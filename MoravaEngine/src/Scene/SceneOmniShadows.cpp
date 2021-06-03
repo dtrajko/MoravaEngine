@@ -286,7 +286,7 @@ void SceneOmniShadows::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
         shaderMain->Bind();
 
         model = glm::mat4(1.0f);
-        shaderMain->setMat4("model", model);
+        shaderMain->SetMat4("model", model);
         ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
         ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
         meshes["floor"]->Render();
@@ -294,8 +294,8 @@ void SceneOmniShadows::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
-    shaderMain->setMat4("model", model);
-    shaderOmniShadow->setMat4("model", model);
+    shaderMain->SetMat4("model", model);
+    shaderOmniShadow->SetMat4("model", model);
     ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
     meshes["cube"]->Render();

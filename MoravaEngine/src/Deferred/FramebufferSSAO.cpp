@@ -50,7 +50,7 @@ void FramebufferSSAO::Write(const glm::mat4& projection, const GBuffer& gbuffer)
 	glBindFramebuffer(GL_FRAMEBUFFER, m_SSAO_FBO);
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_ShaderSSAO->Bind();
-	m_ShaderSSAO->setMat4("projection", projection);
+	m_ShaderSSAO->SetMat4("projection", projection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gbuffer.GBUFFER_TEXTURE_TYPE_POSITION);
 	glActiveTexture(GL_TEXTURE1);
@@ -63,14 +63,14 @@ void FramebufferSSAO::Write(const glm::mat4& projection, const GBuffer& gbuffer)
 	// 2. generate SSAO texture
 	// -----------------------------------------------------------------
 	m_ShaderSSAO->Bind();
-	m_ShaderSSAO->setInt("gPosition", 0);
-	m_ShaderSSAO->setInt("gNormal", 1);
-	m_ShaderSSAO->setInt("texNoise", 2);
-	m_ShaderSSAO->setFloat("screenWidth", (float)m_Width);
-	m_ShaderSSAO->setFloat("screenHeight", (float)m_Height);
-	m_ShaderSSAO->setInt("m_KernelSize", m_KernelSize);
-	m_ShaderSSAO->setFloat("radius", m_Radius);
-	m_ShaderSSAO->setFloat("bias", m_Bias);
+	m_ShaderSSAO->SetInt("gPosition", 0);
+	m_ShaderSSAO->SetInt("gNormal", 1);
+	m_ShaderSSAO->SetInt("texNoise", 2);
+	m_ShaderSSAO->SetFloat("screenWidth", (float)m_Width);
+	m_ShaderSSAO->SetFloat("screenHeight", (float)m_Height);
+	m_ShaderSSAO->SetInt("m_KernelSize", m_KernelSize);
+	m_ShaderSSAO->SetFloat("radius", m_Radius);
+	m_ShaderSSAO->SetFloat("bias", m_Bias);
 }
 
 void FramebufferSSAO::GenerateSampleKernel()
@@ -95,7 +95,7 @@ void FramebufferSSAO::GenerateSampleKernel()
 		scale = Math::Lerp(0.1f, 1.0f, scale * scale);
 		sample *= scale;
 		m_SSAO_Kernel.push_back(sample);
-		m_ShaderSSAO->setVec3("samples[" + std::to_string(i) + "]", sample);
+		m_ShaderSSAO->SetFloat3("samples[" + std::to_string(i) + "]", sample);
 	}
 }
 

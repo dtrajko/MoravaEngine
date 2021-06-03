@@ -824,7 +824,7 @@ void SceneMarchingCubes::Render(Window* mainWindow, glm::mat4 projectionMatrix, 
     if (m_DrawGizmos) {
         if (passType == "main") {
             shaderBasic->Bind();
-            shaderBasic->setMat4("model", glm::mat4(1.0f));
+            shaderBasic->SetMat4("model", glm::mat4(1.0f));
             m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
         }
     }
@@ -840,18 +840,18 @@ void SceneMarchingCubes::Render(Window* mainWindow, glm::mat4 projectionMatrix, 
 
         if (passType == "shadow_dir") {
             shaderShadowMap->Bind();
-            shaderShadowMap->setMat4("model", model);
-            shaderShadowMap->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-            shaderShadowMap->setBool("u_Animated", false);
+            shaderShadowMap->SetMat4("model", model);
+            shaderShadowMap->SetMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+            shaderShadowMap->SetBool("u_Animated", false);
         }
         else {
             shaderMain->Bind();
-            shaderMain->setMat4("projection", projectionMatrix);
-            shaderMain->setMat4("view", m_Camera->GetViewMatrix());
-            shaderMain->setMat4("model", model);
-            shaderMain->setVec4("tintColor", m_Player->GetColor());
-            shaderMain->setInt("albedoMap", 0);
-            shaderMain->setInt("shadowMap", GetTextureSlots()["shadow"]);
+            shaderMain->SetMat4("projection", projectionMatrix);
+            shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
+            shaderMain->SetMat4("model", model);
+            shaderMain->SetFloat4("tintColor", m_Player->GetColor());
+            shaderMain->SetInt("albedoMap", 0);
+            shaderMain->SetInt("shadowMap", GetTextureSlots()["shadow"]);
         }
         m_Player->Render();
         /**** END render Player ****/
@@ -863,20 +863,20 @@ void SceneMarchingCubes::Render(Window* mainWindow, glm::mat4 projectionMatrix, 
         if (passType == "shadow_dir")
         {
             shaderShadowMap->Bind();
-            shaderShadowMap->setMat4("model", glm::mat4(1.0f));
-            shaderShadowMap->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-            shaderShadowMap->setBool("u_Animated", false);
+            shaderShadowMap->SetMat4("model", glm::mat4(1.0f));
+            shaderShadowMap->SetMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+            shaderShadowMap->SetBool("u_Animated", false);
         }
         else
         {
             shaderMarchingCubes->Bind();
-            shaderMarchingCubes->setMat4("projection", projectionMatrix);
-            shaderMarchingCubes->setMat4("view", m_Camera->GetViewMatrix());
-            shaderMarchingCubes->setMat4("model", glm::mat4(1.0f));
-            shaderMarchingCubes->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-            shaderMarchingCubes->setInt("albedoMap", 0);
+            shaderMarchingCubes->SetMat4("projection", projectionMatrix);
+            shaderMarchingCubes->SetMat4("view", m_Camera->GetViewMatrix());
+            shaderMarchingCubes->SetMat4("model", glm::mat4(1.0f));
+            shaderMarchingCubes->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            shaderMarchingCubes->SetInt("albedoMap", 0);
             if (sceneSettings.enableShadows) {
-                shaderMarchingCubes->setInt("shadowMap", GetTextureSlots()["shadow"]);
+                shaderMarchingCubes->SetInt("shadowMap", GetTextureSlots()["shadow"]);
             }
         }
         m_TerrainMarchingCubes->Render();
@@ -886,10 +886,10 @@ void SceneMarchingCubes::Render(Window* mainWindow, glm::mat4 projectionMatrix, 
     if (m_RenderTerrainVoxels) {
         /**** BEGIN Render Procedural Landmass Generation Terrain ****/
         shaderRenderInstanced->Bind();
-        shaderRenderInstanced->setMat4("projection", projectionMatrix);
-        shaderRenderInstanced->setMat4("view", m_Camera->GetViewMatrix());
-        shaderRenderInstanced->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
-        shaderRenderInstanced->setInt("albedoMap", 0);
+        shaderRenderInstanced->SetMat4("projection", projectionMatrix);
+        shaderRenderInstanced->SetMat4("view", m_Camera->GetViewMatrix());
+        shaderRenderInstanced->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        shaderRenderInstanced->SetInt("albedoMap", 0);
         m_RenderInstanced->Render();
         /**** END Render Procedural Landmass Generation Terrain ****/
     }

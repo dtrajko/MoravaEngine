@@ -92,8 +92,8 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
     // s_Data.OutlineMaterial = Hazel::Ref<HazelMaterial>::Create(s_ShaderGrid);
     s_Data.GridMaterial = new Material(s_ShaderGrid);
     s_ShaderGrid->Bind();
-    s_ShaderGrid->setFloat("u_Scale", s_GridScale);
-    s_ShaderGrid->setFloat("u_Res", s_GridSize);
+    s_ShaderGrid->SetFloat("u_Scale", s_GridScale);
+    s_ShaderGrid->SetFloat("u_Res", s_GridSize);
 
     s_Data.SceneData.SkyboxMaterial = new Material(s_ShaderSkybox);
     s_Data.SceneData.SkyboxMaterial->SetFlag(MaterialFlag::DepthTest, true); // false
@@ -312,11 +312,11 @@ void EnvMapSceneRenderer::RenderSkybox()
     EnvMapSceneRenderer::GetRadianceMap()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
 
     glm::mat4 viewProj = GetViewProjection();
-    EnvMapSceneRenderer::s_ShaderSkybox->setMat4("u_InverseVP", glm::inverse(viewProj));
+    EnvMapSceneRenderer::s_ShaderSkybox->SetMat4("u_InverseVP", glm::inverse(viewProj));
 
-    s_ShaderSkybox->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    s_ShaderSkybox->setFloat("u_TextureLod", EnvMapSharedData::s_EditorScene->GetSkyboxLod());
-    s_ShaderSkybox->setFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    s_ShaderSkybox->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
+    s_ShaderSkybox->SetFloat("u_TextureLod", EnvMapSharedData::s_EditorScene->GetSkyboxLod());
+    s_ShaderSkybox->SetFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
 
     EnvMapSharedData::s_SkyboxCube->Render();
 
@@ -334,18 +334,18 @@ void EnvMapSceneRenderer::RenderHazelGrid()
     // ---- uniform float u_Res;
 
     s_ShaderGrid->Bind();
-    s_ShaderGrid->setFloat("u_Scale", EnvMapSceneRenderer::s_GridScale);
-    s_ShaderGrid->setFloat("u_Res", EnvMapSceneRenderer::s_GridSize);
+    s_ShaderGrid->SetFloat("u_Scale", EnvMapSceneRenderer::s_GridScale);
+    s_ShaderGrid->SetFloat("u_Res", EnvMapSceneRenderer::s_GridSize);
 
     glm::mat4 viewProj = GetViewProjection();
-    s_ShaderGrid->setMat4("u_ViewProjection", viewProj);
+    s_ShaderGrid->SetMat4("u_ViewProjection", viewProj);
 
     bool depthTest = true;
 
     glm::mat4 transform = glm::mat4(1.0f);
     transform = glm::scale(transform, glm::vec3(16.0f, 1.0f, 16.0f));
     transform = glm::rotate(transform, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-    s_ShaderGrid->setMat4("u_Transform", transform);
+    s_ShaderGrid->SetMat4("u_Transform", transform);
 
     EnvMapSharedData::s_Quad->Render();
 
@@ -376,65 +376,65 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(Hazel::Ref<MoravaShader> shade
 
     shaderHazelPBR->Bind();
 
-    shaderHazelPBR->setInt("u_AlbedoTexture", EnvMapSharedData::s_SamplerSlots.at("albedo"));
-    shaderHazelPBR->setInt("u_NormalTexture", EnvMapSharedData::s_SamplerSlots.at("normal"));
-    shaderHazelPBR->setInt("u_MetalnessTexture", EnvMapSharedData::s_SamplerSlots.at("metalness"));
-    shaderHazelPBR->setInt("u_RoughnessTexture", EnvMapSharedData::s_SamplerSlots.at("roughness"));
-    shaderHazelPBR->setInt("u_EmissiveTexture", EnvMapSharedData::s_SamplerSlots.at("emissive"));
-    shaderHazelPBR->setInt("u_AOTexture", EnvMapSharedData::s_SamplerSlots.at("ao"));
+    shaderHazelPBR->SetInt("u_AlbedoTexture", EnvMapSharedData::s_SamplerSlots.at("albedo"));
+    shaderHazelPBR->SetInt("u_NormalTexture", EnvMapSharedData::s_SamplerSlots.at("normal"));
+    shaderHazelPBR->SetInt("u_MetalnessTexture", EnvMapSharedData::s_SamplerSlots.at("metalness"));
+    shaderHazelPBR->SetInt("u_RoughnessTexture", EnvMapSharedData::s_SamplerSlots.at("roughness"));
+    shaderHazelPBR->SetInt("u_EmissiveTexture", EnvMapSharedData::s_SamplerSlots.at("emissive"));
+    shaderHazelPBR->SetInt("u_AOTexture", EnvMapSharedData::s_SamplerSlots.at("ao"));
 
-    shaderHazelPBR->setVec3("u_MaterialUniforms.AlbedoColor", envMapMaterial->GetAlbedoInput().Color);
-    shaderHazelPBR->setFloat("u_MaterialUniforms.Metalness", envMapMaterial->GetMetalnessInput().Value);
-    shaderHazelPBR->setFloat("u_MaterialUniforms.Roughness", envMapMaterial->GetRoughnessInput().Value);
-    shaderHazelPBR->setFloat("u_MaterialUniforms.Emissive", envMapMaterial->GetEmissiveInput().Value);
-    shaderHazelPBR->setFloat("u_MaterialUniforms.AO", envMapMaterial->GetAOInput().Value);
+    shaderHazelPBR->SetFloat3("u_MaterialUniforms.AlbedoColor", envMapMaterial->GetAlbedoInput().Color);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.Metalness", envMapMaterial->GetMetalnessInput().Value);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.Roughness", envMapMaterial->GetRoughnessInput().Value);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.Emissive", envMapMaterial->GetEmissiveInput().Value);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.AO", envMapMaterial->GetAOInput().Value);
 
-    shaderHazelPBR->setFloat("u_MaterialUniforms.EnvMapRotation", EnvMapSharedData::s_EnvMapRotation);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.EnvMapRotation", EnvMapSharedData::s_EnvMapRotation);
 
-    shaderHazelPBR->setFloat("u_MaterialUniforms.RadiancePrefilter", EnvMapSharedData::s_RadiancePrefilter ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_MaterialUniforms.AlbedoTexToggle", envMapMaterial->GetAlbedoInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_MaterialUniforms.NormalTexToggle", envMapMaterial->GetNormalInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_MaterialUniforms.MetalnessTexToggle", envMapMaterial->GetMetalnessInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_MaterialUniforms.RoughnessTexToggle", envMapMaterial->GetRoughnessInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_MaterialUniforms.EmissiveTexToggle", envMapMaterial->GetEmissiveInput().UseTexture ? 1.0f : 0.0f);
-    shaderHazelPBR->setFloat("u_MaterialUniforms.AOTexToggle", envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.RadiancePrefilter", EnvMapSharedData::s_RadiancePrefilter ? 1.0f : 0.0f);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.AlbedoTexToggle", envMapMaterial->GetAlbedoInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.NormalTexToggle", envMapMaterial->GetNormalInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.MetalnessTexToggle", envMapMaterial->GetMetalnessInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.RoughnessTexToggle", envMapMaterial->GetRoughnessInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.EmissiveTexToggle", envMapMaterial->GetEmissiveInput().UseTexture ? 1.0f : 0.0f);
+    shaderHazelPBR->SetFloat("u_MaterialUniforms.AOTexToggle", envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
 
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    shaderHazelPBR->setFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure()); // originally used in Shaders/Hazel/SceneComposite
+    shaderHazelPBR->SetFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure()); // originally used in Shaders/Hazel/SceneComposite
 
-    shaderHazelPBR->setFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
+    shaderHazelPBR->SetFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
 
     glm::mat4 viewProj = GetViewProjection();
-    shaderHazelPBR->setMat4("u_ViewProjectionMatrix", viewProj);
-    shaderHazelPBR->setVec3("u_CameraPosition", EnvMapSharedData::s_ActiveCamera->GetPosition());
-    shaderHazelPBR->setMat4("u_DirLightTransform", EnvMapSharedData::s_DirLightTransform);
+    shaderHazelPBR->SetMat4("u_ViewProjectionMatrix", viewProj);
+    shaderHazelPBR->SetFloat3("u_CameraPosition", EnvMapSharedData::s_ActiveCamera->GetPosition());
+    shaderHazelPBR->SetMat4("u_DirLightTransform", EnvMapSharedData::s_DirLightTransform);
 
     // Environment (TODO: don't do this per mesh)
-    shaderHazelPBR->setInt("u_EnvRadianceTex", EnvMapSharedData::s_SamplerSlots.at("radiance"));
-    shaderHazelPBR->setInt("u_EnvIrradianceTex", EnvMapSharedData::s_SamplerSlots.at("irradiance"));
-    shaderHazelPBR->setInt("u_BRDFLUTTexture", EnvMapSharedData::s_SamplerSlots.at("BRDF_LUT"));
+    shaderHazelPBR->SetInt("u_EnvRadianceTex", EnvMapSharedData::s_SamplerSlots.at("radiance"));
+    shaderHazelPBR->SetInt("u_EnvIrradianceTex", EnvMapSharedData::s_SamplerSlots.at("irradiance"));
+    shaderHazelPBR->SetInt("u_BRDFLUTTexture", EnvMapSharedData::s_SamplerSlots.at("BRDF_LUT"));
 
     // Set lights (TODO: move to light environment and don't do per mesh)
-    shaderHazelPBR->setVec3("lights.Direction", EnvMapSceneRenderer::GetActiveLight().Direction);
-    shaderHazelPBR->setVec3("lights.Radiance", EnvMapSceneRenderer::GetActiveLight().Radiance);
-    shaderHazelPBR->setFloat("lights.Multiplier", EnvMapSceneRenderer::GetActiveLight().Multiplier);
+    shaderHazelPBR->SetFloat3("lights.Direction", EnvMapSceneRenderer::GetActiveLight().Direction);
+    shaderHazelPBR->SetFloat3("lights.Radiance", EnvMapSceneRenderer::GetActiveLight().Radiance);
+    shaderHazelPBR->SetFloat("lights.Multiplier", EnvMapSceneRenderer::GetActiveLight().Multiplier);
 
-    shaderHazelPBR->setInt("pointLightCount", 1);
-    shaderHazelPBR->setInt("spotLightCount", 1);
+    shaderHazelPBR->SetInt("pointLightCount", 1);
+    shaderHazelPBR->SetInt("spotLightCount", 1);
 
     // Point lights / Omni directional shadows
     if (EnvMapSharedData::s_PointLightEntity.HasComponent<Hazel::PointLightComponent>())
     {
         auto& plc = EnvMapSharedData::s_PointLightEntity.GetComponent<Hazel::PointLightComponent>();
         auto& tc = EnvMapSharedData::s_PointLightEntity.GetComponent<Hazel::TransformComponent>();
-        shaderHazelPBR->setBool("pointLights[0].base.enabled", plc.Enabled);
-        shaderHazelPBR->setVec3("pointLights[0].base.color", plc.Color);
-        shaderHazelPBR->setFloat("pointLights[0].base.ambientIntensity", plc.AmbientIntensity);
-        shaderHazelPBR->setFloat("pointLights[0].base.diffuseIntensity", plc.DiffuseIntensity);
-        shaderHazelPBR->setVec3("pointLights[0].position", tc.Translation);
-        shaderHazelPBR->setFloat("pointLights[0].constant", plc.Constant);
-        shaderHazelPBR->setFloat("pointLights[0].linear", plc.Linear);
-        shaderHazelPBR->setFloat("pointLights[0].exponent", plc.Exponent);
+        shaderHazelPBR->SetBool("pointLights[0].base.enabled", plc.Enabled);
+        shaderHazelPBR->SetFloat3("pointLights[0].base.color", plc.Color);
+        shaderHazelPBR->SetFloat("pointLights[0].base.ambientIntensity", plc.AmbientIntensity);
+        shaderHazelPBR->SetFloat("pointLights[0].base.diffuseIntensity", plc.DiffuseIntensity);
+        shaderHazelPBR->SetFloat3("pointLights[0].position", tc.Translation);
+        shaderHazelPBR->SetFloat("pointLights[0].constant", plc.Constant);
+        shaderHazelPBR->SetFloat("pointLights[0].linear", plc.Linear);
+        shaderHazelPBR->SetFloat("pointLights[0].exponent", plc.Exponent);
     }
 
     // Spot lights / Omni directional shadows
@@ -442,16 +442,16 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(Hazel::Ref<MoravaShader> shade
     {
         auto& slc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::SpotLightComponent>();
         auto& tc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
-        shaderHazelPBR->setBool("spotLights[0].base.base.enabled", slc.Enabled);
-        shaderHazelPBR->setVec3("spotLights[0].base.base.color", slc.Color);
-        shaderHazelPBR->setFloat("spotLights[0].base.base.ambientIntensity", slc.AmbientIntensity);
-        shaderHazelPBR->setFloat("spotLights[0].base.base.diffuseIntensity", slc.DiffuseIntensity);
-        shaderHazelPBR->setVec3("spotLights[0].base.position", tc.Translation);
-        shaderHazelPBR->setFloat("spotLights[0].base.constant", slc.Constant);
-        shaderHazelPBR->setFloat("spotLights[0].base.linear", slc.Linear);
-        shaderHazelPBR->setFloat("spotLights[0].base.exponent", slc.Exponent);
-        shaderHazelPBR->setVec3("spotLights[0].direction", tc.Rotation);
-        shaderHazelPBR->setFloat("spotLights[0].edge", slc.Edge);
+        shaderHazelPBR->SetBool("spotLights[0].base.base.enabled", slc.Enabled);
+        shaderHazelPBR->SetFloat3("spotLights[0].base.base.color", slc.Color);
+        shaderHazelPBR->SetFloat("spotLights[0].base.base.ambientIntensity", slc.AmbientIntensity);
+        shaderHazelPBR->SetFloat("spotLights[0].base.base.diffuseIntensity", slc.DiffuseIntensity);
+        shaderHazelPBR->SetFloat3("spotLights[0].base.position", tc.Translation);
+        shaderHazelPBR->SetFloat("spotLights[0].base.constant", slc.Constant);
+        shaderHazelPBR->SetFloat("spotLights[0].base.linear", slc.Linear);
+        shaderHazelPBR->SetFloat("spotLights[0].base.exponent", slc.Exponent);
+        shaderHazelPBR->SetFloat3("spotLights[0].direction", tc.Rotation);
+        shaderHazelPBR->SetFloat("spotLights[0].edge", slc.Edge);
     }
 
     shaderHazelPBR->Validate();
@@ -509,28 +509,28 @@ void EnvMapSceneRenderer::GeometryPass()
                 EnvMapSharedData::s_ShaderHazelPBR->Bind();
 
                 EnvMapSharedData::s_ShadowMapDirLight->ReadTexture(EnvMapSharedData::s_SamplerSlots.at("shadow"));
-                EnvMapSharedData::s_ShaderHazelPBR->setInt("u_ShadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow"));
+                EnvMapSharedData::s_ShaderHazelPBR->SetInt("u_ShadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow"));
 
                 {
                     EnvMapSharedData::s_OmniShadowMapPointLight->ReadTexture(EnvMapSharedData::s_SamplerSlots.at("shadow_omni"));
-                    EnvMapSharedData::s_ShaderHazelPBR->setInt("u_OmniShadowMaps[0].shadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow_omni"));
+                    EnvMapSharedData::s_ShaderHazelPBR->SetInt("u_OmniShadowMaps[0].shadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow_omni"));
 
                     float farPlane = 1000.0f;
                     if (EnvMapSharedData::s_PointLightEntity.HasComponent<Hazel::PointLightComponent>()) {
                         farPlane = EnvMapSharedData::s_PointLightEntity.GetComponent<Hazel::PointLightComponent>().FarPlane;
                     }
-                    EnvMapSharedData::s_ShaderHazelPBR->setFloat("u_OmniShadowMaps[0].farPlane", farPlane);
+                    EnvMapSharedData::s_ShaderHazelPBR->SetFloat("u_OmniShadowMaps[0].farPlane", farPlane);
                 }
 
                 {
                     EnvMapSharedData::s_OmniShadowMapSpotLight->ReadTexture(EnvMapSharedData::s_SamplerSlots.at("shadow_omni") + 1);
-                    EnvMapSharedData::s_ShaderHazelPBR->setInt("u_OmniShadowMaps[1].shadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow_omni") + 1);
+                    EnvMapSharedData::s_ShaderHazelPBR->SetInt("u_OmniShadowMaps[1].shadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow_omni") + 1);
 
                     float farPlane = 1000.0f;
                     if (EnvMapSharedData::s_SpotLightEntity.HasComponent<Hazel::SpotLightComponent>()) {
                         farPlane = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::SpotLightComponent>().FarPlane;
                     }
-                    EnvMapSharedData::s_ShaderHazelPBR->setFloat("u_OmniShadowMaps[1].farPlane", farPlane);
+                    EnvMapSharedData::s_ShaderHazelPBR->SetFloat("u_OmniShadowMaps[1].farPlane", farPlane);
                 }
 
                 Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
@@ -594,9 +594,9 @@ void EnvMapSceneRenderer::CompositePass()
     auto targetFramebuffer = static_cast<Hazel::Ref<Framebuffer>>(s_Data.GeoPass->GetSpecification().TargetFramebuffer);
 
     targetFramebuffer->GetTextureAttachmentColor()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    s_Data.CompositeShader->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    s_Data.CompositeShader->setFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure()); // s_Data.SceneData.SceneCamera.Camera
-    s_Data.CompositeShader->setInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
+    s_Data.CompositeShader->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
+    s_Data.CompositeShader->SetFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure()); // s_Data.SceneData.SceneCamera.Camera
+    s_Data.CompositeShader->SetInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
 
     // Hazel::HazelRenderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::HazelMaterial>());
 

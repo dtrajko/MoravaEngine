@@ -420,7 +420,7 @@ void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	if (passType == "main")
 	{
 		shaders["main"]->Bind();
-		shaders["main"]->setFloat("tilingFactor", m_TilingFactor);
+		shaders["main"]->SetFloat("tilingFactor", m_TilingFactor);
 
 		/* Floor */
 		model = glm::mat4(1.0f);

@@ -200,7 +200,7 @@ namespace Hazel {
 		s_Data.DepthTest = depthTest;
 
 		s_Data.TextureShader->Bind();
-		s_Data.TextureShader->setMat4("u_ViewProjection", viewProj);
+		s_Data.TextureShader->SetMat4("u_ViewProjection", viewProj);
 
 		s_Data.QuadIndexCount = 0;
 		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
@@ -219,7 +219,7 @@ namespace Hazel {
 			s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
 			s_Data.TextureShader->Bind();
-			s_Data.TextureShader->setMat4("u_ViewProjection", s_Data.CameraViewProj);
+			s_Data.TextureShader->SetMat4("u_ViewProjection", s_Data.CameraViewProj);
 
 			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 				s_Data.TextureSlots[i]->Bind(i);
@@ -239,7 +239,7 @@ namespace Hazel {
 			s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
 
 			s_Data.LineShader->Bind();
-			s_Data.LineShader->setMat4("u_ViewProjection", s_Data.CameraViewProj);
+			s_Data.LineShader->SetMat4("u_ViewProjection", s_Data.CameraViewProj);
 
 			s_Data.LineVertexBuffer->Bind();
 			s_Data.LinePipeline->Bind();

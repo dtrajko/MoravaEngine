@@ -51,7 +51,7 @@ void ShaderMain::SetPointLights(PointLight* pointLights, unsigned int lightCount
 {
 	if (lightCount > MAX_POINT_LIGHTS) lightCount = MAX_POINT_LIGHTS;
 
-	setInt("pointLightCount", lightCount);
+	SetInt("pointLightCount", lightCount);
 
 	for (int i = 0; i < (int)lightCount; i++)
 	{
@@ -75,7 +75,7 @@ void ShaderMain::SetSpotLights(SpotLight* spotLights, unsigned int lightCount, u
 {
 	if (lightCount > MAX_SPOT_LIGHTS) lightCount = MAX_SPOT_LIGHTS;
 
-	setInt("spotLightCount", lightCount);
+	SetInt("spotLightCount", lightCount);
 
 	for (int i = 0; i < (int)lightCount; i++)
 	{

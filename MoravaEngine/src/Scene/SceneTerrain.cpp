@@ -163,12 +163,12 @@ void SceneTerrain::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(m_TerrainScale));
-	shaders["main"]->setMat4("model", model);
+	shaders["main"]->SetMat4("model", model);
 	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	textures["rock"]->Bind(textureSlots["diffuse"]);
 	// textures["colorMap"]->Bind(textureSlots["diffuse"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	shaders["main"]->setFloat("tilingFactor", m_Tiling_Factor);
+	shaders["main"]->SetFloat("tilingFactor", m_Tiling_Factor);
 	meshes["terrain"]->Render();
 }
 
@@ -188,15 +188,15 @@ void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(256.0f, 1.0f, 256.0f));
 
-	shaderWater->setMat4("model", model);
+	shaderWater->SetMat4("model", model);
 	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
-	shaderWater->setInt("reflectionTexture", textureSlots["reflection"]);
-	shaderWater->setInt("refractionTexture", textureSlots["refraction"]);
+	shaderWater->SetInt("reflectionTexture", textureSlots["reflection"]);
+	shaderWater->SetInt("refractionTexture", textureSlots["refraction"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
-	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
+	shaderWater->SetFloat3("lightColor", LightManager::directionalLight.GetColor());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->Render();
 }

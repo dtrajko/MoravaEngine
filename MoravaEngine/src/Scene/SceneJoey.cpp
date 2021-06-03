@@ -88,28 +88,28 @@ void SceneJoey::SetupShaders()
 	printf("RendererJoey: m_ShaderBlurVertical compiled [programID=%d]\n", m_ShaderBlurVertical->GetProgramID());
 
 	m_Shader_PBR->Bind();
-	m_Shader_PBR->setInt("irradianceMap", 0);
-	m_Shader_PBR->setInt("prefilterMap", 1);
-	m_Shader_PBR->setInt("brdfLUT", 2);
-	m_Shader_PBR->setInt("albedoMap", 3);
-	m_Shader_PBR->setInt("normalMap", 4);
-	m_Shader_PBR->setInt("metallicMap", 5);
-	m_Shader_PBR->setInt("roughnessMap", 6);
-	m_Shader_PBR->setInt("aoMap", 7);
+	m_Shader_PBR->SetInt("irradianceMap", 0);
+	m_Shader_PBR->SetInt("prefilterMap", 1);
+	m_Shader_PBR->SetInt("brdfLUT", 2);
+	m_Shader_PBR->SetInt("albedoMap", 3);
+	m_Shader_PBR->SetInt("normalMap", 4);
+	m_Shader_PBR->SetInt("metallicMap", 5);
+	m_Shader_PBR->SetInt("roughnessMap", 6);
+	m_Shader_PBR->SetInt("aoMap", 7);
 
 	m_Shader_PBR_MRE->Bind();
-	m_Shader_PBR_MRE->setInt("irradianceMap", 0);
-	m_Shader_PBR_MRE->setInt("prefilterMap", 1);
-	m_Shader_PBR_MRE->setInt("brdfLUT", 2);
-	m_Shader_PBR_MRE->setInt("albedoMap", 3);
-	m_Shader_PBR_MRE->setInt("normalMap", 4);
-	m_Shader_PBR_MRE->setInt("metalRoughMap", 5);
-	m_Shader_PBR_MRE->setInt("emissiveMap", 6);
-	m_Shader_PBR_MRE->setInt("aoMap", 7);
+	m_Shader_PBR_MRE->SetInt("irradianceMap", 0);
+	m_Shader_PBR_MRE->SetInt("prefilterMap", 1);
+	m_Shader_PBR_MRE->SetInt("brdfLUT", 2);
+	m_Shader_PBR_MRE->SetInt("albedoMap", 3);
+	m_Shader_PBR_MRE->SetInt("normalMap", 4);
+	m_Shader_PBR_MRE->SetInt("metalRoughMap", 5);
+	m_Shader_PBR_MRE->SetInt("emissiveMap", 6);
+	m_Shader_PBR_MRE->SetInt("aoMap", 7);
 
 	m_ShaderBackground->Bind();
-	m_ShaderBackground->setInt("environmentMap", 0);
-	m_ShaderBackground->setFloat("u_TextureLOD", 0.0f);
+	m_ShaderBackground->SetInt("environmentMap", 0);
+	m_ShaderBackground->SetFloat("u_TextureLOD", 0.0f);
 }
 
 void SceneJoey::SetupMaterials()
@@ -404,9 +404,9 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 	{
 		// initialize static shader uniforms before rendering
 		m_Shader_PBR->Bind();
-		m_Shader_PBR->setMat4("projection", projectionMatrix);
-		m_Shader_PBR->setMat4("view", m_Camera->GetViewMatrix());
-		m_Shader_PBR->setVec3("camPos", m_Camera->GetPosition());
+		m_Shader_PBR->SetMat4("projection", projectionMatrix);
+		m_Shader_PBR->SetMat4("view", m_Camera->GetViewMatrix());
+		m_Shader_PBR->SetFloat3("camPos", m_Camera->GetPosition());
 
 		// render scene, supplying the convoluted irradiance map to the final shader.
 		// bind pre-computed IBL data
@@ -420,35 +420,35 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		// rusted iron
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-5.0, 0.0, 2.0));
-		m_Shader_PBR->setMat4("model", model);
+		m_Shader_PBR->SetMat4("model", model);
 		materials["rusted_iron"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// gold
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-3.0, 0.0, 2.0));
-		m_Shader_PBR->setMat4("model", model);
+		m_Shader_PBR->SetMat4("model", model);
 		materials["gold"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// grass
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-1.0, 0.0, 2.0));
-		m_Shader_PBR->setMat4("model", model);
+		m_Shader_PBR->SetMat4("model", model);
 		materials["grass"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// plastic
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(1.0, 0.0, 2.0));
-		m_Shader_PBR->setMat4("model", model);
+		m_Shader_PBR->SetMat4("model", model);
 		materials["plastic"]->BindTextures(3);
 		m_SphereJoey->Render();
 
 		// wall
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(3.0, 0.0, 2.0));
-		m_Shader_PBR->setMat4("model", model);
+		m_Shader_PBR->SetMat4("model", model);
 		materials["wall"]->BindTextures(3);
 		m_SphereJoey->Render();
 
@@ -459,12 +459,12 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		{
 			glm::vec3 newPos = m_LightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
 			newPos = m_LightPositions[i];
-			m_Shader_PBR->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-			m_Shader_PBR->setVec3("lightColors[" + std::to_string(i) + "]", m_LightColors[i]);
+			m_Shader_PBR->SetFloat3("lightPositions[" + std::to_string(i) + "]", newPos);
+			m_Shader_PBR->SetFloat3("lightColors[" + std::to_string(i) + "]", m_LightColors[i]);
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, newPos);
 			model = glm::scale(model, glm::vec3(0.5f));
-			m_Shader_PBR->setMat4("model", model);
+			m_Shader_PBR->SetMat4("model", model);
 			materials["silver"]->BindTextures(3);
 			m_SphereJoey->Render();
 		}
@@ -477,7 +477,7 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(0.1f));
-		m_Shader_PBR->setMat4("model", model);
+		m_Shader_PBR->SetMat4("model", model);
 		materials["cerberus"]->BindTextures(3);
 		models["cerberus"]->RenderPBR();
 	}
@@ -488,19 +488,19 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		m_Timestep = m_IsRotating ? m_Timestep - 0.1f * m_RotationFactor : 0.0f;
 
 		m_Shader_PBR_MRE->Bind();
-		m_Shader_PBR_MRE->setMat4("projection", projectionMatrix);
-		m_Shader_PBR_MRE->setMat4("view", m_Camera->GetViewMatrix());
-		m_Shader_PBR_MRE->setVec3("camPos", m_Camera->GetPosition());
-		m_Shader_PBR_MRE->setFloat("emissiveFactor",  m_EmissiveFactor);
-		m_Shader_PBR_MRE->setFloat("metalnessFactor", m_MetalnessFactor);
-		m_Shader_PBR_MRE->setFloat("roughnessFactor", m_RoughnessFactor);
+		m_Shader_PBR_MRE->SetMat4("projection", projectionMatrix);
+		m_Shader_PBR_MRE->SetMat4("view", m_Camera->GetViewMatrix());
+		m_Shader_PBR_MRE->SetFloat3("camPos", m_Camera->GetPosition());
+		m_Shader_PBR_MRE->SetFloat("emissiveFactor",  m_EmissiveFactor);
+		m_Shader_PBR_MRE->SetFloat("metalnessFactor", m_MetalnessFactor);
+		m_Shader_PBR_MRE->SetFloat("roughnessFactor", m_RoughnessFactor);
 
 		for (unsigned int i = 0; i < SCENE_JOEY_LIGHT_COUNT; ++i)
 		{
 			glm::vec3 newPos = m_LightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
 			newPos = m_LightPositions[i];
-			m_Shader_PBR_MRE->setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
-			m_Shader_PBR_MRE->setVec3("lightColors[" + std::to_string(i) + "]", m_LightColors[i]);
+			m_Shader_PBR_MRE->SetFloat3("lightPositions[" + std::to_string(i) + "]", newPos);
+			m_Shader_PBR_MRE->SetFloat3("lightColors[" + std::to_string(i) + "]", m_LightColors[i]);
 		}
 
 		/* Khronos DamagedHelmet model */
@@ -510,7 +510,7 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f + m_Timestep), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(5.0f));
-		m_Shader_PBR_MRE->setMat4("model", model);
+		m_Shader_PBR_MRE->SetMat4("model", model);
 		materials["damaged_helmet"]->BindTextures(3);
 		models["damagedHelmet"]->RenderPBR();
 
@@ -521,7 +521,7 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		model = glm::rotate(model, glm::radians(0.0f - m_Timestep), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::scale(model, glm::vec3(5.0f));
-		m_Shader_PBR_MRE->setMat4("model", model);
+		m_Shader_PBR_MRE->SetMat4("model", model);
 		materials["sf_helmet"]->BindTextures(3);
 		models["sfHelmet"]->RenderPBR();
 	}
@@ -539,15 +539,15 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 		glm::mat4 transform = glm::mat4(1.0f);
 		float angleRadians = glm::radians((GLfloat)glfwGetTime());
 		// transform = glm::rotate(transform, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		m_ShaderBackground->setMat4("model", transform);
-		m_ShaderBackground->setMat4("projection", projectionMatrix);
-		m_ShaderBackground->setMat4("view", m_Camera->GetViewMatrix());
+		m_ShaderBackground->SetMat4("model", transform);
+		m_ShaderBackground->SetMat4("projection", projectionMatrix);
+		m_ShaderBackground->SetMat4("view", m_Camera->GetViewMatrix());
 
 		m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
 		// m_MaterialWorkflowPBR->BindIrradianceMap(0); // display irradiance map
 		// m_MaterialWorkflowPBR->BindPrefilterMap(0); // display prefilter map
-		m_ShaderBackground->setInt("environmentMap", 0);
-		m_ShaderBackground->setFloat("u_TextureLOD", m_SkyboxLOD);
+		m_ShaderBackground->SetInt("environmentMap", 0);
+		m_ShaderBackground->SetFloat("u_TextureLOD", m_SkyboxLOD);
 
 		m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 	}

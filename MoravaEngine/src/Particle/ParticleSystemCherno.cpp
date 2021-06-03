@@ -67,8 +67,8 @@ void ParticleSystemCherno::DrawRotatedQuad(glm::vec3 position, glm::vec3 size, f
 	model = glm::translate(model, position);
 	model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(size.x, size.y, size.z));
-	shader->setMat4("model", model);
-	shader->setVec4("tintColor", color);
+	shader->SetMat4("model", model);
+	shader->SetFloat4("tintColor", color);
 	m_Quad->Render();
 }
 

@@ -62,8 +62,8 @@ void RendererVoxelTerrain::RenderPassShadow(Window* mainWindow, Scene* scene, gl
 	glDisable(GL_BLEND);
 
 	/**** BEGIN shadow_map ****/
-	shaderShadowMap->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-	shaderShadowMap->setBool("u_Animated", false);
+	shaderShadowMap->SetMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	shaderShadowMap->SetBool("u_Animated", false);
 	shaderShadowMap->Validate();
 	/**** END shadow_map ****/
 
@@ -100,11 +100,11 @@ void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window* mainW
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
 
-	RendererBasic::GetShaders()["omniShadow"]->setVec3("lightPosition", light->GetPosition());
-	RendererBasic::GetShaders()["omniShadow"]->setFloat("farPlane", light->GetFarPlane());
+	RendererBasic::GetShaders()["omniShadow"]->SetFloat3("lightPosition", light->GetPosition());
+	RendererBasic::GetShaders()["omniShadow"]->SetFloat("farPlane", light->GetFarPlane());
 	std::vector<glm::mat4> lightMatrices = light->CalculateLightTransform();
 	for (unsigned int i = 0; i < lightMatrices.size(); i++) {
-		RendererBasic::GetShaders()["omniShadow"]->setMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
+		RendererBasic::GetShaders()["omniShadow"]->SetMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
 	}
 	RendererBasic::GetShaders()["omniShadow"]->Validate();
 
@@ -126,19 +126,19 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	MoravaShader* shaderMain = (MoravaShader*)RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
-	shaderMain->setMat4("model", glm::mat4(1.0f));
-	shaderMain->setMat4("view", scene->GetCamera()->GetViewMatrix());
-	shaderMain->setMat4("projection", projectionMatrix);
-	shaderMain->setVec3("eyePosition", scene->GetCamera()->GetPosition());
+	shaderMain->SetMat4("model", glm::mat4(1.0f));
+	shaderMain->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+	shaderMain->SetMat4("projection", projectionMatrix);
+	shaderMain->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
 
 	// Directional Light
-	shaderMain->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-	shaderMain->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-	shaderMain->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-	shaderMain->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-	shaderMain->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
+	shaderMain->SetInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+	shaderMain->SetFloat3("directionalLight.base.color", LightManager::directionalLight.GetColor());
+	shaderMain->SetFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+	shaderMain->SetFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+	shaderMain->SetFloat3("directionalLight.direction", LightManager::directionalLight.GetDirection());
 
-	shaderMain->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	shaderMain->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
 	unsigned int textureUnit;
 	unsigned int offset;
@@ -146,54 +146,54 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	// Point Lights
 	textureUnit = scene->GetTextureSlots()["omniShadow"];
 	offset = 0;
-	shaderMain->setInt("pointLightCount", LightManager::pointLightCount);
+	shaderMain->SetInt("pointLightCount", LightManager::pointLightCount);
 
 	for (int i = 0; i < (int)LightManager::pointLightCount; i++)
 	{
-		shaderMain->setInt("pointLights[" + std::to_string(i) + "].base.enabled", LightManager::pointLights[i].GetEnabled());
-		shaderMain->setVec3("pointLights[" + std::to_string(i) + "].base.color", LightManager::pointLights[i].GetColor());
-		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].base.ambientIntensity", LightManager::pointLights[i].GetAmbientIntensity());
-		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].base.diffuseIntensity", LightManager::pointLights[i].GetDiffuseIntensity());
-		shaderMain->setVec3("pointLights[" + std::to_string(i) + "].position", LightManager::pointLights[i].GetPosition());
-		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].constant", LightManager::pointLights[i].GetConstant());
-		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].linear", LightManager::pointLights[i].GetLinear());
-		shaderMain->setFloat("pointLights[" + std::to_string(i) + "].exponent", LightManager::pointLights[i].GetExponent());
+		shaderMain->SetInt("pointLights[" + std::to_string(i) + "].base.enabled", LightManager::pointLights[i].GetEnabled());
+		shaderMain->SetFloat3("pointLights[" + std::to_string(i) + "].base.color", LightManager::pointLights[i].GetColor());
+		shaderMain->SetFloat("pointLights[" + std::to_string(i) + "].base.ambientIntensity", LightManager::pointLights[i].GetAmbientIntensity());
+		shaderMain->SetFloat("pointLights[" + std::to_string(i) + "].base.diffuseIntensity", LightManager::pointLights[i].GetDiffuseIntensity());
+		shaderMain->SetFloat3("pointLights[" + std::to_string(i) + "].position", LightManager::pointLights[i].GetPosition());
+		shaderMain->SetFloat("pointLights[" + std::to_string(i) + "].constant", LightManager::pointLights[i].GetConstant());
+		shaderMain->SetFloat("pointLights[" + std::to_string(i) + "].linear", LightManager::pointLights[i].GetLinear());
+		shaderMain->SetFloat("pointLights[" + std::to_string(i) + "].exponent", LightManager::pointLights[i].GetExponent());
 
 		LightManager::pointLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
-		shaderMain->setInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
-		shaderMain->setFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::pointLights[i].GetFarPlane());
+		shaderMain->SetInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
+		shaderMain->SetFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::pointLights[i].GetFarPlane());
 	}
 
 	// Spot Lights
 	textureUnit = scene->GetTextureSlots()["omniShadow"];
 	offset = LightManager::pointLightCount;
-	shaderMain->setInt("spotLightCount", LightManager::spotLightCount);
+	shaderMain->SetInt("spotLightCount", LightManager::spotLightCount);
 
 	for (int i = 0; i < (int)LightManager::spotLightCount; i++)
 	{
-		shaderMain->setInt("spotLights[" + std::to_string(i) + "].base.base.enabled", LightManager::spotLights[i].GetBasePL()->GetEnabled());
-		shaderMain->setVec3("spotLights[" + std::to_string(i) + "].base.base.color", LightManager::spotLights[i].GetBasePL()->GetColor());
-		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.base.ambientIntensity", LightManager::spotLights[i].GetBasePL()->GetAmbientIntensity());
-		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.base.diffuseIntensity", LightManager::spotLights[i].GetBasePL()->GetDiffuseIntensity());
-		shaderMain->setVec3("spotLights[" + std::to_string(i) + "].base.position", LightManager::spotLights[i].GetBasePL()->GetPosition());
-		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.constant", LightManager::spotLights[i].GetBasePL()->GetConstant());
-		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.linear", LightManager::spotLights[i].GetBasePL()->GetLinear());
-		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].base.exponent", LightManager::spotLights[i].GetBasePL()->GetExponent());
-		shaderMain->setVec3("spotLights[" + std::to_string(i) + "].direction", LightManager::spotLights[i].GetDirection());
-		shaderMain->setFloat("spotLights[" + std::to_string(i) + "].edge", LightManager::spotLights[i].GetEdge());
+		shaderMain->SetInt("spotLights[" + std::to_string(i) + "].base.base.enabled", LightManager::spotLights[i].GetBasePL()->GetEnabled());
+		shaderMain->SetFloat3("spotLights[" + std::to_string(i) + "].base.base.color", LightManager::spotLights[i].GetBasePL()->GetColor());
+		shaderMain->SetFloat("spotLights[" + std::to_string(i) + "].base.base.ambientIntensity", LightManager::spotLights[i].GetBasePL()->GetAmbientIntensity());
+		shaderMain->SetFloat("spotLights[" + std::to_string(i) + "].base.base.diffuseIntensity", LightManager::spotLights[i].GetBasePL()->GetDiffuseIntensity());
+		shaderMain->SetFloat3("spotLights[" + std::to_string(i) + "].base.position", LightManager::spotLights[i].GetBasePL()->GetPosition());
+		shaderMain->SetFloat("spotLights[" + std::to_string(i) + "].base.constant", LightManager::spotLights[i].GetBasePL()->GetConstant());
+		shaderMain->SetFloat("spotLights[" + std::to_string(i) + "].base.linear", LightManager::spotLights[i].GetBasePL()->GetLinear());
+		shaderMain->SetFloat("spotLights[" + std::to_string(i) + "].base.exponent", LightManager::spotLights[i].GetBasePL()->GetExponent());
+		shaderMain->SetFloat3("spotLights[" + std::to_string(i) + "].direction", LightManager::spotLights[i].GetDirection());
+		shaderMain->SetFloat("spotLights[" + std::to_string(i) + "].edge", LightManager::spotLights[i].GetEdge());
 
 		LightManager::spotLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
-		shaderMain->setInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
-		shaderMain->setFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::spotLights[i].GetFarPlane());
+		shaderMain->SetInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
+		shaderMain->SetFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::spotLights[i].GetFarPlane());
 	}
 
 	LightManager::directionalLight.GetShadowMap()->ReadTexture(scene->GetTextureSlots()["shadow"]);
-	shaderMain->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
-	shaderMain->setInt("normalMap", scene->GetTextureSlots()["normal"]);
+	shaderMain->SetInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
+	shaderMain->SetInt("normalMap", scene->GetTextureSlots()["normal"]);
 	if (scene->GetSettings().enableShadows)
-		shaderMain->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
-	shaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
-	shaderMain->setFloat("tilingFactor", 1.0f);
+		shaderMain->SetInt("shadowMap", scene->GetTextureSlots()["shadow"]);
+	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+	shaderMain->SetFloat("tilingFactor", 1.0f);
 	shaderMain->Validate();
 	/**** END shaderMain ****/
 
@@ -201,71 +201,71 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	MoravaShader* shaderMarchingCubes = (MoravaShader*)RendererBasic::GetShaders()["marching_cubes"];
 	shaderMarchingCubes->Bind();
 
-	shaderMarchingCubes->setMat4("model", glm::mat4(1.0f));
-	shaderMarchingCubes->setMat4("view", scene->GetCamera()->GetViewMatrix());
-	shaderMarchingCubes->setMat4("projection", projectionMatrix);
-	shaderMarchingCubes->setVec3("eyePosition", scene->GetCamera()->GetPosition());
+	shaderMarchingCubes->SetMat4("model", glm::mat4(1.0f));
+	shaderMarchingCubes->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+	shaderMarchingCubes->SetMat4("projection", projectionMatrix);
+	shaderMarchingCubes->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
 
 	// Directional Light
-	shaderMarchingCubes->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-	shaderMarchingCubes->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-	shaderMarchingCubes->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-	shaderMarchingCubes->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-	shaderMarchingCubes->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
+	shaderMarchingCubes->SetInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+	shaderMarchingCubes->SetFloat3("directionalLight.base.color", LightManager::directionalLight.GetColor());
+	shaderMarchingCubes->SetFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+	shaderMarchingCubes->SetFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+	shaderMarchingCubes->SetFloat3("directionalLight.direction", LightManager::directionalLight.GetDirection());
 
-	shaderMarchingCubes->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+	shaderMarchingCubes->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
 	// Point Lights
 	textureUnit = scene->GetTextureSlots()["omniShadow"];
 	offset = 0;
-	shaderMarchingCubes->setInt("pointLightCount", LightManager::pointLightCount);
+	shaderMarchingCubes->SetInt("pointLightCount", LightManager::pointLightCount);
 
 	for (int i = 0; i < (int)LightManager::pointLightCount; i++)
 	{
-		shaderMarchingCubes->setInt("pointLights[" + std::to_string(i) + "].base.enabled", LightManager::pointLights[i].GetEnabled());
-		shaderMarchingCubes->setVec3("pointLights[" + std::to_string(i) + "].base.color", LightManager::pointLights[i].GetColor());
-		shaderMarchingCubes->setFloat("pointLights[" + std::to_string(i) + "].base.ambientIntensity", LightManager::pointLights[i].GetAmbientIntensity());
-		shaderMarchingCubes->setFloat("pointLights[" + std::to_string(i) + "].base.diffuseIntensity", LightManager::pointLights[i].GetDiffuseIntensity());
-		shaderMarchingCubes->setVec3("pointLights[" + std::to_string(i) + "].position", LightManager::pointLights[i].GetPosition());
-		shaderMarchingCubes->setFloat("pointLights[" + std::to_string(i) + "].constant", LightManager::pointLights[i].GetConstant());
-		shaderMarchingCubes->setFloat("pointLights[" + std::to_string(i) + "].linear", LightManager::pointLights[i].GetLinear());
-		shaderMarchingCubes->setFloat("pointLights[" + std::to_string(i) + "].exponent", LightManager::pointLights[i].GetExponent());
+		shaderMarchingCubes->SetInt("pointLights[" + std::to_string(i) + "].base.enabled", LightManager::pointLights[i].GetEnabled());
+		shaderMarchingCubes->SetFloat3("pointLights[" + std::to_string(i) + "].base.color", LightManager::pointLights[i].GetColor());
+		shaderMarchingCubes->SetFloat("pointLights[" + std::to_string(i) + "].base.ambientIntensity", LightManager::pointLights[i].GetAmbientIntensity());
+		shaderMarchingCubes->SetFloat("pointLights[" + std::to_string(i) + "].base.diffuseIntensity", LightManager::pointLights[i].GetDiffuseIntensity());
+		shaderMarchingCubes->SetFloat3("pointLights[" + std::to_string(i) + "].position", LightManager::pointLights[i].GetPosition());
+		shaderMarchingCubes->SetFloat("pointLights[" + std::to_string(i) + "].constant", LightManager::pointLights[i].GetConstant());
+		shaderMarchingCubes->SetFloat("pointLights[" + std::to_string(i) + "].linear", LightManager::pointLights[i].GetLinear());
+		shaderMarchingCubes->SetFloat("pointLights[" + std::to_string(i) + "].exponent", LightManager::pointLights[i].GetExponent());
 
 		LightManager::pointLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
-		shaderMarchingCubes->setInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
-		shaderMarchingCubes->setFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::pointLights[i].GetFarPlane());
+		shaderMarchingCubes->SetInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
+		shaderMarchingCubes->SetFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::pointLights[i].GetFarPlane());
 	}
 
 	// Spot Lights
 	textureUnit = scene->GetTextureSlots()["omniShadow"];
 	offset = LightManager::pointLightCount;
-	shaderMarchingCubes->setInt("spotLightCount", LightManager::spotLightCount);
+	shaderMarchingCubes->SetInt("spotLightCount", LightManager::spotLightCount);
 
 	for (int i = 0; i < (int)LightManager::spotLightCount; i++)
 	{
-		shaderMarchingCubes->setInt("spotLights[" + std::to_string(i) + "].base.base.enabled", LightManager::spotLights[i].GetBasePL()->GetEnabled());
-		shaderMarchingCubes->setVec3("spotLights[" + std::to_string(i) + "].base.base.color", LightManager::spotLights[i].GetBasePL()->GetColor());
-		shaderMarchingCubes->setFloat("spotLights[" + std::to_string(i) + "].base.base.ambientIntensity", LightManager::spotLights[i].GetBasePL()->GetAmbientIntensity());
-		shaderMarchingCubes->setFloat("spotLights[" + std::to_string(i) + "].base.base.diffuseIntensity", LightManager::spotLights[i].GetBasePL()->GetDiffuseIntensity());
-		shaderMarchingCubes->setVec3("spotLights[" + std::to_string(i) + "].base.position", LightManager::spotLights[i].GetBasePL()->GetPosition());
-		shaderMarchingCubes->setFloat("spotLights[" + std::to_string(i) + "].base.constant", LightManager::spotLights[i].GetBasePL()->GetConstant());
-		shaderMarchingCubes->setFloat("spotLights[" + std::to_string(i) + "].base.linear", LightManager::spotLights[i].GetBasePL()->GetLinear());
-		shaderMarchingCubes->setFloat("spotLights[" + std::to_string(i) + "].base.exponent", LightManager::spotLights[i].GetBasePL()->GetExponent());
-		shaderMarchingCubes->setVec3("spotLights[" + std::to_string(i) + "].direction", LightManager::spotLights[i].GetDirection());
-		shaderMarchingCubes->setFloat("spotLights[" + std::to_string(i) + "].edge", LightManager::spotLights[i].GetEdge());
+		shaderMarchingCubes->SetInt("spotLights[" + std::to_string(i) + "].base.base.enabled", LightManager::spotLights[i].GetBasePL()->GetEnabled());
+		shaderMarchingCubes->SetFloat3("spotLights[" + std::to_string(i) + "].base.base.color", LightManager::spotLights[i].GetBasePL()->GetColor());
+		shaderMarchingCubes->SetFloat("spotLights[" + std::to_string(i) + "].base.base.ambientIntensity", LightManager::spotLights[i].GetBasePL()->GetAmbientIntensity());
+		shaderMarchingCubes->SetFloat("spotLights[" + std::to_string(i) + "].base.base.diffuseIntensity", LightManager::spotLights[i].GetBasePL()->GetDiffuseIntensity());
+		shaderMarchingCubes->SetFloat3("spotLights[" + std::to_string(i) + "].base.position", LightManager::spotLights[i].GetBasePL()->GetPosition());
+		shaderMarchingCubes->SetFloat("spotLights[" + std::to_string(i) + "].base.constant", LightManager::spotLights[i].GetBasePL()->GetConstant());
+		shaderMarchingCubes->SetFloat("spotLights[" + std::to_string(i) + "].base.linear", LightManager::spotLights[i].GetBasePL()->GetLinear());
+		shaderMarchingCubes->SetFloat("spotLights[" + std::to_string(i) + "].base.exponent", LightManager::spotLights[i].GetBasePL()->GetExponent());
+		shaderMarchingCubes->SetFloat3("spotLights[" + std::to_string(i) + "].direction", LightManager::spotLights[i].GetDirection());
+		shaderMarchingCubes->SetFloat("spotLights[" + std::to_string(i) + "].edge", LightManager::spotLights[i].GetEdge());
 
 		LightManager::spotLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
-		shaderMarchingCubes->setInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
-		shaderMarchingCubes->setFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::spotLights[i].GetFarPlane());
+		shaderMarchingCubes->SetInt("omniShadowMaps[" + std::to_string(offset + i) + "].shadowMap", textureUnit + offset + i);
+		shaderMarchingCubes->SetFloat("omniShadowMaps[" + std::to_string(offset + i) + "].farPlane", LightManager::spotLights[i].GetFarPlane());
 	}
 
 	LightManager::directionalLight.GetShadowMap()->ReadTexture(scene->GetTextureSlots()["shadow"]);
-	shaderMarchingCubes->setInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
-	shaderMarchingCubes->setInt("normalMap", scene->GetTextureSlots()["normal"]);
+	shaderMarchingCubes->SetInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
+	shaderMarchingCubes->SetInt("normalMap", scene->GetTextureSlots()["normal"]);
 	if (scene->GetSettings().enableShadows)
-		shaderMarchingCubes->setInt("shadowMap", scene->GetTextureSlots()["shadow"]);
-	shaderMarchingCubes->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
-	shaderMarchingCubes->setFloat("tilingFactor", 1.0f);
+		shaderMarchingCubes->SetInt("shadowMap", scene->GetTextureSlots()["shadow"]);
+	shaderMarchingCubes->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+	shaderMarchingCubes->SetFloat("tilingFactor", 1.0f);
 	shaderMarchingCubes->Validate();
 	/**** END shaderMarchingCubes ****/
 
@@ -273,27 +273,27 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	MoravaShader* shaderRenderInstanced = (MoravaShader*)RendererBasic::GetShaders()["render_instanced"];
 	shaderRenderInstanced->Bind();
 
-	shaderRenderInstanced->setMat4("projection", projectionMatrix);
-	shaderRenderInstanced->setMat4("view", scene->GetCamera()->GetViewMatrix());
-	shaderRenderInstanced->setVec3("eyePosition", scene->GetCamera()->GetPosition());
+	shaderRenderInstanced->SetMat4("projection", projectionMatrix);
+	shaderRenderInstanced->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+	shaderRenderInstanced->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
 
 	// Directional Light
-	shaderRenderInstanced->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-	shaderRenderInstanced->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-	shaderRenderInstanced->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-	shaderRenderInstanced->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-	shaderRenderInstanced->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
+	shaderRenderInstanced->SetInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+	shaderRenderInstanced->SetFloat3("directionalLight.base.color", LightManager::directionalLight.GetColor());
+	shaderRenderInstanced->SetFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+	shaderRenderInstanced->SetFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+	shaderRenderInstanced->SetFloat3("directionalLight.direction", LightManager::directionalLight.GetDirection());
 
-	shaderRenderInstanced->setFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
-	shaderRenderInstanced->setFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
+	shaderRenderInstanced->SetFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
+	shaderRenderInstanced->SetFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
 	shaderRenderInstanced->Validate();
 	/**** END shaderRenderInstanced ****/
 
 	/**** BEGIN shaderBasic ****/
 	MoravaShader* shaderBasic = RendererBasic::GetShaders()["basic"];
 	shaderBasic->Bind();
-	shaderBasic->setMat4("projection", projectionMatrix);
-	shaderBasic->setMat4("view", scene->GetCamera()->GetViewMatrix());
+	shaderBasic->SetMat4("projection", projectionMatrix);
+	shaderBasic->SetMat4("view", scene->GetCamera()->GetViewMatrix());
 	shaderBasic->Validate();
 	/**** END shaderBasic ****/
 

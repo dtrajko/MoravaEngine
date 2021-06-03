@@ -74,9 +74,9 @@ void SceneDeferred::SetupShaders()
     Log::GetLogger()->info("SceneDeferred: m_ShaderLightBox compiled [programID={0}]", m_ShaderLightBox->GetProgramID());
 
     m_ShaderLightingPass->Bind();
-    m_ShaderLightingPass->setInt("gPosition",   0);
-    m_ShaderLightingPass->setInt("gNormal",     1);
-    m_ShaderLightingPass->setInt("gAlbedoSpec", 2);
+    m_ShaderLightingPass->SetInt("gPosition",   0);
+    m_ShaderLightingPass->SetInt("gNormal",     1);
+    m_ShaderLightingPass->SetInt("gAlbedoSpec", 2);
 }
 
 void SceneDeferred::SetupLights()
@@ -218,8 +218,8 @@ void SceneDeferred::RenderPassGeometry(glm::mat4 projectionMatrix)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_ShaderGeometryPass->Bind();
-    m_ShaderGeometryPass->setMat4("projection", projectionMatrix);
-    m_ShaderGeometryPass->setMat4("view", m_Camera->GetViewMatrix());
+    m_ShaderGeometryPass->SetMat4("projection", projectionMatrix);
+    m_ShaderGeometryPass->SetMat4("view", m_Camera->GetViewMatrix());
 
     glm::mat4 model = glm::mat4(1.0f);
     for (unsigned int i = 0; i < m_ObjectPositions.size(); i++)
@@ -227,7 +227,7 @@ void SceneDeferred::RenderPassGeometry(glm::mat4 projectionMatrix)
         model = glm::mat4(1.0f);
         model = glm::translate(model, m_ObjectPositions[i]);
         model = glm::scale(model, glm::vec3(0.25f));
-        m_ShaderGeometryPass->setMat4("model", model);
+        m_ShaderGeometryPass->SetMat4("model", model);
         m_Backpack->Draw(m_ShaderGeometryPass);
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -249,20 +249,20 @@ void SceneDeferred::RenderPassLighting()
     // send light relevant uniforms
     for (unsigned int i = 0; i < m_LightPositions.size(); i++)
     {
-        m_ShaderLightingPass->setVec3("lights[" + std::to_string(i) + "].Position", m_LightPositions[i]);
-        m_ShaderLightingPass->setVec3("lights[" + std::to_string(i) + "].Color", m_LightColors[i]);
+        m_ShaderLightingPass->SetFloat3("lights[" + std::to_string(i) + "].Position", m_LightPositions[i]);
+        m_ShaderLightingPass->SetFloat3("lights[" + std::to_string(i) + "].Color", m_LightColors[i]);
         // update attenuation parameters and calculate radius
         const float constant = 1.0f; // note that we don't send this to the shader, we assume it is always 1.0 (in our case)
         const float linear = 0.7f;
         const float quadratic = 1.8f;
-        m_ShaderLightingPass->setFloat("lights[" + std::to_string(i) + "].Linear", linear);
-        m_ShaderLightingPass->setFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
+        m_ShaderLightingPass->SetFloat("lights[" + std::to_string(i) + "].Linear", linear);
+        m_ShaderLightingPass->SetFloat("lights[" + std::to_string(i) + "].Quadratic", quadratic);
         // then calculate radius of light volume/sphere
         const float maxBrightness = std::fmaxf(std::fmaxf(m_LightColors[i].r, m_LightColors[i].g), m_LightColors[i].b);
         float radius = (-linear + std::sqrt(linear * linear - 4 * quadratic * (constant - (256.0f / 5.0f) * maxBrightness))) / (2.0f * quadratic);
-        m_ShaderLightingPass->setFloat("lights[" + std::to_string(i) + "].Radius", radius);
+        m_ShaderLightingPass->SetFloat("lights[" + std::to_string(i) + "].Radius", radius);
     }
-    m_ShaderLightingPass->setVec3("viewPos", m_Camera->GetPosition());
+    m_ShaderLightingPass->SetFloat3("viewPos", m_Camera->GetPosition());
 
     // finally render quad
     m_Quad->Render();
@@ -283,16 +283,16 @@ void SceneDeferred::RenderPassForward(glm::mat4 projectionMatrix)
     // 3. render lights on top of scene
     // --------------------------------
     m_ShaderLightBox->Bind();
-    m_ShaderLightBox->setMat4("projection", projectionMatrix);
-    m_ShaderLightBox->setMat4("view", m_Camera->GetViewMatrix());
+    m_ShaderLightBox->SetMat4("projection", projectionMatrix);
+    m_ShaderLightBox->SetMat4("view", m_Camera->GetViewMatrix());
     glm::mat4 model = glm::mat4(1.0f);
     for (unsigned int i = 0; i < m_LightPositions.size(); i++)
     {
         model = glm::mat4(1.0f);
         model = glm::translate(model, m_LightPositions[i]);
         model = glm::scale(model, glm::vec3(0.125f));
-        m_ShaderLightBox->setMat4("model", model);
-        m_ShaderLightBox->setVec3("lightColor", m_LightColors[i]);
+        m_ShaderLightBox->SetMat4("model", model);
+        m_ShaderLightBox->SetFloat3("lightColor", m_LightColors[i]);
         m_Cube->Render();
     }
 }

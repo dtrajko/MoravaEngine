@@ -43,10 +43,10 @@ void SceneFramebuffers::SetupShaders()
 
 	// shader configuration
 	m_ShaderFramebuffersScene->Bind();
-	m_ShaderFramebuffersScene->setInt("texture1", 0);
+	m_ShaderFramebuffersScene->SetInt("texture1", 0);
 
 	m_ShaderFramebuffersScreen->Bind();
-	m_ShaderFramebuffersScreen->setInt("screenTexture", 0);
+	m_ShaderFramebuffersScreen->SetInt("screenTexture", 0);
 }
 
 void SceneFramebuffers::SetupFramebuffers()
@@ -137,8 +137,8 @@ void SceneFramebuffers::Render(Window* mainWindow, glm::mat4 projectionMatrix, s
 		m_ShaderFramebuffersScene->Bind();
 
 		glm::mat4 model = glm::mat4(1.0f);
-		m_ShaderFramebuffersScene->setMat4("view", m_Camera->GetViewMatrix());
-		m_ShaderFramebuffersScene->setMat4("projection", projectionMatrix);
+		m_ShaderFramebuffersScene->SetMat4("view", m_Camera->GetViewMatrix());
+		m_ShaderFramebuffersScene->SetMat4("projection", projectionMatrix);
 
 		// -- cubes
 		glBindVertexArray(GeometryFactory::CubeTexCoords::GetVAO());
@@ -147,12 +147,12 @@ void SceneFramebuffers::Render(Window* mainWindow, glm::mat4 projectionMatrix, s
 		textures["cube_wood"]->Bind(0);
 
 		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-		m_ShaderFramebuffersScene->setMat4("model", model);
+		m_ShaderFramebuffersScene->SetMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		m_ShaderFramebuffersScene->setMat4("model", model);
+		m_ShaderFramebuffersScene->SetMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// -- floor
@@ -160,7 +160,7 @@ void SceneFramebuffers::Render(Window* mainWindow, glm::mat4 projectionMatrix, s
 
 		textures["floor_metal"]->Bind(0);
 
-		m_ShaderFramebuffersScene->setMat4("model", glm::mat4(1.0f));
+		m_ShaderFramebuffersScene->SetMat4("model", glm::mat4(1.0f));
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 	}
@@ -188,26 +188,26 @@ void SceneFramebuffers::Render(Window* mainWindow, glm::mat4 projectionMatrix, s
 
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, 0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
-		m_ShaderFramebuffersScreen->setMat4("model", model);
-		m_ShaderFramebuffersScreen->setInt("effect", GetEffectForFrame(0)); // diffuse (default)
+		m_ShaderFramebuffersScreen->SetMat4("model", model);
+		m_ShaderFramebuffersScreen->SetInt("effect", GetEffectForFrame(0)); // diffuse (default)
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
-		m_ShaderFramebuffersScreen->setMat4("model", model);
-		m_ShaderFramebuffersScreen->setInt("effect", GetEffectForFrame(1)); // inverse color
+		m_ShaderFramebuffersScreen->SetMat4("model", model);
+		m_ShaderFramebuffersScreen->SetInt("effect", GetEffectForFrame(1)); // inverse color
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
-		m_ShaderFramebuffersScreen->setMat4("model", model);
-		m_ShaderFramebuffersScreen->setInt("effect", GetEffectForFrame(2)); // nightvision
+		m_ShaderFramebuffersScreen->SetMat4("model", model);
+		m_ShaderFramebuffersScreen->SetInt("effect", GetEffectForFrame(2)); // nightvision
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		model = glm::translate(glm::mat4(1.0f), glm::vec3(0.5f, -0.5f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.5f));
-		m_ShaderFramebuffersScreen->setMat4("model", model);
-		m_ShaderFramebuffersScreen->setInt("effect", GetEffectForFrame(3)); // kernel sharp
+		m_ShaderFramebuffersScreen->SetMat4("model", model);
+		m_ShaderFramebuffersScreen->SetInt("effect", GetEffectForFrame(3)); // kernel sharp
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 	// -- END Second Render Pass render target default framebuffer

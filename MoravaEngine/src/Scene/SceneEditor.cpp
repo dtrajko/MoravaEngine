@@ -1932,18 +1932,18 @@ void SceneEditor::SetUniformsShaderEditor(MoravaShader* shaderEditor, Texture* t
 {
     shaderEditor->Bind();
 
-    shaderEditor->setMat4("model", sceneObject->transform);
-    shaderEditor->setVec4("tintColor", sceneObject->color);
-    shaderEditor->setBool("isSelected", sceneObject->isSelected);
+    shaderEditor->SetMat4("model", sceneObject->transform);
+    shaderEditor->SetFloat4("tintColor", sceneObject->color);
+    shaderEditor->SetBool("isSelected", sceneObject->isSelected);
 
-    shaderEditor->setFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
-    shaderEditor->setFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
+    shaderEditor->SetFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
+    shaderEditor->SetFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
 
     if (texture != nullptr)
         texture->Bind(0);
 
-    shaderEditor->setInt("albedoMap", 0);
-    shaderEditor->setFloat("tilingFactor", sceneObject->tilingFactor);
+    shaderEditor->SetInt("albedoMap", 0);
+    shaderEditor->SetFloat("tilingFactor", sceneObject->tilingFactor);
 
     if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
         m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
@@ -1952,25 +1952,25 @@ void SceneEditor::SetUniformsShaderEditor(MoravaShader* shaderEditor, Texture* t
     else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
         m_MaterialWorkflowPBR->BindPrefilterMap(1);
 
-    shaderEditor->setInt("cubeMap", 1);
-    shaderEditor->setBool("useCubeMaps", m_UseCubeMaps);
+    shaderEditor->SetInt("cubeMap", 1);
+    shaderEditor->SetBool("useCubeMaps", m_UseCubeMaps);
 
     // Shadows in shaderEditor
     if (LightManager::directionalLight.GetShadowMap() != nullptr)
         LightManager::directionalLight.GetShadowMap()->ReadTexture(2);
-    shaderEditor->setInt("shadowMap", 2);
+    shaderEditor->SetInt("shadowMap", 2);
 }
 
 void SceneEditor::SetUniformsShaderEditorPBR(MoravaShader* shaderEditorPBR, Texture* texture, Hazel::Ref<Material> material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
 
-    shaderEditorPBR->setMat4("model",         sceneObject->transform);
-    shaderEditorPBR->setVec4("tintColor",     sceneObject->color);
-    shaderEditorPBR->setBool("isSelected",    sceneObject->isSelected);
+    shaderEditorPBR->SetMat4("model",         sceneObject->transform);
+    shaderEditorPBR->SetFloat4("tintColor",     sceneObject->color);
+    shaderEditorPBR->SetBool("isSelected",    sceneObject->isSelected);
 
-    shaderEditorPBR->setFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
-    shaderEditorPBR->setFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
+    shaderEditorPBR->SetFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
+    shaderEditorPBR->SetFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
 
     m_MaterialWorkflowPBR->BindTextures(0); // texture slots 0, 1, 2
     material->BindTextures(3);              // texture slots 3, 4, 5, 6, 7
@@ -1978,15 +1978,15 @@ void SceneEditor::SetUniformsShaderEditorPBR(MoravaShader* shaderEditorPBR, Text
     // Override albedo map from material with texture, if texture is available
     if (sceneObject->textureName != "" && sceneObject->textureName != "none") {
         texture->Bind(3); // Albedo is at slot 3
-        shaderEditorPBR->setFloat("tilingFactor", sceneObject->tilingFactor);
+        shaderEditorPBR->SetFloat("tilingFactor", sceneObject->tilingFactor);
     }
     else {
-        shaderEditorPBR->setFloat("tilingFactor", sceneObject->tilingFMaterial);
+        shaderEditorPBR->SetFloat("tilingFactor", sceneObject->tilingFMaterial);
     }
 
     // Shadows in shaderEditorPBR
     LightManager::directionalLight.GetShadowMap()->ReadTexture(8); // texture slots 8
-    shaderEditorPBR->setInt("shadowMap", 8);
+    shaderEditorPBR->SetInt("shadowMap", 8);
 }
 
 void SceneEditor::SetUniformsShaderSkinning(MoravaShader* shaderSkinning, SceneObject* sceneObject, float runningTime)
@@ -1997,17 +1997,17 @@ void SceneEditor::SetUniformsShaderSkinning(MoravaShader* shaderSkinning, SceneO
 
     SkinnedMesh* skinnedMesh = (SkinnedMesh*)sceneObject->mesh;
     skinnedMesh->BoneTransform(runningTime, m_SkinningTransforms[sceneObject->name]);
-    shaderSkinning->setMat4("model", sceneObject->transform);
-    shaderSkinning->setMat4("view", m_Camera->GetViewMatrix());
-    shaderSkinning->setInt("gColorMap", 0);
-    shaderSkinning->setVec3("gEyeWorldPos", m_Camera->GetPosition());
-    shaderSkinning->setFloat("gMatSpecularIntensity", ResourceManager::s_MaterialSpecular);
-    shaderSkinning->setFloat("gSpecularPower", ResourceManager::s_MaterialShininess);
+    shaderSkinning->SetMat4("model", sceneObject->transform);
+    shaderSkinning->SetMat4("view", m_Camera->GetViewMatrix());
+    shaderSkinning->SetInt("gColorMap", 0);
+    shaderSkinning->SetFloat3("gEyeWorldPos", m_Camera->GetPosition());
+    shaderSkinning->SetFloat("gMatSpecularIntensity", ResourceManager::s_MaterialSpecular);
+    shaderSkinning->SetFloat("gSpecularPower", ResourceManager::s_MaterialShininess);
     char locBuff[100] = { '\0' };
     for (unsigned int i = 0; i < m_SkinningTransforms[sceneObject->name].size(); i++)
     {
         snprintf(locBuff, sizeof(locBuff), "gBones[%d]", i);
-        shaderSkinning->setMat4(locBuff, m_SkinningTransforms[sceneObject->name][i]);
+        shaderSkinning->SetMat4(locBuff, m_SkinningTransforms[sceneObject->name][i]);
     }
 }
 
@@ -2017,17 +2017,17 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHybridAnimP
 
     shaderHybridAnimPBR->Bind();
 
-    shaderHybridAnimPBR->setInt("u_AlbedoTexture",    m_SamplerSlots["albedo"]);
-    shaderHybridAnimPBR->setInt("u_NormalTexture",    m_SamplerSlots["normal"]);
-    shaderHybridAnimPBR->setInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
-    shaderHybridAnimPBR->setInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
-    shaderHybridAnimPBR->setInt("u_AOTexture",        m_SamplerSlots["ao"]);
-    shaderHybridAnimPBR->setInt("u_EnvRadianceTex",   m_SamplerSlots["irradiance"]);
-    shaderHybridAnimPBR->setInt("u_PrefilterMap",     m_SamplerSlots["prefilter"]);
-    shaderHybridAnimPBR->setInt("u_BRDFLUT",          m_SamplerSlots["BRDF_LUT"]);
+    shaderHybridAnimPBR->SetInt("u_AlbedoTexture",    m_SamplerSlots["albedo"]);
+    shaderHybridAnimPBR->SetInt("u_NormalTexture",    m_SamplerSlots["normal"]);
+    shaderHybridAnimPBR->SetInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
+    shaderHybridAnimPBR->SetInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
+    shaderHybridAnimPBR->SetInt("u_AOTexture",        m_SamplerSlots["ao"]);
+    shaderHybridAnimPBR->SetInt("u_EnvRadianceTex",   m_SamplerSlots["irradiance"]);
+    shaderHybridAnimPBR->SetInt("u_PrefilterMap",     m_SamplerSlots["prefilter"]);
+    shaderHybridAnimPBR->SetInt("u_BRDFLUT",          m_SamplerSlots["BRDF_LUT"]);
 
-    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_Camera->GetViewMatrix());
-    shaderHybridAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
+    shaderHybridAnimPBR->SetMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_Camera->GetViewMatrix());
+    shaderHybridAnimPBR->SetFloat3("u_CameraPosition", m_Camera->GetPosition());
 
     Hazel::Ref<Material> baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
 
@@ -2040,10 +2040,10 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHybridAnimP
     // Override albedo map from material with texture, if texture is available
     if (sceneObject->textureName != "" && sceneObject->textureName != "none") {
         texture->Bind(m_SamplerSlots["albedo"]); // Albedo is at slot 3
-        shaderHybridAnimPBR->setFloat("u_TilingFactor", sceneObject->tilingFactor);
+        shaderHybridAnimPBR->SetFloat("u_TilingFactor", sceneObject->tilingFactor);
     }
     else {
-        shaderHybridAnimPBR->setFloat("u_TilingFactor", sceneObject->tilingFMaterial);
+        shaderHybridAnimPBR->SetFloat("u_TilingFactor", sceneObject->tilingFMaterial);
     }
 
     m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
@@ -2068,12 +2068,12 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHybridAnimP
         for (size_t i = 0; i < meshAnimPBR->m_BoneTransforms.size(); i++)
         {
             std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-            shaderHybridAnimPBR->setMat4(uniformName, meshAnimPBR->m_BoneTransforms[i]);
+            shaderHybridAnimPBR->SetMat4(uniformName, meshAnimPBR->m_BoneTransforms[i]);
         }
 
         glm::mat4 transform = sceneObject->transform * submesh.Transform;
         transform = glm::scale(transform, sceneObject->scale);
-        shaderHybridAnimPBR->setMat4("u_Transform", transform);
+        shaderHybridAnimPBR->SetMat4("u_Transform", transform);
         shaderHybridAnimPBR->Validate();
 
         // TODO move to virtual HazelMesh::Render() method
@@ -2089,21 +2089,21 @@ void SceneEditor::SetUniformsShaderWater(MoravaShader* shaderWater, SceneObject*
     RendererBasic::EnableTransparency();
 
     shaderWater->Bind();
-    shaderWater->setInt("reflectionTexture", 0);
-    shaderWater->setInt("refractionTexture", 1);
-    shaderWater->setInt("normalMap",         2);
-    shaderWater->setInt("dudvMap",           3);
-    shaderWater->setInt("depthMap",          4);
+    shaderWater->SetInt("reflectionTexture", 0);
+    shaderWater->SetInt("refractionTexture", 1);
+    shaderWater->SetInt("normalMap",         2);
+    shaderWater->SetInt("dudvMap",           3);
+    shaderWater->SetInt("depthMap",          4);
 
-    shaderWater->setMat4("model",          sceneObject->transform);
-    shaderWater->setMat4("view",           m_Camera->GetViewMatrix());
-    shaderWater->setMat4("projection",     projectionMatrix);
-    shaderWater->setVec3("lightPosition",  -(LightManager::directionalLight.GetDirection()));
-    shaderWater->setVec3("cameraPosition", m_Camera->GetPosition());
-    shaderWater->setVec3("lightColor",     LightManager::directionalLight.GetColor());
-    shaderWater->setFloat("moveFactor",    m_WaterManager->GetWaterMoveFactor());
-    shaderWater->setFloat("nearPlane",     sceneSettings.nearPlane);
-    shaderWater->setFloat("farPlane",      sceneSettings.farPlane);
+    shaderWater->SetMat4("model",          sceneObject->transform);
+    shaderWater->SetMat4("view",           m_Camera->GetViewMatrix());
+    shaderWater->SetMat4("projection",     projectionMatrix);
+    shaderWater->SetFloat3("lightPosition",  -(LightManager::directionalLight.GetDirection()));
+    shaderWater->SetFloat3("cameraPosition", m_Camera->GetPosition());
+    shaderWater->SetFloat3("lightColor",     LightManager::directionalLight.GetColor());
+    shaderWater->SetFloat("moveFactor",    m_WaterManager->GetWaterMoveFactor());
+    shaderWater->SetFloat("nearPlane",     sceneSettings.nearPlane);
+    shaderWater->SetFloat("farPlane",      sceneSettings.farPlane);
 
     ResourceManager::GetTexture("none")->Bind(0);
     ResourceManager::GetTexture("none")->Bind(1);
@@ -2301,8 +2301,8 @@ void SceneEditor::RenderLightSources(MoravaShader* shaderGizmo)
     // printf("Render Dir Light Direction [ %.2ff %.2ff %.2ff ]\n", dir.x, dir.y, dir.z);
 
     m_SceneObjects[0]->transform = model;
-    shaderGizmo->setMat4("model", model);
-    shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::directionalLight.GetColor(), 1.0f));
+    shaderGizmo->SetMat4("model", model);
+    shaderGizmo->SetFloat4("tintColor", glm::vec4(LightManager::directionalLight.GetColor(), 1.0f));
     if (m_DisplayLightSources && LightManager::directionalLight.GetEnabled())
         m_SceneObjects[0]->Render();
 
@@ -2316,8 +2316,8 @@ void SceneEditor::RenderLightSources(MoravaShader* shaderGizmo)
         model = glm::translate(model, m_SceneObjects[offsetPoint + i]->position);
         model = glm::scale(model, glm::vec3(0.5f));
         m_SceneObjects[offsetPoint + i]->transform = model;
-        shaderGizmo->setMat4("model", model);
-        shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::pointLights[i].GetColor(), 1.0f));
+        shaderGizmo->SetMat4("model", model);
+        shaderGizmo->SetFloat4("tintColor", glm::vec4(LightManager::pointLights[i].GetColor(), 1.0f));
         if (m_DisplayLightSources && LightManager::pointLights[i].GetEnabled())
             m_SceneObjects[offsetPoint + i]->Render();
     }
@@ -2339,8 +2339,8 @@ void SceneEditor::RenderLightSources(MoravaShader* shaderGizmo)
         model = glm::rotate(model, glm::radians(LightManager::spotLights[i].GetDirection().z * -90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         model = glm::scale(model, glm::vec3(0.5f));
         m_SceneObjects[offsetPoint + i]->transform = model;
-        shaderGizmo->setMat4("model", model);
-        shaderGizmo->setVec4("tintColor", glm::vec4(LightManager::spotLights[i].GetBasePL()->GetColor(), 1.0f));
+        shaderGizmo->SetMat4("model", model);
+        shaderGizmo->SetFloat4("tintColor", glm::vec4(LightManager::spotLights[i].GetBasePL()->GetColor(), 1.0f));
         if (m_DisplayLightSources && LightManager::spotLights[i].GetBasePL()->GetEnabled())
             m_SceneObjects[offsetSpot + i]->Render();
     }
@@ -2367,10 +2367,10 @@ void SceneEditor::RenderSkybox(MoravaShader* shaderBackground)
     glm::mat4 transform = glm::mat4(1.0f);
     float angleRadians = glm::radians((GLfloat)glfwGetTime());
     transform = glm::rotate(transform, angleRadians * m_SkyboxRotationSpeed, glm::vec3(0.0f, 1.0f, 0.0f));
-    shaderBackground->setMat4("model", transform);
+    shaderBackground->SetMat4("model", transform);
 
-    shaderBackground->setInt("environmentMap", environmentMapSlot);
-    shaderBackground->setFloat("u_TextureLOD", m_SkyboxLOD);
+    shaderBackground->SetInt("environmentMap", environmentMapSlot);
+    shaderBackground->SetFloat("u_TextureLOD", m_SkyboxLOD);
 
     if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
         m_MaterialWorkflowPBR->BindEnvironmentCubemap(environmentMapSlot);
@@ -2391,7 +2391,7 @@ void SceneEditor::RenderLineElements(MoravaShader* shaderBasic, glm::mat4 projec
     shaderBasic->Bind();
     if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
     {
-        shaderBasic->setMat4("model", glm::mat4(1.0f));
+        shaderBasic->SetMat4("model", glm::mat4(1.0f));
 
         // TODO: don't rely on hard coded array indices for lights (0 to 8) in m_SceneObjects
         bool drawAABB = true;
@@ -2424,9 +2424,9 @@ void SceneEditor::RenderFramebufferTextures(MoravaShader* shaderEditor)
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 10.0f, -20.0f));
     model = glm::scale(model, glm::vec3(16.0f, 9.0f, 1.0f));
-    shaderEditor->setMat4("model", model);
+    shaderEditor->SetMat4("model", model);
     LightManager::directionalLight.GetShadowMap()->ReadTexture(0);
-    shaderEditor->setInt("shadowMap", 0);
+    shaderEditor->SetInt("shadowMap", 0);
     m_Quad->Render();
 }
 
@@ -2441,7 +2441,7 @@ void SceneEditor::RenderGlassObjects(MoravaShader* shaderGlass)
     model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::scale(model, glm::vec3(0.05f));
-    shaderGlass->setMat4("model", model);
+    shaderGlass->SetMat4("model", model);
 
     if (m_PBR_Map_Edit == PBR_MAP_ENVIRONMENT)
         m_MaterialWorkflowPBR->BindEnvironmentCubemap(1);
@@ -2450,7 +2450,7 @@ void SceneEditor::RenderGlassObjects(MoravaShader* shaderGlass)
     else if (m_PBR_Map_Edit == PBR_MAP_PREFILTER)
         m_MaterialWorkflowPBR->BindPrefilterMap(1);
 
-    shaderGlass->setInt("uCubemap", 1);
+    shaderGlass->SetInt("uCubemap", 1);
 
     m_GlassShaderModel->RenderPBR();
 }
@@ -2476,30 +2476,30 @@ void SceneEditor::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 
         if (passType == "shadow_dir") {
             shaders["shadow_map"]->Bind();
-            shaders["shadow_map"]->setMat4("model", object->transform);
+            shaders["shadow_map"]->SetMat4("model", object->transform);
 
             if (!object->castShadow)
                 shouldRenderObject = false;
         }
         if (passType == "shadow_omni") {
             shaders["omni_shadow_map"]->Bind();
-            shaders["omni_shadow_map"]->setMat4("model", object->transform);
+            shaders["omni_shadow_map"]->SetMat4("model", object->transform);
 
             if (!object->castShadow)
                 shouldRenderObject = false;
         }
         if (passType == "main" || passType == "water_reflect" || passType == "water_refract") {
             shaders["editor_object"]->Bind();
-            shaders["editor_object"]->setMat4("model", object->transform);
+            shaders["editor_object"]->SetMat4("model", object->transform);
             shaders["editor_object_pbr"]->Bind();
-            shaders["editor_object_pbr"]->setMat4("model", object->transform);
+            shaders["editor_object_pbr"]->SetMat4("model", object->transform);
             shaders["skinning"]->Bind();
-            shaders["skinning"]->setMat4("model", object->transform);
+            shaders["skinning"]->SetMat4("model", object->transform);
         }
         if (passType == "main") {
             ResourceManager::GetTexture("none")->Bind(0); // Default fallback for Albedo texture
             shaders["water"]->Bind();
-            shaders["water"]->setMat4("model", object->transform);
+            shaders["water"]->SetMat4("model", object->transform);
         }
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;

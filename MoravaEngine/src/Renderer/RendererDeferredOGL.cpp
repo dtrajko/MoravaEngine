@@ -72,9 +72,9 @@ void RendererDeferredOGL::ForwardPass(Window* mainWindow, Scene* scene, glm::mat
 	m_ShaderForwardBasic->Bind();
 
 	glm::mat4 model = glm::mat4(1.0f);
-	m_ShaderForwardBasic->setMat4("gWVP", projectionMatrix * scene->GetCamera()->GetViewMatrix() * model);
-	m_ShaderForwardBasic->setMat4("gWorld", model);
-	m_ShaderForwardBasic->setInt("gColorMap", m_TextureSlot_Diffuse);
+	m_ShaderForwardBasic->SetMat4("gWVP", projectionMatrix * scene->GetCamera()->GetViewMatrix() * model);
+	m_ShaderForwardBasic->SetMat4("gWorld", model);
+	m_ShaderForwardBasic->SetInt("gColorMap", m_TextureSlot_Diffuse);
 	m_ShaderForwardBasic->Validate();
 
 	ResourceManager::GetTexture("crate_diffuse")->Bind(m_TextureSlot_Diffuse);
@@ -93,9 +93,9 @@ void RendererDeferredOGL::GeometryPass(Window* mainWindow, Scene* scene, glm::ma
 	m_ShaderGeometryPass->Bind();
 
 	glm::mat4 model = glm::mat4(1.0f);
-	m_ShaderGeometryPass->setMat4("gWVP", projectionMatrix * scene->GetCamera()->GetViewMatrix() * model);
-	m_ShaderGeometryPass->setMat4("gWorld", model);
-	m_ShaderGeometryPass->setInt("gColorMap", m_TextureSlot_Diffuse);
+	m_ShaderGeometryPass->SetMat4("gWVP", projectionMatrix * scene->GetCamera()->GetViewMatrix() * model);
+	m_ShaderGeometryPass->SetMat4("gWorld", model);
+	m_ShaderGeometryPass->SetInt("gColorMap", m_TextureSlot_Diffuse);
 	m_ShaderGeometryPass->Validate();
 
 	ResourceManager::GetTexture("crate_diffuse")->Bind(m_TextureSlot_Diffuse);

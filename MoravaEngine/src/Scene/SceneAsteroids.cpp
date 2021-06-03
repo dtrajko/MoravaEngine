@@ -147,22 +147,22 @@ void SceneAsteroids::Render(Window* mainWindow, glm::mat4 projectionMatrix, std:
 
 	// configure transformation matrices
 	m_ShaderPlanet->Bind();
-	m_ShaderPlanet->setMat4("projection", projectionMatrix);
-	m_ShaderPlanet->setMat4("view", m_Camera->GetViewMatrix());
+	m_ShaderPlanet->SetMat4("projection", projectionMatrix);
+	m_ShaderPlanet->SetMat4("view", m_Camera->GetViewMatrix());
 
 	// draw planet
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, -20.0f, 0.0f));
 	model = glm::rotate(model, angleRadians * 10.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(20.0f));
-	m_ShaderPlanet->setMat4("model", model);
+	m_ShaderPlanet->SetMat4("model", model);
 	models["planet"]->Draw(m_ShaderPlanet);
 
 	// draw meteorites
 	m_ShaderAsteroids->Bind();
-	m_ShaderAsteroids->setMat4("projection", projectionMatrix);
-	m_ShaderAsteroids->setMat4("view", m_Camera->GetViewMatrix());
-	m_ShaderAsteroids->setInt("texture_diffuse1", 0);
+	m_ShaderAsteroids->SetMat4("projection", projectionMatrix);
+	m_ShaderAsteroids->SetMat4("view", m_Camera->GetViewMatrix());
+	m_ShaderAsteroids->SetInt("texture_diffuse1", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, models["rock"]->GetTextures()[0].id); // note: we also made the textures_loaded vector public (instead of private) from the model class.
 	for (unsigned int i = 0; i < models["rock"]->GetMeshes().size(); i++)

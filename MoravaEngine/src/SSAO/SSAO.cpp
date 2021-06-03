@@ -200,18 +200,18 @@ void SSAO::GenerateLightingInfo()
 	// shader configuration
 	// --------------------
 	m_ShaderLightingPass->Bind();
-	m_ShaderLightingPass->setInt("gPosition", 0);
-	m_ShaderLightingPass->setInt("gNormal", 1);
-	m_ShaderLightingPass->setInt("gAlbedo", 2);
-	m_ShaderLightingPass->setInt("ssao", 3);
+	m_ShaderLightingPass->SetInt("gPosition", 0);
+	m_ShaderLightingPass->SetInt("gNormal", 1);
+	m_ShaderLightingPass->SetInt("gAlbedo", 2);
+	m_ShaderLightingPass->SetInt("ssao", 3);
 	m_ShaderSSAO->Bind();
-	m_ShaderSSAO->setInt("gPosition", 0);
-	m_ShaderSSAO->setInt("gNormal", 1);
-	m_ShaderSSAO->setInt("texNoise", 2);
-	m_ShaderSSAO->setFloat("screenWidth", (float)m_Width);
-	m_ShaderSSAO->setFloat("screenHeight", (float)m_Height);
+	m_ShaderSSAO->SetInt("gPosition", 0);
+	m_ShaderSSAO->SetInt("gNormal", 1);
+	m_ShaderSSAO->SetInt("texNoise", 2);
+	m_ShaderSSAO->SetFloat("screenWidth", (float)m_Width);
+	m_ShaderSSAO->SetFloat("screenHeight", (float)m_Height);
 	m_ShaderSSAOBlur->Bind();
-	m_ShaderSSAOBlur->setInt("ssaoInput", 0);
+	m_ShaderSSAOBlur->SetInt("ssaoInput", 0);
 }
 
 void SSAO::Update()
@@ -259,25 +259,25 @@ void SSAO::GeometryPass(glm::mat4 projectionMatrix, glm::mat4 viewMatrix,
 	glm::mat4 view = viewMatrix;
 	glm::mat4 model = glm::mat4(1.0f);
 	m_ShaderGeometryPass->Bind();
-	m_ShaderGeometryPass->setMat4("projection", projection);
-	m_ShaderGeometryPass->setMat4("view", view);
+	m_ShaderGeometryPass->SetMat4("projection", projection);
+	m_ShaderGeometryPass->SetMat4("view", view);
 
 	// room cube
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0, 16.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(16.0f, 16.0f, 16.0f));
-	m_ShaderGeometryPass->setMat4("model", model);
-	m_ShaderGeometryPass->setInt("invertedNormals", 1); // invert normals as we're inside the cube
+	m_ShaderGeometryPass->SetMat4("model", model);
+	m_ShaderGeometryPass->SetInt("invertedNormals", 1); // invert normals as we're inside the cube
 	// RenderCube();
 	meshes["cube"]->Render();
-	m_ShaderGeometryPass->setInt("invertedNormals", 0);
+	m_ShaderGeometryPass->SetInt("invertedNormals", 0);
 
 	// gladiator model
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 	// model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0, 0.0, 0.0));
 	model = glm::scale(model, glm::vec3(0.05f));
-	m_ShaderGeometryPass->setMat4("model", model);
+	m_ShaderGeometryPass->SetMat4("model", model);
 	(*models)["gladiator"]->Draw(m_ShaderGeometryPass.Raw());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -291,15 +291,15 @@ void SSAO::GenerateSSAOTexture(glm::mat4 projectionMatrix, std::map<std::string,
 	glClear(GL_COLOR_BUFFER_BIT);
 	m_ShaderSSAO->Bind();
 
-	m_ShaderSSAO->setInt("kernelSize", m_KernelSize);
-	m_ShaderSSAO->setFloat("radius", m_KernelRadius);
-	m_ShaderSSAO->setFloat("bias", m_KernelBias);
+	m_ShaderSSAO->SetInt("kernelSize", m_KernelSize);
+	m_ShaderSSAO->SetFloat("radius", m_KernelRadius);
+	m_ShaderSSAO->SetFloat("bias", m_KernelBias);
 
 	// Send kernel + rotation 
 	for (unsigned int i = 0; i < m_KernelSize; ++i) {
-		m_ShaderSSAO->setVec3("samples[" + std::to_string(i) + "]", m_SSAO_Kernel[i]);
+		m_ShaderSSAO->SetFloat3("samples[" + std::to_string(i) + "]", m_SSAO_Kernel[i]);
 	}
-	m_ShaderSSAO->setMat4("projection", projectionMatrix);
+	m_ShaderSSAO->SetMat4("projection", projectionMatrix);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_GBufferSSAO.m_GBufferPosition);
 	glActiveTexture(GL_TEXTURE1);
@@ -333,14 +333,14 @@ void SSAO::LightPass(glm::mat4 viewMatrix, std::map<std::string, Mesh*> meshes)
 	m_ShaderLightingPass->Bind();
 	// send light relevant uniforms
 	glm::vec3 lightPosView = glm::vec3(viewMatrix * glm::vec4(m_LightPos, 1.0));
-	m_ShaderLightingPass->setVec3("light.Position", lightPosView);
+	m_ShaderLightingPass->SetFloat3("light.Position", lightPosView);
 	m_LightColor = LightManager::directionalLight.GetColor();
-	m_ShaderLightingPass->setVec3("light.Color", m_LightColor);
+	m_ShaderLightingPass->SetFloat3("light.Color", m_LightColor);
 	// Update attenuation parameters
 	const float linear = 0.09f;
 	const float quadratic = 0.032f;
-	m_ShaderLightingPass->setFloat("light.Linear", linear);
-	m_ShaderLightingPass->setFloat("light.Quadratic", quadratic);
+	m_ShaderLightingPass->SetFloat("light.Linear", linear);
+	m_ShaderLightingPass->SetFloat("light.Quadratic", quadratic);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_GBufferSSAO.m_GBufferPosition);
 	glActiveTexture(GL_TEXTURE1);

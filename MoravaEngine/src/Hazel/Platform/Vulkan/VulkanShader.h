@@ -51,9 +51,6 @@ namespace Hazel {
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 
 		virtual void SetUniform(const std::string& fullname, uint32_t value) override;
-		virtual void SetUInt(const std::string& name, uint32_t value) override;
-		virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
-
 		virtual void SetUniform(const std::string& fullname, float value) override;
 		virtual void SetUniform(const std::string& fullname, int value) override;
 		virtual void SetUniform(const std::string& fullname, const glm::vec2& value) override;
@@ -62,9 +59,12 @@ namespace Hazel {
 		virtual void SetUniform(const std::string& fullname, const glm::mat3& value) override;
 		virtual void SetUniform(const std::string& fullname, const glm::mat4& value) override;
 
-		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetInt(const std::string& name, int value) override;
+		virtual void SetUInt(const std::string& name, uint32_t value) override;
+		virtual void SetFloat(const std::string& name, float value) override;
+		virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
+		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 		virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
 		virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;

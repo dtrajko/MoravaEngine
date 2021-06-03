@@ -321,22 +321,22 @@ void EnvMapEditorLayer::UpdateUniforms()
 {
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
     EnvMapSceneRenderer::GetShaderComposite()->Bind();
-    EnvMapSceneRenderer::GetShaderComposite()->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    EnvMapSceneRenderer::GetShaderComposite()->setFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure());
+    EnvMapSceneRenderer::GetShaderComposite()->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
+    EnvMapSceneRenderer::GetShaderComposite()->SetFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure());
     /**** END Shaders/Hazel/SceneComposite ****/
 
     /**** BEGIN Shaders/Hazel/Skybox ****/
     EnvMapSceneRenderer::s_ShaderSkybox->Bind();
-    EnvMapSceneRenderer::s_ShaderSkybox->setInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_TextureLod", EnvMapSharedData::s_EditorScene->GetSkyboxLod());
+    EnvMapSceneRenderer::s_ShaderSkybox->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
+    EnvMapSceneRenderer::s_ShaderSkybox->SetFloat("u_TextureLod", EnvMapSharedData::s_EditorScene->GetSkyboxLod());
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    EnvMapSceneRenderer::s_ShaderSkybox->setFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    EnvMapSceneRenderer::s_ShaderSkybox->SetFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
 
     /**** BEGIN Shaders/Hazel/Outline ****/
     EnvMapSharedData::s_ShaderOutline->Bind();
     glm::mat4 viewProj = EnvMapSceneRenderer::GetViewProjection();
-    EnvMapSharedData::s_ShaderOutline->setMat4("u_ViewProjection", viewProj);
+    EnvMapSharedData::s_ShaderOutline->SetMat4("u_ViewProjection", viewProj);
     /**** BEGIN Shaders/Hazel/Outline ****/
 }
 
@@ -1705,10 +1705,10 @@ void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& tran
         for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
         {
             std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-            EnvMapSharedData::s_ShaderHazelPBR->setMat4(uniformName, mesh->m_BoneTransforms[i]);
+            EnvMapSharedData::s_ShaderHazelPBR->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
         }
 
-        EnvMapSharedData::s_ShaderHazelPBR->setMat4("u_Transform", transform * submesh.Transform);
+        EnvMapSharedData::s_ShaderHazelPBR->SetMat4("u_Transform", transform * submesh.Transform);
 
         if (material->GetFlag(Hazel::HazelMaterialFlag::DepthTest)) { // TODO: Fix Material flags
             glEnable(GL_DEPTH_TEST);
@@ -1989,7 +1989,7 @@ void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 
     m_ShaderShadow->Bind();
 
-    m_ShaderShadow->setMat4("u_DirLightTransform", EnvMapSharedData::s_DirLightTransform);
+    m_ShaderShadow->SetMat4("u_DirLightTransform", EnvMapSharedData::s_DirLightTransform);
 
     RenderSubmeshesShadowPass(m_ShaderShadow);
 
@@ -2031,15 +2031,15 @@ void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, Hazel::E
         farPlane = plc.FarPlane;
     }
 
-    m_ShaderOmniShadow->setVec3("lightPosition", lightPosition);
-    m_ShaderOmniShadow->setFloat("farPlane", farPlane);
+    m_ShaderOmniShadow->SetFloat3("lightPosition", lightPosition);
+    m_ShaderOmniShadow->SetFloat("farPlane", farPlane);
 
     float aspect = (float)omniShadowMap->GetShadowWidth() / (float)omniShadowMap->GetShadowHeight();
     float nearPlane = 0.01f;
     glm::mat4 lightProj = glm::perspective(glm::radians(90.0f), aspect, nearPlane, farPlane);
     std::vector<glm::mat4> lightMatrices = CalculateLightTransform(lightProj, lightPosition);
     for (unsigned int i = 0; i < lightMatrices.size(); i++) {
-        m_ShaderOmniShadow->setMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
+        m_ShaderOmniShadow->SetMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
     }
 
     RenderSubmeshesShadowPass(m_ShaderOmniShadow);
@@ -2075,15 +2075,15 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shade
                     meshComponent.Mesh->m_Pipeline->Bind();
                     meshComponent.Mesh->m_IndexBuffer->Bind();
 
-                    shader->setMat4("model", entityTransform * submesh.Transform);
+                    shader->SetMat4("model", entityTransform * submesh.Transform);
 
                     for (size_t i = 0; i < meshComponent.Mesh->m_BoneTransforms.size(); i++)
                     {
                         std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                        shader->setMat4(uniformName, meshComponent.Mesh->m_BoneTransforms[i]);
+                        shader->SetMat4(uniformName, meshComponent.Mesh->m_BoneTransforms[i]);
                     }
 
-                    shader->setBool("u_Animated", meshComponent.Mesh->IsAnimated());
+                    shader->SetBool("u_Animated", meshComponent.Mesh->IsAnimated());
 
                     glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
                 }
@@ -2125,8 +2125,8 @@ void EnvMapEditorLayer::PostProcessing(Window* mainWindow)
     {
         // learnopengl post processing
         m_ShaderPostProcessing->Bind();
-        m_ShaderPostProcessing->setInt("u_AlbedoMap", 1);
-        m_ShaderPostProcessing->setInt("u_Effect", m_PostProcessingEffect);
+        m_ShaderPostProcessing->SetInt("u_AlbedoMap", 1);
+        m_ShaderPostProcessing->SetInt("u_Effect", m_PostProcessingEffect);
 
         // 0: Default Colors
         // 1: Invert Colors
@@ -2142,8 +2142,8 @@ void EnvMapEditorLayer::PostProcessing(Window* mainWindow)
     {
         // Hazel bloom blur post processing
         // m_ShaderBloomBlur->Bind();
-        // m_ShaderBloomBlur->setInt("u_Texture", 1);
-        // m_ShaderBloomBlur->setBool("u_Horizontal", false);
+        // m_ShaderBloomBlur->SetInt("u_Texture", 1);
+        // m_ShaderBloomBlur->SetBool("u_Horizontal", false);
     }
 
     glBindVertexArray(GeometryFactory::Quad::GetVAO());

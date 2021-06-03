@@ -28,8 +28,8 @@ void ParticleRenderer::RenderAfter()
 void ParticleRenderer::Render(std::map<ParticleTexture*, std::vector<Particle*>*>* particleMap, glm::mat4 viewMatrix)
 {
 	m_Shader->Bind();
-	m_Shader->setMat4("projection", RendererBasic::GetProjectionMatrix());
-	m_Shader->setInt("albedoMap", 0);
+	m_Shader->SetMat4("projection", RendererBasic::GetProjectionMatrix());
+	m_Shader->SetInt("albedoMap", 0);
 
 	RenderBefore();
 
@@ -79,15 +79,15 @@ void ParticleRenderer::UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotat
 
 	glm::mat4 modelViewMatrix = viewMatrix * modelMatrix;
 
-	m_Shader->setMat4("modelView", modelViewMatrix);
+	m_Shader->SetMat4("modelView", modelViewMatrix);
 }
 
 void ParticleRenderer::LoadTexCoordInfo(glm::vec2 texOffset1, glm::vec2 texOffset2, int numRows, float blendFactor)
 {
 	m_Shader->setVec2("texOffset1", texOffset1);
 	m_Shader->setVec2("texOffset2", texOffset2);
-	m_Shader->setFloat("texCoordInfo.numRows", (float)numRows);
-	m_Shader->setFloat("texCoordInfo.blendFactor", blendFactor);
+	m_Shader->SetFloat("texCoordInfo.numRows", (float)numRows);
+	m_Shader->SetFloat("texCoordInfo.blendFactor", blendFactor);
 }
 
 void ParticleRenderer::CleanUp()

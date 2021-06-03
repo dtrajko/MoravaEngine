@@ -250,8 +250,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaderMain->setInt("albedoMap", textureSlots["shadow"]);
-		shaderMain->setInt("normalMap", textureSlots["shadow"]);
+		shaderMain->SetInt("albedoMap", textureSlots["shadow"]);
+		shaderMain->SetInt("normalMap", textureSlots["shadow"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 		meshes["quad"]->Render();
 
@@ -263,8 +263,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaderMain->setInt("albedoMap", textureSlots["diffuse"]);
-		shaderMain->setInt("normalMap", textureSlots["normal"]);
+		shaderMain->SetInt("albedoMap", textureSlots["diffuse"]);
+		shaderMain->SetInt("normalMap", textureSlots["normal"]);
 		m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
@@ -278,8 +278,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-		shaderMain->setInt("albedoMap", textureSlots["diffuse"]);
-		shaderMain->setInt("normalMap", textureSlots["normal"]);
+		shaderMain->SetInt("albedoMap", textureSlots["diffuse"]);
+		shaderMain->SetInt("normalMap", textureSlots["normal"]);
 		m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
 		m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["normal"]);
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
@@ -309,19 +309,19 @@ void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
 	textures["waterNormal"]->Bind(textureSlots["normal"]);
-	shaderWater->setInt("reflectionTexture", textureSlots["reflection"]);
-	shaderWater->setInt("refractionTexture", textureSlots["refraction"]);
-	shaderWater->setInt("normalMap", textureSlots["normal"]);
-	shaderWater->setInt("depthMap", textureSlots["depth"]);
-	shaderWater->setInt("dudvMap", textureSlots["DuDv"]);
+	shaderWater->SetInt("reflectionTexture", textureSlots["reflection"]);
+	shaderWater->SetInt("refractionTexture", textureSlots["refraction"]);
+	shaderWater->SetInt("normalMap", textureSlots["normal"]);
+	shaderWater->SetInt("depthMap", textureSlots["depth"]);
+	shaderWater->SetInt("dudvMap", textureSlots["DuDv"]);
 
-	shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
-	shaderWater->setVec3("lightPosition", -m_LightDirection);
+	shaderWater->SetFloat3("lightColor", LightManager::directionalLight.GetColor());
+	shaderWater->SetFloat3("lightPosition", -m_LightDirection);
 
-	shaderWater->setVec3("eyePosition", m_Camera->GetPosition());
+	shaderWater->SetFloat3("eyePosition", m_Camera->GetPosition());
 
-	shaderWater->setFloat("waterLevel", sceneSettings.waterHeight);
-	shaderWater->setVec4("waterColor", glm::vec4(0.0f, 0.4f, 0.8f, 1.0f));
+	shaderWater->SetFloat("waterLevel", sceneSettings.waterHeight);
+	shaderWater->SetFloat4("waterColor", glm::vec4(0.0f, 0.4f, 0.8f, 1.0f));
 
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->Render();

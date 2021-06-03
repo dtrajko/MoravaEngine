@@ -752,6 +752,13 @@ namespace Hazel {
 		});
 	}
 
+	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value)
+	{
+		HazelRenderer::Submit([=]() {
+			UploadUniformFloat4(name, value);
+		});
+	}
+
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
 		HazelRenderer::Submit([=]() {

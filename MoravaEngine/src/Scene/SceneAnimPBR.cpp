@@ -382,14 +382,14 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
     for (int i = 0; i < MAX_LIGHTS; i++)
     {
         std::string uniformName = std::string("lightPositions[") + std::to_string(i) + std::string("]");
-        m_ShaderHybridAnimPBR->setVec3(uniformName, m_LightPosition);
+        m_ShaderHybridAnimPBR->SetFloat3(uniformName, m_LightPosition);
         uniformName = std::string("lightColors[") + std::to_string(i) + std::string("]");
-        m_ShaderHybridAnimPBR->setVec3(uniformName, m_LightColor);
+        m_ShaderHybridAnimPBR->SetFloat3(uniformName, m_LightColor);
     }
 
-    m_ShaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_Camera->GetViewMatrix());
-    m_ShaderHybridAnimPBR->setVec3("u_CameraPosition", m_Camera->GetPosition());
-    m_ShaderHybridAnimPBR->setFloat("u_TilingFactor", 1.0f);
+    m_ShaderHybridAnimPBR->SetMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_Camera->GetViewMatrix());
+    m_ShaderHybridAnimPBR->SetFloat3("u_CameraPosition", m_Camera->GetPosition());
+    m_ShaderHybridAnimPBR->SetFloat("u_TilingFactor", 1.0f);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
     m_MeshAnimPBR_M1911->OnUpdate(deltaTime, false);
@@ -920,27 +920,27 @@ void SceneAnimPBR::SetupUniforms()
     /**** BEGIN m_ShaderMain ****/
     m_ShaderMain->Bind();
 
-    m_ShaderMain->setMat4("model", glm::mat4(1.0f));
-    m_ShaderMain->setMat4("view", m_Camera->GetViewMatrix());
-    m_ShaderMain->setMat4("projection", RendererBasic::GetProjectionMatrix());
-    m_ShaderMain->setVec3("eyePosition", m_Camera->GetPosition());
+    m_ShaderMain->SetMat4("model", glm::mat4(1.0f));
+    m_ShaderMain->SetMat4("view", m_Camera->GetViewMatrix());
+    m_ShaderMain->SetMat4("projection", RendererBasic::GetProjectionMatrix());
+    m_ShaderMain->SetFloat3("eyePosition", m_Camera->GetPosition());
 
     // Directional Light
-    m_ShaderMain->setInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-    m_ShaderMain->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-    m_ShaderMain->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-    m_ShaderMain->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-    m_ShaderMain->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
+    m_ShaderMain->SetInt("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+    m_ShaderMain->SetFloat3("directionalLight.base.color", LightManager::directionalLight.GetColor());
+    m_ShaderMain->SetFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    m_ShaderMain->SetFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    m_ShaderMain->SetFloat3("directionalLight.direction", LightManager::directionalLight.GetDirection());
 
-    m_ShaderMain->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    m_ShaderMain->setBool("u_Animated", false);
+    m_ShaderMain->SetMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    m_ShaderMain->SetBool("u_Animated", false);
 
-    m_ShaderMain->setInt("albedoMap", textureSlots["diffuse"]);
-    m_ShaderMain->setInt("normalMap", textureSlots["normal"]);
-    m_ShaderMain->setInt("shadowMap", textureSlots["shadow"]);
-    m_ShaderMain->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000.0f));
-    m_ShaderMain->setFloat("tilingFactor", 1.0f);
-    m_ShaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    m_ShaderMain->SetInt("albedoMap", textureSlots["diffuse"]);
+    m_ShaderMain->SetInt("normalMap", textureSlots["normal"]);
+    m_ShaderMain->SetInt("shadowMap", textureSlots["shadow"]);
+    m_ShaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000.0f));
+    m_ShaderMain->SetFloat("tilingFactor", 1.0f);
+    m_ShaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     m_ShaderMain->Validate();
     /**** END m_ShaderMain ****/
 }
@@ -982,15 +982,15 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         model = glm::mat4(1.0f);
         float angleRadians = glm::radians((GLfloat)glfwGetTime());
         // model = glm::rotate(model, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-        m_ShaderBackground->setMat4("model", model);
-        m_ShaderBackground->setMat4("projection", projectionMatrix);
-        m_ShaderBackground->setMat4("view", m_Camera->GetViewMatrix());
+        m_ShaderBackground->SetMat4("model", model);
+        m_ShaderBackground->SetMat4("projection", projectionMatrix);
+        m_ShaderBackground->SetMat4("view", m_Camera->GetViewMatrix());
 
         m_MaterialWorkflowPBR->BindEnvironmentCubemap(0);
         // m_MaterialWorkflowPBR->BindIrradianceMap(0); // display irradiance map
         // m_MaterialWorkflowPBR->BindPrefilterMap(0); // display prefilter map
-        m_ShaderBackground->setInt("environmentMap", 0);
-        m_ShaderBackground->setFloat("u_TextureLOD", m_SkyboxLOD);
+        m_ShaderBackground->SetInt("environmentMap", 0);
+        m_ShaderBackground->SetFloat("u_TextureLOD", m_SkyboxLOD);
 
         m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
     }
@@ -999,15 +999,15 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
     /**** BEGIN Animated PBR models ****/
     m_ShaderHybridAnimPBR->Bind();
 
-    m_ShaderHybridAnimPBR->setInt("u_AlbedoTexture",    m_SamplerSlots["albedo"]);
-    m_ShaderHybridAnimPBR->setInt("u_NormalTexture",    m_SamplerSlots["normal"]);
-    m_ShaderHybridAnimPBR->setInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
-    m_ShaderHybridAnimPBR->setInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
-    m_ShaderHybridAnimPBR->setInt("u_EmissiveTexture",  m_SamplerSlots["emissive"]);
-    m_ShaderHybridAnimPBR->setInt("u_AOTexture",        m_SamplerSlots["ao"]);
-    m_ShaderHybridAnimPBR->setInt("u_EnvRadianceTex",   m_SamplerSlots["irradiance"]);
-    m_ShaderHybridAnimPBR->setInt("u_PrefilterMap",     m_SamplerSlots["prefilter"]);
-    m_ShaderHybridAnimPBR->setInt("u_BRDFLUT",          m_SamplerSlots["BRDF_LUT"]);
+    m_ShaderHybridAnimPBR->SetInt("u_AlbedoTexture",    m_SamplerSlots["albedo"]);
+    m_ShaderHybridAnimPBR->SetInt("u_NormalTexture",    m_SamplerSlots["normal"]);
+    m_ShaderHybridAnimPBR->SetInt("u_MetalnessTexture", m_SamplerSlots["metalness"]);
+    m_ShaderHybridAnimPBR->SetInt("u_RoughnessTexture", m_SamplerSlots["roughness"]);
+    m_ShaderHybridAnimPBR->SetInt("u_EmissiveTexture",  m_SamplerSlots["emissive"]);
+    m_ShaderHybridAnimPBR->SetInt("u_AOTexture",        m_SamplerSlots["ao"]);
+    m_ShaderHybridAnimPBR->SetInt("u_EnvRadianceTex",   m_SamplerSlots["irradiance"]);
+    m_ShaderHybridAnimPBR->SetInt("u_PrefilterMap",     m_SamplerSlots["prefilter"]);
+    m_ShaderHybridAnimPBR->SetInt("u_BRDFLUT",          m_SamplerSlots["BRDF_LUT"]);
 
     m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
 
@@ -1048,10 +1048,10 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
             for (size_t i = 0; i < m_MeshAnimPBR_BobLamp->m_BoneTransforms.size(); i++)
             {
                 std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                m_ShaderHybridAnimPBR->setMat4(uniformName, m_MeshAnimPBR_BobLamp->m_BoneTransforms[i]);
+                m_ShaderHybridAnimPBR->SetMat4(uniformName, m_MeshAnimPBR_BobLamp->m_BoneTransforms[i]);
             }
 
-            m_ShaderHybridAnimPBR->setMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh.Transform);
+            m_ShaderHybridAnimPBR->SetMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh.Transform);
 
             glEnable(GL_DEPTH_TEST);
             glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
@@ -1064,16 +1064,16 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
     m_ShaderMain->Bind();
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, -2.5f, 0.0f));
-    m_ShaderMain->setMat4("model", model);
+    m_ShaderMain->SetMat4("model", model);
     ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
-    m_ShaderMain->setFloat("tilingFactor", 0.1f);
+    m_ShaderMain->SetFloat("tilingFactor", 0.1f);
     meshes["floor"]->Render();
 
-    m_ShaderMain->setMat4("model", m_Entities["Cube"].Transform.Transform);
+    m_ShaderMain->SetMat4("model", m_Entities["Cube"].Transform.Transform);
     ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
     ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
-    m_ShaderMain->setFloat("tilingFactor", 1.0f);
+    m_ShaderMain->SetFloat("tilingFactor", 1.0f);
 
     if (m_Entities["Cube"].Enabled) {
         meshes["cube"]->Render();
@@ -1081,8 +1081,8 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
     // END main shader rendering
 
     m_ShaderBasic->Bind();
-    m_ShaderBasic->setMat4("projection", projectionMatrix);
-    m_ShaderBasic->setMat4("view", m_Camera->GetViewMatrix());
+    m_ShaderBasic->SetMat4("projection", projectionMatrix);
+    m_ShaderBasic->SetMat4("view", m_Camera->GetViewMatrix());
 
     RendererBasic::SetLineThickness(4.0f);
     RendererBasic::EnableMSAA();
@@ -1093,8 +1093,8 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
     {
         if (entity.second.Enabled)
         {
-            m_ShaderBasic->setMat4("model", AABB_Transform);
-            m_ShaderBasic->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+            m_ShaderBasic->SetMat4("model", AABB_Transform);
+            m_ShaderBasic->SetFloat4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
             if (m_VisibleAABBs) entity.second.AABBox.Draw();
         }
     }

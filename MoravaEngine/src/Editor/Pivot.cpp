@@ -69,9 +69,9 @@ void Pivot::Draw(MoravaShader* shader, glm::mat4 projectionMatrix, glm::mat4 vie
 
     shader->Bind();
     glm::mat4 model = glm::mat4(1.0f);
-    shader->setMat4("model", model);
-    shader->setMat4("view", viewMatrix);
-    shader->setMat4("projection", projectionMatrix);
+    shader->SetMat4("model", model);
+    shader->SetMat4("view", viewMatrix);
+    shader->SetMat4("projection", projectionMatrix);
 
     glBindVertexArray(m_LineVAO);
     glDrawElements(GL_LINES, (GLsizei)m_Indices.size(), GL_UNSIGNED_INT, 0);

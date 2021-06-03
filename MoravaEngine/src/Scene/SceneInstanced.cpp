@@ -98,9 +98,9 @@ void SceneInstanced::Render(Window* mainWindow, glm::mat4 projectionMatrix, std:
 {
 	m_ShaderInstanced->Bind();
 
-	m_ShaderInstanced->setMat4("projection", projectionMatrix);
-	m_ShaderInstanced->setMat4("view", m_Camera->GetViewMatrix());
-	m_ShaderInstanced->setMat4("model", glm::mat4(1.0f));
+	m_ShaderInstanced->SetMat4("projection", projectionMatrix);
+	m_ShaderInstanced->SetMat4("view", m_Camera->GetViewMatrix());
+	m_ShaderInstanced->SetMat4("model", glm::mat4(1.0f));
 
 	glBindVertexArray(quadVAO);
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100); // 100 triangles of 6 vertices each

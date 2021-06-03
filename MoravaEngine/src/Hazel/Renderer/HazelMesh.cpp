@@ -1331,10 +1331,10 @@ namespace Hazel {
 		for (size_t i = 0; i < parentMesh->GetBoneTransforms().size(); i++)
 		{
 			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-			shader->setMat4(uniformName, parentMesh->GetBoneTransforms()[i]);
+			shader->SetMat4(uniformName, parentMesh->GetBoneTransforms()[i]);
 		}
 
-		shader->setMat4("u_Transform", entityTransform * Transform);
+		shader->SetMat4("u_Transform", entityTransform * Transform);
 
 		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
 
@@ -1353,15 +1353,15 @@ namespace Hazel {
 		glm::mat4 outlineTransform = Math::CreateTransform(translation, glm::quat(rotation), scale);
 
 		shader->Bind();
-		shader->setMat4("u_Transform", outlineTransform);
+		shader->SetMat4("u_Transform", outlineTransform);
 
 		for (size_t i = 0; i < parentMesh->m_BoneTransforms.size(); i++)
 		{
 			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-			shader->setMat4(uniformName, parentMesh->m_BoneTransforms[i]);
+			shader->SetMat4(uniformName, parentMesh->m_BoneTransforms[i]);
 		}
 
-		shader->setBool("u_Animated", parentMesh->IsAnimated());
+		shader->SetBool("u_Animated", parentMesh->IsAnimated());
 
 		RendererBasic::DisableDepthTest();
 

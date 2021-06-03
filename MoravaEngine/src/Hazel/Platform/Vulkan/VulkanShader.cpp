@@ -35,7 +35,6 @@ namespace Hazel {
 		return ShaderUniformType::None;
 	}
 
-
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
@@ -54,9 +53,7 @@ namespace Hazel {
 		Reload();
 	}
 
-	VulkanShader::~VulkanShader()
-	{
-	}
+	VulkanShader::~VulkanShader() {}
 
 	static std::string ReadShaderFromFile(const std::string& filepath)
 	{
@@ -598,14 +595,9 @@ namespace Hazel {
 		return shaderSources;
 	}
 
-	void VulkanShader::Bind()
-	{
-	}
+	void VulkanShader::Bind() {}
 
-	RendererID VulkanShader::GetRendererID() const
-	{
-		return 0;
-	}
+	RendererID VulkanShader::GetRendererID() const { return 0; }
 
 	void VulkanShader::ClearUniformBuffers()
 	{
@@ -617,87 +609,47 @@ namespace Hazel {
 		return std::hash<std::string>{}(m_AssetPath);
 	}
 
-	void VulkanShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)
-	{
-	}
+	void VulkanShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, float value)
-	{
-	}
+	void VulkanShader::SetUniform(const std::string& fullname, float value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, int value)
-	{
-	}
+	void VulkanShader::SetUniform(const std::string& fullname, int value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec2& value)
-	{
-	}
+	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec2& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec3& value)
-	{
-	}
+	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec3& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec4& value)
-	{
-	}
+	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec4& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::mat3& value)
-	{
-	}
+	void VulkanShader::SetUniform(const std::string& fullname, const glm::mat3& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::mat4& value)
-	{
-	}
+	void VulkanShader::SetUniform(const std::string& fullname, const glm::mat4& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, uint32_t value)
-	{
-	}
+	void VulkanShader::SetUniform(const std::string& fullname, uint32_t value) {}
 
-	void VulkanShader::SetUInt(const std::string& name, uint32_t value)
-	{
-	}
+	void VulkanShader::SetInt(const std::string& name, int value) {}
 
-	void VulkanShader::SetFloat2(const std::string& name, const glm::vec2& value)
-	{
-	}
+	void VulkanShader::SetUInt(const std::string& name, uint32_t value) {}
 
-	void VulkanShader::SetFloat(const std::string& name, float value)
-	{
-	}
+	void VulkanShader::SetFloat(const std::string& name, float value) {}
 
-	void VulkanShader::SetInt(const std::string& name, int value)
-	{
-	}
+	void VulkanShader::SetFloat2(const std::string& name, const glm::vec2& value) {}
 
-	void VulkanShader::SetFloat3(const std::string& name, const glm::vec3& value)
-	{
-	}
+	void VulkanShader::SetFloat3(const std::string& name, const glm::vec3& value) {}
 
-	void VulkanShader::SetMat4(const std::string& name, const glm::mat4& value)
-	{
-	}
+	void VulkanShader::SetFloat4(const std::string& name, const glm::vec4& value) {}
 
-	void VulkanShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind /*= true*/)
-	{
-	}
+	void VulkanShader::SetMat4(const std::string& name, const glm::mat4& value) {}
 
-	void VulkanShader::SetIntArray(const std::string& name, int* values, uint32_t size)
-	{
-	}
+	void VulkanShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind /*= true*/) {}
 
-	const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShader::GetShaderBuffers() const
-	{
-		return {};
-	}
+	void VulkanShader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-	const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanShader::GetResources() const
-	{
-		return {};
-	}
+	const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShader::GetShaderBuffers() const { return {}; }
 
-	void VulkanShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)
-	{
-	}
+	const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanShader::GetResources() const { return {}; }
+
+	void VulkanShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 
 	void* VulkanShader::MapUniformBuffer(uint32_t bindingPoint)
 	{

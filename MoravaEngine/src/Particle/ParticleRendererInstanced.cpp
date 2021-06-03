@@ -73,9 +73,9 @@ void ParticleRendererInstanced::Render(std::map<ParticleTexture*, std::vector<Pa
 
 		m_Shader->Bind();
 		BindTexture(particleTexture);
-		m_Shader->setMat4("projection", RendererBasic::GetProjectionMatrix());
-		m_Shader->setInt("albedoMap", 0);
-		m_Shader->setFloat("numberOfRows", (float)particleTexture->GetNumberOfRows());
+		m_Shader->SetMat4("projection", RendererBasic::GetProjectionMatrix());
+		m_Shader->SetInt("albedoMap", 0);
+		m_Shader->SetFloat("numberOfRows", (float)particleTexture->GetNumberOfRows());
 
 		static_cast<QuadInstanced*>(m_Mesh)->Render((unsigned int)particleVector.size());
 
@@ -118,7 +118,7 @@ void ParticleRendererInstanced::UpdateModelViewMatrix(glm::vec3 position, glm::v
 	StoreMatrixData(modelViewMatrix, vboData);
 
 	// m_Shader->Bind();
-	// m_Shader->setMat4("modelView", modelViewMatrix);
+	// m_Shader->SetMat4("modelView", modelViewMatrix);
 }
 
 void ParticleRendererInstanced::StoreMatrixData(glm::mat4 matrix, float* vboData)
@@ -153,7 +153,7 @@ void ParticleRendererInstanced::LoadTexCoordInfo(Particle* particle, int numberO
 	vboData[m_Pointer++] = particle->GetBlend();
 
 	// TODO - remove old uniforms
-	// m_Shader->setVec4("texOffsets", glm::vec4(particle->GetTexOffset1(), particle->GetTexOffset2()));
+	// m_Shader->SetFloat4("texOffsets", glm::vec4(particle->GetTexOffset1(), particle->GetTexOffset2()));
 	// m_Shader->setFloat("blendFactor", particle->GetBlend());
 }
 

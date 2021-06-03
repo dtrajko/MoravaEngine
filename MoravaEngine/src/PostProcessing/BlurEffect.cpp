@@ -145,8 +145,8 @@ void BlurEffect::RenderHorizontal(int textureHorizontal)
 
 	glActiveTexture(GL_TEXTURE0 + m_OriginalTextureSlot);
 	glBindTexture(GL_TEXTURE_2D, textureHorizontal);
-	m_ShaderHorizontalBlur->setInt("originalTexture", m_OriginalTextureSlot);
-	m_ShaderHorizontalBlur->setFloat("targetWidth", (float)m_Width);
+	m_ShaderHorizontalBlur->SetInt("originalTexture", m_OriginalTextureSlot);
+	m_ShaderHorizontalBlur->SetFloat("targetWidth", (float)m_Width);
 	// Log::GetLogger()->debug("-- BlurEffect::RenderHorizontal originalTexture: {0} targetHeight: {1}", textureHorizontal, (float)m_Height);
 
 	RenderQuadHorizontal();
@@ -165,8 +165,8 @@ void BlurEffect::RenderVertical(int textureVertical)
 
 	glActiveTexture(GL_TEXTURE0 + m_OriginalTextureSlot);
 	glBindTexture(GL_TEXTURE_2D, textureVertical);
-	m_ShaderVerticalBlur->setInt("originalTexture", m_OriginalTextureSlot);
-	m_ShaderVerticalBlur->setFloat("targetHeight", (float)m_Height);
+	m_ShaderVerticalBlur->SetInt("originalTexture", m_OriginalTextureSlot);
+	m_ShaderVerticalBlur->SetFloat("targetHeight", (float)m_Height);
 	// Log::GetLogger()->debug("-- BlurEffect::RenderVertical originalTexture: {0} targetWidth: {1}", textureVertical, (float)m_Width);
 
 	RenderQuadVertical();

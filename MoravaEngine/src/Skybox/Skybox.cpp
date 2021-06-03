@@ -104,9 +104,9 @@ void Skybox::Draw(glm::mat4 modelMatrix, glm::mat4 viewMatrix, glm::mat4 project
 
 	m_SkyShader->Bind();
 
-	m_SkyShader->setMat4("model", modelMatrix);
-	m_SkyShader->setMat4("view", viewMatrix);
-	m_SkyShader->setMat4("projection", projectionMatrix);
+	m_SkyShader->SetMat4("model", modelMatrix);
+	m_SkyShader->SetMat4("view", viewMatrix);
+	m_SkyShader->SetMat4("projection", projectionMatrix);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);

@@ -77,31 +77,31 @@ void RendererEditor::SetShaders()
     Log::GetLogger()->info("RendererEditor: shaderGlass compiled [programID={0}]", shaderGlass->GetProgramID());
 
     shaderEditor->Bind();
-    shaderEditor->setInt("albedoMap", 0);
-    shaderEditor->setInt("cubeMap",   1);
-    shaderEditor->setInt("shadowMap", 2);
+    shaderEditor->SetInt("albedoMap", 0);
+    shaderEditor->SetInt("cubeMap",   1);
+    shaderEditor->SetInt("shadowMap", 2);
     m_OmniShadowTxSlots.insert(std::make_pair("editor_object", 3)); // omniShadowMaps[i].shadowMap = 3
 
     shaderEditorPBR->Bind();
-    shaderEditorPBR->setInt("irradianceMap", 0);
-    shaderEditorPBR->setInt("prefilterMap",  1);
-    shaderEditorPBR->setInt("brdfLUT",       2);
-    shaderEditorPBR->setInt("albedoMap",     3);
-    shaderEditorPBR->setInt("normalMap",     4);
-    shaderEditorPBR->setInt("metallicMap",   5);
-    shaderEditorPBR->setInt("roughnessMap",  6);
-    shaderEditorPBR->setInt("aoMap",         7);
-    shaderEditorPBR->setInt("shadowMap",     8);
+    shaderEditorPBR->SetInt("irradianceMap", 0);
+    shaderEditorPBR->SetInt("prefilterMap",  1);
+    shaderEditorPBR->SetInt("brdfLUT",       2);
+    shaderEditorPBR->SetInt("albedoMap",     3);
+    shaderEditorPBR->SetInt("normalMap",     4);
+    shaderEditorPBR->SetInt("metallicMap",   5);
+    shaderEditorPBR->SetInt("roughnessMap",  6);
+    shaderEditorPBR->SetInt("aoMap",         7);
+    shaderEditorPBR->SetInt("shadowMap",     8);
     m_OmniShadowTxSlots.insert(std::make_pair("editor_object_pbr", 9)); // omniShadowMaps[i].shadowMap = 9
 
     shaderHybridAnimPBR->Bind();
-    shaderHybridAnimPBR->setInt("u_AlbedoTexture",    1);
-    shaderHybridAnimPBR->setInt("u_NormalTexture",    2);
-    shaderHybridAnimPBR->setInt("u_MetalnessTexture", 3);
-    shaderHybridAnimPBR->setInt("u_RoughnessTexture", 4);
-    shaderHybridAnimPBR->setInt("u_EnvRadianceTex",   5);
-    shaderHybridAnimPBR->setInt("u_PrefilterMap",     6);
-    shaderHybridAnimPBR->setInt("u_BRDFLUT",          7);
+    shaderHybridAnimPBR->SetInt("u_AlbedoTexture",    1);
+    shaderHybridAnimPBR->SetInt("u_NormalTexture",    2);
+    shaderHybridAnimPBR->SetInt("u_MetalnessTexture", 3);
+    shaderHybridAnimPBR->SetInt("u_RoughnessTexture", 4);
+    shaderHybridAnimPBR->SetInt("u_EnvRadianceTex",   5);
+    shaderHybridAnimPBR->SetInt("u_PrefilterMap",     6);
+    shaderHybridAnimPBR->SetInt("u_BRDFLUT",          7);
 }
 
 void RendererEditor::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -122,8 +122,8 @@ void RendererEditor::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_BLEND);
 
-    shaderShadowMap->setMat4("u_DirLightTransform", light->CalculateLightTransform());
-    shaderShadowMap->setBool("u_Animated", false);
+    shaderShadowMap->SetMat4("u_DirLightTransform", light->CalculateLightTransform());
+    shaderShadowMap->SetBool("u_Animated", false);
     shaderShadowMap->Validate();
 
     DisableCulling();
@@ -148,8 +148,8 @@ void RendererEditor::RenderPassOmniShadow(PointLight* light, Window* mainWindow,
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_BLEND);
 
-    shaderOmniShadow->setVec3("lightPosition", light->GetPosition());
-    shaderOmniShadow->setFloat("farPlane", light->GetFarPlane());
+    shaderOmniShadow->SetFloat3("lightPosition", light->GetPosition());
+    shaderOmniShadow->SetFloat("farPlane", light->GetFarPlane());
     shaderOmniShadow->setLightMat4(light->CalculateLightTransform());
     shaderOmniShadow->Validate();
 
@@ -173,29 +173,29 @@ void RendererEditor::RenderPassWaterReflection(Window* mainWindow, Scene* scene,
 
     MoravaShader* shaderEditor = RendererBasic::GetShaders()["editor_object"];
     shaderEditor->Bind();
-    shaderEditor->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderEditor->setMat4("projection", projectionMatrix);
-    shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition());
-    shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
+    shaderEditor->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderEditor->SetMat4("projection", projectionMatrix);
+    shaderEditor->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
+    shaderEditor->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditor->SetFloat4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
     
     MoravaShader* shaderEditorPBR = RendererBasic::GetShaders()["editor_object_pbr"];
     shaderEditorPBR->Bind();
-    shaderEditorPBR->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderEditorPBR->setMat4("projection", projectionMatrix);
-    shaderEditorPBR->setVec3("eyePosition", scene->GetCamera()->GetPosition());
-    shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
+    shaderEditorPBR->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderEditorPBR->SetMat4("projection", projectionMatrix);
+    shaderEditorPBR->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
+    shaderEditorPBR->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditorPBR->SetFloat4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
     MoravaShader* shaderSkinning = RendererBasic::GetShaders()["skinning"];
     shaderSkinning->Bind();
-    shaderSkinning->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderSkinning->setMat4("projection", projectionMatrix);
-    shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
+    shaderSkinning->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderSkinning->SetMat4("projection", projectionMatrix);
+    shaderSkinning->SetFloat4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
 
     MoravaShader* shaderHybridAnimPBR = RendererBasic::GetShaders()["hybrid_anim_pbr"];
     shaderHybridAnimPBR->Bind();
-    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", projectionMatrix * scene->GetCamera()->GetViewMatrix());
+    shaderHybridAnimPBR->SetMat4("u_ViewProjectionMatrix", projectionMatrix * scene->GetCamera()->GetViewMatrix());
 
     DisableCulling();
     std::string passType = "water_reflect";
@@ -219,29 +219,29 @@ void RendererEditor::RenderPassWaterRefraction(Window* mainWindow, Scene* scene,
 
     MoravaShader* shaderEditor = RendererBasic::GetShaders()["editor_object"];
     shaderEditor->Bind();
-    shaderEditor->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderEditor->setMat4("projection", projectionMatrix);
-    shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition());
-    shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
+    shaderEditor->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderEditor->SetMat4("projection", projectionMatrix);
+    shaderEditor->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
+    shaderEditor->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditor->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
     MoravaShader* shaderEditorPBR = RendererBasic::GetShaders()["editor_object_pbr"];
     shaderEditorPBR->Bind();
-    shaderEditorPBR->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderEditorPBR->setMat4("projection", projectionMatrix);
-    shaderEditorPBR->setVec3("eyePosition", scene->GetCamera()->GetPosition());
-    shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
+    shaderEditorPBR->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderEditorPBR->SetMat4("projection", projectionMatrix);
+    shaderEditorPBR->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
+    shaderEditorPBR->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditorPBR->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
     MoravaShader* shaderSkinning = RendererBasic::GetShaders()["skinning"];
     shaderSkinning->Bind();
-    shaderSkinning->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderSkinning->setMat4("projection", projectionMatrix);
-    shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
+    shaderSkinning->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderSkinning->SetMat4("projection", projectionMatrix);
+    shaderSkinning->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
 
     MoravaShader* shaderHybridAnimPBR = RendererBasic::GetShaders()["hybrid_anim_pbr"];
     shaderHybridAnimPBR->Bind();
-    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", projectionMatrix * scene->GetCamera()->GetViewMatrix());
+    shaderHybridAnimPBR->SetMat4("u_ViewProjectionMatrix", projectionMatrix * scene->GetCamera()->GetViewMatrix());
 
     DisableCulling();
     std::string passType = "water_refract";
@@ -366,24 +366,24 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     MoravaShader* shaderEditor = RendererBasic::GetShaders()["editor_object"];
     shaderEditor->Bind();
 
-    shaderEditor->setMat4("model", glm::mat4(1.0f));
-    shaderEditor->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderEditor->setMat4("projection", *projectionMatrix);
-    shaderEditor->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    shaderEditor->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
-    shaderEditor->setInt("pointLightCount", LightManager::pointLightCount);
-    shaderEditor->setInt("spotLightCount", LightManager::spotLightCount);
+    shaderEditor->SetMat4("model", glm::mat4(1.0f));
+    shaderEditor->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderEditor->SetMat4("projection", *projectionMatrix);
+    shaderEditor->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditor->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+    shaderEditor->SetInt("pointLightCount", LightManager::pointLightCount);
+    shaderEditor->SetInt("spotLightCount", LightManager::spotLightCount);
     // Eye position / camera direction
-    shaderEditor->setVec3("eyePosition", scene->GetCamera()->GetPosition());
-    shaderEditor->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
-    shaderEditor->setVec4("waterColor", scene->GetWaterManager()->GetWaterColor());
+    shaderEditor->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
+    shaderEditor->SetFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderEditor->SetFloat4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
     // Directional Light
-    shaderEditor->setBool("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-    shaderEditor->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-    shaderEditor->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-    shaderEditor->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-    shaderEditor->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
+    shaderEditor->SetBool("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+    shaderEditor->SetFloat3("directionalLight.base.color", LightManager::directionalLight.GetColor());
+    shaderEditor->SetFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    shaderEditor->SetFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    shaderEditor->SetFloat3("directionalLight.direction", LightManager::directionalLight.GetDirection());
 
     char locBuff[100] = { '\0' };
 
@@ -392,80 +392,80 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     {
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.enabled", i);
         // printf("PointLight[%d] enabled: %d\n", i, LightManager::pointLights[i].GetEnabled());
-        shaderEditor->setBool(locBuff, LightManager::pointLights[i].GetEnabled());
+        shaderEditor->SetBool(locBuff, LightManager::pointLights[i].GetEnabled());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.color", i);
-        shaderEditor->setVec3(locBuff, LightManager::pointLights[i].GetColor());
+        shaderEditor->SetFloat3(locBuff, LightManager::pointLights[i].GetColor());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.ambientIntensity", i);
-        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetAmbientIntensity());
+        shaderEditor->SetFloat(locBuff, LightManager::pointLights[i].GetAmbientIntensity());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].base.diffuseIntensity", i);
-        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetDiffuseIntensity());
+        shaderEditor->SetFloat(locBuff, LightManager::pointLights[i].GetDiffuseIntensity());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].position", i);
-        shaderEditor->setVec3(locBuff, LightManager::pointLights[i].GetPosition());
+        shaderEditor->SetFloat3(locBuff, LightManager::pointLights[i].GetPosition());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].constant", i);
-        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetConstant());
+        shaderEditor->SetFloat(locBuff, LightManager::pointLights[i].GetConstant());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].linear", i);
-        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetLinear());
+        shaderEditor->SetFloat(locBuff, LightManager::pointLights[i].GetLinear());
 
         snprintf(locBuff, sizeof(locBuff), "pointLights[%d].exponent", i);
-        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetExponent());
+        shaderEditor->SetFloat(locBuff, LightManager::pointLights[i].GetExponent());
 
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object.fs is 3
         int textureSlotOffset = 0;
         LightManager::pointLights[i].GetShadowMap()->ReadTexture(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
-        shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
+        shaderEditor->SetInt(locBuff, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
-        shaderEditor->setFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
+        shaderEditor->SetFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
     }
 
     // Spot Lights
     for (unsigned int i = 0; i < LightManager::spotLightCount; i++)
     {
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.enabled", i);
-        shaderEditor->setBool(locBuff, LightManager::spotLights[i].GetBasePL()->GetEnabled());
+        shaderEditor->SetBool(locBuff, LightManager::spotLights[i].GetBasePL()->GetEnabled());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.color", i);
-        shaderEditor->setVec3(locBuff, LightManager::spotLights[i].GetBasePL()->GetColor());
+        shaderEditor->SetFloat3(locBuff, LightManager::spotLights[i].GetBasePL()->GetColor());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.ambientIntensity", i);
-        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetAmbientIntensity());
+        shaderEditor->SetFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetAmbientIntensity());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.base.diffuseIntensity", i);
-        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetDiffuseIntensity());
+        shaderEditor->SetFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetDiffuseIntensity());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.position", i);
-        shaderEditor->setVec3(locBuff, LightManager::spotLights[i].GetBasePL()->GetPosition());
+        shaderEditor->SetFloat3(locBuff, LightManager::spotLights[i].GetBasePL()->GetPosition());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.constant", i);
-        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetConstant());
+        shaderEditor->SetFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetConstant());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.linear", i);
-        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetLinear());
+        shaderEditor->SetFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetLinear());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].base.exponent", i);
-        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetExponent());
+        shaderEditor->SetFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetExponent());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].direction", i);
-        shaderEditor->setVec3(locBuff, LightManager::spotLights[i].GetDirection());
+        shaderEditor->SetFloat3(locBuff, LightManager::spotLights[i].GetDirection());
 
         snprintf(locBuff, sizeof(locBuff), "spotLights[%d].edge", i);
-        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetEdge());
+        shaderEditor->SetFloat(locBuff, LightManager::spotLights[i].GetEdge());
 
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object.fs is 3
         int textureSlotOffset = LightManager::pointLightCount;
         LightManager::spotLights[i].GetShadowMap()->ReadTexture(m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
-        shaderEditor->setInt(locBuff, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
+        shaderEditor->SetInt(locBuff, m_OmniShadowTxSlots["editor_object"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
-        shaderEditor->setFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
+        shaderEditor->SetFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
     }
     /**** End editor_object ****/
 
@@ -475,23 +475,23 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     shaderEditorPBR->Bind();
 
     // initialize static shader uniforms before rendering
-    shaderEditorPBR->setMat4("model", glm::mat4(1.0f));
-    shaderEditorPBR->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderEditorPBR->setMat4("projection", *projectionMatrix);
-    shaderEditorPBR->setVec3("eyePosition", scene->GetCamera()->GetPosition());
-    shaderEditorPBR->setMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    shaderEditorPBR->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
-    shaderEditorPBR->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
-    shaderEditorPBR->setVec4("waterColor", scene->GetWaterManager()->GetWaterColor());
+    shaderEditorPBR->SetMat4("model", glm::mat4(1.0f));
+    shaderEditorPBR->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderEditorPBR->SetMat4("projection", *projectionMatrix);
+    shaderEditorPBR->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
+    shaderEditorPBR->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderEditorPBR->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+    shaderEditorPBR->SetFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderEditorPBR->SetFloat4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
-    shaderEditorPBR->setInt("pointSpotLightCount", LightManager::pointLightCount + LightManager::spotLightCount);
+    shaderEditorPBR->SetInt("pointSpotLightCount", LightManager::pointLightCount + LightManager::spotLightCount);
 
     // directional light
-    shaderEditorPBR->setBool("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-    shaderEditorPBR->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-    shaderEditorPBR->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-    shaderEditorPBR->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-    shaderEditorPBR->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
+    shaderEditorPBR->SetBool("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+    shaderEditorPBR->SetFloat3("directionalLight.base.color", LightManager::directionalLight.GetColor());
+    shaderEditorPBR->SetFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    shaderEditorPBR->SetFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    shaderEditorPBR->SetFloat3("directionalLight.direction", LightManager::directionalLight.GetDirection());
     // printf("Exponent = %.2ff Linear = %.2ff Constant = %.2ff\n", *m_PointLightExponent, *m_PointLightLinear, *m_PointLightConstant);
 
     // point lights
@@ -500,30 +500,30 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     {
         lightIndex = 0 + i; // offset for point lights
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].base.enabled", lightIndex);
-        shaderEditorPBR->setBool(locBuff, LightManager::pointLights[i].GetEnabled());
+        shaderEditorPBR->SetBool(locBuff, LightManager::pointLights[i].GetEnabled());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].base.color", lightIndex);
-        shaderEditorPBR->setVec3(locBuff, LightManager::pointLights[i].GetColor());
+        shaderEditorPBR->SetFloat3(locBuff, LightManager::pointLights[i].GetColor());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].base.ambientIntensity", lightIndex);
-        shaderEditorPBR->setFloat(locBuff, LightManager::pointLights[i].GetAmbientIntensity());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::pointLights[i].GetAmbientIntensity());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].base.diffuseIntensity", lightIndex);
-        shaderEditorPBR->setFloat(locBuff, LightManager::pointLights[i].GetDiffuseIntensity());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::pointLights[i].GetDiffuseIntensity());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].position", lightIndex);
-        shaderEditorPBR->setVec3(locBuff, LightManager::pointLights[i].GetPosition());
+        shaderEditorPBR->SetFloat3(locBuff, LightManager::pointLights[i].GetPosition());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].exponent", lightIndex);
-        shaderEditorPBR->setFloat(locBuff, LightManager::pointLights[i].GetExponent());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::pointLights[i].GetExponent());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].linear", lightIndex);
-        shaderEditorPBR->setFloat(locBuff, LightManager::pointLights[i].GetLinear());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::pointLights[i].GetLinear());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].constant", lightIndex);
-        shaderEditorPBR->setFloat(locBuff, LightManager::pointLights[i].GetConstant());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::pointLights[i].GetConstant());
 
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object_pbr.fs is 9
         int textureSlotOffset = 0;
         LightManager::pointLights[i].GetShadowMap()->ReadTexture(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
-        shaderEditorPBR->setInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        shaderEditorPBR->SetInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
-        shaderEditorPBR->setFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::pointLights[i].GetFarPlane());
     }
 
     for (unsigned int i = 0; i < LightManager::spotLightCount; ++i)
@@ -531,30 +531,30 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
         lightIndex = LightManager::pointLightCount + i; // offset for spot lights
 
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].base.enabled", lightIndex);
-        shaderEditorPBR->setBool(locBuff, LightManager::spotLights[i].GetBasePL()->GetEnabled());
+        shaderEditorPBR->SetBool(locBuff, LightManager::spotLights[i].GetBasePL()->GetEnabled());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].base.color", lightIndex);
-        shaderEditorPBR->setVec3(locBuff, LightManager::spotLights[i].GetBasePL()->GetColor());
+        shaderEditorPBR->SetFloat3(locBuff, LightManager::spotLights[i].GetBasePL()->GetColor());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].base.ambientIntensity", lightIndex);
-        shaderEditorPBR->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetAmbientIntensity());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetAmbientIntensity());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].base.diffuseIntensity", lightIndex);
-        shaderEditorPBR->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetDiffuseIntensity());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetDiffuseIntensity());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].position", lightIndex);
-        shaderEditorPBR->setVec3(locBuff, LightManager::spotLights[i].GetBasePL()->GetPosition());
+        shaderEditorPBR->SetFloat3(locBuff, LightManager::spotLights[i].GetBasePL()->GetPosition());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].exponent", lightIndex);
-        shaderEditorPBR->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetExponent());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetExponent());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].linear", lightIndex);
-        shaderEditorPBR->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetLinear());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetLinear());
         snprintf(locBuff, sizeof(locBuff), "pointSpotLights[%d].constant", lightIndex);
-        shaderEditorPBR->setFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetConstant());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::spotLights[i].GetBasePL()->GetConstant());
 
         // set uniforms for omni shadow maps
         // texture slot for 'omniShadowMaps[i].shadowMap' samplerCube in editor_object_pbr.fs is 9
         int textureSlotOffset = LightManager::pointLightCount;
         LightManager::spotLights[i].GetShadowMap()->ReadTexture(m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].shadowMap", textureSlotOffset + i);
-        shaderEditorPBR->setInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
+        shaderEditorPBR->SetInt(locBuff, m_OmniShadowTxSlots["editor_object_pbr"] + textureSlotOffset + i);
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
-        shaderEditorPBR->setFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
+        shaderEditorPBR->SetFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
     }
     /**** End editor_object_pbr ****/
 
@@ -562,31 +562,31 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     MoravaShader* shaderSkinning = RendererBasic::GetShaders()["skinning"];
     shaderSkinning->Bind();
 
-    shaderSkinning->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderSkinning->setMat4("projection", *projectionMatrix);
-    shaderSkinning->setVec4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
-    shaderSkinning->setVec3("gEyeWorldPos", scene->GetCamera()->GetPosition());
-    shaderSkinning->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
-    shaderSkinning->setVec4("waterColor", scene->GetWaterManager()->GetWaterColor());
+    shaderSkinning->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderSkinning->SetMat4("projection", *projectionMatrix);
+    shaderSkinning->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+    shaderSkinning->SetFloat3("gEyeWorldPos", scene->GetCamera()->GetPosition());
+    shaderSkinning->SetFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderSkinning->SetFloat4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
     // Directional Light
-    shaderSkinning->setVec3("gDirectionalLight.Base.Color", LightManager::directionalLight.GetColor());
-    shaderSkinning->setFloat("gDirectionalLight.Base.AmbientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-    shaderSkinning->setFloat("gDirectionalLight.Base.DiffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-    shaderSkinning->setVec3("gDirectionalLight.Direction", LightManager::directionalLight.GetDirection());
+    shaderSkinning->SetFloat3("gDirectionalLight.Base.Color", LightManager::directionalLight.GetColor());
+    shaderSkinning->SetFloat("gDirectionalLight.Base.AmbientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    shaderSkinning->SetFloat("gDirectionalLight.Base.DiffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    shaderSkinning->SetFloat3("gDirectionalLight.Direction", LightManager::directionalLight.GetDirection());
 
     // TODO: point lights
-    shaderSkinning->setInt("gNumPointLights", 0);
+    shaderSkinning->SetInt("gNumPointLights", 0);
 
     // TODO: spot lights
-    shaderSkinning->setInt("gNumSpotLights", 0);
+    shaderSkinning->SetInt("gNumSpotLights", 0);
     /**** End skinning ****/
 
     /**** Begin Hybrid Anim PBR ****/
     MoravaShader* shaderHybridAnimPBR = RendererBasic::GetShaders()["hybrid_anim_pbr"];
     shaderHybridAnimPBR->Bind();
-    shaderHybridAnimPBR->setMat4("u_ViewProjectionMatrix", *projectionMatrix * scene->GetCamera()->GetViewMatrix());
-    shaderHybridAnimPBR->setVec3("u_CameraPosition", scene->GetCamera()->GetPosition());
+    shaderHybridAnimPBR->SetMat4("u_ViewProjectionMatrix", *projectionMatrix * scene->GetCamera()->GetViewMatrix());
+    shaderHybridAnimPBR->SetFloat3("u_CameraPosition", scene->GetCamera()->GetPosition());
 
     // point lights
     lightIndex = 0;
@@ -595,9 +595,9 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
         lightIndex = 0 + i; // offset for point lights
 
         std::string uniformName = std::string("lightPositions[") + std::to_string(lightIndex) + std::string("]");
-        shaderHybridAnimPBR->setVec3(uniformName, LightManager::pointLights[i].GetPosition());
+        shaderHybridAnimPBR->SetFloat3(uniformName, LightManager::pointLights[i].GetPosition());
         uniformName = std::string("lightColors[") + std::to_string(lightIndex) + std::string("]");
-        shaderHybridAnimPBR->setVec3(uniformName, LightManager::pointLights[i].GetColor());
+        shaderHybridAnimPBR->SetFloat3(uniformName, LightManager::pointLights[i].GetColor());
     }
 
     for (unsigned int i = 0; i < LightManager::spotLightCount; ++i)
@@ -605,61 +605,61 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
         lightIndex = LightManager::pointLightCount + i; // offset for spot lights
 
         std::string uniformName = std::string("lightPositions[") + std::to_string(lightIndex) + std::string("]");
-        shaderHybridAnimPBR->setVec3(uniformName, LightManager::spotLights[i].GetBasePL()->GetPosition());
+        shaderHybridAnimPBR->SetFloat3(uniformName, LightManager::spotLights[i].GetBasePL()->GetPosition());
         uniformName = std::string("lightColors[") + std::to_string(lightIndex) + std::string("]");
-        shaderHybridAnimPBR->setVec3(uniformName, LightManager::spotLights[i].GetBasePL()->GetColor());
+        shaderHybridAnimPBR->SetFloat3(uniformName, LightManager::spotLights[i].GetBasePL()->GetColor());
     }
     /**** End Hybrid Anim PBR ****/
 
     /**** Begin shadow_map ****/
     MoravaShader* shaderShadowMap = RendererBasic::GetShaders()["shadow_map"];
     shaderShadowMap->Bind();
-    shaderShadowMap->setMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    shaderShadowMap->setBool("u_Animated", false);
+    shaderShadowMap->SetMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    shaderShadowMap->SetBool("u_Animated", false);
     /**** End shadow_map ****/
 
     /**** Begin omni_shadow_map ****/
     MoravaShader* shaderOmniShadowMap = RendererBasic::GetShaders()["omni_shadow_map"];
     shaderOmniShadowMap->Bind();
-    shaderOmniShadowMap->setVec3("lightPosition", LightManager::directionalLight.GetPosition());
-    shaderOmniShadowMap->setFloat("farPlane", scene->GetSettings().farPlane);
+    shaderOmniShadowMap->SetFloat3("lightPosition", LightManager::directionalLight.GetPosition());
+    shaderOmniShadowMap->SetFloat("farPlane", scene->GetSettings().farPlane);
     /**** End omni_shadow_map ****/
 
     /**** Begin shaderWater ****/
     MoravaShader* shaderWater = RendererBasic::GetShaders()["water"];
     shaderWater->Bind();
 
-    shaderWater->setMat4("projection", *projectionMatrix);
-    shaderWater->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderWater->setVec3("lightPosition", LightManager::directionalLight.GetPosition());
-    shaderWater->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
-    shaderWater->setVec3("lightColor", LightManager::directionalLight.GetColor());
-    shaderWater->setFloat("moveFactor", scene->GetWaterManager()->GetWaterMoveFactor());
-    shaderWater->setFloat("nearPlane", scene->GetSettings().nearPlane);
-    shaderWater->setFloat("farPlane", scene->GetSettings().farPlane);
-    shaderWater->setVec3("eyePosition", scene->GetCamera()->GetPosition());
-    shaderWater->setFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
-    shaderWater->setVec4("waterColor", scene->GetWaterManager()->GetWaterColor());
+    shaderWater->SetMat4("projection", *projectionMatrix);
+    shaderWater->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderWater->SetFloat3("lightPosition", LightManager::directionalLight.GetPosition());
+    shaderWater->SetFloat3("cameraPosition", scene->GetCamera()->GetPosition());
+    shaderWater->SetFloat3("lightColor", LightManager::directionalLight.GetColor());
+    shaderWater->SetFloat("moveFactor", scene->GetWaterManager()->GetWaterMoveFactor());
+    shaderWater->SetFloat("nearPlane", scene->GetSettings().nearPlane);
+    shaderWater->SetFloat("farPlane", scene->GetSettings().farPlane);
+    shaderWater->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
+    shaderWater->SetFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderWater->SetFloat4("waterColor", scene->GetWaterManager()->GetWaterColor());
     /**** End shaderWater ****/
 
     /**** Begin Background shader ****/
     MoravaShader* shaderBackground = RendererBasic::GetShaders()["background"];
     shaderBackground->Bind();
-    shaderBackground->setMat4("projection", *projectionMatrix);
-    shaderBackground->setMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderBackground->SetMat4("projection", *projectionMatrix);
+    shaderBackground->SetMat4("view", scene->GetCamera()->GetViewMatrix());
     /**** End Background shader ****/
 
     /**** Begin of shaderBasic ****/
     MoravaShader* shaderBasic = RendererBasic::GetShaders()["basic"];
     shaderBasic->Bind();
-    shaderBasic->setMat4("projection", *projectionMatrix);
-    shaderBasic->setMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderBasic->SetMat4("projection", *projectionMatrix);
+    shaderBasic->SetMat4("view", scene->GetCamera()->GetViewMatrix());
     /**** End of shaderBasic ****/
 
     /**** Begin gizmo shader ****/
     MoravaShader* shaderGizmo = RendererBasic::GetShaders()["gizmo"];
     shaderGizmo->Bind();
-    // shaderGizmo->setMat4("projection", *projectionMatrix);
+    // shaderGizmo->SetMat4("projection", *projectionMatrix);
 
     // experimental
     if (((SceneEditor*)scene)->m_GizmoOrthoProjection) {
@@ -667,27 +667,27 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
         float sizeCoef = 5.0f;
         glm::mat4 orthoMatrix = glm::ortho(-aspectRatio * sizeCoef, aspectRatio * sizeCoef, -1.0f * sizeCoef, 1.0f * sizeCoef,
             scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-        shaderGizmo->setMat4("projection", orthoMatrix);
+        shaderGizmo->SetMat4("projection", orthoMatrix);
     }
     else {
-        shaderGizmo->setMat4("projection", *projectionMatrix);
+        shaderGizmo->SetMat4("projection", *projectionMatrix);
     }
 
-    shaderGizmo->setMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderGizmo->SetMat4("view", scene->GetCamera()->GetViewMatrix());
     // Directional Light
-    shaderGizmo->setBool("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
-    shaderGizmo->setVec3("directionalLight.base.color", LightManager::directionalLight.GetColor());
-    shaderGizmo->setFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
-    shaderGizmo->setFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
-    shaderGizmo->setVec3("directionalLight.direction", LightManager::directionalLight.GetDirection());
+    shaderGizmo->SetBool("directionalLight.base.enabled", LightManager::directionalLight.GetEnabled());
+    shaderGizmo->SetFloat3("directionalLight.base.color", LightManager::directionalLight.GetColor());
+    shaderGizmo->SetFloat("directionalLight.base.ambientIntensity", LightManager::directionalLight.GetAmbientIntensity());
+    shaderGizmo->SetFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
+    shaderGizmo->SetFloat3("directionalLight.direction", LightManager::directionalLight.GetDirection());
     /**** End gizmo shader ****/
 
     /**** Begin glass ****/
     MoravaShader* shaderGlass = RendererBasic::GetShaders()["glass"];
     shaderGlass->Bind();
-    shaderGlass->setMat4("view", scene->GetCamera()->GetViewMatrix());
-    shaderGlass->setMat4("projection", *projectionMatrix);
-    shaderGlass->setVec3("cameraPosition", scene->GetCamera()->GetPosition());
+    shaderGlass->SetMat4("view", scene->GetCamera()->GetViewMatrix());
+    shaderGlass->SetMat4("projection", *projectionMatrix);
+    shaderGlass->SetFloat3("cameraPosition", scene->GetCamera()->GetPosition());
     /**** End glass ****/
 }
 

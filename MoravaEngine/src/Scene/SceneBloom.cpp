@@ -73,12 +73,12 @@ void SceneBloom::SetupShaders()
     Log::GetLogger()->info("SceneBloom: m_ShaderBloomFinal compiled [programID={0}]", m_ShaderBloomFinal->GetProgramID());
 
     m_ShaderBloom->Bind();
-    m_ShaderBloom->setInt("diffuseTexture", 0);
+    m_ShaderBloom->SetInt("diffuseTexture", 0);
     m_ShaderBlur->Bind();
-    m_ShaderBlur->setInt("image", 0);
+    m_ShaderBlur->SetInt("image", 0);
     m_ShaderBloomFinal->Bind();
-    m_ShaderBloomFinal->setInt("scene", 0);
-    m_ShaderBloomFinal->setInt("bloomBlur", 1);
+    m_ShaderBloomFinal->SetInt("scene", 0);
+    m_ShaderBloomFinal->SetInt("bloomBlur", 1);
 }
 
 void SceneBloom::SetupFramebuffers()
@@ -230,25 +230,25 @@ void SceneBloom::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::str
     glm::mat4 view = m_Camera->GetViewMatrix();
     glm::mat4 model = glm::mat4(1.0f);
     m_ShaderBloom->Bind();
-    m_ShaderBloom->setMat4("projection", projection);
-    m_ShaderBloom->setMat4("view", view);
+    m_ShaderBloom->SetMat4("projection", projection);
+    m_ShaderBloom->SetMat4("view", view);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_TextureWood);
 
     // set lighting uniforms
     for (unsigned int i = 0; i < m_LightPositions.size(); i++)
     {
-        m_ShaderBloom->setVec3("lights[" + std::to_string(i) + "].Position", m_LightPositions[i]);
-        m_ShaderBloom->setVec3("lights[" + std::to_string(i) + "].Color", m_LightColors[i]);
+        m_ShaderBloom->SetFloat3("lights[" + std::to_string(i) + "].Position", m_LightPositions[i]);
+        m_ShaderBloom->SetFloat3("lights[" + std::to_string(i) + "].Color", m_LightColors[i]);
     }
 
-    m_ShaderBloom->setVec3("viewPos", m_Camera->GetPosition());
+    m_ShaderBloom->SetFloat3("viewPos", m_Camera->GetPosition());
 
     // create one large cube that acts as the floor
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0));
     model = glm::scale(model, glm::vec3(12.5f, 0.5f, 12.5f));
-    m_ShaderBloom->setMat4("model", model);
+    m_ShaderBloom->SetMat4("model", model);
     renderCube();
 
     // then create multiple cubes as the scenery
@@ -256,52 +256,52 @@ void SceneBloom::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::str
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
     model = glm::scale(model, glm::vec3(0.5f));
-    m_ShaderBloom->setMat4("model", model);
+    m_ShaderBloom->SetMat4("model", model);
     renderCube();
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
     model = glm::scale(model, glm::vec3(0.5f));
-    m_ShaderBloom->setMat4("model", model);
+    m_ShaderBloom->SetMat4("model", model);
     renderCube();
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(-1.0f, -1.0f, 2.0));
     model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-    m_ShaderBloom->setMat4("model", model);
+    m_ShaderBloom->SetMat4("model", model);
     renderCube();
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 2.7f, 4.0));
     model = glm::rotate(model, glm::radians(23.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
     model = glm::scale(model, glm::vec3(1.25));
-    m_ShaderBloom->setMat4("model", model);
+    m_ShaderBloom->SetMat4("model", model);
     renderCube();
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(-2.0f, 1.0f, -3.0));
     model = glm::rotate(model, glm::radians(124.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-    m_ShaderBloom->setMat4("model", model);
+    m_ShaderBloom->SetMat4("model", model);
     renderCube();
 
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(-3.0f, 0.0f, 0.0));
     model = glm::scale(model, glm::vec3(0.5f));
-    m_ShaderBloom->setMat4("model", model);
+    m_ShaderBloom->SetMat4("model", model);
     renderCube();
 
     // finally show all the light sources as bright cubes
     m_ShaderLightBox->Bind();
-    m_ShaderLightBox->setMat4("projection", projection);
-    m_ShaderLightBox->setMat4("view", view);
+    m_ShaderLightBox->SetMat4("projection", projection);
+    m_ShaderLightBox->SetMat4("view", view);
 
     for (unsigned int i = 0; i < m_LightPositions.size(); i++)
     {
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(m_LightPositions[i]));
         model = glm::scale(model, glm::vec3(0.25f));
-        m_ShaderLightBox->setMat4("model", model);
-        m_ShaderLightBox->setVec3("lightColor", m_LightColors[i]);
+        m_ShaderLightBox->SetMat4("model", model);
+        m_ShaderLightBox->SetFloat3("lightColor", m_LightColors[i]);
         renderCube();
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -314,7 +314,7 @@ void SceneBloom::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::str
     for (unsigned int i = 0; i < amount; i++)
     {
         glBindFramebuffer(GL_FRAMEBUFFER, m_PingPongFBO[horizontal]);
-        m_ShaderBlur->setInt("horizontal", horizontal);
+        m_ShaderBlur->SetInt("horizontal", horizontal);
         glBindTexture(GL_TEXTURE_2D, first_iteration ? m_ColorBuffers[1] : m_PingPongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
         renderQuad();
         horizontal = !horizontal;
@@ -333,8 +333,8 @@ void SceneBloom::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::str
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, m_PingPongColorbuffers[!horizontal]);
 
-    m_ShaderBloomFinal->setInt("bloom", m_BloomEnabled);
-    m_ShaderBloomFinal->setFloat("exposure", m_Exposure);
+    m_ShaderBloomFinal->SetInt("bloom", m_BloomEnabled);
+    m_ShaderBloomFinal->SetFloat("exposure", m_Exposure);
 
     renderQuad();
 }

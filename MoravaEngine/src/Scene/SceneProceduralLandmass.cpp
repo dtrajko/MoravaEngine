@@ -705,30 +705,30 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
     {
         if (m_DrawGizmos) {
             shaderBasic->Bind();
-            shaderBasic->setMat4("model", glm::mat4(1.0f));
+            shaderBasic->SetMat4("model", glm::mat4(1.0f));
             m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
         }
 
         shaderMain->Bind();
 
         glm::mat4 model = glm::mat4(1.0f);
-        shaderMain->setVec4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        shaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
         switch (m_MapGenConf.drawMode) {
         case MapGenerator::DrawMode::HeightMap:
             model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            shaderMain->setMat4("model", model);
+            shaderMain->SetMat4("model", model);
             ResourceManager::GetTexture("heightMap")->Bind(textureSlots["diffuse"]);
-            shaderMain->setFloat("tilingFactor", 1.0f / m_MapGenConf.mapChunkSize);
+            shaderMain->SetFloat("tilingFactor", 1.0f / m_MapGenConf.mapChunkSize);
             // Log::GetLogger()->info("SceneProceduralLandmass::Render heightMap ID = {0}", ResourceManager::GetTexture("heightMap")->GetID());
             meshes["floor_height"]->Render();
             break;
         case MapGenerator::DrawMode::ColorMap:
             model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            shaderMain->setMat4("model", model);
+            shaderMain->SetMat4("model", model);
             ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
-            shaderMain->setFloat("tilingFactor", 1.0f / m_MapGenConf.mapChunkSize);
+            shaderMain->SetFloat("tilingFactor", 1.0f / m_MapGenConf.mapChunkSize);
             // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
             meshes["floor_height"]->Render();
             break;
@@ -736,9 +736,9 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
             model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
             model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
             model = glm::scale(model, glm::vec3(-1.0f, 1.0f, 1.0f));
-            shaderMain->setMat4("model", model);
+            shaderMain->SetMat4("model", model);
             ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
-            shaderMain->setFloat("tilingFactor", 1.0f);
+            shaderMain->SetFloat("tilingFactor", 1.0f);
             // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
             if (m_RenderTerrainMesh && m_TerrainSL->GetMapGenerator()->GetMesh() != nullptr)
                 m_TerrainSL->GetMapGenerator()->GetMesh()->Render();
@@ -748,17 +748,17 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
 
     /**** BEGIN render Player ****/
     shaderMain->Bind();
-    shaderMain->setMat4("projection", projectionMatrix);
-    shaderMain->setMat4("view", m_Camera->GetViewMatrix());
-    shaderMain->setInt("albedoMap", 0);
-    shaderMain->setVec4("tintColor", m_Player->GetColor());
+    shaderMain->SetMat4("projection", projectionMatrix);
+    shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
+    shaderMain->SetInt("albedoMap", 0);
+    shaderMain->SetFloat4("tintColor", m_Player->GetColor());
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, m_Player->GetPosition());
     model = glm::rotate(model, glm::radians(m_Player->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(m_Player->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(m_Player->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
-    shaderMain->setMat4("model", model);
+    shaderMain->SetMat4("model", model);
 
     if (m_RenderPlayer)
         m_Player->Render();
@@ -774,10 +774,10 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
 
     shaderRenderInstanced->Bind();
 
-    shaderRenderInstanced->setMat4("projection", projectionMatrix);
-    shaderRenderInstanced->setMat4("view", m_Camera->GetViewMatrix());
-    shaderRenderInstanced->setInt("albedoMap", 0);
-    shaderRenderInstanced->setVec4("tintColor", tintColor);
+    shaderRenderInstanced->SetMat4("projection", projectionMatrix);
+    shaderRenderInstanced->SetMat4("view", m_Camera->GetViewMatrix());
+    shaderRenderInstanced->SetInt("albedoMap", 0);
+    shaderRenderInstanced->SetFloat4("tintColor", tintColor);
 
     m_RenderInstanced->m_Texture->Bind(0);
 

@@ -209,25 +209,6 @@ GLuint OpenGLMoravaShader::GetProgramID()
 	return programID;
 }
 
-// utility uniform functions
-void OpenGLMoravaShader::setBool(const std::string& name, bool value)
-{
-	glUniform1i(GetUniformLocation(name), (int)value);
-}
-
-void OpenGLMoravaShader::setInt(const std::string& name, int value)
-{
-	glUniform1i(GetUniformLocation(name), value);
-}
-
-void OpenGLMoravaShader::setFloat(const std::string& name, float value)
-{
-	auto uniformLocation = GetUniformLocation(name);
-	glUniform1f(GetUniformLocation(name), value);
-
-	// Log::GetLogger()->debug("OpenGLMoravaShader::setFloat name: '{0}', value: '{1}', uniformLocation: '{2}'", name, value, uniformLocation);
-}
-
 void OpenGLMoravaShader::setVec2(const std::string& name, const glm::vec2& value)
 {
 	glUniform2fv(GetUniformLocation(name), 1, &value[0]);
@@ -236,28 +217,6 @@ void OpenGLMoravaShader::setVec2(const std::string& name, const glm::vec2& value
 void OpenGLMoravaShader::setVec2(const std::string& name, float x, float y)
 {
 	glUniform2f(GetUniformLocation(name), x, y);
-}
-void OpenGLMoravaShader::setVec3(const std::string& name, const glm::vec3& value)
-{
-	auto uniformLocation = GetUniformLocation(name);
-	glUniform3fv(GetUniformLocation(name), 1, &value[0]);
-
-	// Log::GetLogger()->debug("OpenGLMoravaShader::setFloat name: '{0}', value: [{1} {2} {3}], uniformLocation: '{4}'", name, value.x, value.y, value.z, uniformLocation);
-}
-
-void OpenGLMoravaShader::setVec3(const std::string& name, float x, float y, float z)
-{
-	glUniform3f(GetUniformLocation(name), x, y, z);
-}
-
-void OpenGLMoravaShader::setVec4(const std::string& name, const glm::vec4& value)
-{
-	glUniform4fv(GetUniformLocation(name), 1, &value[0]);
-}
-
-void OpenGLMoravaShader::setVec4(const std::string& name, float x, float y, float z, float w)
-{
-	glUniform4f(GetUniformLocation(name), x, y, z, w);
 }
 
 void OpenGLMoravaShader::setMat2(const std::string& name, const glm::mat2& mat)
@@ -268,11 +227,6 @@ void OpenGLMoravaShader::setMat2(const std::string& name, const glm::mat2& mat)
 void OpenGLMoravaShader::setMat3(const std::string& name, const glm::mat3& mat)
 {
 	glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
-}
-
-void OpenGLMoravaShader::setMat4(const std::string& name, const glm::mat4& mat)
-{
-	glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
 GLint OpenGLMoravaShader::GetUniformLocation(const std::string& name)
@@ -442,6 +396,18 @@ void OpenGLMoravaShader::SetFloat3(const std::string& name, const glm::vec3& val
 	}
 }
 
+void OpenGLMoravaShader::SetFloat4(const std::string& name, const glm::vec4& value)
+{
+	glUseProgram(programID);
+	auto location = glGetUniformLocation(programID, name.c_str());
+	if (location != -1) {
+		glUniform4f(location, value.x, value.y, value.z, value.w);
+	}
+	else {
+		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+	}
+}
+
 void OpenGLMoravaShader::SetMat4(const std::string& name, const glm::mat4& value)
 {
 	glUseProgram(programID);
@@ -494,7 +460,7 @@ void OpenGLMoravaShader::setLightMat4(std::vector<glm::mat4> lightMatrices)
 	for (GLuint i = 0; i < 6; i++)
 	{
 		std::string name = "lightMatrices[" + std::to_string(i) + "]";
-		setMat4(name, lightMatrices[i]);
+		SetMat4(name, lightMatrices[i]);
 	}
 }
 

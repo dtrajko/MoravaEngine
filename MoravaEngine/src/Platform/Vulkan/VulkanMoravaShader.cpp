@@ -57,29 +57,13 @@ void VulkanMoravaShader::Validate() {}
 
 GLuint VulkanMoravaShader::GetProgramID() { return GLuint(); }
 
-void VulkanMoravaShader::setBool(const std::string& name, bool value) {}
-
-void VulkanMoravaShader::setInt(const std::string& name, int value) {}
-
-void VulkanMoravaShader::setFloat(const std::string& name, float value) {}
-
 void VulkanMoravaShader::setVec2(const std::string& name, const glm::vec2& value) {}
 
 void VulkanMoravaShader::setVec2(const std::string& name, float x, float y) {}
 
-void VulkanMoravaShader::setVec3(const std::string& name, const glm::vec3& value) {}
-
-void VulkanMoravaShader::setVec3(const std::string& name, float x, float y, float z) {}
-
-void VulkanMoravaShader::setVec4(const std::string& name, const glm::vec4& value) {}
-
-void VulkanMoravaShader::setVec4(const std::string& name, float x, float y, float z, float w) {}
-
 void VulkanMoravaShader::setMat2(const std::string& name, const glm::mat2& mat) {}
 
 void VulkanMoravaShader::setMat3(const std::string& name, const glm::mat3& mat) {}
-
-void VulkanMoravaShader::setMat4(const std::string& name, const glm::mat4& mat) {}
 
 GLint VulkanMoravaShader::GetUniformLocation(const std::string& name) { return GLint(); }
 
@@ -132,6 +116,8 @@ void VulkanMoravaShader::SetBool(const std::string& name, bool value) {}
 void VulkanMoravaShader::SetFloat2(const std::string& name, const glm::vec2& value) {}
 
 void VulkanMoravaShader::SetFloat3(const std::string& name, const glm::vec3& value) {}
+
+void VulkanMoravaShader::SetFloat4(const std::string& name, const glm::vec4& value) {}
 
 void VulkanMoravaShader::SetMat4(const std::string& name, const glm::mat4& value) {}
 

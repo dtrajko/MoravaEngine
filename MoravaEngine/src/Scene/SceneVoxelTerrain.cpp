@@ -477,7 +477,7 @@ void SceneVoxelTerrain::Render(Window* mainWindow, glm::mat4 projectionMatrix, s
     {
         if (m_DrawGizmos) {
             shaderBasic->Bind();
-            shaderBasic->setMat4("model", glm::mat4(1.0f));
+            shaderBasic->SetMat4("model", glm::mat4(1.0f));
             m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
         }
 
@@ -487,17 +487,17 @@ void SceneVoxelTerrain::Render(Window* mainWindow, glm::mat4 projectionMatrix, s
 
     /**** BEGIN render Player ****/
     shaderMain->Bind();
-    shaderMain->setMat4("projection", projectionMatrix);
-    shaderMain->setMat4("view", m_Camera->GetViewMatrix());
-    shaderMain->setInt("albedoMap", 0);
-    shaderMain->setVec4("tintColor", m_Player->GetColor());
+    shaderMain->SetMat4("projection", projectionMatrix);
+    shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
+    shaderMain->SetInt("albedoMap", 0);
+    shaderMain->SetFloat4("tintColor", m_Player->GetColor());
 
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, m_Player->GetPosition());
     model = glm::rotate(model, glm::radians(m_Player->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(m_Player->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(m_Player->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
-    shaderMain->setMat4("model", model);
+    shaderMain->SetMat4("model", model);
 
     m_Player->Render();
 
@@ -512,10 +512,10 @@ void SceneVoxelTerrain::Render(Window* mainWindow, glm::mat4 projectionMatrix, s
 
     shaderRenderInstanced->Bind();
 
-    shaderRenderInstanced->setMat4("projection", projectionMatrix);
-    shaderRenderInstanced->setMat4("view", m_Camera->GetViewMatrix());
-    shaderRenderInstanced->setInt("albedoMap", 0);
-    shaderRenderInstanced->setVec4("tintColor", tintColor);
+    shaderRenderInstanced->SetMat4("projection", projectionMatrix);
+    shaderRenderInstanced->SetMat4("view", m_Camera->GetViewMatrix());
+    shaderRenderInstanced->SetInt("albedoMap", 0);
+    shaderRenderInstanced->SetFloat4("tintColor", tintColor);
 
     m_RenderInstanced->m_Texture->Bind(0);
     m_RenderInstanced->Render();

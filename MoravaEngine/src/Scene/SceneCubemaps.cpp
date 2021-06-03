@@ -60,13 +60,13 @@ void SceneCubemaps::SetupShaders()
 
     // shader configuration
     m_ShaderCubemaps->Bind();
-    m_ShaderCubemaps->setInt("skybox", 0);
+    m_ShaderCubemaps->SetInt("skybox", 0);
 
     m_ShaderCubemapsNanosuit->Bind();
-    m_ShaderCubemapsNanosuit->setInt("skybox", 0);
+    m_ShaderCubemapsNanosuit->SetInt("skybox", 0);
 
     m_ShaderSkybox->Bind();
-    m_ShaderSkybox->setInt("skybox", 0);
+    m_ShaderSkybox->SetInt("skybox", 0);
 }
 
 void SceneCubemaps::SetupMeshes()
@@ -177,14 +177,14 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
         m_ShaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
 
     m_ShaderCubemaps->Bind();
-    m_ShaderCubemaps->setMat4("projection", projectionMatrix);
-    m_ShaderCubemaps->setMat4("view", m_Camera->GetViewMatrix());
-    m_ShaderCubemaps->setVec3("cameraPos", m_Camera->GetPosition());
+    m_ShaderCubemaps->SetMat4("projection", projectionMatrix);
+    m_ShaderCubemaps->SetMat4("view", m_Camera->GetViewMatrix());
+    m_ShaderCubemaps->SetFloat3("cameraPos", m_Camera->GetPosition());
 
     m_ShaderCubemapsNanosuit->Bind();
-    m_ShaderCubemapsNanosuit->setMat4("projection", projectionMatrix);
-    m_ShaderCubemapsNanosuit->setMat4("view", m_Camera->GetViewMatrix());
-    m_ShaderCubemapsNanosuit->setVec3("cameraPos", m_Camera->GetPosition());
+    m_ShaderCubemapsNanosuit->SetMat4("projection", projectionMatrix);
+    m_ShaderCubemapsNanosuit->SetMat4("view", m_Camera->GetViewMatrix());
+    m_ShaderCubemapsNanosuit->SetFloat3("cameraPos", m_Camera->GetPosition());
 
     glm::mat4 model = glm::mat4(1.0f);
 
@@ -203,8 +203,8 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
                 model = glm::mat4(1.0f);
                 model = glm::translate(model, glm::vec3(tw, (int)m_Terrain->GetMaxY(tw, th), th));
                 model = glm::scale(model, glm::vec3(1.0f));
-                m_ShaderCubemaps->setMat4("model", model);
-                m_ShaderCubemaps->setVec4("tintColor", glm::vec4(1.0f, 0.6f, 0.4f, 0.9f));
+                m_ShaderCubemaps->SetMat4("model", model);
+                m_ShaderCubemaps->SetFloat4("tintColor", glm::vec4(1.0f, 0.6f, 0.4f, 0.9f));
                 glBindVertexArray(GeometryFactory::CubeNormals::GetVAO());
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureCubeMapID);
@@ -232,8 +232,8 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
         }
     }
 
-    m_ShaderCubemaps->setMat4("model", m_ModelCube);
-    m_ShaderCubemaps->setVec4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 0.9f));
+    m_ShaderCubemaps->SetMat4("model", m_ModelCube);
+    m_ShaderCubemaps->SetFloat4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 0.9f));
     glBindVertexArray(GeometryFactory::CubeNormals::GetVAO());
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureCubeMapID);
@@ -242,9 +242,9 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
     glBindVertexArray(0);
 
     m_ShaderBasic->Bind();
-    m_ShaderBasic->setMat4("model", glm::mat4(1.0f));
-    m_ShaderBasic->setMat4("view", m_Camera->GetViewMatrix());
-    m_ShaderBasic->setMat4("projection", projectionMatrix);
+    m_ShaderBasic->SetMat4("model", glm::mat4(1.0f));
+    m_ShaderBasic->SetMat4("view", m_Camera->GetViewMatrix());
+    m_ShaderBasic->SetMat4("projection", projectionMatrix);
 
     if (m_AABBEnabled)
         m_CubeAABB->Draw();
@@ -257,24 +257,24 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
     model = glm::scale(model, glm::vec3(0.2f));
-    m_ShaderCubemapsNanosuit->setMat4("model", model);
-    // m_ShaderCubemaps->setVec4("tintColor", glm::vec4(0.8281f, 0.6836f, 0.2148f, 0.9f)); // Gold color
-    m_ShaderCubemapsNanosuit->setVec4("tintColor", glm::vec4(0.7529f, 0.7529f, 0.7529f, 0.9f)); // Silver color
+    m_ShaderCubemapsNanosuit->SetMat4("model", model);
+    // m_ShaderCubemaps->SetFloat4("tintColor", glm::vec4(0.8281f, 0.6836f, 0.2148f, 0.9f)); // Gold color
+    m_ShaderCubemapsNanosuit->SetFloat4("tintColor", glm::vec4(0.7529f, 0.7529f, 0.7529f, 0.9f)); // Silver color
 
     if (m_NanosuitModelEnabled)
         models["nanosuit"]->Draw(m_ShaderCubemapsNanosuit);
 
     m_ShaderFramebuffersScene->Bind();
-    m_ShaderFramebuffersScene->setMat4("projection", projectionMatrix);
-    m_ShaderFramebuffersScene->setMat4("view", m_Camera->GetViewMatrix());
+    m_ShaderFramebuffersScene->SetMat4("projection", projectionMatrix);
+    m_ShaderFramebuffersScene->SetMat4("view", m_Camera->GetViewMatrix());
 
     /* Floor */
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::scale(model, glm::vec3(5.0f));
-    m_ShaderFramebuffersScene->setMat4("model", model);
-    m_ShaderFramebuffersScene->setInt("texture1", 0);
+    m_ShaderFramebuffersScene->SetMat4("model", model);
+    m_ShaderFramebuffersScene->SetInt("texture1", 0);
     textures["semi_transparent"]->Bind(0);
     // scene->GetMeshes()["quad"]->Render();
 
@@ -282,8 +282,8 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
     model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
     model = glm::scale(model, glm::vec3(1.0f));
-    m_ShaderFramebuffersScene->setMat4("model", model);
-    m_ShaderFramebuffersScene->setInt("texture1", 0);
+    m_ShaderFramebuffersScene->SetMat4("model", model);
+    m_ShaderFramebuffersScene->SetInt("texture1", 0);
     textures["semi_transparent"]->Bind(0);
     if (m_TerrainEnabled)
         meshes["terrain"]->Render();
@@ -291,8 +291,8 @@ void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
     // draw skybox as last
     glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content
     m_ShaderSkybox->Bind();
-    m_ShaderSkybox->setMat4("view", glm::mat4(glm::mat3(m_Camera->GetViewMatrix()))); // remove translation from the view matrix
-    m_ShaderSkybox->setMat4("projection", projectionMatrix);
+    m_ShaderSkybox->SetMat4("view", glm::mat4(glm::mat3(m_Camera->GetViewMatrix()))); // remove translation from the view matrix
+    m_ShaderSkybox->SetMat4("projection", projectionMatrix);
 
     // skybox cube
     glBindVertexArray(GeometryFactory::Skybox::GetVAO());

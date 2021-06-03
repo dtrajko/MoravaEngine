@@ -628,86 +628,86 @@ void Gizmo::Render(MoravaShader* shader)
 	{
 		// Translation Gizmo - Axes
 		m_Axis_T_X->so.transform = Math::CreateTransform(m_Position + m_Axis_T_X->so.position, m_Axis_T_X->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Axis_T_X->so.transform);
-		shader->setVec4("tintColor", m_AxesEnabled.x ? m_Color_Selected : m_Axis_T_X->so.color);
+		shader->SetMat4("model", m_Axis_T_X->so.transform);
+		shader->SetFloat4("tintColor", m_AxesEnabled.x ? m_Color_Selected : m_Axis_T_X->so.color);
 		m_Axis_T_X->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_T_X->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Axis_T_X->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Axis_T_X->so.GetAABB()->Draw();
 
 		m_Axis_T_Y->so.transform = Math::CreateTransform(m_Position + m_Axis_T_Y->so.position, m_Axis_T_Y->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Axis_T_Y->so.transform);
-		shader->setVec4("tintColor", m_AxesEnabled.y ? m_Color_Selected : m_Axis_T_Y->so.color);
+		shader->SetMat4("model", m_Axis_T_Y->so.transform);
+		shader->SetFloat4("tintColor", m_AxesEnabled.y ? m_Color_Selected : m_Axis_T_Y->so.color);
 		m_Axis_T_Y->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_T_Y->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Axis_T_Y->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Axis_T_Y->so.GetAABB()->Draw();
 
 		m_Axis_T_Z->so.transform = Math::CreateTransform(m_Position + m_Axis_T_Z->so.position, m_Axis_T_Z->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Axis_T_Z->so.transform);
-		shader->setVec4("tintColor", m_AxesEnabled.z ? m_Color_Selected : m_Axis_T_Z->so.color);
+		shader->SetMat4("model", m_Axis_T_Z->so.transform);
+		shader->SetFloat4("tintColor", m_AxesEnabled.z ? m_Color_Selected : m_Axis_T_Z->so.color);
 		m_Axis_T_Z->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_T_Z->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Axis_T_Z->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Axis_T_Z->so.GetAABB()->Draw();
 
 		// Translation Gizmo - Arrows (Cones)
 		m_Arrow_T_X->so.transform = Math::CreateTransform(m_Position + m_Arrow_T_X->so.position, m_Arrow_T_X->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Arrow_T_X->so.transform);
-		shader->setVec4("tintColor", m_AxesEnabled.x ? m_Color_Selected : m_Arrow_T_X->so.color);
+		shader->SetMat4("model", m_Arrow_T_X->so.transform);
+		shader->SetFloat4("tintColor", m_AxesEnabled.x ? m_Color_Selected : m_Arrow_T_X->so.color);
 		m_Arrow_T_X->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Arrow_T_X->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Arrow_T_X->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Arrow_T_X->so.GetAABB()->Draw();
 
 		m_Arrow_T_Y->so.transform = Math::CreateTransform(m_Position + m_Arrow_T_Y->so.position, m_Arrow_T_Y->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Arrow_T_Y->so.transform);
-		shader->setVec4("tintColor", m_AxesEnabled.y ? m_Color_Selected : m_Arrow_T_Y->so.color);
+		shader->SetMat4("model", m_Arrow_T_Y->so.transform);
+		shader->SetFloat4("tintColor", m_AxesEnabled.y ? m_Color_Selected : m_Arrow_T_Y->so.color);
 		m_Arrow_T_Y->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Arrow_T_Y->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Arrow_T_Y->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Arrow_T_Y->so.GetAABB()->Draw();
 
 		m_Arrow_T_Z->so.transform = Math::CreateTransform(m_Position + m_Arrow_T_Z->so.position, m_Arrow_T_Z->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Arrow_T_Z->so.transform);
-		shader->setVec4("tintColor", m_AxesEnabled.z ? m_Color_Selected : m_Arrow_T_Z->so.color);
+		shader->SetMat4("model", m_Arrow_T_Z->so.transform);
+		shader->SetFloat4("tintColor", m_AxesEnabled.z ? m_Color_Selected : m_Arrow_T_Z->so.color);
 		m_Arrow_T_Z->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Arrow_T_Z->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Arrow_T_Z->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Arrow_T_Z->so.GetAABB()->Draw();
 
 		// Translation Gizmo - 2D squares
 		m_Square_T_YZ->so.transform = Math::CreateTransform(m_Position + m_Square_T_YZ->so.position, m_Square_T_YZ->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Square_T_YZ->so.transform);
-		shader->setVec4("tintColor", (m_AxesEnabled.y && m_AxesEnabled.z) ? m_Color_Selected : m_Square_T_YZ->so.color);
+		shader->SetMat4("model", m_Square_T_YZ->so.transform);
+		shader->SetFloat4("tintColor", (m_AxesEnabled.y && m_AxesEnabled.z) ? m_Color_Selected : m_Square_T_YZ->so.color);
 		m_Square_T_YZ->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Square_T_YZ->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Square_T_YZ->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Square_T_YZ->so.GetAABB()->Draw();
 
 		m_Square_T_ZX->so.transform = Math::CreateTransform(m_Position + m_Square_T_ZX->so.position, m_Square_T_ZX->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Square_T_ZX->so.transform);
-		shader->setVec4("tintColor", (m_AxesEnabled.z && m_AxesEnabled.x) ? m_Color_Selected : m_Square_T_ZX->so.color);
+		shader->SetMat4("model", m_Square_T_ZX->so.transform);
+		shader->SetFloat4("tintColor", (m_AxesEnabled.z && m_AxesEnabled.x) ? m_Color_Selected : m_Square_T_ZX->so.color);
 		m_Square_T_ZX->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Square_T_ZX->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Square_T_ZX->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Square_T_ZX->so.GetAABB()->Draw();
 
 		m_Square_T_XY->so.transform = Math::CreateTransform(m_Position + m_Square_T_XY->so.position, m_Square_T_XY->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Square_T_XY->so.transform);
-		shader->setVec4("tintColor", (m_AxesEnabled.x && m_AxesEnabled.y) ? m_Color_Selected : m_Square_T_XY->so.color);
+		shader->SetMat4("model", m_Square_T_XY->so.transform);
+		shader->SetFloat4("tintColor", (m_AxesEnabled.x && m_AxesEnabled.y) ? m_Color_Selected : m_Square_T_XY->so.color);
 		m_Square_T_XY->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Square_T_XY->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Square_T_XY->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Square_T_XY->so.GetAABB()->Draw();
 	}
 
@@ -716,64 +716,64 @@ void Gizmo::Render(MoravaShader* shader)
 	{
 		// Scale Gizmo - Axes
 		m_Axis_S_X->so.transform = Math::CreateTransform(m_Position + m_Axis_S_X->so.position, m_Axis_S_X->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Axis_S_X->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_X->so.GetAABB()->m_IsColliding ||
+		shader->SetMat4("model", m_Axis_S_X->so.transform);
+		shader->SetFloat4("tintColor", m_Axis_S_X->so.GetAABB()->m_IsColliding ||
 			m_Handle_S_X->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Axis_S_X->so.color);
 		m_Axis_S_X->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_S_X->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Axis_S_X->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Axis_S_X->so.GetAABB()->Draw();
 
 		m_Axis_S_Y->so.transform = Math::CreateTransform(m_Position + m_Axis_S_Y->so.position, m_Axis_S_Y->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Axis_S_Y->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_Y->so.GetAABB()->m_IsColliding ||
+		shader->SetMat4("model", m_Axis_S_Y->so.transform);
+		shader->SetFloat4("tintColor", m_Axis_S_Y->so.GetAABB()->m_IsColliding ||
 			m_Handle_S_Y->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Axis_S_Y->so.color);
 		m_Axis_S_Y->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_S_Y->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Axis_S_Y->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Axis_S_Y->so.GetAABB()->Draw();
 
 		m_Axis_S_Z->so.transform = Math::CreateTransform(m_Position + m_Axis_S_Z->so.position, m_Axis_S_Z->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Axis_S_Z->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_Z->so.GetAABB()->m_IsColliding ||
+		shader->SetMat4("model", m_Axis_S_Z->so.transform);
+		shader->SetFloat4("tintColor", m_Axis_S_Z->so.GetAABB()->m_IsColliding ||
 			m_Handle_S_Z->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Axis_S_Z->so.color);
 		m_Axis_S_Z->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Axis_S_Z->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Axis_S_Z->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Axis_S_Z->so.GetAABB()->Draw();
 
 		// Scale Gizmo - Handles
 		m_Handle_S_X->so.transform = Math::CreateTransform(m_Position + m_Handle_S_X->so.position, m_Handle_S_X->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Handle_S_X->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_X->so.GetAABB()->m_IsColliding ||
+		shader->SetMat4("model", m_Handle_S_X->so.transform);
+		shader->SetFloat4("tintColor", m_Axis_S_X->so.GetAABB()->m_IsColliding ||
 			m_Handle_S_X->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Handle_S_X->so.color);
 		m_Handle_S_X->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Handle_S_X->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Handle_S_X->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Handle_S_X->so.GetAABB()->Draw();
 
 		m_Handle_S_Y->so.transform = Math::CreateTransform(m_Position + m_Handle_S_Y->so.position, m_Handle_S_Y->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Handle_S_Y->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_Y->so.GetAABB()->m_IsColliding ||
+		shader->SetMat4("model", m_Handle_S_Y->so.transform);
+		shader->SetFloat4("tintColor", m_Axis_S_Y->so.GetAABB()->m_IsColliding ||
 			m_Handle_S_Y->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Handle_S_Y->so.color);
 		m_Handle_S_Y->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Handle_S_Y->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Handle_S_Y->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Handle_S_Y->so.GetAABB()->Draw();
 
 		m_Handle_S_Z->so.transform = Math::CreateTransform(m_Position + m_Handle_S_Z->so.position, m_Handle_S_Z->so.rotation, glm::vec3(1.0f));
-		shader->setMat4("model", m_Handle_S_Z->so.transform);
-		shader->setVec4("tintColor", m_Axis_S_Z->so.GetAABB()->m_IsColliding ||
+		shader->SetMat4("model", m_Handle_S_Z->so.transform);
+		shader->SetFloat4("tintColor", m_Axis_S_Z->so.GetAABB()->m_IsColliding ||
 			m_Handle_S_Z->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Handle_S_Z->so.color);
 		m_Handle_S_Z->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Handle_S_Z->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Handle_S_Z->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Handle_S_Z->so.GetAABB()->Draw();
 	}
 
@@ -781,30 +781,30 @@ void Gizmo::Render(MoravaShader* shader)
 	if (m_Mode == GIZMO_MODE_ROTATE)
 	{
 		m_Ring_R_X->so.transform = Math::CreateTransform(m_Position + m_Ring_R_X->so.position, m_Ring_R_X->so.rotation, m_Ring_R_X->so.scale);
-		shader->setMat4("model", m_Ring_R_X->so.transform);
-		shader->setVec4("tintColor", m_Ring_R_X->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Ring_R_X->so.color);
+		shader->SetMat4("model", m_Ring_R_X->so.transform);
+		shader->SetFloat4("tintColor", m_Ring_R_X->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Ring_R_X->so.color);
 		m_Ring_R_X->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Ring_R_X->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Ring_R_X->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Ring_R_X->so.GetAABB()->Draw();
 
 		m_Ring_R_Y->so.transform = Math::CreateTransform(m_Position + m_Ring_R_Y->so.position, m_Ring_R_Y->so.rotation, m_Ring_R_Y->so.scale);
-		shader->setMat4("model", m_Ring_R_Y->so.transform);
-		shader->setVec4("tintColor", m_Ring_R_Y->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Ring_R_Y->so.color);
+		shader->SetMat4("model", m_Ring_R_Y->so.transform);
+		shader->SetFloat4("tintColor", m_Ring_R_Y->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Ring_R_Y->so.color);
 		m_Ring_R_Y->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Ring_R_Y->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Ring_R_Y->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Ring_R_Y->so.GetAABB()->Draw();
 
 		m_Ring_R_Z->so.transform = Math::CreateTransform(m_Position + m_Ring_R_Z->so.position, m_Ring_R_Z->so.rotation, m_Ring_R_Z->so.scale);
-		shader->setMat4("model", m_Ring_R_Z->so.transform);
-		shader->setVec4("tintColor", m_Ring_R_Z->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Ring_R_Z->so.color);
+		shader->SetMat4("model", m_Ring_R_Z->so.transform);
+		shader->SetFloat4("tintColor", m_Ring_R_Z->so.GetAABB()->m_IsColliding ? m_Color_Selected : m_Ring_R_Z->so.color);
 		m_Ring_R_Z->so.mesh->Render();
 
-		shader->setMat4("model", AABB_Transform);
-		shader->setVec4("tintColor", m_Ring_R_Z->so.GetAABB()->m_Color);
+		shader->SetMat4("model", AABB_Transform);
+		shader->SetFloat4("tintColor", m_Ring_R_Z->so.GetAABB()->m_Color);
 		if (m_DrawAABBs) m_Ring_R_Z->so.GetAABB()->Draw();
 	}
 }

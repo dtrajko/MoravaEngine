@@ -144,49 +144,49 @@ void SceneNanosuit::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
 
 	nanosuitUniforms = GetNanosuitUniforms();
 
-	m_ShaderNanosuit->setVec3("viewPos", m_Camera->GetPosition());
-	m_ShaderNanosuit->setBool("enableNormalMap", nanosuitUniforms->enableNormalMap);
+	m_ShaderNanosuit->SetFloat3("viewPos", m_Camera->GetPosition());
+	m_ShaderNanosuit->SetBool("enableNormalMap", nanosuitUniforms->enableNormalMap);
 
 	// light properties
-	m_ShaderNanosuit->setVec3("light.position", m_LightOnCamera ? m_Camera->GetPosition() : nanosuitUniforms->light.position);
-	m_ShaderNanosuit->setVec3("light.direction", m_LightOnCamera ? m_Camera->GetFront() : nanosuitUniforms->light.direction);
-	m_ShaderNanosuit->setFloat("light.cutOff", nanosuitUniforms->light.cutOff);
-	m_ShaderNanosuit->setFloat("light.outerCutOff", nanosuitUniforms->light.outerCutOff);
+	m_ShaderNanosuit->SetFloat3("light.position", m_LightOnCamera ? m_Camera->GetPosition() : nanosuitUniforms->light.position);
+	m_ShaderNanosuit->SetFloat3("light.direction", m_LightOnCamera ? m_Camera->GetFront() : nanosuitUniforms->light.direction);
+	m_ShaderNanosuit->SetFloat("light.cutOff", nanosuitUniforms->light.cutOff);
+	m_ShaderNanosuit->SetFloat("light.outerCutOff", nanosuitUniforms->light.outerCutOff);
 
-	m_ShaderNanosuit->setVec3("light.ambient", nanosuitUniforms->light.ambient);
+	m_ShaderNanosuit->SetFloat3("light.ambient", nanosuitUniforms->light.ambient);
 	// we configure the diffuse intensity slightly higher; the right lighting conditions differ with each lighting method and environment.
 	// each environment and lighting type requires some tweaking to get the best out of your environment.
-	m_ShaderNanosuit->setVec3("light.diffuse", nanosuitUniforms->light.diffuse);
-	m_ShaderNanosuit->setVec3("light.specular", nanosuitUniforms->light.specular);
-	m_ShaderNanosuit->setFloat("light.constant", nanosuitUniforms->light.constant);
-	m_ShaderNanosuit->setFloat("light.linear", nanosuitUniforms->light.linear);
-	m_ShaderNanosuit->setFloat("light.quadratic", nanosuitUniforms->light.quadratic);
+	m_ShaderNanosuit->SetFloat3("light.diffuse", nanosuitUniforms->light.diffuse);
+	m_ShaderNanosuit->SetFloat3("light.specular", nanosuitUniforms->light.specular);
+	m_ShaderNanosuit->SetFloat("light.constant", nanosuitUniforms->light.constant);
+	m_ShaderNanosuit->SetFloat("light.linear", nanosuitUniforms->light.linear);
+	m_ShaderNanosuit->SetFloat("light.quadratic", nanosuitUniforms->light.quadratic);
 
 	// material properties
-	m_ShaderNanosuit->setInt("material.diffuse", nanosuitUniforms->material.m_AlbedoMap);
-	m_ShaderNanosuit->setInt("material.specular", nanosuitUniforms->material.m_SpecularMap);
-	m_ShaderNanosuit->setInt("material.normalMap", nanosuitUniforms->material.m_NormalMap);
-	m_ShaderNanosuit->setFloat("material.shininess", nanosuitUniforms->material.m_Shininess);
+	m_ShaderNanosuit->SetInt("material.diffuse", nanosuitUniforms->material.m_AlbedoMap);
+	m_ShaderNanosuit->SetInt("material.specular", nanosuitUniforms->material.m_SpecularMap);
+	m_ShaderNanosuit->SetInt("material.normalMap", nanosuitUniforms->material.m_NormalMap);
+	m_ShaderNanosuit->SetFloat("material.shininess", nanosuitUniforms->material.m_Shininess);
 
 	glm::mat4 view = m_Camera->GetViewMatrix();
 
 	// configure transformation matrices
-	m_ShaderNanosuit->setMat4("projection", projectionMatrix);
-	m_ShaderNanosuit->setMat4("view", view);
+	m_ShaderNanosuit->SetMat4("projection", projectionMatrix);
+	m_ShaderNanosuit->SetMat4("view", view);
 
 	// Draw the Nanosuit model
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(m_ModelRotationY), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
-	m_ShaderNanosuit->setMat4("model", model);
+	m_ShaderNanosuit->SetMat4("model", model);
 	models["nanosuit"]->Draw(m_ShaderNanosuit);
 
 	// Render Sphere (Light source)
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, m_LightOnCamera ? m_Camera->GetPosition() : nanosuitUniforms->light.position);
 	model = glm::scale(model, glm::vec3(0.25f));
-	m_ShaderNanosuit->setMat4("model", model);
+	m_ShaderNanosuit->SetMat4("model", model);
 	GetTextures()["plain"]->Bind(0);
 	GetTextures()["plain"]->Bind(1);
 	GetTextures()["plain"]->Bind(2);
@@ -197,7 +197,7 @@ void SceneNanosuit::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
 	model = glm::mat4(1.0f);
 	model = glm::translate(model, { 15.0f, 4.0f, 0.0f });
 	model = glm::scale(model, glm::vec3(8.0f));
-	m_ShaderNanosuit->setMat4("model", model);
+	m_ShaderNanosuit->SetMat4("model", model);
 	meshesJoey["cube"]->Draw(m_ShaderNanosuit);
 }
 

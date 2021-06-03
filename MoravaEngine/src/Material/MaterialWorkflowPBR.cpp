@@ -206,10 +206,10 @@ void MaterialWorkflowPBR::ConvertHDREquirectangularToCubemap()
 	// pbr: convert HDR equirectangular environment map to cubemap equivalent
 	// ----------------------------------------------------------------------
 	m_ShaderEquirectangularToCubemap->Bind();
-	m_ShaderEquirectangularToCubemap->setInt("equirectangularMap", 0);
-	m_ShaderEquirectangularToCubemap->setMat4("projection", m_CaptureProjection);
-	m_ShaderEquirectangularToCubemap->setFloat("blurLevel", (float)m_BlurLevel);
-	m_ShaderEquirectangularToCubemap->setFloat("textureSize", (float)m_CaptureSizeBlur);
+	m_ShaderEquirectangularToCubemap->SetInt("equirectangularMap", 0);
+	m_ShaderEquirectangularToCubemap->SetMat4("projection", m_CaptureProjection);
+	m_ShaderEquirectangularToCubemap->SetFloat("blurLevel", (float)m_BlurLevel);
+	m_ShaderEquirectangularToCubemap->SetFloat("textureSize", (float)m_CaptureSizeBlur);
 
 	Log::GetLogger()->info("MaterialWorkflowPBR BlurLevel: {0}, CaptureSize: {1}", m_BlurLevel, m_CaptureSizeBlur);
 
@@ -220,7 +220,7 @@ void MaterialWorkflowPBR::ConvertHDREquirectangularToCubemap()
 	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		m_ShaderEquirectangularToCubemap->setMat4("view", m_CaptureViews[i]);
+		m_ShaderEquirectangularToCubemap->SetMat4("view", m_CaptureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_EnvironmentCubemap, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		m_SkyboxCube->Render();
@@ -237,12 +237,12 @@ void MaterialWorkflowPBR::ApplyBlurToCubemap()
 	return; // work in progress
 
 	m_ShaderHorizontalBlur->Bind();
-	m_ShaderHorizontalBlur->setInt("originalTexture", m_EnvironmentCubemap);
-	m_ShaderHorizontalBlur->setFloat("targetWidth", (float)m_CaptureSize);
+	m_ShaderHorizontalBlur->SetInt("originalTexture", m_EnvironmentCubemap);
+	m_ShaderHorizontalBlur->SetFloat("targetWidth", (float)m_CaptureSize);
 
 	m_ShaderVerticalBlur->Bind();
-	m_ShaderVerticalBlur->setInt("originalTexture", m_EnvironmentCubemap);
-	m_ShaderVerticalBlur->setFloat("targetHeight", (float)m_CaptureSize);
+	m_ShaderVerticalBlur->SetInt("originalTexture", m_EnvironmentCubemap);
+	m_ShaderVerticalBlur->SetFloat("targetHeight", (float)m_CaptureSize);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemap);
@@ -252,7 +252,7 @@ void MaterialWorkflowPBR::ApplyBlurToCubemap()
 
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		m_ShaderIrradiance->setMat4("view", m_CaptureViews[i]);
+		m_ShaderIrradiance->SetMat4("view", m_CaptureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_IrradianceMap, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		m_SkyboxCube->Render();
@@ -285,8 +285,8 @@ void MaterialWorkflowPBR::SolveDiffuseIntegralByConvolution()
 {
 	// pbr: solve diffuse integral by convolution to create an irradiance (cube)map.	
 	m_ShaderIrradiance->Bind();
-	m_ShaderIrradiance->setInt("environmentMap", 0);
-	m_ShaderIrradiance->setMat4("projection", m_CaptureProjection);
+	m_ShaderIrradiance->SetInt("environmentMap", 0);
+	m_ShaderIrradiance->SetMat4("projection", m_CaptureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemap);
 
@@ -294,7 +294,7 @@ void MaterialWorkflowPBR::SolveDiffuseIntegralByConvolution()
 	glBindFramebuffer(GL_FRAMEBUFFER, m_CaptureFBO);
 	for (unsigned int i = 0; i < 6; ++i)
 	{
-		m_ShaderIrradiance->setMat4("view", m_CaptureViews[i]);
+		m_ShaderIrradiance->SetMat4("view", m_CaptureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_IrradianceMap, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		m_SkyboxCube->Render();
@@ -324,8 +324,8 @@ void MaterialWorkflowPBR::RunQuasiMonteCarloSimulation()
 {
 	// pbr: run a quasi monte-carlo simulation on the environment lighting to create a prefilter (cube)map.
 	m_ShaderPrefilter->Bind();
-	m_ShaderPrefilter->setInt("environmentMap", 0);
-	m_ShaderPrefilter->setMat4("projection", m_CaptureProjection);
+	m_ShaderPrefilter->SetInt("environmentMap", 0);
+	m_ShaderPrefilter->SetMat4("projection", m_CaptureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_EnvironmentCubemap);
 
@@ -341,10 +341,10 @@ void MaterialWorkflowPBR::RunQuasiMonteCarloSimulation()
 		glViewport(0, 0, mipWidth, mipHeight);
 
 		float roughness = (float)mip / (float)(maxMipLevels - 1);
-		m_ShaderPrefilter->setFloat("roughness", roughness);
+		m_ShaderPrefilter->SetFloat("roughness", roughness);
 		for (unsigned int i = 0; i < 6; ++i)
 		{
-			m_ShaderPrefilter->setMat4("view", m_CaptureViews[i]);
+			m_ShaderPrefilter->SetMat4("view", m_CaptureViews[i]);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, m_PrefilterMap, mip);
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

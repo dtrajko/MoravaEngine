@@ -37,9 +37,9 @@ void Raycast::Draw(glm::vec3 start, glm::vec3 end, glm::vec4 color, MoravaShader
     // line
     shader->Bind();
     glm::mat4 model = glm::mat4(1.0f);
-    shader->setMat4("model", model);
-    shader->setMat4("view", viewMatrix);
-    shader->setMat4("projection", projectionMatrix);
+    shader->SetMat4("model", model);
+    shader->SetMat4("view", viewMatrix);
+    shader->SetMat4("projection", projectionMatrix);
 
     glBindVertexArray(m_LineVAO);
     glDrawArrays(GL_LINES, 0, 2);
