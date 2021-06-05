@@ -743,6 +743,81 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 
+    if (m_ShowWindowAssetManager)
+    {
+        ImGui::Begin("Asset Manager", &m_ShowWindowAssetManager);
+        {
+            DrawAssetManager();
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowMaterialEditor)
+    {
+        ImGui::Begin("Material Editor", &m_ShowWindowMaterialEditor);
+        {
+            DrawMaterialEditor();
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowPostProcessing)
+    {
+        ImGui::Begin("Post Processing Effects", &m_ShowWindowPostProcessing);
+        {
+            if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::Checkbox("Post Processing Enabled", &m_PostProcessingEnabled);
+
+                ImGui::Separator();
+
+                ImGui::RadioButton("Default colors", &m_PostProcessingEffect, 0);
+                ImGui::RadioButton("Invert colors", &m_PostProcessingEffect, 1);
+                ImGui::RadioButton("Grayscale", &m_PostProcessingEffect, 2);
+                ImGui::RadioButton("Nightvision", &m_PostProcessingEffect, 3);
+                ImGui::RadioButton("Kernel sharpen", &m_PostProcessingEffect, 4);
+                ImGui::RadioButton("Kernel blur", &m_PostProcessingEffect, 5);
+                ImGui::RadioButton("Shades of gray", &m_PostProcessingEffect, 6);
+                ImGui::RadioButton("8-bit Colors", &m_PostProcessingEffect, 7);
+                ImGui::RadioButton("Gaussian Blur", &m_PostProcessingEffect, 8);
+            }
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowShaderManager)
+    {
+        // Shaders
+        ImGui::Begin("Shader Manager", &m_ShowWindowShaderManager);
+        {
+            if (ImGui::TreeNode("Shaders"))
+            {
+                auto shaders = ResourceManager::GetShaders();
+                for (auto shader = shaders->begin(); shader != shaders->end(); shader++)
+                {
+                    if (ImGui::TreeNode(shader->first.c_str()))
+                    {
+                        std::string buttonName = "Reload##" + shader->first;
+                        if (ImGui::Button(buttonName.c_str())) {
+                            shader->second->Reload();
+                        }
+                        ImGui::TreePop();
+                    }
+                }
+                ImGui::TreePop();
+            }
+
+            std::string buttonName = "Reload All";
+            if (ImGui::Button(buttonName.c_str())) {
+                auto shaders = ResourceManager::GetShaders();
+                for (auto shader = shaders->begin(); shader != shaders->end(); shader++) {
+                    shader->second->Reload();
+                }
+            }
+        }
+        ImGui::End();
+    }
+
     ImGui::Begin("Settings");
     {
         if (ImGui::CollapsingHeader("Display Info"))
@@ -776,27 +851,6 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             ImGui::Checkbox("Enable Omni Shadows",  &scene->sceneSettings.enableOmniShadows);
             ImGui::Checkbox("Enable Water Effects", &scene->sceneSettings.enableWaterEffects);
             ImGui::Checkbox("Enable Particles",     &scene->sceneSettings.enableParticles);
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Post Processing Effects");
-    {
-        if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::Checkbox("Post Processing Enabled", &m_PostProcessingEnabled);
-
-            ImGui::Separator();
-
-            ImGui::RadioButton("Default colors", &m_PostProcessingEffect, 0);
-            ImGui::RadioButton("Invert colors",  &m_PostProcessingEffect, 1);
-            ImGui::RadioButton("Grayscale",      &m_PostProcessingEffect, 2);
-            ImGui::RadioButton("Nightvision",    &m_PostProcessingEffect, 3);
-            ImGui::RadioButton("Kernel sharpen", &m_PostProcessingEffect, 4);
-            ImGui::RadioButton("Kernel blur",    &m_PostProcessingEffect, 5);
-            ImGui::RadioButton("Shades of gray", &m_PostProcessingEffect, 6);
-            ImGui::RadioButton("8-bit Colors",   &m_PostProcessingEffect, 7);
-            ImGui::RadioButton("Gaussian Blur",  &m_PostProcessingEffect, 8);            
         }
     }
     ImGui::End();
@@ -1266,103 +1320,6 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     ImGui::End();
     /**** END Environment Map Scene Settings ****/
 
-    ImGui::Begin("EnvMap Materials");
-    {
-        unsigned int materialIndex = 0;
-        for (auto material_it = MaterialLibrary::s_EnvMapMaterials.begin(); material_it != MaterialLibrary::s_EnvMapMaterials.end();)
-        {
-            Hazel::Ref<EnvMapMaterial> material = material_it->second;
-            std::string materialName = material->GetName();
-            MaterialUUID materialUUID = material->GetUUID();
-
-            // Material section
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-            bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)materialIndex++, flags, materialName.c_str());
-
-            bool materialDelete = false;
-            bool materialClone = false;
-
-            if (ImGui::BeginPopupContextItem())
-            {
-                if (ImGui::MenuItem("Delete Material"))
-                {
-                    materialDelete = true;
-                }
-
-                if (ImGui::MenuItem("Clone Material"))
-                {
-                    materialClone = true;
-                }
-
-                ImGui::EndPopup();
-            }
-
-            if (opened)
-            {
-                ImGuiWrapper::DrawMaterialUI(material, s_CheckerboardTexture);
-
-                ImGui::TreePop();
-            }
-
-            if (materialClone) {
-                auto envMapMaterialSrc = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
-                Hazel::Ref<EnvMapMaterial> envMapMaterialDst = Hazel::Ref<EnvMapMaterial>::Create(MaterialLibrary::NewMaterialName(), envMapMaterialSrc);
-                MaterialLibrary::AddEnvMapMaterial(envMapMaterialDst->GetUUID(), envMapMaterialDst);
-            }
-
-            if (materialDelete) {
-                material_it = MaterialLibrary::s_EnvMapMaterials.erase(material_it++);
-            }
-            else {
-                ++material_it;
-            }
-        }
-    }
-
-    // Right-click on blank space
-    if (ImGui::BeginPopupContextWindow(0, 1, false))
-    {
-        if (ImGui::MenuItem("Create a Material"))
-        {
-            MaterialLibrary::AddNewMaterial("");
-        }
-        ImGui::EndPopup();
-    }
-
-    ImGui::End();
-
-    // Shaders
-    ImGui::Begin("Shaders");
-    {
-        if (ImGui::TreeNode("Shaders"))
-        {
-            auto shaders = ResourceManager::GetShaders();
-            for (auto shader = shaders->begin(); shader != shaders->end(); shader++)
-            {
-                if (ImGui::TreeNode(shader->first.c_str()))
-                {
-                    std::string buttonName = "Reload##" + shader->first;
-                    if (ImGui::Button(buttonName.c_str())) {
-                        shader->second->Reload();
-                    }
-                    ImGui::TreePop();
-                }
-            }
-            ImGui::TreePop();
-        }
-
-        std::string buttonName = "Reload All";
-        if (ImGui::Button(buttonName.c_str())) {
-            auto shaders = ResourceManager::GetShaders();
-            for (auto shader = shaders->begin(); shader != shaders->end(); shader++) {
-                shader->second->Reload();
-            }
-        }
-    }
-    ImGui::End();
-
-    ImGui::Separator();
-
     // Selection
     ImGui::Begin("Selection");
     {
@@ -1579,6 +1536,27 @@ void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("View"))
+        {
+            if (ImGui::MenuItem("Asset Manager", "Ctrl+Space")) {
+                m_ShowWindowAssetManager = !m_ShowWindowAssetManager;
+            }
+
+            if (ImGui::MenuItem("Material Editor", "Ctrl+M")) {
+                m_ShowWindowMaterialEditor = !m_ShowWindowMaterialEditor;
+            }
+
+            if (ImGui::MenuItem("Post Processing Effects", "Ctrl+P")) {
+                m_ShowWindowPostProcessing = !m_ShowWindowPostProcessing;
+            }
+
+            if (ImGui::MenuItem("Shader Manager", "Ctrl+S")) {
+                m_ShowWindowShaderManager = !m_ShowWindowShaderManager;
+            }
+
+            ImGui::EndMenu();
+        }
+
         if (ImGui::BeginMenu("Script"))
         {
             if (ImGui::MenuItem("Reload C# Assembly")) {
@@ -1688,6 +1666,73 @@ void EnvMapEditorLayer::OnNewScene(glm::vec2 viewportSize)
     // m_SceneRenderer->s_Data.ActiveScene = new Hazel::HazelScene();
     EnvMapSharedData::s_EditorScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
     m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
+}
+
+void EnvMapEditorLayer::DrawAssetManager()
+{
+}
+
+void EnvMapEditorLayer::DrawMaterialEditor()
+{
+    unsigned int materialIndex = 0;
+    for (auto material_it = MaterialLibrary::s_EnvMapMaterials.begin(); material_it != MaterialLibrary::s_EnvMapMaterials.end();)
+    {
+        Hazel::Ref<EnvMapMaterial> material = material_it->second;
+        std::string materialName = material->GetName();
+        MaterialUUID materialUUID = material->GetUUID();
+
+        // Material section
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+        bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)materialIndex++, flags, materialName.c_str());
+
+        bool materialDelete = false;
+        bool materialClone = false;
+
+        if (ImGui::BeginPopupContextItem())
+        {
+            if (ImGui::MenuItem("Delete Material"))
+            {
+                materialDelete = true;
+            }
+
+            if (ImGui::MenuItem("Clone Material"))
+            {
+                materialClone = true;
+            }
+
+            ImGui::EndPopup();
+        }
+
+        if (opened)
+        {
+            ImGuiWrapper::DrawMaterialUI(material, s_CheckerboardTexture);
+
+            ImGui::TreePop();
+        }
+
+        if (materialClone) {
+            auto envMapMaterialSrc = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
+            Hazel::Ref<EnvMapMaterial> envMapMaterialDst = Hazel::Ref<EnvMapMaterial>::Create(MaterialLibrary::NewMaterialName(), envMapMaterialSrc);
+            MaterialLibrary::AddEnvMapMaterial(envMapMaterialDst->GetUUID(), envMapMaterialDst);
+        }
+
+        if (materialDelete) {
+            material_it = MaterialLibrary::s_EnvMapMaterials.erase(material_it++);
+        }
+        else {
+            ++material_it;
+        }
+    }
+
+    // Right-click on blank space
+    if (ImGui::BeginPopupContextWindow(0, 1, false))
+    {
+        if (ImGui::MenuItem("Create a Material"))
+        {
+            MaterialLibrary::AddNewMaterial("");
+        }
+        ImGui::EndPopup();
+    }
 }
 
 void EnvMapEditorLayer::SelectEntity(Hazel::Entity e)
@@ -1817,6 +1862,24 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
                 break;
             case (int)KeyCode::S:
                 SaveScene();
+                break;
+
+                // Toggle ImGui windows
+            case (int)KeyCode::Space:
+                // Left CTRL + Space: Toggle Asset Manager
+                m_ShowWindowAssetManager = !m_ShowWindowAssetManager;
+                break;
+            case (int)KeyCode::M:
+                // Left CTRL + M: Toggle Material Editor
+                m_ShowWindowMaterialEditor = !m_ShowWindowMaterialEditor;
+                break;
+            case (int)KeyCode::P:
+                // Left CTRL + P: Toggle Post Processing Effects
+                m_ShowWindowPostProcessing = !m_ShowWindowPostProcessing;
+                break;
+            case (int)KeyCode::H:
+                // Left CTRL + H: Toggle Shader Manager
+                m_ShowWindowShaderManager = !m_ShowWindowShaderManager;
                 break;
         }
 

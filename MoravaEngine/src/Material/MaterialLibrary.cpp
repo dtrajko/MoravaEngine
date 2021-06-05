@@ -26,7 +26,7 @@ void MaterialLibrary::Init()
 Hazel::Ref<MaterialData> MaterialLibrary::AddNewMaterial(std::string name)
 {
     if (name == "") {
-        NewMaterialName();
+        name = NewMaterialName();
     }
 
 	return CreateMaterialData(name, nullptr);

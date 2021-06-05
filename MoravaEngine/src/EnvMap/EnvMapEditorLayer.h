@@ -60,6 +60,9 @@ public:
 
 	void OnNewScene(glm::vec2 viewportSize);
 
+	void DrawAssetManager();
+	void DrawMaterialEditor();
+
 	void UpdateWindowTitle(const std::string& sceneName);
 
 	void OnSelected(const SelectedSubmesh& selectionContext);
@@ -226,5 +229,10 @@ private:
 	std::string m_WindowTitleDynamic = "";
 
 	std::string m_StatusBarMessage = "";
+
+	bool m_ShowWindowAssetManager = false;
+	bool m_ShowWindowMaterialEditor = false;
+	bool m_ShowWindowPostProcessing = false;
+	bool m_ShowWindowShaderManager = false;
 
 };
