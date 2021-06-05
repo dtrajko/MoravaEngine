@@ -373,7 +373,7 @@ void MoravaShader::SetFloat(const std::string& name, float value)
 		glUniform1f(uniformLocation, value);
 	}
 	else {
-		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat() failed [name='{0}', location='{1}']", name, uniformLocation);
+		Log::GetLogger()->error("MoravaShader::SetFloat() failed [name='{0}', location='{1}']", name, uniformLocation);
 	}
 }
 

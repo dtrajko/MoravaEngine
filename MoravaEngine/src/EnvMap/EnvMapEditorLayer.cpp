@@ -747,6 +747,412 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 
+    if (m_ShowWindowSceneHierarchy)
+    {
+        m_SceneHierarchyPanel->OnImGuiRender(&m_ShowWindowSceneHierarchy);
+    }
+
+    m_ShowWindowMeshHierarchy = m_ShowWindowSceneHierarchy;
+
+    if (m_ShowWindowMeshHierarchy)
+    {
+        uint32_t id = 0;
+        auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+        for (auto entt : meshEntities)
+        {
+            Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
+            auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+            if (meshComponent.Mesh) {
+                meshComponent.Mesh->OnImGuiRender(++id, &m_ShowWindowMeshHierarchy);
+            }
+        }
+    }
+
+    m_ShowWindowSelection = m_ShowWindowTransform;
+    m_ShowWindowToolbar = m_ShowWindowTransform;
+    m_ShowWindowSwitchState = m_ShowWindowTransform;
+    m_ShowWindowCamera = m_ShowWindowTransform;
+
+    if (m_ShowWindowTransform)
+    {
+        /////////////////////////////////////////////////////////
+        //// TRANSFORM
+        /////////////////////////////////////////////////////////
+        ImGui::Begin("Transform", &m_ShowWindowTransform);
+        {
+            if (EntitySelection::s_SelectionContext.size())
+            {
+                glm::mat4 transformImGui;
+
+                SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
+
+                // Entity transform
+                auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
+                glm::mat4 entityTransform = tc.GetTransform();
+
+                if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
+                {
+                    transformImGui = entityTransform;
+                }
+                else if (s_SelectionMode == SelectionMode::SubMesh)
+                {
+                    transformImGui = selectedSubmesh.Mesh->Transform;
+                }
+
+                glm::vec3 translation, rotationRadians, scale;
+                Math::DecomposeTransform(transformImGui, translation, rotationRadians, scale);
+                glm::vec3 rotationDegrees = glm::degrees(rotationRadians);
+
+                bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", translation, 0.0f, 80.0f);
+                bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", rotationDegrees, 0.0f, 80.0f);
+                bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", scale, 1.0f, 80.0f);
+
+                if (isTranslationChanged || isRotationChanged || isScaleChanged)
+                {
+                    rotationRadians = glm::radians(rotationDegrees);
+
+                    if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
+                    {
+                        glm::vec3 deltaRotation = rotationRadians - tc.Rotation;
+                        tc.Translation = translation;
+                        tc.Rotation += deltaRotation;
+                        tc.Scale = scale;
+                    }
+                    else if (s_SelectionMode == SelectionMode::SubMesh)
+                    {
+                        selectedSubmesh.Mesh->Transform = Math::CreateTransform(translation, rotationDegrees, scale);
+                    }
+                }
+            }
+        }
+        ImGui::End();
+
+        /////////////////////////////////////////////////////////
+        //// SELECTION
+        /////////////////////////////////////////////////////////
+        ImGui::Begin("Selection", &m_ShowWindowSelection);
+        {
+            ImGui::Text("Selection Mode: ");
+            ImGui::SameLine();
+            const char* label = s_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
+            if (ImGui::Button(label))
+            {
+                s_SelectionMode = s_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
+            }
+
+            std::string entityTag = "N/A";
+            std::string meshName = "N/A";
+            SubmeshUUID submeshUUID = "N/A";
+            Hazel::Entity* entity = nullptr;
+
+            if (EntitySelection::s_SelectionContext.size())
+            {
+                SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
+
+                entity = &selectedSubmesh.Entity;
+                entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
+                meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
+                submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
+            }
+
+            ImGui::Text("Selected Entity: ");
+            ImGui::SameLine();
+            ImGui::Text(entityTag.c_str());
+
+            ImGui::Text("Selected Mesh: ");
+            ImGui::SameLine();
+            ImGui::Text(meshName.c_str());
+
+            // Drop down for selecting a material for a specific submesh
+            std::vector<std::string> materialNameStrings;
+            int index = 0;
+            for (auto& material : MaterialLibrary::s_EnvMapMaterials) {
+                materialNameStrings.push_back(material.second->GetName());
+            }
+
+            std::string submeshMaterialName = materialNameStrings.size() ? materialNameStrings[0] : "N/A";
+
+            MaterialUUID materialUUID;
+            if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
+                materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
+            }
+            int selectedMaterial = -1;
+
+            if (ImGui::BeginCombo("Material", submeshMaterialName.c_str()))
+            {
+                size_t emm_index = 0;
+                for (auto emm_it = MaterialLibrary::s_EnvMapMaterials.begin(); emm_it != MaterialLibrary::s_EnvMapMaterials.end(); emm_it++)
+                {
+                    bool is_selected = (submeshMaterialName == materialNameStrings[emm_index]);
+                    if (ImGui::Selectable(materialNameStrings.at(emm_index).c_str(), is_selected))
+                    {
+                        submeshMaterialName = materialNameStrings[emm_index];
+                        materialUUID = emm_it->second->GetUUID();
+                        if (meshName != "N/A" && submeshMaterialName != "N/A" && submeshUUID != "N/A")
+                        {
+                            auto sm_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
+                            if (sm_it != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
+                                sm_it->second = materialUUID;
+                                Log::GetLogger()->debug("s_SubmeshMaterialUUIDs UPDATE [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
+                                    submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
+                                break;
+                            }
+                            else {
+                                MaterialLibrary::s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
+                                Log::GetLogger()->debug("s_SubmeshMaterialUUIDs INSERT [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
+                                    submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
+                            }
+                        }
+                    }
+                    if (is_selected) {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                    emm_index++;
+                }
+                ImGui::EndCombo();
+            }
+        }
+        ImGui::End();
+
+        /////////////////////////////////////////////////////////
+        //// TOOLBAR
+        /////////////////////////////////////////////////////////
+        {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12, 0));
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12, 4));
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.8f, 0.8f, 0.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+
+            ImGui::Begin("Toolbar", &m_ShowWindowToolbar);
+            {
+                if (m_SceneState == SceneState::Edit)
+                {
+                    //  float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
+                    //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
+                    //  {
+                    //      EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+                    //  }
+
+                    if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
+                    {
+                        OnScenePlay();
+                    }
+                }
+                else if (m_SceneState == SceneState::Play)
+                {
+                    //  float physics2DGravity = s_RuntimeScene->GetPhysics2DGravity();
+                    //  
+                    //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
+                    //  {
+                    //      s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+                    //  }
+
+                    if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
+                    {
+                        OnSceneStop();
+                    }
+                }
+                ImGui::SameLine();
+                if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(1.0f, 1.0f, 1.0f, 0.6f)))
+                {
+                    MORAVA_CORE_INFO("PLAY!");
+                }
+            }
+            ImGui::End();
+
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleVar();
+            ImGui::PopStyleVar();
+        }
+
+        /////////////////////////////////////////////////////////
+        //// SWITCH STATE
+        /////////////////////////////////////////////////////////
+        ImGui::Begin("Switch State", &m_ShowWindowSwitchState);
+        {
+            const char* label = EnvMapSharedData::s_ActiveCamera == EnvMapSharedData::s_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
+            if (ImGui::Button(label))
+            {
+                EnvMapSharedData::s_ActiveCamera = (EnvMapSharedData::s_ActiveCamera == EnvMapSharedData::s_EditorCamera) ?
+                    (Hazel::HazelCamera*)EnvMapSharedData::s_RuntimeCamera :
+                    (Hazel::HazelCamera*)EnvMapSharedData::s_EditorCamera;
+            }
+        }
+        ImGui::End();
+
+        /////////////////////////////////////////////////////////
+        //// CAMERA
+        /////////////////////////////////////////////////////////
+        ImGui::Begin("Camera");
+        {
+            if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                auto pitch = GetMainCameraComponent().Camera.GetPitch();
+                if (ImGui::DragFloat("Pitch", &pitch, 1.0f, -89.0f, 89.0f))
+                {
+                    GetMainCameraComponent().Camera.SetPitch(pitch);
+                }
+
+                auto yaw = GetMainCameraComponent().Camera.GetYaw();
+                if (ImGui::DragFloat("Yaw", &yaw, 1.0f, -180.0f, 180.0f))
+                {
+                    GetMainCameraComponent().Camera.SetYaw(yaw);
+                }
+
+                auto fov = GetMainCameraComponent().Camera.GetPerspectiveVerticalFOV();
+                if (ImGui::DragFloat("FOV", &fov, 1.0f, 10.0f, 150.0f))
+                {
+                    GetMainCameraComponent().Camera.SetPerspectiveVerticalFOV(fov);
+                }
+
+                float nearPlane = GetMainCameraComponent().Camera.GetPerspectiveNearClip();
+                if (ImGui::DragFloat("Near Plane", &nearPlane, 0.1f, -10.0f, 100.0f))
+                {
+                    GetMainCameraComponent().Camera.SetPerspectiveNearClip(nearPlane);
+                }
+
+                float farPlane = GetMainCameraComponent().Camera.GetPerspectiveFarClip();
+                if (ImGui::DragFloat("Far Plane", &farPlane, 1.0f, -100.0f, 5000.0f))
+                {
+                    GetMainCameraComponent().Camera.SetPerspectiveFarClip(farPlane);
+                }
+
+                char buffer[100];
+                sprintf(buffer, "Aspect Ratio  %.2f", EnvMapSharedData::s_ActiveCamera->GetAspectRatio());
+                ImGui::Text(buffer);
+                sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f",
+                    EnvMapSharedData::s_ActiveCamera->GetPosition().x,
+                    EnvMapSharedData::s_ActiveCamera->GetPosition().y,
+                    EnvMapSharedData::s_ActiveCamera->GetPosition().z);
+                ImGui::Text(buffer);
+                sprintf(buffer, "Direction   X %.2f Y %.2f Z %.2f",
+                    EnvMapSharedData::s_ActiveCamera->GetDirection().x,
+                    EnvMapSharedData::s_ActiveCamera->GetDirection().y,
+                    EnvMapSharedData::s_ActiveCamera->GetDirection().z);
+                ImGui::Text(buffer);
+                sprintf(buffer, "Front       X %.2f Y %.2f Z %.2f",
+                    EnvMapSharedData::s_ActiveCamera->GetFront().x,
+                    EnvMapSharedData::s_ActiveCamera->GetFront().y,
+                    EnvMapSharedData::s_ActiveCamera->GetFront().z);
+                ImGui::Text(buffer);
+                sprintf(buffer, "Up          X %.2f Y %.2f Z %.2f",
+                    EnvMapSharedData::s_ActiveCamera->GetUp().x,
+                    EnvMapSharedData::s_ActiveCamera->GetUp().y,
+                    EnvMapSharedData::s_ActiveCamera->GetUp().z);
+                ImGui::Text(buffer);
+                sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f",
+                    EnvMapSharedData::s_ActiveCamera->GetRight().x,
+                    EnvMapSharedData::s_ActiveCamera->GetRight().y,
+                    EnvMapSharedData::s_ActiveCamera->GetRight().z);
+                ImGui::Text(buffer);
+            }
+        }
+        ImGui::End();
+
+        /////////////////////////////////////////////////////////
+        //// ENV-MAP SETTINGS
+        /////////////////////////////////////////////////////////
+
+        /**** BEGIN Environment Map Settings ****/
+        ImGui::Begin("EnvMap Settings");
+        {
+            if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                {
+                    if (ImGui::Button("Load Environment Map"))
+                    {
+                        std::string filename = Application::Get()->OpenFile("*.hdr");
+                        if (filename != "") {
+                            EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(filename));
+                        }
+                    }
+
+                    float skyboxLOD = GetSkyboxLOD();
+                    bool valueChanged = ImGui::DragFloat("Skybox LOD", &skyboxLOD, 0.01f, 0.0f, 2.0f, "%.2f");
+                    if (valueChanged) {
+                        SetSkyboxLOD(skyboxLOD);
+                    }
+
+                    ImGui::Columns(2);
+                    ImGui::AlignTextToFramePadding();
+
+                    Hazel::HazelLight light = EnvMapSceneRenderer::GetActiveLight();
+                    Hazel::HazelLight lightPrev = light;
+
+                    ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::DragProperty);
+                    ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
+                    ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
+                    ImGuiWrapper::Property("Exposure", GetMainCameraComponent().Camera.GetExposure(), 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+                    ImGuiWrapper::Property("Skybox Exposure Factor", EnvMapSharedData::s_SkyboxExposureFactor, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
+
+                    ImGuiWrapper::Property("Radiance Prefiltering", EnvMapSharedData::s_RadiancePrefilter);
+                    ImGuiWrapper::Property("Env Map Rotation", EnvMapSharedData::s_EnvMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
+
+                    if (m_SceneState == SceneState::Edit) {
+                        //  float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
+                        //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
+                        //      EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+                        //  }
+                    }
+                    else if (m_SceneState == SceneState::Play) {
+                        //  float physics2DGravity = s_RuntimeScene->GetPhysics2DGravity();
+                        //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
+                        //      s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+                        //  }
+                    }
+
+                    EnvMapSceneRenderer::SetActiveLight(light);
+
+                    if (light.Direction != lightPrev.Direction) {
+                        auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+                        tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
+                        lightPrev = light;
+                    }
+
+                    ImGui::Columns(1);
+                }
+
+                ImGui::Separator();
+
+                {
+                    ImGui::Text("Mesh");
+
+                    Ref<Hazel::Entity> meshEntity = nullptr;
+                    std::string meshFullPath = "None";
+
+                    std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
+                    ImGui::Text(fileName.c_str()); ImGui::SameLine();
+                    if (ImGui::Button("...##Mesh"))
+                    {
+                        std::string fullPath = Application::Get()->OpenFile();
+                        if (fullPath != "")
+                        {
+                            Hazel::Entity entity = LoadEntity(fullPath);
+                        }
+                    }
+
+                    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+                    if (meshEntities.size())
+                    {
+                        meshEntity = GetMeshEntity();
+                        auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
+                        if (meshComponent.Mesh) {
+                            ImGui::SameLine();
+                            ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
+                        }
+                    }
+                }
+            }
+        }
+        ImGui::End();
+        /**** END Environment Map Scene Settings ****/
+    }
+
     if (m_ShowWindowAssetManager)
     {
         ImGui::Begin("Asset Manager", &m_ShowWindowAssetManager);
@@ -794,21 +1200,26 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         // Shaders
         ImGui::Begin("Shader Manager", &m_ShowWindowShaderManager);
         {
-            if (ImGui::TreeNode("Shaders"))
-            {
-                auto shaders = ResourceManager::GetShaders();
-                for (auto shader = shaders->begin(); shader != shaders->end(); shader++)
+            try {
+                if (ImGui::TreeNode("Shaders"))
                 {
-                    if (ImGui::TreeNode(shader->first.c_str()))
+                    auto shaders = ResourceManager::GetShaders();
+                    for (auto shader = shaders->begin(); shader != shaders->end(); shader++)
                     {
-                        std::string buttonName = "Reload##" + shader->first;
-                        if (ImGui::Button(buttonName.c_str())) {
-                            shader->second->Reload();
+                        if (ImGui::TreeNode(shader->first.c_str()))
+                        {
+                            std::string buttonName = "Reload##" + shader->first;
+                            if (ImGui::Button(buttonName.c_str())) {
+                                shader->second->Reload();
+                            }
+                            ImGui::TreePop();
                         }
-                        ImGui::TreePop();
                     }
+                    ImGui::TreePop();
                 }
-                ImGui::TreePop();
+            }
+            catch (const std::runtime_error& e) {
+                Log::GetLogger()->error("ImGui Exception: '{0}'", e.what());
             }
 
             std::string buttonName = "Reload All";
@@ -822,125 +1233,158 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::End();
     }
 
-    ImGui::Begin("Settings");
+    if (m_ShowWindowFramebuffers)
     {
-        if (ImGui::CollapsingHeader("Display Info"))
+        ImGui::Begin("Framebuffers", &m_ShowWindowFramebuffers);
         {
-            char buffer[100];
-            sprintf(buffer, "Can Viewport Receive Events ? %s", ImGuiWrapper::CanViewportReceiveEvents() ? "YES" : "NO");
-            ImGui::Text(buffer);
+            ImVec2 imageSize(128.0f, 128.0f);
 
-            ImGui::Separator();
+            ImGui::Text("Viewport");
+            ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
-            ImGui::Checkbox("Display Outline", &EnvMapSharedData::s_DisplayOutline);
-            ImGui::Checkbox("Display Bounding Boxes", &m_DisplayBoundingBoxes);
-            ImGui::Checkbox("Display Hazel Grid", &EnvMapSharedData::s_DisplayHazelGrid);
-            ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
-            ImGui::Checkbox("Display Ray", &EnvMapSharedData::s_DisplayRay);
+            ImGui::Text("Post Processing");
+            ImGui::Image((void*)(intptr_t)m_PostProcessingFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
 
-            bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
-            if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
-                Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
-            }
+            ImGui::Text("Equirectangular");
+            ImGui::Image((void*)(intptr_t)EnvMapSceneRenderer::GetEnvEquirect()->GetID(), imageSize);
 
-            float fovDegrees = GetMainCameraComponent().Camera.GetPerspectiveVerticalFOV();
-            if (ImGui::DragFloat("FOV", &fovDegrees, 1.0f, -60.0f, 180.0f)) {
-                GetMainCameraComponent().Camera.SetPerspectiveVerticalFOV(fovDegrees);
-            }
-
-            ImGui::Separator();
-
-            ImGui::Text("Scene Settings");
-            ImGui::Checkbox("Enable Shadows",       &scene->sceneSettings.enableShadows);
-            ImGui::Checkbox("Enable Omni Shadows",  &scene->sceneSettings.enableOmniShadows);
-            ImGui::Checkbox("Enable Water Effects", &scene->sceneSettings.enableWaterEffects);
-            ImGui::Checkbox("Enable Particles",     &scene->sceneSettings.enableParticles);
+            ImGui::Text("Shadow Map");
+            ImGui::Image((void*)(intptr_t)EnvMapSharedData::s_ShadowMapDirLight->GetTextureID(), imageSize);
+            // ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
         }
+        ImGui::End();
     }
-    ImGui::End();
 
-    Application::Get()->OnImGuiRender();
+    if (m_ShowWindowSettings)
+    {
+        ImGui::Begin("Settings", &m_ShowWindowSettings);
+        {
+            if (ImGui::CollapsingHeader("Display Info"))
+            {
+                char buffer[100];
+                sprintf(buffer, "Can Viewport Receive Events ? %s", ImGuiWrapper::CanViewportReceiveEvents() ? "YES" : "NO");
+                ImGui::Text(buffer);
+
+                ImGui::Separator();
+
+                ImGui::Checkbox("Display Outline", &EnvMapSharedData::s_DisplayOutline);
+                ImGui::Checkbox("Display Bounding Boxes", &m_DisplayBoundingBoxes);
+                ImGui::Checkbox("Display Hazel Grid", &EnvMapSharedData::s_DisplayHazelGrid);
+                ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
+                ImGui::Checkbox("Display Ray", &EnvMapSharedData::s_DisplayRay);
+
+                bool eventLoggingEnabled = Application::Get()->GetWindow()->GetEventLogging();
+                if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
+                    Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
+                }
+
+                float fovDegrees = GetMainCameraComponent().Camera.GetPerspectiveVerticalFOV();
+                if (ImGui::DragFloat("FOV", &fovDegrees, 1.0f, -60.0f, 180.0f)) {
+                    GetMainCameraComponent().Camera.SetPerspectiveVerticalFOV(fovDegrees);
+                }
+
+                ImGui::Separator();
+
+                ImGui::Text("Scene Settings");
+                ImGui::Checkbox("Enable Shadows", &scene->sceneSettings.enableShadows);
+                ImGui::Checkbox("Enable Omni Shadows", &scene->sceneSettings.enableOmniShadows);
+                ImGui::Checkbox("Enable Water Effects", &scene->sceneSettings.enableWaterEffects);
+                ImGui::Checkbox("Enable Particles", &scene->sceneSettings.enableParticles);
+            }
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowRendererStats)
+    {
+        Application::Get()->OnImGuiRender(&m_ShowWindowRendererStats);
+    }
+
+    if (m_ShowWindowHelp)
+    {
+        ImGui::Begin("Help", &m_ShowWindowHelp);
+        {
+            ImGui::Text("* Left ALT + Left Mouse Button - Pan");
+            ImGui::Text("* Left ALT + Middle Mouse Button - Rotate/Orbit");
+            ImGui::Text("* Left ALT + Right Mouse Button - Zoom");
+            ImGui::Text("* Left SHIFT + R - Toggle Wireframe");
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowMousePicker)
+    {
+        ImGui::Begin("Mouse Picker", &m_ShowWindowMousePicker);
+        {
+            if (ImGui::CollapsingHeader("Display Info"))
+            {
+                MousePicker* mp = MousePicker::Get();
+
+                char buffer[100];
+
+                sprintf(buffer, "Main Window [ X %i Y %i ]", (int)m_ImGuiViewportMain.x, (int)m_ImGuiViewportMain.y);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
+                ImGui::Text(buffer);
+            }
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowViewportInfo)
+    {
+        ImGui::Begin("Viewport Info", &m_ShowWindowViewportInfo);
+        {
+            glm::ivec2 colorAttachmentSize = glm::ivec2(
+                m_RenderFramebuffer->GetTextureAttachmentColor()->GetWidth(),
+                m_RenderFramebuffer->GetTextureAttachmentColor()->GetHeight());
+            glm::ivec2 depthAttachmentSize = glm::ivec2(
+                m_RenderFramebuffer->GetAttachmentDepth()->GetWidth(),
+                m_RenderFramebuffer->GetAttachmentDepth()->GetHeight());
+
+            ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
+            ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
+        }
+        ImGui::End();
+    }
+    
+    if (m_ShowWindowImGuiMetrics)
+    {
+        ImGui::ShowMetricsWindow();
+    }
 
     // ImGui::ShowMetricsWindow();
 
     m_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkPos().x;
     m_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkPos().y;
 
-    MousePicker* mp = MousePicker::Get();
-
-    ImGui::Begin("Mouse Picker");
-    {
-        if (ImGui::CollapsingHeader("Display Info"))
-        {
-            char buffer[100];
-
-            sprintf(buffer, "Main Window [ X %i Y %i ]", (int)m_ImGuiViewportMain.x, (int)m_ImGuiViewportMain.y);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
-            ImGui::Text(buffer);
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Framebuffers");
-    {
-        ImVec2 imageSize(96.0f, 96.0f);
-
-        ImGui::Text("Viewport");
-        ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
-
-        ImGui::Text("Post Processing");
-        ImGui::Image((void*)(intptr_t)m_PostProcessingFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
-
-        ImGui::Text("Equirectangular");
-        ImGui::Image((void*)(intptr_t)EnvMapSceneRenderer::GetEnvEquirect()->GetID(), imageSize);
-
-        ImGui::Text("Shadow Map");
-        ImGui::Image((void*)(intptr_t)EnvMapSharedData::s_ShadowMapDirLight->GetTextureID(), imageSize);
-        // ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
-    }
-    ImGui::End();
-
-    ImGui::Begin("Viewport Info");
-    {
-        glm::ivec2 colorAttachmentSize = glm::ivec2(
-            m_RenderFramebuffer->GetTextureAttachmentColor()->GetWidth(),
-            m_RenderFramebuffer->GetTextureAttachmentColor()->GetHeight());
-        glm::ivec2 depthAttachmentSize = glm::ivec2(
-            m_RenderFramebuffer->GetAttachmentDepth()->GetWidth(),
-            m_RenderFramebuffer->GetAttachmentDepth()->GetHeight());
-
-        ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
-        ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
-    }
-    ImGui::End();
-
+    /****
     ImGui::Begin("Viewport Environment Map Info");
     {
         Hazel::Ref<Framebuffer> targetFramebuffer = EnvMapSceneRenderer::GetCompositePass()->GetSpecification().TargetFramebuffer;
@@ -955,10 +1399,10 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
     }
     ImGui::End();
+    ****/
 
     // TheCherno ImGui Viewport displaying the framebuffer content
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-
     ImGui::Begin("Viewport");
     {
         m_ViewportPanelMouseOver = ImGui::IsWindowHovered();
@@ -1021,8 +1465,11 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
     }
     ImGui::End();
+    ImGui::PopStyleVar();
 
-    ImGui::Begin("Viewport Environment Map");
+    /****
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+    ImGui::Begin("Viewport EnvMap");
     {
         m_ImGuiViewportEnvMap.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportEnvMapX);
         m_ImGuiViewportEnvMap.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportEnvMapY);
@@ -1044,379 +1491,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
     }
     ImGui::End();
-
     ImGui::PopStyleVar();
-
-    uint32_t id = 0;
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-    for (auto entt : meshEntities)
-    {
-        Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
-        auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
-        if (meshComponent.Mesh) {
-            meshComponent.Mesh->OnImGuiRender(++id);
-        }
-    }
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12, 0));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(12, 4));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.8f, 0.8f, 0.0f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-    ImGui::Begin("Toolbar");
-
-    if (m_SceneState == SceneState::Edit)
-    {
-        //  float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
-        //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
-        //  {
-        //      EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
-        //  }
-
-        if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
-        {
-            OnScenePlay();
-        }
-    }
-    else if (m_SceneState == SceneState::Play)
-    {
-        //  float physics2DGravity = s_RuntimeScene->GetPhysics2DGravity();
-        //  
-        //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
-        //  {
-        //      s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
-        //  }
-
-        if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
-        {
-            OnSceneStop();
-        }
-    }
-    ImGui::SameLine();
-    if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(1.0f, 1.0f, 1.0f, 0.6f)))
-    {
-        MORAVA_CORE_INFO("PLAY!");
-    }
-    ImGui::End();
-    ImGui::PopStyleColor();
-    ImGui::PopStyleColor();
-    ImGui::PopStyleColor();
-    ImGui::PopStyleVar();
-    ImGui::PopStyleVar();
-    ImGui::PopStyleVar();
-
-    ImGui::Begin("Switch State");
-    {
-        const char* label = EnvMapSharedData::s_ActiveCamera == EnvMapSharedData::s_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
-        if (ImGui::Button(label))
-        {
-            EnvMapSharedData::s_ActiveCamera = (EnvMapSharedData::s_ActiveCamera == EnvMapSharedData::s_EditorCamera) ?
-                (Hazel::HazelCamera*)EnvMapSharedData::s_RuntimeCamera :
-                (Hazel::HazelCamera*)EnvMapSharedData::s_EditorCamera;
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Transform");
-    {
-        if (EntitySelection::s_SelectionContext.size())
-        {
-            glm::mat4 transformImGui;
-
-            SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
-
-            // Entity transform
-            auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
-            glm::mat4 entityTransform = tc.GetTransform();
-
-            if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
-            {
-                transformImGui = entityTransform;
-            }
-            else if (s_SelectionMode == SelectionMode::SubMesh)
-            {
-                transformImGui = selectedSubmesh.Mesh->Transform;
-            }
-
-            glm::vec3 translation, rotationRadians, scale;
-            Math::DecomposeTransform(transformImGui, translation, rotationRadians, scale);
-            glm::vec3 rotationDegrees = glm::degrees(rotationRadians);
-
-            bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", translation, 0.0f, 80.0f);
-            bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", rotationDegrees, 0.0f, 80.0f);
-            bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", scale, 1.0f, 80.0f);
-
-            if (isTranslationChanged || isRotationChanged || isScaleChanged)
-            {
-                rotationRadians = glm::radians(rotationDegrees);
-
-                if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
-                {
-                    glm::vec3 deltaRotation = rotationRadians - tc.Rotation;
-                    tc.Translation = translation;
-                    tc.Rotation += deltaRotation;
-                    tc.Scale = scale;
-                }
-                else if (s_SelectionMode == SelectionMode::SubMesh)
-                {
-                    selectedSubmesh.Mesh->Transform = Math::CreateTransform(translation, rotationDegrees, scale);
-                }
-            }
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Camera");
-    {
-        if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            auto pitch = GetMainCameraComponent().Camera.GetPitch();
-            if (ImGui::DragFloat("Pitch", &pitch, 1.0f, -89.0f, 89.0f)) {
-                GetMainCameraComponent().Camera.SetPitch(pitch);
-            }
-
-            auto yaw = GetMainCameraComponent().Camera.GetYaw();
-            if (ImGui::DragFloat("Yaw", &yaw, 1.0f, -180.0f, 180.0f)) {
-                GetMainCameraComponent().Camera.SetYaw(yaw);
-            }
-
-            auto fov = GetMainCameraComponent().Camera.GetPerspectiveVerticalFOV();
-            if(ImGui::DragFloat("FOV", &fov, 1.0f, 10.0f, 150.0f)) {
-                GetMainCameraComponent().Camera.SetPerspectiveVerticalFOV(fov);
-            }
-
-            float nearPlane = GetMainCameraComponent().Camera.GetPerspectiveNearClip();
-            if (ImGui::DragFloat("Near Plane", &nearPlane, 0.1f, -10.0f, 100.0f))
-            {
-                GetMainCameraComponent().Camera.SetPerspectiveNearClip(nearPlane);
-            }
-
-            float farPlane = GetMainCameraComponent().Camera.GetPerspectiveFarClip();
-            if (ImGui::DragFloat("Far Plane", &farPlane, 1.0f, -100.0f, 5000.0f))
-            {
-                GetMainCameraComponent().Camera.SetPerspectiveFarClip(farPlane);
-            }
-
-            char buffer[100];
-            sprintf(buffer, "Aspect Ratio  %.2f", EnvMapSharedData::s_ActiveCamera->GetAspectRatio());
-            ImGui::Text(buffer);
-            sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f", 
-                EnvMapSharedData::s_ActiveCamera->GetPosition().x,
-                EnvMapSharedData::s_ActiveCamera->GetPosition().y,
-                EnvMapSharedData::s_ActiveCamera->GetPosition().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Direction   X %.2f Y %.2f Z %.2f",
-                EnvMapSharedData::s_ActiveCamera->GetDirection().x,
-                EnvMapSharedData::s_ActiveCamera->GetDirection().y,
-                EnvMapSharedData::s_ActiveCamera->GetDirection().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Front       X %.2f Y %.2f Z %.2f",
-                EnvMapSharedData::s_ActiveCamera->GetFront().x,
-                EnvMapSharedData::s_ActiveCamera->GetFront().y,
-                EnvMapSharedData::s_ActiveCamera->GetFront().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Up          X %.2f Y %.2f Z %.2f",
-                EnvMapSharedData::s_ActiveCamera->GetUp().x,
-                EnvMapSharedData::s_ActiveCamera->GetUp().y,
-                EnvMapSharedData::s_ActiveCamera->GetUp().z);
-            ImGui::Text(buffer);
-            sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f",
-                EnvMapSharedData::s_ActiveCamera->GetRight().x,
-                EnvMapSharedData::s_ActiveCamera->GetRight().y,
-                EnvMapSharedData::s_ActiveCamera->GetRight().z);
-            ImGui::Text(buffer);
-        }
-    }
-    ImGui::End();
-
-    /**** BEGIN Environment Map Settings ****/
-    ImGui::Begin("Environment Map Settings");
-    {
-        if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            {
-                if (ImGui::Button("Load Environment Map"))
-                {
-                    std::string filename = Application::Get()->OpenFile("*.hdr");
-                    if (filename != "") {
-                        EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(filename));
-                    }
-                }
-
-                float skyboxLOD = GetSkyboxLOD();
-                bool valueChanged = ImGui::DragFloat("Skybox LOD", &skyboxLOD, 0.01f, 0.0f, 2.0f, "%.2f");
-                if (valueChanged) {
-                    SetSkyboxLOD(skyboxLOD);
-                }
-
-                ImGui::Columns(2);
-                ImGui::AlignTextToFramePadding();
-
-                Hazel::HazelLight light = EnvMapSceneRenderer::GetActiveLight();
-                Hazel::HazelLight lightPrev = light;
-
-                ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::SliderProperty);
-                ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
-                ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
-                ImGuiWrapper::Property("Exposure", GetMainCameraComponent().Camera.GetExposure(), 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
-                ImGuiWrapper::Property("Skybox Exposure Factor", EnvMapSharedData::s_SkyboxExposureFactor, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
-
-                ImGuiWrapper::Property("Radiance Prefiltering", EnvMapSharedData::s_RadiancePrefilter);
-                ImGuiWrapper::Property("Env Map Rotation", EnvMapSharedData::s_EnvMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
-
-                if (m_SceneState == SceneState::Edit) {
-                    //  float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
-                    //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-                    //      EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
-                    //  }
-                }
-                else if (m_SceneState == SceneState::Play) {
-                    //  float physics2DGravity = s_RuntimeScene->GetPhysics2DGravity();
-                    //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-                    //      s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
-                    //  }
-                }
-
-                EnvMapSceneRenderer::SetActiveLight(light);
-
-                if (light.Direction != lightPrev.Direction) {
-                    auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-                    tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
-                    lightPrev = light;
-                }
-
-                ImGui::Columns(1);
-            }
-
-            ImGui::Separator();
-
-            {
-                ImGui::Text("Mesh");
-
-                Ref<Hazel::Entity> meshEntity = nullptr;
-                std::string meshFullPath = "None";
-
-                std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
-                ImGui::Text(fileName.c_str()); ImGui::SameLine();
-                if (ImGui::Button("...##Mesh"))
-                {
-                    std::string fullPath = Application::Get()->OpenFile();
-                    if (fullPath != "")
-                    {
-                        Hazel::Entity entity = LoadEntity(fullPath);
-                    }
-                }
-
-                auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-                if (meshEntities.size())
-                {
-                    meshEntity = GetMeshEntity();
-                    auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
-                    if (meshComponent.Mesh) {
-                        ImGui::SameLine();
-                        ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
-                    }
-                }
-            }
-        }
-    }
-    ImGui::End();
-    /**** END Environment Map Scene Settings ****/
-
-    // Selection
-    ImGui::Begin("Selection");
-    {
-        ImGui::Text("Selection Mode: ");
-        ImGui::SameLine();
-        const char* label = s_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
-        if (ImGui::Button(label))
-        {
-            s_SelectionMode = s_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
-        }
-
-        std::string entityTag = "N/A";
-        std::string meshName = "N/A";
-        SubmeshUUID submeshUUID = "N/A";
-        Hazel::Entity* entity = nullptr;
-
-        if (EntitySelection::s_SelectionContext.size())
-        {
-            SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
-
-            entity = &selectedSubmesh.Entity;
-            entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
-            meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
-            submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
-        }
-
-        ImGui::Text("Selected Entity: ");
-        ImGui::SameLine();
-        ImGui::Text(entityTag.c_str());
-
-        ImGui::Text("Selected Mesh: ");
-        ImGui::SameLine();
-        ImGui::Text(meshName.c_str());
-
-        // Drop down for selecting a material for a specific submesh
-        std::vector<std::string> materialNameStrings;
-        int index = 0;
-        for (auto& material : MaterialLibrary::s_EnvMapMaterials) {
-            materialNameStrings.push_back(material.second->GetName());
-        }
-
-        std::string submeshMaterialName = materialNameStrings.size() ? materialNameStrings[0] : "N/A";
-
-        MaterialUUID materialUUID;
-        if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
-            materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
-        }
-        int selectedMaterial = -1;
-
-        if (ImGui::BeginCombo("Material", submeshMaterialName.c_str()))
-        {
-            size_t emm_index = 0;
-            for (auto emm_it = MaterialLibrary::s_EnvMapMaterials.begin(); emm_it != MaterialLibrary::s_EnvMapMaterials.end(); emm_it++)
-            {
-                bool is_selected = (submeshMaterialName == materialNameStrings[emm_index]);
-                if (ImGui::Selectable(materialNameStrings.at(emm_index).c_str(), is_selected))
-                {
-                    submeshMaterialName = materialNameStrings[emm_index];
-                    materialUUID = emm_it->second->GetUUID();
-                    if (meshName != "N/A" && submeshMaterialName != "N/A" && submeshUUID != "N/A")
-                    {
-                        auto sm_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
-                        if (sm_it != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
-                            sm_it->second = materialUUID;
-                            Log::GetLogger()->debug("s_SubmeshMaterialUUIDs UPDATE [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
-                                submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
-                            break;
-                        }
-                        else {
-                            MaterialLibrary::s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
-                            Log::GetLogger()->debug("s_SubmeshMaterialUUIDs INSERT [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
-                                submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
-                        }
-                    }
-                }
-                if (is_selected) {
-                    ImGui::SetItemDefaultFocus();
-                }
-                emm_index++;
-            }
-            ImGui::EndCombo();
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Help");
-    {
-        ImGui::Text("* Left ALT + Left Mouse Button - Pan");
-        ImGui::Text("* Left ALT + Middle Mouse Button - Rotate/Orbit");
-        ImGui::Text("* Left ALT + Right Mouse Button - Zoom");
-        ImGui::Text("* Left SHIFT + R - Toggle Wireframe");
-    }
-    ImGui::End();
+    ****/
 
     //  ImGui::SetNextWindowSize({ 0.0f, 22.0f }, {});
     //  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 10, 5 });
@@ -1429,10 +1505,6 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     //  }
     //  ImGui::End();
     //  ImGui::PopStyleVar();
-
-    m_SceneHierarchyPanel->OnImGuiRender();
-
-    ImGui::ShowMetricsWindow();
 
     ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
@@ -1542,6 +1614,14 @@ void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
 
         if (ImGui::BeginMenu("View"))
         {
+            if (ImGui::MenuItem("Scene Hierarchy", "Ctrl+H")) {
+                m_ShowWindowSceneHierarchy = !m_ShowWindowSceneHierarchy;
+            }
+
+            if (ImGui::MenuItem("Transform", "Ctrl+T")) {
+                m_ShowWindowTransform = !m_ShowWindowTransform;
+            }
+
             if (ImGui::MenuItem("Asset Manager", "Ctrl+Space")) {
                 m_ShowWindowAssetManager = !m_ShowWindowAssetManager;
             }
@@ -1554,8 +1634,36 @@ void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
                 m_ShowWindowPostProcessing = !m_ShowWindowPostProcessing;
             }
 
-            if (ImGui::MenuItem("Shader Manager", "Ctrl+S")) {
+            if (ImGui::MenuItem("Shader Manager", "Ctrl+V")) {
                 m_ShowWindowShaderManager = !m_ShowWindowShaderManager;
+            }
+
+            if (ImGui::MenuItem("Framebuffers", "Ctrl+F")) {
+                m_ShowWindowFramebuffers = !m_ShowWindowFramebuffers;
+            }
+
+            if (ImGui::MenuItem("Settings", "Ctrl+Z")) {
+                m_ShowWindowSettings = !m_ShowWindowSettings;
+            }
+
+            if (ImGui::MenuItem("Renderer Stats")) {
+                m_ShowWindowRendererStats = !m_ShowWindowRendererStats;
+            }
+
+            if (ImGui::MenuItem("Help")) {
+                m_ShowWindowHelp = !m_ShowWindowHelp;
+            }
+
+            if (ImGui::MenuItem("Mouse Picker")) {
+                m_ShowWindowMousePicker = !m_ShowWindowMousePicker;
+            }
+
+            if (ImGui::MenuItem("Viewport Info")) {
+                m_ShowWindowViewportInfo = !m_ShowWindowViewportInfo;
+            }
+
+            if (ImGui::MenuItem("Dear ImGui Metrics")) {
+                m_ShowWindowImGuiMetrics = !m_ShowWindowImGuiMetrics;
             }
 
             ImGui::EndMenu();
@@ -1869,6 +1977,14 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
                 break;
 
                 // Toggle ImGui windows
+            case (int)KeyCode::H:
+                // Left CTRL + H: Toggle Scene Hierarchy
+                m_ShowWindowSceneHierarchy = !m_ShowWindowSceneHierarchy;
+                break;
+            case (int)KeyCode::T:
+                // Left CTRL + T: Toggle Transform
+                m_ShowWindowTransform = !m_ShowWindowTransform;
+                break;
             case (int)KeyCode::Space:
                 // Left CTRL + Space: Toggle Asset Manager
                 m_ShowWindowAssetManager = !m_ShowWindowAssetManager;
@@ -1881,9 +1997,17 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
                 // Left CTRL + P: Toggle Post Processing Effects
                 m_ShowWindowPostProcessing = !m_ShowWindowPostProcessing;
                 break;
-            case (int)KeyCode::H:
+            case (int)KeyCode::V:
                 // Left CTRL + H: Toggle Shader Manager
                 m_ShowWindowShaderManager = !m_ShowWindowShaderManager;
+                break;
+            case (int)KeyCode::F:
+                // Left CTRL + F: Toggle Framebuffers
+                m_ShowWindowFramebuffers = !m_ShowWindowFramebuffers;
+                break;
+            case (int)KeyCode::X:
+                // Left CTRL + X: Toggle Settings
+                m_ShowWindowSettings = !m_ShowWindowSettings;
                 break;
         }
 

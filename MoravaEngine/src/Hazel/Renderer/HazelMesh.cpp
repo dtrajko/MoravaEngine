@@ -1054,7 +1054,7 @@ namespace Hazel {
 		}
 	}
 
-	void HazelMesh::OnImGuiRender(uint32_t id)
+	void HazelMesh::OnImGuiRender(uint32_t id, bool* p_open)
 	{
 		if (!m_Scene) {
 			Log::GetLogger()->error("Mesh: Scene not initialized!");
@@ -1062,11 +1062,11 @@ namespace Hazel {
 		}
 
 		// Mesh Hierarchy
-		ImGui::Begin("Mesh Hierarchy");
+		ImGui::Begin("Mesh Hierarchy", p_open);
 		ImGuiNodeHierarchy(m_Scene->mRootNode, glm::mat4(1.0f), 0);
 		ImGui::End();
 
-		ImGui::Begin("Mesh Debug");
+		ImGui::Begin("Mesh Debug", p_open);
 		std::string meshFileName = std::to_string(id) + ". " + Util::GetFileNameFromFullPath(m_FilePath);
 		if (ImGui::CollapsingHeader(meshFileName.c_str()))
 		{

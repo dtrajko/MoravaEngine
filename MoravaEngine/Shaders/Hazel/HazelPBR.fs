@@ -131,6 +131,8 @@ const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
 const float material_Shininess = 256.0f;
 const float material_SpecularIntensity = 1.0;
 
+const float shadowIntensity = 3.0f;
+
 struct LightBase
 {
 	bool enabled;
@@ -221,6 +223,9 @@ float CalcOmniShadowFactor(PointLight light, int shadowIndex)
 		}
 		shadow /= samples;
 	}
+
+	shadow *= shadowIntensity;
+
 	return shadow;
 }
 
@@ -259,6 +264,8 @@ float CalcDirectionalShadowFactor()
 	{
 		shadow = 0.0;
 	}
+
+	shadow *= shadowIntensity;
 
 	return shadow;
 }

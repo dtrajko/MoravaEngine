@@ -230,9 +230,24 @@ private:
 
 	std::string m_StatusBarMessage = "";
 
-	bool m_ShowWindowAssetManager = false;
-	bool m_ShowWindowMaterialEditor = false;
+	bool m_ShowWindowSceneHierarchy = true;
+	bool m_ShowWindowTransform      = true;
+	bool m_ShowWindowMaterialEditor = true;
+	bool m_ShowWindowAssetManager   = true;
+
+	bool m_ShowWindowMeshHierarchy  = false;
 	bool m_ShowWindowPostProcessing = false;
-	bool m_ShowWindowShaderManager = false;
+	bool m_ShowWindowShaderManager  = false;
+	bool m_ShowWindowFramebuffers   = false;
+	bool m_ShowWindowSettings       = false;
+	bool m_ShowWindowRendererStats  = false;
+	bool m_ShowWindowHelp           = false;
+	bool m_ShowWindowMousePicker    = false;
+	bool m_ShowWindowViewportInfo   = false;
+	bool m_ShowWindowImGuiMetrics   = false;
+	bool m_ShowWindowSelection      = false;
+	bool m_ShowWindowToolbar        = false;
+	bool m_ShowWindowSwitchState    = false;
+	bool m_ShowWindowCamera         = false;
 
 };

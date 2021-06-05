@@ -49,7 +49,7 @@ public:
 	std::string OpenFile(const char* filter = "All\0*.*\0") const;
 	std::string SaveFile(const char* filter = "All\0*.*\0") const;
 
-	void OnImGuiRender();
+	void OnImGuiRender(bool* p_open = (bool*)0);
 
 	static const char* GetConfigurationName();
 	static const char* GetPlatformName();

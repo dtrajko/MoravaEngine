@@ -309,9 +309,9 @@ std::string Application::SaveFile(const char* filter) const
 	return std::string();
 }
 
-void Application::OnImGuiRender()
+void Application::OnImGuiRender(bool* p_open)
 {
-	ImGui::Begin("Renderer");
+	ImGui::Begin("Renderer", p_open);
 	{
 		auto& caps = Hazel::HazelRenderer::GetCapabilities();
 

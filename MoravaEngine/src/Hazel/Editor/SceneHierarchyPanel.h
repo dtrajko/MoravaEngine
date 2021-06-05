@@ -28,7 +28,7 @@ namespace Hazel
 		void SetSelectionChangedCallback(const std::function<void(Entity)>& func) { m_SelectionChangedCallback = func; }
 		void SetEntityDeletedCallback(const std::function<void(Entity)>& func) { m_EntityDeletedCallback = func; }
 
-		void OnImGuiRender();
+		void OnImGuiRender(bool* p_open = (bool*)0);
 
 	private:
 		void DrawEntityNode(Entity entity);
