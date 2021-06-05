@@ -234,15 +234,12 @@ GLint OpenGLMoravaShader::GetUniformLocation(const std::string& name)
 	std::map<std::string, int>::const_iterator it;
 	it = m_UniformLocations.find(name);
 
-	if (it != m_UniformLocations.end())
-	{
+	if (it != m_UniformLocations.end()) {
 		return it->second;
-	}
-	else
-	{
+	} else {
 		glUseProgram(programID);
 		int uniformLocation = glGetUniformLocation(programID, name.c_str());
-		if (uniformLocation != 1) {
+		if (uniformLocation != -1) {
 			m_UniformLocations.insert(std::make_pair(name, uniformLocation));
 		}
 		return uniformLocation;

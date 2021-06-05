@@ -608,7 +608,6 @@ void EnvMapSceneRenderer::CompositePass()
     s_Data.CompositeShader->Validate();
 
     // Hazel::HazelRenderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::HazelMaterial>());
-
     // Hazel::HazelRenderer::EndRenderPass();
 }
 
