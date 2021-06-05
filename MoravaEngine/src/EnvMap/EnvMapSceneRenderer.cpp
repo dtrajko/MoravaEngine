@@ -162,7 +162,12 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
 
 void EnvMapSceneRenderer::SetupShaders()
 {
-    s_Data.CompositeShader = MoravaShader::Create("Shaders/Hazel/SceneComposite.vs", "Shaders/Hazel/SceneComposite.fs");
+    MoravaShaderSpecification moravaShaderSpecification;
+    moravaShaderSpecification.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
+    moravaShaderSpecification.VertexShaderPath = "Shaders/Hazel/SceneComposite.vs";
+    moravaShaderSpecification.FragmentShaderPath = "Shaders/Hazel/SceneComposite.fs";
+    moravaShaderSpecification.ForceCompile = false;
+    s_Data.CompositeShader = MoravaShader::Create(moravaShaderSpecification);
     Log::GetLogger()->info("EnvMapSceneRenderer: s_ShaderComposite compiled [programID={0}]", s_Data.CompositeShader->GetProgramID());
 
     s_ShaderEquirectangularConversion = MoravaShader::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
@@ -595,8 +600,12 @@ void EnvMapSceneRenderer::CompositePass()
 
     targetFramebuffer->GetTextureAttachmentColor()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
     s_Data.CompositeShader->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    s_Data.CompositeShader->SetFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure()); // s_Data.SceneData.SceneCamera.Camera
+
+    // ERROR: OpenGLMoravaShader::SetFloat() failed [name='u_Exposure', location='-1']
+    // s_Data.CompositeShader->SetFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure()); // s_Data.SceneData.SceneCamera.Camera
+
     s_Data.CompositeShader->SetInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
+    s_Data.CompositeShader->Validate();
 
     // Hazel::HazelRenderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::HazelMaterial>());
 

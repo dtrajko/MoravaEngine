@@ -337,8 +337,9 @@ namespace Hazel {
 		for (auto entity : view)
 		{
 			auto& comp = view.get<CameraComponent>(entity);
-			if (comp.Primary)
+			if (comp.Primary) {
 				return { entity, this };
+			}
 		}
 		return {};
 	}

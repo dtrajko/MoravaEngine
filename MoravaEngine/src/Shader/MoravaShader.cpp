@@ -254,7 +254,7 @@ void MoravaShader::setMat3(const std::string& name, const glm::mat3& mat)
 GLint MoravaShader::GetUniformLocation(const std::string& name)
 {
 	std::map<std::string, int>::const_iterator it;
-	it = m_UniformLocations.find(name.c_str());
+	it = m_UniformLocations.find(name);
 
 	if (it != m_UniformLocations.end())
 	{
@@ -262,8 +262,11 @@ GLint MoravaShader::GetUniformLocation(const std::string& name)
 	}
 	else
 	{
+		glUseProgram(programID);
 		int uniformLocation = glGetUniformLocation(programID, name.c_str());
-		m_UniformLocations.insert(std::make_pair(name, uniformLocation));
+		if (uniformLocation != 1) {
+			m_UniformLocations.insert(std::make_pair(name, uniformLocation));
+		}
 		return uniformLocation;
 	}
 }
@@ -281,10 +284,10 @@ const std::string& MoravaShader::GetName() const
 const std::unordered_map<std::string, Hazel::ShaderBuffer>& MoravaShader::GetShaderBuffers() const
 {
 	// OpenGLMaterial::FindUniformDeclaration requires at least 2 shader buffers
-	std::unordered_map<std::string, Hazel::ShaderBuffer> shaderBuffers = std::unordered_map<std::string, Hazel::ShaderBuffer>();
-	shaderBuffers.insert(std::make_pair("One", Hazel::ShaderBuffer()));
-	shaderBuffers.insert(std::make_pair("Two", Hazel::ShaderBuffer()));
-	return shaderBuffers;
+	// std::unordered_map<std::string, Hazel::ShaderBuffer> shaderBuffers = ;
+	// shaderBuffers.insert(std::make_pair("One", Hazel::ShaderBuffer()));
+	// shaderBuffers.insert(std::make_pair("Two", Hazel::ShaderBuffer()));
+	return std::unordered_map<std::string, Hazel::ShaderBuffer>();
 }
 
 const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& MoravaShader::GetResources() const
@@ -366,16 +369,6 @@ void MoravaShader::SetUniform(const std::string& fullname, const glm::mat4& valu
 	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void MoravaShader::SetFloat(const std::string& name, float value)
-{
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1)
-		glUniform1f(location, value);
-	else
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
-}
-
 void MoravaShader::SetUInt(const std::string& name, uint32_t value)
 {
 	int32_t location = GetUniformLocation(name);
@@ -392,6 +385,17 @@ void MoravaShader::SetBool(const std::string& name, bool value)
 {
 	int32_t location = GetUniformLocation(name);
 	glUniform1i(location, value);
+}
+
+void MoravaShader::SetFloat(const std::string& name, float value)
+{
+	auto uniformLocation = GetUniformLocation(name);
+	if (uniformLocation != -1) {
+		glUniform1f(uniformLocation, value);
+	}
+	else {
+		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat() failed [name='{0}', location='{1}']", name, uniformLocation);
+	}
 }
 
 void MoravaShader::SetFloat2(const std::string& name, const glm::vec2& value)
@@ -434,10 +438,12 @@ void MoravaShader::SetMat4(const std::string& name, const glm::mat4& value)
 {
 	glUseProgram(programID);
 	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1)
+	if (location != -1) {
 		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&value);
-	else
+	}
+	else {
 		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+	}
 }
 
 void MoravaShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)

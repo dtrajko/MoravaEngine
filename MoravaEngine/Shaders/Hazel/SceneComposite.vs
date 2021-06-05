@@ -6,6 +6,7 @@ layout(location = 1) in vec2 a_TexCoord;
 
 out vec2 v_TexCoord;
 
+
 void main()
 {
 	vec4 position = vec4(a_Position.xy, 0.0, 1.0);

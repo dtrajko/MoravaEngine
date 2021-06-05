@@ -863,20 +863,24 @@ namespace Hazel {
 	{
 		glUseProgram(m_RendererID);
 		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		if (location != -1)
+		if (location != -1) {
 			glUniform1f(location, value);
-		else
+		}
+		else {
 			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+		}
 	}
 
 	void OpenGLShader::UploadUniformFloat2(const std::string& name, const glm::vec2& values)
 	{
 		glUseProgram(m_RendererID);
 		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		if (location != -1)
+		if (location != -1) {
 			glUniform2f(location, values.x, values.y);
-		else
+		}
+		else {
 			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+		}
 	}
 
 
@@ -884,30 +888,36 @@ namespace Hazel {
 	{
 		glUseProgram(m_RendererID);
 		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		if (location != -1)
+		if (location != -1) {
 			glUniform3f(location, values.x, values.y, values.z);
-		else
+		}
+		else {
 			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+		}
 	}
 
 	void OpenGLShader::UploadUniformFloat4(const std::string& name, const glm::vec4& values)
 	{
 		glUseProgram(m_RendererID);
 		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		if (location != -1)
+		if (location != -1) {
 			glUniform4f(location, values.x, values.y, values.z, values.w);
-		else
+		}
+		else {
 			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+		}
 	}
 
 	void OpenGLShader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
 	{
 		glUseProgram(m_RendererID);
 		auto location = glGetUniformLocation(m_RendererID, name.c_str());
-		if (location != -1)
+		if (location != -1) {
 			glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
-		else
+		}
+		else {
 			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+		}
 	}
 
 }

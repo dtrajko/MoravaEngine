@@ -1,7 +1,7 @@
 // type fragment
 #version 430
 
-layout(location = 0) out vec4 o_Color;
+layout (location = 0) out vec4 o_Color;
 
 in vec2 v_TexCoord;
 
@@ -28,7 +28,7 @@ void main()
 	ivec2 texCoord = ivec2(v_TexCoord * texSize);
 	vec4 msColor = MultiSampleTexture(u_Texture, texCoord, u_TextureSamples);
 
-	vec3 color = msColor.rgb * u_Exposure;//texture(u_Texture, v_TexCoord).rgb * u_Exposure;
+	vec3 color = msColor.rgb * u_Exposure; //texture(u_Texture, v_TexCoord).rgb * u_Exposure;
 	// Reinhard tonemapping operator.
 	// see: "Photographic Tone Reproduction for Digital Images", eq. 4
 	float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));

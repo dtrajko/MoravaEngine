@@ -320,9 +320,13 @@ void EnvMapEditorLayer::SetupShaders()
 void EnvMapEditorLayer::UpdateUniforms()
 {
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
-    EnvMapSceneRenderer::GetShaderComposite()->Bind();
-    EnvMapSceneRenderer::GetShaderComposite()->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    EnvMapSceneRenderer::GetShaderComposite()->SetFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure());
+    Hazel::Ref<MoravaShader> shaderComposite = EnvMapSceneRenderer::GetShaderComposite();
+    shaderComposite->Bind();
+    shaderComposite->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
+
+    // ERROR: OpenGLMoravaShader::SetFloat() failed [name='u_Exposure', location='-1']
+    // shaderComposite->SetFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure());
+
     /**** END Shaders/Hazel/SceneComposite ****/
 
     /**** BEGIN Shaders/Hazel/Skybox ****/

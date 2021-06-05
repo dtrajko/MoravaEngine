@@ -232,7 +232,7 @@ void OpenGLMoravaShader::setMat3(const std::string& name, const glm::mat3& mat)
 GLint OpenGLMoravaShader::GetUniformLocation(const std::string& name)
 {
 	std::map<std::string, int>::const_iterator it;
-	it = m_UniformLocations.find(name.c_str());
+	it = m_UniformLocations.find(name);
 
 	if (it != m_UniformLocations.end())
 	{
@@ -240,8 +240,11 @@ GLint OpenGLMoravaShader::GetUniformLocation(const std::string& name)
 	}
 	else
 	{
+		glUseProgram(programID);
 		int uniformLocation = glGetUniformLocation(programID, name.c_str());
-		m_UniformLocations.insert(std::make_pair(name, uniformLocation));
+		if (uniformLocation != 1) {
+			m_UniformLocations.insert(std::make_pair(name, uniformLocation));
+		}
 		return uniformLocation;
 	}
 }
@@ -259,10 +262,10 @@ const std::string& OpenGLMoravaShader::GetName() const
 const std::unordered_map<std::string, Hazel::ShaderBuffer>& OpenGLMoravaShader::GetShaderBuffers() const
 {
 	// OpenGLMaterial::FindUniformDeclaration requires at least 2 shader buffers
-	std::unordered_map<std::string, Hazel::ShaderBuffer> shaderBuffers = std::unordered_map<std::string, Hazel::ShaderBuffer>();
-	shaderBuffers.insert(std::make_pair("One", Hazel::ShaderBuffer()));
-	shaderBuffers.insert(std::make_pair("Two", Hazel::ShaderBuffer()));
-	return shaderBuffers;
+	// std::unordered_map<std::string, Hazel::ShaderBuffer> shaderBuffers = std::unordered_map<std::string, Hazel::ShaderBuffer>();
+	// shaderBuffers.insert(std::make_pair("One", Hazel::ShaderBuffer()));
+	// shaderBuffers.insert(std::make_pair("Two", Hazel::ShaderBuffer()));
+	return std::unordered_map<std::string, Hazel::ShaderBuffer>();
 }
 
 const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& OpenGLMoravaShader::GetResources() const
@@ -344,16 +347,6 @@ void OpenGLMoravaShader::SetUniform(const std::string& fullname, const glm::mat4
 	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void OpenGLMoravaShader::SetFloat(const std::string& name, float value)
-{
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1)
-		glUniform1f(location, value);
-	else
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
-}
-
 void OpenGLMoravaShader::SetUInt(const std::string& name, uint32_t value)
 {
 	int32_t location = GetUniformLocation(name);
@@ -370,6 +363,17 @@ void OpenGLMoravaShader::SetBool(const std::string& name, bool value)
 {
 	int32_t location = GetUniformLocation(name);
 	glUniform1i(location, value);
+}
+
+void OpenGLMoravaShader::SetFloat(const std::string& name, float value)
+{
+	auto uniformLocation = GetUniformLocation(name);
+	if (uniformLocation != -1) {
+		glUniform1f(uniformLocation, value);
+	}
+	else {
+		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat() failed [name='{0}', location='{1}']", name, uniformLocation);
+	}
 }
 
 void OpenGLMoravaShader::SetFloat2(const std::string& name, const glm::vec2& value)
@@ -412,10 +416,12 @@ void OpenGLMoravaShader::SetMat4(const std::string& name, const glm::mat4& value
 {
 	glUseProgram(programID);
 	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1)
+	if (location != -1) {
 		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&value);
-	else
+	}
+	else {
 		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+	}
 }
 
 void OpenGLMoravaShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)
@@ -427,8 +433,9 @@ void OpenGLMoravaShader::SetMat4FromRenderThread(const std::string& name, const 
 	else
 	{
 		int location = glGetUniformLocation(programID, name.c_str());
-		if (location != -1)
+		if (location != -1) {
 			UploadUniformMat4(location, value);
+		}
 	}
 }
 
@@ -436,10 +443,12 @@ void OpenGLMoravaShader::UploadUniformMat4(const std::string& name, const glm::m
 {
 	glUseProgram(programID);
 	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1)
+	if (location != -1) {
 		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
-	else
+	}
+	else {
 		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+	}
 }
 
 void OpenGLMoravaShader::UploadUniformMat4(uint32_t location, const glm::mat4& value)
