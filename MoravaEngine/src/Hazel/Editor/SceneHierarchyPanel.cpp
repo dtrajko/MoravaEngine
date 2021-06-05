@@ -370,10 +370,10 @@ namespace Hazel
 			ImGui::Separator();
 			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 			ImGui::PopStyleVar();
-			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
+			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 3.0f);
 
 			ImGui::PushFont(boldFont);
-			if (ImGui::Button("...", ImVec2{ lineHeight, lineHeight })) {
+			if (ImGui::Button("...", ImVec2{ lineHeight * 4.0f, lineHeight })) {
 				ImGui::OpenPopup("ComponentSettings");
 			}
 			ImGui::PopFont();
@@ -396,7 +396,7 @@ namespace Hazel
 
 			if (removeComponent) {
 				entity.RemoveComponent<T>();
-				EntitySelection::s_SelectionContext = {};
+				// EntitySelection::s_SelectionContext = {};
 			}
 		}
 	}
