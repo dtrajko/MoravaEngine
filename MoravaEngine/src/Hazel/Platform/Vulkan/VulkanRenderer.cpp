@@ -38,6 +38,9 @@ namespace Hazel {
 
 	static std::vector<Ref<HazelMesh>> s_Meshes;
 
+	static Submesh* s_SelectedSubmesh;
+	static glm::mat4* s_Transform_ImGuizmo = nullptr;
+
 	struct VulkanRendererData
 	{
 		VkCommandBuffer ActiveCommandBuffer = nullptr;
@@ -48,6 +51,10 @@ namespace Hazel {
 
 	void VulkanRenderer::SubmitMesh(const Ref<HazelMesh>& mesh)
 	{
+		// Temporary code - populate selected submesh
+		std::vector<Submesh> submeshes = mesh->GetSubmeshes();
+		s_SelectedSubmesh = &submeshes.at(0);
+
 		s_Meshes.push_back(mesh);
 	}
 
@@ -188,6 +195,8 @@ namespace Hazel {
 			const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
+
+		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
 
 	static void RenderMesh(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer, HazelCamera* camera) // TODO: remove the HazelCamera parameter
@@ -535,7 +544,7 @@ namespace Hazel {
 					}
 
 					Window* mainWindow = Application::Get()->GetWindow();
-					UpdateImGuizmo(mainWindow);
+					UpdateImGuizmo(mainWindow, camera);
 
 					ImGui::End();
 					ImGui::PopStyleVar();
@@ -781,7 +790,7 @@ namespace Hazel {
 		ImGui::End();
 	}
 
-	void VulkanRenderer::UpdateImGuizmo(Window* mainWindow)
+	void VulkanRenderer::UpdateImGuizmo(Window* mainWindow, HazelCamera* camera)
 	{
 		// BEGIN ImGuizmo
 
@@ -807,8 +816,9 @@ namespace Hazel {
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
 
-			// Entity transform
-			glm::mat4 entityTransform = glm::mat4(1.0f); // Connect to model transform
+			if (s_SelectedSubmesh != nullptr) {
+				s_Transform_ImGuizmo = &s_SelectedSubmesh->Transform; // Connect to model transform
+			}
 
 			// Snapping
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
@@ -820,24 +830,16 @@ namespace Hazel {
 
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
-			if (true) // TODO: specify display criteria here
+			if (s_Transform_ImGuizmo != nullptr) // TODO: specify display criteria here
 			{
 				ImGuizmo::Manipulate(
-					glm::value_ptr(glm::mat4(1.0f)),
-					glm::value_ptr(glm::mat4(1.0f)),
+					glm::value_ptr(camera->GetViewMatrix()),
+					glm::value_ptr(camera->GetProjectionMatrix()),
 					(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
 					ImGuizmo::LOCAL,
-					glm::value_ptr(entityTransform),
+					glm::value_ptr(*s_Transform_ImGuizmo),
 					nullptr,
 					snap ? snapValues : nullptr);
-
-				if (ImGuizmo::IsUsing())
-				{
-					glm::vec3 translation, rotation, scale;
-					Math::DecomposeTransform(entityTransform, translation, rotation, scale);
-
-					glm::vec3 deltaRotation = glm::vec3(0.0f); // TODO: add rotation delta here
-				}
 			}
 		}
 		// END ImGuizmo

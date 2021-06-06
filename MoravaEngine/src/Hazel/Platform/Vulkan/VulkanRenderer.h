@@ -27,7 +27,7 @@ namespace Hazel {
 		static void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material);
 
 		static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
-		static void UpdateImGuizmo(Window* mainWindow);
+		static void UpdateImGuizmo(Window* mainWindow, HazelCamera* camera);
 
 		static uint32_t GetViewportWidth();
 		static uint32_t GetViewportHeight();
