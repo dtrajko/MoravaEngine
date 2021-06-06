@@ -261,4 +261,7 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     if (passType == "post_processing") {
         m_EnvMapEditorLayer->PostProcessing(mainWindow);
     }
+
+    // m_EnvMapEditorLayer->RenderFullscreen(mainWindow);
+
 }

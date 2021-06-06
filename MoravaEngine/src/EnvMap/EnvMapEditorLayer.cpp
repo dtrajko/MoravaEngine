@@ -699,6 +699,8 @@ void EnvMapEditorLayer::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, b
 
 void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 {
+    // if (m_FullscreenEnabled) return;
+
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
 
@@ -1666,6 +1668,10 @@ void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
                 m_ShowWindowImGuiMetrics = !m_ShowWindowImGuiMetrics;
             }
 
+            //  if (ImGui::MenuItem("Fullscreen", "Ctrl+Enter")) {
+            //      m_FullscreenEnabled = !m_FullscreenEnabled;
+            //  }
+
             ImGui::EndMenu();
         }
 
@@ -2009,6 +2015,10 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
                 // Left CTRL + X: Toggle Settings
                 m_ShowWindowSettings = !m_ShowWindowSettings;
                 break;
+            //  case (int)KeyCode::Enter:
+            //      // Left CTRL + Enter: Toggle Fullscreen
+            //      m_FullscreenEnabled = !m_FullscreenEnabled;
+            //      break;
         }
 
         if (Input::IsKeyPressed(MORAVA_KEY_LEFT_SHIFT))
@@ -2345,6 +2355,64 @@ void EnvMapEditorLayer::PostProcessing(Window* mainWindow)
 
     m_PostProcessingFramebuffer->Unbind();
 }
+
+/****
+void EnvMapEditorLayer::RenderFullscreen(Window* mainWindow)
+{
+    int windowWidth = Application::Get()->GetWindow()->GetWidth();
+    int windowHeight = Application::Get()->GetWindow()->GetHeight();
+    int monitorWidth = windowWidth;
+    int monitorHeight = windowHeight;
+
+    if (!m_FullscreenEnabled)
+    {
+        // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+        // glfwSetWindowMonitor(mainWindow->GetHandle(), NULL, 0, 0, windowWidth, windowHeight, GLFW_DONT_CARE);
+        glViewport(0, 0, windowWidth, windowHeight);
+        return;
+    }
+
+    GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+    // glfwGetMonitorPhysicalSize(primaryMonitor, &monitorWidth, &monitorHeight);
+
+    monitorWidth = 1920;
+    monitorHeight = 1080;
+
+    float aspectRatio = monitorWidth / monitorHeight;
+    float degreesFOV = EnvMapSharedData::s_ActiveCamera->GetPerspectiveVerticalFOV();
+    float nearPlane = EnvMapSharedData::s_ActiveCamera->GetPerspectiveNearClip();
+    float farPlane = EnvMapSharedData::s_ActiveCamera->GetPerspectiveFarClip();
+    glm::mat4 projectionMatrix = glm::perspective(glm::radians(degreesFOV), aspectRatio, nearPlane, farPlane);
+    RendererBasic::SetProjectionMatrix(projectionMatrix);
+
+    glfwSetWindowMonitor(mainWindow->GetHandle(), primaryMonitor, 0, 0, monitorWidth, monitorHeight, GLFW_DONT_CARE);
+    glViewport(0, 0, monitorWidth, monitorHeight);
+    RendererBasic::Clear();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    //  Log::GetLogger()->info("Fullscreen enabled: {0}, Monitor resolution: {1}x{2}, Window resolution: {3}x{4}",
+    //      m_FullscreenEnabled, monitorWidth, monitorHeight, windowWidth, windowHeight);
+
+    m_ShaderPostProcessing->Bind();
+    {
+        if (m_PostProcessingEnabled)
+        {
+            m_PostProcessingFramebuffer->GetTextureAttachmentColor()->Bind(1);
+        }
+        else {
+            m_RenderFramebuffer->GetTextureAttachmentColor()->Bind(1);
+        }
+
+        m_ShaderPostProcessing->SetInt("u_AlbedoMap", 1);
+        m_ShaderPostProcessing->SetInt("u_Effect", 0);
+
+        glBindVertexArray(GeometryFactory::Quad::GetVAO());
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+    m_ShaderPostProcessing->Unbind();
+}
+****/
 
 void EnvMapEditorLayer::OnRenderEditor()
 {

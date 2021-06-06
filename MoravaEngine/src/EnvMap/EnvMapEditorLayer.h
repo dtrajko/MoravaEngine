@@ -47,6 +47,9 @@ public:
 
 	void PostProcessing(Window* mainWindow);
 
+	// void RenderFullscreen(Window* mainWindow);
+	// bool GetFullscreenEnabled() { return m_FullscreenEnabled; }
+
 	void OnRenderEditor();
 	void OnRenderRuntime();
 
@@ -229,6 +232,8 @@ private:
 	std::string m_WindowTitleDynamic = "";
 
 	std::string m_StatusBarMessage = "";
+
+	// bool m_FullscreenEnabled = false;
 
 	bool m_ShowWindowSceneHierarchy = true;
 	bool m_ShowWindowTransform      = true;
