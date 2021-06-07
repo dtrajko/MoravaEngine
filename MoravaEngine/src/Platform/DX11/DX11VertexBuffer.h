@@ -6,36 +6,28 @@
 
 #include "Hazel/Core/Buffer.h"
 
-#include "VulkanAllocator.h"
+#include "DX11Allocator.h"
 
 
-namespace Hazel {
+class DX11VertexBuffer : public Hazel::VertexBuffer
+{
+public:
+	DX11VertexBuffer(void* data, uint32_t size, Hazel::VertexBufferUsage usage = Hazel::VertexBufferUsage::Static);
+	DX11VertexBuffer(uint32_t size, Hazel::VertexBufferUsage usage = Hazel::VertexBufferUsage::Dynamic);
 
-	class VulkanVertexBuffer : public VertexBuffer
-	{
-	public:
-		VulkanVertexBuffer(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
-		VulkanVertexBuffer(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+	virtual ~DX11VertexBuffer() {}
 
-		virtual ~VulkanVertexBuffer() {}
+	virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) override {}
+	virtual void Bind() const override {}
 
-		virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) override {}
-		virtual void Bind() const override {}
+	virtual const Hazel::VertexBufferLayout& GetLayout() const override { return {}; }
+	virtual void SetLayout(const Hazel::VertexBufferLayout& layout) override {}
 
-		virtual const VertexBufferLayout& GetLayout() const override { return {}; }
-		virtual void SetLayout(const VertexBufferLayout& layout) override {}
+	virtual unsigned int GetSize() const override { return m_Size; }
+	virtual Hazel::RendererID GetRendererID() const override { return 0; }
 
-		virtual unsigned int GetSize() const override { return m_Size; }
-		virtual RendererID GetRendererID() const override { return 0; }
+private:
+	uint32_t m_Size = 0;
+	Hazel::Buffer m_LocalData;
 
-		VkBuffer GetVulkanBuffer() { return m_VulkanBuffer; }
-
-	private:
-		uint32_t m_Size = 0;
-		Buffer m_LocalData;
-
-		VkBuffer m_VulkanBuffer;
-		VkDeviceMemory m_DeviceMemory;
-	};
-
-}
+};

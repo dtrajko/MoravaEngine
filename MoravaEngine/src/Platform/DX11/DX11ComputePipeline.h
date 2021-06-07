@@ -1,37 +1,33 @@
 #pragma once
 
-#include "VulkanShader.h"
-#include "VulkanTexture.h"
+#include "DX11.h"
 
-#include "vulkan/vulkan.h"
+#include "Hazel/Renderer/HazelShader.h"
 
-namespace Hazel {
+// #include "DX11Shader.h"
+#include "DX11Texture.h"
 
-	class VulkanComputePipeline : public RefCounted
-	{
-	public:
-		VulkanComputePipeline(Ref<HazelShader> computeShader);
-		~VulkanComputePipeline();
 
-		void Execute(VkDescriptorSet* descriptorSets, uint32_t descriptorSetCount, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
+class DX11ComputePipeline : public Hazel::RefCounted
+{
+public:
+	DX11ComputePipeline(Hazel::Ref<Hazel::HazelShader> computeShader);
+	~DX11ComputePipeline();
 
-		void Begin();
-		void Dispatch(VkDescriptorSet descriptorSet, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
-		void End();
+	void Execute(VkDescriptorSet* descriptorSets, uint32_t descriptorSetCount, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 
-		Ref<VulkanShader> GetShader() { return m_Shader; }
+	void Begin();
+	void Dispatch(VkDescriptorSet descriptorSet, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
+	void End();
 
-		void SetPushConstants(const void* data, uint32_t size);
-	private:
-		void CreatePipeline();
-	private:
-		Ref<VulkanShader> m_Shader;
+	Hazel::Ref<Hazel::HazelShader> GetShader() { return m_Shader; }
 
-		VkPipelineLayout m_ComputePipelineLayout = nullptr;
-		VkPipelineCache m_PipelineCache = nullptr;
-		VkPipeline m_ComputePipeline = nullptr;
+	void SetPushConstants(const void* data, uint32_t size);
 
-		VkCommandBuffer m_ActiveComputeCommandBuffer = nullptr;
-	};
+private:
+	void CreatePipeline();
 
-}
+private:
+	Hazel::Ref<Hazel::HazelShader> m_Shader;
+
+};

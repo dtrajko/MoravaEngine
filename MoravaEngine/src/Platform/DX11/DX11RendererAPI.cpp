@@ -1,14 +1,10 @@
-#include "VulkanRendererAPI.h"
+#include "DX11RendererAPI.h"
 
 
-namespace Hazel {
+DX11RendererAPI::DX11RendererAPI()
+{
+}
 
-	VulkanRendererAPI::VulkanRendererAPI()
-	{
-	}
-
-	VulkanRendererAPI::~VulkanRendererAPI()
-	{
-	}
-
+DX11RendererAPI::~DX11RendererAPI()
+{
 }

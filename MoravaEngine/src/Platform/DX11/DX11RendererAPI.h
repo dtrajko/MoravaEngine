@@ -1,15 +1,12 @@
 #pragma once
 
-#include "Vulkan.h"
+#include "DX11.h"
 
 
-namespace Hazel {
+class DX11RendererAPI
+{
+public:
+	DX11RendererAPI();
+	~DX11RendererAPI();
 
-	class VulkanRendererAPI
-	{
-	public:
-		VulkanRendererAPI();
-		~VulkanRendererAPI();
-	};
-
-}
+};

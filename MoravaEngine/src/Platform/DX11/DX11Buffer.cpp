@@ -1,14 +1,10 @@
-#include "VulkanBuffer.h"
+#include "DX11Buffer.h"
 
 
-namespace Hazel {
+DX11Buffer::DX11Buffer()
+{
+}
 
-	VulkanBuffer::VulkanBuffer()
-	{
-	}
-
-	VulkanBuffer::~VulkanBuffer()
-	{
-	}
-
+DX11Buffer::~DX11Buffer()
+{
 }

@@ -1,14 +1,10 @@
-#include "VulkanRenderCommandBuffer.h"
+#include "DX11RenderCommandBuffer.h"
 
 
-namespace Hazel {
+DX11RenderCommandBuffer::DX11RenderCommandBuffer()
+{
+}
 
-	VulkanRenderCommandBuffer::VulkanRenderCommandBuffer()
-	{
-	}
-
-	VulkanRenderCommandBuffer::~VulkanRenderCommandBuffer()
-	{
-	}
-
+DX11RenderCommandBuffer::~DX11RenderCommandBuffer()
+{
 }

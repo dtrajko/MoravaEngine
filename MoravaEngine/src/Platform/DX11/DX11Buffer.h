@@ -1,15 +1,12 @@
 #pragma once
 
-#include "Vulkan.h"
+#include "DX11.h"
 
 
-namespace Hazel {
+class DX11Buffer
+{
+public:
+	DX11Buffer();
+	~DX11Buffer();
 
-	class VulkanBuffer
-	{
-	public:
-		VulkanBuffer();
-		~VulkanBuffer();
-	};
-
-}
+};

@@ -1,14 +1,10 @@
-#include "VulkanMemory.h"
+#include "DX11Memory.h"
 
 
-namespace Hazel {
+DX11Memory::DX11Memory()
+{
+}
 
-	VulkanMemory::VulkanMemory()
-	{
-	}
-
-	VulkanMemory::~VulkanMemory()
-	{
-	}
-
+DX11Memory::~DX11Memory()
+{
 }
