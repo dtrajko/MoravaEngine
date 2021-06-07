@@ -5,7 +5,7 @@
 #include "DX11.h"
 #include "DX11Device.h"
 #include "DX11Allocator.h"
-// #include "DX11SwapChain.h"
+#include "DX11SwapChain.h"
 
 
 struct GLFWwindow;

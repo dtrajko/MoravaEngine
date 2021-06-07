@@ -5,43 +5,39 @@
 #include "Hazel/Core/Layer.h"
 #include "Hazel/Core/Timestep.h"
 #include "Hazel/Events/Event.h"
-#include "Hazel/Platform/Vulkan/VulkanPipeline.h"
-#include "Hazel/Platform/Vulkan/VulkanShader.h"
-#include "Hazel/Platform/Vulkan/VulkanTexture.h"
+// #include "Platform/DX11/DX11Pipeline.h"
+// #include "Platform/DX11/DX11Shader.h"
+#include "Platform/DX11/DX11Texture.h"
 
 #include "Core/Window.h"
 #include "Scene/Scene.h"
 
 
-namespace Hazel {
+class DX11TestLayer : public Hazel::Layer
+{
+public:
+	DX11TestLayer();
+	virtual ~DX11TestLayer();
 
-	class VulkanTestLayer : public Layer
-	{
-	public:
-		VulkanTestLayer();
-		virtual ~VulkanTestLayer();
+	virtual void OnAttach() override;
+	virtual void OnDetach() override;
 
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
+	virtual void OnUpdate(Hazel::Timestep ts) override;
+	void OnImGuiRender(Window* mainWindow, Scene* scene);
 
-		virtual void OnUpdate(Timestep ts) override;
-		void OnImGuiRender(Window* mainWindow, Scene* scene);
+	virtual void OnEvent(Event& event) override;
 
-		virtual void OnEvent(Event& event) override;
+	void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
+	void OnRender(Window* mainWindow);
 
-		void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
-		void OnRender(Window* mainWindow);
+	void Render(const glm::vec4& clearColor, const Hazel::EditorCamera& camera);
 
-		void Render(const glm::vec4& clearColor, const EditorCamera& camera);
+private:
+	std::vector<Hazel::Ref<Hazel::HazelMesh>> m_Meshes;
+	Hazel::Ref<Hazel::HazelTexture2D> m_Texture;
 
-	private:
-		std::vector<Ref<HazelMesh>> m_Meshes;
-		Ref<HazelTexture2D> m_Texture;
+	Hazel::EditorCamera m_Camera;
 
-		EditorCamera m_Camera;
+	std::vector<glm::vec4> m_RandomColors;
 
-		std::vector<glm::vec4> m_RandomColors;
-
-	};
-
-}
+};

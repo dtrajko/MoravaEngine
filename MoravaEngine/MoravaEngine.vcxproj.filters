@@ -816,9 +816,6 @@
     <ClCompile Include="src\Platform\DX11\DX11Device.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\DX11\DX11Diagnostics.cpp">
-      <Filter>Platform\DX11</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Framebuffer.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
@@ -1788,9 +1785,6 @@
       <Filter>Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Device.h">
-      <Filter>Platform\DX11</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Platform\DX11\DX11Diagnostics.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Framebuffer.h">

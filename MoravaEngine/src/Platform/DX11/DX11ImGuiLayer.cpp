@@ -18,7 +18,7 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Platform/DX11/DX11Context.h"
 #include "Platform/DX11/DX11Device.h"
-// #include "Platform/DX11/DX11SwapChain.h"
+#include "Platform/DX11/DX11SwapChain.h"
 
 
 DX11ImGuiLayer::DX11ImGuiLayer()
