@@ -49,7 +49,7 @@ void Application::OnInit()
 
 	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 	{
-		Hazel::VulkanRenderer::Init(); // TODO: call in Hazel::HazelRenderer::Init
+		// Hazel::VulkanRenderer::Init(); // TODO: call in Hazel::HazelRenderer::Init
 		PushLayer(new Hazel::VulkanTestLayer());
 	}
 

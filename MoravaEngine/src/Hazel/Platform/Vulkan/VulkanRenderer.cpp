@@ -86,13 +86,13 @@ namespace Hazel {
 
 		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 
-		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
-		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
-		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelSimple.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
-		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
-		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
+		// s_Data.m_ShaderLibrary->Load("assets/shaders/Grid.glsl");
+		// s_Data.m_ShaderLibrary->Load("assets/shaders/SceneComposite.glsl");
+		// s_Data.m_ShaderLibrary->Load("assets/shaders/HazelSimple.glsl");
+		s_Data.m_ShaderLibrary->Load("assets/shaders/HazelPBR_Static.glsl");
+		// s_Data.m_ShaderLibrary->Load("assets/shaders/Outline.glsl");
+		// s_Data.m_ShaderLibrary->Load("assets/shaders/Skybox.glsl");
+		s_Data.m_ShaderLibrary->Load("assets/shaders/Texture.glsl");
 
 		SceneRenderer::Init();
 
@@ -132,7 +132,7 @@ namespace Hazel {
 				{ ShaderDataType::Float3, "a_Binormal" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
-			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+			pipelineSpecification.Shader = s_Data.m_ShaderLibrary->Get("HazelPBR_Static");
 
 			RenderPassSpecification renderPassSpec;
 			renderPassSpec.TargetFramebuffer = s_Framebuffer;
@@ -154,7 +154,7 @@ namespace Hazel {
 				// { ShaderDataType::Float3, "a_Binormal" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
-			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("Texture");
+			pipelineSpecification.Shader = s_Data.m_ShaderLibrary->Get("Texture");
 
 			RenderPassSpecification renderPassSpec;
 			renderPassSpec.TargetFramebuffer = framebuffer;
