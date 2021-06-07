@@ -1,8 +1,10 @@
 #include "HazelMaterial.h"
 
+#include "Hazel/Renderer/RendererAPI.h"
+
 #include "Hazel/Platform/OpenGL/OpenGLMaterial.h"
 #include "Hazel/Platform/Vulkan/VulkanMaterial.h"
-#include "Hazel/Renderer/RendererAPI.h"
+#include "Platform/DX11/DX11Material.h"
 
 
 namespace Hazel {
@@ -20,9 +22,10 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None: return Ref<HazelMaterial>();
+		case RendererAPIType::None:   return Ref<HazelMaterial>();
 		case RendererAPIType::OpenGL: return Ref<OpenGLMaterial>::Create(shader, name);
 		case RendererAPIType::Vulkan: return Ref<VulkanMaterial>::Create(shader, name);
+		case RendererAPIType::DX11:   return Ref<DX11Material>::Create(shader, name);
 		}
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelMaterial>();

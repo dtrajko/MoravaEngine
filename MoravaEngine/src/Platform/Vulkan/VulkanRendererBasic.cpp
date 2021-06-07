@@ -155,6 +155,11 @@ void VulkanRendererBasic::DisableWireframe()
 	// Log::GetLogger()->warn("VulkanRendererBasic::DisableWireframe: Method not yet supported!");
 }
 
+void VulkanRendererBasic::SetupViewportSize(uint32_t width, uint32_t height)
+{
+	Log::GetLogger()->warn("VulkanRendererBasic::SetupViewportSize({0}, {1}): Method not yet supported!", width, height);
+}
+
 void VulkanRendererBasic::DisableBlend()
 {
 	Log::GetLogger()->warn("VulkanRendererBasic::DisableBlend: Method not yet supported!");

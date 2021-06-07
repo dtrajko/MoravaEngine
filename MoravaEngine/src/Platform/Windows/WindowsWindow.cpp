@@ -113,13 +113,8 @@ void WindowsWindow::Init(const WindowProps& props)
 	glfwSetWindowUserPointer(m_Window, &m_Data);
 	SetVSync(true);
 
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
-	{
-		glEnable(GL_DEPTH_TEST);
-
-		// Setup Viewport size
-		glViewport(0, 0, m_Data.Width, m_Data.Height);
-	}
+	RendererBasic::EnableDepthTest();
+	RendererBasic::SetupViewportSize(m_Data.Width, m_Data.Height);
 
 	// The old MoravaEngine method of handling events
 	// not working with the new Hazel GLFW callbacks

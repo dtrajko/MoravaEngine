@@ -44,6 +44,8 @@ public:
 	static void EnableWireframe();
 	static void DisableWireframe();
 
+	static void SetupViewportSize(uint32_t width, uint32_t height);
+
 	static glm::mat4 GetProjectionMatrix();
 	static void SetProjectionMatrix(glm::mat4 projectionMatrix);
 	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);

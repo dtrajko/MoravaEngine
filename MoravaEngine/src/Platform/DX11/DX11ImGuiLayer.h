@@ -5,14 +5,12 @@
 #include "Hazel/ImGui/ImGuiLayer.h"
 
 
-namespace Hazel {
-
-	class VulkanImGuiLayer : public ImGuiLayer
+	class DX11ImGuiLayer : public Hazel::ImGuiLayer
 	{
 	public:
-		VulkanImGuiLayer();
-		VulkanImGuiLayer(const std::string& name);
-		~VulkanImGuiLayer();
+		DX11ImGuiLayer();
+		DX11ImGuiLayer(const std::string& name);
+		~DX11ImGuiLayer();
 
 		virtual void Begin() override;
 		virtual void End() override;
@@ -24,9 +22,4 @@ namespace Hazel {
 	private:
 		float m_Time = 0.0f;
 
-		VkCommandBuffer m_CommandBuffer;
-		VkDescriptorPool m_DescriptorPool;
-
 	};
-
-}

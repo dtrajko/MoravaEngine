@@ -9,6 +9,7 @@
 
 #include "Hazel/Platform/OpenGL/OpenGLRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "Platform/DX11/DX11Renderer.h"
 
 
 namespace Hazel {
@@ -39,60 +40,14 @@ namespace Hazel {
 
 	void HazelRenderer::Init()
 	{
-		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
-		// OPENGL ONLY - HazelRenderer::Submit([]() { RendererAPI::Init(); });
-
-		if (RendererAPI::Current() == RendererAPIType::Vulkan)
+		switch (RendererAPI::Current())
 		{
-			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
-			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
-			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelSimple.glsl");
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
-			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
-			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
+		case RendererAPIType::None:   return;
+		case RendererAPIType::OpenGL: return OpenGLRenderer::Init();
+		case RendererAPIType::Vulkan: return VulkanRenderer::Init();
+		case RendererAPIType::DX11:   return DX11Renderer::Init();
 		}
-
-		SceneRenderer::Init();
-
-		// Create fullscreen quad
-		float x = -1;
-		float y = -1;
-		float width = 2, height = 2;
-		struct QuadVertex
-		{
-			glm::vec3 Position;
-			glm::vec2 TexCoord;
-		};
-
-		QuadVertex* data = new QuadVertex[4];
-
-		data[0].Position = glm::vec3(x, y, 0.1f);
-		data[0].TexCoord = glm::vec2(0, 0);
-
-		data[1].Position = glm::vec3(x + width, y, 0.1f);
-		data[1].TexCoord = glm::vec2(1, 0);
-
-		data[2].Position = glm::vec3(x + width, y + height, 0.1f);
-		data[2].TexCoord = glm::vec2(1, 1);
-
-		data[3].Position = glm::vec3(x, y + height, 0.1f);
-		data[3].TexCoord = glm::vec2(0, 1);
-
-		PipelineSpecification pipelineSpecification;
-		pipelineSpecification.Layout = {
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float2, "a_TexCoord" }
-		};
-
-		// Missing pipelineSpecification.Shader
-		// s_Data.m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
-
-		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
-
-		// Renderer2D::Init();
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 	}
 
 	Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()

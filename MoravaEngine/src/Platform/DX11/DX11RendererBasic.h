@@ -12,12 +12,12 @@
 
 class Scene;
 
-class OpenGLRendererBasic
+class DX11RendererBasic
 {
 
 public:
-	OpenGLRendererBasic();
-	virtual ~OpenGLRendererBasic();
+	DX11RendererBasic();
+	virtual ~DX11RendererBasic();
 
 	virtual void Init(Scene* scene); // Scene param here could be a mistake
 	virtual void SetUniforms();

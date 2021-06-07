@@ -8,25 +8,23 @@
 #include "OpenGLShader.h"
 #include "OpenGLTexture.h"
 #include "OpenGLImage.h"
+#include "Hazel/Renderer/SceneRenderer.h"
 
 
 namespace Hazel {
 
-	struct OpenGLRendererData
+	struct RendererData
 	{
-		RenderAPICapabilities RenderCaps;
+		Ref<RenderPass> m_ActiveRenderPass;
+		RenderCommandQueue m_CommandQueue;
+		Ref<HazelShaderLibrary> m_ShaderLibrary;
 
 		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;
-		// Ref<Pipeline> m_FullscreenQuadPipeline;
-		PipelineSpecification m_FullscreenQuadPipelineSpec;
-
-		Ref<RenderPass> ActiveRenderPass;
-
-		Ref<HazelTexture2D> BRDFLut;
+		Ref<Pipeline> m_FullscreenQuadPipeline;
 	};
 
-	static OpenGLRendererData* s_Data = nullptr;
+	static RendererData s_Data;
 
 	namespace Utils {
 
@@ -89,86 +87,12 @@ namespace Hazel {
 		}
 	}
 
-#if 0
-
 	void OpenGLRenderer::Init()
 	{
-		s_Data = new OpenGLRendererData();
-		//	HazelRenderer::Submit([]()
-		//	{
-		//		glDebugMessageCallback(Utils::OpenGLLogMessage, nullptr);
-		//		glEnable(GL_DEBUG_OUTPUT);
-		//		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		//	
-		//		unsigned int vao;
-		//		glGenVertexArrays(1, &vao);
-		//		glBindVertexArray(vao);
-		//	
-		//		glEnable(GL_DEPTH_TEST);
-		//		//glEnable(GL_CULL_FACE);
-		//		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-		//		glFrontFace(GL_CCW);
-		//	
-		//		glEnable(GL_BLEND);
-		//		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		//	
-		//		glEnable(GL_MULTISAMPLE);
-		//		glEnable(GL_STENCIL_TEST);
-		//	
-		//		auto& caps = s_Data->RenderCaps;
-		//		caps.Vendor = (const char*)glGetString(GL_VENDOR);
-		//		caps.Device = (const char*)glGetString(GL_RENDERER);
-		//		caps.Version = (const char*)glGetString(GL_VERSION);
-		//	
-		//		glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
-		//		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
-		//	
-		//		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
-		//	
-		//		GLenum error = glGetError();
-		//		while (error != GL_NO_ERROR)
-		//		{
-		//			HZ_CORE_ERROR("OpenGL Error {0}", error);
-		//			error = glGetError();
-		//		}
-		//	});
+		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
+		// OPENGL ONLY - HazelRenderer::Submit([]() { RendererAPI::Init(); });
 
-		glDebugMessageCallback(Utils::OpenGLLogMessage, nullptr);
-		glEnable(GL_DEBUG_OUTPUT);
-		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		
-		unsigned int vao;
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-		
-		glEnable(GL_DEPTH_TEST);
-		//glEnable(GL_CULL_FACE);
-		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-		glFrontFace(GL_CCW);
-		
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		
-		glEnable(GL_MULTISAMPLE);
-		glEnable(GL_STENCIL_TEST);
-		
-		auto& caps = s_Data->RenderCaps;
-		caps.Vendor = (const char*)glGetString(GL_VENDOR);
-		caps.Device = (const char*)glGetString(GL_RENDERER);
-		caps.Version = (const char*)glGetString(GL_VERSION);
-
-		glGetIntegerv(GL_MAX_SAMPLES, &caps.MaxSamples);
-		glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &caps.MaxAnisotropy);
-
-		glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &caps.MaxTextureUnits);
-
-		GLenum error = glGetError();
-		while (error != GL_NO_ERROR)
-		{
-			// HZ_CORE_ERROR("OpenGL Error {0}", error);
-			Log::GetLogger()->error("OpenGL Error {0}", error);
-			error = glGetError();
-		}
+		SceneRenderer::Init();
 
 		// Create fullscreen quad
 		float x = -1;
@@ -194,23 +118,32 @@ namespace Hazel {
 		data[3].Position = glm::vec3(x, y + height, 0.1f);
 		data[3].TexCoord = glm::vec2(0, 1);
 
-		s_Data->m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-		s_Data->m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+		PipelineSpecification pipelineSpecification;
+		pipelineSpecification.Layout = {
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float2, "a_TexCoord" }
+		};
 
-		s_Data->BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
+		// Missing pipelineSpecification.Shader
+		// s_Data.m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
+
+		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
+		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+
+		// Renderer2D::Init();
 	}
 
 	void OpenGLRenderer::Shutdown()
 	{
-		delete s_Data;
+		// delete s_Data;
 	}
 
 	RenderAPICapabilities& OpenGLRenderer::GetCapabilities()
 	{
-		return s_Data->RenderCaps;
+		// return s_Data->RenderCaps;
+		return RenderAPICapabilities{};
 	}
-#endif
 
 	void OpenGLRenderer::BeginFrame()
 	{
@@ -222,49 +155,52 @@ namespace Hazel {
 
 	void OpenGLRenderer::BeginRenderPass(const Ref<RenderPass>& renderPass)
 	{
-		s_Data->ActiveRenderPass = renderPass;
+		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
+
+		// TODO: Convert all of this into a render command buffer
+		s_Data.m_ActiveRenderPass = renderPass;
 
 		renderPass->GetSpecification().TargetFramebuffer->Bind();
-		bool clear = true;
+
+		bool clear = false; // 2nd method parameter in some versions
+
 		if (clear)
 		{
 			const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
-			HazelRenderer::Submit([=]() {
-				Utils::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
-				});
+			// HazelRenderer::Submit([=]()
+			// {
+			// });
+			{
+				RendererAPI::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+			}
 		}
 	}
 
 	void OpenGLRenderer::EndRenderPass()
 	{
-		s_Data->ActiveRenderPass = nullptr;
+		HZ_CORE_ASSERT(s_Data.m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
+		s_Data.m_ActiveRenderPass = nullptr;
 	}
 
 	void OpenGLRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
 	{
-		auto& shader = material->GetShader();
-
 		bool depthTest = true;
-		Ref<OpenGLMaterial> glMaterial = material.As<OpenGLMaterial>();
 		if (material)
 		{
-			glMaterial->UpdateForRendering();
+			material->Bind();
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 		}
 
-		s_Data->m_FullscreenQuadVertexBuffer->Bind();
-		pipeline->Bind();
-		s_Data->m_FullscreenQuadIndexBuffer->Bind();
-		// HazelRenderer::Submit([depthTest]()
-		// {
-		// });
-		{
-			Utils::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
-		}
+		s_Data.m_FullscreenQuadVertexBuffer->Bind();
+		s_Data.m_FullscreenQuadPipeline->Bind();
+		s_Data.m_FullscreenQuadIndexBuffer->Bind();
+		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
 	void OpenGLRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
 	{
+		/****
 		if (!environment)
 			environment = HazelRenderer::GetEmptyEnvironment();
 
@@ -301,6 +237,7 @@ namespace Hazel {
 				glBindTextureUnit(resource->GetRegister(), shadowMapTexture->GetRendererID());
 			}
 		}
+		****/
 	}
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> OpenGLRenderer::CreateEnvironmentMap(const std::string& filepath)
@@ -438,6 +375,7 @@ namespace Hazel {
 
 	void OpenGLRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
 	{
+		/****
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
 		pipeline->Bind();
 		s_Data->m_FullscreenQuadIndexBuffer->Bind();
@@ -456,6 +394,7 @@ namespace Hazel {
 
 				glDrawElements(GL_TRIANGLES, s_Data->m_FullscreenQuadIndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
 			});
+		****/
 	}
 
 }

@@ -870,6 +870,9 @@
     <ClCompile Include="src\Platform\DX11\DX11VertexBuffer.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11RendererBasic.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1839,6 +1842,9 @@
       <Filter>Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11VertexBuffer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11RendererBasic.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
   </ItemGroup>

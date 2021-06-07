@@ -4,9 +4,9 @@
 
 #include "Hazel/Renderer/HazelTexture.h"
 
-#include "Vulkan.h"
+#include "DX11.h"
 
-#include "VulkanImage.h"
+#include "DX11Image.h"
 
 
 namespace Hazel {

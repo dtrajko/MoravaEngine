@@ -11,6 +11,7 @@
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
 #include "Hazel/Platform/Vulkan/VulkanVertexBuffer.h"
+#include "Hazel/Renderer/SceneRenderer.h"
 
 #if !defined(IMGUI_IMPL_API)
 	#define IMGUI_IMPL_API
@@ -44,6 +45,7 @@ namespace Hazel {
 	struct VulkanRendererData
 	{
 		VkCommandBuffer ActiveCommandBuffer = nullptr;
+		Ref<HazelShaderLibrary> m_ShaderLibrary;
 	};
 
 	static VulkanRendererData s_Data;
@@ -80,6 +82,24 @@ namespace Hazel {
 
 	void VulkanRenderer::Init()
 	{
+		/**** BEGIN code from HazelRenderer::Init() ****/
+
+		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
+
+		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
+		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
+		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelSimple.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
+		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
+		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
+
+		SceneRenderer::Init();
+
+		// Renderer2D::Init();
+
+		/**** END code from HazelRenderer::Init() ****/
+
 		// HazelRenderer::Submit([=]() {
 		// });
 		{
