@@ -2,14 +2,9 @@
 
 #include "Scene/Scene.h"
 
-#include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Events/KeyEvent.h"
-#include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
-#include "Hazel/Renderer/HazelMesh.h"
-#include "Hazel/Scene/Entity.h"
 
 #include "Framebuffer/Framebuffer.h"
-#include "HazelVulkan/VulkanWeekRenderer.h"
 #include "Mesh/Grid.h"
 #include "Texture/Texture.h"
 
@@ -17,14 +12,11 @@
 #include <string>
 
 
-class VulkanTestLayer;
-
-
-class SceneHazelVulkan : public Scene
+class SceneDX11 : public Scene
 {
 public:
-	SceneHazelVulkan();
-	virtual ~SceneHazelVulkan() override;
+	SceneDX11();
+	virtual ~SceneDX11() override;
 
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
@@ -50,16 +42,8 @@ private:
 	// Temporary/experimental
 	virtual void OnEntitySelected(Hazel::Entity entity) override;
 
-public:
-	// std::unique_ptr<Hazel::VulkanTestLayer> m_VulkanTestLayer;
-
 private:
 	Hazel::Ref<MoravaShader> m_ShaderBackground;
 	Hazel::Ref<MoravaShader> m_ShaderBasic;
-
-	Grid* m_Grid;
-	Pivot* m_PivotScene;
-
-	friend class EnvMapEditorLayer;
 
 };

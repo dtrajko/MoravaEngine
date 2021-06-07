@@ -12,6 +12,8 @@ void SelectRendererAPI()
 {
 #if defined(SCENE_HAZEL_VULKAN) 
 	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::Vulkan);
+#elif defined(SCENE_DX11) 
+	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::DX11);
 #else:
 	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::OpenGL);
 #endif;

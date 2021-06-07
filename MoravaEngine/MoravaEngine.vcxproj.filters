@@ -795,6 +795,81 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanMoravaShader.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Scene\SceneDX11.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Allocator.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Buffer.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11ComputePipeline.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Context.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Device.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Diagnostics.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Framebuffer.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Image.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11ImGuiLayer.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11IndexBuffer.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Material.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Memory.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Pipeline.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11RenderCommandBuffer.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Renderer.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11RendererAPI.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11RenderPass.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Shader.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11SwapChain.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11TestLayer.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Texture.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Utils.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11VertexBuffer.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1691,6 +1766,81 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanMoravaShader.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="src\Scene\SceneDX11.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Allocator.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Buffer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11ComputePipeline.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Context.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Device.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Diagnostics.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Framebuffer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Image.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11ImGuiLayer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11IndexBuffer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Material.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Memory.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Pipeline.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11RenderCommandBuffer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Renderer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11RendererAPI.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11RenderPass.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Shader.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11SwapChain.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11TestLayer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Texture.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Utils.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11VertexBuffer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -1908,6 +2058,9 @@
     </Filter>
     <Filter Include="Vendors\ImGuizmo">
       <UniqueIdentifier>{f53b9175-4036-4c31-b324-8758066de1d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform\DX11">
+      <UniqueIdentifier>{64aef6e8-8cf5-46f9-824e-d2d07f335955}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

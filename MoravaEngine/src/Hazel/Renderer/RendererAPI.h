@@ -17,6 +17,7 @@ namespace Hazel {
 		None,
 		OpenGL,
 		Vulkan,
+		DX11,
 	};
 
 	enum class PrimitiveType
