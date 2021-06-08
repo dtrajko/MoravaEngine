@@ -11,6 +11,12 @@
 #include "Platform/DX11/DX11RendererBasic.h"
 
 
+glm::mat4 RendererBasic::s_ProjectionMatrix;
+std::map<std::string, MoravaShader*> RendererBasic::s_Shaders;
+std::map<std::string, int> RendererBasic::s_Uniforms;
+glm::vec4 RendererBasic::s_BgColor;
+// bool RendererBasic::s_SpirV_Enabled;
+
 RendererBasic::RendererBasic()
 {
 }
@@ -36,20 +42,7 @@ void RendererBasic::Init(Scene* scene)
 	SetUniforms();
 	SetShaders();
 
-	switch (Hazel::RendererAPI::Current())
-	{
-	case Hazel::RendererAPIType::None: return;
-	case Hazel::RendererAPIType::OpenGL:
-		OpenGLRendererBasic::s_BgColor = glm::vec4(0.0, 0.0, 0.0, 1.0);
-		return;
-	case Hazel::RendererAPIType::Vulkan:
-		VulkanRendererBasic::s_BgColor = glm::vec4(0.0, 0.0, 0.0, 1.0);
-		return;
-	case Hazel::RendererAPIType::DX11:
-		DX11RendererBasic::s_BgColor = glm::vec4(0.0, 0.0, 0.0, 1.0);
-		return;
-	}
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+	s_BgColor = glm::vec4(0.0, 0.0, 0.0, 1.0);
 
 	InitDebug();
 }
@@ -57,13 +50,13 @@ void RendererBasic::Init(Scene* scene)
 void RendererBasic::SetUniforms()
 {
 	// common
-	OpenGLRendererBasic::s_Uniforms.insert(std::make_pair("model", 0));
-	OpenGLRendererBasic::s_Uniforms.insert(std::make_pair("view", 0));
-	OpenGLRendererBasic::s_Uniforms.insert(std::make_pair("projection", 0));
-	OpenGLRendererBasic::s_Uniforms.insert(std::make_pair("nearPlane", 0));
-	OpenGLRendererBasic::s_Uniforms.insert(std::make_pair("farPlane", 0));
-	OpenGLRendererBasic::s_Uniforms.insert(std::make_pair("normalMap", 0));
-	OpenGLRendererBasic::s_Uniforms.insert(std::make_pair("lightPosition", 0));
+	s_Uniforms.insert(std::make_pair("model", 0));
+	s_Uniforms.insert(std::make_pair("view", 0));
+	s_Uniforms.insert(std::make_pair("projection", 0));
+	s_Uniforms.insert(std::make_pair("nearPlane", 0));
+	s_Uniforms.insert(std::make_pair("farPlane", 0));
+	s_Uniforms.insert(std::make_pair("normalMap", 0));
+	s_Uniforms.insert(std::make_pair("lightPosition", 0));
 }
 
 void RendererBasic::SetShaders()
@@ -411,18 +404,18 @@ void RendererBasic::DisableBlend()
 
 void RendererBasic::Cleanup()
 {
-	for (auto& shader : OpenGLRendererBasic::s_Shaders)
+	for (auto& shader : s_Shaders)
 		delete shader.second;
 
-	OpenGLRendererBasic::s_Shaders.clear();
-	OpenGLRendererBasic::s_Uniforms.clear();
+	s_Shaders.clear();
+	s_Uniforms.clear();
 }
 
 void RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)
 {
 	float aspectRatio = scene->GetCameraController()->GetAspectRatio();
 	*projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio, scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-	OpenGLRendererBasic::s_ProjectionMatrix = *projectionMatrix;
+	s_ProjectionMatrix = *projectionMatrix;
 }
 
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)

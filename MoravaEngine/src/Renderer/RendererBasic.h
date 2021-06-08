@@ -71,4 +71,11 @@ public:
 protected:
 	static void UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene);
 
+public:
+	static glm::mat4 s_ProjectionMatrix;
+	static std::map<std::string, MoravaShader*> s_Shaders;
+	static std::map<std::string, int> s_Uniforms;
+	static glm::vec4 s_BgColor;
+	// static bool s_SpirV_Enabled;
+
 };

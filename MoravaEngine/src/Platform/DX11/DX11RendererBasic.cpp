@@ -5,13 +5,6 @@
 #include "Core/Util.h"
 
 
-glm::mat4 DX11RendererBasic::s_ProjectionMatrix;
-std::map<std::string, MoravaShader*> DX11RendererBasic::s_Shaders;
-std::map<std::string, int> DX11RendererBasic::s_Uniforms;
-glm::vec4 DX11RendererBasic::s_BgColor;
-// bool RendererBasic::s_SpirV_Enabled;
-
-
 DX11RendererBasic::DX11RendererBasic()
 {
 }
