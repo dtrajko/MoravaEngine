@@ -469,7 +469,7 @@ SceneProperties Application::SetSceneProperties()
 	sceneProperties.Name = SceneName::HAZEL_ENV_MAP;
 #elif defined(SCENE_HAZEL_VULKAN)
 	sceneProperties.Scene = new SceneHazelVulkan();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererHazelVulkan());
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
 	sceneProperties.Name = SceneName::HAZEL_VULKAN;
 #elif defined(SCENE_DX11)
 	sceneProperties.Scene = new SceneDX11();
