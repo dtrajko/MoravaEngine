@@ -2,36 +2,26 @@
 
 #pragma once
 
-#include "Hazel/Platform/Vulkan/VulkanShader.h"
+#include "DX11.h"
+
+// #include "Platform/DX11/DX11Shader.h"
 #include "Hazel/Renderer/Pipeline.h"
 
-#include "Vulkan.h"
 
+class DX11Pipeline : public Hazel::Pipeline
+{
+public:
+	DX11Pipeline(const Hazel::PipelineSpecification& spec);
+	virtual ~DX11Pipeline();
 
-namespace Hazel {
+	virtual Hazel::PipelineSpecification& GetSpecification() { return m_Specification; }
+	virtual const Hazel::PipelineSpecification& GetSpecification() const { return m_Specification; }
 
-	class VulkanPipeline : public Pipeline
-	{
-	public:
-		VulkanPipeline(const PipelineSpecification& spec);
-		virtual ~VulkanPipeline();
+	virtual void Invalidate() override;
 
-		virtual PipelineSpecification& GetSpecification() { return m_Specification; }
-		virtual const PipelineSpecification& GetSpecification() const { return m_Specification; }
+	virtual void Bind() override;
 
-		virtual void Invalidate() override;
+private:
+	Hazel::PipelineSpecification m_Specification;
 
-		virtual void Bind() override;
-
-		VkPipeline GetVulkanPipeline() { return m_VulkanPipeline; }
-		VkPipelineLayout GetVulkanPipelineLayout() { return m_PipelineLayout; }
-
-	private:
-		PipelineSpecification m_Specification;
-
-		VkPipelineLayout m_PipelineLayout;
-		VkPipeline m_VulkanPipeline;
-		VulkanShader::ShaderMaterialDescriptorSet m_DescriptorSet;
-	};
-
-}
+};

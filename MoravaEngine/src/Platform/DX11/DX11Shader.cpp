@@ -1,11 +1,11 @@
-#include "VulkanShader.h"
+#include "DX11Shader.h"
 
 #include "Hazel/Core/Assert.h"
-#include "Hazel/Platform/Vulkan/VulkanContext.h"
-#include "Hazel/Platform/Vulkan/VulkanTexture.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 
 #include "Core/Log.h"
+#include "Platform/DX11/DX11Context.h"
+#include "Platform/DX11/DX11Texture.h"
 
 #include <shaderc/shaderc.hpp>
 #include <spirv_glsl.hpp>
@@ -13,658 +13,451 @@
 #include <filesystem>
 
 
-namespace Hazel {
+static std::unordered_map<uint32_t, std::unordered_map<uint32_t, DX11Shader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
 
-	static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
+DX11Shader::DX11Shader(const std::string& path, bool forceCompile)
+	: m_AssetPath(path)
+{
+	// TODO: This should be more "general"
+	size_t found = path.find_last_of("/\\");
+	m_Name = found != std::string::npos ? path.substr(found + 1) : path;
+	found = m_Name.find_last_of(".");
+	m_Name = found != std::string::npos ? m_Name.substr(0, found) : m_Name;
+
+	Reload();
+}
+
+DX11Shader::~DX11Shader() {}
+
+static std::string ReadShaderFromFile(const std::string& filepath)
+{
+	std::string result;
+	std::ifstream in(filepath, std::ios::in | std::ios::binary);
+	if (in)
 	{
-		switch (type.basetype)
+		in.seekg(0, std::ios::end);
+		result.resize(in.tellg());
+		in.seekg(0, std::ios::beg);
+		in.read(&result[0], result.size());
+	}
+	else
+	{
+		HZ_CORE_ASSERT(false, "Could not load shader!");
+	}
+	in.close();
+	return result;
+}
+
+void DX11Shader::Reload(bool forceCompile)
+{
+	// Ref<DX11Shader> instance = this;
+	// HazelRenderer::Submit([instance]() mutable
+	// {
+	// });
+	{
+		// Vertex and Fragment for now
+		std::string source = ReadShaderFromFile(m_AssetPath);
+		std::array<std::vector<uint32_t>, 2> shaderData;
+		CompileOrGetDX11Binary(shaderData, false);
+		LoadAndCreateVertexShader(shaderData[0]);
+		LoadAndCreatePixelShader(shaderData[1]);
+		Reflect("vertex", shaderData[0]);
+		Reflect("pixel", shaderData[1]);
+		CreateDescriptors();
+	}
+}
+
+void DX11Shader::LoadAndCreateVertexShader(const std::vector<uint32_t>& shaderData)
+{
+	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
+
+	HZ_CORE_ASSERT(shaderData.size());
+	// Create a new shader module that will be used for pipeline creation
+
+	// TODO: CreateShaderModule
+}
+
+void DX11Shader::LoadAndCreatePixelShader(const std::vector<uint32_t>& shaderData)
+{
+	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
+
+	HZ_CORE_ASSERT(shaderData.size());
+	// Create a new shader module that will be used for pipeline creation
+	
+	// TODO: CreateShaderModule
+}
+
+void DX11Shader::Reflect(const std::string& shaderStage, const std::vector<uint32_t>& shaderData)
+{
+	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
+
+	MORAVA_CORE_TRACE("==========================");
+	MORAVA_CORE_TRACE(" DX11 Shader Reflection");
+	MORAVA_CORE_TRACE(" {0}", m_AssetPath);
+	MORAVA_CORE_TRACE("==========================");
+
+	// Vertex Shader
+	spirv_cross::Compiler compiler(shaderData);
+	spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+
+	MORAVA_CORE_TRACE("Uniform Buffers:");
+	for (const spirv_cross::Resource& resource : resources.uniform_buffers)
+	{
+		const auto& name = resource.name;
+		auto& bufferType = compiler.get_type(resource.base_type_id);
+		int memberCount = static_cast<uint32_t>(bufferType.member_types.size());
+		uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
+		uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
+
+		HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
+
+		UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
+		// UniformBuffer buffer;
+		buffer.BindingPoint = bindingPoint;
+		buffer.Size = size;
+		// AllocateUniformBuffer(buffer);
+		buffer.Name = name;
+		// m_UniformBuffers.insert(std::pair(bindingPoint, buffer));
+
+		MORAVA_CORE_TRACE("  Name: {0}", name);
+		MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
+		MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
+		MORAVA_CORE_TRACE("  Size: {0}", size);
+		MORAVA_CORE_TRACE("--------------------------");
+	}
+
+	MORAVA_CORE_TRACE("Push Constant Buffers:");
+	for (const auto& resource : resources.push_constant_buffers)
+	{
+		const auto& bufferName = resource.name;
+		auto& bufferType = compiler.get_type(resource.base_type_id);
+		auto bufferSize = compiler.get_declared_struct_size(bufferType);
+		int memberCount = static_cast<int>(bufferType.member_types.size());
+		uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
+
+		uint32_t offset = 0;
+		if (m_PushConstantRanges.size())
 		{
-			case spirv_cross::SPIRType::Boolean:  return ShaderUniformType::Bool;
-			case spirv_cross::SPIRType::Int:      return ShaderUniformType::Int;
-			case spirv_cross::SPIRType::Float:
-				if (type.vecsize == 1)            return ShaderUniformType::Float;
-				if (type.vecsize == 2)            return ShaderUniformType::Vec2;
-				if (type.vecsize == 3)            return ShaderUniformType::Vec3;
-				if (type.vecsize == 4)            return ShaderUniformType::Vec4;
-
-				if (type.columns == 3)            return ShaderUniformType::Mat3;
-				if (type.columns == 4)            return ShaderUniformType::Mat4;
-				break;
+			offset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
 		}
-		HZ_CORE_ASSERT(false, "Unknown type!");
-		return ShaderUniformType::None;
-	}
 
-	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
+		auto& pushConstantRange = m_PushConstantRanges.emplace_back();
+		pushConstantRange.Size = static_cast<uint32_t>(bufferSize);
+		pushConstantRange.Offset = offset;
 
-	// Very temporary attribute in Vulkan Week Day 5 Part 1
-	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_AlbedoTexture;
-	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_NormalTexture;
+		// Skip empty push constant buffers - these are for the renderer only
+		if (bufferName.empty())
+			continue;
 
-	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
-		: m_AssetPath(path)
-	{
-		// TODO: This should be more "general"
-		size_t found = path.find_last_of("/\\");
-		m_Name = found != std::string::npos ? path.substr(found + 1) : path;
-		found = m_Name.find_last_of(".");
-		m_Name = found != std::string::npos ? m_Name.substr(0, found) : m_Name;
+		Hazel::ShaderBuffer& buffer = m_Buffers[bufferName];
+		buffer.Name = bufferName;
+		buffer.Size = static_cast<uint32_t>(bufferSize);
 
-		Reload();
-	}
+		MORAVA_CORE_TRACE("  Name: {0}", bufferName);
+		MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
+		// MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
+		MORAVA_CORE_TRACE("  Size: {0}", size);
+		MORAVA_CORE_TRACE("--------------------------");
 
-	VulkanShader::~VulkanShader() {}
-
-	static std::string ReadShaderFromFile(const std::string& filepath)
-	{
-		std::string result;
-		std::ifstream in(filepath, std::ios::in | std::ios::binary);
-		if (in)
+		for (int i = 0; i < memberCount; i++)
 		{
-			in.seekg(0, std::ios::end);
-			result.resize(in.tellg());
-			in.seekg(0, std::ios::beg);
-			in.read(&result[0], result.size());
+			// auto type = compiler.get_type(bufferType.member_types[i]);
+			Hazel::ShaderUniformType type{};
+			const auto& memberName = compiler.get_member_name(bufferType.self, i);
+			auto size = compiler.get_declared_struct_member_size(bufferType, i);
+			auto offset = compiler.type_struct_member_offset(bufferType, i);
+
+			std::string uniformName = bufferName + "." + memberName;
+			buffer.Uniforms[uniformName] = Hazel::ShaderUniform(uniformName, type, static_cast<uint32_t>(size), offset);
 		}
-		else
+	}
+
+	MORAVA_CORE_TRACE("Sampled Images:");
+	for (const auto& resource : resources.sampled_images)
+	{
+		const auto& name = resource.name;
+		auto& type = compiler.get_type(resource.base_type_id);
+		uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+		uint32_t dimension = type.image.dim;
+
+		// HZ_CORE_ASSERT(m_ImageSamplers.find(binding) == m_ImageSamplers.end());
+
+		auto& imageSampler = m_ImageSamplers[binding];
+		// ImageSampler imageSampler;
+		imageSampler.BindingPoint = binding;
+		imageSampler.Name = name;
+		// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
+
+		MORAVA_CORE_TRACE("  Name: {0}", name);
+		// MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
+		MORAVA_CORE_TRACE("  Binding Point: {0}", binding);
+		// MORAVA_CORE_TRACE("  Size: {0}", size);
+		MORAVA_CORE_TRACE("--------------------------");
+	}
+
+	MORAVA_CORE_TRACE("==========================");
+}
+
+void DX11Shader::CreateDescriptors()
+{
+	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
+
+	//////////////////////////////////////////////////////////////////////
+	// Descriptor Pool
+	//////////////////////////////////////////////////////////////////////
+
+	// We need to tell the API the number of max. requested descriptors per type
+
+	if (m_UniformBuffers.size())
+	{
+	}
+
+	if (m_ImageSamplers.size())
+	{
+	}
+
+	// TODO: Move this to the centralized renderer
+	// Create the global descriptor pool
+	// All descriptors used in this example are allocated from this pool
+
+	// TODO: CreateDescriptorPool
+
+	//////////////////////////////////////////////////////////////////////
+	// Descriptor Set Layout
+	//////////////////////////////////////////////////////////////////////
+	std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+	for (auto& [binding, uniformBuffer] : m_UniformBuffers)
+	{
+		AllocateUniformBuffer(uniformBuffer);
+	}
+
+	for (auto& [binding, imageSampler] : m_ImageSamplers)
+	{
+	}
+
+	// TODO: CreateDescriptorSetLayout
+}
+
+void DX11Shader::AllocateUniformBuffer(UniformBuffer& dst)
+{
+	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
+
+	UniformBuffer& uniformBuffer = dst;
+
+	// Prepare and initialize an uniform buffer block containing shader uniforms
+	// Single uniforms like in OpenGL are no longer present in DX11. All Shader uniforms are passed via uniform buffer blocks
+
+	// Vertex shader uniform buffer block
+	// Create a new buffer
+
+	// TODO: CreateBuffer
+	// TODO: BindBufferMemory
+}
+
+// TODO: does not exist in DX11 Week version, added later
+DX11Shader::ShaderMaterialDescriptorSet DX11Shader::CreateDescriptorSets(uint32_t set)
+{
+	Log::GetLogger()->warn("DX11Shader::CreateDescriptorSets(uint32_t set): Method not yet implemented!");
+
+	return DX11Shader::ShaderMaterialDescriptorSet();
+}
+
+// TODO: does not exist in DX11 Week version, added later
+DX11Shader::ShaderMaterialDescriptorSet DX11Shader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets)
+{
+	Log::GetLogger()->warn("DX11Shader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets): Method not yet implemented!");
+
+	return DX11Shader::ShaderMaterialDescriptorSet();
+}
+
+void DX11Shader::CompileOrGetDX11Binary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile)
+{
+	// Vertex Shader
+	{
+		std::filesystem::path p = m_AssetPath;
+		auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_DX11.vert");
+		std::string cachedFilePath = path.string();
+
+		FILE* f = fopen(cachedFilePath.c_str(), "rb");
+		if (f)
 		{
-			HZ_CORE_ASSERT(false, "Could not load shader!");
+			fseek(f, 0, SEEK_END);
+			uint64_t size = ftell(f);
+			fseek(f, 0, SEEK_SET);
+			outputBinary[0] = std::vector<uint32_t>(size / sizeof(uint32_t));
+			fread(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
+			fclose(f);
 		}
-		in.close();
-		return result;
 	}
 
-	void VulkanShader::Reload(bool forceCompile)
+	// Fragment Shader
 	{
-		// Ref<VulkanShader> instance = this;
-		// HazelRenderer::Submit([instance]() mutable
-		// {
-		// });
+		std::filesystem::path p = m_AssetPath;
+		auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_DX11.frag");
+		std::string cachedFilePath = path.string();
+
+		FILE* f = fopen(cachedFilePath.c_str(), "rb");
+		if (f)
 		{
-			// Vertex and Fragment for now
-			std::string source = ReadShaderFromFile(m_AssetPath);
-			m_ShaderSource = PreProcess(source);
-			m_ShaderStages.resize(2);
-			std::array<std::vector<uint32_t>, 2> shaderData;
-			CompileOrGetVulkanBinary(shaderData, false);
-			LoadAndCreateVertexShader(m_ShaderStages[0], shaderData[0]);
-			LoadAndCreateFragmentShader(m_ShaderStages[1], shaderData[1]);
-			Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[0]); // vertex shader method similar to CreateDescriptors()
-			Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[1]); // fragment shader, method similar to CreateDescriptors()
-			CreateDescriptors();
+			fseek(f, 0, SEEK_END);
+			uint64_t size = ftell(f);
+			fseek(f, 0, SEEK_SET);
+			outputBinary[1] = std::vector<uint32_t>(size / sizeof(uint32_t));
+			fread(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
+			fclose(f);
 		}
 	}
 
-	void VulkanShader::LoadAndCreateVertexShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData)
+	if (outputBinary[0].size() == 0)
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
 
-		HZ_CORE_ASSERT(shaderData.size());
-		// Create a new shader module that will be used for pipeline creation
-		VkShaderModuleCreateInfo moduleCreateInfo{};
-		moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		moduleCreateInfo.codeSize = shaderData.size() * sizeof(uint32_t);
-		moduleCreateInfo.pCode = shaderData.data();
-
-		VkShaderModule shaderModule;
-		VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
-
-		shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		shaderStage.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		shaderStage.module = shaderModule;
-		shaderStage.pName = "main";
-	}
-
-	void VulkanShader::LoadAndCreateFragmentShader(VkPipelineShaderStageCreateInfo& shaderStage, const std::vector<uint32_t>& shaderData)
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		HZ_CORE_ASSERT(shaderData.size());
-		// Create a new shader module that will be used for pipeline creation
-		VkShaderModuleCreateInfo moduleCreateInfo{};
-		moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		moduleCreateInfo.codeSize = shaderData.size() * sizeof(uint32_t);
-		moduleCreateInfo.pCode = shaderData.data();
-
-		VkShaderModule shaderModule;
-		VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
-
-		shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		shaderStage.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		shaderStage.module = shaderModule;
-		shaderStage.pName = "main";
-	}
-
-	void VulkanShader::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		MORAVA_CORE_TRACE("==========================");
-		MORAVA_CORE_TRACE(" Vulkan Shader Reflection");
-		MORAVA_CORE_TRACE(" {0}", m_AssetPath);
-		MORAVA_CORE_TRACE("==========================");
+		const bool optimize = false;
+		if (optimize) {
+			options.SetOptimizationLevel(shaderc_optimization_level_performance);
+		}
 
 		// Vertex Shader
-		spirv_cross::Compiler compiler(shaderData);
-		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
-
-		MORAVA_CORE_TRACE("Uniform Buffers:");
-		for (const spirv_cross::Resource& resource : resources.uniform_buffers)
 		{
-			const auto& name = resource.name;
-			auto& bufferType = compiler.get_type(resource.base_type_id);
-			int memberCount = static_cast<uint32_t>(bufferType.member_types.size());
-			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
-			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
-
-			HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
-
-			UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
-			// UniformBuffer buffer;
-			buffer.BindingPoint = bindingPoint;
-			buffer.Size = size;
-			// AllocateUniformBuffer(buffer);
-			buffer.Name = name;
-			buffer.ShaderStage = shaderStage;
-			// m_UniformBuffers.insert(std::pair(bindingPoint, buffer));
-
-			MORAVA_CORE_TRACE("  Name: {0}", name);
-			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
-			MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
-			MORAVA_CORE_TRACE("  Size: {0}", size);
-			MORAVA_CORE_TRACE("--------------------------");
 		}
 
-		MORAVA_CORE_TRACE("Push Constant Buffers:");
-		for (const auto& resource : resources.push_constant_buffers)
-		{
-			const auto& bufferName = resource.name;
-			auto& bufferType = compiler.get_type(resource.base_type_id);
-			auto bufferSize = compiler.get_declared_struct_size(bufferType);
-			int memberCount = static_cast<int>(bufferType.member_types.size());
-			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
-
-			uint32_t offset = 0;
-			if (m_PushConstantRanges.size())
-			{
-				offset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
-			}
-
-			auto& pushConstantRange = m_PushConstantRanges.emplace_back();
-			pushConstantRange.ShaderStage = shaderStage;
-			pushConstantRange.Size = static_cast<uint32_t>(bufferSize);
-			pushConstantRange.Offset = offset;
-
-			// Skip empty push constant buffers - these are for the renderer only
-			if (bufferName.empty())
-				continue;
-
-			ShaderBuffer& buffer = m_Buffers[bufferName];
-			buffer.Name = bufferName;
-			buffer.Size = static_cast<uint32_t>(bufferSize);
-
-			MORAVA_CORE_TRACE("  Name: {0}", bufferName);
-			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
-			// MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
-			MORAVA_CORE_TRACE("  Size: {0}", size);
-			MORAVA_CORE_TRACE("--------------------------");
-
-			for (int i = 0; i < memberCount; i++)
-			{
-				auto type = compiler.get_type(bufferType.member_types[i]);
-				const auto& memberName = compiler.get_member_name(bufferType.self, i);
-				auto size = compiler.get_declared_struct_member_size(bufferType, i);
-				auto offset = compiler.type_struct_member_offset(bufferType, i);
-
-				std::string uniformName = bufferName + "." + memberName;
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), static_cast<uint32_t>(size), offset);
-			}
-		}
-
-		MORAVA_CORE_TRACE("Sampled Images:");
-		for (const auto& resource : resources.sampled_images)
-		{
-			const auto& name = resource.name;
-			auto& type = compiler.get_type(resource.base_type_id);
-			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-			uint32_t dimension = type.image.dim;
-
-			// HZ_CORE_ASSERT(m_ImageSamplers.find(binding) == m_ImageSamplers.end());
-
-			auto& imageSampler = m_ImageSamplers[binding];
-			// ImageSampler imageSampler;
-			imageSampler.BindingPoint = binding;
-			imageSampler.Name = name;
-			imageSampler.ShaderStage = shaderStage;
-			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
-
-			MORAVA_CORE_TRACE("  Name: {0}", name);
-			// MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
-			MORAVA_CORE_TRACE("  Binding Point: {0}", binding);
-			// MORAVA_CORE_TRACE("  Size: {0}", size);
-			MORAVA_CORE_TRACE("--------------------------");
-		}
-
-		MORAVA_CORE_TRACE("==========================");
-	}
-
-	void VulkanShader::CreateDescriptors()
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		//////////////////////////////////////////////////////////////////////
-		// Descriptor Pool
-		//////////////////////////////////////////////////////////////////////
-
-		// We need to tell the API the number of max. requested descriptors per type
-		std::vector<VkDescriptorPoolSize> typeCounts;
-
-		if (m_UniformBuffers.size())
-		{
-			VkDescriptorPoolSize& typeCount = typeCounts.emplace_back();
-			typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			typeCount.descriptorCount = static_cast<uint32_t>(m_UniformBuffers.size());
-		}
-
-		if (m_ImageSamplers.size())
-		{
-			VkDescriptorPoolSize& typeCount = typeCounts.emplace_back();
-			typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			typeCount.descriptorCount = static_cast<uint32_t>(m_ImageSamplers.size());
-		}
-
-		// TODO: Move this to the centralized renderer
-		// Create the global descriptor pool
-		// All descriptors used in this example are allocated from this pool
-		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
-		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		// Once you bind a descriptor set and use it in a vkCmdDraw() function, you can no longer modify it unless you specify the
-		// descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
-		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(typeCounts.size());
-		descriptorPoolInfo.pPoolSizes = typeCounts.data();
-		descriptorPoolInfo.maxSets = 1;
-
-		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
-
-		//////////////////////////////////////////////////////////////////////
-		// Descriptor Set Layout
-		//////////////////////////////////////////////////////////////////////
-		std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
-		for (auto& [binding, uniformBuffer] : m_UniformBuffers)
-		{
-			auto& layoutBinding = layoutBindings.emplace_back();
-			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			layoutBinding.descriptorCount = 1;
-			layoutBinding.stageFlags = uniformBuffer.ShaderStage;
-			layoutBinding.pImmutableSamplers = nullptr;
-			layoutBinding.binding = binding;
-
-			VkWriteDescriptorSet& set = m_WriteDescriptorSets[uniformBuffer.Name];
-			set = {};
-			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-			set.descriptorCount = 1;
-			set.dstBinding = layoutBinding.binding;
-
-			AllocateUniformBuffer(uniformBuffer);
-		}
-
-		for (auto& [binding, imageSampler] : m_ImageSamplers)
-		{
-			auto& layoutBinding = layoutBindings.emplace_back();
-			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			layoutBinding.descriptorCount = 1;
-			layoutBinding.stageFlags = imageSampler.ShaderStage;
-			layoutBinding.pImmutableSamplers = nullptr;
-			layoutBinding.binding = binding;
-
-			HZ_CORE_ASSERT(m_UniformBuffers.find(binding) == m_UniformBuffers.end(), "Binding is already present!");
-
-			VkWriteDescriptorSet& set = m_WriteDescriptorSets[imageSampler.Name];
-			set = {};
-			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-			set.descriptorCount = 1;
-			set.dstBinding = layoutBinding.binding;
-		}
-
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorLayout.pNext = nullptr;
-		descriptorLayout.bindingCount = static_cast<uint32_t>(layoutBindings.size());
-		descriptorLayout.pBindings = layoutBindings.data();
-
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayout));
-	}
-
-	VkDescriptorSet VulkanShader::CreateDescriptorSet()
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		VkDescriptorSet descriptorSet;
-
-		// Allocate a new descriptor set from the global descriptor pool
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = m_DescriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &m_DescriptorSetLayout;
-
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
-		return descriptorSet;
-	}
-
-	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
-	{
-		// HZ_CORE_ASSERT(m_WriteDescriptorSets.find(name) != m_WriteDescriptorSets.end());
-		if (m_WriteDescriptorSets.find(name) == m_WriteDescriptorSets.end())
-		{
-			HZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
-			return nullptr;
-		}
-		return &m_WriteDescriptorSets.at(name);
-
-		//	HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
-		//	if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
-		//	{
-		//		MORAVA_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
-		//		return nullptr;
-		//	}
-		//	return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
-	}
-
-	void VulkanShader::AllocateUniformBuffer(UniformBuffer& dst)
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		UniformBuffer& uniformBuffer = dst;
-
-		// Prepare and initialize an uniform buffer block containing shader uniforms
-		// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
-
-		// Vertex shader uniform buffer block
-		VkBufferCreateInfo bufferInfo = {};
-		VkMemoryAllocateInfo allocInfo = {};
-
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.pNext = nullptr;
-		allocInfo.allocationSize = 0;
-		allocInfo.memoryTypeIndex = 0;
-
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = uniformBuffer.Size;
-		// This buffer will be used as an uniform buffer
-		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-		VulkanAllocator allocator(std::string("UniformBuffer"));
-
-		// Create a new buffer
-		VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer.Buffer));
-
-		VkMemoryRequirements memoryRequirements;
-		vkGetBufferMemoryRequirements(device, uniformBuffer.Buffer, &memoryRequirements);
-		allocInfo.allocationSize = memoryRequirements.size;
-
-		allocator.Allocate(memoryRequirements, &uniformBuffer.Memory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		VK_CHECK_RESULT(vkBindBufferMemory(device, uniformBuffer.Buffer, uniformBuffer.Memory, 0));
-
-		// Store information in the uniform's descriptor that is used by the descriptor set
-		uniformBuffer.Descriptor.buffer = uniformBuffer.Buffer;
-		uniformBuffer.Descriptor.offset = 0;
-		uniformBuffer.Descriptor.range = uniformBuffer.Size;
-	}
-
-	// TODO: does not exist in Vulkan Week version, added later
-	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set)
-	{
-		Log::GetLogger()->warn("VulkanShader::CreateDescriptorSets(uint32_t set): Method not yet implemented!");
-
-		return VulkanShader::ShaderMaterialDescriptorSet();
-	}
-
-	// TODO: does not exist in Vulkan Week version, added later
-	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets)
-	{
-		Log::GetLogger()->warn("VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets): Method not yet implemented!");
-
-		return VulkanShader::ShaderMaterialDescriptorSet();
-	}
-
-	// does not exist in Vulkan Week version, added later
-	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts()
-	{
-		std::vector<VkDescriptorSetLayout> result;
-		result.reserve(m_DescriptorSetLayouts.size());
-		for (auto [set, layout] : m_DescriptorSetLayouts)
-			result.emplace_back(layout);
-
-		return result;
-	}
-
-	void VulkanShader::CompileOrGetVulkanBinary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile)
-	{
-		// Vertex Shader
 		{
 			std::filesystem::path p = m_AssetPath;
-			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.vert");
+			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_DX11.vert");
 			std::string cachedFilePath = path.string();
 
-			FILE* f = fopen(cachedFilePath.c_str(), "rb");
-			if (f)
-			{
-				fseek(f, 0, SEEK_END);
-				uint64_t size = ftell(f);
-				fseek(f, 0, SEEK_SET);
-				outputBinary[0] = std::vector<uint32_t>(size / sizeof(uint32_t));
-				fread(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
-				fclose(f);
-			}
+			FILE* f = fopen(cachedFilePath.c_str(), "wb");
+			fwrite(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
+			fclose(f);
+		}
+	}
+
+	if (outputBinary[1].size() == 0)
+	{
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions options;
+
+		const bool optimize = false;
+		if (optimize)
+			options.SetOptimizationLevel(shaderc_optimization_level_performance);
+
+		// Pixel Shader
+		{
 		}
 
-		// Fragment Shader
 		{
 			std::filesystem::path p = m_AssetPath;
-			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.frag");
+			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_DX11.frag");
 			std::string cachedFilePath = path.string();
 
-			FILE* f = fopen(cachedFilePath.c_str(), "rb");
-			if (f)
-			{
-				fseek(f, 0, SEEK_END);
-				uint64_t size = ftell(f);
-				fseek(f, 0, SEEK_SET);
-				outputBinary[1] = std::vector<uint32_t>(size / sizeof(uint32_t));
-				fread(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
-				fclose(f);
-			}
-		}
-
-		if (outputBinary[0].size() == 0)
-		{
-			shaderc::Compiler compiler;
-			shaderc::CompileOptions options;
-			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-
-			const bool optimize = false;
-			if (optimize)
-				options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-			// Vertex Shader
-			{
-				auto& shaderSource = m_ShaderSource.at(VK_SHADER_STAGE_VERTEX_BIT);
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, shaderc_vertex_shader, m_AssetPath.c_str(), options);
-
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					HZ_CORE_ERROR(module.GetErrorMessage());
-					HZ_CORE_ASSERT(false);
-				}
-
-				const uint8_t* begin = (const uint8_t*)module.cbegin();
-				const uint8_t* end = (const uint8_t*)module.cend();
-				const ptrdiff_t size = end - begin;
-
-				outputBinary[0] = std::vector<uint32_t>(module.cbegin(), module.cend());
-			}
-
-			{
-				std::filesystem::path p = m_AssetPath;
-				auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.vert");
-				std::string cachedFilePath = path.string();
-
-				FILE* f = fopen(cachedFilePath.c_str(), "wb");
-				fwrite(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
-				fclose(f);
-			}
-		}
-
-		if (outputBinary[1].size() == 0)
-		{
-			shaderc::Compiler compiler;
-			shaderc::CompileOptions options;
-			options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-
-			const bool optimize = false;
-			if (optimize)
-				options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
-			// Fragment Shader
-			{
-				auto& shaderSource = m_ShaderSource.at(VK_SHADER_STAGE_FRAGMENT_BIT);
-				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, shaderc_fragment_shader, m_AssetPath.c_str(), options);
-
-				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-				{
-					MORAVA_CORE_ERROR(module.GetErrorMessage());
-					HZ_CORE_ASSERT(false);
-				}
-
-				const uint8_t* begin = (const uint8_t*)module.cbegin();
-				const uint8_t* end = (const uint8_t*)module.cend();
-				const ptrdiff_t size = end - begin;
-
-				outputBinary[1] = std::vector<uint32_t>(module.cbegin(), module.cend());
-			}
-
-			{
-				std::filesystem::path p = m_AssetPath;
-				auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.frag");
-				std::string cachedFilePath = path.string();
-
-				FILE* f = fopen(cachedFilePath.c_str(), "wb");
-				fwrite(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
-				fclose(f);
-			}
+			FILE* f = fopen(cachedFilePath.c_str(), "wb");
+			fwrite(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
+			fclose(f);
 		}
 	}
+}
 
-	static VkShaderStageFlagBits ShaderTypeFromString(const std::string& type)
+static uint32_t ShaderTypeFromString(const std::string& type)
+{
+	if (type == "vertex")                       return 1;
+	if (type == "fragment" || type == "pixel")  return 2;
+	if (type == "compute")
 	{
-		if (type == "vertex")                       return VK_SHADER_STAGE_VERTEX_BIT;
-		if (type == "fragment" || type == "pixel")  return VK_SHADER_STAGE_FRAGMENT_BIT;
-		if (type == "compute")
-		{
-			HZ_CORE_ASSERT(false);
-		}
-
-		return VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+		HZ_CORE_ASSERT(false);
 	}
 
-	std::unordered_map<VkShaderStageFlagBits, std::string> VulkanShader::PreProcess(const std::string& source)
+	return 0;
+}
+
+std::unordered_map<uint32_t, std::string> DX11Shader::PreProcess(const std::string& source)
+{
+	std::unordered_map<uint32_t, std::string> shaderSources;
+
+	const char* typeToken = "#type";
+	size_t typeTokenLength = strlen(typeToken);
+	size_t pos = source.find(typeToken, 0);
+	while (pos != std::string::npos)
 	{
-		std::unordered_map<VkShaderStageFlagBits, std::string> shaderSources;
+		size_t eol = source.find_first_of("\r\n", pos);
+		HZ_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+		size_t begin = pos + typeTokenLength + 1;
+		std::string type = source.substr(begin, eol - begin);
+		HZ_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel" || type == "compute", "Invalid shader type specified");
 
-		const char* typeToken = "#type";
-		size_t typeTokenLength = strlen(typeToken);
-		size_t pos = source.find(typeToken, 0);
-		while (pos != std::string::npos)
-		{
-			size_t eol = source.find_first_of("\r\n", pos);
-			HZ_CORE_ASSERT(eol != std::string::npos, "Syntax error");
-			size_t begin = pos + typeTokenLength + 1;
-			std::string type = source.substr(begin, eol - begin);
-			HZ_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel" || type == "compute", "Invalid shader type specified");
-
-			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			pos = source.find(typeToken, nextLinePos);
-			auto shaderType = ShaderTypeFromString(type);
-			shaderSources[shaderType] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
-		}
-
-		return shaderSources;
+		size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+		pos = source.find(typeToken, nextLinePos);
+		auto shaderType = ShaderTypeFromString(type);
+		shaderSources[shaderType] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 	}
 
-	void VulkanShader::Bind() {}
+	return shaderSources;
+}
 
-	RendererID VulkanShader::GetRendererID() const { return 0; }
+void DX11Shader::Bind() {}
 
-	void VulkanShader::ClearUniformBuffers()
-	{
-		s_UniformBuffers.clear();
-	}
+Hazel::RendererID DX11Shader::GetRendererID() const { return 0; }
 
-	size_t VulkanShader::GetHash() const
-	{
-		return std::hash<std::string>{}(m_AssetPath);
-	}
+void DX11Shader::ClearUniformBuffers()
+{
+	s_UniformBuffers.clear();
+}
 
-	void VulkanShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size) {}
+size_t DX11Shader::GetHash() const
+{
+	return std::hash<std::string>{}(m_AssetPath);
+}
 
-	void VulkanShader::SetUniform(const std::string& fullname, float value) {}
+void DX11Shader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, int value) {}
+void DX11Shader::SetUniform(const std::string& fullname, float value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec2& value) {}
+void DX11Shader::SetUniform(const std::string& fullname, int value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec3& value) {}
+void DX11Shader::SetUniform(const std::string& fullname, const glm::vec2& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec4& value) {}
+void DX11Shader::SetUniform(const std::string& fullname, const glm::vec3& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::mat3& value) {}
+void DX11Shader::SetUniform(const std::string& fullname, const glm::vec4& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::mat4& value) {}
+void DX11Shader::SetUniform(const std::string& fullname, const glm::mat3& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, uint32_t value) {}
+void DX11Shader::SetUniform(const std::string& fullname, const glm::mat4& value) {}
 
-	void VulkanShader::SetInt(const std::string& name, int value) {}
+void DX11Shader::SetUniform(const std::string& fullname, uint32_t value) {}
 
-	void VulkanShader::SetUInt(const std::string& name, uint32_t value) {}
+void DX11Shader::SetInt(const std::string& name, int value) {}
 
-	void VulkanShader::SetFloat(const std::string& name, float value) {}
+void DX11Shader::SetUInt(const std::string& name, uint32_t value) {}
 
-	void VulkanShader::SetFloat2(const std::string& name, const glm::vec2& value) {}
+void DX11Shader::SetFloat(const std::string& name, float value) {}
 
-	void VulkanShader::SetFloat3(const std::string& name, const glm::vec3& value) {}
+void DX11Shader::SetFloat2(const std::string& name, const glm::vec2& value) {}
 
-	void VulkanShader::SetFloat4(const std::string& name, const glm::vec4& value) {}
+void DX11Shader::SetFloat3(const std::string& name, const glm::vec3& value) {}
 
-	void VulkanShader::SetMat4(const std::string& name, const glm::mat4& value) {}
+void DX11Shader::SetFloat4(const std::string& name, const glm::vec4& value) {}
 
-	void VulkanShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind /*= true*/) {}
+void DX11Shader::SetMat4(const std::string& name, const glm::mat4& value) {}
 
-	void VulkanShader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
+void DX11Shader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind /*= true*/) {}
 
-	const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShader::GetShaderBuffers() const { return {}; }
+void DX11Shader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-	const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanShader::GetResources() const { return {}; }
+const std::unordered_map<std::string, Hazel::ShaderBuffer>& DX11Shader::GetShaderBuffers() const { return {}; }
 
-	void VulkanShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
+const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& DX11Shader::GetResources() const { return {}; }
 
-	void* VulkanShader::MapUniformBuffer(uint32_t bindingPoint)
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+void DX11Shader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 
-		uint8_t* pData;
-		VK_CHECK_RESULT(vkMapMemory(device, m_UniformBuffers[bindingPoint].Memory, 0, m_UniformBuffers[bindingPoint].Size, 0, (void**)&pData));
-		return pData;
-	}
+void* DX11Shader::MapUniformBuffer(uint32_t bindingPoint)
+{
+	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
 
-	void VulkanShader::UnmapUniformBuffer(uint32_t bindingPoint)
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+	return nullptr;
+}
 
-		vkUnmapMemory(device, m_UniformBuffers[bindingPoint].Memory);
-	}
-
+void DX11Shader::UnmapUniformBuffer(uint32_t bindingPoint)
+{
+	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
 }

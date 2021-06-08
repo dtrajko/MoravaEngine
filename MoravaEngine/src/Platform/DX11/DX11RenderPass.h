@@ -4,21 +4,19 @@
 
 #include "Hazel/Renderer/RenderPass.h"
 
-#include "Vulkan.h"
+#include "DX11.h"
 
 
-namespace Hazel {
+class DX11RenderPass : public Hazel::RenderPass
+{
+public:
+	DX11RenderPass(const Hazel::RenderPassSpecification& spec);
+	virtual ~DX11RenderPass();
 
-	class VulkanRenderPass : public RenderPass
-	{
-	public:
-		VulkanRenderPass(const RenderPassSpecification& spec);
-		virtual ~VulkanRenderPass();
+	virtual Hazel::RenderPassSpecification& GetSpecification() override { return m_Specification; }
+	virtual const Hazel::RenderPassSpecification& GetSpecification() const override { return m_Specification; }
 
-		virtual RenderPassSpecification& GetSpecification() override { return m_Specification; }
-		virtual const RenderPassSpecification& GetSpecification() const override { return m_Specification; }
-	private:
-		RenderPassSpecification m_Specification;
-	};
+private:
+	Hazel::RenderPassSpecification m_Specification;
 
-}
+};

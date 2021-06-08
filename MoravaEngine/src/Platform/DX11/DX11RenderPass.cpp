@@ -1,15 +1,11 @@
-#include "VulkanRenderPass.h"
+#include "DX11RenderPass.h"
 
 
-namespace Hazel {
+DX11RenderPass::DX11RenderPass(const Hazel::RenderPassSpecification& spec)
+	: m_Specification(spec)
+{
+}
 
-	VulkanRenderPass::VulkanRenderPass(const RenderPassSpecification& spec)
-		: m_Specification(spec)
-	{
-	}
-
-	VulkanRenderPass::~VulkanRenderPass()
-	{
-	}
-
+DX11RenderPass::~DX11RenderPass()
+{
 }
