@@ -3,8 +3,8 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 
 #include "Platform/DX11/DX11Context.h"
-// #include "Platform/DX11/DX11Texture.h"
-// #include "Platform/DX11/DX11Image.h"
+#include "Platform/DX11/DX11Texture.h"
+#include "Platform/DX11/DX11Image.h"
 
 
 DX11Material::DX11Material(const Hazel::Ref<Hazel::HazelShader>& shader, const std::string& name)

@@ -24,7 +24,7 @@ DX11ComputePipeline::~DX11ComputePipeline()
 
 void DX11ComputePipeline::CreatePipeline()
 {
-	// VkDevice device = DX11Context::GetCurrentDevice()->GetDX11Device();
+	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
 
 	// TODO: Abstract into some sort of compute pipeline
 
@@ -32,7 +32,7 @@ void DX11ComputePipeline::CreatePipeline()
 	// TODO: CreateComputePipelines
 }
 
-void DX11ComputePipeline::Execute(VkDescriptorSet* descriptorSets, uint32_t descriptorSetCount, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+void DX11ComputePipeline::Execute()
 {
 	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
 
@@ -44,7 +44,7 @@ void DX11ComputePipeline::Begin()
 	// TODO CmdBindPipeline
 }
 
-void DX11ComputePipeline::Dispatch(VkDescriptorSet descriptorSet, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+void DX11ComputePipeline::Dispatch()
 {
 	// TODO
 }

@@ -4,7 +4,7 @@
 
 #include "DX11.h"
 
-// #include "Platform/DX11/DX11Shader.h"
+#include "DX11Shader.h"
 #include "Hazel/Renderer/Pipeline.h"
 
 

@@ -3,14 +3,14 @@
 #include "imgui.h"
 
 #include "DX11.h"
+#include "DX11Context.h"
+#include "DX11Framebuffer.h"
+#include "DX11IndexBuffer.h"
+#include "DX11Pipeline.h"
+#include "DX11Shader.h"
+#include "DX11Texture.h"
+#include "DX11VertexBuffer.h"
 #include "Hazel/Renderer/HazelRenderer.h"
-#include "Platform/DX11/DX11Context.h"
-// #include "Platform/DX11/DX11Framebuffer.h"
-// #include "Platform/DX11/DX11IndexBuffer.h"
-// #include "Platform/DX11/DX11Pipeline.h"
-// #include "Platform/DX11/DX11Shader.h"
-// #include "Platform/DX11/DX11Texture.h"
-// #include "Platform/DX11/DX11VertexBuffer.h"
 
 #if !defined(IMGUI_IMPL_API)
 	#define IMGUI_IMPL_API

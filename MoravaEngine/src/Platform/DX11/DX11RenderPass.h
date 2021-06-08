@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "Hazel/Renderer/RenderPass.h"
-
 #include "DX11.h"
+
+#include "Hazel/Renderer/RenderPass.h"
 
 
 class DX11RenderPass : public Hazel::RenderPass

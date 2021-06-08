@@ -4,8 +4,8 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 
 #include "Core/Log.h"
-#include "Platform/DX11/DX11Context.h"
-#include "Platform/DX11/DX11Texture.h"
+#include "DX11Context.h"
+#include "DX11Texture.h"
 
 #include <shaderc/shaderc.hpp>
 #include <spirv_glsl.hpp>

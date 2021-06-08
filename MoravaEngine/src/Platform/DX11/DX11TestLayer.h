@@ -5,9 +5,10 @@
 #include "Hazel/Core/Layer.h"
 #include "Hazel/Core/Timestep.h"
 #include "Hazel/Events/Event.h"
-// #include "Platform/DX11/DX11Pipeline.h"
-// #include "Platform/DX11/DX11Shader.h"
-#include "Platform/DX11/DX11Texture.h"
+
+#include "DX11Pipeline.h"
+#include "DX11Shader.h"
+#include "DX11Texture.h"
 
 #include "Core/Window.h"
 #include "Scene/Scene.h"
