@@ -7,6 +7,8 @@
 #include "DX11Allocator.h"
 #include "DX11SwapChain.h"
 
+#include <d3d11.h>
+
 
 struct GLFWwindow;
 
@@ -30,6 +32,13 @@ public:
 	static Hazel::Ref<DX11Context> Get() { return Hazel::Ref<DX11Context>(Hazel::HazelRenderer::GetContext()); }
 	static Hazel::Ref<DX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
 
+public:
+	DX11SwapChain* CreateSwapChain(HWND hwnd, UINT width, UINT height);
+	void SetRasterizerState(bool cull_front);
+
+private:
+	void InitRasterizerState();
+
 private:
 	GLFWwindow* m_WindowHandle;
 
@@ -37,6 +46,22 @@ private:
 	Hazel::Ref<DX11PhysicalDevice> m_PhysicalDevice;
 	Hazel::Ref<DX11Device> m_Device;
 
-	DX11Allocator m_Allocator;
-	// DX11SwapChain m_SwapChain;
+public:
+	ID3D11Device* m_d3d_device;
+
+private:
+	DX11SwapChain* m_SwapChain;
+
+	ID3D11DeviceContext* m_device_context;
+
+	D3D_FEATURE_LEVEL m_feature_level;
+	IDXGIDevice* m_dxgi_device;
+	IDXGIAdapter* m_dxgi_adapter;
+	IDXGIFactory* m_dxgi_factory;
+	ID3D11DeviceContext* m_imm_context;
+	ID3DBlob* m_blob = nullptr;
+
+	ID3D11RasterizerState* m_cull_front_state = nullptr;
+	ID3D11RasterizerState* m_cull_back_state = nullptr;
+
 };
