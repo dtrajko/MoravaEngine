@@ -52,7 +52,7 @@ void VulkanRendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatri
 
 void VulkanRendererBasic::Clear()
 {
-	Log::GetLogger()->warn("VulkanRendererBasic::Clear(): Method not yet supported!");
+	// Log::GetLogger()->warn("VulkanRendererBasic::Clear(): Method not yet supported!");
 }
 
 void VulkanRendererBasic::Clear(float r, float g, float b, float a)
@@ -83,7 +83,7 @@ void VulkanRendererBasic::EnableCulling()
 void VulkanRendererBasic::DisableCulling()
 {
 	// throw std::logic_error("The method or operation is not implemented.");
-	Log::GetLogger()->warn("VulkanRendererBasic::DisableCulling: Method not yet supported!");
+	// Log::GetLogger()->warn("VulkanRendererBasic::DisableCulling: Method not yet supported!");
 }
 
 void VulkanRendererBasic::EnableTransparency()
