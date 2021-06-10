@@ -1003,6 +1003,7 @@ target_link_directories(
 	../vendor/cross-platform/shaderc/libshaderc_util # Linux
 	../vendor/cross-platform/SPIRV-Cross/$ENV{MORAVA_BUILD_TYPE}
 	../vendor/Vulkan/1.2.148.1/Lib
+	../vendor/DirectXTex/bin
 	../${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
 )
 
@@ -1039,6 +1040,9 @@ if(WIN32)
 		box2d.lib
 		shaderc_combined.lib
 		vulkan-1.lib
+		d3d11.lib
+		d3dcompiler.lib
+		DirectXTexD.lib
 	)
 elseif(UNIX)
 	target_link_libraries(
@@ -1106,4 +1110,3 @@ if(WIN32)
 	add_library(Hazel-ScriptCore	SHARED "${Hazel-ScriptCore_SRCS}")
 
 endif()
-
