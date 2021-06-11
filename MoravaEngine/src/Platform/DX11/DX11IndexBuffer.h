@@ -15,6 +15,7 @@ public:
 	~DX11IndexBuffer();
 
 	uint32_t GetSizeIndexList();
+	inline ID3D11Buffer* GetBuffer() { return m_buffer; }
 
 	// DX11IndexBuffer(uint32_t size) {};
 	// DX11IndexBuffer(void* data, uint32_t size = 0) {};

@@ -53,6 +53,7 @@ DX11Context::DX11Context(GLFWwindow* windowHandle)
 
 DX11Context::~DX11Context()
 {
+	m_device_context->Release();
 }
 
 DX11SwapChain* DX11Context::CreateSwapChain(HWND hwnd, UINT width, UINT height)
@@ -118,15 +119,54 @@ void DX11Context::Create()
 
 void DX11Context::OnResize(uint32_t width, uint32_t height)
 {
-	// m_SwapChain.OnResize(width, height);
+	m_SwapChain->OnResize(width, height);
 }
 
 void DX11Context::BeginFrame()
 {
-	// m_SwapChain.BeginFrame();
+	m_SwapChain->BeginFrame();
 }
 
 void DX11Context::SwapBuffers()
 {
-	// m_SwapChain.Present();
+	m_SwapChain->Present(m_VSync);
+}
+
+void DX11Context::ClearRenderTargetColor(float red, float green, float blue, float alpha)
+{
+	FLOAT clear_color[] = { red, green, blue, alpha };
+
+	m_device_context->ClearRenderTargetView(m_SwapChain->m_rtv, clear_color);
+	m_device_context->ClearDepthStencilView(m_SwapChain->m_dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+	m_device_context->OMSetRenderTargets(1, &m_SwapChain->m_rtv, m_SwapChain->m_dsv);
+}
+
+void DX11Context::ClearDepthStencil()
+{
+	m_device_context->ClearDepthStencilView(m_SwapChain->m_dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+}
+
+void DX11Context::SetViewportSize(uint32_t width, uint32_t height)
+{
+	D3D11_VIEWPORT vp = {};
+	vp.Width = (FLOAT)width;
+	vp.Height = (FLOAT)height;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+
+	m_device_context->RSSetViewports(1, &vp);
+}
+
+void DX11Context::SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer)
+{
+	uint32_t stride = vertexBuffer->GetBufferSize();
+	uint32_t offset = 0;
+
+	m_device_context->IASetVertexBuffers(0, 1, &vertexBuffer->m_buffer, &stride, &offset);
+	m_device_context->IASetInputLayout(vertexBuffer->m_layout);
+}
+
+void DX11Context::SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer)
+{
+	m_device_context->IASetIndexBuffer(indexBuffer->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
 }

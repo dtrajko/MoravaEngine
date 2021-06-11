@@ -63,4 +63,6 @@ private:
 	// uint32_t m_CurrentBufferIndex = 0;
 	// uint32_t m_QueueNodeIndex = UINT32_MAX;
 
+	friend class DX11Context;
+
 };

@@ -30,6 +30,8 @@ public:
 	virtual uint32_t GetSize() const override { return m_size_vertex; }
 	virtual Hazel::RendererID GetRendererID() const override { return 0; }
 
+	inline uint32_t GetBufferSize() { return m_size_vertex; }
+
 private:
 	// uint32_t m_Size = 0;
 	// Hazel::Buffer m_LocalData;
@@ -39,5 +41,7 @@ private:
 
 	ID3D11Buffer* m_buffer;
 	ID3D11InputLayout* m_layout;
+
+	friend class DX11Context;
 
 };

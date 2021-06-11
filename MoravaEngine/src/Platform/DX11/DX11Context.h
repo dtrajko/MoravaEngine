@@ -6,6 +6,9 @@
 #include "DX11Device.h"
 #include "DX11Allocator.h"
 #include "DX11SwapChain.h"
+#include "DX11VertexBuffer.h"
+#include "DX11IndexBuffer.h"
+#include "DX11ConstantBuffer.h"
 
 #include <d3d11.h>
 
@@ -34,9 +37,18 @@ public:
 	static IDXGIFactory* GetIDXGIFactory() { return s_IDXGIFactory; };
 	static ID3D11DeviceContext* GetImmediateContext() { return s_ImmediateContext; };
 
-public:
+	// ---------------------------------------------------------------
+
 	DX11SwapChain* CreateSwapChain(HWND hwnd, UINT width, UINT height);
 	void SetRasterizerState(bool cull_front);
+
+	void ClearRenderTargetColor(float red, float green, float blue, float alpha);
+	void ClearDepthStencil();
+
+	void SetViewportSize(uint32_t width, uint32_t height);
+
+	void SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer);
+	void SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer);
 
 private:
 	void InitRasterizerState();
@@ -67,5 +79,7 @@ private:
 	ID3D11RasterizerState* m_cull_back_state = nullptr;
 
 	static bool s_Validation;
+
+	bool m_VSync = true;
 
 };
