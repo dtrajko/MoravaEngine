@@ -6,6 +6,8 @@
 #include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
 
 #include "Core/Timer.h"
+#include "Platform/DX11/DX11TestLayer.h"
+#include "Platform/DX11/DX11Renderer.h"
 
 #if defined(HZ_PLATFORM_WINDOWS)
 	#define GLFW_EXPOSE_NATIVE_WIN32
@@ -47,13 +49,15 @@ void Application::OnInit()
 
 	Hazel::HazelRenderer::Init();
 
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+	switch (Hazel::RendererAPI::Current())
 	{
-		// Hazel::VulkanRenderer::Init(); // TODO: call in Hazel::HazelRenderer::Init
-		PushLayer(new Hazel::VulkanTestLayer());
+		case Hazel::RendererAPIType::Vulkan:
+			PushLayer(new Hazel::VulkanTestLayer());
+			break;
+		case Hazel::RendererAPIType::DX11:
+			PushLayer(new DX11TestLayer());
+			break;
 	}
-
-	// Hazel::HazelRenderer::WaitAndRender();
 
 	float targetFPS = 60.0f;
 	float targetUpdateRate = 24.0f;
@@ -125,9 +129,14 @@ void Application::Run()
 
 			m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
 
-			if(Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+			switch (Hazel::RendererAPI::Current())
 			{
-				Hazel::VulkanRenderer::Draw(m_Scene->GetCamera());
+				case Hazel::RendererAPIType::Vulkan:
+					Hazel::VulkanRenderer::Draw(m_Scene->GetCamera());
+					break;
+				case Hazel::RendererAPIType::DX11:
+					DX11Renderer::Draw(m_Scene->GetCamera());
+					break;
 			}
 
 			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
@@ -176,20 +185,28 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	m_Scene->OnWindowResize(e);
 	m_Window->GetRenderContext()->OnResize(width, height);
 
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+	switch (Hazel::RendererAPI::Current())
 	{
-		auto& fbs = Hazel::HazelFramebufferPool::GetGlobal()->GetAll();
-		for (auto& fb : fbs)
+		case Hazel::RendererAPIType::Vulkan:
 		{
-			const auto& spec = fb->GetSpecification();
-			if (spec.Width == 0 || spec.Height == 0)
+			auto& fbs = Hazel::HazelFramebufferPool::GetGlobal()->GetAll();
+			for (auto& fb : fbs)
 			{
-				fb->Resize((uint32_t)(width * spec.Scale), (uint32_t)(height * spec.Scale));
+				const auto& spec = fb->GetSpecification();
+				if (spec.Width == 0 || spec.Height == 0)
+				{
+					fb->Resize((uint32_t)(width * spec.Scale), (uint32_t)(height * spec.Scale));
+				}
 			}
+			// TODO: TEMP
+			Hazel::VulkanRenderer::OnResize(width, height);
 		}
-
-		// TODO: TEMP
-		Hazel::VulkanRenderer::OnResize(width, height);
+		break;
+		case Hazel::RendererAPIType::DX11:
+		{
+			DX11Renderer::OnResize(width, height);
+		}
+		break;
 	}
 
 	return false;

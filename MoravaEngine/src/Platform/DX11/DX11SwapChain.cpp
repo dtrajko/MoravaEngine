@@ -1,13 +1,17 @@
 #include "DX11SwapChain.h"
+#include "DX11Context.h"
 
 #include "Core/Log.h"
 
 #include <GLFW/glfw3.h>
 
 
-DX11SwapChain::DX11SwapChain(Hazel::Ref<DX11Device> device, IDXGIFactory* dxgiFactory, HWND hwnd, uint32_t width, uint32_t height)
+DX11SwapChain::DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height)
 {
-	Init(device, dxgiFactory, hwnd, width, height);
+	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
+	IDXGIFactory* dxgiFactory = DX11Context::GetIDXGIFactory();
+
+	Init(hwnd, width, height);
 }
 
 DX11SwapChain::~DX11SwapChain()
@@ -22,16 +26,17 @@ void DX11SwapChain::Cleanup()
 	m_swap_chain->Release();
 }
 
-void DX11SwapChain::Init(Hazel::Ref<DX11Device> device, IDXGIFactory* dxgiFactory, HWND hwnd, uint32_t width, uint32_t height)
+void DX11SwapChain::Init(HWND hwnd, uint32_t width, uint32_t height)
 {
-	m_Device = device;
+	m_Device = DX11Context::GetCurrentDevice();
+
+	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
+	IDXGIFactory* dxgiFactory = DX11Context::GetIDXGIFactory();
 
 	m_Width = width;
 	m_Height = height;
 
 	// SwapChain::SwapChain
-	ID3D11Device* dx11Device = device->GetDX11Device();
-
 	DXGI_SWAP_CHAIN_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.BufferCount = 1;
@@ -54,7 +59,7 @@ void DX11SwapChain::Init(Hazel::Ref<DX11Device> device, IDXGIFactory* dxgiFactor
 		throw std::exception("SwapChain initialization failed.");
 	}
 
-	ReloadBuffers(device, width, height);
+	ReloadBuffers(width, height);
 }
 
 bool DX11SwapChain::Present(bool vsync)
@@ -63,7 +68,7 @@ bool DX11SwapChain::Present(bool vsync)
 	return true;
 }
 
-void DX11SwapChain::OnResize(Hazel::Ref<DX11Device>& device, uint32_t width, uint32_t height)
+void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
 {
 	MORAVA_CORE_WARN("DX11SwapChain::OnResize");
 	// auto device = m_Device->GetDX11Device();
@@ -76,24 +81,24 @@ void DX11SwapChain::OnResize(Hazel::Ref<DX11Device>& device, uint32_t width, uin
 	if (m_dsv) m_dsv->Release();
 
 	m_swap_chain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
-	ReloadBuffers(device, width, height);
+	ReloadBuffers(width, height);
 }
 
-void DX11SwapChain::SetFullScreen(Hazel::Ref<DX11Device>& device, bool fullscreen, unsigned int width, unsigned int height)
+void DX11SwapChain::SetFullScreen(bool fullscreen, unsigned int width, unsigned int height)
 {
-	OnResize(device, width, height);
+	OnResize(width, height);
 	m_swap_chain->SetFullscreenState(fullscreen, nullptr);
 }
 
-void DX11SwapChain::ReloadBuffers(Hazel::Ref<DX11Device>& device, uint32_t width, uint32_t height)
+void DX11SwapChain::ReloadBuffers(uint32_t width, uint32_t height)
 {
-	CreateRenderTargetView(device);
-	CreateDepthStencilView(device, width, height);
+	CreateRenderTargetView();
+	CreateDepthStencilView(width, height);
 }
 
-void DX11SwapChain::CreateRenderTargetView(Hazel::Ref<DX11Device>& device)
+void DX11SwapChain::CreateRenderTargetView()
 {
-	ID3D11Device* dx11Device = device->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
 
 	ID3D11Texture2D* buffer = NULL;
 	HRESULT hr = m_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);
@@ -112,9 +117,9 @@ void DX11SwapChain::CreateRenderTargetView(Hazel::Ref<DX11Device>& device)
 	}
 }
 
-void DX11SwapChain::CreateDepthStencilView(Hazel::Ref<DX11Device>& device, uint32_t width, uint32_t height)
+void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 {
-	ID3D11Device* dx11Device = device->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
 
 	ID3D11Texture2D* buffer = NULL;
 	HRESULT hr = m_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);

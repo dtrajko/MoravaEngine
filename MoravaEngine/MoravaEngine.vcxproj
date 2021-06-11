@@ -297,6 +297,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11ConstantBuffer.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Context.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Device.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Framebuffer.cpp">
@@ -716,6 +717,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11ConstantBuffer.h" />
     <ClInclude Include="src\Platform\DX11\DX11Context.h" />
     <ClInclude Include="src\Platform\DX11\DX11Device.h" />
     <ClInclude Include="src\Platform\DX11\DX11Framebuffer.h">

@@ -31,6 +31,8 @@ public:
 
 	static Hazel::Ref<DX11Context> Get() { return Hazel::Ref<DX11Context>(Hazel::HazelRenderer::GetContext()); }
 	static Hazel::Ref<DX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
+	static IDXGIFactory* GetIDXGIFactory() { return s_IDXGIFactory; };
+	static ID3D11DeviceContext* GetImmediateContext() { return s_ImmediateContext; };
 
 public:
 	DX11SwapChain* CreateSwapChain(HWND hwnd, UINT width, UINT height);
@@ -57,11 +59,13 @@ private:
 	D3D_FEATURE_LEVEL m_feature_level;
 	IDXGIDevice* m_dxgi_device;
 	IDXGIAdapter* m_dxgi_adapter;
-	IDXGIFactory* m_dxgi_factory;
-	ID3D11DeviceContext* m_imm_context;
+	static IDXGIFactory* s_IDXGIFactory;
+	static ID3D11DeviceContext* s_ImmediateContext;
 	ID3DBlob* m_blob = nullptr;
 
 	ID3D11RasterizerState* m_cull_front_state = nullptr;
 	ID3D11RasterizerState* m_cull_back_state = nullptr;
+
+	static bool s_Validation;
 
 };
