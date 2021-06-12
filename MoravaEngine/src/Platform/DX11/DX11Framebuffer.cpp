@@ -1,7 +1,7 @@
 #include "DX11Framebuffer.h"
 
 #include "DX11Context.h"
-#include "DX11Texture.h"
+#include "DX11Texture2D.h"
 #include "DX11SwapChain.h"
 
 #include "Core/Application.h"

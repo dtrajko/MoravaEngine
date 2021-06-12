@@ -855,9 +855,6 @@
     <ClCompile Include="src\Platform\DX11\DX11TestLayer.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\DX11\DX11Texture.cpp">
-      <Filter>Platform\DX11</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Utils.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
@@ -868,6 +865,12 @@
       <Filter>Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11ConstantBuffer.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11Texture2D.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11TextureCube.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1826,9 +1829,6 @@
     <ClInclude Include="src\Platform\DX11\DX11TestLayer.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\DX11\DX11Texture.h">
-      <Filter>Platform\DX11</Filter>
-    </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Utils.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
@@ -1839,6 +1839,12 @@
       <Filter>Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11ConstantBuffer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11Texture2D.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11TextureCube.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
   </ItemGroup>

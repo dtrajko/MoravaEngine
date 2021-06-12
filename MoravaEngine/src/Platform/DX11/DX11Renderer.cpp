@@ -8,7 +8,7 @@
 #include "DX11IndexBuffer.h"
 #include "DX11Pipeline.h"
 #include "DX11Shader.h"
-#include "DX11Texture.h"
+#include "DX11Texture2D.h"
 #include "DX11VertexBuffer.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 

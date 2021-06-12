@@ -79,7 +79,8 @@ public:
 		return (uint32_t)m_ShaderDescriptorSets.at(set).UniformBuffers.size();
 	}
 
-		std::unordered_map<uint32_t, std::string> PreProcess(const std::string& source);
+	std::unordered_map<uint32_t, std::string> PreProcess(const std::string& source);
+
 	struct ShaderDescriptorSet
 	{
 		std::unordered_map<uint32_t, UniformBuffer*> UniformBuffers;
@@ -97,7 +98,9 @@ public:
 
 	static void ClearUniformBuffers();
 
-		std::unordered_map<VkShaderStageFlagBits, std::string> m_ShaderSource;
+	ID3D11VertexShader* GetVertexShader() { return m_vs; }
+	ID3D11PixelShader* GetPixelShader() { return m_ps; }
+
 private:
 	void CompileOrGetDX11Binary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile);
 	void LoadAndCreateVertexShader(const std::vector<uint32_t>& shaderData);
@@ -119,5 +122,9 @@ private:
 	std::vector<PushConstantRange> m_PushConstantRanges;
 
 	std::unordered_map<std::string, Hazel::ShaderBuffer> m_Buffers;
+
+	// DirectX 11 specific
+	ID3D11VertexShader* m_vs;
+	ID3D11PixelShader* m_ps;
 
 };

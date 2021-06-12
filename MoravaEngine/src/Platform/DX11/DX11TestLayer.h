@@ -8,7 +8,7 @@
 
 #include "DX11Pipeline.h"
 #include "DX11Shader.h"
-#include "DX11Texture.h"
+#include "DX11Texture2D.h"
 
 #include "Core/Window.h"
 #include "Scene/Scene.h"

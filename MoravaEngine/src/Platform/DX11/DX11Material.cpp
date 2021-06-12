@@ -3,7 +3,7 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 
 #include "Platform/DX11/DX11Context.h"
-#include "Platform/DX11/DX11Texture.h"
+#include "Platform/DX11/DX11Texture2D.h"
 #include "Platform/DX11/DX11Image.h"
 
 

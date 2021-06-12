@@ -54,7 +54,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;HZ_PLATFORM_WINDOWS;HZ_DEBUG;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -64,8 +64,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc_util\$(Configuration);$(SolutionDir)vendor\Vulkan\1.2.148.1\Lib;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration);$(SolutionDir)vendor\DirectXTex\bin</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;mono-2.0-sgen.lib;box2d.lib;shaderc_combined.lib;vulkan-1.lib;d3d11.lib;d3dcompiler.lib;DirectXTexD.lib;assimp-vc142-mtd.lib;yaml-cppd.lib;spirv-cross-cored.lib;spirv-cross-cppd.lib;spirv-cross-glsld.lib;spirv-cross-hlsld.lib;spirv-cross-msld.lib;spirv-cross-reflectd.lib;spirv-cross-utild.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc_util\$(Configuration);$(SolutionDir)vendor\Vulkan\1.2.148.1\Lib;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration);$(SolutionDir)vendor\DirectXTex\build\bin\CMake\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;mono-2.0-sgen.lib;box2d.lib;shaderc_combined.lib;vulkan-1.lib;d3d11.lib;d3dcompiler.lib;DirectXTex.lib;assimp-vc142-mtd.lib;yaml-cppd.lib;spirv-cross-cored.lib;spirv-cross-cppd.lib;spirv-cross-glsld.lib;spirv-cross-hlsld.lib;spirv-cross-msld.lib;spirv-cross-reflectd.lib;spirv-cross-utild.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -79,7 +79,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;HZ_PLATFORM_WINDOWS;HZ_RELEASE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\mono\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(SolutionDir)vendor\DirectXTex\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -90,8 +90,8 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc_util\$(Configuration);$(SolutionDir)vendor\Vulkan\1.2.148.1\Lib;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration);$(SolutionDir)vendor\DirectXTex\bin</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;mono-2.0-sgen.lib;box2d.lib;shaderc_combined.lib;vulkan-1.lib;d3d11.lib;d3dcompiler.lib;DirectXTexD.lib;assimp-vc142-mt.lib;yaml-cpp.lib;spirv-cross-core.lib;spirv-cross-cpp.lib;spirv-cross-glsl.lib;spirv-cross-hlsl.lib;spirv-cross-msl.lib;spirv-cross-reflect.lib;spirv-cross-util.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)build\$(Configuration);$(SolutionDir)vendor\cross-platform\glfw\src\$(Configuration);$(SolutionDir)vendor\GLEW\lib;$(SolutionDir)vendor\cross-platform\assimp\lib\$(Configuration);$(SolutionDir)vendor\cross-platform\yaml-cpp\build\$(Configuration);$(SolutionDir)vendor\build\$(Configuration);$(SolutionDir)vendor\mono\lib\$(Configuration);$(SolutionDir)vendor\box2d\bin\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\build\libshaderc_util\$(Configuration);$(SolutionDir)vendor\Vulkan\1.2.148.1\Lib;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\$(Configuration);$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\$(Configuration);$(SolutionDir)vendor\cross-platform\SPIRV-Cross\$(Configuration);$(SolutionDir)vendor\DirectXTex\build\bin\CMake\$(Configuration)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;mono-2.0-sgen.lib;box2d.lib;shaderc_combined.lib;vulkan-1.lib;d3d11.lib;d3dcompiler.lib;DirectXTex.lib;assimp-vc142-mt.lib;yaml-cpp.lib;spirv-cross-core.lib;spirv-cross-cpp.lib;spirv-cross-glsl.lib;spirv-cross-hlsl.lib;spirv-cross-msl.lib;spirv-cross-reflect.lib;spirv-cross-util.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -385,12 +385,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\Platform\DX11\DX11Texture.cpp">
+    <ClCompile Include="src\Platform\DX11\DX11Texture2D.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11TextureCube.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Utils.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11VertexBuffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -805,12 +806,13 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="src\Platform\DX11\DX11Texture.h">
+    <ClInclude Include="src\Platform\DX11\DX11Texture2D.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11TextureCube.h" />
     <ClInclude Include="src\Platform\DX11\DX11Utils.h" />
     <ClInclude Include="src\Platform\DX11\DX11VertexBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

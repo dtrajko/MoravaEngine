@@ -5,7 +5,7 @@
 #include "Hazel/Renderer/HazelShader.h"
 
 #include "DX11Shader.h"
-#include "DX11Texture.h"
+#include "DX11Texture2D.h"
 
 
 class DX11ComputePipeline : public Hazel::RefCounted

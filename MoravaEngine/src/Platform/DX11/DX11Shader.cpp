@@ -5,7 +5,7 @@
 
 #include "Core/Log.h"
 #include "DX11Context.h"
-#include "DX11Texture.h"
+#include "DX11Texture2D.h"
 
 #include <shaderc/shaderc.hpp>
 #include <spirv_glsl.hpp>

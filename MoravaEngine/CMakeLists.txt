@@ -731,6 +731,30 @@ SET(shaderc_SRCS
 	../vendor/cross-platform/shaderc/libshaderc_util/src/version_profile_test.cc
 )
 
+SET(DirectXTex_SRCS
+	../vendor/DirectXTex/DirectXTex/BC.cpp
+	../vendor/DirectXTex/DirectXTex/BC4BC5.cpp
+	../vendor/DirectXTex/DirectXTex/BC6HBC7.cpp
+	../vendor/DirectXTex/DirectXTex/BCDirectCompute.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexCompress.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexCompressGPU.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexConvert.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexD3D11.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexD3D12.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexDDS.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexFlipRotate.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexHDR.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexImage.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexMipmaps.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexMisc.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexNormalMaps.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexPMAlpha.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexResize.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexTGA.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexUtil.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexWIC.cpp
+)
+
 message("Environment variable 'MORAVA_BUILD_TYPE' = '" $ENV{MORAVA_BUILD_TYPE} "'")
 
 option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
@@ -766,6 +790,8 @@ add_library(yaml-cpp			STATIC "${yaml-cpp_SRCS}")
 add_library(box2d				STATIC "${box2d_SRCS}")
 
 add_library(shaderc				STATIC "${shaderc_SRCS}")
+
+add_library(DirectXTex          STATIC "${DirectXTex_SRCS}")
 
 #	add_library(Hazel-ScriptCore	SHARED "${Hazel-ScriptCore_SRCS}")
 #	add_library(ExampleApp			SHARED "${ExampleApp_SRCS}")
@@ -818,6 +844,7 @@ add_dependencies("${PROJECT_NAME}" glfw3)
 add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
 add_dependencies("${PROJECT_NAME}" yaml-cpp)
 add_dependencies("${PROJECT_NAME}" box2d)
+add_dependencies("${PROJECT_NAME}" DirectXTex)
 # add_dependencies("${PROJECT_NAME}" shaderc)
 # add_dependencies("${PROJECT_NAME}" Hazel-ScriptCore)
 # add_dependencies("${PROJECT_NAME}" ExampleApp)
@@ -982,6 +1009,7 @@ target_include_directories(
 	../vendor/cross-platform/shaderc/libshaderc_util/include
 	../vendor/cross-platform/SPIRV-Cross
 	../vendor/Vulkan/1.2.148.1/Include
+	../vendor/DirectXTex/DirectXTex
 )
 
 target_link_directories(
@@ -1003,7 +1031,7 @@ target_link_directories(
 	../vendor/cross-platform/shaderc/libshaderc_util # Linux
 	../vendor/cross-platform/SPIRV-Cross/$ENV{MORAVA_BUILD_TYPE}
 	../vendor/Vulkan/1.2.148.1/Lib
-	../vendor/DirectXTex/bin
+	../vendor/DirectXTex/build/bin/CMake/$ENV{MORAVA_BUILD_TYPE}
 	../${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
 )
 
@@ -1042,7 +1070,7 @@ if(WIN32)
 		vulkan-1.lib
 		d3d11.lib
 		d3dcompiler.lib
-		DirectXTexD.lib
+		DirectXTex.lib
 	)
 elseif(UNIX)
 	target_link_libraries(

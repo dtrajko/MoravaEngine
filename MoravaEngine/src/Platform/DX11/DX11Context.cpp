@@ -145,12 +145,18 @@ void DX11Context::ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget,
 {
 	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
 	FLOAT clear_color[] = { red, green, blue, alpha };
-	m_device_context->ClearRenderTargetView(renderTarget->GetRenderTargetView(), clear_color);
+	m_device_context->ClearRenderTargetView(renderTarget->m_render_target_view, clear_color);
 }
 
 void DX11Context::ClearDepthStencil()
 {
 	m_device_context->ClearDepthStencilView(m_SwapChain->m_dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+}
+
+void DX11Context::ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil)
+{
+	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
+	m_device_context->ClearDepthStencilView(depthStencil->m_depth_stencil_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 }
 
 void DX11Context::SetViewportSize(uint32_t width, uint32_t height)
@@ -176,4 +182,41 @@ void DX11Context::SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer)
 void DX11Context::SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer)
 {
 	m_device_context->IASetIndexBuffer(indexBuffer->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
+}
+
+void DX11Context::SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil)
+{
+	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
+	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
+
+	m_device_context->OMSetRenderTargets(1, &renderTarget->m_render_target_view, depthStencil->m_depth_stencil_view);
+}
+
+void DX11Context::SetVertexShader(Hazel::Ref<DX11Shader> vertexShader)
+{
+	m_device_context->VSSetShader(vertexShader->GetVertexShader(), nullptr, 0);
+}
+
+void DX11Context::SetPixelShader(Hazel::Ref<DX11Shader> pixelShader)
+{
+	if (!pixelShader) return;
+	m_device_context->PSSetShader(pixelShader->GetPixelShader(), nullptr, 0);
+}
+
+void DX11Context::DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex)
+{
+	m_device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_device_context->Draw((UINT)vertexCount, (UINT)startVertexIndex);
+}
+
+void DX11Context::DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation)
+{
+	m_device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	m_device_context->DrawIndexed((UINT)indexCount, (UINT)startIndexLocation, (UINT)startVertexIndex);
+}
+
+void DX11Context::DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex)
+{
+	m_device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	m_device_context->Draw((UINT)vertexCount, (UINT)startVertexIndex);
 }

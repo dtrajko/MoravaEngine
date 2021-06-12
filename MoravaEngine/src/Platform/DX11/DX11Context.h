@@ -9,7 +9,8 @@
 #include "DX11VertexBuffer.h"
 #include "DX11IndexBuffer.h"
 #include "DX11ConstantBuffer.h"
-#include "DX11Texture.h"
+#include "DX11Texture2D.h"
+#include "DX11Shader.h"
 
 #include <d3d11.h>
 
@@ -46,12 +47,21 @@ public:
 	void ClearRenderTargetColor(float red, float green, float blue, float alpha);
 	void ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha);
 	void ClearDepthStencil();
+	void ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil);
 
 	void SetViewportSize(uint32_t width, uint32_t height);
 
 	void SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer);
 	void SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer);
 
+	void SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil);
+
+	void SetVertexShader(Hazel::Ref<DX11Shader> vertexShader);
+	void SetPixelShader(Hazel::Ref<DX11Shader> pixelShader);
+
+	void DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex);
+	void DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation);
+	void DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex);
 
 private:
 	void InitRasterizerState();
