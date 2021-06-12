@@ -12,6 +12,16 @@
 class DX11Texture2D : public Hazel::HazelTexture2D
 {
 public:
+	enum Type
+	{
+		Normal = 0,
+		RenderTarget,
+		DepthStencil,
+	};
+
+	DX11Texture2D();
+	DX11Texture2D(const std::string& full_path);
+	DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type);
 	DX11Texture2D(const std::string& path, bool srgb = false, Hazel::HazelTextureWrap wrap = Hazel::HazelTextureWrap::Clamp);
 	DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, const void* data, Hazel::HazelTextureWrap wrap = Hazel::HazelTextureWrap::Clamp);
 	DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, Hazel::HazelTextureWrap wrap = Hazel::HazelTextureWrap::Clamp);
@@ -52,6 +62,10 @@ public:
 
 	virtual uint32_t GetID() const override { return uint32_t(0); /* Not implemented */ }
 
+	glm::vec2 getSize() { return m_size; }
+	DX11Texture2D::Type GetType() { return m_type; }
+	ID3D11RenderTargetView* GetRenderTargetView() { return m_render_target_view; }
+
 private:
 	std::string m_Path;
 	uint32_t m_Width;
@@ -64,6 +78,16 @@ private:
 	VkImage m_Image;
 
 	Hazel::HazelImageFormat m_Format = Hazel::HazelImageFormat::None;
+
+
+	glm::vec2 m_size;
+	DX11Texture2D::Type m_type = DX11Texture2D::Type::Normal;
+
+	ID3D11Resource* m_texture = nullptr;
+	ID3D11ShaderResourceView* m_shader_res_view = nullptr;
+	ID3D11RenderTargetView* m_render_target_view = nullptr;
+	ID3D11DepthStencilView* m_depth_stencil_view = nullptr;
+	ID3D11SamplerState* m_sampler_state = nullptr;
 
 };
 

@@ -141,6 +141,13 @@ void DX11Context::ClearRenderTargetColor(float red, float green, float blue, flo
 	m_device_context->OMSetRenderTargets(1, &m_SwapChain->m_rtv, m_SwapChain->m_dsv);
 }
 
+void DX11Context::ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha)
+{
+	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
+	FLOAT clear_color[] = { red, green, blue, alpha };
+	m_device_context->ClearRenderTargetView(renderTarget->GetRenderTargetView(), clear_color);
+}
+
 void DX11Context::ClearDepthStencil()
 {
 	m_device_context->ClearDepthStencilView(m_SwapChain->m_dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);

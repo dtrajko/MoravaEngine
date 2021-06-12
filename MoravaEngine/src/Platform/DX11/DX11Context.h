@@ -9,6 +9,7 @@
 #include "DX11VertexBuffer.h"
 #include "DX11IndexBuffer.h"
 #include "DX11ConstantBuffer.h"
+#include "DX11Texture.h"
 
 #include <d3d11.h>
 
@@ -43,12 +44,14 @@ public:
 	void SetRasterizerState(bool cull_front);
 
 	void ClearRenderTargetColor(float red, float green, float blue, float alpha);
+	void ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha);
 	void ClearDepthStencil();
 
 	void SetViewportSize(uint32_t width, uint32_t height);
 
 	void SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer);
 	void SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer);
+
 
 private:
 	void InitRasterizerState();
