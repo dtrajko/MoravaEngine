@@ -6,7 +6,7 @@
 #include "DX11Device.h"
 
 
-class DX11ConstantBuffer
+class DX11ConstantBuffer : public Hazel::RefCounted
 {
 public:
 	DX11ConstantBuffer() = default;
@@ -15,7 +15,11 @@ public:
 
 	void Update(void* buffer);
 
+	inline ID3D11Buffer* GetBuffer() { return m_buffer; }
+
 private:
 	ID3D11Buffer* m_buffer;
+
+	friend class DX11Context;
 
 };

@@ -41,6 +41,8 @@ public:
 
 	// ---------------------------------------------------------------
 
+	static ID3D11Device* GetDX11Device() { return s_DX11Device; }
+
 	DX11SwapChain* CreateSwapChain(HWND hwnd, UINT width, UINT height);
 	void SetRasterizerState(bool cull_front);
 
@@ -59,12 +61,18 @@ public:
 	void SetVertexShader(Hazel::Ref<DX11Shader> vertexShader);
 	void SetPixelShader(Hazel::Ref<DX11Shader> pixelShader);
 
+	void SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, const std::vector<Hazel::Ref<DX11Texture2D>>& textures, uint32_t textureCount);
+	void SetConstantBuffer(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, Hazel::Ref<DX11ConstantBuffer> buffer);
+
 	void DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex);
 	void DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation);
 	void DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex);
 
 private:
 	void InitRasterizerState();
+
+public:
+	static ID3D11Device* s_DX11Device;
 
 private:
 	GLFWwindow* m_WindowHandle;
@@ -73,10 +81,6 @@ private:
 	Hazel::Ref<DX11PhysicalDevice> m_PhysicalDevice;
 	Hazel::Ref<DX11Device> m_Device;
 
-public:
-	ID3D11Device* m_d3d_device;
-
-private:
 	DX11SwapChain* m_SwapChain;
 
 	ID3D11DeviceContext* m_device_context;

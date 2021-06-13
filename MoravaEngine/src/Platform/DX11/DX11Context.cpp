@@ -7,6 +7,7 @@
 bool DX11Context::s_Validation = true;
 IDXGIFactory* DX11Context::s_IDXGIFactory;
 ID3D11DeviceContext* DX11Context::s_ImmediateContext;
+ID3D11Device* DX11Context::s_DX11Device;
 
 
 DX11Context::DX11Context(GLFWwindow* windowHandle)
@@ -30,7 +31,7 @@ DX11Context::DX11Context(GLFWwindow* windowHandle)
 	for (UINT driver_type_index = 0; driver_type_index < num_driver_types;)
 	{
 		res = D3D11CreateDevice(NULL, driver_types[driver_type_index], NULL, NULL, feature_levels, num_feature_levels,
-			D3D11_SDK_VERSION, &m_d3d_device, &m_feature_level, &s_ImmediateContext);
+			D3D11_SDK_VERSION, &s_DX11Device, &m_feature_level, &s_ImmediateContext);
 
 		if (SUCCEEDED(res))
 		{
@@ -44,7 +45,7 @@ DX11Context::DX11Context(GLFWwindow* windowHandle)
 		throw std::exception("DX11Context: D3D11CreateDevice failed.");
 	}
 
-	m_d3d_device->QueryInterface(__uuidof(IDXGIDevice), (void**)&m_dxgi_device);
+	s_DX11Device->QueryInterface(__uuidof(IDXGIDevice), (void**)&m_dxgi_device);
 	m_dxgi_device->GetParent(__uuidof(IDXGIAdapter), (void**)&m_dxgi_adapter);
 	m_dxgi_adapter->GetParent(__uuidof(IDXGIFactory), (void**)&s_IDXGIFactory);
 
@@ -85,10 +86,10 @@ void DX11Context::InitRasterizerState()
 	desc.CullMode = D3D11_CULL_FRONT;
 	desc.DepthClipEnable = true;
 	desc.FillMode = D3D11_FILL_SOLID;
-	m_d3d_device->CreateRasterizerState(&desc, &m_cull_front_state);
+	s_DX11Device->CreateRasterizerState(&desc, &m_cull_front_state);
 
 	desc.CullMode = D3D11_CULL_BACK;
-	m_d3d_device->CreateRasterizerState(&desc, &m_cull_back_state);
+	s_DX11Device->CreateRasterizerState(&desc, &m_cull_back_state);
 }
 
 void DX11Context::Create()
@@ -219,4 +220,39 @@ void DX11Context::DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIn
 {
 	m_device_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	m_device_context->Draw((UINT)vertexCount, (UINT)startVertexIndex);
+}
+
+void DX11Context::SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, const std::vector<Hazel::Ref<DX11Texture2D>>& textures, uint32_t textureCount)
+{
+	ID3D11ShaderResourceView* list_res[32];
+	ID3D11SamplerState* list_sampler[32];
+
+	for (unsigned int i = 0; i < textureCount; i++)
+	{
+		list_res[i] = textures[i]->m_shader_res_view;
+		list_sampler[i] = textures[i]->m_sampler_state;
+	}
+
+	if (shaderType == DX11Shader::Type::Vertex)
+	{
+		m_device_context->VSSetShaderResources(0, textureCount, list_res);
+		m_device_context->VSSetSamplers(0, textureCount, list_sampler);
+	}
+	else if (shaderType == DX11Shader::Type::Pixel)
+	{
+		m_device_context->PSSetShaderResources(0, textureCount, list_res);
+		m_device_context->PSSetSamplers(0, textureCount, list_sampler);
+	}
+}
+
+void DX11Context::SetConstantBuffer(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, Hazel::Ref<DX11ConstantBuffer> buffer)
+{
+	if (shaderType == DX11Shader::Type::Vertex)
+	{
+		m_device_context->VSSetConstantBuffers(0, 1, &buffer->m_buffer);
+	}
+	else if (shaderType == DX11Shader::Type::Pixel)
+	{
+		m_device_context->PSSetConstantBuffers(0, 1, &buffer->m_buffer);
+	}
 }

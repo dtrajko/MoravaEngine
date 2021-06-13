@@ -30,6 +30,13 @@ public:
 		uint32_t Size = 0;
 	};
 
+	enum class Type
+	{
+		None = 0,
+		Vertex,
+		Pixel,
+	};
+
 public:
 	DX11Shader(const std::string& path, bool forceCompile);
 	virtual ~DX11Shader();

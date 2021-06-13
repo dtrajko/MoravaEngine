@@ -31,6 +31,7 @@ public:
 	virtual Hazel::RendererID GetRendererID() const override { return 0; }
 
 	inline uint32_t GetBufferSize() { return m_size_vertex; }
+	inline ID3D11Buffer* GetBuffer() { return m_buffer; }
 
 private:
 	// uint32_t m_Size = 0;
