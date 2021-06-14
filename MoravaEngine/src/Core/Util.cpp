@@ -6,6 +6,9 @@
 #include <GL/glew.h>
 
 #include <algorithm>
+#include <locale>
+#include <codecvt>
+#include <string>
 
 
 void Util::OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -131,16 +134,16 @@ std::string Util::SpaceToUnderscore(std::string text)
 	return text;
 }
 
-std::wstring Util::StringToWideString(const std::string& sourceString)
+std::wstring Util::StringNarrowToWide(const std::string& srcNarrow)
 {
-	std::wstring_convert< std::codecvt<wchar_t, char, std::mbstate_t> > conv;
-	std::wstring destWideString = conv.from_bytes(sourceString);
-	return destWideString;
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	std::wstring destWide = converter.from_bytes(srcNarrow);
+	return destWide;
 }
 
-const wchar_t* Util::ConvertStdStringToWideChar(const std::string& sourceString)
+std::string Util::StringWideToNarrow(const std::wstring& srcWide)
 {
-	std::wstring destWideString = StringToWideString(sourceString);
-	const wchar_t* destWideChar = destWideString.c_str();
-	return destWideChar;
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	std::string destNarrow = converter.to_bytes(srcWide);
+	return destNarrow;
 }

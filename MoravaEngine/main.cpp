@@ -1,13 +1,6 @@
 #include "main.h"
 
 
-
-// Window properties
-const char* WINDOW_TITLE = "Morava Engine";
-const int WIDTH = 1280;
-const int HEIGHT = 720;
-
-
 void SelectRendererAPI()
 {
 #if defined(SCENE_HAZEL_VULKAN) 
@@ -26,7 +19,7 @@ int main()
 
 	SelectRendererAPI();
 
-	Application::Get()->InitWindow(WindowProps(WINDOW_TITLE, WIDTH, HEIGHT));
+	Application::Get()->InitWindow(WindowProps("Morava Engine", L"Morava Engine", 1280, 720));
 
 	Application::Get()->Run();
 

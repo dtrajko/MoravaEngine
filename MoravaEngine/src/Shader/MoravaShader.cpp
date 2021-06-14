@@ -24,14 +24,13 @@ Hazel::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaSh
 	}
 	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::HazelShader)
 	{
-		moravaShader = Hazel::Ref<MoravaShader>(HazelShader::Create(moravaShaderSpecification.HazelShaderPath, moravaShaderSpecification.ForceCompile));
+		Hazel::Ref<Hazel::HazelShader> hazelShader = HazelShader::Create(moravaShaderSpecification.HazelShaderPath, moravaShaderSpecification.ForceCompile);
+		moravaShader = Hazel::Ref<MoravaShader>(hazelShader);
 	}
 	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::DX11Shader)
 	{
-		const wchar_t* vertexShaderPathWChar = Util::ConvertStdStringToWideChar(moravaShaderSpecification.VertexShaderPath);
-		const wchar_t* pixelShaderPathWChar = Util::ConvertStdStringToWideChar(moravaShaderSpecification.PixelShaderPath);
-
-		moravaShader = Hazel::Ref<MoravaShader>(Hazel::Ref<DX11Shader>::Create(vertexShaderPathWChar, pixelShaderPathWChar));
+		Hazel::Ref<DX11Shader> dx11Shader = Hazel::Ref<DX11Shader>::Create(moravaShaderSpecification.VertexShaderPathDX11.c_str(), moravaShaderSpecification.PixelShaderPathDX11.c_str());
+		moravaShader = Hazel::Ref<MoravaShader>(dx11Shader);
 	}
 
 	return moravaShader;

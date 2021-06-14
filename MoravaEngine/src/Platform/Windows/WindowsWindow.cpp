@@ -209,7 +209,7 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 
 	LPCWSTR className = L"WindowsWindow";
 	LPCWSTR menuName = L"";
-	LPCWSTR windowName = Util::ConvertStdStringToWideChar(props.Title);
+	LPCWSTR windowName = props.TitleDX11.c_str();
 
 	WNDCLASSEX wc;
 	wc.cbClsExtra = NULL;

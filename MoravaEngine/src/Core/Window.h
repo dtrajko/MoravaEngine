@@ -13,13 +13,16 @@
 struct WindowProps
 {
 	std::string Title;
+	std::wstring TitleDX11;
 	uint32_t Width;
 	uint32_t Height;
 
-	WindowProps(const std::string& title = "3D Graphics Engine (C++/OpenGL)",
+	WindowProps(
+		const std::string& title = "Untitled",
+		const std::wstring& titleDX11 = L"Untitled",
 		uint32_t width = 1280,
 		uint32_t height = 720)
-		: Title(title), Width(width), Height(height)
+		: Title(title), TitleDX11(titleDX11), Width(width), Height(height)
 	{
 	}
 };

@@ -31,7 +31,7 @@ public:
 
 	static std::string SpaceToUnderscore(std::string text);
 
-	static std::wstring StringToWideString(const std::string& sourceString);
-	static const wchar_t* ConvertStdStringToWideChar(const std::string& sourceString);
+	static std::wstring StringNarrowToWide(const std::string& srcNarrow);
+	static std::string StringWideToNarrow(const std::wstring& srcWide);
 
 };

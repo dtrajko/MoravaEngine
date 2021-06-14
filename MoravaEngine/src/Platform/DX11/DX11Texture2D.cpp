@@ -10,12 +10,12 @@ DX11Texture2D::DX11Texture2D()
 {
 }
 
-DX11Texture2D::DX11Texture2D(const wchar_t* full_path)
+DX11Texture2D::DX11Texture2D(const wchar_t* fullPath)
 {
 	ID3D11Device* dx11Device = DX11Context::Get()->GetCurrentDevice()->GetDX11Device();
 
 	DirectX::ScratchImage image_data;
-	HRESULT res = DirectX::LoadFromWICFile(full_path, DirectX::WIC_FLAGS_IGNORE_SRGB, nullptr, image_data);
+	HRESULT res = DirectX::LoadFromWICFile(fullPath, DirectX::WIC_FLAGS_IGNORE_SRGB, nullptr, image_data);
 
 	if (SUCCEEDED(res))
 	{
