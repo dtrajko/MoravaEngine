@@ -149,7 +149,6 @@ void WindowsWindow::Init(const WindowProps& props)
 	// not working with the new Hazel GLFW callbacks
 
 	// SetCallbacks();
-	SetCallbacksHazelDev();
 }
 
 void WindowsWindow::InitGLFW(const WindowProps& props)
@@ -199,6 +198,9 @@ void WindowsWindow::InitGLFW(const WindowProps& props)
 
 	// Set context for GLEW to use
 	glfwSetWindowUserPointer(m_Window, &m_Data);
+
+	// GLFW event callbacks
+	SetCallbacksHazelDev();
 }
 
 void WindowsWindow::InitDX11(const WindowProps& props)
@@ -242,7 +244,6 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 
 	// Set this flag to true to indicate that the window is initialized and running
 	m_IsRunning = true;
-
 
 	DX11Context::Get()->Create();
 

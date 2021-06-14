@@ -164,8 +164,6 @@ namespace Hazel {
 				moravaShaderSpecificationHazelDX11.PixelShaderPath = "Shaders/HLSL/DirectionalLightPixelShader.hlsl";
 				moravaShaderSpecificationHazelDX11.ForceCompile = false;
 
-				auto shader = MoravaShader::Create(moravaShaderSpecificationHazelDX11);
-
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelDX11);
 			}
 			/**** END MoravaShader the new API ****/

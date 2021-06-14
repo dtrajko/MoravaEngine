@@ -133,14 +133,9 @@ std::string Util::SpaceToUnderscore(std::string text)
 
 std::wstring Util::StringToWideString(const std::string& sourceString)
 {
-	int len;
-	int slength = (int)sourceString.length() + 1;
-	len = MultiByteToWideChar(CP_ACP, 0, sourceString.c_str(), slength, 0, 0);
-	wchar_t* buf = new wchar_t[len];
-	MultiByteToWideChar(CP_ACP, 0, sourceString.c_str(), slength, buf, len);
-	std::wstring r(buf);
-	delete[] buf;
-	return r;
+	std::wstring_convert< std::codecvt<wchar_t, char, std::mbstate_t> > conv;
+	std::wstring destWideString = conv.from_bytes(sourceString);
+	return destWideString;
 }
 
 const wchar_t* Util::ConvertStdStringToWideChar(const std::string& sourceString)
