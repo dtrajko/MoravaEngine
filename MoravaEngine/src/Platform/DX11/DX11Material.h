@@ -5,11 +5,25 @@
 #include "Hazel/Renderer/HazelImage.h"
 #include "Hazel/Renderer/HazelMaterial.h"
 
+#include "DX11Shader.h"
+#include "DX11ConstantBuffer.h"
+#include "DX11Texture2D.h"
+
 
 class DX11Material : public Hazel::HazelMaterial
 {
 public:
+	enum class CullMode
+	{
+		Front = 0,
+		Back,
+		Both,
+	};
+
 	DX11Material(const Hazel::Ref<Hazel::HazelShader>& shader, const std::string& name = "");
+	// DirectX Material
+	DX11Material(const Hazel::Ref<DX11Shader>& shader);
+	DX11Material(Hazel::Ref<DX11Material> material);
 	virtual ~DX11Material();
 
 	virtual void Invalidate() override;
@@ -112,6 +126,15 @@ public:
 
 	void UpdateForRendering();
 
+	// DirectX Material
+	void AddTexture(Hazel::Ref<DX11Texture2D> texture);
+	void RemoveTexture(unsigned int index);
+
+	void SetData(void* data, unsigned int size);
+
+	void SetCullMode(CullMode cullMode);
+	CullMode GetCullMode();
+
 private:
 	void Init();
 	void AllocateStorage();
@@ -130,5 +153,11 @@ private:
 	std::vector<Hazel::Ref<Hazel::HazelImage>> m_Images;
 
 	std::unordered_map<uint32_t, uint64_t> m_ImageHashes;
+
+	// DirectX Material
+	Hazel::Ref<DX11Shader> m_VertexShader;
+	Hazel::Ref<DX11Shader> m_PixelShader;
+	Hazel::Ref<DX11ConstantBuffer> m_ConstantBuffer;
+	CullMode m_CullMode = CullMode::Back;
 
 };

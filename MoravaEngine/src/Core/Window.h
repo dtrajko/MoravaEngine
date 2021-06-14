@@ -57,6 +57,20 @@ public:
 
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
+	/**** BEGIN DirectX 11 methods ***/
+
+	virtual void SetHWND(HWND hwnd) = 0;
+	virtual HWND GetHWND() = 0;
+
+	// Events
+	virtual void OnCreate() = 0;
+	virtual void OnDestroy() = 0;
+	virtual void OnFocus() = 0;
+	virtual void OnKillFocus() = 0;
+	virtual void OnSize() = 0;
+
+	/**** END DirectX 11 methods ***/
+
 	virtual void OnUpdate() = 0;
 
 	// Methods used by MoravaEngine classes

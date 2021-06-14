@@ -3,6 +3,7 @@
 #include "Core/Application.h"
 #include "Core/CommonValues.h"
 #include "Core/Util.h"
+#include "DX11Context.h"
 
 
 DX11RendererBasic::DX11RendererBasic()
@@ -30,14 +31,6 @@ void DX11RendererBasic::Init(Scene* scene)
 
 void DX11RendererBasic::SetUniforms()
 {
-	// common
-	s_Uniforms.insert(std::make_pair("model", 0));
-	s_Uniforms.insert(std::make_pair("view", 0));
-	s_Uniforms.insert(std::make_pair("projection", 0));
-	s_Uniforms.insert(std::make_pair("nearPlane", 0));
-	s_Uniforms.insert(std::make_pair("farPlane", 0));
-	s_Uniforms.insert(std::make_pair("normalMap", 0));
-	s_Uniforms.insert(std::make_pair("lightPosition", 0));
 }
 
 void DX11RendererBasic::SetShaders()
@@ -150,7 +143,7 @@ void DX11RendererBasic::DisableWireframe()
 
 void DX11RendererBasic::SetupViewportSize(uint32_t width, uint32_t height)
 {
-	Log::GetLogger()->warn("DX11RendererBasic::SetupViewportSize({0}, {1}): Method not yet supported!", width, height);
+	DX11Context::Get()->SetViewportSize(width, height);
 }
 
 void DX11RendererBasic::DisableBlend()

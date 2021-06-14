@@ -7,9 +7,71 @@
 #include "Core/Application.h"
 #include "Core/Log.h"
 
+#include "Platform/DX11/DX11.h"
+#include "Platform/DX11/DX11Context.h"
+
 #include <cmath>
 #include <exception>
 
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+	switch (msg)
+	{
+	case WM_CREATE:
+	{
+		// Event fired when the window is created
+		// Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		// window->SetHWND(hwnd);
+		// window->OnCreate();
+		break;
+	}
+	case WM_SIZE:
+	{
+		// Event fired when the window is resized
+		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		if (window)
+		{
+			window->OnSize();
+		}
+		break;
+	}
+	case WM_SETFOCUS:
+	{
+		// Event fired when the window is in focus
+		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		if (window)
+		{
+			window->OnFocus();
+		}
+		break;
+	}
+	case WM_KILLFOCUS:
+	{
+		// Event fired when the window is in focus
+		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		if (window)
+		{
+			window->OnKillFocus();
+		}
+		break;
+	}
+	case WM_DESTROY:
+	{
+		// Event fired when the window is destroyed
+		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		window->OnDestroy();
+		::PostQuitMessage(0);
+		break;
+	}
+	default:
+	{
+		return ::DefWindowProc(hwnd, msg, wparam, lparam);
+	}
+	}
+
+	return NULL;
+}
 
 /**** BEGIN Hazel properties and methods ****/
 
@@ -64,6 +126,34 @@ void WindowsWindow::Init(const WindowProps& props)
 
 	Log::GetLogger()->info("Creating window {0} [{1}x{2}]", props.Title, props.Width, props.Height);
 
+	switch (Hazel::RendererAPI::Current())
+	{
+		case Hazel::RendererAPIType::OpenGL:
+		case Hazel::RendererAPIType::Vulkan:
+			InitGLFW(props);
+			break;
+		case Hazel::RendererAPIType::DX11:
+			InitDX11(props);
+			break;
+	}
+
+	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create(m_Window));
+	m_RendererContext->Create();
+
+	SetVSync(true);
+
+	RendererBasic::EnableDepthTest();
+	RendererBasic::SetupViewportSize(m_Data.Width, m_Data.Height);
+
+	// The old MoravaEngine method of handling events
+	// not working with the new Hazel GLFW callbacks
+
+	// SetCallbacks();
+	SetCallbacksHazelDev();
+}
+
+void WindowsWindow::InitGLFW(const WindowProps& props)
+{
 	// Initialize GLFW
 	if (!s_GLFWInitialized)
 	{
@@ -73,7 +163,9 @@ void WindowsWindow::Init(const WindowProps& props)
 		if (!glfwInit())
 		{
 			glfwTerminate();
-			throw std::runtime_error("GLFW initialization failed!");
+			std::string msg = "WindowWindow: GLFW initialization failed!";
+			Log::GetCoreLogger()->error(msg);
+			throw std::runtime_error(msg);
 		}
 
 		glfwSetErrorCallback(GLFWErrorCallback);
@@ -93,7 +185,6 @@ void WindowsWindow::Init(const WindowProps& props)
 	// Allow forward compatibility
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-
 	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 	{
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -106,28 +197,134 @@ void WindowsWindow::Init(const WindowProps& props)
 		throw std::runtime_error("GLFW Window creation failed!");
 	}
 
-	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create(m_Window));
-	m_RendererContext->Create();
-
 	// Set context for GLEW to use
 	glfwSetWindowUserPointer(m_Window, &m_Data);
-	SetVSync(true);
+}
 
-	RendererBasic::EnableDepthTest();
-	RendererBasic::SetupViewportSize(m_Data.Width, m_Data.Height);
+void WindowsWindow::InitDX11(const WindowProps& props)
+{
+	m_IsInitialized = false;
 
-	// The old MoravaEngine method of handling events
-	// not working with the new Hazel GLFW callbacks
+	LPCWSTR className = L"WindowsWindow";
+	LPCWSTR menuName = L"";
+	LPCWSTR windowName = Util::ConvertStdStringToWideChar(props.Title);
 
-	// SetCallbacks();
-	SetCallbacksHazelDev();
+	WNDCLASSEX wc;
+	wc.cbClsExtra = NULL;
+	wc.cbSize = sizeof(WNDCLASSEX);
+	wc.cbWndExtra = NULL;
+	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hInstance = NULL;
+	wc.lpszClassName = className;
+	wc.lpszMenuName = menuName;
+	wc.style = NULL;
+	wc.lpfnWndProc = &WndProc;
+
+	if (!::RegisterClassEx(&wc)) // If the registration of class fails, the function returns false
+	{
+		throw std::exception("Window not created successfully.");
+	}
+
+	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
+		NULL, NULL, NULL, NULL);
+
+	if (!m_HWND)
+	{
+		throw std::exception("Window not created successfully.");
+	}
+
+	// Show up the window
+	::ShowWindow(m_HWND, SW_SHOW);
+	::UpdateWindow(m_HWND);
+
+	// Set this flag to true to indicate that the window is initialized and running
+	m_IsRunning = true;
+
+
+	DX11Context::Get()->Create();
+
+	ID3D11Device* device = DX11Context::GetDX11Device();
+
+	DXGI_SWAP_CHAIN_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.BufferCount = 1;
+	desc.BufferDesc.Width = props.Width;
+	desc.BufferDesc.Height = props.Height;
+	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.BufferDesc.RefreshRate.Numerator = 60;
+	desc.BufferDesc.RefreshRate.Denominator = 1;
+	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	desc.OutputWindow = m_HWND;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	desc.Windowed = TRUE;
+
+	DX11Context::Get()->CreateSwapChain(m_HWND, props.Width, props.Height);
 }
 
 void WindowsWindow::Shutdown()
 {
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::OpenGL:
+	case Hazel::RendererAPIType::Vulkan:
+		ShutdownGLFW();
+		break;
+	case Hazel::RendererAPIType::DX11:
+		ShutdownDX11();
+		break;
+	}
+}
+
+void WindowsWindow::ShutdownGLFW()
+{
 	glfwDestroyWindow(m_Window);
 	glfwTerminate();
 	s_GLFWInitialized = false;
+}
+
+void WindowsWindow::ShutdownDX11()
+{
+	Release();
+}
+
+void WindowsWindow::OnCreate()
+{
+}
+
+void WindowsWindow::OnDestroy()
+{
+}
+
+void WindowsWindow::OnFocus()
+{
+}
+
+void WindowsWindow::OnKillFocus()
+{
+}
+
+void WindowsWindow::OnSize()
+{
+}
+
+bool WindowsWindow::Release()
+{
+	// Destroy the window
+	if (!::DestroyWindow(m_HWND))
+	{
+		return false;
+	}
+	return true;
+}
+
+void WindowsWindow::SetHWND(HWND hwnd)
+{
+	m_HWND = hwnd;
 }
 
 inline std::pair<float, float> WindowsWindow::GetWindowPos() const

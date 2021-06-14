@@ -10,15 +10,17 @@ class DX11ConstantBuffer : public Hazel::RefCounted
 {
 public:
 	DX11ConstantBuffer() = default;
-	DX11ConstantBuffer(void* buffer, uint32_t size_buffer);
+	DX11ConstantBuffer(void* buffer, uint32_t bufferSize);
 	virtual ~DX11ConstantBuffer();
 
 	void Update(void* buffer);
 
 	inline ID3D11Buffer* GetBuffer() { return m_buffer; }
+	inline uint32_t GetBufferSize() { return m_BufferSize; }
 
 private:
 	ID3D11Buffer* m_buffer;
+	uint32_t m_BufferSize;
 
 	friend class DX11Context;
 

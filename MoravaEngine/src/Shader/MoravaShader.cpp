@@ -7,6 +7,7 @@
 #include "Core/Util.h"
 #include "Platform/OpenGL/OpenGLMoravaShader.h"
 #include "Platform/Vulkan/VulkanMoravaShader.h"
+#include "Platform/DX11/DX11Shader.h"
 
 
 std::vector<Hazel::Ref<MoravaShader>> MoravaShader::s_AllShaders;
@@ -24,6 +25,13 @@ Hazel::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaSh
 	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::HazelShader)
 	{
 		moravaShader = Hazel::Ref<MoravaShader>(HazelShader::Create(moravaShaderSpecification.HazelShaderPath, moravaShaderSpecification.ForceCompile));
+	}
+	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::DX11Shader)
+	{
+		const wchar_t* vertexShaderPathWChar = Util::ConvertStdStringToWideChar(moravaShaderSpecification.VertexShaderPath);
+		const wchar_t* pixelShaderPathWChar = Util::ConvertStdStringToWideChar(moravaShaderSpecification.PixelShaderPath);
+
+		moravaShader = Hazel::Ref<MoravaShader>(Hazel::Ref<DX11Shader>::Create(vertexShaderPathWChar, pixelShaderPathWChar));
 	}
 
 	return moravaShader;

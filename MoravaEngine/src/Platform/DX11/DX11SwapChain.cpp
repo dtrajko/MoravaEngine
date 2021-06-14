@@ -8,7 +8,7 @@
 
 DX11SwapChain::DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height)
 {
-	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 	IDXGIFactory* dxgiFactory = DX11Context::GetIDXGIFactory();
 
 	Init(hwnd, width, height);
@@ -30,7 +30,7 @@ void DX11SwapChain::Init(HWND hwnd, uint32_t width, uint32_t height)
 {
 	m_Device = DX11Context::GetCurrentDevice();
 
-	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 	IDXGIFactory* dxgiFactory = DX11Context::GetIDXGIFactory();
 
 	m_Width = width;
@@ -56,7 +56,7 @@ void DX11SwapChain::Init(HWND hwnd, uint32_t width, uint32_t height)
 
 	if (FAILED(hr))
 	{
-		throw std::exception("SwapChain initialization failed.");
+		throw std::exception("DX11SwapChain initialization failed.");
 	}
 
 	ReloadBuffers(width, height);
@@ -98,7 +98,7 @@ void DX11SwapChain::ReloadBuffers(uint32_t width, uint32_t height)
 
 void DX11SwapChain::CreateRenderTargetView()
 {
-	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	ID3D11Texture2D* buffer = NULL;
 	HRESULT hr = m_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);
@@ -119,7 +119,7 @@ void DX11SwapChain::CreateRenderTargetView()
 
 void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 {
-	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	ID3D11Texture2D* buffer = NULL;
 	HRESULT hr = m_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);

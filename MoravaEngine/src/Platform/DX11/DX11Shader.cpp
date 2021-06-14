@@ -27,7 +27,48 @@ DX11Shader::DX11Shader(const std::string& path, bool forceCompile)
 	Reload();
 }
 
+DX11Shader::DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShaderPath)
+{
+	ID3D11Device* dx11Device = DX11Context::GetDX11Device();
+
+	void* shaderByteCodeOut = nullptr;
+	size_t byteCodeSizeOut = 0;
+
+	// BEGIN compile Vertex DX11 Shader
+	{
+		CompileDX11Shader(vertexShaderPath, Type::Vertex, "vsmain", &shaderByteCodeOut, &byteCodeSizeOut);
+
+		HRESULT hr = dx11Device->CreateVertexShader(shaderByteCodeOut, byteCodeSizeOut, nullptr, &m_VertexShaderDX11);
+		if (FAILED(hr))
+		{
+			throw std::exception("DX11Shader (Type::Vertex) initialization failed.");
+		}
+
+		ReleaseCompiledDX11Shader();
+	}
+	// END compile Vertex DX11 Shader
+
+	// BEGIN compile Pixel DX11 Shader
+	{
+		CompileDX11Shader(pixelShaderPath, Type::Pixel, "psmain", &shaderByteCodeOut, &byteCodeSizeOut);
+
+		HRESULT hr = dx11Device->CreatePixelShader(shaderByteCodeOut, byteCodeSizeOut, nullptr, &m_PixelShaderDX11);
+		if (FAILED(hr))
+		{
+			throw std::exception("DX11Shader (Type::Pixel) initialization failed.");
+		}
+
+		ReleaseCompiledDX11Shader();
+	}
+	// END compile Pixel DX11 Shader
+}
+
 DX11Shader::~DX11Shader() {}
+
+void DX11Shader::ReleaseCompiledDX11Shader()
+{
+	if (m_Blob) m_Blob->Release();
+}
 
 static std::string ReadShaderFromFile(const std::string& filepath)
 {
@@ -460,4 +501,35 @@ void* DX11Shader::MapUniformBuffer(uint32_t bindingPoint)
 void DX11Shader::UnmapUniformBuffer(uint32_t bindingPoint)
 {
 	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
+}
+
+bool DX11Shader::CompileDX11Shader(const wchar_t* fileName, Type shaderType, const char* entryPointName, void** shaderByteCodeOut, size_t* byteCodeSizeOut)
+{
+	const char* entryPoint = "";
+	if (shaderType == Type::Vertex)
+	{
+		entryPoint = "vs_5_0";
+	}
+	else if (shaderType == Type::Pixel)
+	{
+		entryPoint = "ps_5_0";
+	}
+
+	ID3DBlob* errorBlob = nullptr;
+
+	HRESULT hr = ::D3DCompileFromFile(fileName, nullptr, nullptr, entryPointName, entryPoint, 0, 0, &m_Blob, &errorBlob);
+
+	if (FAILED(hr))
+	{
+		if (errorBlob)
+		{
+			errorBlob->Release();
+		}
+		return false;
+	}
+
+	*shaderByteCodeOut = m_Blob->GetBufferPointer();
+	*byteCodeSizeOut = m_Blob->GetBufferSize();
+
+	return true;
 }

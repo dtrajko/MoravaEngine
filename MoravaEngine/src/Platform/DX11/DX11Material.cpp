@@ -14,6 +14,18 @@ DX11Material::DX11Material(const Hazel::Ref<Hazel::HazelShader>& shader, const s
 	Hazel::HazelRenderer::RegisterShaderDependency(shader, Hazel::Ref<HazelMaterial>(this));
 }
 
+DX11Material::DX11Material(const Hazel::Ref<DX11Shader>& shader)
+{
+	m_Shader = shader;
+}
+
+DX11Material::DX11Material(Hazel::Ref<DX11Material> material)
+{
+	m_Shader = material->GetShader();
+	// m_Shader.As<DX11Shader>()->m_VertexShaderDX11 = material->GetShader().As<DX11Shader>()->m_VertexShaderDX11;
+	// m_Shader.As<DX11Shader>()->m_PixelShaderDX11 = material->GetShader().As<DX11Shader>()->m_PixelShaderDX11;
+}
+
 DX11Material::~DX11Material()
 {
 }
@@ -206,4 +218,38 @@ Hazel::Ref<Hazel::HazelTextureCube> DX11Material::GetTextureCube(const std::stri
 
 void DX11Material::UpdateForRendering()
 {
+}
+
+void DX11Material::AddTexture(Hazel::Ref<DX11Texture2D> texture)
+{
+	m_Textures.push_back(texture);
+}
+
+void DX11Material::RemoveTexture(uint32_t index)
+{
+	if (index >= m_Textures.size()) return;
+
+	m_Textures.erase(m_Textures.begin() + index);
+}
+
+void DX11Material::SetData(void* data, uint32_t size)
+{
+	if (!m_ConstantBuffer)
+	{
+		m_ConstantBuffer = Hazel::Ref<DX11ConstantBuffer>::Create(data, size);
+	}
+	else
+	{
+		m_ConstantBuffer->Update(data);
+	}
+}
+
+void DX11Material::SetCullMode(CullMode mode)
+{
+	m_CullMode = mode;
+}
+
+DX11Material::CullMode DX11Material::GetCullMode()
+{
+	return m_CullMode;
 }

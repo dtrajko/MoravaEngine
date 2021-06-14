@@ -47,60 +47,29 @@ OpenGLMoravaShader::OpenGLMoravaShader(const char* computeLocation, bool forceCo
 	m_Name = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(computeLocation));
 
 	CreateFromFileCompute(computeLocation);
-
 	CompileProgram();
 }
 
 Hazel::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 {
-	Hazel::Ref<OpenGLMoravaShader> result = Hazel::Ref<OpenGLMoravaShader>();
+	Hazel::Ref<OpenGLMoravaShader> result = Hazel::Ref<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
 
-	switch (Hazel::RendererAPI::Current())
-	{
-	case Hazel::RendererAPIType::None: return Hazel::Ref<OpenGLMoravaShader>();
-	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
-		break;
-	case Hazel::RendererAPIType::Vulkan:
-		Log::GetLogger()->error("Not implemented for Vulkan API!");
-		break;
-	}
 	s_AllShaders.push_back(result);
 	return result;
 }
 
 Hazel::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
 {
-	Hazel::Ref<OpenGLMoravaShader> result = Hazel::Ref<OpenGLMoravaShader>();
+	Hazel::Ref<OpenGLMoravaShader> result = Hazel::Ref<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
 
-	switch (Hazel::RendererAPI::Current())
-	{
-	case Hazel::RendererAPIType::None: return Hazel::Ref<OpenGLMoravaShader>();
-	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
-		break;
-	case Hazel::RendererAPIType::Vulkan:
-		Log::GetLogger()->error("Not implemented for Vulkan API!");
-		break;
-	}
 	s_AllShaders.push_back(result);
 	return result;
 }
 
 Hazel::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* computeLocation, bool forceCompile)
 {
-	Hazel::Ref<OpenGLMoravaShader> result = Hazel::Ref<OpenGLMoravaShader>();
+	Hazel::Ref<OpenGLMoravaShader> result = Hazel::Ref<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
 
-	switch (Hazel::RendererAPI::Current())
-	{
-	case Hazel::RendererAPIType::None: return Hazel::Ref<OpenGLMoravaShader>();
-	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
-		break;
-	case Hazel::RendererAPIType::Vulkan:
-		Log::GetLogger()->error("Not implemented for Vulkan API!");
-		break;
-	}
 	s_AllShaders.push_back(result);
 	return result;
 }

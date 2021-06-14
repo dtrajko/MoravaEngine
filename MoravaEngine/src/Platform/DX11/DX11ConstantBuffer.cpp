@@ -3,13 +3,14 @@
 #include "DX11Context.h"
 
 
-DX11ConstantBuffer::DX11ConstantBuffer(void* buffer, uint32_t size_buffer)
+DX11ConstantBuffer::DX11ConstantBuffer(void* buffer, uint32_t bufferSize)
+	: m_BufferSize(bufferSize)
 {
 	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
 
 	D3D11_BUFFER_DESC buff_desc = {};
 	buff_desc.Usage = D3D11_USAGE_DEFAULT;
-	buff_desc.ByteWidth = size_buffer;
+	buff_desc.ByteWidth = bufferSize;
 	buff_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	buff_desc.CPUAccessFlags = 0;
 	buff_desc.MiscFlags = 0;

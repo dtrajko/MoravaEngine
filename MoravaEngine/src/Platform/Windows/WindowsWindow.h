@@ -44,7 +44,27 @@ public:
 private:
 	virtual void Init(const WindowProps& props);
 	virtual void Shutdown();
+
+	void InitGLFW(const WindowProps& props);
+	void InitDX11(const WindowProps& props);
+
+	void ShutdownGLFW();
+	void ShutdownDX11();
 	/**** END Window Hazel version - a platform independent Window interface ****/
+
+	/**** BEGIN DirectX 11 methods ****/
+public:
+	bool Release();
+	virtual void SetHWND(HWND hwnd) override;
+	virtual HWND GetHWND() { return m_HWND; }
+
+	// Events
+	virtual void OnCreate() override;
+	virtual void OnDestroy() override;
+	virtual void OnFocus() override;
+	virtual void OnKillFocus() override;
+	virtual void OnSize() override;
+	/**** END DirectX 11 methods ****/
 
 public:
 	virtual inline GLFWwindow* GetHandle() override { return m_Window; };
@@ -86,6 +106,7 @@ private:
 	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
 
 	GLFWwindow* m_Window;
+
 	struct WindowData
 	{
 		std::string Title;
@@ -100,8 +121,10 @@ private:
 
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
-	// GLFWwindow* glfwWindow;
+	HWND m_HWND; // windef.h
 
+	bool m_IsInitialized = false;
+	bool m_IsRunning = true;
 
 	bool keys[1024];
 	bool buttons[32];

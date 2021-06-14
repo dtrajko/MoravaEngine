@@ -156,6 +156,18 @@ namespace Hazel {
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
 			}
+			else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::DX11)
+			{
+				MoravaShaderSpecification moravaShaderSpecificationHazelDX11;
+				moravaShaderSpecificationHazelDX11.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+				moravaShaderSpecificationHazelDX11.VertexShaderPath = "Shaders/HLSL/DirectionalLightVertexShader.hlsl";
+				moravaShaderSpecificationHazelDX11.PixelShaderPath = "Shaders/HLSL/DirectionalLightPixelShader.hlsl";
+				moravaShaderSpecificationHazelDX11.ForceCompile = false;
+
+				auto shader = MoravaShader::Create(moravaShaderSpecificationHazelDX11);
+
+				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelDX11);
+			}
 			/**** END MoravaShader the new API ****/
 		}
 

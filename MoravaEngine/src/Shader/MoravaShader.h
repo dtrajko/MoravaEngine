@@ -20,8 +20,10 @@ struct MoravaShaderSpecification
 		None = 0,
 		MoravaShader,
 		HazelShader,
+		DX11Shader,
 	};
 	ShaderType ShaderType = ShaderType::None;
+
 	// MoravaShader
 	std::string VertexShaderPath   = "";
 	std::string FragmentShaderPath = "";
@@ -29,6 +31,9 @@ struct MoravaShaderSpecification
 	std::string ComputeShaderPath  = "";
 	// HazelShader
 	std::string HazelShaderPath    = "";
+	// DX11Shader
+	std::string PixelShaderPath    = "";
+
 	bool ForceCompile = false;
 };
 
