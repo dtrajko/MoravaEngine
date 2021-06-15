@@ -79,7 +79,21 @@ namespace Hazel
 				}
 				ImGui::PopID();
 
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::BeginTooltip();
+					ImGui::TextUnformatted(filenameString.c_str());
+					ImGui::EndTooltip();
+				}
+
 				ImGui::Text(filenameString.c_str());
+
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::BeginTooltip();
+					ImGui::TextUnformatted(filenameString.c_str());
+					ImGui::EndTooltip();
+				}
 
 				//	ImGui::Image((void*)(intptr_t)m_TextureDirectory->GetID(), ImVec2{ 64.0f, 64.0f });
 				//	if (ImGui::Button(filenameString.c_str()))
@@ -97,7 +111,21 @@ namespace Hazel
 				}
 				ImGui::PopID();
 
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::BeginTooltip();
+					ImGui::TextUnformatted(filenameString.c_str());
+					ImGui::EndTooltip();
+				}
+
 				ImGui::Text(filenameString.c_str());
+
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::BeginTooltip();
+					ImGui::TextUnformatted(filenameString.c_str());
+					ImGui::EndTooltip();
+				}
 
 				//	ImGui::Image((void*)(intptr_t)m_TextureFile->GetID(), ImVec2{ 64.0f, 64.0f });
 				//	if (ImGui::Button(filenameString.c_str()))
