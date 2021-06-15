@@ -873,6 +873,9 @@
     <ClCompile Include="src\Platform\DX11\DX11TextureCube.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\ContentBrowserPanel.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1846,6 +1849,9 @@
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11TextureCube.h">
       <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\ContentBrowserPanel.h">
+      <Filter>Hazel\Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

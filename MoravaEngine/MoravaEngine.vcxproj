@@ -162,6 +162,7 @@
     <ClCompile Include="src\Hazel\Core\LayerStack.cpp" />
     <ClCompile Include="src\Hazel\Core\Timestep.cpp" />
     <ClCompile Include="src\Hazel\Core\UUID.cpp" />
+    <ClCompile Include="src\Hazel\Editor\ContentBrowserPanel.cpp" />
     <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp" />
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp" />
     <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp" />
@@ -568,6 +569,7 @@
     <ClInclude Include="src\Hazel\Core\Timer.h" />
     <ClInclude Include="src\Hazel\Core\Timestep.h" />
     <ClInclude Include="src\Hazel\Core\UUID.h" />
+    <ClInclude Include="src\Hazel\Editor\ContentBrowserPanel.h" />
     <ClInclude Include="src\Hazel\Editor\EditorCamera.h" />
     <ClInclude Include="src\Hazel\Editor\SceneHierarchyPanel.h" />
     <ClInclude Include="src\Hazel\Events\ApplicationEvent.h" />

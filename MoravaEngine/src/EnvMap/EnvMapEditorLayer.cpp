@@ -86,6 +86,8 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     Hazel::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
     EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
 
+    m_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
+
     s_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
     m_PlayButtonTex = Hazel::HazelTexture2D::Create("Textures/Hazel/PlayButton.png");
 
@@ -1157,11 +1159,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
     if (m_ShowWindowAssetManager)
     {
-        ImGui::Begin("Asset Manager", &m_ShowWindowAssetManager);
-        {
-            DrawAssetManager();
-        }
-        ImGui::End();
+        m_ContentBrowserPanel->OnImGuiRender(&m_ShowWindowAssetManager);
     }
 
     if (m_ShowWindowMaterialEditor)
@@ -1784,10 +1782,6 @@ void EnvMapEditorLayer::OnNewScene(glm::vec2 viewportSize)
     // m_SceneRenderer->s_Data.ActiveScene = new Hazel::HazelScene();
     EnvMapSharedData::s_EditorScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
     m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
-}
-
-void EnvMapEditorLayer::DrawAssetManager()
-{
 }
 
 void EnvMapEditorLayer::DrawMaterialEditor()

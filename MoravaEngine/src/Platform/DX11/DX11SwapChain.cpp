@@ -8,9 +8,6 @@
 
 DX11SwapChain::DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height)
 {
-	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
-	IDXGIFactory* dxgiFactory = DX11Context::Get()->GetIDXGIFactory();
-
 	Init(hwnd, width, height);
 }
 

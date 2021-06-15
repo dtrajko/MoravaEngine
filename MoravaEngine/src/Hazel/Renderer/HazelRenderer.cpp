@@ -42,11 +42,12 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None:   return;
-		case RendererAPIType::OpenGL: return OpenGLRenderer::Init();
-		case RendererAPIType::Vulkan: return VulkanRenderer::Init();
-		case RendererAPIType::DX11:   return DX11Renderer::Init();
+			case RendererAPIType::None:   return;
+			case RendererAPIType::OpenGL: return OpenGLRenderer::Init();
+			case RendererAPIType::Vulkan: return VulkanRenderer::Init();
+			case RendererAPIType::DX11:   return DX11Renderer::Init();
 		}
+		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 	}
 
@@ -315,9 +316,10 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::OpenGL: return new OpenGLRenderer();
-		// case RendererAPIType::Vulkan: return new VulkanRenderer();
+			case RendererAPIType::OpenGL: return new OpenGLRenderer();
+			// case RendererAPIType::Vulkan: return new VulkanRenderer();
 		}
+		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	}

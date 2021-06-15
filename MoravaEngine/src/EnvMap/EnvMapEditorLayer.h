@@ -3,6 +3,7 @@
 #include "../../pch.h"
 
 #include "Hazel/Editor/SceneHierarchyPanel.h"
+#include "Hazel/Editor/ContentBrowserPanel.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/SceneRenderer.h"
@@ -63,7 +64,6 @@ public:
 
 	void OnNewScene(glm::vec2 viewportSize);
 
-	void DrawAssetManager();
 	void DrawMaterialEditor();
 
 	void UpdateWindowTitle(const std::string& sceneName);
@@ -223,6 +223,7 @@ private:
 	bool m_ReloadScriptOnPlay = true;
 
 	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
+	Hazel::ContentBrowserPanel* m_ContentBrowserPanel;
 
 	// Hazel LIVE! #015
 	bool m_UIShowBoundingBoxes;
