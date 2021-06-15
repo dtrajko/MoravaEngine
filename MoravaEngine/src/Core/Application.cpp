@@ -228,7 +228,7 @@ void Application::OnShutdown()
 
 void Application::InitWindow(WindowProps& props)
 {
-	RendererBasic::AppendRendererInfo(props.Title);
+	RendererBasic::AppendRendererInfo(props);
 
 	m_Window = Window::Create(props);
 	m_Window->SetEventCallback(APP_BIND_EVENT_FN(Application::OnEvent));
@@ -281,7 +281,16 @@ std::string Application::OpenFile(const char* filter) const
 	// Initialize OPENFILENAME
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
+	switch (Hazel::RendererAPI::Current())
+	{
+		case Hazel::RendererAPIType::OpenGL:
+		case Hazel::RendererAPIType::Vulkan:
+			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
+			break;
+		case Hazel::RendererAPIType::DX11:
+			ofn.hwndOwner = m_Window->GetHWND();
+			break;
+	}
 	ofn.lpstrFile = szFile;
 	ofn.nMaxFile = sizeof(szFile);
 	ofn.lpstrFilter = filter;
@@ -303,13 +312,22 @@ std::string Application::SaveFile(const char* filter) const
 
 #if defined(HZ_PLATFORM_WINDOWS)
 
-	OPENFILENAMEA ofn;       // common dialog box structure
-	CHAR szFile[260] = { 0 };       // if using TCHAR macros
+	OPENFILENAMEA ofn;        // common dialog box structure
+	CHAR szFile[260] = { 0 }; // if using TCHAR macros
 
 	// Initialize OPENFILENAME
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
+	switch (Hazel::RendererAPI::Current())
+	{
+		case Hazel::RendererAPIType::OpenGL:
+		case Hazel::RendererAPIType::Vulkan:
+			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
+			break;
+		case Hazel::RendererAPIType::DX11:
+			ofn.hwndOwner = m_Window->GetHWND();
+			break;
+	}
 	ofn.lpstrFile = szFile;
 	ofn.nMaxFile = sizeof(szFile);
 	ofn.lpstrFilter = filter;

@@ -99,7 +99,7 @@ void DX11ImGuiLayer::OnAttach()
 		auto DX11Context = DX11Context::Get();
 		// auto device = DX11Context::GetCurrentDevice()->GetDX11Device();
 
-		auto currentDevice = DX11Context::GetCurrentDevice();
+		auto currentDevice = DX11Context::Get()->GetCurrentDevice();
 
 		// Setup Platform/Renderer bindings
 
@@ -172,10 +172,10 @@ void DX11ImGuiLayer::End()
 	// Update and Render additional Platform Windows
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		GLFWwindow* backup_current_context = glfwGetCurrentContext();
-		// TODO: ImGui::UpdatePlatformWindows();
-		ImGui::RenderPlatformWindowsDefault();
-		glfwMakeContextCurrent(backup_current_context);
+		//	GLFWwindow* backup_current_context = glfwGetCurrentContext();
+		//	// TODO: ImGui::UpdatePlatformWindows();
+		//	ImGui::RenderPlatformWindowsDefault();
+		//	glfwMakeContextCurrent(backup_current_context);
 	}
 }
 

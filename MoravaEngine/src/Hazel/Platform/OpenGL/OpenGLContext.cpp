@@ -8,8 +8,8 @@
 
 namespace Hazel {
 
-	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle)
-		: m_WindowHandle(windowHandle)
+	OpenGLContext::OpenGLContext(Window* window)
+		: m_Window(window)
 	{
 	}
 
@@ -22,14 +22,14 @@ namespace Hazel {
 		Log::GetLogger()->info("OpenGLContext::Create");
 
 		// Set context for GLEW to use
-		glfwMakeContextCurrent(m_WindowHandle);
+		glfwMakeContextCurrent(m_Window->GetHandle());
 
 		// Allow modern extension features
 		glewExperimental = GL_TRUE;
 
 		if (glewInit() != GLEW_OK)
 		{
-			glfwDestroyWindow(m_WindowHandle);
+			glfwDestroyWindow(m_Window->GetHandle());
 			glfwTerminate();
 			throw std::runtime_error("GLEW initialization failed!");
 		}
@@ -56,7 +56,7 @@ namespace Hazel {
 
 	void OpenGLContext::SwapBuffers()
 	{
-		glfwSwapBuffers(m_WindowHandle);
+		glfwSwapBuffers(m_Window->GetHandle());
 	}
 
 }

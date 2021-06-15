@@ -12,6 +12,8 @@
 #include "DX11Texture2D.h"
 #include "DX11Shader.h"
 
+#include "Core/Window.h"
+
 #include <d3d11.h>
 
 
@@ -21,8 +23,7 @@ struct GLFWwindow;
 class DX11Context : public Hazel::RendererContext
 {
 public:
-	DX11Context();
-	DX11Context(GLFWwindow* windowHandle);
+	DX11Context(Window* window);
 	virtual ~DX11Context();
 
 	virtual void Create() override;
@@ -32,19 +33,19 @@ public:
 
 	virtual void BeginFrame() override;
 
-	static Hazel::Ref<DX11Device> GetDevice() { return s_Device; }
+	Hazel::Ref<DX11Device> GetDevice() { return m_Device; }
 	// DX11SwapChain& GetSwapChain() { return m_SwapChain; }
 
 	// static Hazel::Ref<DX11Context> Get() { return Hazel::Ref<DX11Context>(Hazel::HazelRenderer::GetContext()); }
-	static Hazel::Ref<DX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
-	static IDXGIFactory* GetIDXGIFactory() { return s_IDXGI_Factory; };
-	static ID3D11DeviceContext* GetImmediateContext() { return s_DX11_DeviceContext; };
+	Hazel::Ref<DX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
+	IDXGIFactory* GetIDXGIFactory() { return m_IDXGI_Factory; };
+	ID3D11DeviceContext* GetImmediateContext() { return m_DX11_DeviceContext; };
 
 	// ---------------------------------------------------------------
 
-	static DX11Context* Get();
+	static Hazel::Ref<DX11Context> Get() { return Hazel::Ref<DX11Context>(Hazel::HazelRenderer::GetContext()); }
 
-	static ID3D11Device* GetDX11Device() { return s_DX11Device; }
+	ID3D11Device* GetDX11Device() { return m_DX11Device; }
 
 	std::shared_ptr<DX11SwapChain> CreateSwapChain(HWND hwnd, UINT width, UINT height);
 	void SetRasterizerState(bool cull_front);
@@ -72,30 +73,31 @@ public:
 	void DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex);
 
 private:
-	static void InitRasterizerState();
+	void InitRasterizerState();
 
 public:
-	static ID3D11Device* s_DX11Device;
 
 private:
-	static DX11Context* s_Instance;
+	ID3D11Device* m_DX11Device;
 
-	GLFWwindow* m_WindowHandle;
+	DX11Context* m_Instance;
+
+	Window* m_Window;
 
 	// Devices
-	static Hazel::Ref<DX11PhysicalDevice> s_PhysicalDevice;
-	static Hazel::Ref<DX11Device> s_Device;
+	Hazel::Ref<DX11PhysicalDevice> m_PhysicalDevice;
+	Hazel::Ref<DX11Device> m_Device;
 
 	std::shared_ptr<DX11SwapChain> m_SwapChain;
 
-	static D3D_FEATURE_LEVEL s_FeatureLevel;
-	static IDXGIDevice* s_DXGI_Device;
-	static IDXGIAdapter* s_DXGI_Adapter;
-	static IDXGIFactory* s_IDXGI_Factory;
-	static ID3D11DeviceContext* s_DX11_DeviceContext;
-	static ID3D11RasterizerState* s_CullFrontState;
-	static ID3D11RasterizerState* s_CullBackState;
-	static bool s_Validation;
+	D3D_FEATURE_LEVEL m_FeatureLevel;
+	IDXGIDevice* m_DXGI_Device;
+	IDXGIAdapter* m_DXGI_Adapter;
+	IDXGIFactory* m_IDXGI_Factory;
+	ID3D11DeviceContext* m_DX11_DeviceContext;
+	ID3D11RasterizerState* m_CullFrontState;
+	ID3D11RasterizerState* m_CullBackState;
+	bool m_Validation;
 
 	ID3DBlob* m_blob = nullptr;
 

@@ -9,7 +9,7 @@ DX11Allocator::DX11Allocator(const Hazel::Ref<DX11Device>& device, const std::st
 }
 
 DX11Allocator::DX11Allocator(const std::string& tag)
-	: m_Device(DX11Context::GetCurrentDevice()), m_Tag(tag)
+	: m_Device(DX11Context::Get()->GetCurrentDevice()), m_Tag(tag)
 {
 }
 

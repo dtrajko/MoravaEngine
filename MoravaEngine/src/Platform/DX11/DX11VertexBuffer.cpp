@@ -11,7 +11,7 @@
 DX11VertexBuffer::DX11VertexBuffer(void* list_vertices, uint32_t size_vertex, uint32_t size_list, void* shader_byte_code, uint32_t size_byte_shader)
 {
 	// m_LocalData = Hazel::Buffer::Copy(data, size);
-	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	D3D11_BUFFER_DESC buff_desc = {};
 	buff_desc.Usage = D3D11_USAGE_DEFAULT;

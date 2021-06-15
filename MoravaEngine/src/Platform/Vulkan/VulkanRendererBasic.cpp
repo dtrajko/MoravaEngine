@@ -13,9 +13,9 @@ VulkanRendererBasic::~VulkanRendererBasic()
 {
 }
 
-void VulkanRendererBasic::RendererInfo(std::string& windowTitle)
+void VulkanRendererBasic::RendererInfo(WindowProps& windowProps)
 {
-	windowTitle += " [Renderer: Vulkan]";
+	windowProps.Title += " [Renderer: Vulkan]";
 }
 
 void VulkanRendererBasic::Init(Scene* scene)

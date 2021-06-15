@@ -14,8 +14,8 @@ namespace Hazel {
 		return VK_FALSE;
 	}
 
-	VulkanContext::VulkanContext(GLFWwindow* windowHandle)
-		: m_WindowHandle(windowHandle)
+	VulkanContext::VulkanContext(Window* window)
+		: m_Window(window)
 	{
 	}
 
@@ -115,9 +115,10 @@ namespace Hazel {
 		m_Allocator = VulkanAllocator(m_Device, std::string("Default"));
 		
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
-		m_SwapChain.InitSurface(m_WindowHandle);
+		m_SwapChain.InitSurface(m_Window->GetHandle());
 
-		uint32_t width = 1280, height = 720;
+		uint32_t width = m_Window->GetWidth();
+		uint32_t height = m_Window->GetHeight();
 		m_SwapChain.Create(&width, &height);
 
 		// Pipeline Cache

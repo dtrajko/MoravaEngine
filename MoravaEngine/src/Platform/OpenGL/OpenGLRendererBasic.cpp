@@ -13,9 +13,9 @@ OpenGLRendererBasic::~OpenGLRendererBasic()
 {
 }
 
-void OpenGLRendererBasic::RendererInfo(std::string& windowTitle)
+void OpenGLRendererBasic::RendererInfo(WindowProps& windowProps)
 {
-	windowTitle += " [Renderer: OpenGL]";
+	windowProps.Title += " [Renderer: OpenGL]";
 }
 
 void OpenGLRendererBasic::Init(Scene* scene)

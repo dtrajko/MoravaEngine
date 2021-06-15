@@ -14,9 +14,9 @@ DX11RendererBasic::~DX11RendererBasic()
 {
 }
 
-void DX11RendererBasic::RendererInfo(std::string& windowTitle)
+void DX11RendererBasic::RendererInfo(WindowProps& windowProps)
 {
-	windowTitle += " [Renderer: DirectX 11]";
+	windowProps.TitleDX11 += L" [Renderer: DirectX 11]";
 }
 
 void DX11RendererBasic::Init(Scene* scene)

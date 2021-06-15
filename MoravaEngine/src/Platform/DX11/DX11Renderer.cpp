@@ -212,7 +212,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		{
 			// Begin Render Pass
 
-			// ImGui Pass
+			/**** BEGIN ImGui Render Pass ****
 			{
 				// ImGui Dockspace
 				bool p_open = true;
@@ -250,6 +250,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 				// End Vulkan Command Buffer
 			}
+			**** END ImGui Render Pass ****/
 
 			// Vulkan CmdExecuteCommands
 			// Vulkan CmdEndRenderPass

@@ -7,6 +7,9 @@
 #include "VulkanAllocator.h"
 #include "VulkanSwapChain.h"
 
+#include "Core/Window.h"
+
+
 struct GLFWwindow;
 
 namespace Hazel {
@@ -14,7 +17,7 @@ namespace Hazel {
 	class VulkanContext : public RendererContext
 	{
 	public:
-		VulkanContext(GLFWwindow* windowHandle);
+		VulkanContext(Window* window);
 		virtual ~VulkanContext();
 
 		virtual void Create() override;
@@ -33,7 +36,7 @@ namespace Hazel {
 		static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
 
 	private:
-		GLFWwindow* m_WindowHandle;
+		Window* m_Window;
 
 		// Devices
 		Ref<VulkanPhysicalDevice> m_PhysicalDevice;

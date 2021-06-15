@@ -38,7 +38,7 @@ DX11TextureCube::~DX11TextureCube()
 
 void DX11TextureCube::Invalidate()
 {
-	auto device = DX11Context::GetCurrentDevice();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 	// auto DX11Device = device->GetDX11Device();
 
 	uint32_t mipCount = GetMipLevelCount();
@@ -54,8 +54,7 @@ uint32_t DX11TextureCube::GetMipLevelCount() const
 
 void DX11TextureCube::GenerateMips(bool readonly)
 {
-	auto device = DX11Context::GetCurrentDevice();
-	// auto DX11Device = device->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	// TODO
 }

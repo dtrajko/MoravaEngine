@@ -33,7 +33,7 @@ public:
 	virtual const std::string& GetTitle() const override { return m_Data.Title; }
 	virtual void SetTitle(std::string title) override;
 
-	inline void* GetNativeWindow() const { return m_Window; }
+	inline void* GetNativeWindow() const { return m_GLFW_Window; }
 
 	virtual Hazel::Ref<Hazel::RendererContext> GetRenderContext() override { return m_RendererContext; }
 
@@ -47,9 +47,6 @@ private:
 
 	void InitGLFW(const WindowProps& props);
 	void InitDX11(const WindowProps& props);
-
-	void ShutdownGLFW();
-	void ShutdownDX11();
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
 	/**** BEGIN DirectX 11 methods ****/
@@ -57,6 +54,11 @@ public:
 	bool Release();
 	virtual void SetHWND(HWND hwnd) override;
 	virtual HWND GetHWND() { return m_HWND; }
+	bool Broadcast();
+
+	bool IsRunning();
+	RECT GetClientWindowRect();
+	RECT GetSizeScreen();
 
 	// Events
 	virtual void OnCreate() override;
@@ -67,7 +69,7 @@ public:
 	/**** END DirectX 11 methods ****/
 
 public:
-	virtual inline GLFWwindow* GetHandle() override { return m_Window; };
+	virtual inline GLFWwindow* GetHandle() override { return m_GLFW_Window; };
 	virtual bool* getKeys() override { return keys; };
 	virtual bool* getMouseButtons() override { return buttons; };
 	virtual bool IsMouseButtonClicked(int mouseButton) override;
@@ -80,7 +82,7 @@ public:
 	virtual void SetShouldClose(bool shouldClose) override;
 	virtual void SetCursorDisabled() override;
 	virtual void SetCursorNormal() override;
-	virtual bool GetShouldClose() override { return glfwWindowShouldClose(m_Window); };
+	virtual bool GetShouldClose() override;
 
 	bool* getKeysPrev() { return keys_prev; }; // previous states of keys
 	bool* getMouseButtonsPrev() { return buttons_prev; }; // previos states of mouse buttons
@@ -105,11 +107,12 @@ public:
 private:
 	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
 
-	GLFWwindow* m_Window;
+	GLFWwindow* m_GLFW_Window;
 
 	struct WindowData
 	{
 		std::string Title;
+		std::wstring TitleDX11;
 		uint32_t Width, Height;
 		bool VSync;
 
@@ -149,6 +152,5 @@ private:
 	float m_CursorIgnoreLimit;
 
 	bool m_EventLoggingEnabled;
-
 
 };

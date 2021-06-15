@@ -6,7 +6,7 @@
 DX11ConstantBuffer::DX11ConstantBuffer(void* buffer, uint32_t bufferSize)
 	: m_BufferSize(bufferSize)
 {
-	ID3D11Device* dx11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetCurrentDevice()->GetDX11Device();
 
 	D3D11_BUFFER_DESC buff_desc = {};
 	buff_desc.Usage = D3D11_USAGE_DEFAULT;
@@ -27,7 +27,7 @@ DX11ConstantBuffer::DX11ConstantBuffer(void* buffer, uint32_t bufferSize)
 
 void DX11ConstantBuffer::Update(void* buffer)
 {
-	ID3D11DeviceContext* immediateContext = DX11Context::GetImmediateContext();
+	ID3D11DeviceContext* immediateContext = DX11Context::Get()->GetImmediateContext();
 
 	immediateContext->UpdateSubresource(m_buffer, NULL, NULL, buffer, NULL, NULL);
 }

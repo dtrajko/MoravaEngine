@@ -4,8 +4,9 @@
 
 #include "Hazel/Core/Ref.h"
 
-struct GLFWwindow;
 
+class Window;
+struct GLFWwindow;
 
 namespace Hazel {
 
@@ -21,7 +22,7 @@ namespace Hazel {
 
 		virtual void OnResize(uint32_t width, uint32_t height) = 0;
 
-		static Ref<RendererContext> Create(GLFWwindow* windowHandle);
+		static Ref<RendererContext> Create(Window* window);
 	};
 
 }

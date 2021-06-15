@@ -25,15 +25,16 @@ RendererBasic::~RendererBasic()
 {
 }
 
-void RendererBasic::AppendRendererInfo(std::string& windowTitle)
+void RendererBasic::AppendRendererInfo(WindowProps& windowProps)
 {
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPIType::None:   return;
-	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::RendererInfo(windowTitle);
-	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::RendererInfo(windowTitle);
-	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::RendererInfo(windowTitle);
+		case Hazel::RendererAPIType::None:   return;
+		case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::RendererInfo(windowProps);
+		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::RendererInfo(windowProps);
+		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::RendererInfo(windowProps);
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -72,6 +73,7 @@ void RendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Win
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -84,6 +86,7 @@ glm::vec4 RendererBasic::GetBgColor()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetBgColor();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetBgColor();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
 	return glm::vec4();
@@ -98,6 +101,7 @@ void RendererBasic::Clear()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::Clear();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::Clear();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -110,6 +114,7 @@ void RendererBasic::Clear(float r, float g, float b, float a)
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::Clear(r, g, b, a);
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::Clear(r, g, b, a);
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -122,6 +127,7 @@ void RendererBasic::SetLineThickness(float thickness)
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetLineThickness(thickness);
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::SetLineThickness(thickness);
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -141,6 +147,7 @@ void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int heigh
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetDefaultFramebuffer(width, height);
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::SetDefaultFramebuffer(width, height);
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -153,6 +160,7 @@ void RendererBasic::InitDebug()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::InitDebug();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::InitDebug();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -165,6 +173,7 @@ void RendererBasic::EnableCulling()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableCulling();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::EnableCulling();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -177,6 +186,7 @@ void RendererBasic::DisableCulling()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableCulling();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::DisableCulling();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -189,6 +199,7 @@ void RendererBasic::EnableTransparency()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableTransparency();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::EnableTransparency();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -201,6 +212,7 @@ void RendererBasic::DisableTransparency()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableTransparency();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::DisableTransparency();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -213,6 +225,7 @@ void RendererBasic::EnableDepthBuffer()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableDepthBuffer();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::EnableDepthBuffer();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -225,6 +238,7 @@ void RendererBasic::DisableDepthBuffer()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableDepthBuffer();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::DisableDepthBuffer();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -237,6 +251,7 @@ void RendererBasic::ClearDepthBuffer()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::ClearDepthBuffer();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::ClearDepthBuffer();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -249,6 +264,7 @@ void RendererBasic::EnableDepthTest()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableDepthTest();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::EnableDepthTest();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -261,6 +277,7 @@ void RendererBasic::DisableDepthTest()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableDepthTest();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::DisableDepthTest();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -273,6 +290,7 @@ void RendererBasic::EnableMSAA()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableMSAA();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::EnableMSAA();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -285,6 +303,7 @@ void RendererBasic::DisableMSAA()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableMSAA();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::DisableMSAA();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -297,6 +316,7 @@ void RendererBasic::EnableBlend()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableBlend();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::EnableBlend();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -309,6 +329,7 @@ void RendererBasic::EnableWireframe()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::EnableWireframe();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::EnableWireframe();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -321,6 +342,7 @@ void RendererBasic::DisableWireframe()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableWireframe();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::DisableWireframe();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -333,6 +355,7 @@ void RendererBasic::SetupViewportSize(uint32_t width, uint32_t height)
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetupViewportSize(width, height);
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::SetupViewportSize(width, height);
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -345,6 +368,7 @@ glm::mat4 RendererBasic::GetProjectionMatrix()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetProjectionMatrix();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetProjectionMatrix();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
 	return glm::mat4();
@@ -359,6 +383,7 @@ void RendererBasic::SetProjectionMatrix(glm::mat4 projectionMatrix)
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetProjectionMatrix(projectionMatrix);
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::SetProjectionMatrix(projectionMatrix);
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -371,6 +396,7 @@ std::map<std::string, MoravaShader*>& RendererBasic::GetShaders()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetShaders();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetShaders();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
 	return std::map<std::string, MoravaShader*>();
@@ -385,6 +411,7 @@ std::map<std::string, int>& RendererBasic::GetUniforms()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetUniforms();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetUniforms();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
 	return std::map<std::string, int>();
@@ -399,6 +426,7 @@ void RendererBasic::DisableBlend()
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableBlend();
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::DisableBlend();
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
@@ -428,5 +456,6 @@ void RendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool 
 	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DrawIndexed(count, type, depthTest);
 	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::DrawIndexed(count, type, depthTest);
 	}
+	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }

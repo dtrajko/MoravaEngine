@@ -29,7 +29,7 @@ DX11Shader::DX11Shader(const std::string& path, bool forceCompile)
 
 DX11Shader::DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShaderPath)
 {
-	ID3D11Device* dx11Device = DX11Context::GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	void* shaderByteCodeOut = nullptr;
 	size_t byteCodeSizeOut = 0;

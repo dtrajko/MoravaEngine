@@ -21,7 +21,7 @@ DX11TestLayer::~DX11TestLayer()
 
 void DX11TestLayer::OnAttach()
 {
-	m_Meshes.push_back(Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+	// m_Meshes.push_back(Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 }
 
 void DX11TestLayer::OnDetach()
@@ -32,7 +32,7 @@ void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
 {
 	m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)DX11Renderer::GetViewportWidth(), (float)DX11Renderer::GetViewportHeight(), 0.01f, 1000.0f));
 
-	m_Camera.OnUpdate(ts);
+	// TODO: m_Camera.OnUpdate(ts);
 
 	glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 	Render(clearColor, m_Camera);
@@ -72,6 +72,8 @@ void DX11TestLayer::OnRender(Window* mainWindow)
 
 void DX11TestLayer::Render(const glm::vec4& clearColor, const Hazel::EditorCamera& camera)
 {
+	if (!m_Meshes.size()) return;
+
 	auto mesh = m_Meshes[0];
 	// HazelRenderer::Submit([=]() mutable
 	// {

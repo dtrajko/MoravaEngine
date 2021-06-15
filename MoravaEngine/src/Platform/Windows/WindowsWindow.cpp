@@ -102,6 +102,7 @@ WindowsWindow::~WindowsWindow()
 void WindowsWindow::Init(const WindowProps& props)
 {
 	m_Data.Title = props.Title;
+	m_Data.TitleDX11 = props.TitleDX11;
 	m_Data.Width = props.Width;
 	m_Data.Height = props.Height;
 
@@ -137,7 +138,7 @@ void WindowsWindow::Init(const WindowProps& props)
 			break;
 	}
 
-	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create(m_Window));
+	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create(this));
 	m_RendererContext->Create();
 
 	SetVSync(true);
@@ -189,15 +190,15 @@ void WindowsWindow::InitGLFW(const WindowProps& props)
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	}
 
-	m_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
-	if (!m_Window)
+	m_GLFW_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
+	if (!m_GLFW_Window)
 	{
 		glfwTerminate();
 		throw std::runtime_error("GLFW Window creation failed!");
 	}
 
 	// Set context for GLEW to use
-	glfwSetWindowUserPointer(m_Window, &m_Data);
+	glfwSetWindowUserPointer(m_GLFW_Window, &m_Data);
 
 	// GLFW event callbacks
 	SetCallbacksHazelDev();
@@ -245,10 +246,6 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 	// Set this flag to true to indicate that the window is initialized and running
 	m_IsRunning = true;
 
-	DX11Context::Get()->Create();
-
-	ID3D11Device* device = DX11Context::GetDX11Device();
-
 	DXGI_SWAP_CHAIN_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.BufferCount = 1;
@@ -263,34 +260,24 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 	desc.SampleDesc.Quality = 0;
 	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	desc.Windowed = TRUE;
-
-	DX11Context::Get()->CreateSwapChain(m_HWND, props.Width, props.Height);
 }
 
 void WindowsWindow::Shutdown()
 {
 	switch (Hazel::RendererAPI::Current())
 	{
-	case Hazel::RendererAPIType::OpenGL:
-	case Hazel::RendererAPIType::Vulkan:
-		ShutdownGLFW();
+		case Hazel::RendererAPIType::OpenGL:
+		case Hazel::RendererAPIType::Vulkan:
+		{
+			glfwDestroyWindow(m_GLFW_Window);
+			glfwTerminate();
+			s_GLFWInitialized = false;
+		}
 		break;
-	case Hazel::RendererAPIType::DX11:
-		ShutdownDX11();
-		break;
-	}
-}
-
-void WindowsWindow::ShutdownGLFW()
-{
-	glfwDestroyWindow(m_Window);
-	glfwTerminate();
-	s_GLFWInitialized = false;
-}
-
-void WindowsWindow::ShutdownDX11()
-{
-	Release();
+		case Hazel::RendererAPIType::DX11:
+			Release();
+			break;
+		}
 }
 
 void WindowsWindow::OnCreate()
@@ -299,6 +286,7 @@ void WindowsWindow::OnCreate()
 
 void WindowsWindow::OnDestroy()
 {
+	m_IsRunning = false;
 }
 
 void WindowsWindow::OnFocus()
@@ -331,17 +319,28 @@ void WindowsWindow::SetHWND(HWND hwnd)
 inline std::pair<float, float> WindowsWindow::GetWindowPos() const
 {
 	int x, y;
-	glfwGetWindowPos(m_Window, &x, &y);
+	glfwGetWindowPos(m_GLFW_Window, &x, &y);
 	return { x, y };
 }
 
 void WindowsWindow::ProcessEvents()
 {
-	glfwPollEvents();
+	switch (Hazel::RendererAPI::Current())
+	{
+		case Hazel::RendererAPIType::OpenGL:
+		case Hazel::RendererAPIType::Vulkan:
+		{
+			glfwPollEvents();
 
-	//ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
-	//glfwSetCursor(m_Window, m_ImGuiMouseCursors[imgui_cursor] ? m_ImGuiMouseCursors[imgui_cursor] : m_ImGuiMouseCursors[ImGuiMouseCursor_Arrow]);
-	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			//ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+			//glfwSetCursor(m_GLFW_Window, m_ImGuiMouseCursors[imgui_cursor] ? m_ImGuiMouseCursors[imgui_cursor] : m_ImGuiMouseCursors[ImGuiMouseCursor_Arrow]);
+			glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
+		break;
+		case Hazel::RendererAPIType::DX11:
+		// TODO: ProcessEvents DX11 version
+		break;
+	}
 }
 
 void WindowsWindow::SwapBuffers()
@@ -371,13 +370,13 @@ bool WindowsWindow::IsVSync() const
 
 void WindowsWindow::Maximize()
 {
-	glfwMaximizeWindow(m_Window);
+	glfwMaximizeWindow(m_GLFW_Window);
 }
 
 void WindowsWindow::SetTitle(std::string title)
 {
 	m_Data.Title = title;
-	glfwSetWindowTitle(m_Window, m_Data.Title.c_str());
+	glfwSetWindowTitle(m_GLFW_Window, m_Data.Title.c_str());
 }
 
 /**** END Hazel properties and methods ****/
@@ -391,9 +390,11 @@ void WindowsWindow::OnUpdate()
 	ProcessEvents();
 
 	// Swap buffers
-	// glfwSwapBuffers(m_Window); // TODO: move to WindowsWindow::SwapBuffers() / OpenGLContext::SwapBuffers()
+	// glfwSwapBuffers(m_GLFW_Window); // TODO: move to WindowsWindow::SwapBuffers() / OpenGLContext::SwapBuffers()
 
 	SwapBuffers();
+
+	Broadcast();
 }
 
 void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
@@ -435,12 +436,26 @@ float WindowsWindow::getYMouseScrollOffset()
 
 void WindowsWindow::SetCursorDisabled()
 {
-	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void WindowsWindow::SetCursorNormal()
 {
-	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+bool WindowsWindow::GetShouldClose()
+{
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::OpenGL:
+	case Hazel::RendererAPIType::Vulkan:
+		return glfwWindowShouldClose(m_GLFW_Window);
+	case Hazel::RendererAPIType::DX11:
+		return !m_IsRunning;
+	default:
+		return true;
+	}
 }
 
 bool WindowsWindow::IsMouseButtonClicked(int mouseButton)
@@ -459,15 +474,15 @@ bool WindowsWindow::IsMouseButtonReleased(int mouseButton)
 
 void WindowsWindow::SetShouldClose(bool shouldClose)
 {
-	glfwSetWindowShouldClose(m_Window, shouldClose);
+	glfwSetWindowShouldClose(m_GLFW_Window, shouldClose);
 }
 
 void WindowsWindow::SetInputMode(bool cursorEnabled)
 {
 	if (cursorEnabled)
-		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	else
-		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 /****
@@ -475,21 +490,21 @@ void WindowsWindow::SetInputMode(bool cursorEnabled)
  *
 void WindowsWindow::SetCallbacks()
 {
-	glfwSetKeyCallback(m_Window, KeyCallback);
-	glfwSetCharCallback(m_Window, CharCallback);
-	glfwSetCursorPosCallback(m_Window, CursorPosCallback);
-	glfwSetMouseButtonCallback(m_Window, MouseButtonCallback);
-	glfwSetCursorEnterCallback(m_Window, CursorEnterCallback);
-	glfwSetWindowSizeCallback(m_Window, WindowSizeCallback);
-	glfwSetWindowCloseCallback(m_Window, WindowCloseCallback);
-	glfwSetScrollCallback(m_Window, ScrollCallback);
+	glfwSetKeyCallback(m_GLFW_Window, KeyCallback);
+	glfwSetCharCallback(m_GLFW_Window, CharCallback);
+	glfwSetCursorPosCallback(m_GLFW_Window, CursorPosCallback);
+	glfwSetMouseButtonCallback(m_GLFW_Window, MouseButtonCallback);
+	glfwSetCursorEnterCallback(m_GLFW_Window, CursorEnterCallback);
+	glfwSetWindowSizeCallback(m_GLFW_Window, WindowSizeCallback);
+	glfwSetWindowCloseCallback(m_GLFW_Window, WindowCloseCallback);
+	glfwSetScrollCallback(m_GLFW_Window, ScrollCallback);
 }
 ****/
 
 void WindowsWindow::SetCallbacksHazelDev()
 {
 	// Set GLFW callbacks (Handle Key and Mouse input)
-	glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+	glfwSetWindowSizeCallback(m_GLFW_Window, [](GLFWwindow* window, int width, int height)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.Width = width;
@@ -501,7 +516,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			WindowSizeCallback(window, width, height);
 		});
 
-	glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
+	glfwSetWindowCloseCallback(m_GLFW_Window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			WindowCloseEvent event;
@@ -511,7 +526,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			WindowCloseCallback(window);
 		});
 
-	glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+	glfwSetKeyCallback(m_GLFW_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -541,7 +556,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			KeyCallback(window, key, scancode, action, mods);
 		});
 
-	glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int codepoint)
+	glfwSetCharCallback(m_GLFW_Window, [](GLFWwindow* window, unsigned int codepoint)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -552,7 +567,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			CharCallback(window, codepoint);
 		});
 
-	glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
+	glfwSetMouseButtonCallback(m_GLFW_Window, [](GLFWwindow* window, int button, int action, int mods)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -576,7 +591,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			MouseButtonCallback(window, button, action, mods);
 		});
 
-	glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xoffset, double yoffset)
+	glfwSetScrollCallback(m_GLFW_Window, [](GLFWwindow* window, double xoffset, double yoffset)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -587,7 +602,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			ScrollCallback(window, xoffset, yoffset);
 		});
 
-	glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xpos, double ypos)
+	glfwSetCursorPosCallback(m_GLFW_Window, [](GLFWwindow* window, double xpos, double ypos)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -598,7 +613,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			CursorPosCallback(window, xpos, ypos);
 		});
 
-	glfwSetCursorEnterCallback(m_Window, [](GLFWwindow* window, int entered)
+	glfwSetCursorEnterCallback(m_GLFW_Window, [](GLFWwindow* window, int entered)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
@@ -754,4 +769,51 @@ void WindowsWindow::ScrollCallback(GLFWwindow* window, double xoffset, double yo
 
 	theWindow->xMouseScrollOffset = (float)xoffset;
 	theWindow->yMouseScrollOffset = (float)yoffset;
+}
+
+// Used only for DirectX 11
+bool WindowsWindow::Broadcast()
+{
+	if (Hazel::RendererAPI::Current() != Hazel::RendererAPIType::DX11) return true;
+
+	MSG msg;
+
+	if (!m_IsInitialized)
+	{
+		SetWindowLongPtr(m_HWND, GWLP_USERDATA, (LONG_PTR)this);
+		OnCreate();
+		m_IsInitialized = true;
+	}
+
+	while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0)
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	Sleep(1);
+
+	return true;
+}
+
+bool WindowsWindow::IsRunning()
+{
+	return m_IsRunning;
+}
+
+RECT WindowsWindow::GetClientWindowRect()
+{
+	RECT rect;
+	::GetClientRect(m_HWND, &rect);
+	::ClientToScreen(m_HWND, (LPPOINT)&rect.left);
+	::ClientToScreen(m_HWND, (LPPOINT)&rect.right);
+	return rect;
+}
+
+RECT WindowsWindow::GetSizeScreen()
+{
+	RECT rect;
+	rect.right = ::GetSystemMetrics(SM_CXSCREEN);
+	rect.bottom = ::GetSystemMetrics(SM_CYSCREEN);
+	return rect;
 }

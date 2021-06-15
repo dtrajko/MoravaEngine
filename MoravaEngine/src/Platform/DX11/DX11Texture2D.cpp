@@ -163,8 +163,7 @@ DX11Texture2D::~DX11Texture2D()
 
 void DX11Texture2D::Invalidate()
 {
-	auto device = DX11Context::GetCurrentDevice();
-	// auto DX11Device = device->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	// TODO
 }

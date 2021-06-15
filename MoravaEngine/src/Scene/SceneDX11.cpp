@@ -99,7 +99,7 @@ void SceneDX11::SetupUniforms()
 
 void SceneDX11::Update(float timestep, Window* mainWindow)
 {
-    Scene::Update(timestep, mainWindow);
+    // TODO: Scene::Update(timestep, mainWindow);
 }
 
 void SceneDX11::UpdateImGui(float timestep, Window* mainWindow)
