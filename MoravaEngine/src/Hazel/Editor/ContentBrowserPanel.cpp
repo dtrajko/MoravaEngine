@@ -1,6 +1,7 @@
 #include "Hazel/Editor/ContentBrowserPanel.h"
 
 #include "Core/Log.h"
+#include "ImGui/ImGuiWrapper.h"
 
 
 namespace Hazel
@@ -23,19 +24,74 @@ namespace Hazel
 	{
 		ImGui::Begin("Content Browser", p_open);
 
-		const ImVec2 iconSize = ImVec2{ 48.0f, 48.0f };
+		ImVec2 panelSize = ImGui::GetWindowSize();
+
+		const ImVec2 verticalSeparator = ImVec2(0.0f, 10.0f);
+
+		/**** BEGIN Table #1 (3 columns) ****/
+
+		ImGui::Columns(3);
+		// ImGui::AlignTextToFramePadding();
+
+		ImGui::SetColumnWidth(0, panelSize.x - 200.0f);
+		ImGui::SetColumnWidth(1, 100.0f);
+		ImGui::SetColumnWidth(2, 100.0f);
+
+		// Column #1: The breadcrumb control can go here
+		// ImGui::Text("Breadcrumb Control");
+		// ImGui::SameLine();
+		// ImGui::Text(m_CurrentDirectory.string().c_str());
+		// ImGui::SameLine();
+
+		std::filesystem::path breadcrumbPath = m_CurrentDirectory;
+		for (auto it = m_CurrentDirectory.begin(); it != m_CurrentDirectory.end(); it++)
+		{
+			if (ImGui::Button(it->filename().string().c_str()))
+			{
+				breadcrumbPath /= *it;
+			}
+			ImGui::SameLine();
+		}
+		m_CurrentDirectory = breadcrumbPath;
+
+		ImGui::NextColumn(); // goto column #2
+
+		float tableCellWidthStep = 4.0f;
+		float tableCellWidthMin = 32.0f;
+		float tableCellWidthMax = 192.0f;
+
+		// This Property control takes 2 table columns (#2 and #3)
+		ImGuiWrapper::Property("Thumbnail Size", m_TableCellWidth, tableCellWidthStep, tableCellWidthMin, tableCellWidthMax, PropertyFlag::DragProperty);
+
+		if (m_TableCellWidth < tableCellWidthMin) m_TableCellWidth = tableCellWidthMin;
+		if (m_TableCellWidth > tableCellWidthMax) m_TableCellWidth = tableCellWidthMax;
+
+		/**** END Table #1 (3 columns) ****/
+
+		// ImGui::Dummy(verticalSeparator);
+
+		ImGui::Separator();
+		ImGui::Dummy(verticalSeparator);
+
+		/**** BEGIN Table #2 (thumbnails, variable number of columns) ****/
+
+		const float cellMarginWidth = 8.0f * 2;
+
+		const ImVec2 iconSize = ImVec2{ m_TableCellWidth - cellMarginWidth, m_TableCellWidth - cellMarginWidth };
 		const ImVec2 iconUV0 = ImVec2(0, 0);
 		const ImVec2 iconUV1 = ImVec2(1, 1);
 		const int iconFramePadding = -1;
 		const ImVec4 iconBgColor = ImVec4(0, 0, 0, 0);
 		const ImVec4 iconTintColor = ImVec4(1, 1, 1, 1);
-		const ImVec2 verticalSeparator = ImVec2(0.0f, 10.0f);
 
-		const uint32_t columnWidth = 64;
-		ImVec2 windowSize = ImGui::GetWindowSize();
-		uint32_t columns = (uint32_t)windowSize.x / columnWidth;
+		uint32_t columnCount = (uint32_t)panelSize.x / (uint32_t)m_TableCellWidth;
 
-		ImGui::Columns(columns);
+		ImGui::Columns(columnCount);
+
+		for (uint32_t i = 0; i < columnCount; i++)
+		{
+			ImGui::SetColumnWidth(i, m_TableCellWidth);
+		}
 
 		uint32_t imageButtonID = 0;
 
@@ -137,6 +193,8 @@ namespace Hazel
 
 			ImGui::NextColumn();
 		}
+
+		/**** END Table #2 (thumbnails, variable number of columns) ****/
 
 		ImGui::End();
 	}

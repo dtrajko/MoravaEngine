@@ -29,6 +29,8 @@ namespace Hazel
 		Ref<HazelTexture2D> m_TextureDirectory;
 		Ref<HazelTexture2D> m_TextureFile;
 
+		float m_TableCellWidth = 64.0f;
+
 	};
 
 }
