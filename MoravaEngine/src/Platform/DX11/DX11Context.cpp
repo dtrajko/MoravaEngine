@@ -67,7 +67,7 @@ std::shared_ptr<DX11SwapChain> DX11Context::CreateSwapChain(HWND hwnd, UINT widt
 {
 	try
 	{
-		m_SwapChain = std::make_shared<DX11SwapChain>(hwnd, width, height);
+		m_SwapChain = std::make_shared<DX11SwapChain>(hwnd, width, height, this);
 	}
 	catch (const std::exception&)
 	{

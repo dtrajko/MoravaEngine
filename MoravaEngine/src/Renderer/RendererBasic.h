@@ -68,6 +68,9 @@ public:
 	// static void SetSpirVEnabled(bool enabled) { s_SpirV_Enabled = enabled; }
 	static bool GetVulkanSupported();
 
+	static void SetRendererContext(Hazel::Ref<Hazel::RendererContext> rendererContext) { s_RendererContext = rendererContext; }
+	static Hazel::Ref<Hazel::RendererContext> GetRendererContext() { return s_RendererContext; }
+
 protected:
 	static void UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene);
 
@@ -77,5 +80,7 @@ public:
 	static std::map<std::string, int> s_Uniforms;
 	static glm::vec4 s_BgColor;
 	// static bool s_SpirV_Enabled;
+
+	static Hazel::Ref<Hazel::RendererContext> s_RendererContext;
 
 };

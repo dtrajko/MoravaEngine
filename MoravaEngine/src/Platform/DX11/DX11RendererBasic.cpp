@@ -143,7 +143,8 @@ void DX11RendererBasic::DisableWireframe()
 
 void DX11RendererBasic::SetupViewportSize(uint32_t width, uint32_t height)
 {
-	DX11Context::Get()->SetViewportSize(width, height);
+	s_RendererContext.As<DX11Context>()->SetViewportSize(width, height);
+	// DX11Context::Get()->SetViewportSize(width, height);
 }
 
 void DX11RendererBasic::DisableBlend()

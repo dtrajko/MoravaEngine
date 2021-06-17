@@ -6,7 +6,8 @@
 #include <GLFW/glfw3.h>
 
 
-DX11SwapChain::DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height)
+DX11SwapChain::DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height, Hazel::Ref<DX11Context> dx11Context)
+	: m_DX11Context(dx11Context)
 {
 	Init(hwnd, width, height);
 }
@@ -25,8 +26,8 @@ void DX11SwapChain::Cleanup()
 
 void DX11SwapChain::Init(HWND hwnd, uint32_t width, uint32_t height)
 {
-	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
-	IDXGIFactory* dxgiFactory = DX11Context::Get()->GetIDXGIFactory();
+	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
+	IDXGIFactory* dxgiFactory = m_DX11Context->GetIDXGIFactory();
 
 	m_Width = width;
 	m_Height = height;
@@ -93,7 +94,7 @@ void DX11SwapChain::ReloadBuffers(uint32_t width, uint32_t height)
 
 void DX11SwapChain::CreateRenderTargetView()
 {
-	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
+	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
 
 	ID3D11Texture2D* buffer = NULL;
 	HRESULT hr = m_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);
@@ -114,7 +115,7 @@ void DX11SwapChain::CreateRenderTargetView()
 
 void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 {
-	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
+	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
 
 	ID3D11Texture2D* buffer = NULL;
 	HRESULT hr = m_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);

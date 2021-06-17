@@ -16,6 +16,8 @@ std::map<std::string, MoravaShader*> RendererBasic::s_Shaders;
 std::map<std::string, int> RendererBasic::s_Uniforms;
 glm::vec4 RendererBasic::s_BgColor;
 // bool RendererBasic::s_SpirV_Enabled;
+Hazel::Ref<Hazel::RendererContext> RendererBasic::s_RendererContext;
+
 
 RendererBasic::RendererBasic()
 {

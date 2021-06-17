@@ -141,6 +141,8 @@ void WindowsWindow::Init(const WindowProps& props)
 	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create(this));
 	m_RendererContext->Create();
 
+	RendererBasic::SetRendererContext(m_RendererContext);
+
 	SetVSync(true);
 
 	RendererBasic::EnableDepthTest();
@@ -339,6 +341,7 @@ void WindowsWindow::ProcessEvents()
 		break;
 		case Hazel::RendererAPIType::DX11:
 		// TODO: ProcessEvents DX11 version
+		Broadcast();
 		break;
 	}
 }
@@ -394,7 +397,7 @@ void WindowsWindow::OnUpdate()
 
 	SwapBuffers();
 
-	Broadcast();
+	// Broadcast();
 }
 
 void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)

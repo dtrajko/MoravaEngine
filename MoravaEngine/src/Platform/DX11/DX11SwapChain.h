@@ -16,11 +16,13 @@
 struct GLFWwindow;
 
 
+class DX11Context;
+
 class DX11SwapChain
 {
 public:
 	DX11SwapChain() = default;
-	DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height);
+	DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height, Hazel::Ref<DX11Context> dx11Context);
 	virtual ~DX11SwapChain();
 
 	void Init(HWND hwnd, uint32_t width, uint32_t height);
@@ -51,6 +53,7 @@ private:
 
 private:
 	Hazel::Ref<DX11Device> m_Device;
+	Hazel::Ref<DX11Context> m_DX11Context;
 
 	uint32_t m_Width = 0;
 	uint32_t m_Height = 0;
