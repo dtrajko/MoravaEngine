@@ -178,7 +178,7 @@ static void RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::HazelCamera* ca
 
 static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
 {
-	Hazel::Ref<DX11Context> context = Hazel::Ref<DX11Context>(Application::Get()->GetWindow()->GetRenderContext());
+	Hazel::Ref<DX11Context> dx11Context = Hazel::Ref<DX11Context>(Application::Get()->GetWindow()->GetRenderContext());
 	// DX11SwapChain& swapChain = context->GetSwapChain();
 
 	// TODO

@@ -99,7 +99,11 @@ void SceneDX11::SetupUniforms()
 
 void SceneDX11::Update(float timestep, Window* mainWindow)
 {
-    // TODO: Scene::Update(timestep, mainWindow);
+    Timer::Get()->Update();
+
+    m_Camera->OnUpdate(timestep);
+
+    // Scene::Update(timestep, mainWindow);
 }
 
 void SceneDX11::UpdateImGui(float timestep, Window* mainWindow)
