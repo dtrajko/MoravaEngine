@@ -1,6 +1,7 @@
 #include "Hazel/Editor/ContentBrowserPanel.h"
 
 #include "Core/Log.h"
+#include "Core/Timer.h"
 #include "ImGui/ImGuiWrapper.h"
 
 
@@ -10,7 +11,7 @@ namespace Hazel
 	static const std::filesystem::path s_AssetPath = ".";
 
 	ContentBrowserPanel::ContentBrowserPanel()
-		: m_CurrentDirectory(s_AssetPath)
+		: m_CurrentDirectory(s_AssetPath), m_CurrentDirectoryOld("")
 	{
 		m_TextureDirectory = HazelTexture2D::Create("Textures/UI/directory_transparent.png", false);
 		m_TextureFile = HazelTexture2D::Create("Textures/UI/file_transparent.png", false);
@@ -30,12 +31,13 @@ namespace Hazel
 
 		/**** BEGIN Table #1 (3 columns) ****/
 
-		ImGui::Columns(3);
+		ImGui::Columns(4);
 		// ImGui::AlignTextToFramePadding();
 
-		ImGui::SetColumnWidth(0, panelSize.x - 200.0f);
-		ImGui::SetColumnWidth(1, 100.0f);
-		ImGui::SetColumnWidth(2, 100.0f);
+		ImGui::SetColumnWidth(0, panelSize.x - 300.0f);
+		ImGui::SetColumnWidth(1, 80.0f);
+		ImGui::SetColumnWidth(2, 110.0f);
+		ImGui::SetColumnWidth(3, 110.0f);
 
 		// Column #1: The breadcrumb control can go here
 		// ImGui::Text("Breadcrumb Control");
@@ -43,24 +45,34 @@ namespace Hazel
 		// ImGui::Text(m_CurrentDirectory.string().c_str());
 		// ImGui::SameLine();
 
-		std::filesystem::path breadcrumbPath = m_CurrentDirectory;
+		std::filesystem::path breadcrumbPath = s_AssetPath;
+		std::filesystem::path selectedDirectoryPath = m_CurrentDirectory;
 		for (auto it = m_CurrentDirectory.begin(); it != m_CurrentDirectory.end(); it++)
 		{
+			if (it->filename() != s_AssetPath)
+			{
+				breadcrumbPath /= it->filename();
+			}
 			if (ImGui::Button(it->filename().string().c_str()))
 			{
-				breadcrumbPath /= *it;
+				selectedDirectoryPath = breadcrumbPath;
 			}
 			ImGui::SameLine();
 		}
-		m_CurrentDirectory = breadcrumbPath;
+		m_CurrentDirectory = selectedDirectoryPath;
 
 		ImGui::NextColumn(); // goto column #2
+
+		// Refresh button
+		m_RefreshPressed = ImGui::Button("Refresh") ? true : false;
+
+		ImGui::NextColumn(); // goto column #3
 
 		float tableCellWidthStep = 4.0f;
 		float tableCellWidthMin = 32.0f;
 		float tableCellWidthMax = 192.0f;
 
-		// This Property control takes 2 table columns (#2 and #3)
+		// This Property control takes 2 table columns (#3 and #4)
 		ImGuiWrapper::Property("Thumbnail Size", m_TableCellWidth, tableCellWidthStep, tableCellWidthMin, tableCellWidthMax, PropertyFlag::DragProperty);
 
 		if (m_TableCellWidth < tableCellWidthMin) m_TableCellWidth = tableCellWidthMin;
@@ -119,7 +131,7 @@ namespace Hazel
 			ImGui::NextColumn();
 		}
 
-		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
+		for (auto& directoryEntry : GetDirectoryEntriesCached(m_CurrentDirectory))
 		{
 			const auto& path = directoryEntry.path();
 			auto relativePath = std::filesystem::relative(path, s_AssetPath);
@@ -197,6 +209,41 @@ namespace Hazel
 		/**** END Table #2 (thumbnails, variable number of columns) ****/
 
 		ImGui::End();
+	}
+
+	std::vector<std::filesystem::directory_entry> ContentBrowserPanel::GetDirectoryEntriesCached(std::filesystem::path currentDirectory)
+	{
+		bool cacheExpired = false;
+
+		float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
+
+		// if (currentTimestamp - m_FilesystemIO.lastTime < m_FilesystemIO.cooldown) return std::filesystem::directory_iterator(currentDirectory);
+		// m_FilesystemIO.lastTime = currentTimestamp;
+
+		cacheExpired = m_RefreshPressed;
+
+		if (currentDirectory != m_CurrentDirectoryOld)
+		{
+			cacheExpired = true;
+			m_CurrentDirectoryOld = currentDirectory;
+		}
+
+		// return cached data if cache is not expired
+		if (!cacheExpired)
+		{
+			return m_DirectoryEntriesCached;
+		}
+
+		// Cache is expired, update it
+		m_DirectoryEntriesCached.clear();
+		for (std::filesystem::directory_entry directoryEntry : std::filesystem::directory_iterator(currentDirectory))
+		{
+			m_DirectoryEntriesCached.push_back(directoryEntry);
+		}
+
+		Log::GetLogger()->debug("DIRECTORY ENTRIES - UPDATING THE CACHE! Timestamp: '{0}'", currentTimestamp);
+
+		return m_DirectoryEntriesCached;
 	}
 
 }
