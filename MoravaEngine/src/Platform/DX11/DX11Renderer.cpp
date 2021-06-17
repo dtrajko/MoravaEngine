@@ -191,8 +191,10 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	// {
 	// });
 	{
-		Hazel::Ref<DX11Context> context = DX11Context::Get();
+		Hazel::Ref<DX11Context> dx11Context = DX11Context::Get();
 		// DX11SwapChain& swapChain = context->GetSwapChain();
+
+		dx11Context->ClearRenderTargetColor(1.0f, 0.4f, 0.0f, 1.0f);
 
 		for (auto& mesh : s_Meshes)
 		{
