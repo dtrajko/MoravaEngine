@@ -8,7 +8,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <iostream>
 #include <string>
+#include <clocale>
 
 
 class Util
@@ -31,7 +33,9 @@ public:
 
 	static std::string SpaceToUnderscore(std::string text);
 
-	static std::wstring StringNarrowToWide(const std::string& srcNarrow);
-	static std::string StringWideToNarrow(const std::wstring& srcWide);
+	// convert from const char* to const wchar_t*
+	static std::wstring to_wstr(const char* mbstr);
+	// convert from const wchar_t* to const char*
+	static std::string to_str(const wchar_t* wcstr);
 
 };

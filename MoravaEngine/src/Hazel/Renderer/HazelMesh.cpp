@@ -160,8 +160,8 @@ namespace Hazel {
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelDX11;
 				moravaShaderSpecificationHazelDX11.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-				moravaShaderSpecificationHazelDX11.VertexShaderPathDX11 = L"Shaders/HLSL/DirectionalLightVertexShader.hlsl";
-				moravaShaderSpecificationHazelDX11.PixelShaderPathDX11 = L"Shaders/HLSL/DirectionalLightPixelShader.hlsl";
+				moravaShaderSpecificationHazelDX11.VertexShaderPath = "Shaders/HLSL/DirectionalLightVertexShader.hlsl";
+				moravaShaderSpecificationHazelDX11.PixelShaderPath = "Shaders/HLSL/DirectionalLightPixelShader.hlsl";
 				moravaShaderSpecificationHazelDX11.ForceCompile = false;
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelDX11);

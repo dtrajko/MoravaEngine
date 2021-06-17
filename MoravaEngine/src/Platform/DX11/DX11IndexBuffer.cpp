@@ -5,9 +5,9 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 
 
-DX11IndexBuffer::DX11IndexBuffer(void* list_indices, uint32_t size_list)\
+DX11IndexBuffer::DX11IndexBuffer(void* list_indices, uint32_t size_list)
 {
-	ID3D11Device* dx11Device = DX11Context::Get()->GetCurrentDevice()->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	D3D11_BUFFER_DESC buff_desc = {};
 	buff_desc.Usage = D3D11_USAGE_DEFAULT;
@@ -28,9 +28,20 @@ DX11IndexBuffer::DX11IndexBuffer(void* list_indices, uint32_t size_list)\
 	}
 }
 
+DX11IndexBuffer::DX11IndexBuffer(uint32_t size)
+{
+	Log::GetLogger()->error("DX11IndexBuffer(uint32_t size) not yet implemented!");
+}
+
 uint32_t DX11IndexBuffer::GetSizeIndexList()
 {
 	return m_size_list;
+}
+
+Hazel::RendererID DX11IndexBuffer::GetRendererID() const
+{
+	Log::GetLogger()->error("GetRendererID() Method not implemented yet!");
+	return Hazel::RendererID();
 }
 
 DX11IndexBuffer::~DX11IndexBuffer()

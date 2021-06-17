@@ -19,7 +19,7 @@ int main()
 
 	SelectRendererAPI();
 
-	Application::Get()->InitWindow(WindowProps("Morava Engine", L"Morava Engine", 1280, 720));
+	Application::Get()->InitWindow(WindowProps("Morava Engine", 1280, 720));
 
 	Application::Get()->Run();
 

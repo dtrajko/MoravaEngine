@@ -51,6 +51,16 @@ DX11VertexBuffer::DX11VertexBuffer(void* list_vertices, uint32_t size_vertex, ui
 	}
 }
 
+DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t size, Hazel::VertexBufferUsage usage)
+{
+	Log::GetLogger()->error("DX11VertexBuffer::DX11VertexBuffer not implemented yet!");
+}
+
+DX11VertexBuffer::DX11VertexBuffer(uint32_t size, Hazel::VertexBufferUsage usage)
+{
+	Log::GetLogger()->error("DX11VertexBuffer::DX11VertexBuffer not implemented yet!");
+}
+
 uint32_t DX11VertexBuffer::GetSizeVertexList()
 {
 	return this->m_size_list;

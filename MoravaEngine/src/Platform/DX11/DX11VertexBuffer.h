@@ -15,8 +15,8 @@ class DX11VertexBuffer : public Hazel::VertexBuffer
 {
 public:
 	DX11VertexBuffer(void* list_vertices, uint32_t size_vertex, uint32_t size_list, void* shader_byte_code, uint32_t size_byte_shader);
-	// DX11VertexBuffer(void* data, uint32_t size, Hazel::VertexBufferUsage usage = Hazel::VertexBufferUsage::Static);
-	// DX11VertexBuffer(uint32_t size, Hazel::VertexBufferUsage usage = Hazel::VertexBufferUsage::Dynamic);
+	DX11VertexBuffer(void* data, uint32_t size, Hazel::VertexBufferUsage usage = Hazel::VertexBufferUsage::Static);
+	DX11VertexBuffer(uint32_t size, Hazel::VertexBufferUsage usage = Hazel::VertexBufferUsage::Dynamic);
 	virtual ~DX11VertexBuffer();
 
 	uint32_t GetSizeVertexList();

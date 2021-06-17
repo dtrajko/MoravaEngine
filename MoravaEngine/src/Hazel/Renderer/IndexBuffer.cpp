@@ -2,6 +2,7 @@
 
 #include "Hazel/Platform/OpenGL/OpenGLIndexBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
+#include "Platform/DX11/DX11IndexBuffer.h"
 
 
 namespace Hazel {
@@ -13,7 +14,9 @@ namespace Hazel {
 			case RendererAPIType::None:    return Ref<IndexBuffer>();
 			case RendererAPIType::OpenGL:  return Ref<OpenGLIndexBuffer>::Create(size);
 			case RendererAPIType::Vulkan:  return Ref<VulkanIndexBuffer>::Create(size);
+			case RendererAPIType::DX11:    return Ref<DX11IndexBuffer>::Create(size);
 		}
+		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<IndexBuffer>();
 	}
@@ -25,7 +28,9 @@ namespace Hazel {
 			case RendererAPIType::None:    return Ref<IndexBuffer>();
 			case RendererAPIType::OpenGL:  return Ref<OpenGLIndexBuffer>::Create(data, size);
 			case RendererAPIType::Vulkan:  return Ref<VulkanIndexBuffer>::Create(data, size);
+			case RendererAPIType::DX11:    return Ref<DX11IndexBuffer>::Create(data, size);
 		}
+		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<IndexBuffer>();
 	}

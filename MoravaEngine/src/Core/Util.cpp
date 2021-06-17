@@ -134,16 +134,43 @@ std::string Util::SpaceToUnderscore(std::string text)
 	return text;
 }
 
-std::wstring Util::StringNarrowToWide(const std::string& srcNarrow)
+// convert from const char* to const wchar_t*
+std::wstring Util::to_wstr(const char* mbstr)
 {
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-	std::wstring destWide = converter.from_bytes(srcNarrow);
-	return destWide;
+	std::mbstate_t state{}; // conversion state
+
+	const char* p = mbstr;
+
+	// get the number of characters
+	// when successfully converted
+	size_t clen = mbsrtowcs(NULL, &p, 0 /* ignore */, &state) + 1; // for termination null character
+
+	// failed to calculate
+	// the character length of the converted string 
+	if (clen == 0)
+	{
+		return L""; // empty wstring
+	}
+
+	// reserve clen characters
+	// wstring reserves +1 character (termination char)
+	std::wstring rlt(clen, L'\0');
+
+	size_t converted = mbsrtowcs(&rlt[0], &mbstr, rlt.size(), &state);
+
+	// conversion failed
+	if (converted == static_cast<std::size_t>(-1))
+	{
+		return L"";
+	}
+	else
+	{
+		return rlt;
+	}
 }
 
-std::string Util::StringWideToNarrow(const std::wstring& srcWide)
+// convert from const wchar_t* to const char*
+std::string Util::to_str(const wchar_t* wcstr)
 {
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-	std::string destNarrow = converter.to_bytes(srcWide);
-	return destNarrow;
+	return std::string();
 }

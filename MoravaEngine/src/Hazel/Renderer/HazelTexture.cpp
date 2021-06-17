@@ -4,6 +4,7 @@
 #include "Hazel/Platform/OpenGL/OpenGLTexture.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
 #include "Platform/DX11/DX11Texture2D.h"
+#include "Core/Util.h"
 
 
 namespace Hazel {
@@ -38,10 +39,10 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None: return Ref<HazelTexture2D>();
+		case RendererAPIType::None:   return Ref<HazelTexture2D>();
 		case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(path, srgb, wrap);
 		case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(path, srgb, wrap);
-		case RendererAPIType::DX11: return Ref<DX11Texture2D>::Create(path);
+		case RendererAPIType::DX11:   return Ref<DX11Texture2D>::Create(Util::to_wstr(path.c_str()).c_str());
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");

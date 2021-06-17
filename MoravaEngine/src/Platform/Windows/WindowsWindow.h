@@ -112,7 +112,6 @@ private:
 	struct WindowData
 	{
 		std::string Title;
-		std::wstring TitleDX11;
 		uint32_t Width, Height;
 		bool VSync;
 

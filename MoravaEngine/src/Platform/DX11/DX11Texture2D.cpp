@@ -12,7 +12,7 @@ DX11Texture2D::DX11Texture2D()
 
 DX11Texture2D::DX11Texture2D(const wchar_t* fullPath)
 {
-	ID3D11Device* dx11Device = DX11Context::Get()->GetCurrentDevice()->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	DirectX::ScratchImage image_data;
 	HRESULT res = DirectX::LoadFromWICFile(fullPath, DirectX::WIC_FLAGS_IGNORE_SRGB, nullptr, image_data);
@@ -48,6 +48,8 @@ DX11Texture2D::DX11Texture2D(const wchar_t* fullPath)
 	{
 		throw std::exception("DX11Texture2D not created successfully.");
 	}
+
+	Log::GetLogger()->info("DX11Texture2D '{0}' successfully loaded!", "const wchar_t*");
 
 	// Invalidate(); // do we need an Invalidate method?
 }

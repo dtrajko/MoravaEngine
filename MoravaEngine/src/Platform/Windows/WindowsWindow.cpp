@@ -102,7 +102,6 @@ WindowsWindow::~WindowsWindow()
 void WindowsWindow::Init(const WindowProps& props)
 {
 	m_Data.Title = props.Title;
-	m_Data.TitleDX11 = props.TitleDX11;
 	m_Data.Width = props.Width;
 	m_Data.Height = props.Height;
 
@@ -212,7 +211,9 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 
 	LPCWSTR className = L"WindowsWindow";
 	LPCWSTR menuName = L"";
-	LPCWSTR windowName = props.TitleDX11.c_str();
+	auto windowNameWStr = Util::to_wstr(props.Title.c_str());
+	auto windowNameWChar = windowNameWStr.c_str();
+	LPCWSTR windowName = (LPCWSTR)windowNameWChar;
 
 	WNDCLASSEX wc;
 	wc.cbClsExtra = NULL;

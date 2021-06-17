@@ -29,7 +29,9 @@ Hazel::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaSh
 	}
 	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::DX11Shader)
 	{
-		Hazel::Ref<DX11Shader> dx11Shader = Hazel::Ref<DX11Shader>::Create(moravaShaderSpecification.VertexShaderPathDX11.c_str(), moravaShaderSpecification.PixelShaderPathDX11.c_str());
+		Hazel::Ref<DX11Shader> dx11Shader = Hazel::Ref<DX11Shader>::Create(
+			Util::to_wstr(moravaShaderSpecification.VertexShaderPath.c_str()).c_str(),
+			Util::to_wstr(moravaShaderSpecification.PixelShaderPath.c_str()).c_str());
 		moravaShader = Hazel::Ref<MoravaShader>(dx11Shader);
 	}
 

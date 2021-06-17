@@ -33,9 +33,6 @@ struct MoravaShaderSpecification
 	std::string HazelShaderPath    = "";
 	// DX11Shader
 	std::string PixelShaderPath    = "";
-	// DX11Shader Wide Strings
-	std::wstring VertexShaderPathDX11 = L"";
-	std::wstring PixelShaderPathDX11 = L"";
 
 	bool ForceCompile = false;
 };
