@@ -9,6 +9,7 @@
 #include <locale>
 #include <codecvt>
 #include <string>
+#include <cstring>
 
 
 void Util::OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
@@ -135,20 +136,40 @@ std::string Util::SpaceToUnderscore(std::string text)
 }
 
 // convert from const char* to const wchar_t*
+// https://www.youtube.com/watch?v=DZyzPSwe5l4
 std::wstring Util::to_wstr(const char* mbstr)
 {
+	// not required, but nice to have
+	// use underscored "en_US" instead of 
+	// hyphened "en-US" for compatibility with GNU g++
+#ifdef _MSC_VER
+	std::setlocale(LC_ALL, "en-US"); // Microsoft Visual Studio
+#else
+	std::setlocale(LC_ALL, "en_US"); // GNU g++
+#endif
+
+	if (mbstr == NULL || strlen(mbstr) == 0)
+	{
+		std::cerr << "Invalid input parameter!" << std::endl;
+		return L"";
+	}
+
 	std::mbstate_t state{}; // conversion state
 
 	const char* p = mbstr;
 
 	// get the number of characters
 	// when successfully converted
-	size_t clen = mbsrtowcs(NULL, &p, 0 /* ignore */, &state) + 1; // for termination null character
+	// mbsrtowcs - [multi byte string] to [wide char string]
+	// https://en.cppreference.com/w/cpp/string/multibyte/mbsrtowcs
+	size_t clen = mbsrtowcs(NULL, &p, 0 /* ignore */, &state);
+		// + 1 is redundant because std::wstring manages the terminating null character
 
 	// failed to calculate
 	// the character length of the converted string 
-	if (clen == 0)
+	if (clen == 0 || clen == static_cast<size_t>(-1))
 	{
+		std::cerr << "Failed to compute clen!" << std::endl;
 		return L""; // empty wstring
 	}
 
@@ -161,6 +182,7 @@ std::wstring Util::to_wstr(const char* mbstr)
 	// conversion failed
 	if (converted == static_cast<std::size_t>(-1))
 	{
+		std::cerr << "The mbsrtowcs() conversion failed!" << std::endl;
 		return L"";
 	}
 	else
@@ -170,7 +192,48 @@ std::wstring Util::to_wstr(const char* mbstr)
 }
 
 // convert from const wchar_t* to const char*
+// https://www.youtube.com/watch?v=DZyzPSwe5l4
 std::string Util::to_str(const wchar_t* wcstr)
 {
-	return std::string();
+	// not required, but nice to have
+	// use underscored "en_US" instead of 
+	// hyphened "en-US" for compatibility with GNU g++
+#ifdef _MSC_VER
+	std::setlocale(LC_ALL, "en-US"); // Microsoft Visual Studio
+#else
+	std::setlocale(LC_ALL, "en_US"); // GNU g++
+#endif
+
+	if (wcstr == NULL || wcslen(wcstr) == 0)
+	{
+		return ""; // empty string
+	}
+
+	std::mbstate_t state{};
+
+	const wchar_t* p = wcstr;
+
+	// wcsrtombs - [wide char string] to [multi byte string]
+	// https://en.cppreference.com/w/cpp/string/multibyte/wcsrtombs
+	size_t clen = wcsrtombs(NULL, &p, 0 /* ignore */, &state);
+		// + 1 is redundant, because std::string manages the terminating null character
+
+	// cannot determine or convert to const char*
+	if (clen == 0 || clen == static_cast<std::size_t>(-1))
+	{
+		return ""; // empty string
+	}
+
+	std::string rlt(clen, '\0');
+
+	size_t converted = wcsrtombs(&rlt[0], &wcstr, rlt.size(), &state);
+
+	if (converted == static_cast<size_t>(-1))
+	{
+		return ""; // return empty string
+	}
+	else
+	{
+		return rlt;
+	}
 }

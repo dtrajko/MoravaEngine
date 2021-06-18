@@ -124,7 +124,7 @@ void WindowsWindow::Init(const WindowProps& props)
 	mouseFirstMoved = true;
 	mouseCursorAboveWindow = false;
 
-	Log::GetLogger()->info("Creating window {0} [{1}x{2}]", props.Title, props.Width, props.Height);
+	Log::GetLogger()->info("Creating window - title: '{0}', size: [{1}x{2}]", props.Title, props.Width, props.Height);
 
 	switch (Hazel::RendererAPI::Current())
 	{
@@ -211,8 +211,8 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 
 	LPCWSTR className = L"WindowsWindow";
 	LPCWSTR menuName = L"";
-	auto windowNameWStr = Util::to_wstr(props.Title.c_str());
-	auto windowNameWChar = windowNameWStr.c_str();
+	std::wstring windowNameWStr = Util::to_wstr(props.Title.c_str());
+	const wchar_t* windowNameWChar = windowNameWStr.c_str();
 	LPCWSTR windowName = (LPCWSTR)windowNameWChar;
 
 	WNDCLASSEX wc;
