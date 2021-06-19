@@ -6,6 +6,7 @@
 // #include "Platform/DX11/DX11Shader.h"
 #include "Platform/DX11/DX11SwapChain.h"
 #include "Platform/DX11/DX11Renderer.h"
+#include "Platform/DX11/DX11Shader.h"
 
 #include "Core/Application.h"
 
@@ -15,12 +16,55 @@ DX11TestLayer::DX11TestLayer()
 {
 }
 
+DX11TestLayer::DX11TestLayer(const std::string& name)
+	: Layer(name), m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
+{
+}
+
 DX11TestLayer::~DX11TestLayer()
 {
 }
 
 void DX11TestLayer::OnAttach()
 {
+	Hazel::HazelFramebufferTextureSpecification framebufferTextureSpecification;
+	framebufferTextureSpecification.Format = Hazel::HazelImageFormat::RGBA;
+
+	std::vector<Hazel::HazelFramebufferTextureSpecification> framebufferTextureSpecifications;
+	framebufferTextureSpecifications.push_back(framebufferTextureSpecification);
+
+	Hazel::HazelFramebufferAttachmentSpecification framebufferAttachmentSpecification{};
+	framebufferAttachmentSpecification.Attachments = framebufferTextureSpecifications;
+
+	Hazel::HazelFramebufferSpecification framebufferSpecification{};
+	framebufferSpecification.ClearColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+	framebufferSpecification.DebugName = "DX11 Framebuffer specification";
+	framebufferSpecification.Width = Application::Get()->GetWindow()->GetWidth();
+	framebufferSpecification.Height = Application::Get()->GetWindow()->GetHeight();
+	framebufferSpecification.NoResize = false;
+	framebufferSpecification.Samples = 1; // TODO: for mipmaps? what is the optimal number?
+	framebufferSpecification.Scale = 1.0f;
+	framebufferSpecification.SwapChainTarget = true; // render to screen or to offscreen render target
+	framebufferSpecification.Attachments = framebufferAttachmentSpecification;
+
+	Hazel::RenderPassSpecification renderPassSpecification{};
+	renderPassSpecification.DebugName = "DX11 Render Pass specificartion";
+	renderPassSpecification.TargetFramebuffer = Hazel::HazelFramebuffer::Create(framebufferSpecification);
+
+	MoravaShaderSpecification moravaShaderSpecification;
+	moravaShaderSpecification.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+	moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/DirectionalLightVertexShader.hlsl";
+	moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/DirectionalLightPixelShader.hlsl";
+	moravaShaderSpecification.ForceCompile = false;
+
+	Hazel::PipelineSpecification pipelineSpecification{};
+	pipelineSpecification.DebugName = "DX11 Pipeline specification";
+	pipelineSpecification.Layout = Hazel::VertexBufferLayout{};
+	pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpecification);
+	pipelineSpecification.Shader = MoravaShader::Create(moravaShaderSpecification);
+
+	m_Pipeline = Hazel::Pipeline::Create(pipelineSpecification);
+
 	// m_Meshes.push_back(Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 }
 

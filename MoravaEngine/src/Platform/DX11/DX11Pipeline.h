@@ -24,4 +24,6 @@ public:
 private:
 	Hazel::PipelineSpecification m_Specification;
 
+	ID3D11InputLayout* m_layout; // should be moved from DX11VertexBuffer to here
+
 };

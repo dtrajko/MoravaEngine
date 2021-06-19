@@ -32,6 +32,8 @@ DX11VertexBuffer::DX11VertexBuffer(void* list_vertices, uint32_t size_vertex, ui
 		throw std::exception("DX11VertexBuffer initialization failed.");
 	}
 
+	/**** BEGIN InputLayout TODO: move to DX11Pipeline::Invalidate ****/
+
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		// SEMANTIC NAME - SEMANTIC INDEX - FORMAT - INPUT SLOT - ALIGNED BYTE OFFSET - INPUT SLOT CLASS - INSTANCE DATA STEP RATE
@@ -49,6 +51,8 @@ DX11VertexBuffer::DX11VertexBuffer(void* list_vertices, uint32_t size_vertex, ui
 	{
 		throw std::exception("DX11VertexBuffer: CreateInputLayout failed.");
 	}
+
+	/**** END InputLayout TODO: move to DX11Pipeline::Invalidate ****/
 }
 
 DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t size, Hazel::VertexBufferUsage usage)

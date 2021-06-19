@@ -29,6 +29,10 @@ DX11Shader::DX11Shader(const std::string& path, bool forceCompile)
 
 DX11Shader::DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShaderPath)
 {
+	s_Specification.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+	s_Specification.VertexShaderPath = Util::to_str(vertexShaderPath);
+	s_Specification.PixelShaderPath = Util::to_str(pixelShaderPath);
+
 	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	void* shaderByteCodeOut = nullptr;
@@ -45,6 +49,8 @@ DX11Shader::DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShad
 		}
 
 		ReleaseCompiledDX11Shader();
+
+		Log::GetLogger()->info("DX11Shader [Type: VERTEX, path: '{0}'] has been successfully created!", s_Specification.VertexShaderPath);
 	}
 	// END compile Vertex DX11 Shader
 
@@ -59,11 +65,32 @@ DX11Shader::DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShad
 		}
 
 		ReleaseCompiledDX11Shader();
+
+		Log::GetLogger()->info("DX11Shader [Type: PIXEL, path: '{0}'] has been successfully created!", s_Specification.PixelShaderPath);
 	}
 	// END compile Pixel DX11 Shader
 }
 
-DX11Shader::~DX11Shader() {}
+DX11Shader::~DX11Shader()
+{
+	ClearShader();
+}
+
+void DX11Shader::ClearShader()
+{
+}
+
+const void* DX11Shader::GetBytecodeWithInputSignature()
+{
+	// DX11-specific method TODO implement this method
+	return nullptr;
+}
+
+size_t DX11Shader::GetBytecodeLength()
+{
+	// DX11-specific method TODO implement this method
+	return size_t();
+}
 
 void DX11Shader::ReleaseCompiledDX11Shader()
 {

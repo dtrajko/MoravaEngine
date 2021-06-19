@@ -19,6 +19,7 @@ namespace Hazel {
 	{
 	public:
 		VulkanTestLayer();
+		VulkanTestLayer(const std::string& name);
 		virtual ~VulkanTestLayer();
 
 		virtual void OnAttach() override;

@@ -115,7 +115,7 @@ public:
 	inline std::string GetName() { return m_Name; }
 
 	void Unbind();
-	void ClearShader();
+	virtual void ClearShader();
 	~MoravaShader();
 
 	GLuint GetProgramID();
@@ -181,5 +181,7 @@ protected:
 	Hazel::ShaderUniformBufferList m_PSRendererUniformBuffers;
 	Ref<Hazel::ShaderUniformBufferDeclaration> m_VSMaterialUniformBuffer;
 	Ref<Hazel::ShaderUniformBufferDeclaration> m_PSMaterialUniformBuffer;
+
+	static MoravaShaderSpecification s_Specification;
 
 };

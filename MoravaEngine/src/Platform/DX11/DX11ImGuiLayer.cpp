@@ -27,6 +27,7 @@ DX11ImGuiLayer::DX11ImGuiLayer()
 }
 
 DX11ImGuiLayer::DX11ImGuiLayer(const std::string& name)
+	: ImGuiLayer(name)
 {
 	Log::GetLogger()->info("DX11ImGuiLayer('{0}') created!", name);
 }

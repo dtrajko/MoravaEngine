@@ -6,6 +6,7 @@
 
 #include "Hazel/Platform/OpenGL/OpenGLRenderPass.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderPass.h"
+#include "Platform/DX11/DX11RenderPass.h"
 
 #include "Core/Log.h"
 
@@ -18,9 +19,11 @@ namespace Hazel {
 		{
 		case RendererAPIType::None:    HZ_CORE_ASSERT(false, "RendererAPI::None is currently not supported!"); return Ref<RenderPass>();
 		case RendererAPIType::OpenGL:  return Ref<OpenGLRenderPass>::Create(spec);
-		case RendererAPIType::Vulkan: return Ref<VulkanRenderPass>::Create(spec);
+		case RendererAPIType::Vulkan:  return Ref<VulkanRenderPass>::Create(spec);
+		case RendererAPIType::DX11:    return Ref<DX11RenderPass>::Create(spec);
 		}
 
+		Log::GetLogger()->error("Unknown RendererAPI!");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return Ref<RenderPass>();
 	}

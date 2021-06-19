@@ -18,6 +18,11 @@ namespace Hazel {
 	{
 	}
 
+	VulkanTestLayer::VulkanTestLayer(const std::string& name)
+		: Layer(name), m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
+	{
+	}
+
 	VulkanTestLayer::~VulkanTestLayer()
 	{
 	}

@@ -10,7 +10,7 @@ class DX11ImGuiLayer : public Hazel::ImGuiLayer
 public:
 	DX11ImGuiLayer();
 	DX11ImGuiLayer(const std::string& name);
-	~DX11ImGuiLayer();
+	virtual ~DX11ImGuiLayer();
 
 	virtual void Begin() override;
 	virtual void End() override;

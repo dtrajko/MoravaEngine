@@ -18,6 +18,7 @@ class DX11TestLayer : public Hazel::Layer
 {
 public:
 	DX11TestLayer();
+	DX11TestLayer(const std::string& name);
 	virtual ~DX11TestLayer();
 
 	virtual void OnAttach() override;
@@ -40,5 +41,7 @@ private:
 	Hazel::EditorCamera m_Camera;
 
 	std::vector<glm::vec4> m_RandomColors;
+
+	Hazel::Ref<Hazel::Pipeline> m_Pipeline;
 
 };

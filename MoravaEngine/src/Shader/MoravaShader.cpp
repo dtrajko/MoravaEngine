@@ -11,11 +11,14 @@
 
 
 std::vector<Hazel::Ref<MoravaShader>> MoravaShader::s_AllShaders;
+MoravaShaderSpecification MoravaShader::s_Specification = MoravaShaderSpecification{};
 
 
 // the ultimate Create method that can create both MoravaShader and HazelShader shader types
 Hazel::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaShaderSpecification)
 {
+	s_Specification = moravaShaderSpecification;
+
 	Hazel::Ref<MoravaShader> moravaShader = Hazel::Ref<MoravaShader>();
 
 	if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::MoravaShader)
@@ -533,20 +536,13 @@ void MoravaShader::Unbind()
 	glUseProgram(0);
 }
 
-void MoravaShader::ClearShader()
-{
-	if (programID > 0)
-	{
-		glDeleteProgram(programID);
-		programID = 0;
-	}
-
-	m_UniformLocations.clear();
-}
-
 MoravaShader::~MoravaShader()
 {
 	ClearShader();
+}
+
+void MoravaShader::ClearShader()
+{
 }
 
 void MoravaShader::CompileShader(const char* vertexCode, const char* fragmentCode)

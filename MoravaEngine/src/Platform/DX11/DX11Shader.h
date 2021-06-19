@@ -114,6 +114,10 @@ public:
 	void SetVertexShaderDX11(ID3D11VertexShader* vertexShader) { m_VertexShaderDX11 = vertexShader; }
 	void SetPixelShaderDX11(ID3D11PixelShader* pixelShader) { m_PixelShaderDX11 = pixelShader; }
 
+	// DX11-specific GET methods
+	const void* GetBytecodeWithInputSignature();
+	size_t GetBytecodeLength();
+
 private:
 	void CompileOrGetDX11Binary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile);
 	void LoadAndCreateVertexShader(const std::vector<uint32_t>& shaderData);
@@ -127,6 +131,8 @@ private:
 	// DirectX 11 private methods
 	bool CompileDX11Shader(const wchar_t* fileName, Type shaderType, const char* entryPointName, void** shaderByteCodeOut, size_t* byteCodeSizeOut);
 	void ReleaseCompiledDX11Shader();
+
+	virtual void ClearShader() override;
 
 private:
 	std::string m_AssetPath;

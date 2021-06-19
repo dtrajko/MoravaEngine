@@ -11,16 +11,30 @@
 
 namespace Hazel {
 
+	ImGuiLayer::ImGuiLayer()
+		: Layer("Untitled Layer")
+	{
+	}
+
+	ImGuiLayer::ImGuiLayer(const std::string& name)
+		: Layer(name)
+	{
+	}
+
+	ImGuiLayer::~ImGuiLayer()
+	{
+	}
 
 	ImGuiLayer* ImGuiLayer::Create()
 	{
 		switch (RendererAPI::Current())
 		{
 		case RendererAPIType::None:   return nullptr;
-		case RendererAPIType::OpenGL: return new OpenGLImGuiLayer();
-		case RendererAPIType::Vulkan: return new VulkanImGuiLayer();
-		case RendererAPIType::DX11:   return new DX11ImGuiLayer();
+		case RendererAPIType::OpenGL: return new OpenGLImGuiLayer("OpenGLImGuiLayer");
+		case RendererAPIType::Vulkan: return new VulkanImGuiLayer("VulkanImGuiLayer");
+		case RendererAPIType::DX11:   return new DX11ImGuiLayer("DX11ImGuiLayer");
 		}
+		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	}

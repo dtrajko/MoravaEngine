@@ -88,7 +88,7 @@ public:
 	inline std::string GetName() { return m_Name; }
 
 	void Unbind();
-	void ClearShader();
+	virtual void ClearShader() override;
 	~OpenGLMoravaShader();
 
 	GLuint GetProgramID();

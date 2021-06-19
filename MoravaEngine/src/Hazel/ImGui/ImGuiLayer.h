@@ -10,6 +10,10 @@ namespace Hazel {
 	class ImGuiLayer : public Layer
 	{
 	public:
+		ImGuiLayer();
+		ImGuiLayer(const std::string& name);
+		virtual ~ImGuiLayer();
+
 		virtual void Begin() = 0;
 		virtual void End() = 0;
 

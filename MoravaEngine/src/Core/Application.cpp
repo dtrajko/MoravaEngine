@@ -52,10 +52,10 @@ void Application::OnInit()
 	switch (Hazel::RendererAPI::Current())
 	{
 		case Hazel::RendererAPIType::Vulkan:
-			PushLayer(new Hazel::VulkanTestLayer());
+			PushLayer(new Hazel::VulkanTestLayer("VulkanTestLayer"));
 			break;
 		case Hazel::RendererAPIType::DX11:
-			PushLayer(new DX11TestLayer());
+			PushLayer(new DX11TestLayer("DX11TestLayer"));
 			break;
 	}
 
