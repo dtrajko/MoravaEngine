@@ -110,27 +110,19 @@ void DX11Renderer::Init()
 	struct DX11Vertex
 	{
 		glm::vec3 Position;
-		glm::vec3 Color;
-
-		//	glm::vec3 Position;
-		//	glm::vec2 TexCoord;
-		//	glm::vec3 Normal;
-		//	glm::vec3 Tangent;
-		//	glm::vec3 Binormal;
+		glm::vec2 TexCoord;
+		glm::vec3 Normal;
+		glm::vec3 Tangent;
+		glm::vec3 Binormal;
 	};
 
 	DX11Vertex vertexList[] =
 	{
-		//	// ----------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ---------- TANGENT XYZ --------- BINORMAL XYZ
-		//	DX11Vertex{ { -0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #1
-		//	DX11Vertex{ { -0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #2
-		//	DX11Vertex{ {  0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #3
-		//	DX11Vertex{ {  0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #4
-
-		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #1
-		DX11Vertex{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f }, }, // VERTEX #2
-		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f }, }, // VERTEX #3
-		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, { 1.0f, 1.0f, 0.0f }, }, // VERTEX #4
+		// ----------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ---------- TANGENT XYZ --------- BINORMAL XYZ
+		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #1
+		DX11Vertex{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #2
+		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #3
+		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #4
 	};
 
 	// temporary DX11 objects and data structures
