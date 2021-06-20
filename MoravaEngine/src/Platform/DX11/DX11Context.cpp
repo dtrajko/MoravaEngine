@@ -29,10 +29,15 @@ void DX11Context::Create()
 	};
 	UINT num_feature_levels = ARRAYSIZE(feature_levels);
 
+	UINT Flags = NULL;
+#if defined(DEBUG) || defined(_DEBUG)  
+	Flags = D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
 	HRESULT res = 0;
 	for (UINT driver_type_index = 0; driver_type_index < num_driver_types;)
 	{
-		res = D3D11CreateDevice(NULL, driver_types[driver_type_index], NULL, NULL, feature_levels, num_feature_levels,
+		res = D3D11CreateDevice(NULL, driver_types[driver_type_index], NULL, Flags, feature_levels, num_feature_levels,
 			D3D11_SDK_VERSION, &m_DX11Device, &m_FeatureLevel, &m_DX11DeviceContext);
 
 		if (SUCCEEDED(res))

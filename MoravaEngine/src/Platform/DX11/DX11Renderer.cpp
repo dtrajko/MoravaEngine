@@ -128,9 +128,9 @@ void DX11Renderer::Init()
 		//	DX11Vertex{ {  0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #4
 
 		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #1
-		DX11Vertex{ { -0.5f,  0.5f, 0.0f }, { 1.0f, 1.0f, 0.0f }, }, // VERTEX #2
-		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #3
-		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, { 1.0f, 1.0f, 1.0f }, }, // VERTEX #4
+		DX11Vertex{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f }, }, // VERTEX #2
+		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, { 1.0f, 0.0f, 0.0f }, }, // VERTEX #3
+		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, { 1.0f, 1.0f, 0.0f }, }, // VERTEX #4
 	};
 
 	// temporary DX11 objects and data structures

@@ -49,7 +49,7 @@ DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t stride, uint32_t count, 
 
 	UINT numElements = ARRAYSIZE(layout);
 
-	void* shaderBytecodePointer = shader->GetVertexShader()->GetBytecodePointer();
+	const void* shaderBytecodePointer = shader->GetVertexShader()->GetBytecodePointer();
 	size_t shaderBytecodeLength = shader->GetVertexShader()->GetBytecodeLength();
 
 	// ::memcpy(&m_InputLayoutBuffer, shaderBytecodePointer, shaderBytecodeLength);
