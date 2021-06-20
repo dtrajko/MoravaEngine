@@ -33,6 +33,7 @@ public:
 	inline uint32_t GetStride() { return m_Stride; }
 	inline uint32_t GetVertexCount() { return m_Count; };
 	inline const ID3D11Buffer* GetDX11Buffer() { return m_Buffer; }
+	inline ID3D11InputLayout* GetInputLayout() { return m_InputLayout; }
 
 private:
 	// uint32_t m_Size = 0;
@@ -43,7 +44,7 @@ private:
 	uint32_t m_Count;
 
 	ID3D11Buffer* m_Buffer;
-	// ID3D11InputLayout* m_Layout; // moved to DX11Pipeline
+	ID3D11InputLayout* m_InputLayout;
 
 	friend class DX11Context;
 

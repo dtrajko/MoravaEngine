@@ -13,12 +13,12 @@ DX11Pipeline::DX11Pipeline(const Hazel::PipelineSpecification& spec)
 
 DX11Pipeline::~DX11Pipeline()
 {
-	m_Layout->Release();
 	// TODO: delete pipeline
 }
 
 void DX11Pipeline::Invalidate()
 {
+	/****
 	HZ_CORE_ASSERT(m_Specification.Shader);
 
 	auto dx11Device = DX11Context::Get()->GetDX11Device();
@@ -29,18 +29,23 @@ void DX11Pipeline::Invalidate()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		// SEMANTIC NAME - SEMANTIC INDEX - FORMAT - INPUT SLOT - ALIGNED BYTE OFFSET - INPUT SLOT CLASS - INSTANCE DATA STEP RATE
+
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		// { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		// { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		// { "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		// { "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "COLOR",    0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+
+		//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0,  0, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		//	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		//	{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		//	{ "TANGENT",  0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 32, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		//	{ "BINORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 44, D3D11_INPUT_PER_VERTEX_DATA, 0},
+
 	};
 
 	UINT numElements = ARRAYSIZE(layout);
 
 	Hazel::Ref<DX11Shader> dx11Shader = m_Specification.Shader.As<DX11Shader>();
 
-	const void* shaderBytecodePointer = dx11Shader->GetVertexShader()->GetBytecodeWithInputSignature();
+	void* shaderBytecodePointer = dx11Shader->GetVertexShader()->GetBytecodeWithInputSignature();
 	size_t shaderBytecodeLength = dx11Shader->GetVertexShader()->GetBytecodeLength();
 
 	// ::memcpy(&m_InputLayoutBuffer, shaderBytecodePointer, shaderBytecodeLength);
@@ -52,6 +57,7 @@ void DX11Pipeline::Invalidate()
 	}
 
 	Log::GetLogger()->info("DX11Pipeline: InputLayout successfully created!");
+	****/
 
 	// Ref<DX11Pipeline> instance = this;
 	// HazelRenderer::Submit([instance]() mutable {});

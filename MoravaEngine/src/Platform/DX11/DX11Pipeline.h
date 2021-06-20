@@ -20,13 +20,7 @@ public:
 	virtual void Invalidate() override;
 	virtual void Bind() override;
 
-	ID3D11InputLayout* GetInputLayout() { return m_Layout; }
-
 private:
 	Hazel::PipelineSpecification m_Specification;
-
-	ID3D11InputLayout* m_Layout;
-
-	const void* m_InputLayoutBuffer;
 
 };

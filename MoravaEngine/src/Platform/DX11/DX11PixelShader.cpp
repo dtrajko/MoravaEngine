@@ -11,7 +11,7 @@ DX11PixelShader::DX11PixelShader(const wchar_t* pixelShaderPath)
 
 	CompileDX11Shader(pixelShaderPath);
 
-	HRESULT hr = dx11Device->CreatePixelShader(m_ShaderBytecodePointer, m_BytecodeLength, nullptr, &m_DX11PixelShader);
+	HRESULT hr = dx11Device->CreatePixelShader(m_BytecodePointer, m_BytecodeLength, nullptr, &m_DX11PixelShader);
 	if (FAILED(hr))
 	{
 		throw std::exception("DX11PixelShader initialization failed.");
@@ -45,7 +45,7 @@ bool DX11PixelShader::CompileDX11Shader(const wchar_t* fileName)
 		return false;
 	}
 
-	m_ShaderBytecodePointer = m_Blob->GetBufferPointer();
+	m_BytecodePointer = m_Blob->GetBufferPointer();
 	m_BytecodeLength = m_Blob->GetBufferSize();
 
 	return true;

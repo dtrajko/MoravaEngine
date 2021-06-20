@@ -77,7 +77,7 @@ void DX11Renderer::Init()
 	framebufferAttachmentSpecification.Attachments = framebufferTextureSpecifications;
 
 	Hazel::HazelFramebufferSpecification framebufferSpecification{};
-	framebufferSpecification.ClearColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+	framebufferSpecification.ClearColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	framebufferSpecification.DebugName = "DX11 Framebuffer specification";
 	framebufferSpecification.Width = Application::Get()->GetWindow()->GetWidth();
 	framebufferSpecification.Height = Application::Get()->GetWindow()->GetHeight();
@@ -96,7 +96,7 @@ void DX11Renderer::Init()
 	// moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/DirLightBumpVS.hlsl";
 	// moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/DirLightBumpPS.hlsl";
 	moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/BasicVertexShader.hlsl";
-	moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/Triangle.hlsl";
+	moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/BasicPixelShader.hlsl";
 	moravaShaderSpecification.ForceCompile = false;
 
 	Hazel::PipelineSpecification pipelineSpecification{};
@@ -110,19 +110,27 @@ void DX11Renderer::Init()
 	struct DX11Vertex
 	{
 		glm::vec3 Position;
-		// glm::vec2 TexCoord;
-		// glm::vec3 Normal;
-		// glm::vec3 Tangent;
-		// glm::vec3 Binormal;
+		glm::vec3 Color;
+
+		//	glm::vec3 Position;
+		//	glm::vec2 TexCoord;
+		//	glm::vec3 Normal;
+		//	glm::vec3 Tangent;
+		//	glm::vec3 Binormal;
 	};
 
 	DX11Vertex vertexList[] =
 	{
-		// ----------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ---------- TANGENT XYZ --------- BINORMAL XYZ
-		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #1
-		DX11Vertex{ { -0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #2
-		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #3
-		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #4
+		//	// ----------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ---------- TANGENT XYZ --------- BINORMAL XYZ
+		//	DX11Vertex{ { -0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #1
+		//	DX11Vertex{ { -0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #2
+		//	DX11Vertex{ {  0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #3
+		//	DX11Vertex{ {  0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #4
+
+		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #1
+		DX11Vertex{ { -0.5f,  0.5f, 0.0f }, { 1.0f, 1.0f, 0.0f }, }, // VERTEX #2
+		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #3
+		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, { 1.0f, 1.0f, 1.0f }, }, // VERTEX #4
 	};
 
 	// temporary DX11 objects and data structures
@@ -250,7 +258,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	Hazel::HazelRenderer::Submit([=]() mutable {});
 
 	/**** BEGIN DirectX 11 rendering ****/
-	ClearRenderTargetColor(0.2f, 0.4f, 0.8f, 1.0f);
+	ClearRenderTargetColor(0.37f, 0.37f, 0.37f, 1.0f);
 
 	DX11Context::Get()->SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 

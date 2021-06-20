@@ -130,7 +130,7 @@ void DX11Context::SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer, Haz
 	uint32_t offset = 0;
 
 	m_DX11DeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer->m_Buffer, &stride, &offset);
-	m_DX11DeviceContext->IASetInputLayout(pipeline->GetInputLayout());
+	m_DX11DeviceContext->IASetInputLayout(vertexBuffer->GetInputLayout());
 }
 
 void DX11Context::SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer)

@@ -14,7 +14,7 @@ public:
 
 	inline ID3D11PixelShader* GetDX11Shader() { return m_DX11PixelShader; }
 
-	inline const void* GetBytecodeWithInputSignature() { return m_ShaderBytecodePointer; }
+	inline void* GetBytecodePointer() { return m_BytecodePointer; }
 	inline size_t GetBytecodeLength() { return m_BytecodeLength; }
 
 private:
@@ -26,7 +26,7 @@ private:
 
 	ID3DBlob* m_Blob = nullptr;
 
-	const void* m_ShaderBytecodePointer;
-	size_t m_BytecodeLength;
+	void* m_BytecodePointer = nullptr;
+	size_t m_BytecodeLength = 0;
 
 };

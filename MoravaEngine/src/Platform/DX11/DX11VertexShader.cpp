@@ -11,7 +11,7 @@ DX11VertexShader::DX11VertexShader(const wchar_t* vertexShaderPath)
 
 	CompileDX11Shader(vertexShaderPath);
 
-	HRESULT hr = dx11Device->CreateVertexShader(m_ShaderBytecodePointer, m_BytecodeLength, nullptr, &m_DX11VertexShader);
+	HRESULT hr = dx11Device->CreateVertexShader(m_BytecodePointer, m_BytecodeLength, nullptr, &m_DX11VertexShader);
 	if (FAILED(hr))
 	{
 		throw std::exception("DX11VertexShader initialization failed.");
@@ -45,7 +45,7 @@ bool DX11VertexShader::CompileDX11Shader(const wchar_t* fileName)
 		return false;
 	}
 
-	m_ShaderBytecodePointer = m_Blob->GetBufferPointer();
+	m_BytecodePointer = m_Blob->GetBufferPointer();
 	m_BytecodeLength = m_Blob->GetBufferSize();
 
 	return true;
