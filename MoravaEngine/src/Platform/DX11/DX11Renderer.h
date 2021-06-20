@@ -5,6 +5,9 @@
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelCamera.h"
 
+#include "DX11Texture2D.h"
+#include "DX11VertexBuffer.h"
+
 #include "Core/Window.h"
 
 
@@ -29,5 +32,15 @@ public:
 
 	static uint32_t GetViewportWidth();
 	static uint32_t GetViewportHeight();
+
+	// DirectX 11 drawing methods (moved from DX11Context)
+	static void ClearRenderTargetColor(float red, float green, float blue, float alpha);
+	static void ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha);
+	static void ClearDepthStencil();
+	static void ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil);
+
+	static void DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex);
+	static void DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation);
+	static void DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex);
 
 };

@@ -343,6 +343,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11PixelShader.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11RenderCommandBuffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -400,6 +401,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11VertexShader.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaShader.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererBasic.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp" />
@@ -765,6 +767,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11PixelShader.h" />
     <ClInclude Include="src\Platform\DX11\DX11RenderCommandBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -822,6 +825,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11VertexShader.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaShader.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererBasic.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h" />

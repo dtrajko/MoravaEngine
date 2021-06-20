@@ -11,6 +11,7 @@
 #include "DX11ConstantBuffer.h"
 #include "DX11Texture2D.h"
 #include "DX11Shader.h"
+#include "DX11Pipeline.h"
 
 #include "Core/Window.h"
 
@@ -34,12 +35,12 @@ public:
 	virtual void BeginFrame() override;
 
 	Hazel::Ref<DX11Device> GetDevice() { return m_Device; }
-	// DX11SwapChain& GetSwapChain() { return m_SwapChain; }
+	std::shared_ptr<DX11SwapChain> GetSwapChain() { return m_SwapChain; }
 
 	// static Hazel::Ref<DX11Context> Get() { return Hazel::Ref<DX11Context>(Hazel::HazelRenderer::GetContext()); }
 	Hazel::Ref<DX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
 	IDXGIFactory* GetIDXGIFactory() { return m_IDXGI_Factory; };
-	ID3D11DeviceContext* GetImmediateContext() { return m_DX11_DeviceContext; };
+	ID3D11DeviceContext* GetImmediateContext() { return m_DX11DeviceContext; };
 
 	// ---------------------------------------------------------------
 
@@ -50,14 +51,9 @@ public:
 	std::shared_ptr<DX11SwapChain> CreateSwapChain(HWND hwnd, UINT width, UINT height);
 	void SetRasterizerState(bool cull_front);
 
-	void ClearRenderTargetColor(float red, float green, float blue, float alpha);
-	void ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha);
-	void ClearDepthStencil();
-	void ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil);
-
 	void SetViewportSize(uint32_t width, uint32_t height);
 
-	void SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer);
+	void SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer, Hazel::Ref<DX11Pipeline> pipeline);
 	void SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer);
 
 	void SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil);
@@ -67,10 +63,6 @@ public:
 
 	void SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, const std::vector<Hazel::Ref<DX11Texture2D>>& textures, uint32_t textureCount);
 	void SetConstantBuffer(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, Hazel::Ref<DX11ConstantBuffer> buffer);
-
-	void DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex);
-	void DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation);
-	void DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex);
 
 private:
 	void InitRasterizerState();
@@ -94,7 +86,7 @@ private:
 	IDXGIDevice* m_DXGI_Device;
 	IDXGIAdapter* m_DXGI_Adapter;
 	IDXGIFactory* m_IDXGI_Factory;
-	ID3D11DeviceContext* m_DX11_DeviceContext;
+	ID3D11DeviceContext* m_DX11DeviceContext;
 	ID3D11RasterizerState* m_CullFrontState;
 	ID3D11RasterizerState* m_CullBackState;
 	bool m_Validation;

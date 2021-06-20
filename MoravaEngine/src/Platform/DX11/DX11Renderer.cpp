@@ -35,6 +35,11 @@ static std::vector<Hazel::Ref<Hazel::HazelMesh>> s_Meshes;
 static Hazel::Submesh* s_SelectedSubmesh;
 static glm::mat4* s_Transform_ImGuizmo = nullptr;
 
+// temporary DX11 objects
+static Hazel::Ref<Hazel::Pipeline> s_Pipeline;
+static Hazel::Ref<DX11VertexBuffer> s_VertexBuffer;
+
+
 struct VulkanRendererData
 {
 	VkCommandBuffer ActiveCommandBuffer = nullptr;
@@ -65,6 +70,74 @@ void DX11Renderer::OnResize(uint32_t width, uint32_t height)
 
 void DX11Renderer::Init()
 {
+	/**** BEGIN DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
+
+	Hazel::HazelFramebufferTextureSpecification framebufferTextureSpecification;
+	framebufferTextureSpecification.Format = Hazel::HazelImageFormat::RGBA;
+
+	std::vector<Hazel::HazelFramebufferTextureSpecification> framebufferTextureSpecifications;
+	framebufferTextureSpecifications.push_back(framebufferTextureSpecification);
+
+	Hazel::HazelFramebufferAttachmentSpecification framebufferAttachmentSpecification{};
+	framebufferAttachmentSpecification.Attachments = framebufferTextureSpecifications;
+
+	Hazel::HazelFramebufferSpecification framebufferSpecification{};
+	framebufferSpecification.ClearColor = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
+	framebufferSpecification.DebugName = "DX11 Framebuffer specification";
+	framebufferSpecification.Width = Application::Get()->GetWindow()->GetWidth();
+	framebufferSpecification.Height = Application::Get()->GetWindow()->GetHeight();
+	framebufferSpecification.NoResize = false;
+	framebufferSpecification.Samples = 1; // TODO: for mipmaps? what is the optimal number?
+	framebufferSpecification.Scale = 1.0f;
+	framebufferSpecification.SwapChainTarget = true; // render to screen or to offscreen render target
+	framebufferSpecification.Attachments = framebufferAttachmentSpecification;
+
+	Hazel::RenderPassSpecification renderPassSpecification{};
+	renderPassSpecification.DebugName = "DX11 Render Pass specificartion";
+	renderPassSpecification.TargetFramebuffer = Hazel::HazelFramebuffer::Create(framebufferSpecification);
+
+	MoravaShaderSpecification moravaShaderSpecification;
+	moravaShaderSpecification.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+	// moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/DirectionalLightVertexShader.hlsl";
+	// moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/DirectionalLightPixelShader.hlsl";
+	moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/Triangle.hlsl";
+	moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/Triangle.hlsl";
+	moravaShaderSpecification.ForceCompile = false;
+
+	Hazel::PipelineSpecification pipelineSpecification{};
+	pipelineSpecification.DebugName = "DX11 Pipeline specification";
+	pipelineSpecification.Layout = Hazel::VertexBufferLayout{};
+	pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpecification);
+	pipelineSpecification.Shader = MoravaShader::Create(moravaShaderSpecification);
+
+	s_Pipeline = Hazel::Pipeline::Create(pipelineSpecification);
+
+	struct DX11Vertex
+	{
+		glm::vec3 Position;
+		// glm::vec2 TexCoord;
+		// glm::vec3 Normal;
+		// glm::vec3 Tangent;
+		// glm::vec3 Binormal;
+	};
+
+	DX11Vertex vertexList[] =
+	{
+		// ----------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ---------- TANGENT XYZ --------- BINORMAL XYZ
+		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
+		DX11Vertex{ {  0.0f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
+		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
+	};
+
+	// temporary DX11 objects and data structures
+	uint32_t vertexStride = sizeof(DX11Vertex);
+	uint32_t vertexCount = ARRAYSIZE(vertexList);
+	s_VertexBuffer = Hazel::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount, pipelineSpecification.Shader);
+
+	DX11Context::Get()->SetVertexBuffer(s_VertexBuffer, s_Pipeline);
+
+	/**** BEGIN DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
+
 	// HazelRenderer::Submit([=]() {
 	// });
 	{
@@ -194,7 +267,20 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		Hazel::Ref<DX11Context> dx11Context = DX11Context::Get();
 		// DX11SwapChain& swapChain = context->GetSwapChain();
 
-		dx11Context->ClearRenderTargetColor(1.0f, 0.4f, 0.0f, 1.0f);
+		ClearRenderTargetColor(0.2f, 0.4f, 0.8f, 1.0f);
+
+		DX11Context::Get()->SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
+
+		Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
+
+		DX11Context::Get()->SetVertexShader(dx11Shader);
+		DX11Context::Get()->SetPixelShader(dx11Shader);
+
+		DX11Context::Get()->SetVertexBuffer(s_VertexBuffer, s_Pipeline);
+
+		uint32_t startVertexIndex;
+		DX11Renderer::DrawTriangleList(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
+
 
 		for (auto& mesh : s_Meshes)
 		{
@@ -473,4 +559,54 @@ uint32_t DX11Renderer::GetViewportWidth()
 uint32_t DX11Renderer::GetViewportHeight()
 {
 	return s_ViewportHeight;
+}
+
+// BEGIN methods from DX11Context
+void DX11Renderer::ClearRenderTargetColor(float red, float green, float blue, float alpha)
+{
+	FLOAT clear_color[] = { red, green, blue, alpha };
+
+	std::shared_ptr<DX11SwapChain> dx11SwapChain = DX11Context::Get()->GetSwapChain();
+
+	DX11Context::Get()->GetImmediateContext()->ClearRenderTargetView(dx11SwapChain->GetRenderTargetView(), clear_color);
+	DX11Context::Get()->GetImmediateContext()->ClearDepthStencilView(dx11SwapChain->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+	DX11Context::Get()->GetImmediateContext()->OMSetRenderTargets(1, &dx11SwapChain->m_DX11RenderTargetView, DX11Context::Get()->GetSwapChain()->GetDepthStencilView());
+}
+
+void DX11Renderer::ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha)
+{
+	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
+	FLOAT clear_color[] = { red, green, blue, alpha };
+	DX11Context::Get()->GetImmediateContext()->ClearRenderTargetView(renderTarget->GetRenderTargetView(), clear_color);
+}
+
+void DX11Renderer::ClearDepthStencil()
+{
+	std::shared_ptr<DX11SwapChain> dx11SwapChain = DX11Context::Get()->GetSwapChain();
+
+	DX11Context::Get()->GetImmediateContext()->ClearDepthStencilView(dx11SwapChain->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+}
+
+void DX11Renderer::ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil)
+{
+	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
+	DX11Context::Get()->GetImmediateContext()->ClearDepthStencilView(depthStencil->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+}
+
+void DX11Renderer::DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex)
+{
+	DX11Context::Get()->GetImmediateContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DX11Context::Get()->GetImmediateContext()->Draw((UINT)vertexCount, (UINT)startVertexIndex);
+}
+
+void DX11Renderer::DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation)
+{
+	DX11Context::Get()->GetImmediateContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DX11Context::Get()->GetImmediateContext()->DrawIndexed((UINT)indexCount, (UINT)startIndexLocation, (UINT)startVertexIndex);
+}
+
+void DX11Renderer::DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex)
+{
+	DX11Context::Get()->GetImmediateContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	DX11Context::Get()->GetImmediateContext()->Draw((UINT)vertexCount, (UINT)startVertexIndex);
 }

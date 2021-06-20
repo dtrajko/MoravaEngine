@@ -159,7 +159,7 @@ void OpenGLRendererBasic::DisableWireframe()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-void OpenGLRendererBasic::SetupViewportSize(uint32_t width, uint32_t height)
+void OpenGLRendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 {
 	// Setup Viewport size
 	glViewport(0, 0, width, height);

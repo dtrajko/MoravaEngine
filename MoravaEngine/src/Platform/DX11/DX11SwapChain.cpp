@@ -19,8 +19,8 @@ DX11SwapChain::~DX11SwapChain()
 
 void DX11SwapChain::Cleanup()
 {
-	m_dsv->Release();
-	m_rtv->Release();
+	m_DX11RenderTargetView->Release();
+	m_DX11DepthStencilView->Release();
 	m_swap_chain->Release();
 }
 
@@ -73,8 +73,8 @@ void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
 	// CreateDepthStencil();
 	// CreateFramebuffer();
 
-	if (m_rtv) m_rtv->Release();
-	if (m_dsv) m_dsv->Release();
+	if (m_DX11RenderTargetView) m_DX11RenderTargetView->Release();
+	if (m_DX11DepthStencilView) m_DX11DepthStencilView->Release();
 
 	m_swap_chain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
 	ReloadBuffers(width, height);
@@ -104,7 +104,7 @@ void DX11SwapChain::CreateRenderTargetView()
 		throw std::exception("SwapChain: GetBuffer failed.");
 	}
 
-	hr = dx11Device->CreateRenderTargetView(buffer, NULL, &m_rtv);
+	hr = dx11Device->CreateRenderTargetView(buffer, NULL, &m_DX11RenderTargetView);
 	buffer->Release();
 
 	if (FAILED(hr))
@@ -140,7 +140,7 @@ void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 		throw std::exception("SwapChain: CreateTexture2D failed.");
 	}
 
-	hr = dx11Device->CreateDepthStencilView(buffer, NULL, &m_dsv);
+	hr = dx11Device->CreateDepthStencilView(buffer, NULL, &m_DX11DepthStencilView);
 	buffer->Release();
 
 	if (FAILED(hr))

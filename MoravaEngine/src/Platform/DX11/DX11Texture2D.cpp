@@ -104,7 +104,7 @@ DX11Texture2D::DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type)
 
 	if (type == RenderTarget)
 	{
-		hr = dx11Device->CreateRenderTargetView(m_texture, NULL, &m_render_target_view);
+		hr = dx11Device->CreateRenderTargetView(m_texture, NULL, &m_RenderTargetView);
 		if (FAILED(hr))
 		{
 			throw std::exception("DX11Texture2D not created successfully (RenderTargetView).");
@@ -112,7 +112,7 @@ DX11Texture2D::DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type)
 	}
 	else if (type == DepthStencil)
 	{
-		hr = dx11Device->CreateDepthStencilView(m_texture, NULL, &m_depth_stencil_view);
+		hr = dx11Device->CreateDepthStencilView(m_texture, NULL, &m_DepthStencilView);
 		if (FAILED(hr))
 		{
 			throw std::exception("DX11Texture2D not created successfully (DepthStencilView).");
@@ -156,8 +156,8 @@ DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uin
 
 DX11Texture2D::~DX11Texture2D()
 {
-	if (m_render_target_view) m_render_target_view->Release();
-	if (m_depth_stencil_view) m_depth_stencil_view->Release();
+	if (m_RenderTargetView) m_RenderTargetView->Release();
+	if (m_DepthStencilView) m_DepthStencilView->Release();
 	if (m_shader_res_view) m_shader_res_view->Release();
 	if (m_sampler_state) m_sampler_state->Release();
 	if (m_texture) m_texture->Release();

@@ -33,7 +33,7 @@ void DX11Context::Create()
 	for (UINT driver_type_index = 0; driver_type_index < num_driver_types;)
 	{
 		res = D3D11CreateDevice(NULL, driver_types[driver_type_index], NULL, NULL, feature_levels, num_feature_levels,
-			D3D11_SDK_VERSION, &m_DX11Device, &m_FeatureLevel, &m_DX11_DeviceContext);
+			D3D11_SDK_VERSION, &m_DX11Device, &m_FeatureLevel, &m_DX11DeviceContext);
 
 		if (SUCCEEDED(res))
 		{
@@ -60,7 +60,7 @@ void DX11Context::Create()
 
 DX11Context::~DX11Context()
 {
-	m_DX11_DeviceContext->Release();
+	m_DX11DeviceContext->Release();
 }
 
 std::shared_ptr<DX11SwapChain> DX11Context::CreateSwapChain(HWND hwnd, UINT width, UINT height)
@@ -79,10 +79,10 @@ std::shared_ptr<DX11SwapChain> DX11Context::CreateSwapChain(HWND hwnd, UINT widt
 void DX11Context::SetRasterizerState(bool cull_front)
 {
 	if (cull_front) {
-		m_DX11_DeviceContext->RSSetState(m_CullFrontState);
+		m_DX11DeviceContext->RSSetState(m_CullFrontState);
 	}
 	else {
-		m_DX11_DeviceContext->RSSetState(m_CullBackState);
+		m_DX11DeviceContext->RSSetState(m_CullBackState);
 	}
 }
 
@@ -113,33 +113,6 @@ void DX11Context::SwapBuffers()
 	m_SwapChain->Present(m_VSync);
 }
 
-void DX11Context::ClearRenderTargetColor(float red, float green, float blue, float alpha)
-{
-	FLOAT clear_color[] = { red, green, blue, alpha };
-
-	m_DX11_DeviceContext->ClearRenderTargetView(m_SwapChain->m_rtv, clear_color);
-	m_DX11_DeviceContext->ClearDepthStencilView(m_SwapChain->m_dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-	m_DX11_DeviceContext->OMSetRenderTargets(1, &m_SwapChain->m_rtv, m_SwapChain->m_dsv);
-}
-
-void DX11Context::ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha)
-{
-	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
-	FLOAT clear_color[] = { red, green, blue, alpha };
-	m_DX11_DeviceContext->ClearRenderTargetView(renderTarget->m_render_target_view, clear_color);
-}
-
-void DX11Context::ClearDepthStencil()
-{
-	m_DX11_DeviceContext->ClearDepthStencilView(m_SwapChain->m_dsv, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-}
-
-void DX11Context::ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil)
-{
-	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
-	m_DX11_DeviceContext->ClearDepthStencilView(depthStencil->m_depth_stencil_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-}
-
 void DX11Context::SetViewportSize(uint32_t width, uint32_t height)
 {
 	D3D11_VIEWPORT vp = {};
@@ -148,21 +121,21 @@ void DX11Context::SetViewportSize(uint32_t width, uint32_t height)
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
 
-	m_DX11_DeviceContext->RSSetViewports(1, &vp);
+	m_DX11DeviceContext->RSSetViewports(1, &vp);
 }
 
-void DX11Context::SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer)
+void DX11Context::SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer, Hazel::Ref<DX11Pipeline> pipeline)
 {
-	uint32_t stride = vertexBuffer->GetBufferSize();
+	uint32_t stride = vertexBuffer->GetStride();
 	uint32_t offset = 0;
 
-	m_DX11_DeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer->m_buffer, &stride, &offset);
-	m_DX11_DeviceContext->IASetInputLayout(vertexBuffer->m_layout);
+	m_DX11DeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer->m_Buffer, &stride, &offset);
+	m_DX11DeviceContext->IASetInputLayout(pipeline->GetInputLayout());
 }
 
 void DX11Context::SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer)
 {
-	m_DX11_DeviceContext->IASetIndexBuffer(indexBuffer->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	m_DX11DeviceContext->IASetIndexBuffer(indexBuffer->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
 }
 
 void DX11Context::SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil)
@@ -170,36 +143,18 @@ void DX11Context::SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel:
 	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
 	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
 
-	m_DX11_DeviceContext->OMSetRenderTargets(1, &renderTarget->m_render_target_view, depthStencil->m_depth_stencil_view);
+	m_DX11DeviceContext->OMSetRenderTargets(1, &renderTarget->m_RenderTargetView, depthStencil->GetDepthStencilView());
 }
 
 void DX11Context::SetVertexShader(Hazel::Ref<DX11Shader> vertexShader)
 {
-	m_DX11_DeviceContext->VSSetShader(vertexShader->GetVertexShaderDX11(), nullptr, 0);
+	m_DX11DeviceContext->VSSetShader(vertexShader->GetVertexShader()->GetDX11Shader(), nullptr, 0);
 }
 
 void DX11Context::SetPixelShader(Hazel::Ref<DX11Shader> pixelShader)
 {
 	if (!pixelShader) return;
-	m_DX11_DeviceContext->PSSetShader(pixelShader->GetPixelShaderDX11(), nullptr, 0);
-}
-
-void DX11Context::DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex)
-{
-	m_DX11_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_DX11_DeviceContext->Draw((UINT)vertexCount, (UINT)startVertexIndex);
-}
-
-void DX11Context::DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation)
-{
-	m_DX11_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_DX11_DeviceContext->DrawIndexed((UINT)indexCount, (UINT)startIndexLocation, (UINT)startVertexIndex);
-}
-
-void DX11Context::DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex)
-{
-	m_DX11_DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	m_DX11_DeviceContext->Draw((UINT)vertexCount, (UINT)startVertexIndex);
+	m_DX11DeviceContext->PSSetShader(pixelShader->GetPixelShader()->GetDX11Shader(), nullptr, 0);
 }
 
 void DX11Context::SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, const std::vector<Hazel::Ref<DX11Texture2D>>& textures, uint32_t textureCount)
@@ -215,13 +170,13 @@ void DX11Context::SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type sha
 
 	if (shaderType == DX11Shader::Type::Vertex)
 	{
-		m_DX11_DeviceContext->VSSetShaderResources(0, textureCount, list_res);
-		m_DX11_DeviceContext->VSSetSamplers(0, textureCount, list_sampler);
+		m_DX11DeviceContext->VSSetShaderResources(0, textureCount, list_res);
+		m_DX11DeviceContext->VSSetSamplers(0, textureCount, list_sampler);
 	}
 	else if (shaderType == DX11Shader::Type::Pixel)
 	{
-		m_DX11_DeviceContext->PSSetShaderResources(0, textureCount, list_res);
-		m_DX11_DeviceContext->PSSetSamplers(0, textureCount, list_sampler);
+		m_DX11DeviceContext->PSSetShaderResources(0, textureCount, list_res);
+		m_DX11DeviceContext->PSSetSamplers(0, textureCount, list_sampler);
 	}
 }
 
@@ -229,10 +184,10 @@ void DX11Context::SetConstantBuffer(Hazel::Ref<DX11Shader> shader, DX11Shader::T
 {
 	if (shaderType == DX11Shader::Type::Vertex)
 	{
-		m_DX11_DeviceContext->VSSetConstantBuffers(0, 1, &buffer->m_buffer);
+		m_DX11DeviceContext->VSSetConstantBuffers(0, 1, &buffer->m_buffer);
 	}
 	else if (shaderType == DX11Shader::Type::Pixel)
 	{
-		m_DX11_DeviceContext->PSSetConstantBuffers(0, 1, &buffer->m_buffer);
+		m_DX11DeviceContext->PSSetConstantBuffers(0, 1, &buffer->m_buffer);
 	}
 }

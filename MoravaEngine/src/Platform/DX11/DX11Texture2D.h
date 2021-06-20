@@ -64,8 +64,9 @@ public:
 
 	glm::vec2 getSize() { return m_size; }
 	DX11Texture2D::Type GetType() { return m_type; }
-	// ID3D11RenderTargetView* GetRenderTargetView() { return m_render_target_view; }
-	// ID3D11DepthStencilView* GetDepthStencilView() { return m_depth_stencil_view; }
+
+	ID3D11RenderTargetView* GetRenderTargetView() { return m_RenderTargetView; }
+	ID3D11DepthStencilView* GetDepthStencilView() { return m_DepthStencilView; }
 
 private:
 	std::string m_Path;
@@ -86,10 +87,11 @@ private:
 
 	ID3D11Resource* m_texture = nullptr;
 	ID3D11ShaderResourceView* m_shader_res_view = nullptr;
-	ID3D11RenderTargetView* m_render_target_view = nullptr;
-	ID3D11DepthStencilView* m_depth_stencil_view = nullptr;
+	ID3D11RenderTargetView* m_RenderTargetView = nullptr;
+	ID3D11DepthStencilView* m_DepthStencilView = nullptr;
 	ID3D11SamplerState* m_sampler_state = nullptr;
 
 	friend class DX11Context;
+	friend class DX11Renderer;
 
 };

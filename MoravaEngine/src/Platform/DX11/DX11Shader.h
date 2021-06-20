@@ -3,6 +3,8 @@
 #pragma once
 
 #include "DX11.h"
+#include "DX11VertexShader.h"
+#include "DX11PixelShader.h"
 
 #include "Shader/MoravaShader.h"
 #include "Hazel/Renderer/HazelTexture.h"
@@ -107,16 +109,8 @@ public:
 
 	static void ClearUniformBuffers();
 
-	// DirectX 11 public methods
-	ID3D11VertexShader* GetVertexShaderDX11() { return m_VertexShaderDX11; }
-	ID3D11PixelShader* GetPixelShaderDX11() { return m_PixelShaderDX11; }
-
-	void SetVertexShaderDX11(ID3D11VertexShader* vertexShader) { m_VertexShaderDX11 = vertexShader; }
-	void SetPixelShaderDX11(ID3D11PixelShader* pixelShader) { m_PixelShaderDX11 = pixelShader; }
-
-	// DX11-specific GET methods
-	const void* GetBytecodeWithInputSignature();
-	size_t GetBytecodeLength();
+	Hazel::Ref<DX11VertexShader> GetVertexShader() { return m_VertexShader; }
+	Hazel::Ref<DX11PixelShader> GetPixelShader() { return m_PixelShader; }
 
 private:
 	void CompileOrGetDX11Binary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile);
@@ -127,10 +121,6 @@ private:
 	void CreateDescriptors();
 
 	void AllocateUniformBuffer(UniformBuffer& dst);
-
-	// DirectX 11 private methods
-	bool CompileDX11Shader(const wchar_t* fileName, Type shaderType, const char* entryPointName, void** shaderByteCodeOut, size_t* byteCodeSizeOut);
-	void ReleaseCompiledDX11Shader();
 
 	virtual void ClearShader() override;
 
@@ -146,11 +136,8 @@ private:
 
 	std::unordered_map<std::string, Hazel::ShaderBuffer> m_Buffers;
 
-	// DirectX 11 specific
-	ID3D11VertexShader* m_VertexShaderDX11;
-	ID3D11PixelShader* m_PixelShaderDX11;
-
-	ID3DBlob* m_Blob = nullptr;
+	Hazel::Ref<DX11VertexShader> m_VertexShader;
+	Hazel::Ref<DX11PixelShader> m_PixelShader;
 
 	friend class DX11Material;
 

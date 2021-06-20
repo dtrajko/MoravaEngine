@@ -18,12 +18,13 @@ public:
 	virtual const Hazel::PipelineSpecification& GetSpecification() const { return m_Specification; }
 
 	virtual void Invalidate() override;
-
 	virtual void Bind() override;
+
+	ID3D11InputLayout* GetInputLayout() { return m_Layout; }
 
 private:
 	Hazel::PipelineSpecification m_Specification;
 
-	ID3D11InputLayout* m_layout; // should be moved from DX11VertexBuffer to here
+	ID3D11InputLayout* m_Layout;
 
 };

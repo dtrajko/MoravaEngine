@@ -40,6 +40,10 @@ public:
 
 	void Cleanup();
 
+	// DirectX 11 specific methods
+	ID3D11RenderTargetView* GetRenderTargetView() { return m_DX11RenderTargetView; }
+	ID3D11DepthStencilView* GetDepthStencilView() { return m_DX11DepthStencilView; }
+
 private:
 	void ReloadBuffers(uint32_t width, uint32_t height);
 
@@ -59,13 +63,14 @@ private:
 	uint32_t m_Height = 0;
 
 	IDXGISwapChain* m_swap_chain = nullptr;
-	ID3D11RenderTargetView* m_rtv = nullptr;
-	ID3D11DepthStencilView* m_dsv = nullptr;
+	ID3D11RenderTargetView* m_DX11RenderTargetView = nullptr;
+	ID3D11DepthStencilView* m_DX11DepthStencilView = nullptr;
 
 	// uint32_t m_ImageCount = 0;
 	// uint32_t m_CurrentBufferIndex = 0;
 	// uint32_t m_QueueNodeIndex = UINT32_MAX;
 
 	friend class DX11Context;
+	friend class DX11Renderer;
 
 };

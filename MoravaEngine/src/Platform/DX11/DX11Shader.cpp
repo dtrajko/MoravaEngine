@@ -33,42 +33,8 @@ DX11Shader::DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShad
 	s_Specification.VertexShaderPath = Util::to_str(vertexShaderPath);
 	s_Specification.PixelShaderPath = Util::to_str(pixelShaderPath);
 
-	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
-
-	void* shaderByteCodeOut = nullptr;
-	size_t byteCodeSizeOut = 0;
-
-	// BEGIN compile Vertex DX11 Shader
-	{
-		CompileDX11Shader(vertexShaderPath, Type::Vertex, "vsmain", &shaderByteCodeOut, &byteCodeSizeOut);
-
-		HRESULT hr = dx11Device->CreateVertexShader(shaderByteCodeOut, byteCodeSizeOut, nullptr, &m_VertexShaderDX11);
-		if (FAILED(hr))
-		{
-			throw std::exception("DX11Shader (Type::Vertex) initialization failed.");
-		}
-
-		ReleaseCompiledDX11Shader();
-
-		Log::GetLogger()->info("DX11Shader [Type: VERTEX, path: '{0}'] has been successfully created!", s_Specification.VertexShaderPath);
-	}
-	// END compile Vertex DX11 Shader
-
-	// BEGIN compile Pixel DX11 Shader
-	{
-		CompileDX11Shader(pixelShaderPath, Type::Pixel, "psmain", &shaderByteCodeOut, &byteCodeSizeOut);
-
-		HRESULT hr = dx11Device->CreatePixelShader(shaderByteCodeOut, byteCodeSizeOut, nullptr, &m_PixelShaderDX11);
-		if (FAILED(hr))
-		{
-			throw std::exception("DX11Shader (Type::Pixel) initialization failed.");
-		}
-
-		ReleaseCompiledDX11Shader();
-
-		Log::GetLogger()->info("DX11Shader [Type: PIXEL, path: '{0}'] has been successfully created!", s_Specification.PixelShaderPath);
-	}
-	// END compile Pixel DX11 Shader
+	m_VertexShader = Hazel::Ref<DX11VertexShader>::Create(vertexShaderPath);
+	m_PixelShader = Hazel::Ref<DX11PixelShader>::Create(pixelShaderPath);
 }
 
 DX11Shader::~DX11Shader()
@@ -78,23 +44,6 @@ DX11Shader::~DX11Shader()
 
 void DX11Shader::ClearShader()
 {
-}
-
-const void* DX11Shader::GetBytecodeWithInputSignature()
-{
-	// DX11-specific method TODO implement this method
-	return nullptr;
-}
-
-size_t DX11Shader::GetBytecodeLength()
-{
-	// DX11-specific method TODO implement this method
-	return size_t();
-}
-
-void DX11Shader::ReleaseCompiledDX11Shader()
-{
-	if (m_Blob) m_Blob->Release();
 }
 
 static std::string ReadShaderFromFile(const std::string& filepath)
@@ -528,35 +477,4 @@ void* DX11Shader::MapUniformBuffer(uint32_t bindingPoint)
 void DX11Shader::UnmapUniformBuffer(uint32_t bindingPoint)
 {
 	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
-}
-
-bool DX11Shader::CompileDX11Shader(const wchar_t* fileName, Type shaderType, const char* entryPointName, void** shaderByteCodeOut, size_t* byteCodeSizeOut)
-{
-	const char* entryPoint = "";
-	if (shaderType == Type::Vertex)
-	{
-		entryPoint = "vs_5_0";
-	}
-	else if (shaderType == Type::Pixel)
-	{
-		entryPoint = "ps_5_0";
-	}
-
-	ID3DBlob* errorBlob = nullptr;
-
-	HRESULT hr = ::D3DCompileFromFile(fileName, nullptr, nullptr, entryPointName, entryPoint, 0, 0, &m_Blob, &errorBlob);
-
-	if (FAILED(hr))
-	{
-		if (errorBlob)
-		{
-			errorBlob->Release();
-		}
-		return false;
-	}
-
-	*shaderByteCodeOut = m_Blob->GetBufferPointer();
-	*byteCodeSizeOut = m_Blob->GetBufferSize();
-
-	return true;
 }

@@ -9,6 +9,7 @@
 #include "DX11Pipeline.h"
 #include "DX11Shader.h"
 #include "DX11Texture2D.h"
+#include "DX11VertexBuffer.h"
 
 #include "Core/Window.h"
 #include "Scene/Scene.h"
@@ -41,7 +42,5 @@ private:
 	Hazel::EditorCamera m_Camera;
 
 	std::vector<glm::vec4> m_RandomColors;
-
-	Hazel::Ref<Hazel::Pipeline> m_Pipeline;
 
 };

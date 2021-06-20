@@ -145,7 +145,7 @@ void WindowsWindow::Init(const WindowProps& props)
 	SetVSync(true);
 
 	RendererBasic::EnableDepthTest();
-	RendererBasic::SetupViewportSize(m_Data.Width, m_Data.Height);
+	RendererBasic::SetViewportSize(m_Data.Width, m_Data.Height);
 
 	// The old MoravaEngine method of handling events
 	// not working with the new Hazel GLFW callbacks

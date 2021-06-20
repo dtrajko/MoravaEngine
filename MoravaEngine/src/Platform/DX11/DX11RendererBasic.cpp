@@ -141,10 +141,17 @@ void DX11RendererBasic::DisableWireframe()
 	// Log::GetLogger()->warn("DX11RendererBasic::DisableWireframe: Method not yet supported!");
 }
 
-void DX11RendererBasic::SetupViewportSize(uint32_t width, uint32_t height)
+void DX11RendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 {
 	s_RendererContext.As<DX11Context>()->SetViewportSize(width, height);
-	// DX11Context::Get()->SetViewportSize(width, height);
+
+	//	D3D11_VIEWPORT vp = {};
+	//	vp.Width = (FLOAT)width;
+	//	vp.Height = (FLOAT)height;
+	//	vp.MinDepth = 0.0f;
+	//	vp.MaxDepth = 1.0f;
+	//	
+	//	DX11Context::Get()->GetImmediateContext()->RSSetViewports(1, &vp);
 }
 
 void DX11RendererBasic::DisableBlend()
