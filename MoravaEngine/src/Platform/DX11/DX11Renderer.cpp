@@ -59,13 +59,8 @@ void DX11Renderer::SubmitMesh(const Hazel::Ref<Hazel::HazelMesh>& mesh)
 
 void DX11Renderer::OnResize(uint32_t width, uint32_t height)
 {
-	// HazelRenderer::Submit([=]() {
-	// });
-	{
-		auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
-
-		// auto DX11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
-	}
+	// HazelRenderer::Submit([=]() {});
+	// auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
 }
 
 void DX11Renderer::Init()
@@ -125,8 +120,12 @@ void DX11Renderer::Init()
 	{
 		// ----------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ---------- TANGENT XYZ --------- BINORMAL XYZ
 		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
-		DX11Vertex{ {  0.0f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
+		DX11Vertex{ { -0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
+		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
+
+		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
 		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
+		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
 	};
 
 	// temporary DX11 objects and data structures
