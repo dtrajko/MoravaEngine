@@ -119,13 +119,10 @@ void DX11Renderer::Init()
 	DX11Vertex vertexList[] =
 	{
 		// ----------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ---------- TANGENT XYZ --------- BINORMAL XYZ
-		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
-		DX11Vertex{ { -0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
-		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
-
-		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
-		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
-		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ },
+		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #1
+		DX11Vertex{ { -0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #2
+		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #3
+		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, /* { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, */ }, // VERTEX #4
 	};
 
 	// temporary DX11 objects and data structures
@@ -265,7 +262,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	DX11Context::Get()->SetVertexBuffer(s_VertexBuffer, s_Pipeline);
 
 	uint32_t startVertexIndex;
-	DX11Renderer::DrawTriangleList(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
+	DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
 
 	for (auto& mesh : s_Meshes)
 	{
