@@ -314,7 +314,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		ImGui::Render();
 
 		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		// ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffer);
+		ImGui_ImplDX11_RenderDrawData(main_draw_data);
 
 		// End Vulkan Command Buffer
 	}

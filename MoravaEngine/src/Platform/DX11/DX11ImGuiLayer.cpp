@@ -1,25 +1,28 @@
 #include "DX11ImGuiLayer.h"
 
+#include "Core/Application.h"
+#include "DX11.h"
+#include "DX11Context.h"
+#include "DX11Device.h"
+#include "DX11SwapChain.h"
+
+#include "Hazel/Renderer/HazelRenderer.h"
+
 // ImGui includes
 #if !defined(IMGUI_IMPL_API)
 	#define IMGUI_IMPL_API
 #endif
 #include "imgui.h"
-#include "backends/imgui_impl_glfw.h"
-// #include "backends/imgui_impl_vulkan_with_textures.h"
+#include "imgui.h"
+#include "backends/imgui_impl_win32.h"
+#include "backends/imgui_impl_dx11.h"
 
 #include "ImGuizmo.h"
 
-#include "Core/Application.h"
+#include <tchar.h>
 
-#include <GLFW/glfw3.h>
 
-#include "DX11.h"
-#include "Hazel/Renderer/HazelRenderer.h"
-#include "Platform/DX11/DX11Context.h"
-#include "Platform/DX11/DX11Device.h"
-#include "Platform/DX11/DX11SwapChain.h"
-
+LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 DX11ImGuiLayer::DX11ImGuiLayer()
 {
@@ -90,21 +93,17 @@ void DX11ImGuiLayer::OnAttach()
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 
+	HWND hwnd = Application::Get()->GetWindow()->GetHWND();
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplWin32_Init(hwnd);
+	ImGui_ImplDX11_Init(DX11Context::Get()->GetDX11Device(), DX11Context::Get()->GetImmediateContext());
+
 	// HazelRenderer::Submit([]{
 	// });
 
 	{
-		Application* app = Application::Get();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow()->GetHandle());
-
-		auto DX11Context = DX11Context::Get();
-		// auto device = DX11Context::GetCurrentDevice()->GetDX11Device();
-
-		auto currentDevice = DX11Context::Get()->GetCurrentDevice();
-
 		// Setup Platform/Renderer bindings
-
-		// Init GLFW for DirectX 11
 
 		// Load Fonts
 		// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -132,32 +131,27 @@ void DX11ImGuiLayer::OnAttach()
 
 void DX11ImGuiLayer::OnDetach()
 {
-	// HazelRenderer::Submit([] {
-	// });
-	{
-		// auto device = DX11Context::GetCurrentDevice()->GetDX11Device();
+	// HazelRenderer::Submit([] {});
 
-		// ImGui Cleanup
-		// ImGui_ImplVulkan_Shutdown();
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
-	}
+	// ImGui Cleanup
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }
 
 void DX11ImGuiLayer::Begin()
 {
 	ImGuiIO& io = ImGui::GetIO();
 
-	float time = (float)glfwGetTime();
+	float time = (float)Timer::Get()->GetCurrentTimestamp();
 	io.DeltaTime = m_Time > 0.0f ? (time - m_Time) : (1.0f / 60.0f);
 	m_Time = time;
 
 	// Start the Dear ImGui frame
-	// TODO: ImGui_ImplVulkan_NewFrame();
-	// ImGui_ImplGlfw_NewFrame();
-	// TODO: ImGui::NewFrame();
-	// TODO: ImGuizmo::BeginFrame();
-	// TODO: ImGui::ShowDemoWindow();
+	// ImGui::Render();
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	// ImGui::NewFrame();
 }
 
 void DX11ImGuiLayer::End()
@@ -168,16 +162,8 @@ void DX11ImGuiLayer::End()
 
 	// Rendering here only in OpenGL version (?)
 	// ImGui::Render();
-	// ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), m_CommandBuffer);
-
-	// Update and Render additional Platform Windows
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		//	GLFWwindow* backup_current_context = glfwGetCurrentContext();
-		//	// TODO: ImGui::UpdatePlatformWindows();
-		//	ImGui::RenderPlatformWindowsDefault();
-		//	glfwMakeContextCurrent(backup_current_context);
-	}
+	// ImDrawData* main_draw_data = ImGui::GetDrawData();
+	// ImGui_ImplDX11_RenderDrawData(main_draw_data);
 }
 
 void DX11ImGuiLayer::OnImGuiRender()
