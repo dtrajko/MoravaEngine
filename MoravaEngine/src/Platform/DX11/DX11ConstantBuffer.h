@@ -15,11 +15,11 @@ public:
 
 	void Update(void* buffer);
 
-	inline ID3D11Buffer* GetBuffer() { return m_buffer; }
+	inline ID3D11Buffer* GetBuffer() { return m_Buffer; }
 	inline uint32_t GetBufferSize() { return m_BufferSize; }
 
 private:
-	ID3D11Buffer* m_buffer;
+	ID3D11Buffer* m_Buffer;
 	uint32_t m_BufferSize;
 
 	friend class DX11Context;

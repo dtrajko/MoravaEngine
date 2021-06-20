@@ -135,7 +135,7 @@ void DX11Context::SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer, Haz
 	uint32_t offset = 0;
 
 	m_DX11DeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer->m_Buffer, &stride, &offset);
-	m_DX11DeviceContext->IASetInputLayout(vertexBuffer->GetInputLayout());
+	m_DX11DeviceContext->IASetInputLayout(pipeline->GetInputLayout());
 }
 
 void DX11Context::SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer)
@@ -189,10 +189,10 @@ void DX11Context::SetConstantBuffer(Hazel::Ref<DX11Shader> shader, DX11Shader::T
 {
 	if (shaderType == DX11Shader::Type::Vertex)
 	{
-		m_DX11DeviceContext->VSSetConstantBuffers(0, 1, &buffer->m_buffer);
+		m_DX11DeviceContext->VSSetConstantBuffers(0, 1, &buffer->m_Buffer);
 	}
 	else if (shaderType == DX11Shader::Type::Pixel)
 	{
-		m_DX11DeviceContext->PSSetConstantBuffers(0, 1, &buffer->m_buffer);
+		m_DX11DeviceContext->PSSetConstantBuffers(0, 1, &buffer->m_Buffer);
 	}
 }
