@@ -138,23 +138,18 @@ void DX11Renderer::Init()
 
 	/**** BEGIN DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
 
-	// HazelRenderer::Submit([=]() {
-	// });
-	{
-	}
+	/****
+	Hazel::HazelRenderer::Submit([=]() {});
 
 	{
 		Hazel::HazelFramebufferSpecification spec;
 		spec.Width = s_ViewportWidth;
 		spec.Height = s_ViewportHeight;
-		// TODO:	s_Framebuffer = Hazel::HazelFramebuffer::Create(spec);
-		// TODO:	s_Framebuffer->AddResizeCallback([](Hazel::Ref<Hazel::HazelFramebuffer> framebuffer) {
-		// TODO:		// HazelRenderer::Submit([framebuffer]() mutable
-		// TODO:		// {
-		// TODO:		// });
-		// TODO:		{
-		// TODO:		}
-		// TODO:	});
+
+		s_Framebuffer = Hazel::HazelFramebuffer::Create(spec);
+		s_Framebuffer->AddResizeCallback([](Hazel::Ref<Hazel::HazelFramebuffer> framebuffer) {
+			Hazel::HazelRenderer::Submit([framebuffer]() mutable {});
+		});
 
 		Hazel::PipelineSpecification pipelineSpecification;
 		pipelineSpecification.Layout = {
@@ -164,33 +159,33 @@ void DX11Renderer::Init()
 			{ Hazel::ShaderDataType::Float3, "a_Binormal" },
 			{ Hazel::ShaderDataType::Float2, "a_TexCoord" },
 		};
-		// TODO: pipelineSpecification.Shader = Hazel::HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+		pipelineSpecification.Shader = Hazel::HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
 
 		Hazel::RenderPassSpecification renderPassSpec;
 		renderPassSpec.TargetFramebuffer = s_Framebuffer;
-		// TODO: pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpec);
-		// TODO: s_MeshPipeline = Hazel::Pipeline::Create(pipelineSpecification);
+		pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpec);
+		s_MeshPipeline = Hazel::Pipeline::Create(pipelineSpecification);
 	}
 
 	{
 		Hazel::HazelFramebufferSpecification spec;
 		spec.SwapChainTarget = true;
-		// TODO: Hazel::Ref<Hazel::HazelFramebuffer> framebuffer = Hazel::HazelFramebuffer::Create(spec);
+		Hazel::Ref<Hazel::HazelFramebuffer> framebuffer = Hazel::HazelFramebuffer::Create(spec);
 
 		Hazel::PipelineSpecification pipelineSpecification;
 		pipelineSpecification.Layout = {
 			{ Hazel::ShaderDataType::Float3, "a_Position" },
-			// { ShaderDataType::Float3, "a_Normal" },
-			// { ShaderDataType::Float3, "a_Tangent" },
-			// { ShaderDataType::Float3, "a_Binormal" },
+			{ Hazel::ShaderDataType::Float3, "a_Normal" },
+			{ Hazel::ShaderDataType::Float3, "a_Tangent" },
+			{ Hazel::ShaderDataType::Float3, "a_Binormal" },
 			{ Hazel::ShaderDataType::Float2, "a_TexCoord" },
 		};
-		// TODO: pipelineSpecification.Shader = Hazel::HazelRenderer::GetShaderLibrary()->Get("Texture");
+		pipelineSpecification.Shader = Hazel::HazelRenderer::GetShaderLibrary()->Get("Texture");
 
 		Hazel::RenderPassSpecification renderPassSpec;
-		// TODO: renderPassSpec.TargetFramebuffer = framebuffer;
-		// TODO: pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpec);
-		// TODO: s_CompositePipeline = Hazel::Pipeline::Create(pipelineSpecification);
+		renderPassSpec.TargetFramebuffer = framebuffer;
+		pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpec);
+		s_CompositePipeline = Hazel::Pipeline::Create(pipelineSpecification);
 	}
 
 	// Create fullscreen quad
@@ -219,23 +214,19 @@ void DX11Renderer::Init()
 	data[3].Position = glm::vec3(x, y + height, 0.1f);
 	data[3].TexCoord = glm::vec2(0, 1);
 
-	// TODO: s_QuadVertexBuffer = Hazel::VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+	s_QuadVertexBuffer = Hazel::VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 	uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
-	// TODO: s_QuadIndexBuffer = Hazel::IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+	s_QuadIndexBuffer = Hazel::IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
-	// HazelRenderer::Submit([=]()
-	// {
-	// });
+	Hazel::HazelRenderer::Submit([=]() {});
 	{
-		// TODO: auto shader = s_CompositePipeline->GetSpecification().Shader;
-		// TODO: auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
-
-		// TODO: auto DX11Device = DX11Context::GetCurrentDevice()->GetDX11Device();
-
-		auto vulkanFB = s_Framebuffer;
+		auto shader = s_CompositePipeline->GetSpecification().Shader;
+		auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
+		auto DX11Device = DX11Context::Get()->GetDX11Device();
 	}
 
 	Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+	****/
 }
 
 static void RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::HazelCamera* camera) // TODO: remove the HazelCamera parameter
@@ -260,144 +251,114 @@ static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
 // TODO: Temporary method until composite rendering is enabled
 void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 {
-	// HazelRenderer::Submit([=]() mutable
-	// {
-	// });
+	Hazel::HazelRenderer::Submit([=]() mutable {});
+
+	/**** BEGIN DirectX 11 rendering ****/
+	ClearRenderTargetColor(0.2f, 0.4f, 0.8f, 1.0f);
+
+	DX11Context::Get()->SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
+
+	Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
+
+	DX11Context::Get()->SetVertexShader(dx11Shader);
+	DX11Context::Get()->SetPixelShader(dx11Shader);
+
+	DX11Context::Get()->SetVertexBuffer(s_VertexBuffer, s_Pipeline);
+
+	uint32_t startVertexIndex;
+	DX11Renderer::DrawTriangleList(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
+
+	for (auto& mesh : s_Meshes)
 	{
-		Hazel::Ref<DX11Context> dx11Context = DX11Context::Get();
-		// DX11SwapChain& swapChain = context->GetSwapChain();
-
-		ClearRenderTargetColor(0.2f, 0.4f, 0.8f, 1.0f);
-
-		DX11Context::Get()->SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
-
-		Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
-
-		DX11Context::Get()->SetVertexShader(dx11Shader);
-		DX11Context::Get()->SetPixelShader(dx11Shader);
-
-		DX11Context::Get()->SetVertexBuffer(s_VertexBuffer, s_Pipeline);
-
-		uint32_t startVertexIndex;
-		DX11Renderer::DrawTriangleList(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
-
-
-		for (auto& mesh : s_Meshes)
-		{
-			RenderMesh(mesh, camera);
-		}
-
-		s_Meshes.clear();
+		RenderMesh(mesh, camera);
 	}
 
-	// HazelRenderer::Submit([=]()
-	// {
-	// });
+	s_Meshes.clear();
+
+	/**** END DirectX 11 rendering ****/
+
+	/****
+	Hazel::HazelRenderer::Submit([=](){});
+
+	Hazel::Ref<DX11Context> dx11Context = DX11Context::Get();
+
+	// Begin Render Pass
+
+	// BEGIN ImGui Render Pass
 	{
-		Hazel::Ref<DX11Context> context = DX11Context::Get();
-		// DX11SwapChain& swapChain = context->GetSwapChain();
+		// ImGui Dockspace
+		bool p_open = true;
+		ShowExampleAppDockSpace(&p_open);
 
+		ImGui::Begin("Scene Hierarchy");
+		ImGui::End();
+
+		// TEMP: Render Viewport
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		ImGui::Begin("Viewport");
+		auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+		auto viewportSize = ImGui::GetContentRegionAvail();
+		ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
+
+		if (s_ViewportWidth != viewportSize.x || s_ViewportHeight != viewportSize.y)
 		{
-			// Begin Render Pass
-
-			/**** BEGIN ImGui Render Pass ****
-			{
-				// ImGui Dockspace
-				bool p_open = true;
-				ShowExampleAppDockSpace(&p_open);
-
-				ImGui::Begin("Scene Hierarchy");
-				ImGui::End();
-
-				// TEMP: Render Viewport
-				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-				ImGui::Begin("Viewport");
-				auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
-				auto viewportSize = ImGui::GetContentRegionAvail();
-				ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
-
-				if (s_ViewportWidth != viewportSize.x || s_ViewportHeight != viewportSize.y)
-				{
-					s_ViewportWidth = (uint32_t)viewportSize.x;
-					s_ViewportHeight = (uint32_t)viewportSize.y;
-					// s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight, true);
-				}
-
-				Window* mainWindow = Application::Get()->GetWindow();
-				UpdateImGuizmo(mainWindow, camera);
-
-				ImGui::End();
-				ImGui::PopStyleVar();
-
-				// TODO: Move to VulkanImGuiLayer
-				// Rendering
-				ImGui::Render();
-
-				ImDrawData* main_draw_data = ImGui::GetDrawData();
-				// ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffer);
-
-				// End Vulkan Command Buffer
-			}
-			**** END ImGui Render Pass ****/
-
-			// Vulkan CmdExecuteCommands
-			// Vulkan CmdEndRenderPass
+			s_ViewportWidth = (uint32_t)viewportSize.x;
+			s_ViewportHeight = (uint32_t)viewportSize.y;
+			// s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight, true);
 		}
+
+		Window* mainWindow = Application::Get()->GetWindow();
+		UpdateImGuizmo(mainWindow, camera);
+
+		ImGui::End();
+		ImGui::PopStyleVar();
+
+		// TODO: Move to VulkanImGuiLayer
+		// Rendering
+		ImGui::Render();
+
+		ImDrawData* main_draw_data = ImGui::GetDrawData();
+		// ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffer);
+
+		// End Vulkan Command Buffer
 	}
+	// END ImGui Render Pass
+
+	// Vulkan CmdExecuteCommands
+	// Vulkan CmdEndRenderPass
+	****/
 }
 
 void DX11Renderer::BeginFrame()
 {
-	//	HazelRenderer::Submit([]()
-	//	{
-	//	});
-	{
-		Hazel::Ref<DX11Context> context = DX11Context::Get();
-		// DX11SwapChain& swapChain = context->GetSwapChain();
+	// Hazel::HazelRenderer::Submit([]() {});
+	// Hazel::Ref<DX11Context> context = DX11Context::Get();
 
-		// TODO
-	}
+	// TODO
 }
 
 void DX11Renderer::EndFrame()
 {
-	//	HazelRenderer::Submit([]()
-	//	{
-	//	});
-	{
-	}
+	// Hazel::HazelRenderer::Submit([]() {});
 }
 
 void DX11Renderer::BeginRenderPass(const Hazel::Ref<Hazel::RenderPass>& renderPass)
 {
-	//	HazelRenderer::Submit([renderPass]()
-	//	{
-	//	});
-	{
-		BeginFrame();
+	// Hazel::HazelRenderer::Submit([]() {});
 
-		// TODO
-	}
+	BeginFrame();
+
+	// TODO
 }
 
 void DX11Renderer::EndRenderPass()
 {
-	//	HazelRenderer::Submit([]()
-	//	{
-	//	});
-	{
-		vkCmdEndRenderPass(s_Data.ActiveCommandBuffer);
-		s_Data.ActiveCommandBuffer = nullptr;
-	}
+	// Hazel::HazelRenderer::Submit([]() {});
 }
 
 void DX11Renderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Material> material)
 {
-	//	HazelRenderer::Submit([]()
-	//	{
-	//	});
-	{
-	}
+	// Hazel::HazelRenderer::Submit([]() {});
 }
 
 //-----------------------------------------------------------------------------
