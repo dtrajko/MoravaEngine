@@ -27,4 +27,6 @@ private:
 
 	ID3D11InputLayout* m_Layout;
 
+	const void* m_InputLayoutBuffer;
+
 };

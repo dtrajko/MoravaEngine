@@ -38,9 +38,14 @@ void DX11Pipeline::Invalidate()
 
 	UINT numElements = ARRAYSIZE(layout);
 
-	const void* shaderBytecode = m_Specification.Shader.As<DX11Shader>()->GetVertexShader()->GetBytecodeWithInputSignature();
-	size_t shaderBytecodeLength = m_Specification.Shader.As<DX11Shader>()->GetVertexShader()->GetBytecodeLength();
-	HRESULT hr = dx11Device->CreateInputLayout(layout, numElements, shaderBytecode, shaderBytecodeLength, &m_Layout);
+	Hazel::Ref<DX11Shader> dx11Shader = m_Specification.Shader.As<DX11Shader>();
+
+	const void* shaderBytecodePointer = dx11Shader->GetVertexShader()->GetBytecodeWithInputSignature();
+	size_t shaderBytecodeLength = dx11Shader->GetVertexShader()->GetBytecodeLength();
+
+	// ::memcpy(&m_InputLayoutBuffer, shaderBytecodePointer, shaderBytecodeLength);
+
+	HRESULT hr = dx11Device->CreateInputLayout(layout, numElements, shaderBytecodePointer, shaderBytecodeLength, &m_Layout);
 	if (FAILED(hr))
 	{
 		throw std::exception("DX11Pipeline: CreateInputLayout failed.");
@@ -48,10 +53,8 @@ void DX11Pipeline::Invalidate()
 
 	Log::GetLogger()->info("DX11Pipeline: InputLayout successfully created!");
 
-	//	Ref<DX11Pipeline> instance = this;
-	//	HazelRenderer::Submit([instance]() mutable
-	//	{
-	//	});
+	// Ref<DX11Pipeline> instance = this;
+	// HazelRenderer::Submit([instance]() mutable {});
 	{
 		// Hazel::Ref<DX11Shader> DX11Shader = Hazel::Ref<DX11Shader>(m_Specification.Shader);
 		// Hazel::Ref<DX11Framebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<DX11Framebuffer>();

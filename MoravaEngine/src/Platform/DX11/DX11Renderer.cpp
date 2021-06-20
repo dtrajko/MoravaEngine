@@ -93,9 +93,9 @@ void DX11Renderer::Init()
 
 	MoravaShaderSpecification moravaShaderSpecification;
 	moravaShaderSpecification.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-	// moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/DirectionalLightVertexShader.hlsl";
-	// moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/DirectionalLightPixelShader.hlsl";
-	moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/Triangle.hlsl";
+	// moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/DirLightBumpVS.hlsl";
+	// moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/DirLightBumpPS.hlsl";
+	moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/BasicVertexShader.hlsl";
 	moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/Triangle.hlsl";
 	moravaShaderSpecification.ForceCompile = false;
 
@@ -256,8 +256,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
 
-	DX11Context::Get()->SetVertexShader(dx11Shader);
-	DX11Context::Get()->SetPixelShader(dx11Shader);
+	DX11Context::Get()->SetVertexShader(dx11Shader->GetVertexShader());
+	DX11Context::Get()->SetPixelShader(dx11Shader->GetPixelShader());
 
 	DX11Context::Get()->SetVertexBuffer(s_VertexBuffer, s_Pipeline);
 

@@ -2086,6 +2086,9 @@
     <Filter Include="Platform\DX11">
       <UniqueIdentifier>{64aef6e8-8cf5-46f9-824e-d2d07f335955}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resources\Shaders\HLSL">
+      <UniqueIdentifier>{32e7d3f1-5c4b-4175-86a2-30365e119cbf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MoravaEngine.rc" />
@@ -2613,5 +2616,34 @@
     <None Include="assets\shaders\VulkanWeekTriangle.glsl">
       <Filter>Resources\Hazel\Shaders</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\HLSL\DirectionalLightPixelShader.hlsl">
+      <Filter>Resources\Shaders\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HLSL\DirectionalLightVertexShader.hlsl">
+      <Filter>Resources\Shaders\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HLSL\DirLightBumpPS.hlsl">
+      <Filter>Resources\Shaders\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HLSL\DirLightBumpVS.hlsl">
+      <Filter>Resources\Shaders\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HLSL\Triangle.hlsl">
+      <Filter>Resources\Shaders\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HLSL\BasicPixelShader.hlsl">
+      <Filter>Resources\Shaders\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HLSL\BasicVertexShader.hlsl">
+      <Filter>Resources\Shaders\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HLSL\MediumPixelShader.hlsl">
+      <Filter>Resources\Shaders\HLSL</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\HLSL\MediumVertexShader.hlsl">
+      <Filter>Resources\Shaders\HLSL</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -58,8 +58,8 @@ public:
 
 	void SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil);
 
-	void SetVertexShader(Hazel::Ref<DX11Shader> vertexShader);
-	void SetPixelShader(Hazel::Ref<DX11Shader> pixelShader);
+	void SetVertexShader(Hazel::Ref<DX11VertexShader> vertexShader);
+	void SetPixelShader(Hazel::Ref<DX11PixelShader> pixelShader);
 
 	void SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, const std::vector<Hazel::Ref<DX11Texture2D>>& textures, uint32_t textureCount);
 	void SetConstantBuffer(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, Hazel::Ref<DX11ConstantBuffer> buffer);
