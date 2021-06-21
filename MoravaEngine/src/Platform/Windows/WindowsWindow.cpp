@@ -249,20 +249,20 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 	// Set this flag to true to indicate that the window is initialized and running
 	m_IsRunning = true;
 
-	DXGI_SWAP_CHAIN_DESC desc;
-	ZeroMemory(&desc, sizeof(desc));
-	desc.BufferCount = 1;
-	desc.BufferDesc.Width = props.Width;
-	desc.BufferDesc.Height = props.Height;
-	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.BufferDesc.RefreshRate.Numerator = 60;
-	desc.BufferDesc.RefreshRate.Denominator = 1;
-	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	desc.OutputWindow = m_HWND;
-	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 0;
-	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-	desc.Windowed = TRUE;
+	//	DXGI_SWAP_CHAIN_DESC desc;
+	//	ZeroMemory(&desc, sizeof(desc));
+	//	desc.BufferCount = 1;
+	//	desc.BufferDesc.Width = props.Width;
+	//	desc.BufferDesc.Height = props.Height;
+	//	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//	desc.BufferDesc.RefreshRate.Numerator = 60;
+	//	desc.BufferDesc.RefreshRate.Denominator = 1;
+	//	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	//	desc.OutputWindow = m_HWND;
+	//	desc.SampleDesc.Count = 1;
+	//	desc.SampleDesc.Quality = 0;
+	//	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	//	desc.Windowed = TRUE;
 }
 
 void WindowsWindow::Shutdown()

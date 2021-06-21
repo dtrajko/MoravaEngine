@@ -97,7 +97,7 @@ void DX11ImGuiLayer::OnAttach()
 
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(hwnd);
-	ImGui_ImplDX11_Init(DX11Context::Get()->GetDX11Device(), DX11Context::Get()->GetImmediateContext());
+	ImGui_ImplDX11_Init(DX11Context::Get()->GetDX11Device(), DX11Context::Get()->GetDX11DeviceContext());
 
 	// HazelRenderer::Submit([]{
 	// });

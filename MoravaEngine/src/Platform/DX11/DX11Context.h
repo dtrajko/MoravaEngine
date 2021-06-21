@@ -48,7 +48,7 @@ public:
 	// static Hazel::Ref<DX11Context> Get() { return Hazel::Ref<DX11Context>(Hazel::HazelRenderer::GetContext()); }
 	Hazel::Ref<DX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
 	IDXGIFactory* GetIDXGIFactory() { return m_IDXGI_Factory; };
-	ID3D11DeviceContext* GetImmediateContext() { return m_DX11DeviceContext; };
+	ID3D11DeviceContext* GetDX11DeviceContext() { return m_DX11DeviceContext; };
 
 	// ---------------------------------------------------------------
 
@@ -62,14 +62,10 @@ public:
 
 	void SetViewportSize(uint32_t width, uint32_t height);
 
-	void SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer, Hazel::Ref<DX11Pipeline> pipeline);
-	void SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer);
-
+	// this should probably be DX11Framebuffer->Bind()
 	void SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil);
 
-	void SetVertexShader(Hazel::Ref<DX11VertexShader> vertexShader);
-	void SetPixelShader(Hazel::Ref<DX11PixelShader> pixelShader);
-
+	// this should probably be DX11Texture[2D]->Bind()
 	void SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, const std::vector<Hazel::Ref<DX11Texture2D>>& textures, uint32_t textureCount);
 
 private:

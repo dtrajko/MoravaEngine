@@ -24,5 +24,7 @@ private:
 
 	friend class DX11Context;
 	friend class DX11Renderer;
+	friend class DX11VertexShader;
+	friend class DX11PixelShader;
 
 };

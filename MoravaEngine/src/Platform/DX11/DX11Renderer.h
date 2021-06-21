@@ -59,8 +59,6 @@ public:
 	static void ClearDepthStencil();
 	static void ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil);
 
-	static void SetConstantBuffer(DX11Shader::Type shaderType, Hazel::Ref<DX11ConstantBuffer> buffer);
-
 	static void DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex);
 	static void DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation);
 	static void DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex);

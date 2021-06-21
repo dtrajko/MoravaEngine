@@ -151,7 +151,7 @@ void DX11RendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 	//	vp.MinDepth = 0.0f;
 	//	vp.MaxDepth = 1.0f;
 	//	
-	//	DX11Context::Get()->GetImmediateContext()->RSSetViewports(1, &vp);
+	//	DX11Context::Get()->GetDX11DeviceContext()->RSSetViewports(1, &vp);
 }
 
 void DX11RendererBasic::DisableBlend()

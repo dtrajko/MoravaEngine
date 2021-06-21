@@ -38,4 +38,6 @@ public:
 	// convert from const wchar_t* to const char*
 	static std::string to_str(const wchar_t* wcstr);
 
+	static glm::vec3 Lerp(const glm::vec3& start, const glm::vec3& end, float delta);
+
 };

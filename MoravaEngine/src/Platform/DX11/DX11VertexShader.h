@@ -2,7 +2,8 @@
 
 #include "Hazel/Core/Ref.h"
 
-#include <d3d11.h>
+#include "DX11.h"
+#include "DX11ConstantBuffer.h"
 
 
 class DX11VertexShader : public Hazel::RefCounted
@@ -16,6 +17,9 @@ public:
 
 	inline void* GetBytecodePointer() { return m_BytecodePointer; }
 	inline size_t GetBytecodeLength() { return m_BytecodeLength; }
+
+	void Bind();
+	void BindConstantBuffer(Hazel::Ref<DX11ConstantBuffer> constantBuffer);
 
 private:
 	bool CompileDX11Shader(const wchar_t* fileName);

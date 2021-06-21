@@ -66,4 +66,5 @@ void DX11Pipeline::Invalidate()
 
 void DX11Pipeline::Bind()
 {
+	DX11Context::Get()->GetDX11DeviceContext()->IASetInputLayout(m_InputLayout);
 }

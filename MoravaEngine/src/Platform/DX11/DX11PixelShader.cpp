@@ -28,6 +28,16 @@ DX11PixelShader::~DX11PixelShader()
 	if (m_DX11PixelShader) m_DX11PixelShader->Release();
 }
 
+void DX11PixelShader::Bind()
+{
+	DX11Context::Get()->GetDX11DeviceContext()->PSSetShader(m_DX11PixelShader, nullptr, 0);
+}
+
+void DX11PixelShader::BindConstantBuffer(Hazel::Ref<DX11ConstantBuffer> constantBuffer)
+{
+	DX11Context::Get()->GetDX11DeviceContext()->PSSetConstantBuffers(0, 1, &constantBuffer->m_Buffer);
+}
+
 bool DX11PixelShader::CompileDX11Shader(const wchar_t* fileName)
 {
 	const char* entryPointName = "psmain";

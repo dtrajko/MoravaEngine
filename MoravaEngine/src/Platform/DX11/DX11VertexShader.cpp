@@ -18,7 +18,6 @@ DX11VertexShader::DX11VertexShader(const wchar_t* vertexShaderPath)
 	}
 
 	// ReleaseCompiledDX11Shader();
-
 	Log::GetLogger()->info("DX11VertexShader '{0}' has been successfully created!", Util::to_str(vertexShaderPath));
 }
 
@@ -26,6 +25,16 @@ DX11VertexShader::~DX11VertexShader()
 {
 	// ReleaseCompiledDX11Shader();
 	if (m_DX11VertexShader) m_DX11VertexShader->Release();
+}
+
+void DX11VertexShader::Bind()
+{
+	DX11Context::Get()->GetDX11DeviceContext()->VSSetShader(m_DX11VertexShader, nullptr, 0);
+}
+
+void DX11VertexShader::BindConstantBuffer(Hazel::Ref<DX11ConstantBuffer> constantBuffer)
+{
+	DX11Context::Get()->GetDX11DeviceContext()->VSSetConstantBuffers(0, 1, &constantBuffer->m_Buffer);
 }
 
 bool DX11VertexShader::CompileDX11Shader(const wchar_t* fileName)

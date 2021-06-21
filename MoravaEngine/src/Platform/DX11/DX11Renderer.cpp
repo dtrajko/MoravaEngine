@@ -39,9 +39,9 @@ static Hazel::Submesh* s_SelectedSubmesh;
 static glm::mat4* s_Transform_ImGuizmo = nullptr;
 
 // temporary DX11 objects
-static Hazel::Ref<Hazel::Pipeline> s_Pipeline;
 static Hazel::Ref<DX11VertexBuffer> s_VertexBuffer;
-
+static Hazel::Ref<DX11IndexBuffer> s_IndexBuffer;
+static Hazel::Ref<Hazel::Pipeline> s_Pipeline;
 static Hazel::Ref<DX11ConstantBuffer> s_ConstantBuffer;
 
 
@@ -107,10 +107,15 @@ void DX11Renderer::Init()
 	DX11VertexLayout vertexList[] =
 	{
 		// ----------------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ----------- TANGENT XYZ --------- BINORMAL XYZ
-		DX11VertexLayout{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, }, // VERTEX #1
-		DX11VertexLayout{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, }, // VERTEX #2
-		DX11VertexLayout{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, }, // VERTEX #3
-		DX11VertexLayout{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #4
+		DX11VertexLayout{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, }, // VERTEX #0
+		DX11VertexLayout{ { -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, }, // VERTEX #1
+		DX11VertexLayout{ {  0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, }, // VERTEX #2
+		DX11VertexLayout{ {  0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #3
+
+		DX11VertexLayout{ {  0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #4
+		DX11VertexLayout{ {  0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, }, // VERTEX #5
+		DX11VertexLayout{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, }, // VERTEX #6
+		DX11VertexLayout{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, }, // VERTEX #7
 	};
 
 	// temporary DX11 objects and data structures
@@ -253,21 +258,14 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
 
-	DX11Context::Get()->SetVertexShader(dx11Shader->GetVertexShader());
-	DX11Context::Get()->SetPixelShader(dx11Shader->GetPixelShader());
-
-	DX11Context::Get()->SetVertexBuffer(s_VertexBuffer, s_Pipeline);
-
-	// World/Model/Transform matrix
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	dx11Shader->GetVertexShader()->Bind();
+	dx11Shader->GetPixelShader()->Bind();
 
 	// View matrix (Camera)
 	glm::mat4 view = glm::mat4(1.0f);
 
 	float elapsedTime = Timer::Get()->GetCurrentTimestamp();
-	float cameraDistance = sin(elapsedTime) + 2.0f;
+	float cameraDistance = sin(elapsedTime) + 3.0f;
 	view = glm::translate(view, glm::vec3(0.0f, 0.0f, cameraDistance));
 
 	// Projection matrix (perspective)
@@ -277,19 +275,93 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	float farPlane = 1000.0f;
 	glm::mat4 projection = glm::perspectiveFovLH(glm::radians(60.0f), viewportWidth, viewportHeight, nearPlane, farPlane);
 
-	DX11ConstantBufferLayout constantBufferLayout;
-	constantBufferLayout.Model = model;
-	constantBufferLayout.View = view;
-	constantBufferLayout.Projection = projection;
-	constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
-	// Log::GetLogger()->info("s_ConstantBufferLayout.Time: {0}", constantBufferLayout.Time);
-	s_ConstantBuffer->Update(&constantBufferLayout);
+	// BEGIN render mesh #1
+	{
+		s_VertexBuffer->Bind();
+		// s_IndexBuffer->Bind();
+		s_Pipeline->Bind();
 
-	SetConstantBuffer(DX11Shader::Type::Vertex, s_ConstantBuffer);
-	SetConstantBuffer(DX11Shader::Type::Pixel, s_ConstantBuffer);
+		// World/Model/Transform matrix
+		glm::mat4 model = glm::mat4(1.0f);
+		// model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		// model = glm::scale(model, glm::vec3(1.0f));
 
-	uint32_t startVertexIndex;
-	DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
+		DX11ConstantBufferLayout constantBufferLayout;
+		constantBufferLayout.Model = model;
+		constantBufferLayout.View = view;
+		constantBufferLayout.Projection = projection;
+		constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
+		// Log::GetLogger()->info("s_ConstantBufferLayout.Time: {0}", constantBufferLayout.Time);
+		s_ConstantBuffer->Update(&constantBufferLayout);
+
+		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+
+		uint32_t startVertexIndex;
+		DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
+	}
+	// END render mesh #1
+
+	// BEGIN render mesh #2
+	{
+		s_VertexBuffer->Bind();
+		// s_IndexBuffer->Bind();
+		s_Pipeline->Bind();
+
+		// World/Model/Transform matrix
+		glm::mat4 model = glm::mat4(1.0f);
+		// model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		// model = glm::scale(model, glm::vec3(1.0f));
+
+		DX11ConstantBufferLayout constantBufferLayout;
+		constantBufferLayout.Model = model;
+		constantBufferLayout.View = view;
+		constantBufferLayout.Projection = projection;
+		constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
+		s_ConstantBuffer->Update(&constantBufferLayout);
+
+		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+
+		uint32_t startVertexIndex;
+		DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
+	}
+	// END render mesh #2
+
+	// BEGIN render mesh #3
+	{
+		s_VertexBuffer->Bind();
+		// s_IndexBuffer->Bind();
+		s_Pipeline->Bind();
+
+		// World/Model/Transform matrix
+		glm::mat4 model = glm::mat4(1.0f);
+		// model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		// model = glm::scale(model, glm::vec3(1.0f));
+
+		DX11ConstantBufferLayout constantBufferLayout;
+		constantBufferLayout.Model = model;
+		constantBufferLayout.View = view;
+		constantBufferLayout.Projection = projection;
+		constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
+		s_ConstantBuffer->Update(&constantBufferLayout);
+
+		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+
+		uint32_t startVertexIndex;
+		DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
+	}
+	// END render mesh #3
 
 	for (auto& mesh : s_Meshes)
 	{
@@ -556,57 +628,45 @@ void DX11Renderer::ClearRenderTargetColor(float red, float green, float blue, fl
 
 	std::shared_ptr<DX11SwapChain> dx11SwapChain = DX11Context::Get()->GetSwapChain();
 
-	DX11Context::Get()->GetImmediateContext()->ClearRenderTargetView(dx11SwapChain->GetRenderTargetView(), clear_color);
-	DX11Context::Get()->GetImmediateContext()->ClearDepthStencilView(dx11SwapChain->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-	DX11Context::Get()->GetImmediateContext()->OMSetRenderTargets(1, &dx11SwapChain->m_DX11RenderTargetView, DX11Context::Get()->GetSwapChain()->GetDepthStencilView());
+	DX11Context::Get()->GetDX11DeviceContext()->ClearRenderTargetView(dx11SwapChain->GetRenderTargetView(), clear_color);
+	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(dx11SwapChain->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+	DX11Context::Get()->GetDX11DeviceContext()->OMSetRenderTargets(1, &dx11SwapChain->m_DX11RenderTargetView, DX11Context::Get()->GetSwapChain()->GetDepthStencilView());
 }
 
 void DX11Renderer::ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha)
 {
 	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
 	FLOAT clear_color[] = { red, green, blue, alpha };
-	DX11Context::Get()->GetImmediateContext()->ClearRenderTargetView(renderTarget->GetRenderTargetView(), clear_color);
+	DX11Context::Get()->GetDX11DeviceContext()->ClearRenderTargetView(renderTarget->GetRenderTargetView(), clear_color);
 }
 
 void DX11Renderer::ClearDepthStencil()
 {
 	std::shared_ptr<DX11SwapChain> dx11SwapChain = DX11Context::Get()->GetSwapChain();
 
-	DX11Context::Get()->GetImmediateContext()->ClearDepthStencilView(dx11SwapChain->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(dx11SwapChain->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 }
 
 void DX11Renderer::ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil)
 {
 	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
-	DX11Context::Get()->GetImmediateContext()->ClearDepthStencilView(depthStencil->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-}
-
-void DX11Renderer::SetConstantBuffer(DX11Shader::Type shaderType, Hazel::Ref<DX11ConstantBuffer> buffer)
-{
-	if (shaderType == DX11Shader::Type::Vertex)
-	{
-		DX11Context::Get()->GetImmediateContext()->VSSetConstantBuffers(0, 1, &buffer->m_Buffer);
-	}
-	else if (shaderType == DX11Shader::Type::Pixel)
-	{
-		DX11Context::Get()->GetImmediateContext()->PSSetConstantBuffers(0, 1, &buffer->m_Buffer);
-	}
+	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(depthStencil->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 }
 
 void DX11Renderer::DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex)
 {
-	DX11Context::Get()->GetImmediateContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	DX11Context::Get()->GetImmediateContext()->Draw((UINT)vertexCount, (UINT)startVertexIndex);
+	DX11Context::Get()->GetDX11DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DX11Context::Get()->GetDX11DeviceContext()->Draw((UINT)vertexCount, (UINT)startVertexIndex);
 }
 
 void DX11Renderer::DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation)
 {
-	DX11Context::Get()->GetImmediateContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	DX11Context::Get()->GetImmediateContext()->DrawIndexed((UINT)indexCount, (UINT)startIndexLocation, (UINT)startVertexIndex);
+	DX11Context::Get()->GetDX11DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DX11Context::Get()->GetDX11DeviceContext()->DrawIndexed((UINT)indexCount, (UINT)startIndexLocation, (UINT)startVertexIndex);
 }
 
 void DX11Renderer::DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex)
 {
-	DX11Context::Get()->GetImmediateContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	DX11Context::Get()->GetImmediateContext()->Draw((UINT)vertexCount, (UINT)startVertexIndex);
+	DX11Context::Get()->GetDX11DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	DX11Context::Get()->GetDX11DeviceContext()->Draw((UINT)vertexCount, (UINT)startVertexIndex);
 }

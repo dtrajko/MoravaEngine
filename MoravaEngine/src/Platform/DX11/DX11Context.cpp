@@ -141,37 +141,12 @@ void DX11Context::SetViewportSize(uint32_t width, uint32_t height)
 	m_DX11DeviceContext->RSSetViewports(1, &vp);
 }
 
-void DX11Context::SetVertexBuffer(Hazel::Ref<DX11VertexBuffer> vertexBuffer, Hazel::Ref<DX11Pipeline> pipeline)
-{
-	uint32_t stride = vertexBuffer->GetStride();
-	uint32_t offset = 0;
-
-	m_DX11DeviceContext->IASetVertexBuffers(0, 1, &vertexBuffer->m_Buffer, &stride, &offset);
-	m_DX11DeviceContext->IASetInputLayout(pipeline->GetInputLayout());
-}
-
-void DX11Context::SetIndexBuffer(Hazel::Ref<DX11IndexBuffer> indexBuffer)
-{
-	m_DX11DeviceContext->IASetIndexBuffer(indexBuffer->GetBuffer(), DXGI_FORMAT_R32_UINT, 0);
-}
-
 void DX11Context::SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil)
 {
 	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
 	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
 
 	m_DX11DeviceContext->OMSetRenderTargets(1, &renderTarget->m_RenderTargetView, depthStencil->GetDepthStencilView());
-}
-
-void DX11Context::SetVertexShader(Hazel::Ref<DX11VertexShader> vertexShader)
-{
-	m_DX11DeviceContext->VSSetShader(vertexShader->GetDX11Shader(), nullptr, 0);
-}
-
-void DX11Context::SetPixelShader(Hazel::Ref<DX11PixelShader> pixelShader)
-{
-	if (!pixelShader) return;
-	m_DX11DeviceContext->PSSetShader(pixelShader->GetDX11Shader(), nullptr, 0);
 }
 
 void DX11Context::SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, const std::vector<Hazel::Ref<DX11Texture2D>>& textures, uint32_t textureCount)

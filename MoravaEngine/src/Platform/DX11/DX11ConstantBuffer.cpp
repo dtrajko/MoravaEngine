@@ -29,7 +29,7 @@ DX11ConstantBuffer::DX11ConstantBuffer(void* buffer, size_t bufferSize)
 
 void DX11ConstantBuffer::Update(void* buffer)
 {
-	ID3D11DeviceContext* immediateContext = DX11Context::Get()->GetImmediateContext();
+	ID3D11DeviceContext* immediateContext = DX11Context::Get()->GetDX11DeviceContext();
 
 	immediateContext->UpdateSubresource(m_Buffer, NULL, NULL, buffer, NULL, NULL);
 }

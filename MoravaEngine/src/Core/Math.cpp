@@ -69,14 +69,6 @@ glm::mat4 Math::Mat4FromAssimpMat4(const aiMatrix4x4& matrix)
 	return result;
 }
 
-/**
- * Convert an arbitrary range to [0-1] range
- */
-float Math::InverseLerp(float xx, float yy, float value)
-{
-	return (value - xx) / (yy - xx);
-}
-
 float Math::ConvertRangeFloat(float value, float oldMin, float oldMax, float newMin, float newMax)
 {
 	return (((value - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin;
@@ -85,6 +77,14 @@ float Math::ConvertRangeFloat(float value, float oldMin, float oldMax, float new
 float Math::Lerp(float a, float b, float f)
 {
 	return a + f * (b - a);
+}
+
+/**
+ * Convert an arbitrary range to [0-1] range
+ */
+float Math::InverseLerp(float xx, float yy, float value)
+{
+    return (value - xx) / (yy - xx);
 }
 
 std::tuple<glm::vec3, glm::quat, glm::vec3> Math::GetTransformDecomposition(const glm::mat4& transform)

@@ -44,3 +44,9 @@ DX11VertexBuffer::~DX11VertexBuffer()
 {
 	if (m_Buffer) m_Buffer->Release();
 }
+
+void DX11VertexBuffer::Bind() const
+{
+	uint32_t offset = 0;
+	DX11Context::Get()->GetDX11DeviceContext()->IASetVertexBuffers(0, 1, &m_Buffer, &m_Stride, &offset);
+}

@@ -237,3 +237,14 @@ std::string Util::to_str(const wchar_t* wcstr)
 		return rlt;
 	}
 }
+
+glm::vec3 Util::Lerp(const glm::vec3& start, const glm::vec3& end, float delta)
+{
+	glm::vec3 out;
+
+	out.x = start.x * (1.0f - delta) + end.x * delta;
+	out.y = start.y * (1.0f - delta) + end.y * delta;
+	out.z = start.z * (1.0f - delta) + end.z * delta;
+
+	return out;
+}
