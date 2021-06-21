@@ -24,6 +24,9 @@ Timer::Timer()
 	m_TargetUpdateRate = 24.0f;
 	m_TargetFPS = 60.0f;
 
+	m_DeltaTime = 0.0f;
+	m_LastFrameTimestamp = 0.0f;
+
 	m_StartTimeChrono = std::chrono::high_resolution_clock::now();
 }
 
@@ -40,9 +43,6 @@ Timer::Timer(float targetFPS, float targetUpdateRate) : Timer()
 
 void Timer::Update()
 {
-	auto elapsedMilliseconds = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - m_StartTimeChrono);
-	float elapsedSeconds = (float)(elapsedMilliseconds.count() / 1000.0f);
-
 	switch (Hazel::RendererAPI::Current())
 	{
 		case Hazel::RendererAPIType::OpenGL:
@@ -50,6 +50,8 @@ void Timer::Update()
 			m_CurrentTimestamp = (float)glfwGetTime(); // returns seconds, as a double
 			break;
 		case Hazel::RendererAPIType::DX11:
+			auto elapsedMilliseconds = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - m_StartTimeChrono);
+			float elapsedSeconds = (float)(elapsedMilliseconds.count() / 1000.0f);
 			m_CurrentTimestamp = elapsedSeconds;
 			break;
 		default:

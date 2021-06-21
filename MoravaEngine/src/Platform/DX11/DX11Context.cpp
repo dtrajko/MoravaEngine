@@ -81,13 +81,22 @@ std::shared_ptr<DX11SwapChain> DX11Context::CreateSwapChain(HWND hwnd, UINT widt
 	return m_SwapChain;
 }
 
-void DX11Context::SetRasterizerState(bool cull_front)
+void DX11Context::SetRasterizerState(DX11CullMode cullMode)
 {
-	if (cull_front) {
-		m_DX11DeviceContext->RSSetState(m_CullFrontState);
-	}
-	else {
-		m_DX11DeviceContext->RSSetState(m_CullBackState);
+	switch (cullMode)
+	{
+	case DX11CullMode::Front:
+		m_DX11DeviceContext->RSSetState(m_CullStateFront);
+		break;
+	case DX11CullMode::Back:
+		m_DX11DeviceContext->RSSetState(m_CullStateBack);
+		break;
+	case DX11CullMode::None:
+		m_DX11DeviceContext->RSSetState(m_CullStateNone);
+		break;
+	default:
+		m_DX11DeviceContext->RSSetState(m_CullStateNone);
+		break;
 	}
 }
 
@@ -97,10 +106,13 @@ void DX11Context::InitRasterizerState()
 	desc.CullMode = D3D11_CULL_FRONT;
 	desc.DepthClipEnable = true;
 	desc.FillMode = D3D11_FILL_SOLID;
-	m_DX11Device->CreateRasterizerState(&desc, &m_CullFrontState);
+	m_DX11Device->CreateRasterizerState(&desc, &m_CullStateFront);
 
 	desc.CullMode = D3D11_CULL_BACK;
-	m_DX11Device->CreateRasterizerState(&desc, &m_CullBackState);
+	m_DX11Device->CreateRasterizerState(&desc, &m_CullStateBack);
+
+	desc.CullMode = D3D11_CULL_NONE;
+	m_DX11Device->CreateRasterizerState(&desc, &m_CullStateNone);
 }
 
 void DX11Context::OnResize(uint32_t width, uint32_t height)

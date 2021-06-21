@@ -21,6 +21,14 @@
 struct GLFWwindow;
 
 
+enum class DX11CullMode
+{
+	None = 0,
+	Front,
+	Back,
+};
+
+
 class DX11Context : public Hazel::RendererContext
 {
 public:
@@ -49,7 +57,8 @@ public:
 	ID3D11Device* GetDX11Device() { return m_DX11Device; }
 
 	std::shared_ptr<DX11SwapChain> CreateSwapChain(HWND hwnd, UINT width, UINT height);
-	void SetRasterizerState(bool cull_front);
+
+	void SetRasterizerState(DX11CullMode cullMode);
 
 	void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -86,8 +95,11 @@ private:
 	IDXGIAdapter* m_DXGI_Adapter;
 	IDXGIFactory* m_IDXGI_Factory;
 	ID3D11DeviceContext* m_DX11DeviceContext;
-	ID3D11RasterizerState* m_CullFrontState;
-	ID3D11RasterizerState* m_CullBackState;
+
+	ID3D11RasterizerState* m_CullStateFront;
+	ID3D11RasterizerState* m_CullStateBack;
+	ID3D11RasterizerState* m_CullStateNone;
+
 	bool m_Validation;
 
 	ID3DBlob* m_blob = nullptr;

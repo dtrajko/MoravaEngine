@@ -17,13 +17,14 @@ DX11VertexShader::DX11VertexShader(const wchar_t* vertexShaderPath)
 		throw std::exception("DX11VertexShader initialization failed.");
 	}
 
-	ReleaseCompiledDX11Shader();
+	// ReleaseCompiledDX11Shader();
 
 	Log::GetLogger()->info("DX11VertexShader '{0}' has been successfully created!", Util::to_str(vertexShaderPath));
 }
 
 DX11VertexShader::~DX11VertexShader()
 {
+	// ReleaseCompiledDX11Shader();
 	if (m_DX11VertexShader) m_DX11VertexShader->Release();
 }
 

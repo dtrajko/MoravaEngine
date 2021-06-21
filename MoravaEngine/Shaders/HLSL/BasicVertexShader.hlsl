@@ -16,7 +16,10 @@ struct VS_OUTPUT
 
 cbuffer constant: register(b0)
 {
-	unsigned int m_time;
+	row_major float4x4 model;
+	row_major float4x4 view;
+	row_major float4x4 projection;
+	unsigned int time;
 }
 
 
@@ -24,7 +27,13 @@ VS_OUTPUT vsmain(VS_INPUT input)
 {
 	VS_OUTPUT output = (VS_OUTPUT)0;
 
-	output.position = input.position;
+	// World space
+	output.position = mul(input.position, model);
+	// View space
+	output.position = mul(output.position, view);
+	// Screen space
+	output.position = mul(output.position, projection);
+
 	output.color = input.normal;
 	output.binormal = input.binormal;
 

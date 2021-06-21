@@ -68,15 +68,15 @@ void DX11RendererBasic::InitDebug()
 	Log::GetLogger()->warn("DX11RendererBasic::InitDebug: Method not yet supported!");
 }
 
+// this API is adequate. In DirectX 11 one can choose between front (D3D11_CULL_FRONT) and back (D3D11_CULL_BACK) culling
 void DX11RendererBasic::EnableCulling()
 {
-	Log::GetLogger()->warn("DX11RendererBasic::EnableCulling: Method not yet supported!");
+	DX11Context::Get()->SetRasterizerState(DX11CullMode::Front); // or DX11CullMode::Back !?
 }
 
 void DX11RendererBasic::DisableCulling()
 {
-	// throw std::logic_error("The method or operation is not implemented.");
-	// Log::GetLogger()->warn("DX11RendererBasic::DisableCulling: Method not yet supported!");
+	DX11Context::Get()->SetRasterizerState(DX11CullMode::None);
 }
 
 void DX11RendererBasic::EnableTransparency()

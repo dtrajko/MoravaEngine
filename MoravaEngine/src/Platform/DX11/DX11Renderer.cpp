@@ -119,6 +119,9 @@ void DX11Renderer::Init()
 	s_VertexBuffer = Hazel::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount, pipelineSpecification.Shader);
 
 	DX11ConstantBufferLayout constantBufferLayout;
+	constantBufferLayout.Model = glm::mat4(1.0f);
+	constantBufferLayout.View = glm::mat4(1.0f);
+	constantBufferLayout.Projection = glm::mat4(1.0f);
 	constantBufferLayout.Time = 0;
 	s_ConstantBuffer = Hazel::Ref<DX11ConstantBuffer>::Create(&constantBufferLayout, sizeof(DX11ConstantBufferLayout));
 
@@ -246,6 +249,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	DX11Context::Get()->SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 
+	DX11Context::Get()->SetRasterizerState(DX11CullMode::None);
+
 	Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
 
 	DX11Context::Get()->SetVertexShader(dx11Shader->GetVertexShader());
@@ -253,7 +258,29 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	DX11Context::Get()->SetVertexBuffer(s_VertexBuffer, s_Pipeline);
 
+	// World/Model/Transform matrix
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+	// View matrix (Camera)
+	glm::mat4 view = glm::mat4(1.0f);
+
+	float elapsedTime = Timer::Get()->GetCurrentTimestamp();
+	float cameraDistance = sin(elapsedTime) + 2.0f;
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, cameraDistance));
+
+	// Projection matrix (perspective)
+	float viewportWidth = (float)Application::Get()->GetWindow()->GetWidth();
+	float viewportHeight = (float)Application::Get()->GetWindow()->GetHeight();
+	float nearPlane = 0.01f;
+	float farPlane = 1000.0f;
+	glm::mat4 projection = glm::perspectiveFovLH(glm::radians(60.0f), viewportWidth, viewportHeight, nearPlane, farPlane);
+
 	DX11ConstantBufferLayout constantBufferLayout;
+	constantBufferLayout.Model = model;
+	constantBufferLayout.View = view;
+	constantBufferLayout.Projection = projection;
 	constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
 	// Log::GetLogger()->info("s_ConstantBufferLayout.Time: {0}", constantBufferLayout.Time);
 	s_ConstantBuffer->Update(&constantBufferLayout);
@@ -270,6 +297,10 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	}
 
 	s_Meshes.clear();
+
+	//	Log::GetLogger()->info("Elapsed time: {0}, delta time: {1}, App Window size: [{2}x{3}]",
+	//		Timer::Get()->GetCurrentTimestamp(), Timer::Get()->GetDeltaTime(),
+	//		Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 
 	/**** END DirectX 11 rendering ****/
 

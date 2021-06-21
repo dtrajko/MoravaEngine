@@ -17,13 +17,14 @@ DX11PixelShader::DX11PixelShader(const wchar_t* pixelShaderPath)
 		throw std::exception("DX11PixelShader initialization failed.");
 	}
 
-	ReleaseCompiledDX11Shader();
+	// ReleaseCompiledDX11Shader();
 
 	Log::GetLogger()->info("DX11PixelShader '{0}' has been successfully created!", Util::to_str(pixelShaderPath));
 }
 
 DX11PixelShader::~DX11PixelShader()
 {
+	// ReleaseCompiledDX11Shader();
 	if (m_DX11PixelShader) m_DX11PixelShader->Release();
 }
 

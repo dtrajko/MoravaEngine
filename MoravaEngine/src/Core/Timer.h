@@ -19,9 +19,7 @@ public:
 	inline const float GetRealFPS() const { return m_RealFPS; };
 	inline const float GetRealUpdateRate() const { return m_RealUpdateRate; };
 	inline const float GetDeltaTime() const { return m_DeltaTime; };
-	// inline const float GetCurrentTimestamp() const { return m_CurrentTimestamp; };
 	inline float GetCurrentTimestamp() { return m_CurrentTimestamp; };
-	// inline float GetElapsedTime() { return m_ElapsedTime; };
 	void Update();
 	bool CanRender() { return m_CanRender; };
 	bool CanUpdate() { return m_CanUpdate; };
@@ -31,7 +29,6 @@ private:
 	static Timer* s_Instance;
 
 	float m_CurrentTimestamp; // time in seconds
-	// float m_ElapsedTime;
 
 	// Render
 	float m_TargetFPS;

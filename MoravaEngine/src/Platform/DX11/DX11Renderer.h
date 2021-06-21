@@ -24,8 +24,12 @@ struct DX11VertexLayout
 __declspec(align(16))
 struct DX11ConstantBufferLayout
 {
+	glm::mat4 Model;
+	glm::mat4 View;
+	glm::mat4 Projection;
 	uint32_t Time;
 };
+
 
 class DX11Renderer
 {
