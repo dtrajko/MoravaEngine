@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 
 /**
  * A singleton class
@@ -19,6 +21,7 @@ public:
 	inline const float GetDeltaTime() const { return m_DeltaTime; };
 	// inline const float GetCurrentTimestamp() const { return m_CurrentTimestamp; };
 	inline float GetCurrentTimestamp() { return m_CurrentTimestamp; };
+	// inline float GetElapsedTime() { return m_ElapsedTime; };
 	void Update();
 	bool CanRender() { return m_CanRender; };
 	bool CanUpdate() { return m_CanUpdate; };
@@ -27,7 +30,8 @@ public:
 private:
 	static Timer* s_Instance;
 
-	float m_CurrentTimestamp;
+	float m_CurrentTimestamp; // time in seconds
+	// float m_ElapsedTime;
 
 	// Render
 	float m_TargetFPS;
@@ -42,4 +46,12 @@ private:
 	float m_LastUpdateTimestamp;
 	float m_DeltaTimeUpdate;
 	bool m_CanUpdate;
+
+	// Using chrono for DirectX 11 as GLFW is not available for it
+#ifdef _WIN32
+	std::chrono::time_point<std::chrono::steady_clock> m_StartTimeChrono;
+#else
+	std::chrono::time_point<std::chrono::system_clock> m_StartTimeChrono;
+#endif
+
 };

@@ -42,5 +42,5 @@ DX11VertexBuffer::DX11VertexBuffer(uint32_t size, Hazel::VertexBufferUsage usage
 
 DX11VertexBuffer::~DX11VertexBuffer()
 {
-	m_Buffer->Release();
+	if (m_Buffer) m_Buffer->Release();
 }

@@ -7,9 +7,25 @@
 
 #include "DX11Texture2D.h"
 #include "DX11VertexBuffer.h"
+#include "DX11ConstantBuffer.h"
 
 #include "Core/Window.h"
 
+
+struct DX11VertexLayout
+{
+	glm::vec3 Position;
+	glm::vec2 TexCoord;
+	glm::vec3 Normal;
+	glm::vec3 Tangent;
+	glm::vec3 Binormal;
+};
+
+__declspec(align(16))
+struct DX11ConstantBufferLayout
+{
+	uint32_t Time;
+};
 
 class DX11Renderer
 {
@@ -38,6 +54,8 @@ public:
 	static void ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha);
 	static void ClearDepthStencil();
 	static void ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil);
+
+	static void SetConstantBuffer(DX11Shader::Type shaderType, Hazel::Ref<DX11ConstantBuffer> buffer);
 
 	static void DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex);
 	static void DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation);

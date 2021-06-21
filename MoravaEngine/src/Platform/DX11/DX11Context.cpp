@@ -184,15 +184,3 @@ void DX11Context::SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type sha
 		m_DX11DeviceContext->PSSetSamplers(0, textureCount, list_sampler);
 	}
 }
-
-void DX11Context::SetConstantBuffer(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, Hazel::Ref<DX11ConstantBuffer> buffer)
-{
-	if (shaderType == DX11Shader::Type::Vertex)
-	{
-		m_DX11DeviceContext->VSSetConstantBuffers(0, 1, &buffer->m_Buffer);
-	}
-	else if (shaderType == DX11Shader::Type::Pixel)
-	{
-		m_DX11DeviceContext->PSSetConstantBuffers(0, 1, &buffer->m_Buffer);
-	}
-}

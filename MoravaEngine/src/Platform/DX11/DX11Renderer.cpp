@@ -12,13 +12,16 @@
 #include "DX11VertexBuffer.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 
+// ImGui includes
 #if !defined(IMGUI_IMPL_API)
-	#define IMGUI_IMPL_API
+#define IMGUI_IMPL_API
 #endif
-#include "backends/imgui_impl_glfw.h"
-// #include "backends/imgui_impl_vulkan_with_textures.h"
+#include "imgui.h"
+#include "imgui.h"
+#include "backends/imgui_impl_win32.h"
+#include "backends/imgui_impl_dx11.h"
 
-#include "../../ImGuizmo/ImGuizmo.h"
+#include "ImGuizmo.h"
 
 
 static Hazel::Ref<Hazel::HazelFramebuffer> s_Framebuffer;
@@ -39,13 +42,7 @@ static glm::mat4* s_Transform_ImGuizmo = nullptr;
 static Hazel::Ref<Hazel::Pipeline> s_Pipeline;
 static Hazel::Ref<DX11VertexBuffer> s_VertexBuffer;
 
-
-struct VulkanRendererData
-{
-	VkCommandBuffer ActiveCommandBuffer = nullptr;
-};
-
-static VulkanRendererData s_Data;
+static Hazel::Ref<DX11ConstantBuffer> s_ConstantBuffer;
 
 
 void DX11Renderer::SubmitMesh(const Hazel::Ref<Hazel::HazelMesh>& mesh)
@@ -107,30 +104,23 @@ void DX11Renderer::Init()
 
 	s_Pipeline = Hazel::Pipeline::Create(pipelineSpecification);
 
-	struct DX11Vertex
+	DX11VertexLayout vertexList[] =
 	{
-		glm::vec3 Position;
-		glm::vec2 TexCoord;
-		glm::vec3 Normal;
-		glm::vec3 Tangent;
-		glm::vec3 Binormal;
-	};
-
-	DX11Vertex vertexList[] =
-	{
-		// ----------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ---------- TANGENT XYZ --------- BINORMAL XYZ
-		DX11Vertex{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #1
-		DX11Vertex{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #2
-		DX11Vertex{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #3
-		DX11Vertex{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, }, // VERTEX #4
+		// ----------------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ----------- TANGENT XYZ --------- BINORMAL XYZ
+		DX11VertexLayout{ { -0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, }, // VERTEX #1
+		DX11VertexLayout{ { -0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, }, // VERTEX #2
+		DX11VertexLayout{ {  0.5f, -0.5f, 0.0f }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, }, // VERTEX #3
+		DX11VertexLayout{ {  0.5f,  0.5f, 0.0f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #4
 	};
 
 	// temporary DX11 objects and data structures
-	uint32_t vertexStride = sizeof(DX11Vertex);
+	uint32_t vertexStride = sizeof(DX11VertexLayout);
 	uint32_t vertexCount = ARRAYSIZE(vertexList);
 	s_VertexBuffer = Hazel::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount, pipelineSpecification.Shader);
 
-	DX11Context::Get()->SetVertexBuffer(s_VertexBuffer, s_Pipeline);
+	DX11ConstantBufferLayout constantBufferLayout;
+	constantBufferLayout.Time = 0;
+	s_ConstantBuffer = Hazel::Ref<DX11ConstantBuffer>::Create(&constantBufferLayout, sizeof(DX11ConstantBufferLayout));
 
 	/**** BEGIN DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
 
@@ -247,10 +237,12 @@ static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
 // TODO: Temporary method until composite rendering is enabled
 void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 {
-	Hazel::HazelRenderer::Submit([=]() mutable {});
+	// Hazel::HazelRenderer::Submit([=]() mutable {});
+
+	// Log::GetLogger()->info("Timer::GetCurrentTimestamp: {0}", Timer::Get()->GetCurrentTimestamp());
 
 	/**** BEGIN DirectX 11 rendering ****/
-	ClearRenderTargetColor(0.37f, 0.37f, 0.37f, 1.0f);
+	ClearRenderTargetColor(0.1f, 0.2f, 0.4f, 1.0f);
 
 	DX11Context::Get()->SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 
@@ -260,6 +252,14 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	DX11Context::Get()->SetPixelShader(dx11Shader->GetPixelShader());
 
 	DX11Context::Get()->SetVertexBuffer(s_VertexBuffer, s_Pipeline);
+
+	DX11ConstantBufferLayout constantBufferLayout;
+	constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
+	// Log::GetLogger()->info("s_ConstantBufferLayout.Time: {0}", constantBufferLayout.Time);
+	s_ConstantBuffer->Update(&constantBufferLayout);
+
+	SetConstantBuffer(DX11Shader::Type::Vertex, s_ConstantBuffer);
+	SetConstantBuffer(DX11Shader::Type::Pixel, s_ConstantBuffer);
 
 	uint32_t startVertexIndex;
 	DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
@@ -548,6 +548,18 @@ void DX11Renderer::ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil)
 {
 	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
 	DX11Context::Get()->GetImmediateContext()->ClearDepthStencilView(depthStencil->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+}
+
+void DX11Renderer::SetConstantBuffer(DX11Shader::Type shaderType, Hazel::Ref<DX11ConstantBuffer> buffer)
+{
+	if (shaderType == DX11Shader::Type::Vertex)
+	{
+		DX11Context::Get()->GetImmediateContext()->VSSetConstantBuffers(0, 1, &buffer->m_Buffer);
+	}
+	else if (shaderType == DX11Shader::Type::Pixel)
+	{
+		DX11Context::Get()->GetImmediateContext()->PSSetConstantBuffers(0, 1, &buffer->m_Buffer);
+	}
 }
 
 void DX11Renderer::DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex)

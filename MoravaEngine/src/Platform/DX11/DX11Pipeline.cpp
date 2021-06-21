@@ -13,7 +13,7 @@ DX11Pipeline::DX11Pipeline(const Hazel::PipelineSpecification& spec)
 
 DX11Pipeline::~DX11Pipeline()
 {
-	m_InputLayout->Release();
+	if (m_InputLayout) m_InputLayout->Release();
 }
 
 void DX11Pipeline::Invalidate()

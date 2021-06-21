@@ -24,7 +24,7 @@ DX11PixelShader::DX11PixelShader(const wchar_t* pixelShaderPath)
 
 DX11PixelShader::~DX11PixelShader()
 {
-	m_DX11PixelShader->Release();
+	if (m_DX11PixelShader) m_DX11PixelShader->Release();
 }
 
 bool DX11PixelShader::CompileDX11Shader(const wchar_t* fileName)

@@ -100,6 +100,8 @@ void SceneDX11::SetupUniforms()
 void SceneDX11::Update(float timestep, Window* mainWindow)
 {
     Timer::Get()->Update();
+ 
+    // Log::GetLogger()->debug("SceneDX11::Update(timestep: '{0}', Timer::GetCurrentTimestamp: '{1}'): ", timestep, Timer::Get()->GetCurrentTimestamp());
 
     m_Camera->OnUpdate(timestep);
 

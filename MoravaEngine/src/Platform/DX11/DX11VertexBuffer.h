@@ -32,7 +32,7 @@ public:
 
 	inline uint32_t GetStride() { return m_Stride; }
 	inline uint32_t GetVertexCount() { return m_Count; };
-	inline const ID3D11Buffer* GetDX11Buffer() { return m_Buffer; }
+	inline ID3D11Buffer* GetDX11Buffer() { return m_Buffer; }
 
 private:
 	// uint32_t m_Size = 0;

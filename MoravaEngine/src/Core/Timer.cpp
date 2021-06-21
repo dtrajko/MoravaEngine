@@ -1,5 +1,7 @@
 #include "Core/Timer.h"
 
+#include "Hazel/Renderer/RendererAPI.h"
+
 #include "Core/CommonValues.h"
 
 #include <stdio.h>
@@ -21,6 +23,8 @@ Timer::Timer()
 {
 	m_TargetUpdateRate = 24.0f;
 	m_TargetFPS = 60.0f;
+
+	m_StartTimeChrono = std::chrono::high_resolution_clock::now();
 }
 
 Timer::Timer(float targetFPS) : Timer()
@@ -36,7 +40,23 @@ Timer::Timer(float targetFPS, float targetUpdateRate) : Timer()
 
 void Timer::Update()
 {
-	m_CurrentTimestamp = (float)glfwGetTime();
+	auto elapsedMilliseconds = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - m_StartTimeChrono);
+	float elapsedSeconds = (float)(elapsedMilliseconds.count() / 1000.0f);
+
+	switch (Hazel::RendererAPI::Current())
+	{
+		case Hazel::RendererAPIType::OpenGL:
+		case Hazel::RendererAPIType::Vulkan:
+			m_CurrentTimestamp = (float)glfwGetTime(); // returns seconds, as a double
+			break;
+		case Hazel::RendererAPIType::DX11:
+			m_CurrentTimestamp = elapsedSeconds;
+			break;
+		default:
+			Log::GetLogger()->error("Unknown RendererAPI");
+			HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+			break;
+	}
 
 	// Render
 	m_DeltaTime = m_CurrentTimestamp - m_LastFrameTimestamp;
@@ -55,7 +75,8 @@ void Timer::Update()
 	m_DeltaTimeUpdate = m_CurrentTimestamp - m_LastUpdateTimestamp;
 	m_CanUpdate = false;
 	m_RealUpdateRate = 1.0f / m_DeltaTimeUpdate;
-	if (m_RealUpdateRate <= m_TargetUpdateRate) {
+	if (m_RealUpdateRate <= m_TargetUpdateRate)
+	{
 		m_CanUpdate = true;
 		m_LastUpdateTimestamp = m_CurrentTimestamp;
 	}

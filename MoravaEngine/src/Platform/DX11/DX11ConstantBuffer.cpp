@@ -3,14 +3,14 @@
 #include "DX11Context.h"
 
 
-DX11ConstantBuffer::DX11ConstantBuffer(void* buffer, uint32_t bufferSize)
+DX11ConstantBuffer::DX11ConstantBuffer(void* buffer, size_t bufferSize)
 	: m_BufferSize(bufferSize)
 {
 	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	D3D11_BUFFER_DESC buff_desc = {};
 	buff_desc.Usage = D3D11_USAGE_DEFAULT;
-	buff_desc.ByteWidth = bufferSize;
+	buff_desc.ByteWidth = (UINT)bufferSize;
 	buff_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 	buff_desc.CPUAccessFlags = 0;
 	buff_desc.MiscFlags = 0;
@@ -23,6 +23,8 @@ DX11ConstantBuffer::DX11ConstantBuffer(void* buffer, uint32_t bufferSize)
 	{
 		throw std::exception("DX11ConstantBuffer initialization failed.");
 	}
+
+	Log::GetLogger()->info("DX11ConstantBuffer successfully created!");
 }
 
 void DX11ConstantBuffer::Update(void* buffer)
@@ -34,5 +36,6 @@ void DX11ConstantBuffer::Update(void* buffer)
 
 DX11ConstantBuffer::~DX11ConstantBuffer()
 {
-	m_Buffer->Release();
+	if (m_Buffer) m_Buffer->Release();
 }
+ 

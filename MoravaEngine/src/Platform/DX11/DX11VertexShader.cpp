@@ -24,7 +24,7 @@ DX11VertexShader::DX11VertexShader(const wchar_t* vertexShaderPath)
 
 DX11VertexShader::~DX11VertexShader()
 {
-	m_DX11VertexShader->Release();
+	if (m_DX11VertexShader) m_DX11VertexShader->Release();
 }
 
 bool DX11VertexShader::CompileDX11Shader(const wchar_t* fileName)
