@@ -291,7 +291,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	glm::mat4 view = glm::mat4(1.0f);
 
 	float elapsedTime = Timer::Get()->GetCurrentTimestamp();
-	float cameraDistance = sin(elapsedTime) + 3.0f;
+	float cameraDistance = sin(elapsedTime) + 4.0f;
 	view = glm::translate(view, glm::vec3(0.0f, 0.0f, cameraDistance));
 
 	// Projection matrix (perspective)
@@ -309,7 +309,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		// World/Model/Transform matrix
 		glm::mat4 model = glm::mat4(1.0f);
-		// model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -341,7 +341,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		// World/Model/Transform matrix
 		glm::mat4 model = glm::mat4(1.0f);
-		// model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -372,7 +372,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		// World/Model/Transform matrix
 		glm::mat4 model = glm::mat4(1.0f);
-		// model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
