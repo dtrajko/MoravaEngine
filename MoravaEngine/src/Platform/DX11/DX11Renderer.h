@@ -6,7 +6,6 @@
 #include "Hazel/Renderer/HazelCamera.h"
 
 #include "DX11Texture2D.h"
-#include "DX11VertexBuffer.h"
 #include "DX11ConstantBuffer.h"
 
 #include "Core/Window.h"

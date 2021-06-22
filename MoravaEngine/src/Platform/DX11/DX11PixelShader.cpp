@@ -26,6 +26,8 @@ DX11PixelShader::~DX11PixelShader()
 {
 	// ReleaseCompiledDX11Shader();
 	if (m_DX11PixelShader) m_DX11PixelShader->Release();
+
+	Log::GetLogger()->info("DX11PixelShader destroyed!");
 }
 
 void DX11PixelShader::Bind()
@@ -58,6 +60,8 @@ bool DX11PixelShader::CompileDX11Shader(const wchar_t* fileName)
 
 	m_BytecodePointer = m_Blob->GetBufferPointer();
 	m_BytecodeLength = m_Blob->GetBufferSize();
+
+	Log::GetLogger()->info("DX11PixelShader '{0}' has been successfully compiled!", Util::to_str(fileName));
 
 	return true;
 }

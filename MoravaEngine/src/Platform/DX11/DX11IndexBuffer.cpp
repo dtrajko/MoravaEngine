@@ -26,16 +26,13 @@ DX11IndexBuffer::DX11IndexBuffer(void* data, uint32_t count)
 	{
 		throw std::exception("DX11IndexBuffer initialization failed.");
 	}
+
+	Log::GetLogger()->info("DX11IndexBuffer successfully created!");
 }
 
 DX11IndexBuffer::DX11IndexBuffer(uint32_t size)
 {
 	Log::GetLogger()->error("DX11IndexBuffer(uint32_t size) not yet implemented!");
-}
-
-uint32_t DX11IndexBuffer::GetIndexCount()
-{
-	return m_Count;
 }
 
 void DX11IndexBuffer::Bind() const
@@ -52,6 +49,8 @@ Hazel::RendererID DX11IndexBuffer::GetRendererID() const
 DX11IndexBuffer::~DX11IndexBuffer()
 {
 	m_Buffer->Release();
+
+	Log::GetLogger()->info("DX11IndexBuffer destroyed!");
 }
 
 // void DX11IndexBuffer::SetData(void* buffer, uint32_t size, uint32_t offset) {}

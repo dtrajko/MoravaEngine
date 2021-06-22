@@ -11,7 +11,7 @@ class DX11PixelShader : public Hazel::RefCounted
 
 public:
 	DX11PixelShader(const wchar_t* pixelShaderPath);
-	~DX11PixelShader();
+	virtual ~DX11PixelShader();
 
 	inline ID3D11PixelShader* GetDX11Shader() { return m_DX11PixelShader; }
 

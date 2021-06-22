@@ -25,6 +25,8 @@ DX11VertexShader::~DX11VertexShader()
 {
 	// ReleaseCompiledDX11Shader();
 	if (m_DX11VertexShader) m_DX11VertexShader->Release();
+
+	Log::GetLogger()->info("DX11VertexShader destroyed!");
 }
 
 void DX11VertexShader::Bind()
@@ -57,6 +59,8 @@ bool DX11VertexShader::CompileDX11Shader(const wchar_t* fileName)
 
 	m_BytecodePointer = m_Blob->GetBufferPointer();
 	m_BytecodeLength = m_Blob->GetBufferSize();
+
+	Log::GetLogger()->info("DX11VertexShader '{0}' has been successfully compiled!", Util::to_str(fileName));
 
 	return true;
 }

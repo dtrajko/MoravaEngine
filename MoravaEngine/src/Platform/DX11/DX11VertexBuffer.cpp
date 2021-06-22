@@ -28,6 +28,8 @@ DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t stride, uint32_t count, 
 	{
 		throw std::exception("DX11VertexBuffer initialization failed.");
 	}
+
+	Log::GetLogger()->info("DX11VertexBuffer successfully created!");
 }
 
 DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t size, Hazel::VertexBufferUsage usage)
@@ -43,6 +45,8 @@ DX11VertexBuffer::DX11VertexBuffer(uint32_t size, Hazel::VertexBufferUsage usage
 DX11VertexBuffer::~DX11VertexBuffer()
 {
 	if (m_Buffer) m_Buffer->Release();
+
+	Log::GetLogger()->info("DX11VertexBuffer destroyed!");
 }
 
 void DX11VertexBuffer::Bind() const

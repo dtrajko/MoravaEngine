@@ -10,6 +10,7 @@
 #include "DX11Shader.h"
 #include "DX11Texture2D.h"
 #include "DX11VertexBuffer.h"
+#include "DX11IndexBuffer.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 
 // ImGui includes
@@ -109,11 +110,11 @@ void DX11Renderer::Init()
 		// ----------------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ----------- TANGENT XYZ --------- BINORMAL XYZ
 		DX11VertexLayout{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, }, // VERTEX #0
 		DX11VertexLayout{ { -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, }, // VERTEX #1
-		DX11VertexLayout{ {  0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, }, // VERTEX #2
-		DX11VertexLayout{ {  0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #3
+		DX11VertexLayout{ {  0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, }, // VERTEX #2
+		DX11VertexLayout{ {  0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #3
 
-		DX11VertexLayout{ {  0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #4
-		DX11VertexLayout{ {  0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, }, // VERTEX #5
+		DX11VertexLayout{ {  0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #4
+		DX11VertexLayout{ {  0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, }, // VERTEX #5
 		DX11VertexLayout{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, }, // VERTEX #6
 		DX11VertexLayout{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, }, // VERTEX #7
 	};
@@ -122,6 +123,31 @@ void DX11Renderer::Init()
 	uint32_t vertexStride = sizeof(DX11VertexLayout);
 	uint32_t vertexCount = ARRAYSIZE(vertexList);
 	s_VertexBuffer = Hazel::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount, pipelineSpecification.Shader);
+
+	uint32_t indexList[] =
+	{
+		// Front side
+		0, 1, 2, // First triangle
+		2, 3, 0, // Second triangle
+		// Back side
+		4, 5, 6,
+		6, 7, 4,
+		// Top side
+		1, 6, 5,
+		5, 2, 1,
+		// Bottom side
+		7, 0, 3,
+		3, 4, 7,
+		// Right side
+		3, 2, 5,
+		5, 4, 3,
+		// Left side
+		7, 6, 1,
+		1, 0, 7,
+	};
+
+	uint32_t indexCount = ARRAYSIZE(indexList);
+	s_IndexBuffer = Hazel::Ref<DX11IndexBuffer>::Create(indexList, indexCount);
 
 	DX11ConstantBufferLayout constantBufferLayout;
 	constantBufferLayout.Model = glm::mat4(1.0f);
@@ -278,7 +304,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	// BEGIN render mesh #1
 	{
 		s_VertexBuffer->Bind();
-		// s_IndexBuffer->Bind();
+		s_IndexBuffer->Bind();
 		s_Pipeline->Bind();
 
 		// World/Model/Transform matrix
@@ -300,15 +326,17 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-		uint32_t startVertexIndex;
-		DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
+		uint32_t startVertexIndex = 0;
+		uint32_t startIndexLocation = 0;
+		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
+		DX11Renderer::DrawIndexedTriangleList(s_IndexBuffer->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
 	// END render mesh #1
 
 	// BEGIN render mesh #2
 	{
 		s_VertexBuffer->Bind();
-		// s_IndexBuffer->Bind();
+		s_IndexBuffer->Bind();
 		s_Pipeline->Bind();
 
 		// World/Model/Transform matrix
@@ -329,15 +357,17 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-		uint32_t startVertexIndex;
-		DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
+		uint32_t startVertexIndex = 0;
+		uint32_t startIndexLocation = 0;
+		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
+		DX11Renderer::DrawIndexedTriangleList(s_IndexBuffer->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
 	// END render mesh #2
 
 	// BEGIN render mesh #3
 	{
 		s_VertexBuffer->Bind();
-		// s_IndexBuffer->Bind();
+		s_IndexBuffer->Bind();
 		s_Pipeline->Bind();
 
 		// World/Model/Transform matrix
@@ -358,8 +388,10 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-		uint32_t startVertexIndex;
-		DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex = 0);
+		uint32_t startVertexIndex = 0;
+		uint32_t startIndexLocation = 0;
+		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
+		DX11Renderer::DrawIndexedTriangleList(s_IndexBuffer->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
 	// END render mesh #3
 

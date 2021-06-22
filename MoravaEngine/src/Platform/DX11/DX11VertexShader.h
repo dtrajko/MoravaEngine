@@ -11,7 +11,7 @@ class DX11VertexShader : public Hazel::RefCounted
 
 public:
 	DX11VertexShader(const wchar_t* vertexShaderPath);
-	~DX11VertexShader();
+	virtual ~DX11VertexShader();
 
 	inline ID3D11VertexShader* GetDX11Shader() { return m_DX11VertexShader; }
 
