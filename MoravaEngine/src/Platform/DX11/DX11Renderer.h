@@ -33,11 +33,12 @@ struct DX11ConstantBufferLayout
 class DX11Renderer
 {
 public:
-	static void SubmitMesh(const Hazel::Ref<Hazel::HazelMesh>& mesh);
-
-	static void OnResize(uint32_t width, uint32_t height);
 	static void Init();
+
 	static void Draw(Hazel::HazelCamera* camera); // TODO: there should be no parameters
+	static void OnResize(uint32_t width, uint32_t height);
+
+	static void SubmitMesh(const Hazel::Ref<Hazel::HazelMesh>& mesh);
 
 	static void BeginFrame();
 	static void EndFrame();

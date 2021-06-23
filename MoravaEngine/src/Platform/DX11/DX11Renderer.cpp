@@ -11,6 +11,8 @@
 #include "DX11Texture2D.h"
 #include "DX11VertexBuffer.h"
 #include "DX11IndexBuffer.h"
+#include "DX11TestLayer.h"
+
 #include "Hazel/Renderer/HazelRenderer.h"
 
 // ImGui includes
@@ -291,8 +293,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	glm::mat4 view = glm::mat4(1.0f);
 
 	float elapsedTime = Timer::Get()->GetCurrentTimestamp();
-	float cameraDistance = sin(elapsedTime) + 4.0f;
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, cameraDistance));
+	// DX11TestLayer::s_CameraPosition.z = sin(elapsedTime) + 4.0f;
+	view = glm::translate(view, DX11TestLayer::s_CameraPosition);
 
 	// Projection matrix (perspective)
 	float viewportWidth = (float)Application::Get()->GetWindow()->GetWidth();

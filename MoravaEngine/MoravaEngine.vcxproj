@@ -286,6 +286,7 @@
     <ClCompile Include="src\Physics\SpartanPhysics.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Allocator.cpp" />
+    <ClCompile Include="src\Platform\DX11\DX11AppWindow.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Buffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -325,6 +326,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11InputSystem.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Material.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -710,6 +712,7 @@
     <ClInclude Include="src\Physics\SpartanPhysics.h" />
     <ClInclude Include="src\Platform\DX11\DX11.h" />
     <ClInclude Include="src\Platform\DX11\DX11Allocator.h" />
+    <ClInclude Include="src\Platform\DX11\DX11AppWindow.h" />
     <ClInclude Include="src\Platform\DX11\DX11Buffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -749,6 +752,8 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11InputListener.h" />
+    <ClInclude Include="src\Platform\DX11\DX11InputSystem.h" />
     <ClInclude Include="src\Platform\DX11\DX11Material.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>

@@ -1,14 +1,16 @@
 #include "DX11TestLayer.h"
 
-#include "Platform/DX11/DX11Context.h"
-// #include "Platform/DX11/DX11IndexBuffer.h"
-// #include "Platform/DX11/DX11Shader.h"
-#include "Platform/DX11/DX11SwapChain.h"
-#include "Platform/DX11/DX11Renderer.h"
-#include "Platform/DX11/DX11Shader.h"
+#include "DX11Context.h"
+#include "DX11SwapChain.h"
+#include "DX11Renderer.h"
+#include "DX11Shader.h"
+#include "DX11InputSystem.h"
 
 #include "Core/Application.h"
 
+
+// camera control
+glm::vec3 DX11TestLayer::s_CameraPosition = glm::vec3(0.0f, 0.0f, 4.0f);
 
 DX11TestLayer::DX11TestLayer()
 	: m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
@@ -26,6 +28,8 @@ DX11TestLayer::~DX11TestLayer()
 
 void DX11TestLayer::OnAttach()
 {
+	DX11InputSystem::Get()->AddListener(this);
+
 	// m_Meshes.push_back(Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 }
 
@@ -35,6 +39,8 @@ void DX11TestLayer::OnDetach()
 
 void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
 {
+	DX11InputSystem::Get()->Update();
+
 	m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)DX11Renderer::GetViewportWidth(), (float)DX11Renderer::GetViewportHeight(), 0.01f, 1000.0f));
 
 	// TODO: m_Camera.OnUpdate(ts);
@@ -98,4 +104,36 @@ void DX11TestLayer::Render(const glm::vec4& clearColor, const Hazel::EditorCamer
 		// TODO:		shader->UnmapUniformBuffer(0);
 		// TODO:	}
 	}
+}
+
+void DX11TestLayer::OnKeyDown(int key)
+{
+	if (key == 'W') // Forwards
+	{
+		s_CameraPosition.z -= m_CameraSpeed * Timer::Get()->GetDeltaTime();
+	}
+	if (key == 'A') // Left
+	{
+		s_CameraPosition.x += m_CameraSpeed * Timer::Get()->GetDeltaTime();
+	}
+	if (key == 'S') // Backwards
+	{
+		s_CameraPosition.z += m_CameraSpeed * Timer::Get()->GetDeltaTime();
+	}
+	if (key == 'D') // Right
+	{
+		s_CameraPosition.x -= m_CameraSpeed * Timer::Get()->GetDeltaTime();
+	}
+	if (key == 'Q') // Down
+	{
+		s_CameraPosition.y += m_CameraSpeed * Timer::Get()->GetDeltaTime();
+	}
+	if (key == 'E') // Up
+	{
+		s_CameraPosition.y -= m_CameraSpeed * Timer::Get()->GetDeltaTime();
+	}
+}
+
+void DX11TestLayer::OnKeyUp(int key)
+{
 }

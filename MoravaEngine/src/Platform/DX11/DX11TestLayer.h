@@ -10,12 +10,13 @@
 #include "DX11Shader.h"
 #include "DX11Texture2D.h"
 #include "DX11VertexBuffer.h"
+#include "DX11InputListener.h"
 
 #include "Core/Window.h"
 #include "Scene/Scene.h"
 
 
-class DX11TestLayer : public Hazel::Layer
+class DX11TestLayer : public Hazel::Layer, public DX11InputListener
 {
 public:
 	DX11TestLayer();
@@ -35,6 +36,13 @@ public:
 
 	void Render(const glm::vec4& clearColor, const Hazel::EditorCamera& camera);
 
+	// Inherited via DX11InputListener
+	virtual void OnKeyDown(int key) override;
+	virtual void OnKeyUp(int key) override;
+
+public:
+	static glm::vec3 s_CameraPosition;
+
 private:
 	std::vector<Hazel::Ref<Hazel::HazelMesh>> m_Meshes;
 	Hazel::Ref<Hazel::HazelTexture2D> m_Texture;
@@ -42,5 +50,7 @@ private:
 	Hazel::EditorCamera m_Camera;
 
 	std::vector<glm::vec4> m_RandomColors;
+
+	float m_CameraSpeed = 2.0f;
 
 };
