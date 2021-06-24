@@ -31,9 +31,6 @@ void DX11InputSystem::RemoveListener(DX11InputListener* listener)
 
 void DX11InputSystem::Update()
 {
-	// don't process keyboard and mouse input events if the window is not in focus
-	if (!Application::Get()->GetWindow()->IsInFocus()) return;
-
 	// MOUSE events
 	POINT currentMousePos = {};
 	::GetCursorPos(&currentMousePos);
@@ -125,4 +122,9 @@ DX11InputSystem* DX11InputSystem::Get()
 {
 	static DX11InputSystem system;
 	return &system;
+}
+
+void DX11InputSystem::ShowCursor(bool show)
+{
+	::ShowCursor(show);
 }

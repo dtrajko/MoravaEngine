@@ -80,6 +80,7 @@ public:
 	virtual void OnRightMouseUp(const DX11Point& deltaMousePos) override;
 
 	virtual bool IsInFocus() override { return m_InFocus; }
+	virtual void SetInFocus(bool inFocus) override { m_InFocus = inFocus; }
 	/**** END DirectX 11 methods ****/
 
 public:

@@ -290,7 +290,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	dx11Shader->GetPixelShader()->Bind();
 
 	// View matrix (Camera)
-	glm::mat4 view = CalculateViewMatrix();
+	glm::mat4 view = DX11CameraFP::Get()->CalculateViewMatrix();
 
 	// Projection matrix (perspective)
 	float viewportWidth = (float)Application::Get()->GetWindow()->GetWidth();
@@ -699,35 +699,4 @@ void DX11Renderer::DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexI
 {
 	DX11Context::Get()->GetDX11DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	DX11Context::Get()->GetDX11DeviceContext()->Draw((UINT)vertexCount, (UINT)startVertexIndex);
-}
-
-glm::mat4 DX11Renderer::CalculateViewMatrix()
-{
-	// Based on Core/Camera calculations
-	glm::vec3& cameraPosition = DX11TestLayer::s_CameraPosition;
-
-	glm::vec3& cameraVectorFront = DX11TestLayer::s_CameraVectorFront;
-	glm::vec3& cameraVectorRight = DX11TestLayer::s_CameraVectorRight;
-	glm::vec3& cameraVectorUp = DX11TestLayer::s_CameraVectorUp;
-
-	float& cameraYaw = DX11TestLayer::s_CameraYaw;
-	float& cameraPitch = DX11TestLayer::s_CameraPitch;
-
-	// preventing the invertion of orientation
-	if (cameraPitch > 89.0f) cameraPitch = 89.0f;
-	if (cameraPitch <= -89.0f) cameraPitch = -89.0f;
-
-	glm::vec3 worldUpVector = glm::vec3(0.0f, 1.0f, 0.0f);
-
-	cameraVectorFront.x = cos(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
-	cameraVectorFront.y = -sin(glm::radians(cameraPitch));
-	cameraVectorFront.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
-	cameraVectorFront = glm::normalize(cameraVectorFront);
-
-	cameraVectorRight = glm::normalize(glm::cross(cameraVectorFront, worldUpVector));
-	cameraVectorUp = glm::normalize(glm::cross(cameraVectorRight, cameraVectorFront));
-
-	glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + glm::normalize(cameraVectorFront), cameraVectorUp);
-
-	return view;
 }

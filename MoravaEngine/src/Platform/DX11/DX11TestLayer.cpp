@@ -9,24 +9,14 @@
 #include "Core/Application.h"
 
 
-// camera control
-glm::vec3 DX11TestLayer::s_CameraPosition = glm::vec3(0.0f, 0.0f, 4.0f);
-
-glm::vec3 DX11TestLayer::s_CameraVectorFront = glm::vec3(0.0f, 0.0f, 1.0f);
-glm::vec3 DX11TestLayer::s_CameraVectorRight = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::vec3 DX11TestLayer::s_CameraVectorUp = glm::vec3(0.0f, 0.0f, 0.0f);
-
-float DX11TestLayer::s_CameraYaw = 90.0f;
-float DX11TestLayer::s_CameraPitch = 0.0f;
-
 
 DX11TestLayer::DX11TestLayer()
-	: m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
+	: m_Camera(std::make_shared<DX11CameraFP>(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f)))
 {
 }
 
 DX11TestLayer::DX11TestLayer(const std::string& name)
-	: Layer(name), m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
+	: Layer(name), m_Camera(std::make_shared<DX11CameraFP>(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f)))
 {
 }
 
@@ -36,9 +26,14 @@ DX11TestLayer::~DX11TestLayer()
 
 void DX11TestLayer::OnAttach()
 {
+	// m_Meshes.push_back(Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+
 	DX11InputSystem::Get()->AddListener(this);
 
-	// m_Meshes.push_back(Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+	m_ShowMouseCursor = true;
+
+	Application::Get()->GetWindow()->SetInFocus(false);
+	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor);
 }
 
 void DX11TestLayer::OnDetach()
@@ -49,7 +44,9 @@ void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
 {
 	DX11InputSystem::Get()->Update();
 
-	m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)DX11Renderer::GetViewportWidth(), (float)DX11Renderer::GetViewportHeight(), 0.01f, 1000.0f));
+	m_Camera->Update();
+
+	m_Camera->SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)DX11Renderer::GetViewportWidth(), (float)DX11Renderer::GetViewportHeight(), 0.01f, 1000.0f));
 
 	// TODO: m_Camera.OnUpdate(ts);
 
@@ -59,6 +56,9 @@ void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
 	{
 		DX11Renderer::SubmitMesh(mesh);
 	}
+
+	bool windowInFocus = Application::Get()->GetWindow()->IsInFocus();
+	// Log::GetLogger()->info("Window::m_InFocus: {0}, m_ShowMouseCursor: {1}", windowInFocus, m_ShowMouseCursor);
 }
 
 void DX11TestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
@@ -67,15 +67,15 @@ void DX11TestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
 void DX11TestLayer::OnEvent(Event& event)
 {
-	m_Camera.OnEvent(event);
+	m_Camera->OnEvent(event);
 
 	if (event.GetEventType() == EventType::WindowResize)
 	{
 		WindowResizeEvent& e = (WindowResizeEvent&)event;
 		if (e.GetWidth() != 0 && e.GetHeight() != 0)
 		{
-			m_Camera.SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
-			m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
+			m_Camera->SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
+			m_Camera->SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
 		}
 	}
 }
@@ -88,7 +88,7 @@ void DX11TestLayer::OnRender(Window* mainWindow)
 {
 }
 
-void DX11TestLayer::Render(const glm::vec4& clearColor, const Hazel::EditorCamera& camera)
+void DX11TestLayer::Render(const glm::vec4& clearColor, const std::shared_ptr<DX11CameraFP>& camera)
 {
 	if (!m_Meshes.size()) return;
 
@@ -116,48 +116,30 @@ void DX11TestLayer::Render(const glm::vec4& clearColor, const Hazel::EditorCamer
 
 void DX11TestLayer::OnKeyDown(int key)
 {
-	float velocity = m_CameraSpeed * Timer::Get()->GetDeltaTime();
-
-	if (key == 'W') // Forwards
-	{
-		s_CameraPosition -= s_CameraVectorFront * velocity;
-	}
-	if (key == 'S') // Backwards
-	{
-		s_CameraPosition += s_CameraVectorFront * velocity;
-	}
-	if (key == 'A') // Left
-	{
-		s_CameraPosition -= s_CameraVectorRight * velocity;
-	}
-	if (key == 'D') // Right
-	{
-		s_CameraPosition += s_CameraVectorRight * velocity;
-	}
-	if (key == 'Q') // Down
-	{
-		s_CameraPosition -= s_CameraVectorUp * velocity;
-	}
-	if (key == 'E') // Up
-	{
-		s_CameraPosition += s_CameraVectorUp * velocity;
-	}
 }
 
 void DX11TestLayer::OnKeyUp(int key)
 {
+	if (key == VK_ESCAPE)
+	{
+		m_ShowMouseCursor = true;
+
+		Application::Get()->GetWindow()->SetInFocus(false);
+		DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor);
+	}
 }
 
 void DX11TestLayer::OnMouseMove(const DX11Point& deltaMousePos)
 {
-	float turnVelocity = m_CameraTurnSpeed * Timer::Get()->GetDeltaTime();
-
-	s_CameraYaw -= deltaMousePos.m_X * turnVelocity;
-	s_CameraPitch -= deltaMousePos.m_Y * turnVelocity;
 }
 
 void DX11TestLayer::OnLeftMouseDown(const DX11Point& deltaMousePos)
 {
+	Log::GetLogger()->info("DX11TestLayer::OnLeftMouseDown([{0}, {1}])", deltaMousePos.m_X, deltaMousePos.m_Y);
+	m_ShowMouseCursor = false;
+
+	Application::Get()->GetWindow()->SetInFocus(true);
+	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor);
 }
 
 void DX11TestLayer::OnRightMouseDown(const DX11Point& deltaMousePos)

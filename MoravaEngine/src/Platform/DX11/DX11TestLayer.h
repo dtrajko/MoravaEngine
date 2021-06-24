@@ -11,6 +11,7 @@
 #include "DX11Texture2D.h"
 #include "DX11VertexBuffer.h"
 #include "DX11InputListener.h"
+#include "DX11CameraFP.h"
 
 #include "Core/Window.h"
 #include "Scene/Scene.h"
@@ -34,7 +35,7 @@ public:
 	void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 	void OnRender(Window* mainWindow);
 
-	void Render(const glm::vec4& clearColor, const Hazel::EditorCamera& camera);
+	void Render(const glm::vec4& clearColor, const std::shared_ptr<DX11CameraFP>& camera);
 
 	// Inherited via DX11InputListener
 	virtual void OnKeyDown(int key) override;
@@ -49,25 +50,14 @@ public:
 	virtual void OnLeftMouseUp(const DX11Point& deltaMousePos) override;
 	virtual void OnRightMouseUp(const DX11Point& deltaMousePos) override;
 
-public:
-	static glm::vec3 s_CameraPosition;
-
-	static glm::vec3 s_CameraVectorFront;
-	static glm::vec3 s_CameraVectorRight;
-	static glm::vec3 s_CameraVectorUp;
-
-	static float s_CameraYaw;
-	static float s_CameraPitch;
-
 private:
 	std::vector<Hazel::Ref<Hazel::HazelMesh>> m_Meshes;
 	Hazel::Ref<Hazel::HazelTexture2D> m_Texture;
 
-	Hazel::EditorCamera m_Camera;
+	std::shared_ptr<DX11CameraFP> m_Camera; // TODO: Use DX11CameraFP as m_Camera
 
 	std::vector<glm::vec4> m_RandomColors;
 
-	float m_CameraSpeed = 2.0f;
-	float m_CameraTurnSpeed = 5.0f;
+	bool m_ShowMouseCursor;
 
 };

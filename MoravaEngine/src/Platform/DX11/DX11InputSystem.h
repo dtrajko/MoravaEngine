@@ -20,6 +20,8 @@ public:
 
 	void Update();
 
+	void ShowCursor(bool show);
+
 	static DX11InputSystem* Get();
 
 private:

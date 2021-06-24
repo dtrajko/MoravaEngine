@@ -284,6 +284,52 @@ void WindowsWindow::SetHWND(HWND hwnd)
 	m_HWND = hwnd;
 }
 
+// A DirectX 11 method
+void WindowsWindow::InitDX11(const WindowProps& props)
+{
+	m_IsInitialized = false;
+
+	LPCWSTR className = L"WindowsWindow";
+	LPCWSTR menuName = L"";
+	std::wstring windowNameWStr = Util::to_wstr(props.Title.c_str());
+	const wchar_t* windowNameWChar = windowNameWStr.c_str();
+	LPCWSTR windowName = (LPCWSTR)windowNameWChar;
+
+	WNDCLASSEX wc;
+	wc.cbClsExtra = NULL;
+	wc.cbSize = sizeof(WNDCLASSEX);
+	wc.cbWndExtra = NULL;
+	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+	wc.hInstance = NULL;
+	wc.lpszClassName = className;
+	wc.lpszMenuName = menuName;
+	wc.style = NULL;
+	wc.lpfnWndProc = &WndProc;
+
+	if (!::RegisterClassEx(&wc)) // If the registration of class fails, the function returns false
+	{
+		throw std::exception("Window not created successfully.");
+	}
+
+	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
+		NULL, NULL, NULL, NULL);
+
+	if (!m_HWND)
+	{
+		throw std::exception("Window not created successfully.");
+	}
+
+	// Show up the window
+	::ShowWindow(m_HWND, SW_SHOW);
+	::UpdateWindow(m_HWND);
+
+	// Set this flag to true to indicate that the window is initialized and running
+	m_IsRunning = true;
+}
+
 // Used only for DirectX 11
 bool WindowsWindow::Broadcast()
 {
@@ -336,6 +382,7 @@ void WindowsWindow::OnFocus()
 {
 	// DX11InputSystem::Get()->AddListener(this);
 	m_InFocus = true;
+	// DX11InputSystem::Get()->ShowCursor(false);
 }
 
 // A DirectX 11 method
@@ -343,6 +390,7 @@ void WindowsWindow::OnKillFocus()
 {
 	// DX11InputSystem::Get()->RemoveListener(this);
 	m_InFocus = false;
+	// DX11InputSystem::Get()->ShowCursor(true);
 }
 
 // A DirectX 11 method
@@ -383,53 +431,6 @@ void WindowsWindow::OnLeftMouseUp(const DX11Point& deltaMousePos)
 // A DirectX 11 method
 void WindowsWindow::OnRightMouseUp(const DX11Point& deltaMousePos)
 {
-}
-
-// A DirectX 11 method
-void WindowsWindow::InitDX11(const WindowProps& props)
-{
-	m_IsInitialized = false;
-
-	LPCWSTR className = L"WindowsWindow";
-	LPCWSTR menuName = L"";
-	std::wstring windowNameWStr = Util::to_wstr(props.Title.c_str());
-	const wchar_t* windowNameWChar = windowNameWStr.c_str();
-	LPCWSTR windowName = (LPCWSTR)windowNameWChar;
-
-	WNDCLASSEX wc;
-	wc.cbClsExtra = NULL;
-	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.cbWndExtra = NULL;
-	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hInstance = NULL;
-	wc.lpszClassName = className;
-	wc.lpszMenuName = menuName;
-	wc.style = NULL;
-	wc.lpfnWndProc = &WndProc;
-
-	if (!::RegisterClassEx(&wc)) // If the registration of class fails, the function returns false
-	{
-		throw std::exception("Window not created successfully.");
-	}
-
-	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
-		NULL, NULL, NULL, NULL);
-
-	if (!m_HWND)
-	{
-		throw std::exception("Window not created successfully.");
-	}
-
-	// Show up the window
-	::ShowWindow(m_HWND, SW_SHOW);
-	::UpdateWindow(m_HWND);
-
-	// Set this flag to true to indicate that the window is initialized and running
-	m_IsRunning = true;
-	m_InFocus = true;
 }
 
 // A DirectX 11 method
