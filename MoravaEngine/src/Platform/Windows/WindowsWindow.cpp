@@ -9,78 +9,11 @@
 
 #include "Platform/DX11/DX11.h"
 #include "Platform/DX11/DX11Context.h"
+#include "Platform/DX11/DX11InputSystem.h"
 
 #include <cmath>
 #include <exception>
 
-
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
-{
-	switch (msg)
-	{
-	case WM_CREATE:
-	{
-		// Event fired when the window is created
-		// Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		// window->SetHWND(hwnd);
-		// window->OnCreate();
-		break;
-	}
-	case WM_SIZE:
-	{
-		// Event fired when the window is resized
-		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		if (window)
-		{
-			window->OnSize();
-		}
-		break;
-	}
-	case WM_SETFOCUS:
-	{
-		// Event fired when the window is in focus
-		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		if (window)
-		{
-			window->OnFocus();
-		}
-		break;
-	}
-	case WM_KILLFOCUS:
-	{
-		// Event fired when the window is in focus
-		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		if (window)
-		{
-			window->OnKillFocus();
-		}
-		break;
-	}
-	case WM_DESTROY:
-	{
-		// Event fired when the window is destroyed
-		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		window->OnDestroy();
-		::PostQuitMessage(0);
-		break;
-	}
-	default:
-	{
-		return ::DefWindowProc(hwnd, msg, wparam, lparam);
-	}
-	}
-
-	return NULL;
-}
-
-/**** BEGIN Hazel properties and methods ****/
-
-static void GLFWErrorCallback(int error, const char* description)
-{
-	Log::GetLogger()->error("GLFW Error ({0}) : {1}", error, description);
-}
-
-static bool s_GLFWInitialized = false;
 
 Window* Window::Create(const WindowProps& props)
 {
@@ -98,6 +31,15 @@ WindowsWindow::~WindowsWindow()
 {
 	Shutdown();
 }
+
+/**** BEGIN Hazel properties and methods (GLFW) ****/
+
+static void GLFWErrorCallback(int error, const char* description)
+{
+	Log::GetLogger()->error("GLFW Error ({0}) : {1}", error, description);
+}
+
+static bool s_GLFWInitialized = false;
 
 void WindowsWindow::Init(const WindowProps& props)
 {
@@ -128,13 +70,13 @@ void WindowsWindow::Init(const WindowProps& props)
 
 	switch (Hazel::RendererAPI::Current())
 	{
-		case Hazel::RendererAPIType::OpenGL:
-		case Hazel::RendererAPIType::Vulkan:
-			InitGLFW(props);
-			break;
-		case Hazel::RendererAPIType::DX11:
-			InitDX11(props);
-			break;
+	case Hazel::RendererAPIType::OpenGL:
+	case Hazel::RendererAPIType::Vulkan:
+		InitGLFW(props);
+		break;
+	case Hazel::RendererAPIType::DX11:
+		InitDX11(props);
+		break;
 	}
 
 	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create(this));
@@ -205,6 +147,245 @@ void WindowsWindow::InitGLFW(const WindowProps& props)
 	SetCallbacksHazelDev();
 }
 
+inline std::pair<float, float> WindowsWindow::GetWindowPos() const
+{
+	int x, y;
+	glfwGetWindowPos(m_GLFW_Window, &x, &y);
+	return { x, y };
+}
+
+void WindowsWindow::ProcessEvents()
+{
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::OpenGL:
+	case Hazel::RendererAPIType::Vulkan:
+	{
+		glfwPollEvents();
+
+		//ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+		//glfwSetCursor(m_GLFW_Window, m_ImGuiMouseCursors[imgui_cursor] ? m_ImGuiMouseCursors[imgui_cursor] : m_ImGuiMouseCursors[ImGuiMouseCursor_Arrow]);
+		glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+	break;
+	case Hazel::RendererAPIType::DX11:
+		// TODO: ProcessEvents DX11 version
+		Broadcast();
+		break;
+	}
+}
+
+void WindowsWindow::SwapBuffers()
+{
+	m_RendererContext->SwapBuffers();
+}
+
+void WindowsWindow::SetVSync(bool enabled)
+{
+	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	{
+		if (enabled) {
+			glfwSwapInterval(1);
+		}
+		else {
+			glfwSwapInterval(0);
+		}
+	}
+
+	m_Data.VSync = enabled;
+}
+
+bool WindowsWindow::IsVSync() const
+{
+	return m_Data.VSync;
+}
+
+void WindowsWindow::Maximize()
+{
+	glfwMaximizeWindow(m_GLFW_Window);
+}
+
+void WindowsWindow::SetTitle(std::string title)
+{
+	m_Data.Title = title;
+	glfwSetWindowTitle(m_GLFW_Window, m_Data.Title.c_str());
+}
+
+void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
+{
+	m_Data.EventCallback = callback;
+}
+
+/**** END Hazel properties and methods ****/
+
+// A DirectX 11 method
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+	switch (msg)
+	{
+	case WM_CREATE:
+	{
+		// Event fired when the window is created
+		// Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		// window->SetHWND(hwnd);
+		// window->OnCreate();
+		break;
+	}
+	case WM_SIZE:
+	{
+		// Event fired when the window is resized
+		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		if (window)
+		{
+			window->OnSize();
+		}
+		break;
+	}
+	case WM_SETFOCUS:
+	{
+		// Event fired when the window is in focus
+		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		if (window)
+		{
+			window->OnFocus();
+		}
+		break;
+	}
+	case WM_KILLFOCUS:
+	{
+		// Event fired when the window is in focus
+		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		if (window)
+		{
+			window->OnKillFocus();
+		}
+		break;
+	}
+	case WM_DESTROY:
+	{
+		// Event fired when the window is destroyed
+		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		window->OnDestroy();
+		::PostQuitMessage(0);
+		break;
+	}
+	default:
+	{
+		return ::DefWindowProc(hwnd, msg, wparam, lparam);
+	}
+	}
+
+	return NULL;
+}
+
+// A DirectX 11 method
+void WindowsWindow::SetHWND(HWND hwnd)
+{
+	m_HWND = hwnd;
+}
+
+// Used only for DirectX 11
+bool WindowsWindow::Broadcast()
+{
+	if (Hazel::RendererAPI::Current() != Hazel::RendererAPIType::DX11) return true;
+
+	MSG msg;
+
+	if (!m_IsInitialized)
+	{
+		SetWindowLongPtr(m_HWND, GWLP_USERDATA, (LONG_PTR)this);
+		OnCreate();
+		m_IsInitialized = true;
+	}
+
+	while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0)
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	Sleep(1);
+
+	return true;
+}
+
+// A DirectX 11 method
+bool WindowsWindow::Release()
+{
+	// Destroy the window
+	if (!::DestroyWindow(m_HWND))
+	{
+		return false;
+	}
+	return true;
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnCreate()
+{
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnDestroy()
+{
+	m_IsRunning = false;
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnFocus()
+{
+	// DX11InputSystem::Get()->AddListener(this);
+	m_InFocus = true;
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnKillFocus()
+{
+	// DX11InputSystem::Get()->RemoveListener(this);
+	m_InFocus = false;
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnSize()
+{
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnKeyDown(int key)
+{
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnKeyUp(int key)
+{
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnMouseMove(const DX11Point& deltaMousePos)
+{
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnLeftMouseDown(const DX11Point& deltaMousePos)
+{
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnRightMouseDown(const DX11Point& deltaMousePos)
+{
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnLeftMouseUp(const DX11Point& deltaMousePos)
+{
+}
+
+// A DirectX 11 method
+void WindowsWindow::OnRightMouseUp(const DX11Point& deltaMousePos)
+{
+}
+
+// A DirectX 11 method
 void WindowsWindow::InitDX11(const WindowProps& props)
 {
 	m_IsInitialized = false;
@@ -248,21 +429,32 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 
 	// Set this flag to true to indicate that the window is initialized and running
 	m_IsRunning = true;
+	m_InFocus = true;
+}
 
-	//	DXGI_SWAP_CHAIN_DESC desc;
-	//	ZeroMemory(&desc, sizeof(desc));
-	//	desc.BufferCount = 1;
-	//	desc.BufferDesc.Width = props.Width;
-	//	desc.BufferDesc.Height = props.Height;
-	//	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	//	desc.BufferDesc.RefreshRate.Numerator = 60;
-	//	desc.BufferDesc.RefreshRate.Denominator = 1;
-	//	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	//	desc.OutputWindow = m_HWND;
-	//	desc.SampleDesc.Count = 1;
-	//	desc.SampleDesc.Quality = 0;
-	//	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-	//	desc.Windowed = TRUE;
+// A DirectX 11 method
+bool WindowsWindow::IsRunning()
+{
+	return m_IsRunning;
+}
+
+// A DirectX 11 method
+RECT WindowsWindow::GetClientWindowRect()
+{
+	RECT rect;
+	::GetClientRect(m_HWND, &rect);
+	::ClientToScreen(m_HWND, (LPPOINT)&rect.left);
+	::ClientToScreen(m_HWND, (LPPOINT)&rect.right);
+	return rect;
+}
+
+// A DirectX 11 method
+RECT WindowsWindow::GetSizeScreen()
+{
+	RECT rect;
+	rect.right = ::GetSystemMetrics(SM_CXSCREEN);
+	rect.bottom = ::GetSystemMetrics(SM_CYSCREEN);
+	return rect;
 }
 
 void WindowsWindow::Shutdown()
@@ -283,108 +475,6 @@ void WindowsWindow::Shutdown()
 		}
 }
 
-void WindowsWindow::OnCreate()
-{
-}
-
-void WindowsWindow::OnDestroy()
-{
-	m_IsRunning = false;
-}
-
-void WindowsWindow::OnFocus()
-{
-}
-
-void WindowsWindow::OnKillFocus()
-{
-}
-
-void WindowsWindow::OnSize()
-{
-}
-
-bool WindowsWindow::Release()
-{
-	// Destroy the window
-	if (!::DestroyWindow(m_HWND))
-	{
-		return false;
-	}
-	return true;
-}
-
-void WindowsWindow::SetHWND(HWND hwnd)
-{
-	m_HWND = hwnd;
-}
-
-inline std::pair<float, float> WindowsWindow::GetWindowPos() const
-{
-	int x, y;
-	glfwGetWindowPos(m_GLFW_Window, &x, &y);
-	return { x, y };
-}
-
-void WindowsWindow::ProcessEvents()
-{
-	switch (Hazel::RendererAPI::Current())
-	{
-		case Hazel::RendererAPIType::OpenGL:
-		case Hazel::RendererAPIType::Vulkan:
-		{
-			glfwPollEvents();
-
-			//ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
-			//glfwSetCursor(m_GLFW_Window, m_ImGuiMouseCursors[imgui_cursor] ? m_ImGuiMouseCursors[imgui_cursor] : m_ImGuiMouseCursors[ImGuiMouseCursor_Arrow]);
-			glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		}
-		break;
-		case Hazel::RendererAPIType::DX11:
-		// TODO: ProcessEvents DX11 version
-		Broadcast();
-		break;
-	}
-}
-
-void WindowsWindow::SwapBuffers()
-{
-	m_RendererContext->SwapBuffers();
-}
-
-void WindowsWindow::SetVSync(bool enabled)
-{
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
-	{
-		if (enabled) {
-			glfwSwapInterval(1);
-		}
-		else {
-			glfwSwapInterval(0);
-		}
-	}
-
-	m_Data.VSync = enabled;
-}
-
-bool WindowsWindow::IsVSync() const
-{
-	return m_Data.VSync;
-}
-
-void WindowsWindow::Maximize()
-{
-	glfwMaximizeWindow(m_GLFW_Window);
-}
-
-void WindowsWindow::SetTitle(std::string title)
-{
-	m_Data.Title = title;
-	glfwSetWindowTitle(m_GLFW_Window, m_Data.Title.c_str());
-}
-
-/**** END Hazel properties and methods ****/
-
 int WindowsWindow::m_ActionPrev;
 
 void WindowsWindow::OnUpdate()
@@ -399,11 +489,6 @@ void WindowsWindow::OnUpdate()
 	SwapBuffers();
 
 	// Broadcast();
-}
-
-void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
-{
-	m_Data.EventCallback = callback;
 }
 
 GLfloat WindowsWindow::getXChange()
@@ -773,51 +858,4 @@ void WindowsWindow::ScrollCallback(GLFWwindow* window, double xoffset, double yo
 
 	theWindow->xMouseScrollOffset = (float)xoffset;
 	theWindow->yMouseScrollOffset = (float)yoffset;
-}
-
-// Used only for DirectX 11
-bool WindowsWindow::Broadcast()
-{
-	if (Hazel::RendererAPI::Current() != Hazel::RendererAPIType::DX11) return true;
-
-	MSG msg;
-
-	if (!m_IsInitialized)
-	{
-		SetWindowLongPtr(m_HWND, GWLP_USERDATA, (LONG_PTR)this);
-		OnCreate();
-		m_IsInitialized = true;
-	}
-
-	while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0)
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-
-	Sleep(1);
-
-	return true;
-}
-
-bool WindowsWindow::IsRunning()
-{
-	return m_IsRunning;
-}
-
-RECT WindowsWindow::GetClientWindowRect()
-{
-	RECT rect;
-	::GetClientRect(m_HWND, &rect);
-	::ClientToScreen(m_HWND, (LPPOINT)&rect.left);
-	::ClientToScreen(m_HWND, (LPPOINT)&rect.right);
-	return rect;
-}
-
-RECT WindowsWindow::GetSizeScreen()
-{
-	RECT rect;
-	rect.right = ::GetSystemMetrics(SM_CXSCREEN);
-	rect.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	return rect;
 }

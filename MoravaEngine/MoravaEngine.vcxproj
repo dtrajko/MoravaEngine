@@ -346,6 +346,7 @@
       </ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11PixelShader.cpp" />
+    <ClCompile Include="src\Platform\DX11\DX11Point.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11RenderCommandBuffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -773,6 +774,7 @@
       </ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11PixelShader.h" />
+    <ClInclude Include="src\Platform\DX11\DX11Point.h" />
     <ClInclude Include="src\Platform\DX11\DX11RenderCommandBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>

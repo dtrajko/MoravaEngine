@@ -1,5 +1,7 @@
 #include "DX11InputSystem.h"
 
+#include "Core/Application.h"
+
 #include <Windows.h>
 
 
@@ -29,6 +31,34 @@ void DX11InputSystem::RemoveListener(DX11InputListener* listener)
 
 void DX11InputSystem::Update()
 {
+	// don't process keyboard and mouse input events if the window is not in focus
+	if (!Application::Get()->GetWindow()->IsInFocus()) return;
+
+	// MOUSE events
+	POINT currentMousePos = {};
+	::GetCursorPos(&currentMousePos);
+
+	if (m_FirstTime)
+	{
+		m_OldMousePos = DX11Point(currentMousePos.x, currentMousePos.y);
+		m_FirstTime = false;
+	}
+
+	if (currentMousePos.x != m_OldMousePos.m_X || currentMousePos.y != m_OldMousePos.m_Y)
+	{
+		// There is mouse move event
+		std::map<DX11InputListener*, DX11InputListener*>::iterator it = m_MapListeners.begin();
+
+		while (it != m_MapListeners.end())
+		{
+			it->second->OnMouseMove(DX11Point(currentMousePos.x - m_OldMousePos.m_X, currentMousePos.y - m_OldMousePos.m_Y));
+			++it;
+		}
+	}
+
+	m_OldMousePos = DX11Point(currentMousePos.x, currentMousePos.y);
+
+	// KEYBOARD events
 	if (::GetKeyboardState(m_KeysState))
 	{
 		for (unsigned int i = 0; i < 256; i++)
@@ -40,6 +70,22 @@ void DX11InputSystem::Update()
 
 				while (it != m_MapListeners.end())
 				{
+					if (i == VK_LBUTTON)
+					{
+						if (m_KeysState[i] != m_OldKeysState[i])
+						{
+							it->second->OnLeftMouseDown(DX11Point(currentMousePos.x, currentMousePos.y));
+						}
+					}
+
+					if (i == VK_RBUTTON)
+					{
+						if (m_KeysState[i] != m_OldKeysState[i])
+						{
+							it->second->OnRightMouseDown(DX11Point(currentMousePos.x, currentMousePos.y));
+						}
+					}
+
 					it->second->OnKeyDown(i);
 					++it;
 				}
@@ -53,6 +99,16 @@ void DX11InputSystem::Update()
 
 					while (it != m_MapListeners.end())
 					{
+						if (i == VK_LBUTTON)
+						{
+							it->second->OnLeftMouseUp(DX11Point(currentMousePos.x, currentMousePos.y));
+						}
+
+						if (i == VK_RBUTTON)
+						{
+							it->second->OnRightMouseUp(DX11Point(currentMousePos.x, currentMousePos.y));
+						}
+
 						it->second->OnKeyUp(i);
 						++it;
 					}

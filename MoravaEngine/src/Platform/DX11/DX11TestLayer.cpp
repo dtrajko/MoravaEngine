@@ -12,6 +12,14 @@
 // camera control
 glm::vec3 DX11TestLayer::s_CameraPosition = glm::vec3(0.0f, 0.0f, 4.0f);
 
+glm::vec3 DX11TestLayer::s_CameraVectorFront = glm::vec3(0.0f, 0.0f, 1.0f);
+glm::vec3 DX11TestLayer::s_CameraVectorRight = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::vec3 DX11TestLayer::s_CameraVectorUp = glm::vec3(0.0f, 0.0f, 0.0f);
+
+float DX11TestLayer::s_CameraYaw = 90.0f;
+float DX11TestLayer::s_CameraPitch = 0.0f;
+
+
 DX11TestLayer::DX11TestLayer()
 	: m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
 {
@@ -108,32 +116,58 @@ void DX11TestLayer::Render(const glm::vec4& clearColor, const Hazel::EditorCamer
 
 void DX11TestLayer::OnKeyDown(int key)
 {
+	float velocity = m_CameraSpeed * Timer::Get()->GetDeltaTime();
+
 	if (key == 'W') // Forwards
 	{
-		s_CameraPosition.z -= m_CameraSpeed * Timer::Get()->GetDeltaTime();
-	}
-	if (key == 'A') // Left
-	{
-		s_CameraPosition.x += m_CameraSpeed * Timer::Get()->GetDeltaTime();
+		s_CameraPosition -= s_CameraVectorFront * velocity;
 	}
 	if (key == 'S') // Backwards
 	{
-		s_CameraPosition.z += m_CameraSpeed * Timer::Get()->GetDeltaTime();
+		s_CameraPosition += s_CameraVectorFront * velocity;
+	}
+	if (key == 'A') // Left
+	{
+		s_CameraPosition -= s_CameraVectorRight * velocity;
 	}
 	if (key == 'D') // Right
 	{
-		s_CameraPosition.x -= m_CameraSpeed * Timer::Get()->GetDeltaTime();
+		s_CameraPosition += s_CameraVectorRight * velocity;
 	}
 	if (key == 'Q') // Down
 	{
-		s_CameraPosition.y += m_CameraSpeed * Timer::Get()->GetDeltaTime();
+		s_CameraPosition -= s_CameraVectorUp * velocity;
 	}
 	if (key == 'E') // Up
 	{
-		s_CameraPosition.y -= m_CameraSpeed * Timer::Get()->GetDeltaTime();
+		s_CameraPosition += s_CameraVectorUp * velocity;
 	}
 }
 
 void DX11TestLayer::OnKeyUp(int key)
+{
+}
+
+void DX11TestLayer::OnMouseMove(const DX11Point& deltaMousePos)
+{
+	float turnVelocity = m_CameraTurnSpeed * Timer::Get()->GetDeltaTime();
+
+	s_CameraYaw -= deltaMousePos.m_X * turnVelocity;
+	s_CameraPitch -= deltaMousePos.m_Y * turnVelocity;
+}
+
+void DX11TestLayer::OnLeftMouseDown(const DX11Point& deltaMousePos)
+{
+}
+
+void DX11TestLayer::OnRightMouseDown(const DX11Point& deltaMousePos)
+{
+}
+
+void DX11TestLayer::OnLeftMouseUp(const DX11Point& deltaMousePos)
+{
+}
+
+void DX11TestLayer::OnRightMouseUp(const DX11Point& deltaMousePos)
 {
 }

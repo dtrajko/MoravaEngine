@@ -70,6 +70,8 @@ public:
 	virtual void OnKillFocus() = 0;
 	virtual void OnSize() = 0;
 
+	virtual bool IsInFocus() = 0;
+
 	/**** END DirectX 11 methods ***/
 
 	virtual void OnUpdate() = 0;

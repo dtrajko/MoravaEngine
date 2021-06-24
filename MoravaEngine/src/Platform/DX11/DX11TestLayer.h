@@ -40,8 +40,24 @@ public:
 	virtual void OnKeyDown(int key) override;
 	virtual void OnKeyUp(int key) override;
 
+	// MOUSE pure virtual callback functions
+	virtual void OnMouseMove(const DX11Point& deltaMousePos) override;
+
+	virtual void OnLeftMouseDown(const DX11Point& deltaMousePos) override;
+	virtual void OnRightMouseDown(const DX11Point& deltaMousePos) override;
+
+	virtual void OnLeftMouseUp(const DX11Point& deltaMousePos) override;
+	virtual void OnRightMouseUp(const DX11Point& deltaMousePos) override;
+
 public:
 	static glm::vec3 s_CameraPosition;
+
+	static glm::vec3 s_CameraVectorFront;
+	static glm::vec3 s_CameraVectorRight;
+	static glm::vec3 s_CameraVectorUp;
+
+	static float s_CameraYaw;
+	static float s_CameraPitch;
 
 private:
 	std::vector<Hazel::Ref<Hazel::HazelMesh>> m_Meshes;
@@ -52,5 +68,6 @@ private:
 	std::vector<glm::vec4> m_RandomColors;
 
 	float m_CameraSpeed = 2.0f;
+	float m_CameraTurnSpeed = 5.0f;
 
 };

@@ -1,13 +1,13 @@
-
-
 #pragma once
 
 #include "Hazel/Renderer/RendererContext.h"
 
+#include "Platform/DX11/DX11InputListener.h"
+
 #include "Core/Window.h"
 
 
-class WindowsWindow : public Window
+class WindowsWindow : public Window, public DX11InputListener
 {
 	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
 public:
@@ -51,7 +51,6 @@ private:
 
 	/**** BEGIN DirectX 11 methods ****/
 public:
-	bool Release();
 	virtual void SetHWND(HWND hwnd) override;
 	virtual HWND GetHWND() { return m_HWND; }
 	bool Broadcast();
@@ -59,6 +58,7 @@ public:
 	bool IsRunning();
 	RECT GetClientWindowRect();
 	RECT GetSizeScreen();
+	bool Release();
 
 	// Events
 	virtual void OnCreate() override;
@@ -66,6 +66,20 @@ public:
 	virtual void OnFocus() override;
 	virtual void OnKillFocus() override;
 	virtual void OnSize() override;
+
+	// Inherited via DX11InputListener
+	virtual void OnKeyDown(int key) override;
+	virtual void OnKeyUp(int key) override;
+
+	virtual void OnMouseMove(const DX11Point& deltaMousePos) override;
+
+	virtual void OnLeftMouseDown(const DX11Point& deltaMousePos) override;
+	virtual void OnRightMouseDown(const DX11Point& deltaMousePos) override;
+
+	virtual void OnLeftMouseUp(const DX11Point& deltaMousePos) override;
+	virtual void OnRightMouseUp(const DX11Point& deltaMousePos) override;
+
+	virtual bool IsInFocus() override { return m_InFocus; }
 	/**** END DirectX 11 methods ****/
 
 public:
@@ -151,5 +165,7 @@ private:
 	float m_CursorIgnoreLimit;
 
 	bool m_EventLoggingEnabled;
+
+	bool m_InFocus;
 
 };

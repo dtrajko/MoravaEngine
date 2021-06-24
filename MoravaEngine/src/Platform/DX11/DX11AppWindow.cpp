@@ -24,3 +24,23 @@ void DX11AppWindow::OnKeyDown(int key)
 void DX11AppWindow::OnKeyUp(int key)
 {
 }
+
+void DX11AppWindow::OnMouseMove(const DX11Point& deltaMousePos)
+{
+}
+
+void DX11AppWindow::OnLeftMouseDown(const DX11Point& deltaMousePos)
+{
+}
+
+void DX11AppWindow::OnRightMouseDown(const DX11Point& deltaMousePos)
+{
+}
+
+void DX11AppWindow::OnLeftMouseUp(const DX11Point& deltaMousePos)
+{
+}
+
+void DX11AppWindow::OnRightMouseUp(const DX11Point& deltaMousePos)
+{
+}

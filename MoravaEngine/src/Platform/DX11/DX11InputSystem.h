@@ -4,6 +4,7 @@
 
 #include "DX11.h"
 #include "DX11InputListener.h"
+#include "DX11Point.h"
 
 #include <map>
 
@@ -23,7 +24,11 @@ public:
 
 private:
 	std::map<DX11InputListener*, DX11InputListener*> m_MapListeners;
+
 	unsigned char m_KeysState[256] = {};
 	unsigned char m_OldKeysState[256] = {};
+
+	DX11Point m_OldMousePos;
+	bool m_FirstTime = true;
 
 };
