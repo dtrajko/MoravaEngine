@@ -37,23 +37,23 @@ void DX11InputSystem::Update()
 
 	if (m_FirstTime)
 	{
-		m_OldMousePos = DX11Point(currentMousePos.x, currentMousePos.y);
+		m_OldMousePos = glm::vec2(currentMousePos.x, currentMousePos.y);
 		m_FirstTime = false;
 	}
 
-	if (currentMousePos.x != m_OldMousePos.m_X || currentMousePos.y != m_OldMousePos.m_Y)
+	if (currentMousePos.x != m_OldMousePos.x || currentMousePos.y != m_OldMousePos.y)
 	{
 		// There is mouse move event
 		std::map<DX11InputListener*, DX11InputListener*>::iterator it = m_MapListeners.begin();
 
 		while (it != m_MapListeners.end())
 		{
-			it->second->OnMouseMove(DX11Point(currentMousePos.x - m_OldMousePos.m_X, currentMousePos.y - m_OldMousePos.m_Y));
+			it->second->OnMouseMove(glm::vec2(currentMousePos.x - m_OldMousePos.x, currentMousePos.y - m_OldMousePos.y));
 			++it;
 		}
 	}
 
-	m_OldMousePos = DX11Point(currentMousePos.x, currentMousePos.y);
+	m_OldMousePos = glm::vec2(currentMousePos.x, currentMousePos.y);
 
 	// KEYBOARD events
 	if (::GetKeyboardState(m_KeysState))
@@ -71,7 +71,7 @@ void DX11InputSystem::Update()
 					{
 						if (m_KeysState[i] != m_OldKeysState[i])
 						{
-							it->second->OnLeftMouseDown(DX11Point(currentMousePos.x, currentMousePos.y));
+							it->second->OnLeftMouseDown(glm::vec2(currentMousePos.x, currentMousePos.y));
 						}
 					}
 
@@ -79,7 +79,7 @@ void DX11InputSystem::Update()
 					{
 						if (m_KeysState[i] != m_OldKeysState[i])
 						{
-							it->second->OnRightMouseDown(DX11Point(currentMousePos.x, currentMousePos.y));
+							it->second->OnRightMouseDown(glm::vec2(currentMousePos.x, currentMousePos.y));
 						}
 					}
 
@@ -98,12 +98,12 @@ void DX11InputSystem::Update()
 					{
 						if (i == VK_LBUTTON)
 						{
-							it->second->OnLeftMouseUp(DX11Point(currentMousePos.x, currentMousePos.y));
+							it->second->OnLeftMouseUp(glm::vec2(currentMousePos.x, currentMousePos.y));
 						}
 
 						if (i == VK_RBUTTON)
 						{
-							it->second->OnRightMouseUp(DX11Point(currentMousePos.x, currentMousePos.y));
+							it->second->OnRightMouseUp(glm::vec2(currentMousePos.x, currentMousePos.y));
 						}
 
 						it->second->OnKeyUp(i);

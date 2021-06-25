@@ -885,12 +885,6 @@
     <ClCompile Include="src\Platform\DX11\DX11InputSystem.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\DX11\DX11AppWindow.cpp">
-      <Filter>Platform\DX11</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Platform\DX11\DX11Point.cpp">
-      <Filter>Platform\DX11</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11CameraFP.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
@@ -1881,12 +1875,6 @@
       <Filter>Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11InputListener.h">
-      <Filter>Platform\DX11</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Platform\DX11\DX11AppWindow.h">
-      <Filter>Platform\DX11</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Platform\DX11\DX11Point.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11CameraFP.h">

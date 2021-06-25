@@ -46,7 +46,7 @@ void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
 
 	DX11InputSystem::Get()->Update();
 
-	DX11CameraFP::Get()->Update();
+	DX11CameraFP::Get()->OnUpdate();
 
 	DX11CameraFP::Get()->SetProjectionMatrix(
 		glm::perspectiveFov(glm::radians(45.0f), (float)DX11Renderer::GetViewportWidth(), (float)DX11Renderer::GetViewportHeight(), 0.01f, 1000.0f));
@@ -127,30 +127,31 @@ void DX11TestLayer::OnKeyUp(int key)
 	}
 }
 
-void DX11TestLayer::OnMouseMove(const DX11Point& deltaMousePos)
+void DX11TestLayer::OnMouseMove(const glm::vec2& deltaMousePos)
 {
 }
 
-void DX11TestLayer::OnLeftMouseDown(const DX11Point& deltaMousePos)
+void DX11TestLayer::OnLeftMouseDown(const glm::vec2& deltaMousePos)
 {
 	m_ShowMouseCursor = false;
 
 	// Application::Get()->GetWindow()->SetInFocus(true);
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor);
 
-	Log::GetLogger()->info("DX11TestLayer::OnLeftMouseDown([{0}, {1}])", deltaMousePos.m_X, deltaMousePos.m_Y);
-	bool windowInFocus = Application::Get()->GetWindow()->IsInFocus();
-	Log::GetLogger()->info("Window::m_InFocus: {0}, m_ShowMouseCursor: {1}, m_Camera->IsEnabled: {2}", windowInFocus, m_ShowMouseCursor, DX11CameraFP::Get()->IsEnabled());
+	Log::GetLogger()->info("DX11TestLayer::OnLeftMouseDown([{0}, {1}])", deltaMousePos.x, deltaMousePos.y);
+	//	bool windowInFocus = Application::Get()->GetWindow()->IsInFocus();
+	//	Log::GetLogger()->info("Window::m_InFocus: {0}, m_ShowMouseCursor: {1}, m_Camera->IsEnabled: {2}",
+	//		windowInFocus, m_ShowMouseCursor, DX11CameraFP::Get()->IsEnabled());
 }
 
-void DX11TestLayer::OnRightMouseDown(const DX11Point& deltaMousePos)
+void DX11TestLayer::OnRightMouseDown(const glm::vec2& deltaMousePos)
 {
 }
 
-void DX11TestLayer::OnLeftMouseUp(const DX11Point& deltaMousePos)
+void DX11TestLayer::OnLeftMouseUp(const glm::vec2& deltaMousePos)
 {
 }
 
-void DX11TestLayer::OnRightMouseUp(const DX11Point& deltaMousePos)
+void DX11TestLayer::OnRightMouseUp(const glm::vec2& deltaMousePos)
 {
 }

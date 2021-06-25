@@ -3,7 +3,6 @@
 #pragma once
 
 #include "DX11.h"
-#include "DX11Point.h"
 
 
 class DX11InputListener
@@ -22,12 +21,12 @@ public:
 	virtual void OnKeyUp(int key) = 0;
 
 	// MOUSE pure virtual callback functions
-	virtual void OnMouseMove(const DX11Point& deltaMousePos) = 0;
+	virtual void OnMouseMove(const glm::vec2& deltaMousePos) = 0;
 
-	virtual void OnLeftMouseDown(const DX11Point& deltaMousePos) = 0;
-	virtual void OnRightMouseDown(const DX11Point& deltaMousePos) = 0;
+	virtual void OnLeftMouseDown(const glm::vec2& deltaMousePos) = 0;
+	virtual void OnRightMouseDown(const glm::vec2& deltaMousePos) = 0;
 
-	virtual void OnLeftMouseUp(const DX11Point& deltaMousePos) = 0;
-	virtual void OnRightMouseUp(const DX11Point& deltaMousePos) = 0;
+	virtual void OnLeftMouseUp(const glm::vec2& deltaMousePos) = 0;
+	virtual void OnRightMouseUp(const glm::vec2& deltaMousePos) = 0;
 
 };

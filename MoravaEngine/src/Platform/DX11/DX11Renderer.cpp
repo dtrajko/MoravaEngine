@@ -290,7 +290,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	dx11Shader->GetPixelShader()->Bind();
 
 	// View matrix (Camera)
-	glm::mat4 view = DX11CameraFP::Get()->CalculateViewMatrix();
+	glm::mat4 view = DX11CameraFP::Get()->GetViewMatrix();
 
 	// Projection matrix (perspective)
 	float viewportWidth = (float)Application::Get()->GetWindow()->GetWidth();
