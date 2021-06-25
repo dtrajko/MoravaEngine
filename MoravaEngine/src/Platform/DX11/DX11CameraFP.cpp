@@ -47,7 +47,9 @@ void DX11CameraFP::SetProjectionMatrix(glm::mat4 projection)
 // DX11InputListener API
 void DX11CameraFP::OnKeyDown(int key)
 {
-	if (!Application::Get()->GetWindow()->IsInFocus()) return;
+	if (!m_Enabled) return;
+
+	// Log::GetLogger()->info("DX11CameraFP::OnKeyDown({0})", key);
 
 	float velocity = m_CameraSpeed * Timer::Get()->GetDeltaTime();
 
@@ -85,7 +87,9 @@ void DX11CameraFP::OnKeyUp(int key)
 // DX11InputListener API
 void DX11CameraFP::OnMouseMove(const DX11Point& deltaMousePos)
 {
-	if (!Application::Get()->GetWindow()->IsInFocus()) return;
+	if (!m_Enabled) return;
+
+	// Log::GetLogger()->info("DX11CameraFP::OnMouseMove([{0}, {1}])", deltaMousePos.m_X, deltaMousePos.m_Y);
 
 	float turnVelocity = m_CameraTurnSpeed * Timer::Get()->GetDeltaTime();
 
@@ -123,6 +127,8 @@ glm::mat4& DX11CameraFP::CalculateViewMatrix()
 	if (m_CameraPitch <= -89.0f) m_CameraPitch = -89.0f;
 
 	glm::vec3 worldUpVector = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	// Log::GetLogger()->info("Yaw: {0}, Pitch: {1}, Position: [{2}, {3}, {4}]", m_CameraYaw, m_CameraPitch, m_CameraPosition.x, m_CameraPosition.y, m_CameraPosition.z);
 
 	m_CameraVectorFront.x = cos(glm::radians(m_CameraYaw)) * cos(glm::radians(m_CameraPitch));
 	m_CameraVectorFront.y = -sin(glm::radians(m_CameraPitch));

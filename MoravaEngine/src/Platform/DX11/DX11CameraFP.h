@@ -40,6 +40,9 @@ public:
 	void SetViewportSize(float width, float height);
 	void SetProjectionMatrix(glm::mat4 projection);
 
+	void SetEnabled(bool enabled) { m_Enabled = enabled; }
+	bool IsEnabled() { return m_Enabled; }
+
 public:
 	glm::mat4 m_Projection = glm::mat4(1.0f);
 	glm::mat4 m_View = glm::mat4(1.0f);
@@ -56,5 +59,7 @@ public:
 private:
 	float m_CameraSpeed = 2.0f;
 	float m_CameraTurnSpeed = 5.0f;
+
+	bool m_Enabled;
 
 };
