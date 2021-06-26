@@ -409,7 +409,7 @@ void WindowsWindow::OnKeyUp(int key)
 }
 
 // A DirectX 11 method
-void WindowsWindow::OnMouseMove(const glm::vec2& mousePos)
+void WindowsWindow::OnMouseMove(const glm::vec2& mousePosDelta, const glm::vec2& mousePosAbs)
 {
 }
 

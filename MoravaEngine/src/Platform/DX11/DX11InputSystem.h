@@ -22,6 +22,8 @@ public:
 	void SetCursorPosition(const glm::vec2& position);
 	void ShowCursor(bool show);
 
+	bool IsMouseCursorAboveViewport();
+
 	static DX11InputSystem* Get();
 
 private:

@@ -1,6 +1,7 @@
 #include "DX11InputSystem.h"
 
 #include "Core/Application.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 #include <Windows.h>
 
@@ -53,7 +54,9 @@ void DX11InputSystem::Update()
 
 		while (it != m_MapListeners.end())
 		{
-			it->second->OnMouseMove(glm::vec2(currentMousePos.x - m_OldMousePos.x, currentMousePos.y - m_OldMousePos.y));
+			glm::vec2 mousePosDelta = glm::vec2(currentMousePos.x - m_OldMousePos.x, currentMousePos.y - m_OldMousePos.y);
+			glm::vec2 mousePosAbs = glm::vec2(currentMousePos.x, currentMousePos.y);
+			it->second->OnMouseMove(mousePosDelta, mousePosAbs);
 			++it;
 		}
 	}
@@ -132,4 +135,25 @@ DX11InputSystem* DX11InputSystem::Get()
 void DX11InputSystem::ShowCursor(bool show)
 {
 	::ShowCursor(show);
+}
+
+bool DX11InputSystem::IsMouseCursorAboveViewport()
+{
+	bool cursorAboveViewport = false;
+
+	WindowsWindow* windowsWindow = (WindowsWindow*)Application::Get()->GetWindow();
+	RECT windowRECT = windowsWindow->GetClientWindowRect();
+
+	POINT currentMousePos = {};
+	::GetCursorPos(&currentMousePos);
+
+	if (currentMousePos.x >= windowRECT.left && currentMousePos.x <= windowRECT.right &&
+		currentMousePos.y >= windowRECT.top && currentMousePos.y <= windowRECT.bottom)
+	{
+		cursorAboveViewport = true;
+	}
+
+	// Log::GetLogger()->info("DX11InputSystem::IsMouseCursorAboveViewport: '{0}'", cursorAboveViewport);
+
+	return cursorAboveViewport;
 }

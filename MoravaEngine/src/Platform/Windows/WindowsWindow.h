@@ -71,7 +71,7 @@ public:
 	virtual void OnKeyDown(int key) override;
 	virtual void OnKeyUp(int key) override;
 
-	virtual void OnMouseMove(const glm::vec2& mousePos) override;
+	virtual void OnMouseMove(const glm::vec2& mousePosDelta, const glm::vec2& mousePosAbs) override;
 
 	virtual void OnLeftMouseDown(const glm::vec2& mousePos) override;
 	virtual void OnRightMouseDown(const glm::vec2& mousePos) override;

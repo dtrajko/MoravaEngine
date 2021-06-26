@@ -21,7 +21,7 @@ public:
 	virtual void OnKeyUp(int key) = 0;
 
 	// MOUSE pure virtual callback functions
-	virtual void OnMouseMove(const glm::vec2& mousePos) = 0;
+	virtual void OnMouseMove(const glm::vec2& mousePosDelta, const glm::vec2& mousePosAbs) = 0;
 
 	virtual void OnLeftMouseDown(const glm::vec2& mousePos) = 0;
 	virtual void OnRightMouseDown(const glm::vec2& mousePos) = 0;

@@ -139,22 +139,36 @@ void DX11CameraFP::OnKeyUp(int key)
 }
 
 // DX11InputListener API
-void DX11CameraFP::OnMouseMove(const glm::vec2& mousePos)
+void DX11CameraFP::OnMouseMove(const glm::vec2& mousePosDelta, const glm::vec2& mousePosAbs)
 {
 	if (!m_Enabled) return;
 
-	// WindowsWindow* windowsWindow = (WindowsWindow*)Application::Get()->GetWindow();
-	// long windowWidth = windowsWindow->GetClientWindowRect().right - windowsWindow->GetClientWindowRect().left;
-	// long windowHeight = windowsWindow->GetClientWindowRect().bottom - windowsWindow->GetClientWindowRect().top;
+	WindowsWindow* windowsWindow = (WindowsWindow*)Application::Get()->GetWindow();
+	RECT windowRECT = windowsWindow->GetClientWindowRect();
 
-	// Log::GetLogger()->info("DX11CameraFP::OnMouseMove([{0}, {1}])", mousePos.m_X, mousePos.m_Y);
+	// Log::GetLogger()->info("Window RECT: Left: {0}, Right: {1}, Top: {2}, Bottom: {3}", windowRECT.left, windowRECT.right, windowRECT.top, windowRECT.bottom);
+	// Log::GetLogger()->info("mousePosDelta: {0}x{1}, mousePosAbs: [{2}x{3}])", mousePosDelta.x, mousePosDelta.y, mousePosAbs.x, mousePosAbs.y);
+
+	// A dirty hack to prevent sudden jumps in delta mouse position
+	// if (abs(mousePosDelta.x) < 4.0f && abs(mousePosDelta.y) < 4.0f) {}
 
 	float turnVelocity = m_TurnSpeed * Timer::Get()->GetDeltaTime();
 
-	m_Yaw -= mousePos.x * turnVelocity;
-	m_Pitch -= mousePos.y * turnVelocity;
+	// absolute mouse position (new)
+	glm::vec2 centralMousePos = glm::vec2(
+		windowRECT.left + ((windowRECT.right - windowRECT.left) / 2.0f),
+		windowRECT.top + ((windowRECT.bottom - windowRECT.top) / 2.0f));
 
-	// DX11InputSystem::Get()->SetCursorPosition(DX11TestLayer::GetStartMousePosition());
+	// delta mouse position (old)
+	// m_Yaw -= mousePosDelta.x * turnVelocity;
+	// m_Pitch -= mousePosDelta.y * turnVelocity;
+
+	m_Yaw -= (mousePosAbs.x - centralMousePos.x) * turnVelocity;
+	m_Pitch -= (mousePosAbs.y - centralMousePos.y) * turnVelocity;
+
+	if (windowsWindow->IsInFocus() && DX11InputSystem::Get()->IsMouseCursorAboveViewport()) {}
+
+	DX11InputSystem::Get()->SetCursorPosition(centralMousePos);
 }
 
 // DX11InputListener API

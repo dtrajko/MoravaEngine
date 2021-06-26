@@ -133,20 +133,19 @@ void DX11TestLayer::OnKeyUp(int key)
 	}
 }
 
-void DX11TestLayer::OnMouseMove(const glm::vec2& mousePos)
+void DX11TestLayer::OnMouseMove(const glm::vec2& mousePosDelta, const glm::vec2& mousePosAbs)
 {
 }
 
 void DX11TestLayer::OnLeftMouseDown(const glm::vec2& mousePos)
 {
-	m_ShowMouseCursor = false;
-
 	// MOUSE events
 	POINT currentMousePos = {};
 	::GetCursorPos(&currentMousePos);
 	s_StartMousePosition = glm::vec2(currentMousePos.x, currentMousePos.y);
 
 	// Application::Get()->GetWindow()->SetInFocus(true);
+	m_ShowMouseCursor = false;
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor);
 
 	Log::GetLogger()->info("DX11TestLayer::OnLeftMouseDown([{0}, {1}])", mousePos.x, mousePos.y);
