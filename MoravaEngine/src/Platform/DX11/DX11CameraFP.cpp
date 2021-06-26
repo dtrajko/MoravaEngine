@@ -22,6 +22,8 @@ DX11CameraFP::DX11CameraFP(glm::mat4 projection) : Hazel::HazelCamera(projection
 	m_Pitch = 0.0f;
 	m_Yaw = 90.0f;
 
+	m_PerspectiveFOV = glm::radians(60.0f);
+
 	UpdateView();
 }
 
@@ -29,16 +31,16 @@ DX11CameraFP::~DX11CameraFP()
 {
 }
 
-void DX11CameraFP::OnUpdate()
+void DX11CameraFP::OnUpdate(Hazel::Timestep ts)
 {
 	UpdateView();
 }
 
-DX11CameraFP* DX11CameraFP::Get()
-{
-	static DX11CameraFP camera;
-	return &camera;
-}
+//	DX11CameraFP* DX11CameraFP::Get()
+//	{
+//		static DX11CameraFP camera;
+//		return &camera;
+//	}
 
 void DX11CameraFP::OnEvent(Event& e)
 {
@@ -47,11 +49,16 @@ void DX11CameraFP::OnEvent(Event& e)
 // Hazel camera API
 void DX11CameraFP::SetViewportSize(float width, float height)
 {
+	m_ViewportWidth = width;
+	m_ViewportHeight = height;
+
+	UpdateProjection();
 }
 
-// Hazel camera API
-void DX11CameraFP::SetProjectionMatrix(glm::mat4 projection)
+void DX11CameraFP::UpdateProjection()
 {
+	// Projection matrix (perspective)
+	m_ProjectionMatrix = glm::perspectiveFovLH(m_PerspectiveFOV, m_ViewportWidth, m_ViewportHeight, m_PerspectiveNear, m_PerspectiveFar);
 }
 
 void DX11CameraFP::UpdateView()

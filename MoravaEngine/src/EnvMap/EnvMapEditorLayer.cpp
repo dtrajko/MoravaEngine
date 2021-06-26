@@ -585,7 +585,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
         {
             ImGuizmo::Manipulate(
                 glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
-                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjection()),
+                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
                 ImGuizmo::LOCAL,
                 glm::value_ptr(entityTransform),
@@ -619,7 +619,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
 
             ImGuizmo::Manipulate(
                 glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
-                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjection()),
+                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
                 ImGuizmo::LOCAL,
                 glm::value_ptr(transformBase),
@@ -2138,7 +2138,7 @@ std::pair<glm::vec3, glm::vec3> EnvMapEditorLayer::CastRay(float mx, float my)
 {
     glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
 
-    glm::mat4 projectionMatrix = EnvMapSharedData::s_ActiveCamera->GetProjection();
+    glm::mat4 projectionMatrix = EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix();
     glm::mat4 viewMatrix = EnvMapSharedData::s_ActiveCamera->GetViewMatrix();
 
     auto inverseProj = glm::inverse(projectionMatrix);

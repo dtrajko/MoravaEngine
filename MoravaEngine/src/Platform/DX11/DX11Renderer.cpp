@@ -280,8 +280,6 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	/**** BEGIN DirectX 11 rendering ****/
 	ClearRenderTargetColor(0.1f, 0.2f, 0.4f, 1.0f);
 
-	DX11Context::Get()->SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
-
 	DX11Context::Get()->SetRasterizerState(DX11CullMode::None);
 
 	Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
@@ -289,15 +287,14 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	dx11Shader->GetVertexShader()->Bind();
 	dx11Shader->GetPixelShader()->Bind();
 
-	// View matrix (Camera)
-	glm::mat4 view = DX11CameraFP::Get()->GetViewMatrix();
+	uint32_t viewportWidth = Application::Get()->GetWindow()->GetWidth();
+	uint32_t viewportHeight = Application::Get()->GetWindow()->GetHeight();
+	DX11Context::Get()->SetViewportSize(viewportWidth, viewportHeight);
+	DX11TestLayer::GetCamera()->SetViewportSize((float)viewportWidth, (float)viewportHeight);
 
-	// Projection matrix (perspective)
-	float viewportWidth = (float)Application::Get()->GetWindow()->GetWidth();
-	float viewportHeight = (float)Application::Get()->GetWindow()->GetHeight();
-	float nearPlane = 0.01f;
-	float farPlane = 1000.0f;
-	glm::mat4 projection = glm::perspectiveFovLH(glm::radians(60.0f), viewportWidth, viewportHeight, nearPlane, farPlane);
+	// View matrix (Camera)
+	glm::mat4 view = DX11TestLayer::GetCamera()->GetViewMatrix();
+	glm::mat4 projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
 
 	// BEGIN render mesh #1
 	{

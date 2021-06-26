@@ -35,7 +35,9 @@ public:
 	void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 	void OnRender(Window* mainWindow);
 
-	void Render(const glm::vec4& clearColor, const DX11CameraFP& camera);
+	void Render(const glm::vec4& clearColor, std::shared_ptr<DX11CameraFP> camera);
+
+	static inline std::shared_ptr<DX11CameraFP> GetCamera() { return s_Camera; }
 
 	// Inherited via DX11InputListener
 	virtual void OnKeyDown(int key) override;
@@ -51,10 +53,10 @@ public:
 	virtual void OnRightMouseUp(const glm::vec2& deltaMousePos) override;
 
 private:
+	static std::shared_ptr<DX11CameraFP> s_Camera;
+
 	std::vector<Hazel::Ref<Hazel::HazelMesh>> m_Meshes;
 	Hazel::Ref<Hazel::HazelTexture2D> m_Texture;
-
-	// std::shared_ptr<DX11CameraFP> m_Camera; // TODO: Use DX11CameraFP as m_Camera
 
 	std::vector<glm::vec4> m_RandomColors;
 

@@ -49,7 +49,6 @@ namespace Hazel {
 		void SetOrthographicFarClip(float farClip) { m_OrthographicFar = farClip; RecalculateProjection(); }
 
 		// Getters
-		inline const glm::mat4& GetProjection() const { return m_ProjectionMatrix; }
 		inline const glm::vec3& GetPosition() const { return m_Position; }
 		inline virtual glm::mat4 GetViewProjection() { return m_ProjectionMatrix * m_ViewMatrix; }
 		inline float GetPitch() const { return m_Pitch; }

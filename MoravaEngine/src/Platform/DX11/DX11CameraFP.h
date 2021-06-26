@@ -5,6 +5,7 @@
 #include "DX11.h"
 #include "DX11InputListener.h"
 
+#include "Hazel/Core/Timestep.h"
 #include "Hazel/Events/Event.h"
 #include "Hazel/Renderer/HazelCamera.h"
 
@@ -16,9 +17,9 @@ public:
 	DX11CameraFP(glm::mat4 projection);
 	~DX11CameraFP();
 
-	void OnUpdate();
+	void OnUpdate(Hazel::Timestep ts);
 
-	static DX11CameraFP* Get();
+	// static DX11CameraFP* Get();
 
 	// Inherited via DX11InputListener
 	virtual void OnKeyDown(int key) override;
@@ -33,16 +34,16 @@ public:
 	virtual void OnLeftMouseUp(const glm::vec2& deltaMousePos) override;
 	virtual void OnRightMouseUp(const glm::vec2& deltaMousePos) override;
 
-	// Methods from EditorCamera (Hazel)
-	void OnEvent(Event& e);
+	virtual void SetViewportSize(float width, float height) override;
 
-	void SetViewportSize(float width, float height);
-	void SetProjectionMatrix(glm::mat4 projection);
+	// Methods from EditorCamera (Hazel)
+	virtual void OnEvent(Event& e) override;
 
 	void SetEnabled(bool enabled) { m_Enabled = enabled; }
 	bool IsEnabled() { return m_Enabled; }
 
 private:
+	void UpdateProjection();
 	void UpdateView();
 
 private:

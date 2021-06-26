@@ -9,12 +9,17 @@
 #include "Core/Application.h"
 
 
+std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
+
+
 DX11TestLayer::DX11TestLayer()
 {
+	s_Camera = std::make_shared<DX11CameraFP>(glm::perspectiveFov(glm::radians(60.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
 }
 
 DX11TestLayer::DX11TestLayer(const std::string& name) : Layer(name)
 {
+	s_Camera = std::make_shared<DX11CameraFP>(glm::perspectiveFov(glm::radians(60.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
 }
 
 DX11TestLayer::~DX11TestLayer()
@@ -40,19 +45,19 @@ void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
 {
 	bool windowInFocus = Application::Get()->GetWindow()->IsInFocus();
 	bool cameraEnabled = windowInFocus && !m_ShowMouseCursor;
-	DX11CameraFP::Get()->SetEnabled(cameraEnabled);
+	s_Camera->SetEnabled(cameraEnabled);
 
 	// Log::GetLogger()->info("windowInFocus: {0}, m_ShowMouseCursor: {1}, cameraEnabled: {2}", windowInFocus, m_ShowMouseCursor, cameraEnabled);
 
 	DX11InputSystem::Get()->Update();
 
-	DX11CameraFP::Get()->OnUpdate();
+	s_Camera->OnUpdate(ts);
 
-	DX11CameraFP::Get()->SetProjectionMatrix(
+	s_Camera->SetProjectionMatrix(
 		glm::perspectiveFov(glm::radians(45.0f), (float)DX11Renderer::GetViewportWidth(), (float)DX11Renderer::GetViewportHeight(), 0.01f, 1000.0f));
 
 	glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-	Render(clearColor, *DX11CameraFP::Get());
+	Render(clearColor, s_Camera);
 	for (Hazel::Ref<Hazel::HazelMesh> mesh : m_Meshes)
 	{
 		DX11Renderer::SubmitMesh(mesh);
@@ -65,15 +70,15 @@ void DX11TestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
 void DX11TestLayer::OnEvent(Event& event)
 {
-	DX11CameraFP::Get()->OnEvent(event);
+	s_Camera->OnEvent(event);
 
 	if (event.GetEventType() == EventType::WindowResize)
 	{
 		WindowResizeEvent& e = (WindowResizeEvent&)event;
 		if (e.GetWidth() != 0 && e.GetHeight() != 0)
 		{
-			DX11CameraFP::Get()->SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
-			DX11CameraFP::Get()->SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
+			s_Camera->SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
+			s_Camera->SetProjectionMatrix(glm::perspectiveFov(glm::radians(60.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
 		}
 	}
 }
@@ -86,7 +91,7 @@ void DX11TestLayer::OnRender(Window* mainWindow)
 {
 }
 
-void DX11TestLayer::Render(const glm::vec4& clearColor, const DX11CameraFP& camera)
+void DX11TestLayer::Render(const glm::vec4& clearColor, std::shared_ptr<DX11CameraFP> camera)
 {
 	if (!m_Meshes.size()) return;
 
