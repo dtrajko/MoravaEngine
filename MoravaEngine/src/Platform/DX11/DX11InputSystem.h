@@ -14,11 +14,12 @@ public:
 	DX11InputSystem();
 	~DX11InputSystem();
 
+	void Update();
+
 	void AddListener(DX11InputListener* listener);
 	void RemoveListener(DX11InputListener* listener);
 
-	void Update();
-
+	void SetCursorPosition(const glm::vec2& position);
 	void ShowCursor(bool show);
 
 	static DX11InputSystem* Get();

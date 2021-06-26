@@ -409,27 +409,27 @@ void WindowsWindow::OnKeyUp(int key)
 }
 
 // A DirectX 11 method
-void WindowsWindow::OnMouseMove(const glm::vec2& deltaMousePos)
+void WindowsWindow::OnMouseMove(const glm::vec2& mousePos)
 {
 }
 
 // A DirectX 11 method
-void WindowsWindow::OnLeftMouseDown(const glm::vec2& deltaMousePos)
+void WindowsWindow::OnLeftMouseDown(const glm::vec2& mousePos)
 {
 }
 
 // A DirectX 11 method
-void WindowsWindow::OnRightMouseDown(const glm::vec2& deltaMousePos)
+void WindowsWindow::OnRightMouseDown(const glm::vec2& mousePos)
 {
 }
 
 // A DirectX 11 method
-void WindowsWindow::OnLeftMouseUp(const glm::vec2& deltaMousePos)
+void WindowsWindow::OnLeftMouseUp(const glm::vec2& mousePos)
 {
 }
 
 // A DirectX 11 method
-void WindowsWindow::OnRightMouseUp(const glm::vec2& deltaMousePos)
+void WindowsWindow::OnRightMouseUp(const glm::vec2& mousePos)
 {
 }
 

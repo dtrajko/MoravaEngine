@@ -71,13 +71,13 @@ public:
 	virtual void OnKeyDown(int key) override;
 	virtual void OnKeyUp(int key) override;
 
-	virtual void OnMouseMove(const glm::vec2& deltaMousePos) override;
+	virtual void OnMouseMove(const glm::vec2& mousePos) override;
 
-	virtual void OnLeftMouseDown(const glm::vec2& deltaMousePos) override;
-	virtual void OnRightMouseDown(const glm::vec2& deltaMousePos) override;
+	virtual void OnLeftMouseDown(const glm::vec2& mousePos) override;
+	virtual void OnRightMouseDown(const glm::vec2& mousePos) override;
 
-	virtual void OnLeftMouseUp(const glm::vec2& deltaMousePos) override;
-	virtual void OnRightMouseUp(const glm::vec2& deltaMousePos) override;
+	virtual void OnLeftMouseUp(const glm::vec2& mousePos) override;
+	virtual void OnRightMouseUp(const glm::vec2& mousePos) override;
 
 	virtual bool IsInFocus() override { return m_InFocus; }
 	virtual void SetInFocus(bool inFocus) override { m_InFocus = inFocus; }

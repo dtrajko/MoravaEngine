@@ -29,6 +29,11 @@ void DX11InputSystem::RemoveListener(DX11InputListener* listener)
 	}
 }
 
+void DX11InputSystem::SetCursorPosition(const glm::vec2& position)
+{
+	::SetCursorPos((int)position.x, (int)position.y);
+}
+
 void DX11InputSystem::Update()
 {
 	// MOUSE events

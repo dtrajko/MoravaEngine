@@ -10,6 +10,7 @@
 
 
 std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
+glm::vec2 DX11TestLayer::s_StartMousePosition;
 
 
 DX11TestLayer::DX11TestLayer()
@@ -132,31 +133,36 @@ void DX11TestLayer::OnKeyUp(int key)
 	}
 }
 
-void DX11TestLayer::OnMouseMove(const glm::vec2& deltaMousePos)
+void DX11TestLayer::OnMouseMove(const glm::vec2& mousePos)
 {
 }
 
-void DX11TestLayer::OnLeftMouseDown(const glm::vec2& deltaMousePos)
+void DX11TestLayer::OnLeftMouseDown(const glm::vec2& mousePos)
 {
 	m_ShowMouseCursor = false;
+
+	// MOUSE events
+	POINT currentMousePos = {};
+	::GetCursorPos(&currentMousePos);
+	s_StartMousePosition = glm::vec2(currentMousePos.x, currentMousePos.y);
 
 	// Application::Get()->GetWindow()->SetInFocus(true);
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor);
 
-	Log::GetLogger()->info("DX11TestLayer::OnLeftMouseDown([{0}, {1}])", deltaMousePos.x, deltaMousePos.y);
+	Log::GetLogger()->info("DX11TestLayer::OnLeftMouseDown([{0}, {1}])", mousePos.x, mousePos.y);
 	//	bool windowInFocus = Application::Get()->GetWindow()->IsInFocus();
 	//	Log::GetLogger()->info("Window::m_InFocus: {0}, m_ShowMouseCursor: {1}, m_Camera->IsEnabled: {2}",
 	//		windowInFocus, m_ShowMouseCursor, DX11CameraFP::Get()->IsEnabled());
 }
 
-void DX11TestLayer::OnRightMouseDown(const glm::vec2& deltaMousePos)
+void DX11TestLayer::OnRightMouseDown(const glm::vec2& mousePos)
 {
 }
 
-void DX11TestLayer::OnLeftMouseUp(const glm::vec2& deltaMousePos)
+void DX11TestLayer::OnLeftMouseUp(const glm::vec2& mousePos)
 {
 }
 
-void DX11TestLayer::OnRightMouseUp(const glm::vec2& deltaMousePos)
+void DX11TestLayer::OnRightMouseUp(const glm::vec2& mousePos)
 {
 }

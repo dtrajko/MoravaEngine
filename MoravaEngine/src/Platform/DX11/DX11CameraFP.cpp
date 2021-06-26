@@ -1,9 +1,11 @@
 #include "DX11CameraFP.h"
 
 #include "DX11InputSystem.h"
+#include "DX11TestLayer.h"
 
 #include "Core/Application.h"
 #include "Core/Timer.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 
 DX11CameraFP::DX11CameraFP() : DX11CameraFP(glm::mat4(1.0f))
@@ -137,34 +139,40 @@ void DX11CameraFP::OnKeyUp(int key)
 }
 
 // DX11InputListener API
-void DX11CameraFP::OnMouseMove(const glm::vec2& deltaMousePos)
+void DX11CameraFP::OnMouseMove(const glm::vec2& mousePos)
 {
 	if (!m_Enabled) return;
 
-	// Log::GetLogger()->info("DX11CameraFP::OnMouseMove([{0}, {1}])", deltaMousePos.m_X, deltaMousePos.m_Y);
+	// WindowsWindow* windowsWindow = (WindowsWindow*)Application::Get()->GetWindow();
+	// long windowWidth = windowsWindow->GetClientWindowRect().right - windowsWindow->GetClientWindowRect().left;
+	// long windowHeight = windowsWindow->GetClientWindowRect().bottom - windowsWindow->GetClientWindowRect().top;
+
+	// Log::GetLogger()->info("DX11CameraFP::OnMouseMove([{0}, {1}])", mousePos.m_X, mousePos.m_Y);
 
 	float turnVelocity = m_TurnSpeed * Timer::Get()->GetDeltaTime();
 
-	m_Yaw -= deltaMousePos.x * turnVelocity;
-	m_Pitch -= deltaMousePos.y * turnVelocity;
+	m_Yaw -= mousePos.x * turnVelocity;
+	m_Pitch -= mousePos.y * turnVelocity;
+
+	// DX11InputSystem::Get()->SetCursorPosition(DX11TestLayer::GetStartMousePosition());
 }
 
 // DX11InputListener API
-void DX11CameraFP::OnLeftMouseDown(const glm::vec2& deltaMousePos)
+void DX11CameraFP::OnLeftMouseDown(const glm::vec2& mousePos)
 {
 }
 
 // DX11InputListener API
-void DX11CameraFP::OnRightMouseDown(const glm::vec2& deltaMousePos)
+void DX11CameraFP::OnRightMouseDown(const glm::vec2& mousePos)
 {
 }
 
 // DX11InputListener API
-void DX11CameraFP::OnLeftMouseUp(const glm::vec2& deltaMousePos)
+void DX11CameraFP::OnLeftMouseUp(const glm::vec2& mousePos)
 {
 }
 
 // DX11InputListener API
-void DX11CameraFP::OnRightMouseUp(const glm::vec2& deltaMousePos)
+void DX11CameraFP::OnRightMouseUp(const glm::vec2& mousePos)
 {
 }

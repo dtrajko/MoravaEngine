@@ -26,13 +26,13 @@ public:
 	virtual void OnKeyUp(int key) override;
 
 	// MOUSE pure virtual callback functions
-	virtual void OnMouseMove(const glm::vec2& deltaMousePos) override;
+	virtual void OnMouseMove(const glm::vec2& mousePos) override;
 
-	virtual void OnLeftMouseDown(const glm::vec2& deltaMousePos) override;
-	virtual void OnRightMouseDown(const glm::vec2& deltaMousePos) override;
+	virtual void OnLeftMouseDown(const glm::vec2& mousePos) override;
+	virtual void OnRightMouseDown(const glm::vec2& mousePos) override;
 
-	virtual void OnLeftMouseUp(const glm::vec2& deltaMousePos) override;
-	virtual void OnRightMouseUp(const glm::vec2& deltaMousePos) override;
+	virtual void OnLeftMouseUp(const glm::vec2& mousePos) override;
+	virtual void OnRightMouseUp(const glm::vec2& mousePos) override;
 
 	virtual void SetViewportSize(float width, float height) override;
 

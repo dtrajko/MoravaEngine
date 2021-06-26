@@ -38,22 +38,24 @@ public:
 	void Render(const glm::vec4& clearColor, std::shared_ptr<DX11CameraFP> camera);
 
 	static inline std::shared_ptr<DX11CameraFP> GetCamera() { return s_Camera; }
+	static inline const glm::vec2& GetStartMousePosition() { return s_StartMousePosition; }
 
 	// Inherited via DX11InputListener
 	virtual void OnKeyDown(int key) override;
 	virtual void OnKeyUp(int key) override;
 
 	// MOUSE pure virtual callback functions
-	virtual void OnMouseMove(const glm::vec2& deltaMousePos) override;
+	virtual void OnMouseMove(const glm::vec2& mousePos) override;
 
-	virtual void OnLeftMouseDown(const glm::vec2& deltaMousePos) override;
-	virtual void OnRightMouseDown(const glm::vec2& deltaMousePos) override;
+	virtual void OnLeftMouseDown(const glm::vec2& mousePos) override;
+	virtual void OnRightMouseDown(const glm::vec2& mousePos) override;
 
-	virtual void OnLeftMouseUp(const glm::vec2& deltaMousePos) override;
-	virtual void OnRightMouseUp(const glm::vec2& deltaMousePos) override;
+	virtual void OnLeftMouseUp(const glm::vec2& mousePos) override;
+	virtual void OnRightMouseUp(const glm::vec2& mousePos) override;
 
 private:
 	static std::shared_ptr<DX11CameraFP> s_Camera;
+	static glm::vec2 s_StartMousePosition;
 
 	std::vector<Hazel::Ref<Hazel::HazelMesh>> m_Meshes;
 	Hazel::Ref<Hazel::HazelTexture2D> m_Texture;
