@@ -34,8 +34,8 @@ void DX11TestLayer::OnAttach()
 	DX11InputSystem::Get()->AddListener(this);
 
 	// Application::Get()->GetWindow()->SetInFocus(false);
-	m_ShowMouseCursor = true;
-	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor);
+
+	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 }
 
 void DX11TestLayer::OnDetach()
@@ -126,10 +126,8 @@ void DX11TestLayer::OnKeyUp(int key)
 {
 	if (key == VK_ESCAPE)
 	{
-		m_ShowMouseCursor = true;
-
 		// Application::Get()->GetWindow()->SetInFocus(false);
-		DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor);
+		DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 	}
 }
 
@@ -144,11 +142,14 @@ void DX11TestLayer::OnLeftMouseDown(const glm::vec2& mousePos)
 	::GetCursorPos(&currentMousePos);
 	s_StartMousePosition = glm::vec2(currentMousePos.x, currentMousePos.y);
 
-	// Application::Get()->GetWindow()->SetInFocus(true);
-	m_ShowMouseCursor = false;
-	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor);
+	if (DX11InputSystem::Get()->IsMouseCursorAboveViewport())
+	{
+		Application::Get()->GetWindow()->SetInFocus(true);
+	}
 
-	Log::GetLogger()->info("DX11TestLayer::OnLeftMouseDown([{0}, {1}])", mousePos.x, mousePos.y);
+	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = false);
+
+	//	Log::GetLogger()->info("DX11TestLayer::OnLeftMouseDown {0}x{1}", mousePos.x, mousePos.y);
 	//	bool windowInFocus = Application::Get()->GetWindow()->IsInFocus();
 	//	Log::GetLogger()->info("Window::m_InFocus: {0}, m_ShowMouseCursor: {1}, m_Camera->IsEnabled: {2}",
 	//		windowInFocus, m_ShowMouseCursor, DX11CameraFP::Get()->IsEnabled());
