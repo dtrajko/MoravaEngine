@@ -148,26 +148,3 @@ void DX11Context::SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel:
 
 	m_DX11DeviceContext->OMSetRenderTargets(1, &renderTarget->m_RenderTargetView, depthStencil->GetDepthStencilView());
 }
-
-void DX11Context::SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, const std::vector<Hazel::Ref<DX11Texture2D>>& textures, uint32_t textureCount)
-{
-	ID3D11ShaderResourceView* list_res[32];
-	ID3D11SamplerState* list_sampler[32];
-
-	for (unsigned int i = 0; i < textureCount; i++)
-	{
-		list_res[i] = textures[i]->m_ShaderResourceView;
-		list_sampler[i] = textures[i]->m_SamplerState;
-	}
-
-	if (shaderType == DX11Shader::Type::Vertex)
-	{
-		m_DX11DeviceContext->VSSetShaderResources(0, textureCount, list_res);
-		m_DX11DeviceContext->VSSetSamplers(0, textureCount, list_sampler);
-	}
-	else if (shaderType == DX11Shader::Type::Pixel)
-	{
-		m_DX11DeviceContext->PSSetShaderResources(0, textureCount, list_res);
-		m_DX11DeviceContext->PSSetSamplers(0, textureCount, list_sampler);
-	}
-}

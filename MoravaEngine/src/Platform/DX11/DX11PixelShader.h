@@ -4,6 +4,7 @@
 
 #include "DX11.h"
 #include "DX11ConstantBuffer.h"
+#include "DX11Texture2D.h"
 
 
 class DX11PixelShader : public Hazel::RefCounted
@@ -20,6 +21,9 @@ public:
 
 	void Bind();
 	void BindConstantBuffer(Hazel::Ref<DX11ConstantBuffer> constantBuffer);
+
+	// moved from DX11Context
+	void SetTextures(const std::vector<Hazel::Ref<DX11Texture2D>>& textures);
 
 private:
 	bool CompileDX11Shader(const wchar_t* fileName);

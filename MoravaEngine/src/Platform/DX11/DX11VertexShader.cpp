@@ -39,6 +39,23 @@ void DX11VertexShader::BindConstantBuffer(Hazel::Ref<DX11ConstantBuffer> constan
 	DX11Context::Get()->GetDX11DeviceContext()->VSSetConstantBuffers(0, 1, &constantBuffer->m_Buffer);
 }
 
+void DX11VertexShader::SetTextures(const std::vector<Hazel::Ref<DX11Texture2D>>& textures)
+{
+	size_t textureCount = textures.size();
+
+	ID3D11ShaderResourceView* list_res[32];
+	ID3D11SamplerState* list_sampler[32];
+
+	for (unsigned int i = 0; i < textureCount; i++)
+	{
+		list_res[i] = textures[i]->m_ShaderResourceView;
+		list_sampler[i] = textures[i]->m_SamplerState;
+	}
+
+	DX11Context::Get()->GetDX11DeviceContext()->VSSetShaderResources(0, (UINT)textureCount, list_res);
+	DX11Context::Get()->GetDX11DeviceContext()->VSSetSamplers(0, (UINT)textureCount, list_sampler);
+}
+
 bool DX11VertexShader::CompileDX11Shader(const wchar_t* fileName)
 {
 	const char* entryPointName = "vsmain";

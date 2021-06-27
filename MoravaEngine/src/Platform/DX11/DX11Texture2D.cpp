@@ -26,6 +26,11 @@ DX11Texture2D::DX11Texture2D(const wchar_t* fullPath)
 
 		if (FAILED(res)) throw std::exception("DX11Texture2D not created successfully.");
 
+		m_Path = Util::to_str(fullPath);
+		m_Width = (uint32_t)image_data.GetMetadata().width;
+		m_Height = (uint32_t)image_data.GetMetadata().height;
+		m_Size = glm::vec2(m_Width, m_Height);
+
 		D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
 		desc.Format = image_data.GetMetadata().format;
 		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
@@ -179,6 +184,11 @@ void DX11Texture2D::Bind(uint32_t slot) const
 {
 }
 
+Hazel::Ref<Hazel::HazelImage2D> DX11Texture2D::GetImage() const
+{
+	return Hazel::Ref<Hazel::HazelImage2D>();
+}
+
 void DX11Texture2D::Lock()
 {
 }
@@ -214,6 +224,11 @@ Hazel::HazelImageFormat DX11Texture2D::GetFormat() const
 uint32_t DX11Texture2D::GetMipLevelCount() const
 {
 	return 0;
+}
+
+uint64_t DX11Texture2D::GetHash() const
+{
+	return uint64_t();
 }
 
 Hazel::RendererID DX11Texture2D::GetRendererID() const

@@ -7,6 +7,9 @@
 #include "DX11InputSystem.h"
 
 #include "Core/Application.h"
+#include "Core/ResourceManager.h"
+
+#include "Hazel/Renderer/HazelTexture.h"
 
 
 std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
@@ -29,13 +32,16 @@ DX11TestLayer::~DX11TestLayer()
 
 void DX11TestLayer::OnAttach()
 {
-	m_Meshes.push_back(Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
-
 	DX11InputSystem::Get()->AddListener(this);
 
 	// Application::Get()->GetWindow()->SetInFocus(false);
 
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
+
+	m_Meshes.push_back(Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+
+	// Hazel::Ref<Hazel::HazelTexture2D> texture = Hazel::HazelTexture2D::Create("Textures/PardCode/wood.jpg", false);
+	Hazel::Ref<Hazel::HazelTexture2D> texture = ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
 }
 
 void DX11TestLayer::OnDetach()
@@ -55,7 +61,7 @@ void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
 	s_Camera->OnUpdate(ts);
 
 	s_Camera->SetProjectionMatrix(
-		glm::perspectiveFov(glm::radians(45.0f), (float)DX11Renderer::GetViewportWidth(), (float)DX11Renderer::GetViewportHeight(), 0.01f, 1000.0f));
+		glm::perspectiveFov(glm::radians(60.0f), (float)DX11Renderer::GetViewportWidth(), (float)DX11Renderer::GetViewportHeight(), 0.01f, 1000.0f));
 
 	glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 	Render(clearColor, s_Camera);

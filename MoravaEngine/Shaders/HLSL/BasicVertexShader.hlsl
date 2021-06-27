@@ -10,8 +10,8 @@ struct VS_INPUT
 struct VS_OUTPUT
 {
 	float4 position: SV_POSITION;
-	float3 color: COLOR;
-	float3 binormal: BINORMAL;
+	float2 texcoord: TEXCOORD0;
+	float3 binormal: BINORMAL0;
 };
 
 cbuffer constant: register(b0)
@@ -34,7 +34,7 @@ VS_OUTPUT vsmain(VS_INPUT input)
 	// Screen space
 	output.position = mul(output.position, projection);
 
-	output.color = input.normal;
+	output.texcoord = input.texcoord;
 	output.binormal = input.binormal;
 
 	return output;

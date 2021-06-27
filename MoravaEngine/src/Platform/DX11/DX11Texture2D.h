@@ -31,28 +31,17 @@ public:
 
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
-
 	virtual void Bind(uint32_t slot = 0) const override;
-
-	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage() const override { return m_Image; }
-
+	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage() const override;
 	void Lock() override;
-
 	void Unlock() override;
-
 	void Resize(uint32_t width, uint32_t height) override;
-
 	Hazel::Buffer GetWriteableBuffer() override;
-
 	bool Loaded() const override;
-
 	const std::string& GetPath() const override;
-
 	Hazel::HazelImageFormat GetFormat() const override;
-
 	uint32_t GetMipLevelCount() const override;
-
-	virtual uint64_t GetHash() const { return (uint64_t)m_Image; }
+	virtual uint64_t GetHash() const; // { return (uint64_t)0; }
 	virtual Hazel::RendererID GetRendererID() const override;
 
 	bool operator ==(const HazelTexture& other) const override
@@ -76,11 +65,7 @@ private:
 
 	Hazel::Buffer m_ImageData;
 
-	VkDeviceMemory m_DeviceMemory;
-	VkImage m_Image;
-
 	Hazel::HazelImageFormat m_Format = Hazel::HazelImageFormat::None;
-
 
 	glm::vec2 m_Size;
 	DX11Texture2D::Type m_Type = DX11Texture2D::Type::Normal;
@@ -93,5 +78,7 @@ private:
 
 	friend class DX11Context;
 	friend class DX11Renderer;
+	friend class DX11VertexShader;
+	friend class DX11PixelShader;
 
 };

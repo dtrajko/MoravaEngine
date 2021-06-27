@@ -65,9 +65,6 @@ public:
 	// this should probably be DX11Framebuffer->Bind()
 	void SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil);
 
-	// this should probably be DX11Texture[2D]->Bind()
-	void SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type shaderType, const std::vector<Hazel::Ref<DX11Texture2D>>& textures, uint32_t textureCount);
-
 private:
 	void InitRasterizerState();
 
