@@ -124,7 +124,7 @@ void DX11Renderer::Init()
 	// temporary DX11 objects and data structures
 	uint32_t vertexStride = sizeof(DX11VertexLayout);
 	uint32_t vertexCount = ARRAYSIZE(vertexList);
-	s_VertexBuffer = Hazel::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount, pipelineSpecification.Shader);
+	s_VertexBuffer = Hazel::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount);
 
 	uint32_t indexList[] =
 	{

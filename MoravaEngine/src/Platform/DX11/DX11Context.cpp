@@ -156,8 +156,8 @@ void DX11Context::SetTexture(Hazel::Ref<DX11Shader> shader, DX11Shader::Type sha
 
 	for (unsigned int i = 0; i < textureCount; i++)
 	{
-		list_res[i] = textures[i]->m_shader_res_view;
-		list_sampler[i] = textures[i]->m_sampler_state;
+		list_res[i] = textures[i]->m_ShaderResourceView;
+		list_sampler[i] = textures[i]->m_SamplerState;
 	}
 
 	if (shaderType == DX11Shader::Type::Vertex)
