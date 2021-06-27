@@ -5,7 +5,7 @@
 #include "DX11.h"
 #include "DX11InputListener.h"
 
-#include <map>
+#include <list>
 
 
 class DX11InputSystem
@@ -27,7 +27,7 @@ public:
 	static DX11InputSystem* Get();
 
 private:
-	std::map<DX11InputListener*, DX11InputListener*> m_MapListeners;
+	std::list<DX11InputListener*> m_Listeners;
 
 	unsigned char m_KeysState[256] = {};
 	unsigned char m_OldKeysState[256] = {};

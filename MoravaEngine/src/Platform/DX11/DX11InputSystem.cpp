@@ -16,17 +16,22 @@ DX11InputSystem::~DX11InputSystem()
 
 void DX11InputSystem::AddListener(DX11InputListener* listener)
 {
-	m_MapListeners.insert(std::make_pair<DX11InputListener*, DX11InputListener*>
-		(std::forward<DX11InputListener*>(listener), std::forward<DX11InputListener*>(listener)));
+	m_Listeners.push_back(listener);
 }
 
 void DX11InputSystem::RemoveListener(DX11InputListener* listener)
 {
-	std::map<DX11InputListener*, DX11InputListener*>::iterator it = m_MapListeners.find(listener);
-
-	if (it != m_MapListeners.end())
+	for (auto it = m_Listeners.begin(); it != m_Listeners.end();)
 	{
-		m_MapListeners.erase(it);
+		if (*it == listener)
+		{
+			it = m_Listeners.erase(it);
+			++it;
+		}
+		else
+		{
+			it++;
+		}
 	}
 }
 
@@ -50,13 +55,11 @@ void DX11InputSystem::Update()
 	if (currentMousePos.x != m_OldMousePos.x || currentMousePos.y != m_OldMousePos.y)
 	{
 		// There is mouse move event
-		std::map<DX11InputListener*, DX11InputListener*>::iterator it = m_MapListeners.begin();
-
-		while (it != m_MapListeners.end())
+		for (auto it = m_Listeners.begin(); it != m_Listeners.end();)
 		{
 			glm::vec2 mousePosDelta = glm::vec2(currentMousePos.x - m_OldMousePos.x, currentMousePos.y - m_OldMousePos.y);
 			glm::vec2 mousePosAbs = glm::vec2(currentMousePos.x, currentMousePos.y);
-			it->second->OnMouseMove(mousePosDelta, mousePosAbs);
+			(*it)->OnMouseMove(mousePosDelta, mousePosAbs);
 			++it;
 		}
 	}
@@ -71,15 +74,13 @@ void DX11InputSystem::Update()
 			if (m_KeysState[i] & 0x80)
 			{
 				// Key is DOWN
-				std::map<DX11InputListener*, DX11InputListener*>::iterator it = m_MapListeners.begin();
-
-				while (it != m_MapListeners.end())
+				for (auto it = m_Listeners.begin(); it != m_Listeners.end();)
 				{
 					if (i == VK_LBUTTON)
 					{
 						if (m_KeysState[i] != m_OldKeysState[i])
 						{
-							it->second->OnLeftMouseDown(glm::vec2(currentMousePos.x, currentMousePos.y));
+							(*it)->OnLeftMouseDown(glm::vec2(currentMousePos.x, currentMousePos.y));
 						}
 					}
 
@@ -87,11 +88,11 @@ void DX11InputSystem::Update()
 					{
 						if (m_KeysState[i] != m_OldKeysState[i])
 						{
-							it->second->OnRightMouseDown(glm::vec2(currentMousePos.x, currentMousePos.y));
+							(*it)->OnRightMouseDown(glm::vec2(currentMousePos.x, currentMousePos.y));
 						}
 					}
 
-					it->second->OnKeyDown(i);
+					(*it)->OnKeyDown(i);
 					++it;
 				}
 			}
@@ -100,21 +101,19 @@ void DX11InputSystem::Update()
 				// Key is UP
 				if (m_KeysState[i] != m_OldKeysState[i])
 				{
-					std::map<DX11InputListener*, DX11InputListener*>::iterator it = m_MapListeners.begin();
-
-					while (it != m_MapListeners.end())
+					for (auto it = m_Listeners.begin(); it != m_Listeners.end();)
 					{
 						if (i == VK_LBUTTON)
 						{
-							it->second->OnLeftMouseUp(glm::vec2(currentMousePos.x, currentMousePos.y));
+							(*it)->OnLeftMouseUp(glm::vec2(currentMousePos.x, currentMousePos.y));
 						}
 
 						if (i == VK_RBUTTON)
 						{
-							it->second->OnRightMouseUp(glm::vec2(currentMousePos.x, currentMousePos.y));
+							(*it)->OnRightMouseUp(glm::vec2(currentMousePos.x, currentMousePos.y));
 						}
 
-						it->second->OnKeyUp(i);
+						(*it)->OnKeyUp(i);
 						++it;
 					}
 				}
