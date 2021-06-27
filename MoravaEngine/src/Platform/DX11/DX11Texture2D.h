@@ -22,9 +22,9 @@ public:
 	DX11Texture2D();
 	DX11Texture2D(const wchar_t* full_path);
 	DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type);
-	DX11Texture2D(const std::string& path, bool srgb = false, Hazel::HazelTextureWrap wrap = Hazel::HazelTextureWrap::Clamp);
-	DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, const void* data, Hazel::HazelTextureWrap wrap = Hazel::HazelTextureWrap::Clamp);
-	DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, Hazel::HazelTextureWrap wrap = Hazel::HazelTextureWrap::Clamp);
+	DX11Texture2D(const std::string& path, bool srgb = false, Hazel::TextureWrap wrap = Hazel::TextureWrap::Clamp);
+	DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, const void* data, Hazel::TextureWrap wrap = Hazel::TextureWrap::Clamp);
+	DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, Hazel::TextureWrap wrap = Hazel::TextureWrap::Clamp);
 	virtual ~DX11Texture2D();
 
 	void Invalidate();

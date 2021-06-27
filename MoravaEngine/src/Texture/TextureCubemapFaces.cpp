@@ -59,7 +59,7 @@ TextureCubemapFaces::TextureCubemapFaces(std::vector<std::string> faces)
     printf("Texture Cube Map succesfully created! [m_ID=%i]\n", m_ID);
 }
 
-void TextureCubemapFaces::Bind(unsigned int textureSlot)
+void TextureCubemapFaces::Bind(uint32_t textureSlot) const
 {
     glActiveTexture(GL_TEXTURE0 + textureSlot);
     glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);

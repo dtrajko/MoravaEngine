@@ -12,7 +12,7 @@ public:
 	~TextureCubemap();
 
 	virtual void OpenGLCreate() override;
-	virtual void Bind(unsigned int textureSlot) override;
+	virtual void Bind(uint32_t textureSlot = 0) const override;
 
 private:
 	int m_Level;

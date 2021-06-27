@@ -135,7 +135,7 @@ DX11Texture2D::DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type)
 	// Invalidate(); // do we need an Invalidate method?
 }
 
-DX11Texture2D::DX11Texture2D(const std::string& path, bool srgb, Hazel::HazelTextureWrap wrap)
+DX11Texture2D::DX11Texture2D(const std::string& path, bool srgb, Hazel::TextureWrap wrap)
 	: m_Path(path)
 {
 	Log::GetLogger()->error("This version of DX11Texture2D constructor is not used in DirecX 11!");
@@ -145,7 +145,7 @@ DX11Texture2D::DX11Texture2D(const std::string& path, bool srgb, Hazel::HazelTex
 	HZ_CORE_ASSERT(false);
 }
 
-DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, const void* data, Hazel::HazelTextureWrap wrap)
+DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, const void* data, Hazel::TextureWrap wrap)
 	: m_Format(format)
 {
 	Log::GetLogger()->error("This version of DX11Texture2D constructor is not used in DirecX 11!");
@@ -155,7 +155,7 @@ DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uin
 	HZ_CORE_ASSERT(false);
 }
 
-DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, Hazel::HazelTextureWrap wrap)
+DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, Hazel::TextureWrap wrap)
 {
 	Log::GetLogger()->error("This version of DX11Texture2D constructor is not used in DirecX 11!");
 

@@ -329,7 +329,7 @@ namespace Hazel {
 			{
 				HazelRenderer::Submit([i, texture]()
 					{
-						HZ_CORE_ASSERT(texture->GetType() == HazelTextureType::TextureCube);
+						HZ_CORE_ASSERT(texture->GetType() == TextureType::TextureCube);
 						Ref<OpenGLTextureCube> glTexture = texture.As<OpenGLTextureCube>();
 						glBindTextureUnit((GLuint)i, glTexture->GetID());
 					});

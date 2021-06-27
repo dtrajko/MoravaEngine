@@ -45,7 +45,7 @@ namespace Hazel {
 
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const std::string& path, bool srgb, HazelTextureWrap wrap)
+	VulkanTexture2D::VulkanTexture2D(const std::string& path, bool srgb, TextureWrap wrap)
 		: m_Path(path)
 	{
 		int width, height, channels;
@@ -73,7 +73,7 @@ namespace Hazel {
 		Invalidate();
 	}
 
-	VulkanTexture2D::VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data, HazelTextureWrap wrap)
+	VulkanTexture2D::VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data, TextureWrap wrap)
 		: m_Format(format)
 	{
 		m_Width = width;
@@ -94,7 +94,7 @@ namespace Hazel {
 		Invalidate();
 	}
 
-	VulkanTexture2D::VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
+	VulkanTexture2D::VulkanTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap)
 	{
 		HZ_CORE_ASSERT(false);
 	}

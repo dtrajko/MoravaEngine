@@ -22,7 +22,7 @@ namespace Hazel {
 		return Ref<HazelTexture2D>();
 	}
 
-	Ref<HazelTexture2D> HazelTexture2D::Create(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
+	Ref<HazelTexture2D> HazelTexture2D::Create(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap)
 	{
 		switch (RendererAPI::Current())
 		{
@@ -35,7 +35,7 @@ namespace Hazel {
 		return Ref<HazelTexture2D>();
 	}
 
-	Ref<HazelTexture2D> HazelTexture2D::Create(const std::string& path, bool srgb, HazelTextureWrap wrap)
+	Ref<HazelTexture2D> HazelTexture2D::Create(const std::string& path, bool srgb, TextureWrap wrap)
 	{
 		switch (RendererAPI::Current())
 		{

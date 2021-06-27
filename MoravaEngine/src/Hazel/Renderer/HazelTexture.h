@@ -12,22 +12,22 @@
 
 namespace Hazel {
 
-	enum class HazelTextureFormat
+	enum class TextureFormat
 	{
-		None = 0,
-		RGB = 1,
-		RGBA = 2,
+		None    = 0,
+		RGB     = 1,
+		RGBA    = 2,
 		Float16 = 3
 	};
 
-	enum class HazelTextureWrap
+	enum class TextureWrap
 	{
-		None = 0,
-		Clamp = 1,
+		None   = 0,
+		Clamp  = 1,
 		Repeat = 2
 	};
 
-	enum class HazelTextureType
+	enum class TextureType
 	{
 		None = 0,
 		Texture2D,
@@ -48,7 +48,7 @@ namespace Hazel {
 
 		virtual uint64_t GetHash() const = 0;
 
-		virtual HazelTextureType GetType() const = 0;
+		virtual TextureType GetType() const = 0;
 
 		virtual bool operator==(const HazelTexture& other) const = 0;
 
@@ -64,8 +64,8 @@ namespace Hazel {
 	{
 	public:
 		static Ref<HazelTexture2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
-		static Ref<HazelTexture2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
-		static Ref<HazelTexture2D> Create(const std::string& path, bool srgb = false, HazelTextureWrap wrap = HazelTextureWrap::Clamp);
+		static Ref<HazelTexture2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap = TextureWrap::Clamp);
+		static Ref<HazelTexture2D> Create(const std::string& path, bool srgb = false, TextureWrap wrap = TextureWrap::Clamp);
 
 		virtual Ref<HazelImage2D> GetImage() const = 0;
 
@@ -80,7 +80,7 @@ namespace Hazel {
 
 		virtual const std::string& GetPath() const = 0;
 
-		virtual HazelTextureType GetType() const override { return HazelTextureType::Texture2D; }
+		virtual TextureType GetType() const override { return TextureType::Texture2D; }
 
 	};
 
@@ -95,7 +95,7 @@ namespace Hazel {
 
 		virtual const std::string& GetPath() const = 0;
 
-		virtual HazelTextureType GetType() const override { return HazelTextureType::TextureCube; }
+		virtual TextureType GetType() const override { return TextureType::TextureCube; }
 
 	};
 

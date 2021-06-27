@@ -13,6 +13,6 @@ public:
 	TextureCubemapFaces(std::vector<std::string> faces);
 	virtual ~TextureCubemapFaces();
 
-	virtual void Bind(unsigned int textureSlot = 0) override;
+	virtual void Bind(uint32_t textureSlot = 0) const override;
 
 };

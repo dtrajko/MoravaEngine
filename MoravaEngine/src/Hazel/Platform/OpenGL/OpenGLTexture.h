@@ -12,8 +12,8 @@ namespace Hazel {
 	{
 	public:
 		OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data);
-		OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap);
-		OpenGLTexture2D(const std::string& path, bool srgb, HazelTextureWrap wrap);
+		OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap);
+		OpenGLTexture2D(const std::string& path, bool srgb, TextureWrap wrap);
 		virtual ~OpenGLTexture2D();
 
 		virtual void Bind(uint32_t slot = 0) const;
@@ -50,7 +50,7 @@ namespace Hazel {
 	private:
 		Ref<HazelImage2D> m_Image;
 		HazelImageFormat m_Format;
-		HazelTextureWrap m_Wrap = HazelTextureWrap::Clamp;
+		TextureWrap m_Wrap = TextureWrap::Clamp;
 		uint32_t m_Width, m_Height;
 		uint32_t m_ID;
 

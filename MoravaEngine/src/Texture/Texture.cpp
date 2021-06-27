@@ -30,7 +30,7 @@ Texture::Texture()
 	m_ID = 0;
 	m_FileLocation = "";
 	m_Buffer = nullptr;
-	m_Format = TextureFormat::RGBA;
+	m_Format = Hazel::TextureFormat::RGBA;
 }
 
 Texture::Texture(const char* fileLoc, bool flipVert)
@@ -63,7 +63,7 @@ Texture::Texture(const char* fileLoc, bool flipVert, bool isSampler)
 	}
 }
 
-Texture::Texture(const char* fileLoc, unsigned int width, unsigned int height, bool isSampler, int filter)
+Texture::Texture(const char* fileLoc, uint32_t width, uint32_t height, bool isSampler, int filter)
 	: Texture()
 {
 	m_FileLocation = fileLoc;
@@ -142,12 +142,12 @@ bool Texture::Load(bool flipVert)
 	{
 		Log::GetLogger()->info("Loading an HDR texture '{0}'", m_FileLocation);
 		m_Buffer = (byte*)stbi_loadf(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
-		m_Format = TextureFormat::Float16;
+		m_Format = Hazel::TextureFormat::Float16;
 	}
 	else
 	{
 		m_Buffer = stbi_load(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
-		m_Format = TextureFormat::RGBA;
+		m_Format = Hazel::TextureFormat::RGBA;
 	}
 
 	if (!m_Buffer)
@@ -279,7 +279,7 @@ void Texture::SetAlpha(int x, int z, int value)
 	m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 3] = value;
 }
 
-void Texture::Bind(unsigned int textureSlot)
+void Texture::Bind(uint32_t textureSlot) const
 {
 	glActiveTexture(GL_TEXTURE0 + textureSlot);
 	glBindTexture(GL_TEXTURE_2D, m_ID);
@@ -310,16 +310,16 @@ void Texture::Clear()
 	m_FileLocation = "";
 }
 
-unsigned int Texture::CalculateMipMapCount(unsigned int width, unsigned int height)
+uint32_t Texture::CalculateMipMapCount(uint32_t width, uint32_t height)
 {
-	unsigned int levels = 1;
+	uint32_t levels = 1;
 	while ((width | height) >> levels)
 		levels++;
 
 	return levels;
 }
 
-unsigned int Texture::GetMipLevelCount()
+uint32_t Texture::GetMipLevelCount()
 {
 	return CalculateMipMapCount(m_Spec.Width, m_Spec.Height);
 }
@@ -328,4 +328,3 @@ Texture::~Texture()
 {
 	Clear();
 }
-

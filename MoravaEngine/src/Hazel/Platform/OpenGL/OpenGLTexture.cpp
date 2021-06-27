@@ -38,7 +38,7 @@ namespace Hazel {
 		m_Image->Invalidate();
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, HazelTextureWrap wrap)
+	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap)
 		: m_Format(format), m_Width(width), m_Height(height), m_Wrap(wrap)
 	{
 		auto self = this;
@@ -49,7 +49,7 @@ namespace Hazel {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		GLenum localWrap = (m_Wrap == HazelTextureWrap::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+		GLenum localWrap = (m_Wrap == TextureWrap::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)localWrap);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)localWrap);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, (GLint)localWrap);
@@ -63,7 +63,7 @@ namespace Hazel {
 		m_ImageData.Allocate(width * height * HazelTexture::GetBPP(m_Format));
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb, HazelTextureWrap wrap)
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb, TextureWrap wrap)
 		: m_FilePath(path), m_Wrap(wrap)
 	{
 		int width, height, channels;
@@ -112,7 +112,7 @@ namespace Hazel {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-			GLenum localWrap = (m_Wrap == HazelTextureWrap::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+			GLenum localWrap = (m_Wrap == TextureWrap::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)localWrap);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)localWrap);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, (GLint)localWrap);

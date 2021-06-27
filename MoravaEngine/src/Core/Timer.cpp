@@ -47,17 +47,23 @@ void Timer::Update()
 	{
 		case Hazel::RendererAPIType::OpenGL:
 		case Hazel::RendererAPIType::Vulkan:
+		{
 			m_CurrentTimestamp = (float)glfwGetTime(); // returns seconds, as a double
 			break;
+		}
 		case Hazel::RendererAPIType::DX11:
+		{
 			auto elapsedMilliseconds = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - m_StartTimeChrono);
 			float elapsedSeconds = (float)(elapsedMilliseconds.count() / 1000.0f);
 			m_CurrentTimestamp = elapsedSeconds;
 			break;
+		}
 		default:
+		{
 			Log::GetLogger()->error("Unknown RendererAPI");
 			HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 			break;
+		}
 	}
 
 	// Render

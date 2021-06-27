@@ -74,7 +74,7 @@ void TextureCubemap::OpenGLCreate()
 	printf("TextureCubemap GL_TEXTURE_CUBE_MAP m_TextureID=%d\n", m_ID);
 }
 
-void TextureCubemap::Bind(unsigned int textureSlot)
+void TextureCubemap::Bind(uint32_t textureSlot) const
 {
 	glActiveTexture(GL_TEXTURE0 + textureSlot);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);
