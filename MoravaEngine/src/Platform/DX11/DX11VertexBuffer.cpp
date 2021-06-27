@@ -5,7 +5,7 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 
 
-DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t stride, uint32_t count, Hazel::Ref<DX11Shader> shader)
+DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t stride, uint32_t count)
 {
 	// m_LocalData = Hazel::Buffer::Copy(data, size);
 	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();

@@ -4,7 +4,6 @@
 
 #include "DX11.h"
 #include "DX11Device.h"
-#include "DX11Shader.h"
 
 #include "Hazel/Renderer/VertexBuffer.h"
 
@@ -15,7 +14,7 @@
 class DX11VertexBuffer : public Hazel::VertexBuffer
 {
 public:
-	DX11VertexBuffer(void* data, uint32_t stride, uint32_t count, Hazel::Ref<DX11Shader> shader);
+	DX11VertexBuffer(void* data, uint32_t stride, uint32_t count);
 	DX11VertexBuffer(void* data, uint32_t size, Hazel::VertexBufferUsage usage = Hazel::VertexBufferUsage::Static);
 	DX11VertexBuffer(uint32_t size, Hazel::VertexBufferUsage usage = Hazel::VertexBufferUsage::Dynamic);
 	virtual ~DX11VertexBuffer();

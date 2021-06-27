@@ -135,6 +135,8 @@ namespace Hazel {
 
 		static Ref<VertexBuffer> Create(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
 		static Ref<VertexBuffer> Create(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+		// DirectX 11 vertex buffer
+		static Ref<VertexBuffer> Create(void* data, uint32_t stride, uint32_t count, VertexBufferUsage usage = VertexBufferUsage::Static);
 
 	};
 

@@ -29,7 +29,7 @@ DX11TestLayer::~DX11TestLayer()
 
 void DX11TestLayer::OnAttach()
 {
-	// m_Meshes.push_back(Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+	m_Meshes.push_back(Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 
 	DX11InputSystem::Get()->AddListener(this);
 

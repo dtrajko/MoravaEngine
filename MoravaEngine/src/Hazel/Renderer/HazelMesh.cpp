@@ -757,7 +757,7 @@ namespace Hazel {
 
 		if (m_IsAnimated)
 		{
-			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)m_AnimatedVertices.size() * sizeof(AnimatedVertex));
+			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)sizeof(AnimatedVertex), (uint32_t)m_AnimatedVertices.size());
 
 			m_VertexBufferLayout = {
 							{ ShaderDataType::Float3, "a_Position" },
@@ -771,7 +771,7 @@ namespace Hazel {
 		}
 		else
 		{
-			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), (uint32_t)m_StaticVertices.size() * sizeof(Vertex));
+			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), (uint32_t)sizeof(Vertex), (uint32_t)m_StaticVertices.size());
 
 			m_VertexBufferLayout = {
 							{ ShaderDataType::Float3, "a_Position" },

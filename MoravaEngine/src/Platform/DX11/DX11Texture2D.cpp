@@ -3,6 +3,8 @@
 #include "DX11Context.h"
 #include "DX11Image.h"
 
+#include "Core/Util.h"
+
 #include <DirectXTex.h>
 
 
@@ -46,10 +48,11 @@ DX11Texture2D::DX11Texture2D(const wchar_t* fullPath)
 	}
 	else
 	{
-		throw std::exception("DX11Texture2D not created successfully.");
+		std::string message = "DX11Texture2D '" + Util::to_str(fullPath) + "' not created successfully.";
+		throw std::exception(message.c_str());
 	}
 
-	Log::GetLogger()->info("DX11Texture2D '{0}' successfully loaded!", "const wchar_t*");
+	Log::GetLogger()->info("DX11Texture2D '{0}' successfully loaded!", Util::to_str(fullPath));
 
 	// Invalidate(); // do we need an Invalidate method?
 }
@@ -90,7 +93,7 @@ DX11Texture2D::DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type)
 
 	if (FAILED(hr))
 	{
-		throw std::exception("DX11Texture2D not created successfully (Texture2D).");
+		throw std::exception("DX11Texture2D not created successfully.");
 	}
 
 	if (type == Normal || type == RenderTarget)
@@ -121,6 +124,8 @@ DX11Texture2D::DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type)
 
 	m_type = type;
 	m_size = size;
+
+	Log::GetLogger()->info("DX11Texture2D successfully created!");
 
 	// Invalidate(); // do we need an Invalidate method?
 }

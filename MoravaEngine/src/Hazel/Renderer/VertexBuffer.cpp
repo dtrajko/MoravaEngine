@@ -35,4 +35,18 @@ namespace Hazel {
 		return Ref<VertexBuffer>();
 	}
 
+	Ref<VertexBuffer> VertexBuffer::Create(void* data, uint32_t stride, uint32_t count, VertexBufferUsage usage)
+	{
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::None:    return Ref<VertexBuffer>();
+		case RendererAPIType::OpenGL:  return Ref<OpenGLVertexBuffer>::Create(data, stride * count, usage);
+		case RendererAPIType::Vulkan:  return Ref<VulkanVertexBuffer>::Create(data, stride * count, usage);
+		case RendererAPIType::DX11:    return Ref<DX11VertexBuffer>::Create(data, stride, count);
+		}
+		Log::GetLogger()->error("Unknown RendererAPI");
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		return Ref<VertexBuffer>();
+	}
+
 }
