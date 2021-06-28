@@ -447,7 +447,7 @@ namespace Hazel {
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					Log::GetLogger()->info("    Albedo map path = {0}", texturePath);
+					Log::GetLogger()->info("    Albedo map path = '{0}'", texturePath);
 
 					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 					try {
@@ -512,7 +512,7 @@ namespace Hazel {
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					HZ_MESH_LOG("    Normal map path = {0}", texturePath);
+					HZ_MESH_LOG("    Normal map path = '{0}'", texturePath);
 
 					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 					try {
@@ -622,7 +622,7 @@ namespace Hazel {
 
 					if (texture->Loaded())
 					{
-						HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
+						HZ_MESH_LOG("    Metalness map path = '{0}'", texturePath);
 						m_MeshShader->SetInt("u_MetalnessTexture", texture->GetID());
 						m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
 					}
@@ -710,7 +710,7 @@ namespace Hazel {
 							auto parentPath = path.parent_path();
 							parentPath /= str;
 							std::string texturePath = parentPath.string();
-							HZ_MESH_LOG("    Metalness map path = {0}", texturePath);
+							HZ_MESH_LOG("    Metalness map path = '{0}'", texturePath);
 
 							Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 							try {

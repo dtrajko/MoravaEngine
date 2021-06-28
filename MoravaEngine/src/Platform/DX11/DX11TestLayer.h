@@ -58,10 +58,6 @@ private:
 	static glm::vec2 s_StartMousePosition;
 
 	std::vector<Hazel::Ref<Hazel::HazelMesh>> m_Meshes;
-	Hazel::Ref<Hazel::HazelTexture2D> m_Texture;
-
-	std::vector<glm::vec4> m_RandomColors;
-
 	bool m_ShowMouseCursor;
 
 };

@@ -14,10 +14,10 @@
 struct DX11VertexLayout
 {
 	glm::vec3 Position;
-	glm::vec2 TexCoord;
 	glm::vec3 Normal;
 	glm::vec3 Tangent;
 	glm::vec3 Binormal;
+	glm::vec2 TexCoord;
 };
 
 __declspec(align(16))
@@ -38,7 +38,8 @@ public:
 	static void Draw(Hazel::HazelCamera* camera); // TODO: there should be no parameters
 	static void OnResize(uint32_t width, uint32_t height);
 
-	static void SubmitMesh(const Hazel::Ref<Hazel::HazelMesh>& mesh);
+	static void SubmitMesh(Hazel::Ref<Hazel::HazelMesh> mesh);
+	static void RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh);
 
 	static void BeginFrame();
 	static void EndFrame();

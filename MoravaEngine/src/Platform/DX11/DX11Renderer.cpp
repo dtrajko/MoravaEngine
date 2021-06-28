@@ -48,7 +48,7 @@ static Hazel::Ref<Hazel::Pipeline> s_Pipeline;
 static Hazel::Ref<DX11ConstantBuffer> s_ConstantBuffer;
 
 
-void DX11Renderer::SubmitMesh(const Hazel::Ref<Hazel::HazelMesh>& mesh)
+void DX11Renderer::SubmitMesh(Hazel::Ref<Hazel::HazelMesh> mesh)
 {
 	// Temporary code - populate selected submesh
 	std::vector<Hazel::Submesh> submeshes = mesh->GetSubmeshes();
@@ -136,47 +136,47 @@ void DX11Renderer::Init()
 
 	DX11VertexLayout vertexList[] =
 	{
-		// ----------------- POSITION XYZ --------- TEXCOORD UV --- NORMAL XYZ ----------- TANGENT XYZ --------- BINORMAL XYZ
-		// DX11VertexLayout{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, }, // VERTEX #0
-		// DX11VertexLayout{ { -0.5f,  0.5f, -0.5f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, }, // VERTEX #1
-		// DX11VertexLayout{ {  0.5f,  0.5f, -0.5f }, { 1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, }, // VERTEX #2
-		// DX11VertexLayout{ {  0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #3
+		// ----------------- POSITION XYZ ---------- NORMAL XYZ ----------- TANGENT XYZ ---------- BINORMAL XYZ -------- TEXCOORD UV
+		// DX11VertexLayout{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f }, }, // VERTEX #0
+		// DX11VertexLayout{ { -0.5f,  0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }, }, // VERTEX #1
+		// DX11VertexLayout{ {  0.5f,  0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, { 1.0f, 0.0f }, }, // VERTEX #2
+		// DX11VertexLayout{ {  0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }, }, // VERTEX #3
 
-		// DX11VertexLayout{ {  0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, }, // VERTEX #4
-		// DX11VertexLayout{ {  0.5f,  0.5f,  0.5f }, { 1.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, }, // VERTEX #5
-		// DX11VertexLayout{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, }, // VERTEX #6
-		// DX11VertexLayout{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, }, // VERTEX #7
+		// DX11VertexLayout{ {  0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }, }, // VERTEX #4
+		// DX11VertexLayout{ {  0.5f,  0.5f,  0.5f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, { 1.0f, 0.0f }, }, // VERTEX #5
+		// DX11VertexLayout{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }, }, // VERTEX #6
+		// DX11VertexLayout{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f }, }, // VERTEX #7
 
 		// front side
-		DX11VertexLayout{ positionList[0], texcoordList[1], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[1], texcoordList[0], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[2], texcoordList[2], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[3], texcoordList[3], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
+		DX11VertexLayout{ positionList[0], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[1], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[2], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[3], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 		// back side
-		DX11VertexLayout{ positionList[4], texcoordList[1], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[5], texcoordList[0], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[6], texcoordList[2], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[7], texcoordList[3], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
+		DX11VertexLayout{ positionList[4], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[5], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[6], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[7], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 		// top side
-		DX11VertexLayout{ positionList[1], texcoordList[1], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[6], texcoordList[0], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[5], texcoordList[2], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[2], texcoordList[3], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
+		DX11VertexLayout{ positionList[1], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[6], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[5], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[2], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 		// bottom side
-		DX11VertexLayout{ positionList[7], texcoordList[1], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[0], texcoordList[0], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[3], texcoordList[2], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[4], texcoordList[3], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
+		DX11VertexLayout{ positionList[7], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[0], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[3], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[4], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 		// right side
-		DX11VertexLayout{ positionList[3], texcoordList[1], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[2], texcoordList[0], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[5], texcoordList[2], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[4], texcoordList[3], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
+		DX11VertexLayout{ positionList[3], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[2], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[5], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[4], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 		// left side
-		DX11VertexLayout{ positionList[7], texcoordList[1], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[6], texcoordList[0], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[1], texcoordList[2], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
-		DX11VertexLayout{ positionList[0], texcoordList[3], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), },
+		DX11VertexLayout{ positionList[7], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[6], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[1], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[0], glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 	};
 
 	// temporary DX11 objects and data structures
@@ -309,17 +309,6 @@ void DX11Renderer::Init()
 	****/
 }
 
-static void RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::HazelCamera* camera) // TODO: remove the HazelCamera parameter
-{
-	// TODO
-
-	auto& submeshes = mesh->GetSubmeshes();
-	for (Hazel::Submesh& submesh : submeshes)
-	{
-		// TODO: Draw Indexed
-	}
-}
-
 static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
 {
 	Hazel::Ref<DX11Context> dx11Context = Hazel::Ref<DX11Context>(Application::Get()->GetWindow()->GetRenderContext());
@@ -357,9 +346,10 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	DX11Context::Get()->SetViewportSize(viewportWidth, viewportHeight);
 	DX11TestLayer::GetCamera()->SetViewportSize((float)viewportWidth, (float)viewportHeight);
 
+	// Projection matrix (Camera)
+	glm::mat4 projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
 	// View matrix (Camera)
 	glm::mat4 view = DX11TestLayer::GetCamera()->GetViewMatrix();
-	glm::mat4 projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
 
 	// BEGIN render mesh #1
 	{
@@ -457,7 +447,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	for (auto& mesh : s_Meshes)
 	{
-		RenderMesh(mesh, camera);
+		RenderMesh(mesh);
 	}
 
 	s_Meshes.clear();
@@ -518,6 +508,56 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	// Vulkan CmdExecuteCommands
 	// Vulkan CmdEndRenderPass
 	****/
+}
+
+void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh)
+{
+	Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
+
+	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = mesh->GetVertexBuffer().As<DX11VertexBuffer>();
+	dx11MeshVB->Bind();
+	Hazel::Ref<DX11IndexBuffer> dx11meshIB = mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+	dx11meshIB->Bind();
+	Hazel::Ref<DX11Pipeline> dx11Pipeline = mesh->GetPipeline().As<DX11Pipeline>();
+	// dx11Pipeline->Bind();
+	s_Pipeline->Bind();
+
+	// Projection matrix (Camera)
+	glm::mat4 projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
+	// View matrix (Camera)
+	glm::mat4 view = DX11TestLayer::GetCamera()->GetViewMatrix();
+
+	auto& submeshes = mesh->GetSubmeshes();
+	for (Hazel::Submesh submesh : submeshes)
+	{
+		// World/Model/Transform matrix
+		glm::mat4 model = submesh.Transform;
+
+		DX11ConstantBufferLayout constantBufferLayout;
+		constantBufferLayout.Model = model;
+		constantBufferLayout.View = view;
+		constantBufferLayout.Projection = projection;
+		constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
+		s_ConstantBuffer->Update(&constantBufferLayout);
+
+		dx11Shader->GetVertexShader()->Bind();
+		dx11Shader->GetPixelShader()->Bind();
+
+		std::vector<Hazel::Ref<DX11Texture2D>> textures;
+		textures.push_back(mesh->GetTextures().at(0).As<DX11Texture2D>());
+		textures.push_back(mesh->GetTextures().at(1).As<DX11Texture2D>());
+
+		dx11Shader->GetVertexShader()->SetTextures(textures);
+		dx11Shader->GetPixelShader()->SetTextures(textures);
+
+		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+
+		uint32_t startVertexIndex = 0;
+		uint32_t startIndexLocation = 0;
+		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
+		DX11Renderer::DrawIndexedTriangleList(s_IndexBuffer->GetIndexCount(), startVertexIndex, startIndexLocation);
+	}
 }
 
 void DX11Renderer::BeginFrame()
