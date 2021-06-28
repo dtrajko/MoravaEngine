@@ -37,8 +37,8 @@ void DX11TestLayer::OnAttach()
 
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 
-	// Hazel::Ref<Hazel::HazelMesh> mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
-	// m_Meshes.push_back(mesh);
+	Hazel::Ref<Hazel::HazelMesh> mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
+	m_Meshes.push_back(mesh);
 
 	// Hazel::Ref<Hazel::HazelTexture2D> texture = Hazel::HazelTexture2D::Create("Textures/PardCode/wood.jpg", false);
 	Hazel::Ref<Hazel::HazelTexture2D> texture = ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");

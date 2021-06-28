@@ -160,8 +160,8 @@ namespace Hazel {
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelDX11;
 				moravaShaderSpecificationHazelDX11.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-				moravaShaderSpecificationHazelDX11.VertexShaderPath = "Shaders/HLSL/DirectionalLightVertexShader.hlsl";
-				moravaShaderSpecificationHazelDX11.PixelShaderPath = "Shaders/HLSL/DirectionalLightPixelShader.hlsl";
+				moravaShaderSpecificationHazelDX11.VertexShaderPath = "Shaders/HLSL/BasicVertexShader.hlsl";
+				moravaShaderSpecificationHazelDX11.PixelShaderPath = "Shaders/HLSL/BasicPixelShader.hlsl";
 				moravaShaderSpecificationHazelDX11.ForceCompile = false;
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelDX11);
@@ -223,7 +223,22 @@ namespace Hazel {
 					}
 
 					if (mesh->HasTextureCoords(0))
-						vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+					{
+						switch (RendererAPI::Current())
+						{
+						case RendererAPIType::OpenGL:
+						case RendererAPIType::Vulkan:
+							vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+							break;
+						case RendererAPIType::DX11:
+							vertex.Texcoord = { mesh->mTextureCoords[0][i].x, 1.0f - mesh->mTextureCoords[0][i].y };
+							break;
+						default:
+							Log::GetLogger()->error("Unknown RendererAPI");
+							HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+							break;
+						}
+					}
 
 					m_AnimatedVertices.push_back(vertex);
 				}
@@ -255,7 +270,22 @@ namespace Hazel {
 					}
 
 					if (mesh->HasTextureCoords(0))
-						vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+					{
+						switch (RendererAPI::Current())
+						{
+						case RendererAPIType::OpenGL:
+						case RendererAPIType::Vulkan:
+							vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
+							break;
+						case RendererAPIType::DX11:
+							vertex.Texcoord = { mesh->mTextureCoords[0][i].x, 1.0f - mesh->mTextureCoords[0][i].y };
+							break;
+						default:
+							Log::GetLogger()->error("Unknown RendererAPI");
+							HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+							break;
+						}
+					}
 
 					m_StaticVertices.push_back(vertex);
 				}

@@ -514,6 +514,9 @@ void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh)
 {
 	Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
 
+	dx11Shader->GetVertexShader()->Bind();
+	dx11Shader->GetPixelShader()->Bind();
+
 	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = mesh->GetVertexBuffer().As<DX11VertexBuffer>();
 	dx11MeshVB->Bind();
 	Hazel::Ref<DX11IndexBuffer> dx11meshIB = mesh->GetIndexBuffer().As<DX11IndexBuffer>();
@@ -521,6 +524,13 @@ void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh)
 	Hazel::Ref<DX11Pipeline> dx11Pipeline = mesh->GetPipeline().As<DX11Pipeline>();
 	// dx11Pipeline->Bind();
 	s_Pipeline->Bind();
+
+	std::vector<Hazel::Ref<DX11Texture2D>> textures;
+	textures.push_back(mesh->GetTextures().at(0).As<DX11Texture2D>());
+	textures.push_back(mesh->GetTextures().at(1).As<DX11Texture2D>());
+
+	dx11Shader->GetVertexShader()->SetTextures(textures);
+	dx11Shader->GetPixelShader()->SetTextures(textures);
 
 	// Projection matrix (Camera)
 	glm::mat4 projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
@@ -532,6 +542,8 @@ void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh)
 	{
 		// World/Model/Transform matrix
 		glm::mat4 model = submesh.Transform;
+		model = glm::translate(model, glm::vec3(0.0f, 0.02f, 0.02f));
+		model = glm::scale(model, glm::vec3(0.05f));
 
 		DX11ConstantBufferLayout constantBufferLayout;
 		constantBufferLayout.Model = model;
@@ -540,23 +552,13 @@ void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh)
 		constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
 		s_ConstantBuffer->Update(&constantBufferLayout);
 
-		dx11Shader->GetVertexShader()->Bind();
-		dx11Shader->GetPixelShader()->Bind();
-
-		std::vector<Hazel::Ref<DX11Texture2D>> textures;
-		textures.push_back(mesh->GetTextures().at(0).As<DX11Texture2D>());
-		textures.push_back(mesh->GetTextures().at(1).As<DX11Texture2D>());
-
-		dx11Shader->GetVertexShader()->SetTextures(textures);
-		dx11Shader->GetPixelShader()->SetTextures(textures);
-
 		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
 		uint32_t startVertexIndex = 0;
 		uint32_t startIndexLocation = 0;
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(s_IndexBuffer->GetIndexCount(), startVertexIndex, startIndexLocation);
+		DX11Renderer::DrawIndexedTriangleList(dx11meshIB->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
 }
 
