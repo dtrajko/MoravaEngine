@@ -11,6 +11,7 @@
 #include "DX11Texture2D.h"
 #include "DX11VertexBuffer.h"
 #include "DX11IndexBuffer.h"
+#include "DX11VertexLayout.h"
 
 #include "Hazel/Renderer/HazelRenderer.h"
 
@@ -449,7 +450,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		s_Pipeline->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
 
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * -40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		DX11ConstantBufferLayout constantBufferLayout;
 		constantBufferLayout.Model = model;

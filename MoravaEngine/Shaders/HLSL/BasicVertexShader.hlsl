@@ -11,15 +11,18 @@ struct VS_OUTPUT
 {
 	float4 position: SV_POSITION;
 	float2 texcoord: TEXCOORD0;
-	float3 binormal: BINORMAL0;
 };
 
 cbuffer constant: register(b0)
 {
-	row_major float4x4 model;
-	row_major float4x4 view;
-	row_major float4x4 projection;
-	unsigned int time;
+	row_major float4x4 m_model;
+	row_major float4x4 m_view;
+	row_major float4x4 m_proj;
+	float4 m_light_direction;
+	float4 m_camera_position;
+	float4 m_light_position;
+	float m_light_radius;
+	float m_time;
 }
 
 
@@ -28,14 +31,13 @@ VS_OUTPUT vsmain(VS_INPUT input)
 	VS_OUTPUT output = (VS_OUTPUT)0;
 
 	// World space
-	output.position = mul(input.position, model);
+	output.position = mul(input.position, m_model);
 	// View space
-	output.position = mul(output.position, view);
+	output.position = mul(output.position, m_view);
 	// Screen space
-	output.position = mul(output.position, projection);
+	output.position = mul(output.position, m_proj);
 
 	output.texcoord = input.texcoord;
-	output.binormal = input.binormal;
 
 	return output;
 }

@@ -1,24 +1,25 @@
-Texture2D Texture: register(t0);
-sampler TextureSampler: register(s0);
+Texture2D Color: register(t0);
+sampler ColorSampler: register(s0);
+
 
 struct PS_INPUT
 {
 	float4 position: SV_POSITION;
 	float2 texcoord: TEXCOORD0;
-	float3 binormal: BINORMAL0;
 };
 
 cbuffer constant: register(b0)
 {
-	row_major float4x4 model;
-	row_major float4x4 view;
-	row_major float4x4 projection;
+	row_major float4x4 m_model;
+	row_major float4x4 m_view;
+	row_major float4x4 m_projection;
 	unsigned int time;
 }
 
 
 float4 psmain(PS_INPUT input) : SV_TARGET
 {
-	// return float4(lerp(input.color, input.binormal, (sin(time / 1000.0) + 1.0) / 2.0), 1.0);
-	return Texture.Sample(TextureSampler, input.texcoord);
+	float4 color = Color.Sample(ColorSampler, float2(input.texcoord.x, 1.0 - input.texcoord.y));
+
+	return color;
 }

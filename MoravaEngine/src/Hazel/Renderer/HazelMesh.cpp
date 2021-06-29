@@ -224,20 +224,7 @@ namespace Hazel {
 
 					if (mesh->HasTextureCoords(0))
 					{
-						switch (RendererAPI::Current())
-						{
-						case RendererAPIType::OpenGL:
-						case RendererAPIType::Vulkan:
-							vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-							break;
-						case RendererAPIType::DX11:
-							vertex.Texcoord = { mesh->mTextureCoords[0][i].x, 1.0f - mesh->mTextureCoords[0][i].y };
-							break;
-						default:
-							Log::GetLogger()->error("Unknown RendererAPI");
-							HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-							break;
-						}
+						vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
 					}
 
 					m_AnimatedVertices.push_back(vertex);
@@ -271,20 +258,7 @@ namespace Hazel {
 
 					if (mesh->HasTextureCoords(0))
 					{
-						switch (RendererAPI::Current())
-						{
-						case RendererAPIType::OpenGL:
-						case RendererAPIType::Vulkan:
-							vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
-							break;
-						case RendererAPIType::DX11:
-							vertex.Texcoord = { mesh->mTextureCoords[0][i].x, 1.0f - mesh->mTextureCoords[0][i].y };
-							break;
-						default:
-							Log::GetLogger()->error("Unknown RendererAPI");
-							HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-							break;
-						}
+						vertex.Texcoord = { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y };
 					}
 
 					m_StaticVertices.push_back(vertex);

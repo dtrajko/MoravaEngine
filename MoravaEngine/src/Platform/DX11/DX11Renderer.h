@@ -9,17 +9,9 @@
 #include "DX11ConstantBuffer.h"
 #include "DX11TestLayer.h"
 
+
 #include "Core/Window.h"
 
-
-struct DX11VertexLayout
-{
-	glm::vec3 Position;
-	glm::vec3 Normal;
-	glm::vec3 Tangent;
-	glm::vec3 Binormal;
-	glm::vec2 TexCoord;
-};
 
 __declspec(align(16))
 struct DX11ConstantBufferLayout
