@@ -206,7 +206,7 @@ void DX11Renderer::Init()
 	};
 
 	uint32_t indexCount = ARRAYSIZE(indexList);
-	s_IndexBuffer = Hazel::Ref<DX11IndexBuffer>::Create(indexList, indexCount * sizeof(uint32_t));
+	s_IndexBuffer = Hazel::Ref<DX11IndexBuffer>::Create(indexList, (uint32_t)(indexCount * sizeof(uint32_t)));
 
 	DX11ConstantBufferLayout constantBufferLayout;
 	constantBufferLayout.Model = glm::mat4(1.0f);
@@ -432,12 +432,48 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
+
 		uint32_t startVertexIndex = 0;
 		uint32_t startIndexLocation = 0;
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
 		DX11Renderer::DrawIndexedTriangleList(s_IndexBuffer->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
 	// END render mesh #3
+
+	// BEGIN render DX11Mesh
+	{
+		Hazel::Ref<DX11VertexBuffer> dx11VertexBuffer = DX11TestLayer::s_Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
+		dx11VertexBuffer->Bind();
+		Hazel::Ref<DX11IndexBuffer> dx11IndexBuffer = DX11TestLayer::s_Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+		dx11IndexBuffer->Bind();
+		s_Pipeline->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 5.0f));
+
+		DX11ConstantBufferLayout constantBufferLayout;
+		constantBufferLayout.Model = model;
+		constantBufferLayout.Projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
+		constantBufferLayout.View = DX11TestLayer::GetCamera()->GetViewMatrix();
+		constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
+		s_ConstantBuffer->Update(&constantBufferLayout);
+
+		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+
+		Hazel::Ref<Hazel::HazelTexture2D> texture = ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick.png");
+		std::vector<Hazel::Ref<DX11Texture2D>> textures;
+		textures.push_back(texture.As<DX11Texture2D>());
+
+		dx11Shader->GetVertexShader()->SetTextures(textures);
+		dx11Shader->GetPixelShader()->SetTextures(textures);
+
+		uint32_t indexCount = dx11IndexBuffer->GetIndexCount();
+		uint32_t startVertexIndex = 0;
+		uint32_t startIndexLocation = 0;
+		DX11Renderer::DrawIndexedTriangleList(indexCount, startVertexIndex, startIndexLocation);
+	}
+	// END render DX11Mesh
 
 	for (auto& renderObject : s_RenderObjects)
 	{
@@ -516,8 +552,7 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 	Hazel::Ref<DX11IndexBuffer> dx11meshIB = renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
 	dx11meshIB->Bind();
 	Hazel::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
-	// dx11Pipeline->Bind();
-	s_Pipeline->Bind();
+	s_Pipeline->Bind(); // TODO dx11Pipeline->Bind()
 
 	uint32_t textureIndex = 0;
 	for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())

@@ -22,10 +22,11 @@ public:
 	virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) override {};
 	virtual void Bind() const override;
 	virtual uint32_t GetCount() const override { return m_Count; }
-	virtual uint32_t GetSize() const override { return m_Count; }
+	virtual uint32_t GetSize() const override { return m_Size; }
 	virtual Hazel::RendererID GetRendererID() const override;
 
 private:
+	uint32_t m_Size;
 	uint32_t m_Count;
 	ID3D11Buffer* m_Buffer;
 

@@ -832,6 +832,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11VertexMesh.h" />
     <ClInclude Include="src\Platform\DX11\DX11VertexShader.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaShader.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererBasic.h" />

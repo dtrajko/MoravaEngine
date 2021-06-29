@@ -19,6 +19,7 @@ DX11IndexBuffer::DX11IndexBuffer(void* data, uint32_t size)
 	D3D11_SUBRESOURCE_DATA init_data = {};
 	init_data.pSysMem = data;
 
+	m_Size = size;
 	m_Count = size / sizeof(uint32_t);
 
 	HRESULT hr = dx11Device->CreateBuffer(&buff_desc, &init_data, &m_Buffer);

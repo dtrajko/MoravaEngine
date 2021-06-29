@@ -1886,6 +1886,9 @@
     <ClInclude Include="src\Platform\DX11\DX11Mesh.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11VertexMesh.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

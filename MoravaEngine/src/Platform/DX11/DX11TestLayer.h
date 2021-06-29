@@ -12,6 +12,7 @@
 #include "DX11VertexBuffer.h"
 #include "DX11InputListener.h"
 #include "DX11CameraFP.h"
+#include "DX11Mesh.h"
 
 #include "Core/Window.h"
 #include "Scene/Scene.h"
@@ -59,6 +60,9 @@ public:
 
 	virtual void OnLeftMouseUp(const glm::vec2& mousePos) override;
 	virtual void OnRightMouseUp(const glm::vec2& mousePos) override;
+
+public:
+	static Hazel::Ref<DX11Mesh> s_Mesh;
 
 private:
 	static std::shared_ptr<DX11CameraFP> s_Camera;

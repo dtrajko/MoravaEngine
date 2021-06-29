@@ -14,6 +14,8 @@
 
 std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
 glm::vec2 DX11TestLayer::s_StartMousePosition;
+Hazel::Ref<DX11Mesh> DX11TestLayer::s_Mesh;
+
 
 DX11TestLayer::DX11TestLayer()
 {
@@ -60,7 +62,9 @@ void DX11TestLayer::OnAttach()
 	m_RenderObjects.push_back(renderObjectCerberus);
 
 	// ---- other assets ----
-	Hazel::Ref<Hazel::HazelTexture2D> texture = ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
+	ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
+	ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick.png");
+	s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
 }
 
 void DX11TestLayer::OnDetach()
