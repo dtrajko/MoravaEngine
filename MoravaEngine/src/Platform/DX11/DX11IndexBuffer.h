@@ -11,7 +11,7 @@
 class DX11IndexBuffer : public Hazel::IndexBuffer
 {
 public:
-	DX11IndexBuffer(void* data, uint32_t count);
+	DX11IndexBuffer(void* data, uint32_t size);
 	DX11IndexBuffer(uint32_t size);
 	~DX11IndexBuffer();
 

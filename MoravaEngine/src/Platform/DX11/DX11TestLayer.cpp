@@ -37,10 +37,29 @@ void DX11TestLayer::OnAttach()
 
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 
-	Hazel::Ref<Hazel::HazelMesh> mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
-	m_Meshes.push_back(mesh);
+	RenderObject renderObjectGladiator;
+	renderObjectGladiator.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Gladiator/Gladiator.fbx");
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_weapon_Normal.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_BaseColor.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_Normal.jpg"));
+	renderObjectGladiator.Transform = glm::mat4(1.0f);
+	renderObjectGladiator.Transform = glm::translate(renderObjectGladiator.Transform, glm::vec3(0.0f, 0.0f, -2.0f));
+	renderObjectGladiator.Transform = glm::scale(renderObjectGladiator.Transform, glm::vec3(0.04f));
+	m_RenderObjects.push_back(renderObjectGladiator);
 
-	// Hazel::Ref<Hazel::HazelTexture2D> texture = Hazel::HazelTexture2D::Create("Textures/PardCode/wood.jpg", false);
+	RenderObject renderObjectCerberus;
+	renderObjectCerberus.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
+	renderObjectCerberus.Textures.push_back(renderObjectCerberus.Mesh->GetTextures().at(0));
+	renderObjectCerberus.Textures.push_back(renderObjectCerberus.Mesh->GetTextures().at(1));
+	renderObjectCerberus.Transform = glm::mat4(1.0f);
+	renderObjectCerberus.Transform = glm::translate(renderObjectCerberus.Transform, glm::vec3(0.0f, 4.0f, 4.0f));
+	renderObjectCerberus.Transform = glm::rotate(renderObjectCerberus.Transform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	renderObjectCerberus.Transform = glm::rotate(renderObjectCerberus.Transform, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	renderObjectCerberus.Transform = glm::scale(renderObjectCerberus.Transform, glm::vec3(2.0f));
+	m_RenderObjects.push_back(renderObjectCerberus);
+
+	// ---- other assets ----
 	Hazel::Ref<Hazel::HazelTexture2D> texture = ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
 }
 
@@ -64,10 +83,12 @@ void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
 		glm::perspectiveFov(glm::radians(60.0f), (float)DX11Renderer::GetViewportWidth(), (float)DX11Renderer::GetViewportHeight(), 0.01f, 1000.0f));
 
 	glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+
 	Render(clearColor, s_Camera);
-	for (Hazel::Ref<Hazel::HazelMesh> mesh : m_Meshes)
+
+	for (RenderObject renderObject : m_RenderObjects)
 	{
-		DX11Renderer::SubmitMesh(mesh);
+		DX11Renderer::SubmitMesh(renderObject);
 	}
 }
 
@@ -85,7 +106,7 @@ void DX11TestLayer::OnEvent(Event& event)
 		if (e.GetWidth() != 0 && e.GetHeight() != 0)
 		{
 			s_Camera->SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
-			s_Camera->SetProjectionMatrix(glm::perspectiveFov(glm::radians(60.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
+			s_Camera->SetProjectionMatrix(glm::perspectiveFov(glm::radians(60.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 1000.0f));
 		}
 	}
 }
@@ -100,28 +121,6 @@ void DX11TestLayer::OnRender(Window* mainWindow)
 
 void DX11TestLayer::Render(const glm::vec4& clearColor, std::shared_ptr<DX11CameraFP> camera)
 {
-	if (!m_Meshes.size()) return;
-
-	auto mesh = m_Meshes[0];
-	// HazelRenderer::Submit([=]() mutable
-	// {
-	// });
-	{
-		Hazel::Ref<DX11Context> context = Hazel::Ref<DX11Context>(Application::Get()->GetWindow()->GetRenderContext());
-		// TODO:	Hazel::Ref<DX11Shader> shader = mesh->GetMeshShader().As<DX11Shader>();
-		// TODO:	DX11SwapChain& swapChain = context->GetSwapChain();
-
-		// TODO:	{
-		// TODO:		// uniform buffer binding 0 uniform Camera
-		// TODO:		void* ubPtr = shader->MapUniformBuffer(0);
-		// TODO:		glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
-		// TODO:		// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
-		// TODO:		glm::mat4 viewProj = proj * camera.GetViewMatrix();  // Runtime camera
-		// TODO:		// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
-		// TODO:		memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
-		// TODO:		shader->UnmapUniformBuffer(0);
-		// TODO:	}
-	}
 }
 
 void DX11TestLayer::OnKeyDown(int key)

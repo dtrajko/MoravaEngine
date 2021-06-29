@@ -7,6 +7,7 @@
 
 #include "DX11Texture2D.h"
 #include "DX11ConstantBuffer.h"
+#include "DX11TestLayer.h"
 
 #include "Core/Window.h"
 
@@ -38,8 +39,8 @@ public:
 	static void Draw(Hazel::HazelCamera* camera); // TODO: there should be no parameters
 	static void OnResize(uint32_t width, uint32_t height);
 
-	static void SubmitMesh(Hazel::Ref<Hazel::HazelMesh> mesh);
-	static void RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh);
+	static void SubmitMesh(RenderObject renderObject);
+	static void RenderMesh(RenderObject renderObject);
 
 	static void BeginFrame();
 	static void EndFrame();

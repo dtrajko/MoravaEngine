@@ -5,13 +5,13 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 
 
-DX11IndexBuffer::DX11IndexBuffer(void* data, uint32_t count)
+DX11IndexBuffer::DX11IndexBuffer(void* data, uint32_t size)
 {
 	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	D3D11_BUFFER_DESC buff_desc = {};
 	buff_desc.Usage = D3D11_USAGE_DEFAULT;
-	buff_desc.ByteWidth = count * 4;
+	buff_desc.ByteWidth = size;
 	buff_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	buff_desc.CPUAccessFlags = 0;
 	buff_desc.MiscFlags = 0;
@@ -19,7 +19,7 @@ DX11IndexBuffer::DX11IndexBuffer(void* data, uint32_t count)
 	D3D11_SUBRESOURCE_DATA init_data = {};
 	init_data.pSysMem = data;
 
-	m_Count = count;
+	m_Count = size / sizeof(uint32_t);
 
 	HRESULT hr = dx11Device->CreateBuffer(&buff_desc, &init_data, &m_Buffer);
 	if (FAILED(hr))

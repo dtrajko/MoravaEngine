@@ -11,7 +11,6 @@
 #include "DX11Texture2D.h"
 #include "DX11VertexBuffer.h"
 #include "DX11IndexBuffer.h"
-#include "DX11TestLayer.h"
 
 #include "Hazel/Renderer/HazelRenderer.h"
 
@@ -36,7 +35,7 @@ static ImTextureID s_TextureID;
 static uint32_t s_ViewportWidth = 1280;
 static uint32_t s_ViewportHeight = 720;
 
-static std::vector<Hazel::Ref<Hazel::HazelMesh>> s_Meshes;
+static std::vector<RenderObject> s_RenderObjects;
 
 static Hazel::Submesh* s_SelectedSubmesh;
 static glm::mat4* s_Transform_ImGuizmo = nullptr;
@@ -48,13 +47,13 @@ static Hazel::Ref<Hazel::Pipeline> s_Pipeline;
 static Hazel::Ref<DX11ConstantBuffer> s_ConstantBuffer;
 
 
-void DX11Renderer::SubmitMesh(Hazel::Ref<Hazel::HazelMesh> mesh)
+void DX11Renderer::SubmitMesh(RenderObject renderObject)
 {
 	// Temporary code - populate selected submesh
-	std::vector<Hazel::Submesh> submeshes = mesh->GetSubmeshes();
+	std::vector<Hazel::Submesh> submeshes = renderObject.Mesh->GetSubmeshes();
 	s_SelectedSubmesh = &submeshes.at(0);
 
-	s_Meshes.push_back(mesh);
+	s_RenderObjects.push_back(renderObject);
 }
 
 void DX11Renderer::OnResize(uint32_t width, uint32_t height)
@@ -207,7 +206,7 @@ void DX11Renderer::Init()
 	};
 
 	uint32_t indexCount = ARRAYSIZE(indexList);
-	s_IndexBuffer = Hazel::Ref<DX11IndexBuffer>::Create(indexList, indexCount);
+	s_IndexBuffer = Hazel::Ref<DX11IndexBuffer>::Create(indexList, indexCount * sizeof(uint32_t));
 
 	DX11ConstantBufferLayout constantBufferLayout;
 	constantBufferLayout.Model = glm::mat4(1.0f);
@@ -346,11 +345,6 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	DX11Context::Get()->SetViewportSize(viewportWidth, viewportHeight);
 	DX11TestLayer::GetCamera()->SetViewportSize((float)viewportWidth, (float)viewportHeight);
 
-	// Projection matrix (Camera)
-	glm::mat4 projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
-	// View matrix (Camera)
-	glm::mat4 view = DX11TestLayer::GetCamera()->GetViewMatrix();
-
 	// BEGIN render mesh #1
 	{
 		s_VertexBuffer->Bind();
@@ -367,8 +361,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		DX11ConstantBufferLayout constantBufferLayout;
 		constantBufferLayout.Model = model;
-		constantBufferLayout.View = view;
-		constantBufferLayout.Projection = projection;
+		constantBufferLayout.Projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
+		constantBufferLayout.View = DX11TestLayer::GetCamera()->GetViewMatrix();
 		constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
 		// Log::GetLogger()->info("s_ConstantBufferLayout.Time: {0}", constantBufferLayout.Time);
 		s_ConstantBuffer->Update(&constantBufferLayout);
@@ -399,8 +393,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		DX11ConstantBufferLayout constantBufferLayout;
 		constantBufferLayout.Model = model;
-		constantBufferLayout.View = view;
-		constantBufferLayout.Projection = projection;
+		constantBufferLayout.Projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
+		constantBufferLayout.View = DX11TestLayer::GetCamera()->GetViewMatrix();
 		constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
 		s_ConstantBuffer->Update(&constantBufferLayout);
 
@@ -430,8 +424,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		DX11ConstantBufferLayout constantBufferLayout;
 		constantBufferLayout.Model = model;
-		constantBufferLayout.View = view;
-		constantBufferLayout.Projection = projection;
+		constantBufferLayout.Projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
+		constantBufferLayout.View = DX11TestLayer::GetCamera()->GetViewMatrix();
 		constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
 		s_ConstantBuffer->Update(&constantBufferLayout);
 
@@ -445,12 +439,12 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	}
 	// END render mesh #3
 
-	for (auto& mesh : s_Meshes)
+	for (auto& renderObject : s_RenderObjects)
 	{
-		RenderMesh(mesh);
+		RenderMesh(renderObject);
 	}
 
-	s_Meshes.clear();
+	s_RenderObjects.clear();
 
 	//	Log::GetLogger()->info("Elapsed time: {0}, delta time: {1}, App Window size: [{2}x{3}]",
 	//		Timer::Get()->GetCurrentTimestamp(), Timer::Get()->GetDeltaTime(),
@@ -510,55 +504,44 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	****/
 }
 
-void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::HazelMesh> mesh)
+void DX11Renderer::RenderMesh(RenderObject renderObject)
 {
 	Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
 
 	dx11Shader->GetVertexShader()->Bind();
 	dx11Shader->GetPixelShader()->Bind();
 
-	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = mesh->GetVertexBuffer().As<DX11VertexBuffer>();
+	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = renderObject.Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
 	dx11MeshVB->Bind();
-	Hazel::Ref<DX11IndexBuffer> dx11meshIB = mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+	Hazel::Ref<DX11IndexBuffer> dx11meshIB = renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
 	dx11meshIB->Bind();
-	Hazel::Ref<DX11Pipeline> dx11Pipeline = mesh->GetPipeline().As<DX11Pipeline>();
+	Hazel::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
 	// dx11Pipeline->Bind();
 	s_Pipeline->Bind();
 
-	std::vector<Hazel::Ref<DX11Texture2D>> textures;
-	textures.push_back(mesh->GetTextures().at(0).As<DX11Texture2D>());
-	textures.push_back(mesh->GetTextures().at(1).As<DX11Texture2D>());
-
-	dx11Shader->GetVertexShader()->SetTextures(textures);
-	dx11Shader->GetPixelShader()->SetTextures(textures);
-
-	// Projection matrix (Camera)
-	glm::mat4 projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
-	// View matrix (Camera)
-	glm::mat4 view = DX11TestLayer::GetCamera()->GetViewMatrix();
-
-	auto& submeshes = mesh->GetSubmeshes();
-	for (Hazel::Submesh submesh : submeshes)
+	uint32_t textureIndex = 0;
+	for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())
 	{
 		// World/Model/Transform matrix
-		glm::mat4 model = submesh.Transform;
-		model = glm::translate(model, glm::vec3(0.0f, 0.02f, 0.02f));
-		model = glm::scale(model, glm::vec3(0.05f));
-
 		DX11ConstantBufferLayout constantBufferLayout;
-		constantBufferLayout.Model = model;
-		constantBufferLayout.View = view;
-		constantBufferLayout.Projection = projection;
+		constantBufferLayout.Model = renderObject.Transform;
+		constantBufferLayout.View = DX11TestLayer::GetCamera()->GetViewMatrix();
+		constantBufferLayout.Projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
 		constantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
 		s_ConstantBuffer->Update(&constantBufferLayout);
 
 		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-		uint32_t startVertexIndex = 0;
-		uint32_t startIndexLocation = 0;
+		std::vector<Hazel::Ref<DX11Texture2D>> textures;
+		textures.push_back(renderObject.Textures.at(textureIndex++).As<DX11Texture2D>()); // Albedo Map
+		textures.push_back(renderObject.Textures.at(textureIndex++).As<DX11Texture2D>()); // Normal Map
+
+		dx11Shader->GetVertexShader()->SetTextures(textures);
+		dx11Shader->GetPixelShader()->SetTextures(textures);
+
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(dx11meshIB->GetIndexCount(), startVertexIndex, startIndexLocation);
+		DX11Renderer::DrawIndexedTriangleList(submesh.IndexCount, submesh.BaseVertex, submesh.BaseIndex);
 	}
 }
 

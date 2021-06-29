@@ -477,11 +477,12 @@ namespace Hazel {
 					auto parentPath = path.parent_path();
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
-					Log::GetLogger()->info("    Albedo map path = '{0}'", texturePath);
+					HZ_MESH_LOG("    Albedo map path = '{0}'", texturePath);
 
 					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 					try {
-						texture = HazelTexture2D::Create(texturePath, false);
+						// texture = HazelTexture2D::Create(texturePath, false);
+						texture = ResourceManager::LoadHazelTexture2D(texturePath);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ALBEDO map failed to load. Loading the default texture placeholder instead.");
@@ -546,7 +547,8 @@ namespace Hazel {
 
 					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 					try {
-						texture = HazelTexture2D::Create(texturePath, false);
+						// texture = HazelTexture2D::Create(texturePath, false);
+						texture = ResourceManager::LoadHazelTexture2D(texturePath);
 						m_Textures.push_back(texture);
 					}
 					catch (...) {
@@ -603,7 +605,8 @@ namespace Hazel {
 
 					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 					try {
-						texture = HazelTexture2D::Create(texturePath, false);
+						// texture = HazelTexture2D::Create(texturePath, false);
+						texture = ResourceManager::LoadHazelTexture2D(texturePath);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ROUGHNESS map failed to load. Loading the default texture placeholder instead.");
@@ -643,7 +646,8 @@ namespace Hazel {
 
 					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 					try {
-						texture = HazelTexture2D::Create(texturePath, false);
+						// texture = HazelTexture2D::Create(texturePath, false);
+						texture = ResourceManager::LoadHazelTexture2D(texturePath);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
@@ -744,7 +748,8 @@ namespace Hazel {
 
 							Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 							try {
-								texture = HazelTexture2D::Create(texturePath, false);
+								// texture = HazelTexture2D::Create(texturePath, false);
+								texture = ResourceManager::LoadHazelTexture2D(texturePath);
 							}
 							catch (...) {
 								Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");

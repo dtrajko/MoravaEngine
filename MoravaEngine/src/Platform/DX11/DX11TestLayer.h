@@ -17,6 +17,13 @@
 #include "Scene/Scene.h"
 
 
+struct RenderObject
+{
+	Hazel::Ref<Hazel::HazelMesh> Mesh;
+	std::vector<Hazel::Ref<Hazel::HazelTexture2D>> Textures;
+	glm::mat4 Transform;
+};
+
 class DX11TestLayer : public Hazel::Layer, public DX11InputListener
 {
 public:
@@ -57,7 +64,7 @@ private:
 	static std::shared_ptr<DX11CameraFP> s_Camera;
 	static glm::vec2 s_StartMousePosition;
 
-	std::vector<Hazel::Ref<Hazel::HazelMesh>> m_Meshes;
+	std::vector<RenderObject> m_RenderObjects;
 	bool m_ShowMouseCursor;
 
 };
