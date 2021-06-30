@@ -12,8 +12,12 @@ cbuffer constant: register(b0)
 {
 	row_major float4x4 m_model;
 	row_major float4x4 m_view;
-	row_major float4x4 m_projection;
-	unsigned int time;
+	row_major float4x4 m_proj;
+	float4 m_light_direction;
+	float4 m_camera_position;
+	float4 m_light_position;
+	float m_light_radius;
+	float m_time;
 }
 
 

@@ -42,6 +42,7 @@ VS_OUTPUT vsmain(VS_INPUT input)
 	// Screen space
 	output.position = mul(output.position, m_proj);
 
+	output.normal = input.normal;
 	output.texcoord = input.texcoord;
 
 	output.tbn[0] = normalize(mul(input.tangent,  m_model));

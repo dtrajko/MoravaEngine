@@ -3,7 +3,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <tiny_obj_loader.h>
 
-#include "DX11VertexMesh.h"
+#include "DX11VertexLayout.h"
 
 #include <locale>
 #include <codecvt>
@@ -28,7 +28,7 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 
 	if (!res) throw std::exception("Mesh not created successfully");
 
-	std::vector<DX11VertexMesh> list_vertices;
+	std::vector<DX11VertexLayout> list_vertices;
 	std::vector<uint32_t> list_indices;
 
 	size_t size_vertex_index_lists = 0;
@@ -87,12 +87,12 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 				}
 
 				glm::vec3 tangent;
-				// glm::vec3 binormal;
+				glm::vec3 binormal;
 
-				//	computeTangents(
-				//		vertices_face[0], vertices_face[1], vertices_face[2],
-				//		texcoords_face[0], texcoords_face[1], texcoords_face[2],
-				//		tangent, binormal);
+				ComputeTangents(
+					vertices_face[0], vertices_face[1], vertices_face[2],
+					texcoords_face[0], texcoords_face[1], texcoords_face[2],
+					tangent, binormal);
 
 				for (unsigned char v = 0; v < num_face_verts; v++)
 				{
@@ -124,7 +124,7 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 					v_binormal = glm::cross(glm::vec3(nx, ny, nz), tangent);
 					v_tangent = glm::cross(v_binormal, glm::vec3(nx, ny, nz));
 
-					DX11VertexMesh vertex(glm::vec3(vx, vy, vz), glm::vec3(nx, ny, nz), v_tangent, v_binormal, glm::vec2(tx, ty));
+					DX11VertexLayout vertex(glm::vec3(vx, vy, vz), glm::vec3(nx, ny, nz), v_tangent, v_binormal, glm::vec2(tx, ty));
 					list_vertices.push_back(vertex);
 
 					list_indices.push_back((unsigned int)index_global_offset + v);
@@ -138,12 +138,30 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 		// m_material_slots[m].num_indices = index_global_offset - m_material_slots[m].start_index;
 	// }
 
-	m_VertexBuffer = Hazel::VertexBuffer::Create(&list_vertices[0], sizeof(DX11VertexMesh), (uint32_t)list_vertices.size());
+	m_VertexBuffer = Hazel::VertexBuffer::Create(&list_vertices[0], sizeof(DX11VertexLayout), (uint32_t)list_vertices.size());
 	m_IndexBuffer = Hazel::IndexBuffer::Create(&list_indices[0], (uint32_t)list_indices.size() * sizeof(uint32_t));
 	// m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index)); // HazelMesh
 	// s_IndexBuffer = Hazel::Ref<DX11IndexBuffer>::Create(indexList, indexCount * sizeof(uint32_t)); // DX11Renderer
 
 	Log::GetLogger()->info("DX11Mesh '{0}' successfully created!", inputfile);
+}
+
+void DX11Mesh::ComputeTangents(
+	const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2,
+	const glm::vec2& t0, const glm::vec2& t1, const glm::vec2& t2,
+	glm::vec3& tangent, glm::vec3& binormal)
+{
+	glm::vec3 deltaPos1 = v1 - v0;
+	glm::vec3 deltaPos2 = v2 - v0;
+
+	glm::vec2 deltaUV1 = t1 - t0;
+	glm::vec2 deltaUV2 = t2 - t0;
+
+	float r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
+	tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y);
+	tangent = glm::normalize(tangent);
+	binormal = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x);
+	binormal = glm::normalize(binormal);
 }
 
 DX11Mesh::~DX11Mesh()

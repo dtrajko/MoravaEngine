@@ -61,9 +61,31 @@ void DX11TestLayer::OnAttach()
 	renderObjectCerberus.Transform = glm::scale(renderObjectCerberus.Transform, glm::vec3(2.0f));
 	m_RenderObjects.push_back(renderObjectCerberus);
 
+	Hazel::Ref<Hazel::HazelMesh> meshSphere = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
+
+	RenderObject renderObjectSphereLeft;
+	renderObjectSphereLeft.Mesh = meshSphere;
+	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg"));
+	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg"));
+	renderObjectSphereLeft.Transform = glm::mat4(1.0f);
+	renderObjectSphereLeft.Transform = glm::translate(renderObjectSphereLeft.Transform, glm::vec3(-4.0f, 2.0f, -4.0f));
+	m_RenderObjects.push_back(renderObjectSphereLeft);
+
+	RenderObject renderObjectSphereRight;
+	renderObjectSphereRight.Mesh = meshSphere;
+	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg"));
+	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg"));
+	renderObjectSphereRight.Transform = glm::mat4(1.0f);
+	renderObjectSphereRight.Transform = glm::translate(renderObjectSphereRight.Transform, glm::vec3(4.0f, 2.0f, -4.0f));
+	m_RenderObjects.push_back(renderObjectSphereRight);
+
 	// ---- other assets ----
 	ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
+	ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
 	ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick.png");
+	ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg");
+	ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg");
+
 	s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
 }
 
