@@ -48,6 +48,9 @@ static Hazel::Ref<Hazel::Pipeline> s_Pipeline;
 static Hazel::Ref<DX11ConstantBuffer> s_ConstantBuffer;
 static DX11ConstantBufferLayout s_ConstantBufferLayout;
 
+static glm::vec3 s_LightPosition;
+static glm::vec3 s_LightDirection;
+
 
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
 {
@@ -335,13 +338,91 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	DX11Context::Get()->SetViewportSize(viewportWidth, viewportHeight);
 	DX11TestLayer::GetCamera()->SetViewportSize((float)viewportWidth, (float)viewportHeight);
 
+	s_LightPosition.x = 0.0f;
+	s_LightPosition.y = sin(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 36.0f;
+	s_LightPosition.z = cos(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 36.0f;
+
+	s_LightDirection = glm::normalize(s_LightPosition - glm::vec3(0.0f, 6.0f, 0.0f));
+
+	// Log::GetLogger()->info("s_LightDirection X:{0} Y:{1} Z:{2}", s_LightDirection.x, s_LightDirection.y, s_LightDirection.z);
+
 	s_ConstantBufferLayout.Projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
 	s_ConstantBufferLayout.View = DX11TestLayer::GetCamera()->GetViewMatrix();
-	s_ConstantBufferLayout.LightDirection = glm::normalize(glm::vec4(0.2f, -0.8f, 0.2f, 0.0f));
+	s_ConstantBufferLayout.LightDirection = glm::vec4(s_LightDirection, 0.0f); // glm::normalize(glm::vec4(0.2f, -0.8f, 0.2f, 0.0f));
 	s_ConstantBufferLayout.CameraPosition = glm::vec4(DX11TestLayer::GetCamera()->GetPosition(), 0.0f);
-	s_ConstantBufferLayout.LightPosition = glm::vec4(-20.0f, 80.0f, -20.0f, 0.0f);
+	s_ConstantBufferLayout.LightPosition = glm::vec4(s_LightPosition, 0.0f);
 	s_ConstantBufferLayout.LightRadius = 1000.0f;
 	s_ConstantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
+
+	// BEGIN render skybox
+	{
+		Hazel::Ref<DX11VertexBuffer> skyboxVB = DX11TestLayer::s_SkyboxSphere->GetVertexBuffer().As<DX11VertexBuffer>();
+		skyboxVB->Bind();
+		Hazel::Ref<DX11IndexBuffer> skyboxIB = DX11TestLayer::s_SkyboxSphere->GetIndexBuffer().As<DX11IndexBuffer>();
+		skyboxIB->Bind();
+		s_Pipeline->Bind();
+
+		glm::mat4 skyboxTransform = glm::mat4(1.0f);
+		skyboxTransform = glm::scale(skyboxTransform, glm::vec3(40.0f));
+		skyboxTransform = glm::rotate(skyboxTransform, glm::radians(Timer::Get()->GetCurrentTimestamp() * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		// World/Model/Transform matrix
+		s_ConstantBufferLayout.Model = skyboxTransform;
+		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
+
+		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+
+		std::vector<Hazel::Ref<DX11Texture2D>> textures;
+		// Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/sky.jpg");
+		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/umhlanga_sunrise_4k.jpg");
+		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+		textures.push_back(textureDiffuse.As<DX11Texture2D>());
+		textures.push_back(textureNormal.As<DX11Texture2D>());
+
+		dx11Shader->GetVertexShader()->SetTextures(textures);
+		dx11Shader->GetPixelShader()->SetTextures(textures);
+
+		uint32_t startVertexIndex = 0;
+		uint32_t startIndexLocation = 0;
+		DX11Renderer::DrawIndexedTriangleList(skyboxIB->GetIndexCount(), startVertexIndex, startIndexLocation);
+	}
+	// END Render skybox
+
+	// BEGIN render Mesh Light Source
+	{
+		Hazel::Ref<DX11VertexBuffer> vertexBuffer = DX11TestLayer::s_MeshLight->GetVertexBuffer().As<DX11VertexBuffer>();
+		vertexBuffer->Bind();
+		Hazel::Ref<DX11IndexBuffer> indexBuffer = DX11TestLayer::s_MeshLight->GetIndexBuffer().As<DX11IndexBuffer>();
+		indexBuffer->Bind();
+		s_Pipeline->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, s_LightPosition);
+		model = glm::scale(model, glm::vec3(1.0f));
+
+		s_ConstantBufferLayout.Model = model;
+		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
+
+		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+
+		std::vector<Hazel::Ref<DX11Texture2D>> textures;
+		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/gold.png");
+		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+
+		textures.push_back(textureDiffuse.As<DX11Texture2D>());
+		textures.push_back(textureNormal.As<DX11Texture2D>());
+
+		dx11Shader->GetVertexShader()->SetTextures(textures);
+		dx11Shader->GetPixelShader()->SetTextures(textures);
+
+		uint32_t indexCount = indexBuffer->GetIndexCount();
+		uint32_t startVertexIndex = 0;
+		uint32_t startIndexLocation = 0;
+		DX11Renderer::DrawIndexedTriangleList(indexCount, startVertexIndex, startIndexLocation);
+	}
+	// END render Mesh Light Source
 
 	// BEGIN render mesh #1
 	{
@@ -351,7 +432,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		// World/Model/Transform matrix
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-2.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-2.0f, 2.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -367,6 +448,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		std::vector<Hazel::Ref<DX11Texture2D>> textures;
 		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
 		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+		// Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/container/container2.png");
+		// Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/container/container2_normal.png");
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
 
@@ -388,7 +471,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		// World/Model/Transform matrix
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -403,6 +486,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		std::vector<Hazel::Ref<DX11Texture2D>> textures;
 		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
 		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+		// Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/container/container2.png");
+		// Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/container/container2_normal.png");
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
 
@@ -424,7 +509,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		// World/Model/Transform matrix
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(2.0f, 2.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -439,6 +524,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		std::vector<Hazel::Ref<DX11Texture2D>> textures;
 		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
 		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+		// Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/container/container2.png");
+		// Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/container/container2_normal.png");
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
 
@@ -461,7 +548,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		s_Pipeline->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
 
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 4.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * -40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		s_ConstantBufferLayout.Model = model;

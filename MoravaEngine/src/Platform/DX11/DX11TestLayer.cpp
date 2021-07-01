@@ -15,6 +15,8 @@
 std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
 glm::vec2 DX11TestLayer::s_StartMousePosition;
 Hazel::Ref<DX11Mesh> DX11TestLayer::s_Mesh;
+Hazel::Ref<Hazel::HazelMesh> DX11TestLayer::s_MeshLight;
+Hazel::Ref<Hazel::HazelMesh> DX11TestLayer::s_SkyboxSphere;
 
 
 DX11TestLayer::DX11TestLayer()
@@ -46,7 +48,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_BaseColor.jpg"));
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_Normal.jpg"));
 	renderObjectGladiator.Transform = glm::mat4(1.0f);
-	renderObjectGladiator.Transform = glm::translate(renderObjectGladiator.Transform, glm::vec3(0.0f, 0.0f, -2.0f));
+	renderObjectGladiator.Transform = glm::translate(renderObjectGladiator.Transform, glm::vec3(0.0f, 0.0f, -4.0f));
 	renderObjectGladiator.Transform = glm::scale(renderObjectGladiator.Transform, glm::vec3(0.04f));
 	m_RenderObjects.push_back(renderObjectGladiator);
 
@@ -79,14 +81,33 @@ void DX11TestLayer::OnAttach()
 	renderObjectSphereRight.Transform = glm::translate(renderObjectSphereRight.Transform, glm::vec3(4.0f, 2.0f, -4.0f));
 	m_RenderObjects.push_back(renderObjectSphereRight);
 
+	RenderObject renderObjectTerrain;
+	renderObjectTerrain.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/terrain.obj");
+	// renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PBR/grass/albedo.png"));
+	// renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PBR/grass/normal.png"));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/grass.jpg"));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png"));
+	renderObjectTerrain.Transform = glm::mat4(1.0f);
+	renderObjectTerrain.Transform = glm::scale(renderObjectTerrain.Transform, glm::vec3(0.5f));
+	m_RenderObjects.push_back(renderObjectTerrain);
+
 	// ---- other assets ----
 	ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
 	ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
 	ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick.png");
 	ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg");
 	ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg");
+	ResourceManager::LoadHazelTexture2D("Textures/default_material_albedo.png");
+	ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+	ResourceManager::LoadHazelTexture2D("Textures/PardCode/sky.jpg");
+	ResourceManager::LoadHazelTexture2D("Textures/PardCode/umhlanga_sunrise_4k.jpg");
+	ResourceManager::LoadHazelTexture2D("Textures/PardCode/gold.png");
+	ResourceManager::LoadHazelTexture2D("Textures/container/container2.png");
+	ResourceManager::LoadHazelTexture2D("Textures/container/container2_normal.png");
 
 	s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
+	s_MeshLight = meshSphere;
+	s_SkyboxSphere = meshSphere;
 }
 
 void DX11TestLayer::OnDetach()

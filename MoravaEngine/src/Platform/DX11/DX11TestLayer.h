@@ -63,6 +63,8 @@ public:
 
 public:
 	static Hazel::Ref<DX11Mesh> s_Mesh;
+	static Hazel::Ref<Hazel::HazelMesh> s_MeshLight;
+	static Hazel::Ref<Hazel::HazelMesh> s_SkyboxSphere;
 
 private:
 	static std::shared_ptr<DX11CameraFP> s_Camera;
