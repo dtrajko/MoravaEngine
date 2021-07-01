@@ -111,7 +111,7 @@ void DX11SwapChain::CreateRenderTargetView(uint32_t width, uint32_t height)
 		throw std::exception("SwapChain: CreateRenderTargetView failed.");
 	}
 
-	Log::GetLogger()->info("DX11SwapChain::CreateRenderTargetView({0}, {1}) successfull!", width, height);
+	Log::GetLogger()->info("DX11SwapChain::CreateRenderTargetView({0}, {1}) successful!", width, height);
 }
 
 void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
@@ -152,7 +152,7 @@ void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 		throw std::exception("SwapChain: CreateDepthStencilView failed.");
 	}
 
-	Log::GetLogger()->info("DX11SwapChain::CreateDepthStencilView({0}, {1}) successfull!", width, height);
+	Log::GetLogger()->info("DX11SwapChain::CreateDepthStencilView({0}, {1}) successful!", width, height);
 }
 
 void DX11SwapChain::BeginFrame()
