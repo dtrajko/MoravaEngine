@@ -19,9 +19,9 @@ struct DX11ConstantBufferLayout
 	glm::mat4 Model          = glm::mat4(1.0f);
 	glm::mat4 View           = glm::mat4(1.0f);
 	glm::mat4 Projection     = glm::mat4(1.0f);
-	glm::vec4 LightDirection = glm::vec4(0.0f);
-	glm::vec4 CameraPosition = glm::vec4(0.0f);
-	glm::vec4 LightPosition  = glm::vec4(0.0f);
+	glm::vec3 LightDirection = glm::vec3(0.0f);
+	glm::vec3 CameraPosition = glm::vec3(0.0f);
+	glm::vec3 LightPosition  = glm::vec3(0.0f);
 	float LightRadius        = 0;
 	uint32_t Time            = 0;
 };

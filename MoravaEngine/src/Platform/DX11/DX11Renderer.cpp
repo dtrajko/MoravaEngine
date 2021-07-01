@@ -348,9 +348,9 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	s_ConstantBufferLayout.Projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
 	s_ConstantBufferLayout.View = DX11TestLayer::GetCamera()->GetViewMatrix();
-	s_ConstantBufferLayout.LightDirection = glm::vec4(s_LightDirection, 0.0f); // glm::normalize(glm::vec4(0.2f, -0.8f, 0.2f, 0.0f));
-	s_ConstantBufferLayout.CameraPosition = glm::vec4(DX11TestLayer::GetCamera()->GetPosition(), 0.0f);
-	s_ConstantBufferLayout.LightPosition = glm::vec4(s_LightPosition, 0.0f);
+	s_ConstantBufferLayout.LightDirection = s_LightDirection;
+	s_ConstantBufferLayout.CameraPosition = DX11TestLayer::GetCamera()->GetPosition();
+	s_ConstantBufferLayout.LightPosition = s_LightPosition;
 	s_ConstantBufferLayout.LightRadius = 1000.0f;
 	s_ConstantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
 
