@@ -66,7 +66,7 @@ bool DX11SwapChain::Present(bool vsync)
 
 void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
 {
-	MORAVA_CORE_WARN("DX11SwapChain::OnResize");
+	MORAVA_CORE_WARN("DX11SwapChain::OnResize({0}, {1})", width, height);
 	// auto device = m_Device->GetDX11Device();
 
 	// Create(&width, &height);
@@ -80,7 +80,7 @@ void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
 	ReloadBuffers(width, height);
 }
 
-void DX11SwapChain::SetFullScreen(bool fullscreen, unsigned int width, unsigned int height)
+void DX11SwapChain::SetFullScreen(bool fullscreen, uint32_t width, uint32_t height)
 {
 	OnResize(width, height);
 	m_swap_chain->SetFullscreenState(fullscreen, nullptr);
@@ -88,17 +88,16 @@ void DX11SwapChain::SetFullScreen(bool fullscreen, unsigned int width, unsigned 
 
 void DX11SwapChain::ReloadBuffers(uint32_t width, uint32_t height)
 {
-	CreateRenderTargetView();
+	CreateRenderTargetView(width, height);
 	CreateDepthStencilView(width, height);
 }
 
-void DX11SwapChain::CreateRenderTargetView()
+void DX11SwapChain::CreateRenderTargetView(uint32_t width, uint32_t height)
 {
 	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
 
 	ID3D11Texture2D* buffer = NULL;
 	HRESULT hr = m_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);
-
 	if (FAILED(hr))
 	{
 		throw std::exception("SwapChain: GetBuffer failed.");
@@ -111,6 +110,8 @@ void DX11SwapChain::CreateRenderTargetView()
 	{
 		throw std::exception("SwapChain: CreateRenderTargetView failed.");
 	}
+
+	Log::GetLogger()->info("DX11SwapChain::CreateRenderTargetView({0}, {1}) successfull!", width, height);
 }
 
 void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
@@ -119,6 +120,10 @@ void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 
 	ID3D11Texture2D* buffer = NULL;
 	HRESULT hr = m_swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&buffer);
+	if (FAILED(hr))
+	{
+		throw std::exception("SwapChain: GetBuffer failed.");
+	}
 
 	D3D11_TEXTURE2D_DESC tex_desc = {};
 	tex_desc.Width = width;
@@ -134,7 +139,6 @@ void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 	tex_desc.CPUAccessFlags = 0;
 
 	hr = dx11Device->CreateTexture2D(&tex_desc, nullptr, &buffer);
-
 	if (FAILED(hr))
 	{
 		throw std::exception("SwapChain: CreateTexture2D failed.");
@@ -147,15 +151,8 @@ void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 	{
 		throw std::exception("SwapChain: CreateDepthStencilView failed.");
 	}
-}
 
-void DX11SwapChain::InitSurface(GLFWwindow* windowHandle)
-{
-	// DX11PhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetDX11PhysicalDevice();
-
-	// glfwCreateWindowSurface(m_Instance, windowHandle, nullptr, &m_Surface);
-
-	// TODO
+	Log::GetLogger()->info("DX11SwapChain::CreateDepthStencilView({0}, {1}) successfull!", width, height);
 }
 
 void DX11SwapChain::BeginFrame()

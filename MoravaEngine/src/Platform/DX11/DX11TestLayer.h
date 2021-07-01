@@ -73,4 +73,6 @@ private:
 	std::vector<RenderObject> m_RenderObjects;
 	bool m_ShowMouseCursor;
 
+	bool m_FullscreenEnabled = false;
+
 };

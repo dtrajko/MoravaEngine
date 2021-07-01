@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Hazel/Renderer/RendererContext.h"
-
-#include "Platform/DX11/DX11InputListener.h"
-
 #include "Core/Window.h"
+#include "Platform/DX11/DX11InputListener.h"
+#include "Core/CommonStructs.h"
+
+#include "Hazel/Renderer/RendererContext.h"
 
 
 class WindowsWindow : public Window, public DX11InputListener
@@ -168,5 +168,7 @@ private:
 	bool m_EventLoggingEnabled;
 
 	bool m_InFocus;
+
+	EventCooldown m_ResizeViewport = { 0.0f, 0.5f }; // used for DirectX 11
 
 };

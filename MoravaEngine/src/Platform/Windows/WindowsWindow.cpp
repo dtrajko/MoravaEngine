@@ -10,6 +10,7 @@
 #include "Platform/DX11/DX11.h"
 #include "Platform/DX11/DX11Context.h"
 #include "Platform/DX11/DX11InputSystem.h"
+#include "Platform/DX11/DX11RendererBasic.h"
 
 #include <cmath>
 #include <exception>
@@ -396,6 +397,22 @@ void WindowsWindow::OnKillFocus()
 // A DirectX 11 method
 void WindowsWindow::OnSize()
 {
+	// Cooldown
+	float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
+	if (currentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
+	m_ResizeViewport.lastTime = currentTimestamp;
+
+	RECT windowRECT = GetClientWindowRect();
+
+	m_Data.Width = windowRECT.right - windowRECT.left;
+	m_Data.Height = windowRECT.bottom - windowRECT.top;
+
+	// DX11Context::Get()->GetSwapChain()->OnResize(windowRECT.right, windowRECT.bottom);
+
+	DX11Context::Get()->GetSwapChain()->OnResize(m_Data.Width, m_Data.Height);
+
+	DX11RendererBasic::SetViewportSize(m_Data.Width, m_Data.Height);
+	// OnUpdate();
 }
 
 // A DirectX 11 method

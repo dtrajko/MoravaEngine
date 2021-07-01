@@ -8,6 +8,7 @@
 
 #include "Core/Application.h"
 #include "Core/ResourceManager.h"
+#include "Platform/Windows/WindowsWindow.h"
 
 #include "Hazel/Renderer/HazelTexture.h"
 
@@ -180,6 +181,19 @@ void DX11TestLayer::OnKeyUp(int key)
 	{
 		// Application::Get()->GetWindow()->SetInFocus(false);
 		DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
+	}
+
+	if (key == 'F')
+	{
+		m_FullscreenEnabled = !m_FullscreenEnabled;
+
+		WindowsWindow* windowsWindow = (WindowsWindow*)Application::Get()->GetWindow();
+		RECT windowRECT = windowsWindow->GetSizeScreen();
+
+		uint32_t width = windowRECT.right; // - windowRECT.left;
+		uint32_t height = windowRECT.bottom; // - windowRECT.top;
+
+		DX11Context::Get()->GetSwapChain()->SetFullScreen(m_FullscreenEnabled, width, height);
 	}
 }
 

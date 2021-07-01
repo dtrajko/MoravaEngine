@@ -26,11 +26,10 @@ public:
 	virtual ~DX11SwapChain();
 
 	void Init(HWND hwnd, uint32_t width, uint32_t height);
-	void InitSurface(GLFWwindow* windowHandle);
 	void Create(uint32_t* width, uint32_t* height, bool vsync = false);
 	
 	void OnResize(uint32_t width, uint32_t height);
-	void SetFullScreen(bool fullscreen, unsigned int width, unsigned int height);
+	void SetFullScreen(bool fullscreen, uint32_t width, uint32_t height);
 
 	uint32_t GetWidth() const { return m_Width; }
 	uint32_t GetHeight() const { return m_Height; }
@@ -47,7 +46,7 @@ public:
 private:
 	void ReloadBuffers(uint32_t width, uint32_t height);
 
-	void CreateRenderTargetView();
+	void CreateRenderTargetView(uint32_t width, uint32_t height);
 	void CreateDepthStencilView(uint32_t width, uint32_t height);
 
 	// uint32_t GetImageCount() const { return m_ImageCount; }
