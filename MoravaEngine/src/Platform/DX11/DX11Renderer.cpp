@@ -874,9 +874,9 @@ void DX11Renderer::ClearRenderTargetColor(float red, float green, float blue, fl
 
 	std::shared_ptr<DX11SwapChain> dx11SwapChain = DX11Context::Get()->GetSwapChain();
 
-	DX11Context::Get()->GetDX11DeviceContext()->ClearRenderTargetView(dx11SwapChain->GetRenderTargetView(), clear_color);
-	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(dx11SwapChain->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-	DX11Context::Get()->GetDX11DeviceContext()->OMSetRenderTargets(1, &dx11SwapChain->m_DX11RenderTargetView, DX11Context::Get()->GetSwapChain()->GetDepthStencilView());
+	DX11Context::Get()->GetDX11DeviceContext()->ClearRenderTargetView(dx11SwapChain->m_DX11RenderTargetView, clear_color);
+	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(dx11SwapChain->m_DX11DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+	DX11Context::Get()->GetDX11DeviceContext()->OMSetRenderTargets(1, &dx11SwapChain->m_DX11RenderTargetView, dx11SwapChain->m_DX11DepthStencilView);
 }
 
 void DX11Renderer::ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha)

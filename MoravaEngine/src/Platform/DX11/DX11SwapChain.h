@@ -61,8 +61,12 @@ private:
 	uint32_t m_Width = 0;
 	uint32_t m_Height = 0;
 
-	IDXGISwapChain* m_swap_chain = nullptr;
+	IDXGISwapChain* m_DX11SwapChain = nullptr;
+
+	ID3D11Texture2D* m_DX11RenderTargetBuffer = nullptr;
 	ID3D11RenderTargetView* m_DX11RenderTargetView = nullptr;
+
+	ID3D11Texture2D* m_DX11DepthStencilBuffer = nullptr;
 	ID3D11DepthStencilView* m_DX11DepthStencilView = nullptr;
 
 	// uint32_t m_ImageCount = 0;

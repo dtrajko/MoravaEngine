@@ -137,6 +137,8 @@ void DX11Context::SetViewportSize(uint32_t width, uint32_t height)
 	vp.Height = (FLOAT)height;
 	vp.MinDepth = 0.0f;
 	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
 
 	m_DX11DeviceContext->RSSetViewports(1, &vp);
 }

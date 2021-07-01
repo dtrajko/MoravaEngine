@@ -166,7 +166,7 @@ void DX11CameraFP::OnMouseMove(const glm::vec2& mousePosDelta, const glm::vec2& 
 	m_Yaw -= (mousePosAbs.x - centralMousePos.x) * turnVelocity;
 	m_Pitch -= (mousePosAbs.y - centralMousePos.y) * turnVelocity;
 
-	if (windowsWindow->IsInFocus() && DX11InputSystem::Get()->IsMouseCursorAboveViewport()) {}
+	// if (windowsWindow->IsInFocus() && DX11InputSystem::Get()->IsMouseCursorAboveViewport()) {}
 
 	DX11InputSystem::Get()->SetCursorPosition(centralMousePos);
 }
