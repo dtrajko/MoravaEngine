@@ -310,7 +310,7 @@ void DX11Renderer::Init()
 
 static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
 {
-	Hazel::Ref<DX11Context> dx11Context = Hazel::Ref<DX11Context>(Application::Get()->GetWindow()->GetRenderContext());
+	Hazel::Ref<DX11Context> dx11Context = Application::Get()->GetWindow()->GetRenderContext().As<DX11Context>();
 	// DX11SwapChain& swapChain = context->GetSwapChain();
 
 	// TODO

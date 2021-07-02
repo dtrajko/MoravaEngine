@@ -86,7 +86,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectTerrain.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/terrain.obj");
 	// renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PBR/grass/albedo.png"));
 	// renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PBR/grass/normal.png"));
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/grass.jpg"));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/sand.jpg"));
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png"));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
 	renderObjectTerrain.Transform = glm::scale(renderObjectTerrain.Transform, glm::vec3(0.5f));

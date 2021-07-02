@@ -8,9 +8,9 @@
 
 
 DX11SwapChain::DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height, Hazel::Ref<DX11Context> dx11Context)
-	: m_DX11Context(dx11Context)
+	: m_HWND(hwnd), m_Width(width), m_Height(height), m_DX11Context(dx11Context)
 {
-	Init(hwnd, width, height);
+	Init();
 }
 
 DX11SwapChain::~DX11SwapChain()
@@ -22,30 +22,32 @@ void DX11SwapChain::Cleanup()
 {
 	// m_DX11RenderTargetBuffer->Release();
 	// m_DX11DepthStencilBuffer->Release();
-	m_DX11RenderTargetView->Release();
-	m_DX11DepthStencilView->Release();
+	// m_DX11RenderTargetView->Release();
+	// m_DX11DepthStencilView->Release();
+
+	m_DX11RenderTargetBuffer.Reset();
+	m_DX11DepthStencilBuffer.Reset();
+	m_DX11RenderTargetView.Reset();
+	m_DX11DepthStencilView.Reset();
 	m_DX11SwapChain->Release();
 }
 
-void DX11SwapChain::Init(HWND hwnd, uint32_t width, uint32_t height)
+void DX11SwapChain::Init()
 {
 	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
 	IDXGIFactory* dxgiFactory = m_DX11Context->GetIDXGIFactory();
-
-	m_Width = width;
-	m_Height = height;
 
 	// SwapChain::SwapChain
 	DXGI_SWAP_CHAIN_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
 	desc.BufferCount = 1;
-	desc.BufferDesc.Width = (UINT)width;
-	desc.BufferDesc.Height = (UINT)height;
+	desc.BufferDesc.Width = (UINT)m_Width;
+	desc.BufferDesc.Height = (UINT)m_Height;
 	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.BufferDesc.RefreshRate.Numerator = 60;
 	desc.BufferDesc.RefreshRate.Denominator = 1;
 	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	desc.OutputWindow = hwnd;
+	desc.OutputWindow = m_HWND;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
@@ -57,7 +59,7 @@ void DX11SwapChain::Init(HWND hwnd, uint32_t width, uint32_t height)
 		throw std::exception("DX11SwapChain initialization failed.");
 	}
 
-	ReloadBuffers(width, height);
+	ReloadBuffers(m_Width, m_Height);
 }
 
 bool DX11SwapChain::Present(bool vsync)
@@ -68,7 +70,13 @@ bool DX11SwapChain::Present(bool vsync)
 
 void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
 {
+	m_Width = width;
+	m_Height = height;
+
 	MORAVA_CORE_WARN("DX11SwapChain::OnResize({0}, {1})", width, height);
+
+	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
+	IDXGIFactory* dxgiFactory = m_DX11Context->GetIDXGIFactory();
 
 	/* 1. Clear render targets from device context */
 	// Clear the previous window size specific context.
@@ -77,20 +85,48 @@ void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
 	m_DX11Context->GetDX11DeviceContext()->OMSetRenderTargets(_countof(nullRenderTargetViews), nullRenderTargetViews, nullDepthStencilView);
 	// m_DX11Context->GetDX11DeviceContext()->OMSetRenderTargets(0, 0, 0);
 
-	// if (m_DX11RenderTargetBuffer) m_DX11RenderTargetBuffer->Release();
-	// if (m_DX11DepthStencilBuffer) m_DX11DepthStencilBuffer->Release();
-	// m_DX11RenderTargetView.Reset();
-	// m_DX11DepthStencilView.Reset();
-	m_DX11RenderTargetView->Release();
-	m_DX11DepthStencilView->Release();
+	// m_DX11RenderTargetBuffer->Release();
+	// m_DX11DepthStencilBuffer->Release();
+	// m_DX11RenderTargetView->Release();
+	// m_DX11DepthStencilView->Release();
 
+	m_DX11RenderTargetBuffer.Reset();
+	m_DX11DepthStencilBuffer.Reset();
+	m_DX11RenderTargetView.Reset();
+	m_DX11DepthStencilView.Reset();
+
+	m_DX11Context->GetDX11DeviceContext()->ClearState();
 	m_DX11Context->GetDX11DeviceContext()->Flush();
 
-	HRESULT hr = m_DX11SwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+	m_DX11SwapChain->Release();
+
+	// SwapChain::SwapChain
+	DXGI_SWAP_CHAIN_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.BufferCount = 1;
+	desc.BufferDesc.Width = (UINT)m_Width;
+	desc.BufferDesc.Height = (UINT)m_Height;
+	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.BufferDesc.RefreshRate.Numerator = 60;
+	desc.BufferDesc.RefreshRate.Denominator = 1;
+	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	desc.OutputWindow = m_HWND;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	desc.Windowed = TRUE;
+
+	HRESULT hr = dxgiFactory->CreateSwapChain(dx11Device, &desc, &m_DX11SwapChain);
 	if (FAILED(hr))
 	{
-		// Log::GetLogger()->error("DX11SwapChain::OnResize({0}, {1}) failed to resize buffers!", width, height);
-		// throw std::exception("DX11SwapChain::OnResize() failed to resize buffers!");
+		throw std::exception("DX11SwapChain initialization failed.");
+	}
+
+	hr = m_DX11SwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_UNKNOWN , 0); // DXGI_FORMAT_R8G8B8A8_UNORM
+	if (FAILED(hr))
+	{
+		Log::GetLogger()->error("DX11SwapChain::OnResize({0}, {1}) failed to resize buffers!", width, height);
+		throw std::exception("DX11SwapChain::OnResize() failed to resize buffers!");
 	}
 
 	ReloadBuffers(width, height);
@@ -111,15 +147,15 @@ void DX11SwapChain::CreateRenderTargetView(uint32_t width, uint32_t height)
 	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
 
 	// Microsoft::WRL::ComPtr<ID3D11Texture2D> dx11RenderTargetBuffer;
-	ID3D11Texture2D* dx11RenderTargetBuffer;
-	HRESULT hr = m_DX11SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&dx11RenderTargetBuffer));
+	// ID3D11Texture2D* dx11RenderTargetBuffer;
+	HRESULT hr = m_DX11SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(m_DX11RenderTargetBuffer.GetAddressOf()));
 	if (FAILED(hr))
 	{
 		throw std::exception("SwapChain: GetBuffer failed.");
 	}
 
-	hr = dx11Device->CreateRenderTargetView(dx11RenderTargetBuffer, 0, &m_DX11RenderTargetView);
-	dx11RenderTargetBuffer->Release();
+	hr = dx11Device->CreateRenderTargetView(m_DX11RenderTargetBuffer.Get(), 0, m_DX11RenderTargetView.GetAddressOf());
+	m_DX11RenderTargetBuffer.Reset();
 
 	if (FAILED(hr))
 	{
@@ -136,8 +172,8 @@ void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
 
 	// Microsoft::WRL::ComPtr<ID3D11Texture2D> dx11DepthStencilBuffer;
-	ID3D11Texture2D* dx11DepthStencilBuffer;
-	HRESULT hr = m_DX11SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&dx11DepthStencilBuffer));
+	// ID3D11Texture2D* dx11DepthStencilBuffer;
+	HRESULT hr = m_DX11SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(m_DX11DepthStencilBuffer.GetAddressOf()));
 	if (FAILED(hr))
 	{
 		throw std::exception("SwapChain: GetBuffer failed.");
@@ -156,14 +192,15 @@ void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 	depthStencilDesc.ArraySize = 1;
 	depthStencilDesc.CPUAccessFlags = 0;
 
-	hr = dx11Device->CreateTexture2D(&depthStencilDesc, nullptr, &dx11DepthStencilBuffer);
+	hr = dx11Device->CreateTexture2D(&depthStencilDesc, nullptr, m_DX11DepthStencilBuffer.GetAddressOf());
 	if (FAILED(hr))
 	{
 		throw std::exception("SwapChain: CreateTexture2D failed.");
 	}
 
-	hr = dx11Device->CreateDepthStencilView(dx11DepthStencilBuffer, NULL, &m_DX11DepthStencilView);
-	dx11DepthStencilBuffer->Release();
+	hr = dx11Device->CreateDepthStencilView(m_DX11DepthStencilBuffer.Get(), NULL, &m_DX11DepthStencilView);
+	// dx11DepthStencilBuffer->Release();
+	m_DX11DepthStencilBuffer.Reset();
 
 	if (FAILED(hr))
 	{
@@ -202,7 +239,7 @@ void DX11SwapChain::ClearRenderTargetColor(float red, float green, float blue, f
 {
 	FLOAT clear_color[] = { red, green, blue, alpha };
 
-	m_DX11Context->GetDX11DeviceContext()->ClearRenderTargetView(m_DX11RenderTargetView, clear_color);
-	m_DX11Context->GetDX11DeviceContext()->ClearDepthStencilView(m_DX11DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
-	m_DX11Context->GetDX11DeviceContext()->OMSetRenderTargets(1, &m_DX11RenderTargetView, m_DX11DepthStencilView);
+	m_DX11Context->GetDX11DeviceContext()->ClearRenderTargetView(m_DX11RenderTargetView.Get(), clear_color);
+	m_DX11Context->GetDX11DeviceContext()->ClearDepthStencilView(m_DX11DepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+	m_DX11Context->GetDX11DeviceContext()->OMSetRenderTargets(1, m_DX11RenderTargetView.GetAddressOf(), m_DX11DepthStencilView.Get());
 }
