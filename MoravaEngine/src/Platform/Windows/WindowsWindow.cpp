@@ -170,7 +170,6 @@ void WindowsWindow::ProcessEvents()
 	}
 	break;
 	case Hazel::RendererAPIType::DX11:
-		// TODO: ProcessEvents DX11 version
 		Broadcast();
 		break;
 	}
@@ -408,11 +407,7 @@ void WindowsWindow::OnSize()
 	m_Data.Height = windowRECT.bottom - windowRECT.top;
 
 	// DX11Context::Get()->GetSwapChain()->OnResize(windowRECT.right, windowRECT.bottom);
-
 	DX11Context::Get()->GetSwapChain()->OnResize(m_Data.Width, m_Data.Height);
-
-	DX11RendererBasic::SetViewportSize(m_Data.Width, m_Data.Height);
-	// OnUpdate();
 }
 
 // A DirectX 11 method

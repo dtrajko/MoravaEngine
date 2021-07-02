@@ -1,5 +1,6 @@
 #include "DX11SwapChain.h"
 #include "DX11Context.h"
+#include "DX11RendererBasic.h"
 
 #include "Core/Log.h"
 
@@ -20,7 +21,7 @@ DX11SwapChain::~DX11SwapChain()
 void DX11SwapChain::Cleanup()
 {
 	// m_DX11RenderTargetBuffer->Release();
-	m_DX11DepthStencilBuffer->Release();
+	// m_DX11DepthStencilBuffer->Release();
 	m_DX11RenderTargetView->Release();
 	m_DX11DepthStencilView->Release();
 	m_DX11SwapChain->Release();
@@ -51,7 +52,6 @@ void DX11SwapChain::Init(HWND hwnd, uint32_t width, uint32_t height)
 	desc.Windowed = TRUE;
 
 	HRESULT hr = dxgiFactory->CreateSwapChain(dx11Device, &desc, &m_DX11SwapChain);
-
 	if (FAILED(hr))
 	{
 		throw std::exception("DX11SwapChain initialization failed.");
@@ -70,15 +70,31 @@ void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
 {
 	MORAVA_CORE_WARN("DX11SwapChain::OnResize({0}, {1})", width, height);
 
+	m_DX11Context->GetDX11DeviceContext()->OMSetRenderTargets(0, 0, 0);
+
 	// if (m_DX11RenderTargetBuffer) m_DX11RenderTargetBuffer->Release();
 	// if (m_DX11DepthStencilBuffer) m_DX11DepthStencilBuffer->Release();
 	if (m_DX11RenderTargetView) m_DX11RenderTargetView->Release();
 	if (m_DX11DepthStencilView) m_DX11DepthStencilView->Release();
 
-	m_DX11SwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+	//	DXGI_MODE_DESC pNewTargetParameters{};
+	//	pNewTargetParameters.Width = width;
+	//	pNewTargetParameters.Height = height;
+	//	pNewTargetParameters.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	//	m_DX11SwapChain->ResizeTarget(&pNewTargetParameters);
+
+	HRESULT hr = m_DX11SwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+	//	if (FAILED(hr))
+	//	{
+	//		Log::GetLogger()->error("DX11SwapChain::OnResize({0}, {1}) failed to resize buffers!", width, height);
+	//		throw std::exception("DX11SwapChain::OnResize() failed to resize buffers!");
+	//	}
+
 	ReloadBuffers(width, height);
 
 	// m_DX11Context->GetDX11DeviceContext()->OMSetRenderTargets(1, &m_DX11RenderTargetView, m_DX11DepthStencilView);
+
+	DX11RendererBasic::SetViewportSize(width, height);
 }
 
 void DX11SwapChain::ReloadBuffers(uint32_t width, uint32_t height)
@@ -91,6 +107,7 @@ void DX11SwapChain::CreateRenderTargetView(uint32_t width, uint32_t height)
 {
 	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
 
+	ID3D11Texture2D* m_DX11RenderTargetBuffer;
 	HRESULT hr = m_DX11SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&m_DX11RenderTargetBuffer));
 	if (FAILED(hr))
 	{
@@ -104,16 +121,18 @@ void DX11SwapChain::CreateRenderTargetView(uint32_t width, uint32_t height)
 	{
 		throw std::exception("SwapChain: CreateRenderTargetView failed.");
 	}
-
-	Log::GetLogger()->info("DX11SwapChain::CreateRenderTargetView({0}, {1}) successful!", width, height);
+	else if (SUCCEEDED(hr))
+	{
+		Log::GetLogger()->info("DX11SwapChain::CreateRenderTargetView({0}, {1}) successful!", width, height);
+	}
 }
 
 void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 {
 	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
 
-	HRESULT hr;
-	hr = m_DX11SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&m_DX11DepthStencilBuffer));
+	ID3D11Texture2D* m_DX11DepthStencilBuffer;
+	HRESULT hr = m_DX11SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&m_DX11DepthStencilBuffer));
 	if (FAILED(hr))
 	{
 		throw std::exception("SwapChain: GetBuffer failed.");
@@ -145,8 +164,10 @@ void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 	{
 		throw std::exception("SwapChain: CreateDepthStencilView failed.");
 	}
-
-	Log::GetLogger()->info("DX11SwapChain::CreateDepthStencilView({0}, {1}) successful!", width, height);
+	else if (SUCCEEDED(hr))
+	{
+		Log::GetLogger()->info("DX11SwapChain::CreateDepthStencilView({0}, {1}) successful!", width, height);
+	}
 }
 
 void DX11SwapChain::SetFullScreen(bool fullscreen, uint32_t width, uint32_t height)

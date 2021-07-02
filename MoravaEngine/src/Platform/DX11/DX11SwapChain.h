@@ -63,10 +63,10 @@ private:
 
 	IDXGISwapChain* m_DX11SwapChain = nullptr;
 
-	ID3D11Texture2D* m_DX11RenderTargetBuffer = nullptr;
+	// ID3D11Texture2D* m_DX11RenderTargetBuffer = nullptr;
 	ID3D11RenderTargetView* m_DX11RenderTargetView = nullptr;
 
-	ID3D11Texture2D* m_DX11DepthStencilBuffer = nullptr;
+	// ID3D11Texture2D* m_DX11DepthStencilBuffer = nullptr;
 	ID3D11DepthStencilView* m_DX11DepthStencilView = nullptr;
 
 	// uint32_t m_ImageCount = 0;

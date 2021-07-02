@@ -117,7 +117,7 @@ void DX11Context::InitRasterizerState()
 
 void DX11Context::OnResize(uint32_t width, uint32_t height)
 {
-	m_SwapChain->OnResize(width, height);
+	// m_SwapChain->OnResize(width, height); // done in WindowsWindow::OnSize();
 }
 
 void DX11Context::BeginFrame()
