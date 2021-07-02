@@ -11,6 +11,8 @@
 
 #include <d3d11.h>
 
+#include <wrl/client.h>
+
 #include <vector>
 
 struct GLFWwindow;
@@ -43,6 +45,8 @@ public:
 	ID3D11RenderTargetView* GetRenderTargetView() { return m_DX11RenderTargetView; }
 	ID3D11DepthStencilView* GetDepthStencilView() { return m_DX11DepthStencilView; }
 
+	void ClearRenderTargetColor(float red, float green, float blue, float alpha);
+
 private:
 	void ReloadBuffers(uint32_t width, uint32_t height);
 
@@ -64,9 +68,11 @@ private:
 	IDXGISwapChain* m_DX11SwapChain = nullptr;
 
 	// ID3D11Texture2D* m_DX11RenderTargetBuffer = nullptr;
+	// Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_DX11RenderTargetView = nullptr;
 	ID3D11RenderTargetView* m_DX11RenderTargetView = nullptr;
 
 	// ID3D11Texture2D* m_DX11DepthStencilBuffer = nullptr;
+	// Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_DX11DepthStencilView = nullptr;
 	ID3D11DepthStencilView* m_DX11DepthStencilView = nullptr;
 
 	// uint32_t m_ImageCount = 0;
