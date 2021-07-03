@@ -397,9 +397,9 @@ void WindowsWindow::OnKillFocus()
 void WindowsWindow::OnSize()
 {
 	// Cooldown
-	// float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
-	// if (currentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
-	// m_ResizeViewport.lastTime = currentTimestamp;
+	float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
+	if (currentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
+	m_ResizeViewport.lastTime = currentTimestamp;
 
 	RECT windowRECT = GetClientWindowRect();
 

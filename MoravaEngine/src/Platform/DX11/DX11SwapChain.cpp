@@ -10,7 +10,15 @@
 DX11SwapChain::DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height, Hazel::Ref<DX11Context> dx11Context)
 	: m_HWND(hwnd), m_Width(width), m_Height(height), m_DX11Context(dx11Context)
 {
-	Init();
+	Invalidate();
+}
+
+void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
+{
+	m_Width = width;
+	m_Height = height;
+
+	Invalidate();
 }
 
 DX11SwapChain::~DX11SwapChain()
@@ -25,55 +33,16 @@ void DX11SwapChain::Cleanup()
 	// m_DX11RenderTargetView->Release();
 	// m_DX11DepthStencilView->Release();
 
-	m_DX11RenderTargetBuffer.Reset();
-	m_DX11DepthStencilBuffer.Reset();
-	m_DX11RenderTargetView.Reset();
-	m_DX11DepthStencilView.Reset();
+	m_DX11RenderTargetBuffer->Release();
+	m_DX11DepthStencilBuffer->Release();
+	m_DX11RenderTargetView->Release();
+	m_DX11DepthStencilView->Release();
 	m_DX11SwapChain->Release();
 }
 
-void DX11SwapChain::Init()
+void DX11SwapChain::Invalidate()
 {
-	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
-	IDXGIFactory* dxgiFactory = m_DX11Context->GetIDXGIFactory();
-
-	// SwapChain::SwapChain
-	DXGI_SWAP_CHAIN_DESC desc;
-	ZeroMemory(&desc, sizeof(desc));
-	desc.BufferCount = 1;
-	desc.BufferDesc.Width = (UINT)m_Width;
-	desc.BufferDesc.Height = (UINT)m_Height;
-	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.BufferDesc.RefreshRate.Numerator = 60;
-	desc.BufferDesc.RefreshRate.Denominator = 1;
-	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	desc.OutputWindow = m_HWND;
-	desc.SampleDesc.Count = 1;
-	desc.SampleDesc.Quality = 0;
-	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-	desc.Windowed = TRUE;
-
-	HRESULT hr = dxgiFactory->CreateSwapChain(dx11Device, &desc, &m_DX11SwapChain);
-	if (FAILED(hr))
-	{
-		throw std::exception("DX11SwapChain initialization failed.");
-	}
-
-	ReloadBuffers(m_Width, m_Height);
-}
-
-bool DX11SwapChain::Present(bool vsync)
-{
-	m_DX11SwapChain->Present(vsync, NULL);
-	return true;
-}
-
-void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
-{
-	m_Width = width;
-	m_Height = height;
-
-	MORAVA_CORE_WARN("DX11SwapChain::OnResize({0}, {1})", width, height);
+	MORAVA_CORE_WARN("DX11SwapChain::OnResize({0}, {1})", m_Width, m_Height);
 
 	ID3D11Device* dx11Device = m_DX11Context->GetDX11Device();
 	IDXGIFactory* dxgiFactory = m_DX11Context->GetIDXGIFactory();
@@ -90,15 +59,17 @@ void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
 	// m_DX11RenderTargetView->Release();
 	// m_DX11DepthStencilView->Release();
 
-	m_DX11RenderTargetBuffer.Reset();
-	m_DX11DepthStencilBuffer.Reset();
-	m_DX11RenderTargetView.Reset();
-	m_DX11DepthStencilView.Reset();
+	if (m_DX11RenderTargetBuffer) m_DX11RenderTargetBuffer.Reset();
+	if (m_DX11DepthStencilBuffer) m_DX11DepthStencilBuffer.Reset();
+	if (m_DX11RenderTargetView) m_DX11RenderTargetView.Reset();
+	if (m_DX11DepthStencilView) m_DX11DepthStencilView.Reset();
 
 	m_DX11Context->GetDX11DeviceContext()->ClearState();
 	m_DX11Context->GetDX11DeviceContext()->Flush();
 
-	m_DX11SwapChain->Release();
+	HRESULT hr;
+
+	m_DX11SwapChain.Reset();
 
 	// SwapChain::SwapChain
 	DXGI_SWAP_CHAIN_DESC desc;
@@ -116,30 +87,51 @@ void DX11SwapChain::OnResize(uint32_t width, uint32_t height)
 	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	desc.Windowed = TRUE;
 
-	HRESULT hr = dxgiFactory->CreateSwapChain(dx11Device, &desc, &m_DX11SwapChain);
+	hr = dxgiFactory->CreateSwapChain(dx11Device, &desc, m_DX11SwapChain.GetAddressOf());
 	if (FAILED(hr))
 	{
 		throw std::exception("DX11SwapChain initialization failed.");
 	}
+	else if (SUCCEEDED(hr))
+	{
+		Log::GetLogger()->info("IDXGISwapChain (buffer size: {0}x{1}) successfully created!", m_Width, m_Height);
+	}
 
-	hr = m_DX11SwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_UNKNOWN , 0); // DXGI_FORMAT_R8G8B8A8_UNORM
+	hr = m_DX11SwapChain->ResizeBuffers(1, m_Width, m_Height, DXGI_FORMAT_UNKNOWN, 0); // DXGI_FORMAT_R8G8B8A8_UNORM
 	if (FAILED(hr))
 	{
-		Log::GetLogger()->error("DX11SwapChain::OnResize({0}, {1}) failed to resize buffers!", width, height);
+		Log::GetLogger()->error("DX11SwapChain::OnResize({0}, {1}) failed to resize buffers!", m_Width, m_Height);
 		throw std::exception("DX11SwapChain::OnResize() failed to resize buffers!");
 	}
 
-	ReloadBuffers(width, height);
+	ReloadBuffers();
 
 	// m_DX11Context->GetDX11DeviceContext()->OMSetRenderTargets(1, &m_DX11RenderTargetView, m_DX11DepthStencilView);
+	// DX11RendererBasic::SetViewportSize(m_Width, m_Height);
 
-	DX11RendererBasic::SetViewportSize(width, height);
+	D3D11_VIEWPORT vp = {};
+	vp.Width = (FLOAT)m_Width;
+	vp.Height = (FLOAT)m_Height;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0.0f;
+	vp.TopLeftY = 0.0f;
+
+	m_DX11Context->GetDX11DeviceContext()->RSSetViewports(1, &vp);
+
+	m_FullscreenToggleMode = false;
 }
 
-void DX11SwapChain::ReloadBuffers(uint32_t width, uint32_t height)
+bool DX11SwapChain::Present(bool vsync)
 {
-	CreateRenderTargetView(width, height);
-	CreateDepthStencilView(width, height);
+	m_DX11SwapChain->Present(vsync, NULL);
+	return true;
+}
+
+void DX11SwapChain::ReloadBuffers()
+{
+	CreateRenderTargetView(m_Width, m_Height);
+	CreateDepthStencilView(m_Width, m_Height);
 }
 
 void DX11SwapChain::CreateRenderTargetView(uint32_t width, uint32_t height)
@@ -212,27 +204,17 @@ void DX11SwapChain::CreateDepthStencilView(uint32_t width, uint32_t height)
 	}
 }
 
-void DX11SwapChain::SetFullScreen(bool fullscreen, uint32_t width, uint32_t height)
+void DX11SwapChain::SetFullScreen(bool fullscreenEnabled, uint32_t width, uint32_t height)
 {
-	OnResize(width, height);
-	m_DX11SwapChain->SetFullscreenState(fullscreen, nullptr);
+	m_FullscreenToggleMode = true;
+
+	m_DX11SwapChain->SetFullscreenState(fullscreenEnabled, nullptr);
+	// OnResize(width, height);
 }
 
 void DX11SwapChain::BeginFrame()
 {
 	// TODO
-}
-
-void DX11SwapChain::Create(uint32_t* width, uint32_t* height, bool vsync)
-{
-	// DX11Device device = m_Device->GetDX11Device();
-	// DX11PhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetDX11PhysicalDevice();
-
-	m_Width = *width;
-	m_Height = *height;
-
-	// CreateDepthStencil();
-	// CreateFramebuffer();
 }
 
 void DX11SwapChain::ClearRenderTargetColor(float red, float green, float blue, float alpha)

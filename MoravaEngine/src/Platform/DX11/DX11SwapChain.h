@@ -27,11 +27,10 @@ public:
 	DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height, Hazel::Ref<DX11Context> dx11Context);
 	virtual ~DX11SwapChain();
 
-	void Init();
-	void Create(uint32_t* width, uint32_t* height, bool vsync = false);
+	void Invalidate();
 	
 	void OnResize(uint32_t width, uint32_t height);
-	void SetFullScreen(bool fullscreen, uint32_t width, uint32_t height);
+	void SetFullScreen(bool fullscreenEnabled, uint32_t width, uint32_t height);
 
 	uint32_t GetWidth() const { return m_Width; }
 	uint32_t GetHeight() const { return m_Height; }
@@ -48,15 +47,10 @@ public:
 	void ClearRenderTargetColor(float red, float green, float blue, float alpha);
 
 private:
-	void ReloadBuffers(uint32_t width, uint32_t height);
+	void ReloadBuffers();
 
 	void CreateRenderTargetView(uint32_t width, uint32_t height);
 	void CreateDepthStencilView(uint32_t width, uint32_t height);
-
-	// uint32_t GetImageCount() const { return m_ImageCount; }
-	// uint32_t GetCurrentBufferIndex() const { return m_CurrentBufferIndex; }
-	// void CreateDrawBuffers();
-	// void FindImageFormatAndColorSpace();
 
 private:
 	Hazel::Ref<DX11Device> m_Device;
@@ -66,21 +60,15 @@ private:
 	uint32_t m_Width = 0;
 	uint32_t m_Height = 0;
 
-	IDXGISwapChain* m_DX11SwapChain = nullptr;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> m_DX11SwapChain = nullptr;
 
-	// ID3D11Texture2D* m_DX11RenderTargetBuffer = nullptr;
-	// ID3D11RenderTargetView* m_DX11RenderTargetView = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DX11RenderTargetBuffer = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_DX11RenderTargetView = nullptr;
 
-	// ID3D11Texture2D* m_DX11DepthStencilBuffer = nullptr;
-	// ID3D11DepthStencilView* m_DX11DepthStencilView = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DX11DepthStencilBuffer = nullptr;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_DX11DepthStencilView = nullptr;
 
-	// uint32_t m_ImageCount = 0;
-	// uint32_t m_CurrentBufferIndex = 0;
-	// uint32_t m_QueueNodeIndex = UINT32_MAX;
+	bool m_FullscreenToggleMode = false;
 
 	friend class DX11Context;
 	friend class DX11Renderer;
