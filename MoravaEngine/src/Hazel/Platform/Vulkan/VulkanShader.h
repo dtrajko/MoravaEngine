@@ -157,11 +157,6 @@ namespace Hazel {
 
 		std::unordered_map<std::string, ShaderBuffer> m_Buffers;
 
-		public:
-			// Very temporary attribute for Vulkan Week Day 5 Part 1
-			// static Hazel::Ref<Hazel::HazelTexture2D> s_AlbedoTexture;
-			// static Hazel::Ref<Hazel::HazelTexture2D> s_NormalTexture;
-
 	};
 
 }

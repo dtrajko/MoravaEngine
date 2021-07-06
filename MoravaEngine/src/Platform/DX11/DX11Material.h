@@ -4,6 +4,7 @@
 
 #include "Hazel/Renderer/HazelImage.h"
 #include "Hazel/Renderer/HazelMaterial.h"
+#include "Hazel/Renderer/Pipeline.h"
 
 #include "DX11Shader.h"
 #include "DX11ConstantBuffer.h"
@@ -20,9 +21,7 @@ public:
 		Both,
 	};
 
-	DX11Material(const Hazel::Ref<Hazel::HazelShader>& shader, const std::string& name = "");
-	// DirectX Material
-	DX11Material(const Hazel::Ref<DX11Shader>& shader);
+	DX11Material(const Hazel::Ref<Hazel::Pipeline>& pipeline, const std::string& name = "");
 	DX11Material(Hazel::Ref<DX11Material> material);
 	virtual ~DX11Material();
 
@@ -58,105 +57,37 @@ public:
 	virtual Hazel::Ref<Hazel::HazelTexture2D> TryGetTexture2D(const std::string& name) override;
 	virtual Hazel::Ref<Hazel::HazelTextureCube> TryGetTextureCube(const std::string& name) override;
 
-	template <typename T>
-	void Set(const std::string& name, const T& value)
-	{
-		auto decl = FindUniformDeclaration(name);
-		HZ_CORE_ASSERT(decl, "Could not find uniform!");
-		if (!decl)
-			return;
+	virtual uint32_t GetFlags() const override { return uint32_t(); }
+	virtual bool GetFlag(Hazel::HazelMaterialFlag flag) const override { return bool(); };
+	virtual void SetFlag(Hazel::HazelMaterialFlag flag, bool value = true) override {};
 
-		auto& buffer = m_UniformStorageBuffer;
-		buffer.Write((byte*)&value, decl->GetSize(), decl->GetOffset());
-	}
-
-	template<typename T>
-	T& Get(const std::string& name)
-	{
-		auto decl = FindUniformDeclaration(name);
-		HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
-		auto& buffer = m_UniformStorageBuffer;
-		return buffer.Read<T>(decl->GetOffset());
-	}
-
-	template<typename T>
-	Hazel::Ref<T> GetResource(const std::string& name)
-	{
-		auto decl = FindResourceDeclaration(name);
-		HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
-		uint32_t slot = decl->GetRegister();
-		HZ_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
-		return Hazel::Ref<T>(m_Textures[slot]);
-	}
-
-	template<typename T>
-	Hazel::Ref<T> TryGetResource(const std::string& name)
-	{
-		auto decl = FindResourceDeclaration(name);
-		if (!decl) {
-			return Hazel::Ref<T>();
-		}
-
-		uint32_t slot = decl->GetRegister();
-		if (slot >= m_Textures.size()) {
-			return Hazel::Ref<T>();
-		}
-
-		return Hazel::Ref<T>(m_Textures[slot]);
-	}
-
-	virtual uint32_t GetFlags() const override { return m_MaterialFlags; }
-	virtual bool GetFlag(Hazel::HazelMaterialFlag flag) const override { return (uint32_t)flag & m_MaterialFlags; }
-	virtual void SetFlag(Hazel::HazelMaterialFlag flag, bool value = true) override
-	{
-		if (value)
-		{
-			m_MaterialFlags |= (uint32_t)flag;
-		}
-		else
-		{
-			m_MaterialFlags &= ~(uint32_t)flag;
-		}
-	}
-
+	Hazel::Ref<Hazel::Pipeline> GetPipeline() { return m_Pipeline; }
 	virtual Hazel::Ref<Hazel::HazelShader> GetShader() override { return m_Shader; }
 	virtual const std::string& GetName() const override { return m_Name; }
-
-	Hazel::Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; }
 
 	void UpdateForRendering();
 
 	// DirectX Material
 	void AddTexture(Hazel::Ref<DX11Texture2D> texture);
-	void RemoveTexture(unsigned int index);
+	void RemoveTexture(uint32_t index);
 
-	void SetData(void* data, unsigned int size);
+	void SetData(void* data, uint32_t size);
 
 	void SetCullMode(CullMode cullMode);
 	CullMode GetCullMode();
 
 private:
-	void Init();
-	void AllocateStorage();
-	void OnShaderReloaded();
-
-	const Hazel::ShaderUniform* FindUniformDeclaration(const std::string& name);
-	const Hazel::ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
-private:
-	Hazel::Ref<Hazel::HazelShader> m_Shader;
+	Hazel::Ref<Hazel::Pipeline> m_Pipeline;
+	Hazel::Ref<Hazel::HazelShader> m_Shader; // shader reference is a pipeline property
 	std::string m_Name;
 
-	uint32_t m_MaterialFlags = 0;
-
-	Hazel::Buffer m_UniformStorageBuffer;
-	std::vector<Hazel::Ref<Hazel::HazelTexture>> m_Textures; // TODO: Texture should only be stored as images
+	std::vector<Hazel::Ref<Hazel::HazelTexture>> m_Textures;
 	std::vector<Hazel::Ref<Hazel::HazelImage>> m_Images;
 
 	std::unordered_map<uint32_t, uint64_t> m_ImageHashes;
 
 	// DirectX Material
-	Hazel::Ref<DX11Shader> m_VertexShader;
-	Hazel::Ref<DX11Shader> m_PixelShader;
+	Hazel::Ref<DX11Shader> m_DX11Shader;
 	Hazel::Ref<DX11ConstantBuffer> m_ConstantBuffer;
 	CullMode m_CullMode = CullMode::Back;
 
