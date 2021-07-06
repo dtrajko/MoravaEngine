@@ -35,6 +35,9 @@ DX11CameraFP::~DX11CameraFP()
 
 void DX11CameraFP::OnUpdate(Hazel::Timestep ts)
 {
+	float width  = (float)Application::Get()->GetWindow()->GetWidth();
+	float height = (float)Application::Get()->GetWindow()->GetHeight();
+
 	UpdateView();
 }
 

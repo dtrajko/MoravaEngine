@@ -164,6 +164,13 @@ void DX11ImGuiLayer::End()
 	// ImGui::Render();
 	// ImDrawData* main_draw_data = ImGui::GetDrawData();
 	// ImGui_ImplDX11_RenderDrawData(main_draw_data);
+
+	// Update and Render additional Platform Windows
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		// ImGui::UpdatePlatformWindows();
+		// ImGui::RenderPlatformWindowsDefault();
+	}
 }
 
 void DX11ImGuiLayer::OnImGuiRender()

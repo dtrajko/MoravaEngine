@@ -42,6 +42,9 @@ public:
 	void SetEnabled(bool enabled) { m_Enabled = enabled; }
 	bool IsEnabled() { return m_Enabled; }
 
+	float GetViewportWidth() { return m_ViewportWidth; }
+	float GetViewportHeight() { return m_ViewportHeight; }
+
 private:
 	void UpdateProjection();
 	void UpdateView();

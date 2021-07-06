@@ -20,9 +20,16 @@
 
 struct RenderObject
 {
+	enum class PipelineType
+	{
+		None = 0,
+		Unlit,
+		Light,
+	};
 	Hazel::Ref<Hazel::HazelMesh> Mesh;
 	std::vector<Hazel::Ref<Hazel::HazelTexture2D>> Textures;
 	glm::mat4 Transform;
+	PipelineType PipelineType;
 };
 
 class DX11TestLayer : public Hazel::Layer, public DX11InputListener

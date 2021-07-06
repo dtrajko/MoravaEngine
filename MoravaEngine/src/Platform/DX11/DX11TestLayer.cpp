@@ -51,6 +51,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectGladiator.Transform = glm::mat4(1.0f);
 	renderObjectGladiator.Transform = glm::translate(renderObjectGladiator.Transform, glm::vec3(0.0f, 0.0f, -4.0f));
 	renderObjectGladiator.Transform = glm::scale(renderObjectGladiator.Transform, glm::vec3(0.04f));
+	renderObjectGladiator.PipelineType = RenderObject::PipelineType::Light;
 	m_RenderObjects.push_back(renderObjectGladiator);
 
 	RenderObject renderObjectCerberus;
@@ -62,6 +63,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectCerberus.Transform = glm::rotate(renderObjectCerberus.Transform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	renderObjectCerberus.Transform = glm::rotate(renderObjectCerberus.Transform, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	renderObjectCerberus.Transform = glm::scale(renderObjectCerberus.Transform, glm::vec3(2.0f));
+	renderObjectCerberus.PipelineType = RenderObject::PipelineType::Light;
 	m_RenderObjects.push_back(renderObjectCerberus);
 
 	Hazel::Ref<Hazel::HazelMesh> meshSphere = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
@@ -72,6 +74,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg"));
 	renderObjectSphereLeft.Transform = glm::mat4(1.0f);
 	renderObjectSphereLeft.Transform = glm::translate(renderObjectSphereLeft.Transform, glm::vec3(-4.0f, 2.0f, -4.0f));
+	renderObjectSphereLeft.PipelineType = RenderObject::PipelineType::Light;
 	m_RenderObjects.push_back(renderObjectSphereLeft);
 
 	RenderObject renderObjectSphereRight;
@@ -80,6 +83,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg"));
 	renderObjectSphereRight.Transform = glm::mat4(1.0f);
 	renderObjectSphereRight.Transform = glm::translate(renderObjectSphereRight.Transform, glm::vec3(4.0f, 2.0f, -4.0f));
+	renderObjectSphereRight.PipelineType = RenderObject::PipelineType::Light;
 	m_RenderObjects.push_back(renderObjectSphereRight);
 
 	RenderObject renderObjectTerrain;
@@ -90,6 +94,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png"));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
 	renderObjectTerrain.Transform = glm::scale(renderObjectTerrain.Transform, glm::vec3(0.5f));
+	renderObjectTerrain.PipelineType = RenderObject::PipelineType::Unlit;
 	m_RenderObjects.push_back(renderObjectTerrain);
 
 	// ---- other assets ----

@@ -44,12 +44,16 @@ static glm::mat4* s_Transform_ImGuizmo = nullptr;
 // temporary DX11 objects
 static Hazel::Ref<DX11VertexBuffer> s_VertexBuffer;
 static Hazel::Ref<DX11IndexBuffer> s_IndexBuffer;
+
 static Hazel::Ref<Hazel::Pipeline> s_Pipeline;
+static Hazel::Ref<Hazel::Pipeline> s_PipelineUnlit;
+
 static Hazel::Ref<DX11ConstantBuffer> s_ConstantBuffer;
 static DX11ConstantBufferLayout s_ConstantBufferLayout;
 
 static glm::vec3 s_LightPosition;
 static glm::vec3 s_LightDirection;
+
 
 
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
@@ -110,6 +114,23 @@ void DX11Renderer::Init()
 	pipelineSpecification.Shader = MoravaShader::Create(moravaShaderSpecification);
 
 	s_Pipeline = Hazel::Pipeline::Create(pipelineSpecification);
+
+	// ---- BEGIN Unlit Pipeline ----
+	Hazel::PipelineSpecification pipelineSpecificationUnlit;
+	pipelineSpecificationUnlit.DebugName = "DX11 Unlit Pipeline specification";
+	pipelineSpecificationUnlit.Layout = Hazel::VertexBufferLayout{};
+	pipelineSpecificationUnlit.RenderPass = Hazel::RenderPass::Create(renderPassSpecification);
+
+	MoravaShaderSpecification moravaShaderSpecificationUnlit;
+	moravaShaderSpecificationUnlit.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+	moravaShaderSpecificationUnlit.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
+	moravaShaderSpecificationUnlit.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
+	moravaShaderSpecificationUnlit.ForceCompile = false;
+
+	pipelineSpecificationUnlit.Shader = MoravaShader::Create(moravaShaderSpecificationUnlit);
+
+	s_PipelineUnlit = Hazel::Pipeline::Create(pipelineSpecificationUnlit);
+	// ---- END Unlit Pipeline ----
 
 	glm::vec3 positionList[] =
 	{
@@ -330,9 +351,6 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
 
-	dx11Shader->GetVertexShader()->Bind();
-	dx11Shader->GetPixelShader()->Bind();
-
 	uint32_t viewportWidth = Application::Get()->GetWindow()->GetWidth();
 	uint32_t viewportHeight = Application::Get()->GetWindow()->GetHeight();
 	DX11Context::Get()->SetViewportSize(viewportWidth, viewportHeight);
@@ -344,8 +362,6 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	s_LightDirection = glm::normalize(s_LightPosition - glm::vec3(0.0f, 6.0f, 0.0f));
 
-	// Log::GetLogger()->info("s_LightDirection X:{0} Y:{1} Z:{2}", s_LightDirection.x, s_LightDirection.y, s_LightDirection.z);
-
 	s_ConstantBufferLayout.Projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
 	s_ConstantBufferLayout.View = DX11TestLayer::GetCamera()->GetViewMatrix();
 	s_ConstantBufferLayout.LightDirection = s_LightDirection;
@@ -356,11 +372,16 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	// BEGIN render skybox
 	{
+		Hazel::Ref<DX11Shader> dx11ShaderUnlit = s_PipelineUnlit->GetSpecification().Shader.As<DX11Shader>();
+
+		dx11ShaderUnlit->GetVertexShader()->Bind();
+		dx11ShaderUnlit->GetPixelShader()->Bind();
+
 		Hazel::Ref<DX11VertexBuffer> skyboxVB = DX11TestLayer::s_SkyboxSphere->GetVertexBuffer().As<DX11VertexBuffer>();
 		skyboxVB->Bind();
 		Hazel::Ref<DX11IndexBuffer> skyboxIB = DX11TestLayer::s_SkyboxSphere->GetIndexBuffer().As<DX11IndexBuffer>();
 		skyboxIB->Bind();
-		s_Pipeline->Bind();
+		s_PipelineUnlit->Bind();
 
 		glm::mat4 skyboxTransform = glm::mat4(1.0f);
 		skyboxTransform = glm::scale(skyboxTransform, glm::vec3(40.0f));
@@ -370,8 +391,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		s_ConstantBufferLayout.Model = skyboxTransform;
 		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
 
-		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
-		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11ShaderUnlit->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
 		std::vector<Hazel::Ref<DX11Texture2D>> textures;
 		// Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/sky.jpg");
@@ -380,8 +401,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
 
-		dx11Shader->GetVertexShader()->SetTextures(textures);
-		dx11Shader->GetPixelShader()->SetTextures(textures);
+		dx11ShaderUnlit->GetVertexShader()->SetTextures(textures);
+		dx11ShaderUnlit->GetPixelShader()->SetTextures(textures);
 
 		uint32_t startVertexIndex = 0;
 		uint32_t startIndexLocation = 0;
@@ -391,6 +412,9 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	// BEGIN render Mesh Light Source
 	{
+		dx11Shader->GetVertexShader()->Bind();
+		dx11Shader->GetPixelShader()->Bind();
+
 		Hazel::Ref<DX11VertexBuffer> vertexBuffer = DX11TestLayer::s_MeshLight->GetVertexBuffer().As<DX11VertexBuffer>();
 		vertexBuffer->Bind();
 		Hazel::Ref<DX11IndexBuffer> indexBuffer = DX11TestLayer::s_MeshLight->GetIndexBuffer().As<DX11IndexBuffer>();
@@ -580,6 +604,24 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	s_RenderObjects.clear();
 
+	// BEGIN DirectX 11 ImGui Render Pass
+	{
+		// ImGui Dockspace
+		bool p_open = true;
+
+		// ShowExampleAppDockSpace(&p_open);
+		// ImGui::ShowDemoWindow(&p_open);
+
+		// Window* mainWindow = Application::Get()->GetWindow();
+		// UpdateImGuizmo(mainWindow, camera);
+
+		// Rendering
+		// ImGui::Render();
+		// ImDrawData* main_draw_data = ImGui::GetDrawData();
+		// ImGui_ImplDX11_RenderDrawData(main_draw_data);
+	}
+	// END DirectX 11 ImGui Render Pass
+
 	//	Log::GetLogger()->info("Elapsed time: {0}, delta time: {1}, App Window size: [{2}x{3}]",
 	//		Timer::Get()->GetCurrentTimestamp(), Timer::Get()->GetDeltaTime(),
 	//		Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
@@ -640,7 +682,18 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 void DX11Renderer::RenderMesh(RenderObject renderObject)
 {
-	Hazel::Ref<DX11Shader> dx11Shader = s_Pipeline->GetSpecification().Shader.As<DX11Shader>();
+	Hazel::Ref<Hazel::Pipeline> pipeline;
+
+	if (renderObject.PipelineType == RenderObject::PipelineType::Light)
+	{
+		pipeline = s_Pipeline;
+	}
+	else if (renderObject.PipelineType == RenderObject::PipelineType::Unlit)
+	{
+		pipeline = s_PipelineUnlit;
+	}
+
+	Hazel::Ref<DX11Shader> dx11Shader = pipeline->GetSpecification().Shader.As<DX11Shader>();
 
 	dx11Shader->GetVertexShader()->Bind();
 	dx11Shader->GetPixelShader()->Bind();
@@ -649,8 +702,8 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 	dx11MeshVB->Bind();
 	Hazel::Ref<DX11IndexBuffer> dx11meshIB = renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
 	dx11meshIB->Bind();
-	Hazel::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
-	s_Pipeline->Bind(); // TODO dx11Pipeline->Bind()
+	// Hazel::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
+	pipeline->Bind(); // TODO dx11Pipeline->Bind()
 
 	uint32_t textureIndex = 0;
 	for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())

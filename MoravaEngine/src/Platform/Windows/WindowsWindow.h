@@ -169,6 +169,6 @@ private:
 
 	bool m_InFocus;
 
-	EventCooldown m_ResizeViewport = { 0.0f, 0.5f }; // used for DirectX 11
+	EventCooldown m_ResizeViewport = { 0.0f, 0.2f }; // used for DirectX 11
 
 };
