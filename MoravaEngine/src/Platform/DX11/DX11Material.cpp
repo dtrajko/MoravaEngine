@@ -53,7 +53,7 @@ Hazel::Ref<Hazel::HazelTexture2D> DX11Material::TryGetTexture2D(const std::strin
 Hazel::Ref<Hazel::HazelTextureCube> DX11Material::GetTextureCube(const std::string& name) { std::string path = ""; return Hazel::HazelTextureCube::Create(path); }
 void DX11Material::UpdateForRendering() {}
 
-void DX11Material::AddTexture(Hazel::Ref<DX11Texture2D> texture)
+void DX11Material::AddTexture(Hazel::Ref<Hazel::HazelTexture> texture)
 {
 	m_Textures.push_back(texture);
 }

@@ -54,11 +54,6 @@ void DX11SwapChain::Invalidate()
 	m_DX11Context->GetDX11DeviceContext()->OMSetRenderTargets(_countof(nullRenderTargetViews), nullRenderTargetViews, nullDepthStencilView);
 	// m_DX11Context->GetDX11DeviceContext()->OMSetRenderTargets(0, 0, 0);
 
-	// m_DX11RenderTargetBuffer->Release();
-	// m_DX11DepthStencilBuffer->Release();
-	// m_DX11RenderTargetView->Release();
-	// m_DX11DepthStencilView->Release();
-
 	if (m_DX11RenderTargetBuffer) m_DX11RenderTargetBuffer.Reset();
 	if (m_DX11DepthStencilBuffer) m_DX11DepthStencilBuffer.Reset();
 	if (m_DX11RenderTargetView) m_DX11RenderTargetView.Reset();
@@ -208,8 +203,8 @@ void DX11SwapChain::SetFullScreen(bool fullscreenEnabled, uint32_t width, uint32
 {
 	m_FullscreenToggleMode = true;
 
-	m_DX11SwapChain->SetFullscreenState(fullscreenEnabled, nullptr);
 	// OnResize(width, height);
+	// m_DX11SwapChain->SetFullscreenState(fullscreenEnabled, nullptr);
 }
 
 void DX11SwapChain::BeginFrame()

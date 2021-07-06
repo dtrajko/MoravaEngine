@@ -68,7 +68,7 @@ public:
 	void UpdateForRendering();
 
 	// DirectX Material
-	void AddTexture(Hazel::Ref<DX11Texture2D> texture);
+	void AddTexture(Hazel::Ref<Hazel::HazelTexture> texture);
 	void RemoveTexture(uint32_t index);
 
 	void SetData(void* data, uint32_t size);
@@ -82,9 +82,6 @@ private:
 	std::string m_Name;
 
 	std::vector<Hazel::Ref<Hazel::HazelTexture>> m_Textures;
-	std::vector<Hazel::Ref<Hazel::HazelImage>> m_Images;
-
-	std::unordered_map<uint32_t, uint64_t> m_ImageHashes;
 
 	// DirectX Material
 	Hazel::Ref<DX11Shader> m_DX11Shader;
