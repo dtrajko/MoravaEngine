@@ -5,6 +5,7 @@
 #include "DX11.h"
 #include "DX11VertexShader.h"
 #include "DX11PixelShader.h"
+#include "DX11Material.h"
 
 #include "Shader/MoravaShader.h"
 #include "Hazel/Renderer/HazelTexture.h"

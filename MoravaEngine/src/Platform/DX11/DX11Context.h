@@ -12,6 +12,7 @@
 #include "DX11Texture2D.h"
 #include "DX11Shader.h"
 #include "DX11Pipeline.h"
+#include "DX11Material.h"
 
 #include "Core/Window.h"
 
@@ -19,15 +20,6 @@
 
 
 struct GLFWwindow;
-
-
-enum class DX11CullMode
-{
-	None = 0,
-	Front,
-	Back,
-};
-
 
 class DX11Context : public Hazel::RendererContext
 {

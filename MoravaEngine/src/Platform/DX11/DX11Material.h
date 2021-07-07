@@ -6,23 +6,26 @@
 #include "Hazel/Renderer/HazelMaterial.h"
 #include "Hazel/Renderer/Pipeline.h"
 
-#include "DX11Shader.h"
 #include "DX11ConstantBuffer.h"
 #include "DX11Texture2D.h"
 
 
+class DX11Shader;
+class DX11Pipeline;
+
+enum class DX11CullMode
+{
+	None = 0,
+	Front,
+	Back,
+};
+
 class DX11Material : public Hazel::HazelMaterial
 {
 public:
-	enum class CullMode
-	{
-		Front = 0,
-		Back,
-		Both,
-	};
-
-	DX11Material(const Hazel::Ref<Hazel::Pipeline>& pipeline, const std::string& name = "");
-	DX11Material(Hazel::Ref<DX11Material> material);
+	DX11Material(const Hazel::Ref<Hazel::HazelShader>& shader, const std::string& name = "");
+	DX11Material(Hazel::Ref<DX11Pipeline> pipeline, const std::string& name = "");
+	DX11Material(Hazel::Ref<DX11Material> material, const std::string& name = "");
 	virtual ~DX11Material();
 
 	virtual void Invalidate() override;
@@ -61,31 +64,33 @@ public:
 	virtual bool GetFlag(Hazel::HazelMaterialFlag flag) const override { return bool(); };
 	virtual void SetFlag(Hazel::HazelMaterialFlag flag, bool value = true) override {};
 
-	Hazel::Ref<Hazel::Pipeline> GetPipeline() { return m_Pipeline; }
-	virtual Hazel::Ref<Hazel::HazelShader> GetShader() override { return m_Shader; }
-	virtual const std::string& GetName() const override { return m_Name; }
+	inline Hazel::Ref<Hazel::Pipeline> GetPipeline() { return m_Pipeline; }
+	inline virtual Hazel::Ref<Hazel::HazelShader> GetShader() override { return m_Shader; }
+	inline virtual const std::string& GetName() const override { return m_Name; }
 
 	void UpdateForRendering();
 
 	// DirectX Material
-	void AddTexture(Hazel::Ref<Hazel::HazelTexture> texture);
+	void AddTexture(Hazel::Ref<DX11Texture2D> texture);
 	void RemoveTexture(uint32_t index);
 
 	void SetData(void* data, uint32_t size);
 
-	void SetCullMode(CullMode cullMode);
-	CullMode GetCullMode();
+	inline void SetCullMode(DX11CullMode cullMode) { m_CullMode = cullMode; }
+	inline DX11CullMode GetCullMode() { return m_CullMode; }
+
+	void Bind();
 
 private:
 	Hazel::Ref<Hazel::Pipeline> m_Pipeline;
 	Hazel::Ref<Hazel::HazelShader> m_Shader; // shader reference is a pipeline property
 	std::string m_Name;
 
-	std::vector<Hazel::Ref<Hazel::HazelTexture>> m_Textures;
+	std::vector<Hazel::Ref<DX11Texture2D>> m_Textures;
 
 	// DirectX Material
 	Hazel::Ref<DX11Shader> m_DX11Shader;
 	Hazel::Ref<DX11ConstantBuffer> m_ConstantBuffer;
-	CullMode m_CullMode = CullMode::Back;
+	DX11CullMode m_CullMode = DX11CullMode::None;
 
 };

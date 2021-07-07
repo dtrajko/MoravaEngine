@@ -30,6 +30,7 @@ struct RenderObject
 	std::vector<Hazel::Ref<Hazel::HazelTexture2D>> Textures;
 	glm::mat4 Transform;
 	PipelineType PipelineType;
+	Hazel::Ref<DX11Material> Material; // we probably need some kind of <Submesh, Material> map here
 };
 
 class DX11TestLayer : public Hazel::Layer, public DX11InputListener

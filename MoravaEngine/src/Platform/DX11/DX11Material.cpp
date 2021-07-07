@@ -2,30 +2,47 @@
 
 #include "Hazel/Renderer/HazelRenderer.h"
 
-#include "Platform/DX11/DX11Context.h"
-#include "Platform/DX11/DX11Texture2D.h"
-#include "Platform/DX11/DX11Image.h"
+#include "DX11Context.h"
+#include "DX11Texture2D.h"
+#include "DX11Image.h"
+#include "DX11Shader.h"
+#include "DX11Pipeline.h"
 
 
-DX11Material::DX11Material(const Hazel::Ref<Hazel::Pipeline>& pipeline, const std::string& name)
-// 	: m_Pipeline(pipeline), m_Shader(pipeline->GetSpecification().Shader), m_Name(name)
+DX11Material::DX11Material(const Hazel::Ref<Hazel::HazelShader>& shader, const std::string& name)
+	: m_Shader(shader), m_Name(name)
 {
-	m_Pipeline = pipeline;
-	// m_Shader = pipeline->GetSpecification().Shader; // TODO: fix the Ref problem
-	m_Name = name;
-
 	Invalidate();
+
+	Log::GetLogger()->info("DX11Material created (name: '{0}')", m_Name);
 }
 
-DX11Material::DX11Material(Hazel::Ref<DX11Material> material)
-	: m_Pipeline(material->GetPipeline()), m_Shader(m_Pipeline->GetSpecification().Shader)
+DX11Material::DX11Material(Hazel::Ref<DX11Pipeline> pipeline, const std::string& name)
+	: m_Pipeline(pipeline), m_Name(name)
 {
+	m_Shader = pipeline->GetSpecification().Shader;
+
 	Invalidate();
+
+	Log::GetLogger()->info("DX11Material created (name: '{0}', pipeline specification debug name: '{1}')",
+		m_Name, m_Pipeline->GetSpecification().DebugName);
+}
+
+DX11Material::DX11Material(Hazel::Ref<DX11Material> material, const std::string& name)
+	: m_Pipeline(material->GetPipeline()), m_Shader(material->GetShader()), m_CullMode(material->GetCullMode())
+{
+	m_Name = name != "" ? name : material->GetName();
+
+	Invalidate();
+
+	Log::GetLogger()->info("DX11Material created (name: '{0}', pipeline specification debug name: '{1}')",
+		m_Name, m_Pipeline->GetSpecification().DebugName);
 }
 
 DX11Material::~DX11Material() {}
 
 void DX11Material::Invalidate() {}
+
 void DX11Material::Set(const std::string& name, float value) {}
 void DX11Material::Set(const std::string& name, int value) {}
 void DX11Material::Set(const std::string& name, uint32_t value) {}
@@ -53,7 +70,7 @@ Hazel::Ref<Hazel::HazelTexture2D> DX11Material::TryGetTexture2D(const std::strin
 Hazel::Ref<Hazel::HazelTextureCube> DX11Material::GetTextureCube(const std::string& name) { std::string path = ""; return Hazel::HazelTextureCube::Create(path); }
 void DX11Material::UpdateForRendering() {}
 
-void DX11Material::AddTexture(Hazel::Ref<Hazel::HazelTexture> texture)
+void DX11Material::AddTexture(Hazel::Ref<DX11Texture2D> texture)
 {
 	m_Textures.push_back(texture);
 }
@@ -77,12 +94,16 @@ void DX11Material::SetData(void* data, uint32_t size)
 	}
 }
 
-void DX11Material::SetCullMode(CullMode mode)
+void DX11Material::Bind()
 {
-	m_CullMode = mode;
-}
+	DX11Context::Get()->SetRasterizerState(m_CullMode);
 
-DX11Material::CullMode DX11Material::GetCullMode()
-{
-	return m_CullMode;
+	m_DX11Shader->GetVertexShader()->BindConstantBuffer(m_ConstantBuffer);
+	m_DX11Shader->GetPixelShader()->BindConstantBuffer(m_ConstantBuffer);
+
+	m_DX11Shader->GetVertexShader()->Bind();
+	m_DX11Shader->GetPixelShader()->Bind();
+
+	m_DX11Shader->GetVertexShader()->SetTextures(m_Textures);
+	m_DX11Shader->GetPixelShader()->SetTextures(m_Textures);
 }

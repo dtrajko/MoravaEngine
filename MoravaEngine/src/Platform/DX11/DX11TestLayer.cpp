@@ -114,6 +114,42 @@ void DX11TestLayer::OnAttach()
 	s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
 	s_MeshLight = meshSphere;
 	s_SkyboxSphere = meshSphere;
+
+	// BEGIN Pipeline Unlit
+	Hazel::PipelineSpecification pipelineSpecUnlit;
+	pipelineSpecUnlit.DebugName = "Pipeline Unlit";
+	pipelineSpecUnlit.Layout = Hazel::VertexBufferLayout{};
+
+	MoravaShaderSpecification shaderSpecUnlit;
+	shaderSpecUnlit.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+	shaderSpecUnlit.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
+	shaderSpecUnlit.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
+	shaderSpecUnlit.ForceCompile = false;
+	pipelineSpecUnlit.Shader = DX11Shader::Create(shaderSpecUnlit);
+
+	Hazel::Ref<DX11Pipeline> pipelineUnlit = DX11Pipeline::Create(pipelineSpecUnlit);
+	// END Pipeline Unlit
+
+	// BEGIN Pipeline Illuminated
+	Hazel::PipelineSpecification pipelineSpecIlluminated;
+	pipelineSpecIlluminated.DebugName = "Pipeline Illuminated";
+	pipelineSpecIlluminated.Layout = Hazel::VertexBufferLayout{};
+
+	MoravaShaderSpecification shaderSpecIlluminated;
+	shaderSpecIlluminated.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+	shaderSpecIlluminated.VertexShaderPath = "Shaders/HLSL/DirLightVertexShader.hlsl";
+	shaderSpecIlluminated.PixelShaderPath = "Shaders/HLSL/DirLightPixelShader.hlsl";
+	shaderSpecIlluminated.ForceCompile = false;
+	pipelineSpecIlluminated.Shader = DX11Shader::Create(shaderSpecIlluminated);
+
+	Hazel::Ref<DX11Pipeline> pipelineIlluminated = DX11Pipeline::Create(pipelineSpecIlluminated);
+	// END Pipeline Illuminated
+
+	Hazel::Ref<DX11Material> materialIlluminated = Hazel::Ref<DX11Material>::Create(pipelineIlluminated, "Material Illuminated");
+	Hazel::Ref<DX11Material> materialUnlit = Hazel::Ref<DX11Material>::Create(pipelineIlluminated, "Material Unlit");
+
+	Hazel::Ref<DX11Material> materialIlluminatedDerived = Hazel::Ref<DX11Material>::Create(materialIlluminated, "Material Illuminated Derived");
+	Hazel::Ref<DX11Material> materialUnlitDerived = Hazel::Ref<DX11Material>::Create(materialUnlit, "Material Unlit Derived");
 }
 
 void DX11TestLayer::OnDetach()
