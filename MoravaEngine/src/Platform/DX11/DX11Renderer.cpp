@@ -574,6 +574,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 4.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * -40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.1f));
 
 		s_ConstantBufferLayout.Model = model;
 		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
@@ -725,6 +726,18 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
 		DX11Renderer::DrawIndexedTriangleList(submesh.IndexCount, submesh.BaseVertex, submesh.BaseIndex);
 	}
+}
+
+void DX11Renderer::RenderMeshDX11(RenderObject renderObject)
+{
+	// Drawing meshes with materials
+
+	// TODO: consider using this high level API, perhaps in a separate method https://youtu.be/cQnPUhEy6MU?t=450
+	// for each (material in materials)
+	//   1. SetMaterial(material)
+	//   2. SetVertexBuffer(mesh->GetVertexBuffer())
+	//   3. SetIndexBuffer(mesh->GetIndexBuffer())
+	//   4. DrawIndexedTriangleList(slit.NumIndices, 0, slot.StartIndex)
 }
 
 void DX11Renderer::BeginFrame()

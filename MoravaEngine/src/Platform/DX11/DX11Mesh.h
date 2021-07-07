@@ -5,9 +5,19 @@
 
 #include "DX11.h"
 
+#include "DX11Material.h"
+
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Renderer/VertexBuffer.h"
 #include "Hazel/Renderer/IndexBuffer.h"
+
+
+struct DX11MaterialSlot
+{
+	size_t StartIndex = 0;
+	size_t NumIndices = 0;
+	size_t MaterialID = 0;
+};
 
 
 class DX11Mesh : public Hazel::RefCounted
@@ -28,5 +38,7 @@ private:
 private:
 	Hazel::Ref<Hazel::VertexBuffer> m_VertexBuffer;
 	Hazel::Ref<Hazel::IndexBuffer> m_IndexBuffer;
+
+	std::vector<DX11MaterialSlot> m_MaterialSlots;
 
 };

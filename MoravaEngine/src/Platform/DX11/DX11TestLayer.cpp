@@ -111,7 +111,9 @@ void DX11TestLayer::OnAttach()
 	ResourceManager::LoadHazelTexture2D("Textures/container/container2.png");
 	ResourceManager::LoadHazelTexture2D("Textures/container/container2_normal.png");
 
-	s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
+	// s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
+	s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/spaceship.obj");
+
 	s_MeshLight = meshSphere;
 	s_SkyboxSphere = meshSphere;
 

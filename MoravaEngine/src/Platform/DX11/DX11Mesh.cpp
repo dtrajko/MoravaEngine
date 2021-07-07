@@ -41,14 +41,20 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 	list_vertices.reserve(size_vertex_index_lists);
 	list_indices.reserve(size_vertex_index_lists);
 
-	// m_material_slots.resize(materials.size());
+	// if .OBJ contains no materials, add a default material
+	if (materials.size() == 0)
+	{
+		materials.push_back(tinyobj::material_t());
+	}
+
+	m_MaterialSlots.resize(materials.size());
 
 	size_t index_global_offset = 0;
 
-	// for (size_t m = 0; m < materials.size(); m++)
-	// {
-		// m_material_slots[m].start_index = index_global_offset;
-		// m_material_slots[m].material_id = m;
+	for (size_t m = 0; m < materials.size(); m++)
+	{
+		m_MaterialSlots[m].StartIndex = index_global_offset;
+		m_MaterialSlots[m].MaterialID = m;
 
 		for (size_t s = 0; s < shapes.size(); s++)
 		{
@@ -58,11 +64,11 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 			{
 				unsigned char num_face_verts = shapes[s].mesh.num_face_vertices[f];
 
-				//	if (shapes[s].mesh.material_ids[f] != m)
-				//	{
-				//		index_offset += num_face_verts;
-				//		continue;
-				//	}
+				if (shapes[s].mesh.material_ids[f] != m)
+				{
+					index_offset += num_face_verts;
+					continue;
+				}
 
 				glm::vec3 vertices_face[3];
 				glm::vec2 texcoords_face[3];
@@ -135,8 +141,8 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 			}
 		}
 
-		// m_material_slots[m].num_indices = index_global_offset - m_material_slots[m].start_index;
-	// }
+		m_MaterialSlots[m].NumIndices = index_global_offset - m_MaterialSlots[m].StartIndex;
+	}
 
 	m_VertexBuffer = Hazel::VertexBuffer::Create(&list_vertices[0], sizeof(DX11VertexLayout), (uint32_t)list_vertices.size());
 	m_IndexBuffer = Hazel::IndexBuffer::Create(&list_indices[0], (uint32_t)list_indices.size() * sizeof(uint32_t));

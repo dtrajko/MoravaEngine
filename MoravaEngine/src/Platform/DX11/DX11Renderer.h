@@ -37,6 +37,7 @@ public:
 
 	static void SubmitMesh(RenderObject renderObject);
 	static void RenderMesh(RenderObject renderObject);
+	static void RenderMeshDX11(RenderObject renderObject);
 
 	static void BeginFrame();
 	static void EndFrame();
