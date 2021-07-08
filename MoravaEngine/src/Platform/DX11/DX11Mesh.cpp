@@ -42,8 +42,10 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 	list_indices.reserve(size_vertex_index_lists);
 
 	// if .OBJ contains no materials, add a default material
+	bool useMaterials = true;
 	if (materials.size() == 0)
 	{
+		useMaterials = false;
 		materials.push_back(tinyobj::material_t());
 	}
 
@@ -64,7 +66,7 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 			{
 				unsigned char num_face_verts = shapes[s].mesh.num_face_vertices[f];
 
-				if (shapes[s].mesh.material_ids[f] != m)
+				if (useMaterials && shapes[s].mesh.material_ids[f] != m)
 				{
 					index_offset += num_face_verts;
 					continue;

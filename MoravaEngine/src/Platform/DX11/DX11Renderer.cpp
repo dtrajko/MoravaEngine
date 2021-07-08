@@ -574,7 +574,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 4.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * -40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.1f));
+		model = glm::scale(model, glm::vec3(1.0f));
 
 		s_ConstantBufferLayout.Model = model;
 		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
