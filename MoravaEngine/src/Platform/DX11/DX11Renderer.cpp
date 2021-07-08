@@ -771,13 +771,16 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 		pipeline = s_PipelineUnlit;
 	}
 
-	Hazel::Ref<DX11Mesh> dx11Mesh = renderObject.Mesh.As<DX11Mesh>();
+	Hazel::Ref<DX11Mesh> dx11Mesh = renderObject.MeshDX11;
 
-	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = dx11Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
-	Hazel::Ref<DX11IndexBuffer> dx11meshIB = dx11Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+	Hazel::Ref<DX11VertexBuffer> dx11VertexBuffer = dx11Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
+	Hazel::Ref<DX11IndexBuffer> dx11IndexBuffer = dx11Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
 
-	dx11meshIB->Bind();
-	dx11MeshVB->Bind();
+	dx11VertexBuffer->Bind();
+	dx11IndexBuffer->Bind();
+
+	// dx11Mesh->GetVertexBuffer()->Bind();
+	// dx11Mesh->GetIndexBuffer()->Bind();
 
 	pipeline->Bind();
 

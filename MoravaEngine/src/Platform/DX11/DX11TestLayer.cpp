@@ -183,7 +183,7 @@ void DX11TestLayer::OnAttach()
 	s_ListMaterials.push_back(materialHouseWood);
 
 	RenderObject renderObjectHouse;
-	renderObjectHouse.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/house.obj");
+	renderObjectHouse.MeshDX11 = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/house.obj");
 	renderObjectHouse.Transform = glm::mat4(1.0f);
 	renderObjectHouse.Transform = glm::translate(renderObjectHouse.Transform, glm::vec3(0.0f, 0.0f, -5.0f));
 	renderObjectHouse.PipelineType = RenderObject::PipelineType::Light;

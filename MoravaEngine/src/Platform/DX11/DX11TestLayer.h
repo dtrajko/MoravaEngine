@@ -27,6 +27,7 @@ struct RenderObject
 		Light,
 	};
 	Hazel::Ref<Hazel::HazelMesh> Mesh;
+	Hazel::Ref<DX11Mesh> MeshDX11;
 	std::vector<Hazel::Ref<Hazel::HazelTexture2D>> Textures;
 	glm::mat4 Transform;
 	PipelineType PipelineType;
