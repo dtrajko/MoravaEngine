@@ -619,9 +619,9 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	// END render meshes without materials
 
 	// BEGIN render meshes with materials
-	for (RenderObject& renderObjectWithMaterials : DX11TestLayer::s_RenderObjectsWithMaterials)
+	for (RenderObject renderObjectWithMaterials : DX11TestLayer::s_RenderObjectsWithMaterials)
 	{
-		RenderMeshDX11(renderObjectWithMaterials, DX11TestLayer::s_ListMaterials);
+		// RenderMeshDX11(renderObjectWithMaterials, DX11TestLayer::s_ListMaterials);
 	}
 	// END render meshes with materials
 
@@ -773,8 +773,12 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 
 	Hazel::Ref<DX11Mesh> dx11Mesh = renderObject.Mesh.As<DX11Mesh>();
 
-	dx11Mesh->GetVertexBuffer()->Bind();
-	dx11Mesh->GetIndexBuffer()->Bind();
+	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = dx11Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
+	Hazel::Ref<DX11IndexBuffer> dx11meshIB = dx11Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+
+	dx11meshIB->Bind();
+	dx11MeshVB->Bind();
+
 	pipeline->Bind();
 
 	for (size_t m = 0; m < dx11Mesh->GetNumMaterialSlots(); m++)

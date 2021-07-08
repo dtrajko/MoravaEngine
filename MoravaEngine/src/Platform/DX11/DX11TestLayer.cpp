@@ -162,6 +162,33 @@ void DX11TestLayer::OnAttach()
 
 	s_ListMaterials.reserve(32); // reserve 32 slots
 
+	Hazel::Ref<Hazel::HazelTexture2D> textureBarrel       = ResourceManager::LoadHazelTexture2D("Textures/PardCode/barrel.jpg");
+	Hazel::Ref<Hazel::HazelTexture2D> textureHouseBrick   = ResourceManager::LoadHazelTexture2D("Textures/PardCode/house_brick.jpg");
+	Hazel::Ref<Hazel::HazelTexture2D> textureHouseWindows = ResourceManager::LoadHazelTexture2D("Textures/PardCode/house_windows.jpg");
+	Hazel::Ref<Hazel::HazelTexture2D> textureHouseWood    = ResourceManager::LoadHazelTexture2D("Textures/PardCode/house_wood.jpg");
+
+	Hazel::Ref<DX11Material> materialBarrel       = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material Barrel");
+	Hazel::Ref<DX11Material> materialHouseBrick   = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Brick");
+	Hazel::Ref<DX11Material> materialHouseWindows = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Windows");
+	Hazel::Ref<DX11Material> materialHouseWood    = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Wood");
+
+	materialBarrel->AddTexture(textureBarrel.As<DX11Texture2D>());
+	materialHouseBrick->AddTexture(textureHouseBrick.As<DX11Texture2D>());
+	materialHouseWindows->AddTexture(textureHouseWindows.As<DX11Texture2D>());
+	materialHouseWood->AddTexture(textureHouseWood.As<DX11Texture2D>());
+
+	s_ListMaterials.push_back(materialBarrel);
+	s_ListMaterials.push_back(materialHouseBrick);
+	s_ListMaterials.push_back(materialHouseWindows);
+	s_ListMaterials.push_back(materialHouseWood);
+
+	RenderObject renderObjectHouse;
+	renderObjectHouse.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/house.obj");
+	renderObjectHouse.Transform = glm::mat4(1.0f);
+	renderObjectHouse.Transform = glm::translate(renderObjectHouse.Transform, glm::vec3(0.0f, 0.0f, -5.0f));
+	renderObjectHouse.PipelineType = RenderObject::PipelineType::Light;
+	s_RenderObjectsWithMaterials.push_back(renderObjectHouse);
+
 	// END prepare data for rendering meshes with materials (render objects and the list of materials)
 }
 
