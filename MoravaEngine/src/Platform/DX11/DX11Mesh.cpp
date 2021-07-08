@@ -154,6 +154,17 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 	Log::GetLogger()->info("DX11Mesh '{0}' successfully created!", inputfile);
 }
 
+const DX11MaterialSlot DX11Mesh::GetMaterialSlot(uint32_t slot)
+{
+	if (slot >= m_MaterialSlots.size()) return DX11MaterialSlot();
+	return m_MaterialSlots[slot];
+}
+
+size_t DX11Mesh::GetNumMaterialSlots()
+{
+	return m_MaterialSlots.size();
+}
+
 void DX11Mesh::ComputeTangents(
 	const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2,
 	const glm::vec2& t0, const glm::vec2& t1, const glm::vec2& t2,

@@ -30,7 +30,7 @@ struct RenderObject
 	std::vector<Hazel::Ref<Hazel::HazelTexture2D>> Textures;
 	glm::mat4 Transform;
 	PipelineType PipelineType;
-	Hazel::Ref<DX11Material> Material; // we probably need some kind of <Submesh, Material> map here
+	std::vector<Hazel::Ref<DX11Material>> Materials; // we probably need some kind of <Submesh, Material> map here
 };
 
 class DX11TestLayer : public Hazel::Layer, public DX11InputListener
@@ -73,6 +73,9 @@ public:
 	static Hazel::Ref<DX11Mesh> s_Mesh;
 	static Hazel::Ref<Hazel::HazelMesh> s_MeshLight;
 	static Hazel::Ref<Hazel::HazelMesh> s_SkyboxSphere;
+	// render meshes with materials
+	static std::vector<RenderObject> s_RenderObjectsWithMaterials;
+	static std::vector<Hazel::Ref<DX11Material>> s_ListMaterials;
 
 private:
 	static std::shared_ptr<DX11CameraFP> s_Camera;

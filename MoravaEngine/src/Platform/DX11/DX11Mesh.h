@@ -29,6 +29,9 @@ public:
 	const Hazel::Ref<Hazel::VertexBuffer>& GetVertexBuffer() { return m_VertexBuffer; };
 	const Hazel::Ref<Hazel::IndexBuffer>& GetIndexBuffer() { return m_IndexBuffer; };
 
+	const DX11MaterialSlot GetMaterialSlot(uint32_t slot);
+	size_t GetNumMaterialSlots();
+
 private:
 	void ComputeTangents(
 		const glm::vec3& v0, const glm::vec3& v1, const glm::vec3& v2,

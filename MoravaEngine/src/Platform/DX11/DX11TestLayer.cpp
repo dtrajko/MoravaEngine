@@ -18,6 +18,9 @@ glm::vec2 DX11TestLayer::s_StartMousePosition;
 Hazel::Ref<DX11Mesh> DX11TestLayer::s_Mesh;
 Hazel::Ref<Hazel::HazelMesh> DX11TestLayer::s_MeshLight;
 Hazel::Ref<Hazel::HazelMesh> DX11TestLayer::s_SkyboxSphere;
+// Render meshes with materials
+std::vector<RenderObject> DX11TestLayer::s_RenderObjectsWithMaterials;
+std::vector<Hazel::Ref<DX11Material>> DX11TestLayer::s_ListMaterials;
 
 
 DX11TestLayer::DX11TestLayer()
@@ -152,6 +155,14 @@ void DX11TestLayer::OnAttach()
 
 	Hazel::Ref<DX11Material> materialIlluminatedDerived = Hazel::Ref<DX11Material>::Create(materialIlluminated, "Material Illuminated Derived");
 	Hazel::Ref<DX11Material> materialUnlitDerived = Hazel::Ref<DX11Material>::Create(materialUnlit, "Material Unlit Derived");
+
+	// BEGIN prepare data for rendering meshes with materials (render objects and the list of materials)
+	// std::vector<RenderObject> DX11TestLayer::s_RenderObjectsWithMaterials;
+	// std::vector<Hazel::Ref<DX11Material>> DX11TestLayer::s_ListMaterials;
+
+	s_ListMaterials.reserve(32); // reserve 32 slots
+
+	// END prepare data for rendering meshes with materials (render objects and the list of materials)
 }
 
 void DX11TestLayer::OnDetach()

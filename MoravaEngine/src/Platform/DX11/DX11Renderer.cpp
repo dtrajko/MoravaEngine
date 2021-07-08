@@ -337,9 +337,20 @@ static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
 	// TODO
 }
 
+void DX11Renderer::Update()
+{
+	// Load constant buffer content to each material
+	for (size_t m = 0; m < DX11TestLayer::s_ListMaterials.size(); m++)
+	{
+		DX11TestLayer::s_ListMaterials[m]->SetData(&s_ConstantBufferLayout, sizeof(DX11ConstantBufferLayout));
+	}
+}
+
 // TODO: Temporary method until composite rendering is enabled
 void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 {
+	Update(); // Ideally, it should be called separately, before the Draw() method
+
 	// Hazel::HazelRenderer::Submit([=]() mutable {});
 
 	// Log::GetLogger()->info("Timer::GetCurrentTimestamp: {0}", Timer::Get()->GetCurrentTimestamp());
@@ -598,12 +609,22 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	}
 	// END render DX11Mesh
 
+	// BEGIN render meshes without materials
 	for (auto& renderObject : s_RenderObjects)
 	{
 		RenderMesh(renderObject);
 	}
 
 	s_RenderObjects.clear();
+	// END render meshes without materials
+
+	// BEGIN render meshes with materials
+	for (RenderObject& renderObjectWithMaterials : DX11TestLayer::s_RenderObjectsWithMaterials)
+	{
+		RenderMeshDX11(renderObjectWithMaterials, DX11TestLayer::s_ListMaterials);
+	}
+	// END render meshes with materials
+
 
 	// BEGIN DirectX 11 ImGui Render Pass
 	{
@@ -728,7 +749,7 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 	}
 }
 
-void DX11Renderer::RenderMeshDX11(RenderObject renderObject)
+void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<Hazel::Ref<DX11Material>>& listMaterials)
 {
 	// Drawing meshes with materials
 
@@ -738,6 +759,36 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject)
 	//   2. SetVertexBuffer(mesh->GetVertexBuffer())
 	//   3. SetIndexBuffer(mesh->GetIndexBuffer())
 	//   4. DrawIndexedTriangleList(slit.NumIndices, 0, slot.StartIndex)
+
+	Hazel::Ref<Hazel::Pipeline> pipeline;
+
+	if (renderObject.PipelineType == RenderObject::PipelineType::Light)
+	{
+		pipeline = s_Pipeline;
+	}
+	else if (renderObject.PipelineType == RenderObject::PipelineType::Unlit)
+	{
+		pipeline = s_PipelineUnlit;
+	}
+
+	Hazel::Ref<DX11Mesh> dx11Mesh = renderObject.Mesh.As<DX11Mesh>();
+
+	dx11Mesh->GetVertexBuffer()->Bind();
+	dx11Mesh->GetIndexBuffer()->Bind();
+	pipeline->Bind();
+
+	for (size_t m = 0; m < dx11Mesh->GetNumMaterialSlots(); m++)
+	{
+		if (m >= listMaterials.size()) break;
+
+		DX11MaterialSlot materialSlot = dx11Mesh->GetMaterialSlot((uint32_t)m);
+
+		Hazel::Ref<DX11Material> material = listMaterials[m];
+
+		material->Bind();
+
+		DX11Renderer::DrawIndexedTriangleList((uint32_t)materialSlot.NumIndices, 0, (uint32_t)materialSlot.StartIndex);
+	}
 }
 
 void DX11Renderer::BeginFrame()

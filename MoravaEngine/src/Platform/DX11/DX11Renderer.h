@@ -32,12 +32,14 @@ class DX11Renderer
 public:
 	static void Init();
 
+	static void Update();
+
 	static void Draw(Hazel::HazelCamera* camera); // TODO: there should be no parameters
 	static void OnResize(uint32_t width, uint32_t height);
 
 	static void SubmitMesh(RenderObject renderObject);
 	static void RenderMesh(RenderObject renderObject);
-	static void RenderMeshDX11(RenderObject renderObject);
+	static void RenderMeshDX11(RenderObject renderObject, const std::vector<Hazel::Ref<DX11Material>>& listMaterials);
 
 	static void BeginFrame();
 	static void EndFrame();
