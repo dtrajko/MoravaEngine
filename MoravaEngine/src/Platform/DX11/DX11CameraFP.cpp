@@ -16,7 +16,7 @@ DX11CameraFP::DX11CameraFP(glm::mat4 projection) : Hazel::HazelCamera(projection
 {
 	DX11InputSystem::Get()->AddListener(this);
 
-	m_Position = glm::vec3(0.0f, 2.0f, 6.0f);
+	m_Position = glm::vec3(0.0f, 6.0f, 20.0f);
 
 	m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	m_Front = glm::vec3(0.0f, 0.0f, 1.0f);

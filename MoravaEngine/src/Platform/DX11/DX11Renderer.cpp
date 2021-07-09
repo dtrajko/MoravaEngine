@@ -99,18 +99,16 @@ void DX11Renderer::Init()
 	renderPassSpecification.DebugName = "DX11 Render Pass specificartion";
 	renderPassSpecification.TargetFramebuffer = Hazel::HazelFramebuffer::Create(framebufferSpecification);
 
-	MoravaShaderSpecification moravaShaderSpecification;
-	moravaShaderSpecification.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-	// moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/BasicVertexShader.hlsl";
-	// moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/BasicPixelShader.hlsl";
-	moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/DirLightVertexShader.hlsl";
-	moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/DirLightPixelShader.hlsl";
-	moravaShaderSpecification.ForceCompile = false;
-
 	Hazel::PipelineSpecification pipelineSpecification{};
 	pipelineSpecification.DebugName = "DX11 Pipeline specification";
 	pipelineSpecification.Layout = Hazel::VertexBufferLayout{};
 	pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpecification);
+
+	MoravaShaderSpecification moravaShaderSpecification;
+	moravaShaderSpecification.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+	moravaShaderSpecification.VertexShaderPath = "Shaders/HLSL/DirLightVertexShader.hlsl";
+	moravaShaderSpecification.PixelShaderPath = "Shaders/HLSL/DirLightPixelShader.hlsl";
+	moravaShaderSpecification.ForceCompile = false;
 	pipelineSpecification.Shader = MoravaShader::Create(moravaShaderSpecification);
 
 	s_Pipeline = Hazel::Pipeline::Create(pipelineSpecification);
@@ -126,7 +124,6 @@ void DX11Renderer::Init()
 	moravaShaderSpecificationUnlit.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
 	moravaShaderSpecificationUnlit.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
 	moravaShaderSpecificationUnlit.ForceCompile = false;
-
 	pipelineSpecificationUnlit.Shader = MoravaShader::Create(moravaShaderSpecificationUnlit);
 
 	s_PipelineUnlit = Hazel::Pipeline::Create(pipelineSpecificationUnlit);
@@ -368,8 +365,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	DX11TestLayer::GetCamera()->SetViewportSize((float)viewportWidth, (float)viewportHeight);
 
 	s_LightPosition.x = 0.0f;
-	s_LightPosition.y = sin(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 36.0f;
-	s_LightPosition.z = cos(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 36.0f;
+	s_LightPosition.y = sin(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 58.0f;
+	s_LightPosition.z = cos(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 58.0f;
 
 	s_LightDirection = glm::normalize(s_LightPosition - glm::vec3(0.0f, 6.0f, 0.0f));
 
@@ -389,13 +386,13 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		dx11ShaderUnlit->GetPixelShader()->Bind();
 
 		Hazel::Ref<DX11VertexBuffer> skyboxVB = DX11TestLayer::s_SkyboxSphere->GetVertexBuffer().As<DX11VertexBuffer>();
-		skyboxVB->Bind();
 		Hazel::Ref<DX11IndexBuffer> skyboxIB = DX11TestLayer::s_SkyboxSphere->GetIndexBuffer().As<DX11IndexBuffer>();
+		skyboxVB->Bind();
 		skyboxIB->Bind();
 		s_PipelineUnlit->Bind();
 
 		glm::mat4 skyboxTransform = glm::mat4(1.0f);
-		skyboxTransform = glm::scale(skyboxTransform, glm::vec3(40.0f));
+		skyboxTransform = glm::scale(skyboxTransform, glm::vec3(60.0f));
 		skyboxTransform = glm::rotate(skyboxTransform, glm::radians(Timer::Get()->GetCurrentTimestamp() * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// World/Model/Transform matrix
@@ -427,14 +424,14 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		dx11Shader->GetPixelShader()->Bind();
 
 		Hazel::Ref<DX11VertexBuffer> vertexBuffer = DX11TestLayer::s_MeshLight->GetVertexBuffer().As<DX11VertexBuffer>();
-		vertexBuffer->Bind();
 		Hazel::Ref<DX11IndexBuffer> indexBuffer = DX11TestLayer::s_MeshLight->GetIndexBuffer().As<DX11IndexBuffer>();
+		vertexBuffer->Bind();
 		indexBuffer->Bind();
 		s_Pipeline->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
 
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, s_LightPosition);
-		model = glm::scale(model, glm::vec3(1.0f));
+		model = glm::scale(model, glm::vec3(2.0f));
 
 		s_ConstantBufferLayout.Model = model;
 		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
@@ -467,11 +464,11 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		// World/Model/Transform matrix
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-2.0f, 2.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-4.0f, 2.0f, 4.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		// model = glm::scale(model, glm::vec3(1.0f));
+		model = glm::scale(model, glm::vec3(2.0f));
 
 		s_ConstantBufferLayout.Model = model;
 		// Log::GetLogger()->info("s_ConstantBufferLayout.Time: {0}", constantBufferLayout.Time);
@@ -506,11 +503,11 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		// World/Model/Transform matrix
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 4.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		// model = glm::scale(model, glm::vec3(1.0f));
+		model = glm::scale(model, glm::vec3(2.0f));
 
 		s_ConstantBufferLayout.Model = model;
 		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
@@ -544,11 +541,11 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 		// World/Model/Transform matrix
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 2.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(4.0f, 2.0f, 4.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		// model = glm::scale(model, glm::vec3(1.0f));
+		model = glm::scale(model, glm::vec3(2.0f));
 
 		s_ConstantBufferLayout.Model = model;
 		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
@@ -577,15 +574,15 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	// BEGIN render DX11Mesh
 	{
 		Hazel::Ref<DX11VertexBuffer> dx11VertexBuffer = DX11TestLayer::s_Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
-		dx11VertexBuffer->Bind();
 		Hazel::Ref<DX11IndexBuffer> dx11IndexBuffer = DX11TestLayer::s_Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+		dx11VertexBuffer->Bind();
 		dx11IndexBuffer->Bind();
 		s_Pipeline->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
 
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 4.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(0.0f, 4.0f, 4.0f));
 		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * -40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f));
+		model = glm::scale(model, glm::vec3(2.0f));
 
 		s_ConstantBufferLayout.Model = model;
 		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
@@ -621,7 +618,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	// BEGIN render meshes with materials
 	for (RenderObject renderObjectWithMaterials : DX11TestLayer::s_RenderObjectsWithMaterials)
 	{
-		// RenderMeshDX11(renderObjectWithMaterials, DX11TestLayer::s_ListMaterials);
+		RenderMeshDX11(renderObjectWithMaterials, DX11TestLayer::s_ListMaterials);
 	}
 	// END render meshes with materials
 
@@ -721,11 +718,11 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 	dx11Shader->GetPixelShader()->Bind();
 
 	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = renderObject.Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
-	dx11MeshVB->Bind();
 	Hazel::Ref<DX11IndexBuffer> dx11meshIB = renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+	dx11MeshVB->Bind();
 	dx11meshIB->Bind();
 	// Hazel::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
-	pipeline->Bind(); // TODO dx11Pipeline->Bind()
+	pipeline->Bind();
 
 	uint32_t textureIndex = 0;
 	for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())
@@ -773,14 +770,13 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 
 	Hazel::Ref<DX11Mesh> dx11Mesh = renderObject.MeshDX11;
 
-	Hazel::Ref<DX11VertexBuffer> dx11VertexBuffer = dx11Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
-	Hazel::Ref<DX11IndexBuffer> dx11IndexBuffer = dx11Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+	// Hazel::Ref<DX11VertexBuffer> dx11VertexBuffer = dx11Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
+	// Hazel::Ref<DX11IndexBuffer> dx11IndexBuffer = dx11Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+	// dx11VertexBuffer->Bind();
+	// dx11IndexBuffer->Bind();
 
-	dx11VertexBuffer->Bind();
-	dx11IndexBuffer->Bind();
-
-	// dx11Mesh->GetVertexBuffer()->Bind();
-	// dx11Mesh->GetIndexBuffer()->Bind();
+	dx11Mesh->GetVertexBuffer()->Bind();
+	dx11Mesh->GetIndexBuffer()->Bind();
 
 	pipeline->Bind();
 
@@ -793,6 +789,10 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 		Hazel::Ref<DX11Material> material = listMaterials[m];
 
 		material->Bind();
+
+		// World/Model/Transform matrix
+		s_ConstantBufferLayout.Model = renderObject.Transform;
+		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
 
 		DX11Renderer::DrawIndexedTriangleList((uint32_t)materialSlot.NumIndices, 0, (uint32_t)materialSlot.StartIndex);
 	}

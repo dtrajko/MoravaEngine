@@ -98,12 +98,12 @@ void DX11Material::Bind()
 {
 	DX11Context::Get()->SetRasterizerState(m_CullMode);
 
-	m_DX11Shader->GetVertexShader()->BindConstantBuffer(m_ConstantBuffer);
-	m_DX11Shader->GetPixelShader()->BindConstantBuffer(m_ConstantBuffer);
+	m_Shader.As<DX11Shader>()->GetVertexShader()->BindConstantBuffer(m_ConstantBuffer);
+	m_Shader.As<DX11Shader>()->GetPixelShader()->BindConstantBuffer(m_ConstantBuffer);
 
-	m_DX11Shader->GetVertexShader()->Bind();
-	m_DX11Shader->GetPixelShader()->Bind();
+	m_Shader.As<DX11Shader>()->GetVertexShader()->Bind();
+	m_Shader.As<DX11Shader>()->GetPixelShader()->Bind();
 
-	m_DX11Shader->GetVertexShader()->SetTextures(m_Textures);
-	m_DX11Shader->GetPixelShader()->SetTextures(m_Textures);
+	m_Shader.As<DX11Shader>()->GetVertexShader()->SetTextures(m_Textures);
+	m_Shader.As<DX11Shader>()->GetPixelShader()->SetTextures(m_Textures);
 }

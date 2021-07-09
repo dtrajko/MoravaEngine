@@ -90,7 +90,6 @@ private:
 	std::vector<Hazel::Ref<DX11Texture2D>> m_Textures;
 
 	// DirectX Material
-	Hazel::Ref<DX11Shader> m_DX11Shader;
 	Hazel::Ref<DX11ConstantBuffer> m_ConstantBuffer;
 	DX11CullMode m_CullMode = DX11CullMode::None;
 
