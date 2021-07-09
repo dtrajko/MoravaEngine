@@ -163,8 +163,7 @@ namespace Hazel {
 				moravaShaderSpecificationHazelDX11.VertexShaderPath = "Shaders/HLSL/BasicVertexShader.hlsl";
 				moravaShaderSpecificationHazelDX11.PixelShaderPath = "Shaders/HLSL/BasicPixelShader.hlsl";
 				moravaShaderSpecificationHazelDX11.ForceCompile = false;
-
-				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelDX11);
+				m_MeshShader = ResourceManager::CreateOrLoadShader(moravaShaderSpecificationHazelDX11);
 			}
 			/**** END MoravaShader the new API ****/
 		}

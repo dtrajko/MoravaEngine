@@ -14,7 +14,9 @@ float ResourceManager::s_MaterialShininess = 256.0f;
 
 std::map<std::string, Hazel::Ref<Hazel::HazelTexture2D>> ResourceManager::s_HazelTextures2D;
 
-std::map<std::string, Hazel::Ref<MoravaShader>> ResourceManager::s_Shaders;
+std::map<std::string, Hazel::Ref<MoravaShader>> ResourceManager::s_ShaderCacheByTitle;
+
+std::map<std::string, Hazel::Ref<MoravaShader>> ResourceManager::s_ShadersCacheByFilepath;
 
 
 void ResourceManager::Init()
@@ -326,29 +328,56 @@ Hazel::Ref<Material> ResourceManager::HotLoadMaterial(std::string materialName)
 
 Hazel::Ref<Hazel::HazelTexture2D> ResourceManager::LoadHazelTexture2D(std::string filePath)
 {
+    Hazel::Ref<Hazel::HazelTexture2D> texture;
+
     std::map<std::string, Hazel::Ref<Hazel::HazelTexture2D>>::iterator entry = s_HazelTextures2D.find(filePath);
     if (entry != s_HazelTextures2D.end()) {
-        return entry->second;
+        // A cache HIT
+        texture = entry->second;
+        // Log::GetLogger()->info("ResourceManager: A texture loaded from the cache [key: '{0}']", filePath);
     }
     else {
-        Hazel::Ref<Hazel::HazelTexture2D> texture = Hazel::HazelTexture2D::Create(filePath);
+        // A cache MISS
+        texture = Hazel::HazelTexture2D::Create(filePath);
         s_HazelTextures2D.insert(std::make_pair(filePath, texture));
-        return texture;
+        Log::GetLogger()->info("ResourceManager: A texture created and stored in cache [key: '{0}']", filePath);
     }
+
+    return texture;
 }
 
 void ResourceManager::AddShader(std::string name, Hazel::Ref<MoravaShader> shader)
 {
-    if (s_Shaders.find(name) == s_Shaders.end()) {
-        s_Shaders.insert(std::make_pair(name, shader));
+    if (s_ShaderCacheByTitle.find(name) == s_ShaderCacheByTitle.end()) {
+        s_ShaderCacheByTitle.insert(std::make_pair(name, shader));
     }
 }
 
 const Hazel::Ref<MoravaShader>& ResourceManager::GetShader(std::string name)
 {
-    if (s_Shaders.find(name) != s_Shaders.end()) {
-        return s_Shaders.find(name)->second;
+    if (s_ShaderCacheByTitle.find(name) != s_ShaderCacheByTitle.end()) {
+        return s_ShaderCacheByTitle.find(name)->second;
     }
     return Hazel::Ref<MoravaShader>();
 }
 
+const Hazel::Ref<MoravaShader>& ResourceManager::CreateOrLoadShader(MoravaShaderSpecification moravaShaderSpecification)
+{
+    Hazel::Ref<MoravaShader> moravaShader;
+
+    std::string pixelShaderPath = moravaShaderSpecification.PixelShaderPath;
+    std::map<std::string, Hazel::Ref<MoravaShader>>::iterator entry = s_ShadersCacheByFilepath.find(pixelShaderPath);
+    if (entry != s_ShadersCacheByFilepath.end()) {
+        // A cache HIT
+        moravaShader = entry->second;
+        Log::GetLogger()->info("ResourceManager: A shader loaded from the cache [key: '{0}']", pixelShaderPath);
+    }
+    else {
+        // A cache MISS
+        moravaShader = MoravaShader::Create(moravaShaderSpecification);
+        s_ShadersCacheByFilepath.insert(std::make_pair(pixelShaderPath, moravaShader));
+        Log::GetLogger()->info("ResourceManager: A shader created and stored in cache [key: '{0}']", pixelShaderPath);
+    }
+
+    return moravaShader;
+}

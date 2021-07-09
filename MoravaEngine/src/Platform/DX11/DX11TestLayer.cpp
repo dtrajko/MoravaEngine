@@ -118,35 +118,40 @@ void DX11TestLayer::OnAttach()
 	s_MeshLight = meshSphere;
 	s_SkyboxSphere = meshSphere;
 
-	// BEGIN Pipeline Unlit
+	/**** BEGIN Pipeline Unlit ****/
+
 	Hazel::PipelineSpecification pipelineSpecUnlit;
 	pipelineSpecUnlit.DebugName = "Pipeline Unlit";
 	pipelineSpecUnlit.Layout = Hazel::VertexBufferLayout{};
 
-	MoravaShaderSpecification shaderSpecUnlit;
-	shaderSpecUnlit.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-	shaderSpecUnlit.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
-	shaderSpecUnlit.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
-	shaderSpecUnlit.ForceCompile = false;
-	pipelineSpecUnlit.Shader = MoravaShader::Create(shaderSpecUnlit);
+	MoravaShaderSpecification moravaShaderSpecificationUnlit;
+	moravaShaderSpecificationUnlit.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+	moravaShaderSpecificationUnlit.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
+	moravaShaderSpecificationUnlit.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
+	moravaShaderSpecificationUnlit.ForceCompile = false;
+	ResourceManager::CreateOrLoadShader(moravaShaderSpecificationUnlit);
+	pipelineSpecUnlit.Shader = ResourceManager::CreateOrLoadShader(moravaShaderSpecificationUnlit);
 
 	Hazel::Ref<DX11Pipeline> pipelineUnlit = DX11Pipeline::Create(pipelineSpecUnlit);
-	// END Pipeline Unlit
 
-	// BEGIN Pipeline Illuminated
+	/**** END Pipeline Unlit ****/
+
+	/**** BEGIN Pipeline Illuminated ****/
+
 	Hazel::PipelineSpecification pipelineSpecIlluminated;
 	pipelineSpecIlluminated.DebugName = "Pipeline Illuminated";
 	pipelineSpecIlluminated.Layout = Hazel::VertexBufferLayout{};
 
-	MoravaShaderSpecification shaderSpecIlluminated;
-	shaderSpecIlluminated.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-	shaderSpecIlluminated.VertexShaderPath = "Shaders/HLSL/DirLightVertexShader.hlsl";
-	shaderSpecIlluminated.PixelShaderPath = "Shaders/HLSL/DirLightPixelShader.hlsl";
-	shaderSpecIlluminated.ForceCompile = false;
-	pipelineSpecIlluminated.Shader = MoravaShader::Create(shaderSpecIlluminated);
+	MoravaShaderSpecification moravaShaderSpecificationIlluminated;
+	moravaShaderSpecificationIlluminated.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+	moravaShaderSpecificationIlluminated.VertexShaderPath = "Shaders/HLSL/DirLightVertexShader.hlsl";
+	moravaShaderSpecificationIlluminated.PixelShaderPath = "Shaders/HLSL/DirLightPixelShader.hlsl";
+	moravaShaderSpecificationIlluminated.ForceCompile = false;
+	pipelineSpecIlluminated.Shader = ResourceManager::CreateOrLoadShader(moravaShaderSpecificationIlluminated);
 
 	Hazel::Ref<DX11Pipeline> pipelineIlluminated = DX11Pipeline::Create(pipelineSpecIlluminated);
-	// END Pipeline Illuminated
+
+	/**** END Pipeline Illuminated ****/
 
 	Hazel::Ref<DX11Material> materialIlluminated = Hazel::Ref<DX11Material>::Create(pipelineIlluminated, "Material Illuminated");
 	Hazel::Ref<DX11Material> materialUnlit = Hazel::Ref<DX11Material>::Create(pipelineIlluminated, "Material Unlit");

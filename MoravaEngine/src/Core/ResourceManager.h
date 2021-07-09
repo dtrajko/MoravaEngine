@@ -24,13 +24,16 @@ public:
 	static inline std::map<std::string, Hazel::Ref<Material>>* GetMaterials() { return &s_Materials; };
 	static inline std::map<std::string, std::string>* GetTextureInfo() { return &s_TextureInfo; };
 	static inline std::map<std::string, TextureInfo>* GetMaterialInfo() { return &s_MaterialInfo; };
-	static inline std::map<std::string, Hazel::Ref<MoravaShader>>* GetShaders() { return &s_Shaders; };
+	static inline std::map<std::string, Hazel::Ref<MoravaShader>>* GetShaders() { return &s_ShaderCacheByTitle; };
 
 	// Loading HazelTexture2D
 	static Hazel::Ref<Hazel::HazelTexture2D> LoadHazelTexture2D(std::string filePath);
 
 	static void AddShader(std::string name, Hazel::Ref<MoravaShader> shader);
 	static const Hazel::Ref<MoravaShader>& GetShader(std::string name);
+
+	// Caching shaders
+	static const Hazel::Ref<MoravaShader>& CreateOrLoadShader(MoravaShaderSpecification moravaShaderSpecification);
 
 public:
 	static float s_MaterialSpecular;
@@ -46,6 +49,8 @@ private:
 
 	static std::map<std::string, Hazel::Ref<Hazel::HazelTexture2D>> s_HazelTextures2D;
 
-	static std::map<std::string, Hazel::Ref<MoravaShader>> s_Shaders;
+	static std::map<std::string, Hazel::Ref<MoravaShader>> s_ShaderCacheByTitle;
+
+	static std::map<std::string, Hazel::Ref<MoravaShader>> s_ShadersCacheByFilepath;
 
 };
