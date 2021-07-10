@@ -142,11 +142,3 @@ void DX11Context::SetViewportSize(uint32_t width, uint32_t height)
 
 	m_DX11DeviceContext->RSSetViewports(1, &vp);
 }
-
-void DX11Context::SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil)
-{
-	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
-	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
-
-	m_DX11DeviceContext->OMSetRenderTargets(1, &renderTarget->m_RenderTargetView, depthStencil->GetDepthStencilView());
-}

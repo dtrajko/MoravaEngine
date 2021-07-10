@@ -49,8 +49,8 @@ void DX11PixelShader::SetTextures(const std::vector<Hazel::Ref<DX11Texture2D>>& 
 
 	for (unsigned int i = 0; i < textureCount; i++)
 	{
-		list_res[i] = textures[i]->m_ShaderResourceView;
-		list_sampler[i] = textures[i]->m_SamplerState;
+		list_res[i] = textures[i]->m_ShaderResourceViewDX11;
+		list_sampler[i] = textures[i]->m_SamplerStateDX11;
 	}
 
 	DX11Context::Get()->GetDX11DeviceContext()->PSSetShaderResources(0, (UINT)textureCount, list_res);

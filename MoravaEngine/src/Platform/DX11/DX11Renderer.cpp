@@ -54,6 +54,8 @@ static DX11ConstantBufferLayout s_ConstantBufferLayout;
 static glm::vec3 s_LightPosition;
 static glm::vec3 s_LightDirection;
 
+static Hazel::Ref<DX11Texture2D> s_RenderTarget;
+static Hazel::Ref<DX11Texture2D> s_DepthStencil;
 
 
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
@@ -67,6 +69,17 @@ void DX11Renderer::SubmitMesh(RenderObject renderObject)
 
 void DX11Renderer::OnResize(uint32_t width, uint32_t height)
 {
+	Log::GetLogger()->info("DX11Renderer::OnResize({0}, {1})", width, height);
+
+	s_RenderTarget->Release();
+	s_DepthStencil->Release();
+
+	s_ViewportWidth = Application::Get()->GetWindow()->GetWidth(); // should we use framebufferSpec.Width?
+	s_ViewportHeight = Application::Get()->GetWindow()->GetHeight(); // should we use framebufferSpec.Height?
+
+	s_RenderTarget = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::RenderTarget);
+	s_DepthStencil = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::DepthStencil);
+
 	// HazelRenderer::Submit([=]() {});
 	// auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
 }
@@ -233,6 +246,13 @@ void DX11Renderer::Init()
 
 	s_ConstantBuffer = Hazel::Ref<DX11ConstantBuffer>::Create(&s_ConstantBufferLayout, sizeof(DX11ConstantBufferLayout));
 
+	// Create a render target texture and a depth stencil texture
+	s_ViewportWidth = Application::Get()->GetWindow()->GetWidth(); // should we use framebufferSpec.Width?
+	s_ViewportHeight = Application::Get()->GetWindow()->GetHeight(); // should we use framebufferSpec.Height?
+
+	s_RenderTarget = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::RenderTarget);
+	s_DepthStencil = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::DepthStencil);
+
 	/**** END DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
 
 	/****
@@ -336,6 +356,9 @@ static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
 
 void DX11Renderer::Update()
 {
+	s_ViewportWidth = 1280;
+	s_ViewportHeight = 720;
+
 	// Load constant buffer content to each material
 	for (size_t m = 0; m < DX11TestLayer::s_ListMaterials.size(); m++)
 	{
@@ -353,9 +376,13 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	// Log::GetLogger()->info("Timer::GetCurrentTimestamp: {0}", Timer::Get()->GetCurrentTimestamp());
 
 	/**** BEGIN DirectX 11 rendering ****/
-	ClearRenderTargetColor(0.1f, 0.2f, 0.4f, 1.0f);
+	ClearRenderTargetColorSwapChain(0.1f, 0.2f, 0.4f, 1.0f);
+	ClearDepthStencilSwapChain();
 
 	DX11Context::Get()->SetRasterizerState(DX11CullMode::None);
+
+	// Redirect rendering from swapchain (window) to framebuffer render targets
+	// SetRenderTarget(s_RenderTarget, s_DepthStencil);
 
 	Hazel::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
 
@@ -985,7 +1012,7 @@ uint32_t DX11Renderer::GetViewportHeight()
 }
 
 // BEGIN methods from DX11Context
-void DX11Renderer::ClearRenderTargetColor(float red, float green, float blue, float alpha)
+void DX11Renderer::ClearRenderTargetColorSwapChain(float red, float green, float blue, float alpha)
 {
 	DX11Context::Get()->GetSwapChain()->ClearRenderTargetColor(red, green, blue, alpha);
 }
@@ -994,20 +1021,28 @@ void DX11Renderer::ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget
 {
 	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
 	FLOAT clear_color[] = { red, green, blue, alpha };
-	DX11Context::Get()->GetDX11DeviceContext()->ClearRenderTargetView(renderTarget->GetRenderTargetView(), clear_color);
+	DX11Context::Get()->GetDX11DeviceContext()->ClearRenderTargetView(renderTarget->GetRenderTargetViewDX11(), clear_color);
 }
 
-void DX11Renderer::ClearDepthStencil()
+void DX11Renderer::ClearDepthStencilSwapChain()
 {
 	std::shared_ptr<DX11SwapChain> dx11SwapChain = DX11Context::Get()->GetSwapChain();
 
-	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(dx11SwapChain->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(dx11SwapChain->GetDepthStencilViewDX11(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 }
 
 void DX11Renderer::ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil)
 {
 	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
-	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(depthStencil->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(depthStencil->GetDepthStencilViewDX11(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
+}
+
+void DX11Renderer::SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil)
+{
+	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
+	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
+
+	DX11Context::Get()->GetDX11DeviceContext()->OMSetRenderTargets(1, &renderTarget->m_RenderTargetViewDX11, depthStencil->m_DepthStencilViewDX11);
 }
 
 void DX11Renderer::DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex)

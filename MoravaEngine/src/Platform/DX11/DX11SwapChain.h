@@ -41,8 +41,8 @@ public:
 	void Cleanup();
 
 	// DirectX 11 specific methods
-	ID3D11RenderTargetView* GetRenderTargetView() { return m_DX11RenderTargetView.Get(); }
-	ID3D11DepthStencilView* GetDepthStencilView() { return m_DX11DepthStencilView.Get(); }
+	ID3D11RenderTargetView* GetRenderTargetViewDX11() { return m_RenderTargetViewDX11.Get(); }
+	ID3D11DepthStencilView* GetDepthStencilViewDX11() { return m_DepthStencilViewDX11.Get(); }
 
 	void ClearRenderTargetColor(float red, float green, float blue, float alpha);
 
@@ -60,13 +60,13 @@ private:
 	uint32_t m_Width = 0;
 	uint32_t m_Height = 0;
 
-	Microsoft::WRL::ComPtr<IDXGISwapChain> m_DX11SwapChain = nullptr;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> m_SwapChainDX11 = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DX11RenderTargetBuffer = nullptr;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_DX11RenderTargetView = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_RenderTargetBufferDX11 = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_RenderTargetViewDX11 = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DX11DepthStencilBuffer = nullptr;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_DX11DepthStencilView = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> m_DepthStencilBufferDX11 = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_DepthStencilViewDX11 = nullptr;
 
 	bool m_FullscreenToggleMode = false;
 

@@ -11,6 +11,7 @@
 #include "Platform/DX11/DX11Context.h"
 #include "Platform/DX11/DX11InputSystem.h"
 #include "Platform/DX11/DX11RendererBasic.h"
+#include "Platform/DX11/DX11Renderer.h"
 
 #include <cmath>
 #include <exception>
@@ -408,6 +409,9 @@ void WindowsWindow::OnSize()
 
 	// DX11Context::Get()->GetSwapChain()->OnResize(windowRECT.right, windowRECT.bottom);
 	DX11Context::Get()->GetSwapChain()->OnResize(m_Data.Width, m_Data.Height);
+
+	// TODO: use observer / event listeners to remove this unwanted and unnecessary dependency
+	DX11Renderer::OnResize(m_Data.Width, m_Data.Height);
 }
 
 // A DirectX 11 method

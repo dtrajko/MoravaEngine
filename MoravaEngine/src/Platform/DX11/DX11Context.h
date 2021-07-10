@@ -54,9 +54,6 @@ public:
 
 	void SetViewportSize(uint32_t width, uint32_t height);
 
-	// this should probably be DX11Framebuffer->Bind()
-	void SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil);
-
 private:
 	void InitRasterizerState();
 

@@ -22,7 +22,7 @@ DX11Texture2D::DX11Texture2D(const wchar_t* fullPath)
 	if (SUCCEEDED(res))
 	{
 		res = DirectX::CreateTexture(dx11Device, image_data.GetImages(),
-			image_data.GetImageCount(), image_data.GetMetadata(), &m_Texture);
+			image_data.GetImageCount(), image_data.GetMetadata(), &m_TextureDX11);
 
 		if (FAILED(res)) throw std::exception("DX11Texture2D not created successfully.");
 
@@ -45,10 +45,10 @@ DX11Texture2D::DX11Texture2D(const wchar_t* fullPath)
 		sampler_desc.MinLOD = 0;
 		sampler_desc.MaxLOD = (FLOAT)image_data.GetMetadata().mipLevels;
 
-		res = dx11Device->CreateSamplerState(&sampler_desc, &m_SamplerState);
+		res = dx11Device->CreateSamplerState(&sampler_desc, &m_SamplerStateDX11);
 		if (FAILED(res)) throw std::exception("DX11Texture2D SamplerState not created successfully.");
 
-		res = dx11Device->CreateShaderResourceView(m_Texture, &desc, &m_ShaderResourceView);
+		res = dx11Device->CreateShaderResourceView(m_TextureDX11, &desc, &m_ShaderResourceViewDX11);
 		if (FAILED(res)) throw std::exception("DX11Texture2D ShaderResourceView not created successfully.");
 	}
 	else
@@ -64,7 +64,7 @@ DX11Texture2D::DX11Texture2D(const wchar_t* fullPath)
 
 DX11Texture2D::DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type)
 {
-	ID3D11Device* dx11Device = DX11Context::Get()->GetCurrentDevice()->GetDX11Device();
+	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
 	D3D11_TEXTURE2D_DESC tex_desc = {};
 	tex_desc.Width = (UINT)size.x;
@@ -94,36 +94,51 @@ DX11Texture2D::DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type)
 	tex_desc.ArraySize = 1;
 	tex_desc.CPUAccessFlags = 0;
 
-	auto hr = dx11Device->CreateTexture2D(&tex_desc, nullptr, (ID3D11Texture2D**)&m_Texture);
-
+	auto hr = dx11Device->CreateTexture2D(&tex_desc, nullptr, (ID3D11Texture2D**)&m_TextureDX11);
 	if (FAILED(hr))
 	{
 		throw std::exception("DX11Texture2D not created successfully.");
 	}
+	else if (SUCCEEDED(hr))
+	{
+		Log::GetLogger()->info("DX11Texture2D successfully created!");
+	}
 
 	if (type == Normal || type == RenderTarget)
 	{
-		hr = dx11Device->CreateShaderResourceView(m_Texture, NULL, &m_ShaderResourceView);
+		hr = dx11Device->CreateShaderResourceView(m_TextureDX11, NULL, &m_ShaderResourceViewDX11);
 		if (FAILED(hr))
 		{
 			throw std::exception("DX11Texture2D not created successfully (ShaderResourceView).");
+		}
+		else if (SUCCEEDED(hr))
+		{
+			Log::GetLogger()->info("DX11Texture2D: ShaderResourceView successfully created!");
 		}
 	}
 
 	if (type == RenderTarget)
 	{
-		hr = dx11Device->CreateRenderTargetView(m_Texture, NULL, &m_RenderTargetView);
+		hr = dx11Device->CreateRenderTargetView(m_TextureDX11, NULL, &m_RenderTargetViewDX11);
 		if (FAILED(hr))
 		{
 			throw std::exception("DX11Texture2D not created successfully (RenderTargetView).");
 		}
+		else if (SUCCEEDED(hr))
+		{
+			Log::GetLogger()->info("DX11Texture2D: RenderTargetView successfully created!");
+		}
 	}
 	else if (type == DepthStencil)
 	{
-		hr = dx11Device->CreateDepthStencilView(m_Texture, NULL, &m_DepthStencilView);
+		hr = dx11Device->CreateDepthStencilView(m_TextureDX11, NULL, &m_DepthStencilViewDX11);
 		if (FAILED(hr))
 		{
 			throw std::exception("DX11Texture2D not created successfully (DepthStencilView).");
+		}
+		else if (SUCCEEDED(hr))
+		{
+			Log::GetLogger()->info("DX11Texture2D: DepthStencilView successfully created!");
 		}
 	}
 
@@ -166,18 +181,26 @@ DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uin
 
 DX11Texture2D::~DX11Texture2D()
 {
-	if (m_RenderTargetView) m_RenderTargetView->Release();
-	if (m_DepthStencilView) m_DepthStencilView->Release();
-	if (m_ShaderResourceView) m_ShaderResourceView->Release();
-	if (m_SamplerState) m_SamplerState->Release();
-	if (m_Texture) m_Texture->Release();
+	Release();
+
+	if (m_RenderTargetViewDX11) m_RenderTargetViewDX11->Release();
+	if (m_DepthStencilViewDX11) m_DepthStencilViewDX11->Release();
+	if (m_ShaderResourceViewDX11) m_ShaderResourceViewDX11->Release();
+	if (m_SamplerStateDX11) m_SamplerStateDX11->Release();
+	if (m_TextureDX11) m_TextureDX11->Release();
+}
+
+void DX11Texture2D::Release()
+{
 }
 
 void DX11Texture2D::Invalidate()
 {
 	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
-	// TODO
+	Release(); // release resources
+
+	// TODO: Re-create resources
 }
 
 void DX11Texture2D::Bind(uint32_t slot) const

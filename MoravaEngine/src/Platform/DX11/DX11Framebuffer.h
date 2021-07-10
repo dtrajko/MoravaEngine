@@ -2,6 +2,8 @@
 
 #include "DX11.h"
 
+#include "DX11Texture2D.h"
+
 #include "Hazel/Renderer/HazelFramebuffer.h"
 
 
@@ -42,5 +44,9 @@ private:
 	std::vector<Hazel::Ref<Hazel::HazelImage2D>> m_Attachments;
 
 	std::vector<std::function<void(Hazel::Ref<HazelFramebuffer>)>> m_ResizeCallbacks;
+
+	// DirectX 11 framebuffer resources (added here as a reminder, not used yet)
+	Hazel::Ref<DX11Texture2D> m_RenderTarget;
+	Hazel::Ref<DX11Texture2D> m_DepthStencil;
 
 };

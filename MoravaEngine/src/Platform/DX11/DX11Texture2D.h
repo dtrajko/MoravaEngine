@@ -28,6 +28,7 @@ public:
 	virtual ~DX11Texture2D();
 
 	void Invalidate();
+	void Release();
 
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
@@ -54,8 +55,8 @@ public:
 	glm::vec2 getSize() { return m_Size; }
 	DX11Texture2D::Type GetType() { return m_Type; }
 
-	ID3D11RenderTargetView* GetRenderTargetView() { return m_RenderTargetView; }
-	ID3D11DepthStencilView* GetDepthStencilView() { return m_DepthStencilView; }
+	ID3D11RenderTargetView* GetRenderTargetViewDX11() { return m_RenderTargetViewDX11; }
+	ID3D11DepthStencilView* GetDepthStencilViewDX11() { return m_DepthStencilViewDX11; }
 
 private:
 	std::string m_Path;
@@ -67,14 +68,14 @@ private:
 
 	Hazel::HazelImageFormat m_Format = Hazel::HazelImageFormat::None;
 
-	glm::vec2 m_Size;
 	DX11Texture2D::Type m_Type = DX11Texture2D::Type::Normal;
+	glm::vec2 m_Size;
 
-	ID3D11Resource* m_Texture = nullptr;
-	ID3D11ShaderResourceView* m_ShaderResourceView = nullptr;
-	ID3D11RenderTargetView* m_RenderTargetView = nullptr;
-	ID3D11DepthStencilView* m_DepthStencilView = nullptr;
-	ID3D11SamplerState* m_SamplerState = nullptr;
+	ID3D11Resource* m_TextureDX11 = nullptr;
+	ID3D11ShaderResourceView* m_ShaderResourceViewDX11 = nullptr;
+	ID3D11RenderTargetView* m_RenderTargetViewDX11 = nullptr;
+	ID3D11DepthStencilView* m_DepthStencilViewDX11 = nullptr;
+	ID3D11SamplerState* m_SamplerStateDX11 = nullptr;
 
 	friend class DX11Context;
 	friend class DX11Renderer;
