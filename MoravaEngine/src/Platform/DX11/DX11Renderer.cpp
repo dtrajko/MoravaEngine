@@ -42,20 +42,27 @@ static Hazel::Submesh* s_SelectedSubmesh;
 static glm::mat4* s_Transform_ImGuizmo = nullptr;
 
 // temporary DX11 objects
-static Hazel::Ref<DX11VertexBuffer> s_VertexBuffer;
-static Hazel::Ref<DX11IndexBuffer> s_IndexBuffer;
+static Hazel::Ref<DX11VertexBuffer> s_VertexBufferCube;
+static Hazel::Ref<DX11IndexBuffer> s_IndexBufferCube;
+
+static Hazel::Ref<DX11VertexBuffer> s_VertexBufferQuad;
+static Hazel::Ref<DX11IndexBuffer> s_IndexBufferQuad;
 
 static Hazel::Ref<Hazel::Pipeline> s_PipelineIlluminated;
 static Hazel::Ref<Hazel::Pipeline> s_PipelineUnlit;
 
-static Hazel::Ref<DX11ConstantBuffer> s_ConstantBuffer;
 static DX11ConstantBufferLayout s_ConstantBufferLayout;
+static DX11ConstantBufferLayout s_ConstantBufferLayoutDeferred;
+
+static Hazel::Ref<DX11ConstantBuffer> s_ConstantBuffer;
 
 static glm::vec3 s_LightPosition;
 static glm::vec3 s_LightDirection;
 
 static Hazel::Ref<DX11Texture2D> s_RenderTarget;
 static Hazel::Ref<DX11Texture2D> s_DepthStencil;
+
+static bool s_DeferredRenderingEnabled = true;
 
 
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
@@ -71,14 +78,17 @@ void DX11Renderer::OnResize(uint32_t width, uint32_t height)
 {
 	Log::GetLogger()->info("DX11Renderer::OnResize({0}, {1})", width, height);
 
-	s_RenderTarget->Release();
-	s_DepthStencil->Release();
-
 	s_ViewportWidth = Application::Get()->GetWindow()->GetWidth(); // should we use framebufferSpec.Width?
 	s_ViewportHeight = Application::Get()->GetWindow()->GetHeight(); // should we use framebufferSpec.Height?
 
-	s_RenderTarget = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::RenderTarget);
-	s_DepthStencil = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::DepthStencil);
+	if (s_DeferredRenderingEnabled)
+	{
+		s_RenderTarget->Release();
+		s_DepthStencil->Release();
+
+		s_RenderTarget = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::RenderTarget);
+		s_DepthStencil = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::DepthStencil);
+	}
 
 	// HazelRenderer::Submit([=]() {});
 	// auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
@@ -142,6 +152,30 @@ void DX11Renderer::Init()
 	s_PipelineUnlit = Hazel::Pipeline::Create(pipelineSpecUnlit);
 	// ---- END Unlit Pipeline ----
 
+	CreateCube();
+
+	if (s_DeferredRenderingEnabled)
+	{
+		CreateQuad(); // to render a render target framebuffer to
+	}
+
+	s_ConstantBuffer = Hazel::Ref<DX11ConstantBuffer>::Create(&s_ConstantBufferLayout, sizeof(DX11ConstantBufferLayout));
+
+	// Create a render target texture and a depth stencil texture
+	s_ViewportWidth = Application::Get()->GetWindow()->GetWidth(); // should we use framebufferSpec.Width?
+	s_ViewportHeight = Application::Get()->GetWindow()->GetHeight(); // should we use framebufferSpec.Height?
+
+	if (s_DeferredRenderingEnabled)
+	{
+		s_RenderTarget = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::RenderTarget);
+		s_DepthStencil = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::DepthStencil);
+	}
+
+	/**** END DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
+}
+
+void DX11Renderer::CreateCube()
+{
 	glm::vec3 positionList[] =
 	{
 		// POSITION      
@@ -171,42 +205,33 @@ void DX11Renderer::Init()
 
 	DX11VertexLayout vertexList[] =
 	{
-		// ----------------- POSITION XYZ ---------- NORMAL XYZ ----------- TANGENT XYZ ---------- BINORMAL XYZ -------- TEXCOORD UV
-		// DX11VertexLayout{ { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f }, }, // VERTEX #0
-		// DX11VertexLayout{ { -0.5f,  0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }, }, // VERTEX #1
-		// DX11VertexLayout{ {  0.5f,  0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, { 1.0f, 0.0f }, }, // VERTEX #2
-		// DX11VertexLayout{ {  0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }, }, // VERTEX #3
-
-		// DX11VertexLayout{ {  0.5f, -0.5f,  0.5f }, { 1.0f, 1.0f, 0.0f }, {  0.8f,  0.8f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }, }, // VERTEX #4
-		// DX11VertexLayout{ {  0.5f,  0.5f,  0.5f }, { 1.0f, 0.0f, 0.0f }, {  0.8f, -0.8f, 0.0f }, { 0.0f, 1.0f, 1.0f }, { 1.0f, 0.0f }, }, // VERTEX #5
-		// DX11VertexLayout{ { -0.5f,  0.5f,  0.5f }, { 0.0f, 1.0f, 0.0f }, { -0.8f,  0.8f, 0.0f }, { 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }, }, // VERTEX #6
-		// DX11VertexLayout{ { -0.5f, -0.5f,  0.5f }, { 0.0f, 0.0f, 0.0f }, { -0.8f, -0.8f, 0.0f }, { 1.0f, 1.0f, 1.0f }, { 0.0f, 1.0f }, }, // VERTEX #7
+		// -------------- POSITION XYZ --- NORMAL XYZ ----------------- TANGENT XYZ ---- BINORMAL XYZ --- TEXCOORD UV
 
 		// front side
-		DX11VertexLayout{ positionList[0], glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
-		DX11VertexLayout{ positionList[1], glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
-		DX11VertexLayout{ positionList[2], glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
-		DX11VertexLayout{ positionList[3], glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
+		DX11VertexLayout{ positionList[0], glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[1], glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[2], glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[3], glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 		// back side
-		DX11VertexLayout{ positionList[4], glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
-		DX11VertexLayout{ positionList[5], glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
-		DX11VertexLayout{ positionList[6], glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
-		DX11VertexLayout{ positionList[7], glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
+		DX11VertexLayout{ positionList[4], glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[5], glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[6], glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[7], glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 		// top side
-		DX11VertexLayout{ positionList[1], glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
-		DX11VertexLayout{ positionList[6], glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
-		DX11VertexLayout{ positionList[5], glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
-		DX11VertexLayout{ positionList[2], glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
+		DX11VertexLayout{ positionList[1], glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[6], glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[5], glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[2], glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 		// bottom side
-		DX11VertexLayout{ positionList[7], glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
-		DX11VertexLayout{ positionList[0], glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
-		DX11VertexLayout{ positionList[3], glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
-		DX11VertexLayout{ positionList[4], glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
+		DX11VertexLayout{ positionList[7], glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[0], glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[3], glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[4], glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 		// right side
-		DX11VertexLayout{ positionList[3], glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
-		DX11VertexLayout{ positionList[2], glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
-		DX11VertexLayout{ positionList[5], glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
-		DX11VertexLayout{ positionList[4], glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
+		DX11VertexLayout{ positionList[3], glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[2], glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[5], glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[4], glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
 		// left side
 		DX11VertexLayout{ positionList[7], glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
 		DX11VertexLayout{ positionList[6], glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
@@ -217,7 +242,7 @@ void DX11Renderer::Init()
 	// temporary DX11 objects and data structures
 	uint32_t vertexStride = sizeof(DX11VertexLayout);
 	uint32_t vertexCount = ARRAYSIZE(vertexList);
-	s_VertexBuffer = Hazel::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount);
+	s_VertexBufferCube = Hazel::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount);
 
 	uint32_t indexList[] =
 	{
@@ -227,123 +252,70 @@ void DX11Renderer::Init()
 		// Back side
 		 4,  5,  6,
 		 6,  7,  4,
-		// Top side
-		 8,  9, 10,
-		10, 11,  8,
-		// Bottom side
-		12, 13, 14,
-		14, 15, 12,
-		// Right side
-		16, 17, 18,
-		18, 19, 16,
-		// Left side
-		20, 21, 22,
-		22, 23, 20,
+		 // Top side
+		  8,  9, 10,
+		 10, 11,  8,
+		 // Bottom side
+		 12, 13, 14,
+		 14, 15, 12,
+		 // Right side
+		 16, 17, 18,
+		 18, 19, 16,
+		 // Left side
+		 20, 21, 22,
+		 22, 23, 20,
 	};
 
 	uint32_t indexCount = ARRAYSIZE(indexList);
-	s_IndexBuffer = Hazel::Ref<DX11IndexBuffer>::Create(indexList, (uint32_t)(indexCount * sizeof(uint32_t)));
+	s_IndexBufferCube = Hazel::Ref<DX11IndexBuffer>::Create(indexList, (uint32_t)(indexCount * sizeof(uint32_t)));
+}
 
-	s_ConstantBuffer = Hazel::Ref<DX11ConstantBuffer>::Create(&s_ConstantBufferLayout, sizeof(DX11ConstantBufferLayout));
-
-	// Create a render target texture and a depth stencil texture
-	s_ViewportWidth = Application::Get()->GetWindow()->GetWidth(); // should we use framebufferSpec.Width?
-	s_ViewportHeight = Application::Get()->GetWindow()->GetHeight(); // should we use framebufferSpec.Height?
-
-	s_RenderTarget = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::RenderTarget);
-	s_DepthStencil = Hazel::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::DepthStencil);
-
-	/**** END DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
-
-	/****
-	Hazel::HazelRenderer::Submit([=]() {});
-
+void DX11Renderer::CreateQuad()
+{
+	glm::vec3 positionList[] =
 	{
-		Hazel::HazelFramebufferSpecification spec;
-		spec.Width = s_ViewportWidth;
-		spec.Height = s_ViewportHeight;
-
-		s_Framebuffer = Hazel::HazelFramebuffer::Create(spec);
-		s_Framebuffer->AddResizeCallback([](Hazel::Ref<Hazel::HazelFramebuffer> framebuffer) {
-			Hazel::HazelRenderer::Submit([framebuffer]() mutable {});
-		});
-
-		Hazel::PipelineSpecification pipelineSpecification;
-		pipelineSpecification.Layout = {
-			{ Hazel::ShaderDataType::Float3, "a_Position" },
-			{ Hazel::ShaderDataType::Float3, "a_Normal" },
-			{ Hazel::ShaderDataType::Float3, "a_Tangent" },
-			{ Hazel::ShaderDataType::Float3, "a_Binormal" },
-			{ Hazel::ShaderDataType::Float2, "a_TexCoord" },
-		};
-		pipelineSpecification.Shader = Hazel::HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
-
-		Hazel::RenderPassSpecification renderPassSpec;
-		renderPassSpec.TargetFramebuffer = s_Framebuffer;
-		pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpec);
-		s_MeshPipeline = Hazel::Pipeline::Create(pipelineSpecification);
-	}
-
-	{
-		Hazel::HazelFramebufferSpecification spec;
-		spec.SwapChainTarget = true;
-		Hazel::Ref<Hazel::HazelFramebuffer> framebuffer = Hazel::HazelFramebuffer::Create(spec);
-
-		Hazel::PipelineSpecification pipelineSpecification;
-		pipelineSpecification.Layout = {
-			{ Hazel::ShaderDataType::Float3, "a_Position" },
-			{ Hazel::ShaderDataType::Float3, "a_Normal" },
-			{ Hazel::ShaderDataType::Float3, "a_Tangent" },
-			{ Hazel::ShaderDataType::Float3, "a_Binormal" },
-			{ Hazel::ShaderDataType::Float2, "a_TexCoord" },
-		};
-		pipelineSpecification.Shader = Hazel::HazelRenderer::GetShaderLibrary()->Get("Texture");
-
-		Hazel::RenderPassSpecification renderPassSpec;
-		renderPassSpec.TargetFramebuffer = framebuffer;
-		pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpec);
-		s_CompositePipeline = Hazel::Pipeline::Create(pipelineSpecification);
-	}
-
-	// Create fullscreen quad
-	float x = -1;
-	float y = -1;
-	float width = 2;
-	float height = 2;
-
-	struct QuadVertex
-	{
-		glm::vec3 Position;
-		glm::vec2 TexCoord;
+		// POSITION      
+		// ------- X ---- Y ---- Z
+		// Front face
+		glm::vec3(-1.0f, -1.0f, 0.0f), // POS0
+		glm::vec3(-1.0f,  1.0f, 0.0f), // POS1
+		glm::vec3( 1.0f,  1.0f, 0.0f), // POS2
+		glm::vec3( 1.0f, -1.0f, 0.0f), // POS3
 	};
 
-	QuadVertex* data = new QuadVertex[4];
-
-	data[0].Position = glm::vec3(x, y, 0.1f);
-	data[0].TexCoord = glm::vec2(0, 0);
-
-	data[1].Position = glm::vec3(x + width, y, 0.1f);
-	data[1].TexCoord = glm::vec2(1, 0);
-
-	data[2].Position = glm::vec3(x + width, y + height, 0.1f);
-	data[2].TexCoord = glm::vec2(1, 1);
-
-	data[3].Position = glm::vec3(x, y + height, 0.1f);
-	data[3].TexCoord = glm::vec2(0, 1);
-
-	s_QuadVertexBuffer = Hazel::VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-	uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
-	s_QuadIndexBuffer = Hazel::IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
-
-	Hazel::HazelRenderer::Submit([=]() {});
+	glm::vec2 texcoordList[] =
 	{
-		auto shader = s_CompositePipeline->GetSpecification().Shader;
-		auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
-		auto DX11Device = DX11Context::Get()->GetDX11Device();
-	}
+		// TEXCOORD
+		// ------ U --- V
+		glm::vec2(0.0f, 0.0f),
+		glm::vec2(0.0f, 1.0f),
+		glm::vec2(1.0f, 0.0f),
+		glm::vec2(1.0f, 1.0f),
+	};
 
-	Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-	****/
+	DX11VertexLayout vertexList[] =
+	{
+		// -------------- POSITION XYZ --- NORMAL XYZ ----------------- TANGENT XYZ ---- BINORMAL XYZ --- TEXCOORD UV
+		DX11VertexLayout{ positionList[0], glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[1], },
+		DX11VertexLayout{ positionList[1], glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[0], },
+		DX11VertexLayout{ positionList[2], glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[2], },
+		DX11VertexLayout{ positionList[3], glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f), glm::vec3(0.0f), texcoordList[3], },
+	};
+
+	// temporary DX11 objects and data structures
+	uint32_t vertexStride = sizeof(DX11VertexLayout);
+	uint32_t vertexCount = ARRAYSIZE(vertexList);
+	s_VertexBufferQuad = Hazel::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount);
+
+	uint32_t indexList[] =
+	{
+		// Front side
+		0,  1,  2, // First triangle
+		2,  3,  0, // Second triangle
+	};
+
+	uint32_t indexCount = ARRAYSIZE(indexList);
+	s_IndexBufferQuad = Hazel::Ref<DX11IndexBuffer>::Create(indexList, (uint32_t)(indexCount * sizeof(uint32_t)));
 }
 
 static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
@@ -359,7 +331,7 @@ void DX11Renderer::Update()
 	s_ViewportWidth = 1280;
 	s_ViewportHeight = 720;
 
-	// Load constant buffer content to each material
+	// Load constant buffer content to each material (moved from the Update method)
 	for (size_t m = 0; m < DX11TestLayer::s_ListMaterials.size(); m++)
 	{
 		DX11TestLayer::s_ListMaterials[m]->SetData(&s_ConstantBufferLayout, sizeof(DX11ConstantBufferLayout));
@@ -371,18 +343,36 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 {
 	Update(); // Ideally, it should be called separately, before the Draw() method
 
-	// Hazel::HazelRenderer::Submit([=]() mutable {});
+	DrawToFramebuffer(camera); // Forward rendering, or the geometry stage of deferred rendering
 
-	// Log::GetLogger()->info("Timer::GetCurrentTimestamp: {0}", Timer::Get()->GetCurrentTimestamp());
+	if (s_DeferredRenderingEnabled)
+	{
+		DrawToScreen(camera); // Deferred rendering (basic, no G-Buffer)
+	}
+}
 
+void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
+{
 	/**** BEGIN DirectX 11 rendering ****/
-	ClearRenderTargetColorSwapChain(0.1f, 0.2f, 0.4f, 1.0f);
-	ClearDepthStencilSwapChain();
+
+	if (s_DeferredRenderingEnabled)
+	{
+		/**** BEGIN Deferred rendering (basic, no G-Buffer) ****/
+		ClearRenderTargetColor(s_RenderTarget, 0.1f, 0.2f, 0.4f, 1.0f); // dark blue
+		ClearDepthStencil(s_DepthStencil);
+		// Redirect rendering from swapchain (window) to framebuffer render targets
+		SetRenderTarget(s_RenderTarget, s_DepthStencil);
+		/**** END Deferred rendering (basic, no G-Buffer) ****/
+	}
+	else
+	{
+		/**** BEGIN Forward rendering ****/
+		ClearRenderTargetColorSwapChain(0.6f, 0.2f, 0.8f, 1.0f); // magenta
+		ClearDepthStencilSwapChain();
+		/**** END Forward rendering ****/
+	}
 
 	DX11Context::Get()->SetRasterizerState(DX11CullMode::None);
-
-	// Redirect rendering from swapchain (window) to framebuffer render targets
-	// SetRenderTarget(s_RenderTarget, s_DepthStencil);
 
 	Hazel::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
 
@@ -484,8 +474,8 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	// BEGIN render mesh #1
 	{
-		s_VertexBuffer->Bind();
-		s_IndexBuffer->Bind();
+		s_VertexBufferCube->Bind();
+		s_IndexBufferCube->Bind();
 		s_PipelineIlluminated->Bind();
 
 		// World/Model/Transform matrix
@@ -515,14 +505,14 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		uint32_t startVertexIndex = 0;
 		uint32_t startIndexLocation = 0;
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(s_IndexBuffer->GetIndexCount(), startVertexIndex, startIndexLocation);
+		DX11Renderer::DrawIndexedTriangleList(s_IndexBufferCube->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
 	// END render mesh #1
 
 	// BEGIN render mesh #2
 	{
-		s_VertexBuffer->Bind();
-		s_IndexBuffer->Bind();
+		s_VertexBufferCube->Bind();
+		s_IndexBufferCube->Bind();
 		s_PipelineIlluminated->Bind();
 
 		// World/Model/Transform matrix
@@ -551,14 +541,14 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		uint32_t startVertexIndex = 0;
 		uint32_t startIndexLocation = 0;
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(s_IndexBuffer->GetIndexCount(), startVertexIndex, startIndexLocation);
+		DX11Renderer::DrawIndexedTriangleList(s_IndexBufferCube->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
 	// END render mesh #2
 
 	// BEGIN render mesh #3
 	{
-		s_VertexBuffer->Bind();
-		s_IndexBuffer->Bind();
+		s_VertexBufferCube->Bind();
+		s_IndexBufferCube->Bind();
 		s_PipelineIlluminated->Bind();
 
 		// World/Model/Transform matrix
@@ -587,7 +577,7 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		uint32_t startVertexIndex = 0;
 		uint32_t startIndexLocation = 0;
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(s_IndexBuffer->GetIndexCount(), startVertexIndex, startIndexLocation);
+		DX11Renderer::DrawIndexedTriangleList(s_IndexBufferCube->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
 	// END render mesh #3
 
@@ -642,7 +632,6 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	}
 	// END render meshes with materials
 
-
 	// BEGIN DirectX 11 ImGui Render Pass
 	{
 		// ImGui Dockspace
@@ -660,63 +649,61 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 		// ImGui_ImplDX11_RenderDrawData(main_draw_data);
 	}
 	// END DirectX 11 ImGui Render Pass
+}
 
-	//	Log::GetLogger()->info("Elapsed time: {0}, delta time: {1}, App Window size: [{2}x{3}]",
-	//		Timer::Get()->GetCurrentTimestamp(), Timer::Get()->GetDeltaTime(),
-	//		Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
+void DX11Renderer::DrawToScreen(Hazel::HazelCamera* camera)
+{
+	ClearRenderTargetColorSwapChain(0.2f, 0.2f, 0.2f, 1.0f); // dark gray
+	ClearDepthStencilSwapChain();
 
-	/**** END DirectX 11 rendering ****/
+	DX11Context::Get()->SetRasterizerState(DX11CullMode::Front);
 
-	/****
-	Hazel::HazelRenderer::Submit([=](){});
+	uint32_t viewportWidth = Application::Get()->GetWindow()->GetWidth();
+	uint32_t viewportHeight = Application::Get()->GetWindow()->GetHeight();
+	DX11Context::Get()->SetViewportSize(viewportWidth, viewportHeight);
+	DX11TestLayer::GetCamera()->SetViewportSize((float)viewportWidth, (float)viewportHeight);
 
-	Hazel::Ref<DX11Context> dx11Context = DX11Context::Get();
+	Hazel::Ref<DX11Shader> dx11ShaderUnlit = s_PipelineUnlit->GetSpecification().Shader.As<DX11Shader>();
 
-	// Begin Render Pass
+	dx11ShaderUnlit->GetVertexShader()->Bind();
+	dx11ShaderUnlit->GetPixelShader()->Bind();
 
-	// BEGIN ImGui Render Pass
-	{
-		// ImGui Dockspace
-		bool p_open = true;
-		ShowExampleAppDockSpace(&p_open);
+	s_VertexBufferQuad->Bind();
+	s_IndexBufferQuad->Bind();
+	s_PipelineUnlit->Bind();
 
-		ImGui::Begin("Scene Hierarchy");
-		ImGui::End();
+	/**** BEGIN constant buffer ****/
 
-		// TEMP: Render Viewport
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		ImGui::Begin("Viewport");
-		auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
-		auto viewportSize = ImGui::GetContentRegionAvail();
-		ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
+	s_ConstantBufferLayoutDeferred = s_ConstantBufferLayout;
 
-		if (s_ViewportWidth != viewportSize.x || s_ViewportHeight != viewportSize.y)
-		{
-			s_ViewportWidth = (uint32_t)viewportSize.x;
-			s_ViewportHeight = (uint32_t)viewportSize.y;
-			// s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight, true);
-		}
+	// World/Model/Transform matrix
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(1.0f, -1.0f, 1.0f)); // flip the texture vertically
 
-		Window* mainWindow = Application::Get()->GetWindow();
-		UpdateImGuizmo(mainWindow, camera);
+	// decrease the quad size little bit so we can visually recognize the deferred rendering mode
+	model = glm::scale(model, glm::vec3(0.99f, 0.98f, 1.0f));
 
-		ImGui::End();
-		ImGui::PopStyleVar();
+	s_ConstantBufferLayoutDeferred.Model = model;
+	s_ConstantBufferLayoutDeferred.View = glm::mat4(1.0f);
+	s_ConstantBufferLayoutDeferred.Projection = glm::mat4(1.0f);
+	s_ConstantBuffer->Update(&s_ConstantBufferLayoutDeferred);
 
-		// TODO: Move to VulkanImGuiLayer
-		// Rendering
-		ImGui::Render();
+	/**** END constant buffer ****/
 
-		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		ImGui_ImplDX11_RenderDrawData(main_draw_data);
+	dx11ShaderUnlit->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+	dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-		// End Vulkan Command Buffer
-	}
-	// END ImGui Render Pass
+	std::vector<Hazel::Ref<DX11Texture2D>> textures;
+	Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = s_RenderTarget;
+	Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+	textures.push_back(textureDiffuse.As<DX11Texture2D>());
+	textures.push_back(textureNormal.As<DX11Texture2D>());
+	dx11ShaderUnlit->GetVertexShader()->SetTextures(textures);
+	dx11ShaderUnlit->GetPixelShader()->SetTextures(textures);
 
-	// Vulkan CmdExecuteCommands
-	// Vulkan CmdEndRenderPass
-	****/
+	uint32_t startVertexIndex = 0;
+	uint32_t startIndexLocation = 0;
+	DX11Renderer::DrawIndexedTriangleList(s_IndexBufferQuad->GetIndexCount(), startVertexIndex, startIndexLocation);
 }
 
 void DX11Renderer::RenderMesh(RenderObject renderObject)
@@ -777,6 +764,8 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 	//   3. SetIndexBuffer(mesh->GetIndexBuffer())
 	//   4. DrawIndexedTriangleList(slit.NumIndices, 0, slot.StartIndex)
 
+	DX11Context::Get()->SetRasterizerState(DX11CullMode::None);
+
 	Hazel::Ref<Hazel::Pipeline> pipeline;
 
 	if (renderObject.PipelineType == RenderObject::PipelineType::Light)
@@ -790,14 +779,8 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 
 	Hazel::Ref<DX11Mesh> dx11Mesh = renderObject.MeshDX11;
 
-	// Hazel::Ref<DX11VertexBuffer> dx11VertexBuffer = dx11Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
-	// Hazel::Ref<DX11IndexBuffer> dx11IndexBuffer = dx11Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
-	// dx11VertexBuffer->Bind();
-	// dx11IndexBuffer->Bind();
-
 	dx11Mesh->GetVertexBuffer()->Bind();
 	dx11Mesh->GetIndexBuffer()->Bind();
-
 	pipeline->Bind();
 
 	for (size_t m = 0; m < dx11Mesh->GetNumMaterialSlots(); m++)

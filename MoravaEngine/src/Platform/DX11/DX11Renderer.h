@@ -67,4 +67,12 @@ public:
 	static void DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation);
 	static void DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex);
 
+	// we split DX11Renderer::Draw() to 2 stages
+	static void DrawToFramebuffer(Hazel::HazelCamera* camera);
+	static void DrawToScreen(Hazel::HazelCamera* camera);
+
+	// helper methods
+	static void CreateCube();
+	static void CreateQuad();
+
 };
