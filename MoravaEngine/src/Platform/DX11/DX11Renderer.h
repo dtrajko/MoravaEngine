@@ -54,6 +54,7 @@ public:
 	static void DrawComponent(const std::string name); // similar to DrawComponent in SceneHierarchyPanel
 	static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
 	static void UpdateImGuizmo(Window* mainWindow, Hazel::HazelCamera* camera);
+	static void DrawMaterialEditor(); // originally EnvMapEditorLayer::DrawMaterialEditor
 
 	static uint32_t GetViewportWidth();
 	static uint32_t GetViewportHeight();

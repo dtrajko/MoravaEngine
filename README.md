@@ -1,7 +1,14 @@
 # MoravaEngine
 
 ## About
-2D/3D graphics engine based on C++ and OpenGL ES 2.0.
+2D/3D graphics engine written in C++ language.
+
+It currently supports the following graphics APIs:
+
+- OpenGL ES 2.0.
+- Vulkan 1.2
+- DirectX 11
+
 Its current purpose is to experiment with various CG concepts and techniques:
 
 * Phong lighting model

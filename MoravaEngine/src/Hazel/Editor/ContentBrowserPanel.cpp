@@ -3,6 +3,7 @@
 #include "Core/Log.h"
 #include "Core/Timer.h"
 #include "ImGui/ImGuiWrapper.h"
+#include "Platform/DX11/DX11Texture2D.h"
 
 
 namespace Hazel
@@ -98,19 +99,22 @@ namespace Hazel
 
 		uint32_t columnCount = (uint32_t)panelSize.x / (uint32_t)m_TableCellWidth;
 
-		ImGui::Columns(columnCount);
-
-		for (uint32_t i = 0; i < columnCount; i++)
+		if (columnCount >= 1)
 		{
-			ImGui::SetColumnWidth(i, m_TableCellWidth);
+			ImGui::Columns(columnCount);
+
+			for (uint32_t i = 0; i < columnCount; i++)
+			{
+				ImGui::SetColumnWidth(i, m_TableCellWidth);
+			}
 		}
 
 		uint32_t imageButtonID = 0;
-
 		if (m_CurrentDirectory != std::filesystem::path(s_AssetPath))
 		{
 			ImGui::PushID(imageButtonID++);
-			if (ImGui::ImageButton((void*)(intptr_t)m_TextureDirectory->GetID(), iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor))
+			ImTextureID dirIconTextureID = m_TextureDirectory->GetImTextureID();
+			if (ImGui::ImageButton(dirIconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor))
 			{
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
 				Log::GetLogger()->info("m_CurrentDirectory: '{0}'", m_CurrentDirectory.string().c_str());
@@ -140,7 +144,8 @@ namespace Hazel
 			if (directoryEntry.is_directory())
 			{
 				ImGui::PushID(imageButtonID++);
-				if (ImGui::ImageButton((void*)(intptr_t)m_TextureDirectory->GetID(), iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor))
+				ImTextureID dirIconTextureID = m_TextureDirectory->GetImTextureID();
+				if (ImGui::ImageButton(dirIconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor))
 				{
 					m_CurrentDirectory /= path.filename();
 					Log::GetLogger()->info("ImageButton (Directory) clicked: '{0}'", m_CurrentDirectory.string().c_str());
@@ -173,7 +178,8 @@ namespace Hazel
 			else
 			{
 				ImGui::PushID(imageButtonID++);
-				if (ImGui::ImageButton((void*)(intptr_t)m_TextureFile->GetID(), iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor))
+				ImTextureID fileIconTextureID = m_TextureFile->GetImTextureID();
+				if (ImGui::ImageButton(fileIconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor))
 				{
 					Log::GetLogger()->info("ImageButton (File) clicked: '{0}'", filenameString.c_str());
 				}

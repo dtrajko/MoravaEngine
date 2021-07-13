@@ -16,6 +16,8 @@
 #include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 
+#include "Material/MaterialLibrary.h"
+
 // ImGui includes
 #if !defined(IMGUI_IMPL_API)
 #define IMGUI_IMPL_API
@@ -63,6 +65,11 @@ static Hazel::Ref<DX11Texture2D> s_RenderTarget;
 static Hazel::Ref<DX11Texture2D> s_DepthStencil;
 
 static bool s_DeferredRenderingEnabled = true;
+
+static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
+
+static Hazel::ContentBrowserPanel* s_ContentBrowserPanel;
+
 
 struct Viewport
 {
@@ -188,6 +195,10 @@ void DX11Renderer::Init()
 	}
 
 	/**** END DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
+
+	s_CheckerboardTexture = ResourceManager::LoadHazelTexture2D("Textures/Hazel/Checkerboard.png");
+
+	s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
 }
 
 void DX11Renderer::CreateCube()
@@ -698,6 +709,16 @@ void DX11Renderer::RenderImGui()
 		}
 		ImGui::End();
 
+		ImGui::Begin("Material Editor");
+		{
+			DrawMaterialEditor();
+		}
+		ImGui::End();
+
+		bool showWindowAssetManager = true;
+		s_ContentBrowserPanel->OnImGuiRender(&showWindowAssetManager);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport");
 		{
 			s_ViewportPanelMouseOver = ImGui::IsWindowHovered();
@@ -726,6 +747,7 @@ void DX11Renderer::RenderImGui()
 			UpdateImGuizmo();
 		}
 		ImGui::End();
+		ImGui::PopStyleVar();
 	}
 	// END DirectX 11 ImGui Render Pass
 }
@@ -804,7 +826,7 @@ void DX11Renderer::UpdateImGuizmo()
 	ImGuizmo::Manipulate(
 		glm::value_ptr(DX11TestLayer::GetCamera()->GetProjectionMatrix()),
 		glm::value_ptr(DX11TestLayer::GetCamera()->GetViewMatrix()),
-		(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+		ImGuizmo::OPERATION::TRANSLATE, // ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
 		ImGuizmo::LOCAL,
 		glm::value_ptr(transform),
 		nullptr,
@@ -1196,6 +1218,69 @@ void DX11Renderer::UpdateImGuizmo(Window* mainWindow, Hazel::HazelCamera* camera
 		}
 	}
 	// END ImGuizmo
+}
+
+void DX11Renderer::DrawMaterialEditor()
+{
+	unsigned int materialIndex = 0;
+	for (auto material_it = MaterialLibrary::s_EnvMapMaterials.begin(); material_it != MaterialLibrary::s_EnvMapMaterials.end();)
+	{
+		Hazel::Ref<EnvMapMaterial> material = material_it->second;
+		std::string materialName = material->GetName();
+		MaterialUUID materialUUID = material->GetUUID();
+
+		// Material section
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)materialIndex++, flags, materialName.c_str());
+
+		bool materialDelete = false;
+		bool materialClone = false;
+
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("Delete Material"))
+			{
+				materialDelete = true;
+			}
+
+			if (ImGui::MenuItem("Clone Material"))
+			{
+				materialClone = true;
+			}
+
+			ImGui::EndPopup();
+		}
+
+		if (opened)
+		{
+			ImGuiWrapper::DrawMaterialUI(material, s_CheckerboardTexture);
+
+			ImGui::TreePop();
+		}
+
+		if (materialClone) {
+			auto envMapMaterialSrc = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
+			Hazel::Ref<EnvMapMaterial> envMapMaterialDst = Hazel::Ref<EnvMapMaterial>::Create(MaterialLibrary::NewMaterialName(), envMapMaterialSrc);
+			MaterialLibrary::AddEnvMapMaterial(envMapMaterialDst->GetUUID(), envMapMaterialDst);
+		}
+
+		if (materialDelete) {
+			material_it = MaterialLibrary::s_EnvMapMaterials.erase(material_it++);
+		}
+		else {
+			++material_it;
+		}
+	}
+
+	// Right-click on blank space
+	if (ImGui::BeginPopupContextWindow(0, 1, false))
+	{
+		if (ImGui::MenuItem("Create a Material"))
+		{
+			MaterialLibrary::AddNewMaterial("");
+		}
+		ImGui::EndPopup();
+	}
 }
 
 uint32_t DX11Renderer::GetViewportWidth()

@@ -6,6 +6,8 @@
 #include "Platform/DX11/DX11Texture2D.h"
 #include "Core/Util.h"
 
+#include "imgui.h"
+
 
 namespace Hazel {
 
@@ -47,6 +49,11 @@ namespace Hazel {
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelTexture2D>();
+	}
+
+	ImTextureID HazelTexture2D::GetImTextureID()
+	{
+		return (ImTextureID)(intptr_t)GetID();
 	}
 
 	Ref<HazelTextureCube> HazelTextureCube::Create(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)

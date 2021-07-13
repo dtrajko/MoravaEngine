@@ -50,7 +50,9 @@ public:
 		throw std::logic_error("The method or operation is not implemented.");
 	}
 
-	virtual uint32_t GetID() const override { return uint32_t(0); /* Not implemented */ }
+	virtual uint32_t GetID() const override { return 0; }
+
+	virtual ImTextureID GetImTextureID() override { return (ImTextureID)(intptr_t)m_ShaderResourceViewDX11; };
 
 	glm::vec2 getSize() { return m_Size; }
 	DX11Texture2D::Type GetType() { return m_Type; }

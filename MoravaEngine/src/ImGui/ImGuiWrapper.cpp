@@ -306,8 +306,8 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 			ImGui::Image(material->GetAlbedoInput().TextureMap ?
-				(void*)(intptr_t)material->GetAlbedoInput().TextureMap->GetID() :
-				(void*)(intptr_t)checkerboardTexture->GetID(), ImVec2(64, 64));
+				(void*)(intptr_t)material->GetAlbedoInput().TextureMap->GetImTextureID() :
+				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
 			if (ImGui::IsItemHovered())
 			{
@@ -317,7 +317,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 					ImGui::TextUnformatted(material->GetAlbedoInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
-					ImGui::Image((void*)(intptr_t)material->GetAlbedoInput().TextureMap->GetID(), ImVec2(384, 384));
+					ImGui::Image((void*)(intptr_t)material->GetAlbedoInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					ImGui::EndTooltip();
 				}
 				if (ImGui::IsItemClicked())
@@ -356,8 +356,8 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 			ImGui::Image(material->GetNormalInput().TextureMap ?
-				(void*)(intptr_t)material->GetNormalInput().TextureMap->GetID() :
-				(void*)(intptr_t)checkerboardTexture->GetID(), ImVec2(64, 64));
+				(void*)(intptr_t)material->GetNormalInput().TextureMap->GetImTextureID() :
+				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
 			if (ImGui::IsItemHovered())
 			{
@@ -367,7 +367,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 					ImGui::TextUnformatted(material->GetNormalInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
-					ImGui::Image((void*)(intptr_t)material->GetNormalInput().TextureMap->GetID(), ImVec2(384, 384));
+					ImGui::Image((void*)(intptr_t)material->GetNormalInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					ImGui::EndTooltip();
 				}
 				if (ImGui::IsItemClicked())
@@ -389,8 +389,8 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 			ImGui::Image(material->GetMetalnessInput().TextureMap ?
-				(void*)(intptr_t)material->GetMetalnessInput().TextureMap->GetID() :
-				(void*)(intptr_t)checkerboardTexture->GetID(), ImVec2(64, 64));
+				(void*)(intptr_t)material->GetMetalnessInput().TextureMap->GetImTextureID() :
+				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
 			if (ImGui::IsItemHovered())
 			{
@@ -400,7 +400,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 					ImGui::TextUnformatted(material->GetMetalnessInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
-					ImGui::Image((void*)(intptr_t)material->GetMetalnessInput().TextureMap->GetID(), ImVec2(384, 384));
+					ImGui::Image((void*)(intptr_t)material->GetMetalnessInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					ImGui::EndTooltip();
 				}
 				if (ImGui::IsItemClicked())
@@ -425,8 +425,8 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 			ImGui::Image(material->GetRoughnessInput().TextureMap ?
-				(void*)(intptr_t)material->GetRoughnessInput().TextureMap->GetID() :
-				(void*)(intptr_t)checkerboardTexture->GetID(), ImVec2(64, 64));
+				(void*)(intptr_t)material->GetRoughnessInput().TextureMap->GetImTextureID() :
+				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
 			if (ImGui::IsItemHovered())
 			{
@@ -436,7 +436,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 					ImGui::TextUnformatted(material->GetRoughnessInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
-					ImGui::Image((void*)(intptr_t)material->GetRoughnessInput().TextureMap->GetID(), ImVec2(384, 384));
+					ImGui::Image((void*)(intptr_t)material->GetRoughnessInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					ImGui::EndTooltip();
 				}
 				if (ImGui::IsItemClicked())
@@ -461,8 +461,8 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 			ImGui::Image(material->GetAOInput().TextureMap ?
-				(void*)(intptr_t)material->GetAOInput().TextureMap->GetID() :
-				(void*)(intptr_t)checkerboardTexture->GetID(), ImVec2(64, 64));
+				(void*)(intptr_t)material->GetAOInput().TextureMap->GetImTextureID() :
+				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
 			if (ImGui::IsItemHovered())
 			{
@@ -472,7 +472,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 					ImGui::TextUnformatted(material->GetAOInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
-					ImGui::Image((void*)(intptr_t)material->GetAOInput().TextureMap->GetID(), ImVec2(384, 384));
+					ImGui::Image((void*)(intptr_t)material->GetAOInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					ImGui::EndTooltip();
 				}
 				if (ImGui::IsItemClicked())
@@ -497,8 +497,8 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		{
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 			ImGui::Image(material->GetEmissiveInput().TextureMap ?
-				(void*)(intptr_t)material->GetEmissiveInput().TextureMap->GetID() :
-				(void*)(intptr_t)checkerboardTexture->GetID(), ImVec2(64, 64));
+				(void*)(intptr_t)material->GetEmissiveInput().TextureMap->GetImTextureID() :
+				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
 			if (ImGui::IsItemHovered())
 			{
@@ -508,7 +508,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
 					ImGui::TextUnformatted(material->GetEmissiveInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
-					ImGui::Image((void*)(intptr_t)material->GetEmissiveInput().TextureMap->GetID(), ImVec2(384, 384));
+					ImGui::Image((void*)(intptr_t)material->GetEmissiveInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					ImGui::EndTooltip();
 				}
 				if (ImGui::IsItemClicked())
