@@ -203,7 +203,7 @@ void DX11TestLayer::OnDetach()
 void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
 {
 	bool windowInFocus = Application::Get()->GetWindow()->IsInFocus();
-	bool cameraEnabled = windowInFocus && !m_ShowMouseCursor;
+	bool cameraEnabled = windowInFocus; // && !m_ShowMouseCursor;
 	s_Camera->SetEnabled(cameraEnabled);
 
 	// Log::GetLogger()->info("windowInFocus: {0}, m_ShowMouseCursor: {1}, cameraEnabled: {2}", windowInFocus, m_ShowMouseCursor, cameraEnabled);
@@ -298,7 +298,7 @@ void DX11TestLayer::OnLeftMouseDown(const glm::vec2& mousePos)
 		Application::Get()->GetWindow()->SetInFocus(true);
 	}
 
-	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = false);
+	// DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = false);
 
 	//	Log::GetLogger()->info("DX11TestLayer::OnLeftMouseDown {0}x{1}", mousePos.x, mousePos.y);
 	//	bool windowInFocus = Application::Get()->GetWindow()->IsInFocus();

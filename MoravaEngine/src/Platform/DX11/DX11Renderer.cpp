@@ -13,6 +13,7 @@
 #include "DX11IndexBuffer.h"
 #include "DX11VertexLayout.h"
 
+#include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 
 // ImGui includes
@@ -678,6 +679,23 @@ void DX11Renderer::RenderImGui()
 
 		// Create ImGui Test Window
 		ImGui::Begin("Scene Hierarchy");
+		{
+			DrawEntityNode("Skybox");
+			DrawEntityNode("Terrain");
+			DrawEntityNode("Gladiator");
+			DrawEntityNode("Cerberus");
+			DrawEntityNode("Cube #1");
+			DrawEntityNode("Cube #2");
+			DrawEntityNode("Cube #3");
+			DrawEntityNode("Teapot");
+			DrawEntityNode("House");
+		}
+		ImGui::End();
+
+		ImGui::Begin("Properties"); // originally belongs to SceneHierarchyPanel::OnImGuiRender
+		{
+			DrawComponent("Transform");
+		}
 		ImGui::End();
 
 		ImGui::Begin("Viewport");
@@ -712,6 +730,67 @@ void DX11Renderer::RenderImGui()
 	// END DirectX 11 ImGui Render Pass
 }
 
+void DX11Renderer::DrawComponent(const std::string name)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	auto boldFont = io.Fonts->Fonts[0];
+
+	ImGuiTreeNodeFlags treeNodeFlags =
+		ImGuiTreeNodeFlags_DefaultOpen |
+		ImGuiTreeNodeFlags_Framed |
+		ImGuiTreeNodeFlags_SpanAvailWidth |
+		ImGuiTreeNodeFlags_AllowItemOverlap |
+		ImGuiTreeNodeFlags_FramePadding;
+
+	// auto& component = entity.GetComponent<T>();
+	ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
+
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
+	float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+	ImGui::Separator();
+	bool open = ImGui::TreeNodeEx((void*)typeid(0).hash_code(), treeNodeFlags, name.c_str());
+	ImGui::PopStyleVar();
+	ImGui::SameLine(contentRegionAvailable.x - lineHeight * 3.0f);
+
+	ImGui::PushFont(boldFont);
+	if (ImGui::Button("...", ImVec2{ lineHeight * 4.0f, lineHeight })) {
+		ImGui::OpenPopup("ComponentSettings");
+	}
+	ImGui::PopFont();
+
+	bool removeComponent = false;
+	if (ImGui::BeginPopup("ComponentSettings"))
+	{
+		if (ImGui::MenuItem("Remove Component")) {
+			removeComponent = true;
+		}
+
+		ImGui::EndPopup();
+	}
+
+	if (open)
+	{
+		// UIFunction content
+		{
+			glm::vec3 componentTranslation = glm::vec3(0.0f); // component.Translation
+			glm::vec3 componentRotation = glm::vec3(0.0f); // component.Rotation
+			glm::vec3 componentScale = glm::vec3(1.0f); // component.Scale
+
+			ImGuiWrapper::DrawVec3Control("Translation", componentTranslation, 0.0f, 80.0f);
+			glm::vec3 rotation = glm::degrees(componentRotation);
+			ImGuiWrapper::DrawVec3Control("Rotation", rotation, 0.0f, 80.0f);
+			// component.Rotation = glm::radians(rotation);
+			ImGuiWrapper::DrawVec3Control("Scale", componentScale, 1.0f, 80.0f);
+		}
+
+		ImGui::TreePop();
+	}
+
+	if (removeComponent) {
+		// TODO: remove component
+	}
+}
+
 void DX11Renderer::UpdateImGuizmo()
 {
 	float rw = (float)ImGui::GetWindowWidth();
@@ -734,6 +813,55 @@ void DX11Renderer::UpdateImGuizmo()
 	if (ImGuizmo::IsUsing())
 	{
 		// TODO
+	}
+}
+
+void DX11Renderer::DrawEntityNode(const std::string name)
+{
+	// const char* name = "Unnamed Entity";
+
+	ImGuiTreeNodeFlags flags =
+		// ImGuiTreeNodeFlags_Selected |
+		ImGuiTreeNodeFlags_OpenOnArrow |
+		ImGuiTreeNodeFlags_SpanAvailWidth;
+	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)0, flags, name.c_str());
+
+	if (ImGui::IsItemClicked())
+	{
+		Log::GetLogger()->debug("Entity Node clicked!");
+	}
+
+	bool entityDeleted = false;
+	bool entityCloned = false;
+
+	if (ImGui::BeginPopupContextItem())
+	{
+		if (ImGui::MenuItem("Delete Entity"))
+		{
+			entityDeleted = true;
+		}
+
+		if (ImGui::MenuItem("Clone Entity"))
+		{
+			entityCloned = true;
+		}
+
+		ImGui::EndPopup();
+	}
+
+	if (opened) {
+
+		// DrawEntitySubmeshes(entity);
+
+		ImGui::TreePop();
+	}
+
+	if (entityDeleted) {
+		// TODO: delete the entity
+	}
+
+	if (entityCloned) {
+		// TODO: clone the entity
 	}
 }
 

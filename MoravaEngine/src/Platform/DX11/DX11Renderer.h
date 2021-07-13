@@ -50,7 +50,8 @@ public:
 
 	static void RenderImGui();
 	static void UpdateImGuizmo();
-
+	static void DrawEntityNode(const std::string name); // similar to SceneHierarchyPanel::DrawEntityNode
+	static void DrawComponent(const std::string name); // similar to DrawComponent in SceneHierarchyPanel
 	static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
 	static void UpdateImGuizmo(Window* mainWindow, Hazel::HazelCamera* camera);
 
