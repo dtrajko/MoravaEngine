@@ -54,6 +54,7 @@ private:
 	float m_TurnSpeed = 5.0f;
 	float m_SpeedBoost = 4.0f;
 	bool m_SpeedBoostEnabled = false;
+	bool m_CameraRotationEnabled = false;
 
 	bool m_Enabled;
 

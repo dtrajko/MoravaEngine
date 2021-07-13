@@ -13,7 +13,6 @@
 	#define IMGUI_IMPL_API
 #endif
 #include "imgui.h"
-#include "imgui.h"
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
@@ -98,41 +97,10 @@ void DX11ImGuiLayer::OnAttach()
 	// Setup Platform/Renderer backends
 	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX11_Init(DX11Context::Get()->GetDX11Device(), DX11Context::Get()->GetDX11DeviceContext());
-
-	// HazelRenderer::Submit([]{
-	// });
-
-	{
-		// Setup Platform/Renderer bindings
-
-		// Load Fonts
-		// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-		// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-		// - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-		// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-		// - Read 'docs/FONTS.md' for more instructions and details.
-		// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-		// io.Fonts->AddFontDefault();
-		// io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-		// io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-		// io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-		// io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-		// ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-		// IM_ASSERT(font != NULL);
-
-		// Upload Fonts
-		{
-			// Use any command queue
-			// ImGui_ImplVulkan_CreateFontsTexture
-			// ImGui_ImplVulkan_DestroyFontUploadObjects
-		}
-	}
 }
 
 void DX11ImGuiLayer::OnDetach()
 {
-	// HazelRenderer::Submit([] {});
-
 	// ImGui Cleanup
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -142,16 +110,15 @@ void DX11ImGuiLayer::OnDetach()
 void DX11ImGuiLayer::Begin()
 {
 	ImGuiIO& io = ImGui::GetIO();
-
+	
 	float time = (float)Timer::Get()->GetCurrentTimestamp();
 	io.DeltaTime = m_Time > 0.0f ? (time - m_Time) : (1.0f / 60.0f);
 	m_Time = time;
-
+	
 	// Start the Dear ImGui frame
-	// ImGui::Render();
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
-	// ImGui::NewFrame();
+	ImGui::NewFrame();
 }
 
 void DX11ImGuiLayer::End()
@@ -159,17 +126,24 @@ void DX11ImGuiLayer::End()
 	ImGuiIO& io = ImGui::GetIO();
 	Application* app = Application::Get();
 	io.DisplaySize = ImVec2(static_cast<float>(app->GetWindow()->GetWidth()), static_cast<float>(app->GetWindow()->GetHeight()));
+	
+	// Rendering
+	
+	// Assemble together Draw Data
+	ImGui::Render();
 
-	// Rendering here only in OpenGL version (?)
-	// ImGui::Render();
-	// ImDrawData* main_draw_data = ImGui::GetDrawData();
-	// ImGui_ImplDX11_RenderDrawData(main_draw_data);
+	// Render Draw Data
+	ImDrawData* main_draw_data = ImGui::GetDrawData();
+	ImGui_ImplDX11_RenderDrawData(main_draw_data);
 
 	// Update and Render additional Platform Windows
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		// ImGui::UpdatePlatformWindows();
-		// ImGui::RenderPlatformWindowsDefault();
+		if (app->GetWindow()->GetHWND())
+		{
+			ImGui::UpdatePlatformWindows();
+		}
+		ImGui::RenderPlatformWindowsDefault();
 	}
 }
 

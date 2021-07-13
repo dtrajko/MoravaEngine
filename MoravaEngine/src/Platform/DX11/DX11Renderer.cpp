@@ -20,7 +20,6 @@
 #define IMGUI_IMPL_API
 #endif
 #include "imgui.h"
-#include "imgui.h"
 #include "backends/imgui_impl_win32.h"
 #include "backends/imgui_impl_dx11.h"
 
@@ -63,6 +62,22 @@ static Hazel::Ref<DX11Texture2D> s_RenderTarget;
 static Hazel::Ref<DX11Texture2D> s_DepthStencil;
 
 static bool s_DeferredRenderingEnabled = true;
+
+struct Viewport
+{
+	int X;
+	int Y;
+	int Width;
+	int Height;
+	int MouseX;
+	int MouseY;
+};
+
+static Viewport s_ImGuiViewport;
+static Viewport s_ImGuiViewportEnvMap;
+static bool s_ViewportPanelMouseOver = false;
+static bool s_ViewportPanelFocused = false;
+static glm::vec2 s_ImGuiViewportMain;
 
 
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
@@ -347,7 +362,11 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 
 	if (s_DeferredRenderingEnabled)
 	{
-		DrawToScreen(camera); // Deferred rendering (basic, no G-Buffer)
+		ClearRenderTargetColorSwapChain(0.2f, 0.2f, 0.2f, 1.0f); // dark gray
+		ClearDepthStencilSwapChain();
+
+		// We don't need this because we use ImGui to display the viewport
+		// DrawToScreen(camera); // Deferred rendering (basic, no G-Buffer)
 	}
 }
 
@@ -632,23 +651,90 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 	}
 	// END render meshes with materials
 
+	RenderImGui();
+}
+
+void DX11Renderer::RenderImGui()
+{
 	// BEGIN DirectX 11 ImGui Render Pass
 	{
+		s_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkPos().x;
+		s_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkPos().y;
+
 		// ImGui Dockspace
 		bool p_open = true;
 
-		// ShowExampleAppDockSpace(&p_open);
-		// ImGui::ShowDemoWindow(&p_open);
+		ShowExampleAppDockSpace(&p_open);
 
-		// Window* mainWindow = Application::Get()->GetWindow();
-		// UpdateImGuizmo(mainWindow, camera);
+		//	ImGui::ShowDemoWindow(&p_open);
+		//	
+		//	Window* mainWindow = Application::Get()->GetWindow();
+		//	UpdateImGuizmo(mainWindow, camera);
+		//	
+		//	// Rendering
+		//	ImGui::Render();
+		//	ImDrawData* main_draw_data = ImGui::GetDrawData();
+		//	ImGui_ImplDX11_RenderDrawData(main_draw_data);
 
-		// Rendering
-		// ImGui::Render();
-		// ImDrawData* main_draw_data = ImGui::GetDrawData();
-		// ImGui_ImplDX11_RenderDrawData(main_draw_data);
+		// Create ImGui Test Window
+		ImGui::Begin("Scene Hierarchy");
+		ImGui::End();
+
+		ImGui::Begin("Viewport");
+		{
+			s_ViewportPanelMouseOver = ImGui::IsWindowHovered();
+			s_ViewportPanelFocused = ImGui::IsWindowFocused();
+
+			ImGuiWrapper::SetViewportEnabled(true);
+			ImGuiWrapper::SetViewportHovered(s_ViewportPanelMouseOver);
+			ImGuiWrapper::SetViewportFocused(s_ViewportPanelFocused);
+
+			auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+			auto viewportSize = ImGui::GetContentRegionAvail();
+
+			ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+
+			s_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - s_ImGuiViewportMain.x);
+			s_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - s_ImGuiViewportMain.y);
+			s_ImGuiViewport.Width = (int)ImGui::GetWindowWidth();
+			s_ImGuiViewport.Height = (int)ImGui::GetWindowHeight();
+			s_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
+			s_ImGuiViewport.MouseY = (int)ImGui::GetMousePos().y;
+
+			glm::vec2 viewportPanelSize = glm::vec2(viewportSize.x, viewportSize.y);
+
+			ImGui::Image((void*)(intptr_t)s_RenderTarget->m_ShaderResourceViewDX11, ImVec2{ viewportPanelSize.x, viewportPanelSize.y});
+
+			UpdateImGuizmo();
+		}
+		ImGui::End();
 	}
 	// END DirectX 11 ImGui Render Pass
+}
+
+void DX11Renderer::UpdateImGuizmo()
+{
+	float rw = (float)ImGui::GetWindowWidth();
+	float rh = (float)ImGui::GetWindowHeight();
+	ImGuizmo::SetOrthographic(false);
+	ImGuizmo::SetDrawlist();
+	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+
+	glm::mat4& transform = s_RenderObjects.size() ? s_RenderObjects[0].Transform : glm::mat4(1.0f);
+
+	ImGuizmo::Manipulate(
+		glm::value_ptr(DX11TestLayer::GetCamera()->GetProjectionMatrix()),
+		glm::value_ptr(DX11TestLayer::GetCamera()->GetViewMatrix()),
+		(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+		ImGuizmo::LOCAL,
+		glm::value_ptr(transform),
+		nullptr,
+		nullptr);
+
+	if (ImGuizmo::IsUsing())
+	{
+		// TODO
+	}
 }
 
 void DX11Renderer::DrawToScreen(Hazel::HazelCamera* camera)

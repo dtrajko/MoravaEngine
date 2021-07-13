@@ -48,6 +48,9 @@ public:
 	static void EndRenderPass();
 	static void SubmitFullscreenQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Material> material);
 
+	static void RenderImGui();
+	static void UpdateImGuizmo();
+
 	static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
 	static void UpdateImGuizmo(Window* mainWindow, Hazel::HazelCamera* camera);
 

@@ -146,6 +146,8 @@ void DX11CameraFP::OnMouseMove(const glm::vec2& mousePosDelta, const glm::vec2& 
 {
 	if (!m_Enabled) return;
 
+	if (!m_CameraRotationEnabled) return;
+
 	WindowsWindow* windowsWindow = (WindowsWindow*)Application::Get()->GetWindow();
 	RECT windowRECT = windowsWindow->GetClientWindowRect();
 
@@ -182,6 +184,7 @@ void DX11CameraFP::OnLeftMouseDown(const glm::vec2& mousePos)
 // DX11InputListener API
 void DX11CameraFP::OnRightMouseDown(const glm::vec2& mousePos)
 {
+	m_CameraRotationEnabled = true;
 }
 
 // DX11InputListener API
@@ -192,4 +195,5 @@ void DX11CameraFP::OnLeftMouseUp(const glm::vec2& mousePos)
 // DX11InputListener API
 void DX11CameraFP::OnRightMouseUp(const glm::vec2& mousePos)
 {
+	m_CameraRotationEnabled = false;
 }
