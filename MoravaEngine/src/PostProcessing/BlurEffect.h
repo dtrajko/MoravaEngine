@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Framebuffer/Framebuffer.h"
+#include "Framebuffer/MoravaFramebuffer.h"
 #include "Shader/MoravaShader.h"
 #include "Texture/Texture.h"
 
@@ -17,8 +17,8 @@ public:
 	FramebufferTexture* GetHorizontalOutputTexture();
 	FramebufferTexture* GetVerticalOutputTexture();
 	void Unbind(int width, int height);
-	inline Framebuffer* GetHorizontalFBO() { return m_HorizontalFBO; };
-	inline Framebuffer* GetVerticalFBO() { return m_VerticalFBO; };
+	inline MoravaFramebuffer* GetHorizontalFBO() { return m_HorizontalFBO; };
+	inline MoravaFramebuffer* GetVerticalFBO() { return m_VerticalFBO; };
 
 private:
 	void SetupShaders();
@@ -35,8 +35,8 @@ private:
 	unsigned int m_QuadVAO;
 	unsigned int m_QuadVBO;
 
-	Framebuffer* m_HorizontalFBO;
-	Framebuffer* m_VerticalFBO;
+	MoravaFramebuffer* m_HorizontalFBO;
+	MoravaFramebuffer* m_VerticalFBO;
 
 	int m_Width;
 	int m_Height;

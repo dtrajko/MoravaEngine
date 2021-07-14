@@ -2,7 +2,7 @@
 
 #include "Scene/Scene.h"
 
-#include "Framebuffer/Framebuffer.h"
+#include "Framebuffer/MoravaFramebuffer.h"
 
 
 class SceneFramebuffers : public Scene
@@ -39,7 +39,7 @@ public:
 	unsigned int SCR_WIDTH = 1280;
 	unsigned int SCR_HEIGHT = 720;
 
-	Framebuffer* m_Framebuffer;
+	MoravaFramebuffer* m_Framebuffer;
 
 	MoravaShader* m_ShaderFramebuffersScene;
 	MoravaShader* m_ShaderFramebuffersScreen;

@@ -1,4 +1,4 @@
-#include "Framebuffer/Framebuffer.h"
+#include "Framebuffer/MoravaFramebuffer.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -10,7 +10,7 @@
 
 static const uint32_t s_MaxFramebufferSize = 8192;
 
-Framebuffer::Framebuffer()
+MoravaFramebuffer::MoravaFramebuffer()
 {
 	m_FBO = 0;
 
@@ -31,20 +31,20 @@ Framebuffer::Framebuffer()
 	Resize(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 }
 
-Framebuffer::Framebuffer(unsigned int width, unsigned int height)
-	: Framebuffer()
+MoravaFramebuffer::MoravaFramebuffer(unsigned int width, unsigned int height)
+	: MoravaFramebuffer()
 {
 	m_FramebufferSpecs.Width = width;
 	m_FramebufferSpecs.Height = height;
 }
 
-Framebuffer::Framebuffer(FramebufferSpecification spec)
+MoravaFramebuffer::MoravaFramebuffer(FramebufferSpecification spec)
 {
 	m_FramebufferSpecs = spec;
-	Framebuffer(spec.Width, spec.Height);
+	MoravaFramebuffer(spec.Width, spec.Height);
 }
 
-void Framebuffer::AddColorAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+void MoravaFramebuffer::AddColorAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	FramebufferSpecification fbSpecs;
 	fbSpecs.Width = width;
@@ -55,7 +55,7 @@ void Framebuffer::AddColorAttachmentSpecification(unsigned int width, unsigned i
 	m_ColorAttachmentSpecs.push_back(fbSpecs);
 }
 
-void Framebuffer::AddDepthAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
+void MoravaFramebuffer::AddDepthAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (m_RenderbufferAttachmentSpec.size()) {
 		Log::GetLogger()->error("Depth attachment specification already exists!");
@@ -71,12 +71,12 @@ void Framebuffer::AddDepthAttachmentSpecification(unsigned int width, unsigned i
 }
 
 
-void Framebuffer::AddColorAttachment(FramebufferSpecification specs)
+void MoravaFramebuffer::AddColorAttachment(FramebufferSpecification specs)
 {
 	m_ColorAttachmentSpecs.push_back(specs);
 }
 
-void Framebuffer::AddDepthAttachment(FramebufferSpecification specs)
+void MoravaFramebuffer::AddDepthAttachment(FramebufferSpecification specs)
 {
 	if (m_RenderbufferAttachmentSpec.size()) {
 		Log::GetLogger()->error("Depth attachment specification already exists!");
@@ -85,7 +85,7 @@ void Framebuffer::AddDepthAttachment(FramebufferSpecification specs)
 	m_RenderbufferAttachmentSpec.push_back(specs);
 }
 
-void Framebuffer::Generate(unsigned int width, unsigned int height)
+void MoravaFramebuffer::Generate(unsigned int width, unsigned int height)
 {
 	if (m_FBO) {
 		Release();
@@ -111,25 +111,25 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 		{
 		case AttachmentFormat::Color:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Color, Multisample: {0}, {1}x{2}]",
+			Log::GetLogger()->debug("MoravaFramebuffer::Generate [AttachmentFormat::Color, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::RGBA:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA, Multisample: {0}, {1}x{2}]",
+			Log::GetLogger()->debug("MoravaFramebuffer::Generate [AttachmentFormat::RGBA, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::RGBA16F:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA16F, Multisample: {0}, {1}x{2}]",
+			Log::GetLogger()->debug("MoravaFramebuffer::Generate [AttachmentFormat::RGBA16F, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::RGBA8:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::RGBA8, Multisample: {0}, {1}x{2}]",
+			Log::GetLogger()->debug("MoravaFramebuffer::Generate [AttachmentFormat::RGBA8, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
 		default:
@@ -152,31 +152,31 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 		case AttachmentFormat::Depth:
 			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth, Multisample: {0}, {1}x{2}]",
+			Log::GetLogger()->debug("MoravaFramebuffer::Generate [AttachmentFormat::Depth, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::DepthStencil:
 			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::DepthStencil, Multisample: {0}, {1}x{2}]",
+			Log::GetLogger()->debug("MoravaFramebuffer::Generate [AttachmentFormat::DepthStencil, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Depth_24:
 			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24, Multisample: {0}, {1}x{2}]",
+			Log::GetLogger()->debug("MoravaFramebuffer::Generate [AttachmentFormat::Depth_24, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Depth_24_Stencil_8:
 			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Depth_24_Stencil_8, Multisample: {0}, {1}x{2}]",
+			Log::GetLogger()->debug("MoravaFramebuffer::Generate [AttachmentFormat::Depth_24_Stencil_8, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Stencil:
 			CreateAttachmentStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
 				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("Framebuffer::Generate [AttachmentFormat::Stencil, Multisample: {0}, {1}x{2}]",
+			Log::GetLogger()->debug("MoravaFramebuffer::Generate [AttachmentFormat::Stencil, Multisample: {0}, {1}x{2}]",
 				m_Multisample, width, height);
 			break;
 		default:
@@ -186,9 +186,9 @@ void Framebuffer::Generate(unsigned int width, unsigned int height)
 	}
 }
 
-void Framebuffer::Release()
+void MoravaFramebuffer::Release()
 {
-	// Log::GetLogger()->info("Framebuffer::Release");
+	// Log::GetLogger()->info("MoravaFramebuffer::Release");
 
 	for (auto& textureAttachment : m_TextureAttachmentsColor)
 		delete textureAttachment;
@@ -200,7 +200,7 @@ void Framebuffer::Release()
 	m_FBO = 0;
 }
 
-void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, bool isMultisample,
+void MoravaFramebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentFormat attachmentFormat)
 {
 	FramebufferTexture* texture = new FramebufferTexture(width, height, isMultisample,
@@ -211,7 +211,7 @@ void Framebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int 
 		texture->GetID(), isMultisample, texture->GetWidth(), texture->GetHeight());
 }
 
-void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height, bool isMultisample,
+void MoravaFramebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
@@ -220,7 +220,7 @@ void Framebuffer::CreateAttachmentDepth(unsigned int width, unsigned int height,
 		m_AttachmentDepth = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
-void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, bool isMultisample,
+void MoravaFramebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
@@ -229,7 +229,7 @@ void Framebuffer::CreateAttachmentStencil(unsigned int width, unsigned int heigh
 		m_AttachmentStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
-void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, bool isMultisample,
+void MoravaFramebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
@@ -238,14 +238,14 @@ void Framebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned i
 		m_AttachmentDepthAndStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
-void Framebuffer::Bind() const
+void MoravaFramebuffer::Bind() const
 {
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
 	glViewport(0, 0, m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 }
 
-void Framebuffer::Unbind() const
+void MoravaFramebuffer::Unbind() const
 {
 	// unbind custom framebuffer and make the default framebuffer active
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -253,7 +253,7 @@ void Framebuffer::Unbind() const
 	glViewport(0, 0, m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 }
 
-void Framebuffer::Bind(unsigned int width, unsigned int height)
+void MoravaFramebuffer::Bind(unsigned int width, unsigned int height)
 {
 	m_FramebufferSpecs.Width = width;
 	m_FramebufferSpecs.Height = height;
@@ -261,7 +261,7 @@ void Framebuffer::Bind(unsigned int width, unsigned int height)
 	Bind();
 }
 
-void Framebuffer::Unbind(unsigned int width, unsigned int height)
+void MoravaFramebuffer::Unbind(unsigned int width, unsigned int height)
 {
 	m_FramebufferSpecs.Width = width;
 	m_FramebufferSpecs.Height = height;
@@ -269,12 +269,12 @@ void Framebuffer::Unbind(unsigned int width, unsigned int height)
 	Unbind();
 }
 
-bool Framebuffer::CheckStatus()
+bool MoravaFramebuffer::CheckStatus()
 {
 	return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
 
-FramebufferTexture* Framebuffer::GetTextureAttachmentColor(unsigned int orderID)
+FramebufferTexture* MoravaFramebuffer::GetTextureAttachmentColor(unsigned int orderID)
 {
 	if (m_TextureAttachmentsColor.size() < (size_t)orderID + 1)
 	{
@@ -285,7 +285,7 @@ FramebufferTexture* Framebuffer::GetTextureAttachmentColor(unsigned int orderID)
 	return m_TextureAttachmentsColor.at(orderID);
 }
 
-Hazel::Ref<Attachment> Framebuffer::GetAttachmentDepth()
+Hazel::Ref<Attachment> MoravaFramebuffer::GetAttachmentDepth()
 {
 	if (!m_AttachmentDepth)
 	{
@@ -295,7 +295,7 @@ Hazel::Ref<Attachment> Framebuffer::GetAttachmentDepth()
 	return m_AttachmentDepth;
 }
 
-Hazel::Ref<Attachment> Framebuffer::GetAttachmentStencil()
+Hazel::Ref<Attachment> MoravaFramebuffer::GetAttachmentStencil()
 {
 	if (!m_AttachmentStencil)
 	{
@@ -304,7 +304,7 @@ Hazel::Ref<Attachment> Framebuffer::GetAttachmentStencil()
 	return m_AttachmentStencil;
 }
 
-Hazel::Ref<Attachment> Framebuffer::GetAttachmentDepthAndStencil()
+Hazel::Ref<Attachment> MoravaFramebuffer::GetAttachmentDepthAndStencil()
 {
 	if (!m_AttachmentDepthAndStencil)
 	{
@@ -314,17 +314,17 @@ Hazel::Ref<Attachment> Framebuffer::GetAttachmentDepthAndStencil()
 	return m_AttachmentDepthAndStencil;
 }
 
-Hazel::Ref<Framebuffer> Framebuffer::Create(const FramebufferSpecification& spec)
+Hazel::Ref<MoravaFramebuffer> MoravaFramebuffer::Create(const FramebufferSpecification& spec)
 {
-	return Hazel::Ref<Framebuffer>::Create(spec);
+	return Hazel::Ref<MoravaFramebuffer>::Create(spec);
 }
 
-void Framebuffer::Clear()
+void MoravaFramebuffer::Clear()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
 
-void Framebuffer::Resize(uint32_t width, uint32_t height)
+void MoravaFramebuffer::Resize(uint32_t width, uint32_t height)
 {
 	if (width  < 0 || width > s_MaxFramebufferSize || height < 0 || height > s_MaxFramebufferSize)
 	{
@@ -338,49 +338,49 @@ void Framebuffer::Resize(uint32_t width, uint32_t height)
 	Generate(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 }
 
-void Framebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)
+void MoravaFramebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)
 {
 	Resize(width, height);
 }
 
-void Framebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot) const
+void MoravaFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot) const
 {
 	if (attachmentIndex >= m_TextureAttachmentsColor.size()) return;
 
 	m_TextureAttachmentsColor.at(attachmentIndex)->Bind(slot);
 }
 
-Hazel::RendererID Framebuffer::GetRendererID() const
+Hazel::RendererID MoravaFramebuffer::GetRendererID() const
 {
 	return m_FBO;
 }
 
-Hazel::Ref<Hazel::HazelImage2D> Framebuffer::GetImage(uint32_t attachmentIndex) const
+Hazel::Ref<Hazel::HazelImage2D> MoravaFramebuffer::GetImage(uint32_t attachmentIndex) const
 {
 	return Hazel::Ref<Hazel::HazelImage2D>();
 }
 
-Hazel::Ref<Hazel::HazelImage2D> Framebuffer::GetDepthImage() const
+Hazel::Ref<Hazel::HazelImage2D> MoravaFramebuffer::GetDepthImage() const
 {
 	return Hazel::Ref<Hazel::HazelImage2D>();
 }
 
-//	Hazel::RendererID Framebuffer::GetColorAttachmentRendererID() const
+//	Hazel::RendererID MoravaFramebuffer::GetColorAttachmentRendererID() const
 //	{
 //		return Hazel::RendererID();
 //	}
 
-//	Hazel::RendererID Framebuffer::GetDepthAttachmentRendererID() const
+//	Hazel::RendererID MoravaFramebuffer::GetDepthAttachmentRendererID() const
 //	{
 //		return Hazel::RendererID();
 //	}
 
-const Hazel::HazelFramebufferSpecification& Framebuffer::GetSpecification() const
+const Hazel::HazelFramebufferSpecification& MoravaFramebuffer::GetSpecification() const
 {
 	return m_HazelFramebufferSpecs;
 }
 
-Framebuffer::~Framebuffer()
+MoravaFramebuffer::~MoravaFramebuffer()
 {
 	Release();
 	m_ColorAttachmentSpecs.clear();

@@ -34,7 +34,7 @@
 #include "Core/Timer.h"
 #include "Core/Util.h"
 #include "Core/ResourceManager.h"
-#include "Framebuffer/Framebuffer.h"
+#include "Framebuffer/MoravaFramebuffer.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Material/Material.h"
 #include "Mesh/Mesh.h"

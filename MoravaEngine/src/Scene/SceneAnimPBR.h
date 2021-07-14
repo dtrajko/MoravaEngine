@@ -2,7 +2,7 @@
 
 #include "Hazel/Renderer/HazelMesh.h"
 
-#include "Framebuffer/Framebuffer.h"
+#include "Framebuffer/MoravaFramebuffer.h"
 #include "Material/MaterialWorkflowPBR.h"
 #include "Mesh/CubeSkybox.h"
 #include "Scene/Scene.h"
@@ -124,7 +124,7 @@ private:
 	bool m_ViewportFocused;
 	bool m_ViewportHovered;
 	glm::vec2 m_ViewportSize;
-	Framebuffer* m_RenderFramebuffer;
+	MoravaFramebuffer* m_RenderFramebuffer;
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;
 

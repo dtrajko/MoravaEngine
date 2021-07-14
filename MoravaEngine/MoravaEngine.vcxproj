@@ -149,7 +149,7 @@
     <ClCompile Include="src\EnvMap\EnvMapSharedData.cpp" />
     <ClCompile Include="src\Framebuffer\Attachment.cpp" />
     <ClCompile Include="src\Framebuffer\Cubemap.cpp" />
-    <ClCompile Include="src\Framebuffer\Framebuffer.cpp" />
+    <ClCompile Include="src\Framebuffer\MoravaFramebuffer.cpp" />
     <ClCompile Include="src\Framebuffer\FramebufferTexture.cpp" />
     <ClCompile Include="src\Framebuffer\FramebufferTextureCubemap.cpp" />
     <ClCompile Include="src\Framebuffer\FramebufferWater.cpp" />
@@ -549,7 +549,7 @@
     <ClInclude Include="src\EnvMap\EnvMapSharedData.h" />
     <ClInclude Include="src\Framebuffer\Attachment.h" />
     <ClInclude Include="src\Framebuffer\Cubemap.h" />
-    <ClInclude Include="src\Framebuffer\Framebuffer.h" />
+    <ClInclude Include="src\Framebuffer\MoravaFramebuffer.h" />
     <ClInclude Include="src\Framebuffer\FramebufferTexture.h" />
     <ClInclude Include="src\Framebuffer\FramebufferTextureCubemap.h" />
     <ClInclude Include="src\Framebuffer\FramebufferWater.h" />

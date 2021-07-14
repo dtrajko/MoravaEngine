@@ -2,7 +2,7 @@
 
 #include "Scene/Scene.h"
 
-#include "Framebuffer/Framebuffer.h"
+#include "Framebuffer/MoravaFramebuffer.h"
 #include "LearnOpenGL/ModelSSAO.h"
 #include "Mesh/Cube.h"
 #include "Mesh/QuadSSAO.h"

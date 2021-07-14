@@ -206,13 +206,13 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
     uint32_t width = Application::Get()->GetWindow()->GetWidth();
     uint32_t height = Application::Get()->GetWindow()->GetHeight();
 
-    m_RenderFramebuffer = Hazel::Ref<Framebuffer>::Create(width, height);
+    m_RenderFramebuffer = Hazel::Ref<MoravaFramebuffer>::Create(width, height);
     m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
     m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Depth);
     m_RenderFramebuffer->Generate(width, height);
 
     // post processing framebuffer
-    m_PostProcessingFramebuffer = Hazel::Ref<Framebuffer>::Create(width, height);
+    m_PostProcessingFramebuffer = Hazel::Ref<MoravaFramebuffer>::Create(width, height);
     m_PostProcessingFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
     m_PostProcessingFramebuffer->Generate(width, height);
 }
@@ -1878,7 +1878,7 @@ void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& tran
     }
 }
 
-void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<Framebuffer> renderFramebuffer)
+void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer)
 {
     float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
 

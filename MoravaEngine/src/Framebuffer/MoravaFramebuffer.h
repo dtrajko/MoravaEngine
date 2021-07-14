@@ -26,13 +26,13 @@ struct FramebufferSpecification
 };
 
 
-class Framebuffer : public Hazel::HazelFramebuffer
+class MoravaFramebuffer : public Hazel::HazelFramebuffer
 {
 public:
-	Framebuffer();
-	Framebuffer(unsigned int width, unsigned int height);
-	Framebuffer(FramebufferSpecification spec);
-	~Framebuffer();
+	MoravaFramebuffer();
+	MoravaFramebuffer(unsigned int width, unsigned int height);
+	MoravaFramebuffer(FramebufferSpecification spec);
+	~MoravaFramebuffer();
 
 	virtual void Unbind() const override;
 	virtual void Bind() const override;
@@ -63,7 +63,7 @@ public:
 
 	FramebufferSpecification& GetSpecification() { return m_FramebufferSpecs; };
 
-	static Hazel::Ref<Framebuffer> Create(const FramebufferSpecification& spec);
+	static Hazel::Ref<MoravaFramebuffer> Create(const FramebufferSpecification& spec);
 
 	inline uint32_t GetWidth() const { return m_FramebufferSpecs.Width; };
 	inline uint32_t GetHeight() const { return m_FramebufferSpecs.Height; };

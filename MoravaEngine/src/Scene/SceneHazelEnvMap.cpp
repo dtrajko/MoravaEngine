@@ -263,5 +263,4 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
     }
 
     // m_EnvMapEditorLayer->RenderFullscreen(mainWindow);
-
 }

@@ -114,7 +114,7 @@ public:
 
 	// from SceneHazelEnvMap
 	void SetupRenderFramebuffer();
-	void ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<Framebuffer> renderFramebuffer);
+	void ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer);
 
 private:
 	void SetupContextData(Scene* scene);
@@ -141,8 +141,8 @@ public:
 	// viewports public
 	glm::vec2 m_ImGuiViewportMain;
 	glm::vec2 m_ViewportMainSize;
-	Hazel::Ref<Framebuffer> m_RenderFramebuffer;
-	Hazel::Ref<Framebuffer> m_PostProcessingFramebuffer;
+	Hazel::Ref<MoravaFramebuffer> m_RenderFramebuffer;
+	Hazel::Ref<MoravaFramebuffer> m_PostProcessingFramebuffer;
 
 private:
 	Hazel::Ref<MoravaShader> m_ShaderShadow;

@@ -3,7 +3,7 @@
 #include "Core/Application.h"
 #include "Core/Profiler.h"
 #include "Core/Timer.h"
-#include "Framebuffer/Framebuffer.h"
+#include "Framebuffer/MoravaFramebuffer.h"
 #include "Mesh/GeometryFactory.h"
 #include "Scene/SceneEditor.h"
 
@@ -312,7 +312,7 @@ void RendererEditor::RenderWaterEffects(float deltaTime, Window* mainWindow, Sce
 void RendererEditor::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     SceneEditor* sceneEditor = (SceneEditor*)scene;
-    Framebuffer* renderFramebuffer = nullptr;
+    MoravaFramebuffer* renderFramebuffer = nullptr;
 
     if (m_IsViewportEnabled)
     {

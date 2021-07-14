@@ -231,9 +231,6 @@
     <ClCompile Include="src\Framebuffer\Cubemap.cpp">
       <Filter>Framebuffer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Framebuffer\Framebuffer.cpp">
-      <Filter>Framebuffer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Framebuffer\FramebufferTexture.cpp">
       <Filter>Framebuffer</Filter>
     </ClCompile>
@@ -891,6 +888,9 @@
     <ClCompile Include="src\Platform\DX11\DX11Mesh.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
+    <ClCompile Include="src\Framebuffer\MoravaFramebuffer.cpp">
+      <Filter>Framebuffer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1132,9 +1132,6 @@
       <Filter>Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\Cubemap.h">
-      <Filter>Framebuffer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Framebuffer\Framebuffer.h">
       <Filter>Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\FramebufferTexture.h">
@@ -1888,6 +1885,9 @@
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11VertexLayout.h">
       <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Framebuffer\MoravaFramebuffer.h">
+      <Filter>Framebuffer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

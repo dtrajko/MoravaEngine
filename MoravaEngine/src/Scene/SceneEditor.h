@@ -5,7 +5,7 @@
 #include "Core/Raycast.h"
 #include "Editor/Gizmo.h"
 #include "Editor/SceneObjectParticleSystem.h"
-#include "Framebuffer/Framebuffer.h"
+#include "Framebuffer/MoravaFramebuffer.h"
 #include "Material/MaterialWorkflowPBR.h"
 #include "Mesh/Grid.h"
 #include "Mesh/Quad.h"
@@ -28,7 +28,7 @@ public:
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
-    inline Framebuffer* GetRenderFramebuffer() { return m_RenderFramebuffer; };
+    inline MoravaFramebuffer* GetRenderFramebuffer() { return m_RenderFramebuffer; };
 
 private:
 	virtual void SetupTextures()   override;
@@ -176,7 +176,7 @@ private:
 	bool m_ViewportFocused;
 	bool m_ViewportHovered;
 
-	Framebuffer* m_RenderFramebuffer;
+	MoravaFramebuffer* m_RenderFramebuffer;
 
 	std::map<std::string, unsigned int> m_SamplerSlots;
 

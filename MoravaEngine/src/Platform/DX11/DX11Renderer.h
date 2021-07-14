@@ -11,6 +11,7 @@
 
 
 #include "Core/Window.h"
+#include "Framebuffer/MoravaFramebuffer.h"
 
 
 __declspec(align(16))
@@ -55,6 +56,9 @@ public:
 	static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
 	static void UpdateImGuizmo(Window* mainWindow, Hazel::HazelCamera* camera);
 	static void DrawMaterialEditor(); // originally EnvMapEditorLayer::DrawMaterialEditor
+	// from EnvMapEditorLayer, previously in SceneHazelEnvMap
+	static void SetupRenderFramebuffer();
+	static void ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer);
 
 	static uint32_t GetViewportWidth();
 	static uint32_t GetViewportHeight();

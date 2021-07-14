@@ -119,9 +119,9 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
     geoFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth_24_Stencil_8;
 
     Hazel::RenderPassSpecification geoRenderPassSpec;
-    geoRenderPassSpec.TargetFramebuffer = Framebuffer::Create(geoFramebufferSpec);
+    geoRenderPassSpec.TargetFramebuffer = MoravaFramebuffer::Create(geoFramebufferSpec);
 
-    auto targetFramebufferGeo = static_cast<Hazel::Ref<Framebuffer>>(geoRenderPassSpec.TargetFramebuffer);
+    auto targetFramebufferGeo = static_cast<Hazel::Ref<MoravaFramebuffer>>(geoRenderPassSpec.TargetFramebuffer);
 
     targetFramebufferGeo->AddColorAttachment(geoFramebufferSpec);
     targetFramebufferGeo->AddDepthAttachment(geoFramebufferDepthSpec);
@@ -141,9 +141,9 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
     isMultisample = compFramebufferSpec.Samples > 1;
 
     Hazel::RenderPassSpecification compRenderPassSpec;
-    compRenderPassSpec.TargetFramebuffer = Framebuffer::Create(compFramebufferSpec);
+    compRenderPassSpec.TargetFramebuffer = MoravaFramebuffer::Create(compFramebufferSpec);
 
-    auto targetFramebufferComp = static_cast<Hazel::Ref<Framebuffer>>(compRenderPassSpec.TargetFramebuffer);
+    auto targetFramebufferComp = static_cast<Hazel::Ref<MoravaFramebuffer>>(compRenderPassSpec.TargetFramebuffer);
 
     targetFramebufferComp->AddColorAttachment(compFramebufferSpec);
 
@@ -596,7 +596,7 @@ void EnvMapSceneRenderer::CompositePass()
 
     s_Data.CompositeShader->Bind();
 
-    auto targetFramebuffer = static_cast<Hazel::Ref<Framebuffer>>(s_Data.GeoPass->GetSpecification().TargetFramebuffer);
+    auto targetFramebuffer = static_cast<Hazel::Ref<MoravaFramebuffer>>(s_Data.GeoPass->GetSpecification().TargetFramebuffer);
 
     targetFramebuffer->GetTextureAttachmentColor()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
     s_Data.CompositeShader->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
@@ -643,7 +643,7 @@ void EnvMapSceneRenderer::FlushDrawList()
 
 uint32_t EnvMapSceneRenderer::GetFinalColorBufferRendererID()
 {
-    auto targetFramebuffer = static_cast<Hazel::Ref<Framebuffer>>(s_Data.CompositePass->GetSpecification().TargetFramebuffer);
+    auto targetFramebuffer = static_cast<Hazel::Ref<MoravaFramebuffer>>(s_Data.CompositePass->GetSpecification().TargetFramebuffer);
 
     return (uint32_t)targetFramebuffer->GetTextureAttachmentColor()->GetID();
 }
@@ -717,7 +717,7 @@ Hazel::Ref<Hazel::RenderPass> EnvMapSceneRenderer::GetFinalRenderPass()
 
 FramebufferTexture* EnvMapSceneRenderer::GetFinalColorBuffer()
 {
-    auto targetFramebuffer = static_cast<Hazel::Ref<Framebuffer>>(s_Data.CompositePass->GetSpecification().TargetFramebuffer);
+    auto targetFramebuffer = static_cast<Hazel::Ref<MoravaFramebuffer>>(s_Data.CompositePass->GetSpecification().TargetFramebuffer);
 
     return targetFramebuffer->GetTextureAttachmentColor();
 }

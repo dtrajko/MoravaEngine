@@ -66,9 +66,27 @@ static Hazel::Ref<DX11Texture2D> s_DepthStencil;
 
 static bool s_DeferredRenderingEnabled = true;
 
+/**** BEGIN variables from the EnvMapEditorLayer ****/
+
+static EventCooldown s_ResizeViewport = { 0.0f, 1.0f };
+
 static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
 
+static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
+static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
+
 static Hazel::ContentBrowserPanel* s_ContentBrowserPanel;
+
+static Hazel::Ref<MoravaFramebuffer> s_RenderFramebuffer;
+static Hazel::Ref<MoravaFramebuffer> s_PostProcessingFramebuffer;
+
+/**** BEGIN variables from Scene.cpp ****/
+
+// ImGuizmo
+static glm::mat4* s_ImGuizmoTransform = nullptr;
+static int s_ImGuizmoType = -1; // -1 = no gizmo
+
+/**** END variables from Scene.cpp ****/
 
 
 struct Viewport
@@ -196,9 +214,48 @@ void DX11Renderer::Init()
 
 	/**** END DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
 
+	/**** BEGIN the code from the EnvMapEditorLayer constructor ****/
+
+	// Create a default material
+	s_DefaultMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_DEF");
+	MaterialLibrary::AddEnvMapMaterial(s_DefaultMaterial->GetUUID(), s_DefaultMaterial);
+
+	// Create the light material
+	s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
+	// Load Hazel/Renderer/HazelTexture
+	s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D("Textures/light_bulb.png");
+	s_LightMaterial->GetAlbedoInput().UseTexture = true;
+	MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
+
 	s_CheckerboardTexture = ResourceManager::LoadHazelTexture2D("Textures/Hazel/Checkerboard.png");
 
 	s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
+
+	s_ImGuizmoTransform = nullptr;
+	s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+	s_ResizeViewport = { 0.0f, 1.0f };
+
+	SetupRenderFramebuffer();
+
+	/****END the code from the EnvMapEditorLayer constructor ****/
+}
+
+void DX11Renderer::SetupRenderFramebuffer()
+{
+	uint32_t width = Application::Get()->GetWindow()->GetWidth();
+	uint32_t height = Application::Get()->GetWindow()->GetHeight();
+
+	//	// Main render target
+	//	s_RenderFramebuffer = Hazel::Ref<MoravaFramebuffer>::Create(width, height);
+	//	s_RenderFramebuffer->AddColorAttachmentSpecification(width, height, //	AttachmentType::Texture, AttachmentFormat::Color);
+	//	s_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, //	AttachmentType::Texture, AttachmentFormat::Depth);
+	//	s_RenderFramebuffer->Generate(width, height);
+
+	//	// Post-processing framebuffer
+	//	s_PostProcessingFramebuffer = Hazel::Ref<MoravaFramebuffer>::Create(width, height);
+	//	s_PostProcessingFramebuffer->AddColorAttachmentSpecification(width, height, //	AttachmentType::Texture, AttachmentFormat::Color);
+	//	s_PostProcessingFramebuffer->Generate(width, height);
 }
 
 void DX11Renderer::CreateCube()
@@ -1281,6 +1338,10 @@ void DX11Renderer::DrawMaterialEditor()
 		}
 		ImGui::EndPopup();
 	}
+}
+
+void DX11Renderer::ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer)
+{
 }
 
 uint32_t DX11Renderer::GetViewportWidth()

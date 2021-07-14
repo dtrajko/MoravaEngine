@@ -92,7 +92,7 @@ void BlurEffect::HorizontalBlurSetup(int width, int height)
 	m_Width = width;
 	m_Height = height;
 
-	m_HorizontalFBO = new Framebuffer(m_Width, m_Height);
+	m_HorizontalFBO = new MoravaFramebuffer(m_Width, m_Height);
 	m_HorizontalFBO->AddColorAttachmentSpecification(m_Width, m_Height, AttachmentType::Texture, AttachmentFormat::Color);
 	m_HorizontalFBO->Generate(m_Width, m_Height);
 
@@ -111,7 +111,7 @@ void BlurEffect::VerticalBlurSetup(int width, int height)
 	m_Width = width;
 	m_Height = height;
 
-	m_VerticalFBO = new Framebuffer(m_Width, m_Height);
+	m_VerticalFBO = new MoravaFramebuffer(m_Width, m_Height);
 	m_VerticalFBO->AddColorAttachmentSpecification(m_Width, m_Height, AttachmentType::Texture, AttachmentFormat::Color);
 	m_VerticalFBO->Generate(m_Width, m_Height);
 
