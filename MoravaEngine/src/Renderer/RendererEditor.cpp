@@ -312,7 +312,7 @@ void RendererEditor::RenderWaterEffects(float deltaTime, Window* mainWindow, Sce
 void RendererEditor::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
     SceneEditor* sceneEditor = (SceneEditor*)scene;
-    MoravaFramebuffer* renderFramebuffer = nullptr;
+    Hazel::Ref<MoravaFramebuffer> renderFramebuffer;
 
     if (m_IsViewportEnabled)
     {

@@ -124,7 +124,7 @@ private:
 	bool m_ViewportFocused;
 	bool m_ViewportHovered;
 	glm::vec2 m_ViewportSize;
-	MoravaFramebuffer* m_RenderFramebuffer;
+	Hazel::Ref<MoravaFramebuffer> m_RenderFramebuffer;
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;
 

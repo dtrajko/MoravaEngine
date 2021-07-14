@@ -39,9 +39,9 @@ public:
 	unsigned int SCR_WIDTH = 1280;
 	unsigned int SCR_HEIGHT = 720;
 
-	MoravaFramebuffer* m_Framebuffer;
+	Hazel::Ref<MoravaFramebuffer> m_Framebuffer;
 
-	MoravaShader* m_ShaderFramebuffersScene;
-	MoravaShader* m_ShaderFramebuffersScreen;
+	Hazel::Ref<MoravaShader> m_ShaderFramebuffersScene;
+	Hazel::Ref<MoravaShader> m_ShaderFramebuffersScreen;
 
 };

@@ -2,12 +2,9 @@
 
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Renderer/HazelFramebuffer.h"
-#include "Hazel/Renderer/RendererAPI.h"
 
+#include "Framebuffer/Attachment.h"
 #include "Framebuffer/FramebufferTexture.h"
-#include "Framebuffer/Renderbuffer.h"
-
-#include <vector>
 
 
 struct FramebufferSpecification
@@ -29,83 +26,35 @@ struct FramebufferSpecification
 class MoravaFramebuffer : public Hazel::HazelFramebuffer
 {
 public:
-	MoravaFramebuffer();
-	MoravaFramebuffer(unsigned int width, unsigned int height);
-	MoravaFramebuffer(FramebufferSpecification spec);
-	~MoravaFramebuffer();
+	static Hazel::Ref<MoravaFramebuffer> Create(uint32_t width, uint32_t height);
+	static Hazel::Ref<MoravaFramebuffer> Create(FramebufferSpecification spec);
 
-	virtual void Unbind() const override;
-	virtual void Bind() const override;
+	// virtual methods from Hazel::HazelFramebuffer
+	virtual void Bind() const = 0;
+	virtual void Unbind() const = 0;
+	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) = 0;
+	virtual void AddResizeCallback(const std::function<void(Hazel::Ref<Hazel::HazelFramebuffer>)>& func) = 0;
+	virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const = 0;
+	virtual uint32_t GetWidth() const = 0;
+	virtual uint32_t GetHeight() const = 0;
+	virtual Hazel::RendererID GetRendererID() const = 0;
+	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const = 0;
+	virtual Hazel::Ref<Hazel::HazelImage2D> GetDepthImage() const = 0;
+	virtual const Hazel::HazelFramebufferSpecification& GetSpecification() const = 0;
 
-	void Bind(unsigned int width, unsigned int height);
-	void Unbind(unsigned int width, unsigned int height);
-	bool CheckStatus();
-
-	void AddColorAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat);
-	void AddDepthAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat);
-
-	void AddColorAttachment(FramebufferSpecification specs); // the generic one based on FramebufferSpecification 
-	void AddDepthAttachment(FramebufferSpecification specs); // the generic one based on FramebufferSpecification 
-
-	void CreateTextureAttachmentColor(unsigned int width, unsigned int height, bool isMultisample,
-		AttachmentFormat attachmentFormat = AttachmentFormat::Color);
-	void CreateAttachmentDepth(unsigned int width, unsigned int height, bool isMultisample,
-		AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth);
-	void CreateAttachmentStencil(unsigned int width, unsigned int height, bool isMultisample,
-		AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Stencil);
-	void CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, bool isMultisample,
-		AttachmentType attachmentType, AttachmentFormat attachmentFormat = AttachmentFormat::Depth_24_Stencil_8);
-
-	FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0);
-	Hazel::Ref<Attachment> GetAttachmentDepth();
-	Hazel::Ref<Attachment> GetAttachmentStencil();
-	Hazel::Ref<Attachment> GetAttachmentDepthAndStencil();
-
-	FramebufferSpecification& GetSpecification() { return m_FramebufferSpecs; };
-
-	static Hazel::Ref<MoravaFramebuffer> Create(const FramebufferSpecification& spec);
-
-	inline uint32_t GetWidth() const { return m_FramebufferSpecs.Width; };
-	inline uint32_t GetHeight() const { return m_FramebufferSpecs.Height; };
-	inline const uint32_t GetID() const { return m_FBO; };
-
-	void Clear();
-
-	void Release();
-	void Generate(unsigned int width, unsigned int height); // Invalidate() in Hazel
-	void Resize(uint32_t width, uint32_t height);
-
-	// HazelFramebuffer abstract methods
-	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate) override;
-
-	virtual void AddResizeCallback(const std::function<void(Hazel::Ref<Hazel::HazelFramebuffer>)>& func) override {};
-
-	virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override;
-	virtual Hazel::RendererID GetRendererID() const override;
-
-	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const override;
-	virtual Hazel::Ref<Hazel::HazelImage2D> GetDepthImage() const override;
-
-	// virtual Hazel::RendererID GetColorAttachmentRendererID() const override;
-	// virtual Hazel::RendererID GetDepthAttachmentRendererID() const override;
-
-	virtual const Hazel::HazelFramebufferSpecification& GetSpecification() const override;
-
-private:
-	unsigned int m_FBO;
-	FramebufferSpecification m_FramebufferSpecs;
-
-	std::vector<FramebufferSpecification> m_ColorAttachmentSpecs;
-	std::vector<FramebufferSpecification> m_RenderbufferAttachmentSpec;
-
-	std::vector<FramebufferTexture*> m_TextureAttachmentsColor;
-	Hazel::Ref<Attachment> m_AttachmentDepth;
-	Hazel::Ref<Attachment> m_AttachmentStencil;
-	Hazel::Ref<Attachment> m_AttachmentDepthAndStencil;
-
-	// Hazel/Platform/OpenGL/OpenGLFramebuffer
-	bool m_Multisample;
-
-	Hazel::HazelFramebufferSpecification m_HazelFramebufferSpecs; // not in use, only for compatibility with Hazel::HazelFramebuffer
+	// virtual methods MoravaFramebufer
+	virtual void Generate(unsigned int width, unsigned int height) = 0; // Invalidate() in Hazel
+	virtual void AddColorAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat) = 0;
+	virtual void AddDepthAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat) = 0;
+	virtual void AddColorAttachment(FramebufferSpecification specs) = 0; // the generic one based on FramebufferSpecification
+	virtual void AddDepthAttachment(FramebufferSpecification specs) = 0;
+	virtual FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0) = 0;
+	virtual Hazel::Ref<Attachment> GetAttachmentDepth() = 0;
+	virtual Hazel::Ref<Attachment> GetAttachmentStencil() = 0;
+	virtual Hazel::Ref<Attachment> GetAttachmentDepthAndStencil() = 0;
+	virtual void Bind(unsigned int width, unsigned int height) = 0;
+	virtual void Unbind(unsigned int width, unsigned int height) = 0;
+	virtual bool CheckStatus() = 0;
+	virtual void Clear() = 0;
 
 };

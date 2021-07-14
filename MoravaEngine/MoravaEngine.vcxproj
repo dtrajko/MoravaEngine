@@ -405,6 +405,7 @@
       </ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11VertexShader.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaFramebuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaShader.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererBasic.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp" />
@@ -834,6 +835,7 @@
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11VertexLayout.h" />
     <ClInclude Include="src\Platform\DX11\DX11VertexShader.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaFramebuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaShader.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererBasic.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h" />

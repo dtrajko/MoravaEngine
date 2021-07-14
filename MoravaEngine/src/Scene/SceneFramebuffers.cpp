@@ -53,7 +53,7 @@ void SceneFramebuffers::SetupFramebuffers()
 {
 	// Framebuffer configuration
 	// -- create a framebuffer (FBO)
-	m_Framebuffer = new MoravaFramebuffer(SCR_WIDTH, SCR_HEIGHT);
+	m_Framebuffer = MoravaFramebuffer::Create(SCR_WIDTH, SCR_HEIGHT);
 
 	// -- generate a color texture attachment
 	m_Framebuffer->AddColorAttachmentSpecification(SCR_WIDTH, SCR_HEIGHT, AttachmentType::Texture, AttachmentFormat::Color);
@@ -242,5 +242,5 @@ SceneFramebuffers::~SceneFramebuffers()
 {
 	CleanupGeometry();
 
-	delete m_Framebuffer;
+	// delete m_Framebuffer;
 }

@@ -58,23 +58,17 @@ namespace Hazel {
 	{
 	public:
 		virtual ~HazelFramebuffer() {}
+
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-
 		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) = 0;
-
 		virtual void AddResizeCallback(const std::function<void(Ref<HazelFramebuffer>)>& func) = 0;
-
 		virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const = 0;
-
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-
 		virtual RendererID GetRendererID() const = 0;
-
 		virtual Ref<HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const = 0;
 		virtual Ref<HazelImage2D> GetDepthImage() const = 0;
-
 		virtual const HazelFramebufferSpecification& GetSpecification() const = 0;
 
 		static Ref<HazelFramebuffer> Create(const HazelFramebufferSpecification& spec);

@@ -28,7 +28,7 @@ public:
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
-    inline MoravaFramebuffer* GetRenderFramebuffer() { return m_RenderFramebuffer; };
+    inline Hazel::Ref<MoravaFramebuffer> GetRenderFramebuffer() { return m_RenderFramebuffer; };
 
 private:
 	virtual void SetupTextures()   override;
@@ -176,7 +176,7 @@ private:
 	bool m_ViewportFocused;
 	bool m_ViewportHovered;
 
-	MoravaFramebuffer* m_RenderFramebuffer;
+	Hazel::Ref<MoravaFramebuffer> m_RenderFramebuffer;
 
 	std::map<std::string, unsigned int> m_SamplerSlots;
 

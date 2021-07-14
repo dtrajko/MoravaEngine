@@ -92,7 +92,7 @@ void BlurEffect::HorizontalBlurSetup(int width, int height)
 	m_Width = width;
 	m_Height = height;
 
-	m_HorizontalFBO = new MoravaFramebuffer(m_Width, m_Height);
+	m_HorizontalFBO = MoravaFramebuffer::Create(m_Width, m_Height);
 	m_HorizontalFBO->AddColorAttachmentSpecification(m_Width, m_Height, AttachmentType::Texture, AttachmentFormat::Color);
 	m_HorizontalFBO->Generate(m_Width, m_Height);
 
@@ -111,7 +111,7 @@ void BlurEffect::VerticalBlurSetup(int width, int height)
 	m_Width = width;
 	m_Height = height;
 
-	m_VerticalFBO = new MoravaFramebuffer(m_Width, m_Height);
+	m_VerticalFBO = MoravaFramebuffer::Create(m_Width, m_Height);
 	m_VerticalFBO->AddColorAttachmentSpecification(m_Width, m_Height, AttachmentType::Texture, AttachmentFormat::Color);
 	m_VerticalFBO->Generate(m_Width, m_Height);
 
@@ -137,7 +137,7 @@ void BlurEffect::Render()
 
 void BlurEffect::RenderHorizontal(int textureHorizontal)
 {
-	m_HorizontalFBO->Bind();
+	m_HorizontalFBO->Bind(m_Width, m_Height);
 	m_ShaderHorizontalBlur->Bind();
 
 	glViewport(0, 0, m_Width, m_Height);
@@ -157,7 +157,7 @@ void BlurEffect::RenderHorizontal(int textureHorizontal)
 
 void BlurEffect::RenderVertical(int textureVertical)
 {
-	m_VerticalFBO->Bind();
+	m_VerticalFBO->Bind(m_Width, m_Height);
 	m_ShaderVerticalBlur->Bind();
 
 	glViewport(0, 0, m_Width, m_Height);
@@ -197,11 +197,11 @@ BlurEffect::~BlurEffect()
 {
 	Release();
 
-	if (m_HorizontalFBO) delete m_HorizontalFBO;
-	if (m_VerticalFBO) delete m_VerticalFBO;
+	// if (m_HorizontalFBO) delete m_HorizontalFBO;
+	// if (m_VerticalFBO) delete m_VerticalFBO;
 
-	if (m_ShaderHorizontalBlur) delete m_ShaderHorizontalBlur;
-	if (m_ShaderVerticalBlur) delete m_ShaderVerticalBlur;
+	// if (m_ShaderHorizontalBlur) delete m_ShaderHorizontalBlur;
+	// if (m_ShaderVerticalBlur) delete m_ShaderVerticalBlur;
 
 	if (m_QuadVAO) glDeleteVertexArrays(1, &m_QuadVAO);
 	if (m_QuadVBO) glDeleteBuffers(1, &m_QuadVBO);
@@ -211,12 +211,12 @@ void BlurEffect::Release()
 {
 }
 
-FramebufferTexture* BlurEffect::GetHorizontalOutputTexture()
+Hazel::Ref<FramebufferTexture> BlurEffect::GetHorizontalOutputTexture()
 {
 	return m_HorizontalFBO->GetTextureAttachmentColor();
 }
 
-FramebufferTexture* BlurEffect::GetVerticalOutputTexture()
+Hazel::Ref<FramebufferTexture> BlurEffect::GetVerticalOutputTexture()
 {
 	return m_VerticalFBO->GetTextureAttachmentColor();
 }

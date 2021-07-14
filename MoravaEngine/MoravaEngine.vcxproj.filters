@@ -891,6 +891,9 @@
     <ClCompile Include="src\Framebuffer\MoravaFramebuffer.cpp">
       <Filter>Framebuffer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaFramebuffer.cpp">
+      <Filter>Platform\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1888,6 +1891,9 @@
     </ClInclude>
     <ClInclude Include="src\Framebuffer\MoravaFramebuffer.h">
       <Filter>Framebuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaFramebuffer.h">
+      <Filter>Platform\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

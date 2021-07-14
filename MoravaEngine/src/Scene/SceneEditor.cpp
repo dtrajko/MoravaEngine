@@ -219,7 +219,7 @@ void SceneEditor::SetupRenderFramebuffer()
 
     uint32_t width = Application::Get()->GetWindow()->GetWidth();
     uint32_t height = Application::Get()->GetWindow()->GetHeight();
-    m_RenderFramebuffer = new MoravaFramebuffer(width, height);
+    m_RenderFramebuffer = MoravaFramebuffer::Create(width, height);
 
     m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
     m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Renderbuffer, AttachmentFormat::Depth);
