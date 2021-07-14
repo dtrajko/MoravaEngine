@@ -5,7 +5,7 @@
 
 It currently supports the following graphics APIs:
 
-- OpenGL ES 2.0.
+- OpenGL 3.3+
 - Vulkan 1.2
 - DirectX 11
 
