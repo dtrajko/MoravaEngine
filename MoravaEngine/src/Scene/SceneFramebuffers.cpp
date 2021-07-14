@@ -35,10 +35,10 @@ void SceneFramebuffers::SetupTextures()
 
 void SceneFramebuffers::SetupShaders()
 {
-	m_ShaderFramebuffersScene = new MoravaShader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
+	m_ShaderFramebuffersScene = MoravaShader::Create("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
 	printf("SceneFramebuffers: m_ShaderFramebuffersScene compiled [programID=%d]\n", m_ShaderFramebuffersScene->GetProgramID());
 
-	m_ShaderFramebuffersScreen = new MoravaShader("Shaders/framebuffers_screen.vs", "Shaders/framebuffers_screen.fs");
+	m_ShaderFramebuffersScreen = MoravaShader::Create("Shaders/framebuffers_screen.vs", "Shaders/framebuffers_screen.fs");
 	printf("SceneFramebuffers: m_ShaderFramebuffersScreen compiled [programID=%d]\n", m_ShaderFramebuffersScreen->GetProgramID());
 
 	// shader configuration

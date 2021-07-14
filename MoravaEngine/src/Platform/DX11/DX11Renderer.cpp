@@ -246,16 +246,16 @@ void DX11Renderer::SetupRenderFramebuffer()
 	uint32_t width = Application::Get()->GetWindow()->GetWidth();
 	uint32_t height = Application::Get()->GetWindow()->GetHeight();
 
-	//	// Main render target
-	//	s_RenderFramebuffer = Hazel::Ref<MoravaFramebuffer>::Create(width, height);
-	//	s_RenderFramebuffer->AddColorAttachmentSpecification(width, height, //	AttachmentType::Texture, AttachmentFormat::Color);
-	//	s_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, //	AttachmentType::Texture, AttachmentFormat::Depth);
-	//	s_RenderFramebuffer->Generate(width, height);
-
-	//	// Post-processing framebuffer
-	//	s_PostProcessingFramebuffer = Hazel::Ref<MoravaFramebuffer>::Create(width, height);
-	//	s_PostProcessingFramebuffer->AddColorAttachmentSpecification(width, height, //	AttachmentType::Texture, AttachmentFormat::Color);
-	//	s_PostProcessingFramebuffer->Generate(width, height);
+	// Main render target
+	s_RenderFramebuffer = MoravaFramebuffer::Create(width, height);
+	s_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+	s_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Depth);
+	s_RenderFramebuffer->Generate(width, height);
+	
+	// Post-processing framebuffer
+	s_PostProcessingFramebuffer = MoravaFramebuffer::Create(width, height);
+	s_PostProcessingFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+	s_PostProcessingFramebuffer->Generate(width, height);
 }
 
 void DX11Renderer::CreateCube()
