@@ -75,10 +75,13 @@ static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
 static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
 static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
 
+static Hazel::SceneHierarchyPanel* s_SceneHierarchyPanel;
 static Hazel::ContentBrowserPanel* s_ContentBrowserPanel;
 
 static Hazel::Ref<MoravaFramebuffer> s_RenderFramebuffer;
 static Hazel::Ref<MoravaFramebuffer> s_PostProcessingFramebuffer;
+
+static Hazel::Ref<Hazel::HazelScene> s_Scene; // the Scene object provides the ECS registru
 
 /**** BEGIN variables from Scene.cpp ****/
 
@@ -229,6 +232,9 @@ void DX11Renderer::Init()
 
 	s_CheckerboardTexture = ResourceManager::LoadHazelTexture2D("Textures/Hazel/Checkerboard.png");
 
+	s_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
+
+	s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(s_Scene);
 	s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
 
 	s_ImGuizmoTransform = nullptr;
@@ -745,35 +751,17 @@ void DX11Renderer::RenderImGui()
 		//	ImDrawData* main_draw_data = ImGui::GetDrawData();
 		//	ImGui_ImplDX11_RenderDrawData(main_draw_data);
 
-		// Create ImGui Test Window
-		ImGui::Begin("Scene Hierarchy");
-		{
-			DrawEntityNode("Skybox");
-			DrawEntityNode("Terrain");
-			DrawEntityNode("Gladiator");
-			DrawEntityNode("Cerberus");
-			DrawEntityNode("Cube #1");
-			DrawEntityNode("Cube #2");
-			DrawEntityNode("Cube #3");
-			DrawEntityNode("Teapot");
-			DrawEntityNode("House");
-		}
-		ImGui::End();
+		bool showSceneHierarchyPanel = true;
+		s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
 
-		ImGui::Begin("Properties"); // originally belongs to SceneHierarchyPanel::OnImGuiRender
-		{
-			DrawComponent("Transform");
-		}
-		ImGui::End();
+		bool showWindowAssetManager = true;
+		s_ContentBrowserPanel->OnImGuiRender(&showWindowAssetManager);
 
 		ImGui::Begin("Material Editor");
 		{
 			DrawMaterialEditor();
 		}
 		ImGui::End();
-
-		bool showWindowAssetManager = true;
-		s_ContentBrowserPanel->OnImGuiRender(&showWindowAssetManager);
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport");

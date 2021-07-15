@@ -1729,7 +1729,7 @@ void EnvMapEditorLayer::NewScene()
 {
     OnNewScene(m_ViewportMainSize);
 }
- 
+
 void EnvMapEditorLayer::OpenScene()
 {
     // auto app = Application::Get();

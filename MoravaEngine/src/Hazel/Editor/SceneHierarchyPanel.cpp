@@ -74,10 +74,10 @@ namespace Hazel
 
 	void SceneHierarchyPanel::OnImGuiRender(bool* p_open)
 	{
-		ImGui::Begin("Scene Hierarchy", p_open);
-
 		if (m_Context)
 		{
+			ImGui::Begin("Scene Hierarchy", p_open);
+
 			uint32_t entityCount = 0;
 			uint32_t meshCount = 0;
 
