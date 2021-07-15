@@ -53,7 +53,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_Normal.jpg"));
 	renderObjectGladiator.Transform = glm::mat4(1.0f);
 	renderObjectGladiator.Transform = glm::translate(renderObjectGladiator.Transform, glm::vec3(0.0f, 0.0f, -2.0f));
-	renderObjectGladiator.Transform = glm::scale(renderObjectGladiator.Transform, glm::vec3(-0.04f, 0.04f, 0.04f));
+	renderObjectGladiator.Transform = glm::scale(renderObjectGladiator.Transform, glm::vec3(0.04f));
 	renderObjectGladiator.PipelineType = RenderObject::PipelineType::Light;
 	m_RenderObjects.push_back(renderObjectGladiator);
 
