@@ -61,10 +61,10 @@ private:
 	Mesh* CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* name);
 	Model* AddNewModel(int modelID, glm::vec3 scale);
 	SceneObjectParticleSystem* AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale);
-	void SetUniformsShaderEditorPBR(MoravaShader* shaderEditorPBR, Texture* texture, Hazel::Ref<Material> material, SceneObject* sceneObject);
-	void SetUniformsShaderEditor(MoravaShader* shaderEditor, Texture* texture, SceneObject* sceneObject);
+	void SetUniformsShaderEditorPBR(MoravaShader* shaderEditorPBR, Hazel::Ref<Texture> texture, Hazel::Ref<Material> material, SceneObject* sceneObject);
+	void SetUniformsShaderEditor(MoravaShader* shaderEditor, Hazel::Ref<Texture> texture, SceneObject* sceneObject);
 	void SetUniformsShaderSkinning(MoravaShader* shaderSkinning, SceneObject* sceneObject, float runningTime);
-	void SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime);
+	void SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHybridAnimPBR, Hazel::Ref<Texture> texture, SceneObject* sceneObject, float runningTime);
 	void SetUniformsShaderWater(MoravaShader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
 	void SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix);
 	virtual bool IsWaterOnScene() override;
@@ -185,7 +185,7 @@ private:
 
 	// experimental section (OpenFile dialog)
 	std::string m_LoadedFile;
-	Texture* m_LoadedTexture;
+	Hazel::Ref<Texture> m_LoadedTexture;
 	std::string m_LoadedTextureFilepath;
 	bool m_UseLoadedTexture;
 

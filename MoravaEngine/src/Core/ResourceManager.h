@@ -15,12 +15,12 @@ public:
 	static void LoadTexture(std::string name, std::string filePath);
 	static void LoadTexture(std::string name, std::string filePath, GLenum filter, bool force);
 	static void LoadMaterial(std::string name, TextureInfo textureInfo);
-	static Texture* HotLoadTexture(std::string textureName);
+	static Hazel::Ref<Texture> HotLoadTexture(std::string textureName);
 	static Hazel::Ref<Material> HotLoadMaterial(std::string materialName);
 
 	// Getters
-	static inline Texture* GetTexture(std::string textureName) { return s_Textures[textureName]; };
-	static inline std::map<std::string, Texture*>* GetTextures() { return &s_Textures; };
+	static inline Hazel::Ref<Texture> GetTexture(std::string textureName) { return s_Textures[textureName]; };
+	static inline std::map<std::string, Hazel::Ref<Texture>>* GetTextures() { return &s_Textures; };
 	static inline std::map<std::string, Hazel::Ref<Material>>* GetMaterials() { return &s_Materials; };
 	static inline std::map<std::string, std::string>* GetTextureInfo() { return &s_TextureInfo; };
 	static inline std::map<std::string, TextureInfo>* GetMaterialInfo() { return &s_MaterialInfo; };
@@ -44,7 +44,7 @@ private:
 	static std::map<std::string, std::string> s_TextureInfo;
 	static std::map<std::string, TextureInfo> s_MaterialInfo;
 
-	static std::map<std::string, Texture*> s_Textures;
+	static std::map<std::string, Hazel::Ref<Texture>> s_Textures;
 	static std::map<std::string, Hazel::Ref<Material>> s_Materials;
 
 	static std::map<std::string, Hazel::Ref<Hazel::HazelTexture2D>> s_HazelTextures2D;

@@ -13,7 +13,7 @@ class RenderInstanced
 
 public:
 	RenderInstanced();
-	RenderInstanced(TerrainBase* terrain, Texture* texture, Mesh* mesh);
+	RenderInstanced(TerrainBase* terrain, Hazel::Ref<Texture> texture, Mesh* mesh);
 	void CreateVertexData();
 	void Update();
 	void Release();
@@ -29,7 +29,7 @@ private:
 
 public:
 	TerrainVoxel* m_Terrain;
-	Texture* m_Texture;
+	Hazel::Ref<Texture> m_Texture;
 	Mesh* m_Mesh;
 	unsigned int m_InstanceCount;
 

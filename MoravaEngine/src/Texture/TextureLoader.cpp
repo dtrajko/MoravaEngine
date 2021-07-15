@@ -18,15 +18,15 @@ TextureLoader::TextureLoader()
 {
 }
 
-Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, bool force)
+Hazel::Ref<Texture> TextureLoader::GetTexture(const char* fileLoc, bool flipVert, bool force)
 {
 	return GetTexture(fileLoc, flipVert, GL_LINEAR, force);
 }
 
-Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, GLenum filter, bool force)
+Hazel::Ref<Texture> TextureLoader::GetTexture(const char* fileLoc, bool flipVert, GLenum filter, bool force)
 {
 	if (!force) {
-		std::map<std::string, Texture*>::iterator it;
+		std::map<std::string, Hazel::Ref<Texture>>::iterator it;
 		it = m_Textures.find(fileLoc);
 	
 		if (it != m_Textures.end())
@@ -36,7 +36,8 @@ Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, GLenum fi
 		}
 	}
 
-	Texture* texture = new Texture(fileLoc, false, true, filter);
+	Hazel::Ref<Texture> texture = Hazel::Ref<Texture>::Create(fileLoc, false, true, filter);
+
 	m_Textures.insert(std::make_pair(fileLoc, texture));
 	Log::GetLogger()->info("TextureLoader MISS - New texture '{0}' loaded [m_Textures.size={1}]", fileLoc, m_Textures.size());
 	return texture;
@@ -44,7 +45,7 @@ Texture* TextureLoader::GetTexture(const char* fileLoc, bool flipVert, GLenum fi
 
 void TextureLoader::Print()
 {
-	std::map<std::string, Texture*>::reverse_iterator rit;
+	std::map<std::string, Hazel::Ref<Texture>>::reverse_iterator rit;
 
 	size_t id = 0;
 	for (rit = m_Textures.rbegin(); rit != m_Textures.rend(); ++rit)
@@ -58,7 +59,7 @@ void TextureLoader::Clean()
 {
 	for (auto& texture : m_Textures)
 	{
-		delete texture.second;
+		// delete texture.second;
 	}
 }
 

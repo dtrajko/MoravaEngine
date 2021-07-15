@@ -11,14 +11,14 @@ class TextureLoader
 public:
 	TextureLoader();
 	static TextureLoader* Get();
-	Texture* GetTexture(const char* fileLoc, bool flipVert, bool force);
-	Texture* GetTexture(const char* fileLoc, bool flipVert, GLenum filter, bool force);
+	Hazel::Ref<Texture> GetTexture(const char* fileLoc, bool flipVert, bool force);
+	Hazel::Ref<Texture> GetTexture(const char* fileLoc, bool flipVert, GLenum filter, bool force);
 	void Print();
 	void Clean();
 	~TextureLoader();
 
 private:
 	static TextureLoader* s_Instance;
-	std::map<std::string, Texture*> m_Textures;
+	std::map<std::string, Hazel::Ref<Texture>> m_Textures;
 
 };

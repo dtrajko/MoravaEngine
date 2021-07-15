@@ -102,7 +102,7 @@ public:
 	Camera* GetCamera();
 	inline CameraController* GetCameraController() const { return m_CameraController; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
-	std::map<std::string, Texture*> GetTextures() const { return textures; };
+	std::map<std::string, Hazel::Ref<Texture>> GetTextures() const { return textures; };
 	std::map<std::string, GLuint> GetTextureSlots() const { return textureSlots; };
 	inline std::map<std::string, Material*> GetMaterials() const { return materials; };
 	inline std::map<std::string, Model*> GetModels() const { return models; };
@@ -148,7 +148,7 @@ protected:
 
 	WaterManager* m_WaterManager;
 
-	std::map<std::string, Texture*> textures;
+	std::map<std::string, Hazel::Ref<Texture>> textures;
 	std::map<std::string, GLuint> textureSlots;
 	std::map<std::string, Mesh*> meshes;
 	std::map<std::string, Model*> models;

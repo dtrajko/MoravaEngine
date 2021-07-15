@@ -6,7 +6,7 @@
 std::map<std::string, std::string> ResourceManager::s_TextureInfo;
 std::map<std::string, TextureInfo> ResourceManager::s_MaterialInfo;
 
-std::map<std::string, Texture*> ResourceManager::s_Textures;
+std::map<std::string, Hazel::Ref<Texture>> ResourceManager::s_Textures;
 std::map<std::string, Hazel::Ref<Material>> ResourceManager::s_Materials;
 
 float ResourceManager::s_MaterialSpecular = 1.0f;
@@ -279,14 +279,14 @@ void ResourceManager::LoadMaterial(std::string name, TextureInfo textureInfo)
     s_Materials.insert(std::make_pair(name, Hazel::Ref<Material>::Create(textureInfo, s_MaterialSpecular, s_MaterialShininess)));
 }
 
-Texture* ResourceManager::HotLoadTexture(std::string textureName)
+Hazel::Ref<Texture> ResourceManager::HotLoadTexture(std::string textureName)
 {
     // Load texture if not available in textures map
     auto textureInfoIterator = s_TextureInfo.find(textureName);
     auto textureIterator = s_Textures.find(textureName);
 
     if (textureInfoIterator == s_TextureInfo.end())
-        return nullptr;
+        return Hazel::Ref<Texture>();
 
     if (textureIterator != s_Textures.end())
         return textureIterator->second;
@@ -296,7 +296,7 @@ Texture* ResourceManager::HotLoadTexture(std::string textureName)
     textureIterator = s_Textures.find(textureName);
 
     if (textureIterator == s_Textures.end())
-        return nullptr;
+        return Hazel::Ref<Texture>();
 
     return textureIterator->second;
 }

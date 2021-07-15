@@ -87,7 +87,7 @@ void Material::SetFlag(MaterialFlag flag, bool value)
 void Material::BindTextures(unsigned int slot)
 {
 	glActiveTexture(GL_TEXTURE0 + slot + 0);
-	if (m_TextureAlbedo != nullptr) {
+	if (m_TextureAlbedo) {
 		glBindTexture(GL_TEXTURE_2D, m_TextureAlbedo->GetID());
 	}
 	else {
@@ -95,7 +95,7 @@ void Material::BindTextures(unsigned int slot)
 	}
 
 	glActiveTexture(GL_TEXTURE0 + slot + 1);
-	if (m_TextureNormal != nullptr) {
+	if (m_TextureNormal) {
 		glBindTexture(GL_TEXTURE_2D, m_TextureNormal->GetID());
 	}
 	else {
@@ -103,7 +103,7 @@ void Material::BindTextures(unsigned int slot)
 	}
 
 	glActiveTexture(GL_TEXTURE0 + slot + 2);
-	if (m_TextureMetallic != nullptr) {
+	if (m_TextureMetallic) {
 		glBindTexture(GL_TEXTURE_2D, m_TextureMetallic->GetID());
 	}
 	else {
@@ -111,7 +111,7 @@ void Material::BindTextures(unsigned int slot)
 	}
 
 	glActiveTexture(GL_TEXTURE0 + slot + 3);
-	if (m_TextureRoughness != nullptr) {
+	if (m_TextureRoughness) {
 		glBindTexture(GL_TEXTURE_2D, m_TextureRoughness->GetID());
 	}
 	else {
@@ -119,7 +119,7 @@ void Material::BindTextures(unsigned int slot)
 	}
 
 	glActiveTexture(GL_TEXTURE0 + slot + 4);
-	if (m_TextureAO != nullptr) {
+	if (m_TextureAO) {
 		glBindTexture(GL_TEXTURE_2D, m_TextureAO->GetID());
 	}
 	else {

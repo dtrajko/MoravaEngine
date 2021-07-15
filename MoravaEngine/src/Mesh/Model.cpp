@@ -164,7 +164,7 @@ void Model::LoadMaterials(const aiScene* scene)
 				if (!m_TextureList[i])
 				{
 					Log::GetLogger()->error("Failed to load texture at '{0}'", texPath);
-					delete m_TextureList[i];
+					// delete m_TextureList[i];
 					m_TextureList[i] = nullptr;
 				}
 			}
@@ -190,7 +190,7 @@ void Model::LoadMaterials(const aiScene* scene)
 				if (!m_NormalMapList[i])
 				{
 					Log::GetLogger()->error("Failed to load normal map at '{0}'", texPath);
-					delete m_NormalMapList[i];
+					// delete m_NormalMapList[i];
 					m_NormalMapList[i] = nullptr;
 				}
 			}
@@ -267,7 +267,7 @@ void Model::Clear()
 
 	for (size_t i = 0; i < m_TextureList.size(); i++)
 	{
-		if (m_TextureList[i] != nullptr)
+		if (m_TextureList[i])
 		{
 			// delete m_TextureList[i];
 			m_TextureList[i] = nullptr;

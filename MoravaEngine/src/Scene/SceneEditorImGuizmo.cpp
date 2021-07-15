@@ -991,7 +991,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
         {
             ImVec2 imageSize(64.0f, 64.0f);
 
-            for (std::map<std::string, Texture*>::iterator it = textures.begin(); it != textures.end(); ++it)
+            for (std::map<std::string, Hazel::Ref<Texture>>::iterator it = textures.begin(); it != textures.end(); ++it)
             {
                 ImGui::Text(it->first.c_str());
                 ImGui::Image((void*)(intptr_t)it->second->GetID(), imageSize);
@@ -2110,7 +2110,7 @@ SceneObjectParticleSystem* SceneEditorImGuizmo::AddNewSceneObjectParticleSystem(
     return particle_system;
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderEditor(MoravaShader* shaderEditor, Texture* texture, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditor(MoravaShader* shaderEditor, Hazel::Ref<Texture> texture, SceneObject* sceneObject)
 {
     shaderEditor->Bind();
 
@@ -2121,8 +2121,10 @@ void SceneEditorImGuizmo::SetUniformsShaderEditor(MoravaShader* shaderEditor, Te
     shaderEditor->SetFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
     shaderEditor->SetFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
 
-    if (texture != nullptr)
+    if (texture)
+    {
         texture->Bind(0);
+    }
 
     shaderEditor->SetInt("albedoMap", 0);
     shaderEditor->SetFloat("tilingFactor", sceneObject->tilingFactor);
@@ -2143,7 +2145,7 @@ void SceneEditorImGuizmo::SetUniformsShaderEditor(MoravaShader* shaderEditor, Te
     shaderEditor->SetInt("shadowMap", 2);
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(MoravaShader* shaderEditorPBR, Texture* texture, Hazel::Ref<Material> material, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(MoravaShader* shaderEditorPBR, Hazel::Ref<Texture> texture, Hazel::Ref<Material> material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
 
@@ -2194,7 +2196,7 @@ void SceneEditorImGuizmo::SetUniformsShaderSkinning(MoravaShader* shaderSkinning
     }
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHybridAnimPBR, Texture* texture, SceneObject* sceneObject, float runningTime)
+void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHybridAnimPBR, Hazel::Ref<Texture> texture, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2603,7 +2605,7 @@ void SceneEditorImGuizmo::Render(Window* mainWindow, glm::mat4 projectionMatrix,
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 
-        Texture* texture = ResourceManager::HotLoadTexture(object->textureName);
+        Hazel::Ref<Texture> texture = ResourceManager::HotLoadTexture(object->textureName);
         Hazel::Ref<Material> material = ResourceManager::HotLoadMaterial(object->materialName);
 
         // Don't render Lights (id = 0 to 8), it's done in RenderLightSources()
