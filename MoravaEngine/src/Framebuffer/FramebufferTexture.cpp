@@ -14,7 +14,7 @@ FramebufferTexture::FramebufferTexture()
 	InitSpecification();
 }
 
-FramebufferTexture::FramebufferTexture(Texture::Specification spec, unsigned int orderID)
+FramebufferTexture::FramebufferTexture(MoravaTexture::Specification spec, unsigned int orderID)
 	: FramebufferTexture()
 {
 	m_Spec.InternalFormat = spec.InternalFormat;

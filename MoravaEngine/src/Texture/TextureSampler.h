@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Texture/Texture.h"
+#include "Platform/OpenGL/OpenGLMoravaTexture.h"
 
 
 /**
  * This type of Texture requires m_Buffer to be available during object lifetime
  * so m_Buffer can be deallocated only in destructor instead immediately in constructor
  */
-class TextureSampler : public Texture
+class TextureSampler : public OpenGLMoravaTexture
 {
 public:
 	TextureSampler();

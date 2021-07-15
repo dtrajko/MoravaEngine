@@ -1,14 +1,14 @@
 #ifndef _TEXTURE_ATLAS_H
 #define _TEXTURE_ATLAS_H
 
-#include "Texture/Texture.h"
+#include "Platform/OpenGL/OpenGLMoravaTexture.h"
 
 #include <GL/glew.h>
 
 #include <string>
 
 
-class TextureAtlas : public Texture
+class TextureAtlas : public OpenGLMoravaTexture
 {
 private:
 	unsigned int m_Rows;

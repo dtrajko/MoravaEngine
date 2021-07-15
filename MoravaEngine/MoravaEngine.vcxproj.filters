@@ -207,9 +207,6 @@
     <ClCompile Include="src\Shader\ShaderPBR.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
-    <ClCompile Include="src\Texture\Texture.cpp">
-      <Filter>Texture</Filter>
-    </ClCompile>
     <ClCompile Include="src\Texture\TextureAtlas.cpp">
       <Filter>Texture</Filter>
     </ClCompile>
@@ -639,9 +636,6 @@
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanSwapchain.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\MoravaVulkanTexture.cpp">
-      <Filter>Platform\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\Physics\SpartanPhysics.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
@@ -897,6 +891,18 @@
     <ClCompile Include="src\Platform\DX11\DX11MoravaFramebuffer.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
+    <ClCompile Include="src\Texture\MoravaTexture.cpp">
+      <Filter>Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaTexture.cpp">
+      <Filter>Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanMoravaTexture.cpp">
+      <Filter>Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11MoravaTexture.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1115,9 +1121,6 @@
     </ClInclude>
     <ClInclude Include="src\Core\CommonValues.h">
       <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Texture\Texture.h">
-      <Filter>Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\TextureAtlas.h">
       <Filter>Texture</Filter>
@@ -1623,9 +1626,6 @@
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanSwapchain.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\MoravaVulkanTexture.h">
-      <Filter>Platform\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\Physics\SpartanPhysics.h">
       <Filter>Physics</Filter>
     </ClInclude>
@@ -1899,6 +1899,18 @@
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11MoravaFramebuffer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture\MoravaTexture.h">
+      <Filter>Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaTexture.h">
+      <Filter>Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanMoravaTexture.h">
+      <Filter>Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11MoravaTexture.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
   </ItemGroup>

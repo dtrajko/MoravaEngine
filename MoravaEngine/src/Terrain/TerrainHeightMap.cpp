@@ -73,7 +73,7 @@ void TerrainHeightMap::Generate(glm::vec3 scale)
 			m_Vertices[vertexPointer + 2] = (float)z;
 
 			// texture coords
-			if (m_TxColorMap != nullptr)
+			if (m_TxColorMap)
 			{
 				// use texture coords for color map
 				m_Vertices[vertexPointer + 3] = 1.0f - GetMaxY(x, z) * (1.0f / (float)m_TxColorMap->GetHeight());
@@ -175,13 +175,16 @@ float TerrainHeightMap::GetMaxY(int x, int z)
 
 	float height = ((float)red + (float)green + (float)blue) / 3;
 	if (m_InvertHeight)
+	{
 		height = m_MaxPixelColor - height;
+	}
 	height *= heightRatio;
+
 	return height;
 }
 
 TerrainHeightMap::~TerrainHeightMap()
 {
-	delete m_TxHeightMap;
-	delete m_TxColorMap;
+	// delete m_TxHeightMap;
+	// delete m_TxColorMap;
 }

@@ -2,7 +2,7 @@
 
 #include "Mesh/Mesh.h"
 #include "Terrain/TerrainVoxel.h"
-#include "Texture/Texture.h"
+#include "Texture/MoravaTexture.h"
 
 #include <map>
 #include <vector>
@@ -13,7 +13,7 @@ class RenderInstanced
 
 public:
 	RenderInstanced();
-	RenderInstanced(TerrainBase* terrain, Hazel::Ref<Texture> texture, Mesh* mesh);
+	RenderInstanced(TerrainBase* terrain, Hazel::Ref<MoravaTexture> texture, Mesh* mesh);
 	void CreateVertexData();
 	void Update();
 	void Release();
@@ -29,7 +29,7 @@ private:
 
 public:
 	TerrainVoxel* m_Terrain;
-	Hazel::Ref<Texture> m_Texture;
+	Hazel::Ref<MoravaTexture> m_Texture;
 	Mesh* m_Mesh;
 	unsigned int m_InstanceCount;
 

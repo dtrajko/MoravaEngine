@@ -9,7 +9,7 @@ RenderInstanced::RenderInstanced()
 	m_InstanceCount = -1;
 }
 
-RenderInstanced::RenderInstanced(TerrainBase* terrain, Hazel::Ref<Texture> texture, Mesh* mesh)
+RenderInstanced::RenderInstanced(TerrainBase* terrain, Hazel::Ref<MoravaTexture> texture, Mesh* mesh)
 {
 	m_Terrain = (TerrainVoxel*)terrain;
 	m_Texture = texture;

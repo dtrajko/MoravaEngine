@@ -5,7 +5,7 @@
 #include "Hazel/Renderer/HazelShader.h"
 
 #include "Shader/MoravaShader.h"
-#include "Texture/Texture.h"
+#include "Texture/MoravaTexture.h"
 
 #include <glm/glm.hpp>
 
@@ -102,12 +102,12 @@ public:
 	// PBR/IBL Material Workflow
 	Material(TextureInfo textureInfoGold, float specularIntensity, float shininess);
 	void BindTextures(unsigned int slot);
-	inline Hazel::Ref<Texture> GetTextureAlbedo()    const { return m_TextureAlbedo;    };
-	inline Hazel::Ref<Texture> GetTextureNormal()    const { return m_TextureNormal;    };
-	inline Hazel::Ref<Texture> GetTextureMetallic()  const { return m_TextureMetallic;  };
-	inline Hazel::Ref<Texture> GetTextureRoughness() const { return m_TextureRoughness; };
-	inline Hazel::Ref<Texture> GetTextureEmissive()  const { return m_TextureEmissive;  };
-	inline Hazel::Ref<Texture> GetTextureAO()        const { return m_TextureAO;        };
+	inline Hazel::Ref<MoravaTexture> GetTextureAlbedo()    const { return m_TextureAlbedo;    };
+	inline Hazel::Ref<MoravaTexture> GetTextureNormal()    const { return m_TextureNormal;    };
+	inline Hazel::Ref<MoravaTexture> GetTextureMetallic()  const { return m_TextureMetallic;  };
+	inline Hazel::Ref<MoravaTexture> GetTextureRoughness() const { return m_TextureRoughness; };
+	inline Hazel::Ref<MoravaTexture> GetTextureEmissive()  const { return m_TextureEmissive;  };
+	inline Hazel::Ref<MoravaTexture> GetTextureAO()        const { return m_TextureAO;        };
 
 	// From Hazel/Renderer/Material
 	bool GetFlag(MaterialFlag flag) const { return (uint32_t)flag & m_MaterialFlags; }
@@ -120,14 +120,14 @@ public:
 	float m_Shininess;
 
 private:
-	Hazel::Ref<Texture> m_TextureAlbedo;
-	Hazel::Ref<Texture> m_TextureNormal;
-	Hazel::Ref<Texture> m_TextureMetallic;
-	Hazel::Ref<Texture> m_TextureRoughness;
-	Hazel::Ref<Texture> m_TextureEmissive;
-	Hazel::Ref<Texture> m_TextureAO;
+	Hazel::Ref<MoravaTexture> m_TextureAlbedo;
+	Hazel::Ref<MoravaTexture> m_TextureNormal;
+	Hazel::Ref<MoravaTexture> m_TextureMetallic;
+	Hazel::Ref<MoravaTexture> m_TextureRoughness;
+	Hazel::Ref<MoravaTexture> m_TextureEmissive;
+	Hazel::Ref<MoravaTexture> m_TextureAO;
 
-	Hazel::Ref<Texture> m_TexturePlaceholder;
+	Hazel::Ref<MoravaTexture> m_TexturePlaceholder;
 
 	std::map<int, MapType> m_Maps;
 

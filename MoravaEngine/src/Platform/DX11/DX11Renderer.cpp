@@ -726,6 +726,11 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 	}
 	// END render meshes with materials
 
+	// Rendering ECS entities (meshes)
+	auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponent>();
+
+	// Log::GetLogger()->debug("DX11Renderer::DrawToFramebuffer meshEntities.size: {0}", meshEntities.size());
+
 	RenderImGui();
 }
 

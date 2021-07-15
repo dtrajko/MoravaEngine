@@ -13,7 +13,7 @@
 #include "Material/Material.h"
 #include "Mesh/Mesh.h"
 #include "Shader/MoravaShader.h"
-#include "Texture/Texture.h"
+#include "Texture/MoravaTexture.h"
 
 #include <glm/glm.hpp>
 

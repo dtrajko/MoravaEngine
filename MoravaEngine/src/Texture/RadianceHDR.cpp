@@ -4,7 +4,7 @@
 
 
 RadianceHDR::RadianceHDR()
-	: Texture()
+	: OpenGLMoravaTexture()
 {
 	m_Spec.Texture_Wrap_S = GL_CLAMP_TO_EDGE;
 	m_Spec.Texture_Wrap_T = GL_CLAMP_TO_EDGE;
@@ -50,5 +50,5 @@ bool RadianceHDR::Load()
 
 RadianceHDR::~RadianceHDR()
 {
-	Texture::Clear();
+	OpenGLMoravaTexture::Clear();
 }

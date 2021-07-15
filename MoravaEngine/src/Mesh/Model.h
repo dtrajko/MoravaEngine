@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Mesh/Mesh.h"
-#include "Texture/Texture.h"
+#include "Texture/MoravaTexture.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -34,8 +34,8 @@ private:
 
 private:
 	std::vector<Mesh*> m_MeshList;
-	std::vector<Hazel::Ref<Texture>> m_TextureList;
-	std::vector<Hazel::Ref<Texture>> m_NormalMapList;
+	std::vector<Hazel::Ref<MoravaTexture>> m_TextureList;
+	std::vector<Hazel::Ref<MoravaTexture>> m_NormalMapList;
 	std::vector<unsigned int> m_MeshToTexture;
 
 	std::string m_TexturesPath;

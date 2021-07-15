@@ -341,6 +341,7 @@
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Mesh.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11MoravaFramebuffer.cpp" />
+    <ClCompile Include="src\Platform\DX11\DX11MoravaTexture.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Pipeline.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -408,6 +409,7 @@
     <ClCompile Include="src\Platform\DX11\DX11VertexShader.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaFramebuffer.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaShader.cpp" />
+    <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaTexture.cpp" />
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererBasic.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandPool.cpp" />
@@ -417,9 +419,9 @@
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanPipeline.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanRenderPass.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanSwapchain.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\MoravaVulkanTexture.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanMoravaFramebuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanMoravaShader.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanMoravaTexture.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererBasic.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanUniformBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.cpp" />
@@ -485,7 +487,7 @@
     <ClCompile Include="src\Terrain\TerrainVoxel.cpp" />
     <ClCompile Include="src\Texture\RadianceHDR.cpp" />
     <ClCompile Include="src\Texture\SubTexture2D.cpp" />
-    <ClCompile Include="src\Texture\Texture.cpp" />
+    <ClCompile Include="src\Texture\MoravaTexture.cpp" />
     <ClCompile Include="src\Texture\TextureAtlas.cpp" />
     <ClCompile Include="src\Texture\TextureCubemap.cpp" />
     <ClCompile Include="src\Texture\TextureCubemapFaces.cpp" />
@@ -771,6 +773,7 @@
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Mesh.h" />
     <ClInclude Include="src\Platform\DX11\DX11MoravaFramebuffer.h" />
+    <ClInclude Include="src\Platform\DX11\DX11MoravaTexture.h" />
     <ClInclude Include="src\Platform\DX11\DX11Pipeline.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </ExcludedFromBuild>
@@ -839,6 +842,7 @@
     <ClInclude Include="src\Platform\DX11\DX11VertexShader.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaFramebuffer.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaShader.h" />
+    <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaTexture.h" />
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererBasic.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandPool.h" />
@@ -848,9 +852,9 @@
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanPipeline.h" />
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanRenderPass.h" />
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanSwapchain.h" />
-    <ClInclude Include="src\Platform\Vulkan\MoravaVulkanTexture.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanMoravaFramebuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanMoravaShader.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanMoravaTexture.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanRendererBasic.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanUniformBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.h" />
@@ -915,7 +919,7 @@
     <ClInclude Include="src\Terrain\TerrainVoxel.h" />
     <ClInclude Include="src\Texture\RadianceHDR.h" />
     <ClInclude Include="src\Texture\SubTexture2D.h" />
-    <ClInclude Include="src\Texture\Texture.h" />
+    <ClInclude Include="src\Texture\MoravaTexture.h" />
     <ClInclude Include="src\Texture\TextureAtlas.h" />
     <ClInclude Include="src\Texture\TextureCubemap.h" />
     <ClInclude Include="src\Texture\TextureCubemapFaces.h" />

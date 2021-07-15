@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Texture/MoravaTexture.h"
+
 #include "Core/CommonValues.h"
 
 #include "Hazel/Renderer/HazelTexture.h"
@@ -7,42 +9,17 @@
 #include <string>
 
 
-class Texture : public Hazel::HazelTexture2D
+class DX11MoravaTexture : public MoravaTexture
 {
 public:
-	struct Specification
-	{
-		int InternalFormat;
-		uint32_t Width;
-		uint32_t Height;
-		int Border;
-		uint32_t Format;
-		uint32_t Type;
-		int Texture_Wrap_S;
-		int Texture_Wrap_T;
-		int Texture_Wrap_R;
-		int Texture_Min_Filter;
-		int Texture_Mag_Filter;
-		int MipLevel;
-		bool FlipVertically;
-		int BitDepth;
-		bool IsSampler; // m_Buffer is required during object lifetime, so it must be deallocated in destructor
-		uint32_t Samples;
-		bool IsMultisample;
-		bool IsSRGB;
-	} m_Spec;
-
-public:
-	Texture();
-	Texture(const char* fileLoc, bool flipVert = false);
-	Texture(const char* fileLoc, bool flipVert, bool isSampler);
-	Texture(const char* fileLoc, bool flipVert, bool isSampler, int filter);
-	Texture(const char* fileLoc, uint32_t width, uint32_t height, bool isSampler, int filter);
-	Texture(const char* fileLoc, Specification spec); // constructor for fully customizable texture
-	virtual ~Texture();
+	DX11MoravaTexture();
+	DX11MoravaTexture(const char* fileLoc, bool flipVert = false, bool isSampler = false, int filter = 0);
+	DX11MoravaTexture(const char* fileLoc, uint32_t width, uint32_t height, bool isSampler = false, int filter = 0);
+	DX11MoravaTexture(const char* fileLoc, Specification spec); // constructor for fully customizable texture
+	virtual ~DX11MoravaTexture();
 
 	virtual bool Load(bool flipVert = false);
-	virtual void OpenGLCreate();
+	virtual void CreateAPISpecific();
 	virtual void Save();
 	virtual Hazel::TextureFormat GetFormat() { return m_Format; };
 
@@ -62,6 +39,8 @@ public:
 	virtual Hazel::RendererID GetRendererID() const override { return m_ID; }
 	// END pure virtual methods inherited from HazelTexture/HazelTexture2D
 
+	virtual bool IsLoaded() const override { return m_Buffer ? true : false; }; // used in Hazel::Mesh
+
 	void Unbind();
 	void Clear();
 	uint32_t CalculateMipMapCount(uint32_t width, uint32_t height); // used in Hazel::SceneRenderer
@@ -70,7 +49,6 @@ public:
 	inline uint32_t GetID() const { return m_ID; };
 	inline uint32_t GetWidth() const { return m_Spec.Width; };
 	inline uint32_t GetHeight() const { return m_Spec.Height; };
-	inline bool IsLoaded() const { return m_Buffer ? true : false; }; // used in Hazel::Mesh
 
 	// Getters
 	int GetRed(int x, int z);
@@ -87,7 +65,6 @@ public:
 	void SetAlpha(int x, int z, int value);
 
 protected:
-	uint32_t m_ID;
 	const char* m_FileLocation;
 	unsigned char* m_Buffer;
 	int m_Level;

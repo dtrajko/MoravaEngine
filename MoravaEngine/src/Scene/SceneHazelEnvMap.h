@@ -7,7 +7,7 @@
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Mesh/Grid.h"
 #include "Scene/Scene.h"
-#include "Texture/Texture.h"
+#include "Texture/MoravaTexture.h"
 
 #include <map>
 #include <string>

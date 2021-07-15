@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Framebuffer/FramebufferTexture.h"
-#include "Texture/Texture.h"
+#include "Texture/MoravaTexture.h"
 
 #include <string>
 
@@ -13,7 +13,7 @@ public:
 	FramebufferTextureCubemap();
 	FramebufferTextureCubemap(unsigned int width, unsigned int height, bool isMultisample,
 		AttachmentFormat attachmentFormat, unsigned int orderID);
-	FramebufferTextureCubemap(Texture::Specification spec, unsigned int orderID);
+	FramebufferTextureCubemap(MoravaTexture::Specification spec, unsigned int orderID);
 	virtual ~FramebufferTextureCubemap() override;
 
 	virtual void InitSpecification() override;

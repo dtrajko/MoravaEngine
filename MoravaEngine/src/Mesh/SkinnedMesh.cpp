@@ -367,11 +367,11 @@ bool SkinnedMesh::InitMaterials(const aiScene* pScene, const std::string& Filena
 
                 Log::GetLogger()->info("SkinnedMesh::InitMaterials FullPath = '{0}'", FullPath);
 
-                m_Textures[i] = new Texture(FullPath.c_str());
+                m_Textures[i] = MoravaTexture::Create(FullPath.c_str());
 
                 if (!m_Textures[i]->Load()) {
                     Log::GetLogger()->error("Error loading texture '{0}'", FullPath);
-                    delete m_Textures[i];
+                    // delete m_Textures[i];
                     m_Textures[i] = NULL;
                     Ret = false;
                 }
@@ -472,7 +472,7 @@ void SkinnedMesh::BindTextures()
 void SkinnedMesh::Clear()
 {
     for (unsigned int i = 0; i < m_Textures.size(); i++) {
-        SAFE_DELETE(m_Textures[i]);
+        // SAFE_DELETE(m_Textures[i]);
     }
 
     if (m_Buffers[0] != 0) {

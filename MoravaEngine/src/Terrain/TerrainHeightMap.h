@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Terrain/TerrainBase.h"
-#include "Texture/Texture.h"
+#include "Texture/MoravaTexture.h"
 
 #include <string>
 
@@ -15,16 +15,16 @@ public:
 
 	virtual void Generate(glm::vec3 scale) override;
 
-	inline Texture* GetHeightMap() const { return m_TxHeightMap; };
-	inline Texture* GetColorMap() const { return m_TxColorMap; };
+	inline Hazel::Ref<MoravaTexture> GetHeightMap() const { return m_TxHeightMap; };
+	inline Hazel::Ref<MoravaTexture> GetColorMap() const { return m_TxColorMap; };
 	virtual float GetMaxY(int x, int z) override;
 
 private:
 	glm::vec3 m_ScalePrev;
 
 	const char* m_HeightMapPath;
-	Texture* m_TxHeightMap = nullptr;
-	Texture* m_TxColorMap = nullptr;
+	Hazel::Ref<MoravaTexture> m_TxHeightMap;
+	Hazel::Ref<MoravaTexture> m_TxColorMap;
 
 	int m_MaxHeight = 30;
 	int m_MaxPixelColor = 256;

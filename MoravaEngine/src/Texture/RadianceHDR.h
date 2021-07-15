@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Texture/Texture.h"
+#include "Platform/OpenGL/OpenGLMoravaTexture.h"
 
 #include <GL/glew.h>
 
 
-class RadianceHDR : public Texture
+class RadianceHDR : public OpenGLMoravaTexture
 {
 public:
 	RadianceHDR();

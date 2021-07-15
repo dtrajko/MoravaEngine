@@ -247,7 +247,7 @@ namespace Hazel
 			m_DirectoryEntriesCached.push_back(directoryEntry);
 		}
 
-		Log::GetLogger()->debug("DIRECTORY ENTRIES - UPDATING THE CACHE! Timestamp: '{0}'", currentTimestamp);
+		Log::GetLogger()->debug("DIRECTORY ENTRIES - UPDATING THE CACHE! Timestamp: {0}", currentTimestamp);
 
 		return m_DirectoryEntriesCached;
 	}

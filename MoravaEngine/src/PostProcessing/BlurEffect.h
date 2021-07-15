@@ -2,7 +2,7 @@
 
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Shader/MoravaShader.h"
-#include "Texture/Texture.h"
+#include "Texture/MoravaTexture.h"
 
 
 class BlurEffect

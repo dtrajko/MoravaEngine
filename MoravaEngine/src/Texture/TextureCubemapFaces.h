@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Texture/Texture.h"
+#include "Platform/OpenGL/OpenGLMoravaTexture.h"
 
 #include <string>
 #include <vector>
 
 
-class TextureCubemapFaces : public Texture
+class TextureCubemapFaces : public OpenGLMoravaTexture
 {
 public:
 	TextureCubemapFaces();

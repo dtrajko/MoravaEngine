@@ -2,7 +2,7 @@
 
 #include "Mesh/MeshUnity.h"
 #include "Terrain/MeshGenerator.h"
-#include "Texture/Texture.h"
+#include "Texture/MoravaTexture.h"
 
 #include <vector>
 
@@ -84,8 +84,8 @@ public:
 private:
 	MapGenConf m_MapGenConfPrev;
 
-	Texture* m_TextureColorMap;
-	Texture* m_TextureHeightMap;
+	Hazel::Ref<MoravaTexture> m_TextureColorMap;
+	Hazel::Ref<MoravaTexture> m_TextureHeightMap;
 	MeshUnity* m_Mesh;
 
 	float m_HeightMapMultiplier;

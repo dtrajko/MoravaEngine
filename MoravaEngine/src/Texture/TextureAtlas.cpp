@@ -1,7 +1,7 @@
 #include "TextureAtlas.h"
 
 
-TextureAtlas::TextureAtlas(std::string fileName) : Texture(fileName.c_str(), false)
+TextureAtlas::TextureAtlas(std::string fileName) : OpenGLMoravaTexture(fileName.c_str(), false)
 {
 	m_Rows = 1;
 	m_Columns = 1;
@@ -58,5 +58,4 @@ unsigned int TextureAtlas::loadTexture(std::string fileName)
 
 TextureAtlas::~TextureAtlas()
 {
-
 }

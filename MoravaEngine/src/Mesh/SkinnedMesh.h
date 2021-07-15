@@ -2,7 +2,7 @@
 
 #include "Mesh/Mesh.h"
 #include "Shader/MoravaShader.h"
-#include "Texture/Texture.h"
+#include "Texture/MoravaTexture.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -116,7 +116,7 @@ private:
     };
 
     std::vector<MeshEntry> m_Entries;
-    std::vector<Texture*> m_Textures;
+    std::vector<Hazel::Ref<MoravaTexture>> m_Textures;
 
     std::map<std::string, unsigned int> m_BoneMapping; // maps a bone name to its index
     unsigned int m_NumBones;

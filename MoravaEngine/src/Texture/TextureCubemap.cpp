@@ -6,7 +6,7 @@
 
 
 TextureCubemap::TextureCubemap()
-	: Texture()
+	: OpenGLMoravaTexture()
 {
 	m_Spec.InternalFormat = GL_RGB16F;
 	m_Spec.Border = 0;
@@ -27,10 +27,10 @@ TextureCubemap::TextureCubemap(unsigned int width, unsigned int height)
 	m_Spec.Width = width;
 	m_Spec.Height = height;
 
-	OpenGLCreate();
+	CreateAPISpecific();
 }
 
-TextureCubemap::TextureCubemap(Texture::Specification spec)
+TextureCubemap::TextureCubemap(MoravaTexture::Specification spec)
 {
 	m_Spec.InternalFormat     = spec.InternalFormat;
 	m_Spec.Width              = spec.Width;
@@ -51,10 +51,10 @@ TextureCubemap::TextureCubemap(Texture::Specification spec)
 	m_Spec.IsMultisample      = spec.IsMultisample;
 	m_Spec.IsSRGB             = spec.IsSRGB;
 
-	OpenGLCreate();
+	CreateAPISpecific();
 }
 
-void TextureCubemap::OpenGLCreate()
+void TextureCubemap::CreateAPISpecific()
 {
 	glGenTextures(1, &m_ID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_ID);

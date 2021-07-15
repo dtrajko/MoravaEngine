@@ -69,7 +69,7 @@ FramebufferTextureCubemap::FramebufferTextureCubemap(unsigned int width, unsigne
 	OpenGLCreate();
 }
 
-FramebufferTextureCubemap::FramebufferTextureCubemap(Texture::Specification spec, unsigned int orderID)
+FramebufferTextureCubemap::FramebufferTextureCubemap(MoravaTexture::Specification spec, unsigned int orderID)
 	: FramebufferTextureCubemap()
 {
 	m_Attachment = GL_COLOR_ATTACHMENT0 + orderID;
