@@ -758,33 +758,12 @@ void DX11Renderer::RenderMeshesECS()
 					entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
 				}
 
-				Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
-				std::string materialUUID;
-
-				for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
-				{
-					materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
-
-					// Render Submesh
-					// load submesh materials for each specific submesh from the s_EnvMapMaterials list
-					if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end()) {
-						envMapMaterial = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
-					}
-
-					RenderObject renderObject = {};
-					renderObject.Mesh = meshComponent.Mesh;
-					renderObject.PipelineType = RenderObject::PipelineType::Light;
-					renderObject.Transform = entityTransform;
-					// renderObject.Textures.push_back(envMapMaterial->GetAlbedoInput().TextureMap);
-					// renderObject.Textures.push_back(envMapMaterial->GetNormalInput().TextureMap);
-					for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())
-					{
-						renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/default_material_albedo.png"));
-						renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/normal_map_default.png"));
-					}
-
-					RenderMesh(renderObject);
-				}
+				RenderObject renderObject = {};
+				renderObject.Mesh = meshComponent.Mesh;
+				renderObject.PipelineType = RenderObject::PipelineType::Light;
+				renderObject.Transform = entityTransform;
+				renderObject.Entity = entity;
+				RenderMesh(renderObject);
 			}
 		}
 	}
@@ -1073,7 +1052,6 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 	// Hazel::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
 	pipeline->Bind();
 
-	uint32_t textureIndex = 0;
 	for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())
 	{
 		// World/Model/Transform matrix
@@ -1083,9 +1061,39 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
+		// Render Submesh
+		// load submesh materials for each specific submesh from the s_EnvMapMaterials list
+		Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
+		std::string materialUUID;
+
+		if (renderObject.Entity)
+		{
+			materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(renderObject.Mesh, submesh, &renderObject.Entity);
+			if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end())
+			{
+				envMapMaterial = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
+
+				renderObject.Textures.clear();
+				if (envMapMaterial->GetAlbedoInput().TextureMap) {
+					renderObject.Textures.push_back(envMapMaterial->GetAlbedoInput().TextureMap);
+				}
+				else {
+					renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/default_material_albedo.png"));
+				}
+
+				if (envMapMaterial->GetNormalInput().TextureMap) {
+					renderObject.Textures.push_back(envMapMaterial->GetNormalInput().TextureMap);
+				}
+				else {
+					renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/normal_map_default.png"));
+				}
+			}
+		}
+
+		// Load textures for submesh material
 		std::vector<Hazel::Ref<DX11Texture2D>> textures;
-		textures.push_back(renderObject.Textures.at(textureIndex++).As<DX11Texture2D>()); // Albedo Map
-		textures.push_back(renderObject.Textures.at(textureIndex++).As<DX11Texture2D>()); // Normal Map
+		textures.push_back(renderObject.Textures.at(0).As<DX11Texture2D>()); // Albedo Map
+		textures.push_back(renderObject.Textures.at(1).As<DX11Texture2D>()); // Normal Map
 
 		dx11Shader->GetVertexShader()->SetTextures(textures);
 		dx11Shader->GetPixelShader()->SetTextures(textures);

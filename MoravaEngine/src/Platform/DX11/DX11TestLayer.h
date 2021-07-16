@@ -5,6 +5,7 @@
 #include "Hazel/Core/Layer.h"
 #include "Hazel/Core/Timestep.h"
 #include "Hazel/Events/Event.h"
+#include "Hazel/Scene/Entity.h"
 
 #include "DX11Pipeline.h"
 #include "DX11Shader.h"
@@ -31,6 +32,7 @@ struct RenderObject
 	std::vector<Hazel::Ref<Hazel::HazelTexture2D>> Textures;
 	glm::mat4 Transform;
 	PipelineType PipelineType;
+	Hazel::Entity Entity;
 	// std::vector<Hazel::Ref<DX11Material>> Materials; // we probably need some kind of <Submesh, Material> map here
 };
 

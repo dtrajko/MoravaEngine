@@ -119,6 +119,8 @@ void DX11ImGuiLayer::Begin()
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+
+	ImGuizmo::BeginFrame();
 }
 
 void DX11ImGuiLayer::End()
@@ -142,8 +144,8 @@ void DX11ImGuiLayer::End()
 		if (app->GetWindow()->GetHWND())
 		{
 			ImGui::UpdatePlatformWindows();
+			ImGui::RenderPlatformWindowsDefault();
 		}
-		ImGui::RenderPlatformWindowsDefault();
 	}
 }
 
