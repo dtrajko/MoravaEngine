@@ -54,7 +54,8 @@ DX11Texture2D::DX11Texture2D(const wchar_t* fullPath)
 	else
 	{
 		std::string message = "DX11Texture2D '" + Util::to_str(fullPath) + "' not created successfully.";
-		throw std::exception(message.c_str());
+		Log::GetLogger()->warn(message);
+		// throw std::exception(message.c_str());
 	}
 
 	Log::GetLogger()->info("DX11Texture2D '{0}' successfully loaded!", Util::to_str(fullPath));

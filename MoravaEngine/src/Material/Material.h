@@ -51,6 +51,7 @@ public:
 	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess); // based on LearnOpenGL material classint
 	Material(int albedo, int specular, int normal, float shininess); // used in SceneNanosuit
 	Material(Hazel::Ref<Hazel::HazelShader> shader); // based on Hazel::Material contructor
+	Material(TextureInfo textureInfoGold, float specularIntensity, float shininess); // PBR/IBL Material Workflow
 	virtual ~Material() override;
 
 	/**** BEGIN virtual methods defined in HazelMaterial ****/
@@ -100,7 +101,6 @@ public:
 	void AddMap(MapType mapType, int textureSlot);
 
 	// PBR/IBL Material Workflow
-	Material(TextureInfo textureInfoGold, float specularIntensity, float shininess);
 	void BindTextures(unsigned int slot);
 	inline Hazel::Ref<MoravaTexture> GetTextureAlbedo()    const { return m_TextureAlbedo;    };
 	inline Hazel::Ref<MoravaTexture> GetTextureNormal()    const { return m_TextureNormal;    };

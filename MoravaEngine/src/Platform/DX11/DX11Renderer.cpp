@@ -223,6 +223,8 @@ void DX11Renderer::Init()
 	s_DefaultMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_DEF");
 	MaterialLibrary::AddEnvMapMaterial(s_DefaultMaterial->GetUUID(), s_DefaultMaterial);
 
+	EnvMapEditorLayer::s_DefaultMaterial = s_DefaultMaterial; // try to remove this dependency in SceneHierarchyPanel::DrawComponents
+
 	// Create the light material
 	s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
 	// Load Hazel/Renderer/HazelTexture
@@ -566,7 +568,7 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 	}
 	// END render Mesh Light Source
 
-	// BEGIN render mesh #1
+	/**** BEGIN render mesh #1 ****
 	{
 		s_VertexBufferCube->Bind();
 		s_IndexBufferCube->Bind();
@@ -601,9 +603,9 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
 		DX11Renderer::DrawIndexedTriangleList(s_IndexBufferCube->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
-	// END render mesh #1
+	**** END render mesh #1 ****/
 
-	// BEGIN render mesh #2
+	/**** BEGIN render mesh #2 ****
 	{
 		s_VertexBufferCube->Bind();
 		s_IndexBufferCube->Bind();
@@ -637,9 +639,9 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
 		DX11Renderer::DrawIndexedTriangleList(s_IndexBufferCube->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
-	// END render mesh #2
+	/**** END render mesh #2 ****/
 
-	// BEGIN render mesh #3
+	/**** BEGIN render mesh #3 ****
 	{
 		s_VertexBufferCube->Bind();
 		s_IndexBufferCube->Bind();
@@ -673,9 +675,9 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
 		DX11Renderer::DrawIndexedTriangleList(s_IndexBufferCube->GetIndexCount(), startVertexIndex, startIndexLocation);
 	}
-	// END render mesh #3
+	/**** END render mesh #3 ****/
 
-	// BEGIN render DX11Mesh
+	/**** BEGIN render DX11Mesh ****
 	{
 		Hazel::Ref<DX11VertexBuffer> dx11VertexBuffer = DX11TestLayer::s_Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
 		Hazel::Ref<DX11IndexBuffer> dx11IndexBuffer = DX11TestLayer::s_Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
@@ -708,7 +710,7 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		uint32_t startIndexLocation = 0;
 		DX11Renderer::DrawIndexedTriangleList(indexCount, startVertexIndex, startIndexLocation);
 	}
-	// END render DX11Mesh
+	/**** END render DX11Mesh ****/
 
 	// BEGIN render meshes without materials
 	for (auto& renderObject : s_RenderObjects)
@@ -727,11 +729,65 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 	// END render meshes with materials
 
 	// Rendering ECS entities (meshes)
-	auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponent>();
-
-	// Log::GetLogger()->debug("DX11Renderer::DrawToFramebuffer meshEntities.size: {0}", meshEntities.size());
+	RenderMeshesECS();
 
 	RenderImGui();
+}
+
+// the code is taken from EnvMapSceneRenderer::GeometryPass()
+void DX11Renderer::RenderMeshesECS()
+{
+	// s_PipelineIlluminated->Bind();
+
+	Hazel::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
+
+	auto meshEntities = s_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponent>();
+
+	// Render all entities with mesh component
+	if (meshEntities.size())
+	{
+		for (auto entt : meshEntities)
+		{
+			Hazel::Entity entity = { entt, s_Scene.Raw() };
+			auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+
+			if (meshComponent.Mesh)
+			{
+				glm::mat4 entityTransform = glm::mat4(1.0f);
+				if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
+					entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+				}
+
+				Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
+				std::string materialUUID;
+
+				for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
+				{
+					materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
+
+					// Render Submesh
+					// load submesh materials for each specific submesh from the s_EnvMapMaterials list
+					if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end()) {
+						envMapMaterial = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
+					}
+
+					RenderObject renderObject = {};
+					renderObject.Mesh = meshComponent.Mesh;
+					renderObject.PipelineType = RenderObject::PipelineType::Light;
+					renderObject.Transform = entityTransform;
+					// renderObject.Textures.push_back(envMapMaterial->GetAlbedoInput().TextureMap);
+					// renderObject.Textures.push_back(envMapMaterial->GetNormalInput().TextureMap);
+					for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())
+					{
+						renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/default_material_albedo.png"));
+						renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/normal_map_default.png"));
+					}
+
+					RenderMesh(renderObject);
+				}
+			}
+		}
+	}
 }
 
 void DX11Renderer::RenderImGui()

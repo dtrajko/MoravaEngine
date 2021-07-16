@@ -41,6 +41,7 @@ public:
 	static void SubmitMesh(RenderObject renderObject);
 	static void RenderMesh(RenderObject renderObject);
 	static void RenderMeshDX11(RenderObject renderObject, const std::vector<Hazel::Ref<DX11Material>>& listMaterials);
+	static void RenderMeshesECS(); // the code is taken from EnvMapSceneRenderer::GeometryPass()
 
 	static void BeginFrame();
 	static void EndFrame();

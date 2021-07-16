@@ -799,11 +799,8 @@ namespace Hazel {
 			// In Vulkan, the Pipeline is created in VulkanRenderer
 			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
 
-			if (RendererAPI::Current() == RendererAPIType::OpenGL)
-			{
-				pipelineSpecification.Layout = m_VertexBufferLayout;
-				m_Pipeline = Pipeline::Create(pipelineSpecification);
-			}
+			pipelineSpecification.Layout = m_VertexBufferLayout;
+			m_Pipeline = Pipeline::Create(pipelineSpecification);
 		}
 		/**** END Create pipeline ****/
 

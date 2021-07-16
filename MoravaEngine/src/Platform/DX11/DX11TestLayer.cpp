@@ -45,6 +45,9 @@ void DX11TestLayer::OnAttach()
 
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 
+	Hazel::Ref<Hazel::HazelMesh> meshSphere = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
+
+	/*
 	RenderObject renderObjectGladiator;
 	renderObjectGladiator.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Gladiator/Gladiator.fbx");
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
@@ -69,8 +72,6 @@ void DX11TestLayer::OnAttach()
 	renderObjectCerberus.PipelineType = RenderObject::PipelineType::Light;
 	m_RenderObjects.push_back(renderObjectCerberus);
 
-	Hazel::Ref<Hazel::HazelMesh> meshSphere = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
-
 	RenderObject renderObjectSphereLeft;
 	renderObjectSphereLeft.Mesh = meshSphere;
 	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg"));
@@ -88,6 +89,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectSphereRight.Transform = glm::translate(renderObjectSphereRight.Transform, glm::vec3(4.0f, 2.0f, 0.0f));
 	renderObjectSphereRight.PipelineType = RenderObject::PipelineType::Light;
 	m_RenderObjects.push_back(renderObjectSphereRight);
+	*/
 
 	RenderObject renderObjectTerrain;
 	renderObjectTerrain.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/terrain.obj");
@@ -99,18 +101,19 @@ void DX11TestLayer::OnAttach()
 	m_RenderObjects.push_back(renderObjectTerrain);
 
 	// ---- other assets ----
-	ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
-	ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
-	ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick.png");
-	ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg");
-	ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg");
-	ResourceManager::LoadHazelTexture2D("Textures/default_material_albedo.png");
-	ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
 	ResourceManager::LoadHazelTexture2D("Textures/PardCode/sky.jpg");
-	ResourceManager::LoadHazelTexture2D("Textures/PardCode/umhlanga_sunrise_4k.jpg");
-	ResourceManager::LoadHazelTexture2D("Textures/PardCode/gold.png");
-	ResourceManager::LoadHazelTexture2D("Textures/container/container2.png");
-	ResourceManager::LoadHazelTexture2D("Textures/container/container2_normal.png");
+
+	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
+	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick.png");
+	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg");
+	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg");
+	// ResourceManager::LoadHazelTexture2D("Textures/default_material_albedo.png");
+	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/umhlanga_sunrise_4k.jpg");
+	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/gold.png");
+	// ResourceManager::LoadHazelTexture2D("Textures/container/container2.png");
+	// ResourceManager::LoadHazelTexture2D("Textures/container/container2_normal.png");
 
 	s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
 	// s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/spaceship.obj");
@@ -153,6 +156,8 @@ void DX11TestLayer::OnAttach()
 
 	/**** END Pipeline Illuminated ****/
 
+	/**** BEGIN Create meshes with materials ****
+
 	Hazel::Ref<DX11Material> materialIlluminated = Hazel::Ref<DX11Material>::Create(pipelineIlluminated, "Material Illuminated");
 	Hazel::Ref<DX11Material> materialUnlit = Hazel::Ref<DX11Material>::Create(pipelineIlluminated, "Material Unlit");
 
@@ -192,6 +197,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectHouse.Transform = glm::scale(renderObjectHouse.Transform, glm::vec3(6.0f));
 	renderObjectHouse.PipelineType = RenderObject::PipelineType::Light;
 	s_RenderObjectsWithMaterials.push_back(renderObjectHouse);
+	/**** END Create meshes with materials ****/
 
 	// END prepare data for rendering meshes with materials (render objects and the list of materials)
 }
