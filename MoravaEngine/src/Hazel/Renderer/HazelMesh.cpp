@@ -2,7 +2,7 @@
 
 #include "HazelMesh.h"
 
-#include <GL/glew.h>
+// #include <GL/glew.h>
 
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -800,6 +800,10 @@ namespace Hazel {
 			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
 
 			pipelineSpecification.Layout = m_VertexBufferLayout;
+			HazelFramebufferSpecification framebufferSpec = {};
+			RenderPassSpecification renderPassSpecification = {};
+			renderPassSpecification.TargetFramebuffer = Hazel::HazelFramebuffer::Create(framebufferSpec);
+			pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpecification);
 			m_Pipeline = Pipeline::Create(pipelineSpecification);
 		}
 		/**** END Create pipeline ****/
@@ -1282,14 +1286,16 @@ namespace Hazel {
 			Ref<HazelMaterial> material = Ref<HazelMaterial>();
 			if (m_Materials.size()) {
 				material = m_Materials[submesh.MaterialIndex];
-				if (material && material->GetFlag(HazelMaterialFlag::DepthTest)) {
-					glEnable(GL_DEPTH_TEST);
+				if (material && material->GetFlag(HazelMaterialFlag::DepthTest))
+				{
+					RendererBasic::EnableDepthTest();
 				}
 			} else {
-				glDisable(GL_DEPTH_TEST);
+				RendererBasic::DisableDepthTest();
 			}
 
-			glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t)* submesh.BaseIndex), submesh.BaseVertex);
+			RendererBasic::DrawIndexed(submesh.IndexCount, 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
+			// glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
 		}
 	}
 
@@ -1335,10 +1341,10 @@ namespace Hazel {
 
 		auto material = parentMesh->GetMaterials()[MaterialIndex];
 		if (material->GetFlag(HazelMaterialFlag::DepthTest)) {
-			glEnable(GL_DEPTH_TEST);
+			RendererBasic::EnableDepthTest();
 		}
 		else {
-			glDisable(GL_DEPTH_TEST);
+			RendererBasic::DisableDepthTest();
 		}
 
 		shader->Bind();
@@ -1351,7 +1357,8 @@ namespace Hazel {
 
 		shader->SetMat4("u_Transform", entityTransform * Transform);
 
-		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
+		RendererBasic::DrawIndexed(IndexCount, 0, BaseVertex, (void*)(sizeof(uint32_t) * BaseIndex));
+		// glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
 
 		shader->Unbind();
 	}
@@ -1380,7 +1387,8 @@ namespace Hazel {
 
 		RendererBasic::DisableDepthTest();
 
-		glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
+		RendererBasic::DrawIndexed(IndexCount, 0, BaseVertex, (void*)(sizeof(uint32_t) * BaseIndex));
+		// glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
 
 		shader->Unbind();
 	}

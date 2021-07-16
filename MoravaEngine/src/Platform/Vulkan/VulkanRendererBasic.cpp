@@ -65,6 +65,11 @@ void VulkanRendererBasic::SetLineThickness(float thickness)
 	Log::GetLogger()->warn("VulkanRendererBasic::SetLineThickness: Method not yet supported!");
 }
 
+void VulkanRendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr)
+{
+	Log::GetLogger()->warn("VulkanRendererBasic::DrawIndexed: Method not yet implemented!");
+}
+
 void VulkanRendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
 	Log::GetLogger()->warn("VulkanRendererBasic::SetDefaultFramebuffer: Method not yet supported!");

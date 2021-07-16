@@ -478,8 +478,8 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 	DX11TestLayer::GetCamera()->SetViewportSize((float)viewportWidth, (float)viewportHeight);
 
 	s_LightPosition.x = 0.0f;
-	s_LightPosition.y = sin(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 58.0f;
-	s_LightPosition.z = cos(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 58.0f;
+	s_LightPosition.y = sin(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 290.0f;
+	s_LightPosition.z = cos(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 290.0f;
 
 	s_LightDirection = glm::normalize(s_LightPosition - glm::vec3(0.0f, 6.0f, 0.0f));
 
@@ -505,7 +505,7 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		s_PipelineUnlit->Bind();
 
 		glm::mat4 skyboxTransform = glm::mat4(1.0f);
-		skyboxTransform = glm::scale(skyboxTransform, glm::vec3(60.0f));
+		skyboxTransform = glm::scale(skyboxTransform, glm::vec3(300.0f));
 		skyboxTransform = glm::rotate(skyboxTransform, glm::radians(Timer::Get()->GetCurrentTimestamp() * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		// World/Model/Transform matrix
@@ -543,7 +543,7 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, s_LightPosition);
-		model = glm::scale(model, glm::vec3(2.0f));
+		model = glm::scale(model, glm::vec3(10.0f));
 
 		s_ConstantBufferLayout.Model = model;
 		s_ConstantBuffer->Update(&s_ConstantBufferLayout);

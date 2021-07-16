@@ -370,6 +370,7 @@ glm::mat4 RendererBasic::GetProjectionMatrix()
 		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetProjectionMatrix();
 		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetProjectionMatrix();
 	}
+
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
@@ -385,6 +386,7 @@ void RendererBasic::SetProjectionMatrix(glm::mat4 projectionMatrix)
 		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetProjectionMatrix(projectionMatrix);
 		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::SetProjectionMatrix(projectionMatrix);
 	}
+
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
@@ -398,6 +400,7 @@ std::map<std::string, MoravaShader*>& RendererBasic::GetShaders()
 		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetShaders();
 		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetShaders();
 	}
+
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
@@ -413,6 +416,7 @@ std::map<std::string, int>& RendererBasic::GetUniforms()
 		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetUniforms();
 		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetUniforms();
 	}
+
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 
@@ -428,6 +432,7 @@ void RendererBasic::DisableBlend()
 		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DisableBlend();
 		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::DisableBlend();
 	}
+
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
@@ -439,6 +444,20 @@ void RendererBasic::Cleanup()
 
 	s_Shaders.clear();
 	s_Uniforms.clear();
+}
+
+void RendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr)
+{
+	switch (Hazel::RendererAPI::Current())
+	{
+		case Hazel::RendererAPIType::None:   return;
+		case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::DrawIndexed(indexCount, startIndexLocation, baseVertexLocation, indicesPtr);
+		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::DrawIndexed(indexCount, startIndexLocation, baseVertexLocation, indicesPtr);
+		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::DrawIndexed(indexCount, startIndexLocation, baseVertexLocation, indicesPtr);
+	}
+
+	Log::GetLogger()->error("Unknown RendererAPI");
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
 void RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)

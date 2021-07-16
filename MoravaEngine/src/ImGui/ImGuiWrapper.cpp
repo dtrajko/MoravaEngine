@@ -648,11 +648,15 @@ bool ImGuiWrapper::Property(const std::string& name, glm::vec3& value, float min
 
 	bool changed = false;
 	if ((int)flags & (int)PropertyFlag::ColorProperty)
+	{
 		changed = ImGui::ColorEdit3(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
-	else if (flags == PropertyFlag::SliderProperty) {
+	}
+	else if (flags == PropertyFlag::SliderProperty)
+	{
 		changed = ImGui::SliderFloat3(id.c_str(), glm::value_ptr(value), min, max);
 	}
-	else {
+	else
+	{
 		changed = ImGui::DragFloat3(id.c_str(), glm::value_ptr(value), 1.0f, min, max);
 	}
 
@@ -677,11 +681,15 @@ bool ImGuiWrapper::Property(const std::string& name, glm::vec4& value, float min
 
 	bool changed = false;
 	if ((int)flags & (int)PropertyFlag::ColorProperty)
+	{
 		changed = ImGui::ColorEdit4(id.c_str(), glm::value_ptr(value), ImGuiColorEditFlags_NoInputs);
-	else if (flags == PropertyFlag::SliderProperty) {
+	}
+	else if (flags == PropertyFlag::SliderProperty)
+	{
 		changed = ImGui::SliderFloat4(id.c_str(), glm::value_ptr(value), min, max);
 	}
-	else {
+	else
+	{
 		changed = ImGui::DragFloat4(id.c_str(), glm::value_ptr(value), 1.0f, min, max);
 	}
 
@@ -748,7 +756,8 @@ bool ImGuiWrapper::Property(const char* label, float& value, float delta)
 	memset(s_IDBuffer + 2, 0, 14);
 	// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
 	sprintf(s_IDBuffer + 2, "%d", s_Counter++);
-	if (ImGui::DragFloat(s_IDBuffer, &value, delta)) {
+	if (ImGui::DragFloat(s_IDBuffer, &value, delta))
+	{
 		modified = true;
 	}
 
@@ -771,7 +780,8 @@ bool ImGuiWrapper::Property(const char* label, glm::vec2& value, float delta)
 	memset(s_IDBuffer + 2, 0, 14);
 	// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
 	sprintf(s_IDBuffer + 2, "%d", s_Counter++);
-	if (ImGui::DragFloat2(s_IDBuffer, glm::value_ptr(value), delta)) {
+	if (ImGui::DragFloat2(s_IDBuffer, glm::value_ptr(value), delta))
+	{
 		modified = true;
 	}
 

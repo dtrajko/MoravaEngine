@@ -58,6 +58,12 @@ void DX11RendererBasic::SetLineThickness(float thickness)
 	Log::GetLogger()->warn("DX11RendererBasic::SetLineThickness: Method not yet supported!");
 }
 
+void DX11RendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr)
+{
+	DX11Context::Get()->GetDX11DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DX11Context::Get()->GetDX11DeviceContext()->DrawIndexed((UINT)indexCount, (UINT)startIndexLocation, (UINT)baseVertexLocation);
+}
+
 void DX11RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
 	Log::GetLogger()->warn("DX11RendererBasic::SetDefaultFramebuffer: Method not yet supported!");

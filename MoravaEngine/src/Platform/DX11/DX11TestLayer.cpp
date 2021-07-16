@@ -96,7 +96,7 @@ void DX11TestLayer::OnAttach()
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/sand.jpg"));
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png"));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
-	renderObjectTerrain.Transform = glm::scale(renderObjectTerrain.Transform, glm::vec3(0.65f));
+	renderObjectTerrain.Transform = glm::scale(renderObjectTerrain.Transform, glm::vec3(4.0f));
 	renderObjectTerrain.PipelineType = RenderObject::PipelineType::Unlit;
 	m_RenderObjects.push_back(renderObjectTerrain);
 

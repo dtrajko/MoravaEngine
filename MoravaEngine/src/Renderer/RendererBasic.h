@@ -71,6 +71,8 @@ public:
 	static void SetRendererContext(Hazel::Ref<Hazel::RendererContext> rendererContext) { s_RendererContext = rendererContext; }
 	static Hazel::Ref<Hazel::RendererContext> GetRendererContext() { return s_RendererContext; }
 
+	static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr = nullptr);
+
 protected:
 	static void UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene);
 

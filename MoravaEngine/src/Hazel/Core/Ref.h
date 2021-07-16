@@ -140,7 +140,9 @@ namespace Hazel {
 		void IncRef() const
 		{
 			if (m_Instance)
+			{
 				m_Instance->IncRefCount();
+			}
 		}
 
 		void DecRef() const

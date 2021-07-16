@@ -74,6 +74,11 @@ void OpenGLRendererBasic::SetLineThickness(float thickness)
 	glLineWidth(thickness);
 }
 
+void OpenGLRendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr)
+{
+	glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, indicesPtr, baseVertexLocation);
+}
+
 void OpenGLRendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
