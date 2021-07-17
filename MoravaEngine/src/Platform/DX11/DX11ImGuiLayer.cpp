@@ -130,7 +130,7 @@ void DX11ImGuiLayer::End()
 	io.DisplaySize = ImVec2(static_cast<float>(app->GetWindow()->GetWidth()), static_cast<float>(app->GetWindow()->GetHeight()));
 	
 	// Rendering
-	
+
 	// Assemble together Draw Data
 	ImGui::Render();
 
@@ -141,14 +141,10 @@ void DX11ImGuiLayer::End()
 	// Update and Render additional Platform Windows
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		try
+		if (!app->GetWindow()->GetShouldClose())
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-		}
-		catch (...)
-		{
-			Log::GetLogger()->warn("DX11ImGuiLayer::End - UpdatePlatformWindows failed!");
 		}
 	}
 }
