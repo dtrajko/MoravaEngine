@@ -55,11 +55,12 @@ public:
 	static void DrawEntityNode(const std::string name); // similar to SceneHierarchyPanel::DrawEntityNode
 	static void DrawComponent(const std::string name); // similar to DrawComponent in SceneHierarchyPanel
 	static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
-	static void UpdateImGuizmo(Window* mainWindow, Hazel::HazelCamera* camera);
-	static void DrawMaterialEditor(); // originally EnvMapEditorLayer::DrawMaterialEditor
 	// from EnvMapEditorLayer, previously in SceneHazelEnvMap
 	static void SetupRenderFramebuffer();
 	static void ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer);
+
+	static void SelectEntity(Hazel::Entity e);
+	static void OnEntityDeleted(Hazel::Entity e);
 
 	static uint32_t GetViewportWidth();
 	static uint32_t GetViewportHeight();

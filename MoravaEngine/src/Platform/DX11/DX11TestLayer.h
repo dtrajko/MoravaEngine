@@ -18,6 +18,8 @@
 #include "Core/Window.h"
 #include "Scene/Scene.h"
 
+#include "ImGuizmo.h"
+
 
 struct RenderObject
 {
@@ -79,6 +81,13 @@ public:
 	// render meshes with materials
 	static std::vector<RenderObject> s_RenderObjectsWithMaterials;
 	static std::vector<Hazel::Ref<DX11Material>> s_ListMaterials;
+
+	static ImGuizmo::OPERATION s_ImGuizmoType;
+	static bool s_LeftControlKeyPressed;
+
+	static bool s_ShowWindowSceneHierarchy;
+	static bool s_ShowWindowAssetManager;
+	static bool s_ShowWindowMaterialEditor;
 
 private:
 	static std::shared_ptr<DX11CameraFP> s_Camera;

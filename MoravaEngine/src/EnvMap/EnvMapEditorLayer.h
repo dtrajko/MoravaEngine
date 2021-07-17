@@ -9,11 +9,11 @@
 #include "Hazel/Renderer/SceneRenderer.h"
 
 #include "Editor/EntitySelection.h"
+#include "Editor/MaterialEditorPanel.h"
 #include "EnvMap/EnvMapMaterial.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "EnvMap/EnvMapSharedData.h"
 #include "Framebuffer/ShadowMap.h"
-
 
 enum class SelectionMode
 {
@@ -63,8 +63,6 @@ public:
 	void SaveSceneAs();
 
 	void OnNewScene(glm::vec2 viewportSize);
-
-	void DrawMaterialEditor();
 
 	void UpdateWindowTitle(const std::string& sceneName);
 
@@ -224,6 +222,7 @@ private:
 
 	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
 	Hazel::ContentBrowserPanel* m_ContentBrowserPanel;
+	MaterialEditorPanel* m_MaterialEditorPanel;
 
 	// Hazel LIVE! #015
 	bool m_UIShowBoundingBoxes;

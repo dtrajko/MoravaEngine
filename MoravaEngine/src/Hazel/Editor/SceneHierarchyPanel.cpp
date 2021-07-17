@@ -77,42 +77,42 @@ namespace Hazel
 		if (m_Context)
 		{
 			ImGui::Begin("Scene Hierarchy", p_open);
-
-			uint32_t entityCount = 0;
-			uint32_t meshCount = 0;
-
-			m_Context->m_Registry.each([&](auto entity)
 			{
-				Entity e(entity, m_Context.Raw());
-				if (e.HasComponent<IDComponent>()) {
-					DrawEntityNode(e);
-				}
-			});
+				uint32_t entityCount = 0;
+				uint32_t meshCount = 0;
 
-			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-			{
-				EntitySelection::s_SelectionContext = {};
-			}
+				m_Context->m_Registry.each([&](auto entity)
+					{
+						Entity e(entity, m_Context.Raw());
+						if (e.HasComponent<IDComponent>()) {
+							DrawEntityNode(e);
+						}
+					});
 
-			// Right-click on blank space
-			if (ImGui::BeginPopupContextWindow(0, 1, false))
-			{
-				if (ImGui::MenuItem("Create Empty Entity"))
+				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 				{
-					m_Context->CreateEntity("Empty Entity");
+					EntitySelection::s_SelectionContext = {};
 				}
-				ImGui::EndPopup();
-			}
 
+				// Right-click on blank space
+				if (ImGui::BeginPopupContextWindow(0, 1, false))
+				{
+					if (ImGui::MenuItem("Create Empty Entity"))
+					{
+						m_Context->CreateEntity("Empty Entity");
+					}
+					ImGui::EndPopup();
+				}
+			}
 			ImGui::End();
 
 			ImGui::Begin("Properties");
-
-			if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity.HasComponent<Hazel::TagComponent>())
 			{
-				DrawComponents(EntitySelection::s_SelectionContext[0].Entity);
+				if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity.HasComponent<Hazel::TagComponent>())
+				{
+					DrawComponents(EntitySelection::s_SelectionContext[0].Entity);
+				}
 			}
-
 			ImGui::End();
 
 #if TODO
@@ -133,6 +133,10 @@ namespace Hazel
 			}
 			ImGui::End();
 #endif
+		}
+		else
+		{
+			Log::GetLogger()->warn("SceneHierarchyPanel::OnImGuiRender: Context Undefined!");
 		}
 	}
 
@@ -186,12 +190,22 @@ namespace Hazel
 			ImGui::TreePop();
 		}
 
-		if (entityDeleted) {
+		if (entityDeleted)
+		{
 			m_Context->DestroyEntity(entity);
-			if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity == entity) {
+			if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity == entity)
+			{
 				EntitySelection::s_SelectionContext = {};
 			}
-			m_EntityDeletedCallback(entity);
+
+			if (m_EntityDeletedCallback)
+			{
+				m_EntityDeletedCallback(entity);
+			}
+			else
+			{
+				Log::GetLogger()->warn("EntityDeletedCallback undefined!");
+			}
 		}
 
 		if (entityCloned) {

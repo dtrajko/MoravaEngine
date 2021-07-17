@@ -17,6 +17,7 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 
 #include "Material/MaterialLibrary.h"
+#include "Editor/MaterialEditorPanel.h"
 
 // ImGui includes
 #if !defined(IMGUI_IMPL_API)
@@ -39,9 +40,6 @@ static uint32_t s_ViewportWidth = 1280;
 static uint32_t s_ViewportHeight = 720;
 
 static std::vector<RenderObject> s_RenderObjects;
-
-static Hazel::Submesh* s_SelectedSubmesh;
-static glm::mat4* s_Transform_ImGuizmo = nullptr;
 
 // temporary DX11 objects
 static Hazel::Ref<DX11VertexBuffer> s_VertexBufferCube;
@@ -77,6 +75,7 @@ static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
 
 static Hazel::SceneHierarchyPanel* s_SceneHierarchyPanel;
 static Hazel::ContentBrowserPanel* s_ContentBrowserPanel;
+static MaterialEditorPanel* s_MaterialEditorPanel;
 
 static Hazel::Ref<MoravaFramebuffer> s_RenderFramebuffer;
 static Hazel::Ref<MoravaFramebuffer> s_PostProcessingFramebuffer;
@@ -87,7 +86,8 @@ static Hazel::Ref<Hazel::HazelScene> s_Scene; // the Scene object provides the E
 
 // ImGuizmo
 static glm::mat4* s_ImGuizmoTransform = nullptr;
-static int s_ImGuizmoType = -1; // -1 = no gizmo
+static Hazel::Submesh* s_SelectedSubmesh;
+static SelectionMode s_SelectionMode = SelectionMode::Entity;
 
 /**** END variables from Scene.cpp ****/
 
@@ -237,16 +237,36 @@ void DX11Renderer::Init()
 	s_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
 
 	s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(s_Scene);
+
 	s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
 
+	s_MaterialEditorPanel = new MaterialEditorPanel();
+
 	s_ImGuizmoTransform = nullptr;
-	s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
 	s_ResizeViewport = { 0.0f, 1.0f };
 
 	SetupRenderFramebuffer();
 
 	/****END the code from the EnvMapEditorLayer constructor ****/
+}
+
+void DX11Renderer::SelectEntity(Hazel::Entity e)
+{
+	Log::GetLogger()->info("DX11Renderer::SelectEntity called!");
+}
+
+void DX11Renderer::OnEntityDeleted(Hazel::Entity e)
+{
+	if (EntitySelection::s_SelectionContext.size())
+	{
+		if (EntitySelection::s_SelectionContext[0].Entity == e) {
+			EntitySelection::s_SelectionContext.clear();
+			EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
+		}
+	}
+
+	Log::GetLogger()->info("DX11Renderer::OnEntityDeleted called!");
 }
 
 void DX11Renderer::SetupRenderFramebuffer()
@@ -447,328 +467,6 @@ void DX11Renderer::Draw(Hazel::HazelCamera* camera)
 	}
 }
 
-void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
-{
-	/**** BEGIN DirectX 11 rendering ****/
-
-	if (s_DeferredRenderingEnabled)
-	{
-		/**** BEGIN Deferred rendering (basic, no G-Buffer) ****/
-		ClearRenderTargetColor(s_RenderTarget, 0.1f, 0.2f, 0.4f, 1.0f); // dark blue
-		ClearDepthStencil(s_DepthStencil);
-		// Redirect rendering from swapchain (window) to framebuffer render targets
-		SetRenderTarget(s_RenderTarget, s_DepthStencil);
-		/**** END Deferred rendering (basic, no G-Buffer) ****/
-	}
-	else
-	{
-		/**** BEGIN Forward rendering ****/
-		ClearRenderTargetColorSwapChain(0.6f, 0.2f, 0.8f, 1.0f); // magenta
-		ClearDepthStencilSwapChain();
-		/**** END Forward rendering ****/
-	}
-
-	DX11Context::Get()->SetRasterizerState(DX11CullMode::None);
-
-	Hazel::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
-
-	uint32_t viewportWidth = Application::Get()->GetWindow()->GetWidth();
-	uint32_t viewportHeight = Application::Get()->GetWindow()->GetHeight();
-	DX11Context::Get()->SetViewportSize(viewportWidth, viewportHeight);
-	DX11TestLayer::GetCamera()->SetViewportSize((float)viewportWidth, (float)viewportHeight);
-
-	s_LightPosition.x = 0.0f;
-	s_LightPosition.y = sin(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 290.0f;
-	s_LightPosition.z = cos(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 290.0f;
-
-	s_LightDirection = glm::normalize(s_LightPosition - glm::vec3(0.0f, 6.0f, 0.0f));
-
-	s_ConstantBufferLayout.Projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
-	s_ConstantBufferLayout.View = DX11TestLayer::GetCamera()->GetViewMatrix();
-	s_ConstantBufferLayout.LightDirection = s_LightDirection;
-	s_ConstantBufferLayout.CameraPosition = DX11TestLayer::GetCamera()->GetPosition();
-	s_ConstantBufferLayout.LightPosition = s_LightPosition;
-	s_ConstantBufferLayout.LightRadius = 1000.0f;
-	s_ConstantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
-
-	// BEGIN render skybox
-	{
-		Hazel::Ref<DX11Shader> dx11ShaderUnlit = s_PipelineUnlit->GetSpecification().Shader.As<DX11Shader>();
-
-		dx11ShaderUnlit->GetVertexShader()->Bind();
-		dx11ShaderUnlit->GetPixelShader()->Bind();
-
-		Hazel::Ref<DX11VertexBuffer> skyboxVB = DX11TestLayer::s_SkyboxSphere->GetVertexBuffer().As<DX11VertexBuffer>();
-		Hazel::Ref<DX11IndexBuffer> skyboxIB = DX11TestLayer::s_SkyboxSphere->GetIndexBuffer().As<DX11IndexBuffer>();
-		skyboxVB->Bind();
-		skyboxIB->Bind();
-		s_PipelineUnlit->Bind();
-
-		glm::mat4 skyboxTransform = glm::mat4(1.0f);
-		skyboxTransform = glm::scale(skyboxTransform, glm::vec3(300.0f));
-		skyboxTransform = glm::rotate(skyboxTransform, glm::radians(Timer::Get()->GetCurrentTimestamp() * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		// World/Model/Transform matrix
-		s_ConstantBufferLayout.Model = skyboxTransform;
-		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
-
-		dx11ShaderUnlit->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
-		dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
-
-		std::vector<Hazel::Ref<DX11Texture2D>> textures;
-		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/umhlanga_sunrise_4k.jpg");
-		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
-		textures.push_back(textureDiffuse.As<DX11Texture2D>());
-		textures.push_back(textureNormal.As<DX11Texture2D>());
-
-		dx11ShaderUnlit->GetVertexShader()->SetTextures(textures);
-		dx11ShaderUnlit->GetPixelShader()->SetTextures(textures);
-
-		uint32_t startVertexIndex = 0;
-		uint32_t startIndexLocation = 0;
-		DX11Renderer::DrawIndexedTriangleList(skyboxIB->GetIndexCount(), startVertexIndex, startIndexLocation);
-	}
-	// END Render skybox
-
-	// BEGIN render Mesh Light Source
-	{
-		dx11Shader->GetVertexShader()->Bind();
-		dx11Shader->GetPixelShader()->Bind();
-
-		Hazel::Ref<DX11VertexBuffer> vertexBuffer = DX11TestLayer::s_MeshLight->GetVertexBuffer().As<DX11VertexBuffer>();
-		Hazel::Ref<DX11IndexBuffer> indexBuffer = DX11TestLayer::s_MeshLight->GetIndexBuffer().As<DX11IndexBuffer>();
-		vertexBuffer->Bind();
-		indexBuffer->Bind();
-		s_PipelineIlluminated->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
-
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, s_LightPosition);
-		model = glm::scale(model, glm::vec3(10.0f));
-
-		s_ConstantBufferLayout.Model = model;
-		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
-
-		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
-		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
-
-		std::vector<Hazel::Ref<DX11Texture2D>> textures;
-		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/gold.png");
-		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
-
-		textures.push_back(textureDiffuse.As<DX11Texture2D>());
-		textures.push_back(textureNormal.As<DX11Texture2D>());
-
-		dx11Shader->GetVertexShader()->SetTextures(textures);
-		dx11Shader->GetPixelShader()->SetTextures(textures);
-
-		uint32_t indexCount = indexBuffer->GetIndexCount();
-		uint32_t startVertexIndex = 0;
-		uint32_t startIndexLocation = 0;
-		DX11Renderer::DrawIndexedTriangleList(indexCount, startVertexIndex, startIndexLocation);
-	}
-	// END render Mesh Light Source
-
-	/**** BEGIN render mesh #1 ****
-	{
-		s_VertexBufferCube->Bind();
-		s_IndexBufferCube->Bind();
-		s_PipelineIlluminated->Bind();
-
-		// World/Model/Transform matrix
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-4.0f, 2.0f, 4.0f));
-		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(2.0f));
-
-		s_ConstantBufferLayout.Model = model;
-		// Log::GetLogger()->info("s_ConstantBufferLayout.Time: {0}", constantBufferLayout.Time);
-		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
-
-		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
-		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
-
-		std::vector<Hazel::Ref<DX11Texture2D>> textures;
-		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
-		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
-		textures.push_back(textureDiffuse.As<DX11Texture2D>());
-		textures.push_back(textureNormal.As<DX11Texture2D>());
-
-		dx11Shader->GetVertexShader()->SetTextures(textures);
-		dx11Shader->GetPixelShader()->SetTextures(textures);
-
-		uint32_t startVertexIndex = 0;
-		uint32_t startIndexLocation = 0;
-		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(s_IndexBufferCube->GetIndexCount(), startVertexIndex, startIndexLocation);
-	}
-	**** END render mesh #1 ****/
-
-	/**** BEGIN render mesh #2 ****
-	{
-		s_VertexBufferCube->Bind();
-		s_IndexBufferCube->Bind();
-		s_PipelineIlluminated->Bind();
-
-		// World/Model/Transform matrix
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 2.0f, 4.0f));
-		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(2.0f));
-
-		s_ConstantBufferLayout.Model = model;
-		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
-
-		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
-		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
-
-		std::vector<Hazel::Ref<DX11Texture2D>> textures;
-		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
-		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
-		textures.push_back(textureDiffuse.As<DX11Texture2D>());
-		textures.push_back(textureNormal.As<DX11Texture2D>());
-
-		dx11Shader->GetVertexShader()->SetTextures(textures);
-		dx11Shader->GetPixelShader()->SetTextures(textures);
-
-		uint32_t startVertexIndex = 0;
-		uint32_t startIndexLocation = 0;
-		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(s_IndexBufferCube->GetIndexCount(), startVertexIndex, startIndexLocation);
-	}
-	/**** END render mesh #2 ****/
-
-	/**** BEGIN render mesh #3 ****
-	{
-		s_VertexBufferCube->Bind();
-		s_IndexBufferCube->Bind();
-		s_PipelineIlluminated->Bind();
-
-		// World/Model/Transform matrix
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(4.0f, 2.0f, 4.0f));
-		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		// model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * 40.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::scale(model, glm::vec3(2.0f));
-
-		s_ConstantBufferLayout.Model = model;
-		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
-
-		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
-		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
-
-		std::vector<Hazel::Ref<DX11Texture2D>> textures;
-		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
-		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
-		textures.push_back(textureDiffuse.As<DX11Texture2D>());
-		textures.push_back(textureNormal.As<DX11Texture2D>());
-
-		dx11Shader->GetVertexShader()->SetTextures(textures);
-		dx11Shader->GetPixelShader()->SetTextures(textures);
-
-		uint32_t startVertexIndex = 0;
-		uint32_t startIndexLocation = 0;
-		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(s_IndexBufferCube->GetIndexCount(), startVertexIndex, startIndexLocation);
-	}
-	/**** END render mesh #3 ****/
-
-	/**** BEGIN render DX11Mesh ****
-	{
-		Hazel::Ref<DX11VertexBuffer> dx11VertexBuffer = DX11TestLayer::s_Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
-		Hazel::Ref<DX11IndexBuffer> dx11IndexBuffer = DX11TestLayer::s_Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
-		dx11VertexBuffer->Bind();
-		dx11IndexBuffer->Bind();
-		s_PipelineIlluminated->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
-
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 4.5f, 4.0f));
-		model = glm::rotate(model, glm::radians(Timer::Get()->GetCurrentTimestamp() * -40.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(2.0f));
-
-		s_ConstantBufferLayout.Model = model;
-		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
-
-		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
-		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
-
-		std::vector<Hazel::Ref<DX11Texture2D>> textures;
-		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg");
-		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg");
-		textures.push_back(textureDiffuse.As<DX11Texture2D>());
-		textures.push_back(textureNormal.As<DX11Texture2D>());
-
-		dx11Shader->GetVertexShader()->SetTextures(textures);
-		dx11Shader->GetPixelShader()->SetTextures(textures);
-
-		uint32_t indexCount = dx11IndexBuffer->GetIndexCount();
-		uint32_t startVertexIndex = 0;
-		uint32_t startIndexLocation = 0;
-		DX11Renderer::DrawIndexedTriangleList(indexCount, startVertexIndex, startIndexLocation);
-	}
-	/**** END render DX11Mesh ****/
-
-	// BEGIN render meshes without materials
-	for (auto& renderObject : s_RenderObjects)
-	{
-		RenderMesh(renderObject);
-	}
-
-	s_RenderObjects.clear();
-	// END render meshes without materials
-
-	// BEGIN render meshes with materials
-	for (RenderObject renderObjectWithMaterials : DX11TestLayer::s_RenderObjectsWithMaterials)
-	{
-		RenderMeshDX11(renderObjectWithMaterials, DX11TestLayer::s_ListMaterials);
-	}
-	// END render meshes with materials
-
-	// Rendering ECS entities (meshes)
-	RenderMeshesECS();
-
-	RenderImGui();
-}
-
-// the code is taken from EnvMapSceneRenderer::GeometryPass()
-void DX11Renderer::RenderMeshesECS()
-{
-	// s_PipelineIlluminated->Bind();
-
-	Hazel::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
-
-	auto meshEntities = s_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponent>();
-
-	// Render all entities with mesh component
-	if (meshEntities.size())
-	{
-		for (auto entt : meshEntities)
-		{
-			Hazel::Entity entity = { entt, s_Scene.Raw() };
-			auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
-
-			if (meshComponent.Mesh)
-			{
-				glm::mat4 entityTransform = glm::mat4(1.0f);
-				if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
-					entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-				}
-
-				RenderObject renderObject = {};
-				renderObject.Mesh = meshComponent.Mesh;
-				renderObject.PipelineType = RenderObject::PipelineType::Light;
-				renderObject.Transform = entityTransform;
-				renderObject.Entity = entity;
-				RenderMesh(renderObject);
-			}
-		}
-	}
-}
-
 void DX11Renderer::RenderImGui()
 {
 	// BEGIN DirectX 11 ImGui Render Pass
@@ -791,17 +489,20 @@ void DX11Renderer::RenderImGui()
 		//	ImDrawData* main_draw_data = ImGui::GetDrawData();
 		//	ImGui_ImplDX11_RenderDrawData(main_draw_data);
 
-		bool showSceneHierarchyPanel = true;
-		s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
-
-		bool showWindowAssetManager = true;
-		s_ContentBrowserPanel->OnImGuiRender(&showWindowAssetManager);
-
-		ImGui::Begin("Material Editor");
+		if (DX11TestLayer::s_ShowWindowSceneHierarchy)
 		{
-			DrawMaterialEditor();
+			s_SceneHierarchyPanel->OnImGuiRender(&DX11TestLayer::s_ShowWindowSceneHierarchy);
 		}
-		ImGui::End();
+
+		if (DX11TestLayer::s_ShowWindowAssetManager)
+		{
+			s_ContentBrowserPanel->OnImGuiRender(&DX11TestLayer::s_ShowWindowAssetManager);
+		}
+
+		if (DX11TestLayer::s_ShowWindowMaterialEditor)
+		{
+			s_MaterialEditorPanel->OnImGuiRender(&DX11TestLayer::s_ShowWindowMaterialEditor);
+		}
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport");
@@ -900,26 +601,83 @@ void DX11Renderer::DrawComponent(const std::string name)
 
 void DX11Renderer::UpdateImGuizmo()
 {
-	float rw = (float)ImGui::GetWindowWidth();
-	float rh = (float)ImGui::GetWindowHeight();
-	ImGuizmo::SetOrthographic(false);
-	ImGuizmo::SetDrawlist();
-	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
-
-	glm::mat4& transform = s_RenderObjects.size() ? s_RenderObjects[0].Transform : glm::mat4(1.0f);
-
-	ImGuizmo::Manipulate(
-		glm::value_ptr(DX11TestLayer::GetCamera()->GetProjectionMatrix()),
-		glm::value_ptr(DX11TestLayer::GetCamera()->GetViewMatrix()),
-		ImGuizmo::OPERATION::TRANSLATE, // ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-		ImGuizmo::LOCAL,
-		glm::value_ptr(transform),
-		nullptr,
-		nullptr);
-
-	if (ImGuizmo::IsUsing())
+	// ImGuizmo
+	if (DX11TestLayer::s_ImGuizmoType != -1 && EntitySelection::s_SelectionContext.size())
 	{
-		// TODO
+		float rw = (float)ImGui::GetWindowWidth();
+		float rh = (float)ImGui::GetWindowHeight();
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+
+		SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
+
+		// Entity transform
+		auto& transformComponent = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
+		glm::mat4 entityTransform = transformComponent.GetTransform();
+
+		// Snapping
+		bool snap = DX11TestLayer::s_LeftControlKeyPressed; // ImGuizmo snap enabled
+		float snapValue = 5.0f; // Snap to 0.5m for translation/scale
+		// Snap to 45 degrees for rotation
+		if (DX11TestLayer::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE)
+		{
+			snapValue = 45.0f;
+		}
+		float snapValues[3] = { snapValue, snapValue, snapValue };
+
+		if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
+		{
+			ImGuizmo::Manipulate(
+				glm::value_ptr(DX11TestLayer::GetCamera()->GetViewMatrix()),
+				glm::value_ptr(DX11TestLayer::GetCamera()->GetProjectionMatrix()),
+				DX11TestLayer::s_ImGuizmoType,
+				ImGuizmo::LOCAL,
+				glm::value_ptr(entityTransform),
+				nullptr,
+				snap ? snapValues : nullptr);
+
+			if (ImGuizmo::IsUsing())
+			{
+				glm::vec3 translation, rotation, scale;
+				Math::DecomposeTransform(entityTransform, translation, rotation, scale);
+
+				glm::vec3 deltaRotation = rotation - transformComponent.Rotation;
+				transformComponent.Translation = translation;
+				transformComponent.Rotation += deltaRotation;
+				transformComponent.Scale = scale;
+			}
+		}
+		else if (s_SelectionMode == SelectionMode::SubMesh)
+		{
+			auto aabb = selectedSubmesh.Mesh->BoundingBox;
+
+			glm::vec3 aabbCenterOffset = glm::vec3(
+				aabb.Min.x + ((aabb.Max.x - aabb.Min.x) / 2.0f),
+				aabb.Min.y + ((aabb.Max.y - aabb.Min.y) / 2.0f),
+				aabb.Min.z + ((aabb.Max.z - aabb.Min.z) / 2.0f)
+			);
+
+			glm::mat4 submeshTransform = selectedSubmesh.Mesh->Transform;
+			submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
+			glm::mat4 transformBase = entityTransform * submeshTransform;
+
+			ImGuizmo::Manipulate(
+				glm::value_ptr(DX11TestLayer::GetCamera()->GetViewMatrix()),
+				glm::value_ptr(DX11TestLayer::GetCamera()->GetProjectionMatrix()),
+				DX11TestLayer::s_ImGuizmoType,
+				ImGuizmo::LOCAL,
+				glm::value_ptr(transformBase),
+				nullptr,
+				snap ? snapValues : nullptr);
+
+			if (ImGuizmo::IsUsing())
+			{
+				submeshTransform = glm::inverse(entityTransform) * transformBase;
+				submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
+				selectedSubmesh.Mesh->Transform = submeshTransform;
+			}
+		}
 	}
 }
 
@@ -1025,82 +783,6 @@ void DX11Renderer::DrawToScreen(Hazel::HazelCamera* camera)
 	uint32_t startVertexIndex = 0;
 	uint32_t startIndexLocation = 0;
 	DX11Renderer::DrawIndexedTriangleList(s_IndexBufferQuad->GetIndexCount(), startVertexIndex, startIndexLocation);
-}
-
-void DX11Renderer::RenderMesh(RenderObject renderObject)
-{
-	Hazel::Ref<Hazel::Pipeline> pipeline;
-
-	if (renderObject.PipelineType == RenderObject::PipelineType::Light)
-	{
-		pipeline = s_PipelineIlluminated;
-	}
-	else if (renderObject.PipelineType == RenderObject::PipelineType::Unlit)
-	{
-		pipeline = s_PipelineUnlit;
-	}
-
-	Hazel::Ref<DX11Shader> dx11Shader = pipeline->GetSpecification().Shader.As<DX11Shader>();
-
-	dx11Shader->GetVertexShader()->Bind();
-	dx11Shader->GetPixelShader()->Bind();
-
-	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = renderObject.Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
-	Hazel::Ref<DX11IndexBuffer> dx11meshIB = renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
-	dx11MeshVB->Bind();
-	dx11meshIB->Bind();
-	// Hazel::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
-	pipeline->Bind();
-
-	for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())
-	{
-		// World/Model/Transform matrix
-		s_ConstantBufferLayout.Model = renderObject.Transform;
-		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
-
-		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
-		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
-
-		// Render Submesh
-		// load submesh materials for each specific submesh from the s_EnvMapMaterials list
-		Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
-		std::string materialUUID;
-
-		if (renderObject.Entity)
-		{
-			materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(renderObject.Mesh, submesh, &renderObject.Entity);
-			if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end())
-			{
-				envMapMaterial = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
-
-				renderObject.Textures.clear();
-				if (envMapMaterial->GetAlbedoInput().TextureMap) {
-					renderObject.Textures.push_back(envMapMaterial->GetAlbedoInput().TextureMap);
-				}
-				else {
-					renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/default_material_albedo.png"));
-				}
-
-				if (envMapMaterial->GetNormalInput().TextureMap) {
-					renderObject.Textures.push_back(envMapMaterial->GetNormalInput().TextureMap);
-				}
-				else {
-					renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/normal_map_default.png"));
-				}
-			}
-		}
-
-		// Load textures for submesh material
-		std::vector<Hazel::Ref<DX11Texture2D>> textures;
-		textures.push_back(renderObject.Textures.at(0).As<DX11Texture2D>()); // Albedo Map
-		textures.push_back(renderObject.Textures.at(1).As<DX11Texture2D>()); // Normal Map
-
-		dx11Shader->GetVertexShader()->SetTextures(textures);
-		dx11Shader->GetPixelShader()->SetTextures(textures);
-
-		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(submesh.IndexCount, submesh.BaseVertex, submesh.BaseIndex);
-	}
 }
 
 void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<Hazel::Ref<DX11Material>>& listMaterials)
@@ -1279,124 +961,6 @@ void DX11Renderer::ShowExampleAppDockSpace(bool* p_open)
 	ImGui::End();
 }
 
-void DX11Renderer::UpdateImGuizmo(Window* mainWindow, Hazel::HazelCamera* camera)
-{
-	// BEGIN ImGuizmo
-
-	// ImGizmo switching modes
-	if (Input::IsKeyPressed(Key::D1))
-		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-	if (Input::IsKeyPressed(Key::D2))
-		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
-
-	if (Input::IsKeyPressed(Key::D3))
-		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
-
-	if (Input::IsKeyPressed(Key::D4))
-		Scene::s_ImGuizmoType = -1;
-
-	// ImGuizmo
-	if (Scene::s_ImGuizmoType != -1)
-	{
-		float rw = (float)ImGui::GetWindowWidth();
-		float rh = (float)ImGui::GetWindowHeight();
-		ImGuizmo::SetOrthographic(false);
-		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
-
-		if (s_SelectedSubmesh != nullptr) {
-			s_Transform_ImGuizmo = &s_SelectedSubmesh->Transform; // Connect to model transform
-		}
-
-		// Snapping
-		bool snap = Input::IsKeyPressed(Key::LeftControl);
-		float snapValue = 1.0f; // Snap to 0.5m for translation/scale
-		// Snap to 45 degrees for rotation
-		if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE) {
-			snapValue = 45.0f;
-		}
-
-		float snapValues[3] = { snapValue, snapValue, snapValue };
-
-		if (s_Transform_ImGuizmo != nullptr) // TODO: specify display criteria here
-		{
-			ImGuizmo::Manipulate(
-				glm::value_ptr(camera->GetViewMatrix()),
-				glm::value_ptr(camera->GetProjectionMatrix()),
-				(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-				ImGuizmo::LOCAL,
-				glm::value_ptr(*s_Transform_ImGuizmo),
-				nullptr,
-				snap ? snapValues : nullptr);
-		}
-	}
-	// END ImGuizmo
-}
-
-void DX11Renderer::DrawMaterialEditor()
-{
-	unsigned int materialIndex = 0;
-	for (auto material_it = MaterialLibrary::s_EnvMapMaterials.begin(); material_it != MaterialLibrary::s_EnvMapMaterials.end();)
-	{
-		Hazel::Ref<EnvMapMaterial> material = material_it->second;
-		std::string materialName = material->GetName();
-		MaterialUUID materialUUID = material->GetUUID();
-
-		// Material section
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)materialIndex++, flags, materialName.c_str());
-
-		bool materialDelete = false;
-		bool materialClone = false;
-
-		if (ImGui::BeginPopupContextItem())
-		{
-			if (ImGui::MenuItem("Delete Material"))
-			{
-				materialDelete = true;
-			}
-
-			if (ImGui::MenuItem("Clone Material"))
-			{
-				materialClone = true;
-			}
-
-			ImGui::EndPopup();
-		}
-
-		if (opened)
-		{
-			ImGuiWrapper::DrawMaterialUI(material, s_CheckerboardTexture);
-
-			ImGui::TreePop();
-		}
-
-		if (materialClone) {
-			auto envMapMaterialSrc = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
-			Hazel::Ref<EnvMapMaterial> envMapMaterialDst = Hazel::Ref<EnvMapMaterial>::Create(MaterialLibrary::NewMaterialName(), envMapMaterialSrc);
-			MaterialLibrary::AddEnvMapMaterial(envMapMaterialDst->GetUUID(), envMapMaterialDst);
-		}
-
-		if (materialDelete) {
-			material_it = MaterialLibrary::s_EnvMapMaterials.erase(material_it++);
-		}
-		else {
-			++material_it;
-		}
-	}
-
-	// Right-click on blank space
-	if (ImGui::BeginPopupContextWindow(0, 1, false))
-	{
-		if (ImGui::MenuItem("Create a Material"))
-		{
-			MaterialLibrary::AddNewMaterial("");
-		}
-		ImGui::EndPopup();
-	}
-}
-
 void DX11Renderer::ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer)
 {
 }
@@ -1461,4 +1025,265 @@ void DX11Renderer::DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexI
 {
 	DX11Context::Get()->GetDX11DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	DX11Context::Get()->GetDX11DeviceContext()->Draw((UINT)vertexCount, (UINT)startVertexIndex);
+}
+
+void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
+{
+	/**** BEGIN DirectX 11 rendering ****/
+
+	if (s_DeferredRenderingEnabled)
+	{
+		/**** BEGIN Deferred rendering (basic, no G-Buffer) ****/
+		ClearRenderTargetColor(s_RenderTarget, 0.1f, 0.2f, 0.4f, 1.0f); // dark blue
+		ClearDepthStencil(s_DepthStencil);
+		// Redirect rendering from swapchain (window) to framebuffer render targets
+		SetRenderTarget(s_RenderTarget, s_DepthStencil);
+		/**** END Deferred rendering (basic, no G-Buffer) ****/
+	}
+	else
+	{
+		/**** BEGIN Forward rendering ****/
+		ClearRenderTargetColorSwapChain(0.6f, 0.2f, 0.8f, 1.0f); // magenta
+		ClearDepthStencilSwapChain();
+		/**** END Forward rendering ****/
+	}
+
+	DX11Context::Get()->SetRasterizerState(DX11CullMode::None);
+
+	Hazel::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
+
+	uint32_t viewportWidth = Application::Get()->GetWindow()->GetWidth();
+	uint32_t viewportHeight = Application::Get()->GetWindow()->GetHeight();
+	DX11Context::Get()->SetViewportSize(viewportWidth, viewportHeight);
+	DX11TestLayer::GetCamera()->SetViewportSize((float)viewportWidth, (float)viewportHeight);
+
+	s_LightPosition.x = 0.0f;
+	s_LightPosition.y = sin(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 290.0f;
+	s_LightPosition.z = cos(Timer::Get()->GetCurrentTimestamp() * 0.5f) * 290.0f;
+
+	s_LightDirection = glm::normalize(s_LightPosition - glm::vec3(0.0f, 6.0f, 0.0f));
+
+	s_ConstantBufferLayout.Projection = DX11TestLayer::GetCamera()->GetProjectionMatrix();
+	s_ConstantBufferLayout.View = DX11TestLayer::GetCamera()->GetViewMatrix();
+	s_ConstantBufferLayout.LightDirection = s_LightDirection;
+	s_ConstantBufferLayout.CameraPosition = DX11TestLayer::GetCamera()->GetPosition();
+	s_ConstantBufferLayout.LightPosition = s_LightPosition;
+	s_ConstantBufferLayout.LightRadius = 1000.0f;
+	s_ConstantBufferLayout.Time = (uint32_t)(Timer::Get()->GetCurrentTimestamp() * 1000.0f);
+
+	// BEGIN render skybox
+	{
+		Hazel::Ref<DX11Shader> dx11ShaderUnlit = s_PipelineUnlit->GetSpecification().Shader.As<DX11Shader>();
+
+		dx11ShaderUnlit->GetVertexShader()->Bind();
+		dx11ShaderUnlit->GetPixelShader()->Bind();
+
+		Hazel::Ref<DX11VertexBuffer> skyboxVB = DX11TestLayer::s_SkyboxSphere->GetVertexBuffer().As<DX11VertexBuffer>();
+		Hazel::Ref<DX11IndexBuffer> skyboxIB = DX11TestLayer::s_SkyboxSphere->GetIndexBuffer().As<DX11IndexBuffer>();
+		skyboxVB->Bind();
+		skyboxIB->Bind();
+		s_PipelineUnlit->Bind();
+
+		glm::mat4 skyboxTransform = glm::mat4(1.0f);
+		skyboxTransform = glm::scale(skyboxTransform, glm::vec3(300.0f));
+		skyboxTransform = glm::rotate(skyboxTransform, glm::radians(Timer::Get()->GetCurrentTimestamp() * 10.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		// World/Model/Transform matrix
+		s_ConstantBufferLayout.Model = skyboxTransform;
+		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
+
+		dx11ShaderUnlit->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+
+		std::vector<Hazel::Ref<DX11Texture2D>> textures;
+		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/umhlanga_sunrise_4k.jpg");
+		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+		textures.push_back(textureDiffuse.As<DX11Texture2D>());
+		textures.push_back(textureNormal.As<DX11Texture2D>());
+
+		dx11ShaderUnlit->GetVertexShader()->SetTextures(textures);
+		dx11ShaderUnlit->GetPixelShader()->SetTextures(textures);
+
+		uint32_t startVertexIndex = 0;
+		uint32_t startIndexLocation = 0;
+		DX11Renderer::DrawIndexedTriangleList(skyboxIB->GetIndexCount(), startVertexIndex, startIndexLocation);
+	}
+	// END Render skybox
+
+	// BEGIN render Mesh Light Source
+	{
+		dx11Shader->GetVertexShader()->Bind();
+		dx11Shader->GetPixelShader()->Bind();
+
+		Hazel::Ref<DX11VertexBuffer> vertexBuffer = DX11TestLayer::s_MeshLight->GetVertexBuffer().As<DX11VertexBuffer>();
+		Hazel::Ref<DX11IndexBuffer> indexBuffer = DX11TestLayer::s_MeshLight->GetIndexBuffer().As<DX11IndexBuffer>();
+		vertexBuffer->Bind();
+		indexBuffer->Bind();
+		s_PipelineIlluminated->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, s_LightPosition);
+		model = glm::scale(model, glm::vec3(10.0f));
+
+		s_ConstantBufferLayout.Model = model;
+		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
+
+		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+
+		std::vector<Hazel::Ref<DX11Texture2D>> textures;
+		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/gold.png");
+		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+
+		textures.push_back(textureDiffuse.As<DX11Texture2D>());
+		textures.push_back(textureNormal.As<DX11Texture2D>());
+
+		dx11Shader->GetVertexShader()->SetTextures(textures);
+		dx11Shader->GetPixelShader()->SetTextures(textures);
+
+		uint32_t indexCount = indexBuffer->GetIndexCount();
+		uint32_t startVertexIndex = 0;
+		uint32_t startIndexLocation = 0;
+		DX11Renderer::DrawIndexedTriangleList(indexCount, startVertexIndex, startIndexLocation);
+	}
+	// END render Mesh Light Source
+
+	// BEGIN render meshes without materials
+	for (auto& renderObject : s_RenderObjects)
+	{
+		RenderMesh(renderObject);
+	}
+
+	s_RenderObjects.clear();
+	// END render meshes without materials
+
+	// BEGIN render meshes with materials
+	for (RenderObject renderObjectWithMaterials : DX11TestLayer::s_RenderObjectsWithMaterials)
+	{
+		RenderMeshDX11(renderObjectWithMaterials, DX11TestLayer::s_ListMaterials);
+	}
+	// END render meshes with materials
+
+	// Rendering ECS entities (meshes)
+	RenderMeshesECS();
+
+	RenderImGui();
+}
+
+// the code is taken from EnvMapSceneRenderer::GeometryPass()
+void DX11Renderer::RenderMeshesECS()
+{
+	// s_PipelineIlluminated->Bind();
+
+	Hazel::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
+
+	auto meshEntities = s_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponent>();
+
+	// Render all entities with mesh component
+	if (meshEntities.size())
+	{
+		for (auto entt : meshEntities)
+		{
+			Hazel::Entity entity = { entt, s_Scene.Raw() };
+			auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+
+			if (meshComponent.Mesh)
+			{
+				glm::mat4 entityTransform = glm::mat4(1.0f);
+				if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
+					entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+				}
+
+				RenderObject renderObject = {};
+				renderObject.Mesh = meshComponent.Mesh;
+				renderObject.PipelineType = RenderObject::PipelineType::Light;
+				renderObject.Transform = entityTransform;
+				renderObject.Entity = entity;
+
+				RenderMesh(renderObject);
+			}
+		}
+	}
+}
+
+void DX11Renderer::RenderMesh(RenderObject renderObject)
+{
+	Hazel::Ref<Hazel::Pipeline> pipeline;
+
+	if (renderObject.PipelineType == RenderObject::PipelineType::Light)
+	{
+		pipeline = s_PipelineIlluminated;
+	}
+	else if (renderObject.PipelineType == RenderObject::PipelineType::Unlit)
+	{
+		pipeline = s_PipelineUnlit;
+	}
+
+	Hazel::Ref<DX11Shader> dx11Shader = pipeline->GetSpecification().Shader.As<DX11Shader>();
+
+	dx11Shader->GetVertexShader()->Bind();
+	dx11Shader->GetPixelShader()->Bind();
+
+	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = renderObject.Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
+	Hazel::Ref<DX11IndexBuffer> dx11meshIB = renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+	dx11MeshVB->Bind();
+	dx11meshIB->Bind();
+	// Hazel::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
+	pipeline->Bind();
+
+	for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())
+	{
+		// World/Model/Transform matrix
+		s_ConstantBufferLayout.Model = renderObject.Transform;
+		s_ConstantBuffer->Update(&s_ConstantBufferLayout);
+
+		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
+		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
+
+		// Render Submesh
+		// load submesh materials for each specific submesh from the s_EnvMapMaterials list
+		Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
+		std::string materialUUID;
+
+		if (renderObject.Entity)
+		{
+			materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(renderObject.Mesh, submesh, &renderObject.Entity);
+			if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end())
+			{
+				envMapMaterial = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
+
+				renderObject.Textures.clear();
+				if (envMapMaterial->GetAlbedoInput().TextureMap)
+				{
+					renderObject.Textures.push_back(envMapMaterial->GetAlbedoInput().TextureMap);
+				}
+
+				if (envMapMaterial->GetNormalInput().TextureMap)
+				{
+					renderObject.Textures.push_back(envMapMaterial->GetNormalInput().TextureMap);
+				}
+			}
+		}
+
+		// Load textures for submesh material
+		std::vector<Hazel::Ref<DX11Texture2D>> textures = {};
+
+		if (renderObject.Textures.size() < 1)
+		{
+			renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/default_material_albedo.png"));
+		}
+		if (renderObject.Textures.size() < 2)
+		{
+			renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/normal_map_default.png"));
+		}
+
+		textures.push_back(renderObject.Textures.at(0).As<DX11Texture2D>()); // Albedo Map
+		textures.push_back(renderObject.Textures.at(1).As<DX11Texture2D>()); // Normal Map
+
+		dx11Shader->GetVertexShader()->SetTextures(textures);
+		dx11Shader->GetPixelShader()->SetTextures(textures);
+
+		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
+		DX11Renderer::DrawIndexedTriangleList(submesh.IndexCount, submesh.BaseVertex, submesh.BaseIndex);
+	}
 }

@@ -22,6 +22,14 @@ Hazel::Ref<Hazel::HazelMesh> DX11TestLayer::s_SkyboxSphere;
 std::vector<RenderObject> DX11TestLayer::s_RenderObjectsWithMaterials;
 std::vector<Hazel::Ref<DX11Material>> DX11TestLayer::s_ListMaterials;
 
+ImGuizmo::OPERATION DX11TestLayer::s_ImGuizmoType;
+
+bool DX11TestLayer::s_LeftControlKeyPressed = false;
+
+bool DX11TestLayer::s_ShowWindowSceneHierarchy = true;
+bool DX11TestLayer::s_ShowWindowAssetManager = true;
+bool DX11TestLayer::s_ShowWindowMaterialEditor = true;
+
 
 DX11TestLayer::DX11TestLayer()
 {
@@ -264,6 +272,10 @@ void DX11TestLayer::Render(const glm::vec4& clearColor, std::shared_ptr<DX11Came
 
 void DX11TestLayer::OnKeyDown(int key)
 {
+	if (key == VK_LCONTROL)
+	{
+		s_LeftControlKeyPressed = true;
+	}
 }
 
 void DX11TestLayer::OnKeyUp(int key)
@@ -285,6 +297,49 @@ void DX11TestLayer::OnKeyUp(int key)
 		uint32_t height = windowRECT.bottom; // - windowRECT.top;
 
 		DX11Context::Get()->GetSwapChain()->SetFullScreen(m_FullscreenEnabled, width, height);
+	}
+
+	// ImGizmo switching modes
+	switch (key)
+	{
+		case '1':
+			s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+			break;
+		case '2':
+			s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
+			break;
+		case '3':
+			s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
+			break;
+		case '4':
+			s_ImGuizmoType = (ImGuizmo::OPERATION)-1;
+			break;
+	}
+
+	if (key == VK_LCONTROL)
+	{
+		s_LeftControlKeyPressed = false;
+	}
+
+	if (s_LeftControlKeyPressed)
+	{
+		if (key == 'H')
+		{
+			s_ShowWindowSceneHierarchy = !s_ShowWindowSceneHierarchy;
+			Log::GetLogger()->info("s_ShowWindowSceneHierarchy: {0}", s_ShowWindowSceneHierarchy);
+		}
+
+		if (key == VK_SPACE)
+		{
+			s_ShowWindowAssetManager = !s_ShowWindowAssetManager;
+			Log::GetLogger()->info("s_ShowWindowAssetManager: {0}", s_ShowWindowAssetManager);
+		}
+
+		if (key == 'M')
+		{
+			s_ShowWindowMaterialEditor = !s_ShowWindowMaterialEditor;
+			Log::GetLogger()->info("s_ShowWindowMaterialEditor: {0}", s_ShowWindowMaterialEditor);
+		}
 	}
 }
 

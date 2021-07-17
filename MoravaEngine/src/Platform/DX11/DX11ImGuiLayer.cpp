@@ -141,10 +141,14 @@ void DX11ImGuiLayer::End()
 	// Update and Render additional Platform Windows
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		if (app->GetWindow()->GetHWND())
+		try
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
+		}
+		catch (...)
+		{
+			Log::GetLogger()->warn("DX11ImGuiLayer::End - UpdatePlatformWindows failed!");
 		}
 	}
 }

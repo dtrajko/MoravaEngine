@@ -88,6 +88,8 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
     m_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
 
+    m_MaterialEditorPanel = new MaterialEditorPanel();
+
     s_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
     m_PlayButtonTex = Hazel::HazelTexture2D::Create("Textures/Hazel/PlayButton.png");
 
@@ -1164,11 +1166,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
     if (m_ShowWindowMaterialEditor)
     {
-        ImGui::Begin("Material Editor", &m_ShowWindowMaterialEditor);
-        {
-            DrawMaterialEditor();
-        }
-        ImGui::End();
+        m_MaterialEditorPanel->OnImGuiRender(&m_ShowWindowMaterialEditor);
     }
 
     if (m_ShowWindowPostProcessing)
@@ -1782,69 +1780,6 @@ void EnvMapEditorLayer::OnNewScene(glm::vec2 viewportSize)
     // m_SceneRenderer->s_Data.ActiveScene = new Hazel::HazelScene();
     EnvMapSharedData::s_EditorScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
     m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
-}
-
-void EnvMapEditorLayer::DrawMaterialEditor()
-{
-    unsigned int materialIndex = 0;
-    for (auto material_it = MaterialLibrary::s_EnvMapMaterials.begin(); material_it != MaterialLibrary::s_EnvMapMaterials.end();)
-    {
-        Hazel::Ref<EnvMapMaterial> material = material_it->second;
-        std::string materialName = material->GetName();
-        MaterialUUID materialUUID = material->GetUUID();
-
-        // Material section
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-        bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)materialIndex++, flags, materialName.c_str());
-
-        bool materialDelete = false;
-        bool materialClone = false;
-
-        if (ImGui::BeginPopupContextItem())
-        {
-            if (ImGui::MenuItem("Delete Material"))
-            {
-                materialDelete = true;
-            }
-
-            if (ImGui::MenuItem("Clone Material"))
-            {
-                materialClone = true;
-            }
-
-            ImGui::EndPopup();
-        }
-
-        if (opened)
-        {
-            ImGuiWrapper::DrawMaterialUI(material, s_CheckerboardTexture);
-
-            ImGui::TreePop();
-        }
-
-        if (materialClone) {
-            auto envMapMaterialSrc = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
-            Hazel::Ref<EnvMapMaterial> envMapMaterialDst = Hazel::Ref<EnvMapMaterial>::Create(MaterialLibrary::NewMaterialName(), envMapMaterialSrc);
-            MaterialLibrary::AddEnvMapMaterial(envMapMaterialDst->GetUUID(), envMapMaterialDst);
-        }
-
-        if (materialDelete) {
-            material_it = MaterialLibrary::s_EnvMapMaterials.erase(material_it++);
-        }
-        else {
-            ++material_it;
-        }
-    }
-
-    // Right-click on blank space
-    if (ImGui::BeginPopupContextWindow(0, 1, false))
-    {
-        if (ImGui::MenuItem("Create a Material"))
-        {
-            MaterialLibrary::AddNewMaterial("");
-        }
-        ImGui::EndPopup();
-    }
 }
 
 void EnvMapEditorLayer::SelectEntity(Hazel::Entity e)

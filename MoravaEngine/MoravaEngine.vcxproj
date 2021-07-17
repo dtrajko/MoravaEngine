@@ -139,6 +139,7 @@
     <ClCompile Include="src\Deferred\GBuffer.cpp" />
     <ClCompile Include="src\Editor\EntitySelection.cpp" />
     <ClCompile Include="src\Editor\Gizmo.cpp" />
+    <ClCompile Include="src\Editor\MaterialEditorPanel.cpp" />
     <ClCompile Include="src\Editor\Pivot.cpp" />
     <ClCompile Include="src\Editor\SceneObject.cpp" />
     <ClCompile Include="src\Editor\SceneObjectLight.cpp" />
@@ -543,6 +544,7 @@
     <ClInclude Include="src\Deferred\GBuffer.h" />
     <ClInclude Include="src\Editor\EntitySelection.h" />
     <ClInclude Include="src\Editor\Gizmo.h" />
+    <ClInclude Include="src\Editor\MaterialEditorPanel.h" />
     <ClInclude Include="src\Editor\Pivot.h" />
     <ClInclude Include="src\Editor\SceneObject.h" />
     <ClInclude Include="src\Editor\SceneObjectLight.h" />

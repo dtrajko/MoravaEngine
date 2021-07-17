@@ -903,6 +903,9 @@
     <ClCompile Include="src\Platform\DX11\DX11MoravaTexture.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
+    <ClCompile Include="src\Editor\MaterialEditorPanel.cpp">
+      <Filter>Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1912,6 +1915,9 @@
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11MoravaTexture.h">
       <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Editor\MaterialEditorPanel.h">
+      <Filter>Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
