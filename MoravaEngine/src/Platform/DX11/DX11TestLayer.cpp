@@ -30,6 +30,19 @@ bool DX11TestLayer::s_ShowWindowSceneHierarchy = true;
 bool DX11TestLayer::s_ShowWindowAssetManager = true;
 bool DX11TestLayer::s_ShowWindowMaterialEditor = true;
 
+Hazel::Ref<Hazel::HazelScene> DX11TestLayer::s_Scene;
+
+glm::mat4 DX11TestLayer::s_CurrentlySelectedTransform;
+
+float DX11TestLayer::s_ViewportWidth = 0.0f;
+float DX11TestLayer::s_ViewportHeight = 0.0f;
+glm::vec2 DX11TestLayer::s_ViewportBounds[2];
+bool DX11TestLayer::s_AllowViewportCameraEvents = true;
+
+Hazel::SceneHierarchyPanel* DX11TestLayer::s_SceneHierarchyPanel;
+Hazel::ContentBrowserPanel* DX11TestLayer::s_ContentBrowserPanel;
+MaterialEditorPanel* DX11TestLayer::s_MaterialEditorPanel;
+
 
 DX11TestLayer::DX11TestLayer()
 {
@@ -48,6 +61,14 @@ DX11TestLayer::~DX11TestLayer()
 void DX11TestLayer::OnAttach()
 {
 	DX11InputSystem::Get()->AddListener(this);
+
+	s_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
+
+	s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(s_Scene);
+
+	s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
+
+	s_MaterialEditorPanel = new MaterialEditorPanel();
 
 	// Application::Get()->GetWindow()->SetInFocus(false);
 
@@ -365,6 +386,8 @@ void DX11TestLayer::OnLeftMouseDown(const glm::vec2& mousePos)
 	//	bool windowInFocus = Application::Get()->GetWindow()->IsInFocus();
 	//	Log::GetLogger()->info("Window::m_InFocus: {0}, m_ShowMouseCursor: {1}, m_Camera->IsEnabled: {2}",
 	//		windowInFocus, m_ShowMouseCursor, DX11CameraFP::Get()->IsEnabled());
+
+	OnLeftMouseDownEventHandler(mousePos);
 }
 
 void DX11TestLayer::OnRightMouseDown(const glm::vec2& mousePos)
@@ -377,4 +400,150 @@ void DX11TestLayer::OnLeftMouseUp(const glm::vec2& mousePos)
 
 void DX11TestLayer::OnRightMouseUp(const glm::vec2& mousePos)
 {
+}
+
+bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
+{
+	float mx = mousePos.x;
+	float my = mousePos.y;
+
+	Log::GetLogger()->debug("DX11TestLayer::OnLeftMouseDownEventHandler mousePos.x: {0}, mousePos.y: {1}", mousePos.x, mousePos.y);
+
+	if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver())
+	{
+		auto [mouseX, mouseY] = GetMouseViewportSpace();
+
+		Log::GetLogger()->debug("DX11TestLayer::OnLeftMouseDownEventHandler GetMouseViewportSpace mouseX: {0}, mouseY: {1}", mouseX, mouseY);
+
+		if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
+		{
+			auto [origin, direction] = CastRay(mouseX, mouseY);
+
+			EntitySelection::s_SelectionContext.clear();
+
+			auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponent>();
+			for (auto e : meshEntities)
+			{
+				Hazel::Entity entity = { e, s_Scene.Raw() };
+				auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+				if (!mesh) {
+					continue;
+				}
+
+				std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
+				float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
+				// for (Hazel::Submesh& submesh : submeshes)
+				for (uint32_t i = 0; i < submeshes.size(); i++)
+				{
+					Hazel::Submesh* submesh = &submeshes[i];
+					auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+					Hazel::Ray ray = {
+						glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
+						glm::inverse(glm::mat3(transform) * glm::mat3(submesh->Transform)) * direction
+					};
+
+					float t;
+					bool intersects = ray.IntersectsAABB(submesh->BoundingBox, t);
+					if (intersects)
+					{
+						const auto& triangleCache = ((Hazel::HazelMesh*)mesh.Raw())->GetTriangleCache(i);
+						if (triangleCache.size())
+						{
+							for (const auto& triangle : triangleCache)
+							{
+								if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+								{
+									AddSubmeshToSelectionContext({ entity, submesh, t });
+
+									Log::GetLogger()->debug("Adding submesh to selection context. Submesh Name: '{0}', selection size: '{1}'",
+										submesh->MeshName, EntitySelection::s_SelectionContext.size());
+									break;
+								}
+							}
+						}
+						else {
+							AddSubmeshToSelectionContext({ entity, submesh, t });
+						}
+					}
+				}
+			}
+			std::sort(EntitySelection::s_SelectionContext.begin(), EntitySelection::s_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
+
+			// TODO: Handle mesh being deleted, etc
+			if (EntitySelection::s_SelectionContext.size()) {
+				s_CurrentlySelectedTransform = EntitySelection::s_SelectionContext[0].Mesh->Transform;
+				OnSelected(EntitySelection::s_SelectionContext[0]);
+			}
+			else {
+				Ref<Hazel::Entity> meshEntity = GetMeshEntity();
+				if (meshEntity) {
+					s_CurrentlySelectedTransform = meshEntity->Transform().GetTransform();
+				}
+			}
+		}
+	}
+	return false;
+}
+
+std::pair<float, float> DX11TestLayer::GetMouseViewportSpace()
+{
+	auto [mx, my] = ImGui::GetMousePos(); // Input::GetMousePosition();
+	mx -= s_ViewportBounds[0].x;
+	my -= s_ViewportBounds[0].y;
+	s_ViewportWidth  = s_ViewportBounds[1].x - s_ViewportBounds[0].x;
+	s_ViewportHeight = s_ViewportBounds[1].y - s_ViewportBounds[0].y;
+
+	return { (mx / s_ViewportWidth) * 2.0f - 1.0f, ((my / s_ViewportHeight) * 2.0f - 1.0f) * -1.0f };
+}
+
+std::pair<glm::vec3, glm::vec3> DX11TestLayer::CastRay(float mx, float my)
+{
+	glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+
+	glm::mat4 projectionMatrix = s_Camera->GetProjectionMatrix();
+	glm::mat4 viewMatrix = s_Camera->GetViewMatrix();
+
+	auto inverseProj = glm::inverse(projectionMatrix);
+	auto inverseView = glm::inverse(glm::mat3(viewMatrix));
+
+	glm::vec4 ray = inverseProj * mouseClipPos;
+	glm::vec3 rayPos = s_Camera->GetPosition();
+	glm::vec3 rayDir = inverseView * glm::vec3(ray); // inverseView * glm::vec3(ray)
+
+	Log::GetLogger()->debug("DX11TestLayer::CastRay | MousePosition [ {0} {1} ]", mx, my);
+	Log::GetLogger()->debug("DX11TestLayer::CastRay | m_ViewportBounds[0] [ {0} {1} ]", s_ViewportBounds[0].x, s_ViewportBounds[0].y);
+	Log::GetLogger()->debug("DX11TestLayer::CastRay | m_ViewportBounds[1] [ {0} {1} ]", s_ViewportBounds[1].x, s_ViewportBounds[1].y);
+	Log::GetLogger()->debug("DX11TestLayer::CastRay | mouseClipPos [ {0} {1} ]", mouseClipPos.x, mouseClipPos.y);
+
+	return { rayPos, rayDir };
+}
+
+void DX11TestLayer::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
+{
+	EntitySelection::s_SelectionContext.push_back(submesh);
+
+	if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Mesh != nullptr) {
+		Log::GetLogger()->debug("SelectionContext[0].Mesh->MeshName: '{0}'", EntitySelection::s_SelectionContext[0].Mesh->MeshName);
+	}
+}
+
+void DX11TestLayer::OnSelected(const SelectedSubmesh& selectionContext)
+{
+	// TODO: move to SceneHazelEnvMap
+	s_SceneHierarchyPanel->SetSelected(selectionContext.Entity);
+	s_Scene->SetSelectedEntity(selectionContext.Entity);
+}
+
+Ref<Hazel::Entity> DX11TestLayer::GetMeshEntity()
+{
+	Ref<Hazel::Entity> meshEntity;
+	auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponent>();
+	if (meshEntities.size()) {
+		for (auto entt : meshEntities)
+		{
+			meshEntity = CreateRef<Hazel::Entity>(entt, s_Scene.Raw());
+		}
+		return meshEntity;
+	}
+	return nullptr;
 }

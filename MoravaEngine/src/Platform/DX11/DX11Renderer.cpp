@@ -73,14 +73,8 @@ static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
 static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
 static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
 
-static Hazel::SceneHierarchyPanel* s_SceneHierarchyPanel;
-static Hazel::ContentBrowserPanel* s_ContentBrowserPanel;
-static MaterialEditorPanel* s_MaterialEditorPanel;
-
 static Hazel::Ref<MoravaFramebuffer> s_RenderFramebuffer;
 static Hazel::Ref<MoravaFramebuffer> s_PostProcessingFramebuffer;
-
-static Hazel::Ref<Hazel::HazelScene> s_Scene; // the Scene object provides the ECS registru
 
 /**** BEGIN variables from Scene.cpp ****/
 
@@ -233,14 +227,6 @@ void DX11Renderer::Init()
 	MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
 
 	s_CheckerboardTexture = ResourceManager::LoadHazelTexture2D("Textures/Hazel/Checkerboard.png");
-
-	s_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
-
-	s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(s_Scene);
-
-	s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
-
-	s_MaterialEditorPanel = new MaterialEditorPanel();
 
 	s_ImGuizmoTransform = nullptr;
 
@@ -491,17 +477,17 @@ void DX11Renderer::RenderImGui()
 
 		if (DX11TestLayer::s_ShowWindowSceneHierarchy)
 		{
-			s_SceneHierarchyPanel->OnImGuiRender(&DX11TestLayer::s_ShowWindowSceneHierarchy);
+			DX11TestLayer::s_SceneHierarchyPanel->OnImGuiRender(&DX11TestLayer::s_ShowWindowSceneHierarchy);
 		}
 
 		if (DX11TestLayer::s_ShowWindowAssetManager)
 		{
-			s_ContentBrowserPanel->OnImGuiRender(&DX11TestLayer::s_ShowWindowAssetManager);
+			DX11TestLayer::s_ContentBrowserPanel->OnImGuiRender(&DX11TestLayer::s_ShowWindowAssetManager);
 		}
 
 		if (DX11TestLayer::s_ShowWindowMaterialEditor)
 		{
-			s_MaterialEditorPanel->OnImGuiRender(&DX11TestLayer::s_ShowWindowMaterialEditor);
+			DX11TestLayer::s_MaterialEditorPanel->OnImGuiRender(&DX11TestLayer::s_ShowWindowMaterialEditor);
 		}
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -531,6 +517,18 @@ void DX11Renderer::RenderImGui()
 			ImGui::Image((void*)(intptr_t)s_RenderTarget->m_ShaderResourceViewDX11, ImVec2{ viewportPanelSize.x, viewportPanelSize.y});
 
 			UpdateImGuizmo();
+
+			auto windowSize = ImGui::GetWindowSize();
+			ImVec2 minBound = ImGui::GetWindowPos();
+
+			minBound.x += viewportOffset.x;
+			// minBound.y += viewportOffset.y;
+
+			ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+			DX11TestLayer::s_ViewportBounds[0] = { minBound.x, minBound.y };
+			DX11TestLayer::s_ViewportBounds[1] = { maxBound.x, maxBound.y };
+
+			DX11TestLayer::s_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
 		}
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -1177,14 +1175,14 @@ void DX11Renderer::RenderMeshesECS()
 
 	Hazel::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
 
-	auto meshEntities = s_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponent>();
+	auto meshEntities = DX11TestLayer::s_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponent>();
 
 	// Render all entities with mesh component
 	if (meshEntities.size())
 	{
 		for (auto entt : meshEntities)
 		{
-			Hazel::Entity entity = { entt, s_Scene.Raw() };
+			Hazel::Entity entity = { entt, DX11TestLayer::s_Scene.Raw() };
 			auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
 
 			if (meshComponent.Mesh)

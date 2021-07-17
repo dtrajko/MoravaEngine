@@ -1803,13 +1803,13 @@ void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& tran
         EnvMapSharedData::s_ShaderHazelPBR->SetMat4("u_Transform", transform * submesh.Transform);
 
         if (material->GetFlag(Hazel::HazelMaterialFlag::DepthTest)) { // TODO: Fix Material flags
-            glEnable(GL_DEPTH_TEST);
+            RendererBasic::EnableDepthTest();
         }
         else {
-            glDisable(GL_DEPTH_TEST);
+            RendererBasic::DisableDepthTest();
         }
 
-        glDrawElementsBaseVertex(GL_TRIANGLES, submesh.GetIndexCount(), GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+        RendererBasic::DrawIndexed(submesh.GetIndexCount(), 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
     }
 }
 
@@ -2111,10 +2111,14 @@ void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 {
     EnvMapSharedData::s_ShadowMapDirLight->BindForWriting();
 
-    glViewport(0, 0, EnvMapSharedData::s_ShadowMapDirLight->GetShadowWidth(), EnvMapSharedData::s_ShadowMapDirLight->GetShadowHeight());
+    uint32_t width = EnvMapSharedData::s_ShadowMapDirLight->GetShadowWidth();
+    uint32_t height = EnvMapSharedData::s_ShadowMapDirLight->GetShadowHeight();
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_BLEND);
+    RendererBasic::SetViewportSize(width, height);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // TODO: create a graphics API-agnostic method in RendererBasic
+
+    RendererBasic::DisableBlend();
     RendererBasic::DisableCulling();
 
     m_ShaderShadow->Bind();
@@ -2139,10 +2143,14 @@ void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, Hazel::E
 {
     omniShadowMap->BindForWriting();
 
-    glViewport(0, 0, omniShadowMap->GetShadowWidth(), omniShadowMap->GetShadowHeight());
+    uint32_t width = omniShadowMap->GetShadowWidth();
+    uint32_t height = omniShadowMap->GetShadowHeight();
+
+    RendererBasic::SetViewportSize(width, height);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_BLEND);
+
+    RendererBasic::DisableBlend();
     RendererBasic::EnableCulling();
 
     m_ShaderOmniShadow->Bind();
@@ -2215,7 +2223,7 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shade
 
                     shader->SetBool("u_Animated", meshComponent.Mesh->IsAnimated());
 
-                    glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+                    RendererBasic::DrawIndexed(submesh.IndexCount, 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
                 }
             }
         }

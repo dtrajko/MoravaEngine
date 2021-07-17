@@ -4,6 +4,8 @@
 
 #include "Hazel/Core/Layer.h"
 #include "Hazel/Core/Timestep.h"
+#include "Hazel/Editor/ContentBrowserPanel.h"
+#include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Events/Event.h"
 #include "Hazel/Scene/Entity.h"
 
@@ -17,6 +19,8 @@
 
 #include "Core/Window.h"
 #include "Scene/Scene.h"
+#include "Editor/EntitySelection.h"
+#include "Editor/MaterialEditorPanel.h"
 
 #include "ImGuizmo.h"
 
@@ -74,6 +78,13 @@ public:
 	virtual void OnLeftMouseUp(const glm::vec2& mousePos) override;
 	virtual void OnRightMouseUp(const glm::vec2& mousePos) override;
 
+	bool OnLeftMouseDownEventHandler(const glm::vec2& mousePos);
+	std::pair<float, float> GetMouseViewportSpace();
+	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my);
+	void AddSubmeshToSelectionContext(SelectedSubmesh submesh);
+	void OnSelected(const SelectedSubmesh& selectionContext);
+	Ref<Hazel::Entity> GetMeshEntity();
+
 public:
 	static Hazel::Ref<DX11Mesh> s_Mesh;
 	static Hazel::Ref<Hazel::HazelMesh> s_MeshLight;
@@ -88,6 +99,19 @@ public:
 	static bool s_ShowWindowSceneHierarchy;
 	static bool s_ShowWindowAssetManager;
 	static bool s_ShowWindowMaterialEditor;
+
+	static Hazel::Ref<Hazel::HazelScene> s_Scene; // the Scene object provides the ECS registry
+
+	static glm::mat4 s_CurrentlySelectedTransform;
+
+	static float s_ViewportWidth;
+	static float s_ViewportHeight;
+	static glm::vec2 s_ViewportBounds[2];
+	static bool s_AllowViewportCameraEvents; // EditorLayer (Raypicking)
+
+	static Hazel::SceneHierarchyPanel* s_SceneHierarchyPanel;
+	static Hazel::ContentBrowserPanel* s_ContentBrowserPanel;
+	static MaterialEditorPanel* s_MaterialEditorPanel;
 
 private:
 	static std::shared_ptr<DX11CameraFP> s_Camera;
