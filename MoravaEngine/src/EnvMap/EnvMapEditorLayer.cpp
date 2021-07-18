@@ -1061,11 +1061,11 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::End();
 
         /////////////////////////////////////////////////////////
-        //// ENV-MAP SETTINGS
+        //// ENVIRONMENT
         /////////////////////////////////////////////////////////
 
-        /**** BEGIN Environment Map Settings ****/
-        ImGui::Begin("EnvMap Settings");
+        /**** BEGIN Environment ****/
+        ImGui::Begin("Environment");
         {
             if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
             {
@@ -1156,7 +1156,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             }
         }
         ImGui::End();
-        /**** END Environment Map Scene Settings ****/
+        /**** END Environment ****/
     }
 
     if (m_ShowWindowAssetManager)
