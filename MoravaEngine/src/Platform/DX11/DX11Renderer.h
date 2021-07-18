@@ -58,6 +58,7 @@ public:
 	// from EnvMapEditorLayer, previously in SceneHazelEnvMap
 	static void SetupRenderFramebuffer();
 	static void ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer);
+	static void DisplaySubmeshMaterialSelector(bool* p_open);
 
 	static void SelectEntity(Hazel::Entity e);
 	static void OnEntityDeleted(Hazel::Entity e);
