@@ -12,10 +12,10 @@ namespace Hazel {
 	{
 		switch (type)
 		{
-			case ShaderDataType::Float:     return VK_FORMAT_R32_SFLOAT;
-			case ShaderDataType::Float2:    return VK_FORMAT_R32G32_SFLOAT;
-			case ShaderDataType::Float3:    return VK_FORMAT_R32G32B32_SFLOAT;
-			case ShaderDataType::Float4:    return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case ShaderDataType::Float:  return VK_FORMAT_R32_SFLOAT;
+			case ShaderDataType::Float2: return VK_FORMAT_R32G32_SFLOAT;
+			case ShaderDataType::Float3: return VK_FORMAT_R32G32B32_SFLOAT;
+			case ShaderDataType::Float4: return VK_FORMAT_R32G32B32A32_SFLOAT;
 		}
 		HZ_CORE_ASSERT(false);
 		return VK_FORMAT_UNDEFINED;
@@ -24,6 +24,12 @@ namespace Hazel {
 	VulkanPipeline::VulkanPipeline(const PipelineSpecification& spec)
 		: m_Specification(spec)
 	{
+		if (!m_Specification.RenderPass->GetSpecification().TargetFramebuffer)
+		{
+			Log::GetLogger()->warn("VulkanPipeline constructor: TargetFramebuffer in RenderPass specification is undefined. Aborting!");
+			return;
+		}
+
 		Invalidate();
 	}
 
