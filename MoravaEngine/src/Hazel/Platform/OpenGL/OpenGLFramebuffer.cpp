@@ -126,85 +126,86 @@ namespace Hazel {
 		: m_Specification(spec)
 	{
 		if (!spec.SwapChainTarget)
+		{
 			Resize(spec.Width, spec.Height, true);
+		}
 	}
 
 	OpenGLFramebuffer::~OpenGLFramebuffer()
 	{
 		GLuint rendererID = m_RendererID;
-		HazelRenderer::Submit([rendererID]() {
-		});
+		// HazelRenderer::Submit([rendererID]() {});
 
 		glDeleteFramebuffers(1, &rendererID);
 	}
 
 	void OpenGLFramebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)
 	{
-		if (!forceRecreate && (m_Width == width && m_Height == height))
-			return;
+		if (!forceRecreate && (m_Width == width && m_Height == height)) return;
 
 		m_Width = width;
 		m_Height = height;
 
-		Ref<OpenGLFramebuffer> instance = this;
-		HazelRenderer::Submit([instance]() mutable
+		// Ref<OpenGLFramebuffer> instance = this;
+		// HazelRenderer::Submit([instance]() mutable {});
+
+		{
+			if (m_RendererID)
 			{
-				if (instance->m_RendererID)
+				glDeleteFramebuffers(1, &m_RendererID);
+
+				m_ColorAttachments.clear();
+			}
+
+			glGenFramebuffers(1, &m_RendererID);
+			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+
+			if (m_ColorAttachmentFormats.size())
+			{
+				m_ColorAttachments.resize(m_ColorAttachmentFormats.size());
+
+				// Create color attachments
+				for (size_t i = 0; i < m_ColorAttachments.size(); i++)
 				{
-					glDeleteFramebuffers(1, &instance->m_RendererID);
-
-					instance->m_ColorAttachments.clear();
+					m_ColorAttachments[i] = Utils::CreateAndAttachColorAttachment(m_Specification.Samples, m_ColorAttachmentFormats[i], m_Width, m_Height, (int)i);
 				}
+			}
 
-				glGenFramebuffers(1, &instance->m_RendererID);
-				glBindFramebuffer(GL_FRAMEBUFFER, instance->m_RendererID);
+			if (m_DepthAttachmentFormat != HazelImageFormat::None)
+			{
+				m_DepthAttachment = Utils::AttachDepthTexture(m_Specification.Samples, m_DepthAttachmentFormat, m_Width, m_Height);
+			}
 
-				if (instance->m_ColorAttachmentFormats.size())
-				{
-					instance->m_ColorAttachments.resize(instance->m_ColorAttachmentFormats.size());
+			if (m_ColorAttachments.size() > 1)
+			{
+				HZ_CORE_ASSERT(m_ColorAttachments.size() <= 4);
+				GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+				glDrawBuffers((GLsizei)m_ColorAttachments.size(), buffers);
+			}
+			else if (m_ColorAttachments.empty())
+			{
+				// Only depth-pass
+				glDrawBuffer(GL_NONE);
+			}
 
-					// Create color attachments
-					for (size_t i = 0; i < instance->m_ColorAttachments.size(); i++)
-						instance->m_ColorAttachments[i] = Utils::CreateAndAttachColorAttachment(instance->m_Specification.Samples, instance->m_ColorAttachmentFormats[i], instance->m_Width, instance->m_Height, (int)i);
-				}
+			HZ_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
 
-				if (instance->m_DepthAttachmentFormat != HazelImageFormat::None)
-				{
-					instance->m_DepthAttachment = Utils::AttachDepthTexture(instance->m_Specification.Samples, instance->m_DepthAttachmentFormat, instance->m_Width, instance->m_Height);
-				}
-
-				if (instance->m_ColorAttachments.size() > 1)
-				{
-					HZ_CORE_ASSERT(instance->m_ColorAttachments.size() <= 4);
-					GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-					glDrawBuffers((GLsizei)instance->m_ColorAttachments.size(), buffers);
-				}
-				else if (instance->m_ColorAttachments.empty())
-				{
-					// Only depth-pass
-					glDrawBuffer(GL_NONE);
-				}
-
-				HZ_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
-
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			});
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
 	}
 
 	void OpenGLFramebuffer::Bind() const
 	{
 		if (m_Specification.SwapChainTarget)
 		{
-			HazelRenderer::Submit([=]() {
-			});
+			// HazelRenderer::Submit([=]() {});
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glViewport(0, 0, m_Specification.Width, m_Specification.Height);
 		}
 		else
 		{
-			HazelRenderer::Submit([=]() {
-			});
+			// HazelRenderer::Submit([=]() {});
 
 			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
 			glViewport(0, 0, m_Specification.Width, m_Specification.Height);
@@ -213,18 +214,16 @@ namespace Hazel {
 
 	void OpenGLFramebuffer::Unbind() const
 	{
-		HazelRenderer::Submit([=]() {
-		});
+		// HazelRenderer::Submit([=]() {});
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void OpenGLFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot) const
 	{
-		Ref<const OpenGLFramebuffer> instance = this;
-		HazelRenderer::Submit([instance, attachmentIndex, slot]() {
-		});
+		// Ref<const OpenGLFramebuffer> instance = this;
+		// HazelRenderer::Submit([instance, attachmentIndex, slot]() {});
 
-		glBindTextureUnit(slot, instance->m_ColorAttachments[attachmentIndex]);
+		glBindTextureUnit(slot, m_ColorAttachments[attachmentIndex]);
 	}
 }

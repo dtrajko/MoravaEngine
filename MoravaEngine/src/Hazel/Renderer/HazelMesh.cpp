@@ -800,9 +800,7 @@ namespace Hazel {
 			Log::GetLogger()->info("Hazel::HazelMesh: Creating a Pipeline...");
 
 			pipelineSpecification.Layout = m_VertexBufferLayout;
-			HazelFramebufferSpecification framebufferSpec = {};
 			RenderPassSpecification renderPassSpecification = {};
-			renderPassSpecification.TargetFramebuffer = Hazel::HazelFramebuffer::Create(framebufferSpec);
 			pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpecification);
 			m_Pipeline = Pipeline::Create(pipelineSpecification);
 		}
