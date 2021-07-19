@@ -281,4 +281,56 @@ namespace Hazel::UI {
 		ImGui::TreePop();
 	}
 
+	static int s_CheckboxCount = 0;
+
+	static void BeginCheckboxGroup(const char* label)
+	{
+		ImGui::Text(label);
+		ImGui::NextColumn();
+		ImGui::PushItemWidth(-1);
+	}
+
+	static bool PropertyCheckboxGroup(const char* label, bool& value)
+	{
+		bool modified = false;
+
+		if (++s_CheckboxCount > 1)
+			ImGui::SameLine();
+
+		ImGui::Text(label);
+		ImGui::SameLine();
+
+		s_IDBuffer[0] = '#';
+		s_IDBuffer[1] = '#';
+		memset(s_IDBuffer + 2, 0, 14);
+		sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++);
+		if (ImGui::Checkbox(s_IDBuffer, &value))
+			modified = true;
+
+		return modified;
+	}
+
+	static bool Button(const char* label, const ImVec2& size = ImVec2(0, 0))
+	{
+		bool result = ImGui::Button(label, size);
+		ImGui::NextColumn();
+		return result;
+	}
+
+	static void EndCheckboxGroup()
+	{
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+		s_CheckboxCount = 0;
+	}
+
+	void Image(const Ref<HazelImage2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+	void Image(const Ref<HazelImage2D>& image, uint32_t layer, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+	void ImageMip(const Ref<HazelImage2D>& image, uint32_t mip, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+	void Image(const Ref<HazelTexture2D>& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+	bool ImageButton(const Ref<HazelImage2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+	bool ImageButton(const char* stringID, const Ref<HazelImage2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+	bool ImageButton(const Ref<HazelTexture2D>& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+	bool ImageButton(const char* stringID, const Ref<HazelTexture2D>& texture, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), int frame_padding = -1, const ImVec4& bg_col = ImVec4(0, 0, 0, 0), const ImVec4& tint_col = ImVec4(1, 1, 1, 1));
+
 }

@@ -48,6 +48,7 @@ namespace Hazel {
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 		virtual uint32_t GetMipLevelCount() const = 0;
+		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const = 0;
 
 		virtual uint64_t GetHash() const = 0;
 

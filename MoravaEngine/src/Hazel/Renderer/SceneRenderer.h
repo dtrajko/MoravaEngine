@@ -14,7 +14,22 @@ namespace Hazel {
 	struct SceneRendererOptions
 	{
 		bool ShowGrid = true;
+		bool ShowSelectedInWireframe = false;
+
 		bool ShowBoundingBoxes = false;
+
+		enum class PhysicsColliderView
+		{
+			None = 0, Normal = 1, OnTop = 2
+		};
+		PhysicsColliderView ShowPhysicsColliders = PhysicsColliderView::None;
+
+		//HBAO
+		bool EnableHBAO = true;
+		float HBAOIntensity = 1.5f;
+		float HBAORadius = 1.0f;
+		float HBAOBias = 0.35f;
+		float HBAOBlurSharpness = 1.0f;
 	};
 
 	struct SceneRendererCamera
@@ -23,6 +38,16 @@ namespace Hazel {
 		glm::mat4 ViewMatrix;
 		float Near, Far;
 		float FOV;
+	};
+
+	struct BloomSettings
+	{
+		bool Enabled = true;
+		float Threshold = 1.0f;
+		float Knee = 0.1f;
+		float UpsampleScale = 1.0f;
+		float Intensity = 1.0f;
+		float DirtIntensity = 1.0f;
 	};
 
 	class SceneRenderer
@@ -85,6 +110,47 @@ namespace Hazel {
 			char Padding3[3] = { 0,0,0 };
 		} RendererDataUB;
 
+		float CascadeSplitLambda = 0.92f;
+		float CascadeFarPlaneOffset = 50.0f, CascadeNearPlaneOffset = -50.0f;
+
+		Ref<Pipeline> m_GeometryPipeline;
+		Ref<Pipeline> m_SelectedGeometryPipeline;
+		Ref<Pipeline> m_GeometryWireframePipeline;
+		Ref<Pipeline> m_GeometryWireframeOnTopPipeline;
+		Ref<Pipeline> m_PreDepthPipeline;
+		Ref<Pipeline> m_CompositePipeline;
+		Ref<Pipeline> m_ShadowPassPipelines[4];
+		Ref<Material> m_ShadowPassMaterial;
+		Ref<Material> m_PreDepthMaterial;
+		Ref<Pipeline> m_SkyboxPipeline;
+		Ref<Material> m_SkyboxMaterial;
+
+		Ref<Pipeline> m_DOFPipeline;
+		Ref<Material> m_DOFMaterial;
+
+		SceneRendererOptions m_Options;
+
+		// Jump Flood Pass
+
+		// Bloom compute
+		Ref<HazelTexture2D> m_BloomComputeTextures[3];
+
+		bool m_ResourcesCreated = false;
+
+		BloomSettings m_BloomSettings;
+		Ref<HazelTexture2D> m_BloomDirtTexture;
+
+		struct GPUTimeQueries
+		{
+			uint32_t ShadowMapPassQuery = 0;
+			uint32_t DepthPrePassQuery = 0;
+			uint32_t LightCullingPassQuery = 0;
+			uint32_t GeometryPassQuery = 0;
+			uint32_t HBAOPassQuery = 0;
+			uint32_t BloomComputePassQuery = 0;
+			uint32_t JumpFloodPassQuery = 0;
+			uint32_t CompositePassQuery = 0;
+		} m_GPUTimeQueries;
 	};
 
 }

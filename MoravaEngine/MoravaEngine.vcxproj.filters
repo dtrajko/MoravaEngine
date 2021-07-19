@@ -2676,11 +2676,8 @@
     <None Include="assets\shaders\VulkanWeekTriangle.glsl">
       <Filter>Resources\Hazel\Shaders</Filter>
     </None>
-    <None Include="Shaders\Hazel\HazelPBR_Static_CascadedShadowMaps.fs">
-      <Filter>Resources\Hazel\Shaders</Filter>
-    </None>
-    <None Include="Shaders\Hazel\HazelPBR_Static_CascadedShadowMaps.vs">
-      <Filter>Resources\Hazel\Shaders</Filter>
+    <None Include="Shaders\Hazel\HazelPBR_Static_CSM.fs">
+      <Filter>Resources\Shaders\Hazel</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
