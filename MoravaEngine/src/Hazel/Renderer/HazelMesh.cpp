@@ -137,6 +137,7 @@ namespace Hazel {
 				moravaShaderSpecificationStatic.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
 				moravaShaderSpecificationStatic.VertexShaderPath = "Shaders/Hazel/HazelPBR_Static.vs";
 				moravaShaderSpecificationStatic.FragmentShaderPath = "Shaders/Hazel/HazelPBR.fs";
+				// moravaShaderSpecificationStatic.FragmentShaderPath = "Shaders/Hazel/HazelPBR_Static_CSM.fs"; // fragment shader with Cascaded Shadow Maps
 				moravaShaderSpecificationStatic.ForceCompile = false;
 
 				MoravaShaderSpecification moravaShaderSpecificationAnim;

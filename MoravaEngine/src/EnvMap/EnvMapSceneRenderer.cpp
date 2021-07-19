@@ -513,6 +513,8 @@ void EnvMapSceneRenderer::GeometryPass()
 
                 EnvMapSharedData::s_ShaderHazelPBR->Bind();
 
+                EnvMapSharedData::s_ShaderHazelPBR->SetBool("u_ShowCascades", true);
+
                 EnvMapSharedData::s_ShadowMapDirLight->ReadTexture(EnvMapSharedData::s_SamplerSlots.at("shadow"));
                 EnvMapSharedData::s_ShaderHazelPBR->SetInt("u_ShadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow"));
 
