@@ -36,6 +36,7 @@ public:
 	inline void* GetNativeWindow() const { return m_GLFW_Window; }
 
 	virtual Hazel::Ref<Hazel::RendererContext> GetRenderContext() override { return m_RendererContext; }
+	virtual Hazel::VulkanSwapChain& GetSwapChain() override;
 
 	void SetInputMode(bool cursorEnabled) override;
 
@@ -135,6 +136,7 @@ private:
 
 	WindowData m_Data;
 	Hazel::Ref<Hazel::RendererContext> m_RendererContext;
+	Hazel::VulkanSwapChain m_SwapChain;
 
 	/**** END Window Hazel version - a platform independent Window interface ****/
 

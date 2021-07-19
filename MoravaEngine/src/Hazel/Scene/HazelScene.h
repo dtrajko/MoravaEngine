@@ -37,9 +37,23 @@ namespace Hazel {
 		bool CastShadows = true;
 	};
 
+	struct HazelPointLight
+	{
+		glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+		float Multiplier = 0.0f;
+		glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+		float MinRadius = 0.001f;
+		float Radius = 25.0f;
+		float Falloff = 1.f;
+		float SourceSize = 0.1f;
+		bool CastsShadows = true;
+		char Padding[3]{ 0, 0, 0 };
+	};
+
 	struct LightEnvironment
 	{
 		HazelDirectionalLight DirectionalLights[4];
+		std::vector<HazelPointLight> PointLights;
 	};
 
 	class Entity;
@@ -153,6 +167,8 @@ namespace Hazel {
 		bool m_IsPlaying = false;
 
 		std::string m_DebugName;
+
+		LightEnvironment m_LightEnvironment;
 
 		friend class Entity;
 		friend class SceneRenderer;

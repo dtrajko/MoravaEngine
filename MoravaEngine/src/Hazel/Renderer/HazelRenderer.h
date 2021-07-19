@@ -106,6 +106,8 @@ namespace Hazel {
 		static void RegisterShaderDependency(Ref<HazelShader> shader, Ref<HazelMaterial> material);
 		static void OnShaderReloaded(size_t hash);
 
+		static uint32_t GetCurrentFrameIndex();
+
 		static RendererConfig& GetConfig();
 
 	private:

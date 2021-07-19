@@ -838,93 +838,6 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::End();
 
         /////////////////////////////////////////////////////////
-        //// SELECTION
-        /////////////////////////////////////////////////////////
-        ImGui::Begin("Selection", &m_ShowWindowSelection);
-        {
-            ImGui::Text("Selection Mode: ");
-            ImGui::SameLine();
-            const char* label = s_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
-            if (ImGui::Button(label))
-            {
-                s_SelectionMode = s_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
-            }
-
-            std::string entityTag = "N/A";
-            std::string meshName = "N/A";
-            SubmeshUUID submeshUUID = "N/A";
-            Hazel::Entity* entity = nullptr;
-
-            if (EntitySelection::s_SelectionContext.size())
-            {
-                SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
-
-                entity = &selectedSubmesh.Entity;
-                entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
-                meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
-                submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
-            }
-
-            ImGui::Text("Selected Entity: ");
-            ImGui::SameLine();
-            ImGui::Text(entityTag.c_str());
-
-            ImGui::Text("Selected Mesh: ");
-            ImGui::SameLine();
-            ImGui::Text(meshName.c_str());
-
-            // Drop down for selecting a material for a specific submesh
-            std::vector<std::string> materialNameStrings;
-            int index = 0;
-            for (auto& material : MaterialLibrary::s_EnvMapMaterials) {
-                materialNameStrings.push_back(material.second->GetName());
-            }
-
-            std::string submeshMaterialName = materialNameStrings.size() ? materialNameStrings[0] : "N/A";
-
-            MaterialUUID materialUUID;
-            if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
-                materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
-            }
-            int selectedMaterial = -1;
-
-            if (ImGui::BeginCombo("Material", submeshMaterialName.c_str()))
-            {
-                size_t emm_index = 0;
-                for (auto emm_it = MaterialLibrary::s_EnvMapMaterials.begin(); emm_it != MaterialLibrary::s_EnvMapMaterials.end(); emm_it++)
-                {
-                    bool is_selected = (submeshMaterialName == materialNameStrings[emm_index]);
-                    if (ImGui::Selectable(materialNameStrings.at(emm_index).c_str(), is_selected))
-                    {
-                        submeshMaterialName = materialNameStrings[emm_index];
-                        materialUUID = emm_it->second->GetUUID();
-                        if (meshName != "N/A" && submeshMaterialName != "N/A" && submeshUUID != "N/A")
-                        {
-                            auto sm_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
-                            if (sm_it != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
-                                sm_it->second = materialUUID;
-                                Log::GetLogger()->debug("s_SubmeshMaterialUUIDs UPDATE [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
-                                    submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
-                                break;
-                            }
-                            else {
-                                MaterialLibrary::s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
-                                Log::GetLogger()->debug("s_SubmeshMaterialUUIDs INSERT [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
-                                    submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
-                            }
-                        }
-                    }
-                    if (is_selected) {
-                        ImGui::SetItemDefaultFocus();
-                    }
-                    emm_index++;
-                }
-                ImGui::EndCombo();
-            }
-        }
-        ImGui::End();
-
-        /////////////////////////////////////////////////////////
         //// TOOLBAR
         /////////////////////////////////////////////////////////
         {
@@ -1171,6 +1084,11 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     if (m_ShowWindowMaterialEditor)
     {
         m_MaterialEditorPanel->OnImGuiRender(&m_ShowWindowMaterialEditor);
+    }
+
+    if (m_ShowWindowMaterialEditor)
+    {
+        DisplaySubmeshMaterialSelector(&m_ShowWindowMaterialEditor);
     }
 
     if (m_ShowWindowPostProcessing)
@@ -1723,6 +1641,96 @@ void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
         }
 
         ImGui::EndMenuBar();
+    }
+    ImGui::End();
+}
+
+void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
+{
+    /////////////////////////////////////////////////////////
+    //// SELECTION
+    /////////////////////////////////////////////////////////
+    ImGui::Begin("Selection", p_open);
+    {
+        ImGui::Text("Selection Mode: ");
+        ImGui::SameLine();
+        const char* label = s_SelectionMode == SelectionMode::Entity ? "Entity" : "Mesh";
+        if (ImGui::Button(label))
+        {
+            s_SelectionMode = s_SelectionMode == SelectionMode::Entity ? SelectionMode::SubMesh : SelectionMode::Entity;
+        }
+
+        std::string entityTag = "N/A";
+        std::string meshName = "N/A";
+        SubmeshUUID submeshUUID = "N/A";
+        Hazel::Entity* entity = nullptr;
+
+        if (EntitySelection::s_SelectionContext.size())
+        {
+            SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
+
+            entity = &selectedSubmesh.Entity;
+            entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
+            meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
+            submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
+        }
+
+        ImGui::Text("Selected Entity: ");
+        ImGui::SameLine();
+        ImGui::Text(entityTag.c_str());
+
+        ImGui::Text("Selected Mesh: ");
+        ImGui::SameLine();
+        ImGui::Text(meshName.c_str());
+
+        // Drop down for selecting a material for a specific submesh
+        std::vector<std::string> materialNameStrings;
+        int index = 0;
+        for (auto& material : MaterialLibrary::s_EnvMapMaterials) {
+            materialNameStrings.push_back(material.second->GetName());
+        }
+
+        std::string submeshMaterialName = materialNameStrings.size() ? materialNameStrings[0] : "N/A";
+
+        MaterialUUID materialUUID;
+        if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
+            materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
+        }
+        int selectedMaterial = -1;
+
+        if (ImGui::BeginCombo("Material", submeshMaterialName.c_str()))
+        {
+            size_t emm_index = 0;
+            for (auto emm_it = MaterialLibrary::s_EnvMapMaterials.begin(); emm_it != MaterialLibrary::s_EnvMapMaterials.end(); emm_it++)
+            {
+                bool is_selected = (submeshMaterialName == materialNameStrings[emm_index]);
+                if (ImGui::Selectable(materialNameStrings.at(emm_index).c_str(), is_selected))
+                {
+                    submeshMaterialName = materialNameStrings[emm_index];
+                    materialUUID = emm_it->second->GetUUID();
+                    if (meshName != "N/A" && submeshMaterialName != "N/A" && submeshUUID != "N/A")
+                    {
+                        auto sm_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
+                        if (sm_it != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
+                            sm_it->second = materialUUID;
+                            Log::GetLogger()->debug("s_SubmeshMaterialUUIDs UPDATE [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
+                                submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
+                            break;
+                        }
+                        else {
+                            MaterialLibrary::s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
+                            Log::GetLogger()->debug("s_SubmeshMaterialUUIDs INSERT [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
+                                submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
+                        }
+                    }
+                }
+                if (is_selected) {
+                    ImGui::SetItemDefaultFocus();
+                }
+                emm_index++;
+            }
+            ImGui::EndCombo();
+        }
     }
     ImGui::End();
 }

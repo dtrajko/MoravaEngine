@@ -6,7 +6,9 @@ namespace Hazel {
 
 	Environment Environment::Load(const std::string& filepath)
 	{
+		// FilePath = filepath;
 		auto [radiance, irradiance] = SceneRenderer::CreateEnvironmentMap(filepath);
+		// return { filepath, radiance, irradiance };
 		return { radiance, irradiance };
 	}
 }

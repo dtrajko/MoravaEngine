@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "Hazel/Scene/HazelScene.h"
+#include "RenderCommandBuffer.h"
 #include "Hazel/Scene/Components.h"
+#include "Hazel/Scene/HazelScene.h"
 #include "HazelMesh.h"
 #include "RenderPass.h"
 
@@ -53,7 +54,7 @@ namespace Hazel {
 
 		static SceneRendererOptions& GetOptions();
 
-		static void OnImGuiRender();
+		void OnImGuiRender();
 
 	private:
 		static void FlushDrawList();
@@ -62,6 +63,28 @@ namespace Hazel {
 		static void BloomBlurPass();
 
 		static void ShadowMapPass();
+
+	private:
+		Ref<RenderCommandBuffer> m_CommandBuffer;
+
+		struct UBRendererData
+		{
+			glm::vec4 CascadeSplits;
+			uint32_t TilesCountX{ 0 };
+			bool ShowCascades = false;
+			char Padding0[3] = { 0,0,0 }; // Bools are 4-bytes in GLSL
+			bool SoftShadows = true;
+			char Padding1[3] = { 0,0,0 };
+			float LightSize = 0.5f;
+			float MaxShadowDistance = 200.0f;
+			float ShadowFade = 1.0f;
+			bool CascadeFading = true;
+			char Padding2[3] = { 0,0,0 };
+			float CascadeTransitionFade = 1.0f;
+			bool ShowLightComplexity = false;
+			char Padding3[3] = { 0,0,0 };
+		} RendererDataUB;
+
 	};
 
 }

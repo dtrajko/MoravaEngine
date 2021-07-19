@@ -32,6 +32,8 @@ namespace Hazel {
 		static uint32_t GetViewportWidth();
 		static uint32_t GetViewportHeight();
 
+		static int32_t& GetSelectedDrawCall();
+
 	};
 
 }

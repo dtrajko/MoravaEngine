@@ -57,6 +57,8 @@ public:
 	void OnImGuiRender(Window* mainWindow, Scene* scene);
 	void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 
+	void DisplaySubmeshMaterialSelector(bool* p_open);
+
 	void NewScene();
 	void OpenScene();
 	void SaveScene();

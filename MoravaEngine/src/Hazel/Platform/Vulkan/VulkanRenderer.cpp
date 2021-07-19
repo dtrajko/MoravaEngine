@@ -24,6 +24,34 @@
 
 namespace Hazel {
 
+	struct VulkanRendererData
+	{
+		RendererCapabilities RenderCaps;
+
+		Ref<HazelTexture2D> BRDFLut;
+
+		Ref<VertexBuffer> QuadVertexBuffer;
+		Ref<IndexBuffer> QuadIndexBuffer;
+		VulkanShader::ShaderMaterialDescriptorSet QuadDescriptorSet;
+
+		std::unordered_map<SceneRenderer*, std::vector<VulkanShader::ShaderMaterialDescriptorSet>> RendererDescriptorSet;
+		VkDescriptorSet ActiveRendererDescriptorSet = nullptr;
+		std::vector<VkDescriptorPool> DescriptorPools;
+		std::vector<uint32_t> DescriptorPoolAllocationCount;
+
+		// UniformBufferSet -> Shader Hash -> Frame -> WriteDescriptor
+		// std::unordered_map<UniformBufferSet*, std::unordered_map<uint64_t, std::vector<std::vector<VkWriteDescriptorSet>>>> UniformBufferWriteDescriptorCache;
+		// std::unordered_map<StorageBufferSet*, std::unordered_map<uint64_t, std::vector<std::vector<VkWriteDescriptorSet>>>> StorageBufferWriteDescriptorCache;
+
+		// Default samplers
+		VkSampler SamplerClamp = nullptr;
+
+		int32_t SelectedDrawCall = -1;
+		int32_t DrawCallCount = 0;
+	};
+
+	// static VulkanRendererData* s_Data = nullptr;
+
 	static VkCommandBuffer s_ImGuiCommandBuffer;
 	static VkCommandBuffer s_CompositeCommandBuffer;
 
@@ -42,13 +70,13 @@ namespace Hazel {
 	static Submesh* s_SelectedSubmesh;
 	static glm::mat4* s_Transform_ImGuizmo = nullptr;
 
-	struct VulkanRendererData
+	struct VulkanRendererDataOld
 	{
 		VkCommandBuffer ActiveCommandBuffer = nullptr;
 		Ref<HazelShaderLibrary> m_ShaderLibrary;
 	};
 
-	static VulkanRendererData s_Data;
+	static VulkanRendererDataOld s_Data;
 
 
 	void VulkanRenderer::SubmitMesh(const Ref<HazelMesh>& mesh)
@@ -873,6 +901,12 @@ namespace Hazel {
 	uint32_t VulkanRenderer::GetViewportHeight()
 	{
 		return s_ViewportHeight;
+	}
+
+	int32_t& VulkanRenderer::GetSelectedDrawCall()
+	{
+		int32_t v;
+		return v; // TODO: s_Data->SelectedDrawCall;
 	}
 
 }

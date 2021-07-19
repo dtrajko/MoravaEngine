@@ -15,6 +15,7 @@ namespace Hazel {
 			: RadianceMap(radianceMap), IrradianceMap(irradianceMap) {}
 
 		static Environment Load(const std::string& filepath);
+
 	};
 
 }

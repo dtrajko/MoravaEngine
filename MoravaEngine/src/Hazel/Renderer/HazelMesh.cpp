@@ -268,7 +268,13 @@ namespace Hazel {
 			// Indices
 			for (size_t i = 0; i < mesh->mNumFaces; i++)
 			{
-				HZ_CORE_ASSERT(mesh->mFaces[i].mNumIndices == 3, "Must have 3 indices.");
+				// HZ_CORE_ASSERT(mesh->mFaces[i].mNumIndices == 3, "Must have 3 indices.");
+				if (mesh->mFaces[i].mNumIndices != 3)
+				{
+					Log::GetLogger()->error("HazelMesh: the face contains invalid number of indices (expected: 3, detected: {0})!", mesh->mFaces[i].mNumIndices);
+					continue;
+				}
+
 				Index index = { mesh->mFaces[i].mIndices[0], mesh->mFaces[i].mIndices[1], mesh->mFaces[i].mIndices[2] };
 				m_Indices.push_back(index);
 
@@ -1228,10 +1234,13 @@ namespace Hazel {
 
 	const std::vector<Triangle> HazelMesh::GetTriangleCache(uint32_t index) const
 	{
-		if (index < m_TriangleCache.size())
+		std::unordered_map<uint32_t, std::vector<Triangle>>::const_iterator entry = m_TriangleCache.find(index);
+
+		if (index < m_TriangleCache.size() && entry != m_TriangleCache.end())
 		{
-			return m_TriangleCache.at(index);
+			return entry->second;
 		}
+
 		return std::vector<Triangle>();
 	}
 

@@ -155,19 +155,36 @@ namespace Hazel {
 
 	void HazelScene::Init()
 	{
-		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL) {
-			auto skyboxShader = MoravaShader::Create("Shaders/Hazel/Skybox.vs", "Shaders/Hazel/Skybox.fs");
-			m_SkyboxMaterial = Material::Create(skyboxShader);
-			m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
-		}
-		else {
-			// auto skyboxShader = HazelShader::Create("assets/shaders/Renderer2D.glsl");
+		MoravaShaderSpecification moravaShaderSpec;
 
-			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
-			// auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox"); // Spir-V method // Pre-load shaders in order to use Get
-			// m_SkyboxMaterial = HazelMaterial::Create(skyboxShader);
-			// m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
+		switch (Hazel::RendererAPI::Current())
+		{
+			case Hazel::RendererAPIType::OpenGL:
+				moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
+				moravaShaderSpec.VertexShaderPath = "Shaders/Hazel/Skybox.vs";
+				moravaShaderSpec.FragmentShaderPath = "Shaders/Hazel/Skybox.fs";
+				break;
+			case Hazel::RendererAPIType::Vulkan:
+				moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
+				moravaShaderSpec.HazelShaderPath = "assets/shaders/Skybox.glsl";
+				break;
+			case Hazel::RendererAPIType::DX11:
+				moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+				moravaShaderSpec.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
+				moravaShaderSpec.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
+				break;
 		}
+		moravaShaderSpec.ForceCompile = false;
+		auto skyboxShader = MoravaShader::Create(moravaShaderSpec);
+
+		m_SkyboxMaterial = Material::Create(skyboxShader);
+		m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
+
+		// auto skyboxShader = HazelShader::Create("assets/shaders/Renderer2D.glsl");
+		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
+		// auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox"); // Spir-V method // Pre-load shaders in order to use Get
+		// m_SkyboxMaterial = HazelMaterial::Create(skyboxShader);
+		// m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 	}
 
 	// Merge OnUpdate/Render into one function?
@@ -289,6 +306,37 @@ namespace Hazel {
 		/////////////////////////////////////////////////////////////////////
 		// RENDER 3D SCENE
 		/////////////////////////////////////////////////////////////////////
+
+		// Process lights
+		{
+			m_LightEnvironment = LightEnvironment();
+			auto lights = m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
+			uint32_t directionalLightIndex = 0;
+			for (auto entity : lights)
+			{
+				auto [transformComponent, lightComponent] = lights.get<TransformComponent, DirectionalLightComponent>(entity);
+				glm::vec3 direction = -glm::normalize(glm::mat3(transformComponent.GetTransform()) * glm::vec3(1.0f));
+				m_LightEnvironment.DirectionalLights[directionalLightIndex++] =
+				{
+					direction,
+					lightComponent.Radiance,
+					1.0f
+				};
+			}
+		}
+
+		// TODO: only one sky light at the moment!
+		{
+			m_Environment = Environment();
+			auto lights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
+			for (auto entity : lights)
+			{
+				auto [transformComponent, skyLightComponent] = lights.get<TransformComponent, SkyLightComponent>(entity);
+				m_Environment = skyLightComponent.SceneEnvironment;
+				SetSkybox(m_Environment.RadianceMap);
+			}
+		}
+
 
 		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 		{

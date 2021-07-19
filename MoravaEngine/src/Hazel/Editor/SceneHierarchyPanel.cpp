@@ -97,9 +97,41 @@ namespace Hazel
 				// Right-click on blank space
 				if (ImGui::BeginPopupContextWindow(0, 1, false))
 				{
-					if (ImGui::MenuItem("Create Empty Entity"))
+					if (ImGui::BeginMenu("Create"))
 					{
-						m_Context->CreateEntity("Empty Entity");
+						if (ImGui::MenuItem("Empty Entity"))
+						{
+							Hazel::Entity newEntity = m_Context->CreateEntity("Empty Entity");
+							// SetSelected(newEntity);
+						}
+
+						if (ImGui::MenuItem("Mesh"))
+						{
+							Hazel::Entity newEntity = m_Context->CreateEntity("Mesh");
+							SetSelected(newEntity);
+							newEntity.AddComponent<MeshComponent>();
+							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
+						}
+
+						ImGui::Separator();
+
+						if (ImGui::MenuItem("Directional Light"))
+						{
+							Hazel::Entity newEntity = m_Context->CreateEntity("Directional Light");
+							// newEntity.AddComponent<DirectionalLightComponent>();
+							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
+							// SetSelected(newEntity);
+						}
+
+						if (ImGui::MenuItem("Sky Light"))
+						{
+							Hazel::Entity newEntity = m_Context->CreateEntity("Sky Light");
+							// newEntity.AddComponent<SkyLightComponent>();
+							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
+							// SetSelected(newEntity);
+						}
+
+						ImGui::EndMenu();
 					}
 					ImGui::EndPopup();
 				}

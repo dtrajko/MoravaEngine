@@ -4,6 +4,9 @@
 #include "Renderer2D.h"
 #include "HazelFramebuffer.h"
 
+#include "Hazel/ImGui/ImGui.h"
+#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -275,7 +278,6 @@ namespace Hazel {
 		if (outline)
 		{
 			// HazelRenderer::Submit([]() {});
-
 			{
 				glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 			}
@@ -285,14 +287,24 @@ namespace Hazel {
 
 		if (outline)
 		{
-			HazelRenderer::Submit([]()
+			// HazelRenderer::Submit([]() {});
 			{
 				glStencilMask(0);
-			});
+			}
 		}
 
-		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
-		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
+		auto& sceneCamera = s_Data.SceneData.SceneCamera;
+
+		auto viewProjection = sceneCamera.Camera.GetProjectionMatrix() * sceneCamera.ViewMatrix;
+		glm::vec3 cameraPosition = glm::inverse(sceneCamera.ViewMatrix)[3]; // TODO: Negate instead
+
+		// Skybox
+		auto skyboxShader = s_Data.SceneData.SkyboxMaterial->GetShader();
+
+		auto inverseVP = glm::inverse(viewProjection);
+		skyboxShader->SetUniformBuffer("Camera", &inverseVP, sizeof(glm::mat4));
+		HazelRenderer::SubmitFullscreenQuad(/*s_Data.SkyboxPipeline,*/s_Data.SceneData.SkyboxMaterial);
+
 
 		struct EnvironmentUB
 		{
@@ -305,12 +317,6 @@ namespace Hazel {
 		environmentUB.lights = s_Data.SceneData.ActiveLight;
 		environmentUB.u_CameraPosition = cameraPosition;
 		s_Data.GridShader->SetUniformBuffer("Environment", &environmentUB, sizeof(EnvironmentUB));
-
-		// Skybox
-		auto skyboxShader = s_Data.SceneData.SkyboxMaterial->GetShader();
-		auto inverseVP = glm::inverse(viewProjection);
-		skyboxShader->SetUniformBuffer("Camera", &inverseVP, sizeof(glm::mat4));
-		HazelRenderer::SubmitFullscreenQuad(/*s_Data.SkyboxPipeline,*/s_Data.SceneData.SkyboxMaterial);
 
 		// Set uniform buffers
 		s_Data.GridShader->SetUniformBuffer("Camera", &viewProjection, sizeof(glm::mat4));
@@ -367,9 +373,7 @@ namespace Hazel {
 
 		if (outline)
 		{
-			HazelRenderer::Submit([]()
-			{
-			});
+			// HazelRenderer::Submit([]() {});
 
 			{
 				glStencilFunc(GL_NOTEQUAL, 1, 0xff);
@@ -463,6 +467,169 @@ namespace Hazel {
 
 	void SceneRenderer::OnImGuiRender()
 	{
+		// HZ_PROFILE_FUNC();
+
+		ImGui::Begin("Scene Renderer");
+
+		if (ImGui::TreeNode("Shaders"))
+		{
+			auto& shaders = HazelShader::s_AllShaders;
+			for (auto& shader : shaders)
+			{
+				if (ImGui::TreeNode(shader->GetName().c_str()))
+				{
+					std::string buttonName = "Reload##" + shader->GetName();
+					if (ImGui::Button(buttonName.c_str()))
+						shader->Reload(true);
+					ImGui::TreePop();
+				}
+			}
+			ImGui::TreePop();
+		}
+
+		if (UI::BeginTreeNode("Visualization"))
+		{
+			UI::BeginPropertyGrid();
+			UI::Property("Show Light Complexity", RendererDataUB.ShowLightComplexity);
+			UI::Property("Show Shadow Cascades", RendererDataUB.ShowCascades);
+			static int maxDrawCall = 1000;
+			UI::PropertySlider("Selected Draw", VulkanRenderer::GetSelectedDrawCall(), -1, maxDrawCall);
+			UI::Property("Max Draw Call", maxDrawCall);
+			UI::EndPropertyGrid();
+			UI::EndTreeNode();
+		}
+
+		if (UI::BeginTreeNode("Render Statistics"))
+		{
+			uint32_t frameIndex = HazelRenderer::GetCurrentFrameIndex();
+			ImGui::Text("GPU time: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex));
+
+			//	ImGui::Text("Shadow Map Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.ShadowMapPassQuery));
+			//	ImGui::Text("Depth Pre-Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.DepthPrePassQuery));
+			//	ImGui::Text("Light Culling Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.LightCullingPassQuery));
+			//	ImGui::Text("Geometry Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GeometryPassQuery));
+			//	ImGui::Text("HBAO Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.HBAOPassQuery));
+			//	ImGui::Text("Bloom Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.BloomComputePassQuery));
+			//	ImGui::Text("Jump Flood Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.JumpFloodPassQuery));
+			//	ImGui::Text("Composite Pass: %.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.CompositePassQuery));
+			//	
+			//	if (UI::BeginTreeNode("Pipeline Statistics"))
+			//	{
+			//		const PipelineStatistics& pipelineStats = m_CommandBuffer->GetPipelineStatistics(frameIndex);
+			//		ImGui::Text("Input Assembly Vertices: %llu", pipelineStats.InputAssemblyVertices);
+			//		ImGui::Text("Input Assembly Primitives: %llu", pipelineStats.InputAssemblyPrimitives);
+			//		ImGui::Text("Vertex Shader Invocations: %llu", pipelineStats.VertexShaderInvocations);
+			//		ImGui::Text("Clipping Invocations: %llu", pipelineStats.ClippingInvocations);
+			//		ImGui::Text("Clipping Primitives: %llu", pipelineStats.ClippingPrimitives);
+			//		ImGui::Text("Fragment Shader Invocations: %llu", pipelineStats.FragmentShaderInvocations);
+			//		ImGui::Text("Compute Shader Invocations: %llu", pipelineStats.ComputeShaderInvocations);
+			//		UI::EndTreeNode();
+			//	}
+			//	
+			//	UI::EndTreeNode();
+		}
+
+		if (UI::BeginTreeNode("Bloom Settings"))
+		{
+			//	UI::BeginPropertyGrid();
+			//	UI::Property("Bloom Enabled", m_BloomSettings.Enabled);
+			//	UI::Property("Threshold", m_BloomSettings.Threshold);
+			//	UI::Property("Knee", m_BloomSettings.Knee);
+			//	UI::Property("Upsample Scale", m_BloomSettings.UpsampleScale);
+			//	UI::Property("Intensity", m_BloomSettings.Intensity, 0.05f, 0.0f, 20.0f);
+			//	UI::Property("Dirt Intensity", m_BloomSettings.DirtIntensity, 0.05f, 0.0f, 20.0f);
+			//	
+			//	// TODO(Yan): move this to somewhere else
+			//	UI::Image(m_BloomDirtTexture, ImVec2(64, 64));
+			//	if (ImGui::IsItemHovered())
+			//	{
+			//		if (ImGui::IsItemClicked())
+			//		{
+			//			std::string filename = Application::Get().OpenFile("");
+			//			if (!filename.empty())
+			//				m_BloomDirtTexture = Texture2D::Create(filename);
+			//		}
+			//	}
+			//	
+			//	UI::EndPropertyGrid();
+			//	UI::EndTreeNode();
+		}
+
+		if (UI::BeginTreeNode("Horizon-Based Ambient Occlusion"))
+		{
+			//	UI::BeginPropertyGrid();
+			//	UI::Property("Enable", m_Options.EnableHBAO);
+			//	UI::Property("Intensity", m_Options.HBAOIntensity, 0.05f, 0.1f, 4.0f);
+			//	UI::Property("Radius", m_Options.HBAORadius, 0.05f, 0.0f, 4.0f);
+			//	UI::Property("Bias", m_Options.HBAOBias, 0.02f, 0.0f, 0.95f);
+			//	UI::Property("Blur Sharpness", m_Options.HBAOBlurSharpness, 0.5f, 0.0f, 100.f);
+			//	UI::EndPropertyGrid();
+			//	
+			//	float size = ImGui::GetContentRegionAvailWidth();
+			//	if (m_ResourcesCreated)
+			//	{
+			//		float size = ImGui::GetContentRegionAvailWidth();
+			//		auto image = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
+			//		UI::Image(image, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+			//	}
+			//	
+			//	UI::EndTreeNode();
+		}
+
+		if (UI::BeginTreeNode("Shadows"))
+		{
+			//	UI::BeginPropertyGrid();
+			//	UI::Property("Soft Shadows", RendererDataUB.SoftShadows);
+			//	UI::Property("DirLight Size", RendererDataUB.LightSize, 0.01f);
+			//	UI::Property("Max Shadow Distance", RendererDataUB.MaxShadowDistance, 1.0f);
+			//	UI::Property("Shadow Fade", RendererDataUB.ShadowFade, 5.0f);
+			//	UI::EndPropertyGrid();
+			//	if (UI::BeginTreeNode("Cascade Settings"))
+			//	{
+			//		UI::BeginPropertyGrid();
+			//		UI::Property("Cascade Fading", RendererDataUB.CascadeFading);
+			//		UI::Property("Cascade Transition Fade", RendererDataUB.CascadeTransitionFade, 0.05f, 0.0f, FLT_MAX);
+			//		UI::Property("Cascade Split", CascadeSplitLambda, 0.01f);
+			//		UI::Property("CascadeNearPlaneOffset", CascadeNearPlaneOffset, 0.1f, -FLT_MAX, 0.0f);
+			//		UI::Property("CascadeFarPlaneOffset", CascadeFarPlaneOffset, 0.1f, 0.0f, FLT_MAX);
+			//		UI::EndPropertyGrid();
+			//		UI::EndTreeNode();
+			//	}
+			//	if (UI::BeginTreeNode("Shadow Map", false))
+			//	{
+			//		static int cascadeIndex = 0;
+			//		auto fb = m_ShadowPassPipelines[cascadeIndex]->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
+			//		auto image = fb->GetDepthImage();
+			//	
+			//		float size = ImGui::GetContentRegionAvailWidth(); // (float)fb->GetWidth() * 0.5f, (float)fb->GetHeight() * 0.5f
+			//		UI::BeginPropertyGrid();
+			//		UI::PropertySlider("Cascade Index", cascadeIndex, 0, 3);
+			//		UI::EndPropertyGrid();
+			//		if (m_ResourcesCreated)
+			//			UI::Image(image, (uint32_t)cascadeIndex, { size, size }, { 0, 1 }, { 1, 0 });
+			//		UI::EndTreeNode();
+			//	}
+			//	
+			//	UI::EndTreeNode();
+		}
+
+		if (UI::BeginTreeNode("Compute Bloom"))
+		{
+			//	float size = ImGui::GetContentRegionAvailWidth();
+			//	if (m_ResourcesCreated)
+			//	{
+			//		static int tex = 0;
+			//		UI::PropertySlider("Texture", tex, 0, 2);
+			//		static int mip = 0;
+			//		auto [mipWidth, mipHeight] = m_BloomComputeTextures[tex]->GetMipSize(mip);
+			//		std::string label = fmt::format("Mip ({0}x{1})", mipWidth, mipHeight);
+			//		UI::PropertySlider(label.c_str(), mip, 0, m_BloomComputeTextures[tex]->GetMipLevelCount() - 1);
+			//		UI::ImageMip(m_BloomComputeTextures[tex]->GetImage(), mip, { size, size * (1.0f / m_BloomComputeTextures[tex]->GetImage()->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+			//	}
+			//	UI::EndTreeNode();
+		}
+
+		ImGui::End();
 	}
 
 	void SceneRenderer::CompositePass()

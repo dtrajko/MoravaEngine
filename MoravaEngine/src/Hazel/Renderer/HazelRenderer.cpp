@@ -335,6 +335,12 @@ namespace Hazel {
 		}
 	}
 
+	uint32_t HazelRenderer::GetCurrentFrameIndex()
+	{
+		// return uint32_t();
+		return Application::Get()->GetWindow()->GetSwapChain().GetCurrentBufferIndex();
+	}
+
 	static RendererAPI* InitRendererAPI()
 	{
 		switch (RendererAPI::Current())

@@ -2,6 +2,7 @@
 
 #include "Hazel/Events/Event.h"
 #include "Hazel/Renderer/RendererContext.h"
+#include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
 
 #include "Core/CommonValues.h"
 
@@ -95,5 +96,6 @@ public:
 	virtual const bool GetEventLogging() const = 0;
 
 	virtual Hazel::Ref<Hazel::RendererContext> GetRenderContext() = 0;
+	virtual Hazel::VulkanSwapChain& GetSwapChain() = 0;
 
 };

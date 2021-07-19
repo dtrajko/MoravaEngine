@@ -906,6 +906,9 @@
     <ClCompile Include="src\Editor\MaterialEditorPanel.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\RenderCommandBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1918,6 +1921,9 @@
     </ClInclude>
     <ClInclude Include="src\Editor\MaterialEditorPanel.h">
       <Filter>Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RenderCommandBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

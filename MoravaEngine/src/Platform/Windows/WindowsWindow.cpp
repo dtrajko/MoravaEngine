@@ -590,6 +590,11 @@ void WindowsWindow::SetShouldClose(bool shouldClose)
 	glfwSetWindowShouldClose(m_GLFW_Window, shouldClose);
 }
 
+Hazel::VulkanSwapChain& WindowsWindow::GetSwapChain()
+{
+	return m_SwapChain;
+}
+
 void WindowsWindow::SetInputMode(bool cursorEnabled)
 {
 	if (cursorEnabled)
