@@ -47,15 +47,21 @@ namespace Hazel {
 
 		static Ref<RenderPass> GetFinalRenderPass();
 		static Ref<HazelTexture2D> GetFinalColorBuffer();
-		
+
 		// TODO: Temp
 		static uint32_t GetFinalColorBufferRendererID();
 
 		static SceneRendererOptions& GetOptions();
+
+		static void OnImGuiRender();
+
 	private:
 		static void FlushDrawList();
 		static void GeometryPass();
 		static void CompositePass();
+		static void BloomBlurPass();
+
+		static void ShadowMapPass();
 	};
 
 }

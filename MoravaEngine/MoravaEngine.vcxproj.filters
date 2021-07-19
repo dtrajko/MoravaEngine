@@ -2670,6 +2670,12 @@
     <None Include="assets\shaders\VulkanWeekTriangle.glsl">
       <Filter>Resources\Hazel\Shaders</Filter>
     </None>
+    <None Include="Shaders\Hazel\HazelPBR_Static_CascadedShadowMaps.fs">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
+    <None Include="Shaders\Hazel\HazelPBR_Static_CascadedShadowMaps.vs">
+      <Filter>Resources\Hazel\Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\HLSL\DirectionalLightPixelShader.hlsl">

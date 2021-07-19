@@ -20,6 +20,8 @@ namespace Hazel {
 			// Resources
 			Ref<HazelMaterial> SkyboxMaterial;
 			Environment SceneEnvironment;
+			float SceneEnvironmentIntensity;
+			LightEnvironment SceneLightEnvironment;
 			HazelLight ActiveLight;
 		} SceneData;
 
@@ -37,6 +39,7 @@ namespace Hazel {
 		Ref<RenderPass> ShadowMapRenderPass[4];
 		float ShadowMapSize = 20.0f;
 		float LightDistance = 0.1f;
+		glm::mat4 LightMatrices[4];
 		glm::mat4 LightViewMatrix;
 		float CascadeSplitLambda = 0.91f;
 		glm::vec4 CascadeSplits;
@@ -71,16 +74,31 @@ namespace Hazel {
 		};
 		std::vector<DrawCommand> DrawList;
 		std::vector<DrawCommand> SelectedMeshDrawList;
+		std::vector<DrawCommand> ShadowPassDrawList;
 
 		// Grid
 		Ref<HazelMaterial> GridMaterial;
 		Ref<HazelShader> GridShader;
 		Ref<HazelMaterial> OutlineMaterial;
+		Ref<HazelMaterial> OutlineAnimMaterial;
 
 		SceneRendererOptions Options;
 	};
 
+	struct SceneRendererStats
+	{
+		float ShadowPass = 0.0f;
+		float GeometryPass = 0.0f;
+		float CompositePass = 0.0f;
+
+		Timer ShadowPassTimer;
+		Timer GeometryPassTimer;
+		Timer CompositePassTimer;
+	};
+
 	static SceneRendererData* s_Data;
+	static SceneRendererStats s_Stats;
+
 
 	void SceneRenderer::Init()
 	{
@@ -415,21 +433,6 @@ namespace Hazel {
 		HazelRenderer::EndRenderPass();
 	}
 
-	void SceneRenderer::CompositePass()
-	{
-		HazelRenderer::BeginRenderPass(s_Data->CompositePass);
-
-		float exposure = s_Data->SceneData.SceneCamera.Camera.GetExposure();
-		int textureSamples = s_Data->GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
-
-		s_Data->CompositeShader->Bind();
-		s_Data->CompositeShader->SetUniform("u_Uniforms.Exposure", exposure);
-		s_Data->CompositeShader->SetUniform("u_Uniforms.TextureSamples", textureSamples);
-		s_Data->GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
-		HazelRenderer::SubmitFullscreenQuad(/*s_Data->CompositePipeline,*/s_Data->CompositeMaterial);
-		HazelRenderer::EndRenderPass();
-	}
-
 	void SceneRenderer::FlushDrawList()
 	{
 		HZ_CORE_ASSERT(!s_Data->ActiveScene, "");
@@ -460,6 +463,200 @@ namespace Hazel {
 	SceneRendererOptions& SceneRenderer::GetOptions()
 	{
 		return s_Data->Options;
+	}
+
+	void SceneRenderer::OnImGuiRender()
+	{
+	}
+
+	void SceneRenderer::CompositePass()
+	{
+		HazelRenderer::BeginRenderPass(s_Data->CompositePass);
+
+		float exposure = s_Data->SceneData.SceneCamera.Camera.GetExposure();
+		int textureSamples = s_Data->GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
+
+		s_Data->CompositeShader->Bind();
+		s_Data->CompositeShader->SetUniform("u_Uniforms.Exposure", exposure);
+		s_Data->CompositeShader->SetUniform("u_Uniforms.TextureSamples", textureSamples);
+		s_Data->GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
+		HazelRenderer::SubmitFullscreenQuad(/*s_Data->CompositePipeline,*/s_Data->CompositeMaterial);
+		HazelRenderer::EndRenderPass();
+	}
+
+	void SceneRenderer::BloomBlurPass()
+	{
+	}
+
+	struct FrustumBounds
+	{
+		float r, l, b, t, f, n;
+	};
+
+	struct CascadeData
+	{
+		glm::mat4 ViewProj;
+		glm::mat4 View;
+		float SplitDepth;
+	};
+
+	static void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection)
+	{
+		FrustumBounds frustumBounds[3];
+
+		auto& sceneCamera = s_Data->SceneData.SceneCamera;
+		auto viewProjection = sceneCamera.Camera.GetProjectionMatrix() * sceneCamera.ViewMatrix;
+
+		const int SHADOW_MAP_CASCADE_COUNT = 4;
+		float cascadeSplits[SHADOW_MAP_CASCADE_COUNT];
+
+		// TODO: less hard-coding!
+		float nearClip = 0.1f;
+		float farClip = 1000.0f;
+		float clipRange = farClip - nearClip;
+
+		float minZ = nearClip;
+		float maxZ = nearClip + clipRange;
+
+		float range = maxZ - minZ;
+		float ratio = maxZ / minZ;
+
+		// Calculate split depths based on view camera frustum
+		// Based on method presented in
+		// https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-10-parallel-split-shadow-maps-programmable-gpus
+
+		for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
+		{
+			float p = (i + 1) / static_cast<float>(SHADOW_MAP_CASCADE_COUNT);
+			float log = minZ * std::pow(ratio, p);
+			float uniform = minZ + range * p;
+			float d = s_Data->CascadeSplitLambda * (log - uniform) + uniform;
+			cascadeSplits[i] = (d - nearClip) / clipRange;
+		}
+
+		cascadeSplits[3] = 0.3f;
+
+		// Manually set cascades here
+		// cascadeSplits[0] = 0.05f;
+		// cascadeSplits[1] = 0.15f;
+		// cascadeSplits[2] = 0.3f;
+		// cascadeSplits[3] = 1.0f;
+
+// Calculate orthographic projection matrix for each cascade
+		float lastSplitDist = 0.0;
+		for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
+		{
+			float splitDist = cascadeSplits[i];
+
+			glm::vec3 frustumCorners[8] =
+			{
+				glm::vec3(-1.0f,  1.0f, -1.0f),
+				glm::vec3(1.0f,  1.0f, -1.0f),
+				glm::vec3(1.0f, -1.0f, -1.0f),
+				glm::vec3(-1.0f, -1.0f, -1.0f),
+				glm::vec3(-1.0f,  1.0f,  1.0f),
+				glm::vec3(1.0f,  1.0f,  1.0f),
+				glm::vec3(1.0f, -1.0f,  1.0f),
+				glm::vec3(-1.0f, -1.0f,  1.0f),
+			};
+
+			// Project frustum corners into world space
+			glm::mat4 invCam = glm::inverse(viewProjection);
+			for (uint32_t i = 0; i < 8; i++)
+			{
+				glm::vec4 invCorner = invCam * glm::vec4(frustumCorners[i], 1.0f);
+				frustumCorners[i] = invCorner / invCorner.w;
+			}
+
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				glm::vec3 dist = frustumCorners[i + 4] - frustumCorners[i];
+				frustumCorners[i + 4] = frustumCorners[i] + (dist * splitDist);
+				frustumCorners[i] = frustumCorners[i] + (dist * lastSplitDist);
+			}
+
+			// Get frustum center
+			glm::vec3 frustumCenter = glm::vec3(0.0f);
+			for (uint32_t i = 0; i < 8; i++)
+				frustumCenter += frustumCorners[i];
+
+			frustumCenter /= 8.0f;
+
+			//frustumCenter *= 0.01f;
+
+			float radius = 0.0f;
+			for (uint32_t i = 0; i < 8; i++)
+			{
+				float distance = glm::length(frustumCorners[i] - frustumCenter);
+				radius = glm::max(radius, distance);
+			}
+			radius = std::ceil(radius * 16.0f) / 16.0f;
+
+			glm::vec3 maxExtents = glm::vec3(radius);
+			glm::vec3 minExtents = -maxExtents;
+
+			glm::vec3 lightDir = -lightDirection;
+			glm::mat4 lightViewMatrix = glm::lookAt(frustumCenter - lightDir * -minExtents.z, frustumCenter, glm::vec3(0.0f, 0.0f, 1.0f));
+			glm::mat4 lightOrthoMatrix = glm::ortho(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f + s_Data->CascadeNearPlaneOffset, maxExtents.z - minExtents.z + s_Data->CascadeFarPlaneOffset);
+
+			// Offset to texel space to avoid shimmering (from https://stackoverflow.com/questions/33499053/cascaded-shadow-map-shimmering)
+			glm::mat4 shadowMatrix = lightOrthoMatrix * lightViewMatrix;
+			const float ShadowMapResolution = 4096.0f;
+			glm::vec4 shadowOrigin = (shadowMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)) * ShadowMapResolution / 2.0f;
+			glm::vec4 roundedOrigin = glm::round(shadowOrigin);
+			glm::vec4 roundOffset = roundedOrigin - shadowOrigin;
+			roundOffset = roundOffset * 2.0f / ShadowMapResolution;
+			roundOffset.z = 0.0f;
+			roundOffset.w = 0.0f;
+
+			lightOrthoMatrix[3] += roundOffset;
+
+			// Store split distance and matrix in cascade
+			cascades[i].SplitDepth = (nearClip + splitDist * clipRange) * -1.0f;
+			cascades[i].ViewProj = lightOrthoMatrix * lightViewMatrix;
+			cascades[i].View = lightViewMatrix;
+
+			lastSplitDist = cascadeSplits[i];
+		}
+	}
+
+	void SceneRenderer::ShadowMapPass()
+	{
+		auto& directionalLights = s_Data->SceneData.SceneLightEnvironment.DirectionalLights;
+		if (directionalLights[0].Multiplier == 0.0f || !directionalLights[0].CastShadows) { return; }
+
+		CascadeData cascades[4];
+		CalculateCascades(cascades, directionalLights[0].Direction);
+		s_Data->LightViewMatrix = cascades[0].View;
+
+		// HazelRenderer::Submit([](){});
+		{
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+		}
+
+		for (int i = 0; i < 4; i++)
+		{
+			s_Data->CascadeSplits[i] = cascades[i].SplitDepth;
+
+			HazelRenderer::BeginRenderPass(s_Data->ShadowMapRenderPass[i]);
+
+			glm::mat4 shadowMapVP = cascades[i].ViewProj;
+
+			static glm::mat4 scaleBiasMatrix = glm::scale(glm::mat4(1.0f), { 0.5f, 0.5f, 0.5f }) * glm::translate(glm::mat4(1.0f), { 1, 1, 1 });
+			s_Data->LightMatrices[i] = scaleBiasMatrix * cascades[i].ViewProj;
+
+
+			// Render entities
+			for (auto& dc : s_Data->ShadowPassDrawList)
+			{
+				Ref<HazelShader> shader = dc.Mesh->IsAnimated() ? s_Data->ShadowMapAnimShader : s_Data->ShadowMapShader;
+				shader->SetMat4("u_ViewProjection", shadowMapVP);
+				HazelRenderer::SubmitMeshWithShader(dc.Mesh, dc.Transform, shader);
+			}
+
+			HazelRenderer::EndRenderPass();
+		}
 	}
 
 }

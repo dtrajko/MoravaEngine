@@ -27,6 +27,21 @@ namespace Hazel {
 		float Multiplier = 1.0f;
 	};
 
+	struct HazelDirectionalLight
+	{
+		glm::vec3 Direction = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+		float Multiplier = 0.0f;
+
+		// C++ only
+		bool CastShadows = true;
+	};
+
+	struct LightEnvironment
+	{
+		HazelDirectionalLight DirectionalLights[4];
+	};
+
 	class Entity;
 	class ScriptableEntity;
 	using EntityMap = std::unordered_map<UUID, entt::entity>;

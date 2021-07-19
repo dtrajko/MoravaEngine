@@ -420,9 +420,9 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(Hazel::Ref<MoravaShader> shade
     shaderHazelPBR->SetInt("u_BRDFLUTTexture", EnvMapSharedData::s_SamplerSlots.at("BRDF_LUT"));
 
     // Set lights (TODO: move to light environment and don't do per mesh)
-    shaderHazelPBR->SetFloat3("lights.Direction", EnvMapSceneRenderer::GetActiveLight().Direction);
-    shaderHazelPBR->SetFloat3("lights.Radiance", EnvMapSceneRenderer::GetActiveLight().Radiance);
-    shaderHazelPBR->SetFloat("lights.Multiplier", EnvMapSceneRenderer::GetActiveLight().Multiplier);
+    shaderHazelPBR->SetFloat3("u_DirectionalLights.Direction", EnvMapSceneRenderer::GetActiveLight().Direction);
+    shaderHazelPBR->SetFloat3("u_DirectionalLights.Radiance", EnvMapSceneRenderer::GetActiveLight().Radiance);
+    shaderHazelPBR->SetFloat("u_DirectionalLights.Multiplier", EnvMapSceneRenderer::GetActiveLight().Multiplier);
 
     shaderHazelPBR->SetInt("pointLightCount", 1);
     shaderHazelPBR->SetInt("spotLightCount", 1);

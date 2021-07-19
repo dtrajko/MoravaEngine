@@ -20,7 +20,8 @@ const int LightCount = 1;
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
 
-struct Light {
+struct DirectionalLight
+{
 	vec3 Direction;
 	vec3 Radiance;
 	float Multiplier;
@@ -37,11 +38,14 @@ in VertexOutput
 	vec4 DirLightSpacePos;
 	vec3 FragPos;
 	mat3 TBN;
+	vec4 ShadowMapCoords[4];
+	vec3 ViewPosition;
 } vs_Input;
 
 layout(location = 0) out vec4 color;
+layout(location = 1) out vec4 o_BloomColor;
 
-uniform Light lights;
+uniform DirectionalLight u_DirectionalLights;
 uniform vec3 u_CameraPosition;
 
 // PBR texture inputs
@@ -58,6 +62,25 @@ uniform samplerCube u_EnvIrradianceTex;
 
 // BRDF LUT
 uniform sampler2D u_BRDFLUTTexture;
+
+// PCSS
+uniform sampler2D u_ShadowMapTexture[4];
+uniform mat4 u_LightView;
+uniform bool u_ShowCascades;
+uniform bool u_SoftShadows;
+uniform float u_LightSize;
+uniform float u_MaxShadowDistance;
+uniform float u_ShadowFade;
+uniform bool u_CascadeFading;
+uniform float u_CascadeTransitionFade;
+
+uniform vec4 u_CascadeSplits;
+
+uniform float u_IBLContribution;
+
+uniform float u_BloomThreshold;
+
+////////////////////////////////////////
 
 // uniform vec3 u_AlbedoColor; // TODO: move to Material struct
 // uniform float u_Metalness;  // TODO: move to Material struct
@@ -238,7 +261,7 @@ float CalcDirectionalShadowFactor()
 	float currentDepth = projCoords.z;
 
 	vec3 normal = normalize(m_Params.Normal);
-	vec3 lightDir = normalize(lights.Direction);
+	vec3 lightDir = normalize(u_DirectionalLights.Direction);
 
 	float bias = max(0.001 * (1.0 - dot(normal, lightDir)), 0.0001);
 	
@@ -487,8 +510,8 @@ vec3 Lighting(vec3 F0)
 	vec3 result = vec3(0.0);
 	for(int i = 0; i < LightCount; i++)
 	{
-		vec3 Li = -lights.Direction;
-		vec3 Lradiance = lights.Radiance * lights.Multiplier;
+		vec3 Li = -u_DirectionalLights.Direction;
+		vec3 Lradiance = u_DirectionalLights.Radiance * u_DirectionalLights.Multiplier;
 		vec3 Lh = normalize(Li + m_Params.View);
 
 		// Calculate angles between surface normal and various light vectors.
@@ -514,7 +537,7 @@ vec3 Lighting(vec3 F0)
 		result += m_Params.SpotLights.rgb;
 	}
 
-	result *= lights.Multiplier;
+	result *= u_DirectionalLights.Multiplier;
 	return result;
 }
 
