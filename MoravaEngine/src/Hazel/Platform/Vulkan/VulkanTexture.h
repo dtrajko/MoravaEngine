@@ -54,6 +54,9 @@ namespace Hazel {
 		}
 
 		virtual uint32_t GetID() const override { return uint32_t(0); /* Not implemented */ }
+
+		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
+
 	private:
 		std::string m_Path;
 		uint32_t m_Width;
@@ -86,6 +89,7 @@ namespace Hazel {
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 		virtual uint32_t GetMipLevelCount() const override;
+		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 
 		virtual bool operator==(const HazelTexture& other) const override { return false; }
 

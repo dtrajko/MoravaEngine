@@ -5,13 +5,16 @@
 
 #include "../../ImGui/imgui.h"
 
+#include "Hazel/Renderer/HazelTexture.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <string>
 
 
-namespace Hazel::UI {
+namespace Hazel::UI
+{
 
 	static int s_UIContextID = 0;
 	static uint32_t s_Counter = 0;

@@ -386,6 +386,12 @@ namespace Hazel {
 		return 0;
 	}
 
+	std::pair<uint32_t, uint32_t> VulkanTexture2D::GetMipSize(uint32_t mip) const
+	{
+		Log::GetLogger()->error("VulkanTexture2D::GetMipSize({0}) - method not implemented!", mip);
+		return std::pair<uint32_t, uint32_t>();
+	}
+
 	//////////////////////////////////////////////////////////////////////////////////
 	// TextureCube
 	//////////////////////////////////////////////////////////////////////////////////
@@ -880,6 +886,12 @@ namespace Hazel {
 
 		m_DescriptorImageInfo.imageLayout = readonly ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL;
 
+	}
+
+	std::pair<uint32_t, uint32_t> VulkanTextureCube::GetMipSize(uint32_t mip) const
+	{
+		Log::GetLogger()->error("VulkanTextureCube::GetMipSize({0}) - method not implemented!", mip);
+		return std::pair<uint32_t, uint32_t>();
 	}
 
 }

@@ -25,6 +25,7 @@ public:
 
 	static GLenum TextureTarget(bool multisampled);
 
+
 public:
 	MoravaTexture::Specification m_Spec;
 

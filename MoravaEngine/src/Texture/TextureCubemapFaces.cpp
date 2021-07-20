@@ -59,6 +59,12 @@ TextureCubemapFaces::TextureCubemapFaces(std::vector<std::string> faces)
     printf("Texture Cube Map succesfully created! [m_ID=%i]\n", m_ID);
 }
 
+std::pair<uint32_t, uint32_t> TextureCubemapFaces::GetMipSize(uint32_t mip) const
+{
+    Log::GetLogger()->error("TextureCubemapFaces::GetMipSize({0}) - method not implemented!", mip);
+    return std::pair<uint32_t, uint32_t>();
+}
+
 void TextureCubemapFaces::Bind(uint32_t textureSlot) const
 {
     glActiveTexture(GL_TEXTURE0 + textureSlot);

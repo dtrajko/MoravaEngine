@@ -45,6 +45,7 @@ public:
 	void Clear();
 	uint32_t CalculateMipMapCount(uint32_t width, uint32_t height); // used in Hazel::SceneRenderer
 	uint32_t GetMipLevelCount();
+	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 
 	inline uint32_t GetID() const { return m_ID; };
 	inline uint32_t GetWidth() const { return m_Spec.Width; };

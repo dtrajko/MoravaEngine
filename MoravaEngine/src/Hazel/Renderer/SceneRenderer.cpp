@@ -329,7 +329,41 @@ namespace Hazel {
 			baseMaterial->Set("u_EnvRadianceTex", s_Data.SceneData.SceneEnvironment.RadianceMap);
 			baseMaterial->Set("u_EnvIrradianceTex", s_Data.SceneData.SceneEnvironment.IrradianceMap);
 			baseMaterial->Set("u_BRDFLUTTexture", s_Data.BRDFLUT);
-			// TODO ...
+
+			// Set lights (TODO: move to light environment and don't do per mesh)
+			auto directionalLight = s_Data.SceneData.SceneLightEnvironment.DirectionalLights[0];
+			// baseMaterial->Set("u_DirectionalLights", directionalLight);
+
+			//	auto rd = baseMaterial->FindResourceDeclaration("u_ShadowMapTexture");
+			//	if (rd)
+			//	{
+			//		auto reg = rd->GetRegister();
+			//	
+			//		auto tex  = s_Data.ShadowMapRenderPass[0]->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID();
+			//		auto tex1 = s_Data.ShadowMapRenderPass[1]->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID();
+			//		auto tex2 = s_Data.ShadowMapRenderPass[2]->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID();
+			//		auto tex3 = s_Data.ShadowMapRenderPass[3]->GetSpecification().TargetFramebuffer->GetColorAttachmentRendererID();
+			//	
+			//		// HazelRenderer::Submit([reg, tex, tex1, tex2, tex3]() mutable {});
+			//		{
+			//			// 4 cascades
+			//			glBindTextureUnit(reg, tex);
+			//			glBindSampler(reg++, s_Data.ShadowMapSampler);
+			//	
+			//			glBindTextureUnit(reg, tex1);
+			//			glBindSampler(reg++, s_Data.ShadowMapSampler);
+			//	
+			//			glBindTextureUnit(reg, tex2);
+			//			glBindSampler(reg++, s_Data.ShadowMapSampler);
+			//	
+			//			glBindTextureUnit(reg, tex3);
+			//			glBindSampler(reg++, s_Data.ShadowMapSampler);
+			//		}
+			//	}
+
+			auto overrideMaterial = nullptr; // dc.Material
+			// HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, overrideMaterial);
+
 		}
 
 		struct EnvironmentUB
@@ -457,18 +491,6 @@ namespace Hazel {
 		}
 
 		HazelRenderer::EndRenderPass();
-	}
-
-	void SceneRenderer::FlushDrawList()
-	{
-		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
-
-		GeometryPass();
-		CompositePass();
-
-		s_Data.DrawList.clear();
-		s_Data.SelectedMeshDrawList.clear();
-		s_Data.SceneData = {};
 	}
 
 	Ref<HazelTexture2D> SceneRenderer::GetFinalColorBuffer()
@@ -744,12 +766,12 @@ namespace Hazel {
 			glm::vec3 frustumCorners[8] =
 			{
 				glm::vec3(-1.0f,  1.0f, -1.0f),
-				glm::vec3(1.0f,  1.0f, -1.0f),
-				glm::vec3(1.0f, -1.0f, -1.0f),
+				glm::vec3( 1.0f,  1.0f, -1.0f),
+				glm::vec3( 1.0f, -1.0f, -1.0f),
 				glm::vec3(-1.0f, -1.0f, -1.0f),
 				glm::vec3(-1.0f,  1.0f,  1.0f),
-				glm::vec3(1.0f,  1.0f,  1.0f),
-				glm::vec3(1.0f, -1.0f,  1.0f),
+				glm::vec3( 1.0f,  1.0f,  1.0f),
+				glm::vec3( 1.0f, -1.0f,  1.0f),
 				glm::vec3(-1.0f, -1.0f,  1.0f),
 			};
 
@@ -850,6 +872,53 @@ namespace Hazel {
 
 			HazelRenderer::EndRenderPass();
 		}
+	}
+
+	void SceneRenderer::FlushDrawList()
+	{
+		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+
+		memset(&s_Stats, 0, sizeof(SceneRendererStats));
+
+		{
+			// HazelRenderer::Submit([]() {});
+			{
+				// s_Stats.ShadowPassTimer.Reset(); // TODO: add method Timer::Reset()
+			}
+			ShadowMapPass();
+			// HazelRenderer::Submit([]() {});
+			{
+				// s_Stats.ShadowPass = s_Stats.ShadowPassTimer.ElapsedMillis(); // TODO: add method Timer::ElapsedMillis()
+			}
+		}
+
+		{
+			// HazelRenderer::Submit([]() {});
+			{
+				// s_Stats.GeometryPassTimer.Reset(); // TODO: add method Timer::Reset()
+			}
+			GeometryPass();
+			// HazelRenderer::Submit([]() {});
+			{
+				// s_Stats.ShadowPass = s_Stats.GeometryPassTimer.ElapsedMillis(); // TODO: add method Timer::ElapsedMillis()
+			}
+		}
+
+		{
+			// HazelRenderer::Submit([]() {});
+			{
+				// s_Stats.CompositePassTimer.Reset(); // TODO: add method Timer::Reset()
+			}
+			CompositePass();
+			// HazelRenderer::Submit([]() {});
+			{
+				// s_Stats.ShadowPass = s_Stats.CompositePassTimer.ElapsedMillis(); // TODO: add method Timer::ElapsedMillis()
+			}
+		}
+
+		s_Data.DrawList.clear();
+		s_Data.SelectedMeshDrawList.clear();
+		s_Data.SceneData = {};
 	}
 
 }

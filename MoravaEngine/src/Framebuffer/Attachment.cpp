@@ -62,3 +62,9 @@ Hazel::HazelImageFormat Attachment::GetFormat() const
 		break;
 	}
 }
+
+std::pair<uint32_t, uint32_t> Attachment::GetMipSize(uint32_t mip) const
+{
+	Log::GetLogger()->error("Attachment::GetMipSize({0}) - method not implemented!", mip);
+	return std::pair<uint32_t, uint32_t>();
+}

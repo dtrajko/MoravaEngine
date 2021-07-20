@@ -46,12 +46,13 @@ public:
 	virtual void Unbind() = 0;
 
 	// virtual methods from Hazel::HazelTexture
-	virtual Hazel::HazelImageFormat GetFormat() const;
-	virtual uint32_t GetMipLevelCount() const { Log::GetLogger()->error("Attachment::GetMipLevelCount - method not implemented!"); return 0; }
-	virtual uint64_t GetHash() const { Log::GetLogger()->error("Attachment::GetHash - method not implemented!"); return 0; }
-	virtual Hazel::TextureType GetType() const { Log::GetLogger()->error("Attachment::GetType - method not implemented!"); return Hazel::TextureType(); }
-	virtual bool operator==(const HazelTexture& other) const { Log::GetLogger()->error("Attachment::operator== - method not implemented!"); return false; }
-	virtual void SetData(void* data, uint32_t size) { Log::GetLogger()->error("Attachment::SetData - method not implemented!"); }
+	virtual Hazel::HazelImageFormat GetFormat() const override ;
+	virtual uint64_t GetHash() const override { Log::GetLogger()->error("Attachment::GetHash - method not implemented!"); return 0; }
+	virtual Hazel::TextureType GetType() const override { Log::GetLogger()->error("Attachment::GetType - method not implemented!"); return Hazel::TextureType(); }
+	virtual bool operator==(const HazelTexture& other) const override { Log::GetLogger()->error("Attachment::operator== - method not implemented!"); return false; }
+	virtual void SetData(void* data, uint32_t size) override { Log::GetLogger()->error("Attachment::SetData - method not implemented!"); }
+	virtual uint32_t GetMipLevelCount() const override { Log::GetLogger()->error("Attachment::GetMipLevelCount - method not implemented!"); return 0; }
+	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 
 protected:
 	unsigned int m_ID;

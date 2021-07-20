@@ -297,6 +297,12 @@ uint32_t OpenGLMoravaTexture::GetMipLevelCount()
 	return CalculateMipMapCount(m_Spec.Width, m_Spec.Height);
 }
 
+std::pair<uint32_t, uint32_t> OpenGLMoravaTexture::GetMipSize(uint32_t mip) const
+{
+	Log::GetLogger()->error("OpenGLMoravaTexture::GetMipSize({0}) - method not implemented!", mip);
+	return std::pair<uint32_t, uint32_t>();
+}
+
 OpenGLMoravaTexture::~OpenGLMoravaTexture()
 {
 	Clear();

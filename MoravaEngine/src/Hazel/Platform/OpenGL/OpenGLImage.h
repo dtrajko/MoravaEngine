@@ -24,6 +24,7 @@ namespace Hazel {
 		virtual HazelImageFormat GetFormat() const override { return m_Format; }
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
+		virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
 		virtual Buffer GetBuffer() const override { return m_ImageData; }
 		virtual Buffer& GetBuffer() override { return m_ImageData; }
@@ -35,7 +36,10 @@ namespace Hazel {
 		RendererID GetSamplerRendererID() const { return m_SamplerRendererID; }
 
 		virtual uint64_t GetHash() const override { return (uint64_t)m_RendererID; }
+
 	private:
+		ImageSpecification m_Specification;
+
 		RendererID m_RendererID = 0;
 		RendererID m_SamplerRendererID = 0;
 		uint32_t m_Width, m_Height;

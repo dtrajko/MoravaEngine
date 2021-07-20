@@ -54,6 +54,12 @@ TextureCubemap::TextureCubemap(MoravaTexture::Specification spec)
 	CreateAPISpecific();
 }
 
+std::pair<uint32_t, uint32_t> TextureCubemap::GetMipSize(uint32_t mip) const
+{
+	Log::GetLogger()->error("TextureCubemap::GetMipSize({0}) - method not implemented!", mip);
+	return std::pair<uint32_t, uint32_t>();
+}
+
 void TextureCubemap::CreateAPISpecific()
 {
 	glGenTextures(1, &m_ID);

@@ -25,6 +25,27 @@ namespace Hazel {
 		Depth = DEPTH24STENCIL8
 	};
 
+	enum class ImageUsage
+	{
+		None = 0,
+		Texture,
+		Attachment,
+		Storage
+	};
+
+	struct ImageSpecification
+	{
+		HazelImageFormat Format = HazelImageFormat::RGBA;
+		ImageUsage Usage = ImageUsage::Texture;
+		uint32_t Width = 1;
+		uint32_t Height = 1;
+		uint32_t Mips = 1;
+		uint32_t Layers = 1;
+		bool Deinterleaved = false;
+
+		std::string DebugName;
+	};
+
 	class HazelImage : public RefCounted
 	{
 	public:
@@ -52,6 +73,7 @@ namespace Hazel {
 	public:
 		static Ref<HazelImage2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, Buffer buffer);
 		static Ref<HazelImage2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
+
 	};
 
 	namespace Utils {
@@ -78,6 +100,14 @@ namespace Hazel {
 		inline uint32_t GetImageMemorySize(HazelImageFormat format, uint32_t width, uint32_t height)
 		{
 			return width * height * GetImageFormatBPP(format);
+		}
+
+		inline bool IsDepthFormat(HazelImageFormat format)
+		{
+			if (format == HazelImageFormat::DEPTH24STENCIL8 || format == HazelImageFormat::DEPTH32F)
+				return true;
+
+			return false;
 		}
 
 	}

@@ -6,8 +6,11 @@
 
 #include "vulkan/vulkan.h"
 
+#include <map>
 
-namespace Hazel {
+
+namespace Hazel
+{
 
 	struct VulkanImageInfo
 	{
@@ -28,8 +31,18 @@ namespace Hazel {
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
+		virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
 		virtual HazelImageFormat GetFormat() const override { return m_Format; }
+
+		virtual VkImageView GetLayerImageView(uint32_t layer)
+		{
+			HZ_CORE_ASSERT(layer < m_PerLayerImageViews.size());
+			return m_PerLayerImageViews[layer];
+		}
+
+		VkImageView GetMipImageView(uint32_t mip);
+		VkImageView RT_GetMipImageView(uint32_t mip);
 
 		VulkanImageInfo& GetImageInfo() { return m_Info; }
 		const VulkanImageInfo& GetImageInfo() const { return m_Info; }
@@ -42,14 +55,21 @@ namespace Hazel {
 		virtual uint64_t GetHash() const override { return (uint64_t)m_Info.Image; }
 
 		void UpdateDescriptor();
+
 	private:
+		ImageSpecification m_Specification;
+
 		HazelImageFormat m_Format;
 		uint32_t m_Width = 0, m_Height = 0;
 
 		Buffer m_ImageData;
 
 		VulkanImageInfo m_Info;
+
+		std::vector<VkImageView> m_PerLayerImageViews;
+		std::map<uint32_t, VkImageView> m_MipImageViews;
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
+
 	};
 
 	namespace Utils {

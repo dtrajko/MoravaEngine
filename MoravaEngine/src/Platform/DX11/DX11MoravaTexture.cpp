@@ -251,6 +251,12 @@ uint32_t DX11MoravaTexture::GetMipLevelCount()
 	return CalculateMipMapCount(m_Spec.Width, m_Spec.Height);
 }
 
+std::pair<uint32_t, uint32_t> DX11MoravaTexture::GetMipSize(uint32_t mip) const
+{
+	Log::GetLogger()->error("DX11MoravaTexture::GetMipSize({0}) - method not implemented!", mip);
+	return std::pair<uint32_t, uint32_t>();
+}
+
 DX11MoravaTexture::~DX11MoravaTexture()
 {
 	Clear();

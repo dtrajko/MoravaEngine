@@ -250,6 +250,12 @@ uint32_t DX11Texture2D::GetMipLevelCount() const
 	return 0;
 }
 
+std::pair<uint32_t, uint32_t> DX11Texture2D::GetMipSize(uint32_t mip) const
+{
+	Log::GetLogger()->error("DX11Texture2D::GetMipSize({0}) - method not implemented!", mip);
+	return std::pair<uint32_t, uint32_t>();
+}
+
 uint64_t DX11Texture2D::GetHash() const
 {
 	return uint64_t();

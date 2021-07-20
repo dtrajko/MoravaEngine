@@ -109,17 +109,6 @@ namespace Hazel {
 
 		}
 
-		static bool IsDepthFormat(HazelImageFormat format)
-		{
-			switch (format)
-			{
-			case HazelImageFormat::DEPTH24STENCIL8:
-			case HazelImageFormat::DEPTH32F:
-				return true;
-			}
-			return false;
-		}
-
 	}
 
 	OpenGLFramebuffer::OpenGLFramebuffer(const HazelFramebufferSpecification& spec)

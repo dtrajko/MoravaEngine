@@ -176,6 +176,12 @@ namespace Hazel {
 		return HazelTexture::CalculateMipMapCount(m_Width, m_Height);
 	}
 
+	std::pair<uint32_t, uint32_t> OpenGLTexture2D::GetMipSize(uint32_t mip) const
+	{
+		Log::GetLogger()->error("OpenGLTexture2D::GetMipSize({0}) - method not implemented!", mip);
+		return std::pair<uint32_t, uint32_t>();
+	}
+
 	//////////////////////////////////////////////////////////////////////////////////
 	// TextureCube
 	//////////////////////////////////////////////////////////////////////////////////
@@ -346,6 +352,12 @@ namespace Hazel {
 	uint32_t OpenGLTextureCube::GetMipLevelCount() const
 	{
 		return HazelTexture::CalculateMipMapCount(m_Width, m_Height);
+	}
+
+	std::pair<uint32_t, uint32_t> OpenGLTextureCube::GetMipSize(uint32_t mip) const
+	{
+		Log::GetLogger()->error("OpenGLTextureCube::GetMipSize({0}) - method not implemented!", mip);
+		return std::pair<uint32_t, uint32_t>();
 	}
 
 }

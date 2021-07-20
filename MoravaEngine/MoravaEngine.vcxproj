@@ -167,6 +167,7 @@
     <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp" />
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp" />
     <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp" />
+    <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp" />
     <ClCompile Include="src\Hazel\Physics\Physics.cpp" />
     <ClCompile Include="src\Hazel\Physics\PhysicsActor.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLContext.cpp" />

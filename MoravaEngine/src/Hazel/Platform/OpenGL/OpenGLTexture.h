@@ -26,6 +26,7 @@ namespace Hazel {
 		// This function currently returns the expected number of mips based on image size,
 		// not present mips in data
 		virtual uint32_t GetMipLevelCount() const override;
+		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 
 		virtual void Lock() override;
 		virtual void Unlock() override;
@@ -82,6 +83,7 @@ namespace Hazel {
 		// This function currently returns the expected number of mips based on image size,
 		// not present mips in data
 		virtual uint32_t GetMipLevelCount() const override;
+		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 
 		virtual const std::string& GetPath() const override { return m_FilePath; }
 

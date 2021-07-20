@@ -9,21 +9,6 @@
 
 namespace Hazel {
 
-	namespace Utils {
-
-		static bool IsDepthFormat(HazelImageFormat format)
-		{
-			switch (format)
-			{
-			case HazelImageFormat::DEPTH24STENCIL8:
-			case HazelImageFormat::DEPTH32F:
-				return true;
-			}
-			return false;
-		}
-
-	}
-
 	VulkanFramebuffer::VulkanFramebuffer(const HazelFramebufferSpecification& spec)
 		: m_Specification(spec)
 	{

@@ -247,6 +247,12 @@ uint32_t VulkanMoravaTexture::GetMipLevelCount()
 	return CalculateMipMapCount(m_Spec.Width, m_Spec.Height);
 }
 
+std::pair<uint32_t, uint32_t> VulkanMoravaTexture::GetMipSize(uint32_t mip) const
+{
+	Log::GetLogger()->error("VulkanMoravaTexture::GetMipSize({0}) - method not implemented!", mip);
+	return std::pair<uint32_t, uint32_t>();
+}
+
 VulkanMoravaTexture::~VulkanMoravaTexture()
 {
 	Clear();
