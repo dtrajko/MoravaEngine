@@ -188,6 +188,7 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\Vulkan.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanAllocator.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanBuffer.cpp" />
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanContext.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanDevice.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanDiagnostics.cpp" />
@@ -219,6 +220,7 @@
     <ClCompile Include="src\Hazel\Renderer\HazelTexture.cpp" />
     <ClCompile Include="src\Hazel\Renderer\IndexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\Pipeline.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\PipelineCompute.cpp" />
     <ClCompile Include="src\Hazel\Renderer\RenderCommandBuffer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\RenderCommandQueue.cpp" />
     <ClCompile Include="src\Hazel\Renderer\Renderer2D.cpp" />
@@ -610,6 +612,7 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\Vulkan.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanAllocator.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanBuffer.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanContext.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanDevice.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanDiagnostics.h" />
@@ -640,6 +643,7 @@
     <ClInclude Include="src\Hazel\Renderer\HazelTexture.h" />
     <ClInclude Include="src\Hazel\Renderer\IndexBuffer.h" />
     <ClInclude Include="src\Hazel\Renderer\Pipeline.h" />
+    <ClInclude Include="src\Hazel\Renderer\PipelineCompute.h" />
     <ClInclude Include="src\Hazel\Renderer\RenderCommand.h" />
     <ClInclude Include="src\Hazel\Renderer\RenderCommandBuffer.h" />
     <ClInclude Include="src\Hazel\Renderer\RenderCommandQueue.h" />

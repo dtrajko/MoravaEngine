@@ -4,17 +4,62 @@
 #include "SceneRenderer.h"
 #include "Renderer2D.h"
 #include "RendererAPI.h"
-
-#include "Renderer/RendererBasic.h"
-
+#include "PipelineCompute.h"
 #include "Hazel/Platform/OpenGL/OpenGLRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "Hazel/Platform/Vulkan/VulkanComputePipeline.h"
+
+#include "Renderer/RendererBasic.h"
 #include "Platform/DX11/DX11Renderer.h"
 
 
 namespace Hazel {
 
+	static std::unordered_map<size_t, Ref<Pipeline>> s_PipelineCache;
+
+	static RendererAPI* s_RendererAPI = nullptr;
+
 	RendererAPIType RendererAPI::s_CurrentRendererAPI = RendererAPIType::OpenGL;
+
+	struct ShaderDependencies
+	{
+		std::vector<Ref<PipelineCompute>> ComputePipelines;
+		std::vector<Ref<Pipeline>> Pipelines;
+		std::vector<Ref<HazelMaterial>> Materials;
+	};
+	static std::unordered_map<size_t, ShaderDependencies> s_ShaderDependencies;
+
+	void HazelRenderer::RegisterShaderDependency(Ref<HazelShader> shader, Ref<Pipeline> pipeline)
+	{
+		s_ShaderDependencies[shader->GetHash()].Pipelines.push_back(pipeline);
+	}
+
+	void HazelRenderer::RegisterShaderDependency(Ref<HazelShader> shader, Ref<HazelMaterial> material)
+	{
+		s_ShaderDependencies[shader->GetHash()].Materials.push_back(material);
+	}
+
+	void HazelRenderer::OnShaderReloaded(size_t hash)
+	{
+		if (s_ShaderDependencies.find(hash) != s_ShaderDependencies.end())
+		{
+			auto& dependencies = s_ShaderDependencies.at(hash);
+			for (auto& pipeline : dependencies.Pipelines)
+			{
+				pipeline->Invalidate();
+			}
+
+			for (auto& computePipeline : dependencies.ComputePipelines)
+			{
+				computePipeline.As<VulkanComputePipeline>()->CreatePipeline();
+			}
+
+			for (auto& material : dependencies.Materials)
+			{
+				material->Invalidate();
+			}
+		}
+	}
 
 	void RendererAPI::SetAPI(RendererAPIType api)
 	{
@@ -115,20 +160,28 @@ namespace Hazel {
 	{
 		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
-		// TODO: Convert all of this into a render command buffer
-		s_Data.m_ActiveRenderPass = renderPass;
-
-		renderPass->GetSpecification().TargetFramebuffer->Bind();
-		if (clear)
+		/**** BEGIN NEW ****/
 		{
-			const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
-			// HazelRenderer::Submit([=]()
-			// {
-			// });
+			// s_RendererAPI->BeginRenderPass(renderCommandBuffer, renderPass, explicitClear);
+		}
+		/**** BEGIN NEW ****/
+
+		/**** BEGIN OLD ****/
+		{
+			// TODO: Convert all of this into a render command buffer
+			s_Data.m_ActiveRenderPass = renderPass;
+
+			renderPass->GetSpecification().TargetFramebuffer->Bind();
+			if (clear)
 			{
-				RendererAPI::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+				const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
+				// HazelRenderer::Submit([=]() {});
+				{
+					RendererAPI::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+				}
 			}
 		}
+		/**** END OLD ****/
 	}
 
 	void HazelRenderer::EndRenderPass()
@@ -298,41 +351,6 @@ namespace Hazel {
 	{
 		// return s_Data.EmptyEnvironment;
 		return Ref<Environment>();
-	}
-
-
-	struct ShaderDependencies
-	{
-		std::vector<Ref<Pipeline>> Pipelines;
-		std::vector<Ref<HazelMaterial>> Materials;
-	};
-	static std::unordered_map<size_t, ShaderDependencies> s_ShaderDependencies;
-
-	void HazelRenderer::RegisterShaderDependency(Ref<HazelShader> shader, Ref<Pipeline> pipeline)
-	{
-		s_ShaderDependencies[shader->GetHash()].Pipelines.push_back(pipeline);
-	}
-
-	void HazelRenderer::RegisterShaderDependency(Ref<HazelShader> shader, Ref<HazelMaterial> material)
-	{
-		s_ShaderDependencies[shader->GetHash()].Materials.push_back(material);
-	}
-
-	void HazelRenderer::OnShaderReloaded(size_t hash)
-	{
-		if (s_ShaderDependencies.find(hash) != s_ShaderDependencies.end())
-		{
-			auto& dependencies = s_ShaderDependencies.at(hash);
-			for (auto& pipeline : dependencies.Pipelines)
-			{
-				pipeline->Invalidate();
-			}
-
-			for (auto& material : dependencies.Materials)
-			{
-				material->Invalidate();
-			}
-		}
 	}
 
 	uint32_t HazelRenderer::GetCurrentFrameIndex()

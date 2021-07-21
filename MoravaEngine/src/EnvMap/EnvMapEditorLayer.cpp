@@ -538,111 +538,6 @@ void EnvMapEditorLayer::CameraSyncECS()
     // s_ActiveCamera->SetProjectionMatrix(GetMainCameraComponent().Camera.GetProjectionMatrix());
 }
 
-void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
-{
-    // BEGIN ImGuizmo
-
-    // ImGizmo switching modes
-    if (Input::IsKeyPressed(Key::D1))
-        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-    if (Input::IsKeyPressed(Key::D2))
-        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
-
-    if (Input::IsKeyPressed(Key::D3))
-        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
-
-    if (Input::IsKeyPressed(Key::D4))
-        Scene::s_ImGuizmoType = -1;
-
-    // Dirty fix: m_SelectionContext not decremented when mesh entity is removed from the scene
-    size_t selectionContextSize = EntitySelection::s_SelectionContext.size();
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-    if (selectionContextSize > meshEntities.size()) {
-        selectionContextSize = meshEntities.size();
-    }
-
-    // ImGuizmo
-    if (Scene::s_ImGuizmoType != -1 && EntitySelection::s_SelectionContext.size())
-    {
-        float rw = (float)ImGui::GetWindowWidth();
-        float rh = (float)ImGui::GetWindowHeight();
-        ImGuizmo::SetOrthographic(false);
-        ImGuizmo::SetDrawlist();
-        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
-
-        SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
-
-        // Entity transform
-        auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
-        glm::mat4 entityTransform = tc.GetTransform();
-
-        // Snapping
-        bool snap = Input::IsKeyPressed(Key::LeftControl);
-        float snapValue = 1.0f; // Snap to 0.5m for translation/scale
-        // Snap to 45 degrees for rotation
-        if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE) {
-            snapValue = 45.0f;
-        }
-
-        float snapValues[3] = { snapValue, snapValue, snapValue };
-
-        if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
-        {
-            ImGuizmo::Manipulate(
-                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
-                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix()),
-                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-                ImGuizmo::LOCAL,
-                glm::value_ptr(entityTransform),
-                nullptr,
-                snap ? snapValues : nullptr);
-
-            if (ImGuizmo::IsUsing())
-            {
-                glm::vec3 translation, rotation, scale;
-                Math::DecomposeTransform(entityTransform, translation, rotation, scale);
-
-                glm::vec3 deltaRotation = rotation - tc.Rotation;
-                tc.Translation = translation;
-                tc.Rotation += deltaRotation;
-                tc.Scale = scale;
-            }
-        }
-        else if (s_SelectionMode == SelectionMode::SubMesh)
-        {
-            auto aabb = selectedSubmesh.Mesh->BoundingBox;
-
-            glm::vec3 aabbCenterOffset = glm::vec3(
-                aabb.Min.x + ((aabb.Max.x - aabb.Min.x) / 2.0f),
-                aabb.Min.y + ((aabb.Max.y - aabb.Min.y) / 2.0f),
-                aabb.Min.z + ((aabb.Max.z - aabb.Min.z) / 2.0f)
-            );
-
-            glm::mat4 submeshTransform = selectedSubmesh.Mesh->Transform;
-            submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
-            glm::mat4 transformBase = entityTransform * submeshTransform;
-
-            ImGuizmo::Manipulate(
-                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
-                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix()),
-                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-                ImGuizmo::LOCAL,
-                glm::value_ptr(transformBase),
-                nullptr,
-                snap ? snapValues : nullptr);
-
-            if (ImGuizmo::IsUsing())
-            {
-                submeshTransform = glm::inverse(entityTransform) * transformBase;
-                submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
-                selectedSubmesh.Mesh->Transform = submeshTransform;
-            }
-        }
-    }
-    // END ImGuizmo
-}
-
 Ref<Hazel::Entity> EnvMapEditorLayer::GetMeshEntity()
 {
     Ref<Hazel::Entity> meshEntity;
@@ -759,13 +654,12 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
     if (m_ShowWindowSceneHierarchy)
     {
+        EnvMapSceneRenderer::OnImGuiRender();
+
         m_SceneHierarchyPanel->OnImGuiRender(&m_ShowWindowSceneHierarchy);
-    }
 
-    m_ShowWindowMeshHierarchy = m_ShowWindowSceneHierarchy;
+        /****************************************************************************************************/
 
-    if (m_ShowWindowMeshHierarchy)
-    {
         uint32_t id = 0;
         auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
         for (auto entt : meshEntities)
@@ -773,15 +667,25 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
             if (meshComponent.Mesh) {
-                meshComponent.Mesh->OnImGuiRender(++id, &m_ShowWindowMeshHierarchy);
+                meshComponent.Mesh->OnImGuiRender(++id, &m_ShowWindowSceneHierarchy);
             }
         }
     }
 
-    m_ShowWindowSelection = m_ShowWindowTransform;
-    m_ShowWindowToolbar = m_ShowWindowTransform;
-    m_ShowWindowSwitchState = m_ShowWindowTransform;
-    m_ShowWindowCamera = m_ShowWindowTransform;
+    if (m_ShowWindowAssetManager)
+    {
+        m_ContentBrowserPanel->OnImGuiRender(&m_ShowWindowAssetManager);
+    }
+
+    if (m_ShowWindowMaterialEditor)
+    {
+        m_MaterialEditorPanel->OnImGuiRender(&m_ShowWindowMaterialEditor);
+    }
+
+    if (m_ShowWindowMaterialEditor)
+    {
+        DisplaySubmeshMaterialSelector(&m_ShowWindowMaterialEditor);
+    }
 
     if (m_ShowWindowTransform)
     {
@@ -848,15 +752,15 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.8f, 0.8f, 0.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
 
-            ImGui::Begin("Toolbar", &m_ShowWindowToolbar);
+            ImGui::Begin("Toolbar", &m_ShowWindowTransform);
             {
                 if (m_SceneState == SceneState::Edit)
                 {
-                    //  float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
-                    //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
-                    //  {
-                    //      EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
-                    //  }
+                    float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
+                    if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
+                    {
+                        EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+                    }
 
                     if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
                     {
@@ -865,12 +769,12 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 }
                 else if (m_SceneState == SceneState::Play)
                 {
-                    //  float physics2DGravity = s_RuntimeScene->GetPhysics2DGravity();
-                    //  
-                    //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
-                    //  {
-                    //      s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
-                    //  }
+                    float physics2DGravity = EnvMapSharedData::s_RuntimeScene->GetPhysics2DGravity();
+                    
+                    if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
+                    {
+                        EnvMapSharedData::s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+                    }
 
                     if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
                     {
@@ -896,7 +800,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         /////////////////////////////////////////////////////////
         //// SWITCH STATE
         /////////////////////////////////////////////////////////
-        ImGui::Begin("Switch State", &m_ShowWindowSwitchState);
+        ImGui::Begin("Switch State", &m_ShowWindowTransform);
         {
             const char* label = EnvMapSharedData::s_ActiveCamera == EnvMapSharedData::s_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
             if (ImGui::Button(label))
@@ -1016,17 +920,19 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     ImGuiWrapper::Property("Radiance Prefiltering", EnvMapSharedData::s_RadiancePrefilter);
                     ImGuiWrapper::Property("Env Map Rotation", EnvMapSharedData::s_EnvMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
 
-                    if (m_SceneState == SceneState::Edit) {
-                        //  float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
-                        //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-                        //      EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
-                        //  }
+                    if (m_SceneState == SceneState::Edit)
+                    {
+                        float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
+                        if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
+                            EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+                        }
                     }
-                    else if (m_SceneState == SceneState::Play) {
-                        //  float physics2DGravity = s_RuntimeScene->GetPhysics2DGravity();
-                        //  if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-                        //      s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
-                        //  }
+                    else if (m_SceneState == SceneState::Play)
+                    {
+                        float physics2DGravity = EnvMapSharedData::s_RuntimeScene->GetPhysics2DGravity();
+                        if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
+                            EnvMapSharedData::s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+                        }
                     }
 
                     EnvMapSceneRenderer::SetActiveLight(light);
@@ -1074,21 +980,6 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         }
         ImGui::End();
         /**** END Environment ****/
-    }
-
-    if (m_ShowWindowAssetManager)
-    {
-        m_ContentBrowserPanel->OnImGuiRender(&m_ShowWindowAssetManager);
-    }
-
-    if (m_ShowWindowMaterialEditor)
-    {
-        m_MaterialEditorPanel->OnImGuiRender(&m_ShowWindowMaterialEditor);
-    }
-
-    if (m_ShowWindowMaterialEditor)
-    {
-        DisplaySubmeshMaterialSelector(&m_ShowWindowMaterialEditor);
     }
 
     if (m_ShowWindowPostProcessing)
@@ -1299,27 +1190,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::ShowMetricsWindow();
     }
 
-    // ImGui::ShowMetricsWindow();
-
     m_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkPos().x;
     m_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkPos().y;
-
-    /****
-    ImGui::Begin("Viewport Environment Map Info");
-    {
-        Hazel::Ref<Framebuffer> targetFramebuffer = EnvMapSceneRenderer::GetCompositePass()->GetSpecification().TargetFramebuffer;
-        glm::ivec2 colorAttachmentSize = glm::ivec2(
-            targetFramebuffer->GetTextureAttachmentColor()->GetWidth(),
-            targetFramebuffer->GetTextureAttachmentColor()->GetHeight());
-        glm::ivec2 depthAttachmentSize = glm::ivec2(
-            targetFramebuffer->GetAttachmentDepth()->GetWidth(),
-            targetFramebuffer->GetAttachmentDepth()->GetHeight());
-
-        ImGui::SliderInt2("Color Attachment Size", glm::value_ptr(colorAttachmentSize), 0, 2048);
-        ImGui::SliderInt2("Depth Attachment Size", glm::value_ptr(depthAttachmentSize), 0, 2048);
-    }
-    ImGui::End();
-    ****/
 
     // TheCherno ImGui Viewport displaying the framebuffer content
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -1335,16 +1207,6 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         // Calculate Viewport bounds (used in EnvMapEditorLayer::CastRay)
         auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
         auto viewportSize = ImGui::GetContentRegionAvail();
-
-        //  Hazel::EnvMapSceneRenderer::SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-        //  EnvMapSharedData::s_EditorScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-        //  if (s_RuntimeScene) {
-        //      s_RuntimeScene->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-        //  }
-        //  
-        //  s_EditorCamera->SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), viewportSize.x, viewportSize.y, 0.1f, 10000.0f));
-        //  s_EditorCamera->SetViewportSize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-        //  ImGui::Image((void*)Hazel::EnvMapSceneRenderer::GetFinalColorBufferID(), viewportSize, { 0, 1 }, { 1, 0 });
 
         ImVec2 screen_pos = ImGui::GetCursorScreenPos();
 
@@ -1386,45 +1248,6 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     }
     ImGui::End();
     ImGui::PopStyleVar();
-
-    /****
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-    ImGui::Begin("Viewport EnvMap");
-    {
-        m_ImGuiViewportEnvMap.X = (int)(ImGui::GetWindowPos().x - m_ImGuiViewportEnvMapX);
-        m_ImGuiViewportEnvMap.Y = (int)(ImGui::GetWindowPos().y - m_ImGuiViewportEnvMapY);
-        m_ImGuiViewportEnvMap.Width = (int)ImGui::GetWindowWidth();
-        m_ImGuiViewportEnvMap.Height = (int)ImGui::GetWindowHeight();
-        m_ImGuiViewportEnvMap.MouseX = (int)ImGui::GetMousePos().x;
-        m_ImGuiViewportEnvMap.MouseY = (int)ImGui::GetMousePos().y;
-
-        m_ViewportEnvMapFocused = ImGui::IsWindowFocused(); // Not in use, use m_ViewportPanelFocused instead
-        m_ViewportEnvMapHovered = ImGui::IsWindowHovered(); // Not in use, use m_ViewportPanelMouseOver instead
-
-        ImVec2 viewportPanelSizeImGuiEnvMap = ImGui::GetContentRegionAvail();
-        glm::vec2 viewportPanelSizeEnvMap = glm::vec2(viewportPanelSizeImGuiEnvMap.x, viewportPanelSizeImGuiEnvMap.y);
-
-        // Currently resize can only work with a single (main) viewport
-        // ResizeViewport(viewportPanelSizeEnvMap, m_EnvMapEditorLayer->GetSceneRenderer()->s_Data.CompositePass->GetSpecification().TargetFramebuffer);
-        Hazel::Ref<Framebuffer> targetFramebuffer = EnvMapSceneRenderer::GetCompositePass()->GetSpecification().TargetFramebuffer;
-        uint64_t textureID = targetFramebuffer->GetTextureAttachmentColor()->GetID();
-        ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportEnvMapSize.x, m_ViewportEnvMapSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-    }
-    ImGui::End();
-    ImGui::PopStyleVar();
-    ****/
-
-    //  ImGui::SetNextWindowSize({ 0.0f, 22.0f }, {});
-    //  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 10, 5 });
-    //  ImGui::Begin("Status bar");
-    //  {
-    //      char buffer[100];
-    //      snprintf(buffer, sizeof(buffer), "Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
-    //      m_StatusBarMessage = buffer;
-    //      ImGui::Text(buffer);
-    //  }
-    //  ImGui::End();
-    //  ImGui::PopStyleVar();
 
     ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
@@ -1643,6 +1466,111 @@ void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
         ImGui::EndMenuBar();
     }
     ImGui::End();
+}
+
+void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
+{
+    // BEGIN ImGuizmo
+
+    // ImGizmo switching modes
+    if (Input::IsKeyPressed(Key::D1))
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+    if (Input::IsKeyPressed(Key::D2))
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
+
+    if (Input::IsKeyPressed(Key::D3))
+        Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
+
+    if (Input::IsKeyPressed(Key::D4))
+        Scene::s_ImGuizmoType = -1;
+
+    // Dirty fix: m_SelectionContext not decremented when mesh entity is removed from the scene
+    size_t selectionContextSize = EntitySelection::s_SelectionContext.size();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    if (selectionContextSize > meshEntities.size()) {
+        selectionContextSize = meshEntities.size();
+    }
+
+    // ImGuizmo
+    if (Scene::s_ImGuizmoType != -1 && EntitySelection::s_SelectionContext.size())
+    {
+        float rw = (float)ImGui::GetWindowWidth();
+        float rh = (float)ImGui::GetWindowHeight();
+        ImGuizmo::SetOrthographic(false);
+        ImGuizmo::SetDrawlist();
+        ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+
+        SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
+
+        // Entity transform
+        auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
+        glm::mat4 entityTransform = tc.GetTransform();
+
+        // Snapping
+        bool snap = Input::IsKeyPressed(Key::LeftControl);
+        float snapValue = 1.0f; // Snap to 0.5m for translation/scale
+        // Snap to 45 degrees for rotation
+        if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE) {
+            snapValue = 45.0f;
+        }
+
+        float snapValues[3] = { snapValue, snapValue, snapValue };
+
+        if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
+        {
+            ImGuizmo::Manipulate(
+                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
+                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix()),
+                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+                ImGuizmo::LOCAL,
+                glm::value_ptr(entityTransform),
+                nullptr,
+                snap ? snapValues : nullptr);
+
+            if (ImGuizmo::IsUsing())
+            {
+                glm::vec3 translation, rotation, scale;
+                Math::DecomposeTransform(entityTransform, translation, rotation, scale);
+
+                glm::vec3 deltaRotation = rotation - tc.Rotation;
+                tc.Translation = translation;
+                tc.Rotation += deltaRotation;
+                tc.Scale = scale;
+            }
+        }
+        else if (s_SelectionMode == SelectionMode::SubMesh)
+        {
+            auto aabb = selectedSubmesh.Mesh->BoundingBox;
+
+            glm::vec3 aabbCenterOffset = glm::vec3(
+                aabb.Min.x + ((aabb.Max.x - aabb.Min.x) / 2.0f),
+                aabb.Min.y + ((aabb.Max.y - aabb.Min.y) / 2.0f),
+                aabb.Min.z + ((aabb.Max.z - aabb.Min.z) / 2.0f)
+            );
+
+            glm::mat4 submeshTransform = selectedSubmesh.Mesh->Transform;
+            submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
+            glm::mat4 transformBase = entityTransform * submeshTransform;
+
+            ImGuizmo::Manipulate(
+                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
+                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix()),
+                (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+                ImGuizmo::LOCAL,
+                glm::value_ptr(transformBase),
+                nullptr,
+                snap ? snapValues : nullptr);
+
+            if (ImGuizmo::IsUsing())
+            {
+                submeshTransform = glm::inverse(entityTransform) * transformBase;
+                submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
+                selectedSubmesh.Mesh->Transform = submeshTransform;
+            }
+        }
+    }
+    // END ImGuizmo
 }
 
 void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
@@ -2151,6 +2079,13 @@ void EnvMapEditorLayer::OnRenderShadowOmni(Window* mainWindow)
     RenderShadowOmniSingleLight(mainWindow, EnvMapSharedData::s_SpotLightEntity, EnvMapSharedData::s_OmniShadowMapSpotLight);
 }
 
+void EnvMapEditorLayer::OnRenderCascadedShadowMaps(Window* mainWindow)
+{
+    // Entry point for rendering meshes to cascaded shadow framebuffers
+    // Triggers EnvMapSceneRenderer::ShadowMapPass(), a copy of Hazel::SceneRenderer::ShadowMapPass()
+    EnvMapSceneRenderer::ShadowMapPass();
+}
+
 void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap)
 {
     omniShadowMap->BindForWriting();
@@ -2216,7 +2151,7 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shade
                 entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
             }
 
-            if (meshComponent.Mesh)
+            if (meshComponent.Mesh && meshComponent.CastShadows)
             {
                 for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                 {

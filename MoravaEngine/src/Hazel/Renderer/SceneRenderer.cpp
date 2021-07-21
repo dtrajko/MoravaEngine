@@ -838,7 +838,15 @@ namespace Hazel {
 	void SceneRenderer::ShadowMapPass()
 	{
 		auto& directionalLights = s_Data.SceneData.SceneLightEnvironment.DirectionalLights;
-		if (directionalLights[0].Multiplier == 0.0f || !directionalLights[0].CastShadows) { return; }
+		if (directionalLights[0].Multiplier == 0.0f || !directionalLights[0].CastShadows)
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				HazelRenderer::BeginRenderPass(s_Data.ShadowMapRenderPass[i]);
+				HazelRenderer::EndRenderPass();
+			}
+			return;
+		}
 
 		CascadeData cascades[4];
 		CalculateCascades(cascades, directionalLights[0].Direction);

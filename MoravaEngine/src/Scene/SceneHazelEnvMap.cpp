@@ -25,19 +25,20 @@
 
 SceneHazelEnvMap::SceneHazelEnvMap()
 {
-    sceneSettings.cameraPosition     = glm::vec3(-24.0f, 5.0f, 0.0f);
-    sceneSettings.cameraStartYaw     = 0.0f;
-    sceneSettings.cameraStartPitch   = 0.0f;
-    sceneSettings.cameraMoveSpeed    = 2.0f;
-    sceneSettings.waterHeight        = 0.0f;
-    sceneSettings.waterWaveSpeed     = 0.05f;
-    sceneSettings.enablePointLights  = true;
-    sceneSettings.enableSpotLights   = true;
-    sceneSettings.enableOmniShadows  = true;
-    sceneSettings.enableSkybox       = false;
-    sceneSettings.enableShadows      = true;
+    sceneSettings.cameraPosition = glm::vec3(-24.0f, 5.0f, 0.0f);
+    sceneSettings.cameraStartYaw = 0.0f;
+    sceneSettings.cameraStartPitch = 0.0f;
+    sceneSettings.cameraMoveSpeed = 2.0f;
+    sceneSettings.waterHeight = 0.0f;
+    sceneSettings.waterWaveSpeed = 0.05f;
+    sceneSettings.enablePointLights = true;
+    sceneSettings.enableSpotLights = true;
+    sceneSettings.enableSkybox = false;
+    sceneSettings.enableShadows = true;
+    sceneSettings.enableOmniShadows = true;
+    sceneSettings.enableCascadedShadowMaps = true;
     sceneSettings.enableWaterEffects = false;
-    sceneSettings.enableParticles    = false;
+    sceneSettings.enableParticles = false;
 
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
@@ -252,6 +253,10 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
 
     if (passType == "shadow_omni" && sceneSettings.enableOmniShadows) {
         m_EnvMapEditorLayer->OnRenderShadowOmni(mainWindow);
+    }
+
+    if (passType == "cascaded_shadow_maps" && sceneSettings.enableCascadedShadowMaps) {
+        m_EnvMapEditorLayer->OnRenderCascadedShadowMaps(mainWindow);
     }
 
     if (passType == "main") {

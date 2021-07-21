@@ -1,5 +1,5 @@
 #include "HazelScene.h"
-#include "Components.h"
+
 #include "Entity.h"
 #include "ScriptableEntity.h"
 #include "Hazel/Renderer/HazelMesh.h"
@@ -297,8 +297,75 @@ namespace Hazel {
 		}
 	}
 
-	void HazelScene::OnRenderRuntime(Timestep ts)
+	void HazelScene::OnRenderRuntime(/*Ref<SceneRenderer> renderer, */Timestep ts)
 	{
+		/////////////////////////////////////////////////////////////////////
+		// RENDER 3D SCENE
+		/////////////////////////////////////////////////////////////////////
+
+		Entity cameraEntity = GetMainCameraEntity();
+		if (!cameraEntity) return;
+
+		// Process camera entity
+		glm::mat4 cameraViewMatrix = glm::inverse(cameraEntity.GetComponent<TransformComponent>().Transform);
+		HZ_CORE_ASSERT(cameraEntity, "Scene does not contain any cameras!");
+		SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>();
+		camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+
+		// Process lights
+		{
+			m_LightEnvironment = LightEnvironment();
+			auto lights = m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
+			uint32_t directionalLightIndex = 0;
+			for (auto entity : lights)
+			{
+				auto [transformComponent, lightComponent] = lights.get<TransformComponent, DirectionalLightComponent>(entity);
+				glm::vec3 direction = -glm::normalize(glm::mat3(transformComponent.GetTransform()) * glm::vec3(1.0f));
+				m_LightEnvironment.DirectionalLights[directionalLightIndex++] =
+				{
+					direction,
+					lightComponent.Radiance,
+					1.0f,
+					lightComponent.CastShadows,
+				};
+			}
+		}
+
+		// TODO: only one sky light at the moment!
+		{
+			m_Environment = Environment();
+			auto lights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
+			for (auto entity : lights)
+			{
+				auto [transformComponent, skyLightComponent] = lights.get<TransformComponent, SkyLightComponent>(entity);
+				m_Environment = skyLightComponent.SceneEnvironment;
+				SetSkybox(m_Environment.RadianceMap);
+			}
+		}
+
+		m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
+
+		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+		// renderer->SetScene(this);
+		// renderer->BeginScene({ camera, cameraViewMatrix, 0.1f, 1000.0f, 45.0f }); //TODO: real values
+		for (auto entity : group)
+		{
+			auto [transformComponent, meshComponent] = group.get<TransformComponent, MeshComponent>(entity);
+			if (meshComponent.Mesh /* && !meshComponent.Mesh->IsFlagSet(AssetFlag::Missing) */)
+			{
+				meshComponent.Mesh->OnUpdate(ts, false);
+				Entity e = Entity(entity, this);
+				glm::mat4 transform = GetTransformRelativeToParent(e);
+
+				//	if (e.HasComponent<RigidBodyComponent>())
+				//		transform = e.Transform().GetTransform();
+
+				// TODO: Should we render (logically)
+				// renderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialTable, transform);
+			}
+		}
+
+		// renderer->EndScene();
 	}
 
 	void HazelScene::OnRenderEditor(Timestep ts, const EditorCamera& editorCamera)
@@ -320,7 +387,8 @@ namespace Hazel {
 				{
 					direction,
 					lightComponent.Radiance,
-					1.0f
+					1.0f,
+					lightComponent.CastShadows,
 				};
 			}
 		}
@@ -336,7 +404,6 @@ namespace Hazel {
 				SetSkybox(m_Environment.RadianceMap);
 			}
 		}
-
 
 		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
 		{
@@ -390,6 +457,127 @@ namespace Hazel {
 			}
 		}
 		return {};
+	}
+
+	Entity HazelScene::FindEntityByUUID(UUID id)
+	{
+		auto view = m_Registry.view<IDComponent>();
+		for (auto entity : view)
+		{
+			auto& idComponent = m_Registry.get<IDComponent>(entity);
+			if (idComponent.ID == id)
+				return Entity(entity, this);
+		}
+
+		return Entity{};
+	}
+
+	void HazelScene::ConvertToLocalSpace(Entity entity)
+	{
+		Entity parent = FindEntityByUUID(entity.GetParentUUID());
+
+		if (!parent)
+			return;
+
+		auto& transform = entity.Transform();
+		glm::mat4 parentTransform = GetWorldSpaceTransformMatrix(parent);
+
+		glm::mat4 localTransform = glm::inverse(parentTransform) * transform.GetTransform();
+		Math::DecomposeTransform(localTransform, transform.Translation, transform.Rotation, transform.Scale);
+	}
+
+	void HazelScene::ConvertToWorldSpace(Entity entity)
+	{
+		Entity parent = FindEntityByUUID(entity.GetParentUUID());
+
+		if (!parent)
+			return;
+
+		glm::mat4 transform = GetTransformRelativeToParent(entity);
+		auto& entityTransform = entity.Transform();
+		Math::DecomposeTransform(transform, entityTransform.Translation, entityTransform.Rotation, entityTransform.Scale);
+	}
+
+	glm::mat4 HazelScene::GetTransformRelativeToParent(Entity entity)
+	{
+		glm::mat4 transform(1.0f);
+
+		Entity parent = FindEntityByUUID(entity.GetParentUUID());
+		if (parent)
+			transform = GetTransformRelativeToParent(parent);
+
+		return transform * entity.Transform().GetTransform();
+	}
+
+	glm::mat4 HazelScene::GetWorldSpaceTransformMatrix(Entity entity)
+	{
+		glm::mat4 transform = entity.Transform().GetTransform();
+
+		while (Entity parent = FindEntityByUUID(entity.GetParentUUID()))
+		{
+			transform = parent.Transform().GetTransform() * transform;
+			entity = parent;
+		}
+
+		return transform;
+	}
+
+	// TODO: Definitely cache this at some point
+	TransformComponent HazelScene::GetWorldSpaceTransform(Entity entity)
+	{
+		glm::mat4 transform = GetWorldSpaceTransformMatrix(entity);
+		TransformComponent transformComponent;
+
+		Math::DecomposeTransform(transform, transformComponent.Translation, transformComponent.Rotation, transformComponent.Scale);
+
+		glm::quat rotationQuat = glm::quat(transformComponent.Rotation);
+		transformComponent.Up = glm::normalize(glm::rotate(rotationQuat, glm::vec3(0.0f, 1.0f, 0.0f)));
+		transformComponent.Right = glm::normalize(glm::rotate(rotationQuat, glm::vec3(1.0f, 0.0f, 0.0f)));
+		transformComponent.Forward = glm::normalize(glm::rotate(rotationQuat, glm::vec3(0.0f, 0.0f, -1.0f)));
+
+		return transformComponent;
+	}
+
+	void HazelScene::ParentEntity(Entity entity, Entity parent)
+	{
+		if (parent.IsDescendantOf(entity))
+		{
+			UnparentEntity(parent);
+
+			Entity newParent = FindEntityByUUID(entity.GetParentUUID());
+			if (newParent)
+			{
+				UnparentEntity(entity);
+				ParentEntity(parent, newParent);
+			}
+		}
+		else
+		{
+			Entity previousParent = FindEntityByUUID(entity.GetParentUUID());
+
+			if (previousParent)
+				UnparentEntity(entity);
+		}
+
+		entity.SetParentUUID(parent.GetUUID());
+		parent.Children().push_back(entity.GetUUID());
+
+		ConvertToLocalSpace(entity);
+	}
+
+	void HazelScene::UnparentEntity(Entity entity, bool convertToWorldSpace)
+	{
+		Entity parent = FindEntityByUUID(entity.GetParentUUID());
+		if (!parent)
+			return;
+
+		auto& parentChildren = parent.Children();
+		parentChildren.erase(std::remove(parentChildren.begin(), parentChildren.end(), entity.GetUUID()), parentChildren.end());
+
+		if (convertToWorldSpace)
+			ConvertToWorldSpace(entity);
+
+		entity.SetParentUUID(0);
 	}
 
 	void HazelScene::OnEntitySelected(Entity entity)

@@ -44,6 +44,8 @@ public:
 	void OnRenderShadowOmni(Window* mainWindow);
 	void RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap);
 
+	void OnRenderCascadedShadowMaps(Window* mainWindow);
+
 	void OnRender(Window* mainWindow);
 
 	void PostProcessing(Window* mainWindow);
@@ -242,7 +244,6 @@ private:
 	bool m_ShowWindowMaterialEditor = true;
 	bool m_ShowWindowAssetManager   = true;
 
-	bool m_ShowWindowMeshHierarchy  = false;
 	bool m_ShowWindowPostProcessing = false;
 	bool m_ShowWindowShaderManager  = false;
 	bool m_ShowWindowFramebuffers   = false;
@@ -252,9 +253,5 @@ private:
 	bool m_ShowWindowMousePicker    = false;
 	bool m_ShowWindowViewportInfo   = false;
 	bool m_ShowWindowImGuiMetrics   = false;
-	bool m_ShowWindowSelection      = false;
-	bool m_ShowWindowToolbar        = false;
-	bool m_ShowWindowSwitchState    = false;
-	bool m_ShowWindowCamera         = false;
 
 };

@@ -912,6 +912,12 @@
     <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp">
       <Filter>Hazel\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\PipelineCompute.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1927,6 +1933,12 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Renderer\RenderCommandBuffer.h">
       <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\PipelineCompute.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

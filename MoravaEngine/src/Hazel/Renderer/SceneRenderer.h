@@ -86,7 +86,6 @@ namespace Hazel {
 		static void GeometryPass();
 		static void CompositePass();
 		static void BloomBlurPass();
-
 		static void ShadowMapPass();
 
 	private:

@@ -22,8 +22,8 @@ namespace Hazel {
 		Ref<VulkanShader> GetShader() { return m_Shader; }
 
 		void SetPushConstants(const void* data, uint32_t size);
-	private:
 		void CreatePipeline();
+
 	private:
 		Ref<VulkanShader> m_Shader;
 

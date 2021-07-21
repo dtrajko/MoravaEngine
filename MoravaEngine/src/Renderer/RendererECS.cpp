@@ -36,6 +36,12 @@ void RendererECS::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
+void RendererECS::RenderPassCascadedShadowMaps(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	std::string passType = "cascaded_shadow_maps";
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
+}
+
 void RendererECS::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	std::string passType = "main";
@@ -59,6 +65,8 @@ void RendererECS::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scen
 	RenderPassShadow(mainWindow, scene, projectionMatrix);
 
 	RenderOmniShadows(mainWindow, scene, projectionMatrix);
+
+	RenderPassCascadedShadowMaps(mainWindow, scene, projectionMatrix); // Working on lighting + shadows in Hazel(20.11.2020)
 
 	RenderPassMain(mainWindow, scene, projectionMatrix);
 

@@ -38,6 +38,7 @@ struct SceneSettings
 	// features
 	bool enableShadows;
 	bool enableOmniShadows;
+	bool enableCascadedShadowMaps;
 	bool enablePointLights;
 	bool enableSpotLights;
 	bool enableWaterEffects;

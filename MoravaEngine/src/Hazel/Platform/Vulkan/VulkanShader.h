@@ -6,6 +6,7 @@
 #include "Hazel/Renderer/HazelTexture.h"
 
 #include "Vulkan.h"
+// #include "VulkanMemoryAllocator/vk_mem_alloc.h"
 
 
 namespace Hazel {
@@ -17,6 +18,16 @@ namespace Hazel {
 		{
 			VkDeviceMemory Memory;
 			VkBuffer Buffer;
+			VkDescriptorBufferInfo Descriptor;
+			uint32_t Size = 0;
+			uint32_t BindingPoint = 0;
+			std::string Name;
+			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+		};
+
+		struct StorageBuffer
+		{
+			// VmaAllocation MemoryAlloc = nullptr;
 			VkDescriptorBufferInfo Descriptor;
 			uint32_t Size = 0;
 			uint32_t BindingPoint = 0;
@@ -46,9 +57,62 @@ namespace Hazel {
 		virtual void Reload(bool forceCompile = false) override;
 
 		virtual size_t GetHash() const override;
-		virtual RendererID GetRendererID() const override;
 
+		virtual const std::string& GetName() const override { return m_Name; }
+		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override;
+		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override;
+		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
+
+		// Vulkan-specific
+		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
+
+		VkDescriptorSet GetDescriptorSet() { return m_DescriptorSet; }
+		VkDescriptorSetLayout GetDescriptorSetLayout(uint32_t set) { return m_DescriptorSetLayouts.at(set); }
+		VkDescriptorSetLayout GetDescriptorSetLayout() { return m_DescriptorSetLayout; } // TODO: obsolete, it should be removed
+		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
+
+		UniformBuffer& GetUniformBuffer(uint32_t binding = 0, uint32_t set = 0) { return m_UniformBuffers[0]; }
+		uint32_t GetUniformBufferCount(uint32_t set = 0)
+		{
+			if (m_ShaderDescriptorSets.find(set) == m_ShaderDescriptorSets.end())
+				return 0;
+
+			return (uint32_t)m_ShaderDescriptorSets.at(set).UniformBuffers.size();
+		}
+
+		struct ShaderDescriptorSet
+		{
+			std::unordered_map<uint32_t, UniformBuffer*> UniformBuffers;
+			std::unordered_map<uint32_t, StorageBuffer*> StorageBuffers;
+			std::unordered_map<uint32_t, ImageSampler> ImageSamplers;
+			std::unordered_map<uint32_t, ImageSampler> StorageImages;
+
+			std::unordered_map<std::string, VkWriteDescriptorSet> WriteDescriptorSets;
+
+			operator bool() const { return !(StorageBuffers.empty() && UniformBuffers.empty() && ImageSamplers.empty() && StorageImages.empty()); }
+		};
+		const std::unordered_map<uint32_t, ShaderDescriptorSet>& GetShaderDescriptorSets() const { return m_ShaderDescriptorSets; }
+		bool HasDescriptorSet(uint32_t set) const { return m_TypeCounts.find(set) != m_TypeCounts.end(); }
+
+		const std::vector<PushConstantRange>& GetPushConstantRanges() const { return m_PushConstantRanges; }
+
+		struct ShaderMaterialDescriptorSet
+		{
+			VkDescriptorPool Pool = nullptr;
+			std::vector<VkDescriptorSet> DescriptorSets;
+		};
+
+		ShaderMaterialDescriptorSet AllocateDescriptorSet(uint32_t set = 0) {}; // TODO - fix syntax error
+		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set = 0);
+		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set, uint32_t numberOfSets);
+		const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const;
+
+		static void ClearUniformBuffers();
+
+		// Vulkan-specific
+		virtual RendererID GetRendererID() const override;
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
+		const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const { return m_ShaderStages; } // used in Vulkan Week
 
 		virtual void SetUniform(const std::string& fullname, uint32_t value) override;
 		virtual void SetUniform(const std::string& fullname, float value) override;
@@ -68,63 +132,18 @@ namespace Hazel {
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 		virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
 		virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
-		virtual const std::string& GetName() const override { return m_Name; }
-		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override;
-		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override;
-		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
-
-		// Vulkan-specific
-		const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const { return m_ShaderStages; } // used in Vulkan Week
-		// const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; } // Used in more recent versions
 
 		void* MapUniformBuffer(uint32_t bindingPoint);
 		void UnmapUniformBuffer(uint32_t bindingPoint);
 
-		VkDescriptorSet GetDescriptorSet() { return m_DescriptorSet; }
-		VkDescriptorSetLayout GetDescriptorSetLayout() { return m_DescriptorSetLayout; }
-
-		UniformBuffer& GetUniformBuffer() { return m_UniformBuffers[0]; }
-		const std::vector<PushConstantRange>& GetPushConstantRanges() const { return m_PushConstantRanges; }
-
 		VkDescriptorSet CreateDescriptorSet();
-		// VkWriteDescriptorSet GetDescriptorSet(const std::string& name) const; // obsolete
-		const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const;
 
-		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
 		//	UniformBuffer& GetUniformBuffer(uint32_t binding = 0, uint32_t set = 0)
 		//	{
 		//		HZ_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
 		//		return *m_ShaderDescriptorSets.at(set).UniformBuffers[binding];
 		//	}
-		uint32_t GetUniformBufferCount(uint32_t set = 0)
-		{
-			if (m_ShaderDescriptorSets.find(set) == m_ShaderDescriptorSets.end())
-				return 0;
-
-			return (uint32_t)m_ShaderDescriptorSets.at(set).UniformBuffers.size();
-		}
-
-		struct ShaderDescriptorSet
-		{
-			std::unordered_map<uint32_t, UniformBuffer*> UniformBuffers;
-			std::unordered_map<uint32_t, ImageSampler> ImageSamplers;
-			std::unordered_map<uint32_t, ImageSampler> StorageImages;
-
-			std::unordered_map<std::string, VkWriteDescriptorSet> WriteDescriptorSets;
-		};
-		const std::unordered_map<uint32_t, ShaderDescriptorSet>& GetShaderDescriptorSets() const { return m_ShaderDescriptorSets; }
 		
-		struct ShaderMaterialDescriptorSet
-		{
-			VkDescriptorPool Pool;
-			std::vector<VkDescriptorSet> DescriptorSets;
-		};
-
-		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set = 0);
-		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set, uint32_t numberOfSets);
-
-		static void ClearUniformBuffers();
-
 	private:
 		std::unordered_map<VkShaderStageFlagBits, std::string> PreProcess(const std::string& source);
 		void CompileOrGetVulkanBinary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile);
@@ -157,6 +176,7 @@ namespace Hazel {
 
 		std::unordered_map<std::string, ShaderBuffer> m_Buffers;
 
+		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> m_TypeCounts;
 	};
 
 }

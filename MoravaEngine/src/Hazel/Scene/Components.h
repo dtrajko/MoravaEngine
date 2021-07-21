@@ -5,10 +5,11 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
-#include "../Core/UUID.h"
-#include "../Renderer/HazelMesh.h"
-#include "../Renderer/HazelCamera.h"
-#include "../Renderer/SceneEnvironment.h"
+#include "Hazel/Core/UUID.h"
+#include "Hazel/Renderer/HazelMesh.h"
+#include "Hazel/Renderer/HazelCamera.h"
+#include "Hazel/Renderer/SceneEnvironment.h"
+#include "Hazel/Scene/SceneCamera.h"
 
 
 namespace Hazel
@@ -34,6 +35,17 @@ namespace Hazel
 		operator const std::string& () const { return Tag; };
 	};
 
+	struct RelationshipComponent
+	{
+		UUID ParentHandle = 0;
+		std::vector<UUID> Children;
+
+		RelationshipComponent() = default;
+		RelationshipComponent(const RelationshipComponent& other) = default;
+		RelationshipComponent(UUID parent)
+			: ParentHandle(parent) {}
+	};
+
 	struct TransformComponent
 	{
 		glm::mat4 Transform;
@@ -41,6 +53,10 @@ namespace Hazel
 		glm::vec3 Translation = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
+
+		glm::vec3 Up = { 0.0f, 1.0f, 0.0f };
+		glm::vec3 Right = { 1.0f, 0.0f, 0.0f };
+		glm::vec3 Forward = { 0.0f, 0.0f, -1.0f };
 
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
@@ -66,6 +82,9 @@ namespace Hazel
 	struct MeshComponent
 	{
 		Ref<HazelMesh> Mesh;
+
+		bool CastShadows = true;    // MeshRenderer property in Unity
+		bool ReceiveShadows = true; // MeshRenderer property in Unity
 
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent& other) = default;
@@ -100,6 +119,9 @@ namespace Hazel
 
 		operator HazelCamera& () { return Camera; }
 		operator const HazelCamera& () const { return Camera; }
+
+		operator SceneCamera& () { return (SceneCamera&)Camera; }
+		operator const SceneCamera& () const { return (SceneCamera&)Camera; }
 	};
 
 	struct SpriteRendererComponent

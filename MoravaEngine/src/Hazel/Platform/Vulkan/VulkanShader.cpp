@@ -415,6 +415,11 @@ namespace Hazel {
 		uniformBuffer.Descriptor.range = uniformBuffer.Size;
 	}
 
+	//	ShaderMaterialDescriptorSet VulkanShader::AllocateDescriptorSet(uint32_t set)
+	//	{
+	//		return ShaderMaterialDescriptorSet();
+	//	}
+
 	// TODO: does not exist in Vulkan Week version, added later
 	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set)
 	{

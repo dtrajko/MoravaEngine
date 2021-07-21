@@ -2,6 +2,7 @@
 
 #include "Hazel/Core/Assert.h"
 #include "Hazel/Platform/OpenGL/OpenGLRenderPass.h"
+#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/HazelShader.h"
 #include "Hazel/Scene/HazelScene.h"
@@ -28,6 +29,40 @@ float EnvMapSceneRenderer::s_GridScale = 16.025f;
 float EnvMapSceneRenderer::s_GridSize = 0.025f;
 uint32_t EnvMapSceneRenderer::s_FramebufferWidth = 1280;
 uint32_t EnvMapSceneRenderer::s_FramebufferHeight = 720;
+
+// variables from SceneRenderer
+Hazel::Ref<Hazel::RenderCommandBuffer> EnvMapSceneRenderer::s_CommandBuffer;
+
+EnvMapSceneRenderer::UBRendererData EnvMapSceneRenderer::s_RendererDataUB;
+
+float EnvMapSceneRenderer::s_CascadeSplitLambda = 0.92f;
+float EnvMapSceneRenderer::s_CascadeFarPlaneOffset = 50.0f;
+float EnvMapSceneRenderer::s_CascadeNearPlaneOffset = -50.0f;
+
+Hazel::Ref<Hazel::Pipeline> EnvMapSceneRenderer::s_GeometryPipeline;
+Hazel::Ref<Hazel::Pipeline> EnvMapSceneRenderer::s_SelectedGeometryPipeline;
+Hazel::Ref<Hazel::Pipeline> EnvMapSceneRenderer::s_GeometryWireframePipeline;
+Hazel::Ref<Hazel::Pipeline> EnvMapSceneRenderer::s_GeometryWireframeOnTopPipeline;
+Hazel::Ref<Hazel::Pipeline> EnvMapSceneRenderer::s_PreDepthPipeline;
+Hazel::Ref<Hazel::Pipeline> EnvMapSceneRenderer::s_CompositePipeline;
+Hazel::Ref<Hazel::Pipeline> EnvMapSceneRenderer::s_ShadowPassPipelines[4];
+Hazel::Ref<Hazel::HazelMaterial> EnvMapSceneRenderer::s_ShadowPassMaterial;
+Hazel::Ref<Hazel::HazelMaterial> EnvMapSceneRenderer::s_PreDepthMaterial;
+Hazel::Ref<Hazel::Pipeline> EnvMapSceneRenderer::s_SkyboxPipeline;
+Hazel::Ref<Hazel::HazelMaterial> EnvMapSceneRenderer::s_SkyboxMaterial;
+Hazel::Ref<Hazel::Pipeline> EnvMapSceneRenderer::s_DOFPipeline;
+Hazel::Ref<Hazel::HazelMaterial> EnvMapSceneRenderer::s_DOFMaterial;
+
+SceneRendererOptions EnvMapSceneRenderer::s_Options;
+
+Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::s_BloomComputeTextures[3];
+
+bool EnvMapSceneRenderer::s_ResourcesCreated = false;
+
+BloomSettings EnvMapSceneRenderer::s_BloomSettings;
+Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::s_BloomDirtTexture;
+
+EnvMapSceneRenderer::GPUTimeQueries EnvMapSceneRenderer::s_GPUTimeQueries;
 
 
 struct EnvMapSceneRendererData
@@ -472,6 +507,177 @@ glm::mat4 EnvMapSceneRenderer::GetViewProjection()
     return viewProj;
 }
 
+void EnvMapSceneRenderer::OnImGuiRender()
+{
+    // HZ_PROFILE_FUNC();
+
+    ImGui::Begin("Scene Renderer");
+
+    if (ImGui::TreeNode("Shaders"))
+    {
+        auto& shaders = Hazel::HazelShader::s_AllShaders;
+        for (auto& shader : shaders)
+        {
+            if (ImGui::TreeNode(shader->GetName().c_str()))
+            {
+                std::string buttonName = "Reload##" + shader->GetName();
+                if (ImGui::Button(buttonName.c_str()))
+                    shader->Reload(true);
+                ImGui::TreePop();
+            }
+        }
+        ImGui::TreePop();
+    }
+
+    if (Hazel::UI::BeginTreeNode("Visualization"))
+    {
+        Hazel::UI::BeginPropertyGrid();
+        Hazel::UI::Property("Show Light Complexity", s_RendererDataUB.ShowLightComplexity);
+        Hazel::UI::Property("Show Shadow Cascades", s_RendererDataUB.ShowCascades);
+        static int maxDrawCall = 1000;
+        Hazel::UI::PropertySlider("Selected Draw", Hazel::VulkanRenderer::GetSelectedDrawCall(), -1, maxDrawCall);
+        Hazel::UI::Property("Max Draw Call", maxDrawCall);
+        Hazel::UI::EndPropertyGrid();
+        Hazel::UI::EndTreeNode();
+    }
+
+    if (Hazel::UI::BeginTreeNode("Render Statistics"))
+    {
+        // uint32_t frameIndex = Hazel::HazelRenderer::GetCurrentFrameIndex();
+        // ImGui::Text("GPU time: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex));
+
+        // ImGui::Text("Shadow Map Pass: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex, s_GPUTimeQueries.ShadowMapPassQuery));
+        // ImGui::Text("Depth Pre-Pass: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex, s_GPUTimeQueries.DepthPrePassQuery));
+        // ImGui::Text("Light Culling Pass: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex, s_GPUTimeQueries.LightCullingPassQuery));
+        // ImGui::Text("Geometry Pass: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex, s_GPUTimeQueries.GeometryPassQuery));
+        // ImGui::Text("HBAO Pass: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex, s_GPUTimeQueries.HBAOPassQuery));
+        // ImGui::Text("Bloom Pass: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex, s_GPUTimeQueries.BloomComputePassQuery));
+        // ImGui::Text("Jump Flood Pass: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex, s_GPUTimeQueries.JumpFloodPassQuery));
+        // ImGui::Text("Composite Pass: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex, s_GPUTimeQueries.CompositePassQuery));
+
+        if (Hazel::UI::BeginTreeNode("Pipeline Statistics"))
+        {
+            // const Hazel::PipelineStatistics& pipelineStats = s_CommandBuffer->GetPipelineStatistics(frameIndex);
+            // ImGui::Text("Input Assembly Vertices: %llu", pipelineStats.InputAssemblyVertices);
+            // ImGui::Text("Input Assembly Primitives: %llu", pipelineStats.InputAssemblyPrimitives);
+            // ImGui::Text("Vertex Shader Invocations: %llu", pipelineStats.VertexShaderInvocations);
+            // ImGui::Text("Clipping Invocations: %llu", pipelineStats.ClippingInvocations);
+            // ImGui::Text("Clipping Primitives: %llu", pipelineStats.ClippingPrimitives);
+            // ImGui::Text("Fragment Shader Invocations: %llu", pipelineStats.FragmentShaderInvocations);
+            // ImGui::Text("Compute Shader Invocations: %llu", pipelineStats.ComputeShaderInvocations);
+            Hazel::UI::EndTreeNode();
+        }
+
+        Hazel::UI::EndTreeNode();
+    }
+
+    if (Hazel::UI::BeginTreeNode("Bloom Settings"))
+    {
+        Hazel::UI::BeginPropertyGrid();
+        Hazel::UI::Property("Bloom Enabled", s_BloomSettings.Enabled);
+        Hazel::UI::Property("Threshold", s_BloomSettings.Threshold);
+        Hazel::UI::Property("Knee", s_BloomSettings.Knee);
+        Hazel::UI::Property("Upsample Scale", s_BloomSettings.UpsampleScale);
+        Hazel::UI::Property("Intensity", s_BloomSettings.Intensity, 0.05f, 0.0f, 20.0f);
+        Hazel::UI::Property("Dirt Intensity", s_BloomSettings.DirtIntensity, 0.05f, 0.0f, 20.0f);
+
+        // TODO(Yan): move this to somewhere else
+        // Hazel::UI::Image(s_BloomDirtTexture, ImVec2(64, 64));
+        if (ImGui::IsItemHovered())
+        {
+            if (ImGui::IsItemClicked())
+            {
+                std::string filename = Application::Get()->OpenFile("");
+                if (!filename.empty())
+                {
+                    s_BloomDirtTexture = Hazel::HazelTexture2D::Create(filename);
+                }
+            }
+        }
+
+        Hazel::UI::EndPropertyGrid();
+        Hazel::UI::EndTreeNode();
+    }
+
+    if (Hazel::UI::BeginTreeNode("Horizon-Based Ambient Occlusion"))
+    {
+        Hazel::UI::BeginPropertyGrid();
+        Hazel::UI::Property("Enable", s_Options.EnableHBAO);
+        Hazel::UI::Property("Intensity", s_Options.HBAOIntensity, 0.05f, 0.1f, 4.0f);
+        Hazel::UI::Property("Radius", s_Options.HBAORadius, 0.05f, 0.0f, 4.0f);
+        Hazel::UI::Property("Bias", s_Options.HBAOBias, 0.02f, 0.0f, 0.95f);
+        Hazel::UI::Property("Blur Sharpness", s_Options.HBAOBlurSharpness, 0.5f, 0.0f, 100.f);
+        Hazel::UI::EndPropertyGrid();
+
+        float size = ImGui::GetContentRegionAvailWidth();
+        if (s_ResourcesCreated)
+        {
+            float size = ImGui::GetContentRegionAvailWidth();
+            auto image = s_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
+            Hazel::UI::Image(image, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+        }
+        Hazel::UI::EndTreeNode();
+    }
+
+    if (Hazel::UI::BeginTreeNode("Shadows"))
+    {
+        Hazel::UI::BeginPropertyGrid();
+        Hazel::UI::Property("Soft Shadows", s_RendererDataUB.SoftShadows);
+        Hazel::UI::Property("DirLight Size", s_RendererDataUB.LightSize, 0.01f);
+        Hazel::UI::Property("Max Shadow Distance", s_RendererDataUB.MaxShadowDistance, 1.0f);
+        Hazel::UI::Property("Shadow Fade", s_RendererDataUB.ShadowFade, 5.0f);
+        Hazel::UI::EndPropertyGrid();
+        if (Hazel::UI::BeginTreeNode("Cascade Settings"))
+        {
+            Hazel::UI::BeginPropertyGrid();
+            Hazel::UI::Property("Cascade Fading", s_RendererDataUB.CascadeFading);
+            Hazel::UI::Property("Cascade Transition Fade", s_RendererDataUB.CascadeTransitionFade, 0.05f, 0.0f, FLT_MAX);
+            Hazel::UI::Property("Cascade Split", s_CascadeSplitLambda, 0.01f);
+            Hazel::UI::Property("CascadeNearPlaneOffset", s_CascadeNearPlaneOffset, 0.1f, -FLT_MAX, 0.0f);
+            Hazel::UI::Property("CascadeFarPlaneOffset", s_CascadeFarPlaneOffset, 0.1f, 0.0f, FLT_MAX);
+            Hazel::UI::EndPropertyGrid();
+            Hazel::UI::EndTreeNode();
+        }
+
+        if (Hazel::UI::BeginTreeNode("Shadow Map", false))
+        {
+            static int cascadeIndex = 0;
+            // auto fb = s_ShadowPassPipelines[cascadeIndex]->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
+            // auto image = fb->GetDepthImage();
+
+            float size = ImGui::GetContentRegionAvailWidth(); // (float)fb->GetWidth() * 0.5f, (float)fb->GetHeight() * 0.5f
+            Hazel::UI::BeginPropertyGrid();
+            Hazel::UI::PropertySlider("Cascade Index", cascadeIndex, 0, 3);
+            Hazel::UI::EndPropertyGrid();
+            if (s_ResourcesCreated)
+            {
+                // Hazel::UI::Image(image, (uint32_t)cascadeIndex, { size, size }, { 0, 1 }, { 1, 0 });
+            }
+            Hazel::UI::EndTreeNode();
+        }
+
+        Hazel::UI::EndTreeNode();
+    }
+
+    if (Hazel::UI::BeginTreeNode("Compute Bloom"))
+    {
+        float size = ImGui::GetContentRegionAvailWidth();
+        if (s_ResourcesCreated)
+        {
+            static int tex = 0;
+            Hazel::UI::PropertySlider("Texture", tex, 0, 2);
+            static int mip = 0;
+            auto [mipWidth, mipHeight] = s_BloomComputeTextures[tex]->GetMipSize(mip);
+            std::string label = fmt::format("Mip ({0}x{1})", mipWidth, mipHeight);
+            Hazel::UI::PropertySlider(label.c_str(), mip, 0, s_BloomComputeTextures[tex]->GetMipLevelCount() - 1);
+            Hazel::UI::ImageMip(s_BloomComputeTextures[tex]->GetImage(), mip, { size, size * (1.0f / s_BloomComputeTextures[tex]->GetImage()->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+        }
+        Hazel::UI::EndTreeNode();
+    }
+
+    ImGui::End();
+}
+
 void EnvMapSceneRenderer::GeometryPass()
 {
     RendererBasic::EnableTransparency();
@@ -611,6 +817,59 @@ void EnvMapSceneRenderer::CompositePass()
 
     // Hazel::HazelRenderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::HazelMaterial>());
     // Hazel::HazelRenderer::EndRenderPass();
+}
+
+void EnvMapSceneRenderer::BloomBlurPass()
+{
+}
+
+void EnvMapSceneRenderer::ShadowMapPass()
+{
+    /****
+    auto& directionalLights = s_Data.SceneData.SceneLightEnvironment.DirectionalLights;
+    if (directionalLights[0].Multiplier == 0.0f || !directionalLights[0].CastShadows)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            HazelRenderer::BeginRenderPass(s_Data.ShadowMapRenderPass[i]);
+            HazelRenderer::EndRenderPass();
+        }
+        return;
+    }
+
+    CascadeData cascades[4];
+    CalculateCascades(cascades, directionalLights[0].Direction);
+    s_Data.LightViewMatrix = cascades[0].View;
+
+    // HazelRenderer::Submit([](){});
+    {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_BACK);
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        s_Data.CascadeSplits[i] = cascades[i].SplitDepth;
+
+        HazelRenderer::BeginRenderPass(s_Data.ShadowMapRenderPass[i]);
+
+        glm::mat4 shadowMapVP = cascades[i].ViewProj;
+
+        static glm::mat4 scaleBiasMatrix = glm::scale(glm::mat4(1.0f), { 0.5f, 0.5f, 0.5f }) * glm::translate(glm::mat4(1.0f), { 1, 1, 1 });
+        s_Data.LightMatrices[i] = scaleBiasMatrix * cascades[i].ViewProj;
+
+
+        // Render entities
+        for (auto& dc : s_Data.ShadowPassDrawList)
+        {
+            Ref<HazelShader> shader = dc.Mesh->IsAnimated() ? s_Data.ShadowMapAnimShader : s_Data.ShadowMapShader;
+            shader->SetMat4("u_ViewProjection", shadowMapVP);
+            HazelRenderer::SubmitMeshWithShader(dc.Mesh, dc.Transform, shader);
+        }
+
+        HazelRenderer::EndRenderPass();
+    }
+    ****/
 }
 
 void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::Entity entity)

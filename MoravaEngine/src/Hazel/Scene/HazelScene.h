@@ -2,13 +2,15 @@
 
 #pragma once
 
+#include "Components.h"
+#include "SceneCamera.h"
+
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Core/UUID.h"
 #include "Hazel/Editor/EditorCamera.h"
 #include "Hazel/Renderer/HazelMaterial.h"
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/SceneEnvironment.h"
-#include "Hazel/Scene/SceneCamera.h"
 
 #include "Shader/MoravaShader.h"
 
@@ -119,6 +121,16 @@ namespace Hazel {
 		}
 
 		Entity FindEntityByTag(const std::string& tag);
+		Entity FindEntityByUUID(UUID id);
+
+		void ConvertToLocalSpace(Entity entity);
+		void ConvertToWorldSpace(Entity entity);
+		glm::mat4 GetTransformRelativeToParent(Entity entity);
+		glm::mat4 GetWorldSpaceTransformMatrix(Entity entity);
+		TransformComponent GetWorldSpaceTransform(Entity entity);
+
+		void ParentEntity(Entity entity, Entity parent);
+		void UnparentEntity(Entity entity, bool convertToWorldSpace = true);
 
 		const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
 		

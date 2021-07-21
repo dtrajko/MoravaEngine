@@ -21,21 +21,22 @@ int Scene::s_ImGuizmoType = -1; // -1 = no gizmo
 
 Scene::Scene()
 {
-	sceneSettings.enableShadows      = false;
-	sceneSettings.enableOmniShadows  = false;
-	sceneSettings.enablePointLights  = false;
-	sceneSettings.enableSpotLights   = false;
-	sceneSettings.enableWaterEffects = false;
-	sceneSettings.enableSkybox       = false;
-	sceneSettings.enableNormalMaps   = false;
-	sceneSettings.enableCulling      = false;
-	sceneSettings.enableParticles    = false;
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 20.0f);
-	sceneSettings.cameraStartYaw = -90.0f;
-	sceneSettings.cameraStartPitch = 0.0f;
-	sceneSettings.cameraMoveSpeed = 4.0f;
-	sceneSettings.nearPlane = 0.01f;
-	sceneSettings.farPlane = 1000.0f;
+	sceneSettings.enableShadows            = false;
+	sceneSettings.enableOmniShadows        = false;
+	sceneSettings.enableCascadedShadowMaps = false;
+	sceneSettings.enablePointLights        = false;
+	sceneSettings.enableSpotLights         = false;
+	sceneSettings.enableWaterEffects       = false;
+	sceneSettings.enableSkybox             = false;
+	sceneSettings.enableNormalMaps         = false;
+	sceneSettings.enableCulling            = false;
+	sceneSettings.enableParticles          = false;
+	sceneSettings.cameraPosition           = glm::vec3(0.0f, 6.0f, 20.0f);
+	sceneSettings.cameraStartYaw           = -90.0f;
+	sceneSettings.cameraStartPitch         = 0.0f;
+	sceneSettings.cameraMoveSpeed          = 4.0f;
+	sceneSettings.nearPlane                = 0.01f;
+	sceneSettings.farPlane                 = 1000.0f;
 
 	// Directional light
 	sceneSettings.directionalLight.base.enabled = true;

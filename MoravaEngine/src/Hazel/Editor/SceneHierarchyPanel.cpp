@@ -637,11 +637,18 @@ namespace Hazel
 						Log::GetLogger()->debug("* * * * * SceneHierarchyPanel Material name: '{0}'", materialData->Name);
 					}
 
-					// MaterialLibrary::SetDefaultMaterialToSubmeshes(mc.Mesh, entity, EnvMapEditorLayer::s_DefaultMaterial);
 					MaterialLibrary::SetMaterialsToSubmeshes(mc.Mesh, entity, EnvMapEditorLayer::s_DefaultMaterial);
 				}
 			}
 			ImGui::Columns(1);
+
+			ImGui::Separator();
+
+			// UI::Property("Cast Shadows", mc.CastShadows);
+			// UI::Property("Receive Shadows", mc.ReceiveShadows);
+
+			ImGui::Checkbox("Cast Shadows", &mc.CastShadows);
+			ImGui::Checkbox("Receive Shadows", &mc.ReceiveShadows);
 		});
 
 		DrawComponent<CameraComponent>("Camera", entity, [=](CameraComponent& cc)

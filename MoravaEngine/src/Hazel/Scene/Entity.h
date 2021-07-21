@@ -65,6 +65,39 @@ namespace Hazel {
 			return !(*this == other);
 		};
 
+		void SetParentUUID(UUID parent) { GetComponent<RelationshipComponent>().ParentHandle = parent; }
+		UUID GetParentUUID() { return GetComponent<RelationshipComponent>().ParentHandle; }
+		std::vector<UUID>& Children() { return GetComponent<RelationshipComponent>().Children; }
+
+		bool HasParent() { return m_Scene->FindEntityByUUID(GetParentUUID()); }
+
+		bool IsAncesterOf(Entity entity)
+		{
+			const auto& children = Children();
+
+			if (children.size() == 0)
+				return false;
+
+			for (UUID child : children)
+			{
+				if (child == entity.GetUUID())
+					return true;
+			}
+
+			for (UUID child : children)
+			{
+				if (m_Scene->FindEntityByUUID(child).IsAncesterOf(entity))
+					return true;
+			}
+
+			return false;
+		}
+
+		bool IsDescendantOf(Entity entity)
+		{
+			return entity.IsAncesterOf(*this);
+		}
+
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 
 		UUID GetSceneUUID() { return m_Scene->GetUUID(); }
