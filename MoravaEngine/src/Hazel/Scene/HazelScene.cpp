@@ -310,7 +310,7 @@ namespace Hazel {
 		glm::mat4 cameraViewMatrix = glm::inverse(cameraEntity.GetComponent<TransformComponent>().Transform);
 		HZ_CORE_ASSERT(cameraEntity, "Scene does not contain any cameras!");
 		SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>();
-		camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		camera.SetViewportSize((float)m_ViewportWidth, (float)m_ViewportHeight);
 
 		// Process lights
 		{

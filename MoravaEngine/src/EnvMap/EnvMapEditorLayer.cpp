@@ -1523,7 +1523,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
                 glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
                 glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-                ImGuizmo::LOCAL,
+                ImGuizmo::WORLD,
                 glm::value_ptr(entityTransform),
                 nullptr,
                 snap ? snapValues : nullptr);
@@ -1557,7 +1557,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
                 glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
                 glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-                ImGuizmo::LOCAL,
+                ImGuizmo::WORLD,
                 glm::value_ptr(transformBase),
                 nullptr,
                 snap ? snapValues : nullptr);
@@ -1661,6 +1661,33 @@ void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
         }
     }
     ImGui::End();
+}
+
+void EnvMapEditorLayer::UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::Ref<Hazel::Submesh> submesh)
+{
+    SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, submesh);
+
+    MaterialUUID materialUUID;
+    if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
+        materialUUID = MaterialLibrary::s_SubmeshMaterialUUIDs.at(submeshUUID);
+    }
+
+    auto sm_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
+    if (sm_it != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
+        sm_it->second = materialUUID;
+        Log::GetLogger()->debug("s_SubmeshMaterialUUIDs UPDATE [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
+            submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
+        return;
+    }
+    else {
+        MaterialLibrary::s_SubmeshMaterialUUIDs.insert(std::make_pair(submeshUUID, materialUUID));
+        Log::GetLogger()->debug("s_SubmeshMaterialUUIDs INSERT [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
+            submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
+    }
+}
+
+void EnvMapEditorLayer::CloneEntity(Hazel::Entity entity)
+{
 }
 
 void EnvMapEditorLayer::NewScene()
