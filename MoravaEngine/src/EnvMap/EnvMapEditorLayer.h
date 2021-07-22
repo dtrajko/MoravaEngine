@@ -61,7 +61,7 @@ public:
 
 	void DisplaySubmeshMaterialSelector(bool* p_open);
 
-	void UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::Ref<Hazel::Submesh> submesh);
+	void UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::Submesh* submesh);
 
 	void NewScene();
 	void OpenScene();

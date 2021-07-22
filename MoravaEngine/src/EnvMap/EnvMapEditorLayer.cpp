@@ -1663,9 +1663,9 @@ void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
     ImGui::End();
 }
 
-void EnvMapEditorLayer::UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::Ref<Hazel::Submesh> submesh)
+void EnvMapEditorLayer::UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::Submesh* submesh)
 {
-    SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, submesh);
+    SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(&entity, submesh);
 
     MaterialUUID materialUUID;
     if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {
@@ -1684,10 +1684,6 @@ void EnvMapEditorLayer::UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::Re
         Log::GetLogger()->debug("s_SubmeshMaterialUUIDs INSERT [ SubmeshUUID: '{0}' => MaterialUUID: '{1}', Items: {2} ]",
             submeshUUID, materialUUID, MaterialLibrary::s_SubmeshMaterialUUIDs.size());
     }
-}
-
-void EnvMapEditorLayer::CloneEntity(Hazel::Entity entity)
-{
 }
 
 void EnvMapEditorLayer::NewScene()
