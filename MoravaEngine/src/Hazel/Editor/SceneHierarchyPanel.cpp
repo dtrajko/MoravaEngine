@@ -624,22 +624,42 @@ namespace Hazel
 			else {
 				ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
 			}
+
+			std::string meshFilepath = "";
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					std::wstring itemPath = std::wstring((const wchar_t*)payload->Data);
+					size_t itemSize = payload->DataSize;
+					Log::GetLogger()->debug("END DRAG & DROP FILE '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
+
+					meshFilepath = std::string{ itemPath.begin(), itemPath.end() };
+				}
+				ImGui::EndDragDropTarget();
+			}
+
 			ImGui::PopItemWidth();
 			ImGui::NextColumn();
+
 			if (ImGui::Button("...##openmesh"))
 			{
-				std::string file = Application::Get()->OpenFile();
-				if (!file.empty()) {
-					mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(file, Hazel::Ref<MoravaShader>(), Hazel::Ref<Hazel::HazelMaterial>(), false);
-
-					auto materialDataVector = MaterialLibrary::s_MaterialData;
-					for (auto materialData : materialDataVector) {
-						Log::GetLogger()->debug("* * * * * SceneHierarchyPanel Material name: '{0}'", materialData->Name);
-					}
-
-					MaterialLibrary::SetMaterialsToSubmeshes(mc.Mesh, entity, EnvMapEditorLayer::s_DefaultMaterial);
-				}
+				meshFilepath = Application::Get()->OpenFile();
 			}
+
+			if (!meshFilepath.empty())
+			{
+				mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(meshFilepath, Hazel::Ref<MoravaShader>(), Hazel::Ref<Hazel::HazelMaterial>(), false);
+
+				auto materialDataVector = MaterialLibrary::s_MaterialData;
+				for (auto materialData : materialDataVector) {
+					Log::GetLogger()->debug("* * * * * SceneHierarchyPanel Material name: '{0}'", materialData->Name);
+				}
+
+				MaterialLibrary::SetMaterialsToSubmeshes(mc.Mesh, entity, EnvMapEditorLayer::s_DefaultMaterial);
+			}
+
 			ImGui::Columns(1);
 
 			ImGui::Separator();

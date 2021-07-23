@@ -128,13 +128,6 @@ namespace Hazel
 
 			ImGui::Text("<-");
 
-			//	ImGui::Image((void*)(intptr_t)m_TextureDirectory->GetID(), ImVec2{ 64.0f, 64.0f });
-			//	if (ImGui::Button("<-"))
-			//	{
-			//		m_CurrentDirectory = m_CurrentDirectory.parent_path();
-			//		Log::GetLogger()->info("m_CurrentDirectory: '{0}'", m_CurrentDirectory.string().c_str());
-			//	}
-
 			ImGui::Dummy(verticalSeparator);
 
 			ImGui::NextColumn();
@@ -154,6 +147,19 @@ namespace Hazel
 
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 				ImGui::ImageButton(iconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor);
+
+				if (ImGui::BeginDragDropSource())
+				{
+					std::wstring itemPath = relativePath.wstring();
+					// size_t itemSize = relativePath.native().size();
+					size_t itemSize = (itemPath.size() + 1) * sizeof(wchar_t);
+
+					// Log::GetLogger()->debug("Begin drag & drop file '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
+
+					ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath.c_str(), itemSize, ImGuiCond_Once);
+
+					ImGui::EndDragDropSource();
+				}
 
 				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{

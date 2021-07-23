@@ -5,6 +5,8 @@
 
 #include "../../ImGuizmo/ImGuizmo.h"
 
+#include <cwchar>
+
 
 bool ImGuiWrapper::s_ViewportEnabled = false;
 bool ImGuiWrapper::s_ViewportHovered = true;
@@ -183,6 +185,9 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				(void*)(intptr_t)material->GetAlbedoInput().TextureMap->GetImTextureID() :
 				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
+
+			DragAndDropTarget(material->GetAlbedoInput().TextureMap, material->GetAlbedoInput().SRGB);
+
 			if (ImGui::IsItemHovered())
 			{
 				if (material->GetAlbedoInput().TextureMap)
@@ -233,6 +238,9 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				(void*)(intptr_t)material->GetNormalInput().TextureMap->GetImTextureID() :
 				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
+
+			DragAndDropTarget(material->GetNormalInput().TextureMap, false);
+
 			if (ImGui::IsItemHovered())
 			{
 				if (material->GetNormalInput().TextureMap)
@@ -266,6 +274,9 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				(void*)(intptr_t)material->GetMetalnessInput().TextureMap->GetImTextureID() :
 				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
+
+			DragAndDropTarget(material->GetMetalnessInput().TextureMap, false);
+
 			if (ImGui::IsItemHovered())
 			{
 				if (material->GetMetalnessInput().TextureMap)
@@ -302,6 +313,9 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				(void*)(intptr_t)material->GetRoughnessInput().TextureMap->GetImTextureID() :
 				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
+
+			DragAndDropTarget(material->GetRoughnessInput().TextureMap, false);
+
 			if (ImGui::IsItemHovered())
 			{
 				if (material->GetRoughnessInput().TextureMap)
@@ -338,6 +352,9 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				(void*)(intptr_t)material->GetAOInput().TextureMap->GetImTextureID() :
 				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
+
+			DragAndDropTarget(material->GetAOInput().TextureMap, false);
+
 			if (ImGui::IsItemHovered())
 			{
 				if (material->GetAOInput().TextureMap)
@@ -374,6 +391,9 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				(void*)(intptr_t)material->GetEmissiveInput().TextureMap->GetImTextureID() :
 				(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
 			ImGui::PopStyleVar();
+
+			DragAndDropTarget(material->GetEmissiveInput().TextureMap, material->GetEmissiveInput().SRGB);
+
 			if (ImGui::IsItemHovered())
 			{
 				if (material->GetEmissiveInput().TextureMap)
@@ -414,6 +434,26 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		}
 	}
 	// END PBR Textures
+}
+
+void ImGuiWrapper::DragAndDropTarget(Hazel::Ref<Hazel::HazelTexture2D>& texture, bool srgb)
+{
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		{
+			std::wstring itemPath = std::wstring((const wchar_t*)payload->Data);
+			size_t itemSize = payload->DataSize;
+			Log::GetLogger()->debug("END DRAG & DROP FILE '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
+
+			std::string filename(itemPath.begin(), itemPath.end());
+			if (filename != "")
+			{
+				texture = Hazel::HazelTexture2D::Create(filename, srgb, Hazel::TextureWrap::Repeat);
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
 }
 
 bool ImGuiWrapper::Property(const std::string& name, bool& value)
