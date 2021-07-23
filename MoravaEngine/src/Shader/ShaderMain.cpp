@@ -1,10 +1,18 @@
 #include "ShaderMain.h"
 
 
-ShaderMain::ShaderMain() : MoravaShader()
+ShaderMain::ShaderMain() : OpenGLMoravaShader()
 {
 	pointLightCount = 0;
 	spotLightCount = 0;
+
+	GetUniformLocations();
+}
+
+ShaderMain::ShaderMain(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+	: OpenGLMoravaShader(vertexLocation, fragmentLocation, forceCompile)
+{
+	GetUniformLocations();
 }
 
 GLint ShaderMain::GetUniformLocationAmbientColor()

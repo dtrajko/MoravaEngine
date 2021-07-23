@@ -3,13 +3,14 @@
 #include "Light/DirectionalLight.h"
 #include "Light/PointLight.h"
 #include "Light/SpotLight.h"
-#include "Shader/MoravaShader.h"
+#include "Platform/OpenGL/OpenGLMoravaShader.h"
 
 
-class ShaderMain : public MoravaShader
+class ShaderMain : public OpenGLMoravaShader
 {
 public:
 	ShaderMain();
+	ShaderMain(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
 
 	// Directional Light
 	GLint GetUniformLocationAmbientColor();
