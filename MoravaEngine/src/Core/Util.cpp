@@ -248,3 +248,12 @@ glm::vec3 Util::Lerp(const glm::vec3& start, const glm::vec3& end, float delta)
 
 	return out;
 }
+
+char Util::DirectorySeparator()
+{
+#ifdef _WIN32
+	return '\\';
+#else
+	return '/';
+#endif
+}

@@ -40,4 +40,6 @@ public:
 
 	static glm::vec3 Lerp(const glm::vec3& start, const glm::vec3& end, float delta);
 
+	static char DirectorySeparator();
+
 };

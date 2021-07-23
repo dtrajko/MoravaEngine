@@ -2,6 +2,7 @@
 
 #include "Core/Log.h"
 #include "Core/Timer.h"
+#include "Core/Util.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Platform/DX11/DX11Texture2D.h"
 
@@ -14,8 +15,10 @@ namespace Hazel
 	ContentBrowserPanel::ContentBrowserPanel()
 		: m_CurrentDirectory(s_AssetPath), m_CurrentDirectoryOld("")
 	{
-		m_TextureDirectory = HazelTexture2D::Create("Textures/UI/directory_transparent.png", false);
-		m_TextureFile = HazelTexture2D::Create("Textures/UI/file_transparent.png", false);
+		// m_TextureDirectory = HazelTexture2D::Create("Textures/UI/directory_transparent.png", false);
+		// m_TextureFile = HazelTexture2D::Create("Textures/UI/file_transparent.png", false);
+		m_TextureDirectory = HazelTexture2D::Create("Textures/UI/directory_modern_transparent.png", false);
+		m_TextureFile = HazelTexture2D::Create("Textures/UI/file_modern_transparent.png", false);
 	}
 
 	ContentBrowserPanel::~ContentBrowserPanel()
@@ -32,7 +35,7 @@ namespace Hazel
 
 		/**** BEGIN Table #1 (3 columns) ****/
 
-		ImGui::Columns(4);
+		ImGui::Columns(4, 0, false);
 		// ImGui::AlignTextToFramePadding();
 
 		ImGui::SetColumnWidth(0, panelSize.x - 300.0f);
@@ -101,7 +104,7 @@ namespace Hazel
 
 		if (columnCount >= 1)
 		{
-			ImGui::Columns(columnCount);
+			ImGui::Columns(columnCount, 0, false);
 
 			for (uint32_t i = 0; i < columnCount; i++)
 			{
@@ -114,11 +117,13 @@ namespace Hazel
 		{
 			ImGui::PushID(imageButtonID++);
 			ImTextureID dirIconTextureID = m_TextureDirectory->GetImTextureID();
-			if (ImGui::ImageButton(dirIconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor))
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+			if (ImGui::ImageButton(dirIconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding/*, iconBgColor, iconTintColor*/))
 			{
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
 				Log::GetLogger()->info("m_CurrentDirectory: '{0}'", m_CurrentDirectory.string().c_str());
 			}
+			ImGui::PopStyleColor();
 			ImGui::PopID();
 
 			ImGui::Text("<-");
@@ -141,15 +146,31 @@ namespace Hazel
 			auto relativePath = std::filesystem::relative(path, s_AssetPath);
 			std::string filenameString = relativePath.filename().string();
 
-			if (directoryEntry.is_directory())
 			{
 				ImGui::PushID(imageButtonID++);
-				ImTextureID dirIconTextureID = m_TextureDirectory->GetImTextureID();
-				if (ImGui::ImageButton(dirIconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor))
+
+				Hazel::Ref<Hazel::HazelTexture2D> iconTexture = directoryEntry.is_directory() ? m_TextureDirectory : m_TextureFile;
+				ImTextureID iconTextureID = iconTexture->GetImTextureID();
+
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+				ImGui::ImageButton(iconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor);
+
+				if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 				{
-					m_CurrentDirectory /= path.filename();
-					Log::GetLogger()->info("ImageButton (Directory) clicked: '{0}'", m_CurrentDirectory.string().c_str());
+					if (directoryEntry.is_directory())
+					{
+						m_CurrentDirectory /= path.filename();
+					}
+
+					/**** BEGIN LOG ****/
+					std::string entryType = directoryEntry.is_directory() ? "Directory" : "File";
+					std::string entryPath = directoryEntry.is_directory() ? 
+						m_CurrentDirectory.string() :
+						m_CurrentDirectory.string() + Util::DirectorySeparator() + filenameString;
+					Log::GetLogger()->info("ImageButton ({0}) clicked: '{1}'", entryType.c_str(), entryPath.c_str());
+					/**** END LOG ****/
 				}
+				ImGui::PopStyleColor();
 				ImGui::PopID();
 
 				if (ImGui::IsItemHovered())
@@ -167,44 +188,6 @@ namespace Hazel
 					ImGui::TextUnformatted(filenameString.c_str());
 					ImGui::EndTooltip();
 				}
-
-				//	ImGui::Image((void*)(intptr_t)m_TextureDirectory->GetID(), ImVec2{ 64.0f, 64.0f });
-				//	if (ImGui::Button(filenameString.c_str()))
-				//	{
-				//		m_CurrentDirectory /= path.filename();
-				//		Log::GetLogger()->info("Button (Directory) clicked: '{0}'", m_CurrentDirectory.string().c_str());
-				//	}
-			}
-			else
-			{
-				ImGui::PushID(imageButtonID++);
-				ImTextureID fileIconTextureID = m_TextureFile->GetImTextureID();
-				if (ImGui::ImageButton(fileIconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor))
-				{
-					Log::GetLogger()->info("ImageButton (File) clicked: '{0}'", filenameString.c_str());
-				}
-				ImGui::PopID();
-
-				if (ImGui::IsItemHovered())
-				{
-					ImGui::BeginTooltip();
-					ImGui::TextUnformatted(filenameString.c_str());
-					ImGui::EndTooltip();
-				}
-
-				ImGui::Text(filenameString.c_str());
-
-				if (ImGui::IsItemHovered())
-				{
-					ImGui::BeginTooltip();
-					ImGui::TextUnformatted(filenameString.c_str());
-					ImGui::EndTooltip();
-				}
-
-				//	ImGui::Image((void*)(intptr_t)m_TextureFile->GetID(), ImVec2{ 64.0f, 64.0f });
-				//	if (ImGui::Button(filenameString.c_str()))
-				//	{
-				//	}
 			}
 
 			ImGui::Dummy(verticalSeparator);
