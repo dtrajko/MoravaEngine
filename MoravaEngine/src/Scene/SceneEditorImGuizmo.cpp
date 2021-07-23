@@ -241,6 +241,9 @@ SceneEditorImGuizmo::SceneEditorImGuizmo()
     m_DirectionsSpotLight.resize(4);
     for (int i = 0; i < 4; i++)
         m_DirectionsSpotLight[i] = glm::vec3(0.0f);
+
+    // Testing MONO
+    auto m = mono_init("dd");
 }
 
 void SceneEditorImGuizmo::SetLightManager()

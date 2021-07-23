@@ -126,6 +126,9 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
     // Hazel::RendererAPI::Init();
+
+    // Testing MONO
+    auto m = mono_init("dd");
 }
 
 SceneHazelEnvMap::~SceneHazelEnvMap()

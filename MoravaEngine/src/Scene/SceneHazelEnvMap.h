@@ -9,6 +9,10 @@
 #include "Scene/Scene.h"
 #include "Texture/MoravaTexture.h"
 
+// Include MONO
+#include <mono/metadata/assembly.h>
+#include <mono/jit/jit.h>
+
 #include <map>
 #include <string>
 
