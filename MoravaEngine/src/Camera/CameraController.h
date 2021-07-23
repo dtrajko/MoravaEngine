@@ -22,6 +22,7 @@ public:
 	virtual void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
 	inline Hazel::HazelCamera* GetCamera() { return m_Camera; };
 	void InvertPitch();
+	void InvertRoll();
 	inline void SetUnlockRotation(bool unlockRotation) { m_UnlockRotation = unlockRotation; };
 
 	void OnResize(uint32_t width, uint32_t height);

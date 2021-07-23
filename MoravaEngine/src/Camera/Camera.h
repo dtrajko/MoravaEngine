@@ -24,7 +24,6 @@ public:
 	virtual void SetPitch(float pitch) override;
 	virtual glm::mat4& GetViewMatrix() override;
 
-private:
 	void UpdateProjection();
 	void UpdateView();
 

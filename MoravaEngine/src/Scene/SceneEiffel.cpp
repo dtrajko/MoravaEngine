@@ -187,6 +187,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(3.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	// shaderMain->SetMat4("model", model);
+	// shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
 	textures["sponzaFloorDiffuse"]->Bind(textureSlots["diffuse"]);
 	textures["sponzaFloorNormal"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
@@ -201,8 +203,9 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(0.0003f, 0.0003f, 0.0003f));
-	// glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	shaderMain->SetMat4("model", model);
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	// shaderMain->SetMat4("model", model);
+	// shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	models["eiffel"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
@@ -214,6 +217,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(0.5f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	// shaderMain->SetMat4("model", model);
+	// shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	models["watchtower"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
@@ -225,6 +230,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(0.02f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	// shaderMain->SetMat4("model", model);
+	// shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	models["helicopter"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
@@ -236,6 +243,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	// shaderMain->SetMat4("model", model);
+	// shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
 	textures["pyramid"]->Bind(textureSlots["diffuse"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
@@ -250,7 +259,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
-		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		shaderMain->SetMat4("model", model);
+		shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
 		shaderMain->SetInt("albedoMap", textureSlots["shadow"]);
 		shaderMain->SetInt("normalMap", textureSlots["shadow"]);
 		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
@@ -264,6 +274,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		// shaderMain->SetMat4("model", model);
+		// shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
 		shaderMain->SetInt("albedoMap", textureSlots["diffuse"]);
 		shaderMain->SetInt("normalMap", textureSlots["normal"]);
 		m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
@@ -278,7 +290,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(-5.0f, 1.0f, 5.0f * (9.0f / 16.0f)));
-		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+		shaderMain->SetMat4("model", model);
+		shaderMain->SetMat4("view", m_Camera->GetViewMatrix());
 		shaderMain->SetInt("albedoMap", textureSlots["diffuse"]);
 		shaderMain->SetInt("normalMap", textureSlots["normal"]);
 		m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["diffuse"]);
@@ -304,7 +317,9 @@ void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(30.0f));
-	shaderWater->SetMat4("model", model);
+	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+	// shaderWater->SetMat4("model", model);
+	// shaderWater->SetMat4("view", m_Camera->GetViewMatrix());
 	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
@@ -318,9 +333,7 @@ void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 
 	shaderWater->SetFloat3("lightColor", LightManager::directionalLight.GetColor());
 	shaderWater->SetFloat3("lightPosition", -m_LightDirection);
-
 	shaderWater->SetFloat3("eyePosition", m_Camera->GetPosition());
-
 	shaderWater->SetFloat("waterLevel", sceneSettings.waterHeight);
 	shaderWater->SetFloat4("waterColor", glm::vec4(0.0f, 0.4f, 0.8f, 1.0f));
 

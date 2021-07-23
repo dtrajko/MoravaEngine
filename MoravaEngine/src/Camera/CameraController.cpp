@@ -114,6 +114,15 @@ void CameraController::InvertPitch()
 {
 	float pitch = m_Camera->GetPitch();
 	m_Camera->SetPitch(-pitch);
+
+	CalculateFront();
+}
+
+void CameraController::InvertRoll()
+{
+	glm::vec3 newWorldUp = -m_Camera->GetWorldUp();
+	m_Camera->SetWorldUp(newWorldUp);
+	m_Camera->OnUpdate(0);
 }
 
 void CameraController::OnResize(uint32_t width, uint32_t height)

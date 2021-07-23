@@ -33,7 +33,7 @@ void main(void) {
 	vec2 ndc = (clipSpace.xy / clipSpace.w) / 2.0 + 0.5;
 	vec2 refractTexCoords = vec2(ndc.x, ndc.y);
 	vec2 reflectTexCoords = vec2(ndc.x, -ndc.y);
-	
+
 	float floorDepth = texture(depthMap, refractTexCoords).r;
 	float floorDistance = 2.0 * nearPlane * farPlane / (farPlane + nearPlane - (2.0 * floorDepth - 1.0) * (farPlane - nearPlane));
 

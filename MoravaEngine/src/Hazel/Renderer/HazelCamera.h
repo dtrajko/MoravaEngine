@@ -57,15 +57,19 @@ namespace Hazel {
 		inline glm::vec3 GetFront() const { return m_Front; }
 		inline glm::vec3 GetUp() const { return m_Up; }
 		inline glm::vec3 GetRight() const { return m_Right; }
+		inline glm::vec3 GetWorldUp() const { return m_WorldUp; }
 		inline float GetExposure() const { return m_Exposure; }
 		inline float& GetExposure() { return m_Exposure; }
 		inline float& GetAspectRatio() { return m_AspectRatio; }
 
 		// setters
 		inline void SetPosition(glm::vec3 position) { m_Position = position; };
-		inline void SetFront(glm::vec3 front) { m_Front = front; };
 		inline virtual void SetPitch(float pitch) { m_Pitch = pitch; };
 		inline void SetYaw(float yaw) { m_Yaw = yaw; };
+		inline void SetWorldUp(glm::vec3 worldUp) { m_WorldUp = worldUp; }
+		inline void SetFront(glm::vec3 front) { m_Front = front; };
+		inline void SetRight(glm::vec3 right) { m_Right = right; }
+		inline void SetUp(glm::vec3 up) { m_Up = up; }
 		inline void SetExposure(float exposure) { m_Exposure = exposure; }
 		inline void SetAspectRatio(float aspectRatio) { m_AspectRatio = aspectRatio; }
 
