@@ -6,6 +6,7 @@
 
 #include "Core/Log.h"
 #include "Shader/MoravaShader.h"
+#include "Platform/OpenGL/OpenGLMoravaShader.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -41,7 +42,7 @@ namespace Hazel {
 		Ref<VertexBuffer> QuadVertexBuffer;
 		Ref<IndexBuffer> QuadIndexBuffer;
 
-		MoravaShader* TextureShader; // Morava shader class
+		Ref<OpenGLMoravaShader> TextureShader; // Morava shader class
 		Ref<HazelShader> TextureHazelShader; // Hazel shader class
 
 		Ref<HazelTexture2D> WhiteTexture;
@@ -60,7 +61,7 @@ namespace Hazel {
 		Ref<VertexBuffer> LineVertexBuffer;
 		Ref<IndexBuffer> LineIndexBuffer;
 
-		MoravaShader* LineShader; // Morava shader class
+		Ref<OpenGLMoravaShader> LineShader; // Morava shader class
 		Ref<HazelShader> LineHazelShader; // Hazel shader class
 
 		uint32_t LineIndexCount = 0;
@@ -138,7 +139,7 @@ namespace Hazel {
 			//		s_Data.TextureHazelShader = HazelShader::Create("assets/shaders/Renderer2D.glsl"); // not in use, only for constructor testing
 			//	}
 
-			s_Data.TextureShader = new MoravaShader("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs");
+			s_Data.TextureShader = Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs"));
 			s_Data.TextureShader->Bind();
 			s_Data.TextureShader->SetIntArray("u_Textures", samplers, s_Data.MaxTextureSlots);
 
@@ -153,11 +154,12 @@ namespace Hazel {
 
 		// Lines
 		{
-			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan) {
+			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+			{
 				s_Data.LineHazelShader = HazelShader::Create("assets/shaders/Renderer2D_Line.glsl"); // not in use, only for constructor testing
 			}
 
-			s_Data.LineShader = new MoravaShader("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+			s_Data.LineShader = Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs"));
 
 			PipelineSpecification pipelineSpecification;
 			pipelineSpecification.Layout = {

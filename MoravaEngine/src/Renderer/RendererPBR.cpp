@@ -65,12 +65,11 @@ void RendererPBR::SetUniforms()
 
 void RendererPBR::SetShaders()
 {
-	ShaderMain* shaderMain = new ShaderMain();
-	shaderMain->CreateFromFiles("Shaders/shader.vert", "Shaders/shader.frag");
+	Hazel::Ref<MoravaShader> shaderMain = MoravaShader::Create("Shaders/shader.vert", "Shaders/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	printf("Renderer: Main shader compiled [programID=%d]\n", shaderMain->GetProgramID());
 
-	MoravaShader* shaderDirectionalShadow = new MoravaShader("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+	Hazel::Ref<MoravaShader> shaderDirectionalShadow = MoravaShader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("directionalShadow", shaderDirectionalShadow));
 	printf("Renderer: Shadow shader compiled [programID=%d]\n", shaderDirectionalShadow->GetProgramID());
 
@@ -109,7 +108,7 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->GetViewMatrix(), projectionMatrix);
 	}
 
-	ShaderMain* shaderMain = (ShaderMain*)RendererBasic::GetShaders()["main"];
+	Hazel::Ref<ShaderMain> shaderMain = RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	RendererBasic::GetUniforms()["model"]       = shaderMain->GetUniformLocation("model");
@@ -148,7 +147,7 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	MoravaShader* shaderWater = RendererBasic::GetShaders()["water"];
+	Hazel::Ref<MoravaShader> shaderWater = RendererBasic::GetShaders()["water"];
 	shaderWater->Bind();
 	RendererBasic::GetUniforms()["model"]             = shaderWater->GetUniformLocation("model");
 	RendererBasic::GetUniforms()["projection"]        = shaderWater->GetUniformLocation("projection");
@@ -189,7 +188,7 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 	scene->RenderWater(projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 	shaderWater->Unbind();
 
-	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(RendererBasic::GetShaders()["pbr"]);
+	Hazel::Ref<MoravaShader> shaderPBR = RendererBasic::GetShaders()["pbr"];
 
 	shaderPBR->Bind();
 	RendererBasic::GetUniforms()["model"]      = shaderPBR->GetUniformLocation("model");

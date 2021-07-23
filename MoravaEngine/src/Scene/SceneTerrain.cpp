@@ -152,7 +152,7 @@ void SceneTerrain::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneTerrain::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 	if (passType == "shadow") return;
 
@@ -173,11 +173,11 @@ void SceneTerrain::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 }
 
 void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
-	MoravaShader* shaderWater = shaders["water"];
+	Hazel::Ref<MoravaShader> shaderWater = shaders["water"];
 	shaderWater->Bind();
 
 	/* Water Tile */

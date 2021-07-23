@@ -800,16 +800,16 @@ void SceneMarchingCubes::Dig(bool* keys, float timestep)
 }
 
 void SceneMarchingCubes::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
 
-    MoravaShader* shaderMain = shaders["main"];
-    MoravaShader* shaderShadowMap = shaders["shadow_map"];
-    MoravaShader* shaderOmniShadow = shaders["omniShadow"];
-    MoravaShader* shaderRenderInstanced = shaders["render_instanced"];
-    MoravaShader* shaderBasic = shaders["basic"];
-    MoravaShader* shaderMarchingCubes = shaders["marching_cubes"];
+    Hazel::Ref<MoravaShader> shaderMain = shaders["main"];
+    Hazel::Ref<MoravaShader> shaderShadowMap = shaders["shadow_map"];
+    Hazel::Ref<MoravaShader> shaderOmniShadow = shaders["omniShadow"];
+    Hazel::Ref<MoravaShader> shaderRenderInstanced = shaders["render_instanced"];
+    Hazel::Ref<MoravaShader> shaderBasic = shaders["basic"];
+    Hazel::Ref<MoravaShader> shaderMarchingCubes = shaders["marching_cubes"];
 
     RendererBasic::EnableTransparency();
 

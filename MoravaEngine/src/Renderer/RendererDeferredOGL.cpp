@@ -42,11 +42,11 @@ void RendererDeferredOGL::CreateBuffers()
 
 void RendererDeferredOGL::SetShaders()
 {
-	m_ShaderForwardBasic = Hazel::Ref<MoravaShader>::Create("Shaders/OGLdev/tutorial35/forward_basic.vs", "Shaders/OGLdev/tutorial35/forward_basic.fs");
+	m_ShaderForwardBasic = MoravaShader::Create("Shaders/OGLdev/tutorial35/forward_basic.vs", "Shaders/OGLdev/tutorial35/forward_basic.fs");
 	RendererBasic::GetShaders().insert(std::make_pair("forward_basic", m_ShaderForwardBasic.Raw()));
 	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderForwardBasic compiled [programID={0}]", m_ShaderForwardBasic->GetProgramID());
 
-	m_ShaderGeometryPass = Hazel::Ref<MoravaShader>::Create("Shaders/OGLdev/tutorial35/geometry_pass.vs", "Shaders/OGLdev/tutorial35/geometry_pass.fs");
+	m_ShaderGeometryPass = MoravaShader::Create("Shaders/OGLdev/tutorial35/geometry_pass.vs", "Shaders/OGLdev/tutorial35/geometry_pass.fs");
 	RendererBasic::GetShaders().insert(std::make_pair("geometry_pass", m_ShaderGeometryPass.Raw()));
 	Log::GetLogger()->info("RendererDeferredOGL: m_ShaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
 }

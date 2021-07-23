@@ -131,7 +131,7 @@ void SceneNanosuit::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneNanosuit::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 	// Clear the window
 	glClearColor(m_BgColor.r, m_BgColor.g, m_BgColor.b, m_BgColor.a);

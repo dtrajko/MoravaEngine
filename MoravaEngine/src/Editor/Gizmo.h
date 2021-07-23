@@ -37,7 +37,6 @@ public:
 	Gizmo();
 	void Update(glm::vec3 cameraPosition, Window* mainWindow);
 	void UpdateActive(glm::vec3 cameraPosition, Window* mainWindow);
-	void Render(MoravaShader* shader);
 	void CreateObjects();
 	void ChangeMode(int mode);
 	void ToggleMode();
@@ -52,6 +51,7 @@ public:
 	void OnMouseRelease(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
 	inline void SetDrawAABBs(bool drawAABBs) { m_DrawAABBs = drawAABBs; };
 	inline glm::quat GetRotation() { return m_Rotation; };
+	void Render(Hazel::Ref<MoravaShader> shader);
 	~Gizmo();
 
 private:

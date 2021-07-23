@@ -175,15 +175,6 @@ void OpenGLRendererBasic::DisableBlend()
 	glDisable(GL_BLEND);
 }
 
-void OpenGLRendererBasic::Cleanup()
-{
-	for (auto& shader : s_Shaders)
-		delete shader.second;
-
-	s_Shaders.clear();
-	RendererBasic::GetUniforms().clear();
-}
-
 void OpenGLRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)
 {
 	float aspectRatio = scene->GetCameraController()->GetAspectRatio();

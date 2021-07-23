@@ -53,14 +53,15 @@ public:
 	static Hazel::Ref<MoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
 	static Hazel::Ref<MoravaShader> Create(const char* computeLocation, bool forceCompile = false);
 
+	// HazelShader abstract methods
+	virtual Hazel::RendererID GetRendererID() const override;
+	virtual size_t GetHash() const override;
+
 	// virtual methods
 	virtual void Bind() override;
 	virtual void Reload(bool forceCompile = false) override;
 	virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
 
-	// HazelShader abstract methods
-	virtual Hazel::RendererID GetRendererID() const override;
-	virtual size_t GetHash() const override;
 	virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 
 	virtual void SetUniform(const std::string& fullname, float value) override;
@@ -75,21 +76,26 @@ public:
 	virtual void SetFloat(const std::string& name, float value) override;
 	virtual void SetUInt(const std::string& name, uint32_t value) override;
 	virtual void SetInt(const std::string& name, int value) override;
-	void SetBool(const std::string& name, bool value);
+	virtual void SetBool(const std::string& name, bool value);
 	virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
 	virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 	virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 	virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 	virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
 
+	void UploadUniformMat4(const std::string& name, const glm::mat4& values) {}
+	void UploadUniformMat4(uint32_t location, const glm::mat4& values) {}
+
+	void setLightMat4(std::vector<glm::mat4> lightMatrices) {}
+	void Unbind() {}
+	// Omni shadow maps
+	void SetLightMatrices(std::vector<glm::mat4> lightMatrices) {}
+
 	virtual const std::string& GetName() const override;
 	virtual const std::unordered_map<std::string, Hazel::ShaderBuffer>& GetShaderBuffers() const override;
 	virtual const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& GetResources() const override;
 
 	virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
-
-	void UploadUniformMat4(const std::string& name, const glm::mat4& values);
-	void UploadUniformMat4(uint32_t location, const glm::mat4& values);
 
 	void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
@@ -109,19 +115,15 @@ public:
 	void setMat2(const std::string& name, const glm::mat2& mat);
 	void setMat3(const std::string& name, const glm::mat3& mat);
 
-	void setLightMat4(std::vector<glm::mat4> lightMatrices);
 	virtual GLint GetUniformLocation(const std::string& name);
 
 	inline std::string GetName() { return m_Name; }
 
-	void Unbind();
 	virtual void ClearShader();
 	~MoravaShader();
 
 	GLuint GetProgramID();
 
-	// Omni shadow maps
-	void SetLightMatrices(std::vector<glm::mat4> lightMatrices);
 
 protected:
 	void CompileProgram();

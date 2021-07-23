@@ -449,6 +449,8 @@ void DX11Shader::SetUInt(const std::string& name, uint32_t value) {}
 
 void DX11Shader::SetFloat(const std::string& name, float value) {}
 
+void DX11Shader::SetBool(const std::string& name, bool value) {}
+
 void DX11Shader::SetFloat2(const std::string& name, const glm::vec2& value) {}
 
 void DX11Shader::SetFloat3(const std::string& name, const glm::vec3& value) {}

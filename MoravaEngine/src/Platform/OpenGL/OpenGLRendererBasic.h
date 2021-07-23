@@ -44,17 +44,9 @@ public:
 
 	static void SetViewportSize(uint32_t width, uint32_t height);
 
-	static inline glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; }
-	static inline void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; }
 	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);
 
-	static std::map<std::string, MoravaShader*>& GetShaders() { return s_Shaders; }
-	static std::map<std::string, int>& GetUniforms() { return s_Uniforms; }
-
-	static glm::vec4 GetBgColor() { return s_BgColor; }
-
 	static void RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow);
-	static void Cleanup();
 	static void Clear();
 	static void Clear(float r, float g, float b, float a);
 

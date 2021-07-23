@@ -46,14 +46,13 @@ public:
 
 	static void SetViewportSize(uint32_t width, uint32_t height);
 
-	static glm::mat4 GetProjectionMatrix();
-	static void SetProjectionMatrix(glm::mat4 projectionMatrix);
+	static glm::vec4 GetBgColor() { return s_BgColor; }
+	static glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; }
+	static void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; }
+	static std::map<std::string, Hazel::Ref<MoravaShader>>& GetShaders() { return s_Shaders; };
+	static std::map<std::string, int>& GetUniforms() { return s_Uniforms; }
+
 	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);
-
-	static std::map<std::string, MoravaShader*>& GetShaders();
-	static std::map<std::string, int>& GetUniforms();
-
-	static glm::vec4 GetBgColor();
 
 	static void RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow);
 	static void Cleanup();
@@ -78,7 +77,7 @@ protected:
 
 public:
 	static glm::mat4 s_ProjectionMatrix;
-	static std::map<std::string, MoravaShader*> s_Shaders;
+	static std::map<std::string, Hazel::Ref<MoravaShader>> s_Shaders;
 	static std::map<std::string, int> s_Uniforms;
 	static glm::vec4 s_BgColor;
 	// static bool s_SpirV_Enabled;

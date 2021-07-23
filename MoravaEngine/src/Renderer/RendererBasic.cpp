@@ -12,7 +12,7 @@
 
 
 glm::mat4 RendererBasic::s_ProjectionMatrix;
-std::map<std::string, MoravaShader*> RendererBasic::s_Shaders;
+std::map<std::string, Hazel::Ref<MoravaShader>> RendererBasic::s_Shaders;
 std::map<std::string, int> RendererBasic::s_Uniforms;
 glm::vec4 RendererBasic::s_BgColor;
 // bool RendererBasic::s_SpirV_Enabled;
@@ -77,21 +77,6 @@ void RendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Win
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-}
-
-glm::vec4 RendererBasic::GetBgColor()
-{
-	switch (Hazel::RendererAPI::Current())
-	{
-		case Hazel::RendererAPIType::None:   return glm::vec4();
-		case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::GetBgColor();
-		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetBgColor();
-		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetBgColor();
-	}
-	Log::GetLogger()->error("Unknown RendererAPI");
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-
-	return glm::vec4();
 }
 
 void RendererBasic::Clear()
@@ -361,68 +346,6 @@ void RendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
-glm::mat4 RendererBasic::GetProjectionMatrix()
-{
-	switch (Hazel::RendererAPI::Current())
-	{
-		case Hazel::RendererAPIType::None:   return glm::mat4();
-		case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::GetProjectionMatrix();
-		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetProjectionMatrix();
-		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetProjectionMatrix();
-	}
-
-	Log::GetLogger()->error("Unknown RendererAPI");
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-
-	return glm::mat4();
-}
-
-void RendererBasic::SetProjectionMatrix(glm::mat4 projectionMatrix)
-{
-	switch (Hazel::RendererAPI::Current())
-	{
-		case Hazel::RendererAPIType::None:   return;
-		case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::SetProjectionMatrix(projectionMatrix);
-		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetProjectionMatrix(projectionMatrix);
-		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::SetProjectionMatrix(projectionMatrix);
-	}
-
-	Log::GetLogger()->error("Unknown RendererAPI");
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-}
-
-std::map<std::string, MoravaShader*>& RendererBasic::GetShaders()
-{
-	switch (Hazel::RendererAPI::Current())
-	{
-		case Hazel::RendererAPIType::None:   return std::map<std::string, MoravaShader*>();
-		case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::GetShaders();
-		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetShaders();
-		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetShaders();
-	}
-
-	Log::GetLogger()->error("Unknown RendererAPI");
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-
-	return std::map<std::string, MoravaShader*>();
-}
-
-std::map<std::string, int>& RendererBasic::GetUniforms()
-{
-	switch (Hazel::RendererAPI::Current())
-	{
-		case Hazel::RendererAPIType::None:   return std::map<std::string, int>();
-		case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::GetUniforms();
-		case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::GetUniforms();
-		case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::GetUniforms();
-	}
-
-	Log::GetLogger()->error("Unknown RendererAPI");
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-
-	return std::map<std::string, int>();
-}
-
 void RendererBasic::DisableBlend()
 {
 	switch (Hazel::RendererAPI::Current())
@@ -439,9 +362,6 @@ void RendererBasic::DisableBlend()
 
 void RendererBasic::Cleanup()
 {
-	for (auto& shader : s_Shaders)
-		delete shader.second;
-
 	s_Shaders.clear();
 	s_Uniforms.clear();
 }

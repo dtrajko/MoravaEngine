@@ -17,12 +17,12 @@ MaterialWorkflowPBR::MaterialWorkflowPBR()
 	m_CaptureSizeBlur = m_CaptureSize;
 	m_MinFramebufferSize = 128;
 
-	m_ShaderEquirectangularToCubemap = nullptr;
-	m_ShaderIrradiance = nullptr;
-	m_ShaderPrefilter = nullptr;
-	m_ShaderBRDF = nullptr;
-	m_ShaderHorizontalBlur = nullptr;
-	m_ShaderVerticalBlur = nullptr;
+	// m_ShaderEquirectangularToCubemap = nullptr;
+	// m_ShaderIrradiance = nullptr;
+	// m_ShaderPrefilter = nullptr;
+	// m_ShaderBRDF = nullptr;
+	// m_ShaderHorizontalBlur = nullptr;
+	// m_ShaderVerticalBlur = nullptr;
 	m_SkyboxCube = nullptr;
 	m_Quad = nullptr;
 
@@ -96,33 +96,39 @@ void MaterialWorkflowPBR::SetGlobalRenderState()
 
 void MaterialWorkflowPBR::SetupShaders()
 {
-	if (!m_ShaderEquirectangularToCubemap) {
-		m_ShaderEquirectangularToCubemap = new MoravaShader("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs");
+	if (!m_ShaderEquirectangularToCubemap)
+	{
+		m_ShaderEquirectangularToCubemap = Hazel::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderEquirectangularToCubemap compiled [programID={0}]", m_ShaderEquirectangularToCubemap->GetProgramID());
 	}
 
-	if (!m_ShaderIrradiance) {
-		m_ShaderIrradiance = new MoravaShader("Shaders/PBR/cubemap.vs", "Shaders/PBR/irradiance_convolution.fs");
+	if (!m_ShaderIrradiance)
+	{
+		m_ShaderIrradiance = Hazel::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/cubemap.vs", "Shaders/PBR/irradiance_convolution.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderIrradiance compiled [programID={0}]", m_ShaderIrradiance->GetProgramID());
 	}
 
-	if (!m_ShaderPrefilter) {
-		m_ShaderPrefilter = new MoravaShader("Shaders/PBR/cubemap.vs", "Shaders/PBR/prefilter.fs");
+	if (!m_ShaderPrefilter)
+	{
+		m_ShaderPrefilter = Hazel::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/cubemap.vs", "Shaders/PBR/prefilter.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderPrefilter compiled [programID={0}]", m_ShaderPrefilter->GetProgramID());
 	}
 
-	if (!m_ShaderBRDF) {
-		m_ShaderBRDF = new MoravaShader("Shaders/PBR/brdf.vs", "Shaders/PBR/brdf.fs");
+	if (!m_ShaderBRDF)
+	{
+		m_ShaderBRDF = Hazel::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/brdf.vs", "Shaders/PBR/brdf.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderBRDF compiled [programID={0}]", m_ShaderBRDF->GetProgramID());
 	}
 
-	if (!m_ShaderHorizontalBlur) {
-		m_ShaderHorizontalBlur = new MoravaShader("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs");
+	if (!m_ShaderHorizontalBlur)
+	{
+		m_ShaderHorizontalBlur = Hazel::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderHorizontalBlur compiled [programID={0}]", m_ShaderHorizontalBlur->GetProgramID());
 	}
 
-	if (!m_ShaderVerticalBlur) {
-		m_ShaderVerticalBlur = new MoravaShader("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs");
+	if (!m_ShaderVerticalBlur)
+	{
+		m_ShaderVerticalBlur = Hazel::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderVerticalBlur compiled [programID={0}]", m_ShaderVerticalBlur->GetProgramID());
 	}
 }
@@ -420,12 +426,13 @@ MaterialWorkflowPBR::~MaterialWorkflowPBR()
 {
 	Cleanup();
 
-	if (m_ShaderEquirectangularToCubemap) delete m_ShaderEquirectangularToCubemap;
-	if (m_ShaderIrradiance) delete m_ShaderIrradiance;
-	if (m_ShaderPrefilter) delete m_ShaderPrefilter;
-	if (m_ShaderBRDF) delete m_ShaderBRDF;
-	if (m_ShaderHorizontalBlur) delete m_ShaderHorizontalBlur;
-	if (m_ShaderVerticalBlur) delete m_ShaderVerticalBlur;
+	// if (m_ShaderEquirectangularToCubemap) delete m_ShaderEquirectangularToCubemap;
+	// if (m_ShaderIrradiance) delete m_ShaderIrradiance;
+	// if (m_ShaderPrefilter) delete m_ShaderPrefilter;
+	// if (m_ShaderBRDF) delete m_ShaderBRDF;
+	// if (m_ShaderHorizontalBlur) delete m_ShaderHorizontalBlur;
+	// if (m_ShaderVerticalBlur) delete m_ShaderVerticalBlur;
+
 	if (m_SkyboxCube) delete m_SkyboxCube;
 	if (m_Quad) delete m_Quad;
 }

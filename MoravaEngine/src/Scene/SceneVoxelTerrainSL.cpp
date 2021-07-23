@@ -707,12 +707,12 @@ bool SceneVoxelTerrainSL::IsPositionVacant(glm::ivec3 queryPosition)
 }
 
 void SceneVoxelTerrainSL::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
-    MoravaShader* shaderMain = shaders["main"];
-    MoravaShader* shaderOmniShadow = shaders["omniShadow"];
-    MoravaShader* shaderRenderInstanced = shaders["render_instanced"];
-    MoravaShader* shaderBasic = shaders["basic"];
+    Hazel::Ref<MoravaShader> shaderMain = shaders["main"];
+    Hazel::Ref<MoravaShader> shaderOmniShadow = shaders["omniShadow"];
+    Hazel::Ref<MoravaShader> shaderRenderInstanced = shaders["render_instanced"];
+    Hazel::Ref<MoravaShader> shaderBasic = shaders["basic"];
 
     RendererBasic::EnableTransparency();
 

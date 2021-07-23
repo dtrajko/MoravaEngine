@@ -1,8 +1,10 @@
 #pragma once
 
+#include "Hazel/Core/Ref.h"
+
 #include "Mesh/CubeSkybox.h"
 #include "Mesh/Quad.h"
-#include "Shader/MoravaShader.h"
+#include "Platform/OpenGL/OpenGLMoravaShader.h"
 
 #include <string>
 
@@ -63,12 +65,12 @@ private:
 	unsigned int m_BRDF_LUT_Texture;
 
 	// Shaders
-	MoravaShader* m_ShaderEquirectangularToCubemap;
-	MoravaShader* m_ShaderIrradiance;
-	MoravaShader* m_ShaderPrefilter;
-	MoravaShader* m_ShaderBRDF;
-	MoravaShader* m_ShaderHorizontalBlur;
-	MoravaShader* m_ShaderVerticalBlur;
+	Hazel::Ref<OpenGLMoravaShader> m_ShaderEquirectangularToCubemap;
+	Hazel::Ref<OpenGLMoravaShader> m_ShaderIrradiance;
+	Hazel::Ref<OpenGLMoravaShader> m_ShaderPrefilter;
+	Hazel::Ref<OpenGLMoravaShader> m_ShaderBRDF;
+	Hazel::Ref<OpenGLMoravaShader> m_ShaderHorizontalBlur;
+	Hazel::Ref<OpenGLMoravaShader> m_ShaderVerticalBlur;
 
 	uint32_t m_BlurLevel;
 	int m_HDR_Map_Width;

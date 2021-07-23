@@ -26,7 +26,7 @@ public:
 	void UpdateImGuizmo(Window* mainWindow);
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 	void SetupUniforms();
 
 private:

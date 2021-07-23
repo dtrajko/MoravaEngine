@@ -19,7 +19,7 @@ Hazel::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaSh
 {
 	s_Specification = moravaShaderSpecification;
 
-	Hazel::Ref<MoravaShader> moravaShader = Hazel::Ref<MoravaShader>();
+	Hazel::Ref<MoravaShader> moravaShader;
 
 	if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::MoravaShader)
 	{
@@ -93,7 +93,7 @@ Hazel::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const 
 	{
 	case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaShader>();
 	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<MoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
+		result = Hazel::Ref<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
 		break;
 	case Hazel::RendererAPIType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
@@ -111,7 +111,7 @@ Hazel::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const 
 	{
 	case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaShader>();
 	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<MoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
+		result = Hazel::Ref<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
 		break;
 	case Hazel::RendererAPIType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
@@ -129,7 +129,7 @@ Hazel::Ref<MoravaShader> MoravaShader::Create(const char* computeLocation, bool 
 	{
 	case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaShader>();
 	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<MoravaShader>::Create(computeLocation, forceCompile);
+		result = Hazel::Ref<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
 		break;
 	case Hazel::RendererAPIType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
@@ -280,14 +280,9 @@ GLint MoravaShader::GetUniformLocation(const std::string& name)
 	}
 }
 
-void MoravaShader::SetIntArray(const std::string& name, int* values, uint32_t size)
-{
-	glUniform1iv(GetUniformLocation(name), size, values);
-}
-
 const std::string& MoravaShader::GetName() const
 {
-	return std::string();
+	return m_Name;
 }
 
 const std::unordered_map<std::string, Hazel::ShaderBuffer>& MoravaShader::GetShaderBuffers() const
@@ -318,222 +313,109 @@ size_t MoravaShader::GetHash() const
 	return std::hash<std::string>{}(m_ShaderFilepath_Vertex + m_ShaderFilepath_Compute + m_ShaderFilepath_Fragment);
 }
 
-void MoravaShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)
-{
-}
-
-void MoravaShader::SetUniform(const std::string& fullname, float value)
-{
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
-	GLint location = m_UniformLocations.at(fullname);
-	glUniform1f(location, value);
-}
-
-void MoravaShader::SetUniform(const std::string& fullname, uint32_t value)
-{
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
-	GLint location = m_UniformLocations.at(fullname);
-	glUniform1ui(location, value);
-}
-
-void MoravaShader::SetUniform(const std::string& fullname, int value)
-{
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
-	GLint location = m_UniformLocations.at(fullname);
-	glUniform1i(location, value);
-}
-
-void MoravaShader::SetUniform(const std::string& fullname, const glm::vec2& value)
-{
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
-	GLint location = m_UniformLocations.at(fullname);
-	glUniform2fv(location, 1, glm::value_ptr(value));
-}
-
-void MoravaShader::SetUniform(const std::string& fullname, const glm::vec3& value)
-{
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
-	GLint location = m_UniformLocations.at(fullname);
-	glUniform3fv(location, 1, glm::value_ptr(value));
-}
-
-void MoravaShader::SetUniform(const std::string& fullname, const glm::vec4& value)
-{
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
-	GLint location = m_UniformLocations.at(fullname);
-	glUniform4fv(location, 1, glm::value_ptr(value));
-}
-
-void MoravaShader::SetUniform(const std::string& fullname, const glm::mat3& value)
-{
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
-	GLint location = m_UniformLocations.at(fullname);
-	glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
-}
-
-void MoravaShader::SetUniform(const std::string& fullname, const glm::mat4& value)
-{
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
-	GLint location = m_UniformLocations.at(fullname);
-	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
-}
-
-void MoravaShader::SetFloat(const std::string& name, float value)
-{
-	auto uniformLocation = GetUniformLocation(name);
-	if (uniformLocation != -1) {
-		glUniform1f(uniformLocation, value);
-	}
-	else {
-		Log::GetLogger()->error("MoravaShader::SetFloat() failed [name='{0}', location='{1}']", name, uniformLocation);
-	}
-}
-
-void MoravaShader::SetUInt(const std::string& name, uint32_t value)
-{
-	int32_t location = GetUniformLocation(name);
-	glUniform1ui(location, value);
-}
-
-void MoravaShader::SetInt(const std::string& name, int value)
-{
-	int32_t location = GetUniformLocation(name);
-	glUniform1i(location, value);
-}
-
-void MoravaShader::SetBool(const std::string& name, bool value)
-{
-	int32_t location = GetUniformLocation(name);
-	glUniform1i(location, value);
-}
-
-void MoravaShader::SetFloat2(const std::string& name, const glm::vec2& value)
-{
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1) {
-		glUniform2f(location, value.x, value.y);
-	}
-	else {
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
-	}
-}
-
-void MoravaShader::SetFloat3(const std::string& name, const glm::vec3& value)
-{
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1) {
-		glUniform3f(location, value.x, value.y, value.z);
-	}
-	else {
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
-	}
-}
-
-void MoravaShader::SetFloat4(const std::string& name, const glm::vec4& value)
-{
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1) {
-		glUniform4f(location, value.x, value.y, value.z, value.w);
-	}
-	else {
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
-	}
-}
-
-void MoravaShader::SetMat4(const std::string& name, const glm::mat4& value)
-{
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1) {
-		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&value);
-	}
-	else {
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
-	}
-}
-
-void MoravaShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)
-{
-	if (bind)
-	{
-		UploadUniformMat4(name, value);
-	}
-	else
-	{
-		int location = glGetUniformLocation(programID, name.c_str());
-		if (location != -1)
-			UploadUniformMat4(location, value);
-	}
-}
-
-void MoravaShader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
-{
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1)
-		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
-	else
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
-}
-
-void MoravaShader::UploadUniformMat4(uint32_t location, const glm::mat4& value)
-{
-	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
-}
-
-void MoravaShader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
-{
-	for (GLuint i = 0; i < 6; i++)
-	{
-		glUniformMatrix4fv(uniformLightMatrices[i], 1, GL_FALSE, glm::value_ptr(lightMatrices[i]));
-	}
-}
-
-void MoravaShader::setLightMat4(std::vector<glm::mat4> lightMatrices)
-{
-	for (GLuint i = 0; i < 6; i++)
-	{
-		std::string name = "lightMatrices[" + std::to_string(i) + "]";
-		SetMat4(name, lightMatrices[i]);
-	}
-}
-
 void MoravaShader::Bind()
 {
-	glUseProgram(programID);
+	Log::GetLogger()->error("MoravaShader::Bind() shouldn't be called directly!");
 }
 
 void MoravaShader::Reload(bool forceCompile)
 {
-	ClearShader();
-
-	programID = glCreateProgram();
-
-	if (!m_ShaderFilepath_Vertex.empty()) {
-		CreateFromFileVertex(m_ShaderFilepath_Vertex.c_str());
-	}
-
-	if (!m_ShaderFilepath_Fragment.empty()) {
-		CreateFromFileFragment(m_ShaderFilepath_Fragment.c_str());
-	}
-
-	if (!m_ShaderFilepath_Geometry.empty()) {
-		CreateFromFileGeometry(m_ShaderFilepath_Geometry.c_str());
-	}
-
-	if (!m_ShaderFilepath_Compute.empty()) {
-		CreateFromFileCompute(m_ShaderFilepath_Compute.c_str());
-	}
-
-	CompileProgram();
+	Log::GetLogger()->error("MoravaShader::Reload() shouldn't be called directly!");
 }
 
-void MoravaShader::Unbind()
+void MoravaShader::SetIntArray(const std::string& name, int* values, uint32_t size)
 {
-	glUseProgram(0);
+	Log::GetLogger()->error("MoravaShader::SetIntArray() shouldn't be called directly!");
+}
+
+void MoravaShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)
+{
+	Log::GetLogger()->error("MoravaShader::SetUniformBuffer() shouldn't be called directly!");
+}
+
+void MoravaShader::SetUniform(const std::string& fullname, float value)
+{
+	Log::GetLogger()->error("MoravaShader::SetUniform() shouldn't be called directly!");
+}
+
+void MoravaShader::SetUniform(const std::string& fullname, uint32_t value)
+{
+	Log::GetLogger()->error("MoravaShader::SetUniform() shouldn't be called directly!");
+}
+
+void MoravaShader::SetUniform(const std::string& fullname, int value)
+{
+	Log::GetLogger()->error("MoravaShader::SetUniform() shouldn't be called directly!");
+}
+
+void MoravaShader::SetUniform(const std::string& fullname, const glm::vec2& value)
+{
+	Log::GetLogger()->error("MoravaShader::SetUniform() shouldn't be called directly!");
+}
+
+void MoravaShader::SetUniform(const std::string& fullname, const glm::vec3& value)
+{
+	Log::GetLogger()->error("MoravaShader::SetUniform() shouldn't be called directly!");
+}
+
+void MoravaShader::SetUniform(const std::string& fullname, const glm::vec4& value)
+{
+	Log::GetLogger()->error("MoravaShader::SetUniform() shouldn't be called directly!");
+}
+
+void MoravaShader::SetUniform(const std::string& fullname, const glm::mat3& value)
+{
+	Log::GetLogger()->error("MoravaShader::SetUniform() shouldn't be called directly!");
+}
+
+void MoravaShader::SetUniform(const std::string& fullname, const glm::mat4& value)
+{
+	Log::GetLogger()->error("MoravaShader::SetUniform() shouldn't be called directly!");
+}
+
+void MoravaShader::SetFloat(const std::string& name, float value)
+{
+	Log::GetLogger()->error("MoravaShader::SetFloat() shouldn't be called directly!");
+}
+
+void MoravaShader::SetUInt(const std::string& name, uint32_t value)
+{
+	Log::GetLogger()->error("MoravaShader::SetUInt() shouldn't be called directly!");
+}
+
+void MoravaShader::SetInt(const std::string& name, int value)
+{
+	Log::GetLogger()->error("MoravaShader::SetInt() shouldn't be called directly!");
+}
+
+void MoravaShader::SetBool(const std::string& name, bool value)
+{
+	Log::GetLogger()->error("MoravaShader::SetBool() shouldn't be called directly!");
+}
+
+void MoravaShader::SetFloat2(const std::string& name, const glm::vec2& value)
+{
+	Log::GetLogger()->error("MoravaShader::SetFloat2() shouldn't be called directly!");
+}
+
+void MoravaShader::SetFloat3(const std::string& name, const glm::vec3& value)
+{
+	Log::GetLogger()->error("MoravaShader::SetFloat3() shouldn't be called directly!");
+}
+
+void MoravaShader::SetFloat4(const std::string& name, const glm::vec4& value)
+{
+	Log::GetLogger()->error("MoravaShader::SetFloat4() shouldn't be called directly!");
+}
+
+void MoravaShader::SetMat4(const std::string& name, const glm::mat4& value)
+{
+	Log::GetLogger()->error("MoravaShader::SetMat4() shouldn't be called directly!");
+}
+
+void MoravaShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)
+{
+	Log::GetLogger()->error("MoravaShader::SetMat4FromRenderThread() shouldn't be called directly!");
 }
 
 MoravaShader::~MoravaShader()

@@ -207,7 +207,7 @@ void Renderer::RenderPassWaterReflection(Window* mainWindow, Scene* scene, glm::
 	modelMatrixSkybox = glm::rotate(modelMatrixSkybox, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 	scene->GetSkybox()->Draw(modelMatrixSkybox, scene->GetCamera()->GetViewMatrix(), projectionMatrix);
 
-	ShaderMain* shaderMain = (ShaderMain*)RendererBasic::GetShaders()["main"];
+	Hazel::Ref<ShaderMain> shaderMain = (Hazel::Ref<ShaderMain>)RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	RendererBasic::GetUniforms()["model"]       = shaderMain->GetUniformLocation("model");
@@ -252,7 +252,7 @@ void Renderer::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::
 	// Clear the window
 	RendererBasic::Clear();
 
-	ShaderMain* shaderMain = (ShaderMain*)RendererBasic::GetShaders()["main"];
+	Hazel::Ref<ShaderMain> shaderMain = (Hazel::Ref<ShaderMain>)RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	RendererBasic::GetUniforms()["model"]       = shaderMain->GetUniformLocation("model");
@@ -302,7 +302,7 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->GetViewMatrix(), projectionMatrix);
 	}
 
-	ShaderMain* shaderMain = (ShaderMain*)RendererBasic::GetShaders()["main"];
+	Hazel::Ref<ShaderMain> shaderMain = (Hazel::Ref<ShaderMain>)RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	RendererBasic::GetUniforms()["model"] = shaderMain->GetUniformLocation("model");
@@ -344,7 +344,7 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 
 	EnableTransparency();
 
-	MoravaShader* shaderWater = RendererBasic::GetShaders()["water"];
+	Hazel::Ref<MoravaShader> shaderWater = RendererBasic::GetShaders()["water"];
 	shaderWater->Bind();
 	RendererBasic::GetUniforms()["model"] = shaderWater->GetUniformLocation("model");
 	RendererBasic::GetUniforms()["projection"] = shaderWater->GetUniformLocation("projection");

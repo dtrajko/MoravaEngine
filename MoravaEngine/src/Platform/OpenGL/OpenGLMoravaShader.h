@@ -48,7 +48,7 @@ public:
 	virtual void SetFloat(const std::string& name, float value) override;
 	virtual void SetUInt(const std::string& name, uint32_t value) override;
 	virtual void SetInt(const std::string& name, int value) override;
-	void SetBool(const std::string& name, bool value);
+	virtual void SetBool(const std::string& name, bool value) override;
 	virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
 	virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 	virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;

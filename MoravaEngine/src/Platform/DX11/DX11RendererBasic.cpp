@@ -165,15 +165,6 @@ void DX11RendererBasic::DisableBlend()
 	Log::GetLogger()->warn("DX11RendererBasic::DisableBlend: Method not yet supported!");
 }
 
-void DX11RendererBasic::Cleanup()
-{
-	for (auto& shader : s_Shaders)
-		delete shader.second;
-
-	s_Shaders.clear();
-	RendererBasic::GetUniforms().clear();
-}
-
 void DX11RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)
 {
 	float aspectRatio = scene->GetCameraController()->GetAspectRatio();

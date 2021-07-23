@@ -93,9 +93,9 @@ public:
 	virtual void UpdateImGui(float timestep, Window* mainWindow) = 0;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) = 0;
+		std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) = 0;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) {};
+		std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) {};
 	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
 	virtual inline bool IsWaterOnScene() { return false; };
 
@@ -162,7 +162,7 @@ private:
 	PointLight pointLights[MAX_POINT_LIGHTS];
 	SpotLight spotLights[MAX_SPOT_LIGHTS];
 
-	std::map<std::string, MoravaShader*> shaders;
+	std::map<std::string, Hazel::Ref<MoravaShader>> shaders;
 	std::map<std::string, int> uniforms;
 
 	unsigned int shadowMapWidth;

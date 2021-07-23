@@ -111,7 +111,7 @@ void SceneParticles::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneParticles::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
     // Skybox shaderBackground
 /* Begin backgroundShader */

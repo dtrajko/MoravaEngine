@@ -1049,9 +1049,9 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
 
             ImGui::Text("Blur Effect Horizontal");
-            ImGui::Image((void*)(intptr_t)m_BlurEffect->GetHorizontalOutputTexture()->GetID(), imageSize);
+            // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetHorizontalOutputTexture()->GetID(), imageSize);
             ImGui::Text("Blur Effect Vertical");
-            ImGui::Image((void*)(intptr_t)m_BlurEffect->GetVerticalOutputTexture()->GetID(), imageSize);
+            // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetVerticalOutputTexture()->GetID(), imageSize);
         }
     }
     ImGui::End();
@@ -2113,7 +2113,7 @@ SceneObjectParticleSystem* SceneEditorImGuizmo::AddNewSceneObjectParticleSystem(
     return particle_system;
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderEditor(MoravaShader* shaderEditor, Hazel::Ref<MoravaTexture> texture, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditor(Hazel::Ref<MoravaShader> shaderEditor, Hazel::Ref<MoravaTexture> texture, SceneObject* sceneObject)
 {
     shaderEditor->Bind();
 
@@ -2148,7 +2148,7 @@ void SceneEditorImGuizmo::SetUniformsShaderEditor(MoravaShader* shaderEditor, Ha
     shaderEditor->SetInt("shadowMap", 2);
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(MoravaShader* shaderEditorPBR, Hazel::Ref<MoravaTexture> texture, Hazel::Ref<Material> material, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(Hazel::Ref<MoravaShader> shaderEditorPBR, Hazel::Ref<MoravaTexture> texture, Hazel::Ref<Material> material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
 
@@ -2176,7 +2176,7 @@ void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(MoravaShader* shaderEditorP
     shaderEditorPBR->SetInt("shadowMap", 8);
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderSkinning(MoravaShader* shaderSkinning, SceneObject* sceneObject, float runningTime)
+void SceneEditorImGuizmo::SetUniformsShaderSkinning(Hazel::Ref<MoravaShader> shaderSkinning, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2199,7 +2199,7 @@ void SceneEditorImGuizmo::SetUniformsShaderSkinning(MoravaShader* shaderSkinning
     }
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHybridAnimPBR, Hazel::Ref<MoravaTexture> texture, SceneObject* sceneObject, float runningTime)
+void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader> shaderHybridAnimPBR, Hazel::Ref<MoravaTexture> texture, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2272,7 +2272,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(MoravaShader* shaderHyb
     }
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderWater(MoravaShader* shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
+void SceneEditorImGuizmo::SetUniformsShaderWater(Hazel::Ref<MoravaShader> shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
 {
     RendererBasic::EnableTransparency();
 
@@ -2450,7 +2450,7 @@ void SceneEditorImGuizmo::AddLightsToSceneObjects()
     }
 }
 
-void SceneEditorImGuizmo::RenderLightSources(MoravaShader* shaderGizmo)
+void SceneEditorImGuizmo::RenderLightSources(Hazel::Ref<MoravaShader> shaderGizmo)
 {
     shaderGizmo->Bind();
 
@@ -2490,9 +2490,9 @@ void SceneEditorImGuizmo::RenderLightSources(MoravaShader* shaderGizmo)
     }
 }
 
-void SceneEditorImGuizmo::RenderSkybox(MoravaShader* shaderBackground)
+void SceneEditorImGuizmo::RenderSkybox(Hazel::Ref<MoravaShader> shaderBackground)
 {
-    m_BlurEffect->Render();
+    // m_BlurEffect->Render();
 
     if (m_IsViewportEnabled) {
         m_RenderFramebuffer->Bind();
@@ -2528,7 +2528,7 @@ void SceneEditorImGuizmo::RenderSkybox(MoravaShader* shaderBackground)
     m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 }
 
-void SceneEditorImGuizmo::RenderLineElements(MoravaShader* shaderBasic, glm::mat4 projectionMatrix)
+void SceneEditorImGuizmo::RenderLineElements(Hazel::Ref<MoravaShader> shaderBasic, glm::mat4 projectionMatrix)
 {
     if (!m_DisplayLineElements) return;
 
@@ -2562,7 +2562,7 @@ void SceneEditorImGuizmo::RenderLineElements(MoravaShader* shaderBasic, glm::mat
 }
 
 void SceneEditorImGuizmo::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
 

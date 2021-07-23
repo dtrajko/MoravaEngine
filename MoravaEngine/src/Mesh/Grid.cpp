@@ -65,7 +65,7 @@ Grid::Grid(int size)
     glBindVertexArray(0);
 }
 
-void Grid::Draw(MoravaShader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
+void Grid::Draw(Hazel::Ref<MoravaShader> shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 {
     shader->Bind();
     glm::mat4 model = glm::mat4(1.0f);

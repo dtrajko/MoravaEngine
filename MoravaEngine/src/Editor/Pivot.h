@@ -21,6 +21,6 @@ public:
 	Pivot(glm::vec3 position, glm::vec3 scale);
 	void UpdatePosition(glm::vec3 position);
 	void Update(glm::vec3 position, glm::vec3 scale);
-	void Draw(MoravaShader* shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+	void Draw(Hazel::Ref<MoravaShader> shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 	virtual ~Pivot();
 };

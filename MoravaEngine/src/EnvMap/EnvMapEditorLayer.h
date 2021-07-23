@@ -15,6 +15,7 @@
 #include "EnvMap/EnvMapSharedData.h"
 #include "Framebuffer/ShadowMap.h"
 
+
 enum class SelectionMode
 {
 	None = 0,

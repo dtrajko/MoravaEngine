@@ -163,15 +163,6 @@ void VulkanRendererBasic::DisableBlend()
 	Log::GetLogger()->warn("VulkanRendererBasic::DisableBlend: Method not yet supported!");
 }
 
-void VulkanRendererBasic::Cleanup()
-{
-	for (auto& shader : s_Shaders)
-		delete shader.second;
-
-	s_Shaders.clear();
-	RendererBasic::GetUniforms().clear();
-}
-
 void VulkanRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)
 {
 	float aspectRatio = scene->GetCameraController()->GetAspectRatio();

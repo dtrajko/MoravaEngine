@@ -199,9 +199,9 @@ void ScenePBR::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void ScenePBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
-	ShaderPBR* shaderPBR = static_cast<ShaderPBR*>(shaders["pbr"]);
+	Hazel::Ref<ShaderPBR> shaderPBR = shaders["pbr"];
 
 	shaderPBR->Bind();
 
@@ -314,11 +314,11 @@ void ScenePBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::strin
 }
 
 void ScenePBR::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
-	MoravaShader* shaderWater = shaders["water"];
+	Hazel::Ref<MoravaShader> shaderWater = shaders["water"];
 
 	// Model matrix
 	glm::mat4 model;

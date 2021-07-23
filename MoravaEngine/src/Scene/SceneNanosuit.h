@@ -41,7 +41,7 @@ public:
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, MoravaShader*> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 	inline std::map<std::string, ModelJoey*> GetModels() const { return models; };
 	inline std::map<std::string, MeshJoey*> GetMeshesJoey() const { return meshesJoey; };
 	NanosuitUniforms* GetNanosuitUniforms() { return nanosuitUniforms; };
