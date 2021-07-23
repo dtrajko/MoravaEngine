@@ -17,7 +17,7 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.enableNormalMaps   = true;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 16.0f, 28.0f);
 	sceneSettings.cameraStartYaw = -90.0f;
-	sceneSettings.cameraMoveSpeed = 4.0f;
+	sceneSettings.cameraMoveSpeed = 2.0f;
 
 	sceneSettings.directionalLight.base.ambientIntensity = 0.4f;
 	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
@@ -42,7 +42,7 @@ SceneEiffel::SceneEiffel()
 	sceneSettings.shadowMapWidth = 2048;
 	sceneSettings.shadowMapHeight = 2048;
 	sceneSettings.shadowSpeed = 0.4f;
-	sceneSettings.waterHeight = -2.0f;
+	sceneSettings.waterHeight = 1.0f;
 	sceneSettings.waterWaveSpeed = 0.2f;
 
 	SetSkybox();
@@ -224,7 +224,7 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 
 	/* Helicopter model */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 1.0f, 6.0f));
+	model = glm::translate(model, glm::vec3(0.0f, 1.5f, 6.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
