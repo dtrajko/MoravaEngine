@@ -2109,6 +2109,16 @@ void EnvMapEditorLayer::OnRenderCascadedShadowMaps(Window* mainWindow)
     EnvMapSceneRenderer::ShadowMapPass();
 }
 
+void EnvMapEditorLayer::OnRenderWaterReflection(Window* mainWindow)
+{
+    // TODO: Render scene object to the water reflection framebuffer, color and depth attachments
+}
+
+void EnvMapEditorLayer::OnRenderWaterRefraction(Window* mainWindow)
+{
+    // TODO: Render scene object to the water refraction framebuffer, color and depth attachments
+}
+
 void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap)
 {
     omniShadowMap->BindForWriting();

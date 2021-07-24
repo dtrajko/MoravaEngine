@@ -42,6 +42,24 @@ void RendererECS::RenderPassCascadedShadowMaps(Window* mainWindow, Scene* scene,
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 }
 
+void RendererECS::RenderWaterEffects(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	RenderPassWaterReflection(mainWindow, scene, projectionMatrix);
+	RenderPassWaterRefraction(mainWindow, scene, projectionMatrix);
+}
+
+void RendererECS::RenderPassWaterReflection(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	std::string passType = "water_reflection";
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
+}
+
+void RendererECS::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	std::string passType = "water_refraction";
+	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
+}
+
 void RendererECS::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	std::string passType = "main";
@@ -67,6 +85,8 @@ void RendererECS::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scen
 	RenderOmniShadows(mainWindow, scene, projectionMatrix);
 
 	RenderPassCascadedShadowMaps(mainWindow, scene, projectionMatrix); // Working on lighting + shadows in Hazel(20.11.2020)
+
+	RenderWaterEffects(mainWindow, scene, projectionMatrix);
 
 	RenderPassMain(mainWindow, scene, projectionMatrix);
 

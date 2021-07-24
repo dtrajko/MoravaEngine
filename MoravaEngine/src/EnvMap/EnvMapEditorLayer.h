@@ -47,6 +47,9 @@ public:
 
 	void OnRenderCascadedShadowMaps(Window* mainWindow);
 
+	void OnRenderWaterReflection(Window* mainWindow);
+	void OnRenderWaterRefraction(Window* mainWindow);
+
 	void OnRender(Window* mainWindow);
 
 	void PostProcessing(Window* mainWindow);

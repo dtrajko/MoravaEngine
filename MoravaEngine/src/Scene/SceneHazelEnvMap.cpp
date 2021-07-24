@@ -262,6 +262,14 @@ void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, st
         m_EnvMapEditorLayer->OnRenderCascadedShadowMaps(mainWindow);
     }
 
+    if (passType == "water_reflection" && sceneSettings.enableWaterEffects) {
+        m_EnvMapEditorLayer->OnRenderWaterReflection(mainWindow);
+    }
+
+    if (passType == "water_refraction" && sceneSettings.enableWaterEffects) {
+        m_EnvMapEditorLayer->OnRenderWaterRefraction(mainWindow);
+    }
+
     if (passType == "main") {
         m_EnvMapEditorLayer->OnRender(mainWindow);
     }
