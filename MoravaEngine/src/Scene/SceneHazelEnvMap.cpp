@@ -139,7 +139,18 @@ SceneHazelEnvMap::SceneHazelEnvMap()
         Log::GetLogger()->info("Mono Domain successfully initialized!");
 
         // Load a Mono assembly HangmanScript.dll
+        m_ptrGameAssembly = mono_domain_assembly_open(m_ptrMonoDomain, "Projects/HangmanScript/bin/Debug/netstandard2.0/HangmanScript.dll");
+        if (m_ptrGameAssembly)
+        {
+            Log::GetLogger()->info("Mono Domain Assembly successfully opened!");
 
+            // Loading Mono image
+            m_ptrGameAssemblyImage = mono_assembly_get_image(m_ptrGameAssembly);
+            if (m_ptrGameAssemblyImage)
+            {
+                Log::GetLogger()->info("Mono Assembly Image successfullu loaded!");
+            }
+        }
     }
 
     /**** END Mono ****/
@@ -151,6 +162,8 @@ SceneHazelEnvMap::~SceneHazelEnvMap()
     if (m_ptrMonoDomain)
     {
         mono_jit_cleanup(m_ptrMonoDomain);
+
+        Log::GetLogger()->info("Mono Domain cleanup is complete!");
     }
 }
 

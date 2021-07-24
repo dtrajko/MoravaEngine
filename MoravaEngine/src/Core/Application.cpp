@@ -222,7 +222,7 @@ void Application::OnShutdown()
 {
 	delete m_ImGuiLayer;
 
-	// delete scene;
+	delete m_Scene;
 	delete m_Renderer;
 }
 
