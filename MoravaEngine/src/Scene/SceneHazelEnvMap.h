@@ -10,8 +10,9 @@
 #include "Texture/MoravaTexture.h"
 
 // Include MONO
-#include <mono/metadata/assembly.h>
 #include <mono/jit/jit.h>
+#include <mono/metadata/assembly.h>
+#include <mono/metadata/debug-helpers.h>
 
 #include <map>
 #include <string>
@@ -59,6 +60,11 @@ private:
 
 	Grid* m_Grid;
 	Pivot* m_PivotScene;
+
+	// Mono generic stuff - https://www.youtube.com/watch?v=ps9EW_nzs34
+	MonoDomain* m_ptrMonoDomain = nullptr;
+	MonoAssembly* m_ptrGameAssembly = nullptr;
+	MonoImage* m_ptrGameAssemblyImage = nullptr;
 
 	friend class EnvMapEditorLayer;
 

@@ -14,10 +14,6 @@
 
 #include <glm/ext/quaternion_float.hpp>
 
-// Include MONO
-#include <mono/metadata/assembly.h>
-#include <mono/jit/jit.h>
-
 #include <future>
 #include <set>
 

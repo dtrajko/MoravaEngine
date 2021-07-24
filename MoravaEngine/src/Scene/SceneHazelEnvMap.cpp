@@ -127,12 +127,31 @@ SceneHazelEnvMap::SceneHazelEnvMap()
 
     // Hazel::RendererAPI::Init();
 
-    // Testing MONO
-    auto m = mono_init("dd");
+    /**** BEGIN Mono ****/
+
+    // Current directory as mono dir
+    mono_set_dirs("C:/Program Files/Mono/lib", "C:/Program Files/Mono/etc");
+
+    // Create Mono domain
+    m_ptrMonoDomain = mono_jit_init("MoravaEngine");
+    if (m_ptrMonoDomain)
+    {
+        Log::GetLogger()->info("Mono Domain successfully initialized!");
+
+        // Load a Mono assembly HangmanScript.dll
+
+    }
+
+    /**** END Mono ****/
 }
 
 SceneHazelEnvMap::~SceneHazelEnvMap()
 {
+    // Release the domain
+    if (m_ptrMonoDomain)
+    {
+        mono_jit_cleanup(m_ptrMonoDomain);
+    }
 }
 
 void SceneHazelEnvMap::SetupShaders()
