@@ -70,13 +70,43 @@ public:
 	virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
 	virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 	virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
+	virtual void SetMat2(const std::string& name, const glm::mat2& mat) override;
+	virtual void SetMat3(const std::string& name, const glm::mat3& mat) override;
 	virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 	virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
 	virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
-	virtual const std::string& GetName() const override { return m_Name; }
+
+	// generic setter methods for uniform location variables
+	virtual void SetVec2(const std::string& name, const glm::vec2& value) override; // TODO: remove, use SetFloat2 instead
+	virtual void SetVec2(const std::string& name, float x, float y) override;       // TODO: remove, use SetFloat2 instead
+
+	virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
+
+	virtual GLint GetUniformLocation(const std::string& name) override;
+	virtual void UploadUniformMat4(const std::string& name, const glm::mat4& values) override;
+	virtual void UploadUniformMat4(uint32_t location, const glm::mat4& values) override;
+	virtual void setLightMat4(std::vector<glm::mat4> lightMatrices) override;
+	// Omni shadow maps
+	virtual void SetLightMatrices(std::vector<glm::mat4> lightMatrices) override;
+
+	virtual void Unbind() override;
+
 	virtual const std::unordered_map<std::string, Hazel::ShaderBuffer>& GetShaderBuffers() const override;
 	virtual const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& GetResources() const override;
-	virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
+
+	virtual void CreateFromString(const char* vertexCode, const char* fragmentCode) override;
+	virtual void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation) override;
+	virtual void CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation) override;
+
+	virtual void CreateFromFileVertex(const char* vertexLocation) override;
+	virtual void CreateFromFileFragment(const char* fragmentLocation) override;
+	virtual void CreateFromFileGeometry(const char* geometryLocation) override;
+	virtual void CreateFromFileCompute(const char* computeLocation) override;
+
+	virtual void Validate() override;
+	virtual void ClearShader() override;
+
+	static std::string ReadFile(const char* fileLocation);
 
 	void* MapUniformBuffer(uint32_t bindingPoint);
 	void UnmapUniformBuffer(uint32_t bindingPoint);
@@ -123,8 +153,6 @@ private:
 	void CreateDescriptors();
 
 	void AllocateUniformBuffer(UniformBuffer& dst);
-
-	virtual void ClearShader() override;
 
 private:
 	std::string m_AssetPath;

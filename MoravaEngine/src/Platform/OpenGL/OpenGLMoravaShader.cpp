@@ -178,26 +178,6 @@ GLuint OpenGLMoravaShader::GetProgramID()
 	return programID;
 }
 
-void OpenGLMoravaShader::setVec2(const std::string& name, const glm::vec2& value)
-{
-	glUniform2fv(GetUniformLocation(name), 1, &value[0]);
-}
-
-void OpenGLMoravaShader::setVec2(const std::string& name, float x, float y)
-{
-	glUniform2f(GetUniformLocation(name), x, y);
-}
-
-void OpenGLMoravaShader::setMat2(const std::string& name, const glm::mat2& mat)
-{
-	glUniformMatrix2fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
-}
-
-void OpenGLMoravaShader::setMat3(const std::string& name, const glm::mat3& mat)
-{
-	glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
-}
-
 GLint OpenGLMoravaShader::GetUniformLocation(const std::string& name)
 {
 	std::map<std::string, int>::const_iterator it;
@@ -218,11 +198,6 @@ GLint OpenGLMoravaShader::GetUniformLocation(const std::string& name)
 void OpenGLMoravaShader::SetIntArray(const std::string& name, int* values, uint32_t size)
 {
 	glUniform1iv(GetUniformLocation(name), size, values);
-}
-
-const std::string& OpenGLMoravaShader::GetName() const
-{
-	return std::string();
 }
 
 const std::unordered_map<std::string, Hazel::ShaderBuffer>& OpenGLMoravaShader::GetShaderBuffers() const
@@ -437,6 +412,26 @@ void OpenGLMoravaShader::setLightMat4(std::vector<glm::mat4> lightMatrices)
 		std::string name = "lightMatrices[" + std::to_string(i) + "]";
 		SetMat4(name, lightMatrices[i]);
 	}
+}
+
+void OpenGLMoravaShader::SetVec2(const std::string& name, const glm::vec2& value)
+{
+	glUniform2fv(GetUniformLocation(name), 1, &value[0]);
+}
+
+void OpenGLMoravaShader::SetVec2(const std::string& name, float x, float y)
+{
+	glUniform2f(GetUniformLocation(name), x, y);
+}
+
+void OpenGLMoravaShader::SetMat2(const std::string& name, const glm::mat2& mat)
+{
+	glUniformMatrix2fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
+}
+
+void OpenGLMoravaShader::SetMat3(const std::string& name, const glm::mat3& mat)
+{
+	glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
 }
 
 void OpenGLMoravaShader::Bind()

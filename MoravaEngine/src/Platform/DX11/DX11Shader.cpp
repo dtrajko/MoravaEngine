@@ -42,6 +42,10 @@ DX11Shader::~DX11Shader()
 	ClearShader();
 }
 
+void DX11Shader::Validate()
+{
+}
+
 void DX11Shader::ClearShader()
 {
 }
@@ -468,6 +472,98 @@ const std::unordered_map<std::string, Hazel::ShaderBuffer>& DX11Shader::GetShade
 const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& DX11Shader::GetResources() const { return {}; }
 
 void DX11Shader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
+
+GLint DX11Shader::GetUniformLocation(const std::string& name)
+{
+	Log::GetLogger()->error("DX11Shader::GetUniformLocation() not implemented yet!");
+	return GLint();
+}
+
+void DX11Shader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
+{
+	Log::GetLogger()->error("DX11Shader::UploadUniformMat4() not implemented yet!");
+}
+
+void DX11Shader::UploadUniformMat4(uint32_t location, const glm::mat4& values)
+{
+	Log::GetLogger()->error("DX11Shader::UploadUniformMat4() not implemented yet!");
+}
+
+void DX11Shader::setLightMat4(std::vector<glm::mat4> lightMatrices)
+{
+	Log::GetLogger()->error("DX11Shader::setLightMat4() not implemented yet!");
+}
+
+void DX11Shader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
+{
+	Log::GetLogger()->error("DX11Shader::SetLightMatrices() not implemented yet!");
+}
+
+void DX11Shader::Unbind()
+{
+	Log::GetLogger()->error("DX11Shader::Unbind() not implemented yet!");
+}
+
+void DX11Shader::CreateFromString(const char* vertexCode, const char* fragmentCode)
+{
+	Log::GetLogger()->error("DX11Shader::CreateFromString() not implemented yet!");
+
+}
+
+void DX11Shader::CreateFromFiles(const char* vertexLocation, const char* fragmentLocation)
+{
+	Log::GetLogger()->error("DX11Shader::CreateFromFiles() not implemented yet!");
+}
+
+void DX11Shader::CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation)
+{
+	Log::GetLogger()->error("DX11Shader::CreateFromFiles() not implemented yet!");
+}
+
+void DX11Shader::CreateFromFileVertex(const char* vertexLocation)
+{
+	Log::GetLogger()->error("DX11Shader::CreateFromFileVertex() not implemented yet!");
+}
+
+void DX11Shader::CreateFromFileFragment(const char* fragmentLocation)
+{
+	Log::GetLogger()->error("DX11Shader::CreateFromFileFragment() not implemented yet!");
+}
+
+void DX11Shader::CreateFromFileGeometry(const char* geometryLocation)
+{
+	Log::GetLogger()->error("DX11Shader::CreateFromFileGeometry() not implemented yet!");
+}
+
+void DX11Shader::CreateFromFileCompute(const char* computeLocation)
+{
+	Log::GetLogger()->error("DX11Shader::CreateFromFileCompute() not implemented yet!");
+}
+
+void DX11Shader::SetVec2(const std::string& name, const glm::vec2& value)
+{
+	Log::GetLogger()->error("DX11Shader::SetVec2() not implemented yet!");
+}
+
+void DX11Shader::SetVec2(const std::string& name, float x, float y)
+{
+	Log::GetLogger()->error("DX11Shader::SetVec2() not implemented yet!");
+}
+
+void DX11Shader::SetMat2(const std::string& name, const glm::mat2& mat)
+{
+	Log::GetLogger()->error("DX11Shader::SetMat2() not implemented yet!");
+}
+
+void DX11Shader::SetMat3(const std::string& name, const glm::mat3& mat)
+{
+	Log::GetLogger()->error("DX11Shader::SetMat3() not implemented yet!");
+}
+
+std::string DX11Shader::ReadFile(const char* fileLocation)
+{
+	return std::string();
+}
 
 void* DX11Shader::MapUniformBuffer(uint32_t bindingPoint)
 {

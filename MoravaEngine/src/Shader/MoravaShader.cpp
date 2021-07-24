@@ -243,26 +243,6 @@ GLuint MoravaShader::GetProgramID()
 	return programID;
 }
 
-void MoravaShader::setVec2(const std::string& name, const glm::vec2& value)
-{
-	glUniform2fv(GetUniformLocation(name), 1, &value[0]);
-}
-
-void MoravaShader::setVec2(const std::string& name, float x, float y)
-{
-	glUniform2f(GetUniformLocation(name), x, y);
-}
-
-void MoravaShader::setMat2(const std::string& name, const glm::mat2& mat)
-{
-	glUniformMatrix2fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
-}
-
-void MoravaShader::setMat3(const std::string& name, const glm::mat3& mat)
-{
-	glUniformMatrix3fv(GetUniformLocation(name), 1, GL_FALSE, &mat[0][0]);
-}
-
 GLint MoravaShader::GetUniformLocation(const std::string& name)
 {
 	std::map<std::string, int>::const_iterator it;
@@ -278,11 +258,6 @@ GLint MoravaShader::GetUniformLocation(const std::string& name)
 		}
 		return uniformLocation;
 	}
-}
-
-const std::string& MoravaShader::GetName() const
-{
-	return m_Name;
 }
 
 const std::unordered_map<std::string, Hazel::ShaderBuffer>& MoravaShader::GetShaderBuffers() const
@@ -416,6 +391,51 @@ void MoravaShader::SetMat4(const std::string& name, const glm::mat4& value)
 void MoravaShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)
 {
 	Log::GetLogger()->error("MoravaShader::SetMat4FromRenderThread() shouldn't be called directly!");
+}
+
+void MoravaShader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
+{
+	Log::GetLogger()->error("MoravaShader::UploadUniformMat4() shouldn't be called directly!");
+}
+
+void MoravaShader::UploadUniformMat4(uint32_t location, const glm::mat4& values)
+{
+	Log::GetLogger()->error("MoravaShader::UploadUniformMat4() shouldn't be called directly!");
+}
+
+void MoravaShader::setLightMat4(std::vector<glm::mat4> lightMatrices)
+{
+	Log::GetLogger()->error("MoravaShader::setLightMat4() shouldn't be called directly!");
+}
+
+void MoravaShader::Unbind()
+{
+	Log::GetLogger()->error("MoravaShader::Unbind() shouldn't be called directly!");
+}
+
+void MoravaShader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
+{
+	Log::GetLogger()->error("MoravaShader::SetLightMatrices() shouldn't be called directly!");
+}
+
+void MoravaShader::SetVec2(const std::string& name, const glm::vec2& value)
+{
+	Log::GetLogger()->error("MoravaShader::SetVec2() shouldn't be called directly!");
+}
+
+void MoravaShader::SetVec2(const std::string& name, float x, float y)
+{
+	Log::GetLogger()->error("MoravaShader::SetVec2() shouldn't be called directly!");
+}
+
+void MoravaShader::SetMat2(const std::string& name, const glm::mat2& mat)
+{
+	Log::GetLogger()->error("MoravaShader::SetMat2() shouldn't be called directly!");
+}
+
+void MoravaShader::SetMat3(const std::string& name, const glm::mat3& mat)
+{
+	Log::GetLogger()->error("MoravaShader::SetMat3() shouldn't be called directly!");
 }
 
 MoravaShader::~MoravaShader()

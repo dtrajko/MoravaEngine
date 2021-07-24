@@ -30,12 +30,20 @@ void RendererOmniShadows::RenderOmniShadows(Window* mainWindow, Scene* scene, gl
 	if (!scene->GetSettings().enableOmniShadows) return;
 
 	for (size_t i = 0; i < LightManager::pointLightCount; i++)
+	{
 		if (LightManager::pointLights[i].GetEnabled())
+		{
 			RenderPassOmniShadow(&LightManager::pointLights[i], mainWindow, scene, projectionMatrix);
+		}
+	}
 
 	for (size_t i = 0; i < LightManager::spotLightCount; i++)
+	{
 		if (LightManager::spotLights[i].GetBasePL()->GetEnabled())
+		{
 			RenderPassOmniShadow((PointLight*)&LightManager::spotLights[i], mainWindow, scene, projectionMatrix);
+		}
+	}
 }
 
 void RendererOmniShadows::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
@@ -49,12 +57,17 @@ void RendererOmniShadows::RenderPassOmniShadow(PointLight* light, Window* mainWi
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glDisable(GL_BLEND);
 
+	RendererBasic::GetUniforms()["model"] = RendererBasic::GetShaders()["omniShadow"]->GetUniformLocation("model");
+	RendererBasic::GetUniforms()["omniLightPos"] = RendererBasic::GetShaders()["omniShadow"]->GetUniformLocation("omniLightPos");
+	RendererBasic::GetUniforms()["farPlane"] = RendererBasic::GetShaders()["omniShadow"]->GetUniformLocation("farPlane");
+
 	RendererBasic::GetShaders()["omniShadow"]->SetFloat3("lightPosition", light->GetPosition());
 	RendererBasic::GetShaders()["omniShadow"]->SetFloat("farPlane", light->GetFarPlane());
 	std::vector<glm::mat4> lightMatrices = light->CalculateLightTransform();
 	for (unsigned int i = 0; i < lightMatrices.size(); i++) {
 		RendererBasic::GetShaders()["omniShadow"]->SetMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
 	}
+	RendererBasic::GetShaders()["omniShadow"]->SetBool("u_Animated", false);
 	RendererBasic::GetShaders()["omniShadow"]->Validate();
 
 	EnableCulling();

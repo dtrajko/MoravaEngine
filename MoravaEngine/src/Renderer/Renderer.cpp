@@ -153,6 +153,10 @@ void Renderer::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene
 	RendererBasic::GetShaders()["omniShadow"]->SetFloat3("lightPosition", light->GetPosition());
 	RendererBasic::GetShaders()["omniShadow"]->SetFloat("farPlane", light->GetFarPlane());
 	RendererBasic::GetShaders()["omniShadow"]->SetLightMatrices(light->CalculateLightTransform());
+	std::vector<glm::mat4> lightMatrices = light->CalculateLightTransform();
+	for (unsigned int i = 0; i < lightMatrices.size(); i++) {
+		RendererBasic::GetShaders()["omniShadow"]->SetMat4("lightMatrices[" + std::to_string(i) + "]", lightMatrices[i]);
+	}
 	RendererBasic::GetShaders()["omniShadow"]->SetBool("u_Animated", false);
 	RendererBasic::GetShaders()["omniShadow"]->Validate();
 

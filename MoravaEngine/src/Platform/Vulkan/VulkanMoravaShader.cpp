@@ -57,19 +57,58 @@ void VulkanMoravaShader::Validate() {}
 
 GLuint VulkanMoravaShader::GetProgramID() { return GLuint(); }
 
-void VulkanMoravaShader::setVec2(const std::string& name, const glm::vec2& value) {}
+GLint VulkanMoravaShader::GetUniformLocation(const std::string& name)
+{
+	Log::GetLogger()->error("VulkanMoravaShader::GetUniformLocation() not implemented yet!");
+	return GLint();
+}
 
-void VulkanMoravaShader::setVec2(const std::string& name, float x, float y) {}
+void VulkanMoravaShader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
+{
+	Log::GetLogger()->error("VulkanMoravaShader::UploadUniformMat4() not implemented yet!");
+}
 
-void VulkanMoravaShader::setMat2(const std::string& name, const glm::mat2& mat) {}
+void VulkanMoravaShader::UploadUniformMat4(uint32_t location, const glm::mat4& value)
+{
+	Log::GetLogger()->error("VulkanMoravaShader::UploadUniformMat4() not implemented yet!");
+}
 
-void VulkanMoravaShader::setMat3(const std::string& name, const glm::mat3& mat) {}
+void VulkanMoravaShader::SetLightMatrices(std::vector<glm::mat4> lightMatrices)
+{
+	Log::GetLogger()->error("VulkanMoravaShader::SetLightMatrices() not implemented yet!");
+}
 
-GLint VulkanMoravaShader::GetUniformLocation(const std::string& name) { return GLint(); }
+void VulkanMoravaShader::setLightMat4(std::vector<glm::mat4> lightMatrices)
+{
+	Log::GetLogger()->error("VulkanMoravaShader::setLightMat4() not implemented yet!");
+}
+
+void VulkanMoravaShader::Unbind()
+{
+	Log::GetLogger()->error("VulkanMoravaShader::Unbind() not implemented yet!");
+}
+
+void VulkanMoravaShader::SetVec2(const std::string& name, const glm::vec2& value)
+{
+	Log::GetLogger()->error("VulkanMoravaShader::SetVec2() not implemented yet!");
+}
+
+void VulkanMoravaShader::SetVec2(const std::string& name, float x, float y)
+{
+	Log::GetLogger()->error("VulkanMoravaShader::SetVec2() not implemented yet!");
+}
+
+void VulkanMoravaShader::SetMat2(const std::string& name, const glm::mat2& mat)
+{
+	Log::GetLogger()->error("VulkanMoravaShader::SetMat2() not implemented yet!");
+}
+
+void VulkanMoravaShader::SetMat3(const std::string& name, const glm::mat3& mat)
+{
+	Log::GetLogger()->error("VulkanMoravaShader::SetMat3() not implemented yet!");
+}
 
 void VulkanMoravaShader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
-
-const std::string& VulkanMoravaShader::GetName() const { return ""; }
 
 const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanMoravaShader::GetShaderBuffers() const
 {
@@ -123,19 +162,9 @@ void VulkanMoravaShader::SetMat4(const std::string& name, const glm::mat4& value
 
 void VulkanMoravaShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind) {}
 
-void VulkanMoravaShader::UploadUniformMat4(const std::string& name, const glm::mat4& values) {}
-
-void VulkanMoravaShader::UploadUniformMat4(uint32_t location, const glm::mat4& value) {}
-
-void VulkanMoravaShader::SetLightMatrices(std::vector<glm::mat4> lightMatrices) {}
-
-void VulkanMoravaShader::setLightMat4(std::vector<glm::mat4> lightMatrices) {}
-
 void VulkanMoravaShader::Bind() {}
 
 void VulkanMoravaShader::Reload(bool forceCompile) {}
-
-void VulkanMoravaShader::Unbind() {}
 
 void VulkanMoravaShader::ClearShader() {}
 

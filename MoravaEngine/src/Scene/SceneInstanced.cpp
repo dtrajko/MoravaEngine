@@ -80,7 +80,7 @@ void SceneInstanced::SetupGeometry()
 	m_ShaderInstanced->Bind();
 	for (unsigned int i = 0; i < 100; i++)
 	{
-		m_ShaderInstanced->setVec2("offsets[" + std::to_string(i) + "]", translations[i]);
+		m_ShaderInstanced->SetFloat2("offsets[" + std::to_string(i) + "]", translations[i]);
 	}
 }
 

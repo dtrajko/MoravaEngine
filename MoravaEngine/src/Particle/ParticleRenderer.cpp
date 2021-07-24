@@ -84,8 +84,8 @@ void ParticleRenderer::UpdateModelViewMatrix(glm::vec3 position, glm::vec3 rotat
 
 void ParticleRenderer::LoadTexCoordInfo(glm::vec2 texOffset1, glm::vec2 texOffset2, int numRows, float blendFactor)
 {
-	m_Shader->setVec2("texOffset1", texOffset1);
-	m_Shader->setVec2("texOffset2", texOffset2);
+	m_Shader->SetFloat2("texOffset1", texOffset1);
+	m_Shader->SetFloat2("texOffset2", texOffset2);
 	m_Shader->SetFloat("texCoordInfo.numRows", (float)numRows);
 	m_Shader->SetFloat("texCoordInfo.blendFactor", blendFactor);
 }

@@ -60,7 +60,6 @@ public:
 	// virtual methods
 	virtual void Bind() override;
 	virtual void Reload(bool forceCompile = false) override;
-	virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
 
 	virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 
@@ -80,50 +79,48 @@ public:
 	virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
 	virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 	virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
+	virtual void SetMat2(const std::string& name, const glm::mat2& mat);
+	virtual void SetMat3(const std::string& name, const glm::mat3& mat);
 	virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 	virtual void SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind = true) override;
+	virtual void SetIntArray(const std::string& name, int* values, uint32_t size) override;
 
-	void UploadUniformMat4(const std::string& name, const glm::mat4& values) {}
-	void UploadUniformMat4(uint32_t location, const glm::mat4& values) {}
-
-	void setLightMat4(std::vector<glm::mat4> lightMatrices) {}
-	void Unbind() {}
-	// Omni shadow maps
-	void SetLightMatrices(std::vector<glm::mat4> lightMatrices) {}
-
-	virtual const std::string& GetName() const override;
-	virtual const std::unordered_map<std::string, Hazel::ShaderBuffer>& GetShaderBuffers() const override;
-	virtual const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& GetResources() const override;
+	// generic setter methods for uniform location variables
+	virtual void SetVec2(const std::string& name, const glm::vec2& value); // TODO: remove, use SetFloat2 instead
+	virtual void SetVec2(const std::string& name, float x, float y);       // TODO: remove, use SetFloat2 instead
 
 	virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
-	void CreateFromString(const char* vertexCode, const char* fragmentCode);
-	void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
-	void CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
+	virtual GLint GetUniformLocation(const std::string& name);
+	virtual void UploadUniformMat4(const std::string& name, const glm::mat4& values);
+	virtual void UploadUniformMat4(uint32_t location, const glm::mat4& values);
+	virtual void setLightMat4(std::vector<glm::mat4> lightMatrices);
+	// Omni shadow maps
+	virtual void SetLightMatrices(std::vector<glm::mat4> lightMatrices);
 
-	void CreateFromFileVertex(const char* vertexLocation);
-	void CreateFromFileFragment(const char* fragmentLocation);
-	void CreateFromFileGeometry(const char* geometryLocation);
-	void CreateFromFileCompute(const char* computeLocation);
+	virtual void Unbind();
+
+	virtual const std::string& GetName() const override { return m_Name; }
+	virtual const std::unordered_map<std::string, Hazel::ShaderBuffer>& GetShaderBuffers() const override;
+	virtual const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& GetResources() const override;
+
+	virtual void CreateFromString(const char* vertexCode, const char* fragmentCode);
+	virtual void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
+	virtual void CreateFromFiles(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation);
+
+	virtual void CreateFromFileVertex(const char* vertexLocation);
+	virtual void CreateFromFileFragment(const char* fragmentLocation);
+	virtual void CreateFromFileGeometry(const char* geometryLocation);
+	virtual void CreateFromFileCompute(const char* computeLocation);
+
+	virtual void Validate();
+	virtual void ClearShader();
 
 	static std::string ReadFile(const char* fileLocation);
-	void Validate();
 
-	// generic setter methods for uniform location variables
-	void setVec2(const std::string& name, const glm::vec2& value);
-	void setVec2(const std::string& name, float x, float y);
-	void setMat2(const std::string& name, const glm::mat2& mat);
-	void setMat3(const std::string& name, const glm::mat3& mat);
-
-	virtual GLint GetUniformLocation(const std::string& name);
-
-	inline std::string GetName() { return m_Name; }
-
-	virtual void ClearShader();
 	~MoravaShader();
 
 	GLuint GetProgramID();
-
 
 protected:
 	void CompileProgram();

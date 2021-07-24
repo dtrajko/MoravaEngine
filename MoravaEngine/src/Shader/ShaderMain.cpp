@@ -12,6 +12,9 @@ ShaderMain::ShaderMain() : OpenGLMoravaShader()
 ShaderMain::ShaderMain(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 	: OpenGLMoravaShader(vertexLocation, fragmentLocation, forceCompile)
 {
+	pointLightCount = 0;
+	spotLightCount = 0;
+
 	GetUniformLocations();
 }
 
