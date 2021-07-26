@@ -16,11 +16,11 @@ TerrainHeightMap::TerrainHeightMap(const char* heightMapPath, float tilingFactor
 	m_HeightMapPath = heightMapPath;
 	m_TilingFactor = tilingFactor;
 
-	m_TxHeightMap = TextureSampler::Create(heightMapPath);
+	m_TxHeightMap = TextureSampler::Create(heightMapPath, false, true);
 
 	if (colorMapPath != nullptr)
 	{
-		m_TxColorMap = TextureSampler::Create(colorMapPath);
+		m_TxColorMap = TextureSampler::Create(colorMapPath, false, true);
 		printf("Color map texture width=%d height=%d\n", m_TxColorMap->GetWidth(), m_TxColorMap->GetHeight());
 	}
 
