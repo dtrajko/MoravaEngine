@@ -16,13 +16,11 @@ TerrainHeightMap::TerrainHeightMap(const char* heightMapPath, float tilingFactor
 	m_HeightMapPath = heightMapPath;
 	m_TilingFactor = tilingFactor;
 
-	m_TxHeightMap = new TextureSampler(heightMapPath);
-	m_TxHeightMap->Load();
+	m_TxHeightMap = TextureSampler::Create(heightMapPath);
 
 	if (colorMapPath != nullptr)
 	{
-		m_TxColorMap = new TextureSampler(colorMapPath);
-		m_TxColorMap->Load();
+		m_TxColorMap = TextureSampler::Create(colorMapPath);
 		printf("Color map texture width=%d height=%d\n", m_TxColorMap->GetWidth(), m_TxColorMap->GetHeight());
 	}
 
@@ -71,6 +69,7 @@ void TerrainHeightMap::Generate(glm::vec3 scale)
 			m_Vertices[vertexPointer + 0] = (float)x;
 			m_Vertices[vertexPointer + 1] = GetMaxY(x, z);
 			m_Vertices[vertexPointer + 2] = (float)z;
+			// Log::GetLogger()->debug("GetMaxY({0}, {1}) = {2}", x, z, GetMaxY(x, z));
 
 			// texture coords
 			if (m_TxColorMap)

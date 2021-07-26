@@ -60,28 +60,29 @@ public:
 
 	virtual bool IsLoaded() const = 0;
 
-	void Unbind() {};
-	void Clear() {};
-	uint32_t CalculateMipMapCount(uint32_t width, uint32_t height) { return uint32_t(); }; // used in Hazel::SceneRenderer
-	uint32_t GetMipLevelCount() { return uint32_t(); };
-
 	inline uint32_t GetID() const { return m_ID; };
 	inline uint32_t GetWidth() const { return m_Spec.Width; };
 	inline uint32_t GetHeight() const { return m_Spec.Height; };
 
+	virtual void Unbind();
+	virtual void Clear();
+	virtual uint32_t CalculateMipMapCount(uint32_t width, uint32_t height); // used in Hazel::SceneRenderer
+	virtual uint32_t GetMipLevelCount();
+	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const;
+
 	// Getters
-	int GetRed(int x, int z) { return int(); }
-	int GetGreen(int x, int z) { return int(); }
-	int GetBlue(int x, int z) { return int(); }
-	int GetAlpha(int x, int z) { return int(); }
-	float GetFileSize(const char* filename) { return float(); }
+	virtual int GetRed(int x, int z);
+	virtual int GetGreen(int x, int z);
+	virtual int GetBlue(int x, int z);
+	virtual int GetAlpha(int x, int z);
+	virtual float GetFileSize(const char* filename);
 
 	// Setters
-	void SetPixel(int x, int z, glm::ivec4 pixel) {};
-	void SetRed(int x, int z, int value) {};
-	void SetGreen(int x, int z, int value) {};
-	void SetBlue(int x, int z, int value) {};
-	void SetAlpha(int x, int z, int value) {};
+	virtual void SetPixel(int x, int z, glm::ivec4 pixel);
+	virtual void SetRed(int x, int z, int value);
+	virtual void SetGreen(int x, int z, int value);
+	virtual void SetBlue(int x, int z, int value);
+	virtual void SetAlpha(int x, int z, int value);
 
 protected:
 	uint32_t m_ID;

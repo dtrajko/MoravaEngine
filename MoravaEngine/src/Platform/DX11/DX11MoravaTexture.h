@@ -41,29 +41,29 @@ public:
 
 	virtual bool IsLoaded() const override { return m_Buffer ? true : false; }; // used in Hazel::Mesh
 
-	void Unbind();
-	void Clear();
-	uint32_t CalculateMipMapCount(uint32_t width, uint32_t height); // used in Hazel::SceneRenderer
-	uint32_t GetMipLevelCount();
-	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
-
 	inline uint32_t GetID() const { return m_ID; };
 	inline uint32_t GetWidth() const { return m_Spec.Width; };
 	inline uint32_t GetHeight() const { return m_Spec.Height; };
 
+	virtual void Unbind() override;
+	virtual void Clear() override;
+	virtual uint32_t CalculateMipMapCount(uint32_t width, uint32_t height) override; // used in Hazel::SceneRenderer
+	virtual uint32_t GetMipLevelCount() override;
+	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
+
 	// Getters
-	int GetRed(int x, int z);
-	int GetGreen(int x, int z);
-	int GetBlue(int x, int z);
-	int GetAlpha(int x, int z);
-	float GetFileSize(const char* filename);
+	virtual int GetRed(int x, int z) override;
+	virtual int GetGreen(int x, int z) override;
+	virtual int GetBlue(int x, int z) override;
+	virtual int GetAlpha(int x, int z) override;
+	virtual float GetFileSize(const char* filename) override;
 
 	// Setters
-	void SetPixel(int x, int z, glm::ivec4 pixel);
-	void SetRed(int x, int z, int value);
-	void SetGreen(int x, int z, int value);
-	void SetBlue(int x, int z, int value);
-	void SetAlpha(int x, int z, int value);
+	virtual void SetPixel(int x, int z, glm::ivec4 pixel) override;
+	virtual void SetRed(int x, int z, int value) override;
+	virtual void SetGreen(int x, int z, int value) override;
+	virtual void SetBlue(int x, int z, int value) override;
+	virtual void SetAlpha(int x, int z, int value) override;
 
 protected:
 	const char* m_FileLocation;

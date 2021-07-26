@@ -135,7 +135,9 @@ bool OpenGLMoravaTexture::Load(bool flipVert)
 	Log::GetLogger()->info("Loading texture '{0}' [ID={1}, size={2} MB]", m_FileLocation, m_ID, fileSize);
 
 	if (!m_Spec.IsSampler)
+	{
 		stbi_image_free(m_Buffer);
+	}
 
 	return true;
 }
