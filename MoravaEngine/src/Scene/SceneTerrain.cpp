@@ -98,9 +98,9 @@ void SceneTerrain::UpdateImGui(float timestep, Window* mainWindow)
 
 	ImGui::Begin("Scene Settings");
 	{
-		ImGui::SliderFloat("Water level", &sceneSettings.waterHeight, -20.0f, 100.0f);
+		ImGuiWrapper::Property("Water level", sceneSettings.waterHeight, 0.1f, -20.0f, 100.0f, PropertyFlag::DragProperty);
 		ImGui::SliderFloat3("Terrain scale", glm::value_ptr(m_TerrainScale), -4.0f, 4.0f);
-		ImGui::SliderFloat("Tiling Factor", &m_Tiling_Factor, 0.0f, 5.0f);
+		ImGuiWrapper::Property("Tiling Factor", m_Tiling_Factor, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
 		ImGui::Separator();
 		ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(dirLightDirection), -1.0f, 1.0f);
 		ImGui::ColorEdit3("DirLight Color", glm::value_ptr(dirLightColor));
