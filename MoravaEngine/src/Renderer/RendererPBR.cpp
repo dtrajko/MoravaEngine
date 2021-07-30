@@ -73,20 +73,15 @@ void RendererPBR::SetShaders()
 	RendererBasic::GetShaders().insert(std::make_pair("directionalShadow", shaderDirectionalShadow));
 	printf("Renderer: Shadow shader compiled [programID=%d]\n", shaderDirectionalShadow->GetProgramID());
 
-	static const char* vertShaderOmniShadowMap = "Shaders/omni_shadow_map.vert";
-	static const char* geomShaderOmniShadowMap = "Shaders/omni_shadow_map.geom";
-	static const char* fragShaderOmniShadowMap = "Shaders/omni_shadow_map.frag";
-	MoravaShader* shaderOmniShadow = new MoravaShader();
-	shaderOmniShadow->CreateFromFiles(vertShaderOmniShadowMap, geomShaderOmniShadowMap, fragShaderOmniShadowMap);
+	Hazel::Ref<MoravaShader> shaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	printf("Renderer: OmniShadow shader compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
 
-	MoravaShader* shaderWater = new MoravaShader("Shaders/water.vert", "Shaders/water.frag");
+	Hazel::Ref<MoravaShader> shaderWater = MoravaShader::Create("Shaders/water.vert", "Shaders/water.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("water", shaderWater));
 	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
-	ShaderPBR* shaderPBR = new ShaderPBR();
-	shaderPBR->CreateFromFiles("Shaders/PBR.vert", "Shaders/PBR.frag");
+	Hazel::Ref<ShaderPBR> shaderPBR = Hazel::Ref<ShaderPBR>::Create("Shaders/PBR.vert", "Shaders/PBR.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("pbr", shaderPBR));
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }

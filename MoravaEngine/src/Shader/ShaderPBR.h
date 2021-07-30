@@ -1,15 +1,17 @@
 #pragma once
 
-#include "Shader/MoravaShader.h"
+#include "Platform/OpenGL/OpenGLMoravaShader.h"
 
 
-class ShaderPBR : public MoravaShader
+class ShaderPBR : public OpenGLMoravaShader
 {
 public:
 	ShaderPBR();
+	ShaderPBR(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
+	~ShaderPBR();
+
 	void SetLightPositions(glm::vec3* lightPositions, unsigned int lightCount);
 	void SetLightColors(glm::vec3* lightColors, unsigned int lightCount);
-	~ShaderPBR();
 
 private:
 	virtual void GetUniformLocations() override;

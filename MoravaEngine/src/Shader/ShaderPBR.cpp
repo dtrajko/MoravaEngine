@@ -4,7 +4,20 @@
 const unsigned int ShaderPBR::lightCount;
 
 
-ShaderPBR::ShaderPBR() : MoravaShader()
+ShaderPBR::ShaderPBR() : OpenGLMoravaShader()
+{
+	for (int i = 0; i < lightCount; i++)
+	{
+		uniformLightPositions[i] = -1;
+	}
+	for (int i = 0; i < lightCount; i++)
+	{
+		uniformLightColors[i] = -1;
+	}
+}
+
+ShaderPBR::ShaderPBR(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+	: OpenGLMoravaShader(vertexLocation, fragmentLocation, forceCompile)
 {
 	for (int i = 0; i < lightCount; i++)
 	{
