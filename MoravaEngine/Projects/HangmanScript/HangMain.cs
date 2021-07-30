@@ -1,4 +1,7 @@
-﻿/// <summary>
+﻿using CGL;
+
+
+/// <summary>
 /// Based on
 /// CS #2 - Creating the MonoDomain (and load script) | C++ Scripting Guide [C#]
 /// https://www.youtube.com/watch?v=ps9EW_nzs34
@@ -14,10 +17,10 @@ namespace HangmanScript
         /// <summary>
         /// Main function
         /// </summary>
-        public static void main()
+        public static IGame main()
         {
-            int i = 5 + 5;
-            System.Console.WriteLine("Value of variable i: " + i);
+            string word = CGL.RandomWord.getRandomWord();
+            return new HangGame(word);
         }
     }
 }

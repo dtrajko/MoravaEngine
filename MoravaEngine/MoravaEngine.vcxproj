@@ -281,6 +281,7 @@
     <ClCompile Include="src\Mesh\Sphere.cpp" />
     <ClCompile Include="src\Mesh\Tile2D.cpp" />
     <ClCompile Include="src\Misc\BulletDebugDrawer.cpp" />
+    <ClCompile Include="src\Mono\CsBind.cpp" />
     <ClCompile Include="src\Particle\Particle.cpp" />
     <ClCompile Include="src\Particle\ParticleMaster.cpp" />
     <ClCompile Include="src\Particle\ParticleRenderer.cpp" />
@@ -714,6 +715,7 @@
     <ClInclude Include="src\Mesh\VertexInstanced.h" />
     <ClInclude Include="src\Mesh\VertexTBN.h" />
     <ClInclude Include="src\Misc\BulletDebugDrawer.h" />
+    <ClInclude Include="src\Mono\CsBind.h" />
     <ClInclude Include="src\Particle\Particle.h" />
     <ClInclude Include="src\Particle\ParticleMaster.h" />
     <ClInclude Include="src\Particle\ParticleRenderer.h" />

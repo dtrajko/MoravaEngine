@@ -28,6 +28,7 @@ public:
 	SceneHazelEnvMap();
 	virtual ~SceneHazelEnvMap() override;
 
+	void InitMono();
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
