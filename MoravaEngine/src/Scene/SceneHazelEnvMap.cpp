@@ -15,7 +15,6 @@
 #include "Core/Util.h"
 #include "EnvMap/EnvMapEditorLayer.h"
 #include "Mesh/Block.h"
-#include "Mono/CsBind.h"
 #include "Shader/MoravaShader.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -128,66 +127,12 @@ SceneHazelEnvMap::SceneHazelEnvMap()
 
     // Hazel::RendererAPI::Init();
 
-    InitMono();
+    m_CsGame = new CsGame();
 }
 
 SceneHazelEnvMap::~SceneHazelEnvMap()
 {
-    // Release the domain
-    if (m_ptrMonoDomain)
-    {
-        mono_jit_cleanup(m_ptrMonoDomain);
-
-        Log::GetLogger()->info("Mono Domain cleanup is complete!");
-    }
-}
-
-void SceneHazelEnvMap::InitMono()
-{
-    /**** BEGIN Mono ****/
-
-    // Current directory as mono dir
-    mono_set_dirs("C:/Program Files/Mono/lib", "C:/Program Files/Mono/etc");
-
-    // Create Mono domain
-    m_ptrMonoDomain = mono_jit_init("MoravaEngine");
-    if (m_ptrMonoDomain)
-    {
-        Log::GetLogger()->info("Mono Domain successfully initialized!");
-
-        // Load a Mono assembly HangmanScript.dll
-        std::string assemblyFilepath = "Projects/HangmanScript/bin/Debug/netstandard2.0/HangmanScript.dll";
-        m_ptrGameAssembly = mono_domain_assembly_open(m_ptrMonoDomain, assemblyFilepath.c_str());
-        if (m_ptrGameAssembly)
-        {
-            Log::GetLogger()->info("Mono Domain Assembly '{0}' successfully opened!", assemblyFilepath);
-
-            // Loading Mono image
-            m_ptrGameAssemblyImage = mono_assembly_get_image(m_ptrGameAssembly);
-            if (m_ptrGameAssemblyImage)
-            {
-                Log::GetLogger()->info("Mono Assembly Image successfullu loaded!");
-
-                // Add internal calls
-                mono_add_internal_call("CGL.RandomWord::getRandomWord()", nullptr/*, &CsBind::CS_RandomWord_getRandomWord */);
-                mono_add_internal_call("CGL.GameConsole::clearBuffer()", nullptr/*, &CGL::Console::clearBuffer */);
-                mono_add_internal_call("CGL.GameConsole::present()", nullptr/*, &CGL::Console::present */);
-                mono_add_internal_call("CGL.GameConsole::putChar(uint, uint, char)", nullptr/*, &CGL::Console::putChar */);
-                mono_add_internal_call("CGL.GameConsole::putString(uint, uint, string, bool)", nullptr/*, &CsBind::CS_GameConsole_putString */);
-
-                // Find IGame
-                MonoClass* ptrIGameClass = mono_class_from_name(m_ptrGameAssemblyImage, "HangmanScript", "IGame");
-                MonoClass* ptrMainClass = mono_class_from_name(m_ptrGameAssemblyImage, "HangmanScript", "HangMain");
-                if (ptrIGameClass && ptrMainClass)
-                {
-                    // Describe method
-                    MonoMethodDesc* ptrMainMethodDesc = mono_method_desc_new(".HangMain:main()", false);
-                }
-            }
-        }
-    }
-
-    /**** END Mono ****/
+    delete m_CsGame;
 }
 
 void SceneHazelEnvMap::SetupShaders()

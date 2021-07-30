@@ -8,11 +8,7 @@
 #include "Mesh/Grid.h"
 #include "Scene/Scene.h"
 #include "Texture/MoravaTexture.h"
-
-// Include MONO
-#include <mono/jit/jit.h>
-#include <mono/metadata/assembly.h>
-#include <mono/metadata/debug-helpers.h>
+#include "Mono/GameInvoker/CsGame.h"
 
 #include <map>
 #include <string>
@@ -28,7 +24,6 @@ public:
 	SceneHazelEnvMap();
 	virtual ~SceneHazelEnvMap() override;
 
-	void InitMono();
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
@@ -62,10 +57,7 @@ private:
 	Grid* m_Grid;
 	Pivot* m_PivotScene;
 
-	// Mono generic stuff - https://www.youtube.com/watch?v=ps9EW_nzs34
-	MonoDomain* m_ptrMonoDomain = nullptr;
-	MonoAssembly* m_ptrGameAssembly = nullptr;
-	MonoImage* m_ptrGameAssemblyImage = nullptr;
+	CsGame* m_CsGame;
 
 	friend class EnvMapEditorLayer;
 

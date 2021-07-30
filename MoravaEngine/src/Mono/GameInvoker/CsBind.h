@@ -5,8 +5,8 @@
 #include <mono/metadata/appdomain.h>
 #include <mono/metadata/debug-helpers.h>
 
-// #include <ConsoleGameLib/RandomWord.h>
-// #include <ConsoleGameLib/GameConsole.h>
+#include "Mono/ConsoleGameLib/RandomWord.h"
+#include "Mono/ConsoleGameLib/GameConsole.h"
 
 
 // C# bindings
