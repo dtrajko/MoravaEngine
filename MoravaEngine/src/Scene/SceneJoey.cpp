@@ -198,16 +198,13 @@ void SceneJoey::SetupMaterials()
 
 void SceneJoey::SetupModels()
 {
-	Model* cerberus = new Model();
-	cerberus->LoadModel("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
+	Model* cerberus = new Model("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
 	models.insert(std::make_pair("cerberus", cerberus));
 
-	Model* damagedHelmet = new Model();
-	damagedHelmet->LoadModel("Models/DamagedHelmet.gltf", "Textures/PBR/DamagedHelmet");
+	Model* damagedHelmet = new Model("Models/DamagedHelmet.gltf", "Textures/PBR/DamagedHelmet");
 	models.insert(std::make_pair("damagedHelmet", damagedHelmet));
 
-	Model* sfHelmet = new Model();
-	sfHelmet->LoadModel("Models/SciFiHelmet.gltf", "Textures/PBR/SciFiHelmet");
+	Model* sfHelmet = new Model("Models/SciFiHelmet.gltf", "Textures/PBR/SciFiHelmet");
 	models.insert(std::make_pair("sfHelmet", sfHelmet));
 }
 

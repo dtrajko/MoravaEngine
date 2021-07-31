@@ -34,8 +34,8 @@ private:
 	ParticleSystemCherno m_ParticleSystem;
 	ParticleProps m_Particle;
 
-	MoravaShader* m_ShaderFBScene;
-	MoravaShader* m_ShaderBackground;
+	Hazel::Ref<MoravaShader> m_ShaderFBScene;
+	Hazel::Ref<MoravaShader> m_ShaderBackground;
 
 	float m_MouseX;
 	float m_MouseY;

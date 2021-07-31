@@ -52,7 +52,7 @@ void MeshSSAO::setupMesh()
 }
 
 // Render the mesh
-void MeshSSAO::Draw(MoravaShader* shader)
+void MeshSSAO::Draw(Hazel::Ref<MoravaShader> shader)
 {
     // bind appropriate textures
     unsigned int diffuseNr = 1;

@@ -43,19 +43,19 @@ void SceneCubemaps::SetupTextures()
 
 void SceneCubemaps::SetupShaders()
 {
-    m_ShaderCubemaps = new MoravaShader("Shaders/LearnOpenGL/6.2.cubemaps.vs", "Shaders/LearnOpenGL/6.2.cubemaps.fs");
+    m_ShaderCubemaps = MoravaShader::Create("Shaders/LearnOpenGL/6.2.cubemaps.vs", "Shaders/LearnOpenGL/6.2.cubemaps.fs");
     printf("SceneCubemaps: m_ShaderCubemaps compiled [programID=%d]\n", m_ShaderCubemaps->GetProgramID());
 
-    m_ShaderCubemapsNanosuit = new MoravaShader("Shaders/LearnOpenGL/6.2.cubemaps_nanosuit.vs", "Shaders/LearnOpenGL/6.2.cubemaps.fs");
+    m_ShaderCubemapsNanosuit = MoravaShader::Create("Shaders/LearnOpenGL/6.2.cubemaps_nanosuit.vs", "Shaders/LearnOpenGL/6.2.cubemaps.fs");
     printf("SceneCubemaps: m_ShaderCubemapsNanosuit compiled [programID=%d]\n", m_ShaderCubemapsNanosuit->GetProgramID());
 
-    m_ShaderSkybox = new MoravaShader("Shaders/LearnOpenGL/6.2.skybox.vs", "Shaders/LearnOpenGL/6.2.skybox.fs");
+    m_ShaderSkybox = MoravaShader::Create("Shaders/LearnOpenGL/6.2.skybox.vs", "Shaders/LearnOpenGL/6.2.skybox.fs");
     printf("SceneCubemaps: m_ShaderSkybox compiled [programID=%d]\n", m_ShaderSkybox->GetProgramID());
 
-    m_ShaderBasic = new MoravaShader("Shaders/basic.vs", "Shaders/basic.fs");
+    m_ShaderBasic = MoravaShader::Create("Shaders/basic.vs", "Shaders/basic.fs");
     printf("SceneCubemaps: m_ShaderBasic compiled [programID=%d]\n", m_ShaderBasic->GetProgramID());
 
-    m_ShaderFramebuffersScene = new MoravaShader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
+    m_ShaderFramebuffersScene = MoravaShader::Create("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
     printf("SceneCubemaps: m_ShaderFramebuffersScene compiled [programID=%d]\n", m_ShaderFramebuffersScene->GetProgramID());
 
     // shader configuration

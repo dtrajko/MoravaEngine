@@ -24,10 +24,10 @@ SceneAsteroids::SceneAsteroids()
 
 void SceneAsteroids::SetupShaders()
 {
-	m_ShaderPlanet = new MoravaShader("Shaders/asteroids_planet.vs", "Shaders/asteroids.fs");
+	m_ShaderPlanet = MoravaShader::Create("Shaders/asteroids_planet.vs", "Shaders/asteroids.fs");
 	printf("SceneAsteroids: m_ShaderPlanet shader compiled [programID=%d]\n", m_ShaderPlanet->GetProgramID());
 
-	m_ShaderAsteroids = new MoravaShader("Shaders/asteroids.vs", "Shaders/asteroids.fs");
+	m_ShaderAsteroids = MoravaShader::Create("Shaders/asteroids.vs", "Shaders/asteroids.fs");
 	printf("SceneAsteroids: m_ShaderAsteroids shader compiled [programID=%d]\n", m_ShaderAsteroids->GetProgramID());
 }
 

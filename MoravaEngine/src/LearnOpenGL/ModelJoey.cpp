@@ -30,10 +30,12 @@ ModelJoey::~ModelJoey()
 }
 
 // draws the model, and thus all its meshes
-void ModelJoey::Draw(MoravaShader* shader)
+void ModelJoey::Draw(Hazel::Ref<MoravaShader> shader)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
+    {
         meshes[i].Draw(shader);
+    }
 }
 
 // loads a model with supported ASSIMP extensions from file and stores the resulting meshes in the meshes vector.

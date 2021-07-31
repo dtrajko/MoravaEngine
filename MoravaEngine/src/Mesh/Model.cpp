@@ -14,7 +14,7 @@ Model::Model()
 
 Model::Model(const std::string& fileName, const std::string& texturesPath)
 {
-	m_TexturesPath = texturesPath;
+	m_TexturesPath = (texturesPath != "") ? texturesPath : "Textures";
 	LoadModel(fileName, m_TexturesPath);
 }
 
@@ -22,7 +22,7 @@ void Model::LoadModel(const std::string& fileName, const std::string& texturesPa
 {
 	Log::GetLogger()->info("Loading model '{0}'. Textures path '{1}", fileName, texturesPath);
 
-	m_TexturesPath = texturesPath;
+	m_TexturesPath = (texturesPath != "") ? texturesPath : "Textures";
 	m_Scale = glm::vec3(1.0f);
 
 	std::chrono::time_point<std::chrono::high_resolution_clock> startTimepoint = std::chrono::high_resolution_clock::now();

@@ -62,7 +62,7 @@ private:
 	bool m_LightSourceVisible;
 	glm::vec4 m_BgColor;
 
-	MoravaShader* m_ShaderNanosuit;
+	Hazel::Ref<MoravaShader> m_ShaderNanosuit;
 
 	std::map<std::string, ModelJoey*> models;
 	std::map<std::string, MeshJoey*> meshesJoey;

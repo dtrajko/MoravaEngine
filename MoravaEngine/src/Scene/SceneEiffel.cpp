@@ -92,16 +92,13 @@ void SceneEiffel::SetupMeshes()
 
 void SceneEiffel::SetupModels()
 { 
-	Model* eiffel = new Model();
-	eiffel->LoadModel("Models/Eiffel_Tower.obj");
+	Model* eiffel = new Model("Models/Eiffel_Tower.obj");
 	models.insert(std::make_pair("eiffel", eiffel));
 
-	Model* watchtower = new Model();
-	watchtower->LoadModel("Models/wooden_watch_tower.obj");
+	Model* watchtower = new Model("Models/wooden_watch_tower.obj");
 	models.insert(std::make_pair("watchtower", watchtower));
 
-	Model* helicopter = new Model();
-	helicopter->LoadModel("Models/OGLdev/hheli/hheli.obj", "Textures/OGLdev/hheli");
+	Model* helicopter = new Model("Models/OGLdev/hheli/hheli.obj", "Textures/OGLdev/hheli");
 	models.insert(std::make_pair("helicopter", helicopter));
 }
 

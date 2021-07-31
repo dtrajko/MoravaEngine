@@ -29,7 +29,7 @@ ModelSSAO::~ModelSSAO()
 }
 
 // draws the model, and thus all its meshes
-void ModelSSAO::Draw(MoravaShader* shader)
+void ModelSSAO::Draw(Hazel::Ref<MoravaShader> shader)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
         meshes[i].Draw(shader);

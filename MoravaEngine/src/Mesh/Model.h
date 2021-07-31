@@ -15,10 +15,9 @@ class Model
 {
 public:
 	Model();
-	Model(const std::string& fileName, const std::string& texturesPath = "Textures");
+	Model(const std::string& fileName, const std::string& texturesPath = "");
 	~Model();
 
-	void LoadModel(const std::string& fileName, const std::string& texturesPath = "Textures");
 	void Update(glm::vec3 scale);
 	void Render(uint32_t txSlotDiffuse, uint32_t txSlotNormal, bool useNormalMaps);
 	void RenderPBR();
@@ -27,6 +26,7 @@ public:
 	inline const std::vector <Mesh*> GetMeshList() const { return m_MeshList; };
 
 private:
+	void LoadModel(const std::string& fileName, const std::string& texturesPath = "");
 	void LoadNode(aiNode* node, const aiScene* scene);
 	void LoadMesh(aiMesh* mesh, const aiScene* scene);
 	void LoadMaterials(const aiScene* scene);

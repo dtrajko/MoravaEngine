@@ -6,7 +6,7 @@
 
 ParticleRenderer::ParticleRenderer()
 {
-	m_Shader = new MoravaShader("Shaders/ThinMatrix/particle.vs", "Shaders/ThinMatrix/particle.fs");
+	m_Shader = MoravaShader::Create("Shaders/ThinMatrix/particle.vs", "Shaders/ThinMatrix/particle.fs");
 	printf("ParticleRenderer: m_Shader compiled [programID=%d]\n", m_Shader->GetProgramID());
 
 	m_Mesh = new Quad();
@@ -93,7 +93,7 @@ void ParticleRenderer::LoadTexCoordInfo(glm::vec2 texOffset1, glm::vec2 texOffse
 void ParticleRenderer::CleanUp()
 {
 	delete m_Mesh;
-	delete m_Shader;
+	// delete m_Shader; // RefCounted instance is automatically deleted
 }
 
 ParticleRenderer::~ParticleRenderer()

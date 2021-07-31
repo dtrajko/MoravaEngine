@@ -77,11 +77,12 @@ void SceneInstanced::SetupGeometry()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glVertexAttribDivisor(2, 1); // tell OpenGL this is an instanced vertex attribute.
 
-	m_ShaderInstanced->Bind();
-	for (unsigned int i = 0; i < 100; i++)
-	{
-		m_ShaderInstanced->SetFloat2("offsets[" + std::to_string(i) + "]", translations[i]);
-	}
+	//	Not used anymore. Offsets are now sent to shader through an input buffer (instanceVBO)
+	//	m_ShaderInstanced->Bind();
+	//	for (unsigned int i = 0; i < 100; i++)
+	//	{
+	//		m_ShaderInstanced->SetFloat2("offsets[" + std::to_string(i) + "]", translations[i]);
+	//	}
 }
 
 void SceneInstanced::Update(float timestep, Window* mainWindow)

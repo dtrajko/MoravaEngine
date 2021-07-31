@@ -32,7 +32,7 @@ SceneNanosuit::SceneNanosuit()
 
 void SceneNanosuit::SetupShaders()
 {
-	m_ShaderNanosuit = new MoravaShader("Shaders/nanosuit.vs", "Shaders/nanosuit.fs");
+	m_ShaderNanosuit = MoravaShader::Create("Shaders/nanosuit.vs", "Shaders/nanosuit.fs");
 	printf("SceneNanosuit: m_ShaderNanosuit compiled [programID=%d]\n", m_ShaderNanosuit->GetProgramID());
 }
 
@@ -191,7 +191,9 @@ void SceneNanosuit::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
 	GetTextures()["plain"]->Bind(1);
 	GetTextures()["plain"]->Bind(2);
 	if (!m_LightOnCamera && m_LightSourceVisible)
+	{
 		GetMeshes()["sphere"]->Render();
+	}
 
 	// Render Cube (with Diffuse/Specular maps)
 	model = glm::mat4(1.0f);
@@ -204,7 +206,9 @@ void SceneNanosuit::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
 SceneNanosuit::~SceneNanosuit()
 {
 	for (auto& model : models)
+	{
 		delete model.second;
+	}
 
 	models.clear();
 

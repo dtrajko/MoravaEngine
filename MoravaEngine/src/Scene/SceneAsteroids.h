@@ -25,8 +25,8 @@ private:
 	void SetupGeometry();
 
 private:
-	MoravaShader* m_ShaderAsteroids;
-	MoravaShader* m_ShaderPlanet;
+	Hazel::Ref<MoravaShader> m_ShaderAsteroids;
+	Hazel::Ref<MoravaShader> m_ShaderPlanet;
 
 	unsigned int quadVAO;
 	unsigned int quadVBO;

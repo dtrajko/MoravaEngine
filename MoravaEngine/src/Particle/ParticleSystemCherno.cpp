@@ -43,12 +43,14 @@ void ParticleSystemCherno::OnUpdate(float ts)
 	}
 }
 
-void ParticleSystemCherno::OnRender(Camera* camera, MoravaShader* shader)
+void ParticleSystemCherno::OnRender(Camera* camera, Hazel::Ref<MoravaShader> shader)
 {
 	for (auto& particle : m_ParticlePool)
 	{
 		if (!particle.Active)
+		{
 			continue;
+		}
 
 		// Fade away particles
 		float life = particle.LifeRemaining / particle.LifeTime;
@@ -61,7 +63,7 @@ void ParticleSystemCherno::OnRender(Camera* camera, MoravaShader* shader)
 	}
 }
 
-void ParticleSystemCherno::DrawRotatedQuad(glm::vec3 position, glm::vec3 size, float rotation, glm::vec4 color, MoravaShader* shader)
+void ParticleSystemCherno::DrawRotatedQuad(glm::vec3 position, glm::vec3 size, float rotation, glm::vec4 color, Hazel::Ref<MoravaShader> shader)
 {
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, position);

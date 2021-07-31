@@ -49,11 +49,11 @@ private:
 	Raycast* m_Raycast;
 	TerrainHeightMap* m_Terrain;
 
-	MoravaShader* m_ShaderCubemaps;
-	MoravaShader* m_ShaderCubemapsNanosuit;
-	MoravaShader* m_ShaderSkybox;
-	MoravaShader* m_ShaderBasic;
-	MoravaShader* m_ShaderFramebuffersScene;
+	Hazel::Ref<MoravaShader> m_ShaderCubemaps;
+	Hazel::Ref<MoravaShader> m_ShaderCubemapsNanosuit;
+	Hazel::Ref<MoravaShader> m_ShaderSkybox;
+	Hazel::Ref<MoravaShader> m_ShaderBasic;
+	Hazel::Ref<MoravaShader> m_ShaderFramebuffersScene;
 
 	float m_CubeRenderLastTime = 0.0f;
 	float m_CubeRenderCooldown = 1.0f;

@@ -64,13 +64,13 @@ void SceneDeferred::SetupFramebuffers()
 
 void SceneDeferred::SetupShaders()
 {
-    m_ShaderGeometryPass = new MoravaShader("Shaders/LearnOpenGL/8.2.g_buffer.vs", "Shaders/LearnOpenGL/8.2.g_buffer.fs");
+    m_ShaderGeometryPass = MoravaShader::Create("Shaders/LearnOpenGL/8.2.g_buffer.vs", "Shaders/LearnOpenGL/8.2.g_buffer.fs");
     Log::GetLogger()->info("SceneDeferred: m_ShaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
 
-    m_ShaderLightingPass = new MoravaShader("Shaders/LearnOpenGL/8.2.deferred_shading.vs", "Shaders/LearnOpenGL/8.2.deferred_shading.fs");
+    m_ShaderLightingPass = MoravaShader::Create("Shaders/LearnOpenGL/8.2.deferred_shading.vs", "Shaders/LearnOpenGL/8.2.deferred_shading.fs");
     Log::GetLogger()->info("SceneDeferred: m_ShaderLightingPass compiled [programID={0}]", m_ShaderLightingPass->GetProgramID());
 
-    m_ShaderLightBox = new MoravaShader("Shaders/LearnOpenGL/8.2.deferred_light_box.vs", "Shaders/LearnOpenGL/8.2.deferred_light_box.fs");
+    m_ShaderLightBox = MoravaShader::Create("Shaders/LearnOpenGL/8.2.deferred_light_box.vs", "Shaders/LearnOpenGL/8.2.deferred_light_box.fs");
     Log::GetLogger()->info("SceneDeferred: m_ShaderLightBox compiled [programID={0}]", m_ShaderLightBox->GetProgramID());
 
     m_ShaderLightingPass->Bind();
@@ -316,7 +316,8 @@ SceneDeferred::~SceneDeferred()
     delete m_Cube;
     delete m_Backpack;
 
-    delete m_ShaderGeometryPass;
-    delete m_ShaderLightingPass;
-    delete m_ShaderLightBox;
+    // RefCounted instances are automatically deleted
+    // delete m_ShaderGeometryPass;
+    // delete m_ShaderLightingPass;
+    // delete m_ShaderLightBox;
 }

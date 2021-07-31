@@ -19,7 +19,7 @@ class MeshSSAO
 public:
     MeshSSAO();
     MeshSSAO(std::vector<VertexSSAO> vertices, std::vector<unsigned int> indices, std::vector<TextureData> textures);
-    void Draw(MoravaShader* shader);
+    void Draw(Hazel::Ref<MoravaShader> shader);
     inline unsigned int GetVAO() const { return VAO; };
     inline std::vector<unsigned int> GetIndices() const { return indices; };
 

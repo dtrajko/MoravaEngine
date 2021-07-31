@@ -22,10 +22,10 @@ SceneParticles::SceneParticles()
     m_MaterialWorkflowPBR = new MaterialWorkflowPBR();
     m_MaterialWorkflowPBR->Init("Textures/HDR/greenwich_park_02_1k.hdr");
 
-    m_ShaderFBScene = new MoravaShader("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
+    m_ShaderFBScene = MoravaShader::Create("Shaders/framebuffers_scene.vs", "Shaders/framebuffers_scene.fs");
     printf("SceneParticles: m_ShaderFBScene compiled [programID=%d]\n", m_ShaderFBScene->GetProgramID());
 
-    m_ShaderBackground = new MoravaShader("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    m_ShaderBackground = MoravaShader::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     Log::GetLogger()->info("SceneParticles: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 }
 

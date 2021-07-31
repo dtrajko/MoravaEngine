@@ -24,8 +24,8 @@ public:
 
 	void OnStart();
 	void OnUpdate(float ts);
-	void OnRender(Camera* camera, MoravaShader* shader);
-	void DrawRotatedQuad(glm::vec3 position, glm::vec3 size, float rotation, glm::vec4 color, MoravaShader* shader);
+	void OnRender(Camera* camera, Hazel::Ref<MoravaShader> shader);
+	void DrawRotatedQuad(glm::vec3 position, glm::vec3 size, float rotation, glm::vec4 color, Hazel::Ref<MoravaShader> shader);
 
 	void Emit(const ParticleProps& particleProps);
 private:
@@ -45,6 +45,6 @@ private:
 	std::vector<Particle> m_ParticlePool;
 	uint32_t m_PoolIndex;
 
-	MoravaShader* m_Shader;
+	Hazel::Ref<MoravaShader> m_Shader;
 	Quad* m_Quad;
 };

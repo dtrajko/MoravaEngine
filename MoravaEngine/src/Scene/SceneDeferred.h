@@ -44,9 +44,9 @@ private:
 	int m_WidthPrev;
 	int m_HeightPrev;
 
-	MoravaShader* m_ShaderGeometryPass;
-	MoravaShader* m_ShaderLightingPass;
-	MoravaShader* m_ShaderLightBox;
+	Hazel::Ref<MoravaShader> m_ShaderGeometryPass;
+	Hazel::Ref<MoravaShader> m_ShaderLightingPass;
+	Hazel::Ref<MoravaShader> m_ShaderLightBox;
 
 	ModelSSAO* m_Backpack;
 	std::vector<glm::vec3> m_ObjectPositions;

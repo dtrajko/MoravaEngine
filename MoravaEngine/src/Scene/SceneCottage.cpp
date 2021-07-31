@@ -113,8 +113,7 @@ void SceneCottage::SetupMeshes()
 
 void SceneCottage::SetupModels()
 {
-	Model* cottage = new Model();
-	cottage->LoadModel("Models/cottage.obj");
+	Model* cottage = new Model("Models/cottage.obj");
 	models.insert(std::make_pair("cottage", cottage));
 
 	Sphere* sphere = new Sphere();

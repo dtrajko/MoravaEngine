@@ -71,9 +71,8 @@ void SceneSponza::SetupMeshes()
 
 void SceneSponza::SetupModels()
 {
-	Model* sponza = new Model();
-	sponza->LoadModel("Models/sponza.obj");
-	models.insert(std::make_pair("sponza", sponza));
+	Model* sponza = new Model("Models/sponza.obj", "Textures");
+    models.insert(std::make_pair("sponza", sponza));
 }
 
 void SceneSponza::Update(float timestep, Window* mainWindow)

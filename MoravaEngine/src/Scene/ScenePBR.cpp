@@ -146,8 +146,7 @@ void ScenePBR::SetupModels()
 
 	if (m_CerberusEnabled)
 	{
-		Model* cerberus = new Model();
-		cerberus->LoadModel("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
+		Model* cerberus = new Model("Models/Cerberus/Cerberus_LP.FBX", "Models/Cerberus/Textures");
 		models.insert(std::make_pair("cerberus", cerberus));
 	}
 }
