@@ -19,7 +19,7 @@ public:
 	void SetupShaders();
 
 private:
-	MoravaShader* m_ShaderInstanced;
+	Hazel::Ref<MoravaShader> m_ShaderInstanced;
 
 	unsigned int quadVAO;
 	unsigned int quadVBO;

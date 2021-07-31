@@ -18,7 +18,7 @@ SceneInstanced::SceneInstanced()
 
 void SceneInstanced::SetupShaders()
 {
-	m_ShaderInstanced = new MoravaShader("Shaders/instanced.vert", "Shaders/instanced.frag");
+	m_ShaderInstanced = MoravaShader::Create("Shaders/instanced.vert", "Shaders/instanced.frag");
 	printf("SceneInstanced: m_ShaderInstanced compiled [programID=%d]\n", m_ShaderInstanced->GetProgramID());
 }
 
