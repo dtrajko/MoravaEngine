@@ -1,7 +1,12 @@
 #pragma once
 
+#include "ConsoleGameLib.h"
 
-class RandomWord
+
+namespace CGL
 {
 
-};
+	// Retrieve a random word
+	/*CGL_EXPORT */const char* getRandomWord();
+
+}

@@ -32,10 +32,10 @@ CsGame::CsGame()
 
                 // Add internal calls
                 mono_add_internal_call("CGL.RandomWord::getRandomWord()", &CsBind::CS_RandomWord_getRandomWord);
-                mono_add_internal_call("CGL.GameConsole::clearBuffer()", nullptr/*, &CGL::Console::clearBuffer */);
-                mono_add_internal_call("CGL.GameConsole::present()", nullptr/*, &CGL::Console::present */);
-                mono_add_internal_call("CGL.GameConsole::putChar(uint, uint, char)", nullptr/*, &CGL::Console::putChar */);
-                mono_add_internal_call("CGL.GameConsole::putString(uint, uint, string, bool)", nullptr/*, &CsBind::CS_GameConsole_putString */);
+                mono_add_internal_call("CGL.GameConsole::clearBuffer()", &CGL::GameConsole::clearBuffer);
+                mono_add_internal_call("CGL.GameConsole::present()", &CGL::GameConsole::present);
+                mono_add_internal_call("CGL.GameConsole::putChar(uint, uint, char)", &CGL::GameConsole::putChar);
+                mono_add_internal_call("CGL.GameConsole::putString(uint, uint, string, bool)", &CsBind::CS_GameConsole_putString);
 
                 // Find IGame
                 MonoClass* ptrIGameClass = mono_class_from_name(m_ptrGameAssemblyImage, "HangmanScript", "IGame");
@@ -64,7 +64,10 @@ CsGame::CsGame()
                                 {
                                     // Get real function
                                     MonoMethod* virtualMethod = mono_method_desc_search_in_class(ptrTickMethodDesc, ptrIGameClass);
-                                    m_ptrTickMethod = mono_object_get_virtual_method(m_ptrGameObject, virtualMethod);
+                                    if (virtualMethod)
+                                    {
+                                        m_ptrTickMethod = mono_object_get_virtual_method(m_ptrGameObject, virtualMethod);
+                                    }
 
                                     // Free
                                     mono_method_desc_free(ptrTickMethodDesc);
@@ -76,7 +79,10 @@ CsGame::CsGame()
                                 {
                                     // Get real function
                                     MonoMethod* virtualMethod = mono_method_desc_search_in_class(ptrKeyMethodDesc, ptrIGameClass);
-                                    m_ptrKeyEventMethod = mono_object_get_virtual_method(m_ptrGameObject, virtualMethod);
+                                    if (virtualMethod)
+                                    {
+                                        m_ptrKeyEventMethod = mono_object_get_virtual_method(m_ptrGameObject, virtualMethod);
+                                    }
 
                                     // Free
                                     mono_method_desc_free(ptrKeyMethodDesc);
@@ -127,11 +133,47 @@ void CsGame::keyEvent(char key)
     {
         // Invoke with exception
         MonoObject* ptrExObject = nullptr;
-        // TODO ...
+        void* args[] = {
+            &key
+        };
+        mono_runtime_invoke(m_ptrKeyEventMethod, m_ptrGameObject, args, &ptrExObject);
+
+        // Report exception
+        if (ptrExObject)
+        {
+            MonoString* exString = mono_object_to_string(ptrExObject, nullptr);
+            const char* exCString = mono_string_to_utf8(exString);
+            MessageBoxA(NULL, exCString, "Mono Invoke issue", MB_OK | MB_ICONERROR);
+        }
     }
 }
 
 bool CsGame::tick()
 {
+    bool result = false;
 
+    // Only if populated
+    if (m_ptrTickMethod)
+    {
+        // Invoke with exception
+        MonoObject* ptrExObject = nullptr;
+        MonoObject* ptrReturnObject = mono_runtime_invoke(m_ptrTickMethod, m_ptrGameObject, nullptr, &ptrExObject);
+
+        // Extract bool if result was OK
+        if (ptrReturnObject)
+        {
+            result = *(bool*)mono_object_unbox(ptrReturnObject);
+        }
+
+        // Report exception
+        if (ptrExObject)
+        {
+            MonoString* exString = mono_object_to_string(ptrExObject, nullptr);
+            const char* exCString = mono_string_to_utf8(exString);
+            MessageBoxA(NULL, exCString, "Mono Invoke issue", MB_OK | MB_ICONERROR);
+        }
+    }
+
+    // Return result
+    return result;
 }

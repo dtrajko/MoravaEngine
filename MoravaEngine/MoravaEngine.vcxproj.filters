@@ -924,6 +924,18 @@
     <ClCompile Include="src\Mono\GameInvoker\CsGame.cpp">
       <Filter>Mono\GameInvoker</Filter>
     </ClCompile>
+    <ClCompile Include="src\Mono\ConsoleGameLib\GameConsole.cpp">
+      <Filter>Mono\ConsoleGameLib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mono\ConsoleGameLib\GConsole.cpp">
+      <Filter>Mono\ConsoleGameLib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mono\ConsoleGameLib\RWord.cpp">
+      <Filter>Mono\ConsoleGameLib</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mono\ConsoleGameLib\RandomWord.cpp">
+      <Filter>Mono\ConsoleGameLib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1957,6 +1969,18 @@
     </ClInclude>
     <ClInclude Include="src\Mono\GameInvoker\CsGame.h">
       <Filter>Mono\GameInvoker</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mono\ConsoleGameLib\ConsoleGameLib.h">
+      <Filter>Mono\ConsoleGameLib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mono\ConsoleGameLib\GConsole.h">
+      <Filter>Mono\ConsoleGameLib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mono\ConsoleGameLib\WinInclude.h">
+      <Filter>Mono\ConsoleGameLib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mono\ConsoleGameLib\RWord.h">
+      <Filter>Mono\ConsoleGameLib</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -11,30 +11,34 @@ namespace HangmanScript
     public class HangGame : IGame
     {
         private string wordToGuess;
+        private bool exit = false;
 
         public HangGame(string word)
         {
             this.wordToGuess = word;
+
+            // Print word
+            CGL.GameConsole.clearBuffer();
+            // CGL.GameConsole.putString(0, 0, "The word is: " + this.wordToGuess, true);
+            CGL.GameConsole.present();
         }
 
         public void keyEvent(char key)
         {
+            // Check if exit
+            if (key == 'X')
+            {
+                exit = true;
+            }
             // throw new NotImplementedException();
-            return;
         }
 
         public bool tick()
         {
-            // throw new NotImplementedException();
-
-            // Print word
-            CGL.GameConsole.clearBuffer();
-            CGL.GameConsole.putString(0, 0, "The word is: " + this.wordToGuess);
-            CGL.GameConsole.present();
-
             // Sleep and return
-            Thread.Sleep(4000);
-            return false;
+            // Thread.Sleep(4000);
+            return !exit;
+            // throw new NotImplementedException();
         }
     }
 }

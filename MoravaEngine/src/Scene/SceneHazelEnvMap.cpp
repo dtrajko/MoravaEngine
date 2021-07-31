@@ -189,6 +189,8 @@ void SceneHazelEnvMap::Update(float timestep, Window* mainWindow)
 
     float deltaTime = Timer::Get()->GetDeltaTime();
     m_EnvMapEditorLayer->OnUpdate(deltaTime);
+
+    m_CsGame->tick();
 }
 
 void SceneHazelEnvMap::UpdateImGui(float timestep, Window* mainWindow)
