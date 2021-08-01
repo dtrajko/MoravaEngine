@@ -24,7 +24,6 @@
 #include "Mesh/Sphere.h"
 #include "Mesh/Tile2D.h"
 #include "Particle/ParticleMaster.h"
-#include "PerlinNoise/PerlinNoise.hpp"
 #include "Shader/MoravaShader.h"
 #include "Terrain/TerrainHeightMap.h"
 #include "Texture/TextureLoader.h"

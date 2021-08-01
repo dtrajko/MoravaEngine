@@ -680,6 +680,9 @@ SceneVoxelTerrain::~SceneVoxelTerrain()
     delete m_Raycast;
     delete m_Player;
 
-    for (auto mesh : meshes)
-        delete &mesh;
+    //  Done in Scene destructor
+    //  for (auto mesh : meshes)
+    //  {
+    //      delete &mesh;
+    //  }
 }
