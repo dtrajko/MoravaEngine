@@ -10,9 +10,8 @@ namespace Hazel {
 	class OpenGLRenderer : public RendererAPI
 	{
 	public:
-		static void Init();
-		static void Shutdown();
-		static RenderAPICapabilities& GetCapabilities();
+		virtual void Init() override;
+		virtual void Shutdown() override;
 
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
@@ -27,6 +26,8 @@ namespace Hazel {
 		virtual void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) override;
+
+		virtual RenderAPICapabilities& GetCapabilities() override;
 
 	};
 

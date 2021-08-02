@@ -48,7 +48,7 @@ namespace Hazel {
 		glEnable(GL_MULTISAMPLE);
 		glEnable(GL_STENCIL_TEST);
 
-		auto& caps = RendererAPI::GetCapabilities();
+		auto& caps = GetCapabilities();
 
 		caps.Vendor = (const char*)glGetString(GL_VENDOR);
 		caps.Device = (const char*)glGetString(GL_RENDERER);

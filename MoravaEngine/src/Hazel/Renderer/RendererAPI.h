@@ -44,31 +44,9 @@ namespace Hazel {
 	class RendererAPI
 	{
 	public:
-		static void Init();
-		static void Shutdown();
+		virtual void Init() = 0;
+		virtual void Shutdown() = 0;
 
-		static void Clear(float r, float g, float b, float a);
-		static void SetClearColor(float r, float g, float b, float a);
-
-		static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true);
-		static void SetLineThickness(float thickness);
-
-		static RenderAPICapabilities& GetCapabilities()
-		{
-			static RenderAPICapabilities capabilities;
-			return capabilities;
-		}
-
-		static RendererAPIType Current() { return s_CurrentRendererAPI; }
-		static void SetAPI(RendererAPIType api);
-
-	private:
-		static void LoadRequiredAssets();
-
-	private:
-		static RendererAPIType s_CurrentRendererAPI;
-
-	public:
 		virtual void BeginFrame() = 0;
 		virtual void EndFrame() = 0;
 
@@ -82,6 +60,23 @@ namespace Hazel {
 		virtual void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) = 0;
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) = 0;
 		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) = 0;
+
+		virtual RenderAPICapabilities& GetCapabilities() = 0;
+
+		static void Clear(float r, float g, float b, float a);
+		static void SetClearColor(float r, float g, float b, float a);
+
+		static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true);
+		static void SetLineThickness(float thickness);
+
+		static RendererAPIType Current() { return s_CurrentRendererAPI; }
+		static void SetAPI(RendererAPIType api);
+
+	private:
+		static void LoadRequiredAssets();
+
+	private:
+		static RendererAPIType s_CurrentRendererAPI;
 
 	// private:
 	// 	inline static RendererAPIType s_CurrentRendererAPI = RendererAPIType::Vulkan;

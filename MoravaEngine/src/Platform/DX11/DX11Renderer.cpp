@@ -237,6 +237,10 @@ void DX11Renderer::Init()
 	/****END the code from the EnvMapEditorLayer constructor ****/
 }
 
+void DX11Renderer::Shutdown()
+{
+}
+
 void DX11Renderer::SelectEntity(Hazel::Entity e)
 {
 	Log::GetLogger()->info("DX11Renderer::SelectEntity called!");
@@ -954,9 +958,35 @@ void DX11Renderer::EndRenderPass()
 	// Hazel::HazelRenderer::Submit([]() {});
 }
 
-void DX11Renderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Material> material)
+void DX11Renderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material)
 {
 	// Hazel::HazelRenderer::Submit([]() {});
+}
+
+void DX11Renderer::SetSceneEnvironment(Hazel::Ref<Hazel::Environment> environment, Hazel::Ref<Hazel::HazelImage2D> shadow)
+{
+}
+
+std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> DX11Renderer::CreateEnvironmentMap(const std::string& filepath)
+{
+	return std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>>();
+}
+
+void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform)
+{
+}
+
+void DX11Renderer::RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform)
+{
+}
+
+void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform)
+{
+}
+
+Hazel::RenderAPICapabilities& DX11Renderer::GetCapabilities()
+{
+	return Hazel::RenderAPICapabilities{};
 }
 
 //-----------------------------------------------------------------------------

@@ -247,6 +247,10 @@ namespace Hazel {
 		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
 
+	void VulkanRenderer::Shutdown()
+	{
+	}
+
 	static void RenderMeshVulkan(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer, HazelCamera* camera) // TODO: remove the HazelCamera parameter
 	{
 		/**** BEGIN Non-composite ****
@@ -713,7 +717,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<Material> material)
+	void VulkanRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
 	{
 		//	HazelRenderer::Submit([]()
 		//	{
@@ -740,6 +744,32 @@ namespace Hazel {
 
 			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 		}
+	}
+
+	void VulkanRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
+	{
+	}
+
+	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> VulkanRenderer::CreateEnvironmentMap(const std::string& filepath)
+	{
+		return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
+	}
+
+	void VulkanRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	{
+	}
+
+	void VulkanRenderer::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	{
+	}
+
+	void VulkanRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
+	{
+	}
+
+	RenderAPICapabilities& VulkanRenderer::GetCapabilities()
+	{
+		return RenderAPICapabilities{};
 	}
 
 	//-----------------------------------------------------------------------------

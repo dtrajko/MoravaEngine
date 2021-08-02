@@ -32,7 +32,24 @@ struct DX11ConstantBufferLayout
 class DX11Renderer : public Hazel::RendererAPI
 {
 public:
-	static void Init();
+	virtual void Init() override;
+	virtual void Shutdown() override;
+
+	virtual void BeginFrame() override;
+	virtual void EndFrame() override;
+
+	virtual void BeginRenderPass(const Hazel::Ref<Hazel::RenderPass>& renderPass) override;
+	virtual void EndRenderPass() override;
+	virtual void SubmitFullscreenQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material) override;
+
+	virtual void SetSceneEnvironment(Hazel::Ref<Hazel::Environment> environment, Hazel::Ref<Hazel::HazelImage2D> shadow) override;
+	virtual std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) override;
+
+	virtual void RenderMesh(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform) override;
+	virtual void RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform) override;
+	virtual void RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform) override;
+
+	virtual Hazel::RenderAPICapabilities& GetCapabilities() override;
 
 	static void Update();
 
@@ -43,13 +60,6 @@ public:
 	static void RenderMesh(RenderObject renderObject);
 	static void RenderMeshDX11(RenderObject renderObject, const std::vector<Hazel::Ref<DX11Material>>& listMaterials);
 	static void RenderMeshesECS(); // the code is taken from EnvMapSceneRenderer::GeometryPass()
-
-	static void BeginFrame();
-	static void EndFrame();
-
-	static void BeginRenderPass(const Hazel::Ref<Hazel::RenderPass>& renderPass);
-	static void EndRenderPass();
-	static void SubmitFullscreenQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Material> material);
 
 	static void RenderImGui();
 	static void UpdateImGuizmo();
