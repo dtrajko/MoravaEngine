@@ -201,25 +201,25 @@ void SceneAnimPBR::SetupMaterials()
 
 void SceneAnimPBR::SetupShaders()
 {
-    m_ShaderMain = Hazel::Ref<MoravaShader>::Create("Shaders/shader.vert", "Shaders/shader.frag");
+    m_ShaderMain = MoravaShader::Create("Shaders/shader.vert", "Shaders/shader.frag");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderMain compiled [programID={0}]", m_ShaderMain->GetProgramID());
 
-    m_ShaderBackground = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    m_ShaderBackground = MoravaShader::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 
-    m_ShaderHybridAnimPBR = Hazel::Ref<MoravaShader>::Create("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
+    m_ShaderHybridAnimPBR = MoravaShader::Create("Shaders/HybridAnimPBR.vs", "Shaders/HybridAnimPBR.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderHybridAnimPBR compiled [programID={0}]", m_ShaderHybridAnimPBR->GetProgramID());
 
-    m_ShaderEquirectangularConversion = Hazel::Ref<MoravaShader>::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
+    m_ShaderEquirectangularConversion = MoravaShader::Create("Shaders/Hazel/EquirectangularToCubeMap.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEquirectangularConversion compiled [programID={0}]", m_ShaderEquirectangularConversion->GetProgramID());
 
-    m_ShaderEnvFiltering = Hazel::Ref<MoravaShader>::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
+    m_ShaderEnvFiltering = MoravaShader::Create("Shaders/Hazel/EnvironmentMipFilter.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvFiltering compiled [programID={0}]", m_ShaderEnvFiltering->GetProgramID());
 
-    m_ShaderEnvIrradiance = Hazel::Ref<MoravaShader>::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
+    m_ShaderEnvIrradiance = MoravaShader::Create("Shaders/Hazel/EnvironmentIrradiance.cs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderEnvIrradiance compiled [programID={0}]", m_ShaderEnvIrradiance->GetProgramID());
 
-    m_ShaderBasic = Hazel::Ref<MoravaShader>::Create("Shaders/basic.vs", "Shaders/basic.fs");
+    m_ShaderBasic = MoravaShader::Create("Shaders/basic.vs", "Shaders/basic.fs");
     Log::GetLogger()->info("SceneAnimPBR: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
 }
 

@@ -325,7 +325,7 @@ void OpenGLMoravaShader::SetFloat2(const std::string& name, const glm::vec2& val
 		glUniform2f(location, value.x, value.y);
 	}
 	else {
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat2 - uniform '{0}' not found!", name);
 	}
 }
 
@@ -337,7 +337,7 @@ void OpenGLMoravaShader::SetFloat3(const std::string& name, const glm::vec3& val
 		glUniform3f(location, value.x, value.y, value.z);
 	}
 	else {
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat3 - uniform '{0}' not found!", name);
 	}
 }
 
@@ -349,7 +349,7 @@ void OpenGLMoravaShader::SetFloat4(const std::string& name, const glm::vec4& val
 		glUniform4f(location, value.x, value.y, value.z, value.w);
 	}
 	else {
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat4 - uniform '{0}' not found!", name);
 	}
 }
 
@@ -361,7 +361,19 @@ void OpenGLMoravaShader::SetMat4(const std::string& name, const glm::mat4& value
 		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&value);
 	}
 	else {
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
+		Log::GetLogger()->error("OpenGLMoravaShader::SetMat4 - uniform '{0}' not found!", name);
+	}
+}
+
+void OpenGLMoravaShader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
+{
+	glUseProgram(programID);
+	auto location = glGetUniformLocation(programID, name.c_str());
+	if (location != -1) {
+		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
+	}
+	else {
+		Log::GetLogger()->error("OpenGLMoravaShader::UploadUniformMat4 - uniform '{0}' not found!", name);
 	}
 }
 
@@ -377,18 +389,6 @@ void OpenGLMoravaShader::SetMat4FromRenderThread(const std::string& name, const 
 		if (location != -1) {
 			UploadUniformMat4(location, value);
 		}
-	}
-}
-
-void OpenGLMoravaShader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
-{
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1) {
-		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
-	}
-	else {
-		Log::GetLogger()->error("Uniform '{0}' not found!", name);
 	}
 }
 

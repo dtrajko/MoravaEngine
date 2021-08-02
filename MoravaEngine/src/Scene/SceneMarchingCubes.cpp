@@ -908,6 +908,9 @@ SceneMarchingCubes::~SceneMarchingCubes()
     delete m_Raycast;
     delete m_Player;
 
-    for (auto mesh : meshes)
-        delete &mesh;
+    //  Object have been deleted in the Scene destructor
+    //  for (auto mesh : meshes)
+    //  {
+    //      delete &mesh;
+    //  }
 }

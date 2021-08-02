@@ -73,7 +73,7 @@ void RendererDeferredOGL::ForwardPass(Window* mainWindow, Scene* scene, glm::mat
 
 	glm::mat4 model = glm::mat4(1.0f);
 	m_ShaderForwardBasic->SetMat4("gWVP", projectionMatrix * scene->GetCamera()->GetViewMatrix() * model);
-	m_ShaderForwardBasic->SetMat4("gWorld", model);
+	// m_ShaderForwardBasic->SetMat4("gWorld", model);
 	m_ShaderForwardBasic->SetInt("gColorMap", m_TextureSlot_Diffuse);
 	m_ShaderForwardBasic->Validate();
 

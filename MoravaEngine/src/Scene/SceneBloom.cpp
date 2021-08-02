@@ -60,16 +60,16 @@ void SceneBloom::SetupModels()
 
 void SceneBloom::SetupShaders()
 {
-    m_ShaderBloom = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.bloom.fs");
+    m_ShaderBloom = MoravaShader::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.bloom.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderBloom compiled [programID={0}]", m_ShaderBloom->GetProgramID());
 
-    m_ShaderLightBox = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.light_box.fs");
+    m_ShaderLightBox = MoravaShader::Create("Shaders/LearnOpenGL/7.bloom.vs", "Shaders/LearnOpenGL/7.light_box.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderLightBox compiled [programID={0}]", m_ShaderLightBox->GetProgramID());
 
-    m_ShaderBlur = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/7.blur.vs", "Shaders/LearnOpenGL/7.blur.fs");
+    m_ShaderBlur = MoravaShader::Create("Shaders/LearnOpenGL/7.blur.vs", "Shaders/LearnOpenGL/7.blur.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderBlur compiled [programID={0}]", m_ShaderBlur->GetProgramID());
 
-    m_ShaderBloomFinal = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/7.bloom_final.vs", "Shaders/LearnOpenGL/7.bloom_final.fs");
+    m_ShaderBloomFinal = MoravaShader::Create("Shaders/LearnOpenGL/7.bloom_final.vs", "Shaders/LearnOpenGL/7.bloom_final.fs");
     Log::GetLogger()->info("SceneBloom: m_ShaderBloomFinal compiled [programID={0}]", m_ShaderBloomFinal->GetProgramID());
 
     m_ShaderBloom->Bind();
@@ -242,7 +242,7 @@ void SceneBloom::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::str
         m_ShaderBloom->SetFloat3("lights[" + std::to_string(i) + "].Color", m_LightColors[i]);
     }
 
-    m_ShaderBloom->SetFloat3("viewPos", m_Camera->GetPosition());
+    // m_ShaderBloom->SetFloat3("viewPos", m_Camera->GetPosition());
 
     // create one large cube that acts as the floor
     model = glm::mat4(1.0f);

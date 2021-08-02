@@ -794,6 +794,9 @@ SceneProceduralLandmass::~SceneProceduralLandmass()
     delete m_Raycast;
     delete m_Player;
 
-    for (auto mesh : meshes)
-        delete &mesh;
+    //  Object already dealocated in Scene destructor
+    //  for (auto mesh : meshes)
+    //  {
+    //      delete &mesh;
+    //  }
 }

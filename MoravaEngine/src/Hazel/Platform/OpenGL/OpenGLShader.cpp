@@ -867,7 +867,7 @@ namespace Hazel {
 			glUniform1f(location, value);
 		}
 		else {
-			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+			HZ_LOG_UNIFORM("OpenGLShader::UploadUniformFloat - uniform '{0}' not found!", name);
 		}
 	}
 
@@ -879,10 +879,9 @@ namespace Hazel {
 			glUniform2f(location, values.x, values.y);
 		}
 		else {
-			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+			HZ_LOG_UNIFORM("OpenGLShader::UploadUniformFloat2 - uniform '{0}' not found!", name);
 		}
 	}
-
 
 	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& values)
 	{
@@ -892,7 +891,7 @@ namespace Hazel {
 			glUniform3f(location, values.x, values.y, values.z);
 		}
 		else {
-			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+			HZ_LOG_UNIFORM("OpenGLShader::UploadUniformFloat3 - uniform '{0}' not found!", name);
 		}
 	}
 
@@ -904,7 +903,7 @@ namespace Hazel {
 			glUniform4f(location, values.x, values.y, values.z, values.w);
 		}
 		else {
-			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+			HZ_LOG_UNIFORM("OpenGLShader::UploadUniformFloat4 - uniform '{0}' not found!", name);
 		}
 	}
 
@@ -916,8 +915,7 @@ namespace Hazel {
 			glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
 		}
 		else {
-			HZ_LOG_UNIFORM("Uniform '{0}' not found!", name);
+			HZ_LOG_UNIFORM("OpenGLShader::UploadUniformMat4 - uniform '{0}' not found!", name);
 		}
 	}
-
 }

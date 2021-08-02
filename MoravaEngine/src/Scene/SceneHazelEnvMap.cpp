@@ -137,10 +137,10 @@ SceneHazelEnvMap::~SceneHazelEnvMap()
 
 void SceneHazelEnvMap::SetupShaders()
 {
-    m_ShaderBackground = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
+    m_ShaderBackground = MoravaShader::Create("Shaders/LearnOpenGL/2.2.2.background.vs", "Shaders/LearnOpenGL/2.2.2.background.fs");
     Log::GetLogger()->info("SceneHazelEnvMap: m_ShaderBackground compiled [programID={0}]", m_ShaderBackground->GetProgramID());
 
-    m_ShaderBasic = Hazel::Ref<MoravaShader>::Create("Shaders/basic.vs", "Shaders/basic.fs");
+    m_ShaderBasic = MoravaShader::Create("Shaders/basic.vs", "Shaders/basic.fs");
     Log::GetLogger()->info("SceneHazelEnvMap: m_ShaderBasic compiled [programID={0}]", m_ShaderBasic->GetProgramID());
 
     ResourceManager::AddShader("LearnOpenGL/2.2.2.background", m_ShaderBackground);

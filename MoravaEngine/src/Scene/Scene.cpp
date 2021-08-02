@@ -424,14 +424,21 @@ Scene::~Scene()
 
 	TextureLoader::Get()->Clean();
 
-	for (auto& mesh : meshes)
-		delete mesh.second;
+	//	Objects already deallocated in the Scene destructor
+	//	for (auto& mesh : meshes)
+	//	{
+	//		delete mesh.second;
+	//	}
 
 	for (auto& material : materials)
+	{
 		delete material.second;
+	}
 
 	for (auto& model : models)
+	{
 		delete model.second;
+	}
 
 	skyboxFaces.clear();
 	textures.clear();

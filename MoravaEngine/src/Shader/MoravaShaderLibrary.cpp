@@ -14,7 +14,7 @@ void MoravaShaderLibrary::Add(Hazel::Ref<MoravaShader>& shader)
 
 void MoravaShaderLibrary::Load(const std::string& name, const std::string& vertexLocation, const std::string& fragmentLocation)
 {
-	auto shader = Hazel::Ref<MoravaShader>::Create(vertexLocation.c_str(), fragmentLocation.c_str());
+	auto shader = MoravaShader::Create(vertexLocation.c_str(), fragmentLocation.c_str());
 	if (s_Shaders.find(name) == s_Shaders.end()) {
 		s_Shaders[name] = shader;
 	}
@@ -22,7 +22,7 @@ void MoravaShaderLibrary::Load(const std::string& name, const std::string& verte
 
 void MoravaShaderLibrary::Load(const std::string& name, const std::string& vertexLocation, const std::string& geometryLocation, const std::string& fragmentLocation)
 {
-	auto shader = Hazel::Ref<MoravaShader>::Create(vertexLocation.c_str(), geometryLocation.c_str(), fragmentLocation.c_str());
+	auto shader = MoravaShader::Create(vertexLocation.c_str(), geometryLocation.c_str(), fragmentLocation.c_str());
 	if (s_Shaders.find(name) == s_Shaders.end()) {
 		s_Shaders[name] = shader;
 	}
@@ -30,7 +30,7 @@ void MoravaShaderLibrary::Load(const std::string& name, const std::string& verte
 
 void MoravaShaderLibrary::Load(const std::string& name, const std::string& computeLocation)
 {
-	auto shader = Hazel::Ref<MoravaShader>::Create(computeLocation.c_str());
+	auto shader = MoravaShader::Create(computeLocation.c_str());
 	if (s_Shaders.find(name) == s_Shaders.end()) {
 		s_Shaders[name] = shader;
 	}

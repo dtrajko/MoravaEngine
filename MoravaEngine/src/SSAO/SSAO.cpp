@@ -41,16 +41,16 @@ void SSAO::Init()
 
 void SSAO::SetupShaders()
 {
-	m_ShaderGeometryPass = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/ssao_geometry.vs", "Shaders/LearnOpenGL/ssao_geometry.fs");
+	m_ShaderGeometryPass = MoravaShader::Create("Shaders/LearnOpenGL/ssao_geometry.vs", "Shaders/LearnOpenGL/ssao_geometry.fs");
 	Log::GetLogger()->info("SSAO: shaderGeometryPass compiled [programID={0}]", m_ShaderGeometryPass->GetProgramID());
 
-	m_ShaderLightingPass = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao_lighting.fs");
+	m_ShaderLightingPass = MoravaShader::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao_lighting.fs");
 	Log::GetLogger()->info("SSAO: shaderLightingPass compiled [programID={0}]", m_ShaderLightingPass->GetProgramID());
 
-	m_ShaderSSAO = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao.fs");
+	m_ShaderSSAO = MoravaShader::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao.fs");
 	Log::GetLogger()->info("SSAO: shaderSSAO compiled [programID={0}]", m_ShaderSSAO->GetProgramID());
 
-	m_ShaderSSAOBlur = Hazel::Ref<MoravaShader>::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao_blur.fs");
+	m_ShaderSSAOBlur = MoravaShader::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao_blur.fs");
 	Log::GetLogger()->info("SSAO: shaderSSAOBlur compiled [programID={0}]", m_ShaderSSAOBlur->GetProgramID());
 }
 

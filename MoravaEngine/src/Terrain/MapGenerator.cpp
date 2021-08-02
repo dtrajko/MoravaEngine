@@ -130,7 +130,7 @@ void MapGenerator::GenerateMap()
 		m_TextureColorMap = TextureGenerator::TextureFromColorMap(m_ColorMap, m_MapGenConf.colorMapFilePath, m_MapGenConf.mapChunkSize, m_MapGenConf.mapChunkSize);
 	}
 
-	MeshData* meshData = MeshGenerator::GenerateTerrainMesh(m_NoiseMap, m_MapGenConf.mapChunkSize, m_MapGenConf.mapChunkSize, m_HeightMapMultiplier, m_SeaLevel, m_LevelOfDetail);
+	MeshUnityData* meshData = MeshGenerator::GenerateTerrainMesh(m_NoiseMap, m_MapGenConf.mapChunkSize, m_MapGenConf.mapChunkSize, m_HeightMapMultiplier, m_SeaLevel, m_LevelOfDetail);
 	m_Mesh = meshData->CreateMesh();
 }
 
@@ -142,6 +142,7 @@ void MapGenerator::Validate()
 	//	if (m_MapGenConf.mapHeight < 1) {
 	//		m_MapGenConf.mapHeight = 1;
 	//	}
+
 	if (m_MapGenConf.lacunarity < 1.0f) {
 		m_MapGenConf.lacunarity = 1.0f;
 	}

@@ -8,7 +8,6 @@ layout (location = 0) out vec4 DiffuseOut;
 
 uniform sampler2D gColorMap;
 
-
 void main()
 {	
 	DiffuseOut = texture(gColorMap, TexCoord0);

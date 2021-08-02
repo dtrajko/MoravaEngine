@@ -7,26 +7,11 @@
 #include <vector>
 
 
-class MeshData;
-
-/**
- * Based on Procedural Landmass Generation series by Sebastian Lague
- */
-class MeshGenerator
+class MeshUnityData
 {
 public:
-	MeshGenerator();
-	~MeshGenerator();
-
-	static MeshData* GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height, float heightMapMultiplier, float seaLevel, int levelOfDetail);
-
-};
-
-class MeshData
-{
-public:
-	MeshData(unsigned int meshWidth, unsigned int meshHeight);
-	~MeshData();
+	MeshUnityData(unsigned int meshWidth, unsigned int meshHeight);
+	~MeshUnityData();
 
 	void AddTriangle(int a, int b, int c);
 	MeshUnity* CreateMesh();
@@ -45,4 +30,17 @@ public:
 	unsigned int m_TriangleIndex;
 
 	MeshUnity* m_Mesh;
+};
+
+/**
+ * Based on Procedural Landmass Generation series by Sebastian Lague
+ */
+class MeshGenerator
+{
+public:
+	MeshGenerator();
+	~MeshGenerator();
+
+	static MeshUnityData* GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height, float heightMapMultiplier, float seaLevel, int levelOfDetail);
+
 };

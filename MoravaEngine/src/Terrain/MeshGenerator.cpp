@@ -9,7 +9,7 @@ MeshGenerator::~MeshGenerator()
 {
 }
 
-MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height, float heightMapMultiplier, float seaLevel, int levelOfDetail)
+MeshUnityData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int width, unsigned int height, float heightMapMultiplier, float seaLevel, int levelOfDetail)
 {
 	float topLeftX = (width - 1) / -2.0f;
 	float topLeftZ = (height - 1) / 2.0f;
@@ -17,7 +17,7 @@ MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int wid
 	int meshSimplificationIncrement = (levelOfDetail == 0) ? 1 : levelOfDetail * 2;
 	int verticesPerLine = (width - 1) / meshSimplificationIncrement + 1;
 
-	MeshData* meshData = new MeshData(verticesPerLine, verticesPerLine);
+	MeshUnityData* meshData = new MeshUnityData(verticesPerLine, verticesPerLine);
 	unsigned int vertexIndex = 0;
 
 	for (unsigned int y = 0; y < height; y += meshSimplificationIncrement) {
@@ -51,7 +51,7 @@ MeshData* MeshGenerator::GenerateTerrainMesh(float** heightMap, unsigned int wid
 	return meshData;
 }
 
-MeshData::MeshData(unsigned int meshWidth, unsigned int meshHeight)
+MeshUnityData::MeshUnityData(unsigned int meshWidth, unsigned int meshHeight)
 {
 	m_Mesh = nullptr;
 
@@ -64,12 +64,12 @@ MeshData::MeshData(unsigned int meshWidth, unsigned int meshHeight)
 	m_Triangles = std::vector<int>();
 }
 
-MeshData::~MeshData()
+MeshUnityData::~MeshUnityData()
 {
 	Release();
 }
 
-void MeshData::AddTriangle(int a, int b, int c)
+void MeshUnityData::AddTriangle(int a, int b, int c)
 {
 	m_Triangles.push_back(a);
 	m_Triangles.push_back(b);
@@ -77,7 +77,7 @@ void MeshData::AddTriangle(int a, int b, int c)
 	m_TriangleIndex += 3;
 }
 
-MeshUnity* MeshData::CreateMesh()
+MeshUnity* MeshUnityData::CreateMesh()
 {
 	Release();
 
@@ -93,7 +93,7 @@ MeshUnity* MeshData::CreateMesh()
 	return m_Mesh;
 }
 
-void MeshData::Release()
+void MeshUnityData::Release()
 {
 	if (m_Mesh != nullptr) {
 		delete m_Mesh;
