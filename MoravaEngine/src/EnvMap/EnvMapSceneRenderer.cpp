@@ -292,7 +292,10 @@ void EnvMapSceneRenderer::SetEnvironment(Hazel::Environment environment)
     s_Data.SceneData.SceneEnvironment = environment;
 }
 
-// Moved from EnvironmentMap
+/****
+ * Moved from EnvironmentMap
+ * This version doesn't give satisfying results, OpenGLRenderer::CreateEnvironmentMap() is probably better
+ ****/
 std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> EnvMapSceneRenderer::CreateEnvironmentMap(const std::string& filepath)
 {
     const uint32_t cubemapSize = 512;
@@ -340,6 +343,7 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
 
     return { s_EnvFiltered, s_IrradianceMap };
 }
+/****/
 
 void EnvMapSceneRenderer::RenderSkybox()
 {

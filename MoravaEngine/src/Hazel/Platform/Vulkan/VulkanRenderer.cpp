@@ -247,7 +247,7 @@ namespace Hazel {
 		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
 
-	static void RenderMesh(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer, HazelCamera* camera) // TODO: remove the HazelCamera parameter
+	static void RenderMeshVulkan(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer, HazelCamera* camera) // TODO: remove the HazelCamera parameter
 	{
 		/**** BEGIN Non-composite ****
 		Ref<VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<VulkanPipeline>();
@@ -406,7 +406,7 @@ namespace Hazel {
 
 			for (auto& mesh : s_Meshes)
 			{
-				RenderMesh(mesh, drawCommandBuffer, camera);
+				RenderMeshVulkan(mesh, drawCommandBuffer, camera);
 			}
 
 			s_Meshes.clear();

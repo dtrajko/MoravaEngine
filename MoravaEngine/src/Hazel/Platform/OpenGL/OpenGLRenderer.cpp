@@ -242,65 +242,77 @@ namespace Hazel {
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> OpenGLRenderer::CreateEnvironmentMap(const std::string& filepath)
 	{
-		const uint32_t cubemapSize = 2048;
+		if (!HazelRenderer::GetConfig().ComputeEnvironmentMaps)
+		{
+			return { HazelRenderer::GetBlackCubeTexture(), HazelRenderer::GetBlackCubeTexture() };
+		}
+
+		const uint32_t cubemapSize = HazelRenderer::GetConfig().EnvironmentMapResolution;
 		const uint32_t irradianceMapSize = 32;
 
 		Ref<OpenGLTextureCube> envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
-		Ref<MoravaShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
+		Ref<OpenGLShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShader>();
 		Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
-		HZ_CORE_ASSERT(envEquirect->GetFormat() == HazelImageFormat::RGBA32F, "Texture is not HDR!");
+		// HZ_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
 
 		equirectangularConversionShader->Bind();
 		envEquirect->Bind(1);
 		HazelRenderer::Submit([envUnfiltered, cubemapSize, envEquirect]()
-			{
-				glBindImageTexture(0, envUnfiltered->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-				glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
-				glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-				glGenerateTextureMipmap(envUnfiltered->GetRendererID());
-			});
+		{
+			glBindImageTexture(0, envUnfiltered->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+			glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
+			glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+			glGenerateTextureMipmap(envUnfiltered->GetRendererID());
+		});
 
-		Ref<MoravaShader> envFilteringShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter");
-
+		Ref<OpenGLShader> envFilteringShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShader>();
 		Ref<OpenGLTextureCube> envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
 
 		HazelRenderer::Submit([envUnfiltered, envFiltered]()
-			{
-				glCopyImageSubData(envUnfiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-					envFiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-					envFiltered->GetWidth(), envFiltered->GetHeight(), 6);
-			});
+		{
+			glCopyImageSubData(envUnfiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
+				envFiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
+				envFiltered->GetWidth(), envFiltered->GetHeight(), 6);
+		});
 
 		envFilteringShader->Bind();
 		envUnfiltered->Bind(1);
 
-		HazelRenderer::Submit([envFilteringShader, envUnfiltered, envFiltered, cubemapSize]() {
-			const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
-			for (int level = 1, size = cubemapSize / 2; level < (int)envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
+		HazelRenderer::Submit([envFilteringShader, envUnfiltered, envFiltered, cubemapSize]()
+		{
+			const float deltaRoughness = 1.0f / glm::max(float(envFiltered->GetMipLevelCount()) - 1.0f, 1.0f);
+			for (uint32_t level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
 			{
 				glBindImageTexture(0, envFiltered->GetRendererID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-				GLint roughnessUniformLocation = glGetUniformLocation(envFilteringShader->GetRendererID(), "u_Uniforms.Roughness");
+
+				const GLint roughnessUniformLocation = glGetUniformLocation(envFilteringShader->GetRendererID(), "u_Uniforms.Roughness");
 				HZ_CORE_ASSERT(roughnessUniformLocation != -1);
 				glUniform1f(roughnessUniformLocation, (float)level * deltaRoughness);
 
-				const GLuint numGroups = glm::max(1, size / 32);
+				const GLuint numGroups = glm::max(1u, size / 32);
 				glDispatchCompute(numGroups, numGroups, 6);
 				glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 			}
-			});
+		});
 
-		Ref<MoravaShader> envIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance");
+		Ref<OpenGLShader> envIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShader>();
 
 		Ref<OpenGLTextureCube> irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA32F, irradianceMapSize, irradianceMapSize).As<OpenGLTextureCube>();
 		envIrradianceShader->Bind();
 		envFiltered->Bind(1);
-		HazelRenderer::Submit([irradianceMap]()
-			{
-				glBindImageTexture(0, irradianceMap->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
-				glDispatchCompute(irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
-				glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-				glGenerateTextureMipmap(irradianceMap->GetRendererID());
-			});
+		HazelRenderer::Submit([irradianceMap, envIrradianceShader]()
+		{
+			glBindImageTexture(0, irradianceMap->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
+
+			const GLint samplesUniformLocation = glGetUniformLocation(envIrradianceShader->GetRendererID(), "u_Uniforms.Samples");
+			HZ_CORE_ASSERT(samplesUniformLocation != -1);
+			const uint32_t samples = HazelRenderer::GetConfig().IrradianceMapComputeSamples;
+			glUniform1ui(samplesUniformLocation, samples);
+
+			glDispatchCompute(irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
+			glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+			glGenerateTextureMipmap(irradianceMap->GetRendererID());
+		});
 
 		return { envFiltered, irradianceMap };
 	}
@@ -332,14 +344,14 @@ namespace Hazel {
 			shader->SetMat4("u_Renderer.Transform", transformUniform);
 
 			HazelRenderer::Submit([submesh, material]()
-				{
-					if (material->GetFlag(HazelMaterialFlag::DepthTest))
-						glEnable(GL_DEPTH_TEST);
-					else
-						glDisable(GL_DEPTH_TEST);
+			{
+				if (material->GetFlag(HazelMaterialFlag::DepthTest))
+					glEnable(GL_DEPTH_TEST);
+				else
+					glDisable(GL_DEPTH_TEST);
 
-					glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
-				});
+				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+			});
 		}
 	}
 

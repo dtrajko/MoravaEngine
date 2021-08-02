@@ -69,6 +69,8 @@ namespace Hazel {
 
 	struct RendererData
 	{
+		RendererConfig Config;
+
 		Ref<RenderPass> m_ActiveRenderPass;
 		RenderCommandQueue m_CommandQueue;
 		Ref<HazelShaderLibrary> m_ShaderLibrary;
@@ -76,12 +78,31 @@ namespace Hazel {
 		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;
 		Ref<Pipeline> m_FullscreenQuadPipeline;
+
+		Ref<HazelTexture2D> WhiteTexture;
+		Ref<HazelTexture2D> BlackTexture;
+		Ref<HazelTexture2D> BRDFLutTexture;
+		Ref<HazelTextureCube> BlackCubeTexture;
+		Ref<Environment> EmptyEnvironment;
 	};
 
 	static RendererData s_Data;
 
 	// static RenderCommandQueue* s_CommandQueue = nullptr;
 	// static std::unordered_map<size_t, Ref<Pipeline>> s_PipelineCache;
+
+	static RendererAPI* InitRendererAPI()
+	{
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::OpenGL: return new OpenGLRenderer();
+		// case RendererAPIType::Vulkan: return new VulkanRenderer();
+		// case RendererAPIType::DX11:   return new DX11Renderer();
+		}
+		Log::GetLogger()->error("Unknown RendererAPI");
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		return nullptr;
+	}
 
 	void HazelRenderer::Init()
 	{
@@ -92,8 +113,17 @@ namespace Hazel {
 			case RendererAPIType::Vulkan: return VulkanRenderer::Init();
 			case RendererAPIType::DX11:   return DX11Renderer::Init();
 		}
-		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+
+		s_RendererAPI = InitRendererAPI();
+
+		//...
+
+		uint32_t blackTextureData[6] = { 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000 };
+		s_Data.BlackCubeTexture = HazelTextureCube::Create(HazelImageFormat::RGBA, 1, 1, &blackTextureData);
+
+		//...
+
+		s_RendererAPI->Init();
 	}
 
 	Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()
@@ -359,18 +389,6 @@ namespace Hazel {
 		return Application::Get()->GetWindow()->GetSwapChain().GetCurrentBufferIndex();
 	}
 
-	static RendererAPI* InitRendererAPI()
-	{
-		switch (RendererAPI::Current())
-		{
-			case RendererAPIType::OpenGL: return new OpenGLRenderer();
-			// case RendererAPIType::Vulkan: return new VulkanRenderer();
-		}
-		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return nullptr;
-	}
-
 	Ref<RendererContext> HazelRenderer::GetContext()
 	{
 		return Application::Get()->GetWindow()->GetRenderContext();
@@ -381,7 +399,6 @@ namespace Hazel {
 		s_ShaderDependencies.clear();
 		SceneRenderer::Shutdown();
 	}
-
 
 #if 0
 
@@ -426,11 +443,6 @@ namespace Hazel {
 		s_RendererAPI->EndFrame();
 	}
 
-	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> HazelRenderer::CreateEnvironmentMap(const std::string& filepath)
-	{
-		return s_RendererAPI->CreateEnvironmentMap(filepath);
-	}
-
 	void HazelRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderMesh(pipeline, mesh, transform);
@@ -451,16 +463,24 @@ namespace Hazel {
 		return s_Data.WhiteTexture;
 	}
 
-	Ref<HazelTextureCube> HazelRenderer::GetBlackCubeTexture()
+#endif
+
+	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> HazelRenderer::CreateEnvironmentMap(const std::string& filepath)
 	{
-		return s_Data.BlackCubeTexture;
+		return s_RendererAPI->CreateEnvironmentMap(filepath);
 	}
 
+	// disabled in some versions of Hazel-dev
 	RendererConfig& HazelRenderer::GetConfig()
 	{
 		return s_Data.Config;
 	}
-#endif
+
+	// disabled in some versions of Hazel-dev
+	Ref<HazelTextureCube> HazelRenderer::GetBlackCubeTexture()
+	{
+		return s_Data.BlackCubeTexture;
+	}
 
 }
 

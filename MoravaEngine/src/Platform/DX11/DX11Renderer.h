@@ -4,6 +4,7 @@
 
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelCamera.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include "DX11Texture2D.h"
 #include "DX11ConstantBuffer.h"
@@ -28,7 +29,7 @@ struct DX11ConstantBufferLayout
 };
 
 
-class DX11Renderer
+class DX11Renderer : public Hazel::RendererAPI
 {
 public:
 	static void Init();

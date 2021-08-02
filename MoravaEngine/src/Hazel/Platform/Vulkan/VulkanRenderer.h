@@ -4,13 +4,14 @@
 
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelCamera.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include "Core/Window.h"
 
 
 namespace Hazel {
 
-	class VulkanRenderer
+	class VulkanRenderer : public RendererAPI
 	{
 	public:
 		static void SubmitMesh(const Ref<HazelMesh>& mesh);

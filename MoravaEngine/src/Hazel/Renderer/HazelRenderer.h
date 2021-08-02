@@ -15,8 +15,14 @@ namespace Hazel {
 
 	struct RendererConfig
 	{
+		uint32_t FramesInFlight = 3;
+
 		// "Experimental" features
 		bool ComputeEnvironmentMaps = false;
+
+		// Tiering settings
+		uint32_t EnvironmentMapResolution = 1024;
+		uint32_t IrradianceMapComputeSamples = 512;
 	};
 
 	class HazelRenderer
