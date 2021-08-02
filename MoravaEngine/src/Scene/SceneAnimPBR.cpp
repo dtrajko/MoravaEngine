@@ -932,8 +932,8 @@ void SceneAnimPBR::SetupUniforms()
     m_ShaderMain->SetFloat("directionalLight.base.diffuseIntensity", LightManager::directionalLight.GetDiffuseIntensity());
     m_ShaderMain->SetFloat3("directionalLight.direction", LightManager::directionalLight.GetDirection());
 
-    m_ShaderMain->SetMat4("u_DirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    m_ShaderMain->SetBool("u_Animated", false);
+    m_ShaderMain->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
+    // m_ShaderMain->SetBool("u_Animated", false);
 
     m_ShaderMain->SetInt("albedoMap", textureSlots["diffuse"]);
     m_ShaderMain->SetInt("normalMap", textureSlots["normal"]);
@@ -1094,7 +1094,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         if (entity.second.Enabled)
         {
             m_ShaderBasic->SetMat4("model", AABB_Transform);
-            m_ShaderBasic->SetFloat4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+            // m_ShaderBasic->SetFloat4("tintColor", glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
             if (m_VisibleAABBs) entity.second.AABBox.Draw();
         }
     }

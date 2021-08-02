@@ -69,10 +69,10 @@ uniform samplerCube cubeMap;
 uniform sampler2D albedoMap;
 uniform sampler2D shadowMap;
 uniform sampler2D normalMap;
-uniform vec4  tintColor;
+uniform vec4 tintColor;
 uniform float tilingFactor;
-uniform bool  isSelected;
-uniform bool  useCubeMaps;
+uniform bool isSelected;
+uniform bool useCubeMaps;
 uniform OmniShadowMap omniShadowMaps[MAX_LIGHTS];
 
 uniform Material material;
@@ -271,7 +271,9 @@ void main()
 
 	vec4 texColor = texture(albedoMap, vTexCoord * tilingFactor);
 	if(texColor.a < 0.1)
-        discard;
+	{
+		discard;
+	}
 
 	FragColor = texColor * tintColor * finalColor;
 }
