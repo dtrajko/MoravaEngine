@@ -1,5 +1,7 @@
-// #type compute
+// type compute
 #version 450 core
+// Physically Based Rendering
+// Copyright (c) 2017-2018 Michał Siejak
 
 // Pre-filters environment cube map using GGX NDF importance sampling.
 // Part of specular IBL split-sum approximation.
@@ -12,13 +14,8 @@ const uint NumSamples = 1024;
 const float InvNumSamples = 1.0 / float(NumSamples);
 
 const int NumMipLevels = 1;
-layout(binding = 0, rgba32f) restrict writeonly uniform imageCube outputTexture[NumMipLevels];
-layout(binding = 1) uniform samplerCube inputTexture;
-
-//	layout (push_constant) uniform Uniforms
-//	{
-//		float Roughness;
-//	} u_Uniforms;
+layout(binding = 0) uniform samplerCube inputTexture;
+layout(binding = 0, rgba16f) restrict writeonly uniform imageCube outputTexture[NumMipLevels];
 
 struct Uniforms
 {
@@ -132,10 +129,9 @@ void main(void)
 
 	// Convolve environment map using GGX NDF importance sampling.
 	// Weight by cosine term since Epic claims it generally improves quality.
-	for(uint i = 0; i < NumSamples; i++)
-	{
+	for(uint i = 0; i < NumSamples; i++) {
 		vec2 u = sampleHammersley(i);
-		vec3 Lh = tangentToWorld(sampleGGX(u.x, u.y, PARAM_ROUGHNESS), N, S, T);
+		vec3 Lh = tangentToWorld(sampleGGX(u.x, u.y, u_Uniforms.Roughness), N, S, T);
 
 		// Compute incident direction (Li) by reflecting viewing direction (Lo) around half-vector (Lh).
 		vec3 Li = 2.0 * dot(Lo, Lh) * Lh - Lo;
@@ -149,7 +145,7 @@ void main(void)
 
 			// GGX normal distribution function (D term) probability density function.
 			// Scaling by 1/4 is due to change of density in terms of Lh to Li (and since N=V, rest of the scaling factor cancels out).
-			float pdf = ndfGGX(cosLh, PARAM_ROUGHNESS) * 0.25;
+			float pdf = ndfGGX(cosLh, u_Uniforms.Roughness) * 0.25;
 
 			// Solid angle associated with this sample.
 			float ws = 1.0 / (NumSamples * pdf);
