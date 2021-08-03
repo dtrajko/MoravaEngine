@@ -2,8 +2,6 @@
 
 #include "Hazel/Renderer/HazelMesh.h"
 
-#include <tiny_obj_loader.h>
-
 
 /**
  * This class shares the interface with HazelMesh, but uses tinyobjloader for loading meshes, instead of assimp

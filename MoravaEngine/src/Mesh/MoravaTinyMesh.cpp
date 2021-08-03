@@ -2,8 +2,8 @@
 
 #include "Core/Util.h"
 
-#define TINYOBJLOADER_IMPLEMENTATION
-#include <tiny_obj_loader.h>
+// #define TINYOBJLOADER_IMPLEMENTATION
+// #include <tiny_obj_loader.h>
 
 
 template <>
@@ -20,6 +20,7 @@ struct std::hash<Hazel::Vertex>
 MoravaTinyMesh::MoravaTinyMesh(const std::string& filepath, Hazel::Ref<MoravaShader> shader, Hazel::Ref<Hazel::HazelMaterial> material, bool isAnimated)
 	: Hazel::HazelMesh(filepath, shader, material, isAnimated)
 {
+	/****
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
@@ -76,4 +77,5 @@ MoravaTinyMesh::MoravaTinyMesh(const std::string& filepath, Hazel::Ref<MoravaSha
 			indices.push_back(uniqueVertices[vertex]);
 		}
 	}
+	****/
 }
