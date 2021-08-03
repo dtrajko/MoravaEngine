@@ -80,7 +80,7 @@ public:
 	static Hazel::Ref<MoravaShader> GetShaderComposite();
 	static Hazel::Ref<Hazel::RenderPass> GetGeoPass();
 	static Hazel::Ref<Hazel::RenderPass> GetCompositePass();
-	static void CreateDrawCommand(std::string fileNameNoExt, Hazel::HazelMesh* mesh);
+	static void CreateDrawCommand(std::string fileNameNoExt, Hazel::Ref<Hazel::HazelMesh> mesh);
 	static Hazel::HazelLight& GetActiveLight();
 	static void SetActiveLight(Hazel::HazelLight& light);
 	static void AddToDrawList(std::string name, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, glm::mat4 transform);

@@ -936,6 +936,9 @@
     <ClCompile Include="src\Mono\ConsoleGameLib\RandomWord.cpp">
       <Filter>Mono\ConsoleGameLib</Filter>
     </ClCompile>
+    <ClCompile Include="src\Mesh\MoravaTinyMesh.cpp">
+      <Filter>Mesh</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1981,6 +1984,9 @@
     </ClInclude>
     <ClInclude Include="src\Mono\ConsoleGameLib\RWord.h">
       <Filter>Mono\ConsoleGameLib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mesh\MoravaTinyMesh.h">
+      <Filter>Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

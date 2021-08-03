@@ -237,7 +237,7 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    Hazel::HazelMesh* mesh = new Hazel::HazelMesh(fullPath, EnvMapSharedData::s_ShaderHazelPBR, Hazel::Ref<Hazel::HazelMaterial>(), isAnimated);
+    Hazel::Ref<Hazel::HazelMesh> mesh = Hazel::Ref<Hazel::HazelMesh>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, Hazel::Ref<Hazel::HazelMaterial>(), isAnimated);
 
     mesh->SetTimeMultiplier(1.0f);
 

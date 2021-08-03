@@ -90,7 +90,7 @@ struct EnvMapSceneRendererData
     struct DrawCommand
     {
         std::string Name;
-        Mesh* MeshPtr;
+        Hazel::Ref<Hazel::HazelMesh> MeshPtr;
         Material* MaterialPtr;
         glm::mat4 Transform;
     };
@@ -948,7 +948,7 @@ Hazel::Ref<Hazel::RenderPass> EnvMapSceneRenderer::GetCompositePass()
     return s_Data.CompositePass;
 }
 
-void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, Hazel::HazelMesh* mesh)
+void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, Hazel::Ref<Hazel::HazelMesh> mesh)
 {
     // s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
     EnvMapSceneRendererData::DrawCommand drawCommand;

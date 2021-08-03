@@ -42,4 +42,7 @@ public:
 
 	static char DirectorySeparator();
 
+	template <typename T, typename... Rest>
+	static void HashCombine(std::size_t& seed, const T& v, const Rest&... rest);
+
 };

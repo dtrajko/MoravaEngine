@@ -271,6 +271,7 @@
     <ClCompile Include="src\Mesh\MeshData.cpp" />
     <ClCompile Include="src\Mesh\MeshUnity.cpp" />
     <ClCompile Include="src\Mesh\Model.cpp" />
+    <ClCompile Include="src\Mesh\MoravaTinyMesh.cpp" />
     <ClCompile Include="src\Mesh\Pyramid.cpp" />
     <ClCompile Include="src\Mesh\Quad.cpp" />
     <ClCompile Include="src\Mesh\QuadInstanced.cpp" />
@@ -708,6 +709,7 @@
     <ClInclude Include="src\Mesh\MeshData.h" />
     <ClInclude Include="src\Mesh\MeshUnity.h" />
     <ClInclude Include="src\Mesh\Model.h" />
+    <ClInclude Include="src\Mesh\MoravaTinyMesh.h" />
     <ClInclude Include="src\Mesh\Pyramid.h" />
     <ClInclude Include="src\Mesh\Quad.h" />
     <ClInclude Include="src\Mesh\QuadInstanced.h" />

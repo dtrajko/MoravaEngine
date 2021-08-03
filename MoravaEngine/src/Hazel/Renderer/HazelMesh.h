@@ -38,6 +38,11 @@ namespace Hazel {
 		glm::vec3 Tangent;
 		glm::vec3 Binormal;
 		glm::vec2 Texcoord;
+
+		bool operator==(const Vertex& other) const
+		{
+			return Position == other.Position && Normal == other.Normal && Texcoord == other.Texcoord;
+		}
 	};
 
 	struct AnimatedVertex
