@@ -18,7 +18,7 @@ namespace Hazel {
 		uint32_t FramesInFlight = 3;
 
 		// "Experimental" features
-		bool ComputeEnvironmentMaps = false;
+		bool ComputeEnvironmentMaps = true;
 
 		// Tiering settings
 		uint32_t EnvironmentMapResolution = 1024;

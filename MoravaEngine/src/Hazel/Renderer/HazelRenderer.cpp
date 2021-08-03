@@ -110,6 +110,12 @@ namespace Hazel {
 
 		//...
 
+		// HazelRenderer::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentMipFilter.glsl");
+		// HazelRenderer::GetShaderLibrary()->Load("Resources/Shaders/EquirectangularToCubeMap.glsl");
+		// HazelRenderer::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentIrradiance.glsl");
+
+		//...
+
 		uint32_t blackTextureData[6] = { 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000 };
 		s_Data.BlackCubeTexture = HazelTextureCube::Create(HazelImageFormat::RGBA, 1, 1, &blackTextureData);
 

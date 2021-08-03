@@ -113,6 +113,8 @@ static EnvMapSceneRendererData s_Data;
 
 void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
 {
+    Hazel::HazelRenderer::Init();
+
     SetupShaders();
 
     s_Data.SceneData.SceneEnvironment = Load(filepath);
@@ -232,6 +234,7 @@ void EnvMapSceneRenderer::SetupShaders()
 Hazel::Environment EnvMapSceneRenderer::Load(const std::string& filepath)
 {
     auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
+    // auto [radiance, irradiance] = Hazel::HazelRenderer::CreateEnvironmentMap(filepath);
     return { radiance, irradiance };
 }
 

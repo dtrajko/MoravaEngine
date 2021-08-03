@@ -1,10 +1,12 @@
 #include "HazelTexture.h"
 
-#include "RendererAPI.h"
 #include "Hazel/Platform/OpenGL/OpenGLTexture.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
-#include "Platform/DX11/DX11Texture2D.h"
+#include "RendererAPI.h"
+
 #include "Core/Util.h"
+#include "Platform/DX11/DX11Texture2D.h"
+#include "Platform/DX11/DX11TextureCube.h"
 
 #include "imgui.h"
 
@@ -60,9 +62,10 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None: return Ref<HazelTextureCube>();
+			case RendererAPIType::None:   return Ref<HazelTextureCube>();
 			case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(format, width, height, data);
 			case RendererAPIType::Vulkan: return Ref<VulkanTextureCube>::Create(format, width, height, data);
+			case RendererAPIType::DX11:   return Ref<DX11TextureCube>::Create(format, width, height, data);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -73,9 +76,10 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None: return Ref<HazelTextureCube>();
+			case RendererAPIType::None:   return Ref<HazelTextureCube>();
 			case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(path);
 			case RendererAPIType::Vulkan: return Ref<VulkanTextureCube>::Create(path);
+			case RendererAPIType::DX11:   return Ref<DX11TextureCube>::Create(path);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -87,9 +91,10 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None: return Ref<HazelTextureCube>();
+			case RendererAPIType::None:   return Ref<HazelTextureCube>();
 			case RendererAPIType::OpenGL: return Ref<OpenGLTextureCube>::Create(format, width, height, true);
 			case RendererAPIType::Vulkan: return Ref<VulkanTextureCube>::Create(format, width, height, nullptr);
+			case RendererAPIType::DX11:   return Ref<DX11TextureCube>::Create(format, width, height, nullptr);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
