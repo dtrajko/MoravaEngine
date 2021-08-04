@@ -39,6 +39,8 @@ out VertexOutput
 	vec4 DirLightSpacePos;
 	vec3 FragPos;
 	mat3 TBN;
+	vec4 ShadowMapCoords[4];
+	vec3 ViewPosition;
 } vs_Output;
 
 void main()
