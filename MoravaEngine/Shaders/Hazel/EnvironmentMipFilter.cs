@@ -17,15 +17,11 @@ const int NumMipLevels = 1;
 layout(binding = 0) uniform samplerCube inputTexture;
 layout(binding = 0, rgba16f) restrict writeonly uniform imageCube outputTexture[NumMipLevels];
 
-struct Uniforms
-{
-	float Roughness;
-};
-
-uniform Uniforms u_Uniforms;
+// Roughness value to pre-filter for.
+layout(location=0) uniform float roughness;
 
 #define PARAM_LEVEL     0
-#define PARAM_ROUGHNESS u_Uniforms.Roughness
+#define PARAM_ROUGHNESS roughness
 
 // Compute Van der Corput radical inverse
 // See: http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
@@ -131,7 +127,7 @@ void main(void)
 	// Weight by cosine term since Epic claims it generally improves quality.
 	for(uint i = 0; i < NumSamples; i++) {
 		vec2 u = sampleHammersley(i);
-		vec3 Lh = tangentToWorld(sampleGGX(u.x, u.y, u_Uniforms.Roughness), N, S, T);
+		vec3 Lh = tangentToWorld(sampleGGX(u.x, u.y, PARAM_ROUGHNESS), N, S, T);
 
 		// Compute incident direction (Li) by reflecting viewing direction (Lo) around half-vector (Lh).
 		vec3 Li = 2.0 * dot(Lo, Lh) * Lh - Lo;
@@ -145,7 +141,7 @@ void main(void)
 
 			// GGX normal distribution function (D term) probability density function.
 			// Scaling by 1/4 is due to change of density in terms of Lh to Li (and since N=V, rest of the scaling factor cancels out).
-			float pdf = ndfGGX(cosLh, u_Uniforms.Roughness) * 0.25;
+			float pdf = ndfGGX(cosLh, PARAM_ROUGHNESS) * 0.25;
 
 			// Solid angle associated with this sample.
 			float ws = 1.0 / (NumSamples * pdf);

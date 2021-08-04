@@ -1,31 +1,24 @@
-// #type compute
+// type compute
 #version 450 core
+// Physically Based Rendering
+// Copyright (c) 2017-2018 Michał Siejak
 
 // Computes diffuse irradiance cubemap convolution for image-based lighting.
 // Uses quasi Monte Carlo sampling with Hammersley sequence.
-
-layout(binding = 0, rgba32f) restrict writeonly uniform imageCube o_IrradianceMap;
-layout(binding = 1) uniform samplerCube u_RadianceMap;
 
 const float PI = 3.141592;
 const float TwoPI = 2 * PI;
 const float Epsilon = 0.00001;
 
-//	layout(push_constant) uniform Uniforms
-//	{
-//		uint Samples;
-//	} u_Uniforms;
+const uint NumSamples = 64 * 1024;
+const float InvNumSamples = 1.0 / float(NumSamples);
 
-struct Uniforms
-{
-	uint Samples;
-};
-
-uniform Uniforms u_Uniforms;
+layout(binding=0) uniform samplerCube inputTexture;
+layout(binding=0, rgba16f) restrict writeonly uniform imageCube outputTexture;
 
 // Compute Van der Corput radical inverse
 // See: http://holger.dammertz.org/stuff/notes_HammersleyOnHemisphere.html
-float RadicalInverse_VdC(uint bits)
+float radicalInverse_VdC(uint bits)
 {
 	bits = (bits << 16u) | (bits >> 16u);
 	bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
@@ -36,10 +29,9 @@ float RadicalInverse_VdC(uint bits)
 }
 
 // Sample i-th point from Hammersley point set of NumSamples points total.
-vec2 SampleHammersley(uint i, uint samples)
+vec2 sampleHammersley(uint i)
 {
-	float invSamples = 1.0 / float(samples);
-	return vec2(i * invSamples, RadicalInverse_VdC(i));
+	return vec2(i * InvNumSamples, radicalInverse_VdC(i));
 }
 
 // Uniformly sample point on a hemisphere.
@@ -54,7 +46,7 @@ vec3 sampleHemisphere(float u1, float u2)
 
 vec3 GetCubeMapTexCoord()
 {
-    vec2 st = gl_GlobalInvocationID.xy / vec2(imageSize(o_IrradianceMap));
+    vec2 st = gl_GlobalInvocationID.xy / vec2(imageSize(outputTexture));
     vec2 uv = 2.0 * vec2(st.x, 1.0 - st.y) - vec2(1.0);
 
     vec3 ret;
@@ -92,23 +84,20 @@ void main(void)
 	vec3 S, T;
 	computeBasisVectors(N, S, T);
 
-	uint samples = 64 * u_Uniforms.Samples;
-	samples = 64 * 1024;
-
 	// Monte Carlo integration of hemispherical irradiance.
 	// As a small optimization this also includes Lambertian BRDF assuming perfectly white surface (albedo of 1.0)
 	// so we don't need to normalize in PBR fragment shader (so technically it encodes exitant radiance rather than irradiance).
 	vec3 irradiance = vec3(0);
-	for(uint i = 0; i < samples; i++)
+	for(uint i = 0; i < NumSamples; i++)
 	{
-		vec2 u  = SampleHammersley(i, samples);
+		vec2 u  = sampleHammersley(i);
 		vec3 Li = tangentToWorld(sampleHemisphere(u.x, u.y), N, S, T);
 		float cosTheta = max(0.0, dot(Li, N));
 
 		// PIs here cancel out because of division by pdf.
-		irradiance += 2.0 * textureLod(u_RadianceMap, Li, 0).rgb * cosTheta;
+		irradiance += 2.0 * textureLod(inputTexture, Li, 0).rgb * cosTheta;
 	}
-	irradiance /= vec3(samples);
+	irradiance /= vec3(NumSamples);
 
-	imageStore(o_IrradianceMap, ivec3(gl_GlobalInvocationID), vec4(irradiance, 1.0));
+	imageStore(outputTexture, ivec3(gl_GlobalInvocationID), vec4(irradiance, 1.0));
 }
