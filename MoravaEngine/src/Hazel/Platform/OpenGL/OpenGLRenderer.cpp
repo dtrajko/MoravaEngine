@@ -258,7 +258,11 @@ namespace Hazel {
 		Ref<OpenGLShader> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<OpenGLShader>();
 
 		Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
+
 		// HZ_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
+		if (envEquirect->GetFormat() != Hazel::HazelImageFormat::RGBA16F) {
+			Log::GetLogger()->error("Texture is not HDR!");
+		}
 
 		equirectangularConversionShader->Bind();
 		envEquirect->Bind(1);
@@ -306,8 +310,10 @@ namespace Hazel {
 		Ref<OpenGLShader> envIrradianceShader = ResourceManager::GetShader("Hazel/EnvironmentIrradiance").As<OpenGLShader>();
 
 		Ref<OpenGLTextureCube> irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA32F, irradianceMapSize, irradianceMapSize).As<OpenGLTextureCube>();
+
 		envIrradianceShader->Bind();
 		envFiltered->Bind(1);
+
 		// HazelRenderer::Submit([irradianceMap, envIrradianceShader]() {});
 		{
 			glBindImageTexture(0, irradianceMap->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
