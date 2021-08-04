@@ -277,6 +277,7 @@ namespace Hazel {
 		// Ref<OpenGLShader> envFilteringShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShader>();
 		Ref<OpenGLShader> envFilteringShader = ResourceManager::GetShader("Hazel/EnvironmentMipFilter").As<OpenGLShader>();
 
+		// s_EnvFiltered = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize, true);
 		Ref<OpenGLTextureCube> envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
 
 		// HazelRenderer::Submit([envUnfiltered, envFiltered]() {});
@@ -294,21 +295,27 @@ namespace Hazel {
 			const float deltaRoughness = 1.0f / glm::max(float(envFiltered->GetMipLevelCount()) - 1.0f, 1.0f);
 			for (uint32_t level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
 			{
+				Log::GetLogger()->debug("BEGIN EnvFiltering size {0} level {1}/{2}", size, level, envFiltered->GetMipLevelCount());
+
 				glBindImageTexture(0, envFiltered->GetRendererID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
 				const GLint roughnessUniformLocation = glGetUniformLocation(envFilteringShader->GetRendererID(), "u_Uniforms.Roughness");
 				HZ_CORE_ASSERT(roughnessUniformLocation != -1);
 				glUniform1f(roughnessUniformLocation, (float)level * deltaRoughness);
 
+				// glProgramUniform1f(envFilteringShader->GetRendererID(), 0, level * deltaRoughness);
+
 				const GLuint numGroups = glm::max(1u, size / 32);
 				glDispatchCompute(numGroups, numGroups, 6);
 				glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+				Log::GetLogger()->debug("END EnvFiltering size {0} numGroups {1} level {2}/{3}", size, numGroups, level, envFiltered->GetMipLevelCount());
 			}
 		}
 
 		// Ref<OpenGLShader> envIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShader>();
 		Ref<OpenGLShader> envIrradianceShader = ResourceManager::GetShader("Hazel/EnvironmentIrradiance").As<OpenGLShader>();
 
+		// s_IrradianceMap = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize, true);
 		Ref<OpenGLTextureCube> irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA32F, irradianceMapSize, irradianceMapSize).As<OpenGLTextureCube>();
 
 		envIrradianceShader->Bind();

@@ -21,7 +21,7 @@ namespace Hazel {
 		bool ComputeEnvironmentMaps = true;
 
 		// Tiering settings
-		uint32_t EnvironmentMapResolution = 1024;
+		uint32_t EnvironmentMapResolution = 512; // 1024;
 		uint32_t IrradianceMapComputeSamples = 512;
 	};
 

@@ -121,10 +121,10 @@ public:
 	static Hazel::Ref<MoravaShader> s_ShaderSkybox;
 
 	// Intermediate textures
-	static Hazel::Ref<Hazel::HazelTextureCube> s_EnvUnfiltered;
+	// static Hazel::Ref<Hazel::HazelTextureCube> s_EnvUnfiltered;
 	static Hazel::Ref<Hazel::HazelTexture2D> s_EnvEquirect;
-	static Hazel::Ref<Hazel::HazelTextureCube> s_EnvFiltered;
-	static Hazel::Ref<Hazel::HazelTextureCube> s_IrradianceMap;
+	// static Hazel::Ref<Hazel::HazelTextureCube> s_EnvFiltered;
+	// static Hazel::Ref<Hazel::HazelTextureCube> s_IrradianceMap;
 
 	static float s_GridScale;
 	static float s_GridSize;
