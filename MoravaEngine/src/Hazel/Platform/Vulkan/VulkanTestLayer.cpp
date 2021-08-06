@@ -342,7 +342,8 @@ namespace Hazel {
 			{
 				// uniform buffer binding 0 uniform Camera
 				void* ubPtr = shader->MapUniformBuffer(0);
-				glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
+				// glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
+				glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)VulkanRenderer::GetViewportWidth(), (float)VulkanRenderer::GetViewportHeight(), 0.1f, 1000.0f);
 				// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
 				glm::mat4 viewProj = proj * camera.GetViewMatrix();  // Runtime camera
 				// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
