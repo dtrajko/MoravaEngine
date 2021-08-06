@@ -1,9 +1,12 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #pragma once
 
 #include "Texture/MoravaTexture.h"
 
 #include "Core/CommonValues.h"
 
+#include "Hazel/Core/Buffer.h"
 #include "Hazel/Renderer/HazelTexture.h"
 
 #include <string>
@@ -13,11 +16,13 @@ class VulkanMoravaTexture : public MoravaTexture
 {
 public:
 	VulkanMoravaTexture();
+	// implementation from Hazel/Platform/Vulkan/VulkanTexture, VulkanTexture2D(const std::string & path, bool srgb = false, TextureWrap wrap = TextureWrap::Clamp);
 	VulkanMoravaTexture(const char* fileLoc, bool flipVert = false, bool isSampler = false, int filter = 0);
 	VulkanMoravaTexture(const char* fileLoc, uint32_t width, uint32_t height, bool isSampler, int filter);
 	VulkanMoravaTexture(const char* fileLoc, Specification spec); // constructor for fully customizable texture
 	virtual ~VulkanMoravaTexture();
 
+	void Invalidate(); // from Hazel/Platform/Vulkan/VulkanTexture class
 	virtual bool Load(bool flipVert = false);
 	virtual void CreateAPISpecific();
 	virtual void Save();
@@ -70,5 +75,14 @@ protected:
 	unsigned char* m_Buffer;
 	int m_Level;
 	Hazel::TextureFormat m_Format;
+
+	// from Hazel/Platform/Vulkan/VulkanTexture
+	uint32_t m_Width;
+	uint32_t m_Height;
+	uint32_t m_Channels;
+	Hazel::Buffer m_ImageData;
+	VkDeviceMemory m_DeviceMemory;
+	VkImage m_Image;
+	VkDescriptorImageInfo m_DescriptorImageInfo = {};
 
 };

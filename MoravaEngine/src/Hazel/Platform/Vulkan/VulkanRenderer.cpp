@@ -581,14 +581,14 @@ namespace Hazel {
 					// ImGui::Begin("Scene Hierarchy");
 					// ImGui::End();
 
-					// bool showSceneHierarchyPanel = true;
-					// VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
+					bool showSceneHierarchyPanel = true;
+					VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
 
-					// bool showContentBrowserPanel = true;
+					bool showContentBrowserPanel = true;
 					// VulkanTestLayer::s_ContentBrowserPanel->OnImGuiRender(&showContentBrowserPanel);
 
-					// bool showMaterialEditorPanel = true;
-					// VulkanTestLayer::s_MaterialEditorPanel->OnImGuiRender(&showMaterialEditorPanel);
+					bool showMaterialEditorPanel = true;
+					VulkanTestLayer::s_MaterialEditorPanel->OnImGuiRender(&showMaterialEditorPanel);
 
 					// TEMP: Render Viewport
 					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));

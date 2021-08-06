@@ -117,6 +117,7 @@ namespace Hazel {
 		VkDeviceMemory m_DeviceMemory;
 		VkImage m_Image;
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
+
 	};
 
 }

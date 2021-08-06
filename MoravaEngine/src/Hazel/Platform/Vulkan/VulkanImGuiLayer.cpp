@@ -211,18 +211,6 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanImGuiLayer::OnUpdate(Timestep ts)
-	{
-	}
-
-	void VulkanImGuiLayer::OnEvent(Event& event)
-	{
-	}
-
-	void VulkanImGuiLayer::OnRender()
-	{
-	}
-
 	void VulkanImGuiLayer::Begin()
 	{
 		ImGuiIO& io = ImGui::GetIO();
@@ -259,6 +247,18 @@ namespace Hazel {
 			ImGui::RenderPlatformWindowsDefault();
 			glfwMakeContextCurrent(backup_current_context);
 		}
+	}
+
+	void VulkanImGuiLayer::OnUpdate(Timestep ts)
+	{
+	}
+
+	void VulkanImGuiLayer::OnEvent(Event& event)
+	{
+	}
+
+	void VulkanImGuiLayer::OnRender()
+	{
 	}
 
 	void VulkanImGuiLayer::OnImGuiRender()
