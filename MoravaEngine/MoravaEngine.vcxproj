@@ -126,6 +126,7 @@
     <ClCompile Include="src\Core\InsertionSort.cpp" />
     <ClCompile Include="src\Core\Log.cpp" />
     <ClCompile Include="src\Core\Math.cpp" />
+    <ClCompile Include="src\Core\MoravaLayer.cpp" />
     <ClCompile Include="src\Core\MousePicker.cpp" />
     <ClCompile Include="src\Core\Random.cpp" />
     <ClCompile Include="src\Core\Raycast.cpp" />
@@ -540,6 +541,7 @@
     <ClInclude Include="src\Core\InsertionSort.h" />
     <ClInclude Include="src\Core\Log.h" />
     <ClInclude Include="src\Core\Math.h" />
+    <ClInclude Include="src\Core\MoravaLayer.h" />
     <ClInclude Include="src\Core\MousePicker.h" />
     <ClInclude Include="src\Core\Profiler.h" />
     <ClInclude Include="src\Core\Random.h" />

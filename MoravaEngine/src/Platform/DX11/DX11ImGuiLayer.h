@@ -17,7 +17,10 @@ public:
 
 	virtual void OnAttach();
 	virtual void OnDetach();
-	virtual void OnImGuiRender();
+	virtual void OnUpdate(Hazel::Timestep ts) override;
+	virtual void OnEvent(Event& event) override;
+	virtual void OnRender() override;
+	virtual void OnImGuiRender() override;
 
 private:
 	float m_Time = 0.0f;

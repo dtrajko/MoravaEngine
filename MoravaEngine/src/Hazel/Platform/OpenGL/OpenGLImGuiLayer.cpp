@@ -109,6 +109,18 @@ namespace Hazel {
 		ImGui::DestroyContext();
 	}
 
+	void OpenGLImGuiLayer::OnUpdate(Timestep ts)
+	{
+	}
+
+	void OpenGLImGuiLayer::OnEvent(Event& event)
+	{
+	}
+
+	void OpenGLImGuiLayer::OnRender()
+	{
+	}
+
 	void OpenGLImGuiLayer::Begin()
 	{
 		ImGuiIO& io = ImGui::GetIO();

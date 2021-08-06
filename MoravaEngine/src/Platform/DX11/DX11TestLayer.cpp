@@ -49,7 +49,7 @@ DX11TestLayer::DX11TestLayer()
 	s_Camera = std::make_shared<DX11CameraFP>(glm::perspectiveFov(glm::radians(60.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
 }
 
-DX11TestLayer::DX11TestLayer(const std::string& name) : Layer(name)
+DX11TestLayer::DX11TestLayer(const std::string& name) : MoravaLayer(name)
 {
 	s_Camera = std::make_shared<DX11CameraFP>(glm::perspectiveFov(glm::radians(60.0f), 1280.0f, 720.0f, 0.1f, 1000.0f));
 }
@@ -260,10 +260,6 @@ void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
 	}
 }
 
-void DX11TestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
-{
-}
-
 void DX11TestLayer::OnEvent(Event& event)
 {
 	s_Camera->OnEvent(event);
@@ -283,7 +279,12 @@ void DX11TestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
 }
 
-void DX11TestLayer::OnRender(Window* mainWindow)
+void DX11TestLayer::OnRender(Window* mainWindow, Scene* scene)
+{
+	DX11Renderer::Draw(scene->GetCamera());
+}
+
+void DX11TestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 {
 }
 

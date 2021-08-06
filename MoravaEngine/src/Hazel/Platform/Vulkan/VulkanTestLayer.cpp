@@ -19,7 +19,7 @@ namespace Hazel {
 	}
 
 	VulkanTestLayer::VulkanTestLayer(const std::string& name)
-		: Layer(name), m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
+		: MoravaLayer(name), m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
 	{
 	}
 
@@ -51,10 +51,6 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanTestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
-	{
-	}
-
 	void VulkanTestLayer::OnEvent(Event& event)
 	{
 		m_Camera.OnEvent(event);
@@ -74,9 +70,13 @@ namespace Hazel {
 	{
 	}
 
-	void VulkanTestLayer::OnRender(Window* mainWindow)
+	void VulkanTestLayer::OnRender(::Window* mainWindow, ::Scene* scene)
 	{
-		// RendererBasic::Clear(1.0f, 0.0f, 1.0f, 1.0f);
+		VulkanRenderer::Draw(scene->GetCamera());
+	}
+
+	void VulkanTestLayer::OnImGuiRender(::Window* mainWindow, ::Scene* scene)
+	{
 	}
 
 	void VulkanTestLayer::Render(const glm::vec4& clearColor, const EditorCamera& camera)

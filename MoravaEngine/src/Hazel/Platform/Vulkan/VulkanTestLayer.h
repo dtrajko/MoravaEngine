@@ -9,13 +9,14 @@
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
 
+#include "Core/MoravaLayer.h"
 #include "Core/Window.h"
 #include "Scene/Scene.h"
 
 
 namespace Hazel {
 
-	class VulkanTestLayer : public Layer
+	class VulkanTestLayer : public MoravaLayer
 	{
 	public:
 		VulkanTestLayer();
@@ -24,16 +25,13 @@ namespace Hazel {
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-
 		virtual void OnUpdate(Timestep ts) override;
-		void OnImGuiRender(Window* mainWindow, Scene* scene);
-
 		virtual void OnEvent(Event& event) override;
-
-		void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
-		void OnRender(Window* mainWindow);
+		virtual void OnImGuiRender(::Window* mainWindow, ::Scene* scene) override;
+		virtual void OnRender(::Window* mainWindow, ::Scene* scene) override;
 
 		void Render(const glm::vec4& clearColor, const EditorCamera& camera);
+		void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 
 	private:
 		std::vector<Ref<HazelMesh>> m_Meshes;

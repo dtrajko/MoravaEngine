@@ -107,6 +107,18 @@ void DX11ImGuiLayer::OnDetach()
 	ImGui::DestroyContext();
 }
 
+void DX11ImGuiLayer::OnUpdate(Hazel::Timestep ts)
+{
+}
+
+void DX11ImGuiLayer::OnEvent(Event& event)
+{
+}
+
+void DX11ImGuiLayer::OnRender()
+{
+}
+
 void DX11ImGuiLayer::Begin()
 {
 	ImGuiIO& io = ImGui::GetIO();

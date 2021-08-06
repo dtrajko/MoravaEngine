@@ -149,7 +149,9 @@ namespace Hazel {
 		}
 		uint32_t slot = decl->GetRegister();
 		if (m_Textures.size() <= slot)
+		{
 			m_Textures.resize((size_t)slot + 1);
+		}
 		m_Textures[slot] = texture;
 	}
 

@@ -17,6 +17,7 @@
 #include "DX11CameraFP.h"
 #include "DX11Mesh.h"
 
+#include "Core/MoravaLayer.h"
 #include "Core/Window.h"
 #include "Scene/Scene.h"
 #include "Editor/EntitySelection.h"
@@ -42,7 +43,7 @@ struct RenderObject
 	// std::vector<Hazel::Ref<DX11Material>> Materials; // we probably need some kind of <Submesh, Material> map here
 };
 
-class DX11TestLayer : public Hazel::Layer, public DX11InputListener
+class DX11TestLayer : public MoravaLayer, public DX11InputListener
 {
 public:
 	DX11TestLayer();
@@ -53,12 +54,13 @@ public:
 	virtual void OnDetach() override;
 
 	virtual void OnUpdate(Hazel::Timestep ts) override;
-	void OnImGuiRender(Window* mainWindow, Scene* scene);
+	virtual void OnImGuiRender(Window* mainWindow, Scene* scene) override;
 
 	virtual void OnEvent(Event& event) override;
 
+	virtual void OnRender(Window* mainWindow, Scene* scene) override;
+
 	void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
-	void OnRender(Window* mainWindow);
 
 	void Render(const glm::vec4& clearColor, std::shared_ptr<DX11CameraFP> camera);
 

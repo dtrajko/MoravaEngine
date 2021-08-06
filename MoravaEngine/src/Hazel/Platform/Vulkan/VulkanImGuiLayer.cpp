@@ -211,6 +211,18 @@ namespace Hazel {
 		}
 	}
 
+	void VulkanImGuiLayer::OnUpdate(Timestep ts)
+	{
+	}
+
+	void VulkanImGuiLayer::OnEvent(Event& event)
+	{
+	}
+
+	void VulkanImGuiLayer::OnRender()
+	{
+	}
+
 	void VulkanImGuiLayer::Begin()
 	{
 		ImGuiIO& io = ImGui::GetIO();

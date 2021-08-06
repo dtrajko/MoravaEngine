@@ -939,6 +939,9 @@
     <ClCompile Include="src\Mesh\MoravaTinyMesh.cpp">
       <Filter>Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="src\Core\MoravaLayer.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1987,6 +1990,9 @@
     </ClInclude>
     <ClInclude Include="src\Mesh\MoravaTinyMesh.h">
       <Filter>Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Core\MoravaLayer.h">
+      <Filter>Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

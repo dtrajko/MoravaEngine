@@ -122,7 +122,9 @@ namespace Hazel {
 		{
 			auto& texture = m_Textures[i];
 			if (texture)
+			{
 				texture->Bind((uint32_t)i);
+			}
 		}
 	}
 
@@ -239,7 +241,9 @@ namespace Hazel {
 		{
 			auto& texture = m_Textures[i];
 			if (texture)
+			{
 				texture->Bind((uint32_t)i);
+			}
 		}
 	}
 }

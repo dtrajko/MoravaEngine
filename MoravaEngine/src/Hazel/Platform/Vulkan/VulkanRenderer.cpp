@@ -124,6 +124,14 @@ namespace Hazel {
 
 		SceneRenderer::Init();
 
+		m_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
+
+		m_SceneHierarchyPanel = new SceneHierarchyPanel(m_Scene);
+
+		m_ContentBrowserPanel = new ContentBrowserPanel();
+
+		m_MaterialEditorPanel = new MaterialEditorPanel();
+
 		// Renderer2D::Init();
 
 		/**** END code from HazelRenderer::Init() ****/
@@ -578,8 +586,10 @@ namespace Hazel {
 					bool p_open = true;
 					ShowExampleAppDockSpace(&p_open);
 
-					ImGui::Begin("Scene Hierarchy");
-					ImGui::End();
+					// ImGui::Begin("Scene Hierarchy");
+					// ImGui::End();
+
+					// m_SceneHierarchyPanel->OnImGuiRender(true);
 
 					// TEMP: Render Viewport
 					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
