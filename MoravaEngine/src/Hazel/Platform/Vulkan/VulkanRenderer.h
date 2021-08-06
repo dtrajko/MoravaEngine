@@ -2,14 +2,11 @@
 
 #pragma once
 
-#include "Hazel/Editor/SceneHierarchyPanel.h"
-#include "Hazel/Editor/ContentBrowserPanel.h"
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelCamera.h"
 #include "Hazel/Renderer/RendererAPI.h"
 
 #include "Core/Window.h"
-#include "Editor/MaterialEditorPanel.h"
 
 
 namespace Hazel {
@@ -49,13 +46,6 @@ namespace Hazel {
 		static uint32_t GetViewportHeight();
 
 		static int32_t& GetSelectedDrawCall();
-
-	private:
-		Ref<HazelScene> m_Scene;
-
-		SceneHierarchyPanel* m_SceneHierarchyPanel;
-		ContentBrowserPanel* m_ContentBrowserPanel;
-		MaterialEditorPanel* m_MaterialEditorPanel;
 
 	};
 

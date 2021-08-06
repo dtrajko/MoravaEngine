@@ -129,16 +129,6 @@ void Application::Run()
 
 			m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
 
-			switch (Hazel::RendererAPI::Current())
-			{
-				case Hazel::RendererAPIType::Vulkan:
-					Hazel::VulkanRenderer::Draw(m_Scene->GetCamera());
-					break;
-				case Hazel::RendererAPIType::DX11:
-					DX11Renderer::Draw(m_Scene->GetCamera());
-					break;
-			}
-
 			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
 
 			Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->End(); });

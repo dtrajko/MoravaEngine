@@ -124,14 +124,6 @@ namespace Hazel {
 
 		SceneRenderer::Init();
 
-		m_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
-
-		m_SceneHierarchyPanel = new SceneHierarchyPanel(m_Scene);
-
-		m_ContentBrowserPanel = new ContentBrowserPanel();
-
-		m_MaterialEditorPanel = new MaterialEditorPanel();
-
 		// Renderer2D::Init();
 
 		/**** END code from HazelRenderer::Init() ****/
@@ -589,7 +581,14 @@ namespace Hazel {
 					// ImGui::Begin("Scene Hierarchy");
 					// ImGui::End();
 
-					// m_SceneHierarchyPanel->OnImGuiRender(true);
+					// bool showSceneHierarchyPanel = true;
+					// VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
+
+					// bool showContentBrowserPanel = true;
+					// VulkanTestLayer::s_ContentBrowserPanel->OnImGuiRender(&showContentBrowserPanel);
+
+					// bool showMaterialEditorPanel = true;
+					// VulkanTestLayer::s_MaterialEditorPanel->OnImGuiRender(&showMaterialEditorPanel);
 
 					// TEMP: Render Viewport
 					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));

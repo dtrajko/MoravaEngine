@@ -4,6 +4,8 @@
 
 #include "Hazel/Core/Layer.h"
 #include "Hazel/Core/Timestep.h"
+#include "Hazel/Editor/SceneHierarchyPanel.h"
+#include "Hazel/Editor/ContentBrowserPanel.h"
 #include "Hazel/Events/Event.h"
 #include "Hazel/Platform/Vulkan/VulkanPipeline.h"
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
@@ -11,6 +13,7 @@
 
 #include "Core/MoravaLayer.h"
 #include "Core/Window.h"
+#include "Editor/MaterialEditorPanel.h"
 #include "Scene/Scene.h"
 
 
@@ -33,6 +36,8 @@ namespace Hazel {
 		void Render(const glm::vec4& clearColor, const EditorCamera& camera);
 		void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 
+		void UpdateImGuizmo();
+
 	private:
 		std::vector<Ref<HazelMesh>> m_Meshes;
 		Ref<HazelTexture2D> m_Texture;
@@ -40,6 +45,12 @@ namespace Hazel {
 		EditorCamera m_Camera;
 
 		std::vector<glm::vec4> m_RandomColors;
+
+	public:
+		static Ref<HazelScene> s_Scene;
+		static SceneHierarchyPanel* s_SceneHierarchyPanel;
+		static ContentBrowserPanel* s_ContentBrowserPanel;
+		static MaterialEditorPanel* s_MaterialEditorPanel;
 
 	};
 

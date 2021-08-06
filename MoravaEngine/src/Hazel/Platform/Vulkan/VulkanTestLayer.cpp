@@ -13,6 +13,12 @@
 
 namespace Hazel {
 
+	Ref<HazelScene> VulkanTestLayer::s_Scene;
+	SceneHierarchyPanel* VulkanTestLayer::s_SceneHierarchyPanel;
+	ContentBrowserPanel* VulkanTestLayer::s_ContentBrowserPanel;
+	MaterialEditorPanel* VulkanTestLayer::s_MaterialEditorPanel;
+
+
 	VulkanTestLayer::VulkanTestLayer()
 		: m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
 	{
@@ -29,6 +35,14 @@ namespace Hazel {
 
 	void VulkanTestLayer::OnAttach()
 	{
+		s_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
+
+		s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(s_Scene);
+
+		s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
+
+		s_MaterialEditorPanel = new MaterialEditorPanel();
+
 		m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Gladiator/Gladiator.fbx"));
 	}
@@ -49,6 +63,193 @@ namespace Hazel {
 		{
 			VulkanRenderer::SubmitMesh(mesh);
 		}
+	}
+
+	void VulkanTestLayer::OnImGuiRender(::Window* mainWindow, ::Scene* scene)
+	{
+		/**** BEGIN Back to Vulkan // Hazel Live (17.02.2021)
+		static bool opt_fullscreen_persistant = true;
+		bool opt_fullscreen = opt_fullscreen_persistant;
+		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+		// DockSpace
+		ImGuiIO& io = ImGui::GetIO();
+		ImGuiStyle& style = ImGui::GetStyle();
+
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+		}
+		/**** END Back to Vulkan // Hazel Live (17.02.2021) ****/
+
+		/**** BEGIN Vulkan ImGui Render Pass ****
+		{
+			s_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkPos().x;
+			s_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkPos().y;
+
+			// ImGui Dockspace
+			bool p_open = true;
+
+			ShowExampleAppDockSpace(&p_open);
+
+			//	ImGui::ShowDemoWindow(&p_open);
+			//	
+			//	Window* mainWindow = Application::Get()->GetWindow();
+			//	UpdateImGuizmo(mainWindow, camera);
+			//	
+			//	// Rendering
+			//	ImGui::Render();
+			//	ImDrawData* main_draw_data = ImGui::GetDrawData();
+			//	ImGui_ImplDX11_RenderDrawData(main_draw_data);
+
+			if (VulkanTestLayer::s_ShowWindowSceneHierarchy)
+			{
+				VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&VulkanTestLayer::s_ShowWindowSceneHierarchy);
+			}
+
+			if (VulkanTestLayer::s_ShowWindowAssetManager)
+			{
+				VulkanTestLayer::s_ContentBrowserPanel->OnImGuiRender(&VulkanTestLayer::s_ShowWindowAssetManager);
+			}
+
+			if (VulkanTestLayer::s_ShowWindowMaterialEditor)
+			{
+				VulkanTestLayer::s_MaterialEditorPanel->OnImGuiRender(&VulkanTestLayer::s_ShowWindowMaterialEditor);
+			}
+
+			if (VulkanTestLayer::s_ShowWindowMaterialEditor)
+			{
+				DisplaySubmeshMaterialSelector(&VulkanTestLayer::s_ShowWindowMaterialEditor);
+			}
+
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+			ImGui::Begin("Viewport");
+			{
+				s_ViewportPanelMouseOver = ImGui::IsWindowHovered();
+				s_ViewportPanelFocused = ImGui::IsWindowFocused();
+
+				ImGuiWrapper::SetViewportEnabled(true);
+				ImGuiWrapper::SetViewportHovered(s_ViewportPanelMouseOver);
+				ImGuiWrapper::SetViewportFocused(s_ViewportPanelFocused);
+
+				auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+				auto viewportSize = ImGui::GetContentRegionAvail();
+
+				ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+
+				s_ImGuiViewport.X = (int)(ImGui::GetWindowPos().x - s_ImGuiViewportMain.x);
+				s_ImGuiViewport.Y = (int)(ImGui::GetWindowPos().y - s_ImGuiViewportMain.y);
+				s_ImGuiViewport.Width = (int)ImGui::GetWindowWidth();
+				s_ImGuiViewport.Height = (int)ImGui::GetWindowHeight();
+				s_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
+				s_ImGuiViewport.MouseY = (int)ImGui::GetMousePos().y;
+
+				glm::vec2 viewportPanelSize = glm::vec2(viewportSize.x, viewportSize.y);
+
+				ImGui::Image((void*)(intptr_t)s_RenderTarget->m_ShaderResourceViewDX11, ImVec2 { viewportPanelSize.x, viewportPanelSize.y });
+
+				UpdateImGuizmo();
+
+				auto windowSize = ImGui::GetWindowSize();
+				ImVec2 minBound = ImGui::GetWindowPos();
+
+				minBound.x += viewportOffset.x;
+				// minBound.y += viewportOffset.y;
+
+				ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+				VulkanTestLayer::s_ViewportBounds[0] = { minBound.x, minBound.y };
+				VulkanTestLayer::s_ViewportBounds[1] = { maxBound.x, maxBound.y };
+
+				VulkanTestLayer::s_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
+			}
+			ImGui::End();
+			ImGui::PopStyleVar();
+		}
+		/**** END Vulkan ImGui Render Pass ****/
+	}
+
+	void VulkanTestLayer::UpdateImGuizmo()
+	{
+		/**** BEGIN Vulkan ImGuizmo ****
+		if (VulkanTestLayer::s_ImGuizmoType != -1 && EntitySelection::s_SelectionContext.size())
+		{
+			float rw = (float)ImGui::GetWindowWidth();
+			float rh = (float)ImGui::GetWindowHeight();
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+
+			SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
+
+			// Entity transform
+			auto& transformComponent = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
+			glm::mat4 entityTransform = transformComponent.GetTransform();
+
+			// Snapping
+			bool snap = VulkanTestLayer::s_LeftControlKeyPressed; // ImGuizmo snap enabled
+			float snapValue = 5.0f; // Snap to 0.5m for translation/scale
+			// Snap to 45 degrees for rotation
+			if (VulkanTestLayer::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE)
+			{
+				snapValue = 45.0f;
+			}
+			float snapValues[3] = { snapValue, snapValue, snapValue };
+
+			if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
+			{
+				ImGuizmo::Manipulate(
+					glm::value_ptr(DX11TestLayer::GetCamera()->GetViewMatrix()),
+					glm::value_ptr(DX11TestLayer::GetCamera()->GetProjectionMatrix()),
+					DX11TestLayer::s_ImGuizmoType,
+					ImGuizmo::LOCAL,
+					glm::value_ptr(entityTransform),
+					nullptr,
+					snap ? snapValues : nullptr);
+
+				if (ImGuizmo::IsUsing())
+				{
+					glm::vec3 translation, rotation, scale;
+					Math::DecomposeTransform(entityTransform, translation, rotation, scale);
+
+					glm::vec3 deltaRotation = rotation - transformComponent.Rotation;
+					transformComponent.Translation = translation;
+					transformComponent.Rotation += deltaRotation;
+					transformComponent.Scale = scale;
+				}
+			}
+			else if (s_SelectionMode == SelectionMode::SubMesh)
+			{
+				auto aabb = selectedSubmesh.Mesh->BoundingBox;
+
+				glm::vec3 aabbCenterOffset = glm::vec3(
+					aabb.Min.x + ((aabb.Max.x - aabb.Min.x) / 2.0f),
+					aabb.Min.y + ((aabb.Max.y - aabb.Min.y) / 2.0f),
+					aabb.Min.z + ((aabb.Max.z - aabb.Min.z) / 2.0f)
+				);
+
+				glm::mat4 submeshTransform = selectedSubmesh.Mesh->Transform;
+				submeshTransform = glm::translate(submeshTransform, aabbCenterOffset);
+				glm::mat4 transformBase = entityTransform * submeshTransform;
+
+				ImGuizmo::Manipulate(
+					glm::value_ptr(VulkanTestLayer::GetCamera()->GetViewMatrix()),
+					glm::value_ptr(VulkanTestLayer::GetCamera()->GetProjectionMatrix()),
+					DX11TestLayer::s_ImGuizmoType,
+					ImGuizmo::LOCAL,
+					glm::value_ptr(transformBase),
+					nullptr,
+					snap ? snapValues : nullptr);
+
+				if (ImGuizmo::IsUsing())
+				{
+					submeshTransform = glm::inverse(entityTransform) * transformBase;
+					submeshTransform = glm::translate(submeshTransform, -aabbCenterOffset);
+					selectedSubmesh.Mesh->Transform = submeshTransform;
+				}
+			}
+		}
+		/**** END Vulkan ImGuizmo ****/
 	}
 
 	void VulkanTestLayer::OnEvent(Event& event)
@@ -73,10 +274,6 @@ namespace Hazel {
 	void VulkanTestLayer::OnRender(::Window* mainWindow, ::Scene* scene)
 	{
 		VulkanRenderer::Draw(scene->GetCamera());
-	}
-
-	void VulkanTestLayer::OnImGuiRender(::Window* mainWindow, ::Scene* scene)
-	{
 	}
 
 	void VulkanTestLayer::Render(const glm::vec4& clearColor, const EditorCamera& camera)
