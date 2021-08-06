@@ -67,7 +67,8 @@ namespace Hazel {
 
 	void VulkanTestLayer::OnImGuiRender(::Window* mainWindow, ::Scene* scene)
 	{
-		/**** BEGIN Back to Vulkan // Hazel Live (17.02.2021)
+		/**** BEGIN Back to Vulkan // Hazel Live (17.02.2021) ****/
+
 		static bool opt_fullscreen_persistant = true;
 		bool opt_fullscreen = opt_fullscreen_persistant;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
@@ -75,12 +76,35 @@ namespace Hazel {
 		// DockSpace
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
-
+		float minWinSizeX = style.WindowMinSize.x;
+		style.WindowMinSize.x = 370.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
+
+		// m_SceneHierarchyPanel.OnImGuiRender();
+
+		style.WindowMinSize.x = minWinSizeX;
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+		ImGui::Begin("Viewport");
+		auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+		auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+		auto viewportOffset = ImGui::GetWindowPos();
+
+		ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+		ImVec2 viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
+
+		uint64_t textureID = 0; // m_Framebuffer->GetColorAttachmentRendererID();
+		ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ viewportSize.x, viewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+
+		ImGui::End();
+		ImGui::PopStyleVar();
+
+		// ImGui::End();
+
 		/**** END Back to Vulkan // Hazel Live (17.02.2021) ****/
 
 		/**** BEGIN Vulkan ImGui Render Pass ****
