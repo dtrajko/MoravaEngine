@@ -15,6 +15,8 @@ namespace Hazel {
 
 	struct OpenGLRendererData
 	{
+		RendererCapabilities RenderCaps;
+
 		Ref<RenderPass> m_ActiveRenderPass;
 		RenderCommandQueue m_CommandQueue;
 		Ref<HazelShaderLibrary> m_ShaderLibrary;
@@ -24,7 +26,7 @@ namespace Hazel {
 		Ref<Pipeline> m_FullscreenQuadPipeline;
 	};
 
-	static OpenGLRendererData s_Data;
+	static OpenGLRendererData* s_Data = nullptr;
 
 	namespace Utils {
 
@@ -89,7 +91,15 @@ namespace Hazel {
 
 	void OpenGLRenderer::Init()
 	{
-		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
+		s_Data = new OpenGLRendererData();
+		auto& caps = s_Data->RenderCaps;
+		caps.Vendor = (const char*)glGetString(GL_VENDOR);
+		caps.Device = (const char*)glGetString(GL_RENDERER);
+		caps.Version = (const char*)glGetString(GL_VERSION);
+
+		Utils::DumpGPUInfo();
+
+		s_Data->m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 		// OPENGL ONLY - HazelRenderer::Submit([]() { RendererAPI::Init(); });
 
 		SceneRenderer::Init();
@@ -125,24 +135,23 @@ namespace Hazel {
 		};
 
 		// Missing pipelineSpecification.Shader
-		// s_Data.m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
+		// s_Data->m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
 
-		s_Data.m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data->m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-		s_Data.m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+		s_Data->m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
 		// Renderer2D::Init();
 	}
 
 	void OpenGLRenderer::Shutdown()
 	{
-		// delete s_Data;
+		delete s_Data;
 	}
 
 	RendererCapabilities& OpenGLRenderer::GetCapabilities()
 	{
-		// return s_Data->RenderCaps;
-		return RendererCapabilities{};
+		return s_Data->RenderCaps;
 	}
 
 	void OpenGLRenderer::BeginFrame()
@@ -158,7 +167,7 @@ namespace Hazel {
 		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
 		// TODO: Convert all of this into a render command buffer
-		s_Data.m_ActiveRenderPass = renderPass;
+		s_Data->m_ActiveRenderPass = renderPass;
 
 		renderPass->GetSpecification().TargetFramebuffer->Bind();
 
@@ -178,9 +187,9 @@ namespace Hazel {
 
 	void OpenGLRenderer::EndRenderPass()
 	{
-		HZ_CORE_ASSERT(s_Data.m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
-		s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
-		s_Data.m_ActiveRenderPass = nullptr;
+		HZ_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		s_Data->m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
+		s_Data->m_ActiveRenderPass = nullptr;
 	}
 
 	void OpenGLRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
@@ -192,9 +201,9 @@ namespace Hazel {
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 		}
 
-		s_Data.m_FullscreenQuadVertexBuffer->Bind();
-		s_Data.m_FullscreenQuadPipeline->Bind();
-		s_Data.m_FullscreenQuadIndexBuffer->Bind();
+		s_Data->m_FullscreenQuadVertexBuffer->Bind();
+		s_Data->m_FullscreenQuadPipeline->Bind();
+		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
