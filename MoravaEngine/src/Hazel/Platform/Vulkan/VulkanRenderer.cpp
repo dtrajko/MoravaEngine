@@ -9,6 +9,7 @@
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanPipeline.h"
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
+#include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
 #include "Hazel/Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Hazel/Renderer/SceneRenderer.h"
@@ -133,17 +134,19 @@ namespace Hazel {
 			spec.Width = s_ViewportWidth;
 			spec.Height = s_ViewportHeight;
 			s_Framebuffer = HazelFramebuffer::Create(spec);
-			s_Framebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer) {
+			s_Framebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer)
+			{
 				// HazelRenderer::Submit([framebuffer]() mutable
 				// {
 				// });
 				{
 					auto vulkanFB = framebuffer.As<VulkanFramebuffer>();
 					const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
+					Log::GetLogger()->warn("Resizing framebuffer; image layout is {0}", imageInfo.imageLayout);
 					// s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 					s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 				}
-				});
+			});
 
 			PipelineSpecification pipelineSpecification;
 			pipelineSpecification.Layout = {

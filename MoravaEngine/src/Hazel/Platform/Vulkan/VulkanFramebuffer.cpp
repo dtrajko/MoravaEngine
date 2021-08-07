@@ -44,6 +44,7 @@ namespace Hazel {
 
 				if (m_Framebuffer) {
 					vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
+					m_Framebuffer = nullptr;
 				}
 
 				VulkanAllocator allocator(std::string("Framebuffer"));

@@ -55,14 +55,4 @@ void RendererTrivial::WaitAndRender(float deltaTime, Window* mainWindow, Scene* 
 	RendererBasic::UpdateProjectionMatrix(&projectionMatrix, scene);
 
 	RenderPassMain(mainWindow, scene, projectionMatrix);
-
-	switch (Hazel::RendererAPI::Current())
-	{
-	case Hazel::RendererAPIType::Vulkan:
-		Hazel::VulkanRenderer::Draw(scene->GetCamera());
-		break;
-	case Hazel::RendererAPIType::DX11:
-		DX11Renderer::Draw(scene->GetCamera());
-		break;
-	}
 }
