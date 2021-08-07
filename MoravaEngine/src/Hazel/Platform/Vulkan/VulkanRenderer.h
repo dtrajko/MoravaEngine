@@ -40,7 +40,7 @@ namespace Hazel {
 
 		static void OnResize(uint32_t width, uint32_t height);
 
-		static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
+		// static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
 		static void UpdateImGuizmo(Window* mainWindow, HazelCamera* camera);
 
 		static uint32_t GetViewportWidth();

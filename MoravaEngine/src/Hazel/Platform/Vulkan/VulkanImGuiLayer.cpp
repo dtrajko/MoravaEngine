@@ -223,10 +223,9 @@ namespace Hazel {
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
 		// ImGuizmo::BeginFrame();
 
-		ImGui::ShowDemoWindow();
+		// ImGui::ShowDemoWindow();
 	}
 
 	void VulkanImGuiLayer::End()

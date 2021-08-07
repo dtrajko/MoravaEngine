@@ -84,6 +84,7 @@ void Application::PushOverlay(Hazel::Layer* layer)
 void Application::RenderImGui()
 {
 	m_ImGuiLayer->Begin();
+
 	ImGui::Begin("Renderer");
 	auto& caps = Hazel::HazelRenderer::GetCapabilities(); // TODO: 's_RendererAPI was nullptr'
 	ImGui::Text("Vendor: %s", caps.Vendor.c_str());
