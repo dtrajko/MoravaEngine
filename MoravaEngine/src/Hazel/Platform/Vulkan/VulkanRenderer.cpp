@@ -131,6 +131,7 @@ namespace Hazel {
 
 		{
 			HazelFramebufferSpecification spec;
+			spec.DebugName = "Viewport";
 			spec.Width = s_ViewportWidth;
 			spec.Height = s_ViewportHeight;
 			s_Framebuffer = HazelFramebuffer::Create(spec);
