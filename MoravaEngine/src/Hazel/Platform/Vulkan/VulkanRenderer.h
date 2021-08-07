@@ -5,6 +5,7 @@
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelCamera.h"
 #include "Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Renderer/RendererCapabilities.h"
 
 #include "Core/Window.h"
 
@@ -31,7 +32,7 @@ namespace Hazel {
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) override;
 
-		virtual RenderAPICapabilities& GetCapabilities() override;
+		virtual RendererCapabilities& GetCapabilities() override;
 
 		static void Draw(HazelCamera* camera); // TODO: there should be no parameters
 

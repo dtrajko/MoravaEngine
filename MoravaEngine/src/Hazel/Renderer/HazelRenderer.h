@@ -7,6 +7,7 @@
 #include "Hazel/Renderer/RendererContext.h"
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Renderer/RendererCapabilities.h"
 
 
 namespace Hazel {
@@ -50,7 +51,7 @@ namespace Hazel {
 
 		static void Shutdown();
 
-		static RenderAPICapabilities& GetCapabilities();
+		static RendererCapabilities& GetCapabilities();
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)

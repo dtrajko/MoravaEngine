@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Renderer/RendererCapabilities.h"
 
 
 namespace Hazel {
@@ -27,7 +28,7 @@ namespace Hazel {
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) override;
 
-		virtual RenderAPICapabilities& GetCapabilities() override;
+		virtual RendererCapabilities& GetCapabilities() override;
 
 	};
 

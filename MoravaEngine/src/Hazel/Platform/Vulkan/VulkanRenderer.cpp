@@ -48,9 +48,13 @@ namespace Hazel {
 
 		int32_t SelectedDrawCall = -1;
 		int32_t DrawCallCount = 0;
+
+		// VulkanRendererDataOld
+		VkCommandBuffer ActiveCommandBuffer = nullptr;
+		Ref<HazelShaderLibrary> m_ShaderLibrary;
 	};
 
-	// static VulkanRendererData* s_Data = nullptr;
+	static VulkanRendererData* s_Data = nullptr;
 
 	static VkCommandBuffer s_ImGuiCommandBuffer;
 	static VkCommandBuffer s_CompositeCommandBuffer;
@@ -70,57 +74,46 @@ namespace Hazel {
 	static Submesh* s_SelectedSubmesh;
 	static glm::mat4* s_Transform_ImGuizmo = nullptr;
 
-	struct VulkanRendererDataOld
-	{
-		VkCommandBuffer ActiveCommandBuffer = nullptr;
-		Ref<HazelShaderLibrary> m_ShaderLibrary;
-	};
+	namespace Utils {
 
-	static VulkanRendererDataOld s_Data;
-
-
-	void VulkanRenderer::SubmitMesh(const Ref<HazelMesh>& mesh)
-	{
-		// Temporary code - populate selected submesh
-		std::vector<Submesh> submeshes = mesh->GetSubmeshes();
-		s_SelectedSubmesh = &submeshes.at(0);
-
-		s_Meshes.push_back(mesh);
-	}
-
-	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
-	{
-		// HazelRenderer::Submit([=]() {
-		// });
+		static const char* VulkanVendorIDToString(uint32_t vendorID)
 		{
-			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
-
-			VkWriteDescriptorSet writeDescriptorSet = {};
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = s_QuadDescriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			writeDescriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
-			writeDescriptorSet.dstBinding = 0;
-
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
+			switch (vendorID)
+			{
+			case 0x10DE: return "NVIDIA";
+			case 0x1002: return "AMD";
+			case 0x8086: return "INTEL";
+			case 0x13B5: return "ARM";
+			}
+			return "Unknown";
 		}
+
 	}
 
 	void VulkanRenderer::Init()
 	{
+		s_Data = new VulkanRendererData();
+		auto& caps = s_Data->RenderCaps;
+		auto& properties = VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
+		caps.Vendor = Utils::VulkanVendorIDToString(properties.vendorID);
+		caps.Device = properties.deviceName;
+		caps.Version = std::to_string(properties.driverVersion);
+
+		Utils::DumpGPUInfo();
+
+		// TODO: Create descriptor pools
+
 		/**** BEGIN code from HazelRenderer::Init() ****/
 
-		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
+		s_Data->m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 
-		// s_Data.m_ShaderLibrary->Load("assets/shaders/Grid.glsl");
-		// s_Data.m_ShaderLibrary->Load("assets/shaders/SceneComposite.glsl");
-		// s_Data.m_ShaderLibrary->Load("assets/shaders/HazelSimple.glsl");
-		s_Data.m_ShaderLibrary->Load("assets/shaders/HazelPBR_Static.glsl");
-		// s_Data.m_ShaderLibrary->Load("assets/shaders/Outline.glsl");
-		// s_Data.m_ShaderLibrary->Load("assets/shaders/Skybox.glsl");
-		s_Data.m_ShaderLibrary->Load("assets/shaders/Texture.glsl");
+		// s_Data->m_ShaderLibrary->Load("assets/shaders/Grid.glsl");
+		// s_Data->m_ShaderLibrary->Load("assets/shaders/SceneComposite.glsl");
+		// s_Data->m_ShaderLibrary->Load("assets/shaders/HazelSimple.glsl");
+		s_Data->m_ShaderLibrary->Load("assets/shaders/HazelPBR_Static.glsl");
+		// s_Data->m_ShaderLibrary->Load("assets/shaders/Outline.glsl");
+		// s_Data->m_ShaderLibrary->Load("assets/shaders/Skybox.glsl");
+		s_Data->m_ShaderLibrary->Load("assets/shaders/Texture.glsl");
 
 		SceneRenderer::Init();
 
@@ -150,7 +143,7 @@ namespace Hazel {
 					// s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 					s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 				}
-			});
+				});
 
 			PipelineSpecification pipelineSpecification;
 			pipelineSpecification.Layout = {
@@ -160,7 +153,7 @@ namespace Hazel {
 				{ ShaderDataType::Float3, "a_Binormal" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
-			pipelineSpecification.Shader = s_Data.m_ShaderLibrary->Get("HazelPBR_Static");
+			pipelineSpecification.Shader = s_Data->m_ShaderLibrary->Get("HazelPBR_Static");
 
 			RenderPassSpecification renderPassSpec;
 			renderPassSpec.TargetFramebuffer = s_Framebuffer;
@@ -182,7 +175,7 @@ namespace Hazel {
 				// { ShaderDataType::Float3, "a_Binormal" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
-			pipelineSpecification.Shader = s_Data.m_ShaderLibrary->Get("Texture");
+			pipelineSpecification.Shader = s_Data->m_ShaderLibrary->Get("Texture");
 
 			RenderPassSpecification renderPassSpec;
 			renderPassSpec.TargetFramebuffer = framebuffer;
@@ -249,6 +242,37 @@ namespace Hazel {
 
 	void VulkanRenderer::Shutdown()
 	{
+		VulkanShader::ClearUniformBuffers();
+		delete s_Data;
+	}
+
+	void VulkanRenderer::SubmitMesh(const Ref<HazelMesh>& mesh)
+	{
+		// Temporary code - populate selected submesh
+		std::vector<Submesh> submeshes = mesh->GetSubmeshes();
+		s_SelectedSubmesh = &submeshes.at(0);
+
+		s_Meshes.push_back(mesh);
+	}
+
+	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
+	{
+		// HazelRenderer::Submit([=]() {
+		// });
+		{
+			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+
+			VkWriteDescriptorSet writeDescriptorSet = {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = s_QuadDescriptorSet;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writeDescriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
+			writeDescriptorSet.dstBinding = 0;
+
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
+		}
 	}
 
 	static void RenderMeshVulkan(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer, HazelCamera* camera) // TODO: remove the HazelCamera parameter
@@ -645,7 +669,7 @@ namespace Hazel {
 			cmdBufInfo.pNext = nullptr;
 
 			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
-			s_Data.ActiveCommandBuffer = drawCommandBuffer;
+			s_Data->ActiveCommandBuffer = drawCommandBuffer;
 			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
 		}
 	}
@@ -656,7 +680,7 @@ namespace Hazel {
 		//	{
 		//	});
 		{
-			VK_CHECK_RESULT(vkEndCommandBuffer(s_Data.ActiveCommandBuffer));
+			VK_CHECK_RESULT(vkEndCommandBuffer(s_Data->ActiveCommandBuffer));
 		}
 	}
 
@@ -693,7 +717,7 @@ namespace Hazel {
 			renderPassBeginInfo.pClearValues = clearValues;
 			renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
 
-			vkCmdBeginRenderPass(s_Data.ActiveCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdBeginRenderPass(s_Data->ActiveCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 			// Update dynamic viewport state
 			VkViewport viewport = {};
@@ -703,7 +727,7 @@ namespace Hazel {
 			viewport.width = (float)width;
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
-			vkCmdSetViewport(s_Data.ActiveCommandBuffer, 0, 1, &viewport);
+			vkCmdSetViewport(s_Data->ActiveCommandBuffer, 0, 1, &viewport);
 
 			// Update dynamic scissor state
 			VkRect2D scissor = {};
@@ -711,7 +735,7 @@ namespace Hazel {
 			scissor.extent.height = height;
 			scissor.offset.x = 0;
 			scissor.offset.y = 0;
-			vkCmdSetScissor(s_Data.ActiveCommandBuffer, 0, 1, &scissor);
+			vkCmdSetScissor(s_Data->ActiveCommandBuffer, 0, 1, &scissor);
 		}
 	}
 
@@ -721,8 +745,8 @@ namespace Hazel {
 		//	{
 		//	});
 		{
-			vkCmdEndRenderPass(s_Data.ActiveCommandBuffer);
-			s_Data.ActiveCommandBuffer = nullptr;
+			vkCmdEndRenderPass(s_Data->ActiveCommandBuffer);
+			s_Data->ActiveCommandBuffer = nullptr;
 		}
 	}
 
@@ -739,19 +763,19 @@ namespace Hazel {
 			auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
 			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
 			VkDeviceSize offsets[1] = { 0 };
-			vkCmdBindVertexBuffers(s_Data.ActiveCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
+			vkCmdBindVertexBuffers(s_Data->ActiveCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
 
 			auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
 			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
-			vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindIndexBuffer(s_Data->ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
-			vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+			vkCmdBindPipeline(s_Data->ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 			// Bind descriptor sets describing shader binding points
-			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &s_QuadDescriptorSet, 0, nullptr);
+			vkCmdBindDescriptorSets(s_Data->ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &s_QuadDescriptorSet, 0, nullptr);
 
-			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+			vkCmdDrawIndexed(s_Data->ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 		}
 	}
 
@@ -776,9 +800,9 @@ namespace Hazel {
 	{
 	}
 
-	RenderAPICapabilities& VulkanRenderer::GetCapabilities()
+	RendererCapabilities& VulkanRenderer::GetCapabilities()
 	{
-		return RenderAPICapabilities{};
+		return s_Data->RenderCaps;
 	}
 
 	//-----------------------------------------------------------------------------

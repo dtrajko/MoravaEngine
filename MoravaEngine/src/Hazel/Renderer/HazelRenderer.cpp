@@ -363,7 +363,7 @@ namespace Hazel {
 
 	// ---------------------------------------------------------------
 
-	RenderAPICapabilities& HazelRenderer::GetCapabilities()
+	RendererCapabilities& HazelRenderer::GetCapabilities()
 	{
 		return s_RendererAPI->GetCapabilities();
 	}

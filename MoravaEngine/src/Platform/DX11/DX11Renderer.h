@@ -49,7 +49,7 @@ public:
 	virtual void RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform) override;
 	virtual void RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform) override;
 
-	virtual Hazel::RenderAPICapabilities& GetCapabilities() override;
+	virtual Hazel::RendererCapabilities& GetCapabilities() override;
 
 	static void Update();
 

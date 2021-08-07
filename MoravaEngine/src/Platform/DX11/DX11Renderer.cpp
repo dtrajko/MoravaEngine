@@ -984,9 +984,9 @@ void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<H
 {
 }
 
-Hazel::RenderAPICapabilities& DX11Renderer::GetCapabilities()
+Hazel::RendererCapabilities& DX11Renderer::GetCapabilities()
 {
-	return Hazel::RenderAPICapabilities{};
+	return Hazel::RendererCapabilities{};
 }
 
 //-----------------------------------------------------------------------------

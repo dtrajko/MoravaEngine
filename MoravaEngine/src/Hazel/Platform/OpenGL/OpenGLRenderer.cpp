@@ -139,10 +139,10 @@ namespace Hazel {
 		// delete s_Data;
 	}
 
-	RenderAPICapabilities& OpenGLRenderer::GetCapabilities()
+	RendererCapabilities& OpenGLRenderer::GetCapabilities()
 	{
 		// return s_Data->RenderCaps;
-		return RenderAPICapabilities{};
+		return RendererCapabilities{};
 	}
 
 	void OpenGLRenderer::BeginFrame()

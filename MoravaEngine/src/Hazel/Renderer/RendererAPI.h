@@ -25,17 +25,6 @@ namespace Hazel {
 		None = 0, Triangles, Lines
 	};
 
-	struct RenderAPICapabilities
-	{
-		std::string Vendor;
-		std::string Device;
-		std::string Version;
-
-		int MaxSamples = 0;
-		float MaxAnisotropy = 0.0f;
-		int MaxTextureUnits = 0;
-	};
-
 	class Pipeline;
 	class HazelMaterial;
 	class HazelMesh;
@@ -61,7 +50,7 @@ namespace Hazel {
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) = 0;
 		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) = 0;
 
-		virtual RenderAPICapabilities& GetCapabilities() = 0;
+		virtual RendererCapabilities& GetCapabilities() = 0;
 
 		static void Clear(float r, float g, float b, float a);
 		static void SetClearColor(float r, float g, float b, float a);
