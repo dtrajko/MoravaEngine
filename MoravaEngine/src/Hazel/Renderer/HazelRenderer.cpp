@@ -86,9 +86,9 @@ namespace Hazel {
 		Ref<Environment> EmptyEnvironment;
 	};
 
-	static RendererData s_Data;
+	static RendererData* s_Data = nullptr;
+	static RenderCommandQueue* s_CommandQueue = nullptr;
 
-	// static RenderCommandQueue* s_CommandQueue = nullptr;
 	// static std::unordered_map<size_t, Ref<Pipeline>> s_PipelineCache;
 
 	static RendererAPI* InitRendererAPI()
@@ -106,7 +106,11 @@ namespace Hazel {
 
 	void HazelRenderer::Init()
 	{
+		s_Data = new RendererData();
+		s_CommandQueue = new RenderCommandQueue();
 		s_RendererAPI = InitRendererAPI();
+
+		s_Data->m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 
 		//...
 
@@ -116,17 +120,23 @@ namespace Hazel {
 
 		//...
 
+		uint32_t whiteTextureData = 0xffffffff;
+		s_Data->WhiteTexture = HazelTexture2D::Create(HazelImageFormat::RGBA, 1, 1, &whiteTextureData);
+
 		uint32_t blackTextureData[6] = { 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000 };
-		s_Data.BlackCubeTexture = HazelTextureCube::Create(HazelImageFormat::RGBA, 1, 1, &blackTextureData);
+		s_Data->BlackCubeTexture = HazelTextureCube::Create(HazelImageFormat::RGBA, 1, 1, &blackTextureData);
+
+		s_Data->EmptyEnvironment = Ref<Environment>::Create(s_Data->BlackCubeTexture, s_Data->BlackCubeTexture);
 
 		//...
 
 		s_RendererAPI->Init();
+		SceneRenderer::Init();
 	}
 
 	Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()
 	{
-		return s_Data.m_ShaderLibrary;
+		return s_Data->m_ShaderLibrary;
 	}
 
 	void HazelRenderer::Clear()
@@ -181,7 +191,7 @@ namespace Hazel {
 
 	void HazelRenderer::WaitAndRender()
 	{
-		s_Data.m_CommandQueue.Execute();
+		s_Data->m_CommandQueue.Execute();
 	}
 
 	void HazelRenderer::BeginRenderPass(Ref<RenderPass> renderPass, bool clear)
@@ -197,7 +207,7 @@ namespace Hazel {
 		/**** BEGIN OLD ****/
 		{
 			// TODO: Convert all of this into a render command buffer
-			s_Data.m_ActiveRenderPass = renderPass;
+			s_Data->m_ActiveRenderPass = renderPass;
 
 			renderPass->GetSpecification().TargetFramebuffer->Bind();
 			if (clear)
@@ -214,9 +224,9 @@ namespace Hazel {
 
 	void HazelRenderer::EndRenderPass()
 	{
-		HZ_CORE_ASSERT(s_Data.m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
-		s_Data.m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
-		s_Data.m_ActiveRenderPass = nullptr;
+		HZ_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		s_Data->m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
+		s_Data->m_ActiveRenderPass = nullptr;
 	}
 
 	void HazelRenderer::SubmitQuad(Ref<HazelMaterial> material, const glm::mat4& transform)
@@ -231,9 +241,9 @@ namespace Hazel {
 			shader->SetUniformBuffer("Transform", &transform, sizeof(glm::mat4));
 		}
 
-		s_Data.m_FullscreenQuadVertexBuffer->Bind();
-		s_Data.m_FullscreenQuadPipeline->Bind();
-		s_Data.m_FullscreenQuadIndexBuffer->Bind();
+		s_Data->m_FullscreenQuadVertexBuffer->Bind();
+		s_Data->m_FullscreenQuadPipeline->Bind();
+		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
@@ -246,9 +256,9 @@ namespace Hazel {
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 		}
 
-		s_Data.m_FullscreenQuadVertexBuffer->Bind();
-		s_Data.m_FullscreenQuadPipeline->Bind();
-		s_Data.m_FullscreenQuadIndexBuffer->Bind();
+		s_Data->m_FullscreenQuadVertexBuffer->Bind();
+		s_Data->m_FullscreenQuadPipeline->Bind();
+		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
@@ -358,7 +368,7 @@ namespace Hazel {
 
 	RenderCommandQueue& HazelRenderer::GetRenderCommandQueue()
 	{
-		return s_Data.m_CommandQueue;
+		return s_Data->m_CommandQueue;
 	}
 
 	// ---------------------------------------------------------------
@@ -377,7 +387,7 @@ namespace Hazel {
 	// Used by OpenGLRenderer
 	Ref<Environment> HazelRenderer::GetEmptyEnvironment()
 	{
-		// return s_Data.EmptyEnvironment;
+		// return s_Data->EmptyEnvironment;
 		return Ref<Environment>();
 	}
 
@@ -396,6 +406,10 @@ namespace Hazel {
 	{
 		s_ShaderDependencies.clear();
 		SceneRenderer::Shutdown();
+		s_RendererAPI->Shutdown();
+
+		delete s_Data;
+		delete s_CommandQueue;
 	}
 
 #if 0
@@ -408,7 +422,7 @@ namespace Hazel {
 		if (s_PipelineCache.find(hash) == s_PipelineCache.end())
 		{
 			// Create pipeline
-			PipelineSpecification spec = s_Data.m_FullscreenQuadPipelineSpec;
+			PipelineSpecification spec = s_Data->m_FullscreenQuadPipelineSpec;
 			spec.Shader = shader;
 			spec.DebugName = "Renderer-FullscreenQuad-" + shader->GetName();
 			s_PipelineCache[hash] = Pipeline::Create(spec);
@@ -425,9 +439,9 @@ namespace Hazel {
 			cullFace = !material->GetFlag(MaterialFlag::TwoSided);
 		}
 
-		s_Data.FullscreenQuadVertexBuffer->Bind();
+		s_Data->FullscreenQuadVertexBuffer->Bind();
 		pipeline->Bind();
-		s_Data.FullscreenQuadIndexBuffer->Bind();
+		s_Data->FullscreenQuadIndexBuffer->Bind();
 		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
@@ -456,11 +470,6 @@ namespace Hazel {
 		s_RendererAPI->RenderQuad(pipeline, material, transform);
 	}
 
-	Ref<HazelTexture2D> HazelRenderer::GetWhiteTexture()
-	{
-		return s_Data.WhiteTexture;
-	}
-
 #endif
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> HazelRenderer::CreateEnvironmentMap(const std::string& filepath)
@@ -471,13 +480,18 @@ namespace Hazel {
 	// disabled in some versions of Hazel-dev
 	RendererConfig& HazelRenderer::GetConfig()
 	{
-		return s_Data.Config;
+		return s_Data->Config;
+	}
+
+	Ref<HazelTexture2D> HazelRenderer::GetWhiteTexture()
+	{
+		return s_Data->WhiteTexture;
 	}
 
 	// disabled in some versions of Hazel-dev
 	Ref<HazelTextureCube> HazelRenderer::GetBlackCubeTexture()
 	{
-		return s_Data.BlackCubeTexture;
+		return s_Data->BlackCubeTexture;
 	}
 
 }

@@ -339,7 +339,6 @@ void main()
 	vec3 albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb;
 	color = vec4(albedo, 1);
 
-
 	/**** BEGIN main() from VulkanWeekMesh ****/
 	m_Params.Albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb;
 
