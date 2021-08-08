@@ -783,7 +783,12 @@ namespace Hazel {
 			// auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
 			auto mi = Ref<HazelMaterialInstance>::Create(m_BaseMaterial, "Hazel-Default");
 			mi->Set("u_MaterialUniforms.AlbedoTexToggle", 0.0f);
+			mi->Set("u_MaterialUniforms.NormalTexToggle", 0.0f);
+			mi->Set("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
+			mi->Set("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
 			mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3(0.8f, 0.1f, 0.3f));
+			mi->Set("u_MaterialUniforms.Metalness", 0.0f);
+			mi->Set("u_MaterialUniforms.Roughness", 0.8f);
 			m_Materials.push_back(mi);
 		}
 

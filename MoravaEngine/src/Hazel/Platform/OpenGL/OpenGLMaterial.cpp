@@ -74,7 +74,11 @@ namespace Hazel {
 	{
 		auto& resources = m_Shader->GetResources();
 
-		if (!resources.size()) return nullptr;
+		if (!resources.size())
+		{
+			Log::GetLogger()->error("OpenGLMaterial::FindResourceDeclaration - no resources found (name '{0}')!", name);
+			return nullptr;
+		}
 
 		for (const auto& [n, resource] : resources)
 		{

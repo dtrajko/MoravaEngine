@@ -44,6 +44,7 @@ namespace Hazel {
 		s_MaterialEditorPanel = new MaterialEditorPanel();
 
 		m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Gladiator/Gladiator.fbx"));
 	}
 

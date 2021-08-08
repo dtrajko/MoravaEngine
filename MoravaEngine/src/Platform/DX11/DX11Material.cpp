@@ -128,6 +128,13 @@ const Hazel::ShaderUniform* DX11Material::FindUniformDeclaration(const std::stri
 const Hazel::ShaderResourceDeclaration* DX11Material::FindResourceDeclaration(const std::string& name)
 {
 	auto& resources = m_Shader->GetResources();
+
+	if (!resources.size())
+	{
+		Log::GetLogger()->error("DX11Material::FindResourceDeclaration - no resources found (name '{0}')!", name);
+		return nullptr;
+	}
+
 	for (const auto& [n, resource] : resources)
 	{
 		if (resource.GetName() == name)

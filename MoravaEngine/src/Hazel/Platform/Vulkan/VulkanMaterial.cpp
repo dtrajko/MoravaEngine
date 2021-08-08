@@ -119,6 +119,13 @@ namespace Hazel {
 	const ShaderResourceDeclaration* VulkanMaterial::FindResourceDeclaration(const std::string& name)
 	{
 		auto& resources = m_Shader->GetResources();
+
+		if (!resources.size())
+		{
+			Log::GetLogger()->error("VulkanMaterial::FindResourceDeclaration - no resources found (name '{0}')!", name);
+			return nullptr;
+		}
+
 		for (const auto& [n, resource] : resources)
 		{
 			if (resource.GetName() == name)
@@ -130,7 +137,13 @@ namespace Hazel {
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const Ref<HazelTexture2D>& texture)
 	{
 		const ShaderResourceDeclaration* resource = FindResourceDeclaration(name);
-		HZ_CORE_ASSERT(resource);
+
+		if (!resource)
+		{
+			// HZ_CORE_ASSERT(resource);
+			Log::GetLogger()->error("VulkanMaterial::SetVulkanDescriptor - resource not found (name '{0}')!", name);
+			return;
+		}
 
 		// Texture is already set
 		if (resource->GetRegister() < m_Textures.size() && m_Textures[resource->GetRegister()] && texture->GetHash() == m_Textures[resource->GetRegister()]->GetHash())
