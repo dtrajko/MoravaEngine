@@ -302,6 +302,9 @@ namespace Hazel {
 		auto& submeshes = mesh->GetSubmeshes();
 		for (Submesh& submesh : submeshes)
 		{
+			auto material = mesh->GetMaterials()[submesh.MaterialIndex];
+			Buffer uniformStorageBuffer = material->GetUniformStorageBuffer();
+
 			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
@@ -314,6 +317,7 @@ namespace Hazel {
 
 			glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+			// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 
 			vkCmdDrawIndexed(commandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
 		}

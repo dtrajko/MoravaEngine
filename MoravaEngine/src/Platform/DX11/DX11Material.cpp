@@ -107,3 +107,31 @@ void DX11Material::Bind()
 	m_Shader.As<DX11Shader>()->GetVertexShader()->SetTextures(m_Textures);
 	m_Shader.As<DX11Shader>()->GetPixelShader()->SetTextures(m_Textures);
 }
+
+const Hazel::ShaderUniform* DX11Material::FindUniformDeclaration(const std::string& name)
+{
+	const auto& shaderBuffers = m_Shader->GetShaderBuffers();
+
+	HZ_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
+
+	if (shaderBuffers.size() > 0)
+	{
+		const Hazel::ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
+		if (buffer.Uniforms.find(name) == buffer.Uniforms.end())
+			return nullptr;
+
+		return &buffer.Uniforms.at(name);
+	}
+	return nullptr;
+}
+
+const Hazel::ShaderResourceDeclaration* DX11Material::FindResourceDeclaration(const std::string& name)
+{
+	auto& resources = m_Shader->GetResources();
+	for (const auto& [n, resource] : resources)
+	{
+		if (resource.GetName() == name)
+			return &resource;
+	}
+	return nullptr;
+}

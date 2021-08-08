@@ -870,7 +870,7 @@ void DX11Renderer::DrawToScreen(Hazel::HazelCamera* camera)
 	dx11ShaderUnlit->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 	dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-	std::vector<Hazel::Ref<DX11Texture2D>> textures;
+	std::vector<Hazel::Ref<Hazel::HazelTexture>> textures;
 	Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = s_RenderTarget;
 	Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
 	textures.push_back(textureDiffuse.As<DX11Texture2D>());
@@ -1219,7 +1219,7 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		dx11ShaderUnlit->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-		std::vector<Hazel::Ref<DX11Texture2D>> textures;
+		std::vector<Hazel::Ref<Hazel::HazelTexture>> textures;
 		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/umhlanga_sunrise_4k.jpg");
 		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
@@ -1255,7 +1255,7 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-		std::vector<Hazel::Ref<DX11Texture2D>> textures;
+		std::vector<Hazel::Ref<Hazel::HazelTexture>> textures;
 		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/gold.png");
 		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
 
@@ -1390,7 +1390,7 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 		}
 
 		// Load textures for submesh material
-		std::vector<Hazel::Ref<DX11Texture2D>> textures = {};
+		std::vector<Hazel::Ref<Hazel::HazelTexture>> textures = {};
 
 		if (renderObject.Textures.size() < 1)
 		{

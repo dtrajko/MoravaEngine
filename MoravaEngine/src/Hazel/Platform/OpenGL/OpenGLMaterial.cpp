@@ -73,10 +73,15 @@ namespace Hazel {
 	const ShaderResourceDeclaration* OpenGLMaterial::FindResourceDeclaration(const std::string& name)
 	{
 		auto& resources = m_Shader->GetResources();
+
+		if (!resources.size()) return nullptr;
+
 		for (const auto& [n, resource] : resources)
 		{
 			if (resource.GetName() == name)
+			{
 				return &resource;
+			}
 		}
 		return nullptr;
 	}
@@ -132,7 +137,8 @@ namespace Hazel {
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
 		{
-			HZ_CORE_WARN("Cannot find material property: ", name);
+			// HZ_CORE_WARN("Cannot find material property: ", name);
+			Log::GetLogger()->error("Cannot find material property '{0}'!", name);
 			return;
 		}
 		uint32_t slot = decl->GetRegister();
@@ -144,7 +150,8 @@ namespace Hazel {
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
 		{
-			HZ_CORE_WARN("Cannot find material property: ", name);
+			// HZ_CORE_WARN("Cannot find material property: ", name);
+			Log::GetLogger()->error("Cannot find material property '{0}'!", name);
 			return;
 		}
 		uint32_t slot = decl->GetRegister();
@@ -160,7 +167,8 @@ namespace Hazel {
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
 		{
-			HZ_CORE_WARN("Cannot find material property: ", name);
+			// HZ_CORE_WARN("Cannot find material property: ", name);
+			Log::GetLogger()->error("Cannot find material property '{0}'!", name);
 			return;
 		}
 		uint32_t slot = decl->GetRegister();
@@ -215,9 +223,18 @@ namespace Hazel {
 	Ref<HazelTexture2D> OpenGLMaterial::GetTexture2D(const std::string& name)
 	{
 		auto decl = FindResourceDeclaration(name);
-		HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+		if (!decl)
+		{
+			// HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+			Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
+		}
 		uint32_t slot = decl->GetRegister();
-		HZ_CORE_ASSERT(slot < m_Texture2Ds.size(), "Texture slot is invalid");
+		if (slot >= m_Texture2Ds.size())
+		{
+			// HZ_CORE_ASSERT(slot < m_Texture2Ds.size(), "Texture slot is invalid");
+			Log::GetLogger()->error("Texture slot '{0}' is invalid!", slot);
+		}
+
 		return m_Texture2Ds[slot];
 	}
 

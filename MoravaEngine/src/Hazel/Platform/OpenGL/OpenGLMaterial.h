@@ -51,9 +51,12 @@ namespace Hazel {
 		void Set(const std::string& name, const T& value)
 		{
 			auto decl = FindUniformDeclaration(name);
-			HZ_CORE_ASSERT(decl, "Could not find uniform!");
 			if (!decl)
+			{
+				// HZ_CORE_ASSERT(decl, "Could not find uniform!");
+				Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
 				return;
+			}
 
 			auto& buffer = m_UniformStorageBuffer;
 			buffer.Write((byte*)&value, decl->GetSize(), decl->GetOffset());
@@ -64,7 +67,8 @@ namespace Hazel {
 			auto decl = FindResourceDeclaration(name);
 			if (!decl)
 			{
-				HZ_CORE_WARN("Cannot find material property: ", name);
+				// HZ_CORE_WARN("Cannot find material property: ", name);
+				Log::GetLogger()->error("Cannot find material property: ", name);
 				return;
 			}
 			uint32_t slot = decl->GetRegister();
@@ -77,7 +81,11 @@ namespace Hazel {
 		T& Get(const std::string& name)
 		{
 			auto decl = FindUniformDeclaration(name);
-			HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+			if (!decl)
+			{
+				// HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+				Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
+			}
 			auto& buffer = m_UniformStorageBuffer;
 			return buffer.Read<T>(decl->GetOffset());
 		}
@@ -86,9 +94,17 @@ namespace Hazel {
 		Ref<T> GetResource(const std::string& name)
 		{
 			auto decl = FindResourceDeclaration(name);
-			HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+			if (!decl)
+			{
+				// HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+				Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
+			}
 			uint32_t slot = decl->GetRegister();
-			HZ_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
+			if (slot >= m_Textures.size())
+			{
+				// HZ_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
+				Log::GetLogger()->error("Texture slot '{0}' is invalid!", slot);
+			}
 			return Ref<T>(m_Textures[slot]);
 		}
 

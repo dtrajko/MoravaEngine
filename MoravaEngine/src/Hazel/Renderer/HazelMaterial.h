@@ -91,6 +91,8 @@ namespace Hazel {
 		virtual Ref<HazelShader> GetShader() = 0;
 		virtual const std::string& GetName() const = 0;
 
+		Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; }; // could be obsolete in later versions of the vulkan branch
+
 		// TODO: obsolete?
 		void Bind(); // Removed in more recent commits in Vulkan branch
 
@@ -196,12 +198,13 @@ namespace Hazel {
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;
 
-		Buffer m_UniformStorageBuffer; // could be obsolete in later versions of vulkan branch
+		Buffer m_UniformStorageBuffer; // could be obsolete in later versions of the vulkan branch
 
 		std::vector<Ref<HazelTexture>> m_Textures;
 
 		// TODO: This is temporary; come up with a proper system to track overrides
 		std::unordered_set<std::string> m_OverriddenValues;
+
 	};
 
 }

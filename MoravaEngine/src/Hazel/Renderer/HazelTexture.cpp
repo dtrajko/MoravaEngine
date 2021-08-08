@@ -17,9 +17,10 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None: return Ref<HazelTexture2D>();
+			case RendererAPIType::None:   return Ref<HazelTexture2D>();
 			case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(format, width, height, data);
 			case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, data);
+			case RendererAPIType::DX11:   return Ref<DX11Texture2D>::Create(format, width, height, data);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -30,9 +31,10 @@ namespace Hazel {
 	{
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None: return Ref<HazelTexture2D>();
+			case RendererAPIType::None:   return Ref<HazelTexture2D>();
 			case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(format, width, height, wrap);
 			case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, wrap);
+			case RendererAPIType::DX11:   return Ref<DX11Texture2D>::Create(format, width, height, wrap);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");

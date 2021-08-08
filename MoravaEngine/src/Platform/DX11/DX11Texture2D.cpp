@@ -161,14 +161,14 @@ DX11Texture2D::DX11Texture2D(const std::string& path, bool srgb, Hazel::TextureW
 	HZ_CORE_ASSERT(false);
 }
 
-DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, const void* data, Hazel::TextureWrap wrap)
-	: m_Format(format)
+DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, const void* data, Hazel::TextureWrap wrap) :
+	DX11Texture2D(glm::vec2(width, height), DX11Texture2D::Type::Normal)
 {
-	Log::GetLogger()->error("This version of DX11Texture2D constructor is not used in DirectX 11!");
+	m_Format = format;
 
+	// Log::GetLogger()->error("This version of DX11Texture2D constructor is not used in DirectX 11!");
 	// Invalidate();
-
-	HZ_CORE_ASSERT(false);
+	// HZ_CORE_ASSERT(false);
 }
 
 DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, Hazel::TextureWrap wrap)

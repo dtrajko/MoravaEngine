@@ -197,7 +197,9 @@ namespace Hazel {
 
 			// Skip empty push constant buffers - these are for the renderer only
 			if (bufferName.empty())
+			{
 				continue;
+			}
 
 			ShaderBuffer& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;

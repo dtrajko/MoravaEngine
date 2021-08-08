@@ -382,6 +382,7 @@ namespace Hazel {
 
 		/**** BEGIN Materials ****/
 
+		// Materials
 		if (scene->HasMaterials())
 		{
 			Log::GetLogger()->info("---- Materials - {0} ----", m_FilePath);
@@ -408,18 +409,33 @@ namespace Hazel {
 				uint32_t textureCount = aiMaterial->GetTextureCount(aiTextureType_DIFFUSE);
 				HZ_MESH_LOG("    TextureCount = {0}", textureCount);
 
+				glm::vec3 albedoColor(0.8f);
 				aiColor3D aiColor;
-				aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor);
+				// aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor);
+				if (aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor) == AI_SUCCESS)
+				{
+					albedoColor = { aiColor.r, aiColor.g, aiColor.b };
+				}
 
 				float shininess, metalness;
-				aiMaterial->Get(AI_MATKEY_SHININESS, shininess);
-				aiMaterial->Get(AI_MATKEY_REFLECTIVITY, metalness);
+				// aiMaterial->Get(AI_MATKEY_SHININESS, shininess);
+				if (aiMaterial->Get(AI_MATKEY_SHININESS, shininess) != aiReturn_SUCCESS)
+				{
+					shininess = 80.0f; // Default value
+				}
+
+				// aiMaterial->Get(AI_MATKEY_REFLECTIVITY, metalness);
+				if (aiMaterial->Get(AI_MATKEY_REFLECTIVITY, metalness) != aiReturn_SUCCESS)
+				{
+					metalness = 0.0f;
+				}
 
 				// float roughness = 1.0f - shininess * 0.01f;
 				// roughness *= roughness;
 				float roughness = 1.0f - glm::sqrt(shininess / 100.0f);
 				HZ_MESH_LOG("    COLOR = {0}, {1}, {2}", aiColor.r, aiColor.g, aiColor.b);
 				HZ_MESH_LOG("    ROUGHNESS = {0}", roughness);
+				HZ_MESH_LOG("    METALNESS = {0}", metalness);
 
 				// BEGIN the material data section
 				Submesh* submeshPtr = nullptr;
@@ -431,6 +447,8 @@ namespace Hazel {
 				// END the material data section
 
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
+				bool fallback = !hasAlbedoMap;
+
 				if (hasAlbedoMap)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
@@ -474,9 +492,11 @@ namespace Hazel {
 						else
 						{
 							m_MeshShader->SetInt("u_AlbedoTexture", m_Textures[i]->GetID());
+							mi->Set("u_AlbedoTexture", 1.0f); // redundant
 						}
 
 						m_MeshShader->SetFloat("u_MaterialUniforms.AlbedoTexToggle", 1.0f);
+						mi->Set("u_MaterialUniforms.AlbedoTexToggle", 1.0f); // redundant
 						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Albedo, texturePath, materialData->EnvMapMaterialRef);
 					}
 					else
@@ -487,17 +507,25 @@ namespace Hazel {
 						m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
 
 						HZ_MESH_LOG("Mesh has no Albedo map.");
+
+						fallback = true;
 					}
 				}
 				else
 				{
 					m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
-
 					Log::GetLogger()->info("    No albedo map");
+				}
+
+				if (fallback)
+				{
+					HZ_MESH_LOG("    No albedo map");
+					mi->Set("u_AlbedoTexture", whiteTexture);
 				}
 
 				// Normal maps
 				m_MeshShader->SetFloat("u_MaterialUniforms.NormalTexToggle", 0.0f);
+				mi->Set("u_MaterialUniforms.NormalTexToggle", 0.0f); // redundant
 
 				if (aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS)
 				{
@@ -749,6 +777,14 @@ namespace Hazel {
 				}
 			}
 			HZ_MESH_LOG("------------------------");
+		}
+		else
+		{
+			// auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
+			auto mi = Ref<HazelMaterialInstance>::Create(m_BaseMaterial, "Hazel-Default");
+			mi->Set("u_MaterialUniforms.AlbedoTexToggle", 0.0f);
+			mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3(0.8f, 0.1f, 0.3f));
+			m_Materials.push_back(mi);
 		}
 
 		/**** END Materials ****/
