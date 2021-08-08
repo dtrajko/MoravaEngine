@@ -35,9 +35,11 @@ namespace Hazel {
 		VkFormat GetDepthFormat() const { return m_DepthFormat; }
 
 		static Ref<VulkanPhysicalDevice> Select();
+
 	private:
 		VkFormat FindDepthFormat() const;
 		QueueFamilyIndices GetQueueFamilyIndices(int queueFlags);
+
 	private:
 		QueueFamilyIndices m_QueueFamilyIndices;
 
@@ -73,13 +75,40 @@ namespace Hazel {
 
 		const Ref<VulkanPhysicalDevice>& GetPhysicalDevice() const { return m_PhysicalDevice; }
 		VkDevice GetVulkanDevice() const { return m_LogicalDevice; }
+
+		/**** BEGIN Buffer Helper Functions (VulkanGameEngine by Brendan Galea) ****/
+
+		void CreateBuffer(
+			VkDeviceSize size,
+			VkBufferUsageFlags usage,
+			VkMemoryPropertyFlags properties,
+			VkBuffer& buffer,
+			VkDeviceMemory& bufferMemory);
+
+		VkCommandBuffer BeginSingleTimeCommands();
+		void EndSingleTimeCommands(VkCommandBuffer commandBuffer);
+
+		void CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
+		void CopyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount);
+
+		void CreateImageWithInfo(
+			const VkImageCreateInfo& imageInfo,
+			VkMemoryPropertyFlags properties,
+			VkImage& image,
+			VkDeviceMemory& imageMemory);
+
+		uint32_t FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+		/**** END Buffer Helper Functions (VulkanGameEngine by Brendan Galea) ****/
+
 	private:
 		VkDevice m_LogicalDevice = nullptr;
 		Ref<VulkanPhysicalDevice> m_PhysicalDevice;
 		VkPhysicalDeviceFeatures m_EnabledFeatures;
 		VkCommandPool m_CommandPool, m_ComputeCommandPool;
 
-		VkQueue m_Queue;
+		VkQueue m_Queue; // a.k.a. Graphics Queue (default)
 		VkQueue m_ComputeQueue;
 
 		bool m_EnableDebugMarkers = false;
