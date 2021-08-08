@@ -68,6 +68,14 @@
       <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;box2d.lib;shaderc_combined.lib;vulkan-1.lib;d3d11.lib;d3dcompiler.lib;DirectXTex.lib;mono-2.0-sgen.lib;assimp-vc142-mtd.lib;yaml-cppd.lib;spirv-cross-cored.lib;spirv-cross-cppd.lib;spirv-cross-glsld.lib;spirv-cross-hlsld.lib;spirv-cross-msld.lib;spirv-cross-reflectd.lib;spirv-cross-utild.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>
+      </Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -94,6 +102,14 @@
       <AdditionalDependencies>opengl32.lib;glew32.lib;glfw3.lib;box2d.lib;shaderc_combined.lib;vulkan-1.lib;d3d11.lib;d3dcompiler.lib;DirectXTex.lib;mono-2.0-sgen.lib;assimp-vc142-mt.lib;yaml-cpp.lib;spirv-cross-core.lib;spirv-cross-cpp.lib;spirv-cross-glsl.lib;spirv-cross-hlsl.lib;spirv-cross-msl.lib;spirv-cross-reflect.lib;spirv-cross-util.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>
+      </Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp" />

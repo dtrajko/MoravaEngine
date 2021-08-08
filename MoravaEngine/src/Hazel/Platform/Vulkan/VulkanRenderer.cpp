@@ -3,15 +3,16 @@
 #include "imgui.h"
 
 #include "Vulkan.h"
-#include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
 #include "Hazel/Platform/Vulkan/VulkanFramebuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
+#include "Hazel/Platform/Vulkan/VulkanMaterial.h"
 #include "Hazel/Platform/Vulkan/VulkanPipeline.h"
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
 #include "Hazel/Platform/Vulkan/VulkanVertexBuffer.h"
+#include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/SceneRenderer.h"
 
 #if !defined(IMGUI_IMPL_API)
@@ -20,7 +21,7 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan_with_textures.h"
 
-#include "../../ImGuizmo/ImGuizmo.h"
+#include "ImGuizmo.h"
 
 
 namespace Hazel {
@@ -302,7 +303,7 @@ namespace Hazel {
 		auto& submeshes = mesh->GetSubmeshes();
 		for (Submesh& submesh : submeshes)
 		{
-			auto material = mesh->GetMaterials()[submesh.MaterialIndex];
+			auto& material = mesh->GetMaterials()[submesh.MaterialIndex];
 			Buffer uniformStorageBuffer = material->GetUniformStorageBuffer();
 
 			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();

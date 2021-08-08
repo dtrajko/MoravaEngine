@@ -91,7 +91,7 @@ namespace Hazel {
 		virtual Ref<HazelShader> GetShader() = 0;
 		virtual const std::string& GetName() const = 0;
 
-		Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; }; // could be obsolete in later versions of the vulkan branch
+		Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; }; // should it be located in HazelMaterial or VulkanMaterial?
 
 		// TODO: obsolete?
 		void Bind(); // Removed in more recent commits in Vulkan branch
@@ -106,6 +106,9 @@ namespace Hazel {
 		ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
 		Buffer& GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration);
 
+	protected:
+		Buffer m_UniformStorageBuffer; // should it be located in HazelMaterial or VulkanMaterial?
+
 	private:
 		Ref<HazelShader> m_Shader;
 		// std::unordered_set<HazelMaterial*> m_MaterialInstances;
@@ -114,7 +117,6 @@ namespace Hazel {
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;
 
-		Buffer m_UniformStorageBuffer; // could be obsolete in later versions of vulkan branch
 
 		std::vector<Ref<HazelTexture>> m_Textures;
 

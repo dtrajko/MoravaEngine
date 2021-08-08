@@ -14,9 +14,6 @@ namespace Hazel {
 		: m_Shader(shader), m_Name(name)
 	{
 		m_Shader->AddShaderReloadedCallback(std::bind(&OpenGLMaterial::OnShaderReloaded, this));
-		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan) {
-			AllocateStorage();
-		}
 
 		m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
 		m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;

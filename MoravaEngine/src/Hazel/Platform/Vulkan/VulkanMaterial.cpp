@@ -78,8 +78,6 @@ namespace Hazel {
 
 	void VulkanMaterial::AllocateStorage()
 	{
-		Log::GetLogger()->warn("VulkanMaterial::AllocateStorage: method not yet implemented!"); return;
-
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 
 		if (shaderBuffers.size() > 0)
@@ -109,7 +107,9 @@ namespace Hazel {
 		{
 			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
 			if (buffer.Uniforms.find(name) == buffer.Uniforms.end())
+			{
 				return nullptr;
+			}
 
 			return &buffer.Uniforms.at(name);
 		}

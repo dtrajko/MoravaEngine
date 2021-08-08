@@ -139,11 +139,12 @@ namespace Hazel {
 		virtual Ref<HazelShader> GetShader() override { return m_Shader; }
 		virtual const std::string& GetName() const override { return m_Name; }
 
-		Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; }
+		// Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; } // The method should be in parent HazelMaterial
 
 		void UpdateForRendering();
 
 		const VulkanShader::ShaderMaterialDescriptorSet& GetDescriptorSet() { return m_DescriptorSet; }
+
 	private:
 		void Init();
 		void AllocateStorage();
@@ -156,6 +157,7 @@ namespace Hazel {
 
 		const ShaderUniform* FindUniformDeclaration(const std::string& name);
 		const ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
+
 	private:
 		Ref<HazelShader> m_Shader;
 		std::string m_Name;
@@ -164,6 +166,7 @@ namespace Hazel {
 		{
 			None = 0, Texture2D, TextureCube, Image2D
 		};
+
 		struct PendingDescriptor
 		{
 			PendingDescriptorType Type = PendingDescriptorType::None;
@@ -173,12 +176,13 @@ namespace Hazel {
 			Ref<HazelImage> Image;
 			VkDescriptorImageInfo SubmittedImageInfo{};
 		};
+
 		std::vector<std::shared_ptr<PendingDescriptor>> m_ResidentDescriptors; // TODO: should this be a map (binding point)?
 		std::vector<std::shared_ptr<PendingDescriptor>> m_PendingDescriptors;  // TODO: weak ref
 
 		uint32_t m_MaterialFlags = 0;
 
-		Buffer m_UniformStorageBuffer;
+		// Buffer m_UniformStorageBuffer; // The property should be in parent HazelMaterial
 		std::vector<Ref<HazelTexture>> m_Textures; // TODO: Texture should only be stored as images
 		std::vector<Ref<HazelImage>> m_Images;
 

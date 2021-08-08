@@ -59,7 +59,7 @@ namespace Hazel {
 		virtual size_t GetHash() const override;
 
 		virtual const std::string& GetName() const override { return m_Name; }
-		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override;
+		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override;
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 

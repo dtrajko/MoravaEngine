@@ -135,6 +135,10 @@ void WindowsWindow::InitGLFW(const WindowProps& props)
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	}
 
+	// Enable MSAA (multisample anti-aliasing)
+	glfwWindowHint(GLFW_SAMPLES, 4);
+	glEnable(GL_MULTISAMPLE);
+
 	m_GLFW_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
 	if (!m_GLFW_Window)
 	{

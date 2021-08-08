@@ -340,6 +340,7 @@ namespace Hazel {
 			// Set target frame buffer
 			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 #endif
+
 			{
 				// uniform buffer binding 0 uniform Camera
 				void* ubPtr = shader->MapUniformBuffer(0);
@@ -351,6 +352,34 @@ namespace Hazel {
 				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
 				shader->UnmapUniformBuffer(0);
 			}
+
+			{
+				struct Light
+				{
+					glm::vec3 Direction;
+					glm::vec3 Radiance;
+					float Multiplier;
+				};
+
+				struct UB
+				{
+					Light lights;
+					glm::vec3 u_CameraPosition;
+				};
+
+				UB ub;
+				ub.lights = {
+					{ 0.5f, 0.5f, 0.5f },
+					{ 1.0f, 1.0f, 1.0f },
+					1.0f,
+				};
+				ub.u_CameraPosition = camera.GetPosition();
+
+				void* ubPtr = shader->MapUniformBuffer(1);
+				memcpy(ubPtr, &ub, sizeof(UB));
+				shader->UnmapUniformBuffer(1);
+			}
+
 #if 0
 			{
 				VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();

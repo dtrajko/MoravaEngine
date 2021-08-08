@@ -505,6 +505,7 @@ namespace Hazel {
 
 						// Fallback to albedo color
 						m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
+						mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b }); // redundant
 
 						HZ_MESH_LOG("Mesh has no Albedo map.");
 
@@ -514,6 +515,7 @@ namespace Hazel {
 				else
 				{
 					m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
+					mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b }); // redundant
 					Log::GetLogger()->info("    No albedo map");
 				}
 

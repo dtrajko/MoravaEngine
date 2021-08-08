@@ -167,14 +167,16 @@ namespace Hazel {
 
 		Ref<HazelShader> GetMeshShader() { return m_MeshShader; }
 		Ref<HazelMaterial> GetMaterial() { return m_BaseMaterial; }
+		const std::vector<Ref<HazelMaterial>>& GetMaterials() const { return m_Materials; }
+		std::vector<Ref<HazelMaterial>>& GetMaterials() { return m_Materials; }
+		const std::vector<Ref<HazelTexture2D>>& GetTextures() const { return m_Textures; }
+		std::vector<Ref<HazelTexture2D>>& GetTextures() { return m_Textures; }
+
 		// std::vector<Ref<HazelMaterialInstance>> GetMaterials() { return m_Materials; }
 		// const std::vector<Ref<HazelMaterialInstance>>& GetMaterials() const { return m_Materials; }
-		std::vector<Ref<HazelMaterial>> GetMaterials() { return m_Materials; }
-		const std::vector<Ref<HazelMaterial>>& GetMaterials() const { return m_Materials; }
-		inline std::vector<Ref<HazelTexture2D>>& GetTextures() { return m_Textures; }
-		inline const std::vector<Ref<HazelTexture2D>>& GetTextures() const { return m_Textures; }
-		inline bool& IsAnimated() { return m_IsAnimated; }
-		inline const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
+
+		bool& IsAnimated() { return m_IsAnimated; }
+		const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const;
 
 		Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }

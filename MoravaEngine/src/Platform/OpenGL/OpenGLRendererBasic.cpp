@@ -141,7 +141,7 @@ void OpenGLRendererBasic::DisableDepthTest()
 
 void OpenGLRendererBasic::EnableMSAA()
 {
-	glEnable(GL_MULTISAMPLE);
+	glEnable(GL_MULTISAMPLE); // Probably won't work - MSAA must be enabled before window creation
 }
 
 void OpenGLRendererBasic::DisableMSAA()
