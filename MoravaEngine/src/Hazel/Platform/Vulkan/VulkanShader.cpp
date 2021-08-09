@@ -247,6 +247,30 @@ namespace Hazel {
 			MORAVA_CORE_TRACE("--------------------------");
 		}
 
+		MORAVA_CORE_TRACE("Storage Images:");
+		for (const auto& resource : resources.storage_images)
+		{
+			const auto& name = resource.name;
+			auto& type = compiler.get_type(resource.base_type_id);
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t dimension = type.image.dim;
+
+			// HZ_CORE_ASSERT(m_StorageImages.find(binding) == m_StorageImages.end());
+
+			auto& storageImage = m_StorageImages[binding];
+			// ImageSampler imageSampler;
+			storageImage.BindingPoint = binding;
+			storageImage.Name = name;
+			storageImage.ShaderStage = shaderStage;
+			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
+
+			MORAVA_CORE_TRACE("  Name: {0}", name);
+			// MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
+			MORAVA_CORE_TRACE("  Binding Point: {0}", binding);
+			// MORAVA_CORE_TRACE("  Size: {0}", size);
+			MORAVA_CORE_TRACE("--------------------------");
+		}
+
 		MORAVA_CORE_TRACE("==========================");
 	}
 

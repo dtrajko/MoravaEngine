@@ -166,6 +166,7 @@ namespace Hazel {
 
 		std::unordered_map<uint32_t, UniformBuffer> m_UniformBuffers;
 		std::unordered_map<uint32_t, ImageSampler> m_ImageSamplers;
+		std::unordered_map<uint32_t, ImageSampler> m_StorageImages; // output images in shaders
 		std::unordered_map<std::string, VkWriteDescriptorSet> m_WriteDescriptorSets;
 		std::vector<PushConstantRange> m_PushConstantRanges;
 
