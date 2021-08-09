@@ -114,5 +114,4 @@ namespace Hazel {
 		bool m_EnableDebugMarkers = false;
 	};
 
-
 }

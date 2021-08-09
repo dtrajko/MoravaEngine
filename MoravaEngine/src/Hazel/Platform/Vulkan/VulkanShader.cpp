@@ -425,17 +425,99 @@ namespace Hazel {
 	// TODO: does not exist in Vulkan Week version, added later
 	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set)
 	{
-		Log::GetLogger()->warn("VulkanShader::CreateDescriptorSets(uint32_t set): Method not yet implemented!");
+		ShaderMaterialDescriptorSet result{};
 
-		return VulkanShader::ShaderMaterialDescriptorSet();
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		if (m_TypeCounts.find(set) == m_TypeCounts.end())
+		{
+			// HZ_CORE_ASSERT(m_TypeCounts.find(set) != m_TypeCounts.end());
+			Log::GetLogger()->error("VulkanShader::CreateDescriptorSets('{0}') - descriptor set not found!", set);
+			return result;
+		}
+
+		// TODO: Move this to the centralized renderer
+		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
+		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		descriptorPoolInfo.pNext = nullptr;
+		descriptorPoolInfo.poolSizeCount = m_TypeCounts.at(set).size();
+		descriptorPoolInfo.pPoolSizes = m_TypeCounts.at(set).data();
+		descriptorPoolInfo.maxSets = 1;
+
+		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &result.Pool));
+
+		// Allocate a new descriptor set from the global descriptor pool
+		VkDescriptorSetAllocateInfo allocInfo = {};
+		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+		allocInfo.descriptorPool = result.Pool;
+		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
+
+		result.DescriptorSets.emplace_back();
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, result.DescriptorSets.data()));
+		return result;
 	}
 
 	// TODO: does not exist in Vulkan Week version, added later
 	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets)
 	{
-		Log::GetLogger()->warn("VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets): Method not yet implemented!");
+		ShaderMaterialDescriptorSet result{};
 
-		return VulkanShader::ShaderMaterialDescriptorSet();
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> poolSizes;
+		for (auto&& [set, shaderDescriptorSet] : m_ShaderDescriptorSets)
+		{
+			if (shaderDescriptorSet.UniformBuffers.size())
+			{
+				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				typeCount.descriptorCount = shaderDescriptorSet.UniformBuffers.size() * numberOfSets;
+			}
+			if (shaderDescriptorSet.ImageSamplers.size())
+			{
+				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				typeCount.descriptorCount = shaderDescriptorSet.ImageSamplers.size() * numberOfSets;
+			}
+			if (shaderDescriptorSet.StorageImages.size())
+			{
+				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+				typeCount.descriptorCount = shaderDescriptorSet.StorageImages.size() * numberOfSets;
+			}
+
+		}
+
+		if (poolSizes.find(set) == poolSizes.end())
+		{
+			// HZ_CORE_ASSERT(poolSizes.find(set) != poolSizes.end());
+			Log::GetLogger()->error("VulkanShader::CreateDescriptorSets('{0}, {1}') - descriptor set not found in 'poolSizes'!", set, numberOfSets);
+		}
+
+		// TODO: Move this to the centralized renderer
+		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
+		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		descriptorPoolInfo.pNext = nullptr;
+		descriptorPoolInfo.poolSizeCount = poolSizes.at(set).size();
+		descriptorPoolInfo.pPoolSizes = poolSizes.at(set).data();
+		descriptorPoolInfo.maxSets = numberOfSets;
+
+		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &result.Pool));
+
+		result.DescriptorSets.resize(numberOfSets);
+
+		for (uint32_t i = 0; i < numberOfSets; i++)
+		{
+			VkDescriptorSetAllocateInfo allocInfo = {};
+			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			allocInfo.descriptorPool = result.Pool;
+			allocInfo.descriptorSetCount = 1;
+			allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
+
+			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &result.DescriptorSets[i]));
+		}
+		return result;
 	}
 
 	// does not exist in Vulkan Week version, added later

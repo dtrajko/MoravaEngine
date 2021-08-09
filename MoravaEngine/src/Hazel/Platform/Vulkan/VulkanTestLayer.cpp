@@ -43,9 +43,10 @@ namespace Hazel {
 
 		s_MaterialEditorPanel = new MaterialEditorPanel();
 
-		m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
-		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Gladiator/Gladiator.fbx"));
+		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
+		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/TestSceneVulkan.fbx"));
+		m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 	}
 
 	void VulkanTestLayer::OnDetach()
@@ -342,13 +343,18 @@ namespace Hazel {
 #endif
 
 			{
-				// uniform buffer binding 0 uniform Camera
+				////	// uniform buffer binding 0 uniform Camera
+				////	void* ubPtr = shader->MapUniformBuffer(0);
+				////	// glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
+				////	glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)VulkanRenderer::GetViewportWidth(), (float)VulkanRenderer::GetViewportHeight(), 0.1f, 1000.0f);
+				////	// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
+				////	glm::mat4 viewProj = proj * camera.GetViewMatrix();  // Runtime camera
+				////	// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
+				////	memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+				////	shader->UnmapUniformBuffer(0);
+
 				void* ubPtr = shader->MapUniformBuffer(0);
-				// glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
-				glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)VulkanRenderer::GetViewportWidth(), (float)VulkanRenderer::GetViewportHeight(), 0.1f, 1000.0f);
-				// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
-				glm::mat4 viewProj = proj * camera.GetViewMatrix();  // Runtime camera
-				// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
+				glm::mat4 viewProj = camera.GetViewProjection();
 				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
 				shader->UnmapUniformBuffer(0);
 			}
@@ -357,6 +363,7 @@ namespace Hazel {
 				struct Light
 				{
 					glm::vec3 Direction;
+					// float Padding = 0.0f;
 					glm::vec3 Radiance;
 					float Multiplier;
 				};
@@ -370,6 +377,7 @@ namespace Hazel {
 				UB ub;
 				ub.lights = {
 					{ 0.5f, 0.5f, 0.5f },
+					// 0.0f,
 					{ 1.0f, 1.0f, 1.0f },
 					1.0f,
 				};

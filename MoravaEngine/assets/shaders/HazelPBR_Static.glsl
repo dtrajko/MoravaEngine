@@ -2,7 +2,7 @@
 // -- Hazel Engine PBR shader --
 // -----------------------------
 // Note: this shader is still very much in progress. There are likely many bugs and future additions that will go in.
-//       Currently heavily updated. 
+//       Currently heavily updated.
 //
 // References upon which this is based:
 // - Unreal Engine 4 PBR notes (https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
@@ -51,6 +51,8 @@ void main()
 
 	gl_Position = u_ViewProjectionMatrix * u_Transform * vec4(a_Position, 1.0);
 }
+
+// ---------------------------------------------------------------------------------------------------
 
 #type fragment
 #version 450 core

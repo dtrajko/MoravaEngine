@@ -417,6 +417,8 @@ namespace Hazel {
 					albedoColor = { aiColor.r, aiColor.g, aiColor.b };
 				}
 
+				mi->Set("u_MaterialUniforms.AlbedoColor", albedoColor);
+
 				float shininess, metalness;
 				// aiMaterial->Get(AI_MATKEY_SHININESS, shininess);
 				if (aiMaterial->Get(AI_MATKEY_SHININESS, shininess) != aiReturn_SUCCESS)
@@ -471,6 +473,7 @@ namespace Hazel {
 					if (texture && texture->Loaded())
 					{
 						m_Textures[i] = texture;
+						mi->Set("u_AlbedoTexture", texture);
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
@@ -849,7 +852,8 @@ namespace Hazel {
 			{
 				auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-				MORAVA_CORE_WARN("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
+				// MORAVA_CORE_WARN("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
+				Log::GetLogger()->warn("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
 				vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(s_WriteDescriptorSets.size()), s_WriteDescriptorSets.data(), 0, nullptr);
 			}
 		}

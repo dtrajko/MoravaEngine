@@ -52,16 +52,21 @@ namespace Hazel {
 		stbi_set_flip_vertically_on_load(1);
 		m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
 		m_ImageData.Size = width * height * 4;
-		HZ_CORE_ASSERT(m_ImageData.Data, "Failed to load image!");
+		if (!m_ImageData.Data)
+		{
+			// HZ_CORE_ASSERT(m_ImageData.Data, "Failed to load image!");
+			Log::GetLogger()->error("Failed to load image '{0}'!", path);
+		}
 		m_Width = width;
 		m_Height = height;
 		m_Channels = channels;
 
 		if (channels != 4 && channels != 3) {
+			// HZ_CORE_ASSERT(channels == 4 || channels == 3);
+			Log::GetLogger()->error("Invalid number of channels: '{0}'!", channels);
 			return;
 		}
 
-		HZ_CORE_ASSERT(channels == 4 || channels == 3);
 		// HZ_CORE_ASSERT(channels == 4);
 
 		//	Ref<VulkanTexture2D> instance = this;
