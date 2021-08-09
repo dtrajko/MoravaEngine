@@ -84,51 +84,63 @@ namespace Hazel {
 			// Vertex and Fragment for now
 			std::string source = ReadShaderFromFile(m_AssetPath);
 			m_ShaderSource = PreProcess(source);
-			m_ShaderStages.resize(m_ShaderSource.size());
 			std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
 			shaderData.insert(std::make_pair(VK_SHADER_STAGE_VERTEX_BIT, std::vector<uint32_t>()));
 			shaderData.insert(std::make_pair(VK_SHADER_STAGE_FRAGMENT_BIT, std::vector<uint32_t>()));
-			if (m_ShaderStages.size() > 2)
+			if (m_ShaderSource.size() > 2)
 			{
 				shaderData.insert(std::make_pair(VK_SHADER_STAGE_COMPUTE_BIT, std::vector<uint32_t>()));
 			}
-			CompileOrGetVulkanBinary(shaderData, false);
-			LoadAndCreateShader(VK_SHADER_STAGE_VERTEX_BIT, m_ShaderStages[0], shaderData[VK_SHADER_STAGE_VERTEX_BIT]);
-			LoadAndCreateShader(VK_SHADER_STAGE_FRAGMENT_BIT, m_ShaderStages[1], shaderData[VK_SHADER_STAGE_FRAGMENT_BIT]);
-			Reflect(VK_SHADER_STAGE_VERTEX_BIT, shaderData[VK_SHADER_STAGE_VERTEX_BIT]); // vertex shader method similar to CreateDescriptors()
-			Reflect(VK_SHADER_STAGE_FRAGMENT_BIT, shaderData[VK_SHADER_STAGE_FRAGMENT_BIT]); // fragment shader, method similar to CreateDescriptors()
-			if (m_ShaderStages.size() > 2)
-			{
-				LoadAndCreateShader(VK_SHADER_STAGE_COMPUTE_BIT, m_ShaderStages[2], shaderData[VK_SHADER_STAGE_COMPUTE_BIT]);
-				Reflect(VK_SHADER_STAGE_COMPUTE_BIT, shaderData[VK_SHADER_STAGE_COMPUTE_BIT]); // fragment shader, method similar to CreateDescriptors()
-			}
+			CompileOrGetVulkanBinary(shaderData, forceCompile);
+			LoadAndCreateShaders(shaderData);
+			ReflectAllShaderStages(shaderData);
 			CreateDescriptors();
 		}
 	}
 
-	void VulkanShader::LoadAndCreateShader(VkShaderStageFlagBits shaderStage, VkPipelineShaderStageCreateInfo& pipelineShaderStageCreateInfo, const std::vector<uint32_t>& shaderData)
+	void VulkanShader::LoadAndCreateShaders(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-		HZ_CORE_ASSERT(shaderData.size());
-		// Create a new shader module that will be used for pipeline creation
-		VkShaderModuleCreateInfo moduleCreateInfo{};
-		moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-		moduleCreateInfo.codeSize = shaderData.size() * sizeof(uint32_t);
-		moduleCreateInfo.pCode = shaderData.data();
+		m_PipelineShaderStageCreateInfos.clear();
 
-		VkShaderModule shaderModule;
-		VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
+		for (auto [stage, data] : shaderData)
+		{
+			// HZ_CORE_ASSERT(data.size());
+			if (!data.size()) continue;
 
-		pipelineShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		pipelineShaderStageCreateInfo.stage = shaderStage;
-		pipelineShaderStageCreateInfo.module = shaderModule;
-		pipelineShaderStageCreateInfo.pName = "main";
+			// Create a new shader module that will be used for pipeline creation
+			VkShaderModuleCreateInfo moduleCreateInfo{};
+			moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+			moduleCreateInfo.codeSize = data.size() * sizeof(uint32_t);
+			moduleCreateInfo.pCode = data.data();
+
+			VkShaderModule shaderModule;
+			VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
+
+			VkPipelineShaderStageCreateInfo& shaderStage = m_PipelineShaderStageCreateInfos.emplace_back();
+			shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			shaderStage.stage = stage;
+			shaderStage.module = shaderModule;
+			shaderStage.pName = "main";
+		}
+	}
+
+	void VulkanShader::ReflectAllShaderStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
+	{
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		for (auto [stage, data] : shaderData)
+		{
+			Reflect(stage, data);
+		}
 	}
 
 	void VulkanShader::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		if (!shaderData.size()) return;
 
 		std::string shaderStageName = "UNKNOWN";
 		switch (shaderStage)
@@ -791,6 +803,18 @@ namespace Hazel {
 	}
 
 	void VulkanShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size) {}
+
+	/****
+	const std::vector<VkPipelineShaderStageCreateInfo>& VulkanShader::GetShaderStages() const
+	{
+		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+		for (auto [stage, pipelineShaderStageCreateInfo] : m_ShaderStages)
+		{
+			shaderStages.push_back(pipelineShaderStageCreateInfo);
+		}
+		return shaderStages;
+	}
+	****/
 
 	void VulkanShader::SetUniform(const std::string& fullname, float value) {}
 

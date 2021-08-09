@@ -248,7 +248,7 @@ namespace Hazel {
 			vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributes.size());
 			vertexInputState.pVertexAttributeDescriptions = vertexInputAttributes.data();
 
-			const auto& shaderStages = vulkanShader->GetShaderStages(); // used in Vulkan Week
+			const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos(); // used in Vulkan Week
 			// const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos(); // used in more recent versions
 
 			// Set pipeline shader stage info

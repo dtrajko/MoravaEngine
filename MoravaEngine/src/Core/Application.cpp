@@ -85,14 +85,13 @@ void Application::RenderImGui()
 {
 	m_ImGuiLayer->Begin();
 
-	ImGui::Begin("Renderer");
-	auto& caps = Hazel::HazelRenderer::GetCapabilities(); // TODO: 's_RendererAPI was nullptr'
-	ImGui::Text("Vendor: %s", caps.Vendor.c_str());
-	ImGui::Text("Device: %s", caps.Device.c_str());
-	ImGui::Text("Version: %s", caps.Version.c_str());
-	// ImGui::Text("Frame Time: %.2fms", Timer::Get()->GetCurrentTimestamp());
-	ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
-	ImGui::End();
+	// ImGui::Begin("Renderer");
+	// auto& caps = Hazel::HazelRenderer::GetCapabilities();
+	// ImGui::Text("Vendor: %s", caps.Vendor.c_str());
+	// ImGui::Text("Device: %s", caps.Device.c_str());
+	// ImGui::Text("Version: %s", caps.Version.c_str());
+	// ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
+	// ImGui::End();
 
 	for (Hazel::Layer* layer : m_LayerStack)
 	{

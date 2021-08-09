@@ -112,7 +112,6 @@ namespace Hazel {
 		// Vulkan-specific
 		virtual RendererID GetRendererID() const override;
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
-		const std::vector<VkPipelineShaderStageCreateInfo>& GetShaderStages() const { return m_ShaderStages; } // used in Vulkan Week
 
 		virtual void SetUniform(const std::string& fullname, uint32_t value) override;
 		virtual void SetUniform(const std::string& fullname, float value) override;
@@ -147,16 +146,18 @@ namespace Hazel {
 	private:
 		std::unordered_map<VkShaderStageFlagBits, std::string> PreProcess(const std::string& source);
 		void CompileOrGetVulkanBinary(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile);
-		void LoadAndCreateShader(VkShaderStageFlagBits shaderStage, VkPipelineShaderStageCreateInfo& pipelineShaderStageCreateInfo, const std::vector<uint32_t>& shaderData);
 
+		void LoadAndCreateShaders(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
+		void ReflectAllShaderStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData);
 		void Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData); // same as Reflect()
+		// void LoadAndCreateShader(VkShaderStageFlagBits shaderStage, VkPipelineShaderStageCreateInfo& pipelineShaderStageCreateInfo, const std::vector<uint32_t>& shaderData);
 		void CreateDescriptors(); // same as CreateDescriptorsVulkanWeek();
 
 		void AllocateUniformBuffer(UniformBuffer& dst);
 
 	private:
 		std::vector<VkPipelineShaderStageCreateInfo> m_PipelineShaderStageCreateInfos;
-		std::vector<VkPipelineShaderStageCreateInfo> m_ShaderStages;
+		// std::unordered_map<VkShaderStageFlagBits, VkPipelineShaderStageCreateInfo> m_ShaderStages;
 		std::unordered_map<VkShaderStageFlagBits, std::string> m_ShaderSource;
 		std::string m_AssetPath;
 		std::string m_Name;
