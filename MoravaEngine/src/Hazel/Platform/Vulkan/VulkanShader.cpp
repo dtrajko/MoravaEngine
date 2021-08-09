@@ -85,12 +85,6 @@ namespace Hazel {
 			std::string source = ReadShaderFromFile(m_AssetPath);
 			m_ShaderSource = PreProcess(source);
 			std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
-			shaderData.insert(std::make_pair(VK_SHADER_STAGE_VERTEX_BIT, std::vector<uint32_t>()));
-			shaderData.insert(std::make_pair(VK_SHADER_STAGE_FRAGMENT_BIT, std::vector<uint32_t>()));
-			if (m_ShaderSource.size() > 2)
-			{
-				shaderData.insert(std::make_pair(VK_SHADER_STAGE_COMPUTE_BIT, std::vector<uint32_t>()));
-			}
 			CompileOrGetVulkanBinary(shaderData, forceCompile);
 			LoadAndCreateShaders(shaderData);
 			ReflectAllShaderStages(shaderData);
@@ -106,8 +100,7 @@ namespace Hazel {
 
 		for (auto [stage, data] : shaderData)
 		{
-			// HZ_CORE_ASSERT(data.size());
-			if (!data.size()) continue;
+			HZ_CORE_ASSERT(data.size());
 
 			// Create a new shader module that will be used for pipeline creation
 			VkShaderModuleCreateInfo moduleCreateInfo{};
@@ -128,8 +121,6 @@ namespace Hazel {
 
 	void VulkanShader::ReflectAllShaderStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
 		for (auto [stage, data] : shaderData)
 		{
 			Reflect(stage, data);
@@ -139,8 +130,6 @@ namespace Hazel {
 	void VulkanShader::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		if (!shaderData.size()) return;
 
 		std::string shaderStageName = "UNKNOWN";
 		switch (shaderStage)
@@ -571,7 +560,7 @@ namespace Hazel {
 
 	void VulkanShader::CompileOrGetVulkanBinary(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile)
 	{
-		for (auto [stage, binary] : outputBinary)
+		for (auto [stage, source] : m_ShaderSource)
 		{
 			auto extension = VkShaderStageCachedFileExtension(stage);
 
@@ -639,120 +628,6 @@ namespace Hazel {
 				}
 			}
 		}
-
-		////	// Vertex Shader
-		////	{
-		////		std::filesystem::path p = m_AssetPath;
-		////		auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.vert");
-		////		std::string cachedFilePath = path.string();
-		////	
-		////		FILE* f = fopen(cachedFilePath.c_str(), "rb");
-		////		if (f)
-		////		{
-		////			fseek(f, 0, SEEK_END);
-		////			uint64_t size = ftell(f);
-		////			fseek(f, 0, SEEK_SET);
-		////			outputBinary[0] = std::vector<uint32_t>(size / sizeof(uint32_t));
-		////			fread(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
-		////			fclose(f);
-		////		}
-		////	}
-		////	
-		////	// Fragment Shader
-		////	{
-		////		std::filesystem::path p = m_AssetPath;
-		////		auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.frag");
-		////		std::string cachedFilePath = path.string();
-		////	
-		////		FILE* f = fopen(cachedFilePath.c_str(), "rb");
-		////		if (f)
-		////		{
-		////			fseek(f, 0, SEEK_END);
-		////			uint64_t size = ftell(f);
-		////			fseek(f, 0, SEEK_SET);
-		////			outputBinary[1] = std::vector<uint32_t>(size / sizeof(uint32_t));
-		////			fread(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
-		////			fclose(f);
-		////		}
-		////	}
-
-		////	if (binary[0].size() == 0)
-		////	{
-		////		shaderc::Compiler compiler;
-		////		shaderc::CompileOptions options;
-		////		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-		////	
-		////		const bool optimize = false;
-		////		if (optimize)
-		////			options.SetOptimizationLevel(shaderc_optimization_level_performance);
-		////	
-		////		// Vertex Shader
-		////		{
-		////			auto& shaderSource = m_ShaderSource.at(VK_SHADER_STAGE_VERTEX_BIT);
-		////			shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, shaderc_vertex_shader, m_AssetPath.c_str(), options);
-		////	
-		////			if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-		////			{
-		////				HZ_CORE_ERROR(module.GetErrorMessage());
-		////				HZ_CORE_ASSERT(false);
-		////			}
-		////	
-		////			const uint8_t* begin = (const uint8_t*)module.cbegin();
-		////			const uint8_t* end = (const uint8_t*)module.cend();
-		////			const ptrdiff_t size = end - begin;
-		////	
-		////			outputBinary[0] = std::vector<uint32_t>(module.cbegin(), module.cend());
-		////		}
-		////	
-		////		{
-		////			std::filesystem::path p = m_AssetPath;
-		////			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.vert");
-		////			std::string cachedFilePath = path.string();
-		////	
-		////			FILE* f = fopen(cachedFilePath.c_str(), "wb");
-		////			fwrite(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
-		////			fclose(f);
-		////		}
-		////	}
-		////	
-		////	if (binary[1].size() == 0)
-		////	{
-		////		shaderc::Compiler compiler;
-		////		shaderc::CompileOptions options;
-		////		options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-		////	
-		////		const bool optimize = false;
-		////		if (optimize)
-		////			options.SetOptimizationLevel(shaderc_optimization_level_performance);
-		////	
-		////		// Fragment Shader
-		////		{
-		////			auto& shaderSource = m_ShaderSource.at(VK_SHADER_STAGE_FRAGMENT_BIT);
-		////			shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, shaderc_fragment_shader, m_AssetPath.c_str(), options);
-		////	
-		////			if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-		////			{
-		////				MORAVA_CORE_ERROR(module.GetErrorMessage());
-		////				HZ_CORE_ASSERT(false);
-		////			}
-		////	
-		////			const uint8_t* begin = (const uint8_t*)module.cbegin();
-		////			const uint8_t* end = (const uint8_t*)module.cend();
-		////			const ptrdiff_t size = end - begin;
-		////	
-		////			outputBinary[1] = std::vector<uint32_t>(module.cbegin(), module.cend());
-		////		}
-		////	
-		////		{
-		////			std::filesystem::path p = m_AssetPath;
-		////			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_vulkan.frag");
-		////			std::string cachedFilePath = path.string();
-		////	
-		////			FILE* f = fopen(cachedFilePath.c_str(), "wb");
-		////			fwrite(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
-		////			fclose(f);
-		////		}
-		////	}
 	}
 
 	static VkShaderStageFlagBits ShaderTypeFromString(const std::string& type)
