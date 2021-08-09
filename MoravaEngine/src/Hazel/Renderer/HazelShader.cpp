@@ -66,7 +66,7 @@ namespace Hazel {
 	{
 		Log::GetLogger()->info("HazelShaderLibrary::Load(path: '{0}')", path);
 
-		auto shader = Ref<HazelShader>(HazelShader::Create(path, forceCompile));
+		auto shader = HazelShader::Create(path, forceCompile);
 		auto& name = shader->GetName();
 		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
 		m_Shaders[name] = shader;
@@ -79,7 +79,7 @@ namespace Hazel {
 		Log::GetLogger()->info("HazelShaderLibrary::Load(name: '{0}', path: '{1}')", name, path);
 
 		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
-		m_Shaders[name] = Ref<HazelShader>(HazelShader::Create(path, true));
+		m_Shaders[name] = HazelShader::Create(path, true);
 
 		// m_Shaders.insert(std::make_pair(name, shader));
 	}
