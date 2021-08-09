@@ -316,7 +316,7 @@ namespace Hazel {
 				/**** BEGIN Composite version 080a7edc, Sep 25th ****/
 				// EXAMPLE:
 				// std::vector<VkWriteDescriptorSet> writeDescriptorSets = Renderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
-				auto& ub0 = shader.As<VulkanShader>()->GetUniformBuffer();
+				auto& ub0 = shader.As<VulkanShader>()->GetUniformBuffer(0);
 				VkWriteDescriptorSet writeDescriptorSet = {};
 				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				writeDescriptorSet.dstSet = s_DescriptorSet;
@@ -326,7 +326,7 @@ namespace Hazel {
 				writeDescriptorSet.dstBinding = 0;
 				s_WriteDescriptorSets.push_back(writeDescriptorSet);
 
-				auto& ub1 = shader.As<VulkanShader>()->GetUniformBuffer();
+				auto& ub1 = shader.As<VulkanShader>()->GetUniformBuffer(1);
 				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				writeDescriptorSet.dstSet = s_DescriptorSet;
 				writeDescriptorSet.descriptorCount = 1;

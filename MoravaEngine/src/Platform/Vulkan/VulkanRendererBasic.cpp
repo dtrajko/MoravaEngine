@@ -1,8 +1,11 @@
 #include "VulkanRendererBasic.h"
 
+#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+
 #include "Core/Application.h"
 #include "Core/CommonValues.h"
 #include "Core/Util.h"
+
 
 
 VulkanRendererBasic::VulkanRendererBasic()
@@ -155,12 +158,33 @@ void VulkanRendererBasic::DisableWireframe()
 
 void VulkanRendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 {
-	Log::GetLogger()->warn("VulkanRendererBasic::SetViewportSize({0}, {1}): Method not yet supported!", width, height);
+	Log::GetLogger()->warn("VulkanRendererBasic::SetViewportSize('{0}', '{1}'): Method not yet implemented!", width, height);
+	return;
+
+	VkCommandBuffer commandBuffer{}; // TODO: get the CommandBuffer
+
+	// Update dynamic viewport state
+	VkViewport viewport = {};
+	viewport.x = 0.0f;
+	viewport.y = (float)height;
+	viewport.height = -(float)height;
+	viewport.width = (float)width;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	// vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+	// Update dynamic scissor state
+	VkRect2D scissor = {};
+	scissor.extent.width = width;
+	scissor.extent.height = height;
+	scissor.offset.x = 0;
+	scissor.offset.y = 0;
+	// vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
 void VulkanRendererBasic::DisableBlend()
 {
-	Log::GetLogger()->warn("VulkanRendererBasic::DisableBlend: Method not yet supported!");
+	Log::GetLogger()->warn("VulkanRendererBasic::DisableBlend: Method not yet implemented!");
 }
 
 void VulkanRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)

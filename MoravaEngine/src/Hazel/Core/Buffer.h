@@ -55,7 +55,9 @@ namespace Hazel {
 		void ZeroInitialize()
 		{
 			if (Data)
+			{
 				memset(Data, 0, Size);
+			}
 		}
 
 		template<typename T>

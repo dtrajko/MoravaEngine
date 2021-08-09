@@ -44,9 +44,9 @@ namespace Hazel {
 		s_MaterialEditorPanel = new MaterialEditorPanel();
 
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Gladiator/Gladiator.fbx"));
-		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/TestSceneVulkan.fbx"));
 		m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
 	}
 
 	void VulkanTestLayer::OnDetach()
@@ -343,16 +343,6 @@ namespace Hazel {
 #endif
 
 			{
-				////	// uniform buffer binding 0 uniform Camera
-				////	void* ubPtr = shader->MapUniformBuffer(0);
-				////	// glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)swapChain.GetWidth(), (float)swapChain.GetHeight(), 0.1f, 1000.0f);
-				////	glm::mat4 proj = glm::perspectiveFov(glm::radians(45.0f), (float)VulkanRenderer::GetViewportWidth(), (float)VulkanRenderer::GetViewportHeight(), 0.1f, 1000.0f);
-				////	// glm::mat4 view = glm::inverse(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.5f, 4.0f)));
-				////	glm::mat4 viewProj = proj * camera.GetViewMatrix();  // Runtime camera
-				////	// glm::mat4 viewProj = m_Camera.GetViewProjection(); // Editor camera
-				////	memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
-				////	shader->UnmapUniformBuffer(0);
-
 				void* ubPtr = shader->MapUniformBuffer(0);
 				glm::mat4 viewProj = camera.GetViewProjection();
 				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
@@ -363,7 +353,7 @@ namespace Hazel {
 				struct Light
 				{
 					glm::vec3 Direction;
-					// float Padding = 0.0f;
+					float Padding = 0.0f;
 					glm::vec3 Radiance;
 					float Multiplier;
 				};
@@ -372,16 +362,18 @@ namespace Hazel {
 				{
 					Light lights;
 					glm::vec3 u_CameraPosition;
+					// glm::vec4 u_AlbedoColorUB;
 				};
 
 				UB ub;
 				ub.lights = {
 					{ 0.5f, 0.5f, 0.5f },
-					// 0.0f,
+					0.0f,
 					{ 1.0f, 1.0f, 1.0f },
 					1.0f,
 				};
 				ub.u_CameraPosition = camera.GetPosition();
+				// ub.u_AlbedoColorUB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
 				void* ubPtr = shader->MapUniformBuffer(1);
 				memcpy(ubPtr, &ub, sizeof(UB));

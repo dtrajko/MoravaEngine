@@ -84,7 +84,9 @@ namespace Hazel {
 		{
 			uint32_t size = 0;
 			for (auto [name, shaderBuffer] : shaderBuffers)
+			{
 				size += shaderBuffer.Size;
+			}
 
 			m_UniformStorageBuffer.Allocate(size);
 			m_UniformStorageBuffer.ZeroInitialize();
