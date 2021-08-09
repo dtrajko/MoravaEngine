@@ -362,7 +362,8 @@ namespace Hazel {
 		// HZ_CORE_ASSERT(m_WriteDescriptorSets.find(name) != m_WriteDescriptorSets.end());
 		if (m_WriteDescriptorSets.find(name) == m_WriteDescriptorSets.end())
 		{
-			HZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+			// HZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+			Log::GetLogger()->warn("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
 			return nullptr;
 		}
 		return &m_WriteDescriptorSets.at(name);

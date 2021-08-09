@@ -604,6 +604,7 @@ namespace Hazel {
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
 					// HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
+					HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 
 					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
 					try {
@@ -617,16 +618,39 @@ namespace Hazel {
 
 					if (texture->Loaded())
 					{
-						HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
+						if (RendererAPI::Current() == RendererAPIType::Vulkan)
+						{
+							// HazelRenderer::Submit([instance, shader, texture]() mutable
+							// {
+							// });
+							{
+								const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_RoughnessTexture"); // contains binding point etc
+								if (wds)
+								{
+									VkWriteDescriptorSet descriptorSet = *wds;
+									descriptorSet.dstSet = s_DescriptorSet;
+									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+									descriptorSet.pImageInfo = &imageInfo;
+									s_WriteDescriptorSets.push_back(descriptorSet);
+								}
+							}
+						}
+						else
+						{
+							m_MeshShader->SetInt("u_RoughnessTexture", texture->GetID());
+							mi->Set("u_RoughnessTexture", texture->GetID()); // redundant
+						}
 
-						m_MeshShader->SetInt("u_RoughnessTexture", texture->GetID());
 						m_MeshShader->SetFloat("u_MaterialUniforms.RoughnessTexToggle", 1.0f);
-
+						mi->Set("u_MaterialUniforms.RoughnessTexToggle", 1.0f); // redundant
 						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Roughness, texturePath, materialData->EnvMapMaterialRef);
 					}
 					else
 					{
 						Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
+
+						m_MeshShader->SetFloat("u_MaterialUniforms.Roughness", roughness);
+						m_MeshShader->SetFloat("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
 					}
 				}
 				else
@@ -766,15 +790,15 @@ namespace Hazel {
 									// {
 									// });
 									{
-										//	const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_MetalnessTexture"); // contains binding point etc
-										//	if (wds)
-										//	{
-										//		VkWriteDescriptorSet descriptorSet = *wds;
-										//		descriptorSet.dstSet = s_DescriptorSet;
-										//		auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-										//		descriptorSet.pImageInfo = &imageInfo;
-										//		s_WriteDescriptorSets.push_back(descriptorSet);
-										//	}
+										const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_MetalnessTexture"); // contains binding point etc
+										if (wds)
+										{
+											VkWriteDescriptorSet descriptorSet = *wds;
+											descriptorSet.dstSet = s_DescriptorSet;
+											auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+											descriptorSet.pImageInfo = &imageInfo;
+											s_WriteDescriptorSets.push_back(descriptorSet);
+										}
 									}
 								}
 								else

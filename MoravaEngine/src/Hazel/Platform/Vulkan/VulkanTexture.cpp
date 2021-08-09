@@ -63,8 +63,8 @@ namespace Hazel {
 
 		if (channels != 4 && channels != 3) {
 			// HZ_CORE_ASSERT(channels == 4 || channels == 3);
-			Log::GetLogger()->error("Invalid number of channels: '{0}'!", channels);
-			return;
+			// Log::GetLogger()->error("Invalid number of channels: '{0}'!", channels);
+			// return;
 		}
 
 		// HZ_CORE_ASSERT(channels == 4);

@@ -45,8 +45,8 @@ namespace Hazel {
 
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Gladiator/Gladiator.fbx"));
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/TestSceneVulkan.fbx"));
-		m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
+		m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 	}
 
 	void VulkanTestLayer::OnDetach()

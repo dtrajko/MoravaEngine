@@ -89,14 +89,13 @@ layout (std140, binding = 1) uniform Environment
 {
 	Light lights;
 	vec3 u_CameraPosition; // Offset = 32
-	// vec4 u_AlbedoColorUB;
 };
 
 // PBR texture inputs
 layout (binding = 2) uniform sampler2D u_AlbedoTexture;
 layout (binding = 3) uniform sampler2D u_NormalTexture;
 layout (binding = 4) uniform sampler2D u_MetalnessTexture;
-// layout (binding = 5) uniform sampler2D u_RoughnessTexture;
+layout (binding = 5) uniform sampler2D u_RoughnessTexture;
 
 // Environment maps
 //layout (binding = 6) uniform samplerCube u_EnvRadianceTex;
@@ -289,6 +288,34 @@ vec3 Lighting(vec3 F0)
 	return result;
 }
 
+vec3 LightingTemp(vec3 F0)
+{
+	vec3 result = vec3(0.0);
+	for(int i = 0; i < LightCount; i++)
+	{
+		vec3 Li = vec3(0.5, 0.5, 0.5); // -lights.Direction;
+		vec3 Lradiance = vec3(1.0, 1.0, 1.0) * 2.0; //  lights.Radiance * lights.Multiplier;
+		vec3 Lh = normalize(Li + m_Params.View);
+
+		// Calculate angles between surface normal and various light vectors.
+		float cosLi = max(0.0, dot(m_Params.Normal, Li));
+		float cosLh = max(0.0, dot(m_Params.Normal, Lh));
+
+		vec3 F = fresnelSchlick(F0, max(0.0, dot(Lh, m_Params.View)));
+		float D = ndfGGX(cosLh, m_Params.Roughness);
+		float G = gaSchlickGGX(cosLi, m_Params.NdotV, m_Params.Roughness);
+
+		vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+		vec3 diffuseBRDF = kd * m_Params.Albedo;
+
+		// Cook-Torrance
+		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
+
+		result += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+	}
+	return result;
+}
+
 vec3 IBL(vec3 F0, vec3 Lr)
 {
 	//vec3 irradiance = texture(u_EnvIrradianceTex, m_Params.Normal).rgb;
@@ -312,14 +339,21 @@ vec3 IBL(vec3 F0, vec3 Lr)
 void main()
 {
 	//	Standard PBR inputs
-	m_Params.Albedo = u_MaterialUniforms.AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, Input.TexCoord).rgb : u_MaterialUniforms.AlbedoColor;
-	// m_Params.Metalness = u_MaterialUniforms.MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, Input.TexCoord).r : u_MaterialUniforms.Metalness;
-	// m_Params.Roughness = u_MaterialUniforms.RoughnessTexToggle > 0.5 ?  texture(u_RoughnessTexture, Input.TexCoord).r : u_MaterialUniforms.Roughness;
-	// m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
+
+	// Temporary (values are not updated through the uniform buffer)
+	float u_MaterialUniforms_AlbedoTexToggle = 1.0;
+	float u_MaterialUniforms_NormalTexToggle = 1.0;
+	float u_MaterialUniforms_MetalnessTexToggle = 1.0;
+	float u_MaterialUniforms_RoughnessTexToggle = 1.0;
+
+	m_Params.Albedo = u_MaterialUniforms_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, Input.TexCoord).rgb : u_MaterialUniforms.AlbedoColor;
+	m_Params.Metalness = u_MaterialUniforms_MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, Input.TexCoord).r : u_MaterialUniforms.Metalness;
+	m_Params.Roughness = u_MaterialUniforms_RoughnessTexToggle > 0.5 ?  texture(u_RoughnessTexture, Input.TexCoord).r : u_MaterialUniforms.Roughness;
+	m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
 
 	//	Normals (either from vertex or map)
 	m_Params.Normal = normalize(Input.Normal);
-	if (u_MaterialUniforms.NormalTexToggle > 0.5)
+	if (u_MaterialUniforms_NormalTexToggle > 0.5)
 	{
 		m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, Input.TexCoord).rgb - 1.0);
 		m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);
@@ -331,31 +365,36 @@ void main()
 	//	Specular reflection vector
 	vec3 Lr = 2.0 * m_Params.NdotV * m_Params.Normal - m_Params.View;
 
-	//	Fresnel reflectance, metals use albedo
-	//	vec3 F0 = mix(Fdielectric, m_Params.Albedo, m_Params.Metalness);
+	// Fresnel reflectance, metals use albedo
+	vec3 F0 = mix(Fdielectric, m_Params.Albedo, m_Params.Metalness);
 
-	//	vec3 lightContribution = Lighting(F0);
-	//	vec3 iblContribution = IBL(F0, Lr);
+	vec3 lightContribution = LightingTemp(F0);
+	// vec3 iblContribution = IBL(F0, Lr);
 
-	//	color = vec4(lightContribution + iblContribution, 1.0);
-	//	color = vec4(lightContribution, 1.0);
+	// color = vec4(lightContribution + iblContribution, 1.0);
+	color = vec4(lightContribution, 1.0);
 
-	//	vec3 albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb;
-	//	color = vec4(albedo, 1);
+	// color = vec4(Input.WorldPosition, 1.0);
+	// color = texture(u_RoughnessTexture, Input.TexCoord);
+	// color = vec4(F0, 1.0);
+	// color = vec4(m_Params.View, 1.0);
+
+	// vec3 albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb;
+	// color = vec4(albedo, 1);
 
 	/**** BEGIN main() from VulkanWeekMesh ****/
-	m_Params.Albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb;
-
-	// Normals (either from vertex or map)
-	m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, Input.TexCoord).rgb - 1.0);
-	m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);
-	
-	float ambient = 0.2;
-	vec3 lightDir = vec3(-1.0, 1.0, 0.0);
-	float intensity = clamp(dot(lightDir, m_Params.Normal), ambient, 1.0);
-
-	color = vec4(m_Params.Albedo, 1.0);
-	color.rgb *= intensity;
+	// m_Params.Albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb;
+	// 
+	// // Normals (either from vertex or map)
+	// m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, Input.TexCoord).rgb - 1.0);
+	// m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);
+	// 
+	// float ambient = 0.2;
+	// vec3 lightDir = vec3(-1.0, 1.0, 0.0);
+	// float intensity = clamp(dot(lightDir, m_Params.Normal), ambient, 1.0);
+	// 
+	// color = vec4(m_Params.Albedo, 1.0);
+	// color.rgb *= intensity;
 
 	/**** END main() from VulkanWeekMesh ****/
 }
