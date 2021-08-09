@@ -494,8 +494,8 @@ namespace Hazel {
 						}
 						else
 						{
-							m_MeshShader->SetInt("u_AlbedoTexture", m_Textures[i]->GetID());
-							mi->Set("u_AlbedoTexture", 1.0f); // redundant
+							m_MeshShader->SetInt("u_AlbedoTexture", texture->GetID());
+							mi->Set("u_AlbedoTexture", texture->GetID()); // redundant
 						}
 
 						m_MeshShader->SetFloat("u_MaterialUniforms.AlbedoTexToggle", 1.0f);
@@ -554,6 +554,8 @@ namespace Hazel {
 
 					if (texture->Loaded())
 					{
+						m_Textures.push_back(texture);
+
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
 							// HazelRenderer::Submit([instance, shader, texture]() mutable
@@ -574,9 +576,11 @@ namespace Hazel {
 						else
 						{
 							m_MeshShader->SetInt("u_NormalTexture", texture->GetID());
+							mi->Set("u_NormalTexture", texture->GetID()); // redundant
 						}
 
 						m_MeshShader->SetFloat("u_MaterialUniforms.NormalTexToggle", 1.0f);
+						mi->Set("u_MaterialUniforms.NormalTexToggle", 1.0f); // redundant
 						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Normal, texturePath, materialData->EnvMapMaterialRef);
 					}
 					else
@@ -756,9 +760,31 @@ namespace Hazel {
 
 							if (texture->Loaded())
 							{
-								m_MeshShader->SetInt("u_MetalnessTexture", texture->GetID());
-								m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
+								if (RendererAPI::Current() == RendererAPIType::Vulkan)
+								{
+									// HazelRenderer::Submit([instance, shader, texture]() mutable
+									// {
+									// });
+									{
+										//	const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_MetalnessTexture"); // contains binding point etc
+										//	if (wds)
+										//	{
+										//		VkWriteDescriptorSet descriptorSet = *wds;
+										//		descriptorSet.dstSet = s_DescriptorSet;
+										//		auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+										//		descriptorSet.pImageInfo = &imageInfo;
+										//		s_WriteDescriptorSets.push_back(descriptorSet);
+										//	}
+									}
+								}
+								else
+								{
+									m_MeshShader->SetInt("u_MetalnessTexture", texture->GetID());
+									mi->Set("u_MetalnessTexture", texture->GetID()); // redundant
+								}
 
+								m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
+								mi->Set("u_MaterialUniforms.MetalnessTexToggle", 1.0f); // redundant
 								MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterialRef);
 							}
 							else
