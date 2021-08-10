@@ -9,14 +9,13 @@
 
 namespace Hazel {
 
-
 	EditorCamera::EditorCamera(const glm::mat4& projectionMatrix)
 		: HazelCamera(projectionMatrix)
 	{
 		m_Rotation = glm::vec3(90.0f, 0.0f, 0.0f);
 		m_FocalPoint = glm::vec3(0.0f);
 
-		glm::vec3 position = { -5, 5, 5 };
+		glm::vec3 position = { 0, 5, 20 };
 		m_Distance = glm::distance(position, m_FocalPoint);
 
 		m_Yaw = 3.0f * (float)M_PI / 4.0f;
