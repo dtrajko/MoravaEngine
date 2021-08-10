@@ -41,10 +41,12 @@ public:
 	};
 
 public:
+	DX11Shader();
 	DX11Shader(const std::string& path, bool forceCompile);
 	// DirectX 11
 	DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShaderPath);
 	virtual ~DX11Shader();
+	static Hazel::Ref<DX11Shader> CreateFromString(const std::string& source);
 
 	virtual void Bind() override;
 	virtual void Reload(bool forceCompile = false) override;

@@ -5,6 +5,8 @@
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Renderer/RendererAPI.h"
 
+#include "Platform/DX11/DX11Shader.h"
+
 
 namespace Hazel {
 
@@ -25,6 +27,9 @@ namespace Hazel {
 			case RendererAPIType::Vulkan:
 				result = Ref<VulkanShader>::Create(filepath, forceCompile);
 				break;
+			case RendererAPIType::DX11:
+				result = Ref<DX11Shader>::Create(filepath, forceCompile);
+				break;
 		}
 		s_AllShaders.push_back(result);
 		return result;
@@ -38,8 +43,10 @@ namespace Hazel {
 
 		switch (RendererAPI::Current())
 		{
-			case RendererAPIType::None: return Ref<HazelShader>();
+			case RendererAPIType::None:   return Ref<HazelShader>();
 			case RendererAPIType::OpenGL: result = OpenGLShader::CreateFromString(source);
+			case RendererAPIType::Vulkan: result = VulkanShader::CreateFromString(source);
+			case RendererAPIType::DX11:   result = DX11Shader::CreateFromString(source);
 		}
 		s_AllShaders.push_back(result);
 		return result;

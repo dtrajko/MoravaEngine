@@ -891,22 +891,47 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
             {
                 {
+                    ImGui::Columns(2);
+
+                    ImGui::InputText("##envmapfilepath", (char*)m_EnvMapFilename.c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+
+                    if (ImGui::BeginDragDropTarget())
+                    {
+                        if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                        {
+                            std::wstring itemPath = std::wstring((const wchar_t*)payload->Data);
+                            size_t itemSize = payload->DataSize;
+                            Log::GetLogger()->debug("END DRAG & DROP FILE '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
+
+                            m_EnvMapFilename = std::string{ itemPath.begin(), itemPath.end() };
+                            if (m_EnvMapFilename != "")
+                            {
+                                EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
+                            }
+                        }
+                        ImGui::EndDragDropTarget();
+                    }
+
+                    ImGui::NextColumn();
+
                     if (ImGui::Button("Load Environment Map"))
                     {
-                        std::string filename = Application::Get()->OpenFile("*.hdr");
-                        if (filename != "") {
-                            EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(filename));
+                        m_EnvMapFilename = Application::Get()->OpenFile("*.hdr");
+                        if (m_EnvMapFilename != "")
+                        {
+                            EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
                         }
                     }
 
+                    ImGui::NextColumn();
+
+                    ImGui::AlignTextToFramePadding();
+
                     float skyboxLOD = GetSkyboxLOD();
-                    bool valueChanged = ImGui::DragFloat("Skybox LOD", &skyboxLOD, 0.01f, 0.0f, 2.0f, "%.2f");
-                    if (valueChanged) {
+                    if (ImGuiWrapper::Property("Skybox LOD", skyboxLOD, 0.01f, 0.0f, 2.0f, PropertyFlag::DragProperty))
+                    {
                         SetSkyboxLOD(skyboxLOD);
                     }
-
-                    ImGui::Columns(2);
-                    ImGui::AlignTextToFramePadding();
 
                     Hazel::HazelLight light = EnvMapSceneRenderer::GetActiveLight();
                     Hazel::HazelLight lightPrev = light;

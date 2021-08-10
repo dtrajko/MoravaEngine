@@ -260,4 +260,6 @@ private:
 	bool m_ShowWindowViewportInfo   = false;
 	bool m_ShowWindowImGuiMetrics   = false;
 
+	std::string m_EnvMapFilename = "File Path";
+
 };

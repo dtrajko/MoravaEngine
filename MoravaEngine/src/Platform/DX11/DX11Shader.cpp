@@ -15,6 +15,10 @@
 
 static std::unordered_map<uint32_t, std::unordered_map<uint32_t, DX11Shader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
 
+DX11Shader::DX11Shader()
+{
+}
+
 DX11Shader::DX11Shader(const std::string& path, bool forceCompile)
 	: m_AssetPath(path)
 {
@@ -40,6 +44,15 @@ DX11Shader::DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShad
 DX11Shader::~DX11Shader()
 {
 	ClearShader();
+}
+
+Hazel::Ref<DX11Shader> DX11Shader::CreateFromString(const std::string& source)
+{
+	Log::GetLogger()->error("DX11Shader::CreateFromString - method not implemented!");
+
+	Hazel::Ref<DX11Shader> shader = Hazel::Ref<DX11Shader>::Create();
+	// shader->Load(source, true);
+	return shader;
 }
 
 void DX11Shader::Validate()
