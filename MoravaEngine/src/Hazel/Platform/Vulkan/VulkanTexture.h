@@ -109,7 +109,8 @@ namespace Hazel {
 		void Invalidate();
 	private:
 		HazelImageFormat m_Format = HazelImageFormat::None;
-		uint32_t m_Width = 0, m_Height = 0;
+		uint32_t m_Width = 0;
+		uint32_t m_Height = 0;
 
 		bool m_MipsGenerated = false;
 

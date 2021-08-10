@@ -410,7 +410,7 @@ namespace Hazel {
 			m_LocalStorage = Buffer::Copy(data, size);
 		}
 
-		Ref<VulkanTextureCube> instance = this;
+		// Ref<VulkanTextureCube> instance = this;
 		//	HazelRenderer::Submit([instance]() mutable
 		//	{
 		//		instance->Invalidate();
