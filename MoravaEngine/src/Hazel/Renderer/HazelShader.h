@@ -213,7 +213,7 @@ namespace Hazel
 		void Load(const std::string& path, bool forceCompile = false);
 		void Load(const std::string& name, const std::string& path);
 
-		const Ref<HazelShader>& Get(const std::string& name) const;
+		Ref<HazelShader> Get(const std::string& name);
 
 	private:
 		std::unordered_map<std::string, Ref<HazelShader>> m_Shaders;

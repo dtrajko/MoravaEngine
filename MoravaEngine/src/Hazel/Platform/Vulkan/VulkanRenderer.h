@@ -25,8 +25,12 @@ namespace Hazel {
 		virtual void EndRenderPass() override;
 		virtual void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material) override;
 
-		virtual void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow) override;
+		static uint32_t GetViewportWidth();
+		static uint32_t GetViewportHeight();
+
 		virtual std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) override;
+
+		virtual void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow) override;
 
 		virtual void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
@@ -42,9 +46,6 @@ namespace Hazel {
 
 		// static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
 		static void UpdateImGuizmo(Window* mainWindow, HazelCamera* camera);
-
-		static uint32_t GetViewportWidth();
-		static uint32_t GetViewportHeight();
 
 		static int32_t& GetSelectedDrawCall();
 

@@ -1,9 +1,9 @@
-#include "Hazel/Core/Assert.h"
 #include "Hazel/Renderer/HazelShader.h"
-#include "Hazel/Renderer/RendererAPI.h"
 
+#include "Hazel/Core/Assert.h"
 #include "Hazel/Platform/OpenGL/OpenGLShader.h"
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 
 namespace Hazel {
@@ -84,9 +84,14 @@ namespace Hazel {
 		// m_Shaders.insert(std::make_pair(name, shader));
 	}
 
-	const Ref<HazelShader>& HazelShaderLibrary::Get(const std::string& name) const
+	Ref<HazelShader> HazelShaderLibrary::Get(const std::string& name)
 	{
-		HZ_CORE_ASSERT(m_Shaders.find(name) != m_Shaders.end());
+		// HZ_CORE_ASSERT(m_Shaders.find(name) != m_Shaders.end());
+		if (m_Shaders.find(name) == m_Shaders.end())
+		{
+			Log::GetLogger()->error("HazelShaderLibrary::Get - shader '{0}' not found in ShaderLibrary!", name);
+			return Ref<HazelShader>();
+		}
 		return m_Shaders.at(name);
 	}
 

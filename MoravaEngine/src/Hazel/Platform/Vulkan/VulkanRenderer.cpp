@@ -121,6 +121,8 @@ namespace Hazel {
 
 		// Renderer2D::Init();
 
+		auto [radiance, irradiance] = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
+
 		/**** END code from HazelRenderer::Init() ****/
 
 		// HazelRenderer::Submit([=]() {
@@ -796,6 +798,25 @@ namespace Hazel {
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> VulkanRenderer::CreateEnvironmentMap(const std::string& filepath)
 	{
+		const uint32_t cubemapSize = 1024;
+		const uint32_t irradianceMapSize = 32;
+
+		Ref<HazelTextureCube> envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+		// Ref<HazelShader> equirectangularConversionShader = HazelShader::Create("assets/shaders/EquirectangularToCubeMap.glsl");
+		Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
+
+		// -----
+
+		Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
+		// HazelImageFormat imageFormat = envEquirect->GetFormat();
+		// HZ_CORE_ASSERT(envEquirect->GetFormat() == HazelImageFormat::RGBA16F, "Texture is not HDR!");
+		if (envEquirect->GetFormat() != HazelImageFormat::RGBA16F)
+		{
+			Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirect->GetFormat());
+			// return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
+		}
+
+
 		return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
 	}
 
