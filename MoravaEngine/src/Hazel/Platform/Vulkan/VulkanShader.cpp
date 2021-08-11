@@ -352,7 +352,7 @@ namespace Hazel {
 			layoutBinding.pImmutableSamplers = nullptr;
 			layoutBinding.binding = binding;
 
-			HZ_CORE_ASSERT(m_UniformBuffers.find(binding) == m_UniformBuffers.end(), "Binding is already present!");
+			HZ_CORE_ASSERT(m_UniformBuffers.find(binding) == m_UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
 
 			VkWriteDescriptorSet& set = m_WriteDescriptorSets[imageSampler.Name];
 			set = {};
@@ -370,9 +370,10 @@ namespace Hazel {
 			layoutBinding.stageFlags = storageImage.ShaderStage;
 			layoutBinding.pImmutableSamplers = nullptr;
 			layoutBinding.binding = binding;
-		
-			HZ_CORE_ASSERT(m_UniformBuffers.find(binding) == m_UniformBuffers.end(), "Binding is already present!");
-		
+
+			HZ_CORE_ASSERT(m_UniformBuffers.find(binding) == m_UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
+			HZ_CORE_ASSERT(m_ImageSamplers.find(binding) == m_ImageSamplers.end(), "Binding is already present in m_ImageSamplers!");
+
 			VkWriteDescriptorSet& set = m_WriteDescriptorSets[storageImage.Name];
 			set = {};
 			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
