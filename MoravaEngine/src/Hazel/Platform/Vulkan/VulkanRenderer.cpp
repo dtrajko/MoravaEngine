@@ -862,20 +862,41 @@ namespace Hazel {
 			VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, &computePipelineCreateInfo, nullptr, &computePipeline));
 			// ERROR: vkCreateComputePipelines: required parameter pCreateInfos[0].stage.module specified as VK_NULL_HANDLE
 
-			/**** BEGIN Record a Command Buffer ****
+			/**** BEGIN Record a Command Buffer ****/
 
-			VkCommandBuffer computeCommandBuffer{};
+			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
+			vkQueueWaitIdle(computeQueue);
 
-			vkQueueWaitIdle(VulkanContext::GetCurrentDevice()->GetComputeQueue());
-
-			VkCommandBufferBeginInfo cmdBufInfo; ///
-
-			VK_CHECK_RESULT(vkBeginCommandBuffer(computeCommandBuffer, &cmdBufInfo));
+			VkCommandBuffer computeCommandBuffer = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true, true);
 
 			vkCmdBindPipeline(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
-			vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, comp)
+			vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0, 1, &descriptorSet.DescriptorSet, 0, nullptr);
+
+			vkCmdDispatch(computeCommandBuffer, cubemapSize / 32, cubemapSize / 32, 1);
+
+			vkEndCommandBuffer(computeCommandBuffer);
 
 			/**** END Record a Command Buffer ****/
+
+			/**** BEGIN Submit the  Command Buffer ****/
+
+			VkSubmitInfo computeSubmitInfo{};
+			computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			computeSubmitInfo.commandBufferCount = 1;
+			computeSubmitInfo.pCommandBuffers = &computeCommandBuffer;
+
+			VkFenceCreateInfo fenceCreateInfo{};
+			fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+			fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+			VkFence computeFence;
+			VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &computeFence));
+
+			vkWaitForFences(device, 1, &computeFence, VK_TRUE, UINT64_MAX);
+			vkResetFences(device, 1, &computeFence);
+
+			VK_CHECK_RESULT(vkQueueSubmit(computeQueue, 1, &computeSubmitInfo, computeFence));
+
+			/**** END Submit the  Command Buffer ****/
 		}
 
 		// -----

@@ -491,7 +491,7 @@ namespace Hazel {
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = m_TypeCounts.at(set).size();
+		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(m_TypeCounts.at(set).size());
 		descriptorPoolInfo.pPoolSizes = m_TypeCounts.at(set).data();
 		descriptorPoolInfo.maxSets = 1;
 
@@ -537,19 +537,19 @@ namespace Hazel {
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				typeCount.descriptorCount = shaderDescriptorSet.UniformBuffers.size() * numberOfSets;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.UniformBuffers.size()) * numberOfSets;
 			}
 			if (shaderDescriptorSet.ImageSamplers.size())
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				typeCount.descriptorCount = shaderDescriptorSet.ImageSamplers.size() * numberOfSets;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.ImageSamplers.size()) * numberOfSets;
 			}
 			if (shaderDescriptorSet.StorageImages.size())
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				typeCount.descriptorCount = shaderDescriptorSet.StorageImages.size() * numberOfSets;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.StorageImages.size()) * numberOfSets;
 			}
 
 		}
@@ -564,7 +564,7 @@ namespace Hazel {
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = poolSizes.at(set).size();
+		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.at(set).size());
 		descriptorPoolInfo.pPoolSizes = poolSizes.at(set).data();
 		descriptorPoolInfo.maxSets = numberOfSets;
 

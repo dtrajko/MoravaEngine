@@ -64,7 +64,7 @@ namespace Hazel {
 		VulkanDevice(const Ref<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures enabledFeatures);
 		~VulkanDevice();
 
-		VkQueue GetQueue() { return m_Queue; }
+		VkQueue GetQueue() { return m_Queue; } // the Graphics Queue
 		VkQueue GetComputeQueue() { return m_ComputeQueue; }
 
 		VkCommandBuffer GetCommandBuffer(bool begin, bool compute = false);
