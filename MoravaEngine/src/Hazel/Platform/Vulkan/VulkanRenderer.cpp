@@ -121,8 +121,6 @@ namespace Hazel {
 
 		// Renderer2D::Init();
 
-		auto [radiance, irradiance] = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
-
 		/**** END code from HazelRenderer::Init() ****/
 
 		// HazelRenderer::Submit([=]() {
@@ -243,6 +241,8 @@ namespace Hazel {
 			const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
+
+		auto [radiance, irradiance] = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 
 		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
@@ -803,7 +803,46 @@ namespace Hazel {
 
 		Ref<HazelTextureCube> envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 		// Ref<HazelShader> equirectangularConversionShader = HazelShader::Create("assets/shaders/EquirectangularToCubeMap.glsl");
-		Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
+		// Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
+		Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("ClearCubeMap");
+
+		// HazelRenderer::Submit([]() {});
+		{
+			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+			// TODO: Abstract into some sort of compute pipeline
+			VkDescriptorSetLayoutBinding setLayoutBinding{};
+			setLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			setLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+			setLayoutBinding.binding = 0;
+			setLayoutBinding.descriptorCount = 1;
+
+			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
+			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			descriptorSetLayoutCreateInfo.pBindings = &setLayoutBinding;
+			descriptorSetLayoutCreateInfo.bindingCount = 1;
+			VkDescriptorSetLayout computeDescriptorSetLayout;
+			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, nullptr, &computeDescriptorSetLayout));
+
+			VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+			pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+			pipelineLayoutCreateInfo.setLayoutCount = 1;
+			pipelineLayoutCreateInfo.pSetLayouts = &computeDescriptorSetLayout;
+			VkPipelineLayout computePipelineLayout;
+			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &computePipelineLayout));
+
+			Ref<VulkanShader> vulkanShader = equirectangularConversionShader.As<VulkanShader>();
+
+			VkComputePipelineCreateInfo computePipelineCreateInfo{};
+			computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+			VkPipelineCreateFlags computePipelineCreateFlags{};
+			computePipelineCreateInfo.layout = computePipelineLayout;
+			computePipelineCreateInfo.flags = computePipelineCreateFlags;
+			// TODO populate computePipelineCreateInfo
+
+			VkPipeline pipeline;
+			// VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, &computePipelineCreateInfo, nullptr, &pipeline));
+		}
 
 		// -----
 

@@ -411,16 +411,14 @@ namespace Hazel {
 		}
 
 		// Ref<VulkanTextureCube> instance = this;
-		//	HazelRenderer::Submit([instance]() mutable
-		//	{
-		//		instance->Invalidate();
-		//	});
+		// HazelRenderer::Submit([instance]() mutable { instance->Invalidate(); });
 
 		Invalidate();
 	}
 
 	VulkanTextureCube::VulkanTextureCube(const std::string& path)
 	{
+		Log::GetLogger()->error("VulkanTextureCube::VulkanTextureCube('{0}') - method not implemented!", path);
 	}
 
 	VulkanTextureCube::~VulkanTextureCube()

@@ -120,6 +120,7 @@ namespace Hazel {
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl");
 		}
 
 		//...
