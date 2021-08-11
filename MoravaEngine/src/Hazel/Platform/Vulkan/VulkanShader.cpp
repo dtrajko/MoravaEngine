@@ -283,20 +283,27 @@ namespace Hazel {
 		//////////////////////////////////////////////////////////////////////
 
 		// We need to tell the API the number of max. requested descriptors per type
-		std::vector<VkDescriptorPoolSize> typeCounts;
-
+		m_TypeCounts.insert(std::make_pair(0, std::vector<VkDescriptorPoolSize>()));
+		m_TypeCounts.at(0).clear();
 		if (m_UniformBuffers.size())
 		{
-			VkDescriptorPoolSize& typeCount = typeCounts.emplace_back();
+			VkDescriptorPoolSize& typeCount = m_TypeCounts.at(0).emplace_back();
 			typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			typeCount.descriptorCount = static_cast<uint32_t>(m_UniformBuffers.size());
 		}
 
 		if (m_ImageSamplers.size())
 		{
-			VkDescriptorPoolSize& typeCount = typeCounts.emplace_back();
+			VkDescriptorPoolSize& typeCount = m_TypeCounts.at(0).emplace_back();
 			typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			typeCount.descriptorCount = static_cast<uint32_t>(m_ImageSamplers.size());
+		}
+
+		if (m_StorageImages.size())
+		{
+			VkDescriptorPoolSize& typeCount = m_TypeCounts.at(0).emplace_back();
+			typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			typeCount.descriptorCount = static_cast<uint32_t>(m_StorageImages.size());
 		}
 
 		// TODO: Move this to the centralized renderer
@@ -307,8 +314,8 @@ namespace Hazel {
 		// Once you bind a descriptor set and use it in a vkCmdDraw() function, you can no longer modify it unless you specify the
 		// descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
 		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(typeCounts.size());
-		descriptorPoolInfo.pPoolSizes = typeCounts.data();
+		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(m_TypeCounts.size());
+		descriptorPoolInfo.pPoolSizes = m_TypeCounts.at(0).data();
 		descriptorPoolInfo.maxSets = 1;
 
 		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
@@ -351,6 +358,25 @@ namespace Hazel {
 			set = {};
 			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+			set.descriptorCount = 1;
+			set.dstBinding = layoutBinding.binding;
+		}
+
+		for (auto& [binding, storageImage] : m_StorageImages)
+		{
+			auto& layoutBinding = layoutBindings.emplace_back();
+			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			layoutBinding.descriptorCount = 1;
+			layoutBinding.stageFlags = storageImage.ShaderStage;
+			layoutBinding.pImmutableSamplers = nullptr;
+			layoutBinding.binding = binding;
+		
+			HZ_CORE_ASSERT(m_UniformBuffers.find(binding) == m_UniformBuffers.end(), "Binding is already present!");
+		
+			VkWriteDescriptorSet& set = m_WriteDescriptorSets[storageImage.Name];
+			set = {};
+			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_STORAGE_IMAGE
 			set.descriptorCount = 1;
 			set.dstBinding = layoutBinding.binding;
 		}
@@ -476,10 +502,24 @@ namespace Hazel {
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = result.Pool;
 		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
 
-		result.DescriptorSets.emplace_back();
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, result.DescriptorSets.data()));
+		/**** BEGIN an older version ****/
+		{
+			allocInfo.pSetLayouts = &m_DescriptorSetLayout;
+
+			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &result.DescriptorSet));
+		}
+		/**** END an older version ****/
+
+		/**** BEGIN a more recent version ****
+		{
+			allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
+
+			result.DescriptorSets.emplace_back();
+			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, result.DescriptorSets.data()));
+		}
+		/**** END a more recent version ****/
+
 		return result;
 	}
 

@@ -179,6 +179,8 @@ namespace Hazel {
 		std::unordered_map<std::string, ShaderBuffer> m_Buffers;
 
 		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> m_TypeCounts;
+		// std::vector<VkDescriptorPoolSize> m_TypeCounts;
+
 	};
 
 }

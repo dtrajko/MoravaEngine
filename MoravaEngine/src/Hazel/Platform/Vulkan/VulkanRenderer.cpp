@@ -837,26 +837,45 @@ namespace Hazel {
 			VkPipelineLayout computePipelineLayout;
 			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &computePipelineLayout));
 
-
 			VkWriteDescriptorSet writeDescriptorSet{};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			writeDescriptorSet.dstSet = descriptorSet.DescriptorSet;
 			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 			writeDescriptorSet.dstBinding = 0;
-			//// writeDescriptorSet.pImageInfo = bufferInfo;
-			//// writeDescriptorSet.descriptorCount = descriptorCount;
+			writeDescriptorSet.pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
+			writeDescriptorSet.descriptorCount = 1;
 
-			//// VK_CHECK_RESULT(vkUpdateDescriptorSets(device, computeDescriptorSets.size(), computeDescriptorSets.data(), 0, nullptr));
+			vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
 
 			VkComputePipelineCreateInfo computePipelineCreateInfo{};
 			computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-			VkPipelineCreateFlags computePipelineCreateFlags{};
 			computePipelineCreateInfo.layout = computePipelineLayout;
-			computePipelineCreateInfo.flags = computePipelineCreateFlags;
-			// TODO populate computePipelineCreateInfo
+			computePipelineCreateInfo.flags = 0;
+			computePipelineCreateInfo.stage = vulkanShader->GetPipelineShaderStageCreateInfos()[0];
 
-			//// VkPipeline pipeline;
-			//// VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, &computePipelineCreateInfo, nullptr, &pipeline));
+			VkPipelineCacheCreateInfo pipelineCacheCreateInfo{};
+			pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+			VkPipelineCache pipelineCache;
+			VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
+
+			VkPipeline computePipeline;
+			VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, &computePipelineCreateInfo, nullptr, &computePipeline));
+			// ERROR: vkCreateComputePipelines: required parameter pCreateInfos[0].stage.module specified as VK_NULL_HANDLE
+
+			/**** BEGIN Record a Command Buffer ****
+
+			VkCommandBuffer computeCommandBuffer{};
+
+			vkQueueWaitIdle(VulkanContext::GetCurrentDevice()->GetComputeQueue());
+
+			VkCommandBufferBeginInfo cmdBufInfo; ///
+
+			VK_CHECK_RESULT(vkBeginCommandBuffer(computeCommandBuffer, &cmdBufInfo));
+
+			vkCmdBindPipeline(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
+			vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, comp)
+
+			/**** END Record a Command Buffer ****/
 		}
 
 		// -----
