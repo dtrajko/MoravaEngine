@@ -918,6 +918,39 @@ namespace Hazel {
 	{
 	}
 
+	void HazelMesh::AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<HazelTexture2D> texture)
+	{
+		// Ref<HazelMesh> instance = this;
+		// HazelRenderer::Submit([instance, index, name, texture]() mutable {});
+		{
+			MaterialDescriptor& materialDescriptor = m_MaterialDescriptors[index];
+
+			Ref<HazelShader> shader = m_Materials[index]->GetShader();
+			const VkWriteDescriptorSet* wds = shader.As<VulkanShader>()->GetDescriptorSet(name);
+			HZ_CORE_ASSERT(wds);
+
+			VkWriteDescriptorSet descriptorSet = *wds;
+			descriptorSet.dstSet = materialDescriptor.DescriptorSet.DescriptorSet;
+			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+			descriptorSet.pImageInfo = &imageInfo;
+			materialDescriptor.WriteDescriptors.push_back(descriptorSet);
+		}
+	}
+
+	void HazelMesh::UpdateAllDescriptors()
+	{
+		// Ref<HazelMesh> instance = this;
+		// HazelRenderer::Submit([instance]() mutable {});
+		{
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			for (MaterialDescriptor& md : m_MaterialDescriptors)
+			{
+				HZ_CORE_WARN("Updating {0} descriptor sets", md.WriteDescriptors.size());
+				vkUpdateDescriptorSets(vulkanDevice, (uint32_t)md.WriteDescriptors.size(), md.WriteDescriptors.data(), 0, nullptr);
+			}
+		}
+	}
+
 	void HazelMesh::OnUpdate(Timestep ts, bool debug)
 	{
 		if (m_IsAnimated)

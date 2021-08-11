@@ -96,8 +96,8 @@ namespace Hazel {
 		virtual uint64_t GetHash() const { return (uint64_t)m_Image; }
 
 		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_DescriptorImageInfo; }
-		VkImageView CreateImageViewSingleMip(uint32_t mip);
 
+		VkImageView CreateImageViewSingleMip(uint32_t mip);
 		void GenerateMips(bool readonly = false);
 
 		// abstract methods in HazelTexture

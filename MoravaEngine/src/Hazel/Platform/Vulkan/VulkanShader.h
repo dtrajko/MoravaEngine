@@ -100,6 +100,7 @@ namespace Hazel {
 		{
 			VkDescriptorPool Pool = nullptr;
 			std::vector<VkDescriptorSet> DescriptorSets;
+			VkDescriptorSet DescriptorSet; // redundant or obsolete?
 		};
 
 		ShaderMaterialDescriptorSet AllocateDescriptorSet(uint32_t set = 0) {}; // TODO - fix syntax error

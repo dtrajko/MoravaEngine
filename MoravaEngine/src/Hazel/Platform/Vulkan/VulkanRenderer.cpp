@@ -806,23 +806,29 @@ namespace Hazel {
 		// Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
 		Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("ClearCubeMap");
 
-		// HazelRenderer::Submit([]() {});
+		// HazelRenderer::Submit([equirectangularConversionShader, envUnfiltered]() mutable {});
 		{
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-			// TODO: Abstract into some sort of compute pipeline
-			VkDescriptorSetLayoutBinding setLayoutBinding{};
-			setLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-			setLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-			setLayoutBinding.binding = 0;
-			setLayoutBinding.descriptorCount = 1;
+			////	TODO: Abstract into some sort of compute pipeline
+			////	VkDescriptorSetLayoutBinding setLayoutBinding{};
+			////	setLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			////	setLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
+			////	setLayoutBinding.binding = 0;
+			////	setLayoutBinding.descriptorCount = 1;
+			////	
+			////	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
+			////	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			////	descriptorSetLayoutCreateInfo.pBindings = &setLayoutBinding;
+			////	descriptorSetLayoutCreateInfo.bindingCount = 1;
+			////	VkDescriptorSetLayout computeDescriptorSetLayout;
+			////	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, nullptr, &computeDescriptorSetLayout));
 
-			VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
-			descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			descriptorSetLayoutCreateInfo.pBindings = &setLayoutBinding;
-			descriptorSetLayoutCreateInfo.bindingCount = 1;
-			VkDescriptorSetLayout computeDescriptorSetLayout;
-			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, nullptr, &computeDescriptorSetLayout));
+			Ref<VulkanShader> vulkanShader = equirectangularConversionShader.As<VulkanShader>();
+			Ref<VulkanTextureCube> envUnfilteredCubemap = envUnfiltered.As<VulkanTextureCube>();
+
+			VkDescriptorSetLayout computeDescriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
+			VulkanShader::ShaderMaterialDescriptorSet descriptorSet = vulkanShader->CreateDescriptorSets();
 
 			VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
 			pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -831,7 +837,16 @@ namespace Hazel {
 			VkPipelineLayout computePipelineLayout;
 			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &computePipelineLayout));
 
-			Ref<VulkanShader> vulkanShader = equirectangularConversionShader.As<VulkanShader>();
+
+			VkWriteDescriptorSet writeDescriptorSet{};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = descriptorSet.DescriptorSet;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+			writeDescriptorSet.dstBinding = 0;
+			//// writeDescriptorSet.pImageInfo = bufferInfo;
+			//// writeDescriptorSet.descriptorCount = descriptorCount;
+
+			//// VK_CHECK_RESULT(vkUpdateDescriptorSets(device, computeDescriptorSets.size(), computeDescriptorSets.data(), 0, nullptr));
 
 			VkComputePipelineCreateInfo computePipelineCreateInfo{};
 			computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -840,8 +855,8 @@ namespace Hazel {
 			computePipelineCreateInfo.flags = computePipelineCreateFlags;
 			// TODO populate computePipelineCreateInfo
 
-			VkPipeline pipeline;
-			// VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, &computePipelineCreateInfo, nullptr, &pipeline));
+			//// VkPipeline pipeline;
+			//// VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, &computePipelineCreateInfo, nullptr, &pipeline));
 		}
 
 		// -----

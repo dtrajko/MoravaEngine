@@ -1,12 +1,10 @@
 #pragma once
 
 #include "Hazel/Core/Math/AABB.h"
+#include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Renderer/Pipeline.h"
 #include "Hazel/Renderer/IndexBuffer.h"
 #include "Hazel/Renderer/HazelTexture.h"
-// #include "Hazel/Core/Base.h"
-// #include "Hazel/Renderer/VertexBuffer.h"
-// #include "Hazel/Renderer/Pipeline.h"
 
 #include "Core/Log.h"
 #include "EnvMap/EnvMapMaterial.h"
@@ -188,13 +186,19 @@ namespace Hazel {
 
 		const VertexBufferLayout& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
 
+		struct MaterialDescriptor
+		{
+			VulkanShader::ShaderMaterialDescriptorSet DescriptorSet;
+			std::vector<VkWriteDescriptorSet> WriteDescriptors;
+		};
+		const MaterialDescriptor& GetDescriptorSet(uint32_t index) { return m_MaterialDescriptors[index]; }
+
 		// Setters
 		inline void SetBaseMaterial(Ref<HazelMaterial> baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
 		void DeleteSubmesh(Submesh submesh);
 		void CloneSubmesh(Submesh submesh);
-
 
 	private:
 		void BoneTransform(float time);
@@ -213,6 +217,8 @@ namespace Hazel {
 		void SetupDefaultBaseMaterial();
 		Ref<HazelTexture2D> LoadBaseTexture();
 
+		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<HazelTexture2D> texture);
+		void UpdateAllDescriptors();
 
 	public:
 		Ref<Pipeline> m_Pipeline;
@@ -249,7 +255,7 @@ namespace Hazel {
 
 		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
 
-		// std::vector<MaterialDescriptor> m_MaterialDescriptors;
+		std::vector<MaterialDescriptor> m_MaterialDescriptors;
 
 		// Animation
 		bool m_IsAnimated = false;
