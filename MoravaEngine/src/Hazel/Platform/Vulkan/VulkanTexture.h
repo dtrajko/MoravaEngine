@@ -27,7 +27,6 @@ namespace Hazel {
 		virtual void Bind(uint32_t slot = 0) const override;
 
 		virtual Ref<HazelImage2D> GetImage() const override { return m_Image; }
-		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_DescriptorImageInfo; }
 
 		void Lock() override;
 
@@ -46,6 +45,9 @@ namespace Hazel {
 		uint32_t GetMipLevelCount() const override;
 
 		virtual uint64_t GetHash() const { return (uint64_t)m_Image; }
+
+		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_DescriptorImageInfo; }
+
 		virtual RendererID GetRendererID() const override;
 
 		bool operator ==(const HazelTexture& other) const override
@@ -71,6 +73,7 @@ namespace Hazel {
 		HazelImageFormat m_Format = HazelImageFormat::None;
 
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
+
 	};
 
 	class VulkanTextureCube : public HazelTextureCube

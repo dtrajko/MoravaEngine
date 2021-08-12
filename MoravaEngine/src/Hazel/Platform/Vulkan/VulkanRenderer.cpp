@@ -797,6 +797,7 @@ namespace Hazel {
 	}
 
 	static Ref<HazelTextureCube> envUnfiltered;
+	static Ref<HazelTexture2D> envEquirect;
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> VulkanRenderer::CreateEnvironmentMap(const std::string& filepath)
 	{
@@ -810,6 +811,19 @@ namespace Hazel {
 		// Ref<HazelShader> equirectangularConversionShader = HazelShader::Create("assets/shaders/EquirectangularToCubeMap.glsl");
 		// Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
 		Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("ClearCubeMap");
+
+		if (!envEquirect)
+		{
+			Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
+
+			// HazelImageFormat imageFormat = envEquirect->GetFormat();
+			// HZ_CORE_ASSERT(envEquirect->GetFormat() == HazelImageFormat::RGBA16F, "Texture is not HDR!");
+			if (envEquirect->GetFormat() != HazelImageFormat::RGBA16F)
+			{
+				Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirect->GetFormat());
+				return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
+			}
+		}
 
 		// HazelRenderer::Submit([equirectangularConversionShader, envUnfiltered]() mutable {});
 		{
@@ -831,6 +845,7 @@ namespace Hazel {
 
 			Ref<VulkanShader> vulkanShader = equirectangularConversionShader.As<VulkanShader>();
 			Ref<VulkanTextureCube> envUnfilteredCubemap = envUnfiltered.As<VulkanTextureCube>();
+			Ref<VulkanTexture2D> envEquirectVK = envUnfiltered.As<VulkanTexture2D>();
 
 			VkDescriptorSetLayout computeDescriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
 			VulkanShader::ShaderMaterialDescriptorSet descriptorSet = vulkanShader->CreateDescriptorSets();
@@ -842,16 +857,17 @@ namespace Hazel {
 			VkPipelineLayout computePipelineLayout;
 			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &computePipelineLayout));
 
-			VkWriteDescriptorSet writeDescriptorSet = *vulkanShader->GetDescriptorSet("o_CubeMap");
+			std::array<VkWriteDescriptorSet, 1> writeDescriptors;
 
-			// writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
-			// writeDescriptorSet.dstBinding = 0;
-			// writeDescriptorSet.descriptorCount = 1;
-			// writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-			writeDescriptorSet.pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
+			writeDescriptors[0] = *vulkanShader->GetDescriptorSet("o_CubeMap");
+			writeDescriptors[0].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
+			writeDescriptors[0].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
 
-			vkUpdateDescriptorSets(device, 1, &writeDescriptorSet, 0, nullptr);
+			// writeDescriptors[1] = *vulkanShader->GetDescriptorSet("u_EquirectangularTex");
+			// writeDescriptors[1].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
+			// writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
+
+			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 
 			VkComputePipelineCreateInfo computePipelineCreateInfo{};
 			computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -906,16 +922,6 @@ namespace Hazel {
 		}
 
 		// -----
-
-		Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
-		// HazelImageFormat imageFormat = envEquirect->GetFormat();
-		// HZ_CORE_ASSERT(envEquirect->GetFormat() == HazelImageFormat::RGBA16F, "Texture is not HDR!");
-		if (envEquirect->GetFormat() != HazelImageFormat::RGBA16F)
-		{
-			Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirect->GetFormat());
-			// return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
-		}
-
 
 		return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
 	}

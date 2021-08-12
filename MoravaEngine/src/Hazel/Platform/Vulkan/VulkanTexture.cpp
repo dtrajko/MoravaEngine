@@ -65,10 +65,11 @@ namespace Hazel {
 
 		stbi_set_flip_vertically_on_load(1);
 
-		if (false && stbi_is_hdr(path.c_str()))
+		if (/*false && */stbi_is_hdr(path.c_str()))
 		{
 			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 0);
-			m_ImageData.Size = width * height * 4 * sizeof(float);
+			Log::GetLogger()->debug("VulkanTexture2D: sizeof(float): '{0}'", sizeof(float));
+			m_ImageData.Size = width * height * 4 * 2; // sizeof(float); // 2 bytes instead 4!
 			m_Format = HazelImageFormat::RGBA16F;
 		}
 		else
