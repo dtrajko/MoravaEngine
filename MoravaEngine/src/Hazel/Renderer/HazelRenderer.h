@@ -123,9 +123,15 @@ namespace Hazel {
 	};
 
 	namespace Utils {
-	
-		void DumpGPUInfo();
 
+		inline void DumpGPUInfo()
+		{
+			auto& caps = HazelRenderer::GetCapabilities();
+			Log::GetLogger()->trace("GPU Info:");
+			Log::GetLogger()->trace("  Vendor: {0}", caps.Vendor);
+			Log::GetLogger()->trace("  Device: {0}", caps.Device);
+			Log::GetLogger()->trace("  Version: {0}", caps.Version);
+		}
 	}
 
 }

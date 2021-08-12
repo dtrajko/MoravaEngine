@@ -59,7 +59,21 @@ namespace Hazel::Utils {
 
 	void RetrieveDiagnosticCheckpoints();
 
-	void VulkanCheckResult(VkResult result);
+	void DumpGPUInfoDuplicate(); // A duplicate of DumpGPUInfo() in HazelRenderer
+
+	inline void VulkanCheckResult(VkResult result)
+	{
+		if (result != VK_SUCCESS)
+		{
+			HZ_CORE_ERROR("VkResult is '{0}' in {1}:{2}", ::Hazel::Utils::VKResultToString(result), __FILE__, __LINE__);
+			if (result == VK_ERROR_DEVICE_LOST)
+			{
+				Hazel::Utils::RetrieveDiagnosticCheckpoints();
+				Hazel::Utils::DumpGPUInfoDuplicate();
+			}
+			HZ_CORE_ASSERT(result == VK_SUCCESS);
+		}
+	}
 
 }
 

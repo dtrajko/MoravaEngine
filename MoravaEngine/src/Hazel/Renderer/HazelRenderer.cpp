@@ -120,7 +120,7 @@ namespace Hazel {
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl", true);
 		}
 
 		//...
@@ -499,14 +499,4 @@ namespace Hazel {
 		return s_Data->BlackCubeTexture;
 	}
 
-}
-
-
-void Hazel::Utils::DumpGPUInfo()
-{
-	auto& caps = HazelRenderer::GetCapabilities();
-	Log::GetLogger()->trace("GPU Info:");
-	Log::GetLogger()->trace("  Vendor: {0}", caps.Vendor);
-	Log::GetLogger()->trace("  Device: {0}", caps.Device);
-	Log::GetLogger()->trace("  Version: {0}", caps.Version);
 }

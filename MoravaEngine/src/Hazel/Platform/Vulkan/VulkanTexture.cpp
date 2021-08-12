@@ -10,6 +10,19 @@ namespace Hazel {
 
 	namespace Utils {
 
+		static VkFormat TextureFormatToVkFormat(HazelImageFormat format)
+		{
+			switch (format)
+			{
+				// case HazelImageFormat::RGB: return VK_FORMAT_R8G8B8_UNORM;
+				case HazelImageFormat::RGBA: return VK_FORMAT_R8G8B8A8_UNORM;
+				case HazelImageFormat::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
+			}
+			Log::GetLogger()->error("TextureFormatToVkFormat: HazelImageFormat '{0}' not supported!", format);
+			HZ_CORE_ASSERT(false);
+			return VK_FORMAT_UNDEFINED;
+		}
+
 		static void InsertImageMemoryBarrier(
 			VkCommandBuffer cmdbuffer,
 			VkImage image,
@@ -49,23 +62,37 @@ namespace Hazel {
 		: m_Path(path)
 	{
 		int width, height, channels;
+
 		stbi_set_flip_vertically_on_load(1);
-		m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
-		m_ImageData.Size = width * height * 4;
+
+		if (false && stbi_is_hdr(path.c_str()))
+		{
+			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 0);
+			m_ImageData.Size = width * height * 4 * sizeof(float);
+			m_Format = HazelImageFormat::RGBA16F;
+		}
+		else
+		{
+			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Size = width * height * 4;
+			m_Format = HazelImageFormat::RGBA;
+		}
+
 		if (!m_ImageData.Data)
 		{
 			// HZ_CORE_ASSERT(m_ImageData.Data, "Failed to load image!");
 			Log::GetLogger()->error("Failed to load image '{0}'!", path);
 		}
+
 		m_Width = width;
 		m_Height = height;
 		m_Channels = channels;
 
-		if (channels != 4 && channels != 3) {
-			// HZ_CORE_ASSERT(channels == 4 || channels == 3);
-			// Log::GetLogger()->error("Invalid number of channels: '{0}'!", channels);
-			// return;
-		}
+		//	if (channels != 4 && channels != 3) {
+		//		HZ_CORE_ASSERT(channels == 4 || channels == 3);
+		//		Log::GetLogger()->error("Invalid number of channels: '{0}'!", channels);
+		//		return;
+		//	}
 
 		// HZ_CORE_ASSERT(channels == 4);
 
@@ -590,7 +617,7 @@ namespace Hazel {
 		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // VK_IMAGE_LAYOUT_UNDEFINED or VK_IMAGE_LAYOUT_PREINITIALIZED
+		// imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // VK_IMAGE_LAYOUT_UNDEFINED or VK_IMAGE_LAYOUT_PREINITIALIZED
 		imageCreateInfo.extent = { m_Width, m_Height, 1 };
 		imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
 		imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;

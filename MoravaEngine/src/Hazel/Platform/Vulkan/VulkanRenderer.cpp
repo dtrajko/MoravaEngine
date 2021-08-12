@@ -796,12 +796,17 @@ namespace Hazel {
 	{
 	}
 
+	static Ref<HazelTextureCube> envUnfiltered;
+
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> VulkanRenderer::CreateEnvironmentMap(const std::string& filepath)
 	{
-		const uint32_t cubemapSize = 1024;
+		const uint32_t cubemapSize = 2048;
 		const uint32_t irradianceMapSize = 32;
 
-		Ref<HazelTextureCube> envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+		if (!envUnfiltered)
+		{
+			envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+		}
 		// Ref<HazelShader> equirectangularConversionShader = HazelShader::Create("assets/shaders/EquirectangularToCubeMap.glsl");
 		// Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
 		Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("ClearCubeMap");
@@ -862,7 +867,6 @@ namespace Hazel {
 
 			VkPipeline computePipeline{};
 			VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, &computePipelineCreateInfo, nullptr, &computePipeline));
-			// ERROR: vkCreateComputePipelines: required parameter pCreateInfos[0].stage.module specified as VK_NULL_HANDLE
 
 			/**** BEGIN Record a Command Buffer ****/
 
@@ -874,7 +878,7 @@ namespace Hazel {
 			vkCmdBindPipeline(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
 			vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0, 1, &descriptorSet.DescriptorSet, 0, nullptr);
 
-			vkCmdDispatch(computeCommandBuffer, cubemapSize / 32, cubemapSize / 32, 1);
+			vkCmdDispatch(computeCommandBuffer, cubemapSize / 32, cubemapSize / 32, 6);
 
 			vkEndCommandBuffer(computeCommandBuffer);
 
