@@ -98,7 +98,7 @@ layout (binding = 4) uniform sampler2D u_MetalnessTexture;
 layout (binding = 5) uniform sampler2D u_RoughnessTexture;
 
 // Environment maps
-//layout (binding = 6) uniform samplerCube u_EnvRadianceTex;
+layout (binding = 6) uniform samplerCube u_EnvRadianceTex;
 //layout (binding = 7) uniform samplerCube u_EnvIrradianceTex;
 
 // BRDF LUT

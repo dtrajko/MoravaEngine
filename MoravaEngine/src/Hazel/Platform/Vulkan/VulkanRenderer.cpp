@@ -801,7 +801,7 @@ namespace Hazel {
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> VulkanRenderer::CreateEnvironmentMap(const std::string& filepath)
 	{
-		const uint32_t cubemapSize = 2048;
+		const uint32_t cubemapSize = 1024;
 		const uint32_t irradianceMapSize = 32;
 
 		if (!envUnfiltered)
@@ -816,11 +816,11 @@ namespace Hazel {
 		{
 			Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
 
-			// HazelImageFormat imageFormat = envEquirect->GetFormat();
+			HazelImageFormat envEquirectImageFormat = envEquirect->GetFormat();
 			// HZ_CORE_ASSERT(envEquirect->GetFormat() == HazelImageFormat::RGBA16F, "Texture is not HDR!");
-			if (envEquirect->GetFormat() != HazelImageFormat::RGBA16F)
+			if (envEquirectImageFormat != HazelImageFormat::RGBA32F)
 			{
-				Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirect->GetFormat());
+				Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirectImageFormat);
 				return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
 			}
 		}
@@ -923,7 +923,7 @@ namespace Hazel {
 
 		// -----
 
-		return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
+		return { envUnfiltered, Ref<HazelTextureCube>() };
 	}
 
 	void VulkanRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)

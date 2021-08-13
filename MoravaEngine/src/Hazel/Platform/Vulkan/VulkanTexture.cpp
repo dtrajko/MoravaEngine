@@ -17,6 +17,7 @@ namespace Hazel {
 				// case HazelImageFormat::RGB: return VK_FORMAT_R8G8B8_UNORM;
 				case HazelImageFormat::RGBA: return VK_FORMAT_R8G8B8A8_UNORM;
 				case HazelImageFormat::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
+				case HazelImageFormat::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 			}
 			Log::GetLogger()->error("TextureFormatToVkFormat: HazelImageFormat '{0}' not supported!", format);
 			HZ_CORE_ASSERT(false);
@@ -63,17 +64,16 @@ namespace Hazel {
 	{
 		int width, height, channels;
 
-		stbi_set_flip_vertically_on_load(1);
 
-		if (/*false && */stbi_is_hdr(path.c_str()))
+		if (stbi_is_hdr(path.c_str()))
 		{
-			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 0);
-			Log::GetLogger()->debug("VulkanTexture2D: sizeof(float): '{0}'", sizeof(float));
-			m_ImageData.Size = width * height * 4 * 2; // sizeof(float); // 2 bytes instead 4!
-			m_Format = HazelImageFormat::RGBA16F;
+			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Size = width * height * 4 * sizeof(float);
+			m_Format = HazelImageFormat::RGBA32F;
 		}
 		else
 		{
+			stbi_set_flip_vertically_on_load(1);
 			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
 			m_ImageData.Size = width * height * 4;
 			m_Format = HazelImageFormat::RGBA;
@@ -88,6 +88,8 @@ namespace Hazel {
 		m_Width = width;
 		m_Height = height;
 		m_Channels = channels;
+
+		HZ_CORE_ASSERT(m_Format != HazelImageFormat::None);
 
 		//	if (channels != 4 && channels != 3) {
 		//		HZ_CORE_ASSERT(channels == 4 || channels == 3);
@@ -406,7 +408,7 @@ namespace Hazel {
 
 	HazelImageFormat VulkanTexture2D::GetFormat() const
 	{
-		return HazelImageFormat::None;
+		return m_Format;
 	}
 
 	uint32_t VulkanTexture2D::GetMipLevelCount() const
