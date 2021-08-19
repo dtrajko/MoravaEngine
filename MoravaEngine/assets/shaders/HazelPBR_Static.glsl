@@ -99,10 +99,10 @@ layout (binding = 5) uniform sampler2D u_RoughnessTexture;
 
 // Environment maps
 layout (binding = 6) uniform samplerCube u_EnvRadianceTex;
-//layout (binding = 7) uniform samplerCube u_EnvIrradianceTex;
+// layout (binding = 7) uniform samplerCube u_EnvIrradianceTex;
 
 // BRDF LUT
-//layout (binding = 8) uniform sampler2D u_BRDFLUTTexture;
+// layout (binding = 8) uniform sampler2D u_BRDFLUTTexture;
 
 layout (push_constant) uniform Material
 {
@@ -333,7 +333,18 @@ vec3 IBL(vec3 F0, vec3 Lr)
 	//vec3 specularIBL = specularIrradiance * (F * specularBRDF.x + specularBRDF.y);
 	//
 	//return kd * diffuseIBL + specularIBL;
-	return vec3(0.0);
+	// return vec3(0.0);
+
+	float NoV = clamp(m_Params.NdotV, 0.0, 1.0);
+	vec3 R = 2.0 * dot(m_Params.View, m_Params.Normal) * m_Params.Normal - m_Params.View;
+	vec3 specularIrradiance = texture(u_EnvRadianceTex, Lr).rgb;
+
+	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
+	// vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
+	vec3 specularIBL = specularIrradiance; // * (F * specularBRDF.x + specularBRDF.y);
+
+	// return kd * diffuseIBL + specularIBL;
+	return specularIBL;
 }
 
 void main()
@@ -369,10 +380,10 @@ void main()
 	vec3 F0 = mix(Fdielectric, m_Params.Albedo, m_Params.Metalness);
 
 	vec3 lightContribution = LightingTemp(F0);
-	// vec3 iblContribution = IBL(F0, Lr);
+	vec3 iblContribution = IBL(F0, Lr);
 
-	// color = vec4(lightContribution + iblContribution, 1.0);
-	color = vec4(lightContribution, 1.0);
+	color = vec4(lightContribution + iblContribution, 1.0);
+	// color = vec4(lightContribution, 1.0);
 
 	// color = vec4(Input.WorldPosition, 1.0);
 	// color = texture(u_RoughnessTexture, Input.TexCoord);

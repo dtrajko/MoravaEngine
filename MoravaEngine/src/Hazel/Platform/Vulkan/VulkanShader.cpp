@@ -592,7 +592,9 @@ namespace Hazel {
 		std::vector<VkDescriptorSetLayout> result;
 		result.reserve(m_DescriptorSetLayouts.size());
 		for (auto [set, layout] : m_DescriptorSetLayouts)
+		{
 			result.emplace_back(layout);
+		}
 
 		return result;
 	}
