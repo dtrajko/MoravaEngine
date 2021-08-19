@@ -57,7 +57,7 @@ namespace Hazel {
 		// VulkanRendererDataOld vulkan branch february 19th
 		VkCommandBuffer ActiveCommandBuffer = nullptr;
 		std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> EnvironmentMap;
-		// VkDescriptorSet RendererDescriptorSet;
+		VulkanShader::ShaderMaterialDescriptorSet RendererDescriptorSetFeb2021;
 	};
 
 	static VulkanRendererData* s_Data = nullptr;
@@ -116,9 +116,9 @@ namespace Hazel {
 		// s_Data->m_ShaderLibrary->Load("assets/shaders/Grid.glsl");
 		// s_Data->m_ShaderLibrary->Load("assets/shaders/SceneComposite.glsl");
 		// s_Data->m_ShaderLibrary->Load("assets/shaders/HazelSimple.glsl");
-		s_Data->m_ShaderLibrary->Load("assets/shaders/HazelPBR_Static.glsl");
 		// s_Data->m_ShaderLibrary->Load("assets/shaders/Outline.glsl");
 		// s_Data->m_ShaderLibrary->Load("assets/shaders/Skybox.glsl");
+		s_Data->m_ShaderLibrary->Load("assets/shaders/HazelPBR_Static.glsl");
 		s_Data->m_ShaderLibrary->Load("assets/shaders/Texture.glsl");
 
 		SceneRenderer::Init();
@@ -248,6 +248,24 @@ namespace Hazel {
 
 		s_Data->EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 
+		// HazelRenderer::Submit([]() mutable {});
+		{
+			auto shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+			Ref<VulkanShader> pbrShader = shader.As<VulkanShader>();
+			s_Data->RendererDescriptorSetFeb2021 = pbrShader->CreateDescriptorSets();
+
+			const VkWriteDescriptorSet* wds = pbrShader.As<VulkanShader>()->GetDescriptorSet("u_EnvRadianceTex");
+			HZ_CORE_ASSERT(wds);
+
+			VkWriteDescriptorSet descriptorSet = *wds;
+			descriptorSet.dstSet = s_Data->RendererDescriptorSetFeb2021.DescriptorSet;
+			auto& imageInfo = s_Data->EnvironmentMap.first.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+			descriptorSet.pImageInfo = &imageInfo;
+
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			// vkUpdateDescriptorSets(vulkanDevice, 1, &descriptorSet, 0, nullptr);
+		}
+
 		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
 
@@ -317,11 +335,11 @@ namespace Hazel {
 
 			// Bind descriptor sets describing shader binding points
 			VkDescriptorSet descriptorSet = mesh->GetDescriptorSet(submesh.MaterialIndex).DescriptorSet.DescriptorSet;
-			// VkDescriptorSet rendererDescriptorSet = s_Data->RendererDescriptorSet;
+			VulkanShader::ShaderMaterialDescriptorSet rendererDescriptorSet = s_Data->RendererDescriptorSetFeb2021;
 
 			std::array<VkDescriptorSet, 1> descriptorSets = {
 				descriptorSet,
-				// rendererDescriptorSet,
+				// rendererDescriptorSet.DescriptorSets,
 			};
 
 			// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)mesh->GetDescriptorSet();

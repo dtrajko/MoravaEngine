@@ -565,7 +565,10 @@ namespace Hazel {
 				m_MeshShader->SetFloat("u_MaterialUniforms.NormalTexToggle", 0.0f);
 				mi->Set("u_MaterialUniforms.NormalTexToggle", 0.0f); // redundant
 
-				if (aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS)
+				bool hasNormalMap = aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS;
+				fallback = !hasNormalMap;
+
+				if (hasNormalMap)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
 					std::filesystem::path path = m_FilePath;
@@ -591,6 +594,9 @@ namespace Hazel {
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
+							AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", texture);
+							mi->Set("u_MaterialUniforms.UseNormalMap", true);
+
 							// HazelRenderer::Submit([instance, shader, texture]() mutable
 							// {
 							// });
@@ -619,16 +625,27 @@ namespace Hazel {
 					else
 					{
 						Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
+						fallback = true;
 					}
 				}
-				else
+
+				if (fallback)
 				{
 					Log::GetLogger()->info("    No normal map");
+
+					if (RendererAPI::Current() == RendererAPIType::Vulkan)
+					{
+						AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", whiteTexture);
+					}
 				}
 
 				// Roughness map
 				// m_MeshShader->SetFloat("u_MaterialUniforms.Roughness", 1.0f);
 				// m_MeshShader->SetFloat("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
+
+				bool hasRoughnessMap = aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS;
+				fallback = !hasRoughnessMap;
+
 				if (aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
@@ -681,12 +698,14 @@ namespace Hazel {
 					else
 					{
 						Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
+						fallback = true;
 
 						m_MeshShader->SetFloat("u_MaterialUniforms.Roughness", roughness);
 						m_MeshShader->SetFloat("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
 					}
 				}
-				else
+
+				if (fallback)
 				{
 					Log::GetLogger()->info("    No roughness map");
 

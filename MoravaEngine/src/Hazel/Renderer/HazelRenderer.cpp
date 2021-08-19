@@ -117,10 +117,11 @@ namespace Hazel {
 		// Compute shaders
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		{
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl", true);
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl", true);
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl", true);
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl", true);
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl", true);
 		}
 
 		//...
