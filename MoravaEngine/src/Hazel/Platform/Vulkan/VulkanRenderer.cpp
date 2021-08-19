@@ -3,6 +3,7 @@
 #include "imgui.h"
 
 #include "Vulkan.h"
+#include "Hazel/Platform/Vulkan/VulkanComputePipeline.h"
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
 #include "Hazel/Platform/Vulkan/VulkanFramebuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
@@ -51,9 +52,12 @@ namespace Hazel {
 		int32_t SelectedDrawCall = -1;
 		int32_t DrawCallCount = 0;
 
-		// VulkanRendererDataOld
-		VkCommandBuffer ActiveCommandBuffer = nullptr;
 		Ref<HazelShaderLibrary> m_ShaderLibrary;
+
+		// VulkanRendererDataOld vulkan branch february 19th
+		VkCommandBuffer ActiveCommandBuffer = nullptr;
+		std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> EnvironmentMap;
+		// VkDescriptorSet RendererDescriptorSet;
 	};
 
 	static VulkanRendererData* s_Data = nullptr;
@@ -242,7 +246,7 @@ namespace Hazel {
 			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
 
-		auto [radiance, irradiance] = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
+		s_Data->EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 
 		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
@@ -312,16 +316,22 @@ namespace Hazel {
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 			// Bind descriptor sets describing shader binding points
-			VkDescriptorSet* descriptorSet = (VkDescriptorSet*)mesh->GetDescriptorSet();
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, descriptorSet, 0, nullptr);
+			VkDescriptorSet descriptorSet = mesh->GetDescriptorSet(submesh.MaterialIndex).DescriptorSet.DescriptorSet;
+			// VkDescriptorSet rendererDescriptorSet = s_Data->RendererDescriptorSet;
+
+			std::array<VkDescriptorSet, 1> descriptorSets = {
+				descriptorSet,
+				// rendererDescriptorSet,
+			};
+
+			// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)mesh->GetDescriptorSet();
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
 			// Push Constants
-			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
-
-			glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
+			// glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 			// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submesh.Transform);
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
-
 			vkCmdDrawIndexed(commandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
 		}
 	}
@@ -796,34 +806,32 @@ namespace Hazel {
 	{
 	}
 
-	static Ref<HazelTextureCube> envUnfiltered;
-	static Ref<HazelTexture2D> envEquirect;
-
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> VulkanRenderer::CreateEnvironmentMap(const std::string& filepath)
 	{
 		const uint32_t cubemapSize = 1024;
 		const uint32_t irradianceMapSize = 32;
 
-		if (!envUnfiltered)
+		Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
+		HazelImageFormat envEquirectImageFormat = envEquirect->GetFormat();
+		HZ_CORE_ASSERT(envEquirect->GetFormat() == HazelImageFormat::RGBA16F, "Texture is not HDR!");
+
+		if (envEquirectImageFormat != HazelImageFormat::RGBA16F)
 		{
-			envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+			Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirectImageFormat);
+			return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
 		}
+
+		Ref<HazelTextureCube> envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+		Ref<HazelTextureCube> envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+
+		// Convert equirectangular to cubemap
+		// TODO...
+
 		// Ref<HazelShader> equirectangularConversionShader = HazelShader::Create("assets/shaders/EquirectangularToCubeMap.glsl");
 		// Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
 		Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("ClearCubeMap");
 
-		if (!envEquirect)
-		{
-			Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
-
-			HazelImageFormat envEquirectImageFormat = envEquirect->GetFormat();
-			// HZ_CORE_ASSERT(envEquirect->GetFormat() == HazelImageFormat::RGBA16F, "Texture is not HDR!");
-			if (envEquirectImageFormat != HazelImageFormat::RGBA32F)
-			{
-				Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirectImageFormat);
-				return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
-			}
-		}
+		// Ref<VulkanComputePipeline> equirectangularConversionPipeline = Ref<VulkanComputePipeline>::Create(equirectangularConversionShader);
 
 		// HazelRenderer::Submit([equirectangularConversionShader, envUnfiltered]() mutable {});
 		{
@@ -844,8 +852,6 @@ namespace Hazel {
 			////	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, nullptr, &computeDescriptorSetLayout));
 
 			Ref<VulkanShader> vulkanShader = equirectangularConversionShader.As<VulkanShader>();
-			Ref<VulkanTextureCube> envUnfilteredCubemap = envUnfiltered.As<VulkanTextureCube>();
-			Ref<VulkanTexture2D> envEquirectVK = envUnfiltered.As<VulkanTexture2D>();
 
 			VkDescriptorSetLayout computeDescriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
 			VulkanShader::ShaderMaterialDescriptorSet descriptorSet = vulkanShader->CreateDescriptorSets();
@@ -857,15 +863,21 @@ namespace Hazel {
 			VkPipelineLayout computePipelineLayout;
 			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &computePipelineLayout));
 
-			std::array<VkWriteDescriptorSet, 1> writeDescriptors;
+			// VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			// Ref<VulkanShader> shader = equirectangularConversionPipeline->GetShader();
 
+			std::array<VkWriteDescriptorSet, 2> writeDescriptors;
+			// auto descriptorSet = shader->CreateDescriptorSets();
+
+			Ref<VulkanTextureCube> envUnfilteredCubemap = envUnfiltered.As<VulkanTextureCube>();
 			writeDescriptors[0] = *vulkanShader->GetDescriptorSet("o_CubeMap");
 			writeDescriptors[0].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
 			writeDescriptors[0].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
 
-			// writeDescriptors[1] = *vulkanShader->GetDescriptorSet("u_EquirectangularTex");
-			// writeDescriptors[1].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
-			// writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
+			Ref<VulkanTexture2D> envEquirectVK = envEquirect.As<VulkanTexture2D>();
+			writeDescriptors[1] = *vulkanShader->GetDescriptorSet("u_EquirectangularTex");
+			writeDescriptors[1].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
+			writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
 
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 

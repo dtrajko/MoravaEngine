@@ -305,38 +305,40 @@ namespace Hazel {
 		auto shader = m_MeshShader; // MoravaShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
 		pipelineSpecification.Shader = m_MeshShader;
 
-		if (RendererAPI::Current() == RendererAPIType::Vulkan)
-		{
-			// HazelRenderer::Submit([instance, shader]() mutable
-			// {
-			// });
-			{
-				s_DescriptorSet = m_MeshShader.As<VulkanShader>()->CreateDescriptorSet(); // depends on m_DescriptorPool and m_DescriptorSetLayout
+		//	if (RendererAPI::Current() == RendererAPIType::Vulkan)
+		//	{
+		//		// HazelRenderer::Submit([instance, shader]() mutable
+		//		// {
+		//		// });
+		//		{
+		//			s_DescriptorSet = m_MeshShader.As<VulkanShader>()->CreateDescriptorSet(); // depends on m_DescriptorPool and m_DescriptorSetLayout
+		//	
+		//			/**** BEGIN Composite version 080a7edc, Sep 25th ****/
+		//			// EXAMPLE:
+		//			// std::vector<VkWriteDescriptorSet> writeDescriptorSets = Renderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
+		//			auto& ub0 = shader.As<VulkanShader>()->GetUniformBuffer(0);
+		//			VkWriteDescriptorSet writeDescriptorSet = {};
+		//			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		//			writeDescriptorSet.dstSet = s_DescriptorSet;
+		//			writeDescriptorSet.descriptorCount = 1;
+		//			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		//			writeDescriptorSet.pBufferInfo = &ub0.Descriptor;
+		//			writeDescriptorSet.dstBinding = 0;
+		//			s_WriteDescriptorSets.push_back(writeDescriptorSet);
+		//	
+		//			auto& ub1 = shader.As<VulkanShader>()->GetUniformBuffer(1);
+		//			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		//			writeDescriptorSet.dstSet = s_DescriptorSet;
+		//			writeDescriptorSet.descriptorCount = 1;
+		//			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		//			writeDescriptorSet.pBufferInfo = &ub1.Descriptor;
+		//			writeDescriptorSet.dstBinding = 1;
+		//			s_WriteDescriptorSets.push_back(writeDescriptorSet);
+		//			/**** END Composite 080a7edc, Sep 25th ****/
+		//		}
+		//	}
 
-				/**** BEGIN Composite version 080a7edc, Sep 25th ****/
-				// EXAMPLE:
-				// std::vector<VkWriteDescriptorSet> writeDescriptorSets = Renderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
-				auto& ub0 = shader.As<VulkanShader>()->GetUniformBuffer(0);
-				VkWriteDescriptorSet writeDescriptorSet = {};
-				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				writeDescriptorSet.dstSet = s_DescriptorSet;
-				writeDescriptorSet.descriptorCount = 1;
-				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				writeDescriptorSet.pBufferInfo = &ub0.Descriptor;
-				writeDescriptorSet.dstBinding = 0;
-				s_WriteDescriptorSets.push_back(writeDescriptorSet);
-
-				auto& ub1 = shader.As<VulkanShader>()->GetUniformBuffer(1);
-				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				writeDescriptorSet.dstSet = s_DescriptorSet;
-				writeDescriptorSet.descriptorCount = 1;
-				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				writeDescriptorSet.pBufferInfo = &ub1.Descriptor;
-				writeDescriptorSet.dstBinding = 1;
-				s_WriteDescriptorSets.push_back(writeDescriptorSet);
-				/**** END Composite 080a7edc, Sep 25th ****/
-			}
-		}
+		// Ref<Mesh> instance = this;
 
 		// Bones
 		if (m_IsAnimated)
@@ -391,6 +393,7 @@ namespace Hazel {
 
 			m_Textures.resize(scene->mNumMaterials);
 			m_Materials.resize(scene->mNumMaterials);
+			m_MaterialDescriptors.resize(scene->mNumMaterials);
 
 			Ref<HazelTexture2D> whiteTexture = HazelRenderer::GetWhiteTexture();
 
@@ -403,6 +406,36 @@ namespace Hazel {
 				// auto mi = HazelMaterial::Create(m_BaseMaterial, aiMaterialName.data);
 				// auto mi = Ref<HazelMaterialInstance>::Create(m_BaseMaterial, aiMaterialName.data);
 				m_Materials[i] = mi;
+
+				if (RendererAPI::Current() == RendererAPIType::Vulkan)
+				{
+					// HazelRenderer::Submit([instance, shader, i]() mutable {});
+					{
+						MaterialDescriptor& materialDescriptor = m_MaterialDescriptors[i];
+						materialDescriptor.DescriptorSet = shader.As<VulkanShader>()->CreateDescriptorSets();
+
+						// EXAMPLE:
+						// std::vector<VkWriteDescriptorSet> writeDescriptorSets = Renderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
+						auto& ub0 = shader.As<VulkanShader>()->GetUniformBuffer(0);
+						VkWriteDescriptorSet writeDescriptorSet = {};
+						writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+						writeDescriptorSet.dstSet = materialDescriptor.DescriptorSet.DescriptorSet;
+						writeDescriptorSet.descriptorCount = 1;
+						writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+						writeDescriptorSet.pBufferInfo = &ub0.Descriptor;
+						writeDescriptorSet.dstBinding = 0;
+						materialDescriptor.WriteDescriptors.push_back(writeDescriptorSet);
+
+						auto& ub1 = shader.As<VulkanShader>()->GetUniformBuffer(1);
+						writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+						writeDescriptorSet.dstSet = materialDescriptor.DescriptorSet.DescriptorSet;
+						writeDescriptorSet.descriptorCount = 1;
+						writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+						writeDescriptorSet.pBufferInfo = &ub1.Descriptor;
+						writeDescriptorSet.dstBinding = 1;
+						materialDescriptor.WriteDescriptors.push_back(writeDescriptorSet);
+					}
+				}
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;
@@ -900,13 +933,16 @@ namespace Hazel {
 			// {
 			// });
 			{
-				auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-				// MORAVA_CORE_WARN("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
-				Log::GetLogger()->warn("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
-				vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(s_WriteDescriptorSets.size()), s_WriteDescriptorSets.data(), 0, nullptr);
+				// auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+				// // MORAVA_CORE_WARN("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
+				// Log::GetLogger()->warn("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
+				// vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(s_WriteDescriptorSets.size()), s_WriteDescriptorSets.data(), 0, nullptr);
 			}
+
+			// vulkan branch, february 2021
+			UpdateAllDescriptorSets();
 		}
+
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
 
@@ -947,6 +983,21 @@ namespace Hazel {
 			{
 				HZ_CORE_WARN("Updating {0} descriptor sets", md.WriteDescriptors.size());
 				vkUpdateDescriptorSets(vulkanDevice, (uint32_t)md.WriteDescriptors.size(), md.WriteDescriptors.data(), 0, nullptr);
+			}
+		}
+	}
+
+	void HazelMesh::UpdateAllDescriptorSets()
+	{
+		// Ref<Mesh> instance = this;
+		// HazelRenderer::Submit([instance]() mutable {});
+		{
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			for (MaterialDescriptor& md : m_MaterialDescriptors)
+			{
+				// HZ_CORE_WARN("Updating {0} descriptor sets", md.WriteDescriptors.size());
+				Log::GetLogger()->warn("Updating {0} descriptor sets", md.WriteDescriptors.size());
+				vkUpdateDescriptorSets(vulkanDevice, md.WriteDescriptors.size(), md.WriteDescriptors.data(), 0, nullptr);
 			}
 		}
 	}

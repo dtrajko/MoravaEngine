@@ -219,6 +219,7 @@ namespace Hazel {
 
 		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<HazelTexture2D> texture);
 		void UpdateAllDescriptors();
+		void UpdateAllDescriptorSets(); // Vulkan branch, february 2021
 
 	public:
 		Ref<Pipeline> m_Pipeline;

@@ -29,20 +29,16 @@ namespace Hazel {
 		virtual Ref<HazelImage2D> GetImage() const override { return m_Image; }
 
 		void Lock() override;
-
 		void Unlock() override;
-
 		void Resize(uint32_t width, uint32_t height) override;
 
 		Buffer GetWriteableBuffer() override;
-
 		bool Loaded() const override;
-
-		const std::string& GetPath() const override;
-
 		HazelImageFormat GetFormat() const override;
-
+		const std::string& GetPath() const override;
 		uint32_t GetMipLevelCount() const override;
+
+		void GenerateMips();
 
 		virtual uint64_t GetHash() const { return (uint64_t)m_Image; }
 
@@ -68,7 +64,9 @@ namespace Hazel {
 		Buffer m_ImageData;
 
 		VkDeviceMemory m_DeviceMemory;
-		VkImage m_Image;
+		VkImage m_VkImage;
+
+		Ref<HazelImage2D> m_Image;
 
 		HazelImageFormat m_Format = HazelImageFormat::None;
 
