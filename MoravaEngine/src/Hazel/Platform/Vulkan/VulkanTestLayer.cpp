@@ -343,10 +343,10 @@ namespace Hazel {
 #endif
 
 			{
-				void* ubPtr = shader->MapUniformBuffer(0);
+				void* ubPtr = shader->MapUniformBuffer(0, 0);
 				glm::mat4 viewProj = camera.GetViewProjection();
 				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
-				shader->UnmapUniformBuffer(0);
+				shader->UnmapUniformBuffer(0, 0);
 			}
 
 			{
@@ -375,9 +375,9 @@ namespace Hazel {
 				ub.u_CameraPosition = camera.GetPosition();
 				// ub.u_AlbedoColorUB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
-				void* ubPtr = shader->MapUniformBuffer(1);
+				void* ubPtr = shader->MapUniformBuffer(1, 0);
 				memcpy(ubPtr, &ub, sizeof(UB));
-				shader->UnmapUniformBuffer(1);
+				shader->UnmapUniformBuffer(1, 0);
 			}
 
 #if 0

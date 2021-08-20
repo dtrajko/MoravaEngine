@@ -1016,7 +1016,7 @@ namespace Hazel {
 			{
 				// HZ_CORE_WARN("Updating {0} descriptor sets", md.WriteDescriptors.size());
 				Log::GetLogger()->warn("Updating {0} descriptor sets", md.WriteDescriptors.size());
-				vkUpdateDescriptorSets(vulkanDevice, md.WriteDescriptors.size(), md.WriteDescriptors.data(), 0, nullptr);
+				vkUpdateDescriptorSets(vulkanDevice, (uint32_t)md.WriteDescriptors.size(), md.WriteDescriptors.data(), 0, nullptr);
 			}
 		}
 	}

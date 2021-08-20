@@ -154,23 +154,30 @@ namespace Hazel {
 			const auto& name = resource.name;
 			auto& bufferType = compiler.get_type(resource.base_type_id);
 			int memberCount = static_cast<uint32_t>(bufferType.member_types.size());
-			uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
-			HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
+			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			HZ_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end());
 
-			UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
+			// UniformBuffer& buffer = shaderDescriptorSet.UniformBuffers[bindingPoint];
+			UniformBuffer& buffer = shaderDescriptorSet.UniformBuffers[binding];
 			// UniformBuffer buffer;
-			buffer.BindingPoint = bindingPoint;
+			buffer.BindingPoint = binding;
+			buffer.DescriptorSet = descriptorSet;
 			buffer.Size = size;
 			// AllocateUniformBuffer(buffer);
 			buffer.Name = name;
 			buffer.ShaderStage = shaderStage;
 			// m_UniformBuffers.insert(std::pair(bindingPoint, buffer));
 
+			MORAVA_CORE_TRACE("    {0} ({1}, {2})", name, descriptorSet, binding);
+
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
-			MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
+			MORAVA_CORE_TRACE("  Descriptor Set: {0}", descriptorSet);
+			MORAVA_CORE_TRACE("  Binding Point: {0}", binding);
 			MORAVA_CORE_TRACE("  Size: {0}", size);
 			MORAVA_CORE_TRACE("--------------------------");
 		}
@@ -205,6 +212,8 @@ namespace Hazel {
 			buffer.Name = bufferName;
 			buffer.Size = static_cast<uint32_t>(bufferSize);
 
+			// MORAVA_CORE_TRACE("    {0} ({1}, {2})", name, descriptorSet, binding);
+
 			MORAVA_CORE_TRACE("  Name: {0}", bufferName);
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
 			// MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
@@ -229,19 +238,25 @@ namespace Hazel {
 			const auto& name = resource.name;
 			auto& type = compiler.get_type(resource.base_type_id);
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 			uint32_t dimension = type.image.dim;
 
-			// HZ_CORE_ASSERT(m_ImageSamplers.find(binding) == m_ImageSamplers.end());
+			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			HZ_CORE_ASSERT(shaderDescriptorSet.ImageSamplers.find(binding) == shaderDescriptorSet.ImageSamplers.end());
 
-			auto& imageSampler = m_ImageSamplers[binding];
+			auto& imageSampler = shaderDescriptorSet.ImageSamplers[binding];
 			// ImageSampler imageSampler;
 			imageSampler.BindingPoint = binding;
+			imageSampler.DescriptorSet = descriptorSet;
 			imageSampler.Name = name;
 			imageSampler.ShaderStage = shaderStage;
 			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
 
+			MORAVA_CORE_TRACE("    {0} ({1}, {2})", name, descriptorSet, binding);
+
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			// MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
+			MORAVA_CORE_TRACE("  Descriptor Set: {0}", descriptorSet);
 			MORAVA_CORE_TRACE("  Binding Point: {0}", binding);
 			// MORAVA_CORE_TRACE("  Size: {0}", size);
 			MORAVA_CORE_TRACE("--------------------------");
@@ -253,19 +268,25 @@ namespace Hazel {
 			const auto& name = resource.name;
 			auto& type = compiler.get_type(resource.base_type_id);
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 			uint32_t dimension = type.image.dim;
 
-			// HZ_CORE_ASSERT(m_StorageImages.find(binding) == m_StorageImages.end());
+			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			HZ_CORE_ASSERT(shaderDescriptorSet.StorageImages.find(binding) == shaderDescriptorSet.StorageImages.end());
 
-			auto& storageImage = m_StorageImages[binding];
+			auto& imageSampler = shaderDescriptorSet.StorageImages[binding];
 			// ImageSampler imageSampler;
-			storageImage.BindingPoint = binding;
-			storageImage.Name = name;
-			storageImage.ShaderStage = shaderStage;
+			imageSampler.BindingPoint = binding;
+			imageSampler.DescriptorSet = descriptorSet;
+			imageSampler.Name = name;
+			imageSampler.ShaderStage = shaderStage;
 			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
+
+			MORAVA_CORE_TRACE("    {0} ({1}, {2})", name, descriptorSet, binding);
 
 			MORAVA_CORE_TRACE("  Name: {0}", name);
 			// MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
+			MORAVA_CORE_TRACE("  Descriptor Set: {0}", descriptorSet);
 			MORAVA_CORE_TRACE("  Binding Point: {0}", binding);
 			// MORAVA_CORE_TRACE("  Size: {0}", size);
 			MORAVA_CORE_TRACE("--------------------------");
@@ -283,149 +304,127 @@ namespace Hazel {
 		//////////////////////////////////////////////////////////////////////
 
 		// We need to tell the API the number of max. requested descriptors per type
-		m_TypeCounts.insert(std::make_pair(0, std::vector<VkDescriptorPoolSize>()));
-		m_TypeCounts.at(0).clear();
-		if (m_UniformBuffers.size())
+		m_TypeCounts.clear();
+		for (auto&& [set, shaderDescriptorSet] : m_ShaderDescriptorSets)
 		{
-			VkDescriptorPoolSize& typeCount = m_TypeCounts.at(0).emplace_back();
-			typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			typeCount.descriptorCount = static_cast<uint32_t>(m_UniformBuffers.size());
+			// m_TypeCounts.insert(std::make_pair(0, std::vector<VkDescriptorPoolSize>()));
+			if (shaderDescriptorSet.UniformBuffers.size())
+			{
+				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.UniformBuffers.size());
+			}
+
+			if (shaderDescriptorSet.ImageSamplers.size())
+			{
+				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.ImageSamplers.size());
+			}
+
+			if (shaderDescriptorSet.StorageImages.size())
+			{
+				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.StorageImages.size());
+			}
+
+#if 0
+			// TODO: Move this to the centralized renderer
+			// Create the global descriptor pool
+			// All descriptors used in this example are allocated from this pool
+			VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
+			descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			// Once you bind a descriptor set and use it in a vkCmdDraw() function, you can no longer modify it unless you specify the
+			// descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+			descriptorPoolInfo.pNext = nullptr;
+			descriptorPoolInfo.poolSizeCount = (uint32_t)m_TypeCounts.at(set).size();
+			descriptorPoolInfo.pPoolSizes = m_TypeCounts.at(set).data();
+			descriptorPoolInfo.maxSets = 1;
+
+			VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
+#endif
+
+			//////////////////////////////////////////////////////////////////////
+			// Descriptor Set Layout
+			//////////////////////////////////////////////////////////////////////
+
+			std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+			for (auto& [binding, uniformBuffer] : shaderDescriptorSet.UniformBuffers)
+			{
+				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.stageFlags = uniformBuffer.ShaderStage;
+				layoutBinding.pImmutableSamplers = nullptr;
+				layoutBinding.binding = binding;
+
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[uniformBuffer.Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+				set.descriptorCount = 1;
+				set.dstBinding = layoutBinding.binding;
+
+				AllocateUniformBuffer(uniformBuffer);
+			}
+
+			for (auto& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
+			{
+				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.stageFlags = imageSampler.ShaderStage;
+				layoutBinding.pImmutableSamplers = nullptr;
+				layoutBinding.binding = binding;
+
+				HZ_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
+
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[imageSampler.Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+				set.descriptorCount = 1;
+				set.dstBinding = layoutBinding.binding;
+			}
+
+			for (auto& [binding, storageImage] : shaderDescriptorSet.StorageImages)
+			{
+				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.stageFlags = storageImage.ShaderStage;
+				layoutBinding.pImmutableSamplers = nullptr;
+
+				// uint32_t binding = bindingAndSet & 0xffffffff;
+				// uint32_t descriptorSet = (bindingAndSet >> 32);
+				layoutBinding.binding = binding;
+
+				HZ_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
+				HZ_CORE_ASSERT(shaderDescriptorSet.ImageSamplers.find(binding) == shaderDescriptorSet.ImageSamplers.end(), "Binding is already present in m_ImageSamplers!");
+
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[storageImage.Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_STORAGE_IMAGE
+				set.descriptorCount = 1;
+				set.dstBinding = layoutBinding.binding;
+				// set.dstSet = descriptorSet;
+			}
+
+			VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
+			descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			descriptorLayout.pNext = nullptr;
+			descriptorLayout.bindingCount = static_cast<uint32_t>(layoutBindings.size());
+			descriptorLayout.pBindings = layoutBindings.data();
+
+			MORAVA_CORE_INFO("Creating descriptor set {0} with {1} ubos, {2} samplers and {3} storage images", set,
+				shaderDescriptorSet.UniformBuffers.size(),
+				shaderDescriptorSet.ImageSamplers.size(),
+				shaderDescriptorSet.StorageImages.size());
+
+			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayouts[set]));
 		}
-
-		if (m_ImageSamplers.size())
-		{
-			VkDescriptorPoolSize& typeCount = m_TypeCounts.at(0).emplace_back();
-			typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			typeCount.descriptorCount = static_cast<uint32_t>(m_ImageSamplers.size());
-		}
-
-		if (m_StorageImages.size())
-		{
-			VkDescriptorPoolSize& typeCount = m_TypeCounts.at(0).emplace_back();
-			typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-			typeCount.descriptorCount = static_cast<uint32_t>(m_StorageImages.size());
-		}
-
-		// TODO: Move this to the centralized renderer
-		// Create the global descriptor pool
-		// All descriptors used in this example are allocated from this pool
-		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
-		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		// Once you bind a descriptor set and use it in a vkCmdDraw() function, you can no longer modify it unless you specify the
-		// descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
-		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(m_TypeCounts.size());
-		descriptorPoolInfo.pPoolSizes = m_TypeCounts.at(0).data();
-		descriptorPoolInfo.maxSets = 1;
-
-		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
-
-		//////////////////////////////////////////////////////////////////////
-		// Descriptor Set Layout
-		//////////////////////////////////////////////////////////////////////
-		std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
-		for (auto& [binding, uniformBuffer] : m_UniformBuffers)
-		{
-			auto& layoutBinding = layoutBindings.emplace_back();
-			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			layoutBinding.descriptorCount = 1;
-			layoutBinding.stageFlags = uniformBuffer.ShaderStage;
-			layoutBinding.pImmutableSamplers = nullptr;
-			layoutBinding.binding = binding;
-
-			VkWriteDescriptorSet& set = m_WriteDescriptorSets[uniformBuffer.Name];
-			set = {};
-			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
-			set.descriptorCount = 1;
-			set.dstBinding = layoutBinding.binding;
-
-			AllocateUniformBuffer(uniformBuffer);
-		}
-
-		for (auto& [binding, imageSampler] : m_ImageSamplers)
-		{
-			auto& layoutBinding = layoutBindings.emplace_back();
-			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			layoutBinding.descriptorCount = 1;
-			layoutBinding.stageFlags = imageSampler.ShaderStage;
-			layoutBinding.pImmutableSamplers = nullptr;
-			layoutBinding.binding = binding;
-
-			HZ_CORE_ASSERT(m_UniformBuffers.find(binding) == m_UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
-
-			VkWriteDescriptorSet& set = m_WriteDescriptorSets[imageSampler.Name];
-			set = {};
-			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
-			set.descriptorCount = 1;
-			set.dstBinding = layoutBinding.binding;
-		}
-
-		for (auto& [binding, storageImage] : m_StorageImages)
-		{
-			auto& layoutBinding = layoutBindings.emplace_back();
-			layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-			layoutBinding.descriptorCount = 1;
-			layoutBinding.stageFlags = storageImage.ShaderStage;
-			layoutBinding.pImmutableSamplers = nullptr;
-			layoutBinding.binding = binding;
-
-			HZ_CORE_ASSERT(m_UniformBuffers.find(binding) == m_UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
-			HZ_CORE_ASSERT(m_ImageSamplers.find(binding) == m_ImageSamplers.end(), "Binding is already present in m_ImageSamplers!");
-
-			VkWriteDescriptorSet& set = m_WriteDescriptorSets[storageImage.Name];
-			set = {};
-			set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_STORAGE_IMAGE
-			set.descriptorCount = 1;
-			set.dstBinding = layoutBinding.binding;
-		}
-
-		VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
-		descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorLayout.pNext = nullptr;
-		descriptorLayout.bindingCount = static_cast<uint32_t>(layoutBindings.size());
-		descriptorLayout.pBindings = layoutBindings.data();
-
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayout));
-	}
-
-	VkDescriptorSet VulkanShader::CreateDescriptorSet()
-	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		VkDescriptorSet descriptorSet;
-
-		// Allocate a new descriptor set from the global descriptor pool
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorPool = m_DescriptorPool;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &m_DescriptorSetLayout;
-
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &descriptorSet));
-		return descriptorSet;
-	}
-
-	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
-	{
-		// HZ_CORE_ASSERT(m_WriteDescriptorSets.find(name) != m_WriteDescriptorSets.end());
-		if (m_WriteDescriptorSets.find(name) == m_WriteDescriptorSets.end())
-		{
-			// HZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
-			Log::GetLogger()->warn("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
-			return nullptr;
-		}
-		return &m_WriteDescriptorSets.at(name);
-
-		//	HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
-		//	if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
-		//	{
-		//		MORAVA_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
-		//		return nullptr;
-		//	}
-		//	return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
 	}
 
 	void VulkanShader::AllocateUniformBuffer(UniformBuffer& dst)
@@ -481,18 +480,19 @@ namespace Hazel {
 
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-		if (m_TypeCounts.find(set) == m_TypeCounts.end())
-		{
-			// HZ_CORE_ASSERT(m_TypeCounts.find(set) != m_TypeCounts.end());
-			Log::GetLogger()->error("VulkanShader::CreateDescriptorSets('{0}') - descriptor set not found!", set);
-			return result;
-		}
+		HZ_CORE_ASSERT(m_TypeCounts.find(set) != m_TypeCounts.end());
+
+		//	if (m_TypeCounts.find(set) == m_TypeCounts.end())
+		//	{
+		//		Log::GetLogger()->error("VulkanShader::CreateDescriptorSets('{0}') - descriptor set not found!", set);
+		//		return result;
+		//	}
 
 		// TODO: Move this to the centralized renderer
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(m_TypeCounts.at(set).size());
+		descriptorPoolInfo.poolSizeCount = (uint32_t)m_TypeCounts.at(set).size();
 		descriptorPoolInfo.pPoolSizes = m_TypeCounts.at(set).data();
 		descriptorPoolInfo.maxSets = 1;
 
@@ -503,25 +503,23 @@ namespace Hazel {
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorPool = result.Pool;
 		allocInfo.descriptorSetCount = 1;
+		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
 
-		/**** BEGIN an older version ****/
-		{
-			allocInfo.pSetLayouts = &m_DescriptorSetLayout;
-
-			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &result.DescriptorSet));
-		}
-		/**** END an older version ****/
-
-		/**** BEGIN a more recent version ****
-		{
-			allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
-
-			result.DescriptorSets.emplace_back();
-			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, result.DescriptorSets.data()));
-		}
-		/**** END a more recent version ****/
-
+		// result.DescriptorSets.emplace_back();
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &result.DescriptorSet));
 		return result;
+	}
+
+	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
+	{
+		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
+		{
+			// HZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+			Log::GetLogger()->warn("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+			return nullptr;
+		}
+		return &m_ShaderDescriptorSets.at(set).WriteDescriptorSets.at(name);
 	}
 
 	// TODO: does not exist in Vulkan Week version, added later
@@ -798,20 +796,21 @@ namespace Hazel {
 
 	void VulkanShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 
-	void* VulkanShader::MapUniformBuffer(uint32_t bindingPoint)
+	void* VulkanShader::MapUniformBuffer(uint32_t bindingPoint, uint32_t set)
 	{
+		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 		uint8_t* pData;
-		VK_CHECK_RESULT(vkMapMemory(device, m_UniformBuffers[bindingPoint].Memory, 0, m_UniformBuffers[bindingPoint].Size, 0, (void**)&pData));
+		VK_CHECK_RESULT(vkMapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory, 0, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Size, 0, (void**)&pData));
 		return pData;
 	}
 
-	void VulkanShader::UnmapUniformBuffer(uint32_t bindingPoint)
+	void VulkanShader::UnmapUniformBuffer(uint32_t bindingPoint, uint32_t set)
 	{
+		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		vkUnmapMemory(device, m_UniformBuffers[bindingPoint].Memory);
+		vkUnmapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory);
 	}
 
 }
