@@ -252,18 +252,18 @@ namespace Hazel {
 		{
 			auto shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
 			Ref<VulkanShader> pbrShader = shader.As<VulkanShader>();
-			s_Data->RendererDescriptorSetFeb2021 = pbrShader->CreateDescriptorSets();
+			s_Data->RendererDescriptorSetFeb2021 = pbrShader->CreateDescriptorSets(1);
 
-			// const VkWriteDescriptorSet* wds = pbrShader->GetDescriptorSet("u_EnvRadianceTex");
-			// HZ_CORE_ASSERT(wds);
-			// 
-			// VkWriteDescriptorSet descriptorSet = *wds;
-			// descriptorSet.dstSet = s_Data->RendererDescriptorSetFeb2021.DescriptorSet;
-			// auto& imageInfo = s_Data->EnvironmentMap.first.As<VulkanTextureCube>()->GetVulkanDescriptorInfo();
-			// descriptorSet.pImageInfo = &imageInfo;
-			// 
-			// auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			// vkUpdateDescriptorSets(vulkanDevice, 1, &descriptorSet, 0, nullptr);
+			const VkWriteDescriptorSet* wds = pbrShader->GetDescriptorSet("u_EnvRadianceTex", 1);
+			HZ_CORE_ASSERT(wds);
+
+			VkWriteDescriptorSet descriptorSet = *wds;
+			descriptorSet.dstSet = s_Data->RendererDescriptorSetFeb2021.DescriptorSet;
+			auto& imageInfo = s_Data->EnvironmentMap.first.As<VulkanTextureCube>()->GetVulkanDescriptorInfo();
+			descriptorSet.pImageInfo = &imageInfo;
+			
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			vkUpdateDescriptorSets(vulkanDevice, 1, &descriptorSet, 0, nullptr);
 		}
 
 		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
