@@ -51,7 +51,8 @@ namespace Hazel {
 			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(m_Specification.Shader);
 			Ref<VulkanFramebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
 
-			VkDescriptorSetLayout descriptorSetLayout = vulkanShader->GetDescriptorSetLayout();
+			// VkDescriptorSetLayout descriptorSetLayout = vulkanShader->GetDescriptorSetLayout(0);
+			std::vector<VkDescriptorSetLayout> descriptorSetLayouts = vulkanShader->GetAllDescriptorSetLayouts();
 
 			//////////////////////////////////////////////////////////////////////
 			// Push Constants
@@ -78,8 +79,8 @@ namespace Hazel {
 			pPipelineLayoutCreateInfo.pNext = nullptr;
 
 			// Descriptor Set Layouts
-			pPipelineLayoutCreateInfo.setLayoutCount = 1;
-			pPipelineLayoutCreateInfo.pSetLayouts = &descriptorSetLayout;
+			pPipelineLayoutCreateInfo.setLayoutCount = (uint32_t)descriptorSetLayouts.size();
+			pPipelineLayoutCreateInfo.pSetLayouts = descriptorSetLayouts.data();
 
 			pPipelineLayoutCreateInfo.pushConstantRangeCount = static_cast<uint32_t>(vulkanPushConstantRanges.size());
 			pPipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
