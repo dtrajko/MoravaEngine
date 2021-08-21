@@ -170,10 +170,6 @@ namespace Hazel {
 
 		std::unordered_map<uint32_t, ShaderDescriptorSet> m_ShaderDescriptorSets; // added in Hazel Live 19.02.2021
 
-		// std::unordered_map<uint32_t, UniformBuffer> m_UniformBuffers;                           // obsolete
-		// std::unordered_map<uint32_t, ImageSampler> m_ImageSamplers;                             // obsolete
-		// std::unordered_map<uint32_t, ImageSampler> m_StorageImages; // output images in shaders // obsolete
-		// std::unordered_map<std::string, VkWriteDescriptorSet> m_WriteDescriptorSets;            // obsolete
 		std::vector<PushConstantRange> m_PushConstantRanges;
 
 		std::unordered_map<uint32_t, VkDescriptorSetLayout> m_DescriptorSetLayouts; // added in Hazel Live 19.02.2021

@@ -510,6 +510,9 @@ namespace Hazel {
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
+							AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", texture);
+							mi->Set("u_MaterialUniforms.UseAlbedoMap", true);
+
 							// HazelRenderer::Submit([instance, shader, texture]() mutable
 							// {
 							// });
@@ -557,8 +560,14 @@ namespace Hazel {
 
 				if (fallback)
 				{
-					HZ_MESH_LOG("    No albedo map");
+					// HZ_MESH_LOG("    No albedo map");
+					Log::GetLogger()->info("    No normal map");
 					mi->Set("u_AlbedoTexture", whiteTexture);
+
+					if (RendererAPI::Current() == RendererAPIType::Vulkan)
+					{
+						AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", whiteTexture);
+					}
 				}
 
 				// Normal maps
@@ -631,6 +640,7 @@ namespace Hazel {
 
 				if (fallback)
 				{
+					// HZ_MESH_LOG("    No normal map");
 					Log::GetLogger()->info("    No normal map");
 
 					if (RendererAPI::Current() == RendererAPIType::Vulkan)
