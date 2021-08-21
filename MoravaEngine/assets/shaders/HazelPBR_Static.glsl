@@ -382,8 +382,8 @@ void main()
 	vec3 lightContribution = LightingTemp(F0);
 	vec3 iblContribution = IBL(F0, Lr);
 
-	color = vec4(lightContribution + iblContribution, 1.0);
 	// color = vec4(lightContribution, 1.0);
+	color = vec4(lightContribution + iblContribution, 1.0);
 
 	// color = vec4(Input.WorldPosition, 1.0);
 	// color = texture(u_RoughnessTexture, Input.TexCoord);
