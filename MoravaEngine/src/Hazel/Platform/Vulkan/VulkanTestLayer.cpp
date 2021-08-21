@@ -39,7 +39,7 @@ namespace Hazel {
 
 		s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(s_Scene);
 
-		// s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
+		s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
 
 		s_MaterialEditorPanel = new MaterialEditorPanel();
 

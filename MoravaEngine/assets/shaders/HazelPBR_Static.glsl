@@ -102,7 +102,7 @@ layout (set = 1, binding = 0) uniform samplerCube u_EnvRadianceTex;
 // layout (set = 1, binding = 1) uniform samplerCube u_EnvIrradianceTex;
 
 // BRDF LUT
-// layout (binding = 8) uniform sampler2D u_BRDFLUTTexture;
+layout (set = 1, binding = 1) uniform sampler2D u_BRDFLUTTexture;
 
 layout (push_constant) uniform Material
 {
@@ -340,8 +340,9 @@ vec3 IBL(vec3 F0, vec3 Lr)
 	vec3 specularIrradiance = texture(u_EnvRadianceTex, Lr).rgb;
 
 	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
-	// vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
-	vec3 specularIBL = specularIrradiance; // * (F * specularBRDF.x + specularBRDF.y);
+	vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
+	// vec3 specularIBL = specularIrradiance * (F * specularBRDF.x + specularBRDF.y);
+	vec3 specularIBL = specularIrradiance * (specularBRDF.x + specularBRDF.y);
 
 	// return kd * diffuseIBL + specularIBL;
 	return specularIBL;
