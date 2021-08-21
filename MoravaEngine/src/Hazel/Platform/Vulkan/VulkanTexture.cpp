@@ -69,12 +69,14 @@ namespace Hazel {
 	{
 		int width, height, channels;
 
-
 		if (stbi_is_hdr(path.c_str()))
 		{
-			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
-			m_ImageData.Size = width * height * 4 * sizeof(float);
-			m_Format = HazelImageFormat::RGBA16F;
+			// m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
+			// m_ImageData.Size = width * height * 4 * sizeof(float);
+			// m_Format = HazelImageFormat::RGBA16F;
+			m_ImageData.Data = (byte*)stbi_load(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Size = width * height * 4;
+			m_Format = HazelImageFormat::RGBA;
 		}
 		else
 		{

@@ -252,6 +252,7 @@ namespace Hazel {
 			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
 
+		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/Ice_Lake_HiRes_TMap.jpg");
 		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 		s_Data.BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
@@ -864,13 +865,12 @@ namespace Hazel {
 
 		s_Data.envEquirect = HazelTexture2D::Create(filepath);
 		HazelImageFormat envEquirectImageFormat = s_Data.envEquirect->GetFormat();
-		HZ_CORE_ASSERT(s_Data.envEquirect->GetFormat() == HazelImageFormat::RGBA16F, "Texture is not HDR!");
-
-		if (envEquirectImageFormat != HazelImageFormat::RGBA16F)
-		{
-			Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirectImageFormat);
-			return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
-		}
+		//	HZ_CORE_ASSERT(s_Data.envEquirect->GetFormat() == HazelImageFormat::RGBA16F, "Texture is not HDR!");
+		//	if (envEquirectImageFormat != HazelImageFormat::RGBA16F)
+		//	{
+		//		Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirectImageFormat);
+		//		return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
+		//	}
 
 		s_Data.envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 		s_Data.envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
