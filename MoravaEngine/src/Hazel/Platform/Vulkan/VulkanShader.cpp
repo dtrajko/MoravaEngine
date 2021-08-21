@@ -597,6 +597,12 @@ namespace Hazel {
 		return result;
 	}
 
+	VulkanShader::UniformBuffer& VulkanShader::GetUniformBuffer(uint32_t binding, uint32_t set)
+	{
+		HZ_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
+		return m_ShaderDescriptorSets.at(set).UniformBuffers[binding];
+	}
+
 	static const char* VkShaderStageCachedFileExtension(VkShaderStageFlagBits stage)
 	{
 		switch (stage)

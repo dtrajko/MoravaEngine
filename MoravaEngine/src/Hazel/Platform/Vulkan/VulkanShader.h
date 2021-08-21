@@ -85,7 +85,7 @@ namespace Hazel {
 		// VkDescriptorSetLayout GetDescriptorSetLayout() { return m_DescriptorSetLayout; } // TODO: obsolete, it should be removed
 		std::vector<VkDescriptorSetLayout> GetAllDescriptorSetLayouts();
 
-		UniformBuffer& GetUniformBuffer(uint32_t binding = 0, uint32_t set = 0) { return m_ShaderDescriptorSets[set].UniformBuffers[0]; }
+		UniformBuffer& GetUniformBuffer(uint32_t binding = 0, uint32_t set = 0);
 		uint32_t GetUniformBufferCount(uint32_t set = 0)
 		{
 			if (m_ShaderDescriptorSets.find(set) == m_ShaderDescriptorSets.end())
