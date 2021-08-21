@@ -942,6 +942,9 @@
     <ClCompile Include="src\Core\MoravaLayer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\Platform\Vulkan\VulkanSkyboxCube.cpp">
+      <Filter>Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1993,6 +1996,9 @@
     </ClInclude>
     <ClInclude Include="src\Core\MoravaLayer.h">
       <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\Vulkan\VulkanSkyboxCube.h">
+      <Filter>Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

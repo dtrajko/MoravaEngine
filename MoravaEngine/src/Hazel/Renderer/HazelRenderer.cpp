@@ -122,6 +122,7 @@ namespace Hazel {
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl", true);
 			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl", true);
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl", true);
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl", true);
 		}
 
 		//...

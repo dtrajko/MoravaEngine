@@ -36,6 +36,8 @@ namespace Hazel {
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) override;
 
+		static void RenderSkybox(VkCommandBuffer commandBuffer);
+
 		virtual RendererCapabilities& GetCapabilities() override;
 
 		static void Draw(HazelCamera* camera); // TODO: there should be no parameters

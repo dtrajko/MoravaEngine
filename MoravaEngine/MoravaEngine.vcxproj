@@ -452,6 +452,7 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanMoravaShader.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanMoravaTexture.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererBasic.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanSkyboxCube.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanUniformBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
@@ -899,6 +900,7 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanMoravaShader.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanMoravaTexture.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanRendererBasic.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanSkyboxCube.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanUniformBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
