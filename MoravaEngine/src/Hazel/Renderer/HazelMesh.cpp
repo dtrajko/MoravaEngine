@@ -419,8 +419,8 @@ namespace Hazel {
 						auto& ub0 = shader.As<VulkanShader>()->GetUniformBuffer(0);
 						VkWriteDescriptorSet writeDescriptorSet = {};
 						writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-						writeDescriptorSet.dstSet = materialDescriptor.DescriptorSet.DescriptorSet;
-						writeDescriptorSet.descriptorCount = 1;
+						writeDescriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
+						writeDescriptorSet.descriptorCount = (uint32_t)materialDescriptor.DescriptorSet.DescriptorSets.size();
 						writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 						writeDescriptorSet.pBufferInfo = &ub0.Descriptor;
 						writeDescriptorSet.dstBinding = 0;
@@ -428,8 +428,8 @@ namespace Hazel {
 
 						auto& ub1 = shader.As<VulkanShader>()->GetUniformBuffer(1);
 						writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-						writeDescriptorSet.dstSet = materialDescriptor.DescriptorSet.DescriptorSet;
-						writeDescriptorSet.descriptorCount = 1;
+						writeDescriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
+						writeDescriptorSet.descriptorCount = (uint32_t)materialDescriptor.DescriptorSet.DescriptorSets.size();
 						writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 						writeDescriptorSet.pBufferInfo = &ub1.Descriptor;
 						writeDescriptorSet.dstBinding = 1;
@@ -1008,7 +1008,8 @@ namespace Hazel {
 			HZ_CORE_ASSERT(wds);
 
 			VkWriteDescriptorSet descriptorSet = *wds;
-			descriptorSet.dstSet = materialDescriptor.DescriptorSet.DescriptorSet;
+			descriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
+			descriptorSet.descriptorCount = (uint32_t)materialDescriptor.DescriptorSet.DescriptorSets.size();
 			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
 			descriptorSet.pImageInfo = &imageInfo;
 			materialDescriptor.WriteDescriptors.push_back(descriptorSet);

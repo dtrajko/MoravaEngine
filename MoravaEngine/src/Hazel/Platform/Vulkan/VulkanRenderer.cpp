@@ -245,8 +245,8 @@ namespace Hazel {
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = s_QuadDescriptorSet.DescriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.dstSet = *s_QuadDescriptorSet.DescriptorSets.data();
+			writeDescriptorSet.descriptorCount = (uint32_t)s_QuadDescriptorSet.DescriptorSets.size();
 			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			writeDescriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
 			writeDescriptorSet.dstBinding = 0;
@@ -271,13 +271,15 @@ namespace Hazel {
 
 			std::array<VkWriteDescriptorSet, 2> writeDescriptors;
 
-			writeDescriptors[0] = *pbrShader->GetDescriptorSet("u_EnvRadianceTex", 1);;
-			writeDescriptors[0].dstSet = s_Data.RendererDescriptorSetFeb2021.DescriptorSet;
+			writeDescriptors[0] = *pbrShader->GetDescriptorSet("u_EnvRadianceTex", 1);
+			writeDescriptors[0].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
+			writeDescriptors[0].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
 			auto& imageInfo = s_Data.EnvironmentMap.first.As<VulkanTextureCube>()->GetVulkanDescriptorInfo();
 			writeDescriptors[0].pImageInfo = &imageInfo;
 
-			writeDescriptors[1] = *pbrShader->GetDescriptorSet("u_BRDFLUTTexture", 1);;
-			writeDescriptors[1].dstSet = s_Data.RendererDescriptorSetFeb2021.DescriptorSet;
+			writeDescriptors[1] = *pbrShader->GetDescriptorSet("u_BRDFLUTTexture", 1);
+			writeDescriptors[1].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
+			writeDescriptors[1].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
 			auto& imageInfoBRDFLut = s_Data.BRDFLut.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
 			writeDescriptors[1].pImageInfo = &imageInfoBRDFLut;
 
@@ -285,7 +287,7 @@ namespace Hazel {
 			vkUpdateDescriptorSets(vulkanDevice, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 		}
 
-		// Skybox
+		/*** BEGIN Setup the Skybox ****/
 		s_Data.VulkanSkyboxCube = Hazel::Ref<VulkanSkyboxCube>::Create();
 
 		PipelineSpecification skyboxPipelineSpecification = {};
@@ -303,7 +305,8 @@ namespace Hazel {
 		renderPassSpecification.TargetFramebuffer = framebuffer;
 		skyboxPipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpecification);
 
-		s_Data.SkyboxPipeline = Pipeline::Create(skyboxPipelineSpecification);
+		// s_Data.SkyboxPipeline = Pipeline::Create(skyboxPipelineSpecification);
+		/*** END Setup the Skybox ****/
 
 		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 	}
@@ -332,8 +335,8 @@ namespace Hazel {
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = s_QuadDescriptorSet.DescriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.dstSet = *s_QuadDescriptorSet.DescriptorSets.data();
+			writeDescriptorSet.descriptorCount = (uint32_t)s_QuadDescriptorSet.DescriptorSets.size();
 			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			writeDescriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
 			writeDescriptorSet.dstBinding = 0;
@@ -395,12 +398,12 @@ namespace Hazel {
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 			// Bind descriptor sets describing shader binding points
-			VkDescriptorSet descriptorSet = mesh->GetDescriptorSet(submesh.MaterialIndex).DescriptorSet.DescriptorSet;
+			std::vector<VkDescriptorSet> descriptorSet = mesh->GetDescriptorSet(submesh.MaterialIndex).DescriptorSet.DescriptorSets;
 			VulkanShader::ShaderMaterialDescriptorSet rendererDescriptorSet = s_Data.RendererDescriptorSetFeb2021;
 
 			std::array<VkDescriptorSet, 2> descriptorSets = {
-				descriptorSet,
-				rendererDescriptorSet.DescriptorSet,
+				*descriptorSet.data(),
+				*rendererDescriptorSet.DescriptorSets.data(),
 			};
 
 			// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)mesh->GetDescriptorSet();
@@ -433,8 +436,8 @@ namespace Hazel {
 		// VulkanShader::ShaderMaterialDescriptorSet descriptorSet1 = vulkanSkyboxShader->CreateDescriptorSets(1);
 
 		std::array<VkDescriptorSet, 1> descriptorSets = {
-			descriptorSet0.DescriptorSet,
-			// descriptorSet1.DescriptorSet,
+			*descriptorSet0.DescriptorSets.data(),
+			// *descriptorSet1.DescriptorSets.data(),
 		};
 
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipelineLayout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
@@ -494,7 +497,7 @@ namespace Hazel {
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 		// Bind descriptor sets describing shader binding points
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &s_QuadDescriptorSet.DescriptorSet, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_QuadDescriptorSet.DescriptorSets.size(), s_QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
 		vkCmdDrawIndexed(commandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 
@@ -904,7 +907,7 @@ namespace Hazel {
 			vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 			// Bind descriptor sets describing shader binding points
-			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &s_QuadDescriptorSet.DescriptorSet, 0, nullptr);
+			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_QuadDescriptorSet.DescriptorSets.size(), s_QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
 			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 		}
@@ -947,17 +950,19 @@ namespace Hazel {
 
 			Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
 			writeDescriptors[0] = *shader->GetDescriptorSet("o_CubeMap");
-			writeDescriptors[0].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
+			writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+			writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 			writeDescriptors[0].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
 
 			Ref<VulkanTexture2D> envEquirectVK = s_Data.envEquirect.As<VulkanTexture2D>();
 			writeDescriptors[1] = *shader->GetDescriptorSet("u_EquirectangularTex");
-			writeDescriptors[1].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
+			writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+			writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 			writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
 
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 
-			equirectangularConversionPipeline->Execute(&descriptorSet.DescriptorSet, 1, cubemapSize / 32, cubemapSize / 32, 6);
+			equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
 		}
 
 		// MipFiltering
@@ -976,17 +981,19 @@ namespace Hazel {
 
 			Ref<VulkanTextureCube> envFilteredCubemap = s_Data.envFiltered.As<VulkanTextureCube>();
 			writeDescriptors[0] = *shader->GetDescriptorSet("outputTexture");
-			writeDescriptors[0].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
+			writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+			writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 			writeDescriptors[0].pImageInfo = &envFilteredCubemap->GetVulkanDescriptorInfo();
 
 			Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
 			writeDescriptors[1] = *shader->GetDescriptorSet("inputTexture");
-			writeDescriptors[1].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
+			writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+			writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 			writeDescriptors[1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
 
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 
-			environmentMipFilterPipeline->Execute(&descriptorSet.DescriptorSet, 1, cubemapSize / 32, cubemapSize / 32, 6);
+			// environmentMipFilterPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
 		}
 
 		return { s_Data.envUnfiltered, s_Data.irradianceMap };

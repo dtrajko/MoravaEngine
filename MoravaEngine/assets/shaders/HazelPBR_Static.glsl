@@ -319,7 +319,7 @@ vec3 LightingTemp(vec3 F0)
 vec3 IBL(vec3 F0, vec3 Lr)
 {
 	//vec3 irradiance = texture(u_EnvIrradianceTex, m_Params.Normal).rgb;
-	//vec3 F = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
+	vec3 F = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
 	//vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
 	//vec3 diffuseIBL = m_Params.Albedo * irradiance;
 	//
@@ -341,8 +341,8 @@ vec3 IBL(vec3 F0, vec3 Lr)
 
 	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
 	vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
-	// vec3 specularIBL = specularIrradiance * (F * specularBRDF.x + specularBRDF.y);
-	vec3 specularIBL = specularIrradiance * (specularBRDF.x + specularBRDF.y);
+	vec3 specularIBL = specularIrradiance * (F * specularBRDF.x + specularBRDF.y);
+	// vec3 specularIBL = specularIrradiance * (0.5 * specularBRDF.x + specularBRDF.y);
 
 	// return kd * diffuseIBL + specularIBL;
 	return specularIBL;

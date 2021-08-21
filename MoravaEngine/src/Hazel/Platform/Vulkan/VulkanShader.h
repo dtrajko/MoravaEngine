@@ -104,7 +104,7 @@ namespace Hazel {
 		{
 			VkDescriptorPool Pool = nullptr;
 			std::vector<VkDescriptorSet> DescriptorSets;
-			VkDescriptorSet DescriptorSet; // redundant or obsolete?
+			// VkDescriptorSet DescriptorSet; // redundant or obsolete?
 		};
 
 		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set = 0);
