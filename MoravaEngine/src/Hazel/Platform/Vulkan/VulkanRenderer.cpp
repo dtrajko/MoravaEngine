@@ -876,115 +876,32 @@ namespace Hazel {
 		s_Data.envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 		s_Data.irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 
-		// Convert equirectangular to cubemap
-		// TODO...
-
-		// Ref<HazelShader> equirectangularConversionShader = HazelShader::Create("assets/shaders/EquirectangularToCubeMap.glsl");
-		// Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("ClearCubeMap");
 		Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
+		Ref<VulkanComputePipeline> equirectangularConversionPipeline = Ref<VulkanComputePipeline>::Create(equirectangularConversionShader);
 
-		// Ref<VulkanComputePipeline> equirectangularConversionPipeline = Ref<VulkanComputePipeline>::Create(equirectangularConversionShader);
-
-		// HazelRenderer::Submit([equirectangularConversionShader, envUnfiltered]() mutable {});
+		// HazelRenderer::Submit([equirectangularConversionPipeline, equirectangularConversionShader, envUnfiltered]() mutable {});
 		{
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-			////	TODO: Abstract into some sort of compute pipeline
-			////	VkDescriptorSetLayoutBinding setLayoutBinding{};
-			////	setLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-			////	setLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-			////	setLayoutBinding.binding = 0;
-			////	setLayoutBinding.descriptorCount = 1;
-			////	
-			////	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
-			////	descriptorSetLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-			////	descriptorSetLayoutCreateInfo.pBindings = &setLayoutBinding;
-			////	descriptorSetLayoutCreateInfo.bindingCount = 1;
-			////	VkDescriptorSetLayout computeDescriptorSetLayout;
-			////	VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, nullptr, &computeDescriptorSetLayout));
-
-			Ref<VulkanShader> vulkanShader = equirectangularConversionShader.As<VulkanShader>();
-
-			VkDescriptorSetLayout computeDescriptorSetLayout = vulkanShader->GetDescriptorSetLayout(0);
-			VulkanShader::ShaderMaterialDescriptorSet descriptorSet = vulkanShader->CreateDescriptorSets();
-
-			VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
-			pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-			pipelineLayoutCreateInfo.setLayoutCount = 1;
-			pipelineLayoutCreateInfo.pSetLayouts = &computeDescriptorSetLayout;
-			VkPipelineLayout computePipelineLayout;
-			VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &computePipelineLayout));
-
-			// VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			// Ref<VulkanShader> shader = equirectangularConversionPipeline->GetShader();
+			Ref<VulkanShader> shader = equirectangularConversionPipeline->GetShader();
+			Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
+			Ref<VulkanTexture2D> envEquirectVK = s_Data.envEquirect.As<VulkanTexture2D>();
+			VulkanShader::ShaderMaterialDescriptorSet descriptorSet = shader->CreateDescriptorSets();
 
 			std::array<VkWriteDescriptorSet, 2> writeDescriptors;
 
-			Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
-			writeDescriptors[0] = *vulkanShader->GetDescriptorSet("o_CubeMap");
+			writeDescriptors[0] = *shader->GetDescriptorSet("o_CubeMap");
 			writeDescriptors[0].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
 			writeDescriptors[0].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
 
-			Ref<VulkanTexture2D> envEquirectVK = s_Data.envEquirect.As<VulkanTexture2D>();
-			writeDescriptors[1] = *vulkanShader->GetDescriptorSet("u_EquirectangularTex");
+			writeDescriptors[1] = *shader->GetDescriptorSet("u_EquirectangularTex");
 			writeDescriptors[1].dstSet = descriptorSet.DescriptorSet; // Should this be set inside the shader?
 			writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
 
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 
-			VkComputePipelineCreateInfo computePipelineCreateInfo{};
-			computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
-			computePipelineCreateInfo.layout = computePipelineLayout;
-			computePipelineCreateInfo.flags = 0;
-			const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos();
-			computePipelineCreateInfo.stage = shaderStages[0];
-
-			VkPipelineCacheCreateInfo pipelineCacheCreateInfo{};
-			pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-			VkPipelineCache pipelineCache;
-			VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &pipelineCache));
-
-			VkPipeline computePipeline{};
-			VK_CHECK_RESULT(vkCreateComputePipelines(device, nullptr, 1, &computePipelineCreateInfo, nullptr, &computePipeline));
-
-			/**** BEGIN Record a Command Buffer ****/
-
-			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
-			vkQueueWaitIdle(computeQueue);
-
-			VkCommandBuffer computeCommandBuffer = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true, true);
-
-			vkCmdBindPipeline(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
-			vkCmdBindDescriptorSets(computeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, computePipelineLayout, 0, 1, &descriptorSet.DescriptorSet, 0, nullptr);
-
-			vkCmdDispatch(computeCommandBuffer, cubemapSize / 32, cubemapSize / 32, 6);
-
-			vkEndCommandBuffer(computeCommandBuffer);
-
-			/**** END Record a Command Buffer ****/
-
-			/**** BEGIN Submit the  Command Buffer ****/
-
-			VkSubmitInfo computeSubmitInfo{};
-			computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			computeSubmitInfo.commandBufferCount = 1;
-			computeSubmitInfo.pCommandBuffers = &computeCommandBuffer;
-
-			VkFenceCreateInfo fenceCreateInfo{};
-			fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-			fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-			VkFence computeFence;
-			VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &computeFence));
-
-			vkWaitForFences(device, 1, &computeFence, VK_TRUE, UINT64_MAX);
-			vkResetFences(device, 1, &computeFence);
-
-			VK_CHECK_RESULT(vkQueueSubmit(computeQueue, 1, &computeSubmitInfo, computeFence));
-
-			/**** END Submit the  Command Buffer ****/
+			equirectangularConversionPipeline->Execute(&descriptorSet.DescriptorSet, 1, cubemapSize / 32, cubemapSize / 32, 6);
 		}
-
-		// -----
 
 		return { s_Data.envUnfiltered, s_Data.irradianceMap };
 	}

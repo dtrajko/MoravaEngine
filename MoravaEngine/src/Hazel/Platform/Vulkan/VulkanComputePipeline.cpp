@@ -14,10 +14,10 @@ namespace Hazel {
 	VulkanComputePipeline::VulkanComputePipeline(Ref<HazelShader> computeShader)
 		: m_Shader(computeShader.As<VulkanShader>())
 	{
-		Ref<VulkanComputePipeline> instance = this;
-		HazelRenderer::Submit([instance]() mutable {
-			instance->CreatePipeline();
-		});
+		// Ref<VulkanComputePipeline> instance = this;
+		// HazelRenderer::Submit([instance]() mutable { instance->CreatePipeline(); });
+
+		CreatePipeline();
 	}
 
 	VulkanComputePipeline::~VulkanComputePipeline()
