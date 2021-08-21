@@ -506,12 +506,12 @@ namespace Hazel {
 					if (texture && texture->Loaded())
 					{
 						m_Textures[i] = texture;
-						mi->Set("u_AlbedoTexture", texture);
+						// mi->Set("u_AlbedoTexture", texture); //  VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_AlbedoTexture')!
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", texture);
-							mi->Set("u_MaterialUniforms.UseAlbedoMap", true);
+							// mi->Set("u_MaterialUniforms.UseAlbedoMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseAlbedoMap'!
 
 							// HazelRenderer::Submit([instance, shader, texture]() mutable
 							// {
@@ -604,7 +604,7 @@ namespace Hazel {
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", texture);
-							mi->Set("u_MaterialUniforms.UseNormalMap", true);
+							// mi->Set("u_MaterialUniforms.UseNormalMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseNormalMap'!
 
 							// HazelRenderer::Submit([instance, shader, texture]() mutable
 							// {
@@ -678,11 +678,15 @@ namespace Hazel {
 
 					if (texture->Loaded())
 					{
+						m_Textures[i] = texture;
+						// mi->Set("u_RoughnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_RoughnessTexture')!
+
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
-							// HazelRenderer::Submit([instance, shader, texture]() mutable
-							// {
-							// });
+							AddMaterialTextureWriteDescriptor(i, "u_RoughnessTexture", texture);
+							// mi->Set("u_MaterialUniforms.UseRoughnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseRoughnessMap'!
+
+							// HazelRenderer::Submit([instance, shader, texture]() mutable {});
 							{
 								const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_RoughnessTexture"); // contains binding point etc
 								if (wds)
@@ -825,8 +829,6 @@ namespace Hazel {
 						std::string key = prop->mKey.data;
 						if (key == "$raw.ReflectionFactor|file")
 						{
-							metalnessTextureFound = true;
-
 							// TODO: Temp - this should be handled by Hazel's filesystem
 							std::filesystem::path path = m_FilePath;
 							auto parentPath = path.parent_path();
@@ -846,11 +848,17 @@ namespace Hazel {
 
 							if (texture->Loaded())
 							{
+								metalnessTextureFound = true;
+
+								m_Textures.push_back(texture);
+								// mi->Set("u_MetalnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_MetalnessTexture')!
+
 								if (RendererAPI::Current() == RendererAPIType::Vulkan)
 								{
-									// HazelRenderer::Submit([instance, shader, texture]() mutable
-									// {
-									// });
+									AddMaterialTextureWriteDescriptor(0, "u_MetalnessTexture", texture);
+									// mi->Set("u_MaterialUniforms.UseMetalnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseMetalnessMap'!
+
+									// HazelRenderer::Submit([instance, shader, texture]() mutable {});
 									{
 										const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_MetalnessTexture"); // contains binding point etc
 										if (wds)
@@ -873,13 +881,6 @@ namespace Hazel {
 								mi->Set("u_MaterialUniforms.MetalnessTexToggle", 1.0f); // redundant
 								MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, texturePath, materialData->EnvMapMaterialRef);
 							}
-							else
-							{
-								Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
-
-								m_MeshShader->SetFloat("u_MaterialUniforms.Metalness", metalness);
-								m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
-							}
 							break;
 						}
 					}
@@ -888,9 +889,21 @@ namespace Hazel {
 				if (!metalnessTextureFound)
 				{
 					Log::GetLogger()->info("    No metalness map");
+					// Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
 
 					m_MeshShader->SetFloat("u_MaterialUniforms.Metalness", metalness);
 					m_MeshShader->SetFloat("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
+				}
+
+				fallback = !metalnessTextureFound;
+				if (fallback)
+				{
+					HZ_MESH_LOG("    No metalness map");
+
+					if (RendererAPI::Current() == RendererAPIType::Vulkan)
+					{
+						AddMaterialTextureWriteDescriptor(i, "u_MetalnessTexture", whiteTexture);
+					}
 				}
 			}
 			HZ_MESH_LOG("------------------------");

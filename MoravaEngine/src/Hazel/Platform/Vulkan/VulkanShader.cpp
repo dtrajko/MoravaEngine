@@ -798,7 +798,10 @@ namespace Hazel {
 
 	// const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShader::GetShaderBuffers() const { return {}; }
 
-	const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanShader::GetResources() const { return {}; }
+	const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanShader::GetResources() const
+	{
+		return {};
+	}
 
 	void VulkanShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 
