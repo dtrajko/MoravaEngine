@@ -13,9 +13,9 @@ VulkanSkyboxCube::VulkanSkyboxCube()
 		glm::vec2 TexCoord;
 	};
 
-	float sizeX = 0.5f;
-	float sizeY = 0.5f;
-	float sizeZ = 0.5f;
+	float sizeX = 1.0f;
+	float sizeY = 1.0f;
+	float sizeZ = 1.0f;
 
 	float txCoX = 1.0f;
 	float txCoY = 1.0f;

@@ -849,7 +849,8 @@ namespace Hazel {
 
 	uint32_t VulkanTextureCube::GetMipLevelCount() const
 	{
-		return Utils::MipCount(m_Width, m_Height);
+		return 1; // mipmaping not working at the moment
+		// return Utils::MipCount(m_Width, m_Height);
 	}
 
 	VkImageView VulkanTextureCube::CreateImageViewSingleMip(uint32_t mip)

@@ -290,22 +290,21 @@ namespace Hazel {
 		/*** BEGIN Setup the Skybox ****/
 		s_Data.VulkanSkyboxCube = Hazel::Ref<VulkanSkyboxCube>::Create();
 
-		PipelineSpecification skyboxPipelineSpecification = {};
-		s_Data.SkyboxShader = s_Data.m_ShaderLibrary->Get("Skybox");
-		skyboxPipelineSpecification.Shader = s_Data.SkyboxShader;
-		VertexBufferLayout vertexBufferLayout = {
+		PipelineSpecification skyboxPipelineSpecification;
+		skyboxPipelineSpecification.DebugName = "Skybox Pipeline Specification";
+		skyboxPipelineSpecification.Layout = {
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 		};
-		skyboxPipelineSpecification.Layout = vertexBufferLayout;
-		RenderPassSpecification renderPassSpecification = {};
-		HazelFramebufferSpecification framebufferSpec;
-		framebufferSpec.SwapChainTarget = true;
-		Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(framebufferSpec);
-		renderPassSpecification.TargetFramebuffer = framebuffer;
-		skyboxPipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpecification);
+		s_Data.SkyboxShader = s_Data.m_ShaderLibrary->Get("Skybox");
+		skyboxPipelineSpecification.Shader = s_Data.SkyboxShader;
 
-		// s_Data.SkyboxPipeline = Pipeline::Create(skyboxPipelineSpecification);
+		RenderPassSpecification renderPassSpecification;
+		renderPassSpecification.DebugName = "Skybox RenderPass Specification";
+		renderPassSpecification.TargetFramebuffer = s_Framebuffer;
+		skyboxPipelineSpecification.RenderPass = RenderPass::Create(renderPassSpecification);
+
+		s_Data.SkyboxPipeline = Pipeline::Create(skyboxPipelineSpecification);
 		/*** END Setup the Skybox ****/
 
 		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
@@ -418,31 +417,64 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
+	void VulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer, HazelCamera* camera)
 	{
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
 		Ref<VulkanPipeline> vulkanSkyboxPipeline = s_Data.SkyboxPipeline.As<VulkanPipeline>();
 
 		VkPipelineLayout skyboxPipelineLayout = vulkanSkyboxPipeline->GetVulkanPipelineLayout();
 
 		Ref<VulkanShader> vulkanSkyboxShader = s_Data.SkyboxShader.As<VulkanShader>();
 
+		void* ubPtr = vulkanSkyboxShader->MapUniformBuffer(0, 0);
+		struct SkyboxUniformCamera
+		{
+			glm::mat4 ViewProjectionMatrix;  // u_ViewProjectionMatrix
+			glm::mat4 InverseViewProjection; // u_InverseViewProjection
+		} skyboxUniformCamera;
+		
+		skyboxUniformCamera.ViewProjectionMatrix = camera->GetViewProjection();
+		skyboxUniformCamera.InverseViewProjection = glm::inverse(camera->GetViewProjection());
+		memcpy(ubPtr, &skyboxUniformCamera, sizeof(SkyboxUniformCamera));
+		vulkanSkyboxShader->UnmapUniformBuffer(0, 0);
+
+		std::array<VkWriteDescriptorSet, 2> writeDescriptors;
+		VulkanShader::ShaderMaterialDescriptorSet descriptorSet = vulkanSkyboxShader->CreateDescriptorSets();
+
+		writeDescriptors[0] = *vulkanSkyboxShader->GetDescriptorSet("Camera");
+		writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+		writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
+		writeDescriptors[0].pBufferInfo = &vulkanSkyboxShader->GetUniformBuffer(0, 0).Descriptor;
+
+		Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
+		writeDescriptors[1] = *vulkanSkyboxShader->GetDescriptorSet("u_Texture");
+		writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+		writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
+		writeDescriptors[1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
+
+		vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+
+		Ref<VulkanVertexBuffer> vulkanSkyboxCubeVB = s_Data.VulkanSkyboxCube->m_VertexBuffer.As<VulkanVertexBuffer>();
+		VkBuffer skyboxCubeVertexVkBuffer = vulkanSkyboxCubeVB->GetVulkanBuffer();
+		VkDeviceSize offsets[1] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &skyboxCubeVertexVkBuffer, offsets);
+
 		Ref<VulkanIndexBuffer> vulkanSkyboxCubeIB = s_Data.VulkanSkyboxCube->m_IndexBuffer.As<VulkanIndexBuffer>();
-		vkCmdBindIndexBuffer(commandBuffer, vulkanSkyboxCubeIB->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+		VkBuffer skyboxCubeIndexVkBuffer = vulkanSkyboxCubeIB->GetVulkanBuffer();
+		vkCmdBindIndexBuffer(commandBuffer, skyboxCubeIndexVkBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		VkPipeline pipeline = vulkanSkyboxPipeline->GetVulkanPipeline();
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+		VkPipeline skyboxPipeline = vulkanSkyboxPipeline->GetVulkanPipeline();
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipeline);
 
-		VulkanShader::ShaderMaterialDescriptorSet descriptorSet0 = vulkanSkyboxShader->CreateDescriptorSets(0);
-		// VulkanShader::ShaderMaterialDescriptorSet descriptorSet1 = vulkanSkyboxShader->CreateDescriptorSets(1);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipelineLayout, 0, (uint32_t)descriptorSet.DescriptorSets.size(), descriptorSet.DescriptorSets.data(), 0, nullptr);
 
-		std::array<VkDescriptorSet, 1> descriptorSets = {
-			*descriptorSet0.DescriptorSets.data(),
-			// *descriptorSet1.DescriptorSets.data(),
-		};
-
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipelineLayout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
+		// push constants
+		float textureLod = 1.0f;
+		vkCmdPushConstants(commandBuffer, skyboxPipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &textureLod);
 
 		vkCmdDrawIndexed(commandBuffer, s_Data.VulkanSkyboxCube->m_IndexCount, 1, 0, 0, 0);
+
 	}
 
 	static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
@@ -569,7 +601,7 @@ namespace Hazel {
 			scissor.offset.y = 0;
 			vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
-			// RenderSkybox(drawCommandBuffer); // in progress
+			RenderSkybox(drawCommandBuffer, camera); // in progress
 
 			for (auto& mesh : s_Meshes)
 			{

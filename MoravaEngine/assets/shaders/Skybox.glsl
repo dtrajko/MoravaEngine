@@ -26,7 +26,7 @@ void main()
 #version 450 core
 
 layout(location = 0) out vec4 finalColor;
-layout(location = 1) out vec4 o_Bloom;
+// layout(location = 1) out vec4 o_Bloom;
 
 layout (binding = 1) uniform samplerCube u_Texture;
 
@@ -40,5 +40,5 @@ layout (location = 0) in vec3 v_Position;
 void main()
 {
 	finalColor = textureLod(u_Texture, v_Position, u_Uniforms.TextureLod);
-	o_Bloom = vec4(0.0);
+	// o_Bloom = vec4(0.0);
 }
