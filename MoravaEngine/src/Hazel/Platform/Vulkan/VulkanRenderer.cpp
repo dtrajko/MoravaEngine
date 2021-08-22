@@ -29,6 +29,8 @@
 
 namespace Hazel {
 
+	bool VulkanRenderer::s_MipMapsEnabled = false;
+
 	struct VulkanRendererData
 	{
 		// Hazel Live 19.02.2021
@@ -37,12 +39,12 @@ namespace Hazel {
 		Ref<HazelTexture2D> BRDFLut;
 		VulkanShader::ShaderMaterialDescriptorSet RendererDescriptorSetFeb2021;
 
-		/**** BEGIN keep smart references alive ****/
+		/**** BEGIN dtrajko Keep smart references alive ****/
 		Ref<HazelTextureCube> envUnfiltered;
 		Ref<HazelTextureCube> envFiltered;
 		Ref<HazelTextureCube> irradianceMap;
 		Ref<HazelTexture2D> envEquirect;
-		/**** END keep smart references alive ****/
+		/**** END dtrajko Keep smart references alive ****/
 
 		RendererCapabilities RenderCaps;
 
@@ -989,7 +991,7 @@ namespace Hazel {
 			Ref<VulkanTexture2D> envEquirectVK = s_Data.envEquirect.As<VulkanTexture2D>();
 			writeDescriptors[1] = *shader->GetDescriptorSet("u_EquirectangularTex");
 			writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
-			writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
+			writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 			writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
 
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
@@ -1008,24 +1010,48 @@ namespace Hazel {
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			Ref<VulkanShader> shader = environmentMipFilterPipeline->GetShader();
 
-			std::array<VkWriteDescriptorSet, 2> writeDescriptors;
-			VulkanShader::ShaderMaterialDescriptorSet descriptorSet = shader->CreateDescriptorSets();
-
 			Ref<VulkanTextureCube> envFilteredCubemap = s_Data.envFiltered.As<VulkanTextureCube>();
-			writeDescriptors[0] = *shader->GetDescriptorSet("outputTexture");
-			writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
-			writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
-			writeDescriptors[0].pImageInfo = &envFilteredCubemap->GetVulkanDescriptorInfo();
+			VkDescriptorImageInfo imageInfo = envFilteredCubemap->GetVulkanDescriptorInfo();
 
-			Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
-			writeDescriptors[1] = *shader->GetDescriptorSet("inputTexture");
-			writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
-			writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
-			writeDescriptors[1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
+			uint32_t totalMipLevels = s_MipMapsEnabled ? 11 : 1;
+
+			std::vector<VkWriteDescriptorSet> writeDescriptors;
+			std::vector<VkDescriptorImageInfo> mipImageInfos;
+
+			writeDescriptors.resize(totalMipLevels * 2);
+			mipImageInfos.resize(totalMipLevels);
+
+			VulkanShader::ShaderMaterialDescriptorSet descriptorSet = shader->CreateDescriptorSets(0, totalMipLevels);
+
+			for (uint32_t i = 0; i < totalMipLevels; i++)
+			{
+				VkDescriptorImageInfo& mipImageInfo = mipImageInfos[i];
+				mipImageInfo.imageView = envFilteredCubemap->CreateImageViewSingleMip(i);
+				mipImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+				writeDescriptors[i * 2 + 0] = *shader->GetDescriptorSet("outputTexture");
+				writeDescriptors[i * 2 + 0].dstSet = descriptorSet.DescriptorSets[i]; // Should this be set inside the shader?
+				writeDescriptors[i * 2 + 0].pImageInfo = &mipImageInfo;
+
+				Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
+				writeDescriptors[i * 2 + 1] = *shader->GetDescriptorSet("inputTexture");
+				writeDescriptors[i * 2 + 1].dstSet = descriptorSet.DescriptorSets[i]; // Should this be set inside the shader?
+				writeDescriptors[i * 2 + 1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
+			}
 
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 
-			// environmentMipFilterPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
+			environmentMipFilterPipeline->Begin(); // begin compute pass
+			const float deltaRoughness = 1.0f / glm::max((float)s_Data.envFiltered->GetMipLevelCount() - 1.0f, 1.0f);
+			for (uint32_t i = 0, size = cubemapSize; i < totalMipLevels; i++, size /= 2)
+			{
+				uint32_t numGroups = glm::max(1u, size / 32);
+				float roughness = i * deltaRoughness;
+				roughness = glm::max(roughness, 0.05f);
+				environmentMipFilterPipeline->SetPushConstants(&roughness, sizeof(float));
+				environmentMipFilterPipeline->Dispatch(descriptorSet.DescriptorSets[i], numGroups, numGroups, 6);
+			}
+			environmentMipFilterPipeline->End();
 		}
 
 		return { s_Data.envUnfiltered, s_Data.irradianceMap };

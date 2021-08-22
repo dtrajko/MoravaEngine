@@ -51,6 +51,9 @@ namespace Hazel {
 
 		static int32_t& GetSelectedDrawCall();
 
+	public:
+		static bool s_MipMapsEnabled;
+
 	};
 
 }

@@ -2,6 +2,7 @@
 
 #include "VulkanContext.h"
 #include "VulkanImage.h"
+#include "VulkanRenderer.h"
 
 #include "../stb_image.h"
 
@@ -849,8 +850,7 @@ namespace Hazel {
 
 	uint32_t VulkanTextureCube::GetMipLevelCount() const
 	{
-		return 1; // mipmaping not working at the moment
-		// return Utils::MipCount(m_Width, m_Height);
+		return VulkanRenderer::s_MipMapsEnabled ? Utils::MipCount(m_Width, m_Height) : 1;
 	}
 
 	VkImageView VulkanTextureCube::CreateImageViewSingleMip(uint32_t mip)
