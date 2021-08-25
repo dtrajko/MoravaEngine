@@ -142,8 +142,7 @@ namespace Hazel {
 
 		/**** END code from HazelRenderer::Init() ****/
 
-		// HazelRenderer::Submit([=]() {
-		// });
+		// HazelRenderer::Submit([=]() {});
 		{
 			s_ImGuiCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
 			s_CompositeCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
@@ -157,9 +156,7 @@ namespace Hazel {
 			s_Framebuffer = HazelFramebuffer::Create(spec);
 			s_Framebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer)
 			{
-				// HazelRenderer::Submit([framebuffer]() mutable
-				// {
-				// });
+				// HazelRenderer::Submit([framebuffer]() mutable {});
 				{
 					auto vulkanFB = framebuffer.As<VulkanFramebuffer>();
 					const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
@@ -237,9 +234,7 @@ namespace Hazel {
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
 		s_QuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
-		// HazelRenderer::Submit([=]()
-		// {
-		// });
+		// HazelRenderer::Submit([=]() {});
 		{
 			auto shader = s_CompositePipeline->GetSpecification().Shader.As<VulkanShader>();
 			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
@@ -329,8 +324,7 @@ namespace Hazel {
 
 	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
 	{
-		// HazelRenderer::Submit([=]() {
-		// });
+		// HazelRenderer::Submit([=]() {});
 		{
 			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
 
@@ -548,9 +542,7 @@ namespace Hazel {
 			viewportFBNeedsResize = false;
 		}
 
-		// HazelRenderer::Submit([=]() mutable
-		// {
-		// });
+		// HazelRenderer::Submit([=]() mutable {});
 		{
 			Ref<VulkanContext> context = VulkanContext::Get();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
@@ -615,9 +607,7 @@ namespace Hazel {
 			vkCmdEndRenderPass(drawCommandBuffer);
 		}
 
-		// HazelRenderer::Submit([=]()
-		// {
-		// });
+		// HazelRenderer::Submit([=]() {});
 		{
 			Ref<VulkanContext> context = VulkanContext::Get();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
@@ -825,9 +815,7 @@ namespace Hazel {
 
 	void VulkanRenderer::BeginFrame()
 	{
-		//	HazelRenderer::Submit([]()
-		//	{
-		//	});
+		// HazelRenderer::Submit([]() {});
 		{
 			Ref<VulkanContext> context = VulkanContext::Get();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
@@ -844,9 +832,7 @@ namespace Hazel {
 
 	void VulkanRenderer::EndFrame()
 	{
-		//	HazelRenderer::Submit([]()
-		//	{
-		//	});
+		// HazelRenderer::Submit([]() {});
 		{
 			VK_CHECK_RESULT(vkEndCommandBuffer(s_Data.ActiveCommandBuffer));
 		}
@@ -854,9 +840,7 @@ namespace Hazel {
 
 	void VulkanRenderer::BeginRenderPass(const Ref<RenderPass>& renderPass)
 	{
-		//	HazelRenderer::Submit([renderPass]()
-		//	{
-		//	});
+		// HazelRenderer::Submit([renderPass]() {});
 		{
 			BeginFrame();
 
@@ -909,9 +893,7 @@ namespace Hazel {
 
 	void VulkanRenderer::EndRenderPass()
 	{
-		//	HazelRenderer::Submit([]()
-		//	{
-		//	});
+		// HazelRenderer::Submit([]() {});
 		{
 			vkCmdEndRenderPass(s_Data.ActiveCommandBuffer);
 			s_Data.ActiveCommandBuffer = nullptr;
@@ -920,9 +902,7 @@ namespace Hazel {
 
 	void VulkanRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
 	{
-		//	HazelRenderer::Submit([]()
-		//	{
-		//	});
+		// HazelRenderer::Submit([]() {});
 		{
 			Ref<VulkanPipeline> vulkanPipeline = s_CompositePipeline.As<VulkanPipeline>();
 
@@ -997,6 +977,8 @@ namespace Hazel {
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 
 			equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
+
+			// envUnfilteredCubemap->GenerateMips();
 		}
 
 		// MipFiltering
@@ -1053,6 +1035,33 @@ namespace Hazel {
 			}
 			environmentMipFilterPipeline->End();
 		}
+
+		// Irradiance map
+		Ref<HazelShader> environmentIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance");
+		Ref<VulkanComputePipeline> environmentIrradiancePipeline = Ref<VulkanComputePipeline>::Create(environmentIrradianceShader);
+		s_Data.irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize);
+
+		// HazelRenderer::Submit([environmentIrradiancePipeline, s_Data.irradianceMap, irradianceMapSize]() {});
+		/****
+		std::array<VkWriteDescriptorSet, 2> writeDescriptors;
+		VulkanShader::ShaderMaterialDescriptorSet descriptorSet = shader->CreateDescriptorSets();
+
+		Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
+		writeDescriptors[0] = *shader->GetDescriptorSet("o_CubeMap");
+		writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+		writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
+		writeDescriptors[0].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
+
+		Ref<VulkanTexture2D> envEquirectVK = s_Data.envEquirect.As<VulkanTexture2D>();
+		writeDescriptors[1] = *shader->GetDescriptorSet("u_EquirectangularTex");
+		writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+		writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
+		writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
+
+		vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+
+		equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
+		****/
 
 		return { s_Data.envUnfiltered, s_Data.irradianceMap };
 	}
