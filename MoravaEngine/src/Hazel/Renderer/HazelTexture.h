@@ -103,6 +103,9 @@ namespace Hazel {
 
 		virtual TextureType GetType() const override { return TextureType::TextureCube; }
 
+		// temp debug variable
+		bool m_MipsGenerated = false;
+
 	};
 
 }

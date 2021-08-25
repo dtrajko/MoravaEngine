@@ -1012,12 +1012,12 @@ namespace Hazel {
 				mipImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 				writeDescriptors[i * 2 + 0] = *shader->GetDescriptorSet("outputTexture");
-				writeDescriptors[i * 2 + 0].dstSet = descriptorSet.DescriptorSets[i]; // Should this be set inside the shader?
+				writeDescriptors[i * 2 + 0].dstSet = descriptorSet.DescriptorSets[i];
 				writeDescriptors[i * 2 + 0].pImageInfo = &mipImageInfo;
 
 				Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
 				writeDescriptors[i * 2 + 1] = *shader->GetDescriptorSet("inputTexture");
-				writeDescriptors[i * 2 + 1].dstSet = descriptorSet.DescriptorSets[i]; // Should this be set inside the shader?
+				writeDescriptors[i * 2 + 1].dstSet = descriptorSet.DescriptorSets[i];
 				writeDescriptors[i * 2 + 1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
 			}
 
@@ -1041,27 +1041,30 @@ namespace Hazel {
 		Ref<VulkanComputePipeline> environmentIrradiancePipeline = Ref<VulkanComputePipeline>::Create(environmentIrradianceShader);
 		s_Data.irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize);
 
-		// HazelRenderer::Submit([environmentIrradiancePipeline, s_Data.irradianceMap, irradianceMapSize]() {});
-		/****
-		std::array<VkWriteDescriptorSet, 2> writeDescriptors;
-		VulkanShader::ShaderMaterialDescriptorSet descriptorSet = shader->CreateDescriptorSets();
+		// HazelRenderer::Submit([environmentIrradiancePipeline, envFilteredCubemap, s_Data.irradianceMap, irradianceMapSize]() mutable {});
+		{
+			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			Ref<VulkanShader> shader = environmentIrradiancePipeline->GetShader();
 
-		Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
-		writeDescriptors[0] = *shader->GetDescriptorSet("o_CubeMap");
-		writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
-		writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
-		writeDescriptors[0].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
+			std::array<VkWriteDescriptorSet, 2> writeDescriptors;
+			VulkanShader::ShaderMaterialDescriptorSet descriptorSet = shader->CreateDescriptorSets();
 
-		Ref<VulkanTexture2D> envEquirectVK = s_Data.envEquirect.As<VulkanTexture2D>();
-		writeDescriptors[1] = *shader->GetDescriptorSet("u_EquirectangularTex");
-		writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
-		writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
-		writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
+			Ref<VulkanTextureCube> irradianceCubemap = s_Data.irradianceMap.As<VulkanTextureCube>();
+			writeDescriptors[0] = *shader->GetDescriptorSet("o_IrradianceMap");
+			writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data();
+			writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
+			writeDescriptors[0].pImageInfo = &irradianceCubemap->GetVulkanDescriptorInfo();
 
-		vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+			Ref<VulkanTextureCube> envFilteredCubemap = s_Data.envFiltered.As<VulkanTextureCube>();
+			writeDescriptors[1] = *shader->GetDescriptorSet("u_RadianceMap");
+			writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data();
+			writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
+			writeDescriptors[1].pImageInfo = &envFilteredCubemap->GetVulkanDescriptorInfo();
 
-		equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
-		****/
+			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+
+			environmentIrradiancePipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), irradianceCubemap->GetWidth() / 32, irradianceCubemap->GetHeight() / 32, 6);
+		}
 
 		return { s_Data.envUnfiltered, s_Data.irradianceMap };
 	}

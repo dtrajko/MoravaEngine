@@ -951,6 +951,13 @@ namespace Hazel {
 		subresourceRange.layerCount = 1;
 		subresourceRange.levelCount = mipLevels;
 
+		SetImageLayout(
+			blitCmd,
+			m_Image,
+			VK_IMAGE_LAYOUT_GENERAL,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			subresourceRange);
+
 		Utils::InsertImageMemoryBarrier(blitCmd, m_Image,
 			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
@@ -1048,6 +1055,8 @@ namespace Hazel {
 
 		VulkanContext::GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
 #endif
+
+		m_MipsGenerated = true;
 	}
 
 	std::pair<uint32_t, uint32_t> VulkanTextureCube::GetMipSize(uint32_t mip) const
