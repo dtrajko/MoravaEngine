@@ -99,10 +99,10 @@ layout (binding = 5) uniform sampler2D u_RoughnessTexture;
 
 // Environment maps
 layout (set = 1, binding = 0) uniform samplerCube u_EnvRadianceTex;
-// layout (set = 1, binding = 1) uniform samplerCube u_EnvIrradianceTex;
+layout (set = 1, binding = 1) uniform samplerCube u_EnvIrradianceTex;
 
 // BRDF LUT
-layout (set = 1, binding = 1) uniform sampler2D u_BRDFLUTTexture;
+layout (set = 1, binding = 2) uniform sampler2D u_BRDFLUTTexture;
 
 layout (push_constant) uniform Material
 {
@@ -318,34 +318,21 @@ vec3 LightingTemp(vec3 F0)
 
 vec3 IBL(vec3 F0, vec3 Lr)
 {
-	//vec3 irradiance = texture(u_EnvIrradianceTex, m_Params.Normal).rgb;
+	vec3 irradiance = texture(u_EnvIrradianceTex, m_Params.Normal).rgb;
 	vec3 F = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
-	//vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-	//vec3 diffuseIBL = m_Params.Albedo * irradiance;
-	//
-	//int envRadianceTexLevels = textureQueryLevels(u_EnvRadianceTex);
-	//float NoV = clamp(m_Params.NdotV, 0.0, 1.0);
-	//vec3 R = 2.0 * dot(m_Params.View, m_Params.Normal) * m_Params.Normal - m_Params.View;
-	//vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_MaterialUniforms.EnvMapRotation, Lr), (m_Params.Roughness) * envRadianceTexLevels).rgb;
-	//
-	//// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
-	//vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
-	//vec3 specularIBL = specularIrradiance * (F * specularBRDF.x + specularBRDF.y);
-	//
-	//return kd * diffuseIBL + specularIBL;
-	// return vec3(0.0);
+	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+	vec3 diffuseIBL = m_Params.Albedo * irradiance;
 
+	int envRadianceTexLevels = textureQueryLevels(u_EnvRadianceTex);
 	float NoV = clamp(m_Params.NdotV, 0.0, 1.0);
 	vec3 R = 2.0 * dot(m_Params.View, m_Params.Normal) * m_Params.Normal - m_Params.View;
-	vec3 specularIrradiance = texture(u_EnvRadianceTex, Lr).rgb;
+	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_MaterialUniforms.EnvMapRotation, Lr), (m_Params.Roughness) * envRadianceTexLevels).rgb;
 
 	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
 	vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
 	vec3 specularIBL = specularIrradiance * (F * specularBRDF.x + specularBRDF.y);
-	// vec3 specularIBL = specularIrradiance * (0.5 * specularBRDF.x + specularBRDF.y);
 
-	// return kd * diffuseIBL + specularIBL;
-	return specularIBL;
+	return kd * diffuseIBL + specularIBL;
 }
 
 void main()
