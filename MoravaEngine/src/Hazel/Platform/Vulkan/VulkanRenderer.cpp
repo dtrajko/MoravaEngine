@@ -1068,6 +1068,8 @@ namespace Hazel {
 
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 			environmentIrradiancePipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), irradianceCubemap->GetWidth() / 32, irradianceCubemap->GetHeight() / 32, 6);
+
+			// irradianceCubemap->GenerateMips();
 		}
 
 		return { s_Data.envFiltered, s_Data.irradianceMap };
