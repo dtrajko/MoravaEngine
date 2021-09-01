@@ -29,7 +29,7 @@
 
 namespace Hazel {
 
-	bool VulkanRenderer::s_MipMapsEnabled = false;
+	bool VulkanRenderer::s_MipMapsEnabled = true;
 
 	struct VulkanRendererData
 	{
@@ -983,7 +983,7 @@ namespace Hazel {
 
 			equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
 
-			// envUnfilteredCubemap->GenerateMips();
+			envUnfilteredCubemap->GenerateMips();
 		}
 
 		// MipFiltering
@@ -1069,7 +1069,7 @@ namespace Hazel {
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 			environmentIrradiancePipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), irradianceCubemap->GetWidth() / 32, irradianceCubemap->GetHeight() / 32, 6);
 
-			// irradianceCubemap->GenerateMips();
+			irradianceCubemap->GenerateMips();
 		}
 
 		return { s_Data.envFiltered, s_Data.irradianceMap };

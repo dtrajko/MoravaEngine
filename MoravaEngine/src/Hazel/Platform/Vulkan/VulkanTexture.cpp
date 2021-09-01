@@ -892,8 +892,8 @@ namespace Hazel {
 		SetImageLayout(
 			blitCmd,
 			m_Image,
-			VK_IMAGE_LAYOUT_GENERAL,
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_IMAGE_LAYOUT_GENERAL,
 			subresourceRange);
 
 		Utils::InsertImageMemoryBarrier(blitCmd, m_Image,
