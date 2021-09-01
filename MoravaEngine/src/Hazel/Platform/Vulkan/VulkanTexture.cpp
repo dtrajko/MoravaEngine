@@ -65,6 +65,148 @@ namespace Hazel {
 
 	}
 
+	static void SetImageLayout(
+		VkCommandBuffer cmdbuffer,
+		VkImage image,
+		VkImageLayout oldImageLayout,
+		VkImageLayout newImageLayout,
+		VkImageSubresourceRange subresourceRange,
+		VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+		VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
+	{
+		// Create an image barrier object
+		VkImageMemoryBarrier imageMemoryBarrier{};
+		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		imageMemoryBarrier.oldLayout = oldImageLayout;
+		imageMemoryBarrier.newLayout = newImageLayout;
+		imageMemoryBarrier.image = image;
+		imageMemoryBarrier.subresourceRange = subresourceRange;
+
+		// Source layouts (old)
+		// Source access mask controls actions that have to be finished on the old layout
+		// before it will be transitioned to the new layout
+		switch (oldImageLayout)
+		{
+		case VK_IMAGE_LAYOUT_UNDEFINED:
+			// Image layout is undefined (or does not matter)
+			// Only valid as initial layout
+			// No flags required, listed only for completeness
+			imageMemoryBarrier.srcAccessMask = 0;
+			break;
+
+		case VK_IMAGE_LAYOUT_PREINITIALIZED:
+			// Image is preinitialized
+			// Only valid as initial layout for linear images, preserves memory contents
+			// Make sure host writes have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+			// Image is a color attachment
+			// Make sure any writes to the color buffer have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			// Image is a depth/stencil attachment
+			// Make sure any writes to the depth/stencil buffer have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+			// Image is a transfer source
+			// Make sure any reads from the image have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+			// Image is a transfer destination
+			// Make sure any writes to the image have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+			// Image is read by a shader
+			// Make sure any shader reads from the image have been finished
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			break;
+		default:
+			// Other source layouts aren't handled (yet)
+			break;
+		}
+
+		// Target layouts (new)
+		// Destination access mask controls the dependency for the new image layout
+		switch (newImageLayout)
+		{
+		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+			// Image will be used as a transfer destination
+			// Make sure any writes to the image have been finished
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+			// Image will be used as a transfer source
+			// Make sure any reads from the image have been finished
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+			// Image will be used as a color attachment
+			// Make sure any writes to the color buffer have been finished
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
+			// Image layout will be used as a depth/stencil attachment
+			// Make sure any writes to depth/stencil buffer have been finished
+			imageMemoryBarrier.dstAccessMask = imageMemoryBarrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			break;
+
+		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+			// Image will be read in a shader (sampler, input attachment)
+			// Make sure any writes to the image have been finished
+			if (imageMemoryBarrier.srcAccessMask == 0)
+			{
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
+			}
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			break;
+		default:
+			// Other source layouts aren't handled (yet)
+			break;
+		}
+
+		// Put barrier inside setup command buffer
+		vkCmdPipelineBarrier(
+			cmdbuffer,
+			srcStageMask,
+			dstStageMask,
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &imageMemoryBarrier);
+	}
+
+	static void SetImageLayout(
+		VkCommandBuffer cmdbuffer,
+		VkImage image,
+		VkImageAspectFlags aspectMask,
+		VkImageLayout oldImageLayout,
+		VkImageLayout newImageLayout,
+		VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+		VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
+	{
+		VkImageSubresourceRange subresourceRange = {};
+		subresourceRange.aspectMask = aspectMask;
+		subresourceRange.baseMipLevel = 0;
+		subresourceRange.levelCount = 1;
+		subresourceRange.layerCount = 1;
+		SetImageLayout(cmdbuffer, image, oldImageLayout, newImageLayout, subresourceRange, srcStageMask, dstStageMask);
+	}
+
 	VulkanTexture2D::VulkanTexture2D(const std::string& path, bool srgb, TextureWrap wrap)
 		: m_Path(path)
 	{
@@ -255,6 +397,14 @@ namespace Hazel {
 		bufferCopyRegion.imageExtent.depth = 1;
 		bufferCopyRegion.bufferOffset = 0;
 
+		// Submitted command buffer expects VkImage 0x2f99810000000044[](subresource: aspectMask 0x1 array layer 0, mip level 0) to be in layout
+		// VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
+		SetImageLayout(
+			copyCmd, m_VkImage,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			subresourceRange);
+
 		// Copy mip levels from staging buffer
 		vkCmdCopyBufferToImage(
 			copyCmd,
@@ -422,17 +572,20 @@ namespace Hazel {
 		barrier.image = m_VkImage;
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.subresourceRange.levelCount = 1;
+
+		VkImageSubresourceRange subresourceRange = {};
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		subresourceRange.levelCount = 1;
+		subresourceRange.layerCount = 1;
+		barrier.subresourceRange = subresourceRange;
 
 		int32_t mipWidth = m_Width;
 		int32_t mipHeight = m_Height;
 
 		VkCommandBuffer commandBuffer = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
 
-		auto mipLevels = Utils::MipCount(m_Width, m_Height);
+		// auto mipLevels = Utils::MipCount(m_Width, m_Height);
+		auto mipLevels = GetMipLevelCount();
 
 		for (uint32_t i = 1; i < mipLevels; i++)
 		{
@@ -456,6 +609,7 @@ namespace Hazel {
 			blit.srcSubresource.mipLevel = i - 1;
 			blit.srcSubresource.baseArrayLayer = 0;
 			blit.srcSubresource.layerCount = 1;
+
 			blit.dstOffsets[0] = { 0, 0, 0 };
 			blit.dstOffsets[1] = { mipWidth / 2, mipHeight / 2, 1 };
 			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -469,10 +623,13 @@ namespace Hazel {
 				1, &blit,
 				VK_FILTER_LINEAR);
 
-			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			// barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			// barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
 			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			barrier.subresourceRange.baseMipLevel = i;
 
 			vkCmdPipelineBarrier(commandBuffer,
 				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
@@ -487,8 +644,10 @@ namespace Hazel {
 		}
 
 		// Transition all mips from transfer to shader read
-		barrier.subresourceRange.baseMipLevel = mipLevels - 1;
-		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = mipLevels;
+		// barrier.subresourceRange.baseMipLevel = mipLevels - 1;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -528,148 +687,6 @@ namespace Hazel {
 
 	VulkanTextureCube::~VulkanTextureCube()
 	{
-	}
-
-	static void SetImageLayout(
-		VkCommandBuffer cmdbuffer,
-		VkImage image,
-		VkImageLayout oldImageLayout,
-		VkImageLayout newImageLayout,
-		VkImageSubresourceRange subresourceRange,
-		VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-		VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
-	{
-		// Create an image barrier object
-		VkImageMemoryBarrier imageMemoryBarrier{};
-		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		imageMemoryBarrier.oldLayout = oldImageLayout;
-		imageMemoryBarrier.newLayout = newImageLayout;
-		imageMemoryBarrier.image = image;
-		imageMemoryBarrier.subresourceRange = subresourceRange;
-
-		// Source layouts (old)
-		// Source access mask controls actions that have to be finished on the old layout
-		// before it will be transitioned to the new layout
-		switch (oldImageLayout)
-		{
-		case VK_IMAGE_LAYOUT_UNDEFINED:
-			// Image layout is undefined (or does not matter)
-			// Only valid as initial layout
-			// No flags required, listed only for completeness
-			imageMemoryBarrier.srcAccessMask = 0;
-			break;
-
-		case VK_IMAGE_LAYOUT_PREINITIALIZED:
-			// Image is preinitialized
-			// Only valid as initial layout for linear images, preserves memory contents
-			// Make sure host writes have been finished
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
-			break;
-
-		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-			// Image is a color attachment
-			// Make sure any writes to the color buffer have been finished
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			break;
-
-		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-			// Image is a depth/stencil attachment
-			// Make sure any writes to the depth/stencil buffer have been finished
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			break;
-
-		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-			// Image is a transfer source
-			// Make sure any reads from the image have been finished
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			break;
-
-		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-			// Image is a transfer destination
-			// Make sure any writes to the image have been finished
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			break;
-
-		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-			// Image is read by a shader
-			// Make sure any shader reads from the image have been finished
-			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			break;
-		default:
-			// Other source layouts aren't handled (yet)
-			break;
-		}
-
-		// Target layouts (new)
-		// Destination access mask controls the dependency for the new image layout
-		switch (newImageLayout)
-		{
-		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-			// Image will be used as a transfer destination
-			// Make sure any writes to the image have been finished
-			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-			break;
-
-		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-			// Image will be used as a transfer source
-			// Make sure any reads from the image have been finished
-			imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-			break;
-
-		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-			// Image will be used as a color attachment
-			// Make sure any writes to the color buffer have been finished
-			imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			break;
-
-		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-			// Image layout will be used as a depth/stencil attachment
-			// Make sure any writes to depth/stencil buffer have been finished
-			imageMemoryBarrier.dstAccessMask = imageMemoryBarrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			break;
-
-		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-			// Image will be read in a shader (sampler, input attachment)
-			// Make sure any writes to the image have been finished
-			if (imageMemoryBarrier.srcAccessMask == 0)
-			{
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
-			}
-			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-			break;
-		default:
-			// Other source layouts aren't handled (yet)
-			break;
-		}
-
-		// Put barrier inside setup command buffer
-		vkCmdPipelineBarrier(
-			cmdbuffer,
-			srcStageMask,
-			dstStageMask,
-			0,
-			0, nullptr,
-			0, nullptr,
-			1, &imageMemoryBarrier);
-	}
-
-	static void SetImageLayout(
-		VkCommandBuffer cmdbuffer,
-		VkImage image,
-		VkImageAspectFlags aspectMask,
-		VkImageLayout oldImageLayout,
-		VkImageLayout newImageLayout,
-		VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-		VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT)
-	{
-		VkImageSubresourceRange subresourceRange = {};
-		subresourceRange.aspectMask = aspectMask;
-		subresourceRange.baseMipLevel = 0;
-		subresourceRange.levelCount = 1;
-		subresourceRange.layerCount = 1;
-		SetImageLayout(cmdbuffer, image, oldImageLayout, newImageLayout, subresourceRange, srcStageMask, dstStageMask);
 	}
 
 	void VulkanTextureCube::Invalidate()
