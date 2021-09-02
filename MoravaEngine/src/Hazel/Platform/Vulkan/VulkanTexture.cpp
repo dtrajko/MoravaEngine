@@ -306,6 +306,8 @@ namespace Hazel {
 
 		VkMemoryAllocateInfo memAllocInfo{};
 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		VkMemoryRequirements memoryRequirements = {};
+		memoryRequirements.size = size;
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingMemory;
@@ -319,8 +321,6 @@ namespace Hazel {
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		VK_CHECK_RESULT(vkCreateBuffer(vulkanDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
-
-		VkMemoryRequirements memoryRequirements = {};
 		vkGetBufferMemoryRequirements(vulkanDevice, stagingBuffer, &memoryRequirements);
 		allocator.Allocate(memoryRequirements, &stagingMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		VK_CHECK_RESULT(vkBindBufferMemory(vulkanDevice, stagingBuffer, stagingMemory, 0));
@@ -397,14 +397,6 @@ namespace Hazel {
 		bufferCopyRegion.imageExtent.depth = 1;
 		bufferCopyRegion.bufferOffset = 0;
 
-		// Submitted command buffer expects VkImage 0x2f99810000000044[](subresource: aspectMask 0x1 array layer 0, mip level 0) to be in layout
-		// VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL--instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
-		SetImageLayout(
-			copyCmd, m_VkImage,
-			VK_IMAGE_LAYOUT_UNDEFINED,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			subresourceRange);
-
 		// Copy mip levels from staging buffer
 		vkCmdCopyBufferToImage(
 			copyCmd,
@@ -435,13 +427,11 @@ namespace Hazel {
 
 #endif
 
-#if 0
 		Utils::InsertImageMemoryBarrier(copyCmd, m_VkImage,
 			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
 			subresourceRange);
-#endif
 
 		device->FlushCommandBuffer(copyCmd);
 
@@ -699,11 +689,15 @@ namespace Hazel {
 		auto device = VulkanContext::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
 
+		VkDeviceSize size = m_Width * m_Height * 4 * 2;
+
 		VkFormat format = Utils::TextureFormatToVkFormat(m_Format);
 		uint32_t mipCount = GetMipLevelCount();
 
 		VkMemoryAllocateInfo memAllocInfo{};
 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		VkMemoryRequirements memoryRequirements = {};
+		memoryRequirements.size = size;
 
 		VulkanAllocator allocator(std::string("TextureCube"));
 
@@ -712,7 +706,7 @@ namespace Hazel {
 		imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
 		imageCreateInfo.format = format;
-		imageCreateInfo.mipLevels = mipCount;
+		imageCreateInfo.mipLevels = mipCount; // TODO
 		imageCreateInfo.arrayLayers = 6;
 		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -722,7 +716,6 @@ namespace Hazel {
 		imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 		VK_CHECK_RESULT(vkCreateImage(vulkanDevice, &imageCreateInfo, nullptr, &m_Image));
 
-		VkMemoryRequirements memoryRequirements = {};
 		vkGetImageMemoryRequirements(vulkanDevice, m_Image, &memoryRequirements);
 		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice, m_Image, m_DeviceMemory, 0));
