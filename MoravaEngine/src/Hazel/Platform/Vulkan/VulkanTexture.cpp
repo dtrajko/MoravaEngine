@@ -662,7 +662,7 @@ namespace Hazel {
 		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice, m_Image, m_DeviceMemory, 0));
 
-		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 		VkCommandBuffer layoutCmd = device->GetCommandBuffer(true);
 
@@ -764,15 +764,32 @@ namespace Hazel {
 
 		VkCommandBuffer blitCmd = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
 
-		// Base image barrier
-		VkImageMemoryBarrier barrier = {};
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.image = m_Image;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		//	// Base image barrier
+		//	VkImageMemoryBarrier barrier = {};
+		//	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		//	barrier.image = m_Image;
+		//	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		//	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+		uint32_t mipLevels = GetMipLevelCount();
+		for (uint32_t face = 0; face < 6; face++)
+		{
+			VkImageSubresourceRange mipSubRange = {};
+			mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			mipSubRange.baseMipLevel = 0;
+			mipSubRange.baseArrayLayer = face;
+			mipSubRange.levelCount = 1;
+			mipSubRange.layerCount = 1;
+
+			// Prepare current mip level as image blit destination
+			Utils::InsertImageMemoryBarrier(blitCmd, m_Image,
+				0, VK_ACCESS_TRANSFER_WRITE_BIT,
+				VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				mipSubRange);
+		}
 
 		// Copy down mips from n-1 to n
-		int32_t mipLevels = GetMipLevelCount();
 		for (int32_t i = 1; i < mipLevels; i++)
 		{
 			for (uint32_t face = 0; face < 6; face++)
@@ -783,6 +800,7 @@ namespace Hazel {
 				imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				imageBlit.srcSubresource.layerCount = 1;
 				imageBlit.srcSubresource.mipLevel = i - 1;
+				imageBlit.srcSubresource.baseArrayLayer = face;
 				imageBlit.srcOffsets[1].x = int32_t(m_Width >> (i - 1));
 				imageBlit.srcOffsets[1].y = int32_t(m_Height >> (i - 1));
 				imageBlit.srcOffsets[1].z = 1;
@@ -791,9 +809,13 @@ namespace Hazel {
 				imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				imageBlit.dstSubresource.layerCount = 1;
 				imageBlit.dstSubresource.mipLevel = i;
+				imageBlit.dstSubresource.baseArrayLayer = face;
 				imageBlit.dstOffsets[1].x = int32_t(m_Width >> i);
 				imageBlit.dstOffsets[1].y = int32_t(m_Height >> i);
 				imageBlit.dstOffsets[1].z = 1;
+
+				Log::GetLogger()->info("VTCube::GenerateMips mipLevel: {0}, cube face: {1}, src: {2}x{3}, dst: {4}x{5}",
+					i, face, int32_t(m_Width >> (i - 1)), int32_t(m_Height >> (i - 1)), int32_t(m_Width >> i), int32_t(m_Height >> i));
 
 				VkImageSubresourceRange mipSubRange = {};
 				mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -838,7 +860,7 @@ namespace Hazel {
 
 		Utils::InsertImageMemoryBarrier(blitCmd, m_Image,
 			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			subresourceRange);
 

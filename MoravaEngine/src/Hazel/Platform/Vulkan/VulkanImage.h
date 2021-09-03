@@ -79,7 +79,7 @@ namespace Hazel
 			switch (format)
 			{
 			case HazelImageFormat::RGBA:    return VK_FORMAT_R8G8B8A8_UNORM;
-			case HazelImageFormat::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
+			case HazelImageFormat::RGBA16F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 			case HazelImageFormat::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 			}
 			Log::GetLogger()->error("VulkanImageFormat: HazelImageFormat not supported: '{0}'!", format);
