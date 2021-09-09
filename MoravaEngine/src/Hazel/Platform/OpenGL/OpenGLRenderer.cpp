@@ -73,17 +73,17 @@ namespace Hazel {
 			switch (severity)
 			{
 			case GL_DEBUG_SEVERITY_HIGH:
-				Log::GetLogger()->error("[OpenGL Debug HIGH] {0}", message);
+				Log::GetLogger()->error("[OGLR OpenGL Debug HIGH] {0}", message);
 				// HZ_CORE_ASSERT(false, "GL_DEBUG_SEVERITY_HIGH");
 				break;
 			case GL_DEBUG_SEVERITY_MEDIUM:
-				Log::GetLogger()->warn("[OpenGL Debug MEDIUM] {0}", message);
+				Log::GetLogger()->warn("[OGLR OpenGL Debug MEDIUM] {0}", message);
 				break;
 			case GL_DEBUG_SEVERITY_LOW:
-				Log::GetLogger()->info("[OpenGL Debug LOW] {0}", message);
+				Log::GetLogger()->info("[OGLR OpenGL Debug LOW] {0}", message);
 				break;
 			case GL_DEBUG_SEVERITY_NOTIFICATION:
-				Log::GetLogger()->trace("[OpenGL Debug NOTIFICATION] {0}", message);
+				Log::GetLogger()->trace("[OGLR OpenGL Debug NOTIFICATION] {0}", message);
 				break;
 			}
 		}

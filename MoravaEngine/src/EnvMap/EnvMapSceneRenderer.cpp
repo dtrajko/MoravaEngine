@@ -321,19 +321,20 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
     s_EnvEquirect = Hazel::HazelTexture2D::Create(filepath);
 
     // HZ_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
-    if (s_EnvEquirect->GetFormat() != Hazel::HazelImageFormat::RGBA16F) {
+    if (s_EnvEquirect->GetFormat() != Hazel::HazelImageFormat::RGBA16F)
+    {
         Log::GetLogger()->error("Texture is not HDR!");
     }
 
     equirectangularConversionShader->Bind();
-    s_EnvEquirect->Bind(); // Bind(1);
+    s_EnvEquirect->Bind(0); // Bind(1);
 
     // HazelRenderer::Submit([envUnfiltered, cubemapSize, envEquirect]() {});
     {
-        glBindImageTexture(0, envUnfiltered->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+        glBindImageTexture(0, envUnfiltered->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
         glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
         glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-        glGenerateTextureMipmap(envUnfiltered->GetID());
+        glGenerateTextureMipmap(envUnfiltered->GetRendererID());
     }
 
     // Ref<OpenGLShader> envFilteringShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShader>();
@@ -344,30 +345,30 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
 
     // HazelRenderer::Submit([envUnfiltered, envFiltered]() {});
     {
-        glCopyImageSubData(envUnfiltered->GetID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
-            envFiltered->GetID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
+        glCopyImageSubData(envUnfiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
+            envFiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
             envFiltered->GetWidth(), envFiltered->GetHeight(), 6);
     }
 
     envFilteringShader->Bind();
-    envFiltered->Bind(); // Bind(1);
+    envFiltered->Bind(1);
 
     // HazelRenderer::Submit([envFilteringShader, envUnfiltered, envFiltered, cubemapSize]() {});
     {
-        const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
-        for (int level = 1, size = cubemapSize / 2; level < (int)envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
+        const float deltaRoughness = 1.0f / glm::max(float(envFiltered->GetMipLevelCount()) - 1.0f, 1.0f);
+        for (uint32_t level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
         {
             Log::GetLogger()->debug("BEGIN EnvFiltering size {0} level {1}/{2}", size, level, envFiltered->GetMipLevelCount());
 
-            glBindImageTexture(0, envFiltered->GetID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
+            glBindImageTexture(0, envFiltered->GetRendererID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
 
             const GLint roughnessUniformLocation = glGetUniformLocation(envFilteringShader->GetRendererID(), "u_Uniforms.Roughness");
             // HZ_CORE_ASSERT(roughnessUniformLocation != -1);
             glUniform1f(roughnessUniformLocation, (float)level * deltaRoughness);
 
-            glProgramUniform1f(envFilteringShader->GetRendererID(), 0, level * deltaRoughness);
+            // glProgramUniform1f(envFilteringShader->GetRendererID(), roughnessUniformLocation, (float)(level * deltaRoughness));
 
-            const GLuint numGroups = glm::max(1, size / 32);
+            const GLuint numGroups = glm::max(1u, size / 32);
             glDispatchCompute(numGroups, numGroups, 6);
             glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
             Log::GetLogger()->debug("END EnvFiltering size {0} numGroups {1} level {2}/{3}", size, numGroups, level, envFiltered->GetMipLevelCount());

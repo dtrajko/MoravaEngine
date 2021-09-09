@@ -18,6 +18,7 @@ namespace Hazel {
 			case Hazel::HazelImageFormat::RGB:     return GL_RGB;
 			case Hazel::HazelImageFormat::RGBA:    return GL_RGBA;
 			case Hazel::HazelImageFormat::RGBA16F: return GL_RGBA16F;
+			case Hazel::HazelImageFormat::RGBA32F: return GL_RGBA32F;
 		}
 		Log::GetLogger()->error("Unknown texture format!");
 		return 0;

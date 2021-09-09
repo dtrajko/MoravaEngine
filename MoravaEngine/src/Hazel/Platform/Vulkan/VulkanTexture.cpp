@@ -855,7 +855,7 @@ namespace Hazel {
 		// After the loop, all mip layers are in TRANSFER_SRC layout, so transition all to SHADER_READ
 		VkImageSubresourceRange subresourceRange = {};
 		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		subresourceRange.layerCount = 1;
+		subresourceRange.layerCount = 6;
 		subresourceRange.levelCount = mipLevels;
 
 		Utils::InsertImageMemoryBarrier(blitCmd, m_Image,

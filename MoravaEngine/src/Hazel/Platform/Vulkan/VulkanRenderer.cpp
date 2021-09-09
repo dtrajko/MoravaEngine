@@ -448,11 +448,12 @@ namespace Hazel {
 		writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 		writeDescriptors[0].pBufferInfo = &vulkanSkyboxShader->GetUniformBuffer(0, 0).Descriptor;
 
-		Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
+		// Ref<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
+		Ref<VulkanTextureCube> envFilteredCubemap = s_Data.envFiltered.As<VulkanTextureCube>();
 		writeDescriptors[1] = *vulkanSkyboxShader->GetDescriptorSet("u_Texture");
 		writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
 		writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
-		writeDescriptors[1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
+		writeDescriptors[1].pImageInfo = &envFilteredCubemap->GetVulkanDescriptorInfo();
 
 		vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 
