@@ -287,12 +287,16 @@ namespace Hazel {
 
 	VulkanTexture2D::~VulkanTexture2D()
 	{
-		auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		// Ref<VulkanTexture2D> instance = this;
+		// HazelRenderer::Submit([instance]() {});
+		{
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-		vkDestroyImageView(vulkanDevice, m_DescriptorImageInfo.imageView, nullptr);
-		vkDestroyImage(vulkanDevice, m_VkImage, nullptr);
-		vkDestroySampler(vulkanDevice, m_DescriptorImageInfo.sampler, nullptr);
-		vkFreeMemory(vulkanDevice, m_DeviceMemory, nullptr);
+			vkDestroyImageView(vulkanDevice, m_DescriptorImageInfo.imageView, nullptr);
+			vkDestroyImage(vulkanDevice, m_VkImage, nullptr);
+			vkDestroySampler(vulkanDevice, m_DescriptorImageInfo.sampler, nullptr);
+			vkFreeMemory(vulkanDevice, m_DeviceMemory, nullptr);
+		}
 	}
 
 	void VulkanTexture2D::Invalidate()
@@ -790,7 +794,7 @@ namespace Hazel {
 		}
 
 		// Copy down mips from n-1 to n
-		for (int32_t i = 1; i < mipLevels; i++)
+		for (uint32_t i = 1; i < mipLevels; i++)
 		{
 			for (uint32_t face = 0; face < 6; face++)
 			{
@@ -860,9 +864,18 @@ namespace Hazel {
 
 		Utils::InsertImageMemoryBarrier(blitCmd, m_Image,
 			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL,
+			VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			subresourceRange);
+
+		if (readonly)
+		{
+			SetImageLayout(
+				blitCmd, m_Image,
+				VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				subresourceRange,
+				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+		}
 
 		VulkanContext::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
 

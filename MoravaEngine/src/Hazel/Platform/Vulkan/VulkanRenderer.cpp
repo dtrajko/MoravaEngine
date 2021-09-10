@@ -41,9 +41,9 @@ namespace Hazel {
 
 		/**** BEGIN dtrajko Keep smart references alive ****/
 		Ref<HazelTextureCube> envUnfiltered;
+		Ref<HazelTexture2D> envEquirect;
 		Ref<HazelTextureCube> envFiltered;
 		Ref<HazelTextureCube> irradianceMap;
-		Ref<HazelTexture2D> envEquirect;
 		/**** END dtrajko Keep smart references alive ****/
 
 		RendererCapabilities RenderCaps;
@@ -943,7 +943,6 @@ namespace Hazel {
 		const uint32_t irradianceMapSize = 32;
 
 		s_Data.envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
-		s_Data.irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 
 		s_Data.envEquirect = HazelTexture2D::Create(filepath);
 		HazelImageFormat envEquirectImageFormat = s_Data.envEquirect->GetFormat();
@@ -960,7 +959,7 @@ namespace Hazel {
 		Ref<HazelShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap");
 		Ref<VulkanComputePipeline> equirectangularConversionPipeline = Ref<VulkanComputePipeline>::Create(equirectangularConversionShader);
 
-		// HazelRenderer::Submit([equirectangularConversionPipeline, envUnfiltered]() mutable {});
+		// HazelRenderer::Submit([equirectangularConversionPipeline, envUnfiltered, envEquirect, cubemapSize]() mutable {});
 		{
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			Ref<VulkanShader> shader = equirectangularConversionPipeline->GetShader();
@@ -993,7 +992,7 @@ namespace Hazel {
 
 		s_Data.envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 
-		// HazelRenderer::Submit([environmentMipFilterPipeline, s_Data.envFiltered, cubemapSize]() mutable {});
+		// HazelRenderer::Submit([environmentMipFilterPipeline, cubemapSize, envFiltered, envUnfiltered]() mutable {});
 		{
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			Ref<VulkanShader> shader = environmentMipFilterPipeline->GetShader();
@@ -1045,7 +1044,13 @@ namespace Hazel {
 		// Irradiance map
 		Ref<HazelShader> environmentIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance");
 		Ref<VulkanComputePipeline> environmentIrradiancePipeline = Ref<VulkanComputePipeline>::Create(environmentIrradianceShader);
-		s_Data.irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize);
+
+
+		if (!s_Data.irradianceMap)
+		{
+			// s_Data.irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+			s_Data.irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize);
+		}
 
 		// HazelRenderer::Submit([environmentIrradiancePipeline, envFilteredCubemap, s_Data.irradianceMap, irradianceMapSize]() mutable {});
 		{
@@ -1070,7 +1075,10 @@ namespace Hazel {
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 			environmentIrradiancePipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), irradianceCubemap->GetWidth() / 32, irradianceCubemap->GetHeight() / 32, 6);
 
-			irradianceCubemap->GenerateMips();
+			irradianceCubemap->GenerateMips(true);
+
+			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
+			vkQueueWaitIdle(computeQueue);
 		}
 
 		return { s_Data.envFiltered, s_Data.irradianceMap };
