@@ -980,10 +980,12 @@ namespace Hazel {
 			writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
 
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
-
 			equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
 
 			envUnfilteredCubemap->GenerateMips();
+
+			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
+			vkQueueWaitIdle(computeQueue);
 		}
 
 		// MipFiltering
@@ -1013,6 +1015,7 @@ namespace Hazel {
 			for (uint32_t i = 0; i < totalMipLevels; i++)
 			{
 				VkDescriptorImageInfo& mipImageInfo = mipImageInfos[i];
+				mipImageInfo = imageInfo;
 				mipImageInfo.imageView = envFilteredCubemap->CreateImageViewSingleMip(i);
 				mipImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 

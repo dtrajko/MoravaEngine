@@ -92,9 +92,9 @@ namespace Hazel {
 		}
 
 		vkEndCommandBuffer(computeCommandBuffer);
+
 		if (!s_ComputeFence)
 		{
-
 			VkFenceCreateInfo fenceCreateInfo{};
 			fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 			fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
