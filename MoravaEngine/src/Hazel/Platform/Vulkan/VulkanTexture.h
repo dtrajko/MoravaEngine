@@ -72,6 +72,7 @@ namespace Hazel {
 
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
 
+		bool m_MipsGenerated = false;
 	};
 
 	class VulkanTextureCube : public HazelTextureCube

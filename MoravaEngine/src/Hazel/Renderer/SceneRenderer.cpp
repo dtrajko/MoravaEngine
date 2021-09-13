@@ -173,6 +173,8 @@ namespace Hazel {
 		s_Data.SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
 		s_Data.SceneData.SceneEnvironment = scene->m_Environment;
 		s_Data.SceneData.ActiveLight = scene->m_Light;
+
+		// VulkanRenderer::SetSceneEnvironment(s_Data.SceneData.SceneEnvironment);
 	}
 
 	void SceneRenderer::EndScene()

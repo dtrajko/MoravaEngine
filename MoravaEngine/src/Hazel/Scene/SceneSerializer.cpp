@@ -452,7 +452,7 @@ namespace Hazel {
 		if (environment)
 		{
 			std::string envPath = environment["AssetPath"].as<std::string>();
-			//m_Scene->SetEnvironment(Environment::Load(envPath));
+			m_Scene->SetEnvironment(Environment::Load(envPath)); // disable the line if it starts causing troubles
 
 			auto lightNode = environment["Light"];
 			if (lightNode)

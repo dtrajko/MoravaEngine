@@ -9,6 +9,6 @@ namespace Hazel {
 		// FilePath = filepath;
 		auto [radiance, irradiance] = SceneRenderer::CreateEnvironmentMap(filepath);
 		// return { filepath, radiance, irradiance };
-		return { radiance, irradiance };
+		return { filepath, radiance, irradiance };
 	}
 }

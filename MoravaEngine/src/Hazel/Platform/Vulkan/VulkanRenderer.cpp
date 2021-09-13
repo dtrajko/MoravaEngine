@@ -259,35 +259,14 @@ namespace Hazel {
 		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 		s_Data.BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
-		// HazelRenderer::Submit([]() mutable {});
+		// HazelRenderer::Submit([environment]() mutable {});
 		{
 			auto shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
 			Ref<VulkanShader> pbrShader = shader.As<VulkanShader>();
 			s_Data.RendererDescriptorSetFeb2021 = pbrShader->CreateDescriptorSets(1);
-
-			std::array<VkWriteDescriptorSet, 3> writeDescriptors;
-
-			writeDescriptors[0] = *pbrShader->GetDescriptorSet("u_EnvRadianceTex", 1);
-			writeDescriptors[0].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
-			writeDescriptors[0].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
-			auto& radianceMapImageInfo = s_Data.EnvironmentMap.first.As<VulkanTextureCube>()->GetVulkanDescriptorInfo();
-			writeDescriptors[0].pImageInfo = &radianceMapImageInfo;
-
-			writeDescriptors[1] = *pbrShader->GetDescriptorSet("u_EnvIrradianceTex", 1);
-			writeDescriptors[1].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
-			writeDescriptors[1].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
-			auto& irradianceMapImageInfo = s_Data.EnvironmentMap.second.As<VulkanTextureCube>()->GetVulkanDescriptorInfo();
-			writeDescriptors[1].pImageInfo = &irradianceMapImageInfo;
-
-			writeDescriptors[2] = *pbrShader->GetDescriptorSet("u_BRDFLUTTexture", 1);
-			writeDescriptors[2].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
-			writeDescriptors[2].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
-			auto& brdfLutImageInfo = s_Data.BRDFLut.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-			writeDescriptors[2].pImageInfo = &brdfLutImageInfo;
-
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			vkUpdateDescriptorSets(vulkanDevice, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 		}
+
+		SetSceneEnvironment(Ref<Environment>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), Ref<HazelImage2D>());
 
 		/*** BEGIN Setup the Skybox ****/
 		s_Data.VulkanSkyboxCube = Hazel::Ref<VulkanSkyboxCube>::Create();
@@ -935,6 +914,37 @@ namespace Hazel {
 
 	void VulkanRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
 	{
+		// HazelRenderer::Submit([environment]() mutable {});
+		{
+			auto shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+			Ref<VulkanShader> pbrShader = shader.As<VulkanShader>();
+
+			std::array<VkWriteDescriptorSet, 3> writeDescriptors;
+
+			Ref<VulkanTextureCube> radianceMap = environment->RadianceMap.As<VulkanTextureCube>();
+			Ref<VulkanTextureCube> irradianceMap = environment->IrradianceMap.As<VulkanTextureCube>();
+
+			writeDescriptors[0] = *pbrShader->GetDescriptorSet("u_EnvRadianceTex", 1);
+			writeDescriptors[0].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
+			writeDescriptors[0].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
+			auto& radianceMapImageInfo = radianceMap->GetVulkanDescriptorInfo();
+			writeDescriptors[0].pImageInfo = &radianceMapImageInfo;
+
+			writeDescriptors[1] = *pbrShader->GetDescriptorSet("u_EnvIrradianceTex", 1);
+			writeDescriptors[1].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
+			writeDescriptors[1].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
+			auto& irradianceMapImageInfo = irradianceMap->GetVulkanDescriptorInfo();
+			writeDescriptors[1].pImageInfo = &irradianceMapImageInfo;
+
+			writeDescriptors[2] = *pbrShader->GetDescriptorSet("u_BRDFLUTTexture", 1);
+			writeDescriptors[2].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
+			writeDescriptors[2].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
+			auto& brdfLutImageInfo = s_Data.BRDFLut.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+			writeDescriptors[2].pImageInfo = &brdfLutImageInfo;
+
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			vkUpdateDescriptorSets(vulkanDevice, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+		}
 	}
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> VulkanRenderer::CreateEnvironmentMap(const std::string& filepath)
