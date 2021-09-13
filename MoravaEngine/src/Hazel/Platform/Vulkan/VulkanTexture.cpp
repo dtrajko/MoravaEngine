@@ -669,6 +669,7 @@ namespace Hazel {
 		VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice, m_Image, m_DeviceMemory, 0));
 
 		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		// m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 		VkCommandBuffer layoutCmd = device->GetCommandBuffer(true);
 
@@ -883,6 +884,31 @@ namespace Hazel {
 
 		VulkanContext::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
 
+		m_MipsGenerated = true;
+
+		if (readonly)
+		{
+			uint32_t mipCount = GetMipLevelCount();
+			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			// m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+
+			VkCommandBuffer layoutCmd = device->GetCommandBuffer(true);
+
+			VkImageSubresourceRange subresourceRange = {};
+			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = mipCount;
+			subresourceRange.layerCount = 6;
+
+			SetImageLayout(
+				layoutCmd, m_Image,
+				VK_IMAGE_LAYOUT_UNDEFINED,
+				m_DescriptorImageInfo.imageLayout,
+				subresourceRange);
+
+			device->FlushCommandBuffer(layoutCmd);
+		}
+
 #if 0
 		auto device = VulkanContext::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
@@ -982,7 +1008,6 @@ namespace Hazel {
 		VulkanContext::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
 #endif
 
-		m_MipsGenerated = true;
 	}
 
 	std::pair<uint32_t, uint32_t> VulkanTextureCube::GetMipSize(uint32_t mip) const

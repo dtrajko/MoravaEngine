@@ -992,7 +992,7 @@ namespace Hazel {
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 			equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
 
-			envUnfilteredCubemap->GenerateMips();
+			envUnfilteredCubemap->GenerateMips(true);
 
 			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
 			vkQueueWaitIdle(computeQueue);
