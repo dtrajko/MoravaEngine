@@ -444,6 +444,8 @@ namespace Hazel {
 	{
 		m_SkyboxTexture = skybox;
 		m_ShaderSkybox->SetInt("u_Texture", skybox.Raw()->GetID());
+
+		m_SkyboxMaterial->Set("u_Texture", skybox);
 	}
 
 	Entity HazelScene::GetMainCameraEntity()

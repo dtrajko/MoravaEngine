@@ -23,6 +23,7 @@ namespace Hazel {
 			// Resources
 			Ref<HazelMaterial> SkyboxMaterial;
 			Environment SceneEnvironment;
+			float SkyboxLod;
 			float SceneEnvironmentIntensity;
 			LightEnvironment SceneLightEnvironment;
 			HazelLight ActiveLight;
@@ -172,6 +173,7 @@ namespace Hazel {
 		s_Data.SceneData.SceneCamera = camera;
 		s_Data.SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
 		s_Data.SceneData.SceneEnvironment = scene->m_Environment;
+		s_Data.SceneData.SkyboxLod = scene->m_SkyboxLod;
 		s_Data.SceneData.ActiveLight = scene->m_Light;
 
 		// VulkanRenderer::SetSceneEnvironment(s_Data.SceneData.SceneEnvironment);

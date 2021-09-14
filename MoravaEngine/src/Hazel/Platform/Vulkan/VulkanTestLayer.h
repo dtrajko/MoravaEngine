@@ -39,6 +39,9 @@ namespace Hazel {
 		void UpdateImGuizmo();
 
 	private:
+		static void GeometryPass();
+
+	private:
 		std::vector<Ref<HazelMesh>> m_Meshes;
 		Ref<HazelTexture2D> m_Texture;
 

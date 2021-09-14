@@ -311,8 +311,8 @@ namespace Hazel {
 
 		VkMemoryAllocateInfo memAllocInfo{};
 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		VkMemoryRequirements memoryRequirements = {};
-		memoryRequirements.size = size;
+		// VkMemoryRequirements memoryRequirements = {};
+		// memoryRequirements.size = size;
 
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingMemory;
@@ -326,6 +326,8 @@ namespace Hazel {
 		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		VK_CHECK_RESULT(vkCreateBuffer(vulkanDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+
+		VkMemoryRequirements memoryRequirements = {};
 		vkGetBufferMemoryRequirements(vulkanDevice, stagingBuffer, &memoryRequirements);
 		allocator.Allocate(memoryRequirements, &stagingMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		VK_CHECK_RESULT(vkBindBufferMemory(vulkanDevice, stagingBuffer, stagingMemory, 0));
@@ -637,15 +639,15 @@ namespace Hazel {
 		auto device = VulkanContext::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
 
-		VkDeviceSize size = m_Width * m_Height * 4 * 2;
+		// VkDeviceSize size = m_Width * m_Height * 4 * 2;
 
 		VkFormat format = Utils::TextureFormatToVkFormat(m_Format);
 		uint32_t mipCount = GetMipLevelCount();
 
 		VkMemoryAllocateInfo memAllocInfo{};
 		memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		VkMemoryRequirements memoryRequirements = {};
-		memoryRequirements.size = size;
+		// VkMemoryRequirements memoryRequirements = {};
+		// memoryRequirements.size = size;
 
 		VulkanAllocator allocator(std::string("TextureCube"));
 
@@ -664,6 +666,7 @@ namespace Hazel {
 		imageCreateInfo.flags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 		VK_CHECK_RESULT(vkCreateImage(vulkanDevice, &imageCreateInfo, nullptr, &m_Image));
 
+		VkMemoryRequirements memoryRequirements = {};
 		vkGetImageMemoryRequirements(vulkanDevice, m_Image, &memoryRequirements);
 		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice, m_Image, m_DeviceMemory, 0));
@@ -886,28 +889,7 @@ namespace Hazel {
 
 		m_MipsGenerated = true;
 
-		if (readonly)
-		{
-			uint32_t mipCount = GetMipLevelCount();
-			m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			// m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-
-			VkCommandBuffer layoutCmd = device->GetCommandBuffer(true);
-
-			VkImageSubresourceRange subresourceRange = {};
-			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			subresourceRange.baseMipLevel = 0;
-			subresourceRange.levelCount = mipCount;
-			subresourceRange.layerCount = 6;
-
-			SetImageLayout(
-				layoutCmd, m_Image,
-				VK_IMAGE_LAYOUT_UNDEFINED,
-				m_DescriptorImageInfo.imageLayout,
-				subresourceRange);
-
-			device->FlushCommandBuffer(layoutCmd);
-		}
+		m_DescriptorImageInfo.imageLayout = readonly ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL;
 
 #if 0
 		auto device = VulkanContext::GetCurrentDevice();

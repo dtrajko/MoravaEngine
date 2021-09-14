@@ -6,6 +6,7 @@
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "Hazel/Renderer/SceneRenderer.h"
 
 #include "Core/Application.h"
 #include "HazelVulkan/ExampleVertex.h"
@@ -17,6 +18,20 @@ namespace Hazel {
 	SceneHierarchyPanel* VulkanTestLayer::s_SceneHierarchyPanel;
 	ContentBrowserPanel* VulkanTestLayer::s_ContentBrowserPanel;
 	MaterialEditorPanel* VulkanTestLayer::s_MaterialEditorPanel;
+
+	struct SceneRendererData
+	{
+		const HazelScene* ActiveScene = nullptr;
+
+		struct SceneInfo
+		{
+			SceneRendererCamera SceneCamera;
+		} SceneData;
+
+		Ref<RenderPass> GeoPass;
+	};
+
+	static SceneRendererData s_Data;
 
 
 	VulkanTestLayer::VulkanTestLayer()
@@ -278,6 +293,20 @@ namespace Hazel {
 		/**** END Vulkan ImGuizmo ****/
 	}
 
+	// SceneRenderer::GeometryPass in Hazel Vulkan branch
+	void VulkanTestLayer::GeometryPass()
+	{
+		VulkanRenderer::BeginRenderPassStatic(s_Data.GeoPass);
+
+		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
+		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
+
+		float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
+
+		// TODO
+
+	}
+
 	void VulkanTestLayer::OnEvent(Event& event)
 	{
 		m_Camera.OnEvent(event);
@@ -342,6 +371,8 @@ namespace Hazel {
 			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 #endif
 
+			/**** BEGIN Belongs to SceneRenderer in Vulkan branch ****/
+
 			{
 				void* ubPtr = shader->MapUniformBuffer(0, 0);
 				glm::mat4 viewProj = camera.GetViewProjection();
@@ -379,6 +410,29 @@ namespace Hazel {
 				memcpy(ubPtr, &ub, sizeof(UB));
 				shader->UnmapUniformBuffer(1, 0);
 			}
+
+			/****
+			// Skybox
+			float skyboxLod = s_Data.ActiveScene->GetSkyboxLod()
+			s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", skyboxLod);
+			s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
+			VulkanRenderer::SubmitFullscreenQuad(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
+
+			// RenderEntities
+			for (auto& dc : s_Data.DrawList)
+			{
+				VulkanRenderer::RenderMesh(dc.Mesh, dc.Transform);
+			}
+
+			// Grid
+			if (GetOptions().ShowGrid)
+			{
+				const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
+				VulkanRenderer::RenderQuad(s_Data.GridPipeline, s_Data.GridMaterial, transform);
+			}
+			****/
+
+			/**** END Belongs to SceneRenderer in Vulkan branch ****/
 
 #if 0
 			{

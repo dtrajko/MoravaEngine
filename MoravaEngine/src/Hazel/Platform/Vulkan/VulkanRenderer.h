@@ -25,6 +25,9 @@ namespace Hazel {
 		virtual void EndRenderPass() override;
 		virtual void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material) override;
 
+		static void BeginFrameStatic();
+		static void BeginRenderPassStatic(const Ref<RenderPass>& renderPass);
+
 		static uint32_t GetViewportWidth();
 		static uint32_t GetViewportHeight();
 

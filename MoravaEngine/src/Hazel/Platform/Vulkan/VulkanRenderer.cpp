@@ -798,6 +798,7 @@ namespace Hazel {
 		}
 	}
 
+	// TODO: virtual or static?
 	void VulkanRenderer::BeginFrame()
 	{
 		// HazelRenderer::Submit([]() {});
@@ -815,6 +816,11 @@ namespace Hazel {
 		}
 	}
 
+	// TODO: virtual or static?
+	void VulkanRenderer::BeginFrameStatic()
+	{
+	}
+
 	void VulkanRenderer::EndFrame()
 	{
 		// HazelRenderer::Submit([]() {});
@@ -823,6 +829,7 @@ namespace Hazel {
 		}
 	}
 
+	// TODO: virtual or static?
 	void VulkanRenderer::BeginRenderPass(const Ref<RenderPass>& renderPass)
 	{
 		// HazelRenderer::Submit([renderPass]() {});
@@ -874,6 +881,11 @@ namespace Hazel {
 			scissor.offset.y = 0;
 			vkCmdSetScissor(s_Data.ActiveCommandBuffer, 0, 1, &scissor);
 		}
+	}
+
+	// TODO: virtual or static?
+	void VulkanRenderer::BeginRenderPassStatic(const Ref<RenderPass>& renderPass)
+	{
 	}
 
 	void VulkanRenderer::EndRenderPass()
