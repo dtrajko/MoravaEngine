@@ -5,6 +5,7 @@
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "Hazel/Renderer/Renderer2D.h"
 
 #include "Core/Application.h"
 #include "HazelVulkan/ExampleVertex.h"
@@ -41,7 +42,9 @@ namespace Hazel {
 			Ref<HazelMaterial> Material;
 			glm::mat4 Transform;
 		};
+
 		std::vector<DrawCommand> DrawList;
+		std::vector<DrawCommand> SelectedMeshDrawList;
 
 		// Grid
 		Ref<HazelMaterial> GridMaterial;
@@ -385,6 +388,11 @@ namespace Hazel {
 			VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
 		}
 
+		for (auto& dc : s_Data.SelectedMeshDrawList)
+		{
+			VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
+		}
+
 		// Grid
 		if (GetOptions().ShowGrid)
 		{
@@ -392,6 +400,17 @@ namespace Hazel {
 			VulkanRenderer::RenderQuadStatic(s_Data.GridPipeline, s_Data.GridMaterial, transform);
 		}
 
+		if (GetOptions().ShowBoundingBoxes)
+		{
+			Renderer2D::BeginScene(viewProjection, true);
+			for (auto& dc : s_Data.DrawList)
+			{
+				HazelRenderer::DrawAABB(dc.Mesh, dc.Transform);
+			}
+			Renderer2D::EndScene();
+		}
+
+		VulkanRenderer::EndRenderPassStatic();
 	}
 
 	void VulkanTestLayer::OnEvent(Event& event)

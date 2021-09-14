@@ -256,7 +256,8 @@ namespace Hazel {
 			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
 
-		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
+		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
+		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
 		s_Data.BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
 		// HazelRenderer::Submit([environment]() mutable {});
@@ -749,6 +750,135 @@ namespace Hazel {
 
 						/**** END ImGui panels ****/
 
+						/////////////////////////////////////////////////////////////////////////////////////
+						//// ENVIRONMENT
+						/////////////////////////////////////////////////////////////////////////////////////
+
+						/**** BEGIN Environment ****/
+						ImGui::Begin("Environment");
+						{
+							if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+							{
+								{
+									ImGui::Columns(2);
+
+									ImGui::InputText("##envmapfilepath", "", 256, ImGuiInputTextFlags_ReadOnly);
+
+									if (ImGui::BeginDragDropTarget())
+									{
+										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+										{
+											std::wstring itemPath = std::wstring((const wchar_t*)payload->Data);
+											size_t itemSize = payload->DataSize;
+											Log::GetLogger()->debug("END DRAG & DROP FILE '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
+
+											//	m_EnvMapFilename = std::string{ itemPath.begin(), itemPath.end() };
+											//	if (m_EnvMapFilename != "")
+											//	{
+											//		EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
+											//	}
+										}
+										ImGui::EndDragDropTarget();
+									}
+
+									ImGui::NextColumn();
+
+									if (ImGui::Button("Load Environment Map"))
+									{
+										//	m_EnvMapFilename = Application::Get()->OpenFile("*.hdr");
+										//	if (m_EnvMapFilename != "")
+										//	{
+										//		EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
+										//	}
+									}
+
+									ImGui::NextColumn();
+
+									ImGui::AlignTextToFramePadding();
+
+									float skyboxLOD; // = GetSkyboxLOD();
+									if (ImGuiWrapper::Property("Skybox LOD", skyboxLOD, 0.01f, 0.0f, 2.0f, PropertyFlag::DragProperty))
+									{
+										// SetSkyboxLOD(skyboxLOD);
+									}
+
+									Hazel::HazelLight light; // = EnvMapSceneRenderer::GetActiveLight();
+									Hazel::HazelLight lightPrev = light;
+
+									ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::DragProperty);
+									ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
+									ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
+									float exposure = 1.0f; // GetMainCameraComponent().Camera.GetExposure();
+									ImGuiWrapper::Property("Exposure", exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+									float skyboxExposure = 1.0f; // = EnvMapSharedData::s_SkyboxExposureFactor;
+									ImGuiWrapper::Property("Skybox Exposure Factor", skyboxExposure, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
+
+									float radiancePrefilter = 1.0f; // EnvMapSharedData::s_RadiancePrefilter
+									ImGuiWrapper::Property("Radiance Prefiltering", radiancePrefilter);
+									float envMapRotation = 0.0f; // EnvMapSharedData::s_EnvMapRotation;
+									ImGuiWrapper::Property("Env Map Rotation", envMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
+
+									//	if (m_SceneState == SceneState::Edit)
+									//	{
+									//		float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
+									//		if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
+									//			EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+									//		}
+									//	}
+									//	else if (m_SceneState == SceneState::Play)
+									//	{
+									//		float physics2DGravity = EnvMapSharedData::s_RuntimeScene->GetPhysics2DGravity();
+									//		if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
+									//			EnvMapSharedData::s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+									//		}
+									//	}
+
+									//	EnvMapSceneRenderer::SetActiveLight(light);
+
+									//	if (light.Direction != lightPrev.Direction) {
+									//		auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+									//		tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
+									//		lightPrev = light;
+									//	}
+
+									ImGui::Columns(1);
+								}
+
+								ImGui::Separator();
+
+								{
+									ImGui::Text("Mesh");
+
+									// Ref<Hazel::Entity> meshEntity;
+									std::string meshFullPath = "None";
+
+									std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
+									ImGui::Text(fileName.c_str()); ImGui::SameLine();
+									if (ImGui::Button("...##Mesh"))
+									{
+										std::string fullPath = Application::Get()->OpenFile();
+										if (fullPath != "")
+										{
+											// Hazel::Entity entity = LoadEntity(fullPath);
+										}
+									}
+
+									//	auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+									//	if (meshEntities.size())
+									//	{
+									//		meshEntity = GetMeshEntity();
+									//		auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
+									//		if (meshComponent.Mesh) {
+									//			ImGui::SameLine();
+									//			ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
+									//		}
+									//	}
+								}
+							}
+						}
+						ImGui::End();
+						/**** END Environment ****/
+
 						/**** BEGIN DockSpace menu bar ****/
 
 						if (ImGui::BeginMenuBar())
@@ -888,6 +1018,7 @@ namespace Hazel {
 	{
 	}
 
+	// TODO: virtual or static?
 	void VulkanRenderer::EndRenderPass()
 	{
 		// HazelRenderer::Submit([]() {});
@@ -895,6 +1026,11 @@ namespace Hazel {
 			vkCmdEndRenderPass(s_Data.ActiveCommandBuffer);
 			s_Data.ActiveCommandBuffer = nullptr;
 		}
+	}
+
+	// TODO: virtual or static?
+	void VulkanRenderer::EndRenderPassStatic()
+	{
 	}
 
 	void VulkanRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
@@ -1013,10 +1149,10 @@ namespace Hazel {
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 			equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
 
-			envUnfilteredCubemap->GenerateMips(true);
-
 			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
 			vkQueueWaitIdle(computeQueue);
+
+			envUnfilteredCubemap->GenerateMips(true);
 		}
 
 		// MipFiltering
@@ -1076,6 +1212,9 @@ namespace Hazel {
 				environmentMipFilterPipeline->Dispatch(descriptorSet.DescriptorSets[i], numGroups, numGroups, 6);
 			}
 			environmentMipFilterPipeline->End();
+
+			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
+			vkQueueWaitIdle(computeQueue);
 		}
 
 		// Irradiance map
@@ -1112,10 +1251,10 @@ namespace Hazel {
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 			environmentIrradiancePipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), irradianceCubemap->GetWidth() / 32, irradianceCubemap->GetHeight() / 32, 6);
 
-			irradianceCubemap->GenerateMips(true);
-
 			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
 			vkQueueWaitIdle(computeQueue);
+
+			irradianceCubemap->GenerateMips(true);
 		}
 
 		return { s_Data.envFiltered, s_Data.irradianceMap };
