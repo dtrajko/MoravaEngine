@@ -3,10 +3,8 @@
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
 #include "Hazel/Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
-#include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
-#include "Hazel/Renderer/SceneRenderer.h"
 
 #include "Core/Application.h"
 #include "HazelVulkan/ExampleVertex.h"
@@ -26,9 +24,29 @@ namespace Hazel {
 		struct SceneInfo
 		{
 			SceneRendererCamera SceneCamera;
+			Environment SceneEnvironment;
+			float SkyboxLod;
 		} SceneData;
 
+		// Resources
+		Ref<Pipeline> SkyboxPipeline;
+		Ref<Pipeline> GridPipeline;
+		Ref<HazelMaterial> SkyboxMaterial;
+
 		Ref<RenderPass> GeoPass;
+
+		struct DrawCommand
+		{
+			Ref<HazelMesh> Mesh;
+			Ref<HazelMaterial> Material;
+			glm::mat4 Transform;
+		};
+		std::vector<DrawCommand> DrawList;
+
+		// Grid
+		Ref<HazelMaterial> GridMaterial;
+
+		SceneRendererOptions Options;
 	};
 
 	static SceneRendererData s_Data;
@@ -302,8 +320,77 @@ namespace Hazel {
 		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
 
 		float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
+		// HazelRenderer::Submit([viewProjection, cameraPosition]() {});
+		{
+			auto inverseVP = glm::inverse(viewProjection);
+			auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
+			void* ubPtr = shader->MapUniformBuffer(0);
+			struct ViewProj
+			{
+				glm::mat4 ViewProjection;
+				glm::mat4 InverseViewProjection;
+			};
+			ViewProj viewProj;
+			viewProj.ViewProjection = viewProjection;
+			viewProj.InverseViewProjection = inverseVP;
+			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			shader->UnmapUniformBuffer(0);
 
-		// TODO
+			shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShader>();
+			ubPtr = shader->MapUniformBuffer(0);
+			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			shader->UnmapUniformBuffer(0);
+
+			shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static").As<VulkanShader>();
+			ubPtr = shader->MapUniformBuffer(0);
+			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			shader->UnmapUniformBuffer(0);
+
+			struct Light
+			{
+				glm::vec3 Direction;
+				float Padding = 0.0f;
+				glm::vec3 Radiance;
+				float Multiplier;
+			};
+
+			struct UB
+			{
+				Light lights;
+				glm::vec3 u_CameraPosition;
+			};
+
+			UB ub;
+			ub.lights =
+			{
+				{ 0.5f, -0.5f, 0.5f }, 0.0f,
+				{ 1.0f, 1.0f, 1.0f }, 1.0f
+			};
+
+			ub.u_CameraPosition = cameraPosition;
+
+			ubPtr = shader->MapUniformBuffer(1);
+			memcpy(ubPtr, &ub, sizeof(UB));
+			shader->UnmapUniformBuffer(1);
+		}
+
+		// Skybox
+		s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
+		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
+		VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
+
+		// RenderEntities
+		for (auto& dc : s_Data.DrawList)
+		{
+			VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
+		}
+
+		// Grid
+		if (GetOptions().ShowGrid)
+		{
+			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
+			VulkanRenderer::RenderQuadStatic(s_Data.GridPipeline, s_Data.GridMaterial, transform);
+		}
 
 	}
 
@@ -324,6 +411,11 @@ namespace Hazel {
 
 	void VulkanTestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 	{
+	}
+
+	SceneRendererOptions& VulkanTestLayer::GetOptions()
+	{
+		return s_Data.Options;
 	}
 
 	void VulkanTestLayer::OnRender(::Window* mainWindow, ::Scene* scene)
@@ -371,7 +463,7 @@ namespace Hazel {
 			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 #endif
 
-			/**** BEGIN Belongs to SceneRenderer in Vulkan branch ****/
+			/**** BEGIN belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****/
 
 			{
 				void* ubPtr = shader->MapUniformBuffer(0, 0);
@@ -432,7 +524,7 @@ namespace Hazel {
 			}
 			****/
 
-			/**** END Belongs to SceneRenderer in Vulkan branch ****/
+			/**** END belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****/
 
 #if 0
 			{

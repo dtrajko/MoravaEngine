@@ -10,6 +10,7 @@
 #include "Hazel/Platform/Vulkan/VulkanPipeline.h"
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
+#include "Hazel/Renderer/SceneRenderer.h"
 
 #include "Core/MoravaLayer.h"
 #include "Core/Window.h"
@@ -35,6 +36,8 @@ namespace Hazel {
 
 		void Render(const glm::vec4& clearColor, const EditorCamera& camera);
 		void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
+
+		static SceneRendererOptions& GetOptions();
 
 		void UpdateImGuizmo();
 

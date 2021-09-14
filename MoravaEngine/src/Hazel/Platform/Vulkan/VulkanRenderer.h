@@ -25,9 +25,6 @@ namespace Hazel {
 		virtual void EndRenderPass() override;
 		virtual void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material) override;
 
-		static void BeginFrameStatic();
-		static void BeginRenderPassStatic(const Ref<RenderPass>& renderPass);
-
 		static uint32_t GetViewportWidth();
 		static uint32_t GetViewportHeight();
 
@@ -53,6 +50,13 @@ namespace Hazel {
 		static void UpdateImGuizmo(Window* mainWindow, HazelCamera* camera);
 
 		static int32_t& GetSelectedDrawCall();
+
+		// static versions (copies) of corresponding virtual methods
+		static void BeginFrameStatic();
+		static void BeginRenderPassStatic(const Ref<RenderPass>& renderPass);
+		static void SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material);
+		static void RenderMeshStatic(/*Ref<Pipeline> pipeline,*/Ref<HazelMesh> mesh, const glm::mat4& transform);
+		static void RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
 
 	public:
 		static bool s_MipMapsEnabled;

@@ -924,6 +924,12 @@ namespace Hazel {
 		}
 	}
 
+	// TODO: virtual or static?
+	void VulkanRenderer::SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
+	{
+
+	}
+
 	void VulkanRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
 	{
 		// HazelRenderer::Submit([environment]() mutable {});
@@ -964,7 +970,10 @@ namespace Hazel {
 		const uint32_t cubemapSize = 1024;
 		const uint32_t irradianceMapSize = 32;
 
-		s_Data.envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+		if (!s_Data.envUnfiltered)
+		{
+			s_Data.envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+		}
 
 		s_Data.envEquirect = HazelTexture2D::Create(filepath);
 		HazelImageFormat envEquirectImageFormat = s_Data.envEquirect->GetFormat();
@@ -1014,7 +1023,10 @@ namespace Hazel {
 		Ref<HazelShader> environmentMipFilterShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter");
 		Ref<VulkanComputePipeline> environmentMipFilterPipeline = Ref<VulkanComputePipeline>::Create(environmentMipFilterShader);
 
-		s_Data.envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+		if (!s_Data.envFiltered)
+		{
+			s_Data.envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+		}
 
 		// HazelRenderer::Submit([environmentMipFilterPipeline, cubemapSize, envFiltered, envUnfiltered]() mutable {});
 		{
@@ -1113,11 +1125,19 @@ namespace Hazel {
 	{
 	}
 
+	void VulkanRenderer::RenderMeshStatic(/*Ref<Pipeline> pipeline,*/Ref<HazelMesh> mesh, const glm::mat4& transform)
+	{
+	}
+
 	void VulkanRenderer::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
 	}
 
 	void VulkanRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
+	{
+	}
+
+	void VulkanRenderer::RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
 	{
 	}
 
