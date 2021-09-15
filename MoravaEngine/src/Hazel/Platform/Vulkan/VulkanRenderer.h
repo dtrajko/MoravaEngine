@@ -41,6 +41,10 @@ namespace Hazel {
 		virtual RendererCapabilities& GetCapabilities() override;
 
 		static void Draw(HazelCamera* camera); // TODO: there should be no parameters
+		static void CompositePass(bool viewportFBNeedsResize, HazelCamera* camera);
+		static void GeometryPass(HazelCamera* camera);
+		static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, bool viewportFBNeedsResize, HazelCamera* camera, std::vector<VkCommandBuffer>& commandBuffers);
+		static glm::vec3 GetLightDirectionTemp();
 
 		static void SubmitMesh(const Ref<HazelMesh>& mesh);
 
@@ -58,10 +62,6 @@ namespace Hazel {
 		static void SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material);
 		static void RenderMeshStatic(/*Ref<Pipeline> pipeline,*/Ref<HazelMesh> mesh, const glm::mat4& transform);
 		static void RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
-
-		static void GeometryPass(HazelCamera* camera);
-		static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, bool viewportFBNeedsResize, HazelCamera* camera, std::vector<VkCommandBuffer>& commandBuffers);
-		static glm::vec3 GetLightDirectionTemp();
 
 	public:
 		static bool s_MipMapsEnabled;

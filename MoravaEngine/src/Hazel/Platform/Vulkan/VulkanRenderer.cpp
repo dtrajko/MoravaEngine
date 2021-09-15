@@ -533,6 +533,12 @@ namespace Hazel {
 	// TODO: virtual or static?
 	void VulkanRenderer::BeginFrame()
 	{
+		Log::GetLogger()->error("The virtual method BeginFrame currently not in use. Use BeginFrameStatic instead!");
+	}
+
+	// TODO: virtual or static?
+	void VulkanRenderer::BeginFrameStatic()
+	{
 		// HazelRenderer::Submit([]() {});
 		{
 			Ref<VulkanContext> context = VulkanContext::Get();
@@ -544,13 +550,9 @@ namespace Hazel {
 
 			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 			s_Data.ActiveCommandBuffer = drawCommandBuffer;
-			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+			HZ_CORE_ASSERT(s_Data.ActiveCommandBuffer);
+			// VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
 		}
-	}
-
-	// TODO: virtual or static?
-	void VulkanRenderer::BeginFrameStatic()
-	{
 	}
 
 	void VulkanRenderer::EndFrame()
@@ -564,78 +566,86 @@ namespace Hazel {
 	// TODO: virtual or static?
 	void VulkanRenderer::BeginRenderPass(const Ref<RenderPass>& renderPass)
 	{
-		// HazelRenderer::Submit([renderPass]() {});
-		{
-			BeginFrame();
-
-			// Ref<VulkanFramebuffer> framebuffer = s_Framebuffer.As<VulkanFramebuffer>();
-			auto fb = renderPass->GetSpecification().TargetFramebuffer;
-			Ref<VulkanFramebuffer> framebuffer = fb.As<VulkanFramebuffer>();
-			const auto& fbSpec = framebuffer->GetSpecification();
-
-			uint32_t width = framebuffer->GetWidth();
-			uint32_t height = framebuffer->GetHeight();
-
-			VkRenderPassBeginInfo renderPassBeginInfo = {};
-			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassBeginInfo.pNext = nullptr;
-			renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
-			renderPassBeginInfo.renderArea.offset.x = 0;
-			renderPassBeginInfo.renderArea.offset.y = 0;
-			renderPassBeginInfo.renderArea.extent.width = width;
-			renderPassBeginInfo.renderArea.extent.height = height;
-
-			// TODO: Does out framebuffer has a depth attachment?
-			VkClearValue clearValues[2];
-			clearValues[0].color = { { fbSpec.ClearColor.r, fbSpec.ClearColor.g, fbSpec.ClearColor.b, fbSpec.ClearColor.a } };
-			clearValues[1].depthStencil = { 1.0f, 0 };
-			renderPassBeginInfo.clearValueCount = 2; // Color + depth
-			renderPassBeginInfo.pClearValues = clearValues;
-			renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
-
-			vkCmdBeginRenderPass(s_Data.ActiveCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-			// Update dynamic viewport state
-			VkViewport viewport = {};
-			viewport.x = 0.0f;
-			viewport.y = 0.0f;
-			viewport.height = (float)height;
-			viewport.width = (float)width;
-			viewport.minDepth = 0.0f;
-			viewport.maxDepth = 1.0f;
-			vkCmdSetViewport(s_Data.ActiveCommandBuffer, 0, 1, &viewport);
-
-			// Update dynamic scissor state
-			VkRect2D scissor = {};
-			scissor.extent.width = width;
-			scissor.extent.height = height;
-			scissor.offset.x = 0;
-			scissor.offset.y = 0;
-			vkCmdSetScissor(s_Data.ActiveCommandBuffer, 0, 1, &scissor);
-		}
+		Log::GetLogger()->error("The virtual method BeginRenderPass currently not in use. Use BeginRenderPassStatic instead!");
 	}
 
 	// TODO: virtual or static?
 	void VulkanRenderer::BeginRenderPassStatic(const Ref<RenderPass>& renderPass)
 	{
+		// HazelRenderer::Submit([renderPass]() {});
+		{
+			BeginFrameStatic();
+
+			// Ref<VulkanFramebuffer> framebuffer = s_Framebuffer.As<VulkanFramebuffer>();
+			// auto fb = renderPass->GetSpecification().TargetFramebuffer;
+			// Ref<VulkanFramebuffer> framebuffer = fb.As<VulkanFramebuffer>();
+			// const auto& fbSpec = framebuffer->GetSpecification();
+
+			// uint32_t width = framebuffer->GetWidth();
+			// uint32_t height = framebuffer->GetHeight();
+
+			VkRenderPassBeginInfo renderPassBeginInfo = {};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.pNext = nullptr;
+			// renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
+			renderPassBeginInfo.renderArea.offset.x = 0;
+			renderPassBeginInfo.renderArea.offset.y = 0;
+			// renderPassBeginInfo.renderArea.extent.width = width;
+			// renderPassBeginInfo.renderArea.extent.height = height;
+
+			// TODO: Does out framebuffer has a depth attachment?
+			VkClearValue clearValues[2];
+			// clearValues[0].color = { { fbSpec.ClearColor.r, fbSpec.ClearColor.g, fbSpec.ClearColor.b, fbSpec.ClearColor.a } };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+			renderPassBeginInfo.clearValueCount = 2; // Color + depth
+			renderPassBeginInfo.pClearValues = clearValues;
+			// renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
+
+			// vkCmdBeginRenderPass(s_Data.ActiveCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			// Update dynamic viewport state
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = 0.0f;
+			// viewport.height = (float)height;
+			// viewport.width = (float)width;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			// vkCmdSetViewport(s_Data.ActiveCommandBuffer, 0, 1, &viewport);
+
+			// Update dynamic scissor state
+			VkRect2D scissor = {};
+			// scissor.extent.width = width;
+			// scissor.extent.height = height;
+			scissor.offset.x = 0;
+			scissor.offset.y = 0;
+			// vkCmdSetScissor(s_Data.ActiveCommandBuffer, 0, 1, &scissor);
+		}
 	}
 
 	// TODO: virtual or static?
 	void VulkanRenderer::EndRenderPass()
 	{
-		// HazelRenderer::Submit([]() {});
-		{
-			vkCmdEndRenderPass(s_Data.ActiveCommandBuffer);
-			s_Data.ActiveCommandBuffer = nullptr;
-		}
+		Log::GetLogger()->error("The virtual method EndRenderPass currently not in use. Use EndRenderPassStatic instead!");
 	}
 
 	// TODO: virtual or static?
 	void VulkanRenderer::EndRenderPassStatic()
 	{
+		// HazelRenderer::Submit([]() {});
+		{
+			// vkCmdEndRenderPass(s_Data.ActiveCommandBuffer);
+			s_Data.ActiveCommandBuffer = nullptr;
+		}
 	}
 
 	void VulkanRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
+	{
+		Log::GetLogger()->error("The virtual method SubmitFullscreenQuad currently not in use. Use SubmitFullscreenQuadStatic instead!");
+	}
+
+	// TODO: virtual or static?
+	void VulkanRenderer::SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
 	{
 		// HazelRenderer::Submit([]() {});
 		{
@@ -660,12 +670,6 @@ namespace Hazel {
 
 			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 		}
-	}
-
-	// TODO: virtual or static?
-	void VulkanRenderer::SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
-	{
-
 	}
 
 	void VulkanRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
@@ -768,6 +772,57 @@ namespace Hazel {
 			s_Meshes.clear();
 
 			vkCmdEndRenderPass(drawCommandBuffer);
+		}
+	}
+
+	void VulkanRenderer::CompositePass(bool viewportFBNeedsResize, HazelCamera* camera)
+	{
+		// HazelRenderer::Submit([=]() {});
+		{
+			Ref<VulkanContext> context = VulkanContext::Get();
+			VulkanSwapChain& swapChain = context->GetSwapChain();
+
+			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
+
+			VkClearValue clearValues[2];
+			clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
+			uint32_t width = swapChain.GetWidth();
+			uint32_t height = swapChain.GetHeight();
+
+			VkRenderPassBeginInfo renderPassBeginInfo = {};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.pNext = nullptr;
+			renderPassBeginInfo.renderPass = swapChain.GetRenderPass();
+			renderPassBeginInfo.renderArea.offset.x = 0;
+			renderPassBeginInfo.renderArea.offset.y = 0;
+			renderPassBeginInfo.renderArea.extent.width = width;
+			renderPassBeginInfo.renderArea.extent.height = height;
+			renderPassBeginInfo.clearValueCount = 2; // Color + depth
+			renderPassBeginInfo.pClearValues = clearValues;
+			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+
+			{
+				vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+				VkCommandBufferInheritanceInfo inheritanceInfo = {};
+				inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+				inheritanceInfo.renderPass = swapChain.GetRenderPass();
+				inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+
+				std::vector<VkCommandBuffer> commandBuffers;
+				CompositeRenderPass(inheritanceInfo);
+				commandBuffers.push_back(s_CompositeCommandBuffer);
+
+				OnImGuiRender(inheritanceInfo, viewportFBNeedsResize, camera, commandBuffers);
+
+				vkCmdExecuteCommands(drawCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
+				vkCmdEndRenderPass(drawCommandBuffer);
+			}
+
+			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 		}
 	}
 
@@ -1067,11 +1122,6 @@ namespace Hazel {
 		}
 	}
 
-	glm::vec3 VulkanRenderer::GetLightDirectionTemp()
-	{
-		return s_Data.SceneData.LightDirectionTemp;
-	}
-
 	// TODO: Temporary method until composite rendering is enabled
 	void VulkanRenderer::Draw(HazelCamera* camera)
 	{
@@ -1082,58 +1132,8 @@ namespace Hazel {
 			viewportFBNeedsResize = false;
 		}
 
-		// HazelRenderer::Submit([=]() mutable {});
-		{
-			GeometryPass(camera);
-		}
-
-		// HazelRenderer::Submit([=]() {});
-		{
-			Ref<VulkanContext> context = VulkanContext::Get();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
-
-			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
-
-			VkClearValue clearValues[2];
-			clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
-			clearValues[1].depthStencil = { 1.0f, 0 };
-
-			uint32_t width = swapChain.GetWidth();
-			uint32_t height = swapChain.GetHeight();
-
-			VkRenderPassBeginInfo renderPassBeginInfo = {};
-			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-			renderPassBeginInfo.pNext = nullptr;
-			renderPassBeginInfo.renderPass = swapChain.GetRenderPass();
-			renderPassBeginInfo.renderArea.offset.x = 0;
-			renderPassBeginInfo.renderArea.offset.y = 0;
-			renderPassBeginInfo.renderArea.extent.width = width;
-			renderPassBeginInfo.renderArea.extent.height = height;
-			renderPassBeginInfo.clearValueCount = 2; // Color + depth
-			renderPassBeginInfo.pClearValues = clearValues;
-			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-
-			{
-				vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-
-				VkCommandBufferInheritanceInfo inheritanceInfo = {};
-				inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-				inheritanceInfo.renderPass = swapChain.GetRenderPass();
-				inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-
-				std::vector<VkCommandBuffer> commandBuffers;
-				CompositeRenderPass(inheritanceInfo);
-				commandBuffers.push_back(s_CompositeCommandBuffer);
-
-				OnImGuiRender(inheritanceInfo, viewportFBNeedsResize, camera, commandBuffers);
-
-				vkCmdExecuteCommands(drawCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
-
-				vkCmdEndRenderPass(drawCommandBuffer);
-			}
-
-			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
-		}
+		GeometryPass(camera);
+		CompositePass(viewportFBNeedsResize, camera);
 	}
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> VulkanRenderer::CreateEnvironmentMap(const std::string& filepath)
@@ -1297,6 +1297,7 @@ namespace Hazel {
 
 	void VulkanRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
+		Log::GetLogger()->error("The virtual method RenderMesh currently not in use. Use RenderMeshStatic instead!");
 	}
 
 	void VulkanRenderer::RenderMeshStatic(/*Ref<Pipeline> pipeline,*/Ref<HazelMesh> mesh, const glm::mat4& transform)
@@ -1309,6 +1310,7 @@ namespace Hazel {
 
 	void VulkanRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
 	{
+		Log::GetLogger()->error("The virtual method RenderQuad currently not in use. Use RenderQuadStatic instead!");
 	}
 
 	void VulkanRenderer::RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
@@ -1462,7 +1464,7 @@ namespace Hazel {
 					glm::value_ptr(camera->GetViewMatrix()),
 					glm::value_ptr(camera->GetProjectionMatrix()),
 					(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-					ImGuizmo::LOCAL,
+					ImGuizmo::WORLD,
 					glm::value_ptr(*s_Transform_ImGuizmo),
 					nullptr,
 					snap ? snapValues : nullptr);
@@ -1485,6 +1487,11 @@ namespace Hazel {
 	{
 		int32_t v;
 		return v; // TODO: s_Data.SelectedDrawCall;
+	}
+
+	glm::vec3 VulkanRenderer::GetLightDirectionTemp()
+	{
+		return s_Data.SceneData.LightDirectionTemp;
 	}
 
 }
