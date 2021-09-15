@@ -54,6 +54,7 @@ namespace Hazel {
 
 	static SceneRendererData s_Data;
 
+	std::vector<Ref<HazelMesh>> VulkanTestLayer::s_Meshes;
 
 	VulkanTestLayer::VulkanTestLayer()
 		: m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
@@ -82,7 +83,7 @@ namespace Hazel {
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Gladiator/Gladiator.fbx"));
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/TestSceneVulkan.fbx"));
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
-		m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+		s_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 	}
 
 	void VulkanTestLayer::OnDetach()
@@ -97,7 +98,7 @@ namespace Hazel {
 
 		glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 		Render(clearColor, m_Camera);
-		for (Ref<HazelMesh> mesh : m_Meshes)
+		for (Ref<HazelMesh> mesh : s_Meshes)
 		{
 			VulkanRenderer::SubmitMesh(mesh);
 		}
@@ -315,19 +316,26 @@ namespace Hazel {
 	}
 
 	// SceneRenderer::GeometryPass in Hazel Vulkan branch
-	void VulkanTestLayer::GeometryPass()
+	void VulkanTestLayer::GeometryPass(const glm::vec4& clearColor, const EditorCamera& camera)
 	{
+		// Temporary code
+		s_Data.SceneData.SceneCamera.Camera = camera;
+		auto mesh = s_Meshes[0];
+
 		VulkanRenderer::BeginRenderPassStatic(s_Data.GeoPass);
 
 		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
 		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
 
-		float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
+		// float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
 		// HazelRenderer::Submit([viewProjection, cameraPosition]() {});
 		{
+			Ref<VulkanShader> shader;
+			void* ubPtr;
+
 			auto inverseVP = glm::inverse(viewProjection);
-			auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
-			void* ubPtr = shader->MapUniformBuffer(0);
+			// auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
+			// void* ubPtr = shader->MapUniformBuffer(0);
 			struct ViewProj
 			{
 				glm::mat4 ViewProjection;
@@ -336,13 +344,13 @@ namespace Hazel {
 			ViewProj viewProj;
 			viewProj.ViewProjection = viewProjection;
 			viewProj.InverseViewProjection = inverseVP;
-			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
-			shader->UnmapUniformBuffer(0);
+			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			// shader->UnmapUniformBuffer(0);
 
-			shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShader>();
-			ubPtr = shader->MapUniformBuffer(0);
-			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
-			shader->UnmapUniformBuffer(0);
+			// shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShader>();
+			// ubPtr = shader->MapUniformBuffer(0);
+			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			// shader->UnmapUniformBuffer(0);
 
 			shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static").As<VulkanShader>();
 			ubPtr = shader->MapUniformBuffer(0);
@@ -377,10 +385,53 @@ namespace Hazel {
 			shader->UnmapUniformBuffer(1);
 		}
 
+		/**** BEGIN The old VulkanTestLayer code ****/
+
+		Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
+
+		{
+			void* ubPtr = shader->MapUniformBuffer(0, 0);
+			glm::mat4 viewProj = camera.GetViewProjection();
+			memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+			shader->UnmapUniformBuffer(0, 0);
+		}
+
+		{
+			struct Light
+			{
+				glm::vec3 Direction;
+				float Padding = 0.0f;
+				glm::vec3 Radiance;
+				float Multiplier;
+			};
+
+			struct UB
+			{
+				Light lights;
+				glm::vec3 u_CameraPosition;
+				// glm::vec4 u_AlbedoColorUB;
+			};
+
+			UB ub;
+			ub.lights = {
+				{ 0.5f, 0.5f, 0.5f },
+				0.0f,
+				{ 1.0f, 1.0f, 1.0f },
+				1.0f,
+			};
+			ub.u_CameraPosition = camera.GetPosition();
+			// ub.u_AlbedoColorUB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+			void* ubPtr = shader->MapUniformBuffer(1, 0);
+			memcpy(ubPtr, &ub, sizeof(UB));
+			shader->UnmapUniformBuffer(1, 0);
+		}
+		/**** END The old VulkanTestLayer code ****/
+
 		// Skybox
-		s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
-		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
-		VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
+		// s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
+		// s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
+		// VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
 
 		// RenderEntities
 		for (auto& dc : s_Data.DrawList)
@@ -411,49 +462,16 @@ namespace Hazel {
 		}
 
 		VulkanRenderer::EndRenderPassStatic();
-	}
 
-	void VulkanTestLayer::OnEvent(Event& event)
-	{
-		m_Camera.OnEvent(event);
+#if 0
+		/**** BEGIN the old VulkanTestLayer code, belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****/
 
-		if (event.GetEventType() == EventType::WindowResize)
-		{
-			WindowResizeEvent& e = (WindowResizeEvent&)event;
-			if (e.GetWidth() != 0 && e.GetHeight() != 0)
-			{
-				m_Camera.SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
-				m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
-			}
-		}
-	}
-
-	void VulkanTestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
-	{
-	}
-
-	SceneRendererOptions& VulkanTestLayer::GetOptions()
-	{
-		return s_Data.Options;
-	}
-
-	void VulkanTestLayer::OnRender(::Window* mainWindow, ::Scene* scene)
-	{
-		VulkanRenderer::Draw(scene->GetCamera());
-	}
-
-	void VulkanTestLayer::Render(const glm::vec4& clearColor, const EditorCamera& camera)
-	{
-		auto mesh = m_Meshes[0];
-		// HazelRenderer::Submit([=]() mutable
-		// {
-		// });
+		// HazelRenderer::Submit([=]() mutable {});
 		{
 			Ref<VulkanContext> context = Ref<VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
 			Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
 
-#if 0
 			VkCommandBufferBeginInfo cmdBufInfo = {};
 			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			cmdBufInfo.pNext = nullptr;
@@ -461,7 +479,7 @@ namespace Hazel {
 			// Set clear values for all framebuffer attachments with loadOp set to clear
 			// We use two attachments (color and depth) that are cleared at the start of the subpass and as such we need to set clear values for both
 			VkClearValue clearValues[2];
-			clearValues[0].color = { {clearColor.r, clearColor.g, clearColor.b, clearColor.a } };
+			clearValues[0].color = { { clearColor.r, clearColor.g, clearColor.b, clearColor.a } };
 			clearValues[1].depthStencil = { 1.0f, 0 };
 
 			uint32_t width = swapChain.GetWidth();
@@ -480,72 +498,26 @@ namespace Hazel {
 
 			// Set target frame buffer
 			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-#endif
 
-			/**** BEGIN belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****/
-
-			{
-				void* ubPtr = shader->MapUniformBuffer(0, 0);
-				glm::mat4 viewProj = camera.GetViewProjection();
-				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
-				shader->UnmapUniformBuffer(0, 0);
-			}
-
-			{
-				struct Light
-				{
-					glm::vec3 Direction;
-					float Padding = 0.0f;
-					glm::vec3 Radiance;
-					float Multiplier;
-				};
-
-				struct UB
-				{
-					Light lights;
-					glm::vec3 u_CameraPosition;
-					// glm::vec4 u_AlbedoColorUB;
-				};
-
-				UB ub;
-				ub.lights = {
-					{ 0.5f, 0.5f, 0.5f },
-					0.0f,
-					{ 1.0f, 1.0f, 1.0f },
-					1.0f,
-				};
-				ub.u_CameraPosition = camera.GetPosition();
-				// ub.u_AlbedoColorUB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-
-				void* ubPtr = shader->MapUniformBuffer(1, 0);
-				memcpy(ubPtr, &ub, sizeof(UB));
-				shader->UnmapUniformBuffer(1, 0);
-			}
-
-			/****
 			// Skybox
-			float skyboxLod = s_Data.ActiveScene->GetSkyboxLod()
+			float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
 			s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", skyboxLod);
 			s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
-			VulkanRenderer::SubmitFullscreenQuad(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
+			VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
 
 			// RenderEntities
 			for (auto& dc : s_Data.DrawList)
 			{
-				VulkanRenderer::RenderMesh(dc.Mesh, dc.Transform);
+				VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
 			}
 
 			// Grid
 			if (GetOptions().ShowGrid)
 			{
 				const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
-				VulkanRenderer::RenderQuad(s_Data.GridPipeline, s_Data.GridMaterial, transform);
+				VulkanRenderer::RenderQuadStatic(s_Data.GridPipeline, s_Data.GridMaterial, transform);
 			}
-			****/
 
-			/**** END belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****/
-
-#if 0
 			{
 				VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 				VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
@@ -583,7 +555,44 @@ namespace Hazel {
 
 				VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 			}
-#endif
+
+			/**** END the old VulkanTestLayer code, belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****/
 		}
+#endif
+
+	}
+
+	void VulkanTestLayer::OnEvent(Event& event)
+	{
+		m_Camera.OnEvent(event);
+
+		if (event.GetEventType() == EventType::WindowResize)
+		{
+			WindowResizeEvent& e = (WindowResizeEvent&)event;
+			if (e.GetWidth() != 0 && e.GetHeight() != 0)
+			{
+				m_Camera.SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
+				m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
+			}
+		}
+	}
+
+	void VulkanTestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
+	{
+	}
+
+	SceneRendererOptions& VulkanTestLayer::GetOptions()
+	{
+		return s_Data.Options;
+	}
+
+	void VulkanTestLayer::OnRender(::Window* mainWindow, ::Scene* scene)
+	{
+		VulkanRenderer::Draw(scene->GetCamera());
+	}
+
+	void VulkanTestLayer::Render(const glm::vec4& clearColor, const EditorCamera& camera)
+	{
+		GeometryPass(clearColor, camera);
 	}
 }

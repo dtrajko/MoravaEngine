@@ -42,10 +42,11 @@ namespace Hazel {
 		void UpdateImGuizmo();
 
 	private:
-		static void GeometryPass();
+		static void GeometryPass(const glm::vec4& clearColor, const EditorCamera& camera);
 
 	private:
-		std::vector<Ref<HazelMesh>> m_Meshes;
+		static std::vector<Ref<HazelMesh>> s_Meshes;
+
 		Ref<HazelTexture2D> m_Texture;
 
 		EditorCamera m_Camera;

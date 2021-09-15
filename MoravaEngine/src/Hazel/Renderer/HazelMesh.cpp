@@ -765,9 +765,9 @@ namespace Hazel {
 #endif
 
 				bool metalnessTextureFound = false;
-				for (uint32_t i = 0; i < aiMaterial->mNumProperties; i++)
+				for (uint32_t p = 0; p < aiMaterial->mNumProperties; p++)
 				{
-					auto prop = aiMaterial->mProperties[i];
+					auto prop = aiMaterial->mProperties[p];
 
 #if DEBUG_PRINT_ALL_PROPS
 					HZ_MESH_LOG("Material Property:");
