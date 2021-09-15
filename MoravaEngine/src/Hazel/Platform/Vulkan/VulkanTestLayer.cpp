@@ -27,6 +27,7 @@ namespace Hazel {
 			SceneRendererCamera SceneCamera;
 			Environment SceneEnvironment;
 			float SkyboxLod;
+			LightEnvironment SceneLightEnvironment;
 		} SceneData;
 
 		// Resources
@@ -325,14 +326,12 @@ namespace Hazel {
 		VulkanRenderer::BeginRenderPassStatic(s_Data.GeoPass);
 
 		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
-		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
+		// glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
+		glm::vec3 cameraPosition = camera.GetPosition();
 
 		// float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
 		// HazelRenderer::Submit([viewProjection, cameraPosition]() {});
 		{
-			Ref<VulkanShader> shader;
-			void* ubPtr;
-
 			auto inverseVP = glm::inverse(viewProjection);
 			// auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
 			// void* ubPtr = shader->MapUniformBuffer(0);
@@ -352,51 +351,20 @@ namespace Hazel {
 			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			// shader->UnmapUniformBuffer(0);
 
-			shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static").As<VulkanShader>();
-			ubPtr = shader->MapUniformBuffer(0);
-			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
-			shader->UnmapUniformBuffer(0);
+			// shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static").As<VulkanShader>();
+			// ubPtr = shader->MapUniformBuffer(0);
+			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			// shader->UnmapUniformBuffer(0);
 
-			struct Light
+			Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
+
 			{
-				glm::vec3 Direction;
-				float Padding = 0.0f;
-				glm::vec3 Radiance;
-				float Multiplier;
-			};
+				void* ubPtr = shader->MapUniformBuffer(0, 0);
+				glm::mat4 viewProj = camera.GetViewProjection();
+				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+				shader->UnmapUniformBuffer(0, 0);
+			}
 
-			struct UB
-			{
-				Light lights;
-				glm::vec3 u_CameraPosition;
-			};
-
-			UB ub;
-			ub.lights =
-			{
-				{ 0.5f, -0.5f, 0.5f }, 0.0f,
-				{ 1.0f, 1.0f, 1.0f }, 1.0f
-			};
-
-			ub.u_CameraPosition = cameraPosition;
-
-			ubPtr = shader->MapUniformBuffer(1);
-			memcpy(ubPtr, &ub, sizeof(UB));
-			shader->UnmapUniformBuffer(1);
-		}
-
-		/**** BEGIN The old VulkanTestLayer code ****/
-
-		Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
-
-		{
-			void* ubPtr = shader->MapUniformBuffer(0, 0);
-			glm::mat4 viewProj = camera.GetViewProjection();
-			memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
-			shader->UnmapUniformBuffer(0, 0);
-		}
-
-		{
 			struct Light
 			{
 				glm::vec3 Direction;
@@ -413,20 +381,24 @@ namespace Hazel {
 			};
 
 			UB ub;
-			ub.lights = {
+			ub.lights =
+			{
 				{ 0.5f, 0.5f, 0.5f },
 				0.0f,
 				{ 1.0f, 1.0f, 1.0f },
-				1.0f,
+				1.0f
 			};
-			ub.u_CameraPosition = camera.GetPosition();
+
+			ub.lights.Direction = VulkanRenderer::GetLightDirectionTemp();
+			ub.u_CameraPosition = cameraPosition;
 			// ub.u_AlbedoColorUB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+			// Log::GetLogger()->info("Light Direction: {0}, {1}, {2}", ub.lights.Direction.x, ub.lights.Direction.y, ub.lights.Direction.z);
 
 			void* ubPtr = shader->MapUniformBuffer(1, 0);
 			memcpy(ubPtr, &ub, sizeof(UB));
 			shader->UnmapUniformBuffer(1, 0);
 		}
-		/**** END The old VulkanTestLayer code ****/
 
 		// Skybox
 		// s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);

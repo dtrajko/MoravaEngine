@@ -38,6 +38,7 @@ namespace Hazel {
 			SceneRendererCamera SceneCamera;
 			Environment SceneEnvironment;
 			float SkyboxLod;
+			glm::vec3 LightDirectionTemp;
 		} SceneData;
 
 		// Hazel Live 19.02.2021
@@ -264,7 +265,9 @@ namespace Hazel {
 		}
 
 		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
-		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
+		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
+		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
+
 		s_Data.BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
 		// HazelRenderer::Submit([environment]() mutable {});
@@ -299,6 +302,7 @@ namespace Hazel {
 		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
 		s_Data.SceneData.SkyboxLod = 0.0f;
+		s_Data.SceneData.LightDirectionTemp = { 0.5f, 0.5f, 0.5f };
 	}
 
 	void VulkanRenderer::Shutdown()
@@ -699,7 +703,7 @@ namespace Hazel {
 		}
 	}
 
-	static void GeometryPass(HazelCamera* camera)
+	void VulkanRenderer::GeometryPass(HazelCamera* camera)
 	{
 		// HazelRenderer::Submit([=]() {});
 		{
@@ -767,6 +771,307 @@ namespace Hazel {
 		}
 	}
 
+	void VulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, bool viewportFBNeedsResize, HazelCamera* camera, std::vector<VkCommandBuffer>& commandBuffers)
+	{
+		Ref<VulkanContext> context = VulkanContext::Get();
+		VulkanSwapChain& swapChain = context->GetSwapChain();
+
+		uint32_t width = swapChain.GetWidth();
+		uint32_t height = swapChain.GetHeight();
+
+		// ImGui Pass
+		{
+			VkCommandBufferBeginInfo cmdBufInfo = {};
+			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+			cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
+
+			VK_CHECK_RESULT(vkBeginCommandBuffer(s_ImGuiCommandBuffer, &cmdBufInfo));
+
+			// Update dynamic viewport state
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = (float)height;
+			viewport.height = -(float)height;
+			viewport.width = (float)width;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(s_ImGuiCommandBuffer, 0, 1, &viewport);
+
+			// Update dynamic scissor state
+			VkRect2D scissor = {};
+			scissor.extent.width = width;
+			scissor.extent.height = height;
+			scissor.offset.x = 0;
+			scissor.offset.y = 0;
+			vkCmdSetScissor(s_ImGuiCommandBuffer, 0, 1, &scissor);
+
+			// ImGui Dockspace
+			bool open = true;
+			bool* p_open = &open;
+
+			static bool opt_fullscreen_persistant = true;
+			bool opt_fullscreen = opt_fullscreen_persistant;
+			static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+			// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+			// because it would be confusing to have two docking targets within each others.
+			ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+			if (opt_fullscreen)
+			{
+				ImGuiViewport* viewport = ImGui::GetMainViewport();
+				ImGui::SetNextWindowPos(viewport->GetWorkPos());
+				ImGui::SetNextWindowSize(viewport->GetWorkSize());
+				ImGui::SetNextWindowViewport(viewport->ID);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+				window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+				window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+			}
+
+			// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background 
+			// and handle the pass-thru hole, so we ask Begin() to not render a background.
+			if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+				window_flags |= ImGuiWindowFlags_NoBackground;
+
+			// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+			// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+			// all active windows docked into it will lose their parent and become undocked.
+			// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+			// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+			ImGui::Begin("DockSpace Demo", p_open, window_flags);
+			{
+				if (opt_fullscreen)
+				{
+					ImGui::PopStyleVar(2);
+				}
+
+				// DockSpace
+				ImGuiIO& io = ImGui::GetIO();
+				if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+				{
+					ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+					ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+				}
+				else
+				{
+					// ShowDockingDisabledMessage();
+				}
+
+				/**** BEGIN Viewport ****/
+
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+				ImGui::Begin("Viewport");
+				auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
+				auto viewportSize = ImGui::GetContentRegionAvail();
+				ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
+
+				if (s_ViewportWidth != viewportSize.x || s_ViewportHeight != viewportSize.y)
+				{
+					s_ViewportWidth = (uint32_t)viewportSize.x;
+					s_ViewportHeight = (uint32_t)viewportSize.y;
+					viewportFBNeedsResize = true;
+				}
+
+				Window* mainWindow = Application::Get()->GetWindow();
+				UpdateImGuizmo(mainWindow, camera);
+
+				ImGui::End();
+				ImGui::PopStyleVar();
+
+				/**** END Viewport ****/
+
+				/**** BEGIN ImGui panels ****/
+
+				// ImGui::Begin("Scene Hierarchy");
+				// ImGui::End();
+
+				bool showSceneHierarchyPanel = true;
+				VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
+
+				bool showContentBrowserPanel = true;
+				// VulkanTestLayer::s_ContentBrowserPanel->OnImGuiRender(&showContentBrowserPanel);
+
+				bool showMaterialEditorPanel = true;
+				VulkanTestLayer::s_MaterialEditorPanel->OnImGuiRender(&showMaterialEditorPanel);
+
+				/**** END ImGui panels ****/
+
+				/////////////////////////////////////////////////////////////////////////////////////
+				//// ENVIRONMENT
+				/////////////////////////////////////////////////////////////////////////////////////
+
+				/**** BEGIN Environment ****/
+				ImGui::Begin("Environment");
+				{
+					if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+					{
+						{
+							ImGui::Columns(2);
+
+							ImGui::InputText("##envmapfilepath", "", 256, ImGuiInputTextFlags_ReadOnly);
+
+							if (ImGui::BeginDragDropTarget())
+							{
+								if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+								{
+									std::wstring itemPath = std::wstring((const wchar_t*)payload->Data);
+									size_t itemSize = payload->DataSize;
+									Log::GetLogger()->debug("END DRAG & DROP FILE '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
+
+									//	m_EnvMapFilename = std::string{ itemPath.begin(), itemPath.end() };
+									//	if (m_EnvMapFilename != "")
+									//	{
+									//		EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
+									//	}
+								}
+								ImGui::EndDragDropTarget();
+							}
+
+							ImGui::NextColumn();
+
+							if (ImGui::Button("Load Environment Map"))
+							{
+								//	m_EnvMapFilename = Application::Get()->OpenFile("*.hdr");
+								//	if (m_EnvMapFilename != "")
+								//	{
+								//		EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
+								//	}
+							}
+
+							ImGui::NextColumn();
+
+							ImGui::AlignTextToFramePadding();
+
+							if (ImGuiWrapper::Property("Skybox LOD", s_Data.SceneData.SkyboxLod, 0.01f, 0.0f, 4.0f, PropertyFlag::DragProperty))
+							{
+								// SetSkyboxLOD(skyboxLOD);
+							}
+
+							Hazel::HazelLight light; // = EnvMapSceneRenderer::GetActiveLight();
+							Hazel::HazelLight lightPrev = light;
+
+							ImGuiWrapper::Property("Light Direction", s_Data.SceneData.LightDirectionTemp, 0.01f, -1.0f, 1.0f, PropertyFlag::DragProperty);
+							ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
+							ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
+							float exposure = 1.0f; // GetMainCameraComponent().Camera.GetExposure();
+							ImGuiWrapper::Property("Exposure", exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+							float skyboxExposure = 1.0f; // = EnvMapSharedData::s_SkyboxExposureFactor;
+							ImGuiWrapper::Property("Skybox Exposure Factor", skyboxExposure, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
+
+							float radiancePrefilter = 1.0f; // EnvMapSharedData::s_RadiancePrefilter
+							ImGuiWrapper::Property("Radiance Prefiltering", radiancePrefilter);
+							float envMapRotation = 0.0f; // EnvMapSharedData::s_EnvMapRotation;
+							ImGuiWrapper::Property("Env Map Rotation", envMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
+
+							//	if (m_SceneState == SceneState::Edit)
+							//	{
+							//		float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
+							//		if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
+							//			EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+							//		}
+							//	}
+							//	else if (m_SceneState == SceneState::Play)
+							//	{
+							//		float physics2DGravity = EnvMapSharedData::s_RuntimeScene->GetPhysics2DGravity();
+							//		if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
+							//			EnvMapSharedData::s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+							//		}
+							//	}
+
+							//	EnvMapSceneRenderer::SetActiveLight(light);
+
+							//	if (light.Direction != lightPrev.Direction) {
+							//		auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+							//		tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
+							//		lightPrev = light;
+							//	}
+
+							ImGui::Columns(1);
+						}
+
+						ImGui::Separator();
+
+						{
+							ImGui::Text("Mesh");
+
+							// Ref<Hazel::Entity> meshEntity;
+							std::string meshFullPath = "None";
+
+							std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
+							ImGui::Text(fileName.c_str()); ImGui::SameLine();
+							if (ImGui::Button("...##Mesh"))
+							{
+								std::string fullPath = Application::Get()->OpenFile();
+								if (fullPath != "")
+								{
+									// Hazel::Entity entity = LoadEntity(fullPath);
+								}
+							}
+
+							//	auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+							//	if (meshEntities.size())
+							//	{
+							//		meshEntity = GetMeshEntity();
+							//		auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
+							//		if (meshComponent.Mesh) {
+							//			ImGui::SameLine();
+							//			ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
+							//		}
+							//	}
+						}
+					}
+				}
+				ImGui::End();
+				/**** END Environment ****/
+
+				/**** BEGIN DockSpace menu bar ****/
+
+				if (ImGui::BeginMenuBar())
+				{
+					if (ImGui::BeginMenu("Docking"))
+					{
+						// Disabling fullscreen would allow the window to be moved to the front of other windows,
+						// which we can't undo at the moment without finer window depth/z control.
+						//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
+
+						// if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
+						// if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
+						// if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspace_flags ^=  ImGuiDockNodeFlags_NoDockingInCentralNode;
+						// if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+						// if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
+						ImGui::Separator();
+						if (ImGui::MenuItem("Close DockSpace", NULL, false, p_open != NULL))
+							*p_open = false;
+						ImGui::EndMenu();
+					}
+					ImGui::EndMenuBar();
+				}
+			}
+			ImGui::End(); // END DockSpace Demo
+			ImGui::PopStyleVar();
+
+			/**** END DockSpace menu bar ****/
+
+			// TODO: Move to VulkanImGuiLayer
+			// Rendering
+			ImGui::Render();
+
+			ImDrawData* main_draw_data = ImGui::GetDrawData();
+			ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffer);
+
+			VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffer));
+
+			commandBuffers.push_back(s_ImGuiCommandBuffer);
+		}
+	}
+
+	glm::vec3 VulkanRenderer::GetLightDirectionTemp()
+	{
+		return s_Data.SceneData.LightDirectionTemp;
+	}
+
 	// TODO: Temporary method until composite rendering is enabled
 	void VulkanRenderer::Draw(HazelCamera* camera)
 	{
@@ -820,292 +1125,7 @@ namespace Hazel {
 				CompositeRenderPass(inheritanceInfo);
 				commandBuffers.push_back(s_CompositeCommandBuffer);
 
-				// ImGui Pass
-				{
-					VkCommandBufferBeginInfo cmdBufInfo = {};
-					cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-					cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-					cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
-
-					VK_CHECK_RESULT(vkBeginCommandBuffer(s_ImGuiCommandBuffer, &cmdBufInfo));
-
-					// Update dynamic viewport state
-					VkViewport viewport = {};
-					viewport.x = 0.0f;
-					viewport.y = (float)height;
-					viewport.height = -(float)height;
-					viewport.width = (float)width;
-					viewport.minDepth = 0.0f;
-					viewport.maxDepth = 1.0f;
-					vkCmdSetViewport(s_ImGuiCommandBuffer, 0, 1, &viewport);
-
-					// Update dynamic scissor state
-					VkRect2D scissor = {};
-					scissor.extent.width = width;
-					scissor.extent.height = height;
-					scissor.offset.x = 0;
-					scissor.offset.y = 0;
-					vkCmdSetScissor(s_ImGuiCommandBuffer, 0, 1, &scissor);
-
-					// ImGui Dockspace
-					bool open = true;
-					bool* p_open = &open;
-
-					static bool opt_fullscreen_persistant = true;
-					bool opt_fullscreen = opt_fullscreen_persistant;
-					static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-					// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-					// because it would be confusing to have two docking targets within each others.
-					ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-					if (opt_fullscreen)
-					{
-						ImGuiViewport* viewport = ImGui::GetMainViewport();
-						ImGui::SetNextWindowPos(viewport->GetWorkPos());
-						ImGui::SetNextWindowSize(viewport->GetWorkSize());
-						ImGui::SetNextWindowViewport(viewport->ID);
-						ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-						ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-						window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-						window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-					}
-
-					// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background 
-					// and handle the pass-thru hole, so we ask Begin() to not render a background.
-					if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-						window_flags |= ImGuiWindowFlags_NoBackground;
-
-					// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-					// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-					// all active windows docked into it will lose their parent and become undocked.
-					// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-					// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-					ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-					ImGui::Begin("DockSpace Demo", p_open, window_flags);
-					{
-						if (opt_fullscreen)
-						{
-							ImGui::PopStyleVar(2);
-						}
-
-						// DockSpace
-						ImGuiIO& io = ImGui::GetIO();
-						if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-						{
-							ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-							ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-						}
-						else
-						{
-							// ShowDockingDisabledMessage();
-						}
-
-						/**** BEGIN Viewport ****/
-
-						ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-						ImGui::Begin("Viewport");
-						auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
-						auto viewportSize = ImGui::GetContentRegionAvail();
-						ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
-
-						if (s_ViewportWidth != viewportSize.x || s_ViewportHeight != viewportSize.y)
-						{
-							s_ViewportWidth = (uint32_t)viewportSize.x;
-							s_ViewportHeight = (uint32_t)viewportSize.y;
-							viewportFBNeedsResize = true;
-						}
-
-						Window* mainWindow = Application::Get()->GetWindow();
-						UpdateImGuizmo(mainWindow, camera);
-
-						ImGui::End();
-						ImGui::PopStyleVar();
-
-						/**** END Viewport ****/
-
-						/**** BEGIN ImGui panels ****/
-
-						// ImGui::Begin("Scene Hierarchy");
-						// ImGui::End();
-
-						bool showSceneHierarchyPanel = true;
-						VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
-
-						bool showContentBrowserPanel = true;
-						// VulkanTestLayer::s_ContentBrowserPanel->OnImGuiRender(&showContentBrowserPanel);
-
-						bool showMaterialEditorPanel = true;
-						VulkanTestLayer::s_MaterialEditorPanel->OnImGuiRender(&showMaterialEditorPanel);
-
-						/**** END ImGui panels ****/
-
-						/////////////////////////////////////////////////////////////////////////////////////
-						//// ENVIRONMENT
-						/////////////////////////////////////////////////////////////////////////////////////
-
-						/**** BEGIN Environment ****/
-						ImGui::Begin("Environment");
-						{
-							if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-							{
-								{
-									ImGui::Columns(2);
-
-									ImGui::InputText("##envmapfilepath", "", 256, ImGuiInputTextFlags_ReadOnly);
-
-									if (ImGui::BeginDragDropTarget())
-									{
-										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-										{
-											std::wstring itemPath = std::wstring((const wchar_t*)payload->Data);
-											size_t itemSize = payload->DataSize;
-											Log::GetLogger()->debug("END DRAG & DROP FILE '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
-
-											//	m_EnvMapFilename = std::string{ itemPath.begin(), itemPath.end() };
-											//	if (m_EnvMapFilename != "")
-											//	{
-											//		EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
-											//	}
-										}
-										ImGui::EndDragDropTarget();
-									}
-
-									ImGui::NextColumn();
-
-									if (ImGui::Button("Load Environment Map"))
-									{
-										//	m_EnvMapFilename = Application::Get()->OpenFile("*.hdr");
-										//	if (m_EnvMapFilename != "")
-										//	{
-										//		EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
-										//	}
-									}
-
-									ImGui::NextColumn();
-
-									ImGui::AlignTextToFramePadding();
-
-									if (ImGuiWrapper::Property("Skybox LOD", s_Data.SceneData.SkyboxLod, 0.01f, 0.0f, 4.0f, PropertyFlag::DragProperty))
-									{
-										// SetSkyboxLOD(skyboxLOD);
-									}
-
-									Hazel::HazelLight light; // = EnvMapSceneRenderer::GetActiveLight();
-									Hazel::HazelLight lightPrev = light;
-
-									ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::DragProperty);
-									ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
-									ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
-									float exposure = 1.0f; // GetMainCameraComponent().Camera.GetExposure();
-									ImGuiWrapper::Property("Exposure", exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
-									float skyboxExposure = 1.0f; // = EnvMapSharedData::s_SkyboxExposureFactor;
-									ImGuiWrapper::Property("Skybox Exposure Factor", skyboxExposure, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
-
-									float radiancePrefilter = 1.0f; // EnvMapSharedData::s_RadiancePrefilter
-									ImGuiWrapper::Property("Radiance Prefiltering", radiancePrefilter);
-									float envMapRotation = 0.0f; // EnvMapSharedData::s_EnvMapRotation;
-									ImGuiWrapper::Property("Env Map Rotation", envMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
-
-									//	if (m_SceneState == SceneState::Edit)
-									//	{
-									//		float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
-									//		if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-									//			EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
-									//		}
-									//	}
-									//	else if (m_SceneState == SceneState::Play)
-									//	{
-									//		float physics2DGravity = EnvMapSharedData::s_RuntimeScene->GetPhysics2DGravity();
-									//		if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-									//			EnvMapSharedData::s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
-									//		}
-									//	}
-
-									//	EnvMapSceneRenderer::SetActiveLight(light);
-
-									//	if (light.Direction != lightPrev.Direction) {
-									//		auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-									//		tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
-									//		lightPrev = light;
-									//	}
-
-									ImGui::Columns(1);
-								}
-
-								ImGui::Separator();
-
-								{
-									ImGui::Text("Mesh");
-
-									// Ref<Hazel::Entity> meshEntity;
-									std::string meshFullPath = "None";
-
-									std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
-									ImGui::Text(fileName.c_str()); ImGui::SameLine();
-									if (ImGui::Button("...##Mesh"))
-									{
-										std::string fullPath = Application::Get()->OpenFile();
-										if (fullPath != "")
-										{
-											// Hazel::Entity entity = LoadEntity(fullPath);
-										}
-									}
-
-									//	auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-									//	if (meshEntities.size())
-									//	{
-									//		meshEntity = GetMeshEntity();
-									//		auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
-									//		if (meshComponent.Mesh) {
-									//			ImGui::SameLine();
-									//			ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
-									//		}
-									//	}
-								}
-							}
-						}
-						ImGui::End();
-						/**** END Environment ****/
-
-						/**** BEGIN DockSpace menu bar ****/
-
-						if (ImGui::BeginMenuBar())
-						{
-							if (ImGui::BeginMenu("Docking"))
-							{
-								// Disabling fullscreen would allow the window to be moved to the front of other windows,
-								// which we can't undo at the moment without finer window depth/z control.
-								//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
-
-								// if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
-								// if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
-								// if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspace_flags ^=  ImGuiDockNodeFlags_NoDockingInCentralNode;
-								// if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
-								// if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
-								ImGui::Separator();
-								if (ImGui::MenuItem("Close DockSpace", NULL, false, p_open != NULL))
-									*p_open = false;
-								ImGui::EndMenu();
-							}
-							ImGui::EndMenuBar();
-						}
-					}
-					ImGui::End(); // END DockSpace Demo
-					ImGui::PopStyleVar();
-
-					/**** END DockSpace menu bar ****/
-
-					// TODO: Move to VulkanImGuiLayer
-					// Rendering
-					ImGui::Render();
-
-					ImDrawData* main_draw_data = ImGui::GetDrawData();
-					ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffer);
-
-					VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffer));
-
-					commandBuffers.push_back(s_ImGuiCommandBuffer);
-				}
+				OnImGuiRender(inheritanceInfo, viewportFBNeedsResize, camera, commandBuffers);
 
 				vkCmdExecuteCommands(drawCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 

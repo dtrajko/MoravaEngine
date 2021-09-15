@@ -554,6 +554,11 @@ bool ImGuiWrapper::Property(const std::string& name, glm::vec3& value, PropertyF
 
 bool ImGuiWrapper::Property(const std::string& name, glm::vec3& value, float min, float max, PropertyFlag flags)
 {
+	return Property(name, value, 1.0f, min, max, flags);
+}
+
+bool ImGuiWrapper::Property(const std::string& name, glm::vec3& value, float speed, float min, float max, PropertyFlag flags)
+{
 	ImGui::Text(name.c_str());
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
@@ -571,7 +576,7 @@ bool ImGuiWrapper::Property(const std::string& name, glm::vec3& value, float min
 	}
 	else
 	{
-		changed = ImGui::DragFloat3(id.c_str(), glm::value_ptr(value), 1.0f, min, max);
+		changed = ImGui::DragFloat3(id.c_str(), glm::value_ptr(value), speed, min, max);
 	}
 
 	ImGui::PopItemWidth();

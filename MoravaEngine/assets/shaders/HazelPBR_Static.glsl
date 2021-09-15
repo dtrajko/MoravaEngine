@@ -265,7 +265,7 @@ vec3 Lighting(vec3 F0)
 	vec3 result = vec3(0.0);
 	for(int i = 0; i < LightCount; i++)
 	{
-		vec3 Li = -lights.Direction;
+		vec3 Li = lights.Direction;
 		vec3 Lradiance = lights.Radiance * lights.Multiplier;
 		vec3 Lh = normalize(Li + m_Params.View);
 
@@ -293,7 +293,7 @@ vec3 LightingTemp(vec3 F0)
 	vec3 result = vec3(0.0);
 	for(int i = 0; i < LightCount; i++)
 	{
-		vec3 Li = vec3(-0.5, 0.5, 0.5); // -lights.Direction;
+		vec3 Li = lights.Direction; // vec3(-0.5, 0.5, 0.5); // 
 		vec3 Lradiance = vec3(1.0, 1.0, 1.0) * 2.0; //  lights.Radiance * lights.Multiplier;
 		vec3 Lh = normalize(Li + m_Params.View);
 

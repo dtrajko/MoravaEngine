@@ -59,6 +59,10 @@ namespace Hazel {
 		static void RenderMeshStatic(/*Ref<Pipeline> pipeline,*/Ref<HazelMesh> mesh, const glm::mat4& transform);
 		static void RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
 
+		static void GeometryPass(HazelCamera* camera);
+		static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, bool viewportFBNeedsResize, HazelCamera* camera, std::vector<VkCommandBuffer>& commandBuffers);
+		static glm::vec3 GetLightDirectionTemp();
+
 	public:
 		static bool s_MipMapsEnabled;
 
