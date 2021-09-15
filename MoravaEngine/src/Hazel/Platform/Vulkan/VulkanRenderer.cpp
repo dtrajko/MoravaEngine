@@ -47,6 +47,8 @@ namespace Hazel {
 		Ref<HazelTexture2D> BRDFLut;
 		VulkanShader::ShaderMaterialDescriptorSet RendererDescriptorSetFeb2021;
 
+		float Exposure = 0.8f;
+
 		/**** BEGIN dtrajko Keep smart references alive ****/
 		Ref<HazelTextureCube> envUnfiltered;
 		Ref<HazelTexture2D> envEquirect;
@@ -89,6 +91,7 @@ namespace Hazel {
 	static VkCommandBuffer s_CompositeCommandBuffer;
 
 	static Ref<HazelFramebuffer> s_Framebuffer;
+	static Ref<HazelFramebuffer> s_CompositeFramebuffer;
 	static Ref<Pipeline> s_MeshPipeline;
 	static Ref<Pipeline> s_CompositePipeline;
 	static Ref<VertexBuffer> s_QuadVertexBuffer;
@@ -189,6 +192,24 @@ namespace Hazel {
 			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
 
 			s_MeshPipeline = Pipeline::Create(pipelineSpecification);
+		}
+
+		{
+			HazelFramebufferSpecification spec;
+			spec.DebugName = "CompositeFramebuffer";
+			spec.Width = s_ViewportWidth;
+			spec.Height = s_ViewportHeight;
+			s_CompositeFramebuffer = HazelFramebuffer::Create(spec);
+			s_CompositeFramebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer)
+			{
+				// HazelRenderer::Submit([framebuffer]() mutable {});
+				{
+					auto vulkanFB = framebuffer.As<VulkanFramebuffer>();
+					const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
+					HZ_CORE_WARN("Resizing framebuffer; image layout is {0}", imageInfo.imageLayout);
+					s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+				}
+			});
 		}
 
 		{
@@ -824,6 +845,89 @@ namespace Hazel {
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 		}
+
+#if 0
+		// HazelRenderer::Submit([=]() {});
+		{
+			Ref<VulkanContext> context = VulkanContext::Get();
+			VulkanSwapChain& swapChain = context->GetSwapChain();
+			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
+
+			VkCommandBufferBeginInfo cmdBufInfo = {};
+			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBufInfo.pNext = nullptr;
+
+			Ref<VulkanFramebuffer> framebuffer = s_CompositeFramebuffer.As<VulkanFramebuffer>();
+
+			uint32_t width = framebuffer->GetWidth();
+			uint32_t height = framebuffer->GetHeight();
+
+			VkRenderPassBeginInfo renderPassBeginInfo = {};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.pNext = nullptr;
+			renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
+			renderPassBeginInfo.renderArea.offset.x = 0;
+			renderPassBeginInfo.renderArea.offset.y = 0;
+			renderPassBeginInfo.renderArea.extent.width = width;
+			renderPassBeginInfo.renderArea.extent.height = height;
+
+			VkClearValue clearValues[2];
+			clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
+			renderPassBeginInfo.clearValueCount = 2; // Color + depth
+			renderPassBeginInfo.pClearValues = clearValues;
+			renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
+
+			// vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+			vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+			// Update dynamic viewport state
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = (float)height;
+			viewport.height = -(float)height;
+			viewport.width = (float)width;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(drawCommandBuffer, 0, 1, &viewport);
+
+			// Update dynamic scissor state
+			VkRect2D scissor = {};
+			scissor.extent.width = width;
+			scissor.extent.height = height;
+			scissor.offset.x = 0;
+			scissor.offset.y = 0;
+			vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
+
+			Ref<VulkanPipeline> vulkanPipeline = s_CompositePipeline.As<VulkanPipeline>();
+
+			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
+			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(drawCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
+
+			auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
+			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
+			vkCmdBindIndexBuffer(drawCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
+			vkCmdBindPipeline(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+			float exposure = s_Data.Exposure;
+			vkCmdPushConstants(drawCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &exposure);
+
+			// Bind descriptor sets describing shader binding points
+			vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &s_QuadDescriptorSet.DescriptorSets[0], 0, nullptr);
+
+			vkCmdDrawIndexed(drawCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+
+			vkCmdEndRenderPass(drawCommandBuffer);
+		}
+#endif
+
 	}
 
 	void VulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, bool viewportFBNeedsResize, HazelCamera* camera, std::vector<VkCommandBuffer>& commandBuffers)
