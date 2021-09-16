@@ -492,65 +492,6 @@ namespace Hazel {
 
 	}
 
-	static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
-	{
-		Ref<VulkanContext> context = Ref<VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
-		VkCommandBuffer commandBuffer = s_CompositeCommandBuffer;
-
-		VulkanSwapChain& swapChain = context->GetSwapChain();
-		uint32_t width = swapChain.GetWidth();
-		uint32_t height = swapChain.GetHeight();
-
-		VkCommandBufferBeginInfo cmdBufInfo = {};
-		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-		cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
-
-		VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &cmdBufInfo));
-
-		// Update dynamic viewport state
-		VkViewport viewport = {};
-		viewport.x = 0.0f;
-		viewport.y = (float)height;
-		viewport.height = -(float)height;
-		viewport.width = (float)width;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-
-		// Update dynamic scissor state
-		VkRect2D scissor = {};
-		scissor.extent.width = width;
-		scissor.extent.height = height;
-		scissor.offset.x = 0;
-		scissor.offset.y = 0;
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-
-		// Copy 3D scene here!
-		Ref<VulkanPipeline> vulkanPipeline = s_CompositePipeline.As<VulkanPipeline>();
-
-		VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
-
-		auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
-		VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
-		VkDeviceSize offsets[1] = { 0 };
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vbMeshBuffer, offsets);
-
-		auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
-		VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
-		vkCmdBindIndexBuffer(commandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-		VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-		// Bind descriptor sets describing shader binding points
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_QuadDescriptorSet.DescriptorSets.size(), s_QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
-
-		vkCmdDrawIndexed(commandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
-
-		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
-	}
-
 	// TODO: virtual or static?
 	void VulkanRenderer::BeginFrame()
 	{
@@ -802,15 +743,23 @@ namespace Hazel {
 		{
 			Ref<VulkanContext> context = VulkanContext::Get();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
-
 			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 
-			VkClearValue clearValues[2];
-			clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
-			clearValues[1].depthStencil = { 1.0f, 0 };
+			VkCommandBufferBeginInfo cmdBufInfo = {};
+			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBufInfo.pNext = nullptr;
+
+			Ref<VulkanFramebuffer> framebuffer = s_CompositeFramebuffer.As<VulkanFramebuffer>();
+
+			// uint32_t width = framebuffer->GetWidth();   // framebuffer resize still not enabled
+			// uint32_t height = framebuffer->GetHeight(); // framebuffer resize still not enabled
 
 			uint32_t width = swapChain.GetWidth();
 			uint32_t height = swapChain.GetHeight();
+
+			VkClearValue clearValues[2];
+			clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.0f} };
+			clearValues[1].depthStencil = { 1.0f, 0 };
 
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -824,24 +773,77 @@ namespace Hazel {
 			renderPassBeginInfo.pClearValues = clearValues;
 			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 
-			{
-				vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+			vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
-				VkCommandBufferInheritanceInfo inheritanceInfo = {};
-				inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-				inheritanceInfo.renderPass = swapChain.GetRenderPass();
-				inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+			VkCommandBufferInheritanceInfo inheritanceInfo = {};
+			inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+			inheritanceInfo.renderPass = swapChain.GetRenderPass();
+			inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 
-				std::vector<VkCommandBuffer> commandBuffers;
-				CompositeRenderPass(inheritanceInfo);
-				commandBuffers.push_back(s_CompositeCommandBuffer);
+			std::vector<VkCommandBuffer> commandBuffers;
+				
+			/**** BEGIN CompositeRenderPass(inheritanceInfo) ****/
 
-				OnImGuiRender(inheritanceInfo, viewportFBNeedsResize, camera, commandBuffers);
+			VkCommandBuffer commandBuffer = s_CompositeCommandBuffer;
 
-				vkCmdExecuteCommands(drawCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+			// VkCommandBufferBeginInfo cmdBufInfo = {};
+			// cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+			cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
 
-				vkCmdEndRenderPass(drawCommandBuffer);
-			}
+			VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &cmdBufInfo));
+
+			// Update dynamic viewport state
+			VkViewport viewport = {};
+			viewport.x = 0.0f;
+			viewport.y = (float)height;
+			viewport.height = -(float)height;
+			viewport.width = (float)width;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+			// Update dynamic scissor state
+			VkRect2D scissor = {};
+			scissor.extent.width = width;
+			scissor.extent.height = height;
+			scissor.offset.x = 0;
+			scissor.offset.y = 0;
+			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+			// Copy 3D scene here!
+			Ref<VulkanPipeline> vulkanPipeline = s_CompositePipeline.As<VulkanPipeline>();
+
+			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
+			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vbMeshBuffer, offsets);
+
+			auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
+			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
+			vkCmdBindIndexBuffer(commandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+			// Bind descriptor sets describing shader binding points
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_QuadDescriptorSet.DescriptorSets.size(), s_QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
+
+			vkCmdDrawIndexed(commandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+
+			VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+
+			/**** END CompositeRenderPass(inheritanceInfo) ****/
+
+			commandBuffers.push_back(s_CompositeCommandBuffer);
+
+			OnImGuiRender(inheritanceInfo, viewportFBNeedsResize, camera, commandBuffers);
+
+			vkCmdExecuteCommands(drawCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
+			vkCmdEndRenderPass(drawCommandBuffer);
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 		}
@@ -849,18 +851,18 @@ namespace Hazel {
 #if 0
 		// HazelRenderer::Submit([=]() {});
 		{
-			Ref<VulkanContext> context = VulkanContext::Get();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
-			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
-
-			VkCommandBufferBeginInfo cmdBufInfo = {};
-			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			cmdBufInfo.pNext = nullptr;
-
-			Ref<VulkanFramebuffer> framebuffer = s_CompositeFramebuffer.As<VulkanFramebuffer>();
-
-			uint32_t width = framebuffer->GetWidth();
-			uint32_t height = framebuffer->GetHeight();
+			//	Ref<VulkanContext> context = VulkanContext::Get();
+			//	VulkanSwapChain& swapChain = context->GetSwapChain();
+			//	VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
+			//	
+			//	VkCommandBufferBeginInfo cmdBufInfo = {};
+			//	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			//	cmdBufInfo.pNext = nullptr;
+			//	
+			//	Ref<VulkanFramebuffer> framebuffer = s_CompositeFramebuffer.As<VulkanFramebuffer>();
+			//	
+			//	uint32_t width = framebuffer->GetWidth();
+			//	uint32_t height = framebuffer->GetHeight();
 
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -1114,8 +1116,7 @@ namespace Hazel {
 							ImGuiWrapper::Property("Light Direction", s_Data.SceneData.LightDirectionTemp, 0.01f, -1.0f, 1.0f, PropertyFlag::DragProperty);
 							ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
 							ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
-							float exposure = 1.0f; // GetMainCameraComponent().Camera.GetExposure();
-							ImGuiWrapper::Property("Exposure", exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+							ImGuiWrapper::Property("Exposure", s_Data.Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
 							float skyboxExposure = 1.0f; // = EnvMapSharedData::s_SkyboxExposureFactor;
 							ImGuiWrapper::Property("Skybox Exposure Factor", skyboxExposure, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
 
