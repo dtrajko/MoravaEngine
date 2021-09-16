@@ -30,6 +30,7 @@
 namespace Hazel {
 
 	bool VulkanRenderer::s_MipMapsEnabled = true;
+	bool VulkanRenderer::s_ViewportFBNeedsResize = false;
 
 	struct VulkanRendererData
 	{
@@ -361,7 +362,7 @@ namespace Hazel {
 		}
 	}
 
-	static void RenderMeshVulkan(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer, HazelCamera* camera) // TODO: remove the HazelCamera parameter
+	void VulkanRenderer::RenderMeshVulkan(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer)
 	{
 		/**** BEGIN keep smart references alive ****/
 		Ref<HazelTextureCube> envUnfiltered = s_Data.envUnfiltered;
@@ -433,7 +434,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer, HazelCamera* camera)
+	void VulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
@@ -450,8 +451,8 @@ namespace Hazel {
 			glm::mat4 InverseViewProjection; // u_InverseViewProjection
 		} skyboxUniformCamera;
 		
-		skyboxUniformCamera.ViewProjectionMatrix = camera->GetViewProjection();
-		skyboxUniformCamera.InverseViewProjection = glm::inverse(camera->GetViewProjection());
+		skyboxUniformCamera.ViewProjectionMatrix = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
+		skyboxUniformCamera.InverseViewProjection = glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewProjection());
 		memcpy(ubPtr, &skyboxUniformCamera, sizeof(SkyboxUniformCamera));
 		vulkanSkyboxShader->UnmapUniformBuffer(0, 0);
 
@@ -670,7 +671,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanRenderer::GeometryPass(HazelCamera* camera)
+	void VulkanRenderer::GeometryPass()
 	{
 		// HazelRenderer::Submit([=]() {});
 		{
@@ -725,11 +726,11 @@ namespace Hazel {
 			scissor.offset.y = 0;
 			vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
-			VulkanRenderer::RenderSkybox(drawCommandBuffer, camera); // in progress
+			VulkanRenderer::RenderSkybox(drawCommandBuffer); // in progress
 
 			for (auto& mesh : s_Meshes)
 			{
-				RenderMeshVulkan(mesh, drawCommandBuffer, camera);
+				RenderMeshVulkan(mesh, drawCommandBuffer);
 			}
 
 			s_Meshes.clear();
@@ -738,7 +739,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanRenderer::CompositePass(bool viewportFBNeedsResize, HazelCamera* camera)
+	void VulkanRenderer::CompositePass()
 	{
 		// HazelRenderer::Submit([=]() {});
 		{
@@ -847,7 +848,7 @@ namespace Hazel {
 
 			commandBuffers.push_back(s_CompositeCommandBuffer);
 
-			OnImGuiRender(inheritanceInfo, viewportFBNeedsResize, camera, commandBuffers);
+			OnImGuiRender(inheritanceInfo, commandBuffers);
 
 			vkCmdExecuteCommands(drawCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
@@ -857,7 +858,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, bool viewportFBNeedsResize, HazelCamera* camera, std::vector<VkCommandBuffer>& commandBuffers)
+	void VulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers)
 	{
 		Ref<VulkanContext> context = VulkanContext::Get();
 		VulkanSwapChain& swapChain = context->GetSwapChain();
@@ -957,11 +958,11 @@ namespace Hazel {
 				{
 					s_ViewportWidth = (uint32_t)viewportSize.x;
 					s_ViewportHeight = (uint32_t)viewportSize.y;
-					viewportFBNeedsResize = true;
+					s_ViewportFBNeedsResize = true;
 				}
 
 				Window* mainWindow = Application::Get()->GetWindow();
-				UpdateImGuizmo(mainWindow, camera);
+				UpdateImGuizmo(mainWindow);
 
 				ImGui::End();
 				ImGui::PopStyleVar();
@@ -1042,36 +1043,11 @@ namespace Hazel {
 							ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
 							ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
 							ImGuiWrapper::Property("Exposure", s_Data.Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
-							float skyboxExposure = 1.0f; // = EnvMapSharedData::s_SkyboxExposureFactor;
-							ImGuiWrapper::Property("Skybox Exposure Factor", skyboxExposure, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
 
 							float radiancePrefilter = 1.0f; // EnvMapSharedData::s_RadiancePrefilter
 							ImGuiWrapper::Property("Radiance Prefiltering", radiancePrefilter);
 							float envMapRotation = 0.0f; // EnvMapSharedData::s_EnvMapRotation;
 							ImGuiWrapper::Property("Env Map Rotation", envMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
-
-							//	if (m_SceneState == SceneState::Edit)
-							//	{
-							//		float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
-							//		if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-							//			EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
-							//		}
-							//	}
-							//	else if (m_SceneState == SceneState::Play)
-							//	{
-							//		float physics2DGravity = EnvMapSharedData::s_RuntimeScene->GetPhysics2DGravity();
-							//		if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-							//			EnvMapSharedData::s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
-							//		}
-							//	}
-
-							//	EnvMapSceneRenderer::SetActiveLight(light);
-
-							//	if (light.Direction != lightPrev.Direction) {
-							//		auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
-							//		tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
-							//		lightPrev = light;
-							//	}
 
 							ImGui::Columns(1);
 						}
@@ -1155,15 +1131,16 @@ namespace Hazel {
 	// TODO: Temporary method until composite rendering is enabled
 	void VulkanRenderer::Draw(HazelCamera* camera)
 	{
-		static bool viewportFBNeedsResize = false;
-		if (viewportFBNeedsResize)
+		s_Data.SceneData.SceneCamera.Camera = *camera;
+
+		if (s_ViewportFBNeedsResize)
 		{
 			s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
-			viewportFBNeedsResize = false;
+			s_ViewportFBNeedsResize = false;
 		}
 
-		GeometryPass(camera);
-		CompositePass(viewportFBNeedsResize, camera);
+		GeometryPass();
+		CompositePass();
 	}
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> VulkanRenderer::CreateEnvironmentMap(const std::string& filepath)
@@ -1352,103 +1329,7 @@ namespace Hazel {
 		return s_Data.RenderCaps;
 	}
 
-	//-----------------------------------------------------------------------------
-	// [SECTION] Example App: Docking, DockSpace / ShowExampleAppDockSpace()
-	//-----------------------------------------------------------------------------
-
-	// Demonstrate using DockSpace() to create an explicit docking node within an existing window.
-	// Note that you already dock windows into each others _without_ a DockSpace() by just moving windows
-	// from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
-	// DockSpace() is only useful to construct to a central location for your application.
-	////	void VulkanRenderer::ShowExampleAppDockSpace(bool* p_open)
-	////	{
-	////		static bool opt_fullscreen_persistant = true;
-	////		bool opt_fullscreen = opt_fullscreen_persistant;
-	////		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-	////	
-	////		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-	////		// because it would be confusing to have two docking targets within each others.
-	////		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-	////		if (opt_fullscreen)
-	////		{
-	////			ImGuiViewport* viewport = ImGui::GetMainViewport();
-	////			ImGui::SetNextWindowPos(viewport->GetWorkPos());
-	////			ImGui::SetNextWindowSize(viewport->GetWorkSize());
-	////			ImGui::SetNextWindowViewport(viewport->ID);
-	////			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-	////			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-	////			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-	////			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-	////		}
-	////	
-	////		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background 
-	////		// and handle the pass-thru hole, so we ask Begin() to not render a background.
-	////		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-	////			window_flags |= ImGuiWindowFlags_NoBackground;
-	////	
-	////		// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-	////		// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-	////		// all active windows docked into it will lose their parent and become undocked.
-	////		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-	////		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-	////		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	////		ImGui::Begin("DockSpace Demo", p_open, window_flags);
-	////		ImGui::PopStyleVar();
-	////	
-	////		if (opt_fullscreen)
-	////			ImGui::PopStyleVar(2);
-	////	
-	////		// DockSpace
-	////		ImGuiIO& io = ImGui::GetIO();
-	////		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-	////		{
-	////			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-	////			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-	////		}
-	////		else
-	////		{
-	////			// ShowDockingDisabledMessage();
-	////		}
-	////	
-	////		if (ImGui::BeginMenuBar())
-	////		{
-	////			if (ImGui::BeginMenu("Docking"))
-	////			{
-	////				// Disabling fullscreen would allow the window to be moved to the front of other windows,
-	////				// which we can't undo at the moment without finer window depth/z control.
-	////				//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
-	////	
-	////				if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
-	////				if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
-	////				if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
-	////				if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
-	////				if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
-	////				ImGui::Separator();
-	////				if (ImGui::MenuItem("Close DockSpace", NULL, false, p_open != NULL))
-	////					*p_open = false;
-	////				ImGui::EndMenu();
-	////			}
-	////			/****
-	////			HelpMarker(
-	////				"When docking is enabled, you can ALWAYS dock MOST window into another! Try it now!" "\n\n"
-	////				" > if io.ConfigDockingWithShift==false (default):" "\n"
-	////				"   drag windows from title bar to dock" "\n"
-	////				" > if io.ConfigDockingWithShift==true:" "\n"
-	////				"   drag windows from anywhere and hold Shift to dock" "\n\n"
-	////				"This demo app has nothing to do with it!" "\n\n"
-	////				"This demo app only demonstrate the use of ImGui::DockSpace() which allows you to manually create a docking node _within_ another window. This is useful so you can decorate your main application w/in dow ///(e.g. with a menu bar)." "\n\n"
-	////				"ImGui::DockSpace() comes with one hard constraint: it needs to be submitted _before_ any window which may be docked into it. Therefore, if you use a dock spot as the central point of your a/pp	 lication, ///you'll probably want it to be part of the very first window you are submitting to imgui every frame." "\n\n"
-	////				"(NB: because of this constraint, the implicit \"Debug\" window can not be docked into an explicit DockSpace() node, because that window is submitted as part of the NewFrame() call. An easy wo	  rkaround //i/s /that you can create your own implicit \"Debug##2\" window after calling DockSpace() and leave it in the window stack for anyone to use.)"
-	////			);
-	////			****/
-	////	
-	////			ImGui::EndMenuBar();
-	////		}
-	////	
-	////		ImGui::End();
-	////	}
-
-	void VulkanRenderer::UpdateImGuizmo(Window* mainWindow, HazelCamera* camera)
+	void VulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 	{
 		// BEGIN ImGuizmo
 
@@ -1491,8 +1372,8 @@ namespace Hazel {
 			if (s_Transform_ImGuizmo != nullptr) // TODO: specify display criteria here
 			{
 				ImGuizmo::Manipulate(
-					glm::value_ptr(camera->GetViewMatrix()),
-					glm::value_ptr(camera->GetProjectionMatrix()),
+					glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
+					glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
 					(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
 					ImGuizmo::WORLD,
 					glm::value_ptr(*s_Transform_ImGuizmo),

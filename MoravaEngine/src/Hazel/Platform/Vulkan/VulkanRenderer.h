@@ -36,14 +36,16 @@ namespace Hazel {
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) override;
 
-		static void RenderSkybox(VkCommandBuffer commandBuffer, HazelCamera* camera);
+		static void RenderMeshVulkan(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer);
+
+		static void RenderSkybox(VkCommandBuffer commandBuffer);
 
 		virtual RendererCapabilities& GetCapabilities() override;
 
 		static void Draw(HazelCamera* camera); // TODO: there should be no parameters
-		static void CompositePass(bool viewportFBNeedsResize, HazelCamera* camera);
-		static void GeometryPass(HazelCamera* camera);
-		static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, bool viewportFBNeedsResize, HazelCamera* camera, std::vector<VkCommandBuffer>& commandBuffers);
+		static void CompositePass();
+		static void GeometryPass();
+		static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers);
 		static glm::vec3 GetLightDirectionTemp();
 
 		static void SubmitMesh(const Ref<HazelMesh>& mesh);
@@ -51,7 +53,7 @@ namespace Hazel {
 		static void OnResize(uint32_t width, uint32_t height);
 
 		// static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
-		static void UpdateImGuizmo(Window* mainWindow, HazelCamera* camera);
+		static void UpdateImGuizmo(Window* mainWindow);
 
 		static int32_t& GetSelectedDrawCall();
 
@@ -65,6 +67,7 @@ namespace Hazel {
 
 	public:
 		static bool s_MipMapsEnabled;
+		static bool s_ViewportFBNeedsResize;
 
 	};
 
