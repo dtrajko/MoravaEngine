@@ -34,6 +34,7 @@ namespace Hazel {
 
 	struct VulkanRendererData
 	{
+
 		struct SceneInfo
 		{
 			SceneRendererCamera SceneCamera;
@@ -491,7 +492,6 @@ namespace Hazel {
 		vkCmdPushConstants(commandBuffer, skyboxPipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &s_Data.SceneData.SkyboxLod);
 
 		vkCmdDrawIndexed(commandBuffer, s_Data.VulkanSkyboxCube->m_IndexCount, 1, 0, 0, 0);
-
 	}
 
 	// TODO: virtual or static?
@@ -538,6 +538,8 @@ namespace Hazel {
 	{
 		// HazelRenderer::Submit([renderPass]() {});
 		{
+			// HZ_CORE_ASSERT(s_Data.ActiveCommandBuffer);
+
 			BeginFrameStatic();
 
 			// Ref<VulkanFramebuffer> framebuffer = s_Framebuffer.As<VulkanFramebuffer>();
@@ -600,39 +602,6 @@ namespace Hazel {
 		{
 			// vkCmdEndRenderPass(s_Data.ActiveCommandBuffer);
 			s_Data.ActiveCommandBuffer = nullptr;
-		}
-	}
-
-	void VulkanRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
-	{
-		Log::GetLogger()->error("The virtual method SubmitFullscreenQuad currently not in use. Use SubmitFullscreenQuadStatic instead!");
-	}
-
-	// TODO: virtual or static?
-	void VulkanRenderer::SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
-	{
-		// HazelRenderer::Submit([]() {});
-		{
-			Ref<VulkanPipeline> vulkanPipeline = s_CompositePipeline.As<VulkanPipeline>();
-
-			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
-
-			auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
-			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
-			VkDeviceSize offsets[1] = { 0 };
-			vkCmdBindVertexBuffers(s_Data.ActiveCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
-
-			auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
-			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
-			vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
-
-			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
-			vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-			// Bind descriptor sets describing shader binding points
-			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_QuadDescriptorSet.DescriptorSets.size(), s_QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
-
-			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 		}
 	}
 
@@ -1322,6 +1291,69 @@ namespace Hazel {
 
 	void VulkanRenderer::RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
 	{
+		Ref<VulkanMaterial> vulkanMaterial = material.As<VulkanMaterial>();
+		// vulkanMaterial->UpdateForRendering(); // Broken at the moment
+
+		// HazelRenderer::Submit([pipeline, vulkanMaterial, transform]() {});
+		{
+			Ref<VulkanPipeline> vulkanPipeline = pipeline.As<VulkanPipeline>();
+
+			// VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
+			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			// vkCmdBindVertexBuffers(s_Data.ActiveCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
+
+			auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
+			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
+			// vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+			// VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
+			// vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+			// Bind descriptor sets describing shader binding points
+			// vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &vulkanMaterial->GetDescriptorSet().DescriptorSets[0], 0, nullptr);
+
+			// Buffer uniformStorageBuffer = vulkanMaterial->GetUniformStorageBuffer();
+
+			// vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &transform);
+			// vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
+			// vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+		}
+	}
+
+	void VulkanRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
+	{
+		Log::GetLogger()->error("The virtual method SubmitFullscreenQuad currently not in use. Use SubmitFullscreenQuadStatic instead!");
+	}
+
+	// TODO: virtual or static?
+	void VulkanRenderer::SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
+	{
+		// HazelRenderer::Submit([]() {});
+		{
+			Ref<VulkanPipeline> vulkanPipeline = s_CompositePipeline.As<VulkanPipeline>();
+
+			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
+			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(s_Data.ActiveCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
+
+			auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
+			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
+			vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
+			vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+			// Bind descriptor sets describing shader binding points
+			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_QuadDescriptorSet.DescriptorSets.size(), s_QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
+
+			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+		}
 	}
 
 	RendererCapabilities& VulkanRenderer::GetCapabilities()
