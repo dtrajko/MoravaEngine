@@ -309,9 +309,10 @@ namespace Hazel {
 
 		s_Data.BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
-		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
+		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
-		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
+		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
+		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
 
 		// HazelRenderer::Submit([environment]() mutable {});
 		{
@@ -1303,7 +1304,7 @@ namespace Hazel {
 					mesh->GetDescriptorSet(submesh.MaterialIndex).DescriptorSet.DescriptorSets[0],
 					s_Data.RendererDescriptorSetFeb2021.DescriptorSets[0],
 				};
-				vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
+				vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
 				glm::mat4 worldTransform = transform * submesh.Transform;
 
@@ -1322,7 +1323,7 @@ namespace Hazel {
 	void VulkanRenderer::RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
 	{
 		Ref<VulkanMaterial> vulkanMaterial = material.As<VulkanMaterial>();
-		// vulkanMaterial->UpdateForRendering(); // Broken at the moment
+		vulkanMaterial->UpdateForRendering(); // Broken at the moment
 
 		// HazelRenderer::Submit([pipeline, vulkanMaterial, transform]() {});
 		{
