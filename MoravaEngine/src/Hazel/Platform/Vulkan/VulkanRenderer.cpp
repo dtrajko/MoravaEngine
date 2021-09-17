@@ -307,12 +307,12 @@ namespace Hazel {
 			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
 
-		s_Data.BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
-
-		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
+		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
-		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
 		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
+		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
+
+		s_Data.BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
 		// HazelRenderer::Submit([environment]() mutable {});
 		{
