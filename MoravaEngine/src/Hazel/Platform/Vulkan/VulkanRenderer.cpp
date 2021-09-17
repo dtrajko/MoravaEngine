@@ -29,11 +29,51 @@
 
 namespace Hazel {
 
+	namespace Utils
+	{
+		static const char* VulkanVendorIDToString(uint32_t vendorID)
+		{
+			switch (vendorID)
+			{
+			case 0x10DE: return "NVIDIA";
+			case 0x1002: return "AMD";
+			case 0x8086: return "INTEL";
+			case 0x13B5: return "ARM";
+			}
+			return "Unknown";
+		}
+	}
+
 	bool VulkanRenderer::s_MipMapsEnabled = true;
 	bool VulkanRenderer::s_ViewportFBNeedsResize = false;
 
+	static VkCommandBuffer s_ImGuiCommandBuffer;
+	static VkCommandBuffer s_CompositeCommandBuffer;
+
+	static Ref<HazelFramebuffer> s_Framebuffer;
+	static Ref<HazelFramebuffer> s_CompositeFramebuffer;
+	static Ref<Pipeline> s_MeshPipeline;
+	static Ref<Pipeline> s_CompositePipeline;
+	static Ref<VertexBuffer> s_QuadVertexBuffer;
+	static Ref<IndexBuffer> s_QuadIndexBuffer;
+	static VulkanShader::ShaderMaterialDescriptorSet s_QuadDescriptorSet;
+	static ImTextureID s_TextureID;
+	static uint32_t s_ViewportWidth = 1280;
+	static uint32_t s_ViewportHeight = 720;
+
+	static std::vector<Ref<HazelMesh>> s_Meshes;
+
+	static Submesh* s_SelectedSubmesh;
+	static glm::mat4* s_Transform_ImGuizmo = nullptr;
+
 	struct VulkanRendererData
 	{
+		VkCommandBuffer ActiveCommandBuffer = nullptr;
+		Ref<HazelTexture2D> BRDFLut;
+		VulkanShader::ShaderMaterialDescriptorSet RendererDescriptorSetFeb2021;
+		// std::unordered_map<SceneRenderer*, std::vector<VulkanShader::ShaderMaterialDescriptorSet>> RendererDescriptorSet;
+
+		float Exposure = 0.8f;
 
 		struct SceneInfo
 		{
@@ -43,13 +83,7 @@ namespace Hazel {
 			glm::vec3 LightDirectionTemp;
 		} SceneData;
 
-		// Hazel Live 19.02.2021
-		VkCommandBuffer ActiveCommandBuffer = nullptr;
 		std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> EnvironmentMap;
-		Ref<HazelTexture2D> BRDFLut;
-		VulkanShader::ShaderMaterialDescriptorSet RendererDescriptorSetFeb2021;
-
-		float Exposure = 0.8f;
 
 		/**** BEGIN dtrajko Keep smart references alive ****/
 		Ref<HazelTextureCube> envUnfiltered;
@@ -64,7 +98,6 @@ namespace Hazel {
 		Ref<IndexBuffer> QuadIndexBuffer;
 		VulkanShader::ShaderMaterialDescriptorSet QuadDescriptorSet;
 
-		std::unordered_map<SceneRenderer*, std::vector<VulkanShader::ShaderMaterialDescriptorSet>> RendererDescriptorSet;
 		VkDescriptorSet ActiveRendererDescriptorSet = nullptr;
 		std::vector<VkDescriptorPool> DescriptorPools;
 		std::vector<uint32_t> DescriptorPoolAllocationCount;
@@ -89,43 +122,42 @@ namespace Hazel {
 
 	static VulkanRendererData s_Data;
 
-	static VkCommandBuffer s_ImGuiCommandBuffer;
-	static VkCommandBuffer s_CompositeCommandBuffer;
+	void VulkanRenderer::SubmitMesh(const Ref<HazelMesh>& mesh)
+	{
+		// Temporary code - populate selected submesh
+		std::vector<Submesh> submeshes = mesh->GetSubmeshes();
+		s_SelectedSubmesh = &submeshes.at(0);
 
-	static Ref<HazelFramebuffer> s_Framebuffer;
-	static Ref<HazelFramebuffer> s_CompositeFramebuffer;
-	static Ref<Pipeline> s_MeshPipeline;
-	static Ref<Pipeline> s_CompositePipeline;
-	static Ref<VertexBuffer> s_QuadVertexBuffer;
-	static Ref<IndexBuffer> s_QuadIndexBuffer;
-	static VulkanShader::ShaderMaterialDescriptorSet s_QuadDescriptorSet;
-	static ImTextureID s_TextureID;
-	static uint32_t s_ViewportWidth = 1280;
-	static uint32_t s_ViewportHeight = 720;
+		s_Meshes.push_back(mesh);
+	}
 
-	static std::vector<Ref<HazelMesh>> s_Meshes;
-
-	static Submesh* s_SelectedSubmesh;
-	static glm::mat4* s_Transform_ImGuizmo = nullptr;
-
-	namespace Utils {
-
-		static const char* VulkanVendorIDToString(uint32_t vendorID)
+	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
+	{
+		// HazelRenderer::Submit([=]() {});
 		{
-			switch (vendorID)
-			{
-			case 0x10DE: return "NVIDIA";
-			case 0x1002: return "AMD";
-			case 0x8086: return "INTEL";
-			case 0x13B5: return "ARM";
-			}
-			return "Unknown";
-		}
+			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
 
+			VkWriteDescriptorSet writeDescriptorSet = {};
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = *s_QuadDescriptorSet.DescriptorSets.data();
+			writeDescriptorSet.descriptorCount = (uint32_t)s_QuadDescriptorSet.DescriptorSets.size();
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			writeDescriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
+			writeDescriptorSet.dstBinding = 0;
+
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
+		}
 	}
 
 	void VulkanRenderer::Init()
 	{
+		// HazelRenderer::Submit([=]() {});
+		{
+			s_ImGuiCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+			s_CompositeCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+		}
+
 		s_Data = VulkanRendererData{};
 		auto& caps = s_Data.RenderCaps;
 		auto& properties = VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
@@ -155,12 +187,6 @@ namespace Hazel {
 		// Renderer2D::Init();
 
 		/**** END code from HazelRenderer::Init() ****/
-
-		// HazelRenderer::Submit([=]() {});
-		{
-			s_ImGuiCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
-			s_CompositeCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
-		}
 
 		{
 			HazelFramebufferSpecification spec;
@@ -200,6 +226,7 @@ namespace Hazel {
 		{
 			HazelFramebufferSpecification spec;
 			spec.DebugName = "CompositeFramebuffer";
+			spec.SwapChainTarget = true;
 			spec.Width = s_ViewportWidth;
 			spec.Height = s_ViewportHeight;
 			s_CompositeFramebuffer = HazelFramebuffer::Create(spec);
@@ -213,26 +240,18 @@ namespace Hazel {
 					s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 				}
 			});
-		}
-
-		{
-			HazelFramebufferSpecification spec;
-			spec.SwapChainTarget = true;
-			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
 
 			PipelineSpecification pipelineSpecification;
 			pipelineSpecification.Layout = {
 				{ ShaderDataType::Float3, "a_Position" },
-				// { ShaderDataType::Float3, "a_Normal" },
-				// { ShaderDataType::Float3, "a_Tangent" },
-				// { ShaderDataType::Float3, "a_Binormal" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
 			pipelineSpecification.Shader = s_Data.m_ShaderLibrary->Get("SceneComposite");
 
 			RenderPassSpecification renderPassSpec;
-			renderPassSpec.TargetFramebuffer = framebuffer;
+			renderPassSpec.TargetFramebuffer = s_CompositeFramebuffer;
 			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
+			pipelineSpecification.DebugName = "SceneComposite";
 			s_CompositePipeline = Pipeline::Create(pipelineSpecification);
 		}
 
@@ -288,11 +307,11 @@ namespace Hazel {
 			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
 
+		s_Data.BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
+
 		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
 		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
-
-		s_Data.BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
 		// HazelRenderer::Submit([environment]() mutable {});
 		{
@@ -333,34 +352,6 @@ namespace Hazel {
 	{
 		VulkanShader::ClearUniformBuffers();
 		// delete s_Data;
-	}
-
-	void VulkanRenderer::SubmitMesh(const Ref<HazelMesh>& mesh)
-	{
-		// Temporary code - populate selected submesh
-		std::vector<Submesh> submeshes = mesh->GetSubmeshes();
-		s_SelectedSubmesh = &submeshes.at(0);
-
-		s_Meshes.push_back(mesh);
-	}
-
-	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
-	{
-		// HazelRenderer::Submit([=]() {});
-		{
-			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
-
-			VkWriteDescriptorSet writeDescriptorSet = {};
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = *s_QuadDescriptorSet.DescriptorSets.data();
-			writeDescriptorSet.descriptorCount = (uint32_t)s_QuadDescriptorSet.DescriptorSets.size();
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			writeDescriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
-			writeDescriptorSet.dstBinding = 0;
-
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
-		}
 	}
 
 	void VulkanRenderer::RenderMeshVulkan(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer)
@@ -1271,17 +1262,56 @@ namespace Hazel {
 		return { s_Data.envFiltered, s_Data.irradianceMap };
 	}
 
+	void VulkanRenderer::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	{
+	}
+
 	void VulkanRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		Log::GetLogger()->error("The virtual method RenderMesh currently not in use. Use RenderMeshStatic instead!");
 	}
 
-	void VulkanRenderer::RenderMeshStatic(/*Ref<Pipeline> pipeline,*/Ref<HazelMesh> mesh, const glm::mat4& transform)
+	void VulkanRenderer::RenderMeshStatic(Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
-	}
+		// HazelRenderer::Submit([mesh, transform]() mutable {});
+		{
+			Ref<VulkanPipeline> vulkanPipeline = s_MeshPipeline.As<VulkanPipeline>();
 
-	void VulkanRenderer::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
-	{
+			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			auto vulkanMeshVB = mesh->GetVertexBuffer().As<VulkanVertexBuffer>();
+			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(s_Data.ActiveCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
+
+			auto vulkanMeshIB = Ref<VulkanIndexBuffer>(mesh->GetIndexBuffer());
+			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
+			vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
+
+			auto& submeshes = mesh->GetSubmeshes();
+			for (Submesh& submesh : submeshes)
+			{
+				auto& material = mesh->GetMaterials()[submesh.MaterialIndex].As<VulkanMaterial>();
+				material->UpdateForRendering();
+				Buffer uniformStorageBuffer = material->GetUniformStorageBuffer();
+
+				VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
+				vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+				// Bind descriptor sets describing shader binding points
+				std::array<VkDescriptorSet, 2> descriptorSets = {
+					mesh->GetDescriptorSet(submesh.MaterialIndex).DescriptorSet.DescriptorSets[0],
+					s_Data.RendererDescriptorSetFeb2021.DescriptorSets[0],
+				};
+				vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
+
+				glm::mat4 worldTransform = transform * submesh.Transform;
+
+				vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &worldTransform);
+				vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size - 64, &uniformStorageBuffer.Data + 64);
+				vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
+			}
+		}
 	}
 
 	void VulkanRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)

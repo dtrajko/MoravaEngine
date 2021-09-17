@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hazel/Core/Assert.h"
+#include "Hazel/Core/Base.h"
 
 #include "Core/Log.h"
 
@@ -12,7 +13,7 @@ namespace Hazel {
 
 	struct Buffer
 	{
-		void* Data;
+		byte* Data;
 		uint32_t Size;
 
 		Buffer()
@@ -20,7 +21,7 @@ namespace Hazel {
 		{
 		}
 
-		Buffer(void* data, uint32_t size)
+		Buffer(byte* data, uint32_t size)
 			: Data(data), Size(size)
 		{
 		}
