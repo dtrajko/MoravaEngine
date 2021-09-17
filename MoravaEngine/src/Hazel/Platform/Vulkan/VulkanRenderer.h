@@ -59,6 +59,7 @@ namespace Hazel {
 
 		// static versions (copies) of corresponding virtual methods
 		static void BeginFrameStatic();
+		static void EndFrameStatic();
 		static void BeginRenderPassStatic(const Ref<RenderPass>& renderPass);
 		static void EndRenderPassStatic();
 		static void SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material);

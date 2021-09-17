@@ -85,6 +85,14 @@ namespace Hazel {
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/TestSceneVulkan.fbx"));
 		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
 		s_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+
+		RenderPassSpecification renderPassSpec;
+		HazelFramebufferSpecification framebufferSpec;
+		framebufferSpec.DebugName = "GeoPassFramebufferSpec";
+		framebufferSpec.Width = 1280;
+		framebufferSpec.Height = 720;
+		renderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(framebufferSpec);
+		s_Data.GeoPass = RenderPass::Create(renderPassSpec);
 	}
 
 	void VulkanTestLayer::OnDetach()

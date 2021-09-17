@@ -347,6 +347,8 @@ namespace Hazel {
 
 		s_Data.SceneData.SkyboxLod = 0.0f;
 		s_Data.SceneData.LightDirectionTemp = { 0.5f, 0.5f, 0.5f };
+
+		OnResize(s_ViewportWidth, s_ViewportHeight);
 	}
 
 	void VulkanRenderer::Shutdown()
@@ -507,15 +509,21 @@ namespace Hazel {
 			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 			s_Data.ActiveCommandBuffer = drawCommandBuffer;
 			HZ_CORE_ASSERT(s_Data.ActiveCommandBuffer);
-			// VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+			// VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo)); // commandBuffer must not be in the recording or pending state
 		}
 	}
 
 	void VulkanRenderer::EndFrame()
 	{
+		Log::GetLogger()->error("The virtual method EndFrame currently not in use. Use EndFrameStatic instead!");
+	}
+
+	void VulkanRenderer::EndFrameStatic()
+	{
 		// HazelRenderer::Submit([]() {});
 		{
-			VK_CHECK_RESULT(vkEndCommandBuffer(s_Data.ActiveCommandBuffer));
+			// VK_CHECK_RESULT(vkEndCommandBuffer(s_Data.ActiveCommandBuffer));
+			s_Data.ActiveCommandBuffer = nullptr;
 		}
 	}
 
@@ -532,52 +540,53 @@ namespace Hazel {
 		{
 			// HZ_CORE_ASSERT(s_Data.ActiveCommandBuffer);
 
+			auto fb = renderPass->GetSpecification().TargetFramebuffer;
+			Ref<VulkanFramebuffer> framebuffer = fb.As<VulkanFramebuffer>();
+			const auto& fbSpec = framebuffer->GetSpecification();
+
+			uint32_t width = framebuffer->GetWidth();
+			uint32_t height = framebuffer->GetHeight();
+
 			BeginFrameStatic();
-
-			// Ref<VulkanFramebuffer> framebuffer = s_Framebuffer.As<VulkanFramebuffer>();
-			// auto fb = renderPass->GetSpecification().TargetFramebuffer;
-			// Ref<VulkanFramebuffer> framebuffer = fb.As<VulkanFramebuffer>();
-			// const auto& fbSpec = framebuffer->GetSpecification();
-
-			// uint32_t width = framebuffer->GetWidth();
-			// uint32_t height = framebuffer->GetHeight();
 
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassBeginInfo.pNext = nullptr;
-			// renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
+			renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
 			renderPassBeginInfo.renderArea.offset.x = 0;
 			renderPassBeginInfo.renderArea.offset.y = 0;
-			// renderPassBeginInfo.renderArea.extent.width = width;
-			// renderPassBeginInfo.renderArea.extent.height = height;
+			renderPassBeginInfo.renderArea.extent.width = width;
+			renderPassBeginInfo.renderArea.extent.height = height;
 
 			// TODO: Does out framebuffer has a depth attachment?
 			VkClearValue clearValues[2];
-			// clearValues[0].color = { { fbSpec.ClearColor.r, fbSpec.ClearColor.g, fbSpec.ClearColor.b, fbSpec.ClearColor.a } };
+			clearValues[0].color = { { fbSpec.ClearColor.r, fbSpec.ClearColor.g, fbSpec.ClearColor.b, fbSpec.ClearColor.a } };
 			clearValues[1].depthStencil = { 1.0f, 0 };
 			renderPassBeginInfo.clearValueCount = 2; // Color + depth
 			renderPassBeginInfo.pClearValues = clearValues;
-			// renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
+			renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
 
-			// vkCmdBeginRenderPass(s_Data.ActiveCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			// vkCmdBeginRenderPass(s_Data.ActiveCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE); // You must call vkBeginCommandBuffer() before this call to vkCmdBeginRenderPass()
 
 			// Update dynamic viewport state
 			VkViewport viewport = {};
 			viewport.x = 0.0f;
 			viewport.y = 0.0f;
-			// viewport.height = (float)height;
-			// viewport.width = (float)width;
+			viewport.height = (float)height;
+			viewport.width = (float)width;
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
 			// vkCmdSetViewport(s_Data.ActiveCommandBuffer, 0, 1, &viewport);
 
 			// Update dynamic scissor state
 			VkRect2D scissor = {};
-			// scissor.extent.width = width;
-			// scissor.extent.height = height;
+			scissor.extent.width = width;
+			scissor.extent.height = height;
 			scissor.offset.x = 0;
 			scissor.offset.y = 0;
 			// vkCmdSetScissor(s_Data.ActiveCommandBuffer, 0, 1, &scissor);
+
+			EndFrameStatic();
 		}
 	}
 
