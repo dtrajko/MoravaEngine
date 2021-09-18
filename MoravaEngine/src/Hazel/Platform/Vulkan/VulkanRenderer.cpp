@@ -321,7 +321,7 @@ namespace Hazel {
 			s_Data.RendererDescriptorSetFeb2021 = pbrShader->CreateDescriptorSets(1);
 		}
 
-		SetSceneEnvironment(Ref<Environment>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), Ref<HazelImage2D>());
+		SetSceneEnvironmentStatic(Ref<Environment>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), Ref<HazelImage2D>());
 
 		/*** BEGIN Setup the Skybox ****/
 		s_Data.VulkanSkyboxCube = Hazel::Ref<VulkanSkyboxCube>::Create();
@@ -607,6 +607,11 @@ namespace Hazel {
 	}
 
 	void VulkanRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
+	{
+		Log::GetLogger()->error("The virtual method SetSceneEnvironment currently not in use. Use SetSceneEnvironmentStatic instead!");
+	}
+
+	void VulkanRenderer::SetSceneEnvironmentStatic(Ref<Environment> environment, Ref<HazelImage2D> shadow)
 	{
 		// HazelRenderer::Submit([environment]() mutable {});
 		{
@@ -1371,7 +1376,10 @@ namespace Hazel {
 	// TODO: virtual or static?
 	void VulkanRenderer::SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
 	{
-		// HazelRenderer::Submit([]() {});
+		Ref<VulkanMaterial> vulkanMaterial = material.As<VulkanMaterial>();
+		vulkanMaterial->UpdateForRendering();
+
+		// HazelRenderer::Submit([pipeline, vulkanMaterial]() mutable {});
 		{
 			Ref<VulkanPipeline> vulkanPipeline = s_CompositePipeline.As<VulkanPipeline>();
 
@@ -1390,8 +1398,12 @@ namespace Hazel {
 			vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 			// Bind descriptor sets describing shader binding points
-			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_QuadDescriptorSet.DescriptorSets.size(), s_QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
+			// vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_QuadDescriptorSet.DescriptorSets.size(), s_QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
+			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)vulkanMaterial->GetDescriptorSet().DescriptorSets.size(), vulkanMaterial->GetDescriptorSet().DescriptorSets.data(), 0, nullptr);
 
+			Buffer uniformStorageBuffer = vulkanMaterial->GetUniformStorageBuffer();
+
+			vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 		}
 	}

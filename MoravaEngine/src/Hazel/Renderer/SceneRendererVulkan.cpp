@@ -1,0 +1,363 @@
+#include "SceneRendererVulkan.h"
+
+#include "Hazel/Platform/Vulkan/VulkanFramebuffer.h"
+#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "Hazel/Renderer/HazelFramebuffer.h"
+#include "Hazel/Renderer/HazelRenderer.h"
+#include "Hazel/Renderer/RenderPass.h"
+#include "Hazel/Renderer/Renderer2D.h"
+
+
+namespace Hazel {
+
+	struct VulkanRendererData
+	{
+		Ref<RenderPass> GeoPass;
+		Ref<RenderPass> CompositePass;
+
+		Ref<HazelShader> CompositeShader;
+		Ref<HazelMaterial> CompositeMaterial;
+
+		Ref<HazelTexture2D> BRDFLUT;
+
+		Ref<HazelShader> GridShader;
+		Ref<HazelMaterial> GridMaterial;
+		Ref<Pipeline> GridPipeline;
+
+		Ref<HazelMaterial> OutlineMaterial;
+
+		Ref<Pipeline> SkyboxPipeline;
+		Ref<HazelMaterial> SkyboxMaterial;
+
+		VkDescriptorImageInfo ColorBufferInfo;
+
+		Ref<Pipeline> CompositePipeline;
+
+		uint32_t ViewportWidth;
+		uint32_t ViewportHeight;
+		bool NeedsResize;
+
+		const Hazel::HazelScene* ActiveScene = nullptr;
+
+		struct DrawCommand
+		{
+			Ref<HazelMesh> Mesh;
+			Ref<HazelMaterial> Material;
+			glm::mat4 Transform;
+		};
+
+		std::vector<DrawCommand> DrawList;
+		std::vector<DrawCommand> SelectedMeshDrawList;
+
+		struct SceneInfo
+		{
+			SceneRendererCamera SceneCamera;
+			Environment SceneEnvironment; // Smart Ref or not?
+			float SkyboxLod;
+			HazelLight ActiveLight;
+			glm::vec3 LightDirectionTemp;
+		} SceneData;
+
+		SceneRendererOptions Options;
+	};
+
+	static VulkanRendererData s_Data;
+
+	SceneRendererVulkan::SceneRendererVulkan()
+	{
+	}
+
+	SceneRendererVulkan::~SceneRendererVulkan()
+	{
+	}
+
+	void SceneRendererVulkan::Init()
+	{
+		HazelFramebufferSpecification geoFramebufferSpec;
+		geoFramebufferSpec.Width = 1280;
+		geoFramebufferSpec.Height = 720;
+		geoFramebufferSpec.Format = FramebufferFormat::RGBA16F;
+		geoFramebufferSpec.Samples = 8;
+		geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+
+		RenderPassSpecification geoRenderPassSpec;
+		geoRenderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(geoFramebufferSpec);
+		s_Data.GeoPass = RenderPass::Create(geoRenderPassSpec);
+
+		HazelFramebufferSpecification compFramebufferSpec;
+		compFramebufferSpec.Width = 1280;
+		compFramebufferSpec.Height = 720;
+		compFramebufferSpec.Format = FramebufferFormat::RGBA8;
+		compFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+
+		RenderPassSpecification compRenderPassSpec;
+		compRenderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(compFramebufferSpec);
+		s_Data.CompositePass = RenderPass::Create(compRenderPassSpec);
+
+		s_Data.CompositeShader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
+		s_Data.CompositeMaterial = HazelMaterial::Create(s_Data.CompositeShader, "CompositeMaterial");
+		s_Data.BRDFLUT = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
+
+		// Grid
+		{
+			s_Data.GridShader = HazelRenderer::GetShaderLibrary()->Get("Grid");
+			const float gridScale = 16.025f;
+			const float gridSize = 0.025f;
+			s_Data.GridMaterial = HazelMaterial::Create(s_Data.GridShader);
+			s_Data.GridMaterial->Set("u_Settings.Scale", gridScale);
+			s_Data.GridMaterial->Set("u_Settings.Size", gridSize);
+
+			PipelineSpecification pipelineSpec;
+			pipelineSpec.DebugName = "Grid";
+			pipelineSpec.Shader = s_Data.GridShader;
+			pipelineSpec.Layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+			};
+			pipelineSpec.RenderPass = s_Data.GeoPass;
+			s_Data.GridPipeline = Pipeline::Create(pipelineSpec);
+		}
+
+		// Outline
+		auto outlineShader = HazelRenderer::GetShaderLibrary()->Get("Outline");
+		s_Data.OutlineMaterial = HazelMaterial::Create(outlineShader);
+		s_Data.OutlineMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
+
+		// Skybox
+		{
+			auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox");
+
+			PipelineSpecification pipelineSpec;
+			pipelineSpec.DebugName = "Skybox";
+			pipelineSpec.Shader = skyboxShader;
+			pipelineSpec.Layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+			};
+			pipelineSpec.RenderPass = s_Data.GeoPass;
+			s_Data.SkyboxPipeline = Pipeline::Create(pipelineSpec);
+
+			s_Data.SkyboxMaterial = HazelMaterial::Create(skyboxShader);
+			s_Data.SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
+		}
+
+		// Composite
+		{
+			HazelFramebufferSpecification spec;
+			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
+			framebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer)
+			{
+				// HazelRenderer::Submit([framebuffer]() mutable {});
+				{
+					auto vulkanFB = framebuffer.As<VulkanFramebuffer>();
+					s_Data.ColorBufferInfo = vulkanFB->GetVulkanDescriptorInfo();
+				}
+			});
+
+			PipelineSpecification pipelineSpecification;
+			pipelineSpecification.Layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+			};
+			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
+
+			RenderPassSpecification renderPassSpec;
+			renderPassSpec.TargetFramebuffer = framebuffer;
+			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
+			pipelineSpecification.DebugName = "SceneComposite";
+			s_Data.CompositePipeline = Pipeline::Create(pipelineSpecification);
+		}
+	}
+
+	void SceneRendererVulkan::SetViewportSize(uint32_t width, uint32_t height)
+	{
+		s_Data.ViewportWidth = width;
+		s_Data.ViewportHeight = height;
+		s_Data.NeedsResize = true;
+	}
+
+	void SceneRendererVulkan::BeginScene(const HazelScene* scene, const SceneRendererCamera& camera)
+	{
+		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+
+		s_Data.ActiveScene = scene;
+
+		s_Data.SceneData.SceneCamera = camera;
+		s_Data.SceneData.SceneEnvironment = scene->GetEnvironment();
+		s_Data.SceneData.SkyboxLod = scene->GetSkyboxLod();
+		s_Data.SceneData.ActiveLight = scene->GetLight();
+
+		if (s_Data.NeedsResize)
+		{
+			s_Data.GeoPass->GetSpecification().TargetFramebuffer->Resize(s_Data.ViewportWidth, s_Data.ViewportHeight);
+			s_Data.CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->Resize(s_Data.ViewportWidth, s_Data.ViewportHeight);
+			s_Data.NeedsResize = false;
+		}
+
+		VulkanRenderer::SetSceneEnvironmentStatic(&s_Data.SceneData.SceneEnvironment, Ref<HazelImage2D>());
+	}
+
+	void SceneRendererVulkan::EndScene()
+	{
+		HZ_CORE_ASSERT(s_Data.ActiveScene, "");
+
+		s_Data.ActiveScene = nullptr;
+
+		FlushDrawList();
+	}
+
+	void SceneRendererVulkan::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
+	{
+		// TODO: Culling, sorting, etc.
+		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
+	}
+
+	void SceneRendererVulkan::GeometryPass()
+	{
+		VulkanRenderer::BeginRenderPassStatic(s_Data.GeoPass);
+
+		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
+		// glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
+		glm::vec3 cameraPosition = s_Data.SceneData.SceneCamera.Camera.GetPosition();
+
+		// float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
+		// HazelRenderer::Submit([viewProjection, cameraPosition]() {});
+		{
+			auto inverseVP = glm::inverse(viewProjection);
+			// auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
+			// void* ubPtr = shader->MapUniformBuffer(0);
+			struct ViewProj
+			{
+				glm::mat4 ViewProjection;
+				glm::mat4 InverseViewProjection;
+			};
+			ViewProj viewProj;
+			viewProj.ViewProjection = viewProjection;
+			viewProj.InverseViewProjection = inverseVP;
+			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			// shader->UnmapUniformBuffer(0);
+
+			// shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShader>();
+			// ubPtr = shader->MapUniformBuffer(0);
+			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			// shader->UnmapUniformBuffer(0);
+
+			// shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static").As<VulkanShader>();
+			// ubPtr = shader->MapUniformBuffer(0);
+			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			// shader->UnmapUniformBuffer(0);
+
+			// Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
+
+			{
+				// void* ubPtr = shader->MapUniformBuffer(0, 0);
+				glm::mat4 viewProj = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
+				// memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+				// shader->UnmapUniformBuffer(0, 0);
+			}
+
+			struct Light
+			{
+				glm::vec3 Direction;
+				float Padding = 0.0f;
+				glm::vec3 Radiance;
+				float Multiplier;
+			};
+
+			struct UB
+			{
+				Light lights;
+				glm::vec3 u_CameraPosition;
+				// glm::vec4 u_AlbedoColorUB;
+			};
+
+			UB ub;
+			ub.lights =
+			{
+				{ 0.5f, 0.5f, 0.5f },
+				0.0f,
+				{ 1.0f, 1.0f, 1.0f },
+				1.0f
+			};
+
+			ub.lights.Direction = VulkanRenderer::GetLightDirectionTemp();
+			ub.u_CameraPosition = cameraPosition;
+			// ub.u_AlbedoColorUB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+			// Log::GetLogger()->info("Light Direction: {0}, {1}, {2}", ub.lights.Direction.x, ub.lights.Direction.y, ub.lights.Direction.z);
+
+			// void* ubPtr = shader->MapUniformBuffer(1, 0);
+			// memcpy(ubPtr, &ub, sizeof(UB));
+			// shader->UnmapUniformBuffer(1, 0);
+		}
+
+		// Skybox
+		// s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
+		// s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
+		// VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
+
+		// RenderEntities
+		for (auto& dc : s_Data.DrawList)
+		{
+			VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
+		}
+
+		for (auto& dc : s_Data.SelectedMeshDrawList)
+		{
+			VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
+		}
+
+		// Grid
+		if (GetOptions().ShowGrid)
+		{
+			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
+			VulkanRenderer::RenderQuadStatic(s_Data.GridPipeline, s_Data.GridMaterial, transform);
+		}
+
+		if (GetOptions().ShowBoundingBoxes)
+		{
+			Renderer2D::BeginScene(viewProjection, true);
+			for (auto& dc : s_Data.DrawList)
+			{
+				HazelRenderer::DrawAABB(dc.Mesh, dc.Transform);
+			}
+			Renderer2D::EndScene();
+		}
+
+		VulkanRenderer::EndRenderPassStatic();
+	}
+
+	void SceneRendererVulkan::CompositePass()
+	{
+		VulkanRenderer::BeginRenderPassStatic(s_Data.CompositePipeline->GetSpecification().RenderPass);
+
+		float exposure = s_Data.SceneData.SceneCamera.Camera.GetExposure();
+		int textureSamples = s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
+
+		s_Data.CompositeMaterial->Set("u_Uniforms.Exposure", exposure);
+		// s_Data.CompositeMaterial->Set("u_Uniforms.TextureSamples", textureSamples);
+
+		auto& framebuffer = s_Data.GeoPass->GetSpecification().TargetFramebuffer;
+		auto vulkanFramebuffer = framebuffer.As<VulkanFramebuffer>();
+
+		// s_Data.CompositeMaterial->Set("u_Texture", vulkanFramebuffer->GetVulkanDescriptorInfo()); // how it works?
+		s_Data.CompositeMaterial->Set("u_Texture", vulkanFramebuffer->GetColorAttachmentRendererID());
+
+		VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.CompositePipeline, s_Data.CompositeMaterial);
+		VulkanRenderer::EndRenderPassStatic();
+	}
+
+	void SceneRendererVulkan::FlushDrawList()
+	{
+		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+
+		GeometryPass();
+		CompositePass();
+	}
+
+	SceneRendererOptions& SceneRendererVulkan::GetOptions()
+	{
+		return s_Data.Options;
+	}
+
+}

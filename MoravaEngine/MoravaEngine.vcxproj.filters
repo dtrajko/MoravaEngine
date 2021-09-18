@@ -945,6 +945,9 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanSkyboxCube.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\SceneRendererVulkan.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1999,6 +2002,9 @@
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanSkyboxCube.h">
       <Filter>Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\SceneRendererVulkan.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -65,6 +65,7 @@ namespace Hazel {
 		static void SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material);
 		static void RenderMeshStatic(/*Ref<Pipeline> pipeline,*/Ref<HazelMesh> mesh, const glm::mat4& transform);
 		static void RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
+		static void SetSceneEnvironmentStatic(Ref<Environment> environment, Ref<HazelImage2D> shadow);
 
 	public:
 		static bool s_MipMapsEnabled;

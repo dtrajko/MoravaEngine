@@ -246,6 +246,7 @@
     <ClCompile Include="src\Hazel\Renderer\RenderPass.cpp" />
     <ClCompile Include="src\Hazel\Renderer\SceneEnvironment.cpp" />
     <ClCompile Include="src\Hazel\Renderer\SceneRenderer.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\SceneRendererVulkan.cpp" />
     <ClCompile Include="src\Hazel\Renderer\ShaderUniform.cpp" />
     <ClCompile Include="src\Hazel\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\Hazel\Renderer\VertexBuffer.cpp" />
@@ -681,6 +682,7 @@
     <ClInclude Include="src\Hazel\Renderer\RenderPass.h" />
     <ClInclude Include="src\Hazel\Renderer\SceneEnvironment.h" />
     <ClInclude Include="src\Hazel\Renderer\SceneRenderer.h" />
+    <ClInclude Include="src\Hazel\Renderer\SceneRendererVulkan.h" />
     <ClInclude Include="src\Hazel\Renderer\ShaderUniform.h" />
     <ClInclude Include="src\Hazel\Renderer\VertexArray.h" />
     <ClInclude Include="src\Hazel\Renderer\VertexBuffer.h" />

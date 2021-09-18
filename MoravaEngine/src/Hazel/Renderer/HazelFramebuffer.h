@@ -41,6 +41,7 @@ namespace Hazel {
 		float Scale = 1.0f;
 		uint32_t Width = 0;
 		uint32_t Height = 0;
+		FramebufferFormat Format = FramebufferFormat::None;
 		glm::vec4 ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 		HazelFramebufferAttachmentSpecification Attachments;
 		uint32_t Samples = 1; // multisampling
