@@ -1286,7 +1286,7 @@ namespace Hazel {
 		Log::GetLogger()->error("The virtual method RenderMesh currently not in use. Use RenderMeshStatic instead!");
 	}
 
-	void VulkanRenderer::RenderMeshStatic(Ref<HazelMesh> mesh, const glm::mat4& transform)
+	void VulkanRenderer::RenderMeshStatic(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		// HazelRenderer::Submit([mesh, transform]() mutable {});
 		{

@@ -240,15 +240,14 @@ namespace Hazel {
 		VulkanRenderer::BeginRenderPassStatic(s_Data.GeoPass);
 
 		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
-		// glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
-		glm::vec3 cameraPosition = s_Data.SceneData.SceneCamera.Camera.GetPosition();
+		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
+		// glm::vec3 cameraPosition = s_Data.SceneData.SceneCamera.Camera.GetPosition();
 
-		// float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
 		// HazelRenderer::Submit([viewProjection, cameraPosition]() {});
 		{
 			auto inverseVP = glm::inverse(viewProjection);
-			// auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
-			// void* ubPtr = shader->MapUniformBuffer(0);
+			auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
+			void* ubPtr = shader->MapUniformBuffer(0);
 			struct ViewProj
 			{
 				glm::mat4 ViewProjection;
@@ -257,27 +256,18 @@ namespace Hazel {
 			ViewProj viewProj;
 			viewProj.ViewProjection = viewProjection;
 			viewProj.InverseViewProjection = inverseVP;
-			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
-			// shader->UnmapUniformBuffer(0);
+			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			shader->UnmapUniformBuffer(0);
 
-			// shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShader>();
-			// ubPtr = shader->MapUniformBuffer(0);
-			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
-			// shader->UnmapUniformBuffer(0);
+			shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShader>();
+			ubPtr = shader->MapUniformBuffer(0);
+			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			shader->UnmapUniformBuffer(0);
 
-			// shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static").As<VulkanShader>();
-			// ubPtr = shader->MapUniformBuffer(0);
-			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
-			// shader->UnmapUniformBuffer(0);
-
-			// Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
-
-			{
-				// void* ubPtr = shader->MapUniformBuffer(0, 0);
-				glm::mat4 viewProj = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
-				// memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
-				// shader->UnmapUniformBuffer(0, 0);
-			}
+			shader = s_Data.GeometryPipeline->GetSpecification().Shader.As<VulkanShader>();
+			ubPtr = shader->MapUniformBuffer(0);
+			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			shader->UnmapUniformBuffer(0);
 
 			struct Light
 			{
@@ -291,7 +281,6 @@ namespace Hazel {
 			{
 				Light lights;
 				glm::vec3 u_CameraPosition;
-				// glm::vec4 u_AlbedoColorUB;
 			};
 
 			UB ub;
@@ -305,29 +294,26 @@ namespace Hazel {
 
 			ub.lights.Direction = VulkanRenderer::GetLightDirectionTemp();
 			ub.u_CameraPosition = cameraPosition;
-			// ub.u_AlbedoColorUB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
-			// Log::GetLogger()->info("Light Direction: {0}, {1}, {2}", ub.lights.Direction.x, ub.lights.Direction.y, ub.lights.Direction.z);
-
-			// void* ubPtr = shader->MapUniformBuffer(1, 0);
-			// memcpy(ubPtr, &ub, sizeof(UB));
-			// shader->UnmapUniformBuffer(1, 0);
+			ubPtr = shader->MapUniformBuffer(1, 0);
+			memcpy(ubPtr, &ub, sizeof(UB));
+			shader->UnmapUniformBuffer(1, 0);
 		}
 
 		// Skybox
-		// s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
-		// s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
-		// VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
+		s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
+		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
+		VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
 
 		// RenderEntities
 		for (auto& dc : s_Data.DrawList)
 		{
-			VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
+			VulkanRenderer::RenderMeshStatic(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		for (auto& dc : s_Data.SelectedMeshDrawList)
 		{
-			VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
+			VulkanRenderer::RenderMeshStatic(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		// Grid

@@ -31,6 +31,8 @@ namespace Hazel {
 		} SceneData;
 
 		// Resources
+		Ref<Pipeline> GeometryPipeline;
+		Ref<Pipeline> CompositePipeline;
 		Ref<Pipeline> SkyboxPipeline;
 		Ref<Pipeline> GridPipeline;
 		Ref<HazelMaterial> SkyboxMaterial;
@@ -93,6 +95,26 @@ namespace Hazel {
 		framebufferSpec.Height = 720;
 		renderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(framebufferSpec);
 		s_Data.GeoPass = RenderPass::Create(renderPassSpec);
+
+		// Geometry pipeline
+		{
+			HazelFramebufferSpecification spec;
+			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
+
+			PipelineSpecification pipelineSpecification;
+			pipelineSpecification.Layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float3, "a_Normal" },
+				{ ShaderDataType::Float3, "a_Tangent" },
+				{ ShaderDataType::Float3, "a_Binormal" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+			};
+			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+			pipelineSpecification.RenderPass = s_Data.GeoPass;
+			pipelineSpecification.DebugName = "PBR-Static";
+			s_Data.GeometryPipeline = Pipeline::Create(pipelineSpecification);
+		}
+
 	}
 
 	void VulkanTestLayer::OnDetach()
@@ -416,12 +438,12 @@ namespace Hazel {
 		// RenderEntities
 		for (auto& dc : s_Data.DrawList)
 		{
-			VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
+			VulkanRenderer::RenderMeshStatic(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		for (auto& dc : s_Data.SelectedMeshDrawList)
 		{
-			VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
+			VulkanRenderer::RenderMeshStatic(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		// Grid
