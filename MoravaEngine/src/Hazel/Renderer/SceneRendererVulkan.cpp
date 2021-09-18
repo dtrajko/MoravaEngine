@@ -10,34 +10,32 @@
 
 namespace Hazel {
 
-	struct VulkanRendererData
+	struct SceneRendererData
 	{
-		Ref<RenderPass> GeoPass;
-		Ref<RenderPass> CompositePass;
+		const Hazel::HazelScene* ActiveScene = nullptr;
+		struct SceneInfo
+		{
+			SceneRendererCamera SceneCamera;
 
+			// Resources
+			Environment SceneEnvironment;
+			float SkyboxLod = 0.0f;
+			HazelLight ActiveLight;
+			glm::vec3 LightDirectionTemp;
+		} SceneData;
+
+		Ref<HazelTexture2D> BRDFLUT;
 		Ref<HazelShader> CompositeShader;
 		Ref<HazelMaterial> CompositeMaterial;
 
-		Ref<HazelTexture2D> BRDFLUT;
-
-		Ref<HazelShader> GridShader;
-		Ref<HazelMaterial> GridMaterial;
-		Ref<Pipeline> GridPipeline;
-
-		Ref<HazelMaterial> OutlineMaterial;
-
-		Ref<Pipeline> SkyboxPipeline;
-		Ref<HazelMaterial> SkyboxMaterial;
-
-		VkDescriptorImageInfo ColorBufferInfo;
+		Ref<RenderPass> GeoPass;
+		Ref<RenderPass> CompositePass;
 
 		Ref<Pipeline> CompositePipeline;
+		Ref<Pipeline> GridPipeline;
+		Ref<Pipeline> SkyboxPipeline;
 
-		uint32_t ViewportWidth;
-		uint32_t ViewportHeight;
-		bool NeedsResize;
-
-		const Hazel::HazelScene* ActiveScene = nullptr;
+		Ref<HazelMaterial> SkyboxMaterial;
 
 		struct DrawCommand
 		{
@@ -49,19 +47,21 @@ namespace Hazel {
 		std::vector<DrawCommand> DrawList;
 		std::vector<DrawCommand> SelectedMeshDrawList;
 
-		struct SceneInfo
-		{
-			SceneRendererCamera SceneCamera;
-			Environment SceneEnvironment; // Smart Ref or not?
-			float SkyboxLod;
-			HazelLight ActiveLight;
-			glm::vec3 LightDirectionTemp;
-		} SceneData;
+		// Grid
+		Ref<HazelShader> GridShader;
+		Ref<HazelMaterial> GridMaterial;
+		Ref<HazelMaterial> OutlineMaterial;
 
 		SceneRendererOptions Options;
+
+		uint32_t ViewportWidth = 0;
+		uint32_t ViewportHeight = 0;
+		bool NeedsResize = false;
+
+		VkDescriptorImageInfo ColorBufferInfo;
 	};
 
-	static VulkanRendererData s_Data;
+	static SceneRendererData s_Data;
 
 	SceneRendererVulkan::SceneRendererVulkan()
 	{
