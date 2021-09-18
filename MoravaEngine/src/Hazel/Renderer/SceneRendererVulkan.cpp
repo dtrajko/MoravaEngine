@@ -31,6 +31,7 @@ namespace Hazel {
 		Ref<RenderPass> GeoPass;
 		Ref<RenderPass> CompositePass;
 
+		Ref<Pipeline> GeometryPipeline;
 		Ref<Pipeline> CompositePipeline;
 		Ref<Pipeline> GridPipeline;
 		Ref<Pipeline> SkyboxPipeline;
@@ -98,7 +99,7 @@ namespace Hazel {
 		s_Data.CompositeMaterial = HazelMaterial::Create(s_Data.CompositeShader, "CompositeMaterial");
 		s_Data.BRDFLUT = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
-		// Grid
+		// Grid pipeline
 		{
 			s_Data.GridShader = HazelRenderer::GetShaderLibrary()->Get("Grid");
 			const float gridScale = 16.025f;
@@ -123,7 +124,7 @@ namespace Hazel {
 		s_Data.OutlineMaterial = HazelMaterial::Create(outlineShader);
 		s_Data.OutlineMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 
-		// Skybox
+		// Skybox pipeline
 		{
 			auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox");
 
@@ -141,7 +142,29 @@ namespace Hazel {
 			s_Data.SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 		}
 
-		// Composite
+		// Geometry pipeline
+		{
+			HazelFramebufferSpecification spec;
+			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
+
+			PipelineSpecification pipelineSpecification;
+			pipelineSpecification.Layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float3, "a_Normal" },
+				{ ShaderDataType::Float3, "a_Tangent" },
+				{ ShaderDataType::Float3, "a_Binormal" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+			};
+			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+
+			RenderPassSpecification renderPassSpec;
+			renderPassSpec.TargetFramebuffer = framebuffer;
+			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
+			pipelineSpecification.DebugName = "PBR-Static";
+			s_Data.GeometryPipeline = Pipeline::Create(pipelineSpecification);
+		}
+
+		// Composite pipeline
 		{
 			HazelFramebufferSpecification spec;
 			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);

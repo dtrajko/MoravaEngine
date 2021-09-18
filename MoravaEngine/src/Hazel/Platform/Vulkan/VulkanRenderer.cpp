@@ -219,7 +219,7 @@ namespace Hazel {
 			RenderPassSpecification renderPassSpec;
 			renderPassSpec.TargetFramebuffer = s_Framebuffer;
 			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
-
+			pipelineSpecification.DebugName = "PBR-Static";
 			s_MeshPipeline = Pipeline::Create(pipelineSpecification);
 		}
 
