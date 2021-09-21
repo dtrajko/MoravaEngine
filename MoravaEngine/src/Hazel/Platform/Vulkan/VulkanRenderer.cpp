@@ -1511,4 +1511,8 @@ namespace Hazel {
 		return s_Data.SceneData.LightDirectionTemp;
 	}
 
+	void VulkanRenderer::SetCamera(HazelCamera& camera)
+	{
+		s_Data.SceneData.SceneCamera.Camera = camera;
+	}
 }

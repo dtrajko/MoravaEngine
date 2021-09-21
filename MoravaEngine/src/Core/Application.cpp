@@ -111,6 +111,8 @@ void Application::Run()
 	{
 		m_Window->ProcessEvents();
 
+		float deltaTime = Timer::Get()->GetDeltaTime(); // can be used as Hazel::Timestep
+
 		if (!m_Minimized)
 		{
 			for (Hazel::Layer* layer : m_LayerStack)
@@ -127,14 +129,15 @@ void Application::Run()
 			// On Render thread
 			m_Window->GetRenderContext()->BeginFrame();
 
-			m_Renderer->WaitAndRender(Timer::Get()->GetDeltaTime(), m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
+			m_Renderer->WaitAndRender(deltaTime, m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
 
 			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
 
 			switch (Hazel::RendererAPI::Current())
 			{
 			case Hazel::RendererAPIType::Vulkan:
-				Hazel::VulkanRenderer::Draw(m_Scene->GetCamera());
+				m_Scene->OnRenderEditor(deltaTime, *(Hazel::EditorCamera*)m_Scene->GetCamera());
+				// Hazel::VulkanRenderer::Draw(m_Scene->GetCamera());
 				break;
 			case Hazel::RendererAPIType::DX11:
 				DX11Renderer::Draw(m_Scene->GetCamera());

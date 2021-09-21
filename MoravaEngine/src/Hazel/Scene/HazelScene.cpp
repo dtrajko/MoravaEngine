@@ -3,6 +3,7 @@
 #include "Entity.h"
 #include "ScriptableEntity.h"
 #include "Hazel/Renderer/HazelMesh.h"
+#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/SceneRenderer.h"
 #include "Hazel/Script/ScriptEngine.h"
@@ -374,6 +375,18 @@ namespace Hazel {
 		// RENDER 3D SCENE
 		/////////////////////////////////////////////////////////////////////
 
+		m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
+
+		// the following code replaces the VulkanRenderer::Draw() method
+		VulkanRenderer::SetCamera((HazelCamera)editorCamera); // s_Data.SceneData.SceneCamera.Camera = *camera;
+		VulkanRenderer::GeometryPass();
+		VulkanRenderer::CompositePass();
+
+#if 0
+		/////////////////////////////////////////////////////////////////////
+		// RENDER 3D SCENE
+		/////////////////////////////////////////////////////////////////////
+
 		// Process lights
 		{
 			m_LightEnvironment = LightEnvironment();
@@ -432,6 +445,8 @@ namespace Hazel {
 			SceneRenderer::EndScene();
 		}
 		/////////////////////////////////////////////////////////////////////
+#endif
+
 	}
 
 	void HazelScene::SetEnvironment(const Environment& environment)

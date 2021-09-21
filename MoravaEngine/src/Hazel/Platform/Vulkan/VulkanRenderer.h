@@ -65,6 +65,8 @@ namespace Hazel {
 		static void RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
 		static void SetSceneEnvironmentStatic(Ref<Environment> environment, Ref<HazelImage2D> shadow);
 
+		static void SetCamera(HazelCamera& camera);
+
 	public:
 		static bool s_MipMapsEnabled;
 		static bool s_ViewportFBNeedsResize;
