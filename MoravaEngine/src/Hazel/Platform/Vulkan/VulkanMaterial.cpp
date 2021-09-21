@@ -167,28 +167,43 @@ namespace Hazel {
 
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const Ref<HazelTexture2D>& texture)
 	{
-		const ShaderResourceDeclaration* resource = FindResourceDeclaration(name);
-
-		if (!resource)
+		// Ref<VulkanMaterial> instance = this;
+		m_Textures.push_back(texture);
+		// HazelRenderer::Submit([instance, name, texture]() mutable {});
 		{
-			// HZ_CORE_ASSERT(resource);
-			Log::GetLogger()->error("VulkanMaterial::SetVulkanDescriptor - resource not found (name '{0}')!", name);
-			return;
+			const VkWriteDescriptorSet* wds = GetShader().As<VulkanShader>()->GetDescriptorSet(name);
+			HZ_CORE_ASSERT(wds);
+
+			VkWriteDescriptorSet descriptorSet = *wds;
+			descriptorSet.dstSet = m_DescriptorSet.DescriptorSets[0];
+			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+			descriptorSet.pImageInfo = &imageInfo;
+			m_WriteDescriptors.push_back(descriptorSet);
 		}
 
-		// Texture is already set
-		if (resource->GetRegister() < m_Textures.size() && m_Textures[resource->GetRegister()] && texture->GetHash() == m_Textures[resource->GetRegister()]->GetHash())
-			return;
-
-		if (resource->GetRegister() >= m_Textures.size())
-			m_Textures.resize(resource->GetRegister() + 1);
-		m_Textures[resource->GetRegister()] = texture;
-
-		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
-		HZ_CORE_ASSERT(wds);
-		m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::Texture2D, *wds, {}, texture.As<HazelTexture>() /*, nullptr */ }));
-		m_PendingDescriptors.push_back(m_ResidentDescriptors.back());
-
+		/**** BEGIN a more recent version ****/
+		//	const ShaderResourceDeclaration* resource = FindResourceDeclaration(name);
+		//	
+		//	if (!resource)
+		//	{
+		//		// HZ_CORE_ASSERT(resource);
+		//		Log::GetLogger()->error("VulkanMaterial::SetVulkanDescriptor - resource not found (name '{0}')!", name);
+		//		return;
+		//	}
+		//	
+		//	// Texture is already set
+		//	if (resource->GetRegister() < m_Textures.size() && m_Textures[resource->GetRegister()] && texture->GetHash() == m_Textures[resource->GetRegister()]->GetHash())
+		//		return;
+		//	
+		//	if (resource->GetRegister() >= m_Textures.size())
+		//		m_Textures.resize(resource->GetRegister() + 1);
+		//	m_Textures[resource->GetRegister()] = texture;
+		//	
+		//	const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		//	HZ_CORE_ASSERT(wds);
+		//	m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::Texture2D, *wds, {}, texture.As<HazelTexture>() /*, nullptr */ }));
+		//	m_PendingDescriptors.push_back(m_ResidentDescriptors.back());
+		/**** END a more recent version ****/
 	}
 
 	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const Ref<HazelTextureCube>& texture)

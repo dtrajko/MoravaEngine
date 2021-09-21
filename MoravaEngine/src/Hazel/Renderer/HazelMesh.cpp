@@ -508,27 +508,27 @@ namespace Hazel {
 					if (texture && texture->Loaded())
 					{
 						m_Textures[i] = texture;
-						// mi->Set("u_AlbedoTexture", texture); //  VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_AlbedoTexture')!
+						mi->Set("u_AlbedoTexture", texture); //  VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_AlbedoTexture')!
+						mi->Set("u_MaterialUniforms.UseAlbedoMap", true);
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", texture);
-							// mi->Set("u_MaterialUniforms.UseAlbedoMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseAlbedoMap'!
 
-							// HazelRenderer::Submit([instance, shader, texture]() mutable
-							// {
-							// });
-							{
-								const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
-								if (wds)
-								{
-									VkWriteDescriptorSet descriptorSet = *wds;
-									descriptorSet.dstSet = s_DescriptorSet;
-									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-									descriptorSet.pImageInfo = &imageInfo;
-									s_WriteDescriptorSets.push_back(descriptorSet);
-								}
-							}
+							//	mi->Set("u_MaterialUniforms.UseAlbedoMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseAlbedoMap'!
+
+							//	HazelRenderer::Submit([instance, shader, texture]() mutable {});
+							//	{
+							//		const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
+							//		if (wds)
+							//		{
+							//			VkWriteDescriptorSet descriptorSet = *wds;
+							//			descriptorSet.dstSet = s_DescriptorSet;
+							//			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+							//			descriptorSet.pImageInfo = &imageInfo;
+							//			s_WriteDescriptorSets.push_back(descriptorSet);
+							//		}
+							//	}
 						}
 						else
 						{
@@ -603,25 +603,26 @@ namespace Hazel {
 					{
 						m_Textures.push_back(texture);
 
+						mi->Set("u_NormalTexture", texture);
+						mi->Set("u_MaterialUniforms.UseNormalMap", true);
+
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", texture);
 							// mi->Set("u_MaterialUniforms.UseNormalMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseNormalMap'!
 
-							// HazelRenderer::Submit([instance, shader, texture]() mutable
-							// {
-							// });
-							{
-								const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
-								if (wds)
-								{
-									VkWriteDescriptorSet descriptorSet = *wds;
-									descriptorSet.dstSet = s_DescriptorSet;
-									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-									descriptorSet.pImageInfo = &imageInfo;
-									s_WriteDescriptorSets.push_back(descriptorSet);
-								}
-							}
+							//	HazelRenderer::Submit([instance, shader, texture]() mutable {});
+							//	{
+							//		const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
+							//		if (wds)
+							//		{
+							//			VkWriteDescriptorSet descriptorSet = *wds;
+							//			descriptorSet.dstSet = s_DescriptorSet;
+							//			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+							//			descriptorSet.pImageInfo = &imageInfo;
+							//			s_WriteDescriptorSets.push_back(descriptorSet);
+							//		}
+							//	}
 						}
 						else
 						{
@@ -686,20 +687,21 @@ namespace Hazel {
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_RoughnessTexture", texture);
-							// mi->Set("u_MaterialUniforms.UseRoughnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseRoughnessMap'!
 
-							// HazelRenderer::Submit([instance, shader, texture]() mutable {});
-							{
-								const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_RoughnessTexture"); // contains binding point etc
-								if (wds)
-								{
-									VkWriteDescriptorSet descriptorSet = *wds;
-									descriptorSet.dstSet = s_DescriptorSet;
-									auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-									descriptorSet.pImageInfo = &imageInfo;
-									s_WriteDescriptorSets.push_back(descriptorSet);
-								}
-							}
+							//	mi->Set("u_MaterialUniforms.UseRoughnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseRoughnessMap'!
+
+							//	HazelRenderer::Submit([instance, shader, texture]() mutable {});
+							//	{
+							//		const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_RoughnessTexture"); // contains binding point etc
+							//		if (wds)
+							//		{
+							//			VkWriteDescriptorSet descriptorSet = *wds;
+							//			descriptorSet.dstSet = s_DescriptorSet;
+							//			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+							//			descriptorSet.pImageInfo = &imageInfo;
+							//			s_WriteDescriptorSets.push_back(descriptorSet);
+							//		}
+							//	}
 						}
 						else
 						{
@@ -858,20 +860,21 @@ namespace Hazel {
 								if (RendererAPI::Current() == RendererAPIType::Vulkan)
 								{
 									AddMaterialTextureWriteDescriptor(0, "u_MetalnessTexture", texture);
-									// mi->Set("u_MaterialUniforms.UseMetalnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseMetalnessMap'!
 
-									// HazelRenderer::Submit([instance, shader, texture]() mutable {});
-									{
-										const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_MetalnessTexture"); // contains binding point etc
-										if (wds)
-										{
-											VkWriteDescriptorSet descriptorSet = *wds;
-											descriptorSet.dstSet = s_DescriptorSet;
-											auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-											descriptorSet.pImageInfo = &imageInfo;
-											s_WriteDescriptorSets.push_back(descriptorSet);
-										}
-									}
+									//	mi->Set("u_MaterialUniforms.UseMetalnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseMetalnessMap'!
+
+									//	HazelRenderer::Submit([instance, shader, texture]() mutable {});
+									//	{
+									//		const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_MetalnessTexture"); // contains binding point etc
+									//		if (wds)
+									//		{
+									//			VkWriteDescriptorSet descriptorSet = *wds;
+									//			descriptorSet.dstSet = s_DescriptorSet;
+									//			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+									//			descriptorSet.pImageInfo = &imageInfo;
+									//			s_WriteDescriptorSets.push_back(descriptorSet);
+									//		}
+									//	}
 								}
 								else
 								{
