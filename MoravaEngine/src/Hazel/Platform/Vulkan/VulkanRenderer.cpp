@@ -47,21 +47,16 @@ namespace Hazel {
 	bool VulkanRenderer::s_MipMapsEnabled = true;
 	bool VulkanRenderer::s_ViewportFBNeedsResize = false;
 
-	static VkCommandBuffer s_ImGuiCommandBuffer;
-	static VkCommandBuffer s_CompositeCommandBuffer;
-
-	static Ref<HazelFramebuffer> s_Framebuffer;
-	static Ref<HazelFramebuffer> s_CompositeFramebuffer;
-	static Ref<Pipeline> s_MeshPipeline;
-	static Ref<Pipeline> s_CompositePipeline;
-	static Ref<VertexBuffer> s_QuadVertexBuffer;
-	static Ref<IndexBuffer> s_QuadIndexBuffer;
-	static VulkanShader::ShaderMaterialDescriptorSet s_QuadDescriptorSet;
-	static ImTextureID s_TextureID;
-	static uint32_t s_ViewportWidth = 1280;
-	static uint32_t s_ViewportHeight = 720;
-
-	static std::vector<Ref<HazelMesh>> s_Meshes;
+	static VkCommandBuffer s_ImGuiCommandBuffer;         // to be removed from VulkanRenderer
+	static VkCommandBuffer s_CompositeCommandBuffer;     // to be removed from VulkanRenderer
+	static Ref<HazelFramebuffer> s_Framebuffer;          // to be removed from VulkanRenderer
+	static Ref<HazelFramebuffer> s_CompositeFramebuffer; // to be removed from VulkanRenderer
+	static Ref<Pipeline> s_CompositePipeline;            // to be removed from VulkanRenderer
+	static Ref<Pipeline> s_MeshPipeline;                 // to be removed from VulkanRenderer
+	static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
+	static uint32_t s_ViewportWidth = 1280;              // to be removed from VulkanRenderer
+	static uint32_t s_ViewportHeight = 720;              // to be removed from VulkanRenderer
+	static std::vector<Ref<HazelMesh>> s_Meshes;         // to be removed from VulkanRenderer
 
 	static Submesh* s_SelectedSubmesh;
 	static glm::mat4* s_Transform_ImGuizmo = nullptr;
@@ -73,7 +68,11 @@ namespace Hazel {
 		VulkanShader::ShaderMaterialDescriptorSet RendererDescriptorSetFeb2021;
 		// std::unordered_map<SceneRenderer*, std::vector<VulkanShader::ShaderMaterialDescriptorSet>> RendererDescriptorSet;
 
-		float Exposure = 0.8f;
+		Ref<VertexBuffer> QuadVertexBuffer;
+		Ref<IndexBuffer> QuadIndexBuffer;
+		VulkanShader::ShaderMaterialDescriptorSet QuadDescriptorSet;
+
+		// float Exposure = 0.8f; // to be removed from VulkanRenderer
 
 		struct SceneInfo
 		{
@@ -93,10 +92,6 @@ namespace Hazel {
 		/**** END dtrajko Keep smart references alive ****/
 
 		RendererCapabilities RenderCaps;
-
-		Ref<VertexBuffer> QuadVertexBuffer;
-		Ref<IndexBuffer> QuadIndexBuffer;
-		VulkanShader::ShaderMaterialDescriptorSet QuadDescriptorSet;
 
 		VkDescriptorSet ActiveRendererDescriptorSet = nullptr;
 		std::vector<VkDescriptorPool> DescriptorPools;
@@ -122,15 +117,18 @@ namespace Hazel {
 
 	static VulkanRendererData s_Data;
 
-	void VulkanRenderer::SubmitMesh(const Ref<HazelMesh>& mesh)
+	/**** BEGIN to be removed from VulkanRenderer ****/
+	void VulkanRenderer::SubmitMeshTemp(const Ref<HazelMesh>& mesh)
 	{
 		// Temporary code - populate selected submesh
-		std::vector<Submesh> submeshes = mesh->GetSubmeshes();
-		s_SelectedSubmesh = &submeshes.at(0);
+		// std::vector<Submesh> submeshes = mesh->GetSubmeshes();
+		// s_SelectedSubmesh = &submeshes.at(0);
 
 		s_Meshes.push_back(mesh);
 	}
+	/**** END to be removed from VulkanRenderer ****/
 
+	/**** BEGIN to be removed from VulkanRenderer ****/
 	void VulkanRenderer::OnResize(uint32_t width, uint32_t height)
 	{
 		// HazelRenderer::Submit([=]() {});
@@ -139,8 +137,8 @@ namespace Hazel {
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = *s_QuadDescriptorSet.DescriptorSets.data();
-			writeDescriptorSet.descriptorCount = (uint32_t)s_QuadDescriptorSet.DescriptorSets.size();
+			writeDescriptorSet.dstSet = *s_Data.QuadDescriptorSet.DescriptorSets.data();
+			writeDescriptorSet.descriptorCount = (uint32_t)s_Data.QuadDescriptorSet.DescriptorSets.size();
 			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			writeDescriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
 			writeDescriptorSet.dstBinding = 0;
@@ -149,16 +147,19 @@ namespace Hazel {
 			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
 		}
 	}
+	/**** END to be removed from VulkanRenderer ****/
 
 	void VulkanRenderer::Init()
 	{
+		/**** BEGIN: to be removed from VulkanRenderer ****/
 		// HazelRenderer::Submit([=]() {});
 		{
 			s_ImGuiCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
 			s_CompositeCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
 		}
+		/**** END: to be removed from VulkanRenderer ****/
 
-		s_Data = VulkanRendererData{};
+		// s_Data = VulkanRendererData{};
 		auto& caps = s_Data.RenderCaps;
 		auto& properties = VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
 		caps.Vendor = Utils::VulkanVendorIDToString(properties.vendorID);
@@ -188,6 +189,7 @@ namespace Hazel {
 
 		/**** END code from HazelRenderer::Init() ****/
 
+		/**** BEGIN: to be removed from VulkanRenderer ****/
 		{
 			HazelFramebufferSpecification spec;
 			spec.DebugName = "Viewport";
@@ -203,6 +205,19 @@ namespace Hazel {
 					Log::GetLogger()->warn("Resizing framebuffer; image layout is {0}", imageInfo.imageLayout);
 					// s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 					s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+
+					auto shader = s_CompositePipeline->GetSpecification().Shader.As<VulkanShader>();
+
+					VkWriteDescriptorSet writeDescriptorSet = {};
+					writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+					writeDescriptorSet.dstSet = *s_Data.QuadDescriptorSet.DescriptorSets.data();
+					writeDescriptorSet.descriptorCount = (uint32_t)s_Data.QuadDescriptorSet.DescriptorSets.size();
+					writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+					writeDescriptorSet.pImageInfo = &vulkanFB->GetVulkanDescriptorInfo();
+					writeDescriptorSet.dstBinding = 0;
+
+					auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+					vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
 				}
 			});
 
@@ -214,7 +229,8 @@ namespace Hazel {
 				{ ShaderDataType::Float3, "a_Binormal" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
-			pipelineSpecification.Shader = s_Data.m_ShaderLibrary->Get("HazelPBR_Static");
+			// pipelineSpecification.Shader = s_Data.m_ShaderLibrary->Get("HazelPBR_Static");
+			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
 
 			RenderPassSpecification renderPassSpec;
 			renderPassSpec.TargetFramebuffer = s_Framebuffer;
@@ -222,7 +238,9 @@ namespace Hazel {
 			pipelineSpecification.DebugName = "PBR-Static";
 			s_MeshPipeline = Pipeline::Create(pipelineSpecification);
 		}
+		/**** END: to be removed from VulkanRenderer ****/
 
+		/**** BEGIN: to be removed from VulkanRenderer ****/
 		{
 			HazelFramebufferSpecification spec;
 			spec.DebugName = "CompositeFramebuffer";
@@ -254,6 +272,7 @@ namespace Hazel {
 			pipelineSpecification.DebugName = "SceneComposite";
 			s_CompositePipeline = Pipeline::Create(pipelineSpecification);
 		}
+		/**** END: to be removed from VulkanRenderer ****/
 
 		// Create fullscreen quad
 		float x = -1;
@@ -281,20 +300,20 @@ namespace Hazel {
 		data[3].Position = glm::vec3(x, y + height, 0.1f);
 		data[3].TexCoord = glm::vec2(0, 1);
 
-		s_QuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data.QuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
-		s_QuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+		s_Data.QuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
 		// HazelRenderer::Submit([=]() {});
 		{
 			auto shader = s_CompositePipeline->GetSpecification().Shader.As<VulkanShader>();
 			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
-			s_QuadDescriptorSet = shader->CreateDescriptorSets();
+			s_Data.QuadDescriptorSet = shader->CreateDescriptorSets();
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = *s_QuadDescriptorSet.DescriptorSets.data();
-			writeDescriptorSet.descriptorCount = (uint32_t)s_QuadDescriptorSet.DescriptorSets.size();
+			writeDescriptorSet.dstSet = *s_Data.QuadDescriptorSet.DescriptorSets.data();
+			writeDescriptorSet.descriptorCount = (uint32_t)s_Data.QuadDescriptorSet.DescriptorSets.size();
 			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			writeDescriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
 			writeDescriptorSet.dstBinding = 0;
@@ -348,7 +367,7 @@ namespace Hazel {
 		s_Data.SceneData.SkyboxLod = 0.0f;
 		s_Data.SceneData.LightDirectionTemp = { 0.5f, 0.5f, 0.5f };
 
-		OnResize(s_ViewportWidth, s_ViewportHeight);
+		OnResize(s_ViewportWidth, s_ViewportHeight); // to be removed from VulkanRenderer
 	}
 
 	void VulkanRenderer::Shutdown()
@@ -385,7 +404,7 @@ namespace Hazel {
 		Ref<VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<VulkanPipeline>();
 		/**** END Non-composite ****/
 		/**** BEGIN Composite ****/
-		Ref<VulkanPipeline> vulkanPipeline = s_MeshPipeline.As<VulkanPipeline>();
+		Ref<VulkanPipeline> vulkanPipeline = s_MeshPipeline.As<VulkanPipeline>(); // to be removed from VulkanRenderer
 		/**** END Composite ****/
 
 		VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
@@ -797,25 +816,25 @@ namespace Hazel {
 				
 			/**** BEGIN CompositeRenderPass(inheritanceInfo) ****/
 
-			auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
+			auto vulkanMeshVB = s_Data.QuadVertexBuffer.As<VulkanVertexBuffer>();
 			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
 			VkDeviceSize offsets[1] = { 0 };
 			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vbMeshBuffer, offsets);
 
-			auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
+			auto vulkanMeshIB = s_Data.QuadIndexBuffer.As<VulkanIndexBuffer>();
 			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 			vkCmdBindIndexBuffer(commandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-			float exposure = s_Data.Exposure;
+			float exposure = 0.8f; // s_Data.Exposure;
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &exposure);
 
 			// Bind descriptor sets describing shader binding points
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_QuadDescriptorSet.DescriptorSets.size(), s_QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_Data.QuadDescriptorSet.DescriptorSets.size(), s_Data.QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
-			vkCmdDrawIndexed(commandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 
 			VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 
@@ -1017,7 +1036,8 @@ namespace Hazel {
 							ImGuiWrapper::Property("Light Direction", s_Data.SceneData.LightDirectionTemp, 0.01f, -1.0f, 1.0f, PropertyFlag::DragProperty);
 							ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
 							ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
-							ImGuiWrapper::Property("Exposure", s_Data.Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+							float exposure = 0.8f; // s_Data.Exposure;
+							ImGuiWrapper::Property("Exposure", exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
 
 							float radiancePrefilter = 1.0f; // EnvMapSharedData::s_RadiancePrefilter
 							ImGuiWrapper::Property("Radiance Prefiltering", radiancePrefilter);
@@ -1345,12 +1365,12 @@ namespace Hazel {
 
 			// VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
 
-			auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
+			auto vulkanMeshVB = s_Data.QuadVertexBuffer.As<VulkanVertexBuffer>();
 			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
 			VkDeviceSize offsets[1] = { 0 };
 			// vkCmdBindVertexBuffers(s_Data.ActiveCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
 
-			auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
+			auto vulkanMeshIB = s_Data.QuadIndexBuffer.As<VulkanIndexBuffer>();
 			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 			// vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
@@ -1364,7 +1384,7 @@ namespace Hazel {
 
 			// vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &transform);
 			// vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
-			// vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+			// vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 		}
 	}
 
@@ -1385,12 +1405,12 @@ namespace Hazel {
 
 			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
 
-			auto vulkanMeshVB = s_QuadVertexBuffer.As<VulkanVertexBuffer>();
+			auto vulkanMeshVB = s_Data.QuadVertexBuffer.As<VulkanVertexBuffer>();
 			VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
 			VkDeviceSize offsets[1] = { 0 };
 			vkCmdBindVertexBuffers(s_Data.ActiveCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
 
-			auto vulkanMeshIB = s_QuadIndexBuffer.As<VulkanIndexBuffer>();
+			auto vulkanMeshIB = s_Data.QuadIndexBuffer.As<VulkanIndexBuffer>();
 			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 			vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
@@ -1398,13 +1418,13 @@ namespace Hazel {
 			vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 			// Bind descriptor sets describing shader binding points
-			// vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_QuadDescriptorSet.DescriptorSets.size(), s_QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
+			// vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_Data.QuadDescriptorSet.DescriptorSets.size(), s_Data.QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
 			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)vulkanMaterial->GetDescriptorSet().DescriptorSets.size(), vulkanMaterial->GetDescriptorSet().DescriptorSets.data(), 0, nullptr);
 
 			Buffer uniformStorageBuffer = vulkanMaterial->GetUniformStorageBuffer();
 
 			vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, uniformStorageBuffer.Size, uniformStorageBuffer.Data);
-			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 		}
 	}
 
@@ -1468,15 +1488,17 @@ namespace Hazel {
 		// END ImGuizmo
 	}
 
+	/**** BEGIN to be removed from VulkanRenderer ****/
 	uint32_t VulkanRenderer::GetViewportWidth()
 	{
 		return s_ViewportWidth;
 	}
-
+	
 	uint32_t VulkanRenderer::GetViewportHeight()
 	{
 		return s_ViewportHeight;
 	}
+	/**** END to be removed from VulkanRenderer ****/
 
 	int32_t& VulkanRenderer::GetSelectedDrawCall()
 	{

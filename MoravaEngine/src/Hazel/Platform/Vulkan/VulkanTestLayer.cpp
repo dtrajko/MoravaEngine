@@ -131,7 +131,7 @@ namespace Hazel {
 		Render(clearColor, m_Camera);
 		for (Ref<HazelMesh> mesh : s_Meshes)
 		{
-			VulkanRenderer::SubmitMesh(mesh);
+			VulkanRenderer::SubmitMeshTemp(mesh); // the method should be removed from VulkanRenderer
 		}
 	}
 

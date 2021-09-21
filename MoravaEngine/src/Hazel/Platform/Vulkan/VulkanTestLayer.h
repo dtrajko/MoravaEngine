@@ -20,6 +20,9 @@
 
 namespace Hazel {
 
+	/**
+	 * VulkanTestLayer is to be replaced with SceneRendererVulkan
+	 */
 	class VulkanTestLayer : public MoravaLayer
 	{
 	public:

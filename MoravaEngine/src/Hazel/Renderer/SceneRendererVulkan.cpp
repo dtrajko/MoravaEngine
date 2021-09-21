@@ -305,7 +305,7 @@ namespace Hazel {
 		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
 		VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
 
-		// RenderEntities
+		// Render entities
 		for (auto& dc : s_Data.DrawList)
 		{
 			VulkanRenderer::RenderMeshStatic(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);

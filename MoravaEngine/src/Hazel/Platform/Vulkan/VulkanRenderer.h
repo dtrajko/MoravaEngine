@@ -25,8 +25,10 @@ namespace Hazel {
 		virtual void EndRenderPass() override;
 		virtual void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material) override;
 
-		static uint32_t GetViewportWidth();
-		static uint32_t GetViewportHeight();
+		static void SubmitMeshTemp(const Ref<HazelMesh>& mesh); // to be removed from VulkanRenderer
+		static void OnResize(uint32_t width, uint32_t height);  // to be removed from VulkanRenderer
+		static uint32_t GetViewportWidth();                     // to be removed from VulkanRenderer
+		static uint32_t GetViewportHeight();                    // to be removed from VulkanRenderer
 
 		virtual std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) override;
 
@@ -47,10 +49,6 @@ namespace Hazel {
 		static void GeometryPass();
 		static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers);
 		static glm::vec3 GetLightDirectionTemp();
-
-		static void SubmitMesh(const Ref<HazelMesh>& mesh);
-
-		static void OnResize(uint32_t width, uint32_t height);
 
 		// static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
 		static void UpdateImGuizmo(Window* mainWindow);

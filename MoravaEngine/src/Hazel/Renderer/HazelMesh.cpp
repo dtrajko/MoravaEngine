@@ -407,6 +407,7 @@ namespace Hazel {
 				// auto mi = Ref<HazelMaterialInstance>::Create(m_BaseMaterial, aiMaterialName.data);
 				m_Materials[i] = mi;
 
+				/**** BEGIN to be removed from HazelMesh ****/
 				if (RendererAPI::Current() == RendererAPIType::Vulkan)
 				{
 					// HazelRenderer::Submit([instance, shader, i]() mutable {});
@@ -436,6 +437,7 @@ namespace Hazel {
 						materialDescriptor.WriteDescriptors.push_back(writeDescriptorSet);
 					}
 				}
+				/**** END to be removed from HazelMesh ****/
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;

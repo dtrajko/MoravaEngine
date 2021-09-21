@@ -198,8 +198,6 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 					fb->Resize((uint32_t)(width * spec.Scale), (uint32_t)(height * spec.Scale));
 				}
 			}
-			// TODO: TEMP
-			Hazel::VulkanRenderer::OnResize(width, height);
 		}
 		break;
 		case Hazel::RendererAPIType::DX11:
