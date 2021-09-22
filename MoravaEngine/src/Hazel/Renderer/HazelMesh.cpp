@@ -393,7 +393,7 @@ namespace Hazel {
 
 			m_Textures.resize(scene->mNumMaterials);
 			m_Materials.resize(scene->mNumMaterials);
-			m_MaterialDescriptors.resize(scene->mNumMaterials);
+			m_MaterialDescriptors.resize(scene->mNumMaterials); // TODO: to be removed from HazelMesh
 
 			Ref<HazelTexture2D> whiteTexture = HazelRenderer::GetWhiteTexture();
 
@@ -513,7 +513,7 @@ namespace Hazel {
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
-							AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", texture);
+							AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", texture); // TODO: to be removed from HazelMesh
 						}
 						else
 						{
@@ -553,7 +553,7 @@ namespace Hazel {
 
 					if (RendererAPI::Current() == RendererAPIType::Vulkan)
 					{
-						AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", whiteTexture);
+						AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", whiteTexture); // TODO: to be removed from HazelMesh
 					}
 				}
 
@@ -593,7 +593,7 @@ namespace Hazel {
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
-							AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", texture);
+							AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", texture); // TODO: to be removed from HazelMesh
 						}
 						else
 						{
@@ -621,7 +621,7 @@ namespace Hazel {
 
 					if (RendererAPI::Current() == RendererAPIType::Vulkan)
 					{
-						AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", whiteTexture);
+						AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", whiteTexture); // TODO: to be removed from HazelMesh
 					}
 				}
 
@@ -660,7 +660,7 @@ namespace Hazel {
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
-							AddMaterialTextureWriteDescriptor(i, "u_RoughnessTexture", texture);
+							AddMaterialTextureWriteDescriptor(i, "u_RoughnessTexture", texture); // TODO: to be removed from HazelMesh
 						}
 						else
 						{
@@ -819,7 +819,7 @@ namespace Hazel {
 
 								if (RendererAPI::Current() == RendererAPIType::Vulkan)
 								{
-									AddMaterialTextureWriteDescriptor(0, "u_MetalnessTexture", texture);
+									AddMaterialTextureWriteDescriptor(0, "u_MetalnessTexture", texture); // TODO: to be removed from HazelMesh
 								}
 								else
 								{
@@ -854,7 +854,7 @@ namespace Hazel {
 
 					if (RendererAPI::Current() == RendererAPIType::Vulkan)
 					{
-						AddMaterialTextureWriteDescriptor(i, "u_MetalnessTexture", whiteTexture);
+						AddMaterialTextureWriteDescriptor(i, "u_MetalnessTexture", whiteTexture); // TODO: to be removed from HazelMesh
 					}
 				}
 			}

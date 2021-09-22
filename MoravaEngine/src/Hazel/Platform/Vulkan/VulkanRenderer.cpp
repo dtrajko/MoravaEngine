@@ -434,6 +434,7 @@ namespace Hazel {
 
 			// Bind descriptor sets describing shader binding points
 			std::vector<VkDescriptorSet> descriptorSet = mesh->GetDescriptorSet(submesh.MaterialIndex).DescriptorSet.DescriptorSets;
+			// std::vector<VkDescriptorSet> descriptorSet = material.As<VulkanMaterial>()->GetDescriptorSet().DescriptorSets;
 			VulkanShader::ShaderMaterialDescriptorSet rendererDescriptorSet = s_Data.RendererDescriptorSetFeb2021;
 
 			std::array<VkDescriptorSet, 2> descriptorSets = {
@@ -1333,20 +1334,20 @@ namespace Hazel {
 			{
 				auto& material = mesh->GetMaterials()[submesh.MaterialIndex].As<VulkanMaterial>();
 				material->UpdateForRendering();
-				Buffer uniformStorageBuffer = material->GetUniformStorageBuffer();
 
 				VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
 				vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 				// Bind descriptor sets describing shader binding points
 				std::array<VkDescriptorSet, 2> descriptorSets = {
-					mesh->GetDescriptorSet(submesh.MaterialIndex).DescriptorSet.DescriptorSets[0],
+					// mesh->GetDescriptorSet(submesh.MaterialIndex).DescriptorSet.DescriptorSets[0],
+					material->GetDescriptorSet().DescriptorSets[0],
 					s_Data.RendererDescriptorSetFeb2021.DescriptorSets[0],
 				};
 				vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
 				glm::mat4 worldTransform = transform * submesh.Transform;
-
+				Buffer uniformStorageBuffer = material->GetUniformStorageBuffer();
 				vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &worldTransform);
 				vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size - 64, &uniformStorageBuffer.Data + 64);
 				vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, submesh.IndexCount, 1, submesh.BaseIndex, submesh.BaseVertex, 0);
