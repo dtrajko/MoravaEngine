@@ -338,9 +338,16 @@ Hazel::Ref<Hazel::HazelTexture2D> ResourceManager::LoadHazelTexture2D(std::strin
     }
     else {
         // A cache MISS
-        texture = Hazel::HazelTexture2D::Create(filePath);
-        s_HazelTextures2D.insert(std::make_pair(filePath, texture));
-        Log::GetLogger()->info("ResourceManager: A texture created and stored in cache [key: '{0}']", filePath);
+        try
+        {
+            texture = Hazel::HazelTexture2D::Create(filePath);
+            s_HazelTextures2D.insert(std::make_pair(filePath, texture));
+            Log::GetLogger()->info("ResourceManager: A texture created and stored in cache [key: '{0}']", filePath);
+        }
+        catch (...)
+        {
+            Log::GetLogger()->warn("Failed to create a texture '{0}'!", filePath);
+        }
     }
 
     return texture;

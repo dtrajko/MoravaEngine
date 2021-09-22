@@ -76,22 +76,19 @@ namespace Hazel {
 
 	void SceneRendererVulkan::Init()
 	{
-		// temporary code for loading missing shaders
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
-		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
-
-		HazelFramebufferSpecification geoFramebufferSpec;
+		HazelFramebufferSpecification geoFramebufferSpec = {};
 		geoFramebufferSpec.Width = 1280;
 		geoFramebufferSpec.Height = 720;
 		geoFramebufferSpec.Format = FramebufferFormat::RGBA16F;
 		geoFramebufferSpec.Samples = 8;
 		geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
-		RenderPassSpecification geoRenderPassSpec;
+		RenderPassSpecification geoRenderPassSpec = {};
 		geoRenderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(geoFramebufferSpec);
+		/****
 		s_Data.GeoPass = RenderPass::Create(geoRenderPassSpec);
 
-		HazelFramebufferSpecification compFramebufferSpec;
+		HazelFramebufferSpecification compFramebufferSpec = {};
 		compFramebufferSpec.Width = 1280;
 		compFramebufferSpec.Height = 720;
 		compFramebufferSpec.Format = FramebufferFormat::RGBA8;
@@ -102,7 +99,7 @@ namespace Hazel {
 		s_Data.CompositePass = RenderPass::Create(compRenderPassSpec);
 
 		s_Data.CompositeShader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
-		s_Data.CompositeMaterial = HazelMaterial::Create(s_Data.CompositeShader, "CompositeMaterial");
+		// s_Data.CompositeMaterial = HazelMaterial::Create(s_Data.CompositeShader, "CompositeMaterial");
 		s_Data.BRDFLUT = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
 		// Grid pipeline
@@ -110,11 +107,11 @@ namespace Hazel {
 			s_Data.GridShader = HazelRenderer::GetShaderLibrary()->Get("Grid");
 			const float gridScale = 16.025f;
 			const float gridSize = 0.025f;
-			s_Data.GridMaterial = HazelMaterial::Create(s_Data.GridShader);
-			// s_Data.GridMaterial->Set("u_Settings.Scale", gridScale);
-			// s_Data.GridMaterial->Set("u_Settings.Size", gridSize);
+			// s_Data.GridMaterial = HazelMaterial::Create(s_Data.GridShader);
+			// s_Data.GridMaterial->Set("u_Settings.Scale", gridScale); // TODO: fix "We currently only support ONE material buffer!"
+			// s_Data.GridMaterial->Set("u_Settings.Size", gridSize);   // TODO: fix "We currently only support ONE material buffer!"
 
-			PipelineSpecification pipelineSpec;
+			PipelineSpecification pipelineSpec = {};
 			pipelineSpec.DebugName = "Grid";
 			pipelineSpec.Shader = s_Data.GridShader;
 			pipelineSpec.Layout = {
@@ -122,19 +119,19 @@ namespace Hazel {
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
 			pipelineSpec.RenderPass = s_Data.GeoPass;
-			s_Data.GridPipeline = Pipeline::Create(pipelineSpec);
+			// s_Data.GridPipeline = Pipeline::Create(pipelineSpec); // fragment shader writes to output location 1 with no matching attachment
 		}
 
 		// Outline
 		auto outlineShader = HazelRenderer::GetShaderLibrary()->Get("Outline");
-		s_Data.OutlineMaterial = HazelMaterial::Create(outlineShader);
-		s_Data.OutlineMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
+		// s_Data.OutlineMaterial = HazelMaterial::Create(outlineShader);
+		// s_Data.OutlineMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 
 		// Skybox pipeline
 		{
 			auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox");
 
-			PipelineSpecification pipelineSpec;
+			PipelineSpecification pipelineSpec = {};
 			pipelineSpec.DebugName = "Skybox";
 			pipelineSpec.Shader = skyboxShader;
 			pipelineSpec.Layout = {
@@ -144,16 +141,16 @@ namespace Hazel {
 			pipelineSpec.RenderPass = s_Data.GeoPass;
 			s_Data.SkyboxPipeline = Pipeline::Create(pipelineSpec);
 
-			s_Data.SkyboxMaterial = HazelMaterial::Create(skyboxShader);
-			s_Data.SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
+			// s_Data.SkyboxMaterial = HazelMaterial::Create(skyboxShader);
+			// s_Data.SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 		}
 
 		// Geometry pipeline
 		{
-			HazelFramebufferSpecification spec;
+			HazelFramebufferSpecification spec = {};;
 			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
 
-			PipelineSpecification pipelineSpecification;
+			PipelineSpecification pipelineSpecification = {};
 			pipelineSpecification.Layout = {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float3, "a_Normal" },
@@ -163,16 +160,16 @@ namespace Hazel {
 			};
 			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
 
-			RenderPassSpecification renderPassSpec;
+			RenderPassSpecification renderPassSpec = {};
 			renderPassSpec.TargetFramebuffer = framebuffer;
 			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
 			pipelineSpecification.DebugName = "PBR-Static";
-			s_Data.GeometryPipeline = Pipeline::Create(pipelineSpecification);
+			// s_Data.GeometryPipeline = Pipeline::Create(pipelineSpecification); // fragment shader writes to output location 1 with no matching attachment
 		}
 
 		// Composite pipeline
 		{
-			HazelFramebufferSpecification spec;
+			HazelFramebufferSpecification spec = {};;
 			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
 			framebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer)
 			{
@@ -194,8 +191,9 @@ namespace Hazel {
 			renderPassSpec.TargetFramebuffer = framebuffer;
 			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
 			pipelineSpecification.DebugName = "SceneComposite";
-			s_Data.CompositePipeline = Pipeline::Create(pipelineSpecification);
+			// s_Data.CompositePipeline = Pipeline::Create(pipelineSpecification); // fragment shader writes to output location 1 with no matching attachment
 		}
+		****/
 	}
 
 	void SceneRendererVulkan::SetViewportSize(uint32_t width, uint32_t height)

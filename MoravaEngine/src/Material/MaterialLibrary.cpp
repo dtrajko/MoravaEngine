@@ -249,6 +249,12 @@ SubmeshUUID MaterialLibrary::GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submes
 
 void MaterialLibrary::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial)
 {
+    if (!defaultMaterial)
+    {
+        Log::GetLogger()->error("MaterialLibrary::SetDefaultMaterialToSubmeshes: defaultMaterial is undefined!");
+        return;
+    }
+
     for (auto submesh : mesh->GetSubmeshes())
     {
         SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);

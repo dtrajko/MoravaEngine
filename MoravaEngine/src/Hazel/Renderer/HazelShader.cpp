@@ -75,7 +75,14 @@ namespace Hazel {
 
 		auto shader = HazelShader::Create(path, forceCompile);
 		auto& name = shader->GetName();
-		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
+		// HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
+
+		if (m_Shaders.find(name) != m_Shaders.end())
+		{
+			Log::GetLogger()->warn("HazelShaderLibrary::Load: the shader (path: '{0}', name: '{1}') already exists in HazelShaderLibrary!", path, name);
+			return;
+		}
+
 		m_Shaders[name] = shader;
 
 		// m_Shaders.insert(std::make_pair(name, shader));

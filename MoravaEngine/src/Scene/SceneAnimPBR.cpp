@@ -1030,9 +1030,9 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         m_BaseMaterial_BobLamp->GetTextureEmissive()->Bind(m_SamplerSlots["emissive"]);
         m_BaseMaterial_BobLamp->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
 
-        m_MeshAnimPBR_BobLamp->m_VertexBuffer->Bind();
-        m_MeshAnimPBR_BobLamp->m_Pipeline->Bind();
-        m_MeshAnimPBR_BobLamp->m_IndexBuffer->Bind();
+        m_MeshAnimPBR_BobLamp->GetVertexBuffer()->Bind();
+        m_MeshAnimPBR_BobLamp->GetIndexBuffer()->Bind();
+        m_MeshAnimPBR_BobLamp->GetPipeline()->Bind();
 
         auto& materials = m_MeshAnimPBR_BobLamp->GetMaterials();
 
@@ -1045,10 +1045,10 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 
             m_MeshAnimPBR_BobLamp->GetTextures()[submeshIndex]->Bind(m_SamplerSlots["albedo"]);
 
-            for (size_t i = 0; i < m_MeshAnimPBR_BobLamp->m_BoneTransforms.size(); i++)
+            for (size_t i = 0; i < m_MeshAnimPBR_BobLamp->GetBoneTransforms().size(); i++)
             {
                 std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                m_ShaderHybridAnimPBR->SetMat4(uniformName, m_MeshAnimPBR_BobLamp->m_BoneTransforms[i]);
+                m_ShaderHybridAnimPBR->SetMat4(uniformName, m_MeshAnimPBR_BobLamp->GetBoneTransforms()[i]);
             }
 
             m_ShaderHybridAnimPBR->SetMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh.Transform);

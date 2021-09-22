@@ -349,12 +349,12 @@ namespace Hazel {
 
 	void OpenGLRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
-		mesh->m_VertexBuffer->Bind();
+		mesh->GetVertexBuffer()->Bind();
+		mesh->GetIndexBuffer()->Bind();
 		pipeline->Bind();
-		mesh->m_IndexBuffer->Bind();
 
 		auto& materials = mesh->GetMaterials();
-		for (Submesh& submesh : mesh->m_Submeshes)
+		for (Submesh& submesh : mesh->GetSubmeshes())
 		{
 			// Material
 			auto material = materials[submesh.MaterialIndex].As<OpenGLMaterial>();
@@ -363,10 +363,10 @@ namespace Hazel {
 
 			if (false && mesh->IsAnimated())
 			{
-				for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+				for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
 				{
 					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-					mesh->m_MeshShader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
+					mesh->GetMeshShader()->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
 				}
 			}
 
@@ -387,21 +387,21 @@ namespace Hazel {
 
 	void OpenGLRenderer::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
-		mesh->m_VertexBuffer->Bind();
+		mesh->GetVertexBuffer()->Bind();
+		mesh->GetIndexBuffer()->Bind();
 		pipeline->Bind();
-		mesh->m_IndexBuffer->Bind();
 
 		auto shader = pipeline->GetSpecification().Shader;
 		shader->Bind();
 
-		for (Submesh& submesh : mesh->m_Submeshes)
+		for (Submesh& submesh : mesh->GetSubmeshes())
 		{
 			if (false && mesh->IsAnimated())
 			{
-				for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+				for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
 				{
 					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-					mesh->m_MeshShader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
+					mesh->GetMeshShader()->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
 				}
 			}
 

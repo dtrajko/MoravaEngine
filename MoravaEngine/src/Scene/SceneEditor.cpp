@@ -2054,9 +2054,9 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader> shader
     float deltaTime = Timer::Get()->GetDeltaTime();
     meshAnimPBR->OnUpdate(deltaTime, false);
 
-    meshAnimPBR->m_VertexBuffer->Bind();
-    meshAnimPBR->m_Pipeline->Bind();
-    meshAnimPBR->m_IndexBuffer->Bind();
+    meshAnimPBR->GetVertexBuffer()->Bind();
+    meshAnimPBR->GetIndexBuffer()->Bind();
+    meshAnimPBR->GetPipeline()->Bind();
 
     auto& materials = meshAnimPBR->GetMaterials();
 
@@ -2066,10 +2066,10 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader> shader
         // Material
         auto material = materials[submesh.MaterialIndex];
 
-        for (size_t i = 0; i < meshAnimPBR->m_BoneTransforms.size(); i++)
+        for (size_t i = 0; i < meshAnimPBR->GetBoneTransforms().size(); i++)
         {
             std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-            shaderHybridAnimPBR->SetMat4(uniformName, meshAnimPBR->m_BoneTransforms[i]);
+            shaderHybridAnimPBR->SetMat4(uniformName, meshAnimPBR->GetBoneTransforms()[i]);
         }
 
         glm::mat4 transform = sceneObject->transform * submesh.Transform;

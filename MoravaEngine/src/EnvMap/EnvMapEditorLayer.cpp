@@ -1782,10 +1782,10 @@ void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& tran
         // Material
         auto material = materials[submesh.MaterialIndex];
 
-        for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+        for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
         {
             std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-            EnvMapSharedData::s_ShaderHazelPBR->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
+            EnvMapSharedData::s_ShaderHazelPBR->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
         }
 
         EnvMapSharedData::s_ShaderHazelPBR->SetMat4("u_Transform", transform * submesh.Transform);
@@ -2214,16 +2214,16 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shade
                 for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
                 {
                     // Render Submesh
-                    meshComponent.Mesh->m_VertexBuffer->Bind();
-                    meshComponent.Mesh->m_Pipeline->Bind();
-                    meshComponent.Mesh->m_IndexBuffer->Bind();
+                    meshComponent.Mesh->GetVertexBuffer()->Bind();
+                    meshComponent.Mesh->GetIndexBuffer()->Bind();
+                    meshComponent.Mesh->GetPipeline()->Bind();
 
                     shader->SetMat4("model", entityTransform * submesh.Transform);
 
-                    for (size_t i = 0; i < meshComponent.Mesh->m_BoneTransforms.size(); i++)
+                    for (size_t i = 0; i < meshComponent.Mesh->GetBoneTransforms().size(); i++)
                     {
                         std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                        shader->SetMat4(uniformName, meshComponent.Mesh->m_BoneTransforms[i]);
+                        shader->SetMat4(uniformName, meshComponent.Mesh->GetBoneTransforms()[i]);
                     }
 
                     shader->SetBool("u_Animated", meshComponent.Mesh->IsAnimated());

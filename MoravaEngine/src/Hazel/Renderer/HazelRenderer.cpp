@@ -118,12 +118,15 @@ namespace Hazel {
 		// Compute shaders
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		{
+			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl", true);
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl", true);
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl", true);
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl", true);
-			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl", true);
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl", true);
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl", true);
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
 		}
 
 		//...
@@ -140,7 +143,7 @@ namespace Hazel {
 
 		s_RendererAPI->Init();
 		SceneRenderer::Init();
-		// SceneRendererVulkan::Init();
+		SceneRendererVulkan::Init();
 	}
 
 	Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()
@@ -276,12 +279,12 @@ namespace Hazel {
 		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
 		// auto shader = material->GetShader();
 		// TODO: Sort this out
-		mesh->m_VertexBuffer->Bind();
-		mesh->m_Pipeline->Bind();
-		mesh->m_IndexBuffer->Bind();
+		mesh->GetVertexBuffer()->Bind();
+		mesh->GetIndexBuffer()->Bind();
+		mesh->GetPipeline()->Bind();
 
 		auto& materials = mesh->GetMaterials();
-		for (Submesh& submesh : mesh->m_Submeshes)
+		for (Submesh& submesh : mesh->GetSubmeshes())
 		{
 			// Material
 			auto material = overrideMaterial ? overrideMaterial : materials[submesh.MaterialIndex];
@@ -290,10 +293,10 @@ namespace Hazel {
 
 			if (false && mesh->IsAnimated())
 			{
-				for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+				for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
 				{
 					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-					mesh->m_MeshShader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
+					mesh->GetMeshShader()->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
 				}
 			}
 
@@ -316,18 +319,18 @@ namespace Hazel {
 
 	void HazelRenderer::SubmitMeshWithShader(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelShader> shader)
 	{
-		mesh->m_VertexBuffer->Bind();
-		mesh->m_Pipeline->Bind();
-		mesh->m_IndexBuffer->Bind();
+		mesh->GetVertexBuffer()->Bind();
+		mesh->GetIndexBuffer()->Bind();
+		mesh->GetPipeline()->Bind();
 
-		for (Submesh& submesh : mesh->m_Submeshes)
+		for (Submesh& submesh : mesh->GetSubmeshes())
 		{
 			if (mesh->IsAnimated())
 			{
-				for (size_t i = 0; i < mesh->m_BoneTransforms.size(); i++)
+				for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
 				{
 					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-					shader->SetMat4(uniformName, mesh->m_BoneTransforms[i]);
+					shader->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
 				}
 			}
 			shader->SetMat4("u_Transform", transform * submesh.Transform);
@@ -339,7 +342,7 @@ namespace Hazel {
 
 	void HazelRenderer::DrawAABB(Ref<HazelMesh> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
-		for (Submesh& submesh : mesh->m_Submeshes)
+		for (Submesh& submesh : mesh->GetSubmeshes())
 		{
 			auto& aabb = submesh.BoundingBox;
 			auto aabbTransform = transform * submesh.Transform;

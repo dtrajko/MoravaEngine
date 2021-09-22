@@ -234,6 +234,7 @@ namespace Hazel {
 		{
 			// HZ_CORE_ASSERT(m_ImageData.Data, "Failed to load image!");
 			Log::GetLogger()->error("Failed to load image '{0}'!", path);
+			throw "Failed to load image '" + path + "'!";
 		}
 
 		m_Width = width;

@@ -2,6 +2,7 @@
 
 #include "Hazel/Platform/OpenGL/OpenGLFramebuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanFramebuffer.h"
+#include "Platform/DX11/DX11Framebuffer.h"
 
 
 namespace Hazel {
@@ -15,6 +16,7 @@ namespace Hazel {
 			case RendererAPIType::None:		return Ref<HazelFramebuffer>();
 			case RendererAPIType::OpenGL:	result = Ref<OpenGLFramebuffer>::Create(spec); break;
 			case RendererAPIType::Vulkan:	result = Ref<VulkanFramebuffer>::Create(spec); break;
+			case RendererAPIType::DX11:     result = Ref<DX11Framebuffer>::Create(spec); break;
 		}
 		HazelFramebufferPool::GetGlobal()->Add(result);
 		return result;

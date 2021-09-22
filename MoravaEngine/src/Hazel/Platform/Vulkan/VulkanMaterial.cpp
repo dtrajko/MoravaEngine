@@ -46,6 +46,7 @@ namespace Hazel {
 
 	VulkanMaterial::~VulkanMaterial()
 	{
+		Log::GetLogger()->debug("Destroy VulkanMaterial!");
 	}
 
 	void VulkanMaterial::AllocateStorage()

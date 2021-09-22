@@ -41,14 +41,13 @@ namespace Hazel {
 	void VulkanPipeline::Invalidate()
 	{
 		//	Ref<VulkanPipeline> instance = this;
-		//	HazelRenderer::Submit([instance]() mutable
-		//	{
-		//	});
+		//	HazelRenderer::Submit([instance]() mutable {});
 		{
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 			HZ_CORE_ASSERT(m_Specification.Shader);
-			Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(m_Specification.Shader);
+			// Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(m_Specification.Shader);
+			Ref<VulkanShader> vulkanShader = m_Specification.Shader.As<VulkanShader>();
 			Ref<VulkanFramebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
 
 			// VkDescriptorSetLayout descriptorSetLayout = vulkanShader->GetDescriptorSetLayout(0);

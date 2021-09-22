@@ -169,29 +169,37 @@ namespace Hazel {
 		std::vector<Ref<HazelMaterial>>& GetMaterials() { return m_Materials; }
 		const std::vector<Ref<HazelTexture2D>>& GetTextures() const { return m_Textures; }
 		std::vector<Ref<HazelTexture2D>>& GetTextures() { return m_Textures; }
+		const std::string& GetFilePath() const { return m_FilePath; }
 
-		// std::vector<Ref<HazelMaterialInstance>> GetMaterials() { return m_Materials; }
-		// const std::vector<Ref<HazelMaterialInstance>>& GetMaterials() const { return m_Materials; }
-
-		bool& IsAnimated() { return m_IsAnimated; }
-		const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 		const std::vector<Triangle> GetTriangleCache(uint32_t index) const;
 
 		Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
 		Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
 		Ref<Pipeline> GetPipeline() { return m_Pipeline; }
-
-		// VkDescriptorSet& GetDescriptorSet();
-		void* GetDescriptorSet();
-
 		const VertexBufferLayout& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
 
+		/**** BEGIN this code should be removed from HazelMesh Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
 		struct MaterialDescriptor
 		{
 			VulkanShader::ShaderMaterialDescriptorSet DescriptorSet;
 			std::vector<VkWriteDescriptorSet> WriteDescriptors;
 		};
 		const MaterialDescriptor& GetDescriptorSet(uint32_t index) { return m_MaterialDescriptors[index]; }
+
+		// VkDescriptorSet& GetDescriptorSet();
+		void* GetDescriptorSet();
+
+		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<HazelTexture2D> texture);
+		// void UpdateAllDescriptors();
+		void UpdateAllDescriptorSets(); // Vulkan branch, february 2021
+
+		/**** END this code should be removed from HazelMesh Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
+
+		// std::vector<Ref<HazelMaterialInstance>> GetMaterials() { return m_Materials; }
+		// const std::vector<Ref<HazelMaterialInstance>>& GetMaterials() const { return m_Materials; }
+
+		bool& IsAnimated() { return m_IsAnimated; }
+		const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 
 		// Setters
 		inline void SetBaseMaterial(Ref<HazelMaterial> baseMaterial) { m_BaseMaterial = baseMaterial; }
@@ -205,8 +213,6 @@ namespace Hazel {
 		void ReadNodeHierarchy(float AnimationTime, const aiNode* pNode, const glm::mat4& ParentTransform);
 		void TraverseNodes(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 
-		void ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
-
 		aiNodeAnim* FindNodeAnim(const aiAnimation* animation, const std::string& nodeName);
 		uint32_t FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim);
 		uint32_t FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
@@ -214,14 +220,13 @@ namespace Hazel {
 		glm::vec3 InterpolateTranslation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::quat InterpolateRotation(float animationTime, const aiNodeAnim* nodeAnim);
 		glm::vec3 InterpolateScale(float animationTime, const aiNodeAnim* nodeAnim);
+
+		void ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
+
 		void SetupDefaultBaseMaterial();
 		Ref<HazelTexture2D> LoadBaseTexture();
 
-		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<HazelTexture2D> texture);
-		void UpdateAllDescriptors();
-		void UpdateAllDescriptorSets(); // Vulkan branch, february 2021
-
-	public:
+	private:
 		Ref<Pipeline> m_Pipeline;
 		Ref<VertexBuffer> m_VertexBuffer;
 		Ref<IndexBuffer> m_IndexBuffer;
@@ -233,7 +238,6 @@ namespace Hazel {
 		// Materials
 		Ref<MoravaShader> m_MeshShader;
 
-	private:
 		std::unique_ptr<Assimp::Importer> m_Importer;
 
 		glm::mat4 m_InverseTransform;

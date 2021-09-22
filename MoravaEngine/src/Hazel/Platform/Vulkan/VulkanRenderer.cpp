@@ -107,7 +107,7 @@ namespace Hazel {
 		int32_t SelectedDrawCall = -1;
 		int32_t DrawCallCount = 0;
 
-		Ref<HazelShaderLibrary> m_ShaderLibrary;
+		// Ref<HazelShaderLibrary> m_ShaderLibrary;
 
 		// dtrajko vulkan skybox
 		Ref<VulkanSkyboxCube> VulkanSkyboxCube;
@@ -172,16 +172,21 @@ namespace Hazel {
 
 		/**** BEGIN code from HazelRenderer::Init() ****/
 
-		s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
+		// s_Data.m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
 
 		// s_Data.m_ShaderLibrary->Load("assets/shaders/Grid.glsl");
 		// s_Data.m_ShaderLibrary->Load("assets/shaders/SceneComposite.glsl");
 		// s_Data.m_ShaderLibrary->Load("assets/shaders/HazelSimple.glsl");
 		// s_Data.m_ShaderLibrary->Load("assets/shaders/Outline.glsl");
-		s_Data.m_ShaderLibrary->Load("assets/shaders/Skybox.glsl");
-		s_Data.m_ShaderLibrary->Load("assets/shaders/HazelPBR_Static.glsl");
-		s_Data.m_ShaderLibrary->Load("assets/shaders/Texture.glsl");
-		s_Data.m_ShaderLibrary->Load("assets/shaders/SceneComposite.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl", true);
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl", true);
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl", true);
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
 
 		SceneRenderer::Init();
 
@@ -264,7 +269,7 @@ namespace Hazel {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
-			pipelineSpecification.Shader = s_Data.m_ShaderLibrary->Get("SceneComposite");
+			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
 
 			RenderPassSpecification renderPassSpec;
 			renderPassSpec.TargetFramebuffer = s_CompositeFramebuffer;
@@ -351,7 +356,7 @@ namespace Hazel {
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float2, "a_TexCoord" },
 		};
-		s_Data.SkyboxShader = s_Data.m_ShaderLibrary->Get("Skybox");
+		s_Data.SkyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox");
 		skyboxPipelineSpecification.Shader = s_Data.SkyboxShader;
 
 		RenderPassSpecification renderPassSpecification;

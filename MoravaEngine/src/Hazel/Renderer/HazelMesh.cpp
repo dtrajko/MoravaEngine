@@ -31,10 +31,10 @@
 #include <filesystem>
 
 // TEMPORARY VULKAN INCLUDES
-#include "Hazel/Platform/Vulkan/VulkanContext.h"
-#include "Hazel/Platform/Vulkan/VulkanPipeline.h"
-#include "Hazel/Platform/Vulkan/VulkanShader.h"
-#include "Hazel/Platform/Vulkan/VulkanTexture.h"
+#include "Hazel/Platform/Vulkan/VulkanContext.h"  // TODO: to be removed from HazelMesh
+#include "Hazel/Platform/Vulkan/VulkanPipeline.h" // TODO: to be removed from HazelMesh
+#include "Hazel/Platform/Vulkan/VulkanShader.h"   // TODO: to be removed from HazelMesh
+#include "Hazel/Platform/Vulkan/VulkanTexture.h"  // TODO: to be removed from HazelMesh
 
 
 namespace Hazel {
@@ -514,21 +514,6 @@ namespace Hazel {
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", texture);
-
-							//	mi->Set("u_MaterialUniforms.UseAlbedoMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseAlbedoMap'!
-
-							//	HazelRenderer::Submit([instance, shader, texture]() mutable {});
-							//	{
-							//		const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_AlbedoTexture");
-							//		if (wds)
-							//		{
-							//			VkWriteDescriptorSet descriptorSet = *wds;
-							//			descriptorSet.dstSet = s_DescriptorSet;
-							//			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-							//			descriptorSet.pImageInfo = &imageInfo;
-							//			s_WriteDescriptorSets.push_back(descriptorSet);
-							//		}
-							//	}
 						}
 						else
 						{
@@ -599,7 +584,7 @@ namespace Hazel {
 						texture = HazelTexture2D::Create("Textures/normal_map_default.png");
 					}
 
-					if (texture->Loaded())
+					if (texture && texture->Loaded())
 					{
 						m_Textures.push_back(texture);
 
@@ -609,20 +594,6 @@ namespace Hazel {
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", texture);
-							// mi->Set("u_MaterialUniforms.UseNormalMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseNormalMap'!
-
-							//	HazelRenderer::Submit([instance, shader, texture]() mutable {});
-							//	{
-							//		const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_NormalTexture"); // contains binding point etc
-							//		if (wds)
-							//		{
-							//			VkWriteDescriptorSet descriptorSet = *wds;
-							//			descriptorSet.dstSet = s_DescriptorSet;
-							//			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-							//			descriptorSet.pImageInfo = &imageInfo;
-							//			s_WriteDescriptorSets.push_back(descriptorSet);
-							//		}
-							//	}
 						}
 						else
 						{
@@ -645,6 +616,8 @@ namespace Hazel {
 				{
 					// HZ_MESH_LOG("    No normal map");
 					Log::GetLogger()->info("    No normal map");
+
+					mi->Set("u_NormalTexture", whiteTexture);
 
 					if (RendererAPI::Current() == RendererAPIType::Vulkan)
 					{
@@ -682,26 +655,12 @@ namespace Hazel {
 					if (texture->Loaded())
 					{
 						m_Textures[i] = texture;
-						// mi->Set("u_RoughnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_RoughnessTexture')!
+						mi->Set("u_RoughnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_RoughnessTexture')!
+						mi->Set("u_MaterialUniforms.UseRoughnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseRoughnessMap'!
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_RoughnessTexture", texture);
-
-							//	mi->Set("u_MaterialUniforms.UseRoughnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseRoughnessMap'!
-
-							//	HazelRenderer::Submit([instance, shader, texture]() mutable {});
-							//	{
-							//		const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_RoughnessTexture"); // contains binding point etc
-							//		if (wds)
-							//		{
-							//			VkWriteDescriptorSet descriptorSet = *wds;
-							//			descriptorSet.dstSet = s_DescriptorSet;
-							//			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-							//			descriptorSet.pImageInfo = &imageInfo;
-							//			s_WriteDescriptorSets.push_back(descriptorSet);
-							//		}
-							//	}
 						}
 						else
 						{
@@ -855,26 +814,12 @@ namespace Hazel {
 								metalnessTextureFound = true;
 
 								m_Textures.push_back(texture);
-								// mi->Set("u_MetalnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_MetalnessTexture')!
+								mi->Set("u_MetalnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_MetalnessTexture')!
+								mi->Set("u_MaterialUniforms.UseMetalnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseMetalnessMap'!
 
 								if (RendererAPI::Current() == RendererAPIType::Vulkan)
 								{
 									AddMaterialTextureWriteDescriptor(0, "u_MetalnessTexture", texture);
-
-									//	mi->Set("u_MaterialUniforms.UseMetalnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseMetalnessMap'!
-
-									//	HazelRenderer::Submit([instance, shader, texture]() mutable {});
-									//	{
-									//		const VkWriteDescriptorSet* wds = m_MeshShader.As<VulkanShader>()->GetDescriptorSet("u_MetalnessTexture"); // contains binding point etc
-									//		if (wds)
-									//		{
-									//			VkWriteDescriptorSet descriptorSet = *wds;
-									//			descriptorSet.dstSet = s_DescriptorSet;
-									//			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
-									//			descriptorSet.pImageInfo = &imageInfo;
-									//			s_WriteDescriptorSets.push_back(descriptorSet);
-									//		}
-									//	}
 								}
 								else
 								{
@@ -904,6 +849,8 @@ namespace Hazel {
 				if (fallback)
 				{
 					HZ_MESH_LOG("    No metalness map");
+
+					mi->Set("u_MetalnessTexture", whiteTexture);
 
 					if (RendererAPI::Current() == RendererAPIType::Vulkan)
 					{
@@ -969,7 +916,7 @@ namespace Hazel {
 
 			pipelineSpecification.Layout = m_VertexBufferLayout;
 			RenderPassSpecification renderPassSpecification = {};
-			pipelineSpecification.RenderPass = Hazel::RenderPass::Create(renderPassSpecification);
+			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpecification);
 			m_Pipeline = Pipeline::Create(pipelineSpecification);
 		}
 		/**** END Create pipeline ****/
@@ -989,7 +936,6 @@ namespace Hazel {
 			// vulkan branch, february 2021
 			UpdateAllDescriptorSets();
 		}
-
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
 
@@ -1021,20 +967,6 @@ namespace Hazel {
 		}
 	}
 
-	void HazelMesh::UpdateAllDescriptors()
-	{
-		// Ref<HazelMesh> instance = this;
-		// HazelRenderer::Submit([instance]() mutable {});
-		{
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-			for (MaterialDescriptor& md : m_MaterialDescriptors)
-			{
-				HZ_CORE_WARN("Updating {0} descriptor sets", md.WriteDescriptors.size());
-				vkUpdateDescriptorSets(vulkanDevice, (uint32_t)md.WriteDescriptors.size(), md.WriteDescriptors.data(), 0, nullptr);
-			}
-		}
-	}
-
 	void HazelMesh::UpdateAllDescriptorSets()
 	{
 		// Ref<Mesh> instance = this;
@@ -1049,6 +981,22 @@ namespace Hazel {
 			}
 		}
 	}
+
+	/**** BEGIN removed in Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****
+	void HazelMesh::UpdateAllDescriptors()
+	{
+		// Ref<HazelMesh> instance = this;
+		// HazelRenderer::Submit([instance]() mutable {});
+		{
+			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			for (MaterialDescriptor& md : m_MaterialDescriptors)
+			{
+				HZ_CORE_WARN("Updating {0} descriptor sets", md.WriteDescriptors.size());
+				vkUpdateDescriptorSets(vulkanDevice, (uint32_t)md.WriteDescriptors.size(), md.WriteDescriptors.data(), 0, nullptr);
+			}
+		}
+	}
+	/**** END removed in Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
 
 	void HazelMesh::OnUpdate(Timestep ts, bool debug)
 	{
@@ -1534,9 +1482,9 @@ namespace Hazel {
 	{
 		Ref<EnvMapMaterial> envMapMaterial = Ref<EnvMapMaterial>();
 
-		parentMesh->m_VertexBuffer->Bind();
-		parentMesh->m_Pipeline->Bind();
-		parentMesh->m_IndexBuffer->Bind();
+		parentMesh->GetVertexBuffer()->Bind();
+		parentMesh->GetIndexBuffer()->Bind();
+		parentMesh->GetPipeline()->Bind();
 
 		// Manage materials (PBR texture binding)
 		if (m_BaseMaterial) {
@@ -1587,9 +1535,9 @@ namespace Hazel {
 
 	void Submesh::RenderOutline(Ref<HazelMesh> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, Entity entity)
 	{
-		parentMesh->m_VertexBuffer->Bind();
-		parentMesh->m_Pipeline->Bind();
-		parentMesh->m_IndexBuffer->Bind();
+		parentMesh->GetVertexBuffer()->Bind();
+		parentMesh->GetIndexBuffer()->Bind();
+		parentMesh->GetPipeline()->Bind();
 
 		glm::vec3 translation, rotation, scale;
 		Math::DecomposeTransform(entityTransform * Transform, translation, rotation, scale);
@@ -1599,10 +1547,10 @@ namespace Hazel {
 		shader->Bind();
 		shader->SetMat4("u_Transform", outlineTransform);
 
-		for (size_t i = 0; i < parentMesh->m_BoneTransforms.size(); i++)
+		for (size_t i = 0; i < parentMesh->GetBoneTransforms().size(); i++)
 		{
 			std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-			shader->SetMat4(uniformName, parentMesh->m_BoneTransforms[i]);
+			shader->SetMat4(uniformName, parentMesh->GetBoneTransforms()[i]);
 		}
 
 		shader->SetBool("u_Animated", parentMesh->IsAnimated());
