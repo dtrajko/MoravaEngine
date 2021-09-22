@@ -152,7 +152,7 @@ namespace Hazel {
 		virtual ~HazelMesh() override;
 
 		virtual void Create() override;
-		virtual void OnUpdate(Timestep ts, bool debug) override;
+		virtual void OnUpdate(Timestep ts, bool debug = false) override;
 		void OnImGuiRender(uint32_t id = 0, bool* p_open = (bool*)0);
 		void DumpVertexBuffer();
 

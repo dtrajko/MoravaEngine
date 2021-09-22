@@ -47,6 +47,8 @@ namespace Hazel {
 
 		std::vector<DrawCommand> DrawList;
 		std::vector<DrawCommand> SelectedMeshDrawList;
+		std::vector<DrawCommand> ColliderDrawList;
+		std::vector<DrawCommand> ShadowPassDrawList;
 
 		// Grid
 		Ref<HazelShader> GridShader;
@@ -74,6 +76,9 @@ namespace Hazel {
 
 	void SceneRendererVulkan::Init()
 	{
+		// temporary code for loading missing shaders
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
+
 		HazelFramebufferSpecification geoFramebufferSpec;
 		geoFramebufferSpec.Width = 1280;
 		geoFramebufferSpec.Height = 720;
@@ -229,10 +234,26 @@ namespace Hazel {
 		FlushDrawList();
 	}
 
+	void SceneRendererVulkan::SubmitMesh(MeshComponent meshComponent, TransformComponent transformComponent)
+	{
+		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), Ref<HazelMaterial>());
+	}
+
 	void SceneRendererVulkan::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
+	}
+
+	void SceneRendererVulkan::SubmitSelectedMesh(MeshComponent meshComponent, TransformComponent transformComponent)
+	{
+		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
+	}
+
+	void SceneRendererVulkan::SubmitSelectedMesh(Ref<HazelMesh> mesh, const glm::mat4& transform)
+	{
+		s_Data.SelectedMeshDrawList.push_back({ mesh, Ref<HazelMaterial>(), transform });
+		// s_Data.ShadowPassDrawList.push_back({ mesh, Ref<HazelMaterial>, transform });
 	}
 
 	void SceneRendererVulkan::GeometryPass()

@@ -1,13 +1,14 @@
 #include "HazelRenderer.h"
 
 #include "Hazel/Core/Assert.h"
-#include "SceneRenderer.h"
-#include "Renderer2D.h"
-#include "RendererAPI.h"
-#include "PipelineCompute.h"
 #include "Hazel/Platform/OpenGL/OpenGLRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanComputePipeline.h"
+#include "Hazel/Renderer/PipelineCompute.h"
+#include "Hazel/Renderer/Renderer2D.h"
+#include "Hazel/Renderer/RendererAPI.h"
+#include "Hazel/Renderer/SceneRenderer.h"
+#include "Hazel/Renderer/SceneRendererVulkan.h"
 
 #include "Renderer/RendererBasic.h"
 #include "Platform/DX11/DX11Renderer.h"
@@ -139,6 +140,7 @@ namespace Hazel {
 
 		s_RendererAPI->Init();
 		SceneRenderer::Init();
+		// SceneRendererVulkan::Init();
 	}
 
 	Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()

@@ -2,10 +2,11 @@
 
 #include "Entity.h"
 #include "ScriptableEntity.h"
-#include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/SceneRenderer.h"
+#include "Hazel/Renderer/SceneRendererVulkan.h"
 #include "Hazel/Script/ScriptEngine.h"
 
 #include "Core/Math.h"
@@ -375,18 +376,40 @@ namespace Hazel {
 		// RENDER 3D SCENE
 		/////////////////////////////////////////////////////////////////////
 
+#if 0
 		m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
+
+		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+		SceneRendererVulkan::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
+		for (auto entity : group)
+		{
+			auto& [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
+			if (meshComponent.Mesh)
+			{
+				meshComponent.Mesh->OnUpdate(ts);
+
+				// TODO: Should we render (logically)
+
+				if (m_SelectedEntity == entity)
+				{
+					SceneRendererVulkan::SubmitSelectedMesh(meshComponent, transformComponent);
+				}
+				else {
+					SceneRendererVulkan::SubmitMesh(meshComponent, transformComponent);
+				}
+			}
+		}
+		SceneRendererVulkan::EndScene();
 
 		// the following code replaces the VulkanRenderer::Draw() method
 		VulkanRenderer::SetCamera((HazelCamera)editorCamera); // s_Data.SceneData.SceneCamera.Camera = *camera;
 		VulkanRenderer::GeometryPass();
 		VulkanRenderer::CompositePass();
 
-#if 0
 		/////////////////////////////////////////////////////////////////////
-		// RENDER 3D SCENE
-		/////////////////////////////////////////////////////////////////////
+#endif
 
+#if 1
 		// Process lights
 		{
 			m_LightEnvironment = LightEnvironment();
