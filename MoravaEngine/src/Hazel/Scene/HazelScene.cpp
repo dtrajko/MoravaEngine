@@ -376,7 +376,8 @@ namespace Hazel {
 		// RENDER 3D SCENE
 		/////////////////////////////////////////////////////////////////////
 
-#if 0
+#if 1
+
 		m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
 
 		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
@@ -402,14 +403,14 @@ namespace Hazel {
 		SceneRendererVulkan::EndScene();
 
 		// the following code replaces the VulkanRenderer::Draw() method
-		VulkanRenderer::SetCamera((HazelCamera)editorCamera); // s_Data.SceneData.SceneCamera.Camera = *camera;
-		VulkanRenderer::GeometryPass();
-		VulkanRenderer::CompositePass();
+		// VulkanRenderer::SetCamera((HazelCamera)editorCamera); // s_Data.SceneData.SceneCamera.Camera = *camera;
+		// VulkanRenderer::GeometryPass();
+		// VulkanRenderer::CompositePass();
 
 		/////////////////////////////////////////////////////////////////////
-#endif
 
-#if 1
+#else
+
 		// Process lights
 		{
 			m_LightEnvironment = LightEnvironment();
@@ -468,6 +469,7 @@ namespace Hazel {
 			SceneRenderer::EndScene();
 		}
 		/////////////////////////////////////////////////////////////////////
+
 #endif
 
 	}

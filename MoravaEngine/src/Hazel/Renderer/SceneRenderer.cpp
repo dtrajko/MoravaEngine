@@ -23,7 +23,7 @@ namespace Hazel {
 			// Resources
 			Ref<HazelMaterial> SkyboxMaterial;
 			Environment SceneEnvironment;
-			float SkyboxLod;
+			float SkyboxLod = 0.0f;
 			float SceneEnvironmentIntensity;
 			LightEnvironment SceneLightEnvironment;
 			HazelLight ActiveLight;
@@ -31,6 +31,7 @@ namespace Hazel {
 
 		Ref<HazelTexture2D> BRDFLUT;
 		Ref<HazelShader> CompositeShader;
+		Ref<HazelMaterial> CompositeMaterial;
 		Ref<MoravaShader> BloomBlurShader;
 		Ref<MoravaShader> BloomBlendShader;
 
@@ -62,13 +63,13 @@ namespace Hazel {
 		glm::vec2 FocusPoint = { 0.5f, 0.5f };
 
 		RendererID ShadowMapSampler;
-		Ref<Material> CompositeMaterial;
 
 		Ref<Pipeline> GeometryPipeline;
 		Ref<Pipeline> CompositePipeline;
-		Ref<Pipeline> ShadowPassPipeline;
+		Ref<Pipeline> GridPipeline;
 		Ref<Pipeline> SkyboxPipeline;
-		Ref<Material> SkyboxMaterial;
+		Ref<Pipeline> ShadowPassPipeline;
+		Ref<HazelMaterial> SkyboxMaterial;
 
 		struct DrawCommand
 		{
@@ -76,13 +77,15 @@ namespace Hazel {
 			Ref<HazelMaterial> Material;
 			glm::mat4 Transform;
 		};
+
 		std::vector<DrawCommand> DrawList;
 		std::vector<DrawCommand> SelectedMeshDrawList;
+		std::vector<DrawCommand> ColliderDrawList;
 		std::vector<DrawCommand> ShadowPassDrawList;
 
 		// Grid
-		Ref<HazelMaterial> GridMaterial;
 		Ref<HazelShader> GridShader;
+		Ref<HazelMaterial> GridMaterial;
 		Ref<HazelMaterial> OutlineMaterial;
 		Ref<HazelMaterial> OutlineAnimMaterial;
 
@@ -129,15 +132,29 @@ namespace Hazel {
 		s_Data.CompositePass = RenderPass::Create(compRenderPassSpec);
 
 		s_Data.CompositeShader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
+		s_Data.CompositeMaterial = HazelMaterial::Create(s_Data.CompositeShader, "CompositeMaterial");
 		s_Data.BRDFLUT = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
-		// Grid
-		s_Data.GridShader = HazelRenderer::GetShaderLibrary()->Get("Grid");
-		const float gridScale = 16.025f;
-		const float gridSize = 0.025f;
-		s_Data.GridShader->Bind();
-		s_Data.GridShader->SetUniform("u_Settings.Scale", gridScale);
-		s_Data.GridShader->SetUniform("u_Settings.Size", gridSize);
+		// Grid pipeline
+		{
+			s_Data.GridShader = HazelRenderer::GetShaderLibrary()->Get("Grid");
+			const float gridScale = 16.025f;
+			const float gridSize = 0.025f;
+			s_Data.GridMaterial = HazelMaterial::Create(s_Data.GridShader);
+			s_Data.GridShader->Bind();
+			s_Data.GridShader->SetUniform("u_Settings.Scale", gridScale);
+			s_Data.GridShader->SetUniform("u_Settings.Size", gridSize);
+
+			PipelineSpecification pipelineSpec;
+			pipelineSpec.DebugName = "Grid";
+			pipelineSpec.Shader = s_Data.GridShader;
+			pipelineSpec.Layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+			};
+			pipelineSpec.RenderPass = s_Data.GeoPass;
+			s_Data.GridPipeline = Pipeline::Create(pipelineSpec);
+		}
 
 		// Outline
 		auto outlineShader = HazelRenderer::GetShaderLibrary()->Get("Outline");
@@ -172,9 +189,9 @@ namespace Hazel {
 
 		s_Data.SceneData.SceneCamera = camera;
 		s_Data.SceneData.SkyboxMaterial = scene->m_SkyboxMaterial;
-		s_Data.SceneData.SceneEnvironment = scene->m_Environment;
-		s_Data.SceneData.SkyboxLod = scene->m_SkyboxLod;
-		s_Data.SceneData.ActiveLight = scene->m_Light;
+		s_Data.SceneData.SceneEnvironment = scene->GetEnvironment();
+		s_Data.SceneData.SkyboxLod = scene->GetSkyboxLod();
+		s_Data.SceneData.ActiveLight = scene->GetLight();
 
 		// VulkanRenderer::SetSceneEnvironment(s_Data.SceneData.SceneEnvironment);
 	}
@@ -190,7 +207,7 @@ namespace Hazel {
 
 	void SceneRenderer::SubmitMesh(MeshComponent meshComponent, TransformComponent transformComponent)
 	{
-		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), Ref<Material>());
+		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), Ref<HazelMaterial>());
 	}
 
 	void SceneRenderer::SubmitSelectedMesh(MeshComponent meshComponent, TransformComponent transformComponent)
@@ -198,7 +215,7 @@ namespace Hazel {
 		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
 	}
 
-	void SceneRenderer::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<Material> overrideMaterial)
+	void SceneRenderer::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
@@ -207,6 +224,7 @@ namespace Hazel {
 	void SceneRenderer::SubmitSelectedMesh(Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		s_Data.SelectedMeshDrawList.push_back({ mesh, Ref<HazelMaterial>(), transform });
+		// s_Data.ShadowPassDrawList.push_back({ mesh, Ref<HazelMaterial>, transform });
 	}
 
 	static Ref<HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;

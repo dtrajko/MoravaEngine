@@ -12,14 +12,17 @@ namespace Hazel {
 
 	struct SceneRendererData
 	{
-		const Hazel::HazelScene* ActiveScene = nullptr;
+		const HazelScene* ActiveScene = nullptr;
 		struct SceneInfo
 		{
 			SceneRendererCamera SceneCamera;
 
 			// Resources
+			Ref<HazelMaterial> SkyboxMaterial;
 			Environment SceneEnvironment;
 			float SkyboxLod = 0.0f;
+			float SceneEnvironmentIntensity;
+			LightEnvironment SceneLightEnvironment;
 			HazelLight ActiveLight;
 			glm::vec3 LightDirectionTemp;
 		} SceneData;
@@ -27,15 +30,19 @@ namespace Hazel {
 		Ref<HazelTexture2D> BRDFLUT;
 		Ref<HazelShader> CompositeShader;
 		Ref<HazelMaterial> CompositeMaterial;
+		Ref<MoravaShader> BloomBlurShader;
+		Ref<MoravaShader> BloomBlendShader;
 
 		Ref<RenderPass> GeoPass;
 		Ref<RenderPass> CompositePass;
+		Ref<RenderPass> BloomBlurPass[2];
+		Ref<RenderPass> BloomBlendPass;
 
 		Ref<Pipeline> GeometryPipeline;
 		Ref<Pipeline> CompositePipeline;
 		Ref<Pipeline> GridPipeline;
 		Ref<Pipeline> SkyboxPipeline;
-
+		Ref<Pipeline> ShadowPassPipeline;
 		Ref<HazelMaterial> SkyboxMaterial;
 
 		struct DrawCommand
@@ -54,6 +61,7 @@ namespace Hazel {
 		Ref<HazelShader> GridShader;
 		Ref<HazelMaterial> GridMaterial;
 		Ref<HazelMaterial> OutlineMaterial;
+		Ref<HazelMaterial> OutlineAnimMaterial;
 
 		SceneRendererOptions Options;
 
@@ -66,18 +74,11 @@ namespace Hazel {
 
 	static SceneRendererData s_Data;
 
-	SceneRendererVulkan::SceneRendererVulkan()
-	{
-	}
-
-	SceneRendererVulkan::~SceneRendererVulkan()
-	{
-	}
-
 	void SceneRendererVulkan::Init()
 	{
 		// temporary code for loading missing shaders
 		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
+		HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
 
 		HazelFramebufferSpecification geoFramebufferSpec;
 		geoFramebufferSpec.Width = 1280;
@@ -110,8 +111,8 @@ namespace Hazel {
 			const float gridScale = 16.025f;
 			const float gridSize = 0.025f;
 			s_Data.GridMaterial = HazelMaterial::Create(s_Data.GridShader);
-			s_Data.GridMaterial->Set("u_Settings.Scale", gridScale);
-			s_Data.GridMaterial->Set("u_Settings.Size", gridSize);
+			// s_Data.GridMaterial->Set("u_Settings.Scale", gridScale);
+			// s_Data.GridMaterial->Set("u_Settings.Size", gridSize);
 
 			PipelineSpecification pipelineSpec;
 			pipelineSpec.DebugName = "Grid";
@@ -211,6 +212,7 @@ namespace Hazel {
 		s_Data.ActiveScene = scene;
 
 		s_Data.SceneData.SceneCamera = camera;
+		// s_Data.SceneData.SkyboxMaterial = scene->GetSkyboxMaterial();
 		s_Data.SceneData.SceneEnvironment = scene->GetEnvironment();
 		s_Data.SceneData.SkyboxLod = scene->GetSkyboxLod();
 		s_Data.SceneData.ActiveLight = scene->GetLight();
@@ -239,15 +241,15 @@ namespace Hazel {
 		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), Ref<HazelMaterial>());
 	}
 
+	void SceneRendererVulkan::SubmitSelectedMesh(MeshComponent meshComponent, TransformComponent transformComponent)
+	{
+		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
+	}
+
 	void SceneRendererVulkan::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
-	}
-
-	void SceneRendererVulkan::SubmitSelectedMesh(MeshComponent meshComponent, TransformComponent transformComponent)
-	{
-		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
 	}
 
 	void SceneRendererVulkan::SubmitSelectedMesh(Ref<HazelMesh> mesh, const glm::mat4& transform)
