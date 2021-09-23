@@ -107,20 +107,20 @@ namespace Hazel {
 		Buffer& GetUniformBufferTarget(ShaderUniformDeclaration* uniformDeclaration);
 
 	protected:
+		Ref<HazelShader> m_Shader;
+		std::string m_Name;
 		Buffer m_UniformStorageBuffer; // should it be located in HazelMaterial or VulkanMaterial?
+		std::vector<Ref<HazelTexture>> m_Textures;
+		std::vector<Ref<HazelImage>> m_Images;
 
 	private:
-		Ref<HazelShader> m_Shader;
 		// std::unordered_set<HazelMaterial*> m_MaterialInstances;
 		std::unordered_set<HazelMaterialInstance*> m_MaterialInstances;
 
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;
 
-
-		std::vector<Ref<HazelTexture>> m_Textures;
-
-		uint32_t m_MaterialFlags;
+		uint32_t m_MaterialFlags = 0;
 	};
 
 	class HazelMaterialInstance : public RefCounted
@@ -194,15 +194,18 @@ namespace Hazel {
 		void OnMaterialValueUpdated(ShaderUniformDeclaration* decl);
 
 	private:
-		Ref<HazelMaterial> m_Material;
 		std::string m_Name;
+		Ref<HazelMaterial> m_Material;
+
+		std::vector<Ref<HazelTexture>> m_Textures;
+
+		// Buffer m_UniformStorageBuffer; // The property should be in parent HazelMaterial
+		std::vector<Ref<HazelImage>> m_Images;
 
 		Buffer m_VSUniformStorageBuffer;
 		Buffer m_PSUniformStorageBuffer;
 
 		Buffer m_UniformStorageBuffer; // could be obsolete in later versions of the vulkan branch
-
-		std::vector<Ref<HazelTexture>> m_Textures;
 
 		// TODO: This is temporary; come up with a proper system to track overrides
 		std::unordered_set<std::string> m_OverriddenValues;

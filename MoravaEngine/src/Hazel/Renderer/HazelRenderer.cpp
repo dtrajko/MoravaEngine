@@ -118,18 +118,56 @@ namespace Hazel {
 		// Compute shaders
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		{
-			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl", true);
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl", true);
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl", true);
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl", true);
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl", true);
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl", true);
-			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
+			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
+
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
+			// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
 			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
+			HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
 		}
 
-		//...
+		// Compile shaders
+		HazelRenderer::WaitAndRender();
+		SceneRenderer::Init();
+		SceneRendererVulkan::Init();
+		s_RendererAPI->Init(); // this method is currently OpenGL-specific
+
+		// Create fullscreen quad
+		float x = -1;
+		float y = -1;
+		float width = 2;
+		float height = 2;
+		struct QuadVertex
+		{
+			glm::vec3 Position;
+			glm::vec2 TexCoord;
+		};
+
+		QuadVertex* data = new QuadVertex[4];
+
+		data[0].Position = glm::vec3(x, y, 0.1f);
+		data[0].TexCoord = glm::vec2(0, 0);
+
+		data[1].Position = glm::vec3(x + width, y, 0.1f);
+		data[1].TexCoord = glm::vec2(1, 0);
+
+		data[2].Position = glm::vec3(x + width, y + height, 0.1f);
+		data[2].TexCoord = glm::vec2(1, 1);
+
+		data[3].Position = glm::vec3(x, y + height, 0.1f);
+		data[3].TexCoord = glm::vec2(0, 1);
+
+		s_Data->m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
+		s_Data->m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+
+		// ...
 
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data->WhiteTexture = HazelTexture2D::Create(HazelImageFormat::RGBA, 1, 1, &whiteTextureData);
@@ -141,9 +179,6 @@ namespace Hazel {
 
 		//...
 
-		s_RendererAPI->Init();
-		SceneRenderer::Init();
-		SceneRendererVulkan::Init();
 	}
 
 	Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()

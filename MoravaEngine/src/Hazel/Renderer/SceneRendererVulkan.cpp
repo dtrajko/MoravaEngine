@@ -40,7 +40,6 @@ namespace Hazel {
 
 		Ref<Pipeline> GeometryPipeline;
 		Ref<Pipeline> CompositePipeline;
-		Ref<Pipeline> GridPipeline;
 		Ref<Pipeline> SkyboxPipeline;
 		Ref<Pipeline> ShadowPassPipeline;
 		Ref<HazelMaterial> SkyboxMaterial;
@@ -58,6 +57,7 @@ namespace Hazel {
 		std::vector<DrawCommand> ShadowPassDrawList;
 
 		// Grid
+		Ref<Pipeline> GridPipeline;
 		Ref<HazelShader> GridShader;
 		Ref<HazelMaterial> GridMaterial;
 		Ref<HazelMaterial> OutlineMaterial;

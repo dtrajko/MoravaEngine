@@ -159,9 +159,6 @@ namespace Hazel {
 		const ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
 
 	private:
-		Ref<HazelShader> m_Shader;
-		std::string m_Name;
-
 		enum class PendingDescriptorType
 		{
 			None = 0, Texture2D, TextureCube, Image2D
@@ -181,10 +178,6 @@ namespace Hazel {
 		std::vector<std::shared_ptr<PendingDescriptor>> m_PendingDescriptors;  // TODO: weak ref
 
 		uint32_t m_MaterialFlags = 0;
-
-		// Buffer m_UniformStorageBuffer; // The property should be in parent HazelMaterial
-		std::vector<Ref<HazelTexture>> m_Textures; // TODO: Texture should only be stored as images
-		std::vector<Ref<HazelImage>> m_Images;
 
 		std::unordered_map<uint32_t, uint64_t> m_ImageHashes;
 

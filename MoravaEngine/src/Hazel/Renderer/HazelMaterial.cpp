@@ -14,6 +14,7 @@ namespace Hazel {
 	}
 
 	HazelMaterial::HazelMaterial(const Ref<HazelShader>& shader, const std::string& name)
+		: m_Shader(shader), m_Name(name)
 	{
 		// Create(shader, name);
 	}

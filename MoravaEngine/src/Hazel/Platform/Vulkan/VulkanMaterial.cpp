@@ -10,7 +10,7 @@
 namespace Hazel {
 
 	VulkanMaterial::VulkanMaterial(const Ref<HazelShader>& shader, const std::string& name)
-		: m_Shader(shader), m_Name(name)
+		: HazelMaterial(shader, name)
 	{
 		m_WriteDescriptors = std::vector<VkWriteDescriptorSet>();
 
@@ -35,7 +35,7 @@ namespace Hazel {
 				writeDescriptorSet.descriptorCount = (uint32_t)m_DescriptorSet.DescriptorSets.size();
 				writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				writeDescriptorSet.pBufferInfo = &uniformBuffer.Descriptor;
-				writeDescriptorSet.dstBinding = 0;
+				writeDescriptorSet.dstBinding = uniformBuffer.BindingPoint;
 				m_WriteDescriptors.push_back(writeDescriptorSet);
 			}
 		}

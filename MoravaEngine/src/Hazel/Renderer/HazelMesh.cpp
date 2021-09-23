@@ -1039,7 +1039,9 @@ namespace Hazel {
 		HZ_MESH_LOG("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
 
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
+		{
 			TraverseNodes(node->mChildren[i], transform, level + 1);
+		}
 	}
 
 	uint32_t HazelMesh::FindPosition(float AnimationTime, const aiNodeAnim* pNodeAnim)
@@ -1047,7 +1049,9 @@ namespace Hazel {
 		for (uint32_t i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
 		{
 			if (AnimationTime < (float)pNodeAnim->mPositionKeys[i + 1].mTime)
+			{
 				return i;
+			}
 		}
 
 		return 0;
@@ -1056,12 +1060,16 @@ namespace Hazel {
 	uint32_t HazelMesh::FindRotation(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
 		if (pNodeAnim->mNumRotationKeys <= 0)
+		{
 			Log::GetLogger()->error("pNodeAnim->mNumRotationKeys <= 0");
+		}
 
 		for (uint32_t i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++)
 		{
 			if (AnimationTime < (float)pNodeAnim->mRotationKeys[i + 1].mTime)
+			{
 				return i;
+			}
 		}
 
 		return 0;
@@ -1070,12 +1078,16 @@ namespace Hazel {
 	uint32_t HazelMesh::FindScaling(float AnimationTime, const aiNodeAnim* pNodeAnim)
 	{
 		if (pNodeAnim->mNumScalingKeys <= 0)
+		{
 			Log::GetLogger()->error("pNodeAnim->mNumScalingKeys <= 0");
+		}
 
 		for (uint32_t i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++)
 		{
 			if (AnimationTime < (float)pNodeAnim->mScalingKeys[i + 1].mTime)
+			{
 				return i;
+			}
 		}
 
 		return 0;
@@ -1099,10 +1111,14 @@ namespace Hazel {
 		float DeltaTime = (float)(nodeAnim->mPositionKeys[NextPositionIndex].mTime - nodeAnim->mPositionKeys[PositionIndex].mTime);
 		float Factor = (animationTime - (float)nodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
 		if (Factor < 0.0f)
+		{
 			Factor = 0.0f;
+		}
 
 		if (Factor > 1.0f)
+		{
 			Log::GetLogger()->error("Factor must be below 1.0f");
+		}
 
 		const aiVector3D& Start = nodeAnim->mPositionKeys[PositionIndex].mValue;
 		const aiVector3D& End = nodeAnim->mPositionKeys[NextPositionIndex].mValue;
@@ -1124,16 +1140,21 @@ namespace Hazel {
 		uint32_t NextRotationIndex = (RotationIndex + 1);
 
 		if (NextRotationIndex >= nodeAnim->mNumRotationKeys)
+		{
 			Log::GetLogger()->error("NextRotationIndex >= nodeAnim->mNumRotationKeys");
-
+		}
 
 		float DeltaTime = (float)(nodeAnim->mRotationKeys[NextRotationIndex].mTime - nodeAnim->mRotationKeys[RotationIndex].mTime);
 		float Factor = (animationTime - (float)nodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
 		if (Factor < 0.0f)
+		{
 			Factor = 0.0f;
+		}
 
 		if (Factor > 1.0f)
+		{
 			Log::GetLogger()->error("Factor must be below 1.0f");
+		}
 
 		const aiQuaternion& StartRotationQ = nodeAnim->mRotationKeys[RotationIndex].mValue;
 		const aiQuaternion& EndRotationQ = nodeAnim->mRotationKeys[NextRotationIndex].mValue;
@@ -1156,15 +1177,21 @@ namespace Hazel {
 		uint32_t nextIndex = (index + 1);
 
 		if (nextIndex >= nodeAnim->mNumScalingKeys)
+		{
 			Log::GetLogger()->error("nextIndex >= nodeAnim->mNumScalingKeys");
+		}
 
 		float deltaTime = (float)(nodeAnim->mScalingKeys[nextIndex].mTime - nodeAnim->mScalingKeys[index].mTime);
 		float factor = (animationTime - (float)nodeAnim->mScalingKeys[index].mTime) / deltaTime;
 		if (factor < 0.0f)
+		{
 			factor = 0.0f;
+		}
 
 		if (factor > 1.0f)
+		{
 			Log::GetLogger()->error("Factor must be below 1.0f");
+		}
 
 		const auto& start = nodeAnim->mScalingKeys[index].mValue;
 		const auto& end = nodeAnim->mScalingKeys[nextIndex].mValue;
@@ -1234,7 +1261,9 @@ namespace Hazel {
 			****/
 
 			for (uint32_t i = 0; i < node->mNumChildren; i++)
+			{
 				ImGuiNodeHierarchy(node->mChildren[i], transform, level + 1);
+			}
 
 			ImGui::TreePop();
 		}
@@ -1242,7 +1271,8 @@ namespace Hazel {
 
 	void HazelMesh::OnImGuiRender(uint32_t id, bool* p_open)
 	{
-		if (!m_Scene) {
+		if (!m_Scene)
+		{
 			Log::GetLogger()->error("Mesh: Scene not initialized!");
 			return;
 		}
@@ -1310,7 +1340,9 @@ namespace Hazel {
 		}
 
 		for (uint32_t i = 0; i < pNode->mNumChildren; i++)
+		{
 			ReadNodeHierarchy(AnimationTime, pNode->mChildren[i], transform);
+		}
 	}
 
 	aiNodeAnim* HazelMesh::FindNodeAnim(const aiAnimation* animation, const std::string& nodeName)
@@ -1319,7 +1351,9 @@ namespace Hazel {
 		{
 			aiNodeAnim* nodeAnim = animation->mChannels[i];
 			if (std::string(nodeAnim->mNodeName.data) == nodeName)
+			{
 				return nodeAnim;
+			}
 		}
 		return nullptr;
 	}
@@ -1328,11 +1362,13 @@ namespace Hazel {
 	{
 		for (auto iterator = m_Submeshes.cbegin(); iterator != m_Submeshes.cend();)
 		{
-			if (iterator->MeshName == submesh.MeshName) {
+			if (iterator->MeshName == submesh.MeshName)
+			{
 				iterator = m_Submeshes.erase(iterator++);
 				Log::GetLogger()->debug("HazelMesh::DeleteSubmesh erase '{0}'", submesh.MeshName);
 			}
-			else {
+			else
+			{
 				++iterator;
 			}
 		}
@@ -1354,7 +1390,9 @@ namespace Hazel {
 		ReadNodeHierarchy(time, m_Scene->mRootNode, glm::mat4(1.0f));
 		m_BoneTransforms.resize(m_BoneCount);
 		for (size_t i = 0; i < m_BoneCount; i++)
+		{
 			m_BoneTransforms[i] = m_BoneInfo[i].FinalTransformation;
+		}
 	}
 
 	void HazelMesh::DumpVertexBuffer()
@@ -1428,7 +1466,8 @@ namespace Hazel {
 			m_MeshShader->SetMat4("u_Transform", transform * submesh.Transform);
 
 			// Manage materials (PBR texture binding)
-			if (m_BaseMaterial) {
+			if (m_BaseMaterial)
+			{
 				Hazel::Ref<Material> baseMaterialRef = m_BaseMaterial;
 				baseMaterialRef->GetTextureAlbedo()->Bind(samplerSlot + 0);
 				baseMaterialRef->GetTextureNormal()->Bind(samplerSlot + 1);
@@ -1454,13 +1493,16 @@ namespace Hazel {
 
 			// Ref<HazelMaterialInstance> material = Ref<HazelMaterialInstance>();
 			Ref<HazelMaterial> material = Ref<HazelMaterial>();
-			if (m_Materials.size()) {
+			if (m_Materials.size())
+			{
 				material = m_Materials[submesh.MaterialIndex];
 				if (material && material->GetFlag(HazelMaterialFlag::DepthTest))
 				{
 					RendererBasic::EnableDepthTest();
 				}
-			} else {
+			}
+			else
+			{
 				RendererBasic::DisableDepthTest();
 			}
 
@@ -1487,7 +1529,8 @@ namespace Hazel {
 		parentMesh->GetPipeline()->Bind();
 
 		// Manage materials (PBR texture binding)
-		if (m_BaseMaterial) {
+		if (m_BaseMaterial)
+		{
 			m_BaseMaterial->GetTextureAlbedo()->Bind(samplerSlot + 0);
 			m_BaseMaterial->GetTextureNormal()->Bind(samplerSlot + 1);
 			m_BaseMaterial->GetTextureMetallic()->Bind(samplerSlot + 2);
@@ -1510,10 +1553,12 @@ namespace Hazel {
 		}
 
 		auto material = parentMesh->GetMaterials()[MaterialIndex];
-		if (material->GetFlag(HazelMaterialFlag::DepthTest)) {
+		if (material->GetFlag(HazelMaterialFlag::DepthTest))
+		{
 			RendererBasic::EnableDepthTest();
 		}
-		else {
+		else
+		{
 			RendererBasic::DisableDepthTest();
 		}
 
