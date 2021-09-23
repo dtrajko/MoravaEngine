@@ -189,18 +189,17 @@ namespace Hazel {
 			auto& bufferType = compiler.get_type(resource.base_type_id);
 			auto bufferSize = compiler.get_declared_struct_size(bufferType);
 			int memberCount = static_cast<int>(bufferType.member_types.size());
-			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
-			uint32_t offset = 0;
+			uint32_t bufferOffset = 0;
 			if (m_PushConstantRanges.size())
 			{
-				offset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
+				bufferOffset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
 			}
 
 			auto& pushConstantRange = m_PushConstantRanges.emplace_back();
 			pushConstantRange.ShaderStage = shaderStage;
 			pushConstantRange.Size = static_cast<uint32_t>(bufferSize);
-			pushConstantRange.Offset = offset;
+			pushConstantRange.Offset = bufferOffset;
 
 			// Skip empty push constant buffers - these are for the renderer only
 			if (bufferName.empty())
@@ -210,14 +209,14 @@ namespace Hazel {
 
 			ShaderBuffer& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
-			buffer.Size = static_cast<uint32_t>(bufferSize);
+			buffer.Size = static_cast<uint32_t>(bufferSize - bufferOffset);
 
 			// MORAVA_CORE_TRACE("    {0} ({1}, {2})", name, descriptorSet, binding);
 
 			MORAVA_CORE_TRACE("  Name: {0}", bufferName);
 			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
 			// MORAVA_CORE_TRACE("  Binding Point: {0}", bindingPoint);
-			MORAVA_CORE_TRACE("  Size: {0}", size);
+			MORAVA_CORE_TRACE("  Buffer size: {0}", bufferSize);
 			MORAVA_CORE_TRACE("--------------------------");
 
 			for (int i = 0; i < memberCount; i++)
@@ -225,7 +224,7 @@ namespace Hazel {
 				auto type = compiler.get_type(bufferType.member_types[i]);
 				const auto& memberName = compiler.get_member_name(bufferType.self, i);
 				auto size = compiler.get_declared_struct_member_size(bufferType, i);
-				auto offset = compiler.type_struct_member_offset(bufferType, i);
+				auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
 
 				std::string uniformName = bufferName + "." + memberName;
 				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), static_cast<uint32_t>(size), offset);
