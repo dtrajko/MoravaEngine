@@ -33,6 +33,11 @@ namespace Hazel {
 		return Ref<HazelMaterial>();
 	}
 
+	HazelMaterial::~HazelMaterial()
+	{
+		Log::GetLogger()->debug("Destroy HazelMaterial!");
+	}
+
 	void HazelMaterial::AllocateStorage()
 	{
 		Log::GetLogger()->error("AllocateStorage() not implemented in base class HazelMaterial!");

@@ -21,6 +21,7 @@ namespace Hazel {
 
 	OpenGLMaterial::~OpenGLMaterial()
 	{
+		Log::GetLogger()->debug("Destroy OpenGLMaterial!");
 	}
 
 	void OpenGLMaterial::Invalidate()

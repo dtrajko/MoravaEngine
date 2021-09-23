@@ -30,7 +30,7 @@ namespace Hazel {
 		HazelMaterial();
 		HazelMaterial(const Ref<HazelShader>& shader, const std::string& name = "");
 		static Ref<HazelMaterial> Create(const Ref<HazelShader>& shader, const std::string& name = "");
-		virtual ~HazelMaterial() {};
+		virtual ~HazelMaterial();
 
 		virtual void Invalidate() = 0;
 

@@ -509,7 +509,7 @@ namespace Hazel {
 					{
 						m_Textures[i] = texture;
 						mi->Set("u_AlbedoTexture", texture); //  VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_AlbedoTexture')!
-						mi->Set("u_MaterialUniforms.UseAlbedoMap", true);
+						// mi->Set("u_MaterialUniforms.UseAlbedoMap", true);
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
@@ -589,7 +589,7 @@ namespace Hazel {
 						m_Textures.push_back(texture);
 
 						mi->Set("u_NormalTexture", texture);
-						mi->Set("u_MaterialUniforms.UseNormalMap", true);
+						// mi->Set("u_MaterialUniforms.UseNormalMap", true);
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
@@ -656,7 +656,7 @@ namespace Hazel {
 					{
 						m_Textures[i] = texture;
 						mi->Set("u_RoughnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_RoughnessTexture')!
-						mi->Set("u_MaterialUniforms.UseRoughnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseRoughnessMap'!
+						// mi->Set("u_MaterialUniforms.UseRoughnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseRoughnessMap'!
 
 						if (RendererAPI::Current() == RendererAPIType::Vulkan)
 						{
@@ -815,7 +815,7 @@ namespace Hazel {
 
 								m_Textures.push_back(texture);
 								mi->Set("u_MetalnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_MetalnessTexture')!
-								mi->Set("u_MaterialUniforms.UseMetalnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseMetalnessMap'!
+								// mi->Set("u_MaterialUniforms.UseMetalnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseMetalnessMap'!
 
 								if (RendererAPI::Current() == RendererAPIType::Vulkan)
 								{
