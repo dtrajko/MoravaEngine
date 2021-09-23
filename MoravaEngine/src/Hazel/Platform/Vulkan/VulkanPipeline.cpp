@@ -120,6 +120,7 @@ namespace Hazel {
 			VkPipelineRasterizationStateCreateInfo rasterizationState = {};
 			rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 			rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
+			// rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
 			rasterizationState.cullMode = VK_CULL_MODE_NONE;
 			rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 			rasterizationState.depthClampEnable = VK_FALSE;
@@ -131,7 +132,14 @@ namespace Hazel {
 			// We need one blend attachment state per color attachment (even if blending is not used)
 			VkPipelineColorBlendAttachmentState blendAttachmentState[1] = {};
 			blendAttachmentState[0].colorWriteMask = 0xf;
-			blendAttachmentState[0].blendEnable = VK_FALSE;
+			blendAttachmentState[0].blendEnable = VK_TRUE;
+			blendAttachmentState[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+			blendAttachmentState[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			blendAttachmentState[0].colorBlendOp = VK_BLEND_OP_ADD;
+			blendAttachmentState[0].alphaBlendOp = VK_BLEND_OP_ADD;
+			blendAttachmentState[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+			blendAttachmentState[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+
 			VkPipelineColorBlendStateCreateInfo colorBlendState = {};
 			colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 			colorBlendState.attachmentCount = 1;
