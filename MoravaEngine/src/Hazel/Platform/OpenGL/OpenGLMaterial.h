@@ -144,12 +144,14 @@ namespace Hazel {
 		Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; }
 
 		void UpdateForRendering();
+
 	private:
 		void AllocateStorage();
 		void OnShaderReloaded();
 
 		const ShaderUniform* FindUniformDeclaration(const std::string& name);
 		const ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
+
 	private:
 		Ref<HazelShader> m_Shader;
 		std::string m_Name;
@@ -160,6 +162,7 @@ namespace Hazel {
 		std::vector<Ref<HazelTexture>> m_Textures;
 		std::map<uint32_t, Ref<HazelImage2D>> m_Images;
 		std::map<uint32_t, Ref<HazelTexture2D>> m_Texture2Ds;
+
 	};
 
 }

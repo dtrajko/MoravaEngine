@@ -24,7 +24,7 @@
 
 SceneHazelVulkan::SceneHazelVulkan()
 {
-    sceneSettings.cameraPosition     = glm::vec3(-125.0f, -16.0f, 50.0f);
+    sceneSettings.cameraPosition     = glm::vec3(0.0f, 0.0f, 100.0f);
     sceneSettings.cameraStartYaw     = 0.0f;
     sceneSettings.cameraStartPitch   = 0.0f;
     sceneSettings.cameraMoveSpeed    = 2.0f;

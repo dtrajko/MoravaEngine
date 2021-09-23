@@ -9,11 +9,11 @@
 
 namespace Hazel {
 
-
 	OpenGLMaterial::OpenGLMaterial(const Ref<HazelShader>& shader, const std::string& name)
 		: m_Shader(shader), m_Name(name)
 	{
 		m_Shader->AddShaderReloadedCallback(std::bind(&OpenGLMaterial::OnShaderReloaded, this));
+		AllocateStorage();
 
 		m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
 		m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;
@@ -38,7 +38,9 @@ namespace Hazel {
 		{
 			uint32_t size = 0;
 			for (auto [name, shaderBuffer] : shaderBuffers)
+			{
 				size += shaderBuffer.Size;
+			}
 
 			m_UniformStorageBuffer.Allocate(size);
 			m_UniformStorageBuffer.ZeroInitialize();
@@ -61,7 +63,9 @@ namespace Hazel {
 		{
 			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
 			if (buffer.Uniforms.find(name) == buffer.Uniforms.end())
+			{
 				return nullptr;
+			}
 
 			return &buffer.Uniforms.at(name);
 		}
@@ -248,12 +252,14 @@ namespace Hazel {
 	Ref<HazelTexture2D> OpenGLMaterial::TryGetTexture2D(const std::string& name)
 	{
 		auto decl = FindResourceDeclaration(name);
-		if (!decl) {
+		if (!decl)
+		{
 			return Hazel::Ref<Hazel::HazelTexture2D>();
 		}
 
 		uint32_t slot = decl->GetRegister();
-		if (m_Texture2Ds.find(slot) == m_Texture2Ds.end()) {
+		if (m_Texture2Ds.find(slot) == m_Texture2Ds.end())
+		{
 			return Hazel::Ref<Hazel::HazelTexture2D>();
 		}
 
@@ -269,10 +275,10 @@ namespace Hazel {
 	{
 		Ref<OpenGLShader> shader = m_Shader.As<OpenGLShader>();
 
-		HazelRenderer::Submit([shader]()
+		// HazelRenderer::Submit([shader]() {});
 		{
 			glUseProgram(shader->GetRendererID());
-		});
+		}
 
 		const auto& shaderBuffers = GetShader()->GetShaderBuffers();
 		HZ_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
@@ -348,12 +354,12 @@ namespace Hazel {
 			auto& texture = m_Textures[i];
 			if (texture)
 			{
-				HazelRenderer::Submit([i, texture]()
-					{
-						HZ_CORE_ASSERT(texture->GetType() == TextureType::TextureCube);
-						Ref<OpenGLTextureCube> glTexture = texture.As<OpenGLTextureCube>();
-						glBindTextureUnit((GLuint)i, glTexture->GetID());
-					});
+				// HazelRenderer::Submit([i, texture]() {});
+				{
+					HZ_CORE_ASSERT(texture->GetType() == TextureType::TextureCube);
+					Ref<OpenGLTextureCube> glTexture = texture.As<OpenGLTextureCube>();
+					glBindTextureUnit((GLuint)i, glTexture->GetID());
+				}
 			}
 		}
 
@@ -364,11 +370,11 @@ namespace Hazel {
 				uint32_t textureSlot = slot;
 				Ref<HazelImage2D> image = texture->GetImage();
 				Ref<OpenGLImage2D> glImage = image.As<OpenGLImage2D>();
-				HazelRenderer::Submit([textureSlot, glImage]()
+				// HazelRenderer::Submit([textureSlot, glImage]() {});
 				{
 					glBindSampler(textureSlot, glImage->GetSamplerRendererID());
 					glBindTextureUnit(textureSlot, glImage->GetRendererID());
-				});
+				}
 			}
 		}
 
@@ -378,11 +384,11 @@ namespace Hazel {
 			{
 				uint32_t textureSlot = slot;
 				Ref<OpenGLImage2D> glImage = image.As<OpenGLImage2D>();
-				HazelRenderer::Submit([textureSlot, glImage]()
+				// HazelRenderer::Submit([textureSlot, glImage]() {});
 				{
 					glBindSampler(textureSlot, glImage->GetSamplerRendererID());
 					glBindTextureUnit(textureSlot, glImage->GetRendererID());
-				});
+				}
 			}
 		}
 	}
