@@ -13,7 +13,7 @@ namespace Hazel {
 		: m_Shader(shader), m_Name(name)
 	{
 		m_Shader->AddShaderReloadedCallback(std::bind(&OpenGLMaterial::OnShaderReloaded, this));
-		// AllocateStorage();
+		AllocateStorage();
 
 		m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
 		m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;
