@@ -448,7 +448,7 @@ namespace Hazel {
 	// Used by OpenGLRenderer
 	void HazelRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
 	{
-		// s_RendererAPI->SetSceneEnvironment(environment, shadow);
+		s_RendererAPI->SetSceneEnvironment(environment, shadow);
 	}
 
 	// Used by OpenGLRenderer

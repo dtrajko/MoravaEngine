@@ -381,3 +381,7 @@ vendor/box2d
 vendor/cross-platform/shaderc
 vendor/cross-platform/SPIRV-Cross
 vendor/DirectXTex
+vendor/cross-platform/bullet3
+vendor/cross-platform/glew
+vendor/cross-platform/glfw
+vendor/cross-platform/ImGuizmo
