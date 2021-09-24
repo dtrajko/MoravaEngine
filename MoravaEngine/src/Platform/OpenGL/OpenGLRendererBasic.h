@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Hazel/Renderer/RendererAPI.h"
-
 #include "Core/Log.h"
 #include "Core/Window.h"
 #include "Scene/Scene.h"

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "RendererTypes.h"
 #include "RendererCapabilities.h"
+#include "RendererTypes.h"
 #include "SceneEnvironment.h"
 
 #include <cstdint>
@@ -9,8 +9,6 @@
 
 
 namespace Hazel {
-
-	using RendererID = uint32_t;
 
 	enum class RendererAPIType
 	{

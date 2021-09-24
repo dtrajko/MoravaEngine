@@ -203,55 +203,60 @@ namespace Hazel {
 		return s_Data->m_ShaderLibrary;
 	}
 
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void HazelRenderer::Clear()
 	{
-		// HazelRenderer::Submit([]()
-		// {
-		// });
+		// HazelRenderer::Submit([]() {});
 		{
 			RendererAPI::Clear(0.0f, 0.0f, 0.0f, 1.0f);
 		}
 	}
+	/**** END to be removed from HazelRenderer ****/
 
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void HazelRenderer::Clear(float r, float g, float b, float a)
 	{
-		// HazelRenderer::Submit([=]()
-		// {
-		// });
+		// HazelRenderer::Submit([=]() {});
 		{
 			RendererAPI::Clear(r, g, b, a);
 		}
 	}
+	/**** END to be removed from HazelRenderer ****/
 
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void HazelRenderer::ClearMagenta()
 	{
 		Clear(1, 0, 1);
 	}
+	/**** END to be removed from HazelRenderer ****/
 
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void HazelRenderer::SetClearColor(float r, float g, float b, float a)
 	{
 	}
+	/**** END to be removed from HazelRenderer ****/
 
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void HazelRenderer::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
 	{
-		// HazelRenderer::Submit([=]() {
-		// });
+		// HazelRenderer::Submit([=]() {});
 		{
 			RendererAPI::DrawIndexed(count, type, depthTest);
 		}
 	}
+	/**** END to be removed from HazelRenderer ****/
 
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void HazelRenderer::SetLineThickness(float thickness)
 	{
 		Log::GetLogger()->warn("HazelRenderer::SetLineThickness({0}): method not implemented!", thickness);
 
-		// HazelRenderer::Submit([=]() {
-		// });
-
+		// HazelRenderer::Submit([=]() {});
 		{
 			RendererAPI::SetLineThickness(thickness);
 		}
 	}
+	/**** END to be removed from HazelRenderer ****/
 
 	void HazelRenderer::WaitAndRender()
 	{
@@ -355,9 +360,7 @@ namespace Hazel {
 			auto transformUniform = transform * submesh.Transform;
 			shader->SetUniformBuffer("Transform", &transformUniform, sizeof(glm::mat4));
 
-			// HazelRenderer::Submit([submesh, material]()
-			// {
-			// });
+			// HazelRenderer::Submit([submesh, material]() {});
 			{
 				if (material->GetFlag(HazelMaterialFlag::DepthTest))
 					glEnable(GL_DEPTH_TEST);

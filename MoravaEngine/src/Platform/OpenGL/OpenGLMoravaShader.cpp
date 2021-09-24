@@ -1,7 +1,6 @@
 #include "OpenGLMoravaShader.h"
 
 #include "Hazel/Core/Assert.h"
-#include "Hazel/Renderer/RendererAPI.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"

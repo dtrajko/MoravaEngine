@@ -4,7 +4,6 @@
 
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Renderer/HazelTexture.h"
-#include "Hazel/Renderer/RendererAPI.h"
 
 #include "../../ImGuizmo/ImGuizmo.h"
 

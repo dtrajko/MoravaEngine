@@ -5,7 +5,7 @@
 #include "Hazel/Core/Base.h"
 #include "Hazel/Core/Assert.h"
 #include "Hazel/Core/Ref.h"
-#include "RendererAPI.h"
+#include "RendererTypes.h"
 
 #include "Core/Log.h"
 

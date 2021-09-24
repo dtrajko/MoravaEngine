@@ -4,7 +4,6 @@
 
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelCamera.h"
-#include "Hazel/Renderer/RendererAPI.h"
 
 #include "DX11Texture2D.h"
 #include "DX11ConstantBuffer.h"

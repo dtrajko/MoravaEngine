@@ -34,16 +34,12 @@ namespace Hazel {
 		static Ref<RendererContext> GetContext();
 
 		// Commands
-		static void Clear();
-		static void Clear(float r, float g, float b, float a = 1.0f);
-		static void SetClearColor(float r, float g, float b, float a);
-
-		static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true);
-
-		// For OpenGL
-		static void SetLineThickness(float thickness);
-
-		static void ClearMagenta();
+		static void Clear();                                                                // TODO: to be removed from HazelRenderer
+		static void Clear(float r, float g, float b, float a = 1.0f);                       // TODO: to be removed from HazelRenderer
+		static void SetClearColor(float r, float g, float b, float a);                      // TODO: to be removed from HazelRenderer
+		static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest = true); // TODO: to be removed from HazelRenderer
+		static void SetLineThickness(float thickness); // For OpenGL                        // TODO: to be removed from HazelRenderer
+		static void ClearMagenta();                                                         // TODO: to be removed from HazelRenderer
 
 		static void Init();
 
