@@ -377,3 +377,7 @@ MoravaEngine/Models/LowPolyBuildingCollection/
 
 MoravaEngine/assets/shaders/cached/
 MoravaEngine/Models/TankScene/
+vendor/box2d
+vendor/cross-platform/shaderc
+vendor/cross-platform/SPIRV-Cross
+vendor/DirectXTex
