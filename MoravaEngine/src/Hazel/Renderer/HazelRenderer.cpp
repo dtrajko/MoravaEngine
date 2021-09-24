@@ -20,8 +20,6 @@ namespace Hazel {
 
 	static RendererAPI* s_RendererAPI = nullptr;
 
-	RendererAPIType RendererAPI::s_CurrentRendererAPI = RendererAPIType::OpenGL;
-
 	struct ShaderDependencies
 	{
 		std::vector<Ref<PipelineCompute>> ComputePipelines;
@@ -140,6 +138,20 @@ namespace Hazel {
 		{
 			SceneRendererVulkan::Init();
 		}
+
+		std::function<void()> initFunc;
+
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::OpenGL:
+			initFunc; // = OpenGLRenderer::Init;
+			break;
+		case RendererAPIType::Vulkan:
+			initFunc; // = VulkanRenderer::Init;
+			break;
+		}
+
+		// initFunc();
 
 		s_RendererAPI->Init(); // this method is currently OpenGL-specific
 
@@ -544,6 +556,11 @@ namespace Hazel {
 	Ref<HazelTextureCube> HazelRenderer::GetBlackCubeTexture()
 	{
 		return s_Data->BlackCubeTexture;
+	}
+
+	RendererAPI* HazelRenderer::GetRendererAPI()
+	{
+		return s_RendererAPI;
 	}
 
 }

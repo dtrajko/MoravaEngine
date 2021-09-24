@@ -345,7 +345,7 @@ namespace Hazel {
 			s_Data.RendererDescriptorSetFeb2021 = pbrShader->CreateDescriptorSets(1);
 		}
 
-		SetSceneEnvironmentStatic(Ref<Environment>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), Ref<HazelImage2D>());
+		SetSceneEnvironment(Ref<Environment>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), Ref<HazelImage2D>());
 
 		/*** BEGIN Setup the Skybox ****/
 		s_Data.VulkanSkyboxCube = Hazel::Ref<VulkanSkyboxCube>::Create();
@@ -516,14 +516,7 @@ namespace Hazel {
 		vkCmdDrawIndexed(commandBuffer, s_Data.VulkanSkyboxCube->m_IndexCount, 1, 0, 0, 0);
 	}
 
-	// TODO: virtual or static?
 	void VulkanRenderer::BeginFrame()
-	{
-		Log::GetLogger()->error("The virtual method BeginFrame currently not in use. Use BeginFrameStatic instead!");
-	}
-
-	// TODO: virtual or static?
-	void VulkanRenderer::BeginFrameStatic()
 	{
 		// HazelRenderer::Submit([]() {});
 		{
@@ -543,11 +536,6 @@ namespace Hazel {
 
 	void VulkanRenderer::EndFrame()
 	{
-		Log::GetLogger()->error("The virtual method EndFrame currently not in use. Use EndFrameStatic instead!");
-	}
-
-	void VulkanRenderer::EndFrameStatic()
-	{
 		// HazelRenderer::Submit([]() {});
 		{
 			// VK_CHECK_RESULT(vkEndCommandBuffer(s_Data.ActiveCommandBuffer));
@@ -557,12 +545,6 @@ namespace Hazel {
 
 	// TODO: virtual or static?
 	void VulkanRenderer::BeginRenderPass(const Ref<RenderPass>& renderPass)
-	{
-		Log::GetLogger()->error("The virtual method BeginRenderPass currently not in use. Use BeginRenderPassStatic instead!");
-	}
-
-	// TODO: virtual or static?
-	void VulkanRenderer::BeginRenderPassStatic(const Ref<RenderPass>& renderPass)
 	{
 		// HazelRenderer::Submit([renderPass]() {});
 		{
@@ -575,7 +557,7 @@ namespace Hazel {
 			uint32_t width = framebuffer->GetWidth();
 			uint32_t height = framebuffer->GetHeight();
 
-			BeginFrameStatic();
+			BeginFrame();
 
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -614,18 +596,12 @@ namespace Hazel {
 			scissor.offset.y = 0;
 			// vkCmdSetScissor(s_Data.ActiveCommandBuffer, 0, 1, &scissor);
 
-			EndFrameStatic();
+			EndFrame();
 		}
 	}
 
 	// TODO: virtual or static?
 	void VulkanRenderer::EndRenderPass()
-	{
-		Log::GetLogger()->error("The virtual method EndRenderPass currently not in use. Use EndRenderPassStatic instead!");
-	}
-
-	// TODO: virtual or static?
-	void VulkanRenderer::EndRenderPassStatic()
 	{
 		// HazelRenderer::Submit([]() {});
 		{
@@ -635,11 +611,6 @@ namespace Hazel {
 	}
 
 	void VulkanRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
-	{
-		Log::GetLogger()->error("The virtual method SetSceneEnvironment currently not in use. Use SetSceneEnvironmentStatic instead!");
-	}
-
-	void VulkanRenderer::SetSceneEnvironmentStatic(Ref<Environment> environment, Ref<HazelImage2D> shadow)
 	{
 		// HazelRenderer::Submit([environment]() mutable {});
 		{
@@ -1312,11 +1283,6 @@ namespace Hazel {
 
 	void VulkanRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
-		Log::GetLogger()->error("The virtual method RenderMesh currently not in use. Use RenderMeshStatic instead!");
-	}
-
-	void VulkanRenderer::RenderMeshStatic(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
-	{
 		// HazelRenderer::Submit([mesh, transform]() mutable {});
 		{
 			Ref<VulkanPipeline> vulkanPipeline = s_MeshPipeline.As<VulkanPipeline>();
@@ -1360,11 +1326,6 @@ namespace Hazel {
 
 	void VulkanRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
 	{
-		Log::GetLogger()->error("The virtual method RenderQuad currently not in use. Use RenderQuadStatic instead!");
-	}
-
-	void VulkanRenderer::RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
-	{
 		Ref<VulkanMaterial> vulkanMaterial = material.As<VulkanMaterial>();
 		vulkanMaterial->UpdateForRendering(); // Broken at the moment
 
@@ -1398,12 +1359,6 @@ namespace Hazel {
 	}
 
 	void VulkanRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
-	{
-		Log::GetLogger()->error("The virtual method SubmitFullscreenQuad currently not in use. Use SubmitFullscreenQuadStatic instead!");
-	}
-
-	// TODO: virtual or static?
-	void VulkanRenderer::SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
 	{
 		Ref<VulkanMaterial> vulkanMaterial = material.As<VulkanMaterial>();
 		vulkanMaterial->UpdateForRendering();

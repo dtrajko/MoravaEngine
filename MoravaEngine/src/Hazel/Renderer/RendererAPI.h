@@ -15,8 +15,8 @@ namespace Hazel {
 	enum class RendererAPIType
 	{
 		None,
-		OpenGL,
 		Vulkan,
+		OpenGL,
 		DX11,
 	};
 
@@ -44,11 +44,12 @@ namespace Hazel {
 		virtual void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material) = 0;
 
 		virtual void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow) = 0;
-		virtual std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) = 0;
 
 		virtual void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) = 0;
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) = 0;
 		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) = 0;
+
+		virtual std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) = 0;
 
 		virtual RendererCapabilities& GetCapabilities() = 0;
 
@@ -65,10 +66,7 @@ namespace Hazel {
 		static void LoadRequiredAssets();
 
 	private:
-		static RendererAPIType s_CurrentRendererAPI;
-
-	// private:
-	// 	inline static RendererAPIType s_CurrentRendererAPI = RendererAPIType::Vulkan;
+		inline static RendererAPIType s_CurrentRendererAPI = RendererAPIType::Vulkan;
 
 	};
 

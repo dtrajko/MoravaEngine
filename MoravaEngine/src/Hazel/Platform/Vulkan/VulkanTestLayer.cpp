@@ -353,7 +353,7 @@ namespace Hazel {
 		s_Data.SceneData.SceneCamera.Camera = camera;
 		auto mesh = s_Meshes[0];
 
-		VulkanRenderer::BeginRenderPassStatic(s_Data.GeoPass);
+		HazelRenderer::GetRendererAPI()->BeginRenderPass(s_Data.GeoPass);
 
 		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
 		// glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
@@ -438,12 +438,12 @@ namespace Hazel {
 		// RenderEntities
 		for (auto& dc : s_Data.DrawList)
 		{
-			VulkanRenderer::RenderMeshStatic(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+			HazelRenderer::GetRendererAPI()->RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		for (auto& dc : s_Data.SelectedMeshDrawList)
 		{
-			VulkanRenderer::RenderMeshStatic(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+			HazelRenderer::GetRendererAPI()->RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		// Grid
@@ -463,7 +463,7 @@ namespace Hazel {
 			Renderer2D::EndScene();
 		}
 
-		VulkanRenderer::EndRenderPassStatic();
+		HazelRenderer::GetRendererAPI()->EndRenderPass();
 
 #if 0
 		/**** BEGIN the old VulkanTestLayer code, belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****/

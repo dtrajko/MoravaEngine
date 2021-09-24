@@ -117,6 +117,8 @@ namespace Hazel {
 
 		static RendererConfig& GetConfig();
 
+		static RendererAPI* GetRendererAPI();
+
 	private:
 		static RenderCommandQueue& GetRenderCommandQueue();
 

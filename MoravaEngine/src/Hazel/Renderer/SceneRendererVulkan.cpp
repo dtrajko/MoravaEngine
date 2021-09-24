@@ -222,7 +222,7 @@ namespace Hazel {
 			s_Data.NeedsResize = false;
 		}
 
-		VulkanRenderer::SetSceneEnvironmentStatic(&s_Data.SceneData.SceneEnvironment, Ref<HazelImage2D>());
+		HazelRenderer::GetRendererAPI()->SetSceneEnvironment(&s_Data.SceneData.SceneEnvironment, Ref<HazelImage2D>());
 	}
 
 	void SceneRendererVulkan::EndScene()
@@ -258,7 +258,7 @@ namespace Hazel {
 
 	void SceneRendererVulkan::GeometryPass()
 	{
-		VulkanRenderer::BeginRenderPassStatic(s_Data.GeoPass);
+		HazelRenderer::GetRendererAPI()->BeginRenderPass(s_Data.GeoPass);
 
 		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
 		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
@@ -324,24 +324,24 @@ namespace Hazel {
 		// Skybox
 		s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
 		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
-		VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
+		HazelRenderer::GetRendererAPI()->SubmitFullscreenQuad(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
 
 		// Render entities
 		for (auto& dc : s_Data.DrawList)
 		{
-			VulkanRenderer::RenderMeshStatic(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+			HazelRenderer::GetRendererAPI()->RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		for (auto& dc : s_Data.SelectedMeshDrawList)
 		{
-			VulkanRenderer::RenderMeshStatic(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+			HazelRenderer::GetRendererAPI()->RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		// Grid
 		if (GetOptions().ShowGrid)
 		{
 			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
-			VulkanRenderer::RenderQuadStatic(s_Data.GridPipeline, s_Data.GridMaterial, transform);
+			HazelRenderer::GetRendererAPI()->RenderQuad(s_Data.GridPipeline, s_Data.GridMaterial, transform);
 		}
 
 		if (GetOptions().ShowBoundingBoxes)
@@ -354,12 +354,12 @@ namespace Hazel {
 			Renderer2D::EndScene();
 		}
 
-		VulkanRenderer::EndRenderPassStatic();
+		HazelRenderer::GetRendererAPI()->EndRenderPass();
 	}
 
 	void SceneRendererVulkan::CompositePass()
 	{
-		VulkanRenderer::BeginRenderPassStatic(s_Data.CompositePipeline->GetSpecification().RenderPass);
+		HazelRenderer::GetRendererAPI()->BeginRenderPass(s_Data.CompositePipeline->GetSpecification().RenderPass);
 
 		float exposure = s_Data.SceneData.SceneCamera.Camera.GetExposure();
 		int textureSamples = s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
@@ -373,8 +373,8 @@ namespace Hazel {
 		// s_Data.CompositeMaterial->Set("u_Texture", vulkanFramebuffer->GetVulkanDescriptorInfo()); // how it works?
 		s_Data.CompositeMaterial->Set("u_Texture", vulkanFramebuffer->GetColorAttachmentRendererID());
 
-		VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.CompositePipeline, s_Data.CompositeMaterial);
-		VulkanRenderer::EndRenderPassStatic();
+		HazelRenderer::GetRendererAPI()->SubmitFullscreenQuad(s_Data.CompositePipeline, s_Data.CompositeMaterial);
+		HazelRenderer::GetRendererAPI()->EndRenderPass();
 	}
 
 	void SceneRendererVulkan::FlushDrawList()

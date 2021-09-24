@@ -55,16 +55,6 @@ namespace Hazel {
 
 		static int32_t& GetSelectedDrawCall();
 
-		// static versions (copies) of corresponding virtual methods
-		static void BeginFrameStatic();
-		static void EndFrameStatic();
-		static void BeginRenderPassStatic(const Ref<RenderPass>& renderPass);
-		static void EndRenderPassStatic();
-		static void SubmitFullscreenQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material);
-		static void RenderMeshStatic(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
-		static void RenderQuadStatic(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
-		static void SetSceneEnvironmentStatic(Ref<Environment> environment, Ref<HazelImage2D> shadow);
-
 		static void SetCamera(HazelCamera& camera);
 
 	public:
