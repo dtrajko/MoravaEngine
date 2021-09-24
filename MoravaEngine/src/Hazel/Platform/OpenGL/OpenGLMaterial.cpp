@@ -13,7 +13,7 @@ namespace Hazel {
 		: m_Shader(shader), m_Name(name)
 	{
 		m_Shader->AddShaderReloadedCallback(std::bind(&OpenGLMaterial::OnShaderReloaded, this));
-		AllocateStorage();
+		// AllocateStorage();
 
 		m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
 		m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;
@@ -28,6 +28,9 @@ namespace Hazel {
 	{
 	}
 
+	/*
+	 * Made in Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021)
+	 */
 	void OpenGLMaterial::AllocateStorage()
 	{
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();

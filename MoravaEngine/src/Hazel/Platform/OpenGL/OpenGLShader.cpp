@@ -324,7 +324,9 @@ namespace Hazel {
 		}
 
 		for (auto& shaderStageData : shaderData)
+		{
 			Reflect(shaderStageData);
+		}
 	}
 
 	static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)

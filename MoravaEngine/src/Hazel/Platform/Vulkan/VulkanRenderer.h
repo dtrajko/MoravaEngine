@@ -25,24 +25,24 @@ namespace Hazel {
 		virtual void EndRenderPass() override;
 		virtual void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material) override;
 
-		static void SubmitMeshTemp(const Ref<HazelMesh>& mesh); // to be removed from VulkanRenderer
-		static void OnResize(uint32_t width, uint32_t height);  // to be removed from VulkanRenderer
-		static uint32_t GetViewportWidth();                     // to be removed from VulkanRenderer
-		static uint32_t GetViewportHeight();                    // to be removed from VulkanRenderer
-
-		virtual std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) override;
-
 		virtual void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow) override;
 
 		virtual void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
 		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) override;
 
+		virtual std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) override;
+
+		virtual RendererCapabilities& GetCapabilities() override;
+
+		static void SubmitMeshTemp(const Ref<HazelMesh>& mesh); // to be removed from VulkanRenderer
+		static void OnResize(uint32_t width, uint32_t height);  // to be removed from VulkanRenderer
+		static uint32_t GetViewportWidth();                     // to be removed from VulkanRenderer
+		static uint32_t GetViewportHeight();                    // to be removed from VulkanRenderer
+
 		static void RenderMeshVulkan(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer);
 
 		static void RenderSkybox(VkCommandBuffer commandBuffer);
-
-		virtual RendererCapabilities& GetCapabilities() override;
 
 		static void Draw(HazelCamera* camera); // TODO: there should be no parameters
 		static void CompositePass();

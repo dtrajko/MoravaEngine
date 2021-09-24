@@ -52,6 +52,7 @@ namespace Hazel {
 		const ShaderResourceDeclaration* GetShaderResource(const std::string& name);
 
 		static void ClearUniformBuffers();
+
 	private:
 		void Load(const std::string& source, bool forceCompile);
 		void Compile(const std::vector<uint32_t>& vertexBinary, const std::vector<uint32_t>& fragmentBinary);
@@ -89,6 +90,7 @@ namespace Hazel {
 		void UploadUniformFloat4(const std::string& name, const glm::vec4& value);
 
 		void UploadUniformMat4(const std::string& name, const glm::mat4& value);
+
 	private:
 		RendererID m_RendererID = 0;
 		bool m_Loaded = false;

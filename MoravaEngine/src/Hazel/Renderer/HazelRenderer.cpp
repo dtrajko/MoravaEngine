@@ -135,7 +135,12 @@ namespace Hazel {
 		// Compile shaders
 		HazelRenderer::WaitAndRender();
 		SceneRenderer::Init();
-		SceneRendererVulkan::Init();
+
+		if (RendererAPI::Current() == RendererAPIType::Vulkan)
+		{
+			SceneRendererVulkan::Init();
+		}
+
 		s_RendererAPI->Init(); // this method is currently OpenGL-specific
 
 		// Create fullscreen quad

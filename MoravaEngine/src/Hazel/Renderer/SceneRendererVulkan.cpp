@@ -108,8 +108,8 @@ namespace Hazel {
 			const float gridScale = 16.025f;
 			const float gridSize = 0.025f;
 			s_Data.GridMaterial = HazelMaterial::Create(s_Data.GridShader);
-			s_Data.GridMaterial->Set("u_Settings.Scale", gridScale); // TODO: fix "We currently only support ONE material buffer!"
-			s_Data.GridMaterial->Set("u_Settings.Size", gridSize);   // TODO: fix "We currently only support ONE material buffer!"
+			// s_Data.GridMaterial->Set("u_Settings.Scale", gridScale); // TODO: fix "We currently only support ONE material buffer!"
+			// s_Data.GridMaterial->Set("u_Settings.Size", gridSize);   // TODO: fix "We currently only support ONE material buffer!"
 
 			PipelineSpecification pipelineSpec = {};
 			pipelineSpec.DebugName = "Grid";
@@ -139,7 +139,7 @@ namespace Hazel {
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
 			pipelineSpec.RenderPass = s_Data.GeoPass;
-			s_Data.SkyboxPipeline = Pipeline::Create(pipelineSpec);
+			// s_Data.SkyboxPipeline = Pipeline::Create(pipelineSpec);
 
 			s_Data.SkyboxMaterial = HazelMaterial::Create(skyboxShader);
 			s_Data.SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
@@ -164,7 +164,7 @@ namespace Hazel {
 			renderPassSpec.TargetFramebuffer = framebuffer;
 			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
 			pipelineSpecification.DebugName = "PBR-Static";
-			s_Data.GeometryPipeline = Pipeline::Create(pipelineSpecification); // fragment shader writes to output location 1 with no matching attachment
+			// s_Data.GeometryPipeline = Pipeline::Create(pipelineSpecification); // fragment shader writes to output location 1 with no matching attachment
 		}
 
 		// Composite pipeline
@@ -191,7 +191,7 @@ namespace Hazel {
 			renderPassSpec.TargetFramebuffer = framebuffer;
 			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
 			pipelineSpecification.DebugName = "SceneComposite";
-			s_Data.CompositePipeline = Pipeline::Create(pipelineSpecification); // fragment shader writes to output location 1 with no matching attachment
+			// s_Data.CompositePipeline = Pipeline::Create(pipelineSpecification); // fragment shader writes to output location 1 with no matching attachment
 		}
 		****/
 	}

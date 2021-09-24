@@ -376,102 +376,97 @@ namespace Hazel {
 		// RENDER 3D SCENE
 		/////////////////////////////////////////////////////////////////////
 
-#if 1
-
-		m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
-
-		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-		SceneRendererVulkan::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
-		for (auto entity : group)
-		{
-			auto& [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
-			if (meshComponent.Mesh)
-			{
-				meshComponent.Mesh->OnUpdate(ts);
-
-				// TODO: Should we render (logically)
-
-				if (m_SelectedEntity == entity)
-				{
-					SceneRendererVulkan::SubmitSelectedMesh(meshComponent, transformComponent);
-				}
-				else {
-					SceneRendererVulkan::SubmitMesh(meshComponent, transformComponent);
-				}
-			}
-		}
-		SceneRendererVulkan::EndScene();
-
-		// the following code replaces the VulkanRenderer::Draw() method
-		// VulkanRenderer::SetCamera((HazelCamera)editorCamera); // s_Data.SceneData.SceneCamera.Camera = *camera;
-		// VulkanRenderer::GeometryPass();
-		// VulkanRenderer::CompositePass();
-
-		/////////////////////////////////////////////////////////////////////
-
-#else
-
-		// Process lights
-		{
-			m_LightEnvironment = LightEnvironment();
-			auto lights = m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
-			uint32_t directionalLightIndex = 0;
-			for (auto entity : lights)
-			{
-				auto [transformComponent, lightComponent] = lights.get<TransformComponent, DirectionalLightComponent>(entity);
-				glm::vec3 direction = -glm::normalize(glm::mat3(transformComponent.GetTransform()) * glm::vec3(1.0f));
-				m_LightEnvironment.DirectionalLights[directionalLightIndex++] =
-				{
-					direction,
-					lightComponent.Radiance,
-					1.0f,
-					lightComponent.CastShadows,
-				};
-			}
-		}
-
-		// TODO: only one sky light at the moment!
-		{
-			m_Environment = Environment();
-			auto lights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
-			for (auto entity : lights)
-			{
-				auto [transformComponent, skyLightComponent] = lights.get<TransformComponent, SkyLightComponent>(entity);
-				m_Environment = skyLightComponent.SceneEnvironment;
-				SetSkybox(m_Environment.RadianceMap);
-			}
-		}
-
-		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+		if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		{
 			m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
 
 			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-
-			SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
+			SceneRendererVulkan::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
 			for (auto entity : group)
 			{
-				auto [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
+				auto& [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
 				if (meshComponent.Mesh)
 				{
-					meshComponent.Mesh->OnUpdate(ts, false);
+					meshComponent.Mesh->OnUpdate(ts);
 
 					// TODO: Should we render (logically)
 
-					if (m_SelectedEntity == entity) {
-						SceneRenderer::SubmitSelectedMesh(meshComponent, transformComponent);
+					if (m_SelectedEntity == entity)
+					{
+						SceneRendererVulkan::SubmitSelectedMesh(meshComponent, transformComponent);
 					}
 					else {
-						SceneRenderer::SubmitMesh(meshComponent, transformComponent);
+						SceneRendererVulkan::SubmitMesh(meshComponent, transformComponent);
 					}
 				}
 			}
-			SceneRenderer::EndScene();
+			SceneRendererVulkan::EndScene();
+
+			// the following code replaces the VulkanRenderer::Draw() method
+			// VulkanRenderer::SetCamera((HazelCamera)editorCamera); // s_Data.SceneData.SceneCamera.Camera = *camera;
+			// VulkanRenderer::GeometryPass();
+			// VulkanRenderer::CompositePass();
 		}
-		/////////////////////////////////////////////////////////////////////
+		else
+		{
+			// Process lights
+			{
+				m_LightEnvironment = LightEnvironment();
+				auto lights = m_Registry.group<DirectionalLightComponent>(entt::get<TransformComponent>);
+				uint32_t directionalLightIndex = 0;
+				for (auto entity : lights)
+				{
+					auto [transformComponent, lightComponent] = lights.get<TransformComponent, DirectionalLightComponent>(entity);
+					glm::vec3 direction = -glm::normalize(glm::mat3(transformComponent.GetTransform()) * glm::vec3(1.0f));
+					m_LightEnvironment.DirectionalLights[directionalLightIndex++] =
+					{
+						direction,
+						lightComponent.Radiance,
+						1.0f,
+						lightComponent.CastShadows,
+					};
+				}
+			}
 
-#endif
+			// TODO: only one sky light at the moment!
+			{
+				m_Environment = Environment();
+				auto lights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
+				for (auto entity : lights)
+				{
+					auto [transformComponent, skyLightComponent] = lights.get<TransformComponent, SkyLightComponent>(entity);
+					m_Environment = skyLightComponent.SceneEnvironment;
+					SetSkybox(m_Environment.RadianceMap);
+				}
+			}
 
+			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+			{
+				m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
+
+				auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+
+				SceneRenderer::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
+				for (auto entity : group)
+				{
+					auto [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
+					if (meshComponent.Mesh)
+					{
+						meshComponent.Mesh->OnUpdate(ts, false);
+
+						// TODO: Should we render (logically)
+
+						if (m_SelectedEntity == entity) {
+							SceneRenderer::SubmitSelectedMesh(meshComponent, transformComponent);
+						}
+						else {
+							SceneRenderer::SubmitMesh(meshComponent, transformComponent);
+						}
+					}
+				}
+				SceneRenderer::EndScene();
+			}
+		}
 	}
 
 	void HazelScene::SetEnvironment(const Environment& environment)

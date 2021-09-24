@@ -114,7 +114,13 @@ namespace Hazel {
 	OpenGLFramebuffer::OpenGLFramebuffer(const HazelFramebufferSpecification& spec)
 		: m_Specification(spec)
 	{
-		if (!spec.SwapChainTarget)
+		if (!spec.SwapChainTarget || spec.Width == 0 || spec.Height == 0)
+		{
+			auto width = Application::Get()->GetWindow()->GetWidth();
+			auto height = Application::Get()->GetWindow()->GetHeight();
+			Resize((uint32_t)(width * spec.Scale), (uint32_t)(height * spec.Scale), true);
+		}
+		else
 		{
 			Resize(spec.Width, spec.Height, true);
 		}
