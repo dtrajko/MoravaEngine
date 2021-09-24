@@ -14,6 +14,7 @@
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
 #include "Hazel/Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Hazel/Renderer/HazelRenderer.h"
+#include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/SceneRenderer.h"
 
 #include "Platform/Vulkan/VulkanSkyboxCube.h"
@@ -113,18 +114,40 @@ namespace Hazel {
 		Ref<VulkanSkyboxCube> VulkanSkyboxCube;
 		Ref<Pipeline> SkyboxPipeline;
 		Ref<HazelShader> SkyboxShader;
+
+		/**** BEGIN temporary properties from VulkanTestLayer, while moving logic from VulkanTestLayer to VulkanRenderer ****/
+		Ref<RenderPass> GeoPass;
+		Ref<Pipeline> GeometryPipeline;
+
+		struct DrawCommand
+		{
+			Ref<HazelMesh> Mesh;
+			Ref<HazelMaterial> Material;
+			glm::mat4 Transform;
+		};
+
+		std::vector<DrawCommand> DrawList;
+		std::vector<DrawCommand> SelectedMeshDrawList;
+
+		SceneRendererOptions Options;
+		/**** END temporary properties from VulkanTestLayer, while moving logic from VulkanTestLayer to VulkanRenderer ****/
 	};
 
 	static VulkanRendererData s_Data;
 
 	/**** BEGIN to be removed from VulkanRenderer ****/
-	void VulkanRenderer::SubmitMeshTemp(const Ref<HazelMesh>& mesh)
+	void VulkanRenderer::SubmitMeshTemp(const Ref<HazelMesh>& mesh, const glm::mat4& transform)
 	{
 		// Temporary code - populate selected submesh
 		// std::vector<Submesh> submeshes = mesh->GetSubmeshes();
 		// s_SelectedSubmesh = &submeshes.at(0);
 
 		s_Meshes.push_back(mesh);
+
+		// VulkanRendererData::DrawCommand drawCommand = {};
+		// drawCommand.Mesh = mesh;
+		// drawCommand.Transform = transform;
+		s_Data.DrawList.push_back({ mesh, Ref<HazelMaterial>(), transform });
 	}
 	/**** END to be removed from VulkanRenderer ****/
 
@@ -278,6 +301,35 @@ namespace Hazel {
 			s_CompositePipeline = Pipeline::Create(pipelineSpecification);
 		}
 		/**** END: to be removed from VulkanRenderer ****/
+
+		/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
+		RenderPassSpecification renderPassSpec;
+		HazelFramebufferSpecification framebufferSpec;
+		framebufferSpec.DebugName = "GeoPassFramebufferSpec";
+		framebufferSpec.Width = 1280;
+		framebufferSpec.Height = 720;
+		renderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(framebufferSpec);
+		s_Data.GeoPass = RenderPass::Create(renderPassSpec);
+
+		// Geometry pipeline
+		{
+			HazelFramebufferSpecification spec;
+			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
+
+			PipelineSpecification pipelineSpecification;
+			pipelineSpecification.Layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float3, "a_Normal" },
+				{ ShaderDataType::Float3, "a_Tangent" },
+				{ ShaderDataType::Float3, "a_Binormal" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+			};
+			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+			pipelineSpecification.RenderPass = s_Data.GeoPass;
+			pipelineSpecification.DebugName = "PBR-Static";
+			s_Data.GeometryPipeline = Pipeline::Create(pipelineSpecification);
+		}
+		/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
 
 		// Create fullscreen quad
 		float x = -1;
@@ -1114,6 +1166,11 @@ namespace Hazel {
 			s_ViewportFBNeedsResize = false;
 		}
 
+		/**** BEGIN this code is moved from VulkanTestLayer::OnUpdate to VulkanRenderer ****
+		glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+		GeometryPassVulkanTestLayer(clearColor, (EditorCamera&)camera);
+		/**** END this code is moved from VulkanTestLayer::OnUpdate to VulkanRenderer ****/
+
 		GeometryPass();
 		CompositePass();
 	}
@@ -1479,4 +1536,230 @@ namespace Hazel {
 	{
 		s_Data.SceneData.SceneCamera.Camera = camera;
 	}
+
+	/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer****/
+	SceneRendererOptions& VulkanRenderer::GetOptions()
+	{
+		return s_Data.Options;
+	}
+
+	// SceneRenderer::GeometryPass in Hazel Vulkan branch
+	void VulkanRenderer::GeometryPassVulkanTestLayer(const glm::vec4& clearColor, const EditorCamera& camera)
+	{
+		// Temporary code
+		s_Data.SceneData.SceneCamera.Camera = camera;
+		auto mesh = s_Data.DrawList[0].Mesh; // s_Meshes[0];
+
+		HazelRenderer::GetRendererAPI()->BeginRenderPass(s_Data.GeoPass);
+
+		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
+		// glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
+		glm::vec3 cameraPosition = camera.GetPosition();
+
+		// float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
+		// HazelRenderer::Submit([viewProjection, cameraPosition]() {});
+		{
+			auto inverseVP = glm::inverse(viewProjection);
+			// auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
+			// void* ubPtr = shader->MapUniformBuffer(0);
+			struct ViewProj
+			{
+				glm::mat4 ViewProjection;
+				glm::mat4 InverseViewProjection;
+			};
+			ViewProj viewProj;
+			viewProj.ViewProjection = viewProjection;
+			viewProj.InverseViewProjection = inverseVP;
+			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			// shader->UnmapUniformBuffer(0);
+
+			// shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShader>();
+			// ubPtr = shader->MapUniformBuffer(0);
+			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			// shader->UnmapUniformBuffer(0);
+
+			// shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static").As<VulkanShader>();
+			// ubPtr = shader->MapUniformBuffer(0);
+			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
+			// shader->UnmapUniformBuffer(0);
+
+			Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
+
+			{
+				void* ubPtr = shader->MapUniformBuffer(0, 0);
+				glm::mat4 viewProj = camera.GetViewProjection();
+				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
+				shader->UnmapUniformBuffer(0, 0);
+			}
+
+			struct Light
+			{
+				glm::vec3 Direction;
+				float Padding = 0.0f;
+				glm::vec3 Radiance;
+				float Multiplier;
+			};
+
+			struct UB
+			{
+				Light lights;
+				glm::vec3 u_CameraPosition;
+				// glm::vec4 u_AlbedoColorUB;
+			};
+
+			UB ub;
+			ub.lights =
+			{
+				{ 0.5f, 0.5f, 0.5f },
+				0.0f,
+				{ 1.0f, 1.0f, 1.0f },
+				1.0f
+			};
+
+			ub.lights.Direction = VulkanRenderer::GetLightDirectionTemp();
+			ub.u_CameraPosition = cameraPosition;
+			// ub.u_AlbedoColorUB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+			// Log::GetLogger()->info("Light Direction: {0}, {1}, {2}", ub.lights.Direction.x, ub.lights.Direction.y, ub.lights.Direction.z);
+
+			void* ubPtr = shader->MapUniformBuffer(1, 0);
+			memcpy(ubPtr, &ub, sizeof(UB));
+			shader->UnmapUniformBuffer(1, 0);
+		}
+
+		// Skybox
+		// s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
+		// s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
+		// VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
+
+		// RenderEntities
+		for (auto& dc : s_Data.DrawList)
+		{
+			// HazelRenderer::GetRendererAPI()->RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+		}
+
+		for (auto& dc : s_Data.SelectedMeshDrawList)
+		{
+			// HazelRenderer::GetRendererAPI()->RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+		}
+
+		// Grid
+		if (GetOptions().ShowGrid)
+		{
+			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
+			// VulkanRenderer::RenderQuadStatic(s_Data.GridPipeline, s_Data.GridMaterial, transform);
+		}
+
+		if (GetOptions().ShowBoundingBoxes)
+		{
+			Renderer2D::BeginScene(viewProjection, true);
+			for (auto& dc : s_Data.DrawList)
+			{
+				HazelRenderer::DrawAABB(dc.Mesh, dc.Transform);
+			}
+			Renderer2D::EndScene();
+		}
+
+		HazelRenderer::GetRendererAPI()->EndRenderPass();
+
+#if 0
+		/**** BEGIN the old VulkanTestLayer code, belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****/
+
+		// HazelRenderer::Submit([=]() mutable {});
+		{
+			Ref<VulkanContext> context = Ref<VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
+			Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
+			VulkanSwapChain& swapChain = context->GetSwapChain();
+
+			VkCommandBufferBeginInfo cmdBufInfo = {};
+			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+			cmdBufInfo.pNext = nullptr;
+
+			// Set clear values for all framebuffer attachments with loadOp set to clear
+			// We use two attachments (color and depth) that are cleared at the start of the subpass and as such we need to set clear values for both
+			VkClearValue clearValues[2];
+			clearValues[0].color = { { clearColor.r, clearColor.g, clearColor.b, clearColor.a } };
+			clearValues[1].depthStencil = { 1.0f, 0 };
+
+			uint32_t width = swapChain.GetWidth();
+			uint32_t height = swapChain.GetHeight();
+
+			VkRenderPassBeginInfo renderPassBeginInfo = {};
+			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+			renderPassBeginInfo.pNext = nullptr;
+			renderPassBeginInfo.renderPass = swapChain.GetRenderPass();
+			renderPassBeginInfo.renderArea.offset.x = 0;
+			renderPassBeginInfo.renderArea.offset.y = 0;
+			renderPassBeginInfo.renderArea.extent.width = width;
+			renderPassBeginInfo.renderArea.extent.height = height;
+			renderPassBeginInfo.clearValueCount = 2;
+			renderPassBeginInfo.pClearValues = clearValues;
+
+			// Set target frame buffer
+			renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+
+			// Skybox
+			float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
+			s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", skyboxLod);
+			s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
+			VulkanRenderer::SubmitFullscreenQuadStatic(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
+
+			// RenderEntities
+			for (auto& dc : s_Data.DrawList)
+			{
+				VulkanRenderer::RenderMeshStatic(dc.Mesh, dc.Transform);
+			}
+
+			// Grid
+			if (GetOptions().ShowGrid)
+			{
+				const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
+				VulkanRenderer::RenderQuadStatic(s_Data.GridPipeline, s_Data.GridMaterial, transform);
+			}
+
+			{
+				VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
+				VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+
+				// Start the first sub pass specified in our default render pass setup by the base class
+				// This will clear the color and depth attachment
+				vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+				// Update dynamic viewport state
+				VkViewport viewport = {};
+				viewport.x = 0.0f;
+				viewport.y = (float)height;
+				viewport.height = -(float)height;
+				viewport.width = (float)width;
+				viewport.minDepth = 0.0f;
+				viewport.maxDepth = 1.0f;
+				vkCmdSetViewport(drawCommandBuffer, 0, 1, &viewport);
+
+				// Update dynamic scissor state
+				VkRect2D scissor = {};
+				scissor.extent.width = width;
+				scissor.extent.height = height;
+				scissor.offset.x = 0;
+				scissor.offset.y = 0;
+				vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
+
+				// VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+				// DRAW GEO HERE
+
+				vkCmdEndRenderPass(drawCommandBuffer);
+
+				// Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to
+				// VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
+
+				VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
+			}
+
+			/**** END the old VulkanTestLayer code, belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****/
+		}
+#endif
+
+	}
+	/**** END code moved from VulkanTestLayer to VulkanRenderer****/
+
 }

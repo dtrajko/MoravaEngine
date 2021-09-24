@@ -6,6 +6,7 @@
 #include "Hazel/Renderer/HazelCamera.h"
 #include "Hazel/Renderer/RendererAPI.h"
 #include "Hazel/Renderer/RendererCapabilities.h"
+#include "Hazel/Renderer/SceneRenderer.h"
 
 #include "Core/Window.h"
 
@@ -35,18 +36,18 @@ namespace Hazel {
 
 		virtual RendererCapabilities& GetCapabilities() override;
 
-		static void SubmitMeshTemp(const Ref<HazelMesh>& mesh); // to be removed from VulkanRenderer
-		static void OnResize(uint32_t width, uint32_t height);  // to be removed from VulkanRenderer
-		static uint32_t GetViewportWidth();                     // to be removed from VulkanRenderer
-		static uint32_t GetViewportHeight();                    // to be removed from VulkanRenderer
+		static void SubmitMeshTemp(const Ref<HazelMesh>& mesh, const glm::mat4& transform = glm::mat4(1.0f)); // to be removed from VulkanRenderer
+		static void OnResize(uint32_t width, uint32_t height);                                                // to be removed from VulkanRenderer
+		static uint32_t GetViewportWidth();                                                                   // to be removed from VulkanRenderer
+		static uint32_t GetViewportHeight();                                                                  // to be removed from VulkanRenderer
 
 		static void RenderMeshVulkan(Ref<HazelMesh> mesh, VkCommandBuffer commandBuffer);
 
 		static void RenderSkybox(VkCommandBuffer commandBuffer);
 
 		static void Draw(HazelCamera* camera); // TODO: there should be no parameters
-		static void CompositePass();
 		static void GeometryPass();
+		static void CompositePass();
 		static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers);
 		static glm::vec3 GetLightDirectionTemp();
 
@@ -56,6 +57,11 @@ namespace Hazel {
 		static int32_t& GetSelectedDrawCall();
 
 		static void SetCamera(HazelCamera& camera);
+
+		/**** BEGIN methods moved from VulkanTestLayer to VulkanRenderer ****/
+		static SceneRendererOptions& GetOptions(); // moved from VulkanTestLayer to VulkanRenderer
+		static void GeometryPassVulkanTestLayer(const glm::vec4& clearColor, const EditorCamera& camera);
+		/**** END methods moved from VulkanTestLayer to VulkanRenderer ****/
 
 	public:
 		static bool s_MipMapsEnabled;
