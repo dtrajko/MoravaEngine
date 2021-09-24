@@ -37,11 +37,10 @@ namespace Hazel {
 		virtual void OnImGuiRender(::Window* mainWindow, ::Scene* scene) override;
 		virtual void OnRender(::Window* mainWindow, ::Scene* scene) override;
 
-		void Render(const glm::vec4& clearColor, const EditorCamera& camera);
 		void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 
-		static void MapUniformBuffersVTL(const glm::vec4& clearColor, const EditorCamera& camera);
-
+		// void Render(const EditorCamera& camera);
+		// static void MapUniformBuffersVTL(const glm::vec4& clearColor, const EditorCamera& camera);
 		// void UpdateImGuizmo(); // we don't need this method anymore
 		// static void GeometryPass(const glm::vec4& clearColor, const EditorCamera& camera); // we don't need this method anymore
 		// virtual void OnImGuiRenderOld(::Window* mainWindow, ::Scene* scene) override;
@@ -52,12 +51,10 @@ namespace Hazel {
 
 	private:
 		static std::vector<Ref<HazelMesh>> s_Meshes;
-
 		Ref<HazelTexture2D> m_Texture;
-
 		EditorCamera m_Camera;
 
-		std::vector<glm::vec4> m_RandomColors;
+		// std::vector<glm::vec4> m_RandomColors;
 
 	public:
 		static Ref<HazelScene> s_Scene;

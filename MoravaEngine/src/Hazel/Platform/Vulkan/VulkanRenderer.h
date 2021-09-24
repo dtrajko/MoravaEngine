@@ -60,7 +60,7 @@ namespace Hazel {
 
 		/**** BEGIN methods moved from VulkanTestLayer to VulkanRenderer ****/
 		static SceneRendererOptions& GetOptions(); // moved from VulkanTestLayer to VulkanRenderer
-		// static void MapUniformBuffersVTL(const glm::vec4& clearColor, const EditorCamera& camera);
+		static void MapUniformBuffersVTL(Ref<HazelMesh> mesh, const EditorCamera& camera);
 		/**** END methods moved from VulkanTestLayer to VulkanRenderer ****/
 
 	public:

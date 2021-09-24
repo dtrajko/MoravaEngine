@@ -69,57 +69,18 @@ namespace Hazel {
 	{
 	}
 
-	VulkanTestLayer::~VulkanTestLayer()
-	{
-	}
+	VulkanTestLayer::~VulkanTestLayer() {}
 
 	void VulkanTestLayer::OnAttach()
 	{
 		s_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
-
 		s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(s_Scene);
-
 		s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
-
 		s_MaterialEditorPanel = new MaterialEditorPanel();
-
-		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Gladiator/Gladiator.fbx"));
-		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/TestSceneVulkan.fbx"));
-		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
 		s_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
-
-		RenderPassSpecification renderPassSpec;
-		HazelFramebufferSpecification framebufferSpec;
-		framebufferSpec.DebugName = "GeoPassFramebufferSpec";
-		framebufferSpec.Width = 1280;
-		framebufferSpec.Height = 720;
-		renderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(framebufferSpec);
-		s_Data.GeoPass = RenderPass::Create(renderPassSpec);
-
-		// Geometry pipeline
-		{
-			HazelFramebufferSpecification spec;
-			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
-
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.Layout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float3, "a_Normal" },
-				{ ShaderDataType::Float3, "a_Tangent" },
-				{ ShaderDataType::Float3, "a_Binormal" },
-				{ ShaderDataType::Float2, "a_TexCoord" },
-			};
-			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
-			pipelineSpecification.RenderPass = s_Data.GeoPass;
-			pipelineSpecification.DebugName = "PBR-Static";
-			s_Data.GeometryPipeline = Pipeline::Create(pipelineSpecification);
-		}
-
 	}
 
-	void VulkanTestLayer::OnDetach()
-	{
-	}
+	void VulkanTestLayer::OnDetach() {}
 
 	void VulkanTestLayer::OnUpdate(Timestep ts)
 	{
@@ -127,12 +88,12 @@ namespace Hazel {
 
 		m_Camera.OnUpdate(ts);
 
-		glm::vec4 clearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-		Render(clearColor, m_Camera);
 		for (Ref<HazelMesh> mesh : s_Meshes)
 		{
 			VulkanRenderer::SubmitMeshTemp(mesh); // the method should be removed from VulkanRenderer
 		}
+
+		VulkanRenderer::MapUniformBuffersVTL(s_Meshes[0], m_Camera);
 	}
 
 	void VulkanTestLayer::OnImGuiRender(::Window* mainWindow, ::Scene* scene)
@@ -178,6 +139,85 @@ namespace Hazel {
 		/**** END Back to Vulkan // Hazel Live (17.02.2021) ****/
 	}
 
+	void VulkanTestLayer::OnEvent(Event& event)
+	{
+		m_Camera.OnEvent(event);
+
+		if (event.GetEventType() == EventType::WindowResize)
+		{
+			WindowResizeEvent& e = (WindowResizeEvent&)event;
+			if (e.GetWidth() != 0 && e.GetHeight() != 0)
+			{
+				m_Camera.SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
+				m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
+			}
+		}
+	}
+
+	void VulkanTestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) {}
+
+	void VulkanTestLayer::OnRender(::Window* mainWindow, ::Scene* scene)
+	{
+		// VulkanRenderer::Draw(scene->GetCamera());
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/**** BEGIN this version of the OnAttach method is outdated ****
+	void VulkanTestLayer::OnAttachOld()
+	{
+		s_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
+
+		s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(s_Scene);
+
+		s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
+
+		s_MaterialEditorPanel = new MaterialEditorPanel();
+
+		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Gladiator/Gladiator.fbx"));
+		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/TestSceneVulkan.fbx"));
+		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
+		s_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+
+		/**** BEGIN the code that is not used anymore ****
+		RenderPassSpecification renderPassSpec;
+		HazelFramebufferSpecification framebufferSpec;
+		framebufferSpec.DebugName = "GeoPassFramebufferSpec";
+		framebufferSpec.Width = 1280;
+		framebufferSpec.Height = 720;
+		renderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(framebufferSpec);
+		s_Data.GeoPass = RenderPass::Create(renderPassSpec);
+
+		// Geometry pipeline
+		{
+			HazelFramebufferSpecification spec;
+			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
+
+			PipelineSpecification pipelineSpecification;
+			pipelineSpecification.Layout = {
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float3, "a_Normal" },
+				{ ShaderDataType::Float3, "a_Tangent" },
+				{ ShaderDataType::Float3, "a_Binormal" },
+				{ ShaderDataType::Float2, "a_TexCoord" },
+			};
+			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+			pipelineSpecification.RenderPass = s_Data.GeoPass;
+			pipelineSpecification.DebugName = "PBR-Static";
+			s_Data.GeometryPipeline = Pipeline::Create(pipelineSpecification);
+		}
+		/**** END the code that is not used anymore ****
+	}
+	/**** END this version of the OnAttach method is outdated ****/
+
+	/**** BEGIN moved to VulkanRenderer ****
+	SceneRendererOptions& VulkanTestLayer::GetOptions()
+	{
+		return s_Data.Options;
+	}
+	/**** END moved to VulkanRenderer ****/
+
+	/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****
 	void VulkanTestLayer::MapUniformBuffersVTL(const glm::vec4& clearColor, const EditorCamera& camera)
 	{
 		// Temporary code
@@ -261,44 +301,7 @@ namespace Hazel {
 			shader->UnmapUniformBuffer(1, 0);
 		}
 	}
-
-	void VulkanTestLayer::OnEvent(Event& event)
-	{
-		m_Camera.OnEvent(event);
-
-		if (event.GetEventType() == EventType::WindowResize)
-		{
-			WindowResizeEvent& e = (WindowResizeEvent&)event;
-			if (e.GetWidth() != 0 && e.GetHeight() != 0)
-			{
-				m_Camera.SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());
-				m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)e.GetWidth(), (float)e.GetHeight(), 0.1f, 10000.0f));
-			}
-		}
-	}
-
-	void VulkanTestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
-	{
-	}
-
-	void VulkanTestLayer::OnRender(::Window* mainWindow, ::Scene* scene)
-	{
-		VulkanRenderer::Draw(scene->GetCamera());
-	}
-
-	void VulkanTestLayer::Render(const glm::vec4& clearColor, const EditorCamera& camera)
-	{
-		MapUniformBuffersVTL(clearColor, camera);
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	/**** BEGIN moved to VulkanRenderer ****
-	SceneRendererOptions& VulkanTestLayer::GetOptions()
-	{
-		return s_Data.Options;
-	}
-	/**** END moved to VulkanRenderer ****/
+	/**** END code moved from VulkanTestLayer to VulkanRenderer ****/
 
 	/**** BEGIN we don't need this method anymore, the only important part is mapping uniform buffers ****
 	 **** SceneRenderer::GeometryPass in Hazel Vulkan branch
