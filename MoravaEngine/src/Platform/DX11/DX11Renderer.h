@@ -43,11 +43,12 @@ public:
 	virtual void SubmitFullscreenQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material) override;
 
 	virtual void SetSceneEnvironment(Hazel::Ref<Hazel::Environment> environment, Hazel::Ref<Hazel::HazelImage2D> shadow) override;
-	virtual std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) override;
 
 	virtual void RenderMesh(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform) override;
 	virtual void RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform) override;
 	virtual void RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform) override;
+
+	virtual std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) override;
 
 	virtual Hazel::RendererCapabilities& GetCapabilities() override;
 
