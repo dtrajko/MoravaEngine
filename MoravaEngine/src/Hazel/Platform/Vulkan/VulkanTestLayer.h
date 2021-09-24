@@ -40,12 +40,15 @@ namespace Hazel {
 		void Render(const glm::vec4& clearColor, const EditorCamera& camera);
 		void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 
+		static void MapUniformBuffersVTL(const glm::vec4& clearColor, const EditorCamera& camera);
+
+		// void UpdateImGuizmo(); // we don't need this method anymore
+		// static void GeometryPass(const glm::vec4& clearColor, const EditorCamera& camera); // we don't need this method anymore
+		// virtual void OnImGuiRenderOld(::Window* mainWindow, ::Scene* scene) override;
+
+		/**** BEGIN moved to VulkanRenderer ****
 		static SceneRendererOptions& GetOptions();
-
-		void UpdateImGuizmo();
-
-	private:
-		static void GeometryPass(const glm::vec4& clearColor, const EditorCamera& camera);
+		/**** END moved to VulkanRenderer ****/
 
 	private:
 		static std::vector<Ref<HazelMesh>> s_Meshes;

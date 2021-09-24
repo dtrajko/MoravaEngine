@@ -74,9 +74,9 @@ namespace Hazel {
 		RenderCommandQueue m_CommandQueue;
 		Ref<HazelShaderLibrary> m_ShaderLibrary;
 
-		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer;
-		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;
-		Ref<Pipeline> m_FullscreenQuadPipeline;
+		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer; // TODO: remove from HazelRenderer
+		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;   // TODO: remove from HazelRenderer
+		Ref<Pipeline> m_FullscreenQuadPipeline;         // TODO: remove from HazelRenderer
 
 		Ref<HazelTexture2D> WhiteTexture;
 		Ref<HazelTexture2D> BlackTexture;
