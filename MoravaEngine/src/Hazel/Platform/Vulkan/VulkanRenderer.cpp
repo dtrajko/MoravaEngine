@@ -383,10 +383,10 @@ namespace Hazel {
 			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
 
-		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
-		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
-		// s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
-		s_Data.EnvironmentMap = CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
+		// s_Data.EnvironmentMap = HazelRenderer::CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
+		// s_Data.EnvironmentMap = HazelRenderer::CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
+		// s_Data.EnvironmentMap = HazelRenderer::CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
+		s_Data.EnvironmentMap = HazelRenderer::CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
 
 		s_Data.BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
@@ -397,7 +397,7 @@ namespace Hazel {
 			s_Data.RendererDescriptorSetFeb2021 = pbrShader->CreateDescriptorSets(1);
 		}
 
-		SetSceneEnvironment(Ref<Environment>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), Ref<HazelImage2D>());
+		HazelRenderer::SetSceneEnvironment(Ref<Environment>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), Ref<HazelImage2D>());
 
 		/*** BEGIN Setup the Skybox ****/
 		s_Data.VulkanSkyboxCube = Hazel::Ref<VulkanSkyboxCube>::Create();
@@ -1544,7 +1544,7 @@ namespace Hazel {
 		// Temporary code
 		s_Data.SceneData.SceneCamera.Camera = camera;
 
-		HazelRenderer::GetRendererAPI()->BeginRenderPass(s_Data.GeoPass);
+		HazelRenderer::BeginRenderPass(s_Data.GeoPass);
 
 		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
 		// glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];

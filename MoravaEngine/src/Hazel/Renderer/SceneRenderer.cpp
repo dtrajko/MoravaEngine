@@ -193,7 +193,7 @@ namespace Hazel {
 		s_Data.SceneData.SkyboxLod = scene->GetSkyboxLod();
 		s_Data.SceneData.ActiveLight = scene->GetLight();
 
-		// VulkanRenderer::SetSceneEnvironment(s_Data.SceneData.SceneEnvironment);
+		// HazelRenderer::SetSceneEnvironment(s_Data.SceneData.SceneEnvironment);
 	}
 
 	void SceneRenderer::EndScene()
@@ -265,7 +265,8 @@ namespace Hazel {
 		envFilteringShader->Bind();
 		envUnfiltered->Bind();
 
-		HazelRenderer::Submit([envUnfiltered, envFiltered, cubemapSize]() {
+		HazelRenderer::Submit([envUnfiltered, envFiltered, cubemapSize]()
+		{
 			const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
 			for (int level = 1, size = cubemapSize / 2; level < (int)envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
 			{
@@ -325,7 +326,7 @@ namespace Hazel {
 		auto inverseVP = glm::inverse(viewProjection);
 		s_Data.SceneData.SkyboxMaterial->Set("u_InverseVP", glm::inverse(viewProjection));
 		skyboxShader->SetUniformBuffer("Camera", &inverseVP, sizeof(glm::mat4));
-		HazelRenderer::SubmitFullscreenQuad(/*s_Data.SkyboxPipeline,*/s_Data.SceneData.SkyboxMaterial);
+		HazelRenderer::SubmitFullscreenQuad(s_Data.SkyboxPipeline, s_Data.SceneData.SkyboxMaterial);
 
 		float aspectRatio = (float)s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetWidth() / (float)s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetHeight();
 		float frustumSize = 2.0f * sceneCamera.Near * glm::tan(sceneCamera.FOV * 0.5f) * aspectRatio;
@@ -479,6 +480,7 @@ namespace Hazel {
 				glPointSize(10);
 				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 			});
+
 			for (auto& dc : s_Data.SelectedMeshDrawList)
 			{
 				HazelRenderer::SubmitMesh(dc.Mesh, dc.Transform, s_Data.OutlineMaterial);
@@ -508,7 +510,9 @@ namespace Hazel {
 		{
 			Renderer2D::BeginScene(viewProjection, true);
 			for (auto& dc : s_Data.DrawList)
+			{
 				HazelRenderer::DrawAABB(dc.Mesh, dc.Transform);
+			}
 			Renderer2D::EndScene();
 		}
 
@@ -717,7 +721,7 @@ namespace Hazel {
 		s_Data.CompositeShader->SetUniform("u_Uniforms.Exposure", exposure);
 		s_Data.CompositeShader->SetUniform("u_Uniforms.TextureSamples", textureSamples);
 		s_Data.GeoPass->GetSpecification().TargetFramebuffer->BindTexture();
-		HazelRenderer::SubmitFullscreenQuad(/*s_Data.CompositePipeline,*/s_Data.CompositeMaterial);
+		HazelRenderer::SubmitFullscreenQuad(s_Data.CompositePipeline, s_Data.CompositeMaterial);
 		HazelRenderer::EndRenderPass();
 	}
 
@@ -779,7 +783,7 @@ namespace Hazel {
 		// cascadeSplits[2] = 0.3f;
 		// cascadeSplits[3] = 1.0f;
 
-// Calculate orthographic projection matrix for each cascade
+		// Calculate orthographic projection matrix for each cascade
 		float lastSplitDist = 0.0;
 		for (uint32_t i = 0; i < SHADOW_MAP_CASCADE_COUNT; i++)
 		{

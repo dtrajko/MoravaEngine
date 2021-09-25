@@ -86,15 +86,14 @@ namespace Hazel {
 		static void EndFrame();
 
 		static void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow);
-
 		static std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
 
 		static void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
-		static void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
 		static void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
-		static void SubmitFullscreenQuad(/* Ref<Pipeline> pipeline, */Ref<HazelMaterial> material);
+		static void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
 
 		static void SubmitQuad(Ref<HazelMaterial> material, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material);
 		static void SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial = Ref<HazelMaterialInstance>());
 		static void SubmitMeshWithShader(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelShader> shader);
 

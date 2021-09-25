@@ -3,6 +3,7 @@
 #include "Hazel/Platform/OpenGL/OpenGLVertexBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanVertexBuffer.h"
 #include "Platform/DX11/DX11VertexBuffer.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 
 namespace Hazel {

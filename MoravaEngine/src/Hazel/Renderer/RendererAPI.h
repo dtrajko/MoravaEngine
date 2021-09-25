@@ -40,6 +40,7 @@ namespace Hazel {
 		virtual void BeginRenderPass(const Ref<RenderPass>& renderPass) = 0;
 		virtual void EndRenderPass() = 0;
 		virtual void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material) = 0;
+		// virtual void SubmitQuad(Ref<HazelMaterial> material, const glm::mat4& transform) = 0;
 
 		virtual void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow) = 0;
 

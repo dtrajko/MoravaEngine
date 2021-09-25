@@ -74,9 +74,10 @@ namespace Hazel {
 		RenderCommandQueue m_CommandQueue;
 		Ref<HazelShaderLibrary> m_ShaderLibrary;
 
-		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer; // TODO: remove from HazelRenderer
-		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;   // TODO: remove from HazelRenderer
-		Ref<Pipeline> m_FullscreenQuadPipeline;         // TODO: remove from HazelRenderer
+		Ref<VertexBuffer> FullscreenQuadVertexBuffer; // TODO: remove from HazelRenderer
+		Ref<IndexBuffer> FullscreenQuadIndexBuffer;   // TODO: remove from HazelRenderer
+		Ref<Pipeline> FullscreenQuadPipeline;         // TODO: remove from HazelRenderer
+		PipelineSpecification FullscreenQuadPipelineSpec;
 
 		Ref<HazelTexture2D> WhiteTexture;
 		Ref<HazelTexture2D> BlackTexture;
@@ -180,9 +181,9 @@ namespace Hazel {
 		data[3].Position = glm::vec3(x, y + height, 0.1f);
 		data[3].TexCoord = glm::vec2(0, 1);
 
-		s_Data->m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data->FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
-		s_Data->m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+		s_Data->FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 
 		// ...
 
@@ -299,9 +300,15 @@ namespace Hazel {
 
 	void HazelRenderer::EndRenderPass()
 	{
+		s_RendererAPI->EndRenderPass();
+
+		/**** BEGIN the old version of the method ****
+
 		HZ_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
 		s_Data->m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
 		s_Data->m_ActiveRenderPass = nullptr;
+
+		/**** END the old version of the method ****/
 	}
 
 	// Used by OpenGLRenderer
@@ -327,14 +334,33 @@ namespace Hazel {
 			shader->SetUniformBuffer("Transform", &transform, sizeof(glm::mat4));
 		}
 
-		s_Data->m_FullscreenQuadVertexBuffer->Bind();
-		s_Data->m_FullscreenQuadPipeline->Bind();
-		s_Data->m_FullscreenQuadIndexBuffer->Bind();
+		s_Data->FullscreenQuadVertexBuffer->Bind();
+		s_Data->FullscreenQuadIndexBuffer->Bind();
+		s_Data->FullscreenQuadPipeline->Bind();
+
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void HazelRenderer::SubmitFullscreenQuad(/* Ref<Pipeline> pipeline, */Ref<HazelMaterial> material)
+	void HazelRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
 	{
+		s_RendererAPI->SubmitFullscreenQuad(pipeline, material);
+
+		/**** BEGIN the old version of the method ****
+
+		// Retrieve pipeline from cache
+		auto& shader = material->GetShader();
+		auto hash = shader->GetHash();
+		if (s_PipelineCache.find(hash) == s_PipelineCache.end())
+		{
+			// Create pipeline
+			PipelineSpecification spec = s_Data->FullscreenQuadPipelineSpec;
+			spec.Shader = shader;
+			spec.DebugName = "Renderer-FullscreenQuad-" + shader->GetName();
+			s_PipelineCache[hash] = Pipeline::Create(spec);
+		}
+
+		auto& pipelineLocal = s_PipelineCache[hash];
+
 		bool depthTest = true;
 		if (material)
 		{
@@ -342,10 +368,13 @@ namespace Hazel {
 			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
 		}
 
-		s_Data->m_FullscreenQuadVertexBuffer->Bind();
-		s_Data->m_FullscreenQuadPipeline->Bind();
-		s_Data->m_FullscreenQuadIndexBuffer->Bind();
+		s_Data->FullscreenQuadVertexBuffer->Bind();
+		s_Data->FullscreenQuadIndexBuffer->Bind();
+		s_Data->FullscreenQuadPipeline->Bind();
+
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
+
+		/**** END the old version of the method ****/
 	}
 
 	void HazelRenderer::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial)
@@ -528,22 +557,22 @@ namespace Hazel {
 		s_RendererAPI->EndFrame();
 	}
 
-	void HazelRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
-	{
-		s_RendererAPI->RenderMesh(pipeline, mesh, transform);
-	}
-
 	void HazelRenderer::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderMeshWithoutMaterial(pipeline, mesh, transform);
+	}
+
+#endif
+
+	void HazelRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	{
+		s_RendererAPI->RenderMesh(pipeline, mesh, transform);
 	}
 
 	void HazelRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderQuad(pipeline, material, transform);
 	}
-
-#endif
 
 	// disabled in some versions of Hazel-dev
 	RendererConfig& HazelRenderer::GetConfig()
