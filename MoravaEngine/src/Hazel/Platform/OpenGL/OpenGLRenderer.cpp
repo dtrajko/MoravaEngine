@@ -17,13 +17,13 @@ namespace Hazel {
 	{
 		RendererCapabilities RenderCaps;
 
-		Ref<RenderPass> m_ActiveRenderPass;
-		RenderCommandQueue m_CommandQueue;
-		Ref<HazelShaderLibrary> m_ShaderLibrary;
-
 		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;
 		Ref<Pipeline> m_FullscreenQuadPipeline;
+
+		Ref<RenderPass> ActiveRenderPass;
+		RenderCommandQueue m_CommandQueue;
+		Ref<HazelShaderLibrary> m_ShaderLibrary;
 	};
 
 	static OpenGLRendererData* s_Data = nullptr;
@@ -149,11 +149,6 @@ namespace Hazel {
 		delete s_Data;
 	}
 
-	RendererCapabilities& OpenGLRenderer::GetCapabilities()
-	{
-		return s_Data->RenderCaps;
-	}
-
 	void OpenGLRenderer::BeginFrame()
 	{
 	}
@@ -167,7 +162,7 @@ namespace Hazel {
 		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
 		// TODO: Convert all of this into a render command buffer
-		s_Data->m_ActiveRenderPass = renderPass;
+		s_Data->ActiveRenderPass = renderPass;
 
 		renderPass->GetSpecification().TargetFramebuffer->Bind();
 
@@ -176,20 +171,18 @@ namespace Hazel {
 		if (clear)
 		{
 			const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
-			// HazelRenderer::Submit([=]()
-			// {
-			// });
+			// HazelRenderer::Submit([=]() {});
 			{
-				RendererAPI::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+				Utils::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 			}
 		}
 	}
 
 	void OpenGLRenderer::EndRenderPass()
 	{
-		HZ_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
-		s_Data->m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
-		s_Data->m_ActiveRenderPass = nullptr;
+		HZ_CORE_ASSERT(s_Data->ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		s_Data->ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
+		s_Data->ActiveRenderPass = nullptr;
 	}
 
 	void OpenGLRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
@@ -202,8 +195,8 @@ namespace Hazel {
 		}
 
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
-		s_Data->m_FullscreenQuadPipeline->Bind();
 		s_Data->m_FullscreenQuadIndexBuffer->Bind();
+		s_Data->m_FullscreenQuadPipeline->Bind();
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
@@ -211,11 +204,11 @@ namespace Hazel {
 	{
 		/****
 		if (!environment)
+		{
 			environment = HazelRenderer::GetEmptyEnvironment();
+		}
 
-		// HazelRenderer::Submit([environment, shadow]() mutable
-		// {
-		// });
+		// HazelRenderer::Submit([environment, shadow]() mutable {});
 		{
 			auto shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
 			Ref<OpenGLShader> pbrShader = shader.As<OpenGLShader>();
@@ -247,6 +240,100 @@ namespace Hazel {
 			}
 		}
 		****/
+	}
+
+	void OpenGLRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	{
+		mesh->GetVertexBuffer()->Bind();
+		mesh->GetIndexBuffer()->Bind();
+		pipeline->Bind();
+
+		auto& materials = mesh->GetMaterials();
+		for (Submesh& submesh : mesh->GetSubmeshes())
+		{
+			// Material
+			auto material = materials[submesh.MaterialIndex].As<OpenGLMaterial>();
+			auto shader = material->GetShader();
+			material->UpdateForRendering();
+
+			if (false && mesh->IsAnimated())
+			{
+				for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
+				{
+					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+					mesh->GetMeshShader()->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
+				}
+			}
+
+			auto transformUniform = transform * submesh.Transform;
+			shader->SetMat4("u_Renderer.Transform", transformUniform);
+
+			HazelRenderer::Submit([submesh, material]()
+			{
+				if (material->GetFlag(HazelMaterialFlag::DepthTest))
+					glEnable(GL_DEPTH_TEST);
+				else
+					glDisable(GL_DEPTH_TEST);
+
+				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+			});
+		}
+	}
+
+	void OpenGLRenderer::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	{
+		mesh->GetVertexBuffer()->Bind();
+		mesh->GetIndexBuffer()->Bind();
+		pipeline->Bind();
+
+		auto shader = pipeline->GetSpecification().Shader;
+		shader->Bind();
+
+		for (Submesh& submesh : mesh->GetSubmeshes())
+		{
+			if (false && mesh->IsAnimated())
+			{
+				for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
+				{
+					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+					mesh->GetMeshShader()->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
+				}
+			}
+
+			auto transformUniform = transform * submesh.Transform;
+			shader->SetMat4("u_Renderer.Transform", transformUniform);
+
+			HazelRenderer::Submit([submesh]()
+			{
+				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+			});
+		}
+	}
+
+	void OpenGLRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
+	{
+		s_Data->m_FullscreenQuadVertexBuffer->Bind();
+		s_Data->m_FullscreenQuadIndexBuffer->Bind();
+		pipeline->Bind();
+		Ref<OpenGLMaterial> glMaterial = material.As<OpenGLMaterial>();
+		glMaterial->UpdateForRendering();
+
+		auto shader = material->GetShader();
+		shader->SetMat4("u_Renderer.Transform", transform);
+
+		// HazelRenderer::Submit([material]() {});
+		{
+			if (material->GetFlag(HazelMaterialFlag::DepthTest))
+			{
+				glEnable(GL_DEPTH_TEST);
+			}
+			else
+			{
+				glDisable(GL_DEPTH_TEST);
+			}
+
+			glDrawElements(GL_TRIANGLES, s_Data->m_FullscreenQuadIndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+		}
 	}
 
 	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> OpenGLRenderer::CreateEnvironmentMap(const std::string& filepath)
@@ -347,96 +434,9 @@ namespace Hazel {
 		return { envFiltered, irradianceMap };
 	}
 
-	void OpenGLRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	RendererCapabilities& OpenGLRenderer::GetCapabilities()
 	{
-		mesh->GetVertexBuffer()->Bind();
-		mesh->GetIndexBuffer()->Bind();
-		pipeline->Bind();
-
-		auto& materials = mesh->GetMaterials();
-		for (Submesh& submesh : mesh->GetSubmeshes())
-		{
-			// Material
-			auto material = materials[submesh.MaterialIndex].As<OpenGLMaterial>();
-			auto shader = material->GetShader();
-			material->UpdateForRendering();
-
-			if (false && mesh->IsAnimated())
-			{
-				for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
-				{
-					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-					mesh->GetMeshShader()->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
-				}
-			}
-
-			auto transformUniform = transform * submesh.Transform;
-			shader->SetMat4("u_Renderer.Transform", transformUniform);
-
-			HazelRenderer::Submit([submesh, material]()
-			{
-				if (material->GetFlag(HazelMaterialFlag::DepthTest))
-					glEnable(GL_DEPTH_TEST);
-				else
-					glDisable(GL_DEPTH_TEST);
-
-				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
-			});
-		}
-	}
-
-	void OpenGLRenderer::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
-	{
-		mesh->GetVertexBuffer()->Bind();
-		mesh->GetIndexBuffer()->Bind();
-		pipeline->Bind();
-
-		auto shader = pipeline->GetSpecification().Shader;
-		shader->Bind();
-
-		for (Submesh& submesh : mesh->GetSubmeshes())
-		{
-			if (false && mesh->IsAnimated())
-			{
-				for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
-				{
-					std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-					mesh->GetMeshShader()->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
-				}
-			}
-
-			auto transformUniform = transform * submesh.Transform;
-			shader->SetMat4("u_Renderer.Transform", transformUniform);
-
-			HazelRenderer::Submit([submesh]()
-				{
-					glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
-				});
-		}
-	}
-
-	void OpenGLRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
-	{
-		/****
-		s_Data->m_FullscreenQuadVertexBuffer->Bind();
-		pipeline->Bind();
-		s_Data->m_FullscreenQuadIndexBuffer->Bind();
-		Ref<OpenGLMaterial> glMaterial = material.As<OpenGLMaterial>();
-		glMaterial->UpdateForRendering();
-
-		auto shader = material->GetShader();
-		shader->SetMat4("u_Renderer.Transform", transform);
-
-		HazelRenderer::Submit([material]()
-			{
-				if (material->GetFlag(HazelMaterialFlag::DepthTest))
-					glEnable(GL_DEPTH_TEST);
-				else
-					glDisable(GL_DEPTH_TEST);
-
-				glDrawElements(GL_TRIANGLES, s_Data->m_FullscreenQuadIndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
-			});
-		****/
+		return s_Data->RenderCaps;
 	}
 
 }

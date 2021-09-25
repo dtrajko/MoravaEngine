@@ -198,6 +198,11 @@ namespace Hazel {
 
 	}
 
+	RendererCapabilities& HazelRenderer::GetCapabilities()
+	{
+		return s_RendererAPI->GetCapabilities();
+	}
+
 	Ref<HazelShaderLibrary>& HazelRenderer::GetShaderLibrary()
 	{
 		return s_Data->m_ShaderLibrary;
@@ -267,13 +272,14 @@ namespace Hazel {
 	{
 		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
-		/**** BEGIN NEW ****/
+		/**** BEGIN the new code ****/
 		{
 			// s_RendererAPI->BeginRenderPass(renderCommandBuffer, renderPass, explicitClear);
+			s_RendererAPI->BeginRenderPass(renderPass);
 		}
-		/**** BEGIN NEW ****/
+		/**** END the new code ****/
 
-		/**** BEGIN OLD ****/
+		/**** BEGIN The obsolete code moved to OpenGLRenderer ****
 		{
 			// TODO: Convert all of this into a render command buffer
 			s_Data->m_ActiveRenderPass = renderPass;
@@ -288,7 +294,7 @@ namespace Hazel {
 				}
 			}
 		}
-		/**** END OLD ****/
+		/**** END The obsolete code moved to OpenGLRenderer ****/
 	}
 
 	void HazelRenderer::EndRenderPass()
@@ -296,6 +302,17 @@ namespace Hazel {
 		HZ_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
 		s_Data->m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
 		s_Data->m_ActiveRenderPass = nullptr;
+	}
+
+	// Used by OpenGLRenderer
+	void HazelRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
+	{
+		s_RendererAPI->SetSceneEnvironment(environment, shadow);
+	}
+
+	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> HazelRenderer::CreateEnvironmentMap(const std::string& filepath)
+	{
+		return s_RendererAPI->CreateEnvironmentMap(filepath);
 	}
 
 	void HazelRenderer::SubmitQuad(Ref<HazelMaterial> material, const glm::mat4& transform)
@@ -440,17 +457,6 @@ namespace Hazel {
 
 	// ---------------------------------------------------------------
 
-	RendererCapabilities& HazelRenderer::GetCapabilities()
-	{
-		return s_RendererAPI->GetCapabilities();
-	}
-
-	// Used by OpenGLRenderer
-	void HazelRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
-	{
-		s_RendererAPI->SetSceneEnvironment(environment, shadow);
-	}
-
 	// Used by OpenGLRenderer
 	Ref<Environment> HazelRenderer::GetEmptyEnvironment()
 	{
@@ -538,11 +544,6 @@ namespace Hazel {
 	}
 
 #endif
-
-	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> HazelRenderer::CreateEnvironmentMap(const std::string& filepath)
-	{
-		return s_RendererAPI->CreateEnvironmentMap(filepath);
-	}
 
 	// disabled in some versions of Hazel-dev
 	RendererConfig& HazelRenderer::GetConfig()

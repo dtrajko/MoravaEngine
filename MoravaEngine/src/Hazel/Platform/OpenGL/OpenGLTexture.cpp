@@ -32,9 +32,7 @@ namespace Hazel {
 		: m_Width(width), m_Height(height)
 	{
 		m_Image = HazelImage2D::Create(format, width, height, data);
-		HazelRenderer::Submit([=]()
-		{
-		});
+		// HazelRenderer::Submit([=]() {});
 
 		m_Image->Invalidate();
 	}
