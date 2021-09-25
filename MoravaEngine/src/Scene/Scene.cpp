@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "Scene/Scene.h"
 
 #include "Hazel/Events/ApplicationEvent.h"
@@ -181,6 +183,26 @@ void Scene::Update(float timestep, Window* mainWindow)
 		{
 			LightManager::spotLights[2].GetBasePL()->Toggle();
 			// Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
+		}
+
+		// Take a screenshot
+		if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::P))
+		{
+			if (Timer::Get()->GetCurrentTimestamp() - m_KeyPressCooldown.lastTime > m_KeyPressCooldown.cooldown)
+			{
+				time_t rawtime;
+				struct tm* timeinfo;
+				char buffer[80];
+
+				time(&rawtime);
+				timeinfo = localtime(&rawtime);
+
+				strftime(buffer, sizeof(buffer), "%Y-%m-%d_%H-%M-%S", timeinfo);
+				std::string dateTimeString(buffer);
+
+				Application::Get()->CaptureScreenshot("Screenshots/" + dateTimeString + ".jpg");
+				m_KeyPressCooldown.lastTime = Timer::Get()->GetCurrentTimestamp();
+			}
 		}
 	}
 

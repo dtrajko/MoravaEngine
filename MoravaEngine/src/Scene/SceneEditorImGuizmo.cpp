@@ -844,17 +844,19 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
     {
         if (ImGui::CollapsingHeader("Show Details"))
         {
-            ImGui::Text("* Add Mesh or Model: Left CTRL + Left Mouse Button");
-            ImGui::Text("* Camera Rotation: Right Mouse Button");
-            ImGui::Text("* Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up");
             ImGui::Text("* Fast Movement: Left SHIFT + W|A|S|D|Q|E");
-            ImGui::Text("* Enable Gizmo: TAB + Left Mouse Button");
             ImGui::Text("* Toggle Gizmo Modes: 1) Translate, 2) Scale, 3) Rotate, 4) Disable");
-            ImGui::Text("* Scene Save: Left CTRL + S");
-            ImGui::Text("* Scene Reset: Left CTRL + R");
-            ImGui::Text("* Scene Load: Left CTRL + L");
-            ImGui::Text("* Toggle Wireframe Mode: R");
-            ImGui::Text("* Copy scene object: Left CTRL + C");
+            ImGui::Text("* Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up");
+            ImGui::Separator();
+            ImGui::Text("* Left CTRL + S - Scene Save");
+            ImGui::Text("* Left CTRL + R - Scene Reset");
+            ImGui::Text("* Left CTRL + L - Scene Load");
+            ImGui::Text("* Left CTRL + C - Copy scene object");
+            ImGui::Text("* Left CTRL + P - Capture a screenshot");
+            ImGui::Text("* Left CTRL + Left Mouse Button - Add Mesh or Model");
+            ImGui::Text("* Left SHIFT + R - Toggle Wireframe Mode");
+            ImGui::Text("* Right Mouse Button - Camera Rotation");
+            ImGui::Text("* TAB + Left Mouse Button - Enable Gizmo");
         }
     }
     ImGui::End();

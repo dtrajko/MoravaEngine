@@ -4,6 +4,7 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include "Core/Timer.h"
 #include "Platform/DX11/DX11TestLayer.h"
@@ -393,6 +394,20 @@ const char* Application::GetPlatformName()
 	// #error Undefined platform?
 	return "N/A";
 #endif
+}
+
+void Application::CaptureScreenshot(const std::string& filePath)
+{
+	if (Hazel::RendererAPI::Current() != Hazel::RendererAPIType::OpenGL) return;
+
+	int width, height;
+	glfwGetFramebufferSize(m_Window->GetHandle(), &width, &height);
+	uint8_t* ptr = (uint8_t*)malloc(width * height * 4);
+	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, ptr);
+	stbi_flip_vertically_on_write(1);
+	// stbi_write_png(filePath.c_str(), width, height, 4, ptr, 0);
+	stbi_write_jpg(filePath.c_str(), width, height, 4, ptr, 60);
+	free(ptr);
 }
 
 SceneProperties Application::SetSceneProperties()

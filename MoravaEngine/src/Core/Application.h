@@ -54,6 +54,8 @@ public:
 	static const char* GetConfigurationName();
 	static const char* GetPlatformName();
 
+	void CaptureScreenshot(const std::string& filePath);
+
 private:
 	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);
