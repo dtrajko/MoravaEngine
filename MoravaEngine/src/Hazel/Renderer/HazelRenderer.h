@@ -33,6 +33,27 @@ namespace Hazel {
 
 		static Ref<RendererContext> GetContext();
 
+		static void Init();
+		static void Shutdown();
+
+		static void BeginFrame();
+		static void EndFrame();
+
+		// ~Actual~ Renderer here... TODO: remove confusion later
+		static void BeginRenderPass(Ref<RenderPass> renderPass, bool clear = true);
+		static void EndRenderPass();
+		static void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material);
+
+		static void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow);
+
+		static void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
+		static void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
+		static void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
+
+		static std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
+
+		static RendererCapabilities& GetCapabilities();
+
 		// Commands
 		static void Clear();                                                                // TODO: to be removed from HazelRenderer
 		static void Clear(float r, float g, float b, float a = 1.0f);                       // TODO: to be removed from HazelRenderer
@@ -41,13 +62,7 @@ namespace Hazel {
 		static void SetLineThickness(float thickness); // For OpenGL                        // TODO: to be removed from HazelRenderer
 		static void ClearMagenta();                                                         // TODO: to be removed from HazelRenderer
 
-		static void Init();
-
 		static Ref<HazelShaderLibrary>& GetShaderLibrary();
-
-		static void Shutdown();
-
-		static RendererCapabilities& GetCapabilities();
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)
@@ -78,22 +93,7 @@ namespace Hazel {
 
 		static void WaitAndRender();
 
-		// ~Actual~ Renderer here... TODO: remove confusion later
-		static void BeginRenderPass(Ref<RenderPass> renderPass, bool clear = true);
-		static void EndRenderPass();
-
-		static void BeginFrame();
-		static void EndFrame();
-
-		static void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow);
-		static std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
-
-		static void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
-		static void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
-		static void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform);
-
 		static void SubmitQuad(Ref<HazelMaterial> material, const glm::mat4& transform = glm::mat4(1.0f));
-		static void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material);
 		static void SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial = Ref<HazelMaterialInstance>());
 		static void SubmitMeshWithShader(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelShader> shader);
 
