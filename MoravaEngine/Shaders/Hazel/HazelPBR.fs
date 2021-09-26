@@ -144,6 +144,13 @@ struct PBRParameters
 
 PBRParameters m_Params;
 
+struct WireframeMode
+{
+	vec4 LineColor;
+	bool Enabled;
+};
+
+uniform WireframeMode u_WireframeMode;
 
 // ---- BEGIN Phong lighting model ----
 
@@ -608,5 +615,10 @@ void main()
 
 	color = vec4(lightContribution + iblContribution, 1.0);
 	color.rgb += m_Params.Emissive;
-	color.rgb *= u_Exposure; // originally used in Shaders/Hazel/SceneComposite	
+	color.rgb *= u_Exposure; // originally used in Shaders/Hazel/SceneComposite
+
+	if (u_WireframeMode.Enabled)
+	{
+		color = u_WireframeMode.LineColor;
+	}
 }

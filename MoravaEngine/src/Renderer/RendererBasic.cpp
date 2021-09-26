@@ -400,3 +400,16 @@ void RendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool 
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 }
+
+void RendererBasic::SetPolygonMode(PolygonMode polygonMode)
+{
+	switch (Hazel::RendererAPI::Current())
+	{
+	case Hazel::RendererAPIType::None:   return;
+	case Hazel::RendererAPIType::OpenGL: return OpenGLRendererBasic::SetPolygonMode(polygonMode);
+	case Hazel::RendererAPIType::Vulkan: return VulkanRendererBasic::SetPolygonMode(polygonMode);
+	case Hazel::RendererAPIType::DX11:   return DX11RendererBasic::SetPolygonMode(polygonMode);
+	}
+	Log::GetLogger()->error("Unknown RendererAPI");
+	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+}

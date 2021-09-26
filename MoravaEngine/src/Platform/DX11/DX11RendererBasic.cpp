@@ -178,3 +178,7 @@ void DX11RendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, b
 	// throw std::logic_error("The method or operation is not implemented.");
 	Log::GetLogger()->warn("DX11RendererBasic::DrawIndexed: Method not yet supported!");
 }
+
+void DX11RendererBasic::SetPolygonMode(PolygonMode polygonMode)
+{
+}

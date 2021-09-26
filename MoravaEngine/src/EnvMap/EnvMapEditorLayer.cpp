@@ -33,6 +33,8 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
+    EnvMapSharedData::s_Scene = scene;
+
     EnvMapSharedData::s_SamplerSlots = std::map<std::string, unsigned int>();
 
     //  // PBR texture inputs
@@ -98,6 +100,7 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_DisplayLineElements = false;
 
     EnvMapSharedData::s_DisplayOutline = false;
+    EnvMapSharedData::s_DisplayWireframe = false;
     EnvMapSharedData::s_SkyboxExposureFactor = 1.0f;
     EnvMapSharedData::s_RadiancePrefilter = false;
     EnvMapSharedData::s_EnvMapRotation = 0.0f;
@@ -1104,6 +1107,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 ImGui::Separator();
 
                 ImGui::Checkbox("Display Outline", &EnvMapSharedData::s_DisplayOutline);
+                ImGui::Checkbox("Display Wireframe", &EnvMapSharedData::s_DisplayWireframe);
                 ImGui::Checkbox("Display Bounding Boxes", &m_DisplayBoundingBoxes);
                 ImGui::Checkbox("Display Hazel Grid", &EnvMapSharedData::s_DisplayHazelGrid);
                 ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);

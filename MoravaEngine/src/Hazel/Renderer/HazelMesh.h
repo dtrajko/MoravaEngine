@@ -129,7 +129,7 @@ namespace Hazel {
 	{
 	public:
 		void Render(Ref<HazelMesh> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-			const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity);
+			const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity, bool wireframeEnabledScene = false, bool wireframeEnabledModel = false);
 		void RenderOutline(Ref<HazelMesh> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, Entity entity);
 
 	public:

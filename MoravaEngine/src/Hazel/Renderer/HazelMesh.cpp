@@ -1520,7 +1520,7 @@ namespace Hazel {
 	}
 
 	void Submesh::Render(Ref<HazelMesh> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-		const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity)
+		const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity, bool wireframeEnabledScene, bool wireframeEnabledModel)
 	{
 		Ref<EnvMapMaterial> envMapMaterial = Ref<EnvMapMaterial>();
 
@@ -1572,7 +1572,28 @@ namespace Hazel {
 
 		shader->SetMat4("u_Transform", entityTransform * Transform);
 
-		RendererBasic::DrawIndexed(IndexCount, 0, BaseVertex, (void*)(sizeof(uint32_t) * BaseIndex));
+		// ATM too complex logic for rendering polygons and/or wireframe
+
+		if (wireframeEnabledScene)
+		{
+			shader->SetBool("u_WireframeMode.Enabled", false);
+			RendererBasic::DrawIndexed(IndexCount, 0, BaseVertex, (void*)(sizeof(uint32_t) * BaseIndex));
+		}
+		else
+		{
+			shader->SetBool("u_WireframeMode.Enabled", false);
+			RendererBasic::SetPolygonMode(RendererBasic::PolygonMode::FILL);
+			RendererBasic::DrawIndexed(IndexCount, 0, BaseVertex, (void*)(sizeof(uint32_t) * BaseIndex));
+
+			if (wireframeEnabledModel)
+			{
+				shader->SetBool("u_WireframeMode.Enabled", true);
+				shader->SetFloat4("u_WireframeMode.LineColor", glm::vec4(1.0f, 1.0f, 1.0f, 0.5f));
+				RendererBasic::SetPolygonMode(RendererBasic::PolygonMode::LINE);
+				RendererBasic::DrawIndexed(IndexCount, 0, BaseVertex, (void*)(sizeof(uint32_t) * BaseIndex));
+			}
+		}
+
 		// glDrawElementsBaseVertex(GL_TRIANGLES, IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * BaseIndex), BaseVertex);
 
 		shader->Unbind();

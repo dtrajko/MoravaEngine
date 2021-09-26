@@ -200,3 +200,7 @@ void VulkanRendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type,
 	// throw std::logic_error("The method or operation is not implemented.");
 	Log::GetLogger()->warn("VulkanRendererBasic::DrawIndexed: Method not yet supported!");
 }
+
+void VulkanRendererBasic::SetPolygonMode(PolygonMode polygonMode)
+{
+}

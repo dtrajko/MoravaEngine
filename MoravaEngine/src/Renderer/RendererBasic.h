@@ -70,6 +70,15 @@ public:
 
 	static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr = nullptr);
 
+	enum class PolygonMode
+	{
+		POINT = 0,
+		LINE,
+		FILL,
+	};
+
+	static void SetPolygonMode(PolygonMode polygonMode);
+
 protected:
 	static void UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene);
 

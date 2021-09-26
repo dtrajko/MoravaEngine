@@ -5,6 +5,9 @@ std::map<std::string, unsigned int> EnvMapSharedData::s_SamplerSlots;
 
 Hazel::Ref<Hazel::HazelScene> EnvMapSharedData::s_RuntimeScene;
 Hazel::Ref<Hazel::HazelScene> EnvMapSharedData::s_EditorScene;
+
+Scene* EnvMapSharedData::s_Scene; // reference to SceneHazelEnvMap (the original engine scene object)
+
 Hazel::EditorCamera* EnvMapSharedData::s_EditorCamera;
 RuntimeCamera* EnvMapSharedData::s_RuntimeCamera;
 Hazel::HazelCamera* EnvMapSharedData::s_ActiveCamera;
@@ -13,6 +16,7 @@ Hazel::Ref<CubeSkybox> EnvMapSharedData::s_SkyboxCube;
 Hazel::Ref<Quad> EnvMapSharedData::s_Quad;
 
 bool EnvMapSharedData::s_DisplayOutline;
+bool EnvMapSharedData::s_DisplayWireframe;
 float EnvMapSharedData::s_SkyboxExposureFactor;
 bool EnvMapSharedData::s_RadiancePrefilter;
 float EnvMapSharedData::s_EnvMapRotation;

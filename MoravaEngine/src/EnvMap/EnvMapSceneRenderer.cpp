@@ -817,12 +817,19 @@ void EnvMapSceneRenderer::GeometryPass()
 
                     // Render Submesh
                     // load submesh materials for each specific submesh from the s_EnvMapMaterials list
-                    if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end()) {
+                    if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end())
+                    {
                         envMapMaterial = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
                         UpdateShaderPBRUniforms(EnvMapSharedData::s_ShaderHazelPBR, envMapMaterial);
                     }
 
-                    submesh.Render(meshComponent.Mesh, EnvMapSharedData::s_ShaderHazelPBR, entityTransform, samplerSlot, MaterialLibrary::s_EnvMapMaterials, entity);
+                    bool wireframeEnabledScene = EnvMapSharedData::s_Scene->IsWireframeEnabled();
+                    bool wireframeEnabledModel = EnvMapSharedData::s_DisplayWireframe;
+
+                    // Log::GetLogger()->debug("wireframeEnabledScene: {0}, wireframeEnabledModel: {1}", wireframeEnabledScene, wireframeEnabledModel);
+
+                    submesh.Render(meshComponent.Mesh, EnvMapSharedData::s_ShaderHazelPBR, entityTransform, samplerSlot,
+                        MaterialLibrary::s_EnvMapMaterials, entity, wireframeEnabledScene, wireframeEnabledModel);
                 }
             }
         }

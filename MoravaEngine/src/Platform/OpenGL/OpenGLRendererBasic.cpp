@@ -202,7 +202,24 @@ void OpenGLRendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type,
 
 	glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
 
-	if (!depthTest) {
+	if (!depthTest)
+	{
 		glEnable(GL_DEPTH_TEST);
+	}
+}
+
+void OpenGLRendererBasic::SetPolygonMode(PolygonMode polygonMode)
+{
+	switch (polygonMode)
+	{
+	case PolygonMode::POINT:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+		break;
+	case PolygonMode::LINE:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		break;
+	case PolygonMode::FILL:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		break;
 	}
 }

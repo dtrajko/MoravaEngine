@@ -743,7 +743,7 @@ namespace Hazel {
 
 	static void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection)
 	{
-		FrustumBounds frustumBounds[3];
+		// FrustumBounds frustumBounds[3];
 
 		auto& sceneCamera = s_Data.SceneData.SceneCamera;
 		auto viewProjection = sceneCamera.Camera.GetProjectionMatrix() * sceneCamera.ViewMatrix;
