@@ -335,8 +335,8 @@ namespace Hazel {
 		}
 
 		s_Data->FullscreenQuadVertexBuffer->Bind();
-		s_Data->FullscreenQuadIndexBuffer->Bind();
 		s_Data->FullscreenQuadPipeline->Bind();
+		s_Data->FullscreenQuadIndexBuffer->Bind();
 
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
@@ -369,8 +369,8 @@ namespace Hazel {
 		}
 
 		s_Data->FullscreenQuadVertexBuffer->Bind();
-		s_Data->FullscreenQuadIndexBuffer->Bind();
 		s_Data->FullscreenQuadPipeline->Bind();
+		s_Data->FullscreenQuadIndexBuffer->Bind();
 
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 
@@ -383,8 +383,8 @@ namespace Hazel {
 		// auto shader = material->GetShader();
 		// TODO: Sort this out
 		mesh->GetVertexBuffer()->Bind();
-		mesh->GetIndexBuffer()->Bind();
 		mesh->GetPipeline()->Bind();
+		mesh->GetIndexBuffer()->Bind();
 
 		auto& materials = mesh->GetMaterials();
 		for (Submesh& submesh : mesh->GetSubmeshes())
@@ -421,8 +421,8 @@ namespace Hazel {
 	void HazelRenderer::SubmitMeshWithShader(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelShader> shader)
 	{
 		mesh->GetVertexBuffer()->Bind();
-		mesh->GetIndexBuffer()->Bind();
 		mesh->GetPipeline()->Bind();
+		mesh->GetIndexBuffer()->Bind();
 
 		for (Submesh& submesh : mesh->GetSubmeshes())
 		{
@@ -544,6 +544,7 @@ namespace Hazel {
 		s_Data->FullscreenQuadVertexBuffer->Bind();
 		pipeline->Bind();
 		s_Data->FullscreenQuadIndexBuffer->Bind();
+
 		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 

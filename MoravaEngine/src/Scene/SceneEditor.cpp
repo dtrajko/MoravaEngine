@@ -2057,8 +2057,8 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader> shader
     meshAnimPBR->OnUpdate(deltaTime, false);
 
     meshAnimPBR->GetVertexBuffer()->Bind();
-    meshAnimPBR->GetIndexBuffer()->Bind();
     meshAnimPBR->GetPipeline()->Bind();
+    meshAnimPBR->GetIndexBuffer()->Bind();
 
     auto& materials = meshAnimPBR->GetMaterials();
 

@@ -195,8 +195,9 @@ namespace Hazel {
 		}
 
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
-		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 		s_Data->m_FullscreenQuadPipeline->Bind();
+		s_Data->m_FullscreenQuadIndexBuffer->Bind();
+
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
@@ -245,8 +246,8 @@ namespace Hazel {
 	void OpenGLRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		mesh->GetVertexBuffer()->Bind();
-		mesh->GetIndexBuffer()->Bind();
 		pipeline->Bind();
+		mesh->GetIndexBuffer()->Bind();
 
 		auto& materials = mesh->GetMaterials();
 		for (Submesh& submesh : mesh->GetSubmeshes())
@@ -283,8 +284,8 @@ namespace Hazel {
 	void OpenGLRenderer::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		mesh->GetVertexBuffer()->Bind();
-		mesh->GetIndexBuffer()->Bind();
 		pipeline->Bind();
+		mesh->GetIndexBuffer()->Bind();
 
 		auto shader = pipeline->GetSpecification().Shader;
 		shader->Bind();
@@ -313,8 +314,9 @@ namespace Hazel {
 	void OpenGLRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
 	{
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
-		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 		pipeline->Bind();
+		s_Data->m_FullscreenQuadIndexBuffer->Bind();
+
 		Ref<OpenGLMaterial> glMaterial = material.As<OpenGLMaterial>();
 		glMaterial->UpdateForRendering();
 

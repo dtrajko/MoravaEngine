@@ -910,8 +910,8 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 	Hazel::Ref<DX11Mesh> dx11Mesh = renderObject.MeshDX11;
 
 	dx11Mesh->GetVertexBuffer()->Bind();
-	dx11Mesh->GetIndexBuffer()->Bind();
 	pipeline->Bind();
+	dx11Mesh->GetIndexBuffer()->Bind();
 
 	for (size_t m = 0; m < dx11Mesh->GetNumMaterialSlots(); m++)
 	{
@@ -1241,9 +1241,10 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 
 		Hazel::Ref<DX11VertexBuffer> vertexBuffer = DX11TestLayer::s_MeshLight->GetVertexBuffer().As<DX11VertexBuffer>();
 		Hazel::Ref<DX11IndexBuffer> indexBuffer = DX11TestLayer::s_MeshLight->GetIndexBuffer().As<DX11IndexBuffer>();
+
 		vertexBuffer->Bind();
-		indexBuffer->Bind();
 		s_PipelineIlluminated->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
+		indexBuffer->Bind();
 
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, s_LightPosition);
@@ -1350,10 +1351,11 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 
 	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = renderObject.Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
 	Hazel::Ref<DX11IndexBuffer> dx11meshIB = renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
-	dx11MeshVB->Bind();
-	dx11meshIB->Bind();
 	// Hazel::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
+
+	dx11MeshVB->Bind();
 	pipeline->Bind();
+	dx11meshIB->Bind();
 
 	for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())
 	{

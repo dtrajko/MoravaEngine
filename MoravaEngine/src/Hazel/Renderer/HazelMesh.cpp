@@ -1525,8 +1525,8 @@ namespace Hazel {
 		Ref<EnvMapMaterial> envMapMaterial = Ref<EnvMapMaterial>();
 
 		parentMesh->GetVertexBuffer()->Bind();
-		parentMesh->GetIndexBuffer()->Bind();
 		parentMesh->GetPipeline()->Bind();
+		parentMesh->GetIndexBuffer()->Bind();
 
 		// Manage materials (PBR texture binding)
 		if (m_BaseMaterial)
@@ -1602,8 +1602,8 @@ namespace Hazel {
 	void Submesh::RenderOutline(Ref<HazelMesh> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, Entity entity)
 	{
 		parentMesh->GetVertexBuffer()->Bind();
-		parentMesh->GetIndexBuffer()->Bind();
 		parentMesh->GetPipeline()->Bind();
+		parentMesh->GetIndexBuffer()->Bind();
 
 		glm::vec3 translation, rotation, scale;
 		Math::DecomposeTransform(entityTransform * Transform, translation, rotation, scale);

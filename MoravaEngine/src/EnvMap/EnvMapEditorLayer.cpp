@@ -2220,8 +2220,8 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shade
                 {
                     // Render Submesh
                     meshComponent.Mesh->GetVertexBuffer()->Bind();
-                    meshComponent.Mesh->GetIndexBuffer()->Bind();
                     meshComponent.Mesh->GetPipeline()->Bind();
+                    meshComponent.Mesh->GetIndexBuffer()->Bind();
 
                     shader->SetMat4("model", entityTransform * submesh.Transform);
 

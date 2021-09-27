@@ -1031,8 +1031,8 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         m_BaseMaterial_BobLamp->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
 
         m_MeshAnimPBR_BobLamp->GetVertexBuffer()->Bind();
-        m_MeshAnimPBR_BobLamp->GetIndexBuffer()->Bind();
         m_MeshAnimPBR_BobLamp->GetPipeline()->Bind();
+        m_MeshAnimPBR_BobLamp->GetIndexBuffer()->Bind();
 
         auto& materials = m_MeshAnimPBR_BobLamp->GetMaterials();
 
