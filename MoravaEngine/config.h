@@ -26,9 +26,9 @@
 // #define SCENE_ANIM_PBR
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
-// #define SCENE_HAZEL_ENV_MAP
+#define SCENE_HAZEL_ENV_MAP
 // #define SCENE_DX11
-#define SCENE_HAZEL_VULKAN
+// #define SCENE_HAZEL_VULKAN
 
 
 enum class SceneName

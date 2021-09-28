@@ -4,6 +4,7 @@
 
 
 #include "Hazel/Renderer/HazelImage.h"
+#include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/RendererTypes.h"
 
 #include <GL/glew.h>
@@ -85,17 +86,16 @@ namespace Hazel {
 		{
 			switch (format)
 			{
-			case HazelImageFormat::RGB:
-			case HazelImageFormat::SRGB:
-			case HazelImageFormat::RGBA:    return GL_UNSIGNED_BYTE;
-			case HazelImageFormat::RGBA16F:
-			case HazelImageFormat::RGBA32F: return GL_FLOAT;
+				case HazelImageFormat::RGB:
+				case HazelImageFormat::SRGB:
+				case HazelImageFormat::RGBA:    return GL_UNSIGNED_BYTE;
+				case HazelImageFormat::RGBA16F:
+				case HazelImageFormat::RGBA32F: return GL_FLOAT;
 			}
 			HZ_CORE_ASSERT(false, "Unknown image format");
 			return 0;
 		}
 
-		/****
 		inline GLenum OpenGLSamplerWrap(TextureWrap wrap)
 		{
 			switch (wrap)
@@ -107,13 +107,14 @@ namespace Hazel {
 			return 0;
 		}
 
+		/****
 		// Note: should always be called with mipmap = false for magnification filtering
 		inline GLenum OpenGLSamplerFilter(TextureFilter filter, bool mipmap)
 		{
 			switch (filter)
 			{
-			case TextureFilter::Linear:   return mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
-			case TextureFilter::Nearest:  return mipmap ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
+				case TextureFilter::Linear:   return mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+				case TextureFilter::Nearest:  return mipmap ? GL_NEAREST_MIPMAP_NEAREST : GL_NEAREST;
 			}
 			HZ_CORE_ASSERT(false, "Unknown filter");
 			return 0;

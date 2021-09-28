@@ -102,7 +102,10 @@ namespace Hazel::UI {
 			Ref<VulkanImage2D> vulkanImage = image.As<VulkanImage2D>();
 			const auto& imageInfo = vulkanImage->GetImageInfo();
 			if (!imageInfo.ImageView)
+			{
 				return false;
+			}
+
 			const auto textureID = ImGui_ImplVulkan_AddTexture(imageInfo.Sampler, imageInfo.ImageView, vulkanImage->GetDescriptor().imageLayout);
 			ImGuiID id = (ImGuiID)((((uint64_t)imageInfo.ImageView) >> 32) ^ (uint32_t)imageInfo.ImageView);
 			if (stringID)
@@ -111,6 +114,7 @@ namespace Hazel::UI {
 				id = id ^ strID;
 			}
 			// return ImGui::ImageButtonEx(id, textureID, size, uv0, uv1, ImVec2{ (float)frame_padding, (float)frame_padding }, bg_col, tint_col);
+
 			return false;
 		}
 	}

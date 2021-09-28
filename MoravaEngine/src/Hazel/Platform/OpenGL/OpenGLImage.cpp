@@ -31,21 +31,20 @@ namespace Hazel {
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 
-		GLenum format = Utils::OpenGLImageFormat(m_Format);
 		GLenum internalFormat = Utils::OpenGLImageInternalFormat(m_Format);
-		GLenum dataType = Utils::OpenGLFormatDataType(m_Format);
-
 		uint32_t mipCount = Utils::CalculateMipCount(m_Width, m_Height);
 		glTextureStorage2D(m_RendererID, mipCount, internalFormat, m_Width, m_Height);
 		if (m_ImageData)
 		{
+			GLenum format = Utils::OpenGLImageFormat(m_Format);
+			GLenum dataType = Utils::OpenGLFormatDataType(m_Format);
 			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, format, dataType, m_ImageData.Data);
 			glGenerateTextureMipmap(m_RendererID);
 		}
 
 		// Sampler
 		glCreateSamplers(1, &m_SamplerRendererID);
-		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_MIN_FILTER, m_ImageData ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
