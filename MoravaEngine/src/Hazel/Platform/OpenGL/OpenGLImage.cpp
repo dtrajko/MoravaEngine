@@ -4,6 +4,11 @@
 
 namespace Hazel {
 
+	OpenGLImage2D::OpenGLImage2D(uint32_t width, uint32_t height, HazelImageFormat format)
+		: m_Width(width), m_Height(height), m_Format(format)
+	{
+	}
+
 	OpenGLImage2D::OpenGLImage2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
 		: m_Width(width), m_Height(height), m_Format(format)
 	{
@@ -17,24 +22,12 @@ namespace Hazel {
 	{
 	}
 
-	OpenGLImage2D::~OpenGLImage2D()
-	{
-		// Should this be submitted?
-		m_ImageData.Release();
-		if (m_RendererID)
-		{
-			RendererID rendererID = m_RendererID;
-			HazelRenderer::Submit([rendererID]()
-			{
-				glDeleteTextures(1, &rendererID);
-			});
-		}
-	}
-
 	void OpenGLImage2D::Invalidate()
 	{
 		if (m_RendererID)
+		{
 			Release();
+		}
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 
@@ -57,6 +50,24 @@ namespace Hazel {
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+
+	OpenGLImage2D::~OpenGLImage2D()
+	{
+		Release();
+
+		/**** BEGIN Code replaced with Release() method ****
+		// Should this be submitted?
+		m_ImageData.Release();
+		if (m_RendererID)
+		{
+			RendererID rendererID = m_RendererID;
+			// HazelRenderer::Submit([rendererID]() {});
+			{
+				glDeleteTextures(1, &rendererID);
+			}
+		}
+		/**** BEGIN Code replaced with Release() method ****/
 	}
 
 	void OpenGLImage2D::Release()

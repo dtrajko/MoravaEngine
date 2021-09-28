@@ -33,8 +33,9 @@ namespace Hazel {
 	{
 		m_Image = HazelImage2D::Create(format, width, height, data);
 		// HazelRenderer::Submit([=]() {});
-
-		m_Image->Invalidate();
+		{
+			m_Image->Invalidate();
+		}
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap)
@@ -68,28 +69,51 @@ namespace Hazel {
 		int width, height, channels;
 		if (stbi_is_hdr(path.c_str()))
 		{
+			// HZ_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
 			Log::GetLogger()->info("Loading HDR texture {0}, srgb={1}", path, srgb);
 			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 0);
 			m_IsHDR = true;
 			m_Format = HazelImageFormat::RGBA16F;
+
+			Buffer buffer(m_ImageData.Data, Utils::GetImageMemorySize(HazelImageFormat::RGBA32F, width, height));
+			m_Image = HazelImage2D::Create(HazelImageFormat::RGBA32F, width, height, buffer);
 		}
 		else
 		{
-			// Log::GetLogger()->info("Loading texture {0}, srgb={1}", path, srgb);
+			// HZ_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
+			Log::GetLogger()->info("Loading texture {0}, srgb={1}", path, srgb);
 			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
-			if (!m_ImageData.Data) {
+			if (!m_ImageData.Data)
+			{
 				Log::GetLogger()->error("Could not read image!");
 			}
 			m_Format = HazelImageFormat::RGBA;
+
+			HazelImageFormat format = srgb ? HazelImageFormat::RGB : HazelImageFormat::RGBA;
+			Buffer buffer(m_ImageData.Data, Utils::GetImageMemorySize(format, width, height));
+			m_Image = HazelImage2D::Create(format, width, height, buffer);
 		}
 
 		if (!m_ImageData.Data)
+		{
 			return;
-
-		m_Loaded = true;
+		}
 
 		m_Width = width;
 		m_Height = height;
+		m_Loaded = true;
+
+		// Ref<HazelImage2D>& image = m_Image;
+		// HazelRenderer::Submit([image]() mutable {});
+		{
+			// m_Image->Invalidate();
+
+			Buffer& buffer = m_Image->GetBuffer();
+			// stbi_image_free(buffer.Data);
+			buffer = Buffer();
+		}
+
+		/**** BEGIN this part of the code should be removed from the constructor in Vulkan branch ****/
 
 		// TODO: Consolidate properly
 		if (srgb)
@@ -126,6 +150,8 @@ namespace Hazel {
 
 		stbi_image_free(m_ImageData.Data);
 
+		/**** END this part of the code should be removed from the constructor in Vulkan branch ****/
+
 		Util::CheckOpenGLErrors("OpenGLTexture2D::OpenGLTexture2D");
 	}
 
@@ -152,7 +178,8 @@ namespace Hazel {
 
 	void OpenGLTexture2D::Resize(uint32_t width, uint32_t height)
 	{
-		if (!m_Locked) {
+		if (!m_Locked)
+		{
 			Log::GetLogger()->error("Texture must be locked!");
 		}
 
@@ -164,7 +191,8 @@ namespace Hazel {
 
 	Buffer OpenGLTexture2D::GetWriteableBuffer()
 	{
-		if (!m_Locked) {
+		if (!m_Locked)
+		{
 			Log::GetLogger()->error("Texture must be locked!");
 		}
 		return m_ImageData;
