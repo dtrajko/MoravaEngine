@@ -42,19 +42,19 @@ namespace Hazel {
 		virtual bool operator==(const HazelTexture& other) const override
 		{
 			// return m_Image->GetHash() == other.m_Image->GetHash();
-			return m_ID == ((OpenGLTexture2D&)other).m_ID;
+			return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID;
 		}
 
-		virtual uint32_t GetID() const override { return m_ID; }
-		virtual RendererID GetRendererID() const override { return m_ID; }
-		void Resize(uint32_t width, uint32_t height);
+		virtual uint32_t GetID() const override { return m_RendererID; }
+		virtual RendererID GetRendererID() const override { return m_RendererID; }
+		// void Resize(uint32_t width, uint32_t height); // method removed in Hazel Live 18.03.2021 #2
 
 	private:
 		Ref<HazelImage2D> m_Image;
 		HazelImageFormat m_Format;
 		TextureWrap m_Wrap = TextureWrap::Clamp;
 		uint32_t m_Width, m_Height;
-		uint32_t m_ID;
+		RendererID m_RendererID;
 
 		Buffer m_ImageData;
 		bool m_IsHDR = false;

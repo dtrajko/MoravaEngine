@@ -36,7 +36,9 @@ public:
 	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage() const override;
 	void Lock() override;
 	void Unlock() override;
-	void Resize(uint32_t width, uint32_t height) override;
+
+	// void Resize(uint32_t width, uint32_t height) override; // method removed in Hazel Live 18.03.2021 #2
+
 	Hazel::Buffer GetWriteableBuffer() override;
 	bool Loaded() const override;
 	const std::string& GetPath() const override;

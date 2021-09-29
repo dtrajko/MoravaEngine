@@ -45,10 +45,7 @@ namespace Hazel {
 
 	void OpenGLImage2D::Invalidate()
 	{
-		if (m_RendererID)
-		{
-			Release();
-		}
+		if (m_RendererID) { Release(); }
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		// glBindTexture(GL_TEXTURE_2D, m_RendererID);

@@ -49,6 +49,7 @@ namespace Hazel {
 		{
 			// HZ_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
 			Log::GetLogger()->info("Loading HDR texture {0}, srgb={1}", path, srgb);
+
 			float* imageData = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
 
 			// HZ_CORE_ASSERT(imageData);
@@ -66,6 +67,7 @@ namespace Hazel {
 		{
 			// HZ_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
 			Log::GetLogger()->info("Loading texture {0}, srgb={1}", path, srgb);
+
 			stbi_uc* imageData = stbi_load(path.c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
 
 			// HZ_CORE_ASSERT(imageData);
@@ -76,14 +78,11 @@ namespace Hazel {
 
 			Buffer buffer(imageData, Utils::GetImageMemorySize(format, width, height));
 			m_Image = HazelImage2D::Create(format, width, height, buffer);
-
-			// m_Format = HazelImageFormat::RGBA;
-			m_Format = format;
 		}
 
 		if (!m_ImageData.Data)
 		{
-			return;
+			// return;
 		}
 
 		m_Width = width;
@@ -96,58 +95,9 @@ namespace Hazel {
 			// m_Image->Invalidate();
 
 			Buffer& buffer = m_Image->GetBuffer();
-			// stbi_image_free(buffer.Data);
+			stbi_image_free(buffer.Data);
 			buffer = Buffer();
 		}
-
-		/**** BEGIN this part of the code should be removed from the constructor in Vulkan branch ****/
-
-		// Ref<OpenGLTexture2D> instance = this;
-		// HazelRenderer::Submit([instance, srgb]() mutable {});
-		{
-			// TODO: Consolidate properly
-			if (srgb)
-			{
-				glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
-				int levels = HazelTexture::CalculateMipMapCount(m_Width, m_Height);
-				glTextureStorage2D(m_ID, levels, GL_SRGB8, m_Width, m_Height);
-
-				/**** BEGIN code removed in Hazel Live 18.03.2021 #2 ****
-				glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
-				glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				/**** END code removed in Hazel Live 18.03.2021 #2 ****/
-
-				glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, GL_RGB, GL_UNSIGNED_BYTE, m_ImageData.Data);
-				glGenerateTextureMipmap(m_ID);
-			}
-			else
-			{
-				glGenTextures(1, &m_ID);
-				glBindTexture(GL_TEXTURE_2D, m_ID);
-
-				/**** BEGIN code removed in Hazel Live 18.03.2021 #2 ****
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				GLenum localWrap = (m_Wrap == TextureWrap::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)localWrap);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)localWrap);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, (GLint)localWrap);
-				/**** END code removed in Hazel Live 18.03.2021 #2 ****/
-
-				// GLenum internalFormat = HazelToOpenGLTextureFormat(m_Format);
-				// GLenum format = srgb ? GL_SRGB8 : (m_IsHDR ? GL_RGB : HazelToOpenGLTextureFormat(m_Format)); // HDR = GL_RGB for now
-				GLenum internalFormat = Utils::OpenGLImageInternalFormat(m_Format);
-				GLenum format = srgb ? GL_SRGB8 : (m_IsHDR ? GL_RGB : Utils::OpenGLImageFormat(m_Format)); // HDR = GL_RGB for no
-				GLenum type = internalFormat == GL_RGBA16F ? GL_FLOAT : GL_UNSIGNED_BYTE;
-				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, format, type, m_ImageData.Data);
-				glGenerateMipmap(GL_TEXTURE_2D);
-				glBindTexture(GL_TEXTURE_2D, 0);
-			}
-		}
-
-		stbi_image_free(m_ImageData.Data);
-
-		/**** END this part of the code should be removed from the constructor in Vulkan branch ****/
 
 		Util::CheckOpenGLErrors("OpenGLTexture2D::OpenGLTexture2D");
 	}
@@ -157,8 +107,8 @@ namespace Hazel {
 	{
 		auto self = this;
 
-		glGenTextures(1, &m_ID);
-		glBindTexture(GL_TEXTURE_2D, m_ID);
+		glGenTextures(1, &m_RendererID);
+		glBindTexture(GL_TEXTURE_2D, m_RendererID);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -168,7 +118,7 @@ namespace Hazel {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)localWrap);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, (GLint)localWrap);
 
-		glTextureParameterf(m_ID, GL_TEXTURE_MAX_ANISOTROPY, m_MaxAnisotropy);
+		glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, m_MaxAnisotropy);
 
 		GLenum imageInternalFormat = Utils::OpenGLImageInternalFormat(m_Format);
 		GLenum imageFormat = Utils::OpenGLImageFormat(m_Format);
@@ -191,7 +141,11 @@ namespace Hazel {
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
-		glBindTextureUnit(slot, m_ID);
+		// Ref<OpenGLImage2D> image = m_Image.As<OpenGLImage2D>();
+		// HazelRenderer::Submit([slot, image ]() {});
+		{
+			glBindTextureUnit(slot, m_RendererID);
+		}
 	}
 
 	void OpenGLTexture2D::Lock()
@@ -202,30 +156,34 @@ namespace Hazel {
 	void OpenGLTexture2D::Unlock()
 	{
 		m_Locked = false;
-		GLenum format = Utils::OpenGLImageFormat(m_Format);
-		glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, format, GL_UNSIGNED_BYTE, m_ImageData.Data);
+
+		// Ref<OpenGLTexture2D> instance = this;
+		// Ref<OpenGLImage2D> image = m_Image.As<OpenGLImage2D>();
+		// HazelRenderer::Submit([instance, image]() mutable {});
+		{
+			GLenum format = Utils::OpenGLImageFormat(m_Format);
+			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, format, GL_UNSIGNED_BYTE, m_Image->GetBuffer().Data);
+		}
 	}
 
+	/**** BEGIN method removed in Hazel Live 18.03.2021 #2 ****
 	void OpenGLTexture2D::Resize(uint32_t width, uint32_t height)
 	{
-		if (!m_Locked)
-		{
-			Log::GetLogger()->error("Texture must be locked!");
-		}
-
+		// HZ_CORE_ASSERT(m_Locked, "Texture must be locked!");
+		if (!m_Locked) { Log::GetLogger()->error("Texture must be locked!"); }
 		m_ImageData.Allocate(width * height * HazelTexture::GetBPP(m_Format));
 #if HZ_DEBUG
 		m_ImageData.ZeroInitialize();
 #endif
 	}
+	/**** END method removed in Hazel Live 18.03.2021 #2 ****/
 
 	Buffer OpenGLTexture2D::GetWriteableBuffer()
 	{
-		if (!m_Locked)
-		{
-			Log::GetLogger()->error("Texture must be locked!");
-		}
-		return m_ImageData;
+		// HZ_CORE_ASSERT(m_Locked, "Texture must be locked!");
+		if (!m_Locked) { Log::GetLogger()->error("Texture must be locked!"); }
+		// return m_ImageData;
+		return m_Image->GetBuffer();
 	}
 
 	uint32_t OpenGLTexture2D::GetMipLevelCount() const

@@ -30,7 +30,8 @@ namespace Hazel {
 
 		void Lock() override;
 		void Unlock() override;
-		void Resize(uint32_t width, uint32_t height) override;
+
+		// void Resize(uint32_t width, uint32_t height) override; // method removed in Hazel Live 18.03.2021 #2
 
 		Buffer GetWriteableBuffer() override;
 		bool Loaded() const override;

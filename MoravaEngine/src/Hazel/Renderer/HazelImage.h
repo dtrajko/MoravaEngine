@@ -56,9 +56,9 @@ namespace Hazel {
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-		virtual float GetAspectRatio() const = 0;
 
 		virtual HazelImageFormat GetFormat() const = 0;
+		virtual float GetAspectRatio() const = 0;
 
 		virtual Buffer GetBuffer() const = 0;
 		virtual Buffer& GetBuffer() = 0;
@@ -82,11 +82,11 @@ namespace Hazel {
 		{
 			switch (format)
 			{
-			case HazelImageFormat::RGB:
-			case HazelImageFormat::SRGB:    return 3;
-			case HazelImageFormat::RGBA:    return 4;
-			case HazelImageFormat::RGBA16F: return 2 * 4;
-			case HazelImageFormat::RGBA32F: return 4 * 4;
+				case HazelImageFormat::RGB:
+				case HazelImageFormat::SRGB:    return 3;
+				case HazelImageFormat::RGBA:    return 4;
+				case HazelImageFormat::RGBA16F: return 2 * 4;
+				case HazelImageFormat::RGBA32F: return 4 * 4;
 			}
 			HZ_CORE_ASSERT(false);
 			return 0;

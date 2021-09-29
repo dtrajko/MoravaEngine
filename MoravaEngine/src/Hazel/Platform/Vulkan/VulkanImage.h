@@ -31,9 +31,14 @@ namespace Hazel
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
-		virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
 		virtual HazelImageFormat GetFormat() const override { return m_Format; }
+		virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
+
+		virtual Buffer GetBuffer() const override { return m_ImageData; }
+		virtual Buffer& GetBuffer() override { return m_ImageData; }
+
+		virtual uint64_t GetHash() const override { return (uint64_t)m_Info.Image; }
 
 		virtual VkImageView GetLayerImageView(uint32_t layer)
 		{
@@ -48,11 +53,6 @@ namespace Hazel
 		const VulkanImageInfo& GetImageInfo() const { return m_Info; }
 
 		const VkDescriptorImageInfo& GetDescriptor() { return m_DescriptorImageInfo; }
-
-		virtual Buffer GetBuffer() const override { return m_ImageData; }
-		virtual Buffer& GetBuffer() override { return m_ImageData; }
-
-		virtual uint64_t GetHash() const override { return (uint64_t)m_Info.Image; }
 
 		void UpdateDescriptor();
 

@@ -482,9 +482,7 @@ namespace Hazel {
 	{
 	}
 
-	void VulkanTexture2D::Resize(uint32_t width, uint32_t height)
-	{
-	}
+	// void VulkanTexture2D::Resize(uint32_t width, uint32_t height) {} // method removed in Hazel Live 18.03.2021 #2
 
 	Buffer VulkanTexture2D::GetWriteableBuffer()
 	{

@@ -23,17 +23,17 @@ public:
 
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
-	virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
 	virtual Hazel::HazelImageFormat GetFormat() const override { return m_Format; }
-
-	DX11ImageInfo& GetImageInfo() { return m_Info; }
-	const DX11ImageInfo& GetImageInfo() const { return m_Info; }
+	virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
 	virtual Hazel::Buffer GetBuffer() const override { return m_ImageData; }
 	virtual Hazel::Buffer& GetBuffer() override { return m_ImageData; }
 
 	virtual uint64_t GetHash() const override { return m_Info.Image; }
+
+	DX11ImageInfo& GetImageInfo() { return m_Info; }
+	const DX11ImageInfo& GetImageInfo() const { return m_Info; }
 
 	void UpdateDescriptor();
 
