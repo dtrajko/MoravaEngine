@@ -87,7 +87,6 @@ namespace Hazel {
 		virtual TextureType GetType() const override { return TextureType::Texture2D; }
 
 		virtual ImTextureID GetImTextureID();
-
 	};
 
 	class HazelTextureCube : public HazelTexture

@@ -41,6 +41,7 @@ namespace Hazel {
 
 		virtual bool operator==(const HazelTexture& other) const override
 		{
+			// return m_Image->GetHash() == other.m_Image->GetHash();
 			return m_ID == ((OpenGLTexture2D&)other).m_ID;
 		}
 

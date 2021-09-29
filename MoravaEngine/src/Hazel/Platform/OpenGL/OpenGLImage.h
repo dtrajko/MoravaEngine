@@ -15,7 +15,6 @@ namespace Hazel {
 	class OpenGLImage2D : public HazelImage2D
 	{
 	public:
-		OpenGLImage2D(uint32_t width, uint32_t height, HazelImageFormat format);
 		OpenGLImage2D(HazelImageFormat format, uint32_t width, uint32_t height, Buffer buffer);
 		OpenGLImage2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
 		virtual ~OpenGLImage2D();

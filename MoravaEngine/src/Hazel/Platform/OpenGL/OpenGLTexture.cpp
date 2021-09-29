@@ -11,6 +11,7 @@
 
 namespace Hazel {
 
+	/**** BEGIN obsolete method, remove later ****
 	static GLenum HazelToOpenGLTextureFormat(HazelImageFormat format)
 	{
 		switch (format)
@@ -23,6 +24,7 @@ namespace Hazel {
 		Log::GetLogger()->error("Unknown texture format!");
 		return 0;
 	}
+	/**** END obsolete method, remove later ****/
 
 	//////////////////////////////////////////////////////////////////////////////////
 	// Texture2D
@@ -31,11 +33,24 @@ namespace Hazel {
 	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
 		: m_Width(width), m_Height(height)
 	{
+#if 1
 		m_Image = HazelImage2D::Create(format, width, height, data);
 		// HazelRenderer::Submit([=]() {});
 		{
 			m_Image->Invalidate();
 		}
+#else
+		/**** BEGIN constuctor version Hazel Live 18.03.2021 #2 ****/
+		uint32_t size = width * height * 4;
+		m_ImageData = Buffer::Copy(data, size);
+		memcpy(m_ImageData.Data, data, m_ImageData.Size);
+
+		// Ref<OpenGLTexture2D> instance = this;
+		// HazelRenderer::Submit([instance]() mutable {});
+		{
+		}
+		/**** END constuctor version Hazel Live 18.03.2021 #2 ****/
+#endif
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap)
@@ -56,7 +71,9 @@ namespace Hazel {
 
 		glTextureParameterf(m_ID, GL_TEXTURE_MAX_ANISOTROPY, m_MaxAnisotropy);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, HazelToOpenGLTextureFormat(m_Format), m_Width, m_Height, 0, HazelToOpenGLTextureFormat(m_Format), GL_UNSIGNED_BYTE, nullptr);
+		GLenum imageInternalFormat = Utils::OpenGLImageInternalFormat(m_Format);
+		GLenum imageFormat = Utils::OpenGLImageFormat(m_Format);
+		glTexImage2D(GL_TEXTURE_2D, 0, imageInternalFormat, m_Width, m_Height, 0, imageFormat, GL_UNSIGNED_BYTE, nullptr);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -140,8 +157,10 @@ namespace Hazel {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)localWrap);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, (GLint)localWrap);
 
-			GLenum internalFormat = HazelToOpenGLTextureFormat(m_Format);
-			GLenum format = srgb ? GL_SRGB8 : (m_IsHDR ? GL_RGB : HazelToOpenGLTextureFormat(m_Format)); // HDR = GL_RGB for now
+			// GLenum internalFormat = HazelToOpenGLTextureFormat(m_Format);
+			// GLenum format = srgb ? GL_SRGB8 : (m_IsHDR ? GL_RGB : HazelToOpenGLTextureFormat(m_Format)); // HDR = GL_RGB for now
+			GLenum internalFormat = Utils::OpenGLImageInternalFormat(m_Format);
+			GLenum format = srgb ? GL_SRGB8 : (m_IsHDR ? GL_RGB : Utils::OpenGLImageFormat(m_Format)); // HDR = GL_RGB for no
 			GLenum type = internalFormat == GL_RGBA16F ? GL_FLOAT : GL_UNSIGNED_BYTE;
 			glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, format, type, m_ImageData.Data);
 			glGenerateMipmap(GL_TEXTURE_2D);
@@ -157,7 +176,12 @@ namespace Hazel {
 
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
-		glDeleteTextures(1, &m_ID);
+		// Ref<HazelImage2D> image = m_Image;
+		// HazelRenderer::Submit([image]() mutable {});
+		{
+			m_Image->Release();
+		}
+		// glDeleteTextures(1, &m_ID);
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
@@ -173,7 +197,8 @@ namespace Hazel {
 	void OpenGLTexture2D::Unlock()
 	{
 		m_Locked = false;
-		glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, HazelToOpenGLTextureFormat(m_Format), GL_UNSIGNED_BYTE, m_ImageData.Data);
+		GLenum format = Utils::OpenGLImageFormat(m_Format);
+		glTextureSubImage2D(m_ID, 0, 0, 0, m_Width, m_Height, format, GL_UNSIGNED_BYTE, m_ImageData.Data);
 	}
 
 	void OpenGLTexture2D::Resize(uint32_t width, uint32_t height)
@@ -252,8 +277,10 @@ namespace Hazel {
 
 		uint32_t levels = HazelTexture::CalculateMipMapCount(width, height);
 
+		GLenum imageFormat = Utils::OpenGLImageInternalFormat(m_Format);
+
 		glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &m_RendererID);
-		glTextureStorage2D(m_RendererID, levels, HazelToOpenGLTextureFormat(m_Format), width, height);
+		glTextureStorage2D(m_RendererID, levels, imageFormat, width, height);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -336,22 +363,25 @@ namespace Hazel {
 
 		glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, m_MaxAnisotropy);
 
-		auto format = HazelToOpenGLTextureFormat(m_Format);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, format, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[2]);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, format, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[0]);
+		auto internalFormat = Utils::OpenGLImageInternalFormat(m_Format);
+		auto format = Utils::OpenGLImageFormat(m_Format);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, internalFormat, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[2]);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, internalFormat, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[0]);
 
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, format, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[4]);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, format, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[5]);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, internalFormat, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[4]);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, internalFormat, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[5]);
 
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, format, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[1]);
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, format, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[3]);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, internalFormat, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[1]);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, internalFormat, faceWidth, faceHeight, 0, format, GL_UNSIGNED_BYTE, faces[3]);
 
 		glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		for (size_t i = 0; i < faces.size(); i++)
+		{
 			delete[] faces[i];
+		}
 
 		stbi_image_free(m_ImageData);
 	}

@@ -4,8 +4,8 @@
 
 namespace Hazel {
 
-	OpenGLImage2D::OpenGLImage2D(uint32_t width, uint32_t height, HazelImageFormat format)
-		: m_Width(width), m_Height(height), m_Format(format)
+	OpenGLImage2D::OpenGLImage2D(HazelImageFormat format, uint32_t width, uint32_t height, Buffer buffer)
+		: m_Width(width), m_Height(height), m_Format(format), m_ImageData(buffer)
 	{
 	}
 
@@ -14,12 +14,9 @@ namespace Hazel {
 	{
 		// TODO: Local storage should be optional
 		if (data)
+		{
 			m_ImageData = Buffer::Copy(data, Utils::GetImageMemorySize(format, width, height));
-	}
-
-	OpenGLImage2D::OpenGLImage2D(HazelImageFormat format, uint32_t width, uint32_t height, Buffer buffer)
-		: m_Width(width), m_Height(height), m_Format(format), m_ImageData(buffer)
-	{
+		}
 	}
 
 	void OpenGLImage2D::Invalidate()
@@ -30,10 +27,13 @@ namespace Hazel {
 		}
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+		// glBindTexture(GL_TEXTURE_2D, m_RendererID);
 
 		GLenum internalFormat = Utils::OpenGLImageInternalFormat(m_Format);
+
 		uint32_t mipCount = Utils::CalculateMipCount(m_Width, m_Height);
 		glTextureStorage2D(m_RendererID, mipCount, internalFormat, m_Width, m_Height);
+
 		if (m_ImageData)
 		{
 			GLenum format = Utils::OpenGLImageFormat(m_Format);
@@ -54,19 +54,6 @@ namespace Hazel {
 	OpenGLImage2D::~OpenGLImage2D()
 	{
 		Release();
-
-		/**** BEGIN Code replaced with Release() method ****
-		// Should this be submitted?
-		m_ImageData.Release();
-		if (m_RendererID)
-		{
-			RendererID rendererID = m_RendererID;
-			// HazelRenderer::Submit([rendererID]() {});
-			{
-				glDeleteTextures(1, &rendererID);
-			}
-		}
-		/**** BEGIN Code replaced with Release() method ****/
 	}
 
 	void OpenGLImage2D::Release()

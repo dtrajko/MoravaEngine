@@ -123,10 +123,10 @@ layout (push_constant) uniform Material
 struct PBRParameters
 {
 	vec3 Albedo;
-	float Roughness;
-	float Metalness;
-
 	vec3 Normal;
+	float Metalness;
+	float Roughness;
+
 	vec3 View;
 	float NdotV;
 };
@@ -242,7 +242,7 @@ vec3 PrefilterEnvMap(float Roughness, vec3 R)
 		float NoL = clamp(dot(N, L), 0.0, 1.0);
 		if (NoL > 0)
 		{
-			//PrefilteredColor += texture(u_EnvRadianceTex, L).rgb * NoL;
+			// PrefilteredColor += texture(u_EnvRadianceTex, L).rgb * NoL;
 			TotalWeight += NoL;
 		}
 	}
@@ -326,7 +326,7 @@ vec3 IBL(vec3 F0, vec3 Lr)
 	int envRadianceTexLevels = textureQueryLevels(u_EnvRadianceTex);
 	float NoV = clamp(m_Params.NdotV, 0.0, 1.0);
 	vec3 R = 2.0 * dot(m_Params.View, m_Params.Normal) * m_Params.Normal - m_Params.View;
-	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_MaterialUniforms.EnvMapRotation, Lr), (m_Params.Roughness) * envRadianceTexLevels).rgb;
+	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_MaterialUniforms.EnvMapRotation, Lr), m_Params.Roughness * envRadianceTexLevels).rgb;
 
 	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
 	vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
@@ -350,7 +350,7 @@ void main()
 	m_Params.Roughness = u_MaterialUniforms_RoughnessTexToggle > 0.5 ?  texture(u_RoughnessTexture, Input.TexCoord).r : u_MaterialUniforms.Roughness;
 	m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
 
-	//	Normals (either from vertex or map)
+	// Normals (either from vertex or map)
 	m_Params.Normal = normalize(Input.Normal);
 	if (u_MaterialUniforms_NormalTexToggle > 0.5)
 	{
@@ -361,7 +361,7 @@ void main()
 	m_Params.View = normalize(u_CameraPosition - Input.WorldPosition);
 	m_Params.NdotV = max(dot(m_Params.Normal, m_Params.View), 0.0);
 
-	//	Specular reflection vector
+	// Specular reflection vector
 	vec3 Lr = 2.0 * m_Params.NdotV * m_Params.Normal - m_Params.View;
 
 	// Fresnel reflectance, metals use albedo

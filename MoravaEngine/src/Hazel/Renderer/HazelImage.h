@@ -71,8 +71,8 @@ namespace Hazel {
 	class HazelImage2D : public HazelImage
 	{
 	public:
-		static Ref<HazelImage2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, Buffer buffer);
 		static Ref<HazelImage2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
+		static Ref<HazelImage2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, Buffer buffer);
 
 	};
 

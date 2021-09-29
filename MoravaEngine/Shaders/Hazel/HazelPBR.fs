@@ -2,7 +2,7 @@
 // -- Hazel Engine PBR shader --
 // -----------------------------
 // Note: this shader is still very much in progress. There are likely many bugs and future additions that will go in.
-//       Currently heavily updated. 
+//       Currently heavily updated.
 //
 // References upon which this is based:
 // - Unreal Engine 4 PBR notes (https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
@@ -10,7 +10,7 @@
 // - Michal Siejak's PBR project (https://github.com/Nadrin)
 // - My implementation from years ago in the Sparky engine (https://github.com/TheCherno/Sparky)
 // #type fragment
-#version 430 core
+#version 450 core
 
 const float PI = 3.141592;
 const float Epsilon = 0.00001;
@@ -539,6 +539,7 @@ vec3 Lighting(vec3 F0)
 		m_Params.PointLights = CalcPointLights();
 		m_Params.SpotLights = CalcSpotLights();
 
+		// result += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
 		result += ((1.0 - m_Params.ShadowFactor) * (diffuseBRDF + specularBRDF)) * Lradiance * cosLi;
 		result += m_Params.PointLights.rgb;
 		result += m_Params.SpotLights.rgb;
@@ -555,10 +556,10 @@ vec3 IBL(vec3 F0, vec3 Lr)
 	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
 	vec3 diffuseIBL = m_Params.Albedo * irradiance;
 
-	int u_EnvRadianceTexLevels = textureQueryLevels(u_EnvRadianceTex);
+	int envRadianceTexLevels = textureQueryLevels(u_EnvRadianceTex);
 	float NoV = clamp(m_Params.NdotV, 0.0, 1.0);
 	vec3 R = 2.0 * dot(m_Params.View, m_Params.Normal) * m_Params.Normal - m_Params.View;
-	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_MaterialUniforms.EnvMapRotation, Lr), m_Params.Roughness * u_EnvRadianceTexLevels).rgb;
+	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_MaterialUniforms.EnvMapRotation, Lr), m_Params.Roughness * envRadianceTexLevels).rgb;
 
 	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
 	vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
@@ -602,7 +603,7 @@ void main()
 
 	m_Params.View = normalize(u_CameraPosition - vs_Input.WorldPosition);
 	m_Params.NdotV = max(dot(m_Params.Normal, m_Params.View), 0.0);
-		
+
 	// Specular reflection vector
 	vec3 Lr = 2.0 * m_Params.NdotV * m_Params.Normal - m_Params.View;
 
