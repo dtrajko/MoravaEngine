@@ -13,7 +13,7 @@ namespace Hazel {
 
 	struct Buffer
 	{
-		byte* Data;
+		void* Data;
 		uint32_t Size;
 
 		Buffer()
@@ -21,7 +21,7 @@ namespace Hazel {
 		{
 		}
 
-		Buffer(byte* data, uint32_t size)
+		Buffer(void* data, uint32_t size)
 			: Data(data), Size(size)
 		{
 		}

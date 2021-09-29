@@ -4,11 +4,6 @@
 
 namespace Hazel {
 
-	OpenGLImage2D::OpenGLImage2D(HazelImageFormat format, uint32_t width, uint32_t height, Buffer buffer)
-		: m_Width(width), m_Height(height), m_Format(format), m_ImageData(buffer)
-	{
-	}
-
 	OpenGLImage2D::OpenGLImage2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
 		: m_Width(width), m_Height(height), m_Format(format)
 	{
@@ -19,8 +14,14 @@ namespace Hazel {
 		}
 	}
 
+	OpenGLImage2D::OpenGLImage2D(HazelImageFormat format, uint32_t width, uint32_t height, Buffer buffer)
+		: m_Width(width), m_Height(height), m_Format(format), m_ImageData(buffer)
+	{
+	}
+
 	OpenGLImage2D::~OpenGLImage2D()
 	{
+		// Should this be submitted?
 		// HazelRenderer::Submit([=]() {});
 		{
 			if (m_RendererID)
