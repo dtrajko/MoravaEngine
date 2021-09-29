@@ -161,7 +161,7 @@ const int MAX_LIGHTS = MAX_POINT_LIGHTS + MAX_SPOT_LIGHTS;
 const float material_Shininess = 256.0f;
 const float material_SpecularIntensity = 1.0;
 
-const float shadowIntensity = 3.0f;
+const float shadowIntensity = 1.6f;
 
 struct LightBase
 {

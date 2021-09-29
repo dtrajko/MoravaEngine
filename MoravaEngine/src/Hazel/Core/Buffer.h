@@ -48,7 +48,7 @@ namespace Hazel {
 
 		void Release()
 		{
-			// delete[] Data;
+			delete[] Data;
 			Data = nullptr;
 			Size = 0;
 		}

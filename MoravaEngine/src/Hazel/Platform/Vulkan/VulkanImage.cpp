@@ -16,7 +16,6 @@ namespace Hazel {
 
 	void VulkanImage2D::Invalidate()
 	{
-
 	}
 
 	void VulkanImage2D::Release()

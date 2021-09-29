@@ -33,24 +33,12 @@ namespace Hazel {
 	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
 		: m_Width(width), m_Height(height)
 	{
-#if 1
 		m_Image = HazelImage2D::Create(format, width, height, data);
-		// HazelRenderer::Submit([=]() {});
-		{
-			m_Image->Invalidate();
-		}
-#else
-		/**** BEGIN constuctor version Hazel Live 18.03.2021 #2 ****/
-		uint32_t size = width * height * 4;
-		m_ImageData = Buffer::Copy(data, size);
-		memcpy(m_ImageData.Data, data, m_ImageData.Size);
-
 		// Ref<OpenGLTexture2D> instance = this;
 		// HazelRenderer::Submit([instance]() mutable {});
 		{
+			m_Image->Invalidate();
 		}
-		/**** END constuctor version Hazel Live 18.03.2021 #2 ****/
-#endif
 	}
 
 	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap)

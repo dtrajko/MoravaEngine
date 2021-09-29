@@ -78,7 +78,7 @@ namespace Hazel {
 
 	namespace Utils {
 
-		inline uint32_t GetImageFormatBPP(HazelImageFormat format)
+		inline uint32_t GetImageFormatBPP(HazelImageFormat format) // BPP - bytes per pixel
 		{
 			switch (format)
 			{
@@ -105,7 +105,9 @@ namespace Hazel {
 		inline bool IsDepthFormat(HazelImageFormat format)
 		{
 			if (format == HazelImageFormat::DEPTH24STENCIL8 || format == HazelImageFormat::DEPTH32F)
+			{
 				return true;
+			}
 
 			return false;
 		}

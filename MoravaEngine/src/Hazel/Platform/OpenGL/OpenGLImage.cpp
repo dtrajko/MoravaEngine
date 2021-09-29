@@ -19,6 +19,29 @@ namespace Hazel {
 		}
 	}
 
+	OpenGLImage2D::~OpenGLImage2D()
+	{
+		// HazelRenderer::Submit([=]() {});
+		{
+			if (m_RendererID)
+			{
+				glDeleteTextures(1, &m_RendererID);
+			}
+			m_ImageData.Release();
+			// Release();
+		}
+	}
+
+	void OpenGLImage2D::Release()
+	{
+		if (m_RendererID)
+		{
+			glDeleteTextures(1, &m_RendererID);
+			m_RendererID = 0;
+		}
+		m_ImageData.Release();
+	}
+
 	void OpenGLImage2D::Invalidate()
 	{
 		if (m_RendererID)
@@ -49,21 +72,6 @@ namespace Hazel {
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	}
-
-	OpenGLImage2D::~OpenGLImage2D()
-	{
-		Release();
-	}
-
-	void OpenGLImage2D::Release()
-	{
-		if (m_RendererID)
-		{
-			glDeleteTextures(1, &m_RendererID);
-			m_RendererID = 0;
-		}
-		m_ImageData.Release();
 	}
 
 }
