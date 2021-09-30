@@ -14,14 +14,20 @@ namespace Hazel {
 	{
 		if (spec.Width == 0 || spec.Height == 0)
 		{
-			auto width = Application::Get()->GetWindow()->GetWidth();
-			auto height = Application::Get()->GetWindow()->GetHeight();
-			Resize((uint32_t)(width * spec.Scale), (uint32_t)(height * spec.Scale), true);
+			m_Width = Application::Get()->GetWindow()->GetWidth();
+			m_Height = Application::Get()->GetWindow()->GetHeight();
 		}
 		else
 		{
-			Resize(spec.Width, spec.Height, true);
+			m_Width = spec.Width;
+			m_Height = spec.Height;
 		}
+
+		// Create attachment descriptors immediately
+		m_Attachments.emplace_back(HazelImage2D::Create(HazelImageFormat::RGBA32F, m_Width, m_Height));
+		m_Attachments.emplace_back(HazelImage2D::Create(HazelImageFormat::Depth, m_Width, m_Height));
+
+		Resize((uint32_t)(m_Width * spec.Scale), (uint32_t)(m_Height * spec.Scale), true);
 	}
 
 	VulkanFramebuffer::~VulkanFramebuffer()

@@ -1181,7 +1181,8 @@ namespace Hazel {
 		}
 
 		s_Data.envEquirect = HazelTexture2D::Create(filepath);
-		HazelImageFormat envEquirectImageFormat = s_Data.envEquirect->GetFormat();
+		HazelImageFormat envEquirectImageFormat = s_Data.envEquirect->GetFormat(); // Vulkan Live 18.03.2021 #2: s_Data.envEquirect->GetImage()->GetFormat();
+
 		/****
 		HZ_CORE_ASSERT(s_Data.envEquirect->GetFormat() == HazelImageFormat::RGBA16F, "Texture is not HDR!");
 		if (envEquirectImageFormat != HazelImageFormat::RGBA16F)

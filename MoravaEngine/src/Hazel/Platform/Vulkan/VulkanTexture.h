@@ -45,7 +45,7 @@ namespace Hazel {
 
 		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_DescriptorImageInfo; }
 
-		virtual RendererID GetRendererID() const override;
+		// virtual RendererID GetRendererID() const override { return 0; } // Removed in Hazel Live 18.03.2021 #2
 
 		bool operator ==(const HazelTexture& other) const override
 		{
@@ -106,7 +106,8 @@ namespace Hazel {
 
 		// abstract methods in HazelTexture
 		virtual uint32_t GetID() const override { return uint32_t(); /* Not implemented */ }
-		virtual RendererID GetRendererID() const override { return uint32_t(); /* Not implemented */ }
+
+		// virtual RendererID GetRendererID() const override { return uint32_t(); // Removed in Hazel Live 18.03.2021 #2
 		// virtual void Resize(uint32_t width, uint32_t height) override { /* Not implemented */ };
 
 	private:

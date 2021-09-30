@@ -46,7 +46,8 @@ public:
 	uint32_t GetMipLevelCount() const override;
 	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 	virtual uint64_t GetHash() const; // { return (uint64_t)0; }
-	virtual Hazel::RendererID GetRendererID() const override;
+
+	// virtual Hazel::RendererID GetRendererID() const override { return 0; } // Removed in Hazel Live 18.03.2021 #2
 
 	bool operator ==(const HazelTexture& other) const override
 	{

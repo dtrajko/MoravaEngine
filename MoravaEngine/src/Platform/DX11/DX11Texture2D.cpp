@@ -258,8 +258,3 @@ uint64_t DX11Texture2D::GetHash() const
 {
 	return uint64_t();
 }
-
-Hazel::RendererID DX11Texture2D::GetRendererID() const
-{
-	return 0;
-}

@@ -12,8 +12,8 @@ namespace Hazel {
 	{
 	public:
 		OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, const void* data);
-		OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap);
-		OpenGLTexture2D(const std::string& path, bool srgb, TextureWrap wrap);
+		OpenGLTexture2D(const std::string& path, bool srgb);
+		// OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap);
 		virtual ~OpenGLTexture2D();
 
 		virtual void Bind(uint32_t slot = 0) const;
@@ -46,7 +46,9 @@ namespace Hazel {
 		}
 
 		virtual uint32_t GetID() const override { return m_RendererID; }
-		virtual RendererID GetRendererID() const override { return m_RendererID; }
+
+		// virtual RendererID GetRendererID() const override { return m_RendererID; } // Removed in Hazel Live 18.03.2021 #2
+
 		// void Resize(uint32_t width, uint32_t height); // method removed in Hazel Live 18.03.2021 #2
 
 	private:
@@ -89,14 +91,15 @@ namespace Hazel {
 		virtual const std::string& GetPath() const override { return m_FilePath; }
 
 		virtual uint32_t GetID() const override { return m_RendererID; }
-		virtual RendererID GetRendererID() const override { return m_RendererID; }
-
 		virtual uint64_t GetHash() const { return (uint64_t)m_RendererID; }
 
 		virtual bool operator==(const HazelTexture& other) const override
 		{
 			return m_RendererID == ((OpenGLTextureCube&)other).m_RendererID;
 		}
+
+		RendererID GetRendererID() const { return m_RendererID; }
+
 	private:
 		RendererID m_RendererID;
 		HazelImageFormat m_Format;

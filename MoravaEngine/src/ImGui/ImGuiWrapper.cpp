@@ -203,7 +203,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material->GetAlbedoInput().SRGB, Hazel::TextureWrap::Repeat);
+						material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material->GetAlbedoInput().SRGB);
 				}
 			}
 			ImGui::SameLine();
@@ -218,8 +218,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					if (material->GetAlbedoInput().TextureMap)
 						material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(
 							material->GetAlbedoInput().TextureMap->GetPath(),
-							material->GetAlbedoInput().SRGB,
-							Hazel::TextureWrap::Repeat);
+							material->GetAlbedoInput().SRGB);
 				}
 			}
 			ImGui::EndGroup();
@@ -256,7 +255,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false, Hazel::TextureWrap::Repeat);
+						material->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false);
 				}
 			}
 			ImGui::SameLine();
@@ -292,7 +291,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false, Hazel::TextureWrap::Repeat);
+						material->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false);
 				}
 			}
 			ImGui::SameLine();
@@ -331,7 +330,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false, Hazel::TextureWrap::Repeat);
+						material->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false);
 				}
 			}
 			ImGui::SameLine();
@@ -370,7 +369,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false, Hazel::TextureWrap::Repeat);
+						material->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false);
 				}
 			}
 			ImGui::SameLine();
@@ -409,7 +408,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material->GetEmissiveInput().SRGB, Hazel::TextureWrap::Repeat);
+						material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material->GetEmissiveInput().SRGB);
 				}
 			}
 			ImGui::SameLine();
@@ -423,8 +422,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					if (material->GetEmissiveInput().TextureMap)
 						material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(
 							material->GetEmissiveInput().TextureMap->GetPath(),
-							material->GetEmissiveInput().SRGB,
-							Hazel::TextureWrap::Repeat);
+							material->GetEmissiveInput().SRGB);
 				}
 			}
 			ImGui::EndGroup();
@@ -449,7 +447,7 @@ void ImGuiWrapper::DragAndDropTarget(Hazel::Ref<Hazel::HazelTexture2D>& texture,
 			std::string filename(itemPath.begin(), itemPath.end());
 			if (filename != "")
 			{
-				texture = Hazel::HazelTexture2D::Create(filename, srgb, Hazel::TextureWrap::Repeat);
+				texture = Hazel::HazelTexture2D::Create(filename, srgb);
 			}
 		}
 		ImGui::EndDragDropTarget();

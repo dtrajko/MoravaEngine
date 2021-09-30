@@ -33,16 +33,6 @@ namespace Hazel {
 		}
 	}
 
-	void OpenGLImage2D::Release()
-	{
-		if (m_RendererID)
-		{
-			glDeleteTextures(1, &m_RendererID);
-			m_RendererID = 0;
-		}
-		m_ImageData.Release();
-	}
-
 	void OpenGLImage2D::Invalidate()
 	{
 		if (m_RendererID) { Release(); }
@@ -59,8 +49,9 @@ namespace Hazel {
 		{
 			GLenum format = Utils::OpenGLImageFormat(m_Format);
 			GLenum dataType = Utils::OpenGLFormatDataType(m_Format);
-			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, format, dataType, m_ImageData.Data);
-			glGenerateTextureMipmap(m_RendererID);
+			// glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, format, dataType, m_ImageData.Data);
+			// glMemoryBarrier(GL_TEXTURE_FETCH_BARRIER_BIT | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+			// glGenerateTextureMipmap(m_RendererID);
 		}
 
 		// Sampler
@@ -70,6 +61,16 @@ namespace Hazel {
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_R, GL_REPEAT);
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glSamplerParameteri(m_SamplerRendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+
+	void OpenGLImage2D::Release()
+	{
+		if (m_RendererID)
+		{
+			glDeleteTextures(1, &m_RendererID);
+			m_RendererID = 0;
+		}
+		m_ImageData.Release();
 	}
 
 }

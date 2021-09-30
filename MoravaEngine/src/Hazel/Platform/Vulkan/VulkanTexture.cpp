@@ -509,11 +509,6 @@ namespace Hazel {
 		return Utils::MipCount(m_Width, m_Height);
 	}
 
-	RendererID VulkanTexture2D::GetRendererID() const
-	{
-		return 0;
-	}
-
 	std::pair<uint32_t, uint32_t> VulkanTexture2D::GetMipSize(uint32_t mip) const
 	{
 		Log::GetLogger()->error("VulkanTexture2D::GetMipSize({0}) - method not implemented!", mip);

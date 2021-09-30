@@ -41,9 +41,97 @@ namespace Hazel {
 		}
 	}
 
-	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb, TextureWrap wrap)
-		: m_FilePath(path), m_Wrap(wrap)
+	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb)
+		: m_FilePath(path)
 	{
+#if 1
+		int width, height, channels;
+		if (stbi_is_hdr(path.c_str()))
+		{
+			// HZ_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
+			Log::GetLogger()->info("Loading HDR texture {0}, srgb={1}", path, srgb);
+			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 0);
+			m_IsHDR = true;
+			m_Format = HazelImageFormat::RGBA16F;
+
+			Buffer buffer(m_ImageData.Data, Utils::GetImageMemorySize(HazelImageFormat::RGBA32F, width, height));
+			m_Image = HazelImage2D::Create(HazelImageFormat::RGBA32F, width, height, buffer);
+		}
+		else
+		{
+			// HZ_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
+			Log::GetLogger()->info("Loading texture {0}, srgb={1}", path, srgb);
+			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
+			if (!m_ImageData.Data)
+			{
+				Log::GetLogger()->error("Could not read image!");
+			}
+			m_Format = HazelImageFormat::RGBA;
+
+			HazelImageFormat format = srgb ? HazelImageFormat::RGB : HazelImageFormat::RGBA;
+			Buffer buffer(m_ImageData.Data, Utils::GetImageMemorySize(format, width, height));
+			m_Image = HazelImage2D::Create(format, width, height, buffer);
+		}
+
+		if (!m_ImageData.Data)
+		{
+			return;
+		}
+
+		m_Width = width;
+		m_Height = height;
+		m_Loaded = true;
+
+		// Ref<HazelImage2D>& image = m_Image;
+		// HazelRenderer::Submit([image]() mutable {});
+		{
+			// m_Image->Invalidate();
+
+			Buffer& buffer = m_Image->GetBuffer();
+			// stbi_image_free(buffer.Data);
+			buffer = Buffer();
+		}
+
+		/**** BEGIN this part of the code should be removed from the constructor in Vulkan branch ****/
+
+		// TODO: Consolidate properly
+		if (srgb)
+		{
+			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+			int levels = HazelTexture::CalculateMipMapCount(m_Width, m_Height);
+			glTextureStorage2D(m_RendererID, levels, GL_SRGB8, m_Width, m_Height);
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
+			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, GL_RGB, GL_UNSIGNED_BYTE, m_ImageData.Data);
+			glGenerateTextureMipmap(m_RendererID);
+	}
+		else
+		{
+			glGenTextures(1, &m_RendererID);
+			glBindTexture(GL_TEXTURE_2D, m_RendererID);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			GLenum localWrap = (m_Wrap == TextureWrap::Clamp) ? GL_CLAMP_TO_EDGE : GL_REPEAT;
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, (GLint)localWrap);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, (GLint)localWrap);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, (GLint)localWrap);
+
+			// GLenum internalFormat = HazelToOpenGLTextureFormat(m_Format);
+			// GLenum format = srgb ? GL_SRGB8 : (m_IsHDR ? GL_RGB : HazelToOpenGLTextureFormat(m_Format)); // HDR = GL_RGB for now
+			GLenum internalFormat = Utils::OpenGLImageInternalFormat(m_Format);
+			GLenum format = srgb ? GL_SRGB8 : (m_IsHDR ? GL_RGB : Utils::OpenGLImageFormat(m_Format)); // HDR = GL_RGB for no
+			GLenum type = internalFormat == GL_RGBA16F ? GL_FLOAT : GL_UNSIGNED_BYTE;
+			glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_Width, m_Height, 0, format, type, m_ImageData.Data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
+		stbi_image_free(m_ImageData.Data);
+		/**** END this part of the code should be removed from the constructor in Vulkan branch ****/
+#else
 		int width, height, channels;
 		if (stbi_is_hdr(path.c_str()))
 		{
@@ -92,16 +180,17 @@ namespace Hazel {
 		// Ref<HazelImage2D>& image = m_Image;
 		// HazelRenderer::Submit([image]() mutable {});
 		{
-			// m_Image->Invalidate();
+			m_Image->Invalidate();
 
 			Buffer& buffer = m_Image->GetBuffer();
 			stbi_image_free(buffer.Data);
 			buffer = Buffer();
 		}
-
+#endif
 		Util::CheckOpenGLErrors("OpenGLTexture2D::OpenGLTexture2D");
 	}
 
+	/**** BEGIN Method removed in Vulkan branch ****
 	OpenGLTexture2D::OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap)
 		: m_Format(format), m_Width(width), m_Height(height), m_Wrap(wrap)
 	{
@@ -128,6 +217,7 @@ namespace Hazel {
 
 		m_ImageData.Allocate(width * height * HazelTexture::GetBPP(m_Format));
 	}
+	/**** END Method removed in Vulkan branch ****/
 
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{

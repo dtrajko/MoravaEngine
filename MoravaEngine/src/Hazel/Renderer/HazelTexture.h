@@ -57,7 +57,8 @@ namespace Hazel {
 		virtual bool operator==(const HazelTexture& other) const = 0;
 
 		virtual uint32_t GetID() const = 0;
-		virtual RendererID GetRendererID() const = 0;
+
+		// virtual RendererID GetRendererID() const = 0; // Removed in Hazel Live 18.03.2021 #2
 
 		virtual void SetData(void* data, uint32_t size);
 		static uint32_t GetBPP(HazelImageFormat format);
@@ -68,8 +69,8 @@ namespace Hazel {
 	{
 	public:
 		static Ref<HazelTexture2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);
-		static Ref<HazelTexture2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap = TextureWrap::Clamp);
-		static Ref<HazelTexture2D> Create(const std::string& path, bool srgb = false, TextureWrap wrap = TextureWrap::Clamp);
+		static Ref<HazelTexture2D> Create(const std::string& path, bool srgb = false);
+		// static Ref<HazelTexture2D> Create(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap = TextureWrap::Clamp);
 
 		virtual Ref<HazelImage2D> GetImage() const = 0;
 

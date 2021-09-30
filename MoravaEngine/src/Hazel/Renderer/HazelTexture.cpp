@@ -27,33 +27,35 @@ namespace Hazel {
 		return Ref<HazelTexture2D>();
 	}
 
-	Ref<HazelTexture2D> HazelTexture2D::Create(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap)
+	Ref<HazelTexture2D> HazelTexture2D::Create(const std::string& path, bool srgb)
 	{
 		switch (RendererAPI::Current())
 		{
 			case RendererAPIType::None:   return Ref<HazelTexture2D>();
-			case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(format, width, height, wrap);
-			case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, wrap);
-			case RendererAPIType::DX11:   return Ref<DX11Texture2D>::Create(format, width, height, wrap);
-		}
-		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return Ref<HazelTexture2D>();
-	}
-
-	Ref<HazelTexture2D> HazelTexture2D::Create(const std::string& path, bool srgb, TextureWrap wrap)
-	{
-		switch (RendererAPI::Current())
-		{
-			case RendererAPIType::None:   return Ref<HazelTexture2D>();
-			case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(path, srgb, wrap);
-			case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(path, srgb, wrap);
+			case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(path, srgb);
+			case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(path, srgb);
 			case RendererAPIType::DX11:   return Ref<DX11Texture2D>::Create(Util::to_wstr(path.c_str()).c_str());
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return Ref<HazelTexture2D>();
 	}
+
+	/**** BEGIN Method removed in Vulkan branch ****
+	Ref<HazelTexture2D> HazelTexture2D::Create(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap)
+	{
+		switch (RendererAPI::Current())
+		{
+		case RendererAPIType::None:   return Ref<HazelTexture2D>();
+		case RendererAPIType::OpenGL: return Ref<OpenGLTexture2D>::Create(format, width, height, wrap);
+		case RendererAPIType::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, wrap);
+		case RendererAPIType::DX11:   return Ref<DX11Texture2D>::Create(format, width, height, wrap);
+		}
+		Log::GetLogger()->error("Unknown RendererAPI");
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		return Ref<HazelTexture2D>();
+	}
+	/**** END Method removed in Vulkan branch ****/
 
 	ImTextureID HazelTexture2D::GetImTextureID()
 	{
