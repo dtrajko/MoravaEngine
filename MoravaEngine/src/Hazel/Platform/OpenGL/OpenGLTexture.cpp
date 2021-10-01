@@ -44,7 +44,62 @@ namespace Hazel {
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path, bool srgb)
 		: m_FilePath(path)
 	{
-#if 1
+#if 0
+		int width, height, channels;
+		if (stbi_is_hdr(path.c_str()))
+		{
+			// HZ_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
+			Log::GetLogger()->info("Loading HDR texture {0}, srgb={1}", path, srgb);
+
+			float* imageData = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
+
+			// HZ_CORE_ASSERT(imageData);
+			if (!imageData) { Log::GetLogger()->error("Could not read image!"); }
+
+			Buffer buffer(imageData, Utils::GetImageMemorySize(HazelImageFormat::RGBA32F, width, height));
+			m_Image = HazelImage2D::Create(HazelImageFormat::RGBA32F, width, height, buffer);
+
+			// m_ImageData.Data = imageData;
+			m_IsHDR = true;
+			m_Format = HazelImageFormat::RGBA16F;
+
+		}
+		else
+		{
+			// HZ_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
+			Log::GetLogger()->info("Loading texture {0}, srgb={1}", path, srgb);
+
+			stbi_uc* imageData = stbi_load(path.c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
+
+			// HZ_CORE_ASSERT(imageData);
+			if (!imageData) { Log::GetLogger()->error("Could not read image!"); }
+
+			// HazelImageFormat format = srgb ? HazelImageFormat::RGB : HazelImageFormat::RGBA;
+			HazelImageFormat format = channels == 4 ? HazelImageFormat::RGBA : HazelImageFormat::RGB;
+
+			Buffer buffer(imageData, Utils::GetImageMemorySize(format, width, height));
+			m_Image = HazelImage2D::Create(format, width, height, buffer);
+		}
+
+		if (!m_ImageData.Data)
+		{
+			// return;
+		}
+
+		m_Width = width;
+		m_Height = height;
+		m_Loaded = true;
+
+		// Ref<HazelImage2D>& image = m_Image;
+		// HazelRenderer::Submit([image]() mutable {});
+		{
+			m_Image->Invalidate();
+
+			Buffer& buffer = m_Image->GetBuffer();
+			stbi_image_free(buffer.Data);
+			buffer = Buffer();
+		}
+#else
 		int width, height, channels;
 		if (stbi_is_hdr(path.c_str()))
 		{
@@ -131,61 +186,6 @@ namespace Hazel {
 
 		stbi_image_free(m_ImageData.Data);
 		/**** END this part of the code should be removed from the constructor in Vulkan branch ****/
-#else
-		int width, height, channels;
-		if (stbi_is_hdr(path.c_str()))
-		{
-			// HZ_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
-			Log::GetLogger()->info("Loading HDR texture {0}, srgb={1}", path, srgb);
-
-			float* imageData = stbi_loadf(path.c_str(), &width, &height, &channels, 0);
-
-			// HZ_CORE_ASSERT(imageData);
-			if (!imageData) { Log::GetLogger()->error("Could not read image!"); }
-
-			Buffer buffer(imageData, Utils::GetImageMemorySize(HazelImageFormat::RGBA32F, width, height));
-			m_Image = HazelImage2D::Create(HazelImageFormat::RGBA32F, width, height, buffer);
-
-			// m_ImageData.Data = imageData;
-			m_IsHDR = true;
-			m_Format = HazelImageFormat::RGBA16F;
-
-		}
-		else
-		{
-			// HZ_CORE_INFO("Loading texture {0}, srgb={1}", path, srgb);
-			Log::GetLogger()->info("Loading texture {0}, srgb={1}", path, srgb);
-
-			stbi_uc* imageData = stbi_load(path.c_str(), &width, &height, &channels, srgb ? STBI_rgb : STBI_rgb_alpha);
-
-			// HZ_CORE_ASSERT(imageData);
-			if (!imageData) { Log::GetLogger()->error("Could not read image!"); }
-
-			// HazelImageFormat format = srgb ? HazelImageFormat::RGB : HazelImageFormat::RGBA;
-			HazelImageFormat format = channels == 4 ? HazelImageFormat::RGBA : HazelImageFormat::RGB;
-
-			Buffer buffer(imageData, Utils::GetImageMemorySize(format, width, height));
-			m_Image = HazelImage2D::Create(format, width, height, buffer);
-		}
-
-		if (!m_ImageData.Data)
-		{
-			// return;
-		}
-
-		m_Width = width;
-		m_Height = height;
-		m_Loaded = true;
-
-		// Ref<HazelImage2D>& image = m_Image;
-		// HazelRenderer::Submit([image]() mutable {});
-		{
-			m_Image->Invalidate();
-
-			Buffer& buffer = m_Image->GetBuffer();
-			stbi_image_free(buffer.Data);
-			buffer = Buffer();
-		}
 #endif
 		Util::CheckOpenGLErrors("OpenGLTexture2D::OpenGLTexture2D");
 	}

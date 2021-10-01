@@ -20,7 +20,7 @@ namespace Hazel {
 
 		virtual Ref<HazelImage2D> GetImage() const override { return m_Image; }
 
-		virtual HazelImageFormat GetFormat() const override { return m_Format; }
+		virtual HazelImageFormat GetFormat() const override { return m_Image->GetFormat(); }
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 		// This function currently returns the expected number of mips based on image size,

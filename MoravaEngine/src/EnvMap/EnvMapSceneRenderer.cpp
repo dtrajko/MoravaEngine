@@ -314,21 +314,18 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
     const uint32_t irradianceMapSize = 32;
 
     Hazel::Ref<Hazel::OpenGLTextureCube> envUnfiltered = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize).As<Hazel::OpenGLTextureCube>();
-
     // Ref<OpenGLShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShader>();
     Hazel::Ref<Hazel::OpenGLShader> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<Hazel::OpenGLShader>();
-
     s_EnvEquirect = Hazel::HazelTexture2D::Create(filepath);
 
     // HZ_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
-    if (s_EnvEquirect->GetFormat() != Hazel::HazelImageFormat::RGBA16F)
+    if (s_EnvEquirect->GetFormat() != Hazel::HazelImageFormat::RGBA32F)
     {
         Log::GetLogger()->error("Texture is not HDR!");
     }
 
     equirectangularConversionShader->Bind();
-    s_EnvEquirect->Bind(0); // Bind(1);
-
+    s_EnvEquirect->Bind(1);
     // HazelRenderer::Submit([envUnfiltered, cubemapSize, envEquirect]() {});
     {
         glBindImageTexture(0, envUnfiltered->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
@@ -355,7 +352,7 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
 
     // HazelRenderer::Submit([envFilteringShader, envUnfiltered, envFiltered, cubemapSize]() {});
     {
-        const float deltaRoughness = 1.0f / glm::max(float(envFiltered->GetMipLevelCount()) - 1.0f, 1.0f);
+        const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
         for (uint32_t level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
         {
             Log::GetLogger()->debug("BEGIN EnvFiltering size {0} level {1}/{2}", size, level, envFiltered->GetMipLevelCount());
@@ -382,7 +379,7 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
     Hazel::Ref<Hazel::OpenGLTextureCube> irradianceMap = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize).As<Hazel::OpenGLTextureCube>();
 
     envIrradianceShader->Bind();
-    envFiltered->Bind(); // Bind(1);
+    envFiltered->Bind(1);
 
     // HazelRenderer::Submit([irradianceMap, envIrradianceShader]() {});
     {

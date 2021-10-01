@@ -9,8 +9,8 @@
 // layout(binding = 0, rgba32f) restrict writeonly uniform imageCube o_IrradianceMap;
 // layout(binding = 1) uniform samplerCube u_RadianceMap;
 
-layout(binding=0) uniform samplerCube u_RadianceMap;
-layout(binding=0, rgba16f) restrict writeonly uniform imageCube o_IrradianceMap;
+layout(binding = 0, rgba16f) restrict writeonly uniform imageCube o_IrradianceMap;
+layout(binding = 1) uniform samplerCube u_RadianceMap;
 
 const float PI = 3.141592;
 const float TwoPI = 2 * PI;

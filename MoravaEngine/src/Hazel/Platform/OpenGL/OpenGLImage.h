@@ -22,10 +22,10 @@ namespace Hazel {
 		virtual void Invalidate() override;
 		virtual void Release() override;
 
+		virtual HazelImageFormat GetFormat() const override { return m_Format; }
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 
-		virtual HazelImageFormat GetFormat() const override { return m_Format; }
 		virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
 		virtual Buffer GetBuffer() const override { return m_ImageData; }
