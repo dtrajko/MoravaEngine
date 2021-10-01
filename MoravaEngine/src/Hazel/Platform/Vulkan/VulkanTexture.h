@@ -21,6 +21,7 @@ namespace Hazel {
 
 		void Invalidate();
 
+		HazelImageFormat GetFormat() const override { return m_Image->GetFormat(); };
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 
@@ -35,7 +36,6 @@ namespace Hazel {
 
 		Buffer GetWriteableBuffer() override;
 		bool Loaded() const override;
-		HazelImageFormat GetFormat() const override;
 		const std::string& GetPath() const override;
 		uint32_t GetMipLevelCount() const override;
 

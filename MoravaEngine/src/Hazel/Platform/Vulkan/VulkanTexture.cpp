@@ -499,10 +499,12 @@ namespace Hazel {
 		return m_Path;
 	}
 
+	/**** BEGIN removed in Hazel Live 18.03.2021 #2 ****
 	HazelImageFormat VulkanTexture2D::GetFormat() const
 	{
 		return m_Format;
 	}
+	/**** END removed in Hazel Live 18.03.2021 #2 ****/
 
 	uint32_t VulkanTexture2D::GetMipLevelCount() const
 	{

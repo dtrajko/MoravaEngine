@@ -352,6 +352,22 @@ namespace Hazel {
 			}
 		}
 
+#if 1
+		for (size_t i = 0; i < m_Textures.size(); i++)
+		{
+			auto& texture = m_Textures[i];
+			if (texture)
+			{
+				// HazelRenderer::Submit([i, texture]() {});
+				{
+					Ref<OpenGLTexture2D> glTexture = texture.As<OpenGLTexture2D>();
+					Ref<OpenGLImage2D> image = glTexture->GetImage().As<OpenGLImage2D>();
+					glBindTextureUnit((GLuint)i, image->GetRendererID());
+				}
+			}
+		}
+#else
+		/**** BEGIN too early for this code version ****
 		for (size_t i = 0; i < m_Textures.size(); i++)
 		{
 			auto& texture = m_Textures[i];
@@ -394,6 +410,8 @@ namespace Hazel {
 				}
 			}
 		}
+		/**** END too early for this code version ****/
+#endif
 	}
 
 }
