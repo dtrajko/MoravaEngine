@@ -59,10 +59,10 @@ namespace Hazel {
 		virtual uint32_t GetID() const = 0;
 
 		// virtual RendererID GetRendererID() const = 0; // Removed in Hazel Live 18.03.2021 #2
+		// static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height); // Removed in Hazel Live 18.03.2021 #2
 
 		virtual void SetData(void* data, uint32_t size);
 		static uint32_t GetBPP(HazelImageFormat format);
-		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 	};
 
 	class HazelTexture2D : public HazelTexture

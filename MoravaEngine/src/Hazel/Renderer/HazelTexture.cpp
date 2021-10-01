@@ -119,6 +119,7 @@ namespace Hazel {
 		return 0;
 	}
 
+	/**** BEGIN Removed in Hazel Live 18.03.2021 #2 ****
 	uint32_t HazelTexture::CalculateMipMapCount(uint32_t width, uint32_t height)
 	{
 		uint32_t levels = 1;
@@ -127,5 +128,6 @@ namespace Hazel {
 
 		return levels;
 	}
+	/**** END Removed in Hazel Live 18.03.2021 #2 ****/
 
 }

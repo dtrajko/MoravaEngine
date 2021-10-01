@@ -153,7 +153,7 @@ namespace Hazel {
 		if (srgb)
 		{
 			glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-			int levels = HazelTexture::CalculateMipMapCount(m_Width, m_Height);
+			int levels = Utils::CalculateMipCount(m_Width, m_Height);
 			glTextureStorage2D(m_RendererID, levels, GL_SRGB8, m_Width, m_Height);
 			glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, levels > 1 ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 			glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -278,7 +278,7 @@ namespace Hazel {
 
 	uint32_t OpenGLTexture2D::GetMipLevelCount() const
 	{
-		return HazelTexture::CalculateMipMapCount(m_Width, m_Height);
+		return Utils::CalculateMipCount(m_Width, m_Height);
 	}
 
 	std::pair<uint32_t, uint32_t> OpenGLTexture2D::GetMipSize(uint32_t mip) const
@@ -328,7 +328,7 @@ namespace Hazel {
 		m_Height = height;
 		m_Format = format;
 
-		uint32_t levels = HazelTexture::CalculateMipMapCount(width, height);
+		uint32_t levels = Utils::CalculateMipCount(width, height);
 
 		GLenum imageFormat = Utils::OpenGLImageInternalFormat(m_Format);
 
@@ -452,7 +452,7 @@ namespace Hazel {
 
 	uint32_t OpenGLTextureCube::GetMipLevelCount() const
 	{
-		return HazelTexture::CalculateMipMapCount(m_Width, m_Height);
+		return Utils::CalculateMipCount(m_Width, m_Height);
 	}
 
 	std::pair<uint32_t, uint32_t> OpenGLTextureCube::GetMipSize(uint32_t mip) const
