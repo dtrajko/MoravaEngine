@@ -37,8 +37,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spirv-cross-util", "vendor\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "spirv-cross-core", "vendor\cross-platform\SPIRV-Cross\spirv-cross-core.vcxproj", "{DEA195E3-58EA-39CE-AAC9-69DFFD4334C9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "box2d", "vendor\box2d\src\box2d.vcxproj", "{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw", "vendor\cross-platform\glfw\src\glfw.vcxproj", "{B24B1DBB-8361-3DD6-BDEC-D39A27A8CFE7}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yaml-cpp static", "vendor\cross-platform\yaml-cpp\build\yaml-cpp.vcxproj", "{82819AC3-0B8F-393C-ADFD-17DD55B73921}"
@@ -49,7 +47,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hazel-ScriptCore", "MoravaE
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectXTex", "vendor\DirectXTex\build\DirectXTex.vcxproj", "{90651CDB-1DE1-3FF4-84AC-0BC5EBA23FD6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HangmanScript", "MoravaEngine\Projects\HangmanScript\HangmanScript.csproj", "{9B0428B6-B9D3-4ED1-A1A0-E1A44FDE1F48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HangmanScript", "MoravaEngine\Projects\HangmanScript\HangmanScript.csproj", "{9B0428B6-B9D3-4ED1-A1A0-E1A44FDE1F48}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -307,22 +305,6 @@ Global
 		{DEA195E3-58EA-39CE-AAC9-69DFFD4334C9}.RelWithDebInfo|Any CPU.ActiveCfg = RelWithDebInfo|x64
 		{DEA195E3-58EA-39CE-AAC9-69DFFD4334C9}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{DEA195E3-58EA-39CE-AAC9-69DFFD4334C9}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.Debug|x64.ActiveCfg = Debug|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.Debug|x64.Build.0 = Debug|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.Dist|Any CPU.ActiveCfg = RelWithDebInfo|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.Dist|Any CPU.Build.0 = RelWithDebInfo|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.Dist|x64.ActiveCfg = Debug|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.Dist|x64.Build.0 = Debug|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.MinSizeRel|Any CPU.ActiveCfg = MinSizeRel|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.Release|Any CPU.ActiveCfg = Release|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.Release|x64.ActiveCfg = Release|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.Release|x64.Build.0 = Release|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.RelWithDebInfo|Any CPU.ActiveCfg = RelWithDebInfo|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
-		{5D9047FF-745F-3F40-97A2-2FB49BCC4AF1}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 		{B24B1DBB-8361-3DD6-BDEC-D39A27A8CFE7}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{B24B1DBB-8361-3DD6-BDEC-D39A27A8CFE7}.Debug|x64.ActiveCfg = Debug|x64
 		{B24B1DBB-8361-3DD6-BDEC-D39A27A8CFE7}.Debug|x64.Build.0 = Debug|x64
