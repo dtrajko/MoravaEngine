@@ -72,6 +72,7 @@ private:
 	Hazel::LayerStack m_LayerStack;
 
 	Hazel::ImGuiLayer* m_ImGuiLayer;
+	bool m_EnableImGui = true;
 
 	float m_TimeStep = 0;
 	float m_LastFrameTime = 0;

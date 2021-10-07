@@ -110,22 +110,30 @@ void Application::Run()
 	// Loop until window closed
 	while (m_Running = !m_Window->GetShouldClose())
 	{
-		m_Window->ProcessEvents();
-
 		float deltaTime = Timer::Get()->GetDeltaTime(); // can be used as Hazel::Timestep
+
+		m_Window->ProcessEvents();
 
 		if (!m_Minimized)
 		{
-			for (Hazel::Layer* layer : m_LayerStack)
+			Hazel::HazelRenderer::BeginFrame();
 			{
-				layer->OnUpdate(m_TimeStep);
+				for (Hazel::Layer* layer : m_LayerStack)
+				{
+					layer->OnUpdate(m_TimeStep);
+				}
 			}
 
 			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window);
 
 			// Render ImGui on render thread
 			Application* app = this;
-			Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
+			if (m_EnableImGui)
+			{
+				Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
+				// Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->End(); });
+			}
+			Hazel::HazelRenderer::EndFrame();
 
 			// On Render thread
 			m_Window->GetRenderContext()->BeginFrame();
