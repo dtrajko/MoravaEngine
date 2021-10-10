@@ -146,7 +146,7 @@ void Application::Run()
 			{
 			case Hazel::RendererAPIType::Vulkan:
 				// m_Scene->OnRenderEditor(deltaTime, *(Hazel::EditorCamera*)m_Scene->GetCamera());
-				Hazel::VulkanRenderer::Draw(m_Scene->GetCamera()); // replace with m_Scene->OnRenderEditor()
+				Hazel::VulkanRenderer::Draw(m_Scene); // replace with m_Scene->OnRenderEditor()
 				break;
 			case Hazel::RendererAPIType::DX11:
 				DX11Renderer::Draw(m_Scene->GetCamera());

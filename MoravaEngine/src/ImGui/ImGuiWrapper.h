@@ -71,6 +71,8 @@ public:
 	static inline bool const GetViewportFocused() { return s_ViewportFocused; }
 	static bool const CanViewportReceiveEvents();
 
+	static void DrawInputText(std::string text);
+
 private:
 	static bool s_ViewportEnabled;
 	static bool s_ViewportHovered;
