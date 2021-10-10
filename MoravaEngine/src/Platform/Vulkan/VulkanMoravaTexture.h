@@ -26,7 +26,7 @@ public:
 	virtual bool Load(bool flipVert = false);
 	virtual void CreateAPISpecific();
 	virtual void Save();
-	virtual Hazel::TextureFormat GetFormat() { return m_Format; };
+	virtual Hazel::HazelImageFormat GetFormat() { return m_Format; };
 
 	// BEGIN pure virtual methods inherited from HazelTexture/HazelTexture2D
 	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage() const override { return Hazel::Ref<Hazel::HazelImage2D>(); }
@@ -74,7 +74,7 @@ protected:
 	const char* m_FileLocation;
 	unsigned char* m_Buffer;
 	int m_Level;
-	Hazel::TextureFormat m_Format;
+	Hazel::HazelImageFormat m_Format;
 
 	// from Hazel/Platform/Vulkan/VulkanTexture
 	uint32_t m_Width;

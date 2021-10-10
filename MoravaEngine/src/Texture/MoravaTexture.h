@@ -40,7 +40,7 @@ public:
 	virtual bool Load(bool flipVert = false) = 0;
 	virtual void CreateAPISpecific() = 0;
 	virtual void Save() = 0;
-	virtual Hazel::TextureFormat GetFormat() = 0;
+	virtual Hazel::HazelImageFormat GetFormat() = 0;
 
 	// BEGIN pure virtual methods inherited from HazelTexture/HazelTexture2D
 	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage() const = 0;

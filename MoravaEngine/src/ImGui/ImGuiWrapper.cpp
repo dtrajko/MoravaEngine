@@ -154,7 +154,7 @@ void ImGuiWrapper::DrawInputText(std::string text)
 	char buffer[256];
 	memset(buffer, 0, 256);
 	memcpy(buffer, text.c_str(), text.length());
-	ImGui::InputText(text.c_str(), buffer, 256);
+	ImGui::InputText(text.c_str(), buffer, 32);
 }
 
 void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture)
@@ -188,20 +188,18 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " Albedo";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-
 			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetAlbedoInput().TextureMap ?
 					(void*)(intptr_t)material->GetAlbedoInput().TextureMap->GetImTextureID() :
 					(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
+				ImGui::PopStyleVar();
 			}
 			else
 			{
 				DrawInputText("Albedo");
 			}
-
-			ImGui::PopStyleVar();
 
 			DragAndDropTarget(material->GetAlbedoInput().TextureMap, material->GetAlbedoInput().SRGB);
 
@@ -260,20 +258,18 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " Normals";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-
 			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetNormalInput().TextureMap ?
 					(void*)(intptr_t)material->GetNormalInput().TextureMap->GetImTextureID() :
 					(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
+				ImGui::PopStyleVar();
 			}
 			else
 			{
 				DrawInputText("Normal");
 			}
-
-			ImGui::PopStyleVar();
 
 			DragAndDropTarget(material->GetNormalInput().TextureMap, false);
 
@@ -314,20 +310,18 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " Metalness";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-
 			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetMetalnessInput().TextureMap ?
 					(void*)(intptr_t)material->GetMetalnessInput().TextureMap->GetImTextureID() :
 					(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
+				ImGui::PopStyleVar();
 			}
 			else
 			{
 				DrawInputText("Metalness");
 			}
-
-			ImGui::PopStyleVar();
 
 			DragAndDropTarget(material->GetMetalnessInput().TextureMap, false);
 
@@ -371,20 +365,18 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " Roughness";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-
 			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetRoughnessInput().TextureMap ?
 					(void*)(intptr_t)material->GetRoughnessInput().TextureMap->GetImTextureID() :
 					(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
+				ImGui::PopStyleVar();
 			}
 			else
 			{
 				DrawInputText("Roughness");
 			}
-
-			ImGui::PopStyleVar();
 
 			DragAndDropTarget(material->GetRoughnessInput().TextureMap, false);
 
@@ -428,20 +420,18 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " AO";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-
 			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetAOInput().TextureMap ?
 					(void*)(intptr_t)material->GetAOInput().TextureMap->GetImTextureID() :
 					(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
+				ImGui::PopStyleVar();
 			}
 			else
 			{
 				DrawInputText("AO");
 			}
-
-			ImGui::PopStyleVar();
 
 			DragAndDropTarget(material->GetAOInput().TextureMap, false);
 
@@ -485,20 +475,18 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " Emissive";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-
 			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
 			{
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetEmissiveInput().TextureMap ?
 					(void*)(intptr_t)material->GetEmissiveInput().TextureMap->GetImTextureID() :
 					(void*)(intptr_t)checkerboardTexture->GetImTextureID(), ImVec2(64, 64));
+				ImGui::PopStyleVar();
 			}
 			else
 			{
 				DrawInputText("Emissive");
 			}
-
-			ImGui::PopStyleVar();
 
 			DragAndDropTarget(material->GetEmissiveInput().TextureMap, material->GetEmissiveInput().SRGB);
 

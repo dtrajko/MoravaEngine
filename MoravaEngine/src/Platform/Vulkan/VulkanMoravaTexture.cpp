@@ -32,7 +32,7 @@ VulkanMoravaTexture::VulkanMoravaTexture()
 	m_ID = 0;
 	m_FileLocation = "";
 	m_Buffer = nullptr;
-	m_Format = Hazel::TextureFormat::RGBA;
+	m_Format = Hazel::HazelImageFormat::RGBA;
 }
 
 /**
@@ -369,12 +369,12 @@ bool VulkanMoravaTexture::Load(bool flipVert)
 	{
 		Log::GetLogger()->info("Loading an HDR texture '{0}'", m_FileLocation);
 		m_Buffer = (byte*)stbi_loadf(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
-		m_Format = Hazel::TextureFormat::Float16;
+		m_Format = Hazel::HazelImageFormat::RGBA16F;
 	}
 	else
 	{
 		m_Buffer = stbi_load(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
-		m_Format = Hazel::TextureFormat::RGBA;
+		m_Format = Hazel::HazelImageFormat::RGBA;
 	}
 
 	if (!m_Buffer)
