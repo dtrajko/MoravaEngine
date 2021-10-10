@@ -385,3 +385,4 @@ vendor/cross-platform/bullet3
 vendor/cross-platform/glew
 vendor/cross-platform/glfw
 vendor/cross-platform/ImGuizmo
+vendor/PhysX
