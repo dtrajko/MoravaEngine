@@ -948,6 +948,18 @@
     <ClCompile Include="src\Hazel\Renderer\SceneRendererVulkan.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\EditorLayerVulkan.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Project\UserPreferences.cpp">
+      <Filter>Hazel\Project</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\EditorConsolePanel.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\ProjectSettingsWindow.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2006,6 +2018,21 @@
     <ClInclude Include="src\Hazel\Renderer\SceneRendererVulkan.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\EditorLayerVulkan.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Project\UserPreferences.h">
+      <Filter>Hazel\Project</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\EditorConsolePanel.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\ProjectSettingsWindow.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetMetadata.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2238,6 +2265,9 @@
     </Filter>
     <Filter Include="Mono\GameInvoker">
       <UniqueIdentifier>{c402bd23-da64-42be-a977-8b03868f15d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Project">
+      <UniqueIdentifier>{940ae9b4-0db9-4f68-aaa6-65a958be1585}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
