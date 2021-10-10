@@ -228,7 +228,9 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
 					{
-						material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material->GetAlbedoInput().SRGB);
+						// material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material->GetAlbedoInput().SRGB);
+						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, material->GetAlbedoInput().SRGB, false, "AlbedoMap" };
+						material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
 					}
 				}
 			}
@@ -242,9 +244,10 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material->GetAlbedoInput().SRGB))
 				{
 					if (material->GetAlbedoInput().TextureMap)
-						material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(
-							material->GetAlbedoInput().TextureMap->GetPath(),
-							material->GetAlbedoInput().SRGB);
+					{
+						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, material->GetAlbedoInput().SRGB, false, "AlbedoMap" };
+						material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(material->GetAlbedoInput().TextureMap->GetPath(), textureProperties);
+					}
 				}
 			}
 			ImGui::EndGroup();
@@ -297,7 +300,10 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false);
+					{
+						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, false, false, "NormalMap" };
+						material->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+					}
 				}
 			}
 			ImGui::SameLine();
@@ -349,7 +355,10 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false);
+					{
+						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, false, false, "MetalnessMap" };
+						material->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+					}
 				}
 			}
 			ImGui::SameLine();
@@ -404,7 +413,10 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false);
+					{
+						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, false, false, "RoughnessMap" };
+						material->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+					}
 				}
 			}
 			ImGui::SameLine();
@@ -459,7 +471,10 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename, false);
+					{
+						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, false, false, "AOMap" };
+						material->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+					}
 				}
 			}
 			ImGui::SameLine();
@@ -514,7 +529,10 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				{
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
-						material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material->GetEmissiveInput().SRGB);
+					{
+						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, material->GetEmissiveInput().SRGB, false, "EmissiveMap" };
+						material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+					}
 				}
 			}
 			ImGui::SameLine();
@@ -526,9 +544,10 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 				if (ImGui::Checkbox(checkboxLabelSRGB.c_str(), &material->GetEmissiveInput().SRGB))
 				{
 					if (material->GetEmissiveInput().TextureMap)
-						material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(
-							material->GetEmissiveInput().TextureMap->GetPath(),
-							material->GetEmissiveInput().SRGB);
+					{
+						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, material->GetEmissiveInput().SRGB, false, "EmissiveMap" };
+						material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(material->GetEmissiveInput().TextureMap->GetPath(), textureProperties);
+					}
 				}
 			}
 			ImGui::EndGroup();
@@ -553,7 +572,8 @@ void ImGuiWrapper::DragAndDropTarget(Hazel::Ref<Hazel::HazelTexture2D>& texture,
 			std::string filename(itemPath.begin(), itemPath.end());
 			if (filename != "")
 			{
-				texture = Hazel::HazelTexture2D::Create(filename, srgb);
+				Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, srgb, false, "DragAndDropTarget" };
+				texture = Hazel::HazelTexture2D::Create(filename, textureProperties);
 			}
 		}
 		ImGui::EndDragDropTarget();
