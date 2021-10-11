@@ -175,11 +175,15 @@
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp" />
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp" />
+    <ClCompile Include="src\Hazel\Asset\AssetManager.cpp" />
+    <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp" />
     <ClCompile Include="src\Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="src\Hazel\Core\Layer.cpp" />
     <ClCompile Include="src\Hazel\Core\LayerStack.cpp" />
     <ClCompile Include="src\Hazel\Core\Timestep.cpp" />
     <ClCompile Include="src\Hazel\Core\UUID.cpp" />
+    <ClCompile Include="src\Hazel\Editor\AssetEditorPanel.cpp" />
+    <ClCompile Include="src\Hazel\Editor\AudioEventsEditor.cpp" />
     <ClCompile Include="src\Hazel\Editor\ContentBrowserPanel.cpp" />
     <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp" />
     <ClCompile Include="src\Hazel\Editor\EditorConsolePanel.cpp" />
@@ -229,6 +233,7 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTexture.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanUtils.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.cpp" />
+    <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="src\Hazel\Project\UserPreferences.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelCamera.cpp" />
@@ -600,7 +605,9 @@
     <ClInclude Include="src\HazelVulkan\ExampleVertex.h" />
     <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h" />
     <ClInclude Include="src\Hazel\Asset\Asset.h" />
+    <ClInclude Include="src\Hazel\Asset\AssetManager.h" />
     <ClInclude Include="src\Hazel\Asset\AssetMetadata.h" />
+    <ClInclude Include="src\Hazel\Asset\AssetRegistry.h" />
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
     <ClInclude Include="src\Hazel\Core\Buffer.h" />
@@ -616,6 +623,8 @@
     <ClInclude Include="src\Hazel\Core\Timer.h" />
     <ClInclude Include="src\Hazel\Core\Timestep.h" />
     <ClInclude Include="src\Hazel\Core\UUID.h" />
+    <ClInclude Include="src\Hazel\Editor\AssetEditorPanel.h" />
+    <ClInclude Include="src\Hazel\Editor\AudioEventsEditor.h" />
     <ClInclude Include="src\Hazel\Editor\ContentBrowserPanel.h" />
     <ClInclude Include="src\Hazel\Editor\EditorCamera.h" />
     <ClInclude Include="src\Hazel\Editor\EditorConsolePanel.h" />

@@ -960,6 +960,21 @@
     <ClCompile Include="src\Hazel\Editor\ProjectSettingsWindow.cpp">
       <Filter>Hazel\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetManager.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\AssetEditorPanel.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\AudioEventsEditor.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp">
+      <Filter>Hazel\Platform\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2032,6 +2047,18 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Asset\AssetMetadata.h">
       <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetManager.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetRegistry.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\AssetEditorPanel.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\AudioEventsEditor.h">
+      <Filter>Hazel\Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
