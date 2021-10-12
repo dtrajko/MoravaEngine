@@ -235,6 +235,7 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
+    <ClCompile Include="src\Hazel\Project\Project.cpp" />
     <ClCompile Include="src\Hazel\Project\UserPreferences.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelCamera.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelFramebuffer.cpp" />
@@ -628,6 +629,7 @@
     <ClInclude Include="src\Hazel\Editor\ContentBrowserPanel.h" />
     <ClInclude Include="src\Hazel\Editor\EditorCamera.h" />
     <ClInclude Include="src\Hazel\Editor\EditorConsolePanel.h" />
+    <ClInclude Include="src\Hazel\Editor\EditorConsole\ConsoleMessage.h" />
     <ClInclude Include="src\Hazel\Editor\EditorLayerVulkan.h" />
     <ClInclude Include="src\Hazel\Editor\ProjectSettingsWindow.h" />
     <ClInclude Include="src\Hazel\Editor\SceneHierarchyPanel.h" />
@@ -677,6 +679,7 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUtils.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.h" />
+    <ClInclude Include="src\Hazel\Project\Project.h" />
     <ClInclude Include="src\Hazel\Project\UserPreferences.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelCamera.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelFramebuffer.h" />

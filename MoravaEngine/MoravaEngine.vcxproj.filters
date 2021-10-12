@@ -975,6 +975,9 @@
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp">
       <Filter>Hazel\Platform\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Project\Project.cpp">
+      <Filter>Hazel\Project</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2060,6 +2063,12 @@
     <ClInclude Include="src\Hazel\Editor\AudioEventsEditor.h">
       <Filter>Hazel\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\EditorConsole\ConsoleMessage.h">
+      <Filter>Hazel\Editor\EditorConsole</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Project\Project.h">
+      <Filter>Hazel\Project</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2295,6 +2304,9 @@
     </Filter>
     <Filter Include="Hazel\Project">
       <UniqueIdentifier>{940ae9b4-0db9-4f68-aaa6-65a958be1585}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Editor\EditorConsole">
+      <UniqueIdentifier>{d8872329-450d-4470-a5bb-f8b5356632ef}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
