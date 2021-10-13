@@ -177,6 +177,7 @@
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetManager.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp" />
+    <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp" />
     <ClCompile Include="src\Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="src\Hazel\Core\Layer.cpp" />
     <ClCompile Include="src\Hazel\Core\LayerStack.cpp" />
@@ -192,8 +193,8 @@
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp" />
     <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp" />
-    <ClCompile Include="src\Hazel\Physics\Physics.cpp" />
-    <ClCompile Include="src\Hazel\Physics\PhysicsActor.cpp" />
+    <ClCompile Include="src\Hazel\Physics\3D\Physics.cpp" />
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsActor.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLImage.cpp" />
@@ -609,6 +610,7 @@
     <ClInclude Include="src\Hazel\Asset\AssetManager.h" />
     <ClInclude Include="src\Hazel\Asset\AssetMetadata.h" />
     <ClInclude Include="src\Hazel\Asset\AssetRegistry.h" />
+    <ClInclude Include="src\Hazel\Audio\AudioEngine.h" />
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
     <ClInclude Include="src\Hazel\Core\Buffer.h" />
@@ -639,8 +641,8 @@
     <ClInclude Include="src\Hazel\Events\MouseEvent.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGui.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h" />
-    <ClInclude Include="src\Hazel\Physics\Physics.h" />
-    <ClInclude Include="src\Hazel\Physics\PhysicsActor.h" />
+    <ClInclude Include="src\Hazel\Physics\3D\Physics.h" />
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsActor.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLImage.h" />

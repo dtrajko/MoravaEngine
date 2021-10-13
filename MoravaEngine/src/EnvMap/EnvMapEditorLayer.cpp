@@ -936,8 +936,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                         SetSkyboxLOD(skyboxLOD);
                     }
 
-                    Hazel::HazelLight light = EnvMapSceneRenderer::GetActiveLight();
-                    Hazel::HazelLight lightPrev = light;
+                    Hazel::HazelDirLight light = EnvMapSceneRenderer::GetActiveLight();
+                    Hazel::HazelDirLight lightPrev = light;
 
                     ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::DragProperty);
                     ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);

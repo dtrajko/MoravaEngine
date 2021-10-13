@@ -639,12 +639,6 @@
     <ClCompile Include="src\Physics\SpartanPhysics.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Physics\Physics.cpp">
-      <Filter>Hazel\Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Physics\PhysicsActor.cpp">
-      <Filter>Hazel\Physics</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp">
       <Filter>Hazel\Editor</Filter>
     </ClCompile>
@@ -977,6 +971,15 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Project\Project.cpp">
       <Filter>Hazel\Project</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\Physics.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsActor.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1704,12 +1707,6 @@
     <ClInclude Include="src\Physics\SpartanPhysics.h">
       <Filter>Physics</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Physics\Physics.h">
-      <Filter>Hazel\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Physics\PhysicsActor.h">
-      <Filter>Hazel\Physics</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Editor\EditorCamera.h">
       <Filter>Hazel\Editor</Filter>
     </ClInclude>
@@ -2069,6 +2066,15 @@
     <ClInclude Include="src\Hazel\Project\Project.h">
       <Filter>Hazel\Project</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioEngine.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\Physics.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsActor.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2307,6 +2313,12 @@
     </Filter>
     <Filter Include="Hazel\Editor\EditorConsole">
       <UniqueIdentifier>{d8872329-450d-4470-a5bb-f8b5356632ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio">
+      <UniqueIdentifier>{3c47e9eb-23f0-42a6-b224-6657eeb8066d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Physics\3D">
+      <UniqueIdentifier>{b65bf2cf-6391-4825-a8ce-af8ad466668d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

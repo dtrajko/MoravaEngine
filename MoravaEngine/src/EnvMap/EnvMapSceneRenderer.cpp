@@ -78,7 +78,7 @@ struct EnvMapSceneRendererData
         Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
         Material* SkyboxMaterial;
         Hazel::Environment SceneEnvironment;
-        Hazel::HazelLight ActiveLight;
+        Hazel::HazelDirLight ActiveLight;
     } SceneData;
 
     Hazel::Ref<Hazel::HazelTexture2D> BRDFLUT;
@@ -1020,12 +1020,12 @@ void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, Hazel::Re
     s_Data.DrawList.push_back(drawCommand);
 }
 
-Hazel::HazelLight& EnvMapSceneRenderer::GetActiveLight()
+Hazel::HazelDirLight& EnvMapSceneRenderer::GetActiveLight()
 {
     return s_Data.SceneData.ActiveLight;
 }
 
-void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelLight& light)
+void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelDirLight& light)
 {
     s_Data.SceneData.ActiveLight = light;
 }
