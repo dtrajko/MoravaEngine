@@ -369,7 +369,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_EditorScene->OnRenderEditor(timestep, *EnvMapSharedData::s_EditorCamera);
+        EnvMapSharedData::s_EditorScene->OnRenderEditor(Hazel::Ref<Hazel::SceneRenderer>(), timestep, *EnvMapSharedData::s_EditorCamera);
 
         if (m_DrawOnTopBoundingBoxes)
         {
@@ -386,13 +386,13 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
         EnvMapSharedData::s_RuntimeScene->OnUpdate(timestep);
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(Hazel::Ref<Hazel::SceneRenderer>(), timestep);
         break;
     case SceneState::Pause:
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(Hazel::Ref<Hazel::SceneRenderer>(), timestep);
         break;
     }
 
