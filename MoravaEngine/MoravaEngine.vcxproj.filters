@@ -981,6 +981,12 @@
     <ClCompile Include="src\Hazel\Physics\3D\PhysicsActor.cpp">
       <Filter>Hazel\Physics\3D</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\ImGui\ImGuiUtilities.cpp">
+      <Filter>Hazel\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\ImGui\Colours.cpp">
+      <Filter>Hazel\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2074,6 +2080,12 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Physics\3D\PhysicsActor.h">
       <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\Colours.h">
+      <Filter>Hazel\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

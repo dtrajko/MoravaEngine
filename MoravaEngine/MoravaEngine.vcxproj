@@ -191,7 +191,9 @@
     <ClCompile Include="src\Hazel\Editor\EditorLayerVulkan.cpp" />
     <ClCompile Include="src\Hazel\Editor\ProjectSettingsWindow.cpp" />
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp" />
+    <ClCompile Include="src\Hazel\ImGui\Colours.cpp" />
     <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp" />
+    <ClCompile Include="src\Hazel\ImGui\ImGuiUtilities.cpp" />
     <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp" />
     <ClCompile Include="src\Hazel\Physics\3D\Physics.cpp" />
     <ClCompile Include="src\Hazel\Physics\3D\PhysicsActor.cpp" />
@@ -639,8 +641,10 @@
     <ClInclude Include="src\Hazel\Events\Event.h" />
     <ClInclude Include="src\Hazel\Events\KeyEvent.h" />
     <ClInclude Include="src\Hazel\Events\MouseEvent.h" />
+    <ClInclude Include="src\Hazel\ImGui\Colours.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGui.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h" />
     <ClInclude Include="src\Hazel\Physics\3D\Physics.h" />
     <ClInclude Include="src\Hazel\Physics\3D\PhysicsActor.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLContext.h" />
