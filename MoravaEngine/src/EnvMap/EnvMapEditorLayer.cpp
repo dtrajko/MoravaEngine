@@ -142,9 +142,6 @@ void EnvMapEditorLayer::Init()
 
     // Temporary code Hazel LIVE! #004
     Hazel::HazelRenderer::Init();
-
-    bool depthTest = true;
-    Hazel::Renderer2D::Init();
 }
 
 EnvMapEditorLayer::~EnvMapEditorLayer()

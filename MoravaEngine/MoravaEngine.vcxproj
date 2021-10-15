@@ -261,6 +261,9 @@
     <ClCompile Include="src\Hazel\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\SceneRendererVulkan.cpp" />
     <ClCompile Include="src\Hazel\Renderer\ShaderUniform.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\UI\Font.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\UniformBuffer.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\UniformBufferSet.cpp" />
     <ClCompile Include="src\Hazel\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\Hazel\Renderer\VertexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Scene\Entity.cpp" />
@@ -711,6 +714,9 @@
     <ClInclude Include="src\Hazel\Renderer\SceneRenderer.h" />
     <ClInclude Include="src\Hazel\Renderer\SceneRendererVulkan.h" />
     <ClInclude Include="src\Hazel\Renderer\ShaderUniform.h" />
+    <ClInclude Include="src\Hazel\Renderer\UI\Font.h" />
+    <ClInclude Include="src\Hazel\Renderer\UniformBuffer.h" />
+    <ClInclude Include="src\Hazel\Renderer\UniformBufferSet.h" />
     <ClInclude Include="src\Hazel\Renderer\VertexArray.h" />
     <ClInclude Include="src\Hazel\Renderer\VertexBuffer.h" />
     <ClInclude Include="src\Hazel\Scene\Components.h" />

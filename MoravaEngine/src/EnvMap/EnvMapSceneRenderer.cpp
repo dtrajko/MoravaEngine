@@ -66,6 +66,8 @@ Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::s_BloomDirtTexture;
 
 EnvMapSceneRenderer::GPUTimeQueries EnvMapSceneRenderer::s_GPUTimeQueries;
 
+Hazel::Ref<Hazel::Renderer2D> EnvMapSceneRenderer::s_Renderer2D;
+
 
 struct EnvMapSceneRendererData
 {
@@ -197,6 +199,8 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
     s_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
 
     s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
+
+    s_Renderer2D = Hazel::Ref<Hazel::Renderer2D>::Create();
 }
 
 void EnvMapSceneRenderer::SetupShaders()
@@ -832,14 +836,14 @@ void EnvMapSceneRenderer::GeometryPass()
         }
     }
 
-    Hazel::Renderer2D::BeginScene(viewProj, true);
+    s_Renderer2D->BeginScene(viewProj, glm::mat4(1.0f), true);
     {
         // RendererBasic::SetLineThickness(2.0f);
 
         if (EnvMapSharedData::s_DisplayRay)
         {
             glm::vec3 camPosition = EnvMapSharedData::s_ActiveCamera->GetPosition();
-            Hazel::Renderer2D::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+            s_Renderer2D->DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
 
         if (EntitySelection::s_SelectionContext.size()) {
@@ -857,7 +861,7 @@ void EnvMapSceneRenderer::GeometryPass()
             }
         }
     }
-    Hazel::Renderer2D::EndScene();
+    s_Renderer2D->EndScene();
 
     GetGeoPass()->GetSpecification().TargetFramebuffer->Bind();
 }

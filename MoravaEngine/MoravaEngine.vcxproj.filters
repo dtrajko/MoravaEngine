@@ -987,6 +987,15 @@
     <ClCompile Include="src\Hazel\ImGui\Colours.cpp">
       <Filter>Hazel\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\UniformBufferSet.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\UniformBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\UI\Font.cpp">
+      <Filter>Hazel\Renderer\UI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2087,6 +2096,15 @@
     <ClInclude Include="src\Hazel\ImGui\Colours.h">
       <Filter>Hazel\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\UniformBufferSet.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\UniformBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\UI\Font.h">
+      <Filter>Hazel\Renderer\UI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2331,6 +2349,9 @@
     </Filter>
     <Filter Include="Hazel\Physics\3D">
       <UniqueIdentifier>{b65bf2cf-6391-4825-a8ce-af8ad466668d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Renderer\UI">
+      <UniqueIdentifier>{71f0272a-1be8-4aec-bb32-4fdb80f426ab}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

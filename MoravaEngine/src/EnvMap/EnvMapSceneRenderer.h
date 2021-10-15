@@ -196,4 +196,6 @@ public:
 	
 	static GPUTimeQueries s_GPUTimeQueries;
 
+	static Hazel::Ref<Hazel::Renderer2D> s_Renderer2D;
+
 };
