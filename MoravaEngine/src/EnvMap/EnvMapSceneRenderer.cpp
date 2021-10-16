@@ -8,7 +8,6 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/HazelShader.h"
 #include "Hazel/Scene/HazelScene.h"
-#include "Hazel/Renderer/Renderer2D.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"

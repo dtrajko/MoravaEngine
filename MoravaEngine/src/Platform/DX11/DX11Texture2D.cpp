@@ -221,9 +221,7 @@ void DX11Texture2D::Unlock()
 {
 }
 
-void DX11Texture2D::Resize(uint32_t width, uint32_t height)
-{
-}
+// void DX11Texture2D::Resize(uint32_t width, uint32_t height) {} // method removed in Hazel Live 18.03.2021 #2
 
 Hazel::Buffer DX11Texture2D::GetWriteableBuffer()
 {

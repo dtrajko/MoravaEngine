@@ -54,7 +54,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;HZ_PLATFORM_WINDOWS;HZ_DEBUG;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(MONO_PROJECT)include\mono-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(MONO_PROJECT)include\mono-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -87,7 +87,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;HZ_PLATFORM_WINDOWS;HZ_RELEASE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(MONO_PROJECT)include\mono-2.0;$(SolutionDir)vendor\DirectXTex\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(MONO_PROJECT)include\mono-2.0;$(SolutionDir)vendor\DirectXTex\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -128,7 +128,6 @@
     <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -182,7 +181,6 @@
     <ClCompile Include="src\Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="src\Hazel\Core\Layer.cpp" />
     <ClCompile Include="src\Hazel\Core\LayerStack.cpp" />
-    <ClCompile Include="src\Hazel\Core\Ref.cpp" />
     <ClCompile Include="src\Hazel\Core\Timestep.cpp" />
     <ClCompile Include="src\Hazel\Core\UUID.cpp" />
     <ClCompile Include="src\Hazel\Editor\AssetEditorPanel.cpp" />
@@ -212,7 +210,6 @@
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLShader.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLShaderUniform.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLTexture.cpp" />
-    <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLUniformBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLVertexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\Vulkan.cpp" />
@@ -237,7 +234,6 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTexture.cpp" />
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanUniformBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanUtils.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp" />
@@ -449,7 +445,6 @@
       </ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11TextureCube.cpp" />
-    <ClCompile Include="src\Platform\DX11\DX11UniformBuffer.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Utils.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11VertexBuffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -475,6 +470,7 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanMoravaTexture.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererBasic.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanSkyboxCube.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\VulkanUniformBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
@@ -564,7 +560,6 @@
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
-    <ClInclude Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="pch.h" />
@@ -667,7 +662,6 @@
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLShader.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLShaderUniform.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLTexture.h" />
-    <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLUniformBuffer.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLVertexArray.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLVertexBuffer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\Vulkan.h" />
@@ -692,7 +686,6 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h" />
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUniformBuffer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUtils.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.h" />
     <ClInclude Include="src\Hazel\Project\Project.h" />
@@ -917,7 +910,6 @@
       </ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11TextureCube.h" />
-    <ClInclude Include="src\Platform\DX11\DX11UniformBuffer.h" />
     <ClInclude Include="src\Platform\DX11\DX11Utils.h" />
     <ClInclude Include="src\Platform\DX11\DX11VertexBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -944,6 +936,7 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanMoravaTexture.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanRendererBasic.h" />
     <ClInclude Include="src\Platform\Vulkan\VulkanSkyboxCube.h" />
+    <ClInclude Include="src\Platform\Vulkan\VulkanUniformBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Player\Player.h" />
