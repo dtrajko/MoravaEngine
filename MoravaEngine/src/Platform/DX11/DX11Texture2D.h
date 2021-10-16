@@ -27,6 +27,8 @@ public:
 	DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, Hazel::TextureWrap wrap = Hazel::TextureWrap::Clamp);
 	virtual ~DX11Texture2D();
 
+	void Resize(uint32_t width, uint32_t height) override;
+
 	void Invalidate();
 	void Release();
 
@@ -36,8 +38,6 @@ public:
 	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage() const override;
 	void Lock() override;
 	void Unlock() override;
-
-	// void Resize(uint32_t width, uint32_t height) override; // method removed in Hazel Live 18.03.2021 #2
 
 	Hazel::Buffer GetWriteableBuffer() override;
 	bool Loaded() const override;

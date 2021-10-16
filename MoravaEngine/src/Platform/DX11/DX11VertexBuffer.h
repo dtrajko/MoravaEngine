@@ -21,10 +21,8 @@ public:
 
 
 	virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) override {}
+	virtual void RT_SetData(void* buffer, uint32_t size, uint32_t offset = 0) override {}
 	virtual void Bind() const override;
-
-	virtual const Hazel::VertexBufferLayout& GetLayout() const override { return m_Layout; }
-	virtual void SetLayout(const Hazel::VertexBufferLayout& layout) override { m_Layout = layout; }
 
 	virtual uint32_t GetSize() const override { return m_Stride; }
 	virtual Hazel::RendererID GetRendererID() const override { return 0; }
