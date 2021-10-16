@@ -1008,6 +1008,12 @@
     <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp">
       <Filter>Vendors\VulkanMemoryAllocator</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\ShaderCache.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Core\Hash.cpp">
+      <Filter>Hazel\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2125,6 +2131,15 @@
     </ClInclude>
     <ClInclude Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.h">
       <Filter>Vendors\VulkanMemoryAllocator</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\ShaderCache.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Core\Hash.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUniformBufferSet.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

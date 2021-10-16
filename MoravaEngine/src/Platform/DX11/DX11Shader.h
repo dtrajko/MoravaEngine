@@ -48,11 +48,12 @@ public:
 	virtual ~DX11Shader();
 	static Hazel::Ref<DX11Shader> CreateFromString(const std::string& source);
 
-	virtual void Bind() override;
+	virtual void Bind() override {};
+	virtual Hazel::RendererID GetRendererID() const override { return (Hazel::RendererID)0; };
+
 	virtual void Reload(bool forceCompile = false) override;
 
 	virtual size_t GetHash() const override;
-	virtual Hazel::RendererID GetRendererID() const override;
 
 	virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 

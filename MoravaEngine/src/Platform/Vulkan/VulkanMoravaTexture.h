@@ -70,6 +70,8 @@ public:
 	virtual void SetBlue(int x, int z, int value) override;
 	virtual void SetAlpha(int x, int z, int value) override;
 
+	void GenerateMips(bool readonly = false);
+
 protected:
 	const char* m_FileLocation;
 	unsigned char* m_Buffer;
@@ -80,9 +82,14 @@ protected:
 	uint32_t m_Width;
 	uint32_t m_Height;
 	uint32_t m_Channels;
+
 	Hazel::Buffer m_ImageData;
+
+	Hazel::Ref<Hazel::HazelImage2D> m_Image;
+	Hazel::TextureProperties m_Properties;
+
 	VkDeviceMemory m_DeviceMemory;
-	VkImage m_Image;
 	VkDescriptorImageInfo m_DescriptorImageInfo = {};
+
 
 };

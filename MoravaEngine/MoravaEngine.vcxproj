@@ -179,6 +179,7 @@
     <ClCompile Include="src\Hazel\Asset\AssetManager.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp" />
     <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp" />
+    <ClCompile Include="src\Hazel\Core\Hash.cpp" />
     <ClCompile Include="src\Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="src\Hazel\Core\Layer.cpp" />
     <ClCompile Include="src\Hazel\Core\LayerStack.cpp" />
@@ -264,6 +265,7 @@
     <ClCompile Include="src\Hazel\Renderer\SceneEnvironment.cpp" />
     <ClCompile Include="src\Hazel\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\SceneRendererVulkan.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\ShaderCache.cpp" />
     <ClCompile Include="src\Hazel\Renderer\ShaderUniform.cpp" />
     <ClCompile Include="src\Hazel\Renderer\UI\Font.cpp" />
     <ClCompile Include="src\Hazel\Renderer\UniformBuffer.cpp" />
@@ -624,6 +626,7 @@
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
     <ClInclude Include="src\Hazel\Core\Buffer.h" />
+    <ClInclude Include="src\Hazel\Core\Hash.h" />
     <ClInclude Include="src\Hazel\Core\HazelLog.h" />
     <ClInclude Include="src\Hazel\Core\HazelWindow.h" />
     <ClInclude Include="src\Hazel\Core\KeyCodes.h" />
@@ -693,6 +696,7 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUniformBuffer.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUniformBufferSet.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUtils.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.h" />
     <ClInclude Include="src\Hazel\Project\Project.h" />
@@ -720,6 +724,7 @@
     <ClInclude Include="src\Hazel\Renderer\SceneEnvironment.h" />
     <ClInclude Include="src\Hazel\Renderer\SceneRenderer.h" />
     <ClInclude Include="src\Hazel\Renderer\SceneRendererVulkan.h" />
+    <ClInclude Include="src\Hazel\Renderer\ShaderCache.h" />
     <ClInclude Include="src\Hazel\Renderer\ShaderUniform.h" />
     <ClInclude Include="src\Hazel\Renderer\UI\Font.h" />
     <ClInclude Include="src\Hazel\Renderer\UniformBuffer.h" />
