@@ -239,8 +239,6 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     Hazel::Ref<Hazel::HazelMesh> mesh = Hazel::Ref<Hazel::HazelMesh>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, Hazel::Ref<Hazel::HazelMaterial>(), isAnimated);
 
-    mesh->SetTimeMultiplier(1.0f);
-
     EnvMapSceneRenderer::CreateDrawCommand(fileNameNoExt, mesh);
 
     Hazel::Entity meshEntity = CreateEntity(fileNameNoExt);
@@ -424,7 +422,7 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
         Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
         if (mesh)
         {
-            mesh->OnUpdate(timestep, false);
+            mesh->OnUpdate(timestep);
         }
     }
 
@@ -464,7 +462,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, flo
         Hazel::Entity entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
         Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
 
-        mesh->OnUpdate(timestep, false);
+        mesh->OnUpdate(timestep);
     }
 
     Scene::s_ImGuizmoTransform = &m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
@@ -667,7 +665,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
             if (meshComponent.Mesh) {
-                meshComponent.Mesh->OnImGuiRender(++id, &m_ShowWindowSceneHierarchy);
+                // meshComponent.Mesh->OnImGuiRender(++id, &m_ShowWindowSceneHierarchy);
             }
         }
     }
@@ -997,7 +995,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                         auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
                         if (meshComponent.Mesh) {
                             ImGui::SameLine();
-                            ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
+                            // ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
                         }
                     }
                 }
@@ -1779,28 +1777,28 @@ void EnvMapEditorLayer::SelectEntity(Hazel::Entity e)
 void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
     auto& materials = mesh->GetMaterials();
-    for (Hazel::Submesh& submesh : mesh->GetSubmeshes())
-    {
-        // Material
-        auto material = materials[submesh.MaterialIndex];
-
-        for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
-        {
-            std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-            EnvMapSharedData::s_ShaderHazelPBR->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
-        }
-
-        EnvMapSharedData::s_ShaderHazelPBR->SetMat4("u_Transform", transform * submesh.Transform);
-
-        if (material->GetFlag(Hazel::HazelMaterialFlag::DepthTest)) { // TODO: Fix Material flags
-            RendererBasic::EnableDepthTest();
-        }
-        else {
-            RendererBasic::DisableDepthTest();
-        }
-
-        RendererBasic::DrawIndexed(submesh.GetIndexCount(), 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
-    }
+    //  for (Hazel::Submesh& submesh : mesh->GetSubmeshes())
+    //  {
+    //      // Material
+    //      auto material = materials[submesh.MaterialIndex];
+    //  
+    //      for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
+    //      {
+    //          std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+    //          EnvMapSharedData::s_ShaderHazelPBR->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
+    //      }
+    //  
+    //      EnvMapSharedData::s_ShaderHazelPBR->SetMat4("u_Transform", transform * submesh.Transform);
+    //  
+    //      if (material->GetFlag(Hazel::HazelMaterialFlag::DepthTest)) { // TODO: Fix Material flags
+    //          RendererBasic::EnableDepthTest();
+    //      }
+    //      else {
+    //          RendererBasic::DisableDepthTest();
+    //      }
+    //  
+    //      RendererBasic::DrawIndexed(submesh.GetIndexCount(), 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
+    //  }
 }
 
 void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer)
@@ -1975,42 +1973,42 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     continue;
                 }
 
-                std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
+                // std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
                 float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
                 // for (Hazel::Submesh& submesh : submeshes)
-                for (uint32_t i = 0; i < submeshes.size(); i++)
-                {
-                    Hazel::Submesh* submesh = &submeshes[i];
-                    auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-                    Hazel::Ray ray = {
-                        glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
-                        glm::inverse(glm::mat3(transform) * glm::mat3(submesh->Transform)) * direction
-                    };
-
-                    float t;
-                    bool intersects = ray.IntersectsAABB(submesh->BoundingBox, t);
-                    if (intersects)
-                    {
-                        const auto& triangleCache = ((Hazel::HazelMesh*)mesh.Raw())->GetTriangleCache(i);
-                        if (triangleCache.size())
-                        {
-                            for (const auto& triangle : triangleCache)
-                            {
-                                if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
-                                {
-                                    AddSubmeshToSelectionContext({ entity, submesh, t });
-
-                                    Log::GetLogger()->debug("Adding submesh to selection context. Submesh Name: '{0}', selection size: '{1}'", 
-                                        submesh->MeshName, EntitySelection::s_SelectionContext.size());
-                                    break;
-                                }
-                            }
-                        }
-                        else {
-                            AddSubmeshToSelectionContext({ entity, submesh, t });
-                        }
-                    }
-                }
+                //  for (uint32_t i = 0; i < submeshes.size(); i++)
+                //  {
+                //      Hazel::Submesh* submesh = &submeshes[i];
+                //      auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+                //      Hazel::Ray ray = {
+                //          glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
+                //          glm::inverse(glm::mat3(transform) * glm::mat3(submesh->Transform)) * direction
+                //      };
+                //  
+                //      float t;
+                //      bool intersects = ray.IntersectsAABB(submesh->BoundingBox, t);
+                //      if (intersects)
+                //      {
+                //          const auto& triangleCache = ((Hazel::HazelMesh*)mesh.Raw())->GetTriangleCache(i);
+                //          if (triangleCache.size())
+                //          {
+                //              for (const auto& triangle : triangleCache)
+                //              {
+                //                  if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t))
+                //                  {
+                //                      AddSubmeshToSelectionContext({ entity, submesh, t });
+                //  
+                //                      Log::GetLogger()->debug("Adding submesh to selection context. Submesh Name: '{0}', selection size: '{1}'", 
+                //                          submesh->MeshName, EntitySelection::s_SelectionContext.size());
+                //                      break;
+                //                  }
+                //              }
+                //          }
+                //          else {
+                //              AddSubmeshToSelectionContext({ entity, submesh, t });
+                //          }
+                //      }
+                //  }
             }
             std::sort(EntitySelection::s_SelectionContext.begin(), EntitySelection::s_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
 
@@ -2213,25 +2211,25 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shade
 
             if (meshComponent.Mesh && meshComponent.CastShadows)
             {
-                for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
-                {
-                    // Render Submesh
-                    meshComponent.Mesh->GetVertexBuffer()->Bind();
-                    meshComponent.Mesh->GetPipeline()->Bind();
-                    meshComponent.Mesh->GetIndexBuffer()->Bind();
-
-                    shader->SetMat4("model", entityTransform * submesh.Transform);
-
-                    for (size_t i = 0; i < meshComponent.Mesh->GetBoneTransforms().size(); i++)
-                    {
-                        std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                        shader->SetMat4(uniformName, meshComponent.Mesh->GetBoneTransforms()[i]);
-                    }
-
-                    shader->SetBool("u_Animated", meshComponent.Mesh->IsAnimated());
-
-                    RendererBasic::DrawIndexed(submesh.IndexCount, 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
-                }
+                //  for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
+                //  {
+                //      // Render Submesh
+                //      meshComponent.Mesh->GetVertexBuffer()->Bind();
+                //      meshComponent.Mesh->GetPipeline()->Bind();
+                //      meshComponent.Mesh->GetIndexBuffer()->Bind();
+                //  
+                //      shader->SetMat4("model", entityTransform * submesh.Transform);
+                //  
+                //      for (size_t i = 0; i < meshComponent.Mesh->GetBoneTransforms().size(); i++)
+                //      {
+                //          std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+                //          shader->SetMat4(uniformName, meshComponent.Mesh->GetBoneTransforms()[i]);
+                //      }
+                //  
+                //      shader->SetBool("u_Animated", meshComponent.Mesh->IsAnimated());
+                //  
+                //      RendererBasic::DrawIndexed(submesh.IndexCount, 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
+                //  }
             }
         }
     }
