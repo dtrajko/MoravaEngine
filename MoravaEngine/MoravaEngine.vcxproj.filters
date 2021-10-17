@@ -1014,6 +1014,18 @@
     <ClCompile Include="src\Hazel\Core\Hash.cpp">
       <Filter>Hazel\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\StorageBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\StorageBufferSet.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanStorageBuffer.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\MaterialAsset.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2140,6 +2152,24 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUniformBufferSet.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\StorageBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\StorageBufferSet.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBuffer.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBufferSet.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\MaterialAsset.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetTypes.h">
+      <Filter>Hazel\Asset</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

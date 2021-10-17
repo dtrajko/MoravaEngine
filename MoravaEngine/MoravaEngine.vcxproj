@@ -235,6 +235,7 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRendererAPI.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderPass.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanShader.cpp" />
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanStorageBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTexture.cpp" />
@@ -254,6 +255,7 @@
     <ClCompile Include="src\Hazel\Renderer\HazelShader.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelTexture.cpp" />
     <ClCompile Include="src\Hazel\Renderer\IndexBuffer.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\MaterialAsset.cpp" />
     <ClCompile Include="src\Hazel\Renderer\Pipeline.cpp" />
     <ClCompile Include="src\Hazel\Renderer\PipelineCompute.cpp" />
     <ClCompile Include="src\Hazel\Renderer\RenderCommandBuffer.cpp" />
@@ -267,6 +269,8 @@
     <ClCompile Include="src\Hazel\Renderer\SceneRendererVulkan.cpp" />
     <ClCompile Include="src\Hazel\Renderer\ShaderCache.cpp" />
     <ClCompile Include="src\Hazel\Renderer\ShaderUniform.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\StorageBuffer.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\StorageBufferSet.cpp" />
     <ClCompile Include="src\Hazel\Renderer\UI\Font.cpp" />
     <ClCompile Include="src\Hazel\Renderer\UniformBuffer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\UniformBufferSet.cpp" />
@@ -622,6 +626,7 @@
     <ClInclude Include="src\Hazel\Asset\AssetManager.h" />
     <ClInclude Include="src\Hazel\Asset\AssetMetadata.h" />
     <ClInclude Include="src\Hazel\Asset\AssetRegistry.h" />
+    <ClInclude Include="src\Hazel\Asset\AssetTypes.h" />
     <ClInclude Include="src\Hazel\Audio\AudioEngine.h" />
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
@@ -692,6 +697,8 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRendererAPI.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderPass.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanShader.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBuffer.h" />
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBufferSet.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h" />
@@ -710,6 +717,7 @@
     <ClInclude Include="src\Hazel\Renderer\HazelShader.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelTexture.h" />
     <ClInclude Include="src\Hazel\Renderer\IndexBuffer.h" />
+    <ClInclude Include="src\Hazel\Renderer\MaterialAsset.h" />
     <ClInclude Include="src\Hazel\Renderer\Pipeline.h" />
     <ClInclude Include="src\Hazel\Renderer\PipelineCompute.h" />
     <ClInclude Include="src\Hazel\Renderer\RenderCommand.h" />
@@ -726,6 +734,8 @@
     <ClInclude Include="src\Hazel\Renderer\SceneRendererVulkan.h" />
     <ClInclude Include="src\Hazel\Renderer\ShaderCache.h" />
     <ClInclude Include="src\Hazel\Renderer\ShaderUniform.h" />
+    <ClInclude Include="src\Hazel\Renderer\StorageBuffer.h" />
+    <ClInclude Include="src\Hazel\Renderer\StorageBufferSet.h" />
     <ClInclude Include="src\Hazel\Renderer\UI\Font.h" />
     <ClInclude Include="src\Hazel\Renderer\UniformBuffer.h" />
     <ClInclude Include="src\Hazel\Renderer\UniformBufferSet.h" />

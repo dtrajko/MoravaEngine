@@ -944,7 +944,7 @@ void DX11Renderer::EndFrame()
 	// Hazel::HazelRenderer::Submit([]() {});
 }
 
-void DX11Renderer::BeginRenderPass(const Hazel::Ref<Hazel::RenderPass>& renderPass)
+void DX11Renderer::BeginRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::RenderPass> renderPass, bool explicitClear)
 {
 	// Hazel::HazelRenderer::Submit([]() {});
 
@@ -953,7 +953,7 @@ void DX11Renderer::BeginRenderPass(const Hazel::Ref<Hazel::RenderPass>& renderPa
 	// TODO
 }
 
-void DX11Renderer::EndRenderPass()
+void DX11Renderer::EndRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer)
 {
 	// Hazel::HazelRenderer::Submit([]() {});
 }

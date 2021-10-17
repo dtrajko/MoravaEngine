@@ -37,8 +37,8 @@ public:
 	virtual void BeginFrame() override;
 	virtual void EndFrame() override;
 
-	virtual void BeginRenderPass(const Hazel::Ref<Hazel::RenderPass>& renderPass) override;
-	virtual void EndRenderPass() override;
+	virtual void BeginRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::RenderPass> renderPass, bool explicitClear = false) override;
+	virtual void EndRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer) override;
 	virtual void SubmitFullscreenQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material) override;
 
 	virtual void SetSceneEnvironment(Hazel::Ref<Hazel::Environment> environment, Hazel::Ref<Hazel::HazelImage2D> shadow) override;
