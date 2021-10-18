@@ -47,14 +47,20 @@ void DX11Material::Set(const std::string& name, float value) {}
 void DX11Material::Set(const std::string& name, int value) {}
 void DX11Material::Set(const std::string& name, uint32_t value) {}
 void DX11Material::Set(const std::string& name, bool value) {}
+void DX11Material::Set(const std::string& name, const glm::ivec2& value) {}
+void DX11Material::Set(const std::string& name, const glm::ivec3& value) {}
+void DX11Material::Set(const std::string& name, const glm::ivec4& value) {}
 void DX11Material::Set(const std::string& name, const glm::vec2& value) {}
 void DX11Material::Set(const std::string& name, const glm::vec3& value) {}
 void DX11Material::Set(const std::string& name, const glm::vec4& value) {}
 void DX11Material::Set(const std::string& name, const glm::mat3& value) {}
 void DX11Material::Set(const std::string& name, const glm::mat4& value) {}
+
 void DX11Material::Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture) {}
+void DX11Material::Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture, uint32_t arrayIndex) {}
 void DX11Material::Set(const std::string& name, const Hazel::Ref<Hazel::HazelTextureCube>& texture) {}
 void DX11Material::Set(const std::string& name, const Hazel::Ref<Hazel::HazelImage2D>& image) {}
+
 float& DX11Material::GetFloat(const std::string& name) { float v;  return v; }
 int32_t& DX11Material::GetInt(const std::string& name) { int32_t v;  return v; }
 uint32_t& DX11Material::GetUInt(const std::string& name) { uint32_t v;  return v; }

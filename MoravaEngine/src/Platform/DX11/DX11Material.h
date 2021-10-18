@@ -45,7 +45,7 @@ public:
 	virtual void Set(const std::string& name, const glm::mat4& value) override;
 
 	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture) override;
-	virtual void Set(const std::string& name, const Ref<HazelTexture2D>& texture, uint32_t arrayIndex) override;
+	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture, uint32_t arrayIndex) override;
 	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTextureCube>& texture) override;
 	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelImage2D>& image) override;
 
