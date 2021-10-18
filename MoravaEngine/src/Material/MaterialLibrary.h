@@ -48,12 +48,12 @@ public:
 	static Hazel::Ref<EnvMapMaterial> CreateDefaultMaterial(std::string materialName);
 	static void AddEnvMapMaterial(MaterialUUID UUID, Hazel::Ref<EnvMapMaterial> envMapMaterial);
 	static std::string NewMaterialName();
-	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh);
+	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, uint32_t submeshID);
 	static void SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial);
 	static void SetMaterialsToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial);
 	static void AddMaterialFromComponent(Hazel::Entity entity);
 	static void AddTextureToEnvMapMaterial(MaterialTextureType textureType, const std::string& texturePath, Hazel::Ref<EnvMapMaterial> envMapMaterial);
-	static MaterialUUID GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Submesh& submesh, Hazel::Entity* entity);
+	static MaterialUUID GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh> mesh, uint32_t submeshID, Hazel::Entity* entity);
 	static void Cleanup();
 
 private:

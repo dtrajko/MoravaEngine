@@ -237,7 +237,8 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    Hazel::Ref<Hazel::HazelMesh> mesh = Hazel::Ref<Hazel::HazelMesh>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, Hazel::Ref<Hazel::HazelMaterial>(), isAnimated);
+    Hazel::Ref<Hazel::HazelMesh> mesh = Hazel::Ref<Hazel::HazelMesh>::Create(Hazel::Ref<Hazel::MeshAsset>::Create(fullPath));
+    // Hazel::Ref<Hazel::HazelMesh> mesh = Hazel::Ref<Hazel::HazelMesh>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, Hazel::Ref<Hazel::HazelMaterial>(), isAnimated);
 
     EnvMapSceneRenderer::CreateDrawCommand(fileNameNoExt, mesh);
 
@@ -1625,7 +1626,8 @@ void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
             entity = &selectedSubmesh.Entity;
             entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
             meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
-            submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
+            submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, 0);
+            // submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
         }
 
         ImGui::Text("Selected Entity: ");
@@ -1690,7 +1692,8 @@ void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
 
 void EnvMapEditorLayer::UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::Submesh* submesh)
 {
-    SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(&entity, submesh);
+    SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(&entity, 0);
+    // SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(&entity, submesh);
 
     MaterialUUID materialUUID;
     if (MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID) != MaterialLibrary::s_SubmeshMaterialUUIDs.end()) {

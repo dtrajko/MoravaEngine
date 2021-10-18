@@ -18,7 +18,8 @@ struct std::hash<Hazel::Vertex>
 };
 
 MoravaTinyMesh::MoravaTinyMesh(const std::string& filepath, Hazel::Ref<MoravaShader> shader, Hazel::Ref<Hazel::HazelMaterial> material, bool isAnimated)
-	: Hazel::HazelMesh(filepath, shader, material, isAnimated)
+	: Hazel::HazelMesh(Hazel::Ref<Hazel::MeshAsset>())
+	// : Hazel::HazelMesh(filepath, shader, material, isAnimated)
 {
 	/****
 	tinyobj::attrib_t attrib;

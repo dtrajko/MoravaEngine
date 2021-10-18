@@ -286,9 +286,10 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
     m_BaseMaterial_M1911 = Hazel::Ref<Material>::Create(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR_M1911 = Hazel::Ref<Hazel::HazelMesh>::Create("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
+    m_MeshAnimPBR_M1911 = Hazel::Ref<Hazel::HazelMesh>::Create(Hazel::Ref<Hazel::MeshAsset>::Create("Models/M1911/m1911.fbx"));
+    // m_MeshAnimPBR_M1911 = Hazel::Ref<Hazel::HazelMesh>::Create("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
 
-    m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
+    // m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
     m_Entities["M1911"].Transform.Scale = m_Entities["M1911"].Init.Transform.Scale;
     m_Entities["M1911"].Transform.Transform = glm::mat4(1.0f);
@@ -312,8 +313,9 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_BobLamp = Hazel::Ref<Material>::Create(textureInfoBobLamp, materialSpecular, materialShininess);
-    m_MeshAnimPBR_BobLamp = Hazel::Ref<Hazel::HazelMesh>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
-    m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
+    m_MeshAnimPBR_BobLamp = Hazel::Ref<Hazel::HazelMesh>::Create(Hazel::Ref<Hazel::MeshAsset>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh"));
+    // m_MeshAnimPBR_BobLamp = Hazel::Ref<Hazel::HazelMesh>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
+    // m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
 
     m_Entities["BobLamp"].Transform.Scale = m_Entities["BobLamp"].Init.Transform.Scale;
     m_Entities["BobLamp"].Transform.Transform = glm::mat4(1.0f);
@@ -337,8 +339,9 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_AnimBoy = Hazel::Ref<Material>::Create(textureInfoAnimBoy, materialSpecular, materialShininess);
-    m_MeshAnimPBR_AnimBoy = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
-    m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
+    m_MeshAnimPBR_AnimBoy = Hazel::Ref<Hazel::HazelMesh>::Create(Hazel::Ref<Hazel::MeshAsset>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae"));
+    // m_MeshAnimPBR_AnimBoy = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
+    // m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
 
     m_Entities["AnimBoy"].Transform.Scale = m_Entities["AnimBoy"].Init.Transform.Scale;
     m_Entities["AnimBoy"].Transform.Transform = glm::mat4(1.0f);
@@ -392,9 +395,9 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
     m_ShaderHybridAnimPBR->SetFloat("u_TilingFactor", 1.0f);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_MeshAnimPBR_M1911->OnUpdate(deltaTime, false);
-    m_MeshAnimPBR_BobLamp->OnUpdate(deltaTime, false);
-    m_MeshAnimPBR_AnimBoy->OnUpdate(deltaTime, false);
+    m_MeshAnimPBR_M1911->OnUpdate(deltaTime);
+    m_MeshAnimPBR_BobLamp->OnUpdate(deltaTime);
+    m_MeshAnimPBR_AnimBoy->OnUpdate(deltaTime);
 
     if (m_HDRI_Edit != m_HDRI_Edit_Prev)
     {
@@ -747,9 +750,9 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
 
     // ImGui::ShowMetricsWindow();
 
-    m_MeshAnimPBR_M1911->OnImGuiRender();
-    m_MeshAnimPBR_BobLamp->OnImGuiRender();
-    m_MeshAnimPBR_AnimBoy->OnImGuiRender();
+    // m_MeshAnimPBR_M1911->OnImGuiRender();
+    // m_MeshAnimPBR_BobLamp->OnImGuiRender();
+    // m_MeshAnimPBR_AnimBoy->OnImGuiRender();
 }
 
 void SceneAnimPBR::UpdateImGuizmo(Window* mainWindow)
@@ -1013,12 +1016,12 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 
     if (m_Entities["M1911"].Enabled)
     {
-        m_MeshAnimPBR_M1911->Render(m_SamplerSlots["albedo"], m_Entities["M1911"].Transform.Transform, std::map<std::string, Hazel::Ref<EnvMapMaterial>>());
+        // m_MeshAnimPBR_M1911->Render(m_SamplerSlots["albedo"], m_Entities["M1911"].Transform.Transform, std::map<std::string, Hazel::Ref<EnvMapMaterial>>());
     }
 
     if (m_Entities["AnimBoy"].Enabled)
     {
-        m_MeshAnimPBR_AnimBoy->Render(m_SamplerSlots["albedo"], m_Entities["AnimBoy"].Transform.Transform, std::map<std::string, Hazel::Ref<EnvMapMaterial>>());
+        // m_MeshAnimPBR_AnimBoy->Render(m_SamplerSlots["albedo"], m_Entities["AnimBoy"].Transform.Transform, std::map<std::string, Hazel::Ref<EnvMapMaterial>>());
     }
 
     if (m_Entities["BobLamp"].Enabled)
@@ -1030,34 +1033,34 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         m_BaseMaterial_BobLamp->GetTextureEmissive()->Bind(m_SamplerSlots["emissive"]);
         m_BaseMaterial_BobLamp->GetTextureAO()->Bind(m_SamplerSlots["ao"]);
 
-        m_MeshAnimPBR_BobLamp->GetVertexBuffer()->Bind();
-        m_MeshAnimPBR_BobLamp->GetPipeline()->Bind();
-        m_MeshAnimPBR_BobLamp->GetIndexBuffer()->Bind();
+        // m_MeshAnimPBR_BobLamp->GetVertexBuffer()->Bind();
+        // m_MeshAnimPBR_BobLamp->GetPipeline()->Bind();
+        // m_MeshAnimPBR_BobLamp->GetIndexBuffer()->Bind();
 
         auto& materials = m_MeshAnimPBR_BobLamp->GetMaterials();
 
         int submeshIndex = 0;
-        for (Hazel::Submesh& submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
-        {
-            // Material
-            auto material = materials[submesh.MaterialIndex];
-            m_ShaderHybridAnimPBR->Bind();
-
-            m_MeshAnimPBR_BobLamp->GetTextures()[submeshIndex]->Bind(m_SamplerSlots["albedo"]);
-
-            for (size_t i = 0; i < m_MeshAnimPBR_BobLamp->GetBoneTransforms().size(); i++)
-            {
-                std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
-                m_ShaderHybridAnimPBR->SetMat4(uniformName, m_MeshAnimPBR_BobLamp->GetBoneTransforms()[i]);
-            }
-
-            m_ShaderHybridAnimPBR->SetMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh.Transform);
-
-            glEnable(GL_DEPTH_TEST);
-            glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
-
-            submeshIndex++;
-        }
+        //  for (Hazel::Submesh& submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
+        //  {
+        //      // Material
+        //      auto material = materials[submesh.MaterialIndex];
+        //      m_ShaderHybridAnimPBR->Bind();
+        //  
+        //      m_MeshAnimPBR_BobLamp->GetTextures()[submeshIndex]->Bind(m_SamplerSlots["albedo"]);
+        //  
+        //      for (size_t i = 0; i < m_MeshAnimPBR_BobLamp->GetBoneTransforms().size(); i++)
+        //      {
+        //          std::string uniformName = std::string("u_BoneTransforms[") + std::to_string(i) + std::string("]");
+        //          m_ShaderHybridAnimPBR->SetMat4(uniformName, m_MeshAnimPBR_BobLamp->GetBoneTransforms()[i]);
+        //      }
+        //  
+        //      m_ShaderHybridAnimPBR->SetMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh.Transform);
+        //  
+        //      glEnable(GL_DEPTH_TEST);
+        //      glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+        //  
+        //      submeshIndex++;
+        //  }
     }
 
     // BEGIN main shader rendering

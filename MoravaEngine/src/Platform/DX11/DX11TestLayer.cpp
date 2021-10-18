@@ -74,7 +74,8 @@ void DX11TestLayer::OnAttach()
 
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 
-	Hazel::Ref<Hazel::HazelMesh> meshSphere = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
+	Hazel::Ref<Hazel::HazelMesh> meshSphere = Hazel::Ref<Hazel::HazelMesh>(); // Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
+	// Hazel::Ref<Hazel::HazelMesh> meshSphere = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
 
 	/*
 	RenderObject renderObjectGladiator;
@@ -121,7 +122,8 @@ void DX11TestLayer::OnAttach()
 	*/
 
 	RenderObject renderObjectTerrain;
-	renderObjectTerrain.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/terrain.obj");
+	renderObjectTerrain.Mesh = Hazel::Ref<Hazel::HazelMesh>(); // Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/terrain.obj");
+	// renderObjectTerrain.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/terrain.obj");
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/sand.jpg"));
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png"));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
@@ -431,7 +433,7 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 					continue;
 				}
 
-				std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
+				std::vector<Hazel::Submesh>& submeshes = std::vector<Hazel::Submesh>(); // mesh->GetSubmeshes();
 				float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
 				// for (Hazel::Submesh& submesh : submeshes)
 				for (uint32_t i = 0; i < submeshes.size(); i++)
@@ -447,7 +449,7 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 					bool intersects = ray.IntersectsAABB(submesh->BoundingBox, t);
 					if (intersects)
 					{
-						const auto& triangleCache = ((Hazel::HazelMesh*)mesh.Raw())->GetTriangleCache(i);
+						const auto& triangleCache = std::vector<Hazel::Triangle>(); // ((Hazel::HazelMesh*)mesh.Raw())->GetTriangleCache(i);
 						if (triangleCache.size())
 						{
 							for (const auto& triangle : triangleCache)

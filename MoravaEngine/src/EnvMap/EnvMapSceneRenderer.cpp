@@ -466,7 +466,7 @@ void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::
         for (auto selection : EntitySelection::s_SelectionContext)
         {
             if (selection.Mesh && &submesh == selection.Mesh) {
-                submesh.RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
+                // submesh.RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
             }
         }
     }
@@ -777,7 +777,7 @@ void EnvMapSceneRenderer::GeometryPass()
                     entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
                 }
 
-                EnvMapSharedData::s_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? MoravaShaderLibrary::Get("HazelPBR_Anim") : MoravaShaderLibrary::Get("HazelPBR_Static");
+                // EnvMapSharedData::s_ShaderHazelPBR = meshComponent.Mesh->IsAnimated() ? MoravaShaderLibrary::Get("HazelPBR_Anim") : MoravaShaderLibrary::Get("HazelPBR_Static");
 
                 EnvMapSharedData::s_ShaderHazelPBR->Bind();
 
@@ -811,28 +811,27 @@ void EnvMapSceneRenderer::GeometryPass()
                 Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
                 std::string materialUUID;
 
-                for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
-                {
-                    materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
-
-                    RenderOutline(EnvMapSharedData::s_ShaderOutline, entity, entityTransform, submesh);
-
-                    // Render Submesh
-                    // load submesh materials for each specific submesh from the s_EnvMapMaterials list
-                    if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end())
-                    {
-                        envMapMaterial = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
-                        UpdateShaderPBRUniforms(EnvMapSharedData::s_ShaderHazelPBR, envMapMaterial);
-                    }
-
-                    bool wireframeEnabledScene = EnvMapSharedData::s_Scene->IsWireframeEnabled();
-                    bool wireframeEnabledModel = EnvMapSharedData::s_DisplayWireframe;
-
-                    // Log::GetLogger()->debug("wireframeEnabledScene: {0}, wireframeEnabledModel: {1}", wireframeEnabledScene, wireframeEnabledModel);
-
-                    submesh.Render(meshComponent.Mesh, EnvMapSharedData::s_ShaderHazelPBR, entityTransform, samplerSlot,
-                        MaterialLibrary::s_EnvMapMaterials, entity, wireframeEnabledScene, wireframeEnabledModel);
-                }
+                //  for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
+                //  {
+                //      materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
+                //  
+                //      RenderOutline(EnvMapSharedData::s_ShaderOutline, entity, entityTransform, submesh);
+                //  
+                //      // Render Submesh
+                //      // load submesh materials for each specific submesh from the s_EnvMapMaterials list
+                //      if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end())
+                //      {
+                //          envMapMaterial = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
+                //          UpdateShaderPBRUniforms(EnvMapSharedData::s_ShaderHazelPBR, envMapMaterial);
+                //      }
+                //  
+                //      bool wireframeEnabledScene = EnvMapSharedData::s_Scene->IsWireframeEnabled();
+                //      bool wireframeEnabledModel = EnvMapSharedData::s_DisplayWireframe;
+                //  
+                //      // Log::GetLogger()->debug("wireframeEnabledScene: {0}, wireframeEnabledModel: {1}", wireframeEnabledScene, wireframeEnabledModel);
+                //  
+                //      // submesh.Render(meshComponent.Mesh, EnvMapSharedData::s_ShaderHazelPBR, entityTransform, samplerSlot, MaterialLibrary::s_EnvMapMaterials, entity, wireframeEnabledScene, // wireframeEnabledModel);
+                //  }
             }
         }
     }

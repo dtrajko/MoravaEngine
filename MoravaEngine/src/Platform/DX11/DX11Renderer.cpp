@@ -80,7 +80,7 @@ static Hazel::Ref<MoravaFramebuffer> s_PostProcessingFramebuffer;
 
 // ImGuizmo
 static glm::mat4* s_ImGuizmoTransform = nullptr;
-static Hazel::Submesh* s_SelectedSubmesh;
+static uint32_t s_SelectedSubmesh;
 static SelectionMode s_SelectionMode = SelectionMode::Entity;
 
 /**** END variables from Scene.cpp ****/
@@ -106,8 +106,8 @@ static glm::vec2 s_ImGuiViewportMain;
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
 {
 	// Temporary code - populate selected submesh
-	std::vector<Hazel::Submesh> submeshes = renderObject.Mesh->GetSubmeshes();
-	s_SelectedSubmesh = &submeshes.at(0);
+	std::vector<uint32_t> submeshes = renderObject.Mesh->GetSubmeshes();
+	s_SelectedSubmesh = submeshes.at(0);
 
 	s_RenderObjects.push_back(renderObject);
 }
@@ -573,7 +573,7 @@ void DX11Renderer::DisplaySubmeshMaterialSelector(bool* p_open)
 			entity = &selectedSubmesh.Entity;
 			entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
 			meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
-			submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
+			// submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
 		}
 
 		ImGui::Text("Selected Entity: ");
@@ -958,12 +958,15 @@ void DX11Renderer::EndRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCo
 	// Hazel::HazelRenderer::Submit([]() {});
 }
 
-void DX11Renderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material)
+void DX11Renderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::HazelMaterial> material)
 {
-	// Hazel::HazelRenderer::Submit([]() {});
 }
 
-void DX11Renderer::SetSceneEnvironment(Hazel::Ref<Hazel::Environment> environment, Hazel::Ref<Hazel::HazelImage2D> shadow)
+void DX11Renderer::SubmitFullscreenQuadWithOverrides(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, Hazel::Buffer vertexShaderOverrides, Hazel::Buffer fragmentShaderOverrides)
+{
+}
+
+void DX11Renderer::SetSceneEnvironment(Hazel::Ref<Hazel::SceneRenderer> sceneRenderer, Hazel::Ref<Hazel::Environment> environment, Hazel::Ref<Hazel::HazelImage2D> shadow, Hazel::Ref<Hazel::HazelImage2D> linearDepth)
 {
 }
 
@@ -972,15 +975,40 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
 	return std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>>();
 }
 
-void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform)
+Hazel::Ref<Hazel::HazelTextureCube> DX11Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination)
+{
+	return Hazel::Ref<Hazel::HazelTextureCube>();
+}
+
+void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Ref<Hazel::MaterialTable> materialTable, const glm::mat4& transform)
 {
 }
 
-void DX11Renderer::RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform)
+void DX11Renderer::RenderMeshWithMaterial(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform, Hazel::Buffer additionalUniforms)
 {
 }
 
-void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform)
+void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform)
+{
+}
+
+void DX11Renderer::LightCulling(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::PipelineCompute> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups)
+{
+}
+
+void DX11Renderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material)
+{
+}
+
+void DX11Renderer::ClearImage(Hazel::Ref<Hazel::RenderCommandBuffer> commandBuffer, Hazel::Ref<Hazel::HazelImage2D> image)
+{
+}
+
+void DX11Renderer::RenderGeometry(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBuffer, Hazel::Ref<Hazel::HazelMaterial> material, Hazel::Ref<Hazel::VertexBuffer> vertexBuffer, Hazel::Ref<Hazel::IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount)
+{
+}
+
+void DX11Renderer::DispatchComputeShader(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::PipelineCompute> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::ivec3& workGroups)
 {
 }
 
@@ -1202,8 +1230,8 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		dx11ShaderUnlit->GetVertexShader()->Bind();
 		dx11ShaderUnlit->GetPixelShader()->Bind();
 
-		Hazel::Ref<DX11VertexBuffer> skyboxVB = DX11TestLayer::s_SkyboxSphere->GetVertexBuffer().As<DX11VertexBuffer>();
-		Hazel::Ref<DX11IndexBuffer> skyboxIB = DX11TestLayer::s_SkyboxSphere->GetIndexBuffer().As<DX11IndexBuffer>();
+		Hazel::Ref<DX11VertexBuffer> skyboxVB = Hazel::Ref<DX11VertexBuffer>(); // DX11TestLayer::s_SkyboxSphere->GetVertexBuffer().As<DX11VertexBuffer>();
+		Hazel::Ref<DX11IndexBuffer> skyboxIB = Hazel::Ref<DX11IndexBuffer>(); // DX11TestLayer::s_SkyboxSphere->GetIndexBuffer().As<DX11IndexBuffer>();
 		skyboxVB->Bind();
 		skyboxIB->Bind();
 		s_PipelineUnlit->Bind();
@@ -1239,8 +1267,8 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		dx11Shader->GetVertexShader()->Bind();
 		dx11Shader->GetPixelShader()->Bind();
 
-		Hazel::Ref<DX11VertexBuffer> vertexBuffer = DX11TestLayer::s_MeshLight->GetVertexBuffer().As<DX11VertexBuffer>();
-		Hazel::Ref<DX11IndexBuffer> indexBuffer = DX11TestLayer::s_MeshLight->GetIndexBuffer().As<DX11IndexBuffer>();
+		Hazel::Ref<DX11VertexBuffer> vertexBuffer = Hazel::Ref<DX11VertexBuffer>(); // DX11TestLayer::s_MeshLight->GetVertexBuffer().As<DX11VertexBuffer>();
+		Hazel::Ref<DX11IndexBuffer> indexBuffer = Hazel::Ref<DX11IndexBuffer>(); // DX11TestLayer::s_MeshLight->GetIndexBuffer().As<DX11IndexBuffer>();
 
 		vertexBuffer->Bind();
 		s_PipelineIlluminated->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
@@ -1349,15 +1377,15 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 	dx11Shader->GetVertexShader()->Bind();
 	dx11Shader->GetPixelShader()->Bind();
 
-	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = renderObject.Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
-	Hazel::Ref<DX11IndexBuffer> dx11meshIB = renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+	Hazel::Ref<DX11VertexBuffer> dx11MeshVB = Hazel::Ref<DX11VertexBuffer>(); // renderObject.Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
+	Hazel::Ref<DX11IndexBuffer> dx11meshIB = Hazel::Ref<DX11IndexBuffer>(); // renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
 	// Hazel::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
 
 	dx11MeshVB->Bind();
 	pipeline->Bind();
 	dx11meshIB->Bind();
 
-	for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())
+	for (uint32_t submeshID : renderObject.Mesh->GetSubmeshes())
 	{
 		// World/Model/Transform matrix
 		s_ConstantBufferLayout.Model = renderObject.Transform;
@@ -1373,7 +1401,7 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 
 		if (renderObject.Entity)
 		{
-			materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(renderObject.Mesh, submesh, &renderObject.Entity);
+			materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(renderObject.Mesh, submeshID, &renderObject.Entity);
 			if (MaterialLibrary::s_EnvMapMaterials.find(materialUUID) != MaterialLibrary::s_EnvMapMaterials.end())
 			{
 				envMapMaterial = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
@@ -1410,6 +1438,6 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 		dx11Shader->GetPixelShader()->SetTextures(textures);
 
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(submesh.IndexCount, submesh.BaseVertex, submesh.BaseIndex);
+		// DX11Renderer::DrawIndexedTriangleList(submesh.IndexCount, submesh.BaseVertex, submesh.BaseIndex);
 	}
 }
