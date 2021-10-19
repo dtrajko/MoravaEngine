@@ -3,8 +3,8 @@
 #include "DX11Context.h"
 
 
-DX11Image2D::DX11Image2D(Hazel::ImageSpecification specification)
-	: m_Specification(specification)
+DX11Image2D::DX11Image2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height)
+	: m_Format(format), m_Width(width), m_Height(height)
 {
 }
 

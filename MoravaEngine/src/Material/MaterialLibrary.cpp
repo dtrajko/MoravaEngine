@@ -210,11 +210,11 @@ void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Haz
     //  
     //  m_EnvMapMaterials.clear();
 
-    std::vector<uint32_t>& submeshes = mesh->GetSubmeshes();
+    std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
 
-    for (uint32_t submeshID : submeshes)
+    for (Hazel::Submesh& submesh : submeshes)
     {
-        std::string materialUUID = GetSubmeshMaterialUUID(mesh, submeshID, &entity);
+        std::string materialUUID = GetSubmeshMaterialUUID(mesh, submesh, &entity);
 
         Log::GetLogger()->debug("EnvMapEditorLayer::LoadEnvMapMaterials materialUUID = '{0}'", materialUUID);
 
@@ -239,10 +239,10 @@ void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Haz
     }
 }
 
-SubmeshUUID MaterialLibrary::GetSubmeshUUID(Hazel::Entity* entity, uint32_t submeshID)
+SubmeshUUID MaterialLibrary::GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh)
 {
     std::string entityHandle = entity ? std::to_string(entity->GetHandle()) : "0000";
-    SubmeshUUID submeshUUID = "E_" + entityHandle + "_S_" + std::to_string(submeshID);
+    SubmeshUUID submeshUUID = "E_" + entityHandle + "_S_" + submesh->MeshName;
     // Log::GetLogger()->debug("EnvMapEditorLayer::GetSubmeshUUID: '{0}'", submeshUUID);
     return submeshUUID;
 }
@@ -257,7 +257,7 @@ void MaterialLibrary::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh>
 
     for (auto submesh : mesh->GetSubmeshes())
     {
-        SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, submesh);
+        SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);
         MaterialUUID materialUUID = defaultMaterial->GetUUID();
         MaterialLibrary::AddSubmeshMaterialRelation(submeshUUID, materialUUID);
     }
@@ -278,14 +278,14 @@ void MaterialLibrary::SetMaterialsToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh,
         {
             if (materialData->Submesh != nullptr && materialData->EnvMapMaterialRef)
             {
-                //  if (submesh.MeshName == materialData->Submesh->MeshName)
-                //  {
-                //      SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);
-                //      MaterialUUID materialUUID = materialData->EnvMapMaterialRef->GetUUID();
-                //      MaterialLibrary::AddSubmeshMaterialRelation(submeshUUID, materialUUID);
-                //      correctMaterialFound = true;
-                //      break;
-                //  }
+                if (submesh.MeshName == materialData->Submesh->MeshName)
+                {
+                    SubmeshUUID submeshUUID = GetSubmeshUUID(&entity, &submesh);
+                    MaterialUUID materialUUID = materialData->EnvMapMaterialRef->GetUUID();
+                    MaterialLibrary::AddSubmeshMaterialRelation(submeshUUID, materialUUID);
+                    correctMaterialFound = true;
+                    break;
+                }
             }
         }
 
@@ -318,7 +318,7 @@ void MaterialLibrary::AddMaterialFromComponent(Hazel::Entity entity)
     }
 }
 
-MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh> mesh, uint32_t submeshID, Hazel::Entity* entity)
+MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Submesh& submesh, Hazel::Entity* entity)
 {
     MaterialUUID materialUUID = "";
 
@@ -329,7 +329,7 @@ MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh
         Hazel::Ref<EnvMapMaterial> envMapMaterial = materialComponent.Material;
     }
 
-    std::string submeshUUID = GetSubmeshUUID(entity, submeshID);
+    std::string submeshUUID = GetSubmeshUUID(entity, &submesh);
 
     if (s_SubmeshMaterialUUIDs.find(submeshUUID) != s_SubmeshMaterialUUIDs.end()) {
         materialUUID = s_SubmeshMaterialUUIDs.at(submeshUUID);
@@ -338,7 +338,7 @@ MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh
         materialUUID = envMapMaterial->GetUUID();
     }
     else {
-        // std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
+        std::string meshName = Util::StripExtensionFromFileName(Util::GetFileNameFromFullPath(mesh->GetFilePath()));
         materialUUID = EnvMapMaterial::NewMaterialUUID();
     }
 

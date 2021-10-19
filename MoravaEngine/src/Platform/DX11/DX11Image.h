@@ -15,7 +15,7 @@ struct DX11ImageInfo
 class DX11Image2D : public Hazel::HazelImage2D
 {
 public:
-	DX11Image2D(Hazel::ImageSpecification specification);
+	DX11Image2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height);
 	virtual ~DX11Image2D();
 
 	virtual void Invalidate() override;
@@ -28,17 +28,17 @@ public:
 	virtual Hazel::ImageSpecification& GetSpecification() override { return m_Specification; }
 	virtual const Hazel::ImageSpecification& GetSpecification() const override { return m_Specification; }
 
-	void RT_Invalidate() {}
-
-	DX11ImageInfo& GetImageInfo() { return m_Info; }
-	const DX11ImageInfo& GetImageInfo() const { return m_Info; }
+	virtual Hazel::HazelImageFormat GetFormat() const override { return m_Format; }
 
 	virtual Hazel::Buffer GetBuffer() const override { return m_ImageData; }
 	virtual Hazel::Buffer& GetBuffer() override { return m_ImageData; }
 
-	virtual void CreatePerLayerImageViews() override {};
+	virtual void CreatePerLayerImageViews() {}
 
 	virtual uint64_t GetHash() const override { return m_Info.Image; }
+
+	DX11ImageInfo& GetImageInfo() { return m_Info; }
+	const DX11ImageInfo& GetImageInfo() const { return m_Info; }
 
 	void UpdateDescriptor();
 

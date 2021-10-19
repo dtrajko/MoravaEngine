@@ -13,7 +13,7 @@ SceneCottage::SceneCottage()
 	sceneSettings.enableOmniShadows  = true;
 	sceneSettings.enablePointLights  = true;
 	sceneSettings.enableSpotLights   = true;
-	sceneSettings.enableWaterEffects = true;
+	sceneSettings.enableWaterEffects = false;
 	sceneSettings.enableSkybox       = true;
 	sceneSettings.enableNormalMaps   = true;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);
@@ -23,7 +23,7 @@ SceneCottage::SceneCottage()
 	sceneSettings.directionalLight.base.ambientIntensity = 0.2f;
 	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
 	sceneSettings.directionalLight.direction = glm::vec3(-0.8f, -1.2f, 0.8f);
-	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, 0.1f, 32.0f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-32.0f, 32.0f, -32.0f, 32.0f, -32.0f, 32.0f);
 
 	sceneSettings.pointLights[0].base.enabled = true;
 	sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 1.0f, 1.0f);

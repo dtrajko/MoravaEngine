@@ -6,11 +6,11 @@
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
 #include "Hazel/Platform/Vulkan/VulkanImage.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
-#include "Hazel/Renderer/HazelImage.h"
 
 #include <fstream>
 #include <exception>
 #include <string>
+
 
 namespace Utils
 {
@@ -81,16 +81,6 @@ VulkanMoravaTexture::VulkanMoravaTexture()
 	m_FileLocation = "";
 	m_Buffer = nullptr;
 	m_Format = Hazel::HazelImageFormat::RGBA;
-
-	Hazel::ImageSpecification imageSpec;
-	imageSpec.Format = m_Format;
-	imageSpec.Width = m_Width;
-	imageSpec.Height = m_Height;
-	imageSpec.Mips = GetMipLevelCount();
-	imageSpec.DebugName = "VulkanMoravaTexture";
-	m_Image = Hazel::HazelImage2D::Create(imageSpec);
-
-	m_Properties = Hazel::TextureProperties{};
 }
 
 /**
