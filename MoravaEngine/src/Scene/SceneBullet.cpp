@@ -26,7 +26,7 @@ SceneBullet::SceneBullet()
 	sceneSettings.directionalLight.base.ambientIntensity = 0.2f;
 	sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
 	sceneSettings.directionalLight.direction = glm::vec3(0.05f, -0.9f, 0.05f);
-	sceneSettings.lightProjectionMatrix = glm::ortho(-60.0f, 60.0f, -60.0f, 60.0f, 0.1f, 60.0f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-60.0f, 60.0f, -60.0f, 60.0f, -60.0f, 60.0f);
 	sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 0.4f, 0.0f);
 	sceneSettings.pointLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
 	sceneSettings.pointLights[0].base.diffuseIntensity = 2.0f;

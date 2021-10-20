@@ -32,7 +32,7 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     sceneSettings.directionalLight.direction = glm::vec3(0.6f, -0.5f, -0.6f);
     sceneSettings.directionalLight.base.ambientIntensity = 0.75f;
     sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
-    sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 40.0f);
+    sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, -40.0f, 40.0f);
 
     // point lights
     sceneSettings.pointLights[0].base.enabled = false;

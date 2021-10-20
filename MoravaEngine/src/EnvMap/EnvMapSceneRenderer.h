@@ -81,8 +81,8 @@ public:
 	static Hazel::Ref<Hazel::RenderPass> GetGeoPass();
 	static Hazel::Ref<Hazel::RenderPass> GetCompositePass();
 	static void CreateDrawCommand(std::string fileNameNoExt, Hazel::Ref<Hazel::HazelMesh> mesh);
-	static Hazel::HazelDirLight& GetActiveLight();
-	static void SetActiveLight(Hazel::HazelDirLight& light);
+	static Hazel::HazelLight& GetActiveLight();
+	static void SetActiveLight(Hazel::HazelLight& light);
 	static void AddToDrawList(std::string name, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, glm::mat4 transform);
 	static Hazel::Environment Load(const std::string& filepath);
 	static void SetEnvironment(Hazel::Environment environment);
@@ -195,7 +195,5 @@ public:
 	};
 	
 	static GPUTimeQueries s_GPUTimeQueries;
-
-	static Hazel::Ref<Hazel::Renderer2D> s_Renderer2D;
 
 };

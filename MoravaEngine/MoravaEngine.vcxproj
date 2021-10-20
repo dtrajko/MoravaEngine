@@ -177,7 +177,6 @@
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetManager.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp" />
-    <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp" />
     <ClCompile Include="src\Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="src\Hazel\Core\Layer.cpp" />
     <ClCompile Include="src\Hazel\Core\LayerStack.cpp" />
@@ -191,12 +190,10 @@
     <ClCompile Include="src\Hazel\Editor\EditorLayerVulkan.cpp" />
     <ClCompile Include="src\Hazel\Editor\ProjectSettingsWindow.cpp" />
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp" />
-    <ClCompile Include="src\Hazel\ImGui\Colours.cpp" />
     <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp" />
-    <ClCompile Include="src\Hazel\ImGui\ImGuiUtilities.cpp" />
     <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp" />
-    <ClCompile Include="src\Hazel\Physics\3D\Physics.cpp" />
-    <ClCompile Include="src\Hazel\Physics\3D\PhysicsActor.cpp" />
+    <ClCompile Include="src\Hazel\Physics\Physics.cpp" />
+    <ClCompile Include="src\Hazel\Physics\PhysicsActor.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLImage.cpp" />
@@ -238,7 +235,6 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
-    <ClCompile Include="src\Hazel\Project\Project.cpp" />
     <ClCompile Include="src\Hazel\Project\UserPreferences.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelCamera.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelFramebuffer.cpp" />
@@ -261,9 +257,6 @@
     <ClCompile Include="src\Hazel\Renderer\SceneRenderer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\SceneRendererVulkan.cpp" />
     <ClCompile Include="src\Hazel\Renderer\ShaderUniform.cpp" />
-    <ClCompile Include="src\Hazel\Renderer\UI\Font.cpp" />
-    <ClCompile Include="src\Hazel\Renderer\UniformBuffer.cpp" />
-    <ClCompile Include="src\Hazel\Renderer\UniformBufferSet.cpp" />
     <ClCompile Include="src\Hazel\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\Hazel\Renderer\VertexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Scene\Entity.cpp" />
@@ -615,7 +608,6 @@
     <ClInclude Include="src\Hazel\Asset\AssetManager.h" />
     <ClInclude Include="src\Hazel\Asset\AssetMetadata.h" />
     <ClInclude Include="src\Hazel\Asset\AssetRegistry.h" />
-    <ClInclude Include="src\Hazel\Audio\AudioEngine.h" />
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
     <ClInclude Include="src\Hazel\Core\Buffer.h" />
@@ -636,7 +628,6 @@
     <ClInclude Include="src\Hazel\Editor\ContentBrowserPanel.h" />
     <ClInclude Include="src\Hazel\Editor\EditorCamera.h" />
     <ClInclude Include="src\Hazel\Editor\EditorConsolePanel.h" />
-    <ClInclude Include="src\Hazel\Editor\EditorConsole\ConsoleMessage.h" />
     <ClInclude Include="src\Hazel\Editor\EditorLayerVulkan.h" />
     <ClInclude Include="src\Hazel\Editor\ProjectSettingsWindow.h" />
     <ClInclude Include="src\Hazel\Editor\SceneHierarchyPanel.h" />
@@ -644,12 +635,10 @@
     <ClInclude Include="src\Hazel\Events\Event.h" />
     <ClInclude Include="src\Hazel\Events\KeyEvent.h" />
     <ClInclude Include="src\Hazel\Events\MouseEvent.h" />
-    <ClInclude Include="src\Hazel\ImGui\Colours.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGui.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h" />
-    <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h" />
-    <ClInclude Include="src\Hazel\Physics\3D\Physics.h" />
-    <ClInclude Include="src\Hazel\Physics\3D\PhysicsActor.h" />
+    <ClInclude Include="src\Hazel\Physics\Physics.h" />
+    <ClInclude Include="src\Hazel\Physics\PhysicsActor.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLImage.h" />
@@ -688,7 +677,6 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUtils.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.h" />
-    <ClInclude Include="src\Hazel\Project\Project.h" />
     <ClInclude Include="src\Hazel\Project\UserPreferences.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelCamera.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelFramebuffer.h" />
@@ -714,9 +702,6 @@
     <ClInclude Include="src\Hazel\Renderer\SceneRenderer.h" />
     <ClInclude Include="src\Hazel\Renderer\SceneRendererVulkan.h" />
     <ClInclude Include="src\Hazel\Renderer\ShaderUniform.h" />
-    <ClInclude Include="src\Hazel\Renderer\UI\Font.h" />
-    <ClInclude Include="src\Hazel\Renderer\UniformBuffer.h" />
-    <ClInclude Include="src\Hazel\Renderer\UniformBufferSet.h" />
     <ClInclude Include="src\Hazel\Renderer\VertexArray.h" />
     <ClInclude Include="src\Hazel\Renderer\VertexBuffer.h" />
     <ClInclude Include="src\Hazel\Scene\Components.h" />

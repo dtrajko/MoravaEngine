@@ -19,12 +19,7 @@ int main()
 
 	SelectRendererAPI();
 
-	ApplicationSpecification applicationSpecification{};
-	applicationSpecification.Name = "Morava Engine";
-	applicationSpecification.WindowWidth = 1280;
-	applicationSpecification.WindowHeight = 720;
-
-	Application::Create(applicationSpecification, "");
+	Application::Get()->InitWindow(WindowProps("Morava Engine", 1280, 720));
 
 	Application::Get()->Run();
 

@@ -44,17 +44,3 @@ float Input::GetMouseY()
 	auto [x, y] = GetMousePosition();
 	return y;
 }
-
-// TODO: A better way to do this is to handle it internally, and simply move the cursor the opposite side
-//              of the screen when it reaches the edge
-void Input::SetCursorMode(CursorMode mode)
-{
-	Window* window = Application::Get()->GetWindow();
-	glfwSetInputMode(static_cast<GLFWwindow*>(window->GetHandle()), GLFW_CURSOR, GLFW_CURSOR_NORMAL + (int)mode);
-}
-
-CursorMode Input::GetCursorMode()
-{
-	Window* window = Application::Get()->GetWindow();
-	return (CursorMode)(glfwGetInputMode(static_cast<GLFWwindow*>(window->GetHandle()), GLFW_CURSOR) - GLFW_CURSOR_NORMAL);
-}

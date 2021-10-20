@@ -66,8 +66,6 @@ Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::s_BloomDirtTexture;
 
 EnvMapSceneRenderer::GPUTimeQueries EnvMapSceneRenderer::s_GPUTimeQueries;
 
-Hazel::Ref<Hazel::Renderer2D> EnvMapSceneRenderer::s_Renderer2D;
-
 
 struct EnvMapSceneRendererData
 {
@@ -80,7 +78,7 @@ struct EnvMapSceneRendererData
         Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
         Material* SkyboxMaterial;
         Hazel::Environment SceneEnvironment;
-        Hazel::HazelDirLight ActiveLight;
+        Hazel::HazelLight ActiveLight;
     } SceneData;
 
     Hazel::Ref<Hazel::HazelTexture2D> BRDFLUT;
@@ -199,8 +197,6 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
     s_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
 
     s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
-
-    s_Renderer2D = Hazel::Ref<Hazel::Renderer2D>::Create();
 }
 
 void EnvMapSceneRenderer::SetupShaders()
@@ -836,14 +832,14 @@ void EnvMapSceneRenderer::GeometryPass()
         }
     }
 
-    s_Renderer2D->BeginScene(viewProj, glm::mat4(1.0f), true);
+    Hazel::Renderer2D::BeginScene(viewProj, true);
     {
         // RendererBasic::SetLineThickness(2.0f);
 
         if (EnvMapSharedData::s_DisplayRay)
         {
             glm::vec3 camPosition = EnvMapSharedData::s_ActiveCamera->GetPosition();
-            s_Renderer2D->DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+            Hazel::Renderer2D::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
 
         if (EntitySelection::s_SelectionContext.size()) {
@@ -861,7 +857,7 @@ void EnvMapSceneRenderer::GeometryPass()
             }
         }
     }
-    s_Renderer2D->EndScene();
+    Hazel::Renderer2D::EndScene();
 
     GetGeoPass()->GetSpecification().TargetFramebuffer->Bind();
 }
@@ -1024,12 +1020,12 @@ void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, Hazel::Re
     s_Data.DrawList.push_back(drawCommand);
 }
 
-Hazel::HazelDirLight& EnvMapSceneRenderer::GetActiveLight()
+Hazel::HazelLight& EnvMapSceneRenderer::GetActiveLight()
 {
     return s_Data.SceneData.ActiveLight;
 }
 
-void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelDirLight& light)
+void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelLight& light)
 {
     s_Data.SceneData.ActiveLight = light;
 }

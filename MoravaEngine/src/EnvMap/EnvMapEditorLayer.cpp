@@ -142,6 +142,9 @@ void EnvMapEditorLayer::Init()
 
     // Temporary code Hazel LIVE! #004
     Hazel::HazelRenderer::Init();
+
+    bool depthTest = true;
+    Hazel::Renderer2D::Init();
 }
 
 EnvMapEditorLayer::~EnvMapEditorLayer()
@@ -366,7 +369,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_EditorScene->OnRenderEditor(Hazel::Ref<Hazel::SceneRenderer>(), timestep, *EnvMapSharedData::s_EditorCamera);
+        EnvMapSharedData::s_EditorScene->OnRenderEditor(timestep, *EnvMapSharedData::s_EditorCamera);
 
         if (m_DrawOnTopBoundingBoxes)
         {
@@ -383,13 +386,13 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
         EnvMapSharedData::s_RuntimeScene->OnUpdate(timestep);
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(Hazel::Ref<Hazel::SceneRenderer>(), timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(timestep);
         break;
     case SceneState::Pause:
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(Hazel::Ref<Hazel::SceneRenderer>(), timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(timestep);
         break;
     }
 
@@ -933,8 +936,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                         SetSkyboxLOD(skyboxLOD);
                     }
 
-                    Hazel::HazelDirLight light = EnvMapSceneRenderer::GetActiveLight();
-                    Hazel::HazelDirLight lightPrev = light;
+                    Hazel::HazelLight light = EnvMapSceneRenderer::GetActiveLight();
+                    Hazel::HazelLight lightPrev = light;
 
                     ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::DragProperty);
                     ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);

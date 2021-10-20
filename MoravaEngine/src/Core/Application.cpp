@@ -27,29 +27,6 @@ Application::Application()
 {
 }
 
-Application* Application::Create(const ApplicationSpecification& specification, std::string projectPath)
-{
-	Application::Get()->m_Specification = specification;
-	Application::Get()->m_ProjectPath = projectPath;
-
-	Application::Get()->InitWindow(WindowProps(specification.Name, specification.WindowWidth, specification.WindowHeight));
-
-	return Application::Get();
-}
-
-Application* Application::Get()
-{
-	if (s_Instance == nullptr)
-	{
-		s_Instance = new Application();
-		s_Instance->m_Window = nullptr;
-		s_Instance->m_Scene = nullptr;
-		s_Instance->m_Renderer = nullptr;
-	}
-
-	return s_Instance;
-}
-
 void Application::OnInit()
 {
 	SceneProperties sceneProperties = Application::SetSceneProperties();
@@ -268,6 +245,19 @@ void Application::InitWindow(WindowProps& props)
 
 	m_Window = Window::Create(props);
 	m_Window->SetEventCallback(APP_BIND_EVENT_FN(Application::OnEvent));
+}
+
+Application* Application::Get()
+{
+	if (s_Instance == nullptr)
+	{
+		s_Instance = new Application();
+		s_Instance->m_Window = nullptr;
+		s_Instance->m_Scene = nullptr;
+		s_Instance->m_Renderer = nullptr;
+	}
+
+	return s_Instance;
 }
 
 void Application::InitializeScene(SceneProperties sceneProperties)

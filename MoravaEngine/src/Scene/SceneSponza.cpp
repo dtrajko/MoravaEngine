@@ -20,7 +20,7 @@ SceneSponza::SceneSponza()
 	sceneSettings.directionalLight.base.ambientIntensity = 0.2f;
 	sceneSettings.directionalLight.base.diffuseIntensity = 1.0f;
 	sceneSettings.directionalLight.direction = glm::vec3(100.0f, -100.0f, 0.0f);
-	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-32.0f, 32.0f, -32.0f, 32.0f, -32.0f, 32.0f);
     sceneSettings.pointLights[0].base.enabled = false;
     sceneSettings.pointLights[1].base.enabled = false;
     sceneSettings.pointLights[2].base.enabled = false;

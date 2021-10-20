@@ -25,7 +25,7 @@ ScenePBR::ScenePBR()
 	sceneSettings.directionalLight.base.ambientIntensity = 0.02f;
 	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
 	sceneSettings.directionalLight.direction = glm::vec3(1.2f, -14.0f, 1.2f);
-	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, 0.1f, 36.0f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-36.0f, 36.0f, -36.0f, 36.0f, -36.0f, 36.0f);
 
 	sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 1.0f, 1.0f);
 	sceneSettings.pointLights[0].position = glm::vec3(0.0f, 20.0f, 0.0f);
