@@ -37,7 +37,7 @@ public:
 	void Lock() override;
 	void Unlock() override;
 
-	// void Resize(uint32_t width, uint32_t height) override; // method removed in Hazel Live 18.03.2021 #2
+	virtual void Resize(uint32_t width, uint32_t height) override;
 
 	Hazel::Buffer GetWriteableBuffer() override;
 	bool Loaded() const override;

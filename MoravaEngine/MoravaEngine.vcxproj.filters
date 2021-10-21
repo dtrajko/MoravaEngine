@@ -624,9 +624,6 @@
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanIndexBuffer.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Vulkan\VulkanUniformBuffer.cpp">
-      <Filter>Platform\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
@@ -638,12 +635,6 @@
     </ClCompile>
     <ClCompile Include="src\Physics\SpartanPhysics.cpp">
       <Filter>Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Physics\Physics.cpp">
-      <Filter>Hazel\Physics</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Physics\PhysicsActor.cpp">
-      <Filter>Hazel\Physics</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp">
       <Filter>Hazel\Editor</Filter>
@@ -974,6 +965,60 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp">
       <Filter>Hazel\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Project\Project.cpp">
+      <Filter>Hazel\Project</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\Physics.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsActor.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\ImGui\ImGuiUtilities.cpp">
+      <Filter>Hazel\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\ImGui\Colours.cpp">
+      <Filter>Hazel\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\UniformBufferSet.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\UniformBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\UI\Font.cpp">
+      <Filter>Hazel\Renderer\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanUniformBuffer.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLUniformBuffer.cpp">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\DX11\DX11UniformBuffer.cpp">
+      <Filter>Platform\DX11</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\ShaderCache.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Core\Hash.cpp">
+      <Filter>Hazel\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\StorageBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\StorageBufferSet.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanStorageBuffer.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\MaterialAsset.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp">
+      <Filter>Hazel\Audio</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1686,9 +1731,6 @@
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanIndexBuffer.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\Vulkan\VulkanUniformBuffer.h">
-      <Filter>Platform\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
@@ -1700,12 +1742,6 @@
     </ClInclude>
     <ClInclude Include="src\Physics\SpartanPhysics.h">
       <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Physics\Physics.h">
-      <Filter>Hazel\Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Physics\PhysicsActor.h">
-      <Filter>Hazel\Physics</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Editor\EditorCamera.h">
       <Filter>Hazel\Editor</Filter>
@@ -2060,6 +2096,72 @@
     <ClInclude Include="src\Hazel\Editor\AudioEventsEditor.h">
       <Filter>Hazel\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\EditorConsole\ConsoleMessage.h">
+      <Filter>Hazel\Editor\EditorConsole</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Project\Project.h">
+      <Filter>Hazel\Project</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\Physics.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsActor.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\Colours.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\UniformBufferSet.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\UniformBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\UI\Font.h">
+      <Filter>Hazel\Renderer\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUniformBuffer.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLUniformBuffer.h">
+      <Filter>Hazel\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\DX11\DX11UniformBuffer.h">
+      <Filter>Platform\DX11</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\ShaderCache.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Core\Hash.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUniformBufferSet.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\StorageBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\StorageBufferSet.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBuffer.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBufferSet.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\MaterialAsset.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetTypes.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioEngine.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2295,6 +2397,21 @@
     </Filter>
     <Filter Include="Hazel\Project">
       <UniqueIdentifier>{940ae9b4-0db9-4f68-aaa6-65a958be1585}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Editor\EditorConsole">
+      <UniqueIdentifier>{d8872329-450d-4470-a5bb-f8b5356632ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio">
+      <UniqueIdentifier>{3c47e9eb-23f0-42a6-b224-6657eeb8066d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Physics\3D">
+      <UniqueIdentifier>{b65bf2cf-6391-4825-a8ce-af8ad466668d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Renderer\UI">
+      <UniqueIdentifier>{71f0272a-1be8-4aec-bb32-4fdb80f426ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendors\VulkanMemoryAllocator">
+      <UniqueIdentifier>{6eb26f9f-107c-41da-bb1d-8123f8ee09c3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

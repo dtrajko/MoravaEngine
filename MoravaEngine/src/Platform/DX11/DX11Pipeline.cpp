@@ -64,6 +64,10 @@ void DX11Pipeline::Invalidate()
 	}
 }
 
+void DX11Pipeline::SetUniformBuffer(Hazel::Ref<Hazel::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set)
+{
+}
+
 void DX11Pipeline::Bind()
 {
 	DX11Context::Get()->GetDX11DeviceContext()->IASetInputLayout(m_InputLayout);

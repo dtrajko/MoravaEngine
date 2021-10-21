@@ -27,9 +27,13 @@ public:
 	virtual Hazel::HazelImageFormat GetFormat() const override { return m_Format; }
 	virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
+	virtual Hazel::ImageSpecification& GetSpecification() override { return m_Specification; }
+	virtual const Hazel::ImageSpecification& GetSpecification() const override { return m_Specification; }
+
 	virtual Hazel::Buffer GetBuffer() const override { return m_ImageData; }
 	virtual Hazel::Buffer& GetBuffer() override { return m_ImageData; }
 
+	virtual void CreatePerLayerImageViews() override {};
 	virtual uint64_t GetHash() const override { return m_Info.Image; }
 
 	DX11ImageInfo& GetImageInfo() { return m_Info; }

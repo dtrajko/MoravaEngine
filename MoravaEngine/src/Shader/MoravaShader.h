@@ -51,13 +51,12 @@ public:
 	MoravaShader(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
 	MoravaShader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
 	MoravaShader(const char* computeLocation, bool forceCompile = false);
+	~MoravaShader();
 
 	// HazelShader abstract methods
-	virtual Hazel::RendererID GetRendererID() const override;
 	virtual size_t GetHash() const override;
 
 	// virtual methods
-	virtual void Bind() override;
 	virtual void Reload(bool forceCompile = false) override;
 
 	virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
@@ -117,9 +116,10 @@ public:
 
 	static std::string ReadFile(const char* fileLocation);
 
-	~MoravaShader();
-
 	GLuint GetProgramID();
+
+	Hazel::RendererID GetRendererID() const;
+	void Bind();
 
 protected:
 	void CompileProgram();

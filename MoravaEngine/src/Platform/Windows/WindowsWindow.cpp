@@ -86,6 +86,10 @@ void WindowsWindow::Init(const WindowProps& props)
 
 	RendererBasic::SetRendererContext(m_RendererContext);
 
+	// Ref<Hazel::VulkanContext> context = m_RendererContext.As<Hazel::VulkanContext>();
+	// m_SwapChain.Init(Hazel::VulkanContext::GetInstance(), context->GetDevice());
+	// m_SwapChain.InitSurface(m_Window);
+
 	SetVSync(true);
 
 	RendererBasic::EnableDepthTest();

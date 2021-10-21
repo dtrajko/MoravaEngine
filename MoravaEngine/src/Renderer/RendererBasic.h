@@ -4,6 +4,7 @@
 #include "Core/Window.h"
 #include "Scene/Scene.h"
 #include "Shader/MoravaShader.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 #include "glm/glm.hpp"
 

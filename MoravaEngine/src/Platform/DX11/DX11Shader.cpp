@@ -428,10 +428,6 @@ std::unordered_map<uint32_t, std::string> DX11Shader::PreProcess(const std::stri
 	return shaderSources;
 }
 
-void DX11Shader::Bind() {}
-
-Hazel::RendererID DX11Shader::GetRendererID() const { return 0; }
-
 void DX11Shader::ClearUniformBuffers()
 {
 	s_UniformBuffers.clear();

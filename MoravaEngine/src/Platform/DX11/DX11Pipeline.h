@@ -18,6 +18,9 @@ public:
 	virtual const Hazel::PipelineSpecification& GetSpecification() const { return m_Specification; }
 
 	virtual void Invalidate() override;
+
+	virtual void SetUniformBuffer(Hazel::Ref<Hazel::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) override;
+
 	virtual void Bind() override;
 
 	inline ID3D11InputLayout* GetInputLayout() { return m_InputLayout; }
