@@ -28,7 +28,7 @@ OpenGLMoravaFramebuffer::OpenGLMoravaFramebuffer()
 	m_AttachmentStencil = nullptr;
 	m_AttachmentDepthAndStencil = nullptr;
 
-	// Resize(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
+	Resize(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 }
 
 OpenGLMoravaFramebuffer::OpenGLMoravaFramebuffer(unsigned int width, unsigned int height)
@@ -87,9 +87,7 @@ void OpenGLMoravaFramebuffer::AddDepthAttachment(FramebufferSpecification specs)
 
 void OpenGLMoravaFramebuffer::Generate(unsigned int width, unsigned int height)
 {
-	//	if (m_FBO) {
-	//		Release();
-	//	}
+	if (m_FBO) Release();
 
 	m_FramebufferSpecs.Width = width;
 	m_FramebufferSpecs.Height = height;
