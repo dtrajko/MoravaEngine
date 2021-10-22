@@ -128,6 +128,7 @@
     <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -568,6 +569,7 @@
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h" />
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h" />
+    <ClInclude Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="pch.h" />

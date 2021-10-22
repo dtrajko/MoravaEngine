@@ -1020,6 +1020,9 @@
     <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp">
       <Filter>Hazel\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp">
+      <Filter>Vendors\VulkanMemoryAllocator</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2161,6 +2164,9 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Audio\AudioEngine.h">
       <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.h">
+      <Filter>Vendors\VulkanMemoryAllocator</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
