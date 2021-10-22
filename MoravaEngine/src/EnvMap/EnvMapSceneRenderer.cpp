@@ -8,6 +8,7 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/HazelShader.h"
 #include "Hazel/Scene/HazelScene.h"
+#include "Hazel/Renderer/Renderer2D.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -65,6 +66,8 @@ BloomSettings EnvMapSceneRenderer::s_BloomSettings;
 Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::s_BloomDirtTexture;
 
 EnvMapSceneRenderer::GPUTimeQueries EnvMapSceneRenderer::s_GPUTimeQueries;
+
+Hazel::Ref<Hazel::Renderer2D> EnvMapSceneRenderer::s_Renderer2D;
 
 
 struct EnvMapSceneRendererData

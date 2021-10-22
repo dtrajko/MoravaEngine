@@ -4,11 +4,59 @@
 #include "Hazel/Core/Base.h"
 #include "Hazel/Platform/Vulkan/Vulkan.h"
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
+#include "Hazel/Platform/Vulkan/VulkanImage.h"
+#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "Hazel/Renderer/HazelImage.h"
 
 #include <fstream>
 #include <exception>
 #include <string>
 
+namespace Utils
+{
+	// Hazel::VulkanImage
+	VkFormat VulkanImageFormat(Hazel::HazelImageFormat format)
+	{
+		switch (format)
+		{
+		case Hazel::HazelImageFormat::RED32F:   return VK_FORMAT_R32_SFLOAT;
+		case Hazel::HazelImageFormat::RG16F:    return VK_FORMAT_R16G16_SFLOAT;
+		case Hazel::HazelImageFormat::RG32F:    return VK_FORMAT_R32G32_SFLOAT;
+		case Hazel::HazelImageFormat::RGBA:     return VK_FORMAT_R8G8B8A8_UNORM;
+		case Hazel::HazelImageFormat::RGBA16F:  return VK_FORMAT_R16G16B16A16_SFLOAT;
+		case Hazel::HazelImageFormat::RGBA32F:  return VK_FORMAT_R32G32B32A32_SFLOAT;
+		case Hazel::HazelImageFormat::DEPTH32F: return VK_FORMAT_D32_SFLOAT;
+		case Hazel::HazelImageFormat::DEPTH24STENCIL8: return Hazel::VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
+		}
+
+		Log::GetLogger()->error("VulkanImageFormat: HazelImageFormat not supported: '{0}'!", format);
+		// HZ_CORE_ASSERT(false);
+		return VK_FORMAT_UNDEFINED;
+	}
+
+	static VkSamplerAddressMode VulkanSamplerWrap(Hazel::TextureWrap wrap)
+	{
+		switch (wrap)
+		{
+		case Hazel::TextureWrap::Clamp:   return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		case Hazel::TextureWrap::Repeat:  return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		}
+		HZ_CORE_ASSERT(false, "Unknown wrap mode");
+		return (VkSamplerAddressMode)0;
+	}
+
+	static VkFilter VulkanSamplerFilter(Hazel::TextureFilter filter)
+	{
+		switch (filter)
+		{
+		case Hazel::TextureFilter::Linear:   return VK_FILTER_LINEAR;
+		case Hazel::TextureFilter::Nearest:  return VK_FILTER_NEAREST;
+		}
+		HZ_CORE_ASSERT(false, "Unknown filter");
+		return (VkFilter)0;
+	}
+
+}
 
 VulkanMoravaTexture::VulkanMoravaTexture()
 {
@@ -452,6 +500,10 @@ void VulkanMoravaTexture::SetBlue(int x, int z, int value)
 void VulkanMoravaTexture::SetAlpha(int x, int z, int value)
 {
 	m_Buffer[((z * m_Spec.Width + x) * m_Spec.BitDepth) + 3] = value;
+}
+
+void VulkanMoravaTexture::GenerateMips(bool readonly)
+{
 }
 
 void VulkanMoravaTexture::Bind(uint32_t textureSlot) const

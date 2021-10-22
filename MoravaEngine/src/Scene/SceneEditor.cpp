@@ -932,9 +932,9 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
             ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
 
             ImGui::Text("Blur Effect Horizontal");
-            ImGui::Image((void*)(intptr_t)m_BlurEffect->GetHorizontalOutputTexture()->GetID(), imageSize);
+            // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetHorizontalOutputTexture()->GetID(), imageSize);
             ImGui::Text("Blur Effect Vertical");
-            ImGui::Image((void*)(intptr_t)m_BlurEffect->GetVerticalOutputTexture()->GetID(), imageSize);
+            // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetVerticalOutputTexture()->GetID(), imageSize);
         }
     }
     ImGui::End();
@@ -2351,7 +2351,7 @@ void SceneEditor::RenderLightSources(Hazel::Ref<MoravaShader> shaderGizmo)
 
 void SceneEditor::RenderSkybox(Hazel::Ref<MoravaShader> shaderBackground)
 {
-    m_BlurEffect->Render();
+    // m_BlurEffect->Render();
 
     if (m_IsViewportEnabled) {
         m_RenderFramebuffer->Bind();
@@ -2615,7 +2615,7 @@ SceneEditor::~SceneEditor()
     SaveScene();
     CleanupGeometry();
     delete m_ParticleSettingsEdit;
-    delete m_ParticleSettingsPrev;
+    // delete m_ParticleSettingsPrev;
     delete m_CurrentSOPS;
     delete m_PivotScene;
     delete m_Grid;

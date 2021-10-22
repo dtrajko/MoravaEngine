@@ -2710,7 +2710,7 @@ SceneEditorImGuizmo::~SceneEditorImGuizmo()
     SaveScene();
     CleanupGeometry();
     delete m_ParticleSettingsEdit;
-    delete m_ParticleSettingsPrev;
+    // delete m_ParticleSettingsPrev;
     delete m_CurrentSOPS;
     delete m_PivotScene;
     delete m_Grid;

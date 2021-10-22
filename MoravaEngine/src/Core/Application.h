@@ -14,11 +14,24 @@
 #include "Renderer/RendererBasic.h"
 
 
+struct ApplicationSpecification
+{
+	std::string Name = "MoravaEngine";
+	uint32_t WindowWidth = 1280, WindowHeight = 720;
+	bool VSync = true;
+	std::string WorkingDirectory;
+	bool StartMaximized = true;
+	bool Resizable = true;
+	bool EnableImGui = true;
+};
+
 class Application
 {
 public:
 	Application();
 	virtual ~Application();
+
+	static Application* Create(const ApplicationSpecification& specification, std::string projectPath);
 
 	static Application* Get();
 
@@ -64,6 +77,10 @@ private:
 
 private:
 	static Application* s_Instance;
+
+	ApplicationSpecification m_Specification;
+	std::string m_ProjectPath;
+
 	Scene* m_Scene;
 	RendererBasic* m_Renderer;
 
