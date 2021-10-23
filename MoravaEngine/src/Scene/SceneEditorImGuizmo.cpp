@@ -2239,7 +2239,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader
     Hazel::HazelMesh* meshAnimPBR = (Hazel::HazelMesh*)sceneObject->mesh;
 
     float deltaTime = Timer::Get()->GetDeltaTime();
-    meshAnimPBR->OnUpdate(deltaTime, false);
+    meshAnimPBR->OnUpdate(deltaTime);
 
     meshAnimPBR->GetVertexBuffer()->Bind();
     meshAnimPBR->GetPipeline()->Bind();

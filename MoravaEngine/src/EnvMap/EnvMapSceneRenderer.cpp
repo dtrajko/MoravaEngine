@@ -81,7 +81,7 @@ struct EnvMapSceneRendererData
         Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
         Material* SkyboxMaterial;
         Hazel::Environment SceneEnvironment;
-        Hazel::HazelLight ActiveLight;
+        Hazel::HazelDirLight ActiveLight;
     } SceneData;
 
     Hazel::Ref<Hazel::HazelTexture2D> BRDFLUT;
@@ -200,6 +200,8 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
     s_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
 
     s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
+
+    s_Renderer2D = Hazel::Ref<Hazel::Renderer2D>::Create();
 }
 
 void EnvMapSceneRenderer::SetupShaders()
@@ -835,7 +837,7 @@ void EnvMapSceneRenderer::GeometryPass()
         }
     }
 
-    Hazel::Renderer2D::BeginScene(viewProj, true);
+    Hazel::Renderer2D::BeginScene(viewProj, glm::mat4(1.0f), true);
     {
         // RendererBasic::SetLineThickness(2.0f);
 
@@ -1023,12 +1025,12 @@ void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, Hazel::Re
     s_Data.DrawList.push_back(drawCommand);
 }
 
-Hazel::HazelLight& EnvMapSceneRenderer::GetActiveLight()
+Hazel::HazelDirLight& EnvMapSceneRenderer::GetActiveLight()
 {
     return s_Data.SceneData.ActiveLight;
 }
 
-void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelLight& light)
+void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelDirLight& light)
 {
     s_Data.SceneData.ActiveLight = light;
 }

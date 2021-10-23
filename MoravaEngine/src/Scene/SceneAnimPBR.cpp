@@ -392,9 +392,9 @@ void SceneAnimPBR::Update(float timestep, Window* mainWindow)
     m_ShaderHybridAnimPBR->SetFloat("u_TilingFactor", 1.0f);
 
     float deltaTime = Timer::Get()->GetDeltaTime();
-    m_MeshAnimPBR_M1911->OnUpdate(deltaTime, false);
-    m_MeshAnimPBR_BobLamp->OnUpdate(deltaTime, false);
-    m_MeshAnimPBR_AnimBoy->OnUpdate(deltaTime, false);
+    m_MeshAnimPBR_M1911->OnUpdate(deltaTime);
+    m_MeshAnimPBR_BobLamp->OnUpdate(deltaTime);
+    m_MeshAnimPBR_AnimBoy->OnUpdate(deltaTime);
 
     if (m_HDRI_Edit != m_HDRI_Edit_Prev)
     {

@@ -259,11 +259,11 @@ void VulkanMoravaTexture::Invalidate()
 	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	imageCreateInfo.extent = { m_Width, m_Height, 1 };
 	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-	VK_CHECK_RESULT(vkCreateImage(vulkanDevice, &imageCreateInfo, nullptr, &m_Image));
+	VK_CHECK_RESULT(vkCreateImage(vulkanDevice, &imageCreateInfo, nullptr, &m_VulkanImage));
 
-	vkGetImageMemoryRequirements(vulkanDevice, m_Image, &memoryRequirements);
+	vkGetImageMemoryRequirements(vulkanDevice, m_VulkanImage, &memoryRequirements);
 	allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice, m_Image, m_DeviceMemory, 0));
+	VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice, m_VulkanImage, m_DeviceMemory, 0));
 
 	VkCommandBuffer copyCmd = device->GetCommandBuffer(true);
 
@@ -285,7 +285,7 @@ void VulkanMoravaTexture::Invalidate()
 	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier.image = m_Image;
+	imageMemoryBarrier.image = m_VulkanImage;
 	imageMemoryBarrier.subresourceRange = subresourceRange;
 	imageMemoryBarrier.srcAccessMask = 0;
 	imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -308,7 +308,7 @@ void VulkanMoravaTexture::Invalidate()
 	vkCmdCopyBufferToImage(
 		copyCmd,
 		stagingBuffer,
-		m_Image,
+		m_VulkanImage,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		1,
 		&bufferCopyRegion);
@@ -399,7 +399,7 @@ void VulkanMoravaTexture::Invalidate()
 	// Only set mip map count if optimal tiling is used
 	view.subresourceRange.levelCount = 1;
 	// The view will be based on the texture's image
-	view.image = m_Image;
+	view.image = m_VulkanImage;
 	VK_CHECK_RESULT(vkCreateImageView(vulkanDevice, &view, nullptr, &m_DescriptorImageInfo.imageView));
 }
 
@@ -504,6 +504,176 @@ void VulkanMoravaTexture::SetAlpha(int x, int z, int value)
 
 void VulkanMoravaTexture::GenerateMips(bool readonly)
 {
+	auto device = Hazel::VulkanContext::GetCurrentDevice();
+	auto vulkanDevice = device->GetVulkanDevice();
+
+	Hazel::Ref<Hazel::VulkanImage2D> image = m_Image.As<Hazel::VulkanImage2D>();
+	const auto& info = image->GetImageInfo();
+
+	const VkCommandBuffer blitCmd = Hazel::VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
+
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.image = info.Image;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+	const auto mipLevels = GetMipLevelCount();
+	for (uint32_t i = 1; i < mipLevels; i++)
+	{
+		VkImageBlit imageBlit{};
+
+		// Source
+		imageBlit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		imageBlit.srcSubresource.layerCount = 1;
+		imageBlit.srcSubresource.mipLevel = i - 1;
+		imageBlit.srcOffsets[1].x = int32_t(m_Width >> (i - 1));
+		imageBlit.srcOffsets[1].y = int32_t(m_Height >> (i - 1));
+		imageBlit.srcOffsets[1].z = 1;
+
+		// Destination
+		imageBlit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		imageBlit.dstSubresource.layerCount = 1;
+		imageBlit.dstSubresource.mipLevel = i;
+		imageBlit.dstOffsets[1].x = int32_t(m_Width >> i);
+		imageBlit.dstOffsets[1].y = int32_t(m_Height >> i);
+		imageBlit.dstOffsets[1].z = 1;
+
+		VkImageSubresourceRange mipSubRange = {};
+		mipSubRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		mipSubRange.baseMipLevel = i;
+		mipSubRange.levelCount = 1;
+		mipSubRange.layerCount = 1;
+
+		// Prepare current mip level as image blit destination
+		Hazel::Utils::InsertImageMemoryBarrier(blitCmd, info.Image,
+			0, VK_ACCESS_TRANSFER_WRITE_BIT,
+			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+			mipSubRange);
+
+		// Blit from previous level
+		vkCmdBlitImage(
+			blitCmd,
+			info.Image,
+			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			info.Image,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1,
+			&imageBlit,
+			VK_FILTER_LINEAR);
+
+		// Prepare current mip level as image blit source for next level
+		Hazel::Utils::InsertImageMemoryBarrier(blitCmd, info.Image,
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+			mipSubRange);
+	}
+
+	// After the loop, all mip layers are in TRANSFER_SRC layout, so transition all to SHADER_READ
+	VkImageSubresourceRange subresourceRange = {};
+	subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	subresourceRange.layerCount = 1;
+	subresourceRange.levelCount = mipLevels;
+
+	Hazel::Utils::InsertImageMemoryBarrier(blitCmd, info.Image,
+		VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
+		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		subresourceRange);
+
+	Hazel::VulkanContext::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
+
+#if 0
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.image = m_Image;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+	VkImageSubresourceRange subresourceRange = {};
+	subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	subresourceRange.levelCount = 1;
+	subresourceRange.layerCount = 1;
+	barrier.subresourceRange = subresourceRange;
+
+	int32_t mipWidth = m_Width;
+	int32_t mipHeight = m_Height;
+
+	VkCommandBuffer commandBuffer = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
+
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+	vkCmdPipelineBarrier(commandBuffer,
+		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier);
+
+	auto mipLevels = GetMipLevelCount();
+	for (uint32_t i = 1; i < mipLevels; i++)
+	{
+		VkImageBlit blit = {};
+		blit.srcOffsets[0] = { 0, 0, 0 };
+		blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.srcSubresource.mipLevel = i - 1;
+		blit.srcSubresource.baseArrayLayer = 0;
+		blit.srcSubresource.layerCount = 1;
+
+		blit.dstOffsets[0] = { 0, 0, 0 };
+		blit.dstOffsets[1] = { mipWidth / 2, mipHeight / 2, 1 };
+		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		blit.dstSubresource.mipLevel = i;
+		blit.dstSubresource.baseArrayLayer = 0;
+		blit.dstSubresource.layerCount = 1;
+
+		vkCmdBlitImage(commandBuffer,
+			m_Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			1, &blit,
+			VK_FILTER_LINEAR);
+
+		barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+		barrier.subresourceRange.baseMipLevel = i;
+
+		vkCmdPipelineBarrier(commandBuffer,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier);
+
+		if (mipWidth > 1)
+			mipWidth /= 2;
+		if (mipHeight > 1)
+			mipHeight /= 2;
+	}
+
+	// Transition all mips from transfer to shader read
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = mipLevels;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+	vkCmdPipelineBarrier(commandBuffer,
+		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier);
+
+	VulkanContext::GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
+#endif
 }
 
 void VulkanMoravaTexture::Bind(uint32_t textureSlot) const

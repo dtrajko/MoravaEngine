@@ -944,7 +944,7 @@ void DX11Renderer::EndFrame()
 	// Hazel::HazelRenderer::Submit([]() {});
 }
 
-void DX11Renderer::BeginRenderPass(const Hazel::Ref<Hazel::RenderPass>& renderPass)
+void DX11Renderer::BeginRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::RenderPass> renderPass, bool explicitClear)
 {
 	// Hazel::HazelRenderer::Submit([]() {});
 
@@ -953,23 +953,31 @@ void DX11Renderer::BeginRenderPass(const Hazel::Ref<Hazel::RenderPass>& renderPa
 	// TODO
 }
 
-void DX11Renderer::EndRenderPass()
+void DX11Renderer::EndRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer)
 {
 	// Hazel::HazelRenderer::Submit([]() {});
 }
 
-void DX11Renderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material)
+void DX11Renderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::HazelMaterial> material)
 {
-	// Hazel::HazelRenderer::Submit([]() {});
 }
 
-void DX11Renderer::SetSceneEnvironment(Hazel::Ref<Hazel::Environment> environment, Hazel::Ref<Hazel::HazelImage2D> shadow)
+void DX11Renderer::SubmitFullscreenQuadWithOverrides(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, Hazel::Buffer vertexShaderOverrides, Hazel::Buffer fragmentShaderOverrides)
+{
+}
+
+void DX11Renderer::SetSceneEnvironment(Hazel::Ref<Hazel::SceneRenderer> sceneRenderer, Hazel::Ref<Hazel::Environment> environment, Hazel::Ref<Hazel::HazelImage2D> shadow, Hazel::Ref<Hazel::HazelImage2D> linearDepth)
 {
 }
 
 std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> DX11Renderer::CreateEnvironmentMap(const std::string& filepath)
 {
 	return std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>>();
+}
+
+Hazel::Ref<Hazel::HazelTextureCube> DX11Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination)
+{
+	return Hazel::Ref<Hazel::HazelTextureCube>();
 }
 
 void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform)
@@ -981,6 +989,38 @@ void DX11Renderer::RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipelin
 }
 
 void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform)
+{
+}
+
+void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform)
+{
+}
+
+void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Ref<Hazel::MaterialTable> materialTable, const glm::mat4& transform)
+{
+}
+
+void DX11Renderer::RenderMeshWithMaterial(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform, Hazel::Buffer additionalUniforms)
+{
+}
+
+void DX11Renderer::LightCulling(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::PipelineCompute> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups)
+{
+}
+
+void DX11Renderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material)
+{
+}
+
+void DX11Renderer::ClearImage(Hazel::Ref<Hazel::RenderCommandBuffer> commandBuffer, Hazel::Ref<Hazel::HazelImage2D> image)
+{
+}
+
+void DX11Renderer::RenderGeometry(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBuffer, Hazel::Ref<Hazel::HazelMaterial> material, Hazel::Ref<Hazel::VertexBuffer> vertexBuffer, Hazel::Ref<Hazel::IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount)
+{
+}
+
+void DX11Renderer::DispatchComputeShader(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::PipelineCompute> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::ivec3& workGroups)
 {
 }
 

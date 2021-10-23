@@ -83,9 +83,12 @@ protected:
 	uint32_t m_Height;
 	uint32_t m_Channels;
 	Hazel::Buffer m_ImageData;
+
+	Hazel::Ref<Hazel::HazelImage2D> m_Image;
+	VkImage m_VulkanImage;
+
 	Hazel::TextureProperties m_Properties;
 	VkDeviceMemory m_DeviceMemory;
-	VkImage m_Image;
 	VkDescriptorImageInfo m_DescriptorImageInfo = {};
 
 };
