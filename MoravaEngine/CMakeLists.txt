@@ -1010,6 +1010,8 @@ target_include_directories(
 	../vendor/cross-platform/SPIRV-Cross
 	../vendor/Vulkan/1.2.148.1/Include
 	../vendor/DirectXTex/DirectXTex
+	../vendor/miniaudio/include
+	../vendor/PhysX/include
 )
 
 target_link_directories(

@@ -957,9 +957,6 @@
     <ClCompile Include="src\Hazel\Editor\AssetEditorPanel.cpp">
       <Filter>Hazel\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Editor\AudioEventsEditor.cpp">
-      <Filter>Hazel\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp">
       <Filter>Hazel\Platform\Windows</Filter>
     </ClCompile>
@@ -1031,6 +1028,60 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Renderer\HazelMesh.cpp">
       <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Scene\Prefab.cpp">
+      <Filter>Hazel\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioComponent.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\Sound.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\SoundObject.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetImporter.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetSerializer.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioFileUtils.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioEvents\AudioCommandRegistry.cpp">
+      <Filter>Hazel\Audio\AudioEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\Editor\AudioEventsEditor.cpp">
+      <Filter>Hazel\Audio\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioEvents\CommandID.cpp">
+      <Filter>Hazel\Audio\AudioEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Core\Math\Mat4.cpp">
+      <Filter>Hazel\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Core\Math\Noise.cpp">
+      <Filter>Hazel\Core\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Math\HazelMath.cpp">
+      <Filter>Hazel\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsLayer.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\hzpch.cpp">
+      <Filter>Hazel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\CookingFactory.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysXInternal.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\Debug\PhysXDebugger.cpp">
+      <Filter>Hazel\Physics\3D\Debug</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1498,16 +1549,16 @@
       <Filter>Hazel\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Events\ApplicationEvent.h">
-      <Filter>Hazel\Events</Filter>
+      <Filter>Hazel\Core\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Events\Event.h">
-      <Filter>Hazel\Events</Filter>
+      <Filter>Hazel\Core\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Events\KeyEvent.h">
-      <Filter>Hazel\Events</Filter>
+      <Filter>Hazel\Core\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Events\MouseEvent.h">
-      <Filter>Hazel\Events</Filter>
+      <Filter>Hazel\Core\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\ImGui\ImGui.h">
       <Filter>Hazel\ImGui</Filter>
@@ -2102,9 +2153,6 @@
     <ClInclude Include="src\Hazel\Editor\AssetEditorPanel.h">
       <Filter>Hazel\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Editor\AudioEventsEditor.h">
-      <Filter>Hazel\Editor</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Editor\EditorConsole\ConsoleMessage.h">
       <Filter>Hazel\Editor\EditorConsole</Filter>
     </ClInclude>
@@ -2189,6 +2237,75 @@
     <ClInclude Include="src\Hazel\Renderer\HazelMesh.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Scene\Prefab.h">
+      <Filter>Hazel\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioComponent.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\Sound.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\SoundObject.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetExtensions.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetImporter.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetSerializer.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Utilities\SerializationMacros.h">
+      <Filter>Hazel\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioFileUtils.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioEvents\AudioCommandRegistry.h">
+      <Filter>Hazel\Audio\AudioEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\Editor\AudioEventsEditor.h">
+      <Filter>Hazel\Audio\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioEvents\CommandID.h">
+      <Filter>Hazel\Audio\AudioEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Core\Math\Mat4.h">
+      <Filter>Hazel\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Core\Math\Noise.h">
+      <Filter>Hazel\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Math\HazelMath.h">
+      <Filter>Hazel\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsLayer.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Hazel.h">
+      <Filter>Hazel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\hzpch.h">
+      <Filter>Hazel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\CookingFactory.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysXInternal.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\Debug\PhysXDebugger.h">
+      <Filter>Hazel\Physics\3D\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsSettings.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsTypes.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2241,9 +2358,6 @@
     </Filter>
     <Filter Include="Hazel">
       <UniqueIdentifier>{7b3e4f94-2dfa-4d14-b645-f18409733f0a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Events">
-      <UniqueIdentifier>{92fc41f3-3866-4005-97c0-e6b95883217b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Hazel\Core">
       <UniqueIdentifier>{e053c5c1-9585-4c6a-82e8-6a391773a618}</UniqueIdentifier>
@@ -2451,6 +2565,24 @@
     </Filter>
     <Filter Include="HazelLegacy\Editor">
       <UniqueIdentifier>{b985c86e-3b0e-4e32-9083-14b9845ac5bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio\AudioEvents">
+      <UniqueIdentifier>{2d3965f1-d987-468e-a0a3-cbb498908e9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio\DSP">
+      <UniqueIdentifier>{d8b136f0-1ab5-4caa-ad4d-82bdcf9d29d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio\Editor">
+      <UniqueIdentifier>{830417fa-944b-44d7-9ea3-6695d2f78d44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Core\Events">
+      <UniqueIdentifier>{92fc41f3-3866-4005-97c0-e6b95883217b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Math">
+      <UniqueIdentifier>{1aa63241-4192-4ccf-a0f5-17248a410699}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Physics\3D\Debug">
+      <UniqueIdentifier>{df212a44-baa2-437b-aeab-99d116aeb7d3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -54,7 +54,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;HZ_PLATFORM_WINDOWS;HZ_DEBUG;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(MONO_PROJECT)include\mono-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\PhysX\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(SolutionDir)vendor\miniaudio\include;$(MONO_PROJECT)include\mono-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -87,7 +87,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;HZ_PLATFORM_WINDOWS;HZ_RELEASE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(MONO_PROJECT)include\mono-2.0;$(SolutionDir)vendor\DirectXTex\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\PhysX\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(SolutionDir)vendor\miniaudio\include;$(MONO_PROJECT)include\mono-2.0;$(SolutionDir)vendor\DirectXTex\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -178,29 +178,45 @@
     <ClCompile Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Renderer\MeshHazelLegacy.cpp" />
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp" />
+    <ClCompile Include="src\Hazel\Asset\AssetImporter.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetManager.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp" />
+    <ClCompile Include="src\Hazel\Asset\AssetSerializer.cpp" />
+    <ClCompile Include="src\Hazel\Audio\AudioComponent.cpp" />
     <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp" />
+    <ClCompile Include="src\Hazel\Audio\AudioEvents\AudioCommandRegistry.cpp" />
+    <ClCompile Include="src\Hazel\Audio\AudioEvents\CommandID.cpp" />
+    <ClCompile Include="src\Hazel\Audio\AudioFileUtils.cpp" />
+    <ClCompile Include="src\Hazel\Audio\Editor\AudioEventsEditor.cpp" />
+    <ClCompile Include="src\Hazel\Audio\Sound.cpp" />
+    <ClCompile Include="src\Hazel\Audio\SoundObject.cpp" />
     <ClCompile Include="src\Hazel\Core\Hash.cpp" />
     <ClCompile Include="src\Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="src\Hazel\Core\Layer.cpp" />
     <ClCompile Include="src\Hazel\Core\LayerStack.cpp" />
+    <ClCompile Include="src\Hazel\Core\Math\Mat4.cpp" />
+    <ClCompile Include="src\Hazel\Core\Math\Noise.cpp" />
     <ClCompile Include="src\Hazel\Core\Timestep.cpp" />
     <ClCompile Include="src\Hazel\Core\UUID.cpp" />
     <ClCompile Include="src\Hazel\Editor\AssetEditorPanel.cpp" />
-    <ClCompile Include="src\Hazel\Editor\AudioEventsEditor.cpp" />
     <ClCompile Include="src\Hazel\Editor\ContentBrowserPanel.cpp" />
     <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp" />
     <ClCompile Include="src\Hazel\Editor\EditorConsolePanel.cpp" />
     <ClCompile Include="src\Hazel\Editor\EditorLayerVulkan.cpp" />
     <ClCompile Include="src\Hazel\Editor\ProjectSettingsWindow.cpp" />
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp" />
+    <ClCompile Include="src\Hazel\hzpch.cpp" />
     <ClCompile Include="src\Hazel\ImGui\Colours.cpp" />
     <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Hazel\ImGui\ImGuiUtilities.cpp" />
     <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp" />
+    <ClCompile Include="src\Hazel\Math\HazelMath.cpp" />
+    <ClCompile Include="src\Hazel\Physics\3D\CookingFactory.cpp" />
+    <ClCompile Include="src\Hazel\Physics\3D\Debug\PhysXDebugger.cpp" />
     <ClCompile Include="src\Hazel\Physics\3D\Physics.cpp" />
     <ClCompile Include="src\Hazel\Physics\3D\PhysicsActor.cpp" />
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsLayer.cpp" />
+    <ClCompile Include="src\Hazel\Physics\3D\PhysXInternal.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLImage.cpp" />
@@ -280,6 +296,7 @@
     <ClCompile Include="src\Hazel\Renderer\VertexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Scene\Entity.cpp" />
     <ClCompile Include="src\Hazel\Scene\HazelScene.cpp" />
+    <ClCompile Include="src\Hazel\Scene\Prefab.cpp" />
     <ClCompile Include="src\Hazel\Scene\SceneCamera.cpp" />
     <ClCompile Include="src\Hazel\Scene\SceneSerializer.cpp" />
     <ClCompile Include="src\Hazel\Scene\ScriptableEntity.cpp" />
@@ -628,11 +645,21 @@
     <ClInclude Include="src\HazelVulkan\ExampleVertex.h" />
     <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h" />
     <ClInclude Include="src\Hazel\Asset\Asset.h" />
+    <ClInclude Include="src\Hazel\Asset\AssetExtensions.h" />
+    <ClInclude Include="src\Hazel\Asset\AssetImporter.h" />
     <ClInclude Include="src\Hazel\Asset\AssetManager.h" />
     <ClInclude Include="src\Hazel\Asset\AssetMetadata.h" />
     <ClInclude Include="src\Hazel\Asset\AssetRegistry.h" />
+    <ClInclude Include="src\Hazel\Asset\AssetSerializer.h" />
     <ClInclude Include="src\Hazel\Asset\AssetTypes.h" />
+    <ClInclude Include="src\Hazel\Audio\AudioComponent.h" />
     <ClInclude Include="src\Hazel\Audio\AudioEngine.h" />
+    <ClInclude Include="src\Hazel\Audio\AudioEvents\AudioCommandRegistry.h" />
+    <ClInclude Include="src\Hazel\Audio\AudioEvents\CommandID.h" />
+    <ClInclude Include="src\Hazel\Audio\AudioFileUtils.h" />
+    <ClInclude Include="src\Hazel\Audio\Editor\AudioEventsEditor.h" />
+    <ClInclude Include="src\Hazel\Audio\Sound.h" />
+    <ClInclude Include="src\Hazel\Audio\SoundObject.h" />
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
     <ClInclude Include="src\Hazel\Core\Buffer.h" />
@@ -643,6 +670,8 @@
     <ClInclude Include="src\Hazel\Core\Layer.h" />
     <ClInclude Include="src\Hazel\Core\LayerStack.h" />
     <ClInclude Include="src\Hazel\Core\Math\AABB.h" />
+    <ClInclude Include="src\Hazel\Core\Math\Mat4.h" />
+    <ClInclude Include="src\Hazel\Core\Math\Noise.h" />
     <ClInclude Include="src\Hazel\Core\Math\Ray.h" />
     <ClInclude Include="src\Hazel\Core\MouseCodes.h" />
     <ClInclude Include="src\Hazel\Core\Ref.h" />
@@ -650,7 +679,6 @@
     <ClInclude Include="src\Hazel\Core\Timestep.h" />
     <ClInclude Include="src\Hazel\Core\UUID.h" />
     <ClInclude Include="src\Hazel\Editor\AssetEditorPanel.h" />
-    <ClInclude Include="src\Hazel\Editor\AudioEventsEditor.h" />
     <ClInclude Include="src\Hazel\Editor\ContentBrowserPanel.h" />
     <ClInclude Include="src\Hazel\Editor\EditorCamera.h" />
     <ClInclude Include="src\Hazel\Editor\EditorConsolePanel.h" />
@@ -662,12 +690,21 @@
     <ClInclude Include="src\Hazel\Events\Event.h" />
     <ClInclude Include="src\Hazel\Events\KeyEvent.h" />
     <ClInclude Include="src\Hazel\Events\MouseEvent.h" />
+    <ClInclude Include="src\Hazel\Hazel.h" />
+    <ClInclude Include="src\Hazel\hzpch.h" />
     <ClInclude Include="src\Hazel\ImGui\Colours.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGui.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h" />
+    <ClInclude Include="src\Hazel\Math\HazelMath.h" />
+    <ClInclude Include="src\Hazel\Physics\3D\CookingFactory.h" />
+    <ClInclude Include="src\Hazel\Physics\3D\Debug\PhysXDebugger.h" />
     <ClInclude Include="src\Hazel\Physics\3D\Physics.h" />
     <ClInclude Include="src\Hazel\Physics\3D\PhysicsActor.h" />
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsLayer.h" />
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsSettings.h" />
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsTypes.h" />
+    <ClInclude Include="src\Hazel\Physics\3D\PhysXInternal.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.h" />
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLImage.h" />
@@ -750,6 +787,7 @@
     <ClInclude Include="src\Hazel\Scene\Components.h" />
     <ClInclude Include="src\Hazel\Scene\Entity.h" />
     <ClInclude Include="src\Hazel\Scene\HazelScene.h" />
+    <ClInclude Include="src\Hazel\Scene\Prefab.h" />
     <ClInclude Include="src\Hazel\Scene\SceneCamera.h" />
     <ClInclude Include="src\Hazel\Scene\SceneSerializer.h" />
     <ClInclude Include="src\Hazel\Scene\ScriptableEntity.h" />
@@ -757,6 +795,7 @@
     <ClInclude Include="src\Hazel\Script\ScriptEngineRegistry.h" />
     <ClInclude Include="src\Hazel\Script\ScriptWrappers.h" />
     <ClInclude Include="src\Hazel\Utilities\FileSystem.h" />
+    <ClInclude Include="src\Hazel\Utilities\SerializationMacros.h" />
     <ClInclude Include="src\Hazel\Utilities\StringUtils.h" />
     <ClInclude Include="src\Hazel\Utils\PlatformUtils.h" />
     <ClInclude Include="src\ImGui\ImGuiWrapper.h" />

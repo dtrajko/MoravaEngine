@@ -2,6 +2,8 @@
 
 #include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 
+#include "EnvMap/EnvMapMaterial.h"
+
 
 namespace Hazel
 {
@@ -19,6 +21,14 @@ namespace Hazel
 			: Mesh(mesh) {}
 
 		operator Ref<MeshHazelLegacy>() { return Mesh; }
+	};
+
+	struct MaterialComponent
+	{
+		Hazel::Ref<EnvMapMaterial> Material = Hazel::Ref<EnvMapMaterial>();
+
+		MaterialComponent() = default;
+		MaterialComponent(const MaterialComponent& other) = default;
 	};
 
 }

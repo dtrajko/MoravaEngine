@@ -6,7 +6,7 @@
 #include "DX11InputListener.h"
 
 #include "Hazel/Core/Timestep.h"
-#include "Hazel/Events/Event.h"
+#include "Hazel/Core/Events/Event.h"
 #include "Hazel/Renderer/HazelCamera.h"
 
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Core/Events/KeyEvent.h"
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Scene/Entity.h"
 

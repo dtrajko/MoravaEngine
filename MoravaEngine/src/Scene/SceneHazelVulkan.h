@@ -3,7 +3,7 @@
 #include "Scene/Scene.h"
 
 #include "Hazel/Editor/SceneHierarchyPanel.h"
-#include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Core/Events/KeyEvent.h"
 #include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Scene/Entity.h"

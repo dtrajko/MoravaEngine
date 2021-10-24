@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Hazel/Events/Event.h"
+#include "Hazel/Core/Events/Event.h"
 #include "Hazel/Renderer/RendererContext.h"
 #include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
 
