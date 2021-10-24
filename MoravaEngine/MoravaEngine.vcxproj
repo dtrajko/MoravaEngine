@@ -175,6 +175,8 @@
     <ClCompile Include="src\Framebuffer\OmniShadowMap.cpp" />
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp" />
+    <ClCompile Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Renderer\MeshHazelLegacy.cpp" />
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetManager.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp" />
@@ -250,7 +252,6 @@
     <ClCompile Include="src\Hazel\Renderer\HazelFramebuffer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelImage.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelMaterial.cpp" />
-    <ClCompile Include="src\Hazel\Renderer\HazelMesh.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelRenderer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelShader.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelTexture.cpp" />
@@ -620,6 +621,9 @@
     <ClInclude Include="src\Framebuffer\OmniShadowMap.h" />
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
+    <ClInclude Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Renderer\MeshHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Scene\ComponentsHazelLegacy.h" />
     <ClInclude Include="src\HazelVulkan\ExampleVertex.h" />
     <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h" />
     <ClInclude Include="src\Hazel\Asset\Asset.h" />
@@ -713,7 +717,6 @@
     <ClInclude Include="src\Hazel\Renderer\HazelFramebuffer.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelImage.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelMaterial.h" />
-    <ClInclude Include="src\Hazel\Renderer\HazelMesh.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelRenderer.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelShader.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelTexture.h" />

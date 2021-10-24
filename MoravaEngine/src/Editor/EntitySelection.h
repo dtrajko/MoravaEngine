@@ -3,13 +3,15 @@
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Scene/HazelScene.h"
 
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+
 #include <vector>
 
 
 struct SelectedSubmesh
 {
 	Hazel::Entity Entity;
-	Hazel::Submesh* Mesh;
+	Hazel::SubmeshHazelLegacy* Mesh;
 	float Distance;
 };
 

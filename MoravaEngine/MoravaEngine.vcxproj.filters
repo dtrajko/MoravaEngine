@@ -450,9 +450,6 @@
     <ClCompile Include="src\Hazel\Renderer\HazelMaterial.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\HazelMesh.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Renderer\HazelRenderer.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
@@ -1026,6 +1023,12 @@
     <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp">
       <Filter>Vendors\VulkanMemoryAllocator</Filter>
     </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\MeshHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.cpp">
+      <Filter>HazelLegacy\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1540,9 +1543,6 @@
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Renderer\HazelMaterial.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\HazelMesh.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Renderer\HazelRenderer.h">
@@ -2174,6 +2174,15 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanAllocatorVMA.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\MeshHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Scene\ComponentsHazelLegacy.h">
+      <Filter>HazelLegacy\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.h">
+      <Filter>HazelLegacy\Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2424,6 +2433,18 @@
     </Filter>
     <Filter Include="Vendors\VulkanMemoryAllocator">
       <UniqueIdentifier>{6eb26f9f-107c-41da-bb1d-8123f8ee09c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy">
+      <UniqueIdentifier>{81a5ed68-d72c-4ff7-a71d-9c46aea3510b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy\Renderer">
+      <UniqueIdentifier>{f79df5c7-be61-4c28-b42e-48a348ba8922}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy\Scene">
+      <UniqueIdentifier>{9eceaf39-f78d-4fe3-a8a2-7064a6acaf70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy\Editor">
+      <UniqueIdentifier>{b985c86e-3b0e-4e32-9083-14b9845ac5bb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

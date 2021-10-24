@@ -12,6 +12,7 @@
 
 #include "EnvMap/EnvMapMaterial.h"
 #include "EnvMap/EnvMapEditorLayer.h"
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 
 #include <vector>
 #include <string>
@@ -32,7 +33,7 @@ struct MaterialData : public Hazel::RefCounted
 	std::string Name;
 	Hazel::Ref<Hazel::HazelMaterial> Material;
 	Hazel::Ref<EnvMapMaterial> EnvMapMaterialRef;
-	Hazel::Submesh* Submesh;
+	Hazel::SubmeshHazelLegacy* Submesh;
 
 };
 
@@ -42,22 +43,22 @@ public:
 
 	static void Init();
 	static Hazel::Ref<MaterialData> AddNewMaterial(std::string name = "");
-	static Hazel::Ref<MaterialData> AddNewMaterial(Hazel::Ref<Hazel::HazelMaterial> material, Hazel::Submesh* submesh);
+	static Hazel::Ref<MaterialData> AddNewMaterial(Hazel::Ref<Hazel::HazelMaterial> material, Hazel::SubmeshHazelLegacy* submesh);
 	static void RenameMaterial(Hazel::Ref<EnvMapMaterial> envMapMaterial, std::string newName);
-	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity);
+	static void LoadEnvMapMaterials(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity);
 	static Hazel::Ref<EnvMapMaterial> CreateDefaultMaterial(std::string materialName);
 	static void AddEnvMapMaterial(MaterialUUID UUID, Hazel::Ref<EnvMapMaterial> envMapMaterial);
 	static std::string NewMaterialName();
-	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submesh* submesh);
-	static void SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial);
-	static void SetMaterialsToSubmeshes(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial);
+	static SubmeshUUID GetSubmeshUUID(Hazel::Entity* entity, Hazel::SubmeshHazelLegacy* submesh);
+	static void SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial);
+	static void SetMaterialsToSubmeshes(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial);
 	static void AddMaterialFromComponent(Hazel::Entity entity);
 	static void AddTextureToEnvMapMaterial(MaterialTextureType textureType, const std::string& texturePath, Hazel::Ref<EnvMapMaterial> envMapMaterial);
-	static MaterialUUID GetSubmeshMaterialUUID(Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Submesh& submesh, Hazel::Entity* entity);
+	static MaterialUUID GetSubmeshMaterialUUID(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::SubmeshHazelLegacy& submesh, Hazel::Entity* entity);
 	static void Cleanup();
 
 private:
-	static Hazel::Ref<MaterialData> CreateMaterialData(std::string name, Hazel::Submesh* submesh);
+	static Hazel::Ref<MaterialData> CreateMaterialData(std::string name, Hazel::SubmeshHazelLegacy* submesh);
 	static void AddSubmeshMaterialRelation(SubmeshUUID submeshUUID, MaterialUUID materialUUID);
 
 public:
@@ -69,4 +70,3 @@ public:
 	static uint32_t s_MaterialIndex;
 
 };
-

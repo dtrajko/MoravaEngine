@@ -22,6 +22,7 @@
 #include "Scene/Scene.h"
 #include "Editor/EntitySelection.h"
 #include "Editor/MaterialEditorPanel.h"
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 
 #include "ImGuizmo.h"
 
@@ -34,7 +35,7 @@ struct RenderObject
 		Unlit,
 		Light,
 	};
-	Hazel::Ref<Hazel::HazelMesh> Mesh;
+	Hazel::Ref<Hazel::MeshHazelLegacy> Mesh;
 	Hazel::Ref<DX11Mesh> MeshDX11;
 	std::vector<Hazel::Ref<Hazel::HazelTexture2D>> Textures;
 	glm::mat4 Transform;
@@ -89,8 +90,8 @@ public:
 
 public:
 	static Hazel::Ref<DX11Mesh> s_Mesh;
-	static Hazel::Ref<Hazel::HazelMesh> s_MeshLight;
-	static Hazel::Ref<Hazel::HazelMesh> s_SkyboxSphere;
+	static Hazel::Ref<Hazel::MeshHazelLegacy> s_MeshLight;
+	static Hazel::Ref<Hazel::MeshHazelLegacy> s_SkyboxSphere;
 	// render meshes with materials
 	static std::vector<RenderObject> s_RenderObjectsWithMaterials;
 	static std::vector<Hazel::Ref<DX11Material>> s_ListMaterials;

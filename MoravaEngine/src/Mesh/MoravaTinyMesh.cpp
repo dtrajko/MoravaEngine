@@ -7,9 +7,9 @@
 
 
 template <>
-struct std::hash<Hazel::Vertex>
+struct std::hash<Hazel::VertexHazelLegacy>
 {
-	size_t operator()(Hazel::Vertex const& vertex) const
+	size_t operator()(Hazel::VertexHazelLegacy const& vertex) const
 	{
 		size_t seed = 0;
 		Util::HashCombine(seed, vertex.Position, vertex.Normal, vertex.Texcoord);
@@ -18,7 +18,7 @@ struct std::hash<Hazel::Vertex>
 };
 
 MoravaTinyMesh::MoravaTinyMesh(const std::string& filepath, Hazel::Ref<MoravaShader> shader, Hazel::Ref<Hazel::HazelMaterial> material, bool isAnimated)
-	: Hazel::HazelMesh(filepath, shader, material, isAnimated)
+	: Hazel::MeshHazelLegacy(filepath, shader, material, isAnimated)
 {
 	/****
 	tinyobj::attrib_t attrib;

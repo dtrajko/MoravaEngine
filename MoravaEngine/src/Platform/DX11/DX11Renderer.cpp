@@ -18,6 +18,7 @@
 
 #include "Material/MaterialLibrary.h"
 #include "Editor/MaterialEditorPanel.h"
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 
 // ImGui includes
 #if !defined(IMGUI_IMPL_API)
@@ -80,7 +81,7 @@ static Hazel::Ref<MoravaFramebuffer> s_PostProcessingFramebuffer;
 
 // ImGuizmo
 static glm::mat4* s_ImGuizmoTransform = nullptr;
-static Hazel::Submesh* s_SelectedSubmesh;
+static Hazel::SubmeshHazelLegacy* s_SelectedSubmesh;
 static SelectionMode s_SelectionMode = SelectionMode::Entity;
 
 /**** END variables from Scene.cpp ****/
@@ -106,7 +107,7 @@ static glm::vec2 s_ImGuiViewportMain;
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
 {
 	// Temporary code - populate selected submesh
-	std::vector<Hazel::Submesh> submeshes = renderObject.Mesh->GetSubmeshes();
+	std::vector<Hazel::SubmeshHazelLegacy> submeshes = renderObject.Mesh->GetSubmeshes();
 	s_SelectedSubmesh = &submeshes.at(0);
 
 	s_RenderObjects.push_back(renderObject);
@@ -980,18 +981,6 @@ Hazel::Ref<Hazel::HazelTextureCube> DX11Renderer::CreatePreethamSky(float turbid
 	return Hazel::Ref<Hazel::HazelTextureCube>();
 }
 
-void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform)
-{
-}
-
-void DX11Renderer::RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform)
-{
-}
-
-void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform)
-{
-}
-
 void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform)
 {
 }
@@ -1342,7 +1331,7 @@ void DX11Renderer::RenderMeshesECS()
 
 	Hazel::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
 
-	auto meshEntities = DX11TestLayer::s_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponent>();
+	auto meshEntities = DX11TestLayer::s_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
 
 	// Render all entities with mesh component
 	if (meshEntities.size())
@@ -1350,7 +1339,7 @@ void DX11Renderer::RenderMeshesECS()
 		for (auto entt : meshEntities)
 		{
 			Hazel::Entity entity = { entt, DX11TestLayer::s_Scene.Raw() };
-			auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+			auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
 
 			if (meshComponent.Mesh)
 			{
@@ -1397,7 +1386,7 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 	pipeline->Bind();
 	dx11meshIB->Bind();
 
-	for (Hazel::Submesh submesh : renderObject.Mesh->GetSubmeshes())
+	for (Hazel::SubmeshHazelLegacy submesh : renderObject.Mesh->GetSubmeshes())
 	{
 		// World/Model/Transform matrix
 		s_ConstantBufferLayout.Model = renderObject.Transform;
@@ -1452,4 +1441,19 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
 		DX11Renderer::DrawIndexedTriangleList(submesh.IndexCount, submesh.BaseVertex, submesh.BaseIndex);
 	}
+}
+
+// Obsolete methods
+void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, const glm::mat4& transform)
+{
+}
+
+// Obsolete methods
+void DX11Renderer::RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, const glm::mat4& transform)
+{
+}
+
+// Obsolete methods
+void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform)
+{
 }

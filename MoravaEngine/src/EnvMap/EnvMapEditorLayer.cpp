@@ -11,6 +11,7 @@
 #include "Core/MousePicker.h"
 #include "Core/Util.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Light/PointLight.h"
 #include "Material/MaterialLibrary.h"
@@ -186,7 +187,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     // auto mapGenerator = CreateEntity("Map Generator");
     // mapGenerator.AddComponent<Hazel::ScriptComponent>("Example.MapGenerator");
 
-    // Hazel::HazelMesh* meshQuad = new Hazel::HazelMesh("Models/Primitives/quad.obj", m_ShaderHazelPBR, nullptr, false);
+    // Hazel::MeshHazelLegacy* meshQuad = new Hazel::MeshHazelLegacy("Models/Primitives/quad.obj", m_ShaderHazelPBR, nullptr, false);
 
     m_DirectionalLightEntity = CreateEntity("Directional Light");
     auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
@@ -240,7 +241,7 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    Hazel::Ref<Hazel::HazelMesh> mesh = Hazel::Ref<Hazel::HazelMesh>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, Hazel::Ref<Hazel::HazelMaterial>(), isAnimated);
+    Hazel::Ref<Hazel::MeshHazelLegacy> mesh = Hazel::Ref<Hazel::MeshHazelLegacy>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, Hazel::Ref<Hazel::HazelMaterial>(), isAnimated);
 
     mesh->SetTimeMultiplier(1.0f);
 
@@ -424,7 +425,7 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
     for (auto entt : meshEntities)
     {
         Hazel::Entity entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
-        Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+        Hazel::Ref<Hazel::MeshHazelLegacy> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
         if (mesh)
         {
             mesh->OnUpdate(timestep, false);
@@ -465,7 +466,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, flo
     for (auto entt : meshEntities)
     {
         Hazel::Entity entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
-        Hazel::Ref<Hazel::HazelMesh> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+        Hazel::Ref<Hazel::MeshHazelLegacy> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
 
         mesh->OnUpdate(timestep, false);
     }
@@ -1693,7 +1694,7 @@ void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
     ImGui::End();
 }
 
-void EnvMapEditorLayer::UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::Submesh* submesh)
+void EnvMapEditorLayer::UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::SubmeshHazelLegacy* submesh)
 {
     SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(&entity, submesh);
 
@@ -1779,10 +1780,10 @@ void EnvMapEditorLayer::SelectEntity(Hazel::Entity e)
 {
 }
 
-void EnvMapEditorLayer::SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial)
+void EnvMapEditorLayer::SubmitMesh(Hazel::MeshHazelLegacy* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
     auto& materials = mesh->GetMaterials();
-    for (Hazel::Submesh& submesh : mesh->GetSubmeshes())
+    for (Hazel::SubmeshHazelLegacy& submesh : mesh->GetSubmeshes())
     {
         // Material
         auto material = materials[submesh.MaterialIndex];
@@ -1969,21 +1970,21 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
 
             EntitySelection::s_SelectionContext.clear();
 
-            auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+            auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
             for (auto e : meshEntities)
             {
                 Hazel::Entity entity = { e, EnvMapSharedData::s_EditorScene.Raw() };
-                auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+                auto mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
                 if (!mesh) {
                     continue;
                 }
 
-                std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
+                std::vector<Hazel::SubmeshHazelLegacy>& submeshes = mesh->GetSubmeshes();
                 float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
                 // for (Hazel::Submesh& submesh : submeshes)
                 for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
-                    Hazel::Submesh* submesh = &submeshes[i];
+                    Hazel::SubmeshHazelLegacy* submesh = &submeshes[i];
                     auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
                     Hazel::Ray ray = {
                         glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
@@ -1994,7 +1995,7 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     bool intersects = ray.IntersectsAABB(submesh->BoundingBox, t);
                     if (intersects)
                     {
-                        const auto& triangleCache = ((Hazel::HazelMesh*)mesh.Raw())->GetTriangleCache(i);
+                        const auto& triangleCache = ((Hazel::MeshHazelLegacy*)mesh.Raw())->GetTriangleCache(i);
                         if (triangleCache.size())
                         {
                             for (const auto& triangle : triangleCache)
