@@ -48,7 +48,7 @@ namespace Hazel
 	static VkDescriptorSet s_DescriptorSet;
 	static std::vector<VkWriteDescriptorSet> s_WriteDescriptorSets;
 
-	glm::mat4 Mat4FromAssimpMat4(const aiMatrix4x4& matrix)
+	glm::mat4 Mat4FromAssimpMat4HazelLegacy(const aiMatrix4x4& matrix)
 	{
 		glm::mat4 result;
 		//the a,b,c,d in assimp is the row ; the 1,2,3,4 is the column

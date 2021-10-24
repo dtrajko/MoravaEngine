@@ -27,7 +27,7 @@ namespace Hazel
 		void SetSelected(Entity entity);
 		void SetSelectionChangedCallback(const std::function<void(Entity)>& func) { m_SelectionChangedCallback = func; }
 		void SetEntityDeletedCallback(const std::function<void(Entity)>& func) { m_EntityDeletedCallback = func; }
-		void SetMeshAssetConvertCallback(const std::function<void(Entity, Ref<MeshAsset>)>& func) { m_MeshAssetConvertCallback = func; }
+		void SetMeshAssetConvertCallback(const std::function<void(Entity, Ref<HazelMeshAssetLegacy>)>& func) { m_MeshAssetConvertCallback = func; }
 		void SetInvalidMetadataCallback(const std::function<void(Entity, AssetHandle)>& func) { m_InvalidMetadataCallback = func; }
 
 		void OnImGuiRender(bool* p_open = (bool*)0);

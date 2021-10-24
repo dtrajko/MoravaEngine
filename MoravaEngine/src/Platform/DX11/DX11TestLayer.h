@@ -5,7 +5,6 @@
 #include "Hazel/Core/Layer.h"
 #include "Hazel/Core/Timestep.h"
 #include "Hazel/Editor/ContentBrowserPanel.h"
-#include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Events/Event.h"
 #include "Hazel/Scene/Entity.h"
 
@@ -22,6 +21,7 @@
 #include "Scene/Scene.h"
 #include "Editor/EntitySelection.h"
 #include "Editor/MaterialEditorPanel.h"
+#include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
 #include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 
 #include "ImGuizmo.h"
@@ -112,7 +112,7 @@ public:
 	static glm::vec2 s_ViewportBounds[2];
 	static bool s_AllowViewportCameraEvents; // EditorLayer (Raypicking)
 
-	static Hazel::SceneHierarchyPanel* s_SceneHierarchyPanel;
+	static Hazel::SceneHierarchyPanelHazelLegacy* s_SceneHierarchyPanel;
 	static Hazel::ContentBrowserPanel* s_ContentBrowserPanel;
 	static MaterialEditorPanel* s_MaterialEditorPanel;
 

@@ -2063,7 +2063,7 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader> shader
     auto& materials = meshAnimPBR->GetMaterials();
 
     int submeshIndex = 0;
-    for (Hazel::Submesh& submesh : meshAnimPBR->GetSubmeshes())
+    for (Hazel::SubmeshHazelLegacy& submesh : meshAnimPBR->GetSubmeshes())
     {
         // Material
         auto material = materials[submesh.MaterialIndex];

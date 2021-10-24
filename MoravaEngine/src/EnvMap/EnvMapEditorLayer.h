@@ -2,7 +2,6 @@
 
 #include "../../pch.h"
 
-#include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Editor/ContentBrowserPanel.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/Renderer2D.h"
@@ -14,6 +13,7 @@
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "EnvMap/EnvMapSharedData.h"
 #include "Framebuffer/ShadowMap.h"
+#include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
 
 
 enum class SelectionMode
@@ -230,7 +230,7 @@ private:
 	std::string m_SceneFilePath;
 	bool m_ReloadScriptOnPlay = true;
 
-	Hazel::SceneHierarchyPanel* m_SceneHierarchyPanel;
+	Hazel::SceneHierarchyPanelHazelLegacy* m_SceneHierarchyPanel;
 	Hazel::ContentBrowserPanel* m_ContentBrowserPanel;
 	MaterialEditorPanel* m_MaterialEditorPanel;
 

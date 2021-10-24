@@ -252,6 +252,7 @@
     <ClCompile Include="src\Hazel\Renderer\HazelFramebuffer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelImage.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelMaterial.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\HazelMesh.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelRenderer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelShader.cpp" />
     <ClCompile Include="src\Hazel\Renderer\HazelTexture.cpp" />
@@ -717,6 +718,7 @@
     <ClInclude Include="src\Hazel\Renderer\HazelFramebuffer.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelImage.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelMaterial.h" />
+    <ClInclude Include="src\Hazel\Renderer\HazelMesh.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelRenderer.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelShader.h" />
     <ClInclude Include="src\Hazel\Renderer\HazelTexture.h" />

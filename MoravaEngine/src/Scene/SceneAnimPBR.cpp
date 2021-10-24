@@ -1037,7 +1037,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         auto& materials = m_MeshAnimPBR_BobLamp->GetMaterials();
 
         int submeshIndex = 0;
-        for (Hazel::Submesh& submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
+        for (Hazel::SubmeshHazelLegacy& submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
         {
             // Material
             auto material = materials[submesh.MaterialIndex];
