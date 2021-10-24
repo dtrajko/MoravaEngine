@@ -1029,6 +1029,9 @@
     <ClCompile Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.cpp">
       <Filter>HazelLegacy\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\HazelMesh.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2182,6 +2185,9 @@
     </ClInclude>
     <ClInclude Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.h">
       <Filter>HazelLegacy\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\HazelMesh.h">
+      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

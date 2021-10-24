@@ -82,7 +82,7 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
     Init(); // requires a valid Camera reference
 
-    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(EnvMapSharedData::s_EditorScene);
+    m_SceneHierarchyPanel = new Hazel::SceneHierarchyPanelHazelLegacy(EnvMapSharedData::s_EditorScene);
     m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapEditorLayer::SelectEntity, this, std::placeholders::_1));
     m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvMapEditorLayer::OnEntityDeleted, this, std::placeholders::_1));
     m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene); // already done in constructor
@@ -193,15 +193,15 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
     // tc.Rotation = EnvMapSceneRenderer::GetActiveLight().Direction;
     tc.Rotation = glm::normalize(glm::vec3(-0.05f, -0.85f, -0.05f));
-    // m_DirectionalLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
+    // m_DirectionalLightEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(meshQuad);
     auto& dlc = m_DirectionalLightEntity.AddComponent<Hazel::DirectionalLightComponent>();
 
     EnvMapSharedData::s_PointLightEntity = CreateEntity("Point Light");
-    // m_PointLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
+    // m_PointLightEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(meshQuad);
     auto& plc = EnvMapSharedData::s_PointLightEntity.AddComponent<Hazel::PointLightComponent>();
 
     EnvMapSharedData::s_SpotLightEntity = CreateEntity("Spot Light");
-    // m_SpotLightEntity.AddComponent<Hazel::MeshComponent>(meshQuad);
+    // m_SpotLightEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(meshQuad);
     auto& slc = EnvMapSharedData::s_SpotLightEntity.AddComponent<Hazel::SpotLightComponent>();
     auto& sltc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
     sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
@@ -249,7 +249,7 @@ Hazel::Entity EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     Hazel::Entity meshEntity = CreateEntity(fileNameNoExt);
     // m_MeshEntity: NoECS version
-    meshEntity.AddComponent<Hazel::MeshComponent>(mesh);
+    meshEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(mesh);
     meshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
 
     EnvMapSceneRenderer::SubmitEntityEnvMap(meshEntity);
@@ -377,7 +377,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
             // Hazel::HazelRenderer::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
             // auto viewProj = s_EditorCamera->GetViewProjection();
             // Hazel::Renderer2D::BeginScene(viewProj, false);
-            // // TODO: Renderer::DrawAABB(m_MeshEntity.GetComponent<MeshComponent>(), m_MeshEntity.GetComponent<TransformComponent>());
+            // // TODO: Renderer::DrawAABB(m_MeshEntity.GetComponent<MeshComponentHazelLegacy>(), m_MeshEntity.GetComponent<TransformComponent>());
             // Hazel::Renderer2D::EndScene();
             // Hazel::HazelRenderer::EndRenderPass();
         }
@@ -421,11 +421,11 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
     UpdateUniforms();
 
     // Update HazelMesh List
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
     for (auto entt : meshEntities)
     {
         Hazel::Entity entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
-        Hazel::Ref<Hazel::MeshHazelLegacy> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+        Hazel::Ref<Hazel::MeshHazelLegacy> mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
         if (mesh)
         {
             mesh->OnUpdate(timestep, false);
@@ -462,11 +462,11 @@ void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, flo
     UpdateUniforms();
 
     // Update HazelMesh List
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
     for (auto entt : meshEntities)
     {
         Hazel::Entity entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
-        Hazel::Ref<Hazel::MeshHazelLegacy> mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+        Hazel::Ref<Hazel::MeshHazelLegacy> mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
 
         mesh->OnUpdate(timestep, false);
     }
@@ -545,7 +545,7 @@ void EnvMapEditorLayer::CameraSyncECS()
 Ref<Hazel::Entity> EnvMapEditorLayer::GetMeshEntity()
 {
     Ref<Hazel::Entity> meshEntity;
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
     if (meshEntities.size()) {
         for (auto entt : meshEntities)
         {
@@ -665,11 +665,11 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         /****************************************************************************************************/
 
         uint32_t id = 0;
-        auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+        auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
         for (auto entt : meshEntities)
         {
             Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
-            auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+            auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
             if (meshComponent.Mesh) {
                 meshComponent.Mesh->OnImGuiRender(++id, &m_ShowWindowSceneHierarchy);
             }
@@ -994,11 +994,11 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                         }
                     }
 
-                    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+                    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
                     if (meshEntities.size())
                     {
                         meshEntity = GetMeshEntity();
-                        auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
+                        auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponentHazelLegacy>();
                         if (meshComponent.Mesh) {
                             ImGui::SameLine();
                             ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
@@ -1518,7 +1518,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
 
     // Dirty fix: m_SelectionContext not decremented when mesh entity is removed from the scene
     size_t selectionContextSize = EntitySelection::s_SelectionContext.size();
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
     if (selectionContextSize > meshEntities.size()) {
         selectionContextSize = meshEntities.size();
     }
@@ -2201,14 +2201,14 @@ void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, Hazel::E
 void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shader)
 {
     // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
     // Render all entities with mesh component
     if (meshEntities.size())
     {
         for (auto entt : meshEntities)
         {
             Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
-            auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+            auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
 
             glm::mat4 entityTransform = glm::mat4(1.0f);
             if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
@@ -2217,7 +2217,7 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shade
 
             if (meshComponent.Mesh && meshComponent.CastShadows)
             {
-                for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
+                for (Hazel::SubmeshHazelLegacy& submesh : meshComponent.Mesh->GetSubmeshes())
                 {
                     // Render Submesh
                     meshComponent.Mesh->GetVertexBuffer()->Bind();

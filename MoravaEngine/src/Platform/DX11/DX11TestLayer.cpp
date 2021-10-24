@@ -40,7 +40,7 @@ float DX11TestLayer::s_ViewportHeight = 0.0f;
 glm::vec2 DX11TestLayer::s_ViewportBounds[2];
 bool DX11TestLayer::s_AllowViewportCameraEvents = true;
 
-Hazel::SceneHierarchyPanel* DX11TestLayer::s_SceneHierarchyPanel;
+Hazel::SceneHierarchyPanelHazelLegacy* DX11TestLayer::s_SceneHierarchyPanel;
 Hazel::ContentBrowserPanel* DX11TestLayer::s_ContentBrowserPanel;
 MaterialEditorPanel* DX11TestLayer::s_MaterialEditorPanel;
 
@@ -65,7 +65,7 @@ void DX11TestLayer::OnAttach()
 
 	s_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
 
-	s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanel(s_Scene);
+	s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanelHazelLegacy(s_Scene);
 
 	s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
 

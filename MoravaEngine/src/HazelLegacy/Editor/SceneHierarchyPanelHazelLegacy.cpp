@@ -113,8 +113,8 @@ namespace Hazel
 						{
 							Hazel::Entity newEntity = m_Context->CreateEntity("Mesh");
 							SetSelected(newEntity);
-							newEntity.AddComponent<MeshComponent>();
-							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
+							newEntity.AddComponent<MeshComponentHazelLegacy>();
+							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentHazelLegacy>();
 						}
 
 						ImGui::Separator();
@@ -504,11 +504,11 @@ namespace Hazel
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MeshComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MeshComponentHazelLegacy>())
 			{
 				if (ImGui::Button("Mesh"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentHazelLegacy>();
 					//	if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponent>()) {
 					//		EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponent>();
 					//	}
@@ -1006,7 +1006,7 @@ namespace Hazel
 				}
 
 				if (ImGui::MenuItem("Mesh")) {
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentHazelLegacy>();
 					ImGui::CloseCurrentPopup();
 				}
 
