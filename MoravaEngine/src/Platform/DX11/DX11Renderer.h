@@ -8,7 +8,7 @@
 #include "DX11Texture2D.h"
 #include "DX11ConstantBuffer.h"
 #include "DX11TestLayer.h"
-
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 
 #include "Core/Window.h"
 #include "Framebuffer/MoravaFramebuffer.h"
@@ -39,7 +39,6 @@ public:
 
 	virtual void BeginRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::RenderPass> renderPass, bool explicitClear = false) override;
 	virtual void EndRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer) override;
-
 	virtual void SubmitFullscreenQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::HazelMaterial> material) override;
 	virtual void SubmitFullscreenQuadWithOverrides(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, Hazel::Buffer vertexShaderOverrides, Hazel::Buffer fragmentShaderOverrides) override;
 
@@ -106,8 +105,8 @@ public:
 	static void CreateQuad();
 
 	// Obsolete methods
-	virtual void RenderMesh(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform) override;
-	virtual void RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMesh> mesh, const glm::mat4& transform) override;
+	virtual void RenderMesh(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, const glm::mat4& transform) override;
+	virtual void RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, const glm::mat4& transform) override;
 	virtual void RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform) override;
 
 };

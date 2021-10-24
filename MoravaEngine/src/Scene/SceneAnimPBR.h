@@ -67,9 +67,9 @@ private:
 	Hazel::Ref<MoravaShader> m_ShaderEnvIrradiance;
 	Hazel::Ref<MoravaShader> m_ShaderBasic;
 
-	Hazel::Ref<Hazel::HazelMesh> m_MeshAnimPBR_M1911;
-	Hazel::Ref<Hazel::HazelMesh> m_MeshAnimPBR_BobLamp;
-	Hazel::Ref<Hazel::HazelMesh> m_MeshAnimPBR_AnimBoy;
+	Hazel::Ref<Hazel::MeshHazelLegacy> m_MeshAnimPBR_M1911;
+	Hazel::Ref<Hazel::MeshHazelLegacy> m_MeshAnimPBR_BobLamp;
+	Hazel::Ref<Hazel::MeshHazelLegacy> m_MeshAnimPBR_AnimBoy;
 
 	Hazel::Ref<Material> m_BaseMaterial_M1911;
 	Hazel::Ref<Material> m_BaseMaterial_BobLamp;

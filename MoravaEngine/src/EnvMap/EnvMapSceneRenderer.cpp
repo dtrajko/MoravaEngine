@@ -14,6 +14,8 @@
 #include "Core/Log.h"
 #include "Core/ResourceManager.h"
 #include "EnvMap/EnvMapEditorLayer.h"
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 #include "Material/MaterialLibrary.h"
 #include "Renderer/RendererBasic.h"
 #include "Shader/MoravaShaderLibrary.h"
@@ -95,7 +97,7 @@ struct EnvMapSceneRendererData
     struct DrawCommand
     {
         std::string Name;
-        Hazel::Ref<Hazel::HazelMesh> MeshPtr;
+        Hazel::Ref<Hazel::MeshHazelLegacy> MeshPtr;
         Material* MaterialPtr;
         glm::mat4 Transform;
     };
@@ -455,11 +457,11 @@ void EnvMapSceneRenderer::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 }
 
-void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::Submesh& submesh)
+void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::SubmeshHazelLegacy& submesh)
 {
     if (!EnvMapSharedData::s_DisplayOutline) return;
 
-    auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+    auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
 
     // Render outline
     if (EntitySelection::s_SelectionContext.size()) {
@@ -759,8 +761,8 @@ void EnvMapSceneRenderer::GeometryPass()
         RenderHazelGrid();
     }
 
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-    // auto meshEntities = m_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponent>();
+    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
+    // auto meshEntities = m_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
 
     // Render all entities with mesh component
     if (meshEntities.size())
@@ -768,7 +770,7 @@ void EnvMapSceneRenderer::GeometryPass()
         for (auto entt : meshEntities)
         {
             Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
-            auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+            auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
 
             if (meshComponent.Mesh)
             {
@@ -811,7 +813,7 @@ void EnvMapSceneRenderer::GeometryPass()
                 Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
                 std::string materialUUID;
 
-                for (Hazel::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
+                for (Hazel::SubmeshHazelLegacy& submesh : meshComponent.Mesh->GetSubmeshes())
                 {
                     materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
 
@@ -1013,7 +1015,7 @@ Hazel::Ref<Hazel::RenderPass> EnvMapSceneRenderer::GetCompositePass()
     return s_Data.CompositePass;
 }
 
-void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, Hazel::Ref<Hazel::HazelMesh> mesh)
+void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, Hazel::Ref<Hazel::MeshHazelLegacy> mesh)
 {
     // s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
     EnvMapSceneRendererData::DrawCommand drawCommand;
@@ -1035,7 +1037,7 @@ void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelDirLight& light)
     s_Data.SceneData.ActiveLight = light;
 }
 
-void EnvMapSceneRenderer::AddToDrawList(std::string name, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Entity entity, glm::mat4 transform)
+void EnvMapSceneRenderer::AddToDrawList(std::string name, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity, glm::mat4 transform)
 {
     s_Data.DrawList.push_back({ name, mesh.Raw(), entity.GetMaterial(), transform });
 }

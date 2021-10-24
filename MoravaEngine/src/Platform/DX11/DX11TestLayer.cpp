@@ -1,5 +1,7 @@
 #include "DX11TestLayer.h"
 
+#include "Hazel/Renderer/HazelTexture.h"
+
 #include "DX11Context.h"
 #include "DX11SwapChain.h"
 #include "DX11Renderer.h"
@@ -9,15 +11,14 @@
 #include "Core/Application.h"
 #include "Core/ResourceManager.h"
 #include "Platform/Windows/WindowsWindow.h"
-
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 
 
 std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
 glm::vec2 DX11TestLayer::s_StartMousePosition;
 Hazel::Ref<DX11Mesh> DX11TestLayer::s_Mesh;
-Hazel::Ref<Hazel::HazelMesh> DX11TestLayer::s_MeshLight;
-Hazel::Ref<Hazel::HazelMesh> DX11TestLayer::s_SkyboxSphere;
+Hazel::Ref<Hazel::MeshHazelLegacy> DX11TestLayer::s_MeshLight;
+Hazel::Ref<Hazel::MeshHazelLegacy> DX11TestLayer::s_SkyboxSphere;
 // Render meshes with materials
 std::vector<RenderObject> DX11TestLayer::s_RenderObjectsWithMaterials;
 std::vector<Hazel::Ref<DX11Material>> DX11TestLayer::s_ListMaterials;
@@ -74,11 +75,11 @@ void DX11TestLayer::OnAttach()
 
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 
-	Hazel::Ref<Hazel::HazelMesh> meshSphere = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/sphere_hq.obj");
+	Hazel::Ref<Hazel::MeshHazelLegacy> meshSphere = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/PardCode/sphere_hq.obj");
 
 	/*
 	RenderObject renderObjectGladiator;
-	renderObjectGladiator.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Gladiator/Gladiator.fbx");
+	renderObjectGladiator.Mesh = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/Gladiator/Gladiator.fbx");
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_weapon_Normal.jpg"));
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_BaseColor.jpg"));
@@ -90,7 +91,7 @@ void DX11TestLayer::OnAttach()
 	m_RenderObjects.push_back(renderObjectGladiator);
 
 	RenderObject renderObjectCerberus;
-	renderObjectCerberus.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx");
+	renderObjectCerberus.Mesh = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/Cerberus/CerberusMaterials.fbx");
 	renderObjectCerberus.Textures.push_back(renderObjectCerberus.Mesh->GetTextures().at(0));
 	renderObjectCerberus.Textures.push_back(renderObjectCerberus.Mesh->GetTextures().at(1));
 	renderObjectCerberus.Transform = glm::mat4(1.0f);
@@ -121,7 +122,7 @@ void DX11TestLayer::OnAttach()
 	*/
 
 	RenderObject renderObjectTerrain;
-	renderObjectTerrain.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create("Models/PardCode/terrain.obj");
+	renderObjectTerrain.Mesh = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/PardCode/terrain.obj");
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/sand.jpg"));
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png"));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
@@ -422,21 +423,21 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 
 			EntitySelection::s_SelectionContext.clear();
 
-			auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponent>();
+			auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
 			for (auto e : meshEntities)
 			{
 				Hazel::Entity entity = { e, s_Scene.Raw() };
-				auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+				auto mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
 				if (!mesh) {
 					continue;
 				}
 
-				std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
+				std::vector<Hazel::SubmeshHazelLegacy>& submeshes = mesh->GetSubmeshes();
 				float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
 				// for (Hazel::Submesh& submesh : submeshes)
 				for (uint32_t i = 0; i < submeshes.size(); i++)
 				{
-					Hazel::Submesh* submesh = &submeshes[i];
+					Hazel::SubmeshHazelLegacy* submesh = &submeshes[i];
 					auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
 					Hazel::Ray ray = {
 						glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
@@ -447,7 +448,7 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 					bool intersects = ray.IntersectsAABB(submesh->BoundingBox, t);
 					if (intersects)
 					{
-						const auto& triangleCache = ((Hazel::HazelMesh*)mesh.Raw())->GetTriangleCache(i);
+						const auto& triangleCache = ((Hazel::MeshHazelLegacy*)mesh.Raw())->GetTriangleCache(i);
 						if (triangleCache.size())
 						{
 							for (const auto& triangle : triangleCache)

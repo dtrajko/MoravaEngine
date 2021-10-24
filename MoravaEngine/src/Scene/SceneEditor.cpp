@@ -1553,7 +1553,7 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* n
         *name = "drone";
         break;
     case MESH_TYPE_M1911:
-        mesh = new Hazel::HazelMesh("Models/M1911/m1911.fbx", Hazel::Ref<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
+        mesh = new Hazel::MeshHazelLegacy("Models/M1911/m1911.fbx", Hazel::Ref<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
         *name = "M1911";
         break;
     default:
@@ -2051,7 +2051,7 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader> shader
 
     m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
 
-    Hazel::HazelMesh* meshAnimPBR = (Hazel::HazelMesh*)sceneObject->mesh;
+    Hazel::MeshHazelLegacy* meshAnimPBR = (Hazel::MeshHazelLegacy*)sceneObject->mesh;
 
     float deltaTime = Timer::Get()->GetDeltaTime();
     meshAnimPBR->OnUpdate(deltaTime, false);

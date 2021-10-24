@@ -286,7 +286,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
     m_BaseMaterial_M1911 = Hazel::Ref<Material>::Create(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR_M1911 = Hazel::Ref<Hazel::HazelMesh>::Create("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
+    m_MeshAnimPBR_M1911 = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
 
     m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
@@ -312,7 +312,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_BobLamp = Hazel::Ref<Material>::Create(textureInfoBobLamp, materialSpecular, materialShininess);
-    m_MeshAnimPBR_BobLamp = Hazel::Ref<Hazel::HazelMesh>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
+    m_MeshAnimPBR_BobLamp = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
     m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
 
     m_Entities["BobLamp"].Transform.Scale = m_Entities["BobLamp"].Init.Transform.Scale;
@@ -337,7 +337,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_AnimBoy = Hazel::Ref<Material>::Create(textureInfoAnimBoy, materialSpecular, materialShininess);
-    m_MeshAnimPBR_AnimBoy = Hazel::Ref<Hazel::HazelMesh>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
+    m_MeshAnimPBR_AnimBoy = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
     m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
 
     m_Entities["AnimBoy"].Transform.Scale = m_Entities["AnimBoy"].Init.Transform.Scale;

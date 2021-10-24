@@ -65,7 +65,7 @@ public:
 
 	void DisplaySubmeshMaterialSelector(bool* p_open);
 
-	void UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::Submesh* submesh);
+	void UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::SubmeshHazelLegacy* submesh);
 
 	void NewScene();
 	void OpenScene();
@@ -115,7 +115,7 @@ public:
 
 	// Renderer
 	void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
-	void SubmitMesh(Hazel::HazelMesh* mesh, const glm::mat4& transform, Material* overrideMaterial);
+	void SubmitMesh(Hazel::MeshHazelLegacy* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
 	// EditorLayer
 	void OnEvent(Event& e);
