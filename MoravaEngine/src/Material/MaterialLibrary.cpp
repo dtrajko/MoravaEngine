@@ -1,5 +1,7 @@
 #include "MaterialLibrary.h"
 
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
+
 #include <map>
 
 

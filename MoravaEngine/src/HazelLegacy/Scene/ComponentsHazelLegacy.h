@@ -21,4 +21,12 @@ namespace Hazel
 		operator Ref<MeshHazelLegacy>() { return Mesh; }
 	};
 
+	struct MaterialComponent
+	{
+		Hazel::Ref<EnvMapMaterial> Material = Hazel::Ref<EnvMapMaterial>();
+
+		MaterialComponent() = default;
+		MaterialComponent(const MaterialComponent& other) = default;
+	};
+
 }
