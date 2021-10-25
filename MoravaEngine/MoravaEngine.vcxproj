@@ -122,8 +122,8 @@
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.cpp" />
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="..\vendor\ImGui\examples\imgui_impl_vulkan_with_textures.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp" />
@@ -207,8 +207,10 @@
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp" />
     <ClCompile Include="src\Hazel\hzpch.cpp" />
     <ClCompile Include="src\Hazel\ImGui\Colours.cpp" />
+    <ClCompile Include="src\Hazel\ImGui\CustomTreeNode.cpp" />
     <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Hazel\ImGui\ImGuiUtilities.cpp" />
+    <ClCompile Include="src\Hazel\ImGui\ImGuiWidgets.cpp" />
     <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp" />
     <ClCompile Include="src\Hazel\Math\HazelMath.cpp" />
     <ClCompile Include="src\Hazel\Physics\3D\ContactListener.cpp" />
@@ -278,6 +280,7 @@
     <ClCompile Include="src\Hazel\Renderer\HazelTexture.cpp" />
     <ClCompile Include="src\Hazel\Renderer\IndexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Renderer\MaterialAsset.cpp" />
+    <ClCompile Include="src\Hazel\Renderer\MeshFactory.cpp" />
     <ClCompile Include="src\Hazel\Renderer\Pipeline.cpp" />
     <ClCompile Include="src\Hazel\Renderer\PipelineCompute.cpp" />
     <ClCompile Include="src\Hazel\Renderer\RenderCommandBuffer.cpp" />
@@ -307,6 +310,7 @@
     <ClCompile Include="src\Hazel\Script\ScriptEngine.cpp" />
     <ClCompile Include="src\Hazel\Script\ScriptEngineRegistry.cpp" />
     <ClCompile Include="src\Hazel\Script\ScriptWrappers.cpp" />
+    <ClCompile Include="src\Hazel\Utilities\FileSystem.cpp" />
     <ClCompile Include="src\Hazel\Utilities\StringUtils.cpp" />
     <ClCompile Include="src\ImGui\ImGuiWrapper.cpp" />
     <ClCompile Include="src\Instancing\RenderInstanced.cpp" />
@@ -585,8 +589,8 @@
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.h" />
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="..\vendor\ImGui\examples\imgui_impl_vulkan_with_textures.h" />
     <ClInclude Include="..\vendor\ImGui\imconfig.h" />
     <ClInclude Include="..\vendor\ImGui\imgui.h" />
     <ClInclude Include="..\vendor\ImGui\imgui_internal.h" />
@@ -698,9 +702,11 @@
     <ClInclude Include="src\Hazel\Hazel.h" />
     <ClInclude Include="src\Hazel\hzpch.h" />
     <ClInclude Include="src\Hazel\ImGui\Colours.h" />
+    <ClInclude Include="src\Hazel\ImGui\CustomTreeNode.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGui.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h" />
+    <ClInclude Include="src\Hazel\ImGui\ImGuiWidgets.h" />
     <ClInclude Include="src\Hazel\Math\HazelMath.h" />
     <ClInclude Include="src\Hazel\Physics\3D\ContactListener.h" />
     <ClInclude Include="src\Hazel\Physics\3D\CookingFactory.h" />
@@ -770,6 +776,7 @@
     <ClInclude Include="src\Hazel\Renderer\HazelTexture.h" />
     <ClInclude Include="src\Hazel\Renderer\IndexBuffer.h" />
     <ClInclude Include="src\Hazel\Renderer\MaterialAsset.h" />
+    <ClInclude Include="src\Hazel\Renderer\MeshFactory.h" />
     <ClInclude Include="src\Hazel\Renderer\Pipeline.h" />
     <ClInclude Include="src\Hazel\Renderer\PipelineCompute.h" />
     <ClInclude Include="src\Hazel\Renderer\RenderCommand.h" />
