@@ -1083,6 +1083,18 @@
     <ClCompile Include="src\Hazel\Physics\3D\Debug\PhysXDebugger.cpp">
       <Filter>Hazel\Physics\3D\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysXUtils.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsScene.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\ContactListener.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsShapes.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2306,6 +2318,24 @@
     <ClInclude Include="src\Hazel\Physics\3D\PhysicsTypes.h">
       <Filter>Hazel\Physics\3D</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysXUtils.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsScene.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\ContactListener.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Debug\Profiler.h">
+      <Filter>Hazel\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsShapes.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Script\ScriptModuleField.h">
+      <Filter>Hazel\Script</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2583,6 +2613,9 @@
     </Filter>
     <Filter Include="Hazel\Physics\3D\Debug">
       <UniqueIdentifier>{df212a44-baa2-437b-aeab-99d116aeb7d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Debug">
+      <UniqueIdentifier>{92a85a82-afd2-4aa1-bd4b-b766797836c6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

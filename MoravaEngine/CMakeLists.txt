@@ -1012,6 +1012,7 @@ target_include_directories(
 	../vendor/DirectXTex/DirectXTex
 	../vendor/miniaudio/include
 	../vendor/PhysX/include
+	../vendor/Optick/src
 )
 
 target_link_directories(
