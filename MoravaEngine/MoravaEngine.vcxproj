@@ -54,7 +54,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;HZ_PLATFORM_WINDOWS;HZ_DEBUG;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\PhysX\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(SolutionDir)vendor\miniaudio\include;$(SolutionDir)vendor\Optick\src;$(MONO_PROJECT)include\mono-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\PhysX\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(SolutionDir)vendor\miniaudio\include;$(SolutionDir)vendor\farbot\include;$(SolutionDir)vendor\Optick\src;$(SolutionDir)vendor\msdf-atlas-gen\msdf-atlas-gen;$(SolutionDir)vendor\msdf-atlas-gen\msdfgen;$(SolutionDir)vendor\msdf-atlas-gen\msdfgen\include;$(MONO_PROJECT)include\mono-2.0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -87,7 +87,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;HZ_PLATFORM_WINDOWS;HZ_RELEASE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\PhysX\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(SolutionDir)vendor\miniaudio\include;$(SolutionDir)vendor\Optick\src;$(MONO_PROJECT)include\mono-2.0;$(SolutionDir)vendor\DirectXTex\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)src;$(SolutionDir)vendor;$(SolutionDir)vendor\cross-platform\glfw\include;$(SolutionDir)vendor\GLEW\include;$(SolutionDir)vendor\GLM;$(SolutionDir)vendor\cross-platform\assimp\include;$(SolutionDir)vendor\ImGui;$(SolutionDir)vendor\cross-platform\ImGuizmo;$(SolutionDir)vendor\cross-platform\bullet3\src;$(SolutionDir)vendor\tinyobjloader;$(SolutionDir)vendor\spdlog\include;$(SolutionDir)vendor\entt\include;$(SolutionDir)vendor\cross-platform\yaml-cpp\include;$(SolutionDir)vendor\box2d\include;$(SolutionDir)vendor\PhysX\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc\include;$(SolutionDir)vendor\cross-platform\shaderc\libshaderc_util\include;$(SolutionDir)vendor\cross-platform\SPIRV-Cross;$(SolutionDir)vendor\Vulkan\1.2.148.1\Include;$(SolutionDir)vendor\DirectXTex\DirectXTex;$(SolutionDir)vendor\miniaudio\include;$(SolutionDir)vendor\farbot\include;$(SolutionDir)vendor\Optick\src;$(SolutionDir)vendor\msdf-atlas-gen\msdf-atlas-gen;$(SolutionDir)vendor\msdf-atlas-gen\msdfgen;$(SolutionDir)vendor\msdf-atlas-gen\msdfgen\include;$(MONO_PROJECT)include\mono-2.0;$(SolutionDir)vendor\DirectXTex\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -182,14 +182,25 @@
     <ClCompile Include="src\Hazel\Asset\AssetManager.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetSerializer.cpp" />
+    <ClCompile Include="src\Hazel\Audio\Audio.cpp" />
     <ClCompile Include="src\Hazel\Audio\AudioComponent.cpp" />
     <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp" />
     <ClCompile Include="src\Hazel\Audio\AudioEvents\AudioCommandRegistry.cpp" />
     <ClCompile Include="src\Hazel\Audio\AudioEvents\CommandID.cpp" />
     <ClCompile Include="src\Hazel\Audio\AudioFileUtils.cpp" />
+    <ClCompile Include="src\Hazel\Audio\AudioObject.cpp" />
+    <ClCompile Include="src\Hazel\Audio\AudioPlayback.cpp" />
+    <ClCompile Include="src\Hazel\Audio\DSP\Filters\FilterHighPass.cpp" />
+    <ClCompile Include="src\Hazel\Audio\DSP\Filters\FilterLowPass.cpp" />
+    <ClCompile Include="src\Hazel\Audio\DSP\Reverb\Reverb.cpp" />
+    <ClCompile Include="src\Hazel\Audio\DSP\Spatializer\Spatializer.cpp" />
+    <ClCompile Include="src\Hazel\Audio\DSP\Spatializer\VBAP.cpp" />
     <ClCompile Include="src\Hazel\Audio\Editor\AudioEventsEditor.cpp" />
+    <ClCompile Include="src\Hazel\Audio\Editor\OrderedVector.cpp" />
+    <ClCompile Include="src\Hazel\Audio\EntityIDMaps.cpp" />
     <ClCompile Include="src\Hazel\Audio\Sound.cpp" />
     <ClCompile Include="src\Hazel\Audio\SoundObject.cpp" />
+    <ClCompile Include="src\Hazel\Audio\SourceManager.cpp" />
     <ClCompile Include="src\Hazel\Core\Hash.cpp" />
     <ClCompile Include="src\Hazel\Core\HazelLog.cpp" />
     <ClCompile Include="src\Hazel\Core\Layer.cpp" />
@@ -660,14 +671,27 @@
     <ClInclude Include="src\Hazel\Asset\AssetRegistry.h" />
     <ClInclude Include="src\Hazel\Asset\AssetSerializer.h" />
     <ClInclude Include="src\Hazel\Asset\AssetTypes.h" />
+    <ClInclude Include="src\Hazel\Audio\Audio.h" />
     <ClInclude Include="src\Hazel\Audio\AudioComponent.h" />
     <ClInclude Include="src\Hazel\Audio\AudioEngine.h" />
     <ClInclude Include="src\Hazel\Audio\AudioEvents\AudioCommandRegistry.h" />
+    <ClInclude Include="src\Hazel\Audio\AudioEvents\AudioCommands.h" />
     <ClInclude Include="src\Hazel\Audio\AudioEvents\CommandID.h" />
     <ClInclude Include="src\Hazel\Audio\AudioFileUtils.h" />
+    <ClInclude Include="src\Hazel\Audio\AudioObject.h" />
+    <ClInclude Include="src\Hazel\Audio\AudioPlayback.h" />
+    <ClInclude Include="src\Hazel\Audio\DSP\Components\DelayLine.h" />
+    <ClInclude Include="src\Hazel\Audio\DSP\Filters\FilterHighPass.h" />
+    <ClInclude Include="src\Hazel\Audio\DSP\Filters\FilterLowPass.h" />
+    <ClInclude Include="src\Hazel\Audio\DSP\Reverb\Reverb.h" />
+    <ClInclude Include="src\Hazel\Audio\DSP\Spatializer\Spatializer.h" />
+    <ClInclude Include="src\Hazel\Audio\DSP\Spatializer\VBAP.h" />
     <ClInclude Include="src\Hazel\Audio\Editor\AudioEventsEditor.h" />
+    <ClInclude Include="src\Hazel\Audio\Editor\OrderedVector.h" />
+    <ClInclude Include="src\Hazel\Audio\EntityIDMaps.h" />
     <ClInclude Include="src\Hazel\Audio\Sound.h" />
     <ClInclude Include="src\Hazel\Audio\SoundObject.h" />
+    <ClInclude Include="src\Hazel\Audio\SourceManager.h" />
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
     <ClInclude Include="src\Hazel\Core\Buffer.h" />
@@ -796,6 +820,7 @@
     <ClInclude Include="src\Hazel\Renderer\StorageBuffer.h" />
     <ClInclude Include="src\Hazel\Renderer\StorageBufferSet.h" />
     <ClInclude Include="src\Hazel\Renderer\UI\Font.h" />
+    <ClInclude Include="src\Hazel\Renderer\UI\MSDFData.h" />
     <ClInclude Include="src\Hazel\Renderer\UniformBuffer.h" />
     <ClInclude Include="src\Hazel\Renderer\UniformBufferSet.h" />
     <ClInclude Include="src\Hazel\Renderer\VertexArray.h" />

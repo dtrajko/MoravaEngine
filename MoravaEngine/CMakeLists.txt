@@ -1011,8 +1011,12 @@ target_include_directories(
 	../vendor/Vulkan/1.2.148.1/Include
 	../vendor/DirectXTex/DirectXTex
 	../vendor/miniaudio/include
+	../vendor/farbot/include
 	../vendor/PhysX/include
 	../vendor/Optick/src
+	../vendor/msdf-atlas-gen/msdf-atlas-gen
+	../vendor/msdf-atlas-gen/msdfgen
+	../vendor/msdf-atlas-gen/msdfgen/include
 )
 
 target_link_directories(
