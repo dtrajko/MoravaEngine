@@ -11,7 +11,8 @@
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Renderer/SceneEnvironment.h"
 #include "Hazel/Renderer/SceneRenderer.h"
-#include "Hazel/Scene/Entity.h"
+
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
 
 #include "Camera/Camera.h"
 #include "EnvMap/EnvMapSharedData.h"
@@ -53,11 +54,11 @@ struct BloomSettings
 class EnvMapSceneRenderer
 {
 public:
-	static void Init(std::string filepath, Hazel::HazelScene* scene);
+	static void Init(std::string filepath, Hazel::SceneHazelLegacy* scene);
 
 	static void SetViewportSize(uint32_t width, uint32_t height);
 
-	static void BeginScene(Hazel::HazelScene* scene, const Hazel::SceneRendererCamera& camera);
+	static void BeginScene(Hazel::SceneHazelLegacy* scene, const Hazel::SceneRendererCamera& camera);
 	static void EndScene();
 
 	static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Hazel::HazelMaterial> overrideMaterial = nullptr);
@@ -83,7 +84,7 @@ public:
 	static void CreateDrawCommand(std::string fileNameNoExt, Hazel::Ref<Hazel::MeshHazelLegacy> mesh);
 	static Hazel::HazelDirLight& GetActiveLight();
 	static void SetActiveLight(Hazel::HazelDirLight& light);
-	static void AddToDrawList(std::string name, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity, glm::mat4 transform);
+	static void AddToDrawList(std::string name, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity, glm::mat4 transform);
 	static Hazel::Environment Load(const std::string& filepath);
 	static void SetEnvironment(Hazel::Environment environment);
 	static Hazel::Ref<MoravaShader> GetShaderSkybox() { return s_ShaderSkybox; }
@@ -92,9 +93,9 @@ public:
 	static void SetupShaders();
 	static Hazel::SceneRendererCamera& GetCamera();
 
-	static void SubmitEntity(Hazel::Entity entity);
+	static void SubmitEntity(Hazel::EntityHazelLegacy entity);
 
-	static void SubmitEntityEnvMap(Hazel::Entity entity);
+	static void SubmitEntityEnvMap(Hazel::EntityHazelLegacy entity);
 	static glm::mat4 GetViewProjection();
 
 	static void OnImGuiRender();
@@ -109,7 +110,7 @@ public:
 private:
 	static void RenderSkybox();
 	static void RenderHazelGrid();
-	static void RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::SubmeshHazelLegacy& submesh);
+	static void RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::EntityHazelLegacy entity, const glm::mat4& entityTransform, Hazel::SubmeshHazelLegacy& submesh);
 	static void UpdateShaderPBRUniforms(Hazel::Ref<MoravaShader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial);
 
 public:

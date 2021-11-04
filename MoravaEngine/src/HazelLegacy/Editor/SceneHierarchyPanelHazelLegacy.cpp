@@ -39,12 +39,12 @@ namespace Hazel
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
 				entt::entity entityID = entityMap.at(selectedEntityID);
-				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ Entity(entityID, scene.Raw()) , new Hazel::SubmeshHazelLegacy(), 0 }));
+				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ EntityHazelLegacy(entityID, scene.Raw()), new Hazel::SubmeshHazelLegacy(), 0 }));
 			}
 		}
 	}
 
-	void SceneHierarchyPanelHazelLegacy::SetSelected(Entity entity)
+	void SceneHierarchyPanelHazelLegacy::SetSelected(EntityHazelLegacy entity)
 	{
 		if (entity.HasComponent<MeshComponentHazelLegacy>())
 		{
@@ -176,7 +176,7 @@ namespace Hazel
 		}
 	}
 
-	void SceneHierarchyPanelHazelLegacy::DrawEntityNode(Entity entity)
+	void SceneHierarchyPanelHazelLegacy::DrawEntityNode(EntityHazelLegacy entity)
 	{
 		const char* name = "Unnamed Entity";
 		if (entity.HasComponent<TagComponent>()) {
@@ -252,7 +252,7 @@ namespace Hazel
 		}
 	}
 
-	void SceneHierarchyPanelHazelLegacy::DrawEntitySubmeshes(Entity entity)
+	void SceneHierarchyPanelHazelLegacy::DrawEntitySubmeshes(EntityHazelLegacy entity)
 	{
 		if (!entity.HasComponent<Hazel::MeshComponentHazelLegacy>()) return;
 		if (!entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh) return;
@@ -398,7 +398,7 @@ namespace Hazel
 	}
 
 	template<typename T, typename UIFunction>
-	static void DrawComponent(const std::string name, Entity entity, UIFunction uiFunction)
+	static void DrawComponent(const std::string name, EntityHazelLegacy entity, UIFunction uiFunction)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
@@ -457,7 +457,7 @@ namespace Hazel
 		ImGuiWrapper::PopID();
 	}
 
-	void SceneHierarchyPanelHazelLegacy::DrawComponents(Entity entity)
+	void SceneHierarchyPanelHazelLegacy::DrawComponents(EntityHazelLegacy entity)
 	{
 		ImGui::AlignTextToFramePadding();
 
@@ -534,11 +534,11 @@ namespace Hazel
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpotLightComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpotLightLegacyComponent>())
 			{
 				if (ImGui::Button("Spot Light"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpotLightComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpotLightLegacyComponent>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -764,7 +764,7 @@ namespace Hazel
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<PointLightComponent>("Point Light", entity, [](PointLightComponent& plc)
+		DrawComponent<PointLightLegacyComponent>("Point Light", entity, [](PointLightLegacyComponent& plc)
 		{
 			UI::BeginPropertyGrid();
 			UI::Property("Enabled",          plc.Enabled);
@@ -779,7 +779,7 @@ namespace Hazel
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<SpotLightComponent>("Spot Light", entity, [](SpotLightComponent& slc)
+		DrawComponent<SpotLightLegacyComponent>("Spot Light", entity, [](SpotLightLegacyComponent& slc)
 		{
 			UI::BeginPropertyGrid();
 			UI::Property("Enabled",          slc.Enabled);
@@ -834,11 +834,11 @@ namespace Hazel
 			{
 				// Shutdown old script
 				if (ScriptEngine::ModuleExists(oldName)) {
-					ScriptEngine::ShutdownScriptEntity(entity, oldName);
+					// ScriptEngine::ShutdownScriptEntity(entity, oldName);
 				}
 
 				if (ScriptEngine::ModuleExists(sc.ModuleName)) {
-					ScriptEngine::InitScriptEntity(entity);
+					// ScriptEngine::InitScriptEntity(entity);
 				}
 			}
 			
@@ -921,7 +921,7 @@ namespace Hazel
 
 			if (ImGui::Button("Run Script"))
 			{
-				ScriptEngine::OnCreateEntity(entity);
+				// ScriptEngine::OnCreateEntity(entity);
 			}
 		});
 

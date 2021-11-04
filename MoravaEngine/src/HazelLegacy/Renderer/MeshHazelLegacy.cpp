@@ -17,12 +17,13 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
-#include "Hazel/Scene/Entity.h"
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
 
 #include "Core/Log.h"
 #include "Core/Math.h"
 #include "Core/Util.h"
 #include "EnvMap/EnvMapEditorLayer.h"
+#include "Material/Material.h"
 #include "Material/MaterialLibrary.h"
 #include "Shader/MoravaShaderLibrary.h"
 
@@ -1493,7 +1494,7 @@ namespace Hazel
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial)
 			{
-				Hazel::Ref<Material> baseMaterialRef = m_BaseMaterial;
+				Hazel::Ref<::Material> baseMaterialRef = m_BaseMaterial;
 				baseMaterialRef->GetTextureAlbedo()->Bind(samplerSlot + 0);
 				baseMaterialRef->GetTextureNormal()->Bind(samplerSlot + 1);
 				baseMaterialRef->GetTextureMetallic()->Bind(samplerSlot + 2);
@@ -1536,7 +1537,7 @@ namespace Hazel
 		}
 	}
 
-	void MeshHazelLegacy::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity)
+	void MeshHazelLegacy::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityHazelLegacy entity)
 	{
 		for (Hazel::SubmeshHazelLegacy submesh : m_Submeshes)
 		{
@@ -1545,7 +1546,7 @@ namespace Hazel
 	}
 
 	void SubmeshHazelLegacy::Render(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-		const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity, bool wireframeEnabledScene, bool wireframeEnabledModel)
+		const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityHazelLegacy entity, bool wireframeEnabledScene, bool wireframeEnabledModel)
 	{
 		Ref<EnvMapMaterial> envMapMaterial = Ref<EnvMapMaterial>();
 
@@ -1624,7 +1625,7 @@ namespace Hazel
 		shader->Unbind();
 	}
 
-	void SubmeshHazelLegacy::RenderOutline(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, Entity entity)
+	void SubmeshHazelLegacy::RenderOutline(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, EntityHazelLegacy entity)
 	{
 		parentMesh->GetVertexBuffer()->Bind();
 		parentMesh->GetPipeline()->Bind();

@@ -7,12 +7,15 @@
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/MaterialAsset.h"
 
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
+
 #include "Core/Log.h"
 #include "EnvMap/EnvMapMaterial.h"
 #include "Material/Material.h"
 #include "Mesh/Mesh.h"
 #include "Shader/MoravaShader.h"
 #include "Texture/MoravaTexture.h"
+
 
 #include <glm/glm.hpp>
 
@@ -131,8 +134,8 @@ namespace Hazel {
 	{
 	public:
 		void Render(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-			const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity, bool wireframeEnabledScene = false, bool wireframeEnabledModel = false);
-		void RenderOutline(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, Entity entity);
+			const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityHazelLegacy entity, bool wireframeEnabledScene = false, bool wireframeEnabledModel = false);
+		void RenderOutline(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, EntityHazelLegacy entity);
 
 	public:
 		uint32_t BaseVertex;
@@ -174,7 +177,7 @@ namespace Hazel {
 		void DumpVertexBuffer();
 
 		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials);
-		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity);
+		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityHazelLegacy entity);
 
 		// Getters
 		std::vector<SubmeshHazelLegacy>& GetSubmeshes() { return m_Submeshes; }

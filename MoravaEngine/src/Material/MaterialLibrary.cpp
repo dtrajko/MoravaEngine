@@ -202,7 +202,7 @@ Hazel::Ref<EnvMapMaterial> MaterialLibrary::CreateDefaultMaterial(std::string ma
     return envMapMaterial;
 }
 
-void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity)
+void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity)
 {
     //  for (auto material : m_EnvMapMaterials) {
     //      delete material.second;
@@ -239,7 +239,7 @@ void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::MeshHazelLegacy> mes
     }
 }
 
-SubmeshUUID MaterialLibrary::GetSubmeshUUID(Hazel::Entity* entity, Hazel::SubmeshHazelLegacy* submesh)
+SubmeshUUID MaterialLibrary::GetSubmeshUUID(Hazel::EntityHazelLegacy* entity, Hazel::SubmeshHazelLegacy* submesh)
 {
     std::string entityHandle = entity ? std::to_string(entity->GetHandle()) : "0000";
     SubmeshUUID submeshUUID = "E_" + entityHandle + "_S_" + submesh->MeshName;
@@ -247,7 +247,7 @@ SubmeshUUID MaterialLibrary::GetSubmeshUUID(Hazel::Entity* entity, Hazel::Submes
     return submeshUUID;
 }
 
-void MaterialLibrary::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial)
+void MaterialLibrary::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity, Hazel::Ref<EnvMapMaterial> defaultMaterial)
 {
     if (!defaultMaterial)
     {
@@ -268,7 +268,7 @@ void MaterialLibrary::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::MeshHazelL
  * Instead of just assigning the default material to each submesh, this method tries to detect the correct material and assign to the submesh
  * If it fails to do so, it loads the default material
  */
-void MaterialLibrary::SetMaterialsToSubmeshes(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity, Hazel::Ref<EnvMapMaterial> defaultMaterial)
+void MaterialLibrary::SetMaterialsToSubmeshes(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity, Hazel::Ref<EnvMapMaterial> defaultMaterial)
 {
     for (auto submesh : mesh->GetSubmeshes())
     {
@@ -304,7 +304,7 @@ std::string MaterialLibrary::NewMaterialName()
     return materialName;
 }
 
-void MaterialLibrary::AddMaterialFromComponent(Hazel::Entity entity)
+void MaterialLibrary::AddMaterialFromComponent(Hazel::EntityHazelLegacy entity)
 {
     // If entity contains MaterialComponent, load generic material for the entire entity (all submeshes)
     if (entity.HasComponent<Hazel::MaterialComponent>())
@@ -318,7 +318,7 @@ void MaterialLibrary::AddMaterialFromComponent(Hazel::Entity entity)
     }
 }
 
-MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::SubmeshHazelLegacy& submesh, Hazel::Entity* entity)
+MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::SubmeshHazelLegacy& submesh, Hazel::EntityHazelLegacy* entity)
 {
     MaterialUUID materialUUID = "";
 

@@ -25,6 +25,9 @@
 [submodule "vendor/cross-platform/shaderc"]
 	path = vendor/cross-platform/shaderc
 	url = https://github.com/google/shaderc.git
+[submodule "vendor/box2d"]
+	path = vendor/box2d
+	url = https://github.com/erincatto/box2d.git
 [submodule "vendor/DirectXTex"]
 	path = vendor/DirectXTex
 	url = https://github.com/microsoft/DirectXTex.git
@@ -37,6 +40,3 @@
 [submodule "vendor/msdf-atlas-gen"]
 	path = vendor/msdf-atlas-gen
 	url = https://github.com/TheCherno/msdf-atlas-gen.git
-[submodule "vendor/box2d"]
-	path = vendor/box2d
-	url = https://github.com/TheCherno/box2d.git

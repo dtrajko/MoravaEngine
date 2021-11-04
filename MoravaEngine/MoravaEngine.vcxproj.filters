@@ -1140,6 +1140,12 @@
     <ClCompile Include="src\Hazel\Audio\AudioPlayback.cpp">
       <Filter>Hazel\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Scene\SceneHazelLegacy.cpp">
+      <Filter>HazelLegacy\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Scene\EntityHazelLegacy.cpp">
+      <Filter>HazelLegacy\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2431,6 +2437,12 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Audio\AudioPlayback.h">
       <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Scene\SceneHazelLegacy.h">
+      <Filter>HazelLegacy\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Scene\EntityHazelLegacy.h">
+      <Filter>HazelLegacy\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

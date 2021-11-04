@@ -12,7 +12,7 @@
 // #define SCENE_ASTEROIDS
 // #define SCENE_NANOSUIT
 // #define SCENE_FRAMEBUFFERS
-// #define SCENE_CUBEMAPS
+#define SCENE_CUBEMAPS
 // #define SCENE_PARTICLES
 // #define SCENE_OMNI_SHADOWS
 // #define SCENE_VOXEL_TERRAIN
@@ -26,7 +26,7 @@
 // #define SCENE_ANIM_PBR
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
-#define SCENE_HAZEL_ENV_MAP
+// #define SCENE_HAZEL_ENV_MAP
 // #define SCENE_DX11
 // #define SCENE_HAZEL_VULKAN
 

@@ -7,13 +7,15 @@
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/SceneRenderer.h"
 
+#include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
+#include "HazelLegacy/Scene/SceneHazelLegacy.h"
+
 #include "Editor/EntitySelection.h"
 #include "Editor/MaterialEditorPanel.h"
 #include "EnvMap/EnvMapMaterial.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "EnvMap/EnvMapSharedData.h"
 #include "Framebuffer/ShadowMap.h"
-#include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
 
 
 enum class SelectionMode
@@ -33,8 +35,8 @@ public:
 	~EnvMapEditorLayer();
 
 	void OnUpdate(float timestep);
-	void OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, float timestep);
-	void OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, float timestep);
+	void OnUpdateEditor(Hazel::Ref<Hazel::SceneHazelLegacy> scene, float timestep);
+	void OnUpdateRuntime(Hazel::Ref<Hazel::SceneHazelLegacy> scene, float timestep);
 
 	void OnScenePlay();
 	void OnSceneStop();
@@ -43,7 +45,7 @@ public:
 	void RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shader);
 
 	void OnRenderShadowOmni(Window* mainWindow);
-	void RenderShadowOmniSingleLight(Window* mainWindow, Hazel::Entity lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap);
+	void RenderShadowOmniSingleLight(Window* mainWindow, Hazel::EntityHazelLegacy lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap);
 
 	void OnRenderCascadedShadowMaps(Window* mainWindow);
 
@@ -65,7 +67,7 @@ public:
 
 	void DisplaySubmeshMaterialSelector(bool* p_open);
 
-	void UpdateSubmeshMaterialMap(Hazel::Entity entity, Hazel::SubmeshHazelLegacy* submesh);
+	void UpdateSubmeshMaterialMap(Hazel::EntityHazelLegacy entity, Hazel::SubmeshHazelLegacy* submesh);
 
 	void NewScene();
 	void OpenScene();
@@ -77,17 +79,17 @@ public:
 	void UpdateWindowTitle(const std::string& sceneName);
 
 	void OnSelected(const SelectedSubmesh& selectionContext);
-	void OnEntityDeleted(Hazel::Entity e);
+	void OnEntityDeleted(Hazel::EntityHazelLegacy e);
 
 	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()
 	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
 
-	void SelectEntity(Hazel::Entity e);
+	void SelectEntity(Hazel::EntityHazelLegacy e);
 
 	void CameraSyncECS();
 	void UpdateImGuizmo(Window* mainWindow);
-	Hazel::Entity CreateEntity(const std::string& name);
-	Hazel::Entity LoadEntity(std::string fullPath);
+	Hazel::EntityHazelLegacy CreateEntity(const std::string& name);
+	Hazel::EntityHazelLegacy LoadEntity(std::string fullPath);
 	static Hazel::CameraComponent GetMainCameraComponent();
 
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
@@ -167,7 +169,7 @@ private:
 	// Editor resources
 	Hazel::Ref<Hazel::HazelTexture2D> m_PlayButtonTex;
 
-	Hazel::Entity m_DirectionalLightEntity;
+	Hazel::EntityHazelLegacy m_DirectionalLightEntity;
 	glm::mat4 m_LightProjectionMatrix;
 	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
 
