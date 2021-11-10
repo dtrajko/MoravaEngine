@@ -82,7 +82,7 @@ struct SceneSettings
 
 class LightManager;
 
-class Scene : public Hazel::HazelScene
+class Scene : public Hazel::SceneHazelLegacy
 {
 public:
 	Scene();

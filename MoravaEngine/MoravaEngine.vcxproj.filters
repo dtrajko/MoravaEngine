@@ -1146,6 +1146,15 @@
     <ClCompile Include="src\HazelLegacy\Scene\EntityHazelLegacy.cpp">
       <Filter>HazelLegacy\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\MeshSerializer.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\GraphSerializer.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\NodeGraphEditor\Nodes.cpp">
+      <Filter>Hazel\Editor\NodeGraphEditor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2444,6 +2453,24 @@
     <ClInclude Include="src\HazelLegacy\Scene\EntityHazelLegacy.h">
       <Filter>HazelLegacy\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="src\HazelLegacy\ImGui\ImGui.h">
+      <Filter>HazelLegacy\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\MeshSerializer.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\GraphSerializer.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\NodeGraphEditor\NodeGraphAsset.h">
+      <Filter>Hazel\Editor\NodeGraphEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\NodeGraphEditor\Nodes.h">
+      <Filter>Hazel\Editor\NodeGraphEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Utilities\YAMLSerializationHelpers.h">
+      <Filter>Hazel\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2736,6 +2763,12 @@
     </Filter>
     <Filter Include="Hazel\Audio\DSP\Components">
       <UniqueIdentifier>{43e82ed8-73ee-45fa-bb2f-be4a0fed3b63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy\ImGui">
+      <UniqueIdentifier>{c2a0e63d-b9ed-49db-9dd6-e9b4c236a195}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Editor\NodeGraphEditor">
+      <UniqueIdentifier>{deac5b74-4cdb-4d2b-ae0a-1905156050ca}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

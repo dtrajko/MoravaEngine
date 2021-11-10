@@ -769,7 +769,7 @@ void EnvMapSceneRenderer::GeometryPass()
     {
         for (auto entt : meshEntities)
         {
-            Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
+            Hazel::EntityHazelLegacy entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
 
             if (meshComponent.Mesh)
@@ -853,7 +853,7 @@ void EnvMapSceneRenderer::GeometryPass()
             for (auto selection : EntitySelection::s_SelectionContext)
             {
                 if (selection.Mesh) {
-                    Hazel::Entity meshEntity = selection.Entity;
+                    Hazel::EntityHazelLegacy meshEntity = selection.Entity;
                     glm::mat4 transform = glm::mat4(1.0f);
                     if (meshEntity.HasComponent<Hazel::TransformComponent>()) {
                         transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
@@ -943,7 +943,7 @@ void EnvMapSceneRenderer::ShadowMapPass()
     ****/
 }
 
-void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::Entity entity)
+void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::EntityHazelLegacy entity)
 {
     auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
     if (!mesh) {
@@ -1037,14 +1037,12 @@ void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelDirLight& light)
     s_Data.SceneData.ActiveLight = light;
 }
 
-void EnvMapSceneRenderer::AddToDrawList(std::string name, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity, glm::mat4 transform)
+void EnvMapSceneRenderer::AddToDrawList(std::string name, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity, glm::mat4 transform)
 {
     std::string Name;
     Hazel::Ref<Hazel::MeshHazelLegacy> MeshPtr;
     Material* MaterialPtr;
     glm::mat4 Transform;
-
-
 
     s_Data.DrawList.push_back({ name, mesh.Raw(), entity.GetMaterial(), transform });
 }

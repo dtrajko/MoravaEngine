@@ -128,7 +128,7 @@ namespace Hazel {
 	};
 
 	class MeshHazelLegacy;
-	class Entity;
+	class EntityHazelLegacy;
 
 	class SubmeshHazelLegacy : public Mesh
 	{

@@ -224,15 +224,15 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
     m_PostProcessingFramebuffer->Generate(width, height);
 }
 
-Hazel::EntityHazelLayer EnvMapEditorLayer::CreateEntity(const std::string& name)
+Hazel::EntityHazelLegacy EnvMapEditorLayer::CreateEntity(const std::string& name)
 {
     // Both NoECS and ECS
-    Hazel::EntityHazelLayer entity = EnvMapSharedData::s_EditorScene->CreateEntity(name, EnvMapSharedData::s_EditorScene);
+    Hazel::EntityHazelLegacy entity = EnvMapSharedData::s_EditorScene->CreateEntity(name, EnvMapSharedData::s_EditorScene);
 
     return entity;
 }
 
-Hazel::EntityHazelLayer EnvMapEditorLayer::LoadEntity(std::string fullPath)
+Hazel::EntityHazelLegacy EnvMapEditorLayer::LoadEntity(std::string fullPath)
 {
     std::string fileName = Util::GetFileNameFromFullPath(fullPath);
     std::string fileNameNoExt = Util::StripExtensionFromFileName(fileName);
@@ -248,7 +248,7 @@ Hazel::EntityHazelLayer EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     EnvMapSceneRenderer::CreateDrawCommand(fileNameNoExt, mesh);
 
-    Hazel::EntityHazelLayer meshEntity = CreateEntity(fileNameNoExt);
+    Hazel::EntityHazelLegacy meshEntity = CreateEntity(fileNameNoExt);
     // m_MeshEntity: NoECS version
     meshEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(mesh);
     meshEntity.AddComponent<Hazel::ScriptComponent>("Example.Script");
@@ -413,7 +413,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
     // OnUpdateRuntime(s_RuntimeScene, timestep);
 }
 
-void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, float timestep)
+void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::SceneHazelLegacy> scene, float timestep)
 {
     EnvMapSharedData::s_EditorScene = scene;
 
@@ -425,7 +425,7 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
     auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
     for (auto entt : meshEntities)
     {
-        Hazel::Entity entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
+        Hazel::EntityHazelLegacy entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
         Hazel::Ref<Hazel::MeshHazelLegacy> mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
         if (mesh)
         {
@@ -454,7 +454,7 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::HazelScene> scene, floa
     }
 }
 
-void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, float timestep)
+void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::SceneHazelLegacy> scene, float timestep)
 {
     EnvMapSharedData::s_EditorScene = scene;
 
@@ -466,7 +466,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(Hazel::Ref<Hazel::HazelScene> scene, flo
     auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
     for (auto entt : meshEntities)
     {
-        Hazel::Entity entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
+        Hazel::EntityHazelLegacy entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
         Hazel::Ref<Hazel::MeshHazelLegacy> mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
 
         mesh->OnUpdate(timestep, false);
@@ -492,7 +492,7 @@ void EnvMapEditorLayer::OnScenePlay()
         Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
     }
 
-    EnvMapSharedData::s_RuntimeScene = Hazel::Ref<Hazel::HazelScene>::Create();
+    EnvMapSharedData::s_RuntimeScene = Hazel::Ref<Hazel::SceneHazelLegacy>::Create();
     EnvMapSharedData::s_EditorScene->CopyTo(EnvMapSharedData::s_RuntimeScene);
 
     EnvMapSharedData::s_RuntimeScene->OnRuntimeStart();
@@ -550,7 +550,7 @@ Ref<Hazel::EntityHazelLegacy> EnvMapEditorLayer::GetMeshEntity()
     if (meshEntities.size()) {
         for (auto entt : meshEntities)
         {
-            meshEntity = CreateRef<Hazel::Entity>(entt, EnvMapSharedData::s_EditorScene.Raw());
+            meshEntity = CreateRef<Hazel::EntityHazelLegacy>(entt, EnvMapSharedData::s_EditorScene.Raw());
         }
         return meshEntity;
     }
@@ -652,7 +652,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     colors[ImGuiCol_PlotHistogram] = ImVec4(0.73f, 0.6f, 0.15f, 1.0f);
     colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.0f, 0.6f, 0.0f, 1.0f);
     colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
-    colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.8f, 0.8f, 0.8f, 0.35f);
+    // colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.8f, 0.8f, 0.8f, 0.35f);
     colors[ImGuiCol_DragDropTarget] = ImVec4(1.0f, 1.0f, 0.0f, 0.9f);
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
@@ -669,7 +669,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
         for (auto entt : meshEntities)
         {
-            Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
+            Hazel::EntityHazelLegacy entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
             if (meshComponent.Mesh) {
                 meshComponent.Mesh->OnImGuiRender(++id, &m_ShowWindowSceneHierarchy);
@@ -981,7 +981,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 {
                     ImGui::Text("Mesh");
 
-                    Ref<Hazel::Entity> meshEntity = nullptr;
+                    Ref<Hazel::EntityHazelLegacy> meshEntity = nullptr;
                     std::string meshFullPath = "None";
 
                     std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
@@ -1222,8 +1222,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::ShowMetricsWindow();
     }
 
-    m_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkPos().x;
-    m_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkPos().y;
+    m_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkCenter().x;
+    m_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkCenter().y;
 
     // TheCherno ImGui Viewport displaying the framebuffer content
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -1281,7 +1281,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     ImGui::End();
     ImGui::PopStyleVar();
 
-    ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
+    ImVec2 workPos = ImGui::GetMainViewport()->GetWorkCenter();
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
 }
 
@@ -1729,7 +1729,7 @@ void EnvMapEditorLayer::OpenScene()
     std::string filepath = Hazel::FileDialogs::OpenFile("Hazel Scene (*.hsc)\0*.hsc\0");
     if (!filepath.empty())
     {
-        Hazel::Ref<Hazel::HazelScene> newScene = Hazel::Ref<Hazel::HazelScene>::Create();
+        Hazel::Ref<Hazel::SceneHazelLegacy> newScene = Hazel::Ref<Hazel::SceneHazelLegacy>::Create();
         Hazel::SceneSerializer serializer(newScene);
         serializer.Deserialize(filepath);
         EnvMapSharedData::s_EditorScene = newScene;

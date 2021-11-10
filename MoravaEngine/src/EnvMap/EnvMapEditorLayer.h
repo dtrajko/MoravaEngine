@@ -107,7 +107,7 @@ public:
 	inline float& GetEnvMapRotation() { return EnvMapSharedData::s_EnvMapRotation; }
 	inline Hazel::Ref<Hazel::HazelTexture2D> GetCheckerboardTexture() { return s_CheckerboardTexture; }
 	inline Hazel::Ref<Hazel::HazelTextureCube> GetSkyboxTexture() { return m_SkyboxTexture; }
-	Ref<Hazel::Entity> GetMeshEntity();
+	Ref<Hazel::EntityHazelLegacy> GetMeshEntity();
 	inline float& GetSkyboxExposureFactor() { return EnvMapSharedData::s_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
 	void SetViewportBounds(glm::vec2* viewportBounds);

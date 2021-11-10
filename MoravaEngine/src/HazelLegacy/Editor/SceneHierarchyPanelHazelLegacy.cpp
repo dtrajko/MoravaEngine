@@ -27,7 +27,7 @@ namespace Hazel
 	{
 	}
 
-	void SceneHierarchyPanelHazelLegacy::SetContext(Ref<HazelScene> scene)
+	void SceneHierarchyPanelHazelLegacy::SetContext(Ref<SceneHazelLegacy> scene)
 	{
 		m_Context = scene;
 		EntitySelection::s_SelectionContext = {};
@@ -87,7 +87,7 @@ namespace Hazel
 
 				m_Context->m_Registry.each([&](auto entity)
 					{
-						Entity e(entity, m_Context.Raw());
+						EntityHazelLegacy e(entity, m_Context.Raw());
 						if (e.HasComponent<IDComponent>()) {
 							DrawEntityNode(e);
 						}
@@ -105,13 +105,13 @@ namespace Hazel
 					{
 						if (ImGui::MenuItem("Empty Entity"))
 						{
-							Hazel::Entity newEntity = m_Context->CreateEntity("Empty Entity");
+							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Empty Entity");
 							// SetSelected(newEntity);
 						}
 
 						if (ImGui::MenuItem("Mesh"))
 						{
-							Hazel::Entity newEntity = m_Context->CreateEntity("Mesh");
+							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Mesh");
 							SetSelected(newEntity);
 							newEntity.AddComponent<MeshComponentHazelLegacy>();
 							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentHazelLegacy>();
@@ -121,7 +121,7 @@ namespace Hazel
 
 						if (ImGui::MenuItem("Directional Light"))
 						{
-							Hazel::Entity newEntity = m_Context->CreateEntity("Directional Light");
+							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Directional Light");
 							// newEntity.AddComponent<DirectionalLightComponent>();
 							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
 							// SetSelected(newEntity);
@@ -129,7 +129,7 @@ namespace Hazel
 
 						if (ImGui::MenuItem("Sky Light"))
 						{
-							Hazel::Entity newEntity = m_Context->CreateEntity("Sky Light");
+							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Sky Light");
 							// newEntity.AddComponent<SkyLightComponent>();
 							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
 							// SetSelected(newEntity);
@@ -797,7 +797,7 @@ namespace Hazel
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& slc)
+		DrawComponent<SkyLightLegacyComponent>("Sky Light", entity, [](SkyLightLegacyComponent& slc)
 		{
 			ImGui::Columns(3);
 			ImGui::SetColumnWidth(0, 70.0f);
@@ -843,79 +843,79 @@ namespace Hazel
 			}
 			
 			// Public Fields
-			if (ScriptEngine::ModuleExists(sc.ModuleName))
-			{
-				EntityInstanceData& entityInstanceData = ScriptEngine::GetEntityInstanceData(entity.GetSceneUUID(), id);
-				auto& moduleFieldMap = entityInstanceData.ModuleFieldMap;
-				if (moduleFieldMap.find(sc.ModuleName) != moduleFieldMap.end())
-				{
-					auto& publicFields = moduleFieldMap.at(sc.ModuleName);
-					for (auto& [name, field] : publicFields)
-					{
-						bool isRuntime = m_Context->m_IsPlaying && field.IsRuntimeAvailable();
-
-						for (auto& field : publicFields)
-						{
-							switch (field.second.Type)
-							{
-							case FieldType::Int:
-							{
-								int value = field.second.GetStoredValue<int>();
-								if (ImGuiWrapper::Property(field.second.Name.c_str(), value))
-								{
-									field.second.SetStoredValue(value);
-								}
-								break;
-							}
-							case FieldType::Float:
-							{
-								float value = field.second.GetStoredValue<float>();
-								if (ImGuiWrapper::Property(field.second.Name.c_str(), value, 0.2f))
-								{
-									field.second.SetStoredValue(value);
-								}
-								break;
-							}
-							case FieldType::Vec2:
-							{
-								glm::vec2 value = field.second.GetStoredValue<glm::vec2>();
-								if (ImGuiWrapper::Property(field.second.Name.c_str(), value, 0.2f))
-								{
-									field.second.SetStoredValue(value);
-								}
-								break;
-							}
-							case FieldType::Vec3:
-							{
-								glm::vec3 value = isRuntime ? field.second.GetRuntimeValue<glm::vec3>() : field.second.GetStoredValue<glm::vec3>();
-								if (UI::Property(field.second.Name.c_str(), value, 0.2f))
-								{
-									if (isRuntime) {
-										field.second.SetRuntimeValue(value);
-									} else {
-										field.second.SetStoredValue(value);
-									}
-								}
-								break;
-							}
-							case FieldType::Vec4:
-							{
-								glm::vec4 value = isRuntime ? field.second.GetRuntimeValue<glm::vec4>() : field.second.GetStoredValue<glm::vec4>();
-								if (UI::Property(field.second.Name.c_str(), value, 0.2f))
-								{
-									if (isRuntime) {
-										field.second.SetRuntimeValue(value);
-									} else {
-										field.second.SetStoredValue(value);
-									}
-								}
-								break;
-							}
-							}
-						}
-					}
-				}
-			}
+			//	if (ScriptEngine::ModuleExists(sc.ModuleName))
+			//	{
+			//		EntityInstanceData& entityInstanceData = ScriptEngine::GetEntityInstanceData(entity.GetSceneUUID(), id);
+			//		auto& moduleFieldMap = entityInstanceData.ModuleFieldMap;
+			//		if (moduleFieldMap.find(sc.ModuleName) != moduleFieldMap.end())
+			//		{
+			//			auto& publicFields = moduleFieldMap.at(sc.ModuleName);
+			//			for (auto& [name, field] : publicFields)
+			//			{
+			//				bool isRuntime = m_Context->m_IsPlaying && field.IsRuntimeAvailable();
+			//	
+			//				for (auto& field : publicFields)
+			//				{
+			//					switch (field.second.Type)
+			//					{
+			//					case FieldType::Int:
+			//					{
+			//						int value = field.second.GetStoredValue<int>();
+			//						if (ImGuiWrapper::Property(field.second.Name.c_str(), value))
+			//						{
+			//							field.second.SetStoredValue(value);
+			//						}
+			//						break;
+			//					}
+			//					case FieldType::Float:
+			//					{
+			//						float value = field.second.GetStoredValue<float>();
+			//						if (ImGuiWrapper::Property(field.second.Name.c_str(), value, 0.2f))
+			//						{
+			//							field.second.SetStoredValue(value);
+			//						}
+			//						break;
+			//					}
+			//					case FieldType::Vec2:
+			//					{
+			//						glm::vec2 value = field.second.GetStoredValue<glm::vec2>();
+			//						if (ImGuiWrapper::Property(field.second.Name.c_str(), value, 0.2f))
+			//						{
+			//							field.second.SetStoredValue(value);
+			//						}
+			//						break;
+			//					}
+			//					case FieldType::Vec3:
+			//					{
+			//						glm::vec3 value = isRuntime ? field.second.GetRuntimeValue<glm::vec3>() : field.second.GetStoredValue<glm::vec3>();
+			//						if (UI::Property(field.second.Name.c_str(), value, 0.2f))
+			//						{
+			//							if (isRuntime) {
+			//								field.second.SetRuntimeValue(value);
+			//							} else {
+			//								field.second.SetStoredValue(value);
+			//							}
+			//						}
+			//						break;
+			//					}
+			//					case FieldType::Vec4:
+			//					{
+			//						glm::vec4 value = isRuntime ? field.second.GetRuntimeValue<glm::vec4>() : field.second.GetStoredValue<glm::vec4>();
+			//						if (UI::Property(field.second.Name.c_str(), value, 0.2f))
+			//						{
+			//							if (isRuntime) {
+			//								field.second.SetRuntimeValue(value);
+			//							} else {
+			//								field.second.SetStoredValue(value);
+			//							}
+			//						}
+			//						break;
+			//					}
+			//					}
+			//				}
+			//			}
+			//		}
+			//	}
 
 			EndPropertyGrid();
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Hazel/Renderer/HazelCamera.h"
+#include "Hazel/Renderer/SceneEnvironment.h"
 
 #include "EnvMap/EnvMapMaterial.h"
 
@@ -81,4 +82,10 @@ namespace Hazel
 		operator const SceneCamera& () const { return (SceneCamera&)Camera; }
 	};
 
+	struct SkyLightLegacyComponent
+	{
+		Environment SceneEnvironment;
+		float Intensity = 1.0f;
+		float Angle = 0.0f;
+	};
 }
