@@ -6,7 +6,10 @@
 #include "Hazel/Core/Timestep.h"
 #include "Hazel/Editor/ContentBrowserPanel.h"
 #include "Hazel/Core/Events/Event.h"
-#include "Hazel/Scene/Entity.h"
+
+#include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
 
 #include "DX11Pipeline.h"
 #include "DX11Shader.h"
@@ -21,8 +24,6 @@
 #include "Scene/Scene.h"
 #include "Editor/EntitySelection.h"
 #include "Editor/MaterialEditorPanel.h"
-#include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
-#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 
 #include "ImGuizmo.h"
 

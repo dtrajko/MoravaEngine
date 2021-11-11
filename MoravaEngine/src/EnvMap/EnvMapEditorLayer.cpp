@@ -6,13 +6,14 @@
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Utils/PlatformUtils.h"
 
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
+#include "HazelLegacy/Scene/SceneHazelLegacy.h"
+
 #include "../../ImGuizmo/ImGuizmo.h"
 
 #include "Core/MousePicker.h"
 #include "Core/Util.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
-#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
-#include "HazelLegacy/Scene/SceneHazelLegacy.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Light/PointLight.h"
 #include "Material/MaterialLibrary.h"
@@ -179,7 +180,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     EnvMapSharedData::s_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 
     Hazel::EntityHazelLegacy cameraEntity = CreateEntity("Camera");
-    cameraEntity.AddComponent<Hazel::CameraComponent>(*EnvMapSharedData::s_RuntimeCamera);
+    cameraEntity.AddComponent<Hazel::CameraComponentLegacy>(*EnvMapSharedData::s_RuntimeCamera);
 
     EnvMapSharedData::s_ActiveCamera = EnvMapSharedData::s_RuntimeCamera;
 

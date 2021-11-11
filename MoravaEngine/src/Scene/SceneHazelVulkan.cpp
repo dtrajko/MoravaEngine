@@ -179,7 +179,7 @@ bool SceneHazelVulkan::OnKeyPressed(KeyPressedEvent& e)
     return false;
 }
 
-void SceneHazelVulkan::OnEntitySelected(Hazel::Entity entity)
+void SceneHazelVulkan::OnEntitySelected(Hazel::EntityHazelLegacy entity)
 {
 }
 

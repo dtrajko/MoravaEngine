@@ -5,8 +5,9 @@
 #include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Core/Events/KeyEvent.h"
 #include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
-#include "Hazel/Renderer/HazelMesh.h"
-#include "Hazel/Scene/Entity.h"
+
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
 
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "HazelVulkan/VulkanWeekRenderer.h"
@@ -48,7 +49,7 @@ private:
 	bool OnKeyPressed(KeyPressedEvent& e);
 
 	// Temporary/experimental
-	virtual void OnEntitySelected(Hazel::Entity entity) override;
+	virtual void OnEntitySelected(Hazel::EntityHazelLegacy entity) override;
 
 public:
 	// std::unique_ptr<Hazel::VulkanTestLayer> m_VulkanTestLayer;

@@ -1,9 +1,6 @@
 #pragma once
 
-#include "Hazel/Scene/Entity.h"
-#include "Hazel/Scene/HazelScene.h"
-
-#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
 
 #include <vector>
 

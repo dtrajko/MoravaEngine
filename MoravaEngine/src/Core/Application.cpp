@@ -1,12 +1,13 @@
 #include "Core/Application.h"
 
 #include "Hazel/Core/Base.h"
-#include "Hazel/Editor/EditorLayerVulkan.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 #include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
 #include "Hazel/Project/UserPreferences.h"
 #include "Hazel/Renderer/RendererAPI.h"
+
+#include "HazelLegacy/Editor/EditorLayerHazelLegacy.h"
 
 #include "Core/Timer.h"
 #include "Platform/DX11/DX11TestLayer.h"
@@ -79,7 +80,7 @@ void Application::OnInit()
 	{
 		case Hazel::RendererAPIType::Vulkan:
 			PushLayer(new Hazel::VulkanTestLayer("VulkanTestLayer")); // to be removed
-			PushLayer(new Hazel::EditorLayerVulkan(Hazel::Ref<Hazel::UserPreferences>::Create()));
+			PushLayer(new Hazel::EditorLayerHazelLegacy(Hazel::Ref<Hazel::UserPreferences>::Create()));
 			break;
 		case Hazel::RendererAPIType::DX11:
 			PushLayer(new DX11TestLayer("DX11TestLayer"));

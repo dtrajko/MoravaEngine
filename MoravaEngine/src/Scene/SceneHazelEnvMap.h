@@ -2,7 +2,8 @@
 
 #include "Hazel/Core/Events/KeyEvent.h"
 #include "Hazel/Renderer/HazelMesh.h"
-#include "Hazel/Scene/Entity.h"
+
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
 
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Mesh/Grid.h"

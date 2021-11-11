@@ -1,20 +1,18 @@
 #include "SceneHazelLegacy.h"
 
 #include "Hazel/Scene/Components.h"
-#include "Hazel/Scene/Entity.h"
 #include "Hazel/Scene/ScriptableEntity.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
-#include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelRenderer.h"
-#include "Hazel/Renderer/SceneRenderer.h"
-#include "Hazel/Renderer/SceneRendererVulkan.h"
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Physics/3D/Physics.h"
 
-#include "Core/Math.h"
-#include "EnvMap/EnvMapSceneRenderer.h"
+#include "HazelLegacy/Renderer/SceneRendererHazelLegacy.h"
 #include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 #include "HazelLegacy/Scene/EntityHazelLegacy.h"
+
+#include "Core/Math.h"
+#include "EnvMap/EnvMapSceneRenderer.h"
 
 #include <glm/glm.hpp>
 
@@ -243,7 +241,7 @@ namespace Hazel {
 			}
 		}
 
-		m_Registry.view<MeshComponent>().each([=](auto entity, auto& mc)
+		m_Registry.view<MeshComponentHazelLegacy>().each([=](auto entity, auto& mc)
 			{
 				auto mesh = mc.Mesh;
 				if (mesh) {
@@ -254,7 +252,7 @@ namespace Hazel {
 		SceneRenderer::BeginScene(nullptr, { m_Camera, m_Camera.GetViewMatrix() });
 
 		// Render entities
-		m_Registry.view<MeshComponent>().each([=](auto entity, auto& mc)
+		m_Registry.view<MeshComponentHazelLegacy>().each([=](auto entity, auto& mc)
 			{
 				// TODO: Should we render (logically)
 				EnvMapSceneRenderer::SubmitEntity(EntityHazelLegacy{ entity, this });
@@ -345,12 +343,12 @@ namespace Hazel {
 
 		m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
 
-		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+		auto group = m_Registry.group<MeshComponentHazelLegacy>(entt::get<TransformComponent>);
 		// renderer->SetScene(this);
 		// renderer->BeginScene({ camera, cameraViewMatrix, 0.1f, 1000.0f, 45.0f }); //TODO: real values
 		for (auto entity : group)
 		{
-			auto [transformComponent, meshComponent] = group.get<TransformComponent, MeshComponent>(entity);
+			auto [transformComponent, meshComponent] = group.get<TransformComponent, MeshComponentHazelLegacy>(entity);
 			if (meshComponent.Mesh /* && !meshComponent.Mesh->IsFlagSet(AssetFlag::Missing) */)
 			{
 				meshComponent.Mesh->OnUpdate(ts);
@@ -378,11 +376,11 @@ namespace Hazel {
 		{
 			m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
 
-			auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-			SceneRendererVulkan::BeginScene(nullptr, { editorCamera, editorCamera.GetViewMatrix() });
+			auto group = m_Registry.group<MeshComponentHazelLegacy>(entt::get<TransformComponent>);
+			SceneRendererHazelLegacy::BeginScene(nullptr, { editorCamera, editorCamera.GetViewMatrix() });
 			for (auto entity : group)
 			{
-				auto& [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
+				auto& [meshComponent, transformComponent] = group.get<MeshComponentHazelLegacy, TransformComponent>(entity);
 				if (meshComponent.Mesh)
 				{
 					meshComponent.Mesh->OnUpdate(ts);
@@ -391,14 +389,14 @@ namespace Hazel {
 
 					if (m_SelectedEntity == entity)
 					{
-						SceneRendererVulkan::SubmitSelectedMesh(meshComponent, transformComponent);
+						SceneRendererHazelLegacy::SubmitSelectedMesh(meshComponent, transformComponent);
 					}
 					else {
-						SceneRendererVulkan::SubmitMesh(meshComponent, transformComponent);
+						SceneRendererHazelLegacy::SubmitMesh(meshComponent, transformComponent);
 					}
 				}
 			}
-			SceneRendererVulkan::EndScene();
+			SceneRendererHazelLegacy::EndScene();
 
 			// the following code replaces the VulkanRenderer::Draw() method
 			// VulkanRenderer::SetCamera((HazelCamera)editorCamera); // s_Data.SceneData.SceneCamera.Camera = *camera;
@@ -442,12 +440,12 @@ namespace Hazel {
 			{
 				m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
 
-				auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
+				auto group = m_Registry.group<MeshComponentHazelLegacy>(entt::get<TransformComponent>);
 
 				SceneRenderer::BeginScene(nullptr, { editorCamera, editorCamera.GetViewMatrix() });
 				for (auto entity : group)
 				{
-					auto [meshComponent, transformComponent] = group.get<MeshComponent, TransformComponent>(entity);
+					auto [meshComponent, transformComponent] = group.get<MeshComponentHazelLegacy, TransformComponent>(entity);
 					if (meshComponent.Mesh)
 					{
 						meshComponent.Mesh->OnUpdate(ts);
@@ -455,10 +453,10 @@ namespace Hazel {
 						// TODO: Should we render (logically)
 
 						if (m_SelectedEntity == entity) {
-							SceneRenderer::SubmitSelectedMesh(meshComponent, transformComponent);
+							SceneRendererHazelLegacy::SubmitSelectedMesh(meshComponent, transformComponent);
 						}
 						else {
-							SceneRenderer::SubmitMesh(meshComponent, transformComponent);
+							SceneRendererHazelLegacy::SubmitMesh(meshComponent, transformComponent);
 						}
 					}
 				}
@@ -550,7 +548,7 @@ namespace Hazel {
 
 		CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<TransformComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<MeshComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<MeshComponentHazelLegacy>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<DirectionalLightComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SkyLightComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<ScriptComponent>(target->m_Registry, m_Registry, enttMap);
@@ -742,7 +740,7 @@ namespace Hazel {
 		}
 
 		CopyComponentIfExists<TransformComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<MeshComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<MeshComponentHazelLegacy>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<DirectionalLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SkyLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<ScriptComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
@@ -805,8 +803,8 @@ namespace Hazel {
 			entityClone.AddComponent<TransformComponent>(entity.GetComponent<TransformComponent>());
 		}
 
-		if (entity.HasComponent<MeshComponent>()) {
-			entityClone.AddComponent<MeshComponent>(entity.GetComponent<MeshComponent>());
+		if (entity.HasComponent<MeshComponentHazelLegacy>()) {
+			entityClone.AddComponent<MeshComponentHazelLegacy>(entity.GetComponent<MeshComponentHazelLegacy>());
 		}
 
 		if (entity.HasComponent<ScriptComponent>()) {

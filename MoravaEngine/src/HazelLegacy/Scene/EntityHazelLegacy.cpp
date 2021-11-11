@@ -17,4 +17,14 @@ namespace Hazel {
 	{
 	}
 
+	TransformComponent& EntityHazelLegacy::Transform()
+	{
+		return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle);
+	}
+
+	glm::mat4 EntityHazelLegacy::Transform() const
+	{
+		return m_Scene->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform();
+	}
+
 }

@@ -945,7 +945,7 @@ void EnvMapSceneRenderer::ShadowMapPass()
 
 void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::EntityHazelLegacy entity)
 {
-    auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+    auto mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
     if (!mesh) {
         return;
     }

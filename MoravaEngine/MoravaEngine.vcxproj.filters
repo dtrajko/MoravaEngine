@@ -930,12 +930,6 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanSkyboxCube.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\SceneRendererVulkan.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Editor\EditorLayerVulkan.cpp">
-      <Filter>Hazel\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Project\UserPreferences.cpp">
       <Filter>Hazel\Project</Filter>
     </ClCompile>
@@ -1154,6 +1148,12 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Editor\NodeGraphEditor\Nodes.cpp">
       <Filter>Hazel\Editor\NodeGraphEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.cpp">
+      <Filter>HazelLegacy\Editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2195,12 +2195,6 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanSkyboxCube.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\SceneRendererVulkan.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Editor\EditorLayerVulkan.h">
-      <Filter>Hazel\Editor</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Project\UserPreferences.h">
       <Filter>Hazel\Project</Filter>
     </ClInclude>
@@ -2470,6 +2464,15 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Utilities\YAMLSerializationHelpers.h">
       <Filter>Hazel\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.h">
+      <Filter>HazelLegacy\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\Editor\TreeModel.h">
+      <Filter>Hazel\Audio\Editor</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
