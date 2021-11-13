@@ -49,7 +49,7 @@
 #include "imgui_impl_vulkan_with_textures.h"
 #include <stdio.h>
 
-#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
 
 // Reusable buffers used for rendering 1 current in-flight frame, for ImGui_ImplVulkan_RenderDrawData()
 // [Please zero-clear before use!]
@@ -1262,7 +1262,7 @@ ImTextureID ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image_vie
     alloc_info.descriptorSetCount = 1;
     alloc_info.pSetLayouts = &g_DescriptorSetLayout;
 
-    VkDescriptorSet descriptor_set = Hazel::VulkanRenderer::RT_AllocateDescriptorSet(alloc_info);
+    VkDescriptorSet descriptor_set = Hazel::VulkanRendererHazelLegacy::RT_AllocateDescriptorSet(alloc_info);
     ImGui_ImplVulkan_UpdateTextureInfo(descriptor_set, sampler, image_view, image_layout);
     return (ImTextureID)descriptor_set;
 }

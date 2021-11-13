@@ -21,6 +21,8 @@
 #include "Hazel/Core/Base.h"
 #include "Hazel/Core/Events/Event.h"
 
+#include "HazelLegacy/Renderer/RendererAPIHazelLegacy.h"
+
 #include "Camera/CameraController.h"
 #include "Core/Application.h"
 #include "Core/CommonValues.h"

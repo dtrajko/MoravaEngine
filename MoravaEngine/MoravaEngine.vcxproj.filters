@@ -471,9 +471,6 @@
     <ClCompile Include="src\Hazel\Renderer\Renderer2D.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\RendererAPI.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Renderer\RenderPass.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
@@ -750,14 +747,8 @@
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_dx12.cpp">
       <Filter>Vendors\ImGui\backends</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderer.cpp">
-      <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.cpp">
-      <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaShader.cpp">
       <Filter>Platform\OpenGL</Filter>
@@ -1154,6 +1145,18 @@
     </ClCompile>
     <ClCompile Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.cpp">
       <Filter>HazelLegacy\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.cpp">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanRendererHazelLegacy.cpp">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanRenderer.cpp">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\RendererAPIHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1695,9 +1698,6 @@
     <ClInclude Include="src\Hazel\Renderer\Renderer2D.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\RendererAPI.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Renderer\RenderPass.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
@@ -2008,12 +2008,6 @@
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_dx12.h">
       <Filter>Vendors\ImGui\backends</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderer.h">
-      <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.h">
-      <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaShader.h">
       <Filter>Platform\OpenGL</Filter>
@@ -2474,6 +2468,21 @@
     <ClInclude Include="src\Hazel\Audio\Editor\TreeModel.h">
       <Filter>Hazel\Audio\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.h">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanRendererHazelLegacy.h">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderer.h">
+      <Filter>Hazel\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\RendererAPIHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RendererAPI.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2772,6 +2781,12 @@
     </Filter>
     <Filter Include="Hazel\Editor\NodeGraphEditor">
       <UniqueIdentifier>{deac5b74-4cdb-4d2b-ae0a-1905156050ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy\Platform">
+      <UniqueIdentifier>{7f2113a7-fdb9-438e-962e-87c0f3357b6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy\Platform\Vulkan">
+      <UniqueIdentifier>{c8a34e45-ef72-4908-8ece-b065b8ec101a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

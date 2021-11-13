@@ -4,8 +4,8 @@
 
 #include "Hazel/Editor/SceneHierarchyPanel.h"
 #include "Hazel/Core/Events/KeyEvent.h"
-#include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
 
+#include "HazelLegacy/Platform/Vulkan/VulkanTestLayer.h"
 #include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 #include "HazelLegacy/Scene/EntityHazelLegacy.h"
 

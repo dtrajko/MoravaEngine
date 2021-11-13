@@ -2,12 +2,13 @@
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Renderer/HazelRenderer.h"
-#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
-#include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
 #include "Hazel/Project/UserPreferences.h"
 #include "Hazel/Renderer/RendererAPI.h"
 
 #include "HazelLegacy/Editor/EditorLayerHazelLegacy.h"
+#include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
+#include "HazelLegacy/Platform/Vulkan/VulkanTestLayer.h"
+#include "HazelLegacy/Renderer/RendererAPIHazelLegacy.h"
 
 #include "Core/Timer.h"
 #include "Platform/DX11/DX11TestLayer.h"
@@ -82,7 +83,7 @@ void Application::OnInit()
 			PushLayer(new Hazel::VulkanTestLayer("VulkanTestLayer")); // to be removed
 			PushLayer(new Hazel::EditorLayerHazelLegacy(Hazel::Ref<Hazel::UserPreferences>::Create()));
 			break;
-		case Hazel::RendererAPIType::DX11:
+		case Hazel::RendererAPITypeHazelLegacy::DX11:
 			PushLayer(new DX11TestLayer("DX11TestLayer"));
 			break;
 	}
@@ -173,7 +174,7 @@ void Application::Run()
 			{
 			case Hazel::RendererAPIType::Vulkan:
 				// m_Scene->OnRenderEditor(deltaTime, *(Hazel::EditorCamera*)m_Scene->GetCamera());
-				Hazel::VulkanRenderer::Draw(m_Scene); // replace with m_Scene->OnRenderEditor()
+				Hazel::VulkanRendererHazelLegacy::Draw(m_Scene); // replace with m_Scene->OnRenderEditor()
 				break;
 			case Hazel::RendererAPIType::DX11:
 				DX11Renderer::Draw(m_Scene->GetCamera());

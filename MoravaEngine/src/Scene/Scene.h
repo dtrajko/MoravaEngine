@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Hazel/Core/Events/ApplicationEvent.h"
-#include "Hazel/Scene/HazelScene.h"
+
+#include "HazelLegacy/Scene/SceneHazelLegacy.h"
 
 #include "Camera/Camera.h"
 #include "Camera/CameraController.h"

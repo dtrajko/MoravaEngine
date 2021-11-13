@@ -4,11 +4,11 @@
 void SelectRendererAPI()
 {
 #if defined(SCENE_HAZEL_VULKAN) 
-	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::Vulkan);
+	Hazel::RendererAPIHazelLegacy::SetAPI(Hazel::RendererAPITypeHazelLegacy::Vulkan);
 #elif defined(SCENE_DX11) 
-	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::DX11);
+	Hazel::RendererAPIHazelLegacy::SetAPI(Hazel::RendererAPITypeHazelLegacy::DX11);
 #else:
-	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::OpenGL);
+	Hazel::RendererAPIHazelLegacy::SetAPI(Hazel::RendererAPITypeHazelLegacy::OpenGL);
 #endif;
 }
 

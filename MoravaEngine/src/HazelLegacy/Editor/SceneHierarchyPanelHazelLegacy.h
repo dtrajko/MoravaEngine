@@ -2,6 +2,8 @@
 
 #include "../../../pch.h"
 
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+
 // ImGui
 #define _CRT_SECURE_NO_WARNINGS
 #include "../ImGui/ImGui.h"
