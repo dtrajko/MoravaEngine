@@ -1,12 +1,15 @@
 #include "SceneRendererHazelLegacy.h"
 
 #include "Hazel/Platform/Vulkan/VulkanFramebuffer.h"
-#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 #include "Hazel/Renderer/HazelFramebuffer.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/SceneRenderer.h"
+
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
+#include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
+#include "HazelLegacy/Platform/Vulkan/VulkanShaderHazelLegacy.h"
 
 
 namespace Hazel
@@ -319,7 +322,7 @@ namespace Hazel
 		// HazelRenderer::Submit([viewProjection, cameraPosition]() {});
 		{
 			auto inverseVP = glm::inverse(viewProjection);
-			auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
+			auto shader = s_Data.GridMaterial->GetShader().As<VulkanShaderHazelLegacy>();
 			void* ubPtr = shader->MapUniformBuffer(0);
 			struct ViewProj
 			{
@@ -365,7 +368,7 @@ namespace Hazel
 				1.0f
 			};
 
-			ub.lights.Direction = VulkanRenderer::GetLightDirectionTemp();
+			ub.lights.Direction = VulkanRendererHazelLegacy::GetLightDirectionTemp();
 			ub.u_CameraPosition = cameraPosition;
 
 			ubPtr = shader->MapUniformBuffer(1, 0);

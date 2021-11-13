@@ -1,6 +1,6 @@
 #include "Core/Timer.h"
 
-#include "Hazel/Renderer/RendererAPI.h"
+#include "HazelLegacy/Renderer/RendererAPIHazelLegacy.h"
 
 #include "Core/CommonValues.h"
 
@@ -43,15 +43,15 @@ Timer::Timer(float targetFPS, float targetUpdateRate) : Timer()
 
 void Timer::Update()
 {
-	switch (Hazel::RendererAPI::Current())
+	switch (Hazel::RendererAPIHazelLegacy::Current())
 	{
-		case Hazel::RendererAPIType::OpenGL:
-		case Hazel::RendererAPIType::Vulkan:
+		case Hazel::RendererAPITypeHazelLegacy::OpenGL:
+		case Hazel::RendererAPITypeHazelLegacy::Vulkan:
 		{
 			m_CurrentTimestamp = (float)glfwGetTime(); // returns seconds, as a double
 			break;
 		}
-		case Hazel::RendererAPIType::DX11:
+		case Hazel::RendererAPITypeHazelLegacy::DX11:
 		{
 			auto elapsedMilliseconds = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - m_StartTimeChrono);
 			float elapsedSeconds = (float)(elapsedMilliseconds.count() / 1000.0f);

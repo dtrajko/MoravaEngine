@@ -1,5 +1,7 @@
 #include "EnvMapSharedData.h"
 
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
+
 
 std::map<std::string, unsigned int> EnvMapSharedData::s_SamplerSlots;
 

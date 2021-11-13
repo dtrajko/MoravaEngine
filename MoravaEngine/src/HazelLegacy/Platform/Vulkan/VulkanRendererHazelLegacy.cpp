@@ -9,7 +9,6 @@
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanMaterial.h"
 #include "Hazel/Platform/Vulkan/VulkanPipeline.h"
-#include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderCommandBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanStorageBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
@@ -21,6 +20,7 @@
 #include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Renderer/StorageBufferSet.h"
 
+#include "HazelLegacy/Platform/Vulkan/VulkanShaderHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanTestLayer.h"
 
 #include "Platform/Vulkan/VulkanSkyboxCube.h"
@@ -543,7 +543,7 @@ namespace Hazel
 
 		VkPipelineLayout skyboxPipelineLayout = vulkanSkyboxPipeline->GetVulkanPipelineLayout();
 
-		Ref<VulkanShader> vulkanSkyboxShader = s_Data->SkyboxShader.As<VulkanShader>();
+		Ref<VulkanShaderHazelLegacy> vulkanSkyboxShader = s_Data->SkyboxShader.As<VulkanShaderHazelLegacy>();
 
 		void* ubPtr = vulkanSkyboxShader->MapUniformBuffer(0, 0);
 		struct SkyboxUniformCamera
@@ -558,7 +558,7 @@ namespace Hazel
 		vulkanSkyboxShader->UnmapUniformBuffer(0, 0);
 
 		std::array<VkWriteDescriptorSet, 2> writeDescriptors;
-		VulkanShader::ShaderMaterialDescriptorSet descriptorSet = vulkanSkyboxShader->CreateDescriptorSets();
+		VulkanShaderHazelLegacy::ShaderMaterialDescriptorSet descriptorSet = vulkanSkyboxShader->CreateDescriptorSets();
 
 		writeDescriptors[0] = *vulkanSkyboxShader->GetDescriptorSet("Camera");
 		writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
@@ -1706,7 +1706,7 @@ namespace Hazel
 			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			// shader->UnmapUniformBuffer(0);
 
-			Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
+			Ref<VulkanShaderHazelLegacy> shader = mesh->GetMeshShader().As<VulkanShaderHazelLegacy>();
 
 			{
 				void* ubPtr = shader->MapUniformBuffer(0, 0);

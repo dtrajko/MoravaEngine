@@ -54,6 +54,8 @@ namespace Hazel {
 		bool SwapChainTarget = false;
 	};
 
+	struct MeshComponentHazelLegacy;
+
 	class SceneRendererHazelLegacy : public RefCounted
 	{
 	public:

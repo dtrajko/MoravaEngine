@@ -23,7 +23,6 @@
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Scene/Entity.h"
-#include "Hazel/Scene/HazelScene.h"
 
 // Morava classes
 #include "Camera/RuntimeCamera.h"

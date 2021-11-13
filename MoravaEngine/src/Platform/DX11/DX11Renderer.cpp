@@ -242,12 +242,12 @@ void DX11Renderer::Shutdown()
 {
 }
 
-void DX11Renderer::SelectEntity(Hazel::Entity e)
+void DX11Renderer::SelectEntity(Hazel::EntityHazelLegacy e)
 {
 	Log::GetLogger()->info("DX11Renderer::SelectEntity called!");
 }
 
-void DX11Renderer::OnEntityDeleted(Hazel::Entity e)
+void DX11Renderer::OnEntityDeleted(Hazel::EntityHazelLegacy e)
 {
 	if (EntitySelection::s_SelectionContext.size())
 	{
@@ -462,8 +462,8 @@ void DX11Renderer::RenderImGui()
 {
 	// BEGIN DirectX 11 ImGui Render Pass
 	{
-		s_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkPos().x;
-		s_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkPos().y;
+		s_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkCenter().x;
+		s_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkCenter().y;
 
 		// ImGui Dockspace
 		bool p_open = true;
@@ -565,7 +565,7 @@ void DX11Renderer::DisplaySubmeshMaterialSelector(bool* p_open)
 		std::string entityTag = "N/A";
 		std::string meshName = "N/A";
 		SubmeshUUID submeshUUID = "N/A";
-		Hazel::Entity* entity = nullptr;
+		Hazel::EntityHazelLegacy* entity = nullptr;
 
 		if (EntitySelection::s_SelectionContext.size())
 		{
@@ -985,11 +985,11 @@ void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderComma
 {
 }
 
-void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Ref<Hazel::MaterialTable> materialTable, const glm::mat4& transform)
+void DX11Renderer::RenderMesh(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Ref<Hazel::MaterialTable> materialTable, const glm::mat4& transform)
 {
 }
 
-void DX11Renderer::RenderMeshWithMaterial(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform, Hazel::Buffer additionalUniforms)
+void DX11Renderer::RenderMeshWithMaterial(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform, Hazel::Buffer additionalUniforms)
 {
 }
 
@@ -1038,8 +1038,8 @@ void DX11Renderer::ShowExampleAppDockSpace(bool* p_open)
 	if (opt_fullscreen)
 	{
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->GetWorkPos());
-		ImGui::SetNextWindowSize(viewport->GetWorkSize());
+		ImGui::SetNextWindowPos(viewport->GetWorkCenter());
+		ImGui::SetNextWindowSize(viewport->GetWorkCenter());
 		ImGui::SetNextWindowViewport(viewport->ID);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -1338,7 +1338,7 @@ void DX11Renderer::RenderMeshesECS()
 	{
 		for (auto entt : meshEntities)
 		{
-			Hazel::Entity entity = { entt, DX11TestLayer::s_Scene.Raw() };
+			Hazel::EntityHazelLegacy entity = { entt, DX11TestLayer::s_Scene.Raw() };
 			auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
 
 			if (meshComponent.Mesh)

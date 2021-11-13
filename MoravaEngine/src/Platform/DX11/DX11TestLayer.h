@@ -41,7 +41,7 @@ struct RenderObject
 	std::vector<Hazel::Ref<Hazel::HazelTexture2D>> Textures;
 	glm::mat4 Transform;
 	PipelineType PipelineType;
-	Hazel::Entity Entity;
+	Hazel::EntityHazelLegacy Entity;
 	// std::vector<Hazel::Ref<DX11Material>> Materials; // we probably need some kind of <Submesh, Material> map here
 };
 
@@ -87,7 +87,7 @@ public:
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my);
 	void AddSubmeshToSelectionContext(SelectedSubmesh submesh);
 	void OnSelected(const SelectedSubmesh& selectionContext);
-	Ref<Hazel::Entity> GetMeshEntity();
+	Ref<Hazel::EntityHazelLegacy> GetMeshEntity();
 
 public:
 	static Hazel::Ref<DX11Mesh> s_Mesh;
@@ -104,7 +104,7 @@ public:
 	static bool s_ShowWindowAssetManager;
 	static bool s_ShowWindowMaterialEditor;
 
-	static Hazel::Ref<Hazel::HazelScene> s_Scene; // the Scene object provides the ECS registry
+	static Hazel::Ref<Hazel::SceneHazelLegacy> s_Scene; // the Scene object provides the ECS registry
 
 	static glm::mat4 s_CurrentlySelectedTransform;
 

@@ -31,7 +31,7 @@ bool DX11TestLayer::s_ShowWindowSceneHierarchy = true;
 bool DX11TestLayer::s_ShowWindowAssetManager = true;
 bool DX11TestLayer::s_ShowWindowMaterialEditor = true;
 
-Hazel::Ref<Hazel::HazelScene> DX11TestLayer::s_Scene;
+Hazel::Ref<Hazel::SceneHazelLegacy> DX11TestLayer::s_Scene;
 
 glm::mat4 DX11TestLayer::s_CurrentlySelectedTransform;
 
@@ -63,7 +63,7 @@ void DX11TestLayer::OnAttach()
 {
 	DX11InputSystem::Get()->AddListener(this);
 
-	s_Scene = Hazel::Ref<Hazel::HazelScene>::Create();
+	s_Scene = Hazel::Ref<Hazel::SceneHazelLegacy>::Create();
 
 	s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanelHazelLegacy(s_Scene);
 
@@ -426,7 +426,7 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 			auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
 			for (auto e : meshEntities)
 			{
-				Hazel::Entity entity = { e, s_Scene.Raw() };
+				Hazel::EntityHazelLegacy entity = { e, s_Scene.Raw() };
 				auto mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
 				if (!mesh) {
 					continue;
@@ -477,7 +477,7 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 				OnSelected(EntitySelection::s_SelectionContext[0]);
 			}
 			else {
-				Ref<Hazel::Entity> meshEntity = GetMeshEntity();
+				Ref<Hazel::EntityHazelLegacy> meshEntity = GetMeshEntity();
 				if (meshEntity) {
 					s_CurrentlySelectedTransform = meshEntity->Transform().GetTransform();
 				}
@@ -536,14 +536,14 @@ void DX11TestLayer::OnSelected(const SelectedSubmesh& selectionContext)
 	s_Scene->SetSelectedEntity(selectionContext.Entity);
 }
 
-Ref<Hazel::Entity> DX11TestLayer::GetMeshEntity()
+Ref<Hazel::EntityHazelLegacy> DX11TestLayer::GetMeshEntity()
 {
-	Ref<Hazel::Entity> meshEntity;
+	Ref<Hazel::EntityHazelLegacy> meshEntity;
 	auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponent>();
 	if (meshEntities.size()) {
 		for (auto entt : meshEntities)
 		{
-			meshEntity = CreateRef<Hazel::Entity>(entt, s_Scene.Raw());
+			meshEntity = CreateRef<Hazel::EntityHazelLegacy>(entt, s_Scene.Raw());
 		}
 		return meshEntity;
 	}

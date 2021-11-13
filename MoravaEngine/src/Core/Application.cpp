@@ -3,7 +3,6 @@
 #include "Hazel/Core/Base.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Project/UserPreferences.h"
-#include "Hazel/Renderer/RendererAPI.h"
 
 #include "HazelLegacy/Editor/EditorLayerHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
@@ -77,9 +76,9 @@ void Application::OnInit()
 
 	Hazel::HazelRenderer::Init();
 
-	switch (Hazel::RendererAPI::Current())
+	switch (Hazel::RendererAPIHazelLegacy::Current())
 	{
-		case Hazel::RendererAPIType::Vulkan:
+		case Hazel::RendererAPITypeHazelLegacy::Vulkan:
 			PushLayer(new Hazel::VulkanTestLayer("VulkanTestLayer")); // to be removed
 			PushLayer(new Hazel::EditorLayerHazelLegacy(Hazel::Ref<Hazel::UserPreferences>::Create()));
 			break;
@@ -170,13 +169,13 @@ void Application::Run()
 
 			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
 
-			switch (Hazel::RendererAPI::Current())
+			switch (Hazel::RendererAPIHazelLegacy::Current())
 			{
-			case Hazel::RendererAPIType::Vulkan:
+			case Hazel::RendererAPITypeHazelLegacy::Vulkan:
 				// m_Scene->OnRenderEditor(deltaTime, *(Hazel::EditorCamera*)m_Scene->GetCamera());
 				Hazel::VulkanRendererHazelLegacy::Draw(m_Scene); // replace with m_Scene->OnRenderEditor()
 				break;
-			case Hazel::RendererAPIType::DX11:
+			case Hazel::RendererAPITypeHazelLegacy::DX11:
 				DX11Renderer::Draw(m_Scene->GetCamera());
 				break;
 			}
@@ -225,9 +224,9 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	m_Scene->OnWindowResize(e);
 	m_Window->GetRenderContext()->OnResize(width, height);
 
-	switch (Hazel::RendererAPI::Current())
+	switch (Hazel::RendererAPIHazelLegacy::Current())
 	{
-		case Hazel::RendererAPIType::Vulkan:
+		case Hazel::RendererAPITypeHazelLegacy::Vulkan:
 		{
 			auto& fbs = Hazel::HazelFramebufferPool::GetGlobal()->GetAll();
 			for (auto& fb : fbs)
@@ -240,7 +239,7 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 			}
 		}
 		break;
-		case Hazel::RendererAPIType::DX11:
+		case Hazel::RendererAPITypeHazelLegacy::DX11:
 		{
 			DX11Renderer::OnResize(width, height);
 		}
@@ -306,13 +305,13 @@ std::string Application::OpenFile(const char* filter) const
 	// Initialize OPENFILENAME
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	switch (Hazel::RendererAPI::Current())
+	switch (Hazel::RendererAPIHazelLegacy::Current())
 	{
-		case Hazel::RendererAPIType::OpenGL:
-		case Hazel::RendererAPIType::Vulkan:
+		case Hazel::RendererAPITypeHazelLegacy::OpenGL:
+		case Hazel::RendererAPITypeHazelLegacy::Vulkan:
 			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
 			break;
-		case Hazel::RendererAPIType::DX11:
+		case Hazel::RendererAPITypeHazelLegacy::DX11:
 			ofn.hwndOwner = m_Window->GetHWND();
 			break;
 	}
@@ -343,13 +342,13 @@ std::string Application::SaveFile(const char* filter) const
 	// Initialize OPENFILENAME
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	switch (Hazel::RendererAPI::Current())
+	switch (Hazel::RendererAPIHazelLegacy::Current())
 	{
-		case Hazel::RendererAPIType::OpenGL:
-		case Hazel::RendererAPIType::Vulkan:
+		case Hazel::RendererAPITypeHazelLegacy::OpenGL:
+		case Hazel::RendererAPITypeHazelLegacy::Vulkan:
 			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
 			break;
-		case Hazel::RendererAPIType::DX11:
+		case Hazel::RendererAPITypeHazelLegacy::DX11:
 			ofn.hwndOwner = m_Window->GetHWND();
 			break;
 	}
@@ -379,7 +378,7 @@ void Application::OnImGuiRender(bool* p_open)
 		const char* device = "N/A";
 		const char* version = "N/A";
 
-		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+		if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 		{
 			vendor = (const char*)glGetString(GL_VENDOR);
 			device = (const char*)glGetString(GL_RENDERER);
@@ -421,7 +420,7 @@ const char* Application::GetPlatformName()
 
 void Application::CaptureScreenshot(const std::string& filePath)
 {
-	if (Hazel::RendererAPI::Current() != Hazel::RendererAPIType::OpenGL) return;
+	if (Hazel::RendererAPIHazelLegacy::Current() != Hazel::RendererAPITypeHazelLegacy::OpenGL) return;
 
 	int width, height;
 	glfwGetFramebufferSize(m_Window->GetHandle(), &width, &height);

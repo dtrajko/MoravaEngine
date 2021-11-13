@@ -13,8 +13,6 @@
 #include "Hazel/Renderer/SceneEnvironment.h"
 #include "Hazel/Renderer/Renderer2D.h"
 
-#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
-
 #include "Shader/MoravaShader.h"
 
 #include "entt.hpp"
