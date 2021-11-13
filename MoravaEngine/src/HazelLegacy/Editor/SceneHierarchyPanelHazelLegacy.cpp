@@ -57,7 +57,7 @@ namespace Hazel
 					EntitySelection::s_SelectionContext.clear();
 					for (auto& submesh : meshComponent.Mesh->GetSubmeshes())
 					{
-						EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submesh, 0 });
+						EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, submesh, 0 });
 					}
 				}
 				else if (EnvMapEditorLayer::s_SelectionMode == SelectionMode::SubMesh) {
@@ -259,14 +259,14 @@ namespace Hazel
 
 		auto mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
 
-		std::vector<Hazel::SubmeshHazelLegacy>& submeshes = mesh->GetSubmeshes();
+		std::vector<Hazel::Ref<Hazel::SubmeshHazelLegacy>>& submeshes = mesh->GetSubmeshes();
 
 		for (int i = 0; i < submeshes.size(); i++)
 		{
 			bool submeshSelected = false;
 			for (auto selection : EntitySelection::s_SelectionContext)
 			{
-				if (selection.Mesh && selection.Mesh->MeshName == submeshes[i].MeshName)
+				if (selection.Mesh && selection.Mesh->MeshName == submeshes[i]->MeshName)
 				{
 					submeshSelected = true;
 					break;
@@ -274,12 +274,12 @@ namespace Hazel
 			}
 
 			ImGuiTreeNodeFlags flags = (submeshSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i].BaseIndex + i), flags, submeshes[i].MeshName.c_str());
+			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i]->BaseIndex + i), flags, submeshes[i]->MeshName.c_str());
 
 			if (ImGui::IsItemClicked())
 			{
 				EntitySelection::s_SelectionContext.clear();
-				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submeshes[i], 0 });
+				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, submeshes[i], 0 });
 
 				EnvMapEditorLayer::s_SelectionMode = SelectionMode::SubMesh;
 			}
@@ -305,17 +305,17 @@ namespace Hazel
 			if (opened) {
 				ImGui::Text("MeshName: ");
 				ImGui::SameLine();
-				ImGui::Text(submeshes[i].MeshName.c_str());
+				ImGui::Text(submeshes[i]->MeshName.c_str());
 
 				ImGui::Text("NodeName: ");
 				ImGui::SameLine();
-				ImGui::Text(submeshes[i].NodeName.c_str());
+				ImGui::Text(submeshes[i]->NodeName.c_str());
 
 				ImGui::Text("MaterialIndex: ");
 				ImGui::SameLine();
-				ImGui::Text(std::to_string(submeshes[i].MaterialIndex).c_str());
+				ImGui::Text(std::to_string(submeshes[i]->MaterialIndex).c_str());
 
-				SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(&entity, &submeshes[i]);
+				SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(&entity, submeshes[i]);
 				std::string materialUUID = "N/A";
 				std::string materialName = "N/A";
 				auto map_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
@@ -337,7 +337,7 @@ namespace Hazel
 			}
 
 			if (submeshDeleted && submeshSelected) {
-				Log::GetLogger()->debug("SceneHierarchyPanelHazelLegacy DeleteSubmesh('{0}')", submeshes[i].MeshName);
+				Log::GetLogger()->debug("SceneHierarchyPanelHazelLegacy DeleteSubmesh('{0}')", submeshes[i]->MeshName);
 				mesh->DeleteSubmesh(submeshes[i]);
 			}
 
@@ -371,7 +371,7 @@ namespace Hazel
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t meshIndex = node->mMeshes[i];
-			((MeshHazelLegacy *)mesh)->GetSubmeshes()[meshIndex].Transform = transform;
+			((MeshHazelLegacy *)mesh)->GetSubmeshes()[meshIndex]->Transform = transform;
 		}
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
@@ -806,8 +806,8 @@ namespace Hazel
 			ImGui::Text("File Path");
 			ImGui::NextColumn();
 			ImGui::PushItemWidth(-1);
-			if (!slc.SceneEnvironment.FilePath.empty())
-				ImGui::InputText("##envfilepath", (char*)slc.SceneEnvironment.FilePath.c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+			if (!slc.SceneEnvironment->FilePath.empty())
+				ImGui::InputText("##envfilepath", (char*)slc.SceneEnvironment->FilePath.c_str(), 256, ImGuiInputTextFlags_ReadOnly);
 			else
 				ImGui::InputText("##envfilepath", (char*)"Empty", 256, ImGuiInputTextFlags_ReadOnly);
 			ImGui::PopItemWidth();

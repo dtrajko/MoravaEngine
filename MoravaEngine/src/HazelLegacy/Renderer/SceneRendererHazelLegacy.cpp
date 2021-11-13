@@ -25,7 +25,7 @@ namespace Hazel
 
 			// Resources
 			Ref<HazelMaterial> SkyboxMaterial;
-			Environment SceneEnvironment;
+			Ref<Environment> SceneEnvironment;
 			float SkyboxLod = 0.0f;
 			float SceneEnvironmentIntensity;
 			LightEnvironment SceneLightEnvironment;
@@ -231,7 +231,7 @@ namespace Hazel
 
 		s_Data.SceneData.SceneCamera = camera;
 		// s_Data.SceneData.SkyboxMaterial = scene->GetSkyboxMaterial();
-		s_Data.SceneData.SceneEnvironment = *scene->GetEnvironment().Raw();
+		s_Data.SceneData.SceneEnvironment = scene->GetEnvironment();
 		s_Data.SceneData.SkyboxLod = scene->GetSkyboxLod();
 		s_Data.SceneData.ActiveLight = scene->GetLight();
 
@@ -242,7 +242,7 @@ namespace Hazel
 			s_Data.NeedsResize = false;
 		}
 
-		HazelRenderer::SetSceneEnvironment(Ref<SceneRenderer>(), &s_Data.SceneData.SceneEnvironment, Ref<HazelImage2D>(), Ref<HazelImage2D>());
+		HazelRenderer::SetSceneEnvironment(Ref<SceneRenderer>(), s_Data.SceneData.SceneEnvironment, Ref<HazelImage2D>(), Ref<HazelImage2D>());
 	}
 
 	void SceneRendererHazelLegacy::EndScene()
@@ -335,12 +335,12 @@ namespace Hazel
 			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			shader->UnmapUniformBuffer(0);
 
-			shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShader>();
+			shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShaderHazelLegacy>();
 			ubPtr = shader->MapUniformBuffer(0);
 			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			shader->UnmapUniformBuffer(0);
 
-			shader = s_Data.GeometryPipeline->GetSpecification().Shader.As<VulkanShader>();
+			shader = s_Data.GeometryPipeline->GetSpecification().Shader.As<VulkanShaderHazelLegacy>();
 			ubPtr = shader->MapUniformBuffer(0);
 			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			shader->UnmapUniformBuffer(0);
@@ -378,7 +378,7 @@ namespace Hazel
 
 		// Skybox
 		s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
-		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
+		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment->RadianceMap);
 		HazelRenderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer>(), s_Data.SkyboxPipeline, Ref<UniformBufferSet>(), s_Data.SkyboxMaterial);
 
 		// Render entities

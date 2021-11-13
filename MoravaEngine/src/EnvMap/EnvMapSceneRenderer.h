@@ -85,8 +85,8 @@ public:
 	static Hazel::HazelDirLight& GetActiveLight();
 	static void SetActiveLight(Hazel::HazelDirLight& light);
 	static void AddToDrawList(std::string name, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity, glm::mat4 transform);
-	static Hazel::Environment Load(const std::string& filepath);
-	static void SetEnvironment(Hazel::Environment environment);
+	static Hazel::Ref<Hazel::Environment> Load(const std::string& filepath);
+	static void SetEnvironment(Hazel::Ref<Hazel::Environment> environment);
 	static Hazel::Ref<MoravaShader> GetShaderSkybox() { return s_ShaderSkybox; }
 	static Hazel::Ref<MoravaShader> GetShaderGrid() { return s_ShaderGrid; }
 	static Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return s_EnvEquirect; }
@@ -110,7 +110,7 @@ public:
 private:
 	static void RenderSkybox();
 	static void RenderHazelGrid();
-	static void RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::EntityHazelLegacy entity, const glm::mat4& entityTransform, Hazel::SubmeshHazelLegacy& submesh);
+	static void RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::EntityHazelLegacy entity, const glm::mat4& entityTransform, Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh);
 	static void UpdateShaderPBRUniforms(Hazel::Ref<MoravaShader> shaderHazelPBR, Hazel::Ref<EnvMapMaterial> envMapMaterial);
 
 public:

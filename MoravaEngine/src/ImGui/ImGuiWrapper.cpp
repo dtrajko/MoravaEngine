@@ -1,5 +1,7 @@
 #include "ImGuiWrapper.h"
 
+#include "HazelLegacy/Renderer/RendererAPIHazelLegacy.h"
+
 #include "Core/Application.h"
 #include "EnvMap/EnvMapEditorLayer.h"
 
@@ -188,7 +190,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " Albedo";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+			if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetAlbedoInput().TextureMap ?
@@ -212,7 +214,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::TextUnformatted(material->GetAlbedoInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+					if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetAlbedoInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -261,7 +263,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " Normals";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+			if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetNormalInput().TextureMap ?
@@ -285,7 +287,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::TextUnformatted(material->GetNormalInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+					if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetNormalInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -316,7 +318,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " Metalness";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+			if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetMetalnessInput().TextureMap ?
@@ -340,7 +342,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::TextUnformatted(material->GetMetalnessInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+					if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetMetalnessInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -374,7 +376,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " Roughness";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+			if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetRoughnessInput().TextureMap ?
@@ -398,7 +400,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::TextUnformatted(material->GetRoughnessInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+					if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetRoughnessInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -432,7 +434,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " AO";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+			if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetAOInput().TextureMap ?
@@ -456,7 +458,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::TextUnformatted(material->GetAOInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+					if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetAOInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -490,7 +492,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 		std::string textureLabel = material->GetName() + " Emissive";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+			if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetEmissiveInput().TextureMap ?
@@ -514,7 +516,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					ImGui::TextUnformatted(material->GetEmissiveInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+					if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetEmissiveInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}

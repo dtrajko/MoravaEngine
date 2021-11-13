@@ -8,7 +8,7 @@
 struct SelectedSubmesh
 {
 	Hazel::EntityHazelLegacy Entity;
-	Hazel::SubmeshHazelLegacy* Mesh;
+	Hazel::Ref<Hazel::SubmeshHazelLegacy> Mesh;
 	float Distance;
 };
 

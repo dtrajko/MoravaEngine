@@ -1161,6 +1161,9 @@
     <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.cpp">
       <Filter>HazelLegacy\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\Hazel\Core\Ref.cpp">
+      <Filter>Hazel\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />

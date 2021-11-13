@@ -82,7 +82,7 @@ struct EnvMapSceneRendererData
         // Resources
         Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
         Material* SkyboxMaterial;
-        Hazel::Environment SceneEnvironment;
+        Hazel::Ref<Hazel::Environment> SceneEnvironment;
         Hazel::HazelDirLight ActiveLight;
     } SceneData;
 
@@ -124,6 +124,7 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::SceneHazelLegacy* sc
 
     SetupShaders();
 
+    // s_Data.SceneData.SceneEnvironment = Load(filepath);
     s_Data.SceneData.SceneEnvironment = Load(filepath);
     SetEnvironment(s_Data.SceneData.SceneEnvironment);
 
@@ -240,11 +241,11 @@ void EnvMapSceneRenderer::SetupShaders()
 }
 
 // Moved from EnvironmentMap
-Hazel::Environment EnvMapSceneRenderer::Load(const std::string& filepath)
+Hazel::Ref<Hazel::Environment> EnvMapSceneRenderer::Load(const std::string& filepath)
 {
     auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
     // auto [radiance, irradiance] = Hazel::HazelRenderer::CreateEnvironmentMap(filepath);
-    return { radiance, irradiance };
+    return Hazel::Ref<Hazel::Environment>::Create(radiance, irradiance);
 }
 
 void EnvMapSceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
@@ -299,7 +300,7 @@ Hazel::SceneRendererCamera& EnvMapSceneRenderer::GetCamera()
 static Ref<Hazel::HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
 
 // Moved from EnvironmentMap
-void EnvMapSceneRenderer::SetEnvironment(Hazel::Environment environment)
+void EnvMapSceneRenderer::SetEnvironment(Hazel::Ref<Hazel::Environment> environment)
 {
     s_Data.SceneData.SceneEnvironment = environment;
 }
@@ -457,7 +458,7 @@ void EnvMapSceneRenderer::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 }
 
-void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::EntityHazelLegacy entity, const glm::mat4& entityTransform, Hazel::SubmeshHazelLegacy& submesh)
+void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::EntityHazelLegacy entity, const glm::mat4& entityTransform, Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh)
 {
     if (!EnvMapSharedData::s_DisplayOutline) return;
 
@@ -467,8 +468,8 @@ void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::
     if (EntitySelection::s_SelectionContext.size()) {
         for (auto selection : EntitySelection::s_SelectionContext)
         {
-            if (selection.Mesh && &submesh == selection.Mesh) {
-                submesh.RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
+            if (selection.Mesh && submesh == selection.Mesh) {
+                submesh->RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
             }
         }
     }
@@ -813,7 +814,7 @@ void EnvMapSceneRenderer::GeometryPass()
                 Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
                 std::string materialUUID;
 
-                for (Hazel::SubmeshHazelLegacy& submesh : meshComponent.Mesh->GetSubmeshes())
+                for (Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh : meshComponent.Mesh->GetSubmeshes())
                 {
                     materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
 
@@ -832,7 +833,7 @@ void EnvMapSceneRenderer::GeometryPass()
 
                     // Log::GetLogger()->debug("wireframeEnabledScene: {0}, wireframeEnabledModel: {1}", wireframeEnabledScene, wireframeEnabledModel);
 
-                    submesh.Render(meshComponent.Mesh, EnvMapSharedData::s_ShaderHazelPBR, entityTransform, samplerSlot,
+                    submesh->Render(meshComponent.Mesh, EnvMapSharedData::s_ShaderHazelPBR, entityTransform, samplerSlot,
                         MaterialLibrary::s_EnvMapMaterials, entity, wireframeEnabledScene, wireframeEnabledModel);
                 }
             }
@@ -987,12 +988,12 @@ Hazel::SceneRendererOptions& EnvMapSceneRenderer::GetOptions()
 
 Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::GetRadianceMap()
 {
-    return s_Data.SceneData.SceneEnvironment.RadianceMap;
+    return s_Data.SceneData.SceneEnvironment->RadianceMap;
 }
 
 Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::GetIrradianceMap()
 {
-    return s_Data.SceneData.SceneEnvironment.IrradianceMap;
+    return s_Data.SceneData.SceneEnvironment->IrradianceMap;
 }
 
 Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::GetBRDFLUT()

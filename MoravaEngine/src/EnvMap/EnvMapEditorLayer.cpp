@@ -1785,10 +1785,10 @@ void EnvMapEditorLayer::SelectEntity(Hazel::EntityHazelLegacy e)
 void EnvMapEditorLayer::SubmitMesh(Hazel::MeshHazelLegacy* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
     auto& materials = mesh->GetMaterials();
-    for (Hazel::SubmeshHazelLegacy& submesh : mesh->GetSubmeshes())
+    for (Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh : mesh->GetSubmeshes())
     {
         // Material
-        auto material = materials[submesh.MaterialIndex];
+        auto material = materials[submesh->MaterialIndex];
 
         for (size_t i = 0; i < mesh->GetBoneTransforms().size(); i++)
         {
@@ -1796,7 +1796,7 @@ void EnvMapEditorLayer::SubmitMesh(Hazel::MeshHazelLegacy* mesh, const glm::mat4
             EnvMapSharedData::s_ShaderHazelPBR->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
         }
 
-        EnvMapSharedData::s_ShaderHazelPBR->SetMat4("u_Transform", transform * submesh.Transform);
+        EnvMapSharedData::s_ShaderHazelPBR->SetMat4("u_Transform", transform * submesh->Transform);
 
         if (material->GetFlag(Hazel::HazelMaterialFlag::DepthTest)) { // TODO: Fix Material flags
             RendererBasic::EnableDepthTest();
@@ -1805,7 +1805,7 @@ void EnvMapEditorLayer::SubmitMesh(Hazel::MeshHazelLegacy* mesh, const glm::mat4
             RendererBasic::DisableDepthTest();
         }
 
-        RendererBasic::DrawIndexed(submesh.GetIndexCount(), 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
+        RendererBasic::DrawIndexed(submesh->GetIndexCount(), 0, submesh->BaseVertex, (void*)(sizeof(uint32_t) * submesh->BaseIndex));
     }
 }
 
@@ -1981,12 +1981,12 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     continue;
                 }
 
-                std::vector<Hazel::SubmeshHazelLegacy>& submeshes = mesh->GetSubmeshes();
+                std::vector<Hazel::Ref<Hazel::SubmeshHazelLegacy>> submeshes = mesh->GetSubmeshes();
                 float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
                 // for (Hazel::Submesh& submesh : submeshes)
                 for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
-                    Hazel::SubmeshHazelLegacy* submesh = &submeshes[i];
+                    Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh = submeshes[i];
                     auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
                     Hazel::Ray ray = {
                         glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
@@ -2219,14 +2219,14 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shade
 
             if (meshComponent.Mesh && meshComponent.CastShadows)
             {
-                for (Hazel::SubmeshHazelLegacy& submesh : meshComponent.Mesh->GetSubmeshes())
+                for (Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh : meshComponent.Mesh->GetSubmeshes())
                 {
                     // Render Submesh
                     meshComponent.Mesh->GetVertexBuffer()->Bind();
                     meshComponent.Mesh->GetPipeline()->Bind();
                     meshComponent.Mesh->GetIndexBuffer()->Bind();
 
-                    shader->SetMat4("model", entityTransform * submesh.Transform);
+                    shader->SetMat4("model", entityTransform * submesh->Transform);
 
                     for (size_t i = 0; i < meshComponent.Mesh->GetBoneTransforms().size(); i++)
                     {
@@ -2236,7 +2236,7 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shade
 
                     shader->SetBool("u_Animated", meshComponent.Mesh->IsAnimated());
 
-                    RendererBasic::DrawIndexed(submesh.IndexCount, 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
+                    RendererBasic::DrawIndexed(submesh->IndexCount, 0, submesh->BaseVertex, (void*)(sizeof(uint32_t) * submesh->BaseIndex));
                 }
             }
         }

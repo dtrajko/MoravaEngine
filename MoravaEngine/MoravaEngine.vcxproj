@@ -217,6 +217,7 @@
     <ClCompile Include="src\Hazel\Core\LayerStack.cpp" />
     <ClCompile Include="src\Hazel\Core\Math\Mat4.cpp" />
     <ClCompile Include="src\Hazel\Core\Math\Noise.cpp" />
+    <ClCompile Include="src\Hazel\Core\Ref.cpp" />
     <ClCompile Include="src\Hazel\Core\Timestep.cpp" />
     <ClCompile Include="src\Hazel\Core\UUID.cpp" />
     <ClCompile Include="src\Hazel\Editor\AssetEditorPanel.cpp" />

@@ -84,7 +84,7 @@ namespace Hazel
 
 	struct SkyLightLegacyComponent
 	{
-		Environment SceneEnvironment;
+		Ref<Environment> SceneEnvironment;
 		float Intensity = 1.0f;
 		float Angle = 0.0f;
 	};
