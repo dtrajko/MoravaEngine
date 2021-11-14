@@ -40,3 +40,6 @@
 [submodule "vendor/msdf-atlas-gen"]
 	path = vendor/msdf-atlas-gen
 	url = https://github.com/TheCherno/msdf-atlas-gen.git
+[submodule "vendor/FastNoise"]
+	path = vendor/FastNoise
+	url = https://github.com/Auburns/FastNoise

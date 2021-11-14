@@ -249,7 +249,7 @@ namespace Hazel {
 				}
 			});
 
-		SceneRenderer::BeginScene(nullptr, { m_Camera, m_Camera.GetViewMatrix() });
+		SceneRendererHazelLegacy::BeginScene(nullptr, { m_Camera, m_Camera.GetViewMatrix() });
 
 		// Render entities
 		m_Registry.view<MeshComponentHazelLegacy>().each([=](auto entity, auto& mc)
@@ -258,7 +258,7 @@ namespace Hazel {
 				EnvMapSceneRenderer::SubmitEntity(EntityHazelLegacy{ entity, this });
 			});
 
-		SceneRenderer::EndScene();
+		SceneRendererHazelLegacy::EndScene();
 
 		// Render 2D
 		HazelCamera* mainCamera = nullptr;
@@ -331,13 +331,13 @@ namespace Hazel {
 
 		// TODO: only one sky light at the moment!
 		{
-			m_Environment = Environment();
+			m_Environment = Ref<Environment>::Create();
 			auto lights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
 			for (auto entity : lights)
 			{
 				auto [transformComponent, skyLightComponent] = lights.get<TransformComponent, SkyLightComponent>(entity);
 				// m_Environment = skyLightComponent.SceneEnvironment;
-				SetSkybox(m_Environment.RadianceMap);
+				SetSkybox(m_Environment->RadianceMap);
 			}
 		}
 
@@ -426,13 +426,13 @@ namespace Hazel {
 
 			// TODO: only one sky light at the moment!
 			{
-				m_Environment = Environment();
+				m_Environment = Ref<Environment>::Create();
 				auto lights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
 				for (auto entity : lights)
 				{
 					auto [transformComponent, skyLightComponent] = lights.get<TransformComponent, SkyLightComponent>(entity);
 					// m_Environment = skyLightComponent.SceneEnvironment;
-					SetSkybox(m_Environment.RadianceMap);
+					SetSkybox(m_Environment->RadianceMap);
 				}
 			}
 
@@ -442,7 +442,7 @@ namespace Hazel {
 
 				auto group = m_Registry.group<MeshComponentHazelLegacy>(entt::get<TransformComponent>);
 
-				SceneRenderer::BeginScene(nullptr, { editorCamera, editorCamera.GetViewMatrix() });
+				SceneRendererHazelLegacy::BeginScene(nullptr, { editorCamera, editorCamera.GetViewMatrix() });
 				for (auto entity : group)
 				{
 					auto [meshComponent, transformComponent] = group.get<MeshComponentHazelLegacy, TransformComponent>(entity);
@@ -460,7 +460,7 @@ namespace Hazel {
 						}
 					}
 				}
-				SceneRenderer::EndScene();
+				SceneRendererHazelLegacy::EndScene();
 			}
 		}
 	}
@@ -470,10 +470,10 @@ namespace Hazel {
 		Log::GetLogger()->warn("SceneHazelLegacy::OnRenderSimulation method not yet implemented!");
 	}
 
-	void SceneHazelLegacy::SetEnvironment(const Environment& environment)
+	void SceneHazelLegacy::SetEnvironment(Ref<Environment> environment)
 	{
 		m_Environment = environment;
-		SetSkybox(environment.RadianceMap);
+		SetSkybox(environment->RadianceMap);
 	}
 
 	void SceneHazelLegacy::SetSkybox(const Ref<HazelTextureCube>& skybox)

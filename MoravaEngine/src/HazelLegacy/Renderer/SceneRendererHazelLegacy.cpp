@@ -10,6 +10,7 @@
 #include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanShaderHazelLegacy.h"
+#include "HazelLegacy/Renderer/RendererHazelLegacy.h"
 
 
 namespace Hazel
@@ -384,19 +385,19 @@ namespace Hazel
 		// Render entities
 		for (auto& dc : s_Data.DrawList)
 		{
-			HazelRenderer::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+			// HazelRenderer::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		for (auto& dc : s_Data.SelectedMeshDrawList)
 		{
-			HazelRenderer::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+			// HazelRenderer::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		// Grid
 		if (GetOptions().ShowGrid)
 		{
 			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
-			HazelRenderer::RenderQuad(s_Data.GridPipeline, s_Data.GridMaterial, transform);
+			// HazelRenderer::RenderQuad(s_Data.GridPipeline, s_Data.GridMaterial, transform);
 		}
 
 		if (GetOptions().ShowBoundingBoxes)
@@ -404,7 +405,7 @@ namespace Hazel
 			Renderer2D::BeginScene(viewProjection, glm::mat4(1.0f), true);
 			for (auto& dc : s_Data.DrawList)
 			{
-				HazelRenderer::DrawAABB(dc.Mesh, dc.Transform);
+				RendererHazelLegacy::DrawAABB(dc.Mesh, dc.Transform);
 			}
 			Renderer2D::EndScene();
 		}

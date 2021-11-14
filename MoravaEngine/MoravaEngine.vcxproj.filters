@@ -1167,6 +1167,9 @@
     <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.cpp">
       <Filter>HazelLegacy\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\RendererHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2497,6 +2500,9 @@
     </ClInclude>
     <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.h">
       <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\RendererHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

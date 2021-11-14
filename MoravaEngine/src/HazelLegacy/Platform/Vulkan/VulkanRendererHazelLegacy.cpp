@@ -22,6 +22,7 @@
 #include "HazelLegacy/Platform/Vulkan/VulkanFramebufferHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanShaderHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanTestLayer.h"
+#include "HazelLegacy/Renderer/SceneRendererHazelLegacy.h"
 
 #include "Platform/Vulkan/VulkanSkyboxCube.h"
 
@@ -185,7 +186,7 @@ namespace Hazel
 		HazelRenderer::GetShaderLibrary()->Load("Resources/Shaders/Grid.glsl");
 		HazelRenderer::GetShaderLibrary()->Load("Resources/Shaders/Outline.glsl");
 
-		SceneRenderer::Init();
+		SceneRendererHazelLegacy::Init();
 
 		// Renderer2D::Init();
 

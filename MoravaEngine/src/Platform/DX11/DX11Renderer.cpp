@@ -81,7 +81,7 @@ static Hazel::Ref<MoravaFramebuffer> s_PostProcessingFramebuffer;
 
 // ImGuizmo
 static glm::mat4* s_ImGuizmoTransform = nullptr;
-static Hazel::SubmeshHazelLegacy* s_SelectedSubmesh;
+static Hazel::Ref<Hazel::SubmeshHazelLegacy> s_SelectedSubmesh;
 static SelectionMode s_SelectionMode = SelectionMode::Entity;
 
 /**** END variables from Scene.cpp ****/
@@ -107,8 +107,8 @@ static glm::vec2 s_ImGuiViewportMain;
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
 {
 	// Temporary code - populate selected submesh
-	std::vector<Hazel::SubmeshHazelLegacy> submeshes = renderObject.Mesh->GetSubmeshes();
-	s_SelectedSubmesh = &submeshes.at(0);
+	std::vector<Hazel::Ref<Hazel::SubmeshHazelLegacy>> submeshes = renderObject.Mesh->GetSubmeshes();
+	s_SelectedSubmesh = submeshes.at(0);
 
 	s_RenderObjects.push_back(renderObject);
 }
@@ -137,14 +137,14 @@ void DX11Renderer::Init()
 {
 	/**** BEGIN DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
 
-	Hazel::HazelFramebufferTextureSpecification framebufferTextureSpecification;
+	Hazel::FramebufferTextureSpecification framebufferTextureSpecification;
 	framebufferTextureSpecification.Format = Hazel::HazelImageFormat::RGBA;
 
-	std::vector<Hazel::HazelFramebufferTextureSpecification> framebufferTextureSpecifications;
+	std::vector<Hazel::FramebufferTextureSpecification> framebufferTextureSpecifications;
 	framebufferTextureSpecifications.push_back(framebufferTextureSpecification);
 
-	Hazel::HazelFramebufferAttachmentSpecification framebufferAttachmentSpecification{};
-	framebufferAttachmentSpecification.Attachments = framebufferTextureSpecifications;
+	Hazel::HazelFramebufferSpecification framebufferAttachmentSpecification{};
+	framebufferAttachmentSpecification.Attachments.Attachments = framebufferTextureSpecifications;
 
 	Hazel::HazelFramebufferSpecification framebufferSpec{};
 	framebufferSpec.ClearColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1386,7 +1386,7 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 	pipeline->Bind();
 	dx11meshIB->Bind();
 
-	for (Hazel::SubmeshHazelLegacy submesh : renderObject.Mesh->GetSubmeshes())
+	for (Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh : renderObject.Mesh->GetSubmeshes())
 	{
 		// World/Model/Transform matrix
 		s_ConstantBufferLayout.Model = renderObject.Transform;
@@ -1439,7 +1439,7 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 		dx11Shader->GetPixelShader()->SetTextures(textures);
 
 		// DX11Renderer::DrawTriangleStrip(s_VertexBuffer->GetVertexCount(), startVertexIndex);
-		DX11Renderer::DrawIndexedTriangleList(submesh.IndexCount, submesh.BaseVertex, submesh.BaseIndex);
+		DX11Renderer::DrawIndexedTriangleList(submesh->IndexCount, submesh->BaseVertex, submesh->BaseIndex);
 	}
 }
 

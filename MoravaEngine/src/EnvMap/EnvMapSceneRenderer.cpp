@@ -10,6 +10,8 @@
 #include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Renderer/Renderer2D.h"
 
+#include "HazelLegacy/Renderer/RendererHazelLegacy.h"
+
 #include "Core/Application.h"
 #include "Core/Log.h"
 #include "Core/ResourceManager.h"
@@ -860,7 +862,7 @@ void EnvMapSceneRenderer::GeometryPass()
                         transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
                     }
                     glm::vec4 color = EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
-                    Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
+                    Hazel::RendererHazelLegacy::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
                 }
             }
         }

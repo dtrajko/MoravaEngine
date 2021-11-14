@@ -100,8 +100,8 @@ namespace Hazel {
 		void SetSkyboxMaterial(Ref<HazelMaterial> skyboxMaterial) { m_SkyboxMaterial = skyboxMaterial; }
 		Ref<HazelMaterial> GetSkyboxMaterial() { return m_SkyboxMaterial; }
 
-		void SetEnvironment(const Environment& environment);
-		inline const Environment& GetEnvironment() const { return m_Environment; }
+		void SetEnvironment(Ref<Environment> environment);
+		inline Ref<Environment> GetEnvironment() { return m_Environment; }
 		void SetSkybox(const Ref<HazelTextureCube>& skybox);
 
 		DirLightHazelLegacy& GetLight() { return m_Light; }
@@ -174,7 +174,7 @@ namespace Hazel {
 
 		// MoravaShader* m_ShaderSkybox;
 
-		Environment m_Environment;
+		Ref<Environment> m_Environment;
 		float m_EnvironmentIntensity = 1.0f;
 		Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
 		MoravaShader* m_ShaderSkybox;
