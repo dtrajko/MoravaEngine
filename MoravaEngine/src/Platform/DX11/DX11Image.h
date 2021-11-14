@@ -15,6 +15,7 @@ struct DX11ImageInfo
 class DX11Image2D : public Hazel::HazelImage2D
 {
 public:
+	DX11Image2D(Hazel::ImageSpecification specification, const void* data = nullptr);
 	DX11Image2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height);
 	virtual ~DX11Image2D();
 
@@ -24,13 +25,14 @@ public:
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
 
-	virtual Hazel::HazelImageFormat GetFormat() const override { return m_Format; }
 	virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
 	virtual Hazel::ImageSpecification& GetSpecification() override { return m_Specification; }
 	virtual const Hazel::ImageSpecification& GetSpecification() const override { return m_Specification; }
 
 	void RT_Invalidate() {}
+
+	Hazel::HazelImageFormat GetFormat() const { return m_Format; }
 
 	DX11ImageInfo& GetImageInfo() { return m_Info; }
 	const DX11ImageInfo& GetImageInfo() const { return m_Info; }

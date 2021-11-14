@@ -5,7 +5,6 @@
 #include "Hazel/Platform/Vulkan/Vulkan.h"
 #include "Hazel/Platform/Vulkan/VulkanComputePipeline.h"
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
-#include "Hazel/Platform/Vulkan/VulkanFramebuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanIndexBuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanMaterial.h"
 #include "Hazel/Platform/Vulkan/VulkanPipeline.h"
@@ -20,6 +19,7 @@
 #include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Renderer/StorageBufferSet.h"
 
+#include "HazelLegacy/Platform/Vulkan/VulkanFramebufferHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanShaderHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanTestLayer.h"
 
@@ -202,7 +202,7 @@ namespace Hazel
 				{
 					// HazelRenderer::Submit([framebuffer]() mutable {});
 					{
-						auto vulkanFB = framebuffer.As<VulkanFramebuffer>();
+						auto vulkanFB = framebuffer.As<VulkanFramebufferHazelLegacy>();
 						const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 						Log::GetLogger()->warn("Resizing framebuffer; image layout is {0}", imageInfo.imageLayout);
 						// s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
@@ -254,7 +254,7 @@ namespace Hazel
 				{
 					// HazelRenderer::Submit([framebuffer]() mutable {});
 					{
-						auto vulkanFB = framebuffer.As<VulkanFramebuffer>();
+						auto vulkanFB = framebuffer.As<VulkanFramebufferHazelLegacy>();
 						const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 						HZ_CORE_WARN("Resizing framebuffer; image layout is {0}", imageInfo.imageLayout);
 						s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
@@ -354,7 +354,7 @@ namespace Hazel
 		// HazelRenderer::Submit([=]() {});
 		{
 			auto shader = s_CompositePipeline->GetSpecification().Shader.As<VulkanShader>();
-			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebufferHazelLegacy>();
 			s_Data->QuadDescriptorSet = shader->CreateDescriptorSets();
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
@@ -368,7 +368,7 @@ namespace Hazel
 			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
 
-			auto vulkanFB = s_Framebuffer.As<VulkanFramebuffer>();
+			auto vulkanFB = s_Framebuffer.As<VulkanFramebufferHazelLegacy>();
 			const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
@@ -495,7 +495,7 @@ namespace Hazel
 	{
 		// HazelRenderer::Submit([=]() {});
 		{
-			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+			auto framebuffer = s_MeshPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer.As<VulkanFramebufferHazelLegacy>();
 
 			VkWriteDescriptorSet writeDescriptorSet = {};
 			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -700,7 +700,7 @@ namespace Hazel
 			// HZ_CORE_ASSERT(s_Data->ActiveCommandBuffer);
 
 			auto fb = renderPass->GetSpecification().TargetFramebuffer;
-			Ref<VulkanFramebuffer> framebuffer = fb.As<VulkanFramebuffer>();
+			Ref<VulkanFramebufferHazelLegacy> framebuffer = fb.As<VulkanFramebufferHazelLegacy>();
 			const auto& fbSpec = framebuffer->GetSpecification();
 
 			uint32_t width = framebuffer->GetWidth();
@@ -808,7 +808,7 @@ namespace Hazel
 			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
 
-			Ref<VulkanFramebuffer> framebuffer = s_Framebuffer.As<VulkanFramebuffer>();
+			Ref<VulkanFramebufferHazelLegacy> framebuffer = s_Framebuffer.As<VulkanFramebufferHazelLegacy>();
 
 			uint32_t width = framebuffer->GetWidth();
 			uint32_t height = framebuffer->GetHeight();
@@ -897,7 +897,7 @@ namespace Hazel
 			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 			cmdBufInfo.pNext = nullptr;
 
-			Ref<VulkanFramebuffer> framebuffer = s_CompositeFramebuffer.As<VulkanFramebuffer>();
+			Ref<VulkanFramebufferHazelLegacy> framebuffer = s_CompositeFramebuffer.As<VulkanFramebufferHazelLegacy>();
 
 			// uint32_t width = framebuffer->GetWidth();   // framebuffer resize still not enabled
 			// uint32_t height = framebuffer->GetHeight(); // framebuffer resize still not enabled

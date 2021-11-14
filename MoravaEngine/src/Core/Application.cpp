@@ -228,7 +228,7 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
 		case Hazel::RendererAPITypeHazelLegacy::Vulkan:
 		{
-			auto& fbs = Hazel::HazelFramebufferPool::GetGlobal()->GetAll();
+			auto& fbs = Hazel::FramebufferPool::GetGlobal()->GetAll();
 			for (auto& fb : fbs)
 			{
 				const auto& spec = fb->GetSpecification();

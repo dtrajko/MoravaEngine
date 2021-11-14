@@ -91,7 +91,7 @@ namespace Hazel
 		HazelFramebufferSpecification geoFramebufferSpec = {};
 		geoFramebufferSpec.Width = 1280;
 		geoFramebufferSpec.Height = 720;
-		geoFramebufferSpec.Format = FramebufferFormat::RGBA16F;
+		// geoFramebufferSpec.Format = HazelImageFormat::RGBA16F;
 		geoFramebufferSpec.Samples = 8;
 		geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 

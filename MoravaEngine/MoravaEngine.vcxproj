@@ -177,6 +177,7 @@
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp" />
     <ClCompile Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanRendererHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.cpp" />
@@ -669,6 +670,7 @@
     <ClInclude Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\ImGui\ImGui.h" />
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanRendererHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.h" />
