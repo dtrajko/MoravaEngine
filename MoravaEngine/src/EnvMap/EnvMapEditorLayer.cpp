@@ -87,7 +87,7 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapEditorLayer::SelectEntity, this, std::placeholders::_1));
     m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvMapEditorLayer::OnEntityDeleted, this, std::placeholders::_1));
     m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene); // already done in constructor
-    Hazel::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
+    // Hazel::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
     EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
 
     m_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
@@ -489,7 +489,7 @@ void EnvMapEditorLayer::OnScenePlay()
     m_SceneState = SceneState::Play;
 
     if (m_ReloadScriptOnPlay) {
-        Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
+        // Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
     }
 
     EnvMapSharedData::s_RuntimeScene = Hazel::Ref<Hazel::SceneHazelLegacy>::Create();
@@ -508,7 +508,7 @@ void EnvMapEditorLayer::OnSceneStop()
     EnvMapSharedData::s_RuntimeScene = nullptr;
 
     EntitySelection::s_SelectionContext.clear();
-    Hazel::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
+    // Hazel::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
     m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
 }
 
@@ -1451,7 +1451,7 @@ void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
         if (ImGui::BeginMenu("Script"))
         {
             if (ImGui::MenuItem("Reload C# Assembly")) {
-                Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
+                // Hazel::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
             }
 
             ImGui::MenuItem("Reload assembly on play", nullptr, &m_ReloadScriptOnPlay);
@@ -1736,7 +1736,7 @@ void EnvMapEditorLayer::OpenScene()
         std::filesystem::path path = filepath;
         UpdateWindowTitle(path.filename().string());
         m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
-        Hazel::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
+        // Hazel::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
 
         EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
         EntitySelection::s_SelectionContext.clear();

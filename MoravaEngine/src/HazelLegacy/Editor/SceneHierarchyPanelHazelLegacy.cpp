@@ -1,4 +1,4 @@
-#include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
+#include "SceneHierarchyPanelHazelLegacy.h"
 
 // Hazel
 #include "Hazel/Script/ScriptEngine.h"
@@ -794,34 +794,6 @@ namespace Hazel
 			UI::Property("Edge",             slc.Edge);
 			UI::Property("EdgeProcessed",    slc.EdgeProcessed);
 			UI::Property("FarPlane",         slc.FarPlane);
-			UI::EndPropertyGrid();
-		});
-
-		DrawComponent<SkyLightLegacyComponent>("Sky Light", entity, [](SkyLightLegacyComponent& slc)
-		{
-			ImGui::Columns(3);
-			ImGui::SetColumnWidth(0, 70.0f);
-			ImGui::SetColumnWidth(1, 180.0f);
-			ImGui::SetColumnWidth(2, 30.0f);
-			ImGui::Text("File Path");
-			ImGui::NextColumn();
-			ImGui::PushItemWidth(-1);
-			if (!slc.SceneEnvironment->FilePath.empty())
-				ImGui::InputText("##envfilepath", (char*)slc.SceneEnvironment->FilePath.c_str(), 256, ImGuiInputTextFlags_ReadOnly);
-			else
-				ImGui::InputText("##envfilepath", (char*)"Empty", 256, ImGuiInputTextFlags_ReadOnly);
-			ImGui::PopItemWidth();
-			ImGui::NextColumn();
-			if (ImGui::Button("...##openenv"))
-			{
-				std::string file = Application::Get()->OpenFile("*.hdr");
-				if (!file.empty())
-					slc.SceneEnvironment = Environment::Load(file);
-			}
-			ImGui::Columns(1);
-
-			UI::BeginPropertyGrid();
-			UI::Property("Intensity", slc.Intensity, 0.01f, 0.0f, 5.0f);
 			UI::EndPropertyGrid();
 		});
 

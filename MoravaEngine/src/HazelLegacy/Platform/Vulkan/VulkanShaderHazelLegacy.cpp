@@ -3,11 +3,11 @@
 #include "Hazel/Core/Assert.h"
 #include "Hazel/Platform/Vulkan/VulkanContext.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
+#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/ShaderCache.h"
 
 #include "HazelLegacy/Platform/Vulkan/VulkanAllocatorHazelLegacy.h"
-#include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
 
 #include "Core/Log.h"
 
@@ -62,14 +62,14 @@ namespace Hazel {
 
 	}
 
-	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
-	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::StorageBuffer*>> s_StorageBuffers; // set -> binding point -> buffer
+	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderHazelLegacy::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
+	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderHazelLegacy::StorageBuffer*>> s_StorageBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
-	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_AlbedoTexture;
-	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShader::s_NormalTexture;
+	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShaderHazelLegacy::s_AlbedoTexture;
+	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShaderHazelLegacy::s_NormalTexture;
 
-	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
+	VulkanShaderHazelLegacy::VulkanShaderHazelLegacy(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)
 	{
 		// TODO: This should be more "general"
@@ -81,11 +81,11 @@ namespace Hazel {
 		Reload(forceCompile);
 	}
 
-	VulkanShader::~VulkanShader()
+	VulkanShaderHazelLegacy::~VulkanShaderHazelLegacy()
 	{
 	}
 
-	void VulkanShader::ClearUniformBuffers()
+	void VulkanShaderHazelLegacy::ClearUniformBuffers()
 	{
 		s_UniformBuffers.clear();
 		s_StorageBuffers.clear();
@@ -110,9 +110,9 @@ namespace Hazel {
 		return result;
 	}
 
-	void VulkanShader::Reload(bool forceCompile)
+	void VulkanShaderHazelLegacy::Reload(bool forceCompile)
 	{
-		// Ref<VulkanShader> instance = this;
+		// Ref<VulkanShaderHazelLegacy> instance = this;
 		// HazelRenderer::Submit([instance, forceCompile]() mutable {});
 		{
 			// Clear old shader
@@ -143,12 +143,12 @@ namespace Hazel {
 		}
 	}
 
-	size_t VulkanShader::GetHash() const
+	size_t VulkanShaderHazelLegacy::GetHash() const
 	{
 		return std::hash<std::string>{}(m_AssetPath);
 	}
 
-	void VulkanShader::LoadAndCreateShaders(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
+	void VulkanShaderHazelLegacy::LoadAndCreateShaders(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
@@ -175,7 +175,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanShader::ReflectAllShaderStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
+	void VulkanShaderHazelLegacy::ReflectAllShaderStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
 	{
 		m_Resources.clear();
 
@@ -185,7 +185,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanShader::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
+	void VulkanShaderHazelLegacy::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
@@ -404,7 +404,7 @@ namespace Hazel {
 		MORAVA_CORE_TRACE("==========================");
 	}
 
-	void VulkanShader::CreateDescriptors()
+	void VulkanShaderHazelLegacy::CreateDescriptors()
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
@@ -537,7 +537,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanShader::AllocateUniformBuffer(UniformBuffer& dst)
+	void VulkanShaderHazelLegacy::AllocateUniformBuffer(UniformBuffer& dst)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
@@ -578,12 +578,12 @@ namespace Hazel {
 		uniformBuffer.Descriptor.range = uniformBuffer.Size;
 	}
 
-	//	ShaderMaterialDescriptorSet VulkanShader::AllocateDescriptorSet(uint32_t set)
+	//	ShaderMaterialDescriptorSet VulkanShaderHazelLegacy::AllocateDescriptorSet(uint32_t set)
 	//	{
 	//		return ShaderMaterialDescriptorSet();
 	//	}
 
-	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set)
+	VulkanShaderHazelLegacy::ShaderMaterialDescriptorSet VulkanShaderHazelLegacy::CreateDescriptorSets(uint32_t set)
 	{
 		ShaderMaterialDescriptorSet result;
 
@@ -613,19 +613,15 @@ namespace Hazel {
 		return result;
 	}
 
-	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets)
+	VulkanShaderHazelLegacy::ShaderMaterialDescriptorSet VulkanShaderHazelLegacy::CreateDescriptorSets(uint32_t set, uint32_t numberOfSets)
 	{
-		ShaderMaterialDescriptorSet result;
+		ShaderMaterialDescriptorSet result{};
 
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> poolSizes;
-		for (uint32_t set = 0; set < m_ShaderDescriptorSets.size(); set++)
+		for (auto&& [set, shaderDescriptorSet] : m_ShaderDescriptorSets)
 		{
-			auto& shaderDescriptorSet = m_ShaderDescriptorSets[set];
-			if (!shaderDescriptorSet) // Empty descriptor set
-				continue;
-
 			if (shaderDescriptorSet.UniformBuffers.size())
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
@@ -642,11 +638,7 @@ namespace Hazel {
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				uint32_t descriptorSetCount = 0;
-				for (auto&& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
-					descriptorSetCount += imageSampler.ArraySize;
-
-				typeCount.descriptorCount = descriptorSetCount * numberOfSets;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.ImageSamplers.size()) * numberOfSets;
 			}
 			if (shaderDescriptorSet.StorageImages.size())
 			{
@@ -657,13 +649,17 @@ namespace Hazel {
 
 		}
 
-		HZ_CORE_ASSERT(poolSizes.find(set) != poolSizes.end());
+		if (poolSizes.find(set) == poolSizes.end())
+		{
+			// HZ_CORE_ASSERT(poolSizes.find(set) != poolSizes.end());
+			Log::GetLogger()->error("VulkanShaderHazelLegacy::CreateDescriptorSets('{0}, {1}') - descriptor set not found in 'poolSizes'!", set, numberOfSets);
+		}
 
 		// TODO: Move this to the centralized renderer
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
 		descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolInfo.pNext = nullptr;
-		descriptorPoolInfo.poolSizeCount = (uint32_t)poolSizes.at(set).size();
+		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.at(set).size());
 		descriptorPoolInfo.pPoolSizes = poolSizes.at(set).data();
 		descriptorPoolInfo.maxSets = numberOfSets;
 
@@ -684,7 +680,7 @@ namespace Hazel {
 		return result;
 	}
 
-	VulkanShader::ShaderMaterialDescriptorSet VulkanShader::AllocateDescriptorSet(uint32_t set)
+	VulkanShaderHazelLegacy::ShaderMaterialDescriptorSet VulkanShaderHazelLegacy::AllocateDescriptorSet(uint32_t set)
 	{
 		HZ_CORE_ASSERT(set < m_DescriptorSetLayouts.size());
 		ShaderMaterialDescriptorSet result;
@@ -741,13 +737,13 @@ namespace Hazel {
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
-		VkDescriptorSet descriptorSet = VulkanRendererHazelLegacy::RT_AllocateDescriptorSet(allocInfo);
+		VkDescriptorSet descriptorSet = VulkanRenderer::RT_AllocateDescriptorSet(allocInfo);
 		HZ_CORE_ASSERT(descriptorSet);
 		result.DescriptorSets.push_back(descriptorSet);
 		return result;
 	}
 
-	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
+	const VkWriteDescriptorSet* VulkanShaderHazelLegacy::GetDescriptorSet(const std::string& name, uint32_t set) const
 	{
 		HZ_CORE_ASSERT(set < m_ShaderDescriptorSets.size());
 		// HZ_CORE_ASSERT(m_ShaderDescriptorSets[set]);
@@ -761,7 +757,7 @@ namespace Hazel {
 	}
 
 	// does not exist in Vulkan Week version, added later
-	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts()
+	std::vector<VkDescriptorSetLayout> VulkanShaderHazelLegacy::GetAllDescriptorSetLayouts()
 	{
 		std::vector<VkDescriptorSetLayout> result;
 		result.reserve(m_DescriptorSetLayouts.size());
@@ -773,7 +769,7 @@ namespace Hazel {
 		return result;
 	}
 
-	VulkanShader::UniformBuffer& VulkanShader::GetUniformBuffer(uint32_t binding, uint32_t set)
+	VulkanShaderHazelLegacy::UniformBuffer& VulkanShaderHazelLegacy::GetUniformBuffer(uint32_t binding, uint32_t set)
 	{
 		HZ_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
 		return m_ShaderDescriptorSets.at(set).UniformBuffers[binding];
@@ -805,7 +801,7 @@ namespace Hazel {
 		return (shaderc_shader_kind)-1;
 	}
 
-	void VulkanShader::CompileOrGetVulkanBinary(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile)
+	void VulkanShaderHazelLegacy::CompileOrGetVulkanBinary(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile)
 	{
 		for (auto [stage, source] : m_ShaderSource)
 		{
@@ -886,7 +882,7 @@ namespace Hazel {
 		return VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
 	}
 
-	std::unordered_map<VkShaderStageFlagBits, std::string> VulkanShader::PreProcess(const std::string& source)
+	std::unordered_map<VkShaderStageFlagBits, std::string> VulkanShaderHazelLegacy::PreProcess(const std::string& source)
 	{
 		std::unordered_map<VkShaderStageFlagBits, std::string> shaderSources;
 
@@ -910,10 +906,10 @@ namespace Hazel {
 		return shaderSources;
 	}
 
-	void VulkanShader::SetUniformBuffer(const std::string& name, const void* data, uint32_t size) {}
+	void VulkanShaderHazelLegacy::SetUniformBuffer(const std::string& name, const void* data, uint32_t size) {}
 
 	/****
-	const std::vector<VkPipelineShaderStageCreateInfo>& VulkanShader::GetShaderStages() const
+	const std::vector<VkPipelineShaderStageCreateInfo>& VulkanShaderHazelLegacy::GetShaderStages() const
 	{
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
 		for (auto [stage, pipelineShaderStageCreateInfo] : m_ShaderStages)
@@ -924,47 +920,64 @@ namespace Hazel {
 	}
 	****/
 
-	void VulkanShader::SetUniform(const std::string& fullname, float value) {}
+	void VulkanShaderHazelLegacy::SetUniform(const std::string& fullname, float value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, int value) {}
+	void VulkanShaderHazelLegacy::SetUniform(const std::string& fullname, int value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec2& value) {}
+	void VulkanShaderHazelLegacy::SetUniform(const std::string& fullname, const glm::vec2& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec3& value) {}
+	void VulkanShaderHazelLegacy::SetUniform(const std::string& fullname, const glm::vec3& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::vec4& value) {}
+	void VulkanShaderHazelLegacy::SetUniform(const std::string& fullname, const glm::vec4& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::mat3& value) {}
+	void VulkanShaderHazelLegacy::SetUniform(const std::string& fullname, const glm::mat3& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, const glm::mat4& value) {}
+	void VulkanShaderHazelLegacy::SetUniform(const std::string& fullname, const glm::mat4& value) {}
 
-	void VulkanShader::SetUniform(const std::string& fullname, uint32_t value) {}
+	void VulkanShaderHazelLegacy::SetUniform(const std::string& fullname, uint32_t value) {}
 
-	void VulkanShader::SetInt(const std::string& name, int value) {}
+	void VulkanShaderHazelLegacy::SetInt(const std::string& name, int value) {}
 
-	void VulkanShader::SetUInt(const std::string& name, uint32_t value) {}
+	void VulkanShaderHazelLegacy::SetUInt(const std::string& name, uint32_t value) {}
 
-	void VulkanShader::SetFloat(const std::string& name, float value) {}
+	void VulkanShaderHazelLegacy::SetFloat(const std::string& name, float value) {}
 
-	void VulkanShader::SetFloat2(const std::string& name, const glm::vec2& value) {}
+	void VulkanShaderHazelLegacy::SetFloat2(const std::string& name, const glm::vec2& value) {}
 
-	void VulkanShader::SetFloat3(const std::string& name, const glm::vec3& value) {}
+	void VulkanShaderHazelLegacy::SetFloat3(const std::string& name, const glm::vec3& value) {}
 
-	void VulkanShader::SetFloat4(const std::string& name, const glm::vec4& value) {}
+	void VulkanShaderHazelLegacy::SetFloat4(const std::string& name, const glm::vec4& value) {}
 
-	void VulkanShader::SetMat4(const std::string& name, const glm::mat4& value) {}
+	void VulkanShaderHazelLegacy::SetMat4(const std::string& name, const glm::mat4& value) {}
 
-	void VulkanShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind /*= true*/) {}
+	void VulkanShaderHazelLegacy::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind /*= true*/) {}
 
-	void VulkanShader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
+	void VulkanShaderHazelLegacy::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-	// const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShader::GetShaderBuffers() const { return {}; }
+	// const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShaderHazelLegacy::GetShaderBuffers() const { return {}; }
 
-	const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanShader::GetResources() const
+	const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanShaderHazelLegacy::GetResources() const
 	{
 		return m_Resources;
 	}
 
-	void VulkanShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
+	void VulkanShaderHazelLegacy::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
+
+	void* VulkanShaderHazelLegacy::MapUniformBuffer(uint32_t bindingPoint, uint32_t set)
+	{
+		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+
+		uint8_t* pData;
+		VK_CHECK_RESULT(vkMapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory, 0, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Size, 0, (void**)&pData));
+		return pData;
+	}
+
+	void VulkanShaderHazelLegacy::UnmapUniformBuffer(uint32_t bindingPoint, uint32_t set)
+	{
+		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		vkUnmapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory);
+	}
 
 }

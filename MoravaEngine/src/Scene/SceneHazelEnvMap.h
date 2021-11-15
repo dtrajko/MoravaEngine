@@ -47,7 +47,7 @@ private:
 	bool OnKeyPressed(KeyPressedEvent& e);
 
 	// Temporary/experimental
-	virtual void OnEntitySelected(Hazel::Entity entity) override;
+	virtual void OnEntitySelected(Hazel::EntityHazelLegacy entity) override;
 
 private:
 	std::unique_ptr<EnvMapEditorLayer> m_EnvMapEditorLayer;

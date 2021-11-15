@@ -8,6 +8,8 @@
 #include "Scene/Scene.h"
 #include "Texture/TextureCubemap.h"
 
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+
 #include <map>
 #include <string>
 

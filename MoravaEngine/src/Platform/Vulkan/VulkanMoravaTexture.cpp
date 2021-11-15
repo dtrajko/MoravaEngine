@@ -8,6 +8,8 @@
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
 #include "Hazel/Renderer/HazelImage.h"
 
+#include "HazelLegacy/Platform/Vulkan/VulkanAllocatorHazelLegacy.h"
+
 #include <fstream>
 #include <exception>
 #include <string>
@@ -194,7 +196,7 @@ void VulkanMoravaTexture::Invalidate()
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingMemory;
 
-	Hazel::VulkanAllocator allocator(std::string("Texture2D"));
+	Hazel::VulkanAllocatorHazelLegacy allocator(std::string("Texture2D"));
 
 	VkBufferCreateInfo bufferCreateInfo{};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
