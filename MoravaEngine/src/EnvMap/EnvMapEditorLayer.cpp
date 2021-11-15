@@ -3,7 +3,6 @@
 #include "Hazel/Renderer/RendererAPI.h"
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Scene/SceneSerializer.h"
-#include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Utils/PlatformUtils.h"
 
 #include "HazelLegacy/Scene/ComponentsHazelLegacy.h"

@@ -996,9 +996,6 @@
     <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp">
       <Filter>Hazel\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanAllocatorVMA.cpp">
-      <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp">
       <Filter>Vendors\VulkanMemoryAllocator</Filter>
     </ClCompile>
@@ -1169,6 +1166,24 @@
     </ClCompile>
     <ClCompile Include="src\HazelLegacy\Renderer\RendererHazelLegacy.cpp">
       <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanAllocatorHazelLegacy.cpp">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\Debug\NsightAftermathGpuCrashTracker.cpp">
+      <Filter>Hazel\Platform\Vulkan\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Vulkan\Debug\NsightAftermathShaderDatabase.cpp">
+      <Filter>Hazel\Platform\Vulkan\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsController.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\2D\Physics2D.cpp">
+      <Filter>Hazel\Physics\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsJoints.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2291,9 +2306,6 @@
     <ClInclude Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.h">
       <Filter>Vendors\VulkanMemoryAllocator</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanAllocatorVMA.h">
-      <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="src\HazelLegacy\Renderer\MeshHazelLegacy.h">
       <Filter>HazelLegacy\Renderer</Filter>
     </ClInclude>
@@ -2503,6 +2515,33 @@
     </ClInclude>
     <ClInclude Include="src\HazelLegacy\Renderer\RendererHazelLegacy.h">
       <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanAllocatorHazelLegacy.h">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\Debug\NsightAftermathGpuCrashTracker.h">
+      <Filter>Hazel\Platform\Vulkan\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\Debug\NsightAftermathHelpers.h">
+      <Filter>Hazel\Platform\Vulkan\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Platform\Vulkan\Debug\NsightAftermathShaderDatabase.h">
+      <Filter>Hazel\Platform\Vulkan\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsController.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Core\HazelInput.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\2D\Physics2D.h">
+      <Filter>Hazel\Physics\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsActorBase.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsJoints.h">
+      <Filter>Hazel\Physics\3D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2808,6 +2847,12 @@
     </Filter>
     <Filter Include="HazelLegacy\Platform\Vulkan">
       <UniqueIdentifier>{c8a34e45-ef72-4908-8ece-b065b8ec101a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Platform\Vulkan\Debug">
+      <UniqueIdentifier>{12e822ed-8656-498c-80b7-2192ffdb0e9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Physics\2D">
+      <UniqueIdentifier>{41587349-d277-4486-b643-c9ecc6f04ada}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

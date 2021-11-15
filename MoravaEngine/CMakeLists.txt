@@ -1017,6 +1017,7 @@ target_include_directories(
 	../vendor/msdf-atlas-gen/msdf-atlas-gen
 	../vendor/msdf-atlas-gen/msdfgen
 	../vendor/msdf-atlas-gen/msdfgen/include
+	../vendor/NvidiaAftermath/include
 )
 
 target_link_directories(

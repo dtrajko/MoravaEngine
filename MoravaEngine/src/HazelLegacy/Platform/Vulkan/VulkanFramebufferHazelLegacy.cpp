@@ -4,6 +4,8 @@
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
 #include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
 
+#include "HazelLegacy/Platform/Vulkan/VulkanAllocatorHazelLegacy.h"
+
 #include "Core/Application.h"
 
 
@@ -59,7 +61,7 @@ namespace Hazel {
 					m_Framebuffer = nullptr;
 				}
 
-				VulkanAllocator allocator(std::string("Framebuffer"));
+				VulkanAllocatorHazelLegacy allocator(std::string("Framebuffer"));
 
 				std::array<VkAttachmentDescription, 2> attachmentDescriptions;
 
@@ -245,7 +247,7 @@ namespace Hazel {
 		}
 		else
 		{
-			VulkanSwapChain& swapChain = VulkanContext::Get()->GetSwapChain();
+			VulkanSwapChain& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 			m_RenderPass = swapChain.GetRenderPass();
 		}
 

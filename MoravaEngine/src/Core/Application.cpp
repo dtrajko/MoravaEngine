@@ -163,7 +163,7 @@ void Application::Run()
 			Hazel::HazelRenderer::EndFrame();
 
 			// On Render thread
-			m_Window->GetRenderContext()->BeginFrame();
+			m_Window->GetSwapChain().BeginFrame();
 
 			m_Renderer->WaitAndRender(deltaTime, m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
 
@@ -222,7 +222,7 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	Hazel::HazelRenderer::Submit([=]() { glViewport(0, 0, width, height); });
 
 	m_Scene->OnWindowResize(e);
-	m_Window->GetRenderContext()->OnResize(width, height);
+	m_Window->GetSwapChain().OnResize(width, height);
 
 	switch (Hazel::RendererAPIHazelLegacy::Current())
 	{

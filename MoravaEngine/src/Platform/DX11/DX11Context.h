@@ -27,12 +27,10 @@ public:
 	DX11Context(Window* window);
 	virtual ~DX11Context();
 
-	virtual void Create() override;
-	virtual void SwapBuffers() override;
-
-	virtual void OnResize(uint32_t width, uint32_t height) override;
-
-	virtual void BeginFrame() override;
+	void Create();
+	void SwapBuffers();
+	void OnResize(uint32_t width, uint32_t height);
+	void BeginFrame();
 
 	Hazel::Ref<DX11Device> GetDevice() { return m_Device; }
 	std::shared_ptr<DX11SwapChain> GetSwapChain() { return m_SwapChain; }

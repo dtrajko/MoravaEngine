@@ -652,8 +652,7 @@ namespace Hazel
 		/**** BEGIN the old code ****/
 		// HazelRenderer::Submit([]() {});
 		{
-			Ref<VulkanContext> context = VulkanContext::Get();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
+			VulkanSwapChain& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};
 			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -669,9 +668,7 @@ namespace Hazel
 		/**** BEGIN the new code ****/
 		// HazelRenderer::Submit([]() {});
 		{
-			// VulkanSwapChain& swapChain = Application::Get().GetWindow().GetSwapChain();
-			Ref<VulkanContext> context = VulkanContext::Get();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
+			VulkanSwapChain& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 
 			// Reset descriptor pools here
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -799,8 +796,7 @@ namespace Hazel
 	{
 		// HazelRenderer::Submit([=]() {});
 		{
-			Ref<VulkanContext> context = VulkanContext::Get();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
+			VulkanSwapChain& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};
 			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -890,8 +886,7 @@ namespace Hazel
 	{
 		// HazelRenderer::Submit([=]() {});
 		{
-			Ref<VulkanContext> context = VulkanContext::Get();
-			VulkanSwapChain& swapChain = context->GetSwapChain();
+			VulkanSwapChain& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -1007,8 +1002,7 @@ namespace Hazel
 
 	void VulkanRendererHazelLegacy::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers)
 	{
-		Ref<VulkanContext> context = VulkanContext::Get();
-		VulkanSwapChain& swapChain = context->GetSwapChain();
+		VulkanSwapChain& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 
 		uint32_t width = swapChain.GetWidth();
 		uint32_t height = swapChain.GetHeight();

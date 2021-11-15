@@ -6,6 +6,7 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/ShaderCache.h"
 
+#include "HazelLegacy/Platform/Vulkan/VulkanAllocatorHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
 
 #include "Core/Log.h"
@@ -559,7 +560,7 @@ namespace Hazel {
 		// This buffer will be used as an uniform buffer
 		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 
-		VulkanAllocator allocator(std::string("UniformBuffer"));
+		VulkanAllocatorHazelLegacy allocator(std::string("UniformBuffer"));
 
 		// Create a new buffer
 		VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer.Buffer));

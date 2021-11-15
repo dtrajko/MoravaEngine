@@ -10,6 +10,8 @@
 #include "Mesh/Block.h"
 #include "Shader/MoravaShader.h"
 
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+
 #include "../../ImGuizmo/ImGuizmo.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -469,8 +471,8 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
 
-    m_ImGuiMainViewportX = (int)ImGui::GetMainViewport()->GetWorkPos().x;
-    m_ImGuiMainViewportY = (int)ImGui::GetMainViewport()->GetWorkPos().y;
+    m_ImGuiMainViewportX = (int)ImGui::GetMainViewport()->GetWorkCenter().x;
+    m_ImGuiMainViewportY = (int)ImGui::GetMainViewport()->GetWorkCenter().y;
 
     MousePicker* mp = MousePicker::Get();
 
@@ -514,7 +516,7 @@ void SceneAnimPBR::UpdateImGui(float timestep, Window* mainWindow)
     colors[ImGuiCol_PlotHistogram] = ImVec4(0.73f, 0.6f, 0.15f, 1.0f);
     colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.0f, 0.6f, 0.0f, 1.0f);
     colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
-    colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.8f, 0.8f, 0.8f, 0.35f);
+    // colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.8f, 0.8f, 0.8f, 0.35f);
     colors[ImGuiCol_DragDropTarget] = ImVec4(1.0f, 1.0f, 0.0f, 0.9f);
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
@@ -1037,10 +1039,10 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         auto& materials = m_MeshAnimPBR_BobLamp->GetMaterials();
 
         int submeshIndex = 0;
-        for (Hazel::SubmeshHazelLegacy& submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
+        for (Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
         {
             // Material
-            auto material = materials[submesh.MaterialIndex];
+            auto material = materials[submesh->MaterialIndex];
             m_ShaderHybridAnimPBR->Bind();
 
             m_MeshAnimPBR_BobLamp->GetTextures()[submeshIndex]->Bind(m_SamplerSlots["albedo"]);
@@ -1051,10 +1053,10 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
                 m_ShaderHybridAnimPBR->SetMat4(uniformName, m_MeshAnimPBR_BobLamp->GetBoneTransforms()[i]);
             }
 
-            m_ShaderHybridAnimPBR->SetMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh.Transform);
+            m_ShaderHybridAnimPBR->SetMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh->Transform);
 
             glEnable(GL_DEPTH_TEST);
-            glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+            glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 
             submeshIndex++;
         }
