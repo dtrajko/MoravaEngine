@@ -24,8 +24,11 @@ struct GLFWwindow;
 class DX11Context : public Hazel::RendererContext
 {
 public:
+	DX11Context() {};
 	DX11Context(Window* window);
 	virtual ~DX11Context();
+
+	virtual void Init() override {};
 
 	void Create();
 	void SwapBuffers();
