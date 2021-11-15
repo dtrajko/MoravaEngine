@@ -432,12 +432,12 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 					continue;
 				}
 
-				std::vector<Hazel::SubmeshHazelLegacy>& submeshes = mesh->GetSubmeshes();
+				std::vector<Hazel::Ref<Hazel::SubmeshHazelLegacy>>& submeshes = mesh->GetSubmeshes();
 				float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
 				// for (Hazel::Submesh& submesh : submeshes)
 				for (uint32_t i = 0; i < submeshes.size(); i++)
 				{
-					Hazel::SubmeshHazelLegacy* submesh = &submeshes[i];
+					Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh = submeshes[i];
 					auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
 					Hazel::Ray ray = {
 						glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),

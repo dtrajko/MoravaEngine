@@ -1,6 +1,7 @@
 #include "DX11ImGuiLayer.h"
 
 #include "Core/Application.h"
+#include "Core/Timer.h"
 #include "DX11.h"
 #include "DX11Context.h"
 #include "DX11Device.h"

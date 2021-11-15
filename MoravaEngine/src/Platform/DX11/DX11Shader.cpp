@@ -4,6 +4,7 @@
 #include "Hazel/Renderer/HazelRenderer.h"
 
 #include "Core/Log.h"
+#include "Core/Util.h"
 #include "DX11Context.h"
 #include "DX11Texture2D.h"
 

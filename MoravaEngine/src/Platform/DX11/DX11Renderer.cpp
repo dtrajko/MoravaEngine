@@ -155,7 +155,7 @@ void DX11Renderer::Init()
 	framebufferSpec.Samples = 1; // TODO: for mipmaps? what is the optimal number?
 	framebufferSpec.Scale = 1.0f;
 	framebufferSpec.SwapChainTarget = true; // render to screen or to offscreen render target
-	framebufferSpec.Attachments = framebufferAttachmentSpecification;
+	framebufferSpec.Attachments = { Hazel::HazelImageFormat::RGBA };
 
 	Hazel::RenderPassSpecification renderPassSpecification{};
 	renderPassSpecification.DebugName = "DX11 Render Pass specificartion";

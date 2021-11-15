@@ -81,7 +81,7 @@ void WindowsWindow::Init(const WindowProps& props)
 		break;
 	}
 
-	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create(this));
+	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create());
 	m_RendererContext->Create();
 
 	RendererBasic::SetRendererContext(m_RendererContext);
@@ -186,7 +186,7 @@ void WindowsWindow::ProcessEvents()
 
 void WindowsWindow::SwapBuffers()
 {
-	m_RendererContext->SwapBuffers();
+	m_SwapChain.Present();
 }
 
 void WindowsWindow::SetVSync(bool enabled)
