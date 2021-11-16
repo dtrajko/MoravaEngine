@@ -179,7 +179,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     EnvMapSharedData::s_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 
     Hazel::EntityHazelLegacy cameraEntity = CreateEntity("Camera");
-    cameraEntity.AddComponent<Hazel::CameraComponentLegacy>(*EnvMapSharedData::s_RuntimeCamera);
+    // cameraEntity.AddComponent<Hazel::CameraComponentLegacy>((Hazel::HazelCamera)*EnvMapSharedData::s_RuntimeCamera);
 
     EnvMapSharedData::s_ActiveCamera = EnvMapSharedData::s_RuntimeCamera;
 
@@ -199,11 +199,11 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
     EnvMapSharedData::s_PointLightEntity = CreateEntity("Point Light");
     // m_PointLightEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(meshQuad);
-    auto& plc = EnvMapSharedData::s_PointLightEntity.AddComponent<Hazel::PointLightLegacyComponent>();
+    // auto& plc = EnvMapSharedData::s_PointLightEntity.AddComponent<Hazel::PointLightLegacyComponent>();
 
     EnvMapSharedData::s_SpotLightEntity = CreateEntity("Spot Light");
     // m_SpotLightEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(meshQuad);
-    auto& slc = EnvMapSharedData::s_SpotLightEntity.AddComponent<Hazel::SpotLightLegacyComponent>();
+    // auto& slc = EnvMapSharedData::s_SpotLightEntity.AddComponent<Hazel::SpotLightLegacyComponent>();
     auto& sltc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
     sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
 }
