@@ -142,7 +142,7 @@ namespace Hazel
 	{
 		LogStream::Initialize();
 
-		Log::GetLogger()->info("Hazel::MeshHazelLegacy: Loading mesh: {0}", m_FilePath.c_str());
+		Log::GetLogger()->info("MeshHazelLegacy: Loading mesh: {0}", m_FilePath.c_str());
 
 		m_Importer = std::make_unique<Assimp::Importer>();
 
@@ -160,7 +160,7 @@ namespace Hazel
 		if (!m_MeshShader)
 		{
 			/**** BEGIN MoravaShader the new API ****/
-			if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
+			if (RendererAPIHazelLegacy::Current() == RendererAPITypeHazelLegacy::OpenGL)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationStatic;
 				moravaShaderSpecificationStatic.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
@@ -177,7 +177,7 @@ namespace Hazel
 
 				m_MeshShader = m_IsAnimated ? MoravaShader::Create(moravaShaderSpecificationAnim) : MoravaShader::Create(moravaShaderSpecificationStatic);
 			}
-			else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+			else if (RendererAPI::Current() == RendererAPIType::Vulkan)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelVulkan;
 				moravaShaderSpecificationHazelVulkan.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
@@ -186,7 +186,7 @@ namespace Hazel
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
 			}
-			else if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::DX11)
+			else if (RendererAPIHazelLegacy::Current() == RendererAPITypeHazelLegacy::DX11)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelDX11;
 				moravaShaderSpecificationHazelDX11.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
@@ -203,7 +203,7 @@ namespace Hazel
 		uint32_t vertexCount = 0;
 		uint32_t indexCount = 0;
 
-		Log::GetLogger()->info("Hazel::MeshHazelLegacy: Master mesh contains {0} submeshes.", scene->mNumMeshes);
+		Log::GetLogger()->info("MeshHazelLegacy: Master mesh contains {0} submeshes.", scene->mNumMeshes);
 
 		m_Submeshes.reserve(scene->mNumMeshes);
 		for (size_t m = 0; m < scene->mNumMeshes; m++)
@@ -510,7 +510,7 @@ namespace Hazel
 					submeshPtr = m_Submeshes[i];
 				}
 
-				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
+				Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
 				// END the material data section
 
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
@@ -906,7 +906,7 @@ namespace Hazel
 
 		/**** END Materials ****/
 
-		Log::GetLogger()->info("Hazel::MeshHazelLegacy: Creating a Vertex Buffer...");
+		Log::GetLogger()->info("MeshHazelLegacy: Creating a Vertex Buffer...");
 
 		if (m_IsAnimated)
 		{
@@ -935,14 +935,14 @@ namespace Hazel
 			};
 		}
 
-		Log::GetLogger()->info("Hazel::MeshHazelLegacy: Creating an Index Buffer...");
+		Log::GetLogger()->info("MeshHazelLegacy: Creating an Index Buffer...");
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
 		/**** BEGIN Create pipeline ****/
 		{
 			// Temporary and only for OpenGL.
 			// In Vulkan, the Pipeline is created in VulkanRenderer
-			Log::GetLogger()->info("Hazel::MeshHazelLegacy: Creating a Pipeline...");
+			Log::GetLogger()->info("MeshHazelLegacy: Creating a Pipeline...");
 
 			pipelineSpecification.Layout = m_VertexBufferLayout;
 			RenderPassSpecification renderPassSpecification = {};
@@ -969,8 +969,8 @@ namespace Hazel
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
 
-		Log::GetLogger()->info("Hazel::MeshHazelLegacy: Total vertices: {0}", totalVertices);
-		Log::GetLogger()->info("Hazel::MeshHazelLegacy: Total indices: {0}", m_Indices.size());
+		Log::GetLogger()->info("MeshHazelLegacy: Total vertices: {0}", totalVertices);
+		Log::GetLogger()->info("MeshHazelLegacy: Total indices: {0}", m_Indices.size());
 	}
 
 	MeshHazelLegacy::~MeshHazelLegacy()
@@ -1240,7 +1240,7 @@ namespace Hazel
 		textureInfoDefault.roughness = "Textures/plain.png";
 		textureInfoDefault.emissive  = "Texture/plain.png";
 		textureInfoDefault.ao        = "Textures/plain.png";
-		m_BaseMaterial = Hazel::Ref<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
+		m_BaseMaterial = Ref<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
 	}
 
 	Ref<HazelTexture2D> MeshHazelLegacy::LoadBaseTexture()
@@ -1496,7 +1496,7 @@ namespace Hazel
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial)
 			{
-				Hazel::Ref<::Material> baseMaterialRef = m_BaseMaterial;
+				Ref<::Material> baseMaterialRef = m_BaseMaterial;
 				baseMaterialRef->GetTextureAlbedo()->Bind(samplerSlot + 0);
 				baseMaterialRef->GetTextureNormal()->Bind(samplerSlot + 1);
 				baseMaterialRef->GetTextureMetallic()->Bind(samplerSlot + 2);

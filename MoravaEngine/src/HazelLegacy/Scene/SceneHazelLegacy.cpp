@@ -252,11 +252,11 @@ namespace Hazel {
 		SceneRendererHazelLegacy::BeginScene(nullptr, { m_Camera, m_Camera.GetViewMatrix() });
 
 		// Render entities
-		m_Registry.view<MeshComponentHazelLegacy>().each([=](auto entity, auto& mc)
-			{
-				// TODO: Should we render (logically)
-				EnvMapSceneRenderer::SubmitEntity(EntityHazelLegacy{ entity, this });
-			});
+		// m_Registry.view<MeshComponentHazelLegacy>().each([=](auto entity, auto& mc) {});
+		{
+			// TODO: Should we render (logically)
+			// EnvMapSceneRenderer::SubmitEntity(EntityHazelLegacy{ entity, this });
+		}
 
 		SceneRendererHazelLegacy::EndScene();
 

@@ -39,7 +39,7 @@ namespace Hazel
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
 				entt::entity entityID = entityMap.at(selectedEntityID);
-				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ EntityHazelLegacy(entityID, scene.Raw()), new Hazel::SubmeshHazelLegacy(), 0 }));
+				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ EntityHazelLegacy(entityID, scene.Raw()), new SubmeshHazelLegacy(), 0 }));
 			}
 		}
 	}
@@ -72,7 +72,7 @@ namespace Hazel
 		{
 			// if MeshComponent is not available in entity
 			EntitySelection::s_SelectionContext.clear();
-			EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new Hazel::SubmeshHazelLegacy(), 0 });
+			EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new SubmeshHazelLegacy(), 0 });
 		}
 	}
 
@@ -105,13 +105,13 @@ namespace Hazel
 					{
 						if (ImGui::MenuItem("Empty Entity"))
 						{
-							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Empty Entity");
+							EntityHazelLegacy newEntity = m_Context->CreateEntity("Empty Entity");
 							// SetSelected(newEntity);
 						}
 
 						if (ImGui::MenuItem("Mesh"))
 						{
-							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Mesh");
+							EntityHazelLegacy newEntity = m_Context->CreateEntity("Mesh");
 							SetSelected(newEntity);
 							newEntity.AddComponent<MeshComponentHazelLegacy>();
 							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentHazelLegacy>();
@@ -121,7 +121,7 @@ namespace Hazel
 
 						if (ImGui::MenuItem("Directional Light"))
 						{
-							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Directional Light");
+							EntityHazelLegacy newEntity = m_Context->CreateEntity("Directional Light");
 							// newEntity.AddComponent<DirectionalLightComponent>();
 							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
 							// SetSelected(newEntity);
@@ -129,7 +129,7 @@ namespace Hazel
 
 						if (ImGui::MenuItem("Sky Light"))
 						{
-							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Sky Light");
+							EntityHazelLegacy newEntity = m_Context->CreateEntity("Sky Light");
 							// newEntity.AddComponent<SkyLightComponent>();
 							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
 							// SetSelected(newEntity);
@@ -144,7 +144,7 @@ namespace Hazel
 
 			ImGui::Begin("Properties");
 			{
-				if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity.HasComponent<Hazel::TagComponent>())
+				if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity.HasComponent<TagComponent>())
 				{
 					DrawComponents(EntitySelection::s_SelectionContext[0].Entity);
 				}
@@ -193,7 +193,7 @@ namespace Hazel
 		{
 			// EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, nullptr, 0 });
 
-			Log::GetLogger()->debug("ImGui::IsItemClicked: entity.Tag '{0}'", entity.GetComponent<Hazel::TagComponent>().Tag);
+			Log::GetLogger()->debug("ImGui::IsItemClicked: entity.Tag '{0}'", entity.GetComponent<TagComponent>().Tag);
 
 			SetSelected(entity);
 			m_Context->OnEntitySelected(entity);
@@ -254,12 +254,12 @@ namespace Hazel
 
 	void SceneHierarchyPanelHazelLegacy::DrawEntitySubmeshes(EntityHazelLegacy entity)
 	{
-		if (!entity.HasComponent<Hazel::MeshComponentHazelLegacy>()) return;
-		if (!entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh) return;
+		if (!entity.HasComponent<MeshComponentHazelLegacy>()) return;
+		if (!entity.GetComponent<MeshComponentHazelLegacy>().Mesh) return;
 
-		auto mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
+		auto mesh = entity.GetComponent<MeshComponentHazelLegacy>().Mesh;
 
-		std::vector<Hazel::Ref<Hazel::SubmeshHazelLegacy>>& submeshes = mesh->GetSubmeshes();
+		std::vector<Ref<SubmeshHazelLegacy>>& submeshes = mesh->GetSubmeshes();
 
 		for (int i = 0; i < submeshes.size(); i++)
 		{
@@ -338,11 +338,11 @@ namespace Hazel
 
 			if (submeshDeleted && submeshSelected) {
 				Log::GetLogger()->debug("SceneHierarchyPanelHazelLegacy DeleteSubmesh('{0}')", submeshes[i]->MeshName);
-				mesh->DeleteSubmesh(submeshes[i]);
+				// mesh->DeleteSubmesh(submeshes[i]);
 			}
 
 			if (submeshCloned && submeshSelected) {
-				mesh->CloneSubmesh(submeshes[i]);
+				// mesh->CloneSubmesh(submeshes[i]);
 			}
 		}
 	}
@@ -654,7 +654,7 @@ namespace Hazel
 
 			if (!meshFilepath.empty())
 			{
-				mc.Mesh = Hazel::Ref<MeshHazelLegacy>::Create(meshFilepath, Hazel::Ref<MoravaShader>(), Hazel::Ref<Hazel::HazelMaterial>(), false);
+				mc.Mesh = Ref<MeshHazelLegacy>::Create(meshFilepath, Ref<MoravaShader>(), Ref<HazelMaterial>(), false);
 
 				auto materialDataVector = MaterialLibrary::s_MaterialData;
 				for (auto materialData : materialDataVector) {

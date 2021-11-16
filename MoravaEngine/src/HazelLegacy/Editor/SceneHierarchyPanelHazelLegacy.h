@@ -2,14 +2,9 @@
 
 #include "../../../pch.h"
 
+#include "ImGui/ImGuiWrapper.h"
+
 #include "HazelLegacy/Renderer/MeshHazelLegacy.h"
-
-// ImGui
-#define _CRT_SECURE_NO_WARNINGS
-#include "../ImGui/ImGui.h"
-
-#include <imgui.h>
-#include <imgui_internal.h>
 
 
 struct aiNode;
