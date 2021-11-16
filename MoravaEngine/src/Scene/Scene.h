@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Hazel/Events/ApplicationEvent.h"
-#include "Hazel/Scene/HazelScene.h"
+#include "Hazel/Core/Events/ApplicationEvent.h"
+
+#include "HazelLegacy/Scene/SceneHazelLegacy.h"
 
 #include "Camera/Camera.h"
 #include "Camera/CameraController.h"
@@ -82,7 +83,7 @@ struct SceneSettings
 
 class LightManager;
 
-class Scene : public Hazel::HazelScene
+class Scene : public Hazel::SceneHazelLegacy
 {
 public:
 	Scene();

@@ -17,12 +17,14 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
-#include "Hazel/Scene/Entity.h"
+#include "HazelLegacy/Renderer/RendererAPIHazelLegacy.h"
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
 
 #include "Core/Log.h"
 #include "Core/Math.h"
 #include "Core/Util.h"
 #include "EnvMap/EnvMapEditorLayer.h"
+#include "Material/Material.h"
 #include "Material/MaterialLibrary.h"
 #include "Shader/MoravaShaderLibrary.h"
 
@@ -158,7 +160,7 @@ namespace Hazel
 		if (!m_MeshShader)
 		{
 			/**** BEGIN MoravaShader the new API ****/
-			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+			if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::OpenGL)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationStatic;
 				moravaShaderSpecificationStatic.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
@@ -184,7 +186,7 @@ namespace Hazel
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
 			}
-			else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::DX11)
+			else if (Hazel::RendererAPIHazelLegacy::Current() == Hazel::RendererAPITypeHazelLegacy::DX11)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelDX11;
 				moravaShaderSpecificationHazelDX11.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
@@ -208,16 +210,16 @@ namespace Hazel
 		{
 			aiMesh* mesh = scene->mMeshes[m];
 
-			SubmeshHazelLegacy& submesh = m_Submeshes.emplace_back();
-			submesh.BaseVertex = vertexCount;
-			submesh.BaseIndex = indexCount;
-			submesh.MaterialIndex = mesh->mMaterialIndex;
-			submesh.IndexCount = mesh->mNumFaces * 3;
-			submesh.MeshName = mesh->mName.C_Str();
+			Ref<SubmeshHazelLegacy> submesh = m_Submeshes.emplace_back();
+			submesh->BaseVertex = vertexCount;
+			submesh->BaseIndex = indexCount;
+			submesh->MaterialIndex = mesh->mMaterialIndex;
+			submesh->IndexCount = mesh->mNumFaces * 3;
+			submesh->MeshName = mesh->mName.C_Str();
 			// m_Submeshes.push_back(submesh);
 
 			vertexCount += mesh->mNumVertices;
-			indexCount += submesh.IndexCount;
+			indexCount += submesh->IndexCount;
 
 			HZ_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions.");
 			HZ_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals.");
@@ -225,7 +227,7 @@ namespace Hazel
 			// Vertices
 			if (m_IsAnimated)
 			{
-				auto& aabb = submesh.BoundingBox;
+				auto& aabb = submesh->BoundingBox;
 				aabb.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
 				aabb.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
@@ -259,7 +261,7 @@ namespace Hazel
 			}
 			else
 			{
-				auto& aabb = submesh.BoundingBox;
+				auto& aabb = submesh->BoundingBox;
 				aabb.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
 				aabb.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
@@ -308,14 +310,14 @@ namespace Hazel
 				// Triangle cache
 				if (!m_IsAnimated)
 				{
-					if (index.V1 + submesh.BaseVertex < m_StaticVertices.size() &&
-						index.V2 + submesh.BaseVertex < m_StaticVertices.size() &&
-						index.V3 + submesh.BaseVertex < m_StaticVertices.size())
+					if (index.V1 + submesh->BaseVertex < m_StaticVertices.size() &&
+						index.V2 + submesh->BaseVertex < m_StaticVertices.size() &&
+						index.V3 + submesh->BaseVertex < m_StaticVertices.size())
 					{
 						m_TriangleCache[(uint32_t)m].emplace_back(
-							m_StaticVertices[index.V1 + submesh.BaseVertex],
-							m_StaticVertices[index.V2 + submesh.BaseVertex],
-							m_StaticVertices[index.V3 + submesh.BaseVertex]);
+							m_StaticVertices[index.V1 + submesh->BaseVertex],
+							m_StaticVertices[index.V2 + submesh->BaseVertex],
+							m_StaticVertices[index.V3 + submesh->BaseVertex]);
 					}
 				}
 			}
@@ -323,7 +325,7 @@ namespace Hazel
 
 		// Display the list of all submeshes
 		for (size_t m = 0; m < scene->mNumMeshes; m++) {
-			Log::GetLogger()->info("-- Submesh ID {0} NodeName: '{1}'", m, m_Submeshes[m].NodeName);
+			Log::GetLogger()->info("-- Submesh ID {0} NodeName: '{1}'", m, m_Submeshes[m]->NodeName);
 		}
 
 		TraverseNodes(scene->mRootNode);
@@ -373,7 +375,7 @@ namespace Hazel
 			for (size_t m = 0; m < scene->mNumMeshes; m++)
 			{
 				aiMesh* mesh = scene->mMeshes[m];
-				SubmeshHazelLegacy& submesh = m_Submeshes[m];
+				Ref<SubmeshHazelLegacy> submesh = m_Submeshes[m];
 
 				for (size_t i = 0; i < mesh->mNumBones; i++)
 				{
@@ -399,7 +401,7 @@ namespace Hazel
 
 					for (size_t j = 0; j < bone->mNumWeights; j++)
 					{
-						int VertexID = submesh.BaseVertex + bone->mWeights[j].mVertexId;
+						int VertexID = submesh->BaseVertex + bone->mWeights[j].mVertexId;
 						float Weight = bone->mWeights[j].mWeight;
 						if (m_AnimatedVertices.size() > VertexID) {
 							m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
@@ -503,9 +505,9 @@ namespace Hazel
 				HZ_MESH_LOG("    METALNESS = {0}", metalness);
 
 				// BEGIN the material data section
-				SubmeshHazelLegacy* submeshPtr = nullptr;
+				Ref<SubmeshHazelLegacy> submeshPtr = nullptr;
 				if (i < m_Submeshes.size()) {
-					submeshPtr = &m_Submeshes[i];
+					submeshPtr = m_Submeshes[i];
 				}
 
 				Hazel::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
@@ -1058,10 +1060,10 @@ namespace Hazel
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t mesh = node->mMeshes[i];
-			SubmeshHazelLegacy& submesh = m_Submeshes[mesh];
-			submesh.NodeName = node->mName.C_Str();
-			submesh.MeshName = m_Scene->mMeshes[mesh]->mName.C_Str();
-			submesh.Transform = transform;
+			Ref<SubmeshHazelLegacy> submesh = m_Submeshes[mesh];
+			submesh->NodeName = node->mName.C_Str();
+			submesh->MeshName = m_Scene->mMeshes[mesh]->mName.C_Str();
+			submesh->Transform = transform;
 		}
 
 		HZ_MESH_LOG("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
@@ -1264,8 +1266,8 @@ namespace Hazel
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t mesh = node->mMeshes[i];
-			m_Submeshes[mesh].NodeName = node->mName.C_Str();
-			m_Submeshes[mesh].Transform = transform;
+			m_Submeshes[mesh]->NodeName = node->mName.C_Str();
+			m_Submeshes[mesh]->Transform = transform;
 		}
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
@@ -1383,14 +1385,14 @@ namespace Hazel
 		return nullptr;
 	}
 
-	void MeshHazelLegacy::DeleteSubmesh(SubmeshHazelLegacy submesh)
+	void MeshHazelLegacy::DeleteSubmesh(Ref<SubmeshHazelLegacy> submesh)
 	{
 		for (auto iterator = m_Submeshes.cbegin(); iterator != m_Submeshes.cend();)
 		{
-			if (iterator->MeshName == submesh.MeshName)
+			if (iterator->Raw()->MeshName == submesh->MeshName)
 			{
 				iterator = m_Submeshes.erase(iterator++);
-				Log::GetLogger()->debug("MeshHazelLegacy::DeleteSubmesh erase '{0}'", submesh.MeshName);
+				Log::GetLogger()->debug("MeshHazelLegacy::DeleteSubmesh erase '{0}'", submesh->MeshName);
 			}
 			else
 			{
@@ -1399,15 +1401,16 @@ namespace Hazel
 		}
 	}
 
-	void MeshHazelLegacy::CloneSubmesh(SubmeshHazelLegacy submesh)
+	void MeshHazelLegacy::CloneSubmesh(Ref<SubmeshHazelLegacy> submesh)
 	{
 		EntitySelection::s_SelectionContext.clear();
 
-		SubmeshHazelLegacy* submeshCopy = new SubmeshHazelLegacy(submesh);
+		// Ref<SubmeshHazelLegacy> submeshCopy = Ref<SubmeshHazelLegacy>::Create(submesh);
+		Ref<SubmeshHazelLegacy> submeshCopy = Ref<SubmeshHazelLegacy>::Create();
 		std::string appendix = Util::randomString(2);
 		submeshCopy->MeshName += "." + appendix;
 		submeshCopy->NodeName += "." + appendix;
-		m_Submeshes.push_back(*submeshCopy);
+		m_Submeshes.push_back(submeshCopy);
 	}
 
 	void MeshHazelLegacy::BoneTransform(float time)
@@ -1477,7 +1480,7 @@ namespace Hazel
 		m_Pipeline->Bind();
 		m_IndexBuffer->Bind();
 
-		for (SubmeshHazelLegacy& submesh : m_Submeshes)
+		for (Ref<SubmeshHazelLegacy> submesh : m_Submeshes)
 		{
 			m_MeshShader->Bind();
 
@@ -1488,12 +1491,12 @@ namespace Hazel
 				m_MeshShader->SetMat4(uniformName, m_BoneTransforms[i]);
 			}
 
-			m_MeshShader->SetMat4("u_Transform", transform * submesh.Transform);
+			m_MeshShader->SetMat4("u_Transform", transform * submesh->Transform);
 
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial)
 			{
-				Hazel::Ref<Material> baseMaterialRef = m_BaseMaterial;
+				Hazel::Ref<::Material> baseMaterialRef = m_BaseMaterial;
 				baseMaterialRef->GetTextureAlbedo()->Bind(samplerSlot + 0);
 				baseMaterialRef->GetTextureNormal()->Bind(samplerSlot + 1);
 				baseMaterialRef->GetTextureMetallic()->Bind(samplerSlot + 2);
@@ -1520,7 +1523,7 @@ namespace Hazel
 			Ref<HazelMaterial> material = Ref<HazelMaterial>();
 			if (m_Materials.size())
 			{
-				material = m_Materials[submesh.MaterialIndex];
+				material = m_Materials[submesh->MaterialIndex];
 				if (material && material->GetFlag(HazelMaterialFlag::DepthTest))
 				{
 					RendererBasic::EnableDepthTest();
@@ -1531,21 +1534,21 @@ namespace Hazel
 				RendererBasic::DisableDepthTest();
 			}
 
-			RendererBasic::DrawIndexed(submesh.IndexCount, 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
+			RendererBasic::DrawIndexed(submesh->IndexCount, 0, submesh->BaseVertex, (void*)(sizeof(uint32_t) * submesh->BaseIndex));
 			// glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
 		}
 	}
 
-	void MeshHazelLegacy::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity)
+	void MeshHazelLegacy::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityHazelLegacy entity)
 	{
-		for (Hazel::SubmeshHazelLegacy submesh : m_Submeshes)
+		for (Ref<SubmeshHazelLegacy> submesh : m_Submeshes)
 		{
-			submesh.Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials, entity);
+			submesh->Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials, entity);
 		}
 	}
 
 	void SubmeshHazelLegacy::Render(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-		const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity, bool wireframeEnabledScene, bool wireframeEnabledModel)
+		const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityHazelLegacy entity, bool wireframeEnabledScene, bool wireframeEnabledModel)
 	{
 		Ref<EnvMapMaterial> envMapMaterial = Ref<EnvMapMaterial>();
 
@@ -1564,7 +1567,7 @@ namespace Hazel
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 		}
 
-		std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(parentMesh, *this, &entity);
+		std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(parentMesh, this, &entity);
 
 		if (envMapMaterials.find(materialUUID) != envMapMaterials.end())
 		{
@@ -1624,7 +1627,7 @@ namespace Hazel
 		shader->Unbind();
 	}
 
-	void SubmeshHazelLegacy::RenderOutline(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, Entity entity)
+	void SubmeshHazelLegacy::RenderOutline(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, EntityHazelLegacy entity)
 	{
 		parentMesh->GetVertexBuffer()->Bind();
 		parentMesh->GetPipeline()->Bind();

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Core/Events/KeyEvent.h"
 #include "Hazel/Renderer/HazelMesh.h"
-#include "Hazel/Scene/Entity.h"
+
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
 
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Mesh/Grid.h"
@@ -46,7 +47,7 @@ private:
 	bool OnKeyPressed(KeyPressedEvent& e);
 
 	// Temporary/experimental
-	virtual void OnEntitySelected(Hazel::Entity entity) override;
+	virtual void OnEntitySelected(Hazel::EntityHazelLegacy entity) override;
 
 private:
 	std::unique_ptr<EnvMapEditorLayer> m_EnvMapEditorLayer;

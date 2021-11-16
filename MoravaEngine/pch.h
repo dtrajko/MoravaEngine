@@ -8,8 +8,8 @@
 #include "Hazel/Core/Math/Ray.h"
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Editor/EditorCamera.h"
-#include "Hazel/Events/KeyEvent.h"
-#include "Hazel/Events/MouseEvent.h"
+#include "Hazel/Core/Events/KeyEvent.h"
+#include "Hazel/Core/Events/MouseEvent.h"
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/HazelMaterial.h"
@@ -23,7 +23,6 @@
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Scene/Entity.h"
-#include "Hazel/Scene/HazelScene.h"
 
 // Morava classes
 #include "Camera/RuntimeCamera.h"

@@ -5,9 +5,10 @@
 #include "../../config.h"
 
 #include "Hazel/Core/LayerStack.h"
-#include "Hazel/Events/ApplicationEvent.h"
-#include "Hazel/Events/Event.h"
+#include "Hazel/Core/Events/ApplicationEvent.h"
+#include "Hazel/Core/Events/Event.h"
 #include "Hazel/ImGui/ImGuiLayer.h"
+#include "Hazel/Core/Timer.h"
 
 #include "Core/Log.h"
 #include "Core/Window.h"
@@ -69,15 +70,20 @@ public:
 	static const char* GetConfigurationName();
 	static const char* GetPlatformName();
 
+	const ApplicationSpecification& GetSpecification() const { return m_Specification; }
+
+	// Hazel::PerformanceProfiler* GetPerformanceProfiler() { return m_Profiler; }
+
+	Hazel::ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; }
+
 	void CaptureScreenshot(const std::string& filePath);
 
 private:
-	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);
+	bool OnWindowClose(WindowCloseEvent& e);
 
 private:
-	static Application* s_Instance;
-
+	Window* m_Window;
 	ApplicationSpecification m_Specification;
 	std::string m_ProjectPath;
 
@@ -85,15 +91,17 @@ private:
 	RendererBasic* m_Renderer;
 
 	// Hazel properties
-	Window* m_Window;
 	bool m_Running = true;
 	bool m_Minimized = false;
 	Hazel::LayerStack m_LayerStack;
-
 	Hazel::ImGuiLayer* m_ImGuiLayer;
-	bool m_EnableImGui = true;
-
 	float m_TimeStep = 0;
+	// Hazel::PerformanceProfiler* m_Profiler = nullptr; // TODO: Should be null in Dist
+	bool m_ShowStats = true;
+
 	float m_LastFrameTime = 0;
 
+	bool m_EnableImGui = true;
+
+	static Application* s_Instance;
 };

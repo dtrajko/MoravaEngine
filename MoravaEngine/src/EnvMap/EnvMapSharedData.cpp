@@ -1,10 +1,12 @@
 #include "EnvMapSharedData.h"
 
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
+
 
 std::map<std::string, unsigned int> EnvMapSharedData::s_SamplerSlots;
 
-Hazel::Ref<Hazel::HazelScene> EnvMapSharedData::s_RuntimeScene;
-Hazel::Ref<Hazel::HazelScene> EnvMapSharedData::s_EditorScene;
+Hazel::Ref<Hazel::SceneHazelLegacy> EnvMapSharedData::s_RuntimeScene;
+Hazel::Ref<Hazel::SceneHazelLegacy> EnvMapSharedData::s_EditorScene;
 
 Scene* EnvMapSharedData::s_Scene; // reference to SceneHazelEnvMap (the original engine scene object)
 
@@ -29,8 +31,8 @@ Hazel::Ref<ShadowMap> EnvMapSharedData::s_ShadowMapDirLight;
 Hazel::Ref<MoravaShader> EnvMapSharedData::s_ShaderHazelPBR;
 Hazel::Ref<MoravaShader> EnvMapSharedData::s_ShaderOutline;
 
-Hazel::Entity EnvMapSharedData::s_PointLightEntity;
+Hazel::EntityHazelLegacy EnvMapSharedData::s_PointLightEntity;
 Hazel::Ref<OmniShadowMap> EnvMapSharedData::s_OmniShadowMapPointLight;
 
-Hazel::Entity EnvMapSharedData::s_SpotLightEntity;
+Hazel::EntityHazelLegacy EnvMapSharedData::s_SpotLightEntity;
 Hazel::Ref<OmniShadowMap> EnvMapSharedData::s_OmniShadowMapSpotLight;

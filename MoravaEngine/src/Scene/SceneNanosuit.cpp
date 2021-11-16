@@ -66,7 +66,7 @@ void SceneNanosuit::InitNanosuitUniforms()
 	int txSlotSpecular = 1; // sampler2D / Texture slot
 	int txSlotNormal =   2; // sampler2D / Texture slot
 	float shininess = 32.0f;
-	Material material(txSlotDiffuse, txSlotSpecular, txSlotNormal, shininess);
+	Hazel::Ref<Material> material = Hazel::Ref<Material>::Create(txSlotDiffuse, txSlotSpecular, txSlotNormal, shininess);
 
 	nanosuitUniforms->material = material;
 
@@ -108,10 +108,10 @@ void SceneNanosuit::UpdateImGui(float timestep, Window* mainWindow)
 	ImGui::ColorEdit3("Background Color", glm::value_ptr(m_BgColor));
 	ImGui::Separator();
 	ImGui::Separator();
-	ImGui::SliderInt("Material.diffuse",      &nanosuitUniforms->material.m_AlbedoMap,   0, 3);
-	ImGui::SliderInt("Material.specular",     &nanosuitUniforms->material.m_SpecularMap, 0, 3);
-	ImGui::SliderInt("Material.normalMap",    &nanosuitUniforms->material.m_NormalMap,   0, 3);
-	ImGui::SliderFloat("Material.shininess",  &nanosuitUniforms->material.m_Shininess,   0, 512);
+	ImGui::SliderInt("Material.diffuse",      &nanosuitUniforms->material->m_AlbedoMap,   0, 3);
+	ImGui::SliderInt("Material.specular",     &nanosuitUniforms->material->m_SpecularMap, 0, 3);
+	ImGui::SliderInt("Material.normalMap",    &nanosuitUniforms->material->m_NormalMap,   0, 3);
+	ImGui::SliderFloat("Material.shininess",  &nanosuitUniforms->material->m_Shininess,   0, 512);
 	ImGui::Separator();
 	ImGui::Separator();
 	ImGui::SliderFloat3("Light.position",   glm::value_ptr(nanosuitUniforms->light.position),  -50.0f, 50.0f);
@@ -163,10 +163,10 @@ void SceneNanosuit::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::
 	m_ShaderNanosuit->SetFloat("light.quadratic", nanosuitUniforms->light.quadratic);
 
 	// material properties
-	m_ShaderNanosuit->SetInt("material.diffuse", nanosuitUniforms->material.m_AlbedoMap);
-	m_ShaderNanosuit->SetInt("material.specular", nanosuitUniforms->material.m_SpecularMap);
-	m_ShaderNanosuit->SetInt("material.normalMap", nanosuitUniforms->material.m_NormalMap);
-	m_ShaderNanosuit->SetFloat("material.shininess", nanosuitUniforms->material.m_Shininess);
+	m_ShaderNanosuit->SetInt("material.diffuse", nanosuitUniforms->material->m_AlbedoMap);
+	m_ShaderNanosuit->SetInt("material.specular", nanosuitUniforms->material->m_SpecularMap);
+	m_ShaderNanosuit->SetInt("material.normalMap", nanosuitUniforms->material->m_NormalMap);
+	m_ShaderNanosuit->SetFloat("material.shininess", nanosuitUniforms->material->m_Shininess);
 
 	glm::mat4 view = m_Camera->GetViewMatrix();
 

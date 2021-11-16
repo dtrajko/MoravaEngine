@@ -120,7 +120,7 @@ bool SceneDX11::OnKeyPressed(KeyPressedEvent& e)
     return false;
 }
 
-void SceneDX11::OnEntitySelected(Hazel::Entity entity)
+void SceneDX11::OnEntitySelected(Hazel::EntityHazelLegacy entity)
 {
 }
 

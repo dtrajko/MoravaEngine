@@ -243,7 +243,7 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
     return true;
 }
 
-void SceneHazelEnvMap::OnEntitySelected(Hazel::Entity entity)
+void SceneHazelEnvMap::OnEntitySelected(Hazel::EntityHazelLegacy entity)
 {
     // auto& tc = entity.GetComponent<Hazel::TransformComponent>();
     // m_EnvMapEditorLayer->SetMeshEntity(entity);

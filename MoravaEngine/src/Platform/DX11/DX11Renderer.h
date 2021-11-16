@@ -78,7 +78,7 @@ public:
 	static void DisplaySubmeshMaterialSelector(bool* p_open);
 
 	static void SelectEntity(Hazel::Entity e);
-	static void OnEntityDeleted(Hazel::Entity e);
+	static void OnEntityDeleted(Hazel::EntityHazelLegacy e);
 
 	static uint32_t GetViewportWidth();
 	static uint32_t GetViewportHeight();

@@ -27,7 +27,7 @@ struct NanosuitUniforms
 {
 	glm::vec3 viewPos;
 	bool enableNormalMap;
-	Material material;
+	Hazel::Ref<Material> material;
 	NanosuitLight light;
 };
 

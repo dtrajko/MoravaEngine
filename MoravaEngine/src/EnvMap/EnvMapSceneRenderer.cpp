@@ -10,6 +10,8 @@
 #include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Renderer/Renderer2D.h"
 
+#include "HazelLegacy/Renderer/RendererHazelLegacy.h"
+
 #include "Core/Application.h"
 #include "Core/Log.h"
 #include "Core/ResourceManager.h"
@@ -74,7 +76,7 @@ Hazel::Ref<Hazel::Renderer2D> EnvMapSceneRenderer::s_Renderer2D;
 
 struct EnvMapSceneRendererData
 {
-    const Hazel::HazelScene* ActiveScene = nullptr;
+    const Hazel::SceneHazelLegacy* ActiveScene = nullptr;
     struct SceneInfo
     {
         Hazel::SceneRendererCamera SceneCamera;
@@ -82,7 +84,7 @@ struct EnvMapSceneRendererData
         // Resources
         Ref<Hazel::HazelMaterial> HazelSkyboxMaterial;
         Material* SkyboxMaterial;
-        Hazel::Environment SceneEnvironment;
+        Hazel::Ref<Hazel::Environment> SceneEnvironment;
         Hazel::HazelDirLight ActiveLight;
     } SceneData;
 
@@ -98,7 +100,7 @@ struct EnvMapSceneRendererData
     {
         std::string Name;
         Hazel::Ref<Hazel::MeshHazelLegacy> MeshPtr;
-        Material* MaterialPtr;
+        Hazel::HazelMaterial* MaterialPtr;
         glm::mat4 Transform;
     };
     std::vector<DrawCommand> DrawList;
@@ -118,12 +120,13 @@ struct EnvMapSceneRendererData
 
 static EnvMapSceneRendererData s_Data;
 
-void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
+void EnvMapSceneRenderer::Init(std::string filepath, Hazel::SceneHazelLegacy* scene)
 {
     Hazel::HazelRenderer::Init();
 
     SetupShaders();
 
+    // s_Data.SceneData.SceneEnvironment = Load(filepath);
     s_Data.SceneData.SceneEnvironment = Load(filepath);
     SetEnvironment(s_Data.SceneData.SceneEnvironment);
 
@@ -240,11 +243,11 @@ void EnvMapSceneRenderer::SetupShaders()
 }
 
 // Moved from EnvironmentMap
-Hazel::Environment EnvMapSceneRenderer::Load(const std::string& filepath)
+Hazel::Ref<Hazel::Environment> EnvMapSceneRenderer::Load(const std::string& filepath)
 {
     auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
     // auto [radiance, irradiance] = Hazel::HazelRenderer::CreateEnvironmentMap(filepath);
-    return { radiance, irradiance };
+    return Hazel::Ref<Hazel::Environment>::Create(radiance, irradiance);
 }
 
 void EnvMapSceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
@@ -253,7 +256,7 @@ void EnvMapSceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
     s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
 }
 
-void EnvMapSceneRenderer::BeginScene(Hazel::HazelScene* scene, const Hazel::SceneRendererCamera& camera)
+void EnvMapSceneRenderer::BeginScene(Hazel::SceneHazelLegacy* scene, const Hazel::SceneRendererCamera& camera)
 {
     // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
@@ -279,7 +282,7 @@ void EnvMapSceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& tr
 {
 }
 
-void EnvMapSceneRenderer::SubmitEntity(Hazel::Entity entity)
+void EnvMapSceneRenderer::SubmitEntity(Hazel::EntityHazelLegacy entity)
 {
     // TODO: Culling, sorting, etc.
 
@@ -299,7 +302,7 @@ Hazel::SceneRendererCamera& EnvMapSceneRenderer::GetCamera()
 static Ref<Hazel::HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
 
 // Moved from EnvironmentMap
-void EnvMapSceneRenderer::SetEnvironment(Hazel::Environment environment)
+void EnvMapSceneRenderer::SetEnvironment(Hazel::Ref<Hazel::Environment> environment)
 {
     s_Data.SceneData.SceneEnvironment = environment;
 }
@@ -457,7 +460,7 @@ void EnvMapSceneRenderer::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 }
 
-void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::SubmeshHazelLegacy& submesh)
+void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::EntityHazelLegacy entity, const glm::mat4& entityTransform, Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh)
 {
     if (!EnvMapSharedData::s_DisplayOutline) return;
 
@@ -467,8 +470,8 @@ void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::
     if (EntitySelection::s_SelectionContext.size()) {
         for (auto selection : EntitySelection::s_SelectionContext)
         {
-            if (selection.Mesh && &submesh == selection.Mesh) {
-                submesh.RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
+            if (selection.Mesh && submesh == selection.Mesh) {
+                submesh->RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
             }
         }
     }
@@ -529,7 +532,7 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(Hazel::Ref<MoravaShader> shade
     // Point lights / Omni directional shadows
     if (EnvMapSharedData::s_PointLightEntity.HasComponent<Hazel::PointLightComponent>())
     {
-        auto& plc = EnvMapSharedData::s_PointLightEntity.GetComponent<Hazel::PointLightComponent>();
+        auto& plc = EnvMapSharedData::s_PointLightEntity.GetComponent<Hazel::PointLightLegacyComponent>();
         auto& tc = EnvMapSharedData::s_PointLightEntity.GetComponent<Hazel::TransformComponent>();
         shaderHazelPBR->SetBool("pointLights[0].base.enabled", plc.Enabled);
         shaderHazelPBR->SetFloat3("pointLights[0].base.color", plc.Color);
@@ -542,9 +545,9 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(Hazel::Ref<MoravaShader> shade
     }
 
     // Spot lights / Omni directional shadows
-    if (EnvMapSharedData::s_SpotLightEntity.HasComponent<Hazel::SpotLightComponent>())
+    if (EnvMapSharedData::s_SpotLightEntity.HasComponent<Hazel::SpotLightLegacyComponent>())
     {
-        auto& slc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::SpotLightComponent>();
+        auto& slc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::SpotLightLegacyComponent>();
         auto& tc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
         shaderHazelPBR->SetBool("spotLights[0].base.base.enabled", slc.Enabled);
         shaderHazelPBR->SetFloat3("spotLights[0].base.base.color", slc.Color);
@@ -769,7 +772,7 @@ void EnvMapSceneRenderer::GeometryPass()
     {
         for (auto entt : meshEntities)
         {
-            Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
+            Hazel::EntityHazelLegacy entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
 
             if (meshComponent.Mesh)
@@ -793,8 +796,8 @@ void EnvMapSceneRenderer::GeometryPass()
                     EnvMapSharedData::s_ShaderHazelPBR->SetInt("u_OmniShadowMaps[0].shadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow_omni"));
 
                     float farPlane = 1000.0f;
-                    if (EnvMapSharedData::s_PointLightEntity.HasComponent<Hazel::PointLightComponent>()) {
-                        farPlane = EnvMapSharedData::s_PointLightEntity.GetComponent<Hazel::PointLightComponent>().FarPlane;
+                    if (EnvMapSharedData::s_PointLightEntity.HasComponent<Hazel::PointLightLegacyComponent>()) {
+                        farPlane = EnvMapSharedData::s_PointLightEntity.GetComponent<Hazel::PointLightLegacyComponent>().FarPlane;
                     }
                     EnvMapSharedData::s_ShaderHazelPBR->SetFloat("u_OmniShadowMaps[0].farPlane", farPlane);
                 }
@@ -804,8 +807,8 @@ void EnvMapSceneRenderer::GeometryPass()
                     EnvMapSharedData::s_ShaderHazelPBR->SetInt("u_OmniShadowMaps[1].shadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow_omni") + 1);
 
                     float farPlane = 1000.0f;
-                    if (EnvMapSharedData::s_SpotLightEntity.HasComponent<Hazel::SpotLightComponent>()) {
-                        farPlane = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::SpotLightComponent>().FarPlane;
+                    if (EnvMapSharedData::s_SpotLightEntity.HasComponent<Hazel::SpotLightLegacyComponent>()) {
+                        farPlane = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::SpotLightLegacyComponent>().FarPlane;
                     }
                     EnvMapSharedData::s_ShaderHazelPBR->SetFloat("u_OmniShadowMaps[1].farPlane", farPlane);
                 }
@@ -813,7 +816,7 @@ void EnvMapSceneRenderer::GeometryPass()
                 Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
                 std::string materialUUID;
 
-                for (Hazel::SubmeshHazelLegacy& submesh : meshComponent.Mesh->GetSubmeshes())
+                for (Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh : meshComponent.Mesh->GetSubmeshes())
                 {
                     materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
 
@@ -832,7 +835,7 @@ void EnvMapSceneRenderer::GeometryPass()
 
                     // Log::GetLogger()->debug("wireframeEnabledScene: {0}, wireframeEnabledModel: {1}", wireframeEnabledScene, wireframeEnabledModel);
 
-                    submesh.Render(meshComponent.Mesh, EnvMapSharedData::s_ShaderHazelPBR, entityTransform, samplerSlot,
+                    submesh->Render(meshComponent.Mesh, EnvMapSharedData::s_ShaderHazelPBR, entityTransform, samplerSlot,
                         MaterialLibrary::s_EnvMapMaterials, entity, wireframeEnabledScene, wireframeEnabledModel);
                 }
             }
@@ -853,13 +856,13 @@ void EnvMapSceneRenderer::GeometryPass()
             for (auto selection : EntitySelection::s_SelectionContext)
             {
                 if (selection.Mesh) {
-                    Hazel::Entity meshEntity = selection.Entity;
+                    Hazel::EntityHazelLegacy meshEntity = selection.Entity;
                     glm::mat4 transform = glm::mat4(1.0f);
                     if (meshEntity.HasComponent<Hazel::TransformComponent>()) {
                         transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
                     }
                     glm::vec4 color = EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
-                    Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
+                    Hazel::RendererHazelLegacy::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
                 }
             }
         }
@@ -943,9 +946,9 @@ void EnvMapSceneRenderer::ShadowMapPass()
     ****/
 }
 
-void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::Entity entity)
+void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::EntityHazelLegacy entity)
 {
-    auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+    auto mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
     if (!mesh) {
         return;
     }
@@ -987,12 +990,12 @@ Hazel::SceneRendererOptions& EnvMapSceneRenderer::GetOptions()
 
 Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::GetRadianceMap()
 {
-    return s_Data.SceneData.SceneEnvironment.RadianceMap;
+    return s_Data.SceneData.SceneEnvironment->RadianceMap;
 }
 
 Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::GetIrradianceMap()
 {
-    return s_Data.SceneData.SceneEnvironment.IrradianceMap;
+    return s_Data.SceneData.SceneEnvironment->IrradianceMap;
 }
 
 Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::GetBRDFLUT()
@@ -1037,8 +1040,13 @@ void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelDirLight& light)
     s_Data.SceneData.ActiveLight = light;
 }
 
-void EnvMapSceneRenderer::AddToDrawList(std::string name, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity, glm::mat4 transform)
+void EnvMapSceneRenderer::AddToDrawList(std::string name, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity, glm::mat4 transform)
 {
+    std::string Name;
+    Hazel::Ref<Hazel::MeshHazelLegacy> MeshPtr;
+    Material* MaterialPtr;
+    glm::mat4 Transform;
+
     s_Data.DrawList.push_back({ name, mesh.Raw(), entity.GetMaterial(), transform });
 }
 

@@ -2,7 +2,7 @@
 
 #include "Scene/Scene.h"
 
-#include "Hazel/Events/ApplicationEvent.h"
+#include "Hazel/Core/Events/ApplicationEvent.h"
 #include "Hazel/Scene/Components.h"
 
 #include "Core/Application.h"
