@@ -6,14 +6,12 @@
 #include "Hazel/ImGui/Colours.h"
 #include "Hazel/ImGui/ImGuiUtilities.h"
 #include "Hazel/Project/Project.h"
+#include "Hazel/Renderer/RendererAPI.h"
 #include "Hazel/Utilities/FileSystem.h"
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Audio/AudioEngine.h"
 
-#include "HazelLegacy/Renderer/RendererAPIHazelLegacy.h"
-
-#include "imgui.h"
-#include "imgui_internal.h"
+#include "ImGui/ImGuiWrapper.h"
 
 #include "ImGuizmo.h"
 
@@ -190,15 +188,15 @@ namespace Hazel
 	{
 		std::string rendererAPI = "";
 		
-		switch (RendererAPIHazelLegacy::Current())
+		switch (RendererAPI::Current())
 		{
-			case RendererAPITypeHazelLegacy::OpenGL:
+			case RendererAPIType::OpenGL:
 				rendererAPI = "OpenGL";
 				break;
-			case RendererAPITypeHazelLegacy::Vulkan:
+			case RendererAPIType::Vulkan:
 				rendererAPI = "Vulkan";
 				break;
-			case RendererAPITypeHazelLegacy::DX11:
+			case RendererAPIType::DX11:
 				rendererAPI = "DirectX 11";
 				break;
 		}

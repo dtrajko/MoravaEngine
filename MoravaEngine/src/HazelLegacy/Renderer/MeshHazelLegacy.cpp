@@ -2,7 +2,17 @@
 
 #include "MeshHazelLegacy.h"
 
-// #include <GL/glew.h>
+#include "Hazel/Renderer/RendererAPI.h"
+
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
+
+#include "Core/Log.h"
+#include "Core/Math.h"
+#include "Core/Util.h"
+#include "EnvMap/EnvMapEditorLayer.h"
+#include "Material/Material.h"
+#include "Material/MaterialLibrary.h"
+#include "Shader/MoravaShaderLibrary.h"
 
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -16,17 +26,6 @@
 #include <assimp/Importer.hpp>
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
-
-#include "HazelLegacy/Renderer/RendererAPIHazelLegacy.h"
-#include "HazelLegacy/Scene/EntityHazelLegacy.h"
-
-#include "Core/Log.h"
-#include "Core/Math.h"
-#include "Core/Util.h"
-#include "EnvMap/EnvMapEditorLayer.h"
-#include "Material/Material.h"
-#include "Material/MaterialLibrary.h"
-#include "Shader/MoravaShaderLibrary.h"
 
 #include "imgui.h"
 
@@ -160,7 +159,7 @@ namespace Hazel
 		if (!m_MeshShader)
 		{
 			/**** BEGIN MoravaShader the new API ****/
-			if (RendererAPIHazelLegacy::Current() == RendererAPITypeHazelLegacy::OpenGL)
+			if (RendererAPI::Current() == RendererAPIType::OpenGL)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationStatic;
 				moravaShaderSpecificationStatic.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
@@ -186,7 +185,7 @@ namespace Hazel
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
 			}
-			else if (RendererAPIHazelLegacy::Current() == RendererAPITypeHazelLegacy::DX11)
+			else if (RendererAPI::Current() == RendererAPIType::DX11)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelDX11;
 				moravaShaderSpecificationHazelDX11.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;

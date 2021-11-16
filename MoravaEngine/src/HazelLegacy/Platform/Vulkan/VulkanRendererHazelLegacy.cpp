@@ -1451,11 +1451,11 @@ namespace Hazel
 		return Ref<HazelTextureCube>();
 	}
 
-	void VulkanRendererHazelLegacy::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<MeshHazelLegacy> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform)
+	void VulkanRendererHazelLegacy::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<HazelMesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform)
 	{
 	}
 
-	void VulkanRendererHazelLegacy::RenderMeshWithMaterial(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<MeshHazelLegacy> mesh, Ref<HazelMaterial> material, const glm::mat4& transform, Buffer additionalUniforms)
+	void VulkanRendererHazelLegacy::RenderMeshWithMaterial(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<HazelMesh> mesh, Ref<HazelMaterial> material, const glm::mat4& transform, Buffer additionalUniforms)
 	{
 	}
 

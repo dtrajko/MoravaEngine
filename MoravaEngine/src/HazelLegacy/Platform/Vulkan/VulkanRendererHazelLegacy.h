@@ -8,7 +8,6 @@
 #include "Hazel/Renderer/SceneRenderer.h"
 
 #include "HazelLegacy/Renderer/MeshHazelLegacy.h"
-#include "HazelLegacy/Renderer/RendererAPIHazelLegacy.h"
 
 #include "Scene/Scene.h"
 #include "Core/Window.h"
@@ -16,7 +15,7 @@
 
 namespace Hazel {
 
-	class VulkanRendererHazelLegacy : public RendererAPIHazelLegacy
+	class VulkanRendererHazelLegacy : public RendererAPI
 	{
 	public:
 		virtual void Init() override;
@@ -35,8 +34,8 @@ namespace Hazel {
 		virtual std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) override;
 		virtual Ref<HazelTextureCube> CreatePreethamSky(float turbidity, float azimuth, float inclination) override;
 
-		virtual void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<MeshHazelLegacy> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform) override;
-		virtual void RenderMeshWithMaterial(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<MeshHazelLegacy> mesh, Ref<HazelMaterial> material, const glm::mat4& transform, Buffer additionalUniforms = Buffer()) override;
+		virtual void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<HazelMesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform) override;
+		virtual void RenderMeshWithMaterial(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<HazelMesh> mesh, Ref<HazelMaterial> material, const glm::mat4& transform, Buffer additionalUniforms = Buffer()) override;
 
 		virtual void RenderQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<HazelMaterial> material, const glm::mat4& transform) override;
 		virtual void LightCulling(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipelineCompute, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<HazelMaterial> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups) override;

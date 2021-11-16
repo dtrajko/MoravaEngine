@@ -1,12 +1,12 @@
 #include "SceneHazelLegacy.h"
 
+#include "Hazel/Physics/3D/Physics.h"
+#include "Hazel/Renderer/HazelRenderer.h"
+#include "Hazel/Renderer/RendererAPI.h"
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/ScriptableEntity.h"
-#include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Script/ScriptEngine.h"
-#include "Hazel/Physics/3D/Physics.h"
 
-#include "HazelLegacy/Renderer/RendererAPIHazelLegacy.h"
 #include "HazelLegacy/Renderer/SceneRendererHazelLegacy.h"
 #include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 #include "HazelLegacy/Scene/EntityHazelLegacy.h"
@@ -171,18 +171,18 @@ namespace Hazel {
 	{
 		MoravaShaderSpecification moravaShaderSpec;
 
-		switch (Hazel::RendererAPIHazelLegacy::Current())
+		switch (Hazel::RendererAPI::Current())
 		{
-		case Hazel::RendererAPITypeHazelLegacy::OpenGL:
+		case Hazel::RendererAPIType::OpenGL:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
 			moravaShaderSpec.VertexShaderPath = "Shaders/Hazel/Skybox.vs";
 			moravaShaderSpec.FragmentShaderPath = "Shaders/Hazel/Skybox.fs";
 			break;
-		case Hazel::RendererAPITypeHazelLegacy::Vulkan:
+		case Hazel::RendererAPIType::Vulkan:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
 			moravaShaderSpec.HazelShaderPath = "Resources/Shaders/Skybox.glsl";
 			break;
-		case Hazel::RendererAPITypeHazelLegacy::DX11:
+		case Hazel::RendererAPIType::DX11:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
 			moravaShaderSpec.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
 			moravaShaderSpec.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";

@@ -183,7 +183,6 @@
     <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\HazelLegacy\Renderer\MeshHazelLegacy.cpp" />
-    <ClCompile Include="src\HazelLegacy\Renderer\RendererAPIHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Renderer\RendererHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Scene\EntityHazelLegacy.cpp" />
@@ -642,7 +641,6 @@
     <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\HazelLegacy\Renderer\MeshHazelLegacy.h" />
-    <ClInclude Include="src\HazelLegacy\Renderer\RendererAPIHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Renderer\RendererHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Scene\ComponentsHazelLegacy.h" />

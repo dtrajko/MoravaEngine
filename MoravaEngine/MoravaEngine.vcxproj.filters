@@ -1029,9 +1029,6 @@
     <ClCompile Include="src\HazelLegacy\Scene\SceneHazelLegacy.cpp">
       <Filter>HazelLegacy\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\RendererAPIHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\HazelLegacy\Renderer\RendererHazelLegacy.cpp">
       <Filter>HazelLegacy\Renderer</Filter>
     </ClCompile>
@@ -2206,9 +2203,6 @@
     </ClInclude>
     <ClInclude Include="src\HazelLegacy\Scene\SceneHazelLegacy.h">
       <Filter>HazelLegacy\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\RendererAPIHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\HazelLegacy\Renderer\RendererHazelLegacy.h">
       <Filter>HazelLegacy\Renderer</Filter>

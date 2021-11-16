@@ -1,6 +1,6 @@
 #include "RendererHazelLegacy.h"
 
-#include "HazelLegacy/Renderer/RendererAPIHazelLegacy.h"
+#include "Hazel/Renderer/RendererAPI.h"
 
 
 namespace Hazel
