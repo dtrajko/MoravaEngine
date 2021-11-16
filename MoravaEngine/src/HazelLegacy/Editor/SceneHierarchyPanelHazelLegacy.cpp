@@ -127,13 +127,13 @@ namespace Hazel
 							// SetSelected(newEntity);
 						}
 
-						if (ImGui::MenuItem("Sky Light"))
-						{
-							EntityHazelLegacy newEntity = m_Context->CreateEntity("Sky Light");
-							// newEntity.AddComponent<SkyLightComponent>();
-							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
-							// SetSelected(newEntity);
-						}
+						//	if (ImGui::MenuItem("Sky Light"))
+						//	{
+						//		EntityHazelLegacy newEntity = m_Context->CreateEntity("Sky Light");
+						//		newEntity.AddComponent<SkyLightComponent>();
+						//		EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
+						//		SetSelected(newEntity);
+						//	}
 
 						ImGui::EndMenu();
 					}
@@ -543,14 +543,14 @@ namespace Hazel
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SkyLightComponent>())
-			{
-				if (ImGui::Button("Sky Light"))
-				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
+			//	if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SkyLightComponent>())
+			//	{
+			//		if (ImGui::Button("Sky Light"))
+			//		{
+			//			EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
+			//			ImGui::CloseCurrentPopup();
+			//		}
+			//	}
 
 			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<ScriptComponent>())
 			{
