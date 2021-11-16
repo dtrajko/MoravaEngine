@@ -5,6 +5,7 @@
 #include "Hazel/Renderer/RendererAPI.h"
 
 #include "HazelLegacy/Scene/EntityHazelLegacy.h"
+#include "HazelLegacy/Renderer/RendererHazelLegacy.h"
 
 #include "Core/Log.h"
 #include "Core/Math.h"
@@ -209,13 +210,13 @@ namespace Hazel
 		{
 			aiMesh* mesh = scene->mMeshes[m];
 
-			Ref<SubmeshHazelLegacy> submesh = m_Submeshes.emplace_back();
+			Ref<SubmeshHazelLegacy> submesh = Ref<SubmeshHazelLegacy>::Create();
 			submesh->BaseVertex = vertexCount;
 			submesh->BaseIndex = indexCount;
 			submesh->MaterialIndex = mesh->mMaterialIndex;
 			submesh->IndexCount = mesh->mNumFaces * 3;
 			submesh->MeshName = mesh->mName.C_Str();
-			// m_Submeshes.push_back(submesh);
+			m_Submeshes.push_back(submesh);
 
 			vertexCount += mesh->mNumVertices;
 			indexCount += submesh->IndexCount;
@@ -335,7 +336,7 @@ namespace Hazel
 
 		//	if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		//	{
-		//		// HazelRenderer::Submit([instance, shader]() mutable
+		//		// RendererHazelLegacy::Submit([instance, shader]() mutable
 		//		// {
 		//		// });
 		//		{
@@ -413,7 +414,7 @@ namespace Hazel
 		/**** BEGIN Materials ****/
 
 		// Materials
-		Ref<HazelTexture2D> whiteTexture = HazelRenderer::GetWhiteTexture();
+		Ref<HazelTexture2D> whiteTexture = RendererHazelLegacy::GetWhiteTexture();
 		if (scene->HasMaterials())
 		{
 			Log::GetLogger()->info("---- Materials - {0} ----", m_FilePath);
@@ -424,7 +425,7 @@ namespace Hazel
 			m_Materials.resize(scene->mNumMaterials);
 			m_MaterialDescriptors.resize(scene->mNumMaterials); // TODO: to be removed from MeshHazelLegacy
 
-			Ref<HazelTexture2D> whiteTexture = HazelRenderer::GetWhiteTexture();
+			Ref<HazelTexture2D> whiteTexture = RendererHazelLegacy::GetWhiteTexture();
 
 			for (uint32_t i = 0; i < scene->mNumMaterials; i++)
 			{
@@ -439,7 +440,7 @@ namespace Hazel
 				/**** BEGIN to be removed from MeshHazelLegacy ****/
 				if (RendererAPI::Current() == RendererAPIType::Vulkan)
 				{
-					// HazelRenderer::Submit([instance, shader, i]() mutable {});
+					// RendererHazelLegacy::Submit([instance, shader, i]() mutable {});
 					{
 						MaterialDescriptor& materialDescriptor = m_MaterialDescriptors[i];
 						materialDescriptor.DescriptorSet = shader.As<VulkanShader>()->CreateDescriptorSets();
@@ -952,7 +953,7 @@ namespace Hazel
 
 		if (RendererAPI::Current() == RendererAPIType::Vulkan)
 		{
-			// HazelRenderer::Submit([&]()
+			// RendererHazelLegacy::Submit([&]()
 			// {
 			// });
 			{
@@ -979,7 +980,7 @@ namespace Hazel
 	void MeshHazelLegacy::AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<HazelTexture2D> texture)
 	{
 		// Ref<MeshHazelLegacy> instance = this;
-		// HazelRenderer::Submit([instance, index, name, texture]() mutable {});
+		// RendererHazelLegacy::Submit([instance, index, name, texture]() mutable {});
 		{
 			MaterialDescriptor& materialDescriptor = m_MaterialDescriptors[index];
 
@@ -999,7 +1000,7 @@ namespace Hazel
 	void MeshHazelLegacy::UpdateAllDescriptorSets()
 	{
 		// Ref<Mesh> instance = this;
-		// HazelRenderer::Submit([instance]() mutable {});
+		// RendererHazelLegacy::Submit([instance]() mutable {});
 		{
 			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			for (MaterialDescriptor& md : m_MaterialDescriptors)
@@ -1015,7 +1016,7 @@ namespace Hazel
 	void MeshHazelLegacy::UpdateAllDescriptors()
 	{
 		// Ref<MeshHazelLegacy> instance = this;
-		// HazelRenderer::Submit([instance]() mutable {});
+		// RendererHazelLegacy::Submit([instance]() mutable {});
 		{
 			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			for (MaterialDescriptor& md : m_MaterialDescriptors)

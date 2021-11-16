@@ -10,6 +10,8 @@
 #include "Mesh/Block.h"
 #include "Shader/MoravaShader.h"
 
+#include "Hazel/Renderer/HazelRenderer.h"
+
 #include "../../ImGuizmo/ImGuizmo.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -102,6 +104,8 @@ SceneAnimPBR::SceneAnimPBR()
     m_ViewportFocused = false;
     m_ViewportHovered = false;
 
+    Hazel::HazelRenderer::Init();
+
     SetCamera();
     SetLightManager();
     SetupShaders();
@@ -141,6 +145,7 @@ SceneAnimPBR::SceneAnimPBR()
     m_Transform_ImGuizmo = nullptr;
 
     m_VisibleAABBs = true;
+
 }
 
 void SceneAnimPBR::SetLightManager()

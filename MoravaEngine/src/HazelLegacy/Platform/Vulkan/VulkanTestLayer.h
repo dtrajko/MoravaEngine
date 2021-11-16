@@ -9,10 +9,10 @@
 #include "Hazel/Platform/Vulkan/VulkanPipeline.h"
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Platform/Vulkan/VulkanTexture.h"
-#include "Hazel/Renderer/SceneRenderer.h"
 
 #include "HazelLegacy/Scene/SceneHazelLegacy.h"
 #include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
+#include "HazelLegacy/Renderer/SceneRendererHazelLegacy.h"
 
 #include "Core/MoravaLayer.h"
 #include "Core/Window.h"

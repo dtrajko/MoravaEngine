@@ -247,7 +247,9 @@ namespace Hazel {
 		}
 		else
 		{
-			VulkanSwapChain& swapChain = Application::Get()->GetWindow()->GetSwapChain();
+			Ref<VulkanContext> context = VulkanContext::Get();
+			VulkanSwapChain& swapChain = context->GetSwapChain();
+
 			m_RenderPass = swapChain.GetRenderPass();
 		}
 

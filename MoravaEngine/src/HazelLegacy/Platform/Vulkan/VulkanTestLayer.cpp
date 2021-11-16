@@ -43,7 +43,7 @@ namespace Hazel {
 
 		struct DrawCommand
 		{
-			Ref<HazelMesh> Mesh;
+			Ref<MeshHazelLegacy> Mesh;
 			Ref<HazelMaterial> Material;
 			glm::mat4 Transform;
 		};
@@ -90,7 +90,7 @@ namespace Hazel {
 
 		m_Camera.OnUpdate(ts);
 
-		for (Ref<HazelMesh> mesh : s_Meshes)
+		for (Ref<MeshHazelLegacy> mesh : s_Meshes)
 		{
 			VulkanRendererHazelLegacy::SubmitMeshTemp(mesh); // the method should be removed from VulkanRenderer
 		}
@@ -176,10 +176,10 @@ namespace Hazel {
 
 		s_MaterialEditorPanel = new MaterialEditorPanel();
 
-		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Gladiator/Gladiator.fbx"));
-		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/TestSceneVulkan.fbx"));
-		// m_Meshes.push_back(Ref<HazelMesh>::Create("Models/Hazel/Sphere1m.fbx"));
-		s_Meshes.push_back(Ref<HazelMesh>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+		// m_Meshes.push_back(Ref<MeshHazelLegacy>::Create("Models/Gladiator/Gladiator.fbx"));
+		// m_Meshes.push_back(Ref<MeshHazelLegacy>::Create("Models/Hazel/TestSceneVulkan.fbx"));
+		// m_Meshes.push_back(Ref<MeshHazelLegacy>::Create("Models/Hazel/Sphere1m.fbx"));
+		s_Meshes.push_back(Ref<MeshHazelLegacy>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 
 		/**** BEGIN the code that is not used anymore ****
 		RenderPassSpecification renderPassSpec;
