@@ -856,27 +856,27 @@ namespace Hazel
 			s_Meshes.clear();
 			// END Hard-coded data structure with Cerberus PBR model
 
-			auto meshEntities = VulkanTestLayer::s_Scene->GetAllEntitiesWith<MeshComponentHazelLegacy>();
+			// auto meshEntities = VulkanTestLayer::s_Scene->GetAllEntitiesWith<MeshComponentHazelLegacy>();
 
 			// Render all entities with mesh component
-			if (meshEntities.size())
-			{
-				for (auto entt : meshEntities)
-				{
-					Hazel::EntityHazelLegacy entity = { entt, VulkanTestLayer::s_Scene.Raw() };
-					auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
-
-					if (meshComponent.Mesh)
-					{
-						glm::mat4 entityTransform = glm::mat4(1.0f);
-						if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
-							entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
-						}
-
-						RenderMeshVulkan(meshComponent.Mesh, drawCommandBuffer);
-					}
-				}
-			}
+			//	if (meshEntities.size())
+			//	{
+			//		for (auto entt : meshEntities)
+			//		{
+			//			Hazel::EntityHazelLegacy entity = { entt, VulkanTestLayer::s_Scene.Raw() };
+			//			auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
+			//	
+			//			if (meshComponent.Mesh)
+			//			{
+			//				glm::mat4 entityTransform = glm::mat4(1.0f);
+			//				if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
+			//					entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+			//				}
+			//	
+			//				RenderMeshVulkan(meshComponent.Mesh, drawCommandBuffer);
+			//			}
+			//		}
+			//	}
 
 			vkCmdEndRenderPass(drawCommandBuffer);
 		}
@@ -1116,7 +1116,7 @@ namespace Hazel
 				// ImGui::End();
 
 				bool showSceneHierarchyPanel = true;
-				VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
+				// VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
 
 				bool showContentBrowserPanel = true;
 				VulkanTestLayer::s_ContentBrowserPanel->OnImGuiRender(&showContentBrowserPanel);

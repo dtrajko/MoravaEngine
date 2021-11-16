@@ -19,7 +19,7 @@
 #include "config.h"
 
 #include "Hazel/Core/Base.h"
-#include "Hazel/Events/Event.h"
+#include "Hazel/Core/Events/Event.h"
 
 #include "Camera/CameraController.h"
 #include "Core/Application.h"
