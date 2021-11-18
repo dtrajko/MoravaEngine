@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Hazel/Core/Timestep.h"
-#include "Hazel/Events/Event.h"
-#include "Hazel/Events/MouseEvent.h"
+#include "Hazel/Core/Events/Event.h"
+#include "Hazel/Core/Events/MouseEvent.h"
 #include "Hazel/Scene/SceneCamera.h"
 
 #include "glm/glm.hpp"

@@ -1,8 +1,8 @@
 #include "Platform/Windows/WindowsWindow.h"
 
-#include "Hazel/Events/KeyEvent.h"
-#include "Hazel/Events/MouseEvent.h"
-#include "Hazel/Events/ApplicationEvent.h"
+#include "Hazel/Core/Events/KeyEvent.h"
+#include "Hazel/Core/Events/MouseEvent.h"
+#include "Hazel/Core/Events/ApplicationEvent.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"

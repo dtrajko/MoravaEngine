@@ -128,7 +128,10 @@
     <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp" />
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp" />
-    <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp" />
+    <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -175,8 +178,18 @@
     <ClCompile Include="src\Framebuffer\OmniShadowMap.cpp" />
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp" />
+    <ClCompile Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanAllocatorHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanRendererHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\HazelLegacy\Renderer\MeshHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Renderer\RendererHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Scene\EntityHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Scene\SceneHazelLegacy.cpp" />
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetManager.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp" />
@@ -239,7 +252,6 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanShader.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanStorageBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.cpp" />
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTexture.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanUniformBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanUtils.cpp" />
@@ -622,9 +634,20 @@
     <ClInclude Include="src\Framebuffer\OmniShadowMap.h" />
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
+    <ClInclude Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\ImGui\ImGui.h" />
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanAllocatorHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanRendererHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\HazelLegacy\Renderer\MeshHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Renderer\RendererHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Scene\ComponentsHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Scene\EntityHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Scene\SceneHazelLegacy.h" />
     <ClInclude Include="src\HazelVulkan\ExampleVertex.h" />
     <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h" />
     <ClInclude Include="src\Hazel\Asset\Asset.h" />
@@ -636,6 +659,10 @@
     <ClInclude Include="src\Hazel\Core\Assert.h" />
     <ClInclude Include="src\Hazel\Core\Base.h" />
     <ClInclude Include="src\Hazel\Core\Buffer.h" />
+    <ClInclude Include="src\Hazel\Core\Events\ApplicationEvent.h" />
+    <ClInclude Include="src\Hazel\Core\Events\Event.h" />
+    <ClInclude Include="src\Hazel\Core\Events\KeyEvent.h" />
+    <ClInclude Include="src\Hazel\Core\Events\MouseEvent.h" />
     <ClInclude Include="src\Hazel\Core\Hash.h" />
     <ClInclude Include="src\Hazel\Core\HazelLog.h" />
     <ClInclude Include="src\Hazel\Core\HazelWindow.h" />
@@ -658,10 +685,6 @@
     <ClInclude Include="src\Hazel\Editor\EditorLayerVulkan.h" />
     <ClInclude Include="src\Hazel\Editor\ProjectSettingsWindow.h" />
     <ClInclude Include="src\Hazel\Editor\SceneHierarchyPanel.h" />
-    <ClInclude Include="src\Hazel\Events\ApplicationEvent.h" />
-    <ClInclude Include="src\Hazel\Events\Event.h" />
-    <ClInclude Include="src\Hazel\Events\KeyEvent.h" />
-    <ClInclude Include="src\Hazel\Events\MouseEvent.h" />
     <ClInclude Include="src\Hazel\ImGui\Colours.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGui.h" />
     <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h" />
@@ -706,7 +729,6 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBuffer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBufferSet.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanSwapChain.h" />
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUniformBuffer.h" />
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUniformBufferSet.h" />

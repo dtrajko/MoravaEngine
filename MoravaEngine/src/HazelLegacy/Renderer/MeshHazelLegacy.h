@@ -7,12 +7,15 @@
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/MaterialAsset.h"
 
+#include "HazelLegacy/Scene/EntityHazelLegacy.h"
+
 #include "Core/Log.h"
 #include "EnvMap/EnvMapMaterial.h"
 #include "Material/Material.h"
 #include "Mesh/Mesh.h"
 #include "Shader/MoravaShader.h"
 #include "Texture/MoravaTexture.h"
+
 
 #include <glm/glm.hpp>
 
@@ -125,14 +128,14 @@ namespace Hazel {
 	};
 
 	class MeshHazelLegacy;
-	class Entity;
+	class EntityHazelLegacy;
 
 	class SubmeshHazelLegacy : public Mesh
 	{
 	public:
 		void Render(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-			const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity, bool wireframeEnabledScene = false, bool wireframeEnabledModel = false);
-		void RenderOutline(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, Entity entity);
+			const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityHazelLegacy entity, bool wireframeEnabledScene = false, bool wireframeEnabledModel = false);
+		void RenderOutline(Ref<MeshHazelLegacy> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, EntityHazelLegacy entity);
 
 	public:
 		uint32_t BaseVertex;
@@ -174,11 +177,11 @@ namespace Hazel {
 		void DumpVertexBuffer();
 
 		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials);
-		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, Entity entity);
+		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityHazelLegacy entity);
 
 		// Getters
-		std::vector<SubmeshHazelLegacy>& GetSubmeshes() { return m_Submeshes; }
-		const std::vector<SubmeshHazelLegacy>& GetSubmeshes() const { return m_Submeshes; }
+		std::vector<Ref<SubmeshHazelLegacy>>& GetSubmeshes() { return m_Submeshes; }
+		const std::vector<Ref<SubmeshHazelLegacy>>& GetSubmeshes() const { return m_Submeshes; }
 
 		const std::vector<VertexHazelLegacy>& GetVertices() const { return m_StaticVertices; }
 		const std::vector<IndexHazelLegacy>& GetIndices() const { return m_Indices; }
@@ -227,8 +230,8 @@ namespace Hazel {
 		inline void SetBaseMaterial(Ref<HazelMaterial> baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
-		void DeleteSubmesh(SubmeshHazelLegacy submesh);
-		void CloneSubmesh(SubmeshHazelLegacy submesh);
+		void DeleteSubmesh(Ref<SubmeshHazelLegacy> submesh);
+		void CloneSubmesh(Ref<SubmeshHazelLegacy> submesh);
 		const AABB& GetBoundingBox() const { return m_BoundingBox; }
 
 	private:
@@ -252,7 +255,7 @@ namespace Hazel {
 	private:
 		Ref<Pipeline> m_Pipeline;
 
-		std::vector<SubmeshHazelLegacy> m_Submeshes;
+		std::vector<Ref<SubmeshHazelLegacy>> m_Submeshes;
 
 		std::unique_ptr<Assimp::Importer> m_Importer;
 

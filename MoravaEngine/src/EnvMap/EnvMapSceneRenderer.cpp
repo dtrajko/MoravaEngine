@@ -1,14 +1,16 @@
 #include "EnvMapSceneRenderer.h"
 
 #include "Hazel/Core/Assert.h"
+#include "Hazel/ImGui/ImGui.h"
 #include "Hazel/Platform/OpenGL/OpenGLRenderPass.h"
 #include "Hazel/Platform/OpenGL/OpenGLShader.h"
 #include "Hazel/Platform/OpenGL/OpenGLTexture.h"
 #include "Hazel/Platform/Vulkan/VulkanRenderer.h"
-#include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/HazelShader.h"
-#include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Renderer/Renderer2D.h"
+
+#include "HazelLegacy/Renderer/RendererHazelLegacy.h"
+#include "HazelLegacy/Scene/SceneHazelLegacy.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -74,7 +76,7 @@ Hazel::Ref<Hazel::Renderer2D> EnvMapSceneRenderer::s_Renderer2D;
 
 struct EnvMapSceneRendererData
 {
-    const Hazel::HazelScene* ActiveScene = nullptr;
+    const Hazel::SceneHazelLegacy* ActiveScene = nullptr;
     struct SceneInfo
     {
         Hazel::SceneRendererCamera SceneCamera;
@@ -118,10 +120,8 @@ struct EnvMapSceneRendererData
 
 static EnvMapSceneRendererData s_Data;
 
-void EnvMapSceneRenderer::Init(std::string filepath, Hazel::HazelScene* scene)
+void EnvMapSceneRenderer::Init(std::string filepath, Hazel::SceneHazelLegacy* scene)
 {
-    Hazel::HazelRenderer::Init();
-
     SetupShaders();
 
     s_Data.SceneData.SceneEnvironment = Load(filepath);
@@ -243,7 +243,7 @@ void EnvMapSceneRenderer::SetupShaders()
 Hazel::Environment EnvMapSceneRenderer::Load(const std::string& filepath)
 {
     auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
-    // auto [radiance, irradiance] = Hazel::HazelRenderer::CreateEnvironmentMap(filepath);
+    // auto [radiance, irradiance] = Hazel::RendererHazelLegacy::CreateEnvironmentMap(filepath);
     return { radiance, irradiance };
 }
 
@@ -253,7 +253,7 @@ void EnvMapSceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
     s_Data.CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height, true);
 }
 
-void EnvMapSceneRenderer::BeginScene(Hazel::HazelScene* scene, const Hazel::SceneRendererCamera& camera)
+void EnvMapSceneRenderer::BeginScene(Hazel::SceneHazelLegacy* scene, const Hazel::SceneRendererCamera& camera)
 {
     // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
@@ -279,7 +279,7 @@ void EnvMapSceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& tr
 {
 }
 
-void EnvMapSceneRenderer::SubmitEntity(Hazel::Entity entity)
+void EnvMapSceneRenderer::SubmitEntity(Hazel::EntityHazelLegacy entity)
 {
     // TODO: Culling, sorting, etc.
 
@@ -310,18 +310,18 @@ void EnvMapSceneRenderer::SetEnvironment(Hazel::Environment environment)
  ****/
 std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> EnvMapSceneRenderer::CreateEnvironmentMap(const std::string& filepath)
 {
-    Log::GetLogger()->debug("ComputeEnvironmentMaps: {0}", Hazel::HazelRenderer::GetConfig().ComputeEnvironmentMaps);
+    Log::GetLogger()->debug("ComputeEnvironmentMaps: {0}", Hazel::RendererHazelLegacy::GetConfig().ComputeEnvironmentMaps);
 
-    if (!Hazel::HazelRenderer::GetConfig().ComputeEnvironmentMaps)
+    if (!Hazel::RendererHazelLegacy::GetConfig().ComputeEnvironmentMaps)
     {
-        return { Hazel::HazelRenderer::GetBlackCubeTexture(), Hazel::HazelRenderer::GetBlackCubeTexture() };
+        return { Hazel::RendererHazelLegacy::GetBlackCubeTexture(), Hazel::RendererHazelLegacy::GetBlackCubeTexture() };
     }
 
-    const uint32_t cubemapSize = Hazel::HazelRenderer::GetConfig().EnvironmentMapResolution;
+    const uint32_t cubemapSize = Hazel::RendererHazelLegacy::GetConfig().EnvironmentMapResolution;
     const uint32_t irradianceMapSize = 32;
 
     Hazel::Ref<Hazel::OpenGLTextureCube> envUnfiltered = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize).As<Hazel::OpenGLTextureCube>();
-    // Ref<OpenGLShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShader>();
+    // Ref<OpenGLShader> equirectangularConversionShader = RendererHazelLegacy::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShader>();
     Hazel::Ref<Hazel::OpenGLShader> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<Hazel::OpenGLShader>();
     s_EnvEquirect = Hazel::HazelTexture2D::Create(filepath);
 
@@ -333,7 +333,7 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
 
     equirectangularConversionShader->Bind();
     s_EnvEquirect->Bind(1);
-    // HazelRenderer::Submit([envUnfiltered, cubemapSize, envEquirect]() {});
+    // RendererHazelLegacy::Submit([envUnfiltered, cubemapSize, envEquirect]() {});
     {
         glBindImageTexture(0, envUnfiltered->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
         glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
@@ -341,13 +341,13 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
         glGenerateTextureMipmap(envUnfiltered->GetRendererID());
     }
 
-    // Ref<OpenGLShader> envFilteringShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShader>();
+    // Ref<OpenGLShader> envFilteringShader = RendererHazelLegacy::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShader>();
     Hazel::Ref<Hazel::OpenGLShader> envFilteringShader = ResourceManager::GetShader("Hazel/EnvironmentMipFilter").As<Hazel::OpenGLShader>();
 
     // s_EnvFiltered = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize, true);
     Hazel::Ref<Hazel::OpenGLTextureCube> envFiltered = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize).As<Hazel::OpenGLTextureCube>();
 
-    // HazelRenderer::Submit([envUnfiltered, envFiltered]() {});
+    // RendererHazelLegacy::Submit([envUnfiltered, envFiltered]() {});
     {
         glCopyImageSubData(envUnfiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
             envFiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
@@ -357,7 +357,7 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
     envFilteringShader->Bind();
     envFiltered->Bind(1);
 
-    // HazelRenderer::Submit([envFilteringShader, envUnfiltered, envFiltered, cubemapSize]() {});
+    // RendererHazelLegacy::Submit([envFilteringShader, envUnfiltered, envFiltered, cubemapSize]() {});
     {
         const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
         for (uint32_t level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
@@ -379,7 +379,7 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
         }
     }
 
-    // Ref<OpenGLShader> envIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShader>();
+    // Ref<OpenGLShader> envIrradianceShader = RendererHazelLegacy::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShader>();
     Hazel::Ref<Hazel::OpenGLShader> envIrradianceShader = ResourceManager::GetShader("Hazel/EnvironmentIrradiance").As<Hazel::OpenGLShader>();
 
     // s_IrradianceMap = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize, true);
@@ -388,13 +388,13 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
     envIrradianceShader->Bind();
     envFiltered->Bind(1);
 
-    // HazelRenderer::Submit([irradianceMap, envIrradianceShader]() {});
+    // RendererHazelLegacy::Submit([irradianceMap, envIrradianceShader]() {});
     {
         glBindImageTexture(0, irradianceMap->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
 
         const GLint samplesUniformLocation = glGetUniformLocation(envIrradianceShader->GetRendererID(), "u_Uniforms.Samples");
         // HZ_CORE_ASSERT(samplesUniformLocation != -1);
-        const uint32_t samples = Hazel::HazelRenderer::GetConfig().IrradianceMapComputeSamples;
+        const uint32_t samples = Hazel::RendererHazelLegacy::GetConfig().IrradianceMapComputeSamples;
         glUniform1ui(samplesUniformLocation, samples);
 
         glDispatchCompute(irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
@@ -457,7 +457,7 @@ void EnvMapSceneRenderer::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 }
 
-void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::Entity entity, const glm::mat4& entityTransform, Hazel::SubmeshHazelLegacy& submesh)
+void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::EntityHazelLegacy entity, const glm::mat4& entityTransform, Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh)
 {
     if (!EnvMapSharedData::s_DisplayOutline) return;
 
@@ -467,8 +467,8 @@ void EnvMapSceneRenderer::RenderOutline(Hazel::Ref<MoravaShader> shader, Hazel::
     if (EntitySelection::s_SelectionContext.size()) {
         for (auto selection : EntitySelection::s_SelectionContext)
         {
-            if (selection.Mesh && &submesh == selection.Mesh) {
-                submesh.RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
+            if (selection.Mesh && submesh == selection.Mesh) {
+                submesh->RenderOutline(meshComponent.Mesh, shader, entityTransform, entity);
             }
         }
     }
@@ -607,7 +607,7 @@ void EnvMapSceneRenderer::OnImGuiRender()
 
     if (Hazel::UI::BeginTreeNode("Render Statistics"))
     {
-        // uint32_t frameIndex = Hazel::HazelRenderer::GetCurrentFrameIndex();
+        // uint32_t frameIndex = Hazel::RendererHazelLegacy::GetCurrentFrameIndex();
         // ImGui::Text("GPU time: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex));
 
         // ImGui::Text("Shadow Map Pass: %.3fms", s_CommandBuffer->GetExecutionGPUTime(frameIndex, s_GPUTimeQueries.ShadowMapPassQuery));
@@ -769,7 +769,7 @@ void EnvMapSceneRenderer::GeometryPass()
     {
         for (auto entt : meshEntities)
         {
-            Hazel::Entity entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
+            Hazel::EntityHazelLegacy entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
 
             if (meshComponent.Mesh)
@@ -813,9 +813,9 @@ void EnvMapSceneRenderer::GeometryPass()
                 Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>();
                 std::string materialUUID;
 
-                for (Hazel::SubmeshHazelLegacy& submesh : meshComponent.Mesh->GetSubmeshes())
+                for (Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh : meshComponent.Mesh->GetSubmeshes())
                 {
-                    materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, &entity);
+                    materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, entity);
 
                     RenderOutline(EnvMapSharedData::s_ShaderOutline, entity, entityTransform, submesh);
 
@@ -832,7 +832,7 @@ void EnvMapSceneRenderer::GeometryPass()
 
                     // Log::GetLogger()->debug("wireframeEnabledScene: {0}, wireframeEnabledModel: {1}", wireframeEnabledScene, wireframeEnabledModel);
 
-                    submesh.Render(meshComponent.Mesh, EnvMapSharedData::s_ShaderHazelPBR, entityTransform, samplerSlot,
+                    submesh->Render(meshComponent.Mesh, EnvMapSharedData::s_ShaderHazelPBR, entityTransform, samplerSlot,
                         MaterialLibrary::s_EnvMapMaterials, entity, wireframeEnabledScene, wireframeEnabledModel);
                 }
             }
@@ -853,13 +853,13 @@ void EnvMapSceneRenderer::GeometryPass()
             for (auto selection : EntitySelection::s_SelectionContext)
             {
                 if (selection.Mesh) {
-                    Hazel::Entity meshEntity = selection.Entity;
+                    Hazel::EntityHazelLegacy meshEntity = selection.Entity;
                     glm::mat4 transform = glm::mat4(1.0f);
                     if (meshEntity.HasComponent<Hazel::TransformComponent>()) {
                         transform = meshEntity.GetComponent<Hazel::TransformComponent>().GetTransform();
                     }
                     glm::vec4 color = EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
-                    Hazel::HazelRenderer::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
+                    Hazel::RendererHazelLegacy::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
                 }
             }
         }
@@ -871,7 +871,7 @@ void EnvMapSceneRenderer::GeometryPass()
 
 void EnvMapSceneRenderer::CompositePass()
 {
-    // Hazel::HazelRenderer::BeginRenderPass(s_Data.CompositePass, false); // should we clear the framebuffer at this stage?
+    // Hazel::RendererHazelLegacy::BeginRenderPass(s_Data.CompositePass, false); // should we clear the framebuffer at this stage?
 
     s_Data.CompositeShader->Bind();
 
@@ -886,8 +886,8 @@ void EnvMapSceneRenderer::CompositePass()
     s_Data.CompositeShader->SetInt("u_TextureSamples", s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples);
     s_Data.CompositeShader->Validate();
 
-    // Hazel::HazelRenderer::SubmitFullscreenQuad(Hazel::Ref<Hazel::HazelMaterial>());
-    // Hazel::HazelRenderer::EndRenderPass();
+    // Hazel::RendererHazelLegacy::SubmitFullscreenQuad(Hazel::Ref<Hazel::HazelMaterial>());
+    // Hazel::RendererHazelLegacy::EndRenderPass();
 }
 
 void EnvMapSceneRenderer::BloomBlurPass()
@@ -902,8 +902,8 @@ void EnvMapSceneRenderer::ShadowMapPass()
     {
         for (int i = 0; i < 4; i++)
         {
-            HazelRenderer::BeginRenderPass(s_Data.ShadowMapRenderPass[i]);
-            HazelRenderer::EndRenderPass();
+            RendererHazelLegacy::BeginRenderPass(s_Data.ShadowMapRenderPass[i]);
+            RendererHazelLegacy::EndRenderPass();
         }
         return;
     }
@@ -912,7 +912,7 @@ void EnvMapSceneRenderer::ShadowMapPass()
     CalculateCascades(cascades, directionalLights[0].Direction);
     s_Data.LightViewMatrix = cascades[0].View;
 
-    // HazelRenderer::Submit([](){});
+    // RendererHazelLegacy::Submit([](){});
     {
         glEnable(GL_CULL_FACE);
         glCullFace(GL_BACK);
@@ -922,7 +922,7 @@ void EnvMapSceneRenderer::ShadowMapPass()
     {
         s_Data.CascadeSplits[i] = cascades[i].SplitDepth;
 
-        HazelRenderer::BeginRenderPass(s_Data.ShadowMapRenderPass[i]);
+        RendererHazelLegacy::BeginRenderPass(s_Data.ShadowMapRenderPass[i]);
 
         glm::mat4 shadowMapVP = cascades[i].ViewProj;
 
@@ -935,15 +935,15 @@ void EnvMapSceneRenderer::ShadowMapPass()
         {
             Ref<HazelShader> shader = dc.Mesh->IsAnimated() ? s_Data.ShadowMapAnimShader : s_Data.ShadowMapShader;
             shader->SetMat4("u_ViewProjection", shadowMapVP);
-            HazelRenderer::SubmitMeshWithShader(dc.Mesh, dc.Transform, shader);
+            RendererHazelLegacy::SubmitMeshWithShader(dc.Mesh, dc.Transform, shader);
         }
 
-        HazelRenderer::EndRenderPass();
+        RendererHazelLegacy::EndRenderPass();
     }
     ****/
 }
 
-void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::Entity entity)
+void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::EntityHazelLegacy entity)
 {
     auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
     if (!mesh) {
@@ -1037,7 +1037,7 @@ void EnvMapSceneRenderer::SetActiveLight(Hazel::HazelDirLight& light)
     s_Data.SceneData.ActiveLight = light;
 }
 
-void EnvMapSceneRenderer::AddToDrawList(std::string name, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Entity entity, glm::mat4 transform)
+void EnvMapSceneRenderer::AddToDrawList(std::string name, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity, glm::mat4 transform)
 {
     s_Data.DrawList.push_back({ name, mesh.Raw(), entity.GetMaterial(), transform });
 }

@@ -3,10 +3,11 @@
 #include "Scene/Scene.h"
 
 #include "Hazel/Editor/SceneHierarchyPanel.h"
-#include "Hazel/Events/KeyEvent.h"
-#include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
+#include "Hazel/Core/Events/KeyEvent.h"
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Scene/Entity.h"
+
+#include "HazelLegacy/Platform/Vulkan/VulkanTestLayer.h"
 
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "HazelVulkan/VulkanWeekRenderer.h"
