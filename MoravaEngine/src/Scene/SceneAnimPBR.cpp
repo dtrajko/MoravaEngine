@@ -1037,10 +1037,10 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         auto& materials = m_MeshAnimPBR_BobLamp->GetMaterials();
 
         int submeshIndex = 0;
-        for (Hazel::SubmeshHazelLegacy& submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
+        for (Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
         {
             // Material
-            auto material = materials[submesh.MaterialIndex];
+            auto material = materials[submesh->MaterialIndex];
             m_ShaderHybridAnimPBR->Bind();
 
             m_MeshAnimPBR_BobLamp->GetTextures()[submeshIndex]->Bind(m_SamplerSlots["albedo"]);
@@ -1051,10 +1051,10 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
                 m_ShaderHybridAnimPBR->SetMat4(uniformName, m_MeshAnimPBR_BobLamp->GetBoneTransforms()[i]);
             }
 
-            m_ShaderHybridAnimPBR->SetMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh.Transform);
+            m_ShaderHybridAnimPBR->SetMat4("u_Transform", m_Entities["BobLamp"].Transform.Transform * submesh->Transform);
 
             glEnable(GL_DEPTH_TEST);
-            glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+            glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 
             submeshIndex++;
         }

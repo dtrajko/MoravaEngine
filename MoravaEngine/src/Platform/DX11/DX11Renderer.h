@@ -77,8 +77,8 @@ public:
 	static void ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer);
 	static void DisplaySubmeshMaterialSelector(bool* p_open);
 
-	static void SelectEntity(Hazel::Entity e);
-	static void OnEntityDeleted(Hazel::Entity e);
+	static void SelectEntity(Hazel::EntityHazelLegacy e);
+	static void OnEntityDeleted(Hazel::EntityHazelLegacy e);
 
 	static uint32_t GetViewportWidth();
 	static uint32_t GetViewportHeight();

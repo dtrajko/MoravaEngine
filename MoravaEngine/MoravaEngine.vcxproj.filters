@@ -756,9 +756,6 @@
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLRendererAPI.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.cpp">
-      <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.cpp">
       <Filter>Vendors\ImGui\backends</Filter>
     </ClCompile>
@@ -1031,6 +1028,36 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Renderer\HazelMesh.cpp">
       <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Scene\EntityHazelLegacy.cpp">
+      <Filter>HazelLegacy\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Scene\SceneHazelLegacy.cpp">
+      <Filter>HazelLegacy\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanAllocatorHazelLegacy.cpp">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.cpp">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanRendererHazelLegacy.cpp">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.cpp">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.cpp">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\RendererHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.cpp">
+      <Filter>HazelLegacy\Editor</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1497,18 +1524,6 @@
     <ClInclude Include="src\Hazel\Editor\SceneHierarchyPanel.h">
       <Filter>Hazel\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Events\ApplicationEvent.h">
-      <Filter>Hazel\Events</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Events\Event.h">
-      <Filter>Hazel\Events</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Events\KeyEvent.h">
-      <Filter>Hazel\Events</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Events\MouseEvent.h">
-      <Filter>Hazel\Events</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\ImGui\ImGui.h">
       <Filter>Hazel\ImGui</Filter>
     </ClInclude>
@@ -1889,9 +1904,6 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanRenderer.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTestLayer.h">
-      <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.h">
       <Filter>Vendors\ImGui\backends</Filter>
     </ClInclude>
@@ -2189,6 +2201,51 @@
     <ClInclude Include="src\Hazel\Renderer\HazelMesh.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Scene\EntityHazelLegacy.h">
+      <Filter>HazelLegacy\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Scene\SceneHazelLegacy.h">
+      <Filter>HazelLegacy\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanAllocatorHazelLegacy.h">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.h">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanRendererHazelLegacy.h">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.h">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.h">
+      <Filter>HazelLegacy\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\RendererHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\ImGui\ImGui.h">
+      <Filter>HazelLegacy\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.h">
+      <Filter>HazelLegacy\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Core\Events\ApplicationEvent.h">
+      <Filter>Hazel\Core\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Core\Events\Event.h">
+      <Filter>Hazel\Core\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Core\Events\KeyEvent.h">
+      <Filter>Hazel\Core\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Core\Events\MouseEvent.h">
+      <Filter>Hazel\Core\Events</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2241,9 +2298,6 @@
     </Filter>
     <Filter Include="Hazel">
       <UniqueIdentifier>{7b3e4f94-2dfa-4d14-b645-f18409733f0a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Events">
-      <UniqueIdentifier>{92fc41f3-3866-4005-97c0-e6b95883217b}</UniqueIdentifier>
     </Filter>
     <Filter Include="Hazel\Core">
       <UniqueIdentifier>{e053c5c1-9585-4c6a-82e8-6a391773a618}</UniqueIdentifier>
@@ -2451,6 +2505,18 @@
     </Filter>
     <Filter Include="HazelLegacy\Editor">
       <UniqueIdentifier>{b985c86e-3b0e-4e32-9083-14b9845ac5bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy\Platform">
+      <UniqueIdentifier>{b101aa77-a2f5-4c92-a83a-11a485ba60e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy\Platform\Vulkan">
+      <UniqueIdentifier>{543f76bb-5480-48f8-99ea-a8f0ebe3ba21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy\ImGui">
+      <UniqueIdentifier>{83bb75a4-8da3-433b-ad2d-82c452dc99fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Core\Events">
+      <UniqueIdentifier>{6d8235e9-9746-4efb-8ca6-bc61062b9288}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

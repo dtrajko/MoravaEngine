@@ -2,11 +2,12 @@
 
 #include "Hazel/Core/Base.h"
 #include "Hazel/Editor/EditorLayerVulkan.h"
-#include "Hazel/Renderer/HazelRenderer.h"
-#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
-#include "Hazel/Platform/Vulkan/VulkanTestLayer.h"
 #include "Hazel/Project/UserPreferences.h"
 #include "Hazel/Renderer/RendererAPI.h"
+
+#include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
+#include "HazelLegacy/Platform/Vulkan/VulkanTestLayer.h"
+#include "HazelLegacy/Renderer/RendererHazelLegacy.h"
 
 #include "Core/Timer.h"
 #include "Platform/DX11/DX11TestLayer.h"
@@ -73,7 +74,7 @@ void Application::OnInit()
 	m_ImGuiLayer = Hazel::ImGuiLayer::Create();
 	PushOverlay(m_ImGuiLayer);
 
-	Hazel::HazelRenderer::Init();
+	Hazel::RendererHazelLegacy::Init();
 
 	switch (Hazel::RendererAPI::Current())
 	{
@@ -113,7 +114,7 @@ void Application::RenderImGui()
 	m_ImGuiLayer->Begin();
 
 	// ImGui::Begin("Renderer");
-	// auto& caps = Hazel::HazelRenderer::GetCapabilities();
+	// auto& caps = Hazel::RendererHazelLegacy::GetCapabilities();
 	// ImGui::Text("Vendor: %s", caps.Vendor.c_str());
 	// ImGui::Text("Device: %s", caps.Device.c_str());
 	// ImGui::Text("Version: %s", caps.Version.c_str());
@@ -142,7 +143,7 @@ void Application::Run()
 
 		if (!m_Minimized)
 		{
-			Hazel::HazelRenderer::BeginFrame();
+			Hazel::RendererHazelLegacy::BeginFrame();
 			{
 				for (Hazel::Layer* layer : m_LayerStack)
 				{
@@ -156,10 +157,10 @@ void Application::Run()
 			Application* app = this;
 			if (m_EnableImGui)
 			{
-				Hazel::HazelRenderer::Submit([app]() { app->RenderImGui(); });
-				// Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->End(); });
+				Hazel::RendererHazelLegacy::Submit([app]() { app->RenderImGui(); });
+				// Hazel::RendererHazelLegacy::Submit([=]() { m_ImGuiLayer->End(); });
 			}
-			Hazel::HazelRenderer::EndFrame();
+			Hazel::RendererHazelLegacy::EndFrame();
 
 			// On Render thread
 			m_Window->GetRenderContext()->BeginFrame();
@@ -172,14 +173,14 @@ void Application::Run()
 			{
 			case Hazel::RendererAPIType::Vulkan:
 				// m_Scene->OnRenderEditor(deltaTime, *(Hazel::EditorCamera*)m_Scene->GetCamera());
-				Hazel::VulkanRenderer::Draw(m_Scene); // replace with m_Scene->OnRenderEditor()
+				Hazel::VulkanRendererHazelLegacy::Draw(m_Scene); // replace with m_Scene->OnRenderEditor()
 				break;
 			case Hazel::RendererAPIType::DX11:
 				DX11Renderer::Draw(m_Scene->GetCamera());
 				break;
 			}
 
-			Hazel::HazelRenderer::Submit([=]() { m_ImGuiLayer->End(); });
+			Hazel::RendererHazelLegacy::Submit([=]() { m_ImGuiLayer->End(); });
 
 			// Swap buffers and poll events
 			m_Window->SwapBuffers();
@@ -218,7 +219,7 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	}
 
 	m_Minimized = false;
-	Hazel::HazelRenderer::Submit([=]() { glViewport(0, 0, width, height); });
+	Hazel::RendererHazelLegacy::Submit([=]() { glViewport(0, 0, width, height); });
 
 	m_Scene->OnWindowResize(e);
 	m_Window->GetRenderContext()->OnResize(width, height);
@@ -371,7 +372,7 @@ void Application::OnImGuiRender(bool* p_open)
 {
 	ImGui::Begin("Renderer", p_open);
 	{
-		auto& caps = Hazel::HazelRenderer::GetCapabilities();
+		auto& caps = Hazel::RendererHazelLegacy::GetCapabilities();
 
 		const char* vendor = "N/A";
 		const char* device = "N/A";

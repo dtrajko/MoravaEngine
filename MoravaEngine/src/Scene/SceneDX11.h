@@ -2,7 +2,7 @@
 
 #include "Scene/Scene.h"
 
-#include "Hazel/Events/KeyEvent.h"
+#include "Hazel/Core/Events/KeyEvent.h"
 
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Mesh/Grid.h"

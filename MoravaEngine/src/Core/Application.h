@@ -5,8 +5,8 @@
 #include "../../config.h"
 
 #include "Hazel/Core/LayerStack.h"
-#include "Hazel/Events/ApplicationEvent.h"
-#include "Hazel/Events/Event.h"
+#include "Hazel/Core/Events/ApplicationEvent.h"
+#include "Hazel/Core/Events/Event.h"
 #include "Hazel/ImGui/ImGuiLayer.h"
 
 #include "Core/Log.h"

@@ -12,8 +12,8 @@ class EnvMapSharedData
 public:
 	static std::map<std::string, unsigned int> s_SamplerSlots;
 
-	static Hazel::Ref<Hazel::HazelScene> s_RuntimeScene;
-	static Hazel::Ref<Hazel::HazelScene> s_EditorScene;
+	static Hazel::Ref<Hazel::SceneHazelLegacy> s_RuntimeScene;
+	static Hazel::Ref<Hazel::SceneHazelLegacy> s_EditorScene;
 
 	static Scene* s_Scene; // reference to SceneHazelEnvMap (the original engine scene object)
 
@@ -36,10 +36,10 @@ public:
 	static Hazel::Ref<MoravaShader> s_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
 	static Hazel::Ref<MoravaShader> s_ShaderOutline;
 
-	static Hazel::Entity s_PointLightEntity; // temporary, for experimental use
+	static Hazel::EntityHazelLegacy s_PointLightEntity; // temporary, for experimental use
 	static Hazel::Ref<OmniShadowMap> s_OmniShadowMapPointLight;
 
-	static Hazel::Entity s_SpotLightEntity;  // temporary, for experimental use
+	static Hazel::EntityHazelLegacy s_SpotLightEntity;  // temporary, for experimental use
 	static Hazel::Ref<OmniShadowMap> s_OmniShadowMapSpotLight;
 
 	static Hazel::Ref<ShadowMap> s_ShadowMapDirLight;
