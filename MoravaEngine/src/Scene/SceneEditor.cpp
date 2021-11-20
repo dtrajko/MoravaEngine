@@ -10,6 +10,7 @@
 #include "Core/MousePicker.h"
 #include "Core/Profiler.h"
 #include "Core/Timer.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Mesh/Block.h"
 #include "Mesh/Cone.h"
 #include "Mesh/Cylinder.h"
@@ -486,8 +487,8 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
 
-    m_ImGuiMainViewportX = (int)ImGui::GetMainViewport()->GetWorkPos().x;
-    m_ImGuiMainViewportY = (int)ImGui::GetMainViewport()->GetWorkPos().y;
+    m_ImGuiMainViewportX = (int)ImGui::GetMainViewport()->GetWorkCenter().x;
+    m_ImGuiMainViewportY = (int)ImGui::GetMainViewport()->GetWorkCenter().y;
 
     MousePicker* mp = MousePicker::Get();
 

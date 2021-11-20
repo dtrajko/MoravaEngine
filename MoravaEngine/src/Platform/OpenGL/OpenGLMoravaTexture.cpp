@@ -46,7 +46,8 @@ OpenGLMoravaTexture::OpenGLMoravaTexture(const char* fileLoc, bool flipVert, boo
 	try {
 		Load(m_Spec.FlipVertically);
 	}
-	catch (const std::exception& e) {
+	// catch (const std::exception& e) {
+	catch (...) {
 		Log::GetLogger()->error("Failed to load a texture '{0}'!", m_FileLocation);
 		// throw std::runtime_error(e.what());
 	}

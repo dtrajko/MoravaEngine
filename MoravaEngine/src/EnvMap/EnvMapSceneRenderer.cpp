@@ -18,6 +18,7 @@
 #include "EnvMap/EnvMapEditorLayer.h"
 #include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 #include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Material/MaterialLibrary.h"
 #include "Renderer/RendererBasic.h"
 #include "Shader/MoravaShaderLibrary.h"

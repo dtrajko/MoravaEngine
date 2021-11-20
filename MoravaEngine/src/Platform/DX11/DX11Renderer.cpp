@@ -462,8 +462,8 @@ void DX11Renderer::RenderImGui()
 {
 	// BEGIN DirectX 11 ImGui Render Pass
 	{
-		s_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkPos().x;
-		s_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkPos().y;
+		s_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkCenter().x;
+		s_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkCenter().y;
 
 		// ImGui Dockspace
 		bool p_open = true;
@@ -1038,8 +1038,8 @@ void DX11Renderer::ShowExampleAppDockSpace(bool* p_open)
 	if (opt_fullscreen)
 	{
 		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->GetWorkPos());
-		ImGui::SetNextWindowSize(viewport->GetWorkSize());
+		ImGui::SetNextWindowPos(viewport->GetWorkCenter());
+		ImGui::SetNextWindowSize(viewport->GetWorkCenter());
 		ImGui::SetNextWindowViewport(viewport->ID);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);

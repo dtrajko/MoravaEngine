@@ -24,6 +24,7 @@
 #include "Core/Math.h"
 #include "Core/Util.h"
 #include "EnvMap/EnvMapEditorLayer.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Material/Material.h"
 #include "Material/MaterialLibrary.h"
 #include "Shader/MoravaShaderLibrary.h"

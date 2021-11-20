@@ -2,6 +2,7 @@
 
 #include "Scene/SceneJoey.h"
 
+#include "ImGui/ImGuiWrapper.h"
 #include "Mesh/Sphere.h"
 #include "Renderer/Renderer.h"
 #include "Shader/ShaderMain.h"

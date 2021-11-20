@@ -7,6 +7,7 @@
 #include "Core/MousePicker.h"
 #include "Core/Profiler.h"
 #include "Core/Timer.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Mesh/Block.h"
 #include "Terrain/NoiseSL.h"
 #include "Terrain/TerrainMarchingCubes.h"

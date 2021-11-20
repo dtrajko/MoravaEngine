@@ -1,6 +1,7 @@
 #include "Scene/SceneSSAO.h"
 
 #include "Core/Application.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Mesh/Block.h"
 #include "Mesh/Cube.h"
 #include "Mesh/QuadSSAO.h"

@@ -4,6 +4,7 @@
 
 #include "Camera/CameraControllerVoxelTerrain.h"
 #include "Core/MousePicker.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Mesh/Block.h"
 #include "Terrain/NoiseSL.h"
 #include "Terrain/TerrainVoxel.h"

@@ -573,8 +573,8 @@ namespace Hazel {
 
 		/**** BEGIN Vulkan ImGui Render Pass ****
 		{
-			s_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkPos().x;
-			s_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkPos().y;
+			s_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkCenter().x;
+			s_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkCenter().y;
 
 			// ImGui Dockspace
 			bool p_open = true;

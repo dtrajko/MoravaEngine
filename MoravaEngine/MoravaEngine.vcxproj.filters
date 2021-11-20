@@ -1011,9 +1011,6 @@
     <ClCompile Include="src\Hazel\Renderer\MaterialAsset.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp">
-      <Filter>Hazel\Audio</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanAllocatorVMA.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
@@ -1058,6 +1055,87 @@
     </ClCompile>
     <ClCompile Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.cpp">
       <Filter>HazelLegacy\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\Audio.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioComponent.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioEngine.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioFileUtils.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioObject.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioPlayback.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\EntityIDMaps.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\Sound.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\SoundObject.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\SourceManager.cpp">
+      <Filter>Hazel\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\DSP\Components\allpass.cpp">
+      <Filter>Hazel\Audio\DSP\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\DSP\Components\comb.cpp">
+      <Filter>Hazel\Audio\DSP\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\DSP\Components\revmodel.cpp">
+      <Filter>Hazel\Audio\DSP\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\DSP\Filters\FilterHighPass.cpp">
+      <Filter>Hazel\Audio\DSP\Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\DSP\Filters\FilterLowPass.cpp">
+      <Filter>Hazel\Audio\DSP\Filters</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\DSP\Spatializer\Spatializer.cpp">
+      <Filter>Hazel\Audio\DSP\Spatializer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\DSP\Spatializer\VBAP.cpp">
+      <Filter>Hazel\Audio\DSP\Spatializer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\DSP\Reverb\Reverb.cpp">
+      <Filter>Hazel\Audio\DSP\Reverb</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioEvents\AudioCommandRegistry.cpp">
+      <Filter>Hazel\Audio\AudioEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\AudioEvents\CommandID.cpp">
+      <Filter>Hazel\Audio\AudioEvents</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\Editor\AudioEventsEditor.cpp">
+      <Filter>Hazel\Audio\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Audio\Editor\OrderedVector.cpp">
+      <Filter>Hazel\Audio\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\hzpch.cpp">
+      <Filter>Hazel</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetImporter.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetSerializer.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Utilities\FileSystem.cpp">
+      <Filter>Hazel\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vendor\ImGui\imgui_tables.cpp">
+      <Filter>Vendors\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2180,9 +2258,6 @@
     <ClInclude Include="src\Hazel\Asset\AssetTypes.h">
       <Filter>Hazel\Asset</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Audio\AudioEngine.h">
-      <Filter>Hazel\Audio</Filter>
-    </ClInclude>
     <ClInclude Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.h">
       <Filter>Vendors\VulkanMemoryAllocator</Filter>
     </ClInclude>
@@ -2245,6 +2320,123 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Core\Events\MouseEvent.h">
       <Filter>Hazel\Core\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\Audio.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioComponent.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioEngine.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioFileUtils.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioObject.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioPlayback.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\EntityIDMaps.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\Sound.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\SoundObject.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\SourceManager.h">
+      <Filter>Hazel\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Components\allpass.hpp">
+      <Filter>Hazel\Audio\DSP\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Components\comb.hpp">
+      <Filter>Hazel\Audio\DSP\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Components\DelayLine.h">
+      <Filter>Hazel\Audio\DSP\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Components\denormals.h">
+      <Filter>Hazel\Audio\DSP\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Components\revmodel.hpp">
+      <Filter>Hazel\Audio\DSP\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Components\tuning.h">
+      <Filter>Hazel\Audio\DSP\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Filters\FilterHighPass.h">
+      <Filter>Hazel\Audio\DSP\Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Filters\FilterLowPass.h">
+      <Filter>Hazel\Audio\DSP\Filters</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Spatializer\Spatializer.h">
+      <Filter>Hazel\Audio\DSP\Spatializer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Spatializer\VBAP.h">
+      <Filter>Hazel\Audio\DSP\Spatializer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\DSP\Reverb\Reverb.h">
+      <Filter>Hazel\Audio\DSP\Reverb</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioEvents\AudioCommandRegistry.h">
+      <Filter>Hazel\Audio\AudioEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioEvents\AudioCommands.h">
+      <Filter>Hazel\Audio\AudioEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\AudioEvents\CommandID.h">
+      <Filter>Hazel\Audio\AudioEvents</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\Editor\AudioEventsEditor.h">
+      <Filter>Hazel\Audio\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\Editor\OrderedVector.h">
+      <Filter>Hazel\Audio\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Audio\Editor\TreeModel.h">
+      <Filter>Hazel\Audio\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Hazel.h">
+      <Filter>Hazel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\hzpch.h">
+      <Filter>Hazel</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Debug\Profiler.h">
+      <Filter>Hazel\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Utilities\SerializationMacros.h">
+      <Filter>Hazel\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetImporter.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetSerializer.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetExtensions.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\UI\MSDFData.h">
+      <Filter>Hazel\Renderer\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\miniaudio\include\dr_wav.h">
+      <Filter>Vendors\miniaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\miniaudio\include\miniaudio.h">
+      <Filter>Vendors\miniaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\miniaudio\include\miniaudio_engine.h">
+      <Filter>Vendors\miniaudio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vendor\miniaudio\include\miniaudio_incl.h">
+      <Filter>Vendors\miniaudio</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2517,6 +2709,33 @@
     </Filter>
     <Filter Include="Hazel\Core\Events">
       <UniqueIdentifier>{6d8235e9-9746-4efb-8ca6-bc61062b9288}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio\AudioEvents">
+      <UniqueIdentifier>{b9804550-3a3b-4df6-ac8e-253db7294af1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio\Editor">
+      <UniqueIdentifier>{ef45476a-9ec7-4796-941c-4dfd0abddfa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio\DSP">
+      <UniqueIdentifier>{3d75bce1-885f-4400-8bf6-d59c00a999af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio\DSP\Components">
+      <UniqueIdentifier>{4e0ffa46-fee6-44da-9ad8-4870839ff810}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio\DSP\Filters">
+      <UniqueIdentifier>{82c54c78-6ca6-4d0a-9d85-13cb5130e8f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio\DSP\Reverb">
+      <UniqueIdentifier>{f6f4684c-3177-4131-bc0d-0908a2bdd99f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Audio\DSP\Spatializer">
+      <UniqueIdentifier>{0c9c2e73-9752-4d0f-9843-97288cac5513}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Debug">
+      <UniqueIdentifier>{53698a45-27e0-4c02-aeeb-b3af3013c10c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vendors\miniaudio">
+      <UniqueIdentifier>{31fd0167-4843-422b-9367-8eb11a536b82}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

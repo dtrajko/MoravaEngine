@@ -648,7 +648,6 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     colors[ImGuiCol_PlotHistogram] = ImVec4(0.73f, 0.6f, 0.15f, 1.0f);
     colors[ImGuiCol_PlotHistogramHovered] = ImVec4(1.0f, 0.6f, 0.0f, 1.0f);
     colors[ImGuiCol_TextSelectedBg] = ImVec4(0.87f, 0.87f, 0.87f, 0.35f);
-    colors[ImGuiCol_ModalWindowDarkening] = ImVec4(0.8f, 0.8f, 0.8f, 0.35f);
     colors[ImGuiCol_DragDropTarget] = ImVec4(1.0f, 1.0f, 0.0f, 0.9f);
     colors[ImGuiCol_NavHighlight] = ImVec4(0.60f, 0.6f, 0.6f, 1.0f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
@@ -1218,8 +1217,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::ShowMetricsWindow();
     }
 
-    m_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkPos().x;
-    m_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkPos().y;
+    m_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkCenter().x;
+    m_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkCenter().y;
 
     // TheCherno ImGui Viewport displaying the framebuffer content
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -1277,7 +1276,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     ImGui::End();
     ImGui::PopStyleVar();
 
-    ImVec2 workPos = ImGui::GetMainViewport()->GetWorkPos();
+    ImVec2 workPos = ImGui::GetMainViewport()->GetWorkCenter();
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
 }
 

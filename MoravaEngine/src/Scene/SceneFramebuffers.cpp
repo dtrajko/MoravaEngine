@@ -1,5 +1,6 @@
 #include "Scene/SceneFramebuffers.h"
 
+#include "ImGui/ImGuiWrapper.h"
 #include "Mesh/GeometryFactory.h"
 
 
