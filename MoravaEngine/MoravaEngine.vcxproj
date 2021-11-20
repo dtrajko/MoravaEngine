@@ -179,7 +179,6 @@
     <ClCompile Include="src\Framebuffer\OmniShadowMap.cpp" />
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp" />
-    <ClCompile Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanAllocatorHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.cpp" />
@@ -207,8 +206,6 @@
     <ClCompile Include="src\Hazel\Audio\DSP\Components\allpass.cpp" />
     <ClCompile Include="src\Hazel\Audio\DSP\Components\comb.cpp" />
     <ClCompile Include="src\Hazel\Audio\DSP\Components\revmodel.cpp" />
-    <ClCompile Include="src\Hazel\Audio\DSP\Filters\FilterHighPass.cpp" />
-    <ClCompile Include="src\Hazel\Audio\DSP\Filters\FilterLowPass.cpp" />
     <ClCompile Include="src\Hazel\Audio\DSP\Reverb\Reverb.cpp" />
     <ClCompile Include="src\Hazel\Audio\DSP\Spatializer\Spatializer.cpp" />
     <ClCompile Include="src\Hazel\Audio\DSP\Spatializer\VBAP.cpp" />
@@ -225,7 +222,6 @@
     <ClCompile Include="src\Hazel\Core\Timestep.cpp" />
     <ClCompile Include="src\Hazel\Core\UUID.cpp" />
     <ClCompile Include="src\Hazel\Editor\AssetEditorPanel.cpp" />
-    <ClCompile Include="src\Hazel\Editor\AudioEventsEditor.cpp" />
     <ClCompile Include="src\Hazel\Editor\ContentBrowserPanel.cpp" />
     <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp" />
     <ClCompile Include="src\Hazel\Editor\EditorConsolePanel.cpp" />
@@ -664,7 +660,6 @@
     <ClInclude Include="src\Framebuffer\OmniShadowMap.h" />
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
-    <ClInclude Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\ImGui\ImGui.h" />
     <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanAllocatorHazelLegacy.h" />
@@ -703,8 +698,6 @@
     <ClInclude Include="src\Hazel\Audio\DSP\Components\denormals.h" />
     <ClInclude Include="src\Hazel\Audio\DSP\Components\revmodel.hpp" />
     <ClInclude Include="src\Hazel\Audio\DSP\Components\tuning.h" />
-    <ClInclude Include="src\Hazel\Audio\DSP\Filters\FilterHighPass.h" />
-    <ClInclude Include="src\Hazel\Audio\DSP\Filters\FilterLowPass.h" />
     <ClInclude Include="src\Hazel\Audio\DSP\Reverb\Reverb.h" />
     <ClInclude Include="src\Hazel\Audio\DSP\Spatializer\Spatializer.h" />
     <ClInclude Include="src\Hazel\Audio\DSP\Spatializer\VBAP.h" />
@@ -737,7 +730,6 @@
     <ClInclude Include="src\Hazel\Core\UUID.h" />
     <ClInclude Include="src\Hazel\Debug\Profiler.h" />
     <ClInclude Include="src\Hazel\Editor\AssetEditorPanel.h" />
-    <ClInclude Include="src\Hazel\Editor\AudioEventsEditor.h" />
     <ClInclude Include="src\Hazel\Editor\ContentBrowserPanel.h" />
     <ClInclude Include="src\Hazel\Editor\EditorCamera.h" />
     <ClInclude Include="src\Hazel\Editor\EditorConsolePanel.h" />

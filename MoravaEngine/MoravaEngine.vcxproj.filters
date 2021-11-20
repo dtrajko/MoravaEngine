@@ -954,9 +954,6 @@
     <ClCompile Include="src\Hazel\Editor\AssetEditorPanel.cpp">
       <Filter>Hazel\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Editor\AudioEventsEditor.cpp">
-      <Filter>Hazel\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp">
       <Filter>Hazel\Platform\Windows</Filter>
     </ClCompile>
@@ -1053,9 +1050,6 @@
     <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.cpp">
       <Filter>HazelLegacy\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.cpp">
-      <Filter>HazelLegacy\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Audio\Audio.cpp">
       <Filter>Hazel\Audio</Filter>
     </ClCompile>
@@ -1094,12 +1088,6 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Audio\DSP\Components\revmodel.cpp">
       <Filter>Hazel\Audio\DSP\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Audio\DSP\Filters\FilterHighPass.cpp">
-      <Filter>Hazel\Audio\DSP\Filters</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Audio\DSP\Filters\FilterLowPass.cpp">
-      <Filter>Hazel\Audio\DSP\Filters</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Audio\DSP\Spatializer\Spatializer.cpp">
       <Filter>Hazel\Audio\DSP\Spatializer</Filter>
@@ -2192,9 +2180,6 @@
     <ClInclude Include="src\Hazel\Editor\AssetEditorPanel.h">
       <Filter>Hazel\Editor</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Editor\AudioEventsEditor.h">
-      <Filter>Hazel\Editor</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Editor\EditorConsole\ConsoleMessage.h">
       <Filter>Hazel\Editor\EditorConsole</Filter>
     </ClInclude>
@@ -2306,9 +2291,6 @@
     <ClInclude Include="src\HazelLegacy\ImGui\ImGui.h">
       <Filter>HazelLegacy\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Editor\EditorLayerHazelLegacy.h">
-      <Filter>HazelLegacy\Editor</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Core\Events\ApplicationEvent.h">
       <Filter>Hazel\Core\Events</Filter>
     </ClInclude>
@@ -2368,12 +2350,6 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Audio\DSP\Components\tuning.h">
       <Filter>Hazel\Audio\DSP\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Audio\DSP\Filters\FilterHighPass.h">
-      <Filter>Hazel\Audio\DSP\Filters</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Audio\DSP\Filters\FilterLowPass.h">
-      <Filter>Hazel\Audio\DSP\Filters</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Audio\DSP\Spatializer\Spatializer.h">
       <Filter>Hazel\Audio\DSP\Spatializer</Filter>

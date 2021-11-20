@@ -2,7 +2,7 @@
 
 
 // #define SCENE_COTTAGE
-// #define SCENE_EIFFEL
+#define SCENE_EIFFEL
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
 // #define SCENE_PBR
@@ -10,7 +10,7 @@
 // #define SCENE_BULLET
 // #define SCENE_INSTANCED
 // #define SCENE_ASTEROIDS
-#define SCENE_NANOSUIT
+// #define SCENE_NANOSUIT
 // #define SCENE_FRAMEBUFFERS
 // #define SCENE_CUBEMAPS
 // #define SCENE_PARTICLES
