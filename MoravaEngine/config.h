@@ -1,7 +1,7 @@
 #pragma once
 
 
-// #define SCENE_COTTAGE
+#define SCENE_COTTAGE
 // #define SCENE_EIFFEL
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
@@ -23,7 +23,7 @@
 // #define SCENE_BLOOM
 // #define SCENE_DEFERRED
 // #define SCENE_DEFERRED_OGL
-#define SCENE_ANIM_PBR
+// #define SCENE_ANIM_PBR
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_HAZEL_ENV_MAP
