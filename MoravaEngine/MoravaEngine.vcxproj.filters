@@ -2414,6 +2414,12 @@
     <ClInclude Include="..\vendor\miniaudio\include\miniaudio_incl.h">
       <Filter>Vendors\miniaudio</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Utilities\YAMLSerializationHelpers.h">
+      <Filter>Hazel\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Script\ScriptModuleField.h">
+      <Filter>Hazel\Script</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

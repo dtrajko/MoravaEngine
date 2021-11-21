@@ -832,10 +832,12 @@
     <ClInclude Include="src\Hazel\Scene\ScriptableEntity.h" />
     <ClInclude Include="src\Hazel\Script\ScriptEngine.h" />
     <ClInclude Include="src\Hazel\Script\ScriptEngineRegistry.h" />
+    <ClInclude Include="src\Hazel\Script\ScriptModuleField.h" />
     <ClInclude Include="src\Hazel\Script\ScriptWrappers.h" />
     <ClInclude Include="src\Hazel\Utilities\FileSystem.h" />
     <ClInclude Include="src\Hazel\Utilities\SerializationMacros.h" />
     <ClInclude Include="src\Hazel\Utilities\StringUtils.h" />
+    <ClInclude Include="src\Hazel\Utilities\YAMLSerializationHelpers.h" />
     <ClInclude Include="src\Hazel\Utils\PlatformUtils.h" />
     <ClInclude Include="src\ImGui\ImGuiWrapper.h" />
     <ClInclude Include="src\Instancing\RenderInstanced.h" />
