@@ -990,6 +990,7 @@ target_link_directories(
 target_include_directories(
 	"${PROJECT_NAME}" PUBLIC
 	./src
+	../vendor
 	../vendor/cross-platform/assimp/include
 	../vendor/cross-platform/glfw/include
 	../vendor/cross-platform/glfw/src
@@ -1010,6 +1011,9 @@ target_include_directories(
 	../vendor/cross-platform/SPIRV-Cross
 	../vendor/Vulkan/1.2.148.1/Include
 	../vendor/DirectXTex/DirectXTex
+	../vendor/Optick/src
+	../vendor/miniaudio/include
+	../vendor/farbot/include
 )
 
 target_link_directories(
