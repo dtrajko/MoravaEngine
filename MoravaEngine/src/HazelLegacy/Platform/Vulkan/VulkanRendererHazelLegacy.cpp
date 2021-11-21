@@ -808,7 +808,7 @@ namespace Hazel
 			s_Meshes.clear();
 			// END Hard-coded data structure with Cerberus PBR model
 
-			auto meshEntities = VulkanTestLayer::s_Scene->GetAllEntitiesWith<MeshComponent>();
+			auto meshEntities = VulkanTestLayer::s_Scene->GetAllEntitiesWith<MeshComponentHazelLegacy>();
 
 			// Render all entities with mesh component
 			if (meshEntities.size())
@@ -816,7 +816,7 @@ namespace Hazel
 				for (auto entt : meshEntities)
 				{
 					Hazel::EntityHazelLegacy entity = { entt, VulkanTestLayer::s_Scene.Raw() };
-					auto& meshComponent = entity.GetComponent<Hazel::MeshComponent>();
+					auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
 
 					if (meshComponent.Mesh)
 					{
@@ -1167,11 +1167,11 @@ namespace Hazel
 								}
 							}
 
-							//	auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+							//	auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
 							//	if (meshEntities.size())
 							//	{
 							//		meshEntity = GetMeshEntity();
-							//		auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
+							//		auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponentHazelLegacy>();
 							//		if (meshComponent.Mesh) {
 							//			ImGui::SameLine();
 							//			ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());

@@ -2,14 +2,55 @@
 
 #include "Hazel/Renderer/HazelCamera.h"
 #include "Hazel/Renderer/SceneEnvironment.h"
+#include "Hazel/Scene/SceneCamera.h"
+
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 
 #include "EnvMap/EnvMapMaterial.h"
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 
 namespace Hazel
 {
 	class MeshHazelLegacy;
 	class SceneCamera;
+
+	struct TransformComponentHazelLegacy
+	{
+		glm::mat4 Transform;
+
+		glm::vec3 Translation = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
+
+		glm::vec3 Up = { 0.0f, 1.0f, 0.0f };
+		glm::vec3 Right = { 1.0f, 0.0f, 0.0f };
+		glm::vec3 Forward = { 0.0f, 0.0f, -1.0f };
+
+		TransformComponentHazelLegacy() = default;
+		TransformComponentHazelLegacy(const TransformComponentHazelLegacy&) = default;
+		TransformComponentHazelLegacy(const glm::vec3& translation)
+			: Translation(translation) {}
+		TransformComponentHazelLegacy(const glm::mat4& transform)
+			: Transform(transform) {}
+
+		operator glm::mat4& () { CalculateTransform();  return Transform; }
+		operator const glm::mat4& () { CalculateTransform(); return Transform; }
+		glm::mat4 GetTransform() { CalculateTransform(); return Transform; }
+
+		glm::mat4 CalculateTransform()
+		{
+			glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+			Transform = glm::translate(glm::mat4(1.0f), Translation) *
+				rotation *
+				glm::scale(glm::mat4(1.0f), Scale);
+			return Transform;
+		}
+	};
 
 	struct MeshComponentHazelLegacy
 	{
@@ -26,15 +67,15 @@ namespace Hazel
 		operator Ref<MeshHazelLegacy>() { return Mesh; }
 	};
 
-	struct MaterialComponent
+	struct MaterialComponentHazelLegacy
 	{
 		Hazel::Ref<EnvMapMaterial> Material = Hazel::Ref<EnvMapMaterial>();
 
-		MaterialComponent() = default;
-		MaterialComponent(const MaterialComponent& other) = default;
+		MaterialComponentHazelLegacy() = default;
+		MaterialComponentHazelLegacy(const MaterialComponentHazelLegacy& other) = default;
 	};
 
-	struct PointLightLegacyComponent
+	struct PointLightComponentHazelLegacy
 	{
 		bool Enabled = true;
 		glm::vec3 Color = { 1.0f, 1.0f, 1.0f };
@@ -47,7 +88,7 @@ namespace Hazel
 		float FarPlane = 1000.0f;
 	};
 
-	struct SpotLightLegacyComponent
+	struct SpotLightComponentHazelLegacy
 	{
 		bool Enabled = true;
 		glm::vec3 Color = { 1.0f, 1.0f, 1.0f };
@@ -63,16 +104,23 @@ namespace Hazel
 		float FarPlane = 1000.0f;
 	};
 
-	struct CameraComponentLegacy
+	struct SkyLightComponentHazelLegacy
+	{
+		Environment SceneEnvironment;
+		float Intensity = 1.0f;
+		float Angle = 0.0f;
+	};
+
+	struct CameraComponentHazelLegacy
 	{
 		HazelCamera Camera;
 		bool Primary = true; // TODO: think about moving to Scene
 		bool FixedAspectRatio = false;
 
-		CameraComponentLegacy() = default;
-		CameraComponentLegacy(const CameraComponentLegacy& other) = default;
+		CameraComponentHazelLegacy() = default;
+		CameraComponentHazelLegacy(const CameraComponentHazelLegacy& other) = default;
 
-		CameraComponentLegacy(Hazel::HazelCamera camera)
+		CameraComponentHazelLegacy(Hazel::HazelCamera camera)
 			: Camera(camera) {};
 
 		operator HazelCamera& () { return Camera; }
@@ -82,10 +130,4 @@ namespace Hazel
 		operator const SceneCamera& () const { return (SceneCamera&)Camera; }
 	};
 
-	struct SkyLightLegacyComponent
-	{
-		Ref<Environment> SceneEnvironment;
-		float Intensity = 1.0f;
-		float Angle = 0.0f;
-	};
 }

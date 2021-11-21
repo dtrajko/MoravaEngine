@@ -3,16 +3,18 @@
 #include "entt.hpp"
 
 #include "Hazel/Core/Assert.h"
+#include "Hazel/Scene/Components.h"
 
 #include "HazelLegacy/Renderer/MeshHazelLegacy.h"
-#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
-#include "HazelLegacy/Scene/SceneHazelLegacy.h"
 
 #include "Core/Log.h"
 #include "Material/Material.h"
 
 
 namespace Hazel {
+
+	class SceneHazelLegacy;
+	struct TransformComponentHazelLegacy;
 
 	class EntityHazelLegacy
 	{
@@ -31,11 +33,7 @@ namespace Hazel {
 		}
 
 		template<typename T>
-		T& GetComponent()
-		{
-			HZ_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
-			return m_Scene->m_Registry.get<T>(m_EntityHandle);
-		}
+		T& GetComponent();
 
 		template<typename T>
 		bool HasComponent()
@@ -50,7 +48,7 @@ namespace Hazel {
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		TransformComponent& Transform();
+		TransformComponentHazelLegacy& Transform();
 		glm::mat4 Transform() const;
 
 		void SetMaterial(Material* material) { m_Material = material; }
@@ -71,29 +69,9 @@ namespace Hazel {
 		UUID GetParentUUID() { return GetComponent<RelationshipComponent>().ParentHandle; }
 		std::vector<UUID>& Children() { return GetComponent<RelationshipComponent>().Children; }
 
-		bool HasParent() { return m_Scene->FindEntityByUUID(GetParentUUID()); }
+		bool HasParent();
 
-		bool IsAncesterOf(EntityHazelLegacy entity)
-		{
-			const auto& children = Children();
-
-			if (children.size() == 0)
-				return false;
-
-			for (UUID child : children)
-			{
-				if (child == entity.GetUUID())
-					return true;
-			}
-
-			for (UUID child : children)
-			{
-				if (m_Scene->FindEntityByUUID(child).IsAncesterOf(entity))
-					return true;
-			}
-
-			return false;
-		}
+		bool IsAncesterOf(EntityHazelLegacy entity);
 
 		bool IsDescendantOf(EntityHazelLegacy entity)
 		{
@@ -102,7 +80,7 @@ namespace Hazel {
 
 		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
 
-		UUID GetSceneUUID() { return m_Scene->GetUUID(); }
+		UUID GetSceneUUID();
 
 		inline uint32_t GetHandle() { return (uint32_t)m_EntityHandle; }
 

@@ -3,6 +3,7 @@
 #include "../../../pch.h"
 
 #include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+#include "HazelLegacy/Scene/SceneHazelLegacy.h"
 
 // ImGui
 #define _CRT_SECURE_NO_WARNINGS

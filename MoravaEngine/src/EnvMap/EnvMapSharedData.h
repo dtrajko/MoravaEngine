@@ -6,6 +6,8 @@
 #include "Mesh/CubeSkybox.h"
 #include "Mesh/Quad.h"
 
+#include "HazelLegacy/Scene/SceneHazelLegacy.h"
+
 
 class EnvMapSharedData
 {

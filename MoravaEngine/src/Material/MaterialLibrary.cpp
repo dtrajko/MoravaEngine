@@ -309,12 +309,12 @@ std::string MaterialLibrary::NewMaterialName()
 void MaterialLibrary::AddMaterialFromComponent(Hazel::EntityHazelLegacy entity)
 {
     // If entity contains MaterialComponent, load generic material for the entire entity (all submeshes)
-    if (entity.HasComponent<Hazel::MaterialComponent>())
+    if (entity.HasComponent<Hazel::MaterialComponentHazelLegacy>())
     {
-        if (entity.GetComponent<Hazel::MaterialComponent>().Material)
+        if (entity.GetComponent<Hazel::MaterialComponentHazelLegacy>().Material)
         {
             Hazel::Ref<MaterialData> newMaterialData = AddNewMaterial("");
-            auto material = entity.GetComponent<Hazel::MaterialComponent>().Material;
+            auto material = entity.GetComponent<Hazel::MaterialComponentHazelLegacy>().Material;
             material->SetName(newMaterialData->Name);
         }
     }
@@ -325,9 +325,9 @@ MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::MeshHazel
     MaterialUUID materialUUID = "";
 
     EnvMapMaterial* envMapMaterial = nullptr;
-    bool hasMaterialComponent = entity && entity.HasComponent<Hazel::MaterialComponent>();
+    bool hasMaterialComponent = entity && entity.HasComponent<Hazel::MaterialComponentHazelLegacy>();
     if (hasMaterialComponent) {
-        Hazel::MaterialComponent materialComponent = entity.GetComponent<Hazel::MaterialComponent>();
+        Hazel::MaterialComponentHazelLegacy materialComponent = entity.GetComponent<Hazel::MaterialComponentHazelLegacy>();
         Hazel::Ref<EnvMapMaterial> envMapMaterial = materialComponent.Material;
     }
 

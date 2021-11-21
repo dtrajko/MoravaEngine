@@ -7,10 +7,11 @@
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/SceneRenderer.h"
 
-#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanShaderHazelLegacy.h"
 #include "HazelLegacy/Renderer/RendererHazelLegacy.h"
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
+#include "HazelLegacy/Scene/SceneHazelLegacy.h"
 
 
 namespace Hazel
@@ -280,12 +281,12 @@ namespace Hazel
 		s_ThreadPool.clear();
 	}
 
-	void SceneRendererHazelLegacy::SubmitMesh(MeshComponentHazelLegacy meshComponent, TransformComponent transformComponent)
+	void SceneRendererHazelLegacy::SubmitMesh(MeshComponentHazelLegacy meshComponent, TransformComponentHazelLegacy transformComponent)
 	{
 		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), Ref<HazelMaterial>());
 	}
 
-	void SceneRendererHazelLegacy::SubmitSelectedMesh(MeshComponentHazelLegacy meshComponent, TransformComponent transformComponent)
+	void SceneRendererHazelLegacy::SubmitSelectedMesh(MeshComponentHazelLegacy meshComponent, TransformComponentHazelLegacy transformComponent)
 	{
 		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
 	}

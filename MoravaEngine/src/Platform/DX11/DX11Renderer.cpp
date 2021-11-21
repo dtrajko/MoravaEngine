@@ -712,7 +712,7 @@ void DX11Renderer::UpdateImGuizmo()
 		SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
 
 		// Entity transform
-		auto& transformComponent = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
+		auto& transformComponent = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponentHazelLegacy>();
 		glm::mat4 entityTransform = transformComponent.GetTransform();
 
 		// Snapping
@@ -1344,8 +1344,8 @@ void DX11Renderer::RenderMeshesECS()
 			if (meshComponent.Mesh)
 			{
 				glm::mat4 entityTransform = glm::mat4(1.0f);
-				if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
-					entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+				if (entity && entity.HasComponent<Hazel::TransformComponentHazelLegacy>()) {
+					entityTransform = entity.GetComponent<Hazel::TransformComponentHazelLegacy>().GetTransform();
 				}
 
 				RenderObject renderObject = {};

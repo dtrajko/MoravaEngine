@@ -2,6 +2,8 @@
 
 #include "Hazel/Renderer/HazelTexture.h"
 
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
+
 #include "DX11Context.h"
 #include "DX11SwapChain.h"
 #include "DX11Renderer.h"
@@ -11,7 +13,6 @@
 #include "Core/Application.h"
 #include "Core/ResourceManager.h"
 #include "Platform/Windows/WindowsWindow.h"
-#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 
 
 std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
@@ -438,7 +439,7 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 				for (uint32_t i = 0; i < submeshes.size(); i++)
 				{
 					Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh = submeshes[i];
-					auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+					auto transform = entity.GetComponent<Hazel::TransformComponentHazelLegacy>().GetTransform();
 					Hazel::Ray ray = {
 						glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
 						glm::inverse(glm::mat3(transform) * glm::mat3(submesh->Transform)) * direction

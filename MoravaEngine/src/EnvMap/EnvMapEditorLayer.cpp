@@ -175,7 +175,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     EnvMapSharedData::s_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 
     Hazel::EntityHazelLegacy cameraEntity = CreateEntity("Camera");
-    cameraEntity.AddComponent<Hazel::CameraComponent>(*EnvMapSharedData::s_RuntimeCamera);
+    cameraEntity.AddComponent<Hazel::CameraComponentHazelLegacy>(*EnvMapSharedData::s_RuntimeCamera);
 
     EnvMapSharedData::s_ActiveCamera = EnvMapSharedData::s_RuntimeCamera;
 
@@ -187,7 +187,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     // Hazel::MeshHazelLegacy* meshQuad = new Hazel::MeshHazelLegacy("Models/Primitives/quad.obj", m_ShaderHazelPBR, nullptr, false);
 
     m_DirectionalLightEntity = CreateEntity("Directional Light");
-    auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+    auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponentHazelLegacy>();
     // tc.Rotation = EnvMapSceneRenderer::GetActiveLight().Direction;
     tc.Rotation = glm::normalize(glm::vec3(-0.05f, -0.85f, -0.05f));
     // m_DirectionalLightEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(meshQuad);
@@ -199,8 +199,8 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
     EnvMapSharedData::s_SpotLightEntity = CreateEntity("Spot Light");
     // m_SpotLightEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(meshQuad);
-    auto& slc = EnvMapSharedData::s_SpotLightEntity.AddComponent<Hazel::SpotLightComponent>();
-    auto& sltc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::TransformComponent>();
+    auto& slc = EnvMapSharedData::s_SpotLightEntity.AddComponent<Hazel::SpotLightComponentHazelLegacy>();
+    auto& sltc = EnvMapSharedData::s_SpotLightEntity.GetComponent<Hazel::TransformComponentHazelLegacy>();
     sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
@@ -374,7 +374,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
             // Hazel::RendererHazelLegacy::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
             // auto viewProj = s_EditorCamera->GetViewProjection();
             // Hazel::Renderer2D::BeginScene(viewProj, false);
-            // // TODO: Renderer::DrawAABB(m_MeshEntity.GetComponent<MeshComponentHazelLegacy>(), m_MeshEntity.GetComponent<TransformComponent>());
+            // // TODO: Renderer::DrawAABB(m_MeshEntity.GetComponent<MeshComponentHazelLegacy>(), m_MeshEntity.GetComponent<TransformComponentHazelLegacy>());
             // Hazel::Renderer2D::EndScene();
             // Hazel::RendererHazelLegacy::EndRenderPass();
         }
@@ -396,9 +396,9 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
 
     CameraSyncECS();
 
-    if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponent>())
+    if (m_DirectionalLightEntity.HasComponent<Hazel::TransformComponentHazelLegacy>())
     {
-        auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+        auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponentHazelLegacy>();
         EnvMapSceneRenderer::GetActiveLight().Direction = glm::eulerAngles(glm::quat(tc.Rotation));
 
         m_LightDirection = glm::eulerAngles(glm::quat(tc.Rotation));
@@ -701,7 +701,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
 
                 // Entity transform
-                auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
+                auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponentHazelLegacy>();
                 glm::mat4 entityTransform = tc.GetTransform();
 
                 if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
@@ -963,7 +963,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     EnvMapSceneRenderer::SetActiveLight(light);
 
                     if (light.Direction != lightPrev.Direction) {
-                        auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponent>();
+                        auto& tc = m_DirectionalLightEntity.GetComponent<Hazel::TransformComponentHazelLegacy>();
                         tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
                         lightPrev = light;
                     }
@@ -1531,7 +1531,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
         SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
 
         // Entity transform
-        auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponent>();
+        auto& tc = selectedSubmesh.Entity.GetComponent<Hazel::TransformComponentHazelLegacy>();
         glm::mat4 entityTransform = tc.GetTransform();
 
         // Snapping
@@ -1981,7 +1981,7 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
                     Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh = submeshes[i];
-                    auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+                    auto transform = entity.GetComponent<Hazel::TransformComponentHazelLegacy>().GetTransform();
                     Hazel::Ray ray = {
                         glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
                         glm::inverse(glm::mat3(transform) * glm::mat3(submesh->Transform)) * direction
@@ -2163,16 +2163,16 @@ void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, Hazel::E
     m_ShaderOmniShadow->Bind();
 
     glm::vec3 lightPosition = glm::vec3(0.0f);
-    if (lightEntity.HasComponent<Hazel::TransformComponent>())
+    if (lightEntity.HasComponent<Hazel::TransformComponentHazelLegacy>())
     {
-        auto& tc = lightEntity.GetComponent<Hazel::TransformComponent>();
+        auto& tc = lightEntity.GetComponent<Hazel::TransformComponentHazelLegacy>();
         lightPosition = tc.Translation;
     }
 
     float farPlane = 1000.0f;
-    if (lightEntity.HasComponent<Hazel::PointLightComponent>())
+    if (lightEntity.HasComponent<Hazel::PointLightComponentHazelLegacy>())
     {
-        auto& plc = lightEntity.GetComponent<Hazel::PointLightComponent>();
+        auto& plc = lightEntity.GetComponent<Hazel::PointLightComponentHazelLegacy>();
         farPlane = plc.FarPlane;
     }
 
@@ -2207,8 +2207,8 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shade
             auto& meshComponent = entity.GetComponent<Hazel::MeshComponentHazelLegacy>();
 
             glm::mat4 entityTransform = glm::mat4(1.0f);
-            if (entity && entity.HasComponent<Hazel::TransformComponent>()) {
-                entityTransform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+            if (entity && entity.HasComponent<Hazel::TransformComponentHazelLegacy>()) {
+                entityTransform = entity.GetComponent<Hazel::TransformComponentHazelLegacy>().GetTransform();
             }
 
             if (meshComponent.Mesh && meshComponent.CastShadows)

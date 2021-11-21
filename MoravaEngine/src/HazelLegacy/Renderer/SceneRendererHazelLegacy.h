@@ -72,8 +72,8 @@ namespace Hazel {
 		static void EndScene();
 		void UpdateHBAOData();
 
-		static void SubmitMesh(MeshComponentHazelLegacy meshComponent, TransformComponent transformComponent);
-		static void SubmitSelectedMesh(MeshComponentHazelLegacy meshComponent, TransformComponent transformComponent);
+		static void SubmitMesh(MeshComponentHazelLegacy meshComponent, TransformComponentHazelLegacy transformComponent);
+		static void SubmitSelectedMesh(MeshComponentHazelLegacy meshComponent, TransformComponentHazelLegacy transformComponent);
 
 		static void SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<HazelMaterial> overrideMaterial = Ref<HazelMaterial>());
 		static void SubmitSelectedMesh(Ref<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));

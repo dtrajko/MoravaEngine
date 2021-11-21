@@ -2,9 +2,6 @@
 
 #pragma once
 
-#include "Hazel/Scene/Components.h"
-#include "Hazel/Scene/SceneCamera.h"
-
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Core/UUID.h"
 #include "Hazel/Editor/EditorCamera.h"
@@ -12,6 +9,9 @@
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/SceneEnvironment.h"
 #include "Hazel/Renderer/Renderer2D.h"
+#include "Hazel/Scene/SceneCamera.h"
+
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 
 #include "Shader/MoravaShader.h"
 
@@ -22,6 +22,8 @@
 
 
 namespace Hazel {
+
+	struct TransformComponentHazelLegacy;
 
 	struct DirLightHazelLegacy
 	{
@@ -130,7 +132,7 @@ namespace Hazel {
 		void ConvertToWorldSpace(EntityHazelLegacy entity);
 		glm::mat4 GetTransformRelativeToParent(EntityHazelLegacy entity);
 		glm::mat4 GetWorldSpaceTransformMatrix(EntityHazelLegacy entity);
-		TransformComponent GetWorldSpaceTransform(EntityHazelLegacy entity);
+		TransformComponentHazelLegacy GetWorldSpaceTransform(EntityHazelLegacy entity);
 
 		void ParentEntity(EntityHazelLegacy entity, EntityHazelLegacy parent);
 		void UnparentEntity(EntityHazelLegacy entity, bool convertToWorldSpace = true);

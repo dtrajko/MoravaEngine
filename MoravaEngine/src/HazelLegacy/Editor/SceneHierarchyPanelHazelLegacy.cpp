@@ -2,13 +2,16 @@
 
 // Hazel
 #include "Hazel/ImGui/ImGui.h"
+#include "Hazel/Scene/Components.h"
 #include "Hazel/Script/ScriptEngine.h"
+
+// HazelLegacy
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 
 // Morava
 #include "Editor/EntitySelection.h"
 #include "EnvMap/EnvMapEditorLayer.h"
 #include "Material/MaterialLibrary.h"
-#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 
 
 // TODO:
@@ -510,9 +513,9 @@ namespace Hazel
 				if (ImGui::Button("Mesh"))
 				{
 					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentHazelLegacy>();
-					//	if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponent>()) {
-					//		EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponent>();
-					//	}
+					if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponentHazelLegacy>()) {
+						EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponentHazelLegacy>();
+					}
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -526,29 +529,29 @@ namespace Hazel
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<PointLightComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<PointLightComponentHazelLegacy>())
 			{
 				if (ImGui::Button("Point Light"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<PointLightComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<PointLightComponentHazelLegacy>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpotLightLegacyComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpotLightComponentHazelLegacy>())
 			{
 				if (ImGui::Button("Spot Light"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpotLightLegacyComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpotLightComponentHazelLegacy>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SkyLightComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SkyLightComponentHazelLegacy>())
 			{
 				if (ImGui::Button("Sky Light"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponentHazelLegacy>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -594,11 +597,11 @@ namespace Hazel
 					ImGui::CloseCurrentPopup();
 				}
 			}
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponentHazelLegacy>())
 			{
 				if (ImGui::Button("Material"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponentHazelLegacy>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -765,7 +768,7 @@ namespace Hazel
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<PointLightLegacyComponent>("Point Light", entity, [](PointLightLegacyComponent& plc)
+		DrawComponent<PointLightComponentHazelLegacy>("Point Light", entity, [](PointLightComponentHazelLegacy& plc)
 		{
 			UI::BeginPropertyGrid();
 			UI::Property("Enabled",          plc.Enabled);
@@ -780,7 +783,7 @@ namespace Hazel
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<SpotLightLegacyComponent>("Spot Light", entity, [](SpotLightLegacyComponent& slc)
+		DrawComponent<SpotLightComponentHazelLegacy>("Spot Light", entity, [](SpotLightComponentHazelLegacy& slc)
 		{
 			UI::BeginPropertyGrid();
 			UI::Property("Enabled",          slc.Enabled);
@@ -951,7 +954,7 @@ namespace Hazel
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent <MaterialComponent > ("Material", entity, [=](MaterialComponent& mc)
+		DrawComponent <MaterialComponentHazelLegacy > ("Material", entity, [=](MaterialComponentHazelLegacy& mc)
 			{
 				if (!mc.Material) {
 					mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterialRef;
