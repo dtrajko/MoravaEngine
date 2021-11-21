@@ -20,7 +20,6 @@
 
 class VulkanTestLayer;
 
-
 class SceneHazelVulkan : public Scene
 {
 public:
