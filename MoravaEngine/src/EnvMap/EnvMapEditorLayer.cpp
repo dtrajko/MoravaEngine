@@ -1217,8 +1217,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::ShowMetricsWindow();
     }
 
-    m_ImGuiViewportMain.x = ImGui::GetMainViewport()->GetWorkCenter().x;
-    m_ImGuiViewportMain.y = ImGui::GetMainViewport()->GetWorkCenter().y;
+    m_ImGuiViewportMain.x = ImGui::GetMainViewport()->Pos.x;
+    m_ImGuiViewportMain.y = ImGui::GetMainViewport()->Pos.y;
 
     // TheCherno ImGui Viewport displaying the framebuffer content
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
@@ -1276,7 +1276,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
     ImGui::End();
     ImGui::PopStyleVar();
 
-    ImVec2 workPos = ImGui::GetMainViewport()->GetWorkCenter();
+    ImVec2 workPos = ImGui::GetMainViewport()->Pos;
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
 }
 

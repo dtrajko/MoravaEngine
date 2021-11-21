@@ -487,8 +487,8 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
     bool p_open = true;
     ShowExampleAppDockSpace(&p_open, mainWindow);
 
-    m_ImGuiMainViewportX = (int)ImGui::GetMainViewport()->GetWorkCenter().x;
-    m_ImGuiMainViewportY = (int)ImGui::GetMainViewport()->GetWorkCenter().y;
+    m_ImGuiMainViewportX = (int)ImGui::GetMainViewport()->Pos.x;
+    m_ImGuiMainViewportY = (int)ImGui::GetMainViewport()->Pos.y;
 
     MousePicker* mp = MousePicker::Get();
 
