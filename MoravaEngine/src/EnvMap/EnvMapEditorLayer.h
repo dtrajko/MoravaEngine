@@ -4,7 +4,6 @@
 
 #include "Hazel/Editor/ContentBrowserPanel.h"
 #include "Hazel/Renderer/Renderer2D.h"
-#include "Hazel/Renderer/SceneRenderer.h"
 
 #include "Editor/EntitySelection.h"
 #include "Editor/MaterialEditorPanel.h"
@@ -12,7 +11,9 @@
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "EnvMap/EnvMapSharedData.h"
 #include "Framebuffer/ShadowMap.h"
+
 #include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
+#include "HazelLegacy/Renderer/SceneRendererHazelLegacy.h"
 
 
 enum class SelectionMode

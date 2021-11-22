@@ -6,6 +6,7 @@
 #include "Hazel/Scene/Components.h"
 
 #include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+#include "HazelLegacy/Scene/SceneHazelLegacy.h"
 
 #include "Core/Log.h"
 #include "Material/Material.h"
@@ -13,7 +14,6 @@
 
 namespace Hazel {
 
-	class SceneHazelLegacy;
 	struct TransformComponentHazelLegacy;
 
 	class EntityHazelLegacy
@@ -26,14 +26,18 @@ namespace Hazel {
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			HZ_CORE_ASSERT(!HasComponent<T>(), "Entity already has component!");
+			// HZ_CORE_ASSERT(!HasComponent<T>(), "Entity already has component!");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;
 		}
 
 		template<typename T>
-		T& GetComponent();
+		T& GetComponent()
+		{
+			HZ_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
+			return m_Scene->m_Registry.get<T>(m_EntityHandle);
+		}
 
 		template<typename T>
 		bool HasComponent()

@@ -22,6 +22,7 @@
 
 #include "HazelLegacy/Platform/Vulkan/VulkanTestLayer.h"
 #include "HazelLegacy/Renderer/RendererHazelLegacy.h"
+#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 
 #include "Platform/Vulkan/VulkanSkyboxCube.h"
 

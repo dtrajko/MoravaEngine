@@ -19,6 +19,20 @@ namespace Hazel
 	class MeshHazelLegacy;
 	class SceneCamera;
 
+	struct TagComponentHazelLegacy
+	{
+		std::string Tag;
+
+		TagComponentHazelLegacy() = default;
+
+		TagComponentHazelLegacy(const TagComponentHazelLegacy&) = default;
+		TagComponentHazelLegacy(std::string tag)
+			: Tag(tag) {};
+
+		operator std::string& () { return Tag; };
+		operator const std::string& () const { return Tag; };
+	};
+
 	struct TransformComponentHazelLegacy
 	{
 		glm::mat4 Transform;
@@ -34,7 +48,7 @@ namespace Hazel
 		TransformComponentHazelLegacy() = default;
 		TransformComponentHazelLegacy(const TransformComponentHazelLegacy&) = default;
 		TransformComponentHazelLegacy(const glm::vec3& translation)
-			: Translation(translation) {}
+			: Translation(translation), Transform(glm::mat4(1.0f)) {}
 		TransformComponentHazelLegacy(const glm::mat4& transform)
 			: Transform(transform) {}
 

@@ -1,16 +1,14 @@
 #pragma once
 
-#include "Hazel/Renderer/HazelCamera.h"
-#include "Hazel/Core/Ref.h"
+#include "Hazel/Renderer/SceneRenderer.h"
+#include "Hazel/Scene/HazelScene.h"
 
 #include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
-
-#include <glm/glm.hpp>
 
 
 namespace Hazel {
 
-	struct SceneRendererOptionsHazelLegacy
+	struct SceneRendererOptionsVulkan
 	{
 		bool ShowGrid = true;
 		bool ShowSelectedInWireframe = false;
@@ -35,7 +33,7 @@ namespace Hazel {
 		bool ShowBoundingBoxes = false;
 	};
 
-	struct SceneRendererCameraHazelLegacy
+	struct SceneRendererCameraVulkan
 	{
 		HazelCamera Camera;
 		glm::mat4 ViewMatrix;
@@ -43,7 +41,7 @@ namespace Hazel {
 		float FOV;
 	};
 
-	struct BloomSettingsHazelLegacy
+	struct BloomSettingsVulkan
 	{
 		bool Enabled = true;
 		float Threshold = 1.0f;
@@ -53,40 +51,37 @@ namespace Hazel {
 		float DirtIntensity = 1.0f;
 	};
 
-	struct SceneRendererSpecificationHazelLegacy
+	struct SceneRendererSpecificationVulkan
 	{
 		bool SwapChainTarget = false;
 	};
 
-	class SceneHazelLegacy;
-	struct MeshComponentHazelLegacy;
-
-	class SceneRendererHazelLegacy : public RefCounted
+	class SceneRendererVulkan : public RefCounted
 	{
 	public:
-		SceneRendererHazelLegacy(Ref<SceneHazelLegacy> scene, SceneRendererSpecificationHazelLegacy specification = SceneRendererSpecificationHazelLegacy{});
+		SceneRendererVulkan(Ref<HazelScene> scene, SceneRendererSpecificationVulkan specification = SceneRendererSpecificationVulkan{});
 
 		static void Init();
 		static void Shutdown();
 
-		void SetScene(Ref<SceneHazelLegacy> scene);
+		void SetScene(Ref<HazelScene> scene);
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
-		static void BeginScene(SceneHazelLegacy* scene, const SceneRendererCameraHazelLegacy& camera);
+		static void BeginScene(const HazelScene* scene, const SceneRendererCameraVulkan& camera);
 		static void EndScene();
 		void UpdateHBAOData();
 
-		static void SubmitMesh(MeshComponentHazelLegacy meshComponent, TransformComponentHazelLegacy transformComponent);
-		static void SubmitSelectedMesh(MeshComponentHazelLegacy meshComponent, TransformComponentHazelLegacy transformComponent);
+		static void SubmitMesh(MeshComponentHazelLegacy meshComponent, TransformComponent transformComponent);
+		static void SubmitSelectedMesh(MeshComponentHazelLegacy meshComponent, TransformComponent transformComponent);
 
-		static void SubmitMesh(Ref<MeshHazelLegacy> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<HazelMaterial> overrideMaterial = Ref<HazelMaterial>());
-		static void SubmitSelectedMesh(Ref<MeshHazelLegacy> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<HazelMaterial> overrideMaterial = Ref<HazelMaterial>());
+		static void SubmitSelectedMesh(Ref<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 		static Ref<RenderPass> GetFinalRenderPass();
 		static Ref<HazelTexture2D> GetFinalPassImage(); // previously: GetFinalColorBuffer
 
-		static SceneRendererOptionsHazelLegacy& GetOptions();
+		static SceneRendererOptionsVulkan& GetOptions();
 
 		void SetLineWidth(float width);
 
@@ -100,8 +95,8 @@ private:
 		static void ShadowMapPass();
 
 	private:
-		Ref<SceneHazelLegacy> m_Scene;
-		SceneRendererSpecificationHazelLegacy m_Specification;
+		Ref<HazelScene> m_Scene;
+		SceneRendererSpecificationVulkan m_Specification;
 		Ref<RenderCommandBuffer> m_CommandBuffer;
 
 	private:

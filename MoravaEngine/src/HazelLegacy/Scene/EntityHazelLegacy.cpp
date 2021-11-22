@@ -19,12 +19,12 @@ namespace Hazel {
 	{
 	}
 
-	template<typename T>
-	T& EntityHazelLegacy::GetComponent()
-	{
-		HZ_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
-		return m_Scene->m_Registry.get<T>(m_EntityHandle);
-	}
+	//	template<typename T>
+	//	T& EntityHazelLegacy::GetComponent()
+	//	{
+	//		HZ_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
+	//		return m_Scene->m_Registry.get<T>(m_EntityHandle);
+	//	}
 
 	TransformComponentHazelLegacy& EntityHazelLegacy::Transform()
 	{

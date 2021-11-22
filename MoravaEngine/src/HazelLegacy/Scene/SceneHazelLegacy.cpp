@@ -294,7 +294,7 @@ namespace Hazel {
 		}
 	}
 
-	void SceneHazelLegacy::OnRenderRuntime(Ref<SceneRenderer> renderer, Timestep ts)
+	void SceneHazelLegacy::OnRenderRuntime(Ref<SceneRendererHazelLegacy> renderer, Timestep ts)
 	{
 		/////////////////////////////////////////////////////////////////////
 		// RENDER 3D SCENE
@@ -365,7 +365,7 @@ namespace Hazel {
 		// renderer->EndScene();
 	}
 
-	void SceneHazelLegacy::OnRenderEditor(Ref<SceneRenderer> renderer, Timestep ts, const EditorCamera& editorCamera)
+	void SceneHazelLegacy::OnRenderEditor(Ref<SceneRendererHazelLegacy> renderer, Timestep ts, const EditorCamera& editorCamera)
 	{
 		/////////////////////////////////////////////////////////////////////
 		// RENDER 3D SCENE
@@ -464,7 +464,7 @@ namespace Hazel {
 		}
 	}
 
-	void SceneHazelLegacy::OnRenderSimulation(Ref<SceneRenderer> renderer, Timestep ts, const EditorCamera& editorCamera)
+	void SceneHazelLegacy::OnRenderSimulation(Ref<SceneRendererHazelLegacy> renderer, Timestep ts, const EditorCamera& editorCamera)
 	{
 		Log::GetLogger()->warn("SceneHazelLegacy::OnRenderSimulation method not yet implemented!");
 	}
@@ -1065,6 +1065,11 @@ namespace Hazel {
 
 	/////////////////////////////////////////
 	//// ComponentsHazelLegacy
+
+	template<>
+	void SceneHazelLegacy::OnComponentAdded<TagComponentHazelLegacy>(EntityHazelLegacy entity, TagComponentHazelLegacy& component)
+	{
+	}
 
 	template<>
 	void SceneHazelLegacy::OnComponentAdded<TransformComponentHazelLegacy>(EntityHazelLegacy entity, TransformComponentHazelLegacy& component)

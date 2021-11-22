@@ -1,17 +1,13 @@
-#include "SceneRendererHazelLegacy.h"
+#include "SceneRendererVulkan.h"
 
-#include "Hazel/Platform/Vulkan/VulkanFramebuffer.h"
 #include "Hazel/Renderer/HazelFramebuffer.h"
-#include "Hazel/Renderer/HazelRenderer.h"
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Renderer/Renderer2D.h"
-#include "Hazel/Renderer/SceneRenderer.h"
 
+#include "HazelLegacy/Platform/Vulkan/VulkanFramebufferHazelLegacy.h"
 #include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
-#include "HazelLegacy/Platform/Vulkan/VulkanShaderHazelLegacy.h"
 #include "HazelLegacy/Renderer/RendererHazelLegacy.h"
-#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
-#include "HazelLegacy/Scene/SceneHazelLegacy.h"
+#include "HazelLegacy/Renderer/SceneRendererHazelLegacy.h"
 
 
 namespace Hazel
@@ -20,18 +16,18 @@ namespace Hazel
 
 	struct SceneRendererData
 	{
-		const SceneHazelLegacy* ActiveScene = nullptr;
+		const HazelScene* ActiveScene = nullptr;
 		struct SceneInfo
 		{
-			SceneRendererCameraHazelLegacy SceneCamera;
+			SceneRendererCameraVulkan SceneCamera;
 
 			// Resources
 			Ref<HazelMaterial> SkyboxMaterial;
-			Ref<Environment> SceneEnvironment;
+			Environment SceneEnvironment;
 			float SkyboxLod = 0.0f;
 			float SceneEnvironmentIntensity;
 			LightEnvironment SceneLightEnvironment;
-			DirLightHazelLegacy ActiveLight;
+			HazelDirLight ActiveLight;
 			glm::vec3 LightDirectionTemp;
 		} SceneData;
 
@@ -71,7 +67,7 @@ namespace Hazel
 		Ref<HazelMaterial> OutlineMaterial;
 		Ref<HazelMaterial> OutlineAnimMaterial;
 
-		SceneRendererOptionsHazelLegacy Options;
+		SceneRendererOptionsVulkan Options;
 
 		uint32_t ViewportWidth = 0;
 		uint32_t ViewportHeight = 0;
@@ -82,18 +78,18 @@ namespace Hazel
 
 	static SceneRendererData s_Data;
 
-	SceneRendererHazelLegacy::SceneRendererHazelLegacy(Ref<SceneHazelLegacy> scene, SceneRendererSpecificationHazelLegacy specification)
+	SceneRendererVulkan::SceneRendererVulkan(Ref<HazelScene> scene, SceneRendererSpecificationVulkan specification)
 		: m_Scene(scene), m_Specification(specification)
 	{
 		Init();
 	}
 
-	void SceneRendererHazelLegacy::Init()
+	void SceneRendererVulkan::Init()
 	{
 		HazelFramebufferSpecification geoFramebufferSpec = {};
 		geoFramebufferSpec.Width = 1280;
 		geoFramebufferSpec.Height = 720;
-		// geoFramebufferSpec.Format = HazelImageFormat::RGBA16F;
+		geoFramebufferSpec.Format = FramebufferFormat::RGBA16F;
 		geoFramebufferSpec.Samples = 8;
 		geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
@@ -210,22 +206,22 @@ namespace Hazel
 		****/
 	}
 
-	void SceneRendererHazelLegacy::SetScene(Ref<SceneHazelLegacy> scene)
+	void SceneRendererVulkan::SetScene(Ref<HazelScene> scene)
 	{
 	}
 
-	void SceneRendererHazelLegacy::Shutdown()
+	void SceneRendererVulkan::Shutdown()
 	{
 	}
 
-	void SceneRendererHazelLegacy::SetViewportSize(uint32_t width, uint32_t height)
+	void SceneRendererVulkan::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		s_Data.ViewportWidth = width;
 		s_Data.ViewportHeight = height;
 		s_Data.NeedsResize = true;
 	}
 
-	void SceneRendererHazelLegacy::BeginScene(SceneHazelLegacy* scene, const SceneRendererCameraHazelLegacy& camera)
+	void SceneRendererVulkan::BeginScene(const HazelScene* scene, const SceneRendererCameraVulkan& camera)
 	{
 		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
@@ -244,10 +240,10 @@ namespace Hazel
 			s_Data.NeedsResize = false;
 		}
 
-		RendererHazelLegacy::SetSceneEnvironment(Ref<SceneRenderer>(), s_Data.SceneData.SceneEnvironment, Ref<HazelImage2D>(), Ref<HazelImage2D>());
+		RendererHazelLegacy::SetSceneEnvironment(Ref<SceneRendererHazelLegacy>(), &s_Data.SceneData.SceneEnvironment, Ref<HazelImage2D>(), Ref<HazelImage2D>());
 	}
 
-	void SceneRendererHazelLegacy::EndScene()
+	void SceneRendererVulkan::EndScene()
 	{
 		HZ_CORE_ASSERT(s_Data.ActiveScene, "");
 
@@ -255,7 +251,7 @@ namespace Hazel
 
 		FlushDrawList();
 #if MULTI_THREAD
-		// Ref<SceneRendererHazelLegacy> instance = this;
+		// Ref<SceneRendererVulkan> instance = this;
 		// s_ThreadPool.emplace_back(([instance]() mutable {}))
 		{
 			// FlushDrawList();
@@ -267,11 +263,11 @@ namespace Hazel
 		// m_Active = false;
 	}
 
-	void SceneRendererHazelLegacy::UpdateHBAOData()
+	void SceneRendererVulkan::UpdateHBAOData()
 	{
 	}
 
-	void SceneRendererHazelLegacy::WaitForThreads()
+	void SceneRendererVulkan::WaitForThreads()
 	{
 		for (uint32_t i = 0; i < s_ThreadPool.size(); i++)
 		{
@@ -281,41 +277,41 @@ namespace Hazel
 		s_ThreadPool.clear();
 	}
 
-	void SceneRendererHazelLegacy::SubmitMesh(MeshComponentHazelLegacy meshComponent, TransformComponentHazelLegacy transformComponent)
+	void SceneRendererVulkan::SubmitMesh(MeshComponentHazelLegacy meshComponent, TransformComponent transformComponent)
 	{
 		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), Ref<HazelMaterial>());
 	}
 
-	void SceneRendererHazelLegacy::SubmitSelectedMesh(MeshComponentHazelLegacy meshComponent, TransformComponentHazelLegacy transformComponent)
+	void SceneRendererVulkan::SubmitSelectedMesh(MeshComponentHazelLegacy meshComponent, TransformComponent transformComponent)
 	{
 		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
 	}
 
-	void SceneRendererHazelLegacy::SubmitMesh(Ref<MeshHazelLegacy> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
+	void SceneRendererVulkan::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
 	}
 
-	void SceneRendererHazelLegacy::SubmitSelectedMesh(Ref<MeshHazelLegacy> mesh, const glm::mat4& transform)
+	void SceneRendererVulkan::SubmitSelectedMesh(Ref<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		s_Data.SelectedMeshDrawList.push_back({ mesh, Ref<HazelMaterial>(), transform });
 		// s_Data.ShadowPassDrawList.push_back({ mesh, Ref<HazelMaterial>, transform });
 	}
 
-	Ref<RenderPass> SceneRendererHazelLegacy::GetFinalRenderPass()
+	Ref<RenderPass> SceneRendererVulkan::GetFinalRenderPass()
 	{
 		return Ref<RenderPass>();
 	}
 
-	Ref<HazelTexture2D> SceneRendererHazelLegacy::GetFinalPassImage()
+	Ref<HazelTexture2D> SceneRendererVulkan::GetFinalPassImage()
 	{
 		return Ref<HazelTexture2D>();
 	}
 
-	void SceneRendererHazelLegacy::GeometryPass()
+	void SceneRendererVulkan::GeometryPass()
 	{
-		HazelRenderer::BeginRenderPass(Ref<RenderCommandBuffer>(), s_Data.GeoPass);
+		RendererHazelLegacy::BeginRenderPass(Ref<RenderCommandBuffer>(), s_Data.GeoPass);
 
 		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
 		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
@@ -324,7 +320,7 @@ namespace Hazel
 		// HazelRenderer::Submit([viewProjection, cameraPosition]() {});
 		{
 			auto inverseVP = glm::inverse(viewProjection);
-			auto shader = s_Data.GridMaterial->GetShader().As<VulkanShaderHazelLegacy>();
+			auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
 			void* ubPtr = shader->MapUniformBuffer(0);
 			struct ViewProj
 			{
@@ -337,12 +333,12 @@ namespace Hazel
 			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			shader->UnmapUniformBuffer(0);
 
-			shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShaderHazelLegacy>();
+			shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShader>();
 			ubPtr = shader->MapUniformBuffer(0);
 			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			shader->UnmapUniformBuffer(0);
 
-			shader = s_Data.GeometryPipeline->GetSpecification().Shader.As<VulkanShaderHazelLegacy>();
+			shader = s_Data.GeometryPipeline->GetSpecification().Shader.As<VulkanShader>();
 			ubPtr = shader->MapUniformBuffer(0);
 			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			shader->UnmapUniformBuffer(0);
@@ -380,25 +376,25 @@ namespace Hazel
 
 		// Skybox
 		s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
-		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment->RadianceMap);
-		HazelRenderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer>(), s_Data.SkyboxPipeline, Ref<UniformBufferSet>(), s_Data.SkyboxMaterial);
+		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
+		RendererHazelLegacy::SubmitFullscreenQuad(Ref<RenderCommandBuffer>(), s_Data.SkyboxPipeline, Ref<UniformBufferSet>(), s_Data.SkyboxMaterial);
 
 		// Render entities
 		for (auto& dc : s_Data.DrawList)
 		{
-			// HazelRenderer::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+			RendererHazelLegacy::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		for (auto& dc : s_Data.SelectedMeshDrawList)
 		{
-			// HazelRenderer::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+			RendererHazelLegacy::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		// Grid
 		if (GetOptions().ShowGrid)
 		{
 			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
-			// HazelRenderer::RenderQuad(s_Data.GridPipeline, s_Data.GridMaterial, transform);
+			RendererHazelLegacy::RenderQuad(s_Data.GridPipeline, s_Data.GridMaterial, transform);
 		}
 
 		if (GetOptions().ShowBoundingBoxes)
@@ -411,12 +407,12 @@ namespace Hazel
 			Renderer2D::EndScene();
 		}
 
-		HazelRenderer::EndRenderPass(Ref<RenderCommandBuffer>());
+		RendererHazelLegacy::EndRenderPass(Ref<RenderCommandBuffer>());
 	}
 
-	void SceneRendererHazelLegacy::CompositePass()
+	void SceneRendererVulkan::CompositePass()
 	{
-		HazelRenderer::BeginRenderPass(Ref<RenderCommandBuffer>(), s_Data.CompositePipeline->GetSpecification().RenderPass);
+		RendererHazelLegacy::BeginRenderPass(Ref<RenderCommandBuffer>(), s_Data.CompositePipeline->GetSpecification().RenderPass);
 
 		float exposure = s_Data.SceneData.SceneCamera.Camera.GetExposure();
 		int textureSamples = s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
@@ -425,24 +421,24 @@ namespace Hazel
 		// s_Data.CompositeMaterial->Set("u_Uniforms.TextureSamples", textureSamples);
 
 		auto& framebuffer = s_Data.GeoPass->GetSpecification().TargetFramebuffer;
-		auto vulkanFramebuffer = framebuffer.As<VulkanFramebuffer>();
+		auto vulkanFramebuffer = framebuffer.As<VulkanFramebufferHazelLegacy>();
 
 		// s_Data.CompositeMaterial->Set("u_Texture", vulkanFramebuffer->GetVulkanDescriptorInfo()); // how it works?
 		s_Data.CompositeMaterial->Set("u_Texture", vulkanFramebuffer->GetColorAttachmentRendererID());
 
-		HazelRenderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer>(), s_Data.CompositePipeline, Ref<UniformBufferSet>(), s_Data.CompositeMaterial);
-		HazelRenderer::EndRenderPass(Ref<RenderCommandBuffer>());
+		RendererHazelLegacy::SubmitFullscreenQuad(Ref<RenderCommandBuffer>(), s_Data.CompositePipeline, Ref<UniformBufferSet>(), s_Data.CompositeMaterial);
+		RendererHazelLegacy::EndRenderPass(Ref<RenderCommandBuffer>());
 	}
 
-	void SceneRendererHazelLegacy::BloomBlurPass()
+	void SceneRendererVulkan::BloomBlurPass()
 	{
 	}
 
-	void SceneRendererHazelLegacy::ShadowMapPass()
+	void SceneRendererVulkan::ShadowMapPass()
 	{
 	}
 
-	void SceneRendererHazelLegacy::FlushDrawList()
+	void SceneRendererVulkan::FlushDrawList()
 	{
 		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
 
@@ -450,12 +446,12 @@ namespace Hazel
 		CompositePass();
 	}
 
-	SceneRendererOptionsHazelLegacy& SceneRendererHazelLegacy::GetOptions()
+	SceneRendererOptionsVulkan& SceneRendererVulkan::GetOptions()
 	{
 		return s_Data.Options;
 	}
 
-	void SceneRendererHazelLegacy::SetLineWidth(float width)
+	void SceneRendererVulkan::SetLineWidth(float width)
 	{
 		m_LineWidth = width;
 

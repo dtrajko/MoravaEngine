@@ -9,9 +9,8 @@
 #include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/SceneEnvironment.h"
 #include "Hazel/Renderer/Renderer2D.h"
+#include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/SceneCamera.h"
-
-#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 
 #include "Shader/MoravaShader.h"
 
@@ -23,6 +22,7 @@
 
 namespace Hazel {
 
+	class SceneRendererHazelLegacy;
 	struct TransformComponentHazelLegacy;
 
 	struct DirLightHazelLegacy
@@ -62,7 +62,6 @@ namespace Hazel {
 		std::vector<PointLightHazelLegacy> PointLights;
 	};
 
-	class SceneRenderer;
 	class EntityHazelLegacy;
 	class ScriptableEntity;
 	using EntityMap = std::unordered_map<UUID, entt::entity>;
@@ -77,9 +76,9 @@ namespace Hazel {
 		void Init();
 
 		void OnUpdate(Timestep ts);
-		void OnRenderRuntime(Ref<SceneRenderer> renderer, Timestep ts);
-		void OnRenderEditor(Ref<SceneRenderer> renderer, Timestep ts, const EditorCamera& editorCamera);
-		void OnRenderSimulation(Ref<SceneRenderer> renderer, Timestep ts, const EditorCamera& editorCamera);
+		void OnRenderRuntime(Ref<SceneRendererHazelLegacy> renderer, Timestep ts);
+		void OnRenderEditor(Ref<SceneRendererHazelLegacy> renderer, Timestep ts, const EditorCamera& editorCamera);
+		void OnRenderSimulation(Ref<SceneRendererHazelLegacy> renderer, Timestep ts, const EditorCamera& editorCamera);
 		void OnEvent(Event& e);
 
 		// Runtime
@@ -202,7 +201,6 @@ namespace Hazel {
 		bool m_ShouldSimulate = false;
 
 		friend class EntityHazelLegacy;
-		friend class SceneRenderer;
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 		friend class SceneHierarchyPanelHazelLegacy;

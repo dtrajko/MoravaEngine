@@ -7,9 +7,9 @@
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Renderer/RendererAPI.h"
 #include "Hazel/Renderer/SceneRenderer.h"
-#include "Hazel/Renderer/SceneRendererVulkan.h"
 
 #include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
+#include "HazelLegacy/Renderer/SceneRendererVulkan.h"
 
 #include "Renderer/RendererBasic.h"
 #include "Platform/DX11/DX11Renderer.h"

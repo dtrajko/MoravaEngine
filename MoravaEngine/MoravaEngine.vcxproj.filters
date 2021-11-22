@@ -441,57 +441,6 @@
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsPlatformUtils.cpp">
       <Filter>Hazel\Platform\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\HazelCamera.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\HazelFramebuffer.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\HazelMaterial.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\HazelRenderer.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\HazelShader.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\HazelTexture.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\IndexBuffer.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\Pipeline.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\RenderCommandQueue.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\Renderer2D.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\RendererAPI.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\RenderPass.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\SceneEnvironment.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\SceneRenderer.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\ShaderUniform.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\VertexArray.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\VertexBuffer.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Scene\Entity.cpp">
       <Filter>Hazel\Scene</Filter>
     </ClCompile>
@@ -576,9 +525,6 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanContext.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\RendererContext.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLContext.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
@@ -593,9 +539,6 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLMaterial.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\HazelImage.cpp">
-      <Filter>Hazel\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanImage.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
@@ -891,14 +834,8 @@
     <ClCompile Include="src\Editor\MaterialEditorPanel.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\RenderCommandBuffer.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp">
       <Filter>Hazel\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\PipelineCompute.cpp">
-      <Filter>Hazel\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
@@ -929,9 +866,6 @@
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanSkyboxCube.cpp">
       <Filter>Platform\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\SceneRendererVulkan.cpp">
-      <Filter>Hazel\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Editor\EditorLayerVulkan.cpp">
       <Filter>Hazel\Editor</Filter>
@@ -972,12 +906,6 @@
     <ClCompile Include="src\Hazel\ImGui\Colours.cpp">
       <Filter>Hazel\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\UniformBufferSet.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\UniformBuffer.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Renderer\UI\Font.cpp">
       <Filter>Hazel\Renderer\UI</Filter>
     </ClCompile>
@@ -990,23 +918,11 @@
     <ClCompile Include="src\Platform\DX11\DX11UniformBuffer.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\ShaderCache.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Core\Hash.cpp">
       <Filter>Hazel\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\StorageBuffer.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\StorageBufferSet.cpp">
-      <Filter>Hazel\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanStorageBuffer.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\MaterialAsset.cpp">
-      <Filter>Hazel\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanAllocatorVMA.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
@@ -1014,14 +930,8 @@
     <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp">
       <Filter>Vendors\VulkanMemoryAllocator</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\MeshHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.cpp">
       <Filter>HazelLegacy\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Renderer\HazelMesh.cpp">
-      <Filter>Hazel\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\HazelLegacy\Scene\EntityHazelLegacy.cpp">
       <Filter>HazelLegacy\Scene</Filter>
@@ -1043,12 +953,6 @@
     </ClCompile>
     <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.cpp">
       <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\RendererHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Audio\Audio.cpp">
       <Filter>Hazel\Audio</Filter>
@@ -1124,6 +1028,102 @@
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\imgui_tables.cpp">
       <Filter>Vendors\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\HazelCamera.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\HazelFramebuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\HazelImage.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\HazelMaterial.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\HazelMesh.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\HazelRenderer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\HazelShader.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\HazelTexture.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\IndexBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\MaterialAsset.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\Pipeline.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\PipelineCompute.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\RenderCommandBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\RenderCommandQueue.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\Renderer2D.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\RendererAPI.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\RendererContext.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\RenderPass.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\SceneEnvironment.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\SceneRenderer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\ShaderCache.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\ShaderUniform.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\StorageBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\StorageBufferSet.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\UniformBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\UniformBufferSet.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\VertexArray.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Renderer\VertexBuffer.cpp">
+      <Filter>Hazel\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\MeshHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\RendererHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererVulkan.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1620,60 +1620,6 @@
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLVertexBuffer.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\HazelCamera.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\HazelFramebuffer.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\HazelMaterial.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\HazelRenderer.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\HazelShader.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\HazelTexture.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\IndexBuffer.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\Pipeline.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\RenderCommand.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\RenderCommandQueue.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\Renderer2D.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\RendererAPI.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\RenderPass.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\SceneEnvironment.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\SceneRenderer.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\ShaderUniform.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\VertexArray.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\VertexBuffer.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Scene\Components.h">
       <Filter>Hazel\Scene</Filter>
     </ClInclude>
@@ -1767,9 +1713,6 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanContext.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\RendererContext.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLContext.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
@@ -1788,17 +1731,11 @@
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLMaterial.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\HazelImage.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanImage.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLImage.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\RendererTypes.h">
-      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
@@ -1835,9 +1772,6 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Editor\EditorCamera.h">
       <Filter>Hazel\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\RendererCapabilities.h">
-      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMap\EnvMapSharedData.h">
       <Filter>EnvMap</Filter>
@@ -2111,12 +2045,6 @@
     <ClInclude Include="src\Editor\MaterialEditorPanel.h">
       <Filter>Editor</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\RenderCommandBuffer.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\PipelineCompute.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
@@ -2152,9 +2080,6 @@
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanSkyboxCube.h">
       <Filter>Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\SceneRendererVulkan.h">
-      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Editor\EditorLayerVulkan.h">
       <Filter>Hazel\Editor</Filter>
@@ -2198,12 +2123,6 @@
     <ClInclude Include="src\Hazel\ImGui\Colours.h">
       <Filter>Hazel\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\UniformBufferSet.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\UniformBuffer.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Renderer\UI\Font.h">
       <Filter>Hazel\Renderer\UI</Filter>
     </ClInclude>
@@ -2216,29 +2135,17 @@
     <ClInclude Include="src\Platform\DX11\DX11UniformBuffer.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\ShaderCache.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Core\Hash.h">
       <Filter>Hazel\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanUniformBufferSet.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\StorageBuffer.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\StorageBufferSet.h">
-      <Filter>Hazel\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBuffer.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBufferSet.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\MaterialAsset.h">
-      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Asset\AssetTypes.h">
       <Filter>Hazel\Asset</Filter>
@@ -2249,17 +2156,11 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanAllocatorVMA.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\MeshHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\HazelLegacy\Scene\ComponentsHazelLegacy.h">
       <Filter>HazelLegacy\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.h">
       <Filter>HazelLegacy\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Renderer\HazelMesh.h">
-      <Filter>Hazel\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\HazelLegacy\Scene\EntityHazelLegacy.h">
       <Filter>HazelLegacy\Scene</Filter>
@@ -2281,12 +2182,6 @@
     </ClInclude>
     <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.h">
       <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\RendererHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\HazelLegacy\ImGui\ImGui.h">
       <Filter>HazelLegacy\ImGui</Filter>
@@ -2419,6 +2314,111 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Script\ScriptModuleField.h">
       <Filter>Hazel\Script</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\HazelCamera.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\HazelFramebuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\HazelImage.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\HazelMaterial.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\HazelMesh.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\HazelRenderer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\HazelShader.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\HazelTexture.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\IndexBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\MaterialAsset.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\Pipeline.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\PipelineCompute.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RenderCommand.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RenderCommandBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RenderCommandQueue.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\Renderer2D.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RendererAPI.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RendererCapabilities.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RendererContext.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RendererTypes.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\RenderPass.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\SceneEnvironment.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\SceneRenderer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\ShaderCache.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\ShaderUniform.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\StorageBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\StorageBufferSet.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\UniformBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\UniformBufferSet.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\VertexArray.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Renderer\VertexBuffer.h">
+      <Filter>Hazel\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\MeshHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\RendererHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererVulkan.h">
+      <Filter>HazelLegacy\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

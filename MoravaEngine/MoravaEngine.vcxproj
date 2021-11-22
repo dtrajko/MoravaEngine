@@ -188,6 +188,7 @@
     <ClCompile Include="src\HazelLegacy\Renderer\MeshHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Renderer\RendererHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.cpp" />
+    <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererVulkan.cpp" />
     <ClCompile Include="src\HazelLegacy\Scene\EntityHazelLegacy.cpp" />
     <ClCompile Include="src\HazelLegacy\Scene\SceneHazelLegacy.cpp" />
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp" />
@@ -301,7 +302,6 @@
     <ClCompile Include="src\Hazel\Renderer\RenderPass.cpp" />
     <ClCompile Include="src\Hazel\Renderer\SceneEnvironment.cpp" />
     <ClCompile Include="src\Hazel\Renderer\SceneRenderer.cpp" />
-    <ClCompile Include="src\Hazel\Renderer\SceneRendererVulkan.cpp" />
     <ClCompile Include="src\Hazel\Renderer\ShaderCache.cpp" />
     <ClCompile Include="src\Hazel\Renderer\ShaderUniform.cpp" />
     <ClCompile Include="src\Hazel\Renderer\StorageBuffer.cpp" />
@@ -670,6 +670,7 @@
     <ClInclude Include="src\HazelLegacy\Renderer\MeshHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Renderer\RendererHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.h" />
+    <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererVulkan.h" />
     <ClInclude Include="src\HazelLegacy\Scene\ComponentsHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Scene\EntityHazelLegacy.h" />
     <ClInclude Include="src\HazelLegacy\Scene\SceneHazelLegacy.h" />
@@ -813,7 +814,6 @@
     <ClInclude Include="src\Hazel\Renderer\RenderPass.h" />
     <ClInclude Include="src\Hazel\Renderer\SceneEnvironment.h" />
     <ClInclude Include="src\Hazel\Renderer\SceneRenderer.h" />
-    <ClInclude Include="src\Hazel\Renderer\SceneRendererVulkan.h" />
     <ClInclude Include="src\Hazel\Renderer\ShaderCache.h" />
     <ClInclude Include="src\Hazel\Renderer\ShaderUniform.h" />
     <ClInclude Include="src\Hazel\Renderer\StorageBuffer.h" />

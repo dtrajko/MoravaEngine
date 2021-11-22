@@ -118,7 +118,7 @@ namespace Hazel
 							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Mesh");
 							SetSelected(newEntity);
 							newEntity.AddComponent<MeshComponentHazelLegacy>();
-							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentHazelLegacy>();
+							EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentHazelLegacy>();
 						}
 
 						ImGui::Separator();
@@ -945,26 +945,26 @@ namespace Hazel
 		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](CircleCollider2DComponent& cc2dc)
 		{
 			UI::BeginPropertyGrid();
-
+		
 			UI::Property("Offset", cc2dc.Offset);
 			UI::Property("Radius", cc2dc.Radius);
 			UI::Property("Density", cc2dc.Density);
 			UI::Property("Friction", cc2dc.Friction);
-
+		
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent <MaterialComponentHazelLegacy > ("Material", entity, [=](MaterialComponentHazelLegacy& mc)
-			{
-				if (!mc.Material) {
-					mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterialRef;
-					// std::string materialName = EnvMapEditorLayer::NewMaterialName();
-					// mc.Material = EnvMapEditorLayer::CreateDefaultMaterial(materialName);
-					MaterialLibrary::AddMaterialFromComponent(entity);
-				}
-
-				ImGuiWrapper::DrawMaterialUI(mc.Material, EnvMapEditorLayer::s_CheckerboardTexture);
-			});
+		DrawComponent<MaterialComponentHazelLegacy>("Material", entity, [=](MaterialComponentHazelLegacy& mc)
+		{
+			if (!mc.Material) {
+				mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterialRef;
+				// std::string materialName = EnvMapEditorLayer::NewMaterialName();
+				// mc.Material = EnvMapEditorLayer::CreateDefaultMaterial(materialName);
+				MaterialLibrary::AddMaterialFromComponent(entity);
+			}
+		
+			ImGuiWrapper::DrawMaterialUI(mc.Material, EnvMapEditorLayer::s_CheckerboardTexture);
+		});
 
 		/****
 		{

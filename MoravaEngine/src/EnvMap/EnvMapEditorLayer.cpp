@@ -195,7 +195,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
     EnvMapSharedData::s_PointLightEntity = CreateEntity("Point Light");
     // m_PointLightEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(meshQuad);
-    auto& plc = EnvMapSharedData::s_PointLightEntity.AddComponent<Hazel::PointLightComponent>();
+    auto& plc = EnvMapSharedData::s_PointLightEntity.AddComponent<Hazel::PointLightComponentHazelLegacy>();
 
     EnvMapSharedData::s_SpotLightEntity = CreateEntity("Spot Light");
     // m_SpotLightEntity.AddComponent<Hazel::MeshComponentHazelLegacy>(meshQuad);
@@ -1625,7 +1625,7 @@ void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
             SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
 
             entity = selectedSubmesh.Entity;
-            entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
+            entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponentHazelLegacy>().Tag;
             meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
             submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
         }
