@@ -88,7 +88,7 @@ public:
 	void UpdateImGuizmo(Window* mainWindow);
 	Hazel::EntityHazelLegacy CreateEntity(const std::string& name);
 	Hazel::EntityHazelLegacy LoadEntity(std::string fullPath);
-	static Hazel::CameraComponent GetMainCameraComponent();
+	static Hazel::CameraComponentHazelLegacy GetMainCameraComponent();
 
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 

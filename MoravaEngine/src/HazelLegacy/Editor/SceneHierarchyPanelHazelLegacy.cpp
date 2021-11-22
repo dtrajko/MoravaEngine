@@ -98,7 +98,7 @@ namespace Hazel
 
 				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 				{
-					EntitySelection::s_SelectionContext = {};
+					// EntitySelection::s_SelectionContext = {};
 				}
 
 				// Right-click on blank space
@@ -109,7 +109,7 @@ namespace Hazel
 						if (ImGui::MenuItem("Empty Entity"))
 						{
 							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Empty Entity");
-							SetSelected(newEntity);
+							// SetSelected(newEntity);
 						}
 
 						if (ImGui::MenuItem("Mesh"))
@@ -117,7 +117,7 @@ namespace Hazel
 							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Mesh");
 							SetSelected(newEntity);
 							newEntity.AddComponent<MeshComponentHazelLegacy>();
-							EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentHazelLegacy>();
+							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentHazelLegacy>();
 						}
 
 						ImGui::Separator();
@@ -125,17 +125,17 @@ namespace Hazel
 						if (ImGui::MenuItem("Directional Light"))
 						{
 							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Directional Light");
-							newEntity.AddComponent<DirectionalLightComponent>();
-							EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
-							SetSelected(newEntity);
+							// newEntity.AddComponent<DirectionalLightComponent>();
+							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
+							// SetSelected(newEntity);
 						}
 
 						if (ImGui::MenuItem("Sky Light"))
 						{
 							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Sky Light");
-							newEntity.AddComponent<SkyLightComponentHazelLegacy>();
-							EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponentHazelLegacy>();
-							SetSelected(newEntity);
+							// newEntity.AddComponent<SkyLightComponentHazelLegacy>();
+							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponentHazelLegacy>();
+							// SetSelected(newEntity);
 						}
 
 						ImGui::EndMenu();

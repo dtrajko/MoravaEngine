@@ -2,7 +2,6 @@
 
 #pragma once
 
-
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Editor/EditorCamera.h"
 #include "Hazel/Renderer/HazelMaterial.h"
@@ -10,8 +9,8 @@
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Renderer/SceneEnvironment.h"
-#include "Hazel/Renderer/SceneRenderer.h"
-#include "Hazel/Scene/Entity.h"
+
+#include "HazelLegacy/Renderer/SceneRendererHazelLegacy.h"
 
 #include "Camera/Camera.h"
 #include "EnvMap/EnvMapSharedData.h"
@@ -57,7 +56,7 @@ public:
 
 	static void SetViewportSize(uint32_t width, uint32_t height);
 
-	static void BeginScene(Hazel::SceneHazelLegacy* scene, const Hazel::SceneRendererCamera& camera);
+	static void BeginScene(Hazel::SceneHazelLegacy* scene, const Hazel::SceneRendererCameraHazelLegacy& camera);
 	static void EndScene();
 
 	static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Hazel::HazelMaterial> overrideMaterial = nullptr);
@@ -71,7 +70,7 @@ public:
 	// TODO: Temp
 	static uint32_t GetFinalColorBufferRendererID();
 
-	static Hazel::SceneRendererOptions& GetOptions();
+	static Hazel::SceneRendererOptionsHazelLegacy& GetOptions();
 
 	// Temporary methods from EnvMapEditorLayer
 	static Hazel::Ref<Hazel::HazelTextureCube> GetRadianceMap();
@@ -90,7 +89,7 @@ public:
 	static Hazel::Ref<MoravaShader> GetShaderGrid() { return s_ShaderGrid; }
 	static Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return s_EnvEquirect; }
 	static void SetupShaders();
-	static Hazel::SceneRendererCamera& GetCamera();
+	static Hazel::SceneRendererCameraHazelLegacy& GetCamera();
 
 	static void SubmitEntity(Hazel::EntityHazelLegacy entity);
 

@@ -4,11 +4,13 @@
 
 #include "Hazel/Renderer/HazelMesh.h"
 #include "Hazel/Renderer/HazelCamera.h"
+#include "Hazel/Renderer/SceneRenderer.h"
+
+#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 
 #include "DX11Texture2D.h"
 #include "DX11ConstantBuffer.h"
 #include "DX11TestLayer.h"
-#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
 
 #include "Core/Window.h"
 #include "Framebuffer/MoravaFramebuffer.h"

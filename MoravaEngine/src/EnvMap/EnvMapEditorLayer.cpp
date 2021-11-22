@@ -254,12 +254,12 @@ Hazel::EntityHazelLegacy EnvMapEditorLayer::LoadEntity(std::string fullPath)
     return meshEntity;
 }
 
-Hazel::CameraComponent EnvMapEditorLayer::GetMainCameraComponent()
+Hazel::CameraComponentHazelLegacy EnvMapEditorLayer::GetMainCameraComponent()
 {
     auto mainCameraEntity = EnvMapSharedData::s_EditorScene->GetMainCameraEntity();
-    if (mainCameraEntity && mainCameraEntity.HasComponent<Hazel::CameraComponent>())
+    if (mainCameraEntity && mainCameraEntity.HasComponent<Hazel::CameraComponentHazelLegacy>())
     {
-        auto mainCameraComponent = mainCameraEntity.GetComponent<Hazel::CameraComponent>();
+        auto mainCameraComponent = mainCameraEntity.GetComponent<Hazel::CameraComponentHazelLegacy>();
         return mainCameraComponent;
     }
     return {};
@@ -366,11 +366,11 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_EditorScene->OnRenderEditor(Hazel::Ref<Hazel::SceneRenderer>(), timestep, *EnvMapSharedData::s_EditorCamera);
+        EnvMapSharedData::s_EditorScene->OnRenderEditor(Hazel::Ref<Hazel::SceneRendererHazelLegacy>(), timestep, *EnvMapSharedData::s_EditorCamera);
 
         if (m_DrawOnTopBoundingBoxes)
         {
-            // Hazel::RendererHazelLegacy::BeginRenderPass(Hazel::SceneRenderer::GetFinalRenderPass(), false);
+            // Hazel::RendererHazelLegacy::BeginRenderPass(Hazel::SceneRendererHazelLegacy::GetFinalRenderPass(), false);
             // auto viewProj = s_EditorCamera->GetViewProjection();
             // Hazel::Renderer2D::BeginScene(viewProj, false);
             // // TODO: Renderer::DrawAABB(m_MeshEntity.GetComponent<MeshComponentHazelLegacy>(), m_MeshEntity.GetComponent<TransformComponentHazelLegacy>());
@@ -383,13 +383,13 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
         EnvMapSharedData::s_RuntimeScene->OnUpdate(timestep);
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(Hazel::Ref<Hazel::SceneRenderer>(), timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(Hazel::Ref<Hazel::SceneRendererHazelLegacy>(), timestep);
         break;
     case SceneState::Pause:
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(Hazel::Ref<Hazel::SceneRenderer>(), timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(Hazel::Ref<Hazel::SceneRendererHazelLegacy>(), timestep);
         break;
     }
 
@@ -412,7 +412,7 @@ void EnvMapEditorLayer::OnUpdateEditor(Hazel::Ref<Hazel::SceneHazelLegacy> scene
 {
     EnvMapSharedData::s_EditorScene = scene;
 
-    EnvMapSceneRenderer::BeginScene(EnvMapSharedData::s_EditorScene.Raw(), { GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
+    EnvMapSceneRenderer::BeginScene(EnvMapSharedData::s_EditorScene.Raw(), Hazel::SceneRendererCameraHazelLegacy{ GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
 
     UpdateUniforms();
 
@@ -2131,7 +2131,7 @@ void EnvMapEditorLayer::OnRenderShadowOmni(Window* mainWindow)
 void EnvMapEditorLayer::OnRenderCascadedShadowMaps(Window* mainWindow)
 {
     // Entry point for rendering meshes to cascaded shadow framebuffers
-    // Triggers EnvMapSceneRenderer::ShadowMapPass(), a copy of Hazel::SceneRenderer::ShadowMapPass()
+    // Triggers EnvMapSceneRenderer::ShadowMapPass(), a copy of Hazel::SceneRendererHazelLegacy::ShadowMapPass()
     EnvMapSceneRenderer::ShadowMapPass();
 }
 
