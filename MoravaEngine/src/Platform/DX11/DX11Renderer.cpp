@@ -572,7 +572,7 @@ void DX11Renderer::DisplaySubmeshMaterialSelector(bool* p_open)
 			SelectedSubmesh selectedSubmesh = EntitySelection::s_SelectionContext[0];
 
 			entity = selectedSubmesh.Entity;
-			entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponent>().Tag;
+			entityTag = selectedSubmesh.Entity.GetComponent<Hazel::TagComponentHazelLegacy>().Tag;
 			meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
 			submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
 		}
