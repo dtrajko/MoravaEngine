@@ -2,7 +2,6 @@
 
 // Hazel
 #include "Hazel/ImGui/ImGui.h"
-#include "Hazel/Scene/Components.h"
 #include "Hazel/Script/ScriptEngine.h"
 
 // HazelLegacy
@@ -110,7 +109,7 @@ namespace Hazel
 						if (ImGui::MenuItem("Empty Entity"))
 						{
 							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Empty Entity");
-							// SetSelected(newEntity);
+							SetSelected(newEntity);
 						}
 
 						if (ImGui::MenuItem("Mesh"))
@@ -126,17 +125,17 @@ namespace Hazel
 						if (ImGui::MenuItem("Directional Light"))
 						{
 							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Directional Light");
-							// newEntity.AddComponent<DirectionalLightComponent>();
-							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
-							// SetSelected(newEntity);
+							newEntity.AddComponent<DirectionalLightComponent>();
+							EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
+							SetSelected(newEntity);
 						}
 
 						if (ImGui::MenuItem("Sky Light"))
 						{
 							Hazel::EntityHazelLegacy newEntity = m_Context->CreateEntity("Sky Light");
-							// newEntity.AddComponent<SkyLightComponent>();
-							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
-							// SetSelected(newEntity);
+							newEntity.AddComponent<SkyLightComponentHazelLegacy>();
+							EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponentHazelLegacy>();
+							SetSelected(newEntity);
 						}
 
 						ImGui::EndMenu();
@@ -148,7 +147,7 @@ namespace Hazel
 
 			ImGui::Begin("Properties");
 			{
-				if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity.HasComponent<Hazel::TagComponent>())
+				if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity.HasComponent<Hazel::TagComponentHazelLegacy>())
 				{
 					DrawComponents(EntitySelection::s_SelectionContext[0].Entity);
 				}
@@ -183,8 +182,8 @@ namespace Hazel
 	void SceneHierarchyPanelHazelLegacy::DrawEntityNode(EntityHazelLegacy entity)
 	{
 		const char* name = "Unnamed Entity";
-		if (entity.HasComponent<TagComponent>()) {
-			name = entity.GetComponent<TagComponent>().Tag.c_str();
+		if (entity.HasComponent<TagComponentHazelLegacy>()) {
+			name = entity.GetComponent<TagComponentHazelLegacy>().Tag.c_str();
 		}
 		// ImGui::Text("%s", tag.c_str());
 
@@ -197,7 +196,7 @@ namespace Hazel
 		{
 			// EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, nullptr, 0 });
 
-			Log::GetLogger()->debug("ImGui::IsItemClicked: entity.Tag '{0}'", entity.GetComponent<Hazel::TagComponent>().Tag);
+			Log::GetLogger()->debug("ImGui::IsItemClicked: entity.Tag '{0}'", entity.GetComponent<TagComponentHazelLegacy>().Tag);
 
 			SetSelected(entity);
 			m_Context->OnEntitySelected(entity);
@@ -469,9 +468,9 @@ namespace Hazel
 
 		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
-		if (entity.HasComponent<TagComponent>())
+		if (entity.HasComponent<TagComponentHazelLegacy>())
 		{
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
+			auto& tag = entity.GetComponent<TagComponentHazelLegacy>().Tag;
 
 			char buffer[256];
 			memset(buffer, 0, 256);
@@ -499,11 +498,11 @@ namespace Hazel
 
 		if (ImGui::BeginPopup("AddComponentPanel"))
 		{
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<CameraComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<CameraComponentHazelLegacy>())
 			{
 				if (ImGui::Button("Camera"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CameraComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CameraComponentHazelLegacy>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -608,7 +607,7 @@ namespace Hazel
 			ImGui::EndPopup();
 		}
 
-		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
+		DrawComponent<TransformComponentHazelLegacy>("Transform", entity, [](auto& component)
 		{
 			ImGuiWrapper::DrawVec3Control("Translation", component.Translation, 0.0f, 80.0f);
 			glm::vec3 rotation = glm::degrees(component.Rotation);
@@ -679,7 +678,7 @@ namespace Hazel
 			ImGui::Checkbox("Receive Shadows", &mc.ReceiveShadows);
 		});
 
-		DrawComponent<CameraComponent>("Camera", entity, [=](CameraComponent& cc)
+		DrawComponent<CameraComponentHazelLegacy>("Camera", entity, [=](CameraComponentHazelLegacy& cc)
 		{
 			// Projection Type
 			const char* projTypeStrings[] = { "Perspective", "Orthographic" };

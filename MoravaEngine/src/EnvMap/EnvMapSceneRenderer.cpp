@@ -952,9 +952,9 @@ void EnvMapSceneRenderer::SubmitEntityEnvMap(Hazel::EntityHazelLegacy entity)
         return;
     }
 
-    auto transform = entity.GetComponent<Hazel::TransformComponent>().GetTransform();
+    auto transform = entity.GetComponent<Hazel::TransformComponentHazelLegacy>().GetTransform();
 
-    auto name = entity.GetComponent<Hazel::TagComponent>().Tag;
+    auto name = entity.GetComponent<Hazel::TagComponentHazelLegacy>().Tag;
     AddToDrawList(name, mesh, entity, transform);
 }
 

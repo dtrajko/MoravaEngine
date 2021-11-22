@@ -545,15 +545,15 @@ namespace Hazel {
 			enttMap[uuid] = e.m_EntityHandle;
 		}
 
-		CopyComponent<TagComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<DirectionalLightComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<ScriptComponent>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<CameraComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SpriteRendererComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<RigidBody2DComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<BoxCollider2DComponent>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<CircleCollider2DComponent>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<TagComponentHazelLegacy>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<TransformComponentHazelLegacy>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<CameraComponentHazelLegacy>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<MeshComponentHazelLegacy>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<MaterialComponentHazelLegacy>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SkyLightComponentHazelLegacy>(target->m_Registry, m_Registry, enttMap);
@@ -686,9 +686,9 @@ namespace Hazel {
 
 		entity.AddComponent<TransformComponentHazelLegacy>(glm::vec3(0.0f)); // glm::mat4(1.0f)
 
-		// auto& tag = entity.AddComponent<TagComponent>();
+		// auto& tag = entity.AddComponent<TagComponentHazelLegacy>();
 		// tag.Tag = name.empty() ? "Entity" : name;
-		entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
+		entity.AddComponent<TagComponentHazelLegacy>(name.empty() ? "Entity" : name);
 
 		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
 
@@ -705,9 +705,9 @@ namespace Hazel {
 		entity.AddComponent<TransformComponentHazelLegacy>(glm::vec3(0.0f)); // glm::mat4(1.0f)
 
 		if (!name.empty()) {
-			entity.AddComponent<TagComponent>(name);
+			entity.AddComponent<TagComponentHazelLegacy>(name);
 		}
-		// entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
+		// entity.AddComponent<TagComponentHazelLegacy>(name.empty() ? "Entity" : name);
 
 		auto& entityMap = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;
 
@@ -731,8 +731,8 @@ namespace Hazel {
 	void SceneHazelLegacy::DuplicateEntity(EntityHazelLegacy entity)
 	{
 		EntityHazelLegacy newEntity;
-		if (entity.HasComponent<TagComponent>()) {
-			newEntity = CreateEntity(entity.GetComponent<TagComponent>().Tag);
+		if (entity.HasComponent<TagComponentHazelLegacy>()) {
+			newEntity = CreateEntity(entity.GetComponent<TagComponentHazelLegacy>().Tag);
 		}
 		else {
 			newEntity = CreateEntity();
@@ -740,12 +740,12 @@ namespace Hazel {
 
 		CopyComponentIfExists<DirectionalLightComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<ScriptComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<CameraComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SpriteRendererComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<RigidBody2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<BoxCollider2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<CircleCollider2DComponent>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<TransformComponentHazelLegacy>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CameraComponentHazelLegacy>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<MeshComponentHazelLegacy>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<MaterialComponentHazelLegacy>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SkyLightComponentHazelLegacy>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
@@ -754,10 +754,10 @@ namespace Hazel {
 	EntityHazelLegacy SceneHazelLegacy::FindEntityByTag(const std::string& tag)
 	{
 		// TODO: If this becomes used often, consider indexing by tag
-		auto view = m_Registry.view<TagComponent>();
+		auto view = m_Registry.view<TagComponentHazelLegacy>();
 		for (auto entity : view)
 		{
-			auto& candidate = view.get<TagComponent>(entity).Tag;
+			auto& candidate = view.get<TagComponentHazelLegacy>(entity).Tag;
 			if (candidate == tag)
 			{
 				return EntityHazelLegacy(entity, this);
@@ -794,16 +794,16 @@ namespace Hazel {
 			entityClone.AddComponent<IDComponent>(entity.GetComponent<IDComponent>());
 		}
 
-		if (entity.HasComponent<TagComponent>()) {
-			entityClone.AddComponent<TagComponent>(entity.GetComponent<TagComponent>());
+		if (entity.HasComponent<TagComponentHazelLegacy>()) {
+			entityClone.AddComponent<TagComponentHazelLegacy>(entity.GetComponent<TagComponentHazelLegacy>());
 		}
 
 		if (entity.HasComponent<ScriptComponent>()) {
 			entityClone.AddComponent<ScriptComponent>(entity.GetComponent<ScriptComponent>());
 		}
 
-		if (entity.HasComponent<CameraComponent>()) {
-			entityClone.AddComponent<CameraComponent>(entity.GetComponent<CameraComponent>());
+		if (entity.HasComponent<CameraComponentHazelLegacy>()) {
+			entityClone.AddComponent<CameraComponentHazelLegacy>(entity.GetComponent<CameraComponentHazelLegacy>());
 		}
 
 		if (entity.HasComponent<SpriteRendererComponent>()) {
@@ -845,7 +845,7 @@ namespace Hazel {
 			entityClone.AddComponent<MaterialComponentHazelLegacy>(entity.GetComponent<MaterialComponentHazelLegacy>());
 		}
 
-		Log::GetLogger()->warn("Method SceneHazelLegacy::CopyEntity implemented poorly [Tag: '{0}']", entity.GetComponent<TagComponent>().Tag);
+		Log::GetLogger()->warn("Method SceneHazelLegacy::CopyEntity implemented poorly [Tag: '{0}']", entity.GetComponent<TagComponentHazelLegacy>().Tag);
 
 		return entityClone;
 	}
@@ -1018,22 +1018,12 @@ namespace Hazel {
 	}
 
 	template<>
-	void SceneHazelLegacy::OnComponentAdded<TagComponent>(EntityHazelLegacy entity, TagComponent& component)
-	{
-	}
-
-	template<>
-	void SceneHazelLegacy::OnComponentAdded<MeshComponent>(EntityHazelLegacy entity, MeshComponent& component)
-	{
-	}
-
-	template<>
 	void SceneHazelLegacy::OnComponentAdded<ScriptComponent>(EntityHazelLegacy entity, ScriptComponent& component)
 	{
 	}
 
 	template<>
-	void SceneHazelLegacy::OnComponentAdded<CameraComponent>(EntityHazelLegacy entity, CameraComponent& component)
+	void SceneHazelLegacy::OnComponentAdded<CameraComponentHazelLegacy>(EntityHazelLegacy entity, CameraComponentHazelLegacy& component)
 	{
 		component.Camera.SetViewportSize((float)m_ViewportWidth, (float)m_ViewportHeight);
 	}
@@ -1072,12 +1062,12 @@ namespace Hazel {
 	}
 
 	template<>
-	void SceneHazelLegacy::OnComponentAdded<TransformComponentHazelLegacy>(EntityHazelLegacy entity, TransformComponentHazelLegacy& component)
+	void SceneHazelLegacy::OnComponentAdded<MeshComponentHazelLegacy>(EntityHazelLegacy entity, MeshComponentHazelLegacy& component)
 	{
 	}
 
 	template<>
-	void SceneHazelLegacy::OnComponentAdded<MeshComponentHazelLegacy>(EntityHazelLegacy entity, MeshComponentHazelLegacy& component)
+	void SceneHazelLegacy::OnComponentAdded<TransformComponentHazelLegacy>(EntityHazelLegacy entity, TransformComponentHazelLegacy& component)
 	{
 	}
 
@@ -1098,11 +1088,6 @@ namespace Hazel {
 
 	template<>
 	void SceneHazelLegacy::OnComponentAdded<SkyLightComponentHazelLegacy>(EntityHazelLegacy entity, SkyLightComponentHazelLegacy& component)
-	{
-	}
-
-	template<>
-	void SceneHazelLegacy::OnComponentAdded<CameraComponentHazelLegacy>(EntityHazelLegacy entity, CameraComponentHazelLegacy& component)
 	{
 	}
 

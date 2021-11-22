@@ -2,7 +2,6 @@
 
 #include "Hazel/Renderer/RendererAPI.h"
 #include "Hazel/Renderer/RenderPass.h"
-#include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/SceneSerializer.h"
 #include "Hazel/Script/ScriptEngine.h"
 #include "Hazel/Utils/PlatformUtils.h"
