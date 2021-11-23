@@ -894,12 +894,6 @@
     <ClCompile Include="src\Hazel\Project\Project.cpp">
       <Filter>Hazel\Project</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Physics\3D\Physics.cpp">
-      <Filter>Hazel\Physics\3D</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Physics\3D\PhysicsActor.cpp">
-      <Filter>Hazel\Physics\3D</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\ImGui\ImGuiUtilities.cpp">
       <Filter>Hazel\ImGui</Filter>
     </ClCompile>
@@ -1124,6 +1118,48 @@
     </ClCompile>
     <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererVulkan.cpp">
       <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\2D\Physics2D.cpp">
+      <Filter>Hazel\Physics\2D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\ContactListener.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\CookingFactory.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\Physics.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsActor.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsController.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsJoints.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsLayer.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsScene.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysicsShapes.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysXInternal.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\PhysXUtils.cpp">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Physics\3D\Debug\PhysXDebugger.cpp">
+      <Filter>Hazel\Physics\3D\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Math\HazelMath.cpp">
+      <Filter>Hazel\Math</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2111,12 +2147,6 @@
     <ClInclude Include="src\Hazel\Project\Project.h">
       <Filter>Hazel\Project</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Physics\3D\Physics.h">
-      <Filter>Hazel\Physics\3D</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Physics\3D\PhysicsActor.h">
-      <Filter>Hazel\Physics\3D</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h">
       <Filter>Hazel\ImGui</Filter>
     </ClInclude>
@@ -2420,6 +2450,57 @@
     <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererVulkan.h">
       <Filter>HazelLegacy\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\2D\Physics2D.h">
+      <Filter>Hazel\Physics\2D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\ContactListener.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\CookingFactory.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\Physics.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsActor.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsActorBase.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsController.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsJoints.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsLayer.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsScene.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsSettings.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsShapes.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysicsTypes.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysXInternal.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\PhysXUtils.h">
+      <Filter>Hazel\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Physics\3D\Debug\PhysXDebugger.h">
+      <Filter>Hazel\Physics\3D\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Math\HazelMath.h">
+      <Filter>Hazel\Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2718,6 +2799,15 @@
     </Filter>
     <Filter Include="Vendors\miniaudio">
       <UniqueIdentifier>{31fd0167-4843-422b-9367-8eb11a536b82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Physics\2D">
+      <UniqueIdentifier>{9f86e88a-0018-482e-bed5-058ecb64bd15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Physics\3D\Debug">
+      <UniqueIdentifier>{5ae02c7c-9faa-4a7d-8235-c3b4684c945d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Math">
+      <UniqueIdentifier>{80bc6bcb-d620-4081-9ba9-dc909649399c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

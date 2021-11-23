@@ -504,7 +504,7 @@ namespace Hazel
 		vkCmdBindIndexBuffer(commandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
 		auto& submeshes = mesh->GetSubmeshes();
-		for (Ref<Submesh> submesh : submeshes)
+		for (Ref<SubmeshHazelLegacy> submesh : submeshes)
 		{
 			auto& material = mesh->GetMaterials()[submesh->MaterialIndex];
 			Buffer uniformStorageBuffer = material->GetUniformStorageBuffer();

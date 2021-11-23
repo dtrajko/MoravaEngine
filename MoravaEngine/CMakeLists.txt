@@ -1014,6 +1014,8 @@ target_include_directories(
 	../vendor/Optick/src
 	../vendor/miniaudio/include
 	../vendor/farbot/include
+	../vendor/PhysX/include
+	../vendor/NvidiaAftermath/include
 )
 
 target_link_directories(

@@ -374,7 +374,7 @@ namespace Hazel {
 	{
 	}
 
-	void RendererHazelLegacy::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial)
+	void RendererHazelLegacy::SubmitMesh(Ref<MeshHazelLegacy> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial)
 	{
 		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
 		// auto shader = material->GetShader();
@@ -384,10 +384,10 @@ namespace Hazel {
 		mesh->GetIndexBuffer()->Bind();
 
 		auto& materials = mesh->GetMaterials();
-		for (Submesh& submesh : mesh->GetSubmeshes())
+		for (Ref<SubmeshHazelLegacy> submesh : mesh->GetSubmeshes())
 		{
 			// Material
-			auto material = overrideMaterial ? overrideMaterial : materials[submesh.MaterialIndex];
+			auto material = overrideMaterial ? overrideMaterial : materials[submesh->MaterialIndex];
 			auto shader = material->GetShader();
 			material->Bind();
 
@@ -400,7 +400,7 @@ namespace Hazel {
 				}
 			}
 
-			auto transformUniform = transform * submesh.Transform;
+			auto transformUniform = transform * submesh->Transform;
 			shader->SetUniformBuffer("Transform", &transformUniform, sizeof(glm::mat4));
 
 			// RendererHazelLegacy::Submit([submesh, material]() {});
@@ -410,18 +410,18 @@ namespace Hazel {
 				else
 					glDisable(GL_DEPTH_TEST);
 
-				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+				glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 			}
 		}
 	}
 
-	void RendererHazelLegacy::SubmitMeshWithShader(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelShader> shader)
+	void RendererHazelLegacy::SubmitMeshWithShader(Ref<MeshHazelLegacy> mesh, const glm::mat4& transform, Ref<HazelShader> shader)
 	{
 		mesh->GetVertexBuffer()->Bind();
 		mesh->GetPipeline()->Bind();
 		mesh->GetIndexBuffer()->Bind();
 
-		for (Submesh& submesh : mesh->GetSubmeshes())
+		for (Ref<SubmeshHazelLegacy> submesh : mesh->GetSubmeshes())
 		{
 			if (mesh->IsAnimated())
 			{
@@ -431,19 +431,19 @@ namespace Hazel {
 					shader->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
 				}
 			}
-			shader->SetMat4("u_Transform", transform * submesh.Transform);
+			shader->SetMat4("u_Transform", transform * submesh->Transform);
 
 			// RendererHazelLegacy::Submit([submesh]() {});
-			glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+			glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 		}
 	}
 
-	void RendererHazelLegacy::DrawAABB(Ref<HazelMesh> mesh, const glm::mat4& transform, const glm::vec4& color)
+	void RendererHazelLegacy::DrawAABB(Ref<MeshHazelLegacy> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
-		for (Submesh& submesh : mesh->GetSubmeshes())
+		for (Ref<SubmeshHazelLegacy> submesh : mesh->GetSubmeshes())
 		{
-			auto& aabb = submesh.BoundingBox;
-			auto aabbTransform = transform * submesh.Transform;
+			auto& aabb = submesh->BoundingBox;
+			auto aabbTransform = transform * submesh->Transform;
 			DrawAABB(aabb, aabbTransform);
 		}
 	}
@@ -571,7 +571,7 @@ namespace Hazel {
 
 #endif
 
-	void RendererHazelLegacy::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	void RendererHazelLegacy::RenderMesh(Ref<Pipeline> pipeline, Ref<MeshHazelLegacy> mesh, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderMesh(pipeline, mesh, transform);
 	}
