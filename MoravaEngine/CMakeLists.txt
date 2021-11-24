@@ -1015,6 +1015,7 @@ target_include_directories(
 	../vendor/miniaudio/include
 	../vendor/farbot/include
 	../vendor/PhysX/include
+	../vendor/PhysX/include/PhysX
 	../vendor/NvidiaAftermath/include
 )
 
