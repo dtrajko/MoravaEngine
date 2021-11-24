@@ -408,9 +408,6 @@
     <ClCompile Include="src\Hazel\Core\UUID.cpp">
       <Filter>Hazel\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp">
-      <Filter>Hazel\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
@@ -576,9 +573,6 @@
     <ClCompile Include="src\Physics\SpartanPhysics.cpp">
       <Filter>Physics</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp">
-      <Filter>Hazel\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="src\EnvMap\EnvMapSharedData.cpp">
       <Filter>EnvMap</Filter>
     </ClCompile>
@@ -656,9 +650,6 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLImGuiLayer.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp">
-      <Filter>Hazel\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan.cpp">
       <Filter>Vendors\ImGui\backends</Filter>
@@ -789,9 +780,6 @@
     <ClCompile Include="src\Platform\DX11\DX11TextureCube.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Editor\ContentBrowserPanel.cpp">
-      <Filter>Hazel\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11PixelShader.cpp">
       <Filter>Platform\DX11</Filter>
     </ClCompile>
@@ -834,9 +822,6 @@
     <ClCompile Include="src\Editor\MaterialEditorPanel.cpp">
       <Filter>Editor</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp">
-      <Filter>Hazel\ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanComputePipeline.cpp">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClCompile>
@@ -867,38 +852,14 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanSkyboxCube.cpp">
       <Filter>Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Editor\EditorLayerVulkan.cpp">
-      <Filter>Hazel\Editor</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Project\UserPreferences.cpp">
       <Filter>Hazel\Project</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Editor\EditorConsolePanel.cpp">
-      <Filter>Hazel\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Editor\ProjectSettingsWindow.cpp">
-      <Filter>Hazel\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Asset\AssetManager.cpp">
-      <Filter>Hazel\Asset</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp">
-      <Filter>Hazel\Asset</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Editor\AssetEditorPanel.cpp">
-      <Filter>Hazel\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp">
       <Filter>Hazel\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Project\Project.cpp">
       <Filter>Hazel\Project</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\ImGui\ImGuiUtilities.cpp">
-      <Filter>Hazel\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\ImGui\Colours.cpp">
-      <Filter>Hazel\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Renderer\UI\Font.cpp">
       <Filter>Hazel\Renderer\UI</Filter>
@@ -1010,12 +971,6 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\hzpch.cpp">
       <Filter>Hazel</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Asset\AssetImporter.cpp">
-      <Filter>Hazel\Asset</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Asset\AssetSerializer.cpp">
-      <Filter>Hazel\Asset</Filter>
     </ClCompile>
     <ClCompile Include="src\Hazel\Utilities\FileSystem.cpp">
       <Filter>Hazel\Utilities</Filter>
@@ -1160,6 +1115,63 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\Math\HazelMath.cpp">
       <Filter>Hazel\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\AssetEditorPanel.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\ContentBrowserPanel.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\EditorCamera.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\EditorConsolePanel.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\EditorLayerVulkan.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\MeshViewerPanel.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\ProjectSettingsWindow.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp">
+      <Filter>Hazel\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetImporter.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetManager.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetSerializer.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\MeshSerializer.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\ImGui\Colours.cpp">
+      <Filter>Hazel\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\ImGui\CustomTreeNode.cpp">
+      <Filter>Hazel\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\ImGui\ImGuiLayer.cpp">
+      <Filter>Hazel\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\ImGui\ImGuiUtilities.cpp">
+      <Filter>Hazel\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\ImGui\ImGuiWidgets.cpp">
+      <Filter>Hazel\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp">
+      <Filter>Hazel\ImGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1623,12 +1635,6 @@
     <ClInclude Include="src\Hazel\Core\Math\Ray.h">
       <Filter>Hazel\Core\Math</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Editor\SceneHierarchyPanel.h">
-      <Filter>Hazel\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\ImGui\ImGui.h">
-      <Filter>Hazel\ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLFramebuffer.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
@@ -1776,9 +1782,6 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanTexture.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Asset\Asset.h">
-      <Filter>Hazel\Asset</Filter>
-    </ClInclude>
     <ClInclude Include="src\Material\MaterialLibrary.h">
       <Filter>Material</Filter>
     </ClInclude>
@@ -1805,9 +1808,6 @@
     </ClInclude>
     <ClInclude Include="src\Physics\SpartanPhysics.h">
       <Filter>Physics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Editor\EditorCamera.h">
-      <Filter>Hazel\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMap\EnvMapSharedData.h">
       <Filter>EnvMap</Filter>
@@ -1894,9 +1894,6 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLImGuiLayer.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h">
-      <Filter>Hazel\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan.h">
       <Filter>Vendors\ImGui\backends</Filter>
@@ -2030,9 +2027,6 @@
     <ClInclude Include="src\Platform\DX11\DX11TextureCube.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Editor\ContentBrowserPanel.h">
-      <Filter>Hazel\Editor</Filter>
-    </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11PixelShader.h">
       <Filter>Platform\DX11</Filter>
     </ClInclude>
@@ -2117,41 +2111,14 @@
     <ClInclude Include="src\Platform\Vulkan\VulkanSkyboxCube.h">
       <Filter>Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\Editor\EditorLayerVulkan.h">
-      <Filter>Hazel\Editor</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Project\UserPreferences.h">
       <Filter>Hazel\Project</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Editor\EditorConsolePanel.h">
-      <Filter>Hazel\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Editor\ProjectSettingsWindow.h">
-      <Filter>Hazel\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Asset\AssetMetadata.h">
-      <Filter>Hazel\Asset</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Asset\AssetManager.h">
-      <Filter>Hazel\Asset</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Asset\AssetRegistry.h">
-      <Filter>Hazel\Asset</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Editor\AssetEditorPanel.h">
-      <Filter>Hazel\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Editor\EditorConsole\ConsoleMessage.h">
       <Filter>Hazel\Editor\EditorConsole</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Project\Project.h">
       <Filter>Hazel\Project</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h">
-      <Filter>Hazel\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\ImGui\Colours.h">
-      <Filter>Hazel\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Renderer\UI\Font.h">
       <Filter>Hazel\Renderer\UI</Filter>
@@ -2176,9 +2143,6 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanStorageBufferSet.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Asset\AssetTypes.h">
-      <Filter>Hazel\Asset</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.h">
       <Filter>Vendors\VulkanMemoryAllocator</Filter>
@@ -2314,15 +2278,6 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Utilities\SerializationMacros.h">
       <Filter>Hazel\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Asset\AssetImporter.h">
-      <Filter>Hazel\Asset</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Asset\AssetSerializer.h">
-      <Filter>Hazel\Asset</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\Asset\AssetExtensions.h">
-      <Filter>Hazel\Asset</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Renderer\UI\MSDFData.h">
       <Filter>Hazel\Renderer\UI</Filter>
@@ -2500,6 +2455,75 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Math\HazelMath.h">
       <Filter>Hazel\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\AssetEditorPanel.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\ContentBrowserPanel.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\EditorCamera.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\EditorConsolePanel.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\EditorLayerVulkan.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\MeshViewerPanel.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\ProjectSettingsWindow.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Editor\SceneHierarchyPanel.h">
+      <Filter>Hazel\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\Asset.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetExtensions.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetImporter.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetManager.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetMetadata.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetRegistry.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetSerializer.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\AssetTypes.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\MeshSerializer.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\Colours.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\CustomTreeNode.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\ImGui.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\ImGuiWidgets.h">
+      <Filter>Hazel\ImGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
