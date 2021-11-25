@@ -196,6 +196,7 @@
     <ClCompile Include="src\Hazel\Asset\AssetManager.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp" />
     <ClCompile Include="src\Hazel\Asset\AssetSerializer.cpp" />
+    <ClCompile Include="src\Hazel\Asset\GraphSerializer.cpp" />
     <ClCompile Include="src\Hazel\Asset\MeshSerializer.cpp" />
     <ClCompile Include="src\Hazel\Audio\Audio.cpp" />
     <ClCompile Include="src\Hazel\Audio\AudioComponent.cpp" />
@@ -229,6 +230,7 @@
     <ClCompile Include="src\Hazel\Editor\EditorConsolePanel.cpp" />
     <ClCompile Include="src\Hazel\Editor\EditorLayerVulkan.cpp" />
     <ClCompile Include="src\Hazel\Editor\MeshViewerPanel.cpp" />
+    <ClCompile Include="src\Hazel\Editor\NodeGraphEditor\Nodes.cpp" />
     <ClCompile Include="src\Hazel\Editor\ProjectSettingsWindow.cpp" />
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp" />
     <ClCompile Include="src\Hazel\hzpch.cpp" />
@@ -329,6 +331,7 @@
     <ClCompile Include="src\Hazel\Renderer\VertexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Scene\Entity.cpp" />
     <ClCompile Include="src\Hazel\Scene\HazelScene.cpp" />
+    <ClCompile Include="src\Hazel\Scene\Prefab.cpp" />
     <ClCompile Include="src\Hazel\Scene\SceneCamera.cpp" />
     <ClCompile Include="src\Hazel\Scene\SceneSerializer.cpp" />
     <ClCompile Include="src\Hazel\Scene\ScriptableEntity.cpp" />
@@ -700,6 +703,7 @@
     <ClInclude Include="src\Hazel\Asset\AssetRegistry.h" />
     <ClInclude Include="src\Hazel\Asset\AssetSerializer.h" />
     <ClInclude Include="src\Hazel\Asset\AssetTypes.h" />
+    <ClInclude Include="src\Hazel\Asset\GraphSerializer.h" />
     <ClInclude Include="src\Hazel\Asset\MeshSerializer.h" />
     <ClInclude Include="src\Hazel\Audio\Audio.h" />
     <ClInclude Include="src\Hazel\Audio\AudioComponent.h" />
@@ -754,6 +758,8 @@
     <ClInclude Include="src\Hazel\Editor\EditorConsole\ConsoleMessage.h" />
     <ClInclude Include="src\Hazel\Editor\EditorLayerVulkan.h" />
     <ClInclude Include="src\Hazel\Editor\MeshViewerPanel.h" />
+    <ClInclude Include="src\Hazel\Editor\NodeGraphEditor\NodeGraphAsset.h" />
+    <ClInclude Include="src\Hazel\Editor\NodeGraphEditor\Nodes.h" />
     <ClInclude Include="src\Hazel\Editor\ProjectSettingsWindow.h" />
     <ClInclude Include="src\Hazel\Editor\SceneHierarchyPanel.h" />
     <ClInclude Include="src\Hazel\Hazel.h" />
@@ -862,6 +868,7 @@
     <ClInclude Include="src\Hazel\Scene\Components.h" />
     <ClInclude Include="src\Hazel\Scene\Entity.h" />
     <ClInclude Include="src\Hazel\Scene\HazelScene.h" />
+    <ClInclude Include="src\Hazel\Scene\Prefab.h" />
     <ClInclude Include="src\Hazel\Scene\SceneCamera.h" />
     <ClInclude Include="src\Hazel\Scene\SceneSerializer.h" />
     <ClInclude Include="src\Hazel\Scene\ScriptableEntity.h" />

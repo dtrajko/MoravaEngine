@@ -64,7 +64,7 @@ namespace Hazel {
 
 	class EntityHazelLegacy;
 	class ScriptableEntity;
-	using EntityMap = std::unordered_map<UUID, entt::entity>;
+	using EntityMapHazelLegacy = std::unordered_map<UUID, entt::entity>;
 
 
 	class SceneHazelLegacy : public RefCounted
@@ -136,7 +136,7 @@ namespace Hazel {
 		void ParentEntity(EntityHazelLegacy entity, EntityHazelLegacy parent);
 		void UnparentEntity(EntityHazelLegacy entity, bool convertToWorldSpace = true);
 
-		const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
+		const EntityMapHazelLegacy& GetEntityMap() const { return m_EntityIDMap; }
 
 		// Temporary/experimental
 		virtual void OnEntitySelected(EntityHazelLegacy entity);
@@ -166,7 +166,7 @@ namespace Hazel {
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 
-		EntityMap m_EntityIDMap;
+		EntityMapHazelLegacy m_EntityIDMap;
 
 	private:
 		HazelCamera m_Camera;

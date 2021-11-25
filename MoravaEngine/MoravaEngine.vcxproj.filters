@@ -1140,21 +1140,6 @@
     <ClCompile Include="src\Hazel\Editor\SceneHierarchyPanel.cpp">
       <Filter>Hazel\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="src\Hazel\Asset\AssetImporter.cpp">
-      <Filter>Hazel\Asset</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Asset\AssetManager.cpp">
-      <Filter>Hazel\Asset</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp">
-      <Filter>Hazel\Asset</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Asset\AssetSerializer.cpp">
-      <Filter>Hazel\Asset</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Hazel\Asset\MeshSerializer.cpp">
-      <Filter>Hazel\Asset</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\ImGui\Colours.cpp">
       <Filter>Hazel\ImGui</Filter>
     </ClCompile>
@@ -1172,6 +1157,30 @@
     </ClCompile>
     <ClCompile Include="src\Hazel\ImGui\VulkanImGui.cpp">
       <Filter>Hazel\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetImporter.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetManager.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetRegistry.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\AssetSerializer.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\GraphSerializer.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Asset\MeshSerializer.cpp">
+      <Filter>Hazel\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Editor\NodeGraphEditor\Nodes.cpp">
+      <Filter>Hazel\Editor\NodeGraphEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Scene\Prefab.cpp">
+      <Filter>Hazel\Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2480,6 +2489,24 @@
     <ClInclude Include="src\Hazel\Editor\SceneHierarchyPanel.h">
       <Filter>Hazel\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\Colours.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\CustomTreeNode.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\ImGui.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hazel\ImGui\ImGuiWidgets.h">
+      <Filter>Hazel\ImGui</Filter>
+    </ClInclude>
     <ClInclude Include="src\Hazel\Asset\Asset.h">
       <Filter>Hazel\Asset</Filter>
     </ClInclude>
@@ -2504,26 +2531,20 @@
     <ClInclude Include="src\Hazel\Asset\AssetTypes.h">
       <Filter>Hazel\Asset</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Asset\GraphSerializer.h">
+      <Filter>Hazel\Asset</Filter>
+    </ClInclude>
     <ClInclude Include="src\Hazel\Asset\MeshSerializer.h">
       <Filter>Hazel\Asset</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\ImGui\Colours.h">
-      <Filter>Hazel\ImGui</Filter>
+    <ClInclude Include="src\Hazel\Editor\NodeGraphEditor\NodeGraphAsset.h">
+      <Filter>Hazel\Editor\NodeGraphEditor</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\ImGui\CustomTreeNode.h">
-      <Filter>Hazel\ImGui</Filter>
+    <ClInclude Include="src\Hazel\Editor\NodeGraphEditor\Nodes.h">
+      <Filter>Hazel\Editor\NodeGraphEditor</Filter>
     </ClInclude>
-    <ClInclude Include="src\Hazel\ImGui\ImGui.h">
-      <Filter>Hazel\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\ImGui\ImGuiLayer.h">
-      <Filter>Hazel\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\ImGui\ImGuiUtilities.h">
-      <Filter>Hazel\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Hazel\ImGui\ImGuiWidgets.h">
-      <Filter>Hazel\ImGui</Filter>
+    <ClInclude Include="src\Hazel\Scene\Prefab.h">
+      <Filter>Hazel\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2832,6 +2853,9 @@
     </Filter>
     <Filter Include="Hazel\Math">
       <UniqueIdentifier>{80bc6bcb-d620-4081-9ba9-dc909649399c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hazel\Editor\NodeGraphEditor">
+      <UniqueIdentifier>{144489a1-b854-47d3-9e28-1e6b67d6c737}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
