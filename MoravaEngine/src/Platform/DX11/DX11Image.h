@@ -24,7 +24,6 @@ public:
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
 
-	virtual Hazel::HazelImageFormat GetFormat() const override { return m_Format; }
 	virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
 	virtual Hazel::ImageSpecification& GetSpecification() override { return m_Specification; }

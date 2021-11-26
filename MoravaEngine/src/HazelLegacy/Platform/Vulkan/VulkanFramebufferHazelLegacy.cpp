@@ -31,13 +31,13 @@ namespace Hazel {
 		rgbaSpec.Format = HazelImageFormat::RGBA32F;
 		rgbaSpec.Width = m_Width;
 		rgbaSpec.Height = m_Height;
-		m_Attachments.emplace_back(HazelImage2D::Create(HazelImageFormat::RGBA32F, m_Width, m_Height));
+		m_Attachments.emplace_back(HazelImage2D::Create(rgbaSpec));
 
 		ImageSpecification depthSpec;
 		depthSpec.Format = HazelImageFormat::Depth;
 		depthSpec.Width = m_Width;
 		depthSpec.Height = m_Height;
-		m_Attachments.emplace_back(HazelImage2D::Create(HazelImageFormat::Depth, m_Width, m_Height));
+		m_Attachments.emplace_back(HazelImage2D::Create(depthSpec));
 
 		Resize((uint32_t)(m_Width * spec.Scale), (uint32_t)(m_Height * spec.Scale), true);
 	}
