@@ -15,6 +15,7 @@ struct DX11ImageInfo
 class DX11Image2D : public Hazel::HazelImage2D
 {
 public:
+	DX11Image2D(Hazel::ImageSpecification specification);
 	DX11Image2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height);
 	virtual ~DX11Image2D();
 
@@ -50,6 +51,6 @@ private:
 
 	Hazel::Buffer m_ImageData;
 
-	DX11ImageInfo m_Info;
+	DX11ImageInfo m_Info = DX11ImageInfo{};
 
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 
-#define SCENE_COTTAGE
+// #define SCENE_COTTAGE
 // #define SCENE_EIFFEL
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
