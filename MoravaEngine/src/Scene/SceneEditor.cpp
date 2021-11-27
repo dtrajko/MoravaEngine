@@ -2,8 +2,6 @@
 
 #include "Scene/SceneEditor.h"
 
-#include "Hazel/Renderer/HazelMesh.h"
-
 #include "Core/Application.h"
 #include "Core/Log.h"
 #include "Core/Math.h"
