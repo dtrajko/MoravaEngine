@@ -811,8 +811,9 @@ void Gizmo::Render(Hazel::Ref<MoravaShader> shader)
 
 Gizmo::~Gizmo()
 {
-	// if (m_SceneObject != nullptr)
-	delete m_SceneObject;
+	//	if (m_SceneObject != nullptr) {
+	//		delete m_SceneObject;
+	//	}
 
 	for (auto& object : m_GizmoObjects)
 	{

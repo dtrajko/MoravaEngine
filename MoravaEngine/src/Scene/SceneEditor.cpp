@@ -2613,7 +2613,7 @@ SceneEditor::~SceneEditor()
 {
     SaveScene();
     CleanupGeometry();
-    delete m_ParticleSettingsEdit;
+    // delete m_ParticleSettingsEdit;
     // delete m_ParticleSettingsPrev;
     delete m_CurrentSOPS;
     delete m_PivotScene;

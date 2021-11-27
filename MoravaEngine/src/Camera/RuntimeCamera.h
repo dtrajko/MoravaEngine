@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Hazel/Core/Timestep.h"
-#include "Hazel/Renderer/HazelCamera.h"
-
 #include "CameraController.h"
 
 

@@ -21,13 +21,11 @@ void SceneObject::Render()
 
 SceneObject::~SceneObject()
 {
-    delete m_AABB;
-    // delete pivot;
-
-    if (mesh != nullptr) {
-        delete mesh;
-    }
-
+    //  delete m_AABB;
+    //  delete pivot;
+    //  if (mesh != nullptr) {
+    //      delete mesh;
+    //  }
     //  if (model != nullptr && model->GetMeshList().size() > 0) {
     //      delete model;
     //  }
