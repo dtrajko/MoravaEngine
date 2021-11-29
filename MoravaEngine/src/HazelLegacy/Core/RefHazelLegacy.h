@@ -4,7 +4,7 @@
 #include <utility>
 
 
-namespace Hazel {
+namespace HazelLegacy {
 
 	class RefCountedHazelLegacy
 	{

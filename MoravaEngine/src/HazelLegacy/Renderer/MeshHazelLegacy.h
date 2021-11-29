@@ -4,7 +4,7 @@
 #include "Hazel/Platform/Vulkan/VulkanShader.h"
 #include "Hazel/Renderer/Pipeline.h"
 #include "Hazel/Renderer/IndexBuffer.h"
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 #include "Hazel/Renderer/MaterialAsset.h"
 
 #include "HazelLegacy/Scene/EntityHazelLegacy.h"
@@ -31,7 +31,7 @@ namespace Assimp {
 	class Importer;
 }
 
-namespace Hazel {
+namespace HazelLegacy {
 
 	struct VertexHazelLegacy
 	{
@@ -189,8 +189,8 @@ namespace Hazel {
 		Ref<HazelMaterial> GetMaterial() { return m_BaseMaterial; }
 		std::vector<Ref<HazelMaterial>>& GetMaterials() { return m_Materials; }
 		const std::vector<Ref<HazelMaterial>>& GetMaterials() const { return m_Materials; }
-		const std::vector<Ref<HazelTexture2D>>& GetTextures() const { return m_Textures; }
-		std::vector<Ref<HazelTexture2D>>& GetTextures() { return m_Textures; }
+		const std::vector<Ref<Texture2DHazelLegacy>>& GetTextures() const { return m_Textures; }
+		std::vector<Ref<Texture2DHazelLegacy>>& GetTextures() { return m_Textures; }
 		const std::string& GetFilePath() const { return m_FilePath; }
 
 		const std::vector<TriangleHazelLegacy> GetTriangleCache(uint32_t index) const;
@@ -212,7 +212,7 @@ namespace Hazel {
 		// VkDescriptorSet& GetDescriptorSet();
 		void* GetDescriptorSet();
 
-		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<HazelTexture2D> texture);
+		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<Texture2DHazelLegacy> texture);
 		// void UpdateAllDescriptors();
 		void UpdateAllDescriptorSets(); // Vulkan branch, february 2021
 		static AssetType GetStaticType() { return AssetType::MeshAsset; }
@@ -250,7 +250,7 @@ namespace Hazel {
 		void ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 
 		void SetupDefaultBaseMaterial();
-		Ref<HazelTexture2D> LoadBaseTexture();
+		Ref<Texture2DHazelLegacy> LoadBaseTexture();
 
 	private:
 		Ref<Pipeline> m_Pipeline;
@@ -278,10 +278,10 @@ namespace Hazel {
 
 		// Materials
 		Ref<HazelMaterial> m_BaseMaterial;
-		Ref<HazelTexture2D> m_BaseTexture;
+		Ref<Texture2DHazelLegacy> m_BaseTexture;
 		Ref<HazelShader> m_MeshShader;
-		std::vector<Ref<HazelTexture2D>> m_Textures;
-		std::vector<Ref<HazelTexture2D>> m_NormalMaps;
+		std::vector<Ref<Texture2DHazelLegacy>> m_Textures;
+		std::vector<Ref<Texture2DHazelLegacy>> m_NormalMaps;
 		std::vector<Ref<HazelMaterial>> m_Materials;
 		// std::vector<Ref<HazelMaterialInstance>> m_Materials;
 

@@ -32,8 +32,8 @@ namespace Hazel {
 		virtual void SubmitFullscreenQuadWithOverrides(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<HazelMaterial> material, Buffer vertexShaderOverrides, Buffer fragmentShaderOverrides) override;
 
 		virtual void SetSceneEnvironment(Ref<SceneRenderer> sceneRenderer, Ref<Environment> environment, Ref<HazelImage2D> shadow, Ref<HazelImage2D> linearDepth) override;
-		virtual std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) override;
-		virtual Ref<HazelTextureCube> CreatePreethamSky(float turbidity, float azimuth, float inclination) override;
+		virtual std::pair<Ref<TextureCubeHazelLegacy>, Ref<TextureCubeHazelLegacy>> CreateEnvironmentMap(const std::string& filepath) override;
+		virtual Ref<TextureCubeHazelLegacy> CreatePreethamSky(float turbidity, float azimuth, float inclination) override;
 
 		virtual void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<HazelMesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform) override {};
 		virtual void RenderMeshWithMaterial(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<HazelMesh> mesh, Ref<HazelMaterial> material, const glm::mat4& transform, Buffer additionalUniforms = Buffer()) override {};

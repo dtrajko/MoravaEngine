@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 #include "DX11.h"
 
 #include "DX11Image.h"
 
 
-class DX11Texture2D : public Hazel::HazelTexture2D
+class DX11Texture2D : public HazelLegacy::Texture2DHazelLegacy
 {
 public:
 	enum Type

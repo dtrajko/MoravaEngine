@@ -4,7 +4,7 @@
 
 #include "Hazel/Platform/Vulkan/Vulkan.h"
 #include "Hazel/Renderer/HazelShader.h"
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 #include "VulkanMemoryAllocator/vk_mem_alloc.h"
 

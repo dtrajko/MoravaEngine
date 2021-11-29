@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Hazel/Core/Ref.h"
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 #include <glm/glm.hpp>
 
@@ -45,7 +45,7 @@ private:
 	struct AlbedoInput
 	{
 		glm::vec3 Color = { 0.972f, 0.96f, 0.915f }; // Silver, from https://docs.unrealengine.com/en-us/Engine/Rendering/Materials/PhysicallyBased
-		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
+		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
 		bool SRGB = false;
 		bool UseTexture = false;
 	};
@@ -53,7 +53,7 @@ private:
 
 	struct NormalInput
 	{
-		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
+		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
 		bool UseTexture = false;
 	};
 	NormalInput m_NormalInput;
@@ -61,7 +61,7 @@ private:
 	struct MetalnessInput
 	{
 		float Value = 0.0f;
-		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
+		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
 		bool UseTexture = false;
 	};
 	MetalnessInput m_MetalnessInput;
@@ -69,7 +69,7 @@ private:
 	struct RoughnessInput
 	{
 		float Value = 1.0f;
-		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
+		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
 		bool UseTexture = false;
 	};
 	RoughnessInput m_RoughnessInput;
@@ -77,7 +77,7 @@ private:
 	struct EmissiveInput
 	{
 		float Value = 0.0f;
-		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
+		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
 		bool SRGB = true;
 		bool UseTexture = false;
 	};
@@ -86,7 +86,7 @@ private:
 	struct AOInput
 	{
 		float Value = 1.0f;
-		Hazel::Ref<Hazel::HazelTexture2D> TextureMap;
+		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
 		bool UseTexture = false;
 	};
 	AOInput m_AOInput;

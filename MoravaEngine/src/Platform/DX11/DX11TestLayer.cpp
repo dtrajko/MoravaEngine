@@ -1,6 +1,6 @@
 #include "DX11TestLayer.h"
 
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 #include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 
@@ -81,10 +81,10 @@ void DX11TestLayer::OnAttach()
 	/*
 	RenderObject renderObjectGladiator;
 	renderObjectGladiator.Mesh = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/Gladiator/Gladiator.fbx");
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_weapon_Normal.jpg"));
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_BaseColor.jpg"));
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_Normal.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Models/Gladiator/Gladiator_weapon_Normal.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Models/Gladiator/Gladiator_BaseColor.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Models/Gladiator/Gladiator_Normal.jpg"));
 	renderObjectGladiator.Transform = glm::mat4(1.0f);
 	renderObjectGladiator.Transform = glm::translate(renderObjectGladiator.Transform, glm::vec3(0.0f, 0.0f, -2.0f));
 	renderObjectGladiator.Transform = glm::scale(renderObjectGladiator.Transform, glm::vec3(0.04f));
@@ -105,8 +105,8 @@ void DX11TestLayer::OnAttach()
 
 	RenderObject renderObjectSphereLeft;
 	renderObjectSphereLeft.Mesh = meshSphere;
-	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg"));
-	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg"));
+	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_d.jpg"));
+	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_n.jpg"));
 	renderObjectSphereLeft.Transform = glm::mat4(1.0f);
 	renderObjectSphereLeft.Transform = glm::translate(renderObjectSphereLeft.Transform, glm::vec3(-4.0f, 2.0f, 0.0f));
 	renderObjectSphereLeft.PipelineType = RenderObject::PipelineType::Light;
@@ -114,8 +114,8 @@ void DX11TestLayer::OnAttach()
 
 	RenderObject renderObjectSphereRight;
 	renderObjectSphereRight.Mesh = meshSphere;
-	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg"));
-	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg"));
+	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_d.jpg"));
+	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_n.jpg"));
 	renderObjectSphereRight.Transform = glm::mat4(1.0f);
 	renderObjectSphereRight.Transform = glm::translate(renderObjectSphereRight.Transform, glm::vec3(4.0f, 2.0f, 0.0f));
 	renderObjectSphereRight.PipelineType = RenderObject::PipelineType::Light;
@@ -124,27 +124,27 @@ void DX11TestLayer::OnAttach()
 
 	RenderObject renderObjectTerrain;
 	renderObjectTerrain.Mesh = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/PardCode/terrain.obj");
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/sand.jpg"));
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png"));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/sand.jpg"));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/normal_blank.png"));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
 	renderObjectTerrain.Transform = glm::scale(renderObjectTerrain.Transform, glm::vec3(4.0f));
 	renderObjectTerrain.PipelineType = RenderObject::PipelineType::Unlit;
 	m_RenderObjects.push_back(renderObjectTerrain);
 
 	// ---- other assets ----
-	ResourceManager::LoadHazelTexture2D("Textures/PardCode/sky.jpg");
+	ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/sky.jpg");
 
-	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
-	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
-	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick.png");
-	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_d.jpg");
-	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/brick_n.jpg");
-	// ResourceManager::LoadHazelTexture2D("Textures/default_material_albedo.png");
-	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
-	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/umhlanga_sunrise_4k.jpg");
-	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/gold.png");
-	// ResourceManager::LoadHazelTexture2D("Textures/container/container2.png");
-	// ResourceManager::LoadHazelTexture2D("Textures/container/container2_normal.png");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/wood.jpg");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/normal_blank.png");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick.png");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_d.jpg");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_n.jpg");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/default_material_albedo.png");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/normal_blank.png");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/umhlanga_sunrise_4k.jpg");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/gold.png");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/container/container2.png");
+	// ResourceManager::LoadTexture2DHazelLegacy("Textures/container/container2_normal.png");
 
 	s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
 	// s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/spaceship.obj");
@@ -201,10 +201,10 @@ void DX11TestLayer::OnAttach()
 
 	s_ListMaterials.reserve(32); // reserve 32 slots
 
-	Hazel::Ref<Hazel::HazelTexture2D> textureBarrel       = ResourceManager::LoadHazelTexture2D("Textures/PardCode/barrel.jpg");
-	Hazel::Ref<Hazel::HazelTexture2D> textureHouseBrick   = ResourceManager::LoadHazelTexture2D("Textures/PardCode/house_brick.jpg");
-	Hazel::Ref<Hazel::HazelTexture2D> textureHouseWindows = ResourceManager::LoadHazelTexture2D("Textures/PardCode/house_windows.jpg");
-	Hazel::Ref<Hazel::HazelTexture2D> textureHouseWood    = ResourceManager::LoadHazelTexture2D("Textures/PardCode/house_wood.jpg");
+	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureBarrel       = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/barrel.jpg");
+	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureHouseBrick   = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/house_brick.jpg");
+	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureHouseWindows = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/house_windows.jpg");
+	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureHouseWood    = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/house_wood.jpg");
 
 	Hazel::Ref<DX11Material> materialBarrel       = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material Barrel");
 	Hazel::Ref<DX11Material> materialHouseBrick   = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Brick");

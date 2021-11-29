@@ -10,7 +10,7 @@
 #include "HazelLegacy/Renderer/SceneRendererHazelLegacy.h"
 
 
-namespace Hazel
+namespace HazelLegacy
 {
 	static std::vector<std::thread> s_ThreadPool;
 
@@ -31,7 +31,7 @@ namespace Hazel
 			glm::vec3 LightDirectionTemp;
 		} SceneData;
 
-		Ref<HazelTexture2D> BRDFLUT;
+		Ref<Texture2DHazelLegacy> BRDFLUT;
 		Ref<HazelShader> CompositeShader;
 		Ref<HazelMaterial> CompositeMaterial;
 		Ref<MoravaShader> BloomBlurShader;
@@ -110,7 +110,7 @@ namespace Hazel
 
 		s_Data.CompositeShader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
 		s_Data.CompositeMaterial = HazelMaterial::Create(s_Data.CompositeShader, "CompositeMaterial");
-		s_Data.BRDFLUT = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
+		s_Data.BRDFLUT = Texture2DHazelLegacy::Create("assets/textures/BRDF_LUT.tga");
 
 		// Grid pipeline
 		{
@@ -304,9 +304,9 @@ namespace Hazel
 		return Ref<RenderPass>();
 	}
 
-	Ref<HazelTexture2D> SceneRendererVulkan::GetFinalPassImage()
+	Ref<Texture2DHazelLegacy> SceneRendererVulkan::GetFinalPassImage()
 	{
-		return Ref<HazelTexture2D>();
+		return Ref<Texture2DHazelLegacy>();
 	}
 
 	void SceneRendererVulkan::GeometryPass()

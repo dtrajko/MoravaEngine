@@ -3,7 +3,7 @@
 #include "Scene/SceneHazelVulkan.h"
 
 #include "Hazel/Scene/Components.h"
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 #include "../../ImGuizmo/ImGuizmo.h"
 

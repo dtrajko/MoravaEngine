@@ -7,7 +7,7 @@
 #include "Core/CommonValues.h"
 
 #include "Hazel/Core/Buffer.h"
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 #include <string>
 
@@ -28,7 +28,7 @@ public:
 	virtual void Save();
 	virtual Hazel::HazelImageFormat GetFormat() { return m_Format; };
 
-	// BEGIN pure virtual methods inherited from HazelTexture/HazelTexture2D
+	// BEGIN pure virtual methods inherited from HazelTexture/Texture2DHazelLegacy
 	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage() const override { return Hazel::Ref<Hazel::HazelImage2D>(); }
 	virtual void Lock() override {}
 	virtual void Unlock() override {}
@@ -42,7 +42,7 @@ public:
 	virtual uint64_t GetHash() const override { return uint64_t(); }
 	virtual bool operator==(const Hazel::HazelTexture& other) const override { return m_ID == other.GetID(); }
 	virtual Hazel::RendererID GetRendererID() const override { return m_ID; }
-	// END pure virtual methods inherited from HazelTexture/HazelTexture2D
+	// END pure virtual methods inherited from HazelTexture/Texture2DHazelLegacy
 
 	virtual bool IsLoaded() const override { return m_Buffer ? true : false; }; // used in Hazel::Mesh
 

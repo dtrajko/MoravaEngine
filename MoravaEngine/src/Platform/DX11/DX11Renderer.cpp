@@ -69,7 +69,7 @@ static bool s_DeferredRenderingEnabled = true;
 
 static EventCooldown s_ResizeViewport = { 0.0f, 1.0f };
 
-static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
+static Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> s_CheckerboardTexture;
 
 static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
 static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
@@ -223,11 +223,11 @@ void DX11Renderer::Init()
 	// Create the light material
 	s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
 	// Load Hazel/Renderer/HazelTexture
-	s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D("Textures/light_bulb.png");
+	s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy("Textures/light_bulb.png");
 	s_LightMaterial->GetAlbedoInput().UseTexture = true;
 	MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
 
-	s_CheckerboardTexture = ResourceManager::LoadHazelTexture2D("Textures/Hazel/Checkerboard.png");
+	s_CheckerboardTexture = ResourceManager::LoadTexture2DHazelLegacy("Textures/Hazel/Checkerboard.png");
 
 	s_ImGuizmoTransform = nullptr;
 
@@ -872,8 +872,8 @@ void DX11Renderer::DrawToScreen(Hazel::HazelCamera* camera)
 	dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
 	std::vector<Hazel::Ref<Hazel::HazelTexture>> textures;
-	Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = s_RenderTarget;
-	Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureDiffuse = s_RenderTarget;
+	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureNormal = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/normal_blank.png");
 	textures.push_back(textureDiffuse.As<DX11Texture2D>());
 	textures.push_back(textureNormal.As<DX11Texture2D>());
 	dx11ShaderUnlit->GetVertexShader()->SetTextures(textures);
@@ -971,14 +971,14 @@ void DX11Renderer::SetSceneEnvironment(Hazel::Ref<Hazel::SceneRenderer> sceneRen
 {
 }
 
-std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> DX11Renderer::CreateEnvironmentMap(const std::string& filepath)
+std::pair<Hazel::Ref<Hazel::TextureCubeHazelLegacy>, Hazel::Ref<Hazel::TextureCubeHazelLegacy>> DX11Renderer::CreateEnvironmentMap(const std::string& filepath)
 {
-	return std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>>();
+	return std::pair<Hazel::Ref<Hazel::TextureCubeHazelLegacy>, Hazel::Ref<Hazel::TextureCubeHazelLegacy>>();
 }
 
-Hazel::Ref<Hazel::HazelTextureCube> DX11Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination)
+Hazel::Ref<Hazel::TextureCubeHazelLegacy> DX11Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination)
 {
-	return Hazel::Ref<Hazel::HazelTextureCube>();
+	return Hazel::Ref<Hazel::TextureCubeHazelLegacy>();
 }
 
 void DX11Renderer::RenderQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform)
@@ -1249,8 +1249,8 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
 		std::vector<Hazel::Ref<Hazel::HazelTexture>> textures;
-		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/umhlanga_sunrise_4k.jpg");
-		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureDiffuse = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/umhlanga_sunrise_4k.jpg");
+		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureNormal = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/normal_blank.png");
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
 
@@ -1286,8 +1286,8 @@ void DX11Renderer::DrawToFramebuffer(Hazel::HazelCamera* camera)
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
 		std::vector<Hazel::Ref<Hazel::HazelTexture>> textures;
-		Hazel::Ref<Hazel::HazelTexture2D> textureDiffuse = ResourceManager::LoadHazelTexture2D("Textures/PardCode/gold.png");
-		Hazel::Ref<Hazel::HazelTexture2D> textureNormal = ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");
+		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureDiffuse = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/gold.png");
+		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureNormal = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/normal_blank.png");
 
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
@@ -1425,11 +1425,11 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 
 		if (renderObject.Textures.size() < 1)
 		{
-			renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/default_material_albedo.png"));
+			renderObject.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/default_material_albedo.png"));
 		}
 		if (renderObject.Textures.size() < 2)
 		{
-			renderObject.Textures.push_back(ResourceManager::LoadHazelTexture2D("Textures/normal_map_default.png"));
+			renderObject.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/normal_map_default.png"));
 		}
 
 		textures.push_back(renderObject.Textures.at(0).As<DX11Texture2D>()); // Albedo Map

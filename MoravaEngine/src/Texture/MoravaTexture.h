@@ -2,12 +2,12 @@
 
 #include "Core/CommonValues.h"
 
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 #include <string>
 
 
-class MoravaTexture : public Hazel::HazelTexture2D
+class MoravaTexture : public HazelLegacy::Texture2DHazelLegacy
 {
 public:
 	struct Specification
@@ -42,7 +42,7 @@ public:
 	virtual void Save() = 0;
 	virtual Hazel::HazelImageFormat GetFormat() = 0;
 
-	// BEGIN pure virtual methods inherited from HazelTexture/HazelTexture2D
+	// BEGIN pure virtual methods inherited from HazelTexture/Texture2DHazelLegacy
 	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage() const = 0;
 	virtual void Lock() = 0;
 	virtual void Unlock() = 0;
@@ -56,7 +56,7 @@ public:
 	virtual uint64_t GetHash() const = 0;
 	virtual bool operator==(const Hazel::HazelTexture& other) const = 0;
 	virtual Hazel::RendererID GetRendererID() const = 0;
-	// END pure virtual methods inherited from HazelTexture/HazelTexture2D
+	// END pure virtual methods inherited from HazelTexture/Texture2DHazelLegacy
 
 	virtual bool IsLoaded() const = 0;
 

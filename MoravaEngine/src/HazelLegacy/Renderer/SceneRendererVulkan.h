@@ -6,7 +6,7 @@
 #include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
 
 
-namespace Hazel {
+namespace HazelLegacy {
 
 	struct SceneRendererOptionsVulkan
 	{
@@ -79,7 +79,7 @@ namespace Hazel {
 		static void SubmitSelectedMesh(Ref<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 		static Ref<RenderPass> GetFinalRenderPass();
-		static Ref<HazelTexture2D> GetFinalPassImage(); // previously: GetFinalColorBuffer
+		static Ref<Texture2DHazelLegacy> GetFinalPassImage(); // previously: GetFinalColorBuffer
 
 		static SceneRendererOptionsVulkan& GetOptions();
 

@@ -8,7 +8,7 @@
 #include "DX11Material.h"
 
 #include "Shader/MoravaShader.h"
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 
 class DX11Shader : public MoravaShader

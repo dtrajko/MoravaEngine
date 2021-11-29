@@ -44,9 +44,9 @@ public:
 	virtual void Set(const std::string& name, const glm::mat3& value) override;
 	virtual void Set(const std::string& name, const glm::mat4& value) override;
 
-	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture) override;
-	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture, uint32_t arrayIndex) override;
-	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTextureCube>& texture) override;
+	virtual void Set(const std::string& name, const Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>& texture) override;
+	virtual void Set(const std::string& name, const Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>& texture, uint32_t arrayIndex) override;
+	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::TextureCubeHazelLegacy>& texture) override;
 	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelImage2D>& image) override;
 
 	virtual float& GetFloat(const std::string& name) override;
@@ -59,11 +59,11 @@ public:
 	virtual glm::mat3& GetMatrix3(const std::string& name) override;
 	virtual glm::mat4& GetMatrix4(const std::string& name) override;
 
-	virtual Hazel::Ref<Hazel::HazelTexture2D> GetTexture2D(const std::string& name) override;
-	virtual Hazel::Ref<Hazel::HazelTextureCube> GetTextureCube(const std::string& name) override;
+	virtual Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> GetTexture2D(const std::string& name) override;
+	virtual Hazel::Ref<Hazel::TextureCubeHazelLegacy> GetTextureCube(const std::string& name) override;
 
-	virtual Hazel::Ref<Hazel::HazelTexture2D> TryGetTexture2D(const std::string& name) override;
-	virtual Hazel::Ref<Hazel::HazelTextureCube> TryGetTextureCube(const std::string& name) override;
+	virtual Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TryGetTexture2D(const std::string& name) override;
+	virtual Hazel::Ref<Hazel::TextureCubeHazelLegacy> TryGetTextureCube(const std::string& name) override;
 
 	template <typename T>
 	void Set(const std::string& name, const T& value)

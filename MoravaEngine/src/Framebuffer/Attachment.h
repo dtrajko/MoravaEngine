@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Hazel/Core/Ref.h"
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 
 enum class AttachmentType

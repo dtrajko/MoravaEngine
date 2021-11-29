@@ -71,10 +71,10 @@ public:
 	virtual void Set(const std::string& name, const glm::mat3& value) override {};
 	virtual void Set(const std::string& name, const glm::mat4& value) override {};
 
-	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture) override {};
-	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture, uint32_t arrayIndex) override {};
-	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelTextureCube>& texture) override {};
-	virtual void Set(const std::string& name, const Hazel::Ref<Hazel::HazelImage2D>& image) override {};
+	virtual void Set(const std::string& name, const Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>& texture) override {};
+	virtual void Set(const std::string& name, const Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>& texture, uint32_t arrayIndex) override {};
+	virtual void Set(const std::string& name, const Hazel::Ref<HazelLegacy::TextureCubeHazelLegacy>& texture) override {};
+	virtual void Set(const std::string& name, const Hazel::Ref<HazelLegacy::HazelImage2D>& image) override {};
 
 	virtual float& GetFloat(const std::string& name) override { return m_Float; }
 	virtual int32_t& GetInt(const std::string& name) override { return m_int32_t; }
@@ -86,11 +86,11 @@ public:
 	virtual glm::mat3& GetMatrix3(const std::string& name) override { return m_glm_mat3; }
 	virtual glm::mat4& GetMatrix4(const std::string& name) override { return m_glm_mat4; }
 
-	virtual Hazel::Ref<Hazel::HazelTexture2D> GetTexture2D(const std::string& name) override { return Hazel::Ref<Hazel::HazelTexture2D>(); };
-	virtual Hazel::Ref<Hazel::HazelTextureCube> GetTextureCube(const std::string& name) override { return Hazel::Ref<Hazel::HazelTextureCube>(); };
+	virtual Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> GetTexture2D(const std::string& name) override { return Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>(); };
+	virtual Hazel::Ref<Hazel::TextureCubeHazelLegacy> GetTextureCube(const std::string& name) override { return Hazel::Ref<Hazel::TextureCubeHazelLegacy>(); };
 
-	virtual Hazel::Ref<Hazel::HazelTexture2D> TryGetTexture2D(const std::string& name) override { return Hazel::Ref<Hazel::HazelTexture2D>(); };
-	virtual Hazel::Ref<Hazel::HazelTextureCube> TryGetTextureCube(const std::string& name) override { return Hazel::Ref<Hazel::HazelTextureCube>(); };
+	virtual Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TryGetTexture2D(const std::string& name) override { return Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>(); };
+	virtual Hazel::Ref<Hazel::TextureCubeHazelLegacy> TryGetTextureCube(const std::string& name) override { return Hazel::Ref<Hazel::TextureCubeHazelLegacy>(); };
 
 	virtual uint32_t GetFlags() const override { return uint32_t(); };
 	virtual bool GetFlag(Hazel::HazelMaterialFlag flag) const override { return bool(); }

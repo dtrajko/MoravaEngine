@@ -15,7 +15,7 @@
 #include "Platform/DX11/DX11Renderer.h"
 
 
-namespace Hazel {
+namespace HazelLegacy {
 
 	static std::unordered_map<size_t, Ref<Pipeline>> s_PipelineCache;
 
@@ -84,10 +84,10 @@ namespace Hazel {
 		Ref<Pipeline> FullscreenQuadPipeline;         // TODO: remove from RendererHazelLegacy
 		PipelineSpecification FullscreenQuadPipelineSpec;
 
-		Ref<HazelTexture2D> WhiteTexture;
-		Ref<HazelTexture2D> BlackTexture;
-		Ref<HazelTexture2D> BRDFLutTexture;
-		Ref<HazelTextureCube> BlackCubeTexture;
+		Ref<Texture2DHazelLegacy> WhiteTexture;
+		Ref<Texture2DHazelLegacy> BlackTexture;
+		Ref<Texture2DHazelLegacy> BRDFLutTexture;
+		Ref<TextureCubeHazelLegacy> BlackCubeTexture;
 		Ref<Environment> EmptyEnvironment;
 	};
 
@@ -198,10 +198,10 @@ namespace Hazel {
 		// ...
 
 		uint32_t whiteTextureData = 0xffffffff;
-		s_Data->WhiteTexture = HazelTexture2D::Create(HazelImageFormat::RGBA, 1, 1, &whiteTextureData);
+		s_Data->WhiteTexture = Texture2DHazelLegacy::Create(HazelImageFormat::RGBA, 1, 1, &whiteTextureData);
 
 		uint32_t blackTextureData[6] = { 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000 };
-		s_Data->BlackCubeTexture = HazelTextureCube::Create(HazelImageFormat::RGBA, 1, 1, &blackTextureData);
+		s_Data->BlackCubeTexture = TextureCubeHazelLegacy::Create(HazelImageFormat::RGBA, 1, 1, &blackTextureData);
 
 		s_Data->EmptyEnvironment = Ref<Environment>::Create(s_Data->BlackCubeTexture, s_Data->BlackCubeTexture);
 
@@ -297,7 +297,7 @@ namespace Hazel {
 	//		}
 	//	}
 
-	Ref<HazelTextureCube> RendererHazelLegacy::CreatePreethamSky(float turbidity, float azimuth, float inclination)
+	Ref<TextureCubeHazelLegacy> RendererHazelLegacy::CreatePreethamSky(float turbidity, float azimuth, float inclination)
 	{
 		// HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
@@ -325,7 +325,7 @@ namespace Hazel {
 		}
 		/**** END The obsolete code moved to OpenGLRenderer ****/
 
-		return Ref<HazelTextureCube>();
+		return Ref<TextureCubeHazelLegacy>();
 	}
 
 	void RendererHazelLegacy::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform)
@@ -365,7 +365,7 @@ namespace Hazel {
 	{
 	}
 
-	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> RendererHazelLegacy::CreateEnvironmentMap(const std::string& filepath)
+	std::pair<Ref<TextureCubeHazelLegacy>, Ref<TextureCubeHazelLegacy>> RendererHazelLegacy::CreateEnvironmentMap(const std::string& filepath)
 	{
 		return s_RendererAPI->CreateEnvironmentMap(filepath);
 	}
@@ -581,23 +581,23 @@ namespace Hazel {
 		s_RendererAPI->RenderQuad(pipeline, material, transform);
 	}
 
-	Ref<HazelTexture2D> RendererHazelLegacy::GetWhiteTexture()
+	Ref<Texture2DHazelLegacy> RendererHazelLegacy::GetWhiteTexture()
 	{
 		return s_Data->WhiteTexture;
 	}
 
-	Ref<HazelTexture2D> RendererHazelLegacy::GetBlackTexture()
+	Ref<Texture2DHazelLegacy> RendererHazelLegacy::GetBlackTexture()
 	{
-		return Ref<HazelTexture2D>();
+		return Ref<Texture2DHazelLegacy>();
 	}
 
-	Ref<HazelTexture2D> RendererHazelLegacy::GetBRDFLutTexture()
+	Ref<Texture2DHazelLegacy> RendererHazelLegacy::GetBRDFLutTexture()
 	{
-		return Ref<HazelTexture2D>();
+		return Ref<Texture2DHazelLegacy>();
 	}
 
 	// disabled in some versions of Hazel-dev
-	Ref<HazelTextureCube> RendererHazelLegacy::GetBlackCubeTexture()
+	Ref<TextureCubeHazelLegacy> RendererHazelLegacy::GetBlackCubeTexture()
 	{
 		return s_Data->BlackCubeTexture;
 	}

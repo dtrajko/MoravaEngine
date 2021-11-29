@@ -66,8 +66,8 @@ namespace Hazel {
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderHazelLegacy::StorageBuffer*>> s_StorageBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
-	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShaderHazelLegacy::s_AlbedoTexture;
-	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShaderHazelLegacy::s_NormalTexture;
+	// Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> VulkanShaderHazelLegacy::s_AlbedoTexture;
+	// Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> VulkanShaderHazelLegacy::s_NormalTexture;
 
 	VulkanShaderHazelLegacy::VulkanShaderHazelLegacy(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)

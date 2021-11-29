@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 
 class MaterialEditorPanel
@@ -12,6 +12,6 @@ public:
 	void OnImGuiRender(bool* p_open = (bool*)0);
 
 private:
-	Hazel::Ref<Hazel::HazelTexture2D> m_CheckerboardTexture;
+	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> m_CheckerboardTexture;
 
 };

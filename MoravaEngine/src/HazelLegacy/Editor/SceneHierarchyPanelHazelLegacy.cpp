@@ -21,9 +21,9 @@ namespace Hazel
 	SceneHierarchyPanelHazelLegacy::SceneHierarchyPanelHazelLegacy(Ref<HazelScene> scene)
 		: m_Context(scene)
 	{
-		m_PencilIcon = HazelTexture2D::Create("Resources/Editor/pencil_icon.png");
-		m_PlusIcon = HazelTexture2D::Create("Resources/Editor/plus_icon.png");
-		m_GearIcon = HazelTexture2D::Create("Resources/Editor/gear_icon.png");
+		m_PencilIcon = Texture2DHazelLegacy::Create("Resources/Editor/pencil_icon.png");
+		m_PlusIcon = Texture2DHazelLegacy::Create("Resources/Editor/plus_icon.png");
+		m_GearIcon = Texture2DHazelLegacy::Create("Resources/Editor/gear_icon.png");
 	}
 
 	SceneHierarchyPanelHazelLegacy::~SceneHierarchyPanelHazelLegacy()

@@ -5,7 +5,7 @@
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Editor/EditorCamera.h"
 #include "Hazel/Renderer/HazelMaterial.h"
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 #include "Hazel/Renderer/RenderCommandQueue.h"
 #include "Hazel/Renderer/RenderPass.h"
 #include "Hazel/Renderer/SceneEnvironment.h"
@@ -62,10 +62,10 @@ public:
 	static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<Hazel::HazelMaterial> overrideMaterial = nullptr);
 	static void SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
-	static std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
+	static std::pair<Hazel::Ref<Hazel::TextureCubeHazelLegacy>, Hazel::Ref<Hazel::TextureCubeHazelLegacy>> CreateEnvironmentMap(const std::string& filepath);
 
 	static Hazel::Ref<Hazel::RenderPass> GetFinalRenderPass();
-	static FramebufferTexture* GetFinalColorBuffer(); // originally returns Hazel::Ref<Hazel::HazelTexture2D>
+	static FramebufferTexture* GetFinalColorBuffer(); // originally returns Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>
 
 	// TODO: Temp
 	static uint32_t GetFinalColorBufferRendererID();
@@ -73,9 +73,9 @@ public:
 	static Hazel::SceneRendererOptionsHazelLegacy& GetOptions();
 
 	// Temporary methods from EnvMapEditorLayer
-	static Hazel::Ref<Hazel::HazelTextureCube> GetRadianceMap();
-	static Hazel::Ref<Hazel::HazelTextureCube> GetIrradianceMap();
-	static Hazel::Ref<Hazel::HazelTexture2D> GetBRDFLUT();
+	static Hazel::Ref<Hazel::TextureCubeHazelLegacy> GetRadianceMap();
+	static Hazel::Ref<Hazel::TextureCubeHazelLegacy> GetIrradianceMap();
+	static Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> GetBRDFLUT();
 	static Hazel::Ref<MoravaShader> GetShaderComposite();
 	static Hazel::Ref<Hazel::RenderPass> GetGeoPass();
 	static Hazel::Ref<Hazel::RenderPass> GetCompositePass();
@@ -87,7 +87,7 @@ public:
 	static void SetEnvironment(Hazel::Environment environment);
 	static Hazel::Ref<MoravaShader> GetShaderSkybox() { return s_ShaderSkybox; }
 	static Hazel::Ref<MoravaShader> GetShaderGrid() { return s_ShaderGrid; }
-	static Hazel::Ref<Hazel::HazelTexture2D> GetEnvEquirect() { return s_EnvEquirect; }
+	static Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> GetEnvEquirect() { return s_EnvEquirect; }
 	static void SetupShaders();
 	static Hazel::SceneRendererCameraHazelLegacy& GetCamera();
 
@@ -120,10 +120,10 @@ public:
 	static Hazel::Ref<MoravaShader> s_ShaderSkybox;
 
 	// Intermediate textures
-	// static Hazel::Ref<Hazel::HazelTextureCube> s_EnvUnfiltered;
-	static Hazel::Ref<Hazel::HazelTexture2D> s_EnvEquirect;
-	// static Hazel::Ref<Hazel::HazelTextureCube> s_EnvFiltered;
-	// static Hazel::Ref<Hazel::HazelTextureCube> s_IrradianceMap;
+	// static Hazel::Ref<Hazel::TextureCubeHazelLegacy> s_EnvUnfiltered;
+	static Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> s_EnvEquirect;
+	// static Hazel::Ref<Hazel::TextureCubeHazelLegacy> s_EnvFiltered;
+	// static Hazel::Ref<Hazel::TextureCubeHazelLegacy> s_IrradianceMap;
 
 	static float s_GridScale;
 	static float s_GridSize;
@@ -174,12 +174,12 @@ public:
 	static SceneRendererOptions s_Options;
 
 	// Bloom compute
-	static Hazel::Ref<Hazel::HazelTexture2D> s_BloomComputeTextures[3];
+	static Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> s_BloomComputeTextures[3];
 
 	static bool s_ResourcesCreated;
 
 	static BloomSettings s_BloomSettings;
-	static Hazel::Ref<Hazel::HazelTexture2D> s_BloomDirtTexture;
+	static Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> s_BloomDirtTexture;
 
 	struct GPUTimeQueries
 	{

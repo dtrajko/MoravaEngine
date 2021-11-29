@@ -5,12 +5,13 @@
 #include "Hazel/Core/Ref.h"
 #include "Hazel/Core/UUID.h"
 #include "Hazel/Editor/EditorCamera.h"
-#include "Hazel/Renderer/HazelMaterial.h"
-#include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/SceneEnvironment.h"
 #include "Hazel/Renderer/Renderer2D.h"
 #include "Hazel/Scene/Components.h"
 #include "Hazel/Scene/SceneCamera.h"
+
+#include "HazelLegacy/Renderer/MaterialHazelLegacy.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 #include "Shader/MoravaShader.h"
 
@@ -20,7 +21,7 @@
 #include <unordered_map>
 
 
-namespace Hazel {
+namespace HazelLegacy {
 
 	class SceneRendererHazelLegacy;
 	struct TransformComponentHazelLegacy;
@@ -67,7 +68,7 @@ namespace Hazel {
 	using EntityMapHazelLegacy = std::unordered_map<UUID, entt::entity>;
 
 
-	class SceneHazelLegacy : public RefCounted
+	class SceneHazelLegacy : public Hazel::RefCounted
 	{
 	public:
 		SceneHazelLegacy(const std::string& debugName = "Scene", bool isEditorScene = false);
@@ -75,10 +76,10 @@ namespace Hazel {
 
 		void Init();
 
-		void OnUpdate(Timestep ts);
-		void OnRenderRuntime(Ref<SceneRendererHazelLegacy> renderer, Timestep ts);
-		void OnRenderEditor(Ref<SceneRendererHazelLegacy> renderer, Timestep ts, const EditorCamera& editorCamera);
-		void OnRenderSimulation(Ref<SceneRendererHazelLegacy> renderer, Timestep ts, const EditorCamera& editorCamera);
+		void OnUpdate(Hazel::Timestep ts);
+		void OnRenderRuntime(Hazel::Ref<SceneRendererHazelLegacy> renderer, Hazel::Timestep ts);
+		void OnRenderEditor(Hazel::Ref<SceneRendererHazelLegacy> renderer, Hazel::Timestep ts, const Hazel::EditorCamera& editorCamera);
+		void OnRenderSimulation(Hazel::Ref<SceneRendererHazelLegacy> renderer, Hazel::Timestep ts, const Hazel::EditorCamera& editorCamera);
 		void OnEvent(Event& e);
 
 		// Runtime
@@ -95,15 +96,15 @@ namespace Hazel {
 		template<typename T>
 		void OnComponentAdded(EntityHazelLegacy entity, T& component);
 
-		inline void SetCamera(const HazelCamera& camera) { m_Camera = camera; };
-		inline HazelCamera* GetCamera() { return &m_Camera; }
+		inline void SetCamera(const Hazel::HazelCamera& camera) { m_Camera = camera; };
+		inline Hazel::HazelCamera* GetCamera() { return &m_Camera; }
 
-		void SetSkyboxMaterial(Ref<HazelMaterial> skyboxMaterial) { m_SkyboxMaterial = skyboxMaterial; }
-		Ref<HazelMaterial> GetSkyboxMaterial() { return m_SkyboxMaterial; }
+		void SetSkyboxMaterial(Hazel::Ref<MaterialHazelLegacy> skyboxMaterial) { m_SkyboxMaterial = skyboxMaterial; }
+		Hazel::Ref<MaterialHazelLegacy> GetSkyboxMaterial() { return m_SkyboxMaterial; }
 
-		void SetEnvironment(Ref<Environment> environment);
-		inline Ref<Environment> GetEnvironment() { return m_Environment; }
-		void SetSkybox(const Ref<HazelTextureCube>& skybox);
+		void SetEnvironment(Hazel::Ref<Environment> environment);
+		inline Hazel::Ref<Environment> GetEnvironment() { return m_Environment; }
+		void SetSkybox(const Hazel::Ref<TextureCubeHazelLegacy>& skybox);
 
 		DirLightHazelLegacy& GetLight() { return m_Light; }
 		inline const DirLightHazelLegacy& GetLight() const { return m_Light; }
@@ -112,7 +113,7 @@ namespace Hazel {
 		EntityHazelLegacy GetMainCameraEntity();
 
 		EntityHazelLegacy CreateEntity(const std::string& name = "");
-		EntityHazelLegacy CreateEntity(const std::string& name, Ref<SceneHazelLegacy> scene);
+		EntityHazelLegacy CreateEntity(const std::string& name, Hazel::Ref<SceneHazelLegacy> scene);
 		EntityHazelLegacy CreateEntityWithID(UUID uuid, const std::string& name = "", bool runtimeMap = false);
 		void DestroyEntity(EntityHazelLegacy entity);
 		EntityHazelLegacy CloneEntity(EntityHazelLegacy entity);
@@ -141,11 +142,11 @@ namespace Hazel {
 		// Temporary/experimental
 		virtual void OnEntitySelected(EntityHazelLegacy entity);
 
-		void CopyTo(Ref<SceneHazelLegacy>& target); // Working on Hazel LIVE! #14
+		void CopyTo(Hazel::Ref<SceneHazelLegacy>& target); // Working on Hazel LIVE! #14
 
 		UUID GetUUID() const { return m_SceneID; }
 
-		static Ref<SceneHazelLegacy> GetScene(UUID uuid);
+		static Hazel::Ref<SceneHazelLegacy> GetScene(UUID uuid);
 
 		void SetPhysics2DGravity(float gravity);
 		float GetPhysics2DGravity() const;
@@ -175,12 +176,12 @@ namespace Hazel {
 
 		// MoravaShader* m_ShaderSkybox;
 
-		Ref<Environment> m_Environment;
+		Hazel::Ref<Environment> m_Environment;
 		float m_EnvironmentIntensity = 1.0f;
-		Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
+		Hazel::Ref<Hazel::TextureCubeHazelLegacy> m_SkyboxTexture;
 		MoravaShader* m_ShaderSkybox;
 
-		Ref<HazelMaterial> m_SkyboxMaterial;
+		Hazel::Ref<HazelMaterial> m_SkyboxMaterial;
 
 		entt::entity m_SelectedEntity;
 
@@ -194,7 +195,7 @@ namespace Hazel {
 
 		std::vector<std::function<void()>> m_PostUpdateQueue;
 
-		Ref<Renderer2D> m_SceneRenderer2D;
+		Hazel::Ref<Hazel::Renderer2D> m_SceneRenderer2D;
 
 		float m_SkyboxLod = 1.0f;
 		bool m_IsPlaying = false;

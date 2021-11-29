@@ -1182,6 +1182,18 @@
     <ClCompile Include="src\Hazel\Scene\Prefab.cpp">
       <Filter>Hazel\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\TextureHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\MaterialHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\ImageHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HazelLegacy\Renderer\ShaderHazelLegacy.cpp">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2548,6 +2560,18 @@
     </ClInclude>
     <ClInclude Include="src\HazelLegacy\Core\RefHazelLegacy.h">
       <Filter>HazelLegacy\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\TextureHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\MaterialHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\ImageHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Renderer\ShaderHazelLegacy.h">
+      <Filter>HazelLegacy\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

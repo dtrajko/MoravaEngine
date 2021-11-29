@@ -10,7 +10,6 @@
 #include "Hazel/Core/Events/KeyEvent.h"
 #include "Hazel/Core/Events/MouseEvent.h"
 #include "Hazel/Renderer/HazelMesh.h"
-#include "Hazel/Renderer/HazelTexture.h"
 #include "Hazel/Renderer/HazelMaterial.h"
 #include "Hazel/Renderer/HazelShader.h"
 #include "Hazel/Renderer/IndexBuffer.h"
@@ -26,6 +25,7 @@
 
 // HazelLegacy classes
 #include "HazelLegacy/Core/RefHazelLegacy.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 // Morava classes
 #include "Camera/RuntimeCamera.h"

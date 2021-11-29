@@ -103,8 +103,8 @@ public:
 	inline std::map<std::string, unsigned int>& GetSamplerSlots() { return EnvMapSharedData::s_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return EnvMapSharedData::s_RadiancePrefilter; }
 	inline float& GetEnvMapRotation() { return EnvMapSharedData::s_EnvMapRotation; }
-	inline Hazel::Ref<Hazel::HazelTexture2D> GetCheckerboardTexture() { return s_CheckerboardTexture; }
-	inline Hazel::Ref<Hazel::HazelTextureCube> GetSkyboxTexture() { return m_SkyboxTexture; }
+	inline Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> GetCheckerboardTexture() { return s_CheckerboardTexture; }
+	inline Hazel::Ref<Hazel::TextureCubeHazelLegacy> GetSkyboxTexture() { return m_SkyboxTexture; }
 	Hazel::EntityHazelLegacy GetMeshEntity();
 	inline float& GetSkyboxExposureFactor() { return EnvMapSharedData::s_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
@@ -128,7 +128,7 @@ private:
 	void SetupContextData(Scene* scene);
 	void SetupShaders();
 	void UpdateUniforms();
-	void SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox);
+	void SetSkybox(Hazel::Ref<Hazel::TextureCubeHazelLegacy> skybox);
 	void Init();
 
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
@@ -137,7 +137,7 @@ private:
 
 public:
 	static SelectionMode s_SelectionMode;
-	static Hazel::Ref<Hazel::HazelTexture2D> s_CheckerboardTexture;
+	static Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> s_CheckerboardTexture;
 
 	static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
 	static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
@@ -161,11 +161,11 @@ private:
 	int m_PostProcessingEffect = 0;
 	bool m_PostProcessingEnabled = false;
 
-	Hazel::Ref<Hazel::HazelTextureCube> m_SkyboxTexture;
+	Hazel::Ref<Hazel::TextureCubeHazelLegacy> m_SkyboxTexture;
 
 	/** BEGIN properties Hazelnut/EditorLayer **/
 	// Editor resources
-	Hazel::Ref<Hazel::HazelTexture2D> m_PlayButtonTex;
+	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> m_PlayButtonTex;
 
 	Hazel::EntityHazelLegacy m_DirectionalLightEntity;
 	glm::mat4 m_LightProjectionMatrix;

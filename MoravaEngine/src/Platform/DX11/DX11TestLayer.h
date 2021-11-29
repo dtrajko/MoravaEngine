@@ -38,7 +38,7 @@ struct RenderObject
 	};
 	Hazel::Ref<Hazel::MeshHazelLegacy> Mesh;
 	Hazel::Ref<DX11Mesh> MeshDX11;
-	std::vector<Hazel::Ref<Hazel::HazelTexture2D>> Textures;
+	std::vector<Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>> Textures;
 	glm::mat4 Transform;
 	PipelineType PipelineType;
 	Hazel::EntityHazelLegacy Entity;

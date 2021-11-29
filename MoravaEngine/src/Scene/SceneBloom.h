@@ -44,8 +44,8 @@ private:
 	Hazel::Ref<MoravaShader> m_ShaderBlur;
 	Hazel::Ref<MoravaShader> m_ShaderBloomFinal;
 
-	// Hazel::Ref<Hazel::HazelTexture2D> m_TextureWood;
-	// Hazel::Ref<Hazel::HazelTexture2D> m_TextureContainer;
+	// Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> m_TextureWood;
+	// Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> m_TextureContainer;
 
 	unsigned int m_TextureWood;
 	unsigned int m_TextureContainer;

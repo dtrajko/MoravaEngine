@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 #include "DX11.h"
 
 #include "DX11Image.h"
 
 
-class DX11TextureCube : public Hazel::HazelTextureCube
+class DX11TextureCube : public Hazel::TextureCubeHazelLegacy
 {
 public:
 	DX11TextureCube(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, const void* data = nullptr);

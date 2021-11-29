@@ -415,7 +415,7 @@ namespace Hazel
 		/**** BEGIN Materials ****/
 
 		// Materials
-		Ref<HazelTexture2D> whiteTexture = RendererHazelLegacy::GetWhiteTexture();
+		Ref<Texture2DHazelLegacy> whiteTexture = RendererHazelLegacy::GetWhiteTexture();
 		if (scene->HasMaterials())
 		{
 			Log::GetLogger()->info("---- Materials - {0} ----", m_FilePath);
@@ -426,7 +426,7 @@ namespace Hazel
 			m_Materials.resize(scene->mNumMaterials);
 			m_MaterialDescriptors.resize(scene->mNumMaterials); // TODO: to be removed from MeshHazelLegacy
 
-			Ref<HazelTexture2D> whiteTexture = RendererHazelLegacy::GetWhiteTexture();
+			Ref<Texture2DHazelLegacy> whiteTexture = RendererHazelLegacy::GetWhiteTexture();
 
 			for (uint32_t i = 0; i < scene->mNumMaterials; i++)
 			{
@@ -526,10 +526,10 @@ namespace Hazel
 					std::string texturePath = parentPath.string();
 					HZ_MESH_LOG("    Albedo map path = '{0}'", texturePath);
 
-					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
+					Ref<Texture2DHazelLegacy> texture = Ref<Texture2DHazelLegacy>();
 					try {
-						// texture = HazelTexture2D::Create(texturePath, false);
-						texture = ResourceManager::LoadHazelTexture2D(texturePath);
+						// texture = Texture2DHazelLegacy::Create(texturePath, false);
+						texture = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ALBEDO map failed to load. Loading the default texture placeholder instead.");
@@ -604,15 +604,15 @@ namespace Hazel
 					std::string texturePath = parentPath.string();
 					HZ_MESH_LOG("    Normal map path = '{0}'", texturePath);
 
-					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
+					Ref<Texture2DHazelLegacy> texture = Ref<Texture2DHazelLegacy>();
 					try {
-						// texture = HazelTexture2D::Create(texturePath, false);
-						texture = ResourceManager::LoadHazelTexture2D(texturePath);
+						// texture = Texture2DHazelLegacy::Create(texturePath, false);
+						texture = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
 						m_Textures.push_back(texture);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The NORMAL map failed to load. Loading the default texture placeholder instead.");
-						texture = HazelTexture2D::Create("Textures/normal_map_default.png");
+						texture = Texture2DHazelLegacy::Create("Textures/normal_map_default.png");
 					}
 
 					if (texture && texture->Loaded())
@@ -673,10 +673,10 @@ namespace Hazel
 					// HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 					HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 
-					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
+					Ref<Texture2DHazelLegacy> texture = Ref<Texture2DHazelLegacy>();
 					try {
-						// texture = HazelTexture2D::Create(texturePath, false);
-						texture = ResourceManager::LoadHazelTexture2D(texturePath);
+						// texture = Texture2DHazelLegacy::Create(texturePath, false);
+						texture = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ROUGHNESS map failed to load. Loading the default texture placeholder instead.");
@@ -730,10 +730,10 @@ namespace Hazel
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
 
-					Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
+					Ref<Texture2DHazelLegacy> texture = Ref<Texture2DHazelLegacy>();
 					try {
-						// texture = HazelTexture2D::Create(texturePath, false);
-						texture = ResourceManager::LoadHazelTexture2D(texturePath);
+						// texture = Texture2DHazelLegacy::Create(texturePath, false);
+						texture = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
@@ -830,10 +830,10 @@ namespace Hazel
 							std::string texturePath = parentPath.string();
 							HZ_MESH_LOG("    Metalness map path = '{0}'", texturePath);
 
-							Ref<HazelTexture2D> texture = Ref<HazelTexture2D>();
+							Ref<Texture2DHazelLegacy> texture = Ref<Texture2DHazelLegacy>();
 							try {
-								// texture = HazelTexture2D::Create(texturePath, false);
-								texture = ResourceManager::LoadHazelTexture2D(texturePath);
+								// texture = Texture2DHazelLegacy::Create(texturePath, false);
+								texture = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
 							}
 							catch (...) {
 								Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
@@ -978,7 +978,7 @@ namespace Hazel
 	{
 	}
 
-	void MeshHazelLegacy::AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<HazelTexture2D> texture)
+	void MeshHazelLegacy::AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<Texture2DHazelLegacy> texture)
 	{
 		// Ref<MeshHazelLegacy> instance = this;
 		// RendererHazelLegacy::Submit([instance, index, name, texture]() mutable {});
@@ -1244,11 +1244,11 @@ namespace Hazel
 		m_BaseMaterial = Hazel::Ref<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
 	}
 
-	Ref<HazelTexture2D> MeshHazelLegacy::LoadBaseTexture()
+	Ref<Texture2DHazelLegacy> MeshHazelLegacy::LoadBaseTexture()
 	{
 		if (!m_BaseTexture) {
 			try {
-				m_BaseTexture = HazelTexture2D::Create("Textures/plain.png");
+				m_BaseTexture = Texture2DHazelLegacy::Create("Textures/plain.png");
 			}
 			catch (...) {
 				Log::GetLogger()->warn("Failed to load the base texture!");

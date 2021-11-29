@@ -24,7 +24,7 @@
 
 
 SelectionMode EnvMapEditorLayer::s_SelectionMode = SelectionMode::Entity;
-Hazel::Ref<Hazel::HazelTexture2D> EnvMapEditorLayer::s_CheckerboardTexture;
+Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> EnvMapEditorLayer::s_CheckerboardTexture;
 Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::s_DefaultMaterial;
 Hazel::Ref<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
 
@@ -77,7 +77,7 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     // Create the light material
     s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
     // Load Hazel/Renderer/HazelTexture
-    s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D("Textures/light_bulb.png");
+    s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy("Textures/light_bulb.png");
     s_LightMaterial->GetAlbedoInput().UseTexture = true;
     MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
 
@@ -94,8 +94,8 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
     m_MaterialEditorPanel = new MaterialEditorPanel();
 
-    s_CheckerboardTexture = Hazel::HazelTexture2D::Create("Textures/Hazel/Checkerboard.tga");
-    m_PlayButtonTex = Hazel::HazelTexture2D::Create("Textures/Hazel/PlayButton.png");
+    s_CheckerboardTexture = HazelLegacy::Texture2DHazelLegacy::Create("Textures/Hazel/Checkerboard.tga");
+    m_PlayButtonTex = HazelLegacy::Texture2DHazelLegacy::Create("Textures/Hazel/PlayButton.png");
 
     m_DisplayBoundingBoxes = false;
     m_DrawOnTopBoundingBoxes = true; // obsolete?
@@ -352,7 +352,7 @@ void EnvMapEditorLayer::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/Outline ****/
 }
 
-void EnvMapEditorLayer::SetSkybox(Hazel::Ref<Hazel::HazelTextureCube> skybox)
+void EnvMapEditorLayer::SetSkybox(Hazel::Ref<Hazel::TextureCubeHazelLegacy> skybox)
 {
     m_SkyboxTexture = skybox;
     m_SkyboxTexture->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));

@@ -475,7 +475,7 @@ namespace Hazel {
 		SetSkybox(environment->RadianceMap);
 	}
 
-	void SceneHazelLegacy::SetSkybox(const Ref<HazelTextureCube>& skybox)
+	void SceneHazelLegacy::SetSkybox(const Ref<TextureCubeHazelLegacy>& skybox)
 	{
 		m_SkyboxTexture = skybox;
 		m_ShaderSkybox->SetInt("u_Texture", skybox.Raw()->GetID());

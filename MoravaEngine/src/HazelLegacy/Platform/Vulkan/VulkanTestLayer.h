@@ -53,7 +53,7 @@ namespace Hazel {
 
 	private:
 		static std::vector<Ref<MeshHazelLegacy>> s_Meshes;
-		Ref<HazelTexture2D> m_Texture;
+		Ref<Texture2DHazelLegacy> m_Texture;
 		EditorCamera m_Camera;
 
 		// std::vector<glm::vec4> m_RandomColors;

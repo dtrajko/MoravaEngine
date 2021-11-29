@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 
 #include "Material/Material.h"
 #include "Texture/MoravaTexture.h"
@@ -26,8 +26,8 @@ public:
 	static inline std::map<std::string, TextureInfo>* GetMaterialInfo() { return &s_MaterialInfo; };
 	static inline std::map<std::string, Hazel::Ref<MoravaShader>>* GetShaders() { return &s_ShaderCacheByTitle; };
 
-	// Loading HazelTexture2D
-	static Hazel::Ref<Hazel::HazelTexture2D> LoadHazelTexture2D(std::string filePath);
+	// Loading Texture2DHazelLegacy
+	static Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> LoadTexture2DHazelLegacy(std::string filePath);
 
 	static void AddShader(std::string name, Hazel::Ref<MoravaShader> shader);
 	static const Hazel::Ref<MoravaShader>& GetShader(std::string name);
@@ -47,7 +47,7 @@ private:
 	static std::map<std::string, Hazel::Ref<MoravaTexture>> s_Textures;
 	static std::map<std::string, Hazel::Ref<Material>> s_Materials;
 
-	static std::map<std::string, Hazel::Ref<Hazel::HazelTexture2D>> s_HazelTextures2D;
+	static std::map<std::string, Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>> s_HazelTextures2D;
 
 	static std::map<std::string, Hazel::Ref<MoravaShader>> s_ShaderCacheByTitle;
 

@@ -75,7 +75,7 @@ namespace Hazel
 		// HazelScene* ActiveScene = nullptr;
 
 		VkCommandBuffer ActiveCommandBuffer = nullptr;
-		Ref<HazelTexture2D> BRDFLut;
+		Ref<Texture2DHazelLegacy> BRDFLut;
 		VulkanShader::ShaderMaterialDescriptorSet RendererDescriptorSetFeb2021;
 		// std::unordered_map<SceneRenderer*, std::vector<VulkanShader::ShaderMaterialDescriptorSet>> RendererDescriptorSet;
 
@@ -93,13 +93,13 @@ namespace Hazel
 			glm::vec3 LightDirectionTemp;
 		} SceneData;
 
-		std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> EnvironmentMap;
+		std::pair<Ref<TextureCubeHazelLegacy>, Ref<TextureCubeHazelLegacy>> EnvironmentMap;
 
 		/**** BEGIN dtrajko Keep smart references alive ****/
-		Ref<HazelTextureCube> envUnfiltered;
-		Ref<HazelTexture2D> envEquirect;
-		Ref<HazelTextureCube> envFiltered;
-		Ref<HazelTextureCube> irradianceMap;
+		Ref<TextureCubeHazelLegacy> envUnfiltered;
+		Ref<Texture2DHazelLegacy> envEquirect;
+		Ref<TextureCubeHazelLegacy> envFiltered;
+		Ref<TextureCubeHazelLegacy> irradianceMap;
 		/**** END dtrajko Keep smart references alive ****/
 
 		RendererCapabilities RenderCaps;
@@ -379,7 +379,7 @@ namespace Hazel
 		// s_Data->EnvironmentMap = RendererHazelLegacy::CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
 		s_Data->EnvironmentMap = RendererHazelLegacy::CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
 
-		s_Data->BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
+		s_Data->BRDFLut = Texture2DHazelLegacy::Create("assets/textures/BRDF_LUT.tga");
 
 		// RendererHazelLegacy::Submit([environment]() mutable {});
 		{
@@ -464,12 +464,12 @@ namespace Hazel
 	void VulkanRendererHazelLegacy::RenderMeshVulkan(Ref<MeshHazelLegacy> mesh, VkCommandBuffer commandBuffer)
 	{
 		/**** BEGIN keep smart references alive ****/
-		Ref<HazelTextureCube> envUnfiltered = s_Data->envUnfiltered;
-		Ref<HazelTextureCube> envFiltered = s_Data->envFiltered;
-		Ref<HazelTextureCube> irradianceMap = s_Data->irradianceMap;
-		std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> environmentMap = s_Data->EnvironmentMap;
-		Ref<HazelTexture2D> BRDFLut = s_Data->BRDFLut;
-		Ref<HazelTexture2D> envEquirect = s_Data->envEquirect;
+		Ref<TextureCubeHazelLegacy> envUnfiltered = s_Data->envUnfiltered;
+		Ref<TextureCubeHazelLegacy> envFiltered = s_Data->envFiltered;
+		Ref<TextureCubeHazelLegacy> irradianceMap = s_Data->irradianceMap;
+		std::pair<Ref<TextureCubeHazelLegacy>, Ref<TextureCubeHazelLegacy>> environmentMap = s_Data->EnvironmentMap;
+		Ref<Texture2DHazelLegacy> BRDFLut = s_Data->BRDFLut;
+		Ref<Texture2DHazelLegacy> envEquirect = s_Data->envEquirect;
 
 		// auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
@@ -1241,17 +1241,17 @@ namespace Hazel
 		CompositePass();
 	}
 
-	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> VulkanRendererHazelLegacy::CreateEnvironmentMap(const std::string& filepath)
+	std::pair<Ref<TextureCubeHazelLegacy>, Ref<TextureCubeHazelLegacy>> VulkanRendererHazelLegacy::CreateEnvironmentMap(const std::string& filepath)
 	{
 		const uint32_t cubemapSize = 1024;
 		const uint32_t irradianceMapSize = 32;
 
 		if (!s_Data->envUnfiltered)
 		{
-			s_Data->envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+			s_Data->envUnfiltered = TextureCubeHazelLegacy::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 		}
 
-		s_Data->envEquirect = HazelTexture2D::Create(filepath);
+		s_Data->envEquirect = Texture2DHazelLegacy::Create(filepath);
 		HazelImageFormat envEquirectImageFormat = s_Data->envEquirect->GetFormat(); // Vulkan Live 18.03.2021 #2: s_Data->envEquirect->GetImage()->GetFormat();
 
 		/****
@@ -1259,7 +1259,7 @@ namespace Hazel
 		if (envEquirectImageFormat != HazelImageFormat::RGBA16F)
 		{
 			Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirectImageFormat);
-			return std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>>();
+			return std::pair<Ref<TextureCubeHazelLegacy>, Ref<TextureCubeHazelLegacy>>();
 		}
 		****/
 
@@ -1302,7 +1302,7 @@ namespace Hazel
 
 		if (!s_Data->envFiltered)
 		{
-			s_Data->envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+			s_Data->envFiltered = TextureCubeHazelLegacy::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
 		}
 
 		// RendererHazelLegacy::Submit([environmentMipFilterPipeline, cubemapSize, envFiltered, envUnfiltered]() mutable {});
@@ -1365,8 +1365,8 @@ namespace Hazel
 
 		if (!s_Data->irradianceMap)
 		{
-			// s_Data->irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
-			s_Data->irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize); // should be HazelImageFormat::RGBA32F?
+			// s_Data->irradianceMap = TextureCubeHazelLegacy::Create(HazelImageFormat::RGBA16F, cubemapSize, cubemapSize);
+			s_Data->irradianceMap = TextureCubeHazelLegacy::Create(HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize); // should be HazelImageFormat::RGBA32F?
 		}
 
 		// RendererHazelLegacy::Submit([environmentIrradiancePipeline, envFilteredCubemap, s_Data->irradianceMap, irradianceMapSize]() mutable {});
@@ -1401,9 +1401,9 @@ namespace Hazel
 		return { s_Data->envFiltered, s_Data->irradianceMap };
 	}
 
-	Ref<HazelTextureCube> VulkanRendererHazelLegacy::CreatePreethamSky(float turbidity, float azimuth, float inclination)
+	Ref<TextureCubeHazelLegacy> VulkanRendererHazelLegacy::CreatePreethamSky(float turbidity, float azimuth, float inclination)
 	{
-		return Ref<HazelTextureCube>();
+		return Ref<TextureCubeHazelLegacy>();
 	}
 
 	void VulkanRendererHazelLegacy::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<MeshHazelLegacy> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform)

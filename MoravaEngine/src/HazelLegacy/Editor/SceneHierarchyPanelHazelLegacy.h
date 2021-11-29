@@ -51,9 +51,9 @@ namespace Hazel
 		std::function<void(EntityHazelLegacy, Ref<MeshAsset>)> m_MeshAssetConvertCallback;
 		std::function<void(EntityHazelLegacy, AssetHandle)> m_InvalidMetadataCallback;
 
-		Ref<HazelTexture2D> m_PencilIcon;
-		Ref<HazelTexture2D> m_PlusIcon;
-		Ref<HazelTexture2D> m_GearIcon;
+		Ref<Texture2DHazelLegacy> m_PencilIcon;
+		Ref<Texture2DHazelLegacy> m_PlusIcon;
+		Ref<Texture2DHazelLegacy> m_GearIcon;
 
 	};
 

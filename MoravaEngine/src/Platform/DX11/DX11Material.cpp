@@ -56,9 +56,9 @@ void DX11Material::Set(const std::string& name, const glm::vec4& value) {}
 void DX11Material::Set(const std::string& name, const glm::mat3& value) {}
 void DX11Material::Set(const std::string& name, const glm::mat4& value) {}
 
-void DX11Material::Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture) {}
-void DX11Material::Set(const std::string& name, const Hazel::Ref<Hazel::HazelTexture2D>& texture, uint32_t arrayIndex) {}
-void DX11Material::Set(const std::string& name, const Hazel::Ref<Hazel::HazelTextureCube>& texture) {}
+void DX11Material::Set(const std::string& name, const Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>& texture) {}
+void DX11Material::Set(const std::string& name, const Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>& texture, uint32_t arrayIndex) {}
+void DX11Material::Set(const std::string& name, const Hazel::Ref<Hazel::TextureCubeHazelLegacy>& texture) {}
 void DX11Material::Set(const std::string& name, const Hazel::Ref<Hazel::HazelImage2D>& image) {}
 
 float& DX11Material::GetFloat(const std::string& name) { float v;  return v; }
@@ -70,10 +70,10 @@ glm::vec3& DX11Material::GetVector3(const std::string& name) { glm::vec3 v;  ret
 glm::vec4& DX11Material::GetVector4(const std::string& name) { glm::vec4 v;  return v; }
 glm::mat3& DX11Material::GetMatrix3(const std::string& name) { glm::mat3 v;  return v; }
 glm::mat4& DX11Material::GetMatrix4(const std::string& name) { glm::mat4 v;  return v; }
-Hazel::Ref<Hazel::HazelTexture2D> DX11Material::GetTexture2D(const std::string& name) { std::string path = ""; return Hazel::HazelTexture2D::Create(path); }
-Hazel::Ref<Hazel::HazelTextureCube> DX11Material::TryGetTextureCube(const std::string& name) { std::string path = ""; return Hazel::HazelTextureCube::Create(path); }
-Hazel::Ref<Hazel::HazelTexture2D> DX11Material::TryGetTexture2D(const std::string& name) { std::string path = ""; return Hazel::HazelTexture2D::Create(path); }
-Hazel::Ref<Hazel::HazelTextureCube> DX11Material::GetTextureCube(const std::string& name) { std::string path = ""; return Hazel::HazelTextureCube::Create(path); }
+Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> DX11Material::GetTexture2D(const std::string& name) { std::string path = ""; return HazelLegacy::Texture2DHazelLegacy::Create(path); }
+Hazel::Ref<Hazel::TextureCubeHazelLegacy> DX11Material::TryGetTextureCube(const std::string& name) { std::string path = ""; return Hazel::TextureCubeHazelLegacy::Create(path); }
+Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> DX11Material::TryGetTexture2D(const std::string& name) { std::string path = ""; return HazelLegacy::Texture2DHazelLegacy::Create(path); }
+Hazel::Ref<Hazel::TextureCubeHazelLegacy> DX11Material::GetTextureCube(const std::string& name) { std::string path = ""; return Hazel::TextureCubeHazelLegacy::Create(path); }
 void DX11Material::UpdateForRendering() {}
 
 void DX11Material::AddTexture(Hazel::Ref<DX11Texture2D> texture)

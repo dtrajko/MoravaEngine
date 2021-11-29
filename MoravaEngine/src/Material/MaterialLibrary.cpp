@@ -82,27 +82,27 @@ void MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType textureType
     switch (textureType)
     {
     case MaterialTextureType::Albedo:
-        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
         envMapMaterial->GetAlbedoInput().UseTexture = true;
         break;
     case MaterialTextureType::Normal:
-        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
         envMapMaterial->GetNormalInput().UseTexture = true;
         break;
     case MaterialTextureType::Metalness:
-        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
         envMapMaterial->GetMetalnessInput().UseTexture = true;
         break;
     case MaterialTextureType::Roughness:
-        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
         envMapMaterial->GetRoughnessInput().UseTexture = true;
         break;
     case MaterialTextureType::AO:
-        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
         envMapMaterial->GetAOInput().UseTexture = true;
         break;
     case MaterialTextureType::Emissive:
-        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadHazelTexture2D(texturePath);
+        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
         envMapMaterial->GetEmissiveInput().UseTexture = true;
         break;
     }
@@ -172,32 +172,32 @@ Hazel::Ref<EnvMapMaterial> MaterialLibrary::CreateDefaultMaterial(std::string ma
 
     // Load Hazel/Renderer/HazelTexture
     if (textureInfo.albedo != "") {
-        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.albedo);
+        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.albedo);
         envMapMaterial->GetAlbedoInput().UseTexture = true;
     }
     if (textureInfo.normal != "")
     {
-        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.normal);
+        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.normal);
         envMapMaterial->GetNormalInput().UseTexture = true;    
     }
     if (textureInfo.metallic != "")
     {
-        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.metallic);
+        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.metallic);
         envMapMaterial->GetMetalnessInput().UseTexture = true;
     }
     if (textureInfo.roughness != "")
     {
-        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.roughness);
+        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.roughness);
         envMapMaterial->GetRoughnessInput().UseTexture = true;
     }
     if (textureInfo.emissive != "")
     {
-        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.emissive);
+        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.emissive);
         envMapMaterial->GetEmissiveInput().UseTexture = true;
     }
     if (textureInfo.ao != "")
     {
-        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadHazelTexture2D(textureInfo.ao);
+        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.ao);
         envMapMaterial->GetAOInput().UseTexture = true;
     }
 

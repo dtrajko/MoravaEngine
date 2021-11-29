@@ -40,7 +40,7 @@ SceneBloom::~SceneBloom()
 
 void SceneBloom::SetupTextures()
 {
-    // m_TextureWood = Hazel::HazelTexture2D::Create("Textures/wood.png", true, Hazel::TextureWrap::Clamp);
+    // m_TextureWood = HazelLegacy::Texture2DHazelLegacy::Create("Textures/wood.png", true, Hazel::TextureWrap::Clamp);
 
     m_TextureWood = loadTexture("Textures/wood.png", true); // note that we're loading the texture as an SRGB texture
     m_TextureContainer = loadTexture("Textures/container/container2.png", true); // note that we're loading the texture as an SRGB texture

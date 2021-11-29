@@ -157,7 +157,7 @@ void ImGuiWrapper::DrawInputText(std::string text)
 	ImGui::InputText(text.c_str(), buffer, 32);
 }
 
-void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Ref<Hazel::HazelTexture2D> checkerboardTexture)
+void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> checkerboardTexture)
 {
 	// Display Material UUID
 	ImGui::Columns(2);
@@ -228,9 +228,9 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
 					{
-						// material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, material->GetAlbedoInput().SRGB);
+						// material->GetAlbedoInput().TextureMap = HazelLegacy::Texture2DHazelLegacy::Create(filename, material->GetAlbedoInput().SRGB);
 						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, material->GetAlbedoInput().SRGB, false, "AlbedoMap" };
-						material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+						material->GetAlbedoInput().TextureMap = HazelLegacy::Texture2DHazelLegacy::Create(filename, textureProperties);
 					}
 				}
 			}
@@ -246,7 +246,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					if (material->GetAlbedoInput().TextureMap)
 					{
 						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, material->GetAlbedoInput().SRGB, false, "AlbedoMap" };
-						material->GetAlbedoInput().TextureMap = Hazel::HazelTexture2D::Create(material->GetAlbedoInput().TextureMap->GetPath(), textureProperties);
+						material->GetAlbedoInput().TextureMap = HazelLegacy::Texture2DHazelLegacy::Create(material->GetAlbedoInput().TextureMap->GetPath(), textureProperties);
 					}
 				}
 			}
@@ -302,7 +302,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					if (filename != "")
 					{
 						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, false, false, "NormalMap" };
-						material->GetNormalInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+						material->GetNormalInput().TextureMap = HazelLegacy::Texture2DHazelLegacy::Create(filename, textureProperties);
 					}
 				}
 			}
@@ -357,7 +357,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					if (filename != "")
 					{
 						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, false, false, "MetalnessMap" };
-						material->GetMetalnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+						material->GetMetalnessInput().TextureMap = HazelLegacy::Texture2DHazelLegacy::Create(filename, textureProperties);
 					}
 				}
 			}
@@ -415,7 +415,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					if (filename != "")
 					{
 						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, false, false, "RoughnessMap" };
-						material->GetRoughnessInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+						material->GetRoughnessInput().TextureMap = HazelLegacy::Texture2DHazelLegacy::Create(filename, textureProperties);
 					}
 				}
 			}
@@ -473,7 +473,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					if (filename != "")
 					{
 						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, false, false, "AOMap" };
-						material->GetAOInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+						material->GetAOInput().TextureMap = HazelLegacy::Texture2DHazelLegacy::Create(filename, textureProperties);
 					}
 				}
 			}
@@ -531,7 +531,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					if (filename != "")
 					{
 						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, material->GetEmissiveInput().SRGB, false, "EmissiveMap" };
-						material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(filename, textureProperties);
+						material->GetEmissiveInput().TextureMap = HazelLegacy::Texture2DHazelLegacy::Create(filename, textureProperties);
 					}
 				}
 			}
@@ -546,7 +546,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 					if (material->GetEmissiveInput().TextureMap)
 					{
 						Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, material->GetEmissiveInput().SRGB, false, "EmissiveMap" };
-						material->GetEmissiveInput().TextureMap = Hazel::HazelTexture2D::Create(material->GetEmissiveInput().TextureMap->GetPath(), textureProperties);
+						material->GetEmissiveInput().TextureMap = HazelLegacy::Texture2DHazelLegacy::Create(material->GetEmissiveInput().TextureMap->GetPath(), textureProperties);
 					}
 				}
 			}
@@ -559,7 +559,7 @@ void ImGuiWrapper::DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Re
 	// END PBR Textures
 }
 
-void ImGuiWrapper::DragAndDropTarget(Hazel::Ref<Hazel::HazelTexture2D>& texture, bool srgb)
+void ImGuiWrapper::DragAndDropTarget(Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>& texture, bool srgb)
 {
 	if (ImGui::BeginDragDropTarget())
 	{
@@ -573,7 +573,7 @@ void ImGuiWrapper::DragAndDropTarget(Hazel::Ref<Hazel::HazelTexture2D>& texture,
 			if (filename != "")
 			{
 				Hazel::TextureProperties textureProperties = { Hazel::TextureWrap::Repeat, Hazel::TextureFilter::Linear, true, srgb, false, "DragAndDropTarget" };
-				texture = Hazel::HazelTexture2D::Create(filename, textureProperties);
+				texture = HazelLegacy::Texture2DHazelLegacy::Create(filename, textureProperties);
 			}
 		}
 		ImGui::EndDragDropTarget();

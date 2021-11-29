@@ -29,10 +29,10 @@ Hazel::Ref<MoravaShader> EnvMapSceneRenderer::s_ShaderEnvFiltering;
 Hazel::Ref<MoravaShader> EnvMapSceneRenderer::s_ShaderEnvIrradiance;
 Hazel::Ref<MoravaShader> EnvMapSceneRenderer::s_ShaderGrid;
 Hazel::Ref<MoravaShader> EnvMapSceneRenderer::s_ShaderSkybox;
-// Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::s_EnvUnfiltered;
-Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::s_EnvEquirect;
-// Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::s_EnvFiltered;
-// Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::s_IrradianceMap;
+// Hazel::Ref<Hazel::TextureCubeHazelLegacy> EnvMapSceneRenderer::s_EnvUnfiltered;
+Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> EnvMapSceneRenderer::s_EnvEquirect;
+// Hazel::Ref<Hazel::TextureCubeHazelLegacy> EnvMapSceneRenderer::s_EnvFiltered;
+// Hazel::Ref<Hazel::TextureCubeHazelLegacy> EnvMapSceneRenderer::s_IrradianceMap;
 float EnvMapSceneRenderer::s_GridScale = 16.025f;
 float EnvMapSceneRenderer::s_GridSize = 0.025f;
 uint32_t EnvMapSceneRenderer::s_FramebufferWidth = 1280;
@@ -63,12 +63,12 @@ Hazel::Ref<Hazel::HazelMaterial> EnvMapSceneRenderer::s_DOFMaterial;
 
 SceneRendererOptions EnvMapSceneRenderer::s_Options;
 
-Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::s_BloomComputeTextures[3];
+Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> EnvMapSceneRenderer::s_BloomComputeTextures[3];
 
 bool EnvMapSceneRenderer::s_ResourcesCreated = false;
 
 BloomSettings EnvMapSceneRenderer::s_BloomSettings;
-Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::s_BloomDirtTexture;
+Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> EnvMapSceneRenderer::s_BloomDirtTexture;
 
 EnvMapSceneRenderer::GPUTimeQueries EnvMapSceneRenderer::s_GPUTimeQueries;
 
@@ -89,7 +89,7 @@ struct EnvMapSceneRendererData
         Hazel::HazelDirLight ActiveLight;
     } SceneData;
 
-    Hazel::Ref<Hazel::HazelTexture2D> BRDFLUT;
+    Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> BRDFLUT;
 
     Hazel::Ref<MoravaShader> CompositeShader;
 
@@ -202,7 +202,7 @@ void EnvMapSceneRenderer::Init(std::string filepath, Hazel::SceneHazelLegacy* sc
     targetFramebufferComp->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
     s_Data.CompositePass = Hazel::RenderPass::Create(compRenderPassSpec);
 
-    s_Data.BRDFLUT = Hazel::HazelTexture2D::Create("Textures/Hazel/BRDF_LUT.tga");
+    s_Data.BRDFLUT = HazelLegacy::Texture2DHazelLegacy::Create("Textures/Hazel/BRDF_LUT.tga");
 
     s_Renderer2D = Hazel::Ref<Hazel::Renderer2D>::Create();
 }
@@ -309,7 +309,7 @@ void EnvMapSceneRenderer::SetEnvironment(Hazel::Environment environment)
  * Moved from EnvironmentMap
  * This version doesn't give satisfying results, OpenGLRenderer::CreateEnvironmentMap() is probably better
  ****/
-std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCube>> EnvMapSceneRenderer::CreateEnvironmentMap(const std::string& filepath)
+std::pair<Hazel::Ref<Hazel::TextureCubeHazelLegacy>, Hazel::Ref<Hazel::TextureCubeHazelLegacy>> EnvMapSceneRenderer::CreateEnvironmentMap(const std::string& filepath)
 {
     Log::GetLogger()->debug("ComputeEnvironmentMaps: {0}", Hazel::RendererHazelLegacy::GetConfig().ComputeEnvironmentMaps);
 
@@ -321,10 +321,10 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
     const uint32_t cubemapSize = Hazel::RendererHazelLegacy::GetConfig().EnvironmentMapResolution;
     const uint32_t irradianceMapSize = 32;
 
-    Hazel::Ref<Hazel::OpenGLTextureCube> envUnfiltered = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize).As<Hazel::OpenGLTextureCube>();
+    Hazel::Ref<Hazel::OpenGLTextureCube> envUnfiltered = Hazel::TextureCubeHazelLegacy::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize).As<Hazel::OpenGLTextureCube>();
     // Ref<OpenGLShader> equirectangularConversionShader = RendererHazelLegacy::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShader>();
     Hazel::Ref<Hazel::OpenGLShader> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<Hazel::OpenGLShader>();
-    s_EnvEquirect = Hazel::HazelTexture2D::Create(filepath);
+    s_EnvEquirect = HazelLegacy::Texture2DHazelLegacy::Create(filepath);
 
     // HZ_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
     if (s_EnvEquirect->GetFormat() != Hazel::HazelImageFormat::RGBA32F)
@@ -345,8 +345,8 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
     // Ref<OpenGLShader> envFilteringShader = RendererHazelLegacy::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShader>();
     Hazel::Ref<Hazel::OpenGLShader> envFilteringShader = ResourceManager::GetShader("Hazel/EnvironmentMipFilter").As<Hazel::OpenGLShader>();
 
-    // s_EnvFiltered = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize, true);
-    Hazel::Ref<Hazel::OpenGLTextureCube> envFiltered = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize).As<Hazel::OpenGLTextureCube>();
+    // s_EnvFiltered = Hazel::TextureCubeHazelLegacy::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize, true);
+    Hazel::Ref<Hazel::OpenGLTextureCube> envFiltered = Hazel::TextureCubeHazelLegacy::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize).As<Hazel::OpenGLTextureCube>();
 
     // RendererHazelLegacy::Submit([envUnfiltered, envFiltered]() {});
     {
@@ -383,8 +383,8 @@ std::pair<Hazel::Ref<Hazel::HazelTextureCube>, Hazel::Ref<Hazel::HazelTextureCub
     // Ref<OpenGLShader> envIrradianceShader = RendererHazelLegacy::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShader>();
     Hazel::Ref<Hazel::OpenGLShader> envIrradianceShader = ResourceManager::GetShader("Hazel/EnvironmentIrradiance").As<Hazel::OpenGLShader>();
 
-    // s_IrradianceMap = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize, true);
-    Hazel::Ref<Hazel::OpenGLTextureCube> irradianceMap = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize).As<Hazel::OpenGLTextureCube>();
+    // s_IrradianceMap = Hazel::TextureCubeHazelLegacy::Create(Hazel::HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize, true);
+    Hazel::Ref<Hazel::OpenGLTextureCube> irradianceMap = Hazel::TextureCubeHazelLegacy::Create(Hazel::HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize).As<Hazel::OpenGLTextureCube>();
 
     envIrradianceShader->Bind();
     envFiltered->Bind(1);
@@ -655,7 +655,7 @@ void EnvMapSceneRenderer::OnImGuiRender()
                 std::string filename = Application::Get()->OpenFile("");
                 if (!filename.empty())
                 {
-                    s_BloomDirtTexture = Hazel::HazelTexture2D::Create(filename);
+                    s_BloomDirtTexture = HazelLegacy::Texture2DHazelLegacy::Create(filename);
                 }
             }
         }
@@ -986,17 +986,17 @@ Hazel::SceneRendererOptionsHazelLegacy& EnvMapSceneRenderer::GetOptions()
     return s_Data.Options;
 }
 
-Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::GetRadianceMap()
+Hazel::Ref<Hazel::TextureCubeHazelLegacy> EnvMapSceneRenderer::GetRadianceMap()
 {
     return s_Data.SceneData.SceneEnvironment.RadianceMap;
 }
 
-Hazel::Ref<Hazel::HazelTextureCube> EnvMapSceneRenderer::GetIrradianceMap()
+Hazel::Ref<Hazel::TextureCubeHazelLegacy> EnvMapSceneRenderer::GetIrradianceMap()
 {
     return s_Data.SceneData.SceneEnvironment.IrradianceMap;
 }
 
-Hazel::Ref<Hazel::HazelTexture2D> EnvMapSceneRenderer::GetBRDFLUT()
+Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> EnvMapSceneRenderer::GetBRDFLUT()
 {
     return s_Data.BRDFLUT;
 }

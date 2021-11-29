@@ -3,7 +3,7 @@
 #include "Scene/SceneDX11.h"
 
 #include "Hazel/Scene/Components.h"
-#include "Hazel/Renderer/HazelTexture.h"
+#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
 #include "Hazel/Scene/Entity.h"
 
 #include "../../ImGuizmo/ImGuizmo.h"

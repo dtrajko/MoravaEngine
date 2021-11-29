@@ -15,7 +15,7 @@
 #include "Core/Application.h"
 
 
-namespace Hazel {
+namespace HazelLegacy {
 
 	class HazelShaderLibrary;
 
@@ -117,8 +117,8 @@ namespace Hazel {
 		static void EndFrame();
 
 		static void SetSceneEnvironment(Ref<SceneRenderer> sceneRenderer, Ref<Environment> environment, Ref<HazelImage2D> shadow, Ref<HazelImage2D> linearDepth);
-		static std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath);
-		static Ref<HazelTextureCube> CreatePreethamSky(float turbidity, float azimuth, float inclination);
+		static std::pair<Ref<TextureCubeHazelLegacy>, Ref<TextureCubeHazelLegacy>> CreateEnvironmentMap(const std::string& filepath);
+		static Ref<TextureCubeHazelLegacy> CreatePreethamSky(float turbidity, float azimuth, float inclination);
 
 		static void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform);
 		static void RenderMeshWithMaterial(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> material, Buffer additionalUniforms = Buffer());
@@ -132,10 +132,10 @@ namespace Hazel {
 		static void SubmitQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Material> material, const glm::mat4& transform = glm::mat4(1.0f));
 		static void ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<HazelImage2D> image);
 
-		static Ref<HazelTexture2D> GetWhiteTexture();
-		static Ref<HazelTexture2D> GetBlackTexture();
-		static Ref<HazelTexture2D> GetBRDFLutTexture();
-		static Ref<HazelTextureCube> GetBlackCubeTexture();
+		static Ref<Texture2DHazelLegacy> GetWhiteTexture();
+		static Ref<Texture2DHazelLegacy> GetBlackTexture();
+		static Ref<Texture2DHazelLegacy> GetBRDFLutTexture();
+		static Ref<TextureCubeHazelLegacy> GetBlackCubeTexture();
 		static Ref<Environment> GetEmptyEnvironment();
 
 		static void RegisterShaderDependency(Ref<HazelShader> shader, Ref<PipelineCompute> computePipeline);
