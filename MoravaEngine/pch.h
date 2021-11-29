@@ -6,7 +6,6 @@
 #include "Hazel/Core/Base.h"
 #include "Hazel/Core/Math/AABB.h"
 #include "Hazel/Core/Math/Ray.h"
-#include "Hazel/Core/Ref.h"
 #include "Hazel/Editor/EditorCamera.h"
 #include "Hazel/Core/Events/KeyEvent.h"
 #include "Hazel/Core/Events/MouseEvent.h"
@@ -24,6 +23,9 @@
 #include "Hazel/Scene/HazelScene.h"
 #include "Hazel/Scene/Entity.h"
 #include "Hazel/Scene/HazelScene.h"
+
+// HazelLegacy classes
+#include "HazelLegacy/Core/RefHazelLegacy.h"
 
 // Morava classes
 #include "Camera/RuntimeCamera.h"

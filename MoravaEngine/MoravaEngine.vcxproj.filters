@@ -2546,6 +2546,9 @@
     <ClInclude Include="src\Hazel\Scene\Prefab.h">
       <Filter>Hazel\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="src\HazelLegacy\Core\RefHazelLegacy.h">
+      <Filter>HazelLegacy\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2856,6 +2859,9 @@
     </Filter>
     <Filter Include="Hazel\Editor\NodeGraphEditor">
       <UniqueIdentifier>{144489a1-b854-47d3-9e28-1e6b67d6c737}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HazelLegacy\Core">
+      <UniqueIdentifier>{484ec253-83b8-4df8-822a-b8fae121c9cb}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
