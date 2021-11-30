@@ -179,10 +179,12 @@
     <ClCompile Include="src\Framebuffer\OmniShadowMap.cpp" />
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp" />
+    <ClCompile Include="src\H2M\Core\LogH2M.cpp" />
     <ClCompile Include="src\H2M\Core\TimestepH2M.cpp" />
     <ClCompile Include="src\H2M\Editor\SceneHierarchyPanelH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanAllocatorH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanFramebufferH2M.cpp" />
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRendererH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanShaderH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTestLayer.cpp" />
@@ -688,12 +690,14 @@
     <ClInclude Include="src\Framebuffer\OmniShadowMap.h" />
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
+    <ClInclude Include="src\H2M\Core\AssertH2M.h" />
     <ClInclude Include="src\H2M\Core\BaseH2M.h" />
     <ClInclude Include="src\H2M\Core\BufferH2M.h" />
     <ClInclude Include="src\H2M\Core\Events\ApplicationEventH2M.h" />
     <ClInclude Include="src\H2M\Core\Events\EventH2M.h" />
     <ClInclude Include="src\H2M\Core\Events\KeyEventH2M.h" />
     <ClInclude Include="src\H2M\Core\Events\MouseEventH2M.h" />
+    <ClInclude Include="src\H2M\Core\LogH2M.h" />
     <ClInclude Include="src\H2M\Core\Math\AABBH2M.h" />
     <ClInclude Include="src\H2M\Core\RefH2M.h" />
     <ClInclude Include="src\H2M\Core\TimestepH2M.h" />
@@ -701,6 +705,7 @@
     <ClInclude Include="src\H2M\ImGui\ImGuiH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanAllocatorH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanFramebufferH2M.h" />
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRendererH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanShaderH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanTestLayer.h" />
