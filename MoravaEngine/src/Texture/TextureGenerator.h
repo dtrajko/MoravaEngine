@@ -9,7 +9,7 @@
 class TextureGenerator
 {
 public:
-	static Hazel::Ref<MoravaTexture> TextureFromColorMap(glm::vec4* colorMap, const char* fileLocation, int width, int height);
-	static Hazel::Ref<MoravaTexture> TextureFromHeightMap(float** noiseMap, const char* fileLocation, int width, int height);
+	static H2M::Ref<MoravaTexture> TextureFromColorMap(glm::vec4* colorMap, const char* fileLocation, int width, int height);
+	static H2M::Ref<MoravaTexture> TextureFromHeightMap(float** noiseMap, const char* fileLocation, int width, int height);
 
 };

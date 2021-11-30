@@ -5,19 +5,19 @@
 #include "DX11.h"
 #include "DX11InputListener.h"
 
-#include "Hazel/Core/Timestep.h"
-#include "Hazel/Core/Events/Event.h"
-#include "Hazel/Renderer/HazelCamera.h"
+#include "H2M/Core/Timestep.h"
+#include "H2M/Core/Events/Event.h"
+#include "H2M/Renderer/HazelCamera.h"
 
 
-class DX11CameraFP : public Hazel::HazelCamera, public DX11InputListener
+class DX11CameraFP : public H2M::HazelCamera, public DX11InputListener
 {
 public:
 	DX11CameraFP();
 	DX11CameraFP(glm::mat4 projection);
 	~DX11CameraFP();
 
-	void OnUpdate(Hazel::Timestep ts);
+	void OnUpdate(H2M::Timestep ts);
 
 	// static DX11CameraFP* Get();
 

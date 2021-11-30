@@ -7,9 +7,9 @@
 
 
 template <>
-struct std::hash<Hazel::VertexHazelLegacy>
+struct std::hash<H2M::VertexH2M>
 {
-	size_t operator()(Hazel::VertexHazelLegacy const& vertex) const
+	size_t operator()(H2M::VertexH2M const& vertex) const
 	{
 		size_t seed = 0;
 		Util::HashCombine(seed, vertex.Position, vertex.Normal, vertex.Texcoord);
@@ -17,8 +17,8 @@ struct std::hash<Hazel::VertexHazelLegacy>
 	}
 };
 
-MoravaTinyMesh::MoravaTinyMesh(const std::string& filepath, Hazel::Ref<MoravaShader> shader, Hazel::Ref<Hazel::HazelMaterial> material, bool isAnimated)
-	: Hazel::MeshHazelLegacy(filepath, shader, material, isAnimated)
+MoravaTinyMesh::MoravaTinyMesh(const std::string& filepath, H2M::Ref<MoravaShader> shader, H2M::Ref<H2M::HazelMaterial> material, bool isAnimated)
+	: H2M::MeshH2M(filepath, shader, material, isAnimated)
 {
 	/****
 	tinyobj::attrib_t attrib;
@@ -34,13 +34,13 @@ MoravaTinyMesh::MoravaTinyMesh(const std::string& filepath, Hazel::Ref<MoravaSha
 	vertices.clear();
 	indices.clear();
 
-	std::unordered_map<Hazel::Vertex, uint32_t> uniqueVertices{};
+	std::unordered_map<H2M::Vertex, uint32_t> uniqueVertices{};
 
 	for (const auto& shape : shapes)
 	{
 		for (const auto& index : shape.mesh.indices)
 		{
-			Hazel::Vertex vertex{};
+			H2M::Vertex vertex{};
 
 			if (index.vertex_index >= 0)
 			{

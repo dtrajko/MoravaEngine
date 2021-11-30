@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 
 
-Material::Material() : Hazel::HazelMaterial(Hazel::Ref<Hazel::HazelShader>())
+Material::Material() : H2M::HazelMaterial(H2M::Ref<H2M::HazelShader>())
 {
 	m_SpecularIntensity = 0.0f;
 	m_Shininess = 0.0f;
@@ -64,7 +64,7 @@ Material::Material(int txSlotAlbedo, int txSlotSpecular, int txSlotNormalMap, fl
 	m_Shininess = shininess;
 }
 
-Material::Material(Hazel::Ref<Hazel::HazelShader> shader) : Material()
+Material::Material(H2M::Ref<H2M::HazelShader> shader) : Material()
 {
 	m_Shader = shader;
 

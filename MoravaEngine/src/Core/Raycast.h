@@ -16,7 +16,7 @@ class Raycast
 {
 public:
 	Raycast();
-	void Draw(glm::vec3 start, glm::vec3 end, glm::vec4 color, Hazel::Ref<MoravaShader> shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+	void Draw(glm::vec3 start, glm::vec3 end, glm::vec4 color, H2M::Ref<MoravaShader> shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 	~Raycast();
 
 public:

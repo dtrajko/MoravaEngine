@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Hazel/Renderer/HazelShader.h"
-#include "Hazel/Renderer/ShaderUniform.h"
+#include "H2M/Renderer/HazelShader.h"
+#include "H2M/Renderer/ShaderUniform.h"
 
 #include "Core/CommonValues.h"
 
@@ -38,14 +38,14 @@ struct MoravaShaderSpecification
 };
 
 
-class MoravaShader : public Hazel::HazelShader
+class MoravaShader : public H2M::HazelShader
 {
 public:
 	// the ultimate Create method that can create both MoravaShader and HazelShader shader types
-	static Hazel::Ref<MoravaShader> Create(MoravaShaderSpecification moravaShaderSpecification);
-	static Hazel::Ref<MoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
-	static Hazel::Ref<MoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
-	static Hazel::Ref<MoravaShader> Create(const char* computeLocation, bool forceCompile = false);
+	static H2M::Ref<MoravaShader> Create(MoravaShaderSpecification moravaShaderSpecification);
+	static H2M::Ref<MoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
+	static H2M::Ref<MoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
+	static H2M::Ref<MoravaShader> Create(const char* computeLocation, bool forceCompile = false);
 
 	MoravaShader();
 	MoravaShader(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
@@ -99,8 +99,8 @@ public:
 	virtual void Unbind();
 
 	virtual const std::string& GetName() const override { return m_Name; }
-	virtual const std::unordered_map<std::string, Hazel::ShaderBuffer>& GetShaderBuffers() const override;
-	virtual const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& GetResources() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderBuffer>& GetShaderBuffers() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& GetResources() const override;
 
 	virtual void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	virtual void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
@@ -118,7 +118,7 @@ public:
 
 	GLuint GetProgramID();
 
-	Hazel::RendererID GetRendererID() const;
+	H2M::RendererID GetRendererID() const;
 	void Bind();
 
 protected:
@@ -138,12 +138,12 @@ protected:
 	const char* GetShaderTypeNameFromEnum(const GLenum shaderType);
 
 	// Vulkan Week Day 1 (removed later)
-	// virtual const Hazel::ShaderUniformBufferList& GetVSRendererUniforms() const override { return m_VSRendererUniformBuffers; }
-	// virtual const Hazel::ShaderUniformBufferList& GetPSRendererUniforms() const override { return m_PSRendererUniformBuffers; }
+	// virtual const H2M::ShaderUniformBufferList& GetVSRendererUniforms() const override { return m_VSRendererUniformBuffers; }
+	// virtual const H2M::ShaderUniformBufferList& GetPSRendererUniforms() const override { return m_PSRendererUniformBuffers; }
 	// virtual bool HasVSMaterialUniformBuffer() const override { return (bool)m_VSMaterialUniformBuffer; }
 	// virtual bool HasPSMaterialUniformBuffer() const override { return (bool)m_PSMaterialUniformBuffer; }
-	// virtual const Hazel::ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const override { return *m_VSMaterialUniformBuffer; }
-	// virtual const Hazel::ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const override { return *m_PSMaterialUniformBuffer; }
+	// virtual const H2M::ShaderUniformBufferDeclaration& GetVSMaterialUniformBuffer() const override { return *m_VSMaterialUniformBuffer; }
+	// virtual const H2M::ShaderUniformBufferDeclaration& GetPSMaterialUniformBuffer() const override { return *m_PSMaterialUniformBuffer; }
 	// virtual const ShaderResourceList& GetResources() const override { return m_Resources; }
 
 protected:
@@ -172,13 +172,13 @@ protected:
 	std::string m_ShaderFilepath_TessEvaluation;
 
 	// Temporary, before we have an asset manager
-	static std::vector<Hazel::Ref<MoravaShader>> s_AllShaders;
+	static std::vector<H2M::Ref<MoravaShader>> s_AllShaders;
 
 	// Vulkan Week Day 1
-	Hazel::ShaderUniformBufferList m_VSRendererUniformBuffers;
-	Hazel::ShaderUniformBufferList m_PSRendererUniformBuffers;
-	Ref<Hazel::ShaderUniformBufferDeclaration> m_VSMaterialUniformBuffer;
-	Ref<Hazel::ShaderUniformBufferDeclaration> m_PSMaterialUniformBuffer;
+	H2M::ShaderUniformBufferList m_VSRendererUniformBuffers;
+	H2M::ShaderUniformBufferList m_PSRendererUniformBuffers;
+	Ref<H2M::ShaderUniformBufferDeclaration> m_VSMaterialUniformBuffer;
+	Ref<H2M::ShaderUniformBufferDeclaration> m_PSMaterialUniformBuffer;
 
 	static MoravaShaderSpecification s_Specification;
 

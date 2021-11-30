@@ -64,7 +64,7 @@ void RendererDeferredOGL::SetupTextures()
 
 void RendererDeferredOGL::SetupMeshes()
 {
-	m_MeshBlock = Hazel::Ref<Block>::Create(glm::vec3(1.0f, 1.0f, 1.0f));
+	m_MeshBlock = H2M::Ref<Block>::Create(glm::vec3(1.0f, 1.0f, 1.0f));
 }
 
 void RendererDeferredOGL::ForwardPass(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)

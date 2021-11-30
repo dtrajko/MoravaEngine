@@ -2,31 +2,6 @@
 
 #pragma once
 
-// Hazel classes
-#include "Hazel/Core/Base.h"
-#include "Hazel/Core/Math/AABB.h"
-#include "Hazel/Core/Math/Ray.h"
-#include "Hazel/Editor/EditorCamera.h"
-#include "Hazel/Core/Events/KeyEvent.h"
-#include "Hazel/Core/Events/MouseEvent.h"
-#include "Hazel/Renderer/HazelMesh.h"
-#include "Hazel/Renderer/HazelMaterial.h"
-#include "Hazel/Renderer/HazelShader.h"
-#include "Hazel/Renderer/IndexBuffer.h"
-#include "Hazel/Renderer/RenderCommandQueue.h"
-#include "Hazel/Renderer/RenderPass.h"
-#include "Hazel/Renderer/RendererAPI.h"
-#include "Hazel/Renderer/VertexArray.h"
-#include "Hazel/Renderer/VertexBuffer.h"
-#include "Hazel/Scene/Components.h"
-#include "Hazel/Scene/HazelScene.h"
-#include "Hazel/Scene/Entity.h"
-#include "Hazel/Scene/HazelScene.h"
-
-// HazelLegacy classes
-#include "HazelLegacy/Core/RefHazelLegacy.h"
-#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
-
 // Morava classes
 #include "Camera/RuntimeCamera.h"
 #include "Core/Application.h"
@@ -43,6 +18,28 @@
 #include "Scene/Scene.h"
 #include "Shader/MoravaShader.h"
 #include "Texture/TextureCubemap.h"
+
+// H2M classes
+#include "H2M/Core/BaseH2M.h"
+#include "H2M/Core/Math/AABBH2M.h"
+#include "H2M/Core/Math/Ray.h"
+#include "H2M/Core/RefH2M.h"
+#include "H2M/Editor/EditorCamera.h"
+#include "H2M/Core/Events/KeyEventH2M.h"
+#include "H2M/Core/Events/MouseEventH2M.h"
+#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/MaterialH2M.h"
+#include "H2M/Renderer/ShaderH2M.h"
+#include "H2M/Renderer/IndexBuffer.h"
+#include "H2M/Renderer/RenderCommandQueue.h"
+#include "H2M/Renderer/RenderPass.h"
+#include "H2M/Renderer/RendererAPI.h"
+#include "H2M/Renderer/TextureH2M.h"
+#include "H2M/Renderer/VertexArray.h"
+#include "H2M/Renderer/VertexBuffer.h"
+#include "H2M/Scene/ComponentsH2M.h"
+#include "H2M/Scene/SceneH2M.h"
+#include "H2M/Scene/EntityH2M.h"
 
 // GLM
 #include <glm/gtc/type_ptr.hpp>

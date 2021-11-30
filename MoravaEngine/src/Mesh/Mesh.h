@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Hazel/Core/Ref.h"
-#include "Hazel/Core/Timestep.h"
+#include "H2M/Core/Ref.h"
+#include "H2M/Core/Timestep.h"
 
 #include "Core/Transform.h"
 #include "Material/Material.h"
@@ -13,7 +13,7 @@
 
 struct aiScene;
 
-class Mesh : public Hazel::RefCounted
+class Mesh : public H2M::RefCounted
 {
 
 public:
@@ -26,7 +26,7 @@ public:
 	virtual void Create(float* vertices, unsigned int* indices, unsigned int vertexCount, unsigned int indexCount);
 	virtual void Generate(glm::vec3 scale);
 	virtual void Update(glm::vec3 scale);
-	virtual void OnUpdate(Hazel::Timestep ts, bool debug); // HazelMesh Update method
+	virtual void OnUpdate(H2M::Timestep ts, bool debug); // HazelMesh Update method
 	virtual void Render();
 	virtual void Clear();
 

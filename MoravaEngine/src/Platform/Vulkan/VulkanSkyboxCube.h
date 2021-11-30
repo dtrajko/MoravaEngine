@@ -2,8 +2,8 @@
 
 #include "Mesh/Mesh.h"
 
-#include "Hazel/Renderer/VertexBuffer.h"
-#include "Hazel/Renderer/IndexBuffer.h"
+#include "H2M/Renderer/VertexBuffer.h"
+#include "H2M/Renderer/IndexBuffer.h"
 
 
 class VulkanSkyboxCube : public Mesh
@@ -13,8 +13,8 @@ public:
 	~VulkanSkyboxCube();
 
 public:
-	Hazel::Ref<Hazel::VertexBuffer> m_VertexBuffer;
-	Hazel::Ref<Hazel::IndexBuffer> m_IndexBuffer;
+	H2M::Ref<H2M::VertexBuffer> m_VertexBuffer;
+	H2M::Ref<H2M::IndexBuffer> m_IndexBuffer;
 
 	uint32_t m_IndexCount;
 

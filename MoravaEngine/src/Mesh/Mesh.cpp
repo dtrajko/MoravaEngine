@@ -87,7 +87,7 @@ void Mesh::Update(glm::vec3 scale)
 		Generate(scale);
 }
 
-void Mesh::OnUpdate(Hazel::Timestep ts, bool debug)
+void Mesh::OnUpdate(H2M::Timestep ts, bool debug)
 {
 }
 

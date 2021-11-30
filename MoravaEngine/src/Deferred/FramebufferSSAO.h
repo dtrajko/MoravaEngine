@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Hazel/Core/Ref.h"
+#include "H2M/Core/Ref.h"
 
 #include "Shader/MoravaShader.h"
 #include "Deferred/GBuffer.h"
@@ -37,9 +37,9 @@ private:
 
 	uint32_t m_NoiseTexture;
 
-	Hazel::Ref<MoravaShader> m_ShaderSSAO;
+	H2M::Ref<MoravaShader> m_ShaderSSAO;
 
-	Hazel::Ref<QuadSSAO> m_QuadSSAO;
+	H2M::Ref<QuadSSAO> m_QuadSSAO;
 
 	std::vector<glm::vec3> m_SSAO_Kernel;
 

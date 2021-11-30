@@ -4,7 +4,7 @@
 #include "Core/Window.h"
 #include "Scene/Scene.h"
 #include "Shader/MoravaShader.h"
-#include "Hazel/Renderer/RendererAPI.h"
+#include "H2M/Renderer/RendererAPI.h"
 
 #include "glm/glm.hpp"
 
@@ -48,7 +48,7 @@ public:
 	static glm::vec4 GetBgColor() { return s_BgColor; }
 	static glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; }
 	static void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; }
-	static std::map<std::string, Hazel::Ref<MoravaShader>>& GetShaders() { return s_Shaders; };
+	static std::map<std::string, H2M::Ref<MoravaShader>>& GetShaders() { return s_Shaders; };
 	static std::map<std::string, int>& GetUniforms() { return s_Uniforms; }
 
 	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);
@@ -61,13 +61,13 @@ public:
 	static void SetLineThickness(float thickness); // RendererAPI::SetLineThickness
 
 	// Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
-	static void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
+	static void DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest);
 
 	// static void SetSpirVEnabled(bool enabled) { s_SpirV_Enabled = enabled; }
 	static bool GetVulkanSupported();
 
-	static void SetRendererContext(Hazel::Ref<Hazel::RendererContext> rendererContext) { s_RendererContext = rendererContext; }
-	static Hazel::Ref<Hazel::RendererContext> GetRendererContext() { return s_RendererContext; }
+	static void SetRendererContext(H2M::Ref<H2M::RendererContext> rendererContext) { s_RendererContext = rendererContext; }
+	static H2M::Ref<H2M::RendererContext> GetRendererContext() { return s_RendererContext; }
 
 	static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr = nullptr);
 
@@ -85,11 +85,11 @@ protected:
 
 public:
 	static glm::mat4 s_ProjectionMatrix;
-	static std::map<std::string, Hazel::Ref<MoravaShader>> s_Shaders;
+	static std::map<std::string, H2M::Ref<MoravaShader>> s_Shaders;
 	static std::map<std::string, int> s_Uniforms;
 	static glm::vec4 s_BgColor;
 	// static bool s_SpirV_Enabled;
 
-	static Hazel::Ref<Hazel::RendererContext> s_RendererContext;
+	static H2M::Ref<H2M::RendererContext> s_RendererContext;
 
 };

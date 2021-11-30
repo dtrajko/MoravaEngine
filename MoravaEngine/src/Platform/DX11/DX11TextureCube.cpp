@@ -10,16 +10,16 @@
 // TextureCube
 //////////////////////////////////////////////////////////////////////////////////
 
-DX11TextureCube::DX11TextureCube(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, const void* data)
+DX11TextureCube::DX11TextureCube(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data)
 	: m_Format(format), m_Width(width), m_Height(height)
 {
 	if (data)
 	{
 		uint32_t size = width * height * 4 * 6; // six layers
-		m_LocalStorage = Hazel::Buffer::Copy(data, size);
+		m_LocalStorage = H2M::Buffer::Copy(data, size);
 	}
 
-	//	Hazel::Ref<DX11TextureCube> instance = this;
+	//	H2M::Ref<DX11TextureCube> instance = this;
 	//	HazelRenderer::Submit([instance]() mutable
 	//	{
 	//		instance->Invalidate();

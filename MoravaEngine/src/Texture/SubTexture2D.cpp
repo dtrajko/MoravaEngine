@@ -9,7 +9,7 @@ SubTexture2D::SubTexture2D()
 	m_TexCoords[3] = { 0.0f, 0.0f };
 }
 
-SubTexture2D::SubTexture2D(Hazel::Ref<MoravaTexture> texture, const glm::vec2& min, const glm::vec2& max)
+SubTexture2D::SubTexture2D(H2M::Ref<MoravaTexture> texture, const glm::vec2& min, const glm::vec2& max)
 	: m_Texture(texture)
 {
 	m_TexCoords[0] = { min.x, min.y };
@@ -18,7 +18,7 @@ SubTexture2D::SubTexture2D(Hazel::Ref<MoravaTexture> texture, const glm::vec2& m
 	m_TexCoords[3] = { min.x, max.y };
 }
 
-SubTexture2D SubTexture2D::CreateFromCoords(Hazel::Ref<MoravaTexture> texture, const glm::vec2& coords, const glm::vec2& cellSize, const glm::vec2& spriteSize)
+SubTexture2D SubTexture2D::CreateFromCoords(H2M::Ref<MoravaTexture> texture, const glm::vec2& coords, const glm::vec2& cellSize, const glm::vec2& spriteSize)
 {
 	glm::vec2 min = { ((coords.x + 0) * cellSize.x) / texture->GetWidth(),  ((coords.y + 0) * cellSize.y) / texture->GetHeight() }; // { 0.0f, 0.0f }
 	glm::vec2 max = { ((coords.x + spriteSize.x) * cellSize.x) / texture->GetWidth(),  ((coords.y + spriteSize.y) * cellSize.y) / texture->GetHeight() }; // { 1.0f, 1.0f }

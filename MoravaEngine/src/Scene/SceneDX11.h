@@ -2,7 +2,7 @@
 
 #include "Scene/Scene.h"
 
-#include "Hazel/Core/Events/KeyEvent.h"
+#include "H2M/Core/Events/KeyEvent.h"
 
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Mesh/Grid.h"
@@ -22,7 +22,7 @@ public:
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 	void SetupUniforms();
 
 private:
@@ -40,10 +40,10 @@ private:
 	bool OnKeyPressed(KeyPressedEvent& e);
 
 	// Temporary/experimental
-	virtual void OnEntitySelected(Hazel::Entity entity) override;
+	virtual void OnEntitySelected(H2M::Entity entity) override;
 
 private:
-	Hazel::Ref<MoravaShader> m_ShaderBackground;
-	Hazel::Ref<MoravaShader> m_ShaderBasic;
+	H2M::Ref<MoravaShader> m_ShaderBackground;
+	H2M::Ref<MoravaShader> m_ShaderBasic;
 
 };

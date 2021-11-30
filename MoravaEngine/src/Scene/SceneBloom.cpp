@@ -40,7 +40,7 @@ SceneBloom::~SceneBloom()
 
 void SceneBloom::SetupTextures()
 {
-    // m_TextureWood = HazelLegacy::Texture2DHazelLegacy::Create("Textures/wood.png", true, Hazel::TextureWrap::Clamp);
+    // m_TextureWood = H2M::Texture2DH2M::Create("Textures/wood.png", true, H2M::TextureWrap::Clamp);
 
     m_TextureWood = loadTexture("Textures/wood.png", true); // note that we're loading the texture as an SRGB texture
     m_TextureContainer = loadTexture("Textures/container/container2.png", true); // note that we're loading the texture as an SRGB texture
@@ -218,7 +218,7 @@ void SceneBloom::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneBloom::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
     if (m_Width == 0 || m_Height == 0) return;
 

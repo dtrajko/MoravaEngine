@@ -27,20 +27,20 @@ WaterManager::WaterManager(int width, int height, float waterHeight, float waveS
 
 	m_ReflectionFB = new FramebufferWater(m_Width, m_Height);
 
-	Hazel::Ref<FramebufferTexture> reflectionTextureAttachment = Hazel::Ref<FramebufferTexture>::Create(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
+	H2M::Ref<FramebufferTexture> reflectionTextureAttachment = H2M::Ref<FramebufferTexture>::Create(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
 	m_ReflectionFB->AddColorAttachment(reflectionTextureAttachment);
 
-	Hazel::Ref<Renderbuffer> reflectionDepthBuffer = Hazel::Ref<Renderbuffer>::Create(m_Width, m_Height, AttachmentFormat::Depth, 0, m_ReflectionFB->GetID());
+	H2M::Ref<Renderbuffer> reflectionDepthBuffer = H2M::Ref<Renderbuffer>::Create(m_Width, m_Height, AttachmentFormat::Depth, 0, m_ReflectionFB->GetID());
 	m_ReflectionFB->AddDepthBuffer(reflectionDepthBuffer);
 
 	SwitchToDefaultFramebuffer();
 
 	m_RefractionFB = new FramebufferWater(m_Width, m_Height);
 
-	Hazel::Ref<FramebufferTexture> refractionTextureAttachment = Hazel::Ref<FramebufferTexture>::Create(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
+	H2M::Ref<FramebufferTexture> refractionTextureAttachment = H2M::Ref<FramebufferTexture>::Create(m_Width, m_Height, isMultisample, AttachmentFormat::Color, 0);
 	m_RefractionFB->AddColorAttachment(refractionTextureAttachment);
 
-	Hazel::Ref<FramebufferTexture> refractionDepthAttachment = Hazel::Ref<FramebufferTexture>::Create(m_Width, m_Height, isMultisample, AttachmentFormat::Depth, 0);
+	H2M::Ref<FramebufferTexture> refractionDepthAttachment = H2M::Ref<FramebufferTexture>::Create(m_Width, m_Height, isMultisample, AttachmentFormat::Depth, 0);
 	m_RefractionFB->AddDepthAttachment(refractionDepthAttachment);
 
 	SwitchToDefaultFramebuffer();

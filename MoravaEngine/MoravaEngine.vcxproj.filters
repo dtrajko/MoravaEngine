@@ -885,30 +885,6 @@
     <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp">
       <Filter>Vendors\VulkanMemoryAllocator</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.cpp">
-      <Filter>HazelLegacy\Editor</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Scene\EntityHazelLegacy.cpp">
-      <Filter>HazelLegacy\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Scene\SceneHazelLegacy.cpp">
-      <Filter>HazelLegacy\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanAllocatorHazelLegacy.cpp">
-      <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.cpp">
-      <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanRendererHazelLegacy.cpp">
-      <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.cpp">
-      <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.cpp">
-      <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Audio\Audio.cpp">
       <Filter>Hazel\Audio</Filter>
     </ClCompile>
@@ -1062,18 +1038,6 @@
     <ClCompile Include="src\Hazel\Renderer\VertexBuffer.cpp">
       <Filter>Hazel\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\MeshHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\RendererHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\SceneRendererVulkan.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Physics\2D\Physics2D.cpp">
       <Filter>Hazel\Physics\2D</Filter>
     </ClCompile>
@@ -1182,17 +1146,68 @@
     <ClCompile Include="src\Hazel\Scene\Prefab.cpp">
       <Filter>Hazel\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\TextureHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
+    <ClCompile Include="src\H2M\Core\TimestepH2M.cpp">
+      <Filter>H2M\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\MaterialHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
+    <ClCompile Include="src\H2M\Editor\SceneHierarchyPanelH2M.cpp">
+      <Filter>H2M\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\ImageHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanAllocatorH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
     </ClCompile>
-    <ClCompile Include="src\HazelLegacy\Renderer\ShaderHazelLegacy.cpp">
-      <Filter>HazelLegacy\Renderer</Filter>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanFramebufferH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRendererH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanShaderH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTestLayer.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\CameraH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\ImageH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\MaterialH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\MeshH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\PipelineH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\RendererH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\SceneRendererH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\SceneRendererVulkan.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\ShaderH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\TextureH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Scene\EntityH2M.cpp">
+      <Filter>H2M\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Scene\SceneCameraH2M.cpp">
+      <Filter>H2M\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Scene\SceneH2M.cpp">
+      <Filter>H2M\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\FramebufferH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2171,36 +2186,6 @@
     <ClInclude Include="src\Hazel\Platform\Vulkan\VulkanAllocatorVMA.h">
       <Filter>Hazel\Platform\Vulkan</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Scene\ComponentsHazelLegacy.h">
-      <Filter>HazelLegacy\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Editor\SceneHierarchyPanelHazelLegacy.h">
-      <Filter>HazelLegacy\Editor</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Scene\EntityHazelLegacy.h">
-      <Filter>HazelLegacy\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Scene\SceneHazelLegacy.h">
-      <Filter>HazelLegacy\Scene</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanAllocatorHazelLegacy.h">
-      <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanFramebufferHazelLegacy.h">
-      <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanRendererHazelLegacy.h">
-      <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanShaderHazelLegacy.h">
-      <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Platform\Vulkan\VulkanTestLayer.h">
-      <Filter>HazelLegacy\Platform\Vulkan</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\ImGui\ImGui.h">
-      <Filter>HazelLegacy\ImGui</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Core\Events\ApplicationEvent.h">
       <Filter>Hazel\Core\Events</Filter>
     </ClInclude>
@@ -2414,18 +2399,6 @@
     <ClInclude Include="src\Hazel\Renderer\VertexBuffer.h">
       <Filter>Hazel\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\MeshHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\RendererHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\SceneRendererVulkan.h">
-      <Filter>HazelLegacy\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Physics\2D\Physics2D.h">
       <Filter>Hazel\Physics\2D</Filter>
     </ClInclude>
@@ -2558,20 +2531,98 @@
     <ClInclude Include="src\Hazel\Scene\Prefab.h">
       <Filter>Hazel\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Core\RefHazelLegacy.h">
-      <Filter>HazelLegacy\Core</Filter>
+    <ClInclude Include="src\H2M\Core\Events\ApplicationEventH2M.h">
+      <Filter>H2M\Core\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\TextureHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
+    <ClInclude Include="src\H2M\Core\Events\EventH2M.h">
+      <Filter>H2M\Core\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\MaterialHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
+    <ClInclude Include="src\H2M\Core\Events\KeyEventH2M.h">
+      <Filter>H2M\Core\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\ImageHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
+    <ClInclude Include="src\H2M\Core\Events\MouseEventH2M.h">
+      <Filter>H2M\Core\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\HazelLegacy\Renderer\ShaderHazelLegacy.h">
-      <Filter>HazelLegacy\Renderer</Filter>
+    <ClInclude Include="src\H2M\Core\Math\AABBH2M.h">
+      <Filter>H2M\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Core\BaseH2M.h">
+      <Filter>H2M\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Core\BufferH2M.h">
+      <Filter>H2M\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Core\RefH2M.h">
+      <Filter>H2M\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Core\TimestepH2M.h">
+      <Filter>H2M\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Editor\SceneHierarchyPanelH2M.h">
+      <Filter>H2M\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\ImGui\ImGuiH2M.h">
+      <Filter>H2M\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanAllocatorH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanFramebufferH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRendererH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanShaderH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanTestLayer.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\CameraH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\ImageH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\MaterialH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\MeshH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\PipelineH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\RendererH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\SceneRendererH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\SceneRendererVulkan.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\ShaderH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\TextureH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Scene\ComponentsH2M.h">
+      <Filter>H2M\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Scene\EntityH2M.h">
+      <Filter>H2M\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Scene\SceneCameraH2M.h">
+      <Filter>H2M\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Scene\SceneH2M.h">
+      <Filter>H2M\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\FramebufferH2M.h">
+      <Filter>H2M\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2821,27 +2872,6 @@
     <Filter Include="Vendors\VulkanMemoryAllocator">
       <UniqueIdentifier>{6eb26f9f-107c-41da-bb1d-8123f8ee09c3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HazelLegacy">
-      <UniqueIdentifier>{81a5ed68-d72c-4ff7-a71d-9c46aea3510b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HazelLegacy\Renderer">
-      <UniqueIdentifier>{f79df5c7-be61-4c28-b42e-48a348ba8922}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HazelLegacy\Scene">
-      <UniqueIdentifier>{9eceaf39-f78d-4fe3-a8a2-7064a6acaf70}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HazelLegacy\Editor">
-      <UniqueIdentifier>{b985c86e-3b0e-4e32-9083-14b9845ac5bb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HazelLegacy\Platform">
-      <UniqueIdentifier>{b101aa77-a2f5-4c92-a83a-11a485ba60e7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HazelLegacy\Platform\Vulkan">
-      <UniqueIdentifier>{543f76bb-5480-48f8-99ea-a8f0ebe3ba21}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HazelLegacy\ImGui">
-      <UniqueIdentifier>{83bb75a4-8da3-433b-ad2d-82c452dc99fb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Hazel\Core\Events">
       <UniqueIdentifier>{6d8235e9-9746-4efb-8ca6-bc61062b9288}</UniqueIdentifier>
     </Filter>
@@ -2884,8 +2914,35 @@
     <Filter Include="Hazel\Editor\NodeGraphEditor">
       <UniqueIdentifier>{144489a1-b854-47d3-9e28-1e6b67d6c737}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HazelLegacy\Core">
+    <Filter Include="H2M">
+      <UniqueIdentifier>{81a5ed68-d72c-4ff7-a71d-9c46aea3510b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Renderer">
+      <UniqueIdentifier>{f79df5c7-be61-4c28-b42e-48a348ba8922}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Scene">
+      <UniqueIdentifier>{9eceaf39-f78d-4fe3-a8a2-7064a6acaf70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Editor">
+      <UniqueIdentifier>{b985c86e-3b0e-4e32-9083-14b9845ac5bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Platform">
+      <UniqueIdentifier>{b101aa77-a2f5-4c92-a83a-11a485ba60e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Platform\Vulkan">
+      <UniqueIdentifier>{543f76bb-5480-48f8-99ea-a8f0ebe3ba21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\ImGui">
+      <UniqueIdentifier>{83bb75a4-8da3-433b-ad2d-82c452dc99fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Core">
       <UniqueIdentifier>{484ec253-83b8-4df8-822a-b8fae121c9cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Core\Events">
+      <UniqueIdentifier>{c1e5183e-9f24-4f20-a89f-c1868844bb9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Core\Math">
+      <UniqueIdentifier>{b350be4a-e97c-4058-a8e5-39f5cce0a24f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

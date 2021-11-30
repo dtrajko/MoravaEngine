@@ -610,7 +610,7 @@ void Gizmo::UpdateActive(glm::vec3 cameraPosition, Window* mainWindow)
 	}
 }
 
-void Gizmo::Render(Hazel::Ref<MoravaShader> shader)
+void Gizmo::Render(H2M::Ref<MoravaShader> shader)
 {
 	if (!m_Active || m_Mode == GIZMO_MODE_NONE) return;
 

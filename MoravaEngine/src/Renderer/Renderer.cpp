@@ -66,23 +66,23 @@ void Renderer::SetUniforms()
 
 void Renderer::SetShaders()
 {
-	Hazel::Ref<ShaderMain> shaderMain = Hazel::Ref<ShaderMain>::Create("Shaders/shader.vert", "Shaders/shader.frag");
+	H2M::Ref<ShaderMain> shaderMain = H2M::Ref<ShaderMain>::Create("Shaders/shader.vert", "Shaders/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	printf("Renderer: Main shader compiled [programID=%d]\n", shaderMain->GetProgramID());
 
-	Hazel::Ref<MoravaShader> shaderDirectionalShadow = MoravaShader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+	H2M::Ref<MoravaShader> shaderDirectionalShadow = MoravaShader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("directionalShadow", shaderDirectionalShadow));
 	printf("Renderer: Shadow shader compiled [programID=%d]\n", shaderDirectionalShadow->GetProgramID());
 
-	Hazel::Ref<MoravaShader> shaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+	H2M::Ref<MoravaShader> shaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	printf("Renderer: OmniShadow shader compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
 
-	Hazel::Ref<MoravaShader> shaderWater = MoravaShader::Create("Shaders/water.vert", "Shaders/water.frag");
+	H2M::Ref<MoravaShader> shaderWater = MoravaShader::Create("Shaders/water.vert", "Shaders/water.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("water", shaderWater));
 	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
-	Hazel::Ref<MoravaShader> shaderPBR = MoravaShader::Create("Shaders/PBR.vert", "Shaders/PBR.frag");
+	H2M::Ref<MoravaShader> shaderPBR = MoravaShader::Create("Shaders/PBR.vert", "Shaders/PBR.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("pbr", shaderPBR));
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }
@@ -212,7 +212,7 @@ void Renderer::RenderPassWaterReflection(Window* mainWindow, Scene* scene, glm::
 	modelMatrixSkybox = glm::rotate(modelMatrixSkybox, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 	scene->GetSkybox()->Draw(modelMatrixSkybox, scene->GetCamera()->GetViewMatrix(), projectionMatrix);
 
-	Hazel::Ref<ShaderMain> shaderMain = RendererBasic::GetShaders()["main"];
+	H2M::Ref<ShaderMain> shaderMain = RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	RendererBasic::GetUniforms()["model"]       = shaderMain->GetUniformLocation("model");
@@ -261,7 +261,7 @@ void Renderer::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::
 	// Clear the window
 	RendererBasic::Clear();
 
-	Hazel::Ref<ShaderMain> shaderMain = RendererBasic::GetShaders()["main"];
+	H2M::Ref<ShaderMain> shaderMain = RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	RendererBasic::GetUniforms()["model"]       = shaderMain->GetUniformLocation("model");
@@ -311,7 +311,7 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->GetViewMatrix(), projectionMatrix);
 	}
 
-	Hazel::Ref<ShaderMain> shaderMain = (Hazel::Ref<ShaderMain>)RendererBasic::GetShaders()["main"];
+	H2M::Ref<ShaderMain> shaderMain = (H2M::Ref<ShaderMain>)RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	RendererBasic::GetUniforms()["model"] = shaderMain->GetUniformLocation("model");
@@ -353,7 +353,7 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 
 	EnableTransparency();
 
-	Hazel::Ref<MoravaShader> shaderWater = RendererBasic::GetShaders()["water"];
+	H2M::Ref<MoravaShader> shaderWater = RendererBasic::GetShaders()["water"];
 	shaderWater->Bind();
 	RendererBasic::GetUniforms()["model"] = shaderWater->GetUniformLocation("model");
 	RendererBasic::GetUniforms()["projection"] = shaderWater->GetUniformLocation("projection");

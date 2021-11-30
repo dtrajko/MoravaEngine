@@ -6,7 +6,7 @@
 #include "DX11Device.h"
 
 
-class DX11ConstantBuffer : public Hazel::RefCounted
+class DX11ConstantBuffer : public H2M::RefCounted
 {
 public:
 	DX11ConstantBuffer() = default;

@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "Hazel/Core/Layer.h"
-#include "Hazel/Core/Timestep.h"
-#include "Hazel/Editor/ContentBrowserPanel.h"
-#include "Hazel/Core/Events/Event.h"
+#include "H2M/Core/Layer.h"
+#include "H2M/Core/Timestep.h"
+#include "H2M/Editor/ContentBrowserPanel.h"
+#include "H2M/Core/Events/Event.h"
 
-#include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
-#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
-#include "HazelLegacy/Scene/EntityHazelLegacy.h"
+#include "H2M/Editor/SceneHierarchyPanelH2M.h"
+#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Scene/EntityH2M.h"
 
 #include "DX11Pipeline.h"
 #include "DX11Shader.h"
@@ -36,13 +36,13 @@ struct RenderObject
 		Unlit,
 		Light,
 	};
-	Hazel::Ref<Hazel::MeshHazelLegacy> Mesh;
-	Hazel::Ref<DX11Mesh> MeshDX11;
-	std::vector<Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>> Textures;
+	H2M::Ref<H2M::MeshH2M> Mesh;
+	H2M::Ref<DX11Mesh> MeshDX11;
+	std::vector<H2M::Ref<H2M::Texture2DH2M>> Textures;
 	glm::mat4 Transform;
 	PipelineType PipelineType;
-	Hazel::EntityHazelLegacy Entity;
-	// std::vector<Hazel::Ref<DX11Material>> Materials; // we probably need some kind of <Submesh, Material> map here
+	H2M::EntityH2M Entity;
+	// std::vector<H2M::Ref<DX11Material>> Materials; // we probably need some kind of <Submesh, Material> map here
 };
 
 class DX11TestLayer : public MoravaLayer, public DX11InputListener
@@ -55,7 +55,7 @@ public:
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
 
-	virtual void OnUpdate(Hazel::Timestep ts) override;
+	virtual void OnUpdate(H2M::Timestep ts) override;
 	virtual void OnImGuiRender(Window* mainWindow, Scene* scene) override;
 
 	virtual void OnEvent(Event& event) override;
@@ -87,15 +87,15 @@ public:
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my);
 	void AddSubmeshToSelectionContext(SelectedSubmesh submesh);
 	void OnSelected(const SelectedSubmesh& selectionContext);
-	Ref<Hazel::EntityHazelLegacy> GetMeshEntity();
+	Ref<H2M::EntityH2M> GetMeshEntity();
 
 public:
-	static Hazel::Ref<DX11Mesh> s_Mesh;
-	static Hazel::Ref<Hazel::MeshHazelLegacy> s_MeshLight;
-	static Hazel::Ref<Hazel::MeshHazelLegacy> s_SkyboxSphere;
+	static H2M::Ref<DX11Mesh> s_Mesh;
+	static H2M::Ref<H2M::MeshH2M> s_MeshLight;
+	static H2M::Ref<H2M::MeshH2M> s_SkyboxSphere;
 	// render meshes with materials
 	static std::vector<RenderObject> s_RenderObjectsWithMaterials;
-	static std::vector<Hazel::Ref<DX11Material>> s_ListMaterials;
+	static std::vector<H2M::Ref<DX11Material>> s_ListMaterials;
 
 	static ImGuizmo::OPERATION s_ImGuizmoType;
 	static bool s_LeftControlKeyPressed;
@@ -104,7 +104,7 @@ public:
 	static bool s_ShowWindowAssetManager;
 	static bool s_ShowWindowMaterialEditor;
 
-	static Hazel::Ref<Hazel::SceneHazelLegacy> s_Scene; // the Scene object provides the ECS registry
+	static H2M::Ref<H2M::SceneH2M> s_Scene; // the Scene object provides the ECS registry
 
 	static glm::mat4 s_CurrentlySelectedTransform;
 
@@ -113,8 +113,8 @@ public:
 	static glm::vec2 s_ViewportBounds[2];
 	static bool s_AllowViewportCameraEvents; // EditorLayer (Raypicking)
 
-	static Hazel::SceneHierarchyPanelHazelLegacy* s_SceneHierarchyPanel;
-	static Hazel::ContentBrowserPanel* s_ContentBrowserPanel;
+	static H2M::SceneHierarchyPanelH2M* s_SceneHierarchyPanel;
+	static H2M::ContentBrowserPanel* s_ContentBrowserPanel;
 	static MaterialEditorPanel* s_MaterialEditorPanel;
 
 private:

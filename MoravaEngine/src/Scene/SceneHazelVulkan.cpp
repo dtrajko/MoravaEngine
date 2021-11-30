@@ -2,8 +2,8 @@
 
 #include "Scene/SceneHazelVulkan.h"
 
-#include "Hazel/Scene/Components.h"
-#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
+#include "H2M/Scene/Components.h"
+#include "H2M/Renderer/TextureH2M.h"
 
 #include "../../ImGuizmo/ImGuizmo.h"
 
@@ -179,11 +179,11 @@ bool SceneHazelVulkan::OnKeyPressed(KeyPressedEvent& e)
     return false;
 }
 
-void SceneHazelVulkan::OnEntitySelected(Hazel::Entity entity)
+void SceneHazelVulkan::OnEntitySelected(H2M::Entity entity)
 {
 }
 
 void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 }

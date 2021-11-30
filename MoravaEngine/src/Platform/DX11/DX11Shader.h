@@ -8,7 +8,7 @@
 #include "DX11Material.h"
 
 #include "Shader/MoravaShader.h"
-#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
+#include "H2M/Renderer/TextureH2M.h"
 
 
 class DX11Shader : public MoravaShader
@@ -46,10 +46,10 @@ public:
 	// DirectX 11
 	DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShaderPath);
 	virtual ~DX11Shader();
-	static Hazel::Ref<DX11Shader> CreateFromString(const std::string& source);
+	static H2M::Ref<DX11Shader> CreateFromString(const std::string& source);
 
 	virtual void Bind() override {};
-	virtual Hazel::RendererID GetRendererID() const override { return (Hazel::RendererID)0; };
+	virtual H2M::RendererID GetRendererID() const override { return (H2M::RendererID)0; };
 
 	virtual void Reload(bool forceCompile = false) override;
 
@@ -94,8 +94,8 @@ public:
 
 	virtual void Unbind() override;
 
-	virtual const std::unordered_map<std::string, Hazel::ShaderBuffer>& GetShaderBuffers() const override;
-	virtual const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& GetResources() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderBuffer>& GetShaderBuffers() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& GetResources() const override;
 
 	virtual void CreateFromString(const char* vertexCode, const char* fragmentCode) override;
 	virtual void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation) override;
@@ -144,8 +144,8 @@ public:
 
 	static void ClearUniformBuffers();
 
-	Hazel::Ref<DX11VertexShader> GetVertexShader() { return m_VertexShader; }
-	Hazel::Ref<DX11PixelShader> GetPixelShader() { return m_PixelShader; }
+	H2M::Ref<DX11VertexShader> GetVertexShader() { return m_VertexShader; }
+	H2M::Ref<DX11PixelShader> GetPixelShader() { return m_PixelShader; }
 
 private:
 	void CompileOrGetDX11Binary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile);
@@ -167,10 +167,10 @@ private:
 	std::unordered_map<uint32_t, ImageSampler> m_ImageSamplers;
 	std::vector<PushConstantRange> m_PushConstantRanges;
 
-	std::unordered_map<std::string, Hazel::ShaderBuffer> m_Buffers;
+	std::unordered_map<std::string, H2M::ShaderBuffer> m_Buffers;
 
-	Hazel::Ref<DX11VertexShader> m_VertexShader;
-	Hazel::Ref<DX11PixelShader> m_PixelShader;
+	H2M::Ref<DX11VertexShader> m_VertexShader;
+	H2M::Ref<DX11PixelShader> m_PixelShader;
 
 	friend class DX11Material;
 

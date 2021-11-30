@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "Hazel/Renderer/HazelMesh.h"
-#include "Hazel/Renderer/HazelCamera.h"
-#include "Hazel/Renderer/SceneRenderer.h"
+#include "H2M/Renderer/HazelMesh.h"
+#include "H2M/Renderer/HazelCamera.h"
+#include "H2M/Renderer/SceneRenderer.h"
 
-#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+#include "H2M/Renderer/MeshH2M.h"
 
 #include "DX11Texture2D.h"
 #include "DX11ConstantBuffer.h"
@@ -30,7 +30,7 @@ struct DX11ConstantBufferLayout
 };
 
 
-class DX11Renderer : public Hazel::RendererAPI
+class DX11Renderer : public H2M::RendererAPIH2M
 {
 public:
 	virtual void Init() override;
@@ -39,34 +39,34 @@ public:
 	virtual void BeginFrame() override;
 	virtual void EndFrame() override;
 
-	virtual void BeginRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::RenderPass> renderPass, bool explicitClear = false) override;
-	virtual void EndRenderPass(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer) override;
-	virtual void SubmitFullscreenQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::HazelMaterial> material) override;
-	virtual void SubmitFullscreenQuadWithOverrides(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, Hazel::Buffer vertexShaderOverrides, Hazel::Buffer fragmentShaderOverrides) override;
+	virtual void BeginRenderPass(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::RenderPass> renderPass, bool explicitClear = false) override;
+	virtual void EndRenderPass(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer) override;
+	virtual void SubmitFullscreenQuad(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::HazelMaterial> material) override;
+	virtual void SubmitFullscreenQuadWithOverrides(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::HazelMaterial> material, H2M::Buffer vertexShaderOverrides, H2M::Buffer fragmentShaderOverrides) override;
 
-	virtual void SetSceneEnvironment(Hazel::Ref<Hazel::SceneRenderer> sceneRenderer, Hazel::Ref<Hazel::Environment> environment, Hazel::Ref<Hazel::HazelImage2D> shadow, Hazel::Ref<Hazel::HazelImage2D> linearDepth) override;
-	virtual std::pair<Hazel::Ref<Hazel::TextureCubeHazelLegacy>, Hazel::Ref<Hazel::TextureCubeHazelLegacy>> CreateEnvironmentMap(const std::string& filepath) override;
-	virtual Hazel::Ref<Hazel::TextureCubeHazelLegacy> CreatePreethamSky(float turbidity, float azimuth, float inclination) override;
+	virtual void SetSceneEnvironment(H2M::Ref<H2M::SceneRenderer> sceneRenderer, H2M::Ref<H2M::Environment> environment, H2M::Ref<H2M::HazelImage2D> shadow, H2M::Ref<H2M::HazelImage2D> linearDepth) override;
+	virtual std::pair<H2M::Ref<H2M::TextureCubeH2M>, H2M::Ref<H2M::TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) override;
+	virtual H2M::Ref<H2M::TextureCubeH2M> CreatePreethamSky(float turbidity, float azimuth, float inclination) override;
 
-	virtual void RenderMesh(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Ref<Hazel::MaterialTable> materialTable, const glm::mat4& transform) override;
-	virtual void RenderMeshWithMaterial(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMesh> mesh, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform, Hazel::Buffer additionalUniforms = Hazel::Buffer()) override;
-	virtual void RenderQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform) override;
-	virtual void LightCulling(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::PipelineCompute> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups) override;
-	virtual void SubmitFullscreenQuad(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref< Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material) override;
-	virtual void ClearImage(Hazel::Ref<Hazel::RenderCommandBuffer> commandBuffer, Hazel::Ref<Hazel::HazelImage2D> image) override;
-	virtual void RenderGeometry(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBuffer, Hazel::Ref<Hazel::HazelMaterial> material, Hazel::Ref<Hazel::VertexBuffer> vertexBuffer, Hazel::Ref<Hazel::IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0) override;
-	virtual void DispatchComputeShader(Hazel::Ref<Hazel::RenderCommandBuffer> renderCommandBuffer, Hazel::Ref<Hazel::PipelineCompute> pipeline, Hazel::Ref<Hazel::UniformBufferSet> uniformBufferSet, Hazel::Ref<Hazel::StorageBufferSet> storageBufferSet, Hazel::Ref<Hazel::HazelMaterial> material, const glm::ivec3& workGroups) override;
+	virtual void RenderMesh(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMesh> mesh, H2M::Ref<H2M::MaterialTable> materialTable, const glm::mat4& transform) override;
+	virtual void RenderMeshWithMaterial(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMesh> mesh, H2M::Ref<H2M::HazelMaterial> material, const glm::mat4& transform, H2M::Buffer additionalUniforms = H2M::Buffer()) override;
+	virtual void RenderQuad(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMaterial> material, const glm::mat4& transform) override;
+	virtual void LightCulling(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::PipelineCompute> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMaterial> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups) override;
+	virtual void SubmitFullscreenQuad(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref< H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMaterial> material) override;
+	virtual void ClearImage(H2M::Ref<H2M::RenderCommandBuffer> commandBuffer, H2M::Ref<H2M::HazelImage2D> image) override;
+	virtual void RenderGeometry(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBuffer, H2M::Ref<H2M::HazelMaterial> material, H2M::Ref<H2M::VertexBuffer> vertexBuffer, H2M::Ref<H2M::IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0) override;
+	virtual void DispatchComputeShader(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::PipelineCompute> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMaterial> material, const glm::ivec3& workGroups) override;
 
-	virtual Hazel::RendererCapabilities& GetCapabilities() override;
+	virtual H2M::RendererCapabilities& GetCapabilities() override;
 
 	static void Update();
 
-	static void Draw(Hazel::HazelCamera* camera); // TODO: there should be no parameters
+	static void Draw(H2M::HazelCamera* camera); // TODO: there should be no parameters
 	static void OnResize(uint32_t width, uint32_t height);
 
 	static void SubmitMesh(RenderObject renderObject);
 	static void RenderMesh(RenderObject renderObject);
-	static void RenderMeshDX11(RenderObject renderObject, const std::vector<Hazel::Ref<DX11Material>>& listMaterials);
+	static void RenderMeshDX11(RenderObject renderObject, const std::vector<H2M::Ref<DX11Material>>& listMaterials);
 	static void RenderMeshesECS(); // the code is taken from EnvMapSceneRenderer::GeometryPass()
 
 	static void RenderImGui();
@@ -76,39 +76,39 @@ public:
 	static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
 	// from EnvMapEditorLayer, previously in SceneHazelEnvMap
 	static void SetupRenderFramebuffer();
-	static void ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer);
+	static void ResizeViewport(glm::vec2 viewportPanelSize, H2M::Ref<MoravaFramebuffer> renderFramebuffer);
 	static void DisplaySubmeshMaterialSelector(bool* p_open);
 
-	static void SelectEntity(Hazel::EntityHazelLegacy e);
-	static void OnEntityDeleted(Hazel::EntityHazelLegacy e);
+	static void SelectEntity(H2M::EntityH2M e);
+	static void OnEntityDeleted(H2M::EntityH2M e);
 
 	static uint32_t GetViewportWidth();
 	static uint32_t GetViewportHeight();
 
 	// DirectX 11 drawing methods (moved from DX11Context)
 	static void ClearRenderTargetColorSwapChain(float red, float green, float blue, float alpha);
-	static void ClearRenderTargetColor(Hazel::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha);
+	static void ClearRenderTargetColor(H2M::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha);
 	static void ClearDepthStencilSwapChain();
-	static void ClearDepthStencil(Hazel::Ref<DX11Texture2D> depthStencil);
+	static void ClearDepthStencil(H2M::Ref<DX11Texture2D> depthStencil);
 
 	// this should probably be DX11Framebuffer->Bind()
-	static void SetRenderTarget(Hazel::Ref<DX11Texture2D> renderTarget, Hazel::Ref<DX11Texture2D> depthStencil);
+	static void SetRenderTarget(H2M::Ref<DX11Texture2D> renderTarget, H2M::Ref<DX11Texture2D> depthStencil);
 
 	static void DrawTriangleList(uint32_t vertexCount, uint32_t startVertexIndex);
 	static void DrawIndexedTriangleList(uint32_t indexCount, uint32_t startVertexIndex, uint32_t startIndexLocation);
 	static void DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexIndex);
 
 	// we split DX11Renderer::Draw() to 2 stages
-	static void DrawToFramebuffer(Hazel::HazelCamera* camera);
-	static void DrawToScreen(Hazel::HazelCamera* camera);
+	static void DrawToFramebuffer(H2M::HazelCamera* camera);
+	static void DrawToScreen(H2M::HazelCamera* camera);
 
 	// helper methods
 	static void CreateCube();
 	static void CreateQuad();
 
 	// Obsolete methods
-	virtual void RenderMesh(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, const glm::mat4& transform) override;
-	virtual void RenderMeshWithoutMaterial(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::MeshHazelLegacy> mesh, const glm::mat4& transform) override;
-	virtual void RenderQuad(Hazel::Ref<Hazel::Pipeline> pipeline, Hazel::Ref<Hazel::HazelMaterial> material, const glm::mat4& transform) override;
+	virtual void RenderMesh(H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::MeshH2M> mesh, const glm::mat4& transform) override;
+	virtual void RenderMeshWithoutMaterial(H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::MeshH2M> mesh, const glm::mat4& transform) override;
+	virtual void RenderQuad(H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::HazelMaterial> material, const glm::mat4& transform) override;
 
 };

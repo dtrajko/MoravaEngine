@@ -18,7 +18,7 @@ public:
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 
 private:
 	virtual void SetupTextures() override;
@@ -39,13 +39,13 @@ private:
 	void ResetHandlers();
 
 private:
-	Hazel::Ref<MoravaShader> m_ShaderBloom;
-	Hazel::Ref<MoravaShader> m_ShaderLightBox;
-	Hazel::Ref<MoravaShader> m_ShaderBlur;
-	Hazel::Ref<MoravaShader> m_ShaderBloomFinal;
+	H2M::Ref<MoravaShader> m_ShaderBloom;
+	H2M::Ref<MoravaShader> m_ShaderLightBox;
+	H2M::Ref<MoravaShader> m_ShaderBlur;
+	H2M::Ref<MoravaShader> m_ShaderBloomFinal;
 
-	// Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> m_TextureWood;
-	// Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> m_TextureContainer;
+	// H2M::Ref<H2M::Texture2DH2M> m_TextureWood;
+	// H2M::Ref<H2M::Texture2DH2M> m_TextureContainer;
 
 	unsigned int m_TextureWood;
 	unsigned int m_TextureContainer;

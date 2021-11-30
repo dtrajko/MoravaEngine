@@ -4,7 +4,7 @@
 #include "Terrain/NoiseSL.h"
 
 
-Hazel::Ref<MoravaTexture> TextureGenerator::TextureFromHeightMap(float** noiseMap, const char* fileLocation, int width, int height)
+H2M::Ref<MoravaTexture> TextureGenerator::TextureFromHeightMap(float** noiseMap, const char* fileLocation, int width, int height)
 {
 	printf("TextureGenerator::TextureFromHeightMap\n");
 
@@ -21,9 +21,9 @@ Hazel::Ref<MoravaTexture> TextureGenerator::TextureFromHeightMap(float** noiseMa
 	return TextureFromColorMap(colorMap, fileLocation, width, height);
 }
 
-Hazel::Ref<MoravaTexture> TextureGenerator::TextureFromColorMap(glm::vec4* colorMap, const char* fileLocation, int width, int height)
+H2M::Ref<MoravaTexture> TextureGenerator::TextureFromColorMap(glm::vec4* colorMap, const char* fileLocation, int width, int height)
 {
-	Hazel::Ref<MoravaTexture> texture = MoravaTexture::Create(fileLocation, width, height, true, GL_LINEAR);
+	H2M::Ref<MoravaTexture> texture = MoravaTexture::Create(fileLocation, width, height, true, GL_LINEAR);
 
 	constexpr int constValueIntMin = std::numeric_limits<int>::min();
 	constexpr int constValueIntMax = std::numeric_limits<int>::max();

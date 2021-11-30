@@ -1,18 +1,18 @@
 #pragma once
 
-#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
+#include "H2M/Renderer/MeshH2M.h"
 
 
 /**
  * This class shares the interface with HazelMesh, but uses tinyobjloader for loading meshes, instead of assimp
  */
-class MoravaTinyMesh : public Hazel::MeshHazelLegacy
+class MoravaTinyMesh : public H2M::MeshH2M
 {
 public:
-	MoravaTinyMesh(const std::string& filepath, Hazel::Ref<MoravaShader> shader, Hazel::Ref<Hazel::HazelMaterial> material, bool isAnimated);
+	MoravaTinyMesh(const std::string& filepath, H2M::Ref<MoravaShader> shader, H2M::Ref<H2M::HazelMaterial> material, bool isAnimated);
 
 public:
-	std::vector<Hazel::VertexHazelLegacy> vertices{};
+	std::vector<H2M::VertexH2M> vertices{};
 	std::vector<uint32_t> indices{};
 
 };

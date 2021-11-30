@@ -17,7 +17,7 @@ public:
 
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 
 private:
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
@@ -44,9 +44,9 @@ private:
 	int m_WidthPrev;
 	int m_HeightPrev;
 
-	Hazel::Ref<MoravaShader> m_ShaderGeometryPass;
-	Hazel::Ref<MoravaShader> m_ShaderLightingPass;
-	Hazel::Ref<MoravaShader> m_ShaderLightBox;
+	H2M::Ref<MoravaShader> m_ShaderGeometryPass;
+	H2M::Ref<MoravaShader> m_ShaderLightingPass;
+	H2M::Ref<MoravaShader> m_ShaderLightBox;
 
 	ModelSSAO* m_Backpack;
 	std::vector<glm::vec3> m_ObjectPositions;

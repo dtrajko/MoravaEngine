@@ -2,12 +2,12 @@
 
 #include "Core/CommonValues.h"
 
-#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
+#include "H2M/Renderer/TextureH2M.h"
 
 #include <string>
 
 
-class MoravaTexture : public HazelLegacy::Texture2DHazelLegacy
+class MoravaTexture : public H2M::Texture2DH2M
 {
 public:
 	struct Specification
@@ -33,30 +33,30 @@ public:
 	} m_Spec;
 
 public:
-	static Hazel::Ref<MoravaTexture> Create(const char* fileLoc, bool flipVert = false, bool isSampler = false, int filter = 0);
-	static Hazel::Ref<MoravaTexture> Create(const char* fileLoc, uint32_t width, uint32_t height, bool isSampler, int filter);
-	static Hazel::Ref<MoravaTexture> Create(const char* fileLoc, Specification spec);
+	static H2M::Ref<MoravaTexture> Create(const char* fileLoc, bool flipVert = false, bool isSampler = false, int filter = 0);
+	static H2M::Ref<MoravaTexture> Create(const char* fileLoc, uint32_t width, uint32_t height, bool isSampler, int filter);
+	static H2M::Ref<MoravaTexture> Create(const char* fileLoc, Specification spec);
 
 	virtual bool Load(bool flipVert = false) = 0;
 	virtual void CreateAPISpecific() = 0;
 	virtual void Save() = 0;
-	virtual Hazel::HazelImageFormat GetFormat() = 0;
+	virtual H2M::ImageFormatH2M GetFormat() = 0;
 
-	// BEGIN pure virtual methods inherited from HazelTexture/Texture2DHazelLegacy
-	virtual Hazel::Ref<Hazel::HazelImage2D> GetImage() const = 0;
+	// BEGIN pure virtual methods inherited from HazelTexture/Texture2DH2M
+	virtual H2M::Ref<H2M::HazelImage2D> GetImage() const = 0;
 	virtual void Lock() = 0;
 	virtual void Unlock() = 0;
-	virtual Hazel::Buffer GetWriteableBuffer() = 0;
+	virtual H2M::Buffer GetWriteableBuffer() = 0;
 	virtual void Resize(uint32_t width, uint32_t height) = 0;
 	virtual bool Loaded() const = 0;
 	virtual const std::string& GetPath() const = 0;
 	virtual void Bind(uint32_t textureSlot = 0) const = 0;
-	virtual Hazel::HazelImageFormat GetFormat() const = 0;
+	virtual H2M::ImageFormatH2M GetFormat() const = 0;
 	virtual uint32_t GetMipLevelCount() const = 0;
 	virtual uint64_t GetHash() const = 0;
-	virtual bool operator==(const Hazel::HazelTexture& other) const = 0;
-	virtual Hazel::RendererID GetRendererID() const = 0;
-	// END pure virtual methods inherited from HazelTexture/Texture2DHazelLegacy
+	virtual bool operator==(const H2M::HazelTexture& other) const = 0;
+	virtual H2M::RendererID GetRendererID() const = 0;
+	// END pure virtual methods inherited from HazelTexture/Texture2DH2M
 
 	virtual bool IsLoaded() const = 0;
 
@@ -66,7 +66,7 @@ public:
 
 	virtual void Unbind();
 	virtual void Clear();
-	virtual uint32_t CalculateMipMapCount(uint32_t width, uint32_t height); // used in Hazel::SceneRenderer
+	virtual uint32_t CalculateMipMapCount(uint32_t width, uint32_t height); // used in H2M::SceneRenderer
 	virtual uint32_t GetMipLevelCount();
 	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const;
 

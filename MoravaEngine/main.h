@@ -18,8 +18,8 @@
 
 #include "config.h"
 
-#include "Hazel/Core/Base.h"
-#include "Hazel/Core/Events/Event.h"
+#include "H2M/Core/BaseH2M.h"
+#include "H2M/Core/Events/EventH2M.h"
 
 #include "Camera/CameraController.h"
 #include "Core/Application.h"

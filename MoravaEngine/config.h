@@ -73,7 +73,7 @@ struct SceneProperties
 	Scene* Scene;
 	RendererBasic* Renderer;
 	SceneName Name;
-	// Hazel::RendererAPIType RendererAPI;
+	// H2M::RendererAPIH2MType RendererAPI;
 };
 
 

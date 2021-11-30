@@ -4,10 +4,10 @@
 
 #include "../../config.h"
 
-#include "Hazel/Core/LayerStack.h"
-#include "Hazel/Core/Events/ApplicationEvent.h"
-#include "Hazel/Core/Events/Event.h"
-#include "Hazel/ImGui/ImGuiLayer.h"
+#include "H2M/Core/LayerStack.h"
+#include "H2M/Core/Events/ApplicationEvent.h"
+#include "H2M/Core/Events/Event.h"
+#include "H2M/ImGui/ImGuiLayer.h"
 
 #include "Core/Log.h"
 #include "Core/Window.h"
@@ -46,8 +46,8 @@ public:
 
 	void OnEvent(Event& e);
 
-	void PushLayer(Hazel::Layer* layer);
-	void PushOverlay(Hazel::Layer* layer);
+	void PushLayer(H2M::Layer* layer);
+	void PushOverlay(H2M::Layer* layer);
 
 	void RenderImGui(); // Hazel Vulkan Week Day 4 1:26
 	void ClassifyEvents();
@@ -88,9 +88,9 @@ private:
 	Window* m_Window;
 	bool m_Running = true;
 	bool m_Minimized = false;
-	Hazel::LayerStack m_LayerStack;
+	H2M::LayerStack m_LayerStack;
 
-	Hazel::ImGuiLayer* m_ImGuiLayer;
+	H2M::ImGuiLayer* m_ImGuiLayer;
 	bool m_EnableImGui = true;
 
 	float m_TimeStep = 0;

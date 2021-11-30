@@ -8,7 +8,7 @@ Camera::Camera() : Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0
 }
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
-	: Hazel::SceneCamera()
+	: H2M::SceneCameraH2M()
 {
 	m_Position = position;
 	m_Yaw = yaw;
@@ -51,7 +51,7 @@ void Camera::UpdateView()
 	m_ViewMatrix = glm::lookAt(m_Position, m_Position + glm::normalize(m_Front), m_Up);
 }
 
-void Camera::OnUpdate(Hazel::Timestep ts)
+void Camera::OnUpdate(H2M::TimestepH2M ts)
 {
 	m_Right = glm::normalize(glm::cross(m_Front, m_WorldUp));
 	m_Up = glm::normalize(glm::cross(m_Right, m_Front));
@@ -59,10 +59,10 @@ void Camera::OnUpdate(Hazel::Timestep ts)
 	UpdateView();
 }
 
-void Camera::OnEvent(Event& e)
+void Camera::OnEvent(H2M::EventH2M& e)
 {
-	EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(Camera::OnMouseScroll));
+	H2M::EventDispatcher dispatcher(e);
+	dispatcher.Dispatch<H2M::MouseScrolledEvent>(HZ_BIND_EVENT_FN(Camera::OnMouseScroll));
 }
 
 void Camera::SetViewportSize(float width, float height)

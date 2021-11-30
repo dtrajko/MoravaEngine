@@ -183,7 +183,7 @@ void OpenGLRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Sc
 }
 
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
-void OpenGLRendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
+void OpenGLRendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest)
 {
 	if (!depthTest) {
 		glDisable(GL_DEPTH_TEST);
@@ -192,10 +192,10 @@ void OpenGLRendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type,
 	GLenum glPrimitiveType = 0;
 	switch (type)
 	{
-	case Hazel::PrimitiveType::Triangles:
+	case H2M::PrimitiveType::Triangles:
 		glPrimitiveType = GL_TRIANGLES;
 		break;
-	case Hazel::PrimitiveType::Lines:
+	case H2M::PrimitiveType::Lines:
 		glPrimitiveType = GL_LINES;
 		break;
 	}

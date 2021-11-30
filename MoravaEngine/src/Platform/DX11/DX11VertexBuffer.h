@@ -5,18 +5,18 @@
 #include "DX11.h"
 #include "DX11Device.h"
 
-#include "Hazel/Renderer/VertexBuffer.h"
+#include "H2M/Renderer/VertexBuffer.h"
 
-// #include "Hazel/Core/Buffer.h"
+// #include "H2M/Core/Buffer.h"
 // #include "DX11Allocator.h"
 
 
-class DX11VertexBuffer : public Hazel::VertexBuffer
+class DX11VertexBuffer : public H2M::VertexBuffer
 {
 public:
 	DX11VertexBuffer(void* data, uint32_t stride, uint32_t count);
-	DX11VertexBuffer(void* data, uint32_t size, Hazel::VertexBufferUsage usage = Hazel::VertexBufferUsage::Static);
-	DX11VertexBuffer(uint32_t size, Hazel::VertexBufferUsage usage = Hazel::VertexBufferUsage::Dynamic);
+	DX11VertexBuffer(void* data, uint32_t size, H2M::VertexBufferUsage usage = H2M::VertexBufferUsage::Static);
+	DX11VertexBuffer(uint32_t size, H2M::VertexBufferUsage usage = H2M::VertexBufferUsage::Dynamic);
 	virtual ~DX11VertexBuffer();
 
 
@@ -24,11 +24,11 @@ public:
 	virtual void RT_SetData(void* buffer, uint32_t size, uint32_t offset = 0) override {}
 	virtual void Bind() const override;
 
-	virtual const Hazel::VertexBufferLayout& GetLayout() const override { return m_Layout; }
-	virtual void SetLayout(const Hazel::VertexBufferLayout& layout) override { m_Layout = layout; }
+	virtual const H2M::VertexBufferLayout& GetLayout() const override { return m_Layout; }
+	virtual void SetLayout(const H2M::VertexBufferLayout& layout) override { m_Layout = layout; }
 
 	virtual uint32_t GetSize() const override { return m_Stride; }
-	virtual Hazel::RendererID GetRendererID() const override { return 0; }
+	virtual H2M::RendererID GetRendererID() const override { return 0; }
 
 	inline uint32_t GetStride() { return m_Stride; }
 	inline uint32_t GetVertexCount() { return m_Count; };
@@ -36,8 +36,8 @@ public:
 
 private:
 	// uint32_t m_Size = 0;
-	// Hazel::Buffer m_LocalData;
-	Hazel::VertexBufferLayout m_Layout; // OpenGL-specific? Or it belongs to pipeline?
+	// H2M::Buffer m_LocalData;
+	H2M::VertexBufferLayout m_Layout; // OpenGL-specific? Or it belongs to pipeline?
 
 	uint32_t m_Stride;
 	uint32_t m_Count;

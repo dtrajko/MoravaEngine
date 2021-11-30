@@ -1,12 +1,12 @@
 #include "MaterialLibrary.h"
 
-#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
+#include "H2M/Scene/ComponentsH2M.h"
 
 #include <map>
 
 
-std::vector<Hazel::Ref<MaterialData>> MaterialLibrary::s_MaterialData;
-std::map<MaterialUUID, Hazel::Ref<EnvMapMaterial>> MaterialLibrary::s_EnvMapMaterials;
+std::vector<H2M::Ref<MaterialData>> MaterialLibrary::s_MaterialData;
+std::map<MaterialUUID, H2M::Ref<EnvMapMaterial>> MaterialLibrary::s_EnvMapMaterials;
 std::map<SubmeshUUID, MaterialUUID> MaterialLibrary::s_SubmeshMaterialUUIDs;
 TextureInfo MaterialLibrary::s_TextureInfoDefault;
 std::map<std::string, TextureInfo> MaterialLibrary::s_TextureInfo;
@@ -25,23 +25,23 @@ void MaterialLibrary::Init()
     s_TextureInfoDefault.ao        = "Textures/PBR/non_reflective/ao.png";
 }
 
-Hazel::Ref<MaterialData> MaterialLibrary::AddNewMaterial(std::string name)
+H2M::Ref<MaterialData> MaterialLibrary::AddNewMaterial(std::string name)
 {
     if (name == "") {
         name = NewMaterialName();
     }
 
-	return CreateMaterialData(name, Hazel::Ref<Hazel::SubmeshHazelLegacy>());
+	return CreateMaterialData(name, H2M::Ref<H2M::SubmeshH2M>());
 }
 
-Hazel::Ref<MaterialData> MaterialLibrary::AddNewMaterial(Hazel::Ref<Hazel::HazelMaterial> material, Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh)
+H2M::Ref<MaterialData> MaterialLibrary::AddNewMaterial(H2M::Ref<H2M::HazelMaterial> material, H2M::Ref<H2M::SubmeshH2M> submesh)
 {
     return CreateMaterialData(material->GetName(), submesh);
 }
 
-Hazel::Ref<MaterialData> MaterialLibrary::CreateMaterialData(std::string name, Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh)
+H2M::Ref<MaterialData> MaterialLibrary::CreateMaterialData(std::string name, H2M::Ref<H2M::SubmeshH2M> submesh)
 {
-    Hazel::Ref<MaterialData> materialData = Hazel::Ref<MaterialData>::Create();
+    H2M::Ref<MaterialData> materialData = H2M::Ref<MaterialData>::Create();
 
     // If material is "DefaultMaterial", try to assign more meaningful name from submesh info
     if ((
@@ -59,14 +59,14 @@ Hazel::Ref<MaterialData> MaterialLibrary::CreateMaterialData(std::string name, H
     materialData->Submesh = submesh;
     s_MaterialData.push_back(materialData);
 
-    Hazel::Ref<EnvMapMaterial> defaultEnvMapMaterial = MaterialLibrary::CreateDefaultMaterial(materialData->Name);
+    H2M::Ref<EnvMapMaterial> defaultEnvMapMaterial = MaterialLibrary::CreateDefaultMaterial(materialData->Name);
     AddEnvMapMaterial(defaultEnvMapMaterial->GetUUID(), defaultEnvMapMaterial);
     materialData->EnvMapMaterialRef = defaultEnvMapMaterial;
 
     return materialData;
 }
 
-void MaterialLibrary::AddEnvMapMaterial(MaterialUUID UUID, Hazel::Ref<EnvMapMaterial> envMapMaterial)
+void MaterialLibrary::AddEnvMapMaterial(MaterialUUID UUID, H2M::Ref<EnvMapMaterial> envMapMaterial)
 {
 	if (s_EnvMapMaterials.find(envMapMaterial->GetName()) != s_EnvMapMaterials.end())
 	{
@@ -77,32 +77,32 @@ void MaterialLibrary::AddEnvMapMaterial(MaterialUUID UUID, Hazel::Ref<EnvMapMate
 	s_EnvMapMaterials.insert(std::make_pair(UUID, envMapMaterial));
 }
 
-void MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType textureType, const std::string& texturePath, Hazel::Ref<EnvMapMaterial> envMapMaterial)
+void MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType textureType, const std::string& texturePath, H2M::Ref<EnvMapMaterial> envMapMaterial)
 {
     switch (textureType)
     {
     case MaterialTextureType::Albedo:
-        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
+        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2DH2M(texturePath);
         envMapMaterial->GetAlbedoInput().UseTexture = true;
         break;
     case MaterialTextureType::Normal:
-        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
+        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadTexture2DH2M(texturePath);
         envMapMaterial->GetNormalInput().UseTexture = true;
         break;
     case MaterialTextureType::Metalness:
-        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
+        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadTexture2DH2M(texturePath);
         envMapMaterial->GetMetalnessInput().UseTexture = true;
         break;
     case MaterialTextureType::Roughness:
-        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
+        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadTexture2DH2M(texturePath);
         envMapMaterial->GetRoughnessInput().UseTexture = true;
         break;
     case MaterialTextureType::AO:
-        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
+        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadTexture2DH2M(texturePath);
         envMapMaterial->GetAOInput().UseTexture = true;
         break;
     case MaterialTextureType::Emissive:
-        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(texturePath);
+        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadTexture2DH2M(texturePath);
         envMapMaterial->GetEmissiveInput().UseTexture = true;
         break;
     }
@@ -115,7 +115,7 @@ void MaterialLibrary::Cleanup()
 	s_SubmeshMaterialUUIDs.clear();
 }
 
-void MaterialLibrary::RenameMaterial(Hazel::Ref<EnvMapMaterial> envMapMaterial, std::string newName)
+void MaterialLibrary::RenameMaterial(H2M::Ref<EnvMapMaterial> envMapMaterial, std::string newName)
 {
     Log::GetLogger()->debug("MaterialLibrary::RenameMaterial from '{0}' to '{1}'", envMapMaterial->GetName(), newName);
 
@@ -158,9 +158,9 @@ void MaterialLibrary::AddSubmeshMaterialRelation(SubmeshUUID submeshUUID, Materi
     }
 }
 
-Hazel::Ref<EnvMapMaterial> MaterialLibrary::CreateDefaultMaterial(std::string materialName)
+H2M::Ref<EnvMapMaterial> MaterialLibrary::CreateDefaultMaterial(std::string materialName)
 {
-    Hazel::Ref<EnvMapMaterial> envMapMaterial = Hazel::Ref<EnvMapMaterial>::Create(materialName);
+    H2M::Ref<EnvMapMaterial> envMapMaterial = H2M::Ref<EnvMapMaterial>::Create(materialName);
 
     TextureInfo textureInfo;
     if (s_TextureInfo.find(materialName) != s_TextureInfo.end()) {
@@ -172,39 +172,39 @@ Hazel::Ref<EnvMapMaterial> MaterialLibrary::CreateDefaultMaterial(std::string ma
 
     // Load Hazel/Renderer/HazelTexture
     if (textureInfo.albedo != "") {
-        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.albedo);
+        envMapMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2DH2M(textureInfo.albedo);
         envMapMaterial->GetAlbedoInput().UseTexture = true;
     }
     if (textureInfo.normal != "")
     {
-        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.normal);
+        envMapMaterial->GetNormalInput().TextureMap = ResourceManager::LoadTexture2DH2M(textureInfo.normal);
         envMapMaterial->GetNormalInput().UseTexture = true;    
     }
     if (textureInfo.metallic != "")
     {
-        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.metallic);
+        envMapMaterial->GetMetalnessInput().TextureMap = ResourceManager::LoadTexture2DH2M(textureInfo.metallic);
         envMapMaterial->GetMetalnessInput().UseTexture = true;
     }
     if (textureInfo.roughness != "")
     {
-        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.roughness);
+        envMapMaterial->GetRoughnessInput().TextureMap = ResourceManager::LoadTexture2DH2M(textureInfo.roughness);
         envMapMaterial->GetRoughnessInput().UseTexture = true;
     }
     if (textureInfo.emissive != "")
     {
-        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.emissive);
+        envMapMaterial->GetEmissiveInput().TextureMap = ResourceManager::LoadTexture2DH2M(textureInfo.emissive);
         envMapMaterial->GetEmissiveInput().UseTexture = true;
     }
     if (textureInfo.ao != "")
     {
-        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadTexture2DHazelLegacy(textureInfo.ao);
+        envMapMaterial->GetAOInput().TextureMap = ResourceManager::LoadTexture2DH2M(textureInfo.ao);
         envMapMaterial->GetAOInput().UseTexture = true;
     }
 
     return envMapMaterial;
 }
 
-void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity)
+void MaterialLibrary::LoadEnvMapMaterials(H2M::Ref<H2M::MeshH2M> mesh, H2M::EntityH2M entity)
 {
     //  for (auto material : m_EnvMapMaterials) {
     //      delete material.second;
@@ -212,9 +212,9 @@ void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::MeshHazelLegacy> mes
     //  
     //  m_EnvMapMaterials.clear();
 
-    std::vector<Hazel::Ref<Hazel::SubmeshHazelLegacy>> submeshes = mesh->GetSubmeshes();
+    std::vector<H2M::Ref<H2M::SubmeshH2M>> submeshes = mesh->GetSubmeshes();
 
-    for (Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh : submeshes)
+    for (H2M::Ref<H2M::SubmeshH2M> submesh : submeshes)
     {
         std::string materialUUID = GetSubmeshMaterialUUID(mesh, submesh, entity);
 
@@ -224,7 +224,7 @@ void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::MeshHazelLegacy> mes
             continue;
         }
 
-        Hazel::Ref<EnvMapMaterial> envMapMaterial = MaterialLibrary::CreateDefaultMaterial(materialUUID);
+        H2M::Ref<EnvMapMaterial> envMapMaterial = MaterialLibrary::CreateDefaultMaterial(materialUUID);
         MaterialLibrary::AddEnvMapMaterial(materialUUID, envMapMaterial);
     }
 
@@ -241,7 +241,7 @@ void MaterialLibrary::LoadEnvMapMaterials(Hazel::Ref<Hazel::MeshHazelLegacy> mes
     }
 }
 
-SubmeshUUID MaterialLibrary::GetSubmeshUUID(Hazel::EntityHazelLegacy entity, Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh)
+SubmeshUUID MaterialLibrary::GetSubmeshUUID(H2M::EntityH2M entity, H2M::Ref<H2M::SubmeshH2M> submesh)
 {
     std::string entityHandle = entity ? std::to_string(entity.GetHandle()) : "0000";
     SubmeshUUID submeshUUID = "E_" + entityHandle + "_S_" + submesh->MeshName;
@@ -249,7 +249,7 @@ SubmeshUUID MaterialLibrary::GetSubmeshUUID(Hazel::EntityHazelLegacy entity, Haz
     return submeshUUID;
 }
 
-void MaterialLibrary::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity, Hazel::Ref<EnvMapMaterial> defaultMaterial)
+void MaterialLibrary::SetDefaultMaterialToSubmeshes(H2M::Ref<H2M::MeshH2M> mesh, H2M::EntityH2M entity, H2M::Ref<EnvMapMaterial> defaultMaterial)
 {
     if (!defaultMaterial)
     {
@@ -270,7 +270,7 @@ void MaterialLibrary::SetDefaultMaterialToSubmeshes(Hazel::Ref<Hazel::MeshHazelL
  * Instead of just assigning the default material to each submesh, this method tries to detect the correct material and assign to the submesh
  * If it fails to do so, it loads the default material
  */
-void MaterialLibrary::SetMaterialsToSubmeshes(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::EntityHazelLegacy entity, Hazel::Ref<EnvMapMaterial> defaultMaterial)
+void MaterialLibrary::SetMaterialsToSubmeshes(H2M::Ref<H2M::MeshH2M> mesh, H2M::EntityH2M entity, H2M::Ref<EnvMapMaterial> defaultMaterial)
 {
     for (auto submesh : mesh->GetSubmeshes())
     {
@@ -306,29 +306,29 @@ std::string MaterialLibrary::NewMaterialName()
     return materialName;
 }
 
-void MaterialLibrary::AddMaterialFromComponent(Hazel::EntityHazelLegacy entity)
+void MaterialLibrary::AddMaterialFromComponent(H2M::EntityH2M entity)
 {
     // If entity contains MaterialComponent, load generic material for the entire entity (all submeshes)
-    if (entity.HasComponent<Hazel::MaterialComponentHazelLegacy>())
+    if (entity.HasComponent<H2M::MaterialComponentH2M>())
     {
-        if (entity.GetComponent<Hazel::MaterialComponentHazelLegacy>().Material)
+        if (entity.GetComponent<H2M::MaterialComponentH2M>().Material)
         {
-            Hazel::Ref<MaterialData> newMaterialData = AddNewMaterial("");
-            auto material = entity.GetComponent<Hazel::MaterialComponentHazelLegacy>().Material;
+            H2M::Ref<MaterialData> newMaterialData = AddNewMaterial("");
+            auto material = entity.GetComponent<H2M::MaterialComponentH2M>().Material;
             material->SetName(newMaterialData->Name);
         }
     }
 }
 
-MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(Hazel::Ref<Hazel::MeshHazelLegacy> mesh, Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh, Hazel::EntityHazelLegacy entity)
+MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(H2M::Ref<H2M::MeshH2M> mesh, H2M::Ref<H2M::SubmeshH2M> submesh, H2M::EntityH2M entity)
 {
     MaterialUUID materialUUID = "";
 
     EnvMapMaterial* envMapMaterial = nullptr;
-    bool hasMaterialComponent = entity && entity.HasComponent<Hazel::MaterialComponentHazelLegacy>();
+    bool hasMaterialComponent = entity && entity.HasComponent<H2M::MaterialComponentH2M>();
     if (hasMaterialComponent) {
-        Hazel::MaterialComponentHazelLegacy materialComponent = entity.GetComponent<Hazel::MaterialComponentHazelLegacy>();
-        Hazel::Ref<EnvMapMaterial> envMapMaterial = materialComponent.Material;
+        H2M::MaterialComponentH2M materialComponent = entity.GetComponent<H2M::MaterialComponentH2M>();
+        H2M::Ref<EnvMapMaterial> envMapMaterial = materialComponent.Material;
     }
 
     std::string submeshUUID = GetSubmeshUUID(entity, submesh);

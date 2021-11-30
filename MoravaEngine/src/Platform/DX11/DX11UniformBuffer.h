@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Hazel/Renderer/UniformBuffer.h"
+#include "H2M/Renderer/UniformBuffer.h"
 
 #include <string>
 

@@ -1,8 +1,8 @@
 #include "Platform/Windows/WindowsWindow.h"
 
-#include "Hazel/Core/Events/KeyEvent.h"
-#include "Hazel/Core/Events/MouseEvent.h"
-#include "Hazel/Core/Events/ApplicationEvent.h"
+#include "H2M/Core/Events/KeyEvent.h"
+#include "H2M/Core/Events/MouseEvent.h"
+#include "H2M/Core/Events/ApplicationEvent.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -70,24 +70,24 @@ void WindowsWindow::Init(const WindowProps& props)
 
 	Log::GetLogger()->info("Creating window - title: '{0}', size: [{1}x{2}]", props.Title, props.Width, props.Height);
 
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-	case Hazel::RendererAPIType::OpenGL:
-	case Hazel::RendererAPIType::Vulkan:
+	case H2M::RendererAPIH2MType::OpenGL:
+	case H2M::RendererAPIH2MType::Vulkan:
 		InitGLFW(props);
 		break;
-	case Hazel::RendererAPIType::DX11:
+	case H2M::RendererAPIH2MType::DX11:
 		InitDX11(props);
 		break;
 	}
 
-	m_RendererContext = Hazel::Ref<Hazel::RendererContext>(Hazel::RendererContext::Create(this));
+	m_RendererContext = H2M::Ref<H2M::RendererContext>(H2M::RendererContext::Create(this));
 	m_RendererContext->Create();
 
 	RendererBasic::SetRendererContext(m_RendererContext);
 
-	// Ref<Hazel::VulkanContext> context = m_RendererContext.As<Hazel::VulkanContext>();
-	// m_SwapChain.Init(Hazel::VulkanContext::GetInstance(), context->GetDevice());
+	// Ref<H2M::VulkanContext> context = m_RendererContext.As<H2M::VulkanContext>();
+	// m_SwapChain.Init(H2M::VulkanContext::GetInstance(), context->GetDevice());
 	// m_SwapChain.InitSurface(m_Window);
 
 	SetVSync(true);
@@ -134,7 +134,7 @@ void WindowsWindow::InitGLFW(const WindowProps& props)
 	// Allow forward compatibility
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+	if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::Vulkan)
 	{
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	}
@@ -166,10 +166,10 @@ inline std::pair<float, float> WindowsWindow::GetWindowPos() const
 
 void WindowsWindow::ProcessEvents()
 {
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-	case Hazel::RendererAPIType::OpenGL:
-	case Hazel::RendererAPIType::Vulkan:
+	case H2M::RendererAPIH2MType::OpenGL:
+	case H2M::RendererAPIH2MType::Vulkan:
 	{
 		glfwPollEvents();
 
@@ -178,7 +178,7 @@ void WindowsWindow::ProcessEvents()
 		glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 	break;
-	case Hazel::RendererAPIType::DX11:
+	case H2M::RendererAPIH2MType::DX11:
 		Broadcast();
 		break;
 	}
@@ -191,7 +191,7 @@ void WindowsWindow::SwapBuffers()
 
 void WindowsWindow::SetVSync(bool enabled)
 {
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
 	{
 		if (enabled) {
 			glfwSwapInterval(1);
@@ -349,7 +349,7 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 // Used only for DirectX 11
 bool WindowsWindow::Broadcast()
 {
-	if (Hazel::RendererAPI::Current() != Hazel::RendererAPIType::DX11) return true;
+	if (H2M::RendererAPIH2M::Current() != H2M::RendererAPIH2MType::DX11) return true;
 
 	MSG msg;
 
@@ -491,17 +491,17 @@ RECT WindowsWindow::GetSizeScreen()
 
 void WindowsWindow::Shutdown()
 {
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-		case Hazel::RendererAPIType::OpenGL:
-		case Hazel::RendererAPIType::Vulkan:
+		case H2M::RendererAPIH2MType::OpenGL:
+		case H2M::RendererAPIH2MType::Vulkan:
 		{
 			glfwDestroyWindow(m_GLFW_Window);
 			glfwTerminate();
 			s_GLFWInitialized = false;
 		}
 		break;
-		case Hazel::RendererAPIType::DX11:
+		case H2M::RendererAPIH2MType::DX11:
 			Release();
 			break;
 		}
@@ -567,12 +567,12 @@ void WindowsWindow::SetCursorNormal()
 
 bool WindowsWindow::GetShouldClose()
 {
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-	case Hazel::RendererAPIType::OpenGL:
-	case Hazel::RendererAPIType::Vulkan:
+	case H2M::RendererAPIH2MType::OpenGL:
+	case H2M::RendererAPIH2MType::Vulkan:
 		return glfwWindowShouldClose(m_GLFW_Window);
-	case Hazel::RendererAPIType::DX11:
+	case H2M::RendererAPIH2MType::DX11:
 		return !m_IsRunning;
 	default:
 		return true;
@@ -598,7 +598,7 @@ void WindowsWindow::SetShouldClose(bool shouldClose)
 	glfwSetWindowShouldClose(m_GLFW_Window, shouldClose);
 }
 
-Hazel::VulkanSwapChain& WindowsWindow::GetSwapChain()
+H2M::VulkanSwapChain& WindowsWindow::GetSwapChain()
 {
 	return m_SwapChain;
 }

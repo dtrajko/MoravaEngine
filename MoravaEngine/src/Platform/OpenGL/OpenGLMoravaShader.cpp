@@ -1,6 +1,6 @@
 #include "OpenGLMoravaShader.h"
 
-#include "Hazel/Core/Assert.h"
+#include "H2M/Core/Assert.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"
@@ -49,25 +49,25 @@ OpenGLMoravaShader::OpenGLMoravaShader(const char* computeLocation, bool forceCo
 	CompileProgram();
 }
 
-Hazel::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+H2M::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 {
-	Hazel::Ref<OpenGLMoravaShader> result = Hazel::Ref<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
+	H2M::Ref<OpenGLMoravaShader> result = H2M::Ref<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
 
 	s_AllShaders.push_back(result);
 	return result;
 }
 
-Hazel::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
+H2M::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
 {
-	Hazel::Ref<OpenGLMoravaShader> result = Hazel::Ref<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
+	H2M::Ref<OpenGLMoravaShader> result = H2M::Ref<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
 
 	s_AllShaders.push_back(result);
 	return result;
 }
 
-Hazel::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* computeLocation, bool forceCompile)
+H2M::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* computeLocation, bool forceCompile)
 {
-	Hazel::Ref<OpenGLMoravaShader> result = Hazel::Ref<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
+	H2M::Ref<OpenGLMoravaShader> result = H2M::Ref<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
 
 	s_AllShaders.push_back(result);
 	return result;
@@ -199,18 +199,18 @@ void OpenGLMoravaShader::SetIntArray(const std::string& name, int* values, uint3
 	glUniform1iv(GetUniformLocation(name), size, values);
 }
 
-const std::unordered_map<std::string, Hazel::ShaderBuffer>& OpenGLMoravaShader::GetShaderBuffers() const
+const std::unordered_map<std::string, H2M::ShaderBuffer>& OpenGLMoravaShader::GetShaderBuffers() const
 {
 	// OpenGLMaterial::FindUniformDeclaration requires at least 2 shader buffers
-	// std::unordered_map<std::string, Hazel::ShaderBuffer> shaderBuffers = std::unordered_map<std::string, Hazel::ShaderBuffer>();
-	// shaderBuffers.insert(std::make_pair("One", Hazel::ShaderBuffer()));
-	// shaderBuffers.insert(std::make_pair("Two", Hazel::ShaderBuffer()));
-	return std::unordered_map<std::string, Hazel::ShaderBuffer>();
+	// std::unordered_map<std::string, H2M::ShaderBuffer> shaderBuffers = std::unordered_map<std::string, H2M::ShaderBuffer>();
+	// shaderBuffers.insert(std::make_pair("One", H2M::ShaderBuffer()));
+	// shaderBuffers.insert(std::make_pair("Two", H2M::ShaderBuffer()));
+	return std::unordered_map<std::string, H2M::ShaderBuffer>();
 }
 
-const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& OpenGLMoravaShader::GetResources() const
+const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& OpenGLMoravaShader::GetResources() const
 {
-	return std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>();
+	return std::unordered_map<std::string, H2M::ShaderResourceDeclaration>();
 }
 
 void OpenGLMoravaShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)

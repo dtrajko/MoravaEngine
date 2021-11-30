@@ -1,7 +1,7 @@
 #include "DX11Shader.h"
 
-#include "Hazel/Core/Assert.h"
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "H2M/Core/Assert.h"
+#include "H2M/Renderer/HazelRenderer.h"
 
 #include "Core/Log.h"
 #include "DX11Context.h"
@@ -37,8 +37,8 @@ DX11Shader::DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShad
 	s_Specification.VertexShaderPath = Util::to_str(vertexShaderPath);
 	s_Specification.PixelShaderPath = Util::to_str(pixelShaderPath);
 
-	m_VertexShader = Hazel::Ref<DX11VertexShader>::Create(vertexShaderPath);
-	m_PixelShader = Hazel::Ref<DX11PixelShader>::Create(pixelShaderPath);
+	m_VertexShader = H2M::Ref<DX11VertexShader>::Create(vertexShaderPath);
+	m_PixelShader = H2M::Ref<DX11PixelShader>::Create(pixelShaderPath);
 }
 
 DX11Shader::~DX11Shader()
@@ -46,11 +46,11 @@ DX11Shader::~DX11Shader()
 	ClearShader();
 }
 
-Hazel::Ref<DX11Shader> DX11Shader::CreateFromString(const std::string& source)
+H2M::Ref<DX11Shader> DX11Shader::CreateFromString(const std::string& source)
 {
 	Log::GetLogger()->error("DX11Shader::CreateFromString - method not implemented!");
 
-	Hazel::Ref<DX11Shader> shader = Hazel::Ref<DX11Shader>::Create();
+	H2M::Ref<DX11Shader> shader = H2M::Ref<DX11Shader>::Create();
 	// shader->Load(source, true);
 	return shader;
 }
@@ -183,7 +183,7 @@ void DX11Shader::Reflect(const std::string& shaderStage, const std::vector<uint3
 		if (bufferName.empty())
 			continue;
 
-		Hazel::ShaderBuffer& buffer = m_Buffers[bufferName];
+		H2M::ShaderBuffer& buffer = m_Buffers[bufferName];
 		buffer.Name = bufferName;
 		buffer.Size = static_cast<uint32_t>(bufferSize);
 
@@ -196,13 +196,13 @@ void DX11Shader::Reflect(const std::string& shaderStage, const std::vector<uint3
 		for (int i = 0; i < memberCount; i++)
 		{
 			// auto type = compiler.get_type(bufferType.member_types[i]);
-			Hazel::ShaderUniformType type{};
+			H2M::ShaderUniformType type{};
 			const auto& memberName = compiler.get_member_name(bufferType.self, i);
 			auto size = compiler.get_declared_struct_member_size(bufferType, i);
 			auto offset = compiler.type_struct_member_offset(bufferType, i);
 
 			std::string uniformName = bufferName + "." + memberName;
-			buffer.Uniforms[uniformName] = Hazel::ShaderUniform(uniformName, type, static_cast<uint32_t>(size), offset);
+			buffer.Uniforms[uniformName] = H2M::ShaderUniform(uniformName, type, static_cast<uint32_t>(size), offset);
 		}
 	}
 
@@ -476,9 +476,9 @@ void DX11Shader::SetMat4FromRenderThread(const std::string& name, const glm::mat
 
 void DX11Shader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-const std::unordered_map<std::string, Hazel::ShaderBuffer>& DX11Shader::GetShaderBuffers() const { return {}; }
+const std::unordered_map<std::string, H2M::ShaderBuffer>& DX11Shader::GetShaderBuffers() const { return {}; }
 
-const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& DX11Shader::GetResources() const { return {}; }
+const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& DX11Shader::GetResources() const { return {}; }
 
 void DX11Shader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 

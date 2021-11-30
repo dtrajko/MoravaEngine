@@ -165,7 +165,7 @@ void SceneCubemaps::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneCubemaps::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
     RendererBasic::EnableTransparency();
 

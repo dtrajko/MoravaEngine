@@ -2,8 +2,8 @@
 
 #include "../../pch.h"
 
-#include "Hazel/Editor/ContentBrowserPanel.h"
-#include "Hazel/Renderer/Renderer2D.h"
+#include "H2M/Editor/ContentBrowserPanel.h"
+#include "H2M/Renderer/Renderer2D.h"
 
 #include "Editor/EntitySelection.h"
 #include "Editor/MaterialEditorPanel.h"
@@ -12,8 +12,8 @@
 #include "EnvMap/EnvMapSharedData.h"
 #include "Framebuffer/ShadowMap.h"
 
-#include "HazelLegacy/Editor/SceneHierarchyPanelHazelLegacy.h"
-#include "HazelLegacy/Renderer/SceneRendererHazelLegacy.h"
+#include "H2M/Editor/SceneHierarchyPanelH2M.h"
+#include "H2M/Renderer/SceneRendererH2M.h"
 
 
 enum class SelectionMode
@@ -33,17 +33,17 @@ public:
 	~EnvMapEditorLayer();
 
 	void OnUpdate(float timestep);
-	void OnUpdateEditor(Hazel::Ref<Hazel::SceneHazelLegacy> scene, float timestep);
-	void OnUpdateRuntime(Hazel::Ref<Hazel::SceneHazelLegacy> scene, float timestep);
+	void OnUpdateEditor(H2M::Ref<H2M::SceneH2M> scene, float timestep);
+	void OnUpdateRuntime(H2M::Ref<H2M::SceneH2M> scene, float timestep);
 
 	void OnScenePlay();
 	void OnSceneStop();
 
 	void OnRenderShadow(Window* mainWindow);
-	void RenderSubmeshesShadowPass(Hazel::Ref<MoravaShader> shader);
+	void RenderSubmeshesShadowPass(H2M::Ref<MoravaShader> shader);
 
 	void OnRenderShadowOmni(Window* mainWindow);
-	void RenderShadowOmniSingleLight(Window* mainWindow, Hazel::EntityHazelLegacy lightEntity, Hazel::Ref<OmniShadowMap> omniShadowMap);
+	void RenderShadowOmniSingleLight(Window* mainWindow, H2M::EntityH2M lightEntity, H2M::Ref<OmniShadowMap> omniShadowMap);
 
 	void OnRenderCascadedShadowMaps(Window* mainWindow);
 
@@ -65,7 +65,7 @@ public:
 
 	void DisplaySubmeshMaterialSelector(bool* p_open);
 
-	void UpdateSubmeshMaterialMap(Hazel::EntityHazelLegacy entity, Hazel::SubmeshHazelLegacy* submesh);
+	void UpdateSubmeshMaterialMap(H2M::EntityH2M entity, H2M::SubmeshH2M* submesh);
 
 	void NewScene();
 	void OpenScene();
@@ -77,18 +77,18 @@ public:
 	void UpdateWindowTitle(const std::string& sceneName);
 
 	void OnSelected(const SelectedSubmesh& selectionContext);
-	void OnEntityDeleted(Hazel::EntityHazelLegacy e);
+	void OnEntityDeleted(H2M::EntityH2M e);
 
 	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()
 	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
 
-	void SelectEntity(Hazel::EntityHazelLegacy e);
+	void SelectEntity(H2M::EntityH2M e);
 
 	void CameraSyncECS();
 	void UpdateImGuizmo(Window* mainWindow);
-	Hazel::EntityHazelLegacy CreateEntity(const std::string& name);
-	Hazel::EntityHazelLegacy LoadEntity(std::string fullPath);
-	static Hazel::CameraComponentHazelLegacy GetMainCameraComponent();
+	H2M::EntityH2M CreateEntity(const std::string& name);
+	H2M::EntityH2M LoadEntity(std::string fullPath);
+	static H2M::CameraComponentH2M GetMainCameraComponent();
 
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 
@@ -98,14 +98,14 @@ public:
 	void SetSkyboxLOD(float LOD);
 
 	// Getters
-	Hazel::Ref<MoravaShader> GetShaderPBR_Anim();
-	Hazel::Ref<MoravaShader> GetShaderPBR_Static();
+	H2M::Ref<MoravaShader> GetShaderPBR_Anim();
+	H2M::Ref<MoravaShader> GetShaderPBR_Static();
 	inline std::map<std::string, unsigned int>& GetSamplerSlots() { return EnvMapSharedData::s_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return EnvMapSharedData::s_RadiancePrefilter; }
 	inline float& GetEnvMapRotation() { return EnvMapSharedData::s_EnvMapRotation; }
-	inline Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> GetCheckerboardTexture() { return s_CheckerboardTexture; }
-	inline Hazel::Ref<Hazel::TextureCubeHazelLegacy> GetSkyboxTexture() { return m_SkyboxTexture; }
-	Hazel::EntityHazelLegacy GetMeshEntity();
+	inline H2M::Ref<H2M::Texture2DH2M> GetCheckerboardTexture() { return s_CheckerboardTexture; }
+	inline H2M::Ref<H2M::TextureCubeH2M> GetSkyboxTexture() { return m_SkyboxTexture; }
+	H2M::EntityH2M GetMeshEntity();
 	inline float& GetSkyboxExposureFactor() { return EnvMapSharedData::s_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
 	void SetViewportBounds(glm::vec2* viewportBounds);
@@ -114,21 +114,21 @@ public:
 	inline bool* GetDisplayRay() { return &EnvMapSharedData::s_DisplayRay; };
 
 	// Renderer
-	void DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest);
-	void SubmitMesh(Hazel::MeshHazelLegacy* mesh, const glm::mat4& transform, Material* overrideMaterial);
+	void DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest);
+	void SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
 	// EditorLayer
 	void OnEvent(Event& e);
 
 	// from SceneHazelEnvMap
 	void SetupRenderFramebuffer();
-	void ResizeViewport(glm::vec2 viewportPanelSize, Hazel::Ref<MoravaFramebuffer> renderFramebuffer);
+	void ResizeViewport(glm::vec2 viewportPanelSize, H2M::Ref<MoravaFramebuffer> renderFramebuffer);
 
 private:
 	void SetupContextData(Scene* scene);
 	void SetupShaders();
 	void UpdateUniforms();
-	void SetSkybox(Hazel::Ref<Hazel::TextureCubeHazelLegacy> skybox);
+	void SetSkybox(H2M::Ref<H2M::TextureCubeH2M> skybox);
 	void Init();
 
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
@@ -137,10 +137,10 @@ private:
 
 public:
 	static SelectionMode s_SelectionMode;
-	static Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> s_CheckerboardTexture;
+	static H2M::Ref<H2M::Texture2DH2M> s_CheckerboardTexture;
 
-	static Hazel::Ref<EnvMapMaterial> s_DefaultMaterial;
-	static Hazel::Ref<EnvMapMaterial> s_LightMaterial;
+	static H2M::Ref<EnvMapMaterial> s_DefaultMaterial;
+	static H2M::Ref<EnvMapMaterial> s_LightMaterial;
 
 	glm::mat4 m_CurrentlySelectedTransform;
 	glm::mat4* m_RelativeTransform = nullptr;
@@ -149,25 +149,25 @@ public:
 	// viewports public
 	glm::vec2 m_ImGuiViewportMain;
 	glm::vec2 m_ViewportMainSize;
-	Hazel::Ref<MoravaFramebuffer> m_RenderFramebuffer;
-	Hazel::Ref<MoravaFramebuffer> m_PostProcessingFramebuffer;
+	H2M::Ref<MoravaFramebuffer> m_RenderFramebuffer;
+	H2M::Ref<MoravaFramebuffer> m_PostProcessingFramebuffer;
 
 private:
-	Hazel::Ref<MoravaShader> m_ShaderShadow;
-	Hazel::Ref<MoravaShader> m_ShaderOmniShadow;
-	Hazel::Ref<MoravaShader> m_ShaderPostProcessing;
-	Hazel::Ref<MoravaShader> m_ShaderBloomBlur;
+	H2M::Ref<MoravaShader> m_ShaderShadow;
+	H2M::Ref<MoravaShader> m_ShaderOmniShadow;
+	H2M::Ref<MoravaShader> m_ShaderPostProcessing;
+	H2M::Ref<MoravaShader> m_ShaderBloomBlur;
 
 	int m_PostProcessingEffect = 0;
 	bool m_PostProcessingEnabled = false;
 
-	Hazel::Ref<Hazel::TextureCubeHazelLegacy> m_SkyboxTexture;
+	H2M::Ref<H2M::TextureCubeH2M> m_SkyboxTexture;
 
 	/** BEGIN properties Hazelnut/EditorLayer **/
 	// Editor resources
-	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> m_PlayButtonTex;
+	H2M::Ref<H2M::Texture2DH2M> m_PlayButtonTex;
 
-	Hazel::EntityHazelLegacy m_DirectionalLightEntity;
+	H2M::EntityH2M m_DirectionalLightEntity;
 	glm::mat4 m_LightProjectionMatrix;
 	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
 
@@ -230,8 +230,8 @@ private:
 	std::string m_SceneFilePath;
 	bool m_ReloadScriptOnPlay = true;
 
-	Hazel::SceneHierarchyPanelHazelLegacy* m_SceneHierarchyPanel;
-	Hazel::ContentBrowserPanel* m_ContentBrowserPanel;
+	H2M::SceneHierarchyPanelH2M* m_SceneHierarchyPanel;
+	H2M::ContentBrowserPanel* m_ContentBrowserPanel;
 	MaterialEditorPanel* m_MaterialEditorPanel;
 
 	// Hazel LIVE! #015

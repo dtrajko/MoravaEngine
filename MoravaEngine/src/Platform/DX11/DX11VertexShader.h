@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "Hazel/Core/Ref.h"
+#include "H2M/Core/Ref.h"
 
 #include "DX11.h"
 #include "DX11ConstantBuffer.h"
 #include "DX11Texture2D.h"
 
 
-class DX11VertexShader : public Hazel::RefCounted
+class DX11VertexShader : public H2M::RefCounted
 {
 
 public:
@@ -22,10 +22,10 @@ public:
 	inline size_t GetBytecodeLength() { return m_BytecodeLength; }
 
 	void Bind();
-	void BindConstantBuffer(Hazel::Ref<DX11ConstantBuffer> constantBuffer);
+	void BindConstantBuffer(H2M::Ref<DX11ConstantBuffer> constantBuffer);
 
 	// moved from DX11Context
-	void SetTextures(const std::vector<Hazel::Ref<Hazel::HazelTexture>>& textures);
+	void SetTextures(const std::vector<H2M::Ref<H2M::HazelTexture>>& textures);
 
 private:
 	bool CompileDX11Shader(const wchar_t* fileName);

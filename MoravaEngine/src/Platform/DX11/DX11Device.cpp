@@ -1,7 +1,7 @@
 #include "DX11Device.h"
 
 #include "DX11Context.h"
-#include "Hazel/Core/Assert.h"
+#include "H2M/Core/Assert.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -16,16 +16,16 @@ DX11PhysicalDevice::~DX11PhysicalDevice()
 {
 }
 
-Hazel::Ref<DX11PhysicalDevice> DX11PhysicalDevice::Select()
+H2M::Ref<DX11PhysicalDevice> DX11PhysicalDevice::Select()
 {
-	return Hazel::Ref<DX11PhysicalDevice>::Create();
+	return H2M::Ref<DX11PhysicalDevice>::Create();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 // DX11 Device
 ////////////////////////////////////////////////////////////////////////////////////
 
-DX11Device::DX11Device(const Hazel::Ref<DX11PhysicalDevice>& physicalDevice)
+DX11Device::DX11Device(const H2M::Ref<DX11PhysicalDevice>& physicalDevice)
 	: m_PhysicalDevice(physicalDevice)
 {
 }

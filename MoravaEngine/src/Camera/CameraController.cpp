@@ -10,7 +10,7 @@
 #include <cstdio>
 
 
-CameraController::CameraController(Hazel::HazelCamera* camera, float aspectRatio, float moveSpeed, float turnSpeed)
+CameraController::CameraController(H2M::HazelCamera* camera, float aspectRatio, float moveSpeed, float turnSpeed)
 {
 	m_Camera = camera;
 	m_Camera->SetAspectRatio(aspectRatio);
@@ -127,7 +127,7 @@ void CameraController::InvertRoll()
 
 void CameraController::OnResize(uint32_t width, uint32_t height)
 {
-	// TODO (void Hazel::OrthographicCameraController::OnResize(float width, float height))
+	// TODO (void H2M::OrthographicCameraController::OnResize(float width, float height))
 	m_Camera->SetAspectRatio((float)width / (float)height);
 }
 

@@ -23,6 +23,6 @@ public:
 
 protected:
 	Mesh* m_Mesh;
-	Hazel::Ref<MoravaShader> m_Shader;
+	H2M::Ref<MoravaShader> m_Shader;
 
 };

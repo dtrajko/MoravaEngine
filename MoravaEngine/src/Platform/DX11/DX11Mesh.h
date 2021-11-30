@@ -7,9 +7,9 @@
 
 #include "DX11Material.h"
 
-#include "Hazel/Core/Ref.h"
-#include "Hazel/Renderer/VertexBuffer.h"
-#include "Hazel/Renderer/IndexBuffer.h"
+#include "H2M/Core/Ref.h"
+#include "H2M/Renderer/VertexBuffer.h"
+#include "H2M/Renderer/IndexBuffer.h"
 
 
 struct DX11MaterialSlot
@@ -20,14 +20,14 @@ struct DX11MaterialSlot
 };
 
 
-class DX11Mesh : public Hazel::RefCounted
+class DX11Mesh : public H2M::RefCounted
 {
 public:
 	DX11Mesh(const wchar_t* fullPath);
 	~DX11Mesh();
 
-	const Hazel::Ref<Hazel::VertexBuffer>& GetVertexBuffer() { return m_VertexBuffer; };
-	const Hazel::Ref<Hazel::IndexBuffer>& GetIndexBuffer() { return m_IndexBuffer; };
+	const H2M::Ref<H2M::VertexBuffer>& GetVertexBuffer() { return m_VertexBuffer; };
+	const H2M::Ref<H2M::IndexBuffer>& GetIndexBuffer() { return m_IndexBuffer; };
 
 	const DX11MaterialSlot GetMaterialSlot(uint32_t slot);
 	size_t GetNumMaterialSlots();
@@ -39,8 +39,8 @@ private:
 		glm::vec3& tangent, glm::vec3& binormal);
 
 private:
-	Hazel::Ref<Hazel::VertexBuffer> m_VertexBuffer;
-	Hazel::Ref<Hazel::IndexBuffer> m_IndexBuffer;
+	H2M::Ref<H2M::VertexBuffer> m_VertexBuffer;
+	H2M::Ref<H2M::IndexBuffer> m_IndexBuffer;
 
 	std::vector<DX11MaterialSlot> m_MaterialSlots;
 

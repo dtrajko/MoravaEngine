@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Hazel/Core/Ref.h"
-#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
+#include "H2M/Core/Ref.h"
+#include "H2M/Renderer/TextureH2M.h"
 
 #include <glm/glm.hpp>
 
 
 using MaterialUUID = std::string;
 
-class EnvMapMaterial : public Hazel::RefCounted
+class EnvMapMaterial : public H2M::RefCounted
 {
 	struct AlbedoInput;
 	struct NormalInput;
@@ -20,7 +20,7 @@ class EnvMapMaterial : public Hazel::RefCounted
 public:
 	EnvMapMaterial();
 	EnvMapMaterial(std::string name = "Untitled");
-	EnvMapMaterial(std::string name, Hazel::Ref<EnvMapMaterial> other);
+	EnvMapMaterial(std::string name, H2M::Ref<EnvMapMaterial> other);
 	~EnvMapMaterial() = default;
 
 	inline AlbedoInput& GetAlbedoInput() { return m_AlbedoInput; }
@@ -45,7 +45,7 @@ private:
 	struct AlbedoInput
 	{
 		glm::vec3 Color = { 0.972f, 0.96f, 0.915f }; // Silver, from https://docs.unrealengine.com/en-us/Engine/Rendering/Materials/PhysicallyBased
-		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
+		H2M::Ref<H2M::Texture2DH2M> TextureMap;
 		bool SRGB = false;
 		bool UseTexture = false;
 	};
@@ -53,7 +53,7 @@ private:
 
 	struct NormalInput
 	{
-		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
+		H2M::Ref<H2M::Texture2DH2M> TextureMap;
 		bool UseTexture = false;
 	};
 	NormalInput m_NormalInput;
@@ -61,7 +61,7 @@ private:
 	struct MetalnessInput
 	{
 		float Value = 0.0f;
-		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
+		H2M::Ref<H2M::Texture2DH2M> TextureMap;
 		bool UseTexture = false;
 	};
 	MetalnessInput m_MetalnessInput;
@@ -69,7 +69,7 @@ private:
 	struct RoughnessInput
 	{
 		float Value = 1.0f;
-		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
+		H2M::Ref<H2M::Texture2DH2M> TextureMap;
 		bool UseTexture = false;
 	};
 	RoughnessInput m_RoughnessInput;
@@ -77,7 +77,7 @@ private:
 	struct EmissiveInput
 	{
 		float Value = 0.0f;
-		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
+		H2M::Ref<H2M::Texture2DH2M> TextureMap;
 		bool SRGB = true;
 		bool UseTexture = false;
 	};
@@ -86,7 +86,7 @@ private:
 	struct AOInput
 	{
 		float Value = 1.0f;
-		Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TextureMap;
+		H2M::Ref<H2M::Texture2DH2M> TextureMap;
 		bool UseTexture = false;
 	};
 	AOInput m_AOInput;

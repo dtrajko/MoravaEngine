@@ -17,7 +17,7 @@ EnvMapMaterial::EnvMapMaterial(std::string name)
 	m_UUID = NewMaterialUUID();
 }
 
-EnvMapMaterial::EnvMapMaterial(std::string name, Hazel::Ref<EnvMapMaterial> other)
+EnvMapMaterial::EnvMapMaterial(std::string name, H2M::Ref<EnvMapMaterial> other)
 	: EnvMapMaterial(name)
 {
 	m_AlbedoInput = other->m_AlbedoInput;

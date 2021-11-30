@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Hazel/Scene/SceneCamera.h"
+#include "H2M/Scene/SceneCameraH2M.h"
 
 #include "glm/glm.hpp"
 
 
-class Camera : public Hazel::SceneCamera
+class Camera : public H2M::SceneCameraH2M
 {
 
 public:
@@ -14,8 +14,8 @@ public:
 	Camera(glm::vec3 position, float yaw, float pitch, float fovDegrees, float aspectRatio, float moveSpeed, float turnSpeed);
 	~Camera();
 
-	virtual void OnUpdate(Hazel::Timestep ts) override;
-	virtual void OnEvent(Event& e) override;
+	virtual void OnUpdate(H2M::TimestepH2M ts) override;
+	virtual void OnEvent(H2M::EventH2M& e) override;
 
 	virtual void SetViewportSize(float width, float height) override;
 	virtual void SetPitch(float pitch) override;

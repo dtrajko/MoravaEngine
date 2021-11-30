@@ -1,6 +1,6 @@
 #include "RendererTrivial.h"
 
-#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "H2M/Platform/Vulkan/VulkanRenderer.h"
 
 #include "Platform/DX11/DX11Renderer.h"
 

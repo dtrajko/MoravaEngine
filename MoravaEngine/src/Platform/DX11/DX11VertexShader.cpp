@@ -34,12 +34,12 @@ void DX11VertexShader::Bind()
 	DX11Context::Get()->GetDX11DeviceContext()->VSSetShader(m_DX11VertexShader, nullptr, 0);
 }
 
-void DX11VertexShader::BindConstantBuffer(Hazel::Ref<DX11ConstantBuffer> constantBuffer)
+void DX11VertexShader::BindConstantBuffer(H2M::Ref<DX11ConstantBuffer> constantBuffer)
 {
 	DX11Context::Get()->GetDX11DeviceContext()->VSSetConstantBuffers(0, 1, &constantBuffer->m_Buffer);
 }
 
-void DX11VertexShader::SetTextures(const std::vector<Hazel::Ref<Hazel::HazelTexture>>& textures)
+void DX11VertexShader::SetTextures(const std::vector<H2M::Ref<H2M::HazelTexture>>& textures)
 {
 	size_t textureCount = textures.size();
 

@@ -2,9 +2,9 @@
 
 #include "Scene/SceneHazelEnvMap.h"
 
-#include "Hazel/Scene/Components.h"
-#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
-#include "Hazel/Renderer/RendererAPI.h"
+#include "H2M/Scene/Components.h"
+#include "H2M/Renderer/TextureH2M.h"
+#include "H2M/Renderer/RendererAPI.h"
 
 #include "../../ImGuizmo/ImGuizmo.h"
 
@@ -125,7 +125,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
-    // Hazel::RendererAPI::Init();
+    // H2M::RendererAPIH2M::Init();
 
     m_CsGame = new CsGame();
 }
@@ -243,14 +243,14 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
     return true;
 }
 
-void SceneHazelEnvMap::OnEntitySelected(Hazel::Entity entity)
+void SceneHazelEnvMap::OnEntitySelected(H2M::Entity entity)
 {
-    // auto& tc = entity.GetComponent<Hazel::TransformComponent>();
+    // auto& tc = entity.GetComponent<H2M::TransformComponent>();
     // m_EnvMapEditorLayer->SetMeshEntity(entity);
 }
 
 void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
     if (passType == "shadow" && sceneSettings.enableShadows) {
         m_EnvMapEditorLayer->OnRenderShadow(mainWindow);

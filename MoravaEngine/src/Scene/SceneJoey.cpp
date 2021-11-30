@@ -384,7 +384,7 @@ void SceneJoey::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 	// configure global opengl state
 	glEnable(GL_DEPTH_TEST);
@@ -553,6 +553,6 @@ void SceneJoey::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::stri
 }
 
 void SceneJoey::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 }

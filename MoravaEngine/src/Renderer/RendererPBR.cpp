@@ -65,23 +65,23 @@ void RendererPBR::SetUniforms()
 
 void RendererPBR::SetShaders()
 {
-	Hazel::Ref<MoravaShader> shaderMain = MoravaShader::Create("Shaders/shader.vert", "Shaders/shader.frag");
+	H2M::Ref<MoravaShader> shaderMain = MoravaShader::Create("Shaders/shader.vert", "Shaders/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	printf("Renderer: Main shader compiled [programID=%d]\n", shaderMain->GetProgramID());
 
-	Hazel::Ref<MoravaShader> shaderDirectionalShadow = MoravaShader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
+	H2M::Ref<MoravaShader> shaderDirectionalShadow = MoravaShader::Create("Shaders/directional_shadow_map.vert", "Shaders/directional_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("directionalShadow", shaderDirectionalShadow));
 	printf("Renderer: Shadow shader compiled [programID=%d]\n", shaderDirectionalShadow->GetProgramID());
 
-	Hazel::Ref<MoravaShader> shaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+	H2M::Ref<MoravaShader> shaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	printf("Renderer: OmniShadow shader compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
 
-	Hazel::Ref<MoravaShader> shaderWater = MoravaShader::Create("Shaders/water.vert", "Shaders/water.frag");
+	H2M::Ref<MoravaShader> shaderWater = MoravaShader::Create("Shaders/water.vert", "Shaders/water.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("water", shaderWater));
 	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
-	Hazel::Ref<ShaderPBR> shaderPBR = Hazel::Ref<ShaderPBR>::Create("Shaders/PBR.vert", "Shaders/PBR.frag");
+	H2M::Ref<ShaderPBR> shaderPBR = H2M::Ref<ShaderPBR>::Create("Shaders/PBR.vert", "Shaders/PBR.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("pbr", shaderPBR));
 	printf("Renderer: PBR shader compiled [programID=%d]\n", shaderPBR->GetProgramID());
 }
@@ -103,7 +103,7 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->GetViewMatrix(), projectionMatrix);
 	}
 
-	Hazel::Ref<ShaderMain> shaderMain = RendererBasic::GetShaders()["main"];
+	H2M::Ref<ShaderMain> shaderMain = RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	RendererBasic::GetUniforms()["model"]       = shaderMain->GetUniformLocation("model");
@@ -142,7 +142,7 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	Hazel::Ref<MoravaShader> shaderWater = RendererBasic::GetShaders()["water"];
+	H2M::Ref<MoravaShader> shaderWater = RendererBasic::GetShaders()["water"];
 	shaderWater->Bind();
 	RendererBasic::GetUniforms()["model"]             = shaderWater->GetUniformLocation("model");
 	RendererBasic::GetUniforms()["projection"]        = shaderWater->GetUniformLocation("projection");
@@ -183,7 +183,7 @@ void RendererPBR::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 pro
 	scene->RenderWater(projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 	shaderWater->Unbind();
 
-	Hazel::Ref<MoravaShader> shaderPBR = RendererBasic::GetShaders()["pbr"];
+	H2M::Ref<MoravaShader> shaderPBR = RendererBasic::GetShaders()["pbr"];
 
 	shaderPBR->Bind();
 	RendererBasic::GetUniforms()["model"]      = shaderPBR->GetUniformLocation("model");

@@ -4,19 +4,19 @@
 
 #include "DX11.h"
 
-#include "Hazel/Renderer/RenderPass.h"
+#include "H2M/Renderer/RenderPass.h"
 
 
-class DX11RenderPass : public Hazel::RenderPass
+class DX11RenderPass : public H2M::RenderPass
 {
 public:
-	DX11RenderPass(const Hazel::RenderPassSpecification& spec);
+	DX11RenderPass(const H2M::RenderPassSpecification& spec);
 	virtual ~DX11RenderPass();
 
-	virtual Hazel::RenderPassSpecification& GetSpecification() override { return m_Specification; }
-	virtual const Hazel::RenderPassSpecification& GetSpecification() const override { return m_Specification; }
+	virtual H2M::RenderPassSpecification& GetSpecification() override { return m_Specification; }
+	virtual const H2M::RenderPassSpecification& GetSpecification() const override { return m_Specification; }
 
 private:
-	Hazel::RenderPassSpecification m_Specification;
+	H2M::RenderPassSpecification m_Specification;
 
 };

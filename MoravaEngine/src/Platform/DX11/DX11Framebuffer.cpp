@@ -9,12 +9,12 @@
 
 namespace Utils {
 
-	static bool IsDepthFormat(Hazel::HazelImageFormat format)
+	static bool IsDepthFormat(H2M::ImageFormatH2M format)
 	{
 		switch (format)
 		{
-		case Hazel::HazelImageFormat::DEPTH24STENCIL8:
-		case Hazel::HazelImageFormat::DEPTH32F:
+		case H2M::ImageFormatH2M::DEPTH24STENCIL8:
+		case H2M::ImageFormatH2M::DEPTH32F:
 			return true;
 		}
 		return false;
@@ -22,7 +22,7 @@ namespace Utils {
 
 }
 
-DX11Framebuffer::DX11Framebuffer(const Hazel::HazelFramebufferSpecification& spec)
+DX11Framebuffer::DX11Framebuffer(const H2M::FramebufferSpecificationH2M& spec)
 	: m_Specification(spec)
 {
 	if (spec.Width == 0 || spec.Height == 0)
@@ -78,7 +78,7 @@ void DX11Framebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate
 	}
 }
 
-void DX11Framebuffer::AddResizeCallback(const std::function<void(Hazel::Ref<Hazel::HazelFramebuffer>)>& func)
+void DX11Framebuffer::AddResizeCallback(const std::function<void(H2M::Ref<H2M::HazelFramebuffer>)>& func)
 {
 	m_ResizeCallbacks.push_back(func);
 }

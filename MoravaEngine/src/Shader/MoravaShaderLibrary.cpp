@@ -1,10 +1,10 @@
 #include "Shader/MoravaShaderLibrary.h"
 
 
-std::unordered_map<std::string, Hazel::Ref<MoravaShader>> MoravaShaderLibrary::s_Shaders;
+std::unordered_map<std::string, H2M::Ref<MoravaShader>> MoravaShaderLibrary::s_Shaders;
 
 
-void MoravaShaderLibrary::Add(Hazel::Ref<MoravaShader>& shader)
+void MoravaShaderLibrary::Add(H2M::Ref<MoravaShader>& shader)
 {
 	auto name = shader->GetName();
 	if (s_Shaders.find(name) == s_Shaders.end()) {
@@ -36,10 +36,10 @@ void MoravaShaderLibrary::Load(const std::string& name, const std::string& compu
 	}
 }
 
-const Hazel::Ref<MoravaShader>& MoravaShaderLibrary::Get(const std::string& name)
+const H2M::Ref<MoravaShader>& MoravaShaderLibrary::Get(const std::string& name)
 {
 	if (s_Shaders.find(name) != s_Shaders.end()) {
 		return s_Shaders[name];
 	}
-	return Hazel::Ref<MoravaShader>();
+	return H2M::Ref<MoravaShader>();
 }

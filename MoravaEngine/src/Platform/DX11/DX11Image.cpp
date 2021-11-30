@@ -3,12 +3,12 @@
 #include "DX11Context.h"
 
 
-DX11Image2D::DX11Image2D(Hazel::ImageSpecification specification)
+DX11Image2D::DX11Image2D(H2M::ImageSpecification specification)
 	: m_Format(specification.Format), m_Width(specification.Width), m_Height(specification.Height)
 {
 }
 
-DX11Image2D::DX11Image2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height)
+DX11Image2D::DX11Image2D(H2M::ImageFormatH2M format, uint32_t width, uint32_t height)
 	: m_Format(format), m_Width(width), m_Height(height)
 {
 }

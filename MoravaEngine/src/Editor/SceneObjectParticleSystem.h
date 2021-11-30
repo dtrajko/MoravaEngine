@@ -12,7 +12,7 @@ class SceneObjectParticleSystem : public SceneObject
 {
 public:
 	SceneObjectParticleSystem();
-	SceneObjectParticleSystem(bool instancedRendering, int maxInstances, Hazel::HazelCamera* camera, CameraController* cameraController);
+	SceneObjectParticleSystem(bool instancedRendering, int maxInstances, H2M::HazelCamera* camera, CameraController* cameraController);
 	~SceneObjectParticleSystem();
 
 	void Update(bool enabled, std::map<std::string, float>* profiler_results);
@@ -24,7 +24,7 @@ private:
 	void Regenerate();
 
 private:
-	Hazel::HazelCamera* m_Camera;
+	H2M::HazelCamera* m_Camera;
 	CameraController* m_CameraController;
 
 	ParticleSettings m_Settings;

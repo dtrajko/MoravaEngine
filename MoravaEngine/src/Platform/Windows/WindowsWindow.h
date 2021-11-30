@@ -4,7 +4,7 @@
 #include "Platform/DX11/DX11InputListener.h"
 #include "Core/CommonStructs.h"
 
-#include "Hazel/Renderer/RendererContext.h"
+#include "H2M/Renderer/RendererContext.h"
 
 
 class WindowsWindow : public Window, public DX11InputListener
@@ -35,8 +35,8 @@ public:
 
 	inline void* GetNativeWindow() const { return m_GLFW_Window; }
 
-	virtual Hazel::Ref<Hazel::RendererContext> GetRenderContext() override { return m_RendererContext; }
-	virtual Hazel::VulkanSwapChain& GetSwapChain() override;
+	virtual H2M::Ref<H2M::RendererContext> GetRenderContext() override { return m_RendererContext; }
+	virtual H2M::VulkanSwapChain& GetSwapChain() override;
 
 	void SetInputMode(bool cursorEnabled) override;
 
@@ -135,8 +135,8 @@ private:
 	};
 
 	WindowData m_Data;
-	Hazel::Ref<Hazel::RendererContext> m_RendererContext;
-	Hazel::VulkanSwapChain m_SwapChain;
+	H2M::Ref<H2M::RendererContext> m_RendererContext;
+	H2M::VulkanSwapChain m_SwapChain;
 
 	/**** END Window Hazel version - a platform independent Window interface ****/
 

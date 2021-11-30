@@ -12,7 +12,7 @@ DX11CameraFP::DX11CameraFP() : DX11CameraFP(glm::mat4(1.0f))
 {
 }
 
-DX11CameraFP::DX11CameraFP(glm::mat4 projection) : Hazel::HazelCamera(projection)
+DX11CameraFP::DX11CameraFP(glm::mat4 projection) : H2M::HazelCamera(projection)
 {
 	DX11InputSystem::Get()->AddListener(this);
 
@@ -33,7 +33,7 @@ DX11CameraFP::~DX11CameraFP()
 {
 }
 
-void DX11CameraFP::OnUpdate(Hazel::Timestep ts)
+void DX11CameraFP::OnUpdate(H2M::Timestep ts)
 {
 	float width  = (float)Application::Get()->GetWindow()->GetWidth();
 	float height = (float)Application::Get()->GetWindow()->GetHeight();

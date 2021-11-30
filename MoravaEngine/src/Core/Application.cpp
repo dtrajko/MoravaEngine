@@ -1,13 +1,13 @@
 #include "Core/Application.h"
 
-#include "Hazel/Core/Base.h"
-#include "Hazel/Editor/EditorLayerVulkan.h"
-#include "Hazel/Project/UserPreferences.h"
-#include "Hazel/Renderer/RendererAPI.h"
+#include "H2M/Core/Base.h"
+#include "H2M/Editor/EditorLayerVulkan.h"
+#include "H2M/Project/UserPreferences.h"
+#include "H2M/Renderer/RendererAPI.h"
 
-#include "HazelLegacy/Platform/Vulkan/VulkanRendererHazelLegacy.h"
-#include "HazelLegacy/Platform/Vulkan/VulkanTestLayer.h"
-#include "HazelLegacy/Renderer/RendererHazelLegacy.h"
+#include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
+#include "H2M/Platform/Vulkan/VulkanTestLayer.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 #include "Core/Timer.h"
 #include "Platform/DX11/DX11TestLayer.h"
@@ -71,18 +71,18 @@ void Application::OnInit()
 
 	m_Renderer->Init(m_Scene);
 
-	m_ImGuiLayer = Hazel::ImGuiLayer::Create();
+	m_ImGuiLayer = H2M::ImGuiLayer::Create();
 	PushOverlay(m_ImGuiLayer);
 
-	Hazel::RendererHazelLegacy::Init();
+	H2M::RendererH2M::Init();
 
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-		case Hazel::RendererAPIType::Vulkan:
-			PushLayer(new Hazel::VulkanTestLayer("VulkanTestLayer")); // to be removed
-			PushLayer(new Hazel::EditorLayerVulkan(Hazel::Ref<Hazel::UserPreferences>::Create()));
+		case H2M::RendererAPIH2MType::Vulkan:
+			PushLayer(new H2M::VulkanTestLayer("VulkanTestLayer")); // to be removed
+			PushLayer(new H2M::EditorLayerVulkan(H2M::Ref<H2M::UserPreferences>::Create()));
 			break;
-		case Hazel::RendererAPIType::DX11:
+		case H2M::RendererAPIH2MType::DX11:
 			PushLayer(new DX11TestLayer("DX11TestLayer"));
 			break;
 	}
@@ -97,13 +97,13 @@ Application::~Application()
 	delete m_Window;
 }
 
-void Application::PushLayer(Hazel::Layer* layer)
+void Application::PushLayer(H2M::Layer* layer)
 {
 	m_LayerStack.PushLayer(layer);
 	layer->OnAttach();
 }
 
-void Application::PushOverlay(Hazel::Layer* layer)
+void Application::PushOverlay(H2M::Layer* layer)
 {
 	m_LayerStack.PushOverlay(layer);
 	layer->OnAttach();
@@ -114,14 +114,14 @@ void Application::RenderImGui()
 	m_ImGuiLayer->Begin();
 
 	// ImGui::Begin("Renderer");
-	// auto& caps = Hazel::RendererHazelLegacy::GetCapabilities();
+	// auto& caps = H2M::RendererH2M::GetCapabilities();
 	// ImGui::Text("Vendor: %s", caps.Vendor.c_str());
 	// ImGui::Text("Device: %s", caps.Device.c_str());
 	// ImGui::Text("Version: %s", caps.Version.c_str());
 	// ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
 	// ImGui::End();
 
-	for (Hazel::Layer* layer : m_LayerStack)
+	for (H2M::Layer* layer : m_LayerStack)
 	{
 		layer->OnImGuiRender();
 	}
@@ -137,15 +137,15 @@ void Application::Run()
 	// Loop until window closed
 	while (m_Running = !m_Window->GetShouldClose())
 	{
-		float deltaTime = Timer::Get()->GetDeltaTime(); // can be used as Hazel::Timestep
+		float deltaTime = Timer::Get()->GetDeltaTime(); // can be used as H2M::Timestep
 
 		m_Window->ProcessEvents();
 
 		if (!m_Minimized)
 		{
-			Hazel::RendererHazelLegacy::BeginFrame();
+			H2M::RendererH2M::BeginFrame();
 			{
-				for (Hazel::Layer* layer : m_LayerStack)
+				for (H2M::Layer* layer : m_LayerStack)
 				{
 					layer->OnUpdate(m_TimeStep);
 				}
@@ -157,10 +157,10 @@ void Application::Run()
 			Application* app = this;
 			if (m_EnableImGui)
 			{
-				Hazel::RendererHazelLegacy::Submit([app]() { app->RenderImGui(); });
-				// Hazel::RendererHazelLegacy::Submit([=]() { m_ImGuiLayer->End(); });
+				H2M::RendererH2M::Submit([app]() { app->RenderImGui(); });
+				// H2M::RendererH2M::Submit([=]() { m_ImGuiLayer->End(); });
 			}
-			Hazel::RendererHazelLegacy::EndFrame();
+			H2M::RendererH2M::EndFrame();
 
 			// On Render thread
 			m_Window->GetRenderContext()->BeginFrame();
@@ -169,18 +169,18 @@ void Application::Run()
 
 			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
 
-			switch (Hazel::RendererAPI::Current())
+			switch (H2M::RendererAPIH2M::Current())
 			{
-			case Hazel::RendererAPIType::Vulkan:
-				// m_Scene->OnRenderEditor(deltaTime, *(Hazel::EditorCamera*)m_Scene->GetCamera());
-				Hazel::VulkanRendererHazelLegacy::Draw(m_Scene); // replace with m_Scene->OnRenderEditor()
+			case H2M::RendererAPIH2MType::Vulkan:
+				// m_Scene->OnRenderEditor(deltaTime, *(H2M::EditorCamera*)m_Scene->GetCamera());
+				H2M::VulkanRendererH2M::Draw(m_Scene); // replace with m_Scene->OnRenderEditor()
 				break;
-			case Hazel::RendererAPIType::DX11:
+			case H2M::RendererAPIH2MType::DX11:
 				DX11Renderer::Draw(m_Scene->GetCamera());
 				break;
 			}
 
-			Hazel::RendererHazelLegacy::Submit([=]() { m_ImGuiLayer->End(); });
+			H2M::RendererH2M::Submit([=]() { m_ImGuiLayer->End(); });
 
 			// Swap buffers and poll events
 			m_Window->SwapBuffers();
@@ -219,16 +219,16 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	}
 
 	m_Minimized = false;
-	Hazel::RendererHazelLegacy::Submit([=]() { glViewport(0, 0, width, height); });
+	H2M::RendererH2M::Submit([=]() { glViewport(0, 0, width, height); });
 
 	m_Scene->OnWindowResize(e);
 	m_Window->GetRenderContext()->OnResize(width, height);
 
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-		case Hazel::RendererAPIType::Vulkan:
+		case H2M::RendererAPIH2MType::Vulkan:
 		{
-			auto& fbs = Hazel::HazelFramebufferPool::GetGlobal()->GetAll();
+			auto& fbs = H2M::HazelFramebufferPool::GetGlobal()->GetAll();
 			for (auto& fb : fbs)
 			{
 				const auto& spec = fb->GetSpecification();
@@ -239,7 +239,7 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 			}
 		}
 		break;
-		case Hazel::RendererAPIType::DX11:
+		case H2M::RendererAPIH2MType::DX11:
 		{
 			DX11Renderer::OnResize(width, height);
 		}
@@ -305,13 +305,13 @@ std::string Application::OpenFile(const char* filter) const
 	// Initialize OPENFILENAME
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-		case Hazel::RendererAPIType::OpenGL:
-		case Hazel::RendererAPIType::Vulkan:
+		case H2M::RendererAPIH2MType::OpenGL:
+		case H2M::RendererAPIH2MType::Vulkan:
 			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
 			break;
-		case Hazel::RendererAPIType::DX11:
+		case H2M::RendererAPIH2MType::DX11:
 			ofn.hwndOwner = m_Window->GetHWND();
 			break;
 	}
@@ -342,13 +342,13 @@ std::string Application::SaveFile(const char* filter) const
 	// Initialize OPENFILENAME
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-		case Hazel::RendererAPIType::OpenGL:
-		case Hazel::RendererAPIType::Vulkan:
+		case H2M::RendererAPIH2MType::OpenGL:
+		case H2M::RendererAPIH2MType::Vulkan:
 			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
 			break;
-		case Hazel::RendererAPIType::DX11:
+		case H2M::RendererAPIH2MType::DX11:
 			ofn.hwndOwner = m_Window->GetHWND();
 			break;
 	}
@@ -372,13 +372,13 @@ void Application::OnImGuiRender(bool* p_open)
 {
 	ImGui::Begin("Renderer", p_open);
 	{
-		auto& caps = Hazel::RendererHazelLegacy::GetCapabilities();
+		auto& caps = H2M::RendererH2M::GetCapabilities();
 
 		const char* vendor = "N/A";
 		const char* device = "N/A";
 		const char* version = "N/A";
 
-		if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+		if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
 		{
 			vendor = (const char*)glGetString(GL_VENDOR);
 			device = (const char*)glGetString(GL_RENDERER);
@@ -420,7 +420,7 @@ const char* Application::GetPlatformName()
 
 void Application::CaptureScreenshot(const std::string& filePath)
 {
-	if (Hazel::RendererAPI::Current() != Hazel::RendererAPIType::OpenGL) return;
+	if (H2M::RendererAPIH2M::Current() != H2M::RendererAPIH2MType::OpenGL) return;
 
 	int width, height;
 	glfwGetFramebufferSize(m_Window->GetHandle(), &width, &height);

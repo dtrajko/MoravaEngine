@@ -1,6 +1,6 @@
 #include "VulkanRendererBasic.h"
 
-#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
+#include "H2M/Platform/Vulkan/VulkanRenderer.h"
 
 #include "Core/Application.h"
 #include "Core/CommonValues.h"
@@ -195,7 +195,7 @@ void VulkanRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Sc
 }
 
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
-void VulkanRendererBasic::DrawIndexed(uint32_t count, Hazel::PrimitiveType type, bool depthTest)
+void VulkanRendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest)
 {
 	// throw std::logic_error("The method or operation is not implemented.");
 	Log::GetLogger()->warn("VulkanRendererBasic::DrawIndexed: Method not yet supported!");

@@ -2,9 +2,9 @@
 
 #include "Scene/SceneDX11.h"
 
-#include "Hazel/Scene/Components.h"
-#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
-#include "Hazel/Scene/Entity.h"
+#include "H2M/Scene/Components.h"
+#include "H2M/Renderer/TextureH2M.h"
+#include "H2M/Scene/Entity.h"
 
 #include "../../ImGuizmo/ImGuizmo.h"
 
@@ -120,11 +120,11 @@ bool SceneDX11::OnKeyPressed(KeyPressedEvent& e)
     return false;
 }
 
-void SceneDX11::OnEntitySelected(Hazel::Entity entity)
+void SceneDX11::OnEntitySelected(H2M::Entity entity)
 {
 }
 
 void SceneDX11::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 }

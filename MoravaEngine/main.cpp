@@ -4,11 +4,11 @@
 void SelectRendererAPI()
 {
 #if defined(SCENE_HAZEL_VULKAN) 
-	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::Vulkan);
+	H2M::RendererAPIH2M::SetAPI(H2M::RendererAPIH2MType::Vulkan);
 #elif defined(SCENE_DX11) 
-	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::DX11);
+	H2M::RendererAPIH2M::SetAPI(H2M::RendererAPIH2MType::DX11);
 #else:
-	Hazel::RendererAPI::SetAPI(Hazel::RendererAPIType::OpenGL);
+	H2M::RendererAPIH2M::SetAPI(H2M::RendererAPIH2MType::OpenGL);
 #endif;
 }
 

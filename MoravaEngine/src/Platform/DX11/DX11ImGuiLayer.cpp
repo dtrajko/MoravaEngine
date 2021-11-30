@@ -6,7 +6,7 @@
 #include "DX11Device.h"
 #include "DX11SwapChain.h"
 
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/HazelRenderer.h"
 
 // ImGui includes
 #if !defined(IMGUI_IMPL_API)
@@ -107,7 +107,7 @@ void DX11ImGuiLayer::OnDetach()
 	ImGui::DestroyContext();
 }
 
-void DX11ImGuiLayer::OnUpdate(Hazel::Timestep ts)
+void DX11ImGuiLayer::OnUpdate(H2M::Timestep ts)
 {
 }
 

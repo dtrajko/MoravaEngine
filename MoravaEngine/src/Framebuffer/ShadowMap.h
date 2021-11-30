@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Hazel/Core/Ref.h"
+#include "H2M/Core/Ref.h"
 
 #include <GL/glew.h>
 
 #include <stdio.h>
 
 
-class ShadowMap : public Hazel::RefCounted
+class ShadowMap : public H2M::RefCounted
 {
 public:
 	ShadowMap();

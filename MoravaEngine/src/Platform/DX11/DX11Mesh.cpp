@@ -146,10 +146,10 @@ DX11Mesh::DX11Mesh(const wchar_t* fullPath)
 		m_MaterialSlots[m].NumIndices = index_global_offset - m_MaterialSlots[m].StartIndex;
 	}
 
-	m_VertexBuffer = Hazel::VertexBuffer::Create(&list_vertices[0], sizeof(DX11VertexLayout), (uint32_t)list_vertices.size());
-	m_IndexBuffer = Hazel::IndexBuffer::Create(&list_indices[0], (uint32_t)list_indices.size() * sizeof(uint32_t));
+	m_VertexBuffer = H2M::VertexBuffer::Create(&list_vertices[0], sizeof(DX11VertexLayout), (uint32_t)list_vertices.size());
+	m_IndexBuffer = H2M::IndexBuffer::Create(&list_indices[0], (uint32_t)list_indices.size() * sizeof(uint32_t));
 	// m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index)); // HazelMesh
-	// s_IndexBuffer = Hazel::Ref<DX11IndexBuffer>::Create(indexList, indexCount * sizeof(uint32_t)); // DX11Renderer
+	// s_IndexBuffer = H2M::Ref<DX11IndexBuffer>::Create(indexList, indexCount * sizeof(uint32_t)); // DX11Renderer
 
 	Log::GetLogger()->info("DX11Mesh '{0}' successfully created!", inputfile);
 }

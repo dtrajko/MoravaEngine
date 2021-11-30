@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Hazel/Core/Events/Event.h"
-#include "Hazel/Renderer/RendererContext.h"
-#include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
+#include "H2M/Core/Events/Event.h"
+#include "H2M/Renderer/RendererContext.h"
+#include "H2M/Platform/Vulkan/VulkanSwapChain.h"
 
 #include "Core/CommonValues.h"
 
@@ -95,7 +95,7 @@ public:
 	virtual void SetEventLogging(bool enabled) = 0;
 	virtual const bool GetEventLogging() const = 0;
 
-	virtual Hazel::Ref<Hazel::RendererContext> GetRenderContext() = 0;
-	virtual Hazel::VulkanSwapChain& GetSwapChain() = 0;
+	virtual H2M::Ref<H2M::RendererContext> GetRenderContext() = 0;
+	virtual H2M::VulkanSwapChain& GetSwapChain() = 0;
 
 };

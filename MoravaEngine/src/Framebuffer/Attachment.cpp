@@ -21,44 +21,44 @@ Attachment::~Attachment()
 }
 
 /****
- * Maps between AttachmentFormat and Hazel::HazelImageFormat values
+ * Maps between AttachmentFormat and H2M::ImageFormatH2M values
  */
-Hazel::HazelImageFormat Attachment::GetFormat() const
+H2M::ImageFormatH2M Attachment::GetFormat() const
 {
 	switch (m_AttachmentFormat)
 	{
 	case AttachmentFormat::None:
-		return Hazel::HazelImageFormat::None;
+		return H2M::ImageFormatH2M::None;
 		break;
 	case AttachmentFormat::Color:
-		return Hazel::HazelImageFormat::RGB;
+		return H2M::ImageFormatH2M::RGB;
 		break;
 	case AttachmentFormat::Depth:
-		return Hazel::HazelImageFormat::Depth;
+		return H2M::ImageFormatH2M::Depth;
 		break;
 	case AttachmentFormat::Stencil:
-		return Hazel::HazelImageFormat::DEPTH24STENCIL8;
+		return H2M::ImageFormatH2M::DEPTH24STENCIL8;
 		break;
 	case AttachmentFormat::Depth_24:
-		return Hazel::HazelImageFormat::Depth;
+		return H2M::ImageFormatH2M::Depth;
 		break;
 	case AttachmentFormat::DepthStencil:
-		return Hazel::HazelImageFormat::DEPTH24STENCIL8;
+		return H2M::ImageFormatH2M::DEPTH24STENCIL8;
 		break;
 	case AttachmentFormat::Depth_24_Stencil_8:
-		return Hazel::HazelImageFormat::DEPTH24STENCIL8;
+		return H2M::ImageFormatH2M::DEPTH24STENCIL8;
 		break;
 	case AttachmentFormat::RGBA:
-		return Hazel::HazelImageFormat::RGBA;
+		return H2M::ImageFormatH2M::RGBA;
 		break;
 	case AttachmentFormat::RGBA16F:
-		return Hazel::HazelImageFormat::RGBA16F;
+		return H2M::ImageFormatH2M::RGBA16F;
 		break;
 	case AttachmentFormat::RGBA8:
-		return Hazel::HazelImageFormat::RGBA;
+		return H2M::ImageFormatH2M::RGBA;
 		break;
 	default:
-		return Hazel::HazelImageFormat::None;
+		return H2M::ImageFormatH2M::None;
 		break;
 	}
 }

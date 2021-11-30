@@ -689,12 +689,12 @@ bool SceneProceduralLandmass::IsPositionVacant(glm::ivec3 queryPosition)
 }
 
 void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
-    Hazel::Ref<MoravaShader> shaderMain = shaders["main"];
-    Hazel::Ref<MoravaShader> shaderOmniShadow = shaders["omniShadow"];
-    Hazel::Ref<MoravaShader> shaderRenderInstanced = shaders["render_instanced"];
-    Hazel::Ref<MoravaShader> shaderBasic = shaders["basic"];
+    H2M::Ref<MoravaShader> shaderMain = shaders["main"];
+    H2M::Ref<MoravaShader> shaderOmniShadow = shaders["omniShadow"];
+    H2M::Ref<MoravaShader> shaderRenderInstanced = shaders["render_instanced"];
+    H2M::Ref<MoravaShader> shaderBasic = shaders["basic"];
 
     RendererBasic::EnableTransparency();
 

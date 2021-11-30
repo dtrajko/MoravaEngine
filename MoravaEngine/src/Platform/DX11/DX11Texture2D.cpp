@@ -151,7 +151,7 @@ DX11Texture2D::DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type)
 	// Invalidate(); // do we need an Invalidate method?
 }
 
-DX11Texture2D::DX11Texture2D(const std::string& path, bool srgb, Hazel::TextureWrap wrap)
+DX11Texture2D::DX11Texture2D(const std::string& path, bool srgb, H2M::TextureWrapH2M wrap)
 	: m_Path(path)
 {
 	Log::GetLogger()->error("This version of DX11Texture2D constructor is not used in DirectX 11!");
@@ -161,7 +161,7 @@ DX11Texture2D::DX11Texture2D(const std::string& path, bool srgb, Hazel::TextureW
 	HZ_CORE_ASSERT(false);
 }
 
-DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, const void* data, Hazel::TextureWrap wrap) :
+DX11Texture2D::DX11Texture2D(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, H2M::TextureWrapH2M wrap) :
 	DX11Texture2D(glm::vec2(width, height), DX11Texture2D::Type::Normal)
 {
 	m_Format = format;
@@ -171,7 +171,7 @@ DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uin
 	// HZ_CORE_ASSERT(false);
 }
 
-DX11Texture2D::DX11Texture2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height, Hazel::TextureWrap wrap)
+DX11Texture2D::DX11Texture2D(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, H2M::TextureWrapH2M wrap)
 {
 	Log::GetLogger()->error("This version of DX11Texture2D constructor is not used in DirectX 11!");
 
@@ -208,9 +208,9 @@ void DX11Texture2D::Bind(uint32_t slot) const
 {
 }
 
-Hazel::Ref<Hazel::HazelImage2D> DX11Texture2D::GetImage() const
+H2M::Ref<H2M::HazelImage2D> DX11Texture2D::GetImage() const
 {
-	return Hazel::Ref<Hazel::HazelImage2D>();
+	return H2M::Ref<H2M::HazelImage2D>();
 }
 
 void DX11Texture2D::Lock()
@@ -225,7 +225,7 @@ void DX11Texture2D::Resize(uint32_t width, uint32_t height)
 {
 }
 
-Hazel::Buffer DX11Texture2D::GetWriteableBuffer()
+H2M::Buffer DX11Texture2D::GetWriteableBuffer()
 {
 	return m_ImageData;
 }
@@ -240,9 +240,9 @@ const std::string& DX11Texture2D::GetPath() const
 	return m_Path;
 }
 
-Hazel::HazelImageFormat DX11Texture2D::GetFormat() const
+H2M::ImageFormatH2M DX11Texture2D::GetFormat() const
 {
-	return Hazel::HazelImageFormat::None;
+	return H2M::ImageFormatH2M::None;
 }
 
 uint32_t DX11Texture2D::GetMipLevelCount() const

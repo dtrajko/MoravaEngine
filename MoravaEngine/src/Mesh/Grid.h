@@ -12,7 +12,7 @@ class Grid
 public:
 	Grid();
 	Grid(int size);
-	void Draw(Hazel::Ref<MoravaShader> shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
+	void Draw(H2M::Ref<MoravaShader> shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix);
 	~Grid();
 
 private:

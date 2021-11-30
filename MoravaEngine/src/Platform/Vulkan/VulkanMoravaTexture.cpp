@@ -1,12 +1,12 @@
 #include "VulkanMoravaTexture.h"
 
 #include "Core/Log.h"
-#include "Hazel/Core/Base.h"
-#include "Hazel/Platform/Vulkan/Vulkan.h"
-#include "Hazel/Platform/Vulkan/VulkanContext.h"
-#include "Hazel/Platform/Vulkan/VulkanImage.h"
-#include "Hazel/Platform/Vulkan/VulkanRenderer.h"
-#include "Hazel/Renderer/HazelImage.h"
+#include "H2M/Core/Base.h"
+#include "H2M/Platform/Vulkan/Vulkan.h"
+#include "H2M/Platform/Vulkan/VulkanContext.h"
+#include "H2M/Platform/Vulkan/VulkanImage.h"
+#include "H2M/Platform/Vulkan/VulkanRenderer.h"
+#include "H2M/Renderer/HazelImage.h"
 
 #include <fstream>
 #include <exception>
@@ -14,43 +14,43 @@
 
 namespace Utils
 {
-	// Hazel::VulkanImage
-	VkFormat VulkanImageFormat(Hazel::HazelImageFormat format)
+	// H2M::VulkanImage
+	VkFormat VulkanImageFormat(H2M::ImageFormatH2M format)
 	{
 		switch (format)
 		{
-		case Hazel::HazelImageFormat::RED32F:   return VK_FORMAT_R32_SFLOAT;
-		case Hazel::HazelImageFormat::RG16F:    return VK_FORMAT_R16G16_SFLOAT;
-		case Hazel::HazelImageFormat::RG32F:    return VK_FORMAT_R32G32_SFLOAT;
-		case Hazel::HazelImageFormat::RGBA:     return VK_FORMAT_R8G8B8A8_UNORM;
-		case Hazel::HazelImageFormat::RGBA16F:  return VK_FORMAT_R16G16B16A16_SFLOAT;
-		case Hazel::HazelImageFormat::RGBA32F:  return VK_FORMAT_R32G32B32A32_SFLOAT;
-		case Hazel::HazelImageFormat::DEPTH32F: return VK_FORMAT_D32_SFLOAT;
-		case Hazel::HazelImageFormat::DEPTH24STENCIL8: return Hazel::VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
+		case H2M::ImageFormatH2M::RED32F:   return VK_FORMAT_R32_SFLOAT;
+		case H2M::ImageFormatH2M::RG16F:    return VK_FORMAT_R16G16_SFLOAT;
+		case H2M::ImageFormatH2M::RG32F:    return VK_FORMAT_R32G32_SFLOAT;
+		case H2M::ImageFormatH2M::RGBA:     return VK_FORMAT_R8G8B8A8_UNORM;
+		case H2M::ImageFormatH2M::RGBA16F:  return VK_FORMAT_R16G16B16A16_SFLOAT;
+		case H2M::ImageFormatH2M::RGBA32F:  return VK_FORMAT_R32G32B32A32_SFLOAT;
+		case H2M::ImageFormatH2M::DEPTH32F: return VK_FORMAT_D32_SFLOAT;
+		case H2M::ImageFormatH2M::DEPTH24STENCIL8: return H2M::VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
 		}
 
-		Log::GetLogger()->error("VulkanImageFormat: HazelImageFormat not supported: '{0}'!", format);
+		Log::GetLogger()->error("VulkanImageFormat: ImageFormatH2M not supported: '{0}'!", format);
 		// HZ_CORE_ASSERT(false);
 		return VK_FORMAT_UNDEFINED;
 	}
 
-	static VkSamplerAddressMode VulkanSamplerWrap(Hazel::TextureWrap wrap)
+	static VkSamplerAddressMode VulkanSamplerWrap(H2M::TextureWrapH2M wrap)
 	{
 		switch (wrap)
 		{
-		case Hazel::TextureWrap::Clamp:   return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-		case Hazel::TextureWrap::Repeat:  return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		case H2M::TextureWrapH2M::Clamp:   return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		case H2M::TextureWrapH2M::Repeat:  return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		}
 		HZ_CORE_ASSERT(false, "Unknown wrap mode");
 		return (VkSamplerAddressMode)0;
 	}
 
-	static VkFilter VulkanSamplerFilter(Hazel::TextureFilter filter)
+	static VkFilter VulkanSamplerFilter(H2M::TextureFilter filter)
 	{
 		switch (filter)
 		{
-		case Hazel::TextureFilter::Linear:   return VK_FILTER_LINEAR;
-		case Hazel::TextureFilter::Nearest:  return VK_FILTER_NEAREST;
+		case H2M::TextureFilter::Linear:   return VK_FILTER_LINEAR;
+		case H2M::TextureFilter::Nearest:  return VK_FILTER_NEAREST;
 		}
 		HZ_CORE_ASSERT(false, "Unknown filter");
 		return (VkFilter)0;
@@ -80,7 +80,7 @@ VulkanMoravaTexture::VulkanMoravaTexture()
 	m_ID = 0;
 	m_FileLocation = "";
 	m_Buffer = nullptr;
-	m_Format = Hazel::HazelImageFormat::RGBA;
+	m_Format = H2M::ImageFormatH2M::RGBA;
 }
 
 /**
@@ -174,7 +174,7 @@ VulkanMoravaTexture::VulkanMoravaTexture(const char* fileLoc, Specification spec
  */
 void VulkanMoravaTexture::Invalidate()
 {
-	auto device = Hazel::VulkanContext::GetCurrentDevice();
+	auto device = H2M::VulkanContext::GetCurrentDevice();
 	auto vulkanDevice = device->GetVulkanDevice();
 
 	VkDeviceSize size = m_ImageData.Size;
@@ -194,7 +194,7 @@ void VulkanMoravaTexture::Invalidate()
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingMemory;
 
-	Hazel::VulkanAllocator allocator(std::string("Texture2D"));
+	H2M::VulkanAllocator allocator(std::string("Texture2D"));
 
 	VkBufferCreateInfo bufferCreateInfo{};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -417,12 +417,12 @@ bool VulkanMoravaTexture::Load(bool flipVert)
 	{
 		Log::GetLogger()->info("Loading an HDR texture '{0}'", m_FileLocation);
 		m_Buffer = (byte*)stbi_loadf(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
-		m_Format = Hazel::HazelImageFormat::RGBA16F;
+		m_Format = H2M::ImageFormatH2M::RGBA16F;
 	}
 	else
 	{
 		m_Buffer = stbi_load(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
-		m_Format = Hazel::HazelImageFormat::RGBA;
+		m_Format = H2M::ImageFormatH2M::RGBA;
 	}
 
 	if (!m_Buffer)
@@ -504,13 +504,13 @@ void VulkanMoravaTexture::SetAlpha(int x, int z, int value)
 
 void VulkanMoravaTexture::GenerateMips(bool readonly)
 {
-	auto device = Hazel::VulkanContext::GetCurrentDevice();
+	auto device = H2M::VulkanContext::GetCurrentDevice();
 	auto vulkanDevice = device->GetVulkanDevice();
 
-	Hazel::Ref<Hazel::VulkanImage2D> image = m_Image.As<Hazel::VulkanImage2D>();
+	H2M::Ref<H2M::VulkanImage2D> image = m_Image.As<H2M::VulkanImage2D>();
 	const auto& info = image->GetImageInfo();
 
-	const VkCommandBuffer blitCmd = Hazel::VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
+	const VkCommandBuffer blitCmd = H2M::VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
 
 	VkImageMemoryBarrier barrier = {};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -546,7 +546,7 @@ void VulkanMoravaTexture::GenerateMips(bool readonly)
 		mipSubRange.layerCount = 1;
 
 		// Prepare current mip level as image blit destination
-		Hazel::Utils::InsertImageMemoryBarrier(blitCmd, info.Image,
+		H2M::Utils::InsertImageMemoryBarrier(blitCmd, info.Image,
 			0, VK_ACCESS_TRANSFER_WRITE_BIT,
 			VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -564,7 +564,7 @@ void VulkanMoravaTexture::GenerateMips(bool readonly)
 			VK_FILTER_LINEAR);
 
 		// Prepare current mip level as image blit source for next level
-		Hazel::Utils::InsertImageMemoryBarrier(blitCmd, info.Image,
+		H2M::Utils::InsertImageMemoryBarrier(blitCmd, info.Image,
 			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -577,13 +577,13 @@ void VulkanMoravaTexture::GenerateMips(bool readonly)
 	subresourceRange.layerCount = 1;
 	subresourceRange.levelCount = mipLevels;
 
-	Hazel::Utils::InsertImageMemoryBarrier(blitCmd, info.Image,
+	H2M::Utils::InsertImageMemoryBarrier(blitCmd, info.Image,
 		VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
 		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		subresourceRange);
 
-	Hazel::VulkanContext::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
+	H2M::VulkanContext::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
 
 #if 0
 	VkImageMemoryBarrier barrier = {};

@@ -29,8 +29,8 @@ public:
 	void UpdateImGuizmo(Window* mainWindow);
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
-    inline Hazel::Ref<MoravaFramebuffer> GetRenderFramebuffer() { return m_RenderFramebuffer; };
+		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+    inline H2M::Ref<MoravaFramebuffer> GetRenderFramebuffer() { return m_RenderFramebuffer; };
 
 private:
 	virtual void SetupTextures()   override;
@@ -43,9 +43,9 @@ private:
 	// void SetupECS();
 
 	void AddLightsToSceneObjects();
-	void RenderLightSources(Hazel::Ref<MoravaShader> shader);
-	void RenderSkybox(Hazel::Ref<MoravaShader> shader);
-	void RenderLineElements(Hazel::Ref<MoravaShader> shader, glm::mat4 projectionMatrix);
+	void RenderLightSources(H2M::Ref<MoravaShader> shader);
+	void RenderSkybox(H2M::Ref<MoravaShader> shader);
+	void RenderLineElements(H2M::Ref<MoravaShader> shader, glm::mat4 projectionMatrix);
 	void SetGeometry();
 	void CleanupGeometry();
 	inline Raycast* GetRaycast() const { return m_Raycast; };
@@ -61,11 +61,11 @@ private:
 	Mesh* CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* name);
 	Model* AddNewModel(int modelID, glm::vec3 scale);
 	SceneObjectParticleSystem* AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale);
-	void SetUniformsShaderEditorPBR(Hazel::Ref<MoravaShader> shaderEditorPBR, Hazel::Ref<MoravaTexture> texture, Hazel::Ref<Material> material, SceneObject* sceneObject);
-	void SetUniformsShaderEditor(Hazel::Ref<MoravaShader> shaderEditor, Hazel::Ref<MoravaTexture> texture, SceneObject* sceneObject);
-	void SetUniformsShaderSkinning(Hazel::Ref<MoravaShader> shaderSkinning, SceneObject* sceneObject, float runningTime);
-	void SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader> shaderHybridAnimPBR, Hazel::Ref<MoravaTexture> texture, SceneObject* sceneObject, float runningTime);
-	void SetUniformsShaderWater(Hazel::Ref<MoravaShader> shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
+	void SetUniformsShaderEditorPBR(H2M::Ref<MoravaShader> shaderEditorPBR, H2M::Ref<MoravaTexture> texture, H2M::Ref<Material> material, SceneObject* sceneObject);
+	void SetUniformsShaderEditor(H2M::Ref<MoravaShader> shaderEditor, H2M::Ref<MoravaTexture> texture, SceneObject* sceneObject);
+	void SetUniformsShaderSkinning(H2M::Ref<MoravaShader> shaderSkinning, SceneObject* sceneObject, float runningTime);
+	void SetUniformsShaderHybridAnimPBR(H2M::Ref<MoravaShader> shaderHybridAnimPBR, H2M::Ref<MoravaTexture> texture, SceneObject* sceneObject, float runningTime);
+	void SetUniformsShaderWater(H2M::Ref<MoravaShader> shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
 	void SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix);
 	virtual bool IsWaterOnScene() override;
 	void UpdateLightManager();
@@ -175,7 +175,7 @@ private:
 	bool m_ViewportFocused;
 	bool m_ViewportHovered;
 
-	Hazel::Ref<MoravaFramebuffer> m_RenderFramebuffer;
+	H2M::Ref<MoravaFramebuffer> m_RenderFramebuffer;
 
 	std::map<std::string, unsigned int> m_SamplerSlots;
 
@@ -185,7 +185,7 @@ private:
 
 	// experimental section (OpenFile dialog)
 	std::string m_LoadedFile;
-	Hazel::Ref<MoravaTexture> m_LoadedTexture;
+	H2M::Ref<MoravaTexture> m_LoadedTexture;
 	std::string m_LoadedTextureFilepath;
 	bool m_UseLoadedTexture;
 
@@ -200,6 +200,6 @@ private:
 	glm::vec3 m_DirLightSourcePosition;
 
 	// Panels
-	// Hazel::SceneHierarchyPanel m_SceneHierarchyPanel;
+	// H2M::SceneHierarchyPanel m_SceneHierarchyPanel;
 
 };

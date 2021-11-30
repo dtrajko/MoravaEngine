@@ -1,7 +1,7 @@
 #include "OpenGLMoravaTexture.h"
 
 #include "Core/Log.h"
-#include "Hazel/Core/Base.h"
+#include "H2M/Core/Base.h"
 
 #include <fstream>
 #include <exception>
@@ -30,7 +30,7 @@ OpenGLMoravaTexture::OpenGLMoravaTexture()
 	m_ID = 0;
 	m_FileLocation = "";
 	m_Buffer = nullptr;
-	m_Format = Hazel::HazelImageFormat::RGBA;
+	m_Format = H2M::ImageFormatH2M::RGBA;
 }
 
 OpenGLMoravaTexture::OpenGLMoravaTexture(const char* fileLoc, bool flipVert, bool isSampler, int filter)
@@ -116,12 +116,12 @@ bool OpenGLMoravaTexture::Load(bool flipVert)
 	{
 		Log::GetLogger()->info("Loading an HDR texture '{0}'", m_FileLocation);
 		m_Buffer = (byte*)stbi_loadf(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
-		m_Format = Hazel::HazelImageFormat::RGBA16F;
+		m_Format = H2M::ImageFormatH2M::RGBA16F;
 	}
 	else
 	{
 		m_Buffer = stbi_load(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
-		m_Format = Hazel::HazelImageFormat::RGBA;
+		m_Format = H2M::ImageFormatH2M::RGBA;
 	}
 
 	if (!m_Buffer)

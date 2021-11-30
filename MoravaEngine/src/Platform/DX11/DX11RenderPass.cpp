@@ -1,9 +1,9 @@
 #include "DX11RenderPass.h"
 
-#include "Hazel/Renderer/HazelFramebuffer.h"
+#include "H2M/Renderer/HazelFramebuffer.h"
 
 
-DX11RenderPass::DX11RenderPass(const Hazel::RenderPassSpecification& spec)
+DX11RenderPass::DX11RenderPass(const H2M::RenderPassSpecification& spec)
 	: m_Specification(spec)
 {
 }

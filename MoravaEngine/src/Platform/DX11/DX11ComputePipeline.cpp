@@ -1,16 +1,16 @@
 #include "DX11ComputePipeline.h"
 
-#include "Hazel/Core/Timer.h"
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "H2M/Core/Timer.h"
+#include "H2M/Renderer/HazelRenderer.h"
 
 #include "Platform/DX11/DX11Context.h"
 
 
-DX11ComputePipeline::DX11ComputePipeline(Hazel::Ref<Hazel::HazelShader> computeShader)
+DX11ComputePipeline::DX11ComputePipeline(H2M::Ref<H2M::HazelShader> computeShader)
 	: m_Shader(computeShader)
 {
-	// Hazel::Ref<DX11ComputePipeline> instance = this;
-	// Hazel::HazelRenderer::Submit([instance]() mutable
+	// H2M::Ref<DX11ComputePipeline> instance = this;
+	// H2M::HazelRenderer::Submit([instance]() mutable
 	// {
 	// });
 	{

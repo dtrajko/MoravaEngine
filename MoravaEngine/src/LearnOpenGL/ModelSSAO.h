@@ -20,7 +20,7 @@ public:
     ModelSSAO(const std::string& path, const std::string& textureDirectory = "", bool gamma = false);
     virtual ~ModelSSAO();
 
-    virtual void Draw(Hazel::Ref<MoravaShader> shader);
+    virtual void Draw(H2M::Ref<MoravaShader> shader);
     inline std::vector<TextureData> GetTextures() { return textures_loaded; };
     inline std::vector<MeshSSAO> GetMeshes() { return meshes; };
 

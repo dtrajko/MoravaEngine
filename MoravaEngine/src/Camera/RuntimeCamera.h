@@ -6,14 +6,14 @@
 /**
  * RuntimeCamera bundles Camera and CameraController and shares the interface with EditorCamera  
  */
-class RuntimeCamera : public Hazel::HazelCamera
+class RuntimeCamera : public H2M::HazelCamera
 {
 public:
 	RuntimeCamera();
 	RuntimeCamera(glm::vec3 position, float yaw, float pitch, float fovDegrees, float aspectRatio, float moveSpeed, float turnSpeed);
 	~RuntimeCamera();
 
-	virtual void OnUpdate(Hazel::Timestep ts) override;
+	virtual void OnUpdate(H2M::Timestep ts) override;
 	virtual void OnEvent(Event& e) override;
 	virtual void SetViewportSize(float width, float height) override;
 

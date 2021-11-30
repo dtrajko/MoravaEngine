@@ -5,32 +5,32 @@
 #include "Platform/DX11/DX11MoravaFramebuffer.h"
 
 
-Hazel::Ref<MoravaFramebuffer> MoravaFramebuffer::Create(uint32_t width, uint32_t height)
+H2M::Ref<MoravaFramebuffer> MoravaFramebuffer::Create(uint32_t width, uint32_t height)
 {
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-		case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaFramebuffer>();
-		case Hazel::RendererAPIType::OpenGL: return Hazel::Ref<OpenGLMoravaFramebuffer>::Create(width, height);
-		case Hazel::RendererAPIType::Vulkan: return Hazel::Ref<VulkanMoravaFramebuffer>::Create(width, height);
-		case Hazel::RendererAPIType::DX11: return Hazel::Ref<DX11MoravaFramebuffer>::Create(width, height);
+		case H2M::RendererAPIH2MType::None: return H2M::Ref<MoravaFramebuffer>();
+		case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<OpenGLMoravaFramebuffer>::Create(width, height);
+		case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<VulkanMoravaFramebuffer>::Create(width, height);
+		case H2M::RendererAPIH2MType::DX11: return H2M::Ref<DX11MoravaFramebuffer>::Create(width, height);
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-	return Hazel::Ref<MoravaFramebuffer>();
+	return H2M::Ref<MoravaFramebuffer>();
 }
 
-Hazel::Ref<MoravaFramebuffer> MoravaFramebuffer::Create(FramebufferSpecification spec)
+H2M::Ref<MoravaFramebuffer> MoravaFramebuffer::Create(FramebufferSpecification spec)
 {
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-		case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaFramebuffer>();
-		case Hazel::RendererAPIType::OpenGL: return Hazel::Ref<OpenGLMoravaFramebuffer>::Create(spec);
-		case Hazel::RendererAPIType::Vulkan: return Hazel::Ref<VulkanMoravaFramebuffer>::Create(spec);
-		case Hazel::RendererAPIType::DX11: return Hazel::Ref<DX11MoravaFramebuffer>::Create(spec);
+		case H2M::RendererAPIH2MType::None: return H2M::Ref<MoravaFramebuffer>();
+		case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<OpenGLMoravaFramebuffer>::Create(spec);
+		case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<VulkanMoravaFramebuffer>::Create(spec);
+		case H2M::RendererAPIH2MType::DX11: return H2M::Ref<DX11MoravaFramebuffer>::Create(spec);
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-	return Hazel::Ref<MoravaFramebuffer>();
+	return H2M::Ref<MoravaFramebuffer>();
 }

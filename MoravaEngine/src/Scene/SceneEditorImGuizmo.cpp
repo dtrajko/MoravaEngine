@@ -266,17 +266,17 @@ void SceneEditorImGuizmo::SetupRenderFramebuffer()
 void SceneEditorImGuizmo::SetupECS()
 {
     // Entity
-    Hazel::Entity squareA = CreateEntity("Square A");
-    Hazel::Entity squareB = CreateEntity("Square B");
+    H2M::Entity squareA = CreateEntity("Square A");
+    H2M::Entity squareB = CreateEntity("Square B");
 
-    Hazel::Entity cameraEntityA = CreateEntity("Camera A");
-    cameraEntityA.AddComponent<Hazel::CameraComponent>();
+    H2M::Entity cameraEntityA = CreateEntity("Camera A");
+    cameraEntityA.AddComponent<H2M::CameraComponent>();
 
-    Hazel::Entity cameraEntityB = CreateEntity("Camera B");
-    Hazel::CameraComponent& cameraComponentB = cameraEntityB.AddComponent<Hazel::CameraComponent>();
+    H2M::Entity cameraEntityB = CreateEntity("Camera B");
+    H2M::CameraComponent& cameraComponentB = cameraEntityB.AddComponent<H2M::CameraComponent>();
     cameraComponentB.Primary = false;
 
-    class CameraController : public Hazel::ScriptableEntity
+    class CameraController : public H2M::ScriptableEntity
     {
     public:
         void OnCreate()
@@ -284,7 +284,7 @@ void SceneEditorImGuizmo::SetupECS()
             std::cout << "CameraController::OnCreate!" << std::endl;
 
             // two cameras on different locations
-            auto& transform = GetComponent<Hazel::TransformComponent>().Transform;
+            auto& transform = GetComponent<H2M::TransformComponent>().Transform;
             transform[3][0] = rand() % 10 - 5.0f;
         }
 
@@ -297,7 +297,7 @@ void SceneEditorImGuizmo::SetupECS()
         {
             // std::cout << "CameraController::Timestep: " << ts << std::endl;
 
-            auto& transform = GetComponent<Hazel::TransformComponent>().Transform;
+            auto& transform = GetComponent<H2M::TransformComponent>().Transform;
             float speed = 5.0f;
 
             if (Input::IsKeyPressed(KeyCode::A))
@@ -311,8 +311,8 @@ void SceneEditorImGuizmo::SetupECS()
         }
     };
 
-    cameraEntityA.AddComponent<Hazel::NativeScriptComponent>().Bind<CameraController>();
-    cameraEntityB.AddComponent<Hazel::NativeScriptComponent>().Bind<CameraController>();
+    cameraEntityA.AddComponent<H2M::NativeScriptComponent>().Bind<CameraController>();
+    cameraEntityB.AddComponent<H2M::NativeScriptComponent>().Bind<CameraController>();
 
     m_SceneHierarchyPanel.SetContext(std::shared_ptr<Scene>(this));
 }
@@ -991,7 +991,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
         {
             ImVec2 imageSize(64.0f, 64.0f);
 
-            for (std::map<std::string, Hazel::Ref<MoravaTexture>>::iterator it = textures.begin(); it != textures.end(); ++it)
+            for (std::map<std::string, H2M::Ref<MoravaTexture>>::iterator it = textures.begin(); it != textures.end(); ++it)
             {
                 ImGui::Text(it->first.c_str());
                 ImGui::Image((void*)(intptr_t)it->second->GetID(), imageSize);
@@ -1284,7 +1284,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
     // Mesh Hierarchy / Mesh Debug
     for (auto& object : m_SceneObjects) {
         if (m_AnimPBRMeshes.find(object->m_TypeID) != m_AnimPBRMeshes.end()) { // is it a animated PBR mesh?
-            ((Hazel::MeshHazelLegacy*)object->mesh)->OnImGuiRender();
+            ((H2M::MeshH2M*)object->mesh)->OnImGuiRender();
         }
     }
 
@@ -1743,7 +1743,7 @@ Mesh* SceneEditorImGuizmo::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::s
         *name = "drone";
         break;
     case MESH_TYPE_M1911:
-        mesh = new Hazel::MeshHazelLegacy("Models/M1911/m1911.fbx", Hazel::Ref<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
+        mesh = new H2M::MeshH2M("Models/M1911/m1911.fbx", H2M::Ref<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
         *name = "M1911";
         break;
     default:
@@ -2110,7 +2110,7 @@ SceneObjectParticleSystem* SceneEditorImGuizmo::AddNewSceneObjectParticleSystem(
     return particle_system;
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderEditor(Hazel::Ref<MoravaShader> shaderEditor, Hazel::Ref<MoravaTexture> texture, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditor(H2M::Ref<MoravaShader> shaderEditor, H2M::Ref<MoravaTexture> texture, SceneObject* sceneObject)
 {
     shaderEditor->Bind();
 
@@ -2145,7 +2145,7 @@ void SceneEditorImGuizmo::SetUniformsShaderEditor(Hazel::Ref<MoravaShader> shade
     shaderEditor->SetInt("shadowMap", 2);
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(Hazel::Ref<MoravaShader> shaderEditorPBR, Hazel::Ref<MoravaTexture> texture, Hazel::Ref<Material> material, SceneObject* sceneObject)
+void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(H2M::Ref<MoravaShader> shaderEditorPBR, H2M::Ref<MoravaTexture> texture, H2M::Ref<Material> material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
 
@@ -2173,7 +2173,7 @@ void SceneEditorImGuizmo::SetUniformsShaderEditorPBR(Hazel::Ref<MoravaShader> sh
     shaderEditorPBR->SetInt("shadowMap", 8);
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderSkinning(Hazel::Ref<MoravaShader> shaderSkinning, SceneObject* sceneObject, float runningTime)
+void SceneEditorImGuizmo::SetUniformsShaderSkinning(H2M::Ref<MoravaShader> shaderSkinning, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2196,7 +2196,7 @@ void SceneEditorImGuizmo::SetUniformsShaderSkinning(Hazel::Ref<MoravaShader> sha
     }
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader> shaderHybridAnimPBR, Hazel::Ref<MoravaTexture> texture, SceneObject* sceneObject, float runningTime)
+void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(H2M::Ref<MoravaShader> shaderHybridAnimPBR, H2M::Ref<MoravaTexture> texture, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2214,7 +2214,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader
     shaderHybridAnimPBR->SetMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_Camera->GetViewMatrix());
     shaderHybridAnimPBR->SetFloat3("u_CameraPosition", m_Camera->GetPosition());
 
-    Hazel::Ref<Material> baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
+    H2M::Ref<Material> baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
 
     baseMaterial->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
     baseMaterial->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
@@ -2233,7 +2233,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader
 
     m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
 
-    Hazel::MeshHazelLegacy* meshAnimPBR = (Hazel::MeshHazelLegacy*)sceneObject->mesh;
+    H2M::MeshH2M* meshAnimPBR = (H2M::MeshH2M*)sceneObject->mesh;
 
     float deltaTime = Timer::Get()->GetDeltaTime();
     meshAnimPBR->OnUpdate(deltaTime);
@@ -2245,7 +2245,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader
     auto& materials = meshAnimPBR->GetMaterials();
 
     int submeshIndex = 0;
-    for (Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh : meshAnimPBR->GetSubmeshes())
+    for (H2M::Ref<H2M::SubmeshH2M> submesh : meshAnimPBR->GetSubmeshes())
     {
         // Material
         auto material = materials[submesh->MaterialIndex];
@@ -2269,7 +2269,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(Hazel::Ref<MoravaShader
     }
 }
 
-void SceneEditorImGuizmo::SetUniformsShaderWater(Hazel::Ref<MoravaShader> shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
+void SceneEditorImGuizmo::SetUniformsShaderWater(H2M::Ref<MoravaShader> shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
 {
     RendererBasic::EnableTransparency();
 
@@ -2447,7 +2447,7 @@ void SceneEditorImGuizmo::AddLightsToSceneObjects()
     }
 }
 
-void SceneEditorImGuizmo::RenderLightSources(Hazel::Ref<MoravaShader> shaderGizmo)
+void SceneEditorImGuizmo::RenderLightSources(H2M::Ref<MoravaShader> shaderGizmo)
 {
     shaderGizmo->Bind();
 
@@ -2487,7 +2487,7 @@ void SceneEditorImGuizmo::RenderLightSources(Hazel::Ref<MoravaShader> shaderGizm
     }
 }
 
-void SceneEditorImGuizmo::RenderSkybox(Hazel::Ref<MoravaShader> shaderBackground)
+void SceneEditorImGuizmo::RenderSkybox(H2M::Ref<MoravaShader> shaderBackground)
 {
     // m_BlurEffect->Render();
 
@@ -2525,7 +2525,7 @@ void SceneEditorImGuizmo::RenderSkybox(Hazel::Ref<MoravaShader> shaderBackground
     m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 }
 
-void SceneEditorImGuizmo::RenderLineElements(Hazel::Ref<MoravaShader> shaderBasic, glm::mat4 projectionMatrix)
+void SceneEditorImGuizmo::RenderLineElements(H2M::Ref<MoravaShader> shaderBasic, glm::mat4 projectionMatrix)
 {
     if (!m_DisplayLineElements) return;
 
@@ -2559,7 +2559,7 @@ void SceneEditorImGuizmo::RenderLineElements(Hazel::Ref<MoravaShader> shaderBasi
 }
 
 void SceneEditorImGuizmo::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, Hazel::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
 
@@ -2605,8 +2605,8 @@ void SceneEditorImGuizmo::Render(Window* mainWindow, glm::mat4 projectionMatrix,
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 
-        Hazel::Ref<MoravaTexture> texture = ResourceManager::HotLoadTexture(object->textureName);
-        Hazel::Ref<Material> material = ResourceManager::HotLoadMaterial(object->materialName);
+        H2M::Ref<MoravaTexture> texture = ResourceManager::HotLoadTexture(object->textureName);
+        H2M::Ref<Material> material = ResourceManager::HotLoadMaterial(object->materialName);
 
         // Don't render Lights (id = 0 to 8), it's done in RenderLightSources()
         if (object->name.substr(0, 6) == "Light.")

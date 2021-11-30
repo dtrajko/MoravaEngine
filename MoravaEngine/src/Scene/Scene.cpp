@@ -2,8 +2,8 @@
 
 #include "Scene/Scene.h"
 
-#include "Hazel/Core/Events/ApplicationEvent.h"
-#include "Hazel/Scene/Components.h"
+#include "H2M/Core/Events/ApplicationEvent.h"
+#include "H2M/Scene/Components.h"
 
 #include "Core/Application.h"
 #include "Mesh/MeshData.h"
@@ -245,7 +245,7 @@ void Scene::SetupTextureSlots()
 
 void Scene::SetupMaterials()
 {
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
 	{
 		materials.insert(std::make_pair("shiny",      new Material(1.0f,  128.0f)));
 		materials.insert(std::make_pair("dull",       new Material(1.0f,   64.0f)));
@@ -280,7 +280,7 @@ void Scene::SetSkybox()
 
 void Scene::SetupTextures()
 {
-	if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+	if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
 	{
 		textures.insert(std::make_pair("normalMapDefault", TextureLoader::Get()->GetTexture("Textures/normal_map_default.png", false, false)));
 		textures.insert(std::make_pair("shadowMapDefault", TextureLoader::Get()->GetTexture("Textures/shadow_map_default.png", false, false)));

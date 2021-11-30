@@ -4,7 +4,7 @@
 
 #include "DX11.h"
 
-#include "Hazel/Renderer/HazelImage.h"
+#include "H2M/Renderer/HazelImage.h"
 
 
 struct DX11ImageInfo
@@ -12,11 +12,11 @@ struct DX11ImageInfo
 	uint64_t Image;
 };
 
-class DX11Image2D : public Hazel::HazelImage2D
+class DX11Image2D : public H2M::HazelImage2D
 {
 public:
-	DX11Image2D(Hazel::ImageSpecification specification);
-	DX11Image2D(Hazel::HazelImageFormat format, uint32_t width, uint32_t height);
+	DX11Image2D(H2M::ImageSpecification specification);
+	DX11Image2D(H2M::ImageFormatH2M format, uint32_t width, uint32_t height);
 	virtual ~DX11Image2D();
 
 	virtual void Invalidate() override;
@@ -27,16 +27,16 @@ public:
 
 	virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
-	virtual Hazel::ImageSpecification& GetSpecification() override { return m_Specification; }
-	virtual const Hazel::ImageSpecification& GetSpecification() const override { return m_Specification; }
+	virtual H2M::ImageSpecification& GetSpecification() override { return m_Specification; }
+	virtual const H2M::ImageSpecification& GetSpecification() const override { return m_Specification; }
 
 	void RT_Invalidate() {}
 
 	DX11ImageInfo& GetImageInfo() { return m_Info; }
 	const DX11ImageInfo& GetImageInfo() const { return m_Info; }
 
-	virtual Hazel::Buffer GetBuffer() const override { return m_ImageData; }
-	virtual Hazel::Buffer& GetBuffer() override { return m_ImageData; }
+	virtual H2M::Buffer GetBuffer() const override { return m_ImageData; }
+	virtual H2M::Buffer& GetBuffer() override { return m_ImageData; }
 
 	virtual void CreatePerLayerImageViews() override {};
 	virtual uint64_t GetHash() const override { return m_Info.Image; }
@@ -44,12 +44,12 @@ public:
 	void UpdateDescriptor();
 
 private:
-	Hazel::ImageSpecification m_Specification;
+	H2M::ImageSpecification m_Specification;
 
-	Hazel::HazelImageFormat m_Format;
+	H2M::ImageFormatH2M m_Format;
 	uint32_t m_Width = 0, m_Height = 0;
 
-	Hazel::Buffer m_ImageData;
+	H2M::Buffer m_ImageData;
 
 	DX11ImageInfo m_Info = DX11ImageInfo{};
 

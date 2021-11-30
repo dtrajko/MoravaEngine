@@ -26,7 +26,7 @@ SceneObjectParticleSystem::SceneObjectParticleSystem()
     m_CameraController = nullptr;
 }
 
-SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, int maxInstances, Hazel::HazelCamera* camera, CameraController* cameraController) : SceneObject()
+SceneObjectParticleSystem::SceneObjectParticleSystem(bool instancedRendering, int maxInstances, H2M::HazelCamera* camera, CameraController* cameraController) : SceneObject()
 {
     m_Camera = camera;
     m_CameraController = cameraController;
@@ -103,7 +103,7 @@ void SceneObjectParticleSystem::Regenerate()
     delete m_Master;
     m_Master = new ParticleMaster(m_Settings.instanced, m_MaxInstances);
 
-    Hazel::Ref<MoravaTexture> texture = ResourceManager::HotLoadTexture(m_Settings.textureName);
+    H2M::Ref<MoravaTexture> texture = ResourceManager::HotLoadTexture(m_Settings.textureName);
     m_ParticleTexture = new ParticleTexture(texture->GetID(), m_Settings.numRows);
     m_System = new ParticleSystemThinMatrix(m_ParticleTexture, m_Settings.PPS,
         m_Settings.direction, m_Settings.intensity, m_Settings.gravityComplient,

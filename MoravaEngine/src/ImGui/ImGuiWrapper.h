@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Hazel/Core/Ref.h"
-#include "Hazel/Scene/Components.h"
+#include "H2M/Core/Ref.h"
+#include "H2M/Scene/Components.h"
 
 #include "Core/CommonValues.h"
 #include "Core/Window.h"
@@ -39,8 +39,8 @@ public:
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 
-	static void DrawMaterialUI(Hazel::Ref<EnvMapMaterial> material, Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> checkerboardTexture);
-	static void DragAndDropTarget(Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>& texture, bool srgb = false);
+	static void DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2M::Texture2DH2M> checkerboardTexture);
+	static void DragAndDropTarget(H2M::Ref<H2M::Texture2DH2M>& texture, bool srgb = false);
 
 	// ImGui UI helpers
 	static bool Property(const std::string& name, bool& value);

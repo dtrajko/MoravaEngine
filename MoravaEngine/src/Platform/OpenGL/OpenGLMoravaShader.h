@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Hazel/Renderer/HazelShader.h"
-#include "Hazel/Renderer/ShaderUniform.h"
+#include "H2M/Renderer/HazelShader.h"
+#include "H2M/Renderer/ShaderUniform.h"
 
 #include "Core/CommonValues.h"
 #include "Shader/MoravaShader.h"
@@ -22,16 +22,16 @@ public:
 	OpenGLMoravaShader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
 	OpenGLMoravaShader(const char* computeLocation, bool forceCompile = false);
 
-	static Hazel::Ref<OpenGLMoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
-	static Hazel::Ref<OpenGLMoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
-	static Hazel::Ref<OpenGLMoravaShader> Create(const char* computeLocation, bool forceCompile = false);
+	static H2M::Ref<OpenGLMoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
+	static H2M::Ref<OpenGLMoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
+	static H2M::Ref<OpenGLMoravaShader> Create(const char* computeLocation, bool forceCompile = false);
 
 	// virtual methods
 	virtual void Bind() override;
 	virtual void Reload(bool forceCompile = false) override;
 
 	// HazelShader abstract methods
-	virtual Hazel::RendererID GetRendererID() const override;
+	virtual H2M::RendererID GetRendererID() const override;
 	virtual size_t GetHash() const override;
 	virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 
@@ -72,8 +72,8 @@ public:
 
 	virtual void Unbind() override;
 
-	virtual const std::unordered_map<std::string, Hazel::ShaderBuffer>& GetShaderBuffers() const override;
-	virtual const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& GetResources() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderBuffer>& GetShaderBuffers() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& GetResources() const override;
 
 	virtual void CreateFromString(const char* vertexCode, const char* fragmentCode) override;
 	virtual void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation) override;

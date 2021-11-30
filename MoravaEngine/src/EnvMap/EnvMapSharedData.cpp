@@ -3,17 +3,17 @@
 
 std::map<std::string, unsigned int> EnvMapSharedData::s_SamplerSlots;
 
-Hazel::Ref<Hazel::SceneHazelLegacy> EnvMapSharedData::s_RuntimeScene;
-Hazel::Ref<Hazel::SceneHazelLegacy> EnvMapSharedData::s_EditorScene;
+H2M::Ref<H2M::SceneH2M> EnvMapSharedData::s_RuntimeScene;
+H2M::Ref<H2M::SceneH2M> EnvMapSharedData::s_EditorScene;
 
 Scene* EnvMapSharedData::s_Scene; // reference to SceneHazelEnvMap (the original engine scene object)
 
-Hazel::EditorCamera* EnvMapSharedData::s_EditorCamera;
+H2M::EditorCamera* EnvMapSharedData::s_EditorCamera;
 RuntimeCamera* EnvMapSharedData::s_RuntimeCamera;
-Hazel::HazelCamera* EnvMapSharedData::s_ActiveCamera;
+H2M::HazelCamera* EnvMapSharedData::s_ActiveCamera;
 
-Hazel::Ref<CubeSkybox> EnvMapSharedData::s_SkyboxCube;
-Hazel::Ref<Quad> EnvMapSharedData::s_Quad;
+H2M::Ref<CubeSkybox> EnvMapSharedData::s_SkyboxCube;
+H2M::Ref<Quad> EnvMapSharedData::s_Quad;
 
 bool EnvMapSharedData::s_DisplayOutline;
 bool EnvMapSharedData::s_DisplayWireframe;
@@ -24,13 +24,13 @@ glm::mat4 EnvMapSharedData::s_DirLightTransform;
 bool EnvMapSharedData::s_DisplayHazelGrid;
 bool EnvMapSharedData::s_DisplayRay;
 glm::vec3 EnvMapSharedData::s_NewRay;
-Hazel::Ref<ShadowMap> EnvMapSharedData::s_ShadowMapDirLight;
+H2M::Ref<ShadowMap> EnvMapSharedData::s_ShadowMapDirLight;
 
-Hazel::Ref<MoravaShader> EnvMapSharedData::s_ShaderHazelPBR;
-Hazel::Ref<MoravaShader> EnvMapSharedData::s_ShaderOutline;
+H2M::Ref<MoravaShader> EnvMapSharedData::s_ShaderHazelPBR;
+H2M::Ref<MoravaShader> EnvMapSharedData::s_ShaderOutline;
 
-Hazel::EntityHazelLegacy EnvMapSharedData::s_PointLightEntity;
-Hazel::Ref<OmniShadowMap> EnvMapSharedData::s_OmniShadowMapPointLight;
+H2M::EntityH2M EnvMapSharedData::s_PointLightEntity;
+H2M::Ref<OmniShadowMap> EnvMapSharedData::s_OmniShadowMapPointLight;
 
-Hazel::EntityHazelLegacy EnvMapSharedData::s_SpotLightEntity;
-Hazel::Ref<OmniShadowMap> EnvMapSharedData::s_OmniShadowMapSpotLight;
+H2M::EntityH2M EnvMapSharedData::s_SpotLightEntity;
+H2M::Ref<OmniShadowMap> EnvMapSharedData::s_OmniShadowMapSpotLight;

@@ -2,7 +2,7 @@
 
 #include "DX11Context.h"
 
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/HazelRenderer.h"
 
 
 DX11IndexBuffer::DX11IndexBuffer(void* data, uint32_t size)
@@ -41,10 +41,10 @@ void DX11IndexBuffer::Bind() const
 	DX11Context::Get()->GetDX11DeviceContext()->IASetIndexBuffer(m_Buffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
-Hazel::RendererID DX11IndexBuffer::GetRendererID() const
+H2M::RendererID DX11IndexBuffer::GetRendererID() const
 {
 	Log::GetLogger()->error("GetRendererID() Method not implemented yet!");
-	return Hazel::RendererID();
+	return H2M::RendererID();
 }
 
 DX11IndexBuffer::~DX11IndexBuffer()
@@ -56,4 +56,4 @@ DX11IndexBuffer::~DX11IndexBuffer()
 
 // void DX11IndexBuffer::SetData(void* buffer, uint32_t size, uint32_t offset) {}
 // void DX11IndexBuffer::Bind() const {}
-// Hazel::RendererID DX11IndexBuffer::GetRendererID() const { return 0; }
+// H2M::RendererID DX11IndexBuffer::GetRendererID() const { return 0; }

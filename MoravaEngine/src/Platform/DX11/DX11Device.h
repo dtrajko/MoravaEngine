@@ -2,37 +2,37 @@
 
 #pragma once
 
-#include "Hazel/Core/Ref.h"
+#include "H2M/Core/Ref.h"
 
 #include "DX11.h"
 
 #include <unordered_set>
 
 	
-class DX11PhysicalDevice : public Hazel::RefCounted
+class DX11PhysicalDevice : public H2M::RefCounted
 {
 public:
 	DX11PhysicalDevice();
 	~DX11PhysicalDevice();
 
-	static Hazel::Ref<DX11PhysicalDevice> Select();
+	static H2M::Ref<DX11PhysicalDevice> Select();
 
 	friend class DX11Device;
 };
 
 // Represents a logical device
-class DX11Device : public Hazel::RefCounted
+class DX11Device : public H2M::RefCounted
 {
 public:
-	DX11Device(const Hazel::Ref<DX11PhysicalDevice>& physicalDevice);
+	DX11Device(const H2M::Ref<DX11PhysicalDevice>& physicalDevice);
 	~DX11Device();
 
-	const Hazel::Ref<DX11PhysicalDevice>& GetPhysicalDevice() const { return m_PhysicalDevice; }
+	const H2M::Ref<DX11PhysicalDevice>& GetPhysicalDevice() const { return m_PhysicalDevice; }
 
 	ID3D11Device* GetDX11Device() const { return m_LogicalDevice; }
 
 private:
-	Hazel::Ref<DX11PhysicalDevice> m_PhysicalDevice;
+	H2M::Ref<DX11PhysicalDevice> m_PhysicalDevice;
 
 	ID3D11Device* m_LogicalDevice; // m_d3d_device
 

@@ -1,7 +1,7 @@
 #include "VulkanMoravaShader.h"
 
-#include "Hazel/Core/Assert.h"
-#include "Hazel/Renderer/RendererAPI.h"
+#include "H2M/Core/Assert.h"
+#include "H2M/Renderer/RendererAPI.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"
@@ -23,17 +23,17 @@ VulkanMoravaShader::VulkanMoravaShader(const char* vertexLocation, const char* g
 VulkanMoravaShader::VulkanMoravaShader(const char* computeLocation, bool forceCompile)
 	: VulkanMoravaShader() {}
 
-Hazel::Ref<VulkanMoravaShader> VulkanMoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+H2M::Ref<VulkanMoravaShader> VulkanMoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 {
-	return Hazel::Ref<VulkanMoravaShader>();
+	return H2M::Ref<VulkanMoravaShader>();
 }
 
-Hazel::Ref<VulkanMoravaShader> VulkanMoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
+H2M::Ref<VulkanMoravaShader> VulkanMoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
 {
-	return Hazel::Ref<VulkanMoravaShader>();
+	return H2M::Ref<VulkanMoravaShader>();
 }
 
-Hazel::Ref<VulkanMoravaShader> VulkanMoravaShader::Create(const char* computeLocation, bool forceCompile) { return Hazel::Ref<VulkanMoravaShader>(); }
+H2M::Ref<VulkanMoravaShader> VulkanMoravaShader::Create(const char* computeLocation, bool forceCompile) { return H2M::Ref<VulkanMoravaShader>(); }
 
 VulkanMoravaShader::~VulkanMoravaShader() {}
 
@@ -110,14 +110,14 @@ void VulkanMoravaShader::SetMat3(const std::string& name, const glm::mat3& mat)
 
 void VulkanMoravaShader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanMoravaShader::GetShaderBuffers() const
+const std::unordered_map<std::string, H2M::ShaderBuffer>& VulkanMoravaShader::GetShaderBuffers() const
 {
-	return std::unordered_map<std::string, Hazel::ShaderBuffer>();
+	return std::unordered_map<std::string, H2M::ShaderBuffer>();
 }
 
-const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& VulkanMoravaShader::GetResources() const
+const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& VulkanMoravaShader::GetResources() const
 {
-	return std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>();
+	return std::unordered_map<std::string, H2M::ShaderResourceDeclaration>();
 }
 
 void VulkanMoravaShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}

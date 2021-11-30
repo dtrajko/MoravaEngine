@@ -1,7 +1,7 @@
 #include "Shader/MoravaShader.h"
 
-#include "Hazel/Core/Assert.h"
-#include "Hazel/Renderer/RendererAPI.h"
+#include "H2M/Core/Assert.h"
+#include "H2M/Renderer/RendererAPI.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"
@@ -10,16 +10,16 @@
 #include "Platform/DX11/DX11Shader.h"
 
 
-std::vector<Hazel::Ref<MoravaShader>> MoravaShader::s_AllShaders;
+std::vector<H2M::Ref<MoravaShader>> MoravaShader::s_AllShaders;
 MoravaShaderSpecification MoravaShader::s_Specification = MoravaShaderSpecification{};
 
 
 // the ultimate Create method that can create both MoravaShader and HazelShader shader types
-Hazel::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaShaderSpecification)
+H2M::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaShaderSpecification)
 {
 	s_Specification = moravaShaderSpecification;
 
-	Hazel::Ref<MoravaShader> moravaShader;
+	H2M::Ref<MoravaShader> moravaShader;
 
 	if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::MoravaShader)
 	{
@@ -27,15 +27,15 @@ Hazel::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaSh
 	}
 	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::HazelShader)
 	{
-		Hazel::Ref<Hazel::HazelShader> hazelShader = HazelShader::Create(moravaShaderSpecification.HazelShaderPath, moravaShaderSpecification.ForceCompile);
-		moravaShader = Hazel::Ref<MoravaShader>(hazelShader);
+		H2M::Ref<H2M::HazelShader> hazelShader = HazelShader::Create(moravaShaderSpecification.HazelShaderPath, moravaShaderSpecification.ForceCompile);
+		moravaShader = H2M::Ref<MoravaShader>(hazelShader);
 	}
 	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::DX11Shader)
 	{
-		Hazel::Ref<DX11Shader> dx11Shader = Hazel::Ref<DX11Shader>::Create(
+		H2M::Ref<DX11Shader> dx11Shader = H2M::Ref<DX11Shader>::Create(
 			Util::to_wstr(moravaShaderSpecification.VertexShaderPath.c_str()).c_str(),
 			Util::to_wstr(moravaShaderSpecification.PixelShaderPath.c_str()).c_str());
-		moravaShader = Hazel::Ref<MoravaShader>(dx11Shader);
+		moravaShader = H2M::Ref<MoravaShader>(dx11Shader);
 	}
 
 	return moravaShader;
@@ -85,17 +85,17 @@ MoravaShader::MoravaShader(const char* computeLocation, bool forceCompile)
 	CompileProgram();
 }
 
-Hazel::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+H2M::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 {
-	Hazel::Ref<MoravaShader> result = Hazel::Ref<MoravaShader>();
+	H2M::Ref<MoravaShader> result = H2M::Ref<MoravaShader>();
 
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-	case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaShader>();
-	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
+	case H2M::RendererAPIH2MType::None: return H2M::Ref<MoravaShader>();
+	case H2M::RendererAPIH2MType::OpenGL:
+		result = H2M::Ref<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
 		break;
-	case Hazel::RendererAPIType::Vulkan:
+	case H2M::RendererAPIH2MType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 	}
@@ -103,17 +103,17 @@ Hazel::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const 
 	return result;
 }
 
-Hazel::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
+H2M::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
 {
-	Hazel::Ref<MoravaShader> result = Hazel::Ref<MoravaShader>();
+	H2M::Ref<MoravaShader> result = H2M::Ref<MoravaShader>();
 
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-	case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaShader>();
-	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
+	case H2M::RendererAPIH2MType::None: return H2M::Ref<MoravaShader>();
+	case H2M::RendererAPIH2MType::OpenGL:
+		result = H2M::Ref<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
 		break;
-	case Hazel::RendererAPIType::Vulkan:
+	case H2M::RendererAPIH2MType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 	}
@@ -121,17 +121,17 @@ Hazel::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const 
 	return result;
 }
 
-Hazel::Ref<MoravaShader> MoravaShader::Create(const char* computeLocation, bool forceCompile)
+H2M::Ref<MoravaShader> MoravaShader::Create(const char* computeLocation, bool forceCompile)
 {
-	Hazel::Ref<MoravaShader> result = Hazel::Ref<MoravaShader>();
+	H2M::Ref<MoravaShader> result = H2M::Ref<MoravaShader>();
 
-	switch (Hazel::RendererAPI::Current())
+	switch (H2M::RendererAPIH2M::Current())
 	{
-	case Hazel::RendererAPIType::None: return Hazel::Ref<MoravaShader>();
-	case Hazel::RendererAPIType::OpenGL:
-		result = Hazel::Ref<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
+	case H2M::RendererAPIH2MType::None: return H2M::Ref<MoravaShader>();
+	case H2M::RendererAPIH2MType::OpenGL:
+		result = H2M::Ref<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
 		break;
-	case Hazel::RendererAPIType::Vulkan:
+	case H2M::RendererAPIH2MType::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 	}
@@ -260,18 +260,18 @@ GLint MoravaShader::GetUniformLocation(const std::string& name)
 	}
 }
 
-const std::unordered_map<std::string, Hazel::ShaderBuffer>& MoravaShader::GetShaderBuffers() const
+const std::unordered_map<std::string, H2M::ShaderBuffer>& MoravaShader::GetShaderBuffers() const
 {
 	// OpenGLMaterial::FindUniformDeclaration requires at least 2 shader buffers
-	// std::unordered_map<std::string, Hazel::ShaderBuffer> shaderBuffers = ;
-	// shaderBuffers.insert(std::make_pair("One", Hazel::ShaderBuffer()));
-	// shaderBuffers.insert(std::make_pair("Two", Hazel::ShaderBuffer()));
-	return std::unordered_map<std::string, Hazel::ShaderBuffer>();
+	// std::unordered_map<std::string, H2M::ShaderBuffer> shaderBuffers = ;
+	// shaderBuffers.insert(std::make_pair("One", H2M::ShaderBuffer()));
+	// shaderBuffers.insert(std::make_pair("Two", H2M::ShaderBuffer()));
+	return std::unordered_map<std::string, H2M::ShaderBuffer>();
 }
 
-const std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>& MoravaShader::GetResources() const
+const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& MoravaShader::GetResources() const
 {
-	return std::unordered_map<std::string, Hazel::ShaderResourceDeclaration>();
+	return std::unordered_map<std::string, H2M::ShaderResourceDeclaration>();
 }
 
 void MoravaShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)

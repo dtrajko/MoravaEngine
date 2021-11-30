@@ -4,11 +4,11 @@
 
 #include "DX11.h"
 
-#include "Hazel/Core/Buffer.h"
-#include "Hazel/Renderer/IndexBuffer.h"
+#include "H2M/Core/Buffer.h"
+#include "H2M/Renderer/IndexBuffer.h"
 
 
-class DX11IndexBuffer : public Hazel::IndexBuffer
+class DX11IndexBuffer : public H2M::IndexBuffer
 {
 public:
 	DX11IndexBuffer(void* data, uint32_t size);
@@ -23,7 +23,7 @@ public:
 	virtual void Bind() const override;
 	virtual uint32_t GetCount() const override { return m_Count; }
 	virtual uint32_t GetSize() const override { return m_Size; }
-	virtual Hazel::RendererID GetRendererID() const override;
+	virtual H2M::RendererID GetRendererID() const override;
 
 private:
 	uint32_t m_Size;
@@ -31,6 +31,6 @@ private:
 	ID3D11Buffer* m_Buffer;
 
 	// uint32_t m_Size = 0;
-	// Hazel::Buffer m_LocalData;
+	// H2M::Buffer m_LocalData;
 
 };

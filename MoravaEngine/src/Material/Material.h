@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Hazel/Core/Base.h"
-#include "Hazel/Renderer/HazelMaterial.h"
-#include "Hazel/Renderer/HazelShader.h"
+#include "H2M/Core/Base.h"
+#include "H2M/Renderer/HazelMaterial.h"
+#include "H2M/Renderer/HazelShader.h"
 
 #include "Shader/MoravaShader.h"
 #include "Texture/MoravaTexture.h"
@@ -43,14 +43,14 @@ enum class MaterialFlag
 };
 
 
-class Material : public Hazel::HazelMaterial
+class Material : public H2M::HazelMaterial
 {
 public:
 	Material();
 	Material(float specularIntensity, float shininess);
 	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess); // based on LearnOpenGL material classint
 	Material(int albedo, int specular, int normal, float shininess); // used in SceneNanosuit
-	Material(Hazel::Ref<Hazel::HazelShader> shader); // based on Hazel::Material contructor
+	Material(H2M::Ref<H2M::HazelShader> shader); // based on H2M::Material contructor
 	Material(TextureInfo textureInfoGold, float specularIntensity, float shininess); // PBR/IBL Material Workflow
 	virtual ~Material() override;
 
@@ -71,10 +71,10 @@ public:
 	virtual void Set(const std::string& name, const glm::mat3& value) override {};
 	virtual void Set(const std::string& name, const glm::mat4& value) override {};
 
-	virtual void Set(const std::string& name, const Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>& texture) override {};
-	virtual void Set(const std::string& name, const Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>& texture, uint32_t arrayIndex) override {};
-	virtual void Set(const std::string& name, const Hazel::Ref<HazelLegacy::TextureCubeHazelLegacy>& texture) override {};
-	virtual void Set(const std::string& name, const Hazel::Ref<HazelLegacy::HazelImage2D>& image) override {};
+	virtual void Set(const std::string& name, const H2M::Ref<H2M::Texture2DH2M>& texture) override {};
+	virtual void Set(const std::string& name, const H2M::Ref<H2M::Texture2DH2M>& texture, uint32_t arrayIndex) override {};
+	virtual void Set(const std::string& name, const H2M::Ref<H2M::TextureCubeH2M>& texture) override {};
+	virtual void Set(const std::string& name, const H2M::Ref<H2M::HazelImage2D>& image) override {};
 
 	virtual float& GetFloat(const std::string& name) override { return m_Float; }
 	virtual int32_t& GetInt(const std::string& name) override { return m_int32_t; }
@@ -86,17 +86,17 @@ public:
 	virtual glm::mat3& GetMatrix3(const std::string& name) override { return m_glm_mat3; }
 	virtual glm::mat4& GetMatrix4(const std::string& name) override { return m_glm_mat4; }
 
-	virtual Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> GetTexture2D(const std::string& name) override { return Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>(); };
-	virtual Hazel::Ref<Hazel::TextureCubeHazelLegacy> GetTextureCube(const std::string& name) override { return Hazel::Ref<Hazel::TextureCubeHazelLegacy>(); };
+	virtual H2M::Ref<H2M::Texture2DH2M> GetTexture2D(const std::string& name) override { return H2M::Ref<H2M::Texture2DH2M>(); };
+	virtual H2M::Ref<H2M::TextureCubeH2M> GetTextureCube(const std::string& name) override { return H2M::Ref<H2M::TextureCubeH2M>(); };
 
-	virtual Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> TryGetTexture2D(const std::string& name) override { return Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>(); };
-	virtual Hazel::Ref<Hazel::TextureCubeHazelLegacy> TryGetTextureCube(const std::string& name) override { return Hazel::Ref<Hazel::TextureCubeHazelLegacy>(); };
+	virtual H2M::Ref<H2M::Texture2DH2M> TryGetTexture2D(const std::string& name) override { return H2M::Ref<H2M::Texture2DH2M>(); };
+	virtual H2M::Ref<H2M::TextureCubeH2M> TryGetTextureCube(const std::string& name) override { return H2M::Ref<H2M::TextureCubeH2M>(); };
 
 	virtual uint32_t GetFlags() const override { return uint32_t(); };
-	virtual bool GetFlag(Hazel::HazelMaterialFlag flag) const override { return bool(); }
-	virtual void SetFlag(Hazel::HazelMaterialFlag flag, bool value = true) override {}
+	virtual bool GetFlag(H2M::HazelMaterialFlag flag) const override { return bool(); }
+	virtual void SetFlag(H2M::HazelMaterialFlag flag, bool value = true) override {}
 
-	virtual Hazel::Ref<Hazel::HazelShader> GetShader() override { return Hazel::Ref<Hazel::HazelShader>(); }
+	virtual H2M::Ref<H2M::HazelShader> GetShader() override { return H2M::Ref<H2M::HazelShader>(); }
 	virtual const std::string& GetName() const override { return m_Name; }
 
 	/**** END virtual methods defined in HazelMaterial ****/
@@ -106,12 +106,12 @@ public:
 
 	// PBR/IBL Material Workflow
 	void BindTextures(unsigned int slot);
-	inline Hazel::Ref<MoravaTexture> GetTextureAlbedo()    const { return m_TextureAlbedo;    };
-	inline Hazel::Ref<MoravaTexture> GetTextureNormal()    const { return m_TextureNormal;    };
-	inline Hazel::Ref<MoravaTexture> GetTextureMetallic()  const { return m_TextureMetallic;  };
-	inline Hazel::Ref<MoravaTexture> GetTextureRoughness() const { return m_TextureRoughness; };
-	inline Hazel::Ref<MoravaTexture> GetTextureEmissive()  const { return m_TextureEmissive;  };
-	inline Hazel::Ref<MoravaTexture> GetTextureAO()        const { return m_TextureAO;        };
+	inline H2M::Ref<MoravaTexture> GetTextureAlbedo()    const { return m_TextureAlbedo;    };
+	inline H2M::Ref<MoravaTexture> GetTextureNormal()    const { return m_TextureNormal;    };
+	inline H2M::Ref<MoravaTexture> GetTextureMetallic()  const { return m_TextureMetallic;  };
+	inline H2M::Ref<MoravaTexture> GetTextureRoughness() const { return m_TextureRoughness; };
+	inline H2M::Ref<MoravaTexture> GetTextureEmissive()  const { return m_TextureEmissive;  };
+	inline H2M::Ref<MoravaTexture> GetTextureAO()        const { return m_TextureAO;        };
 
 	// From Hazel/Renderer/Material
 	bool GetFlag(MaterialFlag flag) const { return (uint32_t)flag & m_MaterialFlags; }
@@ -124,14 +124,14 @@ public:
 	float m_Shininess;
 
 private:
-	Hazel::Ref<MoravaTexture> m_TextureAlbedo;
-	Hazel::Ref<MoravaTexture> m_TextureNormal;
-	Hazel::Ref<MoravaTexture> m_TextureMetallic;
-	Hazel::Ref<MoravaTexture> m_TextureRoughness;
-	Hazel::Ref<MoravaTexture> m_TextureEmissive;
-	Hazel::Ref<MoravaTexture> m_TextureAO;
+	H2M::Ref<MoravaTexture> m_TextureAlbedo;
+	H2M::Ref<MoravaTexture> m_TextureNormal;
+	H2M::Ref<MoravaTexture> m_TextureMetallic;
+	H2M::Ref<MoravaTexture> m_TextureRoughness;
+	H2M::Ref<MoravaTexture> m_TextureEmissive;
+	H2M::Ref<MoravaTexture> m_TextureAO;
 
-	Hazel::Ref<MoravaTexture> m_TexturePlaceholder;
+	H2M::Ref<MoravaTexture> m_TexturePlaceholder;
 
 	std::map<int, MapType> m_Maps;
 
@@ -151,7 +151,7 @@ private:
 
 	// From Hazel/Renderer/Material
 	uint32_t m_MaterialFlags;
-	Hazel::Ref<Hazel::HazelShader> m_Shader;
+	H2M::Ref<H2M::HazelShader> m_Shader;
 
 	float m_Float;
 	int32_t m_int32_t;

@@ -1,8 +1,8 @@
 #include "DX11TestLayer.h"
 
-#include "HazelLegacy/Renderer/TextureHazelLegacy.h"
+#include "H2M/Renderer/TextureH2M.h"
 
-#include "HazelLegacy/Scene/ComponentsHazelLegacy.h"
+#include "H2M/Scene/ComponentsH2M.h"
 
 #include "DX11Context.h"
 #include "DX11SwapChain.h"
@@ -17,12 +17,12 @@
 
 std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
 glm::vec2 DX11TestLayer::s_StartMousePosition;
-Hazel::Ref<DX11Mesh> DX11TestLayer::s_Mesh;
-Hazel::Ref<Hazel::MeshHazelLegacy> DX11TestLayer::s_MeshLight;
-Hazel::Ref<Hazel::MeshHazelLegacy> DX11TestLayer::s_SkyboxSphere;
+H2M::Ref<DX11Mesh> DX11TestLayer::s_Mesh;
+H2M::Ref<H2M::MeshH2M> DX11TestLayer::s_MeshLight;
+H2M::Ref<H2M::MeshH2M> DX11TestLayer::s_SkyboxSphere;
 // Render meshes with materials
 std::vector<RenderObject> DX11TestLayer::s_RenderObjectsWithMaterials;
-std::vector<Hazel::Ref<DX11Material>> DX11TestLayer::s_ListMaterials;
+std::vector<H2M::Ref<DX11Material>> DX11TestLayer::s_ListMaterials;
 
 ImGuizmo::OPERATION DX11TestLayer::s_ImGuizmoType;
 
@@ -32,7 +32,7 @@ bool DX11TestLayer::s_ShowWindowSceneHierarchy = true;
 bool DX11TestLayer::s_ShowWindowAssetManager = true;
 bool DX11TestLayer::s_ShowWindowMaterialEditor = true;
 
-Hazel::Ref<Hazel::SceneHazelLegacy> DX11TestLayer::s_Scene;
+H2M::Ref<H2M::SceneH2M> DX11TestLayer::s_Scene;
 
 glm::mat4 DX11TestLayer::s_CurrentlySelectedTransform;
 
@@ -41,8 +41,8 @@ float DX11TestLayer::s_ViewportHeight = 0.0f;
 glm::vec2 DX11TestLayer::s_ViewportBounds[2];
 bool DX11TestLayer::s_AllowViewportCameraEvents = true;
 
-Hazel::SceneHierarchyPanelHazelLegacy* DX11TestLayer::s_SceneHierarchyPanel;
-Hazel::ContentBrowserPanel* DX11TestLayer::s_ContentBrowserPanel;
+H2M::SceneHierarchyPanelH2M* DX11TestLayer::s_SceneHierarchyPanel;
+H2M::ContentBrowserPanel* DX11TestLayer::s_ContentBrowserPanel;
 MaterialEditorPanel* DX11TestLayer::s_MaterialEditorPanel;
 
 
@@ -64,11 +64,11 @@ void DX11TestLayer::OnAttach()
 {
 	DX11InputSystem::Get()->AddListener(this);
 
-	s_Scene = Hazel::Ref<Hazel::SceneHazelLegacy>::Create();
+	s_Scene = H2M::Ref<H2M::SceneH2M>::Create();
 
-	s_SceneHierarchyPanel = new Hazel::SceneHierarchyPanelHazelLegacy(s_Scene);
+	s_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(s_Scene);
 
-	s_ContentBrowserPanel = new Hazel::ContentBrowserPanel();
+	s_ContentBrowserPanel = new H2M::ContentBrowserPanel();
 
 	s_MaterialEditorPanel = new MaterialEditorPanel();
 
@@ -76,15 +76,15 @@ void DX11TestLayer::OnAttach()
 
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 
-	Hazel::Ref<Hazel::MeshHazelLegacy> meshSphere = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/PardCode/sphere_hq.obj");
+	H2M::Ref<H2M::MeshH2M> meshSphere = H2M::Ref<H2M::MeshH2M>::Create("Models/PardCode/sphere_hq.obj");
 
 	/*
 	RenderObject renderObjectGladiator;
-	renderObjectGladiator.Mesh = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/Gladiator/Gladiator.fbx");
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Models/Gladiator/Gladiator_weapon_Normal.jpg"));
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Models/Gladiator/Gladiator_BaseColor.jpg"));
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Models/Gladiator/Gladiator_Normal.jpg"));
+	renderObjectGladiator.Mesh = H2M::Ref<H2M::MeshH2M>::Create("Models/Gladiator/Gladiator.fbx");
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_weapon_Normal.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_BaseColor.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_Normal.jpg"));
 	renderObjectGladiator.Transform = glm::mat4(1.0f);
 	renderObjectGladiator.Transform = glm::translate(renderObjectGladiator.Transform, glm::vec3(0.0f, 0.0f, -2.0f));
 	renderObjectGladiator.Transform = glm::scale(renderObjectGladiator.Transform, glm::vec3(0.04f));
@@ -92,7 +92,7 @@ void DX11TestLayer::OnAttach()
 	m_RenderObjects.push_back(renderObjectGladiator);
 
 	RenderObject renderObjectCerberus;
-	renderObjectCerberus.Mesh = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/Cerberus/CerberusMaterials.fbx");
+	renderObjectCerberus.Mesh = H2M::Ref<H2M::MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx");
 	renderObjectCerberus.Textures.push_back(renderObjectCerberus.Mesh->GetTextures().at(0));
 	renderObjectCerberus.Textures.push_back(renderObjectCerberus.Mesh->GetTextures().at(1));
 	renderObjectCerberus.Transform = glm::mat4(1.0f);
@@ -105,8 +105,8 @@ void DX11TestLayer::OnAttach()
 
 	RenderObject renderObjectSphereLeft;
 	renderObjectSphereLeft.Mesh = meshSphere;
-	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_d.jpg"));
-	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_n.jpg"));
+	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_d.jpg"));
+	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_n.jpg"));
 	renderObjectSphereLeft.Transform = glm::mat4(1.0f);
 	renderObjectSphereLeft.Transform = glm::translate(renderObjectSphereLeft.Transform, glm::vec3(-4.0f, 2.0f, 0.0f));
 	renderObjectSphereLeft.PipelineType = RenderObject::PipelineType::Light;
@@ -114,8 +114,8 @@ void DX11TestLayer::OnAttach()
 
 	RenderObject renderObjectSphereRight;
 	renderObjectSphereRight.Mesh = meshSphere;
-	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_d.jpg"));
-	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_n.jpg"));
+	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_d.jpg"));
+	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_n.jpg"));
 	renderObjectSphereRight.Transform = glm::mat4(1.0f);
 	renderObjectSphereRight.Transform = glm::translate(renderObjectSphereRight.Transform, glm::vec3(4.0f, 2.0f, 0.0f));
 	renderObjectSphereRight.PipelineType = RenderObject::PipelineType::Light;
@@ -123,40 +123,40 @@ void DX11TestLayer::OnAttach()
 	*/
 
 	RenderObject renderObjectTerrain;
-	renderObjectTerrain.Mesh = Hazel::Ref<Hazel::MeshHazelLegacy>::Create("Models/PardCode/terrain.obj");
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/sand.jpg"));
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/normal_blank.png"));
+	renderObjectTerrain.Mesh = H2M::Ref<H2M::MeshH2M>::Create("Models/PardCode/terrain.obj");
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/sand.jpg"));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png"));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
 	renderObjectTerrain.Transform = glm::scale(renderObjectTerrain.Transform, glm::vec3(4.0f));
 	renderObjectTerrain.PipelineType = RenderObject::PipelineType::Unlit;
 	m_RenderObjects.push_back(renderObjectTerrain);
 
 	// ---- other assets ----
-	ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/sky.jpg");
+	ResourceManager::LoadTexture2DH2M("Textures/PardCode/sky.jpg");
 
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/wood.jpg");
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/normal_blank.png");
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick.png");
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_d.jpg");
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/brick_n.jpg");
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/default_material_albedo.png");
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/normal_blank.png");
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/umhlanga_sunrise_4k.jpg");
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/gold.png");
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/container/container2.png");
-	// ResourceManager::LoadTexture2DHazelLegacy("Textures/container/container2_normal.png");
+	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/wood.jpg");
+	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
+	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick.png");
+	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_d.jpg");
+	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_n.jpg");
+	// ResourceManager::LoadTexture2DH2M("Textures/default_material_albedo.png");
+	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
+	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/umhlanga_sunrise_4k.jpg");
+	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/gold.png");
+	// ResourceManager::LoadTexture2DH2M("Textures/container/container2.png");
+	// ResourceManager::LoadTexture2DH2M("Textures/container/container2_normal.png");
 
-	s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
-	// s_Mesh = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/spaceship.obj");
+	s_Mesh = H2M::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
+	// s_Mesh = H2M::Ref<DX11Mesh>::Create(L"Models/PardCode/spaceship.obj");
 
 	s_MeshLight = meshSphere;
 	s_SkyboxSphere = meshSphere;
 
 	/**** BEGIN Pipeline Unlit ****/
 
-	Hazel::PipelineSpecification pipelineSpecUnlit;
+	H2M::PipelineSpecification pipelineSpecUnlit;
 	pipelineSpecUnlit.DebugName = "Pipeline Unlit";
-	pipelineSpecUnlit.Layout = Hazel::VertexBufferLayout{};
+	pipelineSpecUnlit.Layout = H2M::VertexBufferLayout{};
 
 	MoravaShaderSpecification moravaShaderSpecificationUnlit;
 	moravaShaderSpecificationUnlit.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
@@ -166,15 +166,15 @@ void DX11TestLayer::OnAttach()
 	ResourceManager::CreateOrLoadShader(moravaShaderSpecificationUnlit);
 	pipelineSpecUnlit.Shader = ResourceManager::CreateOrLoadShader(moravaShaderSpecificationUnlit);
 
-	Hazel::Ref<DX11Pipeline> pipelineUnlit = DX11Pipeline::Create(pipelineSpecUnlit);
+	H2M::Ref<DX11Pipeline> pipelineUnlit = DX11Pipeline::Create(pipelineSpecUnlit);
 
 	/**** END Pipeline Unlit ****/
 
 	/**** BEGIN Pipeline Illuminated ****/
 
-	Hazel::PipelineSpecification pipelineSpecIlluminated;
+	H2M::PipelineSpecification pipelineSpecIlluminated;
 	pipelineSpecIlluminated.DebugName = "Pipeline Illuminated";
-	pipelineSpecIlluminated.Layout = Hazel::VertexBufferLayout{};
+	pipelineSpecIlluminated.Layout = H2M::VertexBufferLayout{};
 
 	MoravaShaderSpecification moravaShaderSpecificationIlluminated;
 	moravaShaderSpecificationIlluminated.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
@@ -183,33 +183,33 @@ void DX11TestLayer::OnAttach()
 	moravaShaderSpecificationIlluminated.ForceCompile = false;
 	pipelineSpecIlluminated.Shader = ResourceManager::CreateOrLoadShader(moravaShaderSpecificationIlluminated);
 
-	Hazel::Ref<DX11Pipeline> pipelineIlluminated = DX11Pipeline::Create(pipelineSpecIlluminated);
+	H2M::Ref<DX11Pipeline> pipelineIlluminated = DX11Pipeline::Create(pipelineSpecIlluminated);
 
 	/**** END Pipeline Illuminated ****/
 
 	/**** BEGIN Create meshes with materials ****
 
-	Hazel::Ref<DX11Material> materialIlluminated = Hazel::Ref<DX11Material>::Create(pipelineIlluminated, "Material Illuminated");
-	Hazel::Ref<DX11Material> materialUnlit = Hazel::Ref<DX11Material>::Create(pipelineIlluminated, "Material Unlit");
+	H2M::Ref<DX11Material> materialIlluminated = H2M::Ref<DX11Material>::Create(pipelineIlluminated, "Material Illuminated");
+	H2M::Ref<DX11Material> materialUnlit = H2M::Ref<DX11Material>::Create(pipelineIlluminated, "Material Unlit");
 
-	Hazel::Ref<DX11Material> materialIlluminatedDerived = Hazel::Ref<DX11Material>::Create(materialIlluminated, "Material Illuminated Derived");
-	Hazel::Ref<DX11Material> materialUnlitDerived = Hazel::Ref<DX11Material>::Create(materialUnlit, "Material Unlit Derived");
+	H2M::Ref<DX11Material> materialIlluminatedDerived = H2M::Ref<DX11Material>::Create(materialIlluminated, "Material Illuminated Derived");
+	H2M::Ref<DX11Material> materialUnlitDerived = H2M::Ref<DX11Material>::Create(materialUnlit, "Material Unlit Derived");
 
 	// BEGIN prepare data for rendering meshes with materials (render objects and the list of materials)
 	// std::vector<RenderObject> DX11TestLayer::s_RenderObjectsWithMaterials;
-	// std::vector<Hazel::Ref<DX11Material>> DX11TestLayer::s_ListMaterials;
+	// std::vector<H2M::Ref<DX11Material>> DX11TestLayer::s_ListMaterials;
 
 	s_ListMaterials.reserve(32); // reserve 32 slots
 
-	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureBarrel       = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/barrel.jpg");
-	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureHouseBrick   = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/house_brick.jpg");
-	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureHouseWindows = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/house_windows.jpg");
-	Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> textureHouseWood    = ResourceManager::LoadTexture2DHazelLegacy("Textures/PardCode/house_wood.jpg");
+	H2M::Ref<H2M::Texture2DH2M> textureBarrel       = ResourceManager::LoadTexture2DH2M("Textures/PardCode/barrel.jpg");
+	H2M::Ref<H2M::Texture2DH2M> textureHouseBrick   = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_brick.jpg");
+	H2M::Ref<H2M::Texture2DH2M> textureHouseWindows = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_windows.jpg");
+	H2M::Ref<H2M::Texture2DH2M> textureHouseWood    = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_wood.jpg");
 
-	Hazel::Ref<DX11Material> materialBarrel       = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material Barrel");
-	Hazel::Ref<DX11Material> materialHouseBrick   = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Brick");
-	Hazel::Ref<DX11Material> materialHouseWindows = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Windows");
-	Hazel::Ref<DX11Material> materialHouseWood    = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Wood");
+	H2M::Ref<DX11Material> materialBarrel       = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material Barrel");
+	H2M::Ref<DX11Material> materialHouseBrick   = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Brick");
+	H2M::Ref<DX11Material> materialHouseWindows = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Windows");
+	H2M::Ref<DX11Material> materialHouseWood    = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Wood");
 
 	materialBarrel->AddTexture(textureBarrel.As<DX11Texture2D>());
 	materialHouseBrick->AddTexture(textureHouseBrick.As<DX11Texture2D>());
@@ -222,7 +222,7 @@ void DX11TestLayer::OnAttach()
 	s_ListMaterials.push_back(materialHouseWood);
 
 	RenderObject renderObjectHouse;
-	renderObjectHouse.MeshDX11 = Hazel::Ref<DX11Mesh>::Create(L"Models/PardCode/house.obj");
+	renderObjectHouse.MeshDX11 = H2M::Ref<DX11Mesh>::Create(L"Models/PardCode/house.obj");
 	renderObjectHouse.Transform = glm::mat4(1.0f);
 	renderObjectHouse.Transform = glm::translate(renderObjectHouse.Transform, glm::vec3(0.0f, 0.0f, -20.0f));
 	renderObjectHouse.Transform = glm::scale(renderObjectHouse.Transform, glm::vec3(6.0f));
@@ -237,7 +237,7 @@ void DX11TestLayer::OnDetach()
 {
 }
 
-void DX11TestLayer::OnUpdate(Hazel::Timestep ts)
+void DX11TestLayer::OnUpdate(H2M::Timestep ts)
 {
 	bool windowInFocus = Application::Get()->GetWindow()->IsInFocus();
 	bool cameraEnabled = windowInFocus; // && !m_ShowMouseCursor;
@@ -424,23 +424,23 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 
 			EntitySelection::s_SelectionContext.clear();
 
-			auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponentHazelLegacy>();
+			auto meshEntities = s_Scene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
 			for (auto e : meshEntities)
 			{
-				Hazel::EntityHazelLegacy entity = { e, s_Scene.Raw() };
-				auto mesh = entity.GetComponent<Hazel::MeshComponentHazelLegacy>().Mesh;
+				H2M::EntityH2M entity = { e, s_Scene.Raw() };
+				auto mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
 				if (!mesh) {
 					continue;
 				}
 
-				std::vector<Hazel::Ref<Hazel::SubmeshHazelLegacy>> submeshes = mesh->GetSubmeshes();
+				std::vector<H2M::Ref<H2M::SubmeshH2M>> submeshes = mesh->GetSubmeshes();
 				float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
-				// for (Hazel::Submesh& submesh : submeshes)
+				// for (H2M::Submesh& submesh : submeshes)
 				for (uint32_t i = 0; i < submeshes.size(); i++)
 				{
-					Hazel::Ref<Hazel::SubmeshHazelLegacy> submesh = submeshes[i];
-					auto transform = entity.GetComponent<Hazel::TransformComponentHazelLegacy>().GetTransform();
-					Hazel::Ray ray = {
+					H2M::Ref<H2M::SubmeshH2M> submesh = submeshes[i];
+					auto transform = entity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
+					H2M::Ray ray = {
 						glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
 						glm::inverse(glm::mat3(transform) * glm::mat3(submesh->Transform)) * direction
 					};
@@ -449,7 +449,7 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 					bool intersects = ray.IntersectsAABB(submesh->BoundingBox, t);
 					if (intersects)
 					{
-						const auto& triangleCache = ((Hazel::MeshHazelLegacy*)mesh.Raw())->GetTriangleCache(i);
+						const auto& triangleCache = ((H2M::MeshH2M*)mesh.Raw())->GetTriangleCache(i);
 						if (triangleCache.size())
 						{
 							for (const auto& triangle : triangleCache)
@@ -478,7 +478,7 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 				OnSelected(EntitySelection::s_SelectionContext[0]);
 			}
 			else {
-				Ref<Hazel::EntityHazelLegacy> meshEntity = GetMeshEntity();
+				Ref<H2M::EntityH2M> meshEntity = GetMeshEntity();
 				if (meshEntity) {
 					s_CurrentlySelectedTransform = meshEntity->Transform().GetTransform();
 				}
@@ -537,14 +537,14 @@ void DX11TestLayer::OnSelected(const SelectedSubmesh& selectionContext)
 	s_Scene->SetSelectedEntity(selectionContext.Entity);
 }
 
-Ref<Hazel::EntityHazelLegacy> DX11TestLayer::GetMeshEntity()
+Ref<H2M::EntityH2M> DX11TestLayer::GetMeshEntity()
 {
-	Ref<Hazel::EntityHazelLegacy> meshEntity;
-	auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponent>();
+	Ref<H2M::EntityH2M> meshEntity;
+	auto meshEntities = s_Scene->GetAllEntitiesWith<H2M::MeshComponent>();
 	if (meshEntities.size()) {
 		for (auto entt : meshEntities)
 		{
-			meshEntity = CreateRef<Hazel::EntityHazelLegacy>(entt, s_Scene.Raw());
+			meshEntity = CreateRef<H2M::EntityH2M>(entt, s_Scene.Raw());
 		}
 		return meshEntity;
 	}

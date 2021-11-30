@@ -213,27 +213,27 @@ void DX11MoravaFramebuffer::CreateAttachmentDepth(unsigned int width, unsigned i
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	//	if (attachmentType == AttachmentType::Texture)
-	//		m_AttachmentDepth = Hazel::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
+	//		m_AttachmentDepth = H2M::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	//	else if (attachmentType == AttachmentType::Renderbuffer)
-	//		m_AttachmentDepth = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
+	//		m_AttachmentDepth = H2M::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
 void DX11MoravaFramebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentStencil = Hazel::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
+		m_AttachmentStencil = H2M::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
+		m_AttachmentStencil = H2M::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
 void DX11MoravaFramebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentDepthAndStencil = Hazel::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
+		m_AttachmentDepthAndStencil = H2M::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentDepthAndStencil = Hazel::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
+		m_AttachmentDepthAndStencil = H2M::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
 void DX11MoravaFramebuffer::Bind() const
@@ -285,7 +285,7 @@ FramebufferTexture* DX11MoravaFramebuffer::GetTextureAttachmentColor(unsigned in
 	return m_TextureAttachmentsColor.at(orderID);
 }
 
-Hazel::Ref<Attachment> DX11MoravaFramebuffer::GetAttachmentDepth()
+H2M::Ref<Attachment> DX11MoravaFramebuffer::GetAttachmentDepth()
 {
 	if (!m_AttachmentDepth)
 	{
@@ -295,7 +295,7 @@ Hazel::Ref<Attachment> DX11MoravaFramebuffer::GetAttachmentDepth()
 	return m_AttachmentDepth;
 }
 
-Hazel::Ref<Attachment> DX11MoravaFramebuffer::GetAttachmentStencil()
+H2M::Ref<Attachment> DX11MoravaFramebuffer::GetAttachmentStencil()
 {
 	if (!m_AttachmentStencil)
 	{
@@ -304,7 +304,7 @@ Hazel::Ref<Attachment> DX11MoravaFramebuffer::GetAttachmentStencil()
 	return m_AttachmentStencil;
 }
 
-Hazel::Ref<Attachment> DX11MoravaFramebuffer::GetAttachmentDepthAndStencil()
+H2M::Ref<Attachment> DX11MoravaFramebuffer::GetAttachmentDepthAndStencil()
 {
 	if (!m_AttachmentDepthAndStencil)
 	{
@@ -314,7 +314,7 @@ Hazel::Ref<Attachment> DX11MoravaFramebuffer::GetAttachmentDepthAndStencil()
 	return m_AttachmentDepthAndStencil;
 }
 
-Hazel::Ref<MoravaFramebuffer> DX11MoravaFramebuffer::Create(const FramebufferSpecification& spec)
+H2M::Ref<MoravaFramebuffer> DX11MoravaFramebuffer::Create(const FramebufferSpecification& spec)
 {
 	return MoravaFramebuffer::Create(spec);
 }
@@ -350,32 +350,32 @@ void DX11MoravaFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot)
 	m_TextureAttachmentsColor.at(attachmentIndex)->Bind(slot);
 }
 
-Hazel::RendererID DX11MoravaFramebuffer::GetRendererID() const
+H2M::RendererID DX11MoravaFramebuffer::GetRendererID() const
 {
 	return m_FBO;
 }
 
-Hazel::Ref<Hazel::HazelImage2D> DX11MoravaFramebuffer::GetImage(uint32_t attachmentIndex) const
+H2M::Ref<H2M::HazelImage2D> DX11MoravaFramebuffer::GetImage(uint32_t attachmentIndex) const
 {
-	return Hazel::Ref<Hazel::HazelImage2D>();
+	return H2M::Ref<H2M::HazelImage2D>();
 }
 
-Hazel::Ref<Hazel::HazelImage2D> DX11MoravaFramebuffer::GetDepthImage() const
+H2M::Ref<H2M::HazelImage2D> DX11MoravaFramebuffer::GetDepthImage() const
 {
-	return Hazel::Ref<Hazel::HazelImage2D>();
+	return H2M::Ref<H2M::HazelImage2D>();
 }
 
-//	Hazel::RendererID DX11MoravaFramebuffer::GetColorAttachmentRendererID() const
+//	H2M::RendererID DX11MoravaFramebuffer::GetColorAttachmentRendererID() const
 //	{
-//		return Hazel::RendererID();
+//		return H2M::RendererID();
 //	}
 
-//	Hazel::RendererID DX11MoravaFramebuffer::GetDepthAttachmentRendererID() const
+//	H2M::RendererID DX11MoravaFramebuffer::GetDepthAttachmentRendererID() const
 //	{
-//		return Hazel::RendererID();
+//		return H2M::RendererID();
 //	}
 
-const Hazel::HazelFramebufferSpecification& DX11MoravaFramebuffer::GetSpecification() const
+const H2M::HazelFramebufferSpecification& DX11MoravaFramebuffer::GetSpecification() const
 {
 	return m_HazelFramebufferSpecs;
 }

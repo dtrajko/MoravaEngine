@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/HazelRenderer.h"
 
 #include "DX11.h"
 #include "DX11Device.h"
@@ -21,7 +21,7 @@
 
 struct GLFWwindow;
 
-class DX11Context : public Hazel::RendererContext
+class DX11Context : public H2M::RendererContext
 {
 public:
 	DX11Context(Window* window);
@@ -34,17 +34,17 @@ public:
 
 	virtual void BeginFrame() override;
 
-	Hazel::Ref<DX11Device> GetDevice() { return m_Device; }
+	H2M::Ref<DX11Device> GetDevice() { return m_Device; }
 	std::shared_ptr<DX11SwapChain> GetSwapChain() { return m_SwapChain; }
 
-	// static Hazel::Ref<DX11Context> Get() { return Hazel::Ref<DX11Context>(Hazel::HazelRenderer::GetContext()); }
-	Hazel::Ref<DX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
+	// static H2M::Ref<DX11Context> Get() { return H2M::Ref<DX11Context>(H2M::HazelRenderer::GetContext()); }
+	H2M::Ref<DX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
 	IDXGIFactory* GetIDXGIFactory() { return m_IDXGI_Factory; };
 	ID3D11DeviceContext* GetDX11DeviceContext() { return m_DX11DeviceContext; };
 
 	// ---------------------------------------------------------------
 
-	static Hazel::Ref<DX11Context> Get() { return Hazel::Ref<DX11Context>(Hazel::HazelRenderer::GetContext()); }
+	static H2M::Ref<DX11Context> Get() { return H2M::Ref<DX11Context>(H2M::HazelRenderer::GetContext()); }
 
 	ID3D11Device* GetDX11Device() { return m_DX11Device; }
 
@@ -67,8 +67,8 @@ private:
 	Window* m_Window;
 
 	// Devices
-	Hazel::Ref<DX11PhysicalDevice> m_PhysicalDevice;
-	Hazel::Ref<DX11Device> m_Device;
+	H2M::Ref<DX11PhysicalDevice> m_PhysicalDevice;
+	H2M::Ref<DX11Device> m_Device;
 
 	std::shared_ptr<DX11SwapChain> m_SwapChain;
 

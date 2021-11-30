@@ -6,17 +6,17 @@
 std::map<std::string, std::string> ResourceManager::s_TextureInfo;
 std::map<std::string, TextureInfo> ResourceManager::s_MaterialInfo;
 
-std::map<std::string, Hazel::Ref<MoravaTexture>> ResourceManager::s_Textures;
-std::map<std::string, Hazel::Ref<Material>> ResourceManager::s_Materials;
+std::map<std::string, H2M::Ref<MoravaTexture>> ResourceManager::s_Textures;
+std::map<std::string, H2M::Ref<Material>> ResourceManager::s_Materials;
 
 float ResourceManager::s_MaterialSpecular = 1.0f;
 float ResourceManager::s_MaterialShininess = 256.0f;
 
-std::map<std::string, Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>> ResourceManager::s_HazelTextures2D;
+std::map<std::string, H2M::Ref<H2M::Texture2DH2M>> ResourceManager::s_HazelTextures2D;
 
-std::map<std::string, Hazel::Ref<MoravaShader>> ResourceManager::s_ShaderCacheByTitle;
+std::map<std::string, H2M::Ref<MoravaShader>> ResourceManager::s_ShaderCacheByTitle;
 
-std::map<std::string, Hazel::Ref<MoravaShader>> ResourceManager::s_ShadersCacheByFilepath;
+std::map<std::string, H2M::Ref<MoravaShader>> ResourceManager::s_ShadersCacheByFilepath;
 
 
 void ResourceManager::Init()
@@ -276,17 +276,17 @@ void ResourceManager::LoadTexture(std::string name, std::string filePath, GLenum
 
 void ResourceManager::LoadMaterial(std::string name, TextureInfo textureInfo)
 {
-    s_Materials.insert(std::make_pair(name, Hazel::Ref<Material>::Create(textureInfo, s_MaterialSpecular, s_MaterialShininess)));
+    s_Materials.insert(std::make_pair(name, H2M::Ref<Material>::Create(textureInfo, s_MaterialSpecular, s_MaterialShininess)));
 }
 
-Hazel::Ref<MoravaTexture> ResourceManager::HotLoadTexture(std::string textureName)
+H2M::Ref<MoravaTexture> ResourceManager::HotLoadTexture(std::string textureName)
 {
     // Load texture if not available in textures map
     auto textureInfoIterator = s_TextureInfo.find(textureName);
     auto textureIterator = s_Textures.find(textureName);
 
     if (textureInfoIterator == s_TextureInfo.end())
-        return Hazel::Ref<MoravaTexture>();
+        return H2M::Ref<MoravaTexture>();
 
     if (textureIterator != s_Textures.end())
         return textureIterator->second;
@@ -296,19 +296,19 @@ Hazel::Ref<MoravaTexture> ResourceManager::HotLoadTexture(std::string textureNam
     textureIterator = s_Textures.find(textureName);
 
     if (textureIterator == s_Textures.end())
-        return Hazel::Ref<MoravaTexture>();
+        return H2M::Ref<MoravaTexture>();
 
     return textureIterator->second;
 }
 
-Hazel::Ref<Material> ResourceManager::HotLoadMaterial(std::string materialName)
+H2M::Ref<Material> ResourceManager::HotLoadMaterial(std::string materialName)
 {
     // Load Material if not available in materials map
     auto materialInfoIterator = s_MaterialInfo.find(materialName);
     auto materialIterator = s_Materials.find(materialName);
 
     if (materialInfoIterator == s_MaterialInfo.end()) {
-        return Hazel::Ref<Material>();
+        return H2M::Ref<Material>();
     }
 
     if (materialIterator != s_Materials.end()) {
@@ -320,17 +320,17 @@ Hazel::Ref<Material> ResourceManager::HotLoadMaterial(std::string materialName)
     materialIterator = s_Materials.find(materialName);
 
     if (materialIterator == s_Materials.end()) {
-        return Hazel::Ref<Material>();
+        return H2M::Ref<Material>();
     }
 
     return materialIterator->second;
 }
 
-Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> ResourceManager::LoadTexture2DHazelLegacy(std::string filePath)
+H2M::Ref<H2M::Texture2DH2M> ResourceManager::LoadTexture2DH2M(std::string filePath)
 {
-    Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> texture;
+    H2M::Ref<H2M::Texture2DH2M> texture;
 
-    std::map<std::string, Hazel::Ref<HazelLegacy::Texture2DHazelLegacy>>::iterator entry = s_HazelTextures2D.find(filePath);
+    std::map<std::string, H2M::Ref<H2M::Texture2DH2M>>::iterator entry = s_HazelTextures2D.find(filePath);
     if (entry != s_HazelTextures2D.end()) {
         // A cache HIT
         texture = entry->second;
@@ -340,7 +340,7 @@ Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> ResourceManager::LoadTexture2DHaze
         // A cache MISS
         try
         {
-            texture = HazelLegacy::Texture2DHazelLegacy::Create(filePath);
+            texture = H2M::Texture2DH2M::Create(filePath);
             s_HazelTextures2D.insert(std::make_pair(filePath, texture));
             Log::GetLogger()->info("ResourceManager: A texture created and stored in cache [key: '{0}']", filePath);
         }
@@ -353,27 +353,27 @@ Hazel::Ref<HazelLegacy::Texture2DHazelLegacy> ResourceManager::LoadTexture2DHaze
     return texture;
 }
 
-void ResourceManager::AddShader(std::string name, Hazel::Ref<MoravaShader> shader)
+void ResourceManager::AddShader(std::string name, H2M::Ref<MoravaShader> shader)
 {
     if (s_ShaderCacheByTitle.find(name) == s_ShaderCacheByTitle.end()) {
         s_ShaderCacheByTitle.insert(std::make_pair(name, shader));
     }
 }
 
-const Hazel::Ref<MoravaShader>& ResourceManager::GetShader(std::string name)
+const H2M::Ref<MoravaShader>& ResourceManager::GetShader(std::string name)
 {
     if (s_ShaderCacheByTitle.find(name) != s_ShaderCacheByTitle.end()) {
         return s_ShaderCacheByTitle.find(name)->second;
     }
-    return Hazel::Ref<MoravaShader>();
+    return H2M::Ref<MoravaShader>();
 }
 
-const Hazel::Ref<MoravaShader>& ResourceManager::CreateOrLoadShader(MoravaShaderSpecification moravaShaderSpecification)
+const H2M::Ref<MoravaShader>& ResourceManager::CreateOrLoadShader(MoravaShaderSpecification moravaShaderSpecification)
 {
-    Hazel::Ref<MoravaShader> moravaShader;
+    H2M::Ref<MoravaShader> moravaShader;
 
     std::string pixelShaderPath = moravaShaderSpecification.PixelShaderPath;
-    std::map<std::string, Hazel::Ref<MoravaShader>>::iterator entry = s_ShadersCacheByFilepath.find(pixelShaderPath);
+    std::map<std::string, H2M::Ref<MoravaShader>>::iterator entry = s_ShadersCacheByFilepath.find(pixelShaderPath);
     if (entry != s_ShadersCacheByFilepath.end()) {
         // A cache HIT
         moravaShader = entry->second;

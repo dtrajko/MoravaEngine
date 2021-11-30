@@ -1,17 +1,17 @@
 #pragma once
 
-#include "Hazel/Scene/HazelScene.h"
+#include "H2M/Scene/HazelScene.h"
 
-#include "HazelLegacy/Renderer/MeshHazelLegacy.h"
-#include "HazelLegacy/Scene/EntityHazelLegacy.h"
+#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Scene/EntityH2M.h"
 
 #include <vector>
 
 
 struct SelectedSubmesh
 {
-	Hazel::EntityHazelLegacy Entity;
-	Hazel::Ref<Hazel::SubmeshHazelLegacy> Mesh;
+	H2M::EntityH2M Entity;
+	H2M::Ref<H2M::SubmeshH2M> Mesh;
 	float Distance;
 };
 
