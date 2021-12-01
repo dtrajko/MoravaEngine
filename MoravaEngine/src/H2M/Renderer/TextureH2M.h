@@ -47,13 +47,13 @@ namespace H2M {
 	class Texture2DH2M : public TextureH2M
 	{
 	public:
-		static H2M::Ref<Texture2DH2M> Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr, H2M::TextureProperties properties = H2M::TextureProperties());
-		static H2M::Ref<Texture2DH2M> Create(const std::string& path, H2M::TextureProperties properties = H2M::TextureProperties());
+		static H2M::RefH2M<Texture2DH2M> Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr, H2M::TextureProperties properties = H2M::TextureProperties());
+		static H2M::RefH2M<Texture2DH2M> Create(const std::string& path, H2M::TextureProperties properties = H2M::TextureProperties());
 
-		// static H2M::Ref<Texture2DH2M> Create(const std::string& path, bool srgb = false);
-		// static H2M::Ref<Texture2DH2M> Create(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrap wrap = TextureWrap::Clamp);
+		// static H2M::RefH2M<Texture2DH2M> Create(const std::string& path, bool srgb = false);
+		// static H2M::RefH2M<Texture2DH2M> Create(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrap wrap = TextureWrap::Clamp);
 
-		virtual H2M::Ref<H2M::HazelImage2D> GetImage() const = 0;
+		virtual H2M::RefH2M<H2M::HazelImage2D> GetImage() const = 0;
 
 		virtual void Lock() = 0;
 		virtual void Unlock() = 0;
@@ -74,11 +74,11 @@ namespace H2M {
 	class TextureCubeH2M : public TextureH2M
 	{
 	public:
-		static H2M::Ref<TextureCubeH2M> Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr);
-		static H2M::Ref<TextureCubeH2M> Create(const std::string& path);
+		static H2M::RefH2M<TextureCubeH2M> Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr);
+		static H2M::RefH2M<TextureCubeH2M> Create(const std::string& path);
 
 		// Used only by the OpenGL EnvMap scene. Scheduled for removal.
-		static H2M::Ref<TextureCubeH2M> Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, bool notUsed);
+		static H2M::RefH2M<TextureCubeH2M> Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, bool notUsed);
 
 		virtual const std::string& GetPath() const { return std::string{}; };
 

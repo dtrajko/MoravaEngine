@@ -27,8 +27,8 @@ public:
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
-    inline H2M::Ref<MoravaFramebuffer> GetRenderFramebuffer() { return m_RenderFramebuffer; };
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+    inline H2M::RefH2M<MoravaFramebuffer> GetRenderFramebuffer() { return m_RenderFramebuffer; };
 
 private:
 	virtual void SetupTextures()   override;
@@ -40,11 +40,11 @@ private:
     void SetupRenderFramebuffer();
 	void AddLightsToSceneObjects();
 
-	void RenderLightSources(H2M::Ref<MoravaShader> shader);
-	void RenderSkybox(H2M::Ref<MoravaShader> shader);
-	void RenderLineElements(H2M::Ref<MoravaShader> shader, glm::mat4 projectionMatrix);
-	void RenderFramebufferTextures(H2M::Ref<MoravaShader> shader);
-	void RenderGlassObjects(H2M::Ref<MoravaShader> shader);
+	void RenderLightSources(H2M::RefH2M<MoravaShader> shader);
+	void RenderSkybox(H2M::RefH2M<MoravaShader> shader);
+	void RenderLineElements(H2M::RefH2M<MoravaShader> shader, glm::mat4 projectionMatrix);
+	void RenderFramebufferTextures(H2M::RefH2M<MoravaShader> shader);
+	void RenderGlassObjects(H2M::RefH2M<MoravaShader> shader);
 	void SetGeometry();
 	void CleanupGeometry();
 	inline Raycast* GetRaycast() const { return m_Raycast; };
@@ -60,11 +60,11 @@ private:
 	Mesh* CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* name);
 	Model* AddNewModel(int modelID, glm::vec3 scale);
 	SceneObjectParticleSystem* AddNewSceneObjectParticleSystem(int objectTypeID, glm::vec3 scale);
-	void SetUniformsShaderEditorPBR(H2M::Ref<MoravaShader> shaderEditorPBR, H2M::Ref<MoravaTexture> texture, H2M::Ref<Material> material, SceneObject* sceneObject);
-	void SetUniformsShaderEditor(H2M::Ref<MoravaShader> shaderEditor, H2M::Ref<MoravaTexture> texture, SceneObject* sceneObject);
-	void SetUniformsShaderSkinning(H2M::Ref<MoravaShader> shaderSkinning, SceneObject* sceneObject, float runningTime);
-	void SetUniformsShaderHybridAnimPBR(H2M::Ref<MoravaShader> shaderHybridAnimPBR, H2M::Ref<MoravaTexture> texture, SceneObject* sceneObject, float runningTime);
-	void SetUniformsShaderWater(H2M::Ref<MoravaShader> shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
+	void SetUniformsShaderEditorPBR(H2M::RefH2M<MoravaShader> shaderEditorPBR, H2M::RefH2M<MoravaTexture> texture, H2M::RefH2M<Material> material, SceneObject* sceneObject);
+	void SetUniformsShaderEditor(H2M::RefH2M<MoravaShader> shaderEditor, H2M::RefH2M<MoravaTexture> texture, SceneObject* sceneObject);
+	void SetUniformsShaderSkinning(H2M::RefH2M<MoravaShader> shaderSkinning, SceneObject* sceneObject, float runningTime);
+	void SetUniformsShaderHybridAnimPBR(H2M::RefH2M<MoravaShader> shaderHybridAnimPBR, H2M::RefH2M<MoravaTexture> texture, SceneObject* sceneObject, float runningTime);
+	void SetUniformsShaderWater(H2M::RefH2M<MoravaShader> shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix);
 	void SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix);
 	glm::mat4 CalculateRenderTransform(SceneObject* sceneObject);
 	virtual bool IsWaterOnScene() override;
@@ -176,7 +176,7 @@ private:
 	bool m_ViewportFocused;
 	bool m_ViewportHovered;
 
-	H2M::Ref<MoravaFramebuffer> m_RenderFramebuffer;
+	H2M::RefH2M<MoravaFramebuffer> m_RenderFramebuffer;
 
 	std::map<std::string, unsigned int> m_SamplerSlots;
 
@@ -186,7 +186,7 @@ private:
 
 	// experimental section (OpenFile dialog)
 	std::string m_LoadedFile;
-	H2M::Ref<MoravaTexture> m_LoadedTexture;
+	H2M::RefH2M<MoravaTexture> m_LoadedTexture;
 	std::string m_LoadedTextureFilepath;
 	bool m_UseLoadedTexture;
 

@@ -50,10 +50,10 @@ public:
 	GBufferSSAO m_GBufferSSAO;
 
 	// Shaders
-	H2M::Ref<MoravaShader> m_ShaderGeometryPass;
-	H2M::Ref<MoravaShader> m_ShaderLightingPass;
-	H2M::Ref<MoravaShader> m_ShaderSSAO;
-	H2M::Ref<MoravaShader> m_ShaderSSAOBlur;
+	H2M::RefH2M<MoravaShader> m_ShaderGeometryPass;
+	H2M::RefH2M<MoravaShader> m_ShaderLightingPass;
+	H2M::RefH2M<MoravaShader> m_ShaderSSAO;
+	H2M::RefH2M<MoravaShader> m_ShaderSSAOBlur;
 
 	// SSAO processing stage
 	unsigned int m_SSAO_FBO;
@@ -75,7 +75,7 @@ public:
 private:
 	std::vector<glm::vec3> m_SSAO_Kernel;
 
-	H2M::Ref<QuadSSAO> m_QuadSSAO;
+	H2M::RefH2M<QuadSSAO> m_QuadSSAO;
 
 	uint32_t m_Width;
 	uint32_t m_Height;

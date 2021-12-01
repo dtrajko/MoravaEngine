@@ -10,7 +10,7 @@
 #include "H2M/Renderer/HazelCamera.h"
 
 
-class DX11CameraFP : public H2M::HazelCamera, public DX11InputListener
+class DX11CameraFP : public H2M::CameraH2M, public DX11InputListener
 {
 public:
 	DX11CameraFP();

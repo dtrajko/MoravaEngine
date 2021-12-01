@@ -36,13 +36,13 @@ struct RenderObject
 		Unlit,
 		Light,
 	};
-	H2M::Ref<H2M::MeshH2M> Mesh;
-	H2M::Ref<DX11Mesh> MeshDX11;
-	std::vector<H2M::Ref<H2M::Texture2DH2M>> Textures;
+	H2M::RefH2M<H2M::MeshH2M> Mesh;
+	H2M::RefH2M<DX11Mesh> MeshDX11;
+	std::vector<H2M::RefH2M<H2M::Texture2DH2M>> Textures;
 	glm::mat4 Transform;
 	PipelineType PipelineType;
 	H2M::EntityH2M Entity;
-	// std::vector<H2M::Ref<DX11Material>> Materials; // we probably need some kind of <Submesh, Material> map here
+	// std::vector<H2M::RefH2M<DX11Material>> Materials; // we probably need some kind of <Submesh, Material> map here
 };
 
 class DX11TestLayer : public MoravaLayer, public DX11InputListener
@@ -90,12 +90,12 @@ public:
 	Ref<H2M::EntityH2M> GetMeshEntity();
 
 public:
-	static H2M::Ref<DX11Mesh> s_Mesh;
-	static H2M::Ref<H2M::MeshH2M> s_MeshLight;
-	static H2M::Ref<H2M::MeshH2M> s_SkyboxSphere;
+	static H2M::RefH2M<DX11Mesh> s_Mesh;
+	static H2M::RefH2M<H2M::MeshH2M> s_MeshLight;
+	static H2M::RefH2M<H2M::MeshH2M> s_SkyboxSphere;
 	// render meshes with materials
 	static std::vector<RenderObject> s_RenderObjectsWithMaterials;
-	static std::vector<H2M::Ref<DX11Material>> s_ListMaterials;
+	static std::vector<H2M::RefH2M<DX11Material>> s_ListMaterials;
 
 	static ImGuizmo::OPERATION s_ImGuizmoType;
 	static bool s_LeftControlKeyPressed;
@@ -104,7 +104,7 @@ public:
 	static bool s_ShowWindowAssetManager;
 	static bool s_ShowWindowMaterialEditor;
 
-	static H2M::Ref<H2M::SceneH2M> s_Scene; // the Scene object provides the ECS registry
+	static H2M::RefH2M<H2M::SceneH2M> s_Scene; // the Scene object provides the ECS registry
 
 	static glm::mat4 s_CurrentlySelectedTransform;
 

@@ -58,7 +58,7 @@ void DX11Context::Create()
 
 	InitRasterizerState();
 
-	m_Device = H2M::Ref<DX11Device>::Create(m_PhysicalDevice);
+	m_Device = H2M::RefH2M<DX11Device>::Create(m_PhysicalDevice);
 
 	CreateSwapChain(m_Window->GetHWND(), m_Window->GetWidth(), m_Window->GetHeight());
 }

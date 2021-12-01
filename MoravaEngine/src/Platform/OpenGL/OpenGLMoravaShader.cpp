@@ -49,25 +49,25 @@ OpenGLMoravaShader::OpenGLMoravaShader(const char* computeLocation, bool forceCo
 	CompileProgram();
 }
 
-H2M::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+H2M::RefH2M<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 {
-	H2M::Ref<OpenGLMoravaShader> result = H2M::Ref<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
+	H2M::RefH2M<OpenGLMoravaShader> result = H2M::RefH2M<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
 
 	s_AllShaders.push_back(result);
 	return result;
 }
 
-H2M::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
+H2M::RefH2M<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
 {
-	H2M::Ref<OpenGLMoravaShader> result = H2M::Ref<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
+	H2M::RefH2M<OpenGLMoravaShader> result = H2M::RefH2M<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
 
 	s_AllShaders.push_back(result);
 	return result;
 }
 
-H2M::Ref<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* computeLocation, bool forceCompile)
+H2M::RefH2M<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* computeLocation, bool forceCompile)
 {
-	H2M::Ref<OpenGLMoravaShader> result = H2M::Ref<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
+	H2M::RefH2M<OpenGLMoravaShader> result = H2M::RefH2M<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
 
 	s_AllShaders.push_back(result);
 	return result;

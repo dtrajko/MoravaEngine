@@ -13,8 +13,8 @@ public:
 	~VulkanSkyboxCube();
 
 public:
-	H2M::Ref<H2M::VertexBuffer> m_VertexBuffer;
-	H2M::Ref<H2M::IndexBuffer> m_IndexBuffer;
+	H2M::RefH2M<H2M::VertexBuffer> m_VertexBuffer;
+	H2M::RefH2M<H2M::IndexBuffer> m_IndexBuffer;
 
 	uint32_t m_IndexCount;
 

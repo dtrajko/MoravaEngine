@@ -70,18 +70,18 @@ void WindowsWindow::Init(const WindowProps& props)
 
 	Log::GetLogger()->info("Creating window - title: '{0}', size: [{1}x{2}]", props.Title, props.Width, props.Height);
 
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-	case H2M::RendererAPIH2MType::OpenGL:
-	case H2M::RendererAPIH2MType::Vulkan:
+	case H2M::RendererAPITypeH2M::OpenGL:
+	case H2M::RendererAPITypeH2M::Vulkan:
 		InitGLFW(props);
 		break;
-	case H2M::RendererAPIH2MType::DX11:
+	case H2M::RendererAPITypeH2M::DX11:
 		InitDX11(props);
 		break;
 	}
 
-	m_RendererContext = H2M::Ref<H2M::RendererContext>(H2M::RendererContext::Create(this));
+	m_RendererContext = H2M::RefH2M<H2M::RendererContext>(H2M::RendererContext::Create(this));
 	m_RendererContext->Create();
 
 	RendererBasic::SetRendererContext(m_RendererContext);
@@ -134,7 +134,7 @@ void WindowsWindow::InitGLFW(const WindowProps& props)
 	// Allow forward compatibility
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-	if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::Vulkan)
+	if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
 	{
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	}
@@ -166,10 +166,10 @@ inline std::pair<float, float> WindowsWindow::GetWindowPos() const
 
 void WindowsWindow::ProcessEvents()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-	case H2M::RendererAPIH2MType::OpenGL:
-	case H2M::RendererAPIH2MType::Vulkan:
+	case H2M::RendererAPITypeH2M::OpenGL:
+	case H2M::RendererAPITypeH2M::Vulkan:
 	{
 		glfwPollEvents();
 
@@ -178,7 +178,7 @@ void WindowsWindow::ProcessEvents()
 		glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 	break;
-	case H2M::RendererAPIH2MType::DX11:
+	case H2M::RendererAPITypeH2M::DX11:
 		Broadcast();
 		break;
 	}
@@ -191,7 +191,7 @@ void WindowsWindow::SwapBuffers()
 
 void WindowsWindow::SetVSync(bool enabled)
 {
-	if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+	if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 	{
 		if (enabled) {
 			glfwSwapInterval(1);
@@ -349,7 +349,7 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 // Used only for DirectX 11
 bool WindowsWindow::Broadcast()
 {
-	if (H2M::RendererAPIH2M::Current() != H2M::RendererAPIH2MType::DX11) return true;
+	if (H2M::RendererAPI_H2M::Current() != H2M::RendererAPITypeH2M::DX11) return true;
 
 	MSG msg;
 
@@ -491,17 +491,17 @@ RECT WindowsWindow::GetSizeScreen()
 
 void WindowsWindow::Shutdown()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::OpenGL:
-		case H2M::RendererAPIH2MType::Vulkan:
+		case H2M::RendererAPITypeH2M::OpenGL:
+		case H2M::RendererAPITypeH2M::Vulkan:
 		{
 			glfwDestroyWindow(m_GLFW_Window);
 			glfwTerminate();
 			s_GLFWInitialized = false;
 		}
 		break;
-		case H2M::RendererAPIH2MType::DX11:
+		case H2M::RendererAPITypeH2M::DX11:
 			Release();
 			break;
 		}
@@ -567,12 +567,12 @@ void WindowsWindow::SetCursorNormal()
 
 bool WindowsWindow::GetShouldClose()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-	case H2M::RendererAPIH2MType::OpenGL:
-	case H2M::RendererAPIH2MType::Vulkan:
+	case H2M::RendererAPITypeH2M::OpenGL:
+	case H2M::RendererAPITypeH2M::Vulkan:
 		return glfwWindowShouldClose(m_GLFW_Window);
-	case H2M::RendererAPIH2MType::DX11:
+	case H2M::RendererAPITypeH2M::DX11:
 		return !m_IsRunning;
 	default:
 		return true;

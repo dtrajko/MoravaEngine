@@ -11,7 +11,7 @@
 struct SelectedSubmesh
 {
 	H2M::EntityH2M Entity;
-	H2M::Ref<H2M::SubmeshH2M> Mesh;
+	H2M::RefH2M<H2M::SubmeshH2M> Mesh;
 	float Distance;
 };
 

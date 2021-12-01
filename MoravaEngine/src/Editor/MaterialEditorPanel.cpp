@@ -21,7 +21,7 @@ void MaterialEditorPanel::OnImGuiRender(bool* p_open)
 	unsigned int materialIndex = 0;
 	for (auto material_it = MaterialLibrary::s_EnvMapMaterials.begin(); material_it != MaterialLibrary::s_EnvMapMaterials.end();)
 	{
-		H2M::Ref<EnvMapMaterial> material = material_it->second;
+		H2M::RefH2M<EnvMapMaterial> material = material_it->second;
 		std::string materialName = material->GetName();
 		MaterialUUID materialUUID = material->GetUUID();
 
@@ -56,7 +56,7 @@ void MaterialEditorPanel::OnImGuiRender(bool* p_open)
 
 		if (materialClone) {
 			auto envMapMaterialSrc = MaterialLibrary::s_EnvMapMaterials.at(materialUUID);
-			H2M::Ref<EnvMapMaterial> envMapMaterialDst = H2M::Ref<EnvMapMaterial>::Create(MaterialLibrary::NewMaterialName(), envMapMaterialSrc);
+			H2M::RefH2M<EnvMapMaterial> envMapMaterialDst = H2M::RefH2M<EnvMapMaterial>::Create(MaterialLibrary::NewMaterialName(), envMapMaterialSrc);
 			MaterialLibrary::AddEnvMapMaterial(envMapMaterialDst->GetUUID(), envMapMaterialDst);
 		}
 

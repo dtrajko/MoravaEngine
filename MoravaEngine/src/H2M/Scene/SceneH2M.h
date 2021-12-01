@@ -77,9 +77,9 @@ namespace H2M {
 		void Init();
 
 		void OnUpdate(H2M::Timestep ts);
-		void OnRenderRuntime(H2M::Ref<SceneRendererH2M> renderer, H2M::Timestep ts);
-		void OnRenderEditor(H2M::Ref<SceneRendererH2M> renderer, H2M::Timestep ts, const H2M::EditorCamera& editorCamera);
-		void OnRenderSimulation(H2M::Ref<SceneRendererH2M> renderer, H2M::Timestep ts, const H2M::EditorCamera& editorCamera);
+		void OnRenderRuntime(H2M::RefH2M<SceneRendererH2M> renderer, H2M::Timestep ts);
+		void OnRenderEditor(H2M::RefH2M<SceneRendererH2M> renderer, H2M::Timestep ts, const H2M::EditorCamera& editorCamera);
+		void OnRenderSimulation(H2M::RefH2M<SceneRendererH2M> renderer, H2M::Timestep ts, const H2M::EditorCamera& editorCamera);
 		void OnEvent(Event& e);
 
 		// Runtime
@@ -96,15 +96,15 @@ namespace H2M {
 		template<typename T>
 		void OnComponentAdded(EntityH2M entity, T& component);
 
-		inline void SetCamera(const H2M::HazelCamera& camera) { m_Camera = camera; };
-		inline H2M::HazelCamera* GetCamera() { return &m_Camera; }
+		inline void SetCamera(const H2M::CameraH2M& camera) { m_Camera = camera; };
+		inline H2M::CameraH2M* GetCamera() { return &m_Camera; }
 
-		void SetSkyboxMaterial(H2M::Ref<MaterialH2M> skyboxMaterial) { m_SkyboxMaterial = skyboxMaterial; }
-		H2M::Ref<MaterialH2M> GetSkyboxMaterial() { return m_SkyboxMaterial; }
+		void SetSkyboxMaterial(H2M::RefH2M<MaterialH2M> skyboxMaterial) { m_SkyboxMaterial = skyboxMaterial; }
+		H2M::RefH2M<MaterialH2M> GetSkyboxMaterial() { return m_SkyboxMaterial; }
 
-		void SetEnvironment(H2M::Ref<Environment> environment);
-		inline H2M::Ref<Environment> GetEnvironment() { return m_Environment; }
-		void SetSkybox(const H2M::Ref<TextureCubeH2M>& skybox);
+		void SetEnvironment(H2M::RefH2M<Environment> environment);
+		inline H2M::RefH2M<Environment> GetEnvironment() { return m_Environment; }
+		void SetSkybox(const H2M::RefH2M<TextureCubeH2M>& skybox);
 
 		DirLightH2M& GetLight() { return m_Light; }
 		inline const DirLightH2M& GetLight() const { return m_Light; }
@@ -113,7 +113,7 @@ namespace H2M {
 		EntityH2M GetMainCameraEntity();
 
 		EntityH2M CreateEntity(const std::string& name = "");
-		EntityH2M CreateEntity(const std::string& name, H2M::Ref<SceneH2M> scene);
+		EntityH2M CreateEntity(const std::string& name, H2M::RefH2M<SceneH2M> scene);
 		EntityH2M CreateEntityWithID(UUID uuid, const std::string& name = "", bool runtimeMap = false);
 		void DestroyEntity(EntityH2M entity);
 		EntityH2M CloneEntity(EntityH2M entity);
@@ -142,11 +142,11 @@ namespace H2M {
 		// Temporary/experimental
 		virtual void OnEntitySelected(EntityH2M entity);
 
-		void CopyTo(H2M::Ref<SceneH2M>& target); // Working on Hazel LIVE! #14
+		void CopyTo(H2M::RefH2M<SceneH2M>& target); // Working on Hazel LIVE! #14
 
 		UUID GetUUID() const { return m_SceneID; }
 
-		static H2M::Ref<SceneH2M> GetScene(UUID uuid);
+		static H2M::RefH2M<SceneH2M> GetScene(UUID uuid);
 
 		void SetPhysics2DGravity(float gravity);
 		float GetPhysics2DGravity() const;
@@ -176,12 +176,12 @@ namespace H2M {
 
 		// MoravaShader* m_ShaderSkybox;
 
-		H2M::Ref<Environment> m_Environment;
+		H2M::RefH2M<Environment> m_Environment;
 		float m_EnvironmentIntensity = 1.0f;
-		H2M::Ref<H2M::TextureCubeH2M> m_SkyboxTexture;
+		H2M::RefH2M<H2M::TextureCubeH2M> m_SkyboxTexture;
 		MoravaShader* m_ShaderSkybox;
 
-		H2M::Ref<HazelMaterial> m_SkyboxMaterial;
+		H2M::RefH2M<HazelMaterial> m_SkyboxMaterial;
 
 		entt::entity m_SelectedEntity;
 
@@ -195,7 +195,7 @@ namespace H2M {
 
 		std::vector<std::function<void()>> m_PostUpdateQueue;
 
-		H2M::Ref<H2M::Renderer2D> m_SceneRenderer2D;
+		H2M::RefH2M<H2M::Renderer2D> m_SceneRenderer2D;
 
 		float m_SkyboxLod = 1.0f;
 		bool m_IsPlaying = false;

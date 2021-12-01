@@ -36,7 +36,7 @@ void SSAO::Init()
 	m_GBufferSSAO.Init();
 	GenerateConditional();
 
-	m_QuadSSAO = H2M::Ref<QuadSSAO>::Create();
+	m_QuadSSAO = H2M::RefH2M<QuadSSAO>::Create();
 }
 
 void SSAO::SetupShaders()

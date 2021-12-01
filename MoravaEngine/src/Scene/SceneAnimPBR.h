@@ -26,7 +26,7 @@ public:
 	void UpdateImGuizmo(Window* mainWindow);
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 	void SetupUniforms();
 
 private:
@@ -58,22 +58,22 @@ private:
 		int MouseY;
 	} m_ImGuiViewport;
 
-	H2M::Ref<MoravaShader> m_ShaderMain;
-	H2M::Ref<MoravaShader> m_ShaderBackground;
-	H2M::Ref<MoravaShader> m_ShaderHybridAnimPBR;
-	H2M::Ref<MoravaShader> m_ShaderHDR;
-	H2M::Ref<MoravaShader> m_ShaderEquirectangularConversion;
-	H2M::Ref<MoravaShader> m_ShaderEnvFiltering;
-	H2M::Ref<MoravaShader> m_ShaderEnvIrradiance;
-	H2M::Ref<MoravaShader> m_ShaderBasic;
+	H2M::RefH2M<MoravaShader> m_ShaderMain;
+	H2M::RefH2M<MoravaShader> m_ShaderBackground;
+	H2M::RefH2M<MoravaShader> m_ShaderHybridAnimPBR;
+	H2M::RefH2M<MoravaShader> m_ShaderHDR;
+	H2M::RefH2M<MoravaShader> m_ShaderEquirectangularConversion;
+	H2M::RefH2M<MoravaShader> m_ShaderEnvFiltering;
+	H2M::RefH2M<MoravaShader> m_ShaderEnvIrradiance;
+	H2M::RefH2M<MoravaShader> m_ShaderBasic;
 
-	H2M::Ref<H2M::MeshH2M> m_MeshAnimPBR_M1911;
-	H2M::Ref<H2M::MeshH2M> m_MeshAnimPBR_BobLamp;
-	H2M::Ref<H2M::MeshH2M> m_MeshAnimPBR_AnimBoy;
+	H2M::RefH2M<H2M::MeshH2M> m_MeshAnimPBR_M1911;
+	H2M::RefH2M<H2M::MeshH2M> m_MeshAnimPBR_BobLamp;
+	H2M::RefH2M<H2M::MeshH2M> m_MeshAnimPBR_AnimBoy;
 
-	H2M::Ref<Material> m_BaseMaterial_M1911;
-	H2M::Ref<Material> m_BaseMaterial_BobLamp;
-	H2M::Ref<Material> m_BaseMaterial_AnimBoy;
+	H2M::RefH2M<Material> m_BaseMaterial_M1911;
+	H2M::RefH2M<Material> m_BaseMaterial_BobLamp;
+	H2M::RefH2M<Material> m_BaseMaterial_AnimBoy;
 
 	struct Entity {
 		struct Transform {
@@ -124,7 +124,7 @@ private:
 	bool m_ViewportFocused;
 	bool m_ViewportHovered;
 	glm::vec2 m_ViewportSize;
-	H2M::Ref<MoravaFramebuffer> m_RenderFramebuffer;
+	H2M::RefH2M<MoravaFramebuffer> m_RenderFramebuffer;
 	float m_CurrentTimestamp;
 	EventCooldown m_ResizeViewport;
 

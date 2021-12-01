@@ -239,7 +239,7 @@ void SceneSponza::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneSponza::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 	/* Sponza scene */
 	glm::mat4 model = glm::mat4(1.0f);
@@ -273,11 +273,11 @@ void SceneSponza::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 }
 
 void SceneSponza::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
-    H2M::Ref<MoravaShader> shaderWater = shaders["water"];
+    H2M::RefH2M<MoravaShader> shaderWater = shaders["water"];
 
 	/* Water Tile */
 	glm::mat4 model = glm::mat4(1.0f);

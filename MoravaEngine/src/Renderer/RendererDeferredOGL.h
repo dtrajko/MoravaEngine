@@ -39,10 +39,10 @@ private:
 
 	uint32_t m_TextureSlot_Diffuse;
 
-	H2M::Ref<MoravaShader> m_ShaderForwardBasic;
-	H2M::Ref<MoravaShader> m_ShaderGeometryPass;
+	H2M::RefH2M<MoravaShader> m_ShaderForwardBasic;
+	H2M::RefH2M<MoravaShader> m_ShaderGeometryPass;
 
-	H2M::Ref<Mesh> m_MeshBlock;
+	H2M::RefH2M<Mesh> m_MeshBlock;
 
 	uint32_t m_WindowWidthOld = 0;
 	uint32_t m_WindowHeightOld = 0;

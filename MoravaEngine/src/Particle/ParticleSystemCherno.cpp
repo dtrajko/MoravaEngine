@@ -43,7 +43,7 @@ void ParticleSystemCherno::OnUpdate(float ts)
 	}
 }
 
-void ParticleSystemCherno::OnRender(Camera* camera, H2M::Ref<MoravaShader> shader)
+void ParticleSystemCherno::OnRender(Camera* camera, H2M::RefH2M<MoravaShader> shader)
 {
 	for (auto& particle : m_ParticlePool)
 	{
@@ -63,7 +63,7 @@ void ParticleSystemCherno::OnRender(Camera* camera, H2M::Ref<MoravaShader> shade
 	}
 }
 
-void ParticleSystemCherno::DrawRotatedQuad(glm::vec3 position, glm::vec3 size, float rotation, glm::vec4 color, H2M::Ref<MoravaShader> shader)
+void ParticleSystemCherno::DrawRotatedQuad(glm::vec3 position, glm::vec3 size, float rotation, glm::vec4 color, H2M::RefH2M<MoravaShader> shader)
 {
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, position);

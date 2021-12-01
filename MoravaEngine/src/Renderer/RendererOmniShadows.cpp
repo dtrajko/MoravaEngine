@@ -16,11 +16,11 @@ void RendererOmniShadows::Init(Scene* scene)
 
 void RendererOmniShadows::SetShaders()
 {
-	H2M::Ref<MoravaShader> shaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
+	H2M::RefH2M<MoravaShader> shaderOmniShadow = MoravaShader::Create("Shaders/omni_shadow_map.vert", "Shaders/omni_shadow_map.geom", "Shaders/omni_shadow_map.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	Log::GetLogger()->info("RendererOmniShadows: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 
-	H2M::Ref<MoravaShader> shaderMain = MoravaShader::Create("Shaders/shader.vert", "Shaders/shader.frag");
+	H2M::RefH2M<MoravaShader> shaderMain = MoravaShader::Create("Shaders/shader.vert", "Shaders/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	Log::GetLogger()->info("RendererOmniShadows: shaderMain compiled [programID={0}]", shaderMain->GetProgramID());
 }
@@ -84,7 +84,7 @@ void RendererOmniShadows::RenderPassMain(Window* mainWindow, Scene* scene, glm::
 	// Clear the window
 	RendererBasic::Clear();
 
-	H2M::Ref<MoravaShader> shaderMain = RendererBasic::GetShaders()["main"];
+	H2M::RefH2M<MoravaShader> shaderMain = RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
 	shaderMain->SetMat4("model", glm::mat4(1.0f));

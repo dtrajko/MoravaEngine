@@ -17,9 +17,9 @@ public:
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 
 private:
 	virtual void SetupMaterials() override;
@@ -41,11 +41,11 @@ public:
 	float m_RotationFactor;
 
 private:
-	H2M::Ref<MoravaShader> m_Shader_PBR;
-	H2M::Ref<MoravaShader> m_Shader_PBR_MRE;
-	H2M::Ref<MoravaShader> m_ShaderBackground;
-	H2M::Ref<MoravaShader> m_ShaderBlurHorizontal;
-	H2M::Ref<MoravaShader> m_ShaderBlurVertical;
+	H2M::RefH2M<MoravaShader> m_Shader_PBR;
+	H2M::RefH2M<MoravaShader> m_Shader_PBR_MRE;
+	H2M::RefH2M<MoravaShader> m_ShaderBackground;
+	H2M::RefH2M<MoravaShader> m_ShaderBlurHorizontal;
+	H2M::RefH2M<MoravaShader> m_ShaderBlurVertical;
 
 	glm::vec3 m_CameraPosition;
 	glm::vec3 m_LightPositionOffset[SCENE_JOEY_LIGHT_COUNT];

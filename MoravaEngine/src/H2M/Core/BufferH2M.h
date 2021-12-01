@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Hazel/Core/Assert.h"
-#include "Hazel/Core/Base.h"
+#include "H2M/Core/AssertH2M.h"
+#include "H2M/Core/BaseH2M.h"
 
 #include "Core/Log.h"
 
@@ -9,26 +9,27 @@
 #include <memory>
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	struct Buffer
+	struct BufferH2M
 	{
 		void* Data;
 		uint32_t Size;
 
-		Buffer()
+		BufferH2M()
 			: Data(nullptr), Size(0)
 		{
 		}
 
-		Buffer(void* data, uint32_t size)
+		BufferH2M(void* data, uint32_t size)
 			: Data(data), Size(size)
 		{
 		}
 
-		static Buffer Copy(const void* data, uint32_t size)
+		static BufferH2M Copy(const void* data, uint32_t size)
 		{
-			Buffer buffer;
+			BufferH2M buffer;
 			buffer.Allocate(size);
 			memcpy(buffer.Data, data, size);
 			return buffer;

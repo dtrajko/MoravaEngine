@@ -22,10 +22,10 @@ public:
 	inline size_t GetBytecodeLength() { return m_BytecodeLength; }
 
 	void Bind();
-	void BindConstantBuffer(H2M::Ref<DX11ConstantBuffer> constantBuffer);
+	void BindConstantBuffer(H2M::RefH2M<DX11ConstantBuffer> constantBuffer);
 
 	// moved from DX11Context
-	void SetTextures(const std::vector<H2M::Ref<H2M::HazelTexture>>& textures);
+	void SetTextures(const std::vector<H2M::RefH2M<H2M::HazelTexture>>& textures);
 
 private:
 	bool CompileDX11Shader(const wchar_t* fileName);

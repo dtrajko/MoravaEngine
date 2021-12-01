@@ -876,7 +876,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
         {
             ImVec2 imageSize(64.0f, 64.0f);
 
-            for (std::map<std::string, H2M::Ref<MoravaTexture>>::iterator it = textures.begin(); it != textures.end(); ++it)
+            for (std::map<std::string, H2M::RefH2M<MoravaTexture>>::iterator it = textures.begin(); it != textures.end(); ++it)
             {
                 ImGui::Text(it->first.c_str());
                 ImGui::Image((void*)(intptr_t)it->second->GetID(), imageSize);
@@ -1552,7 +1552,7 @@ Mesh* SceneEditor::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::string* n
         *name = "drone";
         break;
     case MESH_TYPE_M1911:
-        mesh = new H2M::MeshH2M("Models/M1911/m1911.fbx", H2M::Ref<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
+        mesh = new H2M::MeshH2M("Models/M1911/m1911.fbx", H2M::RefH2M<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
         *name = "M1911";
         break;
     default:
@@ -1928,7 +1928,7 @@ SceneObjectParticleSystem* SceneEditor::AddNewSceneObjectParticleSystem(int obje
     return particle_system;
 }
 
-void SceneEditor::SetUniformsShaderEditor(H2M::Ref<MoravaShader> shaderEditor, H2M::Ref<MoravaTexture> texture, SceneObject* sceneObject)
+void SceneEditor::SetUniformsShaderEditor(H2M::RefH2M<MoravaShader> shaderEditor, H2M::RefH2M<MoravaTexture> texture, SceneObject* sceneObject)
 {
     shaderEditor->Bind();
 
@@ -1963,7 +1963,7 @@ void SceneEditor::SetUniformsShaderEditor(H2M::Ref<MoravaShader> shaderEditor, H
     shaderEditor->SetInt("shadowMap", 2);
 }
 
-void SceneEditor::SetUniformsShaderEditorPBR(H2M::Ref<MoravaShader> shaderEditorPBR, H2M::Ref<MoravaTexture> texture, H2M::Ref<Material> material, SceneObject* sceneObject)
+void SceneEditor::SetUniformsShaderEditorPBR(H2M::RefH2M<MoravaShader> shaderEditorPBR, H2M::RefH2M<MoravaTexture> texture, H2M::RefH2M<Material> material, SceneObject* sceneObject)
 {
     shaderEditorPBR->Bind();
 
@@ -1991,7 +1991,7 @@ void SceneEditor::SetUniformsShaderEditorPBR(H2M::Ref<MoravaShader> shaderEditor
     shaderEditorPBR->SetInt("shadowMap", 8);
 }
 
-void SceneEditor::SetUniformsShaderSkinning(H2M::Ref<MoravaShader> shaderSkinning, SceneObject* sceneObject, float runningTime)
+void SceneEditor::SetUniformsShaderSkinning(H2M::RefH2M<MoravaShader> shaderSkinning, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2013,7 +2013,7 @@ void SceneEditor::SetUniformsShaderSkinning(H2M::Ref<MoravaShader> shaderSkinnin
     }
 }
 
-void SceneEditor::SetUniformsShaderHybridAnimPBR(H2M::Ref<MoravaShader> shaderHybridAnimPBR, H2M::Ref<MoravaTexture> texture, SceneObject* sceneObject, float runningTime)
+void SceneEditor::SetUniformsShaderHybridAnimPBR(H2M::RefH2M<MoravaShader> shaderHybridAnimPBR, H2M::RefH2M<MoravaTexture> texture, SceneObject* sceneObject, float runningTime)
 {
     RendererBasic::DisableCulling();
 
@@ -2031,7 +2031,7 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(H2M::Ref<MoravaShader> shaderHy
     shaderHybridAnimPBR->SetMat4("u_ViewProjectionMatrix", RendererBasic::GetProjectionMatrix() * m_Camera->GetViewMatrix());
     shaderHybridAnimPBR->SetFloat3("u_CameraPosition", m_Camera->GetPosition());
 
-    H2M::Ref<Material> baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
+    H2M::RefH2M<Material> baseMaterial = ResourceManager::HotLoadMaterial(sceneObject->materialName);
 
     baseMaterial->GetTextureAlbedo()->Bind(m_SamplerSlots["albedo"]);
     baseMaterial->GetTextureNormal()->Bind(m_SamplerSlots["normal"]);
@@ -2062,7 +2062,7 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(H2M::Ref<MoravaShader> shaderHy
     auto& materials = meshAnimPBR->GetMaterials();
 
     int submeshIndex = 0;
-    for (H2M::Ref<H2M::SubmeshH2M> submesh : meshAnimPBR->GetSubmeshes())
+    for (H2M::RefH2M<H2M::SubmeshH2M> submesh : meshAnimPBR->GetSubmeshes())
     {
         // Material
         auto material = materials[submesh->MaterialIndex];
@@ -2086,7 +2086,7 @@ void SceneEditor::SetUniformsShaderHybridAnimPBR(H2M::Ref<MoravaShader> shaderHy
     }
 }
 
-void SceneEditor::SetUniformsShaderWater(H2M::Ref<MoravaShader> shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
+void SceneEditor::SetUniformsShaderWater(H2M::RefH2M<MoravaShader> shaderWater, SceneObject* sceneObject, glm::mat4& projectionMatrix)
 {
     RendererBasic::EnableTransparency();
 
@@ -2281,7 +2281,7 @@ void SceneEditor::AddLightsToSceneObjects()
     }
 }
 
-void SceneEditor::RenderLightSources(H2M::Ref<MoravaShader> shaderGizmo)
+void SceneEditor::RenderLightSources(H2M::RefH2M<MoravaShader> shaderGizmo)
 {
     shaderGizmo->Bind();
 
@@ -2348,7 +2348,7 @@ void SceneEditor::RenderLightSources(H2M::Ref<MoravaShader> shaderGizmo)
     }
 }
 
-void SceneEditor::RenderSkybox(H2M::Ref<MoravaShader> shaderBackground)
+void SceneEditor::RenderSkybox(H2M::RefH2M<MoravaShader> shaderBackground)
 {
     // m_BlurEffect->Render();
 
@@ -2386,7 +2386,7 @@ void SceneEditor::RenderSkybox(H2M::Ref<MoravaShader> shaderBackground)
     m_MaterialWorkflowPBR->GetSkyboxCube()->Render();
 }
 
-void SceneEditor::RenderLineElements(H2M::Ref<MoravaShader> shaderBasic, glm::mat4 projectionMatrix)
+void SceneEditor::RenderLineElements(H2M::RefH2M<MoravaShader> shaderBasic, glm::mat4 projectionMatrix)
 {
     if (!m_DrawGizmos) return;
 
@@ -2419,7 +2419,7 @@ void SceneEditor::RenderLineElements(H2M::Ref<MoravaShader> shaderBasic, glm::ma
     m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
 }
 
-void SceneEditor::RenderFramebufferTextures(H2M::Ref<MoravaShader> shaderEditor)
+void SceneEditor::RenderFramebufferTextures(H2M::RefH2M<MoravaShader> shaderEditor)
 {
     // A quad for displaying a shadow map on it
     shaderEditor->Bind();
@@ -2432,7 +2432,7 @@ void SceneEditor::RenderFramebufferTextures(H2M::Ref<MoravaShader> shaderEditor)
     m_Quad->Render();
 }
 
-void SceneEditor::RenderGlassObjects(H2M::Ref<MoravaShader> shaderGlass)
+void SceneEditor::RenderGlassObjects(H2M::RefH2M<MoravaShader> shaderGlass)
 {
     // Glass objects (Reflection/Refraction/Fresnel)
     shaderGlass->Bind();
@@ -2458,7 +2458,7 @@ void SceneEditor::RenderGlassObjects(H2M::Ref<MoravaShader> shaderGlass)
 }
 
 void SceneEditor::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
     m_ActiveRenderPasses.push_back(passType); // for displaying all render passes in ImGui
 
@@ -2506,8 +2506,8 @@ void SceneEditor::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 
         float runningTime = ((float)glfwGetTime() * 1000.0f - m_StartTimestamp) / 1000.0f;
 
-        H2M::Ref<MoravaTexture> texture = ResourceManager::HotLoadTexture(object->textureName);
-        H2M::Ref<Material> material = ResourceManager::HotLoadMaterial(object->materialName);
+        H2M::RefH2M<MoravaTexture> texture = ResourceManager::HotLoadTexture(object->textureName);
+        H2M::RefH2M<Material> material = ResourceManager::HotLoadMaterial(object->materialName);
 
         // Don't render Lights (id = 0 to 8), it's done in RenderLightSources()
         if (object->name.substr(0, 6) == "Light.")

@@ -15,16 +15,16 @@ public:
 
 	virtual void Generate(glm::vec3 scale) override;
 
-	inline H2M::Ref<MoravaTexture> GetHeightMap() const { return m_TxHeightMap; };
-	inline H2M::Ref<MoravaTexture> GetColorMap() const { return m_TxColorMap; };
+	inline H2M::RefH2M<MoravaTexture> GetHeightMap() const { return m_TxHeightMap; };
+	inline H2M::RefH2M<MoravaTexture> GetColorMap() const { return m_TxColorMap; };
 	virtual float GetMaxY(int x, int z) override;
 
 private:
 	glm::vec3 m_ScalePrev;
 
 	const char* m_HeightMapPath;
-	H2M::Ref<MoravaTexture> m_TxHeightMap;
-	H2M::Ref<MoravaTexture> m_TxColorMap;
+	H2M::RefH2M<MoravaTexture> m_TxHeightMap;
+	H2M::RefH2M<MoravaTexture> m_TxColorMap;
 
 	int m_MaxHeight = 30;
 	int m_MaxPixelColor = 256;

@@ -37,8 +37,8 @@ DX11Shader::DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShad
 	s_Specification.VertexShaderPath = Util::to_str(vertexShaderPath);
 	s_Specification.PixelShaderPath = Util::to_str(pixelShaderPath);
 
-	m_VertexShader = H2M::Ref<DX11VertexShader>::Create(vertexShaderPath);
-	m_PixelShader = H2M::Ref<DX11PixelShader>::Create(pixelShaderPath);
+	m_VertexShader = H2M::RefH2M<DX11VertexShader>::Create(vertexShaderPath);
+	m_PixelShader = H2M::RefH2M<DX11PixelShader>::Create(pixelShaderPath);
 }
 
 DX11Shader::~DX11Shader()
@@ -46,11 +46,11 @@ DX11Shader::~DX11Shader()
 	ClearShader();
 }
 
-H2M::Ref<DX11Shader> DX11Shader::CreateFromString(const std::string& source)
+H2M::RefH2M<DX11Shader> DX11Shader::CreateFromString(const std::string& source)
 {
 	Log::GetLogger()->error("DX11Shader::CreateFromString - method not implemented!");
 
-	H2M::Ref<DX11Shader> shader = H2M::Ref<DX11Shader>::Create();
+	H2M::RefH2M<DX11Shader> shader = H2M::RefH2M<DX11Shader>::Create();
 	// shader->Load(source, true);
 	return shader;
 }

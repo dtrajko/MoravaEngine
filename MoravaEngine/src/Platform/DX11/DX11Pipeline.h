@@ -18,7 +18,7 @@ public:
 	virtual const H2M::PipelineSpecification& GetSpecification() const { return m_Specification; }
 
 	virtual void Invalidate() override;
-	virtual void SetUniformBuffer(H2M::Ref<H2M::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) override;
+	virtual void SetUniformBuffer(H2M::RefH2M<H2M::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) override;
 
 	virtual void Bind() override;
 

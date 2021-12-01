@@ -76,13 +76,13 @@ void Application::OnInit()
 
 	H2M::RendererH2M::Init();
 
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::Vulkan:
+		case H2M::RendererAPITypeH2M::Vulkan:
 			PushLayer(new H2M::VulkanTestLayer("VulkanTestLayer")); // to be removed
-			PushLayer(new H2M::EditorLayerVulkan(H2M::Ref<H2M::UserPreferences>::Create()));
+			PushLayer(new H2M::EditorLayerVulkan(H2M::RefH2M<H2M::UserPreferences>::Create()));
 			break;
-		case H2M::RendererAPIH2MType::DX11:
+		case H2M::RendererAPITypeH2M::DX11:
 			PushLayer(new DX11TestLayer("DX11TestLayer"));
 			break;
 	}
@@ -169,13 +169,13 @@ void Application::Run()
 
 			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
 
-			switch (H2M::RendererAPIH2M::Current())
+			switch (H2M::RendererAPI_H2M::Current())
 			{
-			case H2M::RendererAPIH2MType::Vulkan:
+			case H2M::RendererAPITypeH2M::Vulkan:
 				// m_Scene->OnRenderEditor(deltaTime, *(H2M::EditorCamera*)m_Scene->GetCamera());
 				H2M::VulkanRendererH2M::Draw(m_Scene); // replace with m_Scene->OnRenderEditor()
 				break;
-			case H2M::RendererAPIH2MType::DX11:
+			case H2M::RendererAPITypeH2M::DX11:
 				DX11Renderer::Draw(m_Scene->GetCamera());
 				break;
 			}
@@ -224,9 +224,9 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	m_Scene->OnWindowResize(e);
 	m_Window->GetRenderContext()->OnResize(width, height);
 
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::Vulkan:
+		case H2M::RendererAPITypeH2M::Vulkan:
 		{
 			auto& fbs = H2M::HazelFramebufferPool::GetGlobal()->GetAll();
 			for (auto& fb : fbs)
@@ -239,7 +239,7 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 			}
 		}
 		break;
-		case H2M::RendererAPIH2MType::DX11:
+		case H2M::RendererAPITypeH2M::DX11:
 		{
 			DX11Renderer::OnResize(width, height);
 		}
@@ -305,13 +305,13 @@ std::string Application::OpenFile(const char* filter) const
 	// Initialize OPENFILENAME
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::OpenGL:
-		case H2M::RendererAPIH2MType::Vulkan:
+		case H2M::RendererAPITypeH2M::OpenGL:
+		case H2M::RendererAPITypeH2M::Vulkan:
 			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
 			break;
-		case H2M::RendererAPIH2MType::DX11:
+		case H2M::RendererAPITypeH2M::DX11:
 			ofn.hwndOwner = m_Window->GetHWND();
 			break;
 	}
@@ -342,13 +342,13 @@ std::string Application::SaveFile(const char* filter) const
 	// Initialize OPENFILENAME
 	ZeroMemory(&ofn, sizeof(OPENFILENAME));
 	ofn.lStructSize = sizeof(OPENFILENAME);
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::OpenGL:
-		case H2M::RendererAPIH2MType::Vulkan:
+		case H2M::RendererAPITypeH2M::OpenGL:
+		case H2M::RendererAPITypeH2M::Vulkan:
 			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
 			break;
-		case H2M::RendererAPIH2MType::DX11:
+		case H2M::RendererAPITypeH2M::DX11:
 			ofn.hwndOwner = m_Window->GetHWND();
 			break;
 	}
@@ -378,7 +378,7 @@ void Application::OnImGuiRender(bool* p_open)
 		const char* device = "N/A";
 		const char* version = "N/A";
 
-		if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+		if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 		{
 			vendor = (const char*)glGetString(GL_VENDOR);
 			device = (const char*)glGetString(GL_RENDERER);
@@ -420,7 +420,7 @@ const char* Application::GetPlatformName()
 
 void Application::CaptureScreenshot(const std::string& filePath)
 {
-	if (H2M::RendererAPIH2M::Current() != H2M::RendererAPIH2MType::OpenGL) return;
+	if (H2M::RendererAPI_H2M::Current() != H2M::RendererAPITypeH2M::OpenGL) return;
 
 	int width, height;
 	glfwGetFramebufferSize(m_Window->GetHandle(), &width, &height);

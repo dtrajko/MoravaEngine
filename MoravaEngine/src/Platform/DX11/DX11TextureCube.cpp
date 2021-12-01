@@ -19,7 +19,7 @@ DX11TextureCube::DX11TextureCube(H2M::ImageFormatH2M format, uint32_t width, uin
 		m_LocalStorage = H2M::Buffer::Copy(data, size);
 	}
 
-	//	H2M::Ref<DX11TextureCube> instance = this;
+	//	H2M::RefH2M<DX11TextureCube> instance = this;
 	//	HazelRenderer::Submit([instance]() mutable
 	//	{
 	//		instance->Invalidate();

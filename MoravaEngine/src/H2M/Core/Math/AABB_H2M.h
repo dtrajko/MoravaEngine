@@ -6,15 +6,15 @@
 namespace H2M
 {
 
-	struct AABBH2M
+	struct AABB_H2M
 	{
 
 		glm::vec3 Min, Max;
 
-        AABBH2M()
+        AABB_H2M()
 			: Min(0.0f), Max(0.0f) {}
 
-        AABBH2M(const glm::vec3& min, const glm::vec3& max)
+        AABB_H2M(const glm::vec3& min, const glm::vec3& max)
 			: Min(min), Max(max) {}
 
 		bool Intersect(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, float& t) const

@@ -24,9 +24,9 @@
 
 
 SelectionMode EnvMapEditorLayer::s_SelectionMode = SelectionMode::Entity;
-H2M::Ref<H2M::Texture2DH2M> EnvMapEditorLayer::s_CheckerboardTexture;
-H2M::Ref<EnvMapMaterial> EnvMapEditorLayer::s_DefaultMaterial;
-H2M::Ref<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
+H2M::RefH2M<H2M::Texture2DH2M> EnvMapEditorLayer::s_CheckerboardTexture;
+H2M::RefH2M<EnvMapMaterial> EnvMapEditorLayer::s_DefaultMaterial;
+H2M::RefH2M<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
 
 
 EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
@@ -59,10 +59,10 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     // SceneComposite.fs - uniform sampler2DMS u_Texture;
     EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("u_Texture",  1));
 
-    EnvMapSharedData::s_SkyboxCube = H2M::Ref<CubeSkybox>::Create();
-    EnvMapSharedData::s_Quad = H2M::Ref<Quad>::Create();
+    EnvMapSharedData::s_SkyboxCube = H2M::RefH2M<CubeSkybox>::Create();
+    EnvMapSharedData::s_Quad = H2M::RefH2M<Quad>::Create();
 
-    EnvMapSharedData::s_EditorScene = H2M::Ref<H2M::SceneH2M>::Create();
+    EnvMapSharedData::s_EditorScene = H2M::RefH2M<H2M::SceneH2M>::Create();
     EnvMapSharedData::s_EditorScene->SetSkyboxLod(0.1f);
 
     EnvMapSceneRenderer::Init(filepath, EnvMapSharedData::s_EditorScene.Raw());
@@ -119,16 +119,16 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_WindowTitleStatic = Application::Get()->GetWindow()->GetTitle();
     UpdateWindowTitle("New Scene");
 
-    EnvMapSharedData::s_ShadowMapDirLight = H2M::Ref<ShadowMap>::Create();
+    EnvMapSharedData::s_ShadowMapDirLight = H2M::RefH2M<ShadowMap>::Create();
     EnvMapSharedData::s_ShadowMapDirLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
 
     m_LightDirection = glm::normalize(glm::vec3(0.05f, -0.85f, 0.05f));
     m_LightProjectionMatrix = glm::ortho(-64.0f, 64.0f, -64.0f, 64.0f, -64.0f, 64.0f);
 
-    EnvMapSharedData::s_OmniShadowMapPointLight = H2M::Ref<OmniShadowMap>::Create();
+    EnvMapSharedData::s_OmniShadowMapPointLight = H2M::RefH2M<OmniShadowMap>::Create();
     EnvMapSharedData::s_OmniShadowMapPointLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
 
-    EnvMapSharedData::s_OmniShadowMapSpotLight = H2M::Ref<OmniShadowMap>::Create();
+    EnvMapSharedData::s_OmniShadowMapSpotLight = H2M::RefH2M<OmniShadowMap>::Create();
     EnvMapSharedData::s_OmniShadowMapSpotLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
 
     GeometryFactory::Quad::Create();
@@ -237,7 +237,7 @@ H2M::EntityH2M EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    H2M::Ref<H2M::MeshH2M> mesh = H2M::Ref<H2M::MeshH2M>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, H2M::Ref<H2M::HazelMaterial>(), isAnimated);
+    H2M::RefH2M<H2M::MeshH2M> mesh = H2M::RefH2M<H2M::MeshH2M>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, H2M::RefH2M<H2M::HazelMaterial>(), isAnimated);
 
     mesh->SetTimeMultiplier(1.0f);
 
@@ -280,17 +280,17 @@ void EnvMapEditorLayer::ShowBoundingBoxes(bool showBoundingBoxes, bool showBound
 
 void EnvMapEditorLayer::SetupShaders()
 {
-    H2M::Ref<MoravaShader> shaderHazelPBR_Static = MoravaShader::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
+    H2M::RefH2M<MoravaShader> shaderHazelPBR_Static = MoravaShader::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Static compiled [programID={0}]", shaderHazelPBR_Static->GetProgramID());
 
     // PBR shader with the support for Cascaded Shadow Maps
-    // H2M::Ref<MoravaShader> shaderHazelPBR_Static = MoravaShader::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR_Static_CSM.fs");
+    // H2M::RefH2M<MoravaShader> shaderHazelPBR_Static = MoravaShader::Create("Shaders/Hazel/HazelPBR_Static.vs", "Shaders/Hazel/HazelPBR_Static_CSM.fs");
     // Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Static compiled [programID={0}]", shaderHazelPBR_Static->GetProgramID());
 
-    H2M::Ref<MoravaShader> shaderHazelPBR_Anim = MoravaShader::Create("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
+    H2M::RefH2M<MoravaShader> shaderHazelPBR_Anim = MoravaShader::Create("Shaders/Hazel/HazelPBR_Anim.vs", "Shaders/Hazel/HazelPBR.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderHazelPBR_Anim compiled [programID={0}]", shaderHazelPBR_Anim->GetProgramID());
 
-    H2M::Ref<MoravaShader> shaderRenderer2D_Line = MoravaShader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+    H2M::RefH2M<MoravaShader> shaderRenderer2D_Line = MoravaShader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
     Log::GetLogger()->info("EnvMapEditorLayer: m_ShaderRenderer2D_Line compiled [programID={0}]", shaderRenderer2D_Line->GetProgramID());
 
     EnvMapSharedData::s_ShaderOutline = MoravaShader::Create("Shaders/Hazel/Outline.vs", "Shaders/Hazel/Outline.fs");
@@ -328,7 +328,7 @@ void EnvMapEditorLayer::SetupShaders()
 void EnvMapEditorLayer::UpdateUniforms()
 {
     /**** BEGIN Shaders/Hazel/SceneComposite ****/
-    H2M::Ref<MoravaShader> shaderComposite = EnvMapSceneRenderer::GetShaderComposite();
+    H2M::RefH2M<MoravaShader> shaderComposite = EnvMapSceneRenderer::GetShaderComposite();
     shaderComposite->Bind();
     shaderComposite->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
 
@@ -352,7 +352,7 @@ void EnvMapEditorLayer::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/Outline ****/
 }
 
-void EnvMapEditorLayer::SetSkybox(H2M::Ref<H2M::TextureCubeH2M> skybox)
+void EnvMapEditorLayer::SetSkybox(H2M::RefH2M<H2M::TextureCubeH2M> skybox)
 {
     m_SkyboxTexture = skybox;
     m_SkyboxTexture->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
@@ -366,7 +366,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_EditorScene->OnRenderEditor(H2M::Ref<H2M::SceneRendererH2M>(), timestep, *EnvMapSharedData::s_EditorCamera);
+        EnvMapSharedData::s_EditorScene->OnRenderEditor(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep, *EnvMapSharedData::s_EditorCamera);
 
         if (m_DrawOnTopBoundingBoxes)
         {
@@ -383,13 +383,13 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
         EnvMapSharedData::s_RuntimeScene->OnUpdate(timestep);
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::Ref<H2M::SceneRendererH2M>(), timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep);
         break;
     case SceneState::Pause:
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::Ref<H2M::SceneRendererH2M>(), timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep);
         break;
     }
 
@@ -408,7 +408,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
     // OnUpdateRuntime(s_RuntimeScene, timestep);
 }
 
-void EnvMapEditorLayer::OnUpdateEditor(H2M::Ref<H2M::SceneH2M> scene, float timestep)
+void EnvMapEditorLayer::OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float timestep)
 {
     EnvMapSharedData::s_EditorScene = scene;
 
@@ -421,7 +421,7 @@ void EnvMapEditorLayer::OnUpdateEditor(H2M::Ref<H2M::SceneH2M> scene, float time
     for (auto entt : meshEntities)
     {
         H2M::EntityH2M entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
-        H2M::Ref<H2M::MeshH2M> mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
+        H2M::RefH2M<H2M::MeshH2M> mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
         if (mesh)
         {
             mesh->OnUpdate(timestep, false);
@@ -449,7 +449,7 @@ void EnvMapEditorLayer::OnUpdateEditor(H2M::Ref<H2M::SceneH2M> scene, float time
     }
 }
 
-void EnvMapEditorLayer::OnUpdateRuntime(H2M::Ref<H2M::SceneH2M> scene, float timestep)
+void EnvMapEditorLayer::OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float timestep)
 {
     EnvMapSharedData::s_EditorScene = scene;
 
@@ -462,7 +462,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(H2M::Ref<H2M::SceneH2M> scene, float tim
     for (auto entt : meshEntities)
     {
         H2M::EntityH2M entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
-        H2M::Ref<H2M::MeshH2M> mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
+        H2M::RefH2M<H2M::MeshH2M> mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
 
         mesh->OnUpdate(timestep, false);
     }
@@ -487,7 +487,7 @@ void EnvMapEditorLayer::OnScenePlay()
         H2M::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
     }
 
-    EnvMapSharedData::s_RuntimeScene = H2M::Ref<H2M::SceneH2M>::Create();
+    EnvMapSharedData::s_RuntimeScene = H2M::RefH2M<H2M::SceneH2M>::Create();
     EnvMapSharedData::s_EditorScene->CopyTo(EnvMapSharedData::s_RuntimeScene);
 
     EnvMapSharedData::s_RuntimeScene->OnRuntimeStart();
@@ -568,12 +568,12 @@ void EnvMapEditorLayer::SetSkyboxLOD(float LOD)
     EnvMapSharedData::s_EditorScene->SetSkyboxLod(LOD);
 }
 
-H2M::Ref<MoravaShader> EnvMapEditorLayer::GetShaderPBR_Anim()
+H2M::RefH2M<MoravaShader> EnvMapEditorLayer::GetShaderPBR_Anim()
 {
     return MoravaShaderLibrary::Get("HazelPBR_Anim");
 }
 
-H2M::Ref<MoravaShader> EnvMapEditorLayer::GetShaderPBR_Static()
+H2M::RefH2M<MoravaShader> EnvMapEditorLayer::GetShaderPBR_Static()
 {
     return MoravaShaderLibrary::Get("HazelPBR_Static");
 }
@@ -805,8 +805,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             if (ImGui::Button(label))
             {
                 EnvMapSharedData::s_ActiveCamera = (EnvMapSharedData::s_ActiveCamera == EnvMapSharedData::s_EditorCamera) ?
-                    (H2M::HazelCamera*)EnvMapSharedData::s_RuntimeCamera :
-                    (H2M::HazelCamera*)EnvMapSharedData::s_EditorCamera;
+                    (H2M::CameraH2M*)EnvMapSharedData::s_RuntimeCamera :
+                    (H2M::CameraH2M*)EnvMapSharedData::s_EditorCamera;
             }
         }
         ImGui::End();
@@ -1723,7 +1723,7 @@ void EnvMapEditorLayer::OpenScene()
     std::string filepath = H2M::FileDialogs::OpenFile("Hazel Scene (*.hsc)\0*.hsc\0");
     if (!filepath.empty())
     {
-        H2M::Ref<H2M::SceneH2M> newScene = H2M::Ref<H2M::SceneH2M>::Create();
+        H2M::RefH2M<H2M::SceneH2M> newScene = H2M::RefH2M<H2M::SceneH2M>::Create();
         H2M::SceneSerializer serializer(newScene);
         serializer.Deserialize(filepath);
         EnvMapSharedData::s_EditorScene = newScene;
@@ -1778,7 +1778,7 @@ void EnvMapEditorLayer::SelectEntity(H2M::EntityH2M e)
 void EnvMapEditorLayer::SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
     auto& materials = mesh->GetMaterials();
-    for (H2M::Ref<H2M::SubmeshH2M> submesh : mesh->GetSubmeshes())
+    for (H2M::RefH2M<H2M::SubmeshH2M> submesh : mesh->GetSubmeshes())
     {
         // Material
         auto material = materials[submesh->MaterialIndex];
@@ -1802,7 +1802,7 @@ void EnvMapEditorLayer::SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transfor
     }
 }
 
-void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, H2M::Ref<MoravaFramebuffer> renderFramebuffer)
+void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, H2M::RefH2M<MoravaFramebuffer> renderFramebuffer)
 {
     float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
 
@@ -1974,12 +1974,12 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                     continue;
                 }
 
-                std::vector<H2M::Ref<H2M::SubmeshH2M>> submeshes = mesh->GetSubmeshes();
+                std::vector<H2M::RefH2M<H2M::SubmeshH2M>> submeshes = mesh->GetSubmeshes();
                 float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
                 // for (H2M::Submesh& submesh : submeshes)
                 for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
-                    H2M::Ref<H2M::SubmeshH2M> submesh = submeshes[i];
+                    H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[i];
                     auto transform = entity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
                     H2M::Ray ray = {
                         glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
@@ -2145,7 +2145,7 @@ void EnvMapEditorLayer::OnRenderWaterRefraction(Window* mainWindow)
     // TODO: Render scene object to the water refraction framebuffer, color and depth attachments
 }
 
-void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, H2M::EntityH2M lightEntity, H2M::Ref<OmniShadowMap> omniShadowMap)
+void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, H2M::EntityH2M lightEntity, H2M::RefH2M<OmniShadowMap> omniShadowMap)
 {
     omniShadowMap->BindForWriting();
 
@@ -2193,7 +2193,7 @@ void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, H2M::Ent
     RendererBasic::SetDefaultFramebuffer((unsigned int)mainWindow->GetWidth(), (unsigned int)mainWindow->GetHeight());
 }
 
-void EnvMapEditorLayer::RenderSubmeshesShadowPass(H2M::Ref<MoravaShader> shader)
+void EnvMapEditorLayer::RenderSubmeshesShadowPass(H2M::RefH2M<MoravaShader> shader)
 {
     // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
     auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
@@ -2212,7 +2212,7 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(H2M::Ref<MoravaShader> shader)
 
             if (meshComponent.Mesh && meshComponent.CastShadows)
             {
-                for (H2M::Ref<H2M::SubmeshH2M> submesh : meshComponent.Mesh->GetSubmeshes())
+                for (H2M::RefH2M<H2M::SubmeshH2M> submesh : meshComponent.Mesh->GetSubmeshes())
                 {
                     // Render Submesh
                     meshComponent.Mesh->GetVertexBuffer()->Bind();

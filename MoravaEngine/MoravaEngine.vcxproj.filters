@@ -1215,6 +1215,30 @@
     <ClCompile Include="src\H2M\Core\LogH2M.cpp">
       <Filter>H2M\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\ShaderUniformH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\RendererAPI_H2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\RenderCommandBufferH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\SceneEnvironmentH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRenderCommandBufferH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanContextH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanDeviceH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanSwapChainH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2549,7 +2573,7 @@
     <ClInclude Include="src\H2M\Core\Events\MouseEventH2M.h">
       <Filter>H2M\Core\Events</Filter>
     </ClInclude>
-    <ClInclude Include="src\H2M\Core\Math\AABBH2M.h">
+    <ClInclude Include="src\H2M\Core\Math\AABB_H2M.h">
       <Filter>H2M\Core\Math</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\BaseH2M.h">
@@ -2638,6 +2662,36 @@
     </ClInclude>
     <ClInclude Include="src\H2M\Core\LogH2M.h">
       <Filter>H2M\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\ShaderUniformH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\RendererTypesH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\RendererAPI_H2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\RenderCommandBufferH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\RendererCapabilitiesH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\SceneEnvironmentH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRenderCommandBufferH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanContextH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanDeviceH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanSwapChainH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

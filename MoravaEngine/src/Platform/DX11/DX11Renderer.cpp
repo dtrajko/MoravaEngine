@@ -31,11 +31,11 @@
 #include "ImGuizmo.h"
 
 
-static H2M::Ref<H2M::HazelFramebuffer> s_Framebuffer;
-static H2M::Ref<H2M::Pipeline> s_MeshPipeline;
-static H2M::Ref<H2M::Pipeline> s_CompositePipeline;
-static H2M::Ref<H2M::VertexBuffer> s_QuadVertexBuffer;
-static H2M::Ref<H2M::IndexBuffer> s_QuadIndexBuffer;
+static H2M::RefH2M<H2M::HazelFramebuffer> s_Framebuffer;
+static H2M::RefH2M<H2M::Pipeline> s_MeshPipeline;
+static H2M::RefH2M<H2M::Pipeline> s_CompositePipeline;
+static H2M::RefH2M<H2M::VertexBuffer> s_QuadVertexBuffer;
+static H2M::RefH2M<H2M::IndexBuffer> s_QuadIndexBuffer;
 static ImTextureID s_TextureID;
 static uint32_t s_ViewportWidth = 1280;
 static uint32_t s_ViewportHeight = 720;
@@ -43,25 +43,25 @@ static uint32_t s_ViewportHeight = 720;
 static std::vector<RenderObject> s_RenderObjects;
 
 // temporary DX11 objects
-static H2M::Ref<DX11VertexBuffer> s_VertexBufferCube;
-static H2M::Ref<DX11IndexBuffer> s_IndexBufferCube;
+static H2M::RefH2M<DX11VertexBuffer> s_VertexBufferCube;
+static H2M::RefH2M<DX11IndexBuffer> s_IndexBufferCube;
 
-static H2M::Ref<DX11VertexBuffer> s_VertexBufferQuad;
-static H2M::Ref<DX11IndexBuffer> s_IndexBufferQuad;
+static H2M::RefH2M<DX11VertexBuffer> s_VertexBufferQuad;
+static H2M::RefH2M<DX11IndexBuffer> s_IndexBufferQuad;
 
-static H2M::Ref<H2M::Pipeline> s_PipelineIlluminated;
-static H2M::Ref<H2M::Pipeline> s_PipelineUnlit;
+static H2M::RefH2M<H2M::Pipeline> s_PipelineIlluminated;
+static H2M::RefH2M<H2M::Pipeline> s_PipelineUnlit;
 
 static DX11ConstantBufferLayout s_ConstantBufferLayout;
 static DX11ConstantBufferLayout s_ConstantBufferLayoutDeferred;
 
-static H2M::Ref<DX11ConstantBuffer> s_ConstantBuffer;
+static H2M::RefH2M<DX11ConstantBuffer> s_ConstantBuffer;
 
 static glm::vec3 s_LightPosition;
 static glm::vec3 s_LightDirection;
 
-static H2M::Ref<DX11Texture2D> s_RenderTarget;
-static H2M::Ref<DX11Texture2D> s_DepthStencil;
+static H2M::RefH2M<DX11Texture2D> s_RenderTarget;
+static H2M::RefH2M<DX11Texture2D> s_DepthStencil;
 
 static bool s_DeferredRenderingEnabled = true;
 
@@ -69,19 +69,19 @@ static bool s_DeferredRenderingEnabled = true;
 
 static EventCooldown s_ResizeViewport = { 0.0f, 1.0f };
 
-static H2M::Ref<H2M::Texture2DH2M> s_CheckerboardTexture;
+static H2M::RefH2M<H2M::Texture2DH2M> s_CheckerboardTexture;
 
-static H2M::Ref<EnvMapMaterial> s_DefaultMaterial;
-static H2M::Ref<EnvMapMaterial> s_LightMaterial;
+static H2M::RefH2M<EnvMapMaterial> s_DefaultMaterial;
+static H2M::RefH2M<EnvMapMaterial> s_LightMaterial;
 
-static H2M::Ref<MoravaFramebuffer> s_RenderFramebuffer;
-static H2M::Ref<MoravaFramebuffer> s_PostProcessingFramebuffer;
+static H2M::RefH2M<MoravaFramebuffer> s_RenderFramebuffer;
+static H2M::RefH2M<MoravaFramebuffer> s_PostProcessingFramebuffer;
 
 /**** BEGIN variables from Scene.cpp ****/
 
 // ImGuizmo
 static glm::mat4* s_ImGuizmoTransform = nullptr;
-static H2M::Ref<H2M::SubmeshH2M> s_SelectedSubmesh;
+static H2M::RefH2M<H2M::SubmeshH2M> s_SelectedSubmesh;
 static SelectionMode s_SelectionMode = SelectionMode::Entity;
 
 /**** END variables from Scene.cpp ****/
@@ -107,7 +107,7 @@ static glm::vec2 s_ImGuiViewportMain;
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
 {
 	// Temporary code - populate selected submesh
-	std::vector<H2M::Ref<H2M::SubmeshH2M>> submeshes = renderObject.Mesh->GetSubmeshes();
+	std::vector<H2M::RefH2M<H2M::SubmeshH2M>> submeshes = renderObject.Mesh->GetSubmeshes();
 	s_SelectedSubmesh = submeshes[0];
 
 	s_RenderObjects.push_back(renderObject);
@@ -125,8 +125,8 @@ void DX11Renderer::OnResize(uint32_t width, uint32_t height)
 		s_RenderTarget->Release();
 		s_DepthStencil->Release();
 
-		s_RenderTarget = H2M::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::RenderTarget);
-		s_DepthStencil = H2M::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::DepthStencil);
+		s_RenderTarget = H2M::RefH2M<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::RenderTarget);
+		s_DepthStencil = H2M::RefH2M<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::DepthStencil);
 	}
 
 	// HazelRenderer::Submit([=]() {});
@@ -198,7 +198,7 @@ void DX11Renderer::Init()
 		CreateQuad(); // to render a render target framebuffer to
 	}
 
-	s_ConstantBuffer = H2M::Ref<DX11ConstantBuffer>::Create(&s_ConstantBufferLayout, sizeof(DX11ConstantBufferLayout));
+	s_ConstantBuffer = H2M::RefH2M<DX11ConstantBuffer>::Create(&s_ConstantBufferLayout, sizeof(DX11ConstantBufferLayout));
 
 	// Create a render target texture and a depth stencil texture
 	s_ViewportWidth = Application::Get()->GetWindow()->GetWidth(); // should we use framebufferSpec.Width?
@@ -206,8 +206,8 @@ void DX11Renderer::Init()
 
 	if (s_DeferredRenderingEnabled)
 	{
-		s_RenderTarget = H2M::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::RenderTarget);
-		s_DepthStencil = H2M::Ref<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::DepthStencil);
+		s_RenderTarget = H2M::RefH2M<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::RenderTarget);
+		s_DepthStencil = H2M::RefH2M<DX11Texture2D>::Create(glm::vec2((float)s_ViewportWidth, (float)s_ViewportHeight), DX11Texture2D::Type::DepthStencil);
 	}
 
 	/**** END DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
@@ -345,7 +345,7 @@ void DX11Renderer::CreateCube()
 	// temporary DX11 objects and data structures
 	uint32_t vertexStride = sizeof(DX11VertexLayout);
 	uint32_t vertexCount = ARRAYSIZE(vertexList);
-	s_VertexBufferCube = H2M::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount);
+	s_VertexBufferCube = H2M::RefH2M<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount);
 
 	uint32_t indexList[] =
 	{
@@ -370,7 +370,7 @@ void DX11Renderer::CreateCube()
 	};
 
 	uint32_t indexCount = ARRAYSIZE(indexList);
-	s_IndexBufferCube = H2M::Ref<DX11IndexBuffer>::Create(indexList, (uint32_t)(indexCount * sizeof(uint32_t)));
+	s_IndexBufferCube = H2M::RefH2M<DX11IndexBuffer>::Create(indexList, (uint32_t)(indexCount * sizeof(uint32_t)));
 }
 
 void DX11Renderer::CreateQuad()
@@ -408,7 +408,7 @@ void DX11Renderer::CreateQuad()
 	// temporary DX11 objects and data structures
 	uint32_t vertexStride = sizeof(DX11VertexLayout);
 	uint32_t vertexCount = ARRAYSIZE(vertexList);
-	s_VertexBufferQuad = H2M::Ref<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount);
+	s_VertexBufferQuad = H2M::RefH2M<DX11VertexBuffer>::Create(vertexList, vertexStride, vertexCount);
 
 	uint32_t indexList[] =
 	{
@@ -418,12 +418,12 @@ void DX11Renderer::CreateQuad()
 	};
 
 	uint32_t indexCount = ARRAYSIZE(indexList);
-	s_IndexBufferQuad = H2M::Ref<DX11IndexBuffer>::Create(indexList, (uint32_t)(indexCount * sizeof(uint32_t)));
+	s_IndexBufferQuad = H2M::RefH2M<DX11IndexBuffer>::Create(indexList, (uint32_t)(indexCount * sizeof(uint32_t)));
 }
 
 static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
 {
-	H2M::Ref<DX11Context> dx11Context = Application::Get()->GetWindow()->GetRenderContext().As<DX11Context>();
+	H2M::RefH2M<DX11Context> dx11Context = Application::Get()->GetWindow()->GetRenderContext().As<DX11Context>();
 	// DX11SwapChain& swapChain = context->GetSwapChain();
 
 	// TODO
@@ -442,7 +442,7 @@ void DX11Renderer::Update()
 }
 
 // TODO: Temporary method until composite rendering is enabled
-void DX11Renderer::Draw(H2M::HazelCamera* camera)
+void DX11Renderer::Draw(H2M::CameraH2M* camera)
 {
 	Update(); // Ideally, it should be called separately, before the Draw() method
 
@@ -829,7 +829,7 @@ void DX11Renderer::DrawEntityNode(const std::string name)
 	}
 }
 
-void DX11Renderer::DrawToScreen(H2M::HazelCamera* camera)
+void DX11Renderer::DrawToScreen(H2M::CameraH2M* camera)
 {
 	ClearRenderTargetColorSwapChain(0.2f, 0.2f, 0.2f, 1.0f); // dark gray
 	ClearDepthStencilSwapChain();
@@ -841,7 +841,7 @@ void DX11Renderer::DrawToScreen(H2M::HazelCamera* camera)
 	DX11Context::Get()->SetViewportSize(viewportWidth, viewportHeight);
 	DX11TestLayer::GetCamera()->SetViewportSize((float)viewportWidth, (float)viewportHeight);
 
-	H2M::Ref<DX11Shader> dx11ShaderUnlit = s_PipelineUnlit->GetSpecification().Shader.As<DX11Shader>();
+	H2M::RefH2M<DX11Shader> dx11ShaderUnlit = s_PipelineUnlit->GetSpecification().Shader.As<DX11Shader>();
 
 	dx11ShaderUnlit->GetVertexShader()->Bind();
 	dx11ShaderUnlit->GetPixelShader()->Bind();
@@ -871,9 +871,9 @@ void DX11Renderer::DrawToScreen(H2M::HazelCamera* camera)
 	dx11ShaderUnlit->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 	dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-	std::vector<H2M::Ref<H2M::HazelTexture>> textures;
-	H2M::Ref<H2M::Texture2DH2M> textureDiffuse = s_RenderTarget;
-	H2M::Ref<H2M::Texture2DH2M> textureNormal = ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
+	std::vector<H2M::RefH2M<H2M::HazelTexture>> textures;
+	H2M::RefH2M<H2M::Texture2DH2M> textureDiffuse = s_RenderTarget;
+	H2M::RefH2M<H2M::Texture2DH2M> textureNormal = ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
 	textures.push_back(textureDiffuse.As<DX11Texture2D>());
 	textures.push_back(textureNormal.As<DX11Texture2D>());
 	dx11ShaderUnlit->GetVertexShader()->SetTextures(textures);
@@ -884,7 +884,7 @@ void DX11Renderer::DrawToScreen(H2M::HazelCamera* camera)
 	DX11Renderer::DrawIndexedTriangleList(s_IndexBufferQuad->GetIndexCount(), startVertexIndex, startIndexLocation);
 }
 
-void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H2M::Ref<DX11Material>>& listMaterials)
+void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H2M::RefH2M<DX11Material>>& listMaterials)
 {
 	// Drawing meshes with materials
 
@@ -897,7 +897,7 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 
 	DX11Context::Get()->SetRasterizerState(DX11CullMode::None);
 
-	H2M::Ref<H2M::Pipeline> pipeline;
+	H2M::RefH2M<H2M::Pipeline> pipeline;
 
 	if (renderObject.PipelineType == RenderObject::PipelineType::Light)
 	{
@@ -908,7 +908,7 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 		pipeline = s_PipelineUnlit;
 	}
 
-	H2M::Ref<DX11Mesh> dx11Mesh = renderObject.MeshDX11;
+	H2M::RefH2M<DX11Mesh> dx11Mesh = renderObject.MeshDX11;
 
 	dx11Mesh->GetVertexBuffer()->Bind();
 	pipeline->Bind();
@@ -920,7 +920,7 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 
 		DX11MaterialSlot materialSlot = dx11Mesh->GetMaterialSlot((uint32_t)m);
 
-		H2M::Ref<DX11Material> material = listMaterials[m];
+		H2M::RefH2M<DX11Material> material = listMaterials[m];
 
 		material->Bind();
 
@@ -935,7 +935,7 @@ void DX11Renderer::RenderMeshDX11(RenderObject renderObject, const std::vector<H
 void DX11Renderer::BeginFrame()
 {
 	// H2M::HazelRenderer::Submit([]() {});
-	// H2M::Ref<DX11Context> context = DX11Context::Get();
+	// H2M::RefH2M<DX11Context> context = DX11Context::Get();
 
 	// TODO
 }
@@ -945,7 +945,7 @@ void DX11Renderer::EndFrame()
 	// H2M::HazelRenderer::Submit([]() {});
 }
 
-void DX11Renderer::BeginRenderPass(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::RenderPass> renderPass, bool explicitClear)
+void DX11Renderer::BeginRenderPass(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::RenderPass> renderPass, bool explicitClear)
 {
 	// H2M::HazelRenderer::Submit([]() {});
 
@@ -954,62 +954,62 @@ void DX11Renderer::BeginRenderPass(H2M::Ref<H2M::RenderCommandBuffer> renderComm
 	// TODO
 }
 
-void DX11Renderer::EndRenderPass(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer)
+void DX11Renderer::EndRenderPass(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer)
 {
 	// H2M::HazelRenderer::Submit([]() {});
 }
 
-void DX11Renderer::SubmitFullscreenQuad(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::HazelMaterial> material)
+void DX11Renderer::SubmitFullscreenQuad(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::HazelMaterial> material)
 {
 }
 
-void DX11Renderer::SubmitFullscreenQuadWithOverrides(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::HazelMaterial> material, H2M::Buffer vertexShaderOverrides, H2M::Buffer fragmentShaderOverrides)
+void DX11Renderer::SubmitFullscreenQuadWithOverrides(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::HazelMaterial> material, H2M::Buffer vertexShaderOverrides, H2M::Buffer fragmentShaderOverrides)
 {
 }
 
-void DX11Renderer::SetSceneEnvironment(H2M::Ref<H2M::SceneRenderer> sceneRenderer, H2M::Ref<H2M::Environment> environment, H2M::Ref<H2M::HazelImage2D> shadow, H2M::Ref<H2M::HazelImage2D> linearDepth)
+void DX11Renderer::SetSceneEnvironment(H2M::RefH2M<H2M::SceneRenderer> sceneRenderer, H2M::RefH2M<H2M::Environment> environment, H2M::RefH2M<H2M::HazelImage2D> shadow, H2M::RefH2M<H2M::HazelImage2D> linearDepth)
 {
 }
 
-std::pair<H2M::Ref<H2M::TextureCubeH2M>, H2M::Ref<H2M::TextureCubeH2M>> DX11Renderer::CreateEnvironmentMap(const std::string& filepath)
+std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> DX11Renderer::CreateEnvironmentMap(const std::string& filepath)
 {
-	return std::pair<H2M::Ref<H2M::TextureCubeH2M>, H2M::Ref<H2M::TextureCubeH2M>>();
+	return std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>>();
 }
 
-H2M::Ref<H2M::TextureCubeH2M> DX11Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination)
+H2M::RefH2M<H2M::TextureCubeH2M> DX11Renderer::CreatePreethamSky(float turbidity, float azimuth, float inclination)
 {
-	return H2M::Ref<H2M::TextureCubeH2M>();
+	return H2M::RefH2M<H2M::TextureCubeH2M>();
 }
 
-void DX11Renderer::RenderQuad(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMaterial> material, const glm::mat4& transform)
-{
-}
-
-void DX11Renderer::RenderMesh(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMesh> mesh, H2M::Ref<H2M::MaterialTable> materialTable, const glm::mat4& transform)
+void DX11Renderer::RenderQuad(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMaterial> material, const glm::mat4& transform)
 {
 }
 
-void DX11Renderer::RenderMeshWithMaterial(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMesh> mesh, H2M::Ref<H2M::HazelMaterial> material, const glm::mat4& transform, H2M::Buffer additionalUniforms)
+void DX11Renderer::RenderMesh(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMesh> mesh, H2M::RefH2M<H2M::MaterialTable> materialTable, const glm::mat4& transform)
 {
 }
 
-void DX11Renderer::LightCulling(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::PipelineCompute> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMaterial> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups)
+void DX11Renderer::RenderMeshWithMaterial(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMesh> mesh, H2M::RefH2M<H2M::HazelMaterial> material, const glm::mat4& transform, H2M::Buffer additionalUniforms)
 {
 }
 
-void DX11Renderer::SubmitFullscreenQuad(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMaterial> material)
+void DX11Renderer::LightCulling(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::PipelineCompute> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMaterial> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups)
 {
 }
 
-void DX11Renderer::ClearImage(H2M::Ref<H2M::RenderCommandBuffer> commandBuffer, H2M::Ref<H2M::HazelImage2D> image)
+void DX11Renderer::SubmitFullscreenQuad(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMaterial> material)
 {
 }
 
-void DX11Renderer::RenderGeometry(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBuffer, H2M::Ref<H2M::HazelMaterial> material, H2M::Ref<H2M::VertexBuffer> vertexBuffer, H2M::Ref<H2M::IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount)
+void DX11Renderer::ClearImage(H2M::RefH2M<H2M::RenderCommandBuffer> commandBuffer, H2M::RefH2M<H2M::HazelImage2D> image)
 {
 }
 
-void DX11Renderer::DispatchComputeShader(H2M::Ref<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::Ref<H2M::PipelineCompute> pipeline, H2M::Ref<H2M::UniformBufferSet> uniformBufferSet, H2M::Ref<H2M::StorageBufferSet> storageBufferSet, H2M::Ref<H2M::HazelMaterial> material, const glm::ivec3& workGroups)
+void DX11Renderer::RenderGeometry(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBuffer, H2M::RefH2M<H2M::HazelMaterial> material, H2M::RefH2M<H2M::VertexBuffer> vertexBuffer, H2M::RefH2M<H2M::IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount)
+{
+}
+
+void DX11Renderer::DispatchComputeShader(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::PipelineCompute> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMaterial> material, const glm::ivec3& workGroups)
 {
 }
 
@@ -1114,7 +1114,7 @@ void DX11Renderer::ShowExampleAppDockSpace(bool* p_open)
 	ImGui::End();
 }
 
-void DX11Renderer::ResizeViewport(glm::vec2 viewportPanelSize, H2M::Ref<MoravaFramebuffer> renderFramebuffer)
+void DX11Renderer::ResizeViewport(glm::vec2 viewportPanelSize, H2M::RefH2M<MoravaFramebuffer> renderFramebuffer)
 {
 }
 
@@ -1134,7 +1134,7 @@ void DX11Renderer::ClearRenderTargetColorSwapChain(float red, float green, float
 	DX11Context::Get()->GetSwapChain()->ClearRenderTargetColor(red, green, blue, alpha);
 }
 
-void DX11Renderer::ClearRenderTargetColor(H2M::Ref<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha)
+void DX11Renderer::ClearRenderTargetColor(H2M::RefH2M<DX11Texture2D> renderTarget, float red, float green, float blue, float alpha)
 {
 	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
 	FLOAT clear_color[] = { red, green, blue, alpha };
@@ -1148,13 +1148,13 @@ void DX11Renderer::ClearDepthStencilSwapChain()
 	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(dx11SwapChain->GetDepthStencilViewDX11(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 }
 
-void DX11Renderer::ClearDepthStencil(H2M::Ref<DX11Texture2D> depthStencil)
+void DX11Renderer::ClearDepthStencil(H2M::RefH2M<DX11Texture2D> depthStencil)
 {
 	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
 	DX11Context::Get()->GetDX11DeviceContext()->ClearDepthStencilView(depthStencil->GetDepthStencilViewDX11(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 }
 
-void DX11Renderer::SetRenderTarget(H2M::Ref<DX11Texture2D> renderTarget, H2M::Ref<DX11Texture2D> depthStencil)
+void DX11Renderer::SetRenderTarget(H2M::RefH2M<DX11Texture2D> renderTarget, H2M::RefH2M<DX11Texture2D> depthStencil)
 {
 	if (renderTarget->GetType() != DX11Texture2D::Type::RenderTarget) return;
 	if (depthStencil->GetType() != DX11Texture2D::Type::DepthStencil) return;
@@ -1180,7 +1180,7 @@ void DX11Renderer::DrawTriangleStrip(uint32_t vertexCount, uint32_t startVertexI
 	DX11Context::Get()->GetDX11DeviceContext()->Draw((UINT)vertexCount, (UINT)startVertexIndex);
 }
 
-void DX11Renderer::DrawToFramebuffer(H2M::HazelCamera* camera)
+void DX11Renderer::DrawToFramebuffer(H2M::CameraH2M* camera)
 {
 	/**** BEGIN DirectX 11 rendering ****/
 
@@ -1203,7 +1203,7 @@ void DX11Renderer::DrawToFramebuffer(H2M::HazelCamera* camera)
 
 	DX11Context::Get()->SetRasterizerState(DX11CullMode::None);
 
-	H2M::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
+	H2M::RefH2M<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
 
 	uint32_t viewportWidth = Application::Get()->GetWindow()->GetWidth();
 	uint32_t viewportHeight = Application::Get()->GetWindow()->GetHeight();
@@ -1226,13 +1226,13 @@ void DX11Renderer::DrawToFramebuffer(H2M::HazelCamera* camera)
 
 	// BEGIN render skybox
 	{
-		H2M::Ref<DX11Shader> dx11ShaderUnlit = s_PipelineUnlit->GetSpecification().Shader.As<DX11Shader>();
+		H2M::RefH2M<DX11Shader> dx11ShaderUnlit = s_PipelineUnlit->GetSpecification().Shader.As<DX11Shader>();
 
 		dx11ShaderUnlit->GetVertexShader()->Bind();
 		dx11ShaderUnlit->GetPixelShader()->Bind();
 
-		H2M::Ref<DX11VertexBuffer> skyboxVB = DX11TestLayer::s_SkyboxSphere->GetVertexBuffer().As<DX11VertexBuffer>();
-		H2M::Ref<DX11IndexBuffer> skyboxIB = DX11TestLayer::s_SkyboxSphere->GetIndexBuffer().As<DX11IndexBuffer>();
+		H2M::RefH2M<DX11VertexBuffer> skyboxVB = DX11TestLayer::s_SkyboxSphere->GetVertexBuffer().As<DX11VertexBuffer>();
+		H2M::RefH2M<DX11IndexBuffer> skyboxIB = DX11TestLayer::s_SkyboxSphere->GetIndexBuffer().As<DX11IndexBuffer>();
 		skyboxVB->Bind();
 		skyboxIB->Bind();
 		s_PipelineUnlit->Bind();
@@ -1248,9 +1248,9 @@ void DX11Renderer::DrawToFramebuffer(H2M::HazelCamera* camera)
 		dx11ShaderUnlit->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-		std::vector<H2M::Ref<H2M::HazelTexture>> textures;
-		H2M::Ref<H2M::Texture2DH2M> textureDiffuse = ResourceManager::LoadTexture2DH2M("Textures/PardCode/umhlanga_sunrise_4k.jpg");
-		H2M::Ref<H2M::Texture2DH2M> textureNormal = ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
+		std::vector<H2M::RefH2M<H2M::HazelTexture>> textures;
+		H2M::RefH2M<H2M::Texture2DH2M> textureDiffuse = ResourceManager::LoadTexture2DH2M("Textures/PardCode/umhlanga_sunrise_4k.jpg");
+		H2M::RefH2M<H2M::Texture2DH2M> textureNormal = ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
 
@@ -1268,8 +1268,8 @@ void DX11Renderer::DrawToFramebuffer(H2M::HazelCamera* camera)
 		dx11Shader->GetVertexShader()->Bind();
 		dx11Shader->GetPixelShader()->Bind();
 
-		H2M::Ref<DX11VertexBuffer> vertexBuffer = DX11TestLayer::s_MeshLight->GetVertexBuffer().As<DX11VertexBuffer>();
-		H2M::Ref<DX11IndexBuffer> indexBuffer = DX11TestLayer::s_MeshLight->GetIndexBuffer().As<DX11IndexBuffer>();
+		H2M::RefH2M<DX11VertexBuffer> vertexBuffer = DX11TestLayer::s_MeshLight->GetVertexBuffer().As<DX11VertexBuffer>();
+		H2M::RefH2M<DX11IndexBuffer> indexBuffer = DX11TestLayer::s_MeshLight->GetIndexBuffer().As<DX11IndexBuffer>();
 
 		vertexBuffer->Bind();
 		s_PipelineIlluminated->Bind(); // TODO: DX11TestLayer::s_Mesh->GetPipeline()->Bind();
@@ -1285,9 +1285,9 @@ void DX11Renderer::DrawToFramebuffer(H2M::HazelCamera* camera)
 		dx11Shader->GetVertexShader()->BindConstantBuffer(s_ConstantBuffer);
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
-		std::vector<H2M::Ref<H2M::HazelTexture>> textures;
-		H2M::Ref<H2M::Texture2DH2M> textureDiffuse = ResourceManager::LoadTexture2DH2M("Textures/PardCode/gold.png");
-		H2M::Ref<H2M::Texture2DH2M> textureNormal = ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
+		std::vector<H2M::RefH2M<H2M::HazelTexture>> textures;
+		H2M::RefH2M<H2M::Texture2DH2M> textureDiffuse = ResourceManager::LoadTexture2DH2M("Textures/PardCode/gold.png");
+		H2M::RefH2M<H2M::Texture2DH2M> textureNormal = ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
 
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
@@ -1329,7 +1329,7 @@ void DX11Renderer::RenderMeshesECS()
 {
 	// s_PipelineIlluminated->Bind();
 
-	H2M::Ref<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
+	H2M::RefH2M<DX11Shader> dx11Shader = s_PipelineIlluminated->GetSpecification().Shader.As<DX11Shader>();
 
 	auto meshEntities = DX11TestLayer::s_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<H2M::MeshComponentH2M>();
 
@@ -1362,7 +1362,7 @@ void DX11Renderer::RenderMeshesECS()
 
 void DX11Renderer::RenderMesh(RenderObject renderObject)
 {
-	H2M::Ref<H2M::Pipeline> pipeline;
+	H2M::RefH2M<H2M::Pipeline> pipeline;
 
 	if (renderObject.PipelineType == RenderObject::PipelineType::Light)
 	{
@@ -1373,20 +1373,20 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 		pipeline = s_PipelineUnlit;
 	}
 
-	H2M::Ref<DX11Shader> dx11Shader = pipeline->GetSpecification().Shader.As<DX11Shader>();
+	H2M::RefH2M<DX11Shader> dx11Shader = pipeline->GetSpecification().Shader.As<DX11Shader>();
 
 	dx11Shader->GetVertexShader()->Bind();
 	dx11Shader->GetPixelShader()->Bind();
 
-	H2M::Ref<DX11VertexBuffer> dx11MeshVB = renderObject.Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
-	H2M::Ref<DX11IndexBuffer> dx11meshIB = renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
-	// H2M::Ref<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
+	H2M::RefH2M<DX11VertexBuffer> dx11MeshVB = renderObject.Mesh->GetVertexBuffer().As<DX11VertexBuffer>();
+	H2M::RefH2M<DX11IndexBuffer> dx11meshIB = renderObject.Mesh->GetIndexBuffer().As<DX11IndexBuffer>();
+	// H2M::RefH2M<DX11Pipeline> dx11Pipeline = renderObject.Mesh->GetPipeline().As<DX11Pipeline>();
 
 	dx11MeshVB->Bind();
 	pipeline->Bind();
 	dx11meshIB->Bind();
 
-	for (H2M::Ref<H2M::SubmeshH2M> submesh : renderObject.Mesh->GetSubmeshes())
+	for (H2M::RefH2M<H2M::SubmeshH2M> submesh : renderObject.Mesh->GetSubmeshes())
 	{
 		// World/Model/Transform matrix
 		s_ConstantBufferLayout.Model = renderObject.Transform;
@@ -1397,7 +1397,7 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 
 		// Render Submesh
 		// load submesh materials for each specific submesh from the s_EnvMapMaterials list
-		H2M::Ref<EnvMapMaterial> envMapMaterial = H2M::Ref<EnvMapMaterial>();
+		H2M::RefH2M<EnvMapMaterial> envMapMaterial = H2M::RefH2M<EnvMapMaterial>();
 		std::string materialUUID;
 
 		if (renderObject.Entity)
@@ -1421,7 +1421,7 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 		}
 
 		// Load textures for submesh material
-		std::vector<H2M::Ref<H2M::HazelTexture>> textures = {};
+		std::vector<H2M::RefH2M<H2M::HazelTexture>> textures = {};
 
 		if (renderObject.Textures.size() < 1)
 		{
@@ -1444,16 +1444,16 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 }
 
 // Obsolete methods
-void DX11Renderer::RenderMesh(H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::MeshH2M> mesh, const glm::mat4& transform)
+void DX11Renderer::RenderMesh(H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform)
 {
 }
 
 // Obsolete methods
-void DX11Renderer::RenderMeshWithoutMaterial(H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::MeshH2M> mesh, const glm::mat4& transform)
+void DX11Renderer::RenderMeshWithoutMaterial(H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform)
 {
 }
 
 // Obsolete methods
-void DX11Renderer::RenderQuad(H2M::Ref<H2M::Pipeline> pipeline, H2M::Ref<H2M::HazelMaterial> material, const glm::mat4& transform)
+void DX11Renderer::RenderQuad(H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::HazelMaterial> material, const glm::mat4& transform)
 {
 }

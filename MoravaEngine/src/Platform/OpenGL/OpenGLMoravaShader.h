@@ -22,9 +22,9 @@ public:
 	OpenGLMoravaShader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
 	OpenGLMoravaShader(const char* computeLocation, bool forceCompile = false);
 
-	static H2M::Ref<OpenGLMoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
-	static H2M::Ref<OpenGLMoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
-	static H2M::Ref<OpenGLMoravaShader> Create(const char* computeLocation, bool forceCompile = false);
+	static H2M::RefH2M<OpenGLMoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
+	static H2M::RefH2M<OpenGLMoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
+	static H2M::RefH2M<OpenGLMoravaShader> Create(const char* computeLocation, bool forceCompile = false);
 
 	// virtual methods
 	virtual void Bind() override;

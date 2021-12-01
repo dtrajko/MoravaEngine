@@ -19,7 +19,7 @@ public:
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 
 	void SetGeometry();
 	void CleanupGeometry();
@@ -49,11 +49,11 @@ private:
 	Raycast* m_Raycast;
 	TerrainHeightMap* m_Terrain;
 
-	H2M::Ref<MoravaShader> m_ShaderCubemaps;
-	H2M::Ref<MoravaShader> m_ShaderCubemapsNanosuit;
-	H2M::Ref<MoravaShader> m_ShaderSkybox;
-	H2M::Ref<MoravaShader> m_ShaderBasic;
-	H2M::Ref<MoravaShader> m_ShaderFramebuffersScene;
+	H2M::RefH2M<MoravaShader> m_ShaderCubemaps;
+	H2M::RefH2M<MoravaShader> m_ShaderCubemapsNanosuit;
+	H2M::RefH2M<MoravaShader> m_ShaderSkybox;
+	H2M::RefH2M<MoravaShader> m_ShaderBasic;
+	H2M::RefH2M<MoravaShader> m_ShaderFramebuffersScene;
 
 	float m_CubeRenderLastTime = 0.0f;
 	float m_CubeRenderCooldown = 1.0f;

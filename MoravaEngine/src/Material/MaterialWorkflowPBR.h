@@ -65,12 +65,12 @@ private:
 	unsigned int m_BRDF_LUT_Texture;
 
 	// Shaders
-	H2M::Ref<OpenGLMoravaShader> m_ShaderEquirectangularToCubemap;
-	H2M::Ref<OpenGLMoravaShader> m_ShaderIrradiance;
-	H2M::Ref<OpenGLMoravaShader> m_ShaderPrefilter;
-	H2M::Ref<OpenGLMoravaShader> m_ShaderBRDF;
-	H2M::Ref<OpenGLMoravaShader> m_ShaderHorizontalBlur;
-	H2M::Ref<OpenGLMoravaShader> m_ShaderVerticalBlur;
+	H2M::RefH2M<OpenGLMoravaShader> m_ShaderEquirectangularToCubemap;
+	H2M::RefH2M<OpenGLMoravaShader> m_ShaderIrradiance;
+	H2M::RefH2M<OpenGLMoravaShader> m_ShaderPrefilter;
+	H2M::RefH2M<OpenGLMoravaShader> m_ShaderBRDF;
+	H2M::RefH2M<OpenGLMoravaShader> m_ShaderHorizontalBlur;
+	H2M::RefH2M<OpenGLMoravaShader> m_ShaderVerticalBlur;
 
 	uint32_t m_BlurLevel;
 	int m_HDR_Map_Width;

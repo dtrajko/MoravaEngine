@@ -34,8 +34,8 @@ private:
 
 private:
 	std::vector<Mesh*> m_MeshList;
-	std::vector<H2M::Ref<MoravaTexture>> m_TextureList;
-	std::vector<H2M::Ref<MoravaTexture>> m_NormalMapList;
+	std::vector<H2M::RefH2M<MoravaTexture>> m_TextureList;
+	std::vector<H2M::RefH2M<MoravaTexture>> m_NormalMapList;
 	std::vector<unsigned int> m_MeshToTexture;
 
 	std::string m_TexturesPath;

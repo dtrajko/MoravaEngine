@@ -23,11 +23,11 @@ public:
 	virtual void Unbind() const override;
 	virtual void Bind() const override;
 	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate) override;
-	virtual void AddResizeCallback(const std::function<void(H2M::Ref<H2M::HazelFramebuffer>)>& func) override {};
+	virtual void AddResizeCallback(const std::function<void(H2M::RefH2M<H2M::HazelFramebuffer>)>& func) override {};
 	virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override;
 	virtual H2M::RendererID GetRendererID() const override;
-	virtual H2M::Ref<H2M::HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const override;
-	virtual H2M::Ref<H2M::HazelImage2D> GetDepthImage() const override;
+	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const override;
+	virtual H2M::RefH2M<H2M::HazelImage2D> GetDepthImage() const override;
 	virtual const H2M::HazelFramebufferSpecification& GetSpecification() const override;
 	// virtual H2M::RendererID GetColorAttachmentRendererID() const override;
 	// virtual H2M::RendererID GetDepthAttachmentRendererID() const override;
@@ -39,9 +39,9 @@ public:
 	virtual void AddColorAttachment(FramebufferSpecification specs) override; // the generic one based on FramebufferSpecification
 	virtual void AddDepthAttachment(FramebufferSpecification specs) override; // the generic one based on FramebufferSpecification
 	virtual FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0) override;
-	virtual H2M::Ref<Attachment> GetAttachmentDepth() override;
-	virtual H2M::Ref<Attachment> GetAttachmentStencil() override;
-	virtual H2M::Ref<Attachment> GetAttachmentDepthAndStencil() override;
+	virtual H2M::RefH2M<Attachment> GetAttachmentDepth() override;
+	virtual H2M::RefH2M<Attachment> GetAttachmentStencil() override;
+	virtual H2M::RefH2M<Attachment> GetAttachmentDepthAndStencil() override;
 	virtual void Bind(unsigned int width, unsigned int height) override;
 	virtual void Unbind(unsigned int width, unsigned int height) override;
 	virtual bool CheckStatus() override;
@@ -58,7 +58,7 @@ public:
 
 	FramebufferSpecification& GetSpecification() { return m_FramebufferSpecs; };
 
-	static H2M::Ref<MoravaFramebuffer> Create(const FramebufferSpecification& spec);
+	static H2M::RefH2M<MoravaFramebuffer> Create(const FramebufferSpecification& spec);
 
 	inline uint32_t GetWidth() const { return m_FramebufferSpecs.Width; };
 	inline uint32_t GetHeight() const { return m_FramebufferSpecs.Height; };
@@ -75,9 +75,9 @@ private:
 	std::vector<FramebufferSpecification> m_RenderbufferAttachmentSpec;
 
 	std::vector<FramebufferTexture*> m_TextureAttachmentsColor;
-	H2M::Ref<Attachment> m_AttachmentDepth;
-	H2M::Ref<Attachment> m_AttachmentStencil;
-	H2M::Ref<Attachment> m_AttachmentDepthAndStencil;
+	H2M::RefH2M<Attachment> m_AttachmentDepth;
+	H2M::RefH2M<Attachment> m_AttachmentStencil;
+	H2M::RefH2M<Attachment> m_AttachmentDepthAndStencil;
 
 	// Hazel/Platform/OpenGL/OpenGLFramebuffer
 	bool m_Multisample;

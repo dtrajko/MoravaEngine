@@ -48,7 +48,7 @@ public:
 	static glm::vec4 GetBgColor() { return s_BgColor; }
 	static glm::mat4 GetProjectionMatrix() { return s_ProjectionMatrix; }
 	static void SetProjectionMatrix(glm::mat4 projectionMatrix) { s_ProjectionMatrix = projectionMatrix; }
-	static std::map<std::string, H2M::Ref<MoravaShader>>& GetShaders() { return s_Shaders; };
+	static std::map<std::string, H2M::RefH2M<MoravaShader>>& GetShaders() { return s_Shaders; };
 	static std::map<std::string, int>& GetUniforms() { return s_Uniforms; }
 
 	static void SetDefaultFramebuffer(unsigned int width, unsigned int height);
@@ -66,8 +66,8 @@ public:
 	// static void SetSpirVEnabled(bool enabled) { s_SpirV_Enabled = enabled; }
 	static bool GetVulkanSupported();
 
-	static void SetRendererContext(H2M::Ref<H2M::RendererContext> rendererContext) { s_RendererContext = rendererContext; }
-	static H2M::Ref<H2M::RendererContext> GetRendererContext() { return s_RendererContext; }
+	static void SetRendererContext(H2M::RefH2M<H2M::RendererContext> rendererContext) { s_RendererContext = rendererContext; }
+	static H2M::RefH2M<H2M::RendererContext> GetRendererContext() { return s_RendererContext; }
 
 	static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr = nullptr);
 
@@ -85,11 +85,11 @@ protected:
 
 public:
 	static glm::mat4 s_ProjectionMatrix;
-	static std::map<std::string, H2M::Ref<MoravaShader>> s_Shaders;
+	static std::map<std::string, H2M::RefH2M<MoravaShader>> s_Shaders;
 	static std::map<std::string, int> s_Uniforms;
 	static glm::vec4 s_BgColor;
 	// static bool s_SpirV_Enabled;
 
-	static H2M::Ref<H2M::RendererContext> s_RendererContext;
+	static H2M::RefH2M<H2M::RendererContext> s_RendererContext;
 
 };

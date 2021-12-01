@@ -208,9 +208,9 @@ void DX11Texture2D::Bind(uint32_t slot) const
 {
 }
 
-H2M::Ref<H2M::HazelImage2D> DX11Texture2D::GetImage() const
+H2M::RefH2M<H2M::HazelImage2D> DX11Texture2D::GetImage() const
 {
-	return H2M::Ref<H2M::HazelImage2D>();
+	return H2M::RefH2M<H2M::HazelImage2D>();
 }
 
 void DX11Texture2D::Lock()

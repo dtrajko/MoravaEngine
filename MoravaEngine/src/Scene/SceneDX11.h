@@ -22,7 +22,7 @@ public:
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 	void SetupUniforms();
 
 private:
@@ -43,7 +43,7 @@ private:
 	virtual void OnEntitySelected(H2M::Entity entity) override;
 
 private:
-	H2M::Ref<MoravaShader> m_ShaderBackground;
-	H2M::Ref<MoravaShader> m_ShaderBasic;
+	H2M::RefH2M<MoravaShader> m_ShaderBackground;
+	H2M::RefH2M<MoravaShader> m_ShaderBasic;
 
 };

@@ -11,16 +11,16 @@ class CameraController
 
 public:
 	CameraController() = default;
-	CameraController(H2M::HazelCamera* camera, float aspectRatio, float moveSpeed, float turnSpeed);
+	CameraController(H2M::CameraH2M* camera, float aspectRatio, float moveSpeed, float turnSpeed);
 	virtual ~CameraController();
 
 	virtual void Update();
-	void OnEvent(Event& e);
+	void OnEvent(H2M::EventH2M& e);
 
 	virtual void KeyControl(bool* keys, float deltaTime);
 	virtual void MouseControl(bool* buttons, float xChange, float yChange);
 	virtual void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
-	inline H2M::HazelCamera* GetCamera() { return m_Camera; };
+	inline H2M::CameraH2M* GetCamera() { return m_Camera; };
 	void InvertPitch();
 	void InvertRoll();
 	inline void SetUnlockRotation(bool unlockRotation) { m_UnlockRotation = unlockRotation; };
@@ -35,7 +35,7 @@ protected:
 	void CalculateFront();
 
 protected:
-	H2M::HazelCamera* m_Camera;
+	H2M::CameraH2M* m_Camera;
 
 	float m_ZoomLevel = 1.0f;
 

@@ -9,7 +9,7 @@ RenderInstanced::RenderInstanced()
 	m_InstanceCount = -1;
 }
 
-RenderInstanced::RenderInstanced(TerrainBase* terrain, H2M::Ref<MoravaTexture> texture, Mesh* mesh)
+RenderInstanced::RenderInstanced(TerrainBase* terrain, H2M::RefH2M<MoravaTexture> texture, Mesh* mesh)
 {
 	m_Terrain = (TerrainVoxel*)terrain;
 	m_Texture = texture;

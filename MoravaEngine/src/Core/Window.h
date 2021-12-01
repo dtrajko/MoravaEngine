@@ -95,7 +95,7 @@ public:
 	virtual void SetEventLogging(bool enabled) = 0;
 	virtual const bool GetEventLogging() const = 0;
 
-	virtual H2M::Ref<H2M::RendererContext> GetRenderContext() = 0;
+	virtual H2M::RefH2M<H2M::RendererContext> GetRenderContext() = 0;
 	virtual H2M::VulkanSwapChain& GetSwapChain() = 0;
 
 };

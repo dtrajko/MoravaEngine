@@ -33,7 +33,7 @@ public:
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
 	virtual void Bind(uint32_t slot = 0) const override;
-	virtual H2M::Ref<H2M::HazelImage2D> GetImage() const override;
+	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage() const override;
 	void Lock() override;
 	void Unlock() override;
 

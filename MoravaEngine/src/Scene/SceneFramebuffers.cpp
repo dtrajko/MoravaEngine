@@ -122,7 +122,7 @@ void SceneFramebuffers::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneFramebuffers::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 	{
 		// -- BEGIN First Render Pass render target m_Framebuffer

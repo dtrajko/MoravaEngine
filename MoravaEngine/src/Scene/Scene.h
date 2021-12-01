@@ -93,9 +93,9 @@ public:
 	virtual void UpdateImGui(float timestep, Window* mainWindow) = 0;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) = 0;
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) = 0;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) {};
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) {};
 	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
 	virtual inline bool IsWaterOnScene() { return false; };
 
@@ -103,7 +103,7 @@ public:
 	Camera* GetCamera();
 	inline CameraController* GetCameraController() const { return m_CameraController; };
 	static inline SceneSettings GetSettings() { return sceneSettings; };
-	std::map<std::string, H2M::Ref<MoravaTexture>> GetTextures() const { return textures; };
+	std::map<std::string, H2M::RefH2M<MoravaTexture>> GetTextures() const { return textures; };
 	std::map<std::string, GLuint> GetTextureSlots() const { return textureSlots; };
 	inline std::map<std::string, Material*> GetMaterials() const { return materials; };
 	inline std::map<std::string, Model*> GetModels() const { return models; };
@@ -149,7 +149,7 @@ protected:
 
 	WaterManager* m_WaterManager;
 
-	std::map<std::string, H2M::Ref<MoravaTexture>> textures;
+	std::map<std::string, H2M::RefH2M<MoravaTexture>> textures;
 	std::map<std::string, GLuint> textureSlots;
 	std::map<std::string, Mesh*> meshes;
 	std::map<std::string, Model*> models;
@@ -162,7 +162,7 @@ private:
 	PointLight pointLights[MAX_POINT_LIGHTS];
 	SpotLight spotLights[MAX_SPOT_LIGHTS];
 
-	std::map<std::string, H2M::Ref<MoravaShader>> shaders;
+	std::map<std::string, H2M::RefH2M<MoravaShader>> shaders;
 	std::map<std::string, int> uniforms;
 
 	unsigned int shadowMapWidth;

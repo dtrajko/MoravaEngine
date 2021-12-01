@@ -23,17 +23,17 @@ VulkanMoravaShader::VulkanMoravaShader(const char* vertexLocation, const char* g
 VulkanMoravaShader::VulkanMoravaShader(const char* computeLocation, bool forceCompile)
 	: VulkanMoravaShader() {}
 
-H2M::Ref<VulkanMoravaShader> VulkanMoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+H2M::RefH2M<VulkanMoravaShader> VulkanMoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 {
-	return H2M::Ref<VulkanMoravaShader>();
+	return H2M::RefH2M<VulkanMoravaShader>();
 }
 
-H2M::Ref<VulkanMoravaShader> VulkanMoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
+H2M::RefH2M<VulkanMoravaShader> VulkanMoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
 {
-	return H2M::Ref<VulkanMoravaShader>();
+	return H2M::RefH2M<VulkanMoravaShader>();
 }
 
-H2M::Ref<VulkanMoravaShader> VulkanMoravaShader::Create(const char* computeLocation, bool forceCompile) { return H2M::Ref<VulkanMoravaShader>(); }
+H2M::RefH2M<VulkanMoravaShader> VulkanMoravaShader::Create(const char* computeLocation, bool forceCompile) { return H2M::RefH2M<VulkanMoravaShader>(); }
 
 VulkanMoravaShader::~VulkanMoravaShader() {}
 

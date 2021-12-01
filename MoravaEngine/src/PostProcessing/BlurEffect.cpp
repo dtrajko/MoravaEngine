@@ -211,12 +211,12 @@ void BlurEffect::Release()
 {
 }
 
-H2M::Ref<FramebufferTexture> BlurEffect::GetHorizontalOutputTexture()
+H2M::RefH2M<FramebufferTexture> BlurEffect::GetHorizontalOutputTexture()
 {
 	return m_HorizontalFBO->GetTextureAttachmentColor();
 }
 
-H2M::Ref<FramebufferTexture> BlurEffect::GetVerticalOutputTexture()
+H2M::RefH2M<FramebufferTexture> BlurEffect::GetVerticalOutputTexture()
 {
 	return m_VerticalFBO->GetTextureAttachmentColor();
 }

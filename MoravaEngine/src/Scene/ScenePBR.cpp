@@ -198,9 +198,9 @@ void ScenePBR::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void ScenePBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
-	H2M::Ref<ShaderPBR> shaderPBR = shaders["pbr"];
+	H2M::RefH2M<ShaderPBR> shaderPBR = shaders["pbr"];
 
 	shaderPBR->Bind();
 
@@ -313,11 +313,11 @@ void ScenePBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::strin
 }
 
 void ScenePBR::RenderWater(glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 	if (!sceneSettings.enableWaterEffects) return;
 
-	H2M::Ref<MoravaShader> shaderWater = shaders["water"];
+	H2M::RefH2M<MoravaShader> shaderWater = shaders["water"];
 
 	// Model matrix
 	glm::mat4 model;

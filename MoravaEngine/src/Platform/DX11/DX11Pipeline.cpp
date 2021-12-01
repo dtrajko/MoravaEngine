@@ -32,7 +32,7 @@ void DX11Pipeline::Invalidate()
 
 	UINT numElements = ARRAYSIZE(layout);
 
-	H2M::Ref<DX11Shader> dx11Shader = m_Specification.Shader.As<DX11Shader>();
+	H2M::RefH2M<DX11Shader> dx11Shader = m_Specification.Shader.As<DX11Shader>();
 
 	const void* shaderBytecodePointer = dx11Shader->GetVertexShader()->GetBytecodePointer();
 	size_t shaderBytecodeLength = dx11Shader->GetVertexShader()->GetBytecodeLength();
@@ -49,8 +49,8 @@ void DX11Pipeline::Invalidate()
 	// Ref<DX11Pipeline> instance = this;
 	// HazelRenderer::Submit([instance]() mutable {});
 	{
-		// H2M::Ref<DX11Shader> DX11Shader = H2M::Ref<DX11Shader>(m_Specification.Shader);
-		// H2M::Ref<DX11Framebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<DX11Framebuffer>();
+		// H2M::RefH2M<DX11Shader> DX11Shader = H2M::RefH2M<DX11Shader>(m_Specification.Shader);
+		// H2M::RefH2M<DX11Framebuffer> framebuffer = m_Specification.RenderPass->GetSpecification().TargetFramebuffer.As<DX11Framebuffer>();
 
 		//////////////////////////////////////////////////////////////////////
 		// Push Constants
@@ -64,7 +64,7 @@ void DX11Pipeline::Invalidate()
 	}
 }
 
-void DX11Pipeline::SetUniformBuffer(H2M::Ref<H2M::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set)
+void DX11Pipeline::SetUniformBuffer(H2M::RefH2M<H2M::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set)
 {
 }
 

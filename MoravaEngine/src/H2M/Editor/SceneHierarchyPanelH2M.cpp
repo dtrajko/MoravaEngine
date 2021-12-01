@@ -262,7 +262,7 @@ namespace Hazel
 
 		auto mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
 
-		std::vector<H2M::Ref<H2M::SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
+		std::vector<H2M::RefH2M<H2M::SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
 
 		for (int i = 0; i < submeshes.size(); i++)
 		{
@@ -657,7 +657,7 @@ namespace Hazel
 
 			if (!meshFilepath.empty())
 			{
-				mc.Mesh = H2M::Ref<MeshH2M>::Create(meshFilepath, H2M::Ref<MoravaShader>(), H2M::Ref<H2M::HazelMaterial>(), false);
+				mc.Mesh = H2M::RefH2M<MeshH2M>::Create(meshFilepath, H2M::RefH2M<MoravaShader>(), H2M::RefH2M<H2M::HazelMaterial>(), false);
 
 				auto materialDataVector = MaterialLibrary::s_MaterialData;
 				for (auto materialData : materialDataVector) {

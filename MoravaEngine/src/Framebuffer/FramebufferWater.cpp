@@ -33,17 +33,17 @@ FramebufferWater::FramebufferWater(unsigned int width, unsigned int height)
 	Log::GetLogger()->info("FramebufferWater FBO={0} {1}x{2}", m_FBO, m_Width, m_Height);
 }
 
-void FramebufferWater::AddColorAttachment(H2M::Ref<FramebufferTexture> colorAttachment)
+void FramebufferWater::AddColorAttachment(H2M::RefH2M<FramebufferTexture> colorAttachment)
 {
 	m_ColorAttachment = colorAttachment;
 }
 
-void FramebufferWater::AddDepthAttachment(H2M::Ref<FramebufferTexture> depthAttachment)
+void FramebufferWater::AddDepthAttachment(H2M::RefH2M<FramebufferTexture> depthAttachment)
 {
 	m_DepthAttachment = depthAttachment;
 }
 
-void FramebufferWater::AddDepthBuffer(H2M::Ref<Renderbuffer> depthBuffer)
+void FramebufferWater::AddDepthBuffer(H2M::RefH2M<Renderbuffer> depthBuffer)
 {
 	m_DepthBuffer = depthBuffer;
 }

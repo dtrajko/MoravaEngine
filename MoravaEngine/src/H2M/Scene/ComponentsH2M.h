@@ -83,7 +83,7 @@ namespace H2M
 
 	struct MaterialComponentH2M
 	{
-		H2M::Ref<EnvMapMaterial> Material = H2M::Ref<EnvMapMaterial>();
+		H2M::RefH2M<EnvMapMaterial> Material = H2M::RefH2M<EnvMapMaterial>();
 
 		MaterialComponentH2M() = default;
 		MaterialComponentH2M(const MaterialComponentH2M& other) = default;
@@ -134,7 +134,7 @@ namespace H2M
 		CameraComponentH2M() = default;
 		CameraComponentH2M(const CameraComponentH2M& other) = default;
 
-		CameraComponentH2M(H2M::HazelCamera camera)
+		CameraComponentH2M(H2M::CameraH2M camera)
 			: Camera(camera) {};
 
 		operator HazelCamera& () { return Camera; }

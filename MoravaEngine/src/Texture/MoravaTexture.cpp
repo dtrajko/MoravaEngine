@@ -8,49 +8,49 @@
 #include "Platform/DX11/DX11MoravaTexture.h"
 
 
-H2M::Ref<MoravaTexture> MoravaTexture::Create(const char* fileLoc, bool flipVert, bool isSampler, int filter)
+H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, bool flipVert, bool isSampler, int filter)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return H2M::Ref<MoravaTexture>();
-		case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<OpenGLMoravaTexture>::Create(fileLoc, flipVert, isSampler, filter);
-		case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<VulkanMoravaTexture>::Create(fileLoc, flipVert, isSampler, filter);
-		case H2M::RendererAPIH2MType::DX11:   return H2M::Ref<DX11MoravaTexture>::Create(fileLoc, flipVert, isSampler, filter);
+		case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<MoravaTexture>();
+		case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<OpenGLMoravaTexture>::Create(fileLoc, flipVert, isSampler, filter);
+		case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<VulkanMoravaTexture>::Create(fileLoc, flipVert, isSampler, filter);
+		case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11MoravaTexture>::Create(fileLoc, flipVert, isSampler, filter);
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-	return H2M::Ref<MoravaTexture>();
+	return H2M::RefH2M<MoravaTexture>();
 }
 
-H2M::Ref<MoravaTexture> MoravaTexture::Create(const char* fileLoc, uint32_t width, uint32_t height, bool isSampler, int filter)
+H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, uint32_t width, uint32_t height, bool isSampler, int filter)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return H2M::Ref<MoravaTexture>();
-		case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<OpenGLMoravaTexture>::Create(fileLoc, width, height, isSampler, filter);
-		case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<VulkanMoravaTexture>::Create(fileLoc, width, height, isSampler, filter);
-		case H2M::RendererAPIH2MType::DX11:   return H2M::Ref<DX11MoravaTexture>::Create(fileLoc, width, height, isSampler, filter);
+		case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<MoravaTexture>();
+		case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<OpenGLMoravaTexture>::Create(fileLoc, width, height, isSampler, filter);
+		case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<VulkanMoravaTexture>::Create(fileLoc, width, height, isSampler, filter);
+		case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11MoravaTexture>::Create(fileLoc, width, height, isSampler, filter);
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-	return H2M::Ref<MoravaTexture>();
+	return H2M::RefH2M<MoravaTexture>();
 }
 
-H2M::Ref<MoravaTexture> MoravaTexture::Create(const char* fileLoc, Specification spec)
+H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, Specification spec)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return H2M::Ref<MoravaTexture>();
-		case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<OpenGLMoravaTexture>::Create(fileLoc, spec);
-		case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<VulkanMoravaTexture>::Create(fileLoc, spec);
-		case H2M::RendererAPIH2MType::DX11:   return H2M::Ref<DX11MoravaTexture>::Create(fileLoc, spec);
+		case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<MoravaTexture>();
+		case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<OpenGLMoravaTexture>::Create(fileLoc, spec);
+		case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<VulkanMoravaTexture>::Create(fileLoc, spec);
+		case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11MoravaTexture>::Create(fileLoc, spec);
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-	return H2M::Ref<MoravaTexture>();
+	return H2M::RefH2M<MoravaTexture>();
 }
 
 void MoravaTexture::Unbind()

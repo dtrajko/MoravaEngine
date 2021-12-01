@@ -1,7 +1,7 @@
 #include "Material/MaterialInstance.h"
 
 
-MaterialInstance::MaterialInstance(const H2M::Ref<H2M::HazelMaterial>& material, const std::string& name)
+MaterialInstance::MaterialInstance(const H2M::RefH2M<H2M::HazelMaterial>& material, const std::string& name)
 	: H2M::HazelMaterial(material, name)
 {
 }

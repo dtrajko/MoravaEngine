@@ -13,7 +13,7 @@ class RenderInstanced
 
 public:
 	RenderInstanced();
-	RenderInstanced(TerrainBase* terrain, H2M::Ref<MoravaTexture> texture, Mesh* mesh);
+	RenderInstanced(TerrainBase* terrain, H2M::RefH2M<MoravaTexture> texture, Mesh* mesh);
 	void CreateVertexData();
 	void Update();
 	void Release();
@@ -29,7 +29,7 @@ private:
 
 public:
 	TerrainVoxel* m_Terrain;
-	H2M::Ref<MoravaTexture> m_Texture;
+	H2M::RefH2M<MoravaTexture> m_Texture;
 	Mesh* m_Mesh;
 	unsigned int m_InstanceCount;
 

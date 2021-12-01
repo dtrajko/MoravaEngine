@@ -9,7 +9,7 @@
 #include "DX11Pipeline.h"
 
 
-DX11Material::DX11Material(const H2M::Ref<H2M::HazelShader>& shader, const std::string& name)
+DX11Material::DX11Material(const H2M::RefH2M<H2M::HazelShader>& shader, const std::string& name)
 	: m_Shader(shader), m_Name(name)
 {
 	Invalidate();
@@ -17,7 +17,7 @@ DX11Material::DX11Material(const H2M::Ref<H2M::HazelShader>& shader, const std::
 	Log::GetLogger()->info("DX11Material created (name: '{0}')", m_Name);
 }
 
-DX11Material::DX11Material(H2M::Ref<DX11Pipeline> pipeline, const std::string& name)
+DX11Material::DX11Material(H2M::RefH2M<DX11Pipeline> pipeline, const std::string& name)
 	: m_Pipeline(pipeline), m_Name(name)
 {
 	m_Shader = pipeline->GetSpecification().Shader;
@@ -28,7 +28,7 @@ DX11Material::DX11Material(H2M::Ref<DX11Pipeline> pipeline, const std::string& n
 		m_Name, m_Pipeline->GetSpecification().DebugName);
 }
 
-DX11Material::DX11Material(H2M::Ref<DX11Material> material, const std::string& name)
+DX11Material::DX11Material(H2M::RefH2M<DX11Material> material, const std::string& name)
 	: m_Pipeline(material->GetPipeline()), m_Shader(material->GetShader()), m_CullMode(material->GetCullMode())
 {
 	m_Name = name != "" ? name : material->GetName();
@@ -56,10 +56,10 @@ void DX11Material::Set(const std::string& name, const glm::vec4& value) {}
 void DX11Material::Set(const std::string& name, const glm::mat3& value) {}
 void DX11Material::Set(const std::string& name, const glm::mat4& value) {}
 
-void DX11Material::Set(const std::string& name, const H2M::Ref<H2M::Texture2DH2M>& texture) {}
-void DX11Material::Set(const std::string& name, const H2M::Ref<H2M::Texture2DH2M>& texture, uint32_t arrayIndex) {}
-void DX11Material::Set(const std::string& name, const H2M::Ref<H2M::TextureCubeH2M>& texture) {}
-void DX11Material::Set(const std::string& name, const H2M::Ref<H2M::HazelImage2D>& image) {}
+void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Texture2DH2M>& texture) {}
+void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Texture2DH2M>& texture, uint32_t arrayIndex) {}
+void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::TextureCubeH2M>& texture) {}
+void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::HazelImage2D>& image) {}
 
 float& DX11Material::GetFloat(const std::string& name) { float v;  return v; }
 int32_t& DX11Material::GetInt(const std::string& name) { int32_t v;  return v; }
@@ -70,13 +70,13 @@ glm::vec3& DX11Material::GetVector3(const std::string& name) { glm::vec3 v;  ret
 glm::vec4& DX11Material::GetVector4(const std::string& name) { glm::vec4 v;  return v; }
 glm::mat3& DX11Material::GetMatrix3(const std::string& name) { glm::mat3 v;  return v; }
 glm::mat4& DX11Material::GetMatrix4(const std::string& name) { glm::mat4 v;  return v; }
-H2M::Ref<H2M::Texture2DH2M> DX11Material::GetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2DH2M::Create(path); }
-H2M::Ref<H2M::TextureCubeH2M> DX11Material::TryGetTextureCube(const std::string& name) { std::string path = ""; return H2M::TextureCubeH2M::Create(path); }
-H2M::Ref<H2M::Texture2DH2M> DX11Material::TryGetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2DH2M::Create(path); }
-H2M::Ref<H2M::TextureCubeH2M> DX11Material::GetTextureCube(const std::string& name) { std::string path = ""; return H2M::TextureCubeH2M::Create(path); }
+H2M::RefH2M<H2M::Texture2DH2M> DX11Material::GetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2DH2M::Create(path); }
+H2M::RefH2M<H2M::TextureCubeH2M> DX11Material::TryGetTextureCube(const std::string& name) { std::string path = ""; return H2M::TextureCubeH2M::Create(path); }
+H2M::RefH2M<H2M::Texture2DH2M> DX11Material::TryGetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2DH2M::Create(path); }
+H2M::RefH2M<H2M::TextureCubeH2M> DX11Material::GetTextureCube(const std::string& name) { std::string path = ""; return H2M::TextureCubeH2M::Create(path); }
 void DX11Material::UpdateForRendering() {}
 
-void DX11Material::AddTexture(H2M::Ref<DX11Texture2D> texture)
+void DX11Material::AddTexture(H2M::RefH2M<DX11Texture2D> texture)
 {
 	m_Textures.push_back(texture);
 }
@@ -92,7 +92,7 @@ void DX11Material::SetData(void* data, uint32_t size)
 {
 	if (!m_ConstantBuffer)
 	{
-		m_ConstantBuffer = H2M::Ref<DX11ConstantBuffer>::Create(data, size);
+		m_ConstantBuffer = H2M::RefH2M<DX11ConstantBuffer>::Create(data, size);
 	}
 	else
 	{

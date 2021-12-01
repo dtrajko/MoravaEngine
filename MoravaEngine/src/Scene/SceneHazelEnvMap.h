@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Hazel-dev/Core/Ref.h"
-
 #include "H2M/Core/Events/KeyEventH2M.h"
+#include "H2M/Core/RefH2M.h"
 #include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Scene/EntityH2M.h"
 
@@ -30,7 +29,7 @@ public:
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 	void SetupUniforms();
 
 private:
@@ -53,8 +52,8 @@ private:
 private:
 	std::unique_ptr<EnvMapEditorLayer> m_EnvMapEditorLayer;
 
-	H2M::Ref<MoravaShader> m_ShaderBackground;
-	H2M::Ref<MoravaShader> m_ShaderBasic;
+	H2M::RefH2M<MoravaShader> m_ShaderBackground;
+	H2M::RefH2M<MoravaShader> m_ShaderBasic;
 
 	Grid* m_Grid;
 	Pivot* m_PivotScene;

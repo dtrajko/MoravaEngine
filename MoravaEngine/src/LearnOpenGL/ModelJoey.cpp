@@ -30,7 +30,7 @@ ModelJoey::~ModelJoey()
 }
 
 // draws the model, and thus all its meshes
-void ModelJoey::Draw(H2M::Ref<MoravaShader> shader)
+void ModelJoey::Draw(H2M::RefH2M<MoravaShader> shader)
 {
     for (unsigned int i = 0; i < meshes.size(); i++)
     {

@@ -507,7 +507,7 @@ void VulkanMoravaTexture::GenerateMips(bool readonly)
 	auto device = H2M::VulkanContext::GetCurrentDevice();
 	auto vulkanDevice = device->GetVulkanDevice();
 
-	H2M::Ref<H2M::VulkanImage2D> image = m_Image.As<H2M::VulkanImage2D>();
+	H2M::RefH2M<H2M::VulkanImage2D> image = m_Image.As<H2M::VulkanImage2D>();
 	const auto& info = image->GetImageInfo();
 
 	const VkCommandBuffer blitCmd = H2M::VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);

@@ -39,8 +39,8 @@ public:
 
 	static bool DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f);
 
-	static void DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2M::Texture2DH2M> checkerboardTexture);
-	static void DragAndDropTarget(H2M::Ref<H2M::Texture2DH2M>& texture, bool srgb = false);
+	static void DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::RefH2M<H2M::Texture2DH2M> checkerboardTexture);
+	static void DragAndDropTarget(H2M::RefH2M<H2M::Texture2DH2M>& texture, bool srgb = false);
 
 	// ImGui UI helpers
 	static bool Property(const std::string& name, bool& value);

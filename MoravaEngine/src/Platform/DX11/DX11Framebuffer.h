@@ -15,7 +15,7 @@ public:
 
 	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
 
-	virtual void AddResizeCallback(const std::function<void(H2M::Ref<H2M::HazelFramebuffer>)>& func) override;
+	virtual void AddResizeCallback(const std::function<void(H2M::RefH2M<H2M::HazelFramebuffer>)>& func) override;
 
 	virtual void Bind() const override {}
 	virtual void Unbind() const override {}
@@ -27,8 +27,8 @@ public:
 
 	virtual H2M::RendererID GetRendererID() const { return m_RendererID; }
 
-	virtual H2M::Ref<H2M::HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const override { HZ_CORE_ASSERT(attachmentIndex < m_Attachments.size()); return m_Attachments[attachmentIndex]; }
-	virtual H2M::Ref<H2M::HazelImage2D> GetDepthImage() const override { return H2M::Ref<H2M::HazelImage2D>(); /* m_DepthAttachment; */ }
+	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const override { HZ_CORE_ASSERT(attachmentIndex < m_Attachments.size()); return m_Attachments[attachmentIndex]; }
+	virtual H2M::RefH2M<H2M::HazelImage2D> GetDepthImage() const override { return H2M::RefH2M<H2M::HazelImage2D>(); /* m_DepthAttachment; */ }
 
 	virtual H2M::RendererID GetColorAttachmentRendererID() const { return 0; }
 	virtual H2M::RendererID GetDepthAttachmentRendererID() const { return 0; }
@@ -41,12 +41,12 @@ private:
 	H2M::RendererID m_RendererID = 0;
 	uint32_t m_Width = 0, m_Height = 0;
 
-	std::vector<H2M::Ref<H2M::HazelImage2D>> m_Attachments;
+	std::vector<H2M::RefH2M<H2M::HazelImage2D>> m_Attachments;
 
-	std::vector<std::function<void(H2M::Ref<HazelFramebuffer>)>> m_ResizeCallbacks;
+	std::vector<std::function<void(H2M::RefH2M<HazelFramebuffer>)>> m_ResizeCallbacks;
 
 	// DirectX 11 framebuffer resources (added here as a reminder, not used yet)
-	H2M::Ref<DX11Texture2D> m_RenderTarget;
-	H2M::Ref<DX11Texture2D> m_DepthStencil;
+	H2M::RefH2M<DX11Texture2D> m_RenderTarget;
+	H2M::RefH2M<DX11Texture2D> m_DepthStencil;
 
 };

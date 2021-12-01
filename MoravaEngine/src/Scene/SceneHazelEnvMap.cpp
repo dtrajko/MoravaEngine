@@ -125,7 +125,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     m_Grid = new Grid(20);
     m_PivotScene = new Pivot(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(50.0f, 50.0f, 50.0f));
 
-    // H2M::RendererAPIH2M::Init();
+    // H2M::RendererAPI_H2M::Init();
 
     m_CsGame = new CsGame();
 }
@@ -250,7 +250,7 @@ void SceneHazelEnvMap::OnEntitySelected(H2M::Entity entity)
 }
 
 void SceneHazelEnvMap::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
     if (passType == "shadow" && sceneSettings.enableShadows) {
         m_EnvMapEditorLayer->OnRenderShadow(mainWindow);

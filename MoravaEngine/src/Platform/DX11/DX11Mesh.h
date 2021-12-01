@@ -26,8 +26,8 @@ public:
 	DX11Mesh(const wchar_t* fullPath);
 	~DX11Mesh();
 
-	const H2M::Ref<H2M::VertexBuffer>& GetVertexBuffer() { return m_VertexBuffer; };
-	const H2M::Ref<H2M::IndexBuffer>& GetIndexBuffer() { return m_IndexBuffer; };
+	const H2M::RefH2M<H2M::VertexBuffer>& GetVertexBuffer() { return m_VertexBuffer; };
+	const H2M::RefH2M<H2M::IndexBuffer>& GetIndexBuffer() { return m_IndexBuffer; };
 
 	const DX11MaterialSlot GetMaterialSlot(uint32_t slot);
 	size_t GetNumMaterialSlots();
@@ -39,8 +39,8 @@ private:
 		glm::vec3& tangent, glm::vec3& binormal);
 
 private:
-	H2M::Ref<H2M::VertexBuffer> m_VertexBuffer;
-	H2M::Ref<H2M::IndexBuffer> m_IndexBuffer;
+	H2M::RefH2M<H2M::VertexBuffer> m_VertexBuffer;
+	H2M::RefH2M<H2M::IndexBuffer> m_IndexBuffer;
 
 	std::vector<DX11MaterialSlot> m_MaterialSlots;
 

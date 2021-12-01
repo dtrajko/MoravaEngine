@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 
 
-DX11SwapChain::DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height, H2M::Ref<DX11Context> dx11Context)
+DX11SwapChain::DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height, H2M::RefH2M<DX11Context> dx11Context)
 	: m_HWND(hwnd), m_Width(width), m_Height(height), m_DX11Context(dx11Context)
 {
 	Invalidate();

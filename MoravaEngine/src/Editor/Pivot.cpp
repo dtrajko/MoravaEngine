@@ -18,7 +18,7 @@ void Pivot::Update(glm::vec3 position, glm::vec3 scale)
     m_Scale = scale;
 }
 
-void Pivot::Draw(H2M::Ref<MoravaShader> shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
+void Pivot::Draw(H2M::RefH2M<MoravaShader> shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 {
     glm::vec4 colorX = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
     glm::vec4 colorY = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);

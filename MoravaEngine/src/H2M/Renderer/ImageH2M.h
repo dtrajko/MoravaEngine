@@ -110,8 +110,8 @@ namespace H2M {
 	class Image2DH2M : public ImageH2M
 	{
 	public:
-		static H2M::Ref<Image2DH2M> Create(ImageSpecification specification, H2M::Buffer buffer);
-		static H2M::Ref<Image2DH2M> Create(ImageSpecification specification, const void* data = nullptr);
+		static H2M::RefH2M<Image2DH2M> Create(ImageSpecification specification, H2M::Buffer buffer);
+		static H2M::RefH2M<Image2DH2M> Create(ImageSpecification specification, const void* data = nullptr);
 	};
 
 	namespace Utils {

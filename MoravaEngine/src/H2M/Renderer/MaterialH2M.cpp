@@ -13,24 +13,24 @@ namespace H2M {
 	{
 	}
 
-	MaterialH2M::MaterialH2M(const H2M::Ref<ShaderH2M>& shader, const std::string& name)
+	MaterialH2M::MaterialH2M(const H2M::RefH2M<ShaderH2M>& shader, const std::string& name)
 		: m_Shader(shader), m_Name(name)
 	{
 		// Create(shader, name);
 	}
 
-	H2M::Ref<MaterialH2M> MaterialH2M::Create(const H2M::Ref<ShaderH2M>& shader, const std::string& name)
+	H2M::RefH2M<MaterialH2M> MaterialH2M::Create(const H2M::RefH2M<ShaderH2M>& shader, const std::string& name)
 	{
-		switch (H2M::RendererAPIH2M::Current())
+		switch (H2M::RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPIH2MType::None:   return H2M::Ref<MaterialH2M>();
-			case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<H2M::OpenGLMaterial>::Create(shader, name);
-			case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<H2M::VulkanMaterial>::Create(shader, name);
-			case H2M::RendererAPIH2MType::DX11:   return H2M::Ref<DX11Material>::Create(shader, name);
+			case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<MaterialH2M>();
+			case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<H2M::OpenGLMaterial>::Create(shader, name);
+			case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<H2M::VulkanMaterial>::Create(shader, name);
+			case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11Material>::Create(shader, name);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return H2M::Ref<MaterialH2M>();
+		return H2M::RefH2M<MaterialH2M>();
 	}
 
 	MaterialH2M::~MaterialH2M()
@@ -143,12 +143,12 @@ namespace H2M {
 	// MaterialInstance
 	//////////////////////////////////////////////////////////////////////////////////
 
-	H2M::Ref<MaterialInstanceH2M> MaterialInstanceH2M::Create(const H2M::Ref<MaterialH2M>& material)
+	H2M::RefH2M<MaterialInstanceH2M> MaterialInstanceH2M::Create(const H2M::RefH2M<MaterialH2M>& material)
 	{
-		return H2M::Ref<MaterialInstanceH2M>::Create(material);
+		return H2M::RefH2M<MaterialInstanceH2M>::Create(material);
 	}
 
-	MaterialInstanceH2M::MaterialInstanceH2M(const H2M::Ref<MaterialH2M>& material, const std::string& name)
+	MaterialInstanceH2M::MaterialInstanceH2M(const H2M::RefH2M<MaterialH2M>& material, const std::string& name)
 		: m_Material(material), m_Name(name)
 	{
 		m_Material->m_MaterialInstances.insert(this);

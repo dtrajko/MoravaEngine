@@ -46,7 +46,7 @@ public:
 	// DirectX 11
 	DX11Shader(const wchar_t* vertexShaderPath, const wchar_t* pixelShaderPath);
 	virtual ~DX11Shader();
-	static H2M::Ref<DX11Shader> CreateFromString(const std::string& source);
+	static H2M::RefH2M<DX11Shader> CreateFromString(const std::string& source);
 
 	virtual void Bind() override {};
 	virtual H2M::RendererID GetRendererID() const override { return (H2M::RendererID)0; };
@@ -144,8 +144,8 @@ public:
 
 	static void ClearUniformBuffers();
 
-	H2M::Ref<DX11VertexShader> GetVertexShader() { return m_VertexShader; }
-	H2M::Ref<DX11PixelShader> GetPixelShader() { return m_PixelShader; }
+	H2M::RefH2M<DX11VertexShader> GetVertexShader() { return m_VertexShader; }
+	H2M::RefH2M<DX11PixelShader> GetPixelShader() { return m_PixelShader; }
 
 private:
 	void CompileOrGetDX11Binary(std::array<std::vector<uint32_t>, 2>& outputBinary, bool forceCompile);
@@ -169,8 +169,8 @@ private:
 
 	std::unordered_map<std::string, H2M::ShaderBuffer> m_Buffers;
 
-	H2M::Ref<DX11VertexShader> m_VertexShader;
-	H2M::Ref<DX11PixelShader> m_PixelShader;
+	H2M::RefH2M<DX11VertexShader> m_VertexShader;
+	H2M::RefH2M<DX11PixelShader> m_PixelShader;
 
 	friend class DX11Material;
 

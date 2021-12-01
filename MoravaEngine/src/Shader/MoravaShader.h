@@ -42,10 +42,10 @@ class MoravaShader : public H2M::HazelShader
 {
 public:
 	// the ultimate Create method that can create both MoravaShader and HazelShader shader types
-	static H2M::Ref<MoravaShader> Create(MoravaShaderSpecification moravaShaderSpecification);
-	static H2M::Ref<MoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
-	static H2M::Ref<MoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
-	static H2M::Ref<MoravaShader> Create(const char* computeLocation, bool forceCompile = false);
+	static H2M::RefH2M<MoravaShader> Create(MoravaShaderSpecification moravaShaderSpecification);
+	static H2M::RefH2M<MoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
+	static H2M::RefH2M<MoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
+	static H2M::RefH2M<MoravaShader> Create(const char* computeLocation, bool forceCompile = false);
 
 	MoravaShader();
 	MoravaShader(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
@@ -172,7 +172,7 @@ protected:
 	std::string m_ShaderFilepath_TessEvaluation;
 
 	// Temporary, before we have an asset manager
-	static std::vector<H2M::Ref<MoravaShader>> s_AllShaders;
+	static std::vector<H2M::RefH2M<MoravaShader>> s_AllShaders;
 
 	// Vulkan Week Day 1
 	H2M::ShaderUniformBufferList m_VSRendererUniformBuffers;

@@ -161,7 +161,7 @@ namespace Hazel
 		if (!m_MeshShader)
 		{
 			/**** BEGIN MoravaShader the new API ****/
-			if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+			if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationStatic;
 				moravaShaderSpecificationStatic.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
@@ -178,7 +178,7 @@ namespace Hazel
 
 				m_MeshShader = m_IsAnimated ? MoravaShader::Create(moravaShaderSpecificationAnim) : MoravaShader::Create(moravaShaderSpecificationStatic);
 			}
-			else if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::Vulkan)
+			else if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelVulkan;
 				moravaShaderSpecificationHazelVulkan.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
@@ -187,7 +187,7 @@ namespace Hazel
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
 			}
-			else if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::DX11)
+			else if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::DX11)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelDX11;
 				moravaShaderSpecificationHazelDX11.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
@@ -511,7 +511,7 @@ namespace Hazel
 					submeshPtr = m_Submeshes[i];
 				}
 
-				H2M::Ref<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
+				H2M::RefH2M<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
 				// END the material data section
 
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
@@ -1241,7 +1241,7 @@ namespace Hazel
 		textureInfoDefault.roughness = "Textures/plain.png";
 		textureInfoDefault.emissive  = "Texture/plain.png";
 		textureInfoDefault.ao        = "Textures/plain.png";
-		m_BaseMaterial = H2M::Ref<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
+		m_BaseMaterial = H2M::RefH2M<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
 	}
 
 	Ref<Texture2DH2M> MeshH2M::LoadBaseTexture()
@@ -1497,7 +1497,7 @@ namespace Hazel
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial)
 			{
-				H2M::Ref<::Material> baseMaterialRef = m_BaseMaterial;
+				H2M::RefH2M<::Material> baseMaterialRef = m_BaseMaterial;
 				baseMaterialRef->GetTextureAlbedo()->Bind(samplerSlot + 0);
 				baseMaterialRef->GetTextureNormal()->Bind(samplerSlot + 1);
 				baseMaterialRef->GetTextureMetallic()->Bind(samplerSlot + 2);

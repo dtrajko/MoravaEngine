@@ -12,11 +12,11 @@
 
 
 glm::mat4 RendererBasic::s_ProjectionMatrix;
-std::map<std::string, H2M::Ref<MoravaShader>> RendererBasic::s_Shaders;
+std::map<std::string, H2M::RefH2M<MoravaShader>> RendererBasic::s_Shaders;
 std::map<std::string, int> RendererBasic::s_Uniforms;
 glm::vec4 RendererBasic::s_BgColor;
 // bool RendererBasic::s_SpirV_Enabled;
-H2M::Ref<H2M::RendererContext> RendererBasic::s_RendererContext;
+H2M::RefH2M<H2M::RendererContext> RendererBasic::s_RendererContext;
 
 
 RendererBasic::RendererBasic()
@@ -29,12 +29,12 @@ RendererBasic::~RendererBasic()
 
 void RendererBasic::AppendRendererInfo(WindowProps& windowProps)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::RendererInfo(windowProps);
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::RendererInfo(windowProps);
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::RendererInfo(windowProps);
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::RendererInfo(windowProps);
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::RendererInfo(windowProps);
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::RendererInfo(windowProps);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -68,12 +68,12 @@ void RendererBasic::SetShaders()
 
 void RendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -81,12 +81,12 @@ void RendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Win
 
 void RendererBasic::Clear()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::Clear();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::Clear();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::Clear();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::Clear();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::Clear();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::Clear();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -94,12 +94,12 @@ void RendererBasic::Clear()
 
 void RendererBasic::Clear(float r, float g, float b, float a)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::Clear(r, g, b, a);
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::Clear(r, g, b, a);
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::Clear(r, g, b, a);
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::Clear(r, g, b, a);
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::Clear(r, g, b, a);
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::Clear(r, g, b, a);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -107,12 +107,12 @@ void RendererBasic::Clear(float r, float g, float b, float a)
 
 void RendererBasic::SetLineThickness(float thickness)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::SetLineThickness(thickness);
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::SetLineThickness(thickness);
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::SetLineThickness(thickness);
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::SetLineThickness(thickness);
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::SetLineThickness(thickness);
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetLineThickness(thickness);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -127,12 +127,12 @@ bool RendererBasic::GetVulkanSupported()
 
 void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::SetDefaultFramebuffer(width, height);
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::SetDefaultFramebuffer(width, height);
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::SetDefaultFramebuffer(width, height);
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::SetDefaultFramebuffer(width, height);
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::SetDefaultFramebuffer(width, height);
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetDefaultFramebuffer(width, height);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -140,12 +140,12 @@ void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int heigh
 
 void RendererBasic::InitDebug()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::InitDebug();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::InitDebug();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::InitDebug();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::InitDebug();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::InitDebug();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::InitDebug();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -153,12 +153,12 @@ void RendererBasic::InitDebug()
 
 void RendererBasic::EnableCulling()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::EnableCulling();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::EnableCulling();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::EnableCulling();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::EnableCulling();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::EnableCulling();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableCulling();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -166,12 +166,12 @@ void RendererBasic::EnableCulling()
 
 void RendererBasic::DisableCulling()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::DisableCulling();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::DisableCulling();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::DisableCulling();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DisableCulling();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DisableCulling();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableCulling();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -179,12 +179,12 @@ void RendererBasic::DisableCulling()
 
 void RendererBasic::EnableTransparency()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::EnableTransparency();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::EnableTransparency();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::EnableTransparency();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::EnableTransparency();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::EnableTransparency();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableTransparency();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -192,12 +192,12 @@ void RendererBasic::EnableTransparency()
 
 void RendererBasic::DisableTransparency()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::DisableTransparency();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::DisableTransparency();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::DisableTransparency();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DisableTransparency();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DisableTransparency();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableTransparency();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -205,12 +205,12 @@ void RendererBasic::DisableTransparency()
 
 void RendererBasic::EnableDepthBuffer()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::EnableDepthBuffer();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::EnableDepthBuffer();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::EnableDepthBuffer();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::EnableDepthBuffer();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::EnableDepthBuffer();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableDepthBuffer();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -218,12 +218,12 @@ void RendererBasic::EnableDepthBuffer()
 
 void RendererBasic::DisableDepthBuffer()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::DisableDepthBuffer();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::DisableDepthBuffer();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::DisableDepthBuffer();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DisableDepthBuffer();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DisableDepthBuffer();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableDepthBuffer();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -231,12 +231,12 @@ void RendererBasic::DisableDepthBuffer()
 
 void RendererBasic::ClearDepthBuffer()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::ClearDepthBuffer();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::ClearDepthBuffer();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::ClearDepthBuffer();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::ClearDepthBuffer();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::ClearDepthBuffer();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::ClearDepthBuffer();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -244,12 +244,12 @@ void RendererBasic::ClearDepthBuffer()
 
 void RendererBasic::EnableDepthTest()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::EnableDepthTest();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::EnableDepthTest();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::EnableDepthTest();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::EnableDepthTest();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::EnableDepthTest();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableDepthTest();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -257,12 +257,12 @@ void RendererBasic::EnableDepthTest()
 
 void RendererBasic::DisableDepthTest()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::DisableDepthTest();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::DisableDepthTest();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::DisableDepthTest();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DisableDepthTest();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DisableDepthTest();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableDepthTest();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -270,12 +270,12 @@ void RendererBasic::DisableDepthTest()
 
 void RendererBasic::EnableMSAA()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::EnableMSAA();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::EnableMSAA();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::EnableMSAA();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::EnableMSAA();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::EnableMSAA();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableMSAA();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -283,12 +283,12 @@ void RendererBasic::EnableMSAA()
 
 void RendererBasic::DisableMSAA()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::DisableMSAA();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::DisableMSAA();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::DisableMSAA();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DisableMSAA();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DisableMSAA();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableMSAA();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -296,12 +296,12 @@ void RendererBasic::DisableMSAA()
 
 void RendererBasic::EnableBlend()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::EnableBlend();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::EnableBlend();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::EnableBlend();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::EnableBlend();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::EnableBlend();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableBlend();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -309,12 +309,12 @@ void RendererBasic::EnableBlend()
 
 void RendererBasic::EnableWireframe()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::EnableWireframe();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::EnableWireframe();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::EnableWireframe();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::EnableWireframe();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::EnableWireframe();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableWireframe();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -322,12 +322,12 @@ void RendererBasic::EnableWireframe()
 
 void RendererBasic::DisableWireframe()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::DisableWireframe();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::DisableWireframe();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::DisableWireframe();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DisableWireframe();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DisableWireframe();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableWireframe();
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -335,12 +335,12 @@ void RendererBasic::DisableWireframe()
 
 void RendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::SetViewportSize(width, height);
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::SetViewportSize(width, height);
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::SetViewportSize(width, height);
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::SetViewportSize(width, height);
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::SetViewportSize(width, height);
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetViewportSize(width, height);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -348,12 +348,12 @@ void RendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 
 void RendererBasic::DisableBlend()
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::DisableBlend();
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::DisableBlend();
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::DisableBlend();
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DisableBlend();
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DisableBlend();
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableBlend();
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
@@ -368,12 +368,12 @@ void RendererBasic::Cleanup()
 
 void RendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::DrawIndexed(indexCount, startIndexLocation, baseVertexLocation, indicesPtr);
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::DrawIndexed(indexCount, startIndexLocation, baseVertexLocation, indicesPtr);
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::DrawIndexed(indexCount, startIndexLocation, baseVertexLocation, indicesPtr);
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DrawIndexed(indexCount, startIndexLocation, baseVertexLocation, indicesPtr);
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DrawIndexed(indexCount, startIndexLocation, baseVertexLocation, indicesPtr);
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DrawIndexed(indexCount, startIndexLocation, baseVertexLocation, indicesPtr);
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
@@ -390,12 +390,12 @@ void RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* s
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
 void RendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPIH2MType::None:   return;
-		case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::DrawIndexed(count, type, depthTest);
-		case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::DrawIndexed(count, type, depthTest);
-		case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::DrawIndexed(count, type, depthTest);
+		case H2M::RendererAPITypeH2M::None:   return;
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DrawIndexed(count, type, depthTest);
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DrawIndexed(count, type, depthTest);
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DrawIndexed(count, type, depthTest);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -403,12 +403,12 @@ void RendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool de
 
 void RendererBasic::SetPolygonMode(PolygonMode polygonMode)
 {
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-	case H2M::RendererAPIH2MType::None:   return;
-	case H2M::RendererAPIH2MType::OpenGL: return OpenGLRendererBasic::SetPolygonMode(polygonMode);
-	case H2M::RendererAPIH2MType::Vulkan: return VulkanRendererBasic::SetPolygonMode(polygonMode);
-	case H2M::RendererAPIH2MType::DX11:   return DX11RendererBasic::SetPolygonMode(polygonMode);
+	case H2M::RendererAPITypeH2M::None:   return;
+	case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::SetPolygonMode(polygonMode);
+	case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::SetPolygonMode(polygonMode);
+	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetPolygonMode(polygonMode);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	HZ_CORE_ASSERT(false, "Unknown RendererAPI");

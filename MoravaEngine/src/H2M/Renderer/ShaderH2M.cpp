@@ -1,9 +1,9 @@
 #include "ShaderH2M.h"
 
-#include "H2M/Core/Assert.h"
-#include "H2M/Platform/OpenGL/OpenGLShader.h"
-#include "H2M/Platform/Vulkan/VulkanShader.h"
-#include "H2M/Renderer/RendererAPI.h"
+#include "H2M/Core/AssertH2M.h"
+#include "H2M/Platform/OpenGL/OpenGLShaderH2M.h"
+#include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "Platform/DX11/DX11Shader.h"
 
@@ -11,43 +11,43 @@
 namespace H2M
 {
 
-	std::vector<H2M::Ref<ShaderH2M>> ShaderH2M::s_AllShaders;
+	std::vector<H2M::RefH2M<ShaderH2M>> ShaderH2M::s_AllShaders;
 
-	H2M::Ref<ShaderH2M> ShaderH2M::Create(const std::string& filepath, bool forceCompile)
+	H2M::RefH2M<ShaderH2M> ShaderH2M::Create(const std::string& filepath, bool forceCompile)
 	{
 		Log::GetLogger()->info("ShaderH2M::Create('{0}')", filepath.c_str());
 
-		H2M::Ref<ShaderH2M> result = H2M::Ref<ShaderH2M>();
+		H2M::RefH2M<ShaderH2M> result = H2M::RefH2M<ShaderH2M>();
 
-		switch (H2M::RendererAPIH2M::Current())
+		switch (H2M::RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPIH2MType::None: return H2M::Ref<ShaderH2M>();
-			case H2M::RendererAPIH2MType::OpenGL:
-				result = H2M::Ref<H2M::OpenGLShader>::Create(filepath, forceCompile);
+			case H2M::RendererAPITypeH2M::None: return H2M::RefH2M<ShaderH2M>();
+			case H2M::RendererAPITypeH2M::OpenGL:
+				result = H2M::RefH2M<H2M::OpenGLShader>::Create(filepath, forceCompile);
 				break;
-			case H2M::RendererAPIH2MType::Vulkan:
-				result = H2M::Ref<H2M::VulkanShader>::Create(filepath, forceCompile);
+			case H2M::RendererAPITypeH2M::Vulkan:
+				result = H2M::RefH2M<H2M::VulkanShader>::Create(filepath, forceCompile);
 				break;
-			case H2M::RendererAPIH2MType::DX11:
-				result = H2M::Ref<DX11Shader>::Create(filepath, forceCompile);
+			case H2M::RendererAPITypeH2M::DX11:
+				result = H2M::RefH2M<DX11Shader>::Create(filepath, forceCompile);
 				break;
 		}
 		s_AllShaders.push_back(result);
 		return result;
 	}
 
-	H2M::Ref<ShaderH2M> ShaderH2M::CreateFromString(const std::string& source)
+	H2M::RefH2M<ShaderH2M> ShaderH2M::CreateFromString(const std::string& source)
 	{
 		Log::GetLogger()->info("ShaderH2M::CreateFromString('{0}')", source.c_str());
 
-		H2M::Ref<ShaderH2M> result = H2M::Ref<ShaderH2M>();
+		H2M::RefH2M<ShaderH2M> result = H2M::RefH2M<ShaderH2M>();
 
-		switch (H2M::RendererAPIH2M::Current())
+		switch (H2M::RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPIH2MType::None:   return H2M::Ref<ShaderH2M>();
-			case H2M::RendererAPIH2MType::OpenGL: result = H2M::OpenGLShader::CreateFromString(source);
-			case H2M::RendererAPIH2MType::Vulkan: result = H2M::VulkanShader::CreateFromString(source);
-			case H2M::RendererAPIH2MType::DX11:   result = DX11Shader::CreateFromString(source);
+			case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<ShaderH2M>();
+			case H2M::RendererAPITypeH2M::OpenGL: result = H2M::OpenGLShader::CreateFromString(source);
+			case H2M::RendererAPITypeH2M::Vulkan: result = H2M::VulkanShader::CreateFromString(source);
+			case H2M::RendererAPITypeH2M::DX11:   result = DX11Shader::CreateFromString(source);
 		}
 		s_AllShaders.push_back(result);
 		return result;
@@ -61,7 +61,7 @@ namespace H2M
 	{
 	}
 
-	void ShaderLibraryH2M::Add(const H2M::Ref<ShaderH2M>& shader)
+	void ShaderLibraryH2M::Add(const H2M::RefH2M<ShaderH2M>& shader)
 	{
 		auto& name = shader->GetName();
 		HZ_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
@@ -99,13 +99,13 @@ namespace H2M
 		// m_Shaders.insert(std::make_pair(name, shader));
 	}
 
-	H2M::Ref<ShaderH2M> ShaderLibraryH2M::Get(const std::string& name)
+	H2M::RefH2M<ShaderH2M> ShaderLibraryH2M::Get(const std::string& name)
 	{
 		// HZ_CORE_ASSERT(m_Shaders.find(name) != m_Shaders.end());
 		if (m_Shaders.find(name) == m_Shaders.end())
 		{
 			Log::GetLogger()->error("ShaderLibraryH2M::Get - shader '{0}' not found in ShaderLibrary!", name);
-			return H2M::Ref<ShaderH2M>();
+			return H2M::RefH2M<ShaderH2M>();
 		}
 		return m_Shaders.at(name);
 	}

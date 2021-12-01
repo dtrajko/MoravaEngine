@@ -36,7 +36,7 @@ bool FramebufferSSAO::Init(unsigned int width, unsigned int height)
 	m_ShaderSSAO = MoravaShader::Create("Shaders/LearnOpenGL/ssao.vs", "Shaders/LearnOpenGL/ssao.fs");
 	Log::GetLogger()->info("FramebufferSSAO: m_ShaderSSAO compiled [programID={0}]", m_ShaderSSAO->GetProgramID());
 
-	m_QuadSSAO = H2M::Ref<QuadSSAO>::Create();
+	m_QuadSSAO = H2M::RefH2M<QuadSSAO>::Create();
 
 	GenerateSampleKernel();
 	GenerateNoiseTexture();

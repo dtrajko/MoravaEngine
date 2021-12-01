@@ -157,7 +157,7 @@ void ImGuiWrapper::DrawInputText(std::string text)
 	ImGui::InputText(text.c_str(), buffer, 32);
 }
 
-void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2M::Texture2DH2M> checkerboardTexture)
+void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::RefH2M<H2M::Texture2DH2M> checkerboardTexture)
 {
 	// Display Material UUID
 	ImGui::Columns(2);
@@ -188,7 +188,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 		std::string textureLabel = material->GetName() + " Albedo";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+			if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetAlbedoInput().TextureMap ?
@@ -212,7 +212,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 					ImGui::TextUnformatted(material->GetAlbedoInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+					if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetAlbedoInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -261,7 +261,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 		std::string textureLabel = material->GetName() + " Normals";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+			if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetNormalInput().TextureMap ?
@@ -285,7 +285,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 					ImGui::TextUnformatted(material->GetNormalInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+					if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetNormalInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -316,7 +316,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 		std::string textureLabel = material->GetName() + " Metalness";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+			if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetMetalnessInput().TextureMap ?
@@ -340,7 +340,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 					ImGui::TextUnformatted(material->GetMetalnessInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+					if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetMetalnessInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -374,7 +374,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 		std::string textureLabel = material->GetName() + " Roughness";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+			if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetRoughnessInput().TextureMap ?
@@ -398,7 +398,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 					ImGui::TextUnformatted(material->GetRoughnessInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (H2M::RendererAPIH2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
+					if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetRoughnessInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -432,7 +432,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 		std::string textureLabel = material->GetName() + " AO";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+			if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetAOInput().TextureMap ?
@@ -456,7 +456,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 					ImGui::TextUnformatted(material->GetAOInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+					if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetAOInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -490,7 +490,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 		std::string textureLabel = material->GetName() + " Emissive";
 		if (ImGui::CollapsingHeader(textureLabel.c_str(), nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 		{
-			if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+			if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 			{
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
 				ImGui::Image(material->GetEmissiveInput().TextureMap ?
@@ -514,7 +514,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 					ImGui::TextUnformatted(material->GetEmissiveInput().TextureMap->GetPath().c_str());
 					ImGui::PopTextWrapPos();
 
-					if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::OpenGL)
+					if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 					{
 						ImGui::Image((void*)(intptr_t)material->GetEmissiveInput().TextureMap->GetImTextureID(), ImVec2(384, 384));
 					}
@@ -559,7 +559,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::Ref<EnvMapMaterial> material, H2M::Ref<H2
 	// END PBR Textures
 }
 
-void ImGuiWrapper::DragAndDropTarget(H2M::Ref<H2M::Texture2DH2M>& texture, bool srgb)
+void ImGuiWrapper::DragAndDropTarget(H2M::RefH2M<H2M::Texture2DH2M>& texture, bool srgb)
 {
 	if (ImGui::BeginDragDropTarget())
 	{

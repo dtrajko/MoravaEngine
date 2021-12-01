@@ -13,32 +13,32 @@
 
 namespace H2M {
 
-	H2M::Ref<Texture2DH2M> Texture2DH2M::Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, H2M::TextureProperties properties)
+	H2M::RefH2M<Texture2DH2M> Texture2DH2M::Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, H2M::TextureProperties properties)
 	{
-		switch (H2M::RendererAPIH2M::Current())
+		switch (H2M::RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPIH2MType::None:   return H2M::Ref<Texture2DH2M>();
-			case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<H2M::OpenGLTexture2D>::Create(format, width, height, data);
-			case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<H2M::VulkanTexture2D>::Create(format, width, height, data, properties);
-			case H2M::RendererAPIH2MType::DX11:   return H2M::Ref<DX11Texture2D>::Create(format, width, height, data);
+			case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<Texture2DH2M>();
+			case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<H2M::OpenGLTexture2D>::Create(format, width, height, data);
+			case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<H2M::VulkanTexture2D>::Create(format, width, height, data, properties);
+			case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11Texture2D>::Create(format, width, height, data);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return H2M::Ref<Texture2DH2M>();
+		return H2M::RefH2M<Texture2DH2M>();
 	}
 
-	H2M::Ref<Texture2DH2M> Texture2DH2M::Create(const std::string& path, H2M::TextureProperties properties)
+	H2M::RefH2M<Texture2DH2M> Texture2DH2M::Create(const std::string& path, H2M::TextureProperties properties)
 	{
-		switch (H2M::RendererAPIH2M::Current())
+		switch (H2M::RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPIH2MType::None:   return H2M::Ref<Texture2DH2M>();
-			case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<H2M::OpenGLTexture2D>::Create(path, properties);
-			case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<H2M::VulkanTexture2D>::Create(path, properties);
-			case H2M::RendererAPIH2MType::DX11:   return H2M::Ref<DX11Texture2D>::Create(Util::to_wstr(path.c_str()).c_str());
+			case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<Texture2DH2M>();
+			case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<H2M::OpenGLTexture2D>::Create(path, properties);
+			case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<H2M::VulkanTexture2D>::Create(path, properties);
+			case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11Texture2D>::Create(Util::to_wstr(path.c_str()).c_str());
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return H2M::Ref<Texture2DH2M>();
+		return H2M::RefH2M<Texture2DH2M>();
 	}
 
 	/**** BEGIN Method removed in Vulkan branch ****
@@ -62,47 +62,47 @@ namespace H2M {
 		return (ImTextureID)(intptr_t)GetID();
 	}
 
-	H2M::Ref<TextureCubeH2M> TextureCubeH2M::Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data)
+	H2M::RefH2M<TextureCubeH2M> TextureCubeH2M::Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data)
 	{
-		switch (H2M::RendererAPIH2M::Current())
+		switch (H2M::RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPIH2MType::None:   return H2M::Ref<TextureCubeH2M>();
-			case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<H2M::OpenGLTextureCube>::Create(format, width, height, data);
-			case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<H2M::VulkanTextureCube>::Create(format, width, height, data, H2M::TextureProperties{});
-			case H2M::RendererAPIH2MType::DX11:   return H2M::Ref<DX11TextureCube>::Create(format, width, height, data);
+			case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<TextureCubeH2M>();
+			case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<H2M::OpenGLTextureCube>::Create(format, width, height, data);
+			case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<H2M::VulkanTextureCube>::Create(format, width, height, data, H2M::TextureProperties{});
+			case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11TextureCube>::Create(format, width, height, data);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return H2M::Ref<TextureCubeH2M>();
+		return H2M::RefH2M<TextureCubeH2M>();
 	}
 
-	H2M::Ref<TextureCubeH2M> TextureCubeH2M::Create(const std::string& path)
+	H2M::RefH2M<TextureCubeH2M> TextureCubeH2M::Create(const std::string& path)
 	{
-		switch (H2M::RendererAPIH2M::Current())
+		switch (H2M::RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPIH2MType::None:   return H2M::Ref<TextureCubeH2M>();
-			case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<H2M::OpenGLTextureCube>::Create(path);
-			case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<H2M::VulkanTextureCube>::Create(path, H2M::TextureProperties{});
-			case H2M::RendererAPIH2MType::DX11:   return H2M::Ref<DX11TextureCube>::Create(path);
+			case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<TextureCubeH2M>();
+			case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<H2M::OpenGLTextureCube>::Create(path);
+			case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<H2M::VulkanTextureCube>::Create(path, H2M::TextureProperties{});
+			case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11TextureCube>::Create(path);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return H2M::Ref<TextureCubeH2M>();
+		return H2M::RefH2M<TextureCubeH2M>();
 	}
 
 	// Used only by the OpenGL EnvMap scene. Scheduled for removal.
-	H2M::Ref<TextureCubeH2M> TextureCubeH2M::Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, bool notUsed)
+	H2M::RefH2M<TextureCubeH2M> TextureCubeH2M::Create(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, bool notUsed)
 	{
-		switch (H2M::RendererAPIH2M::Current())
+		switch (H2M::RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPIH2MType::None:   return H2M::Ref<TextureCubeH2M>();
-			case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<H2M::OpenGLTextureCube>::Create(format, width, height, true);
-			case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<H2M::VulkanTextureCube>::Create(format, width, height, nullptr, H2M::TextureProperties{});
-			case H2M::RendererAPIH2MType::DX11:   return H2M::Ref<DX11TextureCube>::Create(format, width, height, nullptr);
+			case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<TextureCubeH2M>();
+			case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<H2M::OpenGLTextureCube>::Create(format, width, height, true);
+			case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<H2M::VulkanTextureCube>::Create(format, width, height, nullptr, H2M::TextureProperties{});
+			case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11TextureCube>::Create(format, width, height, nullptr);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return H2M::Ref<TextureCubeH2M>();
+		return H2M::RefH2M<TextureCubeH2M>();
 	}
 
 	void TextureH2M::SetData(void* data, uint32_t size)

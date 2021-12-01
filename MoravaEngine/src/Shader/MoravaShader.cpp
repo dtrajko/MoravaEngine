@@ -10,16 +10,16 @@
 #include "Platform/DX11/DX11Shader.h"
 
 
-std::vector<H2M::Ref<MoravaShader>> MoravaShader::s_AllShaders;
+std::vector<H2M::RefH2M<MoravaShader>> MoravaShader::s_AllShaders;
 MoravaShaderSpecification MoravaShader::s_Specification = MoravaShaderSpecification{};
 
 
 // the ultimate Create method that can create both MoravaShader and HazelShader shader types
-H2M::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaShaderSpecification)
+H2M::RefH2M<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaShaderSpecification)
 {
 	s_Specification = moravaShaderSpecification;
 
-	H2M::Ref<MoravaShader> moravaShader;
+	H2M::RefH2M<MoravaShader> moravaShader;
 
 	if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::MoravaShader)
 	{
@@ -27,15 +27,15 @@ H2M::Ref<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaShad
 	}
 	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::HazelShader)
 	{
-		H2M::Ref<H2M::HazelShader> hazelShader = HazelShader::Create(moravaShaderSpecification.HazelShaderPath, moravaShaderSpecification.ForceCompile);
-		moravaShader = H2M::Ref<MoravaShader>(hazelShader);
+		H2M::RefH2M<H2M::HazelShader> hazelShader = HazelShader::Create(moravaShaderSpecification.HazelShaderPath, moravaShaderSpecification.ForceCompile);
+		moravaShader = H2M::RefH2M<MoravaShader>(hazelShader);
 	}
 	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::DX11Shader)
 	{
-		H2M::Ref<DX11Shader> dx11Shader = H2M::Ref<DX11Shader>::Create(
+		H2M::RefH2M<DX11Shader> dx11Shader = H2M::RefH2M<DX11Shader>::Create(
 			Util::to_wstr(moravaShaderSpecification.VertexShaderPath.c_str()).c_str(),
 			Util::to_wstr(moravaShaderSpecification.PixelShaderPath.c_str()).c_str());
-		moravaShader = H2M::Ref<MoravaShader>(dx11Shader);
+		moravaShader = H2M::RefH2M<MoravaShader>(dx11Shader);
 	}
 
 	return moravaShader;
@@ -85,17 +85,17 @@ MoravaShader::MoravaShader(const char* computeLocation, bool forceCompile)
 	CompileProgram();
 }
 
-H2M::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
+H2M::RefH2M<MoravaShader> MoravaShader::Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile)
 {
-	H2M::Ref<MoravaShader> result = H2M::Ref<MoravaShader>();
+	H2M::RefH2M<MoravaShader> result = H2M::RefH2M<MoravaShader>();
 
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-	case H2M::RendererAPIH2MType::None: return H2M::Ref<MoravaShader>();
-	case H2M::RendererAPIH2MType::OpenGL:
-		result = H2M::Ref<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
+	case H2M::RendererAPITypeH2M::None: return H2M::RefH2M<MoravaShader>();
+	case H2M::RendererAPITypeH2M::OpenGL:
+		result = H2M::RefH2M<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
 		break;
-	case H2M::RendererAPIH2MType::Vulkan:
+	case H2M::RendererAPITypeH2M::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 	}
@@ -103,17 +103,17 @@ H2M::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const ch
 	return result;
 }
 
-H2M::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
+H2M::RefH2M<MoravaShader> MoravaShader::Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile)
 {
-	H2M::Ref<MoravaShader> result = H2M::Ref<MoravaShader>();
+	H2M::RefH2M<MoravaShader> result = H2M::RefH2M<MoravaShader>();
 
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-	case H2M::RendererAPIH2MType::None: return H2M::Ref<MoravaShader>();
-	case H2M::RendererAPIH2MType::OpenGL:
-		result = H2M::Ref<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
+	case H2M::RendererAPITypeH2M::None: return H2M::RefH2M<MoravaShader>();
+	case H2M::RendererAPITypeH2M::OpenGL:
+		result = H2M::RefH2M<OpenGLMoravaShader>::Create(vertexLocation, geometryLocation, fragmentLocation, forceCompile);
 		break;
-	case H2M::RendererAPIH2MType::Vulkan:
+	case H2M::RendererAPITypeH2M::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 	}
@@ -121,17 +121,17 @@ H2M::Ref<MoravaShader> MoravaShader::Create(const char* vertexLocation, const ch
 	return result;
 }
 
-H2M::Ref<MoravaShader> MoravaShader::Create(const char* computeLocation, bool forceCompile)
+H2M::RefH2M<MoravaShader> MoravaShader::Create(const char* computeLocation, bool forceCompile)
 {
-	H2M::Ref<MoravaShader> result = H2M::Ref<MoravaShader>();
+	H2M::RefH2M<MoravaShader> result = H2M::RefH2M<MoravaShader>();
 
-	switch (H2M::RendererAPIH2M::Current())
+	switch (H2M::RendererAPI_H2M::Current())
 	{
-	case H2M::RendererAPIH2MType::None: return H2M::Ref<MoravaShader>();
-	case H2M::RendererAPIH2MType::OpenGL:
-		result = H2M::Ref<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
+	case H2M::RendererAPITypeH2M::None: return H2M::RefH2M<MoravaShader>();
+	case H2M::RendererAPITypeH2M::OpenGL:
+		result = H2M::RefH2M<OpenGLMoravaShader>::Create(computeLocation, forceCompile);
 		break;
-	case H2M::RendererAPIH2MType::Vulkan:
+	case H2M::RendererAPITypeH2M::Vulkan:
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 	}

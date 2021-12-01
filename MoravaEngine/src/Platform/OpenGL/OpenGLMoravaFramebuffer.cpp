@@ -213,27 +213,27 @@ void OpenGLMoravaFramebuffer::CreateAttachmentDepth(unsigned int width, unsigned
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentDepth = H2M::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
+		m_AttachmentDepth = H2M::RefH2M<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentDepth = H2M::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
+		m_AttachmentDepth = H2M::RefH2M<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
 void OpenGLMoravaFramebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentStencil = H2M::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
+		m_AttachmentStencil = H2M::RefH2M<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentStencil = H2M::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
+		m_AttachmentStencil = H2M::RefH2M<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
 void OpenGLMoravaFramebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
-		m_AttachmentDepthAndStencil = H2M::Ref<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
+		m_AttachmentDepthAndStencil = H2M::RefH2M<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
 	else if (attachmentType == AttachmentType::Renderbuffer)
-		m_AttachmentDepthAndStencil = H2M::Ref<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
+		m_AttachmentDepthAndStencil = H2M::RefH2M<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
 }
 
 void OpenGLMoravaFramebuffer::Bind() const
@@ -283,7 +283,7 @@ FramebufferTexture* OpenGLMoravaFramebuffer::GetTextureAttachmentColor(unsigned 
 	return m_TextureAttachmentsColor.at(orderID);
 }
 
-H2M::Ref<Attachment> OpenGLMoravaFramebuffer::GetAttachmentDepth()
+H2M::RefH2M<Attachment> OpenGLMoravaFramebuffer::GetAttachmentDepth()
 {
 	if (!m_AttachmentDepth)
 	{
@@ -293,7 +293,7 @@ H2M::Ref<Attachment> OpenGLMoravaFramebuffer::GetAttachmentDepth()
 	return m_AttachmentDepth;
 }
 
-H2M::Ref<Attachment> OpenGLMoravaFramebuffer::GetAttachmentStencil()
+H2M::RefH2M<Attachment> OpenGLMoravaFramebuffer::GetAttachmentStencil()
 {
 	if (!m_AttachmentStencil)
 	{
@@ -302,7 +302,7 @@ H2M::Ref<Attachment> OpenGLMoravaFramebuffer::GetAttachmentStencil()
 	return m_AttachmentStencil;
 }
 
-H2M::Ref<Attachment> OpenGLMoravaFramebuffer::GetAttachmentDepthAndStencil()
+H2M::RefH2M<Attachment> OpenGLMoravaFramebuffer::GetAttachmentDepthAndStencil()
 {
 	if (!m_AttachmentDepthAndStencil)
 	{
@@ -312,7 +312,7 @@ H2M::Ref<Attachment> OpenGLMoravaFramebuffer::GetAttachmentDepthAndStencil()
 	return m_AttachmentDepthAndStencil;
 }
 
-H2M::Ref<MoravaFramebuffer> OpenGLMoravaFramebuffer::Create(const FramebufferSpecification& spec)
+H2M::RefH2M<MoravaFramebuffer> OpenGLMoravaFramebuffer::Create(const FramebufferSpecification& spec)
 {
 	return MoravaFramebuffer::Create(spec);
 }
@@ -353,14 +353,14 @@ H2M::RendererID OpenGLMoravaFramebuffer::GetRendererID() const
 	return m_FBO;
 }
 
-H2M::Ref<H2M::HazelImage2D> OpenGLMoravaFramebuffer::GetImage(uint32_t attachmentIndex) const
+H2M::RefH2M<H2M::HazelImage2D> OpenGLMoravaFramebuffer::GetImage(uint32_t attachmentIndex) const
 {
-	return H2M::Ref<H2M::HazelImage2D>();
+	return H2M::RefH2M<H2M::HazelImage2D>();
 }
 
-H2M::Ref<H2M::HazelImage2D> OpenGLMoravaFramebuffer::GetDepthImage() const
+H2M::RefH2M<H2M::HazelImage2D> OpenGLMoravaFramebuffer::GetDepthImage() const
 {
-	return H2M::Ref<H2M::HazelImage2D>();
+	return H2M::RefH2M<H2M::HazelImage2D>();
 }
 
 //	H2M::RendererID OpenGLMoravaFramebuffer::GetColorAttachmentRendererID() const

@@ -10,7 +10,7 @@
 #include <cstdio>
 
 
-CameraController::CameraController(H2M::HazelCamera* camera, float aspectRatio, float moveSpeed, float turnSpeed)
+CameraController::CameraController(H2M::CameraH2M* camera, float aspectRatio, float moveSpeed, float turnSpeed)
 {
 	m_Camera = camera;
 	m_Camera->SetAspectRatio(aspectRatio);

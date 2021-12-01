@@ -24,7 +24,7 @@ public:
 	virtual H2M::ImageFormatH2M GetFormat() { return m_Format; };
 
 	// BEGIN pure virtual methods inherited from HazelTexture/Texture2DH2M
-	virtual H2M::Ref<H2M::HazelImage2D> GetImage() const override { return H2M::Ref<H2M::HazelImage2D>(); }
+	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage() const override { return H2M::RefH2M<H2M::HazelImage2D>(); }
 	virtual void Lock() override {}
 	virtual void Unlock() override {}
 	virtual H2M::Buffer GetWriteableBuffer() override { return H2M::Buffer(); }

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "H2M/Core/Math/AABBH2M.h"
+#include "H2M/Core/Math/AABB_H2M.h"
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
-#include "H2M/Renderer/Pipeline.h"
-#include "H2M/Renderer/IndexBuffer.h"
+#include "H2M/Renderer/PipelineH2M.h"
+#include "H2M/Renderer/IndexBufferH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
-#include "H2M/Renderer/MaterialAsset.h"
+#include "H2M/Renderer/MaterialAssetH2M.h"
 #include "H2M/Scene/EntityH2M.h"
 
 #include "Core/Log.h"
@@ -132,9 +132,9 @@ namespace H2M {
 	class SubmeshH2M : public Mesh
 	{
 	public:
-		void Render(Ref<MeshH2M> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-			const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityH2M entity, bool wireframeEnabledScene = false, bool wireframeEnabledModel = false);
-		void RenderOutline(Ref<MeshH2M> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, EntityH2M entity);
+		void Render(RefH2M<MeshH2M> parentMesh, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
+			const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, EntityH2M entity, bool wireframeEnabledScene = false, bool wireframeEnabledModel = false);
+		void RenderOutline(RefH2M<MeshH2M> parentMesh, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, EntityH2M entity);
 
 	public:
 		uint32_t BaseVertex;
@@ -167,7 +167,7 @@ namespace H2M {
 	{
 	public:
 		MeshH2M(const std::string& filename);
-		MeshH2M(const std::string& filename, Ref<MoravaShader> shader, Ref<HazelMaterial> material, bool isAnimated);
+		MeshH2M(const std::string& filename, RefH2M<MoravaShader> shader, RefH2M<HazelMaterial> material, bool isAnimated);
 		virtual ~MeshH2M() override;
 
 		virtual void Create() override;
@@ -175,35 +175,35 @@ namespace H2M {
 		void OnImGuiRender(uint32_t id = 0, bool* p_open = (bool*)0);
 		void DumpVertexBuffer();
 
-		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials);
-		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityH2M entity);
+		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials);
+		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, EntityH2M entity);
 
 		// Getters
-		std::vector<Ref<SubmeshH2M>>& GetSubmeshes() { return m_Submeshes; }
-		const std::vector<Ref<SubmeshH2M>>& GetSubmeshes() const { return m_Submeshes; }
+		std::vector<RefH2M<SubmeshH2M>>& GetSubmeshes() { return m_Submeshes; }
+		const std::vector<RefH2M<SubmeshH2M>>& GetSubmeshes() const { return m_Submeshes; }
 
 		const std::vector<VertexH2M>& GetVertices() const { return m_StaticVertices; }
 		const std::vector<IndexH2M>& GetIndices() const { return m_Indices; }
-		Ref<HazelShader> GetMeshShader() { return m_MeshShader; }
-		Ref<HazelMaterial> GetMaterial() { return m_BaseMaterial; }
-		std::vector<Ref<HazelMaterial>>& GetMaterials() { return m_Materials; }
-		const std::vector<Ref<HazelMaterial>>& GetMaterials() const { return m_Materials; }
-		const std::vector<Ref<Texture2DH2M>>& GetTextures() const { return m_Textures; }
-		std::vector<Ref<Texture2DH2M>>& GetTextures() { return m_Textures; }
+		RefH2M<HazelShader> GetMeshShader() { return m_MeshShader; }
+		RefH2M<MaterialH2M> GetMaterial() { return m_BaseMaterial; }
+		std::vector<RefH2M<MaterialH2M>>& GetMaterials() { return m_Materials; }
+		const std::vector<RefH2M<MaterialH2M>>& GetMaterials() const { return m_Materials; }
+		const std::vector<RefH2M<Texture2DH2M>>& GetTextures() const { return m_Textures; }
+		std::vector<RefH2M<Texture2DH2M>>& GetTextures() { return m_Textures; }
 		const std::string& GetFilePath() const { return m_FilePath; }
 
 		const std::vector<TriangleH2M> GetTriangleCache(uint32_t index) const;
 		// const std::vector<TriangleH2M> GetTriangleCache(uint32_t index) const { return m_TriangleCache.at(index); }
 
-		Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
-		Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
-		Ref<Pipeline> GetPipeline() { return m_Pipeline; }
-		const VertexBufferLayout& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
+		RefH2M<VertexBufferH2M> GetVertexBuffer() { return m_VertexBuffer; }
+		RefH2M<IndexBufferH2M> GetIndexBuffer() { return m_IndexBuffer; }
+		RefH2M<PipelineH2M> GetPipeline() { return m_Pipeline; }
+		const VertexBufferLayoutH2M& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
 
 		/**** BEGIN this code should be removed from MeshH2M Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
 		struct MaterialDescriptor
 		{
-			VulkanShader::ShaderMaterialDescriptorSet DescriptorSet;
+			VulkanShaderH2M::ShaderMaterialDescriptorSet DescriptorSet;
 			std::vector<VkWriteDescriptorSet> WriteDescriptors;
 		};
 		const MaterialDescriptor& GetDescriptorSet(uint32_t index) { return m_MaterialDescriptors[index]; }
@@ -211,26 +211,26 @@ namespace H2M {
 		// VkDescriptorSet& GetDescriptorSet();
 		void* GetDescriptorSet();
 
-		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<Texture2DH2M> texture);
+		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, RefH2M<Texture2DH2M> texture);
 		// void UpdateAllDescriptors();
 		void UpdateAllDescriptorSets(); // Vulkan branch, february 2021
-		static AssetType GetStaticType() { return AssetType::MeshAsset; }
-		AssetType GetAssetType() const { return GetStaticType(); }
+		static AssetTypeH2M GetStaticType() { return AssetTypeH2M::MeshAsset; }
+		AssetTypeH2M GetAssetType() const { return GetStaticType(); }
 
 		/**** END this code should be removed from MeshH2M Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
 
-		// std::vector<Ref<HazelMaterialInstance>> GetMaterials() { return m_Materials; }
-		// const std::vector<Ref<HazelMaterialInstance>>& GetMaterials() const { return m_Materials; }
+		// std::vector<RefH2M<HazelMaterialInstance>> GetMaterials() { return m_Materials; }
+		// const std::vector<RefH2M<HazelMaterialInstance>>& GetMaterials() const { return m_Materials; }
 
 		bool& IsAnimated() { return m_IsAnimated; }
 		const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 
 		// Setters
-		inline void SetBaseMaterial(Ref<HazelMaterial> baseMaterial) { m_BaseMaterial = baseMaterial; }
+		inline void SetBaseMaterial(RefH2M<MaterialH2M> baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
-		void DeleteSubmesh(Ref<SubmeshH2M> submesh);
-		void CloneSubmesh(Ref<SubmeshH2M> submesh);
+		void DeleteSubmesh(RefH2M<SubmeshH2M> submesh);
+		void CloneSubmesh(RefH2M<SubmeshH2M> submesh);
 		const AABB& GetBoundingBox() const { return m_BoundingBox; }
 
 	private:
@@ -249,12 +249,12 @@ namespace H2M {
 		void ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 
 		void SetupDefaultBaseMaterial();
-		Ref<Texture2DH2M> LoadBaseTexture();
+		RefH2M<Texture2DH2M> LoadBaseTexture();
 
 	private:
-		Ref<Pipeline> m_Pipeline;
+		RefH2M<Pipeline> m_Pipeline;
 
-		std::vector<Ref<SubmeshH2M>> m_Submeshes;
+		std::vector<RefH2M<SubmeshH2M>> m_Submeshes;
 
 		std::unique_ptr<Assimp::Importer> m_Importer;
 
@@ -263,8 +263,8 @@ namespace H2M {
 		uint32_t m_BoneCount = 0;
 		std::vector<BoneInfoH2M> m_BoneInfo;
 
-		Ref<VertexBuffer> m_VertexBuffer;
-		Ref<IndexBuffer> m_IndexBuffer;
+		RefH2M<VertexBuffer> m_VertexBuffer;
+		RefH2M<IndexBuffer> m_IndexBuffer;
 		VertexBufferLayout m_VertexBufferLayout;
 
 		std::vector<VertexH2M> m_StaticVertices;
@@ -276,13 +276,13 @@ namespace H2M {
 		const aiScene* m_Scene;
 
 		// Materials
-		Ref<HazelMaterial> m_BaseMaterial;
-		Ref<Texture2DH2M> m_BaseTexture;
-		Ref<HazelShader> m_MeshShader;
-		std::vector<Ref<Texture2DH2M>> m_Textures;
-		std::vector<Ref<Texture2DH2M>> m_NormalMaps;
-		std::vector<Ref<HazelMaterial>> m_Materials;
-		// std::vector<Ref<HazelMaterialInstance>> m_Materials;
+		RefH2M<HazelMaterial> m_BaseMaterial;
+		RefH2M<Texture2DH2M> m_BaseTexture;
+		RefH2M<HazelShader> m_MeshShader;
+		std::vector<RefH2M<Texture2DH2M>> m_Textures;
+		std::vector<RefH2M<Texture2DH2M>> m_NormalMaps;
+		std::vector<RefH2M<HazelMaterial>> m_Materials;
+		// std::vector<RefH2M<HazelMaterialInstance>> m_Materials;
 
 		std::unordered_map<uint32_t, std::vector<TriangleH2M>> m_TriangleCache;
 

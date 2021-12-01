@@ -391,7 +391,7 @@ namespace Hazel
 		RendererH2M::SetSceneEnvironment(Ref<SceneRenderer>(), Ref<Environment>::Create(s_Data->EnvironmentMap.first, s_Data->EnvironmentMap.second), Ref<HazelImage2D>(), Ref<HazelImage2D>());
 
 		/*** BEGIN Setup the Skybox ****/
-		s_Data->VulkanSkyboxCube = H2M::Ref<VulkanSkyboxCube>::Create();
+		s_Data->VulkanSkyboxCube = H2M::RefH2M<VulkanSkyboxCube>::Create();
 
 		PipelineSpecification skyboxPipelineSpecification;
 		skyboxPipelineSpecification.DebugName = "Skybox Pipeline Specification";

@@ -84,8 +84,8 @@ public:
 private:
 	MapGenConf m_MapGenConfPrev;
 
-	H2M::Ref<MoravaTexture> m_TextureColorMap;
-	H2M::Ref<MoravaTexture> m_TextureHeightMap;
+	H2M::RefH2M<MoravaTexture> m_TextureColorMap;
+	H2M::RefH2M<MoravaTexture> m_TextureHeightMap;
 	MeshUnity* m_Mesh;
 
 	float m_HeightMapMultiplier;

@@ -73,7 +73,7 @@ struct SceneProperties
 	Scene* Scene;
 	RendererBasic* Renderer;
 	SceneName Name;
-	// H2M::RendererAPIH2MType RendererAPI;
+	// H2M::RendererAPITypeH2M RendererAPI;
 };
 
 

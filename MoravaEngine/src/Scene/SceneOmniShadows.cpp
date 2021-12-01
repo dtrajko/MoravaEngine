@@ -270,10 +270,10 @@ void SceneOmniShadows::UpdateImGui(float timestep, Window* mainWindow)
 }
 
 void SceneOmniShadows::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
-    H2M::Ref<MoravaShader> shaderMain = shaders["main"];
-    H2M::Ref<MoravaShader> shaderOmniShadow = shaders["omniShadow"];
+    H2M::RefH2M<MoravaShader> shaderMain = shaders["main"];
+    H2M::RefH2M<MoravaShader> shaderOmniShadow = shaders["omniShadow"];
 
     glm::mat4 model = glm::mat4(1.0f);
 

@@ -15,7 +15,7 @@ public:
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 
 	void SetGeometry();
 	void CleanupGeometry();
@@ -39,9 +39,9 @@ public:
 	unsigned int SCR_WIDTH = 1280;
 	unsigned int SCR_HEIGHT = 720;
 
-	H2M::Ref<MoravaFramebuffer> m_Framebuffer;
+	H2M::RefH2M<MoravaFramebuffer> m_Framebuffer;
 
-	H2M::Ref<MoravaShader> m_ShaderFramebuffersScene;
-	H2M::Ref<MoravaShader> m_ShaderFramebuffersScreen;
+	H2M::RefH2M<MoravaShader> m_ShaderFramebuffersScene;
+	H2M::RefH2M<MoravaShader> m_ShaderFramebuffersScreen;
 
 };

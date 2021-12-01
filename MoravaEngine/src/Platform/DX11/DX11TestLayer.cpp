@@ -17,12 +17,12 @@
 
 std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
 glm::vec2 DX11TestLayer::s_StartMousePosition;
-H2M::Ref<DX11Mesh> DX11TestLayer::s_Mesh;
-H2M::Ref<H2M::MeshH2M> DX11TestLayer::s_MeshLight;
-H2M::Ref<H2M::MeshH2M> DX11TestLayer::s_SkyboxSphere;
+H2M::RefH2M<DX11Mesh> DX11TestLayer::s_Mesh;
+H2M::RefH2M<H2M::MeshH2M> DX11TestLayer::s_MeshLight;
+H2M::RefH2M<H2M::MeshH2M> DX11TestLayer::s_SkyboxSphere;
 // Render meshes with materials
 std::vector<RenderObject> DX11TestLayer::s_RenderObjectsWithMaterials;
-std::vector<H2M::Ref<DX11Material>> DX11TestLayer::s_ListMaterials;
+std::vector<H2M::RefH2M<DX11Material>> DX11TestLayer::s_ListMaterials;
 
 ImGuizmo::OPERATION DX11TestLayer::s_ImGuizmoType;
 
@@ -32,7 +32,7 @@ bool DX11TestLayer::s_ShowWindowSceneHierarchy = true;
 bool DX11TestLayer::s_ShowWindowAssetManager = true;
 bool DX11TestLayer::s_ShowWindowMaterialEditor = true;
 
-H2M::Ref<H2M::SceneH2M> DX11TestLayer::s_Scene;
+H2M::RefH2M<H2M::SceneH2M> DX11TestLayer::s_Scene;
 
 glm::mat4 DX11TestLayer::s_CurrentlySelectedTransform;
 
@@ -64,7 +64,7 @@ void DX11TestLayer::OnAttach()
 {
 	DX11InputSystem::Get()->AddListener(this);
 
-	s_Scene = H2M::Ref<H2M::SceneH2M>::Create();
+	s_Scene = H2M::RefH2M<H2M::SceneH2M>::Create();
 
 	s_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(s_Scene);
 
@@ -76,11 +76,11 @@ void DX11TestLayer::OnAttach()
 
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 
-	H2M::Ref<H2M::MeshH2M> meshSphere = H2M::Ref<H2M::MeshH2M>::Create("Models/PardCode/sphere_hq.obj");
+	H2M::RefH2M<H2M::MeshH2M> meshSphere = H2M::RefH2M<H2M::MeshH2M>::Create("Models/PardCode/sphere_hq.obj");
 
 	/*
 	RenderObject renderObjectGladiator;
-	renderObjectGladiator.Mesh = H2M::Ref<H2M::MeshH2M>::Create("Models/Gladiator/Gladiator.fbx");
+	renderObjectGladiator.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create("Models/Gladiator/Gladiator.fbx");
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_weapon_Normal.jpg"));
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_BaseColor.jpg"));
@@ -92,7 +92,7 @@ void DX11TestLayer::OnAttach()
 	m_RenderObjects.push_back(renderObjectGladiator);
 
 	RenderObject renderObjectCerberus;
-	renderObjectCerberus.Mesh = H2M::Ref<H2M::MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx");
+	renderObjectCerberus.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx");
 	renderObjectCerberus.Textures.push_back(renderObjectCerberus.Mesh->GetTextures().at(0));
 	renderObjectCerberus.Textures.push_back(renderObjectCerberus.Mesh->GetTextures().at(1));
 	renderObjectCerberus.Transform = glm::mat4(1.0f);
@@ -123,7 +123,7 @@ void DX11TestLayer::OnAttach()
 	*/
 
 	RenderObject renderObjectTerrain;
-	renderObjectTerrain.Mesh = H2M::Ref<H2M::MeshH2M>::Create("Models/PardCode/terrain.obj");
+	renderObjectTerrain.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create("Models/PardCode/terrain.obj");
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/sand.jpg"));
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png"));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
@@ -146,8 +146,8 @@ void DX11TestLayer::OnAttach()
 	// ResourceManager::LoadTexture2DH2M("Textures/container/container2.png");
 	// ResourceManager::LoadTexture2DH2M("Textures/container/container2_normal.png");
 
-	s_Mesh = H2M::Ref<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
-	// s_Mesh = H2M::Ref<DX11Mesh>::Create(L"Models/PardCode/spaceship.obj");
+	s_Mesh = H2M::RefH2M<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
+	// s_Mesh = H2M::RefH2M<DX11Mesh>::Create(L"Models/PardCode/spaceship.obj");
 
 	s_MeshLight = meshSphere;
 	s_SkyboxSphere = meshSphere;
@@ -166,7 +166,7 @@ void DX11TestLayer::OnAttach()
 	ResourceManager::CreateOrLoadShader(moravaShaderSpecificationUnlit);
 	pipelineSpecUnlit.Shader = ResourceManager::CreateOrLoadShader(moravaShaderSpecificationUnlit);
 
-	H2M::Ref<DX11Pipeline> pipelineUnlit = DX11Pipeline::Create(pipelineSpecUnlit);
+	H2M::RefH2M<DX11Pipeline> pipelineUnlit = DX11Pipeline::Create(pipelineSpecUnlit);
 
 	/**** END Pipeline Unlit ****/
 
@@ -183,33 +183,33 @@ void DX11TestLayer::OnAttach()
 	moravaShaderSpecificationIlluminated.ForceCompile = false;
 	pipelineSpecIlluminated.Shader = ResourceManager::CreateOrLoadShader(moravaShaderSpecificationIlluminated);
 
-	H2M::Ref<DX11Pipeline> pipelineIlluminated = DX11Pipeline::Create(pipelineSpecIlluminated);
+	H2M::RefH2M<DX11Pipeline> pipelineIlluminated = DX11Pipeline::Create(pipelineSpecIlluminated);
 
 	/**** END Pipeline Illuminated ****/
 
 	/**** BEGIN Create meshes with materials ****
 
-	H2M::Ref<DX11Material> materialIlluminated = H2M::Ref<DX11Material>::Create(pipelineIlluminated, "Material Illuminated");
-	H2M::Ref<DX11Material> materialUnlit = H2M::Ref<DX11Material>::Create(pipelineIlluminated, "Material Unlit");
+	H2M::RefH2M<DX11Material> materialIlluminated = H2M::RefH2M<DX11Material>::Create(pipelineIlluminated, "Material Illuminated");
+	H2M::RefH2M<DX11Material> materialUnlit = H2M::RefH2M<DX11Material>::Create(pipelineIlluminated, "Material Unlit");
 
-	H2M::Ref<DX11Material> materialIlluminatedDerived = H2M::Ref<DX11Material>::Create(materialIlluminated, "Material Illuminated Derived");
-	H2M::Ref<DX11Material> materialUnlitDerived = H2M::Ref<DX11Material>::Create(materialUnlit, "Material Unlit Derived");
+	H2M::RefH2M<DX11Material> materialIlluminatedDerived = H2M::RefH2M<DX11Material>::Create(materialIlluminated, "Material Illuminated Derived");
+	H2M::RefH2M<DX11Material> materialUnlitDerived = H2M::RefH2M<DX11Material>::Create(materialUnlit, "Material Unlit Derived");
 
 	// BEGIN prepare data for rendering meshes with materials (render objects and the list of materials)
 	// std::vector<RenderObject> DX11TestLayer::s_RenderObjectsWithMaterials;
-	// std::vector<H2M::Ref<DX11Material>> DX11TestLayer::s_ListMaterials;
+	// std::vector<H2M::RefH2M<DX11Material>> DX11TestLayer::s_ListMaterials;
 
 	s_ListMaterials.reserve(32); // reserve 32 slots
 
-	H2M::Ref<H2M::Texture2DH2M> textureBarrel       = ResourceManager::LoadTexture2DH2M("Textures/PardCode/barrel.jpg");
-	H2M::Ref<H2M::Texture2DH2M> textureHouseBrick   = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_brick.jpg");
-	H2M::Ref<H2M::Texture2DH2M> textureHouseWindows = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_windows.jpg");
-	H2M::Ref<H2M::Texture2DH2M> textureHouseWood    = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_wood.jpg");
+	H2M::RefH2M<H2M::Texture2DH2M> textureBarrel       = ResourceManager::LoadTexture2DH2M("Textures/PardCode/barrel.jpg");
+	H2M::RefH2M<H2M::Texture2DH2M> textureHouseBrick   = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_brick.jpg");
+	H2M::RefH2M<H2M::Texture2DH2M> textureHouseWindows = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_windows.jpg");
+	H2M::RefH2M<H2M::Texture2DH2M> textureHouseWood    = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_wood.jpg");
 
-	H2M::Ref<DX11Material> materialBarrel       = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material Barrel");
-	H2M::Ref<DX11Material> materialHouseBrick   = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Brick");
-	H2M::Ref<DX11Material> materialHouseWindows = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Windows");
-	H2M::Ref<DX11Material> materialHouseWood    = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Wood");
+	H2M::RefH2M<DX11Material> materialBarrel       = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material Barrel");
+	H2M::RefH2M<DX11Material> materialHouseBrick   = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Brick");
+	H2M::RefH2M<DX11Material> materialHouseWindows = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Windows");
+	H2M::RefH2M<DX11Material> materialHouseWood    = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Wood");
 
 	materialBarrel->AddTexture(textureBarrel.As<DX11Texture2D>());
 	materialHouseBrick->AddTexture(textureHouseBrick.As<DX11Texture2D>());
@@ -222,7 +222,7 @@ void DX11TestLayer::OnAttach()
 	s_ListMaterials.push_back(materialHouseWood);
 
 	RenderObject renderObjectHouse;
-	renderObjectHouse.MeshDX11 = H2M::Ref<DX11Mesh>::Create(L"Models/PardCode/house.obj");
+	renderObjectHouse.MeshDX11 = H2M::RefH2M<DX11Mesh>::Create(L"Models/PardCode/house.obj");
 	renderObjectHouse.Transform = glm::mat4(1.0f);
 	renderObjectHouse.Transform = glm::translate(renderObjectHouse.Transform, glm::vec3(0.0f, 0.0f, -20.0f));
 	renderObjectHouse.Transform = glm::scale(renderObjectHouse.Transform, glm::vec3(6.0f));
@@ -433,12 +433,12 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 					continue;
 				}
 
-				std::vector<H2M::Ref<H2M::SubmeshH2M>> submeshes = mesh->GetSubmeshes();
+				std::vector<H2M::RefH2M<H2M::SubmeshH2M>> submeshes = mesh->GetSubmeshes();
 				float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
 				// for (H2M::Submesh& submesh : submeshes)
 				for (uint32_t i = 0; i < submeshes.size(); i++)
 				{
-					H2M::Ref<H2M::SubmeshH2M> submesh = submeshes[i];
+					H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[i];
 					auto transform = entity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
 					H2M::Ray ray = {
 						glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),

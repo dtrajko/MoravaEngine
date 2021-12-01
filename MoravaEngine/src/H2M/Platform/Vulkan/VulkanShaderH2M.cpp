@@ -66,8 +66,8 @@ namespace Hazel {
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderH2M::StorageBuffer*>> s_StorageBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
-	// H2M::Ref<H2M::Texture2DH2M> VulkanShaderH2M::s_AlbedoTexture;
-	// H2M::Ref<H2M::Texture2DH2M> VulkanShaderH2M::s_NormalTexture;
+	// H2M::RefH2M<H2M::Texture2DH2M> VulkanShaderH2M::s_AlbedoTexture;
+	// H2M::RefH2M<H2M::Texture2DH2M> VulkanShaderH2M::s_NormalTexture;
 
 	VulkanShaderH2M::VulkanShaderH2M(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)

@@ -37,9 +37,9 @@ private:
 
 	uint32_t m_NoiseTexture;
 
-	H2M::Ref<MoravaShader> m_ShaderSSAO;
+	H2M::RefH2M<MoravaShader> m_ShaderSSAO;
 
-	H2M::Ref<QuadSSAO> m_QuadSSAO;
+	H2M::RefH2M<QuadSSAO> m_QuadSSAO;
 
 	std::vector<glm::vec3> m_SSAO_Kernel;
 

@@ -289,8 +289,8 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoM1911.emissive  = "Textures/plain.png";
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
-    m_BaseMaterial_M1911 = H2M::Ref<Material>::Create(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR_M1911 = H2M::Ref<H2M::MeshH2M>::Create("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
+    m_BaseMaterial_M1911 = H2M::RefH2M<Material>::Create(textureInfoM1911, materialSpecular, materialShininess);
+    m_MeshAnimPBR_M1911 = H2M::RefH2M<H2M::MeshH2M>::Create("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
 
     m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
@@ -315,8 +315,8 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoBobLamp.emissive  = "Textures/plain.png";
     textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
 
-    m_BaseMaterial_BobLamp = H2M::Ref<Material>::Create(textureInfoBobLamp, materialSpecular, materialShininess);
-    m_MeshAnimPBR_BobLamp = H2M::Ref<H2M::MeshH2M>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
+    m_BaseMaterial_BobLamp = H2M::RefH2M<Material>::Create(textureInfoBobLamp, materialSpecular, materialShininess);
+    m_MeshAnimPBR_BobLamp = H2M::RefH2M<H2M::MeshH2M>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
     m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
 
     m_Entities["BobLamp"].Transform.Scale = m_Entities["BobLamp"].Init.Transform.Scale;
@@ -340,8 +340,8 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoAnimBoy.emissive  = "Textures/plain.png";
     textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
 
-    m_BaseMaterial_AnimBoy = H2M::Ref<Material>::Create(textureInfoAnimBoy, materialSpecular, materialShininess);
-    m_MeshAnimPBR_AnimBoy = H2M::Ref<H2M::MeshH2M>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
+    m_BaseMaterial_AnimBoy = H2M::RefH2M<Material>::Create(textureInfoAnimBoy, materialSpecular, materialShininess);
+    m_MeshAnimPBR_AnimBoy = H2M::RefH2M<H2M::MeshH2M>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
     m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
 
     m_Entities["AnimBoy"].Transform.Scale = m_Entities["AnimBoy"].Init.Transform.Scale;
@@ -953,7 +953,7 @@ SceneAnimPBR::~SceneAnimPBR()
 }
 
 void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-	std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+	std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
     if (m_IsViewportEnabled)
     {
@@ -1016,12 +1016,12 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 
     if (m_Entities["M1911"].Enabled)
     {
-        m_MeshAnimPBR_M1911->Render(m_SamplerSlots["albedo"], m_Entities["M1911"].Transform.Transform, std::map<std::string, H2M::Ref<EnvMapMaterial>>());
+        m_MeshAnimPBR_M1911->Render(m_SamplerSlots["albedo"], m_Entities["M1911"].Transform.Transform, std::map<std::string, H2M::RefH2M<EnvMapMaterial>>());
     }
 
     if (m_Entities["AnimBoy"].Enabled)
     {
-        m_MeshAnimPBR_AnimBoy->Render(m_SamplerSlots["albedo"], m_Entities["AnimBoy"].Transform.Transform, std::map<std::string, H2M::Ref<EnvMapMaterial>>());
+        m_MeshAnimPBR_AnimBoy->Render(m_SamplerSlots["albedo"], m_Entities["AnimBoy"].Transform.Transform, std::map<std::string, H2M::RefH2M<EnvMapMaterial>>());
     }
 
     if (m_Entities["BobLamp"].Enabled)
@@ -1040,7 +1040,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         auto& materials = m_MeshAnimPBR_BobLamp->GetMaterials();
 
         int submeshIndex = 0;
-        for (H2M::Ref<H2M::SubmeshH2M> submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
+        for (H2M::RefH2M<H2M::SubmeshH2M> submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
         {
             // Material
             auto material = materials[submesh->MaterialIndex];

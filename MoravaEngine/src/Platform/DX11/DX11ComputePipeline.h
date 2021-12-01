@@ -11,7 +11,7 @@
 class DX11ComputePipeline : public H2M::RefCounted
 {
 public:
-	DX11ComputePipeline(H2M::Ref<H2M::HazelShader> computeShader);
+	DX11ComputePipeline(H2M::RefH2M<H2M::HazelShader> computeShader);
 	~DX11ComputePipeline();
 
 	void Execute();
@@ -20,7 +20,7 @@ public:
 	void Dispatch();
 	void End();
 
-	H2M::Ref<H2M::HazelShader> GetShader() { return m_Shader; }
+	H2M::RefH2M<H2M::HazelShader> GetShader() { return m_Shader; }
 
 	void SetPushConstants(const void* data, uint32_t size);
 
@@ -28,6 +28,6 @@ private:
 	void CreatePipeline();
 
 private:
-	H2M::Ref<H2M::HazelShader> m_Shader;
+	H2M::RefH2M<H2M::HazelShader> m_Shader;
 
 };

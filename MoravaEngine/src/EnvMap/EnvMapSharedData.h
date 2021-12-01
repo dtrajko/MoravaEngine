@@ -14,17 +14,17 @@ class EnvMapSharedData
 public:
 	static std::map<std::string, unsigned int> s_SamplerSlots;
 
-	static H2M::Ref<H2M::SceneH2M> s_RuntimeScene;
-	static H2M::Ref<H2M::SceneH2M> s_EditorScene;
+	static H2M::RefH2M<H2M::SceneH2M> s_RuntimeScene;
+	static H2M::RefH2M<H2M::SceneH2M> s_EditorScene;
 
 	static Scene* s_Scene; // reference to SceneHazelEnvMap (the original engine scene object)
 
 	static H2M::EditorCamera* s_EditorCamera;
 	static RuntimeCamera* s_RuntimeCamera;
-	static H2M::HazelCamera* s_ActiveCamera;
+	static H2M::CameraH2M* s_ActiveCamera;
 
-	static H2M::Ref<CubeSkybox>s_SkyboxCube;
-	static H2M::Ref<Quad> s_Quad;
+	static H2M::RefH2M<CubeSkybox>s_SkyboxCube;
+	static H2M::RefH2M<Quad> s_Quad;
 	static bool s_DisplayOutline;
 	static bool s_DisplayWireframe;
 	static float s_SkyboxExposureFactor;
@@ -35,16 +35,16 @@ public:
 	static bool s_DisplayRay;
 	static glm::vec3 s_NewRay;
 
-	static H2M::Ref<MoravaShader> s_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
-	static H2M::Ref<MoravaShader> s_ShaderOutline;
+	static H2M::RefH2M<MoravaShader> s_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
+	static H2M::RefH2M<MoravaShader> s_ShaderOutline;
 
 	static H2M::EntityH2M s_PointLightEntity; // temporary, for experimental use
-	static H2M::Ref<OmniShadowMap> s_OmniShadowMapPointLight;
+	static H2M::RefH2M<OmniShadowMap> s_OmniShadowMapPointLight;
 
 	static H2M::EntityH2M s_SpotLightEntity;  // temporary, for experimental use
-	static H2M::Ref<OmniShadowMap> s_OmniShadowMapSpotLight;
+	static H2M::RefH2M<OmniShadowMap> s_OmniShadowMapSpotLight;
 
-	static H2M::Ref<ShadowMap> s_ShadowMapDirLight;
+	static H2M::RefH2M<ShadowMap> s_ShadowMapDirLight;
 
 private:
 

@@ -2,14 +2,15 @@
 
 #pragma once
 
-#include "H2M/Platform/Vulkan/Vulkan.h"
+#include "H2M/Platform/Vulkan/VulkanH2M.h"
 #include "H2M/Renderer/ShaderH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
 
 #include "VulkanMemoryAllocator/vk_mem_alloc.h"
 
 
-namespace Hazel {
+namespace H2M
+{
 
 	class VulkanShaderH2M : public ShaderH2M
 	{

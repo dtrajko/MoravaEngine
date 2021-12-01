@@ -25,7 +25,7 @@ public:
 
 private:
 	Mesh* skyMesh;
-	H2M::Ref<MoravaShader> m_SkyShader;
+	H2M::RefH2M<MoravaShader> m_SkyShader;
 	GLuint textureID;
 
 };

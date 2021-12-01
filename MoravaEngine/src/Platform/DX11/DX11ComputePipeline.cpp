@@ -6,10 +6,10 @@
 #include "Platform/DX11/DX11Context.h"
 
 
-DX11ComputePipeline::DX11ComputePipeline(H2M::Ref<H2M::HazelShader> computeShader)
+DX11ComputePipeline::DX11ComputePipeline(H2M::RefH2M<H2M::HazelShader> computeShader)
 	: m_Shader(computeShader)
 {
-	// H2M::Ref<DX11ComputePipeline> instance = this;
+	// H2M::RefH2M<DX11ComputePipeline> instance = this;
 	// H2M::HazelRenderer::Submit([instance]() mutable
 	// {
 	// });

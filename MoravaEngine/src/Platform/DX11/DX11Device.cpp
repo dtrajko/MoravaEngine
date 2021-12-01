@@ -16,16 +16,16 @@ DX11PhysicalDevice::~DX11PhysicalDevice()
 {
 }
 
-H2M::Ref<DX11PhysicalDevice> DX11PhysicalDevice::Select()
+H2M::RefH2M<DX11PhysicalDevice> DX11PhysicalDevice::Select()
 {
-	return H2M::Ref<DX11PhysicalDevice>::Create();
+	return H2M::RefH2M<DX11PhysicalDevice>::Create();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
 // DX11 Device
 ////////////////////////////////////////////////////////////////////////////////////
 
-DX11Device::DX11Device(const H2M::Ref<DX11PhysicalDevice>& physicalDevice)
+DX11Device::DX11Device(const H2M::RefH2M<DX11PhysicalDevice>& physicalDevice)
 	: m_PhysicalDevice(physicalDevice)
 {
 }

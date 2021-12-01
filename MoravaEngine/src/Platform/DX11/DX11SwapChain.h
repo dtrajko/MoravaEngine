@@ -24,7 +24,7 @@ class DX11SwapChain
 {
 public:
 	DX11SwapChain() = default;
-	DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height, H2M::Ref<DX11Context> dx11Context);
+	DX11SwapChain(HWND hwnd, uint32_t width, uint32_t height, H2M::RefH2M<DX11Context> dx11Context);
 	virtual ~DX11SwapChain();
 
 	void Invalidate();
@@ -53,8 +53,8 @@ private:
 	void CreateDepthStencilView(uint32_t width, uint32_t height);
 
 private:
-	H2M::Ref<DX11Device> m_Device;
-	H2M::Ref<DX11Context> m_DX11Context;
+	H2M::RefH2M<DX11Device> m_Device;
+	H2M::RefH2M<DX11Context> m_DX11Context;
 
 	HWND m_HWND;
 	uint32_t m_Width = 0;

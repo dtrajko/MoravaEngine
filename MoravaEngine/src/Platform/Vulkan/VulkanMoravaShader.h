@@ -22,9 +22,9 @@ public:
 	VulkanMoravaShader(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
 	VulkanMoravaShader(const char* computeLocation, bool forceCompile = false);
 
-	static H2M::Ref<VulkanMoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
-	static H2M::Ref<VulkanMoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
-	static H2M::Ref<VulkanMoravaShader> Create(const char* computeLocation, bool forceCompile = false);
+	static H2M::RefH2M<VulkanMoravaShader> Create(const char* vertexLocation, const char* fragmentLocation, bool forceCompile = false);
+	static H2M::RefH2M<VulkanMoravaShader> Create(const char* vertexLocation, const char* geometryLocation, const char* fragmentLocation, bool forceCompile = false);
+	static H2M::RefH2M<VulkanMoravaShader> Create(const char* computeLocation, bool forceCompile = false);
 
 	// virtual methods
 	virtual void Bind() override;

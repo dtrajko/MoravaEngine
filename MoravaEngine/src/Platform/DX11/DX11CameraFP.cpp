@@ -12,7 +12,7 @@ DX11CameraFP::DX11CameraFP() : DX11CameraFP(glm::mat4(1.0f))
 {
 }
 
-DX11CameraFP::DX11CameraFP(glm::mat4 projection) : H2M::HazelCamera(projection)
+DX11CameraFP::DX11CameraFP(glm::mat4 projection) : H2M::CameraH2M(projection)
 {
 	DX11InputSystem::Get()->AddListener(this);
 

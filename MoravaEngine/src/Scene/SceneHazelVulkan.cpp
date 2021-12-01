@@ -184,6 +184,6 @@ void SceneHazelVulkan::OnEntitySelected(H2M::Entity entity)
 }
 
 void SceneHazelVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
-    std::map<std::string, H2M::Ref<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+    std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
 }

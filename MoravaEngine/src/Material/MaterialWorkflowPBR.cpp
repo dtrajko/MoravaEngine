@@ -98,37 +98,37 @@ void MaterialWorkflowPBR::SetupShaders()
 {
 	if (!m_ShaderEquirectangularToCubemap)
 	{
-		m_ShaderEquirectangularToCubemap = H2M::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs"));
+		m_ShaderEquirectangularToCubemap = H2M::RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/cubemap.vs", "Shaders/PBR/equirectangular_to_cubemap.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderEquirectangularToCubemap compiled [programID={0}]", m_ShaderEquirectangularToCubemap->GetProgramID());
 	}
 
 	if (!m_ShaderIrradiance)
 	{
-		m_ShaderIrradiance = H2M::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/cubemap.vs", "Shaders/PBR/irradiance_convolution.fs"));
+		m_ShaderIrradiance = H2M::RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/cubemap.vs", "Shaders/PBR/irradiance_convolution.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderIrradiance compiled [programID={0}]", m_ShaderIrradiance->GetProgramID());
 	}
 
 	if (!m_ShaderPrefilter)
 	{
-		m_ShaderPrefilter = H2M::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/cubemap.vs", "Shaders/PBR/prefilter.fs"));
+		m_ShaderPrefilter = H2M::RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/cubemap.vs", "Shaders/PBR/prefilter.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderPrefilter compiled [programID={0}]", m_ShaderPrefilter->GetProgramID());
 	}
 
 	if (!m_ShaderBRDF)
 	{
-		m_ShaderBRDF = H2M::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/brdf.vs", "Shaders/PBR/brdf.fs"));
+		m_ShaderBRDF = H2M::RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/PBR/brdf.vs", "Shaders/PBR/brdf.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderBRDF compiled [programID={0}]", m_ShaderBRDF->GetProgramID());
 	}
 
 	if (!m_ShaderHorizontalBlur)
 	{
-		m_ShaderHorizontalBlur = H2M::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs"));
+		m_ShaderHorizontalBlur = H2M::RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/ThinMatrix/blur_horizontal.vs", "Shaders/ThinMatrix/blur.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderHorizontalBlur compiled [programID={0}]", m_ShaderHorizontalBlur->GetProgramID());
 	}
 
 	if (!m_ShaderVerticalBlur)
 	{
-		m_ShaderVerticalBlur = H2M::Ref<OpenGLMoravaShader>(MoravaShader::Create("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs"));
+		m_ShaderVerticalBlur = H2M::RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/ThinMatrix/blur_vertical.vs", "Shaders/ThinMatrix/blur.fs"));
 		Log::GetLogger()->info("MaterialWorkflowPBR: m_ShaderVerticalBlur compiled [programID={0}]", m_ShaderVerticalBlur->GetProgramID());
 	}
 }

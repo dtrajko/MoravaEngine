@@ -9,14 +9,14 @@
 namespace H2M
 {
 
-	H2M::Ref<PipelineH2M> PipelineH2M::Create(const PipelineSpecification& spec)
+	H2M::RefH2M<PipelineH2M> PipelineH2M::Create(const PipelineSpecification& spec)
 	{
-		switch (H2M::RendererAPIH2M::Current())
+		switch (H2M::RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPIH2MType::None:   return H2M::Ref<Pipeline>();
-			case H2M::RendererAPIH2MType::OpenGL: return H2M::Ref<H2M::OpenGLPipeline>::Create(spec);
-			case H2M::RendererAPIH2MType::Vulkan: return H2M::Ref<H2M::VulkanPipeline>::Create(spec);
-			case H2M::RendererAPIH2MType::DX11:   return H2M::Ref<DX11Pipeline>::Create(spec);
+			case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<Pipeline>();
+			case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<H2M::OpenGLPipeline>::Create(spec);
+			case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<H2M::VulkanPipeline>::Create(spec);
+			case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11Pipeline>::Create(spec);
 		}
 
 		H2M::Log::GetLogger()->error("Unknown RendererAPI");

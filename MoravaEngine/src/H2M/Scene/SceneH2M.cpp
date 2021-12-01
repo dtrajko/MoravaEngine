@@ -146,18 +146,18 @@ namespace H2M {
 	{
 		MoravaShaderSpecification moravaShaderSpec;
 
-		switch (H2M::RendererAPIH2M::Current())
+		switch (H2M::RendererAPI_H2M::Current())
 		{
-		case H2M::RendererAPIH2MType::OpenGL:
+		case H2M::RendererAPITypeH2M::OpenGL:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
 			moravaShaderSpec.VertexShaderPath = "Shaders/Hazel/Skybox.vs";
 			moravaShaderSpec.FragmentShaderPath = "Shaders/Hazel/Skybox.fs";
 			break;
-		case H2M::RendererAPIH2MType::Vulkan:
+		case H2M::RendererAPITypeH2M::Vulkan:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
 			moravaShaderSpec.HazelShaderPath = "Resources/Shaders/Skybox.glsl";
 			break;
-		case H2M::RendererAPIH2MType::DX11:
+		case H2M::RendererAPITypeH2M::DX11:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
 			moravaShaderSpec.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
 			moravaShaderSpec.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
@@ -411,7 +411,7 @@ namespace H2M {
 				}
 			}
 
-			if (H2M::RendererAPIH2M::Current() == H2M::RendererAPIH2MType::Vulkan)
+			if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
 			{
 				m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
 

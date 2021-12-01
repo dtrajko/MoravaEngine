@@ -33,9 +33,9 @@ public:
 	} m_Spec;
 
 public:
-	static H2M::Ref<MoravaTexture> Create(const char* fileLoc, bool flipVert = false, bool isSampler = false, int filter = 0);
-	static H2M::Ref<MoravaTexture> Create(const char* fileLoc, uint32_t width, uint32_t height, bool isSampler, int filter);
-	static H2M::Ref<MoravaTexture> Create(const char* fileLoc, Specification spec);
+	static H2M::RefH2M<MoravaTexture> Create(const char* fileLoc, bool flipVert = false, bool isSampler = false, int filter = 0);
+	static H2M::RefH2M<MoravaTexture> Create(const char* fileLoc, uint32_t width, uint32_t height, bool isSampler, int filter);
+	static H2M::RefH2M<MoravaTexture> Create(const char* fileLoc, Specification spec);
 
 	virtual bool Load(bool flipVert = false) = 0;
 	virtual void CreateAPISpecific() = 0;
@@ -43,7 +43,7 @@ public:
 	virtual H2M::ImageFormatH2M GetFormat() = 0;
 
 	// BEGIN pure virtual methods inherited from HazelTexture/Texture2DH2M
-	virtual H2M::Ref<H2M::HazelImage2D> GetImage() const = 0;
+	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage() const = 0;
 	virtual void Lock() = 0;
 	virtual void Unlock() = 0;
 	virtual H2M::Buffer GetWriteableBuffer() = 0;

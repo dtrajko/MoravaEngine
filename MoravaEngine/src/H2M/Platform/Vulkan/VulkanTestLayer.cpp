@@ -74,7 +74,7 @@ namespace Hazel {
 
 	void VulkanTestLayer::OnAttach()
 	{
-		s_Scene = H2M::Ref<H2M::SceneH2M>::Create();
+		s_Scene = H2M::RefH2M<H2M::SceneH2M>::Create();
 		s_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(s_Scene);
 		s_ContentBrowserPanel = new H2M::ContentBrowserPanel();
 		s_MaterialEditorPanel = new MaterialEditorPanel();
@@ -167,7 +167,7 @@ namespace Hazel {
 	/**** BEGIN this version of the OnAttach method is outdated ****
 	void VulkanTestLayer::OnAttachOld()
 	{
-		s_Scene = H2M::Ref<H2M::HazelScene>::Create();
+		s_Scene = H2M::RefH2M<H2M::HazelScene>::Create();
 
 		s_SceneHierarchyPanel = new H2M::SceneHierarchyPanel(s_Scene);
 

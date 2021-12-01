@@ -51,7 +51,7 @@ public:
 	void OnMouseRelease(Window* mainWindow, std::vector<SceneObject*>* sceneObjects, unsigned int& selectedIndex);
 	inline void SetDrawAABBs(bool drawAABBs) { m_DrawAABBs = drawAABBs; };
 	inline glm::quat GetRotation() { return m_Rotation; };
-	void Render(H2M::Ref<MoravaShader> shader);
+	void Render(H2M::RefH2M<MoravaShader> shader);
 	~Gizmo();
 
 private:

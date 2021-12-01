@@ -35,12 +35,12 @@ void DX11PixelShader::Bind()
 	DX11Context::Get()->GetDX11DeviceContext()->PSSetShader(m_DX11PixelShader, nullptr, 0);
 }
 
-void DX11PixelShader::BindConstantBuffer(H2M::Ref<DX11ConstantBuffer> constantBuffer)
+void DX11PixelShader::BindConstantBuffer(H2M::RefH2M<DX11ConstantBuffer> constantBuffer)
 {
 	DX11Context::Get()->GetDX11DeviceContext()->PSSetConstantBuffers(0, 1, &constantBuffer->m_Buffer);
 }
 
-void DX11PixelShader::SetTextures(const std::vector<H2M::Ref<H2M::HazelTexture>>& textures)
+void DX11PixelShader::SetTextures(const std::vector<H2M::RefH2M<H2M::HazelTexture>>& textures)
 {
 	size_t textureCount = textures.size();
 

@@ -33,17 +33,17 @@ public:
 	~EnvMapEditorLayer();
 
 	void OnUpdate(float timestep);
-	void OnUpdateEditor(H2M::Ref<H2M::SceneH2M> scene, float timestep);
-	void OnUpdateRuntime(H2M::Ref<H2M::SceneH2M> scene, float timestep);
+	void OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float timestep);
+	void OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float timestep);
 
 	void OnScenePlay();
 	void OnSceneStop();
 
 	void OnRenderShadow(Window* mainWindow);
-	void RenderSubmeshesShadowPass(H2M::Ref<MoravaShader> shader);
+	void RenderSubmeshesShadowPass(H2M::RefH2M<MoravaShader> shader);
 
 	void OnRenderShadowOmni(Window* mainWindow);
-	void RenderShadowOmniSingleLight(Window* mainWindow, H2M::EntityH2M lightEntity, H2M::Ref<OmniShadowMap> omniShadowMap);
+	void RenderShadowOmniSingleLight(Window* mainWindow, H2M::EntityH2M lightEntity, H2M::RefH2M<OmniShadowMap> omniShadowMap);
 
 	void OnRenderCascadedShadowMaps(Window* mainWindow);
 
@@ -98,13 +98,13 @@ public:
 	void SetSkyboxLOD(float LOD);
 
 	// Getters
-	H2M::Ref<MoravaShader> GetShaderPBR_Anim();
-	H2M::Ref<MoravaShader> GetShaderPBR_Static();
+	H2M::RefH2M<MoravaShader> GetShaderPBR_Anim();
+	H2M::RefH2M<MoravaShader> GetShaderPBR_Static();
 	inline std::map<std::string, unsigned int>& GetSamplerSlots() { return EnvMapSharedData::s_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return EnvMapSharedData::s_RadiancePrefilter; }
 	inline float& GetEnvMapRotation() { return EnvMapSharedData::s_EnvMapRotation; }
-	inline H2M::Ref<H2M::Texture2DH2M> GetCheckerboardTexture() { return s_CheckerboardTexture; }
-	inline H2M::Ref<H2M::TextureCubeH2M> GetSkyboxTexture() { return m_SkyboxTexture; }
+	inline H2M::RefH2M<H2M::Texture2DH2M> GetCheckerboardTexture() { return s_CheckerboardTexture; }
+	inline H2M::RefH2M<H2M::TextureCubeH2M> GetSkyboxTexture() { return m_SkyboxTexture; }
 	H2M::EntityH2M GetMeshEntity();
 	inline float& GetSkyboxExposureFactor() { return EnvMapSharedData::s_SkyboxExposureFactor; };
 	float& GetSkyboxLOD();
@@ -122,13 +122,13 @@ public:
 
 	// from SceneHazelEnvMap
 	void SetupRenderFramebuffer();
-	void ResizeViewport(glm::vec2 viewportPanelSize, H2M::Ref<MoravaFramebuffer> renderFramebuffer);
+	void ResizeViewport(glm::vec2 viewportPanelSize, H2M::RefH2M<MoravaFramebuffer> renderFramebuffer);
 
 private:
 	void SetupContextData(Scene* scene);
 	void SetupShaders();
 	void UpdateUniforms();
-	void SetSkybox(H2M::Ref<H2M::TextureCubeH2M> skybox);
+	void SetSkybox(H2M::RefH2M<H2M::TextureCubeH2M> skybox);
 	void Init();
 
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
@@ -137,10 +137,10 @@ private:
 
 public:
 	static SelectionMode s_SelectionMode;
-	static H2M::Ref<H2M::Texture2DH2M> s_CheckerboardTexture;
+	static H2M::RefH2M<H2M::Texture2DH2M> s_CheckerboardTexture;
 
-	static H2M::Ref<EnvMapMaterial> s_DefaultMaterial;
-	static H2M::Ref<EnvMapMaterial> s_LightMaterial;
+	static H2M::RefH2M<EnvMapMaterial> s_DefaultMaterial;
+	static H2M::RefH2M<EnvMapMaterial> s_LightMaterial;
 
 	glm::mat4 m_CurrentlySelectedTransform;
 	glm::mat4* m_RelativeTransform = nullptr;
@@ -149,23 +149,23 @@ public:
 	// viewports public
 	glm::vec2 m_ImGuiViewportMain;
 	glm::vec2 m_ViewportMainSize;
-	H2M::Ref<MoravaFramebuffer> m_RenderFramebuffer;
-	H2M::Ref<MoravaFramebuffer> m_PostProcessingFramebuffer;
+	H2M::RefH2M<MoravaFramebuffer> m_RenderFramebuffer;
+	H2M::RefH2M<MoravaFramebuffer> m_PostProcessingFramebuffer;
 
 private:
-	H2M::Ref<MoravaShader> m_ShaderShadow;
-	H2M::Ref<MoravaShader> m_ShaderOmniShadow;
-	H2M::Ref<MoravaShader> m_ShaderPostProcessing;
-	H2M::Ref<MoravaShader> m_ShaderBloomBlur;
+	H2M::RefH2M<MoravaShader> m_ShaderShadow;
+	H2M::RefH2M<MoravaShader> m_ShaderOmniShadow;
+	H2M::RefH2M<MoravaShader> m_ShaderPostProcessing;
+	H2M::RefH2M<MoravaShader> m_ShaderBloomBlur;
 
 	int m_PostProcessingEffect = 0;
 	bool m_PostProcessingEnabled = false;
 
-	H2M::Ref<H2M::TextureCubeH2M> m_SkyboxTexture;
+	H2M::RefH2M<H2M::TextureCubeH2M> m_SkyboxTexture;
 
 	/** BEGIN properties Hazelnut/EditorLayer **/
 	// Editor resources
-	H2M::Ref<H2M::Texture2DH2M> m_PlayButtonTex;
+	H2M::RefH2M<H2M::Texture2DH2M> m_PlayButtonTex;
 
 	H2M::EntityH2M m_DirectionalLightEntity;
 	glm::mat4 m_LightProjectionMatrix;

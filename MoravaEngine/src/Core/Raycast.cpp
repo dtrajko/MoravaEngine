@@ -7,7 +7,7 @@ Raycast::Raycast()
 {
 }
 
-void Raycast::Draw(glm::vec3 start, glm::vec3 end, glm::vec4 color, H2M::Ref<MoravaShader> shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
+void Raycast::Draw(glm::vec3 start, glm::vec3 end, glm::vec4 color, H2M::RefH2M<MoravaShader> shader, glm::mat4 projectionMatrix, glm::mat4 viewMatrix)
 {
     m_LineStart = start;
     m_LineEnd = end;

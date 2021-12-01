@@ -2,11 +2,10 @@
 
 #pragma once
 
-#include "Hazel-dev/Core/Ref.h"
-
-#include "H2M/Core/Buffer.h"
-#include "H2M/Renderer/RendererTypes.h"
-#include "H2M/Renderer/ShaderUniform.h"
+#include "H2M/Core/BufferH2M.h"
+#include "H2M/Core/RefH2M.h"
+#include "H2M/Renderer/RendererTypesH2M.h"
+#include "H2M/Renderer/ShaderUniformH2M.h"
 
 #include <glm/glm.hpp>
 
@@ -18,7 +17,7 @@
 namespace H2M
 {
 
-	enum class UniformType
+	enum class UniformTypeH2M
 	{
 		None = 0,
 		Float, Float2, Float3, Float4,
@@ -26,14 +25,14 @@ namespace H2M
 		Int32, Uint32
 	};
 
-	struct UniformDecl
+	struct UniformDeclH2M
 	{
-		UniformType Type;
+		UniformTypeH2M Type;
 		std::ptrdiff_t Offset;
 		std::string Name;
 	};
 
-	struct UniformBufferTemp
+	struct UniformBufferTempH2M
 	{
 		// TODO: This currently represents a byte buffer that has been
 		// packed with uniforms. This was primarily created for OpenGL,
@@ -42,18 +41,18 @@ namespace H2M
 		// nothing to do with GL uniform buffers, this is simply a CPU-side
 		// buffer abstraction.
 		uint8_t* Buffer;
-		std::vector<UniformDecl> Uniforms;
+		std::vector<UniformDeclH2M> Uniforms;
 	};
 
-	struct UniformBufferBase
+	struct UniformBufferBaseH2M
 	{
 		virtual const uint8_t* GetBuffer() const = 0;
-		virtual const UniformDecl* GetUniforms() const = 0;
+		virtual const UniformDeclH2M* GetUniforms() const = 0;
 		virtual unsigned int GetUniformCount() const = 0;
 	};
 
 	template<unsigned int N, unsigned int U>
-	struct UniformBufferDeclaration : public UniformBufferBase
+	struct UniformBufferDeclarationH2M : public UniformBufferBaseH2M
 	{
 		uint8_t Buffer[N];
 		UniformDecl Uniforms[U];
@@ -101,50 +100,50 @@ namespace H2M
 
 	};
 
-	enum class ShaderUniformType
+	enum class ShaderUniformTypeH2M
 	{
 		None = 0, Bool, Int, UInt, Float, Vec2, Vec3, Vec4, Mat3, Mat4,
 		IVec2, IVec3, IVec4
 	};
 
-	class ShaderUniform
+	class ShaderUniformH2M
 	{
 	public:
-		ShaderUniform() = default;
-		ShaderUniform(const std::string& name, ShaderUniformType type, uint32_t size, uint32_t offset);
+		ShaderUniformH2M() = default;
+		ShaderUniformH2M(const std::string& name, ShaderUniformTypeH2M type, uint32_t size, uint32_t offset);
 
 		const std::string& GetName() const { return m_Name; }
-		ShaderUniformType GetType() const { return m_Type; }
+		ShaderUniformTypeH2M GetType() const { return m_Type; }
 		uint32_t GetSize() const { return m_Size; }
 		uint32_t GetOffset() const { return m_Offset; }
 
-		static const std::string& UniformTypeToString(ShaderUniformType type);
+		static const std::string& UniformTypeToString(ShaderUniformTypeH2M type);
 
 	private:
 		std::string m_Name;
-		ShaderUniformType m_Type = ShaderUniformType::None;
+		ShaderUniformTypeH2M m_Type = ShaderUniformTypeH2M::None;
 		uint32_t m_Size = 0;
 		uint32_t m_Offset = 0;
 	};
 
-	struct ShaderUniformBuffer
+	struct ShaderUniformBufferH2M
 	{
 		std::string Name;
 		uint32_t Index;
 		uint32_t BindingPoint;
 		uint32_t Size;
 		uint32_t RendererID;
-		std::vector<ShaderUniform> Uniforms;
+		std::vector<ShaderUniformH2M> Uniforms;
 	};
 
-	struct ShaderBuffer
+	struct ShaderBufferH2M
 	{
 		std::string Name;
 		uint32_t Size = 0;
-		std::unordered_map<std::string, ShaderUniform> Uniforms;
+		std::unordered_map<std::string, ShaderUniformH2M> Uniforms;
 	};
 
-	class ShaderH2M : public H2M::RefCounted
+	class ShaderH2M : public H2M::RefCountedH2M
 	{
 	public:
 		using ShaderReloadedCallback = std::function<void()>;
@@ -154,7 +153,7 @@ namespace H2M
 		virtual size_t GetHash() const = 0;
 
 		virtual void Bind() = 0;
-		virtual H2M::RendererID GetRendererID() const = 0;
+		virtual H2M::RendererID_H2M GetRendererID() const = 0;
 
 		// NEW shader system
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) = 0;
@@ -186,40 +185,40 @@ namespace H2M
 		// Represents a complete shader program stored in a single file.
 		// Note: currently for simplicity this is simply a string filepath, however
 		//       in the future this will be an asset object + metadata
-		static H2M::Ref<ShaderH2M> Create(const std::string& filepath, bool forceCompile = false);
-		static H2M::Ref<ShaderH2M> CreateFromString(const std::string& source);
+		static H2M::RefH2M<ShaderH2M> Create(const std::string& filepath, bool forceCompile = false);
+		static H2M::RefH2M<ShaderH2M> CreateFromString(const std::string& source);
 
-		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const = 0;
+		virtual const std::unordered_map<std::string, ShaderBufferH2M>& GetShaderBuffers() const = 0;
 
-		virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& GetResources() const = 0;
+		virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& GetResources() const = 0;
 
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) = 0;
 
 		// Temporary, before we have an asset manager
-		static std::vector<H2M::Ref<ShaderH2M>> s_AllShaders;
+		static std::vector<H2M::RefH2M<ShaderH2M>> s_AllShaders;
 
 		// Methods from Vulkan Week Day 1
 		bool HasVSMaterialUniformBuffer();
 		bool HasPSMaterialUniformBuffer();
-		H2M::Buffer GetVSMaterialUniformBuffer();
-		H2M::Buffer GetPSMaterialUniformBuffer();
+		BufferH2M GetVSMaterialUniformBuffer();
+		BufferH2M GetPSMaterialUniformBuffer();
 	};
 
 	// This should be eventually handled by the Asset Manager
-	class ShaderLibraryH2M : public H2M::RefCounted
+	class ShaderLibraryH2M : public RefCountedH2M
 	{
 	public:
 		ShaderLibraryH2M();
 		~ShaderLibraryH2M();
 
-		void Add(const H2M::Ref<ShaderH2M>& shader);
+		void Add(const H2M::RefH2M<ShaderH2M>& shader);
 		void Load(const std::string& path, bool forceCompile = false);
 		void Load(const std::string& name, const std::string& path);
 
-		H2M::Ref<ShaderH2M> Get(const std::string& name);
+		H2M::RefH2M<ShaderH2M> Get(const std::string& name);
 
 	private:
-		std::unordered_map<std::string, H2M::Ref<ShaderH2M>> m_Shaders;
+		std::unordered_map<std::string, H2M::RefH2M<ShaderH2M>> m_Shaders;
 
 	};
 

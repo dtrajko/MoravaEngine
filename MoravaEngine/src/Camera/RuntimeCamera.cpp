@@ -7,7 +7,7 @@
 
 RuntimeCamera::RuntimeCamera()
 {
-	m_ProjectionType = H2M::HazelCamera::ProjectionType::Perspective;
+	m_ProjectionType = H2M::CameraH2M::ProjectionType::Perspective;
     m_CameraController = CameraController(this, 1.778f, 2.0f, 0.1f);
 }
 
@@ -18,7 +18,7 @@ RuntimeCamera::RuntimeCamera(glm::vec3 position, float yaw, float pitch, float f
 	m_Pitch = pitch;
 	m_PerspectiveFOV = glm::radians(fovDegrees);
 	m_AspectRatio = aspectRatio;
-	m_ProjectionType = H2M::HazelCamera::ProjectionType::Perspective;
+	m_ProjectionType = H2M::CameraH2M::ProjectionType::Perspective;
 
 	m_WorldUp = glm::vec3(0.0f, 1.0f, 0.0f);
 	m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
@@ -41,7 +41,7 @@ void RuntimeCamera::UpdateView()
 	m_ViewMatrix = glm::lookAt(m_Position, m_Position + glm::normalize(m_Front), m_Up);
 }
 
-void RuntimeCamera::OnUpdate(H2M::Timestep ts)
+void RuntimeCamera::OnUpdate(H2M::TimestepH2M ts)
 {
 	m_CameraController.Update();
 
@@ -56,12 +56,12 @@ void RuntimeCamera::OnUpdate(H2M::Timestep ts)
 	UpdateView();
 }
 
-void RuntimeCamera::OnEvent(Event& e)
+void RuntimeCamera::OnEvent(H2M::EventH2M& e)
 {
 	m_CameraController.OnEvent(e);
 
-	EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<MouseScrolledEvent>(HZ_BIND_EVENT_FN(RuntimeCamera::OnMouseScroll));
+	H2M::EventDispatcherH2M::dispatcher(e);
+	dispatcher.Dispatch<H2M::MouseScrolledEventH2M>(HZ_BIND_EVENT_FN(RuntimeCamera::OnMouseScroll));
 }
 
 void RuntimeCamera::SetViewportSize(float width, float height)

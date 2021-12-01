@@ -25,7 +25,7 @@ namespace H2M {
 
 	struct PipelineSpecification
 	{
-		H2M::Ref<ShaderH2M> Shader;
+		H2M::RefH2M<ShaderH2M> Shader;
 		VertexBufferLayout Layout;
 		Ref<RenderPass> RenderPass;
 		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
@@ -47,12 +47,12 @@ namespace H2M {
 		virtual const PipelineSpecification& GetSpecification() const = 0;
 
 		virtual void Invalidate() = 0;
-		virtual void SetUniformBuffer(H2M::Ref<H2M::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) = 0;
+		virtual void SetUniformBuffer(H2M::RefH2M<H2M::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) = 0;
 
 		// TEMP: remove this when render command buffers are a thing
 		virtual void Bind() = 0;
 
-		static H2M::Ref<PipelineH2M> Create(const PipelineSpecification& spec);
+		static H2M::RefH2M<PipelineH2M> Create(const PipelineSpecification& spec);
 
 	};
 

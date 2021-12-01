@@ -24,9 +24,9 @@ enum class DX11CullMode
 class DX11Material : public H2M::HazelMaterial
 {
 public:
-	DX11Material(const H2M::Ref<H2M::HazelShader>& shader, const std::string& name = "");
-	DX11Material(H2M::Ref<DX11Pipeline> pipeline, const std::string& name = "");
-	DX11Material(H2M::Ref<DX11Material> material, const std::string& name = "");
+	DX11Material(const H2M::RefH2M<H2M::HazelShader>& shader, const std::string& name = "");
+	DX11Material(H2M::RefH2M<DX11Pipeline> pipeline, const std::string& name = "");
+	DX11Material(H2M::RefH2M<DX11Material> material, const std::string& name = "");
 	virtual ~DX11Material();
 
 	virtual void Invalidate() override;
@@ -44,10 +44,10 @@ public:
 	virtual void Set(const std::string& name, const glm::mat3& value) override;
 	virtual void Set(const std::string& name, const glm::mat4& value) override;
 
-	virtual void Set(const std::string& name, const H2M::Ref<H2M::Texture2DH2M>& texture) override;
-	virtual void Set(const std::string& name, const H2M::Ref<H2M::Texture2DH2M>& texture, uint32_t arrayIndex) override;
-	virtual void Set(const std::string& name, const H2M::Ref<H2M::TextureCubeH2M>& texture) override;
-	virtual void Set(const std::string& name, const H2M::Ref<H2M::HazelImage2D>& image) override;
+	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2DH2M>& texture) override;
+	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2DH2M>& texture, uint32_t arrayIndex) override;
+	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::TextureCubeH2M>& texture) override;
+	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::HazelImage2D>& image) override;
 
 	virtual float& GetFloat(const std::string& name) override;
 	virtual int32_t& GetInt(const std::string& name) override;
@@ -59,11 +59,11 @@ public:
 	virtual glm::mat3& GetMatrix3(const std::string& name) override;
 	virtual glm::mat4& GetMatrix4(const std::string& name) override;
 
-	virtual H2M::Ref<H2M::Texture2DH2M> GetTexture2D(const std::string& name) override;
-	virtual H2M::Ref<H2M::TextureCubeH2M> GetTextureCube(const std::string& name) override;
+	virtual H2M::RefH2M<H2M::Texture2DH2M> GetTexture2D(const std::string& name) override;
+	virtual H2M::RefH2M<H2M::TextureCubeH2M> GetTextureCube(const std::string& name) override;
 
-	virtual H2M::Ref<H2M::Texture2DH2M> TryGetTexture2D(const std::string& name) override;
-	virtual H2M::Ref<H2M::TextureCubeH2M> TryGetTextureCube(const std::string& name) override;
+	virtual H2M::RefH2M<H2M::Texture2DH2M> TryGetTexture2D(const std::string& name) override;
+	virtual H2M::RefH2M<H2M::TextureCubeH2M> TryGetTextureCube(const std::string& name) override;
 
 	template <typename T>
 	void Set(const std::string& name, const T& value)
@@ -80,7 +80,7 @@ public:
 		buffer.Write((byte*)&value, decl->GetSize(), decl->GetOffset());
 	}
 
-	void Set(const std::string& name, const H2M::Ref<H2M::HazelTexture>& texture)
+	void Set(const std::string& name, const H2M::RefH2M<H2M::HazelTexture>& texture)
 	{
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
@@ -150,14 +150,14 @@ public:
 	virtual bool GetFlag(H2M::HazelMaterialFlag flag) const override { return bool(); };
 	virtual void SetFlag(H2M::HazelMaterialFlag flag, bool value = true) override {};
 
-	inline H2M::Ref<H2M::Pipeline> GetPipeline() { return m_Pipeline; }
-	inline virtual H2M::Ref<H2M::HazelShader> GetShader() override { return m_Shader; }
+	inline H2M::RefH2M<H2M::Pipeline> GetPipeline() { return m_Pipeline; }
+	inline virtual H2M::RefH2M<H2M::HazelShader> GetShader() override { return m_Shader; }
 	inline virtual const std::string& GetName() const override { return m_Name; }
 
 	void UpdateForRendering();
 
 	// DirectX Material
-	void AddTexture(H2M::Ref<DX11Texture2D> texture);
+	void AddTexture(H2M::RefH2M<DX11Texture2D> texture);
 	void RemoveTexture(uint32_t index);
 
 	void SetData(void* data, uint32_t size);
@@ -171,14 +171,14 @@ public:
 	const H2M::ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
 
 private:
-	H2M::Ref<H2M::Pipeline> m_Pipeline;
-	H2M::Ref<H2M::HazelShader> m_Shader; // shader reference is a pipeline property
+	H2M::RefH2M<H2M::Pipeline> m_Pipeline;
+	H2M::RefH2M<H2M::HazelShader> m_Shader; // shader reference is a pipeline property
 	std::string m_Name;
 
-	std::vector<H2M::Ref<H2M::HazelTexture>> m_Textures;
+	std::vector<H2M::RefH2M<H2M::HazelTexture>> m_Textures;
 
 	// DirectX Material
-	H2M::Ref<DX11ConstantBuffer> m_ConstantBuffer;
+	H2M::RefH2M<DX11ConstantBuffer> m_ConstantBuffer;
 	DX11CullMode m_CullMode = DX11CullMode::None;
 
 };

@@ -12,7 +12,7 @@ public:
 	Cubemap(int width, int height);
 	inline TextureCubemap* GetTextureCubemap() { return m_TextureCubemap; };
 	inline FramebufferWater* GetCaptureFBO() { return m_CaptureFBO; };
-	inline H2M::Ref<Renderbuffer> GetCaptureRBO() { return m_CaptureRBO; };
+	inline H2M::RefH2M<Renderbuffer> GetCaptureRBO() { return m_CaptureRBO; };
 	~Cubemap();
 
 private:
@@ -20,7 +20,7 @@ private:
 	unsigned int m_Height;
 
 	FramebufferWater* m_CaptureFBO;
-	H2M::Ref<Renderbuffer> m_CaptureRBO;
+	H2M::RefH2M<Renderbuffer> m_CaptureRBO;
 	TextureCubemap* m_TextureCubemap;
 
 };

@@ -34,17 +34,17 @@ public:
 
 	virtual void BeginFrame() override;
 
-	H2M::Ref<DX11Device> GetDevice() { return m_Device; }
+	H2M::RefH2M<DX11Device> GetDevice() { return m_Device; }
 	std::shared_ptr<DX11SwapChain> GetSwapChain() { return m_SwapChain; }
 
-	// static H2M::Ref<DX11Context> Get() { return H2M::Ref<DX11Context>(H2M::HazelRenderer::GetContext()); }
-	H2M::Ref<DX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
+	// static H2M::RefH2M<DX11Context> Get() { return H2M::RefH2M<DX11Context>(H2M::HazelRenderer::GetContext()); }
+	H2M::RefH2M<DX11Device> GetCurrentDevice() { return Get()->GetDevice(); }
 	IDXGIFactory* GetIDXGIFactory() { return m_IDXGI_Factory; };
 	ID3D11DeviceContext* GetDX11DeviceContext() { return m_DX11DeviceContext; };
 
 	// ---------------------------------------------------------------
 
-	static H2M::Ref<DX11Context> Get() { return H2M::Ref<DX11Context>(H2M::HazelRenderer::GetContext()); }
+	static H2M::RefH2M<DX11Context> Get() { return H2M::RefH2M<DX11Context>(H2M::HazelRenderer::GetContext()); }
 
 	ID3D11Device* GetDX11Device() { return m_DX11Device; }
 
@@ -67,8 +67,8 @@ private:
 	Window* m_Window;
 
 	// Devices
-	H2M::Ref<DX11PhysicalDevice> m_PhysicalDevice;
-	H2M::Ref<DX11Device> m_Device;
+	H2M::RefH2M<DX11PhysicalDevice> m_PhysicalDevice;
+	H2M::RefH2M<DX11Device> m_Device;
 
 	std::shared_ptr<DX11SwapChain> m_SwapChain;
 

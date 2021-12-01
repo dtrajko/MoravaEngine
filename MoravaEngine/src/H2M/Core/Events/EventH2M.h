@@ -15,7 +15,7 @@ namespace H2M
 	// For the future, a better strategy might be to buffer events in an event
 	// bus and process them during the "event" part of the update stage.
 
-	enum class EventType
+	enum class EventTypeH2M
 	{
 		None = 0,
 		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
@@ -27,7 +27,7 @@ namespace H2M
 	/**
 	 * The purpose of EventCategory is event filtering
 	 */
-	enum EventCategory
+	enum EventCategoryH2M
 	{
 		None = 0,
 		EventCategoryApplication = BIT(0),
@@ -37,8 +37,8 @@ namespace H2M
 		EventCategoryMouseButton = BIT(4)
 	};
 
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
-							virtual EventType GetEventType() const override { return GetStaticType(); }\
+#define EVENT_CLASS_TYPE(type) static EventTypeH2M GetStaticType() { return EventTypeH2M::type; }\
+							virtual EventTypeH2M GetEventType() const override { return GetStaticType(); }\
 							virtual const char* GetName() const override { return #type; }
 
 #define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
@@ -48,18 +48,18 @@ namespace H2M
 	 */
 	class EventH2M
 	{
-		friend class EventDispatcher;
+		friend class EventDispatcherH2M;
 
 	public:
 
 		bool Handled = false;
 
-		virtual EventType GetEventType() const = 0;
+		virtual EventTypeH2M GetEventType() const = 0;
 		virtual const char* GetName() const = 0;
 		virtual int GetCategoryFlags() const = 0;
 		virtual std::string ToString() const { return GetName(); }
 
-		inline bool IsInCategory(EventCategory category)
+		inline bool IsInCategory(EventCategoryH2M category)
 		{
 			return GetCategoryFlags() & category;
 		}
@@ -68,12 +68,12 @@ namespace H2M
 	/**
 	 * EventDispatcher
 	 */
-	class EventDispatcher
+	class EventDispatcherH2M
 	{
 		template<typename T>
 		using EventFn = std::function<bool(T&)>;
 	public:
-		EventDispatcher(EventH2M& event)
+		EventDispatcherH2M(EventH2M& event)
 			: m_Event(event)
 		{
 		}
