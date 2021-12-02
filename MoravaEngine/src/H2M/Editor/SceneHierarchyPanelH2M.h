@@ -51,9 +51,9 @@ namespace Hazel
 		std::function<void(EntityH2M, Ref<MeshAsset>)> m_MeshAssetConvertCallback;
 		std::function<void(EntityH2M, AssetHandle)> m_InvalidMetadataCallback;
 
-		Ref<Texture2DH2M> m_PencilIcon;
-		Ref<Texture2DH2M> m_PlusIcon;
-		Ref<Texture2DH2M> m_GearIcon;
+		Ref<Texture2D_H2M> m_PencilIcon;
+		Ref<Texture2D_H2M> m_PlusIcon;
+		Ref<Texture2D_H2M> m_GearIcon;
 
 	};
 

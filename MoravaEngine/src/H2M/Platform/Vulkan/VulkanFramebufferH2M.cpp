@@ -49,7 +49,7 @@ namespace Hazel {
 
 		if (!m_Specification.SwapChainTarget)
 		{
-			// Ref<VulkanFramebuffer> instance = this;
+			// RefH2M<VulkanFramebuffer> instance = this;
 			// RendererH2M::Submit([instance, width, height]() mutable
 			// {
 			// });
@@ -257,7 +257,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanFramebufferH2M::AddResizeCallback(const std::function<void(Ref<HazelFramebuffer>)>& func)
+	void VulkanFramebufferH2M::AddResizeCallback(const std::function<void(RefH2M<HazelFramebuffer>)>& func)
 	{
 		m_ResizeCallbacks.push_back(func);
 	}

@@ -8,7 +8,7 @@
 #include <vulkan/vulkan.h>
 
 
-namespace Hazel::Utils {
+namespace H2M::Utils {
 
 	inline const char* VKResultToString(VkResult result)
 	{
@@ -53,7 +53,8 @@ namespace Hazel::Utils {
 		case VK_OPERATION_NOT_DEFERRED_KHR: return "VK_OPERATION_NOT_DEFERRED_KHR";
 		case VK_PIPELINE_COMPILE_REQUIRED_EXT: return "VK_PIPELINE_COMPILE_REQUIRED_EXT";
 		}
-		HZ_CORE_ASSERT(false);
+
+		H2M_CORE_ASSERT(false);
 		return nullptr;
 	}
 
@@ -65,13 +66,13 @@ namespace Hazel::Utils {
 	{
 		if (result != VK_SUCCESS)
 		{
-			HZ_CORE_ERROR("VkResult is '{0}' in {1}:{2}", ::Hazel::Utils::VKResultToString(result), __FILE__, __LINE__);
+			H2M_CORE_ERROR("VkResult is '{0}' in {1}:{2}", ::H2M::Utils::VKResultToString(result), __FILE__, __LINE__);
 			if (result == VK_ERROR_DEVICE_LOST)
 			{
-				Hazel::Utils::RetrieveDiagnosticCheckpoints();
-				Hazel::Utils::DumpGPUInfoDuplicate();
+				H2M::Utils::RetrieveDiagnosticCheckpoints();
+				H2M::Utils::DumpGPUInfoDuplicate();
 			}
-			HZ_CORE_ASSERT(result == VK_SUCCESS);
+			H2M_CORE_ASSERT(result == VK_SUCCESS);
 		}
 	}
 
@@ -82,7 +83,7 @@ namespace Hazel::Utils {
 	VkResult res = (f);												             \
 	if (res != VK_SUCCESS)											             \
 	{																             \
-		HZ_CORE_ERROR("VkResult is '{0}' in {1}:{2}", res, __FILE__ , __LINE__); \
-		HZ_CORE_ASSERT(res == VK_SUCCESS);										 \
+		H2M_CORE_ERROR("VkResult is '{0}' in {1}:{2}", res, __FILE__ , __LINE__); \
+		H2M_CORE_ASSERT(res == VK_SUCCESS);										 \
 	}																			 \
 }

@@ -14,7 +14,7 @@
 
 namespace Hazel {
 
-	Ref<SceneH2M> VulkanTestLayer::s_Scene;
+	RefH2M<SceneH2M> VulkanTestLayer::s_Scene;
 	SceneHierarchyPanelH2M* VulkanTestLayer::s_SceneHierarchyPanel;
 	ContentBrowserPanel* VulkanTestLayer::s_ContentBrowserPanel;
 	MaterialEditorPanel* VulkanTestLayer::s_MaterialEditorPanel;
@@ -32,18 +32,18 @@ namespace Hazel {
 		} SceneData;
 
 		// Resources
-		Ref<Pipeline> GeometryPipeline;
-		Ref<Pipeline> CompositePipeline;
-		Ref<Pipeline> SkyboxPipeline;
-		Ref<Pipeline> GridPipeline;
-		Ref<HazelMaterial> SkyboxMaterial;
+		RefH2M<Pipeline> GeometryPipeline;
+		RefH2M<Pipeline> CompositePipeline;
+		RefH2M<Pipeline> SkyboxPipeline;
+		RefH2M<Pipeline> GridPipeline;
+		RefH2M<HazelMaterial> SkyboxMaterial;
 
-		Ref<RenderPass> GeoPass;
+		RefH2M<RenderPass> GeoPass;
 
 		struct DrawCommand
 		{
-			Ref<MeshH2M> Mesh;
-			Ref<HazelMaterial> Material;
+			RefH2M<MeshH2M> Mesh;
+			RefH2M<HazelMaterial> Material;
 			glm::mat4 Transform;
 		};
 
@@ -51,14 +51,14 @@ namespace Hazel {
 		std::vector<DrawCommand> SelectedMeshDrawList;
 
 		// Grid
-		Ref<HazelMaterial> GridMaterial;
+		RefH2M<HazelMaterial> GridMaterial;
 
 		// SceneRendererOptions Options; // moved to VulkanRendererH2M
 	};
 
 	static SceneRendererData s_Data;
 
-	std::vector<Ref<MeshH2M>> VulkanTestLayer::s_Meshes;
+	std::vector<RefH2M<MeshH2M>> VulkanTestLayer::s_Meshes;
 
 	VulkanTestLayer::VulkanTestLayer()
 		: m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
@@ -74,11 +74,11 @@ namespace Hazel {
 
 	void VulkanTestLayer::OnAttach()
 	{
-		s_Scene = H2M::RefH2M<H2M::SceneH2M>::Create();
+		s_Scene = RefH2M<H2M::SceneH2M>::Create();
 		s_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(s_Scene);
 		s_ContentBrowserPanel = new H2M::ContentBrowserPanel();
 		s_MaterialEditorPanel = new MaterialEditorPanel();
-		s_Meshes.push_back(Ref<MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+		s_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 	}
 
 	void VulkanTestLayer::OnDetach() {}
@@ -89,7 +89,7 @@ namespace Hazel {
 
 		m_Camera.OnUpdate(ts);
 
-		for (Ref<MeshH2M> mesh : s_Meshes)
+		for (RefH2M<MeshH2M> mesh : s_Meshes)
 		{
 			VulkanRendererH2M::SubmitMeshTemp(mesh); // the method should be removed from VulkanRendererH2M
 		}
@@ -167,7 +167,7 @@ namespace Hazel {
 	/**** BEGIN this version of the OnAttach method is outdated ****
 	void VulkanTestLayer::OnAttachOld()
 	{
-		s_Scene = H2M::RefH2M<H2M::HazelScene>::Create();
+		s_Scene = RefH2M<H2M::HazelScene>::Create();
 
 		s_SceneHierarchyPanel = new H2M::SceneHierarchyPanel(s_Scene);
 
@@ -175,10 +175,10 @@ namespace Hazel {
 
 		s_MaterialEditorPanel = new MaterialEditorPanel();
 
-		// m_Meshes.push_back(Ref<MeshH2M>::Create("Models/Gladiator/Gladiator.fbx"));
-		// m_Meshes.push_back(Ref<MeshH2M>::Create("Models/Hazel/TestSceneVulkan.fbx"));
-		// m_Meshes.push_back(Ref<MeshH2M>::Create("Models/Hazel/Sphere1m.fbx"));
-		s_Meshes.push_back(Ref<MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+		// m_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Gladiator/Gladiator.fbx"));
+		// m_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Hazel/TestSceneVulkan.fbx"));
+		// m_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Hazel/Sphere1m.fbx"));
+		s_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 
 		/**** BEGIN the code that is not used anymore ****
 		RenderPassSpecification renderPassSpec;
@@ -192,7 +192,7 @@ namespace Hazel {
 		// Geometry pipeline
 		{
 			HazelFramebufferSpecification spec;
-			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
+			RefH2M<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
 
 			PipelineSpecification pipelineSpecification;
 			pipelineSpecification.Layout = {
@@ -258,7 +258,7 @@ namespace Hazel {
 			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			// shader->UnmapUniformBuffer(0);
 
-			Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
+			RefH2M<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
 
 			{
 				void* ubPtr = shader->MapUniformBuffer(0, 0);
@@ -350,8 +350,8 @@ namespace Hazel {
 
 		// HazelRenderer::Submit([=]() mutable {});
 		{
-			Ref<VulkanContext> context = Ref<VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
-			Ref<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
+			RefH2M<VulkanContext> context = RefH2M<VulkanContext>(Application::Get()->GetWindow()->GetRenderContext());
+			RefH2M<VulkanShader> shader = mesh->GetMeshShader().As<VulkanShader>();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};

@@ -26,8 +26,8 @@ public:
 	static inline std::map<std::string, TextureInfo>* GetMaterialInfo() { return &s_MaterialInfo; };
 	static inline std::map<std::string, H2M::RefH2M<MoravaShader>>* GetShaders() { return &s_ShaderCacheByTitle; };
 
-	// Loading Texture2DH2M
-	static H2M::RefH2M<H2M::Texture2DH2M> LoadTexture2DH2M(std::string filePath);
+	// Loading Texture2D_H2M
+	static H2M::RefH2M<H2M::Texture2D_H2M> LoadTexture2D_H2M(std::string filePath);
 
 	static void AddShader(std::string name, H2M::RefH2M<MoravaShader> shader);
 	static const H2M::RefH2M<MoravaShader>& GetShader(std::string name);
@@ -47,7 +47,7 @@ private:
 	static std::map<std::string, H2M::RefH2M<MoravaTexture>> s_Textures;
 	static std::map<std::string, H2M::RefH2M<Material>> s_Materials;
 
-	static std::map<std::string, H2M::RefH2M<H2M::Texture2DH2M>> s_HazelTextures2D;
+	static std::map<std::string, H2M::RefH2M<H2M::Texture2D_H2M>> s_HazelTextures2D;
 
 	static std::map<std::string, H2M::RefH2M<MoravaShader>> s_ShaderCacheByTitle;
 

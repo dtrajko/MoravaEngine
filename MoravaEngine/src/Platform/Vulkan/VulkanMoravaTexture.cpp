@@ -30,7 +30,7 @@ namespace Utils
 		}
 
 		Log::GetLogger()->error("VulkanImageFormat: ImageFormatH2M not supported: '{0}'!", format);
-		// HZ_CORE_ASSERT(false);
+		// H2M_CORE_ASSERT(false);
 		return VK_FORMAT_UNDEFINED;
 	}
 
@@ -41,7 +41,7 @@ namespace Utils
 		case H2M::TextureWrapH2M::Clamp:   return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		case H2M::TextureWrapH2M::Repeat:  return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 		}
-		HZ_CORE_ASSERT(false, "Unknown wrap mode");
+		H2M_CORE_ASSERT(false, "Unknown wrap mode");
 		return (VkSamplerAddressMode)0;
 	}
 
@@ -52,7 +52,7 @@ namespace Utils
 		case H2M::TextureFilter::Linear:   return VK_FILTER_LINEAR;
 		case H2M::TextureFilter::Nearest:  return VK_FILTER_NEAREST;
 		}
-		HZ_CORE_ASSERT(false, "Unknown filter");
+		H2M_CORE_ASSERT(false, "Unknown filter");
 		return (VkFilter)0;
 	}
 
@@ -108,8 +108,8 @@ VulkanMoravaTexture::VulkanMoravaTexture(const char* fileLoc, bool flipVert, boo
 		return;
 	}
 
-	HZ_CORE_ASSERT(channels == 4 || channels == 3);
-	// HZ_CORE_ASSERT(channels == 4);
+	H2M_CORE_ASSERT(channels == 4 || channels == 3);
+	// H2M_CORE_ASSERT(channels == 4);
 
 	//	Ref<VulkanTexture2D> instance = this;
 	//	HazelRenderer::Submit([instance]() mutable

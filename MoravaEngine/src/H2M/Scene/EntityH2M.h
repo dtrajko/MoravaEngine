@@ -2,8 +2,8 @@
 
 #include "entt.hpp"
 
-#include "H2M/Core/Assert.h"
-#include "H2M/Scene/Components.h"
+#include "H2M/Core/AssertH2M.h"
+#include "H2M/Scene/ComponentsH2M.h"
 
 #include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Scene/SceneH2M.h"
@@ -12,7 +12,8 @@
 #include "Material/Material.h"
 
 
-namespace H2M {
+namespace H2M
+{
 
 	struct TransformComponentH2M;
 
@@ -26,7 +27,7 @@ namespace H2M {
 		template<typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
-			HZ_CORE_ASSERT(!HasComponent<T>(), "Entity already has component!");
+			H2M_CORE_ASSERT(!HasComponent<T>(), "Entity already has component!");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 			m_Scene->OnComponentAdded<T>(*this, component);
 			return component;
@@ -35,7 +36,7 @@ namespace H2M {
 		template<typename T>
 		T& GetComponent()
 		{
-			HZ_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
+			H2M_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
@@ -48,7 +49,7 @@ namespace H2M {
 		template<typename T>
 		void RemoveComponent()
 		{
-			HZ_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
+			H2M_CORE_ASSERT(HasComponent<T>(), "Entity does not have component!");
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
@@ -69,9 +70,9 @@ namespace H2M {
 			return !(*this == other);
 		};
 
-		void SetParentUUID(UUID parent) { GetComponent<RelationshipComponent>().ParentHandle = parent; }
-		UUID GetParentUUID() { return GetComponent<RelationshipComponent>().ParentHandle; }
-		std::vector<UUID>& Children() { return GetComponent<RelationshipComponent>().Children; }
+		void SetParentUUID(UUID_H2M parent) { GetComponent<RelationshipComponentH2M>().ParentHandle = parent; }
+		UUID_H2M GetParentUUID() { return GetComponent<RelationshipComponentH2M>().ParentHandle; }
+		std::vector<UUID_H2M>& Children() { return GetComponent<RelationshipComponentH2M>().Children; }
 
 		bool HasParent();
 
@@ -82,9 +83,9 @@ namespace H2M {
 			return entity.IsAncesterOf(*this);
 		}
 
-		UUID GetUUID() { return GetComponent<IDComponent>().ID; }
+		UUID_H2M GetUUID() { return GetComponent<IDComponentH2M>().ID; }
 
-		UUID GetSceneUUID();
+		UUID_H2M GetSceneUUID();
 
 		inline uint32_t GetHandle() { return (uint32_t)m_EntityHandle; }
 

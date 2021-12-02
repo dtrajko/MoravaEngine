@@ -52,14 +52,14 @@ namespace Hazel {
 		/**** END moved to VulkanRenderer ****/
 
 	private:
-		static std::vector<Ref<MeshH2M>> s_Meshes;
-		Ref<Texture2DH2M> m_Texture;
+		static std::vector<RefH2M<MeshH2M>> s_Meshes;
+		RefH2M<Texture2D_H2M> m_Texture;
 		EditorCamera m_Camera;
 
 		// std::vector<glm::vec4> m_RandomColors;
 
 	public:
-		static Ref<SceneH2M> s_Scene;
+		static RefH2M<SceneH2M> s_Scene;
 		static SceneHierarchyPanelH2M* s_SceneHierarchyPanel;
 		static ContentBrowserPanel* s_ContentBrowserPanel;
 		static MaterialEditorPanel* s_MaterialEditorPanel;

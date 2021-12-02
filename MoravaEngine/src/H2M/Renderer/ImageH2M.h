@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "H2M/Core/Base.h"
-#include "H2M/Core/Buffer.h"
-#include "H2M/Core/Ref.h"
+#include "H2M/Core/BaseH2M.h"
+#include "H2M/Core/BufferH2M.h"
+#include "H2M/Core/RefH2M.h"
 
 
 namespace H2M {
@@ -69,7 +69,7 @@ namespace H2M {
 		std::string DebugName;
 	};
 
-	struct ImageSpecification
+	struct ImageSpecificationH2M
 	{
 		ImageFormatH2M Format = ImageFormatH2M::RGBA;
 		ImageUsageH2M Usage = ImageUsageH2M::Texture;
@@ -82,7 +82,7 @@ namespace H2M {
 		std::string DebugName;
 	};
 
-	class ImageH2M : public H2M::RefCounted
+	class ImageH2M : public RefCountedH2M
 	{
 	public:
 		virtual ~ImageH2M() {}
@@ -94,11 +94,11 @@ namespace H2M {
 		virtual uint32_t GetHeight() const = 0;
 		virtual float GetAspectRatio() const = 0;
 
-		virtual ImageSpecification& GetSpecification() = 0;
-		virtual const ImageSpecification& GetSpecification() const = 0;
+		virtual ImageSpecificationH2M& GetSpecification() = 0;
+		virtual const ImageSpecificationH2M& GetSpecification() const = 0;
 
-		virtual H2M::Buffer GetBuffer() const = 0;
-		virtual H2M::Buffer& GetBuffer() = 0;
+		virtual BufferH2M GetBuffer() const = 0;
+		virtual BufferH2M& GetBuffer() = 0;
 
 		virtual void CreatePerLayerImageViews() = 0;
 
@@ -107,11 +107,11 @@ namespace H2M {
 		// TODO: usage (eg. shader read)
 	};
 
-	class Image2DH2M : public ImageH2M
+	class Image2D_H2M : public ImageH2M
 	{
 	public:
-		static H2M::RefH2M<Image2DH2M> Create(ImageSpecification specification, H2M::Buffer buffer);
-		static H2M::RefH2M<Image2DH2M> Create(ImageSpecification specification, const void* data = nullptr);
+		static RefH2M<Image2D_H2M> Create(ImageSpecificationH2M specification, BufferH2M buffer);
+		static RefH2M<Image2D_H2M> Create(ImageSpecificationH2M specification, const void* data = nullptr);
 	};
 
 	namespace Utils {
@@ -127,7 +127,7 @@ namespace H2M {
 			case ImageFormatH2M::RGBA16F: return 2 * 4;
 			case ImageFormatH2M::RGBA32F: return 4 * 4;
 			}
-			HZ_CORE_ASSERT(false);
+			H2M_CORE_ASSERT(false);
 			return 0;
 		}
 

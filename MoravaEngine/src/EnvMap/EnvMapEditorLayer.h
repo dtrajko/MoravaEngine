@@ -103,7 +103,7 @@ public:
 	inline std::map<std::string, unsigned int>& GetSamplerSlots() { return EnvMapSharedData::s_SamplerSlots; }
 	inline bool& GetRadiancePrefilter() { return EnvMapSharedData::s_RadiancePrefilter; }
 	inline float& GetEnvMapRotation() { return EnvMapSharedData::s_EnvMapRotation; }
-	inline H2M::RefH2M<H2M::Texture2DH2M> GetCheckerboardTexture() { return s_CheckerboardTexture; }
+	inline H2M::RefH2M<H2M::Texture2D_H2M> GetCheckerboardTexture() { return s_CheckerboardTexture; }
 	inline H2M::RefH2M<H2M::TextureCubeH2M> GetSkyboxTexture() { return m_SkyboxTexture; }
 	H2M::EntityH2M GetMeshEntity();
 	inline float& GetSkyboxExposureFactor() { return EnvMapSharedData::s_SkyboxExposureFactor; };
@@ -137,7 +137,7 @@ private:
 
 public:
 	static SelectionMode s_SelectionMode;
-	static H2M::RefH2M<H2M::Texture2DH2M> s_CheckerboardTexture;
+	static H2M::RefH2M<H2M::Texture2D_H2M> s_CheckerboardTexture;
 
 	static H2M::RefH2M<EnvMapMaterial> s_DefaultMaterial;
 	static H2M::RefH2M<EnvMapMaterial> s_LightMaterial;
@@ -165,7 +165,7 @@ private:
 
 	/** BEGIN properties Hazelnut/EditorLayer **/
 	// Editor resources
-	H2M::RefH2M<H2M::Texture2DH2M> m_PlayButtonTex;
+	H2M::RefH2M<H2M::Texture2D_H2M> m_PlayButtonTex;
 
 	H2M::EntityH2M m_DirectionalLightEntity;
 	glm::mat4 m_LightProjectionMatrix;

@@ -30,7 +30,7 @@ H2M::RefH2M<MoravaShader> EnvMapSceneRenderer::s_ShaderEnvIrradiance;
 H2M::RefH2M<MoravaShader> EnvMapSceneRenderer::s_ShaderGrid;
 H2M::RefH2M<MoravaShader> EnvMapSceneRenderer::s_ShaderSkybox;
 // H2M::RefH2M<H2M::TextureCubeH2M> EnvMapSceneRenderer::s_EnvUnfiltered;
-H2M::RefH2M<H2M::Texture2DH2M> EnvMapSceneRenderer::s_EnvEquirect;
+H2M::RefH2M<H2M::Texture2D_H2M> EnvMapSceneRenderer::s_EnvEquirect;
 // H2M::RefH2M<H2M::TextureCubeH2M> EnvMapSceneRenderer::s_EnvFiltered;
 // H2M::RefH2M<H2M::TextureCubeH2M> EnvMapSceneRenderer::s_IrradianceMap;
 float EnvMapSceneRenderer::s_GridScale = 16.025f;
@@ -63,12 +63,12 @@ H2M::RefH2M<H2M::HazelMaterial> EnvMapSceneRenderer::s_DOFMaterial;
 
 SceneRendererOptions EnvMapSceneRenderer::s_Options;
 
-H2M::RefH2M<H2M::Texture2DH2M> EnvMapSceneRenderer::s_BloomComputeTextures[3];
+H2M::RefH2M<H2M::Texture2D_H2M> EnvMapSceneRenderer::s_BloomComputeTextures[3];
 
 bool EnvMapSceneRenderer::s_ResourcesCreated = false;
 
 BloomSettings EnvMapSceneRenderer::s_BloomSettings;
-H2M::RefH2M<H2M::Texture2DH2M> EnvMapSceneRenderer::s_BloomDirtTexture;
+H2M::RefH2M<H2M::Texture2D_H2M> EnvMapSceneRenderer::s_BloomDirtTexture;
 
 EnvMapSceneRenderer::GPUTimeQueries EnvMapSceneRenderer::s_GPUTimeQueries;
 
@@ -89,7 +89,7 @@ struct EnvMapSceneRendererData
         H2M::HazelDirLight ActiveLight;
     } SceneData;
 
-    H2M::RefH2M<H2M::Texture2DH2M> BRDFLUT;
+    H2M::RefH2M<H2M::Texture2D_H2M> BRDFLUT;
 
     H2M::RefH2M<MoravaShader> CompositeShader;
 
@@ -202,7 +202,7 @@ void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene)
     targetFramebufferComp->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
     s_Data.CompositePass = H2M::RenderPass::Create(compRenderPassSpec);
 
-    s_Data.BRDFLUT = H2M::Texture2DH2M::Create("Textures/Hazel/BRDF_LUT.tga");
+    s_Data.BRDFLUT = H2M::Texture2D_H2M::Create("Textures/Hazel/BRDF_LUT.tga");
 
     s_Renderer2D = H2M::RefH2M<H2M::Renderer2D>::Create();
 }
@@ -256,7 +256,7 @@ void EnvMapSceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
 
 void EnvMapSceneRenderer::BeginScene(H2M::SceneH2M* scene, const H2M::SceneRendererCameraH2M& camera)
 {
-    // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+    // H2M_CORE_ASSERT(!s_Data.ActiveScene, "");
 
     s_Data.ActiveScene = scene;
 
@@ -265,7 +265,7 @@ void EnvMapSceneRenderer::BeginScene(H2M::SceneH2M* scene, const H2M::SceneRende
 
 void EnvMapSceneRenderer::EndScene()
 {
-    HZ_CORE_ASSERT(s_Data.ActiveScene, "");
+    H2M_CORE_ASSERT(s_Data.ActiveScene, "");
 
     s_Data.ActiveScene = nullptr;
 
@@ -324,9 +324,9 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
     H2M::RefH2M<H2M::OpenGLTextureCube> envUnfiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize).As<H2M::OpenGLTextureCube>();
     // Ref<OpenGLShader> equirectangularConversionShader = RendererH2M::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShader>();
     H2M::RefH2M<H2M::OpenGLShader> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<H2M::OpenGLShader>();
-    s_EnvEquirect = H2M::Texture2DH2M::Create(filepath);
+    s_EnvEquirect = H2M::Texture2D_H2M::Create(filepath);
 
-    // HZ_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
+    // H2M_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
     if (s_EnvEquirect->GetFormat() != H2M::ImageFormatH2M::RGBA32F)
     {
         Log::GetLogger()->error("Texture is not HDR!");
@@ -368,7 +368,7 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
             glBindImageTexture(0, envFiltered->GetRendererID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
 
             const GLint roughnessUniformLocation = glGetUniformLocation(envFilteringShader->GetRendererID(), "u_Uniforms.Roughness");
-            // HZ_CORE_ASSERT(roughnessUniformLocation != -1);
+            // H2M_CORE_ASSERT(roughnessUniformLocation != -1);
             glUniform1f(roughnessUniformLocation, (float)level * deltaRoughness);
 
             // glProgramUniform1f(envFilteringShader->GetRendererID(), roughnessUniformLocation, (float)(level * deltaRoughness));
@@ -394,7 +394,7 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
         glBindImageTexture(0, irradianceMap->GetID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA16F);
 
         const GLint samplesUniformLocation = glGetUniformLocation(envIrradianceShader->GetRendererID(), "u_Uniforms.Samples");
-        // HZ_CORE_ASSERT(samplesUniformLocation != -1);
+        // H2M_CORE_ASSERT(samplesUniformLocation != -1);
         const uint32_t samples = H2M::RendererH2M::GetConfig().IrradianceMapComputeSamples;
         glUniform1ui(samplesUniformLocation, samples);
 
@@ -655,7 +655,7 @@ void EnvMapSceneRenderer::OnImGuiRender()
                 std::string filename = Application::Get()->OpenFile("");
                 if (!filename.empty())
                 {
-                    s_BloomDirtTexture = H2M::Texture2DH2M::Create(filename);
+                    s_BloomDirtTexture = H2M::Texture2D_H2M::Create(filename);
                 }
             }
         }
@@ -959,7 +959,7 @@ void EnvMapSceneRenderer::SubmitEntityEnvMap(H2M::EntityH2M entity)
 
 void EnvMapSceneRenderer::FlushDrawList()
 {
-    // HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+    // H2M_CORE_ASSERT(!s_Data.ActiveScene, "");
 
     //  if (!s_Data.ActiveScene) {
     //      Log::GetLogger()->error("Active scene is not specified!");
@@ -996,7 +996,7 @@ H2M::RefH2M<H2M::TextureCubeH2M> EnvMapSceneRenderer::GetIrradianceMap()
     return s_Data.SceneData.SceneEnvironment.IrradianceMap;
 }
 
-H2M::RefH2M<H2M::Texture2DH2M> EnvMapSceneRenderer::GetBRDFLUT()
+H2M::RefH2M<H2M::Texture2D_H2M> EnvMapSceneRenderer::GetBRDFLUT()
 {
     return s_Data.BRDFLUT;
 }

@@ -12,6 +12,6 @@ public:
 	void OnImGuiRender(bool* p_open = (bool*)0);
 
 private:
-	H2M::RefH2M<H2M::Texture2DH2M> m_CheckerboardTexture;
+	H2M::RefH2M<H2M::Texture2D_H2M> m_CheckerboardTexture;
 
 };

@@ -26,8 +26,8 @@ namespace H2M
 			SceneRendererCameraH2M SceneCamera;
 
 			// Resources
-			Ref<HazelMaterial> SkyboxMaterial;
-			Ref<Environment> SceneEnvironment;
+			RefH2M<HazelMaterial> SkyboxMaterial;
+			RefH2M<Environment> SceneEnvironment;
 			float SkyboxLod = 0.0f;
 			float SceneEnvironmentIntensity;
 			LightEnvironment SceneLightEnvironment;
@@ -35,27 +35,27 @@ namespace H2M
 			glm::vec3 LightDirectionTemp;
 		} SceneData;
 
-		Ref<Texture2DH2M> BRDFLUT;
-		Ref<HazelShader> CompositeShader;
-		Ref<HazelMaterial> CompositeMaterial;
-		Ref<MoravaShader> BloomBlurShader;
-		Ref<MoravaShader> BloomBlendShader;
+		RefH2M<Texture2D_H2M> BRDFLUT;
+		RefH2M<HazelShader> CompositeShader;
+		RefH2M<HazelMaterial> CompositeMaterial;
+		RefH2M<MoravaShader> BloomBlurShader;
+		RefH2M<MoravaShader> BloomBlendShader;
 
-		Ref<RenderPass> GeoPass;
-		Ref<RenderPass> CompositePass;
-		Ref<RenderPass> BloomBlurPass[2];
-		Ref<RenderPass> BloomBlendPass;
+		RefH2M<RenderPass> GeoPass;
+		RefH2M<RenderPass> CompositePass;
+		RefH2M<RenderPass> BloomBlurPass[2];
+		RefH2M<RenderPass> BloomBlendPass;
 
-		Ref<Pipeline> GeometryPipeline;
-		Ref<Pipeline> CompositePipeline;
-		Ref<Pipeline> SkyboxPipeline;
-		Ref<Pipeline> ShadowPassPipeline;
-		Ref<HazelMaterial> SkyboxMaterial;
+		RefH2M<Pipeline> GeometryPipeline;
+		RefH2M<Pipeline> CompositePipeline;
+		RefH2M<Pipeline> SkyboxPipeline;
+		RefH2M<Pipeline> ShadowPassPipeline;
+		RefH2M<HazelMaterial> SkyboxMaterial;
 
 		struct DrawCommand
 		{
-			Ref<HazelMesh> Mesh;
-			Ref<HazelMaterial> Material;
+			RefH2M<HazelMesh> Mesh;
+			RefH2M<HazelMaterial> Material;
 			glm::mat4 Transform;
 		};
 
@@ -65,11 +65,11 @@ namespace H2M
 		std::vector<DrawCommand> ShadowPassDrawList;
 
 		// Grid
-		Ref<Pipeline> GridPipeline;
-		Ref<HazelShader> GridShader;
-		Ref<HazelMaterial> GridMaterial;
-		Ref<HazelMaterial> OutlineMaterial;
-		Ref<HazelMaterial> OutlineAnimMaterial;
+		RefH2M<Pipeline> GridPipeline;
+		RefH2M<HazelShader> GridShader;
+		RefH2M<HazelMaterial> GridMaterial;
+		RefH2M<HazelMaterial> OutlineMaterial;
+		RefH2M<HazelMaterial> OutlineAnimMaterial;
 
 		SceneRendererOptionsH2M Options;
 
@@ -82,7 +82,7 @@ namespace H2M
 
 	static SceneRendererData s_Data;
 
-	SceneRendererH2M::SceneRendererH2M(Ref<SceneH2M> scene, SceneRendererSpecificationH2M specification)
+	SceneRendererH2M::SceneRendererH2M(RefH2M<SceneH2M> scene, SceneRendererSpecificationH2M specification)
 		: m_Scene(scene), m_Specification(specification)
 	{
 		Init();
@@ -114,7 +114,7 @@ namespace H2M
 
 		s_Data.CompositeShader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
 		s_Data.CompositeMaterial = HazelMaterial::Create(s_Data.CompositeShader, "CompositeMaterial");
-		s_Data.BRDFLUT = Texture2DH2M::Create("assets/textures/BRDF_LUT.tga");
+		s_Data.BRDFLUT = Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga");
 
 		// Grid pipeline
 		{
@@ -162,7 +162,7 @@ namespace H2M
 		// Geometry pipeline
 		{
 			HazelFramebufferSpecification spec = {};
-			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
+			RefH2M<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
 
 			PipelineSpecification pipelineSpecification = {};
 			pipelineSpecification.Layout = {
@@ -184,8 +184,8 @@ namespace H2M
 		// Composite pipeline
 		{
 			HazelFramebufferSpecification spec = {};;
-			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
-			framebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer)
+			RefH2M<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
+			framebuffer->AddResizeCallback([](RefH2M<HazelFramebuffer> framebuffer)
 			{
 				// HazelRenderer::Submit([framebuffer]() mutable {});
 				{
@@ -210,7 +210,7 @@ namespace H2M
 		****/
 	}
 
-	void SceneRendererH2M::SetScene(Ref<SceneH2M> scene)
+	void SceneRendererH2M::SetScene(RefH2M<SceneH2M> scene)
 	{
 	}
 
@@ -227,7 +227,7 @@ namespace H2M
 
 	void SceneRendererH2M::BeginScene(SceneH2M* scene, const SceneRendererCameraH2M& camera)
 	{
-		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+		H2M_CORE_ASSERT(!s_Data.ActiveScene, "");
 
 		s_Data.ActiveScene = scene;
 
@@ -244,18 +244,18 @@ namespace H2M
 			s_Data.NeedsResize = false;
 		}
 
-		RendererH2M::SetSceneEnvironment(Ref<SceneRenderer>(), s_Data.SceneData.SceneEnvironment, Ref<HazelImage2D>(), Ref<HazelImage2D>());
+		RendererH2M::SetSceneEnvironment(RefH2M<SceneRenderer>(), s_Data.SceneData.SceneEnvironment, RefH2M<HazelImage2D>(), RefH2M<HazelImage2D>());
 	}
 
 	void SceneRendererH2M::EndScene()
 	{
-		HZ_CORE_ASSERT(s_Data.ActiveScene, "");
+		H2M_CORE_ASSERT(s_Data.ActiveScene, "");
 
 		s_Data.ActiveScene = nullptr;
 
 		FlushDrawList();
 #if MULTI_THREAD
-		// Ref<SceneRendererH2M> instance = this;
+		// RefH2M<SceneRendererH2M> instance = this;
 		// s_ThreadPool.emplace_back(([instance]() mutable {}))
 		{
 			// FlushDrawList();
@@ -283,7 +283,7 @@ namespace H2M
 
 	void SceneRendererH2M::SubmitMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent)
 	{
-		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), Ref<HazelMaterial>());
+		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), RefH2M<HazelMaterial>());
 	}
 
 	void SceneRendererH2M::SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent)
@@ -291,31 +291,31 @@ namespace H2M
 		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
 	}
 
-	void SceneRendererH2M::SubmitMesh(Ref<MeshH2M> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
+	void SceneRendererH2M::SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<HazelMaterial> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
 	}
 
-	void SceneRendererH2M::SubmitSelectedMesh(Ref<MeshH2M> mesh, const glm::mat4& transform)
+	void SceneRendererH2M::SubmitSelectedMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform)
 	{
-		s_Data.SelectedMeshDrawList.push_back({ mesh, Ref<HazelMaterial>(), transform });
-		// s_Data.ShadowPassDrawList.push_back({ mesh, Ref<HazelMaterial>, transform });
+		s_Data.SelectedMeshDrawList.push_back({ mesh, RefH2M<HazelMaterial>(), transform });
+		// s_Data.ShadowPassDrawList.push_back({ mesh, RefH2M<HazelMaterial>, transform });
 	}
 
-	Ref<RenderPass> SceneRendererH2M::GetFinalRenderPass()
+	RefH2M<RenderPass> SceneRendererH2M::GetFinalRenderPass()
 	{
-		return Ref<RenderPass>();
+		return RefH2M<RenderPass>();
 	}
 
-	Ref<Texture2DH2M> SceneRendererH2M::GetFinalPassImage()
+	RefH2M<Texture2D_H2M> SceneRendererH2M::GetFinalPassImage()
 	{
-		return Ref<Texture2DH2M>();
+		return RefH2M<Texture2D_H2M>();
 	}
 
 	void SceneRendererH2M::GeometryPass()
 	{
-		HazelRenderer::BeginRenderPass(Ref<RenderCommandBuffer>(), s_Data.GeoPass);
+		HazelRenderer::BeginRenderPass(RefH2M<RenderCommandBuffer>(), s_Data.GeoPass);
 
 		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
 		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
@@ -381,7 +381,7 @@ namespace H2M
 		// Skybox
 		s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
 		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment->RadianceMap);
-		HazelRenderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer>(), s_Data.SkyboxPipeline, Ref<UniformBufferSet>(), s_Data.SkyboxMaterial);
+		HazelRenderer::SubmitFullscreenQuad(RefH2M<RenderCommandBuffer>(), s_Data.SkyboxPipeline, RefH2M<UniformBufferSet>(), s_Data.SkyboxMaterial);
 
 		// Render entities
 		for (auto& dc : s_Data.DrawList)
@@ -411,12 +411,12 @@ namespace H2M
 			Renderer2D::EndScene();
 		}
 
-		HazelRenderer::EndRenderPass(Ref<RenderCommandBuffer>());
+		HazelRenderer::EndRenderPass(RefH2M<RenderCommandBuffer>());
 	}
 
 	void SceneRendererH2M::CompositePass()
 	{
-		HazelRenderer::BeginRenderPass(Ref<RenderCommandBuffer>(), s_Data.CompositePipeline->GetSpecification().RenderPass);
+		HazelRenderer::BeginRenderPass(RefH2M<RenderCommandBuffer>(), s_Data.CompositePipeline->GetSpecification().RenderPass);
 
 		float exposure = s_Data.SceneData.SceneCamera.Camera.GetExposure();
 		int textureSamples = s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
@@ -430,8 +430,8 @@ namespace H2M
 		// s_Data.CompositeMaterial->Set("u_Texture", vulkanFramebuffer->GetVulkanDescriptorInfo()); // how it works?
 		s_Data.CompositeMaterial->Set("u_Texture", vulkanFramebuffer->GetColorAttachmentRendererID());
 
-		HazelRenderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer>(), s_Data.CompositePipeline, Ref<UniformBufferSet>(), s_Data.CompositeMaterial);
-		HazelRenderer::EndRenderPass(Ref<RenderCommandBuffer>());
+		HazelRenderer::SubmitFullscreenQuad(RefH2M<RenderCommandBuffer>(), s_Data.CompositePipeline, RefH2M<UniformBufferSet>(), s_Data.CompositeMaterial);
+		HazelRenderer::EndRenderPass(RefH2M<RenderCommandBuffer>());
 	}
 
 	void SceneRendererH2M::BloomBlurPass()
@@ -444,7 +444,7 @@ namespace H2M
 
 	void SceneRendererH2M::FlushDrawList()
 	{
-		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+		H2M_CORE_ASSERT(!s_Data.ActiveScene, "");
 
 		GeometryPass();
 		CompositePass();

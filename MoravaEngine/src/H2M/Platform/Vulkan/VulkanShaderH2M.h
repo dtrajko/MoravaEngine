@@ -67,8 +67,8 @@ namespace H2M
 		virtual size_t GetHash() const override;
 
 		virtual const std::string& GetName() const override { return m_Name; }
-		virtual const std::unordered_map<std::string, ShaderBuffer>& GetShaderBuffers() const override { return m_Buffers; }
-		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override;
+		virtual const std::unordered_map<std::string, ShaderBufferH2M>& GetShaderBuffers() const override { return m_Buffers; }
+		virtual const std::unordered_map<std::string, ShaderResourceDeclarationH2M>& GetResources() const override;
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
 		// Vulkan-specific
@@ -79,7 +79,7 @@ namespace H2M
 
 		//	UniformBuffer& GetUniformBuffer(uint32_t binding = 0, uint32_t set = 0)
 		//	{
-		//		HZ_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
+		//		H2M_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
 		//		return *m_ShaderDescriptorSets.at(set).UniformBuffers[binding];
 		//	}
 
@@ -129,7 +129,7 @@ namespace H2M
 
 	public:
 		// Vulkan-specific
-		virtual RendererID GetRendererID() const override { return (RendererID)0; };
+		virtual RendererID_H2M GetRendererID() const override { return (RendererID_H2M)0; };
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 
 		virtual void SetUniform(const std::string& fullname, uint32_t value) override;
@@ -176,9 +176,9 @@ namespace H2M
 		std::unordered_map<uint32_t, ShaderDescriptorSet> m_ShaderDescriptorSets; // added in Hazel Live 19.02.2021
 
 		std::vector<PushConstantRange> m_PushConstantRanges;
-		std::unordered_map<std::string, ShaderResourceDeclaration> m_Resources;
+		std::unordered_map<std::string, ShaderResourceDeclarationH2M> m_Resources;
 
-		std::unordered_map<std::string, ShaderBuffer> m_Buffers;
+		std::unordered_map<std::string, ShaderBufferH2M> m_Buffers;
 
 		// std::vector<VkDescriptorSetLayout> m_DescriptorSetLayouts;
 		std::unordered_map<uint32_t, VkDescriptorSetLayout> m_DescriptorSetLayouts; // added in Hazel Live 19.02.2021

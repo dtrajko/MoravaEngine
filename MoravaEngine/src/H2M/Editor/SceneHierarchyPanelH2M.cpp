@@ -21,9 +21,9 @@ namespace Hazel
 	SceneHierarchyPanelH2M::SceneHierarchyPanelH2M(Ref<HazelScene> scene)
 		: m_Context(scene)
 	{
-		m_PencilIcon = Texture2DH2M::Create("Resources/Editor/pencil_icon.png");
-		m_PlusIcon = Texture2DH2M::Create("Resources/Editor/plus_icon.png");
-		m_GearIcon = Texture2DH2M::Create("Resources/Editor/gear_icon.png");
+		m_PencilIcon = Texture2D_H2M::Create("Resources/Editor/pencil_icon.png");
+		m_PlusIcon = Texture2D_H2M::Create("Resources/Editor/plus_icon.png");
+		m_GearIcon = Texture2D_H2M::Create("Resources/Editor/gear_icon.png");
 	}
 
 	SceneHierarchyPanelH2M::~SceneHierarchyPanelH2M()

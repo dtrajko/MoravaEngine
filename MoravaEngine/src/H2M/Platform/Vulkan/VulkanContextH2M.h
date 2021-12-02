@@ -28,20 +28,20 @@ namespace H2M
 
 		virtual void BeginFrame() override;
 
-		Ref<VulkanDevice> GetDevice() { return m_Device; }
+		RefH2M<VulkanDevice> GetDevice() { return m_Device; }
 		VulkanSwapChain& GetSwapChain() { return m_SwapChain; }
 
 		static VkInstance GetInstance() { return s_VulkanInstance; }
 
-		static Ref<VulkanContext> Get();
-		static Ref<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
+		static RefH2M<VulkanContext> Get();
+		static RefH2M<VulkanDevice> GetCurrentDevice() { return Get()->GetDevice(); }
 
 	private:
 		Window* m_Window;
 
 		// Devices
-		Ref<VulkanPhysicalDevice> m_PhysicalDevice;
-		Ref<VulkanDevice> m_Device;
+		RefH2M<VulkanPhysicalDevice> m_PhysicalDevice;
+		RefH2M<VulkanDevice> m_Device;
 
 		// Vulkan instance
 		inline static VkInstance s_VulkanInstance;

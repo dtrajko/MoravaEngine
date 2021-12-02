@@ -69,7 +69,7 @@ static bool s_DeferredRenderingEnabled = true;
 
 static EventCooldown s_ResizeViewport = { 0.0f, 1.0f };
 
-static H2M::RefH2M<H2M::Texture2DH2M> s_CheckerboardTexture;
+static H2M::RefH2M<H2M::Texture2D_H2M> s_CheckerboardTexture;
 
 static H2M::RefH2M<EnvMapMaterial> s_DefaultMaterial;
 static H2M::RefH2M<EnvMapMaterial> s_LightMaterial;
@@ -223,11 +223,11 @@ void DX11Renderer::Init()
 	// Create the light material
 	s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
 	// Load Hazel/Renderer/HazelTexture
-	s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2DH2M("Textures/light_bulb.png");
+	s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2D_H2M("Textures/light_bulb.png");
 	s_LightMaterial->GetAlbedoInput().UseTexture = true;
 	MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
 
-	s_CheckerboardTexture = ResourceManager::LoadTexture2DH2M("Textures/Hazel/Checkerboard.png");
+	s_CheckerboardTexture = ResourceManager::LoadTexture2D_H2M("Textures/Hazel/Checkerboard.png");
 
 	s_ImGuizmoTransform = nullptr;
 
@@ -872,8 +872,8 @@ void DX11Renderer::DrawToScreen(H2M::CameraH2M* camera)
 	dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
 	std::vector<H2M::RefH2M<H2M::HazelTexture>> textures;
-	H2M::RefH2M<H2M::Texture2DH2M> textureDiffuse = s_RenderTarget;
-	H2M::RefH2M<H2M::Texture2DH2M> textureNormal = ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
+	H2M::RefH2M<H2M::Texture2D_H2M> textureDiffuse = s_RenderTarget;
+	H2M::RefH2M<H2M::Texture2D_H2M> textureNormal = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png");
 	textures.push_back(textureDiffuse.As<DX11Texture2D>());
 	textures.push_back(textureNormal.As<DX11Texture2D>());
 	dx11ShaderUnlit->GetVertexShader()->SetTextures(textures);
@@ -1249,8 +1249,8 @@ void DX11Renderer::DrawToFramebuffer(H2M::CameraH2M* camera)
 		dx11ShaderUnlit->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
 		std::vector<H2M::RefH2M<H2M::HazelTexture>> textures;
-		H2M::RefH2M<H2M::Texture2DH2M> textureDiffuse = ResourceManager::LoadTexture2DH2M("Textures/PardCode/umhlanga_sunrise_4k.jpg");
-		H2M::RefH2M<H2M::Texture2DH2M> textureNormal = ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
+		H2M::RefH2M<H2M::Texture2D_H2M> textureDiffuse = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/umhlanga_sunrise_4k.jpg");
+		H2M::RefH2M<H2M::Texture2D_H2M> textureNormal = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png");
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
 
@@ -1286,8 +1286,8 @@ void DX11Renderer::DrawToFramebuffer(H2M::CameraH2M* camera)
 		dx11Shader->GetPixelShader()->BindConstantBuffer(s_ConstantBuffer);
 
 		std::vector<H2M::RefH2M<H2M::HazelTexture>> textures;
-		H2M::RefH2M<H2M::Texture2DH2M> textureDiffuse = ResourceManager::LoadTexture2DH2M("Textures/PardCode/gold.png");
-		H2M::RefH2M<H2M::Texture2DH2M> textureNormal = ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
+		H2M::RefH2M<H2M::Texture2D_H2M> textureDiffuse = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/gold.png");
+		H2M::RefH2M<H2M::Texture2D_H2M> textureNormal = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png");
 
 		textures.push_back(textureDiffuse.As<DX11Texture2D>());
 		textures.push_back(textureNormal.As<DX11Texture2D>());
@@ -1425,11 +1425,11 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 
 		if (renderObject.Textures.size() < 1)
 		{
-			renderObject.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/default_material_albedo.png"));
+			renderObject.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/default_material_albedo.png"));
 		}
 		if (renderObject.Textures.size() < 2)
 		{
-			renderObject.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/normal_map_default.png"));
+			renderObject.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/normal_map_default.png"));
 		}
 
 		textures.push_back(renderObject.Textures.at(0).As<DX11Texture2D>()); // Albedo Map

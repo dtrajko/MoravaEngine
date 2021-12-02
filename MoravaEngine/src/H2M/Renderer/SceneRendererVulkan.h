@@ -59,12 +59,12 @@ namespace H2M {
 	class SceneRendererVulkan : public RefCounted
 	{
 	public:
-		SceneRendererVulkan(Ref<HazelScene> scene, SceneRendererSpecificationVulkan specification = SceneRendererSpecificationVulkan{});
+		SceneRendererVulkan(RefH2M<HazelScene> scene, SceneRendererSpecificationVulkan specification = SceneRendererSpecificationVulkan{});
 
 		static void Init();
 		static void Shutdown();
 
-		void SetScene(Ref<HazelScene> scene);
+		void SetScene(RefH2M<HazelScene> scene);
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -75,11 +75,11 @@ namespace H2M {
 		static void SubmitMesh(MeshComponentH2M meshComponent, TransformComponent transformComponent);
 		static void SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponent transformComponent);
 
-		static void SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<HazelMaterial> overrideMaterial = Ref<HazelMaterial>());
-		static void SubmitSelectedMesh(Ref<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitMesh(RefH2M<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<HazelMaterial> overrideMaterial = RefH2M<HazelMaterial>());
+		static void SubmitSelectedMesh(RefH2M<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
-		static Ref<RenderPass> GetFinalRenderPass();
-		static Ref<Texture2DH2M> GetFinalPassImage(); // previously: GetFinalColorBuffer
+		static RefH2M<RenderPass> GetFinalRenderPass();
+		static RefH2M<Texture2D_H2M> GetFinalPassImage(); // previously: GetFinalColorBuffer
 
 		static SceneRendererOptionsVulkan& GetOptions();
 
@@ -95,9 +95,9 @@ private:
 		static void ShadowMapPass();
 
 	private:
-		Ref<HazelScene> m_Scene;
+		RefH2M<HazelScene> m_Scene;
 		SceneRendererSpecificationVulkan m_Specification;
-		Ref<RenderCommandBuffer> m_CommandBuffer;
+		RefH2M<RenderCommandBuffer> m_CommandBuffer;
 
 	private:
 		bool m_NeedsResize = false;

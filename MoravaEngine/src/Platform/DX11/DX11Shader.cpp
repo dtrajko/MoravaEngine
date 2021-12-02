@@ -76,7 +76,7 @@ static std::string ReadShaderFromFile(const std::string& filepath)
 	}
 	else
 	{
-		HZ_CORE_ASSERT(false, "Could not load shader!");
+		H2M_CORE_ASSERT(false, "Could not load shader!");
 	}
 	in.close();
 	return result;
@@ -105,7 +105,7 @@ void DX11Shader::LoadAndCreateVertexShader(const std::vector<uint32_t>& shaderDa
 {
 	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
 
-	HZ_CORE_ASSERT(shaderData.size());
+	H2M_CORE_ASSERT(shaderData.size());
 	// Create a new shader module that will be used for pipeline creation
 
 	// TODO: CreateShaderModule
@@ -115,7 +115,7 @@ void DX11Shader::LoadAndCreatePixelShader(const std::vector<uint32_t>& shaderDat
 {
 	// DX11Device device = DX11Context::GetCurrentDevice()->GetDX11Device();
 
-	HZ_CORE_ASSERT(shaderData.size());
+	H2M_CORE_ASSERT(shaderData.size());
 	// Create a new shader module that will be used for pipeline creation
 	
 	// TODO: CreateShaderModule
@@ -143,7 +143,7 @@ void DX11Shader::Reflect(const std::string& shaderStage, const std::vector<uint3
 		uint32_t bindingPoint = compiler.get_decoration(resource.id, spv::DecorationBinding);
 		uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
-		HZ_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
+		H2M_CORE_ASSERT(m_UniformBuffers.find(bindingPoint) == m_UniformBuffers.end());
 
 		UniformBuffer& buffer = m_UniformBuffers[bindingPoint];
 		// UniformBuffer buffer;
@@ -214,7 +214,7 @@ void DX11Shader::Reflect(const std::string& shaderStage, const std::vector<uint3
 		uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 		uint32_t dimension = type.image.dim;
 
-		// HZ_CORE_ASSERT(m_ImageSamplers.find(binding) == m_ImageSamplers.end());
+		// H2M_CORE_ASSERT(m_ImageSamplers.find(binding) == m_ImageSamplers.end());
 
 		auto& imageSampler = m_ImageSamplers[binding];
 		// ImageSampler imageSampler;
@@ -398,7 +398,7 @@ static uint32_t ShaderTypeFromString(const std::string& type)
 	if (type == "fragment" || type == "pixel")  return 2;
 	if (type == "compute")
 	{
-		HZ_CORE_ASSERT(false);
+		H2M_CORE_ASSERT(false);
 	}
 
 	return 0;
@@ -414,10 +414,10 @@ std::unordered_map<uint32_t, std::string> DX11Shader::PreProcess(const std::stri
 	while (pos != std::string::npos)
 	{
 		size_t eol = source.find_first_of("\r\n", pos);
-		HZ_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+		H2M_CORE_ASSERT(eol != std::string::npos, "Syntax error");
 		size_t begin = pos + typeTokenLength + 1;
 		std::string type = source.substr(begin, eol - begin);
-		HZ_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel" || type == "compute", "Invalid shader type specified");
+		H2M_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel" || type == "compute", "Invalid shader type specified");
 
 		size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 		pos = source.find(typeToken, nextLinePos);

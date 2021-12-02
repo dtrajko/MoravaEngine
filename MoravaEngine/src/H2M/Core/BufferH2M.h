@@ -70,7 +70,7 @@ namespace H2M
 
 		byte* ReadBytes(uint32_t size, uint32_t offset)
 		{
-			HZ_CORE_ASSERT(offset + size <= Size, "Buffer overflow!");
+			H2M_CORE_ASSERT(offset + size <= Size, "Buffer overflow!");
 			byte* buffer = new byte[size];
 			memcpy(buffer, (byte*)Data + offset, size);
 			return buffer;
@@ -78,7 +78,7 @@ namespace H2M
 
 		void Write(void* data, uint32_t size, uint32_t offset = 0)
 		{
-			HZ_CORE_ASSERT(offset + size <= Size, "Buffer overflow!");
+			H2M_CORE_ASSERT(offset + size <= Size, "Buffer overflow!");
 			memcpy((byte*)Data + offset, data, size);
 		}
 

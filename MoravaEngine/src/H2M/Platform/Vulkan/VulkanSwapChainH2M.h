@@ -23,7 +23,7 @@ namespace Hazel {
 	public:
 		VulkanSwapChain() = default;
 
-		void Init(VkInstance instance, const Ref<VulkanDevice>& device);
+		void Init(VkInstance instance, const RefH2M<VulkanDevice>& device);
 		void InitSurface(GLFWwindow* windowHandle);
 		void Create(uint32_t* width, uint32_t* height, bool vsync = false);
 		
@@ -47,12 +47,12 @@ namespace Hazel {
 		uint32_t GetCurrentBufferIndex() const { return m_CurrentBufferIndex; }
 		VkFramebuffer GetFramebuffer(uint32_t index)
 		{
-			HZ_CORE_ASSERT(index < m_ImageCount);
+			H2M_CORE_ASSERT(index < m_ImageCount);
 			return m_Framebuffers[index];
 		}
 		VkCommandBuffer GetDrawCommandBuffer(uint32_t index)
 		{
-			HZ_CORE_ASSERT(index < m_ImageCount);
+			H2M_CORE_ASSERT(index < m_ImageCount);
 			return m_DrawCommandBuffers[index];
 		}
 
@@ -68,7 +68,7 @@ namespace Hazel {
 
 	private:
 		VkInstance m_Instance;
-		Ref<VulkanDevice> m_Device;
+		RefH2M<VulkanDevice> m_Device;
 		VulkanAllocator m_Allocator;
 
 		bool m_VSync = false;

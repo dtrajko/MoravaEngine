@@ -3,7 +3,7 @@
 #pragma once
 
 #include "H2M/Renderer/HazelCamera.h"
-#include "H2M/Core/Ref.h"
+#include "H2M/Core/RefH2M.h"
 
 #include "H2M/Scene/ComponentsH2M.h"
 
@@ -66,12 +66,12 @@ namespace H2M {
 	class SceneRendererH2M : public RefCounted
 	{
 	public:
-		SceneRendererH2M(Ref<SceneH2M> scene, SceneRendererSpecificationH2M specification = SceneRendererSpecificationH2M{});
+		SceneRendererH2M(RefH2M<SceneH2M> scene, SceneRendererSpecificationH2M specification = SceneRendererSpecificationH2M{});
 
 		static void Init();
 		static void Shutdown();
 
-		void SetScene(Ref<SceneH2M> scene);
+		void SetScene(RefH2M<SceneH2M> scene);
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -82,11 +82,11 @@ namespace H2M {
 		static void SubmitMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent);
 		static void SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent);
 
-		static void SubmitMesh(Ref<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<HazelMaterial> overrideMaterial = Ref<HazelMaterial>());
-		static void SubmitSelectedMesh(Ref<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<HazelMaterial> overrideMaterial = RefH2M<HazelMaterial>());
+		static void SubmitSelectedMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
-		static Ref<RenderPass> GetFinalRenderPass();
-		static Ref<Texture2DH2M> GetFinalPassImage(); // previously: GetFinalColorBuffer
+		static RefH2M<RenderPass> GetFinalRenderPass();
+		static RefH2M<Texture2D_H2M> GetFinalPassImage(); // previously: GetFinalColorBuffer
 
 		static SceneRendererOptionsH2M& GetOptions();
 
@@ -102,9 +102,9 @@ private:
 		static void ShadowMapPass();
 
 	private:
-		Ref<SceneH2M> m_Scene;
+		RefH2M<SceneH2M> m_Scene;
 		SceneRendererSpecificationH2M m_Specification;
-		Ref<RenderCommandBuffer> m_CommandBuffer;
+		RefH2M<RenderCommandBuffer> m_CommandBuffer;
 
 	private:
 		bool m_NeedsResize = false;

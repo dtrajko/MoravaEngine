@@ -118,7 +118,7 @@ namespace Hazel
 		Create();
 	}
 
-	MeshH2M::MeshH2M(const std::string& filename, Ref<MoravaShader> shader, Ref<HazelMaterial> material, bool isAnimated)
+	MeshH2M::MeshH2M(const std::string& filename, RefH2M<MoravaShader> shader, RefH2M<HazelMaterial> material, bool isAnimated)
 		: m_MeshShader(shader), m_BaseMaterial(material), m_IsAnimated(isAnimated)
 	{
 		m_FilePath = filename;
@@ -211,7 +211,7 @@ namespace Hazel
 		{
 			aiMesh* mesh = scene->mMeshes[m];
 
-			Ref<SubmeshH2M> submesh = Ref<SubmeshH2M>::Create();
+			RefH2M<SubmeshH2M> submesh = RefH2M<SubmeshH2M>::Create();
 			submesh->BaseVertex = vertexCount;
 			submesh->BaseIndex = indexCount;
 			submesh->MaterialIndex = mesh->mMaterialIndex;
@@ -222,8 +222,8 @@ namespace Hazel
 			vertexCount += mesh->mNumVertices;
 			indexCount += submesh->IndexCount;
 
-			HZ_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions.");
-			HZ_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals.");
+			H2M_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions.");
+			H2M_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals.");
 
 			// Vertices
 			if (m_IsAnimated)
@@ -298,7 +298,7 @@ namespace Hazel
 			// Indices
 			for (size_t i = 0; i < mesh->mNumFaces; i++)
 			{
-				// HZ_CORE_ASSERT(mesh->mFaces[i].mNumIndices == 3, "Must have 3 indices.");
+				// H2M_CORE_ASSERT(mesh->mFaces[i].mNumIndices == 3, "Must have 3 indices.");
 				if (mesh->mFaces[i].mNumIndices != 3)
 				{
 					Log::GetLogger()->error("MeshH2M: the face contains invalid number of indices (expected: 3, detected: {0})!", mesh->mFaces[i].mNumIndices);
@@ -368,7 +368,7 @@ namespace Hazel
 		//		}
 		//	}
 
-		// Ref<Mesh> instance = this;
+		// RefH2M<Mesh> instance = this;
 
 		// Bones
 		if (m_IsAnimated)
@@ -376,7 +376,7 @@ namespace Hazel
 			for (size_t m = 0; m < scene->mNumMeshes; m++)
 			{
 				aiMesh* mesh = scene->mMeshes[m];
-				Ref<SubmeshH2M> submesh = m_Submeshes[m];
+				RefH2M<SubmeshH2M> submesh = m_Submeshes[m];
 
 				for (size_t i = 0; i < mesh->mNumBones; i++)
 				{
@@ -415,7 +415,7 @@ namespace Hazel
 		/**** BEGIN Materials ****/
 
 		// Materials
-		Ref<Texture2DH2M> whiteTexture = RendererH2M::GetWhiteTexture();
+		RefH2M<Texture2D_H2M> whiteTexture = RendererH2M::GetWhiteTexture();
 		if (scene->HasMaterials())
 		{
 			Log::GetLogger()->info("---- Materials - {0} ----", m_FilePath);
@@ -426,7 +426,7 @@ namespace Hazel
 			m_Materials.resize(scene->mNumMaterials);
 			m_MaterialDescriptors.resize(scene->mNumMaterials); // TODO: to be removed from MeshH2M
 
-			Ref<Texture2DH2M> whiteTexture = RendererH2M::GetWhiteTexture();
+			RefH2M<Texture2D_H2M> whiteTexture = RendererH2M::GetWhiteTexture();
 
 			for (uint32_t i = 0; i < scene->mNumMaterials; i++)
 			{
@@ -435,7 +435,7 @@ namespace Hazel
 
 				auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
 				// auto mi = HazelMaterial::Create(m_BaseMaterial, aiMaterialName.data);
-				// auto mi = Ref<HazelMaterialInstance>::Create(m_BaseMaterial, aiMaterialName.data);
+				// auto mi = RefH2M<HazelMaterialInstance>::Create(m_BaseMaterial, aiMaterialName.data);
 				m_Materials[i] = mi;
 
 				/**** BEGIN to be removed from MeshH2M ****/
@@ -506,12 +506,12 @@ namespace Hazel
 				HZ_MESH_LOG("    METALNESS = {0}", metalness);
 
 				// BEGIN the material data section
-				Ref<SubmeshH2M> submeshPtr = Ref<SubmeshH2M>();
+				RefH2M<SubmeshH2M> submeshPtr = RefH2M<SubmeshH2M>();
 				if (i < m_Submeshes.size()) {
 					submeshPtr = m_Submeshes[i];
 				}
 
-				H2M::RefH2M<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
+				RefH2M<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
 				// END the material data section
 
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
@@ -526,10 +526,10 @@ namespace Hazel
 					std::string texturePath = parentPath.string();
 					HZ_MESH_LOG("    Albedo map path = '{0}'", texturePath);
 
-					Ref<Texture2DH2M> texture = Ref<Texture2DH2M>();
+					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
-						// texture = Texture2DH2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2DH2M(texturePath);
+						// texture = Texture2D_H2M::Create(texturePath, false);
+						texture = ResourceManager::LoadTexture2D_H2M(texturePath);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ALBEDO map failed to load. Loading the default texture placeholder instead.");
@@ -604,15 +604,15 @@ namespace Hazel
 					std::string texturePath = parentPath.string();
 					HZ_MESH_LOG("    Normal map path = '{0}'", texturePath);
 
-					Ref<Texture2DH2M> texture = Ref<Texture2DH2M>();
+					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
-						// texture = Texture2DH2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2DH2M(texturePath);
+						// texture = Texture2D_H2M::Create(texturePath, false);
+						texture = ResourceManager::LoadTexture2D_H2M(texturePath);
 						m_Textures.push_back(texture);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The NORMAL map failed to load. Loading the default texture placeholder instead.");
-						texture = Texture2DH2M::Create("Textures/normal_map_default.png");
+						texture = Texture2D_H2M::Create("Textures/normal_map_default.png");
 					}
 
 					if (texture && texture->Loaded())
@@ -673,10 +673,10 @@ namespace Hazel
 					// HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 					HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 
-					Ref<Texture2DH2M> texture = Ref<Texture2DH2M>();
+					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
-						// texture = Texture2DH2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2DH2M(texturePath);
+						// texture = Texture2D_H2M::Create(texturePath, false);
+						texture = ResourceManager::LoadTexture2D_H2M(texturePath);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ROUGHNESS map failed to load. Loading the default texture placeholder instead.");
@@ -730,10 +730,10 @@ namespace Hazel
 					parentPath /= std::string(aiTexPath.data);
 					std::string texturePath = parentPath.string();
 
-					Ref<Texture2DH2M> texture = Ref<Texture2DH2M>();
+					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
-						// texture = Texture2DH2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2DH2M(texturePath);
+						// texture = Texture2D_H2M::Create(texturePath, false);
+						texture = ResourceManager::LoadTexture2D_H2M(texturePath);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
@@ -830,10 +830,10 @@ namespace Hazel
 							std::string texturePath = parentPath.string();
 							HZ_MESH_LOG("    Metalness map path = '{0}'", texturePath);
 
-							Ref<Texture2DH2M> texture = Ref<Texture2DH2M>();
+							RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 							try {
-								// texture = Texture2DH2M::Create(texturePath, false);
-								texture = ResourceManager::LoadTexture2DH2M(texturePath);
+								// texture = Texture2D_H2M::Create(texturePath, false);
+								texture = ResourceManager::LoadTexture2D_H2M(texturePath);
 							}
 							catch (...) {
 								Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
@@ -894,7 +894,7 @@ namespace Hazel
 		else
 		{
 			// auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
-			auto mi = Ref<HazelMaterialInstance>::Create(m_BaseMaterial, "Hazel-Default");
+			auto mi = RefH2M<HazelMaterialInstance>::Create(m_BaseMaterial, "Hazel-Default");
 			mi->Set("u_MaterialUniforms.AlbedoTexToggle", 0.0f);
 			mi->Set("u_MaterialUniforms.NormalTexToggle", 0.0f);
 			mi->Set("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
@@ -978,16 +978,16 @@ namespace Hazel
 	{
 	}
 
-	void MeshH2M::AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, Ref<Texture2DH2M> texture)
+	void MeshH2M::AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, RefH2M<Texture2D_H2M> texture)
 	{
-		// Ref<MeshH2M> instance = this;
+		// RefH2M<MeshH2M> instance = this;
 		// RendererH2M::Submit([instance, index, name, texture]() mutable {});
 		{
 			MaterialDescriptor& materialDescriptor = m_MaterialDescriptors[index];
 
-			Ref<HazelShader> shader = m_Materials[index]->GetShader();
+			RefH2M<HazelShader> shader = m_Materials[index]->GetShader();
 			const VkWriteDescriptorSet* wds = shader.As<VulkanShader>()->GetDescriptorSet(name);
-			HZ_CORE_ASSERT(wds);
+			H2M_CORE_ASSERT(wds);
 
 			VkWriteDescriptorSet descriptorSet = *wds;
 			descriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
@@ -1000,7 +1000,7 @@ namespace Hazel
 
 	void MeshH2M::UpdateAllDescriptorSets()
 	{
-		// Ref<Mesh> instance = this;
+		// RefH2M<Mesh> instance = this;
 		// RendererH2M::Submit([instance]() mutable {});
 		{
 			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -1016,7 +1016,7 @@ namespace Hazel
 	/**** BEGIN removed in Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****
 	void MeshH2M::UpdateAllDescriptors()
 	{
-		// Ref<MeshH2M> instance = this;
+		// RefH2M<MeshH2M> instance = this;
 		// RendererH2M::Submit([instance]() mutable {});
 		{
 			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -1061,7 +1061,7 @@ namespace Hazel
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t mesh = node->mMeshes[i];
-			Ref<SubmeshH2M> submesh = m_Submeshes[mesh];
+			RefH2M<SubmeshH2M> submesh = m_Submeshes[mesh];
 			submesh->NodeName = node->mName.C_Str();
 			submesh->MeshName = m_Scene->mMeshes[mesh]->mName.C_Str();
 			submesh->Transform = transform;
@@ -1241,14 +1241,14 @@ namespace Hazel
 		textureInfoDefault.roughness = "Textures/plain.png";
 		textureInfoDefault.emissive  = "Texture/plain.png";
 		textureInfoDefault.ao        = "Textures/plain.png";
-		m_BaseMaterial = H2M::RefH2M<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
+		m_BaseMaterial = RefH2M<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
 	}
 
-	Ref<Texture2DH2M> MeshH2M::LoadBaseTexture()
+	RefH2M<Texture2D_H2M> MeshH2M::LoadBaseTexture()
 	{
 		if (!m_BaseTexture) {
 			try {
-				m_BaseTexture = Texture2DH2M::Create("Textures/plain.png");
+				m_BaseTexture = Texture2D_H2M::Create("Textures/plain.png");
 			}
 			catch (...) {
 				Log::GetLogger()->warn("Failed to load the base texture!");
@@ -1386,7 +1386,7 @@ namespace Hazel
 		return nullptr;
 	}
 
-	void MeshH2M::DeleteSubmesh(Ref<SubmeshH2M> submesh)
+	void MeshH2M::DeleteSubmesh(RefH2M<SubmeshH2M> submesh)
 	{
 		for (auto iterator = m_Submeshes.cbegin(); iterator != m_Submeshes.cend();)
 		{
@@ -1402,12 +1402,12 @@ namespace Hazel
 		}
 	}
 
-	void MeshH2M::CloneSubmesh(Ref<SubmeshH2M> submesh)
+	void MeshH2M::CloneSubmesh(RefH2M<SubmeshH2M> submesh)
 	{
 		EntitySelection::s_SelectionContext.clear();
 
-		// Ref<SubmeshH2M> submeshCopy = Ref<SubmeshH2M>::Create(submesh);
-		Ref<SubmeshH2M> submeshCopy = Ref<SubmeshH2M>::Create();
+		// RefH2M<SubmeshH2M> submeshCopy = RefH2M<SubmeshH2M>::Create(submesh);
+		RefH2M<SubmeshH2M> submeshCopy = RefH2M<SubmeshH2M>::Create();
 		std::string appendix = Util::randomString(2);
 		submeshCopy->MeshName += "." + appendix;
 		submeshCopy->NodeName += "." + appendix;
@@ -1473,15 +1473,15 @@ namespace Hazel
 		return std::vector<TriangleH2M>();
 	}
 
-	void MeshH2M::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials)
+	void MeshH2M::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials)
 	{
-		Ref<EnvMapMaterial> envMapMaterial = Ref<EnvMapMaterial>();
+		RefH2M<EnvMapMaterial> envMapMaterial = RefH2M<EnvMapMaterial>();
 
 		m_VertexBuffer->Bind();
 		m_Pipeline->Bind();
 		m_IndexBuffer->Bind();
 
-		for (Ref<SubmeshH2M> submesh : m_Submeshes)
+		for (RefH2M<SubmeshH2M> submesh : m_Submeshes)
 		{
 			m_MeshShader->Bind();
 
@@ -1497,7 +1497,7 @@ namespace Hazel
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial)
 			{
-				H2M::RefH2M<::Material> baseMaterialRef = m_BaseMaterial;
+				RefH2M<::Material> baseMaterialRef = m_BaseMaterial;
 				baseMaterialRef->GetTextureAlbedo()->Bind(samplerSlot + 0);
 				baseMaterialRef->GetTextureNormal()->Bind(samplerSlot + 1);
 				baseMaterialRef->GetTextureMetallic()->Bind(samplerSlot + 2);
@@ -1506,7 +1506,7 @@ namespace Hazel
 				baseMaterialRef->GetTextureAO()->Bind(samplerSlot + 5);
 			}
 
-			Ref<MeshH2M> instance = this;
+			RefH2M<MeshH2M> instance = this;
 			std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(instance, submesh, H2M::EntityH2M{});
 
 			if (envMapMaterials.find(materialUUID) != envMapMaterials.end())
@@ -1520,8 +1520,8 @@ namespace Hazel
 				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 5);
 			}
 
-			// Ref<HazelMaterialInstance> material = Ref<HazelMaterialInstance>();
-			Ref<HazelMaterial> material = Ref<HazelMaterial>();
+			// RefH2M<HazelMaterialInstance> material = RefH2M<HazelMaterialInstance>();
+			RefH2M<HazelMaterial> material = RefH2M<HazelMaterial>();
 			if (m_Materials.size())
 			{
 				material = m_Materials[submesh->MaterialIndex];
@@ -1540,18 +1540,18 @@ namespace Hazel
 		}
 	}
 
-	void MeshH2M::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityH2M entity)
+	void MeshH2M::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, EntityH2M entity)
 	{
-		for (Ref<SubmeshH2M> submesh : m_Submeshes)
+		for (RefH2M<SubmeshH2M> submesh : m_Submeshes)
 		{
 			submesh->Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials, entity);
 		}
 	}
 
-	void SubmeshH2M::Render(Ref<MeshH2M> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-		const std::map<std::string, Ref<EnvMapMaterial>>& envMapMaterials, EntityH2M entity, bool wireframeEnabledScene, bool wireframeEnabledModel)
+	void SubmeshH2M::Render(RefH2M<MeshH2M> parentMesh, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
+		const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, EntityH2M entity, bool wireframeEnabledScene, bool wireframeEnabledModel)
 	{
-		Ref<EnvMapMaterial> envMapMaterial = Ref<EnvMapMaterial>();
+		RefH2M<EnvMapMaterial> envMapMaterial = RefH2M<EnvMapMaterial>();
 
 		parentMesh->GetVertexBuffer()->Bind();
 		parentMesh->GetPipeline()->Bind();
@@ -1628,7 +1628,7 @@ namespace Hazel
 		shader->Unbind();
 	}
 
-	void SubmeshH2M::RenderOutline(Ref<MeshH2M> parentMesh, Ref<MoravaShader> shader, const glm::mat4& entityTransform, EntityH2M entity)
+	void SubmeshH2M::RenderOutline(RefH2M<MeshH2M> parentMesh, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, EntityH2M entity)
 	{
 		parentMesh->GetVertexBuffer()->Bind();
 		parentMesh->GetPipeline()->Bind();

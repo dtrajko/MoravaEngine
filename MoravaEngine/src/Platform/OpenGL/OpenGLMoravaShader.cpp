@@ -233,56 +233,56 @@ void OpenGLMoravaShader::SetUniformBuffer(const std::string& name, const void* d
 
 void OpenGLMoravaShader::SetUniform(const std::string& fullname, float value)
 {
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform1f(location, value);
 }
 
 void OpenGLMoravaShader::SetUniform(const std::string& fullname, uint32_t value)
 {
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform1ui(location, value);
 }
 
 void OpenGLMoravaShader::SetUniform(const std::string& fullname, int value)
 {
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform1i(location, value);
 }
 
 void OpenGLMoravaShader::SetUniform(const std::string& fullname, const glm::vec2& value)
 {
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform2fv(location, 1, glm::value_ptr(value));
 }
 
 void OpenGLMoravaShader::SetUniform(const std::string& fullname, const glm::vec3& value)
 {
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform3fv(location, 1, glm::value_ptr(value));
 }
 
 void OpenGLMoravaShader::SetUniform(const std::string& fullname, const glm::vec4& value)
 {
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniform4fv(location, 1, glm::value_ptr(value));
 }
 
 void OpenGLMoravaShader::SetUniform(const std::string& fullname, const glm::mat3& value)
 {
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 void OpenGLMoravaShader::SetUniform(const std::string& fullname, const glm::mat4& value)
 {
-	HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+	H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 	GLint location = m_UniformLocations.at(fullname);
 	glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 }

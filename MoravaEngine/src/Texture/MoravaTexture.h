@@ -7,7 +7,7 @@
 #include <string>
 
 
-class MoravaTexture : public H2M::Texture2DH2M
+class MoravaTexture : public H2M::Texture2D_H2M
 {
 public:
 	struct Specification
@@ -42,7 +42,7 @@ public:
 	virtual void Save() = 0;
 	virtual H2M::ImageFormatH2M GetFormat() = 0;
 
-	// BEGIN pure virtual methods inherited from HazelTexture/Texture2DH2M
+	// BEGIN pure virtual methods inherited from HazelTexture/Texture2D_H2M
 	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage() const = 0;
 	virtual void Lock() = 0;
 	virtual void Unlock() = 0;
@@ -56,7 +56,7 @@ public:
 	virtual uint64_t GetHash() const = 0;
 	virtual bool operator==(const H2M::HazelTexture& other) const = 0;
 	virtual H2M::RendererID GetRendererID() const = 0;
-	// END pure virtual methods inherited from HazelTexture/Texture2DH2M
+	// END pure virtual methods inherited from HazelTexture/Texture2D_H2M
 
 	virtual bool IsLoaded() const = 0;
 

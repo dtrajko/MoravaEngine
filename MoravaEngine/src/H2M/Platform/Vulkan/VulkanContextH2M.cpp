@@ -30,7 +30,7 @@ namespace Hazel {
 	{
 		MORAVA_CORE_INFO("VulkanContext::Create");
 
-		HZ_CORE_ASSERT(glfwVulkanSupported(), "GLFW must support Vulkan!");
+		H2M_CORE_ASSERT(glfwVulkanSupported(), "GLFW must support Vulkan!");
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Application Info
@@ -98,7 +98,7 @@ namespace Hazel {
 		if (s_Validation)
 		{
 			auto vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(s_VulkanInstance, "vkCreateDebugReportCallbackEXT");
-			HZ_CORE_ASSERT(vkCreateDebugReportCallbackEXT != NULL, "");
+			H2M_CORE_ASSERT(vkCreateDebugReportCallbackEXT != NULL, "");
 			VkDebugReportCallbackCreateInfoEXT debug_report_ci = {};
 			debug_report_ci.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
 			debug_report_ci.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
@@ -112,7 +112,7 @@ namespace Hazel {
 		VkPhysicalDeviceFeatures enabledFeatures;
 		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
 		enabledFeatures.samplerAnisotropy = true;
-		m_Device = Ref<VulkanDevice>::Create(m_PhysicalDevice, enabledFeatures);
+		m_Device = RefH2M<VulkanDevice>::Create(m_PhysicalDevice, enabledFeatures);
 
 		// Why is this here?
 		m_Allocator = VulkanAllocator(m_Device, std::string("Default"));
@@ -141,9 +141,9 @@ namespace Hazel {
 		m_SwapChain.BeginFrame();
 	}
 
-	Ref<VulkanContext> VulkanContext::Get()
+	RefH2M<VulkanContext> VulkanContext::Get()
 	{
-		return Ref<VulkanContext>(HazelRenderer::GetContext());
+		return RefH2M<VulkanContext>(HazelRenderer::GetContext());
 	}
 
 	void VulkanContext::SwapBuffers()

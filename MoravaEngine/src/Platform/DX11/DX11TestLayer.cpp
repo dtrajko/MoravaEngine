@@ -81,10 +81,10 @@ void DX11TestLayer::OnAttach()
 	/*
 	RenderObject renderObjectGladiator;
 	renderObjectGladiator.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create("Models/Gladiator/Gladiator.fbx");
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_weapon_Normal.jpg"));
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_BaseColor.jpg"));
-	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2DH2M("Models/Gladiator/Gladiator_Normal.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Models/Gladiator/Gladiator_weapon_Normal.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Models/Gladiator/Gladiator_BaseColor.jpg"));
+	renderObjectGladiator.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Models/Gladiator/Gladiator_Normal.jpg"));
 	renderObjectGladiator.Transform = glm::mat4(1.0f);
 	renderObjectGladiator.Transform = glm::translate(renderObjectGladiator.Transform, glm::vec3(0.0f, 0.0f, -2.0f));
 	renderObjectGladiator.Transform = glm::scale(renderObjectGladiator.Transform, glm::vec3(0.04f));
@@ -105,8 +105,8 @@ void DX11TestLayer::OnAttach()
 
 	RenderObject renderObjectSphereLeft;
 	renderObjectSphereLeft.Mesh = meshSphere;
-	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_d.jpg"));
-	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_n.jpg"));
+	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/brick_d.jpg"));
+	renderObjectSphereLeft.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/brick_n.jpg"));
 	renderObjectSphereLeft.Transform = glm::mat4(1.0f);
 	renderObjectSphereLeft.Transform = glm::translate(renderObjectSphereLeft.Transform, glm::vec3(-4.0f, 2.0f, 0.0f));
 	renderObjectSphereLeft.PipelineType = RenderObject::PipelineType::Light;
@@ -114,8 +114,8 @@ void DX11TestLayer::OnAttach()
 
 	RenderObject renderObjectSphereRight;
 	renderObjectSphereRight.Mesh = meshSphere;
-	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_d.jpg"));
-	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_n.jpg"));
+	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/brick_d.jpg"));
+	renderObjectSphereRight.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/brick_n.jpg"));
 	renderObjectSphereRight.Transform = glm::mat4(1.0f);
 	renderObjectSphereRight.Transform = glm::translate(renderObjectSphereRight.Transform, glm::vec3(4.0f, 2.0f, 0.0f));
 	renderObjectSphereRight.PipelineType = RenderObject::PipelineType::Light;
@@ -124,27 +124,27 @@ void DX11TestLayer::OnAttach()
 
 	RenderObject renderObjectTerrain;
 	renderObjectTerrain.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create("Models/PardCode/terrain.obj");
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/sand.jpg"));
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png"));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/sand.jpg"));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png"));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
 	renderObjectTerrain.Transform = glm::scale(renderObjectTerrain.Transform, glm::vec3(4.0f));
 	renderObjectTerrain.PipelineType = RenderObject::PipelineType::Unlit;
 	m_RenderObjects.push_back(renderObjectTerrain);
 
 	// ---- other assets ----
-	ResourceManager::LoadTexture2DH2M("Textures/PardCode/sky.jpg");
+	ResourceManager::LoadTexture2D_H2M("Textures/PardCode/sky.jpg");
 
-	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/wood.jpg");
-	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
-	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick.png");
-	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_d.jpg");
-	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/brick_n.jpg");
-	// ResourceManager::LoadTexture2DH2M("Textures/default_material_albedo.png");
-	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/normal_blank.png");
-	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/umhlanga_sunrise_4k.jpg");
-	// ResourceManager::LoadTexture2DH2M("Textures/PardCode/gold.png");
-	// ResourceManager::LoadTexture2DH2M("Textures/container/container2.png");
-	// ResourceManager::LoadTexture2DH2M("Textures/container/container2_normal.png");
+	// ResourceManager::LoadTexture2D_H2M("Textures/PardCode/wood.jpg");
+	// ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png");
+	// ResourceManager::LoadTexture2D_H2M("Textures/PardCode/brick.png");
+	// ResourceManager::LoadTexture2D_H2M("Textures/PardCode/brick_d.jpg");
+	// ResourceManager::LoadTexture2D_H2M("Textures/PardCode/brick_n.jpg");
+	// ResourceManager::LoadTexture2D_H2M("Textures/default_material_albedo.png");
+	// ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png");
+	// ResourceManager::LoadTexture2D_H2M("Textures/PardCode/umhlanga_sunrise_4k.jpg");
+	// ResourceManager::LoadTexture2D_H2M("Textures/PardCode/gold.png");
+	// ResourceManager::LoadTexture2D_H2M("Textures/container/container2.png");
+	// ResourceManager::LoadTexture2D_H2M("Textures/container/container2_normal.png");
 
 	s_Mesh = H2M::RefH2M<DX11Mesh>::Create(L"Models/PardCode/teapot.obj");
 	// s_Mesh = H2M::RefH2M<DX11Mesh>::Create(L"Models/PardCode/spaceship.obj");
@@ -201,10 +201,10 @@ void DX11TestLayer::OnAttach()
 
 	s_ListMaterials.reserve(32); // reserve 32 slots
 
-	H2M::RefH2M<H2M::Texture2DH2M> textureBarrel       = ResourceManager::LoadTexture2DH2M("Textures/PardCode/barrel.jpg");
-	H2M::RefH2M<H2M::Texture2DH2M> textureHouseBrick   = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_brick.jpg");
-	H2M::RefH2M<H2M::Texture2DH2M> textureHouseWindows = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_windows.jpg");
-	H2M::RefH2M<H2M::Texture2DH2M> textureHouseWood    = ResourceManager::LoadTexture2DH2M("Textures/PardCode/house_wood.jpg");
+	H2M::RefH2M<H2M::Texture2D_H2M> textureBarrel       = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/barrel.jpg");
+	H2M::RefH2M<H2M::Texture2D_H2M> textureHouseBrick   = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/house_brick.jpg");
+	H2M::RefH2M<H2M::Texture2D_H2M> textureHouseWindows = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/house_windows.jpg");
+	H2M::RefH2M<H2M::Texture2D_H2M> textureHouseWood    = ResourceManager::LoadTexture2D_H2M("Textures/PardCode/house_wood.jpg");
 
 	H2M::RefH2M<DX11Material> materialBarrel       = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material Barrel");
 	H2M::RefH2M<DX11Material> materialHouseBrick   = DX11Material::Create(pipelineSpecIlluminated.Shader, "Material House Brick");

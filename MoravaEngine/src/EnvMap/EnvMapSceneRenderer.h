@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "H2M/Core/Ref.h"
+#include "H2M/Core/RefH2M.h"
 #include "H2M/Editor/EditorCamera.h"
 #include "H2M/Renderer/HazelMaterial.h"
 #include "H2M/Renderer/TextureH2M.h"
@@ -65,7 +65,7 @@ public:
 	static std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath);
 
 	static H2M::RefH2M<H2M::RenderPass> GetFinalRenderPass();
-	static FramebufferTexture* GetFinalColorBuffer(); // originally returns H2M::RefH2M<H2M::Texture2DH2M>
+	static FramebufferTexture* GetFinalColorBuffer(); // originally returns H2M::RefH2M<H2M::Texture2D_H2M>
 
 	// TODO: Temp
 	static uint32_t GetFinalColorBufferRendererID();
@@ -75,7 +75,7 @@ public:
 	// Temporary methods from EnvMapEditorLayer
 	static H2M::RefH2M<H2M::TextureCubeH2M> GetRadianceMap();
 	static H2M::RefH2M<H2M::TextureCubeH2M> GetIrradianceMap();
-	static H2M::RefH2M<H2M::Texture2DH2M> GetBRDFLUT();
+	static H2M::RefH2M<H2M::Texture2D_H2M> GetBRDFLUT();
 	static H2M::RefH2M<MoravaShader> GetShaderComposite();
 	static H2M::RefH2M<H2M::RenderPass> GetGeoPass();
 	static H2M::RefH2M<H2M::RenderPass> GetCompositePass();
@@ -87,7 +87,7 @@ public:
 	static void SetEnvironment(H2M::Environment environment);
 	static H2M::RefH2M<MoravaShader> GetShaderSkybox() { return s_ShaderSkybox; }
 	static H2M::RefH2M<MoravaShader> GetShaderGrid() { return s_ShaderGrid; }
-	static H2M::RefH2M<H2M::Texture2DH2M> GetEnvEquirect() { return s_EnvEquirect; }
+	static H2M::RefH2M<H2M::Texture2D_H2M> GetEnvEquirect() { return s_EnvEquirect; }
 	static void SetupShaders();
 	static H2M::SceneRendererCameraH2M& GetCamera();
 
@@ -121,7 +121,7 @@ public:
 
 	// Intermediate textures
 	// static H2M::RefH2M<H2M::TextureCubeH2M> s_EnvUnfiltered;
-	static H2M::RefH2M<H2M::Texture2DH2M> s_EnvEquirect;
+	static H2M::RefH2M<H2M::Texture2D_H2M> s_EnvEquirect;
 	// static H2M::RefH2M<H2M::TextureCubeH2M> s_EnvFiltered;
 	// static H2M::RefH2M<H2M::TextureCubeH2M> s_IrradianceMap;
 
@@ -174,12 +174,12 @@ public:
 	static SceneRendererOptions s_Options;
 
 	// Bloom compute
-	static H2M::RefH2M<H2M::Texture2DH2M> s_BloomComputeTextures[3];
+	static H2M::RefH2M<H2M::Texture2D_H2M> s_BloomComputeTextures[3];
 
 	static bool s_ResourcesCreated;
 
 	static BloomSettings s_BloomSettings;
-	static H2M::RefH2M<H2M::Texture2DH2M> s_BloomDirtTexture;
+	static H2M::RefH2M<H2M::Texture2D_H2M> s_BloomDirtTexture;
 
 	struct GPUTimeQueries
 	{

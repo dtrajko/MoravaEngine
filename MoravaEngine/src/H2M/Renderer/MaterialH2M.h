@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "H2M/Core/Base.h"
-#include "H2M/Core/Ref.h"
-
+#include "H2M/Core/BaseH2M.h"
+#include "H2M/Core/RefH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
 #include "H2M/Renderer/ShaderH2M.h"
 
@@ -15,7 +14,7 @@
 
 namespace H2M {
 
-	enum class HazelMaterialFlag
+	enum class MaterialFlagH2M
 	{
 		None       = BIT(0),
 		DepthTest  = BIT(1),
@@ -23,14 +22,14 @@ namespace H2M {
 		TwoSided   = BIT(3),
 	};
 
-	class MaterialH2M : public H2M::RefCounted
+	class MaterialH2M : public RefCountedH2M
 	{
 		friend class MaterialInstanceH2M; // Removed in more recent commits in Vulkan branch?
 
 	public:
 		MaterialH2M();
-		MaterialH2M(const H2M::RefH2M<ShaderH2M>& shader, const std::string& name = "");
-		static H2M::RefH2M<MaterialH2M> Create(const H2M::RefH2M<ShaderH2M>& shader, const std::string& name = "");
+		MaterialH2M(const RefH2M<ShaderH2M>& shader, const std::string& name = "");
+		static RefH2M<MaterialH2M> Create(const RefH2M<ShaderH2M>& shader, const std::string& name = "");
 		virtual ~MaterialH2M();
 
 		virtual void Invalidate() = 0;
@@ -48,10 +47,10 @@ namespace H2M {
 		virtual void Set(const std::string& name, const glm::mat3& value) = 0;
 		virtual void Set(const std::string& name, const glm::mat4& value) = 0;
 
-		virtual void Set(const std::string& name, const H2M::RefH2M<Texture2DH2M>& texture) = 0;
-		virtual void Set(const std::string& name, const H2M::RefH2M<Texture2DH2M>& texture, uint32_t arrayIndex) = 0;
-		virtual void Set(const std::string& name, const H2M::RefH2M<TextureCubeH2M>& texture) = 0;
-		virtual void Set(const std::string& name, const H2M::RefH2M<Image2DH2M>& image) = 0;
+		virtual void Set(const std::string& name, const RefH2M<Texture2D_H2M>& texture) = 0;
+		virtual void Set(const std::string& name, const RefH2M<Texture2D_H2M>& texture, uint32_t arrayIndex) = 0;
+		virtual void Set(const std::string& name, const RefH2M<TextureCubeH2M>& texture) = 0;
+		virtual void Set(const std::string& name, const RefH2M<Image2D_H2M>& image) = 0;
 
 		virtual float& GetFloat(const std::string& name) = 0;
 		virtual int32_t& GetInt(const std::string& name) = 0;
@@ -63,40 +62,40 @@ namespace H2M {
 		virtual glm::mat3& GetMatrix3(const std::string& name) = 0;
 		virtual glm::mat4& GetMatrix4(const std::string& name) = 0;
 
-		virtual H2M::RefH2M<Texture2DH2M> GetTexture2D(const std::string& name) = 0;
-		virtual H2M::RefH2M<TextureCubeH2M> GetTextureCube(const std::string& name) = 0;
+		virtual RefH2M<Texture2D_H2M> GetTexture2D(const std::string& name) = 0;
+		virtual RefH2M<TextureCubeH2M> GetTextureCube(const std::string& name) = 0;
 
-		virtual H2M::RefH2M<Texture2DH2M> TryGetTexture2D(const std::string& name) = 0;
-		virtual H2M::RefH2M<TextureCubeH2M> TryGetTextureCube(const std::string& name) = 0;
+		virtual RefH2M<Texture2D_H2M> TryGetTexture2D(const std::string& name) = 0;
+		virtual RefH2M<TextureCubeH2M> TryGetTextureCube(const std::string& name) = 0;
 
 #if 0
 		template<typename T>
 		T& Get(const std::string& name)
 		{
 			auto decl = FindUniformDeclaration(name);
-			HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+			H2M_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
 			auto& buffer = GetUniformBufferTarget(decl);
 			return buffer.Read<T>(decl->GetOffset());
 		}
 
 		template<typename T>
-		Ref<T> GetResource(const std::string& name)
+		RefH2M<T> GetResource(const std::string& name)
 		{
 			auto decl = FindResourceDeclaration(name);
 			uint32_t slot = decl->GetRegister();
-			HZ_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
+			H2M_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
 			return m_Textures[slot];
 		}
 #endif
 
 		virtual uint32_t GetFlags() const = 0;
-		virtual bool GetFlag(HazelMaterialFlag flag) const = 0;
-		virtual void SetFlag(HazelMaterialFlag flag, bool value = true) = 0;
+		virtual bool GetFlag(MaterialFlagH2M flag) const = 0;
+		virtual void SetFlag(MaterialFlagH2M flag, bool value = true) = 0;
 
-		virtual H2M::RefH2M<ShaderH2M> GetShader() = 0;
+		virtual RefH2M<ShaderH2M> GetShader() = 0;
 		virtual const std::string& GetName() const = 0;
 
-		H2M::Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; }; // should it be located in HazelMaterial or VulkanMaterial?
+		BufferH2M GetUniformStorageBuffer() { return m_UniformStorageBuffer; }; // should it be located in HazelMaterial or VulkanMaterial?
 
 		// TODO: obsolete?
 		void Bind(); // Removed in more recent commits in Vulkan branch
@@ -107,33 +106,33 @@ namespace H2M {
 
 		void OnShaderReloaded();
 
-		H2M::ShaderUniformDeclaration* FindUniformDeclaration(const std::string& name);
-		H2M::ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
-		H2M::Buffer& GetUniformBufferTarget(H2M::ShaderUniformDeclaration* uniformDeclaration);
+		ShaderUniformDeclarationH2M* FindUniformDeclaration(const std::string& name);
+		ShaderResourceDeclarationH2M* FindResourceDeclaration(const std::string& name);
+		BufferH2M& GetUniformBufferTarget(ShaderUniformDeclarationH2M* uniformDeclaration);
 
 	protected:
-		H2M::RefH2M<ShaderH2M> m_Shader;
+		RefH2M<ShaderH2M> m_Shader;
 		std::string m_Name;
-		H2M::Buffer m_UniformStorageBuffer; // should it be located in MaterialH2M or VulkanMaterial?
-		std::vector<Ref<TextureH2M>> m_Textures;
-		std::vector<H2M::RefH2M<ImageH2M>> m_Images;
+		BufferH2M m_UniformStorageBuffer; // should it be located in MaterialH2M or VulkanMaterial?
+		std::vector<RefH2M<TextureH2M>> m_Textures;
+		std::vector<RefH2M<ImageH2M>> m_Images;
 
 	private:
 		// std::unordered_set<MaterialH2M*> m_MaterialInstances;
 		std::unordered_set<MaterialInstanceH2M*> m_MaterialInstances;
 
-		H2M::Buffer m_VSUniformStorageBuffer;
-		H2M::Buffer m_PSUniformStorageBuffer;
+		BufferH2M m_VSUniformStorageBuffer;
+		BufferH2M m_PSUniformStorageBuffer;
 
 		uint32_t m_MaterialFlags = 0;
 	};
 
-	class MaterialInstanceH2M : public H2M::RefCounted
+	class MaterialInstanceH2M : public RefCountedH2M
 	{
 		friend class MaterialH2M;
 
 	public:
-		MaterialInstanceH2M(const H2M::RefH2M<MaterialH2M>& material, const std::string& name = "");
+		MaterialInstanceH2M(const RefH2M<MaterialH2M>& material, const std::string& name = "");
 		virtual ~MaterialInstanceH2M();
 
 		template <typename T>
@@ -149,7 +148,7 @@ namespace H2M {
 			m_Textures[slot] = texture;
 		}
 
-		void Set(const std::string& name, Texture2DH2M* texture)
+		void Set(const std::string& name, Texture2D_H2M* texture)
 		{
 			Set(name, (TextureH2M*)texture);
 		}
@@ -163,10 +162,10 @@ namespace H2M {
 		void AllocateStorage(); // Removed in more recent commits in Vulkan branch?
 
 		uint32_t GetFlags() const { return m_Material->GetFlags(); }
-		bool GetFlag(HazelMaterialFlag flag) const { return (uint32_t)flag & m_Material->GetFlags(); }
-		void SetFlag(HazelMaterialFlag flag, bool value = true);
+		bool GetFlag(MaterialFlagH2M flag) const { return (uint32_t)flag & m_Material->GetFlags(); }
+		void SetFlag(MaterialFlagH2M flag, bool value = true);
 
-		H2M::RefH2M<ShaderH2M> GetShader() { return m_Material->GetShader(); }
+		RefH2M<ShaderH2M> GetShader() { return m_Material->GetShader(); }
 
 		static MaterialInstanceH2M* Create(MaterialH2M* material);
 
@@ -175,42 +174,42 @@ namespace H2M {
 		T& Get(const std::string& name)
 		{
 			auto decl = FindUniformDeclaration(name);
-			HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+			H2M_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
 			auto& buffer = GetUniformBufferTarget(decl);
 			return buffer.Read<T>(decl->GetOffset());
 		}
 
 		template<typename T>
-		Ref<T> GetResource(const std::string& name)
+		RefH2M<T> GetResource(const std::string& name)
 		{
 			auto decl = FindResourceDeclaration(name);
 			uint32_t slot = decl->GetRegister();
-			HZ_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
+			H2M_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
 			return m_Textures[slot];
 		}
 #endif
 
 	public:
-		static H2M::RefH2M<MaterialInstanceH2M> Create(const H2M::RefH2M<MaterialH2M>& material);
+		static RefH2M<MaterialInstanceH2M> Create(const RefH2M<MaterialH2M>& material);
 
 	private:
 		void OnShaderReloaded();
-		H2M::Buffer& GetUniformBufferTarget(H2M::ShaderUniformDeclaration* uniformDeclaration);
-		void OnMaterialValueUpdated(H2M::ShaderUniformDeclaration* decl);
+		BufferH2M& GetUniformBufferTarget(ShaderUniformDeclarationH2M* uniformDeclaration);
+		void OnMaterialValueUpdated(ShaderUniformDeclarationH2M* decl);
 
 	private:
 		std::string m_Name;
-		H2M::RefH2M<MaterialH2M> m_Material;
+		RefH2M<MaterialH2M> m_Material;
 
-		std::vector<H2M::RefH2M<TextureH2M>> m_Textures;
+		std::vector<RefH2M<TextureH2M>> m_Textures;
 
 		// Buffer m_UniformStorageBuffer; // The property should be in parent MaterialH2M
-		std::vector<H2M::RefH2M<ImageH2M>> m_Images;
+		std::vector<RefH2M<ImageH2M>> m_Images;
 
-		H2M::Buffer m_VSUniformStorageBuffer;
-		H2M::Buffer m_PSUniformStorageBuffer;
+		BufferH2M m_VSUniformStorageBuffer;
+		BufferH2M m_PSUniformStorageBuffer;
 
-		H2M::Buffer m_UniformStorageBuffer; // could be obsolete in later versions of the vulkan branch
+		BufferH2M m_UniformStorageBuffer; // could be obsolete in later versions of the vulkan branch
 
 		// TODO: This is temporary; come up with a proper system to track overrides
 		std::unordered_set<std::string> m_OverriddenValues;

@@ -8,31 +8,31 @@
 namespace H2M
 {
 
-	Ref<RenderCommandBufferH2M> RenderCommandBufferH2M::Create(uint32_t count, const std::string& debugName)
+	RefH2M<RenderCommandBufferH2M> RenderCommandBufferH2M::Create(uint32_t count, const std::string& debugName)
 	{
 		switch (RendererAPI_H2M::Current())
 		{
-			case RendererAPITypeH2M::None:    return Ref<RenderCommandBufferH2M>();
-			case RendererAPITypeH2M::Vulkan:  return Ref<VulkanRenderCommandBuffer>::Create(count, debugName);
+			case RendererAPITypeH2M::None:    return RefH2M<RenderCommandBufferH2M>();
+			case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanRenderCommandBuffer>::Create(count, debugName);
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return Ref<RenderCommandBufferH2M>();
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+		return RefH2M<RenderCommandBufferH2M>();
 	}
 
-	Ref<RenderCommandBufferH2M> RenderCommandBufferH2M::CreateFromSwapChain(const std::string& debugName)
+	RefH2M<RenderCommandBufferH2M> RenderCommandBufferH2M::CreateFromSwapChain(const std::string& debugName)
 	{
 		switch (RendererAPI_H2M::Current())
 		{
-			case RendererAPITypeH2M::None:    return Ref<RenderCommandBufferH2M>();
-			case RendererAPITypeH2M::Vulkan:  return Ref<VulkanRenderCommandBuffer>::Create(debugName, true);
+			case RendererAPITypeH2M::None:    return RefH2M<RenderCommandBufferH2M>();
+			case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanRenderCommandBuffer>::Create(debugName, true);
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 
-		return Ref<RenderCommandBufferH2M>();
+		return RefH2M<RenderCommandBufferH2M>();
 	}
 
 }

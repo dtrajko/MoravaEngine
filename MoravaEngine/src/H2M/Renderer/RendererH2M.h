@@ -36,7 +36,7 @@ namespace H2M {
 	public:
 		typedef void(*RenderCommandFn)(void*);
 
-		static Ref<RendererContext> GetContext();
+		static RefH2M<RendererContext> GetContext();
 
 		static void Init();
 		static void Shutdown();
@@ -51,7 +51,7 @@ namespace H2M {
 		// static void SetLineThickness(float thickness); // For OpenGL                     // TODO: to be removed from RendererH2M
 		// static void ClearMagenta();                                                      // TODO: to be removed from RendererH2M
 
-		static Ref<HazelShaderLibrary>& GetShaderLibrary();
+		static RefH2M<HazelShaderLibrary>& GetShaderLibrary();
 
 		template<typename FuncT>
 		static void Submit(FuncT&& func)
@@ -110,37 +110,37 @@ namespace H2M {
 
 		// ~Actual~ Renderer here... TODO: remove confusion later
 		// ~Actual~ Renderer here... TODO: remove confusion later
-		static void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<RenderPass> renderPass, bool explicitClear = false);
-		static void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer);
+		static void BeginRenderPass(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<RenderPass> renderPass, bool explicitClear = false);
+		static void EndRenderPass(RefH2M<RenderCommandBuffer> renderCommandBuffer);
 
 		static void BeginFrame();
 		static void EndFrame();
 
-		static void SetSceneEnvironment(Ref<SceneRenderer> sceneRenderer, Ref<Environment> environment, Ref<HazelImage2D> shadow, Ref<HazelImage2D> linearDepth);
-		static std::pair<Ref<TextureCubeH2M>, Ref<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath);
-		static Ref<TextureCubeH2M> CreatePreethamSky(float turbidity, float azimuth, float inclination);
+		static void SetSceneEnvironment(RefH2M<SceneRenderer> sceneRenderer, RefH2M<Environment> environment, RefH2M<HazelImage2D> shadow, RefH2M<HazelImage2D> linearDepth);
+		static std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath);
+		static RefH2M<TextureCubeH2M> CreatePreethamSky(float turbidity, float azimuth, float inclination);
 
-		static void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform);
-		static void RenderMeshWithMaterial(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> material, Buffer additionalUniforms = Buffer());
-		static void RenderQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::mat4& transform);
-		static void SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material);
-		static void SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material);
-		static void SubmitFullscreenQuadWithOverrides(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material, Buffer vertexShaderOverrides, Buffer fragmentShaderOverrides);
-		static void LightCulling(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> computePipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups);
-		static void DispatchComputeShader(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> computePipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::ivec3& workGroups);
-		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0);
-		static void SubmitQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Material> material, const glm::mat4& transform = glm::mat4(1.0f));
-		static void ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<HazelImage2D> image);
+		static void RenderMesh(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Mesh> mesh, RefH2M<MaterialTable> materialTable, const glm::mat4& transform);
+		static void RenderMeshWithMaterial(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Mesh> mesh, const glm::mat4& transform, RefH2M<Material> material, Buffer additionalUniforms = Buffer());
+		static void RenderQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, const glm::mat4& transform);
+		static void SubmitFullscreenQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<Material> material);
+		static void SubmitFullscreenQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material);
+		static void SubmitFullscreenQuadWithOverrides(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<Material> material, Buffer vertexShaderOverrides, Buffer fragmentShaderOverrides);
+		static void LightCulling(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<PipelineCompute> computePipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups);
+		static void DispatchComputeShader(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<PipelineCompute> computePipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, const glm::ivec3& workGroups);
+		static void RenderGeometry(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, RefH2M<VertexBuffer> vertexBuffer, RefH2M<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0);
+		static void SubmitQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Material> material, const glm::mat4& transform = glm::mat4(1.0f));
+		static void ClearImage(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<HazelImage2D> image);
 
-		static Ref<Texture2DH2M> GetWhiteTexture();
-		static Ref<Texture2DH2M> GetBlackTexture();
-		static Ref<Texture2DH2M> GetBRDFLutTexture();
-		static Ref<TextureCubeH2M> GetBlackCubeTexture();
-		static Ref<Environment> GetEmptyEnvironment();
+		static RefH2M<Texture2D_H2M> GetWhiteTexture();
+		static RefH2M<Texture2D_H2M> GetBlackTexture();
+		static RefH2M<Texture2D_H2M> GetBRDFLutTexture();
+		static RefH2M<TextureCubeH2M> GetBlackCubeTexture();
+		static RefH2M<Environment> GetEmptyEnvironment();
 
-		static void RegisterShaderDependency(Ref<HazelShader> shader, Ref<PipelineCompute> computePipeline);
-		static void RegisterShaderDependency(Ref<HazelShader> shader, Ref<Pipeline> pipeline);
-		static void RegisterShaderDependency(Ref<HazelShader> shader, Ref<HazelMaterial> material);
+		static void RegisterShaderDependency(RefH2M<HazelShader> shader, RefH2M<PipelineCompute> computePipeline);
+		static void RegisterShaderDependency(RefH2M<HazelShader> shader, RefH2M<Pipeline> pipeline);
+		static void RegisterShaderDependency(RefH2M<HazelShader> shader, RefH2M<HazelMaterial> material);
 		static void OnShaderReloaded(size_t hash);
 
 		static uint32_t GetCurrentFrameIndex();
@@ -151,15 +151,15 @@ namespace H2M {
 		static RenderCommandQueue& GetRenderResourceReleaseQueue(uint32_t index);
 
 		// Obsolete methods
-		static void SubmitQuad(Ref<HazelMaterial> material, const glm::mat4& transform = glm::mat4(1.0f));
-		static void SubmitMesh(Ref<MeshH2M> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial = Ref<HazelMaterialInstance>());
-		static void SubmitMeshWithShader(Ref<MeshH2M> mesh, const glm::mat4& transform, Ref<HazelShader> shader);
+		static void SubmitQuad(RefH2M<HazelMaterial> material, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<HazelMaterialInstance> overrideMaterial = RefH2M<HazelMaterialInstance>());
+		static void SubmitMeshWithShader(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<HazelShader> shader);
 
-		static void RenderMesh(Ref<Pipeline> pipeline, Ref<MeshH2M> mesh, const glm::mat4& transform);
-		static void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<MeshH2M> mesh, const glm::mat4& transform);
-		static void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform);
+		static void RenderMesh(RefH2M<Pipeline> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform);
+		static void RenderMeshWithoutMaterial(RefH2M<Pipeline> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform);
+		static void RenderQuad(RefH2M<Pipeline> pipeline, RefH2M<HazelMaterial> material, const glm::mat4& transform);
 
-		static void DrawAABB(Ref<MeshH2M> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		static void DrawAABB(RefH2M<MeshH2M> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		static void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 
 	private:

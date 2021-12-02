@@ -19,12 +19,12 @@ namespace Hazel {
 	public:
 		VulkanAllocatorH2M() = default;
 		VulkanAllocatorH2M(const std::string& tag);
-		VulkanAllocatorH2M(const Ref<VulkanDevice>& device, const std::string& tag = "");
+		VulkanAllocatorH2M(const RefH2M<VulkanDevice>& device, const std::string& tag = "");
 		~VulkanAllocatorH2M();
 
 		void Allocate(VkMemoryRequirements requirements, VkDeviceMemory* dest, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	private:
-		Ref<VulkanDevice> m_Device;
+		RefH2M<VulkanDevice> m_Device;
 		std::string m_Tag;
 	};
 

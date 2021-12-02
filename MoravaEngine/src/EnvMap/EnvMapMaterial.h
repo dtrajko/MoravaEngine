@@ -1,6 +1,6 @@
 #pragma once
 
-#include "H2M/Core/Ref.h"
+#include "H2M/Core/RefH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
 
 #include <glm/glm.hpp>
@@ -8,7 +8,7 @@
 
 using MaterialUUID = std::string;
 
-class EnvMapMaterial : public H2M::RefCounted
+class EnvMapMaterial : public H2M::RefCountedH2M
 {
 	struct AlbedoInput;
 	struct NormalInput;
@@ -45,7 +45,7 @@ private:
 	struct AlbedoInput
 	{
 		glm::vec3 Color = { 0.972f, 0.96f, 0.915f }; // Silver, from https://docs.unrealengine.com/en-us/Engine/Rendering/Materials/PhysicallyBased
-		H2M::RefH2M<H2M::Texture2DH2M> TextureMap;
+		H2M::RefH2M<H2M::Texture2D_H2M> TextureMap;
 		bool SRGB = false;
 		bool UseTexture = false;
 	};
@@ -53,7 +53,7 @@ private:
 
 	struct NormalInput
 	{
-		H2M::RefH2M<H2M::Texture2DH2M> TextureMap;
+		H2M::RefH2M<H2M::Texture2D_H2M> TextureMap;
 		bool UseTexture = false;
 	};
 	NormalInput m_NormalInput;
@@ -61,7 +61,7 @@ private:
 	struct MetalnessInput
 	{
 		float Value = 0.0f;
-		H2M::RefH2M<H2M::Texture2DH2M> TextureMap;
+		H2M::RefH2M<H2M::Texture2D_H2M> TextureMap;
 		bool UseTexture = false;
 	};
 	MetalnessInput m_MetalnessInput;
@@ -69,7 +69,7 @@ private:
 	struct RoughnessInput
 	{
 		float Value = 1.0f;
-		H2M::RefH2M<H2M::Texture2DH2M> TextureMap;
+		H2M::RefH2M<H2M::Texture2D_H2M> TextureMap;
 		bool UseTexture = false;
 	};
 	RoughnessInput m_RoughnessInput;
@@ -77,7 +77,7 @@ private:
 	struct EmissiveInput
 	{
 		float Value = 0.0f;
-		H2M::RefH2M<H2M::Texture2DH2M> TextureMap;
+		H2M::RefH2M<H2M::Texture2D_H2M> TextureMap;
 		bool SRGB = true;
 		bool UseTexture = false;
 	};
@@ -86,7 +86,7 @@ private:
 	struct AOInput
 	{
 		float Value = 1.0f;
-		H2M::RefH2M<H2M::Texture2DH2M> TextureMap;
+		H2M::RefH2M<H2M::Texture2D_H2M> TextureMap;
 		bool UseTexture = false;
 	};
 	AOInput m_AOInput;

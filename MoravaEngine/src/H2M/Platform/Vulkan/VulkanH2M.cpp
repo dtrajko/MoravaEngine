@@ -14,7 +14,7 @@ namespace Hazel::Utils {
 		case VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT: return "VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT";
 		case VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT: return "VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT";
 		}
-		HZ_CORE_ASSERT(false);
+		H2M_CORE_ASSERT(false);
 		return nullptr;
 	}
 

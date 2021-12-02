@@ -1,24 +1,24 @@
 #pragma once
 
-#include "HazelTexture.h"
+#include "TextureH2M.h"
 
-namespace Hazel {
+namespace H2M {
 
-	struct Environment : public Asset
+	struct EnvironmentH2M : public AssetH2M
 	{
 		std::string FilePath;
-		Ref<HazelTextureCube> RadianceMap;
-		Ref<HazelTextureCube> IrradianceMap;
+		RefH2M<TextureCubeH2M> RadianceMap;
+		RefH2M<TextureCubeH2M> IrradianceMap;
 
-		Environment() = default;
-		Environment(const Ref<HazelTextureCube>& radianceMap, const Ref<HazelTextureCube>& irradianceMap)
+		EnvironmentH2M() = default;
+		EnvironmentH2M(const RefH2M<TextureCubeH2M>& radianceMap, const RefH2M<TextureCubeH2M>& irradianceMap)
 			: RadianceMap(radianceMap), IrradianceMap(irradianceMap) {}
-		Environment(std::string filePath, const Ref<HazelTextureCube>& radianceMap, const Ref<HazelTextureCube>& irradianceMap)
+		EnvironmentH2M(std::string filePath, const RefH2M<TextureCubeH2M>& radianceMap, const RefH2M<TextureCubeH2M>& irradianceMap)
 			: FilePath(filePath), RadianceMap(radianceMap), IrradianceMap(irradianceMap) {}
 
-		static Environment Load(const std::string& filepath);
-		static AssetType GetStaticType() { return AssetType::EnvMap; }
-		virtual AssetType GetAssetType() const override { return GetStaticType(); }
+		static EnvironmentH2M Load(const std::string& filepath);
+		static AssetTypeH2M GetStaticType() { return AssetTypeH2M::EnvMap; }
+		virtual AssetTypeH2M GetAssetType() const override { return GetStaticType(); }
 
 	};
 

@@ -38,7 +38,7 @@ struct RenderObject
 	};
 	H2M::RefH2M<H2M::MeshH2M> Mesh;
 	H2M::RefH2M<DX11Mesh> MeshDX11;
-	std::vector<H2M::RefH2M<H2M::Texture2DH2M>> Textures;
+	std::vector<H2M::RefH2M<H2M::Texture2D_H2M>> Textures;
 	glm::mat4 Transform;
 	PipelineType PipelineType;
 	H2M::EntityH2M Entity;

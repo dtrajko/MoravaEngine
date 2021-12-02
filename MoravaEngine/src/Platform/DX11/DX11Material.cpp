@@ -1,6 +1,6 @@
 #include "DX11Material.h"
 
-#include "H2M/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 #include "DX11Context.h"
 #include "DX11Texture2D.h"
@@ -9,7 +9,7 @@
 #include "DX11Pipeline.h"
 
 
-DX11Material::DX11Material(const H2M::RefH2M<H2M::HazelShader>& shader, const std::string& name)
+DX11Material::DX11Material(const H2M::RefH2M<H2M::ShaderH2M>& shader, const std::string& name)
 	: m_Shader(shader), m_Name(name)
 {
 	Invalidate();
@@ -56,8 +56,8 @@ void DX11Material::Set(const std::string& name, const glm::vec4& value) {}
 void DX11Material::Set(const std::string& name, const glm::mat3& value) {}
 void DX11Material::Set(const std::string& name, const glm::mat4& value) {}
 
-void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Texture2DH2M>& texture) {}
-void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Texture2DH2M>& texture, uint32_t arrayIndex) {}
+void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D_H2M>& texture) {}
+void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D_H2M>& texture, uint32_t arrayIndex) {}
 void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::TextureCubeH2M>& texture) {}
 void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::HazelImage2D>& image) {}
 
@@ -70,9 +70,9 @@ glm::vec3& DX11Material::GetVector3(const std::string& name) { glm::vec3 v;  ret
 glm::vec4& DX11Material::GetVector4(const std::string& name) { glm::vec4 v;  return v; }
 glm::mat3& DX11Material::GetMatrix3(const std::string& name) { glm::mat3 v;  return v; }
 glm::mat4& DX11Material::GetMatrix4(const std::string& name) { glm::mat4 v;  return v; }
-H2M::RefH2M<H2M::Texture2DH2M> DX11Material::GetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2DH2M::Create(path); }
+H2M::RefH2M<H2M::Texture2D_H2M> DX11Material::GetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2D_H2M::Create(path); }
 H2M::RefH2M<H2M::TextureCubeH2M> DX11Material::TryGetTextureCube(const std::string& name) { std::string path = ""; return H2M::TextureCubeH2M::Create(path); }
-H2M::RefH2M<H2M::Texture2DH2M> DX11Material::TryGetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2DH2M::Create(path); }
+H2M::RefH2M<H2M::Texture2D_H2M> DX11Material::TryGetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2D_H2M::Create(path); }
 H2M::RefH2M<H2M::TextureCubeH2M> DX11Material::GetTextureCube(const std::string& name) { std::string path = ""; return H2M::TextureCubeH2M::Create(path); }
 void DX11Material::UpdateForRendering() {}
 
@@ -118,7 +118,7 @@ const H2M::ShaderUniform* DX11Material::FindUniformDeclaration(const std::string
 {
 	const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 
-	HZ_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
+	H2M_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
 
 	if (shaderBuffers.size() > 0)
 	{

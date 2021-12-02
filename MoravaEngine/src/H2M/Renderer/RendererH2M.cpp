@@ -17,29 +17,29 @@
 
 namespace H2M {
 
-	static std::unordered_map<size_t, Ref<Pipeline>> s_PipelineCache;
+	static std::unordered_map<size_t, RefH2M<Pipeline>> s_PipelineCache;
 
 	static RendererAPI* s_RendererAPI = nullptr;
 
 	struct ShaderDependencies
 	{
-		std::vector<Ref<PipelineCompute>> ComputePipelines;
-		std::vector<Ref<Pipeline>> Pipelines;
-		std::vector<Ref<HazelMaterial>> Materials;
+		std::vector<RefH2M<PipelineCompute>> ComputePipelines;
+		std::vector<RefH2M<Pipeline>> Pipelines;
+		std::vector<RefH2M<HazelMaterial>> Materials;
 	};
 	static std::unordered_map<size_t, ShaderDependencies> s_ShaderDependencies;
 
-	void RendererH2M::RegisterShaderDependency(Ref<HazelShader> shader, Ref<PipelineCompute> computePipeline)
+	void RendererH2M::RegisterShaderDependency(RefH2M<HazelShader> shader, RefH2M<PipelineCompute> computePipeline)
 	{
 		s_ShaderDependencies[shader->GetHash()].ComputePipelines.push_back(computePipeline);
 	}
 
-	void RendererH2M::RegisterShaderDependency(Ref<HazelShader> shader, Ref<Pipeline> pipeline)
+	void RendererH2M::RegisterShaderDependency(RefH2M<HazelShader> shader, RefH2M<Pipeline> pipeline)
 	{
 		s_ShaderDependencies[shader->GetHash()].Pipelines.push_back(pipeline);
 	}
 
-	void RendererH2M::RegisterShaderDependency(Ref<HazelShader> shader, Ref<HazelMaterial> material)
+	void RendererH2M::RegisterShaderDependency(RefH2M<HazelShader> shader, RefH2M<HazelMaterial> material)
 	{
 		s_ShaderDependencies[shader->GetHash()].Materials.push_back(material);
 	}
@@ -75,26 +75,26 @@ namespace H2M {
 	{
 		RendererConfig Config;
 
-		Ref<RenderPass> m_ActiveRenderPass;
+		RefH2M<RenderPass> m_ActiveRenderPass;
 		RenderCommandQueue m_CommandQueue;
-		Ref<HazelShaderLibrary> m_ShaderLibrary;
+		RefH2M<HazelShaderLibrary> m_ShaderLibrary;
 
-		Ref<VertexBuffer> FullscreenQuadVertexBuffer; // TODO: remove from RendererH2M
-		Ref<IndexBuffer> FullscreenQuadIndexBuffer;   // TODO: remove from RendererH2M
-		Ref<Pipeline> FullscreenQuadPipeline;         // TODO: remove from RendererH2M
+		RefH2M<VertexBuffer> FullscreenQuadVertexBuffer; // TODO: remove from RendererH2M
+		RefH2M<IndexBuffer> FullscreenQuadIndexBuffer;   // TODO: remove from RendererH2M
+		RefH2M<Pipeline> FullscreenQuadPipeline;         // TODO: remove from RendererH2M
 		PipelineSpecification FullscreenQuadPipelineSpec;
 
-		Ref<Texture2DH2M> WhiteTexture;
-		Ref<Texture2DH2M> BlackTexture;
-		Ref<Texture2DH2M> BRDFLutTexture;
-		Ref<TextureCubeH2M> BlackCubeTexture;
-		Ref<Environment> EmptyEnvironment;
+		RefH2M<Texture2D_H2M> WhiteTexture;
+		RefH2M<Texture2D_H2M> BlackTexture;
+		RefH2M<Texture2D_H2M> BRDFLutTexture;
+		RefH2M<TextureCubeH2M> BlackCubeTexture;
+		RefH2M<Environment> EmptyEnvironment;
 	};
 
 	static RendererData* s_Data = nullptr;
 	static RenderCommandQueue* s_CommandQueue = nullptr;
 
-	// static std::unordered_map<size_t, Ref<Pipeline>> s_PipelineCache;
+	// static std::unordered_map<size_t, RefH2M<Pipeline>> s_PipelineCache;
 	static RenderCommandQueue s_ResourceFreeQueue[3];
 
 	static RendererAPI* InitRendererAPI()
@@ -106,7 +106,7 @@ namespace H2M {
 			case RendererAPIType::DX11:   return new DX11Renderer();
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	}
 
@@ -120,7 +120,7 @@ namespace H2M {
 
 		s_RendererAPI = InitRendererAPI();
 
-		s_Data->m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
+		s_Data->m_ShaderLibrary = RefH2M<HazelShaderLibrary>::Create();
 
 		//...
 
@@ -198,12 +198,12 @@ namespace H2M {
 		// ...
 
 		uint32_t whiteTextureData = 0xffffffff;
-		s_Data->WhiteTexture = Texture2DH2M::Create(ImageFormatH2M::RGBA, 1, 1, &whiteTextureData);
+		s_Data->WhiteTexture = Texture2D_H2M::Create(ImageFormatH2M::RGBA, 1, 1, &whiteTextureData);
 
 		uint32_t blackTextureData[6] = { 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000 };
 		s_Data->BlackCubeTexture = TextureCubeH2M::Create(ImageFormatH2M::RGBA, 1, 1, &blackTextureData);
 
-		s_Data->EmptyEnvironment = Ref<Environment>::Create(s_Data->BlackCubeTexture, s_Data->BlackCubeTexture);
+		s_Data->EmptyEnvironment = RefH2M<Environment>::Create(s_Data->BlackCubeTexture, s_Data->BlackCubeTexture);
 
 		//...
 	}
@@ -221,7 +221,7 @@ namespace H2M {
 		}
 	}
 
-	Ref<HazelShaderLibrary>& RendererH2M::GetShaderLibrary()
+	RefH2M<HazelShaderLibrary>& RendererH2M::GetShaderLibrary()
 	{
 		return s_Data->m_ShaderLibrary;
 	}
@@ -243,7 +243,7 @@ namespace H2M {
 		s_Data->m_CommandQueue.Execute();
 	}
 
-	void RendererH2M::BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<RenderPass> renderPass, bool explicitClear)
+	void RendererH2M::BeginRenderPass(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<RenderPass> renderPass, bool explicitClear)
 	{
 		// RendererH2M::Submit([=]() {});
 		{
@@ -251,13 +251,13 @@ namespace H2M {
 		}
 	}
 
-	void RendererH2M::EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer)
+	void RendererH2M::EndRenderPass(RefH2M<RenderCommandBuffer> renderCommandBuffer)
 	{
 		s_RendererAPI->EndRenderPass(renderCommandBuffer);
 
 		/**** BEGIN the old version of the method ****
 
-		HZ_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		H2M_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
 		s_Data->m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
 		s_Data->m_ActiveRenderPass = nullptr;
 
@@ -274,7 +274,7 @@ namespace H2M {
 	//	}
 
 	// Used by OpenGLRenderer
-	void RendererH2M::SetSceneEnvironment(Ref<SceneRenderer> sceneRenderer, Ref<Environment> environment, Ref<HazelImage2D> shadow, Ref<HazelImage2D> linearDepth)
+	void RendererH2M::SetSceneEnvironment(RefH2M<SceneRenderer> sceneRenderer, RefH2M<Environment> environment, RefH2M<HazelImage2D> shadow, RefH2M<HazelImage2D> linearDepth)
 	{
 		s_RendererAPI->SetSceneEnvironment(sceneRenderer, environment, shadow, linearDepth);
 	}
@@ -297,9 +297,9 @@ namespace H2M {
 	//		}
 	//	}
 
-	Ref<TextureCubeH2M> RendererH2M::CreatePreethamSky(float turbidity, float azimuth, float inclination)
+	RefH2M<TextureCubeH2M> RendererH2M::CreatePreethamSky(float turbidity, float azimuth, float inclination)
 	{
-		// HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
+		// H2M_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
 		/**** BEGIN the new code ****/
 		{
@@ -325,56 +325,56 @@ namespace H2M {
 		}
 		/**** END The obsolete code moved to OpenGLRenderer ****/
 
-		return Ref<TextureCubeH2M>();
+		return RefH2M<TextureCubeH2M>();
 	}
 
-	void RendererH2M::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, Ref<MaterialTable> materialTable, const glm::mat4& transform)
+	void RendererH2M::RenderMesh(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Mesh> mesh, RefH2M<MaterialTable> materialTable, const glm::mat4& transform)
 	{
 	}
 
-	void RendererH2M::RenderMeshWithMaterial(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Mesh> mesh, const glm::mat4& transform, Ref<Material> material, Buffer additionalUniforms)
+	void RendererH2M::RenderMeshWithMaterial(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Mesh> mesh, const glm::mat4& transform, RefH2M<Material> material, Buffer additionalUniforms)
 	{
 	}
 
-	void RendererH2M::RenderQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::mat4& transform)
+	void RendererH2M::RenderQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, const glm::mat4& transform)
 	{
 	}
 
-	void RendererH2M::SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material)
+	void RendererH2M::SubmitFullscreenQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<Material> material)
 	{
 	}
 
-	void RendererH2M::SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material)
+	void RendererH2M::SubmitFullscreenQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material)
 	{
 	}
 
-	void RendererH2M::SubmitFullscreenQuadWithOverrides(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material, Buffer vertexShaderOverrides, Buffer fragmentShaderOverrides)
+	void RendererH2M::SubmitFullscreenQuadWithOverrides(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<Material> material, Buffer vertexShaderOverrides, Buffer fragmentShaderOverrides)
 	{
 		s_RendererAPI->SubmitFullscreenQuadWithOverrides(renderCommandBuffer, pipeline, uniformBufferSet, material, vertexShaderOverrides, fragmentShaderOverrides);
 	}
 
-	void RendererH2M::LightCulling(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> computePipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups)
+	void RendererH2M::LightCulling(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<PipelineCompute> computePipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups)
 	{
 	}
 
-	void RendererH2M::DispatchComputeShader(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> computePipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, const glm::ivec3& workGroups)
+	void RendererH2M::DispatchComputeShader(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<PipelineCompute> computePipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, const glm::ivec3& workGroups)
 	{
 	}
 
-	void RendererH2M::RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount)
+	void RendererH2M::RenderGeometry(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, RefH2M<VertexBuffer> vertexBuffer, RefH2M<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount)
 	{
 	}
 
-	std::pair<Ref<TextureCubeH2M>, Ref<TextureCubeH2M>> RendererH2M::CreateEnvironmentMap(const std::string& filepath)
+	std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> RendererH2M::CreateEnvironmentMap(const std::string& filepath)
 	{
 		return s_RendererAPI->CreateEnvironmentMap(filepath);
 	}
 
-	void RendererH2M::SubmitQuad(Ref<HazelMaterial> material, const glm::mat4& transform)
+	void RendererH2M::SubmitQuad(RefH2M<HazelMaterial> material, const glm::mat4& transform)
 	{
 	}
 
-	void RendererH2M::SubmitMesh(Ref<MeshH2M> mesh, const glm::mat4& transform, Ref<HazelMaterialInstance> overrideMaterial)
+	void RendererH2M::SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<HazelMaterialInstance> overrideMaterial)
 	{
 		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
 		// auto shader = material->GetShader();
@@ -384,7 +384,7 @@ namespace H2M {
 		mesh->GetIndexBuffer()->Bind();
 
 		auto& materials = mesh->GetMaterials();
-		for (Ref<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
 		{
 			// Material
 			auto material = overrideMaterial ? overrideMaterial : materials[submesh->MaterialIndex];
@@ -415,13 +415,13 @@ namespace H2M {
 		}
 	}
 
-	void RendererH2M::SubmitMeshWithShader(Ref<MeshH2M> mesh, const glm::mat4& transform, Ref<HazelShader> shader)
+	void RendererH2M::SubmitMeshWithShader(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<HazelShader> shader)
 	{
 		mesh->GetVertexBuffer()->Bind();
 		mesh->GetPipeline()->Bind();
 		mesh->GetIndexBuffer()->Bind();
 
-		for (Ref<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
 		{
 			if (mesh->IsAnimated())
 			{
@@ -438,9 +438,9 @@ namespace H2M {
 		}
 	}
 
-	void RendererH2M::DrawAABB(Ref<MeshH2M> mesh, const glm::mat4& transform, const glm::vec4& color)
+	void RendererH2M::DrawAABB(RefH2M<MeshH2M> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
-		for (Ref<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
 		{
 			auto& aabb = submesh->BoundingBox;
 			auto aabbTransform = transform * submesh->Transform;
@@ -481,7 +481,7 @@ namespace H2M {
 		return *s_CommandQueue;
 	}
 
-	void RendererH2M::SubmitQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Material> material, const glm::mat4& transform)
+	void RendererH2M::SubmitQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Material> material, const glm::mat4& transform)
 	{
 		bool depthTest = true;
 		if (material)
@@ -500,12 +500,12 @@ namespace H2M {
 		// RendererH2M::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void RendererH2M::ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<HazelImage2D> image)
+	void RendererH2M::ClearImage(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<HazelImage2D> image)
 	{
 		s_RendererAPI->ClearImage(renderCommandBuffer, image);
 	}
 
-	Ref<RendererContext> RendererH2M::GetContext()
+	RefH2M<RendererContext> RendererH2M::GetContext()
 	{
 		return Application::Get()->GetWindow()->GetRenderContext();
 	}
@@ -532,7 +532,7 @@ namespace H2M {
 
 #if 0
 
-	void Renderer::SubmitFullscreenQuad(Ref<Material> material)
+	void Renderer::SubmitFullscreenQuad(RefH2M<Material> material)
 	{
 		// Retrieve pipeline from cache
 		auto& shader = material->GetShader();
@@ -564,45 +564,45 @@ namespace H2M {
 		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void RendererH2M::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	void RendererH2M::RenderMeshWithoutMaterial(RefH2M<Pipeline> pipeline, RefH2M<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderMeshWithoutMaterial(pipeline, mesh, transform);
 	}
 
 #endif
 
-	void RendererH2M::RenderMesh(Ref<Pipeline> pipeline, Ref<MeshH2M> mesh, const glm::mat4& transform)
+	void RendererH2M::RenderMesh(RefH2M<Pipeline> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderMesh(pipeline, mesh, transform);
 	}
 
-	void RendererH2M::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
+	void RendererH2M::RenderQuad(RefH2M<Pipeline> pipeline, RefH2M<HazelMaterial> material, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderQuad(pipeline, material, transform);
 	}
 
-	Ref<Texture2DH2M> RendererH2M::GetWhiteTexture()
+	RefH2M<Texture2D_H2M> RendererH2M::GetWhiteTexture()
 	{
 		return s_Data->WhiteTexture;
 	}
 
-	Ref<Texture2DH2M> RendererH2M::GetBlackTexture()
+	RefH2M<Texture2D_H2M> RendererH2M::GetBlackTexture()
 	{
-		return Ref<Texture2DH2M>();
+		return RefH2M<Texture2D_H2M>();
 	}
 
-	Ref<Texture2DH2M> RendererH2M::GetBRDFLutTexture()
+	RefH2M<Texture2D_H2M> RendererH2M::GetBRDFLutTexture()
 	{
-		return Ref<Texture2DH2M>();
+		return RefH2M<Texture2D_H2M>();
 	}
 
 	// disabled in some versions of Hazel-dev
-	Ref<TextureCubeH2M> RendererH2M::GetBlackCubeTexture()
+	RefH2M<TextureCubeH2M> RendererH2M::GetBlackCubeTexture()
 	{
 		return s_Data->BlackCubeTexture;
 	}
 
-	Ref<Environment> RendererH2M::GetEmptyEnvironment()
+	RefH2M<Environment> RendererH2M::GetEmptyEnvironment()
 	{
 		return s_Data->EmptyEnvironment;
 	}

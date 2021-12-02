@@ -44,8 +44,8 @@ public:
 	virtual void Set(const std::string& name, const glm::mat3& value) override;
 	virtual void Set(const std::string& name, const glm::mat4& value) override;
 
-	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2DH2M>& texture) override;
-	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2DH2M>& texture, uint32_t arrayIndex) override;
+	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D_H2M>& texture) override;
+	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D_H2M>& texture, uint32_t arrayIndex) override;
 	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::TextureCubeH2M>& texture) override;
 	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::HazelImage2D>& image) override;
 
@@ -59,10 +59,10 @@ public:
 	virtual glm::mat3& GetMatrix3(const std::string& name) override;
 	virtual glm::mat4& GetMatrix4(const std::string& name) override;
 
-	virtual H2M::RefH2M<H2M::Texture2DH2M> GetTexture2D(const std::string& name) override;
+	virtual H2M::RefH2M<H2M::Texture2D_H2M> GetTexture2D(const std::string& name) override;
 	virtual H2M::RefH2M<H2M::TextureCubeH2M> GetTextureCube(const std::string& name) override;
 
-	virtual H2M::RefH2M<H2M::Texture2DH2M> TryGetTexture2D(const std::string& name) override;
+	virtual H2M::RefH2M<H2M::Texture2D_H2M> TryGetTexture2D(const std::string& name) override;
 	virtual H2M::RefH2M<H2M::TextureCubeH2M> TryGetTextureCube(const std::string& name) override;
 
 	template <typename T>
@@ -71,7 +71,7 @@ public:
 		auto decl = FindUniformDeclaration(name);
 		if (!decl)
 		{
-			// HZ_CORE_ASSERT(decl, "Could not find uniform!");
+			// H2M_CORE_ASSERT(decl, "Could not find uniform!");
 			Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
 			return;
 		}
@@ -103,7 +103,7 @@ public:
 		auto decl = FindUniformDeclaration(name);
 		if (!decl)
 		{
-			// HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+			// H2M_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
 			Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
 		}
 		auto& buffer = m_UniformStorageBuffer;
@@ -116,13 +116,13 @@ public:
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
 		{
-			// HZ_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
+			// H2M_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
 			Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
 		}
 		uint32_t slot = decl->GetRegister();
 		if (slot >= m_Textures.size())
 		{
-			// HZ_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
+			// H2M_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
 			Log::GetLogger()->error("Texture slot '{0}' is invalid!", slot);
 		}
 		return Ref<T>(m_Textures[slot]);

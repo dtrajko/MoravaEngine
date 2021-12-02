@@ -153,7 +153,7 @@ namespace H2M {
 	// HazelMeshAssetLegacy is a representation of an actual asset file on disk
 	// Meshes are created from MeshAssets
 	//
-	class HazelMeshAssetLegacy : public Asset
+	class MeshAssetH2M : public AssetH2M
 	{
 	public:
 		HazelMeshAssetLegacy(const std::string& filename);
@@ -188,8 +188,8 @@ namespace H2M {
 		RefH2M<MaterialH2M> GetMaterial() { return m_BaseMaterial; }
 		std::vector<RefH2M<MaterialH2M>>& GetMaterials() { return m_Materials; }
 		const std::vector<RefH2M<MaterialH2M>>& GetMaterials() const { return m_Materials; }
-		const std::vector<RefH2M<Texture2DH2M>>& GetTextures() const { return m_Textures; }
-		std::vector<RefH2M<Texture2DH2M>>& GetTextures() { return m_Textures; }
+		const std::vector<RefH2M<Texture2D_H2M>>& GetTextures() const { return m_Textures; }
+		std::vector<RefH2M<Texture2D_H2M>>& GetTextures() { return m_Textures; }
 		const std::string& GetFilePath() const { return m_FilePath; }
 
 		const std::vector<TriangleH2M> GetTriangleCache(uint32_t index) const;
@@ -211,7 +211,7 @@ namespace H2M {
 		// VkDescriptorSet& GetDescriptorSet();
 		void* GetDescriptorSet();
 
-		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, RefH2M<Texture2DH2M> texture);
+		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, RefH2M<Texture2D_H2M> texture);
 		// void UpdateAllDescriptors();
 		void UpdateAllDescriptorSets(); // Vulkan branch, february 2021
 		static AssetTypeH2M GetStaticType() { return AssetTypeH2M::MeshAsset; }
@@ -249,7 +249,7 @@ namespace H2M {
 		void ImGuiNodeHierarchy(aiNode* node, const glm::mat4& parentTransform = glm::mat4(1.0f), uint32_t level = 0);
 
 		void SetupDefaultBaseMaterial();
-		RefH2M<Texture2DH2M> LoadBaseTexture();
+		RefH2M<Texture2D_H2M> LoadBaseTexture();
 
 	private:
 		RefH2M<Pipeline> m_Pipeline;
@@ -277,10 +277,10 @@ namespace H2M {
 
 		// Materials
 		RefH2M<HazelMaterial> m_BaseMaterial;
-		RefH2M<Texture2DH2M> m_BaseTexture;
+		RefH2M<Texture2D_H2M> m_BaseTexture;
 		RefH2M<HazelShader> m_MeshShader;
-		std::vector<RefH2M<Texture2DH2M>> m_Textures;
-		std::vector<RefH2M<Texture2DH2M>> m_NormalMaps;
+		std::vector<RefH2M<Texture2D_H2M>> m_Textures;
+		std::vector<RefH2M<Texture2D_H2M>> m_NormalMaps;
 		std::vector<RefH2M<HazelMaterial>> m_Materials;
 		// std::vector<RefH2M<HazelMaterialInstance>> m_Materials;
 

@@ -1,9 +1,9 @@
 #include "MaterialH2M.h"
 
-#include "H2M/Renderer/RendererAPI.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
-#include "H2M/Platform/OpenGL/OpenGLMaterial.h"
-#include "H2M/Platform/Vulkan/VulkanMaterial.h"
+#include "H2M/Platform/OpenGL/OpenGLMaterialH2M.h"
+#include "H2M/Platform/Vulkan/VulkanMaterialH2M.h"
 #include "Platform/DX11/DX11Material.h"
 
 
@@ -13,24 +13,24 @@ namespace H2M {
 	{
 	}
 
-	MaterialH2M::MaterialH2M(const H2M::RefH2M<ShaderH2M>& shader, const std::string& name)
+	MaterialH2M::MaterialH2M(const RefH2M<ShaderH2M>& shader, const std::string& name)
 		: m_Shader(shader), m_Name(name)
 	{
 		// Create(shader, name);
 	}
 
-	H2M::RefH2M<MaterialH2M> MaterialH2M::Create(const H2M::RefH2M<ShaderH2M>& shader, const std::string& name)
+	RefH2M<MaterialH2M> MaterialH2M::Create(const RefH2M<ShaderH2M>& shader, const std::string& name)
 	{
-		switch (H2M::RendererAPI_H2M::Current())
+		switch (RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<MaterialH2M>();
-			case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<H2M::OpenGLMaterial>::Create(shader, name);
-			case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<H2M::VulkanMaterial>::Create(shader, name);
-			case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11Material>::Create(shader, name);
+			case H2M::RendererAPITypeH2M::None:   return RefH2M<MaterialH2M>();
+			case H2M::RendererAPITypeH2M::OpenGL: return RefH2M<OpenGLMaterialH2M>::Create(shader, name);
+			case H2M::RendererAPITypeH2M::Vulkan: return RefH2M<VulkanMaterialH2M>::Create(shader, name);
+			case H2M::RendererAPITypeH2M::DX11:   return RefH2M<DX11Material>::Create(shader, name);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return H2M::RefH2M<MaterialH2M>();
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+		return RefH2M<MaterialH2M>();
 	}
 
 	MaterialH2M::~MaterialH2M()
@@ -44,7 +44,7 @@ namespace H2M {
 
 		//	const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 		//	
-		//	HZ_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
+		//	H2M_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
 		//	
 		//	if (shaderBuffers.size() > 0)
 		//	{
@@ -61,7 +61,7 @@ namespace H2M {
 		auto& shader = m_Shader;
 		shader->Bind();
 		const auto& shaderBuffers = GetShader()->GetShaderBuffers();
-		HZ_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
+		H2M_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
 
 		//	if (shaderBuffers.size() > 0)
 		//	{
@@ -143,12 +143,12 @@ namespace H2M {
 	// MaterialInstance
 	//////////////////////////////////////////////////////////////////////////////////
 
-	H2M::RefH2M<MaterialInstanceH2M> MaterialInstanceH2M::Create(const H2M::RefH2M<MaterialH2M>& material)
+	RefH2M<MaterialInstanceH2M> MaterialInstanceH2M::Create(const RefH2M<MaterialH2M>& material)
 	{
-		return H2M::RefH2M<MaterialInstanceH2M>::Create(material);
+		return RefH2M<MaterialInstanceH2M>::Create(material);
 	}
 
-	MaterialInstanceH2M::MaterialInstanceH2M(const H2M::RefH2M<MaterialH2M>& material, const std::string& name)
+	MaterialInstanceH2M::MaterialInstanceH2M(const RefH2M<MaterialH2M>& material, const std::string& name)
 		: m_Material(material), m_Name(name)
 	{
 		m_Material->m_MaterialInstances.insert(this);
@@ -164,7 +164,7 @@ namespace H2M {
 	{
 		const auto& shaderBuffers = GetShader()->GetShaderBuffers();
 
-		HZ_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
+		H2M_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
 
 		if (shaderBuffers.size() > 0)
 		{
@@ -184,7 +184,7 @@ namespace H2M {
 		shader->Bind();
 
 		const auto& shaderBuffers = GetShader()->GetShaderBuffers();
-		HZ_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
+		H2M_CORE_ASSERT(shaderBuffers.size() <= 1, "We currently only support ONE material buffer!");
 
 		if (shaderBuffers.size() > 0)
 		{

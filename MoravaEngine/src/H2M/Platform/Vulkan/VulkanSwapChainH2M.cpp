@@ -9,14 +9,14 @@
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                        \
 {                                                                       \
 	fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetInstanceProcAddr(inst, "vk"#entrypoint)); \
-	HZ_CORE_ASSERT(fp##entrypoint);                                     \
+	H2M_CORE_ASSERT(fp##entrypoint);                                     \
 }
 
 // Macro to get a procedure address based on a vulkan device
 #define GET_DEVICE_PROC_ADDR(dev, entrypoint)                           \
 {                                                                       \
 	fp##entrypoint = reinterpret_cast<PFN_vk##entrypoint>(vkGetDeviceProcAddr(dev, "vk"#entrypoint));   \
-	HZ_CORE_ASSERT(fp##entrypoint);                                     \
+	H2M_CORE_ASSERT(fp##entrypoint);                                     \
 }
 
 static PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
@@ -31,7 +31,7 @@ static PFN_vkQueuePresentKHR fpQueuePresentKHR;
 
 namespace Hazel {
 
-	void VulkanSwapChain::Init(VkInstance instance, const Ref<VulkanDevice>& device)
+	void VulkanSwapChain::Init(VkInstance instance, const RefH2M<VulkanDevice>& device)
 	{
 		m_Instance = instance;
 		m_Device = device;
@@ -59,7 +59,7 @@ namespace Hazel {
 		// Get available queue family properties
 		uint32_t queueCount;
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, NULL);
-		HZ_CORE_ASSERT(queueCount >= 1);
+		H2M_CORE_ASSERT(queueCount >= 1);
 
 		std::vector<VkQueueFamilyProperties> queueProps(queueCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, queueProps.data());
@@ -108,8 +108,8 @@ namespace Hazel {
 			}
 		}
 
-		HZ_CORE_ASSERT(graphicsQueueNodeIndex != UINT32_MAX);
-		HZ_CORE_ASSERT(presentQueueNodeIndex != UINT32_MAX);
+		H2M_CORE_ASSERT(graphicsQueueNodeIndex != UINT32_MAX);
+		H2M_CORE_ASSERT(presentQueueNodeIndex != UINT32_MAX);
 
 		m_QueueNodeIndex = graphicsQueueNodeIndex;
 
@@ -130,7 +130,7 @@ namespace Hazel {
 		// Get available present modes
 		uint32_t presentModeCount;
 		VK_CHECK_RESULT(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_Surface, &presentModeCount, NULL));
-		HZ_CORE_ASSERT(presentModeCount > 0, "");
+		H2M_CORE_ASSERT(presentModeCount > 0, "");
 
 		std::vector<VkPresentModeKHR> presentModes(presentModeCount);
 		VK_CHECK_RESULT(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_Surface, &presentModeCount, presentModes.data()));
@@ -420,7 +420,7 @@ namespace Hazel {
 			}
 		}
 
-		HZ_CORE_ASSERT(m_DepthBufferFormat);
+		H2M_CORE_ASSERT(m_DepthBufferFormat);
 
 		VkImageCreateInfo imageCI{};
 		imageCI.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -677,7 +677,7 @@ namespace Hazel {
 		// Get list of supported surface formats
 		uint32_t formatCount;
 		VK_CHECK_RESULT(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_Surface, &formatCount, NULL));
-		HZ_CORE_ASSERT(formatCount > 0);
+		H2M_CORE_ASSERT(formatCount > 0);
 
 		std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
 		VK_CHECK_RESULT(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_Surface, &formatCount, surfaceFormats.data()));

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "H2M/Renderer/HazelShader.h"
-#include "H2M/Renderer/ShaderUniform.h"
+#include "H2M/Renderer/ShaderH2M.h"
+#include "H2M/Renderer/ShaderUniformH2M.h"
 
 #include "Core/CommonValues.h"
 
@@ -38,7 +38,7 @@ struct MoravaShaderSpecification
 };
 
 
-class MoravaShader : public H2M::HazelShader
+class MoravaShader : public H2M::ShaderH2M
 {
 public:
 	// the ultimate Create method that can create both MoravaShader and HazelShader shader types
@@ -99,8 +99,8 @@ public:
 	virtual void Unbind();
 
 	virtual const std::string& GetName() const override { return m_Name; }
-	virtual const std::unordered_map<std::string, H2M::ShaderBuffer>& GetShaderBuffers() const override;
-	virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& GetResources() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderBufferH2M>& GetShaderBuffers() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& GetResources() const override;
 
 	virtual void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	virtual void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);
@@ -118,7 +118,7 @@ public:
 
 	GLuint GetProgramID();
 
-	H2M::RendererID GetRendererID() const;
+	H2M::RendererID_H2M GetRendererID() const;
 	void Bind();
 
 protected:
@@ -177,8 +177,8 @@ protected:
 	// Vulkan Week Day 1
 	H2M::ShaderUniformBufferList m_VSRendererUniformBuffers;
 	H2M::ShaderUniformBufferList m_PSRendererUniformBuffers;
-	Ref<H2M::ShaderUniformBufferDeclaration> m_VSMaterialUniformBuffer;
-	Ref<H2M::ShaderUniformBufferDeclaration> m_PSMaterialUniformBuffer;
+	H2M::RefH2M<H2M::ShaderUniformBufferDeclarationH2M> m_VSMaterialUniformBuffer;
+	H2M::RefH2M<H2M::ShaderUniformBufferDeclarationH2M> m_PSMaterialUniformBuffer;
 
 	static MoravaShaderSpecification s_Specification;
 

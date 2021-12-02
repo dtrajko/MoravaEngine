@@ -16,7 +16,7 @@ H2M::RefH2M<MoravaFramebuffer> MoravaFramebuffer::Create(uint32_t width, uint32_
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 	return H2M::RefH2M<MoravaFramebuffer>();
 }
 
@@ -31,6 +31,6 @@ H2M::RefH2M<MoravaFramebuffer> MoravaFramebuffer::Create(FramebufferSpecificatio
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 	return H2M::RefH2M<MoravaFramebuffer>();
 }

@@ -1,4 +1,4 @@
-#include "HazelFramebuffer.h"
+#include "FramebufferH2M.h"
 
 #include "Hazel/Platform/OpenGL/OpenGLFramebuffer.h"
 #include "Hazel/Platform/Vulkan/VulkanFramebuffer.h"
@@ -7,16 +7,16 @@
 
 namespace Hazel {
 
-	Ref<HazelFramebuffer> HazelFramebuffer::Create(const HazelFramebufferSpecification& spec)
+	RefH2M<HazelFramebuffer> HazelFramebuffer::Create(const HazelFramebufferSpecification& spec)
 	{
-		Ref<HazelFramebuffer> result = Ref<HazelFramebuffer>();
+		RefH2M<HazelFramebuffer> result = RefH2M<HazelFramebuffer>();
 
 		switch (RendererAPI::Current())
 		{
-		case RendererAPIType::None:		return Ref<HazelFramebuffer>();
-		case RendererAPIType::Vulkan:	result = Ref<VulkanFramebuffer>::Create(spec); break;
-		case RendererAPIType::OpenGL:	result = Ref<OpenGLFramebuffer>::Create(spec); break;
-		case RendererAPIType::DX11:		result = Ref<DX11Framebuffer>::Create(spec); break;
+		case RendererAPIType::None:		return RefH2M<HazelFramebuffer>();
+		case RendererAPIType::Vulkan:	result = RefH2M<VulkanFramebuffer>::Create(spec); break;
+		case RendererAPIType::OpenGL:	result = RefH2M<OpenGLFramebuffer>::Create(spec); break;
+		case RendererAPIType::DX11:		result = RefH2M<DX11Framebuffer>::Create(spec); break;
 		}
 		HazelFramebufferPool::GetGlobal()->Add(result);
 		return result;
@@ -39,7 +39,7 @@ namespace Hazel {
 		return std::weak_ptr<HazelFramebuffer>();
 	}
 
-	void HazelFramebufferPool::Add(const Ref<HazelFramebuffer>& framebuffer)
+	void HazelFramebufferPool::Add(const RefH2M<HazelFramebuffer>& framebuffer)
 	{
 		m_Pool.push_back(framebuffer);
 	}

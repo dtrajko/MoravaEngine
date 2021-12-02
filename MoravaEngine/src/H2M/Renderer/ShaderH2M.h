@@ -55,12 +55,12 @@ namespace H2M
 	struct UniformBufferDeclarationH2M : public UniformBufferBaseH2M
 	{
 		uint8_t Buffer[N];
-		UniformDecl Uniforms[U];
+		UniformDeclH2M Uniforms[U];
 		std::ptrdiff_t Cursor = 0;
 		int Index = 0;
 
 		virtual const uint8_t* GetBuffer() const override { return Buffer; }
-		virtual const UniformDecl* GetUniforms() const override { return Uniforms; }
+		virtual const UniformDeclH2M* GetUniforms() const override { return Uniforms; }
 		virtual unsigned int GetUniformCount() const { return U; }
 
 		template<typename T>
@@ -185,8 +185,8 @@ namespace H2M
 		// Represents a complete shader program stored in a single file.
 		// Note: currently for simplicity this is simply a string filepath, however
 		//       in the future this will be an asset object + metadata
-		static H2M::RefH2M<ShaderH2M> Create(const std::string& filepath, bool forceCompile = false);
-		static H2M::RefH2M<ShaderH2M> CreateFromString(const std::string& source);
+		static RefH2M<ShaderH2M> Create(const std::string& filepath, bool forceCompile = false);
+		static RefH2M<ShaderH2M> CreateFromString(const std::string& source);
 
 		virtual const std::unordered_map<std::string, ShaderBufferH2M>& GetShaderBuffers() const = 0;
 
@@ -195,7 +195,7 @@ namespace H2M
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) = 0;
 
 		// Temporary, before we have an asset manager
-		static std::vector<H2M::RefH2M<ShaderH2M>> s_AllShaders;
+		static std::vector<RefH2M<ShaderH2M>> s_AllShaders;
 
 		// Methods from Vulkan Week Day 1
 		bool HasVSMaterialUniformBuffer();
@@ -211,14 +211,14 @@ namespace H2M
 		ShaderLibraryH2M();
 		~ShaderLibraryH2M();
 
-		void Add(const H2M::RefH2M<ShaderH2M>& shader);
+		void Add(const RefH2M<ShaderH2M>& shader);
 		void Load(const std::string& path, bool forceCompile = false);
 		void Load(const std::string& name, const std::string& path);
 
-		H2M::RefH2M<ShaderH2M> Get(const std::string& name);
+		RefH2M<ShaderH2M> Get(const std::string& name);
 
 	private:
-		std::unordered_map<std::string, H2M::RefH2M<ShaderH2M>> m_Shaders;
+		std::unordered_map<std::string, RefH2M<ShaderH2M>> m_Shaders;
 
 	};
 

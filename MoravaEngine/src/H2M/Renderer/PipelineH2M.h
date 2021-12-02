@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "Hazel-dev/Core/Ref.h"
-#include "HazelShader.h"
-#include "VertexBuffer.h"
-#include "UniformBuffer.h"
+#include "H2M/Core/RefH2M.h"
+#include "H2M/Renderer/ShaderH2M.h"
+#include "H2M/Renderer/VertexBufferH2M.h"
+#include "H2M/Renderer/UniformBufferH2M.h"
 
 
 namespace H2M {
@@ -25,9 +25,9 @@ namespace H2M {
 
 	struct PipelineSpecification
 	{
-		H2M::RefH2M<ShaderH2M> Shader;
-		VertexBufferLayout Layout;
-		Ref<RenderPass> RenderPass;
+		RefH2M<ShaderH2M> Shader;
+		VertexBufferLayoutH2M Layout;
+		RefH2M<RenderPass> RenderPass;
 		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
 		bool BackfaceCulling = true;
 		bool DepthTest = true;
@@ -38,7 +38,7 @@ namespace H2M {
 		std::string DebugName;
 	};
 
-	class PipelineH2M : public H2M::RefCounted
+	class PipelineH2M : public RefCountedH2M
 	{
 	public:
 		virtual ~PipelineH2M() = default;
@@ -47,12 +47,12 @@ namespace H2M {
 		virtual const PipelineSpecification& GetSpecification() const = 0;
 
 		virtual void Invalidate() = 0;
-		virtual void SetUniformBuffer(H2M::RefH2M<H2M::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) = 0;
+		virtual void SetUniformBuffer(RefH2M<UniformBufferH2M> uniformBuffer, uint32_t binding, uint32_t set = 0) = 0;
 
 		// TEMP: remove this when render command buffers are a thing
 		virtual void Bind() = 0;
 
-		static H2M::RefH2M<PipelineH2M> Create(const PipelineSpecification& spec);
+		static RefH2M<PipelineH2M> Create(const PipelineSpecification& spec);
 
 	};
 

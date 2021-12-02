@@ -7,7 +7,7 @@
 
 MaterialEditorPanel::MaterialEditorPanel()
 {
-	m_CheckerboardTexture = ResourceManager::LoadTexture2DH2M("Textures/Hazel/Checkerboard.png");
+	m_CheckerboardTexture = ResourceManager::LoadTexture2D_H2M("Textures/Hazel/Checkerboard.png");
 }
 
 MaterialEditorPanel::~MaterialEditorPanel()

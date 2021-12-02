@@ -61,7 +61,7 @@ void Timer::Update()
 		default:
 		{
 			Log::GetLogger()->error("Unknown RendererAPI");
-			HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+			H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 			break;
 		}
 	}

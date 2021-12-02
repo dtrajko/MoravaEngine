@@ -1239,6 +1239,63 @@
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanSwapChainH2M.cpp">
       <Filter>H2M\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Core\UUID_H2M.cpp">
+      <Filter>H2M\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTextureH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLTextureH2M.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLImageH2M.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanImageH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanMaterialH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLMaterialH2M.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\ShaderCacheH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Core\HashH2M.cpp">
+      <Filter>H2M\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\UniformBufferH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\VertexBufferH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanUniformBufferH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanVertexBufferH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLUniformBufferH2M.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLVertexBufferH2M.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\IndexBufferH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\MaterialAssetH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLIndexBufferH2M.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanIndexBufferH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2693,6 +2750,69 @@
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanSwapChainH2M.h">
       <Filter>H2M\Platform\Vulkan</Filter>
     </ClInclude>
+    <ClInclude Include="src\H2M\Asset\AssetH2M.h">
+      <Filter>H2M\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Asset\AssetTypesH2M.h">
+      <Filter>H2M\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Core\UUID_H2M.h">
+      <Filter>H2M\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanTextureH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLTextureH2M.h">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLImageH2M.h">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanImageH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanMaterialH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLMaterialH2M.h">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\ShaderCacheH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Core\HashH2M.h">
+      <Filter>H2M\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\UniformBufferH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\VertexBufferH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanUniformBufferH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanVertexBufferH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLUniformBufferH2M.h">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLVertexBufferH2M.h">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\IndexBufferH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\MaterialAssetH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLIndexBufferH2M.h">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanIndexBufferH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -3012,6 +3132,12 @@
     </Filter>
     <Filter Include="H2M\Core\Math">
       <UniqueIdentifier>{b350be4a-e97c-4058-a8e5-39f5cce0a24f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Asset">
+      <UniqueIdentifier>{30a42a39-33b8-4c05-b5bc-c76761eef31f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Platform\OpenGL">
+      <UniqueIdentifier>{54ef7588-c6fd-41f7-ba99-91cc37c7a4b5}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

@@ -1,13 +1,12 @@
 #include "VulkanShaderH2M.h"
 
-#include "H2M/Core/Assert.h"
-#include "H2M/Platform/Vulkan/VulkanContext.h"
-#include "H2M/Platform/Vulkan/VulkanTexture.h"
-#include "H2M/Platform/Vulkan/VulkanRenderer.h"
-#include "H2M/Renderer/HazelRenderer.h"
-#include "H2M/Renderer/ShaderCache.h"
-
+#include "H2M/Core/AssertH2M.h"
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#include "H2M/Platform/Vulkan/VulkanTextureH2M.h"
+#include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Platform/Vulkan/VulkanAllocatorH2M.h"
+#include "H2M/Renderer/RendererH2M.h"
+#include "H2M/Renderer/ShaderCacheH2M.h"
 
 #include "Core/Log.h"
 
@@ -17,7 +16,7 @@
 #include <filesystem>
 
 
-namespace Hazel {
+namespace H2M {
 
 	namespace Utils {
 
@@ -56,7 +55,7 @@ namespace Hazel {
 				if (type.vecsize == 4)            return ShaderUniformType::Vec4;
 				break;
 			}
-			HZ_CORE_ASSERT(false, "Unknown type!");
+			H2M_CORE_ASSERT(false, "Unknown type!");
 			return ShaderUniformType::None;
 		}
 
@@ -66,8 +65,8 @@ namespace Hazel {
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderH2M::StorageBuffer*>> s_StorageBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
-	// H2M::RefH2M<H2M::Texture2DH2M> VulkanShaderH2M::s_AlbedoTexture;
-	// H2M::RefH2M<H2M::Texture2DH2M> VulkanShaderH2M::s_NormalTexture;
+	// RefH2M<H2M::Texture2D_H2M> VulkanShaderH2M::s_AlbedoTexture;
+	// RefH2M<H2M::Texture2D_H2M> VulkanShaderH2M::s_NormalTexture;
 
 	VulkanShaderH2M::VulkanShaderH2M(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)
@@ -112,7 +111,7 @@ namespace Hazel {
 
 	void VulkanShaderH2M::Reload(bool forceCompile)
 	{
-		// Ref<VulkanShaderH2M> instance = this;
+		// RefH2M<VulkanShaderH2M> instance = this;
 		// HazelRenderer::Submit([instance, forceCompile]() mutable {});
 		{
 			// Clear old shader
@@ -156,7 +155,7 @@ namespace Hazel {
 
 		for (auto [stage, data] : shaderData)
 		{
-			HZ_CORE_ASSERT(data.size());
+			H2M_CORE_ASSERT(data.size());
 
 			// Create a new shader module that will be used for pipeline creation
 			VkShaderModuleCreateInfo moduleCreateInfo{};
@@ -217,7 +216,7 @@ namespace Hazel {
 			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
 			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
-			HZ_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end());
+			H2M_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end());
 
 			// UniformBuffer& buffer = shaderDescriptorSet.UniformBuffers[bindingPoint];
 			UniformBuffer& buffer = shaderDescriptorSet.UniformBuffers[binding];
@@ -346,7 +345,7 @@ namespace Hazel {
 			}
 
 			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
-			HZ_CORE_ASSERT(shaderDescriptorSet.ImageSamplers.find(binding) == shaderDescriptorSet.ImageSamplers.end());
+			H2M_CORE_ASSERT(shaderDescriptorSet.ImageSamplers.find(binding) == shaderDescriptorSet.ImageSamplers.end());
 			// ImageSampler imageSampler;
 			auto& imageSampler = shaderDescriptorSet.ImageSamplers[binding];
 			imageSampler.BindingPoint = binding;
@@ -488,7 +487,7 @@ namespace Hazel {
 				layoutBinding.pImmutableSamplers = nullptr;
 				layoutBinding.binding = binding;
 
-				HZ_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
+				H2M_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
 
 				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[imageSampler.Name];
 				set = {};
@@ -510,8 +509,8 @@ namespace Hazel {
 				// uint32_t descriptorSet = (bindingAndSet >> 32);
 				layoutBinding.binding = binding;
 
-				HZ_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
-				HZ_CORE_ASSERT(shaderDescriptorSet.ImageSamplers.find(binding) == shaderDescriptorSet.ImageSamplers.end(), "Binding is already present in m_ImageSamplers!");
+				H2M_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
+				H2M_CORE_ASSERT(shaderDescriptorSet.ImageSamplers.find(binding) == shaderDescriptorSet.ImageSamplers.end(), "Binding is already present in m_ImageSamplers!");
 
 				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[storageImage.Name];
 				set = {};
@@ -589,7 +588,7 @@ namespace Hazel {
 
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-		HZ_CORE_ASSERT(m_TypeCounts.find(set) != m_TypeCounts.end());
+		H2M_CORE_ASSERT(m_TypeCounts.find(set) != m_TypeCounts.end());
 
 		// TODO: Move this to the centralized renderer
 		VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
@@ -651,7 +650,7 @@ namespace Hazel {
 
 		if (poolSizes.find(set) == poolSizes.end())
 		{
-			// HZ_CORE_ASSERT(poolSizes.find(set) != poolSizes.end());
+			// H2M_CORE_ASSERT(poolSizes.find(set) != poolSizes.end());
 			Log::GetLogger()->error("VulkanShaderH2M::CreateDescriptorSets('{0}, {1}') - descriptor set not found in 'poolSizes'!", set, numberOfSets);
 		}
 
@@ -682,7 +681,7 @@ namespace Hazel {
 
 	VulkanShaderH2M::ShaderMaterialDescriptorSet VulkanShaderH2M::AllocateDescriptorSet(uint32_t set)
 	{
-		HZ_CORE_ASSERT(set < m_DescriptorSetLayouts.size());
+		H2M_CORE_ASSERT(set < m_DescriptorSetLayouts.size());
 		ShaderMaterialDescriptorSet result;
 
 		if (m_ShaderDescriptorSets.empty())
@@ -738,15 +737,15 @@ namespace Hazel {
 		allocInfo.descriptorSetCount = 1;
 		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
 		VkDescriptorSet descriptorSet = VulkanRenderer::RT_AllocateDescriptorSet(allocInfo);
-		HZ_CORE_ASSERT(descriptorSet);
+		H2M_CORE_ASSERT(descriptorSet);
 		result.DescriptorSets.push_back(descriptorSet);
 		return result;
 	}
 
 	const VkWriteDescriptorSet* VulkanShaderH2M::GetDescriptorSet(const std::string& name, uint32_t set) const
 	{
-		HZ_CORE_ASSERT(set < m_ShaderDescriptorSets.size());
-		// HZ_CORE_ASSERT(m_ShaderDescriptorSets[set]);
+		H2M_CORE_ASSERT(set < m_ShaderDescriptorSets.size());
+		// H2M_CORE_ASSERT(m_ShaderDescriptorSets[set]);
 		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
 		{
 			// HZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
@@ -771,7 +770,7 @@ namespace Hazel {
 
 	VulkanShaderH2M::UniformBuffer& VulkanShaderH2M::GetUniformBuffer(uint32_t binding, uint32_t set)
 	{
-		HZ_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
+		H2M_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
 		return m_ShaderDescriptorSets.at(set).UniformBuffers[binding];
 	}
 
@@ -783,7 +782,7 @@ namespace Hazel {
 		case VK_SHADER_STAGE_FRAGMENT_BIT: return ".cached_vulkan.frag";
 		case VK_SHADER_STAGE_COMPUTE_BIT:  return ".cached_vulkan.comp";
 		}
-		HZ_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");
+		H2M_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");
 		Log::GetLogger()->error("Invalid VkShaderStageFlagBits value '{0}'!", stage);
 		return "";
 	}
@@ -797,7 +796,7 @@ namespace Hazel {
 		case VK_SHADER_STAGE_COMPUTE_BIT:  return shaderc_compute_shader;
 		}
 		Log::GetLogger()->error("Invalid VkShaderStageFlagBits value '{0}'!", stage);
-		HZ_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");
+		H2M_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");
 		return (shaderc_shader_kind)-1;
 	}
 
@@ -849,7 +848,7 @@ namespace Hazel {
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{
 						HZ_CORE_ERROR(module.GetErrorMessage());
-						HZ_CORE_ASSERT(false);
+						H2M_CORE_ASSERT(false);
 					}
 
 					const uint8_t* begin = (const uint8_t*)module.cbegin();
@@ -892,10 +891,10 @@ namespace Hazel {
 		while (pos != std::string::npos)
 		{
 			size_t eol = source.find_first_of("\r\n", pos);
-			HZ_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			H2M_CORE_ASSERT(eol != std::string::npos, "Syntax error");
 			size_t begin = pos + typeTokenLength + 1;
 			std::string type = source.substr(begin, eol - begin);
-			HZ_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel" || type == "compute", "Invalid shader type specified");
+			H2M_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel" || type == "compute", "Invalid shader type specified");
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			pos = source.find(typeToken, nextLinePos);
@@ -965,7 +964,7 @@ namespace Hazel {
 
 	void* VulkanShaderH2M::MapUniformBuffer(uint32_t bindingPoint, uint32_t set)
 	{
-		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+		H2M_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
 		uint8_t* pData;
@@ -975,7 +974,7 @@ namespace Hazel {
 
 	void VulkanShaderH2M::UnmapUniformBuffer(uint32_t bindingPoint, uint32_t set)
 	{
-		HZ_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
+		H2M_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		vkUnmapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory);
 	}

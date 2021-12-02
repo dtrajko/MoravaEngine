@@ -1,6 +1,6 @@
 #include "Texture/MoravaTexture.h"
 
-#include "H2M/Core/Ref.h"
+#include "H2M/Core/RefH2M.h"
 #include "H2M/Renderer/RendererAPI.h"
 
 #include "Platform/OpenGL/OpenGLMoravaTexture.h"
@@ -19,7 +19,7 @@ H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, bool flipV
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 	return H2M::RefH2M<MoravaTexture>();
 }
 
@@ -34,7 +34,7 @@ H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, uint32_t w
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 	return H2M::RefH2M<MoravaTexture>();
 }
 
@@ -49,7 +49,7 @@ H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, Specificat
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
-	HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 	return H2M::RefH2M<MoravaTexture>();
 }
 

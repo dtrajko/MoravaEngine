@@ -20,7 +20,7 @@ namespace H2M
 		uint32_t gpuCount = 0;
 		// Get number of available physical devices
 		vkEnumeratePhysicalDevices(vkInstance, &gpuCount, nullptr);
-		HZ_CORE_ASSERT(gpuCount > 0, "");
+		H2M_CORE_ASSERT(gpuCount > 0, "");
 		// Enumerate devices
 		std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
 		VK_CHECK_RESULT(vkEnumeratePhysicalDevices(vkInstance, &gpuCount, physicalDevices.data()));
@@ -42,7 +42,7 @@ namespace H2M
 			selectedPhysicalDevice = physicalDevices.back();
 		}
 
-		HZ_CORE_ASSERT(selectedPhysicalDevice, "Could not find any physical devices!");
+		H2M_CORE_ASSERT(selectedPhysicalDevice, "Could not find any physical devices!");
 		m_PhysicalDevice = selectedPhysicalDevice;
 
 		// Device info
@@ -57,7 +57,7 @@ namespace H2M
 
 		uint32_t queueFamilyCount;
 		vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, nullptr);
-		HZ_CORE_ASSERT(queueFamilyCount > 0, "");
+		H2M_CORE_ASSERT(queueFamilyCount > 0, "");
 		m_QueueFamilyProperties.resize(queueFamilyCount);
 		vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, m_QueueFamilyProperties.data());
 
@@ -132,7 +132,7 @@ namespace H2M
 		}
 
 		m_DepthFormat = FindDepthFormat();
-		HZ_CORE_ASSERT(m_DepthFormat);
+		H2M_CORE_ASSERT(m_DepthFormat);
 	}
 
 	VulkanPhysicalDeviceH2M::~VulkanPhysicalDeviceH2M()
@@ -240,7 +240,7 @@ namespace H2M
 			typeBits >>= 1;
 		}
 
-		HZ_CORE_ASSERT(false, "Could not find a suitable memory type!");
+		H2M_CORE_ASSERT(false, "Could not find a suitable memory type!");
 		return UINT32_MAX;
 	}
 
@@ -259,7 +259,7 @@ namespace H2M
 		// Do we need to enable any other extensions (eg. NV_RAYTRACING?)
 		std::vector<const char*> deviceExtensions;
 		// If the device will be used for presenting to a display via a swapchain we need to request the swapchain extension
-		HZ_CORE_ASSERT(m_PhysicalDevice->IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
+		H2M_CORE_ASSERT(m_PhysicalDevice->IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
 		deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
 		VkDeviceCreateInfo deviceCreateInfo = {};
@@ -285,7 +285,7 @@ namespace H2M
 		}
 
 		VkResult result = vkCreateDevice(m_PhysicalDevice->GetVulkanPhysicalDevice(), &deviceCreateInfo, nullptr, &m_LogicalDevice);
-		HZ_CORE_ASSERT(result == VK_SUCCESS);
+		H2M_CORE_ASSERT(result == VK_SUCCESS);
 
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -337,7 +337,7 @@ namespace H2M
 	{
 		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
-		HZ_CORE_ASSERT(commandBuffer != VK_NULL_HANDLE);
+		H2M_CORE_ASSERT(commandBuffer != VK_NULL_HANDLE);
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 

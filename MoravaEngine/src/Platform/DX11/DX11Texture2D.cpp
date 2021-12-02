@@ -158,7 +158,7 @@ DX11Texture2D::DX11Texture2D(const std::string& path, bool srgb, H2M::TextureWra
 
 	// Invalidate();
 
-	HZ_CORE_ASSERT(false);
+	H2M_CORE_ASSERT(false);
 }
 
 DX11Texture2D::DX11Texture2D(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, H2M::TextureWrapH2M wrap) :
@@ -168,7 +168,7 @@ DX11Texture2D::DX11Texture2D(H2M::ImageFormatH2M format, uint32_t width, uint32_
 
 	// Log::GetLogger()->error("This version of DX11Texture2D constructor is not used in DirectX 11!");
 	// Invalidate();
-	// HZ_CORE_ASSERT(false);
+	// H2M_CORE_ASSERT(false);
 }
 
 DX11Texture2D::DX11Texture2D(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, H2M::TextureWrapH2M wrap)
@@ -177,7 +177,7 @@ DX11Texture2D::DX11Texture2D(H2M::ImageFormatH2M format, uint32_t width, uint32_
 
 	// Invalidate();
 
-	HZ_CORE_ASSERT(false);
+	H2M_CORE_ASSERT(false);
 }
 
 DX11Texture2D::~DX11Texture2D()

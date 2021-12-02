@@ -7,7 +7,7 @@
  * Manages relations between materials and submeshes
  */
 
-#include "H2M/Core/Ref.h"
+#include "H2M/Core/RefH2M.h"
 #include "H2M/Renderer/HazelMaterial.h"
 
 #include "EnvMap/EnvMapMaterial.h"

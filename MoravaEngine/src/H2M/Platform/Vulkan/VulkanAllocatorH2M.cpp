@@ -14,7 +14,7 @@
 
 namespace Hazel {
 
-	VulkanAllocatorH2M::VulkanAllocatorH2M(const Ref<VulkanDevice>& device, const std::string& tag)
+	VulkanAllocatorH2M::VulkanAllocatorH2M(const RefH2M<VulkanDevice>& device, const std::string& tag)
 		: m_Device(device), m_Tag(tag)
 	{
 	}
@@ -30,7 +30,7 @@ namespace Hazel {
 
 	void VulkanAllocatorH2M::Allocate(VkMemoryRequirements requirements, VkDeviceMemory* dest, VkMemoryPropertyFlags flags /*= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT*/)
 	{
-		HZ_CORE_ASSERT(m_Device);
+		H2M_CORE_ASSERT(m_Device);
 
 		// TODO: Tracking
 		Log::GetLogger()->trace("VulkanAllocator ({0}): allocating {1} bytes", m_Tag, requirements.size);

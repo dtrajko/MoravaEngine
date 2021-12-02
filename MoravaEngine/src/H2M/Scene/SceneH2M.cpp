@@ -75,7 +75,7 @@ namespace H2M {
 		SceneH2M* scene = s_ActiveScenes[sceneID];
 
 		auto entityID = registry.get<IDComponent>(entity).ID;
-		HZ_CORE_ASSERT(scene->m_EntityIDMap.find(entityID) != scene->m_EntityIDMap.end());
+		H2M_CORE_ASSERT(scene->m_EntityIDMap.find(entityID) != scene->m_EntityIDMap.end());
 		// ScriptEngine::InitScriptEntity(Entity{ scene->m_EntityIDMap.at(entityID), scene });
 	}
 
@@ -88,7 +88,7 @@ namespace H2M {
 
 		auto entityID = registry.get<IDComponent>(entity).ID;
 
-		HZ_CORE_ASSERT(scene->m_EntityIDMap.find(entityID) != scene->m_EntityIDMap.end());
+		H2M_CORE_ASSERT(scene->m_EntityIDMap.find(entityID) != scene->m_EntityIDMap.end());
 		ScriptEngine::OnScriptComponentDestroyed(sceneID, entityID);
 	}
 
@@ -270,7 +270,7 @@ namespace H2M {
 		}
 	}
 
-	void SceneH2M::OnRenderRuntime(Ref<SceneRendererH2M> renderer, Timestep ts)
+	void SceneH2M::OnRenderRuntime(RefH2M<SceneRendererH2M> renderer, Timestep ts)
 	{
 		/////////////////////////////////////////////////////////////////////
 		// RENDER 3D SCENE
@@ -281,7 +281,7 @@ namespace H2M {
 
 		// Process camera entity
 		glm::mat4 cameraViewMatrix = glm::inverse(cameraEntity.GetComponent<TransformComponentH2M>().Transform);
-		HZ_CORE_ASSERT(cameraEntity, "Scene does not contain any cameras!");
+		H2M_CORE_ASSERT(cameraEntity, "Scene does not contain any cameras!");
 		SceneCamera& camera = cameraEntity.GetComponent<CameraComponent>();
 		camera.SetViewportSize((float)m_ViewportWidth, (float)m_ViewportHeight);
 
@@ -306,7 +306,7 @@ namespace H2M {
 
 		// TODO: only one sky light at the moment!
 		{
-			m_Environment = Ref<Environment>::Create();
+			m_Environment = RefH2M<Environment>::Create();
 			auto lights = m_Registry.group<SkyLightComponentH2M>(entt::get<TransformComponentH2M>);
 			for (auto entity : lights)
 			{
@@ -341,7 +341,7 @@ namespace H2M {
 		// renderer->EndScene();
 	}
 
-	void SceneH2M::OnRenderEditor(Ref<SceneRendererH2M> renderer, Timestep ts, const EditorCamera& editorCamera)
+	void SceneH2M::OnRenderEditor(RefH2M<SceneRendererH2M> renderer, Timestep ts, const EditorCamera& editorCamera)
 	{
 		/////////////////////////////////////////////////////////////////////
 		// RENDER 3D SCENE
@@ -401,7 +401,7 @@ namespace H2M {
 
 			// TODO: only one sky light at the moment!
 			{
-				m_Environment = Ref<Environment>::Create();
+				m_Environment = RefH2M<Environment>::Create();
 				auto lights = m_Registry.group<SkyLightComponentH2M>(entt::get<TransformComponentH2M>);
 				for (auto entity : lights)
 				{
@@ -440,18 +440,18 @@ namespace H2M {
 		}
 	}
 
-	void SceneH2M::OnRenderSimulation(Ref<SceneRendererH2M> renderer, Timestep ts, const EditorCamera& editorCamera)
+	void SceneH2M::OnRenderSimulation(RefH2M<SceneRendererH2M> renderer, Timestep ts, const EditorCamera& editorCamera)
 	{
 		Log::GetLogger()->warn("SceneH2M::OnRenderSimulation method not yet implemented!");
 	}
 
-	void SceneH2M::SetEnvironment(Ref<Environment> environment)
+	void SceneH2M::SetEnvironment(RefH2M<Environment> environment)
 	{
 		m_Environment = environment;
 		SetSkybox(environment->RadianceMap);
 	}
 
-	void SceneH2M::SetSkybox(const Ref<TextureCubeH2M>& skybox)
+	void SceneH2M::SetSkybox(const RefH2M<TextureCubeH2M>& skybox)
 	{
 		m_SkyboxTexture = skybox;
 		m_ShaderSkybox->SetInt("u_Texture", skybox.Raw()->GetID());
@@ -501,7 +501,7 @@ namespace H2M {
 	 *
 	 * Copy to runtime
 	 */
-	void SceneH2M::CopyTo(Ref<SceneH2M>& target)
+	void SceneH2M::CopyTo(RefH2M<SceneH2M>& target)
 	{
 		// Environment
 		target->m_Light = m_Light;
@@ -644,7 +644,7 @@ namespace H2M {
 		// TODO...
 	}
 
-	EntityH2M SceneH2M::CreateEntity(const std::string& name, Ref<SceneH2M> scene)
+	EntityH2M SceneH2M::CreateEntity(const std::string& name, RefH2M<SceneH2M> scene)
 	{
 		EntityH2M entity = CreateEntity(name);
 		entity.m_Scene = scene.Raw();
@@ -689,7 +689,7 @@ namespace H2M {
 
 		Log::GetLogger()->debug("CreateEntityWithID uuid = '{0}', name = '{1}'", uuid, name);
 
-		// HZ_CORE_ASSERT(entityMap.find(uuid) == entityMap.end());
+		// H2M_CORE_ASSERT(entityMap.find(uuid) == entityMap.end());
 		entityMap[uuid] = entity;
 		return entity;
 	}
@@ -743,7 +743,7 @@ namespace H2M {
 		return EntityH2M{};
 	}
 
-	Ref<SceneH2M> SceneH2M::GetScene(UUID uuid)
+	RefH2M<SceneH2M> SceneH2M::GetScene(UUID uuid)
 	{
 		if (s_ActiveScenes.find(uuid) != s_ActiveScenes.end()) {
 			return s_ActiveScenes.at(uuid);
@@ -892,7 +892,7 @@ namespace H2M {
 				if (e.HasComponent<RigidBody2DComponent>())
 				{
 					auto& rigidBody2D = e.GetComponent<RigidBody2DComponent>();
-					HZ_CORE_ASSERT(rigidBody2D.RuntimeBody);
+					H2M_CORE_ASSERT(rigidBody2D.RuntimeBody);
 					b2Body* body = static_cast<b2Body*>(rigidBody2D.RuntimeBody);
 
 					b2PolygonShape polygonShape;
@@ -919,7 +919,7 @@ namespace H2M {
 				if (e.HasComponent<RigidBody2DComponent>())
 				{
 					auto& rigidBody2D = e.GetComponent<RigidBody2DComponent>();
-					HZ_CORE_ASSERT(rigidBody2D.RuntimeBody);
+					H2M_CORE_ASSERT(rigidBody2D.RuntimeBody);
 					b2Body* body = static_cast<b2Body*>(rigidBody2D.RuntimeBody);
 
 					b2CircleShape circleShape;

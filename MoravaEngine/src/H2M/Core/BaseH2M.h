@@ -6,17 +6,17 @@
 
 
 // __VA_ARGS__ expansion to get past MSVC "bug"
-#define HZ_EXPAND_VARGS(x) x
+#define H2M_EXPAND_VARGS(x) x
 
 #define BIT(x) (1 << x)
 
 #define APP_BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
-#define HZ_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
+#define H2M_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
 
 template<typename T>
 using ScopeH2M = std::unique_ptr<T>;
 template<typename T, typename ... Args>
-constexpr ScopeH2M<T> CreateScope(Args&& ... args)
+constexpr ScopeH2M<T> CreateScopeH2M(Args&& ... args)
 {
 	return std::make_unique<T>(std::forward<Args>(args)...);
 }
@@ -24,7 +24,7 @@ constexpr ScopeH2M<T> CreateScope(Args&& ... args)
 template<typename T>
 using RefH2M = std::shared_ptr<T>;
 template<typename T, typename ... Args>
-constexpr RefH2M<T> CreateRef(Args&& ... args)
+constexpr RefH2M<T> CreateRefH2M(Args&& ... args)
 {
 	return std::make_shared<T>(std::forward<Args>(args)...);
 }

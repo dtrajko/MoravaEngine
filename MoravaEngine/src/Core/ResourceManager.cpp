@@ -12,7 +12,7 @@ std::map<std::string, H2M::RefH2M<Material>> ResourceManager::s_Materials;
 float ResourceManager::s_MaterialSpecular = 1.0f;
 float ResourceManager::s_MaterialShininess = 256.0f;
 
-std::map<std::string, H2M::RefH2M<H2M::Texture2DH2M>> ResourceManager::s_HazelTextures2D;
+std::map<std::string, H2M::RefH2M<H2M::Texture2D_H2M>> ResourceManager::s_HazelTextures2D;
 
 std::map<std::string, H2M::RefH2M<MoravaShader>> ResourceManager::s_ShaderCacheByTitle;
 
@@ -326,11 +326,11 @@ H2M::RefH2M<Material> ResourceManager::HotLoadMaterial(std::string materialName)
     return materialIterator->second;
 }
 
-H2M::RefH2M<H2M::Texture2DH2M> ResourceManager::LoadTexture2DH2M(std::string filePath)
+H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadTexture2D_H2M(std::string filePath)
 {
-    H2M::RefH2M<H2M::Texture2DH2M> texture;
+    H2M::RefH2M<H2M::Texture2D_H2M> texture;
 
-    std::map<std::string, H2M::RefH2M<H2M::Texture2DH2M>>::iterator entry = s_HazelTextures2D.find(filePath);
+    std::map<std::string, H2M::RefH2M<H2M::Texture2D_H2M>>::iterator entry = s_HazelTextures2D.find(filePath);
     if (entry != s_HazelTextures2D.end()) {
         // A cache HIT
         texture = entry->second;
@@ -340,7 +340,7 @@ H2M::RefH2M<H2M::Texture2DH2M> ResourceManager::LoadTexture2DH2M(std::string fil
         // A cache MISS
         try
         {
-            texture = H2M::Texture2DH2M::Create(filePath);
+            texture = H2M::Texture2D_H2M::Create(filePath);
             s_HazelTextures2D.insert(std::make_pair(filePath, texture));
             Log::GetLogger()->info("ResourceManager: A texture created and stored in cache [key: '{0}']", filePath);
         }

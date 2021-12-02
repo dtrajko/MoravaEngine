@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Hazel-dev/Renderer/RendererAPI.h"
-
 #include "H2M/Core/RefH2M.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include <glm/glm.hpp>
 
@@ -10,7 +9,8 @@
 #include <vector>
 
 
-namespace H2M {
+namespace H2M
+{
 
 	class FramebufferH2M;
 
@@ -66,16 +66,16 @@ namespace H2M {
 		bool SwapChainTarget = false;
 
 		// Note: these are used to attach multi-layered depth images and color image arrays
-		Ref<Image2DH2M> ExistingImage;
+		RefH2M<Image2D_H2M> ExistingImage;
 		std::vector<uint32_t> ExistingImageLayers;
 
 		// Specify existing images to attach instead of creating
 		// new images. attachment index -> image
-		std::map<uint32_t, Ref<HazelImage2D>> ExistingImages;
+		std::map<uint32_t, RefH2M<HazelImage2D>> ExistingImages;
 
 		// At the moment this will just create a new render pass
 		// with an existing framebuffer
-		Ref<HazelFramebuffer> ExistingFramebuffer;
+		RefH2M<HazelFramebuffer> ExistingFramebuffer;
 
 		std::string DebugName;
 	};
@@ -88,7 +88,7 @@ namespace H2M {
 		virtual void Unbind() const = 0;
 
 		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) = 0;
-		virtual void AddResizeCallback(const std::function<void(Ref<FramebufferH2M>)>& func) = 0;
+		virtual void AddResizeCallback(const std::function<void(RefH2M<FramebufferH2M>)>& func) = 0;
 
 		virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const = 0;
 
@@ -97,12 +97,12 @@ namespace H2M {
 
 		virtual RendererID GetRendererID() const = 0;
 
-		virtual Ref<HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const = 0;
-		virtual Ref<HazelImage2D> GetDepthImage() const = 0;
+		virtual RefH2M<HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const = 0;
+		virtual RefH2M<HazelImage2D> GetDepthImage() const = 0;
 
 		virtual const HazelFramebufferSpecification& GetSpecification() const = 0;
 
-		static Ref<FramebufferH2M> Create(const HazelFramebufferSpecification& spec);
+		static RefH2M<FramebufferH2M> Create(const HazelFramebufferSpecification& spec);
 	};
 
 	class HazelFramebufferPool final
@@ -112,14 +112,14 @@ namespace H2M {
 		~HazelFramebufferPool();
 
 		std::weak_ptr<FramebufferH2M> AllocateBuffer();
-		void Add(const Ref<FramebufferH2M>& framebuffer);
+		void Add(const RefH2M<FramebufferH2M>& framebuffer);
 
-		std::vector<Ref<FramebufferH2M>>& GetAll() { return m_Pool; }
-		const std::vector<Ref<FramebufferH2M>>& GetAll() const { return m_Pool; }
+		std::vector<RefH2M<FramebufferH2M>>& GetAll() { return m_Pool; }
+		const std::vector<RefH2M<FramebufferH2M>>& GetAll() const { return m_Pool; }
 
 		inline static HazelFramebufferPool* GetGlobal() { return s_Instance; }
 	private:
-		std::vector<Ref<FramebufferH2M>> m_Pool;
+		std::vector<RefH2M<FramebufferH2M>> m_Pool;
 
 		static HazelFramebufferPool* s_Instance;
 	};

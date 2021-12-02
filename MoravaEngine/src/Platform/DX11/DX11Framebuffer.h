@@ -27,7 +27,7 @@ public:
 
 	virtual H2M::RendererID GetRendererID() const { return m_RendererID; }
 
-	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const override { HZ_CORE_ASSERT(attachmentIndex < m_Attachments.size()); return m_Attachments[attachmentIndex]; }
+	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const override { H2M_CORE_ASSERT(attachmentIndex < m_Attachments.size()); return m_Attachments[attachmentIndex]; }
 	virtual H2M::RefH2M<H2M::HazelImage2D> GetDepthImage() const override { return H2M::RefH2M<H2M::HazelImage2D>(); /* m_DepthAttachment; */ }
 
 	virtual H2M::RendererID GetColorAttachmentRendererID() const { return 0; }

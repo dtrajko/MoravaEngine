@@ -9,7 +9,7 @@
 #include "DX11Image.h"
 
 
-class DX11Texture2D : public H2M::Texture2DH2M
+class DX11Texture2D : public H2M::Texture2D_H2M
 {
 public:
 	enum Type

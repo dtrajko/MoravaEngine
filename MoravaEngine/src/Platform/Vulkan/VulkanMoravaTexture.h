@@ -28,7 +28,7 @@ public:
 	virtual void Save();
 	virtual H2M::ImageFormatH2M GetFormat() { return m_Format; };
 
-	// BEGIN pure virtual methods inherited from HazelTexture/Texture2DH2M
+	// BEGIN pure virtual methods inherited from HazelTexture/Texture2D_H2M
 	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage() const override { return H2M::RefH2M<H2M::HazelImage2D>(); }
 	virtual void Lock() override {}
 	virtual void Unlock() override {}
@@ -42,7 +42,7 @@ public:
 	virtual uint64_t GetHash() const override { return uint64_t(); }
 	virtual bool operator==(const H2M::HazelTexture& other) const override { return m_ID == other.GetID(); }
 	virtual H2M::RendererID GetRendererID() const override { return m_ID; }
-	// END pure virtual methods inherited from HazelTexture/Texture2DH2M
+	// END pure virtual methods inherited from HazelTexture/Texture2D_H2M
 
 	virtual bool IsLoaded() const override { return m_Buffer ? true : false; }; // used in H2M::Mesh
 

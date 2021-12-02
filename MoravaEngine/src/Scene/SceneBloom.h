@@ -44,8 +44,8 @@ private:
 	H2M::RefH2M<MoravaShader> m_ShaderBlur;
 	H2M::RefH2M<MoravaShader> m_ShaderBloomFinal;
 
-	// H2M::RefH2M<H2M::Texture2DH2M> m_TextureWood;
-	// H2M::RefH2M<H2M::Texture2DH2M> m_TextureContainer;
+	// H2M::RefH2M<H2M::Texture2D_H2M> m_TextureWood;
+	// H2M::RefH2M<H2M::Texture2D_H2M> m_TextureContainer;
 
 	unsigned int m_TextureWood;
 	unsigned int m_TextureContainer;

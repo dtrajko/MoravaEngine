@@ -1,10 +1,9 @@
 #pragma once
 
-#include "H2M/Renderer/HazelCamera.h"
-#include "H2M/Renderer/SceneEnvironment.h"
-#include "H2M/Scene/SceneCamera.h"
-
+#include "H2M/Renderer/CameraH2M.h"
 #include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/SceneEnvironmentH2M.h"
+#include "H2M/Scene/SceneCameraH2M.h"
 
 #include "EnvMap/EnvMapMaterial.h"
 
@@ -17,7 +16,12 @@
 namespace H2M
 {
 	class MeshH2M;
-	class SceneCamera;
+	class SceneCameraH2M;
+
+	struct IDComponentH2M
+	{
+		UUID_H2M ID = 0;
+	};
 
 	struct TagComponentH2M
 	{
@@ -31,6 +35,17 @@ namespace H2M
 
 		operator std::string& () { return Tag; };
 		operator const std::string& () const { return Tag; };
+	};
+
+	struct RelationshipComponentH2M
+	{
+		UUID_H2M ParentHandle = 0;
+		std::vector<UUID_H2M> Children;
+
+		RelationshipComponentH2M() = default;
+		RelationshipComponentH2M(const RelationshipComponentH2M& other) = default;
+		RelationshipComponentH2M(UUID_H2M parent)
+			: ParentHandle(parent) {}
 	};
 
 	struct TransformComponentH2M
@@ -68,22 +83,22 @@ namespace H2M
 
 	struct MeshComponentH2M
 	{
-		Ref<MeshH2M> Mesh;
+		RefH2M<MeshH2M> Mesh;
 
 		bool CastShadows = true;    // MeshRenderer property in Unity
 		bool ReceiveShadows = true; // MeshRenderer property in Unity
 
 		MeshComponentH2M() = default;
 		MeshComponentH2M(const MeshComponentH2M& other) = default;
-		MeshComponentH2M(const Ref<MeshH2M>& mesh)
+		MeshComponentH2M(const RefH2M<MeshH2M>& mesh)
 			: Mesh(mesh) {}
 
-		operator Ref<MeshH2M>() { return Mesh; }
+		operator RefH2M<MeshH2M>() { return Mesh; }
 	};
 
 	struct MaterialComponentH2M
 	{
-		H2M::RefH2M<EnvMapMaterial> Material = H2M::RefH2M<EnvMapMaterial>();
+		RefH2M<EnvMapMaterial> Material = RefH2M<EnvMapMaterial>();
 
 		MaterialComponentH2M() = default;
 		MaterialComponentH2M(const MaterialComponentH2M& other) = default;
@@ -120,28 +135,25 @@ namespace H2M
 
 	struct SkyLightComponentH2M
 	{
-		Environment SceneEnvironment;
+		EnvironmentH2M SceneEnvironment;
 		float Intensity = 1.0f;
 		float Angle = 0.0f;
 	};
 
 	struct CameraComponentH2M
 	{
-		HazelCamera Camera;
+		CameraH2M Camera;
 		bool Primary = true; // TODO: think about moving to Scene
 		bool FixedAspectRatio = false;
 
 		CameraComponentH2M() = default;
 		CameraComponentH2M(const CameraComponentH2M& other) = default;
 
-		CameraComponentH2M(H2M::CameraH2M camera)
+		CameraComponentH2M(CameraH2M camera)
 			: Camera(camera) {};
 
-		operator HazelCamera& () { return Camera; }
-		operator const HazelCamera& () const { return Camera; }
-
-		operator SceneCamera& () { return (SceneCamera&)Camera; }
-		operator const SceneCamera& () const { return (SceneCamera&)Camera; }
+		operator CameraH2M& () { return Camera; }
+		operator const CameraH2M& () const { return Camera; }
 	};
 
 }

@@ -146,7 +146,7 @@ namespace H2M {
 	{
 		m_TimestampNextAvailableQuery = 2;
 
-		// Ref<VulkanRenderCommandBuffer> instance = this;
+		// RefH2M<VulkanRenderCommandBuffer> instance = this;
 		// RendererH2M::Submit([instance]() mutable {});
 		{
 			uint32_t frameIndex = RendererH2M::GetCurrentFrameIndex();
@@ -171,7 +171,7 @@ namespace H2M {
 
 	void VulkanRenderCommandBufferH2M::End()
 	{
-		// Ref<VulkanRenderCommandBuffer> instance = this;
+		// RefH2M<VulkanRenderCommandBuffer> instance = this;
 		// RendererH2M::Submit([instance]() {});
 		{
 			uint32_t frameIndex = RendererH2M::GetCurrentFrameIndex();
@@ -186,7 +186,7 @@ namespace H2M {
 	{
 		if (m_OwnedBySwapChain) return;
 
-		// Ref<VulkanRenderCommandBuffer> instance = this;
+		// RefH2M<VulkanRenderCommandBuffer> instance = this;
 		// RendererH2M::Submit([instance]() mutable {});
 		{
 			auto device = VulkanContextH2M::GetCurrentDevice();

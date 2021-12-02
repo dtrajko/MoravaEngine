@@ -24,7 +24,7 @@
 
 
 SelectionMode EnvMapEditorLayer::s_SelectionMode = SelectionMode::Entity;
-H2M::RefH2M<H2M::Texture2DH2M> EnvMapEditorLayer::s_CheckerboardTexture;
+H2M::RefH2M<H2M::Texture2D_H2M> EnvMapEditorLayer::s_CheckerboardTexture;
 H2M::RefH2M<EnvMapMaterial> EnvMapEditorLayer::s_DefaultMaterial;
 H2M::RefH2M<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
 
@@ -77,7 +77,7 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     // Create the light material
     s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
     // Load Hazel/Renderer/HazelTexture
-    s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2DH2M("Textures/light_bulb.png");
+    s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2D_H2M("Textures/light_bulb.png");
     s_LightMaterial->GetAlbedoInput().UseTexture = true;
     MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
 
@@ -94,8 +94,8 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
     m_MaterialEditorPanel = new MaterialEditorPanel();
 
-    s_CheckerboardTexture = H2M::Texture2DH2M::Create("Textures/Hazel/Checkerboard.tga");
-    m_PlayButtonTex = H2M::Texture2DH2M::Create("Textures/Hazel/PlayButton.png");
+    s_CheckerboardTexture = H2M::Texture2D_H2M::Create("Textures/Hazel/Checkerboard.tga");
+    m_PlayButtonTex = H2M::Texture2D_H2M::Create("Textures/Hazel/PlayButton.png");
 
     m_DisplayBoundingBoxes = false;
     m_DrawOnTopBoundingBoxes = true; // obsolete?

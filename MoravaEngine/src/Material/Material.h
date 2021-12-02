@@ -1,8 +1,8 @@
 #pragma once
 
-#include "H2M/Core/Base.h"
-#include "H2M/Renderer/HazelMaterial.h"
-#include "H2M/Renderer/HazelShader.h"
+#include "H2M/Core/BaseH2M.h"
+#include "H2M/Renderer/MaterialH2M.h"
+#include "H2M/Renderer/ShaderH2M.h"
 
 #include "Shader/MoravaShader.h"
 #include "Texture/MoravaTexture.h"
@@ -43,14 +43,14 @@ enum class MaterialFlag
 };
 
 
-class Material : public H2M::HazelMaterial
+class Material : public H2M::MaterialH2M
 {
 public:
 	Material();
 	Material(float specularIntensity, float shininess);
 	Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shininess); // based on LearnOpenGL material classint
 	Material(int albedo, int specular, int normal, float shininess); // used in SceneNanosuit
-	Material(H2M::RefH2M<H2M::HazelShader> shader); // based on H2M::Material contructor
+	Material(H2M::RefH2M<H2M::ShaderH2M> shader); // based on H2M::Material contructor
 	Material(TextureInfo textureInfoGold, float specularIntensity, float shininess); // PBR/IBL Material Workflow
 	virtual ~Material() override;
 
@@ -71,10 +71,10 @@ public:
 	virtual void Set(const std::string& name, const glm::mat3& value) override {};
 	virtual void Set(const std::string& name, const glm::mat4& value) override {};
 
-	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2DH2M>& texture) override {};
-	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2DH2M>& texture, uint32_t arrayIndex) override {};
+	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D_H2M>& texture) override {};
+	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D_H2M>& texture, uint32_t arrayIndex) override {};
 	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::TextureCubeH2M>& texture) override {};
-	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::HazelImage2D>& image) override {};
+	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Image2D_H2M>& image) override {};
 
 	virtual float& GetFloat(const std::string& name) override { return m_Float; }
 	virtual int32_t& GetInt(const std::string& name) override { return m_int32_t; }
@@ -86,17 +86,17 @@ public:
 	virtual glm::mat3& GetMatrix3(const std::string& name) override { return m_glm_mat3; }
 	virtual glm::mat4& GetMatrix4(const std::string& name) override { return m_glm_mat4; }
 
-	virtual H2M::RefH2M<H2M::Texture2DH2M> GetTexture2D(const std::string& name) override { return H2M::RefH2M<H2M::Texture2DH2M>(); };
+	virtual H2M::RefH2M<H2M::Texture2D_H2M> GetTexture2D(const std::string& name) override { return H2M::RefH2M<H2M::Texture2D_H2M>(); };
 	virtual H2M::RefH2M<H2M::TextureCubeH2M> GetTextureCube(const std::string& name) override { return H2M::RefH2M<H2M::TextureCubeH2M>(); };
 
-	virtual H2M::RefH2M<H2M::Texture2DH2M> TryGetTexture2D(const std::string& name) override { return H2M::RefH2M<H2M::Texture2DH2M>(); };
+	virtual H2M::RefH2M<H2M::Texture2D_H2M> TryGetTexture2D(const std::string& name) override { return H2M::RefH2M<H2M::Texture2D_H2M>(); };
 	virtual H2M::RefH2M<H2M::TextureCubeH2M> TryGetTextureCube(const std::string& name) override { return H2M::RefH2M<H2M::TextureCubeH2M>(); };
 
 	virtual uint32_t GetFlags() const override { return uint32_t(); };
-	virtual bool GetFlag(H2M::HazelMaterialFlag flag) const override { return bool(); }
-	virtual void SetFlag(H2M::HazelMaterialFlag flag, bool value = true) override {}
+	virtual bool GetFlag(H2M::MaterialFlagH2M flag) const override { return bool(); }
+	virtual void SetFlag(H2M::MaterialFlagH2M flag, bool value = true) override {}
 
-	virtual H2M::RefH2M<H2M::HazelShader> GetShader() override { return H2M::RefH2M<H2M::HazelShader>(); }
+	virtual H2M::RefH2M<H2M::ShaderH2M> GetShader() override { return H2M::RefH2M<H2M::ShaderH2M>(); }
 	virtual const std::string& GetName() const override { return m_Name; }
 
 	/**** END virtual methods defined in HazelMaterial ****/
