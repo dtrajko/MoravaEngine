@@ -3,14 +3,13 @@
 #pragma once
 
 #include "H2M/Core/RefH2M.h"
-#include "H2M/Renderer/ShaderH2M.h"
-#include "H2M/Renderer/VertexBufferH2M.h"
-#include "H2M/Renderer/UniformBufferH2M.h"
+#include "ShaderH2M.h"
+#include "VertexBufferH2M.h"
+#include "RenderPassH2M.h"
 
 
-namespace H2M {
-
-	class RenderPass;
+namespace H2M
+{
 
 	enum class PrimitiveTopology
 	{
@@ -27,15 +26,22 @@ namespace H2M {
 	{
 		RefH2M<ShaderH2M> Shader;
 		VertexBufferLayoutH2M Layout;
-		RefH2M<RenderPass> RenderPass;
-		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
-		bool BackfaceCulling = true;
-		bool DepthTest = true;
-		bool DepthWrite = true;
-		bool Wireframe = false;
-		float LineWidth = 1.0f;
+		RefH2M<RenderPassH2M> RenderPass;
 
 		std::string DebugName;
+	};
+
+	struct PipelineStatistics
+	{
+		uint64_t InputAssemblyVertices = 0;
+		uint64_t InputAssemblyPrimitives = 0;
+		uint64_t VertexShaderInvocations = 0;
+		uint64_t ClippingInvocations = 0;
+		uint64_t ClippingPrimitives = 0;
+		uint64_t FragmentShaderInvocations = 0;
+		uint64_t ComputeShaderInvocations = 0;
+
+		// TODO(Yan): tesselation shader stats when we have them
 	};
 
 	class PipelineH2M : public RefCountedH2M
@@ -47,7 +53,6 @@ namespace H2M {
 		virtual const PipelineSpecification& GetSpecification() const = 0;
 
 		virtual void Invalidate() = 0;
-		virtual void SetUniformBuffer(RefH2M<UniformBufferH2M> uniformBuffer, uint32_t binding, uint32_t set = 0) = 0;
 
 		// TEMP: remove this when render command buffers are a thing
 		virtual void Bind() = 0;

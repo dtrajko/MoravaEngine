@@ -43,10 +43,10 @@ public:
 	virtual H2M::ImageFormatH2M GetFormat() = 0;
 
 	// BEGIN pure virtual methods inherited from HazelTexture/Texture2D_H2M
-	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage() const = 0;
+	virtual H2M::RefH2M<H2M::Image2D_H2M> GetImage() const = 0;
 	virtual void Lock() = 0;
 	virtual void Unlock() = 0;
-	virtual H2M::Buffer GetWriteableBuffer() = 0;
+	virtual H2M::BufferH2M GetWriteableBuffer() = 0;
 	virtual void Resize(uint32_t width, uint32_t height) = 0;
 	virtual bool Loaded() const = 0;
 	virtual const std::string& GetPath() const = 0;
@@ -54,8 +54,8 @@ public:
 	virtual H2M::ImageFormatH2M GetFormat() const = 0;
 	virtual uint32_t GetMipLevelCount() const = 0;
 	virtual uint64_t GetHash() const = 0;
-	virtual bool operator==(const H2M::HazelTexture& other) const = 0;
-	virtual H2M::RendererID GetRendererID() const = 0;
+	virtual bool operator==(const H2M::TextureH2M& other) const = 0;
+	virtual H2M::RendererID_H2M GetRendererID() const = 0;
 	// END pure virtual methods inherited from HazelTexture/Texture2D_H2M
 
 	virtual bool IsLoaded() const = 0;

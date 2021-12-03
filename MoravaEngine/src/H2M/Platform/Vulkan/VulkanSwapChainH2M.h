@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "Hazel/Core/Base.h"
-#include "Hazel/Core/Assert.h"
+#include "H2M/Core/BaseH2M.h"
+#include "H2M/Core/AssertH2M.h"
 
-#include "Vulkan.h"
-#include "VulkanDevice.h"
-#include "VulkanAllocator.h"
+#include "H2M/Platform/Vulkan/VulkanH2M.h"
+#include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
+#include "H2M/Platform/Vulkan/VulkanAllocatorH2M.h"
 
 #include "VulkanMemoryAllocator/vk_mem_alloc.h"
 
@@ -16,14 +16,15 @@
 struct GLFWwindow;
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	class VulkanSwapChain
+	class VulkanSwapChainH2M
 	{
 	public:
-		VulkanSwapChain() = default;
+		VulkanSwapChainH2M() = default;
 
-		void Init(VkInstance instance, const RefH2M<VulkanDevice>& device);
+		void Init(VkInstance instance, const RefH2M<VulkanDeviceH2M>& device);
 		void InitSurface(GLFWwindow* windowHandle);
 		void Create(uint32_t* width, uint32_t* height, bool vsync = false);
 		
@@ -68,8 +69,8 @@ namespace Hazel {
 
 	private:
 		VkInstance m_Instance;
-		RefH2M<VulkanDevice> m_Device;
-		VulkanAllocator m_Allocator;
+		RefH2M<VulkanDeviceH2M> m_Device;
+		VulkanAllocatorH2M m_Allocator;
 
 		bool m_VSync = false;
 

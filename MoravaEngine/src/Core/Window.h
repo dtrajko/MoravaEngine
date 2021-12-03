@@ -1,8 +1,8 @@
 #pragma once
 
-#include "H2M/Core/Events/Event.h"
-#include "H2M/Renderer/RendererContext.h"
-#include "H2M/Platform/Vulkan/VulkanSwapChain.h"
+#include "H2M/Core/Events/EventH2M.h"
+#include "H2M/Renderer/RendererContextH2M.h"
+#include "H2M/Platform/Vulkan/VulkanSwapChainH2M.h"
 
 #include "Core/CommonValues.h"
 
@@ -30,7 +30,7 @@ class Window
 {
 	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
 public:
-	using EventCallbackFn = std::function<void(Event&)>;
+	using EventCallbackFn = std::function<void(H2M::EventH2M&)>;
 
 	virtual ~Window() {};
 
@@ -95,7 +95,7 @@ public:
 	virtual void SetEventLogging(bool enabled) = 0;
 	virtual const bool GetEventLogging() const = 0;
 
-	virtual H2M::RefH2M<H2M::RendererContext> GetRenderContext() = 0;
-	virtual H2M::VulkanSwapChain& GetSwapChain() = 0;
+	virtual H2M::RefH2M<H2M::RendererContextH2M> GetRenderContext() = 0;
+	virtual H2M::VulkanSwapChainH2M& GetSwapChain() = 0;
 
 };

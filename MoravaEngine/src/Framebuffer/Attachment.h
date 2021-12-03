@@ -30,7 +30,7 @@ enum class AttachmentFormat
 	DEPTH32F            = 14, // H2M::ImageFormatH2M
 };
 
-class Attachment : public H2M::HazelTexture
+class Attachment : public H2M::TextureH2M
 {
 public:
 	Attachment();
@@ -38,7 +38,7 @@ public:
 	virtual ~Attachment();
 
 	inline uint32_t GetID() const { return m_ID; };
-	inline H2M::RendererID GetRendererID() const { return m_ID; };
+	inline H2M::RendererID_H2M GetRendererID() const { return m_ID; };
 	inline virtual uint32_t GetWidth() const override { return m_Width; };
 	inline virtual uint32_t GetHeight() const override { return m_Height; };
 
@@ -48,8 +48,8 @@ public:
 	// virtual methods from H2M::HazelTexture
 	virtual H2M::ImageFormatH2M GetFormat() const override ;
 	virtual uint64_t GetHash() const override { Log::GetLogger()->error("Attachment::GetHash - method not implemented!"); return 0; }
-	virtual H2M::TextureType GetType() const override { Log::GetLogger()->error("Attachment::GetType - method not implemented!"); return H2M::TextureType(); }
-	virtual bool operator==(const HazelTexture& other) const override { Log::GetLogger()->error("Attachment::operator== - method not implemented!"); return false; }
+	virtual H2M::TextureTypeH2M GetType() const override { Log::GetLogger()->error("Attachment::GetType - method not implemented!"); return H2M::TextureTypeH2M(); }
+	virtual bool operator==(const TextureH2M& other) const override { Log::GetLogger()->error("Attachment::operator== - method not implemented!"); return false; }
 	virtual void SetData(void* data, uint32_t size) override { Log::GetLogger()->error("Attachment::SetData - method not implemented!"); }
 	virtual uint32_t GetMipLevelCount() const override { Log::GetLogger()->error("Attachment::GetMipLevelCount - method not implemented!"); return 0; }
 	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;

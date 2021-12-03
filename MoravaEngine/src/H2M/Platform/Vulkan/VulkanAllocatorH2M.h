@@ -1,12 +1,13 @@
 #pragma once
 
-#include "H2M/Platform/Vulkan/Vulkan.h"
-#include "H2M/Platform/Vulkan/VulkanDevice.h"
+#include "H2M/Platform/Vulkan/VulkanH2M.h"
+#include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
 
 #include <string>
 
 
-namespace Hazel {
+namespace H2M
+{
 
 	struct GPUMemoryStatsH2M
 	{
@@ -19,13 +20,14 @@ namespace Hazel {
 	public:
 		VulkanAllocatorH2M() = default;
 		VulkanAllocatorH2M(const std::string& tag);
-		VulkanAllocatorH2M(const RefH2M<VulkanDevice>& device, const std::string& tag = "");
+		VulkanAllocatorH2M(const RefH2M<VulkanDeviceH2M>& device, const std::string& tag = "");
 		~VulkanAllocatorH2M();
 
 		void Allocate(VkMemoryRequirements requirements, VkDeviceMemory* dest, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	private:
-		RefH2M<VulkanDevice> m_Device;
+		RefH2M<VulkanDeviceH2M> m_Device;
 		std::string m_Tag;
+
 	};
 
 }

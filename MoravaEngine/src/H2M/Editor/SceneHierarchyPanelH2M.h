@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
 #include "../../../pch.h"
@@ -22,15 +28,15 @@ namespace Hazel
 	{
 	public:
 		SceneHierarchyPanelH2M() = default;
-		SceneHierarchyPanelH2M(Ref<HazelScene> scene);
+		SceneHierarchyPanelH2M(RefH2M<SceneH2M> scene);
 		~SceneHierarchyPanelH2M();
 
-		void SetContext(Ref<SceneH2M> scene);
-		Ref<SceneH2M> GetContext() { return m_Context; };
+		void SetContext(RefH2M<SceneH2M> scene);
+		RefH2M<SceneH2M> GetContext() { return m_Context; };
 		void SetSelected(EntityH2M entity);
 		void SetSelectionChangedCallback(const std::function<void(EntityH2M)>& func) { m_SelectionChangedCallback = func; }
 		void SetEntityDeletedCallback(const std::function<void(EntityH2M)>& func) { m_EntityDeletedCallback = func; }
-		void SetMeshAssetConvertCallback(const std::function<void(EntityH2M, Ref<HazelMeshAssetLegacy>)>& func) { m_MeshAssetConvertCallback = func; }
+		void SetMeshAssetConvertCallback(const std::function<void(EntityH2M, RefH2M<HazelMeshAssetLegacy>)>& func) { m_MeshAssetConvertCallback = func; }
 		void SetInvalidMetadataCallback(const std::function<void(EntityH2M, AssetHandle)>& func) { m_InvalidMetadataCallback = func; }
 
 		void OnImGuiRender(bool* p_open = (bool*)0);

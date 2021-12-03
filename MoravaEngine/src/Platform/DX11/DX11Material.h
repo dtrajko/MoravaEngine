@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "H2M/Renderer/HazelImage.h"
-#include "H2M/Renderer/HazelMaterial.h"
-#include "H2M/Renderer/Pipeline.h"
+#include "H2M/Renderer/ImageH2M.h"
+#include "H2M/Renderer/MaterialH2M.h"
+#include "H2M/Renderer/PipelineH2M.h"
 
 #include "DX11ConstantBuffer.h"
 #include "DX11Texture2D.h"

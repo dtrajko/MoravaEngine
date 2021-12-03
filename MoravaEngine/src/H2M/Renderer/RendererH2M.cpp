@@ -1,45 +1,40 @@
 #include "RendererH2M.h"
 
-#include "H2M/Core/Assert.h"
-#include "H2M/Platform/OpenGL/OpenGLRenderer.h"
-#include "H2M/Platform/Vulkan/VulkanComputePipeline.h"
-#include "H2M/Renderer/PipelineCompute.h"
-#include "H2M/Renderer/Renderer2D.h"
-#include "H2M/Renderer/RendererAPI.h"
-#include "H2M/Renderer/SceneRenderer.h"
-
+#include "H2M/Core/AssertH2M.h"
+#include "H2M/Platform/OpenGL/OpenGLRendererH2M.h"
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
-#include "H2M/Renderer/SceneRendererVulkan.h"
+#include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
+#include "H2M/Renderer/PipelineComputeH2M.h"
+#include "H2M/Renderer/Renderer2D_H2M.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
+#include "H2M/Renderer/SceneRendererH2M.h"
+#include "H2M/Renderer/SceneRendererVulkanH2M.h"
 
 #include "Renderer/RendererBasic.h"
 #include "Platform/DX11/DX11Renderer.h"
 
 
-namespace H2M {
+namespace H2M
+{
 
-	static std::unordered_map<size_t, RefH2M<Pipeline>> s_PipelineCache;
+	static std::unordered_map<size_t, RefH2M<PipelineH2M>> s_PipelineCache;
 
-	static RendererAPI* s_RendererAPI = nullptr;
+	static RendererAPI_H2M* s_RendererAPI = nullptr;
 
 	struct ShaderDependencies
 	{
-		std::vector<RefH2M<PipelineCompute>> ComputePipelines;
-		std::vector<RefH2M<Pipeline>> Pipelines;
-		std::vector<RefH2M<HazelMaterial>> Materials;
+		std::vector<RefH2M<PipelineComputeH2M>> ComputePipelines;
+		std::vector<RefH2M<PipelineH2M>> Pipelines;
+		std::vector<RefH2M<MaterialH2M>> Materials;
 	};
 	static std::unordered_map<size_t, ShaderDependencies> s_ShaderDependencies;
 
-	void RendererH2M::RegisterShaderDependency(RefH2M<HazelShader> shader, RefH2M<PipelineCompute> computePipeline)
-	{
-		s_ShaderDependencies[shader->GetHash()].ComputePipelines.push_back(computePipeline);
-	}
-
-	void RendererH2M::RegisterShaderDependency(RefH2M<HazelShader> shader, RefH2M<Pipeline> pipeline)
+	void RendererH2M::RegisterShaderDependency(RefH2M<ShaderH2M> shader, RefH2M<PipelineH2M> pipeline)
 	{
 		s_ShaderDependencies[shader->GetHash()].Pipelines.push_back(pipeline);
 	}
 
-	void RendererH2M::RegisterShaderDependency(RefH2M<HazelShader> shader, RefH2M<HazelMaterial> material)
+	void RendererH2M::RegisterShaderDependency(RefH2M<ShaderH2M> shader, RefH2M<MaterialH2M> material)
 	{
 		s_ShaderDependencies[shader->GetHash()].Materials.push_back(material);
 	}
@@ -56,7 +51,7 @@ namespace H2M {
 
 			for (auto& computePipeline : dependencies.ComputePipelines)
 			{
-				computePipeline.As<VulkanComputePipeline>()->CreatePipeline();
+				computePipeline.As<VulkanComputePipelineH2M>()->CreatePipeline();
 			}
 
 			for (auto& material : dependencies.Materials)
@@ -66,98 +61,94 @@ namespace H2M {
 		}
 	}
 
-	uint32_t RendererH2M::GetCurrentFrameIndex()
+	void RendererAPI_H2M::SetAPI(RendererAPITypeH2M api)
 	{
-		return Application::Get()->GetWindow()->GetSwapChain().GetCurrentBufferIndex();
+		// TODO: make sure this is called at a valid time
+		s_CurrentRendererAPI = api;
 	}
 
-	struct RendererData
+	struct RendererDataH2M
 	{
-		RendererConfig Config;
+		RendererConfigH2M Config;
 
-		RefH2M<RenderPass> m_ActiveRenderPass;
-		RenderCommandQueue m_CommandQueue;
-		RefH2M<HazelShaderLibrary> m_ShaderLibrary;
+		RefH2M<RenderPassH2M> m_ActiveRenderPass;
+		RenderCommandQueueH2M m_CommandQueue;
+		RefH2M<ShaderLibraryH2M> m_ShaderLibrary;
 
-		RefH2M<VertexBuffer> FullscreenQuadVertexBuffer; // TODO: remove from RendererH2M
-		RefH2M<IndexBuffer> FullscreenQuadIndexBuffer;   // TODO: remove from RendererH2M
-		RefH2M<Pipeline> FullscreenQuadPipeline;         // TODO: remove from RendererH2M
+		RefH2M<VertexBufferH2M> FullscreenQuadVertexBuffer; // TODO: remove from RendererH2M
+		RefH2M<IndexBufferH2M> FullscreenQuadIndexBuffer;   // TODO: remove from RendererH2M
+		RefH2M<PipelineH2M> FullscreenQuadPipeline;         // TODO: remove from RendererH2M
 		PipelineSpecification FullscreenQuadPipelineSpec;
 
 		RefH2M<Texture2D_H2M> WhiteTexture;
 		RefH2M<Texture2D_H2M> BlackTexture;
 		RefH2M<Texture2D_H2M> BRDFLutTexture;
 		RefH2M<TextureCubeH2M> BlackCubeTexture;
-		RefH2M<Environment> EmptyEnvironment;
+		RefH2M<EnvironmentH2M> EmptyEnvironment;
 	};
 
-	static RendererData* s_Data = nullptr;
-	static RenderCommandQueue* s_CommandQueue = nullptr;
+	static RendererDataH2M* s_Data = nullptr;
+	static RenderCommandQueueH2M* s_CommandQueue = nullptr;
 
 	// static std::unordered_map<size_t, RefH2M<Pipeline>> s_PipelineCache;
-	static RenderCommandQueue s_ResourceFreeQueue[3];
 
-	static RendererAPI* InitRendererAPI()
+	static RendererAPI_H2M* InitRendererAPI()
 	{
-		switch (RendererAPI::Current())
+		switch (RendererAPI_H2M::Current())
 		{
-			case RendererAPIType::OpenGL: return new OpenGLRenderer();
-			case RendererAPIType::Vulkan: return new VulkanRendererH2M();
-			case RendererAPIType::DX11:   return new DX11Renderer();
+			case RendererAPITypeH2M::OpenGL: return new OpenGLRendererH2M();
+			case RendererAPITypeH2M::Vulkan: return new VulkanRendererH2M();
+			case RendererAPITypeH2M::DX11:   return new DX11Renderer();
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
-		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	}
 
 	void RendererH2M::Init()
 	{
-		s_Data = new RendererData();
-		s_CommandQueue = new RenderCommandQueue();
-
-		// Make sure we don't have more frames in flight than swapchain images
-		RendererH2M::GetConfig().FramesInFlight = glm::min<uint32_t>(RendererH2M::GetConfig().FramesInFlight, Application::Get()->GetWindow()->GetSwapChain().GetImageCount());
-
+		s_Data = new RendererDataH2M();
+		s_CommandQueue = new RenderCommandQueueH2M();
 		s_RendererAPI = InitRendererAPI();
 
-		s_Data->m_ShaderLibrary = RefH2M<HazelShaderLibrary>::Create();
+		s_Data->m_ShaderLibrary = RefH2M<ShaderLibraryH2M>::Create();
 
 		//...
 
 		// Compute shaders
-		if (RendererAPI::Current() == RendererAPIType::Vulkan)
+		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 		{
-			// RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ClearCubeMap.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EquirectangularToCubeMap.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentMipFilter.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentIrradiance.glsl");
+			// RendererH2M::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl");
+			RendererH2M::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
+			RendererH2M::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
+			RendererH2M::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
 
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Grid.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SceneComposite.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
-			// RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Anim.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Outline.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
-			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
+			RendererH2M::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
+			RendererH2M::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
+			RendererH2M::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
+			// RendererH2M::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
+			RendererH2M::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
+			RendererH2M::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
+			RendererH2M::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
 		}
 
 		// Compile shaders
 		RendererH2M::WaitAndRender();
-		SceneRenderer::Init();
+		SceneRendererH2M::Init();
 
-		if (RendererAPI::Current() == RendererAPIType::Vulkan)
+		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 		{
-			SceneRendererVulkan::Init();
+			SceneRendererVulkanH2M::Init();
 		}
 
 		std::function<void()> initFunc;
 
-		switch (RendererAPI::Current())
+		switch (RendererAPI_H2M::Current())
 		{
-		case RendererAPIType::OpenGL:
+		case RendererAPITypeH2M::OpenGL:
 			initFunc; // = OpenGLRenderer::Init;
 			break;
-		case RendererAPIType::Vulkan:
+		case RendererAPITypeH2M::Vulkan:
 			initFunc; // = VulkanRenderer::Init;
 			break;
 		}
@@ -191,9 +182,9 @@ namespace H2M {
 		data[3].Position = glm::vec3(x, y + height, 0.1f);
 		data[3].TexCoord = glm::vec2(0, 1);
 
-		s_Data->FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data->FullscreenQuadVertexBuffer = VertexBufferH2M::Create(data, 4 * sizeof(QuadVertex));
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
-		s_Data->FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+		s_Data->FullscreenQuadIndexBuffer = IndexBufferH2M::Create(indices, 6 * sizeof(uint32_t));
 
 		// ...
 
@@ -203,108 +194,90 @@ namespace H2M {
 		uint32_t blackTextureData[6] = { 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000, 0xff000000 };
 		s_Data->BlackCubeTexture = TextureCubeH2M::Create(ImageFormatH2M::RGBA, 1, 1, &blackTextureData);
 
-		s_Data->EmptyEnvironment = RefH2M<Environment>::Create(s_Data->BlackCubeTexture, s_Data->BlackCubeTexture);
+		s_Data->EmptyEnvironment = RefH2M<EnvironmentH2M>::Create(s_Data->BlackCubeTexture, s_Data->BlackCubeTexture);
 
 		//...
+
 	}
 
-	RendererCapabilities& RendererH2M::GetCapabilities()
+	RendererCapabilitiesH2M& RendererH2M::GetCapabilities()
 	{
 		return s_RendererAPI->GetCapabilities();
 	}
 
-	void RendererH2M::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
-	{
-		// RendererH2M::Submit([=]() {});
-		{
-			RendererAPI::DrawIndexed(count, type, depthTest);
-		}
-	}
-
-	RefH2M<HazelShaderLibrary>& RendererH2M::GetShaderLibrary()
+	RefH2M<ShaderLibraryH2M>& RendererH2M::GetShaderLibrary()
 	{
 		return s_Data->m_ShaderLibrary;
 	}
 
-	//	void RendererH2M::Clear()
-	//	{
-	//		// RendererH2M::Submit([]() {});
-	//		{
-	//			RendererAPI::Clear(0.0f, 0.0f, 0.0f, 1.0f);
-	//		}
-	//	}
+	/**** BEGIN to be removed from RendererH2M ****/
+	void RendererH2M::Clear()
+	{
+		// RendererH2M::Submit([]() {});
+		{
+			RendererAPI_H2M::Clear(0.0f, 0.0f, 0.0f, 1.0f);
+		}
+	}
+	/**** END to be removed from RendererH2M ****/
 
-	//	void RendererH2M::Clear(float r, float g, float b, float a)
-	//	{
-	//	}
+	/**** BEGIN to be removed from RendererH2M ****/
+	void RendererH2M::Clear(float r, float g, float b, float a)
+	{
+		// RendererH2M::Submit([=]() {});
+		{
+			RendererAPI_H2M::Clear(r, g, b, a);
+		}
+	}
+	/**** END to be removed from RendererH2M ****/
+
+	/**** BEGIN to be removed from RendererH2M ****/
+	void RendererH2M::ClearMagenta()
+	{
+		Clear(1, 0, 1);
+	}
+	/**** END to be removed from RendererH2M ****/
+
+	/**** BEGIN to be removed from RendererH2M ****/
+	void RendererH2M::SetClearColor(float r, float g, float b, float a)
+	{
+	}
+	/**** END to be removed from RendererH2M ****/
+
+	/**** BEGIN to be removed from RendererH2M ****/
+	void RendererH2M::DrawIndexed(uint32_t count, PrimitiveTypeH2M type, bool depthTest)
+	{
+		// RendererH2M::Submit([=]() {});
+		{
+			RendererAPI_H2M::DrawIndexed(count, type, depthTest);
+		}
+	}
+	/**** END to be removed from RendererH2M ****/
+
+	/**** BEGIN to be removed from RendererH2M ****/
+	void RendererH2M::SetLineThickness(float thickness)
+	{
+		Log::GetLogger()->warn("RendererH2M::SetLineThickness({0}): method not implemented!", thickness);
+
+		// RendererH2M::Submit([=]() {});
+		{
+			RendererAPI_H2M::SetLineThickness(thickness);
+		}
+	}
+	/**** END to be removed from RendererH2M ****/
 
 	void RendererH2M::WaitAndRender()
 	{
 		s_Data->m_CommandQueue.Execute();
 	}
 
-	void RendererH2M::BeginRenderPass(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<RenderPass> renderPass, bool explicitClear)
+	void RendererH2M::BeginRenderPass(RefH2M<RenderPassH2M> renderPass, bool clear)
 	{
-		// RendererH2M::Submit([=]() {});
-		{
-			// RendererAPI::Clear(r, g, b, a);
-		}
-	}
-
-	void RendererH2M::EndRenderPass(RefH2M<RenderCommandBuffer> renderCommandBuffer)
-	{
-		s_RendererAPI->EndRenderPass(renderCommandBuffer);
-
-		/**** BEGIN the old version of the method ****
-
-		H2M_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
-		s_Data->m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
-		s_Data->m_ActiveRenderPass = nullptr;
-
-		/**** END the old version of the method ****/
-	}
-
-	//	void RendererH2M::ClearMagenta()
-	//	{
-	//		Clear(1, 0, 1);
-	//	}
-
-	//	void RendererH2M::SetClearColor(float r, float g, float b, float a)
-	//	{
-	//	}
-
-	// Used by OpenGLRenderer
-	void RendererH2M::SetSceneEnvironment(RefH2M<SceneRenderer> sceneRenderer, RefH2M<Environment> environment, RefH2M<HazelImage2D> shadow, RefH2M<HazelImage2D> linearDepth)
-	{
-		s_RendererAPI->SetSceneEnvironment(sceneRenderer, environment, shadow, linearDepth);
-	}
-
-	//	void RendererH2M::DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
-	//	{
-	//		// RendererH2M::Submit([=]() {});
-	//		{
-	//			RendererAPI::DrawIndexed(count, type, depthTest);
-	//		}
-	//	}
-
-	//	void RendererH2M::SetLineThickness(float thickness)
-	//	{
-	//		Log::GetLogger()->warn("RendererH2M::SetLineThickness({0}): method not implemented!", thickness);
-	//	
-	//		// RendererH2M::Submit([=]() {});
-	//		{
-	//			RendererAPI::SetLineThickness(thickness);
-	//		}
-	//	}
-
-	RefH2M<TextureCubeH2M> RendererH2M::CreatePreethamSky(float turbidity, float azimuth, float inclination)
-	{
-		// H2M_CORE_ASSERT(renderPass, "Render pass cannot be null!");
+		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
 		/**** BEGIN the new code ****/
 		{
 			// s_RendererAPI->BeginRenderPass(renderCommandBuffer, renderPass, explicitClear);
-			// s_RendererAPI->BeginRenderPass(renderPass);
+			s_RendererAPI->BeginRenderPass(renderPass);
 		}
 		/**** END the new code ****/
 
@@ -324,45 +297,25 @@ namespace H2M {
 			}
 		}
 		/**** END The obsolete code moved to OpenGLRenderer ****/
-
-		return RefH2M<TextureCubeH2M>();
 	}
 
-	void RendererH2M::RenderMesh(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Mesh> mesh, RefH2M<MaterialTable> materialTable, const glm::mat4& transform)
+	void RendererH2M::EndRenderPass()
 	{
+		s_RendererAPI->EndRenderPass();
+
+		/**** BEGIN the old version of the method ****
+
+		HZ_CORE_ASSERT(s_Data->m_ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		s_Data->m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
+		s_Data->m_ActiveRenderPass = nullptr;
+
+		/**** END the old version of the method ****/
 	}
 
-	void RendererH2M::RenderMeshWithMaterial(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Mesh> mesh, const glm::mat4& transform, RefH2M<Material> material, Buffer additionalUniforms)
+	// Used by OpenGLRenderer
+	void RendererH2M::SetSceneEnvironment(RefH2M<EnvironmentH2M> environment, RefH2M<Image2D_H2M> shadow)
 	{
-	}
-
-	void RendererH2M::RenderQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, const glm::mat4& transform)
-	{
-	}
-
-	void RendererH2M::SubmitFullscreenQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<Material> material)
-	{
-	}
-
-	void RendererH2M::SubmitFullscreenQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material)
-	{
-	}
-
-	void RendererH2M::SubmitFullscreenQuadWithOverrides(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<Material> material, Buffer vertexShaderOverrides, Buffer fragmentShaderOverrides)
-	{
-		s_RendererAPI->SubmitFullscreenQuadWithOverrides(renderCommandBuffer, pipeline, uniformBufferSet, material, vertexShaderOverrides, fragmentShaderOverrides);
-	}
-
-	void RendererH2M::LightCulling(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<PipelineCompute> computePipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups)
-	{
-	}
-
-	void RendererH2M::DispatchComputeShader(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<PipelineCompute> computePipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, const glm::ivec3& workGroups)
-	{
-	}
-
-	void RendererH2M::RenderGeometry(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Pipeline> pipeline, RefH2M<UniformBufferSet> uniformBufferSet, RefH2M<StorageBufferSet> storageBufferSet, RefH2M<Material> material, RefH2M<VertexBuffer> vertexBuffer, RefH2M<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount)
-	{
+		s_RendererAPI->SetSceneEnvironment(environment, shadow);
 	}
 
 	std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> RendererH2M::CreateEnvironmentMap(const std::string& filepath)
@@ -370,11 +323,62 @@ namespace H2M {
 		return s_RendererAPI->CreateEnvironmentMap(filepath);
 	}
 
-	void RendererH2M::SubmitQuad(RefH2M<HazelMaterial> material, const glm::mat4& transform)
+	void RendererH2M::SubmitQuad(RefH2M<MaterialH2M> material, const glm::mat4& transform)
 	{
+		bool depthTest = true;
+		if (material)
+		{
+			material->Bind();
+			depthTest = material->GetFlag(MaterialFlagH2M::DepthTest);
+
+			auto shader = material->GetShader();
+			shader->SetUniformBuffer("Transform", &transform, sizeof(glm::mat4));
+		}
+
+		s_Data->FullscreenQuadVertexBuffer->Bind();
+		s_Data->FullscreenQuadPipeline->Bind();
+		s_Data->FullscreenQuadIndexBuffer->Bind();
+
+		RendererH2M::DrawIndexed(6, PrimitiveTypeH2M::Triangles, depthTest);
 	}
 
-	void RendererH2M::SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<HazelMaterialInstance> overrideMaterial)
+	void RendererH2M::SubmitFullscreenQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material)
+	{
+		s_RendererAPI->SubmitFullscreenQuad(pipeline, material);
+
+		/**** BEGIN the old version of the method ****
+
+		// Retrieve pipeline from cache
+		auto& shader = material->GetShader();
+		auto hash = shader->GetHash();
+		if (s_PipelineCache.find(hash) == s_PipelineCache.end())
+		{
+			// Create pipeline
+			PipelineSpecification spec = s_Data->FullscreenQuadPipelineSpec;
+			spec.Shader = shader;
+			spec.DebugName = "Renderer-FullscreenQuad-" + shader->GetName();
+			s_PipelineCache[hash] = Pipeline::Create(spec);
+		}
+
+		auto& pipelineLocal = s_PipelineCache[hash];
+
+		bool depthTest = true;
+		if (material)
+		{
+			material->Bind();
+			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
+		}
+
+		s_Data->FullscreenQuadVertexBuffer->Bind();
+		s_Data->FullscreenQuadPipeline->Bind();
+		s_Data->FullscreenQuadIndexBuffer->Bind();
+
+		RendererH2M::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
+
+		/**** END the old version of the method ****/
+	}
+
+	void RendererH2M::SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<MaterialInstanceH2M> overrideMaterial)
 	{
 		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
 		// auto shader = material->GetShader();
@@ -384,10 +388,10 @@ namespace H2M {
 		mesh->GetIndexBuffer()->Bind();
 
 		auto& materials = mesh->GetMaterials();
-		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (SubmeshH2M& submesh : mesh->GetSubmeshes())
 		{
 			// Material
-			auto material = overrideMaterial ? overrideMaterial : materials[submesh->MaterialIndex];
+			auto material = overrideMaterial ? overrideMaterial : materials[submesh.MaterialIndex];
 			auto shader = material->GetShader();
 			material->Bind();
 
@@ -400,28 +404,28 @@ namespace H2M {
 				}
 			}
 
-			auto transformUniform = transform * submesh->Transform;
+			auto transformUniform = transform * submesh.Transform;
 			shader->SetUniformBuffer("Transform", &transformUniform, sizeof(glm::mat4));
 
 			// RendererH2M::Submit([submesh, material]() {});
 			{
-				if (material->GetFlag(HazelMaterialFlag::DepthTest))
+				if (material->GetFlag(MaterialFlagH2M::DepthTest))
 					glEnable(GL_DEPTH_TEST);
 				else
 					glDisable(GL_DEPTH_TEST);
 
-				glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
+				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
 			}
 		}
 	}
 
-	void RendererH2M::SubmitMeshWithShader(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<HazelShader> shader)
+	void RendererH2M::SubmitMeshWithShader(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<ShaderH2M> shader)
 	{
 		mesh->GetVertexBuffer()->Bind();
 		mesh->GetPipeline()->Bind();
 		mesh->GetIndexBuffer()->Bind();
 
-		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (SubmeshH2M& submesh : mesh->GetSubmeshes())
 		{
 			if (mesh->IsAnimated())
 			{
@@ -431,19 +435,19 @@ namespace H2M {
 					shader->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
 				}
 			}
-			shader->SetMat4("u_Transform", transform * submesh->Transform);
+			shader->SetMat4("u_Transform", transform * submesh.Transform);
 
 			// RendererH2M::Submit([submesh]() {});
-			glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
+			glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
 		}
 	}
 
 	void RendererH2M::DrawAABB(RefH2M<MeshH2M> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
-		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (SubmeshH2M& submesh : mesh->GetSubmeshes())
 		{
-			auto& aabb = submesh->BoundingBox;
-			auto aabbTransform = transform * submesh->Transform;
+			auto& aabb = submesh.BoundingBox;
+			auto aabbTransform = transform * submesh.Transform;
 			DrawAABB(aabb, aabbTransform);
 		}
 	}
@@ -467,45 +471,36 @@ namespace H2M {
 		};
 
 		for (uint32_t i = 0; i < 4; i++)
-			Renderer2D::DrawLine(corners[i], corners[(i + 1) % 4], color);
+			Renderer2D_H2M::DrawLine(corners[i], corners[(i + 1) % 4], color);
 
 		for (uint32_t i = 0; i < 4; i++)
-			Renderer2D::DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
+			Renderer2D_H2M::DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
 
 		for (uint32_t i = 0; i < 4; i++)
-			Renderer2D::DrawLine(corners[i], corners[i + 4], color);
+			Renderer2D_H2M::DrawLine(corners[i], corners[i + 4], color);
 	}
 
-	RenderCommandQueue& RendererH2M::GetRenderCommandQueue()
+	RenderCommandQueueH2M& RendererH2M::GetRenderCommandQueue()
 	{
-		return *s_CommandQueue;
+		return s_Data->m_CommandQueue;
 	}
 
-	void RendererH2M::SubmitQuad(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<Material> material, const glm::mat4& transform)
+	// ---------------------------------------------------------------
+
+	// Used by OpenGLRenderer
+	RefH2M<EnvironmentH2M> RendererH2M::GetEmptyEnvironment()
 	{
-		bool depthTest = true;
-		if (material)
-		{
-			material->Bind();
-			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
-
-			auto shader = material->GetShader();
-			shader->SetUniformBuffer("Transform", &transform, sizeof(glm::mat4));
-		}
-
-		s_Data->FullscreenQuadVertexBuffer->Bind();
-		s_Data->FullscreenQuadPipeline->Bind();
-		s_Data->FullscreenQuadIndexBuffer->Bind();
-
-		// RendererH2M::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
+		// return s_Data->EmptyEnvironment;
+		return RefH2M<EnvironmentH2M>();
 	}
 
-	void RendererH2M::ClearImage(RefH2M<RenderCommandBuffer> renderCommandBuffer, RefH2M<HazelImage2D> image)
+	uint32_t RendererH2M::GetCurrentFrameIndex()
 	{
-		s_RendererAPI->ClearImage(renderCommandBuffer, image);
+		// return uint32_t();
+		return Application::Get()->GetWindow()->GetSwapChain().GetCurrentBufferIndex();
 	}
 
-	RefH2M<RendererContext> RendererH2M::GetContext()
+	RefH2M<RendererContextH2M> RendererH2M::GetContext()
 	{
 		return Application::Get()->GetWindow()->GetRenderContext();
 	}
@@ -513,21 +508,11 @@ namespace H2M {
 	void RendererH2M::Shutdown()
 	{
 		s_ShaderDependencies.clear();
-		SceneRenderer::Shutdown();
+		SceneRendererH2M::Shutdown();
 		s_RendererAPI->Shutdown();
 
 		delete s_Data;
 		delete s_CommandQueue;
-	}
-
-	void RendererH2M::BeginFrame()
-	{
-		s_RendererAPI->BeginFrame();
-	}
-
-	void RendererH2M::EndFrame()
-	{
-		s_RendererAPI->EndFrame();
 	}
 
 #if 0
@@ -564,36 +549,42 @@ namespace H2M {
 		Renderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void RendererH2M::RenderMeshWithoutMaterial(RefH2M<Pipeline> pipeline, RefH2M<HazelMesh> mesh, const glm::mat4& transform)
+	void RendererH2M::BeginFrame()
+	{
+		s_RendererAPI->BeginFrame();
+	}
+
+	void RendererH2M::EndFrame()
+	{
+		s_RendererAPI->EndFrame();
+	}
+
+	void RendererH2M::RenderMeshWithoutMaterial(RefH2M<Pipeline> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderMeshWithoutMaterial(pipeline, mesh, transform);
 	}
 
 #endif
 
-	void RendererH2M::RenderMesh(RefH2M<Pipeline> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
+	void RendererH2M::RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderMesh(pipeline, mesh, transform);
 	}
 
-	void RendererH2M::RenderQuad(RefH2M<Pipeline> pipeline, RefH2M<HazelMaterial> material, const glm::mat4& transform)
+	void RendererH2M::RenderQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderQuad(pipeline, material, transform);
+	}
+
+	// disabled in some versions of Hazel-dev
+	RendererConfigH2M& RendererH2M::GetConfig()
+	{
+		return s_Data->Config;
 	}
 
 	RefH2M<Texture2D_H2M> RendererH2M::GetWhiteTexture()
 	{
 		return s_Data->WhiteTexture;
-	}
-
-	RefH2M<Texture2D_H2M> RendererH2M::GetBlackTexture()
-	{
-		return RefH2M<Texture2D_H2M>();
-	}
-
-	RefH2M<Texture2D_H2M> RendererH2M::GetBRDFLutTexture()
-	{
-		return RefH2M<Texture2D_H2M>();
 	}
 
 	// disabled in some versions of Hazel-dev
@@ -602,25 +593,9 @@ namespace H2M {
 		return s_Data->BlackCubeTexture;
 	}
 
-	RefH2M<Environment> RendererH2M::GetEmptyEnvironment()
-	{
-		return s_Data->EmptyEnvironment;
-	}
-
-	RendererAPI* RendererH2M::GetRendererAPI()
+	RendererAPI_H2M* RendererH2M::GetRendererAPI()
 	{
 		return s_RendererAPI;
-	}
-
-	RenderCommandQueue& RendererH2M::GetRenderResourceReleaseQueue(uint32_t index)
-	{
-		return s_ResourceFreeQueue[index];
-	}
-
-	RendererConfigH2M& RendererH2M::GetConfig()
-	{
-		static RendererConfigH2M config;
-		return config;
 	}
 
 }

@@ -24,7 +24,7 @@
 #include "H2M/Core/Math/AABBH2M.h"
 #include "H2M/Core/Math/Ray.h"
 #include "H2M/Core/RefH2M.h"
-#include "H2M/Editor/EditorCamera.h"
+#include "H2M/Editor/EditorCameraH2M.h"
 #include "H2M/Core/Events/KeyEventH2M.h"
 #include "H2M/Core/Events/MouseEventH2M.h"
 #include "H2M/Renderer/MeshH2M.h"

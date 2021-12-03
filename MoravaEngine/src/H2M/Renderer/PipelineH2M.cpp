@@ -1,9 +1,8 @@
 #include "PipelineH2M.h"
 
-#include "Hazel/Platform/OpenGL/OpenGLPipeline.h"
-#include "Hazel/Platform/Vulkan/VulkanPipeline.h"
+#include "H2M/Platform/OpenGL/OpenGLPipelineH2M.h"
+#include "H2M/Platform/Vulkan/VulkanPipelineH2M.h"
 #include "Platform/DX11/DX11Pipeline.h"
-#include "Hazel/Renderer/RendererAPI.h"
 
 
 namespace H2M
@@ -11,16 +10,16 @@ namespace H2M
 
 	RefH2M<PipelineH2M> PipelineH2M::Create(const PipelineSpecification& spec)
 	{
-		switch (H2M::RendererAPI_H2M::Current())
+		switch (RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPITypeH2M::None:   return RefH2M<Pipeline>();
-			case H2M::RendererAPITypeH2M::OpenGL: return RefH2M<H2M::OpenGLPipeline>::Create(spec);
-			case H2M::RendererAPITypeH2M::Vulkan: return RefH2M<H2M::VulkanPipeline>::Create(spec);
-			case H2M::RendererAPITypeH2M::DX11:   return RefH2M<DX11Pipeline>::Create(spec);
+			case RendererAPITypeH2M::None:   return RefH2M<PipelineH2M>();
+			case RendererAPITypeH2M::OpenGL: return RefH2M<OpenGLPipelineH2M>::Create(spec);
+			case RendererAPITypeH2M::Vulkan: return RefH2M<VulkanPipelineH2M>::Create(spec);
+			case RendererAPITypeH2M::DX11:   return RefH2M<DX11Pipeline>::Create(spec);
 		}
 
-		H2M::Log::GetLogger()->error("Unknown RendererAPI");
-		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+		Log::GetLogger()->error("Unknown RendererAPI");
+		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
 		return RefH2M<PipelineH2M>();
 	}
 }

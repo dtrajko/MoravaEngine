@@ -1,7 +1,7 @@
 #pragma once
 
-#include "H2M/Core/KeyCodes.h"
-#include "H2M/Core/MouseCodes.h"
+#include "H2M/Core/KeyCodesH2M.h"
+#include "H2M/Core/MouseCodesH2M.h"
 
 #include <utility>
 

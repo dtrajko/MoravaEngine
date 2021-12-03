@@ -4,7 +4,7 @@
 
 #include "DX11.h"
 
-#include "H2M/Renderer/HazelImage.h"
+#include "H2M/Renderer/ImageH2M.h"
 
 
 struct DX11ImageInfo

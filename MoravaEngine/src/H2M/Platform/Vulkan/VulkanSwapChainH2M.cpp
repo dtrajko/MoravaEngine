@@ -1,4 +1,4 @@
-#include "VulkanSwapChain.h"
+#include "VulkanSwapChainH2M.h"
 
 #include "Core/Log.h"
 
@@ -29,13 +29,14 @@ static PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR;
 static PFN_vkAcquireNextImageKHR fpAcquireNextImageKHR;
 static PFN_vkQueuePresentKHR fpQueuePresentKHR;
 
-namespace Hazel {
+namespace H2M
+{
 
-	void VulkanSwapChain::Init(VkInstance instance, const RefH2M<VulkanDevice>& device)
+	void VulkanSwapChainH2M::Init(VkInstance instance, const RefH2M<VulkanDeviceH2M>& device)
 	{
 		m_Instance = instance;
 		m_Device = device;
-		m_Allocator = VulkanAllocator(m_Device, std::string("SwapChain"));
+		m_Allocator = VulkanAllocatorH2M(m_Device, std::string("SwapChain"));
 
 		VkDevice vulkanDevice = m_Device->GetVulkanDevice();
 		GET_DEVICE_PROC_ADDR(vulkanDevice, CreateSwapchainKHR);
@@ -50,7 +51,7 @@ namespace Hazel {
 		GET_INSTANCE_PROC_ADDR(instance, GetPhysicalDeviceSurfacePresentModesKHR);
 	}
 	
-	void VulkanSwapChain::InitSurface(GLFWwindow* windowHandle)
+	void VulkanSwapChainH2M::InitSurface(GLFWwindow* windowHandle)
 	{
 		VkPhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 
@@ -116,7 +117,7 @@ namespace Hazel {
 		FindImageFormatAndColorSpace();
 	}
 
-	void VulkanSwapChain::Create(uint32_t* width, uint32_t* height, bool vsync)
+	void VulkanSwapChainH2M::Create(uint32_t* width, uint32_t* height, bool vsync)
 	{
 		VkDevice device = m_Device->GetVulkanDevice();
 		VkPhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
@@ -392,7 +393,7 @@ namespace Hazel {
 		CreateFramebuffer();
 	}
 
-	void VulkanSwapChain::CreateDepthStencil()
+	void VulkanSwapChainH2M::CreateDepthStencil()
 	{
 
 #if 1 // The old VulkanAllocator version
@@ -493,9 +494,9 @@ namespace Hazel {
 #endif
 	}
 
-	void VulkanSwapChain::CreateFramebuffer()
+	void VulkanSwapChainH2M::CreateFramebuffer()
 	{
-		// TODO: Maybe move into VulkanSwapChain
+		// TODO: Maybe move into VulkanSwapChainH2M
 		// Setup Framebuffer
 		VkImageView ivAttachments[2];
 
@@ -521,7 +522,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanSwapChain::CreateDrawBuffers()
+	void VulkanSwapChainH2M::CreateDrawBuffers()
 	{
 		// Create one command buffer for each swap chain image and reuse for rendering
 		m_DrawCommandBuffers.resize(m_ImageCount);
@@ -541,7 +542,7 @@ namespace Hazel {
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device->GetVulkanDevice(), &commandBufferAllocateInfo, m_DrawCommandBuffers.data()));
 	}
 
-	void VulkanSwapChain::OnResize(uint32_t width, uint32_t height)
+	void VulkanSwapChainH2M::OnResize(uint32_t width, uint32_t height)
 	{
 		MORAVA_CORE_WARN("VulkanContext::OnResize");
 		auto device = m_Device->GetVulkanDevice();
@@ -570,12 +571,12 @@ namespace Hazel {
 		vkDeviceWaitIdle(device);
 	}
 
-	void VulkanSwapChain::BeginFrame()
+	void VulkanSwapChainH2M::BeginFrame()
 	{
 		VK_CHECK_RESULT(AcquireNextImage(m_Semaphores.PresentComplete, &m_CurrentBufferIndex));
 	}
 
-	void VulkanSwapChain::Present()
+	void VulkanSwapChainH2M::Present()
 	{
 		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
@@ -626,14 +627,14 @@ namespace Hazel {
 		//vkResetCommandPool(m_Device->GetVulkanDevice(), m_CommandPool, 0);
 	}
 
-	VkResult VulkanSwapChain::AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex)
+	VkResult VulkanSwapChainH2M::AcquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex)
 	{
 		// By setting timeout to UINT64_MAX we will always wait until the next image has been acquired or an actual error is thrown
 		// With that we don't have to handle VK_NOT_READY
 		return fpAcquireNextImageKHR(m_Device->GetVulkanDevice(), m_SwapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence)nullptr, imageIndex);
 	}
 
-	VkResult VulkanSwapChain::QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore)
+	VkResult VulkanSwapChainH2M::QueuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore)
 	{
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -650,7 +651,7 @@ namespace Hazel {
 		return fpQueuePresentKHR(queue, &presentInfo);
 	}
 
-	void VulkanSwapChain::Cleanup()
+	void VulkanSwapChainH2M::Cleanup()
 	{
 		VkDevice device = m_Device->GetVulkanDevice();
 
@@ -670,7 +671,7 @@ namespace Hazel {
 		m_SwapChain = VK_NULL_HANDLE;
 	}
 
-	void VulkanSwapChain::FindImageFormatAndColorSpace()
+	void VulkanSwapChainH2M::FindImageFormatAndColorSpace()
 	{
 		VkPhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 

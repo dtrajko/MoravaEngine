@@ -1,12 +1,13 @@
 #include "VulkanMoravaTexture.h"
 
-#include "Core/Log.h"
-#include "H2M/Core/Base.h"
+#include "H2M/Core/BaseH2M.h"
 #include "H2M/Platform/Vulkan/Vulkan.h"
 #include "H2M/Platform/Vulkan/VulkanContext.h"
 #include "H2M/Platform/Vulkan/VulkanImage.h"
 #include "H2M/Platform/Vulkan/VulkanRenderer.h"
-#include "H2M/Renderer/HazelImage.h"
+#include "H2M/Renderer/ImageH2M.h"
+
+#include "Core/Log.h"
 
 #include <fstream>
 #include <exception>

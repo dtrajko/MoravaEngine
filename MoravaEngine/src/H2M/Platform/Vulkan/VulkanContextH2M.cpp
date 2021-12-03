@@ -1,12 +1,12 @@
-#include "VulkanContext.h"
+#include "VulkanContextH2M.h"
 
-#include "Hazel/Renderer/HazelRenderer.h"
-
-#include "Vulkan.h"
+#include "VulkanH2M.h"
 
 #include <glfw/glfw3.h>
 
-namespace Hazel {
+
+namespace H2M
+{
 
 	static bool s_Validation = true;
 
@@ -17,18 +17,18 @@ namespace Hazel {
 		return VK_FALSE;
 	}
 
-	VulkanContext::VulkanContext(Window* window)
+	VulkanContextH2M::VulkanContextH2M(Window* window)
 		: m_Window(window)
 	{
 	}
 
-	VulkanContext::~VulkanContext()
+	VulkanContextH2M::~VulkanContextH2M()
 	{
 	}
 
-	void VulkanContext::Create()
+	void VulkanContextH2M::Create()
 	{
-		MORAVA_CORE_INFO("VulkanContext::Create");
+		MORAVA_CORE_INFO("VulkanContextH2M::Create");
 
 		H2M_CORE_ASSERT(glfwVulkanSupported(), "GLFW must support Vulkan!");
 
@@ -107,17 +107,16 @@ namespace Hazel {
 			VK_CHECK_RESULT(vkCreateDebugReportCallbackEXT(s_VulkanInstance, &debug_report_ci, nullptr, &m_DebugReportCallback));
 		}
 
-		m_PhysicalDevice = VulkanPhysicalDevice::Select();
+		m_PhysicalDevice = VulkanPhysicalDeviceH2M::Select();
 
 		VkPhysicalDeviceFeatures enabledFeatures;
 		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
 		enabledFeatures.samplerAnisotropy = true;
-		m_Device = RefH2M<VulkanDevice>::Create(m_PhysicalDevice, enabledFeatures);
+		m_Device = RefH2M<VulkanDeviceH2M>::Create(m_PhysicalDevice, enabledFeatures);
 
 		// Why is this here?
-		m_Allocator = VulkanAllocator(m_Device, std::string("Default"));
-		// m_AllocatorVMA = VulkanAllocatorVMA("Default");
-
+		m_Allocator = VulkanAllocatorH2M(m_Device, std::string("Default"));
+		
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
 		m_SwapChain.InitSurface(m_Window->GetHandle());
 
@@ -131,22 +130,17 @@ namespace Hazel {
 		VK_CHECK_RESULT(vkCreatePipelineCache(m_Device->GetVulkanDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
 	}
 
-	void VulkanContext::OnResize(uint32_t width, uint32_t height)
+	void VulkanContextH2M::OnResize(uint32_t width, uint32_t height)
 	{
 		m_SwapChain.OnResize(width, height);
 	}
 
-	void VulkanContext::BeginFrame()
+	void VulkanContextH2M::BeginFrame()
 	{
 		m_SwapChain.BeginFrame();
 	}
 
-	RefH2M<VulkanContext> VulkanContext::Get()
-	{
-		return RefH2M<VulkanContext>(HazelRenderer::GetContext());
-	}
-
-	void VulkanContext::SwapBuffers()
+	void VulkanContextH2M::SwapBuffers()
 	{
 		m_SwapChain.Present();
 	}

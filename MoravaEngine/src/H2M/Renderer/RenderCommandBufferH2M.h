@@ -1,7 +1,6 @@
 #pragma once
 
 #include "H2M/Core/RefH2M.h"
-
 #include "H2M/Renderer/PipelineH2M.h"
 
 #include <string>
@@ -10,7 +9,7 @@
 namespace H2M
 {
 
-	struct PipelineStatistics
+	struct PipelineStatisticsH2M
 	{
 		uint64_t InputAssemblyVertices = 0;
 		uint64_t InputAssemblyPrimitives = 0;
@@ -40,6 +39,7 @@ namespace H2M
 
 		static RefH2M<RenderCommandBufferH2M> Create(uint32_t count = 0, const std::string& debugName = "");
 		static RefH2M<RenderCommandBufferH2M> CreateFromSwapChain(const std::string& debugName = "");
+
 	};
 
 }

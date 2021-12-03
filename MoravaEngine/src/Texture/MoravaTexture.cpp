@@ -1,7 +1,8 @@
 #include "Texture/MoravaTexture.h"
 
+#include "H2M/Core/AssertH2M.h"
 #include "H2M/Core/RefH2M.h"
-#include "H2M/Renderer/RendererAPI.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "Platform/OpenGL/OpenGLMoravaTexture.h"
 #include "Platform/Vulkan/VulkanMoravaTexture.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "H2M/Renderer/HazelMaterial.h"
+#include "H2M/Renderer/MaterialH2M.h"
 
 #include "Material/Material.h"
 

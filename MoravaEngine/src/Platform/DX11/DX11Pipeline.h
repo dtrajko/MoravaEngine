@@ -2,13 +2,13 @@
 
 #pragma once
 
+#include "H2M/Renderer/PipelineH2M.h"
+
 #include "DX11.h"
-
 #include "DX11Shader.h"
-#include "H2M/Renderer/Pipeline.h"
 
 
-class DX11Pipeline : public H2M::Pipeline
+class DX11Pipeline : public H2M::PipelineH2M
 {
 public:
 	DX11Pipeline(const H2M::PipelineSpecification& spec);
@@ -18,7 +18,7 @@ public:
 	virtual const H2M::PipelineSpecification& GetSpecification() const { return m_Specification; }
 
 	virtual void Invalidate() override;
-	virtual void SetUniformBuffer(H2M::RefH2M<H2M::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) override;
+	virtual void SetUniformBuffer(H2M::RefH2M<H2M::UniformBufferH2M> uniformBuffer, uint32_t binding, uint32_t set = 0) override;
 
 	virtual void Bind() override;
 

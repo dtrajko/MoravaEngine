@@ -1,7 +1,7 @@
 #pragma once
 
 #include "H2M/Core/RefH2M.h"
-#include "H2M/Scene/Components.h"
+#include "H2M/Scene/ComponentsH2M.h"
 
 #include "Core/CommonValues.h"
 #include "Core/Window.h"

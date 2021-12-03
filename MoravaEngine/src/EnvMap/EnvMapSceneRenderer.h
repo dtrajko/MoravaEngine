@@ -3,12 +3,12 @@
 #pragma once
 
 #include "H2M/Core/RefH2M.h"
-#include "H2M/Editor/EditorCamera.h"
-#include "H2M/Renderer/HazelMaterial.h"
+#include "H2M/Editor/EditorCameraH2M.h"
+#include "H2M/Renderer/MaterialH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
 #include "H2M/Renderer/RenderCommandQueue.h"
 #include "H2M/Renderer/RenderPass.h"
-#include "H2M/Renderer/SceneEnvironment.h"
+#include "H2M/Renderer/SceneEnvironmentH2M.h"
 
 #include "H2M/Renderer/SceneRendererH2M.h"
 

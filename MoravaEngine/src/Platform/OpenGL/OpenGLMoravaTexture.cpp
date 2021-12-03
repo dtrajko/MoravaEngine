@@ -1,7 +1,8 @@
 #include "OpenGLMoravaTexture.h"
 
+#include "H2M/Core/BaseH2M.h"
+
 #include "Core/Log.h"
-#include "H2M/Core/Base.h"
 
 #include <fstream>
 #include <exception>

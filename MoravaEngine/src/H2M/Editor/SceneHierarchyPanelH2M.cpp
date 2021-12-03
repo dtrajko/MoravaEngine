@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "SceneHierarchyPanelH2M.h"
 
 // Hazel
@@ -18,7 +24,7 @@
 
 namespace Hazel
 {
-	SceneHierarchyPanelH2M::SceneHierarchyPanelH2M(Ref<HazelScene> scene)
+	SceneHierarchyPanelH2M::SceneHierarchyPanelH2M(RefH2M<HazelScene> scene)
 		: m_Context(scene)
 	{
 		m_PencilIcon = Texture2D_H2M::Create("Resources/Editor/pencil_icon.png");
@@ -30,7 +36,7 @@ namespace Hazel
 	{
 	}
 
-	void SceneHierarchyPanelH2M::SetContext(Ref<SceneH2M> scene)
+	void SceneHierarchyPanelH2M::SetContext(RefH2M<SceneH2M> scene)
 	{
 		m_Context = scene;
 		EntitySelection::s_SelectionContext = {};

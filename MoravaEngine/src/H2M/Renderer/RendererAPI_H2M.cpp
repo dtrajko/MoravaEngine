@@ -1,8 +1,6 @@
-#include "RendererAPI.h"
+#include "RendererAPI_H2M.h"
 
-#include "Hazel/Core/Assert.h"
+#include "H2M/Core/AssertH2M.h"
 
 
-namespace Hazel {
-
-}
+namespace H2M {}

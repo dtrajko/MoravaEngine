@@ -3,9 +3,7 @@
 #include "Core/CommonValues.h"
 
 
-Camera::Camera() : Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f)
-{
-}
+Camera::Camera() : Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f) {}
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 	: H2M::SceneCameraH2M()
@@ -36,9 +34,7 @@ Camera::Camera(glm::vec3 position, float yaw, float pitch, float fovDegrees, flo
 	UpdateView();
 }
 
-Camera::~Camera()
-{
-}
+Camera::~Camera() {}
 
 void Camera::UpdateProjection()
 {
@@ -61,8 +57,8 @@ void Camera::OnUpdate(H2M::TimestepH2M ts)
 
 void Camera::OnEvent(H2M::EventH2M& e)
 {
-	H2M::EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<H2M::MouseScrolledEvent>(HZ_BIND_EVENT_FN(Camera::OnMouseScroll));
+	H2M::EventDispatcherH2M dispatcher(e);
+	dispatcher.Dispatch<H2M::MouseScrolledEventH2M>(H2M_BIND_EVENT_FN(Camera::OnMouseScroll));
 }
 
 void Camera::SetViewportSize(float width, float height)

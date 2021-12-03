@@ -1,7 +1,7 @@
 #include "VulkanAllocatorH2M.h"
 
-#include "H2M/Platform/Vulkan/VulkanContext.h"
-#include "H2M/Utilities/StringUtils.h"
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#include "H2M/Utilities/StringUtilsH2M.h"
 
 #include "Core/Log.h"
 
@@ -12,15 +12,16 @@
 #define HZ_ALLOCATOR_LOG(...)
 #endif
 
-namespace Hazel {
+namespace H2M
+{
 
-	VulkanAllocatorH2M::VulkanAllocatorH2M(const RefH2M<VulkanDevice>& device, const std::string& tag)
+	VulkanAllocatorH2M::VulkanAllocatorH2M(const RefH2M<VulkanDeviceH2M>& device, const std::string& tag)
 		: m_Device(device), m_Tag(tag)
 	{
 	}
 
 	VulkanAllocatorH2M::VulkanAllocatorH2M(const std::string& tag)
-		: m_Device(VulkanContext::GetCurrentDevice()), m_Tag(tag)
+		: m_Device(VulkanContextH2M::GetCurrentDevice()), m_Tag(tag)
 	{
 	}
 

@@ -1,10 +1,11 @@
 #pragma once
 
+#include "H2M/Renderer/RendererAPI_H2M.h"
+
 #include "Core/Log.h"
 #include "Core/Window.h"
 #include "Scene/Scene.h"
 #include "Shader/MoravaShader.h"
-#include "H2M/Renderer/RendererAPI.h"
 
 #include "glm/glm.hpp"
 
@@ -61,13 +62,13 @@ public:
 	static void SetLineThickness(float thickness); // RendererAPI::SetLineThickness
 
 	// Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
-	static void DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest);
+	static void DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest);
 
 	// static void SetSpirVEnabled(bool enabled) { s_SpirV_Enabled = enabled; }
 	static bool GetVulkanSupported();
 
-	static void SetRendererContext(H2M::RefH2M<H2M::RendererContext> rendererContext) { s_RendererContext = rendererContext; }
-	static H2M::RefH2M<H2M::RendererContext> GetRendererContext() { return s_RendererContext; }
+	static void SetRendererContext(H2M::RefH2M<H2M::RendererContextH2M> rendererContext) { s_RendererContext = rendererContext; }
+	static H2M::RefH2M<H2M::RendererContextH2M> GetRendererContext() { return s_RendererContext; }
 
 	static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr = nullptr);
 
@@ -90,6 +91,6 @@ public:
 	static glm::vec4 s_BgColor;
 	// static bool s_SpirV_Enabled;
 
-	static H2M::RefH2M<H2M::RendererContext> s_RendererContext;
+	static H2M::RefH2M<H2M::RendererContextH2M> s_RendererContext;
 
 };

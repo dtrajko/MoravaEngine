@@ -8,7 +8,7 @@
  */
 
 #include "H2M/Core/RefH2M.h"
-#include "H2M/Renderer/HazelMaterial.h"
+#include "H2M/Renderer/MaterialH2M.h"
 
 #include "EnvMap/EnvMapMaterial.h"
 #include "EnvMap/EnvMapEditorLayer.h"

@@ -3,9 +3,10 @@
 #include <string>
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	struct RendererCapabilities
+	struct RendererCapabilitiesH2M
 	{
 		std::string Vendor;
 		std::string Device;
@@ -15,6 +16,5 @@ namespace Hazel {
 		float MaxAnisotropy = 0.0f;
 		int MaxTextureUnits = 0;
 	};
-
 
 }

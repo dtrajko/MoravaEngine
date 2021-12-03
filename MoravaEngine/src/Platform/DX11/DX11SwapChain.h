@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "H2M/Core/Base.h"
+#include "H2M/Core/BaseH2M.h"
 #include "H2M/Core/Assert.h"
 
 #include "DX11.h"

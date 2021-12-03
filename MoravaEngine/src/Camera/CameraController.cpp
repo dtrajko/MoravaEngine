@@ -106,7 +106,7 @@ void CameraController::Update()
 	CalculateFront();
 }
 
-void CameraController::OnEvent(Event& e)
+void CameraController::OnEvent(H2M::EventH2M& e)
 {
 }
 

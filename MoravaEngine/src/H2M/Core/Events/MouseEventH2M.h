@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
 #include "EventH2M.h"
@@ -28,10 +34,10 @@ namespace H2M
 		float m_MouseX, m_MouseY;
 	};
 
-	class MouseScrolledEvent : public EventH2M
+	class MouseScrolledEventH2M : public EventH2M
 	{
 	public:
-		MouseScrolledEvent(float xOffset, float yOffset)
+		MouseScrolledEventH2M(float xOffset, float yOffset)
 			: m_XOffset(xOffset), m_YOffset(yOffset) {}
 
 		inline float GetXOffset() const { return m_XOffset; }
@@ -50,24 +56,24 @@ namespace H2M
 		float m_XOffset, m_YOffset;
 	};
 
-	class MouseButtonEvent : public EventH2M
+	class MouseButtonEventH2M : public EventH2M
 	{
 	public:
 		inline int GetMouseButton() const { return m_Button; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput);
 	protected:
-		MouseButtonEvent(int button)
+		MouseButtonEventH2M(int button)
 			: m_Button(button) {}
 
 		int m_Button;
 	};
 
-	class MouseButtonPressedEvent : public MouseButtonEvent
+	class MouseButtonPressedEventH2M : public MouseButtonEventH2M
 	{
 	public:
-		MouseButtonPressedEvent(int button)
-			: MouseButtonEvent(button) {}
+		MouseButtonPressedEventH2M(int button)
+			: MouseButtonEventH2M(button) {}
 
 		std::string ToString() const override
 		{
@@ -79,11 +85,11 @@ namespace H2M
 		EVENT_CLASS_TYPE(MouseButtonPressed);
 	};
 
-	class MouseButtonReleasedEvent : public MouseButtonEvent
+	class MouseButtonReleasedEventH2M : public MouseButtonEventH2M
 	{
 	public:
-		MouseButtonReleasedEvent(int button)
-			: MouseButtonEvent(button) {}
+		MouseButtonReleasedEventH2M(int button)
+			: MouseButtonEventH2M(button) {}
 
 		std::string ToString() const override
 		{

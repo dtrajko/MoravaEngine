@@ -4,10 +4,10 @@
 
 #include "../../config.h"
 
-#include "H2M/Core/LayerStack.h"
-#include "H2M/Core/Events/ApplicationEvent.h"
-#include "H2M/Core/Events/Event.h"
-#include "H2M/ImGui/ImGuiLayer.h"
+#include "H2M/Core/LayerStackH2M.h"
+#include "H2M/Core/Events/ApplicationEventH2M.h"
+#include "H2M/Core/Events/EventH2M.h"
+#include "H2M/ImGui/ImGuiLayerH2M.h"
 
 #include "Core/Log.h"
 #include "Core/Window.h"
@@ -44,10 +44,10 @@ public:
 	SceneProperties Application::SetSceneProperties();
 	void InitializeScene(SceneProperties sceneProperties); // TODO: Initialize Scene and Renderer here
 
-	void OnEvent(Event& e);
+	void OnEvent(H2M::EventH2M& e);
 
-	void PushLayer(H2M::Layer* layer);
-	void PushOverlay(H2M::Layer* layer);
+	void PushLayer(H2M::LayerH2M* layer);
+	void PushOverlay(H2M::LayerH2M* layer);
 
 	void RenderImGui(); // Hazel Vulkan Week Day 4 1:26
 	void ClassifyEvents();
@@ -72,8 +72,8 @@ public:
 	void CaptureScreenshot(const std::string& filePath);
 
 private:
-	bool OnWindowClose(WindowCloseEvent& e);
-	bool OnWindowResize(WindowResizeEvent& e);
+	bool OnWindowClose(H2M::WindowCloseEvent& e);
+	bool OnWindowResize(H2M::WindowResizeEvent& e);
 
 private:
 	static Application* s_Instance;
@@ -88,9 +88,9 @@ private:
 	Window* m_Window;
 	bool m_Running = true;
 	bool m_Minimized = false;
-	H2M::LayerStack m_LayerStack;
+	H2M::LayerStackH2M m_LayerStack;
 
-	H2M::ImGuiLayer* m_ImGuiLayer;
+	H2M::ImGuiLayerH2M* m_ImGuiLayer;
 	bool m_EnableImGui = true;
 
 	float m_TimeStep = 0;

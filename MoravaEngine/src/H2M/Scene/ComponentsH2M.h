@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
 #include "H2M/Renderer/CameraH2M.h"
@@ -96,12 +102,47 @@ namespace H2M
 		operator RefH2M<MeshH2M>() { return Mesh; }
 	};
 
+	struct CameraComponentH2M
+	{
+		CameraH2M Camera;
+		bool Primary = true; // TODO: think about moving to Scene
+		bool FixedAspectRatio = false;
+
+		CameraComponentH2M() = default;
+		CameraComponentH2M(const CameraComponentH2M& other) = default;
+
+		CameraComponentH2M(CameraH2M camera)
+			: Camera(camera) {};
+
+		operator CameraH2M& () { return Camera; }
+		operator const CameraH2M& () const { return Camera; }
+
+		operator SceneCameraH2M& () { return (SceneCameraH2M&)Camera; }
+		operator const SceneCameraH2M& () const { return (SceneCameraH2M&)Camera; }
+	};
+
 	struct MaterialComponentH2M
 	{
 		RefH2M<EnvMapMaterial> Material = RefH2M<EnvMapMaterial>();
 
 		MaterialComponentH2M() = default;
 		MaterialComponentH2M(const MaterialComponentH2M& other) = default;
+	};
+
+	struct DirectionalLightComponentH2M
+	{
+		glm::vec3 Radiance = { 1.0f, 1.0f, 1.0f };
+		float Intensity = 1.0f;
+		bool CastShadows = true;
+		bool SoftShadows = true;
+		float LightSize = 0.5f; // For PCSS
+	};
+
+	struct SkyLightComponentH2M
+	{
+		EnvironmentH2M SceneEnvironment;
+		float Intensity = 1.0f;
+		float Angle = 0.0f;
 	};
 
 	struct PointLightComponentH2M
@@ -133,27 +174,29 @@ namespace H2M
 		float FarPlane = 1000.0f;
 	};
 
-	struct SkyLightComponentH2M
+	struct SpriteRendererComponentH2M
 	{
-		EnvironmentH2M SceneEnvironment;
-		float Intensity = 1.0f;
-		float Angle = 0.0f;
+		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		RefH2M<Texture2D_H2M> Texture;
+		float TilingFactor = 1.0f;
+
+		SpriteRendererComponentH2M() = default;
+		SpriteRendererComponentH2M(const SpriteRendererComponentH2M&) = default;
+		SpriteRendererComponentH2M(const glm::vec4& color)
+			: Color(color) {};
 	};
 
-	struct CameraComponentH2M
+	struct RigidBody2DComponentH2M
 	{
-		CameraH2M Camera;
-		bool Primary = true; // TODO: think about moving to Scene
-		bool FixedAspectRatio = false;
+		enum class Type { Static, Dynamic, Kinematic };
+		Type BodyType;
+		bool FixedRotation = false;
 
-		CameraComponentH2M() = default;
-		CameraComponentH2M(const CameraComponentH2M& other) = default;
+		// Storage for runtime
+		void* RuntimeBody = nullptr;
 
-		CameraComponentH2M(CameraH2M camera)
-			: Camera(camera) {};
-
-		operator CameraH2M& () { return Camera; }
-		operator const CameraH2M& () const { return Camera; }
+		RigidBody2DComponentH2M() = default;
+		RigidBody2DComponentH2M(const RigidBody2DComponentH2M& other) = default;
 	};
 
 }

@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 
-class ShadowMap : public H2M::RefCounted
+class ShadowMap : public H2M::RefCountedH2M
 {
 public:
 	ShadowMap();

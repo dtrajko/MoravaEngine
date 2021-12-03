@@ -27,7 +27,7 @@ namespace H2M
 		virtual void OnUpdate(TimestepH2M ts) {};
 		virtual void OnEvent(EventH2M& e) {};
 		virtual inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; };
-		virtual inline bool OnMouseScroll(MouseScrolledEvent& e) { return false; };
+		virtual inline bool OnMouseScroll(MouseScrolledEventH2M& e) { return false; };
 
 		virtual inline const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		virtual inline glm::mat4& GetViewMatrix() { return m_ViewMatrix; }

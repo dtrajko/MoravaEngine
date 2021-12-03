@@ -1,6 +1,6 @@
 #pragma once
 
-#include "H2M/Core/Layer.h"
+#include "H2M/Core/LayerH2M.h"
 
 #include "Core/Window.h"
 #include "Scene/Scene.h"
@@ -9,7 +9,7 @@
 /***
  * Slightly modified version of H2M::Layer to be used in MoravaEngine environment
  */
-class MoravaLayer : public H2M::Layer
+class MoravaLayer : public H2M::LayerH2M
 {
 public:
 	MoravaLayer(const std::string& name = "MoravaLayer");
@@ -17,7 +17,7 @@ public:
 
 	virtual void OnAttach() = 0;
 	virtual void OnDetach() = 0;
-	virtual void OnUpdate(H2M::Timestep ts) = 0;
+	virtual void OnUpdate(H2M::TimestepH2M ts) = 0;
 	virtual void OnEvent(Event& event) = 0;
 	virtual void OnRender() override {}; // Hazel version
 	virtual void OnRender(Window* mainWindow, Scene* scene) = 0; // MoravaEngine version

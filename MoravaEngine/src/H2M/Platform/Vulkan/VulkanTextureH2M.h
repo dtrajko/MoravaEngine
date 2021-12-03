@@ -2,23 +2,24 @@
 
 #pragma once
 
-#include "Hazel/Renderer/HazelTexture.h"
+#include "H2M/Renderer/TextureH2M.h"
 
-#include "Vulkan.h"
+#include "VulkanH2M.h"
 
-#include "VulkanImage.h"
+#include "VulkanImageH2M.h"
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	class VulkanTexture2D : public HazelTexture2D
+	class VulkanTexture2D_H2M : public Texture2D_H2M
 	{
 	public:
-		VulkanTexture2D(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TextureProperties properties);
-		VulkanTexture2D(const std::string& path, TextureProperties properties);
+		VulkanTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TexturePropertiesH2M properties);
+		VulkanTexture2D_H2M(const std::string& path, TexturePropertiesH2M properties);
 		// VulkanTexture2D(const std::string& path, bool srgb = false);
 		// VulkanTexture2D(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrap wrap = TextureWrap::Clamp);
-		virtual ~VulkanTexture2D();
+		virtual ~VulkanTexture2D_H2M();
 
 		void Invalidate();
 
@@ -28,12 +29,12 @@ namespace Hazel {
 
 		virtual void Bind(uint32_t slot = 0) const override;
 
-		virtual RefH2M<HazelImage2D> GetImage() const override { return m_Image; }
+		virtual RefH2M<Image2D_H2M> GetImage() const override { return m_Image; }
 
 		void Lock() override;
 		void Unlock() override;
 
-		Buffer GetWriteableBuffer() override;
+		BufferH2M GetWriteableBuffer() override;
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
 
@@ -49,7 +50,7 @@ namespace Hazel {
 
 		// virtual RendererID GetRendererID() const override { return 0; } // Removed in Hazel Live 18.03.2021 #2
 
-		bool operator ==(const HazelTexture& other) const override
+		bool operator ==(const TextureH2M& other) const override
 		{
 			throw std::logic_error("The method or operation is not implemented.");
 		}
@@ -63,14 +64,14 @@ namespace Hazel {
 		uint32_t m_Width;
 		uint32_t m_Height;
 		uint32_t m_Channels;
-		TextureProperties m_Properties;
+		TexturePropertiesH2M m_Properties;
 
-		Buffer m_ImageData;
+		BufferH2M m_ImageData;
 
 		VkDeviceMemory m_DeviceMemory;
 		VkImage m_VkImage;
 
-		RefH2M<HazelImage2D> m_Image;
+		RefH2M<Image2D_H2M> m_Image;
 
 		ImageFormatH2M m_Format = ImageFormatH2M::None;
 
@@ -79,12 +80,12 @@ namespace Hazel {
 		bool m_MipsGenerated = false;
 	};
 
-	class VulkanTextureCube : public HazelTextureCube
+	class VulkanTextureCubeH2M : public TextureCubeH2M
 	{
 	public:
-		VulkanTextureCube(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TextureProperties properties);
-		VulkanTextureCube(const std::string& path, TextureProperties properties);
-		virtual ~VulkanTextureCube();
+		VulkanTextureCubeH2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TexturePropertiesH2M properties);
+		VulkanTextureCubeH2M(const std::string& path, TexturePropertiesH2M properties);
+		virtual ~VulkanTextureCubeH2M();
 
 		virtual const std::string& GetPath() const override { return std::string(); }
 
@@ -97,7 +98,7 @@ namespace Hazel {
 		virtual uint32_t GetMipLevelCount() const override;
 		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 
-		virtual bool operator==(const HazelTexture& other) const override { return false; }
+		virtual bool operator==(const TextureH2M& other) const override { return false; }
 
 		virtual uint64_t GetHash() const { return (uint64_t)m_Image; }
 
@@ -120,11 +121,11 @@ namespace Hazel {
 		ImageFormatH2M m_Format = ImageFormatH2M::None;
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
-		TextureProperties m_Properties;
+		TexturePropertiesH2M m_Properties;
 
 		bool m_MipsGenerated = false;
 
-		Buffer m_LocalStorage;
+		BufferH2M m_LocalStorage;
 		VkDeviceMemory m_DeviceMemory;
 		VkImage m_Image;
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};

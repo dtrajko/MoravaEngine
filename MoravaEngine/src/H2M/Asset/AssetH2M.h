@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
 #include "H2M/Core/UUID_H2M.h"
