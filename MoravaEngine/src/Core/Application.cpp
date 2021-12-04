@@ -97,13 +97,13 @@ Application::~Application()
 	delete m_Window;
 }
 
-void Application::PushLayer(H2M::Layer* layer)
+void Application::PushLayer(H2M::LayerH2M* layer)
 {
 	m_LayerStack.PushLayer(layer);
 	layer->OnAttach();
 }
 
-void Application::PushOverlay(H2M::Layer* layer)
+void Application::PushOverlay(H2M::LayerH2M* layer)
 {
 	m_LayerStack.PushOverlay(layer);
 	layer->OnAttach();
@@ -121,7 +121,7 @@ void Application::RenderImGui()
 	// ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
 	// ImGui::End();
 
-	for (H2M::Layer* layer : m_LayerStack)
+	for (H2M::LayerH2M* layer : m_LayerStack)
 	{
 		layer->OnImGuiRender();
 	}
@@ -145,7 +145,7 @@ void Application::Run()
 		{
 			H2M::RendererH2M::BeginFrame();
 			{
-				for (H2M::Layer* layer : m_LayerStack)
+				for (H2M::LayerH2M* layer : m_LayerStack)
 				{
 					layer->OnUpdate(m_TimeStep);
 				}
@@ -173,7 +173,7 @@ void Application::Run()
 			{
 			case H2M::RendererAPITypeH2M::Vulkan:
 				// m_Scene->OnRenderEditor(deltaTime, *(H2M::EditorCamera*)m_Scene->GetCamera());
-				H2M::VulkanRendererH2M::Draw(m_Scene); // replace with m_Scene->OnRenderEditor()
+				H2M::VulkanRendererH2M::Draw(m_Scene->GetCamera()); // replace with m_Scene->OnRenderEditor()
 				break;
 			case H2M::RendererAPITypeH2M::DX11:
 				DX11Renderer::Draw(m_Scene->GetCamera());
@@ -194,11 +194,11 @@ void Application::Run()
 	OnShutdown();
 }
 
-void Application::OnEvent(Event& e)
+void Application::OnEvent(H2M::EventH2M& e)
 {
-	EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<WindowCloseEvent>(APP_BIND_EVENT_FN(OnWindowClose));
-	dispatcher.Dispatch<WindowResizeEvent>(APP_BIND_EVENT_FN(OnWindowResize));
+	H2M::EventDispatcherH2M dispatcher(e);
+	dispatcher.Dispatch<H2M::WindowCloseEventH2M>(APP_BIND_EVENT_FN(OnWindowClose));
+	dispatcher.Dispatch<H2M::WindowResizeEventH2M>(APP_BIND_EVENT_FN(OnWindowResize));
 
 	for (auto it = m_LayerStack.end(); it != m_LayerStack.begin(); )
 	{
@@ -208,7 +208,7 @@ void Application::OnEvent(Event& e)
 	}
 }
 
-bool Application::OnWindowResize(WindowResizeEvent& e)
+bool Application::OnWindowResize(H2M::WindowResizeEventH2M& e)
 {
 	int width = e.GetWidth(), height = e.GetHeight();
 
@@ -228,7 +228,7 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
 		case H2M::RendererAPITypeH2M::Vulkan:
 		{
-			auto& fbs = H2M::FramebufferH2MPool::GetGlobal()->GetAll();
+			auto& fbs = H2M::FramebufferPoolH2M::GetGlobal()->GetAll();
 			for (auto& fb : fbs)
 			{
 				const auto& spec = fb->GetSpecification();
@@ -249,7 +249,7 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	return false;
 }
 
-bool Application::OnWindowClose(WindowCloseEvent& e)
+bool Application::OnWindowClose(H2M::WindowCloseEventH2M& e)
 {
 	m_Running = false;
 	return true;
@@ -280,15 +280,15 @@ void Application::InitializeScene(SceneProperties sceneProperties)
 // Event handling code extracted and removed from Application::Run(). Currently not in use.
 void Application::ClassifyEvents()
 {
-	WindowResizeEvent e(1280, 720);
+	H2M::WindowResizeEventH2M e(1280, 720);
 	Log::GetLogger()->debug(e);
 
-	if (e.IsInCategory(EventCategoryApplication))
+	if (e.IsInCategory(H2M::EventCategoryApplication))
 	{
 		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryApplication'");
 	}
 
-	if (e.IsInCategory(EventCategoryInput))
+	if (e.IsInCategory(H2M::EventCategoryInput))
 	{
 		Log::GetLogger()->debug("Event 'WindowResizeEvent' belongs to category 'EventCategoryInput'");
 	}

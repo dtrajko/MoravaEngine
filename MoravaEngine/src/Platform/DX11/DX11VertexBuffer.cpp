@@ -2,7 +2,7 @@
 
 #include "DX11Context.h"
 
-#include "H2M/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 
 DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t stride, uint32_t count)
@@ -32,12 +32,12 @@ DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t stride, uint32_t count)
 	Log::GetLogger()->info("DX11VertexBuffer successfully created!");
 }
 
-DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t size, H2M::VertexBufferUsage usage)
+DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t size, H2M::VertexBufferUsageH2M usage)
 {
 	Log::GetLogger()->error("DX11VertexBuffer::DX11VertexBuffer not implemented yet!");
 }
 
-DX11VertexBuffer::DX11VertexBuffer(uint32_t size, H2M::VertexBufferUsage usage)
+DX11VertexBuffer::DX11VertexBuffer(uint32_t size, H2M::VertexBufferUsageH2M usage)
 {
 	Log::GetLogger()->error("DX11VertexBuffer::DX11VertexBuffer not implemented yet!");
 }

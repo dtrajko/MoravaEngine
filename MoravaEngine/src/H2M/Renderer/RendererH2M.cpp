@@ -452,7 +452,7 @@ namespace H2M
 		}
 	}
 
-	void RendererH2M::DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color /*= glm::vec4(1.0f)*/)
+	void RendererH2M::DrawAABB(const AABB_H2M& aabb, const glm::mat4& transform, const glm::vec4& color /*= glm::vec4(1.0f)*/)
 	{
 		glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
 		glm::vec4 max = { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f };

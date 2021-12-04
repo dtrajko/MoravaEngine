@@ -5,6 +5,7 @@
  */
 
 #include "SceneHierarchyPanelH2M.h"
+#include "H2M/ImGui/ImGuiH2M.h"
 
 // Morava
 #include "Editor/EntitySelection.h"
@@ -33,22 +34,22 @@ namespace H2M
 		if (EntitySelection::s_SelectionContext.size() && false)
 		{
 			//	Try and find same entity in new scene
-			auto& EntityMapH2M = m_Context->GetEntityMapH2M();
+			auto& entityMap = m_Context->GetEntityMapH2M();
 			UUID_H2M selectedEntityID = EntitySelection::s_SelectionContext[0].Entity.GetUUID();
 
-			if (EntityMapH2M.find(selectedEntityID) != EntityMapH2M.end()) {
-				entt::entity entityID = EntityMapH2M.at(selectedEntityID);
-				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ EntityH2M(entityID, scene.Raw()) , new SubmeshH2M(), 0 }));
+			if (entityMap.find(selectedEntityID) != entityMap.end()) {
+				entt::entity entityID = entityMap.at(selectedEntityID);
+				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ EntityH2M(entityID, scene.Raw()), new SubmeshH2M(), 0 }));
 			}
 		}
 	}
 
-	void SceneHierarchyPanelH2M::SetSelected(Entity entity)
+	void SceneHierarchyPanelH2M::SetSelected(EntityH2M entity)
 	{
-		if (entity.HasComponent<MeshComponent>())
+		if (entity.HasComponent<MeshComponentH2M>())
 		{
 			// if MeshComponent is available in entity
-			auto& meshComponent = entity.GetComponent<MeshComponent>();
+			auto& meshComponent = entity.GetComponent<MeshComponentH2M>();
 			if (meshComponent.Mesh)
 			{
 				if (EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity)
@@ -71,7 +72,7 @@ namespace H2M
 		{
 			// if MeshComponent is not available in entity
 			EntitySelection::s_SelectionContext.clear();
-			EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new Hazel::Submesh(), 0 });
+			EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new SubmeshH2M(), 0 });
 		}
 	}
 
@@ -86,8 +87,8 @@ namespace H2M
 
 				m_Context->m_Registry.each([&](auto entity)
 					{
-						Entity e(entity, m_Context.Raw());
-						if (e.HasComponent<IDComponent>()) {
+						EntityH2M e(entity, m_Context.Raw());
+						if (e.HasComponent<IDComponentH2M>()) {
 							DrawEntityNode(e);
 						}
 					});
@@ -104,15 +105,15 @@ namespace H2M
 					{
 						if (ImGui::MenuItem("Empty Entity"))
 						{
-							Hazel::Entity newEntity = m_Context->CreateEntity("Empty Entity");
+							EntityH2M newEntity = m_Context->CreateEntity("Empty Entity");
 							// SetSelected(newEntity);
 						}
 
 						if (ImGui::MenuItem("Mesh"))
 						{
-							Hazel::Entity newEntity = m_Context->CreateEntity("Mesh");
+							EntityH2M newEntity = m_Context->CreateEntity("Mesh");
 							SetSelected(newEntity);
-							newEntity.AddComponent<MeshComponent>();
+							newEntity.AddComponent<MeshComponentH2M>();
 							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
 						}
 
@@ -120,7 +121,7 @@ namespace H2M
 
 						if (ImGui::MenuItem("Directional Light"))
 						{
-							Hazel::Entity newEntity = m_Context->CreateEntity("Directional Light");
+							EntityH2M newEntity = m_Context->CreateEntity("Directional Light");
 							// newEntity.AddComponent<DirectionalLightComponent>();
 							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
 							// SetSelected(newEntity);
@@ -128,7 +129,7 @@ namespace H2M
 
 						if (ImGui::MenuItem("Sky Light"))
 						{
-							Hazel::Entity newEntity = m_Context->CreateEntity("Sky Light");
+							EntityH2M newEntity = m_Context->CreateEntity("Sky Light");
 							// newEntity.AddComponent<SkyLightComponent>();
 							// EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
 							// SetSelected(newEntity);
@@ -143,7 +144,7 @@ namespace H2M
 
 			ImGui::Begin("Properties");
 			{
-				if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity.HasComponent<Hazel::TagComponent>())
+				if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity.HasComponent<TagComponentH2M>())
 				{
 					DrawComponents(EntitySelection::s_SelectionContext[0].Entity);
 				}
@@ -175,11 +176,11 @@ namespace H2M
 		}
 	}
 
-	void SceneHierarchyPanelH2M::DrawEntityNode(Entity entity)
+	void SceneHierarchyPanelH2M::DrawEntityNode(EntityH2M entity)
 	{
 		const char* name = "Unnamed Entity";
-		if (entity.HasComponent<TagComponent>()) {
-			name = entity.GetComponent<TagComponent>().Tag.c_str();
+		if (entity.HasComponent<TagComponentH2M>()) {
+			name = entity.GetComponent<TagComponentH2M>().Tag.c_str();
 		}
 		// ImGui::Text("%s", tag.c_str());
 
@@ -192,7 +193,7 @@ namespace H2M
 		{
 			// EnvironmentMap::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, nullptr, 0 });
 
-			Log::GetLogger()->debug("ImGui::IsItemClicked: entity.Tag '{0}'", entity.GetComponent<Hazel::TagComponent>().Tag);
+			Log::GetLogger()->debug("ImGui::IsItemClicked: entity.Tag '{0}'", entity.GetComponent<TagComponentH2M>().Tag);
 
 			SetSelected(entity);
 			m_Context->OnEntitySelected(entity);
@@ -251,21 +252,21 @@ namespace H2M
 		}
 	}
 
-	void SceneHierarchyPanelH2M::DrawEntitySubmeshes(Entity entity)
+	void SceneHierarchyPanelH2M::DrawEntitySubmeshes(EntityH2M entity)
 	{
-		if (!entity.HasComponent<Hazel::MeshComponent>()) return;
-		if (!entity.GetComponent<Hazel::MeshComponent>().Mesh) return;
+		if (!entity.HasComponent<MeshComponentH2M>()) return;
+		if (!entity.GetComponent<MeshComponentH2M>().Mesh) return;
 
-		auto mesh = entity.GetComponent<Hazel::MeshComponent>().Mesh;
+		auto mesh = entity.GetComponent<MeshComponentH2M>().Mesh;
 
-		std::vector<Hazel::Submesh>& submeshes = mesh->GetSubmeshes();
+		std::vector<RefH2M<SubmeshH2M>> submeshes = mesh->GetSubmeshes();
 
 		for (int i = 0; i < submeshes.size(); i++)
 		{
 			bool submeshSelected = false;
 			for (auto selection : EntitySelection::s_SelectionContext)
 			{
-				if (selection.Mesh && selection.Mesh->MeshName == submeshes[i].MeshName)
+				if (selection.Mesh && selection.Mesh->MeshName == submeshes[i]->MeshName)
 				{
 					submeshSelected = true;
 					break;
@@ -273,7 +274,7 @@ namespace H2M
 			}
 
 			ImGuiTreeNodeFlags flags = (submeshSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i].BaseIndex + i), flags, submeshes[i].MeshName.c_str());
+			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i]->BaseIndex + i), flags, submeshes[i]->MeshName.c_str());
 
 			if (ImGui::IsItemClicked())
 			{
@@ -304,17 +305,17 @@ namespace H2M
 			if (opened) {
 				ImGui::Text("MeshName: ");
 				ImGui::SameLine();
-				ImGui::Text(submeshes[i].MeshName.c_str());
+				ImGui::Text(submeshes[i]->MeshName.c_str());
 
 				ImGui::Text("NodeName: ");
 				ImGui::SameLine();
-				ImGui::Text(submeshes[i].NodeName.c_str());
+				ImGui::Text(submeshes[i]->NodeName.c_str());
 
 				ImGui::Text("MaterialIndex: ");
 				ImGui::SameLine();
-				ImGui::Text(std::to_string(submeshes[i].MaterialIndex).c_str());
+				ImGui::Text(std::to_string(submeshes[i]->MaterialIndex).c_str());
 
-				SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(&entity, &submeshes[i]);
+				SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, &submeshes[i]);
 				std::string materialUUID = "N/A";
 				std::string materialName = "N/A";
 				auto map_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
@@ -336,7 +337,7 @@ namespace H2M
 			}
 
 			if (submeshDeleted && submeshSelected) {
-				Log::GetLogger()->debug("SceneHierarchyPanel DeleteSubmesh('{0}')", submeshes[i].MeshName);
+				Log::GetLogger()->debug("SceneHierarchyPanel DeleteSubmesh('{0}')", submeshes[i]->MeshName);
 				mesh->DeleteSubmesh(submeshes[i]);
 			}
 
@@ -370,7 +371,7 @@ namespace H2M
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t meshIndex = node->mMeshes[i];
-			((HazelMesh*)mesh)->GetSubmeshes()[meshIndex].Transform = transform;
+			((MeshH2M*)mesh)->GetSubmeshes()[meshIndex]->Transform = transform;
 		}
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
@@ -397,7 +398,7 @@ namespace H2M
 	}
 
 	template<typename T, typename UIFunction>
-	static void DrawComponent(const std::string name, Entity entity, UIFunction uiFunction)
+	static void DrawComponent(const std::string name, EntityH2M entity, UIFunction uiFunction)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
@@ -456,17 +457,17 @@ namespace H2M
 		ImGuiWrapper::PopID();
 	}
 
-	void SceneHierarchyPanelH2M::DrawComponents(Entity entity)
+	void SceneHierarchyPanelH2M::DrawComponents(EntityH2M entity)
 	{
 		ImGui::AlignTextToFramePadding();
 
-		auto id = entity.GetComponent<IDComponent>().ID;
+		auto id = entity.GetComponent<IDComponentH2M>().ID;
 
 		ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
-		if (entity.HasComponent<TagComponent>())
+		if (entity.HasComponent<TagComponentH2M>())
 		{
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
+			auto& tag = entity.GetComponent<TagComponentH2M>().Tag;
 
 			char buffer[256];
 			memset(buffer, 0, 256);
@@ -494,20 +495,20 @@ namespace H2M
 
 		if (ImGui::BeginPopup("AddComponentPanel"))
 		{
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<CameraComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<CameraComponentH2M>())
 			{
 				if (ImGui::Button("Camera"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CameraComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CameraComponentH2M>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MeshComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MeshComponentH2M>())
 			{
 				if (ImGui::Button("Mesh"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MeshComponentH2M>();
 					//	if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponent>()) {
 					//		EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponent>();
 					//	}
@@ -515,95 +516,72 @@ namespace H2M
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<DirectionalLightComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<DirectionalLightComponentH2M>())
 			{
 				if (ImGui::Button("Directional Light"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<DirectionalLightComponentH2M>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<PointLightComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<PointLightComponentH2M>())
 			{
 				if (ImGui::Button("Point Light"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<PointLightComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<PointLightComponentH2M>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpotLightComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpotLightComponentH2M>())
 			{
 				if (ImGui::Button("Spot Light"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpotLightComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpotLightComponentH2M>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SkyLightComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SkyLightComponentH2M>())
 			{
 				if (ImGui::Button("Sky Light"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SkyLightComponentH2M>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<ScriptComponent>())
-			{
-				if (ImGui::Button("Script"))
-				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<ScriptComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpriteRendererComponent>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<SpriteRendererComponentH2M>())
 			{
 				if (ImGui::Button("Sprite Renderer"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpriteRendererComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<SpriteRendererComponentH2M>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<RigidBody2DComponent>())
+
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<RigidBody2DComponentH2M>())
 			{
 				if (ImGui::Button("Rigidbody 2D"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<RigidBody2DComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<RigidBody2DComponentH2M>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<BoxCollider2DComponent>())
-			{
-				if (ImGui::Button("Box Collider 2D"))
-				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<BoxCollider2DComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<CircleCollider2DComponent>())
-			{
-				if (ImGui::Button("Circle Collider 2D"))
-				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CircleCollider2DComponent>();
-					ImGui::CloseCurrentPopup();
-				}
-			}
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponent>())
+
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponentH2M>())
 			{
 				if (ImGui::Button("Material"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponent>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponentH2M>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
 			ImGui::EndPopup();
 		}
 
-		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
+		DrawComponent<TransformComponentH2M>("Transform", entity, [](auto& component)
 		{
 			ImGuiWrapper::DrawVec3Control("Translation", component.Translation, 0.0f, 80.0f);
 			glm::vec3 rotation = glm::degrees(component.Rotation);
@@ -612,7 +590,7 @@ namespace H2M
 			ImGuiWrapper::DrawVec3Control("Scale", component.Scale, 1.0f, 80.0f);
 		});
 
-		DrawComponent<MeshComponent>("Mesh", entity, [=](MeshComponent& mc)
+		DrawComponent<MeshComponentH2M>("Mesh", entity, [=](MeshComponentH2M& mc)
 		{
 			ImGui::Columns(3);
 			ImGui::SetColumnWidth(0, 70.0f);
@@ -653,7 +631,7 @@ namespace H2M
 
 			if (!meshFilepath.empty())
 			{
-				mc.Mesh = Hazel::Ref<Hazel::HazelMesh>::Create(meshFilepath, Hazel::Ref<MoravaShader>(), Hazel::Ref<Hazel::HazelMaterial>(), false);
+				mc.Mesh = RefH2M<MeshH2M>::Create(meshFilepath, RefH2M<MoravaShader>(), RefH2M<MaterialH2M>(), false);
 
 				auto materialDataVector = MaterialLibrary::s_MaterialData;
 				for (auto materialData : materialDataVector) {
@@ -674,7 +652,7 @@ namespace H2M
 			ImGui::Checkbox("Receive Shadows", &mc.ReceiveShadows);
 		});
 
-		DrawComponent<CameraComponent>("Camera", entity, [=](CameraComponent& cc)
+		DrawComponent<CameraComponentH2M>("Camera", entity, [=](CameraComponentH2M& cc)
 		{
 			// Projection Type
 			const char* projTypeStrings[] = { "Perspective", "Orthographic" };
@@ -687,7 +665,7 @@ namespace H2M
 					if (ImGui::Selectable(projTypeStrings[type], is_selected))
 					{
 						currentProj = projTypeStrings[type];
-						cc.Camera.SetProjectionType((SceneCamera::ProjectionType)type);
+						cc.Camera.SetProjectionType((SceneCameraH2M::ProjectionType)type);
 					}
 					if (is_selected)
 						ImGui::SetItemDefaultFocus();
@@ -697,7 +675,7 @@ namespace H2M
 
 			ImGuiWrapper::BeginPropertyGrid();
 			// Perspective parameters
-			if (cc.Camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
+			if (cc.Camera.GetProjectionType() == SceneCameraH2M::ProjectionType::Perspective)
 			{
 				float verticalFOV = cc.Camera.GetPerspectiveVerticalFOV();
 				if (ImGuiWrapper::Property("Vertical FOV", verticalFOV)) {
@@ -721,7 +699,7 @@ namespace H2M
 			}
 
 			// Orthographic parameters
-			else if (cc.Camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
+			else if (cc.Camera.GetProjectionType() == SceneCameraH2M::ProjectionType::Orthographic)
 			{
 				float orthoSize = cc.Camera.GetOrthographicSize();
 				if (ImGuiWrapper::Property("Size", orthoSize)) {
@@ -747,12 +725,12 @@ namespace H2M
 			EndPropertyGrid();
 		});
 
-		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
+		DrawComponent<SpriteRendererComponentH2M>("Sprite Renderer", entity, [](auto& component)
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 		});
 
-		DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](DirectionalLightComponent& dlc)
+		DrawComponent<DirectionalLightComponentH2M>("Directional Light", entity, [](DirectionalLightComponentH2M& dlc)
 		{
 			UI::BeginPropertyGrid();
 			UI::PropertyColor("Radiance", dlc.Radiance);
@@ -763,7 +741,7 @@ namespace H2M
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<PointLightComponent>("Point Light", entity, [](PointLightComponent& plc)
+		DrawComponent<PointLightComponentH2M>("Point Light", entity, [](PointLightComponentH2M& plc)
 		{
 			UI::BeginPropertyGrid();
 			UI::Property("Enabled",          plc.Enabled);
@@ -778,7 +756,7 @@ namespace H2M
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<SpotLightComponent>("Spot Light", entity, [](SpotLightComponent& slc)
+		DrawComponent<SpotLightComponentH2M>("Spot Light", entity, [](SpotLightComponentH2M& slc)
 		{
 			UI::BeginPropertyGrid();
 			UI::Property("Enabled",          slc.Enabled);
@@ -796,7 +774,7 @@ namespace H2M
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& slc)
+		DrawComponent<SkyLightComponentH2M>("Sky Light", entity, [](SkyLightComponentH2M& slc)
 		{
 			ImGui::Columns(3);
 			ImGui::SetColumnWidth(0, 70.0f);
@@ -815,7 +793,7 @@ namespace H2M
 			{
 				std::string file = Application::Get()->OpenFile("*.hdr");
 				if (!file.empty())
-					slc.SceneEnvironment = Environment::Load(file);
+					slc.SceneEnvironment = EnvironmentH2M::Load(file);
 			}
 			ImGui::Columns(1);
 
@@ -824,107 +802,7 @@ namespace H2M
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<ScriptComponent>("Script", entity, [=](ScriptComponent& sc) mutable
-		{
-			UI::BeginPropertyGrid();
-			std::string oldName = sc.ModuleName;
-
-			if (UI::Property("Module Name", sc.ModuleName, ScriptEngine::ModuleExists(sc.ModuleName))) // TODO: no live edit
-			{
-				// Shutdown old script
-				if (ScriptEngine::ModuleExists(oldName)) {
-					ScriptEngine::ShutdownScriptEntity(entity, oldName);
-				}
-
-				if (ScriptEngine::ModuleExists(sc.ModuleName)) {
-					ScriptEngine::InitScriptEntity(entity);
-				}
-			}
-			
-			// Public Fields
-			if (ScriptEngine::ModuleExists(sc.ModuleName))
-			{
-				EntityInstanceData& entityInstanceData = ScriptEngine::GetEntityInstanceData(entity.GetSceneUUID(), id);
-				auto& moduleFieldMap = entityInstanceData.ModuleFieldMap;
-				if (moduleFieldMap.find(sc.ModuleName) != moduleFieldMap.end())
-				{
-					auto& publicFields = moduleFieldMap.at(sc.ModuleName);
-					for (auto& [name, field] : publicFields)
-					{
-						bool isRuntime = m_Context->m_IsPlaying && field.IsRuntimeAvailable();
-
-						for (auto& field : publicFields)
-						{
-							switch (field.second.Type)
-							{
-							case FieldType::Int:
-							{
-								int value = field.second.GetStoredValue<int>();
-								if (ImGuiWrapper::Property(field.second.Name.c_str(), value))
-								{
-									field.second.SetStoredValue(value);
-								}
-								break;
-							}
-							case FieldType::Float:
-							{
-								float value = field.second.GetStoredValue<float>();
-								if (ImGuiWrapper::Property(field.second.Name.c_str(), value, 0.2f))
-								{
-									field.second.SetStoredValue(value);
-								}
-								break;
-							}
-							case FieldType::Vec2:
-							{
-								glm::vec2 value = field.second.GetStoredValue<glm::vec2>();
-								if (ImGuiWrapper::Property(field.second.Name.c_str(), value, 0.2f))
-								{
-									field.second.SetStoredValue(value);
-								}
-								break;
-							}
-							case FieldType::Vec3:
-							{
-								glm::vec3 value = isRuntime ? field.second.GetRuntimeValue<glm::vec3>() : field.second.GetStoredValue<glm::vec3>();
-								if (UI::Property(field.second.Name.c_str(), value, 0.2f))
-								{
-									if (isRuntime) {
-										field.second.SetRuntimeValue(value);
-									} else {
-										field.second.SetStoredValue(value);
-									}
-								}
-								break;
-							}
-							case FieldType::Vec4:
-							{
-								glm::vec4 value = isRuntime ? field.second.GetRuntimeValue<glm::vec4>() : field.second.GetStoredValue<glm::vec4>();
-								if (UI::Property(field.second.Name.c_str(), value, 0.2f))
-								{
-									if (isRuntime) {
-										field.second.SetRuntimeValue(value);
-									} else {
-										field.second.SetStoredValue(value);
-									}
-								}
-								break;
-							}
-							}
-						}
-					}
-				}
-			}
-
-			EndPropertyGrid();
-
-			if (ImGui::Button("Run Script"))
-			{
-				ScriptEngine::OnCreateEntity(entity);
-			}
-		});
-
-		DrawComponent<RigidBody2DComponent>("Rigidbody 2D", entity, [](RigidBody2DComponent& rb2dc)
+		DrawComponent<RigidBody2DComponentH2M>("Rigidbody 2D", entity, [](RigidBody2DComponentH2M& rb2dc)
 		{
 			// Rigidbody2D Type
 			const char* rb2dTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
@@ -937,7 +815,7 @@ namespace H2M
 					if (ImGui::Selectable(rb2dTypeStrings[type], is_selected))
 					{
 						currentType = rb2dTypeStrings[type];
-						rb2dc.BodyType = (RigidBody2DComponent::Type)type;
+						rb2dc.BodyType = (RigidBody2DComponentH2M::Type)type;
 					}
 					if (is_selected)
 						ImGui::SetItemDefaultFocus();
@@ -945,7 +823,7 @@ namespace H2M
 				ImGui::EndCombo();
 			}
 
-			if (rb2dc.BodyType == RigidBody2DComponent::Type::Dynamic)
+			if (rb2dc.BodyType == RigidBody2DComponentH2M::Type::Dynamic)
 			{
 				UI::BeginPropertyGrid();
 				UI::Property("Fixed Rotation", rb2dc.FixedRotation);
@@ -953,31 +831,7 @@ namespace H2M
 			}
 		});
 
-		DrawComponent<BoxCollider2DComponent>("Box Collider 2D", entity, [](BoxCollider2DComponent& bc2dc)
-		{
-			UI::BeginPropertyGrid();
-
-			UI::Property("Offset", bc2dc.Offset);
-			UI::Property("Size", bc2dc.Size);
-			UI::Property("Density", bc2dc.Density);
-			UI::Property("Friction", bc2dc.Friction);
-
-			UI::EndPropertyGrid();
-		});
-
-		DrawComponent<CircleCollider2DComponent>("Circle Collider 2D", entity, [](CircleCollider2DComponent& cc2dc)
-		{
-			UI::BeginPropertyGrid();
-
-			UI::Property("Offset", cc2dc.Offset);
-			UI::Property("Radius", cc2dc.Radius);
-			UI::Property("Density", cc2dc.Density);
-			UI::Property("Friction", cc2dc.Friction);
-
-			UI::EndPropertyGrid();
-		});
-
-		DrawComponent <MaterialComponent > ("Material", entity, [=](MaterialComponent& mc)
+		DrawComponent <MaterialComponentH2M>("Material", entity, [=](MaterialComponentH2M& mc)
 			{
 				if (!mc.Material) {
 					mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterialRef;

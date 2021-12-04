@@ -5,9 +5,9 @@
 #include "DX11.h"
 #include "DX11InputListener.h"
 
-#include "H2M/Core/Timestep.h"
-#include "H2M/Core/Events/Event.h"
-#include "H2M/Renderer/HazelCamera.h"
+#include "H2M/Core/TimestepH2M.h"
+#include "H2M/Core/Events/EventH2M.h"
+#include "H2M/Renderer/CameraH2M.h"
 
 
 class DX11CameraFP : public H2M::CameraH2M, public DX11InputListener
@@ -17,7 +17,7 @@ public:
 	DX11CameraFP(glm::mat4 projection);
 	~DX11CameraFP();
 
-	void OnUpdate(H2M::Timestep ts);
+	void OnUpdate(H2M::TimestepH2M ts);
 
 	// static DX11CameraFP* Get();
 
@@ -37,7 +37,7 @@ public:
 	virtual void SetViewportSize(float width, float height) override;
 
 	// Methods from EditorCamera (Hazel)
-	virtual void OnEvent(Event& e) override;
+	virtual void OnEvent(H2M::EventH2M& e) override;
 
 	void SetEnabled(bool enabled) { m_Enabled = enabled; }
 	bool IsEnabled() { return m_Enabled; }

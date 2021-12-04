@@ -37,7 +37,7 @@ public:
 	void Lock() override;
 	void Unlock() override;
 
-	virtual void Resize(uint32_t width, uint32_t height) override;
+	// virtual void Resize(uint32_t width, uint32_t height) override;
 
 	H2M::BufferH2M GetWriteableBuffer() override;
 	bool Loaded() const override;
@@ -49,7 +49,7 @@ public:
 
 	// virtual H2M::RendererID_H2M GetRendererID() const override { return 0; } // Removed in Hazel Live 18.03.2021 #2
 
-	bool operator ==(const HazelTexture& other) const override
+	bool operator ==(const TextureH2M& other) const override
 	{
 		throw std::logic_error("The method or operation is not implemented.");
 	}

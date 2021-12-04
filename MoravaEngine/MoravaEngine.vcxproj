@@ -739,6 +739,7 @@
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
     <ClInclude Include="src\H2M\Asset\AssetH2M.h" />
+    <ClInclude Include="src\H2M\Asset\AssetMetadataH2M.h" />
     <ClInclude Include="src\H2M\Asset\AssetTypesH2M.h" />
     <ClInclude Include="src\H2M\Core\AssertH2M.h" />
     <ClInclude Include="src\H2M\Core\BaseH2M.h" />

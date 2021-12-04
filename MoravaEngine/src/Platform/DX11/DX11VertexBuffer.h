@@ -5,18 +5,18 @@
 #include "DX11.h"
 #include "DX11Device.h"
 
-#include "H2M/Renderer/VertexBuffer.h"
+#include "H2M/Renderer/VertexBufferH2M.h"
 
 // #include "H2M/Core/Buffer.h"
 // #include "DX11Allocator.h"
 
 
-class DX11VertexBuffer : public H2M::VertexBuffer
+class DX11VertexBuffer : public H2M::VertexBufferH2M
 {
 public:
 	DX11VertexBuffer(void* data, uint32_t stride, uint32_t count);
-	DX11VertexBuffer(void* data, uint32_t size, H2M::VertexBufferUsage usage = H2M::VertexBufferUsage::Static);
-	DX11VertexBuffer(uint32_t size, H2M::VertexBufferUsage usage = H2M::VertexBufferUsage::Dynamic);
+	DX11VertexBuffer(void* data, uint32_t size, H2M::VertexBufferUsageH2M usage = H2M::VertexBufferUsageH2M::Static);
+	DX11VertexBuffer(uint32_t size, H2M::VertexBufferUsageH2M usage = H2M::VertexBufferUsageH2M::Dynamic);
 	virtual ~DX11VertexBuffer();
 
 
@@ -24,8 +24,8 @@ public:
 	virtual void RT_SetData(void* buffer, uint32_t size, uint32_t offset = 0) override {}
 	virtual void Bind() const override;
 
-	virtual const H2M::VertexBufferLayout& GetLayout() const override { return m_Layout; }
-	virtual void SetLayout(const H2M::VertexBufferLayout& layout) override { m_Layout = layout; }
+	virtual const H2M::VertexBufferLayoutH2M& GetLayout() const override { return m_Layout; }
+	virtual void SetLayout(const H2M::VertexBufferLayoutH2M& layout) override { m_Layout = layout; }
 
 	virtual uint32_t GetSize() const override { return m_Stride; }
 	virtual H2M::RendererID_H2M GetRendererID() const override { return 0; }
@@ -37,7 +37,7 @@ public:
 private:
 	// uint32_t m_Size = 0;
 	// H2M::BufferH2M m_LocalData;
-	H2M::VertexBufferLayout m_Layout; // OpenGL-specific? Or it belongs to pipeline?
+	H2M::VertexBufferLayoutH2M m_Layout; // OpenGL-specific? Or it belongs to pipeline?
 
 	uint32_t m_Stride;
 	uint32_t m_Count;

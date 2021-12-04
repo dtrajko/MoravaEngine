@@ -9,6 +9,7 @@
 #include "H2M/Renderer/RenderCommandBufferH2M.h"
 #include "H2M/Renderer/RenderCommandQueueH2M.h"
 #include "H2M/Renderer/RenderPassH2M.h"
+#include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/SceneEnvironmentH2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
 

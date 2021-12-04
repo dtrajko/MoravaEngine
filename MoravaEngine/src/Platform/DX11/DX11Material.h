@@ -21,7 +21,7 @@ enum class DX11CullMode
 };
 
 
-class DX11Material : public H2M::HazelMaterial
+class DX11Material : public H2M::MaterialH2M
 {
 public:
 	DX11Material(const H2M::RefH2M<H2M::HazelShader>& shader, const std::string& name = "");
@@ -80,7 +80,7 @@ public:
 		buffer.Write((byte*)&value, decl->GetSize(), decl->GetOffset());
 	}
 
-	void Set(const std::string& name, const H2M::RefH2M<H2M::HazelTexture>& texture)
+	void Set(const std::string& name, const H2M::RefH2M<H2M::TextureH2M>& texture)
 	{
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
@@ -111,7 +111,7 @@ public:
 	}
 
 	template<typename T>
-	Ref<T> GetResource(const std::string& name)
+	RefH2M<T> GetResource(const std::string& name)
 	{
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
@@ -129,7 +129,7 @@ public:
 	}
 
 	template<typename T>
-	Ref<T> TryGetResource(const std::string& name)
+	RefH2M<T> TryGetResource(const std::string& name)
 	{
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
@@ -147,11 +147,11 @@ public:
 	}
 
 	virtual uint32_t GetFlags() const override { return uint32_t(); }
-	virtual bool GetFlag(H2M::HazelMaterialFlag flag) const override { return bool(); };
-	virtual void SetFlag(H2M::HazelMaterialFlag flag, bool value = true) override {};
+	virtual bool GetFlag(H2M::MaterialFlagH2M flag) const override { return bool(); };
+	virtual void SetFlag(H2M::MaterialFlagH2M flag, bool value = true) override {};
 
-	inline H2M::RefH2M<H2M::Pipeline> GetPipeline() { return m_Pipeline; }
-	inline virtual H2M::RefH2M<H2M::HazelShader> GetShader() override { return m_Shader; }
+	inline H2M::RefH2M<H2M::PipelineH2M> GetPipeline() { return m_Pipeline; }
+	inline virtual H2M::RefH2M<H2M::ShaderH2M> GetShader() override { return m_Shader; }
 	inline virtual const std::string& GetName() const override { return m_Name; }
 
 	void UpdateForRendering();
@@ -167,15 +167,15 @@ public:
 
 	void Bind();
 
-	const H2M::ShaderUniform* FindUniformDeclaration(const std::string& name);
-	const H2M::ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
+	const H2M::ShaderUniformH2M* FindUniformDeclaration(const std::string& name);
+	const H2M::ShaderResourceDeclarationH2M* FindResourceDeclaration(const std::string& name);
 
 private:
-	H2M::RefH2M<H2M::Pipeline> m_Pipeline;
-	H2M::RefH2M<H2M::HazelShader> m_Shader; // shader reference is a pipeline property
+	H2M::RefH2M<H2M::PipelineH2M> m_Pipeline;
+	H2M::RefH2M<H2M::ShaderH2M> m_Shader; // shader reference is a pipeline property
 	std::string m_Name;
 
-	std::vector<H2M::RefH2M<H2M::HazelTexture>> m_Textures;
+	std::vector<H2M::RefH2M<H2M::TextureH2M>> m_Textures;
 
 	// DirectX Material
 	H2M::RefH2M<DX11ConstantBuffer> m_ConstantBuffer;

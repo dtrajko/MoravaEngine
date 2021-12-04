@@ -6,7 +6,7 @@
 #include "DX11Device.h"
 
 
-class DX11ConstantBuffer : public H2M::RefCounted
+class DX11ConstantBuffer : public H2M::RefCountedH2M
 {
 public:
 	DX11ConstantBuffer() = default;

@@ -2,15 +2,13 @@
 
 #pragma once
 
-#include "H2M/Renderer/HazelMesh.h"
-#include "H2M/Renderer/HazelCamera.h"
-#include "H2M/Renderer/SceneRenderer.h"
-
 #include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/CameraH2M.h"
 
 #include "DX11Texture2D.h"
 #include "DX11ConstantBuffer.h"
 #include "DX11TestLayer.h"
+
 
 #include "Core/Window.h"
 #include "Framebuffer/MoravaFramebuffer.h"
@@ -39,25 +37,19 @@ public:
 	virtual void BeginFrame() override;
 	virtual void EndFrame() override;
 
-	virtual void BeginRenderPass(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::RenderPass> renderPass, bool explicitClear = false) override;
-	virtual void EndRenderPass(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer) override;
-	virtual void SubmitFullscreenQuad(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::HazelMaterial> material) override;
-	virtual void SubmitFullscreenQuadWithOverrides(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::HazelMaterial> material, H2M::BufferH2M vertexShaderOverrides, H2M::BufferH2M fragmentShaderOverrides) override;
+	virtual void BeginRenderPass(const H2M::RefH2M<H2M::RenderPassH2M>& renderPass) override;
+	virtual void EndRenderPass() override;
+	virtual void SubmitFullscreenQuad(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MaterialH2M> material) override;
 
-	virtual void SetSceneEnvironment(H2M::RefH2M<H2M::SceneRenderer> sceneRenderer, H2M::RefH2M<H2M::Environment> environment, H2M::RefH2M<H2M::Image2D_H2M> shadow, H2M::RefH2M<H2M::Image2D_H2M> linearDepth) override;
+	virtual void SetSceneEnvironment(H2M::RefH2M<H2M::EnvironmentH2M> environment, H2M::RefH2M<H2M::Image2D_H2M> shadow) override;
+
+	virtual void RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform) override;
+	virtual void RenderMeshWithoutMaterial(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform) override;
+	virtual void RenderQuad(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MaterialH2M> material, const glm::mat4& transform) override;
+
 	virtual std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) override;
-	virtual H2M::RefH2M<H2M::TextureCubeH2M> CreatePreethamSky(float turbidity, float azimuth, float inclination) override;
 
-	virtual void RenderMesh(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMesh> mesh, H2M::RefH2M<H2M::MaterialTable> materialTable, const glm::mat4& transform) override;
-	virtual void RenderMeshWithMaterial(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMesh> mesh, H2M::RefH2M<H2M::HazelMaterial> material, const glm::mat4& transform, H2M::BufferH2M additionalUniforms = H2M::BufferH2M()) override;
-	virtual void RenderQuad(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMaterial> material, const glm::mat4& transform) override;
-	virtual void LightCulling(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::PipelineCompute> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMaterial> material, const glm::ivec2& screenSize, const glm::ivec3& workGroups) override;
-	virtual void SubmitFullscreenQuad(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M< H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMaterial> material) override;
-	virtual void ClearImage(H2M::RefH2M<H2M::RenderCommandBuffer> commandBuffer, H2M::RefH2M<H2M::Image2D_H2M> image) override;
-	virtual void RenderGeometry(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBuffer, H2M::RefH2M<H2M::HazelMaterial> material, H2M::RefH2M<H2M::VertexBuffer> vertexBuffer, H2M::RefH2M<H2M::IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0) override;
-	virtual void DispatchComputeShader(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::PipelineCompute> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMaterial> material, const glm::ivec3& workGroups) override;
-
-	virtual H2M::RendererCapabilities& GetCapabilities() override;
+	virtual H2M::RendererCapabilitiesH2M& GetCapabilities() override;
 
 	static void Update();
 
@@ -105,10 +97,5 @@ public:
 	// helper methods
 	static void CreateCube();
 	static void CreateQuad();
-
-	// Obsolete methods
-	virtual void RenderMesh(H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform) override;
-	virtual void RenderMeshWithoutMaterial(H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform) override;
-	virtual void RenderQuad(H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::HazelMaterial> material, const glm::mat4& transform) override;
 
 };

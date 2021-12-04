@@ -9,7 +9,7 @@
 #include "DX11Texture2D.h"
 
 
-class DX11VertexShader : public H2M::RefCounted
+class DX11VertexShader : public H2M::RefCountedH2M
 {
 
 public:
@@ -25,7 +25,7 @@ public:
 	void BindConstantBuffer(H2M::RefH2M<DX11ConstantBuffer> constantBuffer);
 
 	// moved from DX11Context
-	void SetTextures(const std::vector<H2M::RefH2M<H2M::HazelTexture>>& textures);
+	void SetTextures(const std::vector<H2M::RefH2M<H2M::TextureH2M>>& textures);
 
 private:
 	bool CompileDX11Shader(const wchar_t* fileName);

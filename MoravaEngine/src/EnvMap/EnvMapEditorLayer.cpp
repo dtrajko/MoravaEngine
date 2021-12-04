@@ -928,8 +928,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                         SetSkyboxLOD(skyboxLOD);
                     }
 
-                    H2M::DirLightH2M light = EnvMapSceneRenderer::GetActiveLight();
-                    H2M::DirLightH2M lightPrev = light;
+                    H2M::LightH2M light = EnvMapSceneRenderer::GetActiveLight();
+                    H2M::LightH2M lightPrev = light;
 
                     ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::DragProperty);
                     ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
@@ -1441,7 +1441,7 @@ void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
         if (ImGui::BeginMenu("Script"))
         {
             if (ImGui::MenuItem("Reload C# Assembly")) {
-                H2M::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
+                // H2M::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
             }
 
             ImGui::MenuItem("Reload assembly on play", nullptr, &m_ReloadScriptOnPlay);
@@ -1715,33 +1715,13 @@ void EnvMapEditorLayer::NewScene()
 
 void EnvMapEditorLayer::OpenScene()
 {
-    // auto app = Application::Get();
-    std::string filepath = H2M::FileDialogs::OpenFile("Hazel Scene (*.hsc)\0*.hsc\0");
-    if (!filepath.empty())
-    {
-        H2M::RefH2M<H2M::SceneH2M> newScene = H2M::RefH2M<H2M::SceneH2M>::Create();
-        H2M::SceneSerializer serializer(newScene);
-        serializer.Deserialize(filepath);
-        EnvMapSharedData::s_EditorScene = newScene;
-        std::filesystem::path path = filepath;
-        UpdateWindowTitle(path.filename().string());
-        m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
-        H2M::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
-
-        EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
-        EntitySelection::s_SelectionContext.clear();
-
-        m_SceneFilePath = filepath;
-
-        OnNewScene(m_ViewportMainSize);
-    }
 }
 
 void EnvMapEditorLayer::SaveScene()
 {
     if (!m_SceneFilePath.empty()) {
-        H2M::SceneSerializer serializer(EnvMapSharedData::s_EditorScene);
-        serializer.Serialize(m_SceneFilePath);
+        // H2M::SceneSerializer serializer(EnvMapSharedData::s_EditorScene);
+        // serializer.Serialize(m_SceneFilePath);
     }
 }
 
@@ -1751,8 +1731,8 @@ void EnvMapEditorLayer::SaveSceneAs()
     std::string filepath = app->SaveFile("Hazel Scene (*.hsc)\0*.hsc\0");
     if (!filepath.empty())
     {
-        H2M::SceneSerializer serializer(EnvMapSharedData::s_EditorScene);
-        serializer.Serialize(filepath);
+        // H2M::SceneSerializer serializer(EnvMapSharedData::s_EditorScene);
+        // serializer.Serialize(filepath);
 
         std::filesystem::path path = filepath;
         UpdateWindowTitle(path.filename().string());
@@ -1787,7 +1767,7 @@ void EnvMapEditorLayer::SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transfor
 
         EnvMapSharedData::s_ShaderHazelPBR->SetMat4("u_Transform", transform * submesh->Transform);
 
-        if (material->GetFlag(H2M::HazelMaterialFlag::DepthTest)) { // TODO: Fix Material flags
+        if (material->GetFlag(H2M::MaterialFlagH2M::DepthTest)) { // TODO: Fix Material flags
             RendererBasic::EnableDepthTest();
         }
         else {
@@ -1813,7 +1793,7 @@ void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, H2M::RefH2M<
     }
 }
 
-void EnvMapEditorLayer::OnEvent(Event& e)
+void EnvMapEditorLayer::OnEvent(H2M::EventH2M& e)
 {
     if (m_SceneState == SceneState::Edit)
     {
@@ -1830,12 +1810,12 @@ void EnvMapEditorLayer::OnEvent(Event& e)
 
     // EnvMapSharedData::s_ActiveCamera->OnEvent(e);
 
-    EventDispatcher dispatcher(e);
-    dispatcher.Dispatch<KeyPressedEvent>(HZ_BIND_EVENT_FN(EnvMapEditorLayer::OnKeyPressedEvent));
-    dispatcher.Dispatch<MouseButtonPressedEvent>(HZ_BIND_EVENT_FN(EnvMapEditorLayer::OnMouseButtonPressed));
+    H2M::EventDispatcherH2M dispatcher(e);
+    dispatcher.Dispatch<H2M::KeyPressedEventH2M>(H2M_BIND_EVENT_FN(EnvMapEditorLayer::OnKeyPressedEvent));
+    dispatcher.Dispatch<H2M::MouseButtonPressedEventH2M>(H2M_BIND_EVENT_FN(EnvMapEditorLayer::OnMouseButtonPressed));
 }
 
-bool EnvMapEditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
+bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
 {
     if (m_ViewportPanelFocused)
     {
@@ -1949,7 +1929,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(KeyPressedEvent& e)
     return false;
 }
 
-bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
+bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
 {
     auto [mx, my] = Input::GetMousePosition();
     if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
@@ -1977,7 +1957,7 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
                 {
                     H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[i];
                     auto transform = entity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
-                    H2M::Ray ray = {
+                    H2M::RayH2M ray = {
                         glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
                         glm::inverse(glm::mat3(transform) * glm::mat3(submesh->Transform)) * direction
                     };

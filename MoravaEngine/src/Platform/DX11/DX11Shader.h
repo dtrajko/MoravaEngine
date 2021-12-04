@@ -49,7 +49,7 @@ public:
 	static H2M::RefH2M<DX11Shader> CreateFromString(const std::string& source);
 
 	virtual void Bind() override {};
-	virtual H2M::RendererID_H2M GetRendererID() const override { return (H2M::RendererID)0; };
+	virtual H2M::RendererID_H2M GetRendererID() const override { return (H2M::RendererID_H2M)0; };
 
 	virtual void Reload(bool forceCompile = false) override;
 
@@ -94,8 +94,8 @@ public:
 
 	virtual void Unbind() override;
 
-	virtual const std::unordered_map<std::string, H2M::ShaderBuffer>& GetShaderBuffers() const override;
-	virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& GetResources() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderBufferH2M>& GetShaderBuffers() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& GetResources() const override;
 
 	virtual void CreateFromString(const char* vertexCode, const char* fragmentCode) override;
 	virtual void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation) override;
@@ -167,7 +167,7 @@ private:
 	std::unordered_map<uint32_t, ImageSampler> m_ImageSamplers;
 	std::vector<PushConstantRange> m_PushConstantRanges;
 
-	std::unordered_map<std::string, H2M::ShaderBuffer> m_Buffers;
+	std::unordered_map<std::string, H2M::ShaderBufferH2M> m_Buffers;
 
 	H2M::RefH2M<DX11VertexShader> m_VertexShader;
 	H2M::RefH2M<DX11PixelShader> m_PixelShader;

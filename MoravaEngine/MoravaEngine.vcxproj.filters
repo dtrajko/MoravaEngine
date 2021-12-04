@@ -2957,6 +2957,9 @@
     <ClInclude Include="src\H2M\Editor\ContentBrowserPanelH2M.h">
       <Filter>H2M\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="src\H2M\Asset\AssetMetadataH2M.h">
+      <Filter>H2M\Asset</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

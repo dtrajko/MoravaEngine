@@ -1,21 +1,22 @@
-#include "PipelineCompute.h"
+#include "PipelineComputeH2M.h"
 
-#include "Hazel/Renderer/RendererAPI.h"
-#include "Hazel/Platform/Vulkan/VulkanComputePipeline.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
+#include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
 
-namespace Hazel {
+namespace H2M
+{
 
-	Ref<PipelineCompute> PipelineCompute::Create(Ref<HazelShader> computeShader)
+	RefH2M<PipelineComputeH2M> PipelineComputeH2M::Create(RefH2M<ShaderH2M> computeShader)
 	{
-		switch (RendererAPI::Current())
+		switch (RendererAPI_H2M::Current())
 		{
-			case RendererAPIType::None: return Ref<PipelineCompute>();
-			case RendererAPIType::Vulkan: return Ref<VulkanComputePipeline>::Create(computeShader);
+			case RendererAPITypeH2M::None: return RefH2M<PipelineComputeH2M>();
+			case RendererAPITypeH2M::Vulkan: return RefH2M<VulkanComputePipelineH2M>::Create(computeShader);
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
-		return Ref<PipelineCompute>();
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+		return RefH2M<PipelineComputeH2M>();
 	}
 
 }

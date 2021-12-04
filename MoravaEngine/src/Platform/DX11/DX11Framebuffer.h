@@ -4,7 +4,7 @@
 
 #include "DX11Texture2D.h"
 
-#include "H2M/Renderer/HazelFramebuffer.h"
+#include "H2M/Renderer/FramebufferH2M.h"
 
 
 class DX11Framebuffer : public H2M::FramebufferH2M
@@ -43,7 +43,7 @@ private:
 
 	std::vector<H2M::RefH2M<H2M::Image2D_H2M>> m_Attachments;
 
-	std::vector<std::function<void(H2M::RefH2M<HazelFramebuffer>)>> m_ResizeCallbacks;
+	std::vector<std::function<void(H2M::RefH2M<FramebufferH2M>)>> m_ResizeCallbacks;
 
 	// DirectX 11 framebuffer resources (added here as a reminder, not used yet)
 	H2M::RefH2M<DX11Texture2D> m_RenderTarget;

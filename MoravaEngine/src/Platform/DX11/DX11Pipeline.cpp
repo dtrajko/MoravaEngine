@@ -2,10 +2,10 @@
 
 #include "DX11Context.h"
 #include "DX11Framebuffer.h"
-#include "H2M/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 
-DX11Pipeline::DX11Pipeline(const H2M::PipelineSpecification& spec)
+DX11Pipeline::DX11Pipeline(const H2M::PipelineSpecificationH2M& spec)
 	: m_Specification(spec)
 {
 	Invalidate();
@@ -62,10 +62,6 @@ void DX11Pipeline::Invalidate()
 		// TODO: DestroyShaderModule(device, shaderStages[0].module, nullptr); // ???
 		// TODO: DestroyShaderModule(device, shaderStages[1].module, nullptr); // ???
 	}
-}
-
-void DX11Pipeline::SetUniformBuffer(H2M::RefH2M<H2M::UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set)
-{
 }
 
 void DX11Pipeline::Bind()

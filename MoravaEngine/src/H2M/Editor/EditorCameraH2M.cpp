@@ -141,7 +141,7 @@ namespace H2M {
 
 		if (e.GetEventType() == EventTypeH2M::WindowResize)
 		{
-			WindowResizeEvent& event = (WindowResizeEvent&)e;
+			WindowResizeEventH2M& event = (WindowResizeEventH2M&)e;
 			if (event.GetWidth() != 0 && event.GetHeight() != 0)
 			{
 				SetViewportSize((float)event.GetWidth(), (float)event.GetHeight());

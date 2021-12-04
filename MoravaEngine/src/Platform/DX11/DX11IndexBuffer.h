@@ -4,11 +4,11 @@
 
 #include "DX11.h"
 
-#include "H2M/Core/Buffer.h"
-#include "H2M/Renderer/IndexBuffer.h"
+#include "H2M/Core/BufferH2M.h"
+#include "H2M/Renderer/IndexBufferH2M.h"
 
 
-class DX11IndexBuffer : public H2M::IndexBuffer
+class DX11IndexBuffer : public H2M::IndexBufferH2M
 {
 public:
 	DX11IndexBuffer(void* data, uint32_t size);

@@ -8,7 +8,7 @@
 namespace Hazel
 {
 
-	class DX11UniformBuffer : public UniformBuffer
+	class DX11UniformBuffer : public UniformBufferH2M
 	{
 	public:
 		DX11UniformBuffer(uint32_t size, uint32_t binding);

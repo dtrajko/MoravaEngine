@@ -99,7 +99,7 @@ namespace H2M
 		static void SubmitMeshWithShader(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<HazelShader> shader);
 
 		static void DrawAABB(RefH2M<MeshH2M> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
-		static void DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		static void DrawAABB(const AABB_H2M& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 
 		static RefH2M<Texture2D_H2M> GetWhiteTexture();
 		static RefH2M<TextureCubeH2M> GetBlackCubeTexture();

@@ -8,8 +8,8 @@
 #include "DX11Material.h"
 
 #include "H2M/Core/RefH2M.h"
-#include "H2M/Renderer/VertexBuffer.h"
-#include "H2M/Renderer/IndexBuffer.h"
+#include "H2M/Renderer/VertexBufferH2M.h"
+#include "H2M/Renderer/IndexBufferH2M.h"
 
 
 struct DX11MaterialSlot
@@ -20,14 +20,14 @@ struct DX11MaterialSlot
 };
 
 
-class DX11Mesh : public H2M::RefCounted
+class DX11Mesh : public H2M::RefCountedH2M
 {
 public:
 	DX11Mesh(const wchar_t* fullPath);
 	~DX11Mesh();
 
-	const H2M::RefH2M<H2M::VertexBuffer>& GetVertexBuffer() { return m_VertexBuffer; };
-	const H2M::RefH2M<H2M::IndexBuffer>& GetIndexBuffer() { return m_IndexBuffer; };
+	const H2M::RefH2M<H2M::VertexBufferH2M>& GetVertexBuffer() { return m_VertexBuffer; };
+	const H2M::RefH2M<H2M::IndexBufferH2M>& GetIndexBuffer() { return m_IndexBuffer; };
 
 	const DX11MaterialSlot GetMaterialSlot(uint32_t slot);
 	size_t GetNumMaterialSlots();
@@ -39,8 +39,8 @@ private:
 		glm::vec3& tangent, glm::vec3& binormal);
 
 private:
-	H2M::RefH2M<H2M::VertexBuffer> m_VertexBuffer;
-	H2M::RefH2M<H2M::IndexBuffer> m_IndexBuffer;
+	H2M::RefH2M<H2M::VertexBufferH2M> m_VertexBuffer;
+	H2M::RefH2M<H2M::IndexBufferH2M> m_IndexBuffer;
 
 	std::vector<DX11MaterialSlot> m_MaterialSlots;
 

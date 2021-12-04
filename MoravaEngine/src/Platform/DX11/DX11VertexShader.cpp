@@ -39,7 +39,7 @@ void DX11VertexShader::BindConstantBuffer(H2M::RefH2M<DX11ConstantBuffer> consta
 	DX11Context::Get()->GetDX11DeviceContext()->VSSetConstantBuffers(0, 1, &constantBuffer->m_Buffer);
 }
 
-void DX11VertexShader::SetTextures(const std::vector<H2M::RefH2M<H2M::HazelTexture>>& textures)
+void DX11VertexShader::SetTextures(const std::vector<H2M::RefH2M<H2M::TextureH2M>>& textures)
 {
 	size_t textureCount = textures.size();
 
