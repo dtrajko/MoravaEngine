@@ -12,7 +12,7 @@ namespace H2M
 	{
 	public:
 		VulkanMaterialH2M(const RefH2M<HazelShader>& shader, const std::string& name = "");
-		VulkanMaterialH2M(RefH2M<HazelMaterial> material, const std::string& name = "");
+		VulkanMaterialH2M(RefH2M<MaterialH2M> material, const std::string& name = "");
 		virtual ~VulkanMaterialH2M();
 
 		virtual void Invalidate() override;
@@ -66,7 +66,7 @@ namespace H2M
 			buffer.Write((byte*)&value, decl->GetSize(), decl->GetOffset());
 		}
 
-		void Set(const std::string& name, const RefH2M<HazelTexture>& texture)
+		void Set(const std::string& name, const RefH2M<TextureH2M>& texture)
 		{
 			auto decl = FindResourceDeclaration(name);
 			if (!decl)
@@ -180,8 +180,8 @@ namespace H2M
 			PendingDescriptorType Type = PendingDescriptorType::None;
 			VkWriteDescriptorSet WDS;
 			VkDescriptorImageInfo ImageInfo{};
-			RefH2M<HazelTexture> Texture;
-			RefH2M<HazelImage> Image;
+			RefH2M<TextureH2M> Texture;
+			RefH2M<ImageH2M> Image;
 			VkDescriptorImageInfo SubmittedImageInfo{};
 		};
 
@@ -190,8 +190,8 @@ namespace H2M
 			PendingDescriptorType Type = PendingDescriptorType::None;
 			VkWriteDescriptorSet WDS;
 			std::vector<VkDescriptorImageInfo> ImageInfos;
-			std::vector<RefH2M<HazelTexture>> Textures;
-			std::vector<RefH2M<HazelImage>> Images;
+			std::vector<RefH2M<TextureH2M>> Textures;
+			std::vector<RefH2M<ImageH2M>> Images;
 			VkDescriptorImageInfo SubmittedImageInfo{};
 		};
 
@@ -202,9 +202,9 @@ namespace H2M
 		uint32_t m_MaterialFlags = 0;
 
 		Buffer m_UniformStorageBuffer;
-		std::vector<RefH2M<HazelTexture>> m_Textures; // TODO: Texture should only be stored as images
-		std::vector<std::vector<RefH2M<HazelTexture>>> m_TextureArrays;
-		std::vector<RefH2M<HazelImage>> m_Images;
+		std::vector<RefH2M<TextureH2M>> m_Textures; // TODO: Texture should only be stored as images
+		std::vector<std::vector<RefH2M<TextureH2M>>> m_TextureArrays;
+		std::vector<RefH2M<ImageH2M>> m_Images;
 
 		VulkanShader::ShaderMaterialDescriptorSet m_DescriptorSets[3];
 

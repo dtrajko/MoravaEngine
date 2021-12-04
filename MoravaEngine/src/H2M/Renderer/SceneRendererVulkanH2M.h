@@ -13,7 +13,7 @@
 namespace H2M
 {
 
-	class SceneRendererVulkanH2M
+	class SceneRendererVulkanH2M : public RefCountedH2M
 	{
 	public:
 		static void Init();

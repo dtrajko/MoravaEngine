@@ -1,45 +1,46 @@
-#include "ImGuiLayer.h"
+#include "ImGuiLayerH2M.h"
 
-#include "Hazel/Renderer/RendererAPI.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
-#include "Hazel/Platform/OpenGL/OpenGLImGuiLayer.h"
-#include "Hazel/Platform/Vulkan/VulkanImGuiLayer.h"
+#include "H2M/Platform/OpenGL/OpenGLImGuiLayerH2M.h"
+#include "H2M/Platform/Vulkan/VulkanImGuiLayerH2M.h"
 #include "Platform/DX11/DX11ImGuiLayer.h"
 
 #include <imgui.h>
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	ImGuiLayer::ImGuiLayer()
-		: Layer("Untitled Layer")
+	ImGuiLayerH2M::ImGuiLayerH2M()
+		: LayerH2M("Untitled Layer")
 	{
 	}
 
-	ImGuiLayer::ImGuiLayer(const std::string& name)
-		: Layer(name)
+	ImGuiLayerH2M::ImGuiLayerH2M(const std::string& name)
+		: LayerH2M(name)
 	{
 	}
 
-	ImGuiLayer::~ImGuiLayer()
+	ImGuiLayerH2M::~ImGuiLayerH2M()
 	{
 	}
 
-	ImGuiLayer* ImGuiLayer::Create()
+	ImGuiLayerH2M* ImGuiLayerH2M::Create()
 	{
-		switch (RendererAPI::Current())
+		switch (RendererAPI_H2M::Current())
 		{
-		case RendererAPIType::None:   return nullptr;
-		case RendererAPIType::OpenGL: return new OpenGLImGuiLayer("OpenGLImGuiLayer");
-		case RendererAPIType::Vulkan: return new VulkanImGuiLayer("VulkanImGuiLayer");
-		case RendererAPIType::DX11:   return new DX11ImGuiLayer("DX11ImGuiLayer");
+		case RendererAPITypeH2M::None:   return nullptr;
+		case RendererAPITypeH2M::OpenGL: return new OpenGLImGuiLayerH2M("OpenGLImGuiLayerH2M");
+		case RendererAPITypeH2M::Vulkan: return new VulkanImGuiLayerH2M("VulkanImGuiLayerH2M");
+		case RendererAPITypeH2M::DX11:   return new DX11ImGuiLayer("DX11ImGuiLayer");
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	}
 
-	void ImGuiLayer::SetDarkThemeColors()
+	void ImGuiLayerH2M::SetDarkThemeColors()
 	{
 		auto& colors = ImGui::GetStyle().Colors;
 		colors[ImGuiCol_WindowBg] = ImVec4{ 0.1f, 0.105f, 0.11f, 1.0f };

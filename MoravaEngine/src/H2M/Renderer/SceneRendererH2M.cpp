@@ -1,7 +1,7 @@
 #include "SceneRendererH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanFramebuffer.h"
-#include "H2M/Renderer/HazelFramebuffer.h"
+#include "H2M/Renderer/FramebufferH2M.h"
 #include "H2M/Renderer/HazelRenderer.h"
 #include "H2M/Renderer/RenderPass.h"
 #include "H2M/Renderer/Renderer2D.h"
@@ -26,7 +26,7 @@ namespace H2M
 			SceneRendererCameraH2M SceneCamera;
 
 			// Resources
-			RefH2M<HazelMaterial> SkyboxMaterial;
+			RefH2M<MaterialH2M> SkyboxMaterial;
 			RefH2M<Environment> SceneEnvironment;
 			float SkyboxLod = 0.0f;
 			float SceneEnvironmentIntensity;
@@ -37,7 +37,7 @@ namespace H2M
 
 		RefH2M<Texture2D_H2M> BRDFLUT;
 		RefH2M<HazelShader> CompositeShader;
-		RefH2M<HazelMaterial> CompositeMaterial;
+		RefH2M<MaterialH2M> CompositeMaterial;
 		RefH2M<MoravaShader> BloomBlurShader;
 		RefH2M<MoravaShader> BloomBlendShader;
 
@@ -50,12 +50,12 @@ namespace H2M
 		RefH2M<Pipeline> CompositePipeline;
 		RefH2M<Pipeline> SkyboxPipeline;
 		RefH2M<Pipeline> ShadowPassPipeline;
-		RefH2M<HazelMaterial> SkyboxMaterial;
+		RefH2M<MaterialH2M> SkyboxMaterial;
 
 		struct DrawCommand
 		{
 			RefH2M<HazelMesh> Mesh;
-			RefH2M<HazelMaterial> Material;
+			RefH2M<MaterialH2M> Material;
 			glm::mat4 Transform;
 		};
 
@@ -67,9 +67,9 @@ namespace H2M
 		// Grid
 		RefH2M<Pipeline> GridPipeline;
 		RefH2M<HazelShader> GridShader;
-		RefH2M<HazelMaterial> GridMaterial;
-		RefH2M<HazelMaterial> OutlineMaterial;
-		RefH2M<HazelMaterial> OutlineAnimMaterial;
+		RefH2M<MaterialH2M> GridMaterial;
+		RefH2M<MaterialH2M> OutlineMaterial;
+		RefH2M<MaterialH2M> OutlineAnimMaterial;
 
 		SceneRendererOptionsH2M Options;
 
@@ -283,7 +283,7 @@ namespace H2M
 
 	void SceneRendererH2M::SubmitMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent)
 	{
-		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), RefH2M<HazelMaterial>());
+		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), RefH2M<MaterialH2M>());
 	}
 
 	void SceneRendererH2M::SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent)
@@ -291,7 +291,7 @@ namespace H2M
 		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
 	}
 
-	void SceneRendererH2M::SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<HazelMaterial> overrideMaterial)
+	void SceneRendererH2M::SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<MaterialH2M> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
@@ -299,8 +299,8 @@ namespace H2M
 
 	void SceneRendererH2M::SubmitSelectedMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform)
 	{
-		s_Data.SelectedMeshDrawList.push_back({ mesh, RefH2M<HazelMaterial>(), transform });
-		// s_Data.ShadowPassDrawList.push_back({ mesh, RefH2M<HazelMaterial>, transform });
+		s_Data.SelectedMeshDrawList.push_back({ mesh, RefH2M<MaterialH2M>(), transform });
+		// s_Data.ShadowPassDrawList.push_back({ mesh, RefH2M<MaterialH2M>, transform });
 	}
 
 	RefH2M<RenderPass> SceneRendererH2M::GetFinalRenderPass()

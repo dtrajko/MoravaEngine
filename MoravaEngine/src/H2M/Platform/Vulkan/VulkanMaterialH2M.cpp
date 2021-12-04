@@ -41,7 +41,7 @@ namespace Hazel {
 		}
 
 		// Init();
-		// HazelRenderer::RegisterShaderDependency(shader, RefH2M<HazelMaterial>(this));
+		// HazelRenderer::RegisterShaderDependency(shader, RefH2M<MaterialH2M>(this));
 	}
 
 	VulkanMaterial::~VulkanMaterial()

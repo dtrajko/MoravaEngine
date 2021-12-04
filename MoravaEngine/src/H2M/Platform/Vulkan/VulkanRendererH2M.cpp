@@ -123,7 +123,7 @@ namespace H2M
 		struct DrawCommand
 		{
 			RefH2M<MeshH2M> Mesh;
-			RefH2M<HazelMaterial> Material;
+			RefH2M<MaterialH2M> Material;
 			glm::mat4 Transform;
 		};
 
@@ -148,7 +148,7 @@ namespace H2M
 		// VulkanRendererData::DrawCommand drawCommand = {};
 		// drawCommand.Mesh = mesh;
 		// drawCommand.Transform = transform;
-		s_Data.DrawList.push_back({ mesh, RefH2M<HazelMaterial>(), transform });
+		s_Data.DrawList.push_back({ mesh, RefH2M<MaterialH2M>(), transform });
 	}
 	/**** END to be removed from VulkanRenderer ****/
 
@@ -1378,7 +1378,7 @@ namespace H2M
 		}
 	}
 
-	void VulkanRendererH2M::RenderQuad(RefH2M<Pipeline> pipeline, RefH2M<HazelMaterial> material, const glm::mat4& transform)
+	void VulkanRendererH2M::RenderQuad(RefH2M<Pipeline> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform)
 	{
 		RefH2M<VulkanMaterial> vulkanMaterial = material.As<VulkanMaterial>();
 		vulkanMaterial->UpdateForRendering(); // Broken at the moment
@@ -1412,7 +1412,7 @@ namespace H2M
 		}
 	}
 
-	void VulkanRendererH2M::SubmitFullscreenQuad(RefH2M<Pipeline> pipeline, RefH2M<HazelMaterial> material)
+	void VulkanRendererH2M::SubmitFullscreenQuad(RefH2M<Pipeline> pipeline, RefH2M<MaterialH2M> material)
 	{
 		RefH2M<VulkanMaterial> vulkanMaterial = material.As<VulkanMaterial>();
 		vulkanMaterial->UpdateForRendering();

@@ -3,7 +3,7 @@
 #include "Framebuffer/MoravaFramebuffer.h"
 
 #include "H2M/Core/RefH2M.h"
-#include "H2M/Renderer/HazelFramebuffer.h"
+#include "H2M/Renderer/FramebufferH2M.h"
 
 #include "Framebuffer/FramebufferTexture.h"
 #include "Framebuffer/Renderbuffer.h"

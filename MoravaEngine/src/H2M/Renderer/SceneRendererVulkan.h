@@ -75,7 +75,7 @@ namespace H2M {
 		static void SubmitMesh(MeshComponentH2M meshComponent, TransformComponent transformComponent);
 		static void SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponent transformComponent);
 
-		static void SubmitMesh(RefH2M<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<HazelMaterial> overrideMaterial = RefH2M<HazelMaterial>());
+		static void SubmitMesh(RefH2M<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<MaterialH2M> overrideMaterial = RefH2M<MaterialH2M>());
 		static void SubmitSelectedMesh(RefH2M<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 		static RefH2M<RenderPass> GetFinalRenderPass();

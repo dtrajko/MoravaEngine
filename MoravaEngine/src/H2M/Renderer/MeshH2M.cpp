@@ -1496,7 +1496,7 @@ namespace H2M
 			}
 
 			// RefH2M<HazelMaterialInstance> material = RefH2M<HazelMaterialInstance>();
-			RefH2M<HazelMaterial> material = RefH2M<HazelMaterial>();
+			RefH2M<MaterialH2M> material = RefH2M<MaterialH2M>();
 			if (m_Materials.size())
 			{
 				material = m_Materials[submesh->MaterialIndex];

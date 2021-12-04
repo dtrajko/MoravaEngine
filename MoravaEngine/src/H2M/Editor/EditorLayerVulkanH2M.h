@@ -108,7 +108,7 @@ namespace H2M
 
 	private:
 		RefH2M<UserPreferencesH2M> m_UserPreferences;
-		ScopeH2M<SceneHierarchyPanel> m_SceneHierarchyPanel, m_PrefabHierarchyPanel;
+		ScopeH2M<SceneHierarchyPanelH2M> m_SceneHierarchyPanel, m_PrefabHierarchyPanel;
 
 		RefH2M<SceneH2M> m_RuntimeScene, m_EditorScene, m_SimulationScene, m_CurrentScene;
 		RefH2M<SceneRendererVulkanH2M> m_ViewportRenderer;

@@ -16,9 +16,6 @@
 #include "H2M/Renderer/RendererTypesH2M.h"
 
 
-typedef void* ImTextureID;
-
-
 namespace H2M
 {
 

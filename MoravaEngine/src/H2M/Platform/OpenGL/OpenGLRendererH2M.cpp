@@ -198,7 +198,7 @@ namespace H2M
 		s_Data->ActiveRenderPass = nullptr;
 	}
 
-	void OpenGLRenderer::SubmitFullscreenQuad(RefH2M<Pipeline> pipeline, RefH2M<HazelMaterial> material)
+	void OpenGLRenderer::SubmitFullscreenQuad(RefH2M<Pipeline> pipeline, RefH2M<MaterialH2M> material)
 	{
 		bool depthTest = true;
 		if (material)
@@ -419,7 +419,7 @@ namespace H2M
 		}
 	}
 
-	void OpenGLRenderer::RenderQuad(RefH2M<Pipeline> pipeline, RefH2M<HazelMaterial> material, const glm::mat4& transform)
+	void OpenGLRenderer::RenderQuad(RefH2M<Pipeline> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform)
 	{
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
 		pipeline->Bind();

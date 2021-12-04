@@ -1359,6 +1359,9 @@
     <ClCompile Include="src\H2M\Editor\ContentBrowserPanelH2M.cpp">
       <Filter>H2M\Editor</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLImGuiLayerH2M.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2959,6 +2962,9 @@
     </ClInclude>
     <ClInclude Include="src\H2M\Asset\AssetMetadataH2M.h">
       <Filter>H2M\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLImGuiLayerH2M.h">
+      <Filter>H2M\Platform\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

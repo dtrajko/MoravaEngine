@@ -193,6 +193,7 @@
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLContextH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLFramebufferH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLImageH2M.cpp" />
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLImGuiLayerH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLIndexBufferH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLMaterialH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLPipelineH2M.cpp" />
@@ -769,6 +770,7 @@
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLContextH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLFramebufferH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLImageH2M.h" />
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLImGuiLayerH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLIndexBufferH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLMaterialH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLPipelineH2M.h" />

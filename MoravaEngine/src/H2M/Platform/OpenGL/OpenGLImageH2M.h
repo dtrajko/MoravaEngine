@@ -39,15 +39,10 @@ namespace H2M {
 
 		virtual float GetAspectRatio() const override { return (float)m_Specification.Width / (float)m_Specification.Height; }
 
-		virtual ImageSpecificationH2M& GetSpecification() override { return m_Specification; }
-		virtual const ImageSpecificationH2M& GetSpecification() const override { return m_Specification; }
-
 		void RT_Invalidate() {}
 
 		virtual BufferH2M GetBuffer() const override { return m_ImageData; }
 		virtual BufferH2M& GetBuffer() override { return m_ImageData; }
-
-		virtual void CreatePerLayerImageViews() override {};
 
 		virtual uint64_t GetHash() const override { return (uint64_t)m_RendererID; }
 

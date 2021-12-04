@@ -133,7 +133,7 @@ void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene)
     s_Data.SceneData.ActiveLight.Multiplier = 1.0f;
 
     // Grid
-    // s_Data.OutlineMaterial = H2M::RefH2M<HazelMaterial>::Create(s_ShaderGrid);
+    // s_Data.OutlineMaterial = H2M::RefH2M<MaterialH2M>::Create(s_ShaderGrid);
     s_Data.GridMaterial = new Material(s_ShaderGrid);
     s_ShaderGrid->Bind();
     s_ShaderGrid->SetFloat("u_Scale", s_GridScale);

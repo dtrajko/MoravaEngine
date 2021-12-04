@@ -275,8 +275,8 @@ namespace H2M {
 		float m_TimeMultiplier = 1.0f;
 		bool m_AnimationPlaying = true;
 
-		friend class Renderer;
-		friend class SceneHierarchyPanel;
+		friend class RendererH2M;
+		friend class SceneHierarchyPanelH2M;
 
 	};
 }

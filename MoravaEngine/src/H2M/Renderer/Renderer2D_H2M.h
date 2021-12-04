@@ -13,7 +13,7 @@
 namespace H2M
 {
 
-	class Renderer2D_H2M
+	class Renderer2D_H2M : public RefCountedH2M
 	{
 	public:
 		static void Init();
