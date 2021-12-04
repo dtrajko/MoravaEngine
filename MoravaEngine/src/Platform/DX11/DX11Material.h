@@ -47,7 +47,7 @@ public:
 	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D_H2M>& texture) override;
 	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D_H2M>& texture, uint32_t arrayIndex) override;
 	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::TextureCubeH2M>& texture) override;
-	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::HazelImage2D>& image) override;
+	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Image2D_H2M>& image) override;
 
 	virtual float& GetFloat(const std::string& name) override;
 	virtual int32_t& GetInt(const std::string& name) override;

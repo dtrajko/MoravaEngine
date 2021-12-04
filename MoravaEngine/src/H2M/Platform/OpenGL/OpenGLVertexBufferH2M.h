@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
 #include "H2M/Core/BufferH2M.h"
@@ -20,27 +27,27 @@ namespace H2M {
 	class OpenGLVertexBufferH2M : public VertexBufferH2M
 	{
 	public:
-		OpenGLVertexBufferH2M(void* data, uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Static);
-		OpenGLVertexBufferH2M(uint32_t size, VertexBufferUsage usage = VertexBufferUsage::Dynamic);
+		OpenGLVertexBufferH2M(void* data, uint32_t size, VertexBufferUsageH2M usage = VertexBufferUsageH2M::Static);
+		OpenGLVertexBufferH2M(uint32_t size, VertexBufferUsageH2M usage = VertexBufferUsageH2M::Dynamic);
 		virtual ~OpenGLVertexBufferH2M();
 
 		virtual void SetData(void* data, uint32_t size, uint32_t offset = 0);
 		virtual void Bind() const;
 		virtual void RT_SetData(void* buffer, uint32_t size, uint32_t offset = 0) override;
 
-		virtual const VertexBufferLayout& GetLayout() const override { return m_Layout; }
-		virtual void SetLayout(const VertexBufferLayout& layout) override { m_Layout = layout; }
+		virtual const VertexBufferLayoutH2M& GetLayout() const override { return m_Layout; }
+		virtual void SetLayout(const VertexBufferLayoutH2M& layout) override { m_Layout = layout; }
 
 		virtual uint32_t GetSize() const { return m_Size; }
-		virtual RendererID GetRendererID() const { return m_RendererID; }
+		virtual RendererID_H2M GetRendererID() const { return m_RendererID; }
 
 	private:
 		uint32_t m_RendererID = 0;
 		uint32_t m_Size;
-		VertexBufferUsage m_Usage;
-		VertexBufferLayout m_Layout;
+		VertexBufferUsageH2M m_Usage;
+		VertexBufferLayoutH2M m_Layout;
 
-		Buffer m_LocalData;
+		BufferH2M m_LocalData;
 	};
 
 }

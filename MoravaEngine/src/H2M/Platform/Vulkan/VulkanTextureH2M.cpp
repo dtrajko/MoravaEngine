@@ -16,10 +16,10 @@ namespace H2M {
 			switch (format)
 			{
 				// case ImageFormatH2M::RGB: return VK_FORMAT_R8G8B8_UNORM;
-			case ImageFormatH2M::RGBA: return VK_FORMAT_R8G8B8A8_UNORM;
+				case ImageFormatH2M::RGBA: return VK_FORMAT_R8G8B8A8_UNORM;
 				// case ImageFormatH2M::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
-			case ImageFormatH2M::RGBA16F: return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case ImageFormatH2M::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
+				case ImageFormatH2M::RGBA16F: return VK_FORMAT_R32G32B32A32_SFLOAT;
+				case ImageFormatH2M::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 			}
 			Log::GetLogger()->error("TextureFormatToVkFormat: ImageFormatH2M '{0}' not supported!", format);
 			H2M_CORE_ASSERT(false);
@@ -208,30 +208,9 @@ namespace H2M {
 		SetImageLayout(cmdbuffer, image, oldImageLayout, newImageLayout, subresourceRange, srcStageMask, dstStageMask);
 	}
 
-	VulkanTexture2D::VulkanTexture2D(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TextureProperties properties)
-		: m_Format(format)
-	{
-		m_Width = width;
-		m_Height = height;
-
-		// H2M_CORE_ASSERT(format == ImageFormat::RGBA);
-		uint32_t size = width * height * 4;
-
-		m_ImageData = Buffer::Copy(data, size);
-		memcpy(m_ImageData.Data, data, m_ImageData.Size);
-
-		//	RefH2M<VulkanTexture2D> instance = this;
-		//	HazelRenderer::Submit([instance]() mutable {});
-		{
-			Invalidate();
-		}
-	}
-
-	VulkanTexture2D::VulkanTexture2D(const std::string& path, TextureProperties properties)
+	VulkanTexture2D_H2M::VulkanTexture2D_H2M(const std::string& path, bool srgb, TextureWrapH2M wrap)
 		: m_Path(path)
 	{
-		Log::GetLogger()->info("VulkanTexture2D::VulkanTexture2D(path='{0}', srgb='{1}')", path, false);
-
 		int width, height, channels;
 
 		if (stbi_is_hdr(path.c_str()))
@@ -239,9 +218,9 @@ namespace H2M {
 			// m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
 			// m_ImageData.Size = width * height * 4 * sizeof(float);
 			// m_Format = ImageFormatH2M::RGBA16F;
-			m_ImageData.Data = (byte*)stbi_load(path.c_str(), &width, &height, &channels, 4); // or stbi_loadf?
+			m_ImageData.Data = (byte*)stbi_load(path.c_str(), &width, &height, &channels, 4);
 			m_ImageData.Size = width * height * 4;
-			m_Format = ImageFormatH2M::RGBA; // or RGBA32F?
+			m_Format = ImageFormatH2M::RGBA;
 		}
 		else
 		{
@@ -272,27 +251,47 @@ namespace H2M {
 
 		// H2M_CORE_ASSERT(channels == 4);
 
-		//	RefH2M<VulkanTexture2D> instance = this;
-		//	HazelRenderer::Submit([instance]() mutable {});
-		{
-			Invalidate();
-		}
+		//	Ref<VulkanTexture2D_H2M> instance = this;
+		//	HazelRenderer::Submit([instance]() mutable
+		//	{
+		//		instance->Invalidate();
+		//	});
 
+		Invalidate();
 	}
 
-	/**** BEGIN method removed in Hazel Live 18.03.2021 #2 ****
-	VulkanTexture2D::VulkanTexture2D(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrap wrap)
+	VulkanTexture2D_H2M::VulkanTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TextureWrapH2M wrap)
+		: m_Format(format)
+	{
+		m_Width = width;
+		m_Height = height;
+
+		// H2M_CORE_ASSERT(format == ImageFormat::RGBA);
+		uint32_t size = width * height * 4;
+
+		m_ImageData = BufferH2M::Copy(data, size);
+		memcpy(m_ImageData.Data, data, m_ImageData.Size);
+
+		//	Ref<VulkanTexture2D_H2M> instance = this;
+		//	HazelRenderer::Submit([instance]() mutable
+		//	{
+		//		instance->Invalidate();
+		//	});
+
+		Invalidate();
+	}
+
+	VulkanTexture2D_H2M::VulkanTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrapH2M wrap)
 	{
 		H2M_CORE_ASSERT(false);
 	}
-	/**** END method removed in Hazel Live 18.03.2021 #2 ****/
 
-	VulkanTexture2D::~VulkanTexture2D()
+	VulkanTexture2D_H2M::~VulkanTexture2D_H2M()
 	{
-		// RefH2M<VulkanTexture2D> instance = this;
+		// Ref<VulkanTexture2D_H2M> instance = this;
 		// HazelRenderer::Submit([instance]() {});
 		{
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 			vkDestroyImageView(vulkanDevice, m_DescriptorImageInfo.imageView, nullptr);
 			vkDestroyImage(vulkanDevice, m_VkImage, nullptr);
@@ -301,9 +300,9 @@ namespace H2M {
 		}
 	}
 
-	void VulkanTexture2D::Invalidate()
+	void VulkanTexture2D_H2M::Invalidate()
 	{
-		auto device = VulkanContext::GetCurrentDevice();
+		auto device = VulkanContextH2M::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
 
 		VkDeviceSize size = m_ImageData.Size;
@@ -319,7 +318,7 @@ namespace H2M {
 		VkBuffer stagingBuffer;
 		VkDeviceMemory stagingMemory;
 
-		VulkanAllocator allocator(std::string("Texture2D"));
+		VulkanAllocatorH2M allocator(std::string("Texture2D"));
 
 		VkBufferCreateInfo bufferCreateInfo{};
 		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -471,61 +470,59 @@ namespace H2M {
 		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
-	void VulkanTexture2D::Bind(uint32_t slot) const
+	void VulkanTexture2D_H2M::Bind(uint32_t slot) const
 	{
 	}
 
-	void VulkanTexture2D::Lock()
+	void VulkanTexture2D_H2M::Lock()
 	{
 	}
 
-	void VulkanTexture2D::Unlock()
+	void VulkanTexture2D_H2M::Unlock()
 	{
 	}
 
-	void VulkanTexture2D::Resize(uint32_t width, uint32_t height)
-	{
-	}
+	// void VulkanTexture2D_H2M::Resize(uint32_t width, uint32_t height) {} // method removed in Hazel Live 18.03.2021 #2
 
-	Buffer VulkanTexture2D::GetWriteableBuffer()
+	BufferH2M VulkanTexture2D_H2M::GetWriteableBuffer()
 	{
 		return m_ImageData;
 	}
 
-	bool VulkanTexture2D::Loaded() const
+	bool VulkanTexture2D_H2M::Loaded() const
 	{
 		return true;
 	}
 
-	const std::string& VulkanTexture2D::GetPath() const
+	const std::string& VulkanTexture2D_H2M::GetPath() const
 	{
 		return m_Path;
 	}
 
 	/**** BEGIN removed in Hazel Live 18.03.2021 #2 ****
-	ImageFormatH2M VulkanTexture2D::GetFormat() const
+	ImageFormatH2M VulkanTexture2D_H2M::GetFormat() const
 	{
 		return m_Format;
 	}
 	/**** END removed in Hazel Live 18.03.2021 #2 ****/
 
-	uint32_t VulkanTexture2D::GetMipLevelCount() const
+	uint32_t VulkanTexture2D_H2M::GetMipLevelCount() const
 	{
 		return Utils::MipCount(m_Width, m_Height);
 	}
 
-	std::pair<uint32_t, uint32_t> VulkanTexture2D::GetMipSize(uint32_t mip) const
+	std::pair<uint32_t, uint32_t> VulkanTexture2D_H2M::GetMipSize(uint32_t mip) const
 	{
-		Log::GetLogger()->error("VulkanTexture2D::GetMipSize({0}) - method not implemented!", mip);
+		Log::GetLogger()->error("VulkanTexture2D_H2M::GetMipSize({0}) - method not implemented!", mip);
 		return std::pair<uint32_t, uint32_t>();
 	}
 
-	void VulkanTexture2D::GenerateMips()
+	void VulkanTexture2D_H2M::GenerateMips()
 	{
-		auto device = VulkanContext::GetCurrentDevice();
+		auto device = VulkanContextH2M::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
 
-		VkCommandBuffer blitCmd = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
+		VkCommandBuffer blitCmd = VulkanContextH2M::GetCurrentDevice()->GetCommandBuffer(true);
 
 		// Base image barrier
 		VkImageMemoryBarrier barrier = {};
@@ -600,7 +597,7 @@ namespace H2M {
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			subresourceRange);
 
-		VulkanContext::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
+		VulkanContextH2M::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
 
 		m_MipsGenerated = true;
 	}
@@ -609,22 +606,22 @@ namespace H2M {
 	// TextureCube
 	//////////////////////////////////////////////////////////////////////////////////
 
-	VulkanTextureCube::VulkanTextureCube(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TextureProperties properties)
+	VulkanTextureCube::VulkanTextureCube(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data)
 		: m_Format(format), m_Width(width), m_Height(height)
 	{
 		if (data)
 		{
 			uint32_t size = width * height * 4 * 6; // six layers
-			m_LocalStorage = Buffer::Copy(data, size);
+			m_LocalStorage = BufferH2M::Copy(data, size);
 		}
 
-		// RefH2M<VulkanTextureCube> instance = this;
+		// Ref<VulkanTextureCube> instance = this;
 		// HazelRenderer::Submit([instance]() mutable { instance->Invalidate(); });
 
 		Invalidate();
 	}
 
-	VulkanTextureCube::VulkanTextureCube(const std::string& path, TextureProperties properties)
+	VulkanTextureCube::VulkanTextureCube(const std::string& path)
 	{
 		Log::GetLogger()->error("VulkanTextureCube::VulkanTextureCube('{0}') - method not implemented!", path);
 	}
@@ -635,7 +632,7 @@ namespace H2M {
 
 	void VulkanTextureCube::Invalidate()
 	{
-		auto device = VulkanContext::GetCurrentDevice();
+		auto device = VulkanContextH2M::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
 
 		// VkDeviceSize size = m_Width * m_Height * 4 * 2;
@@ -648,7 +645,7 @@ namespace H2M {
 		// VkMemoryRequirements memoryRequirements = {};
 		// memoryRequirements.size = size;
 
-		VulkanAllocator allocator(std::string("TextureCube"));
+		VulkanAllocatorH2M allocator(std::string("TextureCube"));
 
 		// Create optimal tiled target image on the device
 		VkImageCreateInfo imageCreateInfo{};
@@ -739,14 +736,14 @@ namespace H2M {
 
 	uint32_t VulkanTextureCube::GetMipLevelCount() const
 	{
-		return VulkanRenderer::s_MipMapsEnabled ? Utils::MipCount(m_Width, m_Height) : 1;
+		return VulkanRendererH2M::s_MipMapsEnabled ? Utils::MipCount(m_Width, m_Height) : 1;
 	}
 
 	VkImageView VulkanTextureCube::CreateImageViewSingleMip(uint32_t mip)
 	{
 		// TODO: assert to check mip count
 
-		auto device = VulkanContext::GetCurrentDevice();
+		auto device = VulkanContextH2M::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
 
 		VkFormat format = Utils::VulkanImageFormat(m_Format);
@@ -770,10 +767,10 @@ namespace H2M {
 
 	void VulkanTextureCube::GenerateMips(bool readonly)
 	{
-		auto device = VulkanContext::GetCurrentDevice();
+		auto device = VulkanContextH2M::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
 
-		VkCommandBuffer blitCmd = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
+		VkCommandBuffer blitCmd = VulkanContextH2M::GetCurrentDevice()->GetCommandBuffer(true);
 
 		uint32_t mipLevels = GetMipLevelCount();
 		for (uint32_t face = 0; face < 6; face++)
@@ -884,7 +881,7 @@ namespace H2M {
 				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
 		}
 
-		VulkanContext::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
+		VulkanContextH2M::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
 
 		m_MipsGenerated = true;
 
@@ -920,7 +917,7 @@ namespace H2M {
 				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-
+				
 				vkCmdPipelineBarrier(blitCmd,
 					VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
 					0,
@@ -936,7 +933,7 @@ namespace H2M {
 				blit.srcSubresource.baseArrayLayer = face;
 				blit.srcSubresource.layerCount = 1;
 				blit.dstOffsets[0] = { 0, 0, 0 };
-				blit.dstOffsets[1] = { mipWidth / 2, mipHeight / 2, 1 };
+				blit.dstOffsets[1] = { mipWidth / 2, mipHeight / 2, 1};
 				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				blit.dstSubresource.mipLevel = i;
 				blit.dstSubresource.baseArrayLayer = face;

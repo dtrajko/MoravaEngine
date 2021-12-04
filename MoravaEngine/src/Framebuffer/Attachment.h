@@ -46,7 +46,7 @@ public:
 	virtual void Unbind() = 0;
 
 	// virtual methods from H2M::HazelTexture
-	virtual H2M::ImageFormatH2M GetFormat() const override ;
+	virtual H2M::ImageFormatH2M GetFormat() const override;
 	virtual uint64_t GetHash() const override { Log::GetLogger()->error("Attachment::GetHash - method not implemented!"); return 0; }
 	virtual H2M::TextureTypeH2M GetType() const override { Log::GetLogger()->error("Attachment::GetType - method not implemented!"); return H2M::TextureTypeH2M(); }
 	virtual bool operator==(const TextureH2M& other) const override { Log::GetLogger()->error("Attachment::operator== - method not implemented!"); return false; }

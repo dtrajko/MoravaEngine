@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "OpenGLVertexArrayH2M.h"
 
 #include "H2M/Platform/OpenGL/OpenGLVertexBufferH2M.h"

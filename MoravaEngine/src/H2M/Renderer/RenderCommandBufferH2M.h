@@ -9,19 +9,6 @@
 namespace H2M
 {
 
-	struct PipelineStatisticsH2M
-	{
-		uint64_t InputAssemblyVertices = 0;
-		uint64_t InputAssemblyPrimitives = 0;
-		uint64_t VertexShaderInvocations = 0;
-		uint64_t ClippingInvocations = 0;
-		uint64_t ClippingPrimitives = 0;
-		uint64_t FragmentShaderInvocations = 0;
-		uint64_t ComputeShaderInvocations = 0;
-
-		// TODO(Yan): tesselation shader stats when we have them
-	};
-
 	class RenderCommandBufferH2M : public RefCountedH2M
 	{
 	public:
@@ -32,7 +19,7 @@ namespace H2M
 		virtual void Submit() = 0;
 
 		virtual float GetExecutionGPUTime(uint32_t frameIndex, uint32_t queryIndex = 0) const = 0;
-		virtual const PipelineStatistics& GetPipelineStatistics(uint32_t frameIndex) const = 0;
+		virtual const PipelineStatisticsH2M& GetPipelineStatistics(uint32_t frameIndex) const = 0;
 
 		virtual uint64_t BeginTimestampQuery() = 0;
 		virtual void EndTimestampQuery(uint64_t queryID) = 0;

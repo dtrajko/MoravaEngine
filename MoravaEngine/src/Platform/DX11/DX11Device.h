@@ -9,7 +9,7 @@
 #include <unordered_set>
 
 	
-class DX11PhysicalDevice : public H2M::RefCounted
+class DX11PhysicalDevice : public H2M::RefCountedH2M
 {
 public:
 	DX11PhysicalDevice();
@@ -21,7 +21,7 @@ public:
 };
 
 // Represents a logical device
-class DX11Device : public H2M::RefCounted
+class DX11Device : public H2M::RefCountedH2M
 {
 public:
 	DX11Device(const H2M::RefH2M<DX11PhysicalDevice>& physicalDevice);

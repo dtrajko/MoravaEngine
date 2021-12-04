@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #pragma once
@@ -22,13 +28,6 @@ namespace H2M
 		RGB     = 1,
 		RGBA    = 2,
 		Float16 = 3
-	};
-
-	enum class TextureWrapH2M
-	{
-		None   = 0,
-		Clamp  = 1,
-		Repeat = 2
 	};
 
 	enum class TextureTypeH2M

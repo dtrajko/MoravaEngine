@@ -44,7 +44,7 @@ private:
 
 	void SetupShaders(); // Usually in Renderer* classes
 
-	bool OnKeyPressed(H2M::KeyPressedEvent& e);
+	bool OnKeyPressed(H2M::KeyPressedEventH2M& e);
 
 	// Temporary/experimental
 	virtual void OnEntitySelected(H2M::EntityH2M entity) override;

@@ -41,7 +41,7 @@ void DX11IndexBuffer::Bind() const
 	DX11Context::Get()->GetDX11DeviceContext()->IASetIndexBuffer(m_Buffer, DXGI_FORMAT_R32_UINT, 0);
 }
 
-H2M::RendererID DX11IndexBuffer::GetRendererID() const
+H2M::RendererID_H2M DX11IndexBuffer::GetRendererID() const
 {
 	Log::GetLogger()->error("GetRendererID() Method not implemented yet!");
 	return H2M::RendererID();
@@ -56,4 +56,4 @@ DX11IndexBuffer::~DX11IndexBuffer()
 
 // void DX11IndexBuffer::SetData(void* buffer, uint32_t size, uint32_t offset) {}
 // void DX11IndexBuffer::Bind() const {}
-// H2M::RendererID DX11IndexBuffer::GetRendererID() const { return 0; }
+// H2M::RendererID_H2M DX11IndexBuffer::GetRendererID() const { return 0; }

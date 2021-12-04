@@ -185,7 +185,9 @@
     <ClCompile Include="src\H2M\Core\LogH2M.cpp" />
     <ClCompile Include="src\H2M\Core\TimestepH2M.cpp" />
     <ClCompile Include="src\H2M\Core\UUID_H2M.cpp" />
+    <ClCompile Include="src\H2M\Editor\ContentBrowserPanelH2M.cpp" />
     <ClCompile Include="src\H2M\Editor\EditorCameraH2M.cpp" />
+    <ClCompile Include="src\H2M\Editor\EditorLayerVulkanH2M.cpp" />
     <ClCompile Include="src\H2M\Editor\SceneHierarchyPanelH2M.cpp" />
     <ClCompile Include="src\H2M\ImGui\ImGuiLayerH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLContextH2M.cpp" />
@@ -196,6 +198,7 @@
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLPipelineH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLRendererH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLRenderPassH2M.cpp" />
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLShaderH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLTextureH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLVertexArrayH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLVertexBufferH2M.cpp" />
@@ -218,6 +221,7 @@
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTextureH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanVertexBufferH2M.cpp" />
+    <ClCompile Include="src\H2M\Project\UserPreferencesH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\CameraH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\FramebufferH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\ImageH2M.cpp" />
@@ -749,12 +753,15 @@
     <ClInclude Include="src\H2M\Core\LayerStackH2M.h" />
     <ClInclude Include="src\H2M\Core\LogH2M.h" />
     <ClInclude Include="src\H2M\Core\Math\AABB_H2M.h" />
+    <ClInclude Include="src\H2M\Core\Math\RayH2M.h" />
     <ClInclude Include="src\H2M\Core\MouseCodesH2M.h" />
     <ClInclude Include="src\H2M\Core\RefH2M.h" />
     <ClInclude Include="src\H2M\Core\TimerH2M.h" />
     <ClInclude Include="src\H2M\Core\TimestepH2M.h" />
     <ClInclude Include="src\H2M\Core\UUID_H2M.h" />
+    <ClInclude Include="src\H2M\Editor\ContentBrowserPanelH2M.h" />
     <ClInclude Include="src\H2M\Editor\EditorCameraH2M.h" />
+    <ClInclude Include="src\H2M\Editor\EditorLayerVulkanH2M.h" />
     <ClInclude Include="src\H2M\Editor\SceneHierarchyPanelH2M.h" />
     <ClInclude Include="src\H2M\ImGui\ImGuiH2M.h" />
     <ClInclude Include="src\H2M\ImGui\ImGuiLayerH2M.h" />
@@ -766,6 +773,7 @@
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLPipelineH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLRendererH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLRenderPassH2M.h" />
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLShaderH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLTextureH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLVertexArrayH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLVertexBufferH2M.h" />
@@ -788,6 +796,7 @@
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanTestLayer.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanTextureH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanVertexBufferH2M.h" />
+    <ClInclude Include="src\H2M\Project\UserPreferencesH2M.h" />
     <ClInclude Include="src\H2M\Renderer\CameraH2M.h" />
     <ClInclude Include="src\H2M\Renderer\FramebufferH2M.h" />
     <ClInclude Include="src\H2M\Renderer\ImageH2M.h" />

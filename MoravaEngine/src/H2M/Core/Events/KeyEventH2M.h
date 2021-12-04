@@ -28,10 +28,10 @@ namespace H2M
 		int m_KeyCode;
 	};
 
-	class KeyPressedEvent : public KeyEventH2M
+	class KeyPressedEventH2M : public KeyEventH2M
 	{
 	public:
-		KeyPressedEvent(int keycode, int repeatCount)
+		KeyPressedEventH2M(int keycode, int repeatCount)
 			: KeyEventH2M(keycode), m_RepeatCount(repeatCount) {}
 
 		inline int GetRepeatCount() const { return m_RepeatCount; }
@@ -48,10 +48,10 @@ namespace H2M
 		int m_RepeatCount;
 	};
 
-	class KeyReleasedEvent : public KeyEventH2M
+	class KeyReleasedEventH2M : public KeyEventH2M
 	{
 	public:
-		KeyReleasedEvent(int keycode)
+		KeyReleasedEventH2M(int keycode)
 			: KeyEventH2M(keycode) {}
 
 		std::string ToString() const override
@@ -64,10 +64,10 @@ namespace H2M
 		EVENT_CLASS_TYPE(KeyReleased)
 	};
 
-	class KeyTypedEvent : public KeyEventH2M
+	class KeyTypedEventH2M : public KeyEventH2M
 	{
 	public:
-		KeyTypedEvent(int keycode)
+		KeyTypedEventH2M(int keycode)
 			: KeyEventH2M(keycode) {}
 
 		std::string ToString() const override

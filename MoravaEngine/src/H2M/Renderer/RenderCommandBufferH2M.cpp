@@ -13,7 +13,7 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 			case RendererAPITypeH2M::None:    return RefH2M<RenderCommandBufferH2M>();
-			case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanRenderCommandBuffer>::Create(count, debugName);
+			case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanRenderCommandBufferH2M>::Create(count, debugName);
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI");
@@ -26,7 +26,7 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 			case RendererAPITypeH2M::None:    return RefH2M<RenderCommandBufferH2M>();
-			case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanRenderCommandBuffer>::Create(debugName, true);
+			case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanRenderCommandBufferH2M>::Create(debugName, true);
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI");

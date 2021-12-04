@@ -1,49 +1,48 @@
 #include "VulkanTestLayer.h"
 
-#include "H2M/Platform/Vulkan/VulkanContext.h"
-#include "H2M/Platform/Vulkan/VulkanVertexBuffer.h"
-#include "H2M/Platform/Vulkan/VulkanIndexBuffer.h"
-#include "H2M/Platform/Vulkan/VulkanSwapChain.h"
-#include "H2M/Renderer/Renderer2D.h"
-
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#include "H2M/Platform/Vulkan/VulkanVertexBufferH2M.h"
+#include "H2M/Platform/Vulkan/VulkanIndexBufferH2M.h"
+#include "H2M/Platform/Vulkan/VulkanSwapChainH2M.h"
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
+#include "H2M/Renderer/Renderer2D_H2M.h"
 
 #include "Core/Application.h"
 #include "HazelVulkan/ExampleVertex.h"
 
 
-namespace Hazel {
+namespace H2M {
 
 	RefH2M<SceneH2M> VulkanTestLayer::s_Scene;
 	SceneHierarchyPanelH2M* VulkanTestLayer::s_SceneHierarchyPanel;
-	ContentBrowserPanel* VulkanTestLayer::s_ContentBrowserPanel;
+	ContentBrowserPanelH2M* VulkanTestLayer::s_ContentBrowserPanel;
 	MaterialEditorPanel* VulkanTestLayer::s_MaterialEditorPanel;
 
 	struct SceneRendererData
 	{
-		const HazelScene* ActiveScene = nullptr;
+		const SceneH2M* ActiveScene = nullptr;
 
 		struct SceneInfo
 		{
-			SceneRendererCamera SceneCamera;
-			Environment SceneEnvironment;
+			SceneRendererCameraH2M SceneCamera;
+			EnvironmentH2M SceneEnvironment;
 			float SkyboxLod;
-			LightEnvironment SceneLightEnvironment;
+			LightEnvironmentH2M SceneLightEnvironment;
 		} SceneData;
 
 		// Resources
-		RefH2M<Pipeline> GeometryPipeline;
-		RefH2M<Pipeline> CompositePipeline;
-		RefH2M<Pipeline> SkyboxPipeline;
-		RefH2M<Pipeline> GridPipeline;
-		RefH2M<HazelMaterial> SkyboxMaterial;
+		RefH2M<PipelineH2M> GeometryPipeline;
+		RefH2M<PipelineH2M> CompositePipeline;
+		RefH2M<PipelineH2M> SkyboxPipeline;
+		RefH2M<PipelineH2M> GridPipeline;
+		RefH2M<MaterialH2M> SkyboxMaterial;
 
-		RefH2M<RenderPass> GeoPass;
+		RefH2M<RenderPassH2M> GeoPass;
 
 		struct DrawCommand
 		{
 			RefH2M<MeshH2M> Mesh;
-			RefH2M<HazelMaterial> Material;
+			RefH2M<MaterialH2M> Material;
 			glm::mat4 Transform;
 		};
 
@@ -51,7 +50,7 @@ namespace Hazel {
 		std::vector<DrawCommand> SelectedMeshDrawList;
 
 		// Grid
-		RefH2M<HazelMaterial> GridMaterial;
+		RefH2M<MaterialH2M> GridMaterial;
 
 		// SceneRendererOptions Options; // moved to VulkanRendererH2M
 	};
@@ -76,14 +75,14 @@ namespace Hazel {
 	{
 		s_Scene = RefH2M<H2M::SceneH2M>::Create();
 		s_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(s_Scene);
-		s_ContentBrowserPanel = new H2M::ContentBrowserPanel();
+		s_ContentBrowserPanel = new H2M::ContentBrowserPanelH2M();
 		s_MaterialEditorPanel = new MaterialEditorPanel();
 		s_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 	}
 
 	void VulkanTestLayer::OnDetach() {}
 
-	void VulkanTestLayer::OnUpdate(Timestep ts)
+	void VulkanTestLayer::OnUpdate(TimestepH2M ts)
 	{
 		m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)VulkanRendererH2M::GetViewportWidth(), (float)VulkanRendererH2M::GetViewportHeight(), 0.01f, 1000.0f));
 
@@ -140,11 +139,11 @@ namespace Hazel {
 		/**** END Back to Vulkan // Hazel Live (17.02.2021) ****/
 	}
 
-	void VulkanTestLayer::OnEvent(Event& event)
+	void VulkanTestLayer::OnEvent(EventH2M& event)
 	{
 		m_Camera.OnEvent(event);
 
-		if (event.GetEventType() == EventType::WindowResize)
+		if (event.GetEventType() == EventTypeH2M::WindowResize)
 		{
 			WindowResizeEvent& e = (WindowResizeEvent&)event;
 			if (e.GetWidth() != 0 && e.GetHeight() != 0)

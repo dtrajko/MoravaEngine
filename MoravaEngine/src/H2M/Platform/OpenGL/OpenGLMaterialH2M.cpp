@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "OpenGLMaterial.h"
 
 #include "Hazel/Renderer/HazelRenderer.h"

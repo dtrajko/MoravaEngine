@@ -2,17 +2,16 @@
 
 #pragma once
 
-#include "H2M/Core/Layer.h"
-#include "H2M/Core/Timestep.h"
-#include "H2M/Editor/ContentBrowserPanel.h"
-#include "H2M/Core/Events/Event.h"
-#include "H2M/Platform/Vulkan/VulkanPipeline.h"
-#include "H2M/Platform/Vulkan/VulkanShader.h"
-#include "H2M/Platform/Vulkan/VulkanTexture.h"
-#include "H2M/Renderer/SceneRenderer.h"
-
-#include "H2M/Scene/SceneH2M.h"
+#include "H2M/Core/LayerH2M.h"
+#include "H2M/Core/TimestepH2M.h"
+#include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
+#include "H2M/Core/Events/EventH2M.h"
+#include "H2M/Platform/Vulkan/VulkanPipelineH2M.h"
+#include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
+#include "H2M/Platform/Vulkan/VulkanTextureH2M.h"
+#include "H2M/Renderer/SceneRendererH2M.h"
+#include "H2M/Scene/SceneH2M.h"
 
 #include "Core/MoravaLayer.h"
 #include "Core/Window.h"
@@ -20,7 +19,7 @@
 #include "Scene/Scene.h"
 
 
-namespace Hazel {
+namespace H2M {
 
 	/**
 	 * VulkanTestLayer is to be replaced with SceneRendererH2M
@@ -34,8 +33,8 @@ namespace Hazel {
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnUpdate(Timestep ts) override;
-		virtual void OnEvent(Event& event) override;
+		virtual void OnUpdate(TimestepH2M ts) override;
+		virtual void OnEvent(EventH2M& event) override;
 		virtual void OnImGuiRender(::Window* mainWindow, ::Scene* scene) override;
 		virtual void OnRender(::Window* mainWindow, ::Scene* scene) override;
 
@@ -54,14 +53,14 @@ namespace Hazel {
 	private:
 		static std::vector<RefH2M<MeshH2M>> s_Meshes;
 		RefH2M<Texture2D_H2M> m_Texture;
-		EditorCamera m_Camera;
+		EditorCameraH2M m_Camera;
 
 		// std::vector<glm::vec4> m_RandomColors;
 
 	public:
 		static RefH2M<SceneH2M> s_Scene;
 		static SceneHierarchyPanelH2M* s_SceneHierarchyPanel;
-		static ContentBrowserPanel* s_ContentBrowserPanel;
+		static ContentBrowserPanelH2M* s_ContentBrowserPanel;
 		static MaterialEditorPanel* s_MaterialEditorPanel;
 
 	};

@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #pragma once
@@ -71,13 +78,13 @@ namespace H2M
 
 	};
 
-	class OpenGLTextureCube : public TextureCubeH2M
+	class OpenGLTextureCubeH2M : public TextureCubeH2M
 	{
 	public:
-		OpenGLTextureCube(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr);
-		OpenGLTextureCube(ImageFormatH2M format, uint32_t width, uint32_t height, bool notUsed);
-		OpenGLTextureCube(const std::string& path);
-		virtual ~OpenGLTextureCube();
+		OpenGLTextureCubeH2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr);
+		OpenGLTextureCubeH2M(ImageFormatH2M format, uint32_t width, uint32_t height, bool notUsed);
+		OpenGLTextureCubeH2M(const std::string& path);
+		virtual ~OpenGLTextureCubeH2M();
 
 		virtual void Bind(uint32_t slot = 0) const;
 
@@ -96,7 +103,7 @@ namespace H2M
 
 		virtual bool operator==(const TextureH2M& other) const override
 		{
-			return m_RendererID == ((OpenGLTextureCube&)other).m_RendererID;
+			return m_RendererID == ((OpenGLTextureCubeH2M&)other).m_RendererID;
 		}
 
 		RendererID_H2M GetRendererID() const { return m_RendererID; }

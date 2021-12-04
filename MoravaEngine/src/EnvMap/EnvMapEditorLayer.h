@@ -2,8 +2,10 @@
 
 #include "../../pch.h"
 
-#include "H2M/Editor/ContentBrowserPanel.h"
-#include "H2M/Renderer/Renderer2D.h"
+#include "H2M/Editor/ContentBrowserPanelH2M.h"
+#include "H2M/Editor/SceneHierarchyPanelH2M.h"
+#include "H2M/Renderer/Renderer2D_H2M.h"
+#include "H2M/Renderer/SceneRendererH2M.h"
 
 #include "Editor/EntitySelection.h"
 #include "Editor/MaterialEditorPanel.h"
@@ -11,9 +13,6 @@
 #include "EnvMap/EnvMapSceneRenderer.h"
 #include "EnvMap/EnvMapSharedData.h"
 #include "Framebuffer/ShadowMap.h"
-
-#include "H2M/Editor/SceneHierarchyPanelH2M.h"
-#include "H2M/Renderer/SceneRendererH2M.h"
 
 
 enum class SelectionMode
@@ -79,8 +78,8 @@ public:
 	void OnSelected(const SelectedSubmesh& selectionContext);
 	void OnEntityDeleted(H2M::EntityH2M e);
 
-	bool OnKeyPressedEvent(KeyPressedEvent& e); // EditorLayer::OnKeyPressedEvent()
-	bool OnMouseButtonPressed(MouseButtonPressedEvent& e); // EditorLayer::OnMouseButtonPressedEvent()
+	bool OnKeyPressedEvent(H2M::KeyPressedEventH2M& e); // EditorLayer::OnKeyPressedEvent()
+	bool OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e); // EditorLayer::OnMouseButtonPressedEvent()
 
 	void SelectEntity(H2M::EntityH2M e);
 
@@ -114,11 +113,11 @@ public:
 	inline bool* GetDisplayRay() { return &EnvMapSharedData::s_DisplayRay; };
 
 	// Renderer
-	void DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest);
+	void DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest);
 	void SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
 	// EditorLayer
-	void OnEvent(Event& e);
+	void OnEvent(H2M::EventH2M& e);
 
 	// from SceneHazelEnvMap
 	void SetupRenderFramebuffer();
@@ -231,7 +230,7 @@ private:
 	bool m_ReloadScriptOnPlay = true;
 
 	H2M::SceneHierarchyPanelH2M* m_SceneHierarchyPanel;
-	H2M::ContentBrowserPanel* m_ContentBrowserPanel;
+	H2M::ContentBrowserPanelH2M* m_ContentBrowserPanel;
 	MaterialEditorPanel* m_MaterialEditorPanel;
 
 	// Hazel LIVE! #015

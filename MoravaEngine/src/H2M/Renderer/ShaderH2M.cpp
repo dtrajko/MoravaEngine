@@ -124,16 +124,16 @@ namespace H2M
 		return false;
 	}
 
-	H2M::Buffer ShaderH2M::GetVSMaterialUniformBuffer()
+	H2M::BufferH2M ShaderH2M::GetVSMaterialUniformBuffer()
 	{
 		Log::GetLogger()->warn("ShaderH2M::GetVSMaterialUniformBuffer - Method not implemented!");
-		return H2M::Buffer();
+		return H2M::BufferH2M();
 	}
 
-	H2M::Buffer ShaderH2M::GetPSMaterialUniformBuffer()
+	H2M::BufferH2M ShaderH2M::GetPSMaterialUniformBuffer()
 	{
 		Log::GetLogger()->warn("ShaderH2M::GetPSMaterialUniformBuffer - Method not implemented!");
-		return H2M::Buffer();
+		return H2M::BufferH2M();
 	}
 
 	ShaderUniform::ShaderUniform(const std::string& name, ShaderUniformType type, uint32_t size, uint32_t offset)

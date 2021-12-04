@@ -11,7 +11,7 @@
 namespace H2M
 {
 
-	enum class PrimitiveTopology
+	enum class PrimitiveTopologyH2M
 	{
 		None = 0,
 		Points,
@@ -22,7 +22,7 @@ namespace H2M
 		TriangleFan
 	};
 
-	struct PipelineSpecification
+	struct PipelineSpecificationH2M
 	{
 		RefH2M<ShaderH2M> Shader;
 		VertexBufferLayoutH2M Layout;
@@ -31,7 +31,7 @@ namespace H2M
 		std::string DebugName;
 	};
 
-	struct PipelineStatistics
+	struct PipelineStatisticsH2M
 	{
 		uint64_t InputAssemblyVertices = 0;
 		uint64_t InputAssemblyPrimitives = 0;
@@ -49,15 +49,15 @@ namespace H2M
 	public:
 		virtual ~PipelineH2M() = default;
 
-		virtual PipelineSpecification& GetSpecification() = 0;
-		virtual const PipelineSpecification& GetSpecification() const = 0;
+		virtual PipelineSpecificationH2M& GetSpecification() = 0;
+		virtual const PipelineSpecificationH2M& GetSpecification() const = 0;
 
 		virtual void Invalidate() = 0;
 
 		// TEMP: remove this when render command buffers are a thing
 		virtual void Bind() = 0;
 
-		static RefH2M<PipelineH2M> Create(const PipelineSpecification& spec);
+		static RefH2M<PipelineH2M> Create(const PipelineSpecificationH2M& spec);
 
 	};
 

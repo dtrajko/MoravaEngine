@@ -3,9 +3,7 @@
 #pragma once
 
 #include "H2M/Renderer/TextureH2M.h"
-
 #include "VulkanH2M.h"
-
 #include "VulkanImageH2M.h"
 
 
@@ -15,15 +13,14 @@ namespace H2M
 	class VulkanTexture2D_H2M : public Texture2D_H2M
 	{
 	public:
-		VulkanTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TexturePropertiesH2M properties);
-		VulkanTexture2D_H2M(const std::string& path, TexturePropertiesH2M properties);
-		// VulkanTexture2D(const std::string& path, bool srgb = false);
-		// VulkanTexture2D(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrap wrap = TextureWrap::Clamp);
+		VulkanTexture2D_H2M(const std::string& path, bool srgb = false, TextureWrapH2M wrap = TextureWrapH2M::Clamp);
+		VulkanTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TextureWrapH2M wrap = TextureWrapH2M::Clamp);
+		VulkanTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrapH2M wrap = TextureWrapH2M::Clamp);
 		virtual ~VulkanTexture2D_H2M();
 
 		void Invalidate();
 
-		ImageFormatH2M GetFormat() const override { return m_Format; };
+		ImageFormatH2M GetFormat() const override { return m_Image->GetFormat(); };
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 
@@ -34,11 +31,10 @@ namespace H2M
 		void Lock() override;
 		void Unlock() override;
 
+		// void Resize(uint32_t width, uint32_t height) override; // method removed in Hazel Live 18.03.2021 #2
+
 		BufferH2M GetWriteableBuffer() override;
-
-		virtual void Resize(uint32_t width, uint32_t height) override;
-
-		virtual bool Loaded() const override;
+		bool Loaded() const override;
 		const std::string& GetPath() const override;
 		uint32_t GetMipLevelCount() const override;
 
@@ -64,7 +60,6 @@ namespace H2M
 		uint32_t m_Width;
 		uint32_t m_Height;
 		uint32_t m_Channels;
-		TexturePropertiesH2M m_Properties;
 
 		BufferH2M m_ImageData;
 
@@ -80,14 +75,14 @@ namespace H2M
 		bool m_MipsGenerated = false;
 	};
 
-	class VulkanTextureCubeH2M : public TextureCubeH2M
+	class VulkanTextureCube : public TextureCubeH2M
 	{
 	public:
-		VulkanTextureCubeH2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TexturePropertiesH2M properties);
-		VulkanTextureCubeH2M(const std::string& path, TexturePropertiesH2M properties);
-		virtual ~VulkanTextureCubeH2M();
+		VulkanTextureCube(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr);
+		VulkanTextureCube(const std::string& path);
+		virtual ~VulkanTextureCube();
 
-		virtual const std::string& GetPath() const override { return std::string(); }
+		virtual const std::string& GetPath() const override { return ""; }
 
 		virtual void Bind(uint32_t slot = 0) const override {}
 
@@ -108,7 +103,7 @@ namespace H2M
 
 		void GenerateMips(bool readonly = false);
 
-		// abstract methods in HazelTexture
+		// abstract methods in TextureH2M
 		virtual uint32_t GetID() const override { return uint32_t(); /* Not implemented */ }
 
 		// virtual RendererID GetRendererID() const override { return uint32_t(); // Removed in Hazel Live 18.03.2021 #2
@@ -116,12 +111,10 @@ namespace H2M
 
 	private:
 		void Invalidate();
-
 	private:
 		ImageFormatH2M m_Format = ImageFormatH2M::None;
 		uint32_t m_Width = 0;
 		uint32_t m_Height = 0;
-		TexturePropertiesH2M m_Properties;
 
 		bool m_MipsGenerated = false;
 

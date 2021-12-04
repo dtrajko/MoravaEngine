@@ -14,11 +14,11 @@ namespace H2M
 	class VulkanPipelineH2M : public PipelineH2M
 	{
 	public:
-		VulkanPipelineH2M(const PipelineSpecification& spec);
+		VulkanPipelineH2M(const PipelineSpecificationH2M& spec);
 		virtual ~VulkanPipelineH2M();
 
-		virtual PipelineSpecification& GetSpecification() { return m_Specification; }
-		virtual const PipelineSpecification& GetSpecification() const { return m_Specification; }
+		virtual PipelineSpecificationH2M& GetSpecification() { return m_Specification; }
+		virtual const PipelineSpecificationH2M& GetSpecification() const { return m_Specification; }
 
 		virtual void Invalidate() override;
 
@@ -28,7 +28,7 @@ namespace H2M
 		VkPipelineLayout GetVulkanPipelineLayout() { return m_PipelineLayout; }
 
 	private:
-		PipelineSpecification m_Specification;
+		PipelineSpecificationH2M m_Specification;
 
 		VkPipelineLayout m_PipelineLayout;
 		VkPipeline m_VulkanPipeline;

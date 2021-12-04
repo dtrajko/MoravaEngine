@@ -78,7 +78,7 @@ void DX11Framebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate
 	}
 }
 
-void DX11Framebuffer::AddResizeCallback(const std::function<void(H2M::RefH2M<H2M::HazelFramebuffer>)>& func)
+void DX11Framebuffer::AddResizeCallback(const std::function<void(H2M::RefH2M<H2M::FramebufferH2M>)>& func)
 {
 	m_ResizeCallbacks.push_back(func);
 }

@@ -1,20 +1,28 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #pragma once
 
-#include "Hazel/Renderer/Pipeline.h"
+#include "H2M/Renderer/PipelineH2M.h"
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	class OpenGLPipeline : public Pipeline
+	class OpenGLPipelineH2M : public PipelineH2M
 	{
 	public:
-		OpenGLPipeline(const PipelineSpecification& spec);
-		virtual ~OpenGLPipeline();
+		OpenGLPipelineH2M(const PipelineSpecificationH2M& spec);
+		virtual ~OpenGLPipelineH2M();
 
-		virtual PipelineSpecification& GetSpecification() { return m_Specification; }
-		virtual const PipelineSpecification& GetSpecification() const { return m_Specification; }
+		virtual PipelineSpecificationH2M& GetSpecification() { return m_Specification; }
+		virtual const PipelineSpecificationH2M& GetSpecification() const { return m_Specification; }
 
 		virtual void Invalidate() override;
 
@@ -22,7 +30,7 @@ namespace Hazel {
 		virtual void Bind() override;
 
 	private:
-		PipelineSpecification m_Specification;
+		PipelineSpecificationH2M m_Specification;
 		uint32_t m_VertexArrayRendererID = 0;
 
 	};

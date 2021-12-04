@@ -1,14 +1,22 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #pragma once
 
-#include "Hazel/Renderer/RendererAPI.h"
-#include "Hazel/Renderer/RendererCapabilities.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
+#include "H2M/Renderer/RendererCapabilitiesH2M.h"
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	class OpenGLRenderer : public RendererAPI
+	class OpenGLRendererH2M : public RendererAPI_H2M
 	{
 	public:
 		virtual void Init() override;
@@ -17,19 +25,19 @@ namespace Hazel {
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
 
-		virtual void BeginRenderPass(const Ref<RenderPass>& renderPass) override;
+		virtual void BeginRenderPass(const RefH2M<RenderPassH2M>& renderPass) override;
 		virtual void EndRenderPass() override;
-		virtual void SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material) override;
+		virtual void SubmitFullscreenQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material) override;
 
-		virtual void SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow) override;
+		virtual void SetSceneEnvironment(RefH2M<EnvironmentH2M> environment, RefH2M<Image2D_H2M> shadow) override;
 
-		virtual void RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
-		virtual void RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform) override;
-		virtual void RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform) override;
+		virtual void RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform) override;
+		virtual void RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform) override;
+		virtual void RenderQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform) override;
 
-		virtual std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> CreateEnvironmentMap(const std::string& filepath) override;
+		virtual std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) override;
 
-		virtual RendererCapabilities& GetCapabilities() override;
+		virtual RendererCapabilitiesH2M& GetCapabilities() override;
 
 	};
 

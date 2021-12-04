@@ -601,12 +601,12 @@ namespace H2M
 		}
 		// entity.AddComponent<TagComponent>(name.empty() ? "Entity" : name);
 
-		auto& entityMap = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;
+		auto& EntityMapH2M = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;
 
 		Log::GetLogger()->debug("CreateEntityWithID uuid = '{0}', name = '{1}'", uuid, name);
 
-		// HZ_CORE_ASSERT(entityMap.find(uuid) == entityMap.end());
-		entityMap[uuid] = entity;
+		// HZ_CORE_ASSERT(EntityMapH2M.find(uuid) == EntityMapH2M.end());
+		EntityMapH2M[uuid] = entity;
 		return entity;
 	}
 

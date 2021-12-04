@@ -1,25 +1,33 @@
-#include "RenderCommandQueue.h"
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
+#include "RenderCommandQueueH2M.h"
 
 #include <memory>
 #include <functional>
 #include <cstring>
 
 
-namespace Hazel {
+namespace H2M
+{
 
-    RenderCommandQueue::RenderCommandQueue()
+    RenderCommandQueueH2M::RenderCommandQueueH2M()
     {
         m_CommandBuffer = new uint8_t[10 * 1024 * 1024]; // 10MB buffer
         m_CommandBufferPtr = m_CommandBuffer;
         memset(m_CommandBuffer, 0, 10 * 1024 * 1024);
     }
 
-    RenderCommandQueue::~RenderCommandQueue()
+    RenderCommandQueueH2M::~RenderCommandQueueH2M()
     {
         delete[] m_CommandBuffer;
     }
 
-    void* RenderCommandQueue::Allocate(RenderCommandFn fn, uint32_t size)
+    void* RenderCommandQueueH2M::Allocate(RenderCommandFn fn, uint32_t size)
     {
         // TODO: alignment
         *(RenderCommandFn*)m_CommandBufferPtr = fn;
@@ -35,7 +43,7 @@ namespace Hazel {
         return memory;
     }
 
-    void RenderCommandQueue::Execute()
+    void RenderCommandQueueH2M::Execute()
     {
         uint8_t* buffer = m_CommandBuffer;
 

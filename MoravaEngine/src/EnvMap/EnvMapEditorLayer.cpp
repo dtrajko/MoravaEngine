@@ -1,10 +1,7 @@
 #include "EnvMapEditorLayer.h"
 
-#include "H2M/Renderer/RendererAPI.h"
-#include "H2M/Renderer/RenderPass.h"
-#include "H2M/Scene/SceneSerializer.h"
-#include "H2M/Script/ScriptEngine.h"
-#include "H2M/Utils/PlatformUtils.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
+#include "H2M/Renderer/RenderPassH2M.h"
 
 #include "H2M/Scene/ComponentsH2M.h"
 
@@ -87,10 +84,9 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapEditorLayer::SelectEntity, this, std::placeholders::_1));
     m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvMapEditorLayer::OnEntityDeleted, this, std::placeholders::_1));
     m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene); // already done in constructor
-    H2M::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
     EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
 
-    m_ContentBrowserPanel = new H2M::ContentBrowserPanel();
+    m_ContentBrowserPanel = new H2M::ContentBrowserPanelH2M();
 
     m_MaterialEditorPanel = new MaterialEditorPanel();
 
@@ -136,12 +132,12 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 
 void EnvMapEditorLayer::Init()
 {
-    Application::Get()->GetWindow()->SetEventCallback(HZ_BIND_EVENT_FN(EnvMapEditorLayer::OnEvent));
+    Application::Get()->GetWindow()->SetEventCallback(H2M_BIND_EVENT_FN(EnvMapEditorLayer::OnEvent));
 
     SetupShaders();
 
     bool depthTest = true;
-    H2M::Renderer2D::Init();
+    H2M::Renderer2D_H2M::Init();
 }
 
 EnvMapEditorLayer::~EnvMapEditorLayer()
@@ -163,12 +159,12 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
     float fov = 60.0f;
     float aspectRatio = 1.778f; // 16/9
-    EnvMapSharedData::s_EditorCamera = new H2M::EditorCamera(fov, aspectRatio, 0.1f, 1000.0f);
+    EnvMapSharedData::s_EditorCamera = new H2M::EditorCameraH2M(fov, aspectRatio, 0.1f, 1000.0f);
     EnvMapSharedData::s_RuntimeCamera = new RuntimeCamera(scene->GetSettings().cameraPosition, scene->GetSettings().cameraStartYaw, scene->GetSettings().cameraStartPitch,
         fov, aspectRatio, scene->GetSettings().cameraMoveSpeed, 0.1f);
 
-    EnvMapSharedData::s_EditorCamera->SetProjectionType(H2M::SceneCamera::ProjectionType::Perspective);
-    EnvMapSharedData::s_RuntimeCamera->SetProjectionType(H2M::SceneCamera::ProjectionType::Perspective);
+    EnvMapSharedData::s_EditorCamera->SetProjectionType(H2M::SceneCameraH2M::ProjectionType::Perspective);
+    EnvMapSharedData::s_RuntimeCamera->SetProjectionType(H2M::SceneCameraH2M::ProjectionType::Perspective);
 
     EnvMapSharedData::s_EditorCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
     EnvMapSharedData::s_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
@@ -190,7 +186,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     // tc.Rotation = EnvMapSceneRenderer::GetActiveLight().Direction;
     tc.Rotation = glm::normalize(glm::vec3(-0.05f, -0.85f, -0.05f));
     // m_DirectionalLightEntity.AddComponent<H2M::MeshComponentH2M>(meshQuad);
-    auto& dlc = m_DirectionalLightEntity.AddComponent<H2M::DirectionalLightComponent>();
+    auto& dlc = m_DirectionalLightEntity.AddComponent<H2M::DirectionalLightComponentH2M>();
 
     EnvMapSharedData::s_PointLightEntity = CreateEntity("Point Light");
     // m_PointLightEntity.AddComponent<H2M::MeshComponentH2M>(meshQuad);
@@ -237,7 +233,7 @@ H2M::EntityH2M EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    H2M::RefH2M<H2M::MeshH2M> mesh = H2M::RefH2M<H2M::MeshH2M>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, H2M::RefH2M<H2M::HazelMaterial>(), isAnimated);
+    H2M::RefH2M<H2M::MeshH2M> mesh = H2M::RefH2M<H2M::MeshH2M>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, H2M::RefH2M<H2M::MaterialH2M>(), isAnimated);
 
     mesh->SetTimeMultiplier(1.0f);
 
@@ -246,7 +242,6 @@ H2M::EntityH2M EnvMapEditorLayer::LoadEntity(std::string fullPath)
     H2M::EntityH2M meshEntity = CreateEntity(fileNameNoExt);
     // m_MeshEntity: NoECS version
     meshEntity.AddComponent<H2M::MeshComponentH2M>(mesh);
-    meshEntity.AddComponent<H2M::ScriptComponent>("Example.Script");
 
     EnvMapSceneRenderer::SubmitEntityEnvMap(meshEntity);
     // LoadEnvMapMaterials(mesh, meshEntity);
@@ -366,7 +361,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_EditorScene->OnRenderEditor(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep, *EnvMapSharedData::s_EditorCamera);
+        EnvMapSharedData::s_EditorScene->OnRenderEditor(timestep, *EnvMapSharedData::s_EditorCamera);
 
         if (m_DrawOnTopBoundingBoxes)
         {
@@ -383,13 +378,13 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
         EnvMapSharedData::s_RuntimeScene->OnUpdate(timestep);
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(timestep);
         break;
     case SceneState::Pause:
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(timestep);
         break;
     }
 
@@ -483,8 +478,9 @@ void EnvMapEditorLayer::OnScenePlay()
 
     m_SceneState = SceneState::Play;
 
-    if (m_ReloadScriptOnPlay) {
-        H2M::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
+    if (m_ReloadScriptOnPlay)
+    {
+        // H2M::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
     }
 
     EnvMapSharedData::s_RuntimeScene = H2M::RefH2M<H2M::SceneH2M>::Create();
@@ -503,7 +499,7 @@ void EnvMapEditorLayer::OnSceneStop()
     EnvMapSharedData::s_RuntimeScene = nullptr;
 
     EntitySelection::s_SelectionContext.clear();
-    H2M::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
+    // H2M::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
     m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
 }
 
@@ -578,7 +574,7 @@ H2M::RefH2M<MoravaShader> EnvMapEditorLayer::GetShaderPBR_Static()
     return MoravaShaderLibrary::Get("HazelPBR_Static");
 }
 
-void EnvMapEditorLayer::DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest)
+void EnvMapEditorLayer::DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest)
 {
     if (!depthTest)
         glDisable(GL_DEPTH_TEST);
@@ -586,10 +582,10 @@ void EnvMapEditorLayer::DrawIndexed(uint32_t count, H2M::PrimitiveType type, boo
     GLenum glPrimitiveType = 0;
     switch (type)
     {
-    case H2M::PrimitiveType::Triangles:
+    case H2M::PrimitiveTypeH2M::Triangles:
         glPrimitiveType = GL_TRIANGLES;
         break;
-    case H2M::PrimitiveType::Lines:
+    case H2M::PrimitiveTypeH2M::Lines:
         glPrimitiveType = GL_LINES;
         break;
     }
@@ -932,8 +928,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                         SetSkyboxLOD(skyboxLOD);
                     }
 
-                    H2M::HazelDirLight light = EnvMapSceneRenderer::GetActiveLight();
-                    H2M::HazelDirLight lightPrev = light;
+                    H2M::DirLightH2M light = EnvMapSceneRenderer::GetActiveLight();
+                    H2M::DirLightH2M lightPrev = light;
 
                     ImGuiWrapper::Property("Light Direction", light.Direction, -180.0f, 180.0f, PropertyFlag::DragProperty);
                     ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);

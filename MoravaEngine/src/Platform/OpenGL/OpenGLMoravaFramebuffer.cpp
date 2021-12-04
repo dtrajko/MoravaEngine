@@ -348,32 +348,32 @@ void OpenGLMoravaFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slo
 	m_TextureAttachmentsColor.at(attachmentIndex)->Bind(slot);
 }
 
-H2M::RendererID OpenGLMoravaFramebuffer::GetRendererID() const
+H2M::RendererID_H2M OpenGLMoravaFramebuffer::GetRendererID() const
 {
 	return m_FBO;
 }
 
-H2M::RefH2M<H2M::HazelImage2D> OpenGLMoravaFramebuffer::GetImage(uint32_t attachmentIndex) const
+H2M::RefH2M<H2M::Image2D_H2M> OpenGLMoravaFramebuffer::GetImage(uint32_t attachmentIndex) const
 {
-	return H2M::RefH2M<H2M::HazelImage2D>();
+	return H2M::RefH2M<H2M::Image2D_H2M>();
 }
 
-H2M::RefH2M<H2M::HazelImage2D> OpenGLMoravaFramebuffer::GetDepthImage() const
+H2M::RefH2M<H2M::Image2D_H2M> OpenGLMoravaFramebuffer::GetDepthImage() const
 {
-	return H2M::RefH2M<H2M::HazelImage2D>();
+	return H2M::RefH2M<H2M::Image2D_H2M>();
 }
 
-//	H2M::RendererID OpenGLMoravaFramebuffer::GetColorAttachmentRendererID() const
+//	H2M::RendererID_H2M OpenGLMoravaFramebuffer::GetColorAttachmentRendererID() const
 //	{
 //		return H2M::RendererID();
 //	}
 
-//	H2M::RendererID OpenGLMoravaFramebuffer::GetDepthAttachmentRendererID() const
+//	H2M::RendererID_H2M OpenGLMoravaFramebuffer::GetDepthAttachmentRendererID() const
 //	{
 //		return H2M::RendererID();
 //	}
 
-const H2M::HazelFramebufferSpecification& OpenGLMoravaFramebuffer::GetSpecification() const
+const H2M::FramebufferSpecificationH2M& OpenGLMoravaFramebuffer::GetSpecification() const
 {
 	return m_HazelFramebufferSpecs;
 }

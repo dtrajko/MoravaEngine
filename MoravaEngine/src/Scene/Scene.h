@@ -89,7 +89,7 @@ public:
 	virtual ~Scene();
 
 	virtual void Update(float timestep, Window* mainWindow);
-	virtual void OnWindowResize(H2M::WindowResizeEvent& e);
+	virtual void OnWindowResize(H2M::WindowResizeEventH2M& e);
 	virtual void UpdateImGui(float timestep, Window* mainWindow) = 0;
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,

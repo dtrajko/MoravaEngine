@@ -23,7 +23,7 @@ public:
 	virtual void Bind() const override;
 	virtual uint32_t GetCount() const override { return m_Count; }
 	virtual uint32_t GetSize() const override { return m_Size; }
-	virtual H2M::RendererID GetRendererID() const override;
+	virtual H2M::RendererID_H2M GetRendererID() const override;
 
 private:
 	uint32_t m_Size;
@@ -31,6 +31,6 @@ private:
 	ID3D11Buffer* m_Buffer;
 
 	// uint32_t m_Size = 0;
-	// H2M::Buffer m_LocalData;
+	// H2M::BufferH2M m_LocalData;
 
 };

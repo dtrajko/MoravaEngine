@@ -85,12 +85,12 @@ namespace H2M {
 		FramebufferSpecificationH2M geoFramebufferSpec = {};
 		geoFramebufferSpec.Width = 1280;
 		geoFramebufferSpec.Height = 720;
-		geoFramebufferSpec.Format = FramebufferFormat::RGBA16F;
+		geoFramebufferSpec.Format = FramebufferFormatH2M::RGBA16F;
 		geoFramebufferSpec.Samples = 8;
 		geoFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
 		RenderPassSpecificationH2M geoRenderPassSpec = {};
-		geoRenderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(geoFramebufferSpec);
+		geoRenderPassSpec.TargetFramebuffer = FramebufferH2M::Create(geoFramebufferSpec);
 		/****
 		s_Data.GeoPass = RenderPass::Create(geoRenderPassSpec);
 
@@ -104,13 +104,13 @@ namespace H2M {
 		compRenderPassSpec.TargetFramebuffer = HazelFramebuffer::Create(compFramebufferSpec);
 		s_Data.CompositePass = RenderPass::Create(compRenderPassSpec);
 
-		s_Data.CompositeShader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
+		s_Data.CompositeShader = RendererH2M::GetShaderLibrary()->Get("SceneComposite");
 		s_Data.CompositeMaterial = HazelMaterial::Create(s_Data.CompositeShader, "CompositeMaterial");
 		s_Data.BRDFLUT = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
 
 		// Grid pipeline
 		{
-			s_Data.GridShader = HazelRenderer::GetShaderLibrary()->Get("Grid");
+			s_Data.GridShader = RendererH2M::GetShaderLibrary()->Get("Grid");
 			const float gridScale = 16.025f;
 			const float gridSize = 0.025f;
 			s_Data.GridMaterial = HazelMaterial::Create(s_Data.GridShader);
@@ -129,13 +129,13 @@ namespace H2M {
 		}
 
 		// Outline
-		auto outlineShader = HazelRenderer::GetShaderLibrary()->Get("Outline");
+		auto outlineShader = RendererH2M::GetShaderLibrary()->Get("Outline");
 		s_Data.OutlineMaterial = HazelMaterial::Create(outlineShader);
 		s_Data.OutlineMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 
 		// Skybox pipeline
 		{
-			auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox");
+			auto skyboxShader = RendererH2M::GetShaderLibrary()->Get("Skybox");
 
 			PipelineSpecification pipelineSpec = {};
 			pipelineSpec.DebugName = "Skybox";
@@ -164,7 +164,7 @@ namespace H2M {
 				{ ShaderDataType::Float3, "a_Binormal" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
-			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
+			pipelineSpecification.Shader = RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static");
 
 			RenderPassSpecification renderPassSpec = {};
 			renderPassSpec.TargetFramebuffer = framebuffer;
@@ -179,7 +179,7 @@ namespace H2M {
 			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
 			framebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer)
 			{
-				// HazelRenderer::Submit([framebuffer]() mutable {});
+				// RendererH2M::Submit([framebuffer]() mutable {});
 				{
 					auto vulkanFB = framebuffer.As<VulkanFramebuffer>();
 					s_Data.ColorBufferInfo = vulkanFB->GetVulkanDescriptorInfo();
@@ -191,7 +191,7 @@ namespace H2M {
 				{ ShaderDataType::Float3, "a_Position" },
 				{ ShaderDataType::Float2, "a_TexCoord" },
 			};
-			pipelineSpecification.Shader = HazelRenderer::GetShaderLibrary()->Get("SceneComposite");
+			pipelineSpecification.Shader = RendererH2M::GetShaderLibrary()->Get("SceneComposite");
 
 			RenderPassSpecification renderPassSpec;
 			renderPassSpec.TargetFramebuffer = framebuffer;
@@ -209,9 +209,9 @@ namespace H2M {
 		s_Data.NeedsResize = true;
 	}
 
-	void SceneRendererVulkanH2M::BeginScene(const HazelScene* scene, const SceneRendererCamera& camera)
+	void SceneRendererVulkanH2M::BeginScene(const SceneH2M* scene, const SceneRendererCameraH2M& camera)
 	{
-		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+		H2M_CORE_ASSERT(!s_Data.ActiveScene, "");
 
 		s_Data.ActiveScene = scene;
 
@@ -228,52 +228,52 @@ namespace H2M {
 			s_Data.NeedsResize = false;
 		}
 
-		HazelRenderer::SetSceneEnvironment(&s_Data.SceneData.SceneEnvironment, Ref<HazelImage2D>());
+		RendererH2M::SetSceneEnvironment(&s_Data.SceneData.SceneEnvironment, RefH2M<Image2D_H2M>());
 	}
 
 	void SceneRendererVulkanH2M::EndScene()
 	{
-		HZ_CORE_ASSERT(s_Data.ActiveScene, "");
+		H2M_CORE_ASSERT(s_Data.ActiveScene, "");
 
 		s_Data.ActiveScene = nullptr;
 
 		FlushDrawList();
 	}
 
-	void SceneRendererVulkanH2M::SubmitMesh(MeshComponent meshComponent, TransformComponent transformComponent)
+	void SceneRendererVulkanH2M::SubmitMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent)
 	{
-		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), Ref<HazelMaterial>());
+		SubmitMesh(meshComponent.Mesh, transformComponent.GetTransform(), RefH2M<MaterialH2M>());
 	}
 
-	void SceneRendererVulkanH2M::SubmitSelectedMesh(MeshComponent meshComponent, TransformComponent transformComponent)
+	void SceneRendererVulkanH2M::SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent)
 	{
 		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
 	}
 
-	void SceneRendererVulkanH2M::SubmitMesh(Ref<HazelMesh> mesh, const glm::mat4& transform, Ref<HazelMaterial> overrideMaterial)
+	void SceneRendererVulkanH2M::SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<MaterialH2M> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
 	}
 
-	void SceneRendererVulkanH2M::SubmitSelectedMesh(Ref<HazelMesh> mesh, const glm::mat4& transform)
+	void SceneRendererVulkanH2M::SubmitSelectedMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform)
 	{
-		s_Data.SelectedMeshDrawList.push_back({ mesh, Ref<HazelMaterial>(), transform });
+		s_Data.SelectedMeshDrawList.push_back({ mesh, RefH2M<MaterialH2M>(), transform });
 		// s_Data.ShadowPassDrawList.push_back({ mesh, Ref<HazelMaterial>, transform });
 	}
 
 	void SceneRendererVulkanH2M::GeometryPass()
 	{
-		HazelRenderer::BeginRenderPass(s_Data.GeoPass);
+		RendererH2M::BeginRenderPass(s_Data.GeoPass);
 
 		auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
 		glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
 		// glm::vec3 cameraPosition = s_Data.SceneData.SceneCamera.Camera.GetPosition();
 
-		// HazelRenderer::Submit([viewProjection, cameraPosition]() {});
+		// RendererH2M::Submit([viewProjection, cameraPosition]() {});
 		{
 			auto inverseVP = glm::inverse(viewProjection);
-			auto shader = s_Data.GridMaterial->GetShader().As<VulkanShader>();
+			auto shader = s_Data.GridMaterial->GetShader().As<VulkanShaderH2M>();
 			void* ubPtr = shader->MapUniformBuffer(0);
 			struct ViewProj
 			{
@@ -286,12 +286,12 @@ namespace H2M {
 			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			shader->UnmapUniformBuffer(0);
 
-			shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShader>();
+			shader = s_Data.SkyboxMaterial->GetShader().As<VulkanShaderH2M>();
 			ubPtr = shader->MapUniformBuffer(0);
 			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			shader->UnmapUniformBuffer(0);
 
-			shader = s_Data.GeometryPipeline->GetSpecification().Shader.As<VulkanShader>();
+			shader = s_Data.GeometryPipeline->GetSpecification().Shader.As<VulkanShaderH2M>();
 			ubPtr = shader->MapUniformBuffer(0);
 			memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			shader->UnmapUniformBuffer(0);
@@ -319,7 +319,7 @@ namespace H2M {
 				1.0f
 			};
 
-			ub.lights.Direction = VulkanRenderer::GetLightDirectionTemp();
+			ub.lights.Direction = VulkanRendererH2M::GetLightDirectionTemp();
 			ub.u_CameraPosition = cameraPosition;
 
 			ubPtr = shader->MapUniformBuffer(1, 0);
@@ -330,42 +330,42 @@ namespace H2M {
 		// Skybox
 		s_Data.SkyboxMaterial->Set("u_Uniforms.TextureLod", s_Data.SceneData.SkyboxLod);
 		s_Data.SkyboxMaterial->Set("u_Texture", s_Data.SceneData.SceneEnvironment.RadianceMap);
-		HazelRenderer::SubmitFullscreenQuad(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
+		RendererH2M::SubmitFullscreenQuad(s_Data.SkyboxPipeline, s_Data.SkyboxMaterial);
 
 		// Render entities
 		for (auto& dc : s_Data.DrawList)
 		{
-			HazelRenderer::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+			RendererH2M::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		for (auto& dc : s_Data.SelectedMeshDrawList)
 		{
-			HazelRenderer::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
+			RendererH2M::RenderMesh(s_Data.GeometryPipeline, dc.Mesh, dc.Transform);
 		}
 
 		// Grid
 		if (GetOptions().ShowGrid)
 		{
 			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(16.0f));
-			HazelRenderer::RenderQuad(s_Data.GridPipeline, s_Data.GridMaterial, transform);
+			RendererH2M::RenderQuad(s_Data.GridPipeline, s_Data.GridMaterial, transform);
 		}
 
 		if (GetOptions().ShowBoundingBoxes)
 		{
-			Renderer2D::BeginScene(viewProjection, true);
+			Renderer2D_H2M::BeginScene(viewProjection, true);
 			for (auto& dc : s_Data.DrawList)
 			{
-				HazelRenderer::DrawAABB(dc.Mesh, dc.Transform);
+				RendererH2M::DrawAABB(dc.Mesh, dc.Transform);
 			}
-			Renderer2D::EndScene();
+			Renderer2D_H2M::EndScene();
 		}
 
-		HazelRenderer::EndRenderPass();
+		RendererH2M::EndRenderPass();
 	}
 
 	void SceneRendererVulkanH2M::CompositePass()
 	{
-		HazelRenderer::BeginRenderPass(s_Data.CompositePipeline->GetSpecification().RenderPass);
+		RendererH2M::BeginRenderPass(s_Data.CompositePipeline->GetSpecification().RenderPass);
 
 		float exposure = s_Data.SceneData.SceneCamera.Camera.GetExposure();
 		int textureSamples = s_Data.GeoPass->GetSpecification().TargetFramebuffer->GetSpecification().Samples;
@@ -374,24 +374,24 @@ namespace H2M {
 		// s_Data.CompositeMaterial->Set("u_Uniforms.TextureSamples", textureSamples);
 
 		auto& framebuffer = s_Data.GeoPass->GetSpecification().TargetFramebuffer;
-		auto vulkanFramebuffer = framebuffer.As<VulkanFramebuffer>();
+		auto vulkanFramebuffer = framebuffer.As<VulkanFramebufferH2M>();
 
 		// s_Data.CompositeMaterial->Set("u_Texture", vulkanFramebuffer->GetVulkanDescriptorInfo()); // how it works?
 		s_Data.CompositeMaterial->Set("u_Texture", vulkanFramebuffer->GetColorAttachmentRendererID());
 
-		HazelRenderer::SubmitFullscreenQuad(s_Data.CompositePipeline, s_Data.CompositeMaterial);
-		HazelRenderer::EndRenderPass();
+		RendererH2M::SubmitFullscreenQuad(s_Data.CompositePipeline, s_Data.CompositeMaterial);
+		RendererH2M::EndRenderPass();
 	}
 
 	void SceneRendererVulkanH2M::FlushDrawList()
 	{
-		HZ_CORE_ASSERT(!s_Data.ActiveScene, "");
+		H2M_CORE_ASSERT(!s_Data.ActiveScene, "");
 
 		GeometryPass();
 		CompositePass();
 	}
 
-	SceneRendererOptions& SceneRendererVulkanH2M::GetOptions()
+	SceneRendererOptionsH2M& SceneRendererVulkanH2M::GetOptions()
 	{
 		return s_Data.Options;
 	}

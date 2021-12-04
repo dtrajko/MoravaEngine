@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
 #include "H2M/Core/Math/AABB_H2M.h"
@@ -160,8 +166,8 @@ namespace H2M {
 		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, EntityH2M entity);
 
 		// Getters
-		std::vector<SubmeshH2M>& GetSubmeshes() { return m_Submeshes; }
-		const std::vector<SubmeshH2M>& GetSubmeshes() const { return m_Submeshes; }
+		std::vector<RefH2M<SubmeshH2M>>& GetSubmeshes() { return m_Submeshes; }
+		const std::vector<RefH2M<SubmeshH2M>>& GetSubmeshes() const { return m_Submeshes; }
 
 		RefH2M<ShaderH2M> GetMeshShader() { return m_MeshShader; }
 		RefH2M<MaterialH2M> GetMaterial() { return m_BaseMaterial; }
@@ -205,8 +211,8 @@ namespace H2M {
 		inline void SetBaseMaterial(RefH2M<MaterialH2M> baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
-		void DeleteSubmesh(SubmeshH2M submesh);
-		void CloneSubmesh(SubmeshH2M submesh);
+		void DeleteSubmesh(RefH2M<SubmeshH2M> submesh);
+		void CloneSubmesh(RefH2M<SubmeshH2M> submesh);
 
 	private:
 		void BoneTransform(float time);
@@ -233,7 +239,7 @@ namespace H2M {
 		VertexBufferLayoutH2M m_VertexBufferLayout;
 
 		std::vector<glm::mat4> m_BoneTransforms;
-		std::vector<SubmeshH2M> m_Submeshes;
+		std::vector<RefH2M<SubmeshH2M>> m_Submeshes;
 
 		// Materials
 		RefH2M<MoravaShader> m_MeshShader;

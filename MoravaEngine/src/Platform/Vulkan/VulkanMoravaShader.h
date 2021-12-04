@@ -31,7 +31,7 @@ public:
 	virtual void Reload(bool forceCompile = false) override;
 
 	// HazelShader abstract methods
-	virtual H2M::RendererID GetRendererID() const override;
+	virtual H2M::RendererID_H2M GetRendererID() const override;
 	virtual size_t GetHash() const override;
 	virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 

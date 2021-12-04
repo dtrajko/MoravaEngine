@@ -66,7 +66,7 @@ namespace H2M
 	};
 
 	class EntityH2M;
-	using EntityMap = std::unordered_map<UUID, entt::entity>;
+	using EntityMapH2MH2M = std::unordered_map<UUID, entt::entity>;
 
 	class SceneH2M : public RefCountedH2M
 	{
@@ -137,7 +137,7 @@ namespace H2M
 		void ParentEntity(EntityH2M entity, EntityH2M parent);
 		void UnparentEntity(EntityH2M entity, bool convertToWorldSpace = true);
 
-		const EntityMap& GetEntityMap() const { return m_EntityIDMap; }
+		const EntityMapH2MH2M& GetEntityMapH2M() const { return m_EntityIDMap; }
 		
 		// Temporary/experimental
 		virtual void OnEntitySelected(EntityH2M entity);
@@ -162,7 +162,7 @@ namespace H2M
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
 
-		EntityMap m_EntityIDMap;
+		EntityMapH2MH2M m_EntityIDMap;
 
 	private:
 		CameraH2M m_Camera;

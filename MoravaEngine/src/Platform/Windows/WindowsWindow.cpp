@@ -1,8 +1,8 @@
 #include "Platform/Windows/WindowsWindow.h"
 
-#include "H2M/Core/Events/KeyEvent.h"
-#include "H2M/Core/Events/MouseEvent.h"
-#include "H2M/Core/Events/ApplicationEvent.h"
+#include "H2M/Core/Events/KeyEventH2M.h"
+#include "H2M/Core/Events/MouseEventH2M.h"
+#include "H2M/Core/Events/ApplicationEventH2M.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -81,7 +81,7 @@ void WindowsWindow::Init(const WindowProps& props)
 		break;
 	}
 
-	m_RendererContext = H2M::RefH2M<H2M::RendererContext>(H2M::RendererContext::Create(this));
+	m_RendererContext = H2M::RefH2M<H2M::RendererContextH2M>(H2M::RendererContextH2M::Create(this));
 	m_RendererContext->Create();
 
 	RendererBasic::SetRendererContext(m_RendererContext);
@@ -598,7 +598,7 @@ void WindowsWindow::SetShouldClose(bool shouldClose)
 	glfwSetWindowShouldClose(m_GLFW_Window, shouldClose);
 }
 
-H2M::VulkanSwapChain& WindowsWindow::GetSwapChain()
+H2M::VulkanSwapChainH2M& WindowsWindow::GetSwapChain()
 {
 	return m_SwapChain;
 }
@@ -635,7 +635,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.Width = width;
 			data.Height = height;
-			WindowResizeEvent event(width, height);
+			H2M::WindowResizeEventH2M event(width, height);
 			data.EventCallback(event);
 
 			// Support for the old way of handling events
@@ -645,7 +645,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 	glfwSetWindowCloseCallback(m_GLFW_Window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			WindowCloseEvent event;
+			H2M::WindowCloseEventH2M event;
 			data.EventCallback(event);
 
 			// Support for the old way of handling events
@@ -660,19 +660,19 @@ void WindowsWindow::SetCallbacksHazelDev()
 			{
 				case GLFW_PRESS:
 				{
-					KeyPressedEvent event(key, 0);
+					H2M::KeyPressedEventH2M event(key, 0);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					KeyReleasedEvent event(key);
+					H2M::KeyReleasedEventH2M event(key);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(key, 1);
+					H2M::KeyPressedEventH2Mevent(key, 1);
 					data.EventCallback(event);
 					break;
 				}
@@ -686,7 +686,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-			KeyTypedEvent event(codepoint);
+			H2M::KeyTypedEventH2M event(codepoint);
 			data.EventCallback(event);
 
 			// Support for the old way of handling events
@@ -701,13 +701,13 @@ void WindowsWindow::SetCallbacksHazelDev()
 			{
 				case GLFW_PRESS:
 				{
-					MouseButtonPressedEvent event(button);
+					H2M::MouseButtonPressedEventH2M event(button);
 					data.EventCallback(event);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
-					MouseButtonReleasedEvent event(button);
+					H2M::MouseButtonReleasedEventH2M event(button);
 					data.EventCallback(event);
 					break;
 				}
@@ -721,7 +721,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-			MouseScrolledEvent event((float)xoffset, (float)yoffset);
+			H2M::MouseScrolledEventH2M event((float)xoffset, (float)yoffset);
 			data.EventCallback(event);
 
 			// Support for the old way of handling events
@@ -732,7 +732,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-			MouseMovedEvent event((float)xpos, (float)ypos);
+			H2M::MouseMovedEventH2M event((float)xpos, (float)ypos);
 			data.EventCallback(event);
 
 			// Support for the old way of handling events

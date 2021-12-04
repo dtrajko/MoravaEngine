@@ -27,11 +27,11 @@ enum class MaterialTextureType {
 	Emissive,
 };
 
-struct MaterialData : public H2M::RefCounted
+struct MaterialData : public H2M::RefCountedH2M
 {
 	MaterialUUID UUID;
 	std::string Name;
-	H2M::RefH2M<H2M::HazelMaterial> Material;
+	H2M::RefH2M<H2M::MaterialH2M> Material;
 	H2M::RefH2M<EnvMapMaterial> EnvMapMaterialRef;
 	H2M::RefH2M<H2M::SubmeshH2M> Submesh;
 
@@ -43,7 +43,7 @@ public:
 
 	static void Init();
 	static H2M::RefH2M<MaterialData> AddNewMaterial(std::string name = "");
-	static H2M::RefH2M<MaterialData> AddNewMaterial(H2M::RefH2M<H2M::HazelMaterial> material, H2M::RefH2M<H2M::SubmeshH2M> submesh);
+	static H2M::RefH2M<MaterialData> AddNewMaterial(H2M::RefH2M<H2M::MaterialH2M> material, H2M::RefH2M<H2M::SubmeshH2M> submesh);
 	static void RenameMaterial(H2M::RefH2M<EnvMapMaterial> envMapMaterial, std::string newName);
 	static void LoadEnvMapMaterials(H2M::RefH2M<H2M::MeshH2M> mesh, H2M::EntityH2M entity);
 	static H2M::RefH2M<EnvMapMaterial> CreateDefaultMaterial(std::string materialName);

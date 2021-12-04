@@ -1,51 +1,59 @@
-#include "OpenGLPipeline.h"
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
 
-#include "../../Renderer/HazelRenderer.h"
+#include "OpenGLPipelineH2M.h"
+
+#include "H2M/Renderer/RendererH2M.h"
 
 #include <GL/glew.h>
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
+	static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataTypeH2M type)
 	{
 		switch (type)
 		{
-		case ShaderDataType::Float:    return GL_FLOAT;
-		case ShaderDataType::Float2:   return GL_FLOAT;
-		case ShaderDataType::Float3:   return GL_FLOAT;
-		case ShaderDataType::Float4:   return GL_FLOAT;
-		case ShaderDataType::Mat3:     return GL_FLOAT;
-		case ShaderDataType::Mat4:     return GL_FLOAT;
-		case ShaderDataType::Int:      return GL_INT;
-		case ShaderDataType::Int2:     return GL_INT;
-		case ShaderDataType::Int3:     return GL_INT;
-		case ShaderDataType::Int4:     return GL_INT;
-		case ShaderDataType::Bool:     return GL_BOOL;
+		case ShaderDataTypeH2M::Float:    return GL_FLOAT;
+		case ShaderDataTypeH2M::Float2:   return GL_FLOAT;
+		case ShaderDataTypeH2M::Float3:   return GL_FLOAT;
+		case ShaderDataTypeH2M::Float4:   return GL_FLOAT;
+		case ShaderDataTypeH2M::Mat3:     return GL_FLOAT;
+		case ShaderDataTypeH2M::Mat4:     return GL_FLOAT;
+		case ShaderDataTypeH2M::Int:      return GL_INT;
+		case ShaderDataTypeH2M::Int2:     return GL_INT;
+		case ShaderDataTypeH2M::Int3:     return GL_INT;
+		case ShaderDataTypeH2M::Int4:     return GL_INT;
+		case ShaderDataTypeH2M::Bool:     return GL_BOOL;
 		}
 
 		Log::GetLogger()->error("Unknown ShaderDataType!");
 		return 0;
 	}
 
-	OpenGLPipeline::OpenGLPipeline(const PipelineSpecification& spec)
+	OpenGLPipelineH2M::OpenGLPipelineH2M(const PipelineSpecificationH2M& spec)
 		: m_Specification(spec)
 	{
 		Invalidate();
 	}
 
-	OpenGLPipeline::~OpenGLPipeline()
+	OpenGLPipelineH2M::~OpenGLPipelineH2M()
 	{
 		GLuint rendererID = m_VertexArrayRendererID;
-		HazelRenderer::Submit([rendererID]()
+		RendererH2M::Submit([rendererID]()
 		{
 			glDeleteVertexArrays(1, &rendererID);
 		});
 	}
 
-	void OpenGLPipeline::Invalidate()
+	void OpenGLPipelineH2M::Invalidate()
 	{
-		HZ_CORE_ASSERT(m_Specification.Layout.GetElements().size(), "Layout is empty!");
+		H2M_CORE_ASSERT(m_Specification.Layout.GetElements().size(), "Layout is empty!");
 
 		// Ref<OpenGLPipeline> instance = this;
 		// HazelRenderer::Submit([instance]() mutable
@@ -89,10 +97,10 @@ namespace Hazel {
 		// });
 	}
 
-	void OpenGLPipeline::Bind()
+	void OpenGLPipelineH2M::Bind()
 	{
-		Ref<OpenGLPipeline> instance = this;
-		HazelRenderer::Submit([instance]()
+		RefH2M<OpenGLPipelineH2M> instance = this;
+		RendererH2M::Submit([instance]()
 		{
 			glBindVertexArray(instance->m_VertexArrayRendererID);
 

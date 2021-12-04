@@ -6,10 +6,10 @@
 #include "H2M/Editor/EditorCameraH2M.h"
 #include "H2M/Renderer/MaterialH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
-#include "H2M/Renderer/RenderCommandQueue.h"
-#include "H2M/Renderer/RenderPass.h"
+#include "H2M/Renderer/RenderCommandBufferH2M.h"
+#include "H2M/Renderer/RenderCommandQueueH2M.h"
+#include "H2M/Renderer/RenderPassH2M.h"
 #include "H2M/Renderer/SceneEnvironmentH2M.h"
-
 #include "H2M/Renderer/SceneRendererH2M.h"
 
 #include "Camera/Camera.h"
@@ -59,12 +59,12 @@ public:
 	static void BeginScene(H2M::SceneH2M* scene, const H2M::SceneRendererCameraH2M& camera);
 	static void EndScene();
 
-	static void SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), Ref<H2M::HazelMaterial> overrideMaterial = nullptr);
-	static void SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+	static void SubmitMesh(RefH2M<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<H2M::MaterialH2M> overrideMaterial = nullptr);
+	static void SubmitSelectedMesh(RefH2M<Mesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 	static std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath);
 
-	static H2M::RefH2M<H2M::RenderPass> GetFinalRenderPass();
+	static H2M::RefH2M<H2M::RenderPassH2M> GetFinalRenderPass();
 	static FramebufferTexture* GetFinalColorBuffer(); // originally returns H2M::RefH2M<H2M::Texture2D_H2M>
 
 	// TODO: Temp
@@ -77,14 +77,14 @@ public:
 	static H2M::RefH2M<H2M::TextureCubeH2M> GetIrradianceMap();
 	static H2M::RefH2M<H2M::Texture2D_H2M> GetBRDFLUT();
 	static H2M::RefH2M<MoravaShader> GetShaderComposite();
-	static H2M::RefH2M<H2M::RenderPass> GetGeoPass();
-	static H2M::RefH2M<H2M::RenderPass> GetCompositePass();
+	static H2M::RefH2M<H2M::RenderPassH2M> GetGeoPass();
+	static H2M::RefH2M<H2M::RenderPassH2M> GetCompositePass();
 	static void CreateDrawCommand(std::string fileNameNoExt, H2M::RefH2M<H2M::MeshH2M> mesh);
-	static H2M::HazelDirLight& GetActiveLight();
-	static void SetActiveLight(H2M::HazelDirLight& light);
+	static H2M::LightH2M& GetActiveLight();
+	static void SetActiveLight(H2M::LightH2M& light);
 	static void AddToDrawList(std::string name, H2M::RefH2M<H2M::MeshH2M> mesh, H2M::EntityH2M entity, glm::mat4 transform);
-	static H2M::Environment Load(const std::string& filepath);
-	static void SetEnvironment(H2M::Environment environment);
+	static H2M::EnvironmentH2M Load(const std::string& filepath);
+	static void SetEnvironment(H2M::EnvironmentH2M environment);
 	static H2M::RefH2M<MoravaShader> GetShaderSkybox() { return s_ShaderSkybox; }
 	static H2M::RefH2M<MoravaShader> GetShaderGrid() { return s_ShaderGrid; }
 	static H2M::RefH2M<H2M::Texture2D_H2M> GetEnvEquirect() { return s_EnvEquirect; }
@@ -132,7 +132,7 @@ public:
 	static uint32_t s_FramebufferHeight;
 
 	// From SceneRenderer
-	static H2M::RefH2M<H2M::RenderCommandBuffer> s_CommandBuffer;
+	static H2M::RefH2M<H2M::RenderCommandBufferH2M> s_CommandBuffer;
 
 	struct UBRendererData
 	{
@@ -157,19 +157,19 @@ public:
 	static float s_CascadeFarPlaneOffset;
 	static float s_CascadeNearPlaneOffset;
 
-	static H2M::RefH2M<H2M::Pipeline> s_GeometryPipeline;
-	static H2M::RefH2M<H2M::Pipeline> s_SelectedGeometryPipeline;
-	static H2M::RefH2M<H2M::Pipeline> s_GeometryWireframePipeline;
-	static H2M::RefH2M<H2M::Pipeline> s_GeometryWireframeOnTopPipeline;
-	static H2M::RefH2M<H2M::Pipeline> s_PreDepthPipeline;
-	static H2M::RefH2M<H2M::Pipeline> s_CompositePipeline;
-	static H2M::RefH2M<H2M::Pipeline> s_ShadowPassPipelines[4];
-	static H2M::RefH2M<H2M::HazelMaterial> s_ShadowPassMaterial;
-	static H2M::RefH2M<H2M::HazelMaterial> s_PreDepthMaterial;
-	static H2M::RefH2M<H2M::Pipeline> s_SkyboxPipeline;
-	static H2M::RefH2M<H2M::HazelMaterial> s_SkyboxMaterial;
-	static H2M::RefH2M<H2M::Pipeline> s_DOFPipeline;
-	static H2M::RefH2M<H2M::HazelMaterial> s_DOFMaterial;
+	static H2M::RefH2M<H2M::PipelineH2M> s_GeometryPipeline;
+	static H2M::RefH2M<H2M::PipelineH2M> s_SelectedGeometryPipeline;
+	static H2M::RefH2M<H2M::PipelineH2M> s_GeometryWireframePipeline;
+	static H2M::RefH2M<H2M::PipelineH2M> s_GeometryWireframeOnTopPipeline;
+	static H2M::RefH2M<H2M::PipelineH2M> s_PreDepthPipeline;
+	static H2M::RefH2M<H2M::PipelineH2M> s_CompositePipeline;
+	static H2M::RefH2M<H2M::PipelineH2M> s_ShadowPassPipelines[4];
+	static H2M::RefH2M<H2M::MaterialH2M> s_ShadowPassMaterial;
+	static H2M::RefH2M<H2M::MaterialH2M> s_PreDepthMaterial;
+	static H2M::RefH2M<H2M::PipelineH2M> s_SkyboxPipeline;
+	static H2M::RefH2M<H2M::MaterialH2M> s_SkyboxMaterial;
+	static H2M::RefH2M<H2M::PipelineH2M> s_DOFPipeline;
+	static H2M::RefH2M<H2M::MaterialH2M> s_DOFMaterial;
 
 	static SceneRendererOptions s_Options;
 
@@ -195,6 +195,6 @@ public:
 	
 	static GPUTimeQueries s_GPUTimeQueries;
 
-	static H2M::RefH2M<H2M::Renderer2D> s_Renderer2D;
+	static H2M::RefH2M<H2M::Renderer2D_H2M> s_Renderer2D;
 
 };

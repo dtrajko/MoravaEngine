@@ -2,11 +2,10 @@
 
 #pragma once
 
-#include "H2M/Core/Layer.h"
-#include "H2M/Core/Timestep.h"
-#include "H2M/Editor/ContentBrowserPanel.h"
-#include "H2M/Core/Events/Event.h"
-
+#include "H2M/Core/Events/EventH2M.h"
+#include "H2M/Core/LayerH2M.h"
+#include "H2M/Core/TimestepH2M.h"
+#include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
 #include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Scene/EntityH2M.h"
@@ -55,10 +54,10 @@ public:
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
 
-	virtual void OnUpdate(H2M::Timestep ts) override;
+	virtual void OnUpdate(H2M::TimestepH2M ts) override;
 	virtual void OnImGuiRender(Window* mainWindow, Scene* scene) override;
 
-	virtual void OnEvent(Event& event) override;
+	virtual void OnEvent(H2M::EventH2M& event) override;
 
 	virtual void OnRender(Window* mainWindow, Scene* scene) override;
 
@@ -87,7 +86,7 @@ public:
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my);
 	void AddSubmeshToSelectionContext(SelectedSubmesh submesh);
 	void OnSelected(const SelectedSubmesh& selectionContext);
-	Ref<H2M::EntityH2M> GetMeshEntity();
+	RefH2M<H2M::EntityH2M> GetMeshEntity();
 
 public:
 	static H2M::RefH2M<DX11Mesh> s_Mesh;
@@ -114,7 +113,7 @@ public:
 	static bool s_AllowViewportCameraEvents; // EditorLayer (Raypicking)
 
 	static H2M::SceneHierarchyPanelH2M* s_SceneHierarchyPanel;
-	static H2M::ContentBrowserPanel* s_ContentBrowserPanel;
+	static H2M::ContentBrowserPanelH2M* s_ContentBrowserPanel;
 	static MaterialEditorPanel* s_MaterialEditorPanel;
 
 private:

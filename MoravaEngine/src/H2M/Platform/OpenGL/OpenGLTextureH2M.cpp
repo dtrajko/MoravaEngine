@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "OpenGLTextureH2M.h"
 
 #include "H2M/Renderer/RendererH2M.h"
@@ -292,7 +299,7 @@ namespace H2M
 	// TextureCube
 	//////////////////////////////////////////////////////////////////////////////////
 
-	OpenGLTextureCube::OpenGLTextureCube(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data)
+	OpenGLTextureCubeH2M::OpenGLTextureCubeH2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data)
 	{
 		m_Width = width;
 		m_Height = height;
@@ -323,7 +330,7 @@ namespace H2M
 		}
 	}
 
-	OpenGLTextureCube::OpenGLTextureCube(ImageFormatH2M format, uint32_t width, uint32_t height, bool notUsed)
+	OpenGLTextureCubeH2M::OpenGLTextureCubeH2M(ImageFormatH2M format, uint32_t width, uint32_t height, bool notUsed)
 	{
 		m_Width = width;
 		m_Height = height;
@@ -345,7 +352,7 @@ namespace H2M
 		// glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, 16);
 	}
 
-	OpenGLTextureCube::OpenGLTextureCube(const std::string& path)
+	OpenGLTextureCubeH2M::OpenGLTextureCubeH2M(const std::string& path)
 		: m_FilePath(path)
 	{
 		int width, height, channels;
@@ -440,23 +447,23 @@ namespace H2M
 		stbi_image_free(m_ImageData);
 	}
 
-	OpenGLTextureCube::~OpenGLTextureCube()
+	OpenGLTextureCubeH2M::~OpenGLTextureCubeH2M()
 	{
 		auto self = this;
 		glDeleteTextures(1, &m_RendererID);
 	}
 
-	void OpenGLTextureCube::Bind(uint32_t slot) const
+	void OpenGLTextureCubeH2M::Bind(uint32_t slot) const
 	{
 		glBindTextureUnit(slot, m_RendererID);
 	}
 
-	uint32_t OpenGLTextureCube::GetMipLevelCount() const
+	uint32_t OpenGLTextureCubeH2M::GetMipLevelCount() const
 	{
 		return Utils::CalculateMipCount(m_Width, m_Height);
 	}
 
-	std::pair<uint32_t, uint32_t> OpenGLTextureCube::GetMipSize(uint32_t mip) const
+	std::pair<uint32_t, uint32_t> OpenGLTextureCubeH2M::GetMipSize(uint32_t mip) const
 	{
 		Log::GetLogger()->error("OpenGLTextureCube::GetMipSize({0}) - method not implemented!", mip);
 		return std::pair<uint32_t, uint32_t>();

@@ -12,10 +12,10 @@
 namespace H2M
 {
 
-	class WindowResizeEvent : public EventH2M
+	class WindowResizeEventH2M : public EventH2M
 	{
 	public:
-		WindowResizeEvent(unsigned int width, unsigned int height)
+		WindowResizeEventH2M(unsigned int width, unsigned int height)
 			: m_Width(width), m_Height(height) {}
 
 		inline unsigned int GetWidth() const { return m_Width; }
@@ -34,10 +34,10 @@ namespace H2M
 		unsigned int m_Width, m_Height;
 	};
 
-	class WindowCloseEvent : public EventH2M
+	class WindowCloseEventH2M : public EventH2M
 	{
 	public:
-		WindowCloseEvent()
+		WindowCloseEventH2M()
 		{
 
 		}
@@ -47,28 +47,28 @@ namespace H2M
 	};
 
 
-	class AppTickEvent : public EventH2M
+	class AppTickEventH2M : public EventH2M
 	{
 	public:
-		AppTickEvent() {}
+		AppTickEventH2M() {}
 
 		EVENT_CLASS_TYPE(AppTick);
 		EVENT_CLASS_CATEGORY(EventCategoryApplication);
 	};
 
-	class AppUpdateEvent : public EventH2M
+	class AppUpdateEventH2M : public EventH2M
 	{
 	public:
-		AppUpdateEvent() {}
+		AppUpdateEventH2M() {}
 
 		EVENT_CLASS_TYPE(AppUpdate);
 		EVENT_CLASS_CATEGORY(EventCategoryApplication);
 	};
 
-	class AppRenderEvent : public EventH2M
+	class AppRenderEventH2M : public EventH2M
 	{
 	public:
-		AppRenderEvent() {}
+		AppRenderEventH2M() {}
 
 		EVENT_CLASS_TYPE(AppRender);
 		EVENT_CLASS_CATEGORY(EventCategoryApplication);

@@ -34,7 +34,7 @@ H2M::RefH2M<MaterialData> MaterialLibrary::AddNewMaterial(std::string name)
 	return CreateMaterialData(name, H2M::RefH2M<H2M::SubmeshH2M>());
 }
 
-H2M::RefH2M<MaterialData> MaterialLibrary::AddNewMaterial(H2M::RefH2M<H2M::HazelMaterial> material, H2M::RefH2M<H2M::SubmeshH2M> submesh)
+H2M::RefH2M<MaterialData> MaterialLibrary::AddNewMaterial(H2M::RefH2M<H2M::MaterialH2M> material, H2M::RefH2M<H2M::SubmeshH2M> submesh)
 {
     return CreateMaterialData(material->GetName(), submesh);
 }

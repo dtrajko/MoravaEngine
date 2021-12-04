@@ -1,7 +1,7 @@
+#include "H2M/Core/AssertH2M.h"
+
 #include "Core/Log.h"
 #include "Core/Util.h"
-
-#include "H2M/Core/Assert.h"
 
 #include <GL/glew.h>
 

@@ -49,7 +49,7 @@ public:
 	static H2M::RefH2M<DX11Shader> CreateFromString(const std::string& source);
 
 	virtual void Bind() override {};
-	virtual H2M::RendererID GetRendererID() const override { return (H2M::RendererID)0; };
+	virtual H2M::RendererID_H2M GetRendererID() const override { return (H2M::RendererID)0; };
 
 	virtual void Reload(bool forceCompile = false) override;
 

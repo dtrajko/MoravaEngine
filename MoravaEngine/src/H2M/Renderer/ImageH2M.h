@@ -3,6 +3,7 @@
 #include "H2M/Core/BaseH2M.h"
 #include "H2M/Core/BufferH2M.h"
 #include "H2M/Core/RefH2M.h"
+#include "H2M/Renderer/TextureH2M.h"
 
 
 namespace H2M
@@ -32,6 +33,31 @@ namespace H2M
 		Texture,
 		Attachment,
 		Storage
+	};
+
+	enum class TextureWrapH2M
+	{
+		None = 0,
+		Clamp,
+		Repeat
+	};
+
+	enum class TextureFilterH2M
+	{
+		None = 0,
+		Linear,
+		Nearest
+	};
+
+	struct TexturePropertiesH2M
+	{
+		TextureWrapH2M SamplerWrap = TextureWrapH2M::Repeat;
+		TextureFilterH2M SamplerFilter = TextureFilterH2M::Linear;
+		bool GenerateMips = true;
+		bool SRGB = false;
+		bool Storage = false;
+
+		std::string DebugName;
 	};
 
 	struct ImageSpecificationH2M

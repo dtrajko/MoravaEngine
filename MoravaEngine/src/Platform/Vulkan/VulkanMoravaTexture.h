@@ -29,10 +29,10 @@ public:
 	virtual H2M::ImageFormatH2M GetFormat() { return m_Format; };
 
 	// BEGIN pure virtual methods inherited from HazelTexture/Texture2D_H2M
-	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage() const override { return H2M::RefH2M<H2M::HazelImage2D>(); }
+	virtual H2M::RefH2M<H2M::Image2D_H2M> GetImage() const override { return H2M::RefH2M<H2M::Image2D_H2M>(); }
 	virtual void Lock() override {}
 	virtual void Unlock() override {}
-	virtual H2M::Buffer GetWriteableBuffer() override { return H2M::Buffer(); }
+	virtual H2M::BufferH2M GetWriteableBuffer() override { return H2M::BufferH2M(); }
 	virtual void Resize(uint32_t width, uint32_t height) override {}
 	virtual bool Loaded() const override { return m_Buffer ? true : false; }
 	virtual const std::string& GetPath() const override { return std::string(m_FileLocation); }
@@ -41,7 +41,7 @@ public:
 	virtual uint32_t GetMipLevelCount() const override { return uint32_t(); }
 	virtual uint64_t GetHash() const override { return uint64_t(); }
 	virtual bool operator==(const H2M::HazelTexture& other) const override { return m_ID == other.GetID(); }
-	virtual H2M::RendererID GetRendererID() const override { return m_ID; }
+	virtual H2M::RendererID_H2M GetRendererID() const override { return m_ID; }
 	// END pure virtual methods inherited from HazelTexture/Texture2D_H2M
 
 	virtual bool IsLoaded() const override { return m_Buffer ? true : false; }; // used in H2M::Mesh
@@ -82,9 +82,9 @@ protected:
 	uint32_t m_Width;
 	uint32_t m_Height;
 	uint32_t m_Channels;
-	H2M::Buffer m_ImageData;
+	H2M::BufferH2M m_ImageData;
 
-	H2M::RefH2M<H2M::HazelImage2D> m_Image;
+	H2M::RefH2M<H2M::Image2D_H2M> m_Image;
 	VkImage m_VulkanImage;
 
 	H2M::TextureProperties m_Properties;

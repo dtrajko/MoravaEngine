@@ -1,6 +1,6 @@
 #pragma once
 
-#include "H2M/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 #include "DX11.h"
 #include "DX11Device.h"
@@ -21,7 +21,7 @@
 
 struct GLFWwindow;
 
-class DX11Context : public H2M::RendererContext
+class DX11Context : public H2M::RendererContextH2M
 {
 public:
 	DX11Context(Window* window);
@@ -44,7 +44,7 @@ public:
 
 	// ---------------------------------------------------------------
 
-	static H2M::RefH2M<DX11Context> Get() { return H2M::RefH2M<DX11Context>(H2M::HazelRenderer::GetContext()); }
+	static H2M::RefH2M<DX11Context> Get() { return H2M::RefH2M<DX11Context>(H2M::RendererH2M::GetContext()); }
 
 	ID3D11Device* GetDX11Device() { return m_DX11Device; }
 

@@ -1,31 +1,40 @@
-#include "OpenGLRenderer.h"
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
 
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "OpenGLRendererH2M.h"
+
+#include "H2M/Renderer/RendererH2M.h"
+#include "H2M/Renderer/RenderCommandQueueH2M.h"
 
 #include <GL/glew.h>
 
-#include "OpenGLMaterial.h"
-#include "OpenGLShader.h"
-#include "OpenGLTexture.h"
-#include "OpenGLImage.h"
-#include "Hazel/Renderer/SceneRenderer.h"
+#include "OpenGLMaterialH2M.h"
+#include "OpenGLShaderH2M.h"
+#include "OpenGLTextureH2M.h"
+#include "OpenGLImageH2M.h"
+#include "H2M/Renderer/SceneRendererH2M.h"
 
 
-namespace Hazel {
+namespace H2M
+{
 
 	struct OpenGLRendererData
 	{
-		RendererCapabilities RenderCaps;
+		RendererCapabilitiesH2M RenderCaps;
 
-		Ref<VertexBuffer> m_FullscreenQuadVertexBuffer;
-		Ref<IndexBuffer> m_FullscreenQuadIndexBuffer;
-		Ref<Pipeline> m_FullscreenQuadPipeline;
+		RefH2M<VertexBufferH2M> m_FullscreenQuadVertexBuffer;
+		RefH2M<IndexBufferH2M> m_FullscreenQuadIndexBuffer;
+		RefH2M<PipelineH2M> m_FullscreenQuadPipeline;
 
-		Ref<RenderPass> ActiveRenderPass;
-		RenderCommandQueue m_CommandQueue;
-		Ref<HazelShaderLibrary> m_ShaderLibrary;
+		RefH2M<RenderPassH2M> ActiveRenderPass;
+		RenderCommandQueueH2M m_CommandQueue;
+		RefH2M<ShaderLibraryH2M> m_ShaderLibrary;
 
-		Ref<HazelTexture2D> BRDFLut;
+		RefH2M<Texture2D_H2M> BRDFLut;
 	};
 
 	static OpenGLRendererData* s_Data = nullptr;
@@ -101,7 +110,7 @@ namespace Hazel {
 
 		Utils::DumpGPUInfo();
 
-		s_Data->m_ShaderLibrary = Ref<HazelShaderLibrary>::Create();
+		s_Data->m_ShaderLibrary = RefH2M<HazelShaderLibrary>::Create();
 		// OPENGL ONLY - HazelRenderer::Submit([]() { RendererAPI::Init(); });
 
 		SceneRenderer::Init();
@@ -161,7 +170,7 @@ namespace Hazel {
 	{
 	}
 
-	void OpenGLRenderer::BeginRenderPass(const Ref<RenderPass>& renderPass)
+	void OpenGLRenderer::BeginRenderPass(const RefH2M<RenderPass>& renderPass)
 	{
 		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
@@ -189,7 +198,7 @@ namespace Hazel {
 		s_Data->ActiveRenderPass = nullptr;
 	}
 
-	void OpenGLRenderer::SubmitFullscreenQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material)
+	void OpenGLRenderer::SubmitFullscreenQuad(RefH2M<Pipeline> pipeline, RefH2M<HazelMaterial> material)
 	{
 		bool depthTest = true;
 		if (material)
@@ -205,7 +214,7 @@ namespace Hazel {
 		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 	}
 
-	void OpenGLRenderer::SetSceneEnvironment(Ref<Environment> environment, Ref<HazelImage2D> shadow)
+	void OpenGLRenderer::SetSceneEnvironment(RefH2M<Environment> environment, RefH2M<HazelImage2D> shadow)
 	{
 		if (!environment)
 		{
@@ -215,37 +224,37 @@ namespace Hazel {
 		// HazelRenderer::Submit([environment, shadow]() mutable {});
 		{
 			auto shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
-			Ref<OpenGLShader> pbrShader = shader.As<OpenGLShader>();
+			RefH2M<OpenGLShader> pbrShader = shader.As<OpenGLShader>();
 
 			if (auto resource = pbrShader->GetShaderResource("u_EnvRadianceTex"))
 			{
-				Ref<OpenGLTextureCube> radianceMap = environment->RadianceMap.As<OpenGLTextureCube>();
+				RefH2M<OpenGLTextureCube> radianceMap = environment->RadianceMap.As<OpenGLTextureCube>();
 				glBindTextureUnit(resource->GetRegister(), radianceMap->GetRendererID());
 			}
 
 			if (auto resource = pbrShader->GetShaderResource("u_EnvIrradianceTex"))
 			{
-				Ref<OpenGLTextureCube> irradianceMap = environment->IrradianceMap.As<OpenGLTextureCube>();
+				RefH2M<OpenGLTextureCube> irradianceMap = environment->IrradianceMap.As<OpenGLTextureCube>();
 				glBindTextureUnit(resource->GetRegister(), irradianceMap->GetRendererID());
 			}
 
 			if (auto resource = pbrShader->GetShaderResource("u_BRDFLUTTexture"))
 			{
-				Ref<OpenGLImage2D> brdfLUTImage = s_Data->BRDFLut->GetImage();
+				RefH2M<OpenGLImage2D> brdfLUTImage = s_Data->BRDFLut->GetImage();
 				glBindSampler(resource->GetRegister(), brdfLUTImage->GetSamplerRendererID());
 				glBindTextureUnit(resource->GetRegister(), brdfLUTImage->GetRendererID());
 			}
 
 			if (auto resource = pbrShader->GetShaderResource("u_ShadowMapTexture"))
 			{
-				Ref<OpenGLImage2D> shadowMapTexture = shadow.As<OpenGLTexture2D>();
+				RefH2M<OpenGLImage2D> shadowMapTexture = shadow.As<OpenGLTexture2D>();
 				glBindSampler(resource->GetRegister(), shadowMapTexture->GetSamplerRendererID());
 				glBindTextureUnit(resource->GetRegister(), shadowMapTexture->GetRendererID());
 			}
 		}
 	}
 
-	std::pair<Ref<HazelTextureCube>, Ref<HazelTextureCube>> OpenGLRenderer::CreateEnvironmentMap(const std::string& filepath)
+	std::pair<RefH2M<HazelTextureCube>, RefH2M<HazelTextureCube>> OpenGLRenderer::CreateEnvironmentMap(const std::string& filepath)
 	{
 		Log::GetLogger()->debug("ComputeEnvironmentMaps: {0}", HazelRenderer::GetConfig().ComputeEnvironmentMaps);
 
@@ -257,10 +266,10 @@ namespace Hazel {
 		const uint32_t cubemapSize = HazelRenderer::GetConfig().EnvironmentMapResolution;
 		const uint32_t irradianceMapSize = 32;
 
-		Ref<OpenGLTextureCube> envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
-		// Ref<OpenGLShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShader>();
-		Ref<OpenGLShader> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<OpenGLShader>();
-		Ref<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
+		RefH2M<OpenGLTextureCube> envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
+		// RefH2M<OpenGLShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShader>();
+		RefH2M<OpenGLShader> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<OpenGLShader>();
+		RefH2M<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
 
 		// HZ_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
 		if (envEquirect->GetFormat() != Hazel::HazelImageFormat::RGBA16F)
@@ -278,11 +287,11 @@ namespace Hazel {
 			glGenerateTextureMipmap(envUnfiltered->GetRendererID());
 		}
 
-		// Ref<OpenGLShader> envFilteringShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShader>();
-		Ref<OpenGLShader> envFilteringShader = ResourceManager::GetShader("Hazel/EnvironmentMipFilter").As<OpenGLShader>();
+		// RefH2M<OpenGLShader> envFilteringShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShader>();
+		RefH2M<OpenGLShader> envFilteringShader = ResourceManager::GetShader("Hazel/EnvironmentMipFilter").As<OpenGLShader>();
 
 		// s_EnvFiltered = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize, true);
-		Ref<OpenGLTextureCube> envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
+		RefH2M<OpenGLTextureCube> envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
 
 		// HazelRenderer::Submit([envUnfiltered, envFiltered]() {});
 		{
@@ -316,11 +325,11 @@ namespace Hazel {
 			}
 		}
 
-		// Ref<OpenGLShader> envIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShader>();
-		Ref<OpenGLShader> envIrradianceShader = ResourceManager::GetShader("Hazel/EnvironmentIrradiance").As<OpenGLShader>();
+		// RefH2M<OpenGLShader> envIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShader>();
+		RefH2M<OpenGLShader> envIrradianceShader = ResourceManager::GetShader("Hazel/EnvironmentIrradiance").As<OpenGLShader>();
 
 		// s_IrradianceMap = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize, true);
-		Ref<OpenGLTextureCube> irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA32F, irradianceMapSize, irradianceMapSize).As<OpenGLTextureCube>();
+		RefH2M<OpenGLTextureCube> irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA32F, irradianceMapSize, irradianceMapSize).As<OpenGLTextureCube>();
 
 		envIrradianceShader->Bind();
 		envFiltered->Bind(1);
@@ -342,7 +351,7 @@ namespace Hazel {
 		return { envFiltered, irradianceMap };
 	}
 
-	void OpenGLRenderer::RenderMesh(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	void OpenGLRenderer::RenderMesh(RefH2M<Pipeline> pipeline, RefH2M<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		mesh->GetVertexBuffer()->Bind();
 		pipeline->Bind();
@@ -380,7 +389,7 @@ namespace Hazel {
 		}
 	}
 
-	void OpenGLRenderer::RenderMeshWithoutMaterial(Ref<Pipeline> pipeline, Ref<HazelMesh> mesh, const glm::mat4& transform)
+	void OpenGLRenderer::RenderMeshWithoutMaterial(RefH2M<Pipeline> pipeline, RefH2M<HazelMesh> mesh, const glm::mat4& transform)
 	{
 		mesh->GetVertexBuffer()->Bind();
 		pipeline->Bind();
@@ -410,13 +419,13 @@ namespace Hazel {
 		}
 	}
 
-	void OpenGLRenderer::RenderQuad(Ref<Pipeline> pipeline, Ref<HazelMaterial> material, const glm::mat4& transform)
+	void OpenGLRenderer::RenderQuad(RefH2M<Pipeline> pipeline, RefH2M<HazelMaterial> material, const glm::mat4& transform)
 	{
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
 		pipeline->Bind();
 		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 
-		Ref<OpenGLMaterial> glMaterial = material.As<OpenGLMaterial>();
+		RefH2M<OpenGLMaterial> glMaterial = material.As<OpenGLMaterial>();
 		glMaterial->UpdateForRendering();
 
 		auto shader = material->GetShader();

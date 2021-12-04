@@ -12,10 +12,10 @@
 namespace H2M
 {
 
-	class MouseMovedEvent : public EventH2M
+	class MouseMovedEventH2M : public EventH2M
 	{
 	public:
-		MouseMovedEvent(float x, float y)
+		MouseMovedEventH2M(float x, float y)
 			: m_MouseX(x), m_MouseY(y) {}
 
 		inline float GetX() const { return m_MouseX; }

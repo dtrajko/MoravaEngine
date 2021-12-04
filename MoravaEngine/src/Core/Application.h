@@ -72,8 +72,8 @@ public:
 	void CaptureScreenshot(const std::string& filePath);
 
 private:
-	bool OnWindowClose(H2M::WindowCloseEvent& e);
-	bool OnWindowResize(H2M::WindowResizeEvent& e);
+	bool OnWindowClose(H2M::WindowCloseEventH2M& e);
+	bool OnWindowResize(H2M::WindowResizeEventH2M& e);
 
 private:
 	static Application* s_Instance;

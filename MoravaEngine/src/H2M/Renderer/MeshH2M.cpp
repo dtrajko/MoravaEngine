@@ -19,12 +19,13 @@
 
 #include "H2M/Scene/EntityH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 // TEMPORARY VULKAN INCLUDES
-#include "Hazel/Platform/Vulkan/VulkanContext.h"  // TODO: to be removed from MeshH2M
-#include "Hazel/Platform/Vulkan/VulkanPipeline.h" // TODO: to be removed from MeshH2M
-#include "Hazel/Platform/Vulkan/VulkanShader.h"   // TODO: to be removed from MeshH2M
-#include "Hazel/Platform/Vulkan/VulkanTexture.h"  // TODO: to be removed from MeshH2M
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"  // TODO: to be removed from MeshH2M
+#include "H2M/Platform/Vulkan/VulkanPipelineH2M.h" // TODO: to be removed from MeshH2M
+#include "H2M/Platform/Vulkan/VulkanShaderH2M.h"   // TODO: to be removed from MeshH2M
+#include "H2M/Platform/Vulkan/VulkanTextureH2M.h"  // TODO: to be removed from MeshH2M
 
 #include "Core/Log.h"
 #include "Core/Math.h"
@@ -133,7 +134,7 @@ namespace H2M
 		if (!m_MeshShader)
 		{
 			/**** BEGIN MoravaShader the new API ****/
-			if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::OpenGL)
+			if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationStatic;
 				moravaShaderSpecificationStatic.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
@@ -150,7 +151,7 @@ namespace H2M
 
 				m_MeshShader = m_IsAnimated ? MoravaShader::Create(moravaShaderSpecificationAnim) : MoravaShader::Create(moravaShaderSpecificationStatic);
 			}
-			else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::Vulkan)
+			else if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelVulkan;
 				moravaShaderSpecificationHazelVulkan.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
@@ -159,7 +160,7 @@ namespace H2M
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
 			}
-			else if (Hazel::RendererAPI::Current() == Hazel::RendererAPIType::DX11)
+			else if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::DX11)
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelDX11;
 				moravaShaderSpecificationHazelDX11.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
@@ -183,24 +184,24 @@ namespace H2M
 		{
 			aiMesh* mesh = scene->mMeshes[m];
 
-			SubmeshH2M& submesh = m_Submeshes.emplace_back();
-			submesh.BaseVertex = vertexCount;
-			submesh.BaseIndex = indexCount;
-			submesh.MaterialIndex = mesh->mMaterialIndex;
-			submesh.IndexCount = mesh->mNumFaces * 3;
-			submesh.MeshName = mesh->mName.C_Str();
+			RefH2M<SubmeshH2M> submesh = RefH2M<SubmeshH2M>::Create();
+			submesh->BaseVertex = vertexCount;
+			submesh->BaseIndex = indexCount;
+			submesh->MaterialIndex = mesh->mMaterialIndex;
+			submesh->IndexCount = mesh->mNumFaces * 3;
+			submesh->MeshName = mesh->mName.C_Str();
 			// m_Submeshes.push_back(submesh);
 
 			vertexCount += mesh->mNumVertices;
-			indexCount += submesh.IndexCount;
+			indexCount += submesh->IndexCount;
 
-			HZ_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions.");
-			HZ_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals.");
+			H2M_CORE_ASSERT(mesh->HasPositions(), "Meshes require positions.");
+			H2M_CORE_ASSERT(mesh->HasNormals(), "Meshes require normals.");
 
 			// Vertices
 			if (m_IsAnimated)
 			{
-				auto& aabb = submesh.BoundingBox;
+				auto& aabb = submesh->BoundingBox;
 				aabb.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
 				aabb.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
@@ -234,7 +235,7 @@ namespace H2M
 			}
 			else
 			{
-				auto& aabb = submesh.BoundingBox;
+				auto& aabb = submesh->BoundingBox;
 				aabb.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
 				aabb.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
@@ -283,14 +284,14 @@ namespace H2M
 				// Triangle cache
 				if (!m_IsAnimated)
 				{
-					if (index.V1 + submesh.BaseVertex < m_StaticVertices.size() &&
-						index.V2 + submesh.BaseVertex < m_StaticVertices.size() &&
-						index.V3 + submesh.BaseVertex < m_StaticVertices.size())
+					if (index.V1 + submesh->BaseVertex < m_StaticVertices.size() &&
+						index.V2 + submesh->BaseVertex < m_StaticVertices.size() &&
+						index.V3 + submesh->BaseVertex < m_StaticVertices.size())
 					{
 						m_TriangleCache[(uint32_t)m].emplace_back(
-							m_StaticVertices[index.V1 + submesh.BaseVertex],
-							m_StaticVertices[index.V2 + submesh.BaseVertex],
-							m_StaticVertices[index.V3 + submesh.BaseVertex]);
+							m_StaticVertices[index.V1 + submesh->BaseVertex],
+							m_StaticVertices[index.V2 + submesh->BaseVertex],
+							m_StaticVertices[index.V3 + submesh->BaseVertex]);
 					}
 				}
 			}
@@ -298,12 +299,12 @@ namespace H2M
 
 		// Display the list of all submeshes
 		for (size_t m = 0; m < scene->mNumMeshes; m++) {
-			Log::GetLogger()->info("-- Submesh ID {0} NodeName: '{1}'", m, m_Submeshes[m].NodeName);
+			Log::GetLogger()->info("-- Submesh ID {0} NodeName: '{1}'", m, m_Submeshes[m]->NodeName);
 		}
 
 		TraverseNodes(scene->mRootNode);
 
-		PipelineSpecification pipelineSpecification;
+		PipelineSpecificationH2M pipelineSpecification;
 		auto shader = m_MeshShader; // MoravaShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
 		pipelineSpecification.Shader = m_MeshShader;
 
@@ -348,7 +349,7 @@ namespace H2M
 			for (size_t m = 0; m < scene->mNumMeshes; m++)
 			{
 				aiMesh* mesh = scene->mMeshes[m];
-				SubmeshH2M& submesh = m_Submeshes[m];
+				RefH2M<SubmeshH2M> submesh = m_Submeshes[m];
 
 				for (size_t i = 0; i < mesh->mNumBones; i++)
 				{
@@ -374,7 +375,7 @@ namespace H2M
 
 					for (size_t j = 0; j < bone->mNumWeights; j++)
 					{
-						int VertexID = submesh.BaseVertex + bone->mWeights[j].mVertexId;
+						int VertexID = submesh->BaseVertex + bone->mWeights[j].mVertexId;
 						float Weight = bone->mWeights[j].mWeight;
 						if (m_AnimatedVertices.size() > VertexID) {
 							m_AnimatedVertices[VertexID].AddBoneData(boneIndex, Weight);
@@ -419,7 +420,7 @@ namespace H2M
 
 						// EXAMPLE:
 						// std::vector<VkWriteDescriptorSet> writeDescriptorSets = Renderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
-						auto& ub0 = shader.As<VulkanShader>()->GetUniformBuffer(0);
+						auto& ub0 = shader.As<VulkanShaderH2M>()->GetUniformBuffer(0);
 						VkWriteDescriptorSet writeDescriptorSet = {};
 						writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 						writeDescriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
@@ -429,7 +430,7 @@ namespace H2M
 						writeDescriptorSet.dstBinding = 0;
 						materialDescriptor.WriteDescriptors.push_back(writeDescriptorSet);
 
-						auto& ub1 = shader.As<VulkanShader>()->GetUniformBuffer(1);
+						auto& ub1 = shader.As<VulkanShaderH2M>()->GetUniformBuffer(1);
 						writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 						writeDescriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
 						writeDescriptorSet.descriptorCount = (uint32_t)materialDescriptor.DescriptorSet.DescriptorSets.size();
@@ -477,12 +478,12 @@ namespace H2M
 				HZ_MESH_LOG("    METALNESS = {0}", metalness);
 
 				// BEGIN the material data section
-				Submesh* submeshPtr = nullptr;
+				RefH2M<SubmeshH2M> submeshPtr = RefH2M<SubmeshH2M>();
 				if (i < m_Submeshes.size()) {
 					submeshPtr = &m_Submeshes[i];
 				}
 
-				Hazel::RefH2M<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
+				RefH2M<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
 				// END the material data section
 
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
@@ -1033,9 +1034,9 @@ namespace H2M
 		{
 			uint32_t mesh = node->mMeshes[i];
 			Submesh& submesh = m_Submeshes[mesh];
-			submesh.NodeName = node->mName.C_Str();
-			submesh.MeshName = m_Scene->mMeshes[mesh]->mName.C_Str();
-			submesh.Transform = transform;
+			submesh->NodeName = node->mName.C_Str();
+			submesh->MeshName = m_Scene->mMeshes[mesh]->mName.C_Str();
+			submesh->Transform = transform;
 		}
 
 		HZ_MESH_LOG("{0} {1}", LevelToSpaces(level), node->mName.C_Str());
@@ -1360,14 +1361,14 @@ namespace H2M
 		return nullptr;
 	}
 
-	void MeshH2M::DeleteSubmesh(Submesh submesh)
+	void MeshH2M::DeleteSubmesh(RefH2M<SubmeshH2M> submesh)
 	{
 		for (auto iterator = m_Submeshes.cbegin(); iterator != m_Submeshes.cend();)
 		{
-			if (iterator->MeshName == submesh.MeshName)
+			if (iterator->Raw()->MeshName == submesh->MeshName)
 			{
 				iterator = m_Submeshes.erase(iterator++);
-				Log::GetLogger()->debug("MeshH2M::DeleteSubmesh erase '{0}'", submesh.MeshName);
+				Log::GetLogger()->debug("MeshH2M::DeleteSubmesh erase '{0}'", submesh->MeshName);
 			}
 			else
 			{
@@ -1376,15 +1377,16 @@ namespace H2M
 		}
 	}
 
-	void MeshH2M::CloneSubmesh(Submesh submesh)
+	void MeshH2M::CloneSubmesh(RefH2M<SubmeshH2M> submesh)
 	{
 		EntitySelection::s_SelectionContext.clear();
 
-		Submesh* submeshCopy = new Submesh(submesh);
+		// Ref<SubmeshHazelLegacy> submeshCopy = Ref<SubmeshHazelLegacy>::Create(submesh);
+		RefH2M<SubmeshH2M> submeshCopy = RefH2M<SubmeshH2M>::Create();
 		std::string appendix = Util::randomString(2);
 		submeshCopy->MeshName += "." + appendix;
 		submeshCopy->NodeName += "." + appendix;
-		m_Submeshes.push_back(*submeshCopy);
+		m_Submeshes.push_back(submeshCopy);
 	}
 
 	void MeshH2M::BoneTransform(float time)
@@ -1465,7 +1467,7 @@ namespace H2M
 				m_MeshShader->SetMat4(uniformName, m_BoneTransforms[i]);
 			}
 
-			m_MeshShader->SetMat4("u_Transform", transform * submesh.Transform);
+			m_MeshShader->SetMat4("u_Transform", transform * submesh->Transform);
 
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial)
@@ -1497,7 +1499,7 @@ namespace H2M
 			RefH2M<HazelMaterial> material = RefH2M<HazelMaterial>();
 			if (m_Materials.size())
 			{
-				material = m_Materials[submesh.MaterialIndex];
+				material = m_Materials[submesh->MaterialIndex];
 				if (material && material->GetFlag(HazelMaterialFlag::DepthTest))
 				{
 					RendererBasic::EnableDepthTest();
@@ -1508,8 +1510,8 @@ namespace H2M
 				RendererBasic::DisableDepthTest();
 			}
 
-			RendererBasic::DrawIndexed(submesh.IndexCount, 0, submesh.BaseVertex, (void*)(sizeof(uint32_t) * submesh.BaseIndex));
-			// glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+			RendererBasic::DrawIndexed(submesh->IndexCount, 0, submesh->BaseVertex, (void*)(sizeof(uint32_t) * submesh->BaseIndex));
+			// glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 		}
 	}
 
@@ -1517,7 +1519,7 @@ namespace H2M
 	{
 		for (Hazel::Submesh submesh : m_Submeshes)
 		{
-			submesh.Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials, entity);
+			submesh->Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials, entity);
 		}
 	}
 

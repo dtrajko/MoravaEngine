@@ -208,9 +208,9 @@ void DX11Texture2D::Bind(uint32_t slot) const
 {
 }
 
-H2M::RefH2M<H2M::HazelImage2D> DX11Texture2D::GetImage() const
+H2M::RefH2M<H2M::Image2D_H2M> DX11Texture2D::GetImage() const
 {
-	return H2M::RefH2M<H2M::HazelImage2D>();
+	return H2M::RefH2M<H2M::Image2D_H2M>();
 }
 
 void DX11Texture2D::Lock()
@@ -225,7 +225,7 @@ void DX11Texture2D::Resize(uint32_t width, uint32_t height)
 {
 }
 
-H2M::Buffer DX11Texture2D::GetWriteableBuffer()
+H2M::BufferH2M DX11Texture2D::GetWriteableBuffer()
 {
 	return m_ImageData;
 }

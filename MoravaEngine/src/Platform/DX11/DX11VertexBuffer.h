@@ -28,7 +28,7 @@ public:
 	virtual void SetLayout(const H2M::VertexBufferLayout& layout) override { m_Layout = layout; }
 
 	virtual uint32_t GetSize() const override { return m_Stride; }
-	virtual H2M::RendererID GetRendererID() const override { return 0; }
+	virtual H2M::RendererID_H2M GetRendererID() const override { return 0; }
 
 	inline uint32_t GetStride() { return m_Stride; }
 	inline uint32_t GetVertexCount() { return m_Count; };
@@ -36,7 +36,7 @@ public:
 
 private:
 	// uint32_t m_Size = 0;
-	// H2M::Buffer m_LocalData;
+	// H2M::BufferH2M m_LocalData;
 	H2M::VertexBufferLayout m_Layout; // OpenGL-specific? Or it belongs to pipeline?
 
 	uint32_t m_Stride;

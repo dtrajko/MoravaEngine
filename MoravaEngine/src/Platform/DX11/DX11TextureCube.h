@@ -36,7 +36,7 @@ public:
 	// abstract methods in HazelTexture
 	virtual uint32_t GetID() const override { return uint32_t(); /* Not implemented */ }
 
-	// virtual H2M::RendererID GetRendererID() const override { return uint32_t(); // Removed in Hazel Live 18.03.2021 #2
+	// virtual H2M::RendererID_H2M GetRendererID() const override { return uint32_t(); // Removed in Hazel Live 18.03.2021 #2
 	// virtual void Resize(uint32_t width, uint32_t height) override { /* Not implemented */ };
 
 private:
@@ -48,6 +48,6 @@ private:
 
 	bool m_MipsGenerated = false;
 
-	H2M::Buffer m_LocalStorage;
+	H2M::BufferH2M m_LocalStorage;
 
 };

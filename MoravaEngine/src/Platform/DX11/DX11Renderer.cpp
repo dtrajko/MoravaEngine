@@ -31,7 +31,7 @@
 #include "ImGuizmo.h"
 
 
-static H2M::RefH2M<H2M::HazelFramebuffer> s_Framebuffer;
+static H2M::RefH2M<H2M::FramebufferH2M> s_Framebuffer;
 static H2M::RefH2M<H2M::Pipeline> s_MeshPipeline;
 static H2M::RefH2M<H2M::Pipeline> s_CompositePipeline;
 static H2M::RefH2M<H2M::VertexBuffer> s_QuadVertexBuffer;
@@ -137,16 +137,16 @@ void DX11Renderer::Init()
 {
 	/**** BEGIN DirectX 11 Init (from DX11TestLayer::OnAttach) ****/
 
-	H2M::HazelFramebufferTextureSpecification framebufferTextureSpecification;
+	H2M::FramebufferH2MTextureSpecification framebufferTextureSpecification;
 	framebufferTextureSpecification.Format = H2M::ImageFormatH2M::RGBA;
 
-	std::vector<H2M::HazelFramebufferTextureSpecification> framebufferTextureSpecifications;
+	std::vector<H2M::FramebufferH2MTextureSpecification> framebufferTextureSpecifications;
 	framebufferTextureSpecifications.push_back(framebufferTextureSpecification);
 
-	H2M::HazelFramebufferAttachmentSpecification framebufferAttachmentSpecification{};
+	H2M::FramebufferH2MAttachmentSpecification framebufferAttachmentSpecification{};
 	framebufferAttachmentSpecification.Attachments = framebufferTextureSpecifications;
 
-	H2M::HazelFramebufferSpecification framebufferSpec{};
+	H2M::FramebufferSpecificationH2M framebufferSpec{};
 	framebufferSpec.ClearColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	framebufferSpec.DebugName = "DX11 Framebuffer specification";
 	framebufferSpec.Width = Application::Get()->GetWindow()->GetWidth();
@@ -159,7 +159,7 @@ void DX11Renderer::Init()
 
 	H2M::RenderPassSpecification renderPassSpecification{};
 	renderPassSpecification.DebugName = "DX11 Render Pass specificartion";
-	renderPassSpecification.TargetFramebuffer = H2M::HazelFramebuffer::Create(framebufferSpec);
+	renderPassSpecification.TargetFramebuffer = H2M::FramebufferH2M::Create(framebufferSpec);
 
 	H2M::PipelineSpecification pipelineSpecIlluminated{};
 	pipelineSpecIlluminated.DebugName = "DX11 Pipeline specification";
@@ -963,11 +963,11 @@ void DX11Renderer::SubmitFullscreenQuad(H2M::RefH2M<H2M::RenderCommandBuffer> re
 {
 }
 
-void DX11Renderer::SubmitFullscreenQuadWithOverrides(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::HazelMaterial> material, H2M::Buffer vertexShaderOverrides, H2M::Buffer fragmentShaderOverrides)
+void DX11Renderer::SubmitFullscreenQuadWithOverrides(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::HazelMaterial> material, H2M::BufferH2M vertexShaderOverrides, H2M::BufferH2M fragmentShaderOverrides)
 {
 }
 
-void DX11Renderer::SetSceneEnvironment(H2M::RefH2M<H2M::SceneRenderer> sceneRenderer, H2M::RefH2M<H2M::Environment> environment, H2M::RefH2M<H2M::HazelImage2D> shadow, H2M::RefH2M<H2M::HazelImage2D> linearDepth)
+void DX11Renderer::SetSceneEnvironment(H2M::RefH2M<H2M::SceneRenderer> sceneRenderer, H2M::RefH2M<H2M::Environment> environment, H2M::RefH2M<H2M::Image2D_H2M> shadow, H2M::RefH2M<H2M::Image2D_H2M> linearDepth)
 {
 }
 
@@ -989,7 +989,7 @@ void DX11Renderer::RenderMesh(H2M::RefH2M<H2M::RenderCommandBuffer> renderComman
 {
 }
 
-void DX11Renderer::RenderMeshWithMaterial(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMesh> mesh, H2M::RefH2M<H2M::HazelMaterial> material, const glm::mat4& transform, H2M::Buffer additionalUniforms)
+void DX11Renderer::RenderMeshWithMaterial(H2M::RefH2M<H2M::RenderCommandBuffer> renderCommandBuffer, H2M::RefH2M<H2M::Pipeline> pipeline, H2M::RefH2M<H2M::UniformBufferSet> uniformBufferSet, H2M::RefH2M<H2M::StorageBufferSet> storageBufferSet, H2M::RefH2M<H2M::HazelMesh> mesh, H2M::RefH2M<H2M::HazelMaterial> material, const glm::mat4& transform, H2M::BufferH2M additionalUniforms)
 {
 }
 
@@ -1001,7 +1001,7 @@ void DX11Renderer::SubmitFullscreenQuad(H2M::RefH2M<H2M::RenderCommandBuffer> re
 {
 }
 
-void DX11Renderer::ClearImage(H2M::RefH2M<H2M::RenderCommandBuffer> commandBuffer, H2M::RefH2M<H2M::HazelImage2D> image)
+void DX11Renderer::ClearImage(H2M::RefH2M<H2M::RenderCommandBuffer> commandBuffer, H2M::RefH2M<H2M::Image2D_H2M> image)
 {
 }
 

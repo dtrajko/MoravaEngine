@@ -21,7 +21,7 @@
 
 struct aiNode;
 
-namespace Hazel
+namespace H2M
 {
 
 	class SceneHierarchyPanelH2M
@@ -36,8 +36,6 @@ namespace Hazel
 		void SetSelected(EntityH2M entity);
 		void SetSelectionChangedCallback(const std::function<void(EntityH2M)>& func) { m_SelectionChangedCallback = func; }
 		void SetEntityDeletedCallback(const std::function<void(EntityH2M)>& func) { m_EntityDeletedCallback = func; }
-		void SetMeshAssetConvertCallback(const std::function<void(EntityH2M, RefH2M<HazelMeshAssetLegacy>)>& func) { m_MeshAssetConvertCallback = func; }
-		void SetInvalidMetadataCallback(const std::function<void(EntityH2M, AssetHandle)>& func) { m_InvalidMetadataCallback = func; }
 
 		void OnImGuiRender(bool* p_open = (bool*)0);
 
@@ -49,17 +47,11 @@ namespace Hazel
 		void DrawEntitySubmeshes(EntityH2M entity);
 
 	private:
-		Ref<SceneH2M> m_Context;
-		Entity m_SelectionContext;
+		RefH2M<SceneH2M> m_Context;
+		EntityH2M m_SelectionContext;
 
 		std::function<void(EntityH2M)> m_SelectionChangedCallback;
 		std::function<void(EntityH2M)> m_EntityDeletedCallback;
-		std::function<void(EntityH2M, Ref<MeshAsset>)> m_MeshAssetConvertCallback;
-		std::function<void(EntityH2M, AssetHandle)> m_InvalidMetadataCallback;
-
-		Ref<Texture2D_H2M> m_PencilIcon;
-		Ref<Texture2D_H2M> m_PlusIcon;
-		Ref<Texture2D_H2M> m_GearIcon;
 
 	};
 

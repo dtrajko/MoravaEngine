@@ -23,14 +23,14 @@ public:
 	virtual void Unbind() const override;
 	virtual void Bind() const override;
 	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate) override;
-	virtual void AddResizeCallback(const std::function<void(H2M::RefH2M<H2M::HazelFramebuffer>)>& func) override {};
+	virtual void AddResizeCallback(const std::function<void(H2M::RefH2M<H2M::FramebufferH2M>)>& func) override {};
 	virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override;
-	virtual H2M::RendererID GetRendererID() const override;
-	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage(uint32_t attachmentIndex = 0) const override;
-	virtual H2M::RefH2M<H2M::HazelImage2D> GetDepthImage() const override;
-	virtual const H2M::HazelFramebufferSpecification& GetSpecification() const override;
-	// virtual H2M::RendererID GetColorAttachmentRendererID() const override;
-	// virtual H2M::RendererID GetDepthAttachmentRendererID() const override;
+	virtual H2M::RendererID_H2M GetRendererID() const override;
+	virtual H2M::RefH2M<H2M::Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const override;
+	virtual H2M::RefH2M<H2M::Image2D_H2M> GetDepthImage() const override;
+	virtual const H2M::FramebufferSpecificationH2M& GetSpecification() const override;
+	// virtual H2M::RendererID_H2M GetColorAttachmentRendererID() const override;
+	// virtual H2M::RendererID_H2M GetDepthAttachmentRendererID() const override;
 
 	// virtual/abstract methods from MoravaFramebuffer
 	virtual void Generate(unsigned int width, unsigned int height) override; // Invalidate() in Hazel
@@ -82,6 +82,6 @@ private:
 	// Hazel/Platform/OpenGL/OpenGLFramebuffer
 	bool m_Multisample;
 
-	H2M::HazelFramebufferSpecification m_HazelFramebufferSpecs; // not in use, only for compatibility with H2M::HazelFramebuffer
+	H2M::FramebufferSpecificationH2M m_HazelFramebufferSpecs; // not in use, only for compatibility with H2M::FramebufferH2M
 
 };

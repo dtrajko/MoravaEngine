@@ -1,9 +1,9 @@
 #include "Core/Application.h"
 
 #include "H2M/Core/BaseH2M.h"
-#include "H2M/Editor/EditorLayerVulkan.h"
-#include "H2M/Project/UserPreferences.h"
-#include "H2M/Renderer/RendererAPI.h"
+#include "H2M/Editor/EditorLayerVulkanH2M.h"
+#include "H2M/Project/UserPreferencesH2M.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Platform/Vulkan/VulkanTestLayer.h"
@@ -71,7 +71,7 @@ void Application::OnInit()
 
 	m_Renderer->Init(m_Scene);
 
-	m_ImGuiLayer = H2M::ImGuiLayer::Create();
+	m_ImGuiLayer = H2M::ImGuiLayerH2M::Create();
 	PushOverlay(m_ImGuiLayer);
 
 	H2M::RendererH2M::Init();
@@ -80,7 +80,7 @@ void Application::OnInit()
 	{
 		case H2M::RendererAPITypeH2M::Vulkan:
 			PushLayer(new H2M::VulkanTestLayer("VulkanTestLayer")); // to be removed
-			PushLayer(new H2M::EditorLayerVulkan(H2M::RefH2M<H2M::UserPreferences>::Create()));
+			PushLayer(new H2M::EditorLayerVulkanH2M(H2M::RefH2M<H2M::UserPreferencesH2M>::Create())); // used in Hazel-dev
 			break;
 		case H2M::RendererAPITypeH2M::DX11:
 			PushLayer(new DX11TestLayer("DX11TestLayer"));
@@ -228,7 +228,7 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	{
 		case H2M::RendererAPITypeH2M::Vulkan:
 		{
-			auto& fbs = H2M::HazelFramebufferPool::GetGlobal()->GetAll();
+			auto& fbs = H2M::FramebufferH2MPool::GetGlobal()->GetAll();
 			for (auto& fb : fbs)
 			{
 				const auto& spec = fb->GetSpecification();

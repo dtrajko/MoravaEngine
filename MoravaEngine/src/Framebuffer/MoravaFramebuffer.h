@@ -29,7 +29,7 @@ public:
 	static H2M::RefH2M<MoravaFramebuffer> Create(uint32_t width, uint32_t height);
 	static H2M::RefH2M<MoravaFramebuffer> Create(FramebufferSpecification spec);
 
-	// virtual methods from H2M::HazelFramebuffer
+	// virtual methods from H2M::FramebufferH2M
 	virtual void Bind() const = 0;
 	virtual void Unbind() const = 0;
 	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) = 0;

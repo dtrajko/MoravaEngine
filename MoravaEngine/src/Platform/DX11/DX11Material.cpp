@@ -59,7 +59,7 @@ void DX11Material::Set(const std::string& name, const glm::mat4& value) {}
 void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D_H2M>& texture) {}
 void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D_H2M>& texture, uint32_t arrayIndex) {}
 void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::TextureCubeH2M>& texture) {}
-void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::HazelImage2D>& image) {}
+void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Image2D_H2M>& image) {}
 
 float& DX11Material::GetFloat(const std::string& name) { float v;  return v; }
 int32_t& DX11Material::GetInt(const std::string& name) { int32_t v;  return v; }

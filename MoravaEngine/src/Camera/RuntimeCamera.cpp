@@ -60,8 +60,8 @@ void RuntimeCamera::OnEvent(H2M::EventH2M& e)
 {
 	m_CameraController.OnEvent(e);
 
-	H2M::EventDispatcherH2M::dispatcher(e);
-	dispatcher.Dispatch<H2M::MouseScrolledEventH2M>(HZ_BIND_EVENT_FN(RuntimeCamera::OnMouseScroll));
+	H2M::EventDispatcherH2M dispatcher(e);
+	dispatcher.Dispatch<H2M::MouseScrolledEventH2M>(H2M_BIND_EVENT_FN(RuntimeCamera::OnMouseScroll));
 }
 
 void RuntimeCamera::SetViewportSize(float width, float height)

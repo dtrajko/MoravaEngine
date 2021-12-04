@@ -1,14 +1,13 @@
 #include "EnvMapSceneRenderer.h"
 
-#include "H2M/Core/Assert.h"
-#include "H2M/ImGui/ImGui.h"
-#include "H2M/Platform/OpenGL/OpenGLRenderPass.h"
-#include "H2M/Platform/OpenGL/OpenGLShader.h"
-#include "H2M/Platform/OpenGL/OpenGLTexture.h"
-#include "H2M/Platform/Vulkan/VulkanRenderer.h"
-#include "H2M/Renderer/HazelShader.h"
-#include "H2M/Renderer/Renderer2D.h"
-
+#include "H2M/Core/AssertH2M.h"
+#include "H2M/ImGui/ImGuiH2M.h"
+#include "H2M/Platform/OpenGL/OpenGLRenderPassH2M.h"
+#include "H2M/Platform/OpenGL/OpenGLShaderH2M.h"
+#include "H2M/Platform/OpenGL/OpenGLTextureH2M.h"
+#include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
+#include "H2M/Renderer/ShaderH2M.h"
+#include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
@@ -39,7 +38,7 @@ uint32_t EnvMapSceneRenderer::s_FramebufferWidth = 1280;
 uint32_t EnvMapSceneRenderer::s_FramebufferHeight = 720;
 
 // variables from SceneRenderer
-H2M::RefH2M<H2M::RenderCommandBuffer> EnvMapSceneRenderer::s_CommandBuffer;
+H2M::RefH2M<H2M::RenderCommandBufferH2M> EnvMapSceneRenderer::s_CommandBuffer;
 
 EnvMapSceneRenderer::UBRendererData EnvMapSceneRenderer::s_RendererDataUB;
 
@@ -47,19 +46,19 @@ float EnvMapSceneRenderer::s_CascadeSplitLambda = 0.92f;
 float EnvMapSceneRenderer::s_CascadeFarPlaneOffset = 50.0f;
 float EnvMapSceneRenderer::s_CascadeNearPlaneOffset = -50.0f;
 
-H2M::RefH2M<H2M::Pipeline> EnvMapSceneRenderer::s_GeometryPipeline;
-H2M::RefH2M<H2M::Pipeline> EnvMapSceneRenderer::s_SelectedGeometryPipeline;
-H2M::RefH2M<H2M::Pipeline> EnvMapSceneRenderer::s_GeometryWireframePipeline;
-H2M::RefH2M<H2M::Pipeline> EnvMapSceneRenderer::s_GeometryWireframeOnTopPipeline;
-H2M::RefH2M<H2M::Pipeline> EnvMapSceneRenderer::s_PreDepthPipeline;
-H2M::RefH2M<H2M::Pipeline> EnvMapSceneRenderer::s_CompositePipeline;
-H2M::RefH2M<H2M::Pipeline> EnvMapSceneRenderer::s_ShadowPassPipelines[4];
-H2M::RefH2M<H2M::HazelMaterial> EnvMapSceneRenderer::s_ShadowPassMaterial;
-H2M::RefH2M<H2M::HazelMaterial> EnvMapSceneRenderer::s_PreDepthMaterial;
-H2M::RefH2M<H2M::Pipeline> EnvMapSceneRenderer::s_SkyboxPipeline;
-H2M::RefH2M<H2M::HazelMaterial> EnvMapSceneRenderer::s_SkyboxMaterial;
-H2M::RefH2M<H2M::Pipeline> EnvMapSceneRenderer::s_DOFPipeline;
-H2M::RefH2M<H2M::HazelMaterial> EnvMapSceneRenderer::s_DOFMaterial;
+H2M::RefH2M<H2M::PipelineH2M> EnvMapSceneRenderer::s_GeometryPipeline;
+H2M::RefH2M<H2M::PipelineH2M> EnvMapSceneRenderer::s_SelectedGeometryPipeline;
+H2M::RefH2M<H2M::PipelineH2M> EnvMapSceneRenderer::s_GeometryWireframePipeline;
+H2M::RefH2M<H2M::PipelineH2M> EnvMapSceneRenderer::s_GeometryWireframeOnTopPipeline;
+H2M::RefH2M<H2M::PipelineH2M> EnvMapSceneRenderer::s_PreDepthPipeline;
+H2M::RefH2M<H2M::PipelineH2M> EnvMapSceneRenderer::s_CompositePipeline;
+H2M::RefH2M<H2M::PipelineH2M> EnvMapSceneRenderer::s_ShadowPassPipelines[4];
+H2M::RefH2M<H2M::MaterialH2M> EnvMapSceneRenderer::s_ShadowPassMaterial;
+H2M::RefH2M<H2M::MaterialH2M> EnvMapSceneRenderer::s_PreDepthMaterial;
+H2M::RefH2M<H2M::PipelineH2M> EnvMapSceneRenderer::s_SkyboxPipeline;
+H2M::RefH2M<H2M::MaterialH2M> EnvMapSceneRenderer::s_SkyboxMaterial;
+H2M::RefH2M<H2M::PipelineH2M> EnvMapSceneRenderer::s_DOFPipeline;
+H2M::RefH2M<H2M::MaterialH2M> EnvMapSceneRenderer::s_DOFMaterial;
 
 SceneRendererOptions EnvMapSceneRenderer::s_Options;
 
@@ -72,7 +71,7 @@ H2M::RefH2M<H2M::Texture2D_H2M> EnvMapSceneRenderer::s_BloomDirtTexture;
 
 EnvMapSceneRenderer::GPUTimeQueries EnvMapSceneRenderer::s_GPUTimeQueries;
 
-H2M::RefH2M<H2M::Renderer2D> EnvMapSceneRenderer::s_Renderer2D;
+H2M::RefH2M<H2M::Renderer2D_H2M> EnvMapSceneRenderer::s_Renderer2D;
 
 
 struct EnvMapSceneRendererData
@@ -83,19 +82,19 @@ struct EnvMapSceneRendererData
         H2M::SceneRendererCameraH2M SceneCamera;
 
         // Resources
-        Ref<H2M::HazelMaterial> HazelSkyboxMaterial;
+        RefH2M<H2M::MaterialH2M> HazelSkyboxMaterial;
         Material* SkyboxMaterial;
-        H2M::Environment SceneEnvironment;
-        H2M::HazelDirLight ActiveLight;
+        H2M::EnvironmentH2M SceneEnvironment;
+        H2M::LightH2M ActiveLight;
     } SceneData;
 
     H2M::RefH2M<H2M::Texture2D_H2M> BRDFLUT;
 
     H2M::RefH2M<MoravaShader> CompositeShader;
 
-    H2M::RefH2M<H2M::RenderPass> GeoPass;
-    H2M::RefH2M<H2M::RenderPass> CompositePass;
-    H2M::RefH2M<H2M::RenderPass> ActiveRenderPass;
+    H2M::RefH2M<H2M::RenderPassH2M> GeoPass;
+    H2M::RefH2M<H2M::RenderPassH2M> CompositePass;
+    H2M::RefH2M<H2M::RenderPassH2M> ActiveRenderPass;
 
     struct DrawCommand
     {
@@ -109,14 +108,14 @@ struct EnvMapSceneRendererData
 
     // Grid
     Material* GridMaterial;
-    // Ref<HazelShader> HazelGridShader;
-    // Ref<MoravaShader> GridShader;
-    Ref<H2M::HazelMaterial> OutlineMaterial;
+    // RefH2M<HazelShader> HazelGridShader;
+    // RefH2M<MoravaShader> GridShader;
+    RefH2M<H2M::MaterialH2M> OutlineMaterial;
 
     H2M::SceneRendererOptionsH2M Options;
 
     // Renderer data
-    H2M::RenderCommandQueue* m_CommandQueue;
+    H2M::RenderCommandQueueH2M* m_CommandQueue;
 };
 
 static EnvMapSceneRendererData s_Data;
@@ -163,7 +162,7 @@ void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene)
     geoFramebufferDepthSpec.attachmentType = AttachmentType::Texture;
     geoFramebufferDepthSpec.attachmentFormat = AttachmentFormat::Depth_24_Stencil_8;
 
-    H2M::RenderPassSpecification geoRenderPassSpec;
+    H2M::RenderPassSpecificationH2M geoRenderPassSpec;
     geoRenderPassSpec.TargetFramebuffer = MoravaFramebuffer::Create(geoFramebufferSpec);
 
     auto targetFramebufferGeo = static_cast<H2M::RefH2M<MoravaFramebuffer>>(geoRenderPassSpec.TargetFramebuffer);
@@ -174,7 +173,7 @@ void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene)
 
     targetFramebufferGeo->Generate(geoFramebufferSpec.Width, geoFramebufferSpec.Height);
 
-    s_Data.GeoPass = H2M::RenderPass::Create(geoRenderPassSpec);
+    s_Data.GeoPass = H2M::RenderPassH2M::Create(geoRenderPassSpec);
 
     FramebufferSpecification compFramebufferSpec;
     compFramebufferSpec.Width = s_FramebufferWidth;
@@ -185,7 +184,7 @@ void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene)
 
     isMultisample = compFramebufferSpec.Samples > 1;
 
-    H2M::RenderPassSpecification compRenderPassSpec;
+    H2M::RenderPassSpecificationH2M compRenderPassSpec;
     compRenderPassSpec.TargetFramebuffer = MoravaFramebuffer::Create(compFramebufferSpec);
 
     auto targetFramebufferComp = static_cast<H2M::RefH2M<MoravaFramebuffer>>(compRenderPassSpec.TargetFramebuffer);
@@ -200,11 +199,11 @@ void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene)
 
     Log::GetLogger()->debug("Generating the COMPOSITE RenderPass framebuffer with AttachmentFormat::RGBA");
     targetFramebufferComp->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
-    s_Data.CompositePass = H2M::RenderPass::Create(compRenderPassSpec);
+    s_Data.CompositePass = H2M::RenderPassH2M::Create(compRenderPassSpec);
 
     s_Data.BRDFLUT = H2M::Texture2D_H2M::Create("Textures/Hazel/BRDF_LUT.tga");
 
-    s_Renderer2D = H2M::RefH2M<H2M::Renderer2D>::Create();
+    s_Renderer2D = H2M::RefH2M<H2M::Renderer2D_H2M>::Create();
 }
 
 void EnvMapSceneRenderer::SetupShaders()
@@ -241,7 +240,7 @@ void EnvMapSceneRenderer::SetupShaders()
 }
 
 // Moved from EnvironmentMap
-H2M::Environment EnvMapSceneRenderer::Load(const std::string& filepath)
+H2M::EnvironmentH2M EnvMapSceneRenderer::Load(const std::string& filepath)
 {
     auto [radiance, irradiance] = CreateEnvironmentMap(filepath);
     // auto [radiance, irradiance] = H2M::RendererH2M::CreateEnvironmentMap(filepath);
@@ -272,11 +271,11 @@ void EnvMapSceneRenderer::EndScene()
     FlushDrawList();
 }
 
-void EnvMapSceneRenderer::SubmitMesh(Ref<Mesh> mesh, const glm::mat4& transform, Ref<H2M::HazelMaterial> overrideMaterial)
+void EnvMapSceneRenderer::SubmitMesh(RefH2M<Mesh> mesh, const glm::mat4& transform, RefH2M<H2M::MaterialH2M> overrideMaterial)
 {
 }
 
-void EnvMapSceneRenderer::SubmitSelectedMesh(Ref<Mesh> mesh, const glm::mat4& transform)
+void EnvMapSceneRenderer::SubmitSelectedMesh(RefH2M<Mesh> mesh, const glm::mat4& transform)
 {
 }
 
@@ -297,10 +296,10 @@ H2M::SceneRendererCameraH2M& EnvMapSceneRenderer::GetCamera()
     return s_Data.SceneData.SceneCamera;
 }
 
-static Ref<H2M::HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
+static RefH2M<H2M::HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
 
 // Moved from EnvironmentMap
-void EnvMapSceneRenderer::SetEnvironment(H2M::Environment environment)
+void EnvMapSceneRenderer::SetEnvironment(H2M::EnvironmentH2M environment)
 {
     s_Data.SceneData.SceneEnvironment = environment;
 }
@@ -321,9 +320,9 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
     const uint32_t cubemapSize = H2M::RendererH2M::GetConfig().EnvironmentMapResolution;
     const uint32_t irradianceMapSize = 32;
 
-    H2M::RefH2M<H2M::OpenGLTextureCube> envUnfiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize).As<H2M::OpenGLTextureCube>();
-    // Ref<OpenGLShader> equirectangularConversionShader = RendererH2M::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShader>();
-    H2M::RefH2M<H2M::OpenGLShader> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<H2M::OpenGLShader>();
+    H2M::RefH2M<H2M::OpenGLTextureCubeH2M> envUnfiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize).As<H2M::OpenGLTextureCubeH2M>();
+    // RefH2M<OpenGLShaderH2M> equirectangularConversionShader = RendererH2M::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShaderH2M>();
+    H2M::RefH2M<H2M::OpenGLShaderH2M> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<H2M::OpenGLShaderH2M>();
     s_EnvEquirect = H2M::Texture2D_H2M::Create(filepath);
 
     // H2M_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
@@ -342,11 +341,11 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
         glGenerateTextureMipmap(envUnfiltered->GetRendererID());
     }
 
-    // Ref<OpenGLShader> envFilteringShader = RendererH2M::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShader>();
-    H2M::RefH2M<H2M::OpenGLShader> envFilteringShader = ResourceManager::GetShader("Hazel/EnvironmentMipFilter").As<H2M::OpenGLShader>();
+    // RefH2M<OpenGLShaderH2M> envFilteringShader = RendererH2M::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShaderH2M>();
+    H2M::RefH2M<H2M::OpenGLShaderH2M> envFilteringShader = ResourceManager::GetShader("Hazel/EnvironmentMipFilter").As<H2M::OpenGLShaderH2M>();
 
     // s_EnvFiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize, true);
-    H2M::RefH2M<H2M::OpenGLTextureCube> envFiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize).As<H2M::OpenGLTextureCube>();
+    H2M::RefH2M<H2M::OpenGLTextureCubeH2M> envFiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize).As<H2M::OpenGLTextureCubeH2M>();
 
     // RendererH2M::Submit([envUnfiltered, envFiltered]() {});
     {
@@ -380,11 +379,11 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
         }
     }
 
-    // Ref<OpenGLShader> envIrradianceShader = RendererH2M::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShader>();
-    H2M::RefH2M<H2M::OpenGLShader> envIrradianceShader = ResourceManager::GetShader("Hazel/EnvironmentIrradiance").As<H2M::OpenGLShader>();
+    // RefH2M<OpenGLShaderH2M> envIrradianceShader = RendererH2M::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShaderH2M>();
+    H2M::RefH2M<H2M::OpenGLShaderH2M> envIrradianceShader = ResourceManager::GetShader("Hazel/EnvironmentIrradiance").As<H2M::OpenGLShaderH2M>();
 
     // s_IrradianceMap = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, irradianceMapSize, irradianceMapSize, true);
-    H2M::RefH2M<H2M::OpenGLTextureCube> irradianceMap = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, irradianceMapSize, irradianceMapSize).As<H2M::OpenGLTextureCube>();
+    H2M::RefH2M<H2M::OpenGLTextureCubeH2M> irradianceMap = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, irradianceMapSize, irradianceMapSize).As<H2M::OpenGLTextureCubeH2M>();
 
     envIrradianceShader->Bind();
     envFiltered->Bind(1);
@@ -580,7 +579,7 @@ void EnvMapSceneRenderer::OnImGuiRender()
 
     if (ImGui::TreeNode("Shaders"))
     {
-        auto& shaders = H2M::HazelShader::s_AllShaders;
+        auto& shaders = H2M::ShaderH2M::s_AllShaders;
         for (auto& shader : shaders)
         {
             if (ImGui::TreeNode(shader->GetName().c_str()))
@@ -600,7 +599,7 @@ void EnvMapSceneRenderer::OnImGuiRender()
         H2M::UI::Property("Show Light Complexity", s_RendererDataUB.ShowLightComplexity);
         H2M::UI::Property("Show Shadow Cascades", s_RendererDataUB.ShowCascades);
         static int maxDrawCall = 1000;
-        H2M::UI::PropertySlider("Selected Draw", H2M::VulkanRenderer::GetSelectedDrawCall(), -1, maxDrawCall);
+        H2M::UI::PropertySlider("Selected Draw", H2M::VulkanRendererH2M::GetSelectedDrawCall(), -1, maxDrawCall);
         H2M::UI::Property("Max Draw Call", maxDrawCall);
         H2M::UI::EndPropertyGrid();
         H2M::UI::EndTreeNode();
@@ -840,14 +839,14 @@ void EnvMapSceneRenderer::GeometryPass()
         }
     }
 
-    H2M::Renderer2D::BeginScene(viewProj, glm::mat4(1.0f), true);
+    H2M::Renderer2D_H2M::BeginScene(viewProj, true);
     {
         // RendererBasic::SetLineThickness(2.0f);
 
         if (EnvMapSharedData::s_DisplayRay)
         {
             glm::vec3 camPosition = EnvMapSharedData::s_ActiveCamera->GetPosition();
-            H2M::Renderer2D::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+            H2M::Renderer2D_H2M::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
 
         if (EntitySelection::s_SelectionContext.size()) {
@@ -865,7 +864,7 @@ void EnvMapSceneRenderer::GeometryPass()
             }
         }
     }
-    H2M::Renderer2D::EndScene();
+    H2M::Renderer2D_H2M::EndScene();
 
     GetGeoPass()->GetSpecification().TargetFramebuffer->Bind();
 }
@@ -934,7 +933,7 @@ void EnvMapSceneRenderer::ShadowMapPass()
         // Render entities
         for (auto& dc : s_Data.ShadowPassDrawList)
         {
-            Ref<HazelShader> shader = dc.Mesh->IsAnimated() ? s_Data.ShadowMapAnimShader : s_Data.ShadowMapShader;
+            RefH2M<HazelShader> shader = dc.Mesh->IsAnimated() ? s_Data.ShadowMapAnimShader : s_Data.ShadowMapShader;
             shader->SetMat4("u_ViewProjection", shadowMapVP);
             RendererH2M::SubmitMeshWithShader(dc.Mesh, dc.Transform, shader);
         }
@@ -1006,12 +1005,12 @@ H2M::RefH2M<MoravaShader> EnvMapSceneRenderer::GetShaderComposite()
     return s_Data.CompositeShader;
 }
 
-H2M::RefH2M<H2M::RenderPass> EnvMapSceneRenderer::GetGeoPass()
+H2M::RefH2M<H2M::RenderPassH2M> EnvMapSceneRenderer::GetGeoPass()
 {
     return s_Data.GeoPass;
 }
 
-H2M::RefH2M<H2M::RenderPass> EnvMapSceneRenderer::GetCompositePass()
+H2M::RefH2M<H2M::RenderPassH2M> EnvMapSceneRenderer::GetCompositePass()
 {
     return s_Data.CompositePass;
 }
@@ -1028,12 +1027,12 @@ void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, H2M::RefH
     s_Data.DrawList.push_back(drawCommand);
 }
 
-H2M::HazelDirLight& EnvMapSceneRenderer::GetActiveLight()
+H2M::LightH2M& EnvMapSceneRenderer::GetActiveLight()
 {
     return s_Data.SceneData.ActiveLight;
 }
 
-void EnvMapSceneRenderer::SetActiveLight(H2M::HazelDirLight& light)
+void EnvMapSceneRenderer::SetActiveLight(H2M::LightH2M& light)
 {
     s_Data.SceneData.ActiveLight = light;
 }
@@ -1043,7 +1042,7 @@ void EnvMapSceneRenderer::AddToDrawList(std::string name, H2M::RefH2M<H2M::MeshH
     s_Data.DrawList.push_back({ name, mesh.Raw(), entity.GetMaterial(), transform });
 }
 
-H2M::RefH2M<H2M::RenderPass> EnvMapSceneRenderer::GetFinalRenderPass()
+H2M::RefH2M<H2M::RenderPassH2M> EnvMapSceneRenderer::GetFinalRenderPass()
 {
     return s_Data.CompositePass;
 }

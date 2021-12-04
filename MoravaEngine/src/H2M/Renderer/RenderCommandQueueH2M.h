@@ -1,17 +1,25 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
 #include <cstdint>
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	class RenderCommandQueue
+	class RenderCommandQueueH2M
 	{
 	public:
 		typedef void(*RenderCommandFn)(void*);
 
-		RenderCommandQueue();
-		~RenderCommandQueue();
+		RenderCommandQueueH2M();
+		~RenderCommandQueueH2M();
 
 		void* Allocate(RenderCommandFn fn, uint32_t size);
 		void Execute();

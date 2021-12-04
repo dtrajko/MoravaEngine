@@ -2,13 +2,15 @@
 
 #include "H2M/Platform/OpenGL/OpenGLPipelineH2M.h"
 #include "H2M/Platform/Vulkan/VulkanPipelineH2M.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
+
 #include "Platform/DX11/DX11Pipeline.h"
 
 
 namespace H2M
 {
 
-	RefH2M<PipelineH2M> PipelineH2M::Create(const PipelineSpecification& spec)
+	RefH2M<PipelineH2M> PipelineH2M::Create(const PipelineSpecificationH2M& spec)
 	{
 		switch (RendererAPI_H2M::Current())
 		{

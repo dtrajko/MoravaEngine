@@ -1347,6 +1347,18 @@
     <ClCompile Include="src\H2M\Core\LayerStackH2M.cpp">
       <Filter>H2M\Core</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLShaderH2M.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Editor\EditorLayerVulkanH2M.cpp">
+      <Filter>H2M\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Project\UserPreferencesH2M.cpp">
+      <Filter>H2M\Project</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Editor\ContentBrowserPanelH2M.cpp">
+      <Filter>H2M\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2930,6 +2942,21 @@
     <ClInclude Include="src\H2M\Core\LayerStackH2M.h">
       <Filter>H2M\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLShaderH2M.h">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Core\Math\RayH2M.h">
+      <Filter>H2M\Core\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Editor\EditorLayerVulkanH2M.h">
+      <Filter>H2M\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Project\UserPreferencesH2M.h">
+      <Filter>H2M\Project</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Editor\ContentBrowserPanelH2M.h">
+      <Filter>H2M\Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -3258,6 +3285,9 @@
     </Filter>
     <Filter Include="H2M\Utilities">
       <UniqueIdentifier>{b0d79515-9e21-4d0a-aa2e-e2ef02f050f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Project">
+      <UniqueIdentifier>{fd8626a3-b58b-43eb-b944-92b1b7eccbf2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

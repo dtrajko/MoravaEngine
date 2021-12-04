@@ -1,9 +1,8 @@
 #pragma once
 
-#include "H2M/Scene/HazelScene.h"
-
 #include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Scene/EntityH2M.h"
+#include "H2M/Scene/SceneH2M.h"
 
 #include <vector>
 

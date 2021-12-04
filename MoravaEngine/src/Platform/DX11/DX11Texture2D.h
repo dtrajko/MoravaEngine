@@ -33,13 +33,13 @@ public:
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
 	virtual void Bind(uint32_t slot = 0) const override;
-	virtual H2M::RefH2M<H2M::HazelImage2D> GetImage() const override;
+	virtual H2M::RefH2M<H2M::Image2D_H2M> GetImage() const override;
 	void Lock() override;
 	void Unlock() override;
 
 	virtual void Resize(uint32_t width, uint32_t height) override;
 
-	H2M::Buffer GetWriteableBuffer() override;
+	H2M::BufferH2M GetWriteableBuffer() override;
 	bool Loaded() const override;
 	const std::string& GetPath() const override;
 	H2M::ImageFormatH2M GetFormat() const override;
@@ -47,7 +47,7 @@ public:
 	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 	virtual uint64_t GetHash() const; // { return (uint64_t)0; }
 
-	// virtual H2M::RendererID GetRendererID() const override { return 0; } // Removed in Hazel Live 18.03.2021 #2
+	// virtual H2M::RendererID_H2M GetRendererID() const override { return 0; } // Removed in Hazel Live 18.03.2021 #2
 
 	bool operator ==(const HazelTexture& other) const override
 	{
@@ -70,7 +70,7 @@ private:
 	uint32_t m_Height;
 	uint32_t m_Channels;
 
-	H2M::Buffer m_ImageData;
+	H2M::BufferH2M m_ImageData;
 
 	H2M::ImageFormatH2M m_Format = H2M::ImageFormatH2M::None;
 

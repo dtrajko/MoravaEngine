@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "OpenGLFramebufferH2M.h"
 
 #include "H2M/Renderer/ImageH2M.h"

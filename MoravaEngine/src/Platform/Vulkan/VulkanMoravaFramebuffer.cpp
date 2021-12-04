@@ -350,32 +350,32 @@ void VulkanMoravaFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slo
 	m_TextureAttachmentsColor.at(attachmentIndex)->Bind(slot);
 }
 
-H2M::RendererID VulkanMoravaFramebuffer::GetRendererID() const
+H2M::RendererID_H2M VulkanMoravaFramebuffer::GetRendererID() const
 {
 	return m_FBO;
 }
 
-H2M::RefH2M<H2M::HazelImage2D> VulkanMoravaFramebuffer::GetImage(uint32_t attachmentIndex) const
+H2M::RefH2M<H2M::Image2D_H2M> VulkanMoravaFramebuffer::GetImage(uint32_t attachmentIndex) const
 {
-	return H2M::RefH2M<H2M::HazelImage2D>();
+	return H2M::RefH2M<H2M::Image2D_H2M>();
 }
 
-H2M::RefH2M<H2M::HazelImage2D> VulkanMoravaFramebuffer::GetDepthImage() const
+H2M::RefH2M<H2M::Image2D_H2M> VulkanMoravaFramebuffer::GetDepthImage() const
 {
-	return H2M::RefH2M<H2M::HazelImage2D>();
+	return H2M::RefH2M<H2M::Image2D_H2M>();
 }
 
-//	H2M::RendererID VulkanMoravaFramebuffer::GetColorAttachmentRendererID() const
+//	H2M::RendererID_H2M VulkanMoravaFramebuffer::GetColorAttachmentRendererID() const
 //	{
 //		return H2M::RendererID();
 //	}
 
-//	H2M::RendererID VulkanMoravaFramebuffer::GetDepthAttachmentRendererID() const
+//	H2M::RendererID_H2M VulkanMoravaFramebuffer::GetDepthAttachmentRendererID() const
 //	{
 //		return H2M::RendererID();
 //	}
 
-const H2M::HazelFramebufferSpecification& VulkanMoravaFramebuffer::GetSpecification() const
+const H2M::FramebufferSpecificationH2M& VulkanMoravaFramebuffer::GetSpecification() const
 {
 	return m_HazelFramebufferSpecs;
 }
