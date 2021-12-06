@@ -1,7 +1,13 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
-#include "H2M/Renderer/SceneRenderer.h"
-#include "H2M/Scene/HazelScene.h"
+#include "H2M/Renderer/SceneRendererH2M.h"
+#include "H2M/Scene/SceneH2M.h"
 
 #include "H2M/Scene/ComponentsH2M.h"
 
@@ -35,7 +41,7 @@ namespace H2M {
 
 	struct SceneRendererCameraVulkan
 	{
-		HazelCamera Camera;
+		CameraH2M Camera;
 		glm::mat4 ViewMatrix;
 		float Near, Far;
 		float FOV;
@@ -56,29 +62,29 @@ namespace H2M {
 		bool SwapChainTarget = false;
 	};
 
-	class SceneRendererVulkan : public RefCounted
+	class SceneRendererVulkan : public RefCountedH2M
 	{
 	public:
-		SceneRendererVulkan(RefH2M<HazelScene> scene, SceneRendererSpecificationVulkan specification = SceneRendererSpecificationVulkan{});
+		SceneRendererVulkan(RefH2M<SceneH2M> scene, SceneRendererSpecificationVulkan specification = SceneRendererSpecificationVulkan{});
 
 		static void Init();
 		static void Shutdown();
 
-		void SetScene(RefH2M<HazelScene> scene);
+		void SetScene(RefH2M<SceneH2M> scene);
 
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
-		static void BeginScene(const HazelScene* scene, const SceneRendererCameraVulkan& camera);
+		static void BeginScene(const SceneH2M* scene, const SceneRendererCameraVulkan& camera);
 		static void EndScene();
 		void UpdateHBAOData();
 
-		static void SubmitMesh(MeshComponentH2M meshComponent, TransformComponent transformComponent);
-		static void SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponent transformComponent);
+		static void SubmitMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent);
+		static void SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent);
 
-		static void SubmitMesh(RefH2M<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<MaterialH2M> overrideMaterial = RefH2M<MaterialH2M>());
-		static void SubmitSelectedMesh(RefH2M<HazelMesh> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<MaterialH2M> overrideMaterial = RefH2M<MaterialH2M>());
+		static void SubmitSelectedMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
-		static RefH2M<RenderPass> GetFinalRenderPass();
+		static RefH2M<RenderPassH2M> GetFinalRenderPass();
 		static RefH2M<Texture2D_H2M> GetFinalPassImage(); // previously: GetFinalColorBuffer
 
 		static SceneRendererOptionsVulkan& GetOptions();
@@ -95,9 +101,9 @@ private:
 		static void ShadowMapPass();
 
 	private:
-		RefH2M<HazelScene> m_Scene;
+		RefH2M<SceneH2M> m_Scene;
 		SceneRendererSpecificationVulkan m_Specification;
-		RefH2M<RenderCommandBuffer> m_CommandBuffer;
+		RefH2M<RenderCommandBufferH2M> m_CommandBuffer;
 
 	private:
 		bool m_NeedsResize = false;

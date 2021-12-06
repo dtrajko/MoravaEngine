@@ -4,19 +4,19 @@
 
 #include "DX11.h"
 
-#include "H2M/Renderer/RenderPass.h"
+#include "H2M/Renderer/RenderPassH2M.h"
 
 
-class DX11RenderPass : public H2M::RenderPass
+class DX11RenderPass : public H2M::RenderPassH2M
 {
 public:
-	DX11RenderPass(const H2M::RenderPassSpecification& spec);
+	DX11RenderPass(const H2M::RenderPassSpecificationH2M& spec);
 	virtual ~DX11RenderPass();
 
-	virtual H2M::RenderPassSpecification& GetSpecification() override { return m_Specification; }
-	virtual const H2M::RenderPassSpecification& GetSpecification() const override { return m_Specification; }
+	virtual H2M::RenderPassSpecificationH2M& GetSpecification() override { return m_Specification; }
+	virtual const H2M::RenderPassSpecificationH2M& GetSpecification() const override { return m_Specification; }
 
 private:
-	H2M::RenderPassSpecification m_Specification;
+	H2M::RenderPassSpecificationH2M m_Specification;
 
 };

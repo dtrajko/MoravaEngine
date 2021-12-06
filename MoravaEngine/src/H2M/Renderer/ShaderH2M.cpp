@@ -42,12 +42,12 @@ namespace H2M
 
 		RefH2M<ShaderH2M> result = RefH2M<ShaderH2M>();
 
-		switch (H2M::RendererAPI_H2M::Current())
+		switch (RendererAPI_H2M::Current())
 		{
-			case H2M::RendererAPITypeH2M::None:   return RefH2M<ShaderH2M>();
-			case H2M::RendererAPITypeH2M::OpenGL: result = H2M::OpenGLShader::CreateFromString(source);
-			case H2M::RendererAPITypeH2M::Vulkan: result = H2M::VulkanShader::CreateFromString(source);
-			case H2M::RendererAPITypeH2M::DX11:   result = DX11Shader::CreateFromString(source);
+			case RendererAPITypeH2M::None:   return RefH2M<ShaderH2M>();
+			case RendererAPITypeH2M::OpenGL: result = OpenGLShaderH2M::CreateFromString(source);
+			case RendererAPITypeH2M::Vulkan: result = VulkanShaderH2M::CreateFromString(source);
+			case RendererAPITypeH2M::DX11:   result = DX11Shader::CreateFromString(source);
 		}
 		s_AllShaders.push_back(result);
 		return result;
@@ -136,22 +136,22 @@ namespace H2M
 		return H2M::BufferH2M();
 	}
 
-	ShaderUniform::ShaderUniform(const std::string& name, ShaderUniformType type, uint32_t size, uint32_t offset)
+	ShaderUniformH2M::ShaderUniformH2M(const std::string& name, ShaderUniformTypeH2M type, uint32_t size, uint32_t offset)
 		: m_Name(name), m_Type(type), m_Size(size), m_Offset(offset)
 	{
 	}
 
-	const std::string& ShaderUniform::UniformTypeToString(ShaderUniformType type)
+	const std::string& ShaderUniformH2M::UniformTypeToString(ShaderUniformTypeH2M type)
 	{
-		if (type == ShaderUniformType::Bool)
+		if (type == ShaderUniformTypeH2M::Bool)
 		{
 			return "Boolean";
 		}
-		else if (type == ShaderUniformType::Int)
+		else if (type == ShaderUniformTypeH2M::Int)
 		{
 			return "Int";
 		}
-		else if (type == ShaderUniformType::Float)
+		else if (type == ShaderUniformTypeH2M::Float)
 		{
 			return "Float";
 		}

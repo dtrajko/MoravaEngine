@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "PipelineH2M.h"
 
 #include "H2M/Platform/OpenGL/OpenGLPipelineH2M.h"
@@ -21,7 +27,7 @@ namespace H2M
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 		return RefH2M<PipelineH2M>();
 	}
 }

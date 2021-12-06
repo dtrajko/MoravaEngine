@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "RendererH2M.h"
 
 #include "H2M/Core/AssertH2M.h"
@@ -78,7 +84,7 @@ namespace H2M
 		RefH2M<VertexBufferH2M> FullscreenQuadVertexBuffer; // TODO: remove from RendererH2M
 		RefH2M<IndexBufferH2M> FullscreenQuadIndexBuffer;   // TODO: remove from RendererH2M
 		RefH2M<PipelineH2M> FullscreenQuadPipeline;         // TODO: remove from RendererH2M
-		PipelineSpecification FullscreenQuadPipelineSpec;
+		PipelineSpecificationH2M FullscreenQuadPipelineSpec;
 
 		RefH2M<Texture2D_H2M> WhiteTexture;
 		RefH2M<Texture2D_H2M> BlackTexture;
@@ -101,7 +107,7 @@ namespace H2M
 			case RendererAPITypeH2M::DX11:   return new DX11Renderer();
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
-		HZ_CORE_ASSERT(false, "Unknown RendererAPI");
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	}
 
@@ -272,7 +278,7 @@ namespace H2M
 
 	void RendererH2M::BeginRenderPass(RefH2M<RenderPassH2M> renderPass, bool clear)
 	{
-		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
+		H2M_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
 		/**** BEGIN the new code ****/
 		{
@@ -388,10 +394,10 @@ namespace H2M
 		mesh->GetIndexBuffer()->Bind();
 
 		auto& materials = mesh->GetMaterials();
-		for (SubmeshH2M& submesh : mesh->GetSubmeshes())
+		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
 		{
 			// Material
-			auto material = overrideMaterial ? overrideMaterial : materials[submesh.MaterialIndex];
+			auto material = overrideMaterial ? overrideMaterial : materials[submesh->MaterialIndex];
 			auto shader = material->GetShader();
 			material->Bind();
 
@@ -404,7 +410,7 @@ namespace H2M
 				}
 			}
 
-			auto transformUniform = transform * submesh.Transform;
+			auto transformUniform = transform * submesh->Transform;
 			shader->SetUniformBuffer("Transform", &transformUniform, sizeof(glm::mat4));
 
 			// RendererH2M::Submit([submesh, material]() {});
@@ -414,7 +420,7 @@ namespace H2M
 				else
 					glDisable(GL_DEPTH_TEST);
 
-				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+				glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 			}
 		}
 	}
@@ -425,7 +431,7 @@ namespace H2M
 		mesh->GetPipeline()->Bind();
 		mesh->GetIndexBuffer()->Bind();
 
-		for (SubmeshH2M& submesh : mesh->GetSubmeshes())
+		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
 		{
 			if (mesh->IsAnimated())
 			{
@@ -435,19 +441,19 @@ namespace H2M
 					shader->SetMat4(uniformName, mesh->GetBoneTransforms()[i]);
 				}
 			}
-			shader->SetMat4("u_Transform", transform * submesh.Transform);
+			shader->SetMat4("u_Transform", transform * submesh->Transform);
 
 			// RendererH2M::Submit([submesh]() {});
-			glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+			glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 		}
 	}
 
 	void RendererH2M::DrawAABB(RefH2M<MeshH2M> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
-		for (SubmeshH2M& submesh : mesh->GetSubmeshes())
+		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
 		{
-			auto& aabb = submesh.BoundingBox;
-			auto aabbTransform = transform * submesh.Transform;
+			auto& aabb = submesh->BoundingBox;
+			auto aabbTransform = transform * submesh->Transform;
 			DrawAABB(aabb, aabbTransform);
 		}
 	}

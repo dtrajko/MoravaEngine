@@ -1,40 +1,42 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #pragma once
 
-#include "H2M/Core/RefH2M.h"
-#include "H2M/Renderer/CameraH2M.h"
-#include "H2M/Renderer/RenderCommandBufferH2M.h"
+#include "RenderCommandBufferH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
+#include "H2M/Scene/SceneH2M.h"
+#include "MeshH2M.h"
+#include "RenderPassH2M.h"
 
-#include <glm/glm.hpp>
 
-
-namespace H2M {
+namespace H2M
+{
 
 	struct SceneRendererOptionsH2M
 	{
 		bool ShowGrid = true;
 		bool ShowSelectedInWireframe = false;
 
-		enum class PhysicsColliderView
+		bool ShowBoundingBoxes = false;
+
+		enum class PhysicsColliderViewH2M
 		{
-			None = 0,
-			Normal = 1,
-			OnTop = 2,
+			None = 0, Normal = 1, OnTop = 2
 		};
+		PhysicsColliderViewH2M ShowPhysicsColliders = PhysicsColliderViewH2M::None;
 
-		PhysicsColliderView ShowPhysicsColliders = PhysicsColliderView::None;
-		glm::vec4 PhysicsColliderColor = glm::vec4{ 0.2f, 1.0f, 0.2f, 1.0f };
-
-		// HBAO
+		//HBAO
 		bool EnableHBAO = true;
 		float HBAOIntensity = 1.5f;
 		float HBAORadius = 1.0f;
 		float HBAOBias = 0.35f;
 		float HBAOBlurSharpness = 1.0f;
-
-		bool ShowBoundingBoxes = false;
 	};
 
 	struct SceneRendererCameraH2M
@@ -55,46 +57,38 @@ namespace H2M {
 		float DirtIntensity = 1.0f;
 	};
 
-	struct SceneRendererSpecificationH2M
-	{
-		bool SwapChainTarget = false;
-	};
-
-	class SceneH2M;
-	struct MeshComponentH2M;
-
-	class SceneRendererH2M : public RefCountedH2M
+	class SceneRendererH2M
 	{
 	public:
-		SceneRendererH2M(RefH2M<SceneH2M> scene, SceneRendererSpecificationH2M specification = SceneRendererSpecificationH2M{});
-
 		static void Init();
 		static void Shutdown();
 
-		void SetScene(RefH2M<SceneH2M> scene);
-
 		static void SetViewportSize(uint32_t width, uint32_t height);
 
-		static void BeginScene(SceneH2M* scene, const SceneRendererCameraH2M& camera);
+		static void BeginScene(const SceneH2M* scene, const SceneRendererCameraH2M& camera);
 		static void EndScene();
-		void UpdateHBAOData();
 
+		// old?
 		static void SubmitMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent);
 		static void SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent);
 
+		// new?
 		static void SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<MaterialH2M> overrideMaterial = RefH2M<MaterialH2M>());
 		static void SubmitSelectedMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
+		static std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath);
+
 		static RefH2M<RenderPassH2M> GetFinalRenderPass();
-		static RefH2M<Texture2D_H2M> GetFinalPassImage(); // previously: GetFinalColorBuffer
+		static RefH2M<Texture2D_H2M> GetFinalColorBuffer();
+
+		// TODO: Temp
+		static uint32_t GetFinalColorBufferRendererID();
 
 		static SceneRendererOptionsH2M& GetOptions();
 
-		void SetLineWidth(float width);
+		void OnImGuiRender();
 
-		static void WaitForThreads();
-
-private:
+	private:
 		static void FlushDrawList();
 		static void GeometryPass();
 		static void CompositePass();
@@ -102,17 +96,67 @@ private:
 		static void ShadowMapPass();
 
 	private:
-		RefH2M<SceneH2M> m_Scene;
-		SceneRendererSpecificationH2M m_Specification;
 		RefH2M<RenderCommandBufferH2M> m_CommandBuffer;
 
-	private:
-		bool m_NeedsResize = false;
-		bool m_Active = false;
+		struct UBRendererData
+		{
+			glm::vec4 CascadeSplits;
+			uint32_t TilesCountX{ 0 };
+			bool ShowCascades = false;
+			char Padding0[3] = { 0,0,0 }; // Bools are 4-bytes in GLSL
+			bool SoftShadows = true;
+			char Padding1[3] = { 0,0,0 };
+			float LightSize = 0.5f;
+			float MaxShadowDistance = 200.0f;
+			float ShadowFade = 1.0f;
+			bool CascadeFading = true;
+			char Padding2[3] = { 0,0,0 };
+			float CascadeTransitionFade = 1.0f;
+			bool ShowLightComplexity = false;
+			char Padding3[3] = { 0,0,0 };
+		} RendererDataUB;
+
+		float CascadeSplitLambda = 0.92f;
+		float CascadeFarPlaneOffset = 50.0f, CascadeNearPlaneOffset = -50.0f;
+
+		RefH2M<PipelineH2M> m_GeometryPipeline;
+		RefH2M<PipelineH2M> m_SelectedGeometryPipeline;
+		RefH2M<PipelineH2M> m_GeometryWireframePipeline;
+		RefH2M<PipelineH2M> m_GeometryWireframeOnTopPipeline;
+		RefH2M<PipelineH2M> m_PreDepthPipeline;
+		RefH2M<PipelineH2M> m_CompositePipeline;
+		RefH2M<PipelineH2M> m_ShadowPassPipelines[4];
+		RefH2M<Material> m_ShadowPassMaterial;
+		RefH2M<Material> m_PreDepthMaterial;
+		RefH2M<PipelineH2M> m_SkyboxPipeline;
+		RefH2M<Material> m_SkyboxMaterial;
+
+		RefH2M<PipelineH2M> m_DOFPipeline;
+		RefH2M<Material> m_DOFMaterial;
+
+		SceneRendererOptionsH2M m_Options;
+
+		// Jump Flood Pass
+
+		// Bloom compute
+		RefH2M<Texture2D_H2M> m_BloomComputeTextures[3];
+
 		bool m_ResourcesCreated = false;
 
-		float m_LineWidth = 2.0f;
+		BloomSettingsH2M m_BloomSettings;
+		RefH2M<Texture2D_H2M> m_BloomDirtTexture;
 
+		struct GPUTimeQueries
+		{
+			uint32_t ShadowMapPassQuery = 0;
+			uint32_t DepthPrePassQuery = 0;
+			uint32_t LightCullingPassQuery = 0;
+			uint32_t GeometryPassQuery = 0;
+			uint32_t HBAOPassQuery = 0;
+			uint32_t BloomComputePassQuery = 0;
+			uint32_t JumpFloodPassQuery = 0;
+			uint32_t CompositePassQuery = 0;
+		} m_GPUTimeQueries;
 	};
 
 }

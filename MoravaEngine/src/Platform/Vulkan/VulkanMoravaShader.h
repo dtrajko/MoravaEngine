@@ -1,7 +1,7 @@
 #pragma once
 
-#include "H2M/Renderer/HazelShader.h"
-#include "H2M/Renderer/ShaderUniform.h"
+#include "H2M/Renderer/ShaderH2M.h"
+#include "H2M/Renderer/ShaderUniformH2M.h"
 
 #include "Core/CommonValues.h"
 #include "Shader/MoravaShader.h"
