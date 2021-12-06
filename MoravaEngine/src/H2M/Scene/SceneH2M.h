@@ -115,7 +115,7 @@ namespace H2M
 
 		EntityH2M CreateEntity(const std::string& name = "");
 		EntityH2M CreateEntity(const std::string& name, RefH2M<SceneH2M> scene);
-		EntityH2M CreateEntityWithID(UUID uuid, const std::string& name = "", bool runtimeMap = false);
+		EntityH2M CreateEntityWithID(UUID_H2M uuid, const std::string& name = "", bool runtimeMap = false);
 		void DestroyEntity(EntityH2M entity);
 		EntityH2M CloneEntity(EntityH2M entity);
 		void DuplicateEntity(EntityH2M entity); // Cherno's version, same as CloneEntity
@@ -127,7 +127,7 @@ namespace H2M
 		}
 
 		EntityH2M FindEntityByTag(const std::string& tag);
-		EntityH2M FindEntityByUUID(UUID id);
+		EntityH2M FindEntityByUUID(UUID_H2M id);
 
 		void ConvertToLocalSpace(EntityH2M entity);
 		void ConvertToWorldSpace(EntityH2M entity);
@@ -145,9 +145,9 @@ namespace H2M
 
 		void CopyTo(RefH2M<SceneH2M>& target); // Working on Hazel LIVE! #14
 
-		UUID GetUUID() const { return m_SceneID; }
+		UUID_H2M GetUUID() const { return m_SceneID; }
 
-		static RefH2M<SceneH2M> GetScene(UUID uuid);
+		static RefH2M<SceneH2M> GetScene(UUID_H2M uuid);
 
 		void SetPhysics2DGravity(float gravity);
 		float GetPhysics2DGravity() const;
@@ -156,7 +156,7 @@ namespace H2M
 		void SetSelectedEntity(entt::entity entity) { m_SelectedEntity = entity; }
 
 	public:
-		UUID m_SceneID;
+		UUID_H2M m_SceneID;
 		entt::entity m_SceneEntity;
 		entt::registry m_Registry;
 

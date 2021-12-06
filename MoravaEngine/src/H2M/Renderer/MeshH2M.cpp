@@ -1381,7 +1381,7 @@ namespace H2M
 	{
 		EntitySelection::s_SelectionContext.clear();
 
-		// Ref<SubmeshHazelLegacy> submeshCopy = Ref<SubmeshHazelLegacy>::Create(submesh);
+		// Ref<SubmeshH2M> submeshCopy = Ref<SubmeshH2M>::Create(submesh);
 		RefH2M<SubmeshH2M> submeshCopy = RefH2M<SubmeshH2M>::Create();
 		std::string appendix = Util::randomString(2);
 		submeshCopy->MeshName += "." + appendix;
