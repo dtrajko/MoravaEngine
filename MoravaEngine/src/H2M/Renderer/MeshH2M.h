@@ -201,8 +201,8 @@ namespace H2M {
 
 		/**** END this code should be removed from MeshH2M Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
 
-		// std::vector<RefH2M<HazelMaterialInstance>> GetMaterials() { return m_Materials; }
-		// const std::vector<RefH2M<HazelMaterialInstance>>& GetMaterials() const { return m_Materials; }
+		// std::vector<RefH2M<MaterialInstanceH2M>> GetMaterials() { return m_Materials; }
+		// const std::vector<RefH2M<MaterialInstanceH2M>>& GetMaterials() const { return m_Materials; }
 
 		bool& IsAnimated() { return m_IsAnimated; }
 		const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
@@ -262,7 +262,7 @@ namespace H2M {
 		std::vector<RefH2M<Texture2D_H2M>> m_Textures;
 		std::vector<RefH2M<Texture2D_H2M>> m_NormalMaps;
 		std::vector<RefH2M<MaterialH2M>> m_Materials;
-		// std::vector<RefH2M<HazelMaterialInstance>> m_Materials;
+		// std::vector<RefH2M<MaterialInstanceH2M>> m_Materials;
 
 		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
 

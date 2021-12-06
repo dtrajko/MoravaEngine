@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "VulkanRenderCommandBufferH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"

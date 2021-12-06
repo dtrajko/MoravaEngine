@@ -41,6 +41,7 @@ namespace H2M
 		void InvalidateOld(bool srgb, TextureWrapH2M wrap, bool isHDR); // Temporary method
 		virtual void Release() override;
 
+		virtual ImageFormatH2M GetFormat() const override { return m_Format; }
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 

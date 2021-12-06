@@ -32,7 +32,7 @@ namespace H2M
 		} SceneData;
 
 		RefH2M<Texture2D_H2M> BRDFLUT;
-		RefH2M<HazelShader> CompositeShader;
+		RefH2M<ShaderH2M> CompositeShader;
 		RefH2M<MaterialH2M> CompositeMaterial;
 		RefH2M<MoravaShader> BloomBlurShader;
 		RefH2M<MoravaShader> BloomBlendShader;
@@ -62,7 +62,7 @@ namespace H2M
 
 		// Grid
 		RefH2M<Pipeline> GridPipeline;
-		RefH2M<HazelShader> GridShader;
+		RefH2M<ShaderH2M> GridShader;
 		RefH2M<MaterialH2M> GridMaterial;
 		RefH2M<MaterialH2M> OutlineMaterial;
 		RefH2M<MaterialH2M> OutlineAnimMaterial;

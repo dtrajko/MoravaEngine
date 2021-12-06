@@ -55,7 +55,7 @@ namespace H2M
 	class ShaderStructH2M
 	{
 	private:
-		friend class HazelShader;
+		friend class ShaderH2M;
 
 	private:
 		std::string m_Name;

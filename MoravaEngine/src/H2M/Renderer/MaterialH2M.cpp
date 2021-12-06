@@ -168,13 +168,13 @@ namespace H2M {
 
 		if (shaderBuffers.size() > 0)
 		{
-			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
+			const ShaderBufferH2M& buffer = (*shaderBuffers.begin()).second;
 			m_UniformStorageBuffer.Allocate(buffer.Size);
 			m_UniformStorageBuffer.ZeroInitialize();
 		}
 	}
 
-	void MaterialInstanceH2M::SetFlag(HazelMaterialFlag flag, bool value)
+	void MaterialInstanceH2M::SetFlag(MaterialFlagH2M flag, bool value)
 	{
 	}
 
@@ -188,56 +188,56 @@ namespace H2M {
 
 		if (shaderBuffers.size() > 0)
 		{
-			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
+			const ShaderBufferH2M& buffer = (*shaderBuffers.begin()).second;
 
 			for (auto& [name, uniform] : buffer.Uniforms)
 			{
 				switch (uniform.GetType())
 				{
 					//	None = 0, Bool, Int, Float, Vec2, Vec3, Vec4, Mat3, Mat4
-				case ShaderUniformType::Bool:
+				case ShaderUniformTypeH2M::Bool:
 				{
 					bool value = m_UniformStorageBuffer.Read<bool>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Int:
+				case ShaderUniformTypeH2M::Int:
 				{
 					int value = m_UniformStorageBuffer.Read<int>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Float:
+				case ShaderUniformTypeH2M::Float:
 				{
 					float value = m_UniformStorageBuffer.Read<float>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Vec2:
+				case ShaderUniformTypeH2M::Vec2:
 				{
 					const glm::vec2& value = m_UniformStorageBuffer.Read<glm::vec2>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Vec3:
+				case ShaderUniformTypeH2M::Vec3:
 				{
 					const glm::vec3& value = m_UniformStorageBuffer.Read<glm::vec3>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Vec4:
+				case ShaderUniformTypeH2M::Vec4:
 				{
 					const glm::vec4& value = m_UniformStorageBuffer.Read<glm::vec4>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Mat3:
+				case ShaderUniformTypeH2M::Mat3:
 				{
 					const glm::mat3& value = m_UniformStorageBuffer.Read<glm::mat3>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Mat4:
+				case ShaderUniformTypeH2M::Mat4:
 				{
 					const glm::mat4& value = m_UniformStorageBuffer.Read<glm::mat4>(uniform.GetOffset());
 					shader->SetUniform(name, value);

@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #define _CRT_SECURE_NO_WARNINGS
 
 #pragma once
@@ -75,12 +82,12 @@ namespace H2M
 		bool m_MipsGenerated = false;
 	};
 
-	class VulkanTextureCube : public TextureCubeH2M
+	class VulkanTextureCubeH2M : public TextureCubeH2M
 	{
 	public:
-		VulkanTextureCube(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr);
-		VulkanTextureCube(const std::string& path);
-		virtual ~VulkanTextureCube();
+		VulkanTextureCubeH2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr);
+		VulkanTextureCubeH2M(const std::string& path);
+		virtual ~VulkanTextureCubeH2M();
 
 		virtual const std::string& GetPath() const override { return ""; }
 

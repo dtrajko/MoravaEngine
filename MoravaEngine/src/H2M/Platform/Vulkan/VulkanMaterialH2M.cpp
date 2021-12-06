@@ -17,7 +17,7 @@
 namespace H2M
 {
 
-	VulkanMaterialH2M::VulkanMaterialH2M(const RefH2M<HazelShader>& shader, const std::string& name)
+	VulkanMaterialH2M::VulkanMaterialH2M(const RefH2M<ShaderH2M>& shader, const std::string& name)
 		: MaterialH2M(shader, name)
 	{
 		m_WriteDescriptors = std::vector<VkWriteDescriptorSet>();

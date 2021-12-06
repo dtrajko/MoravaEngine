@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "VulkanTextureH2M.h"
 
 #include "VulkanContextH2M.h"
@@ -606,7 +613,7 @@ namespace H2M {
 	// TextureCube
 	//////////////////////////////////////////////////////////////////////////////////
 
-	VulkanTextureCube::VulkanTextureCube(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data)
+	VulkanTextureCubeH2M::VulkanTextureCubeH2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data)
 		: m_Format(format), m_Width(width), m_Height(height)
 	{
 		if (data)
@@ -621,16 +628,16 @@ namespace H2M {
 		Invalidate();
 	}
 
-	VulkanTextureCube::VulkanTextureCube(const std::string& path)
+	VulkanTextureCubeH2M::VulkanTextureCubeH2M(const std::string& path)
 	{
-		Log::GetLogger()->error("VulkanTextureCube::VulkanTextureCube('{0}') - method not implemented!", path);
+		Log::GetLogger()->error("VulkanTextureCubeH2M::VulkanTextureCubeH2M('{0}') - method not implemented!", path);
 	}
 
-	VulkanTextureCube::~VulkanTextureCube()
+	VulkanTextureCubeH2M::~VulkanTextureCubeH2M()
 	{
 	}
 
-	void VulkanTextureCube::Invalidate()
+	void VulkanTextureCubeH2M::Invalidate()
 	{
 		auto device = VulkanContextH2M::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
@@ -734,12 +741,12 @@ namespace H2M {
 		VK_CHECK_RESULT(vkCreateImageView(vulkanDevice, &view, nullptr, &m_DescriptorImageInfo.imageView));
 	}
 
-	uint32_t VulkanTextureCube::GetMipLevelCount() const
+	uint32_t VulkanTextureCubeH2M::GetMipLevelCount() const
 	{
 		return VulkanRendererH2M::s_MipMapsEnabled ? Utils::MipCount(m_Width, m_Height) : 1;
 	}
 
-	VkImageView VulkanTextureCube::CreateImageViewSingleMip(uint32_t mip)
+	VkImageView VulkanTextureCubeH2M::CreateImageViewSingleMip(uint32_t mip)
 	{
 		// TODO: assert to check mip count
 
@@ -765,7 +772,7 @@ namespace H2M {
 		return result;
 	}
 
-	void VulkanTextureCube::GenerateMips(bool readonly)
+	void VulkanTextureCubeH2M::GenerateMips(bool readonly)
 	{
 		auto device = VulkanContextH2M::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
@@ -988,9 +995,9 @@ namespace H2M {
 
 	}
 
-	std::pair<uint32_t, uint32_t> VulkanTextureCube::GetMipSize(uint32_t mip) const
+	std::pair<uint32_t, uint32_t> VulkanTextureCubeH2M::GetMipSize(uint32_t mip) const
 	{
-		Log::GetLogger()->error("VulkanTextureCube::GetMipSize({0}) - method not implemented!", mip);
+		Log::GetLogger()->error("VulkanTextureCubeH2M::GetMipSize({0}) - method not implemented!", mip);
 		return std::pair<uint32_t, uint32_t>();
 	}
 

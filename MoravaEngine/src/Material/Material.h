@@ -151,7 +151,7 @@ private:
 
 	// From Hazel/Renderer/Material
 	uint32_t m_MaterialFlags;
-	H2M::RefH2M<H2M::HazelShader> m_Shader;
+	H2M::RefH2M<H2M::ShaderH2M> m_Shader;
 
 	float m_Float;
 	int32_t m_int32_t;

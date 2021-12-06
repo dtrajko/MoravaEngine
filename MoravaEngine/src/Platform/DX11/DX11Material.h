@@ -24,7 +24,7 @@ enum class DX11CullMode
 class DX11Material : public H2M::MaterialH2M
 {
 public:
-	DX11Material(const H2M::RefH2M<H2M::HazelShader>& shader, const std::string& name = "");
+	DX11Material(const H2M::RefH2M<H2M::ShaderH2M>& shader, const std::string& name = "");
 	DX11Material(H2M::RefH2M<DX11Pipeline> pipeline, const std::string& name = "");
 	DX11Material(H2M::RefH2M<DX11Material> material, const std::string& name = "");
 	virtual ~DX11Material();

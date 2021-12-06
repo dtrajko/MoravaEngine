@@ -28,6 +28,7 @@ public:
 	virtual void Invalidate() override;
 	virtual void Release() override;
 
+	virtual H2M::ImageFormatH2M GetFormat() const override { return m_Format; }
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
 

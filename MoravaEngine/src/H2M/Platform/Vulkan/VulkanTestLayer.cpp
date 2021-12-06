@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "VulkanTestLayer.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -145,7 +152,7 @@ namespace H2M {
 
 		if (event.GetEventType() == EventTypeH2M::WindowResize)
 		{
-			WindowResizeEvent& e = (WindowResizeEvent&)event;
+			WindowResizeEventH2M& e = (WindowResizeEventH2M&)event;
 			if (e.GetWidth() != 0 && e.GetHeight() != 0)
 			{
 				m_Camera.SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());

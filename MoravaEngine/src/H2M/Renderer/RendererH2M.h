@@ -96,7 +96,7 @@ namespace H2M
 
 		static void SubmitQuad(RefH2M<MaterialH2M> material, const glm::mat4& transform = glm::mat4(1.0f));
 		static void SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<MaterialInstanceH2M> overrideMaterial = RefH2M<MaterialInstanceH2M>());
-		static void SubmitMeshWithShader(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<HazelShader> shader);
+		static void SubmitMeshWithShader(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<ShaderH2M> shader);
 
 		static void DrawAABB(RefH2M<MeshH2M> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		static void DrawAABB(const AABB_H2M& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));

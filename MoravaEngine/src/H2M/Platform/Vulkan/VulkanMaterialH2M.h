@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
@@ -11,7 +18,7 @@ namespace H2M
 	class VulkanMaterialH2M : public MaterialH2M
 	{
 	public:
-		VulkanMaterialH2M(const RefH2M<HazelShader>& shader, const std::string& name = "");
+		VulkanMaterialH2M(const RefH2M<ShaderH2M>& shader, const std::string& name = "");
 		VulkanMaterialH2M(RefH2M<MaterialH2M> material, const std::string& name = "");
 		virtual ~VulkanMaterialH2M();
 
@@ -167,7 +174,7 @@ namespace H2M
 		const ShaderResourceDeclarationH2M* FindResourceDeclaration(const std::string& name);
 
 	private:
-		// RefH2M<HazelShader> m_Shader;
+		// RefH2M<ShaderH2M> m_Shader;
 		// std::string m_Name;
 
 		enum class PendingDescriptorType

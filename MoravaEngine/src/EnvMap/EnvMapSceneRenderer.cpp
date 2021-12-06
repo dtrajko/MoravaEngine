@@ -108,7 +108,7 @@ struct EnvMapSceneRendererData
 
     // Grid
     Material* GridMaterial;
-    // RefH2M<HazelShader> HazelGridShader;
+    // RefH2M<ShaderH2M> HazelGridShader;
     // RefH2M<MoravaShader> GridShader;
     RefH2M<H2M::MaterialH2M> OutlineMaterial;
 
@@ -296,7 +296,7 @@ H2M::SceneRendererCameraH2M& EnvMapSceneRenderer::GetCamera()
     return s_Data.SceneData.SceneCamera;
 }
 
-static RefH2M<H2M::HazelShader> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
+static RefH2M<H2M::ShaderH2M> equirectangularConversionShader, envFilteringShader, envIrradianceShader;
 
 // Moved from EnvironmentMap
 void EnvMapSceneRenderer::SetEnvironment(H2M::EnvironmentH2M environment)
@@ -933,7 +933,7 @@ void EnvMapSceneRenderer::ShadowMapPass()
         // Render entities
         for (auto& dc : s_Data.ShadowPassDrawList)
         {
-            RefH2M<HazelShader> shader = dc.Mesh->IsAnimated() ? s_Data.ShadowMapAnimShader : s_Data.ShadowMapShader;
+            RefH2M<ShaderH2M> shader = dc.Mesh->IsAnimated() ? s_Data.ShadowMapAnimShader : s_Data.ShadowMapShader;
             shader->SetMat4("u_ViewProjection", shadowMapVP);
             RendererH2M::SubmitMeshWithShader(dc.Mesh, dc.Transform, shader);
         }

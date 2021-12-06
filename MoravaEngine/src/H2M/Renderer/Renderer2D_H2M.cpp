@@ -63,7 +63,7 @@ namespace H2M
 		RefH2M<IndexBufferH2M> LineIndexBuffer;
 
 		RefH2M<OpenGLMoravaShader> LineShader; // Morava shader class
-		RefH2M<HazelShader> LineHazelShader; // Hazel shader class
+		RefH2M<ShaderH2M> LineHazelShader; // Hazel shader class
 
 		uint32_t LineIndexCount = 0;
 		LineVertex* LineVertexBufferBase = nullptr;

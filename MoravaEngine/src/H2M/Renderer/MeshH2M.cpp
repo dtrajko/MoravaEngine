@@ -308,7 +308,7 @@ namespace H2M
 		auto shader = m_MeshShader; // MoravaShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
 		pipelineSpecification.Shader = m_MeshShader;
 
-		//	if (RendererAPI::Current() == RendererAPIType::Vulkan)
+		//	if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 		//	{
 		//		// HazelRenderer::Submit([instance, shader]() mutable
 		//		// {
@@ -407,7 +407,7 @@ namespace H2M
 
 				auto mi = MaterialH2M::Create(m_MeshShader, aiMaterialName.data);
 				// auto mi = HazelMaterial::Create(m_BaseMaterial, aiMaterialName.data);
-				// auto mi = RefH2M<HazelMaterialInstance>::Create(m_BaseMaterial, aiMaterialName.data);
+				// auto mi = RefH2M<MaterialInstanceH2M>::Create(m_BaseMaterial, aiMaterialName.data);
 				m_Materials[i] = mi;
 
 				/**** BEGIN to be removed from MeshH2M ****/
@@ -514,7 +514,7 @@ namespace H2M
 						mi->Set("u_AlbedoTexture", texture); //  VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_AlbedoTexture')!
 						// mi->Set("u_MaterialUniforms.UseAlbedoMap", true);
 
-						if (RendererAPI::Current() == RendererAPIType::Vulkan)
+						if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", texture); // TODO: to be removed from MeshH2M
 						}
@@ -554,7 +554,7 @@ namespace H2M
 					Log::GetLogger()->info("    No normal map");
 					mi->Set("u_AlbedoTexture", whiteTexture);
 
-					if (RendererAPI::Current() == RendererAPIType::Vulkan)
+					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
 						AddMaterialTextureWriteDescriptor(i, "u_AlbedoTexture", whiteTexture); // TODO: to be removed from MeshH2M
 					}
@@ -594,7 +594,7 @@ namespace H2M
 						mi->Set("u_NormalTexture", texture);
 						// mi->Set("u_MaterialUniforms.UseNormalMap", true);
 
-						if (RendererAPI::Current() == RendererAPIType::Vulkan)
+						if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", texture); // TODO: to be removed from MeshH2M
 						}
@@ -622,7 +622,7 @@ namespace H2M
 
 					mi->Set("u_NormalTexture", whiteTexture);
 
-					if (RendererAPI::Current() == RendererAPIType::Vulkan)
+					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
 						AddMaterialTextureWriteDescriptor(i, "u_NormalTexture", whiteTexture); // TODO: to be removed from MeshH2M
 					}
@@ -661,7 +661,7 @@ namespace H2M
 						mi->Set("u_RoughnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_RoughnessTexture')!
 						// mi->Set("u_MaterialUniforms.UseRoughnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseRoughnessMap'!
 
-						if (RendererAPI::Current() == RendererAPIType::Vulkan)
+						if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 						{
 							AddMaterialTextureWriteDescriptor(i, "u_RoughnessTexture", texture); // TODO: to be removed from MeshH2M
 						}
@@ -820,7 +820,7 @@ namespace H2M
 								mi->Set("u_MetalnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_MetalnessTexture')!
 								// mi->Set("u_MaterialUniforms.UseMetalnessMap", true); // VulkanMaterial::Set - Could not find uniform with name 'u_MaterialUniforms.UseMetalnessMap'!
 
-								if (RendererAPI::Current() == RendererAPIType::Vulkan)
+								if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 								{
 									AddMaterialTextureWriteDescriptor(0, "u_MetalnessTexture", texture); // TODO: to be removed from MeshH2M
 								}
@@ -855,7 +855,7 @@ namespace H2M
 
 					mi->Set("u_MetalnessTexture", whiteTexture);
 
-					if (RendererAPI::Current() == RendererAPIType::Vulkan)
+					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
 						AddMaterialTextureWriteDescriptor(i, "u_MetalnessTexture", whiteTexture); // TODO: to be removed from MeshH2M
 					}
@@ -866,7 +866,7 @@ namespace H2M
 		else
 		{
 			// auto mi = HazelMaterial::Create(m_MeshShader, aiMaterialName.data);
-			auto mi = RefH2M<HazelMaterialInstance>::Create(m_BaseMaterial, "Hazel-Default");
+			auto mi = RefH2M<MaterialInstanceH2M>::Create(m_BaseMaterial, "Hazel-Default");
 			mi->Set("u_MaterialUniforms.AlbedoTexToggle", 0.0f);
 			mi->Set("u_MaterialUniforms.NormalTexToggle", 0.0f);
 			mi->Set("u_MaterialUniforms.MetalnessTexToggle", 0.0f);
@@ -883,33 +883,33 @@ namespace H2M
 
 		if (m_IsAnimated)
 		{
-			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), (uint32_t)sizeof(AnimatedVertex), (uint32_t)m_AnimatedVertices.size());
+			m_VertexBuffer = VertexBufferH2M::Create(m_AnimatedVertices.data(), (uint32_t)sizeof(AnimatedVertex), (uint32_t)m_AnimatedVertices.size());
 
 			m_VertexBufferLayout = {
-							{ ShaderDataType::Float3, "a_Position" },
-							{ ShaderDataType::Float3, "a_Normal" },
-							{ ShaderDataType::Float3, "a_Tangent" },
-							{ ShaderDataType::Float3, "a_Binormal" },
-							{ ShaderDataType::Float2, "a_TexCoord" },
-							{ ShaderDataType::Int4,   "a_BoneIDs" },
-							{ ShaderDataType::Float4, "a_BoneWeights" },
+							{ ShaderDataTypeH2M::Float3, "a_Position" },
+							{ ShaderDataTypeH2M::Float3, "a_Normal" },
+							{ ShaderDataTypeH2M::Float3, "a_Tangent" },
+							{ ShaderDataTypeH2M::Float3, "a_Binormal" },
+							{ ShaderDataTypeH2M::Float2, "a_TexCoord" },
+							{ ShaderDataTypeH2M::Int4,   "a_BoneIDs" },
+							{ ShaderDataTypeH2M::Float4, "a_BoneWeights" },
 			};
 		}
 		else
 		{
-			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), (uint32_t)sizeof(Vertex), (uint32_t)m_StaticVertices.size());
+			m_VertexBuffer = VertexBufferH2M::Create(m_StaticVertices.data(), (uint32_t)sizeof(Vertex), (uint32_t)m_StaticVertices.size());
 
 			m_VertexBufferLayout = {
-							{ ShaderDataType::Float3, "a_Position" },
-							{ ShaderDataType::Float3, "a_Normal" },
-							{ ShaderDataType::Float3, "a_Tangent" },
-							{ ShaderDataType::Float3, "a_Binormal" },
-							{ ShaderDataType::Float2, "a_TexCoord" },
+							{ ShaderDataTypeH2M::Float3, "a_Position" },
+							{ ShaderDataTypeH2M::Float3, "a_Normal" },
+							{ ShaderDataTypeH2M::Float3, "a_Tangent" },
+							{ ShaderDataTypeH2M::Float3, "a_Binormal" },
+							{ ShaderDataTypeH2M::Float2, "a_TexCoord" },
 			};
 		}
 
 		Log::GetLogger()->info("Hazel::MeshH2M: Creating an Index Buffer...");
-		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
+		m_IndexBuffer = IndexBufferH2M::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
 		/**** BEGIN Create pipeline ****/
 		{
@@ -918,13 +918,13 @@ namespace H2M
 			Log::GetLogger()->info("Hazel::MeshH2M: Creating a Pipeline...");
 
 			pipelineSpecification.Layout = m_VertexBufferLayout;
-			RenderPassSpecification renderPassSpecification = {};
-			pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpecification);
-			m_Pipeline = Pipeline::Create(pipelineSpecification);
+			RenderPassSpecificationH2M renderPassSpec = {};
+			pipelineSpecification.RenderPass = RenderPassH2M::Create(renderPassSpec);
+			m_Pipeline = PipelineH2M::Create(pipelineSpecification);
 		}
 		/**** END Create pipeline ****/
 
-		if (RendererAPI::Current() == RendererAPIType::Vulkan)
+		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 		{
 			// HazelRenderer::Submit([&]()
 			// {
@@ -957,14 +957,14 @@ namespace H2M
 		{
 			MaterialDescriptor& materialDescriptor = m_MaterialDescriptors[index];
 
-			RefH2M<HazelShader> shader = m_Materials[index]->GetShader();
-			const VkWriteDescriptorSet* wds = shader.As<VulkanShader>()->GetDescriptorSet(name);
-			HZ_CORE_ASSERT(wds);
+			RefH2M<ShaderH2M> shader = m_Materials[index]->GetShader();
+			const VkWriteDescriptorSet* wds = shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
+			H2M_CORE_ASSERT(wds);
 
 			VkWriteDescriptorSet descriptorSet = *wds;
 			descriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
 			descriptorSet.descriptorCount = (uint32_t)materialDescriptor.DescriptorSet.DescriptorSets.size();
-			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+			auto& imageInfo = texture.As<VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
 			descriptorSet.pImageInfo = &imageInfo;
 			materialDescriptor.WriteDescriptors.push_back(descriptorSet);
 		}
@@ -1001,7 +1001,7 @@ namespace H2M
 	}
 	/**** END removed in Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
 
-	void MeshH2M::OnUpdate(Timestep ts, bool debug)
+	void MeshH2M::OnUpdate(TimestepH2M ts, bool debug)
 	{
 		if (m_IsAnimated)
 		{
@@ -1033,7 +1033,7 @@ namespace H2M
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t mesh = node->mMeshes[i];
-			Submesh& submesh = m_Submeshes[mesh];
+			RefH2M<SubmeshH2M> submesh = m_Submeshes[mesh];
 			submesh->NodeName = node->mName.C_Str();
 			submesh->MeshName = m_Scene->mMeshes[mesh]->mName.C_Str();
 			submesh->Transform = transform;
@@ -1239,8 +1239,8 @@ namespace H2M
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t mesh = node->mMeshes[i];
-			m_Submeshes[mesh].NodeName = node->mName.C_Str();
-			m_Submeshes[mesh].Transform = transform;
+			m_Submeshes[mesh]->NodeName = node->mName.C_Str();
+			m_Submeshes[mesh]->Transform = transform;
 		}
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
@@ -1456,7 +1456,7 @@ namespace H2M
 		m_Pipeline->Bind();
 		m_IndexBuffer->Bind();
 
-		for (Submesh& submesh : m_Submeshes)
+		for (RefH2M<SubmeshH2M> submesh : m_Submeshes)
 		{
 			m_MeshShader->Bind();
 
@@ -1472,7 +1472,7 @@ namespace H2M
 			// Manage materials (PBR texture binding)
 			if (m_BaseMaterial)
 			{
-				Hazel::RefH2M<Material> baseMaterialRef = m_BaseMaterial;
+				RefH2M<Material> baseMaterialRef = m_BaseMaterial;
 				baseMaterialRef->GetTextureAlbedo()->Bind(samplerSlot + 0);
 				baseMaterialRef->GetTextureNormal()->Bind(samplerSlot + 1);
 				baseMaterialRef->GetTextureMetallic()->Bind(samplerSlot + 2);
@@ -1482,7 +1482,7 @@ namespace H2M
 			}
 
 			RefH2M<MeshH2M> instance = this;
-			std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(instance, submesh, nullptr);
+			std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(instance, submesh, EntityH2M{});
 
 			if (envMapMaterials.find(materialUUID) != envMapMaterials.end())
 			{
@@ -1495,12 +1495,12 @@ namespace H2M
 				envMapMaterial->GetAOInput().TextureMap->Bind(samplerSlot + 5);
 			}
 
-			// RefH2M<HazelMaterialInstance> material = RefH2M<HazelMaterialInstance>();
+			// RefH2M<MaterialInstanceH2M> material = RefH2M<MaterialInstanceH2M>();
 			RefH2M<MaterialH2M> material = RefH2M<MaterialH2M>();
 			if (m_Materials.size())
 			{
 				material = m_Materials[submesh->MaterialIndex];
-				if (material && material->GetFlag(HazelMaterialFlag::DepthTest))
+				if (material && material->GetFlag(MaterialFlagH2M::DepthTest))
 				{
 					RendererBasic::EnableDepthTest();
 				}
@@ -1515,16 +1515,16 @@ namespace H2M
 		}
 	}
 
-	void MeshH2M::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, Entity entity)
+	void MeshH2M::RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, EntityH2M entity)
 	{
-		for (Hazel::Submesh submesh : m_Submeshes)
+		for (RefH2M<SubmeshH2M> submesh : m_Submeshes)
 		{
 			submesh->Render(this, m_MeshShader, transform, samplerSlot, envMapMaterials, entity);
 		}
 	}
 
-	void Submesh::Render(RefH2M<MeshH2M> parentMesh, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
-		const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, Entity entity, bool wireframeEnabledScene, bool wireframeEnabledModel)
+	void SubmeshH2M::Render(RefH2M<MeshH2M> parentMesh, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
+		const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, EntityH2M entity, bool wireframeEnabledScene, bool wireframeEnabledModel)
 	{
 		RefH2M<EnvMapMaterial> envMapMaterial = RefH2M<EnvMapMaterial>();
 
@@ -1543,7 +1543,7 @@ namespace H2M
 			m_BaseMaterial->GetTextureAO()->Bind(samplerSlot + 5);
 		}
 
-		std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(parentMesh, *this, &entity);
+		std::string materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(parentMesh, this, entity);
 
 		if (envMapMaterials.find(materialUUID) != envMapMaterials.end())
 		{
@@ -1557,7 +1557,7 @@ namespace H2M
 		}
 
 		auto material = parentMesh->GetMaterials()[MaterialIndex];
-		if (material->GetFlag(HazelMaterialFlag::DepthTest))
+		if (material->GetFlag(MaterialFlagH2M::DepthTest))
 		{
 			RendererBasic::EnableDepthTest();
 		}
@@ -1603,7 +1603,7 @@ namespace H2M
 		shader->Unbind();
 	}
 
-	void Submesh::RenderOutline(RefH2M<MeshH2M> parentMesh, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, Entity entity)
+	void SubmeshH2M::RenderOutline(RefH2M<MeshH2M> parentMesh, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, EntityH2M entity)
 	{
 		parentMesh->GetVertexBuffer()->Bind();
 		parentMesh->GetPipeline()->Bind();
