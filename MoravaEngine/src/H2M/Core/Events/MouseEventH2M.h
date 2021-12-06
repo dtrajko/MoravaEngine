@@ -28,8 +28,8 @@ namespace H2M
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseMoved);
-		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput);
+		EVENT_CLASS_TYPE_H2M(MouseMoved);
+		EVENT_CLASS_CATEGORY_H2M(EventCategoryMouse | EventCategoryInput);
 	private:
 		float m_MouseX, m_MouseY;
 	};
@@ -50,8 +50,8 @@ namespace H2M
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseScrolled);
-		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput);
+		EVENT_CLASS_TYPE_H2M(MouseScrolled);
+		EVENT_CLASS_CATEGORY_H2M(EventCategoryMouse | EventCategoryInput);
 	private:
 		float m_XOffset, m_YOffset;
 	};
@@ -61,7 +61,7 @@ namespace H2M
 	public:
 		inline int GetMouseButton() const { return m_Button; }
 
-		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput);
+		EVENT_CLASS_CATEGORY_H2M(EventCategoryMouse | EventCategoryInput);
 	protected:
 		MouseButtonEventH2M(int button)
 			: m_Button(button) {}
@@ -82,7 +82,7 @@ namespace H2M
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseButtonPressed);
+		EVENT_CLASS_TYPE_H2M(MouseButtonPressed);
 	};
 
 	class MouseButtonReleasedEventH2M : public MouseButtonEventH2M
@@ -98,7 +98,7 @@ namespace H2M
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(MouseButtonReleased);
+		EVENT_CLASS_TYPE_H2M(MouseButtonReleased);
 	};
 
 }

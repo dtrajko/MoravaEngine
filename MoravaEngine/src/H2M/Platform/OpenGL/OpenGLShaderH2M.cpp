@@ -7,18 +7,18 @@
 
 #include "OpenGLShaderH2M.h"
 
+#include "H2M/Renderer/RendererH2M.h"
+#include "H2M/Utilities/FileSystemH2M.h"
+
 #include <string>
 #include <sstream>
 #include <limits>
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Hazel/Renderer/HazelRenderer.h"
-
 #include <shaderc/shaderc.hpp>
 #include <filesystem>
 
-#include "Hazel/Utilities/FileSystem.h"
 
 
 namespace H2M
@@ -26,7 +26,7 @@ namespace H2M
 
 #define UNIFORM_LOGGING 0
 #if UNIFORM_LOGGING
-#define HZ_LOG_UNIFORM(...) HZ_CORE_WARN(__VA_ARGS__)
+#define HZ_LOG_UNIFORM(...) H2M_CORE_WARN(__VA_ARGS__)
 #else
 #define HZ_LOG_UNIFORM
 #endif
@@ -61,9 +61,9 @@ namespace H2M
 		Reload(forceRecompile);
 	}
 
-	Ref<OpenGLShaderH2M> OpenGLShaderH2M::CreateFromString(const std::string& source)
+	RefH2M<OpenGLShaderH2M> OpenGLShaderH2M::CreateFromString(const std::string& source)
 	{
-		Ref<OpenGLShaderH2M> shader = Ref<OpenGLShaderH2M>::Create();
+		RefH2M<OpenGLShaderH2M> shader = RefH2M<OpenGLShaderH2M>::Create();
 		shader->Load(source, true);
 		return shader;
 	}
@@ -78,8 +78,8 @@ namespace H2M
 	{
 		m_ShaderSource = PreProcess(source);
 		Utils::CreateCacheDirectoryIfNeeded();
-		Ref<OpenGLShaderH2M> instance = this;
-		HazelRenderer::Submit([instance, forceCompile]() mutable
+		RefH2M<OpenGLShaderH2M> instance = this;
+		RendererH2M::Submit([instance, forceCompile]() mutable
 		{
 			std::array<std::vector<uint32_t>, 2> vulkanBinaries;
 			std::unordered_map<uint32_t, std::vector<uint32_t>> shaderData;
@@ -101,7 +101,7 @@ namespace H2M
 		case GL_FRAGMENT_SHADER:  return ".cached_vulkan.frag";
 		case GL_COMPUTE_SHADER:   return ".cached_vulkan.comp";
 		}
-		HZ_CORE_ASSERT(false);
+		H2M_CORE_ASSERT(false);
 		return "";
 	}
 
@@ -113,7 +113,7 @@ namespace H2M
 		case GL_FRAGMENT_SHADER:  return ".cached_opengl.frag";
 		case GL_COMPUTE_SHADER:   return ".cached_opengl.comp";
 		}
-		HZ_CORE_ASSERT(false);
+		H2M_CORE_ASSERT(false);
 		return "";
 	}
 
@@ -125,7 +125,7 @@ namespace H2M
 		case GL_FRAGMENT_SHADER:  return shaderc_fragment_shader;
 		case GL_COMPUTE_SHADER:   return shaderc_compute_shader;
 		}
-		HZ_CORE_ASSERT(false);
+		H2M_CORE_ASSERT(false);
 		return (shaderc_shader_kind)0;
 	}
 
@@ -137,7 +137,7 @@ namespace H2M
 		case GL_FRAGMENT_SHADER:  return "Fragment";
 		case GL_COMPUTE_SHADER:   return "Compute";
 		}
-		HZ_CORE_ASSERT(false);
+		H2M_CORE_ASSERT(false);
 		return "";
 	}
 
@@ -184,8 +184,8 @@ namespace H2M
 
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{
-						HZ_CORE_ERROR(module.GetErrorMessage());
-						HZ_CORE_ASSERT(false);
+						H2M_CORE_ERROR(module.GetErrorMessage());
+						H2M_CORE_ASSERT(false);
 					}
 
 					const uint8_t* begin = (const uint8_t*)module.cbegin();
@@ -266,8 +266,8 @@ namespace H2M
 
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{
-						HZ_CORE_ERROR(module.GetErrorMessage());
-						HZ_CORE_ASSERT(false);
+						H2M_CORE_ERROR(module.GetErrorMessage());
+						H2M_CORE_ASSERT(false);
 					}
 
 					shaderStageData = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -305,7 +305,7 @@ namespace H2M
 			// The maxLength includes the NULL character
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
-			HZ_CORE_ERROR("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
+			H2M_CORE_ERROR("Shader compilation failed ({0}):\n{1}", m_AssetPath, &infoLog[0]);
 
 			// We don't need the program anymore.
 			glDeleteProgram(program);
@@ -325,7 +325,7 @@ namespace H2M
 			{
 				GLint location = glGetUniformLocation(m_RendererID, name.c_str());
 				if (location == -1)
-					HZ_CORE_WARN("{0}: could not find uniform location {0}", name);
+					H2M_CORE_WARN("{0}: could not find uniform location {0}", name);
 
 				m_UniformLocations[name] = location;
 			}
@@ -337,25 +337,25 @@ namespace H2M
 		}
 	}
 
-	static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
+	static ShaderUniformTypeH2M SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
 	{
 		switch (type.basetype)
 		{
-		case spirv_cross::SPIRType::Boolean:  return ShaderUniformType::Bool;
-		case spirv_cross::SPIRType::Int:      return ShaderUniformType::Int;
-		case spirv_cross::SPIRType::UInt:     return ShaderUniformType::UInt;
+		case spirv_cross::SPIRType::Boolean:  return ShaderUniformTypeH2M::Bool;
+		case spirv_cross::SPIRType::Int:      return ShaderUniformTypeH2M::Int;
+		case spirv_cross::SPIRType::UInt:     return ShaderUniformTypeH2M::UInt;
 		case spirv_cross::SPIRType::Float:
-			if (type.vecsize == 1)            return ShaderUniformType::Float;
-			if (type.vecsize == 2)            return ShaderUniformType::Vec2;
-			if (type.vecsize == 3)            return ShaderUniformType::Vec3;
-			if (type.vecsize == 4)            return ShaderUniformType::Vec4;
+			if (type.vecsize == 1)            return ShaderUniformTypeH2M::Float;
+			if (type.vecsize == 2)            return ShaderUniformTypeH2M::Vec2;
+			if (type.vecsize == 3)            return ShaderUniformTypeH2M::Vec3;
+			if (type.vecsize == 4)            return ShaderUniformTypeH2M::Vec4;
 
-			if (type.columns == 3)            return ShaderUniformType::Mat3;
-			if (type.columns == 4)            return ShaderUniformType::Mat4;
+			if (type.columns == 3)            return ShaderUniformTypeH2M::Mat3;
+			if (type.columns == 4)            return ShaderUniformTypeH2M::Mat4;
 			break;
 		}
-		HZ_CORE_ASSERT(false, "Unknown type!");
-		return ShaderUniformType::None;
+		H2M_CORE_ASSERT(false, "Unknown type!");
+		return ShaderUniformTypeH2M::None;
 	}
 
 	void OpenGLShaderH2M::Compile(const std::vector<uint32_t>& vertexBinary, const std::vector<uint32_t>& fragmentBinary)
@@ -381,7 +381,7 @@ namespace H2M
 
 			auto location = compiler.get_decoration(resource.id, spv::DecorationLocation);
 			int memberCount = static_cast<int>(bufferType.member_types.size());
-			ShaderBuffer& buffer = m_Buffers[bufferName];
+			ShaderBufferH2M& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
 			buffer.Size = static_cast<uint32_t>(bufferSize) - m_ConstantBufferOffset;
 			for (int i = 0; i < memberCount; i++)
@@ -392,7 +392,7 @@ namespace H2M
 				auto offset = compiler.type_struct_member_offset(bufferType, i) - m_ConstantBufferOffset;
 
 				std::string uniformName = bufferName + "." + memberName;
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, SPIRTypeToShaderUniformType(type), static_cast<uint32_t>(size), offset);
+				buffer.Uniforms[uniformName] = ShaderUniformH2M(uniformName, SPIRTypeToShaderUniformType(type), static_cast<uint32_t>(size), offset);
 			}
 
 			m_ConstantBufferOffset += static_cast<uint32_t>(bufferSize);
@@ -420,7 +420,7 @@ namespace H2M
 
 			if (s_UniformBuffers.find(bindingPoint) == s_UniformBuffers.end())
 			{
-				ShaderUniformBuffer& buffer = s_UniformBuffers[bindingPoint];
+				ShaderUniformBufferH2M& buffer = s_UniformBuffers[bindingPoint];
 				buffer.Name = resource.name;
 				buffer.BindingPoint = bindingPoint;
 				buffer.Size = bufferSize;
@@ -450,8 +450,8 @@ namespace H2M
 			else
 			{
 				// Validation
-				ShaderUniformBuffer& buffer = s_UniformBuffers.at(bindingPoint);
-				HZ_CORE_ASSERT(buffer.Name == resource.name); // Must be the same buffer
+				ShaderUniformBufferH2M& buffer = s_UniformBuffers.at(bindingPoint);
+				H2M_CORE_ASSERT(buffer.Name == resource.name); // Must be the same buffer
 				if (bufferSize > buffer.Size) // Resize buffer if needed
 				{
 					buffer.Size = bufferSize;
@@ -476,8 +476,8 @@ namespace H2M
 			uint32_t dimension = type.image.dim;
 
 			GLint location = glGetUniformLocation(m_RendererID, name.c_str());
-			//HZ_CORE_ASSERT(location != -1);
-			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
+			//H2M_CORE_ASSERT(location != -1);
+			m_Resources[name] = ShaderResourceDeclarationH2M(name, binding, 1);
 			glUniform1i(location, binding);
 		}
 	}
@@ -489,7 +489,7 @@ namespace H2M
 
 	void OpenGLShaderH2M::Bind()
 	{
-		HazelRenderer::Submit([=]() {
+		RendererH2M::Submit([=]() {
 			glUseProgram(m_RendererID);
 		});
 	}
@@ -507,7 +507,7 @@ namespace H2M
 		}
 		else
 		{
-			HZ_CORE_ASSERT(false, "Could not load shader!");
+			H2M_CORE_ASSERT(false, "Could not load shader!");
 		}
 		in.close();
 		return result;
@@ -523,10 +523,10 @@ namespace H2M
 		while (pos != std::string::npos)
 		{
 			size_t eol = source.find_first_of("\r\n", pos);
-			HZ_CORE_ASSERT(eol != std::string::npos, "Syntax error");
+			H2M_CORE_ASSERT(eol != std::string::npos, "Syntax error");
 			size_t begin = pos + typeTokenLength + 1;
 			std::string type = source.substr(begin, eol - begin);
-			HZ_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel" || type == "compute", "Invalid shader type specified");
+			H2M_CORE_ASSERT(type == "vertex" || type == "fragment" || type == "pixel" || type == "compute", "Invalid shader type specified");
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			pos = source.find(typeToken, nextLinePos);
@@ -608,7 +608,7 @@ namespace H2M
 	{
 		int32_t result = glGetUniformLocation(m_RendererID, name.c_str());
 		if (result == -1)
-			HZ_CORE_WARN("Could not find uniform '{0}' in shader", name);
+			H2M_CORE_WARN("Could not find uniform '{0}' in shader", name);
 
 		return result;
 	}
@@ -632,7 +632,7 @@ namespace H2M
 
 	void OpenGLShaderH2M::SetUniformBuffer(const std::string& name, const void* data, uint32_t size)
 	{
-		ShaderUniformBuffer* uniformBuffer = nullptr;
+		ShaderUniformBufferH2M* uniformBuffer = nullptr;
 		for (auto& [bindingPoint, ub] : s_UniformBuffers)
 		{
 			if (ub.Name == name)
@@ -642,16 +642,16 @@ namespace H2M
 			}
 		}
 
-		HZ_CORE_ASSERT(uniformBuffer);
-		HZ_CORE_ASSERT(uniformBuffer->Size >= size);
+		H2M_CORE_ASSERT(uniformBuffer);
+		H2M_CORE_ASSERT(uniformBuffer->Size >= size);
 		glNamedBufferSubData(uniformBuffer->RendererID, 0, size, data);
 	}
 
 	void OpenGLShaderH2M::SetUniform(const std::string& fullname, float value)
 	{
-		HazelRenderer::Submit([=]()
+		RendererH2M::Submit([=]()
 		{
-			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+			H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform1f(location, value);
 		});
@@ -659,9 +659,9 @@ namespace H2M
 
 	void OpenGLShaderH2M::SetUniform(const std::string& fullname, uint32_t value)
 	{
-		HazelRenderer::Submit([=]()
+		RendererH2M::Submit([=]()
 		{
-			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+			H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform1ui(location, value);
 		});
@@ -669,9 +669,9 @@ namespace H2M
 
 	void OpenGLShaderH2M::SetUniform(const std::string& fullname, int value)
 	{
-		HazelRenderer::Submit([=]()
+		RendererH2M::Submit([=]()
 		{
-			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+			H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform1i(location, value);
 		});
@@ -679,9 +679,9 @@ namespace H2M
 
 	void OpenGLShaderH2M::SetUniform(const std::string& fullname, const glm::vec2& value)
 	{
-		HazelRenderer::Submit([=]()
+		RendererH2M::Submit([=]()
 		{
-			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+			H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform2fv(location, 1, glm::value_ptr(value));
 		});
@@ -689,9 +689,9 @@ namespace H2M
 
 	void OpenGLShaderH2M::SetUniform(const std::string& fullname, const glm::vec3& value)
 	{
-		HazelRenderer::Submit([=]()
+		RendererH2M::Submit([=]()
 		{
-			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+			H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform3fv(location, 1, glm::value_ptr(value));
 		});
@@ -699,9 +699,9 @@ namespace H2M
 
 	void OpenGLShaderH2M::SetUniform(const std::string& fullname, const glm::vec4& value)
 	{
-		HazelRenderer::Submit([=]()
+		RendererH2M::Submit([=]()
 		{
-			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+			H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniform4fv(location, 1, glm::value_ptr(value));
 		});
@@ -709,9 +709,9 @@ namespace H2M
 
 	void OpenGLShaderH2M::SetUniform(const std::string& fullname, const glm::mat3& value)
 	{
-		HazelRenderer::Submit([=]()
+		RendererH2M::Submit([=]()
 		{
-			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+			H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
 		});
@@ -719,9 +719,9 @@ namespace H2M
 
 	void OpenGLShaderH2M::SetUniform(const std::string& fullname, const glm::mat4& value)
 	{
-		HazelRenderer::Submit([=]()
+		RendererH2M::Submit([=]()
 		{
-			HZ_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
+			H2M_CORE_ASSERT(m_UniformLocations.find(fullname) != m_UniformLocations.end());
 			GLint location = m_UniformLocations.at(fullname);
 			glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
 		});
@@ -729,49 +729,49 @@ namespace H2M
 
 	void OpenGLShaderH2M::SetUInt(const std::string& name, uint32_t value)
 	{
-		HazelRenderer::Submit([=]() {
+		RendererH2M::Submit([=]() {
 			UploadUniformUInt(name, value);
 		});
 	}
 
 	void OpenGLShaderH2M::SetFloat(const std::string& name, float value)
 	{
-		HazelRenderer::Submit([=]() {
+		RendererH2M::Submit([=]() {
 			UploadUniformFloat(name, value);
 		});
 	}
 
 	void OpenGLShaderH2M::SetInt(const std::string& name, int value)
 	{
-		HazelRenderer::Submit([=]() {
+		RendererH2M::Submit([=]() {
 			UploadUniformInt(name, value);
 		});
 	}
 
 	void OpenGLShaderH2M::SetFloat2(const std::string& name, const glm::vec2& value)
 	{
-		HazelRenderer::Submit([=]() {
+		RendererH2M::Submit([=]() {
 			UploadUniformFloat2(name, value);
 		});
 	}
 
 	void OpenGLShaderH2M::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
-		HazelRenderer::Submit([=]() {
+		RendererH2M::Submit([=]() {
 			UploadUniformFloat3(name, value);
 		});
 	}
 
 	void OpenGLShaderH2M::SetFloat4(const std::string& name, const glm::vec4& value)
 	{
-		HazelRenderer::Submit([=]() {
+		RendererH2M::Submit([=]() {
 			UploadUniformFloat4(name, value);
 		});
 	}
 
 	void OpenGLShaderH2M::SetMat4(const std::string& name, const glm::mat4& value)
 	{
-		HazelRenderer::Submit([=]() {
+		RendererH2M::Submit([=]() {
 			UploadUniformMat4(name, value);
 		});
 	}
@@ -792,12 +792,12 @@ namespace H2M
 
 	void OpenGLShaderH2M::SetIntArray(const std::string& name, int* values, uint32_t size)
 	{
-		HazelRenderer::Submit([=]() {
+		RendererH2M::Submit([=]() {
 			UploadUniformIntArray(name, values, size);
 		});
 	}
 
-	const ShaderResourceDeclaration* OpenGLShaderH2M::GetShaderResource(const std::string& name)
+	const ShaderResourceDeclarationH2M* OpenGLShaderH2M::GetShaderResource(const std::string& name)
 	{
 		if (m_Resources.find(name) == m_Resources.end())
 			return nullptr;

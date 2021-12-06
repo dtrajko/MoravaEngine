@@ -28,7 +28,7 @@ namespace H2M {
 			return m_ExecutionGPUTimes[frameIndex][queryIndex / 2];
 		}
 
-		virtual const PipelineStatistics& GetPipelineStatistics(uint32_t frameIndex) const override;
+		virtual const PipelineStatisticsH2M& GetPipelineStatistics(uint32_t frameIndex) const override;
 
 		virtual uint64_t BeginTimestampQuery() override;
 		virtual void EndTimestampQuery(uint64_t queryID) override;
@@ -55,7 +55,7 @@ namespace H2M {
 		std::vector<std::vector<float>> m_ExecutionGPUTimes;
 
 		uint32_t m_PipelineQueryCount = 0;
-		std::vector<PipelineStatistics> m_PipelineStatisticsQueryResults;
+		std::vector<PipelineStatisticsH2M> m_PipelineStatisticsQueryResults;
 	};
 
 }

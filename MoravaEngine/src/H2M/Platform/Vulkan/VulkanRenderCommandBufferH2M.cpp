@@ -84,7 +84,7 @@ namespace H2M {
 		uint32_t framesInFlight = RendererH2M::GetConfig().FramesInFlight;
 
 		m_CommandBuffers.resize(framesInFlight);
-		VulkanSwapChain& swapChain = Application::Get()->GetWindow()->GetSwapChain();
+		VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 		for (uint32_t frame = 0; frame < framesInFlight; frame++)
 			m_CommandBuffers[frame] = swapChain.GetDrawCommandBuffer(frame);
 
@@ -217,15 +217,15 @@ namespace H2M {
 
 			// Retrieve pipeline stats results
 			vkGetQueryPoolResults(device->GetVulkanDevice(), m_PipelineStatisticsQueryPools[frameIndex], 0, 1,
-				sizeof(PipelineStatistics), &m_PipelineStatisticsQueryResults[frameIndex], sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+				sizeof(PipelineStatisticsH2M), &m_PipelineStatisticsQueryResults[frameIndex], sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
 		}
 	}
 
-	const PipelineStatistics& VulkanRenderCommandBufferH2M::GetPipelineStatistics(uint32_t frameIndex) const
+	const PipelineStatisticsH2M& VulkanRenderCommandBufferH2M::GetPipelineStatistics(uint32_t frameIndex) const
 	{
 		Log::GetLogger()->warn("VulkanRenderCommandBuffer::GetPipelineStatistics - method not yet implemented!");
 
-		PipelineStatistics pipelineStatistics = {};
+		PipelineStatisticsH2M pipelineStatistics = {};
 		return pipelineStatistics;
 	}
 

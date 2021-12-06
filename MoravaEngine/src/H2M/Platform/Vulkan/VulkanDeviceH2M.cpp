@@ -15,7 +15,7 @@ namespace H2M
 
 	VulkanPhysicalDeviceH2M::VulkanPhysicalDeviceH2M()
 	{
-		auto vkInstance = VulkanContext::GetInstance();
+		auto vkInstance = VulkanContextH2M::GetInstance();
 
 		uint32_t gpuCount = 0;
 		// Get number of available physical devices

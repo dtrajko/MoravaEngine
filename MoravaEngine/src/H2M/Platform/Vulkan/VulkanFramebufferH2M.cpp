@@ -1,17 +1,24 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "VulkanFramebufferH2M.h"
 
-#include "H2M/Platform/Vulkan/VulkanContext.h"
-#include "H2M/Platform/Vulkan/VulkanTexture.h"
-#include "H2M/Platform/Vulkan/VulkanSwapChain.h"
-
 #include "H2M/Platform/Vulkan/VulkanAllocatorH2M.h"
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#include "H2M/Platform/Vulkan/VulkanSwapChainH2M.h"
+#include "H2M/Platform/Vulkan/VulkanTextureH2M.h"
 
 #include "Core/Application.h"
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	VulkanFramebufferH2M::VulkanFramebufferH2M(const HazelFramebufferSpecification& spec)
+	VulkanFramebufferH2M::VulkanFramebufferH2M(const FramebufferSpecificationH2M& spec)
 		: m_Specification(spec)
 	{
 		if (spec.Width == 0 || spec.Height == 0)
@@ -26,18 +33,8 @@ namespace Hazel {
 		}
 
 		// Create attachment descriptors immediately
-
-		ImageSpecification rgbaSpec;
-		rgbaSpec.Format = ImageFormatH2M::RGBA32F;
-		rgbaSpec.Width = m_Width;
-		rgbaSpec.Height = m_Height;
-		m_Attachments.emplace_back(HazelImage2D::Create(rgbaSpec));
-
-		ImageSpecification depthSpec;
-		depthSpec.Format = ImageFormatH2M::Depth;
-		depthSpec.Width = m_Width;
-		depthSpec.Height = m_Height;
-		m_Attachments.emplace_back(HazelImage2D::Create(depthSpec));
+		m_Attachments.emplace_back(Image2D_H2M::Create(ImageFormatH2M::RGBA32F, m_Width, m_Height));
+		m_Attachments.emplace_back(Image2D_H2M::Create(ImageFormatH2M::Depth, m_Width, m_Height));
 
 		Resize((uint32_t)(m_Width * spec.Scale), (uint32_t)(m_Height * spec.Scale), true);
 	}
@@ -54,7 +51,7 @@ namespace Hazel {
 			// {
 			// });
 			{
-				auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+				auto device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 				if (m_Framebuffer) {
 					vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
@@ -135,7 +132,7 @@ namespace Hazel {
 
 				// DEPTH ATTACHMENT
 				{
-					VkFormat depthFormat = VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
+					VkFormat depthFormat = VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
 
 					VkImageCreateInfo imageCreateInfo = {};
 					imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -247,7 +244,7 @@ namespace Hazel {
 		}
 		else
 		{
-			VulkanSwapChain& swapChain = Application::Get()->GetWindow()->GetSwapChain();
+			VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 			m_RenderPass = swapChain.GetRenderPass();
 		}
 
@@ -257,7 +254,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanFramebufferH2M::AddResizeCallback(const std::function<void(RefH2M<HazelFramebuffer>)>& func)
+	void VulkanFramebufferH2M::AddResizeCallback(const std::function<void(RefH2M<FramebufferH2M>)>& func)
 	{
 		m_ResizeCallbacks.push_back(func);
 	}

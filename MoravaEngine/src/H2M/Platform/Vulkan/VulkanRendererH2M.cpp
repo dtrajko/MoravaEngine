@@ -167,7 +167,7 @@ namespace H2M
 			writeDescriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
 			writeDescriptorSet.dstBinding = 0;
 
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
 		}
 	}
@@ -178,14 +178,14 @@ namespace H2M
 		/**** BEGIN: to be removed from VulkanRenderer ****/
 		// RendererH2M::Submit([=]() {});
 		{
-			s_ImGuiCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
-			s_CompositeCommandBuffer = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+			s_ImGuiCommandBuffer = VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+			s_CompositeCommandBuffer = VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
 		}
 		/**** END: to be removed from VulkanRenderer ****/
 
 		// s_Data = VulkanRendererData{};
 		auto& caps = s_Data.RenderCaps;
-		auto& properties = VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
+		auto& properties = VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
 		caps.Vendor = Utils::VulkanVendorIDToString(properties.vendorID);
 		caps.Device = properties.deviceName;
 		caps.Version = std::to_string(properties.driverVersion);
@@ -245,7 +245,7 @@ namespace H2M
 					writeDescriptorSet.pImageInfo = &vulkanFB->GetVulkanDescriptorInfo();
 					writeDescriptorSet.dstBinding = 0;
 
-					auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+					auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 					vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
 				}
 			});
@@ -376,7 +376,7 @@ namespace H2M
 			writeDescriptorSet.pImageInfo = &framebuffer->GetVulkanDescriptorInfo();
 			writeDescriptorSet.dstBinding = 0;
 
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 			vkUpdateDescriptorSets(vulkanDevice, 1, &writeDescriptorSet, 0, nullptr);
 
 			auto vulkanFB = s_Framebuffer.As<VulkanFramebuffer>();
@@ -444,7 +444,7 @@ namespace H2M
 		RefH2M<HazelTexture2D> BRDFLut = s_Data.BRDFLut;
 		RefH2M<HazelTexture2D> envEquirect = s_Data.envEquirect;
 
-		// auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		// auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		// auto shader = RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static");
 		// RefH2M<VulkanShaderH2M> pbrShader = shader.As<VulkanShaderH2M>();
@@ -511,7 +511,7 @@ namespace H2M
 
 	void VulkanRendererH2M::RenderSkybox(VkCommandBuffer commandBuffer)
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		RefH2M<VulkanPipeline> vulkanSkyboxPipeline = s_Data.SkyboxPipeline.As<VulkanPipeline>();
 
@@ -573,7 +573,7 @@ namespace H2M
 	{
 		// RendererH2M::Submit([]() {});
 		{
-			RefH2M<VulkanContext> context = VulkanContext::Get();
+			RefH2M<VulkanContext> context = VulkanContextH2M::Get();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -693,7 +693,7 @@ namespace H2M
 			auto& brdfLutImageInfo = s_Data.BRDFLut.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
 			writeDescriptors[2].pImageInfo = &brdfLutImageInfo;
 
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 			vkUpdateDescriptorSets(vulkanDevice, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 		}
 	}
@@ -702,7 +702,7 @@ namespace H2M
 	{
 		// RendererH2M::Submit([=]() {});
 		{
-			RefH2M<VulkanContext> context = VulkanContext::Get();
+			RefH2M<VulkanContext> context = VulkanContextH2M::Get();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -770,7 +770,7 @@ namespace H2M
 	{
 		// RendererH2M::Submit([=]() {});
 		{
-			RefH2M<VulkanContext> context = VulkanContext::Get();
+			RefH2M<VulkanContext> context = VulkanContextH2M::Get();
 			VulkanSwapChain& swapChain = context->GetSwapChain();
 			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 
@@ -887,7 +887,7 @@ namespace H2M
 
 	void VulkanRendererH2M::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers)
 	{
-		RefH2M<VulkanContext> context = VulkanContext::Get();
+		RefH2M<VulkanContext> context = VulkanContextH2M::Get();
 		VulkanSwapChain& swapChain = context->GetSwapChain();
 
 		uint32_t width = swapChain.GetWidth();
@@ -1199,7 +1199,7 @@ namespace H2M
 
 		// RendererH2M::Submit([equirectangularConversionPipeline, envUnfiltered, envEquirect, cubemapSize]() mutable {});
 		{
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 			RefH2M<VulkanShaderH2M> shader = equirectangularConversionPipeline->GetShader();
 
 			std::array<VkWriteDescriptorSet, 2> writeDescriptors;
@@ -1220,7 +1220,7 @@ namespace H2M
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 			equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
 
-			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
+			VkQueue computeQueue = VulkanContextH2M::GetCurrentDevice()->GetComputeQueue();
 			vkQueueWaitIdle(computeQueue);
 
 			envUnfilteredCubemap->GenerateMips(true);
@@ -1237,7 +1237,7 @@ namespace H2M
 
 		// RendererH2M::Submit([environmentMipFilterPipeline, cubemapSize, envFiltered, envUnfiltered]() mutable {});
 		{
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 			RefH2M<VulkanShaderH2M> shader = environmentMipFilterPipeline->GetShader();
 
 			RefH2M<VulkanTextureCube> envFilteredCubemap = s_Data.envFiltered.As<VulkanTextureCube>();
@@ -1284,7 +1284,7 @@ namespace H2M
 			}
 			environmentMipFilterPipeline->End();
 
-			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
+			VkQueue computeQueue = VulkanContextH2M::GetCurrentDevice()->GetComputeQueue();
 			vkQueueWaitIdle(computeQueue);
 		}
 
@@ -1301,7 +1301,7 @@ namespace H2M
 
 		// RendererH2M::Submit([environmentIrradiancePipeline, envFilteredCubemap, s_Data.irradianceMap, irradianceMapSize]() mutable {});
 		{
-			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 			RefH2M<VulkanShaderH2M> shader = environmentIrradiancePipeline->GetShader();
 
 			std::array<VkWriteDescriptorSet, 2> writeDescriptors;
@@ -1322,7 +1322,7 @@ namespace H2M
 			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 			environmentIrradiancePipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), irradianceCubemap->GetWidth() / 32, irradianceCubemap->GetHeight() / 32, 6);
 
-			VkQueue computeQueue = VulkanContext::GetCurrentDevice()->GetComputeQueue();
+			VkQueue computeQueue = VulkanContextH2M::GetCurrentDevice()->GetComputeQueue();
 			vkQueueWaitIdle(computeQueue);
 
 			irradianceCubemap->GenerateMips(true);

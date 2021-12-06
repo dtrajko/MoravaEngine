@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
 #include "H2M/Platform/Vulkan/VulkanH2M.h"
@@ -9,7 +16,7 @@ namespace H2M {
 	class VulkanFramebufferH2M : public FramebufferH2M
 	{
 	public:
-		VulkanFramebufferH2M(const HazelFramebufferSpecification& spec);
+		VulkanFramebufferH2M(const FramebufferSpecificationH2M& spec);
 
 		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
 
@@ -37,10 +44,10 @@ namespace H2M {
 
 		size_t GetColorAttachmentCount() const { return m_Attachments.size(); }
 		const std::vector<VkClearValue>& GetVulkanClearValues() const { return m_ClearValues; }
-		virtual const HazelFramebufferSpecification& GetSpecification() const override { return m_Specification; }
+		virtual const FramebufferSpecificationH2M& GetSpecification() const override { return m_Specification; }
 
 	private:
-		HazelFramebufferSpecification m_Specification;
+		FramebufferSpecificationH2M m_Specification;
 		RendererID_H2M m_RendererID = 0;
 		uint32_t m_Width = 0, m_Height = 0;
 

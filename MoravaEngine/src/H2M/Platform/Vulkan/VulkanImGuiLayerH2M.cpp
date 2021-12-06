@@ -1,4 +1,14 @@
-#include "VulkanImGuiLayer.h"
+#include "VulkanImGuiLayerH2M.h"
+
+#include "VulkanH2M.h"
+#include "H2M/Renderer/RendererH2M.h"
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
+#include "H2M/Platform/Vulkan/VulkanSwapChainH2M.h"
+
+#include "Core/Application.h"
+
+#include "ImGuizmo.h"
 
 // ImGui includes
 #if !defined(IMGUI_IMPL_API)
@@ -8,20 +18,11 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan_with_textures.h"
 
-#include "ImGuizmo.h"
-
-#include "Core/Application.h"
-
 #include <GLFW/glfw3.h>
 
-#include "Vulkan.h"
-#include "Hazel/Renderer/HazelRenderer.h"
-#include "Hazel/Platform/Vulkan/VulkanContext.h"
-#include "Hazel/Platform/Vulkan/VulkanDevice.h"
-#include "Hazel/Platform/Vulkan/VulkanSwapChain.h"
 
-
-namespace Hazel {
+namespace H2M
+{
 
 	static void check_vk_result(VkResult err)
 	{
@@ -32,21 +33,21 @@ namespace Hazel {
 			abort();
 	}
 
-	VulkanImGuiLayer::VulkanImGuiLayer()
+	VulkanImGuiLayerH2M::VulkanImGuiLayerH2M()
 	{
-		Log::GetLogger()->info("VulkanImGuiLayer created!");
+		Log::GetLogger()->info("VulkanImGuiLayerH2M created!");
 	}
 
-	VulkanImGuiLayer::VulkanImGuiLayer(const std::string& name)
+	VulkanImGuiLayerH2M::VulkanImGuiLayerH2M(const std::string& name)
 	{
-		Log::GetLogger()->info("VulkanImGuiLayer('{0}') created!", name);
+		Log::GetLogger()->info("VulkanImGuiLayerH2M('{0}') created!", name);
 	}
 
-	VulkanImGuiLayer::~VulkanImGuiLayer()
+	VulkanImGuiLayerH2M::~VulkanImGuiLayerH2M()
 	{
-		Log::GetLogger()->info("VulkanImGuiLayer destroyed!");
+		Log::GetLogger()->info("VulkanImGuiLayerH2M destroyed!");
 
-		auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		auto device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		// Cleanup
 		VkResult err = vkDeviceWaitIdle(device);
@@ -54,11 +55,11 @@ namespace Hazel {
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
-		// ImGui_ImplVulkanH_DestroyWindow(VulkanContext::GetInstance(), device, &g_MainWindowData, nullptr);
+		// ImGui_ImplVulkanH_DestroyWindow(VulkanContextH2M::GetInstance(), device, &g_MainWindowData, nullptr);
 		vkDestroyDescriptorPool(device, m_DescriptorPool, nullptr);
 	}
 
-	void VulkanImGuiLayer::OnAttach()
+	void VulkanImGuiLayerH2M::OnAttach()
 	{
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
@@ -116,10 +117,10 @@ namespace Hazel {
 			Application* app = Application::Get();
 			GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow()->GetHandle());
 
-			auto vulkanContext = VulkanContext::Get();
-			auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			auto vulkanContext = VulkanContextH2M::Get();
+			auto device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
-			auto currentDevice = VulkanContext::GetCurrentDevice();
+			auto currentDevice = VulkanContextH2M::GetCurrentDevice();
 
 			// Create Descriptor Pool
 			{
@@ -151,11 +152,11 @@ namespace Hazel {
 			// Setup Platform/Renderer bindings
 			ImGui_ImplGlfw_InitForVulkan(window, true);
 			ImGui_ImplVulkan_InitInfo init_info = {};
-			init_info.Instance = VulkanContext::GetInstance();
+			init_info.Instance = VulkanContextH2M::GetInstance();
 			init_info.PhysicalDevice = currentDevice->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 			init_info.Device = currentDevice->GetVulkanDevice();
 			init_info.QueueFamily = currentDevice->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
-			init_info.Queue = currentDevice->GetQueue();
+			init_info.Queue = currentDevice->GetGraphicsQueue();
 			init_info.PipelineCache = nullptr;
 			init_info.DescriptorPool = m_DescriptorPool;
 			init_info.Allocator = nullptr;
@@ -194,12 +195,12 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanImGuiLayer::OnDetach()
+	void VulkanImGuiLayerH2M::OnDetach()
 	{
 		// HazelRenderer::Submit([] {
 		// });
 		{
-			auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			auto device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 			auto err = vkDeviceWaitIdle(device);
 			check_vk_result(err);
@@ -211,7 +212,7 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanImGuiLayer::Begin()
+	void VulkanImGuiLayerH2M::Begin()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
@@ -228,7 +229,7 @@ namespace Hazel {
 		// ImGui::ShowDemoWindow();
 	}
 
-	void VulkanImGuiLayer::End()
+	void VulkanImGuiLayerH2M::End()
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		Application* app = Application::Get();
@@ -248,19 +249,19 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanImGuiLayer::OnUpdate(Timestep ts)
+	void VulkanImGuiLayerH2M::OnUpdate(TimestepH2M ts)
 	{
 	}
 
-	void VulkanImGuiLayer::OnEvent(Event& event)
+	void VulkanImGuiLayerH2M::OnEvent(EventH2M& event)
 	{
 	}
 
-	void VulkanImGuiLayer::OnRender()
+	void VulkanImGuiLayerH2M::OnRender()
 	{
 	}
 
-	void VulkanImGuiLayer::OnImGuiRender()
+	void VulkanImGuiLayerH2M::OnImGuiRender()
 	{
 	}
 

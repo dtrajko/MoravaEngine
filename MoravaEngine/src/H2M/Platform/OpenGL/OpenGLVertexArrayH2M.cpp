@@ -70,14 +70,14 @@ namespace H2M
 		});
 	}
 
-	void OpenGLVertexArrayH2M::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+	void OpenGLVertexArrayH2M::AddVertexBuffer(const RefH2M<VertexBufferH2M>& vertexBuffer)
 	{
-		HZ_CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
+		H2M_CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!");
 
 		Bind();
 		vertexBuffer->Bind();
 
-		Ref<OpenGLVertexArray> instance = this;
+		RefH2M<OpenGLVertexArrayH2M> instance = this;
 		RendererH2M::Submit([instance, vertexBuffer]() mutable {
 			const auto& layout = vertexBuffer->GetLayout();
 			for (const auto& element : layout)

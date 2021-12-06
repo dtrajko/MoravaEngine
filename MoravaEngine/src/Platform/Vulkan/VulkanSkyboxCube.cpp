@@ -71,8 +71,8 @@ VulkanSkyboxCube::VulkanSkyboxCube()
 		20, 21, 23, // bottom
 	};
 
-	m_VertexBuffer = H2M::VertexBuffer::Create(vertices.data(), (uint32_t)vertices.size() * sizeof(VertexSkyboxCube));
-	m_IndexBuffer = H2M::IndexBuffer::Create(indices.data(), (uint32_t)indices.size() * sizeof(uint32_t));
+	m_VertexBuffer = H2M::VertexBufferH2M::Create(vertices.data(), (uint32_t)vertices.size() * sizeof(VertexSkyboxCube));
+	m_IndexBuffer = H2M::IndexBufferH2M::Create(indices.data(), (uint32_t)indices.size() * sizeof(uint32_t));
 
 	m_IndexCount = (uint32_t)indices.size();
 }

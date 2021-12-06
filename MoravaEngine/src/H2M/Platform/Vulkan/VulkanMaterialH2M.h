@@ -30,10 +30,10 @@ namespace H2M
 		virtual void Set(const std::string& name, const glm::mat3& value) override;
 		virtual void Set(const std::string& name, const glm::mat4& value) override;
 
-		virtual void Set(const std::string& name, const RefH2M<HazelTexture2D>& texture) override;
-		virtual void Set(const std::string& name, const RefH2M<HazelTexture2D>& texture, uint32_t arrayIndex) override;
-		virtual void Set(const std::string& name, const RefH2M<HazelTextureCube>& texture) override;
-		virtual void Set(const std::string& name, const RefH2M<HazelImage2D>& image) override;
+		virtual void Set(const std::string& name, const RefH2M<Texture2D_H2M>& texture) override;
+		virtual void Set(const std::string& name, const RefH2M<Texture2D_H2M>& texture, uint32_t arrayIndex) override;
+		virtual void Set(const std::string& name, const RefH2M<TextureCubeH2M>& texture) override;
+		virtual void Set(const std::string& name, const RefH2M<Image2D_H2M>& image) override;
 
 		virtual float& GetFloat(const std::string& name) override;
 		virtual int32_t& GetInt(const std::string& name) override;
@@ -45,11 +45,11 @@ namespace H2M
 		virtual glm::mat3& GetMatrix3(const std::string& name) override;
 		virtual glm::mat4& GetMatrix4(const std::string& name) override;
 
-		virtual RefH2M<HazelTexture2D> GetTexture2D(const std::string& name) override;
-		virtual RefH2M<HazelTextureCube> GetTextureCube(const std::string& name) override;
+		virtual RefH2M<Texture2D_H2M> GetTexture2D(const std::string& name) override;
+		virtual RefH2M<TextureCubeH2M> GetTextureCube(const std::string& name) override;
 
-		virtual RefH2M<HazelTexture2D> TryGetTexture2D(const std::string& name) override;
-		virtual RefH2M<HazelTextureCube> TryGetTextureCube(const std::string& name) override;
+		virtual RefH2M<Texture2D_H2M> TryGetTexture2D(const std::string& name) override;
+		virtual RefH2M<TextureCubeH2M> TryGetTextureCube(const std::string& name) override;
 
 		template <typename T>
 		void Set(const std::string& name, const T& value)
@@ -129,8 +129,8 @@ namespace H2M
 		}
 
 		virtual uint32_t GetFlags() const override { return m_MaterialFlags; }
-		virtual bool GetFlag(HazelMaterialFlag flag) const override { return (uint32_t)flag & m_MaterialFlags; }
-		virtual void SetFlag(HazelMaterialFlag flag, bool value = true) override
+		virtual bool GetFlag(MaterialFlagH2M flag) const override { return (uint32_t)flag & m_MaterialFlags; }
+		virtual void SetFlag(MaterialFlagH2M flag, bool value = true) override
 		{
 			if (value)
 			{
@@ -142,29 +142,29 @@ namespace H2M
 			}
 		}
 
-		virtual RefH2M<HazelShader> GetShader() override { return m_Shader; }
+		virtual RefH2M<ShaderH2M> GetShader() override { return m_Shader; }
 		virtual const std::string& GetName() const override { return m_Name; }
 
-		Buffer GetUniformStorageBuffer() { return m_UniformStorageBuffer; }
+		BufferH2M GetUniformStorageBuffer() { return m_UniformStorageBuffer; }
 
 		void UpdateForRendering();
 		void InvalidateDescriptorSets();
 
-		const VulkanShader::ShaderMaterialDescriptorSet& GetDescriptorSet() { return m_DescriptorSet; }
+		const VulkanShaderH2M::ShaderMaterialDescriptorSet& GetDescriptorSet() { return m_DescriptorSet; }
 
 	private:
 		void Init();
 		void AllocateStorage();
 		void OnShaderReloaded();
 
-		void SetVulkanDescriptor(const std::string& name, const RefH2M<HazelTexture2D>& texture);
-		void SetVulkanDescriptor(const std::string& name, const RefH2M<HazelTexture2D>& texture, uint32_t arrayIndex);
-		void SetVulkanDescriptor(const std::string& name, const RefH2M<HazelTextureCube>& texture);
-		void SetVulkanDescriptor(const std::string& name, const RefH2M<HazelImage2D>& image);
+		void SetVulkanDescriptor(const std::string& name, const RefH2M<Texture2D_H2M>& texture);
+		void SetVulkanDescriptor(const std::string& name, const RefH2M<Texture2D_H2M>& texture, uint32_t arrayIndex);
+		void SetVulkanDescriptor(const std::string& name, const RefH2M<TextureCubeH2M>& texture);
+		void SetVulkanDescriptor(const std::string& name, const RefH2M<Image2D_H2M>& image);
 		void SetVulkanDescriptor(const std::string& name, const VkDescriptorImageInfo& imageInfo);
 
-		const ShaderUniform* FindUniformDeclaration(const std::string& name);
-		const ShaderResourceDeclaration* FindResourceDeclaration(const std::string& name);
+		const ShaderUniformH2M* FindUniformDeclaration(const std::string& name);
+		const ShaderResourceDeclarationH2M* FindResourceDeclaration(const std::string& name);
 
 	private:
 		// RefH2M<HazelShader> m_Shader;
@@ -201,16 +201,16 @@ namespace H2M
 
 		uint32_t m_MaterialFlags = 0;
 
-		Buffer m_UniformStorageBuffer;
+		BufferH2M m_UniformStorageBuffer;
 		std::vector<RefH2M<TextureH2M>> m_Textures; // TODO: Texture should only be stored as images
 		std::vector<std::vector<RefH2M<TextureH2M>>> m_TextureArrays;
 		std::vector<RefH2M<ImageH2M>> m_Images;
 
-		VulkanShader::ShaderMaterialDescriptorSet m_DescriptorSets[3];
+		VulkanShaderH2M::ShaderMaterialDescriptorSet m_DescriptorSets[3];
 
 		std::unordered_map<uint32_t, uint64_t> m_ImageHashes;
 
-		VulkanShader::ShaderMaterialDescriptorSet m_DescriptorSet;
+		VulkanShaderH2M::ShaderMaterialDescriptorSet m_DescriptorSet;
 
 		std::vector<VkWriteDescriptorSet> m_WriteDescriptors;
 		std::vector<bool> m_DirtyDescriptorSets;

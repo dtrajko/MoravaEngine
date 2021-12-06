@@ -28,8 +28,8 @@ namespace H2M
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(WindowResize);
-		EVENT_CLASS_CATEGORY(EventCategoryApplication);
+		EVENT_CLASS_TYPE_H2M(WindowResize);
+		EVENT_CLASS_CATEGORY_H2M(EventCategoryApplication);
 	private:
 		unsigned int m_Width, m_Height;
 	};
@@ -42,8 +42,8 @@ namespace H2M
 
 		}
 
-		EVENT_CLASS_TYPE(WindowClose);
-		EVENT_CLASS_CATEGORY(EventCategoryApplication);
+		EVENT_CLASS_TYPE_H2M(WindowClose);
+		EVENT_CLASS_CATEGORY_H2M(EventCategoryApplication);
 	};
 
 
@@ -52,8 +52,8 @@ namespace H2M
 	public:
 		AppTickEventH2M() {}
 
-		EVENT_CLASS_TYPE(AppTick);
-		EVENT_CLASS_CATEGORY(EventCategoryApplication);
+		EVENT_CLASS_TYPE_H2M(AppTick);
+		EVENT_CLASS_CATEGORY_H2M(EventCategoryApplication);
 	};
 
 	class AppUpdateEventH2M : public EventH2M
@@ -61,8 +61,8 @@ namespace H2M
 	public:
 		AppUpdateEventH2M() {}
 
-		EVENT_CLASS_TYPE(AppUpdate);
-		EVENT_CLASS_CATEGORY(EventCategoryApplication);
+		EVENT_CLASS_TYPE_H2M(AppUpdate);
+		EVENT_CLASS_CATEGORY_H2M(EventCategoryApplication);
 	};
 
 	class AppRenderEventH2M : public EventH2M
@@ -70,8 +70,8 @@ namespace H2M
 	public:
 		AppRenderEventH2M() {}
 
-		EVENT_CLASS_TYPE(AppRender);
-		EVENT_CLASS_CATEGORY(EventCategoryApplication);
+		EVENT_CLASS_TYPE_H2M(AppRender);
+		EVENT_CLASS_CATEGORY_H2M(EventCategoryApplication);
 	};
 
 }

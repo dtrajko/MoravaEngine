@@ -20,7 +20,7 @@ namespace H2M
 	public:
 		inline int GetKeyCode() const { return m_KeyCode; }
 
-		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
+		EVENT_CLASS_CATEGORY_H2M(EventCategoryKeyboard | EventCategoryInput)
 	protected:
 		KeyEventH2M(int keycode)
 			: m_KeyCode(keycode) {}
@@ -43,7 +43,7 @@ namespace H2M
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(KeyPressed)
+		EVENT_CLASS_TYPE_H2M(KeyPressed)
 	private:
 		int m_RepeatCount;
 	};
@@ -61,7 +61,7 @@ namespace H2M
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(KeyReleased)
+		EVENT_CLASS_TYPE_H2M(KeyReleased)
 	};
 
 	class KeyTypedEventH2M : public KeyEventH2M
@@ -77,7 +77,7 @@ namespace H2M
 			return ss.str();
 		}
 
-		EVENT_CLASS_TYPE(KeyTyped)
+		EVENT_CLASS_TYPE_H2M(KeyTyped)
 	};
 
 }

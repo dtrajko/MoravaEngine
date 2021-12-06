@@ -43,11 +43,11 @@ namespace H2M
 		EventCategoryMouseButton = BIT(4)
 	};
 
-#define EVENT_CLASS_TYPE(type) static EventTypeH2M GetStaticType() { return EventTypeH2M::type; }\
+#define EVENT_CLASS_TYPE_H2M(type) static EventTypeH2M GetStaticType() { return EventTypeH2M::type; }\
 							virtual EventTypeH2M GetEventType() const override { return GetStaticType(); }\
 							virtual const char* GetName() const override { return #type; }
 
-#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
+#define EVENT_CLASS_CATEGORY_H2M(category) virtual int GetCategoryFlags() const override { return category; }
 
 	/**
 	 * Event - the base class for events

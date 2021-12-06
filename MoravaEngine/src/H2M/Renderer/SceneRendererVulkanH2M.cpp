@@ -94,7 +94,7 @@ namespace H2M {
 		/****
 		s_Data.GeoPass = RenderPass::Create(geoRenderPassSpec);
 
-		HazelFramebufferSpecification compFramebufferSpec = {};
+		FramebufferSpecificationH2M compFramebufferSpec = {};
 		compFramebufferSpec.Width = 1280;
 		compFramebufferSpec.Height = 720;
 		compFramebufferSpec.Format = FramebufferFormat::RGBA8;
@@ -153,7 +153,7 @@ namespace H2M {
 
 		// Geometry pipeline
 		{
-			HazelFramebufferSpecification spec = {};;
+			FramebufferSpecificationH2M spec = {};;
 			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
 
 			PipelineSpecification pipelineSpecification = {};
@@ -175,7 +175,7 @@ namespace H2M {
 
 		// Composite pipeline
 		{
-			HazelFramebufferSpecification spec = {};;
+			FramebufferSpecificationH2M spec = {};;
 			Ref<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
 			framebuffer->AddResizeCallback([](Ref<HazelFramebuffer> framebuffer)
 			{

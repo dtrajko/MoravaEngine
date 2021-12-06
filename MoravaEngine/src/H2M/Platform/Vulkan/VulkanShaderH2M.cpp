@@ -1,12 +1,16 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "VulkanShaderH2M.h"
 
 #include "H2M/Core/AssertH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Platform/Vulkan/VulkanTextureH2M.h"
-#include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
-#include "H2M/Platform/Vulkan/VulkanAllocatorH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
-#include "H2M/Renderer/ShaderCacheH2M.h"
 
 #include "Core/Log.h"
 
@@ -16,57 +20,34 @@
 #include <filesystem>
 
 
-namespace H2M {
+namespace H2M
+{
 
-	namespace Utils {
-
-		static const char* GetCacheDirectory()
+	static ShaderUniformTypeH2M SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
+	{
+		switch (type.basetype)
 		{
-			// TODO: make sure the assets directory is valid
-			return "Resources/Cache/Shader/Vulkan";
-		}
-
-		static void CreateCacheDirectoryIfNeeded()
-		{
-			std::string cacheDirectory = GetCacheDirectory();
-			if (!std::filesystem::exists(cacheDirectory))
-				std::filesystem::create_directories(cacheDirectory);
-		}
-
-		static ShaderUniformType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
-		{
-			switch (type.basetype)
-			{
-			case spirv_cross::SPIRType::Boolean:  return ShaderUniformType::Bool;
-			case spirv_cross::SPIRType::Int:
-				if (type.vecsize == 1)            return ShaderUniformType::Int;
-				if (type.vecsize == 2)            return ShaderUniformType::IVec2;
-				if (type.vecsize == 3)            return ShaderUniformType::IVec3;
-				if (type.vecsize == 4)            return ShaderUniformType::IVec4;
-
-			case spirv_cross::SPIRType::UInt:     return ShaderUniformType::UInt;
+			case spirv_cross::SPIRType::Boolean:  return ShaderUniformTypeH2M::Bool;
+			case spirv_cross::SPIRType::Int:      return ShaderUniformTypeH2M::Int;
 			case spirv_cross::SPIRType::Float:
-				if (type.columns == 3)            return ShaderUniformType::Mat3;
-				if (type.columns == 4)            return ShaderUniformType::Mat4;
+				if (type.vecsize == 1)            return ShaderUniformTypeH2M::Float;
+				if (type.vecsize == 2)            return ShaderUniformTypeH2M::Vec2;
+				if (type.vecsize == 3)            return ShaderUniformTypeH2M::Vec3;
+				if (type.vecsize == 4)            return ShaderUniformTypeH2M::Vec4;
 
-				if (type.vecsize == 1)            return ShaderUniformType::Float;
-				if (type.vecsize == 2)            return ShaderUniformType::Vec2;
-				if (type.vecsize == 3)            return ShaderUniformType::Vec3;
-				if (type.vecsize == 4)            return ShaderUniformType::Vec4;
+				if (type.columns == 3)            return ShaderUniformTypeH2M::Mat3;
+				if (type.columns == 4)            return ShaderUniformTypeH2M::Mat4;
 				break;
-			}
-			H2M_CORE_ASSERT(false, "Unknown type!");
-			return ShaderUniformType::None;
 		}
-
+		H2M_CORE_ASSERT(false, "Unknown type!");
+		return ShaderUniformTypeH2M::None;
 	}
 
-	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderH2M::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
-	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderH2M::StorageBuffer*>> s_StorageBuffers; // set -> binding point -> buffer
+	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderH2M::UniformBufferH2M*>> s_UniformBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
-	// RefH2M<H2M::Texture2D_H2M> VulkanShaderH2M::s_AlbedoTexture;
-	// RefH2M<H2M::Texture2D_H2M> VulkanShaderH2M::s_NormalTexture;
+	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShaderH2M::s_AlbedoTexture;
+	// Hazel::Ref<Hazel::HazelTexture2D> VulkanShaderH2M::s_NormalTexture;
 
 	VulkanShaderH2M::VulkanShaderH2M(const std::string& path, bool forceCompile)
 		: m_AssetPath(path)
@@ -77,18 +58,10 @@ namespace H2M {
 		found = m_Name.find_last_of(".");
 		m_Name = found != std::string::npos ? m_Name.substr(0, found) : m_Name;
 
-		Reload(forceCompile);
+		Reload();
 	}
 
-	VulkanShaderH2M::~VulkanShaderH2M()
-	{
-	}
-
-	void VulkanShaderH2M::ClearUniformBuffers()
-	{
-		s_UniformBuffers.clear();
-		s_StorageBuffers.clear();
-	}
+	VulkanShaderH2M::~VulkanShaderH2M() {}
 
 	static std::string ReadShaderFromFile(const std::string& filepath)
 	{
@@ -103,7 +76,7 @@ namespace H2M {
 		}
 		else
 		{
-			HZ_CORE_VERIFY(false, "Could not load shader!");
+			H2M_CORE_ASSERT(false, "Could not load shader!");
 		}
 		in.close();
 		return result;
@@ -111,45 +84,25 @@ namespace H2M {
 
 	void VulkanShaderH2M::Reload(bool forceCompile)
 	{
-		// RefH2M<VulkanShaderH2M> instance = this;
-		// HazelRenderer::Submit([instance, forceCompile]() mutable {});
+		// Ref<VulkanShader> instance = this;
+		// HazelRenderer::Submit([instance]() mutable
+		// {
+		// });
 		{
-			// Clear old shader
-			m_ShaderDescriptorSets.clear();
-			m_Resources.clear();
-			m_PushConstantRanges.clear();
-			m_PipelineShaderStageCreateInfos.clear();
-			m_DescriptorSetLayouts.clear();
-			m_ShaderSource.clear();
-			m_Buffers.clear();
-			m_TypeCounts.clear();
-
-
-			Utils::CreateCacheDirectoryIfNeeded();
-
 			// Vertex and Fragment for now
 			std::string source = ReadShaderFromFile(m_AssetPath);
-			forceCompile = ShaderCache::HasChanged(m_AssetPath, source);
-
 			m_ShaderSource = PreProcess(source);
 			std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
 			CompileOrGetVulkanBinary(shaderData, forceCompile);
 			LoadAndCreateShaders(shaderData);
 			ReflectAllShaderStages(shaderData);
 			CreateDescriptors();
-
-			HazelRenderer::OnShaderReloaded(GetHash());
 		}
-	}
-
-	size_t VulkanShaderH2M::GetHash() const
-	{
-		return std::hash<std::string>{}(m_AssetPath);
 	}
 
 	void VulkanShaderH2M::LoadAndCreateShaders(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		m_PipelineShaderStageCreateInfos.clear();
 
@@ -176,8 +129,6 @@ namespace H2M {
 
 	void VulkanShaderH2M::ReflectAllShaderStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
 	{
-		m_Resources.clear();
-
 		for (auto [stage, data] : shaderData)
 		{
 			Reflect(stage, data);
@@ -186,7 +137,7 @@ namespace H2M {
 
 	void VulkanShaderH2M::Reflect(VkShaderStageFlagBits shaderStage, const std::vector<uint32_t>& shaderData)
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		std::string shaderStageName = "UNKNOWN";
 		switch (shaderStage)
@@ -215,11 +166,11 @@ namespace H2M {
 			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
-			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			ShaderDescriptorSetH2M& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
 			H2M_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end());
 
 			// UniformBuffer& buffer = shaderDescriptorSet.UniformBuffers[bindingPoint];
-			UniformBuffer& buffer = shaderDescriptorSet.UniformBuffers[binding];
+			UniformBufferH2M& buffer = shaderDescriptorSet.UniformBuffers[binding];
 			// UniformBuffer buffer;
 			buffer.BindingPoint = binding;
 			buffer.DescriptorSet = descriptorSet;
@@ -239,53 +190,14 @@ namespace H2M {
 			MORAVA_CORE_TRACE("--------------------------");
 		}
 
-		MORAVA_CORE_TRACE("Storage Buffers:");
-		for (const auto& resource : resources.storage_buffers)
-		{
-			const auto& name = resource.name;
-			auto& bufferType = compiler.get_type(resource.base_type_id);
-			uint32_t memberCount = (uint32_t)bufferType.member_types.size();
-			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
-			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-			uint32_t size = (uint32_t)compiler.get_declared_struct_size(bufferType);
-
-			if (descriptorSet >= m_ShaderDescriptorSets.size())
-			{
-				// m_ShaderDescriptorSets.resize(descriptorSet + 1);
-			}
-
-			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
-			if (s_StorageBuffers[descriptorSet].find(binding) == s_StorageBuffers[descriptorSet].end())
-			{
-				StorageBuffer* storageBuffer = new StorageBuffer();
-				storageBuffer->BindingPoint = binding;
-				storageBuffer->Size = size;
-				storageBuffer->Name = name;
-				storageBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
-				s_StorageBuffers.at(descriptorSet)[binding] = storageBuffer;
-			}
-			else
-			{
-				StorageBuffer* storageBuffer = s_StorageBuffers.at(descriptorSet).at(binding);
-				if (size > storageBuffer->Size)
-					storageBuffer->Size = size;
-			}
-
-			shaderDescriptorSet.StorageBuffers[binding] = *s_StorageBuffers.at(descriptorSet).at(binding);
-
-			MORAVA_CORE_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
-			MORAVA_CORE_TRACE("  Member Count: {0}", memberCount);
-			MORAVA_CORE_TRACE("  Size: {0}", size);
-			MORAVA_CORE_TRACE("-------------------");
-		}
-
 		MORAVA_CORE_TRACE("Push Constant Buffers:");
 		for (const auto& resource : resources.push_constant_buffers)
 		{
 			const auto& bufferName = resource.name;
 			auto& bufferType = compiler.get_type(resource.base_type_id);
-			auto bufferSize = (uint32_t)compiler.get_declared_struct_size(bufferType);
-			uint32_t memberCount = uint32_t(bufferType.member_types.size());
+			auto bufferSize = compiler.get_declared_struct_size(bufferType);
+			int memberCount = static_cast<int>(bufferType.member_types.size());
+
 			uint32_t bufferOffset = 0;
 			if (m_PushConstantRanges.size())
 			{
@@ -294,18 +206,18 @@ namespace H2M {
 
 			auto& pushConstantRange = m_PushConstantRanges.emplace_back();
 			pushConstantRange.ShaderStage = shaderStage;
-			pushConstantRange.Size = bufferSize - bufferOffset;
+			pushConstantRange.Size = static_cast<uint32_t>(bufferSize);
 			pushConstantRange.Offset = bufferOffset;
 
 			// Skip empty push constant buffers - these are for the renderer only
-			if (bufferName.empty() || bufferName == "u_Renderer")
+			if (bufferName.empty())
 			{
 				continue;
 			}
 
-			ShaderBuffer& buffer = m_Buffers[bufferName];
+			ShaderBufferH2M& buffer = m_Buffers[bufferName];
 			buffer.Name = bufferName;
-			buffer.Size = bufferSize - bufferOffset;
+			buffer.Size = static_cast<uint32_t>(bufferSize - bufferOffset);
 
 			// MORAVA_CORE_TRACE("    {0} ({1}, {2})", name, descriptorSet, binding);
 
@@ -315,15 +227,15 @@ namespace H2M {
 			MORAVA_CORE_TRACE("  Buffer size: {0}", bufferSize);
 			MORAVA_CORE_TRACE("--------------------------");
 
-			for (uint32_t i = 0; i < memberCount; i++)
+			for (int i = 0; i < memberCount; i++)
 			{
 				auto type = compiler.get_type(bufferType.member_types[i]);
 				const auto& memberName = compiler.get_member_name(bufferType.self, i);
-				auto size = (uint32_t)compiler.get_declared_struct_member_size(bufferType, i);
+				auto size = compiler.get_declared_struct_member_size(bufferType, i);
 				auto offset = compiler.type_struct_member_offset(bufferType, i) - bufferOffset;
 
-				std::string uniformName = fmt::format("{}.{}", bufferName, memberName);
-				buffer.Uniforms[uniformName] = ShaderUniform(uniformName, Utils::SPIRTypeToShaderUniformType(type), size, offset);
+				std::string uniformName = bufferName + "." + memberName;
+				buffer.Uniforms[uniformName] = ShaderUniformH2M(uniformName, SPIRTypeToShaderUniformType(type), static_cast<uint32_t>(size), offset);
 			}
 		}
 
@@ -331,31 +243,21 @@ namespace H2M {
 		for (const auto& resource : resources.sampled_images)
 		{
 			const auto& name = resource.name;
-			auto& baseType = compiler.get_type(resource.base_type_id);
-			auto& type = compiler.get_type(resource.type_id);
+			auto& type = compiler.get_type(resource.base_type_id);
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
-			uint32_t dimension = baseType.image.dim;
-			uint32_t arraySize = type.array[0];
-			if (arraySize == 0)
-				arraySize = 1;
-			if (descriptorSet >= m_ShaderDescriptorSets.size())
-			{
-				// m_ShaderDescriptorSets.resize(descriptorSet + 1);
-			}
+			uint32_t dimension = type.image.dim;
 
-			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			ShaderDescriptorSetH2M& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
 			H2M_CORE_ASSERT(shaderDescriptorSet.ImageSamplers.find(binding) == shaderDescriptorSet.ImageSamplers.end());
-			// ImageSampler imageSampler;
+
 			auto& imageSampler = shaderDescriptorSet.ImageSamplers[binding];
+			// ImageSampler imageSampler;
 			imageSampler.BindingPoint = binding;
 			imageSampler.DescriptorSet = descriptorSet;
 			imageSampler.Name = name;
 			imageSampler.ShaderStage = shaderStage;
 			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
-			imageSampler.ArraySize = arraySize;
-
-			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
 
 			MORAVA_CORE_TRACE("    {0} ({1}, {2})", name, descriptorSet, binding);
 
@@ -376,14 +278,11 @@ namespace H2M {
 			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 			uint32_t dimension = type.image.dim;
 
-			if (descriptorSet >= m_ShaderDescriptorSets.size())
-			{
-				// m_ShaderDescriptorSets.resize(descriptorSet + 1);
-			}
+			ShaderDescriptorSetH2M& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			H2M_CORE_ASSERT(shaderDescriptorSet.StorageImages.find(binding) == shaderDescriptorSet.StorageImages.end());
 
-			ShaderDescriptorSet& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
-			// ImageSampler imageSampler;
 			auto& imageSampler = shaderDescriptorSet.StorageImages[binding];
+			// ImageSampler imageSampler;
 			imageSampler.BindingPoint = binding;
 			imageSampler.DescriptorSet = descriptorSet;
 			imageSampler.Name = name;
@@ -405,7 +304,7 @@ namespace H2M {
 
 	void VulkanShaderH2M::CreateDescriptors()
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		//////////////////////////////////////////////////////////////////////
 		// Descriptor Pool
@@ -413,10 +312,9 @@ namespace H2M {
 
 		// We need to tell the API the number of max. requested descriptors per type
 		m_TypeCounts.clear();
-		for (uint32_t set = 0; set < m_ShaderDescriptorSets.size(); set++)
+		for (auto&& [set, shaderDescriptorSet] : m_ShaderDescriptorSets)
 		{
-			auto& shaderDescriptorSet = m_ShaderDescriptorSets[set];
-
+			// m_TypeCounts.insert(std::make_pair(0, std::vector<VkDescriptorPoolSize>()));
 			if (shaderDescriptorSet.UniformBuffers.size())
 			{
 				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
@@ -536,11 +434,11 @@ namespace H2M {
 		}
 	}
 
-	void VulkanShaderH2M::AllocateUniformBuffer(UniformBuffer& dst)
+	void VulkanShaderH2M::AllocateUniformBuffer(UniformBufferH2M& dst)
 	{
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
-		UniformBuffer& uniformBuffer = dst;
+		UniformBufferH2M& uniformBuffer = dst;
 
 		// Prepare and initialize an uniform buffer block containing shader uniforms
 		// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
@@ -586,7 +484,7 @@ namespace H2M {
 	{
 		ShaderMaterialDescriptorSet result;
 
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		H2M_CORE_ASSERT(m_TypeCounts.find(set) != m_TypeCounts.end());
 
@@ -616,7 +514,7 @@ namespace H2M {
 	{
 		ShaderMaterialDescriptorSet result{};
 
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		std::unordered_map<uint32_t, std::vector<VkDescriptorPoolSize>> poolSizes;
 		for (auto&& [set, shaderDescriptorSet] : m_ShaderDescriptorSets)
@@ -625,13 +523,7 @@ namespace H2M {
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.UniformBuffers.size() * numberOfSets;
-			}
-			if (shaderDescriptorSet.StorageBuffers.size())
-			{
-				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
-				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.StorageBuffers.size() * numberOfSets;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.UniformBuffers.size()) * numberOfSets;
 			}
 			if (shaderDescriptorSet.ImageSamplers.size())
 			{
@@ -643,7 +535,7 @@ namespace H2M {
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				typeCount.descriptorCount = (uint32_t)shaderDescriptorSet.StorageImages.size() * numberOfSets;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.StorageImages.size()) * numberOfSets;
 			}
 
 		}
@@ -679,73 +571,9 @@ namespace H2M {
 		return result;
 	}
 
-	VulkanShaderH2M::ShaderMaterialDescriptorSet VulkanShaderH2M::AllocateDescriptorSet(uint32_t set)
-	{
-		H2M_CORE_ASSERT(set < m_DescriptorSetLayouts.size());
-		ShaderMaterialDescriptorSet result;
-
-		if (m_ShaderDescriptorSets.empty())
-			return result;
-
-#if 0
-		if (!m_DescriptorPool)
-		{
-			std::vector<VkDescriptorPoolSize> poolSizes;
-			for (uint32_t set = 0; set < m_ShaderDescriptorSets.size(); set++)
-			{
-				auto& shaderDescriptorSet = m_ShaderDescriptorSets[set];
-				if (!shaderDescriptorSet) // Empty descriptor set
-					continue;
-
-				if (shaderDescriptorSet.UniformBuffers.size())
-				{
-					VkDescriptorPoolSize& typeCount = poolSizes.emplace_back();
-					typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-					typeCount.descriptorCount = shaderDescriptorSet.UniformBuffers.size();
-				}
-				if (shaderDescriptorSet.ImageSamplers.size())
-				{
-					VkDescriptorPoolSize& typeCount = poolSizes.emplace_back();
-					typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-					typeCount.descriptorCount = shaderDescriptorSet.ImageSamplers.size();
-				}
-				if (shaderDescriptorSet.StorageImages.size())
-				{
-					VkDescriptorPoolSize& typeCount = poolSizes.emplace_back();
-					typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-					typeCount.descriptorCount = shaderDescriptorSet.StorageImages.size();
-				}
-			}
-
-			VkDescriptorPoolCreateInfo descriptorPoolInfo = {};
-			descriptorPoolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			descriptorPoolInfo.pNext = nullptr;
-			descriptorPoolInfo.poolSizeCount = poolSizes.size();
-			descriptorPoolInfo.pPoolSizes = poolSizes.data();
-			descriptorPoolInfo.maxSets = m_ShaderDescriptorSets.size() * 1000;
-
-			VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
-		}
-#endif
-
-		// TODO: remove
-		result.Pool = nullptr;
-
-
-		VkDescriptorSetAllocateInfo allocInfo = {};
-		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfo.descriptorSetCount = 1;
-		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
-		VkDescriptorSet descriptorSet = VulkanRenderer::RT_AllocateDescriptorSet(allocInfo);
-		H2M_CORE_ASSERT(descriptorSet);
-		result.DescriptorSets.push_back(descriptorSet);
-		return result;
-	}
-
 	const VkWriteDescriptorSet* VulkanShaderH2M::GetDescriptorSet(const std::string& name, uint32_t set) const
 	{
-		H2M_CORE_ASSERT(set < m_ShaderDescriptorSets.size());
-		// H2M_CORE_ASSERT(m_ShaderDescriptorSets[set]);
+		H2M_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
 		if (m_ShaderDescriptorSets.at(set).WriteDescriptorSets.find(name) == m_ShaderDescriptorSets.at(set).WriteDescriptorSets.end())
 		{
 			// HZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
@@ -768,7 +596,7 @@ namespace H2M {
 		return result;
 	}
 
-	VulkanShaderH2M::UniformBuffer& VulkanShaderH2M::GetUniformBuffer(uint32_t binding, uint32_t set)
+	VulkanShaderH2M::UniformBufferH2M& VulkanShaderH2M::GetUniformBuffer(uint32_t binding, uint32_t set)
 	{
 		H2M_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
 		return m_ShaderDescriptorSets.at(set).UniformBuffers[binding];
@@ -782,8 +610,8 @@ namespace H2M {
 		case VK_SHADER_STAGE_FRAGMENT_BIT: return ".cached_vulkan.frag";
 		case VK_SHADER_STAGE_COMPUTE_BIT:  return ".cached_vulkan.comp";
 		}
-		H2M_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");
 		Log::GetLogger()->error("Invalid VkShaderStageFlagBits value '{0}'!", stage);
+		H2M_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");
 		return "";
 	}
 
@@ -847,7 +675,7 @@ namespace H2M {
 
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{
-						HZ_CORE_ERROR(module.GetErrorMessage());
+						H2M_CORE_ERROR(module.GetErrorMessage());
 						H2M_CORE_ASSERT(false);
 					}
 
@@ -905,6 +733,20 @@ namespace H2M {
 		return shaderSources;
 	}
 
+	void VulkanShaderH2M::Bind() {}
+
+	RendererID_H2M VulkanShaderH2M::GetRendererID() const { return 0; }
+
+	void VulkanShaderH2M::ClearUniformBuffers()
+	{
+		s_UniformBuffers.clear();
+	}
+
+	size_t VulkanShaderH2M::GetHash() const
+	{
+		return std::hash<std::string>{}(m_AssetPath);
+	}
+
 	void VulkanShaderH2M::SetUniformBuffer(const std::string& name, const void* data, uint32_t size) {}
 
 	/****
@@ -953,11 +795,11 @@ namespace H2M {
 
 	void VulkanShaderH2M::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-	// const std::unordered_map<std::string, H2M::ShaderBuffer>& VulkanShaderH2M::GetShaderBuffers() const { return {}; }
+	// const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShaderH2M::GetShaderBuffers() const { return {}; }
 
-	const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& VulkanShaderH2M::GetResources() const
+	const std::unordered_map<std::string, ShaderResourceDeclarationH2M>& VulkanShaderH2M::GetResources() const
 	{
-		return m_Resources;
+		return {};
 	}
 
 	void VulkanShaderH2M::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
@@ -965,7 +807,7 @@ namespace H2M {
 	void* VulkanShaderH2M::MapUniformBuffer(uint32_t bindingPoint, uint32_t set)
 	{
 		H2M_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		uint8_t* pData;
 		VK_CHECK_RESULT(vkMapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory, 0, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Size, 0, (void**)&pData));
@@ -975,7 +817,7 @@ namespace H2M {
 	void VulkanShaderH2M::UnmapUniformBuffer(uint32_t bindingPoint, uint32_t set)
 	{
 		H2M_CORE_ASSERT(m_ShaderDescriptorSets.find(set) != m_ShaderDescriptorSets.end());
-		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 		vkUnmapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory);
 	}
 

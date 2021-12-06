@@ -930,7 +930,7 @@ namespace H2M
 			// {
 			// });
 			{
-				// auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+				// auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 				// // MORAVA_CORE_WARN("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
 				// Log::GetLogger()->warn("Updating {0} descriptor sets", s_WriteDescriptorSets.size());
 				// vkUpdateDescriptorSets(vulkanDevice, static_cast<uint32_t>(s_WriteDescriptorSets.size()), s_WriteDescriptorSets.data(), 0, nullptr);
@@ -975,7 +975,7 @@ namespace H2M
 		// RefH2M<Mesh> instance = this;
 		// HazelRenderer::Submit([instance]() mutable {});
 		{
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 			for (MaterialDescriptor& md : m_MaterialDescriptors)
 			{
 				// HZ_CORE_WARN("Updating {0} descriptor sets", md.WriteDescriptors.size());
@@ -991,7 +991,7 @@ namespace H2M
 		// RefH2M<MeshH2M> instance = this;
 		// HazelRenderer::Submit([instance]() mutable {});
 		{
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 			for (MaterialDescriptor& md : m_MaterialDescriptors)
 			{
 				HZ_CORE_WARN("Updating {0} descriptor sets", md.WriteDescriptors.size());

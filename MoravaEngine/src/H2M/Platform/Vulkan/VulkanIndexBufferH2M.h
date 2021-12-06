@@ -6,6 +6,8 @@
 
 #include "H2M/Core/BufferH2M.h"
 
+#include "VulkanAllocatorH2M.h"
+
 
 namespace H2M
 {
@@ -15,7 +17,6 @@ namespace H2M
 	public:
 		VulkanIndexBufferH2M(uint32_t size);
 		VulkanIndexBufferH2M(void* data, uint32_t size = 0);
-		virtual ~VulkanIndexBufferH2M();
 
 		virtual void SetData(void* buffer, uint32_t size, uint32_t offset = 0) override;
 		virtual void Bind() const override;
@@ -28,11 +29,10 @@ namespace H2M
 		VkBuffer GetVulkanBuffer() { return m_VulkanBuffer; }
 	private:
 		uint32_t m_Size = 0;
-		Buffer m_LocalData;
+		BufferH2M m_LocalData;
 
 		VkBuffer m_VulkanBuffer;
 		VkDeviceMemory m_DeviceMemory;
-		VmaAllocation m_MemoryAllocation;
 	};
 
 }

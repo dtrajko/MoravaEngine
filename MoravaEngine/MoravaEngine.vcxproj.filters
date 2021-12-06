@@ -1362,6 +1362,12 @@
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLImGuiLayerH2M.cpp">
       <Filter>H2M\Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanImGuiLayerH2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\ShaderCacheH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2965,6 +2971,15 @@
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLImGuiLayerH2M.h">
       <Filter>H2M\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanImGuiLayerH2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Utilities\FileSystemH2M.h">
+      <Filter>H2M\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\ShaderCacheH2M.h">
+      <Filter>H2M\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

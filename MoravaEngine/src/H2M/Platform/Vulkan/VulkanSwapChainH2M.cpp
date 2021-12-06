@@ -544,7 +544,7 @@ namespace H2M
 
 	void VulkanSwapChainH2M::OnResize(uint32_t width, uint32_t height)
 	{
-		MORAVA_CORE_WARN("VulkanContext::OnResize");
+		MORAVA_CORE_WARN("VulkanContextH2M::OnResize");
 		auto device = m_Device->GetVulkanDevice();
 
 		vkDeviceWaitIdle(device);

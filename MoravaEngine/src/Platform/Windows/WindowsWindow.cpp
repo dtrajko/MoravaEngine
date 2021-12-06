@@ -87,7 +87,7 @@ void WindowsWindow::Init(const WindowProps& props)
 	RendererBasic::SetRendererContext(m_RendererContext);
 
 	// Ref<H2M::VulkanContext> context = m_RendererContext.As<H2M::VulkanContext>();
-	// m_SwapChain.Init(H2M::VulkanContext::GetInstance(), context->GetDevice());
+	// m_SwapChain.Init(H2M::VulkanContextH2M::GetInstance(), context->GetDevice());
 	// m_SwapChain.InitSurface(m_Window);
 
 	SetVSync(true);

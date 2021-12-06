@@ -181,7 +181,7 @@ namespace H2M {
 
 		/**** BEGIN the code that is not used anymore ****
 		RenderPassSpecification renderPassSpec;
-		HazelFramebufferSpecification framebufferSpec;
+		FramebufferSpecificationH2M framebufferSpec;
 		framebufferSpec.DebugName = "GeoPassFramebufferSpec";
 		framebufferSpec.Width = 1280;
 		framebufferSpec.Height = 720;
@@ -190,7 +190,7 @@ namespace H2M {
 
 		// Geometry pipeline
 		{
-			HazelFramebufferSpecification spec;
+			FramebufferSpecificationH2M spec;
 			RefH2M<HazelFramebuffer> framebuffer = HazelFramebuffer::Create(spec);
 
 			PipelineSpecification pipelineSpecification;

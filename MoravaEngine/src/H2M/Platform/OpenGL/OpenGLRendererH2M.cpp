@@ -52,23 +52,23 @@ namespace H2M
 			glClearColor(r, g, b, a);
 		}
 
-		static void DrawIndexed(uint32_t count, PrimitiveType type, bool depthTest)
+		static void DrawIndexed(uint32_t count, PrimitiveTypeH2M type, bool depthTest)
 		{
 			if (!depthTest)
 				glDisable(GL_DEPTH_TEST);
 
-			GLenum glPrimitiveType = 0;
+			GLenum glPrimitiveTypeH2M = 0;
 			switch (type)
 			{
-			case PrimitiveType::Triangles:
-				glPrimitiveType = GL_TRIANGLES;
+			case PrimitiveTypeH2M::Triangles:
+				glPrimitiveTypeH2M = GL_TRIANGLES;
 				break;
-			case PrimitiveType::Lines:
-				glPrimitiveType = GL_LINES;
+			case PrimitiveTypeH2M::Lines:
+				glPrimitiveTypeH2M = GL_LINES;
 				break;
 			}
 
-			glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
+			glDrawElements(glPrimitiveTypeH2M, count, GL_UNSIGNED_INT, nullptr);
 
 			if (!depthTest)
 				glEnable(GL_DEPTH_TEST);
@@ -100,7 +100,7 @@ namespace H2M
 		}
 	}
 
-	void OpenGLRenderer::Init()
+	void OpenGLRendererH2M::Init()
 	{
 		s_Data = new OpenGLRendererData();
 		auto& caps = s_Data->RenderCaps;
@@ -110,10 +110,10 @@ namespace H2M
 
 		Utils::DumpGPUInfo();
 
-		s_Data->m_ShaderLibrary = RefH2M<HazelShaderLibrary>::Create();
-		// OPENGL ONLY - HazelRenderer::Submit([]() { RendererAPI::Init(); });
+		s_Data->m_ShaderLibrary = RefH2M<ShaderLibraryH2M>::Create();
+		// OPENGL ONLY - RendererH2M::Submit([]() { RendererAPI::Init(); });
 
-		SceneRenderer::Init();
+		SceneRendererH2M::Init();
 
 		// Create fullscreen quad
 		float x = -1;
@@ -139,40 +139,40 @@ namespace H2M
 		data[3].Position = glm::vec3(x, y + height, 0.1f);
 		data[3].TexCoord = glm::vec2(0, 1);
 
-		PipelineSpecification pipelineSpecification;
+		PipelineSpecificationH2M pipelineSpecification;
 		pipelineSpecification.Layout = {
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float2, "a_TexCoord" }
+			{ ShaderDataTypeH2M::Float3, "a_Position" },
+			{ ShaderDataTypeH2M::Float2, "a_TexCoord" }
 		};
 
 		// Missing pipelineSpecification.Shader
 		// s_Data->m_FullscreenQuadPipeline = Pipeline::Create(pipelineSpecification);
 
-		s_Data->m_FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
+		s_Data->m_FullscreenQuadVertexBuffer = VertexBufferH2M::Create(data, 4 * sizeof(QuadVertex));
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
-		s_Data->m_FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+		s_Data->m_FullscreenQuadIndexBuffer = IndexBufferH2M::Create(indices, 6 * sizeof(uint32_t));
 
-		s_Data->BRDFLut = HazelTexture2D::Create("assets/textures/BRDF_LUT.tga");
+		s_Data->BRDFLut = Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga");
 
 		// Renderer2D::Init();
 	}
 
-	void OpenGLRenderer::Shutdown()
+	void OpenGLRendererH2M::Shutdown()
 	{
 		delete s_Data;
 	}
 
-	void OpenGLRenderer::BeginFrame()
+	void OpenGLRendererH2M::BeginFrame()
 	{
 	}
 
-	void OpenGLRenderer::EndFrame()
+	void OpenGLRendererH2M::EndFrame()
 	{
 	}
 
-	void OpenGLRenderer::BeginRenderPass(const RefH2M<RenderPass>& renderPass)
+	void OpenGLRendererH2M::BeginRenderPass(const RefH2M<RenderPassH2M>& renderPass)
 	{
-		HZ_CORE_ASSERT(renderPass, "Render pass cannot be null!");
+		H2M_CORE_ASSERT(renderPass, "Render pass cannot be null!");
 
 		// TODO: Convert all of this into a render command buffer
 		s_Data->ActiveRenderPass = renderPass;
@@ -184,102 +184,102 @@ namespace H2M
 		if (clear)
 		{
 			const glm::vec4& clearColor = renderPass->GetSpecification().TargetFramebuffer->GetSpecification().ClearColor;
-			// HazelRenderer::Submit([=]() {});
+			// RendererH2M::Submit([=]() {});
 			{
 				Utils::Clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 			}
 		}
 	}
 
-	void OpenGLRenderer::EndRenderPass()
+	void OpenGLRendererH2M::EndRenderPass()
 	{
-		HZ_CORE_ASSERT(s_Data->ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
+		H2M_CORE_ASSERT(s_Data->ActiveRenderPass, "No active render pass! Have you called Renderer::EndRenderPass twice?");
 		s_Data->ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
 		s_Data->ActiveRenderPass = nullptr;
 	}
 
-	void OpenGLRenderer::SubmitFullscreenQuad(RefH2M<Pipeline> pipeline, RefH2M<MaterialH2M> material)
+	void OpenGLRendererH2M::SubmitFullscreenQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material)
 	{
 		bool depthTest = true;
 		if (material)
 		{
 			material->Bind();
-			depthTest = material->GetFlag(HazelMaterialFlag::DepthTest);
+			depthTest = material->GetFlag(MaterialFlagH2M::DepthTest);
 		}
 
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
 		s_Data->m_FullscreenQuadPipeline->Bind();
 		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 
-		HazelRenderer::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
+		RendererH2M::DrawIndexed(6, PrimitiveTypeH2M::Triangles, depthTest);
 	}
 
-	void OpenGLRenderer::SetSceneEnvironment(RefH2M<Environment> environment, RefH2M<HazelImage2D> shadow)
+	void OpenGLRendererH2M::SetSceneEnvironment(RefH2M<EnvironmentH2M> environment, RefH2M<Image2D_H2M> shadow)
 	{
 		if (!environment)
 		{
-			environment = HazelRenderer::GetEmptyEnvironment();
+			environment = RendererH2M::GetEmptyEnvironment();
 		}
 
-		// HazelRenderer::Submit([environment, shadow]() mutable {});
+		// RendererH2M::Submit([environment, shadow]() mutable {});
 		{
-			auto shader = HazelRenderer::GetShaderLibrary()->Get("HazelPBR_Static");
-			RefH2M<OpenGLShader> pbrShader = shader.As<OpenGLShader>();
+			auto shader = RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static");
+			RefH2M<OpenGLShaderH2M> pbrShader = shader.As<OpenGLShaderH2M>();
 
 			if (auto resource = pbrShader->GetShaderResource("u_EnvRadianceTex"))
 			{
-				RefH2M<OpenGLTextureCube> radianceMap = environment->RadianceMap.As<OpenGLTextureCube>();
+				RefH2M<OpenGLTextureCubeH2M> radianceMap = environment->RadianceMap.As<OpenGLTextureCubeH2M>();
 				glBindTextureUnit(resource->GetRegister(), radianceMap->GetRendererID());
 			}
 
 			if (auto resource = pbrShader->GetShaderResource("u_EnvIrradianceTex"))
 			{
-				RefH2M<OpenGLTextureCube> irradianceMap = environment->IrradianceMap.As<OpenGLTextureCube>();
+				RefH2M<OpenGLTextureCubeH2M> irradianceMap = environment->IrradianceMap.As<OpenGLTextureCubeH2M>();
 				glBindTextureUnit(resource->GetRegister(), irradianceMap->GetRendererID());
 			}
 
 			if (auto resource = pbrShader->GetShaderResource("u_BRDFLUTTexture"))
 			{
-				RefH2M<OpenGLImage2D> brdfLUTImage = s_Data->BRDFLut->GetImage();
+				RefH2M<OpenGLImage2D_H2M> brdfLUTImage = s_Data->BRDFLut->GetImage();
 				glBindSampler(resource->GetRegister(), brdfLUTImage->GetSamplerRendererID());
 				glBindTextureUnit(resource->GetRegister(), brdfLUTImage->GetRendererID());
 			}
 
 			if (auto resource = pbrShader->GetShaderResource("u_ShadowMapTexture"))
 			{
-				RefH2M<OpenGLImage2D> shadowMapTexture = shadow.As<OpenGLTexture2D>();
+				RefH2M<OpenGLImage2D_H2M> shadowMapTexture = shadow.As<OpenGLTexture2D_H2M>();
 				glBindSampler(resource->GetRegister(), shadowMapTexture->GetSamplerRendererID());
 				glBindTextureUnit(resource->GetRegister(), shadowMapTexture->GetRendererID());
 			}
 		}
 	}
 
-	std::pair<RefH2M<HazelTextureCube>, RefH2M<HazelTextureCube>> OpenGLRenderer::CreateEnvironmentMap(const std::string& filepath)
+	std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> OpenGLRendererH2M::CreateEnvironmentMap(const std::string& filepath)
 	{
-		Log::GetLogger()->debug("ComputeEnvironmentMaps: {0}", HazelRenderer::GetConfig().ComputeEnvironmentMaps);
+		Log::GetLogger()->debug("ComputeEnvironmentMaps: {0}", RendererH2M::GetConfig().ComputeEnvironmentMaps);
 
-		if (!HazelRenderer::GetConfig().ComputeEnvironmentMaps)
+		if (!RendererH2M::GetConfig().ComputeEnvironmentMaps)
 		{
-			return { HazelRenderer::GetBlackCubeTexture(), HazelRenderer::GetBlackCubeTexture() };
+			return { RendererH2M::GetBlackCubeTexture(), RendererH2M::GetBlackCubeTexture() };
 		}
 
-		const uint32_t cubemapSize = HazelRenderer::GetConfig().EnvironmentMapResolution;
+		const uint32_t cubemapSize = RendererH2M::GetConfig().EnvironmentMapResolution;
 		const uint32_t irradianceMapSize = 32;
 
-		RefH2M<OpenGLTextureCube> envUnfiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
-		// RefH2M<OpenGLShader> equirectangularConversionShader = HazelRenderer::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShader>();
-		RefH2M<OpenGLShader> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<OpenGLShader>();
-		RefH2M<HazelTexture2D> envEquirect = HazelTexture2D::Create(filepath);
+		RefH2M<OpenGLTextureCubeH2M> envUnfiltered = TextureCubeH2M::Create(ImageFormatH2M::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCubeH2M>();
+		// RefH2M<OpenGLShaderH2M> equirectangularConversionShader = RendererH2M::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShaderH2M>();
+		RefH2M<OpenGLShaderH2M> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<OpenGLShaderH2M>();
+		RefH2M<Texture2D_H2M> envEquirect = Texture2D_H2M::Create(filepath);
 
 		// HZ_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
-		if (envEquirect->GetFormat() != Hazel::HazelImageFormat::RGBA16F)
+		if (envEquirect->GetFormat() != ImageFormatH2M::RGBA16F)
 		{
 			Log::GetLogger()->error("Texture is not HDR!");
 		}
 
 		equirectangularConversionShader->Bind();
 		envEquirect->Bind(1);
-		// HazelRenderer::Submit([envUnfiltered, cubemapSize, envEquirect]() {});
+		// RendererH2M::Submit([envUnfiltered, cubemapSize, envEquirect]() {});
 		{
 			glBindImageTexture(0, envUnfiltered->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 			glDispatchCompute(cubemapSize / 32, cubemapSize / 32, 6);
@@ -287,13 +287,13 @@ namespace H2M
 			glGenerateTextureMipmap(envUnfiltered->GetRendererID());
 		}
 
-		// RefH2M<OpenGLShader> envFilteringShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShader>();
-		RefH2M<OpenGLShader> envFilteringShader = ResourceManager::GetShader("Hazel/EnvironmentMipFilter").As<OpenGLShader>();
+		// RefH2M<OpenGLShaderH2M> envFilteringShader = RendererH2M::GetShaderLibrary()->Get("EnvironmentMipFilter").As<OpenGLShaderH2M>();
+		RefH2M<OpenGLShaderH2M> envFilteringShader = ResourceManager::GetShader("Hazel/EnvironmentMipFilter").As<OpenGLShaderH2M>();
 
-		// s_EnvFiltered = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, cubemapSize, cubemapSize, true);
-		RefH2M<OpenGLTextureCube> envFiltered = HazelTextureCube::Create(HazelImageFormat::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCube>();
+		// s_EnvFiltered = Hazel::TextureCubeH2M::Create(Hazel::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize, true);
+		RefH2M<OpenGLTextureCubeH2M> envFiltered = TextureCubeH2M::Create(ImageFormatH2M::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCubeH2M>();
 
-		// HazelRenderer::Submit([envUnfiltered, envFiltered]() {});
+		// RendererH2M::Submit([envUnfiltered, envFiltered]() {});
 		{
 			glCopyImageSubData(envUnfiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
 				envFiltered->GetRendererID(), GL_TEXTURE_CUBE_MAP, 0, 0, 0, 0,
@@ -303,7 +303,7 @@ namespace H2M
 		envFilteringShader->Bind();
 		envUnfiltered->Bind(1);
 
-		// HazelRenderer::Submit([envFilteringShader, envUnfiltered, envFiltered, cubemapSize]() {});
+		// RendererH2M::Submit([envFilteringShader, envUnfiltered, envFiltered, cubemapSize]() {});
 		{
 			const float deltaRoughness = 1.0f / glm::max((float)(envFiltered->GetMipLevelCount() - 1.0f), 1.0f);
 			for (uint32_t level = 1, size = cubemapSize / 2; level < envFiltered->GetMipLevelCount(); level++, size /= 2) // <= ?
@@ -313,7 +313,7 @@ namespace H2M
 				glBindImageTexture(0, envFiltered->GetRendererID(), level, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
 				const GLint roughnessUniformLocation = glGetUniformLocation(envFilteringShader->GetRendererID(), "u_Uniforms.Roughness");
-				HZ_CORE_ASSERT(roughnessUniformLocation != -1);
+				H2M_CORE_ASSERT(roughnessUniformLocation != -1);
 				glUniform1f(roughnessUniformLocation, (float)level * deltaRoughness);
 
 				// glProgramUniform1f(envFilteringShader->GetRendererID(), 0, level * deltaRoughness);
@@ -325,22 +325,22 @@ namespace H2M
 			}
 		}
 
-		// RefH2M<OpenGLShader> envIrradianceShader = HazelRenderer::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShader>();
-		RefH2M<OpenGLShader> envIrradianceShader = ResourceManager::GetShader("Hazel/EnvironmentIrradiance").As<OpenGLShader>();
+		// RefH2M<OpenGLShaderH2M> envIrradianceShader = RendererH2M::GetShaderLibrary()->Get("EnvironmentIrradiance").As<OpenGLShaderH2M>();
+		RefH2M<OpenGLShaderH2M> envIrradianceShader = ResourceManager::GetShader("Hazel/EnvironmentIrradiance").As<OpenGLShaderH2M>();
 
-		// s_IrradianceMap = Hazel::HazelTextureCube::Create(Hazel::HazelImageFormat::RGBA16F, irradianceMapSize, irradianceMapSize, true);
-		RefH2M<OpenGLTextureCube> irradianceMap = HazelTextureCube::Create(HazelImageFormat::RGBA32F, irradianceMapSize, irradianceMapSize).As<OpenGLTextureCube>();
+		// s_IrradianceMap = Hazel::TextureCubeH2M::Create(Hazel::ImageFormatH2M::RGBA16F, irradianceMapSize, irradianceMapSize, true);
+		RefH2M<OpenGLTextureCubeH2M> irradianceMap = TextureCubeH2M::Create(ImageFormatH2M::RGBA32F, irradianceMapSize, irradianceMapSize).As<OpenGLTextureCubeH2M>();
 
 		envIrradianceShader->Bind();
 		envFiltered->Bind(1);
 
-		// HazelRenderer::Submit([irradianceMap, envIrradianceShader]() {});
+		// RendererH2M::Submit([irradianceMap, envIrradianceShader]() {});
 		{
 			glBindImageTexture(0, irradianceMap->GetRendererID(), 0, GL_TRUE, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
 			const GLint samplesUniformLocation = glGetUniformLocation(envIrradianceShader->GetRendererID(), "u_Uniforms.Samples");
-			HZ_CORE_ASSERT(samplesUniformLocation != -1);
-			const uint32_t samples = HazelRenderer::GetConfig().IrradianceMapComputeSamples;
+			H2M_CORE_ASSERT(samplesUniformLocation != -1);
+			const uint32_t samples = RendererH2M::GetConfig().IrradianceMapComputeSamples;
 			glUniform1ui(samplesUniformLocation, samples);
 
 			glDispatchCompute(irradianceMap->GetWidth() / 32, irradianceMap->GetHeight() / 32, 6);
@@ -351,17 +351,17 @@ namespace H2M
 		return { envFiltered, irradianceMap };
 	}
 
-	void OpenGLRenderer::RenderMesh(RefH2M<Pipeline> pipeline, RefH2M<HazelMesh> mesh, const glm::mat4& transform)
+	void OpenGLRendererH2M::RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
 	{
 		mesh->GetVertexBuffer()->Bind();
 		pipeline->Bind();
 		mesh->GetIndexBuffer()->Bind();
 
 		auto& materials = mesh->GetMaterials();
-		for (Submesh& submesh : mesh->GetSubmeshes())
+		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
 		{
 			// Material
-			auto material = materials[submesh.MaterialIndex].As<OpenGLMaterial>();
+			auto material = materials[submesh->MaterialIndex].As<OpenGLMaterialH2M>();
 			auto shader = material->GetShader();
 			material->UpdateForRendering();
 
@@ -374,22 +374,22 @@ namespace H2M
 				}
 			}
 
-			auto transformUniform = transform * submesh.Transform;
+			auto transformUniform = transform * submesh->Transform;
 			shader->SetMat4("u_Renderer.Transform", transformUniform);
 
-			HazelRenderer::Submit([submesh, material]()
+			RendererH2M::Submit([submesh, material]()
 			{
-				if (material->GetFlag(HazelMaterialFlag::DepthTest))
+				if (material->GetFlag(MaterialFlagH2M::DepthTest))
 					glEnable(GL_DEPTH_TEST);
 				else
 					glDisable(GL_DEPTH_TEST);
 
-				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+				glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 			});
 		}
 	}
 
-	void OpenGLRenderer::RenderMeshWithoutMaterial(RefH2M<Pipeline> pipeline, RefH2M<HazelMesh> mesh, const glm::mat4& transform)
+	void OpenGLRendererH2M::RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
 	{
 		mesh->GetVertexBuffer()->Bind();
 		pipeline->Bind();
@@ -398,7 +398,7 @@ namespace H2M
 		auto shader = pipeline->GetSpecification().Shader;
 		shader->Bind();
 
-		for (Submesh& submesh : mesh->GetSubmeshes())
+		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
 		{
 			if (false && mesh->IsAnimated())
 			{
@@ -409,31 +409,31 @@ namespace H2M
 				}
 			}
 
-			auto transformUniform = transform * submesh.Transform;
+			auto transformUniform = transform * submesh->Transform;
 			shader->SetMat4("u_Renderer.Transform", transformUniform);
 
-			HazelRenderer::Submit([submesh]()
+			RendererH2M::Submit([submesh]()
 			{
-				glDrawElementsBaseVertex(GL_TRIANGLES, submesh.IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh.BaseIndex), submesh.BaseVertex);
+				glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 			});
 		}
 	}
 
-	void OpenGLRenderer::RenderQuad(RefH2M<Pipeline> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform)
+	void OpenGLRendererH2M::RenderQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform)
 	{
 		s_Data->m_FullscreenQuadVertexBuffer->Bind();
 		pipeline->Bind();
 		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 
-		RefH2M<OpenGLMaterial> glMaterial = material.As<OpenGLMaterial>();
+		RefH2M<OpenGLMaterialH2M> glMaterial = material.As<OpenGLMaterialH2M>();
 		glMaterial->UpdateForRendering();
 
 		auto shader = material->GetShader();
 		shader->SetMat4("u_Renderer.Transform", transform);
 
-		// HazelRenderer::Submit([material]() {});
+		// RendererH2M::Submit([material]() {});
 		{
-			if (material->GetFlag(HazelMaterialFlag::DepthTest))
+			if (material->GetFlag(MaterialFlagH2M::DepthTest))
 			{
 				glEnable(GL_DEPTH_TEST);
 			}
@@ -446,7 +446,7 @@ namespace H2M
 		}
 	}
 
-	RendererCapabilities& OpenGLRenderer::GetCapabilities()
+	RendererCapabilitiesH2M& OpenGLRendererH2M::GetCapabilities()
 	{
 		return s_Data->RenderCaps;
 	}

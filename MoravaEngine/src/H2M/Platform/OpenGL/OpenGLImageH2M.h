@@ -7,6 +7,12 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+ /**
+  * @package H2M (Hazel to Morava)
+  * @author  Yan Chernikov (TheCherno)
+  * @licence Apache License 2.0
+  */
+
 #pragma once
 
 
@@ -17,7 +23,8 @@
 #include <GL/glew.h>
 
 
-namespace H2M {
+namespace H2M
+{
 
 	class OpenGLImage2D_H2M : public Image2D_H2M
 	{

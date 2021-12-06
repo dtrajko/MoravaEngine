@@ -122,7 +122,7 @@ namespace H2M
 
 	void VulkanComputePipelineH2M::Begin()
 	{
-		HZ_CORE_ASSERT(!m_ActiveComputeCommandBuffer);
+		H2M_CORE_ASSERT(!m_ActiveComputeCommandBuffer);
 
 		m_ActiveComputeCommandBuffer = VulkanContextH2M::GetCurrentDevice()->GetCommandBuffer(true, true);
 		vkCmdBindPipeline(m_ActiveComputeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipeline);
@@ -130,7 +130,7 @@ namespace H2M
 
 	void VulkanComputePipelineH2M::Dispatch(VkDescriptorSet descriptorSet, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
-		HZ_CORE_ASSERT(m_ActiveComputeCommandBuffer);
+		H2M_CORE_ASSERT(m_ActiveComputeCommandBuffer);
 
 		vkCmdBindDescriptorSets(m_ActiveComputeCommandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_ComputePipelineLayout, 0, 1, &descriptorSet, 0, 0);
 		vkCmdDispatch(m_ActiveComputeCommandBuffer, groupCountX, groupCountY, groupCountZ);
@@ -138,7 +138,7 @@ namespace H2M
 
 	void VulkanComputePipelineH2M::End()
 	{
-		HZ_CORE_ASSERT(m_ActiveComputeCommandBuffer);
+		H2M_CORE_ASSERT(m_ActiveComputeCommandBuffer);
 
 		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 		VkQueue computeQueue = VulkanContextH2M::GetCurrentDevice()->GetComputeQueue();

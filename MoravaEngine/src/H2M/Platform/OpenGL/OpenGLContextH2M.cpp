@@ -5,28 +5,23 @@
  * @licence Apache License 2.0
  */
 
-#include "OpenGLContext.h"
+#include "OpenGLContextH2M.h"
 
-#include "Hazel/Core/Assert.h"
+#include "H2M/Core/AssertH2M.h"
 
 #include "Core/CommonValues.h"
 #include "Core/Log.h"
 
 
-namespace Hazel {
+namespace H2M {
 
-	OpenGLContext::OpenGLContext(Window* window)
-		: m_Window(window)
-	{
-	}
+	OpenGLContextH2M::OpenGLContextH2M(Window* window) : m_Window(window) {}
 
-	OpenGLContext::~OpenGLContext()
-	{
-	}
+	OpenGLContextH2M::~OpenGLContextH2M() {}
 
-	void OpenGLContext::Create()
+	void OpenGLContextH2M::Create()
 	{
-		Log::GetLogger()->info("OpenGLContext::Create");
+		Log::GetLogger()->info("OpenGLContextH2M::Create");
 
 		// Set context for GLEW to use
 		glfwMakeContextCurrent(m_Window->GetHandle());
@@ -61,7 +56,7 @@ namespace Hazel {
 #endif
 	}
 
-	void OpenGLContext::SwapBuffers()
+	void OpenGLContextH2M::SwapBuffers()
 	{
 		glfwSwapBuffers(m_Window->GetHandle());
 	}

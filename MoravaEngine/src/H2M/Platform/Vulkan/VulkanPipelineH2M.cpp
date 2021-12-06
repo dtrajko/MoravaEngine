@@ -1,3 +1,10 @@
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "VulkanPipelineH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -22,7 +29,7 @@ namespace H2M
 		return VK_FORMAT_UNDEFINED;
 	}
 
-	VulkanPipelineH2M::VulkanPipelineH2M(const PipelineSpecification& spec)
+	VulkanPipelineH2M::VulkanPipelineH2M(const PipelineSpecificationH2M& spec)
 		: m_Specification(spec)
 	{
 		if (!m_Specification.RenderPass->GetSpecification().TargetFramebuffer)
@@ -100,7 +107,7 @@ namespace H2M
 
 			// Renderpass this pipeline is attached to
 			/**** BEGIN Non-composite ****
-			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
+			pipelineCreateInfo.renderPass = VulkanContextH2M::Get()->GetSwapChain().GetRenderPass();
 			/**** END Non-composite ****/
 			/**** BEGIN Composite ****/
 			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
@@ -273,7 +280,7 @@ namespace H2M
 			pipelineCreateInfo.pViewportState = &viewportState;
 			pipelineCreateInfo.pDepthStencilState = &depthStencilState;
 			/**** BEGIN Non-composite ****
-			pipelineCreateInfo.renderPass = VulkanContext::Get()->GetSwapChain().GetRenderPass();
+			pipelineCreateInfo.renderPass = VulkanContextH2M::Get()->GetSwapChain().GetRenderPass();
 			/**** END Non-composite ****/
 			/**** BEGIN Composite ****/
 			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();

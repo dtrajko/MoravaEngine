@@ -27,7 +27,7 @@ namespace Utils
 		case H2M::ImageFormatH2M::RGBA16F:  return VK_FORMAT_R16G16B16A16_SFLOAT;
 		case H2M::ImageFormatH2M::RGBA32F:  return VK_FORMAT_R32G32B32A32_SFLOAT;
 		case H2M::ImageFormatH2M::DEPTH32F: return VK_FORMAT_D32_SFLOAT;
-		case H2M::ImageFormatH2M::DEPTH24STENCIL8: return H2M::VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
+		case H2M::ImageFormatH2M::DEPTH24STENCIL8: return H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
 		}
 
 		Log::GetLogger()->error("VulkanImageFormat: ImageFormatH2M not supported: '{0}'!", format);
@@ -175,7 +175,7 @@ VulkanMoravaTexture::VulkanMoravaTexture(const char* fileLoc, Specification spec
  */
 void VulkanMoravaTexture::Invalidate()
 {
-	auto device = H2M::VulkanContext::GetCurrentDevice();
+	auto device = H2M::VulkanContextH2M::GetCurrentDevice();
 	auto vulkanDevice = device->GetVulkanDevice();
 
 	VkDeviceSize size = m_ImageData.Size;
@@ -505,13 +505,13 @@ void VulkanMoravaTexture::SetAlpha(int x, int z, int value)
 
 void VulkanMoravaTexture::GenerateMips(bool readonly)
 {
-	auto device = H2M::VulkanContext::GetCurrentDevice();
+	auto device = H2M::VulkanContextH2M::GetCurrentDevice();
 	auto vulkanDevice = device->GetVulkanDevice();
 
 	H2M::RefH2M<H2M::VulkanImage2D> image = m_Image.As<H2M::VulkanImage2D>();
 	const auto& info = image->GetImageInfo();
 
-	const VkCommandBuffer blitCmd = H2M::VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
+	const VkCommandBuffer blitCmd = H2M::VulkanContextH2M::GetCurrentDevice()->GetCommandBuffer(true);
 
 	VkImageMemoryBarrier barrier = {};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -584,7 +584,7 @@ void VulkanMoravaTexture::GenerateMips(bool readonly)
 		VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 		subresourceRange);
 
-	H2M::VulkanContext::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
+	H2M::VulkanContextH2M::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
 
 #if 0
 	VkImageMemoryBarrier barrier = {};
@@ -602,7 +602,7 @@ void VulkanMoravaTexture::GenerateMips(bool readonly)
 	int32_t mipWidth = m_Width;
 	int32_t mipHeight = m_Height;
 
-	VkCommandBuffer commandBuffer = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
+	VkCommandBuffer commandBuffer = VulkanContextH2M::GetCurrentDevice()->GetCommandBuffer(true);
 
 	barrier.subresourceRange.baseMipLevel = 0;
 	barrier.subresourceRange.baseArrayLayer = 0;
@@ -673,7 +673,7 @@ void VulkanMoravaTexture::GenerateMips(bool readonly)
 		0, nullptr,
 		1, &barrier);
 
-	VulkanContext::GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
+	VulkanContextH2M::GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
 #endif
 }
 

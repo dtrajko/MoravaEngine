@@ -15,6 +15,8 @@
 #include "H2M/Renderer/ImageH2M.h"
 #include "H2M/Renderer/RendererTypesH2M.h"
 
+#include <imgui.h>
+
 
 namespace H2M
 {

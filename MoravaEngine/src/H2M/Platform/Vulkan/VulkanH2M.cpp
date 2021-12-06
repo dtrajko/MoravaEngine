@@ -1,11 +1,19 @@
-#include "Vulkan.h"
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
 
-#include "VulkanContext.h"
-#include "VulkanDiagnostics.h"
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "VulkanH2M.h"
+
+#include "VulkanContextH2M.h"
+#include "VulkanDiagnosticsH2M.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 
-namespace Hazel::Utils {
+namespace H2M::Utils
+{
 
 	static const char* StageToString(VkPipelineStageFlagBits stage)
 	{
@@ -27,12 +35,12 @@ namespace Hazel::Utils {
 				data[i].sType = VK_STRUCTURE_TYPE_CHECKPOINT_DATA_NV;
 
 			uint32_t retrievedCount = checkpointCount;
-			// vkGetQueueCheckpointDataNV(::Hazel::VulkanContext::GetCurrentDevice()->GetGraphicsQueue(), &retrievedCount, data); // unresolved external symbol vkGetQueueCheckpointDataNV
-			HZ_CORE_ERROR("RetrieveDiagnosticCheckpoints (Graphics Queue):");
+			// vkGetQueueCheckpointDataNV(::Hazel::VulkanContextH2M::GetCurrentDevice()->GetGraphicsQueue(), &retrievedCount, data); // unresolved external symbol vkGetQueueCheckpointDataNV
+			H2M_CORE_ERROR("RetrieveDiagnosticCheckpoints (Graphics Queue):");
 			for (uint32_t i = 0; i < retrievedCount; i++)
 			{
-				VulkanCheckpointData* checkpoint = (VulkanCheckpointData*)data[i].pCheckpointMarker;
-				HZ_CORE_ERROR("Checkpoint: {0} (stage: {1})", checkpoint->Data, StageToString(data[i].stage));
+				VulkanCheckpointDataH2M* checkpoint = (VulkanCheckpointDataH2M*)data[i].pCheckpointMarker;
+				H2M_CORE_ERROR("Checkpoint: {0} (stage: {1})", checkpoint->Data, StageToString(data[i].stage));
 			}
 		}
 		{
@@ -42,12 +50,12 @@ namespace Hazel::Utils {
 				data[i].sType = VK_STRUCTURE_TYPE_CHECKPOINT_DATA_NV;
 
 			uint32_t retrievedCount = checkpointCount;
-			// vkGetQueueCheckpointDataNV(::Hazel::VulkanContext::GetCurrentDevice()->GetComputeQueue(), &retrievedCount, data); // unresolved external symbol vkGetQueueCheckpointDataNV
-			HZ_CORE_ERROR("RetrieveDiagnosticCheckpoints (Compute Queue):");
+			// vkGetQueueCheckpointDataNV(::Hazel::VulkanContextH2M::GetCurrentDevice()->GetComputeQueue(), &retrievedCount, data); // unresolved external symbol vkGetQueueCheckpointDataNV
+			H2M_CORE_ERROR("RetrieveDiagnosticCheckpoints (Compute Queue):");
 			for (uint32_t i = 0; i < retrievedCount; i++)
 			{
-				VulkanCheckpointData* checkpoint = (VulkanCheckpointData*)data[i].pCheckpointMarker;
-				HZ_CORE_ERROR("Checkpoint: {0} (stage: {1})", checkpoint->Data, StageToString(data[i].stage));
+				VulkanCheckpointDataH2M* checkpoint = (VulkanCheckpointDataH2M*)data[i].pCheckpointMarker;
+				H2M_CORE_ERROR("Checkpoint: {0} (stage: {1})", checkpoint->Data, StageToString(data[i].stage));
 			}
 		}
 		__debugbreak();
@@ -56,7 +64,7 @@ namespace Hazel::Utils {
 	// A duplicate of DumpGPUInfo() in HazelRenderer
 	void DumpGPUInfoDuplicate()
 	{
-		auto& caps = HazelRenderer::GetCapabilities();
+		auto& caps = RendererH2M::GetCapabilities();
 		Log::GetLogger()->trace("GPU Info:");
 		Log::GetLogger()->trace("  Vendor: {0}", caps.Vendor);
 		Log::GetLogger()->trace("  Device: {0}", caps.Device);

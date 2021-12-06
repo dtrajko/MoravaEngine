@@ -211,6 +211,7 @@
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanFramebufferH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanImageH2M.cpp" />
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanImGuiLayerH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanIndexBufferH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanMaterialH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanPipelineH2M.cpp" />
@@ -242,6 +243,7 @@
     <ClCompile Include="src\H2M\Renderer\SceneRendererH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\SceneRendererVulkan.cpp" />
     <ClCompile Include="src\H2M\Renderer\SceneRendererVulkanH2M.cpp" />
+    <ClCompile Include="src\H2M\Renderer\ShaderCacheH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\ShaderH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\ShaderUniformH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\TextureH2M.cpp" />
@@ -788,6 +790,7 @@
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanFramebufferH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanImageH2M.h" />
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanImGuiLayerH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanIndexBufferH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanMaterialH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanPipelineH2M.h" />
@@ -822,6 +825,7 @@
     <ClInclude Include="src\H2M\Renderer\SceneRendererH2M.h" />
     <ClInclude Include="src\H2M\Renderer\SceneRendererVulkan.h" />
     <ClInclude Include="src\H2M\Renderer\SceneRendererVulkanH2M.h" />
+    <ClInclude Include="src\H2M\Renderer\ShaderCacheH2M.h" />
     <ClInclude Include="src\H2M\Renderer\ShaderH2M.h" />
     <ClInclude Include="src\H2M\Renderer\ShaderUniformH2M.h" />
     <ClInclude Include="src\H2M\Renderer\TextureH2M.h" />
@@ -832,6 +836,7 @@
     <ClInclude Include="src\H2M\Scene\EntityH2M.h" />
     <ClInclude Include="src\H2M\Scene\SceneCameraH2M.h" />
     <ClInclude Include="src\H2M\Scene\SceneH2M.h" />
+    <ClInclude Include="src\H2M\Utilities\FileSystemH2M.h" />
     <ClInclude Include="src\H2M\Utilities\StringUtilsH2M.h" />
     <ClInclude Include="src\HazelVulkan\ExampleVertex.h" />
     <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h" />

@@ -1,29 +1,37 @@
-#include "VulkanMaterial.h"
+/**
+ *
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
 
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "VulkanMaterialH2M.h"
 
-#include "Hazel/Platform/Vulkan/VulkanContext.h"
-#include "Hazel/Platform/Vulkan/VulkanTexture.h"
-#include "Hazel/Platform/Vulkan/VulkanImage.h"
+#include "H2M/Renderer/RendererH2M.h"
+
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#include "H2M/Platform/Vulkan/VulkanTextureH2M.h"
+#include "H2M/Platform/Vulkan/VulkanImageH2M.h"
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	VulkanMaterial::VulkanMaterial(const RefH2M<HazelShader>& shader, const std::string& name)
-		: HazelMaterial(shader, name)
+	VulkanMaterialH2M::VulkanMaterialH2M(const RefH2M<HazelShader>& shader, const std::string& name)
+		: MaterialH2M(shader, name)
 	{
 		m_WriteDescriptors = std::vector<VkWriteDescriptorSet>();
 
-		m_Shader->AddShaderReloadedCallback(std::bind(&VulkanMaterial::OnShaderReloaded, this));
+		m_Shader->AddShaderReloadedCallback(std::bind(&VulkanMaterialH2M::OnShaderReloaded, this));
 		AllocateStorage();
 
 		m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
 		m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;
 
-		// RefH2M<VulkanMaterial> instance = this;
+		// RefH2M<VulkanMaterialH2M> instance = this;
 		// HazelRenderer::Submit([instance]() mutable {});
 		{
-			auto shader = GetShader().As<VulkanShader>();
+			auto shader = GetShader().As<VulkanShaderH2M>();
 			m_DescriptorSet = shader->CreateDescriptorSets();
 
 			for (uint32_t i = 0; i < shader->GetUniformBufferCount(); i++)
@@ -44,12 +52,12 @@ namespace Hazel {
 		// HazelRenderer::RegisterShaderDependency(shader, RefH2M<MaterialH2M>(this));
 	}
 
-	VulkanMaterial::~VulkanMaterial()
+	VulkanMaterialH2M::~VulkanMaterialH2M()
 	{
-		Log::GetLogger()->debug("Destroy VulkanMaterial!");
+		Log::GetLogger()->debug("Destroy VulkanMaterialH2M!");
 	}
 
-	void VulkanMaterial::AllocateStorage()
+	void VulkanMaterialH2M::AllocateStorage()
 	{
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 
@@ -61,13 +69,13 @@ namespace Hazel {
 				size += shaderBuffer.Size;
 			}
 
-			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
+			const ShaderBufferH2M& buffer = (*shaderBuffers.begin()).second;
 			m_UniformStorageBuffer.Allocate(size);
 			m_UniformStorageBuffer.ZeroInitialize();
 		}
 	}
 
-	void VulkanMaterial::Init()
+	void VulkanMaterialH2M::Init()
 	{
 		AllocateStorage();
 
@@ -75,7 +83,7 @@ namespace Hazel {
 		m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;
 
 		// TODO: Maybe get the descriptor set from the pipeline
-		RefH2M<VulkanShader> vulkanShader = m_Shader.As<VulkanShader>();
+		RefH2M<VulkanShaderH2M> vulkanShader = m_Shader.As<VulkanShaderH2M>();
 		for (uint32_t i = 0; i < vulkanShader->GetUniformBufferCount(); i++)
 		{
 			// auto& uniformBuffer = vulkanShader->GetUniformBuffer(i);
@@ -89,22 +97,22 @@ namespace Hazel {
 			m_WriteDescriptors.push_back(writeDescriptorSet);
 		}
 
-		// RefH2M<VulkanMaterial> instance = this;
+		// RefH2M<VulkanMaterialH2M> instance = this;
 		// HazelRenderer::Submit([=]() mutable
 		// {
 		// });
 		{
-			auto shader = GetShader().As<VulkanShader>();
+			auto shader = GetShader().As<VulkanShaderH2M>();
 			m_DescriptorSet = shader->CreateDescriptorSets();
 		}
 	}
 
-	void VulkanMaterial::Invalidate()
+	void VulkanMaterialH2M::Invalidate()
 	{
-		auto shader = m_Shader.As<VulkanShader>();
+		auto shader = m_Shader.As<VulkanShaderH2M>();
 		m_DescriptorSet = shader->CreateDescriptorSets();
 
-		RefH2M<VulkanShader> vulkanShader = m_Shader.As<VulkanShader>();
+		RefH2M<VulkanShaderH2M> vulkanShader = m_Shader.As<VulkanShaderH2M>();
 		for (uint32_t i = 0; i < vulkanShader->GetUniformBufferCount(); i++)
 		{
 			// auto& uniformBuffer = vulkanShader->GetUniformBuffer(i);
@@ -123,13 +131,13 @@ namespace Hazel {
 		}
 	}
 
-	void VulkanMaterial::OnShaderReloaded()
+	void VulkanMaterialH2M::OnShaderReloaded()
 	{
 		return;
 		AllocateStorage();
 	}
 
-	const ShaderUniform* VulkanMaterial::FindUniformDeclaration(const std::string& name)
+	const ShaderUniformH2M* VulkanMaterialH2M::FindUniformDeclaration(const std::string& name)
 	{
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 
@@ -137,7 +145,7 @@ namespace Hazel {
 
 		if (shaderBuffers.size() > 0)
 		{
-			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
+			const ShaderBufferH2M& buffer = (*shaderBuffers.begin()).second;
 			if (buffer.Uniforms.find(name) == buffer.Uniforms.end())
 			{
 				return nullptr;
@@ -148,13 +156,13 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	const ShaderResourceDeclaration* VulkanMaterial::FindResourceDeclaration(const std::string& name)
+	const ShaderResourceDeclarationH2M* VulkanMaterialH2M::FindResourceDeclaration(const std::string& name)
 	{
 		auto& resources = m_Shader->GetResources();
 
 		if (!resources.size())
 		{
-			Log::GetLogger()->error("VulkanMaterial::FindResourceDeclaration - no resources found (name '{0}')!", name);
+			Log::GetLogger()->error("VulkanMaterialH2M::FindResourceDeclaration - no resources found (name '{0}')!", name);
 			return nullptr;
 		}
 
@@ -166,18 +174,18 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const RefH2M<HazelTexture2D>& texture)
+	void VulkanMaterialH2M::SetVulkanDescriptor(const std::string& name, const RefH2M<Texture2D_H2M>& texture)
 	{
-		// RefH2M<VulkanMaterial> instance = this;
+		// RefH2M<VulkanMaterialH2M> instance = this;
 		m_Textures.push_back(texture);
 		// HazelRenderer::Submit([instance, name, texture]() mutable {});
 		{
-			const VkWriteDescriptorSet* wds = GetShader().As<VulkanShader>()->GetDescriptorSet(name);
+			const VkWriteDescriptorSet* wds = GetShader().As<VulkanShaderH2M>()->GetDescriptorSet(name);
 			H2M_CORE_ASSERT(wds);
 
 			VkWriteDescriptorSet descriptorSet = *wds;
 			descriptorSet.dstSet = m_DescriptorSet.DescriptorSets[0];
-			auto& imageInfo = texture.As<VulkanTexture2D>()->GetVulkanDescriptorInfo();
+			auto& imageInfo = texture.As<VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
 			descriptorSet.pImageInfo = &imageInfo;
 			m_WriteDescriptors.push_back(descriptorSet);
 		}
@@ -188,7 +196,7 @@ namespace Hazel {
 		//	if (!resource)
 		//	{
 		//		// H2M_CORE_ASSERT(resource);
-		//		Log::GetLogger()->error("VulkanMaterial::SetVulkanDescriptor - resource not found (name '{0}')!", name);
+		//		Log::GetLogger()->error("VulkanMaterialH2M::SetVulkanDescriptor - resource not found (name '{0}')!", name);
 		//		return;
 		//	}
 		//	
@@ -200,16 +208,16 @@ namespace Hazel {
 		//		m_Textures.resize(resource->GetRegister() + 1);
 		//	m_Textures[resource->GetRegister()] = texture;
 		//	
-		//	const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		//	const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
 		//	H2M_CORE_ASSERT(wds);
 		//	m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::Texture2D, *wds, {}, texture.As<HazelTexture>() /*, nullptr */ }));
 		//	m_PendingDescriptors.push_back(m_ResidentDescriptors.back());
 		/**** END a more recent version ****/
 	}
 
-	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const RefH2M<HazelTexture2D>& texture, uint32_t arrayIndex)
+	void VulkanMaterialH2M::SetVulkanDescriptor(const std::string& name, const RefH2M<Texture2D_H2M>& texture, uint32_t arrayIndex)
 	{
-		const ShaderResourceDeclaration* resource = FindResourceDeclaration(name);
+		const ShaderResourceDeclarationH2M* resource = FindResourceDeclaration(name);
 		H2M_CORE_ASSERT(resource);
 
 		uint32_t binding = resource->GetRegister();
@@ -225,7 +233,7 @@ namespace Hazel {
 
 		m_TextureArrays[binding][arrayIndex] = texture;
 
-		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
 		H2M_CORE_ASSERT(wds);
 		if (m_ResidentDescriptorArrays.find(binding) == m_ResidentDescriptorArrays.end())
 		{
@@ -243,9 +251,9 @@ namespace Hazel {
 		InvalidateDescriptorSets();
 	}
 
-	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const RefH2M<HazelTextureCube>& texture)
+	void VulkanMaterialH2M::SetVulkanDescriptor(const std::string& name, const RefH2M<TextureCubeH2M>& texture)
 	{
-		const ShaderResourceDeclaration* resource = FindResourceDeclaration(name);
+		const ShaderResourceDeclarationH2M* resource = FindResourceDeclaration(name);
 		H2M_CORE_ASSERT(resource);
 
 		// Texture is already set
@@ -256,15 +264,15 @@ namespace Hazel {
 			m_Textures.resize(resource->GetRegister() + 1);
 		m_Textures[resource->GetRegister()] = texture;
 
-		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
 		H2M_CORE_ASSERT(wds);
-		m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::TextureCube, *wds, {}, texture.As<HazelTexture>() /*, nullptr */ }));
+		m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::TextureCube, *wds, {}, texture.As<TextureH2M>() /*, nullptr */ }));
 		m_PendingDescriptors.push_back(m_ResidentDescriptors.back());
 	}
 
-	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const VkDescriptorImageInfo& imageInfo)
+	void VulkanMaterialH2M::SetVulkanDescriptor(const std::string& name, const VkDescriptorImageInfo& imageInfo)
 	{
-		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
 		H2M_CORE_ASSERT(wds);
 
 		if (m_ImageInfos.find(name) != m_ImageInfos.end())
@@ -280,9 +288,9 @@ namespace Hazel {
 		m_WriteDescriptors.push_back(descriptorSet);
 	}
 
-	void VulkanMaterial::SetVulkanDescriptor(const std::string& name, const RefH2M<HazelImage2D>& image)
+	void VulkanMaterialH2M::SetVulkanDescriptor(const std::string& name, const RefH2M<Image2D_H2M>& image)
 	{
-		const ShaderResourceDeclaration* resource = FindResourceDeclaration(name);
+		const ShaderResourceDeclarationH2M* resource = FindResourceDeclaration(name);
 		H2M_CORE_ASSERT(resource);
 
 		// TODO: replace with set/map
@@ -294,177 +302,177 @@ namespace Hazel {
 		m_Images[resource->GetRegister()] = image;
 		m_ImageHashes[resource->GetRegister()] = image->GetHash();
 
-		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShader>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
 		H2M_CORE_ASSERT(wds);
 		// m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::TextureCube, *wds, {}, texture.As<HazelTexture>() /* , nullptr */ }));
 		m_PendingDescriptors.push_back(m_ResidentDescriptors.back());
 	}
 
-	void VulkanMaterial::Set(const std::string& name, float value)
+	void VulkanMaterialH2M::Set(const std::string& name, float value)
 	{
 		Set<float>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, int value)
+	void VulkanMaterialH2M::Set(const std::string& name, int value)
 	{
 		Set<int>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, uint32_t value)
+	void VulkanMaterialH2M::Set(const std::string& name, uint32_t value)
 	{
 		Set<uint32_t>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, bool value)
+	void VulkanMaterialH2M::Set(const std::string& name, bool value)
 	{
 		// Bools are 4-byte ints
 		Set<int>(name, (int)value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const glm::ivec2& value)
+	void VulkanMaterialH2M::Set(const std::string& name, const glm::ivec2& value)
 	{
 		Set<glm::ivec2>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const glm::ivec3& value)
+	void VulkanMaterialH2M::Set(const std::string& name, const glm::ivec3& value)
 	{
 		Set<glm::ivec3>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const glm::ivec4& value)
+	void VulkanMaterialH2M::Set(const std::string& name, const glm::ivec4& value)
 	{
 		Set<glm::ivec4>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const glm::vec2& value)
+	void VulkanMaterialH2M::Set(const std::string& name, const glm::vec2& value)
 	{
 		Set<glm::vec2>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const glm::vec3& value)
+	void VulkanMaterialH2M::Set(const std::string& name, const glm::vec3& value)
 	{
 		Set<glm::vec3>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const glm::vec4& value)
+	void VulkanMaterialH2M::Set(const std::string& name, const glm::vec4& value)
 	{
 		Set<glm::vec4>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const glm::mat3& value)
+	void VulkanMaterialH2M::Set(const std::string& name, const glm::mat3& value)
 	{
 		Set<glm::mat3>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const glm::mat4& value)
+	void VulkanMaterialH2M::Set(const std::string& name, const glm::mat4& value)
 	{
 		Set<glm::mat4>(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const RefH2M<HazelTexture2D>& texture)
+	void VulkanMaterialH2M::Set(const std::string& name, const RefH2M<Texture2D_H2M>& texture)
 	{
 		SetVulkanDescriptor(name, texture);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const RefH2M<HazelTexture2D>& texture, uint32_t arrayIndex)
+	void VulkanMaterialH2M::Set(const std::string& name, const RefH2M<Texture2D_H2M>& texture, uint32_t arrayIndex)
 	{
 		SetVulkanDescriptor(name, texture, arrayIndex);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const RefH2M<HazelTextureCube>& texture)
+	void VulkanMaterialH2M::Set(const std::string& name, const RefH2M<TextureCubeH2M>& texture)
 	{
 		SetVulkanDescriptor(name, texture);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const RefH2M<HazelImage2D>& image)
+	void VulkanMaterialH2M::Set(const std::string& name, const RefH2M<Image2D_H2M>& image)
 	{
 		SetVulkanDescriptor(name, image);
 	}
 
-	float& VulkanMaterial::GetFloat(const std::string& name)
+	float& VulkanMaterialH2M::GetFloat(const std::string& name)
 	{
 		return Get<float>(name);
 	}
 
-	int32_t& VulkanMaterial::GetInt(const std::string& name)
+	int32_t& VulkanMaterialH2M::GetInt(const std::string& name)
 	{
 		return Get<int32_t>(name);
 	}
 
-	uint32_t& VulkanMaterial::GetUInt(const std::string& name)
+	uint32_t& VulkanMaterialH2M::GetUInt(const std::string& name)
 	{
 		return Get<uint32_t>(name);
 	}
 
-	bool& VulkanMaterial::GetBool(const std::string& name)
+	bool& VulkanMaterialH2M::GetBool(const std::string& name)
 	{
 		return Get<bool>(name);
 	}
 
-	glm::vec2& VulkanMaterial::GetVector2(const std::string& name)
+	glm::vec2& VulkanMaterialH2M::GetVector2(const std::string& name)
 	{
 		return Get<glm::vec2>(name);
 	}
 
-	glm::vec3& VulkanMaterial::GetVector3(const std::string& name)
+	glm::vec3& VulkanMaterialH2M::GetVector3(const std::string& name)
 	{
 		return Get<glm::vec3>(name);
 	}
 
-	glm::vec4& VulkanMaterial::GetVector4(const std::string& name)
+	glm::vec4& VulkanMaterialH2M::GetVector4(const std::string& name)
 	{
 		return Get<glm::vec4>(name);
 	}
 
-	glm::mat3& VulkanMaterial::GetMatrix3(const std::string& name)
+	glm::mat3& VulkanMaterialH2M::GetMatrix3(const std::string& name)
 	{
 		return Get<glm::mat3>(name);
 	}
 
-	glm::mat4& VulkanMaterial::GetMatrix4(const std::string& name)
+	glm::mat4& VulkanMaterialH2M::GetMatrix4(const std::string& name)
 	{
 		return Get<glm::mat4>(name);
 	}
 
-	RefH2M<HazelTexture2D> VulkanMaterial::GetTexture2D(const std::string& name)
+	RefH2M<Texture2D_H2M> VulkanMaterialH2M::GetTexture2D(const std::string& name)
 	{
-		return GetResource<HazelTexture2D>(name);
+		return GetResource<Texture2D_H2M>(name);
 	}
 
-	RefH2M<HazelTextureCube> VulkanMaterial::TryGetTextureCube(const std::string& name)
+	RefH2M<TextureCubeH2M> VulkanMaterialH2M::TryGetTextureCube(const std::string& name)
 	{
-		return TryGetResource<HazelTextureCube>(name);
+		return TryGetResource<TextureCubeH2M>(name);
 	}
 
-	RefH2M<HazelTexture2D> VulkanMaterial::TryGetTexture2D(const std::string& name)
+	RefH2M<Texture2D_H2M> VulkanMaterialH2M::TryGetTexture2D(const std::string& name)
 	{
-		return TryGetResource<HazelTexture2D>(name);
+		return TryGetResource<Texture2D_H2M>(name);
 	}
 
-	RefH2M<HazelTextureCube> VulkanMaterial::GetTextureCube(const std::string& name)
+	RefH2M<TextureCubeH2M> VulkanMaterialH2M::GetTextureCube(const std::string& name)
 	{
-		return GetResource<HazelTextureCube>(name);
+		return GetResource<TextureCubeH2M>(name);
 	}
 
-	void VulkanMaterial::UpdateForRendering()
+	void VulkanMaterialH2M::UpdateForRendering()
 	{
-		// RefH2M<VulkanMaterial> instance = this;
+		// RefH2M<VulkanMaterialH2M> instance = this;
 		// HazelRenderer::Submit([instance]() mutable {});
 		{
-			auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 			if (m_WriteDescriptors.size())
 			{
-				HZ_CORE_WARN("Updating {0} descriptor sets", m_WriteDescriptors.size());
+				H2M_CORE_WARN("Updating {0} descriptor sets", m_WriteDescriptors.size());
 				vkUpdateDescriptorSets(vulkanDevice, (uint32_t)m_WriteDescriptors.size(), m_WriteDescriptors.data(), 0, nullptr);
 				m_WriteDescriptors.clear();
 			}
 		}
 	}
 
-	void VulkanMaterial::InvalidateDescriptorSets()
+	void VulkanMaterialH2M::InvalidateDescriptorSets()
 	{
-		const uint32_t framesInFlight = HazelRenderer::GetConfig().FramesInFlight;
+		const uint32_t framesInFlight = RendererH2M::GetConfig().FramesInFlight;
 		for (uint32_t i = 0; i < framesInFlight; i++)
 			m_DirtyDescriptorSets[i] = true;
 	}

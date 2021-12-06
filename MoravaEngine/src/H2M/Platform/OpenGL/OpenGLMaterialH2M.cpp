@@ -5,40 +5,41 @@
  * @licence Apache License 2.0
  */
 
-#include "OpenGLMaterial.h"
+#include "OpenGLMaterialH2M.h"
 
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/RendererH2M.h"
 
-#include "OpenGLShader.h"
-#include "OpenGLTexture.h"
-#include "OpenGLImage.h"
+#include "OpenGLImageH2M.h"
+#include "OpenGLShaderH2M.h"
+#include "OpenGLTextureH2M.h"
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	OpenGLMaterial::OpenGLMaterial(const RefH2M<HazelShader>& shader, const std::string& name)
+	OpenGLMaterialH2M::OpenGLMaterialH2M(const RefH2M<ShaderH2M>& shader, const std::string& name)
 		: m_Shader(shader), m_Name(name)
 	{
-		m_Shader->AddShaderReloadedCallback(std::bind(&OpenGLMaterial::OnShaderReloaded, this));
+		m_Shader->AddShaderReloadedCallback(std::bind(&OpenGLMaterialH2M::OnShaderReloaded, this));
 		AllocateStorage();
 
 		m_MaterialFlags |= (uint32_t)MaterialFlag::DepthTest;
 		m_MaterialFlags |= (uint32_t)MaterialFlag::Blend;
 	}
 
-	OpenGLMaterial::~OpenGLMaterial()
+	OpenGLMaterialH2M::~OpenGLMaterialH2M()
 	{
-		Log::GetLogger()->debug("Destroy OpenGLMaterial!");
+		Log::GetLogger()->debug("Destroy OpenGLMaterialH2M!");
 	}
 
-	void OpenGLMaterial::Invalidate()
+	void OpenGLMaterialH2M::Invalidate()
 	{
 	}
 
 	/*
 	 * Made in Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021)
 	 */
-	void OpenGLMaterial::AllocateStorage()
+	void OpenGLMaterialH2M::AllocateStorage()
 	{
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 
@@ -57,13 +58,13 @@ namespace Hazel {
 		}
 	}
 
-	void OpenGLMaterial::OnShaderReloaded()
+	void OpenGLMaterialH2M::OnShaderReloaded()
 	{
 		return;
 		AllocateStorage();
 	}
 
-	const ShaderUniform* OpenGLMaterial::FindUniformDeclaration(const std::string& name)
+	const ShaderUniformH2M* OpenGLMaterialH2M::FindUniformDeclaration(const std::string& name)
 	{
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 
@@ -71,7 +72,7 @@ namespace Hazel {
 
 		if (shaderBuffers.size() > 0)
 		{
-			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
+			const ShaderBufferH2M& buffer = (*shaderBuffers.begin()).second;
 			if (buffer.Uniforms.find(name) == buffer.Uniforms.end())
 			{
 				return nullptr;
@@ -82,13 +83,13 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	const ShaderResourceDeclaration* OpenGLMaterial::FindResourceDeclaration(const std::string& name)
+	const ShaderResourceDeclarationH2M* OpenGLMaterialH2M::FindResourceDeclaration(const std::string& name)
 	{
 		auto& resources = m_Shader->GetResources();
 
 		if (!resources.size())
 		{
-			Log::GetLogger()->error("OpenGLMaterial::FindResourceDeclaration - no resources found (name '{0}')!", name);
+			Log::GetLogger()->error("OpenGLMaterialH2M::FindResourceDeclaration - no resources found (name '{0}')!", name);
 			return nullptr;
 		}
 
@@ -102,72 +103,72 @@ namespace Hazel {
 		return nullptr;
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, float value)
+	void OpenGLMaterialH2M::Set(const std::string& name, float value)
 	{
 		Set<float>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, int value)
+	void OpenGLMaterialH2M::Set(const std::string& name, int value)
 	{
 		Set<int>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, uint32_t value)
+	void OpenGLMaterialH2M::Set(const std::string& name, uint32_t value)
 	{
 		Set<uint32_t>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, bool value)
+	void OpenGLMaterialH2M::Set(const std::string& name, bool value)
 	{
 		// Bools are uints
 		Set<uint32_t>(name, (int)value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const glm::ivec2& value)
+	void OpenGLMaterialH2M::Set(const std::string& name, const glm::ivec2& value)
 	{
 		Set<glm::ivec2>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const glm::ivec3& value)
+	void OpenGLMaterialH2M::Set(const std::string& name, const glm::ivec3& value)
 	{
 		Set<glm::ivec3>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const glm::ivec4& value)
+	void OpenGLMaterialH2M::Set(const std::string& name, const glm::ivec4& value)
 	{
 		Set<glm::ivec4>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const glm::vec2& value)
+	void OpenGLMaterialH2M::Set(const std::string& name, const glm::vec2& value)
 	{
 		Set<glm::vec2>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const glm::vec3& value)
+	void OpenGLMaterialH2M::Set(const std::string& name, const glm::vec3& value)
 	{
 		Set<glm::vec3>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const glm::vec4& value)
+	void OpenGLMaterialH2M::Set(const std::string& name, const glm::vec4& value)
 	{
 		Set<glm::vec4>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const glm::mat3& value)
+	void OpenGLMaterialH2M::Set(const std::string& name, const glm::mat3& value)
 	{
 		Set<glm::mat3>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const glm::mat4& value)
+	void OpenGLMaterialH2M::Set(const std::string& name, const glm::mat4& value)
 	{
 		Set<glm::mat4>(name, value);
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const RefH2M<HazelTexture2D>& texture, uint32_t arrayIndex)
+	void OpenGLMaterialH2M::Set(const std::string& name, const RefH2M<Texture2D_H2M>& texture, uint32_t arrayIndex)
 	{
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const RefH2M<HazelTexture2D>& texture)
+	void OpenGLMaterialH2M::Set(const std::string& name, const RefH2M<Texture2D_H2M>& texture)
 	{
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
@@ -180,7 +181,7 @@ namespace Hazel {
 		m_Texture2Ds[slot] = texture;
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const RefH2M<HazelTextureCube>& texture)
+	void OpenGLMaterialH2M::Set(const std::string& name, const RefH2M<TextureCubeH2M>& texture)
 	{
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
@@ -197,7 +198,7 @@ namespace Hazel {
 		m_Textures[slot] = texture;
 	}
 
-	void OpenGLMaterial::Set(const std::string& name, const RefH2M<HazelImage2D>& image)
+	void OpenGLMaterialH2M::Set(const std::string& name, const RefH2M<Image2D_H2M>& image)
 	{
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
@@ -210,52 +211,52 @@ namespace Hazel {
 		m_Images[slot] = image;
 	}
 
-	float& OpenGLMaterial::GetFloat(const std::string& name)
+	float& OpenGLMaterialH2M::GetFloat(const std::string& name)
 	{
 		return Get<float>(name);
 	}
 
-	int32_t& OpenGLMaterial::GetInt(const std::string& name)
+	int32_t& OpenGLMaterialH2M::GetInt(const std::string& name)
 	{
 		return Get<int32_t>(name);
 	}
 
-	uint32_t& OpenGLMaterial::GetUInt(const std::string& name)
+	uint32_t& OpenGLMaterialH2M::GetUInt(const std::string& name)
 	{
 		return Get<uint32_t>(name);
 	}
 
-	bool& OpenGLMaterial::GetBool(const std::string& name)
+	bool& OpenGLMaterialH2M::GetBool(const std::string& name)
 	{
 		return Get<bool>(name);
 	}
 
-	glm::vec2& OpenGLMaterial::GetVector2(const std::string& name)
+	glm::vec2& OpenGLMaterialH2M::GetVector2(const std::string& name)
 	{
 		return Get<glm::vec2>(name);
 	}
 
-	glm::vec3& OpenGLMaterial::GetVector3(const std::string& name)
+	glm::vec3& OpenGLMaterialH2M::GetVector3(const std::string& name)
 	{
 		return Get<glm::vec3>(name);
 	}
 
-	glm::vec4& OpenGLMaterial::GetVector4(const std::string& name)
+	glm::vec4& OpenGLMaterialH2M::GetVector4(const std::string& name)
 	{
 		return Get<glm::vec4>(name);
 	}
 
-	glm::mat3& OpenGLMaterial::GetMatrix3(const std::string& name)
+	glm::mat3& OpenGLMaterialH2M::GetMatrix3(const std::string& name)
 	{
 		return Get<glm::mat3>(name);
 	}
 
-	glm::mat4& OpenGLMaterial::GetMatrix4(const std::string& name)
+	glm::mat4& OpenGLMaterialH2M::GetMatrix4(const std::string& name)
 	{
 		return Get<glm::mat4>(name);
 	}
 
-	RefH2M<HazelTexture2D> OpenGLMaterial::GetTexture2D(const std::string& name)
+	RefH2M<Texture2D_H2M> OpenGLMaterialH2M::GetTexture2D(const std::string& name)
 	{
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
@@ -273,36 +274,36 @@ namespace Hazel {
 		return m_Texture2Ds[slot];
 	}
 
-	RefH2M<HazelTextureCube> OpenGLMaterial::TryGetTextureCube(const std::string& name)
+	RefH2M<TextureCubeH2M> OpenGLMaterialH2M::TryGetTextureCube(const std::string& name)
 	{
-		return TryGetResource<HazelTextureCube>(name);
+		return TryGetResource<TextureCubeH2M>(name);
 	}
 
-	RefH2M<HazelTexture2D> OpenGLMaterial::TryGetTexture2D(const std::string& name)
+	RefH2M<Texture2D_H2M> OpenGLMaterialH2M::TryGetTexture2D(const std::string& name)
 	{
 		auto decl = FindResourceDeclaration(name);
 		if (!decl)
 		{
-			return Hazel::RefH2M<Hazel::HazelTexture2D>();
+			return RefH2M<Texture2D_H2M>();
 		}
 
 		uint32_t slot = decl->GetRegister();
 		if (m_Texture2Ds.find(slot) == m_Texture2Ds.end())
 		{
-			return Hazel::RefH2M<Hazel::HazelTexture2D>();
+			return RefH2M<Texture2D_H2M>();
 		}
 
 		return m_Texture2Ds[slot];
 	}
 
-	RefH2M<HazelTextureCube> OpenGLMaterial::GetTextureCube(const std::string& name)
+	RefH2M<TextureCubeH2M> OpenGLMaterialH2M::GetTextureCube(const std::string& name)
 	{
-		return GetResource<HazelTextureCube>(name);
+		return GetResource<TextureCubeH2M>(name);
 	}
 
-	void OpenGLMaterial::UpdateForRendering()
+	void OpenGLMaterialH2M::UpdateForRendering()
 	{
-		RefH2M<OpenGLShader> shader = m_Shader.As<OpenGLShader>();
+		RefH2M<OpenGLShaderH2M> shader = m_Shader.As<OpenGLShaderH2M>();
 
 		// HazelRenderer::Submit([shader]() {});
 		{
@@ -314,56 +315,56 @@ namespace Hazel {
 
 		if (shaderBuffers.size() > 0)
 		{
-			const ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
+			const ShaderBufferH2M& buffer = (*shaderBuffers.begin()).second;
 
 			for (auto& [name, uniform] : buffer.Uniforms)
 			{
 				switch (uniform.GetType())
 				{
-				case ShaderUniformType::Bool:
-				case ShaderUniformType::UInt:
+				case ShaderUniformTypeH2M::Bool:
+				case ShaderUniformTypeH2M::UInt:
 				{
 					uint32_t value = m_UniformStorageBuffer.Read<uint32_t>(uniform.GetOffset());
 					shader->SetUniform(name, (int)value);
 					break;
 				}
-				case ShaderUniformType::Int:
+				case ShaderUniformTypeH2M::Int:
 				{
 					int value = m_UniformStorageBuffer.Read<int>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Float:
+				case ShaderUniformTypeH2M::Float:
 				{
 					float value = m_UniformStorageBuffer.Read<float>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Vec2:
+				case ShaderUniformTypeH2M::Vec2:
 				{
 					const glm::vec2& value = m_UniformStorageBuffer.Read<glm::vec2>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Vec3:
+				case ShaderUniformTypeH2M::Vec3:
 				{
 					const glm::vec3& value = m_UniformStorageBuffer.Read<glm::vec3>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Vec4:
+				case ShaderUniformTypeH2M::Vec4:
 				{
 					const glm::vec4& value = m_UniformStorageBuffer.Read<glm::vec4>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Mat3:
+				case ShaderUniformTypeH2M::Mat3:
 				{
 					const glm::mat3& value = m_UniformStorageBuffer.Read<glm::mat3>(uniform.GetOffset());
 					shader->SetUniform(name, value);
 					break;
 				}
-				case ShaderUniformType::Mat4:
+				case ShaderUniformTypeH2M::Mat4:
 				{
 					const glm::mat4& value = m_UniformStorageBuffer.Read<glm::mat4>(uniform.GetOffset());
 					shader->SetUniform(name, value);
@@ -386,15 +387,15 @@ namespace Hazel {
 			{
 				// HazelRenderer::Submit([i, texture]() {});
 				{
-					if (texture->GetType() == TextureType::TextureCube)
+					if (texture->GetType() == TextureTypeH2M::TextureCube)
 					{
-						RefH2M<OpenGLTextureCube> glTexture = texture.As<OpenGLTextureCube>();
+						RefH2M<OpenGLTextureCubeH2M> glTexture = texture.As<OpenGLTextureCubeH2M>();
 						glBindTextureUnit((GLuint)i, glTexture->GetRendererID());
 					}
 					else
 					{
-						RefH2M<OpenGLTexture2D> glTexture = texture.As<OpenGLTexture2D>();
-						RefH2M<OpenGLImage2D> image = glTexture->GetImage().As<OpenGLImage2D>();
+						RefH2M<OpenGLTexture2D_H2M> glTexture = texture.As<OpenGLTexture2D_H2M>();
+						RefH2M<OpenGLImage2D_H2M> image = glTexture->GetImage().As<OpenGLImage2D_H2M>();
 						glBindTextureUnit((GLuint)i, image->GetRendererID());
 					}
 				}
@@ -421,7 +422,7 @@ namespace Hazel {
 			if (texture)
 			{
 				uint32_t textureSlot = slot;
-				RefH2M<HazelImage2D> image = texture->GetImage();
+				RefH2M<Image2D_H2M> image = texture->GetImage();
 				RefH2M<OpenGLImage2D> glImage = image.As<OpenGLImage2D>();
 				// HazelRenderer::Submit([textureSlot, glImage]() {});
 				{

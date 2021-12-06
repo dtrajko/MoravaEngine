@@ -7,20 +7,21 @@
 
 #pragma once
 
-#include "Hazel/Renderer/RendererContext.h"
+#include "H2M/Renderer/RendererContextH2M.h"
 
 #include "Core/Window.h"
 
 
 struct GLFWwindow;
 
-namespace Hazel {
+namespace H2M
+{
 
-	class OpenGLContext : public RendererContext
+	class OpenGLContextH2M : public RendererContextH2M
 	{
 	public:
-		OpenGLContext(Window* window);
-		virtual ~OpenGLContext();
+		OpenGLContextH2M(Window* window);
+		virtual ~OpenGLContextH2M();
 
 		virtual void Create() override;
 		virtual void BeginFrame() override {}

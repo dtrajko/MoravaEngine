@@ -2,25 +2,26 @@
 
 #pragma once
 
-#include "Hazel/ImGui/ImGuiLayer.h"
+#include "H2M/ImGui/ImGuiLayerH2M.h"
 
 
-namespace Hazel {
+namespace H2M
+{
 
-	class VulkanImGuiLayer : public ImGuiLayer
+	class VulkanImGuiLayerH2M : public ImGuiLayerH2M
 	{
 	public:
-		VulkanImGuiLayer();
-		VulkanImGuiLayer(const std::string& name);
-		~VulkanImGuiLayer();
+		VulkanImGuiLayerH2M();
+		VulkanImGuiLayerH2M(const std::string& name);
+		~VulkanImGuiLayerH2M();
 
 		virtual void Begin() override;
 		virtual void End() override;
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
-		virtual void OnUpdate(Timestep ts) override;
-		virtual void OnEvent(Event& event) override;
+		virtual void OnUpdate(TimestepH2M ts) override;
+		virtual void OnEvent(EventH2M& event) override;
 		virtual void OnRender() override;
 		virtual void OnImGuiRender() override;
 

@@ -888,7 +888,7 @@ namespace H2M {
 		m_DescriptorImageInfo.imageLayout = readonly ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL;
 
 #if 0
-		auto device = VulkanContext::GetCurrentDevice();
+		auto device = VulkanContextH2M::GetCurrentDevice();
 		auto vulkanDevice = device->GetVulkanDevice();
 
 		VkImageMemoryBarrier barrier = {};
@@ -904,7 +904,7 @@ namespace H2M {
 		int32_t mipWidth = m_Width;
 		int32_t mipHeight = m_Height;
 
-		VkCommandBuffer blitCmd = VulkanContext::GetCurrentDevice()->GetCommandBuffer(true);
+		VkCommandBuffer blitCmd = VulkanContextH2M::GetCurrentDevice()->GetCommandBuffer(true);
 
 		auto mipLevels = GetMipLevelCount();
 		for (uint32_t i = 1; i < mipLevels; i++)
@@ -983,7 +983,7 @@ namespace H2M {
 			barrier.subresourceRange,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
 
-		VulkanContext::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
+		VulkanContextH2M::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
 #endif
 
 	}

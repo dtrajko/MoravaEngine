@@ -1,20 +1,21 @@
-#include "VulkanVertexBuffer.h"
+#include "VulkanVertexBufferH2M.h"
 
-#include "VulkanContext.h"
+#include "VulkanContextH2M.h"
 
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/RendererH2M.h"
 
-namespace Hazel {
+namespace H2M
+{
 
-	VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size, VertexBufferUsage usage)
+	VulkanVertexBufferH2M::VulkanVertexBufferH2M(uint32_t size, VertexBufferUsageH2M usage)
 		: m_Size(size)
 	{
 	}
 
-	VulkanVertexBuffer::VulkanVertexBuffer(void* data, uint32_t size, VertexBufferUsage usage)
+	VulkanVertexBufferH2M::VulkanVertexBufferH2M(void* data, uint32_t size, VertexBufferUsageH2M usage)
 		: m_Size(size)
 	{
-		m_LocalData = Buffer::Copy(data, size);
+		m_LocalData = BufferH2M::Copy(data, size);
 
 		//	Ref<VulkanVertexBuffer> instance = this;
 		//	HazelRenderer::Submit([instance]() mutable
@@ -45,7 +46,7 @@ namespace Hazel {
 		//	});
 
 		// TODO: Use staging
-		auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		auto device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		// Index buffer
 		VkBufferCreateInfo indexbufferInfo = {};
@@ -58,7 +59,7 @@ namespace Hazel {
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(device, m_VulkanBuffer, &memoryRequirements);
 
-		VulkanAllocator allocator(std::string("VertexBuffer"));
+		VulkanAllocatorH2M allocator(std::string("VertexBuffer"));
 		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		void* dstBuffer;
@@ -67,36 +68,6 @@ namespace Hazel {
 		vkUnmapMemory(device, m_DeviceMemory);
 
 		VK_CHECK_RESULT(vkBindBufferMemory(device, m_VulkanBuffer, m_DeviceMemory, 0));
-	}
-
-	VulkanVertexBuffer::~VulkanVertexBuffer()
-	{
-		VkBuffer buffer = m_VulkanBuffer;
-		VmaAllocation allocation = m_MemoryAllocation;
-		// HazelRenderer::SubmitResourceFree([buffer, allocation]() {});
-		{
-			VulkanAllocatorVMA allocator("VertexBuffer");
-			allocator.DestroyBuffer(buffer, allocation);
-		}
-	}
-
-	void VulkanVertexBuffer::SetData(void* buffer, uint32_t size, uint32_t offset)
-	{
-		H2M_CORE_ASSERT(size <= m_LocalData.Size);
-		memcpy(m_LocalData.Data, (uint8_t*)buffer + offset, size);;
-		// Ref<VulkanVertexBuffer> instance = this;
-		// HazelRenderer::Submit([instance, size, offset]() mutable {});
-		{
-			RT_SetData(m_LocalData.Data, size, offset);
-		}
-	}
-
-	void VulkanVertexBuffer::RT_SetData(void* buffer, uint32_t size, uint32_t offset)
-	{
-		//	VulkanAllocator allocator(std::string("VulkanVertexBuffer"));
-		//	uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
-		//	memcpy(pData, (uint8_t*)buffer + offset, size);
-		//	allocator.UnmapMemory(m_MemoryAllocation);
 	}
 
 }

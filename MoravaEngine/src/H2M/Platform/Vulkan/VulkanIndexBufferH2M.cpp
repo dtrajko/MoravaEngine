@@ -1,22 +1,24 @@
-#include "VulkanIndexBuffer.h"
+#include "VulkanIndexBufferH2M.h"
 
-#include "VulkanContext.h"
+#include "VulkanContextH2M.h"
 
-#include "Hazel/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/RendererH2M.h"
 
-namespace Hazel {
 
-	VulkanIndexBuffer::VulkanIndexBuffer(uint32_t size)
+namespace H2M
+{
+
+	VulkanIndexBufferH2M::VulkanIndexBufferH2M(uint32_t size)
 		: m_Size(size)
 	{
 	}
 
-	VulkanIndexBuffer::VulkanIndexBuffer(void* data, uint32_t size)
+	VulkanIndexBufferH2M::VulkanIndexBufferH2M(void* data, uint32_t size)
 		: m_Size(size)
 	{
-		m_LocalData = Buffer::Copy(data, size);
+		m_LocalData = BufferH2M::Copy(data, size);
 
-		//	Ref<VulkanIndexBuffer> instance = this;
+		//	Ref<VulkanIndexBufferH2M> instance = this;
 		//	HazelRenderer::Submit([instance]() mutable
 		//	{
 		//		auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -43,7 +45,7 @@ namespace Hazel {
 		//		VK_CHECK_RESULT(vkBindBufferMemory(device, instance->m_VulkanBuffer, instance->m_DeviceMemory, 0));
 		//	});
 
-		auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		auto device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		// Index buffer
 		VkBufferCreateInfo indexbufferInfo = {};
@@ -56,7 +58,7 @@ namespace Hazel {
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(device, m_VulkanBuffer, &memoryRequirements);
 
-		VulkanAllocator allocator(std::string("IndexBuffer"));
+		VulkanAllocatorH2M allocator(std::string("IndexBuffer"));
 		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		void* dstBuffer;
@@ -67,26 +69,15 @@ namespace Hazel {
 		VK_CHECK_RESULT(vkBindBufferMemory(device, m_VulkanBuffer, m_DeviceMemory, 0));
 	}
 
-	VulkanIndexBuffer::~VulkanIndexBuffer()
-	{
-		VkBuffer buffer = m_VulkanBuffer;
-		VmaAllocation allocation = m_MemoryAllocation;
-		HazelRenderer::SubmitResourceFree([buffer, allocation]() {});
-		{
-			VulkanAllocatorVMA allocator(std::string("IndexBuffer"));
-			allocator.DestroyBuffer(buffer, allocation);
-		}
-	}
-
-	void VulkanIndexBuffer::SetData(void* buffer, uint32_t size, uint32_t offset)
+	void VulkanIndexBufferH2M::SetData(void* buffer, uint32_t size, uint32_t offset)
 	{
 	}
 
-	void VulkanIndexBuffer::Bind() const
+	void VulkanIndexBufferH2M::Bind() const
 	{
 	}
 
-	RendererID VulkanIndexBuffer::GetRendererID() const
+	RendererID_H2M VulkanIndexBufferH2M::GetRendererID() const
 	{
 		return 0;
 	}

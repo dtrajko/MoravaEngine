@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "H2M/ImGui/ImGuiLayer.h"
+#include "H2M/ImGui/ImGuiLayerH2M.h"
 
 
-class DX11ImGuiLayer : public H2M::ImGuiLayer
+class DX11ImGuiLayer : public H2M::ImGuiLayerH2M
 {
 public:
 	DX11ImGuiLayer();
@@ -17,8 +17,8 @@ public:
 
 	virtual void OnAttach();
 	virtual void OnDetach();
-	virtual void OnUpdate(H2M::Timestep ts) override;
-	virtual void OnEvent(Event& event) override;
+	virtual void OnUpdate(H2M::TimestepH2M ts) override;
+	virtual void OnEvent(H2M::EventH2M& event) override;
 	virtual void OnRender() override;
 	virtual void OnImGuiRender() override;
 
