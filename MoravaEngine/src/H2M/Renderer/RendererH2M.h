@@ -62,12 +62,12 @@ namespace H2M
 		static RendererCapabilitiesH2M& GetCapabilities();
 
 		// Commands
-		static void Clear();                                                                // TODO: to be removed from HazelRenderer
-		static void Clear(float r, float g, float b, float a = 1.0f);                       // TODO: to be removed from HazelRenderer
-		static void SetClearColor(float r, float g, float b, float a);                      // TODO: to be removed from HazelRenderer
+		static void Clear();                                                                   // TODO: to be removed from HazelRenderer
+		static void Clear(float r, float g, float b, float a = 1.0f);                          // TODO: to be removed from HazelRenderer
+		static void SetClearColor(float r, float g, float b, float a);                         // TODO: to be removed from HazelRenderer
 		static void DrawIndexed(uint32_t count, PrimitiveTypeH2M type, bool depthTest = true); // TODO: to be removed from HazelRenderer
-		static void SetLineThickness(float thickness); // For OpenGL                        // TODO: to be removed from HazelRenderer
-		static void ClearMagenta();                                                         // TODO: to be removed from HazelRenderer
+		static void SetLineThickness(float thickness); // For OpenGL                           // TODO: to be removed from HazelRenderer
+		static void ClearMagenta();                                                            // TODO: to be removed from HazelRenderer
 
 		static RefH2M<ShaderLibraryH2M>& GetShaderLibrary();
 

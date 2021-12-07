@@ -678,7 +678,7 @@ void EnvMapSceneRenderer::OnImGuiRender()
         {
             float size = ImGui::GetContentRegionAvailWidth();
             auto image = s_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
-            H2M::UI::Image(image, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+            // H2M::UI::Image(image, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
         }
         H2M::UI::EndTreeNode();
     }
@@ -734,7 +734,7 @@ void EnvMapSceneRenderer::OnImGuiRender()
             auto [mipWidth, mipHeight] = s_BloomComputeTextures[tex]->GetMipSize(mip);
             std::string label = fmt::format("Mip ({0}x{1})", mipWidth, mipHeight);
             H2M::UI::PropertySlider(label.c_str(), mip, 0, s_BloomComputeTextures[tex]->GetMipLevelCount() - 1);
-            H2M::UI::ImageMip(s_BloomComputeTextures[tex]->GetImage(), mip, { size, size * (1.0f / s_BloomComputeTextures[tex]->GetImage()->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+            // H2M::UI::ImageMip(s_BloomComputeTextures[tex]->GetImage(), mip, { size, size * (1.0f / s_BloomComputeTextures[tex]->GetImage()->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
         }
         H2M::UI::EndTreeNode();
     }

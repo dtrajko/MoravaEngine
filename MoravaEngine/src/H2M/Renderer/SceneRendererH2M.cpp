@@ -620,7 +620,7 @@ namespace H2M
 			UI::Property("Dirt Intensity", m_BloomSettings.DirtIntensity, 0.05f, 0.0f, 20.0f);
 
 			// TODO(Yan): move this to somewhere else
-			UI::Image(m_BloomDirtTexture, ImVec2(64, 64));
+			// UI::Image(m_BloomDirtTexture, ImVec2(64, 64));
 			if (ImGui::IsItemHovered())
 			{
 				if (ImGui::IsItemClicked())
@@ -652,7 +652,7 @@ namespace H2M
 			{
 				float size = ImGui::GetContentRegionAvailWidth();
 				auto image = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
-				UI::Image(image, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+				// UI::Image(image, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
 			}
 			UI::EndTreeNode();
 		}
@@ -689,7 +689,7 @@ namespace H2M
 				UI::EndPropertyGrid();
 				if (m_ResourcesCreated)
 				{
-					UI::Image(image, (uint32_t)cascadeIndex, { size, size }, { 0, 1 }, { 1, 0 });
+					// UI::Image(image, (uint32_t)cascadeIndex, { size, size }, { 0, 1 }, { 1, 0 });
 				}
 				UI::EndTreeNode();
 			}
@@ -708,7 +708,7 @@ namespace H2M
 				auto [mipWidth, mipHeight] = m_BloomComputeTextures[tex]->GetMipSize(mip);
 				std::string label = fmt::format("Mip ({0}x{1})", mipWidth, mipHeight);
 				UI::PropertySlider(label.c_str(), mip, 0, m_BloomComputeTextures[tex]->GetMipLevelCount() - 1);
-				UI::ImageMip(m_BloomComputeTextures[tex]->GetImage(), mip, { size, size * (1.0f / m_BloomComputeTextures[tex]->GetImage()->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+				// UI::ImageMip(m_BloomComputeTextures[tex]->GetImage(), mip, { size, size * (1.0f / m_BloomComputeTextures[tex]->GetImage()->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
 			}
 			UI::EndTreeNode();
 		}

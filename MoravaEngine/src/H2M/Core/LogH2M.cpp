@@ -4,17 +4,17 @@
  * @licence Apache License 2.0
  */
 
-#include "Hazel/Core/HazelLog.h"
+#include "H2M/Core/LogH2M.h"
 
 #include "spdlog/sinks/stdout_color_sinks.h"
 
-namespace Hazel {
+namespace H2M
+{
 
-	std::shared_ptr<spdlog::logger> HazelLog::s_CoreLogger;
-	std::shared_ptr<spdlog::logger> HazelLog::s_ClientLogger;
-	std::shared_ptr<spdlog::logger> HazelLog::s_EditorConsoleLogger;
+	std::shared_ptr<spdlog::logger> LogH2M::s_CoreLogger;
+	std::shared_ptr<spdlog::logger> LogH2M::s_ClientLogger;
 
-	void HazelLog::Init()
+	void LogH2M::Init()
 	{
 		spdlog::set_pattern("%^[%T] %n: %v%$");
 		s_CoreLogger = spdlog::stdout_color_mt("HAZEL");

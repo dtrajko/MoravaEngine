@@ -143,7 +143,7 @@ void Application::Run()
 
 		if (!m_Minimized)
 		{
-			H2M::RendererH2M::BeginFrame();
+			// H2M::RendererH2M::BeginFrame();
 			{
 				for (H2M::LayerH2M* layer : m_LayerStack)
 				{
@@ -160,7 +160,7 @@ void Application::Run()
 				H2M::RendererH2M::Submit([app]() { app->RenderImGui(); });
 				// H2M::RendererH2M::Submit([=]() { m_ImGuiLayer->End(); });
 			}
-			H2M::RendererH2M::EndFrame();
+			// H2M::RendererH2M::EndFrame();
 
 			// On Render thread
 			m_Window->GetRenderContext()->BeginFrame();

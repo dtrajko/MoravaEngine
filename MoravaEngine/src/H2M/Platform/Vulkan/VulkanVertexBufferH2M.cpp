@@ -77,4 +77,16 @@ namespace H2M
 		VK_CHECK_RESULT_H2M(vkBindBufferMemory(device, m_VulkanBuffer, m_DeviceMemory, 0));
 	}
 
+	VulkanVertexBufferH2M::~VulkanVertexBufferH2M()
+	{
+	}
+
+	void VulkanVertexBufferH2M::SetData(void* buffer, uint32_t size, uint32_t offset)
+	{
+	}
+
+	void VulkanVertexBufferH2M::RT_SetData(void* buffer, uint32_t size, uint32_t offset)
+	{
+	}
+
 }
