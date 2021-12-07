@@ -465,9 +465,6 @@
     <ClCompile Include="src\ImGui\ImGuiWrapper.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
-      <Filter>Platform\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>Platform\Windows</Filter>
     </ClCompile>
@@ -1364,6 +1361,12 @@
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\ShaderCacheH2M.cpp">
       <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Windows\WindowsInputH2M.cpp">
+      <Filter>H2M\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Hazel\Platform\Windows\WindowsInput.cpp">
+      <Filter>Hazel\Platform\Windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -3306,6 +3309,9 @@
     </Filter>
     <Filter Include="H2M\Project">
       <UniqueIdentifier>{fd8626a3-b58b-43eb-b944-92b1b7eccbf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="H2M\Platform\Windows">
+      <UniqueIdentifier>{9f3e24ef-98e5-4f9b-aefd-25b43a6d3014}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

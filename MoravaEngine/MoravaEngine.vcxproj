@@ -223,6 +223,7 @@
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTextureH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanVertexBufferH2M.cpp" />
+    <ClCompile Include="src\H2M\Platform\Windows\WindowsInputH2M.cpp" />
     <ClCompile Include="src\H2M\Project\UserPreferencesH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\CameraH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\FramebufferH2M.cpp" />
@@ -359,6 +360,7 @@
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanUtils.cpp" />
     <ClCompile Include="src\Hazel\Platform\Vulkan\VulkanVertexBuffer.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsFileSystem.cpp" />
+    <ClCompile Include="src\Hazel\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="src\Hazel\Project\Project.cpp" />
     <ClCompile Include="src\Hazel\Project\UserPreferences.cpp" />
@@ -598,7 +600,6 @@
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererBasic.cpp" />
     <ClCompile Include="src\Platform\Vulkan\VulkanSkyboxCube.cpp" />
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.cpp" />
-    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Player\Player.cpp" />
     <ClCompile Include="src\Player\PlayerController.cpp" />
