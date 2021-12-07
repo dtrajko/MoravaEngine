@@ -80,14 +80,14 @@ namespace H2M
 					// We will sample directly from the color attachment
 					imageCreateInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 
-					VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &m_ColorAttachment.image));
+					VK_CHECK_RESULT_H2M(vkCreateImage(device, &imageCreateInfo, nullptr, &m_ColorAttachment.image));
 
 					VkMemoryRequirements memoryRequirements;
 					vkGetImageMemoryRequirements(device, m_ColorAttachment.image, &memoryRequirements);
 
 					allocator.Allocate(memoryRequirements, &m_ColorAttachment.mem);
 
-					VK_CHECK_RESULT(vkBindImageMemory(device, m_ColorAttachment.image, m_ColorAttachment.mem, 0));
+					VK_CHECK_RESULT_H2M(vkBindImageMemory(device, m_ColorAttachment.image, m_ColorAttachment.mem, 0));
 
 					VkImageViewCreateInfo colorImageViewCreateInfo = {};
 					colorImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -100,7 +100,7 @@ namespace H2M
 					colorImageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 					colorImageViewCreateInfo.subresourceRange.layerCount = 1;
 					colorImageViewCreateInfo.image = m_ColorAttachment.image;
-					VK_CHECK_RESULT(vkCreateImageView(device, &colorImageViewCreateInfo, nullptr, &m_ColorAttachment.view));
+					VK_CHECK_RESULT_H2M(vkCreateImageView(device, &colorImageViewCreateInfo, nullptr, &m_ColorAttachment.view));
 
 					// Create sampler to sample from the attachment in the fragment shader
 					VkSamplerCreateInfo samplerCreateInfo = {};
@@ -117,7 +117,7 @@ namespace H2M
 					samplerCreateInfo.minLod = 0.0f;
 					samplerCreateInfo.maxLod = 1.0f;
 					samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-					VK_CHECK_RESULT(vkCreateSampler(device, &samplerCreateInfo, nullptr, &m_ColorAttachmentSampler));
+					VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerCreateInfo, nullptr, &m_ColorAttachmentSampler));
 
 					attachmentDescriptions[0].flags = 0;
 					attachmentDescriptions[0].format = COLOR_BUFFER_FORMAT;
@@ -148,12 +148,12 @@ namespace H2M
 					// We will sample directly from the depth attachment
 					imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-					VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &m_DepthAttachment.image));
+					VK_CHECK_RESULT_H2M(vkCreateImage(device, &imageCreateInfo, nullptr, &m_DepthAttachment.image));
 					VkMemoryRequirements memoryRequirements;
 					vkGetImageMemoryRequirements(device, m_DepthAttachment.image, &memoryRequirements);
 					allocator.Allocate(memoryRequirements, &m_DepthAttachment.mem);
 
-					VK_CHECK_RESULT(vkBindImageMemory(device, m_DepthAttachment.image, m_DepthAttachment.mem, 0));
+					VK_CHECK_RESULT_H2M(vkBindImageMemory(device, m_DepthAttachment.image, m_DepthAttachment.mem, 0));
 
 					VkImageViewCreateInfo depthStencilImageViewCreateInfo = {};
 					depthStencilImageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -167,7 +167,7 @@ namespace H2M
 					depthStencilImageViewCreateInfo.subresourceRange.baseArrayLayer = 0;
 					depthStencilImageViewCreateInfo.subresourceRange.layerCount = 1;
 					depthStencilImageViewCreateInfo.image = m_DepthAttachment.image;
-					VK_CHECK_RESULT(vkCreateImageView(device, &depthStencilImageViewCreateInfo, nullptr, &m_DepthAttachment.view));
+					VK_CHECK_RESULT_H2M(vkCreateImageView(device, &depthStencilImageViewCreateInfo, nullptr, &m_DepthAttachment.view));
 
 					// Depth attachment
 					attachmentDescriptions[1].flags = 0;
@@ -219,7 +219,7 @@ namespace H2M
 				renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 				renderPassInfo.pDependencies = dependencies.data();
 
-				VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass));
+				VK_CHECK_RESULT_H2M(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass));
 
 				VkImageView attachments[2];
 				attachments[0] = m_ColorAttachment.view;
@@ -234,7 +234,7 @@ namespace H2M
 				framebufferCreateInfo.height = height;
 				framebufferCreateInfo.layers = 1;
 
-				VK_CHECK_RESULT(vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &m_Framebuffer));
+				VK_CHECK_RESULT_H2M(vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &m_Framebuffer));
 
 				// Fill a descriptor for later use in a descriptor set
 				m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

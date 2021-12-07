@@ -2,9 +2,9 @@
 
 #include "Scene/SceneHazelEnvMap.h"
 
-#include "H2M/Scene/Components.h"
+#include "H2M/Scene/ComponentsH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
-#include "H2M/Renderer/RendererAPI.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "../../ImGuizmo/ImGuizmo.h"
 
@@ -203,7 +203,7 @@ void SceneHazelEnvMap::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
     m_EnvMapEditorLayer->ShowExampleAppDockSpace(p_open, mainWindow);
 }
 
-bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
+bool SceneHazelEnvMap::OnKeyPressed(H2M::KeyPressedEventH2M& e)
 {
     // Shortcuts
     if (e.GetRepeatCount() > 0) {
@@ -243,7 +243,7 @@ bool SceneHazelEnvMap::OnKeyPressed(KeyPressedEvent& e)
     return true;
 }
 
-void SceneHazelEnvMap::OnEntitySelected(H2M::Entity entity)
+void SceneHazelEnvMap::OnEntitySelected(H2M::EntityH2M entity)
 {
     // auto& tc = entity.GetComponent<H2M::TransformComponent>();
     // m_EnvMapEditorLayer->SetMeshEntity(entity);

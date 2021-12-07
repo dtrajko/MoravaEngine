@@ -35,9 +35,9 @@ inline std::ostream& operator<<(std::ostream& os, MouseButton button)
 class Input
 {
 public:
-	static bool IsKeyPressed(KeyCode key);               // KeyCode key
-	static bool IsMouseButtonPressed(MouseCode button);  // MouseCode button
-	static bool IsMouseButtonReleased(MouseCode button); // MouseCode button
+	static bool IsKeyPressed(KeyCodeH2M key);               // KeyCode key
+	static bool IsMouseButtonPressed(MouseCodeH2M button);  // MouseCode button
+	static bool IsMouseButtonReleased(MouseCodeH2M button); // MouseCode button
 	static std::pair<float, float> GetMousePosition();
 	static float GetMouseX();
 	static float GetMouseY();

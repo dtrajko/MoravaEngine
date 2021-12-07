@@ -21,7 +21,7 @@ namespace H2M
 	{
 	private:
 		friend class ShaderH2M;
-		friend class OpenGLShader;
+		friend class OpenGLShaderH2M;
 		friend class ShaderStructH2M;
 
 	public:

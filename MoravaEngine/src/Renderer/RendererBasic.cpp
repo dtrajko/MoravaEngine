@@ -1,6 +1,6 @@
 #include "Renderer/RendererBasic.h"
 
-#include "H2M/Renderer/RendererAPI.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "Core/Application.h"
 #include "Core/CommonValues.h"
@@ -16,7 +16,7 @@ std::map<std::string, H2M::RefH2M<MoravaShader>> RendererBasic::s_Shaders;
 std::map<std::string, int> RendererBasic::s_Uniforms;
 glm::vec4 RendererBasic::s_BgColor;
 // bool RendererBasic::s_SpirV_Enabled;
-H2M::RefH2M<H2M::RendererContext> RendererBasic::s_RendererContext;
+H2M::RefH2M<H2M::RendererContextH2M> RendererBasic::s_RendererContext;
 
 
 RendererBasic::RendererBasic()
@@ -388,7 +388,7 @@ void RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* s
 }
 
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
-void RendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest)
+void RendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest)
 {
 	switch (H2M::RendererAPI_H2M::Current())
 	{

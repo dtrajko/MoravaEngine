@@ -11,14 +11,14 @@ bool Input::IsKeyPressed(KeyCode key)
 	return state == GLFW_PRESS || state == GLFW_REPEAT;
 }
 
-bool Input::IsMouseButtonPressed(MouseCode button)
+bool Input::IsMouseButtonPressed(MouseCodeH2M button)
 {
 	auto window = static_cast<GLFWwindow*>(Application::Get()->GetWindow()->GetHandle());
 	auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));
 	return state == GLFW_PRESS;
 }
 
-bool Input::IsMouseButtonReleased(MouseCode button)
+bool Input::IsMouseButtonReleased(MouseCodeH2M button)
 {
 	auto window = static_cast<GLFWwindow*>(Application::Get()->GetWindow()->GetHandle());
 	auto state = glfwGetMouseButton(window, static_cast<int32_t>(button));

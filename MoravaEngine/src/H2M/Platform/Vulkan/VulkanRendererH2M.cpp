@@ -590,7 +590,7 @@ namespace H2M
 			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 			s_Data.ActiveCommandBuffer = drawCommandBuffer;
 			H2M_CORE_ASSERT(s_Data.ActiveCommandBuffer);
-			// VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo)); // commandBuffer must not be in the recording or pending state
+			// VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo)); // commandBuffer must not be in the recording or pending state
 		}
 	}
 
@@ -598,7 +598,7 @@ namespace H2M
 	{
 		// RendererH2M::Submit([]() {});
 		{
-			// VK_CHECK_RESULT(vkEndCommandBuffer(s_Data.ActiveCommandBuffer));
+			// VK_CHECK_RESULT_H2M(vkEndCommandBuffer(s_Data.ActiveCommandBuffer));
 			s_Data.ActiveCommandBuffer = nullptr;
 		}
 	}
@@ -717,7 +717,7 @@ namespace H2M
 			cmdBufInfo.pNext = nullptr;
 
 			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
-			VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+			VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
 
 			RefH2M<VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<VulkanFramebufferH2M>();
 
@@ -829,7 +829,7 @@ namespace H2M
 			cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
 			cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
 
-			VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &cmdBufInfo));
+			VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(commandBuffer, &cmdBufInfo));
 
 			// Update dynamic viewport state
 			VkViewport viewport = {};
@@ -876,7 +876,7 @@ namespace H2M
 
 			vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 
-			VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+			VK_CHECK_RESULT_H2M(vkEndCommandBuffer(commandBuffer));
 
 			/**** END CompositeRenderPass(inheritanceInfo) ****/
 
@@ -888,7 +888,7 @@ namespace H2M
 
 			vkCmdEndRenderPass(drawCommandBuffer);
 
-			VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
+			VK_CHECK_RESULT_H2M(vkEndCommandBuffer(drawCommandBuffer));
 		}
 	}
 
@@ -907,7 +907,7 @@ namespace H2M
 			cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
 			cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
 
-			VK_CHECK_RESULT(vkBeginCommandBuffer(s_ImGuiCommandBuffer, &cmdBufInfo));
+			VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(s_ImGuiCommandBuffer, &cmdBufInfo));
 
 			// Update dynamic viewport state
 			VkViewport viewport = {};
@@ -1157,7 +1157,7 @@ namespace H2M
 			ImDrawData* main_draw_data = ImGui::GetDrawData();
 			ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffer);
 
-			VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffer));
+			VK_CHECK_RESULT_H2M(vkEndCommandBuffer(s_ImGuiCommandBuffer));
 
 			commandBuffers.push_back(s_ImGuiCommandBuffer);
 		}

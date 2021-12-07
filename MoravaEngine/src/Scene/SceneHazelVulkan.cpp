@@ -2,7 +2,7 @@
 
 #include "Scene/SceneHazelVulkan.h"
 
-#include "H2M/Scene/Components.h"
+#include "H2M/Scene/ComponentsH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
 
 #include "../../ImGuizmo/ImGuizmo.h"

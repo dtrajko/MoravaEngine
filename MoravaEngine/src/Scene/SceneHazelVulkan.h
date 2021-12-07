@@ -2,10 +2,10 @@
 
 #include "Scene/Scene.h"
 
-#include "H2M/Editor/SceneHierarchyPanel.h"
-#include "H2M/Core/Events/KeyEvent.h"
-#include "H2M/Renderer/HazelMesh.h"
-#include "H2M/Scene/Entity.h"
+#include "H2M/Editor/SceneHierarchyPanelH2M.h"
+#include "H2M/Core/Events/KeyEventH2M.h"
+#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Scene/EntityH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanTestLayer.h"
 
@@ -45,10 +45,10 @@ private:
 
 	void SetupShaders(); // Usually in Renderer* classes
 
-	bool OnKeyPressed(KeyPressedEvent& e);
+	bool OnKeyPressed(H2M::KeyPressedEventH2M& e);
 
 	// Temporary/experimental
-	virtual void OnEntitySelected(H2M::Entity entity) override;
+	virtual void OnEntitySelected(H2M::EntityH2M entity) override;
 
 public:
 	// std::unique_ptr<H2M::VulkanTestLayer> m_VulkanTestLayer;

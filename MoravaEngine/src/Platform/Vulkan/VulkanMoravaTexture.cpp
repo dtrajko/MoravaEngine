@@ -203,14 +203,14 @@ void VulkanMoravaTexture::Invalidate()
 	// This buffer is used as a transfer source for the buffer copy
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	VK_CHECK_RESULT(vkCreateBuffer(vulkanDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
+	VK_CHECK_RESULT_H2M(vkCreateBuffer(vulkanDevice, &bufferCreateInfo, nullptr, &stagingBuffer));
 	vkGetBufferMemoryRequirements(vulkanDevice, stagingBuffer, &memoryRequirements);
 	allocator.Allocate(memoryRequirements, &stagingMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	VK_CHECK_RESULT(vkBindBufferMemory(vulkanDevice, stagingBuffer, stagingMemory, 0));
+	VK_CHECK_RESULT_H2M(vkBindBufferMemory(vulkanDevice, stagingBuffer, stagingMemory, 0));
 
 	// Copy texture data into host local staging buffer
 	uint8_t* destData;
-	VK_CHECK_RESULT(vkMapMemory(vulkanDevice, stagingMemory, 0, memoryRequirements.size, 0, (void**)&destData));
+	VK_CHECK_RESULT_H2M(vkMapMemory(vulkanDevice, stagingMemory, 0, memoryRequirements.size, 0, (void**)&destData));
 	memcpy(destData, m_ImageData.Data, size);
 	vkUnmapMemory(vulkanDevice, stagingMemory);
 
@@ -260,11 +260,11 @@ void VulkanMoravaTexture::Invalidate()
 	imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	imageCreateInfo.extent = { m_Width, m_Height, 1 };
 	imageCreateInfo.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-	VK_CHECK_RESULT(vkCreateImage(vulkanDevice, &imageCreateInfo, nullptr, &m_VulkanImage));
+	VK_CHECK_RESULT_H2M(vkCreateImage(vulkanDevice, &imageCreateInfo, nullptr, &m_VulkanImage));
 
 	vkGetImageMemoryRequirements(vulkanDevice, m_VulkanImage, &memoryRequirements);
 	allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-	VK_CHECK_RESULT(vkBindImageMemory(vulkanDevice, m_VulkanImage, m_DeviceMemory, 0));
+	VK_CHECK_RESULT_H2M(vkBindImageMemory(vulkanDevice, m_VulkanImage, m_DeviceMemory, 0));
 
 	VkCommandBuffer copyCmd = device->GetCommandBuffer(true);
 
@@ -379,7 +379,7 @@ void VulkanMoravaTexture::Invalidate()
 	sampler.maxAnisotropy = 1.0;
 	sampler.anisotropyEnable = VK_FALSE;
 	sampler.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-	VK_CHECK_RESULT(vkCreateSampler(vulkanDevice, &sampler, nullptr, &m_DescriptorImageInfo.sampler));
+	VK_CHECK_RESULT_H2M(vkCreateSampler(vulkanDevice, &sampler, nullptr, &m_DescriptorImageInfo.sampler));
 
 	// Create image view
 	// Textures are not directly accessed by the shaders and
@@ -401,7 +401,7 @@ void VulkanMoravaTexture::Invalidate()
 	view.subresourceRange.levelCount = 1;
 	// The view will be based on the texture's image
 	view.image = m_VulkanImage;
-	VK_CHECK_RESULT(vkCreateImageView(vulkanDevice, &view, nullptr, &m_DescriptorImageInfo.imageView));
+	VK_CHECK_RESULT_H2M(vkCreateImageView(vulkanDevice, &view, nullptr, &m_DescriptorImageInfo.imageView));
 }
 
 bool VulkanMoravaTexture::Load(bool flipVert)

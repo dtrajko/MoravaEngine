@@ -85,7 +85,7 @@ namespace H2M::Utils {
 
 }
 
-#define VK_CHECK_RESULT(f)											             \
+#define VK_CHECK_RESULT_H2M(f)											             \
 {																	             \
 	VkResult res = (f);												             \
 	if (res != VK_SUCCESS)											             \

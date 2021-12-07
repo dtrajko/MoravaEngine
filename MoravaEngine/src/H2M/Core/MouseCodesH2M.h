@@ -9,7 +9,7 @@
 #include <sstream>
 
 
-typedef enum class MouseCode : uint16_t
+typedef enum class MouseCodeH2M : uint16_t
 {
 	// From glfw3.h
 	Button0                = 0,
@@ -27,7 +27,7 @@ typedef enum class MouseCode : uint16_t
 	ButtonMiddle           = Button2
 } Mouse;
 
-inline std::ostream& operator<<(std::ostream& os, MouseCode mouseCode)
+inline std::ostream& operator<<(std::ostream& os, MouseCodeH2M mouseCode)
 {
 	os << static_cast<int32_t>(mouseCode);
 	return os;

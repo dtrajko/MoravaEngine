@@ -47,7 +47,7 @@ namespace H2M
 		memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		memAlloc.allocationSize = requirements.size;
 		memAlloc.memoryTypeIndex = m_Device->GetPhysicalDevice()->GetMemoryTypeIndex(requirements.memoryTypeBits, flags);
-		VK_CHECK_RESULT(vkAllocateMemory(m_Device->GetVulkanDevice(), &memAlloc, nullptr, dest));
+		VK_CHECK_RESULT_H2M(vkAllocateMemory(m_Device->GetVulkanDevice(), &memAlloc, nullptr, dest));
 	}
 
 }

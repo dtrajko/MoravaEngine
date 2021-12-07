@@ -37,7 +37,7 @@ namespace H2M
 		//		indexbufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		//	
 		//		// Copy index data to a buffer visible to the host
-		//		VK_CHECK_RESULT(vkCreateBuffer(device, &indexbufferInfo, nullptr, &instance->m_VulkanBuffer));
+		//		VK_CHECK_RESULT_H2M(vkCreateBuffer(device, &indexbufferInfo, nullptr, &instance->m_VulkanBuffer));
 		//		VkMemoryRequirements memoryRequirements;
 		//		vkGetBufferMemoryRequirements(device, instance->m_VulkanBuffer, &memoryRequirements);
 		//	
@@ -45,11 +45,11 @@ namespace H2M
 		//		allocator.Allocate(memoryRequirements, &instance->m_DeviceMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		//	
 		//		void* dstBuffer;
-		//		VK_CHECK_RESULT(vkMapMemory(device, instance->m_DeviceMemory, 0, instance->m_Size, 0, &dstBuffer));
+		//		VK_CHECK_RESULT_H2M(vkMapMemory(device, instance->m_DeviceMemory, 0, instance->m_Size, 0, &dstBuffer));
 		//		memcpy(dstBuffer, instance->m_LocalData.Data, instance->m_Size);
 		//		vkUnmapMemory(device, instance->m_DeviceMemory);
 		//	
-		//		VK_CHECK_RESULT(vkBindBufferMemory(device, instance->m_VulkanBuffer, instance->m_DeviceMemory, 0));
+		//		VK_CHECK_RESULT_H2M(vkBindBufferMemory(device, instance->m_VulkanBuffer, instance->m_DeviceMemory, 0));
 		//	});
 
 		// TODO: Use staging
@@ -62,7 +62,7 @@ namespace H2M
 		indexbufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
 		// Copy index data to a buffer visible to the host
-		VK_CHECK_RESULT(vkCreateBuffer(device, &indexbufferInfo, nullptr, &m_VulkanBuffer));
+		VK_CHECK_RESULT_H2M(vkCreateBuffer(device, &indexbufferInfo, nullptr, &m_VulkanBuffer));
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(device, m_VulkanBuffer, &memoryRequirements);
 
@@ -70,11 +70,11 @@ namespace H2M
 		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 		void* dstBuffer;
-		VK_CHECK_RESULT(vkMapMemory(device, m_DeviceMemory, 0, m_Size, 0, &dstBuffer));
+		VK_CHECK_RESULT_H2M(vkMapMemory(device, m_DeviceMemory, 0, m_Size, 0, &dstBuffer));
 		memcpy(dstBuffer, m_LocalData.Data, m_Size);
 		vkUnmapMemory(device, m_DeviceMemory);
 
-		VK_CHECK_RESULT(vkBindBufferMemory(device, m_VulkanBuffer, m_DeviceMemory, 0));
+		VK_CHECK_RESULT_H2M(vkBindBufferMemory(device, m_VulkanBuffer, m_DeviceMemory, 0));
 	}
 
 }

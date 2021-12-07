@@ -88,15 +88,15 @@ namespace H2M
 		RenderCommandH2M::Init();
 
 		{
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.Layout = {
+			PipelineSpecificationH2M pipelineSpec;
+			pipelineSpec.Layout = {
 				{ ShaderDataTypeH2M::Float3, "a_Position" },
 				{ ShaderDataTypeH2M::Float4, "a_Color" },
 				{ ShaderDataTypeH2M::Float2, "a_TexCoord" },
 				{ ShaderDataTypeH2M::Float,  "a_TexIndex" },
 				{ ShaderDataTypeH2M::Float,  "a_TilingFactor" }
 			};
-			s_Data.QuadPipeline = PipelineH2M::Create(pipelineSpecification);
+			s_Data.QuadPipeline = PipelineH2M::Create(pipelineSpec);
 
 			s_Data.QuadVertexBuffer = VertexBufferH2M::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 
@@ -168,12 +168,12 @@ namespace H2M
 
 			s_Data.LineShader = RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs"));
 
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.Layout = {
+			PipelineSpecificationH2M pipelineSpec;
+			pipelineSpec.Layout = {
 				{ ShaderDataTypeH2M::Float3, "a_Position" },
 				{ ShaderDataTypeH2M::Float4, "a_Color" }
 			};
-			s_Data.LinePipeline = PipelineH2M::Create(pipelineSpecification);
+			s_Data.LinePipeline = PipelineH2M::Create(pipelineSpec);
 
 			s_Data.LineVertexBuffer = VertexBufferH2M::Create(s_Data.MaxLineVertices * sizeof(LineVertex));
 			s_Data.LineVertexBuffer->SetLayout({

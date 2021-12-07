@@ -117,7 +117,7 @@ namespace H2M
 			moduleCreateInfo.pCode = data.data();
 
 			VkShaderModule shaderModule;
-			VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
+			VK_CHECK_RESULT_H2M(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
 
 			VkPipelineShaderStageCreateInfo& shaderStage = m_PipelineShaderStageCreateInfos.emplace_back();
 			shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -349,7 +349,7 @@ namespace H2M
 			descriptorPoolInfo.pPoolSizes = m_TypeCounts.at(set).data();
 			descriptorPoolInfo.maxSets = 1;
 
-			VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
+			VK_CHECK_RESULT_H2M(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &m_DescriptorPool));
 #endif
 
 			//////////////////////////////////////////////////////////////////////
@@ -430,7 +430,7 @@ namespace H2M
 				shaderDescriptorSet.ImageSamplers.size(),
 				shaderDescriptorSet.StorageImages.size());
 
-			VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayouts[set]));
+			VK_CHECK_RESULT_H2M(vkCreateDescriptorSetLayout(device, &descriptorLayout, nullptr, &m_DescriptorSetLayouts[set]));
 		}
 	}
 
@@ -460,14 +460,14 @@ namespace H2M
 		VulkanAllocatorH2M allocator(std::string("UniformBuffer"));
 
 		// Create a new buffer
-		VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer.Buffer));
+		VK_CHECK_RESULT_H2M(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBuffer.Buffer));
 
 		VkMemoryRequirements memoryRequirements;
 		vkGetBufferMemoryRequirements(device, uniformBuffer.Buffer, &memoryRequirements);
 		allocInfo.allocationSize = memoryRequirements.size;
 
 		allocator.Allocate(memoryRequirements, &uniformBuffer.Memory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-		VK_CHECK_RESULT(vkBindBufferMemory(device, uniformBuffer.Buffer, uniformBuffer.Memory, 0));
+		VK_CHECK_RESULT_H2M(vkBindBufferMemory(device, uniformBuffer.Buffer, uniformBuffer.Memory, 0));
 
 		// Store information in the uniform's descriptor that is used by the descriptor set
 		uniformBuffer.Descriptor.buffer = uniformBuffer.Buffer;
@@ -496,7 +496,7 @@ namespace H2M
 		descriptorPoolInfo.pPoolSizes = m_TypeCounts.at(set).data();
 		descriptorPoolInfo.maxSets = 1;
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &result.Pool));
+		VK_CHECK_RESULT_H2M(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &result.Pool));
 
 		// Allocate a new descriptor set from the global descriptor pool
 		VkDescriptorSetAllocateInfo allocInfo = {};
@@ -506,7 +506,7 @@ namespace H2M
 		allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
 
 		result.DescriptorSets.emplace_back();
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, result.DescriptorSets.data()));
+		VK_CHECK_RESULT_H2M(vkAllocateDescriptorSets(device, &allocInfo, result.DescriptorSets.data()));
 		return result;
 	}
 
@@ -554,7 +554,7 @@ namespace H2M
 		descriptorPoolInfo.pPoolSizes = poolSizes.at(set).data();
 		descriptorPoolInfo.maxSets = numberOfSets;
 
-		VK_CHECK_RESULT(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &result.Pool));
+		VK_CHECK_RESULT_H2M(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &result.Pool));
 
 		result.DescriptorSets.resize(numberOfSets);
 
@@ -566,7 +566,7 @@ namespace H2M
 			allocInfo.descriptorSetCount = 1;
 			allocInfo.pSetLayouts = &m_DescriptorSetLayouts[set];
 
-			VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &result.DescriptorSets[i]));
+			VK_CHECK_RESULT_H2M(vkAllocateDescriptorSets(device, &allocInfo, &result.DescriptorSets[i]));
 		}
 		return result;
 	}
@@ -810,7 +810,7 @@ namespace H2M
 		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 		uint8_t* pData;
-		VK_CHECK_RESULT(vkMapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory, 0, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Size, 0, (void**)&pData));
+		VK_CHECK_RESULT_H2M(vkMapMemory(device, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Memory, 0, m_ShaderDescriptorSets.at(set).UniformBuffers.at(bindingPoint).Size, 0, (void**)&pData));
 		return pData;
 	}
 

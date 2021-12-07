@@ -30,7 +30,7 @@ namespace H2M
 		H2M_CORE_ASSERT(gpuCount > 0, "");
 		// Enumerate devices
 		std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
-		VK_CHECK_RESULT(vkEnumeratePhysicalDevices(vkInstance, &gpuCount, physicalDevices.data()));
+		VK_CHECK_RESULT_H2M(vkEnumeratePhysicalDevices(vkInstance, &gpuCount, physicalDevices.data()));
 
 		VkPhysicalDevice selectedPhysicalDevice = nullptr;
 		for (VkPhysicalDevice physicalDevice : physicalDevices)
@@ -298,10 +298,10 @@ namespace H2M
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		cmdPoolInfo.queueFamilyIndex = m_PhysicalDevice->m_QueueFamilyIndices.Graphics;
 		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		VK_CHECK_RESULT(vkCreateCommandPool(m_LogicalDevice, &cmdPoolInfo, nullptr, &m_CommandPool));
+		VK_CHECK_RESULT_H2M(vkCreateCommandPool(m_LogicalDevice, &cmdPoolInfo, nullptr, &m_CommandPool));
 
 		cmdPoolInfo.queueFamilyIndex = m_PhysicalDevice->m_QueueFamilyIndices.Compute;
-		VK_CHECK_RESULT(vkCreateCommandPool(m_LogicalDevice, &cmdPoolInfo, nullptr, &m_ComputeCommandPool));
+		VK_CHECK_RESULT_H2M(vkCreateCommandPool(m_LogicalDevice, &cmdPoolInfo, nullptr, &m_ComputeCommandPool));
 
 		// Get a graphics queue from the device
 		vkGetDeviceQueue(m_LogicalDevice, m_PhysicalDevice->m_QueueFamilyIndices.Graphics, 0, &m_Queue);
@@ -322,14 +322,14 @@ namespace H2M
 		cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		cmdBufAllocateInfo.commandBufferCount = 1;
 
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_LogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
+		VK_CHECK_RESULT_H2M(vkAllocateCommandBuffers(m_LogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
 
 		// If requested, also start the new command buffer
 		if (begin)
 		{
 			VkCommandBufferBeginInfo cmdBufferBeginInfo{};
 			cmdBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufferBeginInfo));
+			VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(cmdBuffer, &cmdBufferBeginInfo));
 		}
 
 		return cmdBuffer;
@@ -346,7 +346,7 @@ namespace H2M
 
 		H2M_CORE_ASSERT(commandBuffer != VK_NULL_HANDLE);
 
-		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+		VK_CHECK_RESULT_H2M(vkEndCommandBuffer(commandBuffer));
 
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -358,12 +358,12 @@ namespace H2M
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceCreateInfo.flags = 0;
 		VkFence fence;
-		VK_CHECK_RESULT(vkCreateFence(m_LogicalDevice, &fenceCreateInfo, nullptr, &fence));
+		VK_CHECK_RESULT_H2M(vkCreateFence(m_LogicalDevice, &fenceCreateInfo, nullptr, &fence));
 
 		// Submit to the queue
-		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
+		VK_CHECK_RESULT_H2M(vkQueueSubmit(queue, 1, &submitInfo, fence));
 		// Wait for the fence to signal that command buffer has finished executing
-		VK_CHECK_RESULT(vkWaitForFences(m_LogicalDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+		VK_CHECK_RESULT_H2M(vkWaitForFences(m_LogicalDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 
 		vkDestroyFence(m_LogicalDevice, fence, nullptr);
 		vkFreeCommandBuffers(m_LogicalDevice, m_CommandPool, 1, &commandBuffer);
@@ -379,7 +379,7 @@ namespace H2M
 		cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 		cmdBufAllocateInfo.commandBufferCount = 1;
 
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_LogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
+		VK_CHECK_RESULT_H2M(vkAllocateCommandBuffers(m_LogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
 		return cmdBuffer;
 	}
 

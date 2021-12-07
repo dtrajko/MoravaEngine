@@ -883,6 +883,7 @@
     <ClInclude Include="src\Hazel\Core\Events\KeyEvent.h" />
     <ClInclude Include="src\Hazel\Core\Events\MouseEvent.h" />
     <ClInclude Include="src\Hazel\Core\Hash.h" />
+    <ClInclude Include="src\Hazel\Core\HazelInput.h" />
     <ClInclude Include="src\Hazel\Core\HazelLog.h" />
     <ClInclude Include="src\Hazel\Core\HazelWindow.h" />
     <ClInclude Include="src\Hazel\Core\KeyCodes.h" />

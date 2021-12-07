@@ -1,6 +1,6 @@
 #pragma once
 
-#include "H2M/Renderer/HazelMesh.h"
+#include "H2M/Renderer/MeshH2M.h"
 
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Material/MaterialWorkflowPBR.h"

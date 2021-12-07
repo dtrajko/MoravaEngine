@@ -9,7 +9,7 @@
 #include <sstream>
 
 
-typedef enum class KeyCode : uint16_t
+typedef enum class KeyCodeH2M : uint16_t
 {
 	// From glfw3.h
 	Space = 32,
@@ -142,9 +142,9 @@ typedef enum class KeyCode : uint16_t
 	RightAlt = 346,
 	RightSuper = 347,
 	Menu = 348
-} Key;
+} KeyH2M;
 
-inline std::ostream& operator<<(std::ostream& os, KeyCode keyCode)
+inline std::ostream& operator<<(std::ostream& os, KeyCodeH2M keyCode)
 {
 	os << static_cast<int32_t>(keyCode);
 	return os;

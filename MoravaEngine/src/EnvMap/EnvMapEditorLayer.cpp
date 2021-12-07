@@ -1821,7 +1821,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
     {
         switch (e.GetKeyCode())
         {
-            case (int)KeyCode::Q:
+            case (int)KeyCodeH2M::Q:
                 Scene::s_ImGuizmoType = -1;
                 break;
 
@@ -1837,7 +1837,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
                 break;
             END UpdateImGuizmo ****/
 
-            case (int)KeyCode::Delete:
+            case (int)KeyCodeH2M::Delete:
                 if (EntitySelection::s_SelectionContext.size())
                 {
                     H2M::EntityH2M selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
@@ -1854,58 +1854,58 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
     {
         switch (e.GetKeyCode())
         {
-            case (int)KeyCode::B:
+            case (int)KeyCodeH2M::B:
                 // Toggle bounding boxes
                 m_UIShowBoundingBoxes = !m_UIShowBoundingBoxes;
                 ShowBoundingBoxes(m_UIShowBoundingBoxes, m_UIShowBoundingBoxesOnTop);
                 break;
-            case (int)KeyCode::D:
+            case (int)KeyCodeH2M::D:
                 if (EntitySelection::s_SelectionContext.size()) {
                     H2M::EntityH2M selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
                     EnvMapSharedData::s_EditorScene->DuplicateEntity(selectedEntity);
                 }
                 break;
-            case (int)KeyCode::G:
+            case (int)KeyCodeH2M::G:
                 // Toggle grid
                 EnvMapSceneRenderer::GetOptions().ShowGrid = !EnvMapSceneRenderer::GetOptions().ShowGrid;
                 break;
-            case (int)KeyCode::O:
+            case (int)KeyCodeH2M::O:
                 OpenScene();
                 break;
-            case (int)KeyCode::S:
+            case (int)KeyCodeH2M::S:
                 SaveScene();
                 break;
 
                 // Toggle ImGui windows
-            case (int)KeyCode::H:
+            case (int)KeyCodeH2M::H:
                 // Left CTRL + H: Toggle Scene Hierarchy
                 m_ShowWindowSceneHierarchy = !m_ShowWindowSceneHierarchy;
                 break;
-            case (int)KeyCode::T:
+            case (int)KeyCodeH2M::T:
                 // Left CTRL + T: Toggle Transform
                 m_ShowWindowTransform = !m_ShowWindowTransform;
                 break;
-            case (int)KeyCode::Space:
+            case (int)KeyCodeH2M::Space:
                 // Left CTRL + Space: Toggle Asset Manager
                 m_ShowWindowAssetManager = !m_ShowWindowAssetManager;
                 break;
-            case (int)KeyCode::M:
+            case (int)KeyCodeH2M::M:
                 // Left CTRL + M: Toggle Material Editor
                 m_ShowWindowMaterialEditor = !m_ShowWindowMaterialEditor;
                 break;
-            case (int)KeyCode::P:
+            case (int)KeyCodeH2M::P:
                 // Left CTRL + P: Toggle Post Processing Effects
                 m_ShowWindowPostProcessing = !m_ShowWindowPostProcessing;
                 break;
-            case (int)KeyCode::V:
+            case (int)KeyCodeH2M::V:
                 // Left CTRL + H: Toggle Shader Manager
                 m_ShowWindowShaderManager = !m_ShowWindowShaderManager;
                 break;
-            case (int)KeyCode::F:
+            case (int)KeyCodeH2M::F:
                 // Left CTRL + F: Toggle Framebuffers
                 m_ShowWindowFramebuffers = !m_ShowWindowFramebuffers;
                 break;
-            case (int)KeyCode::X:
+            case (int)KeyCodeH2M::X:
                 // Left CTRL + X: Toggle Settings
                 m_ShowWindowSettings = !m_ShowWindowSettings;
                 break;
@@ -1919,7 +1919,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
         {
             switch (e.GetKeyCode())
             {
-            case (int)KeyCode::S:
+            case (int)KeyCodeH2M::S:
                 SaveSceneAs();
                 break;
             }

@@ -6,7 +6,7 @@
 #include "DX11Device.h"
 #include "DX11SwapChain.h"
 
-#include "H2M/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 // ImGui includes
 #if !defined(IMGUI_IMPL_API)

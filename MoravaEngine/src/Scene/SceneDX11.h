@@ -2,7 +2,7 @@
 
 #include "Scene/Scene.h"
 
-#include "H2M/Core/Events/KeyEvent.h"
+#include "H2M/Core/Events/KeyEventH2M.h"
 
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Mesh/Grid.h"

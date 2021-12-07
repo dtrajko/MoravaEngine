@@ -229,8 +229,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 					if (filename != "")
 					{
 						// material->GetAlbedoInput().TextureMap = H2M::Texture2D_H2M::Create(filename, material->GetAlbedoInput().SRGB);
-						H2M::TextureProperties textureProperties = { H2M::TextureWrapH2M::Repeat, H2M::TextureFilter::Linear, true, material->GetAlbedoInput().SRGB, false, "AlbedoMap" };
-						material->GetAlbedoInput().TextureMap = H2M::Texture2D_H2M::Create(filename, textureProperties);
+						// H2M::TexturePropertiesH2M textureProperties = { H2M::TextureWrapH2M::Repeat, H2M::TextureFilterH2M::Linear, true, material->GetAlbedoInput().SRGB, false, "AlbedoMap" };
+						material->GetAlbedoInput().TextureMap = H2M::Texture2D_H2M::Create(filename, material->GetAlbedoInput().SRGB);
 					}
 				}
 			}
@@ -245,8 +245,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 				{
 					if (material->GetAlbedoInput().TextureMap)
 					{
-						H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, material->GetAlbedoInput().SRGB, false, "AlbedoMap" };
-						material->GetAlbedoInput().TextureMap = H2M::Texture2D_H2M::Create(material->GetAlbedoInput().TextureMap->GetPath(), textureProperties);
+						// H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, material->GetAlbedoInput().SRGB, false, "AlbedoMap" };
+						material->GetAlbedoInput().TextureMap = H2M::Texture2D_H2M::Create(material->GetAlbedoInput().TextureMap->GetPath(), material->GetAlbedoInput().SRGB);
 					}
 				}
 			}
@@ -301,8 +301,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
 					{
-						H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, false, false, "NormalMap" };
-						material->GetNormalInput().TextureMap = H2M::Texture2D_H2M::Create(filename, textureProperties);
+						// H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, false, false, "NormalMap" };
+						material->GetNormalInput().TextureMap = H2M::Texture2D_H2M::Create(filename, false);
 					}
 				}
 			}
@@ -356,8 +356,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
 					{
-						H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, false, false, "MetalnessMap" };
-						material->GetMetalnessInput().TextureMap = H2M::Texture2D_H2M::Create(filename, textureProperties);
+						// H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, false, false, "MetalnessMap" };
+						material->GetMetalnessInput().TextureMap = H2M::Texture2D_H2M::Create(filename, false);
 					}
 				}
 			}
@@ -414,8 +414,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
 					{
-						H2M::TexturePropertiesH2M textureProperties = { H2M::TextureWrapH2M::Repeat, H2M::TextureFilterH2M::Linear, true, false, false, "RoughnessMap" };
-						material->GetRoughnessInput().TextureMap = H2M::Texture2D_H2M::Create(filename, textureProperties);
+						// H2M::TexturePropertiesH2M textureProperties = { H2M::TextureWrapH2M::Repeat, H2M::TextureFilterH2M::Linear, true, false, false, "RoughnessMap" };
+						material->GetRoughnessInput().TextureMap = H2M::Texture2D_H2M::Create(filename, false);
 					}
 				}
 			}
@@ -472,8 +472,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
 					{
-						H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, false, false, "AOMap" };
-						material->GetAOInput().TextureMap = H2M::Texture2D_H2M::Create(filename, textureProperties);
+						// H2M::TexturePropertiesH2M textureProperties = { H2M::TextureWrapH2M::Repeat, H2M::TextureFilterH2M::Linear, true, false, false, "AOMap" };
+						material->GetAOInput().TextureMap = H2M::Texture2D_H2M::Create(filename, false);
 					}
 				}
 			}
@@ -530,8 +530,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 					std::string filename = Application::Get()->OpenFile();
 					if (filename != "")
 					{
-						H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, material->GetEmissiveInput().SRGB, false, "EmissiveMap" };
-						material->GetEmissiveInput().TextureMap = H2M::Texture2D_H2M::Create(filename, textureProperties);
+						// H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, material->GetEmissiveInput().SRGB, false, "EmissiveMap" };
+						material->GetEmissiveInput().TextureMap = H2M::Texture2D_H2M::Create(filename, material->GetEmissiveInput().SRGB);
 					}
 				}
 			}
@@ -545,8 +545,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 				{
 					if (material->GetEmissiveInput().TextureMap)
 					{
-						H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, material->GetEmissiveInput().SRGB, false, "EmissiveMap" };
-						material->GetEmissiveInput().TextureMap = H2M::Texture2D_H2M::Create(material->GetEmissiveInput().TextureMap->GetPath(), textureProperties);
+						// H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, material->GetEmissiveInput().SRGB, false, "EmissiveMap" };
+						material->GetEmissiveInput().TextureMap = H2M::Texture2D_H2M::Create(material->GetEmissiveInput().TextureMap->GetPath(), material->GetEmissiveInput().SRGB);
 					}
 				}
 			}
@@ -572,8 +572,8 @@ void ImGuiWrapper::DragAndDropTarget(H2M::RefH2M<H2M::Texture2D_H2M>& texture, b
 			std::string filename(itemPath.begin(), itemPath.end());
 			if (filename != "")
 			{
-				H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, srgb, false, "DragAndDropTarget" };
-				texture = H2M::Texture2D_H2M::Create(filename, textureProperties);
+				// H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, srgb, false, "DragAndDropTarget" };
+				texture = H2M::Texture2D_H2M::Create(filename, srgb);
 			}
 		}
 		ImGui::EndDragDropTarget();

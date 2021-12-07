@@ -1,6 +1,6 @@
 #include "OpenGLMoravaShader.h"
 
-#include "H2M/Core/Assert.h"
+#include "H2M/Core/AssertH2M.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"
@@ -199,18 +199,18 @@ void OpenGLMoravaShader::SetIntArray(const std::string& name, int* values, uint3
 	glUniform1iv(GetUniformLocation(name), size, values);
 }
 
-const std::unordered_map<std::string, H2M::ShaderBuffer>& OpenGLMoravaShader::GetShaderBuffers() const
+const std::unordered_map<std::string, H2M::ShaderBufferH2M>& OpenGLMoravaShader::GetShaderBuffers() const
 {
 	// OpenGLMaterial::FindUniformDeclaration requires at least 2 shader buffers
 	// std::unordered_map<std::string, H2M::ShaderBuffer> shaderBuffers = std::unordered_map<std::string, H2M::ShaderBuffer>();
 	// shaderBuffers.insert(std::make_pair("One", H2M::ShaderBuffer()));
 	// shaderBuffers.insert(std::make_pair("Two", H2M::ShaderBuffer()));
-	return std::unordered_map<std::string, H2M::ShaderBuffer>();
+	return std::unordered_map<std::string, H2M::ShaderBufferH2M>();
 }
 
-const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& OpenGLMoravaShader::GetResources() const
+const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& OpenGLMoravaShader::GetResources() const
 {
-	return std::unordered_map<std::string, H2M::ShaderResourceDeclaration>();
+	return std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>();
 }
 
 void OpenGLMoravaShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)

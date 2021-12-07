@@ -72,8 +72,8 @@ public:
 
 	virtual void Unbind() override;
 
-	virtual const std::unordered_map<std::string, H2M::ShaderBuffer>& GetShaderBuffers() const override;
-	virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& GetResources() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderBufferH2M>& GetShaderBuffers() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& GetResources() const override;
 
 	virtual void CreateFromString(const char* vertexCode, const char* fragmentCode) override;
 	virtual void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation) override;

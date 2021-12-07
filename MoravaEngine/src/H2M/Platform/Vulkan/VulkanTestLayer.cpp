@@ -408,7 +408,7 @@ namespace H2M {
 
 			{
 				VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
-				VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+				VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
 
 				// Start the first sub pass specified in our default render pass setup by the base class
 				// This will clear the color and depth attachment
@@ -441,7 +441,7 @@ namespace H2M {
 				// Ending the render pass will add an implicit barrier transitioning the frame buffer color attachment to
 				// VK_IMAGE_LAYOUT_PRESENT_SRC_KHR for presenting it to the windowing system
 
-				VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
+				VK_CHECK_RESULT_H2M(vkEndCommandBuffer(drawCommandBuffer));
 			}
 
 			/**** END the old VulkanTestLayer code, belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****

@@ -2,11 +2,9 @@
 
 #include "Scene/SceneDX11.h"
 
-#include "H2M/Scene/Components.h"
+#include "H2M/Scene/ComponentsH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
-#include "H2M/Scene/Entity.h"
-
-#include "../../ImGuizmo/ImGuizmo.h"
+#include "H2M/Scene/EntityH2M.h"
 
 #include "Core/Application.h"
 #include "Core/Input.h"
@@ -15,6 +13,8 @@
 #include "Core/Util.h"
 #include "Mesh/Block.h"
 #include "Shader/MoravaShader.h"
+
+#include "../../ImGuizmo/ImGuizmo.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>

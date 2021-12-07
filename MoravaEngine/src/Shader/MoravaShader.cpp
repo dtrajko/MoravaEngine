@@ -1,7 +1,7 @@
 #include "Shader/MoravaShader.h"
 
-#include "H2M/Core/Assert.h"
-#include "H2M/Renderer/RendererAPI.h"
+#include "H2M/Core/AssertH2M.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"

@@ -16,7 +16,7 @@ DX11TextureCube::DX11TextureCube(H2M::ImageFormatH2M format, uint32_t width, uin
 	if (data)
 	{
 		uint32_t size = width * height * 4 * 6; // six layers
-		m_LocalStorage = H2M::Buffer::Copy(data, size);
+		m_LocalStorage = H2M::BufferH2M::Copy(data, size);
 	}
 
 	//	H2M::RefH2M<DX11TextureCube> instance = this;

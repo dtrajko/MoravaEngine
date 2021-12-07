@@ -23,7 +23,7 @@ namespace H2M {
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		cmdPoolInfo.queueFamilyIndex = device->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
 		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		VK_CHECK_RESULT(vkCreateCommandPool(device->GetVulkanDevice(), &cmdPoolInfo, nullptr, &m_CommandPool));
+		VK_CHECK_RESULT_H2M(vkCreateCommandPool(device->GetVulkanDevice(), &cmdPoolInfo, nullptr, &m_CommandPool));
 
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -33,14 +33,14 @@ namespace H2M {
 			count = framesInFlight;
 		commandBufferAllocateInfo.commandBufferCount = count;
 		m_CommandBuffers.resize(count);
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(device->GetVulkanDevice(), &commandBufferAllocateInfo, m_CommandBuffers.data()));
+		VK_CHECK_RESULT_H2M(vkAllocateCommandBuffers(device->GetVulkanDevice(), &commandBufferAllocateInfo, m_CommandBuffers.data()));
 
 		VkFenceCreateInfo fenceCreateInfo{};
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 		m_WaitFences.resize(framesInFlight);
 		for (auto& fence : m_WaitFences)
-			VK_CHECK_RESULT(vkCreateFence(device->GetVulkanDevice(), &fenceCreateInfo, nullptr, &fence));
+			VK_CHECK_RESULT_H2M(vkCreateFence(device->GetVulkanDevice(), &fenceCreateInfo, nullptr, &fence));
 
 		VkQueryPoolCreateInfo queryPoolCreateInfo = {};
 		queryPoolCreateInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
@@ -54,7 +54,7 @@ namespace H2M {
 		queryPoolCreateInfo.queryCount = m_TimestampQueryCount;
 		m_TimestampQueryPools.resize(framesInFlight);
 		for (auto& timestampQueryPool : m_TimestampQueryPools)
-			VK_CHECK_RESULT(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &timestampQueryPool));
+			VK_CHECK_RESULT_H2M(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &timestampQueryPool));
 
 		m_TimestampQueryResults.resize(framesInFlight);
 		for (auto& timestampQueryResults : m_TimestampQueryResults)
@@ -79,7 +79,7 @@ namespace H2M {
 
 		m_PipelineStatisticsQueryPools.resize(framesInFlight);
 		for (auto& pipelineStatisticsQueryPools : m_PipelineStatisticsQueryPools)
-			VK_CHECK_RESULT(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &pipelineStatisticsQueryPools));
+			VK_CHECK_RESULT_H2M(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &pipelineStatisticsQueryPools));
 
 		m_PipelineStatisticsQueryResults.resize(framesInFlight);
 	}
@@ -107,7 +107,7 @@ namespace H2M {
 		queryPoolCreateInfo.queryCount = m_TimestampQueryCount;
 		m_TimestampQueryPools.resize(framesInFlight);
 		for (auto& timestampQueryPool : m_TimestampQueryPools)
-			VK_CHECK_RESULT(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &timestampQueryPool));
+			VK_CHECK_RESULT_H2M(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &timestampQueryPool));
 
 		m_TimestampQueryResults.resize(framesInFlight);
 		for (auto& timestampQueryResults : m_TimestampQueryResults)
@@ -132,7 +132,7 @@ namespace H2M {
 
 		m_PipelineStatisticsQueryPools.resize(framesInFlight);
 		for (auto& pipelineStatisticsQueryPools : m_PipelineStatisticsQueryPools)
-			VK_CHECK_RESULT(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &pipelineStatisticsQueryPools));
+			VK_CHECK_RESULT_H2M(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &pipelineStatisticsQueryPools));
 
 		m_PipelineStatisticsQueryResults.resize(framesInFlight);
 	}
@@ -164,7 +164,7 @@ namespace H2M {
 			cmdBufInfo.pNext = nullptr;
 
 			VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
-			VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &cmdBufInfo));
+			VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(commandBuffer, &cmdBufInfo));
 
 			// Timestamp query
 			vkCmdResetQueryPool(commandBuffer, m_TimestampQueryPools[frameIndex], 0, m_TimestampQueryCount);
@@ -185,7 +185,7 @@ namespace H2M {
 			VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
 			vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_TimestampQueryPools[frameIndex], 1);
 			vkCmdEndQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0);
-			VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+			VK_CHECK_RESULT_H2M(vkEndCommandBuffer(commandBuffer));
 		}
 	}
 
@@ -206,9 +206,9 @@ namespace H2M {
 			VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
 			submitInfo.pCommandBuffers = &commandBuffer;
 
-			VK_CHECK_RESULT(vkWaitForFences(device->GetVulkanDevice(), 1, &m_WaitFences[frameIndex], VK_TRUE, UINT64_MAX));
-			VK_CHECK_RESULT(vkResetFences(device->GetVulkanDevice(), 1, &m_WaitFences[frameIndex]));
-			VK_CHECK_RESULT(vkQueueSubmit(device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[frameIndex]));
+			VK_CHECK_RESULT_H2M(vkWaitForFences(device->GetVulkanDevice(), 1, &m_WaitFences[frameIndex], VK_TRUE, UINT64_MAX));
+			VK_CHECK_RESULT_H2M(vkResetFences(device->GetVulkanDevice(), 1, &m_WaitFences[frameIndex]));
+			VK_CHECK_RESULT_H2M(vkQueueSubmit(device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[frameIndex]));
 
 			// Retrieve timestamp query results
 			vkGetQueryPoolResults(device->GetVulkanDevice(), m_TimestampQueryPools[frameIndex], 0, m_TimestampNextAvailableQuery,

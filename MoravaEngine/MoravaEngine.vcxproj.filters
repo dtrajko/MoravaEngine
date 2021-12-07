@@ -2981,6 +2981,9 @@
     <ClInclude Include="src\H2M\Renderer\ShaderCacheH2M.h">
       <Filter>H2M\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Hazel\Core\HazelInput.h">
+      <Filter>Hazel\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">

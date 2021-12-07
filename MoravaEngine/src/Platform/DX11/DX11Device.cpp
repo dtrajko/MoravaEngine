@@ -1,7 +1,7 @@
 #include "DX11Device.h"
 
 #include "DX11Context.h"
-#include "H2M/Core/Assert.h"
+#include "H2M/Core/AssertH2M.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////////

@@ -2,7 +2,7 @@
 
 #include "DX11Context.h"
 
-#include "H2M/Renderer/HazelRenderer.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 
 DX11IndexBuffer::DX11IndexBuffer(void* data, uint32_t size)

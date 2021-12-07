@@ -1,7 +1,7 @@
 #include "DX11Shader.h"
 
-#include "H2M/Core/Assert.h"
-#include "H2M/Renderer/HazelRenderer.h"
+#include "H2M/Core/AssertH2M.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 #include "Core/Log.h"
 #include "DX11Context.h"

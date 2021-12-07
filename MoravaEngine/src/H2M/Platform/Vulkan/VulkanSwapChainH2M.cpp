@@ -133,15 +133,15 @@ namespace H2M
 
 		// Get physical device surface properties and formats
 		VkSurfaceCapabilitiesKHR surfCaps;
-		VK_CHECK_RESULT(fpGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_Surface, &surfCaps));
+		VK_CHECK_RESULT_H2M(fpGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, m_Surface, &surfCaps));
 
 		// Get available present modes
 		uint32_t presentModeCount;
-		VK_CHECK_RESULT(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_Surface, &presentModeCount, NULL));
+		VK_CHECK_RESULT_H2M(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_Surface, &presentModeCount, NULL));
 		H2M_CORE_ASSERT(presentModeCount > 0, "");
 
 		std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-		VK_CHECK_RESULT(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_Surface, &presentModeCount, presentModes.data()));
+		VK_CHECK_RESULT_H2M(fpGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice, m_Surface, &presentModeCount, presentModes.data()));
 
 		VkExtent2D swapchainExtent = {};
 		// If width (and height) equals the special value 0xFFFFFFFF, the size of the surface will be set by the swapchain
@@ -252,7 +252,7 @@ namespace H2M
 			swapchainCI.imageUsage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 		}
 
-		VK_CHECK_RESULT(fpCreateSwapchainKHR(device, &swapchainCI, nullptr, &m_SwapChain));
+		VK_CHECK_RESULT_H2M(fpCreateSwapchainKHR(device, &swapchainCI, nullptr, &m_SwapChain));
 
 		// If an existing swap chain is re-created, destroy the old swap chain
 		// This also cleans up all the presentable images
@@ -264,11 +264,11 @@ namespace H2M
 			}
 			fpDestroySwapchainKHR(device, oldSwapchain, nullptr);
 		}
-		VK_CHECK_RESULT(fpGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, NULL));
+		VK_CHECK_RESULT_H2M(fpGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, NULL));
 
 		// Get the swap chain images
 		m_Images.resize(m_ImageCount);
-		VK_CHECK_RESULT(fpGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, m_Images.data()));
+		VK_CHECK_RESULT_H2M(fpGetSwapchainImagesKHR(device, m_SwapChain, &m_ImageCount, m_Images.data()));
 
 		// Get the swap chain buffers containing the image and imageview
 		m_Buffers.resize(m_ImageCount);
@@ -296,7 +296,7 @@ namespace H2M
 
 			colorAttachmentView.image = m_Buffers[i].image;
 
-			VK_CHECK_RESULT(vkCreateImageView(device, &colorAttachmentView, nullptr, &m_Buffers[i].view));
+			VK_CHECK_RESULT_H2M(vkCreateImageView(device, &colorAttachmentView, nullptr, &m_Buffers[i].view));
 		}
 
 		CreateDrawBuffers();
@@ -308,10 +308,10 @@ namespace H2M
 		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 		// Create a semaphore used to synchronize image presentation
 		// Ensures that the image is displayed before we start submitting new commands to the queu
-		VK_CHECK_RESULT(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.PresentComplete));
+		VK_CHECK_RESULT_H2M(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.PresentComplete));
 		// Create a semaphore used to synchronize command submission
 		// Ensures that the image is not presented until all commands have been sumbitted and executed
-		VK_CHECK_RESULT(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.RenderComplete));
+		VK_CHECK_RESULT_H2M(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.RenderComplete));
 
 		// Set up submit info structure
 		// Semaphores will stay the same during application lifetime
@@ -333,7 +333,7 @@ namespace H2M
 		m_WaitFences.resize(m_DrawCommandBuffers.size());
 		for (auto& fence : m_WaitFences)
 		{
-			VK_CHECK_RESULT(vkCreateFence(m_Device->GetVulkanDevice(), &fenceCreateInfo, nullptr, &fence));
+			VK_CHECK_RESULT_H2M(vkCreateFence(m_Device->GetVulkanDevice(), &fenceCreateInfo, nullptr, &fence));
 		}
 
 		CreateDepthStencil();
@@ -395,7 +395,7 @@ namespace H2M
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
 
-		VK_CHECK_RESULT(vkCreateRenderPass(m_Device->GetVulkanDevice(), &renderPassInfo, nullptr, &m_RenderPass));
+		VK_CHECK_RESULT_H2M(vkCreateRenderPass(m_Device->GetVulkanDevice(), &renderPassInfo, nullptr, &m_RenderPass));
 
 		CreateFramebuffer();
 	}
@@ -442,11 +442,11 @@ namespace H2M
 		imageCI.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 		VkDevice device = m_Device->GetVulkanDevice();
-		VK_CHECK_RESULT(vkCreateImage(device, &imageCI, nullptr, &m_DepthStencil.Image));
+		VK_CHECK_RESULT_H2M(vkCreateImage(device, &imageCI, nullptr, &m_DepthStencil.Image));
 		VkMemoryRequirements memReqs{};
 		vkGetImageMemoryRequirements(device, m_DepthStencil.Image, &memReqs);
 		m_Allocator.Allocate(memReqs, &m_DepthStencil.DeviceMemory);
-		VK_CHECK_RESULT(vkBindImageMemory(device, m_DepthStencil.Image, m_DepthStencil.DeviceMemory, 0));
+		VK_CHECK_RESULT_H2M(vkBindImageMemory(device, m_DepthStencil.Image, m_DepthStencil.DeviceMemory, 0));
 
 		VkImageViewCreateInfo imageViewCI{};
 		imageViewCI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -462,7 +462,7 @@ namespace H2M
 		if (m_DepthBufferFormat >= VK_FORMAT_D16_UNORM_S8_UINT)
 			imageViewCI.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-		VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCI, nullptr, &m_DepthStencil.ImageView));
+		VK_CHECK_RESULT_H2M(vkCreateImageView(device, &imageViewCI, nullptr, &m_DepthStencil.ImageView));
 
 #else // The version based on new VulkanAllocator (VulkanMemoryAllocator)
 
@@ -497,7 +497,7 @@ namespace H2M
 		if (depthFormat >= VK_FORMAT_D16_UNORM_S8_UINT)
 			imageViewCI.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
-		VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCI, nullptr, &m_DepthStencil.ImageView));
+		VK_CHECK_RESULT_H2M(vkCreateImageView(device, &imageViewCI, nullptr, &m_DepthStencil.ImageView));
 #endif
 	}
 
@@ -525,7 +525,7 @@ namespace H2M
 		for (uint32_t i = 0; i < m_Framebuffers.size(); i++)
 		{
 			ivAttachments[0] = m_Buffers[i].view;
-			VK_CHECK_RESULT(vkCreateFramebuffer(m_Device->GetVulkanDevice(), &frameBufferCreateInfo, nullptr, &m_Framebuffers[i]));
+			VK_CHECK_RESULT_H2M(vkCreateFramebuffer(m_Device->GetVulkanDevice(), &frameBufferCreateInfo, nullptr, &m_Framebuffers[i]));
 		}
 	}
 
@@ -539,14 +539,14 @@ namespace H2M
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 		cmdPoolInfo.queueFamilyIndex = m_QueueNodeIndex;
 		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-		VK_CHECK_RESULT(vkCreateCommandPool(m_Device->GetVulkanDevice(), &cmdPoolInfo, nullptr, &m_CommandPool));
+		VK_CHECK_RESULT_H2M(vkCreateCommandPool(m_Device->GetVulkanDevice(), &cmdPoolInfo, nullptr, &m_CommandPool));
 
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandBufferAllocateInfo.commandPool = m_CommandPool;
 		commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 		commandBufferAllocateInfo.commandBufferCount = static_cast<uint32_t>(m_DrawCommandBuffers.size());
-		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device->GetVulkanDevice(), &commandBufferAllocateInfo, m_DrawCommandBuffers.data()));
+		VK_CHECK_RESULT_H2M(vkAllocateCommandBuffers(m_Device->GetVulkanDevice(), &commandBufferAllocateInfo, m_DrawCommandBuffers.data()));
 	}
 
 	void VulkanSwapChainH2M::OnResize(uint32_t width, uint32_t height)
@@ -580,7 +580,7 @@ namespace H2M
 
 	void VulkanSwapChainH2M::BeginFrame()
 	{
-		VK_CHECK_RESULT(AcquireNextImage(m_Semaphores.PresentComplete, &m_CurrentBufferIndex));
+		VK_CHECK_RESULT_H2M(AcquireNextImage(m_Semaphores.PresentComplete, &m_CurrentBufferIndex));
 	}
 
 	void VulkanSwapChainH2M::Present()
@@ -588,8 +588,8 @@ namespace H2M
 		const uint64_t DEFAULT_FENCE_TIMEOUT = 100000000000;
 
 		// Use a fence to wait until the command buffer has finished execution before using it again
-		VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
-		VK_CHECK_RESULT(vkResetFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
+		VK_CHECK_RESULT_H2M(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
+		VK_CHECK_RESULT_H2M(vkResetFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
 
 		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -605,7 +605,7 @@ namespace H2M
 		submitInfo.commandBufferCount = 1;
 
 		// Submit to the graphics queue passing a wait fence
-		VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
+		VK_CHECK_RESULT_H2M(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
 
 		// Present the current buffer to the swap chain
 		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
@@ -622,11 +622,11 @@ namespace H2M
 			}
 			else
 			{
-				VK_CHECK_RESULT(result);
+				VK_CHECK_RESULT_H2M(result);
 			}
 		}
 
-		VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+		VK_CHECK_RESULT_H2M(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, DEFAULT_FENCE_TIMEOUT));
 
 		// vkQueueWaitIdle(m_Queue);
 
@@ -684,11 +684,11 @@ namespace H2M
 
 		// Get list of supported surface formats
 		uint32_t formatCount;
-		VK_CHECK_RESULT(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_Surface, &formatCount, NULL));
+		VK_CHECK_RESULT_H2M(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_Surface, &formatCount, NULL));
 		H2M_CORE_ASSERT(formatCount > 0);
 
 		std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
-		VK_CHECK_RESULT(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_Surface, &formatCount, surfaceFormats.data()));
+		VK_CHECK_RESULT_H2M(fpGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, m_Surface, &formatCount, surfaceFormats.data()));
 
 		// If the surface format list only includes one entry with VK_FORMAT_UNDEFINED,
 		// there is no preferered format, so we assume VK_FORMAT_B8G8R8A8_UNORM

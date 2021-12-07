@@ -1,7 +1,7 @@
 #include "DX11ComputePipeline.h"
 
-#include "H2M/Core/Timer.h"
-#include "H2M/Renderer/HazelRenderer.h"
+#include "H2M/Core/TimerH2M.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 #include "Platform/DX11/DX11Context.h"
 

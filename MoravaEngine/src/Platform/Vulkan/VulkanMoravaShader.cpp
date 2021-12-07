@@ -1,7 +1,7 @@
 #include "VulkanMoravaShader.h"
 
-#include "H2M/Core/Assert.h"
-#include "H2M/Renderer/RendererAPI.h"
+#include "H2M/Core/AssertH2M.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "Core/Log.h"
 #include "Core/Util.h"
@@ -110,14 +110,14 @@ void VulkanMoravaShader::SetMat3(const std::string& name, const glm::mat3& mat)
 
 void VulkanMoravaShader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-const std::unordered_map<std::string, H2M::ShaderBuffer>& VulkanMoravaShader::GetShaderBuffers() const
+const std::unordered_map<std::string, H2M::ShaderBufferH2M>& VulkanMoravaShader::GetShaderBuffers() const
 {
-	return std::unordered_map<std::string, H2M::ShaderBuffer>();
+	return std::unordered_map<std::string, H2M::ShaderBufferH2M>();
 }
 
-const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& VulkanMoravaShader::GetResources() const
+const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& VulkanMoravaShader::GetResources() const
 {
-	return std::unordered_map<std::string, H2M::ShaderResourceDeclaration>();
+	return std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>();
 }
 
 void VulkanMoravaShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}

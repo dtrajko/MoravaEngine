@@ -41,13 +41,13 @@ namespace H2M {
 		if (children.size() == 0)
 			return false;
 
-		for (UUID child : children)
+		for (UUID_H2M child : children)
 		{
 			if (child == entity.GetUUID())
 				return true;
 		}
 
-		for (UUID child : children)
+		for (UUID_H2M child : children)
 		{
 			if (m_Scene->FindEntityByUUID(child).IsAncesterOf(entity))
 				return true;
@@ -56,7 +56,7 @@ namespace H2M {
 		return false;
 	}
 
-	UUID EntityH2M::GetSceneUUID()
+	UUID_H2M EntityH2M::GetSceneUUID()
 	{
 		return m_Scene->GetUUID();
 	}

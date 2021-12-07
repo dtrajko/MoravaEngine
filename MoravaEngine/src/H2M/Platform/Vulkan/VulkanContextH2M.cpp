@@ -100,7 +100,7 @@ namespace H2M
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Instance and Surface Creation
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		VK_CHECK_RESULT(vkCreateInstance(&instanceCreateInfo, nullptr, &s_VulkanInstance));
+		VK_CHECK_RESULT_H2M(vkCreateInstance(&instanceCreateInfo, nullptr, &s_VulkanInstance));
 
 		if (s_Validation)
 		{
@@ -111,7 +111,7 @@ namespace H2M
 			debug_report_ci.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
 			debug_report_ci.pfnCallback = VulkanDebugReportCallback;
 			debug_report_ci.pUserData = NULL;
-			VK_CHECK_RESULT(vkCreateDebugReportCallbackEXT(s_VulkanInstance, &debug_report_ci, nullptr, &m_DebugReportCallback));
+			VK_CHECK_RESULT_H2M(vkCreateDebugReportCallbackEXT(s_VulkanInstance, &debug_report_ci, nullptr, &m_DebugReportCallback));
 		}
 
 		m_PhysicalDevice = VulkanPhysicalDeviceH2M::Select();
@@ -134,7 +134,7 @@ namespace H2M
 		// Pipeline Cache
 		VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 		pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-		VK_CHECK_RESULT(vkCreatePipelineCache(m_Device->GetVulkanDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
+		VK_CHECK_RESULT_H2M(vkCreatePipelineCache(m_Device->GetVulkanDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
 	}
 
 	void VulkanContextH2M::OnResize(uint32_t width, uint32_t height)

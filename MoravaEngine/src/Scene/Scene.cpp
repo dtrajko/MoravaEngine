@@ -2,8 +2,8 @@
 
 #include "Scene/Scene.h"
 
-#include "H2M/Core/Events/ApplicationEvent.h"
-#include "H2M/Scene/Components.h"
+#include "H2M/Core/Events/ApplicationEventH2M.h"
+#include "H2M/Scene/ComponentsH2M.h"
 
 #include "Core/Application.h"
 #include "Mesh/MeshData.h"

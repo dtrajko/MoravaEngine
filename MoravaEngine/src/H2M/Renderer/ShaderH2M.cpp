@@ -23,10 +23,10 @@ namespace H2M
 		{
 			case H2M::RendererAPITypeH2M::None: return RefH2M<ShaderH2M>();
 			case H2M::RendererAPITypeH2M::OpenGL:
-				result = RefH2M<H2M::OpenGLShader>::Create(filepath, forceCompile);
+				result = RefH2M<OpenGLShaderH2M>::Create(filepath, forceCompile);
 				break;
 			case H2M::RendererAPITypeH2M::Vulkan:
-				result = RefH2M<H2M::VulkanShaderH2M>::Create(filepath, forceCompile);
+				result = RefH2M<VulkanShaderH2M>::Create(filepath, forceCompile);
 				break;
 			case H2M::RendererAPITypeH2M::DX11:
 				result = RefH2M<DX11Shader>::Create(filepath, forceCompile);

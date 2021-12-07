@@ -76,7 +76,7 @@ namespace H2M
 			imageViewCreateInfo.subresourceRange.layerCount = 1;
 			imageViewCreateInfo.image = m_Info.Image;
 
-			VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_MipImageViews[mip]));
+			VK_CHECK_RESULT_H2M(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_MipImageViews[mip]));
 		}
 		return m_MipImageViews.at(mip);
 	}

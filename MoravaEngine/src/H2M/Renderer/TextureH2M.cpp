@@ -68,8 +68,8 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 			case RendererAPITypeH2M::None:   return RefH2M<TextureCubeH2M>();
-			case RendererAPITypeH2M::OpenGL: return RefH2M<OpenGLTextureCube_H2M>::Create(format, width, height, data);
-			case RendererAPITypeH2M::Vulkan: return RefH2M<VulkanTextureCube_H2M>::Create(format, width, height, data);
+			case RendererAPITypeH2M::OpenGL: return RefH2M<OpenGLTextureCubeH2M>::Create(format, width, height, data);
+			case RendererAPITypeH2M::Vulkan: return RefH2M<VulkanTextureCubeH2M>::Create(format, width, height, data);
 			case RendererAPITypeH2M::DX11:   return RefH2M<DX11TextureCube>::Create(format, width, height, data);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI_H2M");

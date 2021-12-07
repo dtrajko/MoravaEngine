@@ -64,7 +64,7 @@ namespace H2M
 			pipelineLayoutCreateInfo.pPushConstantRanges = vulkanPushConstantRanges.data();
 		}
 
-		VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &m_ComputePipelineLayout));
+		VK_CHECK_RESULT_H2M(vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &m_ComputePipelineLayout));
 
 		VkComputePipelineCreateInfo computePipelineCreateInfo{};
 		computePipelineCreateInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
@@ -76,8 +76,8 @@ namespace H2M
 		VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
 		pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 	
-		VK_CHECK_RESULT(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
-		VK_CHECK_RESULT(vkCreateComputePipelines(device, m_PipelineCache, 1, &computePipelineCreateInfo, nullptr, &m_ComputePipeline));
+		VK_CHECK_RESULT_H2M(vkCreatePipelineCache(device, &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
+		VK_CHECK_RESULT_H2M(vkCreateComputePipelines(device, m_PipelineCache, 1, &computePipelineCreateInfo, nullptr, &m_ComputePipeline));
 	}
 
 	void VulkanComputePipelineH2M::Execute(VkDescriptorSet* descriptorSets, uint32_t descriptorSetCount, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
@@ -105,7 +105,7 @@ namespace H2M
 			VkFenceCreateInfo fenceCreateInfo{};
 			fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 			fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-			VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &s_ComputeFence));
+			VK_CHECK_RESULT_H2M(vkCreateFence(device, &fenceCreateInfo, nullptr, &s_ComputeFence));
 		}
 
 		// Make sure previous compute shader in pipeline has completed (TODO: this shouldn't be needed for all cases)
@@ -116,7 +116,7 @@ namespace H2M
 		computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		computeSubmitInfo.commandBufferCount = 1;
 		computeSubmitInfo.pCommandBuffers = &computeCommandBuffer;
-		VK_CHECK_RESULT(vkQueueSubmit(computeQueue, 1, &computeSubmitInfo, s_ComputeFence));
+		VK_CHECK_RESULT_H2M(vkQueueSubmit(computeQueue, 1, &computeSubmitInfo, s_ComputeFence));
 
 		// Wait for execution of compute shader to complete
 		// Currently this is here for "safety"
@@ -157,7 +157,7 @@ namespace H2M
 			VkFenceCreateInfo fenceCreateInfo{};
 			fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 			fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-			VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &s_ComputeFence));
+			VK_CHECK_RESULT_H2M(vkCreateFence(device, &fenceCreateInfo, nullptr, &s_ComputeFence));
 		}
 		vkWaitForFences(device, 1, &s_ComputeFence, VK_TRUE, UINT64_MAX);
 		vkResetFences(device, 1, &s_ComputeFence);
@@ -166,7 +166,7 @@ namespace H2M
 		computeSubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		computeSubmitInfo.commandBufferCount = 1;
 		computeSubmitInfo.pCommandBuffers = &m_ActiveComputeCommandBuffer;
-		VK_CHECK_RESULT(vkQueueSubmit(computeQueue, 1, &computeSubmitInfo, s_ComputeFence));
+		VK_CHECK_RESULT_H2M(vkQueueSubmit(computeQueue, 1, &computeSubmitInfo, s_ComputeFence));
 
 		// Wait for execution of compute shader to complete
 		// Currently this is here for "safety"

@@ -27,7 +27,7 @@ public:
 	virtual uint32_t GetMipLevelCount() const override;
 	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override { return { 0, 0 }; }
 
-	virtual bool operator==(const HazelTexture& other) const override { return false; }
+	virtual bool operator==(const TextureH2M& other) const override { return false; }
 
 	virtual uint64_t GetHash() const { return (uint64_t)0; /* Not implemented */ }
 
