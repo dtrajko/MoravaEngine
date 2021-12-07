@@ -1932,7 +1932,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
 bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
 {
     auto [mx, my] = Input::GetMousePosition();
-    if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(KeyH2M::LeftAlt))
+    if (e.GetMouseButton() == (int)MouseH2M::ButtonLeft && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(KeyH2M::LeftAlt))
     {
         auto [mouseX, mouseY] = GetMouseViewportSpace();
         if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)

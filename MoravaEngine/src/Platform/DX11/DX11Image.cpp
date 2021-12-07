@@ -3,7 +3,7 @@
 #include "DX11Context.h"
 
 
-DX11Image2D::DX11Image2D(H2M::ImageSpecification specification)
+DX11Image2D::DX11Image2D(H2M::ImageSpecificationH2M specification)
 	: m_Format(specification.Format), m_Width(specification.Width), m_Height(specification.Height)
 {
 }

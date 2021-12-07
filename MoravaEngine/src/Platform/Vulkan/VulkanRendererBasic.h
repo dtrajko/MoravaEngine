@@ -53,7 +53,7 @@ public:
 	static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr = nullptr);
 
 	// Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
-	static void DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest);
+	static void DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest);
 
 	static void SetPolygonMode(PolygonMode polygonMode);
 

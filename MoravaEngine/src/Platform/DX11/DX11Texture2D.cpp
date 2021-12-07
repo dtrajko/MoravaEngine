@@ -221,9 +221,7 @@ void DX11Texture2D::Unlock()
 {
 }
 
-void DX11Texture2D::Resize(uint32_t width, uint32_t height)
-{
-}
+// void DX11Texture2D::Resize(uint32_t width, uint32_t height) {}
 
 H2M::BufferH2M DX11Texture2D::GetWriteableBuffer()
 {

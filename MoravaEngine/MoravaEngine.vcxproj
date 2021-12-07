@@ -572,7 +572,6 @@
       </ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11TextureCube.cpp" />
-    <ClCompile Include="src\Platform\DX11\DX11UniformBuffer.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Utils.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11VertexBuffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -829,7 +828,6 @@
     <ClInclude Include="src\H2M\Renderer\ShaderH2M.h" />
     <ClInclude Include="src\H2M\Renderer\ShaderUniformH2M.h" />
     <ClInclude Include="src\H2M\Renderer\TextureH2M.h" />
-    <ClInclude Include="src\H2M\Renderer\UniformBufferSet.h" />
     <ClInclude Include="src\H2M\Renderer\VertexArrayH2M.h" />
     <ClInclude Include="src\H2M\Renderer\VertexBufferH2M.h" />
     <ClInclude Include="src\H2M\Scene\ComponentsH2M.h" />
@@ -1206,7 +1204,6 @@
       </ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11TextureCube.h" />
-    <ClInclude Include="src\Platform\DX11\DX11UniformBuffer.h" />
     <ClInclude Include="src\Platform\DX11\DX11Utils.h" />
     <ClInclude Include="src\Platform\DX11\DX11VertexBuffer.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

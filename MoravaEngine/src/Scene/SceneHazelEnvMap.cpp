@@ -215,7 +215,7 @@ bool SceneHazelEnvMap::OnKeyPressed(H2M::KeyPressedEventH2M& e)
 
     switch (e.GetKeyCode())
     {
-        case (int)Key::N:
+        case (int)KeyH2M::N:
         {
             if (control)
             {
@@ -223,7 +223,7 @@ bool SceneHazelEnvMap::OnKeyPressed(H2M::KeyPressedEventH2M& e)
             }
             break;
         }
-        case (int)Key::O:
+        case (int)KeyH2M::O:
         {
             if (control)
             {
@@ -231,7 +231,7 @@ bool SceneHazelEnvMap::OnKeyPressed(H2M::KeyPressedEventH2M& e)
             }
             break;
         }
-        case (int)Key::S:
+        case (int)KeyH2M::S:
         {
             if (control && shift)
             {

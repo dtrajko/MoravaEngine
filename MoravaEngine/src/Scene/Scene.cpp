@@ -214,7 +214,7 @@ void Scene::Update(float timestep, Window* mainWindow)
 	}
 }
 
-void Scene::OnWindowResize(WindowResizeEvent& e)
+void Scene::OnWindowResize(H2M::WindowResizeEventH2M& e)
 {
 	m_CameraController->OnResize((uint32_t)e.GetWidth(), (uint32_t)e.GetHeight());
 	m_Camera->SetViewportSize((float)e.GetWidth(), (float)e.GetHeight());

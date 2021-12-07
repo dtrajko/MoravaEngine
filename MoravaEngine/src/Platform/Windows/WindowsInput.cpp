@@ -4,7 +4,7 @@
 #include "Core/Application.h"
 
 
-bool Input::IsKeyPressed(KeyCode key)
+bool Input::IsKeyPressed(KeyCodeH2M key)
 {
 	auto window = static_cast<GLFWwindow*>(Application::Get()->GetWindow()->GetHandle());
 	auto state = glfwGetKey(window, static_cast<int32_t>(key));
@@ -47,14 +47,14 @@ float Input::GetMouseY()
 
 // TODO: A better way to do this is to handle it internally, and simply move the cursor the opposite side
 //              of the screen when it reaches the edge
-void Input::SetCursorMode(CursorMode mode)
+void Input::SetCursorMode(CursorModeH2M mode)
 {
 	Window* window = Application::Get()->GetWindow();
 	glfwSetInputMode(static_cast<GLFWwindow*>(window->GetHandle()), GLFW_CURSOR, GLFW_CURSOR_NORMAL + (int)mode);
 }
 
-CursorMode Input::GetCursorMode()
+CursorModeH2M Input::GetCursorMode()
 {
 	Window* window = Application::Get()->GetWindow();
-	return (CursorMode)(glfwGetInputMode(static_cast<GLFWwindow*>(window->GetHandle()), GLFW_CURSOR) - GLFW_CURSOR_NORMAL);
+	return (CursorModeH2M)(glfwGetInputMode(static_cast<GLFWwindow*>(window->GetHandle()), GLFW_CURSOR) - GLFW_CURSOR_NORMAL);
 }

@@ -453,7 +453,7 @@ void SceneAnimPBR::CheckIntersection(Window* mainWindow)
                 entity.second.AABBox.GetMin(), entity.second.AABBox.GetMax(), glm::vec2(0.0f));
     }
 
-    if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft))
+    if (mainWindow->IsMouseButtonClicked((int)MouseH2M::ButtonLeft))
     {
         for (auto& entity : m_Entities)
         {

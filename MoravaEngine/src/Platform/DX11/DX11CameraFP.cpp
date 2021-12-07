@@ -33,7 +33,7 @@ DX11CameraFP::~DX11CameraFP()
 {
 }
 
-void DX11CameraFP::OnUpdate(H2M::Timestep ts)
+void DX11CameraFP::OnUpdate(H2M::TimestepH2M ts)
 {
 	float width  = (float)Application::Get()->GetWindow()->GetWidth();
 	float height = (float)Application::Get()->GetWindow()->GetHeight();
@@ -47,7 +47,7 @@ void DX11CameraFP::OnUpdate(H2M::Timestep ts)
 //		return &camera;
 //	}
 
-void DX11CameraFP::OnEvent(Event& e)
+void DX11CameraFP::OnEvent(H2M::EventH2M& e)
 {
 }
 

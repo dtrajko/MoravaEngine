@@ -477,7 +477,7 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 				OnSelected(EntitySelection::s_SelectionContext[0]);
 			}
 			else {
-				Ref<H2M::EntityH2M> meshEntity = GetMeshEntity();
+				RefH2M<H2M::EntityH2M> meshEntity = GetMeshEntity();
 				if (meshEntity) {
 					s_CurrentlySelectedTransform = meshEntity->Transform().GetTransform();
 				}
@@ -536,14 +536,14 @@ void DX11TestLayer::OnSelected(const SelectedSubmesh& selectionContext)
 	s_Scene->SetSelectedEntity(selectionContext.Entity);
 }
 
-Ref<H2M::EntityH2M> DX11TestLayer::GetMeshEntity()
+RefH2M<H2M::EntityH2M> DX11TestLayer::GetMeshEntity()
 {
-	Ref<H2M::EntityH2M> meshEntity;
-	auto meshEntities = s_Scene->GetAllEntitiesWith<Hazel::MeshComponentH2M>();
+	RefH2M<H2M::EntityH2M> meshEntity;
+	auto meshEntities = s_Scene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
 	if (meshEntities.size()) {
 		for (auto entt : meshEntities)
 		{
-			meshEntity = CreateRef<H2M::EntityH2M>(entt, s_Scene.Raw());
+			meshEntity = CreateRefH2M<H2M::EntityH2M>(entt, s_Scene.Raw());
 		}
 		return meshEntity;
 	}

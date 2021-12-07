@@ -8,7 +8,7 @@
 #include "DX11Texture2D.h"
 
 
-class DX11ComputePipeline : public H2M::RefCounted
+class DX11ComputePipeline : public H2M::RefCountedH2M
 {
 public:
 	DX11ComputePipeline(H2M::RefH2M<H2M::ShaderH2M> computeShader);

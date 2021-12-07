@@ -44,7 +44,7 @@ void DX11IndexBuffer::Bind() const
 H2M::RendererID_H2M DX11IndexBuffer::GetRendererID() const
 {
 	Log::GetLogger()->error("GetRendererID() Method not implemented yet!");
-	return H2M::RendererID();
+	return H2M::RendererID_H2M();
 }
 
 DX11IndexBuffer::~DX11IndexBuffer()

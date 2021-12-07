@@ -395,7 +395,7 @@ void RendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool
 		case H2M::RendererAPITypeH2M::None:   return;
 		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DrawIndexed(count, type, depthTest);
 		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DrawIndexed(count, type, depthTest);
-		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DrawIndexed(count, type, depthTest);
+		// case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DrawIndexed(count, type, depthTest);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -408,7 +408,7 @@ void RendererBasic::SetPolygonMode(PolygonMode polygonMode)
 	case H2M::RendererAPITypeH2M::None:   return;
 	case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::SetPolygonMode(polygonMode);
 	case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::SetPolygonMode(polygonMode);
-	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetPolygonMode(polygonMode);
+	// case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetPolygonMode(polygonMode);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");

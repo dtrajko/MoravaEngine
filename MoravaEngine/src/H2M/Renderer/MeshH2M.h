@@ -33,9 +33,10 @@ namespace Assimp {
 	class Importer;
 }
 
-namespace H2M {
+namespace H2M
+{
 
-	struct Vertex
+	struct VertexH2M
 	{
 		glm::vec3 Position;
 		glm::vec3 Normal;
@@ -43,7 +44,7 @@ namespace H2M {
 		glm::vec3 Binormal;
 		glm::vec2 Texcoord;
 
-		bool operator==(const Vertex& other) const
+		bool operator==(const VertexH2M& other) const
 		{
 			return Position == other.Position && Normal == other.Normal && Texcoord == other.Texcoord;
 		}
@@ -120,11 +121,11 @@ namespace H2M {
 		}
 	};
 
-	struct Triangle
+	struct TriangleH2M
 	{
-		Vertex V0, V1, V2;
+		VertexH2M V0, V1, V2;
 
-		Triangle(const Vertex& v0, const Vertex& v1, const Vertex& v2)
+		TriangleH2M(const VertexH2M& v0, const VertexH2M& v1, const VertexH2M& v2)
 			: V0(v0), V1(v1), V2(v2) {}
 	};
 
@@ -177,7 +178,7 @@ namespace H2M {
 		std::vector<RefH2M<Texture2D_H2M>>& GetTextures() { return m_Textures; }
 		const std::string& GetFilePath() const { return m_FilePath; }
 
-		const std::vector<Triangle> GetTriangleCache(uint32_t index) const;
+		const std::vector<TriangleH2M> GetTriangleCache(uint32_t index) const;
 
 		RefH2M<VertexBufferH2M> GetVertexBuffer() { return m_VertexBuffer; }
 		RefH2M<IndexBufferH2M> GetIndexBuffer() { return m_IndexBuffer; }
@@ -251,7 +252,7 @@ namespace H2M {
 		uint32_t m_BoneCount = 0;
 		std::vector<BoneInfo> m_BoneInfo;
 
-		std::vector<Vertex> m_StaticVertices;
+		std::vector<VertexH2M> m_StaticVertices;
 		std::vector<AnimatedVertex> m_AnimatedVertices;
 		std::vector<Index> m_Indices;
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
@@ -264,7 +265,7 @@ namespace H2M {
 		std::vector<RefH2M<MaterialH2M>> m_Materials;
 		// std::vector<RefH2M<MaterialInstanceH2M>> m_Materials;
 
-		std::unordered_map<uint32_t, std::vector<Triangle>> m_TriangleCache;
+		std::unordered_map<uint32_t, std::vector<TriangleH2M>> m_TriangleCache;
 
 		std::vector<MaterialDescriptor> m_MaterialDescriptors;
 

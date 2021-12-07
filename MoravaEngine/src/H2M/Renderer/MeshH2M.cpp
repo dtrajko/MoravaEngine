@@ -247,7 +247,7 @@ namespace H2M
 
 				for (size_t i = 0; i < mesh->mNumVertices; i++)
 				{
-					Vertex vertex;
+					VertexH2M vertex;
 					vertex.Position = { mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z };
 					vertex.Normal = { mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z };
 
@@ -903,7 +903,7 @@ namespace H2M
 		}
 		else
 		{
-			m_VertexBuffer = VertexBufferH2M::Create(m_StaticVertices.data(), (uint32_t)sizeof(Vertex), (uint32_t)m_StaticVertices.size());
+			m_VertexBuffer = VertexBufferH2M::Create(m_StaticVertices.data(), (uint32_t)sizeof(VertexH2M), (uint32_t)m_StaticVertices.size());
 
 			m_VertexBufferLayout = {
 							{ ShaderDataTypeH2M::Float3, "a_Position" },
@@ -1442,16 +1442,16 @@ namespace H2M
 		HZ_MESH_LOG("------------------------------------------------------");
 	}
 
-	const std::vector<Triangle> MeshH2M::GetTriangleCache(uint32_t index) const
+	const std::vector<TriangleH2M> MeshH2M::GetTriangleCache(uint32_t index) const
 	{
-		std::unordered_map<uint32_t, std::vector<Triangle>>::const_iterator entry = m_TriangleCache.find(index);
+		std::unordered_map<uint32_t, std::vector<TriangleH2M>>::const_iterator entry = m_TriangleCache.find(index);
 
 		if (index < m_TriangleCache.size() && entry != m_TriangleCache.end())
 		{
 			return entry->second;
 		}
 
-		return std::vector<Triangle>();
+		return std::vector<TriangleH2M>();
 	}
 
 	void MeshH2M::Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials)

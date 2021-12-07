@@ -1,10 +1,10 @@
 #include "VulkanMoravaTexture.h"
 
 #include "H2M/Core/BaseH2M.h"
-#include "H2M/Platform/Vulkan/Vulkan.h"
-#include "H2M/Platform/Vulkan/VulkanContext.h"
-#include "H2M/Platform/Vulkan/VulkanImage.h"
-#include "H2M/Platform/Vulkan/VulkanRenderer.h"
+#include "H2M/Platform/Vulkan/VulkanH2M.h"
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#include "H2M/Platform/Vulkan/VulkanImageH2M.h"
+#include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Renderer/ImageH2M.h"
 
 #include "Core/Log.h"
@@ -20,8 +20,6 @@ namespace Utils
 	{
 		switch (format)
 		{
-		case H2M::ImageFormatH2M::RED32F:   return VK_FORMAT_R32_SFLOAT;
-		case H2M::ImageFormatH2M::RG16F:    return VK_FORMAT_R16G16_SFLOAT;
 		case H2M::ImageFormatH2M::RG32F:    return VK_FORMAT_R32G32_SFLOAT;
 		case H2M::ImageFormatH2M::RGBA:     return VK_FORMAT_R8G8B8A8_UNORM;
 		case H2M::ImageFormatH2M::RGBA16F:  return VK_FORMAT_R16G16B16A16_SFLOAT;
@@ -46,12 +44,12 @@ namespace Utils
 		return (VkSamplerAddressMode)0;
 	}
 
-	static VkFilter VulkanSamplerFilter(H2M::TextureFilter filter)
+	static VkFilter VulkanSamplerFilter(H2M::TextureFilterH2M filter)
 	{
 		switch (filter)
 		{
-		case H2M::TextureFilter::Linear:   return VK_FILTER_LINEAR;
-		case H2M::TextureFilter::Nearest:  return VK_FILTER_NEAREST;
+		case H2M::TextureFilterH2M::Linear:   return VK_FILTER_LINEAR;
+		case H2M::TextureFilterH2M::Nearest:  return VK_FILTER_NEAREST;
 		}
 		H2M_CORE_ASSERT(false, "Unknown filter");
 		return (VkFilter)0;
@@ -195,7 +193,7 @@ void VulkanMoravaTexture::Invalidate()
 	VkBuffer stagingBuffer;
 	VkDeviceMemory stagingMemory;
 
-	H2M::VulkanAllocator allocator(std::string("Texture2D"));
+	H2M::VulkanAllocatorH2M allocator(std::string("Texture2D"));
 
 	VkBufferCreateInfo bufferCreateInfo{};
 	bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -508,7 +506,7 @@ void VulkanMoravaTexture::GenerateMips(bool readonly)
 	auto device = H2M::VulkanContextH2M::GetCurrentDevice();
 	auto vulkanDevice = device->GetVulkanDevice();
 
-	H2M::RefH2M<H2M::VulkanImage2D> image = m_Image.As<H2M::VulkanImage2D>();
+	H2M::RefH2M<H2M::VulkanImage2D_H2M> image = m_Image.As<H2M::VulkanImage2D_H2M>();
 	const auto& info = image->GetImageInfo();
 
 	const VkCommandBuffer blitCmd = H2M::VulkanContextH2M::GetCurrentDevice()->GetCommandBuffer(true);

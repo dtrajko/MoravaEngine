@@ -1636,7 +1636,7 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
         m_Transform_ImGuizmo = &m_SceneObjects[m_SelectedIndex]->transform;
     }
 
-    if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft) && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(KeyH2M::LeftAlt))
+    if (mainWindow->IsMouseButtonClicked((int)MouseH2M::ButtonLeft) && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(KeyH2M::LeftAlt))
     {
         m_Transform_ImGuizmo = &m_SceneObjects[m_SelectedIndex]->transform;
         if (m_ImGizmoType == -1) {

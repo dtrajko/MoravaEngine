@@ -29,7 +29,7 @@ DX11ImGuiLayer::DX11ImGuiLayer()
 }
 
 DX11ImGuiLayer::DX11ImGuiLayer(const std::string& name)
-	: ImGuiLayer(name)
+	: ImGuiLayerH2M(name)
 {
 	Log::GetLogger()->info("DX11ImGuiLayer('{0}') created!", name);
 }
@@ -107,11 +107,11 @@ void DX11ImGuiLayer::OnDetach()
 	ImGui::DestroyContext();
 }
 
-void DX11ImGuiLayer::OnUpdate(H2M::Timestep ts)
+void DX11ImGuiLayer::OnUpdate(H2M::TimestepH2M ts)
 {
 }
 
-void DX11ImGuiLayer::OnEvent(Event& event)
+void DX11ImGuiLayer::OnEvent(H2M::EventH2M& event)
 {
 }
 

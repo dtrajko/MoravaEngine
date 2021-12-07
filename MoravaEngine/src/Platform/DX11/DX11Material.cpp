@@ -114,7 +114,7 @@ void DX11Material::Bind()
 	m_Shader.As<DX11Shader>()->GetPixelShader()->SetTextures(m_Textures);
 }
 
-const H2M::ShaderUniform* DX11Material::FindUniformDeclaration(const std::string& name)
+const H2M::ShaderUniformH2M* DX11Material::FindUniformDeclaration(const std::string& name)
 {
 	const auto& shaderBuffers = m_Shader->GetShaderBuffers();
 
@@ -122,7 +122,7 @@ const H2M::ShaderUniform* DX11Material::FindUniformDeclaration(const std::string
 
 	if (shaderBuffers.size() > 0)
 	{
-		const H2M::ShaderBuffer& buffer = (*shaderBuffers.begin()).second;
+		const H2M::ShaderBufferH2M& buffer = (*shaderBuffers.begin()).second;
 		if (buffer.Uniforms.find(name) == buffer.Uniforms.end())
 			return nullptr;
 
@@ -131,7 +131,7 @@ const H2M::ShaderUniform* DX11Material::FindUniformDeclaration(const std::string
 	return nullptr;
 }
 
-const H2M::ShaderResourceDeclaration* DX11Material::FindResourceDeclaration(const std::string& name)
+const H2M::ShaderResourceDeclarationH2M* DX11Material::FindResourceDeclaration(const std::string& name)
 {
 	auto& resources = m_Shader->GetResources();
 

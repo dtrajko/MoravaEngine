@@ -37,10 +37,10 @@ private:
 
 	void SetupShaders(); // Usually in Renderer* classes
 
-	bool OnKeyPressed(KeyPressedEvent& e);
+	bool OnKeyPressed(H2M::KeyPressedEventH2M& e);
 
 	// Temporary/experimental
-	virtual void OnEntitySelected(H2M::Entity entity) override;
+	virtual void OnEntitySelected(H2M::EntityH2M entity) override;
 
 private:
 	H2M::RefH2M<MoravaShader> m_ShaderBackground;

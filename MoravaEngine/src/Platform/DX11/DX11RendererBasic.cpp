@@ -149,7 +149,7 @@ void DX11RendererBasic::DisableWireframe()
 
 void DX11RendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 {
-	s_RendererContext.As<DX11Context>()->SetViewportSize(width, height);
+	((DX11Context*)s_RendererContext)->SetViewportSize(width, height);
 
 	//	D3D11_VIEWPORT vp = {};
 	//	vp.Width = (FLOAT)width;
@@ -173,7 +173,7 @@ void DX11RendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scen
 }
 
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
-void DX11RendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveType type, bool depthTest)
+void DX11RendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest)
 {
 	// throw std::logic_error("The method or operation is not implemented.");
 	Log::GetLogger()->warn("DX11RendererBasic::DrawIndexed: Method not yet supported!");

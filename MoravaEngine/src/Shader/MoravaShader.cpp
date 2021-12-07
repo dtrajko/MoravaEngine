@@ -27,7 +27,7 @@ H2M::RefH2M<MoravaShader> MoravaShader::Create(MoravaShaderSpecification moravaS
 	}
 	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::HazelShader)
 	{
-		H2M::RefH2M<H2M::HazelShader> hazelShader = HazelShader::Create(moravaShaderSpecification.HazelShaderPath, moravaShaderSpecification.ForceCompile);
+		H2M::RefH2M<H2M::ShaderH2M> hazelShader = ShaderH2M::Create(moravaShaderSpecification.HazelShaderPath, moravaShaderSpecification.ForceCompile);
 		moravaShader = H2M::RefH2M<MoravaShader>(hazelShader);
 	}
 	else if (moravaShaderSpecification.ShaderType == MoravaShaderSpecification::ShaderType::DX11Shader)
@@ -260,18 +260,18 @@ GLint MoravaShader::GetUniformLocation(const std::string& name)
 	}
 }
 
-const std::unordered_map<std::string, H2M::ShaderBuffer>& MoravaShader::GetShaderBuffers() const
+const std::unordered_map<std::string, H2M::ShaderBufferH2M>& MoravaShader::GetShaderBuffers() const
 {
 	// OpenGLMaterial::FindUniformDeclaration requires at least 2 shader buffers
 	// std::unordered_map<std::string, H2M::ShaderBuffer> shaderBuffers = ;
 	// shaderBuffers.insert(std::make_pair("One", H2M::ShaderBuffer()));
 	// shaderBuffers.insert(std::make_pair("Two", H2M::ShaderBuffer()));
-	return std::unordered_map<std::string, H2M::ShaderBuffer>();
+	return std::unordered_map<std::string, H2M::ShaderBufferH2M>();
 }
 
-const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& MoravaShader::GetResources() const
+const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& MoravaShader::GetResources() const
 {
-	return std::unordered_map<std::string, H2M::ShaderResourceDeclaration>();
+	return std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>();
 }
 
 void MoravaShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)

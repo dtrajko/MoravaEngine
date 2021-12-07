@@ -115,12 +115,12 @@ void SceneDX11::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
 }
 
-bool SceneDX11::OnKeyPressed(KeyPressedEvent& e)
+bool SceneDX11::OnKeyPressed(H2M::KeyPressedEventH2M& e)
 {
     return false;
 }
 
-void SceneDX11::OnEntitySelected(H2M::Entity entity)
+void SceneDX11::OnEntitySelected(H2M::EntityH2M entity)
 {
 }
 

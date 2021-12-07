@@ -183,7 +183,7 @@ void DX11Shader::Reflect(const std::string& shaderStage, const std::vector<uint3
 		if (bufferName.empty())
 			continue;
 
-		H2M::ShaderBuffer& buffer = m_Buffers[bufferName];
+		H2M::ShaderBufferH2M& buffer = m_Buffers[bufferName];
 		buffer.Name = bufferName;
 		buffer.Size = static_cast<uint32_t>(bufferSize);
 
@@ -196,13 +196,13 @@ void DX11Shader::Reflect(const std::string& shaderStage, const std::vector<uint3
 		for (int i = 0; i < memberCount; i++)
 		{
 			// auto type = compiler.get_type(bufferType.member_types[i]);
-			H2M::ShaderUniformType type{};
+			H2M::ShaderUniformTypeH2M type{};
 			const auto& memberName = compiler.get_member_name(bufferType.self, i);
 			auto size = compiler.get_declared_struct_member_size(bufferType, i);
 			auto offset = compiler.type_struct_member_offset(bufferType, i);
 
 			std::string uniformName = bufferName + "." + memberName;
-			buffer.Uniforms[uniformName] = H2M::ShaderUniform(uniformName, type, static_cast<uint32_t>(size), offset);
+			buffer.Uniforms[uniformName] = H2M::ShaderUniformH2M(uniformName, type, static_cast<uint32_t>(size), offset);
 		}
 	}
 
@@ -476,9 +476,9 @@ void DX11Shader::SetMat4FromRenderThread(const std::string& name, const glm::mat
 
 void DX11Shader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-const std::unordered_map<std::string, H2M::ShaderBuffer>& DX11Shader::GetShaderBuffers() const { return {}; }
+const std::unordered_map<std::string, H2M::ShaderBufferH2M>& DX11Shader::GetShaderBuffers() const { return {}; }
 
-const std::unordered_map<std::string, H2M::ShaderResourceDeclaration>& DX11Shader::GetResources() const { return {}; }
+const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& DX11Shader::GetResources() const { return {}; }
 
 void DX11Shader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 

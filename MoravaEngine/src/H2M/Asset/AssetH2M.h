@@ -16,7 +16,7 @@
 
 namespace H2M {
 
-	using AssetHandleH2M = UUID;
+	using AssetHandleH2M = UUID_H2M;
 
 	class AssetH2M : public RefCountedH2M
 	{

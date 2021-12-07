@@ -81,7 +81,7 @@ void WindowsWindow::Init(const WindowProps& props)
 		break;
 	}
 
-	m_RendererContext = H2M::RefH2M<H2M::RendererContextH2M>(H2M::RendererContextH2M::Create(this));
+	m_RendererContext = H2M::RendererContextH2M::Create(this);
 	m_RendererContext->Create();
 
 	RendererBasic::SetRendererContext(m_RendererContext);
@@ -672,7 +672,7 @@ void WindowsWindow::SetCallbacksHazelDev()
 				}
 				case GLFW_REPEAT:
 				{
-					H2M::KeyPressedEventH2Mevent(key, 1);
+					H2M::KeyPressedEventH2M event(key, 1);
 					data.EventCallback(event);
 					break;
 				}

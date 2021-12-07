@@ -870,9 +870,6 @@
     <ClCompile Include="src\Hazel\Platform\OpenGL\OpenGLUniformBuffer.cpp">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\DX11\DX11UniformBuffer.cpp">
-      <Filter>Platform\DX11</Filter>
-    </ClCompile>
     <ClCompile Include="src\Hazel\Core\Hash.cpp">
       <Filter>Hazel\Core</Filter>
     </ClCompile>
@@ -2324,9 +2321,6 @@
     <ClInclude Include="src\Hazel\Platform\OpenGL\OpenGLUniformBuffer.h">
       <Filter>Hazel\Platform\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\DX11\DX11UniformBuffer.h">
-      <Filter>Platform\DX11</Filter>
-    </ClInclude>
     <ClInclude Include="src\Hazel\Core\Hash.h">
       <Filter>Hazel\Core</Filter>
     </ClInclude>
@@ -2913,9 +2907,6 @@
       <Filter>H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\SceneRendererVulkanH2M.h">
-      <Filter>H2M\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\H2M\Renderer\UniformBufferSet.h">
       <Filter>H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Utilities\StringUtilsH2M.h">

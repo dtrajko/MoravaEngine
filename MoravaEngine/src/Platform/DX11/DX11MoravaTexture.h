@@ -35,7 +35,7 @@ public:
 	virtual H2M::ImageFormatH2M GetFormat() const override { return H2M::ImageFormatH2M(); }
 	virtual uint32_t GetMipLevelCount() const override { return uint32_t(); }
 	virtual uint64_t GetHash() const override { return uint64_t(); }
-	virtual bool operator==(const H2M::HazelTexture& other) const override { return m_ID == other.GetID(); }
+	virtual bool operator==(const H2M::TextureH2M& other) const override { return m_ID == other.GetID(); }
 	virtual H2M::RendererID_H2M GetRendererID() const override { return m_ID; }
 	// END pure virtual methods inherited from HazelTexture/Texture2D_H2M
 

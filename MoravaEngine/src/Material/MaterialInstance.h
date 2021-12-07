@@ -5,17 +5,17 @@
 #include "Material/Material.h"
 
 
-class MaterialInstance : public H2M::HazelMaterial
+class MaterialInstance : public H2M::MaterialH2M
 {
 public:
-	MaterialInstance(const H2M::RefH2M<H2M::HazelMaterial>& material, const std::string& name = "");
+	MaterialInstance(const H2M::RefH2M<H2M::MaterialH2M>& material, const std::string& name = "");
 	~MaterialInstance();
 
 	void Bind();
-	H2M::RefH2M<H2M::HazelShader> GetShader() { return m_Material->GetShader(); }
+	H2M::RefH2M<H2M::ShaderH2M> GetShader() { return m_Material->GetShader(); }
 
 private:
-	H2M::RefH2M<H2M::HazelMaterial> m_Material;
+	H2M::RefH2M<H2M::MaterialH2M> m_Material;
 	std::string m_Name;
 
 };

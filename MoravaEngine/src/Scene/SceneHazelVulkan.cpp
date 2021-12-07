@@ -174,12 +174,12 @@ void SceneHazelVulkan::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
 }
 
-bool SceneHazelVulkan::OnKeyPressed(KeyPressedEvent& e)
+bool SceneHazelVulkan::OnKeyPressed(H2M::KeyPressedEventH2M& e)
 {
     return false;
 }
 
-void SceneHazelVulkan::OnEntitySelected(H2M::Entity entity)
+void SceneHazelVulkan::OnEntitySelected(H2M::EntityH2M entity)
 {
 }
 
