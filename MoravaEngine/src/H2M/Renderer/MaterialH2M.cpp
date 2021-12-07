@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "MaterialH2M.h"
 
 #include "H2M/Renderer/RendererAPI_H2M.h"

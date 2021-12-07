@@ -169,7 +169,7 @@ void Scene::Update(float timestep, Window* mainWindow)
 	if (ImGuiWrapper::CanViewportReceiveEvents())
 	{
 		// Toggle wireframe mode
-		if (Input::IsKeyPressed(Key::R))
+		if (Input::IsKeyPressed(KeyH2M::R))
 		{
 			if (Timer::Get()->GetCurrentTimestamp() - m_KeyPressCooldown.lastTime > m_KeyPressCooldown.cooldown)
 			{
@@ -179,14 +179,14 @@ void Scene::Update(float timestep, Window* mainWindow)
 		}
 
 		// Flashlight toggle key
-		if (Input::IsKeyPressed(Key::F))
+		if (Input::IsKeyPressed(KeyH2M::F))
 		{
 			LightManager::spotLights[2].GetBasePL()->Toggle();
 			// Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
 		}
 
 		// Take a screenshot
-		if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::P))
+		if (Input::IsKeyPressed(KeyH2M::LeftControl) && Input::IsKeyPressed(KeyH2M::P))
 		{
 			if (Timer::Get()->GetCurrentTimestamp() - m_KeyPressCooldown.lastTime > m_KeyPressCooldown.cooldown)
 			{

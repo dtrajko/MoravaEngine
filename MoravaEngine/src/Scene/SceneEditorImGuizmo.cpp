@@ -1338,16 +1338,16 @@ void SceneEditorImGuizmo::UpdateImGuizmo(Window* mainWindow)
     /**** BEGIN ImGuizmo ****/
 
     // ImGizmo switching modes
-    if (Input::IsKeyPressed(MORAVA_KEY_1))
+    if (Input::IsKeyPressed(H2M_KEY_1))
         m_ImGizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
-    if (Input::IsKeyPressed(MORAVA_KEY_2))
+    if (Input::IsKeyPressed(H2M_KEY_2))
         m_ImGizmoType = ImGuizmo::OPERATION::ROTATE;
 
-    if (Input::IsKeyPressed(MORAVA_KEY_3))
+    if (Input::IsKeyPressed(H2M_KEY_3))
         m_ImGizmoType = ImGuizmo::OPERATION::SCALE;
 
-    if (Input::IsKeyPressed(MORAVA_KEY_4))
+    if (Input::IsKeyPressed(H2M_KEY_4))
         m_ImGizmoType = -1;
 
     // Gizmo
@@ -1590,31 +1590,31 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
     }
 
     // Add new scene object with default settings
-    if (Input::IsMouseButtonPressed(Mouse::ButtonLeft) && Input::IsKeyPressed(Key::LeftControl))
+    if (Input::IsMouseButtonPressed(MouseH2M::ButtonLeft) && Input::IsKeyPressed(KeyH2M::LeftControl))
     {
         AddSceneObject();
     }
 
     // Copy selected scene object
-    if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::C))
+    if (Input::IsKeyPressed(KeyH2M::LeftControl) && Input::IsKeyPressed(KeyH2M::C))
     {
         CopySceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
         m_SceneObjects[m_SelectedIndex]->isSelected = false;
     }
 
     // Delete selected object
-    if (Input::IsKeyPressed(Key::Delete))
+    if (Input::IsKeyPressed(KeyH2M::Delete))
     {
         DeleteSceneObject(mainWindow, &m_SceneObjects, m_SelectedIndex);
     }
 
-    if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::R))
+    if (Input::IsKeyPressed(KeyH2M::LeftControl) && Input::IsKeyPressed(KeyH2M::R))
         ResetScene();
 
-    if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::S))
+    if (Input::IsKeyPressed(KeyH2M::LeftControl) && Input::IsKeyPressed(KeyH2M::S))
         SaveScene();
 
-    if (Input::IsKeyPressed(Key::LeftControl) && Input::IsKeyPressed(Key::L))
+    if (Input::IsKeyPressed(KeyH2M::LeftControl) && Input::IsKeyPressed(KeyH2M::L))
         LoadScene();
 
     for (auto& object : m_SceneObjects)
@@ -1636,7 +1636,7 @@ void SceneEditorImGuizmo::Update(float timestep, Window* mainWindow)
         m_Transform_ImGuizmo = &m_SceneObjects[m_SelectedIndex]->transform;
     }
 
-    if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft) && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+    if (mainWindow->IsMouseButtonClicked((int)Mouse::ButtonLeft) && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(KeyH2M::LeftAlt))
     {
         m_Transform_ImGuizmo = &m_SceneObjects[m_SelectedIndex]->transform;
         if (m_ImGizmoType == -1) {
@@ -2305,7 +2305,7 @@ void SceneEditorImGuizmo::SetUniformsShaderWater(H2M::RefH2M<MoravaShader> shade
 
 void SceneEditorImGuizmo::SwitchOrthographicView(Window* mainWindow, glm::mat4& projectionMatrix)
 {
-    if (Input::IsKeyPressed(Key::O))
+    if (Input::IsKeyPressed(KeyH2M::O))
     {
         if (Timer::Get()->GetCurrentTimestamp() - m_ProjectionChange.lastTime > m_ProjectionChange.cooldown)
         {

@@ -111,19 +111,19 @@ namespace H2M {
 
 	void EditorCameraH2M::OnUpdate(TimestepH2M ts)
 	{
-		if (Input::IsKeyPressed(Key::LeftAlt))
+		if (Input::IsKeyPressed(KeyH2M::LeftAlt))
 		{
 			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
 			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
 			m_InitialMousePosition = mouse;
 
-			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle)) {
+			if (Input::IsMouseButtonPressed(MouseH2M::ButtonMiddle)) {
 				MousePan(delta);
 			}
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonLeft)) {
+			else if (Input::IsMouseButtonPressed(MouseH2M::ButtonLeft)) {
 				MouseRotate(delta);
 			}
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight)) {
+			else if (Input::IsMouseButtonPressed(MouseH2M::ButtonRight)) {
 				MouseZoom(delta.y);
 			}
 		}

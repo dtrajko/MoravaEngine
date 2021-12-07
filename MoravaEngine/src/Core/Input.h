@@ -6,14 +6,14 @@
 #include <utility>
 
 
-enum class CursorMode
+enum class CursorModeH2M
 {
 	Normal = 0,
 	Hidden = 1,
 	Locked = 2
 };
 
-typedef enum class MouseButton : uint16_t
+typedef enum class MouseButtonH2M : uint16_t
 {
 	Button0 = 0,
 	Button1 = 1,
@@ -24,9 +24,9 @@ typedef enum class MouseButton : uint16_t
 	Left = Button0,
 	Right = Button1,
 	Middle = Button2
-} Button;
+} ButtonH2M;
 
-inline std::ostream& operator<<(std::ostream& os, MouseButton button)
+inline std::ostream& operator<<(std::ostream& os, MouseButtonH2M button)
 {
 	os << static_cast<int32_t>(button);
 	return os;
@@ -42,7 +42,7 @@ public:
 	static float GetMouseX();
 	static float GetMouseY();
 
-	static void SetCursorMode(CursorMode mode);
-	static CursorMode GetCursorMode();
+	static void SetCursorMode(CursorModeH2M mode);
+	static CursorModeH2M GetCursorMode();
 
 };

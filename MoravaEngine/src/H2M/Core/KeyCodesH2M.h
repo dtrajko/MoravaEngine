@@ -151,128 +151,128 @@ inline std::ostream& operator<<(std::ostream& os, KeyCodeH2M keyCode)
 }
 
 // From glfw3.h
-#define MORAVA_KEY_SPACE           Key::Space
-#define MORAVA_KEY_APOSTROPHE      Key::Apostrophe    /* ' */
-#define MORAVA_KEY_COMMA           Key::Comma         /* , */
-#define MORAVA_KEY_MINUS           Key::Minus         /* - */
-#define MORAVA_KEY_PERIOD          Key::Period        /* . */
-#define MORAVA_KEY_SLASH           Key::Slash         /* / */
-#define MORAVA_KEY_0               Key::D0
-#define MORAVA_KEY_1               Key::D1
-#define MORAVA_KEY_2               Key::D2
-#define MORAVA_KEY_3               Key::D3
-#define MORAVA_KEY_4               Key::D4
-#define MORAVA_KEY_5               Key::D5
-#define MORAVA_KEY_6               Key::D6
-#define MORAVA_KEY_7               Key::D7
-#define MORAVA_KEY_8               Key::D8
-#define MORAVA_KEY_9               Key::D9
-#define MORAVA_KEY_SEMICOLON       Key::Semicolon     /* ; */
-#define MORAVA_KEY_EQUAL           Key::Equal         /* = */
-#define MORAVA_KEY_A               Key::A
-#define MORAVA_KEY_B               Key::B
-#define MORAVA_KEY_C               Key::C
-#define MORAVA_KEY_D               Key::D
-#define MORAVA_KEY_E               Key::E
-#define MORAVA_KEY_F               Key::F
-#define MORAVA_KEY_G               Key::G
-#define MORAVA_KEY_H               Key::H
-#define MORAVA_KEY_I               Key::I
-#define MORAVA_KEY_J               Key::J
-#define MORAVA_KEY_K               Key::K
-#define MORAVA_KEY_L               Key::L
-#define MORAVA_KEY_M               Key::M
-#define MORAVA_KEY_N               Key::N
-#define MORAVA_KEY_O               Key::O
-#define MORAVA_KEY_P               Key::P
-#define MORAVA_KEY_Q               Key::Q
-#define MORAVA_KEY_R               Key::R
-#define MORAVA_KEY_S               Key::S
-#define MORAVA_KEY_T               Key::T
-#define MORAVA_KEY_U               Key::U
-#define MORAVA_KEY_V               Key::V
-#define MORAVA_KEY_W               Key::W
-#define MORAVA_KEY_X               Key::X
-#define MORAVA_KEY_Y               Key::Y
-#define MORAVA_KEY_Z               Key::Z
-#define MORAVA_KEY_LEFT_BRACKET    Key::LeftBracket   /* [ */
-#define MORAVA_KEY_BACKSLASH       Key::Backslash     /* \ */
-#define MORAVA_KEY_RIGHT_BRACKET   Key::RightBracket  /* ] */
-#define MORAVA_KEY_GRAVE_ACCENT    Key::GraveAccent   /* ` */
-#define MORAVA_KEY_WORLD_1         Key::World1        /* non-US #1 */
-#define MORAVA_KEY_WORLD_2         Key::World2        /* non-US #2 */
+#define H2M_KEY_SPACE           KeyH2M::Space
+#define H2M_KEY_APOSTROPHE      KeyH2M::Apostrophe    /* ' */
+#define H2M_KEY_COMMA           KeyH2M::Comma         /* , */
+#define H2M_KEY_MINUS           KeyH2M::Minus         /* - */
+#define H2M_KEY_PERIOD          KeyH2M::Period        /* . */
+#define H2M_KEY_SLASH           KeyH2M::Slash         /* / */
+#define H2M_KEY_0               KeyH2M::D0
+#define H2M_KEY_1               KeyH2M::D1
+#define H2M_KEY_2               KeyH2M::D2
+#define H2M_KEY_3               KeyH2M::D3
+#define H2M_KEY_4               KeyH2M::D4
+#define H2M_KEY_5               KeyH2M::D5
+#define H2M_KEY_6               KeyH2M::D6
+#define H2M_KEY_7               KeyH2M::D7
+#define H2M_KEY_8               KeyH2M::D8
+#define H2M_KEY_9               KeyH2M::D9
+#define H2M_KEY_SEMICOLON       KeyH2M::Semicolon     /* ; */
+#define H2M_KEY_EQUAL           KeyH2M::Equal         /* = */
+#define H2M_KEY_A               KeyH2M::A
+#define H2M_KEY_B               KeyH2M::B
+#define H2M_KEY_C               KeyH2M::C
+#define H2M_KEY_D               KeyH2M::D
+#define H2M_KEY_E               KeyH2M::E
+#define H2M_KEY_F               KeyH2M::F
+#define H2M_KEY_G               KeyH2M::G
+#define H2M_KEY_H               KeyH2M::H
+#define H2M_KEY_I               KeyH2M::I
+#define H2M_KEY_J               KeyH2M::J
+#define H2M_KEY_K               KeyH2M::K
+#define H2M_KEY_L               KeyH2M::L
+#define H2M_KEY_M               KeyH2M::M
+#define H2M_KEY_N               KeyH2M::N
+#define H2M_KEY_O               KeyH2M::O
+#define H2M_KEY_P               KeyH2M::P
+#define H2M_KEY_Q               KeyH2M::Q
+#define H2M_KEY_R               KeyH2M::R
+#define H2M_KEY_S               KeyH2M::S
+#define H2M_KEY_T               KeyH2M::T
+#define H2M_KEY_U               KeyH2M::U
+#define H2M_KEY_V               KeyH2M::V
+#define H2M_KEY_W               KeyH2M::W
+#define H2M_KEY_X               KeyH2M::X
+#define H2M_KEY_Y               KeyH2M::Y
+#define H2M_KEY_Z               KeyH2M::Z
+#define H2M_KEY_LEFT_BRACKET    KeyH2M::LeftBracket   /* [ */
+#define H2M_KEY_BACKSLASH       KeyH2M::Backslash     /* \ */
+#define H2M_KEY_RIGHT_BRACKET   KeyH2M::RightBracket  /* ] */
+#define H2M_KEY_GRAVE_ACCENT    KeyH2M::GraveAccent   /* ` */
+#define H2M_KEY_WORLD_1         KeyH2M::World1        /* non-US #1 */
+#define H2M_KEY_WORLD_2         KeyH2M::World2        /* non-US #2 */
 
 /* Function keys */
-#define MORAVA_KEY_ESCAPE          Key::Escape
-#define MORAVA_KEY_ENTER           Key::Enter
-#define MORAVA_KEY_TAB             Key::Tab
-#define MORAVA_KEY_BACKSPACE       Key::Backspace
-#define MORAVA_KEY_INSERT          Key::Insert
-#define MORAVA_KEY_DELETE          Key::Delete
-#define MORAVA_KEY_RIGHT           Key::Right
-#define MORAVA_KEY_LEFT            Key::Left
-#define MORAVA_KEY_DOWN            Key::Down
-#define MORAVA_KEY_UP              Key::Up
-#define MORAVA_KEY_PAGE_UP         Key::PageUp
-#define MORAVA_KEY_PAGE_DOWN       Key::PageDown
-#define MORAVA_KEY_HOME            Key::Home
-#define MORAVA_KEY_END             Key::End
-#define MORAVA_KEY_CAPS_LOCK       Key::CapsLock
-#define MORAVA_KEY_SCROLL_LOCK     Key::ScrollLock
-#define MORAVA_KEY_NUM_LOCK        Key::NumLock
-#define MORAVA_KEY_PRINT_SCREEN    Key::PrintScreen
-#define MORAVA_KEY_PAUSE           Key::Pause
-#define MORAVA_KEY_F1              Key::F1
-#define MORAVA_KEY_F2              Key::F2
-#define MORAVA_KEY_F3              Key::F3
-#define MORAVA_KEY_F4              Key::F4
-#define MORAVA_KEY_F5              Key::F5
-#define MORAVA_KEY_F6              Key::F6
-#define MORAVA_KEY_F7              Key::F7
-#define MORAVA_KEY_F8              Key::F8
-#define MORAVA_KEY_F9              Key::F9
-#define MORAVA_KEY_F10             Key::F10
-#define MORAVA_KEY_F11             Key::F11
-#define MORAVA_KEY_F12             Key::F12
-#define MORAVA_KEY_F13             Key::F13
-#define MORAVA_KEY_F14             Key::F14
-#define MORAVA_KEY_F15             Key::F15
-#define MORAVA_KEY_F16             Key::F16
-#define MORAVA_KEY_F17             Key::F17
-#define MORAVA_KEY_F18             Key::F18
-#define MORAVA_KEY_F19             Key::F19
-#define MORAVA_KEY_F20             Key::F20
-#define MORAVA_KEY_F21             Key::F21
-#define MORAVA_KEY_F22             Key::F22
-#define MORAVA_KEY_F23             Key::F23
-#define MORAVA_KEY_F24             Key::F24
-#define MORAVA_KEY_F25             Key::F25
+#define H2M_KEY_ESCAPE          KeyH2M::Escape
+#define H2M_KEY_ENTER           KeyH2M::Enter
+#define H2M_KEY_TAB             KeyH2M::Tab
+#define H2M_KEY_BACKSPACE       KeyH2M::Backspace
+#define H2M_KEY_INSERT          KeyH2M::Insert
+#define H2M_KEY_DELETE          KeyH2M::Delete
+#define H2M_KEY_RIGHT           KeyH2M::Right
+#define H2M_KEY_LEFT            KeyH2M::Left
+#define H2M_KEY_DOWN            KeyH2M::Down
+#define H2M_KEY_UP              KeyH2M::Up
+#define H2M_KEY_PAGE_UP         KeyH2M::PageUp
+#define H2M_KEY_PAGE_DOWN       KeyH2M::PageDown
+#define H2M_KEY_HOME            KeyH2M::Home
+#define H2M_KEY_END             KeyH2M::End
+#define H2M_KEY_CAPS_LOCK       KeyH2M::CapsLock
+#define H2M_KEY_SCROLL_LOCK     KeyH2M::ScrollLock
+#define H2M_KEY_NUM_LOCK        KeyH2M::NumLock
+#define H2M_KEY_PRINT_SCREEN    KeyH2M::PrintScreen
+#define H2M_KEY_PAUSE           KeyH2M::Pause
+#define H2M_KEY_F1              KeyH2M::F1
+#define H2M_KEY_F2              KeyH2M::F2
+#define H2M_KEY_F3              KeyH2M::F3
+#define H2M_KEY_F4              KeyH2M::F4
+#define H2M_KEY_F5              KeyH2M::F5
+#define H2M_KEY_F6              KeyH2M::F6
+#define H2M_KEY_F7              KeyH2M::F7
+#define H2M_KEY_F8              KeyH2M::F8
+#define H2M_KEY_F9              KeyH2M::F9
+#define H2M_KEY_F10             KeyH2M::F10
+#define H2M_KEY_F11             KeyH2M::F11
+#define H2M_KEY_F12             KeyH2M::F12
+#define H2M_KEY_F13             KeyH2M::F13
+#define H2M_KEY_F14             KeyH2M::F14
+#define H2M_KEY_F15             KeyH2M::F15
+#define H2M_KEY_F16             KeyH2M::F16
+#define H2M_KEY_F17             KeyH2M::F17
+#define H2M_KEY_F18             KeyH2M::F18
+#define H2M_KEY_F19             KeyH2M::F19
+#define H2M_KEY_F20             KeyH2M::F20
+#define H2M_KEY_F21             KeyH2M::F21
+#define H2M_KEY_F22             KeyH2M::F22
+#define H2M_KEY_F23             KeyH2M::F23
+#define H2M_KEY_F24             KeyH2M::F24
+#define H2M_KEY_F25             KeyH2M::F25
 
 /* Keypad */
-#define MORAVA_KEY_KP_0            Key::KP0
-#define MORAVA_KEY_KP_1            Key::KP1
-#define MORAVA_KEY_KP_2            Key::KP2
-#define MORAVA_KEY_KP_3            Key::KP3
-#define MORAVA_KEY_KP_4            Key::KP4
-#define MORAVA_KEY_KP_5            Key::KP5
-#define MORAVA_KEY_KP_6            Key::KP6
-#define MORAVA_KEY_KP_7            Key::KP7
-#define MORAVA_KEY_KP_8            Key::KP8
-#define MORAVA_KEY_KP_9            Key::KP9
-#define MORAVA_KEY_KP_DECIMAL      Key::KPDecimal
-#define MORAVA_KEY_KP_DIVIDE       Key::KPDivide
-#define MORAVA_KEY_KP_MULTIPLY     Key::KPMultiply
-#define MORAVA_KEY_KP_SUBTRACT     Key::KPSubtract
-#define MORAVA_KEY_KP_ADD          Key::KPAdd
-#define MORAVA_KEY_KP_ENTER        Key::KPEnter
-#define MORAVA_KEY_KP_EQUAL        Key::KPEqual
+#define H2M_KEY_KP_0            KeyH2M::KP0
+#define H2M_KEY_KP_1            KeyH2M::KP1
+#define H2M_KEY_KP_2            KeyH2M::KP2
+#define H2M_KEY_KP_3            KeyH2M::KP3
+#define H2M_KEY_KP_4            KeyH2M::KP4
+#define H2M_KEY_KP_5            KeyH2M::KP5
+#define H2M_KEY_KP_6            KeyH2M::KP6
+#define H2M_KEY_KP_7            KeyH2M::KP7
+#define H2M_KEY_KP_8            KeyH2M::KP8
+#define H2M_KEY_KP_9            KeyH2M::KP9
+#define H2M_KEY_KP_DECIMAL      KeyH2M::KPDecimal
+#define H2M_KEY_KP_DIVIDE       KeyH2M::KPDivide
+#define H2M_KEY_KP_MULTIPLY     KeyH2M::KPMultiply
+#define H2M_KEY_KP_SUBTRACT     KeyH2M::KPSubtract
+#define H2M_KEY_KP_ADD          KeyH2M::KPAdd
+#define H2M_KEY_KP_ENTER        KeyH2M::KPEnter
+#define H2M_KEY_KP_EQUAL        KeyH2M::KPEqual
 
-#define MORAVA_KEY_LEFT_SHIFT      Key::LeftShift
-#define MORAVA_KEY_LEFT_CONTROL    Key::LeftControl
-#define MORAVA_KEY_LEFT_ALT        Key::LeftAlt
-#define MORAVA_KEY_LEFT_SUPER      Key::LeftSuper
-#define MORAVA_KEY_RIGHT_SHIFT     Key::RightShift
-#define MORAVA_KEY_RIGHT_CONTROL   Key::RightControl
-#define MORAVA_KEY_RIGHT_ALT       Key::RightAlt
-#define MORAVA_KEY_RIGHT_SUPER     Key::RightSuper
-#define MORAVA_KEY_MENU            Key::Menu
+#define H2M_KEY_LEFT_SHIFT      KeyH2M::LeftShift
+#define H2M_KEY_LEFT_CONTROL    KeyH2M::LeftControl
+#define H2M_KEY_LEFT_ALT        KeyH2M::LeftAlt
+#define H2M_KEY_LEFT_SUPER      KeyH2M::LeftSuper
+#define H2M_KEY_RIGHT_SHIFT     KeyH2M::RightShift
+#define H2M_KEY_RIGHT_CONTROL   KeyH2M::RightControl
+#define H2M_KEY_RIGHT_ALT       KeyH2M::RightAlt
+#define H2M_KEY_RIGHT_SUPER     KeyH2M::RightSuper
+#define H2M_KEY_MENU            KeyH2M::Menu

@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "IndexBufferH2M.h"
 
 #include "H2M/Platform/OpenGL/OpenGLIndexBufferH2M.h"

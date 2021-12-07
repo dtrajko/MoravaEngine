@@ -1495,16 +1495,16 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
     // BEGIN ImGuizmo
 
     // ImGizmo switching modes
-    if (Input::IsKeyPressed(Key::D1))
+    if (Input::IsKeyPressed(KeyH2M::D1))
         Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
-    if (Input::IsKeyPressed(Key::D2))
+    if (Input::IsKeyPressed(KeyH2M::D2))
         Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
 
-    if (Input::IsKeyPressed(Key::D3))
+    if (Input::IsKeyPressed(KeyH2M::D3))
         Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
 
-    if (Input::IsKeyPressed(Key::D4))
+    if (Input::IsKeyPressed(KeyH2M::D4))
         Scene::s_ImGuizmoType = -1;
 
     // Dirty fix: m_SelectionContext not decremented when mesh entity is removed from the scene
@@ -1530,7 +1530,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
         glm::mat4 entityTransform = tc.GetTransform();
 
         // Snapping
-        bool snap = Input::IsKeyPressed(Key::LeftControl);
+        bool snap = Input::IsKeyPressed(KeyH2M::LeftControl);
         float snapValue = 1.0f; // Snap to 0.5m for translation/scale
         // Snap to 45 degrees for rotation
         if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE) {
@@ -1850,7 +1850,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
         }
     }
 
-    if (Input::IsKeyPressed(MORAVA_KEY_LEFT_CONTROL))
+    if (Input::IsKeyPressed(H2M_KEY_LEFT_CONTROL))
     {
         switch (e.GetKeyCode())
         {
@@ -1915,7 +1915,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
             //      break;
         }
 
-        if (Input::IsKeyPressed(MORAVA_KEY_LEFT_SHIFT))
+        if (Input::IsKeyPressed(H2M_KEY_LEFT_SHIFT))
         {
             switch (e.GetKeyCode())
             {
@@ -1932,7 +1932,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
 bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
 {
     auto [mx, my] = Input::GetMousePosition();
-    if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+    if (e.GetMouseButton() == (int)Mouse::ButtonLeft && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(KeyH2M::LeftAlt))
     {
         auto [mouseX, mouseY] = GetMouseViewportSpace();
         if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)

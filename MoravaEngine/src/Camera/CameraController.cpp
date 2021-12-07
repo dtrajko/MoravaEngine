@@ -21,43 +21,43 @@ CameraController::CameraController(H2M::CameraH2M* camera, float aspectRatio, fl
 void CameraController::KeyControl(bool* keys, float deltaTime)
 {
 	// Don't move the camera when using Ctrl+S or Ctrl+D in Editor
-	if (Input::IsKeyPressed(Key::LeftControl)) return;
+	if (Input::IsKeyPressed(KeyH2M::LeftControl)) return;
 
 	// Move the camera only the viewport accepts events, i.e. in focus or hovered (mouse over)
 	if (!ImGuiWrapper::CanViewportReceiveEvents()) return;
 
 	float velocity = m_MoveSpeed * deltaTime;
 
-	if (Input::IsKeyPressed(Key::LeftShift))
+	if (Input::IsKeyPressed(KeyH2M::LeftShift))
 	{
 		velocity *= m_SpeedBoost;
 	}
-	if (Input::IsKeyPressed(Key::W) || Input::IsKeyPressed(Key::Up))
+	if (Input::IsKeyPressed(KeyH2M::W) || Input::IsKeyPressed(KeyH2M::Up))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetFront() * velocity);
 	}
-	if (Input::IsKeyPressed(Key::S) || Input::IsKeyPressed(Key::Down))
+	if (Input::IsKeyPressed(KeyH2M::S) || Input::IsKeyPressed(KeyH2M::Down))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetFront() * velocity);
 	}
-	if (Input::IsKeyPressed(Key::A) || Input::IsKeyPressed(Key::Left))
+	if (Input::IsKeyPressed(KeyH2M::A) || Input::IsKeyPressed(KeyH2M::Left))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetRight() * velocity);
 	}
-	if (Input::IsKeyPressed(Key::D) || Input::IsKeyPressed(Key::Right))
+	if (Input::IsKeyPressed(KeyH2M::D) || Input::IsKeyPressed(KeyH2M::Right))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetRight() * velocity);
 	}
-	if (Input::IsKeyPressed(Key::Q))
+	if (Input::IsKeyPressed(KeyH2M::Q))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() - m_Camera->GetUp() * velocity);
 	}
-	if (Input::IsKeyPressed(Key::E) || Input::IsKeyPressed(Key::Space))
+	if (Input::IsKeyPressed(KeyH2M::E) || Input::IsKeyPressed(KeyH2M::Space))
 	{
 		m_Camera->SetPosition(m_Camera->GetPosition() + m_Camera->GetUp() * velocity);
 	}
 
-	if (Input::IsKeyPressed(Key::L))
+	if (Input::IsKeyPressed(KeyH2M::L))
 	{
 		Log::GetLogger()->debug("CameraController GLFW_KEY_L {0}, keys[GLFW_KEY_L] {1}", GLFW_KEY_L, keys[GLFW_KEY_L]);
 		Log::GetLogger()->debug("CameraController::KeyControl Position [ {0}, {1}, {2} ]", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
@@ -67,7 +67,7 @@ void CameraController::KeyControl(bool* keys, float deltaTime)
 
 void CameraController::MouseControl(bool* buttons, float xChange, float yChange)
 {
-	if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+	if (Input::IsMouseButtonPressed(MouseH2M::ButtonRight))
 	{
 		m_Camera->SetYaw(m_Camera->GetYaw() + xChange * m_TurnSpeed);
 		m_Camera->SetPitch(m_Camera->GetPitch() - yChange * m_TurnSpeed);
@@ -81,7 +81,7 @@ void CameraController::MouseScrollControl(bool* keys, float deltaTime, float xOf
 
 	GLfloat velocity = m_MoveSpeed * yOffset;
 
-	if (Input::IsKeyPressed(Key::LeftShift))
+	if (Input::IsKeyPressed(KeyH2M::LeftShift))
 	{
 		velocity *= m_SpeedBoost;
 	}

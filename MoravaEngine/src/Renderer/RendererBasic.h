@@ -67,7 +67,7 @@ public:
 	// static void SetSpirVEnabled(bool enabled) { s_SpirV_Enabled = enabled; }
 	static bool GetVulkanSupported();
 
-	static void SetRendererContext(H2M::RefH2M<H2M::RendererContextH2M> rendererContext) { s_RendererContext = rendererContext; }
+	static void SetRendererContext(H2M::RendererContextH2M* rendererContext) { s_RendererContext = rendererContext; }
 	static H2M::RefH2M<H2M::RendererContextH2M> GetRendererContext() { return s_RendererContext; }
 
 	static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr = nullptr);
@@ -91,6 +91,6 @@ public:
 	static glm::vec4 s_BgColor;
 	// static bool s_SpirV_Enabled;
 
-	static H2M::RefH2M<H2M::RendererContextH2M> s_RendererContext;
+	static H2M::RendererContextH2M* s_RendererContext;
 
 };

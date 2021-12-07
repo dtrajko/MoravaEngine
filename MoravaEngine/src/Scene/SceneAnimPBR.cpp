@@ -760,16 +760,16 @@ void SceneAnimPBR::UpdateImGuizmo(Window* mainWindow)
     // BEGIN ImGuizmo
 
     // ImGizmo switching modes
-    if (Input::IsKeyPressed(Key::D1))
+    if (Input::IsKeyPressed(KeyH2M::D1))
         m_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
-    if (Input::IsKeyPressed(Key::D2))
+    if (Input::IsKeyPressed(KeyH2M::D2))
         m_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
 
-    if (Input::IsKeyPressed(Key::D3))
+    if (Input::IsKeyPressed(KeyH2M::D3))
         m_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
 
-    if (Input::IsKeyPressed(Key::D4))
+    if (Input::IsKeyPressed(KeyH2M::D4))
         m_ImGuizmoType = -1;
 
     // ImGuizmo

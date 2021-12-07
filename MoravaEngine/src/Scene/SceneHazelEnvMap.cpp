@@ -210,8 +210,8 @@ bool SceneHazelEnvMap::OnKeyPressed(H2M::KeyPressedEventH2M& e)
         return false;
     }
 
-    bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-    bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+    bool control = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl);
+    bool shift = Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift);
 
     switch (e.GetKeyCode())
     {
