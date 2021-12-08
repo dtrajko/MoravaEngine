@@ -279,7 +279,7 @@ namespace H2M
 			if (ImGui::IsItemClicked())
 			{
 				EntitySelection::s_SelectionContext.clear();
-				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submeshes[i], 0 });
+				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, submeshes[i], 0 });
 
 				EnvMapEditorLayer::s_SelectionMode = SelectionMode::SubMesh;
 			}
@@ -315,7 +315,7 @@ namespace H2M
 				ImGui::SameLine();
 				ImGui::Text(std::to_string(submeshes[i]->MaterialIndex).c_str());
 
-				SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, &submeshes[i]);
+				SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, submeshes[i]);
 				std::string materialUUID = "N/A";
 				std::string materialName = "N/A";
 				auto map_it = MaterialLibrary::s_SubmeshMaterialUUIDs.find(submeshUUID);
