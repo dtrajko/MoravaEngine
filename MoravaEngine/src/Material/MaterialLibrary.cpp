@@ -212,7 +212,7 @@ void MaterialLibrary::LoadEnvMapMaterials(H2M::RefH2M<H2M::MeshH2M> mesh, H2M::E
     //  
     //  m_EnvMapMaterials.clear();
 
-    std::vector<H2M::RefH2M<H2M::SubmeshH2M>> submeshes = mesh->GetSubmeshes();
+    std::vector<H2M::RefH2M<H2M::SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
 
     for (H2M::RefH2M<H2M::SubmeshH2M> submesh : submeshes)
     {
@@ -272,7 +272,7 @@ void MaterialLibrary::SetDefaultMaterialToSubmeshes(H2M::RefH2M<H2M::MeshH2M> me
  */
 void MaterialLibrary::SetMaterialsToSubmeshes(H2M::RefH2M<H2M::MeshH2M> mesh, H2M::EntityH2M entity, H2M::RefH2M<EnvMapMaterial> defaultMaterial)
 {
-    for (auto submesh : mesh->GetSubmeshes())
+    for (H2M::RefH2M<H2M::SubmeshH2M> submesh : mesh->GetSubmeshes())
     {
         bool correctMaterialFound = false;
         // Let's try to detect a correct material from the list of loaded materials in MaterialLibrary

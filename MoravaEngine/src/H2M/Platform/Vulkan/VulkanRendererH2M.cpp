@@ -146,7 +146,7 @@ namespace H2M
 	void VulkanRendererH2M::SubmitMeshTemp(const RefH2M<MeshH2M>& mesh, const glm::mat4& transform)
 	{
 		// Temporary code - populate selected submesh
-		// std::vector<Submesh> submeshes = mesh->GetSubmeshes();
+		// std::vector<RefH2M<SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
 		// s_SelectedSubmesh = &submeshes.at(0);
 
 		s_Meshes.push_back(mesh);
@@ -1358,7 +1358,7 @@ namespace H2M
 			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 			vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-			auto& submeshes = mesh->GetSubmeshes();
+			std::vector<RefH2M<SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
 			for (RefH2M<SubmeshH2M> submesh : submeshes)
 			{
 				auto& material = mesh->GetMaterials()[submesh->MaterialIndex].As<VulkanMaterialH2M>();

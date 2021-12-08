@@ -106,7 +106,7 @@ static glm::vec2 s_ImGuiViewportMain;
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
 {
 	// Temporary code - populate selected submesh
-	std::vector<H2M::RefH2M<H2M::SubmeshH2M>> submeshes = renderObject.Mesh->GetSubmeshes();
+	std::vector<H2M::RefH2M<H2M::SubmeshH2M>>& submeshes = renderObject.Mesh->GetSubmeshes();
 	s_SelectedSubmesh = submeshes[0];
 
 	s_RenderObjects.push_back(renderObject);
@@ -573,7 +573,10 @@ void DX11Renderer::DisplaySubmeshMaterialSelector(bool* p_open)
 			entity = selectedSubmesh.Entity;
 			entityTag = selectedSubmesh.Entity.GetComponent<H2M::TagComponentH2M>().Tag;
 			meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
-			submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
+			if (selectedSubmesh.Mesh)
+			{
+				submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
+			}
 		}
 
 		ImGui::Text("Selected Entity: ");

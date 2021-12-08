@@ -55,9 +55,9 @@ namespace H2M
 				if (EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity)
 				{
 					EntitySelection::s_SelectionContext.clear();
-					for (auto& submesh : meshComponent.Mesh->GetSubmeshes())
+					for (RefH2M<SubmeshH2M> submesh : meshComponent.Mesh->GetSubmeshes())
 					{
-						EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, &submesh, 0 });
+						EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, submesh, 0 });
 					}
 				}
 				else if (EnvMapEditorLayer::s_SelectionMode == SelectionMode::SubMesh) {
@@ -259,7 +259,7 @@ namespace H2M
 
 		auto mesh = entity.GetComponent<MeshComponentH2M>().Mesh;
 
-		std::vector<RefH2M<SubmeshH2M>> submeshes = mesh->GetSubmeshes();
+		std::vector<RefH2M<SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
 
 		for (int i = 0; i < submeshes.size(); i++)
 		{
