@@ -169,9 +169,9 @@ namespace H2M
 #endif
 
 #if 0
-		s_Data.CompositeShader = MoravaShader::Create("assets/shaders/SceneComposite.glsl");
-		s_Data.BloomBlurShader = MoravaShader::Create("assets/shaders/BloomBlur.glsl");
-		s_Data.BloomBlendShader = MoravaShader::Create("assets/shaders/BloomBlend.glsl");
+		s_Data.CompositeShader = MoravaShader::Create("Resources/Shaders/SceneComposite.glsl");
+		s_Data.BloomBlurShader = MoravaShader::Create("Resources/Shaders/BloomBlur.glsl");
+		s_Data.BloomBlendShader = MoravaShader::Create("Resources/Shaders/BloomBlend.glsl");
 #endif
 
 	}
@@ -242,7 +242,7 @@ namespace H2M
 
 		RefH2M<TextureCubeH2M> envUnfiltered = TextureCubeH2M::Create(ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize);
 		if (!equirectangularConversionShader)
-			equirectangularConversionShader = ShaderH2M::Create("assets/shaders/EquirectangularToCubeMap.glsl");
+			equirectangularConversionShader = ShaderH2M::Create("Resources/Shaders/EquirectangularToCubeMap.glsl");
 		RefH2M<Texture2D_H2M> envEquirect = Texture2D_H2M::Create(filepath);
 		H2M_CORE_ASSERT(envEquirect->GetFormat() == ImageFormatH2M::RGBA16F, "Texture is not HDR!");
 
@@ -256,7 +256,7 @@ namespace H2M
 		});
 
 		if (!envFilteringShader) {
-			envFilteringShader = ShaderH2M::Create("assets/shaders/EnvironmentMipFilter.glsl");
+			envFilteringShader = ShaderH2M::Create("Resources/Shaders/EnvironmentMipFilter.glsl");
 		}
 
 		RefH2M<TextureCubeH2M> envFiltered = TextureCubeH2M::Create(ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize);
@@ -284,7 +284,7 @@ namespace H2M
 		});
 
 		if (!envIrradianceShader) {
-			envIrradianceShader = ShaderH2M::Create("assets/shaders/EnvironmentIrradiance.glsl");
+			envIrradianceShader = ShaderH2M::Create("Resources/Shaders/EnvironmentIrradiance.glsl");
 		}
 
 		RefH2M<TextureCubeH2M> irradianceMap = TextureCubeH2M::Create(ImageFormatH2M::RGBA16F, irradianceMapSize, irradianceMapSize);

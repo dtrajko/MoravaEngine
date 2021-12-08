@@ -115,7 +115,7 @@ namespace H2M
 				break;
 			case RendererAPITypeH2M::Vulkan:
 				moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
-				moravaShaderSpec.HazelShaderPath = "assets/shaders/Skybox.glsl";
+				moravaShaderSpec.HazelShaderPath = "Resources/Shaders/Skybox.glsl";
 				break;
 			case RendererAPITypeH2M::DX11:
 				moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
@@ -129,8 +129,8 @@ namespace H2M
 		m_SkyboxMaterial = Material::Create(skyboxShader);
 		m_SkyboxMaterial->SetFlag(MaterialFlagH2M::DepthTest, false);
 
-		// auto skyboxShader = HazelShader::Create("assets/shaders/Renderer2D.glsl");
-		// HazelRenderer::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
+		// auto skyboxShader = HazelShader::Create("Resources/Shaders/Renderer2D.glsl");
+		// HazelRenderer::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
 		// auto skyboxShader = HazelRenderer::GetShaderLibrary()->Get("Skybox"); // Spir-V method // Pre-load shaders in order to use Get
 		// m_SkyboxMaterial = HazelMaterial::Create(skyboxShader);
 		// m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);

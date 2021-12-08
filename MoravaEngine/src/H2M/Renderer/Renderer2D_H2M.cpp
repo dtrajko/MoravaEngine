@@ -143,7 +143,7 @@ namespace H2M
 				samplers[i] = i;
 
 			//	if (RendererBasic::GetVulkanSupported()) {
-			//		s_Data.TextureHazelShader = ShaderH2M::Create("assets/shaders/Renderer2D.glsl"); // not in use, only for constructor testing
+			//		s_Data.TextureHazelShader = ShaderH2M::Create("Resources/Shaders/Renderer2D.glsl"); // not in use, only for constructor testing
 			//	}
 
 			s_Data.TextureShader = RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs"));
@@ -163,7 +163,7 @@ namespace H2M
 		{
 			if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 			{
-				s_Data.LineHazelShader = ShaderH2M::Create("assets/shaders/Renderer2D_Line.glsl"); // not in use, only for constructor testing
+				s_Data.LineHazelShader = ShaderH2M::Create("Resources/Shaders/Renderer2D_Line.glsl"); // not in use, only for constructor testing
 			}
 
 			s_Data.LineShader = RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs"));

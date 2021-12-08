@@ -161,7 +161,7 @@ namespace H2M
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelVulkan;
 				moravaShaderSpecificationHazelVulkan.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
-				moravaShaderSpecificationHazelVulkan.HazelShaderPath = "assets/shaders/HazelPBR_Static.glsl";
+				moravaShaderSpecificationHazelVulkan.HazelShaderPath = "Resources/Shaders/HazelPBR_Static.glsl";
 				moravaShaderSpecificationHazelVulkan.ForceCompile = true;
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
@@ -311,7 +311,7 @@ namespace H2M
 		TraverseNodes(scene->mRootNode);
 
 		PipelineSpecificationH2M pipelineSpecification;
-		auto shader = m_MeshShader; // MoravaShader::Create("assets/shaders/VulkanWeekMesh.glsl", true);
+		auto shader = m_MeshShader; // MoravaShader::Create("Resources/Shaders/VulkanWeekMesh.glsl", true);
 		pipelineSpecification.Shader = m_MeshShader;
 
 		//	if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)

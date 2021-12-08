@@ -204,19 +204,19 @@ namespace H2M
 
 		// s_Data.m_ShaderLibrary = RefH2M<HazelShaderLibrary>::Create();
 
-		// s_Data.m_ShaderLibrary->Load("assets/shaders/Grid.glsl");
-		// s_Data.m_ShaderLibrary->Load("assets/shaders/SceneComposite.glsl");
-		// s_Data.m_ShaderLibrary->Load("assets/shaders/HazelSimple.glsl");
-		// s_Data.m_ShaderLibrary->Load("assets/shaders/Outline.glsl");
-		RendererH2M::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl", true);
-		RendererH2M::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl", true);
-		RendererH2M::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl", true);
-		RendererH2M::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
-		RendererH2M::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
-		RendererH2M::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
-		RendererH2M::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
-		RendererH2M::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
-		RendererH2M::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
+		// s_Data.m_ShaderLibrary->Load("Resources/Shaders/Grid.glsl");
+		// s_Data.m_ShaderLibrary->Load("Resources/Shaders/SceneComposite.glsl");
+		// s_Data.m_ShaderLibrary->Load("Resources/Shaders/HazelSimple.glsl");
+		// s_Data.m_ShaderLibrary->Load("Resources/Shaders/Outline.glsl");
+		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EquirectangularToCubeMap.glsl", true);
+		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentMipFilter.glsl", true);
+		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentIrradiance.glsl", true);
+		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
+		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
+		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
+		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SceneComposite.glsl");
+		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Grid.glsl");
+		RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Outline.glsl");
 
 		SceneRendererH2M::Init();
 

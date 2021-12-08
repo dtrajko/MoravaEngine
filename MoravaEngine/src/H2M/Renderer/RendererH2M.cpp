@@ -123,18 +123,18 @@ namespace H2M
 		// Compute shaders
 		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 		{
-			// RendererH2M::GetShaderLibrary()->Load("assets/shaders/ClearCubeMap.glsl");
-			RendererH2M::GetShaderLibrary()->Load("assets/shaders/EquirectangularToCubeMap.glsl");
-			RendererH2M::GetShaderLibrary()->Load("assets/shaders/EnvironmentMipFilter.glsl");
-			RendererH2M::GetShaderLibrary()->Load("assets/shaders/EnvironmentIrradiance.glsl");
+			// RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ClearCubeMap.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EquirectangularToCubeMap.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentMipFilter.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentIrradiance.glsl");
 
-			RendererH2M::GetShaderLibrary()->Load("assets/shaders/Grid.glsl");
-			RendererH2M::GetShaderLibrary()->Load("assets/shaders/SceneComposite.glsl");
-			RendererH2M::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Static.glsl");
-			// RendererH2M::GetShaderLibrary()->Load("assets/shaders/HazelPBR_Anim.glsl");
-			RendererH2M::GetShaderLibrary()->Load("assets/shaders/Outline.glsl");
-			RendererH2M::GetShaderLibrary()->Load("assets/shaders/Skybox.glsl");
-			RendererH2M::GetShaderLibrary()->Load("assets/shaders/Texture.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Grid.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SceneComposite.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
+			// RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Anim.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Outline.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
 		}
 
 		// Compile shaders
