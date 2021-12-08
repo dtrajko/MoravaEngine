@@ -1,5 +1,4 @@
 /**
- *
  * @package H2M
  * @author  Yan Chernikov (TheCherno)
  * @licence Apache License 2.0

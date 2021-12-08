@@ -62,7 +62,6 @@ namespace H2M
 
 		static void Clear(float r, float g, float b, float a);
 		static void SetClearColor(float r, float g, float b, float a);
-
 		static void DrawIndexed(uint32_t count, PrimitiveTypeH2M type, bool depthTest = true);
 		static void SetLineThickness(float thickness);
 

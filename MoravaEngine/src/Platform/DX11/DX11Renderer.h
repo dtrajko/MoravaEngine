@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Renderer/CameraH2M.h"
+#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "DX11Texture2D.h"
 #include "DX11ConstantBuffer.h"

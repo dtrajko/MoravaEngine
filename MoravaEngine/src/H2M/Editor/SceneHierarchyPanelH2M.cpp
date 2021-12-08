@@ -831,7 +831,7 @@ namespace H2M
 			}
 		});
 
-		DrawComponent <MaterialComponentH2M>("Material", entity, [=](MaterialComponentH2M& mc)
+		DrawComponent<MaterialComponentH2M>("Material", entity, [=](MaterialComponentH2M& mc)
 			{
 				if (!mc.Material) {
 					mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterialRef;

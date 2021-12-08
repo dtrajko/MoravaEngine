@@ -16,18 +16,18 @@
 namespace H2M
 {
 
-	RendererContextH2M* RendererContextH2M::Create(Window* window)
+	RefH2M<RendererContextH2M> RendererContextH2M::Create(Window* window)
 	{
 		switch (RendererAPI_H2M::Current())
 		{
-			case RendererAPITypeH2M::None:    H2M_CORE_ASSERT(false, "RendererAPITypeH2M:None is currently not supported!"); return nullptr;
-			case RendererAPITypeH2M::OpenGL:  return RefH2M<OpenGLContextH2M>::Create(window).Raw();
-			case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanContextH2M>::Create(window).Raw();
-			case RendererAPITypeH2M::DX11:    return RefH2M<DX11Context>::Create(window).Raw();
+			case RendererAPITypeH2M::None:    H2M_CORE_ASSERT(false, "RendererAPITypeH2M:None is currently not supported!"); return RefH2M<RendererContextH2M>();
+			case RendererAPITypeH2M::OpenGL:  return RefH2M<OpenGLContextH2M>::Create(window);
+			case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanContextH2M>::Create(window);
+			case RendererAPITypeH2M::DX11:    return RefH2M<DX11Context>::Create(window);
 		}
 		Log::GetLogger()->error("Unknown RendererAPI_H2M");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI_H2M");
-		return nullptr;
+		return RefH2M<RendererContextH2M>();
 	}
 
 }

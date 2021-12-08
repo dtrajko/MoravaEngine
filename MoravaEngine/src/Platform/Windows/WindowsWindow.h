@@ -35,7 +35,7 @@ public:
 
 	inline void* GetNativeWindow() const { return m_GLFW_Window; }
 
-	virtual H2M::RendererContextH2M* GetRenderContext() override { return m_RendererContext; }
+	virtual H2M::RefH2M<H2M::RendererContextH2M> GetRenderContext() override { return m_RendererContext; }
 	virtual H2M::VulkanSwapChainH2M& GetSwapChain() override;
 
 	void SetInputMode(bool cursorEnabled) override;
@@ -135,7 +135,7 @@ private:
 	};
 
 	WindowData m_Data;
-	H2M::RendererContextH2M* m_RendererContext;
+	H2M::RefH2M<H2M::RendererContextH2M> m_RendererContext;
 	H2M::VulkanSwapChainH2M m_SwapChain;
 
 	/**** END Window Hazel version - a platform independent Window interface ****/

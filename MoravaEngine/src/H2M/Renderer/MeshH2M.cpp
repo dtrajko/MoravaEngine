@@ -196,7 +196,7 @@ namespace H2M
 			submesh->MaterialIndex = mesh->mMaterialIndex;
 			submesh->IndexCount = mesh->mNumFaces * 3;
 			submesh->MeshName = mesh->mName.C_Str();
-			// m_Submeshes.push_back(submesh);
+			m_Submeshes.push_back(submesh);
 
 			vertexCount += mesh->mNumVertices;
 			indexCount += submesh->IndexCount;

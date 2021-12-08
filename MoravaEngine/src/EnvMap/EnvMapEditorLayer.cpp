@@ -1622,7 +1622,10 @@ void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
             entity = selectedSubmesh.Entity;
             entityTag = selectedSubmesh.Entity.GetComponent<H2M::TagComponentH2M>().Tag;
             meshName = (selectedSubmesh.Mesh) ? selectedSubmesh.Mesh->MeshName : "N/A";
-            submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
+            if (selectedSubmesh.Mesh)
+            {
+                submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, selectedSubmesh.Mesh);
+            }
         }
 
         ImGui::Text("Selected Entity: ");

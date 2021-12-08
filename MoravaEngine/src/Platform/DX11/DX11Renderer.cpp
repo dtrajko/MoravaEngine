@@ -422,7 +422,7 @@ void DX11Renderer::CreateQuad()
 
 static void CompositeRenderPass(VkCommandBufferInheritanceInfo& inheritanceInfo)
 {
-	DX11Context* dx11Context = (DX11Context*)Application::Get()->GetWindow()->GetRenderContext();
+	H2M::RefH2M<DX11Context> dx11Context = Application::Get()->GetWindow()->GetRenderContext().As<DX11Context>();
 	// DX11SwapChain& swapChain = context->GetSwapChain();
 
 	// TODO

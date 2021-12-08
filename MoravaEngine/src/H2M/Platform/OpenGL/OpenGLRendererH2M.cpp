@@ -1,5 +1,4 @@
 /**
- *
  * @package H2M
  * @author  Yan Chernikov (TheCherno)
  * @licence Apache License 2.0
@@ -211,7 +210,7 @@ namespace H2M
 		s_Data->m_FullscreenQuadPipeline->Bind();
 		s_Data->m_FullscreenQuadIndexBuffer->Bind();
 
-		RendererH2M::DrawIndexed(6, PrimitiveTypeH2M::Triangles, depthTest);
+		DrawIndexed(6, PrimitiveTypeH2M::Triangles, depthTest);
 	}
 
 	void OpenGLRendererH2M::SetSceneEnvironment(RefH2M<EnvironmentH2M> environment, RefH2M<Image2D_H2M> shadow)

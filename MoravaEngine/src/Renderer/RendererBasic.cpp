@@ -16,7 +16,7 @@ std::map<std::string, H2M::RefH2M<MoravaShader>> RendererBasic::s_Shaders;
 std::map<std::string, int> RendererBasic::s_Uniforms;
 glm::vec4 RendererBasic::s_BgColor;
 // bool RendererBasic::s_SpirV_Enabled;
-H2M::RendererContextH2M* RendererBasic::s_RendererContext;
+H2M::RefH2M<H2M::RendererContextH2M> RendererBasic::s_RendererContext;
 
 
 RendererBasic::RendererBasic()

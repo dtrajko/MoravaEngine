@@ -1368,6 +1368,12 @@
     <ClCompile Include="src\Hazel\Platform\Windows\WindowsInput.cpp">
       <Filter>Hazel\Platform\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLRendererAPI_H2M.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRendererAPI_H2M.cpp">
+      <Filter>H2M\Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2977,6 +2983,9 @@
     </ClInclude>
     <ClInclude Include="src\Hazel\Core\HazelInput.h">
       <Filter>Hazel\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRendererAPI_H2M.h">
+      <Filter>H2M\Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

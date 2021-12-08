@@ -197,6 +197,7 @@
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLIndexBufferH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLMaterialH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLPipelineH2M.cpp" />
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLRendererAPI_H2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLRendererH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLRenderPassH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLShaderH2M.cpp" />
@@ -216,6 +217,7 @@
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanMaterialH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanPipelineH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRenderCommandBufferH2M.cpp" />
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRendererAPI_H2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRendererH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRenderPassH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanShaderH2M.cpp" />
@@ -795,6 +797,7 @@
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanMaterialH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanPipelineH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRenderCommandBufferH2M.h" />
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRendererAPI_H2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRendererH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRenderPassH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanShaderH2M.h" />

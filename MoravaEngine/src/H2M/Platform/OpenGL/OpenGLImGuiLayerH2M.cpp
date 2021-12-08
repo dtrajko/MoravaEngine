@@ -1,3 +1,9 @@
+/**
+ * @package H2M
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "OpenGLImGuiLayerH2M.h"
 
 #include "H2M/Renderer/RendererH2M.h"

@@ -12,7 +12,6 @@
 #include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
 #include "H2M/Renderer/PipelineComputeH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
-#include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
 
@@ -93,7 +92,7 @@ namespace H2M
 		RefH2M<EnvironmentH2M> EmptyEnvironment;
 	};
 
-	static RendererDataH2M* s_Data = nullptr;
+	static RendererDataH2M* s_Data = new RendererDataH2M();
 	static RenderCommandQueueH2M* s_CommandQueue = nullptr;
 
 	// static std::unordered_map<size_t, RefH2M<Pipeline>> s_PipelineCache;
@@ -216,60 +215,60 @@ namespace H2M
 		return s_Data->m_ShaderLibrary;
 	}
 
-	/**** BEGIN to be removed from RendererH2M ****/
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void RendererH2M::Clear()
 	{
-		// RendererH2M::Submit([]() {});
+		// HazelRenderer::Submit([]() {});
 		{
 			RendererAPI_H2M::Clear(0.0f, 0.0f, 0.0f, 1.0f);
 		}
 	}
-	/**** END to be removed from RendererH2M ****/
+	/**** END to be removed from HazelRenderer ****/
 
-	/**** BEGIN to be removed from RendererH2M ****/
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void RendererH2M::Clear(float r, float g, float b, float a)
 	{
-		// RendererH2M::Submit([=]() {});
+		// HazelRenderer::Submit([=]() {});
 		{
 			RendererAPI_H2M::Clear(r, g, b, a);
 		}
 	}
-	/**** END to be removed from RendererH2M ****/
+	/**** END to be removed from HazelRenderer ****/
 
-	/**** BEGIN to be removed from RendererH2M ****/
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void RendererH2M::ClearMagenta()
 	{
 		Clear(1, 0, 1);
 	}
-	/**** END to be removed from RendererH2M ****/
+	/**** END to be removed from HazelRenderer ****/
 
-	/**** BEGIN to be removed from RendererH2M ****/
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void RendererH2M::SetClearColor(float r, float g, float b, float a)
 	{
 	}
-	/**** END to be removed from RendererH2M ****/
+	/**** END to be removed from HazelRenderer ****/
 
-	/**** BEGIN to be removed from RendererH2M ****/
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void RendererH2M::DrawIndexed(uint32_t count, PrimitiveTypeH2M type, bool depthTest)
 	{
-		// RendererH2M::Submit([=]() {});
+		// HazelRenderer::Submit([=]() {});
 		{
 			RendererAPI_H2M::DrawIndexed(count, type, depthTest);
 		}
 	}
-	/**** END to be removed from RendererH2M ****/
+	/**** END to be removed from HazelRenderer ****/
 
-	/**** BEGIN to be removed from RendererH2M ****/
+	/**** BEGIN to be removed from HazelRenderer ****/
 	void RendererH2M::SetLineThickness(float thickness)
 	{
-		Log::GetLogger()->warn("RendererH2M::SetLineThickness({0}): method not implemented!", thickness);
+		Log::GetLogger()->warn("HazelRenderer::SetLineThickness({0}): method not implemented!", thickness);
 
-		// RendererH2M::Submit([=]() {});
+		// HazelRenderer::Submit([=]() {});
 		{
 			RendererAPI_H2M::SetLineThickness(thickness);
 		}
 	}
-	/**** END to be removed from RendererH2M ****/
+	/**** END to be removed from HazelRenderer ****/
 
 	void RendererH2M::WaitAndRender()
 	{
@@ -345,7 +344,7 @@ namespace H2M
 		s_Data->FullscreenQuadPipeline->Bind();
 		s_Data->FullscreenQuadIndexBuffer->Bind();
 
-		RendererH2M::DrawIndexed(6, PrimitiveTypeH2M::Triangles, depthTest);
+		DrawIndexed(6, PrimitiveTypeH2M::Triangles, depthTest);
 	}
 
 	void RendererH2M::SubmitFullscreenQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material)
@@ -416,9 +415,13 @@ namespace H2M
 			// RendererH2M::Submit([submesh, material]() {});
 			{
 				if (material->GetFlag(MaterialFlagH2M::DepthTest))
+				{
 					glEnable(GL_DEPTH_TEST);
+				}
 				else
+				{
 					glDisable(GL_DEPTH_TEST);
+				}
 
 				glDrawElementsBaseVertex(GL_TRIANGLES, submesh->IndexCount, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * submesh->BaseIndex), submesh->BaseVertex);
 			}
@@ -477,13 +480,19 @@ namespace H2M
 		};
 
 		for (uint32_t i = 0; i < 4; i++)
+		{
 			Renderer2D_H2M::DrawLine(corners[i], corners[(i + 1) % 4], color);
+		}
 
 		for (uint32_t i = 0; i < 4; i++)
+		{
 			Renderer2D_H2M::DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
+		}
 
 		for (uint32_t i = 0; i < 4; i++)
+		{
 			Renderer2D_H2M::DrawLine(corners[i], corners[i + 4], color);
+		}
 	}
 
 	RenderCommandQueueH2M& RendererH2M::GetRenderCommandQueue()

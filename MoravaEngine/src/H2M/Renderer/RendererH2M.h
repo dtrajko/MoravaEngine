@@ -61,7 +61,6 @@ namespace H2M
 
 		static RendererCapabilitiesH2M& GetCapabilities();
 
-		// Commands
 		static void Clear();                                                                   // TODO: to be removed from HazelRenderer
 		static void Clear(float r, float g, float b, float a = 1.0f);                          // TODO: to be removed from HazelRenderer
 		static void SetClearColor(float r, float g, float b, float a);                         // TODO: to be removed from HazelRenderer
@@ -131,10 +130,10 @@ namespace H2M
 		inline void DumpGPUInfo()
 		{
 			auto& caps = RendererH2M::GetCapabilities();
-			H2M::LogH2M::GetClientLogger()->trace("GPU Info:");
-			H2M::LogH2M::GetClientLogger()->trace("  Vendor: {0}", caps.Vendor);
-			H2M::LogH2M::GetClientLogger()->trace("  Device: {0}", caps.Device);
-			H2M::LogH2M::GetClientLogger()->trace("  Version: {0}", caps.Version);
+			Log::GetLogger()->trace("GPU Info:");
+			Log::GetLogger()->trace("  Vendor: {0}", caps.Vendor);
+			Log::GetLogger()->trace("  Device: {0}", caps.Device);
+			Log::GetLogger()->trace("  Version: {0}", caps.Version);
 		}
 	}
 

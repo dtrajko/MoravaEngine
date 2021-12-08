@@ -29,7 +29,7 @@ namespace H2M
 
 		virtual void OnResize(uint32_t width, uint32_t height) = 0;
 
-		static RendererContextH2M* Create(Window* window);
+		static RefH2M<RendererContextH2M> Create(Window* window);
 	};
 
 }
