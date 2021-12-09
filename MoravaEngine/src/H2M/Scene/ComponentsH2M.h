@@ -121,6 +121,24 @@ namespace H2M
 		operator const SceneCameraH2M& () const { return (SceneCameraH2M&)Camera; }
 	};
 
+	// Forward declaration
+	class ScriptableEntityH2M;
+
+	struct NativeScriptComponentH2M
+	{
+		ScriptableEntityH2M* Instance = nullptr;
+
+		ScriptableEntityH2M* (*InstantiateScript)();
+		void (*DestroyScript)(NativeScriptComponentH2M*);
+
+		template<typename T>
+		void Bind()
+		{
+			InstantiateScript = []() { return static_cast<ScriptableEntityH2M*>(new T()); };
+			DestroyScript = [](NativeScriptComponentH2M* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
+		}
+	};
+
 	struct MaterialComponentH2M
 	{
 		RefH2M<EnvMapMaterial> Material = RefH2M<EnvMapMaterial>();

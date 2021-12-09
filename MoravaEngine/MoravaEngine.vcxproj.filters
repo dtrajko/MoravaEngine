@@ -927,6 +927,12 @@
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRendererAPI_H2M.cpp">
       <Filter>H2M\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\UniformBufferH2M.cpp">
+      <Filter>H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLUniformBufferH2M.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1981,6 +1987,15 @@
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRendererAPI_H2M.h">
       <Filter>H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Scene\ScriptableEntityH2M.h">
+      <Filter>H2M\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\UniformBufferH2M.h">
+      <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLUniformBufferH2M.h">
+      <Filter>H2M\Platform\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -12,6 +12,7 @@
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
+#include "H2M/Scene/ScriptableEntityH2M.h"
 
 #include "Core/Math.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
@@ -214,6 +215,91 @@ namespace H2M
 
 			// Renderer2D::EndScene();
 		}
+	}
+
+	void SceneH2M::OnUpdateRuntime(TimestepH2M ts)
+	{
+		// Update scripts
+		{
+			m_Registry.view<NativeScriptComponentH2M>().each([=](auto entity, auto& nsc) {
+				// TODO: Move to scene::OnScenePlay
+				if (!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateScript();
+					nsc.Instance->m_Entity = EntityH2M{ entity, this };
+					nsc.Instance->OnCreate();
+				}
+
+				nsc.Instance->OnUpdate(ts);
+				});
+		}
+
+		// Render 2D
+		CameraH2M* mainCamera = nullptr;
+		glm::mat4 cameraTransform;
+		{
+			auto view = m_Registry.view<TransformComponentH2M, CameraComponentH2M>();
+			for (auto entity : view)
+			{
+				auto [transform, camera] = view.get<TransformComponentH2M, CameraComponentH2M>(entity);
+
+				if (camera.Primary)
+				{
+					mainCamera = &camera.Camera;
+					cameraTransform = transform.GetTransform();
+					break;
+				}
+			}
+		}
+
+		if (mainCamera)
+		{
+			Renderer2D_H2M::BeginScene(*mainCamera, cameraTransform);
+
+			auto group = m_Registry.group<TransformComponentH2M>(entt::get<SpriteRendererComponentH2M>);
+			for (auto entity : group)
+			{
+				auto [transform, sprite] = group.get<TransformComponentH2M, SpriteRendererComponentH2M>(entity);
+
+				Renderer2D_H2M::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+			}
+
+			Renderer2D_H2M::EndScene();
+		}
+	}
+
+	void SceneH2M::OnUpdateEditor(TimestepH2M ts, EditorCameraH2M& camera)
+	{
+		Renderer2D_H2M::BeginScene(camera);
+
+		auto group = m_Registry.group<TransformComponentH2M>(entt::get<SpriteRendererComponentH2M>);
+		for (auto entity : group)
+		{
+			auto [transform, sprite] = group.get<TransformComponentH2M, SpriteRendererComponentH2M>(entity);
+
+			Renderer2D_H2M::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+		}
+
+		Renderer2D_H2M::EndScene();
+	}
+
+	void SceneH2M::OnViewportResize(uint32_t width, uint32_t height)
+	{
+		SetViewportSize(width, height);
+
+		// Resize our non-FixedAspectRatio cameras
+		auto view = m_Registry.view<CameraComponentH2M>();
+		for (auto entity : view)
+		{
+			auto& cameraComponent = view.get<CameraComponentH2M>(entity);
+			if (!cameraComponent.FixedAspectRatio) {
+				cameraComponent.Camera.SetViewportSize((float)width, (float)height);
+			}
+		}
+	}
+
+	void SceneH2M::GetPrimaryCameraEntity()
+	{
 	}
 
 	void SceneH2M::OnRenderRuntime(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts)
@@ -791,21 +877,6 @@ namespace H2M
 	{
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
-	}
-
-	void SceneH2M::OnViewportResize(uint32_t width, uint32_t height)
-	{
-		SetViewportSize(width, height);
-
-		// Resize our non-FixedAspectRatio cameras
-		auto view = m_Registry.view<CameraComponentH2M>();
-		for (auto entity : view)
-		{
-			auto& cameraComponent = view.get<CameraComponentH2M>(entity);
-			if (!cameraComponent.FixedAspectRatio) {
-				cameraComponent.Camera.SetViewportSize((float)width, (float)height);
-			}
-		}
 	}
 
 	template<typename T>

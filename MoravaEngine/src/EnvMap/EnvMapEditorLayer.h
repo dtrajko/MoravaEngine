@@ -35,9 +35,6 @@ public:
 	void OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float timestep);
 	void OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float timestep);
 
-	void OnScenePlay();
-	void OnSceneStop();
-
 	void OnRenderShadow(Window* mainWindow);
 	void RenderSubmeshesShadowPass(H2M::RefH2M<MoravaShader> shader);
 
@@ -66,10 +63,22 @@ public:
 
 	void UpdateSubmeshMaterialMap(H2M::EntityH2M entity, H2M::SubmeshH2M* submesh);
 
+	// EditorLayer
+	void OnEvent(H2M::EventH2M& e);
+
+	bool OnKeyPressedEvent(H2M::KeyPressedEventH2M& e); // EditorLayer::OnKeyPressedEvent()
+	bool OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e); // EditorLayer::OnMouseButtonPressedEvent()
+
 	void NewScene();
 	void OpenScene();
 	void SaveScene();
 	void SaveSceneAs();
+
+	void OnScenePlay();
+	void OnSceneStop();
+
+	// UI Panels
+	void UI_Toolbar();
 
 	void OnNewScene(glm::vec2 viewportSize);
 
@@ -77,9 +86,6 @@ public:
 
 	void OnSelected(const SelectedSubmesh& selectionContext);
 	void OnEntityDeleted(H2M::EntityH2M e);
-
-	bool OnKeyPressedEvent(H2M::KeyPressedEventH2M& e); // EditorLayer::OnKeyPressedEvent()
-	bool OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e); // EditorLayer::OnMouseButtonPressedEvent()
 
 	void SelectEntity(H2M::EntityH2M e);
 
@@ -115,9 +121,6 @@ public:
 	// Renderer
 	void DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest);
 	void SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transform, Material* overrideMaterial);
-
-	// EditorLayer
-	void OnEvent(H2M::EventH2M& e);
 
 	// from SceneHazelEnvMap
 	void SetupRenderFramebuffer();
@@ -219,7 +222,7 @@ private:
 		Play,
 		Pause,
 	};
-	SceneState m_SceneState;
+	SceneState m_SceneState = SceneState::Edit;
 
 	bool m_DisplayBoundingBoxes;
 	bool m_DrawOnTopBoundingBoxes; // obsolete?

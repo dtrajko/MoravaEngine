@@ -6,9 +6,10 @@
 
 #include "Renderer2D_H2M.h"
 
-#include "H2M/Renderer/RenderCommandH2M.h"
 #include "H2M/Core/AssertH2M.h"
+#include "H2M/Renderer/RenderCommandH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
+#include "H2M/Renderer/UniformBufferH2M.h"
 
 #include "Core/Log.h"
 #include "Shader/MoravaShader.h"
@@ -79,6 +80,13 @@ namespace H2M
 		bool DepthTest = true;
 
 		Renderer2D_H2M::Statistics Stats;
+
+		struct CameraData
+		{
+			glm::mat4 ViewProjection;
+		};
+		CameraData CameraBuffer;
+		RefH2M<UniformBufferH2M> CameraUniformBuffer;
 	};
 
 	static Renderer2DData s_Data;
@@ -203,6 +211,28 @@ namespace H2M
 		RenderCommandH2M::SetViewport(0, 0, width, height);
 	}
 
+	void Renderer2D_H2M::BeginScene(const CameraH2M& camera, const glm::mat4& transform)
+	{
+		// H2M_PROFILE_FUNCTION();
+
+		s_Data.CameraBuffer.ViewProjection = camera.GetProjectionMatrix() * glm::inverse(transform);
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
+
+		// StartBatch();
+	}
+
+	void Renderer2D_H2M::BeginScene(const EditorCameraH2M& camera)
+	{
+		// H2M_PROFILE_FUNCTION();
+
+		s_Data.CameraBuffer.ViewProjection = camera.GetViewProjection();
+		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
+
+		// StartBatch();
+	}
+
+	// void Renderer2D_H2M::BeginScene(const OrthographicCameraH2M& camera) {}
+
 	void Renderer2D_H2M::BeginScene(const glm::mat4& viewProj, bool depthTest)
 	{
 		s_Data.CameraViewProj = viewProj;
@@ -317,7 +347,7 @@ namespace H2M
 		DrawQuad(transform, color);
 	}
 
-	void Renderer2D_H2M::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
+	void Renderer2D_H2M::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
 		constexpr size_t quadVertexCount = 4;
 		const float textureIndex = 0.0f; // White Texture
@@ -355,7 +385,7 @@ namespace H2M
 		DrawQuad(transform, texture, tilingFactor, tintColor);
 	}
 
-	void Renderer2D_H2M::DrawQuad(const glm::mat4& transform, Texture2D_H2M* texture, float tilingFactor, const glm::vec4& tintColor)
+	void Renderer2D_H2M::DrawQuad(const glm::mat4& transform, RefH2M<Texture2D_H2M> texture, float tilingFactor, const glm::vec4& tintColor, int entityID)
 	{
 		constexpr size_t quadVertexCount = 4;
 		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
@@ -511,6 +541,22 @@ namespace H2M
 		s_Data.LineIndexCount += 2;
 
 		s_Data.Stats.LineCount++;
+	}
+
+	void Renderer2D_H2M::DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade, int entityID)
+	{
+	}
+
+	void Renderer2D_H2M::DrawSprite(const glm::mat4& transform, SpriteRendererComponentH2M& src, int entityID)
+	{
+		if (src.Texture)
+		{
+			DrawQuad(transform, src.Texture, src.TilingFactor, src.Color, entityID);
+		}
+		else
+		{
+			DrawQuad(transform, src.Color, entityID);
+		}
 	}
 
 }

@@ -80,6 +80,8 @@ namespace H2M
 		void Init();
 
 		void OnUpdate(TimestepH2M ts);
+		void OnUpdateRuntime(TimestepH2M ts);
+		void OnUpdateEditor(TimestepH2M ts, EditorCameraH2M& camera);
 		void OnRenderRuntime(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts);
 		void OnRenderEditor(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts, const EditorCameraH2M& editorCamera);
 		void OnEvent(EventH2M& e);
@@ -94,6 +96,8 @@ namespace H2M
 		void SetViewportSize(uint32_t width, uint32_t height);
 
 		void OnViewportResize(uint32_t width, uint32_t height);
+
+		void GetPrimaryCameraEntity();
 
 		template<typename T>
 		void OnComponentAdded(EntityH2M entity, T& component);

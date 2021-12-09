@@ -374,10 +374,11 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         }
         break;
     case SceneState::Play:
-        if (m_ViewportPanelFocused) {
+        if (m_ViewportPanelFocused)
+        {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_RuntimeScene->OnUpdate(timestep);
+        // EnvMapSharedData::s_RuntimeScene->OnUpdate(timestep);
         EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep);
         break;
     case SceneState::Pause:
@@ -474,9 +475,9 @@ void EnvMapEditorLayer::OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float 
 
 void EnvMapEditorLayer::OnScenePlay()
 {
-    EntitySelection::s_SelectionContext.clear();
-
     m_SceneState = SceneState::Play;
+
+    EntitySelection::s_SelectionContext.clear();
 
     if (m_ReloadScriptOnPlay)
     {
@@ -484,7 +485,7 @@ void EnvMapEditorLayer::OnScenePlay()
     }
 
     EnvMapSharedData::s_RuntimeScene = H2M::RefH2M<H2M::SceneH2M>::Create();
-    EnvMapSharedData::s_EditorScene->CopyTo(EnvMapSharedData::s_RuntimeScene);
+    // EnvMapSharedData::s_EditorScene->CopyTo(EnvMapSharedData::s_RuntimeScene);
 
     EnvMapSharedData::s_RuntimeScene->OnRuntimeStart();
     m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_RuntimeScene);
@@ -492,8 +493,9 @@ void EnvMapEditorLayer::OnScenePlay()
 
 void EnvMapEditorLayer::OnSceneStop()
 {
-    EnvMapSharedData::s_RuntimeScene->OnRuntimeStop();
     m_SceneState = SceneState::Edit;
+
+    EnvMapSharedData::s_RuntimeScene->OnRuntimeStop();
 
     // Unload runtime scene
     EnvMapSharedData::s_RuntimeScene = nullptr;
@@ -747,42 +749,42 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.8f, 0.8f, 0.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
 
-            ImGui::Begin("Toolbar", &m_ShowWindowTransform);
-            {
-                if (m_SceneState == SceneState::Edit)
-                {
-                    float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
-                    if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
-                    {
-                        EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
-                    }
-
-                    if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
-                    {
-                        OnScenePlay();
-                    }
-                }
-                else if (m_SceneState == SceneState::Play)
-                {
-                    float physics2DGravity = EnvMapSharedData::s_RuntimeScene->GetPhysics2DGravity();
-                    
-                    if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
-                    {
-                        EnvMapSharedData::s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
-                    }
-
-                    if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
-                    {
-                        OnSceneStop();
-                    }
-                }
-                ImGui::SameLine();
-                if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(1.0f, 1.0f, 1.0f, 0.6f)))
-                {
-                    MORAVA_CORE_INFO("PLAY!");
-                }
-            }
-            ImGui::End();
+            //  ImGui::Begin("Toolbar", &m_ShowWindowTransform);
+            //  {
+            //      if (m_SceneState == SceneState::Edit)
+            //      {
+            //          float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
+            //          if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
+            //          {
+            //              EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+            //          }
+            //  
+            //          if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
+            //          {
+            //              OnScenePlay();
+            //          }
+            //      }
+            //      else if (m_SceneState == SceneState::Play)
+            //      {
+            //          float physics2DGravity = EnvMapSharedData::s_RuntimeScene->GetPhysics2DGravity();
+            //          
+            //          if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
+            //          {
+            //              EnvMapSharedData::s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+            //          }
+            //  
+            //          if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
+            //          {
+            //              OnSceneStop();
+            //          }
+            //      }
+            //      ImGui::SameLine();
+            //      if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(1.0f, 1.0f, 1.0f, 0.6f)))
+            //      {
+            //          MORAVA_CORE_INFO("PLAY!");
+            //      }
+            //  }
+            //  ImGui::End();
 
             ImGui::PopStyleColor();
             ImGui::PopStyleColor();
@@ -1267,12 +1269,33 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
         SetViewportBounds(m_ViewportBounds);
         m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
+
+        UI_Toolbar();
     }
     ImGui::End();
     ImGui::PopStyleVar();
 
     ImVec2 workPos = ImGui::GetMainViewport()->Pos;
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
+}
+
+void EnvMapEditorLayer::UI_Toolbar()
+{
+    ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+    if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
+    {
+        if (m_SceneState == SceneState::Edit)
+        {
+            OnScenePlay();
+        }
+        else if (m_SceneState == SceneState::Play)
+        {
+            OnSceneStop();
+        }
+    }
+
+    ImGui::End();
 }
 
 // Demonstrate using DockSpace() to create an explicit docking node within an existing window.
