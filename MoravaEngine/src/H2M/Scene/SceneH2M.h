@@ -8,15 +8,15 @@
 
 #pragma once
 
-#include "ComponentsH2M.h"
-#include "SceneCameraH2M.h"
-
 #include "H2M/Core/RefH2M.h"
 #include "H2M/Core/UUID_H2M.h"
 #include "H2M/Editor/EditorCameraH2M.h"
 #include "H2M/Renderer/MaterialH2M.h"
-#include "H2M/Renderer/TextureH2M.h"
+#include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/SceneEnvironmentH2M.h"
+#include "H2M/Renderer/TextureH2M.h"
+#include "H2M/Scene/ComponentsH2M.h"
+#include "H2M/Scene/SceneCameraH2M.h"
 
 #include "Shader/MoravaShader.h"
 
@@ -66,25 +66,30 @@ namespace H2M
 	};
 
 	class EntityH2M;
+	class SceneRendererH2M;
 	using EntityMapH2M = std::unordered_map<UUID_H2M, entt::entity>;
 
 
+	// class SceneH2M : public AssetH2M
 	class SceneH2M : public RefCountedH2M
 	{
 	public:
-		SceneH2M(const std::string& debugName = "SceneH2M", bool isEditorScene = false);
+		SceneH2M(const std::string& debugName = "SceneH2M", bool isEditorScene = false, bool initalize = true);
 		~SceneH2M();
 
 		void Init();
 
 		void OnUpdate(TimestepH2M ts);
-		void OnRenderRuntime(TimestepH2M ts);
-		void OnRenderEditor(TimestepH2M ts, const EditorCameraH2M& editorCamera);
+		void OnRenderRuntime(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts);
+		void OnRenderEditor(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts, const EditorCameraH2M& editorCamera);
 		void OnEvent(EventH2M& e);
 
 		// Runtime
 		void OnRuntimeStart();
 		void OnRuntimeStop();
+
+		void OnSimulationStart();
+		void OnSimulationEnd();
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -149,16 +154,30 @@ namespace H2M
 
 		static RefH2M<SceneH2M> GetScene(UUID_H2M uuid);
 
-		void SetPhysics2DGravity(float gravity);
+		bool IsEditorScene() const { return m_IsEditorScene; }
+		bool IsPlaying() const { return m_IsPlaying; }
+
 		float GetPhysics2DGravity() const;
+		void SetPhysics2DGravity(float gravity);
+
+		// RefH2M<PhysicsSceneH2M> GetPhysicsScene() const;
 
 		// Editor-specific
 		void SetSelectedEntity(entt::entity entity) { m_SelectedEntity = entity; }
 
-	public:
+		static AssetTypeH2M GetStaticType() { return AssetTypeH2M::Scene; }
+		// virtual AssetTypeH2M GetAssetType() const override { return GetStaticType(); }
+
+		const std::string& GetName() const { return m_Name; }
+		void SetName(const std::string& name) { m_Name = name; }
+
+	private:
 		UUID_H2M m_SceneID;
-		entt::entity m_SceneEntity;
+		entt::entity m_SceneEntity = entt::null;
 		entt::registry m_Registry;
+
+		std::string m_Name;
+		bool m_IsEditorScene = false;
 
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;
@@ -171,6 +190,7 @@ namespace H2M
 		float m_LightMultiplier = 0.3f;
 
 		EnvironmentH2M m_Environment;
+		float m_EnvironmentIntensity = 1.0f;
 		RefH2M<TextureCubeH2M> m_SkyboxTexture;
 		MoravaShader* m_ShaderSkybox;
 
@@ -180,19 +200,23 @@ namespace H2M
 
 		EntityH2M* m_PhysicsBodyEntityBuffer = nullptr;
 
-		float m_SkyboxLod = 1.0f;
-		bool m_IsPlaying = false;
-
 		std::string m_DebugName;
 
 		LightEnvironmentH2M m_LightEnvironment;
 
+		EntityH2M* m_Physics2DBodyEntityBuffer = nullptr;
+
+		std::vector<std::function<void()>> m_PostUpdateQueue;
+
+		RefH2M<Renderer2D_H2M> m_SceneRenderer2D;
+
+		float m_SkyboxLod = 1.0f;
+		bool m_IsPlaying = false;
+		bool m_ShouldSimulate = false;
+
 		friend class EntityH2M;
 		friend class SceneRendererH2M;
 		friend class SceneHierarchyPanelH2M;
-
-		// friend void OnScriptComponentConstruct(entt::registry& registry, entt::entity entity);
-		// friend void OnScriptComponentDestroy(entt::registry& registry, entt::entity entity);
 
 	};
 

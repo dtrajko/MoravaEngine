@@ -57,9 +57,16 @@ namespace H2M
 		float DirtIntensity = 1.0f;
 	};
 
-	class SceneRendererH2M
+	struct SceneRendererSpecificationH2M
+	{
+		bool SwapChainTarget = false;
+	};
+
+	class SceneRendererH2M : public RefCountedH2M
 	{
 	public:
+		SceneRendererH2M(RefH2M<SceneH2M> scene, SceneRendererSpecificationH2M specification = SceneRendererSpecificationH2M{});
+
 		static void Init();
 		static void Shutdown();
 

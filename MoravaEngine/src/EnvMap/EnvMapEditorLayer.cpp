@@ -361,7 +361,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_EditorScene->OnRenderEditor(timestep, *EnvMapSharedData::s_EditorCamera);
+        EnvMapSharedData::s_EditorScene->OnRenderEditor(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep, *EnvMapSharedData::s_EditorCamera);
 
         if (m_DrawOnTopBoundingBoxes)
         {
@@ -378,13 +378,13 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
         EnvMapSharedData::s_RuntimeScene->OnUpdate(timestep);
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep);
         break;
     case SceneState::Pause:
         if (m_ViewportPanelFocused) {
             EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
         }
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(timestep);
+        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep);
         break;
     }
 

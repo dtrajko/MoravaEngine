@@ -84,7 +84,7 @@ namespace H2M
 	{
 	}
 
-	SceneH2M::SceneH2M(const std::string& debugName, bool isEditorScene)
+	SceneH2M::SceneH2M(const std::string& debugName, bool isEditorScene, bool initalize)
 		: m_DebugName(debugName)
 	{
 		m_SceneEntity = m_Registry.create();
@@ -216,7 +216,7 @@ namespace H2M
 		}
 	}
 
-	void SceneH2M::OnRenderRuntime(/*RefH2M<SceneRenderer> renderer, */TimestepH2M ts)
+	void SceneH2M::OnRenderRuntime(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts)
 	{
 		/////////////////////////////////////////////////////////////////////
 		// RENDER 3D SCENE
@@ -287,7 +287,7 @@ namespace H2M
 		// renderer->EndScene();
 	}
 
-	void SceneH2M::OnRenderEditor(TimestepH2M ts, const EditorCameraH2M& editorCamera)
+	void SceneH2M::OnRenderEditor(RefH2M<SceneRendererH2M>, TimestepH2M ts, const EditorCameraH2M& editorCamera)
 	{
 		/////////////////////////////////////////////////////////////////////
 		// RENDER 3D SCENE
@@ -701,6 +701,7 @@ namespace H2M
 
 	void SceneH2M::SetPhysics2DGravity(float gravity)
 	{
+		// TODO
 	}
 
 	float SceneH2M::GetPhysics2DGravity() const
@@ -774,6 +775,16 @@ namespace H2M
 		m_IsPlaying = false;
 
 		s_ScriptEntityIDMap = &s_EntityIDMap;
+	}
+
+	void SceneH2M::OnSimulationStart()
+	{
+		// TODO
+	}
+
+	void SceneH2M::OnSimulationEnd()
+	{
+		// TODO
 	}
 
 	void SceneH2M::SetViewportSize(uint32_t width, uint32_t height)

@@ -122,7 +122,7 @@ namespace H2M
 	{
 		LogStream::Initialize();
 
-		Log::GetLogger()->info("Hazel::MeshH2M: Loading mesh: {0}", m_FilePath.c_str());
+		Log::GetLogger()->info("H2M::MeshH2M: Loading mesh: {0}", m_FilePath.c_str());
 
 		m_Importer = std::make_unique<Assimp::Importer>();
 
@@ -183,7 +183,7 @@ namespace H2M
 		uint32_t vertexCount = 0;
 		uint32_t indexCount = 0;
 
-		Log::GetLogger()->info("Hazel::MeshH2M: Master mesh contains {0} submeshes.", scene->mNumMeshes);
+		Log::GetLogger()->info("H2M::MeshH2M: Master mesh contains {0} submeshes.", scene->mNumMeshes);
 
 		m_Submeshes.reserve(scene->mNumMeshes);
 		for (size_t m = 0; m < scene->mNumMeshes; m++)
@@ -885,7 +885,7 @@ namespace H2M
 
 		/**** END Materials ****/
 
-		Log::GetLogger()->info("Hazel::MeshH2M: Creating a Vertex Buffer...");
+		Log::GetLogger()->info("H2M::MeshH2M: Creating a Vertex Buffer...");
 
 		if (m_IsAnimated)
 		{
@@ -914,14 +914,14 @@ namespace H2M
 			};
 		}
 
-		Log::GetLogger()->info("Hazel::MeshH2M: Creating an Index Buffer...");
+		Log::GetLogger()->info("H2M::MeshH2M: Creating an Index Buffer...");
 		m_IndexBuffer = IndexBufferH2M::Create(m_Indices.data(), (uint32_t)m_Indices.size() * sizeof(Index));
 
 		/**** BEGIN Create pipeline ****/
 		{
 			// Temporary and only for OpenGL.
 			// In Vulkan, the Pipeline is created in VulkanRenderer
-			Log::GetLogger()->info("Hazel::MeshH2M: Creating a Pipeline...");
+			Log::GetLogger()->info("H2M::MeshH2M: Creating a Pipeline...");
 
 			pipelineSpecification.Layout = m_VertexBufferLayout;
 			RenderPassSpecificationH2M renderPassSpec = {};
@@ -948,8 +948,8 @@ namespace H2M
 
 		size_t totalVertices = m_IsAnimated ? m_AnimatedVertices.size() : m_StaticVertices.size();
 
-		Log::GetLogger()->info("Hazel::MeshH2M: Total vertices: {0}", totalVertices);
-		Log::GetLogger()->info("Hazel::MeshH2M: Total indices: {0}", m_Indices.size());
+		Log::GetLogger()->info("H2M::MeshH2M: Total vertices: {0}", totalVertices);
+		Log::GetLogger()->info("H2M::MeshH2M: Total indices: {0}", m_Indices.size());
 	}
 
 	MeshH2M::~MeshH2M()

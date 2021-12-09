@@ -112,6 +112,10 @@ namespace H2M
 	static SceneRendererDataH2M s_Data;
 	static SceneRendererStatsH2M s_Stats;
 
+	SceneRendererH2M::SceneRendererH2M(RefH2M<SceneH2M> scene, SceneRendererSpecificationH2M specification)
+	{
+		// TODO
+	}
 
 	void SceneRendererH2M::Init()
 	{
