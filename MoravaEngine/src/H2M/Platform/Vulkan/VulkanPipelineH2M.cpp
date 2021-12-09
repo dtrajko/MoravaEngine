@@ -278,10 +278,10 @@ namespace H2M
 			pipelineCreateInfo.pMultisampleState = &multisampleState;
 			pipelineCreateInfo.pViewportState = &viewportState;
 			pipelineCreateInfo.pDepthStencilState = &depthStencilState;
-			/**** BEGIN Non-composite ****
+			/**** BEGIN Non-composite ****/
 			pipelineCreateInfo.renderPass = VulkanContextH2M::Get()->GetSwapChain().GetRenderPass();
 			/**** END Non-composite ****/
-			/**** BEGIN Composite ****/
+			/**** BEGIN Composite ****
 			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
 			/**** END Composite ****/
 			pipelineCreateInfo.pDynamicState = &dynamicState;

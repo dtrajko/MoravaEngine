@@ -6,7 +6,7 @@
 
 #include "VulkanRendererH2M.h"
 
-#include "H2M/Platform/Vulkan/VulkanH2M.h"
+#include "VulkanH2M.h"
 #include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Platform/Vulkan/VulkanFramebufferH2M.h"
@@ -74,7 +74,7 @@ namespace H2M
 		VkCommandBuffer ActiveCommandBuffer = nullptr;
 		RefH2M<Texture2D_H2M> BRDFLut;
 		VulkanShaderH2M::ShaderMaterialDescriptorSet RendererDescriptorSetFeb2021;
-		// std::unordered_map<SceneRenderer*, std::vector<VulkanShader::ShaderMaterialDescriptorSet>> RendererDescriptorSet;
+		// std::unordered_map<SceneRenderer*, std::vector<VulkanShaderH2M::ShaderMaterialDescriptorSet>> RendererDescriptorSet;
 
 		RefH2M<VertexBufferH2M> QuadVertexBuffer;
 		RefH2M<IndexBufferH2M> QuadIndexBuffer;
@@ -82,7 +82,7 @@ namespace H2M
 
 		// float Exposure = 0.8f; // to be removed from VulkanRenderer
 
-		struct SceneInfoH2M
+		struct SceneInfo
 		{
 			SceneRendererCameraH2M SceneCamera;
 			EnvironmentH2M SceneEnvironment;
@@ -146,7 +146,7 @@ namespace H2M
 	void VulkanRendererH2M::SubmitMeshTemp(const RefH2M<MeshH2M>& mesh, const glm::mat4& transform)
 	{
 		// Temporary code - populate selected submesh
-		// std::vector<RefH2M<SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
+		// std::vector<Submesh> submeshes = mesh->GetSubmeshes();
 		// s_SelectedSubmesh = &submeshes.at(0);
 
 		s_Meshes.push_back(mesh);
@@ -493,7 +493,7 @@ namespace H2M
 
 			// Bind descriptor sets describing shader binding points
 			std::vector<VkDescriptorSet> descriptorSet = mesh->GetDescriptorSet(submesh->MaterialIndex).DescriptorSet.DescriptorSets;
-			// std::vector<VkDescriptorSet> descriptorSet = material.As<VulkanMaterial>()->GetDescriptorSet().DescriptorSets;
+			// std::vector<VkDescriptorSet> descriptorSet = material.As<VulkanMaterialH2M>()->GetDescriptorSet().DescriptorSets;
 			VulkanShaderH2M::ShaderMaterialDescriptorSet rendererDescriptorSet = s_Data.RendererDescriptorSetFeb2021;
 
 			std::array<VkDescriptorSet, 2> descriptorSets = {
@@ -545,7 +545,7 @@ namespace H2M
 		writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 		writeDescriptors[0].pBufferInfo = &vulkanSkyboxShader->GetUniformBuffer(0, 0).Descriptor;
 
-		// RefH2M<VulkanTextureCube> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCube>();
+		// RefH2M<VulkanTextureCubeH2M> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCubeH2M>();
 		RefH2M<VulkanTextureCubeH2M> envFilteredCubemap = s_Data.envFiltered.As<VulkanTextureCubeH2M>();
 		writeDescriptors[1] = *vulkanSkyboxShader->GetDescriptorSet("u_Texture");
 		writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
@@ -607,7 +607,7 @@ namespace H2M
 	{
 		// RendererH2M::Submit([renderPass]() {});
 		{
-			// HZ_CORE_ASSERT(s_Data.ActiveCommandBuffer);
+			// H2M_CORE_ASSERT(s_Data.ActiveCommandBuffer);
 
 			auto fb = renderPass->GetSpecification().TargetFramebuffer;
 			RefH2M<VulkanFramebufferH2M> framebuffer = fb.As<VulkanFramebufferH2M>();
@@ -1191,7 +1191,7 @@ namespace H2M
 		ImageFormatH2M envEquirectImageFormat = s_Data.envEquirect->GetFormat(); // Vulkan Live 18.03.2021 #2: s_Data.envEquirect->GetImage()->GetFormat();
 
 		/****
-		HZ_CORE_ASSERT(s_Data.envEquirect->GetFormat() == ImageFormatH2M::RGBA16F, "Texture is not HDR!");
+		H2M_CORE_ASSERT(s_Data.envEquirect->GetFormat() == ImageFormatH2M::RGBA16F, "Texture is not HDR!");
 		if (envEquirectImageFormat != ImageFormatH2M::RGBA16F)
 		{
 			Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirectImageFormat);

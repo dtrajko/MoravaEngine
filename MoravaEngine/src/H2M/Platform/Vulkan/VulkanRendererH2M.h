@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "H2M/Editor/EditorCameraH2M.h"
 #include "H2M/Renderer/CameraH2M.h"
 #include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
@@ -18,7 +17,8 @@
 #include "Core/Window.h"
 
 
-namespace H2M {
+namespace H2M
+{
 
 	class VulkanRendererH2M : public RendererAPI_H2M
 	{
@@ -43,10 +43,10 @@ namespace H2M {
 
 		virtual RendererCapabilitiesH2M& GetCapabilities() override;
 
-		static void SubmitMeshTemp(const RefH2M<MeshH2M>& mesh, const glm::mat4& transform = glm::mat4(1.0f)); // to be removed from VulkanRenderer
-		static void OnResize(uint32_t width, uint32_t height);                                                // to be removed from VulkanRenderer
-		static uint32_t GetViewportWidth();                                                                   // to be removed from VulkanRenderer
-		static uint32_t GetViewportHeight();                                                                  // to be removed from VulkanRenderer
+		static void SubmitMeshTemp(const RefH2M<MeshH2M>& mesh, const glm::mat4& transform = glm::mat4(1.0f)); // to be removed from VulkanRendererH2M
+		static void OnResize(uint32_t width, uint32_t height);                                                // to be removed from VulkanRendererH2M
+		static uint32_t GetViewportWidth();                                                                   // to be removed from VulkanRendererH2M
+		static uint32_t GetViewportHeight();                                                                  // to be removed from VulkanRendererH2M
 
 		static void RenderMeshVulkan(RefH2M<MeshH2M> mesh, VkCommandBuffer commandBuffer);
 
@@ -65,10 +65,10 @@ namespace H2M {
 
 		static void SetCamera(CameraH2M& camera);
 
-		/**** BEGIN methods moved from VulkanTestLayer to VulkanRenderer ****/
-		static SceneRendererOptionsH2M& GetOptions(); // moved from VulkanTestLayer to VulkanRenderer
+		/**** BEGIN methods moved from VulkanTestLayer to VulkanRendererH2M ****/
+		static SceneRendererOptionsH2M& GetOptions(); // moved from VulkanTestLayer to VulkanRendererH2M
 		static void MapUniformBuffersVTL(RefH2M<MeshH2M> mesh, const EditorCameraH2M& camera);
-		/**** END methods moved from VulkanTestLayer to VulkanRenderer ****/
+		/**** END methods moved from VulkanTestLayer to VulkanRendererH2M ****/
 
 	public:
 		static bool s_MipMapsEnabled;
