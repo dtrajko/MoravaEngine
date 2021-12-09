@@ -1188,7 +1188,7 @@ namespace H2M
 		}
 
 		s_Data.envEquirect = Texture2D_H2M::Create(filepath);
-		ImageFormatH2M envEquirectImageFormat = s_Data.envEquirect->GetFormat(); // Vulkan Live 18.03.2021 #2: s_Data.envEquirect->GetImage()->GetFormat();
+		// ImageFormatH2M envEquirectImageFormat = s_Data.envEquirect->GetFormat(); // Vulkan Live 18.03.2021 #2: s_Data.envEquirect->GetImage()->GetFormat();
 
 		/****
 		H2M_CORE_ASSERT(s_Data.envEquirect->GetFormat() == ImageFormatH2M::RGBA16F, "Texture is not HDR!");
