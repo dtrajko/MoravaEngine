@@ -486,7 +486,7 @@ namespace H2M
 				// BEGIN the material data section
 				RefH2M<SubmeshH2M> submeshPtr = RefH2M<SubmeshH2M>();
 				if (i < m_Submeshes.size()) {
-					submeshPtr = &m_Submeshes[i];
+					submeshPtr = m_Submeshes[i];
 				}
 
 				RefH2M<MaterialData> materialData = MaterialLibrary::AddNewMaterial(m_Materials[i], submeshPtr);
