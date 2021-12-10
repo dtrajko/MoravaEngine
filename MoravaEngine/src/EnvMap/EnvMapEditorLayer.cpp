@@ -398,12 +398,13 @@ void EnvMapEditorLayer::OnUpdate(float ts)
         }
         case SceneState::Play:
         {
-            m_ActiveScene->OnUpdateRuntime(ts);
-
             if (m_ViewportPanelFocused)
             {
                 m_EditorCamera->OnUpdate(ts);
             }
+
+            m_ActiveScene->OnUpdateRuntime(ts);
+
             // m_RuntimeScene->OnUpdate(timestep);
             m_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), ts);
             break;
@@ -414,6 +415,7 @@ void EnvMapEditorLayer::OnUpdate(float ts)
             {
                 m_EditorCamera->OnUpdate(ts);
             }
+
             m_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), ts);
             break;
         }
@@ -437,16 +439,17 @@ void EnvMapEditorLayer::OnUpdate(float ts)
 void EnvMapEditorLayer::OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float timestep)
 {
     EnvMapSharedData::s_EditorScene = scene;
+    m_ActiveScene = scene;
 
     EnvMapSceneRenderer::BeginScene(EnvMapSharedData::s_EditorScene.Raw(), H2M::SceneRendererCameraH2M{ GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
 
     UpdateUniforms();
 
     // Update HazelMesh List
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
+    auto meshEntities = m_ActiveScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
     for (auto entt : meshEntities)
     {
-        H2M::EntityH2M entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
+        H2M::EntityH2M entity{ entt, m_ActiveScene.Raw() };
         H2M::RefH2M<H2M::MeshH2M> mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
         if (mesh)
         {
@@ -519,7 +522,7 @@ void EnvMapEditorLayer::OnScenePlay()
     // EnvMapSharedData::s_EditorScene->CopyTo(m_RuntimeScene);
 
     m_RuntimeScene->OnRuntimeStart();
-    m_SceneHierarchyPanel->SetContext(m_RuntimeScene);
+    // m_SceneHierarchyPanel->SetContext(m_RuntimeScene);
 }
 
 void EnvMapEditorLayer::OnSceneStop()
@@ -689,12 +692,13 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         /****************************************************************************************************/
 
         uint32_t id = 0;
-        auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
+        auto meshEntities = m_ActiveScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
         for (auto entt : meshEntities)
         {
-            H2M::EntityH2M entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
+            H2M::EntityH2M entity = { entt, m_ActiveScene.Raw() };
             auto& meshComponent = entity.GetComponent<H2M::MeshComponentH2M>();
-            if (meshComponent.Mesh) {
+            if (meshComponent.Mesh)
+            {
                 meshComponent.Mesh->OnImGuiRender(++id, &m_ShowWindowSceneHierarchy);
             }
         }
@@ -1038,12 +1042,13 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                         }
                     }
 
-                    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
+                    auto meshEntities = m_ActiveScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
                     if (meshEntities.size())
                     {
                         meshEntity = GetMeshEntity();
                         auto& meshComponent = meshEntity.GetComponent<H2M::MeshComponentH2M>();
-                        if (meshComponent.Mesh) {
+                        if (meshComponent.Mesh)
+                        {
                             ImGui::SameLine();
                             ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
                         }
@@ -1895,7 +1900,8 @@ void EnvMapEditorLayer::OnEvent(H2M::EventH2M& e)
 {
     if (m_SceneState == SceneState::Edit)
     {
-        if (m_ViewportPanelMouseOver) {
+        if (m_ViewportPanelMouseOver)
+        {
             GetMainCameraComponent().Camera.OnEvent(e);
         }
 
