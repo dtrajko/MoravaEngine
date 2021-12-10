@@ -58,6 +58,18 @@ Skybox::Skybox(std::vector<std::string> faceLocations, bool flipVert)
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	float skyboxVertices[] = {
+		-1.0f,  1.0f, -1.0f,    0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+		-1.0f, -1.0f, -1.0f,    0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+		 1.0f,  1.0f, -1.0f,    0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+		 1.0f, -1.0f, -1.0f,    0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+
+		-1.0f,  1.0f,  1.0f,    0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+		 1.0f,  1.0f,  1.0f,    0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+		-1.0f, -1.0f,  1.0f,    0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+		 1.0f, -1.0f,  1.0f,    0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
+	};
+
 	// Mesh Setup
 	unsigned int skyboxIndices[] = {
 		// front
@@ -78,18 +90,6 @@ Skybox::Skybox(std::vector<std::string> faceLocations, bool flipVert)
 		// bottom
 		1, 6, 3,
 		3, 6, 7,
-	};
-
-	float skyboxVertices[] = {
-		-1.0f,  1.0f, -1.0f,     0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
-		-1.0f, -1.0f, -1.0f,     0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
-		 1.0f,  1.0f, -1.0f,     0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
-		 1.0f, -1.0f, -1.0f,     0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
-
-		-1.0f,  1.0f,  1.0f,     0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
-		 1.0f,  1.0f,  1.0f,     0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
-		-1.0f, -1.0f,  1.0f,     0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
-		 1.0f, -1.0f,  1.0f,     0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,    0.0f, 0.0f, 0.0f,
 	};
 
 	skyMesh = new Mesh();
