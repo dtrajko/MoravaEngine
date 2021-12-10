@@ -224,6 +224,7 @@ private:
 		Edit = 0,
 		Play,
 		Pause,
+		Simulate,
 	};
 	SceneState m_SceneState = SceneState::Edit;
 

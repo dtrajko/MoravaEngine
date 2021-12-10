@@ -375,12 +375,14 @@ void EnvMapEditorLayer::OnUpdate(float ts)
     {
         case SceneState::Edit:
         {
-            m_ActiveScene->OnUpdateEditor(ts, *m_EditorCamera);
-
             if (m_ViewportPanelFocused)
             {
+                // m_CameraContoller.OnUpdate(ts);
                 m_EditorCamera->OnUpdate(ts);
             }
+
+            m_ActiveScene->OnUpdateEditor(ts, *m_EditorCamera);
+
             EnvMapSharedData::s_EditorScene->OnRenderEditor(H2M::RefH2M<H2M::SceneRendererH2M>(), ts, *m_EditorCamera);
 
             if (m_DrawOnTopBoundingBoxes)
@@ -828,6 +830,26 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         /////////////////////////////////////////////////////////
         ImGui::Begin("Switch State", &m_ShowWindowTransform);
         {
+            const char* sceneState = "Scene State: UNDEFINED";
+            switch (m_SceneState)
+            {
+                case SceneState::Edit:
+                    sceneState = "Scene State: EDIT";
+                    break;
+                case SceneState::Play:
+                    sceneState = "Scene State: PLAY";
+                    break;
+                case SceneState::Pause:
+                    sceneState = "Scene State: PAUSE";
+                    break;
+                case SceneState::Simulate:
+                    sceneState = "Scene State: SIMULATE";
+                    break;
+            }
+            ImGui::Text(sceneState);
+
+            ImGui::Separator();
+
             const char* label = EnvMapSharedData::s_ActiveCamera == m_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
             if (ImGui::Button(label))
             {
