@@ -31,6 +31,11 @@ public:
 	EnvMapEditorLayer(const std::string& filepath, Scene* scene);
 	~EnvMapEditorLayer();
 
+	void Init();
+
+	void OnAttach();
+	void OnDetach();
+
 	void OnUpdate(float timestep);
 	void OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float timestep);
 	void OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float timestep);
@@ -131,13 +136,15 @@ private:
 	void SetupShaders();
 	void UpdateUniforms();
 	void SetSkybox(H2M::RefH2M<H2M::TextureCubeH2M> skybox);
-	void Init();
 
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
 	std::vector<glm::mat4> CalculateLightTransform(glm::mat4 lightProj, glm::vec3 position);
 
 public:
+	std::string m_Filepath;
+	Scene* m_Scene;
+
 	static SelectionMode s_SelectionMode;
 	static H2M::RefH2M<H2M::Texture2D_H2M> s_CheckerboardTexture;
 
@@ -164,10 +171,6 @@ private:
 	bool m_PostProcessingEnabled = false;
 
 	H2M::RefH2M<H2M::TextureCubeH2M> m_SkyboxTexture;
-
-	/** BEGIN properties Hazelnut/EditorLayer **/
-	// Editor resources
-	H2M::RefH2M<H2M::Texture2D_H2M> m_PlayButtonTex;
 
 	H2M::EntityH2M m_DirectionalLightEntity;
 	glm::mat4 m_LightProjectionMatrix;
@@ -232,9 +235,22 @@ private:
 	std::string m_SceneFilePath;
 	bool m_ReloadScriptOnPlay = true;
 
+	// Panels
 	H2M::SceneHierarchyPanelH2M* m_SceneHierarchyPanel;
 	H2M::ContentBrowserPanelH2M* m_ContentBrowserPanel;
 	MaterialEditorPanel* m_MaterialEditorPanel;
+
+	// Editor resources (BEGIN properties Hazelnut/EditorLayer)
+	H2M::RefH2M<H2M::Texture2D_H2M> m_PlayButtonTex;
+
+	H2M::RefH2M<H2M::Texture2D_H2M> m_IconPlay;
+	H2M::RefH2M<H2M::Texture2D_H2M> m_IconStop;
+
+	H2M::EditorCameraH2M* m_EditorCamera;
+	RuntimeCamera* m_RuntimeCamera;
+
+	H2M::RefH2M<H2M::SceneH2M> m_RuntimeScene;
+	H2M::RefH2M<H2M::SceneH2M> m_ActiveScene;
 
 	// Hazel LIVE! #015
 	bool m_UIShowBoundingBoxes;

@@ -34,7 +34,7 @@ namespace H2M
 		RefH2M<Texture2D_H2M> m_TextureDirectory;
 		RefH2M<Texture2D_H2M> m_TextureFile;
 
-		float m_TableCellWidth = 64.0f;
+		float m_TableCellWidth = 48.0f;
 
 		// EventCooldown m_FilesystemIO = { 0.0f, 0.5f };
 		// std::filesystem::directory_iterator m_DirectoryIteratorCached;

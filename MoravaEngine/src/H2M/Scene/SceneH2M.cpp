@@ -254,7 +254,7 @@ namespace H2M
 
 		if (mainCamera)
 		{
-			Renderer2D_H2M::BeginScene(*mainCamera, cameraTransform);
+			// Renderer2D_H2M::BeginScene(*mainCamera, cameraTransform);
 
 			auto group = m_Registry.group<TransformComponentH2M>(entt::get<SpriteRendererComponentH2M>);
 			for (auto entity : group)
@@ -264,13 +264,13 @@ namespace H2M
 				Renderer2D_H2M::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 			}
 
-			Renderer2D_H2M::EndScene();
+			// Renderer2D_H2M::EndScene();
 		}
 	}
 
 	void SceneH2M::OnUpdateEditor(TimestepH2M ts, EditorCameraH2M& camera)
 	{
-		Renderer2D_H2M::BeginScene(camera);
+		// Renderer2D_H2M::BeginScene(camera);
 
 		auto group = m_Registry.group<TransformComponentH2M>(entt::get<SpriteRendererComponentH2M>);
 		for (auto entity : group)
@@ -280,7 +280,7 @@ namespace H2M
 			Renderer2D_H2M::DrawSprite(transform.GetTransform(), sprite, (int)entity);
 		}
 
-		Renderer2D_H2M::EndScene();
+		// Renderer2D_H2M::EndScene();
 	}
 
 	void SceneH2M::OnViewportResize(uint32_t width, uint32_t height)

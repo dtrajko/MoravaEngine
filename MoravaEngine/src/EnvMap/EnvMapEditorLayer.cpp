@@ -28,33 +28,42 @@ H2M::RefH2M<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
 
 EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 {
+    m_Filepath = filepath;
+    m_Scene = scene;
+
+    Init();
+    OnAttach();
+}
+
+void EnvMapEditorLayer::Init()
+{
     glDebugMessageCallback(Util::OpenGLLogMessage, nullptr);
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
-    EnvMapSharedData::s_Scene = scene;
+    EnvMapSharedData::s_Scene = m_Scene;
 
     EnvMapSharedData::s_SamplerSlots = std::map<std::string, unsigned int>();
 
     //  // PBR texture inputs
-    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("albedo",     1)); // uniform sampler2D u_AlbedoTexture
-    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("normal",     2)); // uniform sampler2D u_NormalTexture
-    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("metalness",  3)); // uniform sampler2D u_MetalnessTexture
-    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("roughness",  4)); // uniform sampler2D u_RoughnessTexture
-    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("emissive",   5)); // uniform sampler2D u_EmissiveTexture
-    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("ao",         6)); // uniform sampler2D u_AOTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("albedo", 1)); // uniform sampler2D u_AlbedoTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("normal", 2)); // uniform sampler2D u_NormalTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("metalness", 3)); // uniform sampler2D u_MetalnessTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("roughness", 4)); // uniform sampler2D u_RoughnessTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("emissive", 5)); // uniform sampler2D u_EmissiveTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("ao", 6)); // uniform sampler2D u_AOTexture
     // Environment maps
-    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("radiance",   7)); // uniform samplerCube u_EnvRadianceTex
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("radiance", 7)); // uniform samplerCube u_EnvRadianceTex
     EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("irradiance", 8)); // uniform samplerCube u_EnvIrradianceTex
     // BRDF LUT
-    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("BRDF_LUT",   9)); // uniform sampler2D u_BRDFLUTTexture
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("BRDF_LUT", 9)); // uniform sampler2D u_BRDFLUTTexture
     // Shadow Map Directional Light
-    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("shadow",      10)); // uniform sampler2D u_ShadowMap
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("shadow", 10)); // uniform sampler2D u_ShadowMap
     EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("shadow_omni", 11)); // uniform samplerCube omniShadowMaps[i].shadowMap
 
     // Skybox.fs         - uniform samplerCube u_Texture;
     // SceneComposite.fs - uniform sampler2DMS u_Texture;
-    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("u_Texture",  1));
+    EnvMapSharedData::s_SamplerSlots.insert(std::make_pair("u_Texture", 1));
 
     EnvMapSharedData::s_SkyboxCube = H2M::RefH2M<CubeSkybox>::Create();
     EnvMapSharedData::s_Quad = H2M::RefH2M<Quad>::Create();
@@ -62,10 +71,12 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     EnvMapSharedData::s_EditorScene = H2M::RefH2M<H2M::SceneH2M>::Create();
     EnvMapSharedData::s_EditorScene->SetSkyboxLod(0.1f);
 
-    EnvMapSceneRenderer::Init(filepath, EnvMapSharedData::s_EditorScene.Raw());
+    m_ActiveScene = EnvMapSharedData::s_EditorScene;
+
+    EnvMapSceneRenderer::Init(m_Filepath, EnvMapSharedData::s_EditorScene.Raw());
     SetSkybox(EnvMapSceneRenderer::GetRadianceMap());
 
-    SetupContextData(scene);
+    SetupContextData(m_Scene);
 
     // Create a default material
     s_DefaultMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_DEF");
@@ -78,7 +89,12 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     s_LightMaterial->GetAlbedoInput().UseTexture = true;
     MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
 
-    Init(); // requires a valid Camera reference
+    Application::Get()->GetWindow()->SetEventCallback(H2M_BIND_EVENT_FN(EnvMapEditorLayer::OnEvent));
+
+    SetupShaders();
+
+    bool depthTest = true;
+    H2M::Renderer2D_H2M::Init();
 
     m_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(EnvMapSharedData::s_EditorScene);
     m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapEditorLayer::SelectEntity, this, std::placeholders::_1));
@@ -89,9 +105,6 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     m_ContentBrowserPanel = new H2M::ContentBrowserPanelH2M();
 
     m_MaterialEditorPanel = new MaterialEditorPanel();
-
-    s_CheckerboardTexture = H2M::Texture2D_H2M::Create("Textures/Hazel/Checkerboard.tga");
-    m_PlayButtonTex = H2M::Texture2D_H2M::Create("Textures/Hazel/PlayButton.png");
 
     m_DisplayBoundingBoxes = false;
     m_DrawOnTopBoundingBoxes = true; // obsolete?
@@ -116,38 +129,41 @@ EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
     UpdateWindowTitle("New Scene");
 
     EnvMapSharedData::s_ShadowMapDirLight = H2M::RefH2M<ShadowMap>::Create();
-    EnvMapSharedData::s_ShadowMapDirLight->Init(scene->GetSettings().shadowMapWidth, scene->GetSettings().shadowMapHeight);
+    EnvMapSharedData::s_ShadowMapDirLight->Init(m_Scene->GetSettings().shadowMapWidth, m_Scene->GetSettings().shadowMapHeight);
 
     m_LightDirection = glm::normalize(glm::vec3(0.05f, -0.85f, 0.05f));
     m_LightProjectionMatrix = glm::ortho(-64.0f, 64.0f, -64.0f, 64.0f, -64.0f, 64.0f);
 
     EnvMapSharedData::s_OmniShadowMapPointLight = H2M::RefH2M<OmniShadowMap>::Create();
-    EnvMapSharedData::s_OmniShadowMapPointLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
+    EnvMapSharedData::s_OmniShadowMapPointLight->Init(m_Scene->GetSettings().omniShadowMapWidth, m_Scene->GetSettings().omniShadowMapHeight);
 
     EnvMapSharedData::s_OmniShadowMapSpotLight = H2M::RefH2M<OmniShadowMap>::Create();
-    EnvMapSharedData::s_OmniShadowMapSpotLight->Init(scene->GetSettings().omniShadowMapWidth, scene->GetSettings().omniShadowMapHeight);
+    EnvMapSharedData::s_OmniShadowMapSpotLight->Init(m_Scene->GetSettings().omniShadowMapWidth, m_Scene->GetSettings().omniShadowMapHeight);
 
     GeometryFactory::Quad::Create();
 }
 
-void EnvMapEditorLayer::Init()
+void EnvMapEditorLayer::OnAttach()
 {
-    Application::Get()->GetWindow()->SetEventCallback(H2M_BIND_EVENT_FN(EnvMapEditorLayer::OnEvent));
+    s_CheckerboardTexture = H2M::Texture2D_H2M::Create("Textures/Hazel/Checkerboard.tga");
+    m_PlayButtonTex = H2M::Texture2D_H2M::Create("Textures/Hazel/PlayButton.png");
 
-    SetupShaders();
-
-    bool depthTest = true;
-    H2M::Renderer2D_H2M::Init();
+    m_IconPlay = H2M::Texture2D_H2M::Create("Resources/Icons/PlayButton.png");
+    m_IconStop = H2M::Texture2D_H2M::Create("Resources/Icons/StopButton.png");
 }
 
 EnvMapEditorLayer::~EnvMapEditorLayer()
 {
     MaterialLibrary::Cleanup();
 
-    delete EnvMapSharedData::s_RuntimeCamera;
-    delete EnvMapSharedData::s_EditorCamera;
+    delete m_RuntimeCamera;
+    delete m_EditorCamera;
 
     GeometryFactory::Quad::Destroy();
+}
+
+void EnvMapEditorLayer::OnDetach()
+{
 }
 
 void EnvMapEditorLayer::SetupContextData(Scene* scene)
@@ -159,20 +175,20 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
     float fov = 60.0f;
     float aspectRatio = 1.778f; // 16/9
-    EnvMapSharedData::s_EditorCamera = new H2M::EditorCameraH2M(fov, aspectRatio, 0.1f, 1000.0f);
-    EnvMapSharedData::s_RuntimeCamera = new RuntimeCamera(scene->GetSettings().cameraPosition, scene->GetSettings().cameraStartYaw, scene->GetSettings().cameraStartPitch,
+    m_EditorCamera = new H2M::EditorCameraH2M(fov, aspectRatio, 0.1f, 1000.0f);
+    m_RuntimeCamera = new RuntimeCamera(scene->GetSettings().cameraPosition, scene->GetSettings().cameraStartYaw, scene->GetSettings().cameraStartPitch,
         fov, aspectRatio, scene->GetSettings().cameraMoveSpeed, 0.1f);
 
-    EnvMapSharedData::s_EditorCamera->SetProjectionType(H2M::SceneCameraH2M::ProjectionType::Perspective);
-    EnvMapSharedData::s_RuntimeCamera->SetProjectionType(H2M::SceneCameraH2M::ProjectionType::Perspective);
+    m_EditorCamera->SetProjectionType(H2M::SceneCameraH2M::ProjectionType::Perspective);
+    m_RuntimeCamera->SetProjectionType(H2M::SceneCameraH2M::ProjectionType::Perspective);
 
-    EnvMapSharedData::s_EditorCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
-    EnvMapSharedData::s_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
+    m_EditorCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
+    m_RuntimeCamera->SetViewportSize((float)Application::Get()->GetWindow()->GetWidth(), (float)Application::Get()->GetWindow()->GetHeight());
 
     H2M::EntityH2M cameraEntity = CreateEntity("Camera");
-    cameraEntity.AddComponent<H2M::CameraComponentH2M>(*EnvMapSharedData::s_RuntimeCamera);
+    cameraEntity.AddComponent<H2M::CameraComponentH2M>(*m_RuntimeCamera);
 
-    EnvMapSharedData::s_ActiveCamera = EnvMapSharedData::s_RuntimeCamera;
+    EnvMapSharedData::s_ActiveCamera = m_RuntimeCamera;
 
     Log::GetLogger()->debug("cameraEntity UUID: {0}", cameraEntity.GetUUID());
 
@@ -353,40 +369,52 @@ void EnvMapEditorLayer::SetSkybox(H2M::RefH2M<H2M::TextureCubeH2M> skybox)
     m_SkyboxTexture->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
 }
 
-void EnvMapEditorLayer::OnUpdate(float timestep)
+void EnvMapEditorLayer::OnUpdate(float ts)
 {
     switch (m_SceneState)
     {
-    case SceneState::Edit:
-        if (m_ViewportPanelFocused) {
-            EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
-        }
-        EnvMapSharedData::s_EditorScene->OnRenderEditor(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep, *EnvMapSharedData::s_EditorCamera);
+        case SceneState::Edit:
+        {
+            m_ActiveScene->OnUpdateEditor(ts, *m_EditorCamera);
 
-        if (m_DrawOnTopBoundingBoxes)
+            if (m_ViewportPanelFocused)
+            {
+                m_EditorCamera->OnUpdate(ts);
+            }
+            EnvMapSharedData::s_EditorScene->OnRenderEditor(H2M::RefH2M<H2M::SceneRendererH2M>(), ts, *m_EditorCamera);
+
+            if (m_DrawOnTopBoundingBoxes)
+            {
+                // H2M::RendererH2M::BeginRenderPass(H2M::SceneRendererH2M::GetFinalRenderPass(), false);
+                // auto viewProj = s_EditorCamera->GetViewProjection();
+                // H2M::Renderer2D::BeginScene(viewProj, false);
+                // // TODO: Renderer::DrawAABB(m_MeshEntity.GetComponent<MeshComponentH2M>(), m_MeshEntity.GetComponent<TransformComponentH2M>());
+                // H2M::Renderer2D::EndScene();
+                // H2M::RendererH2M::EndRenderPass();
+            }
+            break;
+        }
+        case SceneState::Play:
         {
-            // H2M::RendererH2M::BeginRenderPass(H2M::SceneRendererH2M::GetFinalRenderPass(), false);
-            // auto viewProj = s_EditorCamera->GetViewProjection();
-            // H2M::Renderer2D::BeginScene(viewProj, false);
-            // // TODO: Renderer::DrawAABB(m_MeshEntity.GetComponent<MeshComponentH2M>(), m_MeshEntity.GetComponent<TransformComponentH2M>());
-            // H2M::Renderer2D::EndScene();
-            // H2M::RendererH2M::EndRenderPass();
+            m_ActiveScene->OnUpdateRuntime(ts);
+
+            if (m_ViewportPanelFocused)
+            {
+                m_EditorCamera->OnUpdate(ts);
+            }
+            // m_RuntimeScene->OnUpdate(timestep);
+            m_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), ts);
+            break;
         }
-        break;
-    case SceneState::Play:
-        if (m_ViewportPanelFocused)
+        case SceneState::Pause:
         {
-            EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
+            if (m_ViewportPanelFocused)
+            {
+                m_EditorCamera->OnUpdate(ts);
+            }
+            m_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), ts);
+            break;
         }
-        // EnvMapSharedData::s_RuntimeScene->OnUpdate(timestep);
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep);
-        break;
-    case SceneState::Pause:
-        if (m_ViewportPanelFocused) {
-            EnvMapSharedData::s_EditorCamera->OnUpdate(timestep);
-        }
-        EnvMapSharedData::s_RuntimeScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), timestep);
-        break;
     }
 
     CameraSyncECS();
@@ -400,7 +428,7 @@ void EnvMapEditorLayer::OnUpdate(float timestep)
         EnvMapSharedData::s_DirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
     }
 
-    OnUpdateEditor(EnvMapSharedData::s_EditorScene, timestep);
+    OnUpdateEditor(EnvMapSharedData::s_EditorScene, ts);
     // OnUpdateRuntime(s_RuntimeScene, timestep);
 }
 
@@ -440,7 +468,8 @@ void EnvMapEditorLayer::OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float t
     m_ViewportWidth = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-    if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
+    if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f)
+    {
         EnvMapSharedData::s_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
     }
 }
@@ -484,21 +513,21 @@ void EnvMapEditorLayer::OnScenePlay()
         // H2M::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
     }
 
-    EnvMapSharedData::s_RuntimeScene = H2M::RefH2M<H2M::SceneH2M>::Create();
-    // EnvMapSharedData::s_EditorScene->CopyTo(EnvMapSharedData::s_RuntimeScene);
+    m_RuntimeScene = H2M::RefH2M<H2M::SceneH2M>::Create();
+    // EnvMapSharedData::s_EditorScene->CopyTo(m_RuntimeScene);
 
-    EnvMapSharedData::s_RuntimeScene->OnRuntimeStart();
-    m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_RuntimeScene);
+    m_RuntimeScene->OnRuntimeStart();
+    m_SceneHierarchyPanel->SetContext(m_RuntimeScene);
 }
 
 void EnvMapEditorLayer::OnSceneStop()
 {
     m_SceneState = SceneState::Edit;
 
-    EnvMapSharedData::s_RuntimeScene->OnRuntimeStop();
+    m_RuntimeScene->OnRuntimeStop();
 
     // Unload runtime scene
-    EnvMapSharedData::s_RuntimeScene = nullptr;
+    m_RuntimeScene = nullptr;
 
     EntitySelection::s_SelectionContext.clear();
     // H2M::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
@@ -766,11 +795,11 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             //      }
             //      else if (m_SceneState == SceneState::Play)
             //      {
-            //          float physics2DGravity = EnvMapSharedData::s_RuntimeScene->GetPhysics2DGravity();
+            //          float physics2DGravity = m_RuntimeScene->GetPhysics2DGravity();
             //          
             //          if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
             //          {
-            //              EnvMapSharedData::s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+            //              m_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
             //          }
             //  
             //          if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(1.0f, 1.0f, 1.0f, 0.2f)))
@@ -799,12 +828,12 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         /////////////////////////////////////////////////////////
         ImGui::Begin("Switch State", &m_ShowWindowTransform);
         {
-            const char* label = EnvMapSharedData::s_ActiveCamera == EnvMapSharedData::s_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
+            const char* label = EnvMapSharedData::s_ActiveCamera == m_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
             if (ImGui::Button(label))
             {
-                EnvMapSharedData::s_ActiveCamera = (EnvMapSharedData::s_ActiveCamera == EnvMapSharedData::s_EditorCamera) ?
-                    (H2M::CameraH2M*)EnvMapSharedData::s_RuntimeCamera :
-                    (H2M::CameraH2M*)EnvMapSharedData::s_EditorCamera;
+                EnvMapSharedData::s_ActiveCamera = (EnvMapSharedData::s_ActiveCamera == m_EditorCamera) ?
+                    (H2M::CameraH2M*)m_RuntimeCamera :
+                    (H2M::CameraH2M*)m_EditorCamera;
             }
         }
         ImGui::End();
@@ -951,9 +980,9 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     }
                     else if (m_SceneState == SceneState::Play)
                     {
-                        float physics2DGravity = EnvMapSharedData::s_RuntimeScene->GetPhysics2DGravity();
+                        float physics2DGravity = m_RuntimeScene->GetPhysics2DGravity();
                         if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-                            EnvMapSharedData::s_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
+                            m_RuntimeScene->SetPhysics2DGravity(physics2DGravity);
                         }
                     }
 
@@ -1281,9 +1310,24 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
 void EnvMapEditorLayer::UI_Toolbar()
 {
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+    auto& colors = ImGui::GetStyle().Colors;
+    auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f));
+    auto& buttonActive = colors[ImGuiCol_ButtonActive];
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(buttonActive.x, buttonActive.y, buttonActive.z, 0.5f));
+
     ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-    if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
+    float size = ImGui::GetWindowHeight() - 8.0f;
+
+    H2M::RefH2M<H2M::Texture2D_H2M> icon = m_SceneState == SceneState::Edit ? m_IconPlay : m_IconStop;
+
+    ImGui::SameLine((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
+
+    if (ImGui::ImageButton((ImTextureID)(uint64_t)(icon->GetID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
     {
         if (m_SceneState == SceneState::Edit)
         {
@@ -1296,6 +1340,12 @@ void EnvMapEditorLayer::UI_Toolbar()
     }
 
     ImGui::End();
+
+    ImGui::PopStyleColor();
+    ImGui::PopStyleColor();
+    ImGui::PopStyleColor();
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();
 }
 
 // Demonstrate using DockSpace() to create an explicit docking node within an existing window.
@@ -1831,7 +1881,7 @@ void EnvMapEditorLayer::OnEvent(H2M::EventH2M& e)
     }
     else if (m_SceneState == SceneState::Play)
     {
-        EnvMapSharedData::s_RuntimeScene->OnEvent(e);
+        m_RuntimeScene->OnEvent(e);
     }
 
     // EnvMapSharedData::s_ActiveCamera->OnEvent(e);
