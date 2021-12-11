@@ -590,7 +590,11 @@ namespace H2M
 	void SceneH2M::SetSkybox(const RefH2M<TextureCubeH2M>& skybox)
 	{
 		m_SkyboxTexture = skybox;
-		m_ShaderSkybox->SetInt("u_Texture", skybox.Raw()->GetID());
+
+		if (m_ShaderSkybox != nullptr)
+		{
+			m_ShaderSkybox->SetInt("u_Texture", skybox.Raw()->GetID());
+		}
 
 		m_SkyboxMaterial->Set("u_Texture", skybox);
 	}
@@ -763,7 +767,7 @@ namespace H2M
 		return entity;
 	}
 
-	EntityH2M SceneH2M::CreateEntityWithID(UUID_H2M uuid, const std::string& name, bool runtimeMap)
+	EntityH2M SceneH2M::CreateEntityWithUUID(UUID_H2M uuid, const std::string& name, bool runtimeMap)
 	{
 		auto entity = EntityH2M{ m_Registry.create(), this };
 		auto& idComponent = entity.AddComponent<IDComponentH2M>();
@@ -824,13 +828,19 @@ namespace H2M
 		}
 
 		CopyComponentIfExists<TransformComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CameraComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<MeshComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<DirectionalLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<PointLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<SpotLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SkyLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<CameraComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<SpriteRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<Rigidbody2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<MaterialComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<SpriteRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CircleRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<RelationshipComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<NativeScriptComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);	
+		CopyComponentIfExists<Rigidbody2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<BoxCollider2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 	}
 
 	EntityH2M SceneH2M::FindEntityByTag(const std::string& tag)
@@ -870,18 +880,24 @@ namespace H2M
 		for (auto entity : idComponents)
 		{
 			auto uuid = m_Registry.get<IDComponentH2M>(entity).ID;
-			EntityH2M e = target->CreateEntityWithID(uuid, "Entity", true);
+			EntityH2M e = target->CreateEntityWithUUID(uuid, "Entity", true);
 		}
 
 		CopyComponent<TagComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<TransformComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<MeshComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<DirectionalLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<SkyLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<CameraComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<DirectionalLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<PointLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<SpotLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<SkyLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SpriteRendererComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<Rigidbody2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<CircleRendererComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<NativeScriptComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<RelationshipComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<MaterialComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<Rigidbody2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<BoxCollider2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
 
 		target->SetPhysics2DGravity(GetPhysics2DGravity());
 	}
@@ -933,8 +949,8 @@ namespace H2M
 			entityClone.AddComponent<SpriteRendererComponentH2M>(entity.GetComponent<SpriteRendererComponentH2M>());
 		}
 
-		if (entity.HasComponent<Rigidbody2DComponentH2M>()) {
-			entityClone.AddComponent<Rigidbody2DComponentH2M>(entity.GetComponent<Rigidbody2DComponentH2M>());
+		if (entity.HasComponent<CircleRendererComponentH2M>()) {
+			entityClone.AddComponent<CircleRendererComponentH2M>(entity.GetComponent<CircleRendererComponentH2M>());
 		}
 
 		if (entity.HasComponent<MaterialComponentH2M>()) {
@@ -945,8 +961,24 @@ namespace H2M
 			entityClone.AddComponent<DirectionalLightComponentH2M>(entity.GetComponent<DirectionalLightComponentH2M>());
 		}
 
+		if (entity.HasComponent<PointLightComponentH2M>()) {
+			entityClone.AddComponent<PointLightComponentH2M>(entity.GetComponent<PointLightComponentH2M>());
+		}
+
+		if (entity.HasComponent<SpotLightComponentH2M>()) {
+			entityClone.AddComponent<SpotLightComponentH2M>(entity.GetComponent<SpotLightComponentH2M>());
+		}
+
 		if (entity.HasComponent<SkyLightComponentH2M>()) {
 			entityClone.AddComponent<SkyLightComponentH2M>(entity.GetComponent<SkyLightComponentH2M>());
+		}
+
+		if (entity.HasComponent<Rigidbody2DComponentH2M>()) {
+			entityClone.AddComponent<Rigidbody2DComponentH2M>(entity.GetComponent<Rigidbody2DComponentH2M>());
+		}
+
+		if (entity.HasComponent<BoxCollider2DComponentH2M>()) {
+			entityClone.AddComponent<BoxCollider2DComponentH2M>(entity.GetComponent<BoxCollider2DComponentH2M>());
 		}
 
 		Log::GetLogger()->warn("Method SceneH2M::CopyEntity implemented poorly [Tag: '{0}']", entity.GetComponent<TagComponentH2M>().Tag);
@@ -1002,7 +1034,7 @@ namespace H2M
 	}
 
 	template<>
-	void SceneH2M::OnComponentAdded<Rigidbody2DComponentH2M>(EntityH2M entity, Rigidbody2DComponentH2M& component)
+	void SceneH2M::OnComponentAdded<CircleRendererComponentH2M>(EntityH2M entity, CircleRendererComponentH2M& component)
 	{
 	}
 
@@ -1028,6 +1060,16 @@ namespace H2M
 
 	template<>
 	void SceneH2M::OnComponentAdded<SkyLightComponentH2M>(EntityH2M entity, SkyLightComponentH2M& component)
+	{
+	}
+
+	template<>
+	void SceneH2M::OnComponentAdded<Rigidbody2DComponentH2M>(EntityH2M entity, Rigidbody2DComponentH2M& component)
+	{
+	}
+
+	template<>
+	void SceneH2M::OnComponentAdded<BoxCollider2DComponentH2M>(EntityH2M entity, BoxCollider2DComponentH2M& component)
 	{
 	}
 

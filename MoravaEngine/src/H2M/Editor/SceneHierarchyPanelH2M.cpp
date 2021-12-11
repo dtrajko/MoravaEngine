@@ -561,6 +561,15 @@ namespace H2M
 				}
 			}
 
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponentH2M>())
+			{
+				if (ImGui::Button("Material"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponentH2M>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
 			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<Rigidbody2DComponentH2M>())
 			{
 				if (ImGui::Button("Rigidbody 2D"))
@@ -570,14 +579,15 @@ namespace H2M
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponentH2M>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<BoxCollider2DComponentH2M>())
 			{
-				if (ImGui::Button("Material"))
+				if (ImGui::Button("Box Collider 2D"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<MaterialComponentH2M>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<BoxCollider2DComponentH2M>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
+
 			ImGui::EndPopup();
 		}
 
@@ -802,46 +812,55 @@ namespace H2M
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<Rigidbody2DComponentH2M>("Rigidbody 2D", entity, [](Rigidbody2DComponentH2M& rb2dc)
+		DrawComponent<MaterialComponentH2M>("Material", entity, [=](MaterialComponentH2M& mc)
+		{
+			if (!mc.Material) {
+				mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterialRef;
+				// std::string materialName = EnvMapEditorLayer::NewMaterialName();
+				// mc.Material = EnvMapEditorLayer::CreateDefaultMaterial(materialName);
+				MaterialLibrary::AddMaterialFromComponent(entity);
+			}
+
+			ImGuiWrapper::DrawMaterialUI(mc.Material, EnvMapEditorLayer::s_CheckerboardTexture);
+		});
+
+		DrawComponent<Rigidbody2DComponentH2M>("Rigidbody 2D", entity, [](Rigidbody2DComponentH2M& component)
 		{
 			// Rigidbody2D Type
-			const char* rb2dTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
-			const char* currentType = rb2dTypeStrings[(int)rb2dc.Type];
-			if (ImGui::BeginCombo("Type", currentType))
+			const char* bodyTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
+			const char* currentBodyTypeString = bodyTypeStrings[(int)component.Type];
+			if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
 			{
-				for (int type = 0; type < 3; type++)
+				for (int i = 0; i < 3; i++)
 				{
-					bool is_selected = (currentType == rb2dTypeStrings[type]);
-					if (ImGui::Selectable(rb2dTypeStrings[type], is_selected))
+					bool isSelected = (currentBodyTypeString == bodyTypeStrings[i]);
+					if (ImGui::Selectable(bodyTypeStrings[i], isSelected))
 					{
-						currentType = rb2dTypeStrings[type];
-						rb2dc.Type = (Rigidbody2DComponentH2M::BodyType)type;
+						currentBodyTypeString = bodyTypeStrings[i];
+						component.Type = (Rigidbody2DComponentH2M::BodyType)i;
 					}
-					if (is_selected)
+					if (isSelected)
+					{
 						ImGui::SetItemDefaultFocus();
+					}
 				}
 				ImGui::EndCombo();
 			}
 
-			if (rb2dc.Type == Rigidbody2DComponentH2M::BodyType::Dynamic)
-			{
-				UI::BeginPropertyGrid();
-				UI::Property("Fixed Rotation", rb2dc.FixedRotation);
-				UI::EndPropertyGrid();
-			}
+			ImGui::Checkbox("Fixed Rotation", &component.FixedRotation);
 		});
 
-		DrawComponent<MaterialComponentH2M>("Material", entity, [=](MaterialComponentH2M& mc)
-			{
-				if (!mc.Material) {
-					mc.Material = MaterialLibrary::AddNewMaterial("")->EnvMapMaterialRef;
-					// std::string materialName = EnvMapEditorLayer::NewMaterialName();
-					// mc.Material = EnvMapEditorLayer::CreateDefaultMaterial(materialName);
-					MaterialLibrary::AddMaterialFromComponent(entity);
-				}
+		DrawComponent<BoxCollider2DComponentH2M>("Box Collider 2D", entity, [](BoxCollider2DComponentH2M& component)
+		{
+			// BoxCollider2D Type
+			ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset));
+			ImGui::DragFloat2("Size",   glm::value_ptr(component.Size));
 
-				ImGuiWrapper::DrawMaterialUI(mc.Material, EnvMapEditorLayer::s_CheckerboardTexture);
-			});
+			ImGui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f);
+		});
 
 		/****
 		{

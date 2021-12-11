@@ -933,6 +933,9 @@
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLUniformBufferH2M.cpp">
       <Filter>H2M\Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Scene\SceneSerializerH2M.cpp">
+      <Filter>H2M\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1996,6 +1999,9 @@
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLUniformBufferH2M.h">
       <Filter>H2M\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Scene\SceneSerializerH2M.h">
+      <Filter>H2M\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

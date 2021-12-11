@@ -156,13 +156,6 @@ namespace H2M
 		float LightSize = 0.5f; // For PCSS
 	};
 
-	struct SkyLightComponentH2M
-	{
-		EnvironmentH2M SceneEnvironment;
-		float Intensity = 1.0f;
-		float Angle = 0.0f;
-	};
-
 	struct PointLightComponentH2M
 	{
 		bool Enabled = true;
@@ -192,6 +185,13 @@ namespace H2M
 		float FarPlane = 1000.0f;
 	};
 
+	struct SkyLightComponentH2M
+	{
+		EnvironmentH2M SceneEnvironment;
+		float Intensity = 1.0f;
+		float Angle = 0.0f;
+	};
+
 	struct SpriteRendererComponentH2M
 	{
 		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
@@ -202,6 +202,17 @@ namespace H2M
 		SpriteRendererComponentH2M(const SpriteRendererComponentH2M&) = default;
 		SpriteRendererComponentH2M(const glm::vec4& color)
 			: Color(color) {};
+	};
+
+	struct CircleRendererComponentH2M
+	{
+		// Attributes
+		glm::vec4 Color{ 1.0f, 1.0f, 1.0f, 1.0f };
+		float Thickness = 1.0f;
+		float Fade = 0.0f;
+
+		CircleRendererComponentH2M() = default;
+		CircleRendererComponentH2M(const CircleRendererComponentH2M&) = default;
 	};
 
 	// Physics

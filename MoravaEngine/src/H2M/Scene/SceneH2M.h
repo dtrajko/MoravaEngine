@@ -126,7 +126,7 @@ namespace H2M
 
 		EntityH2M CreateEntity(const std::string& name = "");
 		EntityH2M CreateEntity(const std::string& name, RefH2M<SceneH2M> scene);
-		EntityH2M CreateEntityWithID(UUID_H2M uuid, const std::string& name = "", bool runtimeMap = false);
+		EntityH2M CreateEntityWithUUID(UUID_H2M uuid, const std::string& name = "", bool runtimeMap = false);
 		void DestroyEntity(EntityH2M entity);
 		EntityH2M CloneEntity(EntityH2M entity);
 		void DuplicateEntity(EntityH2M entity); // Cherno's version, same as CloneEntity
@@ -225,6 +225,7 @@ namespace H2M
 		friend class EntityH2M;
 		friend class SceneRendererH2M;
 		friend class SceneHierarchyPanelH2M;
+		friend class SceneSerializerH2M;
 
 	};
 
