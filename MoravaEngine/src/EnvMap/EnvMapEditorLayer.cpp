@@ -510,33 +510,34 @@ void EnvMapEditorLayer::OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float 
 void EnvMapEditorLayer::OnScenePlay()
 {
     m_SceneState = SceneState::Play;
+    m_ActiveScene->OnRuntimeStart();
+
+    m_SceneHierarchyPanel->SetContext(m_ActiveScene); // m_RuntimeScene
+
+    //  if (m_ReloadScriptOnPlay)
+    //  {
+    //      H2M::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
+    //  }
 
     EntitySelection::s_SelectionContext.clear();
 
-    if (m_ReloadScriptOnPlay)
-    {
-        // H2M::ScriptEngine::ReloadAssembly("assets/scripts/ExampleApp.dll");
-    }
-
     m_RuntimeScene = H2M::RefH2M<H2M::SceneH2M>::Create();
     // m_EditorScene->CopyTo(m_RuntimeScene);
-
-    m_RuntimeScene->OnRuntimeStart();
-    // m_SceneHierarchyPanel->SetContext(m_RuntimeScene);
+    // m_RuntimeScene->OnRuntimeStart();
 }
 
 void EnvMapEditorLayer::OnSceneStop()
 {
     m_SceneState = SceneState::Edit;
+    m_ActiveScene->OnRuntimeStop();
 
-    m_RuntimeScene->OnRuntimeStop();
+    m_SceneHierarchyPanel->SetContext(m_ActiveScene); // m_EditorScene
 
+    // EntitySelection::s_SelectionContext.clear();
+    // m_RuntimeScene->OnRuntimeStop();
     // Unload runtime scene
     m_RuntimeScene = nullptr;
-
-    EntitySelection::s_SelectionContext.clear();
     // H2M::ScriptEngine::SetSceneContext(m_EditorScene);
-    m_SceneHierarchyPanel->SetContext(m_EditorScene);
 }
 
 void EnvMapEditorLayer::UpdateWindowTitle(const std::string& sceneName)

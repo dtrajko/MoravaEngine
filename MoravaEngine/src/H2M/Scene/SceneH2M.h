@@ -26,6 +26,8 @@
 #include <unordered_map>
 
 
+class b2World;
+
 namespace H2M
 {
 
@@ -70,8 +72,8 @@ namespace H2M
 	using EntityMapH2M = std::unordered_map<UUID_H2M, entt::entity>;
 
 
-	// class SceneH2M : public AssetH2M
-	class SceneH2M : public RefCountedH2M
+	// class SceneH2M : public RefCountedH2M
+	class SceneH2M : public AssetH2M
 	{
 	public:
 		SceneH2M(const std::string& debugName = "SceneH2M", bool isEditorScene = false, bool initalize = true);
@@ -217,6 +219,8 @@ namespace H2M
 		float m_SkyboxLod = 1.0f;
 		bool m_IsPlaying = false;
 		bool m_ShouldSimulate = false;
+
+		b2World* m_World = nullptr;
 
 		friend class EntityH2M;
 		friend class SceneRendererH2M;

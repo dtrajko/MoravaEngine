@@ -492,7 +492,8 @@ namespace H2M
 		for (auto entity : view)
 		{
 			auto& comp = view.get<CameraComponentH2M>(entity);
-			if (comp.Primary) {
+			if (comp.Primary)
+			{
 				return { entity, this };
 			}
 		}

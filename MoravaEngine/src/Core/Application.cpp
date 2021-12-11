@@ -259,7 +259,7 @@ void Application::OnShutdown()
 {
 	delete m_ImGuiLayer;
 
-	delete m_Scene;
+	if (m_Scene != nullptr) delete m_Scene;
 	delete m_Renderer;
 }
 
