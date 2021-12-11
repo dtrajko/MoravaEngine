@@ -204,17 +204,37 @@ namespace H2M
 			: Color(color) {};
 	};
 
-	struct RigidBody2DComponentH2M
+	// Physics
+
+	struct Rigidbody2DComponentH2M
 	{
-		enum class Type { Static, Dynamic, Kinematic };
-		Type BodyType;
+		enum class BodyType { Static, Dynamic, Kinematic };
+		BodyType Type = BodyType::Static;
 		bool FixedRotation = false;
 
 		// Storage for runtime
 		void* RuntimeBody = nullptr;
 
-		RigidBody2DComponentH2M() = default;
-		RigidBody2DComponentH2M(const RigidBody2DComponentH2M& other) = default;
+		Rigidbody2DComponentH2M() = default;
+		Rigidbody2DComponentH2M(const Rigidbody2DComponentH2M& other) = default;
+	};
+
+	struct BoxCollider2DComponentH2M
+	{
+		glm::vec2 Offset = { 0.0f, 0.0f  };
+		glm::vec2 Size = { 0.5f, 0.5f };
+
+		// TODO (Yan): move into physics material in the future maybe
+		float Density = 1.0f;
+		float Friction = 0.5f;
+		float Restitution = 0.0f;
+		float RestitutionThreshold = 0.5f;
+
+		// Storage for runtime
+		void* RuntimeFixture = nullptr;
+
+		BoxCollider2DComponentH2M() = default;
+		BoxCollider2DComponentH2M(const BoxCollider2DComponentH2M& other) = default;
 	};
 
 }

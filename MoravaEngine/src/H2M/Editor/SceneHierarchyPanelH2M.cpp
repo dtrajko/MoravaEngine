@@ -561,11 +561,11 @@ namespace H2M
 				}
 			}
 
-			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<RigidBody2DComponentH2M>())
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<Rigidbody2DComponentH2M>())
 			{
 				if (ImGui::Button("Rigidbody 2D"))
 				{
-					EntitySelection::s_SelectionContext[0].Entity.AddComponent<RigidBody2DComponentH2M>();
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<Rigidbody2DComponentH2M>();
 					ImGui::CloseCurrentPopup();
 				}
 			}
@@ -802,11 +802,11 @@ namespace H2M
 			UI::EndPropertyGrid();
 		});
 
-		DrawComponent<RigidBody2DComponentH2M>("Rigidbody 2D", entity, [](RigidBody2DComponentH2M& rb2dc)
+		DrawComponent<Rigidbody2DComponentH2M>("Rigidbody 2D", entity, [](Rigidbody2DComponentH2M& rb2dc)
 		{
 			// Rigidbody2D Type
 			const char* rb2dTypeStrings[] = { "Static", "Dynamic", "Kinematic" };
-			const char* currentType = rb2dTypeStrings[(int)rb2dc.BodyType];
+			const char* currentType = rb2dTypeStrings[(int)rb2dc.Type];
 			if (ImGui::BeginCombo("Type", currentType))
 			{
 				for (int type = 0; type < 3; type++)
@@ -815,7 +815,7 @@ namespace H2M
 					if (ImGui::Selectable(rb2dTypeStrings[type], is_selected))
 					{
 						currentType = rb2dTypeStrings[type];
-						rb2dc.BodyType = (RigidBody2DComponentH2M::Type)type;
+						rb2dc.Type = (Rigidbody2DComponentH2M::BodyType)type;
 					}
 					if (is_selected)
 						ImGui::SetItemDefaultFocus();
@@ -823,7 +823,7 @@ namespace H2M
 				ImGui::EndCombo();
 			}
 
-			if (rb2dc.BodyType == RigidBody2DComponentH2M::Type::Dynamic)
+			if (rb2dc.Type == Rigidbody2DComponentH2M::BodyType::Dynamic)
 			{
 				UI::BeginPropertyGrid();
 				UI::Property("Fixed Rotation", rb2dc.FixedRotation);

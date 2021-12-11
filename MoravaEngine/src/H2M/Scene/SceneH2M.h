@@ -220,7 +220,7 @@ namespace H2M
 		bool m_IsPlaying = false;
 		bool m_ShouldSimulate = false;
 
-		b2World* m_World = nullptr;
+		b2World* m_PhysicsWorld = nullptr;
 
 		friend class EntityH2M;
 		friend class SceneRendererH2M;

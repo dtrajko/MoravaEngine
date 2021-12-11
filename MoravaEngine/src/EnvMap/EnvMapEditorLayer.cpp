@@ -2,8 +2,8 @@
 
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RenderPassH2M.h"
-
 #include "H2M/Scene/ComponentsH2M.h"
+#include "H2M/Scene/SceneH2M.h"
 
 #include "Core/MousePicker.h"
 #include "Core/Util.h"
@@ -15,7 +15,7 @@
 #include "Renderer/RendererBasic.h"
 #include "Shader/MoravaShaderLibrary.h"
 
-#include "../../ImGuizmo/ImGuizmo.h"
+#include "cross-platform/ImGuizmo/ImGuizmo.h"
 
 #include <filesystem>
 

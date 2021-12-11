@@ -21,6 +21,10 @@
 
 // Box2D
 #include <box2d/box2d.h>
+#include <box2d/b2_world.h>
+#include <box2d/b2_body.h>
+#include <box2d/b2_fixture.h>
+#include <box2d/b2_polygon_shape.h>
 
 #include <string>
 #include <unordered_map>
@@ -103,6 +107,56 @@ namespace H2M
 		// s_ActiveScenes.erase(m_SceneID);
 	}
 
+	void SceneH2M::OnRuntimeStart()
+	{
+		b2Vec2 gravity = b2Vec2{ 0.0f, -9.81f };
+		m_PhysicsWorld = new b2World(gravity);
+
+		auto view = m_Registry.view<Rigidbody2DComponentH2M>();
+		for (auto e : view)
+		{
+			EntityH2M entity = { e, this };
+			auto& transform = entity.GetComponent<TransformComponentH2M>();
+			auto& rb2d = entity.GetComponent<Rigidbody2DComponentH2M>();
+
+			const b2BodyDef* bodyDef = new b2BodyDef{};
+			m_PhysicsWorld->CreateBody(bodyDef);
+
+		}
+
+		// -----------------------------------------
+		m_IsPlaying = true;
+		s_ScriptEntityIDMap = &s_RuntimeEntityIDMap;
+
+		Log::GetLogger()->info("SceneH2M::OnRuntimeStart");
+	}
+
+	void SceneH2M::OnRuntimeStop()
+	{
+		delete m_PhysicsWorld;
+		m_PhysicsWorld = nullptr;
+
+		// -----------------------------------------
+		m_IsPlaying = false;
+		delete[] m_PhysicsBodyEntityBuffer;
+
+		s_ScriptEntityIDMap = &s_EntityIDMap;
+
+		Log::GetLogger()->info("SceneH2M::OnRuntimeStop");
+	}
+
+	void SceneH2M::OnSimulationStart()
+	{
+		// TODO
+		Log::GetLogger()->info("SceneH2M::OnSimulationStart");
+	}
+
+	void SceneH2M::OnSimulationEnd()
+	{
+		// TODO
+		Log::GetLogger()->info("SceneH2M::OnSimulationEnd");
+	}
+
 	void SceneH2M::Init()
 	{
 		MoravaShaderSpecification moravaShaderSpec;
@@ -145,12 +199,12 @@ namespace H2M
 		int32_t positionIterations = 2;
 
 		{
-			auto view = m_Registry.view<RigidBody2DComponentH2M>();
+			auto view = m_Registry.view<Rigidbody2DComponentH2M>();
 			for (auto entity : view)
 			{
 				EntityH2M e = { entity, this };
 				auto& tc = e.Transform();
-				auto& rb2d = e.GetComponent<RigidBody2DComponentH2M>();
+				auto& rb2d = e.GetComponent<Rigidbody2DComponentH2M>();
 				b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
 				auto& position = body->GetPosition();
@@ -720,7 +774,7 @@ namespace H2M
 		CopyComponentIfExists<SkyLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<CameraComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SpriteRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<RigidBody2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<Rigidbody2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<MaterialComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 	}
 
@@ -771,7 +825,7 @@ namespace H2M
 		CopyComponent<SkyLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<CameraComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SpriteRendererComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<RigidBody2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<Rigidbody2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<MaterialComponentH2M>(target->m_Registry, m_Registry, enttMap);
 
 		target->SetPhysics2DGravity(GetPhysics2DGravity());
@@ -824,8 +878,8 @@ namespace H2M
 			entityClone.AddComponent<SpriteRendererComponentH2M>(entity.GetComponent<SpriteRendererComponentH2M>());
 		}
 
-		if (entity.HasComponent<RigidBody2DComponentH2M>()) {
-			entityClone.AddComponent<RigidBody2DComponentH2M>(entity.GetComponent<RigidBody2DComponentH2M>());
+		if (entity.HasComponent<Rigidbody2DComponentH2M>()) {
+			entityClone.AddComponent<Rigidbody2DComponentH2M>(entity.GetComponent<Rigidbody2DComponentH2M>());
 		}
 
 		if (entity.HasComponent<MaterialComponentH2M>()) {
@@ -847,31 +901,6 @@ namespace H2M
 
 	void SceneH2M::OnEvent(EventH2M& e)
 	{
-	}
-
-	void SceneH2M::OnRuntimeStart()
-	{
-		s_ScriptEntityIDMap = &s_RuntimeEntityIDMap;
-
-		m_IsPlaying = true;
-	}
-
-	void SceneH2M::OnRuntimeStop()
-	{
-		delete[] m_PhysicsBodyEntityBuffer;
-		m_IsPlaying = false;
-
-		s_ScriptEntityIDMap = &s_EntityIDMap;
-	}
-
-	void SceneH2M::OnSimulationStart()
-	{
-		// TODO
-	}
-
-	void SceneH2M::OnSimulationEnd()
-	{
-		// TODO
 	}
 
 	void SceneH2M::SetViewportSize(uint32_t width, uint32_t height)
@@ -918,7 +947,7 @@ namespace H2M
 	}
 
 	template<>
-	void SceneH2M::OnComponentAdded<RigidBody2DComponentH2M>(EntityH2M entity, RigidBody2DComponentH2M& component)
+	void SceneH2M::OnComponentAdded<Rigidbody2DComponentH2M>(EntityH2M entity, Rigidbody2DComponentH2M& component)
 	{
 	}
 
