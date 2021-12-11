@@ -19,8 +19,6 @@ public:
 
 	static Scene* s_Scene; // reference to SceneHazelEnvMap (the original engine scene object)
 
-	static H2M::CameraH2M* s_ActiveCamera;
-
 	static H2M::RefH2M<CubeSkybox>s_SkyboxCube;
 	static H2M::RefH2M<Quad> s_Quad;
 	static bool s_DisplayOutline;

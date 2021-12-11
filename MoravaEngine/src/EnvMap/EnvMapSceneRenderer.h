@@ -53,7 +53,7 @@ struct BloomSettings
 class EnvMapSceneRenderer
 {
 public:
-	static void Init(std::string filepath, H2M::SceneH2M* scene);
+	static void Init(std::string filepath, H2M::SceneH2M* scene, EnvMapEditorLayer* editorLayer);
 
 	static void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -113,6 +113,8 @@ private:
 	static void UpdateShaderPBRUniforms(H2M::RefH2M<MoravaShader> shaderHazelPBR, H2M::RefH2M<EnvMapMaterial> envMapMaterial);
 
 public:
+	static EnvMapEditorLayer* s_EditorLayer;
+
 	// From EnvironmentMap
 	static H2M::RefH2M<MoravaShader> s_ShaderEquirectangularConversion;
 	static H2M::RefH2M<MoravaShader> s_ShaderEnvFiltering;

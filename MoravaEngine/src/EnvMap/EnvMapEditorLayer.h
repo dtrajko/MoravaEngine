@@ -131,6 +131,8 @@ public:
 	void SetupRenderFramebuffer();
 	void ResizeViewport(glm::vec2 viewportPanelSize, H2M::RefH2M<MoravaFramebuffer> renderFramebuffer);
 
+	H2M::CameraH2M* GetActiveCamera() const { return m_ActiveCamera; }
+
 private:
 	void SetupContextData(Scene* scene);
 	void SetupShaders();
@@ -249,6 +251,7 @@ private:
 
 	H2M::EditorCameraH2M* m_EditorCamera;
 	RuntimeCamera* m_RuntimeCamera;
+	H2M::CameraH2M* m_ActiveCamera;
 
 	H2M::RefH2M<H2M::SceneH2M> m_RuntimeScene;
 	H2M::RefH2M<H2M::SceneH2M> m_ActiveScene;

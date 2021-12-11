@@ -23,6 +23,8 @@
 #include "Shader/MoravaShaderLibrary.h"
 
 
+EnvMapEditorLayer* EnvMapSceneRenderer::s_EditorLayer;
+
 H2M::RefH2M<MoravaShader> EnvMapSceneRenderer::s_ShaderEquirectangularConversion;
 H2M::RefH2M<MoravaShader> EnvMapSceneRenderer::s_ShaderEnvFiltering;
 H2M::RefH2M<MoravaShader> EnvMapSceneRenderer::s_ShaderEnvIrradiance;
@@ -120,8 +122,12 @@ struct EnvMapSceneRendererData
 
 static EnvMapSceneRendererData s_Data;
 
-void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene)
+void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene, EnvMapEditorLayer* editorLayer)
 {
+    s_EditorLayer = editorLayer;
+
+    s_Data.ActiveScene = scene;
+
     SetupShaders();
 
     s_Data.SceneData.SceneEnvironment = Load(filepath);
@@ -510,7 +516,7 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(H2M::RefH2M<MoravaShader> shad
 
     glm::mat4 viewProj = GetViewProjection();
     shaderHazelPBR->SetMat4("u_ViewProjectionMatrix", viewProj);
-    shaderHazelPBR->SetFloat3("u_CameraPosition", EnvMapSharedData::s_ActiveCamera->GetPosition());
+    shaderHazelPBR->SetFloat3("u_CameraPosition", s_EditorLayer->GetActiveCamera()->GetPosition());
     shaderHazelPBR->SetMat4("u_DirLightTransform", EnvMapSharedData::s_DirLightTransform);
 
     // Environment (TODO: don't do this per mesh)
@@ -567,7 +573,7 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(H2M::RefH2M<MoravaShader> shad
 glm::mat4 EnvMapSceneRenderer::GetViewProjection()
 {
     glm::mat4 viewProjECS = EnvMapEditorLayer::GetMainCameraComponent().Camera.GetViewProjection();
-    glm::mat4 viewProj = EnvMapSharedData::s_ActiveCamera->GetViewProjection();
+    glm::mat4 viewProj = s_EditorLayer->GetActiveCamera()->GetViewProjection();
     return viewProj;
 }
 
@@ -845,7 +851,7 @@ void EnvMapSceneRenderer::GeometryPass()
 
         if (EnvMapSharedData::s_DisplayRay)
         {
-            glm::vec3 camPosition = EnvMapSharedData::s_ActiveCamera->GetPosition();
+            glm::vec3 camPosition = s_EditorLayer->GetActiveCamera()->GetPosition();
             H2M::Renderer2D_H2M::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
 

@@ -73,7 +73,7 @@ void EnvMapEditorLayer::Init()
 
     m_ActiveScene = EnvMapSharedData::s_EditorScene;
 
-    EnvMapSceneRenderer::Init(m_Filepath, EnvMapSharedData::s_EditorScene.Raw());
+    EnvMapSceneRenderer::Init(m_Filepath, m_ActiveScene.Raw(), this);
     SetSkybox(EnvMapSceneRenderer::GetRadianceMap());
 
     SetupContextData(m_Scene);
@@ -188,7 +188,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     H2M::EntityH2M cameraEntity = CreateEntity("Camera");
     cameraEntity.AddComponent<H2M::CameraComponentH2M>(*m_RuntimeCamera);
 
-    EnvMapSharedData::s_ActiveCamera = m_RuntimeCamera;
+    m_ActiveCamera = m_RuntimeCamera;
 
     Log::GetLogger()->debug("cameraEntity UUID: {0}", cameraEntity.GetUUID());
 
@@ -457,13 +457,13 @@ void EnvMapEditorLayer::OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float t
         }
     }
 
-    EnvMapSharedData::s_ActiveCamera->OnUpdate(timestep);
+    m_ActiveCamera->OnUpdate(timestep);
 
-    GetMainCameraComponent().Camera.SetViewMatrix(EnvMapSharedData::s_ActiveCamera->GetViewMatrix());
-    GetMainCameraComponent().Camera.SetProjectionMatrix(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix());
+    GetMainCameraComponent().Camera.SetViewMatrix(m_ActiveCamera->GetViewMatrix());
+    GetMainCameraComponent().Camera.SetProjectionMatrix(m_ActiveCamera->GetProjectionMatrix());
 
-    auto viewMatrix1 = EnvMapSharedData::s_ActiveCamera->GetViewMatrix();
-    auto projectionMatrix1 = EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix();
+    auto viewMatrix1 = m_ActiveCamera->GetViewMatrix();
+    auto projectionMatrix1 = m_ActiveCamera->GetProjectionMatrix();
 
     auto viewMatrix2 = GetMainCameraComponent().Camera.GetViewMatrix();
     auto projectionMatrix2 = GetMainCameraComponent().Camera.GetProjectionMatrix();
@@ -475,7 +475,7 @@ void EnvMapEditorLayer::OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float t
 
     if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f)
     {
-        EnvMapSharedData::s_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        m_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
     }
 }
 
@@ -503,7 +503,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float 
     m_ViewportHeight = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
     if (m_ViewportWidth > 0.0f && m_ViewportHeight > 0.0f) {
-        EnvMapSharedData::s_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+        m_ActiveCamera->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
     }
 }
 
@@ -551,18 +551,18 @@ void EnvMapEditorLayer::UpdateWindowTitle(const std::string& sceneName)
  **/
 void EnvMapEditorLayer::CameraSyncECS()
 {
-    EnvMapSharedData::s_ActiveCamera->SetAspectRatio(GetMainCameraComponent().Camera.GetAspectRatio());
-    EnvMapSharedData::s_ActiveCamera->SetExposure(GetMainCameraComponent().Camera.GetExposure());
-    EnvMapSharedData::s_ActiveCamera->SetProjectionType(GetMainCameraComponent().Camera.GetProjectionType());
+    m_ActiveCamera->SetAspectRatio(GetMainCameraComponent().Camera.GetAspectRatio());
+    m_ActiveCamera->SetExposure(GetMainCameraComponent().Camera.GetExposure());
+    m_ActiveCamera->SetProjectionType(GetMainCameraComponent().Camera.GetProjectionType());
 
     // perspective
-    EnvMapSharedData::s_ActiveCamera->SetPerspectiveVerticalFOV(GetMainCameraComponent().Camera.GetPerspectiveVerticalFOV());
-    EnvMapSharedData::s_ActiveCamera->SetPerspectiveNearClip(GetMainCameraComponent().Camera.GetPerspectiveNearClip());
-    EnvMapSharedData::s_ActiveCamera->SetPerspectiveFarClip(GetMainCameraComponent().Camera.GetPerspectiveFarClip());
+    m_ActiveCamera->SetPerspectiveVerticalFOV(GetMainCameraComponent().Camera.GetPerspectiveVerticalFOV());
+    m_ActiveCamera->SetPerspectiveNearClip(GetMainCameraComponent().Camera.GetPerspectiveNearClip());
+    m_ActiveCamera->SetPerspectiveFarClip(GetMainCameraComponent().Camera.GetPerspectiveFarClip());
 
     // ortho
-    EnvMapSharedData::s_ActiveCamera->SetOrthographicNearClip(GetMainCameraComponent().Camera.GetOrthographicNearClip());
-    EnvMapSharedData::s_ActiveCamera->SetOrthographicFarClip(GetMainCameraComponent().Camera.GetOrthographicFarClip());
+    m_ActiveCamera->SetOrthographicNearClip(GetMainCameraComponent().Camera.GetOrthographicNearClip());
+    m_ActiveCamera->SetOrthographicFarClip(GetMainCameraComponent().Camera.GetOrthographicFarClip());
 
     // s_ActiveCamera->SetPosition(GetMainCameraComponent().Camera.GetPosition());
     // s_ActiveCamera->SetPitch(GetMainCameraComponent().Camera.GetPitch());
@@ -854,10 +854,10 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
             ImGui::Separator();
 
-            const char* label = EnvMapSharedData::s_ActiveCamera == m_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
+            const char* label = m_ActiveCamera == m_EditorCamera ? "EDITOR [ Editor Camera ]" : "RUNTIME [ Runtime Camera ]";
             if (ImGui::Button(label))
             {
-                EnvMapSharedData::s_ActiveCamera = (EnvMapSharedData::s_ActiveCamera == m_EditorCamera) ?
+                m_ActiveCamera = (m_ActiveCamera == m_EditorCamera) ?
                     (H2M::CameraH2M*)m_RuntimeCamera :
                     (H2M::CameraH2M*)m_EditorCamera;
             }
@@ -902,32 +902,32 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 }
 
                 char buffer[100];
-                sprintf(buffer, "Aspect Ratio  %.2f", EnvMapSharedData::s_ActiveCamera->GetAspectRatio());
+                sprintf(buffer, "Aspect Ratio  %.2f", m_ActiveCamera->GetAspectRatio());
                 ImGui::Text(buffer);
                 sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f",
-                    EnvMapSharedData::s_ActiveCamera->GetPosition().x,
-                    EnvMapSharedData::s_ActiveCamera->GetPosition().y,
-                    EnvMapSharedData::s_ActiveCamera->GetPosition().z);
+                    m_ActiveCamera->GetPosition().x,
+                    m_ActiveCamera->GetPosition().y,
+                    m_ActiveCamera->GetPosition().z);
                 ImGui::Text(buffer);
                 sprintf(buffer, "Direction   X %.2f Y %.2f Z %.2f",
-                    EnvMapSharedData::s_ActiveCamera->GetDirection().x,
-                    EnvMapSharedData::s_ActiveCamera->GetDirection().y,
-                    EnvMapSharedData::s_ActiveCamera->GetDirection().z);
+                    m_ActiveCamera->GetDirection().x,
+                    m_ActiveCamera->GetDirection().y,
+                    m_ActiveCamera->GetDirection().z);
                 ImGui::Text(buffer);
                 sprintf(buffer, "Front       X %.2f Y %.2f Z %.2f",
-                    EnvMapSharedData::s_ActiveCamera->GetFront().x,
-                    EnvMapSharedData::s_ActiveCamera->GetFront().y,
-                    EnvMapSharedData::s_ActiveCamera->GetFront().z);
+                    m_ActiveCamera->GetFront().x,
+                    m_ActiveCamera->GetFront().y,
+                    m_ActiveCamera->GetFront().z);
                 ImGui::Text(buffer);
                 sprintf(buffer, "Up          X %.2f Y %.2f Z %.2f",
-                    EnvMapSharedData::s_ActiveCamera->GetUp().x,
-                    EnvMapSharedData::s_ActiveCamera->GetUp().y,
-                    EnvMapSharedData::s_ActiveCamera->GetUp().z);
+                    m_ActiveCamera->GetUp().x,
+                    m_ActiveCamera->GetUp().y,
+                    m_ActiveCamera->GetUp().z);
                 ImGui::Text(buffer);
                 sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f",
-                    EnvMapSharedData::s_ActiveCamera->GetRight().x,
-                    EnvMapSharedData::s_ActiveCamera->GetRight().y,
-                    EnvMapSharedData::s_ActiveCamera->GetRight().z);
+                    m_ActiveCamera->GetRight().x,
+                    m_ActiveCamera->GetRight().y,
+                    m_ActiveCamera->GetRight().z);
                 ImGui::Text(buffer);
             }
         }
@@ -1642,8 +1642,8 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
         if (s_SelectionMode == SelectionMode::Entity || !selectedSubmesh.Mesh)
         {
             ImGuizmo::Manipulate(
-                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
-                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix()),
+                glm::value_ptr(m_ActiveCamera->GetViewMatrix()),
+                glm::value_ptr(m_ActiveCamera->GetProjectionMatrix()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
                 ImGuizmo::WORLD,
                 glm::value_ptr(entityTransform),
@@ -1676,8 +1676,8 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
             glm::mat4 transformBase = entityTransform * submeshTransform;
 
             ImGuizmo::Manipulate(
-                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetViewMatrix()),
-                glm::value_ptr(EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix()),
+                glm::value_ptr(m_ActiveCamera->GetViewMatrix()),
+                glm::value_ptr(m_ActiveCamera->GetProjectionMatrix()),
                 (ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
                 ImGuizmo::WORLD,
                 glm::value_ptr(transformBase),
@@ -1912,7 +1912,7 @@ void EnvMapEditorLayer::OnEvent(H2M::EventH2M& e)
         m_RuntimeScene->OnEvent(e);
     }
 
-    // EnvMapSharedData::s_ActiveCamera->OnEvent(e);
+    // m_ActiveCamera->OnEvent(e);
 
     H2M::EventDispatcherH2M dispatcher(e);
     dispatcher.Dispatch<H2M::KeyPressedEventH2M>(H2M_BIND_EVENT_FN(EnvMapEditorLayer::OnKeyPressedEvent));
@@ -2142,14 +2142,14 @@ std::pair<glm::vec3, glm::vec3> EnvMapEditorLayer::CastRay(float mx, float my)
 {
     glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
 
-    glm::mat4 projectionMatrix = EnvMapSharedData::s_ActiveCamera->GetProjectionMatrix();
-    glm::mat4 viewMatrix = EnvMapSharedData::s_ActiveCamera->GetViewMatrix();
+    glm::mat4 projectionMatrix = m_ActiveCamera->GetProjectionMatrix();
+    glm::mat4 viewMatrix = m_ActiveCamera->GetViewMatrix();
 
     auto inverseProj = glm::inverse(projectionMatrix);
     auto inverseView = glm::inverse(glm::mat3(viewMatrix));
 
     glm::vec4 ray = inverseProj * mouseClipPos;
-    glm::vec3 rayPos = EnvMapSharedData::s_ActiveCamera->GetPosition();
+    glm::vec3 rayPos = m_ActiveCamera->GetPosition();
     glm::vec3 rayDir = inverseView * glm::vec3(ray); // inverseView * glm::vec3(ray)
 
     Log::GetLogger()->debug("EnvMapEditorLayer::CastRay | MousePosition [ {0} {1} ]", mx, my);
@@ -2403,9 +2403,9 @@ void EnvMapEditorLayer::RenderFullscreen(Window* mainWindow)
     monitorHeight = 1080;
 
     float aspectRatio = monitorWidth / monitorHeight;
-    float degreesFOV = EnvMapSharedData::s_ActiveCamera->GetPerspectiveVerticalFOV();
-    float nearPlane = EnvMapSharedData::s_ActiveCamera->GetPerspectiveNearClip();
-    float farPlane = EnvMapSharedData::s_ActiveCamera->GetPerspectiveFarClip();
+    float degreesFOV = m_ActiveCamera->GetPerspectiveVerticalFOV();
+    float nearPlane = m_ActiveCamera->GetPerspectiveNearClip();
+    float farPlane = m_ActiveCamera->GetPerspectiveFarClip();
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(degreesFOV), aspectRatio, nearPlane, farPlane);
     RendererBasic::SetProjectionMatrix(projectionMatrix);
 

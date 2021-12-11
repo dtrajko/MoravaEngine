@@ -7,8 +7,6 @@ H2M::RefH2M<H2M::SceneH2M> EnvMapSharedData::s_EditorScene;
 
 Scene* EnvMapSharedData::s_Scene; // reference to SceneHazelEnvMap (the original engine scene object)
 
-H2M::CameraH2M* EnvMapSharedData::s_ActiveCamera;
-
 H2M::RefH2M<CubeSkybox> EnvMapSharedData::s_SkyboxCube;
 H2M::RefH2M<Quad> EnvMapSharedData::s_Quad;
 
