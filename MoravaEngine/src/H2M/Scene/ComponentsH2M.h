@@ -208,7 +208,7 @@ namespace H2M
 
 	struct Rigidbody2DComponentH2M
 	{
-		enum class BodyType { Static, Dynamic, Kinematic };
+		enum class BodyType { Static = 0, Dynamic, Kinematic };
 		BodyType Type = BodyType::Static;
 		bool FixedRotation = false;
 

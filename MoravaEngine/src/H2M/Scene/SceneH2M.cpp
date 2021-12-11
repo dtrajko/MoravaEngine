@@ -89,6 +89,18 @@ namespace H2M
 	{
 	}
 
+	static b2BodyType Rigidbody2DTypeToBox2DBody(Rigidbody2DComponentH2M::BodyType bodyType)
+	{
+		switch (bodyType)
+		{
+			case Rigidbody2DComponentH2M::BodyType::Static:		return b2_staticBody;
+			case Rigidbody2DComponentH2M::BodyType::Dynamic:	return b2_dynamicBody;
+			case Rigidbody2DComponentH2M::BodyType::Kinematic:	return b2_kinematicBody;
+		}
+		H2M_CORE_ASSERT(false, "Unknown body type!");
+		return b2_staticBody;
+	}
+
 	SceneH2M::SceneH2M(const std::string& debugName, bool isEditorScene, bool initalize)
 		: m_DebugName(debugName)
 	{
@@ -119,9 +131,30 @@ namespace H2M
 			auto& transform = entity.GetComponent<TransformComponentH2M>();
 			auto& rb2d = entity.GetComponent<Rigidbody2DComponentH2M>();
 
-			const b2BodyDef* bodyDef = new b2BodyDef{};
-			m_PhysicsWorld->CreateBody(bodyDef);
+			b2BodyDef bodyDef;
+			bodyDef.type = Rigidbody2DTypeToBox2DBody(rb2d.Type);
+			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+			bodyDef.angle = transform.Rotation.z;
 
+			b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
+			body->SetFixedRotation(rb2d.FixedRotation);
+			rb2d.RuntimeBody = body;
+
+			if (entity.HasComponent<BoxCollider2DComponentH2M>())
+			{
+				auto& bc2d = entity.GetComponent<BoxCollider2DComponentH2M>();
+
+				b2PolygonShape boxShape;
+				boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y);
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &boxShape;
+				fixtureDef.density = bc2d.Density;
+				fixtureDef.friction = bc2d.Friction;
+				fixtureDef.restitution = bc2d.Restitution;
+				fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
+				body->CreateFixture(&fixtureDef);
+			}
 		}
 
 		// -----------------------------------------
@@ -286,6 +319,28 @@ namespace H2M
 
 				nsc.Instance->OnUpdate(ts);
 				});
+		}
+
+		// Physics 2D
+		{
+			const int32_t velocityIterations = 6;
+			const int32_t positionIterations = 2;
+			m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);
+
+			// Retrieve transform from Box2D
+			auto view = m_Registry.view<Rigidbody2DComponentH2M>();
+			for (auto e : view)
+			{
+				EntityH2M entity = { e, this };
+				auto& transform = entity.GetComponent<TransformComponentH2M>();
+				auto& rb2d = entity.GetComponent<Rigidbody2DComponentH2M>();
+
+				b2Body* body = (b2Body*)rb2d.RuntimeBody;
+				const auto& position = body->GetPosition();
+				transform.Translation.x = position.x;
+				transform.Translation.y = position.y;
+				transform.Rotation.z = body->GetAngle();
+			}
 		}
 
 		// Render 2D
