@@ -14,6 +14,7 @@
 #include "H2M/Renderer/SceneRendererH2M.h"
 
 #include "Camera/Camera.h"
+#include "EnvMap/EnvMapEditorLayer.h"
 #include "EnvMap/EnvMapSharedData.h"
 #include "Mesh/HazelFullscreenQuad.h"
 

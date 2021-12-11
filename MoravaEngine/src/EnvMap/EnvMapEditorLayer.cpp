@@ -68,10 +68,10 @@ void EnvMapEditorLayer::Init()
     EnvMapSharedData::s_SkyboxCube = H2M::RefH2M<CubeSkybox>::Create();
     EnvMapSharedData::s_Quad = H2M::RefH2M<Quad>::Create();
 
-    EnvMapSharedData::s_EditorScene = H2M::RefH2M<H2M::SceneH2M>::Create();
-    EnvMapSharedData::s_EditorScene->SetSkyboxLod(0.1f);
+    m_EditorScene = H2M::RefH2M<H2M::SceneH2M>::Create();
+    m_EditorScene->SetSkyboxLod(0.1f);
 
-    m_ActiveScene = EnvMapSharedData::s_EditorScene;
+    m_ActiveScene = m_EditorScene;
 
     EnvMapSceneRenderer::Init(m_Filepath, m_ActiveScene.Raw(), this);
     SetSkybox(EnvMapSceneRenderer::GetRadianceMap());
@@ -96,11 +96,11 @@ void EnvMapEditorLayer::Init()
     bool depthTest = true;
     H2M::Renderer2D_H2M::Init();
 
-    m_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(EnvMapSharedData::s_EditorScene);
+    m_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(m_EditorScene);
     m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapEditorLayer::SelectEntity, this, std::placeholders::_1));
     m_SceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvMapEditorLayer::OnEntityDeleted, this, std::placeholders::_1));
-    m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene); // already done in constructor
-    EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
+    m_SceneHierarchyPanel->SetContext(m_EditorScene); // already done in constructor
+    m_EditorScene->SetSelectedEntity({});
 
     m_ContentBrowserPanel = new H2M::ContentBrowserPanelH2M();
 
@@ -234,7 +234,7 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
 H2M::EntityH2M EnvMapEditorLayer::CreateEntity(const std::string& name)
 {
     // Both NoECS and ECS
-    H2M::EntityH2M entity = EnvMapSharedData::s_EditorScene->CreateEntity(name, EnvMapSharedData::s_EditorScene);
+    H2M::EntityH2M entity = m_EditorScene->CreateEntity(name, m_EditorScene);
 
     return entity;
 }
@@ -267,7 +267,7 @@ H2M::EntityH2M EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
 H2M::CameraComponentH2M EnvMapEditorLayer::GetMainCameraComponent()
 {
-    auto mainCameraEntity = EnvMapSharedData::s_EditorScene->GetMainCameraEntity();
+    auto mainCameraEntity = m_EditorScene->GetMainCameraEntity();
     if (mainCameraEntity && mainCameraEntity.HasComponent<H2M::CameraComponentH2M>())
     {
         auto mainCameraComponent = mainCameraEntity.GetComponent<H2M::CameraComponentH2M>();
@@ -351,7 +351,7 @@ void EnvMapEditorLayer::UpdateUniforms()
     /**** BEGIN Shaders/Hazel/Skybox ****/
     EnvMapSceneRenderer::s_ShaderSkybox->Bind();
     EnvMapSceneRenderer::s_ShaderSkybox->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    EnvMapSceneRenderer::s_ShaderSkybox->SetFloat("u_TextureLod", EnvMapSharedData::s_EditorScene->GetSkyboxLod());
+    EnvMapSceneRenderer::s_ShaderSkybox->SetFloat("u_TextureLod", m_EditorScene->GetSkyboxLod());
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
     EnvMapSceneRenderer::s_ShaderSkybox->SetFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
     /**** END Shaders/Hazel/Skybox ****/
@@ -383,7 +383,7 @@ void EnvMapEditorLayer::OnUpdate(float ts)
 
             m_ActiveScene->OnUpdateEditor(ts, *m_EditorCamera);
 
-            EnvMapSharedData::s_EditorScene->OnRenderEditor(H2M::RefH2M<H2M::SceneRendererH2M>(), ts, *m_EditorCamera);
+            m_EditorScene->OnRenderEditor(H2M::RefH2M<H2M::SceneRendererH2M>(), ts, *m_EditorCamera);
 
             if (m_DrawOnTopBoundingBoxes)
             {
@@ -432,16 +432,16 @@ void EnvMapEditorLayer::OnUpdate(float ts)
         EnvMapSharedData::s_DirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
     }
 
-    OnUpdateEditor(EnvMapSharedData::s_EditorScene, ts);
+    OnUpdateEditor(m_EditorScene, ts);
     // OnUpdateRuntime(s_RuntimeScene, timestep);
 }
 
 void EnvMapEditorLayer::OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float timestep)
 {
-    EnvMapSharedData::s_EditorScene = scene;
+    m_EditorScene = scene;
     m_ActiveScene = scene;
 
-    EnvMapSceneRenderer::BeginScene(EnvMapSharedData::s_EditorScene.Raw(), H2M::SceneRendererCameraH2M{ GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
+    EnvMapSceneRenderer::BeginScene(m_EditorScene.Raw(), H2M::SceneRendererCameraH2M{ GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
 
     UpdateUniforms();
 
@@ -481,17 +481,17 @@ void EnvMapEditorLayer::OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float t
 
 void EnvMapEditorLayer::OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float timestep)
 {
-    EnvMapSharedData::s_EditorScene = scene;
+    m_EditorScene = scene;
 
-    EnvMapSceneRenderer::BeginScene(EnvMapSharedData::s_EditorScene.Raw(), { GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
+    EnvMapSceneRenderer::BeginScene(m_EditorScene.Raw(), { GetMainCameraComponent().Camera, GetMainCameraComponent().Camera.GetViewMatrix() });
 
     UpdateUniforms();
 
     // Update HazelMesh List
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
     for (auto entt : meshEntities)
     {
-        H2M::EntityH2M entity{ entt, EnvMapSharedData::s_EditorScene.Raw() };
+        H2M::EntityH2M entity{ entt, m_EditorScene.Raw() };
         H2M::RefH2M<H2M::MeshH2M> mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
 
         mesh->OnUpdate(timestep, false);
@@ -519,7 +519,7 @@ void EnvMapEditorLayer::OnScenePlay()
     }
 
     m_RuntimeScene = H2M::RefH2M<H2M::SceneH2M>::Create();
-    // EnvMapSharedData::s_EditorScene->CopyTo(m_RuntimeScene);
+    // m_EditorScene->CopyTo(m_RuntimeScene);
 
     m_RuntimeScene->OnRuntimeStart();
     // m_SceneHierarchyPanel->SetContext(m_RuntimeScene);
@@ -535,8 +535,8 @@ void EnvMapEditorLayer::OnSceneStop()
     m_RuntimeScene = nullptr;
 
     EntitySelection::s_SelectionContext.clear();
-    // H2M::ScriptEngine::SetSceneContext(EnvMapSharedData::s_EditorScene);
-    m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
+    // H2M::ScriptEngine::SetSceneContext(m_EditorScene);
+    m_SceneHierarchyPanel->SetContext(m_EditorScene);
 }
 
 void EnvMapEditorLayer::UpdateWindowTitle(const std::string& sceneName)
@@ -573,11 +573,11 @@ void EnvMapEditorLayer::CameraSyncECS()
 H2M::EntityH2M EnvMapEditorLayer::GetMeshEntity()
 {
     H2M::EntityH2M meshEntity;
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
     if (meshEntities.size()) {
         for (auto entt : meshEntities)
         {
-            meshEntity = H2M::EntityH2M(entt, EnvMapSharedData::s_EditorScene.Raw());
+            meshEntity = H2M::EntityH2M(entt, m_EditorScene.Raw());
         }
         return meshEntity;
     }
@@ -586,7 +586,7 @@ H2M::EntityH2M EnvMapEditorLayer::GetMeshEntity()
 
 float& EnvMapEditorLayer::GetSkyboxLOD()
 {
-    return EnvMapSharedData::s_EditorScene->GetSkyboxLod();
+    return m_EditorScene->GetSkyboxLod();
 }
 
 void EnvMapEditorLayer::SetViewportBounds(glm::vec2* viewportBounds)
@@ -597,7 +597,7 @@ void EnvMapEditorLayer::SetViewportBounds(glm::vec2* viewportBounds)
 
 void EnvMapEditorLayer::SetSkyboxLOD(float LOD)
 {
-    EnvMapSharedData::s_EditorScene->SetSkyboxLod(LOD);
+    m_EditorScene->SetSkyboxLod(LOD);
 }
 
 H2M::RefH2M<MoravaShader> EnvMapEditorLayer::GetShaderPBR_Anim()
@@ -788,10 +788,10 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             //  {
             //      if (m_SceneState == SceneState::Edit)
             //      {
-            //          float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
+            //          float physics2DGravity = m_EditorScene->GetPhysics2DGravity();
             //          if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty))
             //          {
-            //              EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+            //              m_EditorScene->SetPhysics2DGravity(physics2DGravity);
             //          }
             //  
             //          if (ImGui::ImageButton((ImTextureID)(uint64_t)(m_PlayButtonTex->GetID()), ImVec2(32, 32), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
@@ -999,9 +999,9 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
                     if (m_SceneState == SceneState::Edit)
                     {
-                        float physics2DGravity = EnvMapSharedData::s_EditorScene->GetPhysics2DGravity();
+                        float physics2DGravity = m_EditorScene->GetPhysics2DGravity();
                         if (ImGuiWrapper::Property("Gravity", physics2DGravity, -10000.0f, 10000.0f, PropertyFlag::DragProperty)) {
-                            EnvMapSharedData::s_EditorScene->SetPhysics2DGravity(physics2DGravity);
+                            m_EditorScene->SetPhysics2DGravity(physics2DGravity);
                         }
                     }
                     else if (m_SceneState == SceneState::Play)
@@ -1609,7 +1609,7 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
 
     // Dirty fix: m_SelectionContext not decremented when mesh entity is removed from the scene
     size_t selectionContextSize = EntitySelection::s_SelectionContext.size();
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
     if (selectionContextSize > meshEntities.size()) {
         selectionContextSize = meshEntities.size();
     }
@@ -1823,7 +1823,7 @@ void EnvMapEditorLayer::OpenScene()
 void EnvMapEditorLayer::SaveScene()
 {
     if (!m_SceneFilePath.empty()) {
-        // H2M::SceneSerializer serializer(EnvMapSharedData::s_EditorScene);
+        // H2M::SceneSerializer serializer(m_EditorScene);
         // serializer.Serialize(m_SceneFilePath);
     }
 }
@@ -1834,7 +1834,7 @@ void EnvMapEditorLayer::SaveSceneAs()
     std::string filepath = app->SaveFile("Hazel Scene (*.hsc)\0*.hsc\0");
     if (!filepath.empty())
     {
-        // H2M::SceneSerializer serializer(EnvMapSharedData::s_EditorScene);
+        // H2M::SceneSerializer serializer(m_EditorScene);
         // serializer.Serialize(filepath);
 
         std::filesystem::path path = filepath;
@@ -1846,8 +1846,8 @@ void EnvMapEditorLayer::SaveSceneAs()
 void EnvMapEditorLayer::OnNewScene(glm::vec2 viewportSize)
 {
     // m_SceneRenderer->s_Data.ActiveScene = new H2M::SceneH2M();
-    EnvMapSharedData::s_EditorScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
-    m_SceneHierarchyPanel->SetContext(EnvMapSharedData::s_EditorScene);
+    m_EditorScene->OnViewportResize((uint32_t)viewportSize.x, (uint32_t)viewportSize.y);
+    m_SceneHierarchyPanel->SetContext(m_EditorScene);
 }
 
 void EnvMapEditorLayer::SelectEntity(H2M::EntityH2M e)
@@ -1905,7 +1905,7 @@ void EnvMapEditorLayer::OnEvent(H2M::EventH2M& e)
             GetMainCameraComponent().Camera.OnEvent(e);
         }
 
-        EnvMapSharedData::s_EditorScene->OnEvent(e);
+        m_EditorScene->OnEvent(e);
     }
     else if (m_SceneState == SceneState::Play)
     {
@@ -1945,9 +1945,9 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
                 if (EntitySelection::s_SelectionContext.size())
                 {
                     H2M::EntityH2M selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
-                    EnvMapSharedData::s_EditorScene->DestroyEntity(selectedEntity);
+                    m_EditorScene->DestroyEntity(selectedEntity);
                     EntitySelection::s_SelectionContext.clear();
-                    EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
+                    m_EditorScene->SetSelectedEntity({});
                     m_SceneHierarchyPanel->SetSelected({});
                 }
                 break;
@@ -1966,7 +1966,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
             case (int)KeyCodeH2M::D:
                 if (EntitySelection::s_SelectionContext.size()) {
                     H2M::EntityH2M selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
-                    EnvMapSharedData::s_EditorScene->DuplicateEntity(selectedEntity);
+                    m_EditorScene->DuplicateEntity(selectedEntity);
                 }
                 break;
             case (int)KeyCodeH2M::G:
@@ -2045,10 +2045,10 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
 
             EntitySelection::s_SelectionContext.clear();
 
-            auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
+            auto meshEntities = m_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
             for (auto e : meshEntities)
             {
-                H2M::EntityH2M entity = { e, EnvMapSharedData::s_EditorScene.Raw() };
+                H2M::EntityH2M entity = { e, m_EditorScene.Raw() };
                 auto mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
                 if (!mesh) {
                     continue;
@@ -2113,7 +2113,7 @@ void EnvMapEditorLayer::OnSelected(const SelectedSubmesh& selectionContext)
 {
     // TODO: move to SceneHazelEnvMap
     m_SceneHierarchyPanel->SetSelected(selectionContext.Entity);
-    EnvMapSharedData::s_EditorScene->SetSelectedEntity(selectionContext.Entity);
+    m_EditorScene->SetSelectedEntity(selectionContext.Entity);
 }
 
 void EnvMapEditorLayer::OnEntityDeleted(H2M::EntityH2M e)
@@ -2122,7 +2122,7 @@ void EnvMapEditorLayer::OnEntityDeleted(H2M::EntityH2M e)
     {
         if (EntitySelection::s_SelectionContext[0].Entity == e) {
             EntitySelection::s_SelectionContext.clear();
-            EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
+            m_EditorScene->SetSelectedEntity({});
         }
     }
 }
@@ -2276,13 +2276,13 @@ void EnvMapEditorLayer::RenderShadowOmniSingleLight(Window* mainWindow, H2M::Ent
 void EnvMapEditorLayer::RenderSubmeshesShadowPass(H2M::RefH2M<MoravaShader> shader)
 {
     // Rendering all meshes (submeshes) on the scene to a shadow framebuffer
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
+    auto meshEntities = m_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
     // Render all entities with mesh component
     if (meshEntities.size())
     {
         for (auto entt : meshEntities)
         {
-            H2M::EntityH2M entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
+            H2M::EntityH2M entity = { entt, m_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<H2M::MeshComponentH2M>();
 
             glm::mat4 entityTransform = glm::mat4(1.0f);

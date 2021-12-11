@@ -1105,7 +1105,7 @@ namespace H2M
 								}
 							}
 
-							//	auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
+							//	auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
 							//	if (meshEntities.size())
 							//	{
 							//		meshEntity = GetMeshEntity();

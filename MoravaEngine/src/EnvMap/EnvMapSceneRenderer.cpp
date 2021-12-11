@@ -425,8 +425,8 @@ void EnvMapSceneRenderer::RenderSkybox()
     EnvMapSceneRenderer::s_ShaderSkybox->SetMat4("u_InverseVP", glm::inverse(viewProj));
 
     s_ShaderSkybox->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
-    s_ShaderSkybox->SetFloat("u_TextureLod", EnvMapSharedData::s_EditorScene->GetSkyboxLod());
-    s_ShaderSkybox->SetFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    s_ShaderSkybox->SetFloat("u_TextureLod", s_EditorLayer->GetActiveScene()->GetSkyboxLod());
+    s_ShaderSkybox->SetFloat("u_Exposure", s_EditorLayer->GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
 
     EnvMapSharedData::s_SkyboxCube->Render();
 
@@ -510,7 +510,7 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(H2M::RefH2M<MoravaShader> shad
     shaderHazelPBR->SetFloat("u_MaterialUniforms.AOTexToggle", envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
 
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    shaderHazelPBR->SetFloat("u_Exposure", EnvMapEditorLayer::GetMainCameraComponent().Camera.GetExposure()); // originally used in Shaders/Hazel/SceneComposite
+    shaderHazelPBR->SetFloat("u_Exposure", s_EditorLayer->GetMainCameraComponent().Camera.GetExposure()); // originally used in Shaders/Hazel/SceneComposite
 
     shaderHazelPBR->SetFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
 
@@ -572,7 +572,7 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(H2M::RefH2M<MoravaShader> shad
 
 glm::mat4 EnvMapSceneRenderer::GetViewProjection()
 {
-    glm::mat4 viewProjECS = EnvMapEditorLayer::GetMainCameraComponent().Camera.GetViewProjection();
+    glm::mat4 viewProjECS = s_EditorLayer->GetActiveCamera()->GetViewProjection();
     glm::mat4 viewProj = s_EditorLayer->GetActiveCamera()->GetViewProjection();
     return viewProj;
 }
@@ -767,7 +767,7 @@ void EnvMapSceneRenderer::GeometryPass()
         RenderHazelGrid();
     }
 
-    auto meshEntities = EnvMapSharedData::s_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
+    auto meshEntities = s_EditorLayer->GetActiveScene()->GetAllEntitiesWith<H2M::MeshComponentH2M>();
     // auto meshEntities = m_SceneHierarchyPanel->GetContext()->GetAllEntitiesWith<H2M::MeshComponentH2M>();
 
     // Render all entities with mesh component
@@ -775,7 +775,7 @@ void EnvMapSceneRenderer::GeometryPass()
     {
         for (auto entt : meshEntities)
         {
-            H2M::EntityH2M entity = { entt, EnvMapSharedData::s_EditorScene.Raw() };
+            H2M::EntityH2M entity = { entt, s_EditorLayer->GetActiveScene().Raw() };
             auto& meshComponent = entity.GetComponent<H2M::MeshComponentH2M>();
 
             if (meshComponent.Mesh)

@@ -250,9 +250,10 @@ void DX11Renderer::OnEntityDeleted(H2M::EntityH2M e)
 {
 	if (EntitySelection::s_SelectionContext.size())
 	{
-		if (EntitySelection::s_SelectionContext[0].Entity == e) {
+		if (EntitySelection::s_SelectionContext[0].Entity == e)
+		{
 			EntitySelection::s_SelectionContext.clear();
-			EnvMapSharedData::s_EditorScene->SetSelectedEntity({});
+			// m_EditorScene->SetSelectedEntity({});
 		}
 	}
 

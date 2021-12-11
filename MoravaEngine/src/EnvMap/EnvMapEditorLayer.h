@@ -10,7 +10,6 @@
 #include "Editor/EntitySelection.h"
 #include "Editor/MaterialEditorPanel.h"
 #include "EnvMap/EnvMapMaterial.h"
-#include "EnvMap/EnvMapSceneRenderer.h"
 #include "EnvMap/EnvMapSharedData.h"
 #include "Framebuffer/ShadowMap.h"
 
@@ -98,7 +97,7 @@ public:
 	void UpdateImGuizmo(Window* mainWindow);
 	H2M::EntityH2M CreateEntity(const std::string& name);
 	H2M::EntityH2M LoadEntity(std::string fullPath);
-	static H2M::CameraComponentH2M GetMainCameraComponent();
+	H2M::CameraComponentH2M GetMainCameraComponent();
 
 	void ShowBoundingBoxes(bool showBoundingBoxes, bool showBoundingBoxesOnTop);
 
@@ -132,6 +131,8 @@ public:
 	void ResizeViewport(glm::vec2 viewportPanelSize, H2M::RefH2M<MoravaFramebuffer> renderFramebuffer);
 
 	H2M::CameraH2M* GetActiveCamera() const { return m_ActiveCamera; }
+
+	H2M::RefH2M<H2M::SceneH2M> GetActiveScene() { return m_ActiveScene; }
 
 private:
 	void SetupContextData(Scene* scene);
@@ -253,6 +254,7 @@ private:
 	RuntimeCamera* m_RuntimeCamera;
 	H2M::CameraH2M* m_ActiveCamera;
 
+	H2M::RefH2M<H2M::SceneH2M> m_EditorScene;
 	H2M::RefH2M<H2M::SceneH2M> m_RuntimeScene;
 	H2M::RefH2M<H2M::SceneH2M> m_ActiveScene;
 

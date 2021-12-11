@@ -14,9 +14,6 @@ class EnvMapSharedData
 public:
 	static std::map<std::string, unsigned int> s_SamplerSlots;
 
-	static H2M::RefH2M<H2M::SceneH2M> s_RuntimeScene;
-	static H2M::RefH2M<H2M::SceneH2M> s_EditorScene;
-
 	static Scene* s_Scene; // reference to SceneHazelEnvMap (the original engine scene object)
 
 	static H2M::RefH2M<CubeSkybox>s_SkyboxCube;
