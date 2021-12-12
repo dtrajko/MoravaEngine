@@ -823,6 +823,15 @@ add_library(DirectXTex          STATIC "${DirectXTex_SRCS}")
 #		"System.Xml"
 #	)
 
+
+if(WIN32)
+
+set_property(TARGET BulletDynamics PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET BulletCollision PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET LinearMath PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+endif()
+
 add_dependencies(assimp irrXML)
 add_dependencies(assimp zlibstatic)
 
