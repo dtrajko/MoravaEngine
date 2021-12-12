@@ -820,25 +820,27 @@ namespace H2M
 	void SceneH2M::DuplicateEntity(EntityH2M entity)
 	{
 		EntityH2M newEntity;
-		if (entity.HasComponent<TagComponentH2M>()) {
+		if (entity.HasComponent<TagComponentH2M>())
+		{
 			newEntity = CreateEntity(entity.GetComponent<TagComponentH2M>().Tag);
 		}
-		else {
+		else
+		{
 			newEntity = CreateEntity();
 		}
 
+		CopyComponentIfExists<RelationshipComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<TransformComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<CameraComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<MeshComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CameraComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<NativeScriptComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<MaterialComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<DirectionalLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<PointLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SpotLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SkyLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<MaterialComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<SpriteRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<CircleRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<RelationshipComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<NativeScriptComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);	
 		CopyComponentIfExists<Rigidbody2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<BoxCollider2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 	}
@@ -884,18 +886,18 @@ namespace H2M
 		}
 
 		CopyComponent<TagComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<RelationshipComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<TransformComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<MeshComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<CameraComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<NativeScriptComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<MaterialComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<DirectionalLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<PointLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SpotLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SkyLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<SpriteRendererComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<CircleRendererComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<NativeScriptComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<RelationshipComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<MaterialComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<Rigidbody2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<BoxCollider2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
 
@@ -933,6 +935,10 @@ namespace H2M
 			entityClone.AddComponent<TagComponentH2M>(entity.GetComponent<TagComponentH2M>());
 		}
 
+		if (entity.HasComponent<RelationshipComponentH2M>()) {
+			entityClone.AddComponent<RelationshipComponentH2M>(entity.GetComponent<RelationshipComponentH2M>());
+		}
+
 		if (entity.HasComponent<TransformComponentH2M>()) {
 			entityClone.AddComponent<TransformComponentH2M>(entity.GetComponent<TransformComponentH2M>());
 		}
@@ -945,12 +951,8 @@ namespace H2M
 			entityClone.AddComponent<CameraComponentH2M>(entity.GetComponent<CameraComponentH2M>());
 		}
 
-		if (entity.HasComponent<SpriteRendererComponentH2M>()) {
-			entityClone.AddComponent<SpriteRendererComponentH2M>(entity.GetComponent<SpriteRendererComponentH2M>());
-		}
-
-		if (entity.HasComponent<CircleRendererComponentH2M>()) {
-			entityClone.AddComponent<CircleRendererComponentH2M>(entity.GetComponent<CircleRendererComponentH2M>());
+		if (entity.HasComponent<NativeScriptComponentH2M>()) {
+			entityClone.AddComponent<NativeScriptComponentH2M>(entity.GetComponent<NativeScriptComponentH2M>());
 		}
 
 		if (entity.HasComponent<MaterialComponentH2M>()) {
@@ -971,6 +973,14 @@ namespace H2M
 
 		if (entity.HasComponent<SkyLightComponentH2M>()) {
 			entityClone.AddComponent<SkyLightComponentH2M>(entity.GetComponent<SkyLightComponentH2M>());
+		}
+
+		if (entity.HasComponent<SpriteRendererComponentH2M>()) {
+			entityClone.AddComponent<SpriteRendererComponentH2M>(entity.GetComponent<SpriteRendererComponentH2M>());
+		}
+
+		if (entity.HasComponent<CircleRendererComponentH2M>()) {
+			entityClone.AddComponent<CircleRendererComponentH2M>(entity.GetComponent<CircleRendererComponentH2M>());
 		}
 
 		if (entity.HasComponent<Rigidbody2DComponentH2M>()) {

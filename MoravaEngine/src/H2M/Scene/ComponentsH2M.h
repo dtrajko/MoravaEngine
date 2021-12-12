@@ -4,6 +4,25 @@
  * @licence Apache License 2.0
  */
 
+/**
+ * IDComponentH2M
+ * TagComponentH2M
+ * RelationshipComponentH2M
+ * TransformComponentH2M
+ * MeshComponentH2M
+ * CameraComponentH2M
+ * NativeScriptComponentH2M
+ * MaterialComponentH2M
+ * DirectionalLightComponentH2M
+ * PointLightComponentH2M
+ * SpotLightComponentH2M
+ * SkyLightComponentH2M
+ * SpriteRendererComponentH2M
+ * CircleRendererComponentH2M
+ * Rigidbody2DComponentH2M
+ * BoxCollider2DComponentH2M
+ */
+
 #pragma once
 
 #include "H2M/Renderer/CameraH2M.h"
