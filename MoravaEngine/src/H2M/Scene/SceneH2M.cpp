@@ -757,35 +757,32 @@ namespace H2M
 
 		entity.AddComponent<TransformComponentH2M>(glm::vec3(0.0f)); // glm::mat4(1.0f)
 
-		// auto& tag = entity.AddComponent<TagComponentH2M>();
-		// tag.Tag = name.empty() ? "Entity" : name;
-		entity.AddComponent<TagComponentH2M>(name.empty() ? "Entity" : name);
+		entity.AddComponent<TagComponentH2M>(name);
 
 		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
 
-		s_EntityIDMap[idComponent.ID] = entity;
+		s_RuntimeEntityIDMap[idComponent.ID] = entity;
 		return entity;
 	}
 
 	EntityH2M SceneH2M::CreateEntityWithUUID(UUID_H2M uuid, const std::string& name, bool runtimeMap)
 	{
+		const std::string& entityName = name.empty() ? DefaultEntityName : name;
+
+		// ECS
 		auto entity = EntityH2M{ m_Registry.create(), this };
 		auto& idComponent = entity.AddComponent<IDComponentH2M>();
 		idComponent.ID = uuid;
 
 		entity.AddComponent<TransformComponentH2M>(glm::vec3(0.0f)); // glm::mat4(1.0f)
 
-		if (!name.empty()) {
-			entity.AddComponent<TagComponentH2M>(name);
-		}
-		// entity.AddComponent<TagComponentH2M>(name.empty() ? "Entity" : name);
-
-		auto& EntityMapH2M = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;
+		entity.AddComponent<TagComponentH2M>(name);
 
 		Log::GetLogger()->debug("CreateEntityWithID uuid = '{0}', name = '{1}'", uuid, name);
 
 		// H2M_CORE_ASSERT(EntityMapH2M.find(uuid) == EntityMapH2M.end());
-		EntityMapH2M[uuid] = entity;
+		auto& entityMapH2M = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;
+		entityMapH2M[uuid] = entity;
 		return entity;
 	}
 
