@@ -226,6 +226,7 @@
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTestLayer.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTextureH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanVertexBufferH2M.cpp" />
+    <ClCompile Include="src\H2M\Platform\Windows\WindowsFileDialogsH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Windows\WindowsInputH2M.cpp" />
     <ClCompile Include="src\H2M\Project\UserPreferencesH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\CameraH2M.cpp" />
@@ -702,6 +703,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="src\H2M\Scene\ScriptableEntityH2M.h" />
+    <ClInclude Include="src\H2M\Utilities\FileDialogsH2M.h" />
     <ClInclude Include="src\H2M\Utilities\FileSystemH2M.h" />
     <ClInclude Include="src\H2M\Utilities\StringUtilsH2M.h" />
     <ClInclude Include="src\HazelVulkan\ExampleVertex.h" />

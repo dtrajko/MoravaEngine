@@ -117,7 +117,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
     SetupMaterials();
     SetupFramebuffers();
 
-    m_EnvMapEditorLayer = std::make_unique<EnvMapEditorLayer>("Textures/HDR/umhlanga_sunrise_4k.hdr", this);
+    m_EnvMapEditorLayer = new EnvMapEditorLayer("Textures/HDR/umhlanga_sunrise_4k.hdr", this);
 
     SetupMeshes();
     SetupModels();
@@ -133,6 +133,7 @@ SceneHazelEnvMap::SceneHazelEnvMap()
 SceneHazelEnvMap::~SceneHazelEnvMap()
 {
     delete m_CsGame;
+    delete m_EnvMapEditorLayer;
 }
 
 void SceneHazelEnvMap::SetupShaders()
@@ -233,9 +234,16 @@ bool SceneHazelEnvMap::OnKeyPressed(H2M::KeyPressedEventH2M& e)
         }
         case (int)KeyH2M::S:
         {
-            if (control && shift)
+            if (control)
             {
-                m_EnvMapEditorLayer->SaveSceneAs();
+                if (shift)
+                {
+                    m_EnvMapEditorLayer->SaveSceneAs();
+                }
+                else
+                {
+                    m_EnvMapEditorLayer->SaveScene();
+                }
             }
             break;
         }

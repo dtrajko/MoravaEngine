@@ -86,6 +86,7 @@ public:
 
 public:
 	virtual inline GLFWwindow* GetHandle() override { return m_GLFW_Window; };
+	virtual inline GLFWwindow* GetNativeWindow() override { return m_GLFW_Window; }; // an alias/synonim of GetHandle
 	virtual bool* getKeys() override { return keys; };
 	virtual bool* getMouseButtons() override { return buttons; };
 	virtual bool IsMouseButtonClicked(int mouseButton) override;

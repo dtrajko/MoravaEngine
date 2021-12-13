@@ -75,11 +75,16 @@ public:
 
 	void NewScene();
 	void OpenScene();
+	void OpenScene(const std::filesystem::path& path);
 	void SaveScene();
 	void SaveSceneAs();
 
+	void SerializeScene(H2M::RefH2M<H2M::SceneH2M> scene, const std::filesystem::path& path);
+
 	void OnScenePlay();
 	void OnSceneStop();
+
+	void OnDuplicateEntity();
 
 	// UI Panels
 	void UI_Toolbar();
@@ -139,6 +144,7 @@ private:
 	void SetupShaders();
 	void UpdateUniforms();
 	void SetSkybox(H2M::RefH2M<H2M::TextureCubeH2M> skybox);
+	void SetupLights(); // temporary solution until lights are properly deserialized
 
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
@@ -175,12 +181,9 @@ private:
 
 	H2M::RefH2M<H2M::TextureCubeH2M> m_SkyboxTexture;
 
-	H2M::EntityH2M m_DirectionalLightEntity;
+	H2M::EntityH2M* m_DirectionalLightEntity;
 	glm::mat4 m_LightProjectionMatrix;
 	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
-
-	float m_ViewportWidth = 0.0f;
-	float m_ViewportHeight = 0.0f;
 	/** END properties Hazelnut/EditorLayer **/
 
 	struct Viewport
@@ -210,6 +213,7 @@ private:
 	bool m_ViewportPanelFocused = false;
 
 	// Used in EnvMapEditorLayer::CastRay
+	glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 	glm::vec2 m_ViewportBounds[2];
 
 	EventCooldown m_ResizeViewport;
@@ -236,7 +240,6 @@ private:
 	bool m_DisplayLineElements;
 
 	// Hazel LIVE! #014
-	std::string m_SceneFilePath;
 	bool m_ReloadScriptOnPlay = true;
 
 	// Panels
@@ -254,9 +257,10 @@ private:
 	RuntimeCamera* m_RuntimeCamera;
 	H2M::CameraH2M* m_ActiveCamera;
 
-	H2M::RefH2M<H2M::SceneH2M> m_EditorScene;
-	H2M::RefH2M<H2M::SceneH2M> m_RuntimeScene;
 	H2M::RefH2M<H2M::SceneH2M> m_ActiveScene;
+	H2M::RefH2M<H2M::SceneH2M> m_EditorScene;
+
+	std::filesystem::path m_EditorScenePath;
 
 	// Hazel LIVE! #015
 	bool m_UIShowBoundingBoxes;

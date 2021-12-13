@@ -39,6 +39,14 @@ namespace H2M
 			return component;
 		}
 
+		template<typename T, typename... Args>
+		T& AddOrReplaceComponent(Args&&... args)
+		{
+			T& component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
+			m_Scene->OnComponentAdded<T>(*this, component);
+			return component;
+		}
+
 		template<typename T>
 		T& GetComponent()
 		{
@@ -46,10 +54,16 @@ namespace H2M
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
-		template<typename T>
+		template<typename... T>
 		bool HasComponent()
 		{
-			return m_Scene->m_Registry.has<T>(m_EntityHandle);
+			return m_Scene->m_Registry.has<T...>(m_EntityHandle);
+		}
+
+		template<typename... T>
+		bool HasComponent() const
+		{
+			return m_Scene->m_Registry.has<T...>(m_EntityHandle);
 		}
 
 		template<typename T>
@@ -90,6 +104,7 @@ namespace H2M
 		}
 
 		UUID_H2M GetUUID() { return GetComponent<IDComponentH2M>().ID; }
+		const std::string& GetName() { return GetComponent<TagComponentH2M>().Tag; }
 
 		UUID_H2M GetSceneUUID();
 

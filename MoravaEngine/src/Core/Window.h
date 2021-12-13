@@ -78,6 +78,7 @@ public:
 
 	// Methods used by MoravaEngine classes
 	virtual GLFWwindow* GetHandle() = 0;
+	virtual GLFWwindow* GetNativeWindow() = 0; // an alias/synonim of GetHandle
 	virtual bool* getKeys() = 0;
 	virtual bool* getMouseButtons() = 0;
 	virtual bool IsMouseButtonClicked(int mouseButton) = 0;

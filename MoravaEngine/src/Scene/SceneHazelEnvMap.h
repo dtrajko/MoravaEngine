@@ -9,6 +9,7 @@
 #include "Mesh/Grid.h"
 #include "Scene/Scene.h"
 #include "Texture/MoravaTexture.h"
+
 #include "Mono/GameInvoker/CsGame.h"
 
 #include <map>
@@ -16,7 +17,6 @@
 
 
 class EnvMapEditorLayer;
-
 
 class SceneHazelEnvMap : public Scene
 {
@@ -50,7 +50,7 @@ private:
 	virtual void OnEntitySelected(H2M::EntityH2M entity) override;
 
 private:
-	std::unique_ptr<EnvMapEditorLayer> m_EnvMapEditorLayer;
+	EnvMapEditorLayer* m_EnvMapEditorLayer;
 
 	H2M::RefH2M<MoravaShader> m_ShaderBackground;
 	H2M::RefH2M<MoravaShader> m_ShaderBasic;

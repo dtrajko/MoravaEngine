@@ -1,0 +1,75 @@
+Scene: Untitled
+Entities:
+  - Entity: 16362023003191239313
+    TagComponentH2M:
+      Tag: Mesh
+    TransformComponentH2M:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [20, 1, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.200000003
+      Restitution: 0.800000012
+      RestitutionThreshold: 2
+  - Entity: 3745726712950606689
+    TagComponentH2M:
+      Tag: Mesh
+    TransformComponentH2M:
+      Translation: [3.06963921e-06, 10, 1.86264515e-09]
+      Rotation: [0, 0, 0.000278728985]
+      Scale: [0.999983907, 0.999983907, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 10
+      Friction: 0.200000003
+      Restitution: 0.800000012
+      RestitutionThreshold: 2
+  - Entity: 12845501142200781368
+    TagComponentH2M:
+      Tag: Spot Light
+    TransformComponentH2M:
+      Translation: [0, 0, 0]
+      Rotation: [0, -1, 0]
+      Scale: [1, 1, 1]
+  - Entity: 12524785488510536638
+    TagComponentH2M:
+      Tag: Point Light
+    TransformComponentH2M:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+  - Entity: 4216980447587360966
+    TagComponentH2M:
+      Tag: Directional Light
+    TransformComponentH2M:
+      Translation: [0, 0, 0]
+      Rotation: [-0.0586210378, -0.996557653, -0.0586210378]
+      Scale: [1, 1, 1]
+  - Entity: 7102313662106794619
+    TagComponentH2M:
+      Tag: Camera
+    TransformComponentH2M:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponentH2M:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 60.0000038
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1000
+        OrthographicFar: 1000
+      Primary: true
+      FixedAspectRatio: false

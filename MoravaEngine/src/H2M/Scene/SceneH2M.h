@@ -71,7 +71,6 @@ namespace H2M
 	class SceneRendererH2M;
 	using EntityMapH2M = std::unordered_map<UUID_H2M, entt::entity>;
 
-
 	// class SceneH2M : public RefCountedH2M
 	class SceneH2M : public AssetH2M
 	{
@@ -79,14 +78,17 @@ namespace H2M
 		SceneH2M(const std::string& debugName = "SceneH2M", bool isEditorScene = false, bool initalize = true);
 		~SceneH2M();
 
-		void Init();
+		static RefH2M<SceneH2M> Copy(RefH2M<SceneH2M> other);
+		void CopyTo(RefH2M<SceneH2M>& target); // Working on Hazel LIVE! #14
 
-		void OnUpdate(TimestepH2M ts);
-		void OnUpdateRuntime(TimestepH2M ts);
-		void OnUpdateEditor(TimestepH2M ts, EditorCameraH2M& camera);
-		void OnRenderRuntime(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts);
-		void OnRenderEditor(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts, const EditorCameraH2M& editorCamera);
-		void OnEvent(EventH2M& e);
+		EntityH2M CreateEntity(const std::string& name = "");
+		EntityH2M CreateEntity(const std::string& name, RefH2M<SceneH2M> scene);
+		EntityH2M CreateEntityWithUUID(UUID_H2M uuid, const std::string& name = "", bool runtimeMap = false);
+		void DestroyEntity(EntityH2M entity);
+		EntityH2M CloneEntity(EntityH2M entity);
+		void DuplicateEntity(EntityH2M entity); // Cherno's version, same as CloneEntity
+
+		void Init();
 
 		// Runtime
 		void OnRuntimeStart();
@@ -94,6 +96,13 @@ namespace H2M
 
 		void OnSimulationStart();
 		void OnSimulationEnd();
+
+		void OnUpdate(TimestepH2M ts); // TODO: replaced by OnUpdateRuntime/OnUpdateEditor, should be removed
+		void OnUpdateRuntime(TimestepH2M ts);
+		void OnUpdateEditor(TimestepH2M ts, EditorCameraH2M& camera);
+		void OnRenderRuntime(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts);
+		void OnRenderEditor(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts, const EditorCameraH2M& editorCamera);
+		void OnEvent(EventH2M& e);
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -124,13 +133,6 @@ namespace H2M
 		float& GetSkyboxLod() { return m_SkyboxLod; }
 		float GetSkyboxLod() const { return m_SkyboxLod; }
 
-		EntityH2M CreateEntity(const std::string& name = "");
-		EntityH2M CreateEntity(const std::string& name, RefH2M<SceneH2M> scene);
-		EntityH2M CreateEntityWithUUID(UUID_H2M uuid, const std::string& name = "", bool runtimeMap = false);
-		void DestroyEntity(EntityH2M entity);
-		EntityH2M CloneEntity(EntityH2M entity);
-		void DuplicateEntity(EntityH2M entity); // Cherno's version, same as CloneEntity
-
 		template<typename T>
 		auto GetAllEntitiesWith()
 		{
@@ -153,8 +155,6 @@ namespace H2M
 		
 		// Temporary/experimental
 		virtual void OnEntitySelected(EntityH2M entity);
-
-		void CopyTo(RefH2M<SceneH2M>& target); // Working on Hazel LIVE! #14
 
 		UUID_H2M GetUUID() const { return m_SceneID; }
 
@@ -216,7 +216,7 @@ namespace H2M
 
 		RefH2M<Renderer2D_H2M> m_SceneRenderer2D;
 
-		float m_SkyboxLod = 1.0f;
+		float m_SkyboxLod = 0.0f;
 		bool m_IsPlaying = false;
 		bool m_ShouldSimulate = false;
 

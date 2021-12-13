@@ -6,12 +6,13 @@
 
 #include "SceneH2M.h"
 
-#include "EntityH2M.h"
+#include "H2M/Core/BaseH2M.h"
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
+#include "H2M/Scene/EntityH2M.h"
 #include "H2M/Scene/ScriptableEntityH2M.h"
 
 #include "Core/Math.h"
@@ -101,6 +102,53 @@ namespace H2M
 		return b2_staticBody;
 	}
 
+	template<typename T>
+	static void CopyComponent(entt::registry& srcRegistry, entt::registry& dstRegistry, std::unordered_map<UUID_H2M, entt::entity>& enttMap)
+	{
+		auto components = srcRegistry.view<T>();
+		for (auto srcEntity : components)
+		{
+			entt::entity destEntity = enttMap.at(srcRegistry.get<IDComponentH2M>(srcEntity).ID);
+
+			auto& srcComponent = srcRegistry.get<T>(srcEntity);
+			auto& destComponent = dstRegistry.emplace_or_replace<T>(destEntity, srcComponent);
+		}
+	}
+
+	template<typename T>
+	static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
+	{
+		if (registry.has<T>(src))
+		{
+			auto& srcComponent = registry.get<T>(src);
+			registry.emplace_or_replace<T>(dst, srcComponent);
+		}
+	}
+
+	template<typename Component>
+	static void CopyComponentHazel2D(entt::registry& dst, entt::registry& src, const std::unordered_map<UUID_H2M, entt::entity>& enttMap)
+	{
+		auto view = src.view<Component>();
+		for (auto e : view)
+		{
+			UUID_H2M uuid = src.get<IDComponentH2M>(e).ID;
+			H2M_CORE_ASSERT(enttMap.find(uuid) != enttMap.end());
+			entt::entity dstEnttID = enttMap.at(uuid);
+
+			auto& component = src.get<Component>(e);
+			dst.emplace_or_replace<Component>(dstEnttID, component);
+		}
+	}
+
+	template<typename Component>
+	static void CopyComponentIfExistsHazel2D(EntityH2M dst, EntityH2M src)
+	{
+		if (src.HasComponent<Component>())
+		{
+			dst.AddOrReplaceComponent<Component>();
+		}
+	}
+
 	SceneH2M::SceneH2M(const std::string& debugName, bool isEditorScene, bool initalize)
 		: m_DebugName(debugName)
 	{
@@ -117,6 +165,179 @@ namespace H2M
 	{
 		m_Registry.clear();
 		// s_ActiveScenes.erase(m_SceneID);
+	}
+
+	RefH2M<SceneH2M> SceneH2M::Copy(RefH2M<SceneH2M> other)
+	{
+		RefH2M<SceneH2M> newScene = RefH2M<SceneH2M>::Create();
+
+		newScene->m_ViewportWidth = other->m_ViewportWidth;
+		newScene->m_ViewportHeight = other->m_ViewportHeight;
+
+		auto& srcSceneRegistry = other->m_Registry;
+		auto& dstSceneRegistry = newScene->m_Registry;
+		std::unordered_map<UUID_H2M, entt::entity> enttMap;
+
+		// Create entities in new scene
+		auto idView = srcSceneRegistry.view<IDComponentH2M>();
+		for (auto e : idView)
+		{
+			UUID_H2M uuid = srcSceneRegistry.get<IDComponentH2M>(e).ID;
+			const auto& name = srcSceneRegistry.get<TagComponentH2M>(e).Tag;
+			EntityH2M newEntity = newScene->CreateEntityWithUUID(uuid, name);
+			enttMap[uuid] = (entt::entity)newEntity;
+		}
+
+		// Copy components (except IDComponentH2M and TagComponentH2M)
+		CopyComponentHazel2D<RelationshipComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<TransformComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<MeshComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<CameraComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<NativeScriptComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<MaterialComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<DirectionalLightComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<PointLightComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<SpotLightComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<SkyLightComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<SpriteRendererComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<CircleRendererComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<Rigidbody2DComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<BoxCollider2DComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
+		return newScene;
+	}
+
+	void SceneH2M::DuplicateEntity(EntityH2M entity)
+	{
+		EntityH2M newEntity;
+		if (entity.HasComponent<TagComponentH2M>())
+		{
+			newEntity = CreateEntity(entity.GetComponent<TagComponentH2M>().Tag);
+		}
+		else
+		{
+			newEntity = CreateEntity();
+		}
+
+		CopyComponentIfExists<RelationshipComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<TransformComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<MeshComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CameraComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<NativeScriptComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<MaterialComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<DirectionalLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<PointLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<SpotLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<SkyLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<SpriteRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CircleRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<Rigidbody2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<BoxCollider2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+	}
+
+	/**
+	 * Working on Hazel LIVE! #14
+	 *
+	 * Copy to runtime
+	 */
+	void SceneH2M::CopyTo(RefH2M<SceneH2M>& target)
+	{
+		// Environment
+		target->m_Light = m_Light;
+		target->m_LightMultiplier = m_LightMultiplier;
+
+		target->m_Environment = m_Environment;
+		target->m_SkyboxTexture = m_SkyboxTexture;
+		target->m_SkyboxMaterial = m_SkyboxMaterial;
+		target->m_SkyboxLod = m_SkyboxLod;
+
+		std::unordered_map<UUID_H2M, entt::entity> enttMap;
+		auto idComponents = m_Registry.view<IDComponentH2M>();
+		for (auto entity : idComponents)
+		{
+			auto uuid = m_Registry.get<IDComponentH2M>(entity).ID;
+			EntityH2M e = target->CreateEntityWithUUID(uuid, "Entity", true);
+		}
+
+		CopyComponent<TagComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<RelationshipComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<TransformComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<MeshComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<CameraComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<NativeScriptComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<MaterialComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<DirectionalLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<PointLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<SpotLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<SkyLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<SpriteRendererComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<CircleRendererComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<Rigidbody2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<BoxCollider2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
+
+		target->SetPhysics2DGravity(GetPhysics2DGravity());
+	}
+
+	EntityH2M SceneH2M::CreateEntity(const std::string& name, RefH2M<SceneH2M> scene)
+	{
+		EntityH2M entity = CreateEntity(name);
+		entity.m_Scene = scene.Raw();
+
+		return entity;
+	}
+
+	EntityH2M SceneH2M::CreateEntity(const std::string& name)
+	{
+#if 1 // New -- not working for point/spot lights in EnvMapEditorLayer
+
+		return CreateEntityWithUUID(UUID_H2M(), name);
+
+#else // Old -- working for point/spot lights in EnvMapEditorLayer
+
+		const std::string& entityName = name.empty() ? DefaultEntityName : name;
+
+		// ECS
+		auto entity = EntityH2M{ m_Registry.create(), this };
+		auto& idComponent = entity.AddComponent<IDComponentH2M>();
+
+		entity.AddComponent<TransformComponentH2M>(glm::vec3(0.0f)); // glm::mat4(1.0f)
+
+		// auto& tag = entity.AddComponent<TagComponentH2M>();
+		// tag.Tag = name.empty() ? "Entity" : name;
+		entity.AddComponent<TagComponentH2M>(name.empty() ? "Entity" : name);
+
+		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
+
+		s_EntityIDMap[idComponent.ID] = entity;
+		return entity;
+
+#endif
+	}
+
+	EntityH2M SceneH2M::CreateEntityWithUUID(UUID_H2M uuid, const std::string& name, bool runtimeMap)
+	{
+		const std::string& entityName = name.empty() ? DefaultEntityName : name;
+
+		// ECS
+		auto entity = EntityH2M{ m_Registry.create(), this };
+		auto& idComponent = entity.AddComponent<IDComponentH2M>();
+		idComponent.ID = uuid;
+
+		entity.AddComponent<TransformComponentH2M>(glm::vec3(0.0f)); // glm::mat4(1.0f)
+
+		entity.AddComponent<TagComponentH2M>(name);
+
+		Log::GetLogger()->debug("CreateEntityWithID uuid = '{0}', name = '{1}'", uuid, name);
+
+		// H2M_CORE_ASSERT(EntityMapH2M.find(uuid) == EntityMapH2M.end());
+		auto& entityMapH2M = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;
+		entityMapH2M[uuid] = entity;
+		return entity;
+	}
+
+	void SceneH2M::DestroyEntity(EntityH2M entity)
+	{
+		m_Registry.destroy(entity.m_EntityHandle);
 	}
 
 	void SceneH2M::OnRuntimeStart()
@@ -224,6 +445,7 @@ namespace H2M
 		// m_SkyboxMaterial->SetFlag(HazelMaterialFlag::DepthTest, false);
 	}
 
+	// TODO: replaced by OnUpdateRuntime/OnUpdateEditor, should be removed
 	// Merge OnUpdate/Render into one function?
 	void SceneH2M::OnUpdate(TimestepH2M ts)
 	{
@@ -308,17 +530,18 @@ namespace H2M
 	{
 		// Update scripts
 		{
-			m_Registry.view<NativeScriptComponentH2M>().each([=](auto entity, auto& nsc) {
-				// TODO: Move to scene::OnScenePlay
-				if (!nsc.Instance)
-				{
-					nsc.Instance = nsc.InstantiateScript();
-					nsc.Instance->m_Entity = EntityH2M{ entity, this };
-					nsc.Instance->OnCreate();
-				}
-
-				nsc.Instance->OnUpdate(ts);
-				});
+			//	m_Registry.view<NativeScriptComponentH2M>().each([=](auto entity, auto& nsc)
+			//	{
+			//		// TODO: Move to scene::OnScenePlay
+			//		if (!nsc.Instance)
+			//		{
+			//			nsc.Instance = nsc.InstantiateScript();
+			//			nsc.Instance->m_Entity = EntityH2M{ entity, this };
+			//			nsc.Instance->OnCreate();
+			//		}
+			//	
+			//		nsc.Instance->OnUpdate(ts);
+			//	});
 		}
 
 		// Physics 2D
@@ -457,29 +680,30 @@ namespace H2M
 			}
 		}
 
-		m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
+		//	m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
 
-		auto group = m_Registry.group<MeshComponentH2M>(entt::get<TransformComponentH2M>);
-		// renderer->SetScene(this);
-		// renderer->BeginScene({ camera, cameraViewMatrix, 0.1f, 1000.0f, 45.0f }); //TODO: real values
-		for (auto entity : group)
-		{
-			auto [transformComponent, meshComponent] = group.get<TransformComponentH2M, MeshComponentH2M>(entity);
-			if (meshComponent.Mesh /* && !meshComponent.Mesh->IsFlagSet(AssetFlag::Missing) */)
-			{
-				meshComponent.Mesh->OnUpdate(ts, false);
-				EntityH2M e = EntityH2M(entity, this);
-				glm::mat4 transform = GetTransformRelativeToParent(e);
-
-				//	if (e.HasComponent<RigidBodyComponentH2M>())
-				//		transform = e.Transform().GetTransform();
-
-				// TODO: Should we render (logically)
-				// renderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialTable, transform);
-			}
-		}
-
-		// renderer->EndScene();
+		//	auto group = m_Registry.group<MeshComponentH2M>(entt::get<TransformComponentH2M>);
+		//	renderer->SetScene(this);
+		//	renderer->BeginScene({ camera, cameraViewMatrix, 0.1f, 1000.0f, 45.0f }); //TODO: real values
+		//	for (auto entity : group)
+		//	{
+		//		auto [transformComponent, meshComponent] = group.get<TransformComponentH2M, MeshComponentH2M>(entity);
+		//		if (meshComponent.Mesh /* && !meshComponent.Mesh->IsFlagSet(AssetFlag::Missing) */)
+		//		{
+		//			meshComponent.Mesh->OnUpdate(ts, false);
+		//			EntityH2M e = EntityH2M(entity, this);
+		//			glm::mat4 transform = GetTransformRelativeToParent(e);
+		//	
+		//			if (e.HasComponent<RigidBodyComponentH2M>())
+		//			{
+		//				transform = e.Transform().GetTransform();
+		//			}
+		//	
+		//			// TODO: Should we render (logically)
+		//			renderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialTable, transform);
+		//		}
+		//	}
+		//	renderer->EndScene();
 	}
 
 	void SceneH2M::OnRenderEditor(RefH2M<SceneRendererH2M>, TimestepH2M ts, const EditorCameraH2M& editorCamera)
@@ -739,109 +963,6 @@ namespace H2M
 		// TODO...
 	}
 
-	EntityH2M SceneH2M::CreateEntity(const std::string& name, RefH2M<SceneH2M> scene)
-	{
-		EntityH2M entity = CreateEntity(name);
-		entity.m_Scene = scene.Raw();
-
-		return entity;
-	}
-
-	EntityH2M SceneH2M::CreateEntity(const std::string& name)
-	{
-		const std::string& entityName = name.empty() ? DefaultEntityName : name;
-
-		// ECS
-		auto entity = EntityH2M{ m_Registry.create(), this };
-		auto& idComponent = entity.AddComponent<IDComponentH2M>();
-
-		entity.AddComponent<TransformComponentH2M>(glm::vec3(0.0f)); // glm::mat4(1.0f)
-
-		entity.AddComponent<TagComponentH2M>(name);
-
-		Log::GetLogger()->debug("CreateEntity name = '{0}'", name);
-
-		s_RuntimeEntityIDMap[idComponent.ID] = entity;
-		return entity;
-	}
-
-	EntityH2M SceneH2M::CreateEntityWithUUID(UUID_H2M uuid, const std::string& name, bool runtimeMap)
-	{
-		const std::string& entityName = name.empty() ? DefaultEntityName : name;
-
-		// ECS
-		auto entity = EntityH2M{ m_Registry.create(), this };
-		auto& idComponent = entity.AddComponent<IDComponentH2M>();
-		idComponent.ID = uuid;
-
-		entity.AddComponent<TransformComponentH2M>(glm::vec3(0.0f)); // glm::mat4(1.0f)
-
-		entity.AddComponent<TagComponentH2M>(name);
-
-		Log::GetLogger()->debug("CreateEntityWithID uuid = '{0}', name = '{1}'", uuid, name);
-
-		// H2M_CORE_ASSERT(EntityMapH2M.find(uuid) == EntityMapH2M.end());
-		auto& entityMapH2M = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;
-		entityMapH2M[uuid] = entity;
-		return entity;
-	}
-
-	void SceneH2M::DestroyEntity(EntityH2M entity)
-	{
-		m_Registry.destroy(entity.m_EntityHandle);
-	}
-
-	template<typename T>
-	static void CopyComponent(entt::registry& srcRegistry, entt::registry& dstRegistry, std::unordered_map<UUID_H2M, entt::entity>& enttMap)
-	{
-		auto components = srcRegistry.view<T>();
-		for (auto srcEntity : components)
-		{
-			entt::entity destEntity = enttMap.at(srcRegistry.get<IDComponentH2M>(srcEntity).ID);
-
-			auto& srcComponent = srcRegistry.get<T>(srcEntity);
-			auto& destComponent = dstRegistry.emplace_or_replace<T>(destEntity, srcComponent);
-		}
-	}
-
-	template<typename T>
-	static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
-	{
-		if (registry.has<T>(src))
-		{
-			auto& srcComponent = registry.get<T>(src);
-			registry.emplace_or_replace<T>(dst, srcComponent);
-		}
-	}
-
-	void SceneH2M::DuplicateEntity(EntityH2M entity)
-	{
-		EntityH2M newEntity;
-		if (entity.HasComponent<TagComponentH2M>())
-		{
-			newEntity = CreateEntity(entity.GetComponent<TagComponentH2M>().Tag);
-		}
-		else
-		{
-			newEntity = CreateEntity();
-		}
-
-		CopyComponentIfExists<RelationshipComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<TransformComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<MeshComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<CameraComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<NativeScriptComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<MaterialComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<DirectionalLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<PointLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<SpotLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<SkyLightComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<SpriteRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<CircleRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<Rigidbody2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-		CopyComponentIfExists<BoxCollider2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
-	}
-
 	EntityH2M SceneH2M::FindEntityByTag(const std::string& tag)
 	{
 		// TODO: If this becomes used often, consider indexing by tag
@@ -856,49 +977,6 @@ namespace H2M
 		}
 
 		return EntityH2M{};
-	}
-
-	/**
-	 * Working on Hazel LIVE! #14
-	 * 
-	 * Copy to runtime
-	 */
-	void SceneH2M::CopyTo(RefH2M<SceneH2M>& target)
-	{
-		// Environment
-		target->m_Light = m_Light;
-		target->m_LightMultiplier = m_LightMultiplier;
-
-		target->m_Environment = m_Environment;
-		target->m_SkyboxTexture = m_SkyboxTexture;
-		target->m_SkyboxMaterial = m_SkyboxMaterial;
-		target->m_SkyboxLod = m_SkyboxLod;
-
-		std::unordered_map<UUID_H2M, entt::entity> enttMap;
-		auto idComponents = m_Registry.view<IDComponentH2M>();
-		for (auto entity : idComponents)
-		{
-			auto uuid = m_Registry.get<IDComponentH2M>(entity).ID;
-			EntityH2M e = target->CreateEntityWithUUID(uuid, "Entity", true);
-		}
-
-		CopyComponent<TagComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<RelationshipComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<TransformComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<MeshComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<CameraComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<NativeScriptComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<MaterialComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<DirectionalLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<PointLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<SpotLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<SkyLightComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<SpriteRendererComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<CircleRendererComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<Rigidbody2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
-		CopyComponent<BoxCollider2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
-
-		target->SetPhysics2DGravity(GetPhysics2DGravity());
 	}
 
 	RefH2M<SceneH2M> SceneH2M::GetScene(UUID_H2M uuid)

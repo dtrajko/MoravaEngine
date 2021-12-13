@@ -164,7 +164,7 @@ namespace H2M {
 
 		if (entity.HasComponent<TransformComponentH2M>())
 		{
-			out << YAML::Key << "TransformComponent";
+			out << YAML::Key << "TransformComponentH2M";
 			out << YAML::BeginMap; // TransformComponent
 
 			auto& tc = entity.GetComponent<TransformComponentH2M>();
@@ -177,7 +177,7 @@ namespace H2M {
 
 		if (entity.HasComponent<CameraComponentH2M>())
 		{
-			out << YAML::Key << "CameraComponent";
+			out << YAML::Key << "CameraComponentH2M";
 			out << YAML::BeginMap; // CameraComponent
 
 			auto& cameraComponent = entity.GetComponent<CameraComponentH2M>();
@@ -202,7 +202,7 @@ namespace H2M {
 
 		if (entity.HasComponent<SpriteRendererComponentH2M>())
 		{
-			out << YAML::Key << "SpriteRendererComponent";
+			out << YAML::Key << "SpriteRendererComponentH2M";
 			out << YAML::BeginMap; // SpriteRendererComponent
 
 			auto& spriteRendererComponent = entity.GetComponent<SpriteRendererComponentH2M>();
@@ -213,7 +213,7 @@ namespace H2M {
 
 		if (entity.HasComponent<CircleRendererComponentH2M>())
 		{
-			out << YAML::Key << "CircleRendererComponent";
+			out << YAML::Key << "CircleRendererComponentH2M";
 			out << YAML::BeginMap; // CircleRendererComponent
 
 			auto& circleRendererComponent = entity.GetComponent<CircleRendererComponentH2M>();
@@ -238,7 +238,7 @@ namespace H2M {
 
 		if (entity.HasComponent<BoxCollider2DComponentH2M>())
 		{
-			out << YAML::Key << "BoxCollider2DComponent";
+			out << YAML::Key << "BoxCollider2DComponentH2M";
 			out << YAML::BeginMap; // BoxCollider2DComponent
 
 			auto& bc2dComponent = entity.GetComponent<BoxCollider2DComponentH2M>();
@@ -300,7 +300,8 @@ namespace H2M {
 			return false;
 
 		std::string sceneName = data["Scene"].as<std::string>();
-		H2M_CORE_TRACE("Deserializing scene '{0}'", sceneName);
+		// H2M_CORE_TRACE("Deserializing scene '{0}'", sceneName);
+		Log::GetLogger()->trace("Deserializing scene '{0}'", sceneName);
 
 		auto entities = data["Entities"];
 		if (entities)
@@ -310,15 +311,16 @@ namespace H2M {
 				uint64_t uuid = entity["Entity"].as<uint64_t>();
 
 				std::string name;
-				auto tagComponent = entity["TagComponent"];
+				auto tagComponent = entity["TagComponentH2M"];
 				if (tagComponent)
 					name = tagComponent["Tag"].as<std::string>();
 
-				H2M_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
+				// H2M_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
+				Log::GetLogger()->trace("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
 				EntityH2M deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, name);
 
-				auto transformComponent = entity["TransformComponent"];
+				auto transformComponent = entity["TransformComponentH2M"];
 				if (transformComponent)
 				{
 					// Entities always have transforms
@@ -328,7 +330,7 @@ namespace H2M {
 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
 				}
 
-				auto cameraComponent = entity["CameraComponent"];
+				auto cameraComponent = entity["CameraComponentH2M"];
 				if (cameraComponent)
 				{
 					auto& cc = deserializedEntity.AddComponent<CameraComponentH2M>();
@@ -348,14 +350,14 @@ namespace H2M {
 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 				}
 
-				auto spriteRendererComponent = entity["SpriteRendererComponent"];
+				auto spriteRendererComponent = entity["SpriteRendererComponentH2M"];
 				if (spriteRendererComponent)
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponentH2M>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
 				}
 
-				auto circleRendererComponent = entity["CircleRendererComponent"];
+				auto circleRendererComponent = entity["CircleRendererComponentH2M"];
 				if (circleRendererComponent)
 				{
 					auto& crc = deserializedEntity.AddComponent<CircleRendererComponentH2M>();
@@ -372,7 +374,7 @@ namespace H2M {
 					rb2d.FixedRotation = rigidbody2DComponent["FixedRotation"].as<bool>();
 				}
 
-				auto boxCollider2DComponent = entity["BoxCollider2DComponent"];
+				auto boxCollider2DComponent = entity["BoxCollider2DComponentH2M"];
 				if (boxCollider2DComponent)
 				{
 					auto& bc2d = deserializedEntity.AddComponent<BoxCollider2DComponentH2M>();

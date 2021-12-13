@@ -38,6 +38,9 @@ namespace H2M
 		void SetSelectionChangedCallback(const std::function<void(EntityH2M)>& func) { m_SelectionChangedCallback = func; }
 		void SetEntityDeletedCallback(const std::function<void(EntityH2M)>& func) { m_EntityDeletedCallback = func; }
 
+		EntityH2M GetSelectedEntity() const { return m_SelectionContext; }
+		void SetSelectedEntity(EntityH2M entity) { m_SelectionContext = entity; }
+
 		void OnImGuiRender(bool* p_open = (bool*)0);
 
 	private:

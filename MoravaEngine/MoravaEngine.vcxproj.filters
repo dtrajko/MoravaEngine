@@ -936,6 +936,9 @@
     <ClCompile Include="src\H2M\Scene\SceneSerializerH2M.cpp">
       <Filter>H2M\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Windows\WindowsFileDialogsH2M.cpp">
+      <Filter>H2M\Platform\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2002,6 +2005,9 @@
     </ClInclude>
     <ClInclude Include="src\H2M\Scene\SceneSerializerH2M.h">
       <Filter>H2M\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Utilities\FileDialogsH2M.h">
+      <Filter>H2M\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
