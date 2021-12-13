@@ -181,7 +181,7 @@ private:
 
 	H2M::RefH2M<H2M::TextureCubeH2M> m_SkyboxTexture;
 
-	H2M::EntityH2M* m_DirectionalLightEntity;
+	H2M::EntityH2M m_DirectionalLightEntity;
 	glm::mat4 m_LightProjectionMatrix;
 	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
 	/** END properties Hazelnut/EditorLayer **/

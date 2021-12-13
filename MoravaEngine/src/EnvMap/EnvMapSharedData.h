@@ -31,10 +31,10 @@ public:
 	static H2M::RefH2M<MoravaShader> s_ShaderHazelPBR; // currently used PBR shader, m_ShaderHazelPBR_Anim or m_ShaderHazelPBR_Static
 	static H2M::RefH2M<MoravaShader> s_ShaderOutline;
 
-	static H2M::EntityH2M* s_PointLightEntity; // temporary, for experimental use
+	static H2M::EntityH2M s_PointLightEntity; // temporary, for experimental use
 	static H2M::RefH2M<OmniShadowMap> s_OmniShadowMapPointLight;
 
-	static H2M::EntityH2M* s_SpotLightEntity;  // temporary, for experimental use
+	static H2M::EntityH2M s_SpotLightEntity;  // temporary, for experimental use
 	static H2M::RefH2M<OmniShadowMap> s_OmniShadowMapSpotLight;
 
 	static H2M::RefH2M<ShadowMap> s_ShadowMapDirLight;
