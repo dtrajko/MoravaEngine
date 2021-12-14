@@ -27,6 +27,21 @@ namespace H2M
 		glm::vec2 TexCoord;
 		float TexIndex;
 		float TilingFactor;
+
+		// Editor-only
+		// int EntityID;
+	};
+
+	struct CircleVertex
+	{
+		glm::vec3 WorldPosition;
+		glm::vec3 LocalPosition;
+		glm::vec4 Color;
+		float Thickness;
+		float Fade;
+
+		// Editor-only
+		int EntityID;
 	};
 
 	struct LineVertex
@@ -37,7 +52,7 @@ namespace H2M
 
 	struct Renderer2DData
 	{
-		static const uint32_t MaxQuads = 2000; // 20000;
+		static const uint32_t MaxQuads = 20000; // 20000;
 		static const uint32_t MaxVertices = MaxQuads * 4;
 		static const uint32_t MaxIndices = MaxQuads * 6;
 		static const uint32_t MaxTextureSlots = 32; // TODO: RenderCaps
@@ -63,6 +78,15 @@ namespace H2M
 		uint32_t TextureSlotIndex = 1; // 0 = white texture
 
 		glm::vec4 QuadVertexPositions[4];
+
+		// Circles
+		RefH2M<VertexArrayH2M> CircleVertexArray;
+		RefH2M<VertexBufferH2M> CircleVertexBuffer;
+		RefH2M<ShaderH2M> CircleShader;
+
+		uint32_t CircleIndexCount = 0;
+		CircleVertex* CircleVertexBufferBase = nullptr;
+		CircleVertex* CircleVertexBufferPtr = nullptr;
 
 		// Lines
 		RefH2M<PipelineH2M> LinePipeline;
@@ -102,7 +126,8 @@ namespace H2M
 				{ ShaderDataTypeH2M::Float4, "a_Color" },
 				{ ShaderDataTypeH2M::Float2, "a_TexCoord" },
 				{ ShaderDataTypeH2M::Float,  "a_TexIndex" },
-				{ ShaderDataTypeH2M::Float,  "a_TilingFactor" }
+				{ ShaderDataTypeH2M::Float,  "a_TilingFactor" },
+				// { ShaderDataTypeH2M::Int,    "a_EntityID" },
 			};
 			s_Data.QuadPipeline = PipelineH2M::Create(pipelineSpec);
 
@@ -113,7 +138,8 @@ namespace H2M
 				{ ShaderDataTypeH2M::Float4, "a_Color" },
 				{ ShaderDataTypeH2M::Float2, "a_TexCoord" },
 				{ ShaderDataTypeH2M::Float,  "a_TexIndex" },
-				{ ShaderDataTypeH2M::Float,  "a_TilingFactor" }
+				{ ShaderDataTypeH2M::Float,  "a_TilingFactor" },
+				// { ShaderDataTypeH2M::Int,    "a_EntityID" },
 			});
 
 			s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
@@ -137,6 +163,25 @@ namespace H2M
 			s_Data.QuadIndexBuffer = IndexBufferH2M::Create(quadIndices, s_Data.MaxIndices);
 			delete[] quadIndices;
 
+			// Circles ----------------------------------------
+
+			s_Data.CircleVertexArray = VertexArrayH2M::Create();
+
+			s_Data.CircleVertexBuffer = VertexBufferH2M::Create(s_Data.MaxVertices * sizeof(CircleVertex));
+			s_Data.CircleVertexBuffer->SetLayout({
+				{ ShaderDataTypeH2M::Float3, "a_WorldPosition"  },
+				{ ShaderDataTypeH2M::Float3, "a_LocalPosition"  },
+				{ ShaderDataTypeH2M::Float4, "a_Color"     },
+				{ ShaderDataTypeH2M::Float,  "a_Thickness" },
+				{ ShaderDataTypeH2M::Float,  "a_Fade"      },
+				{ ShaderDataTypeH2M::Int,    "a_EntityID"  },
+			});
+			s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
+			s_Data.CircleVertexArray->SetIndexBuffer(s_Data.QuadIndexBuffer); // Use quad index buffer
+			s_Data.CircleVertexBufferBase = new CircleVertex[s_Data.MaxVertices];
+
+			//----------------------------------------
+
 			s_Data.WhiteTexture = Texture2D_H2M::Create(ImageFormatH2M::RGBA, 1, 1, nullptr);
 			uint32_t whiteTextureData = 0xffffffff;
 			s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
@@ -157,6 +202,9 @@ namespace H2M
 			s_Data.TextureShader = RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs"));
 			s_Data.TextureShader->Bind();
 			s_Data.TextureShader->SetIntArray("u_Textures", samplers, s_Data.MaxTextureSlots);
+
+			// Circle shader
+			s_Data.CircleShader = RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/Hazel/Renderer2D_Circle.vs", "Shaders/Hazel/Renderer2D_Circle.fs"));
 
 			// Set all texture slots to 0
 			s_Data.TextureSlots[0] = s_Data.WhiteTexture;
@@ -241,13 +289,7 @@ namespace H2M
 		s_Data.TextureShader->Bind();
 		s_Data.TextureShader->SetMat4("u_ViewProjection", viewProj);
 
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-
-		s_Data.LineIndexCount = 0;
-		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
-
-		s_Data.TextureSlotIndex = 1;
+		StartBatch();
 	}
 
 	void Renderer2D_H2M::EndScene()
@@ -295,15 +337,33 @@ namespace H2M
 #endif
 	}
 
+	void Renderer2D_H2M::StartBatch()
+	{
+		s_Data.QuadIndexCount = 0;
+		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+
+		s_Data.CircleIndexCount = 0;
+		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
+
+		s_Data.LineIndexCount = 0;
+		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
+
+		s_Data.TextureSlotIndex = 1;
+	}
+
 	void Renderer2D_H2M::Flush()
 	{
 #if 1 // OLD
 		if (s_Data.QuadIndexCount == 0)
+		{
 			return; // Nothing to draw
+		}
 
 		// Bind textures
 		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+		{
 			s_Data.TextureSlots[i]->Bind(i);
+		}
 
 		s_Data.QuadVertexBuffer->Bind();
 		s_Data.QuadPipeline->Bind();
@@ -312,6 +372,18 @@ namespace H2M
 		RendererH2M::DrawIndexed(s_Data.QuadIndexCount, PrimitiveTypeH2M::Triangles, false);
 		s_Data.Stats.DrawCalls++;
 #endif
+
+		// Circle ------------------------
+
+		if (s_Data.CircleIndexCount)
+		{
+			uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.CircleVertexBufferPtr - (uint8_t*)s_Data.CircleVertexBufferBase);
+			s_Data.CircleVertexBuffer->SetData(s_Data.CircleVertexBufferBase, dataSize);
+
+			s_Data.CircleShader->Bind();
+			RenderCommandH2M::DrawIndexed(s_Data.CircleVertexArray, s_Data.CircleIndexCount);
+			s_Data.Stats.DrawCalls++;
+		}
 	}
 
 	void Renderer2D_H2M::FlushAndReset()
@@ -332,6 +404,12 @@ namespace H2M
 		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 
 		s_Data.TextureSlotIndex = 1;
+	}
+
+	void Renderer2D_H2M::NextBatch()
+	{
+		Flush();
+		StartBatch();
 	}
 
 	void Renderer2D_H2M::DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
@@ -543,8 +621,28 @@ namespace H2M
 		s_Data.Stats.LineCount++;
 	}
 
-	void Renderer2D_H2M::DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness, float fade, int entityID)
+	void Renderer2D_H2M::DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness /*=1.0f*/, float fade/*=0.005f*/, int entityID/*=-1*/)
 	{
+		//	TODO: implement for circles
+		//	if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		//	{
+		//		FlushAndReset(); // NextBatch()
+		//	}
+
+		for (size_t i = 0; i < 4; i++)
+		{
+			s_Data.CircleVertexBufferPtr->WorldPosition = transform * s_Data.QuadVertexPositions[i];
+			s_Data.CircleVertexBufferPtr->LocalPosition = s_Data.QuadVertexPositions[i] * 2.0f;
+			s_Data.CircleVertexBufferPtr->Color = color;
+			s_Data.CircleVertexBufferPtr->Thickness = thickness;
+			s_Data.CircleVertexBufferPtr->Fade = fade;
+			s_Data.CircleVertexBufferPtr->EntityID = entityID;
+			s_Data.CircleVertexBufferPtr++;
+		}
+
+		s_Data.CircleIndexCount += 6;
+		
+		s_Data.Stats.QuadCount++;
 	}
 
 	void Renderer2D_H2M::DrawSprite(const glm::mat4& transform, SpriteRendererComponentH2M& src, int entityID)

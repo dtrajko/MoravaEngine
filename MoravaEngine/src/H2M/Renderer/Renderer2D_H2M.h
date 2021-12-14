@@ -73,6 +73,9 @@ namespace H2M
 		static void FlushAndReset();      // StartBatch
 		static void FlushAndResetLines(); // NextBatch
 
+		static void StartBatch();
+		static void NextBatch();
+
 	};
 
 }

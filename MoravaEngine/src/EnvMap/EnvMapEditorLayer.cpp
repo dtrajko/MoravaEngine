@@ -2018,6 +2018,7 @@ void EnvMapEditorLayer::OnEvent(H2M::EventH2M& e)
     H2M::EventDispatcherH2M dispatcher(e);
     dispatcher.Dispatch<H2M::KeyPressedEventH2M>(H2M_BIND_EVENT_FN(EnvMapEditorLayer::OnKeyPressedEvent));
     dispatcher.Dispatch<H2M::MouseButtonPressedEventH2M>(H2M_BIND_EVENT_FN(EnvMapEditorLayer::OnMouseButtonPressed));
+    dispatcher.Dispatch<H2M::MouseScrolledEventH2M>(H2M_BIND_EVENT_FN(EnvMapEditorLayer::OnMouseScrolled));
 }
 
 bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
@@ -2218,6 +2219,29 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
         }
     }
     return false;
+}
+
+/**
+ * Camera Zoom in / Zoom out implemented for active camera on (EnvMap)EditorLayer level
+ * Better way would be to implement the functionality on camera / camera controller level
+ */
+bool EnvMapEditorLayer::OnMouseScrolled(H2M::MouseScrolledEventH2M& e)
+{
+    float offsetX = e.GetXOffset();
+    float offsetY = e.GetYOffset();
+
+    if (abs(offsetY) < 0.1f || abs(offsetY) > 10.0f)
+    {
+        return false;
+    }
+
+    float velocity = m_CameraMoveSpeed * offsetY;
+
+    m_ActiveCamera->SetPosition(m_ActiveCamera->GetPosition() + m_ActiveCamera->GetFront() * velocity);
+
+    Log::GetLogger()->debug("OnMouseScrolled offsetX: {0} offsetY: {1}", offsetX, offsetY);
+
+    return true;
 }
 
 void EnvMapEditorLayer::OnSelected(const SelectedSubmesh& selectionContext)

@@ -72,6 +72,7 @@ public:
 
 	bool OnKeyPressedEvent(H2M::KeyPressedEventH2M& e); // EditorLayer::OnKeyPressedEvent()
 	bool OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e); // EditorLayer::OnMouseButtonPressedEvent()
+	bool OnMouseScrolled(H2M::MouseScrolledEventH2M& e);
 
 	void NewScene();
 	void OpenScene();
@@ -261,6 +262,8 @@ private:
 	H2M::RefH2M<H2M::SceneH2M> m_EditorScene;
 
 	std::filesystem::path m_EditorScenePath;
+
+	float m_CameraMoveSpeed = 2.0f;
 
 	// Hazel LIVE! #015
 	bool m_UIShowBoundingBoxes;
