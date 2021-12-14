@@ -561,6 +561,15 @@ namespace H2M
 				}
 			}
 
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<CircleRendererComponentH2M>())
+			{
+				if (ImGui::Button("Circle Renderer"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CircleRendererComponentH2M>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
 			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<MaterialComponentH2M>())
 			{
 				if (ImGui::Button("Material"))
@@ -739,6 +748,13 @@ namespace H2M
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 		});
+
+		DrawComponent<CircleRendererComponentH2M>("Circle Renderer", entity, [](auto& component)
+			{
+				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+				ImGui::DragFloat("Thickness", &component.Thickness, 0.01f, 0.0f, 10.0f);
+				ImGui::DragFloat("Fade", &component.Fade, 0.01f, 0.0f, 10.0f);
+			});
 
 		DrawComponent<DirectionalLightComponentH2M>("Directional Light", entity, [](DirectionalLightComponentH2M& dlc)
 		{

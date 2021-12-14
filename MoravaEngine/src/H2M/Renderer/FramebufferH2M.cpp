@@ -20,10 +20,10 @@ namespace H2M
 
 		switch (RendererAPI_H2M::Current())
 		{
-			case RendererAPITypeH2M::None:		return RefH2M<FramebufferH2M>();
-			case RendererAPITypeH2M::OpenGL:	result = RefH2M<OpenGLFramebufferH2M>::Create(spec); break;
-			case RendererAPITypeH2M::Vulkan:	result = RefH2M<VulkanFramebufferH2M>::Create(spec); break;
-			case RendererAPITypeH2M::DX11:     result = RefH2M<DX11Framebuffer>::Create(spec); break;
+			case RendererAPITypeH2M::None:   return RefH2M<FramebufferH2M>();
+			case RendererAPITypeH2M::OpenGL: result = RefH2M<OpenGLFramebufferH2M>::Create(spec); break;
+			case RendererAPITypeH2M::Vulkan: result = RefH2M<VulkanFramebufferH2M>::Create(spec); break;
+			case RendererAPITypeH2M::DX11:   result = RefH2M<DX11Framebuffer>::Create(spec); break;
 		}
 		FramebufferPoolH2M::GetGlobal()->Add(result);
 		return result;

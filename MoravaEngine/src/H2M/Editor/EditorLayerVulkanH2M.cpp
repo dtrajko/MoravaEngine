@@ -6,6 +6,8 @@
 
 #include "EditorLayerVulkanH2M.h"
 
+#include "H2M/Renderer/Renderer2D_H2M.h"
+
 #include "imgui.h"
 #include "imgui_internal.h"
 

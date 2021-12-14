@@ -8,6 +8,7 @@
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Renderer/ShaderH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
+#include "H2M/Renderer/Renderer2D_LinesH2M.h"
 #include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
@@ -210,6 +211,8 @@ void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene, EnvMa
     s_Data.BRDFLUT = H2M::Texture2D_H2M::Create("Textures/Hazel/BRDF_LUT.tga");
 
     s_Renderer2D = H2M::RefH2M<H2M::Renderer2D_H2M>::Create();
+
+    H2M::Renderer2D_LinesH2M::Init();
 }
 
 void EnvMapSceneRenderer::SetupShaders()
@@ -852,31 +855,6 @@ void EnvMapSceneRenderer::GeometryPass()
     {
         // RendererBasic::SetLineThickness(2.0f);
 
-        // BEGIN Draw Lines
-        if (EnvMapSharedData::s_DisplayRay)
-        {
-            glm::vec3 camPosition = s_EditorLayer->GetActiveCamera()->GetPosition();
-            H2M::Renderer2D_H2M::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-        }
-        // END Draw Lines
-
-        // BEGIN Draw AABB Bounding Boxes
-        if (EntitySelection::s_SelectionContext.size()) {
-            for (auto selection : EntitySelection::s_SelectionContext)
-            {
-                if (selection.Mesh) {
-                    H2M::EntityH2M meshEntity = selection.Entity;
-                    glm::mat4 transform = glm::mat4(1.0f);
-                    if (meshEntity.HasComponent<H2M::TransformComponentH2M>()) {
-                        transform = meshEntity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
-                    }
-                    glm::vec4 color = EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
-                    H2M::RendererH2M::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
-                }
-            }
-        }
-        // END Draw AABB Bounding Boxes
-
         // BEGIN Draw Circles
         {
             auto view = s_EditorLayer->GetActiveScene()->GetRegistry().view<H2M::TransformComponentH2M, H2M::CircleRendererComponentH2M>();
@@ -892,6 +870,39 @@ void EnvMapSceneRenderer::GeometryPass()
     }
     H2M::Renderer2D_H2M::EndScene();
     // END Renderer2D_H2M
+
+    // BEGIN Renderer2D_LinesH2M
+    H2M::Renderer2D_LinesH2M::BeginScene(viewProj, true);
+    {
+        // BEGIN Draw Lines
+        if (EnvMapSharedData::s_DisplayRay)
+        {
+            glm::vec3 camPosition = s_EditorLayer->GetActiveCamera()->GetPosition();
+            H2M::Renderer2D_LinesH2M::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+        }
+        // END Draw Lines
+    
+        // BEGIN Draw AABB Bounding Boxes
+        if (EntitySelection::s_SelectionContext.size())
+        {
+            for (auto selection : EntitySelection::s_SelectionContext)
+            {
+                if (selection.Mesh) {
+                    H2M::EntityH2M meshEntity = selection.Entity;
+                    glm::mat4 transform = glm::mat4(1.0f);
+                    if (meshEntity.HasComponent<H2M::TransformComponentH2M>())
+                    {
+                        transform = meshEntity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
+                    }
+                    glm::vec4 color = EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
+                    H2M::RendererH2M::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
+                }
+            }
+        }
+        // END Draw AABB Bounding Boxes
+    }
+    H2M::Renderer2D_LinesH2M::EndScene();
+    // END Renderer2D_LinesH2M
 
     GetGeoPass()->GetSpecification().TargetFramebuffer->Bind();
 }

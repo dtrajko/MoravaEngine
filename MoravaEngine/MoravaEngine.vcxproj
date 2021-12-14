@@ -240,6 +240,7 @@
     <ClCompile Include="src\H2M\Renderer\RenderCommandBufferH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\RenderCommandQueueH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\Renderer2D_H2M.cpp" />
+    <ClCompile Include="src\H2M\Renderer\Renderer2D_LinesH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\RendererAPI_H2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\RendererContextH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\RendererH2M.cpp" />
@@ -677,6 +678,7 @@
     <ClInclude Include="src\H2M\Renderer\RenderCommandH2M.h" />
     <ClInclude Include="src\H2M\Renderer\RenderCommandQueueH2M.h" />
     <ClInclude Include="src\H2M\Renderer\Renderer2D_H2M.h" />
+    <ClInclude Include="src\H2M\Renderer\Renderer2D_LinesH2M.h" />
     <ClInclude Include="src\H2M\Renderer\RendererAPI_H2M.h" />
     <ClInclude Include="src\H2M\Renderer\RendererCapabilitiesH2M.h" />
     <ClInclude Include="src\H2M\Renderer\RendererContextH2M.h" />

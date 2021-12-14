@@ -4,7 +4,6 @@
 
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
-#include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
 
 #include "Editor/EntitySelection.h"

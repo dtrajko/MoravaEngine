@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "VertexArrayH2M.h"
+
 #include <GL/glew.h>
 
 
@@ -41,7 +43,8 @@ namespace H2M
 		inline static void DrawIndexed(RefH2M<VertexArrayH2M> vertexArray, uint32_t indexCount)
 		{
 			vertexArray->Bind();
-			glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, nullptr);
+			uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
+			glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 		}
 
 	};

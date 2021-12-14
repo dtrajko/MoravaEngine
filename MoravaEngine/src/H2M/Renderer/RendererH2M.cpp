@@ -12,6 +12,7 @@
 #include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
 #include "H2M/Renderer/PipelineComputeH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
+#include "H2M/Renderer/Renderer2D_LinesH2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
 
@@ -481,17 +482,17 @@ namespace H2M
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			Renderer2D_H2M::DrawLine(corners[i], corners[(i + 1) % 4], color);
+			Renderer2D_LinesH2M::DrawLine(corners[i], corners[(i + 1) % 4], color);
 		}
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			Renderer2D_H2M::DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
+			Renderer2D_LinesH2M::DrawLine(corners[i + 4], corners[((i + 1) % 4) + 4], color);
 		}
 
 		for (uint32_t i = 0; i < 4; i++)
 		{
-			Renderer2D_H2M::DrawLine(corners[i], corners[i + 4], color);
+			Renderer2D_LinesH2M::DrawLine(corners[i], corners[i + 4], color);
 		}
 	}
 

@@ -2,6 +2,7 @@
 
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RenderPassH2M.h"
+#include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
 #include "H2M/Scene/SceneH2M.h"
 #include "H2M/Scene/SceneSerializerH2M.h"

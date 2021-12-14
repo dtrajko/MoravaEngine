@@ -15,7 +15,6 @@
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
 #include "H2M/Project/UserPreferencesH2M.h"
 #include "H2M/Renderer/MeshH2M.h"
-#include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
 #include "H2M/Scene/EntityH2M.h"
 

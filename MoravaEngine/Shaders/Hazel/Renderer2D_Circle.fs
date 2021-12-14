@@ -18,7 +18,7 @@ struct VertexOutput
 };
 
 layout (location = 0) in VertexOutput Input;
-layout (location = 3) in flat int v_EntityID;
+layout (location = 4) in flat int v_EntityID;
 
 void main()
 {
@@ -28,8 +28,8 @@ void main()
 	color *= vec3(smoothstep(Input.Thickness + Input.Fade, Input.Thickness, distance));
 
 	// Set output color
-	o_Color = vec4(color, 1.0);
-	o_Color.rgb *= Input.Color;
+	o_Color = Input.Color;
+	o_Color.rgb *= color;
 
 	o_EntityID = 0; // v_EntityID;
 }

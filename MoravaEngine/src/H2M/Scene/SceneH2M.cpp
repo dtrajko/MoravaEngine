@@ -9,6 +9,7 @@
 #include "H2M/Core/BaseH2M.h"
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
@@ -586,7 +587,7 @@ namespace H2M
 
 		if (mainCamera)
 		{
-			// Renderer2D_H2M::BeginScene(*mainCamera, cameraTransform);
+			Renderer2D_H2M::BeginScene(*mainCamera, cameraTransform);
 
 			// BEGIN Draw Sprites
 			{
@@ -612,13 +613,13 @@ namespace H2M
 			}
 			// END Draw Circles
 
-			// Renderer2D_H2M::EndScene();
+			Renderer2D_H2M::EndScene();
 		}
 	}
 
 	void SceneH2M::OnUpdateEditor(TimestepH2M ts, EditorCameraH2M& camera)
 	{
-		// Renderer2D_H2M::BeginScene(camera);
+		Renderer2D_H2M::BeginScene(camera);
 
 		// BEGIN Draw Sprites
 		{
@@ -644,7 +645,7 @@ namespace H2M
 		}
 		// END Draw Circles
 
-		// Renderer2D_H2M::EndScene();
+		Renderer2D_H2M::EndScene();
 	}
 
 	void SceneH2M::OnViewportResize(uint32_t width, uint32_t height)

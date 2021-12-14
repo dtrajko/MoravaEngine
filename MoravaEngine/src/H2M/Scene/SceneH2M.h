@@ -12,7 +12,6 @@
 #include "H2M/Core/UUID_H2M.h"
 #include "H2M/Editor/EditorCameraH2M.h"
 #include "H2M/Renderer/MaterialH2M.h"
-#include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/SceneEnvironmentH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
@@ -69,6 +68,8 @@ namespace H2M
 
 	class EntityH2M;
 	class SceneRendererH2M;
+	class Renderer2D_H2M;
+
 	using EntityMapH2M = std::unordered_map<UUID_H2M, entt::entity>;
 
 	// class SceneH2M : public RefCountedH2M
