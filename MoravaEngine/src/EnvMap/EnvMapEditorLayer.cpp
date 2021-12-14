@@ -116,7 +116,7 @@ void EnvMapEditorLayer::Init()
     EnvMapSharedData::s_DisplayWireframe = false;
     EnvMapSharedData::s_SkyboxExposureFactor = 0.5f;
     EnvMapSharedData::s_RadiancePrefilter = false;
-    EnvMapSharedData::s_EnvMapRotation = 0.0f;
+    EnvMapSharedData::s_EnvMapRotation = 180.0f;
     EnvMapSharedData::s_DisplayHazelGrid = true;
     EnvMapSharedData::s_DisplayRay = false;
 

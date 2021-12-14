@@ -422,6 +422,8 @@ void EnvMapSceneRenderer::RenderSkybox()
     EnvMapSceneRenderer::GetRadianceMap()->Bind(EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
 
     glm::mat4 viewProj = GetViewProjection();
+    // Rotate skybox by 180 degrees
+    viewProj = glm::rotate(viewProj, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     EnvMapSceneRenderer::s_ShaderSkybox->SetMat4("u_InverseVP", glm::inverse(viewProj));
 
     s_ShaderSkybox->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
