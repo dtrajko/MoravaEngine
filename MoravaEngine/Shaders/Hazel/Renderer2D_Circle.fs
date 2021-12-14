@@ -7,7 +7,7 @@
 #version 450 core
 
 layout(location = 0) out vec4 o_Color;
-layout(location = 1) out vec4 o_Color2;
+layout(location = 1) out int o_EntityID;
 
 struct VertexOutput
 {
@@ -22,8 +22,6 @@ layout (location = 3) in flat int v_EntityID;
 
 void main()
 {
-	vec2 uv = vec2(0, 0);
-
 	// Calculate distance and fill circle with white
 	float distance = 1.0 - length(Input.LocalPosition);
 	vec3 color = vec3(smoothstep(0.0, Input.Fade, distance));
@@ -32,4 +30,6 @@ void main()
 	// Set output color
 	o_Color = vec4(color, 1.0);
 	o_Color.rgb *= Input.Color;
+
+	o_EntityID = 0; // v_EntityID;
 }
