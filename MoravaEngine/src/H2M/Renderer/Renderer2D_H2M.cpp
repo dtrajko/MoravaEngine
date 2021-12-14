@@ -142,8 +142,8 @@ namespace H2M
 			offset += 4;
 		}
 
-		// RefH2M<IndexBufferH2M> quadIB = IndexBufferH2M::Create(quadIndices, s_Data.MaxIndices);
-		// s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
+		RefH2M<IndexBufferH2M> quadIB = IndexBufferH2M::Create(quadIndices, s_Data.MaxIndices);
+		s_Data.QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 
 		// Circles
@@ -159,7 +159,7 @@ namespace H2M
 			{ ShaderDataTypeH2M::Int,    "a_EntityID"      }
 		});
 		s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
-		// s_Data.CircleVertexArray->SetIndexBuffer(quadIB); // Use quad IB
+		s_Data.CircleVertexArray->SetIndexBuffer(quadIB); // Use quad IB
 		s_Data.CircleVertexBufferBase = new CircleVertex[s_Data.MaxVertices];
 
 		s_Data.WhiteTexture = Texture2D_H2M::Create(ImageFormatH2M::RGBA, 1, 1, nullptr);
