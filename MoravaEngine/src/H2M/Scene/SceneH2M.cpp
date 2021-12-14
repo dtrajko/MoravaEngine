@@ -486,7 +486,7 @@ namespace H2M
 		m_Registry.view<MeshComponentH2M>().each([=](auto entity, auto& mc)
 		{
 			// TODO: Should we render (logically)
-			EnvMapSceneRenderer::SubmitEntity(EntityH2M{ entity, this });
+			::EnvMapSceneRenderer::SubmitEntity(EntityH2M{ entity, this });
 		});
 
 		SceneRendererH2M::EndScene();
@@ -588,13 +588,29 @@ namespace H2M
 		{
 			// Renderer2D_H2M::BeginScene(*mainCamera, cameraTransform);
 
-			auto group = m_Registry.group<TransformComponentH2M>(entt::get<SpriteRendererComponentH2M>);
-			for (auto entity : group)
+			// BEGIN Draw Sprites
 			{
-				auto [transform, sprite] = group.get<TransformComponentH2M, SpriteRendererComponentH2M>(entity);
+				auto group = m_Registry.group<TransformComponentH2M>(entt::get<SpriteRendererComponentH2M>);
+				for (auto entity : group)
+				{
+					auto [transform, sprite] = group.get<TransformComponentH2M, SpriteRendererComponentH2M>(entity);
 
-				Renderer2D_H2M::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+					Renderer2D_H2M::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				}
 			}
+			// END Draw Sprites
+
+			// BEGIN Draw Circles
+			{
+				auto view = m_Registry.view<TransformComponentH2M, CircleRendererComponentH2M>();
+				for (auto entity : view)
+				{
+					auto [transform, circle] = view.get<TransformComponentH2M, CircleRendererComponentH2M>(entity);
+
+					H2M::Renderer2D_H2M::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+				}
+			}
+			// END Draw Circles
 
 			// Renderer2D_H2M::EndScene();
 		}
@@ -604,13 +620,29 @@ namespace H2M
 	{
 		// Renderer2D_H2M::BeginScene(camera);
 
-		auto group = m_Registry.group<TransformComponentH2M>(entt::get<SpriteRendererComponentH2M>);
-		for (auto entity : group)
+		// BEGIN Draw Sprites
 		{
-			auto [transform, sprite] = group.get<TransformComponentH2M, SpriteRendererComponentH2M>(entity);
+			auto group = m_Registry.group<TransformComponentH2M>(entt::get<SpriteRendererComponentH2M>);
+			for (auto entity : group)
+			{
+				auto [transform, sprite] = group.get<TransformComponentH2M, SpriteRendererComponentH2M>(entity);
 
-			Renderer2D_H2M::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				Renderer2D_H2M::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+			}
 		}
+		// END Draw Sprites
+
+		// BEGIN Draw Circles
+		{
+			auto view = m_Registry.view<TransformComponentH2M, CircleRendererComponentH2M>();
+			for (auto entity : view)
+			{
+				auto [transform, circle] = view.get<TransformComponentH2M, CircleRendererComponentH2M>(entity);
+
+				H2M::Renderer2D_H2M::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+			}
+		}
+		// END Draw Circles
 
 		// Renderer2D_H2M::EndScene();
 	}

@@ -177,6 +177,8 @@ namespace H2M
 		const std::string& GetName() const { return m_Name; }
 		void SetName(const std::string& name) { m_Name = name; }
 
+		entt::registry& GetRegistry() { return m_Registry; }
+
 	private:
 		UUID_H2M m_SceneID;
 		entt::entity m_SceneEntity = entt::null;
@@ -226,6 +228,7 @@ namespace H2M
 		friend class SceneRendererH2M;
 		friend class SceneHierarchyPanelH2M;
 		friend class SceneSerializerH2M;
+		friend class EnvMapSceneRenderer;
 
 	};
 

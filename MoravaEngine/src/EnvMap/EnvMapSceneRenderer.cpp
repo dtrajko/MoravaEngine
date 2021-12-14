@@ -847,16 +847,20 @@ void EnvMapSceneRenderer::GeometryPass()
         }
     }
 
+    // BEGIN Renderer2D_H2M
     H2M::Renderer2D_H2M::BeginScene(viewProj, true);
     {
         // RendererBasic::SetLineThickness(2.0f);
 
+        // BEGIN Draw Lines
         if (EnvMapSharedData::s_DisplayRay)
         {
             glm::vec3 camPosition = s_EditorLayer->GetActiveCamera()->GetPosition();
             H2M::Renderer2D_H2M::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
+        // END Draw Lines
 
+        // BEGIN Draw AABB Bounding Boxes
         if (EntitySelection::s_SelectionContext.size()) {
             for (auto selection : EntitySelection::s_SelectionContext)
             {
@@ -871,8 +875,23 @@ void EnvMapSceneRenderer::GeometryPass()
                 }
             }
         }
+        // END Draw AABB Bounding Boxes
+
+        // BEGIN Draw Circles
+        {
+            auto view = s_EditorLayer->GetActiveScene()->GetRegistry().view<H2M::TransformComponentH2M, H2M::CircleRendererComponentH2M>();
+            for (auto entity : view)
+            {
+                auto [transform, circle] = view.get<H2M::TransformComponentH2M, H2M::CircleRendererComponentH2M>(entity);
+
+                H2M::Renderer2D_H2M::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+            }
+        }
+        // END Draw Circles
+
     }
     H2M::Renderer2D_H2M::EndScene();
+    // END Renderer2D_H2M
 
     GetGeoPass()->GetSpecification().TargetFramebuffer->Bind();
 }
