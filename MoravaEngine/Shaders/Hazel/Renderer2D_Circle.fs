@@ -1,18 +1,35 @@
+// -----------------------------
+// - Hazel 2D -
+// Renderer2D Circle Shader
+// -----------------------------
+
 // #type fragment
-#version 330 core
+#version 450 core
 
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec4 o_Color;
+layout(location = 1) out vec4 o_Color2;
 
-in vec4 v_Color;
-in vec2 v_TexCoord;
-in float v_TexIndex;
-in float v_TilingFactor;
+struct VertexOutput
+{
+	vec3 LocalPosition;
+	vec4 Color;
+	float Thickness;
+	float Fade;
+};
 
-uniform vec4 u_Color;
-uniform float u_TilingFactor;
-uniform sampler2D u_Textures[32];
+layout (location = 0) in VertexOutput Input;
+layout (location = 3) in flat int v_EntityID;
 
 void main()
 {
-	color = texture(u_Textures[int(v_TexIndex)], v_TexCoord * v_TilingFactor) * v_Color;
+	vec2 uv = vec2(0, 0);
+
+	// Calculate distance and fill circle with white
+	float distance = 1.0 - length(Input.LocalPosition);
+	vec3 color = vec3(smoothstep(0.0, Input.Fade, distance));
+	color *= vec3(smoothstep(Input.Thickness + Input.Fade, Input.Thickness, distance));
+
+	// Set output color
+	o_Color = vec4(color, 1.0);
+	o_Color.rgb *= Input.Color;
 }

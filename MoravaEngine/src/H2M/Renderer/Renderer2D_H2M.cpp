@@ -186,20 +186,11 @@ namespace H2M
 			uint32_t whiteTextureData = 0xffffffff;
 			s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-			//	Working on Hazel LIVE! #004
-			//	s_Data.WhiteTexture->Lock();
-			//	s_Data.WhiteTexture->GetWriteableBuffer().Write(&whiteTextureData, sizeof(uint32_t));
-			//	s_Data.WhiteTexture->Unlock();
-
 			int32_t samplers[s_Data.MaxTextureSlots];
 			for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 				samplers[i] = i;
 
-			//	if (RendererBasic::GetVulkanSupported()) {
-			//		s_Data.TextureHazelShader = ShaderH2M::Create("Resources/Shaders/Renderer2D.glsl"); // not in use, only for constructor testing
-			//	}
-
-			s_Data.TextureShader = RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/Hazel/Renderer2D.vs", "Shaders/Hazel/Renderer2D.fs"));
+			s_Data.TextureShader = RefH2M<OpenGLMoravaShader>(MoravaShader::Create("Shaders/Hazel/Renderer2D_Quad.vs", "Shaders/Hazel/Renderer2D_Quad.fs"));
 			s_Data.TextureShader->Bind();
 			s_Data.TextureShader->SetIntArray("u_Textures", samplers, s_Data.MaxTextureSlots);
 
