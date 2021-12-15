@@ -2,6 +2,7 @@
 
 #include "Core/Application.h"
 #include "Core/Log.h"
+#include "Core/Util.h"
 
 #include <GL/glew.h>
 
@@ -70,7 +71,6 @@ void OpenGLMoravaFramebuffer::AddDepthAttachmentSpecification(unsigned int width
 	m_RenderbufferAttachmentSpec.push_back(fbSpecs);
 }
 
-
 void OpenGLMoravaFramebuffer::AddColorAttachment(FramebufferSpecification specs)
 {
 	m_ColorAttachmentSpecs.push_back(specs);
@@ -105,30 +105,17 @@ void OpenGLMoravaFramebuffer::Generate(unsigned int width, unsigned int height)
 		// m_FramebufferSpecs.Width = attachmentSpecs.Width;
 		// m_FramebufferSpecs.Height = attachmentSpecs.Height;
 
+		const char* attachmentFormatName = Util::AttachmentFormatToString(attachmentSpecs.attachmentFormat);
+
 		switch (attachmentSpecs.attachmentFormat)
 		{
 		case AttachmentFormat::Color:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::Color, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
-			break;
 		case AttachmentFormat::RGBA:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::RGBA, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
-			break;
 		case AttachmentFormat::RGBA16F:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::RGBA16F, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
-			break;
 		case AttachmentFormat::RGBA8:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::RGBA8, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
+		case AttachmentFormat::RED_INTEGER:
+			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::{0}, Multisample: {1}, {2}x{3}]", attachmentFormatName, m_Multisample, width, height);
 			break;
 		default:
 			Log::GetLogger()->error("Color attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
@@ -148,34 +135,24 @@ void OpenGLMoravaFramebuffer::Generate(unsigned int width, unsigned int height)
 		switch (attachmentSpecs.attachmentFormat)
 		{
 		case AttachmentFormat::Depth:
-			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::Depth, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
+			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::Depth, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::DepthStencil:
-			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::DepthStencil, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
+			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::DepthStencil, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Depth_24:
-			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::Depth_24, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
+			CreateAttachmentDepth(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::Depth_24, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Depth_24_Stencil_8:
-			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::Depth_24_Stencil_8, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
+			CreateAttachmentDepthAndStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::Depth_24_Stencil_8, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		case AttachmentFormat::Stencil:
-			CreateAttachmentStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::Stencil, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
+			CreateAttachmentStencil(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentType, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::Stencil, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		default:
 			Log::GetLogger()->error("Depth attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
@@ -334,6 +311,16 @@ void OpenGLMoravaFramebuffer::Resize(uint32_t width, uint32_t height)
 	m_FramebufferSpecs.Height = height;
 
 	Generate(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
+}
+
+H2M::RendererID_H2M OpenGLMoravaFramebuffer::GetColorAttachmentRendererID(uint32_t index) const
+{
+	if (index >= m_TextureAttachmentsColor.size())
+	{
+		Log::GetLogger()->error("Color attachment with index [{0}] does not exist in m_TextureAttachmentsColor", index);
+		return H2M::RendererID_H2M();
+	}
+	return m_TextureAttachmentsColor[index]->GetRendererID();
 }
 
 void OpenGLMoravaFramebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)

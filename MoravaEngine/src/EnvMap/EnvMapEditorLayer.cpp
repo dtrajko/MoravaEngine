@@ -153,14 +153,6 @@ void EnvMapEditorLayer::OnAttach()
 
     m_IconPlay = H2M::Texture2D_H2M::Create("Resources/Icons/PlayButton.png");
     m_IconStop = H2M::Texture2D_H2M::Create("Resources/Icons/StopButton.png");
-
-    // Used for storing and reading EntityID in RED_INTEGER framebuffer attachment
-    // (Mouse selection on scene objects)
-    // H2M::FramebufferSpecificationH2M framebufferObjectSelectSpec;
-    // framebufferObjectSelectSpec.Attachments = { H2M::ImageFormatH2M::RGBA, H2M::ImageFormatH2M::RED_INTEGER, H2M::ImageFormatH2M::Depth };
-    // framebufferObjectSelectSpec.Width = m_ViewportSize.x;
-    // framebufferObjectSelectSpec.Height = m_ViewportSize.y;
-    // m_FramebufferObjectSelect = H2M::FramebufferH2M::Create(framebufferObjectSelectSpec);
 }
 
 EnvMapEditorLayer::~EnvMapEditorLayer()
@@ -251,6 +243,7 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
 
     m_RenderFramebuffer = MoravaFramebuffer::Create(width, height);
     m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::RED_INTEGER);
     m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Depth);
     m_RenderFramebuffer->Generate(width, height);
 
@@ -258,6 +251,13 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
     m_PostProcessingFramebuffer = MoravaFramebuffer::Create(width, height);
     m_PostProcessingFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
     m_PostProcessingFramebuffer->Generate(width, height);
+
+    // Framebuffer with multiple attachments Hazel2D style
+    H2M::FramebufferSpecificationH2M framebufferSpecH2M;
+    framebufferSpecH2M.Width = width;
+    framebufferSpecH2M.Height = height;
+    framebufferSpecH2M.Attachments = { H2M::ImageFormatH2M::RGBA, H2M::ImageFormatH2M::RED_INTEGER, H2M::ImageFormatH2M::Depth };
+    H2M::RefH2M<H2M::FramebufferH2M> renderFramebufferH2M = H2M::FramebufferH2M::Create(framebufferSpecH2M);
 }
 
 H2M::EntityH2M EnvMapEditorLayer::CreateEntity(const std::string& name)
@@ -1298,7 +1298,6 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
         ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
         ResizeViewport(viewportPanelSize, m_PostProcessingFramebuffer);
-        // ResizeViewport(viewportPanelSize, m_FramebufferObjectSelect);
 
         uint64_t textureID;
         if (m_PostProcessingEnabled)
@@ -2232,9 +2231,6 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
                 }
             }
         }
-
-        // BEGIN Read EntityID value from the RED_INTEGER framebuffer attachment
-        // int pixelData = m_FramebufferObjectSelect->ReadPixel(1, mouseX, mouseY);
     }
     return false;
 }

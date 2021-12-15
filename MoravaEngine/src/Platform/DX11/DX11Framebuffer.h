@@ -31,11 +31,14 @@ public:
 	virtual H2M::RefH2M<H2M::Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const override { H2M_CORE_ASSERT(attachmentIndex < m_Attachments.size()); return m_Attachments[attachmentIndex]; }
 	virtual H2M::RefH2M<H2M::Image2D_H2M> GetDepthImage() const override { return H2M::RefH2M<H2M::Image2D_H2M>(); /* m_DepthAttachment; */ }
 
-	virtual H2M::RendererID_H2M GetColorAttachmentRendererID() const { return 0; }
+	virtual H2M::RendererID_H2M GetColorAttachmentRendererID(uint32_t index = 0) const { return 0; }
 	virtual H2M::RendererID_H2M GetDepthAttachmentRendererID() const { return 0; }
 
 	size_t GetColorAttachmentCount() const { return m_Attachments.size(); }
 	virtual const H2M::FramebufferSpecificationH2M& GetSpecification() const override { return m_Specification; }
+
+	// virtual methods from OpenGLFramebufferHazel2D
+	virtual void ClearAttachment(uint32_t attachmentIndex, int value) override { Log::GetLogger()->error("Method not yet implemented!"); }
 
 private:
 	H2M::FramebufferSpecificationH2M m_Specification;

@@ -2,6 +2,7 @@
 
 #include "Core/Log.h"
 #include "Core/Util.h"
+#include "Framebuffer/Attachment.h"
 
 #include <GL/glew.h>
 
@@ -264,4 +265,30 @@ void Util::HashCombine(std::size_t& seed, const T& v, const Rest&... rest)
 {
 	seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 	(hashCombine(seed, rest), ...);
+}
+
+const char* Util::AttachmentFormatToString(AttachmentFormat attachmentFormat)
+{
+	switch (attachmentFormat)
+	{
+	case AttachmentFormat::None:               return "None";
+	case AttachmentFormat::Color:              return "Color";
+	case AttachmentFormat::Depth:              return "Depth";
+	case AttachmentFormat::DEPTH32F:           return "DEPTH32F";
+	case AttachmentFormat::Depth_24:           return "Depth_24";
+	case AttachmentFormat::DepthStencil:       return "DepthStencil";
+	case AttachmentFormat::Depth_24_Stencil_8: return "Depth_24_Stencil_8";
+	case AttachmentFormat::RGBA:               return "RGBA";
+	case AttachmentFormat::RGBA16F:            return "RGBA16F";
+	case AttachmentFormat::RGBA8:              return "RGBA8";
+	case AttachmentFormat::RGB:                return "RGB";
+	case AttachmentFormat::RGBA32F:            return "RGBA32F";
+	case AttachmentFormat::RG32F:              return "RG32F";
+	case AttachmentFormat::RED_INTEGER:        return "RED_INTEGER";
+	case AttachmentFormat::SRGB:               return "SRGB";
+	case AttachmentFormat::Stencil:            return "Stencil";
+	default:
+		Log::GetLogger()->error("AttachmentFormat '{0}' undefined", attachmentFormat);
+		return "None";
+	}
 }

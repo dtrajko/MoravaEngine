@@ -19,6 +19,7 @@ namespace H2M
 		None = 0,
 		RGB,
 		RGBA,
+		RGBA8,
 		RGBA16F,
 		RGBA32F,
 		RG32F,
@@ -118,6 +119,7 @@ namespace H2M
 				case ImageFormatH2M::RGB:
 				case ImageFormatH2M::SRGB:    return 3;
 				case ImageFormatH2M::RGBA:    return 4;
+				case ImageFormatH2M::RGBA8:   return 4;
 				case ImageFormatH2M::RGBA16F: return 2 * 4;
 				case ImageFormatH2M::RGBA32F: return 4 * 4;
 			}

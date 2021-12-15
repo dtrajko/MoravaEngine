@@ -2,6 +2,7 @@
 
 #include "Core/Application.h"
 #include "Core/Log.h"
+#include "Core/Util.h"
 
 #include <stdexcept>
 
@@ -105,30 +106,17 @@ void VulkanMoravaFramebuffer::Generate(unsigned int width, unsigned int height)
 		// m_FramebufferSpecs.Width = attachmentSpecs.Width;
 		// m_FramebufferSpecs.Height = attachmentSpecs.Height;
 
+		const char* attachmentFormatName = Util::AttachmentFormatToString(attachmentSpecs.attachmentFormat);
+
 		switch (attachmentSpecs.attachmentFormat)
 		{
 		case AttachmentFormat::Color:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("VulkanMoravaFramebuffer::Generate [AttachmentFormat::Color, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
-			break;
 		case AttachmentFormat::RGBA:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("VulkanMoravaFramebuffer::Generate [AttachmentFormat::RGBA, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
-			break;
 		case AttachmentFormat::RGBA16F:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("VulkanMoravaFramebuffer::Generate [AttachmentFormat::RGBA16F, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
-			break;
 		case AttachmentFormat::RGBA8:
-			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample,
-				attachmentSpecs.attachmentFormat);
-			Log::GetLogger()->debug("VulkanMoravaFramebuffer::Generate [AttachmentFormat::RGBA8, Multisample: {0}, {1}x{2}]",
-				m_Multisample, width, height);
+		case AttachmentFormat::RED_INTEGER:
+			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->debug("VulkanMoravaFramebuffer::Generate [AttachmentFormat::{0}, Multisample: {1}, {2}x{3}]", attachmentFormatName, m_Multisample, width, height);
 			break;
 		default:
 			Log::GetLogger()->error("Color attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
@@ -336,6 +324,16 @@ void VulkanMoravaFramebuffer::Resize(uint32_t width, uint32_t height)
 	m_FramebufferSpecs.Height = height;
 
 	Generate(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
+}
+
+H2M::RendererID_H2M VulkanMoravaFramebuffer::GetColorAttachmentRendererID(uint32_t index) const
+{
+	if (index >= m_TextureAttachmentsColor.size())
+	{
+		Log::GetLogger()->error("Color attachment with index [{0}] does not exist in m_TextureAttachmentsColor", index);
+		return H2M::RendererID_H2M();
+	}
+	return m_TextureAttachmentsColor[index]->GetRendererID();
 }
 
 void VulkanMoravaFramebuffer::Resize(uint32_t width, uint32_t height, bool forceRecreate)

@@ -750,11 +750,11 @@ namespace H2M
 		});
 
 		DrawComponent<CircleRendererComponentH2M>("Circle Renderer", entity, [](auto& component)
-			{
-				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-				ImGui::DragFloat("Thickness", &component.Thickness, 0.01f, 0.0f, 10.0f);
-				ImGui::DragFloat("Fade", &component.Fade, 0.01f, 0.0f, 10.0f);
-			});
+		{
+			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+			ImGui::DragFloat("Thickness", &component.Thickness, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Fade", &component.Fade, 0.01f, 0.0f, 1.0f);
+		});
 
 		DrawComponent<DirectionalLightComponentH2M>("Directional Light", entity, [](DirectionalLightComponentH2M& dlc)
 		{

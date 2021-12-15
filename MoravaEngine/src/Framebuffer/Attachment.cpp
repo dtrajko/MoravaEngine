@@ -57,6 +57,9 @@ H2M::ImageFormatH2M Attachment::GetFormat() const
 	case AttachmentFormat::RGBA8:
 		return H2M::ImageFormatH2M::RGBA;
 		break;
+	case AttachmentFormat::RED_INTEGER:
+		return H2M::ImageFormatH2M::RED_INTEGER;
+		break;
 	default:
 		return H2M::ImageFormatH2M::None;
 		break;

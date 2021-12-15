@@ -68,6 +68,10 @@ public:
 	void Release();
 	void Resize(uint32_t width, uint32_t height);
 
+	// virtual methods from OpenGLFramebufferHazel2D
+	virtual void ClearAttachment(uint32_t attachmentIndex, int value) override { Log::GetLogger()->error("Method not yet implemented!"); }
+	virtual H2M::RendererID_H2M GetColorAttachmentRendererID(uint32_t index = 0) const override;
+
 private:
 	unsigned int m_FBO;
 	FramebufferSpecification m_FramebufferSpecs;

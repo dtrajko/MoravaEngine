@@ -28,6 +28,7 @@ enum class AttachmentFormat
 	RG32F               = 12, // H2M::ImageFormatH2M
 	SRGB                = 13, // H2M::ImageFormatH2M
 	DEPTH32F            = 14, // H2M::ImageFormatH2M
+	RED_INTEGER         = 15, // For storing EntityIDs
 };
 
 class Attachment : public H2M::TextureH2M

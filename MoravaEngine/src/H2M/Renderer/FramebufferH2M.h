@@ -80,6 +80,9 @@ namespace H2M
 		virtual RefH2M<Image2D_H2M> GetDepthImage() const = 0;
 		virtual const FramebufferSpecificationH2M& GetSpecification() const = 0;
 
+		// virtual methods from OpenGLFramebufferHazel2D
+		virtual void ClearAttachment(uint32_t attachmentIndex, int value) = 0;
+		virtual RendererID_H2M GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
 
 		static RefH2M<FramebufferH2M> Create(const FramebufferSpecificationH2M& spec);
 
