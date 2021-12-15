@@ -292,4 +292,8 @@ private:
 
 	std::string m_EnvMapFilename = "File Path";
 
+	// Used for storing and reading EntityID in RED_INTEGER framebuffer attachment
+	// (Mouse selection on scene objects)
+	// H2M::RefH2M<H2M::FramebufferH2M> m_FramebufferObjectSelect;
+
 };

@@ -153,6 +153,14 @@ void EnvMapEditorLayer::OnAttach()
 
     m_IconPlay = H2M::Texture2D_H2M::Create("Resources/Icons/PlayButton.png");
     m_IconStop = H2M::Texture2D_H2M::Create("Resources/Icons/StopButton.png");
+
+    // Used for storing and reading EntityID in RED_INTEGER framebuffer attachment
+    // (Mouse selection on scene objects)
+    // H2M::FramebufferSpecificationH2M framebufferObjectSelectSpec;
+    // framebufferObjectSelectSpec.Attachments = { H2M::ImageFormatH2M::RGBA, H2M::ImageFormatH2M::RED_INTEGER, H2M::ImageFormatH2M::Depth };
+    // framebufferObjectSelectSpec.Width = m_ViewportSize.x;
+    // framebufferObjectSelectSpec.Height = m_ViewportSize.y;
+    // m_FramebufferObjectSelect = H2M::FramebufferH2M::Create(framebufferObjectSelectSpec);
 }
 
 EnvMapEditorLayer::~EnvMapEditorLayer()
@@ -1290,12 +1298,15 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
         ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
         ResizeViewport(viewportPanelSize, m_PostProcessingFramebuffer);
+        // ResizeViewport(viewportPanelSize, m_FramebufferObjectSelect);
 
         uint64_t textureID;
-        if (m_PostProcessingEnabled) {
+        if (m_PostProcessingEnabled)
+        {
             textureID = m_PostProcessingFramebuffer->GetTextureAttachmentColor()->GetID();
         }
-        else {
+        else
+        {
             textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
         }
         ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
@@ -2163,7 +2174,8 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
             {
                 H2M::EntityH2M entity = { e, m_EditorScene.Raw() };
                 auto mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
-                if (!mesh) {
+                if (!mesh)
+                {
                     continue;
                 }
 
@@ -2207,17 +2219,22 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
             std::sort(EntitySelection::s_SelectionContext.begin(), EntitySelection::s_SelectionContext.end(), [](auto& a, auto& b) { return a.Distance < b.Distance; });
 
             // TODO: Handle mesh being deleted, etc
-            if (EntitySelection::s_SelectionContext.size()) {
+            if (EntitySelection::s_SelectionContext.size())
+            {
                 m_CurrentlySelectedTransform = EntitySelection::s_SelectionContext[0].Mesh->Transform;
                 OnSelected(EntitySelection::s_SelectionContext[0]);
             }
             else {
                 H2M::EntityH2M meshEntity = GetMeshEntity();
-                if (meshEntity) {
+                if (meshEntity)
+                {
                     m_CurrentlySelectedTransform = meshEntity.Transform().GetTransform();
                 }
             }
         }
+
+        // BEGIN Read EntityID value from the RED_INTEGER framebuffer attachment
+        // int pixelData = m_FramebufferObjectSelect->ReadPixel(1, mouseX, mouseY);
     }
     return false;
 }

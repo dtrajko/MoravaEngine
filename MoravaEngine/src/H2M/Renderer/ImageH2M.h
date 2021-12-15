@@ -23,6 +23,8 @@ namespace H2M
 		RGBA32F,
 		RG32F,
 
+		RED_INTEGER,
+
 		SRGB,
 
 		DEPTH32F,

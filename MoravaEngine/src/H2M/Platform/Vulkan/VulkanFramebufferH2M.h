@@ -18,6 +18,7 @@ namespace H2M {
 		VulkanFramebufferH2M(const FramebufferSpecificationH2M& spec);
 
 		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
 
 		virtual void AddResizeCallback(const std::function<void(RefH2M<FramebufferH2M>)>& func) override;
 

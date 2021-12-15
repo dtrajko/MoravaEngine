@@ -197,6 +197,16 @@ namespace H2M
 		}
 	}
 
+	int OpenGLFramebufferH2M::ReadPixel(uint32_t attachmentIndex, int x, int y)
+	{
+		H2M_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
+
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		int pixelData;
+		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+		return pixelData;
+	}
+
 	void OpenGLFramebufferH2M::Bind() const
 	{
 		if (m_Specification.SwapChainTarget)

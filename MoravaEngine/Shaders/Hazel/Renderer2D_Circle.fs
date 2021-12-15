@@ -31,5 +31,5 @@ void main()
 	o_Color = Input.Color;
 	o_Color.a *= circle;
 
-	o_EntityID = 0; // v_EntityID;
+	o_EntityID = v_EntityID;
 }

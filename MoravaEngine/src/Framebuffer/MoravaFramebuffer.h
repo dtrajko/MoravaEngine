@@ -33,6 +33,7 @@ public:
 	virtual void Bind() const = 0;
 	virtual void Unbind() const = 0;
 	virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) = 0;
+	virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
 	virtual void AddResizeCallback(const std::function<void(H2M::RefH2M<H2M::FramebufferH2M>)>& func) = 0;
 	virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const = 0;
 	virtual uint32_t GetWidth() const = 0;

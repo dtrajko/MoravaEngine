@@ -70,6 +70,7 @@ namespace H2M
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) = 0;
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
 		virtual void AddResizeCallback(const std::function<void(RefH2M<FramebufferH2M>)>& func) = 0;
 		virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const = 0;
 		virtual uint32_t GetWidth() const = 0;
@@ -78,6 +79,7 @@ namespace H2M
 		virtual RefH2M<Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const = 0;
 		virtual RefH2M<Image2D_H2M> GetDepthImage() const = 0;
 		virtual const FramebufferSpecificationH2M& GetSpecification() const = 0;
+
 
 		static RefH2M<FramebufferH2M> Create(const FramebufferSpecificationH2M& spec);
 

@@ -341,6 +341,16 @@ void OpenGLMoravaFramebuffer::Resize(uint32_t width, uint32_t height, bool force
 	Resize(width, height);
 }
 
+int OpenGLMoravaFramebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
+{
+	// HZ_CORE_ASSERT(attachmentIndex < m_TextureAttachmentsColor.size());
+
+	glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+	int pixelData;
+	glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+	return pixelData;
+}
+
 void OpenGLMoravaFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot) const
 {
 	if (attachmentIndex >= m_TextureAttachmentsColor.size()) return;

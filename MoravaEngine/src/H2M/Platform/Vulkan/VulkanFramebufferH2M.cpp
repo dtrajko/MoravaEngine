@@ -253,6 +253,11 @@ namespace H2M
 		}
 	}
 
+	int VulkanFramebufferH2M::ReadPixel(uint32_t attachmentIndex, int x, int y)
+	{
+		return 0;
+	}
+
 	void VulkanFramebufferH2M::AddResizeCallback(const std::function<void(RefH2M<FramebufferH2M>)>& func)
 	{
 		m_ResizeCallbacks.push_back(func);
