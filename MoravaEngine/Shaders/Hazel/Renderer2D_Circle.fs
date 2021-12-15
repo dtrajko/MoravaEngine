@@ -24,12 +24,12 @@ void main()
 {
 	// Calculate distance and fill circle with white
 	float distance = 1.0 - length(Input.LocalPosition);
-	vec3 color = vec3(smoothstep(0.0, Input.Fade, distance));
-	color *= vec3(smoothstep(Input.Thickness + Input.Fade, Input.Thickness, distance));
+	float circle = smoothstep(0.0, Input.Fade, distance);
+	circle *= smoothstep(Input.Thickness + Input.Fade, Input.Thickness, distance);
 
 	// Set output color
 	o_Color = Input.Color;
-	o_Color.rgb *= color;
+	o_Color.a *= circle;
 
 	o_EntityID = 0; // v_EntityID;
 }
