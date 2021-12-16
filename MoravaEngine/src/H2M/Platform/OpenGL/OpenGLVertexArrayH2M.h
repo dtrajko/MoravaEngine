@@ -35,7 +35,7 @@ namespace H2M
 		virtual const std::vector<RefH2M<VertexBufferH2M>>& GetVertexBuffers() const override { return m_VertexBuffers; }
 		virtual const RefH2M<IndexBufferH2M>& GetIndexBuffer() const override { return m_IndexBuffer; }
 
-		virtual RendererID_H2M GetRendererID() const override { return m_RendererID; };
+		virtual uint32_t GetRendererID() const override { return m_RendererID; };
 
 	private:
 		uint32_t m_RendererID = 0;

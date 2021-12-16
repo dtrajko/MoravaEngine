@@ -122,7 +122,7 @@ namespace H2M
 		static void ClearUniformBuffers();
 
 		// Vulkan-specific
-		virtual RendererID_H2M GetRendererID() const override;
+		virtual uint32_t GetRendererID() const override;
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
 
 		virtual void SetUniform(const std::string& fullname, uint32_t value) override;

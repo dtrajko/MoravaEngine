@@ -30,7 +30,7 @@ namespace H2M
 		virtual uint32_t GetCount() const override { return m_Size / sizeof(uint32_t); }
 
 		virtual uint32_t GetSize() const override { return m_Size; }
-		virtual RendererID_H2M GetRendererID() const override;
+		virtual uint32_t GetRendererID() const override;
 
 		VkBuffer GetVulkanBuffer() { return m_VulkanBuffer; }
 	private:

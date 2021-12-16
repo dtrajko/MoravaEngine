@@ -118,7 +118,7 @@ public:
 
 	GLuint GetProgramID();
 
-	H2M::RendererID_H2M GetRendererID() const;
+	uint32_t GetRendererID() const;
 	void Bind();
 
 protected:

@@ -313,12 +313,12 @@ void OpenGLMoravaFramebuffer::Resize(uint32_t width, uint32_t height)
 	Generate(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 }
 
-H2M::RendererID_H2M OpenGLMoravaFramebuffer::GetColorAttachmentRendererID(uint32_t index) const
+uint32_t OpenGLMoravaFramebuffer::GetColorAttachmentRendererID(uint32_t index) const
 {
 	if (index >= m_TextureAttachmentsColor.size())
 	{
 		Log::GetLogger()->error("Color attachment with index [{0}] does not exist in m_TextureAttachmentsColor", index);
-		return H2M::RendererID_H2M();
+		return uint32_t();
 	}
 	return m_TextureAttachmentsColor[index]->GetRendererID();
 }
@@ -345,7 +345,7 @@ void OpenGLMoravaFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slo
 	m_TextureAttachmentsColor.at(attachmentIndex)->Bind(slot);
 }
 
-H2M::RendererID_H2M OpenGLMoravaFramebuffer::GetRendererID() const
+uint32_t OpenGLMoravaFramebuffer::GetRendererID() const
 {
 	return m_FBO;
 }
@@ -360,12 +360,12 @@ H2M::RefH2M<H2M::Image2D_H2M> OpenGLMoravaFramebuffer::GetDepthImage() const
 	return H2M::RefH2M<H2M::Image2D_H2M>();
 }
 
-//	H2M::RendererID_H2M OpenGLMoravaFramebuffer::GetColorAttachmentRendererID() const
+//	uint32_t OpenGLMoravaFramebuffer::GetColorAttachmentRendererID() const
 //	{
 //		return H2M::RendererID();
 //	}
 
-//	H2M::RendererID_H2M OpenGLMoravaFramebuffer::GetDepthAttachmentRendererID() const
+//	uint32_t OpenGLMoravaFramebuffer::GetDepthAttachmentRendererID() const
 //	{
 //		return H2M::RendererID();
 //	}

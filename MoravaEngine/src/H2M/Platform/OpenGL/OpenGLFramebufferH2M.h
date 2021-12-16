@@ -32,8 +32,8 @@ namespace H2M
 
 		virtual void ClearAttachment(uint32_t attachmentIndex, int value) override;
 
-		virtual RendererID_H2M GetColorAttachmentRendererID(uint32_t index = 0) const override { H2M_CORE_ASSERT(index < m_ColorAttachmentIDs.size()); return m_ColorAttachmentIDs[index]; }
-		virtual RendererID_H2M GetDepthAttachmentRendererID() const { return m_DepthAttachmentID; }
+		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override { H2M_CORE_ASSERT(index < m_ColorAttachmentIDs.size()); return m_ColorAttachmentIDs[index]; }
+		virtual uint32_t GetDepthAttachmentRendererID() const { return m_DepthAttachmentID; }
 
 		virtual const FramebufferSpecificationH2M& GetSpecification() const override { return m_Specification; }
 
@@ -42,23 +42,17 @@ namespace H2M
 		virtual uint32_t GetWidth() const override { return m_Specification.Width; }
 		virtual uint32_t GetHeight() const override { return m_Specification.Height; }
 
-		virtual RendererID_H2M GetRendererID() const override { return m_RendererID; }
+		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
-		virtual RefH2M<Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const override { H2M_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size()); return m_ColorAttachments[attachmentIndex]; }
-		virtual RefH2M<Image2D_H2M> GetDepthImage() const override { return m_DepthAttachment; }
+		virtual RefH2M<Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const override { return RefH2M<Image2D_H2M>(); }
+		virtual RefH2M<Image2D_H2M> GetDepthImage() const override { return RefH2M<Image2D_H2M>(); }
 
 	private:
 		FramebufferSpecificationH2M m_Specification;
-		RendererID_H2M m_RendererID = 0;
+		uint32_t m_RendererID = 0;
 
-		std::vector<RefH2M<Image2D_H2M>> m_ColorAttachments;
-		RefH2M<Image2D_H2M> m_DepthAttachment;
-
-		std::vector<RendererID_H2M> m_ColorAttachmentIDs;
-		RendererID_H2M m_DepthAttachmentID = 0;
-
-		// std::vector<ImageFormatH2M> m_ColorAttachmentFormats;
-		// ImageFormatH2M m_DepthAttachmentFormat = ImageFormatH2M::None;
+		std::vector<uint32_t> m_ColorAttachmentIDs;
+		uint32_t m_DepthAttachmentID = 0;
 
 		std::vector<FramebufferTextureSpecificationH2M> m_ColorAttachmentSpecifications;
 		FramebufferTextureSpecificationH2M m_DepthAttachmentSpecification = ImageFormatH2M::None;

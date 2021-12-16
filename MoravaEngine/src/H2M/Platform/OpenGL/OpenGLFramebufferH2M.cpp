@@ -26,12 +26,12 @@ namespace H2M
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 		}
 
-		static void CreateTextures(bool multisampled, RendererID_H2M* outID, uint32_t count)
+		static void CreateTextures(bool multisampled, uint32_t* outID, uint32_t count)
 		{
 			glCreateTextures(TextureTarget(multisampled), count, outID);
 		}
 
-		static void BindTexture(bool multisampled, RendererID_H2M id)
+		static void BindTexture(bool multisampled, uint32_t id)
 		{
 			glBindTexture(TextureTarget(multisampled), id);
 		}
@@ -301,7 +301,7 @@ namespace H2M
 		// RefH2M<const OpenGLFramebufferH2M> instance = this;
 		// HazelRenderer::Submit([instance, attachmentIndex, slot]() {});
 
-		glBindTextureUnit(slot, m_ColorAttachments[attachmentIndex]);
+		glBindTextureUnit(slot, m_ColorAttachmentIDs[attachmentIndex]);
 	}
 
 	void OpenGLFramebufferH2M::Resize(uint32_t width, uint32_t height, bool forceRecreate)

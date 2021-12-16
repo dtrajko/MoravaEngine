@@ -83,7 +83,7 @@ namespace H2M
 	{
 	}
 
-	RendererID_H2M VulkanIndexBufferH2M::GetRendererID() const
+	uint32_t VulkanIndexBufferH2M::GetRendererID() const
 	{
 		return 0;
 	}

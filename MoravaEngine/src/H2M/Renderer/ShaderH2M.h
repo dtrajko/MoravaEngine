@@ -159,7 +159,7 @@ namespace H2M
 		virtual size_t GetHash() const = 0;
 
 		virtual void Bind() = 0;
-		virtual H2M::RendererID_H2M GetRendererID() const = 0;
+		virtual uint32_t GetRendererID() const = 0;
 
 		// NEW shader system
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) = 0;

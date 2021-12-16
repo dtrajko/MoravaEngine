@@ -63,7 +63,7 @@ namespace H2M
 		ImageFormatH2M m_Format;
 		TextureWrapH2M m_Wrap = TextureWrapH2M::Clamp;
 		uint32_t m_Width, m_Height;
-		RendererID_H2M m_RendererID;
+		uint32_t m_RendererID;
 
 		BufferH2M m_ImageData;
 		bool m_IsHDR = false;
@@ -105,10 +105,10 @@ namespace H2M
 			return m_RendererID == ((OpenGLTextureCubeH2M&)other).m_RendererID;
 		}
 
-		RendererID_H2M GetRendererID() const { return m_RendererID; }
+		uint32_t GetRendererID() const { return m_RendererID; }
 
 	private:
-		RendererID_H2M m_RendererID;
+		uint32_t m_RendererID;
 		ImageFormatH2M m_Format;
 		uint32_t m_Width, m_Height;
 

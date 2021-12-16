@@ -38,7 +38,7 @@ namespace H2M {
 		virtual uint32_t GetCount() const { return m_Size / sizeof(uint32_t); }
 
 		virtual uint32_t GetSize() const { return m_Size; }
-		virtual RendererID_H2M GetRendererID() const { return m_RendererID; }
+		virtual uint32_t GetRendererID() const { return m_RendererID; }
 	private:
 		uint32_t m_RendererID = 0;
 		uint32_t m_Size;

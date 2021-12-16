@@ -33,7 +33,7 @@ namespace H2M
 		virtual uint32_t GetCount() const = 0;
 
 		virtual uint32_t GetSize() const = 0;
-		virtual RendererID_H2M GetRendererID() const = 0;
+		virtual uint32_t GetRendererID() const = 0;
 
 		static RefH2M<IndexBufferH2M> Create(uint32_t size);
 		static RefH2M<IndexBufferH2M> Create(void* data, uint32_t size = 0);

@@ -28,7 +28,7 @@ public:
 	virtual void SetLayout(const H2M::VertexBufferLayoutH2M& layout) override { m_Layout = layout; }
 
 	virtual uint32_t GetSize() const override { return m_Stride; }
-	virtual H2M::RendererID_H2M GetRendererID() const override { return 0; }
+	virtual uint32_t GetRendererID() const override { return 0; }
 
 	inline uint32_t GetStride() { return m_Stride; }
 	inline uint32_t GetVertexCount() { return m_Count; };

@@ -68,7 +68,7 @@ namespace H2M
 
 		glm::vec2 FocusPoint = { 0.5f, 0.5f };
 
-		RendererID_H2M ShadowMapSampler;
+		uint32_t ShadowMapSampler;
 
 		RefH2M<PipelineH2M> GeometryPipeline;
 		RefH2M<PipelineH2M> CompositePipeline;

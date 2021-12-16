@@ -29,7 +29,7 @@ namespace H2M
 		virtual const std::vector<RefH2M<VertexBufferH2M>>& GetVertexBuffers() const = 0;
 		virtual const RefH2M<IndexBufferH2M>& GetIndexBuffer() const = 0;
 
-		virtual RendererID_H2M GetRendererID() const = 0;
+		virtual uint32_t GetRendererID() const = 0;
 
 		static RefH2M<VertexArrayH2M> Create();
 

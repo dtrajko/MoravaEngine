@@ -38,7 +38,7 @@ namespace H2M {
 		virtual void SetLayout(const VertexBufferLayoutH2M& layout) override { m_Layout = layout; }
 
 		virtual uint32_t GetSize() const { return m_Size; }
-		virtual RendererID_H2M GetRendererID() const { return m_RendererID; }
+		virtual uint32_t GetRendererID() const { return m_RendererID; }
 
 	private:
 		uint32_t m_RendererID = 0;

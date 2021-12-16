@@ -135,7 +135,7 @@ namespace H2M {
 		virtual void Bind() const = 0;
 
 		virtual uint32_t GetSize() const = 0;
-		virtual RendererID_H2M GetRendererID() const = 0;
+		virtual uint32_t GetRendererID() const = 0;
 
 		virtual const VertexBufferLayoutH2M& GetLayout() const = 0;
 		virtual void SetLayout(const VertexBufferLayoutH2M& layout) = 0;

@@ -23,7 +23,7 @@ public:
 	virtual void Bind() const override;
 	virtual uint32_t GetCount() const override { return m_Count; }
 	virtual uint32_t GetSize() const override { return m_Size; }
-	virtual H2M::RendererID_H2M GetRendererID() const override;
+	virtual uint32_t GetRendererID() const override;
 
 private:
 	uint32_t m_Size;

@@ -55,7 +55,7 @@ public:
 	virtual uint32_t GetMipLevelCount() const = 0;
 	virtual uint64_t GetHash() const = 0;
 	virtual bool operator==(const H2M::TextureH2M& other) const = 0;
-	virtual H2M::RendererID_H2M GetRendererID() const = 0;
+	virtual uint32_t GetRendererID() const = 0;
 	// END pure virtual methods inherited from HazelTexture/Texture2D_H2M
 
 	virtual bool IsLoaded() const = 0;

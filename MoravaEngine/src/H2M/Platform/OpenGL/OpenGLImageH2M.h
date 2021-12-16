@@ -53,17 +53,17 @@ namespace H2M
 
 		virtual uint64_t GetHash() const override { return (uint64_t)m_RendererID; }
 
-		RendererID_H2M& GetRendererID() { return m_RendererID; }
-		RendererID_H2M GetRendererID() const { return m_RendererID; }
+		uint32_t& GetRendererID() { return m_RendererID; }
+		uint32_t GetRendererID() const { return m_RendererID; }
 
-		RendererID_H2M& GetSamplerRendererID() { return m_SamplerRendererID; }
-		RendererID_H2M GetSamplerRendererID() const { return m_SamplerRendererID; }
+		uint32_t& GetSamplerRendererID() { return m_SamplerRendererID; }
+		uint32_t GetSamplerRendererID() const { return m_SamplerRendererID; }
 
 	private:
 		ImageSpecificationH2M m_Specification;
 
-		RendererID_H2M m_RendererID = 0;
-		RendererID_H2M m_SamplerRendererID = 0;
+		uint32_t m_RendererID = 0;
+		uint32_t m_SamplerRendererID = 0;
 		uint32_t m_Width, m_Height;
 		ImageFormatH2M m_Format;
 

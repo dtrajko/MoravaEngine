@@ -734,7 +734,7 @@ namespace H2M
 
 	void VulkanShaderH2M::Bind() {}
 
-	RendererID_H2M VulkanShaderH2M::GetRendererID() const { return 0; }
+	uint32_t VulkanShaderH2M::GetRendererID() const { return 0; }
 
 	void VulkanShaderH2M::ClearUniformBuffers()
 	{

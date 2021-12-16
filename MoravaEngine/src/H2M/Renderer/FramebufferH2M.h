@@ -30,7 +30,7 @@ namespace H2M
 		FramebufferTextureSpecificationH2M() = default;
 		FramebufferTextureSpecificationH2M(ImageFormatH2M format) : Format(format) {}
 
-		ImageFormatH2M Format;
+		ImageFormatH2M Format = ImageFormatH2M::None;
 		// TODO: filtering/wrap
 	};
 
@@ -75,14 +75,14 @@ namespace H2M
 		virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const = 0;
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
-		virtual RendererID_H2M GetRendererID() const = 0;
+		virtual uint32_t GetRendererID() const = 0;
 		virtual RefH2M<Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const = 0;
 		virtual RefH2M<Image2D_H2M> GetDepthImage() const = 0;
 		virtual const FramebufferSpecificationH2M& GetSpecification() const = 0;
 
 		// virtual methods from OpenGLFramebufferHazel2D
 		virtual void ClearAttachment(uint32_t attachmentIndex, int value) = 0;
-		virtual RendererID_H2M GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
+		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
 
 		static RefH2M<FramebufferH2M> Create(const FramebufferSpecificationH2M& spec);
 

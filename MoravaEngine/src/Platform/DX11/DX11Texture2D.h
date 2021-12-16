@@ -47,7 +47,7 @@ public:
 	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 	virtual uint64_t GetHash() const; // { return (uint64_t)0; }
 
-	// virtual H2M::RendererID_H2M GetRendererID() const override { return 0; } // Removed in Hazel Live 18.03.2021 #2
+	// virtual uint32_t GetRendererID() const override { return 0; } // Removed in Hazel Live 18.03.2021 #2
 
 	bool operator ==(const TextureH2M& other) const override
 	{

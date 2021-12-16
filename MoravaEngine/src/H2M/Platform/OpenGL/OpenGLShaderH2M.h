@@ -27,7 +27,7 @@ namespace H2M
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
 		virtual void Bind() override;
-		virtual RendererID_H2M GetRendererID() const override { return m_RendererID; }
+		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 
 		virtual size_t GetHash() const override;
 
@@ -100,7 +100,7 @@ namespace H2M
 		void UploadUniformMat4(const std::string& name, const glm::mat4& value);
 
 	private:
-		RendererID_H2M m_RendererID = 0;
+		uint32_t m_RendererID = 0;
 		bool m_Loaded = false;
 		bool m_IsCompute = false;
 

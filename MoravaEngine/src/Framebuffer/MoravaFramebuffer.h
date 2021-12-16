@@ -38,7 +38,7 @@ public:
 	virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const = 0;
 	virtual uint32_t GetWidth() const = 0;
 	virtual uint32_t GetHeight() const = 0;
-	virtual H2M::RendererID_H2M GetRendererID() const = 0;
+	virtual uint32_t GetRendererID() const = 0;
 	virtual H2M::RefH2M<H2M::Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const = 0;
 	virtual H2M::RefH2M<H2M::Image2D_H2M> GetDepthImage() const = 0;
 	virtual const H2M::FramebufferSpecificationH2M& GetSpecification() const = 0;

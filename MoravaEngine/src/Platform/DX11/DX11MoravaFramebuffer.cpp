@@ -326,7 +326,7 @@ void DX11MoravaFramebuffer::Resize(uint32_t width, uint32_t height)
 	Generate(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
 }
 
-H2M::RendererID_H2M DX11MoravaFramebuffer::GetColorAttachmentRendererID(uint32_t index) const
+uint32_t DX11MoravaFramebuffer::GetColorAttachmentRendererID(uint32_t index) const
 {
 	if (index >= m_TextureAttachmentsColor.size())
 	{
@@ -348,7 +348,7 @@ void DX11MoravaFramebuffer::BindTexture(uint32_t attachmentIndex, uint32_t slot)
 	m_TextureAttachmentsColor.at(attachmentIndex)->Bind(slot);
 }
 
-H2M::RendererID_H2M DX11MoravaFramebuffer::GetRendererID() const
+uint32_t DX11MoravaFramebuffer::GetRendererID() const
 {
 	return m_FBO;
 }
@@ -363,12 +363,12 @@ H2M::RefH2M<H2M::Image2D_H2M> DX11MoravaFramebuffer::GetDepthImage() const
 	return H2M::RefH2M<H2M::Image2D_H2M>();
 }
 
-//	H2M::RendererID_H2M DX11MoravaFramebuffer::GetColorAttachmentRendererID() const
+//	uint32_t DX11MoravaFramebuffer::GetColorAttachmentRendererID() const
 //	{
 //		return H2M::RendererID();
 //	}
 
-//	H2M::RendererID_H2M DX11MoravaFramebuffer::GetDepthAttachmentRendererID() const
+//	uint32_t DX11MoravaFramebuffer::GetDepthAttachmentRendererID() const
 //	{
 //		return H2M::RendererID();
 //	}

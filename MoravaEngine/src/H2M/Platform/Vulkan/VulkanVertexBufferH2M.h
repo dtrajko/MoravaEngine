@@ -34,7 +34,7 @@ namespace H2M
 		virtual void SetLayout(const VertexBufferLayoutH2M& layout) override {}
 
 		virtual unsigned int GetSize() const override { return m_Size; }
-		virtual RendererID_H2M GetRendererID() const override { return 0; }
+		virtual uint32_t GetRendererID() const override { return 0; }
 
 		VkBuffer GetVulkanBuffer() { return m_VulkanBuffer; }
 

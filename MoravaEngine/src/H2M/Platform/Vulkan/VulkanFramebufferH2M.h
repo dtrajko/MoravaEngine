@@ -30,13 +30,13 @@ namespace H2M {
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 
-		virtual RendererID_H2M GetRendererID() const { return m_RendererID; }
+		virtual uint32_t GetRendererID() const { return m_RendererID; }
 
 		virtual RefH2M<Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const override { H2M_CORE_ASSERT(attachmentIndex < m_Attachments.size()); return m_Attachments[attachmentIndex]; }
 		virtual RefH2M<Image2D_H2M> GetDepthImage() const override { return RefH2M<Image2D_H2M>(); /* m_DepthAttachment; */ }
 
-		virtual RendererID_H2M GetColorAttachmentRendererID(uint32_t index = 0) const { return 0; }
-		virtual RendererID_H2M GetDepthAttachmentRendererID() const { return 0; }
+		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const { return 0; }
+		virtual uint32_t GetDepthAttachmentRendererID() const { return 0; }
 
 		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_DescriptorImageInfo; }
 		VkRenderPass GetRenderPass() const { return m_RenderPass; }
@@ -51,7 +51,7 @@ namespace H2M {
 
 	private:
 		FramebufferSpecificationH2M m_Specification;
-		RendererID_H2M m_RendererID = 0;
+		uint32_t m_RendererID = 0;
 		uint32_t m_Width = 0, m_Height = 0;
 
 		std::vector<RefH2M<Image2D_H2M>> m_Attachments;

@@ -26,12 +26,12 @@ public:
 	virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) override { return 0; }
 	virtual void AddResizeCallback(const std::function<void(H2M::RefH2M<H2M::FramebufferH2M>)>& func) override {}
 	virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override;
-	virtual H2M::RendererID_H2M GetRendererID() const override;
+	virtual uint32_t GetRendererID() const override;
 	virtual H2M::RefH2M<H2M::Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const override;
 	virtual H2M::RefH2M<H2M::Image2D_H2M> GetDepthImage() const override;
 	virtual const H2M::FramebufferSpecificationH2M& GetSpecification() const override;
-	// virtual H2M::RendererID_H2M GetColorAttachmentRendererID() const override;
-	// virtual H2M::RendererID_H2M GetDepthAttachmentRendererID() const override;
+	// virtual uint32_t GetColorAttachmentRendererID() const override;
+	// virtual uint32_t GetDepthAttachmentRendererID() const override;
 
 	// virtual/abstract methods from MoravaFramebuffer
 	virtual void Generate(unsigned int width, unsigned int height) override; // Invalidate() in Hazel
@@ -70,7 +70,7 @@ public:
 
 	// virtual methods from OpenGLFramebufferHazel2D
 	virtual void ClearAttachment(uint32_t attachmentIndex, int value) override { Log::GetLogger()->error("Method not yet implemented!"); }
-	virtual H2M::RendererID_H2M GetColorAttachmentRendererID(uint32_t index = 0) const override;
+	virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override;
 
 private:
 	unsigned int m_FBO;
