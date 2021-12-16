@@ -48,4 +48,6 @@ public:
 	static void HashCombine(std::size_t& seed, const T& v, const Rest&... rest);
 
 	static const char* AttachmentFormatToString(AttachmentFormat attachmentFormat);
+	static const char* FormatToString(GLenum format);
+
 };

@@ -37,12 +37,13 @@ namespace H2M
 		{
 			switch (format)
 			{
-			case GL_RGBA8:             return GL_UNSIGNED_BYTE;
-			case GL_RG16F:
-			case GL_RG32F:
-			case GL_RGBA16F:
-			case GL_RGBA32F:           return GL_FLOAT;
-			case GL_DEPTH24_STENCIL8:  return GL_UNSIGNED_INT_24_8;
+				case GL_RGBA8:            return GL_UNSIGNED_BYTE;
+				case GL_RG16F:
+				case GL_RG32F:
+				case GL_RGBA16F:
+				case GL_RGBA32F:          return GL_FLOAT;
+				case GL_DEPTH24_STENCIL8: return GL_UNSIGNED_INT_24_8;
+				case GL_RED_INTEGER:      return GL_UNSIGNED_BYTE;
 			}
 
 			H2M_CORE_ASSERT(false, "Unknown format");
@@ -137,6 +138,10 @@ namespace H2M
 			}
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, 0);
+
+			const char* internalFormatName = Util::FormatToString(internalFormat);
+			const char* formatName = Util::FormatToString(format);
+			Log::GetLogger()->debug("OpenGLFramebufferH2M::AttachColorTexture - internalFormat: {0} format: {1} [{2}x{3}]", internalFormatName, formatName, width, height);
 		}
 
 		static void AttachDepthTexture(uint32_t id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height)
@@ -158,6 +163,10 @@ namespace H2M
 			}
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
+
+			const char* formatName = Util::FormatToString(format);
+			const char* attachmentTypeName = Util::FormatToString(attachmentType);
+			Log::GetLogger()->debug("OpenGLFramebufferH2M::AttachDepthTexture - format: {0} attachmentType: {1} [{2}x{3}]", formatName, attachmentTypeName, width, height);
 		}
 		// END static methods from OpenGLFramebufferHazel2D
 

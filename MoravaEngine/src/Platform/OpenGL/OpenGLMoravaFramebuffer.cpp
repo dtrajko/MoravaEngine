@@ -253,8 +253,7 @@ FramebufferTexture* OpenGLMoravaFramebuffer::GetTextureAttachmentColor(unsigned 
 {
 	if (m_TextureAttachmentsColor.size() < (size_t)orderID + 1)
 	{
-		throw std::runtime_error("Color texture attachment does not exist [orderID = " + std::to_string(orderID) +
-			", m_FBO = " + std::to_string(m_FBO) + "]");
+		throw std::runtime_error("Color texture attachment does not exist [orderID = " + std::to_string(orderID) + ", m_FBO = " + std::to_string(m_FBO) + "]");
 	}
 
 	return m_TextureAttachmentsColor.at(orderID);

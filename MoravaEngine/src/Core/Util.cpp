@@ -292,3 +292,21 @@ const char* Util::AttachmentFormatToString(AttachmentFormat attachmentFormat)
 		return "None";
 	}
 }
+
+const char* Util::FormatToString(GLenum format)
+{
+	switch (format)
+	{
+		case GL_RGBA8:                    return "GL_RGBA8";
+		case GL_RGBA:                     return "GL_RGBA";
+		case GL_R32I:                     return "GL_R32I";
+		case GL_RED_INTEGER:              return "GL_RED_INTEGER";
+		case GL_DEPTH24_STENCIL8:         return "GL_DEPTH24_STENCIL8";
+		case GL_INT:                      return "GL_INT";
+		case GL_DEPTH_STENCIL_ATTACHMENT: return "GL_DEPTH_STENCIL_ATTACHMENT";
+	default:
+		Log::GetLogger()->error("AttachmentFormat '{0}' undefined", format);
+		return "UNDEFINED";
+	}
+
+}
