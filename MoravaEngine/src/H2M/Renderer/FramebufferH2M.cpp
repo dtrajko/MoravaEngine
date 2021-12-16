@@ -7,7 +7,6 @@
 #include "FramebufferH2M.h"
 
 #include "H2M/Platform/OpenGL/OpenGLFramebufferH2M.h"
-#include "H2M/Platform/OpenGL/OpenGLFramebufferHazel2D.h"
 #include "H2M/Platform/Vulkan/VulkanFramebufferH2M.h"
 #include "Platform/DX11/DX11Framebuffer.h"
 

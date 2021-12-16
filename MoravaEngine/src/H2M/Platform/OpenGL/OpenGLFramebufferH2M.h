@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 #include "H2M/Renderer/FramebufferH2M.h"
 
 
@@ -23,31 +22,30 @@ namespace H2M
 
 		void Invalidate();
 
-		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
-		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
-
-		virtual void AddResizeCallback(const std::function<void(RefH2M<FramebufferH2M>)>& func) override {}
-
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
 		virtual void BindTexture(uint32_t attachmentIndex = 0, uint32_t slot = 0) const override;
 
-		virtual uint32_t GetWidth() const override { return m_Width; }
-		virtual uint32_t GetHeight() const override { return m_Height; }
+		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
 
-		virtual RendererID_H2M GetRendererID() const { return m_RendererID; }
+		virtual void ClearAttachment(uint32_t attachmentIndex, int value) override;
 
-		virtual RefH2M<Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const override { H2M_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size()); return m_ColorAttachments[attachmentIndex]; }
-		virtual RefH2M<Image2D_H2M> GetDepthImage() const override { return m_DepthAttachment; }
-
-		virtual RendererID_H2M GetColorAttachmentRendererID(uint32_t index = 0) const { return m_ColorAttachments[index]; }
-		virtual RendererID_H2M GetDepthAttachmentRendererID() const { return m_DepthAttachment; }
+		virtual RendererID_H2M GetColorAttachmentRendererID(uint32_t index = 0) const override { H2M_CORE_ASSERT(index < m_ColorAttachmentIDs.size()); return m_ColorAttachmentIDs[index]; }
+		virtual RendererID_H2M GetDepthAttachmentRendererID() const { return m_DepthAttachmentID; }
 
 		virtual const FramebufferSpecificationH2M& GetSpecification() const override { return m_Specification; }
 
-		// virtual methods from OpenGLFramebufferHazel2D
-		virtual void ClearAttachment(uint32_t attachmentIndex, int value) override { Log::GetLogger()->error("Method not yet implemented!"); }
+		virtual void AddResizeCallback(const std::function<void(RefH2M<FramebufferH2M>)>& func) override {}
+
+		virtual uint32_t GetWidth() const override { return m_Specification.Width; }
+		virtual uint32_t GetHeight() const override { return m_Specification.Height; }
+
+		virtual RendererID_H2M GetRendererID() const override { return m_RendererID; }
+
+		virtual RefH2M<Image2D_H2M> GetImage(uint32_t attachmentIndex = 0) const override { H2M_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size()); return m_ColorAttachments[attachmentIndex]; }
+		virtual RefH2M<Image2D_H2M> GetDepthImage() const override { return m_DepthAttachment; }
 
 	private:
 		FramebufferSpecificationH2M m_Specification;
@@ -59,10 +57,8 @@ namespace H2M
 		std::vector<RendererID_H2M> m_ColorAttachmentIDs;
 		RendererID_H2M m_DepthAttachmentID = 0;
 
-		std::vector<ImageFormatH2M> m_ColorAttachmentFormats;
-		ImageFormatH2M m_DepthAttachmentFormat = ImageFormatH2M::None;
-
-		uint32_t m_Width = 0, m_Height = 0;
+		// std::vector<ImageFormatH2M> m_ColorAttachmentFormats;
+		// ImageFormatH2M m_DepthAttachmentFormat = ImageFormatH2M::None;
 
 		std::vector<FramebufferTextureSpecificationH2M> m_ColorAttachmentSpecifications;
 		FramebufferTextureSpecificationH2M m_DepthAttachmentSpecification = ImageFormatH2M::None;

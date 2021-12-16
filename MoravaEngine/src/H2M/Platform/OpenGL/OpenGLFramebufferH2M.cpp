@@ -20,6 +20,7 @@ namespace H2M
 
 	namespace Utils
 	{
+
 		static GLenum TextureTarget(bool multisampled)
 		{
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
@@ -27,7 +28,7 @@ namespace H2M
 
 		static void CreateTextures(bool multisampled, RendererID_H2M* outID, uint32_t count)
 		{
-			glCreateTextures(TextureTarget(multisampled), 1, outID);
+			glCreateTextures(TextureTarget(multisampled), count, outID);
 		}
 
 		static void BindTexture(bool multisampled, RendererID_H2M id)
@@ -82,45 +83,6 @@ namespace H2M
 			return image;
 		}
 
-		static RefH2M<Image2D_H2M> AttachDepthTexture(int samples, ImageFormatH2M format, uint32_t width, uint32_t height)
-		{
-#if 0
-			bool multisampled = samples > 1;
-			if (multisampled)
-			{
-				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
-			}
-			else
-			{
-				glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
-
-				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(TextureTarget(multisampled), GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			}
-
-			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
-#endif
-			bool multisampled = samples > 1;
-			RefH2M<Image2D_H2M> image;
-			if (multisampled)
-			{
-				//glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
-			}
-			else
-			{
-				image = Image2D_H2M::Create(format, width, height);
-				image->Invalidate();
-			}
-
-			RefH2M<OpenGLImage2D_H2M> glImage = image.As<OpenGLImage2D_H2M>();
-			glFramebufferTexture2D(GL_FRAMEBUFFER, Utils::DepthAttachmentType(format), TextureTarget(multisampled), glImage->GetRendererID(), 0);
-			return image;
-
-		}
-
-		// BEGIN static methods from OpenGLFramebufferHazel2D
 		static void AttachColorTexture(uint32_t id, int samples, GLenum internalFormat, GLenum format, uint32_t width, uint32_t height, int index)
 		{
 			bool multisampled = samples > 1;
@@ -144,6 +106,25 @@ namespace H2M
 			const char* internalFormatName = Util::FormatToString(internalFormat);
 			const char* formatName = Util::FormatToString(format);
 			Log::GetLogger()->debug("OpenGLFramebufferH2M::AttachColorTexture - internalFormat: {0} format: {1} [{2}x{3}]", internalFormatName, formatName, width, height);
+		}
+
+		static RefH2M<Image2D_H2M> AttachDepthTexture(int samples, ImageFormatH2M format, uint32_t width, uint32_t height)
+		{
+			bool multisampled = samples > 1;
+			RefH2M<Image2D_H2M> image;
+			if (multisampled)
+			{
+				// glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
+			}
+			else
+			{
+				image = Image2D_H2M::Create(format, width, height);
+				image->Invalidate();
+			}
+
+			RefH2M<OpenGLImage2D_H2M> glImage = image.As<OpenGLImage2D_H2M>();
+			glFramebufferTexture2D(GL_FRAMEBUFFER, Utils::DepthAttachmentType(format), TextureTarget(multisampled), glImage->GetRendererID(), 0);
+			return image;
 		}
 
 		static void AttachDepthTexture(uint32_t id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height)
@@ -170,7 +151,28 @@ namespace H2M
 			const char* attachmentTypeName = Util::FormatToString(attachmentType);
 			Log::GetLogger()->debug("OpenGLFramebufferH2M::AttachDepthTexture - format: {0} attachmentType: {1} [{2}x{3}]", formatName, attachmentTypeName, width, height);
 		}
-		// END static methods from OpenGLFramebufferHazel2D
+
+		static bool IsDepthFormatHazel2D(ImageFormatH2M format)
+		{
+			switch (format)
+			{
+				case ImageFormatH2M::DEPTH24STENCIL8:  return true;
+			}
+
+			return false;
+		}
+
+		static GLenum HazelFBTextureFormatToGL(ImageFormatH2M format)
+		{
+			switch (format)
+			{
+				case ImageFormatH2M::RGBA8:       return GL_RGBA8;
+				case ImageFormatH2M::RED_INTEGER: return GL_RED_INTEGER;
+			}
+
+			H2M_CORE_ASSERT(false);
+			return 0;
+		}
 
 	}
 
@@ -190,17 +192,6 @@ namespace H2M
 		}
 
 		Invalidate();
-
-		//	if (!spec.SwapChainTarget || spec.Width == 0 || spec.Height == 0)
-		//	{
-		//		auto width = Application::Get()->GetWindow()->GetWidth();
-		//		auto height = Application::Get()->GetWindow()->GetHeight();
-		//		Resize((uint32_t)(width * spec.Scale), (uint32_t)(height * spec.Scale), true);
-		//	}
-		//	else
-		//	{
-		//		Resize(spec.Width, spec.Height, true);
-		//	}
 	}
 
 	OpenGLFramebufferH2M::~OpenGLFramebufferH2M()
@@ -208,7 +199,9 @@ namespace H2M
 		GLuint rendererID = m_RendererID;
 		// HazelRenderer::Submit([rendererID]() {});
 
-		glDeleteFramebuffers(1, &rendererID);
+		glDeleteFramebuffers(1, &m_RendererID);
+		glDeleteTextures((GLsizei)m_ColorAttachmentIDs.size(), m_ColorAttachmentIDs.data());
+		glDeleteTextures(1, &m_DepthAttachmentID);
 	}
 
 	void OpenGLFramebufferH2M::Invalidate()
@@ -239,12 +232,12 @@ namespace H2M
 				Utils::BindTexture(multisample, m_ColorAttachmentIDs[i]);
 				switch (m_ColorAttachmentSpecifications[i].Format)
 				{
-				case ImageFormatH2M::RGBA8:
-					Utils::AttachColorTexture(m_ColorAttachmentIDs[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, (int)i);
-					break;
-				case ImageFormatH2M::RED_INTEGER:
-					Utils::AttachColorTexture(m_ColorAttachmentIDs[i], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, (int)i);
-					break;
+					case ImageFormatH2M::RGBA8:
+						Utils::AttachColorTexture(m_ColorAttachmentIDs[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, (int)i);
+						break;
+					case ImageFormatH2M::RED_INTEGER:
+						Utils::AttachColorTexture(m_ColorAttachmentIDs[i], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, (int)i);
+						break;
 				}
 			}
 		}
@@ -255,9 +248,9 @@ namespace H2M
 			Utils::BindTexture(multisample, m_DepthAttachmentID);
 			switch (m_DepthAttachmentSpecification.Format)
 			{
-			case ImageFormatH2M::DEPTH24STENCIL8:
-				Utils::AttachDepthTexture(m_DepthAttachmentID, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
-				break;
+				case ImageFormatH2M::DEPTH24STENCIL8:
+					Utils::AttachDepthTexture(m_DepthAttachmentID, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+					break;
 			}
 		}
 
@@ -276,89 +269,6 @@ namespace H2M
 		H2M_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	}
-
-	void OpenGLFramebufferH2M::Resize(uint32_t width, uint32_t height, bool forceRecreate)
-	{
-		if (width == 0 || height == 0 || width > s_MaxFramebufferSize || height > s_MaxFramebufferSize)
-		{
-			H2M_CORE_WARN("Attempted to resize framebuffer to {0}, {1}", width, height);
-			return;
-		}
-
-		m_Specification.Width = width;
-		m_Specification.Height = height;
-
-		Invalidate();
-	}
-
-	/**
-	 * Replaced with OpenGLFramebufferHazel2D::Invalidate()
-	 *
-	void OpenGLFramebufferH2M::Resize(uint32_t width, uint32_t height, bool forceRecreate)
-	{
-		if (!forceRecreate && (m_Width == width && m_Height == height)) return;
-
-		m_Width = width;
-		m_Height = height;
-
-		// RefH2M<OpenGLFramebufferH2M> instance = this;
-		// HazelRenderer::Submit([instance]() mutable {});
-
-		{
-			if (m_RendererID)
-			{
-				glDeleteFramebuffers(1, &m_RendererID);
-
-				m_ColorAttachments.clear();
-			}
-
-			glGenFramebuffers(1, &m_RendererID);
-			glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
-
-			if (m_ColorAttachmentFormats.size())
-			{
-				m_ColorAttachments.resize(m_ColorAttachmentFormats.size());
-
-				// Create color attachments
-				for (size_t i = 0; i < m_ColorAttachments.size(); i++)
-				{
-					m_ColorAttachments[i] = Utils::CreateAndAttachColorAttachment(m_Specification.Samples, m_ColorAttachmentFormats[i], m_Width, m_Height, (int)i);
-				}
-			}
-
-			if (m_DepthAttachmentFormat != ImageFormatH2M::None)
-			{
-				m_DepthAttachment = Utils::AttachDepthTexture(m_Specification.Samples, m_DepthAttachmentFormat, m_Width, m_Height);
-			}
-
-			if (m_ColorAttachments.size() > 1)
-			{
-				H2M_CORE_ASSERT(m_ColorAttachments.size() <= 4);
-				GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-				glDrawBuffers((GLsizei)m_ColorAttachments.size(), buffers);
-			}
-			else if (m_ColorAttachments.empty())
-			{
-				// Only depth-pass
-				glDrawBuffer(GL_NONE);
-			}
-
-			H2M_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
-
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		}
-	}
-	*/
-
-	int OpenGLFramebufferH2M::ReadPixel(uint32_t attachmentIndex, int x, int y)
-	{
-		H2M_CORE_ASSERT(attachmentIndex < m_ColorAttachments.size());
-
-		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
-		int pixelData;
-		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
-		return pixelData;
 	}
 
 	void OpenGLFramebufferH2M::Bind() const
@@ -393,4 +303,38 @@ namespace H2M
 
 		glBindTextureUnit(slot, m_ColorAttachments[attachmentIndex]);
 	}
+
+	void OpenGLFramebufferH2M::Resize(uint32_t width, uint32_t height, bool forceRecreate)
+	{
+		if (width == 0 || height == 0 || width > s_MaxFramebufferSize || height > s_MaxFramebufferSize)
+		{
+			H2M_CORE_WARN("Attempted to resize framebuffer to {0}, {1}", width, height);
+			return;
+		}
+
+		m_Specification.Width = width;
+		m_Specification.Height = height;
+
+		Invalidate();
+	}
+
+	int OpenGLFramebufferH2M::ReadPixel(uint32_t attachmentIndex, int x, int y)
+	{
+		H2M_CORE_ASSERT(attachmentIndex < m_ColorAttachmentIDs.size());
+
+		glReadBuffer(GL_COLOR_ATTACHMENT0 + attachmentIndex);
+		int pixelData;
+		glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+		return pixelData;
+	}
+
+	void OpenGLFramebufferH2M::ClearAttachment(uint32_t attachmentIndex, int value)
+	{
+		H2M_CORE_ASSERT(attachmentIndex < m_ColorAttachmentIDs.size());
+
+		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
+		glClearTexImage(m_ColorAttachmentIDs[attachmentIndex], 0,
+			Utils::HazelFBTextureFormatToGL(spec.Format), GL_INT, &value);
+	}
+
 }
