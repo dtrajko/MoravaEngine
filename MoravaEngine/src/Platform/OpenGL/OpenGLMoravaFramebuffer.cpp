@@ -111,8 +111,9 @@ void OpenGLMoravaFramebuffer::Generate(unsigned int width, unsigned int height)
 		{
 		case AttachmentFormat::Color:
 		case AttachmentFormat::RGBA:
-		case AttachmentFormat::RGBA16F:
 		case AttachmentFormat::RGBA8:
+		case AttachmentFormat::RGBA16F:
+		case AttachmentFormat::RGBA32F:
 		case AttachmentFormat::RED_INTEGER:
 			CreateTextureAttachmentColor(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height, m_Multisample, attachmentSpecs.attachmentFormat);
 			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::{0}, Multisample: {1}, {2}x{3}]", attachmentFormatName, m_Multisample, width, height);

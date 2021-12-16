@@ -59,17 +59,17 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 		m_Spec.Format = GL_RGBA;
 		m_Spec.Type = GL_UNSIGNED_BYTE;
 		break;
-	case AttachmentFormat::RGBA16F:
-		m_Attachment = GL_COLOR_ATTACHMENT0 + orderID;
-		m_Spec.InternalFormat = GL_RGBA;
-		m_Spec.Format = GL_RGBA;
-		m_Spec.Type = GL_RGBA16F;
-		break;
 	case AttachmentFormat::RGBA8:
 		m_Attachment = GL_COLOR_ATTACHMENT0 + orderID;
 		m_Spec.InternalFormat = GL_RGBA;
 		m_Spec.Format = GL_RGBA;
 		m_Spec.Type = GL_RGBA8;
+		break;
+	case AttachmentFormat::RGBA16F:
+		m_Attachment = GL_COLOR_ATTACHMENT0 + orderID;
+		m_Spec.InternalFormat = GL_RGBA;
+		m_Spec.Format = GL_RGBA;
+		m_Spec.Type = GL_RGBA16F;
 		break;
 	case AttachmentFormat::RED_INTEGER:
 		m_Attachment = GL_COLOR_ATTACHMENT0 + orderID;

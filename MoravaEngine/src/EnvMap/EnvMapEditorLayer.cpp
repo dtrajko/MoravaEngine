@@ -256,7 +256,7 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
     H2M::FramebufferSpecificationH2M framebufferSpecH2M;
     framebufferSpecH2M.Width = width;
     framebufferSpecH2M.Height = height;
-    framebufferSpecH2M.Attachments = { H2M::ImageFormatH2M::RGBA, H2M::ImageFormatH2M::RED_INTEGER, H2M::ImageFormatH2M::Depth };
+    framebufferSpecH2M.Attachments = { H2M::ImageFormatH2M::RGBA8, H2M::ImageFormatH2M::RED_INTEGER, H2M::ImageFormatH2M::Depth };
     m_RenderFramebufferTempH2M = H2M::FramebufferH2M::Create(framebufferSpecH2M);
 }
 
