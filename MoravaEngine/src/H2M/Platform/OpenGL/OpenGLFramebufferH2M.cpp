@@ -16,6 +16,8 @@
 namespace H2M
 {
 
+	static const uint32_t s_MaxFramebufferSize = 8192;
+
 	namespace Utils
 	{
 		static GLenum TextureTarget(bool multisampled)
@@ -278,6 +280,12 @@ namespace H2M
 
 	void OpenGLFramebufferH2M::Resize(uint32_t width, uint32_t height, bool forceRecreate)
 	{
+		if (width == 0 || height == 0 || width > s_MaxFramebufferSize || height > s_MaxFramebufferSize)
+		{
+			H2M_CORE_WARN("Attempted to resize framebuffer to {0}, {1}", width, height);
+			return;
+		}
+
 		m_Specification.Width = width;
 		m_Specification.Height = height;
 
