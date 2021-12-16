@@ -276,6 +276,14 @@ namespace H2M
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
+	void OpenGLFramebufferH2M::Resize(uint32_t width, uint32_t height, bool forceRecreate)
+	{
+		m_Specification.Width = width;
+		m_Specification.Height = height;
+
+		Invalidate();
+	}
+
 	/**
 	 * Replaced with OpenGLFramebufferHazel2D::Invalidate()
 	 *

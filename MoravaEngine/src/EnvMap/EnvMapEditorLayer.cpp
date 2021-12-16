@@ -257,7 +257,7 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
     framebufferSpecH2M.Width = width;
     framebufferSpecH2M.Height = height;
     framebufferSpecH2M.Attachments = { H2M::ImageFormatH2M::RGBA, H2M::ImageFormatH2M::RED_INTEGER, H2M::ImageFormatH2M::Depth };
-    H2M::RefH2M<H2M::FramebufferH2M> renderFramebufferH2M = H2M::FramebufferH2M::Create(framebufferSpecH2M);
+    m_RenderFramebufferTempH2M = H2M::FramebufferH2M::Create(framebufferSpecH2M);
 }
 
 H2M::EntityH2M EnvMapEditorLayer::CreateEntity(const std::string& name)
@@ -1296,8 +1296,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
         glm::vec2 viewportPanelSize = glm::vec2(viewportSize.x, viewportSize.y);
 
-        ResizeViewport(viewportPanelSize, m_RenderFramebuffer);
-        ResizeViewport(viewportPanelSize, m_PostProcessingFramebuffer);
+        ResizeViewport(viewportPanelSize);
 
         uint64_t textureID;
         if (m_PostProcessingEnabled)
@@ -1993,7 +1992,7 @@ void EnvMapEditorLayer::SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transfor
     }
 }
 
-void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, H2M::RefH2M<MoravaFramebuffer> renderFramebuffer)
+void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize)
 {
     float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
 
@@ -2003,7 +2002,10 @@ void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize, H2M::RefH2M<
 
     if (viewportPanelSize != m_ViewportMainSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
     {
-        renderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+        m_RenderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+        m_PostProcessingFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+        m_RenderFramebufferTempH2M->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+
         m_ViewportMainSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
     }
 }

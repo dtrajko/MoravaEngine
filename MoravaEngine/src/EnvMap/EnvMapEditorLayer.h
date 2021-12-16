@@ -133,7 +133,7 @@ public:
 
 	// from SceneHazelEnvMap
 	void SetupRenderFramebuffer();
-	void ResizeViewport(glm::vec2 viewportPanelSize, H2M::RefH2M<MoravaFramebuffer> renderFramebuffer);
+	void ResizeViewport(glm::vec2 viewportPanelSize);
 
 	H2M::CameraH2M* GetActiveCamera() const { return m_ActiveCamera; }
 
@@ -169,6 +169,8 @@ public:
 	glm::vec2 m_ViewportMainSize;
 	H2M::RefH2M<MoravaFramebuffer> m_RenderFramebuffer;
 	H2M::RefH2M<MoravaFramebuffer> m_PostProcessingFramebuffer;
+
+	H2M::RefH2M<H2M::FramebufferH2M> m_RenderFramebufferTempH2M;
 
 private:
 	H2M::RefH2M<MoravaShader> m_ShaderShadow;
