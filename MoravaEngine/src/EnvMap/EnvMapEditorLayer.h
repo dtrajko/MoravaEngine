@@ -149,6 +149,8 @@ private:
 	std::pair<glm::vec3, glm::vec3> CastRay(float mx, float my); // EditorLayer::CastRay()
 	std::pair<float, float> GetMouseViewportSpace();
 	std::vector<glm::mat4> CalculateLightTransform(glm::mat4 lightProj, glm::vec3 position);
+	std::pair<int, int> GetMouseCoordsInViewport();
+	std::pair<int, int> GetMouseCoordsInViewportFlipY();
 
 public:
 	std::string m_Filepath;
@@ -164,30 +166,14 @@ public:
 	glm::mat4* m_RelativeTransform = nullptr;
 	bool m_AllowViewportCameraEvents = true; // EditorLayer (Raypicking)
 
-	// viewports public
-	glm::vec2 m_ImGuiViewportMain;
-	glm::vec2 m_ViewportSizePrevious = { 0.0f, 0.0f };
+	// BEGIN Render Framebuffers
 	H2M::RefH2M<MoravaFramebuffer> m_RenderFramebuffer;
 	H2M::RefH2M<MoravaFramebuffer> m_PostProcessingFramebuffer;
 
 	H2M::RefH2M<H2M::FramebufferH2M> m_RenderFramebufferTempH2M;
+	// END Render Framebuffers
 
-private:
-	H2M::RefH2M<MoravaShader> m_ShaderShadow;
-	H2M::RefH2M<MoravaShader> m_ShaderOmniShadow;
-	H2M::RefH2M<MoravaShader> m_ShaderPostProcessing;
-	H2M::RefH2M<MoravaShader> m_ShaderBloomBlur;
-
-	int m_PostProcessingEffect = 0;
-	bool m_PostProcessingEnabled = false;
-
-	H2M::RefH2M<H2M::TextureCubeH2M> m_SkyboxTexture;
-
-	H2M::EntityH2M m_DirectionalLightEntity;
-	glm::mat4 m_LightProjectionMatrix;
-	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
-	/** END properties Hazelnut/EditorLayer **/
-
+	// BEGIN Viewport
 	struct Viewport
 	{
 		int X;
@@ -215,10 +201,35 @@ private:
 	bool m_ViewportHovered = false;
 
 	// Used in EnvMapEditorLayer::CastRay
-	glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
 	glm::vec2 m_ViewportBounds[2];
+	glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
+	glm::vec2 m_ViewportSizePrevious = { 0.0f, 0.0f };
 
 	EventCooldown m_ResizeViewport;
+
+	glm::vec2 m_ImGuiViewportMain;
+
+	std::pair<uint32_t, uint32_t> m_MouseCoordsInViewport = { 0, 0 };
+	std::pair<uint32_t, uint32_t> m_MouseCoordsInViewportFlipY = { 0, 0 };
+	// END Viewport
+
+	int m_EntityID = -1;
+
+private:
+	H2M::RefH2M<MoravaShader> m_ShaderShadow;
+	H2M::RefH2M<MoravaShader> m_ShaderOmniShadow;
+	H2M::RefH2M<MoravaShader> m_ShaderPostProcessing;
+	H2M::RefH2M<MoravaShader> m_ShaderBloomBlur;
+
+	int m_PostProcessingEffect = 0;
+	bool m_PostProcessingEnabled = false;
+
+	H2M::RefH2M<H2M::TextureCubeH2M> m_SkyboxTexture;
+
+	H2M::EntityH2M m_DirectionalLightEntity;
+	glm::mat4 m_LightProjectionMatrix;
+	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
+	/** END properties Hazelnut/EditorLayer **/
 
 	// Materials
 	float m_MaterialSpecular = 0.0f;

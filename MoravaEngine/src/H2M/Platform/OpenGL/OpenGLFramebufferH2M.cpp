@@ -236,7 +236,7 @@ namespace H2M
 						Utils::AttachColorTexture(m_ColorAttachmentIDs[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, (int)i);
 						break;
 					case ImageFormatH2M::RED_INTEGER:
-						Utils::AttachColorTexture(m_ColorAttachmentIDs[i], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, (int)i);
+						Utils::AttachColorTexture(m_ColorAttachmentIDs[i], m_Specification.Samples, GL_R16I/*GL_R32I*/, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, (int)i);
 						break;
 				}
 			}

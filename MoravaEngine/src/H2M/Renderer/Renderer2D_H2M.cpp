@@ -508,6 +508,8 @@ namespace H2M
 			s_Data.CircleVertexBufferPtr++;
 		}
 
+		// Log::GetLogger()->info("Renderer2D_H2M::DrawCircle EntityID: ['{0}']", entityID);
+
 		s_Data.CircleIndexCount += 6;
 
 		s_Data.Stats.QuadCount++;

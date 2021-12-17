@@ -254,11 +254,11 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
     m_PostProcessingFramebuffer->Generate(width, height);
 
     // Framebuffer with multiple attachments Hazel2D style
-    H2M::FramebufferSpecificationH2M framebufferSpecH2M;
-    framebufferSpecH2M.Width = width;
-    framebufferSpecH2M.Height = height;
-    framebufferSpecH2M.Attachments = { H2M::ImageFormatH2M::RGBA8, H2M::ImageFormatH2M::RED_INTEGER, H2M::ImageFormatH2M::Depth };
-    m_RenderFramebufferTempH2M = H2M::FramebufferH2M::Create(framebufferSpecH2M);
+    // H2M::FramebufferSpecificationH2M framebufferSpecH2M;
+    // framebufferSpecH2M.Width = width;
+    // framebufferSpecH2M.Height = height;
+    // framebufferSpecH2M.Attachments = { H2M::ImageFormatH2M::RGBA8, H2M::ImageFormatH2M::RED_INTEGER, H2M::ImageFormatH2M::Depth };
+    // m_RenderFramebufferTempH2M = H2M::FramebufferH2M::Create(framebufferSpecH2M);
 }
 
 H2M::EntityH2M EnvMapEditorLayer::CreateEntity(const std::string& name)
@@ -414,13 +414,12 @@ void EnvMapEditorLayer::OnUpdate(float ts)
             m_ActiveScene->OnUpdateEditor(ts, *m_EditorCamera);
 
             // Calculate mouse coordinates within the viewport
-            auto [mx, my] = ImGui::GetMousePos();
-            mx -= m_ViewportBounds[0].x;
-            my -= m_ViewportBounds[0].y;
-            glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
-
-            int mouseX = (int)mx;
-            int mouseY = (int)my;
+            // auto [mx, my] = ImGui::GetMousePos();
+            // mx -= m_ViewportBounds[0].x;
+            // my -= m_ViewportBounds[0].y;
+            // glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+            // int mouseX = (int)mx;
+            // int mouseY = (int)my;
 
             m_EditorScene->OnRenderEditor(H2M::RefH2M<H2M::SceneRendererH2M>(), ts, *m_EditorCamera);
 
@@ -541,7 +540,8 @@ void EnvMapEditorLayer::OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float 
     // m_ViewportSize.x = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     // m_ViewportSize.y = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-    if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f) {
+    if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
+    {
         m_ActiveCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
     }
 }
@@ -1297,16 +1297,19 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             ImGui::Text(buffer);
             ImGui::Separator();
 
-            auto [mouseX, mouseY] = GetMouseViewportSpace();
-            int absMouseX = (mouseX * m_ViewportSize.x + m_ViewportSize.x) / 2;
-            int absMouseY = (m_ViewportSize.y - mouseY * m_ViewportSize.y) / 2;
-            absMouseX = absMouseX < 0 ? 0 : absMouseX;
-            absMouseY = absMouseY < 0 ? 0 : absMouseY;
-            absMouseX = absMouseX > m_ViewportSize.x ? m_ViewportSize.x : absMouseX;
-            absMouseY = absMouseY > m_ViewportSize.y ? m_ViewportSize.y : absMouseY;
-            sprintf(buffer, "Mouse Coordinates in Viewport [ %i %i ]", absMouseX, absMouseY);
+            m_MouseCoordsInViewport = GetMouseCoordsInViewport();
+            sprintf(buffer, "Mouse Coordinates in Viewport [ %i %i ]", m_MouseCoordsInViewport.first, m_MouseCoordsInViewport.second);
             ImGui::Text(buffer);
             ImGui::Separator();
+
+            m_MouseCoordsInViewportFlipY = GetMouseCoordsInViewportFlipY();
+            sprintf(buffer, "Mouse Coordinates in Viewport Flip Y [ %i %i ]", m_MouseCoordsInViewportFlipY.first, m_MouseCoordsInViewportFlipY.second);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "EntityID [ %i ]", m_EntityID);
+            ImGui::Text(buffer);
+            ImGui::Separator();            
         }
         ImGui::End();
     }
@@ -1321,7 +1324,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
     // TheCherno ImGui Viewport displaying the framebuffer content
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-    ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    ImGui::Begin("Viewport");
     {
         auto viewportOffset = ImGui::GetCursorPos(); // Includes tab bar
 
@@ -2054,7 +2057,7 @@ void EnvMapEditorLayer::ResizeViewport()
     {
         m_RenderFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
         m_PostProcessingFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-        m_RenderFramebufferTempH2M->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        // m_RenderFramebufferTempH2M->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
         m_ViewportSizePrevious = glm::vec2(m_ViewportSize.x, m_ViewportSize.y);
     }
@@ -2285,6 +2288,27 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
             }
         }
     }
+
+    // BEGIN Mouse picking based on RED_INTEGER framebuffer attachment
+    m_MouseCoordsInViewportFlipY = GetMouseCoordsInViewportFlipY();
+
+    m_EntityID = -1;
+    if (m_MouseCoordsInViewportFlipY.first > 0 && m_MouseCoordsInViewportFlipY.second > 0 &&
+        m_MouseCoordsInViewportFlipY.first < m_ViewportSize.x && m_MouseCoordsInViewportFlipY.second < m_ViewportSize.y)
+    {
+        m_RenderFramebuffer->Bind(); // required
+        m_EntityID = m_RenderFramebuffer->ReadPixel(1, m_MouseCoordsInViewportFlipY.first, m_MouseCoordsInViewportFlipY.second);
+        m_RenderFramebuffer->Unbind();
+
+        if (m_EntityID != -1)
+        {
+            H2M::EntityH2M entity = { (entt::entity)m_EntityID, m_ActiveScene.Raw() };
+            SelectedSubmesh selectedSubmesh = SelectedSubmesh{ entity, H2M::RefH2M<H2M::SubmeshH2M>(), 0 };
+            AddSubmeshToSelectionContext(selectedSubmesh);
+        }
+    }
+    // END Mouse picking based on RED_INTEGER framebuffer attachment
+
     return false;
 }
 
@@ -2337,7 +2361,28 @@ std::pair<float, float> EnvMapEditorLayer::GetMouseViewportSpace()
     // m_ViewportSize.x = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
     // m_ViewportSize.y = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
-    return { (mx / m_ViewportSize.x) * 2.0f - 1.0f, ((my / m_ViewportSize.y) * 2.0f - 1.0f) * -1.0f };
+    return { (mx / m_ViewportSize.x) * 2.0f - 1.0f, ((my / m_ViewportSize.y) * 2.0f - 1.0f) * - 1.0f };
+}
+
+std::pair<int, int> EnvMapEditorLayer::GetMouseCoordsInViewport()
+{
+    auto [mouseX, mouseY] = GetMouseViewportSpace();
+    int mouseCoordX = (mouseX * m_ViewportSize.x + m_ViewportSize.x) / 2;
+    int mouseCoordY = (m_ViewportSize.y - mouseY * m_ViewportSize.y) / 2;
+    mouseCoordX = mouseCoordX < 0 ? 0 : mouseCoordX;
+    mouseCoordY = mouseCoordY < 0 ? 0 : mouseCoordY;
+    mouseCoordX = mouseCoordX > m_ViewportSize.x ? m_ViewportSize.x : mouseCoordX;
+    mouseCoordY = mouseCoordY > m_ViewportSize.y ? m_ViewportSize.y : mouseCoordY;
+
+    return std::pair<int, int>(mouseCoordX, mouseCoordY);
+}
+
+std::pair<int, int> EnvMapEditorLayer::GetMouseCoordsInViewportFlipY()
+{
+    std::pair<int, int> mouseCoordsInViewport = GetMouseCoordsInViewport();
+    int mouseCoordX = mouseCoordsInViewport.first;
+    int mouseCoordY = m_ViewportSize.y - mouseCoordsInViewport.second;
+    return std::pair<int, int>(mouseCoordX, mouseCoordY);
 }
 
 std::pair<glm::vec3, glm::vec3> EnvMapEditorLayer::CastRay(float mx, float my)
@@ -2524,6 +2569,7 @@ void EnvMapEditorLayer::OnRender(Window* mainWindow)
 
     m_RenderFramebuffer->Bind();
     m_RenderFramebuffer->Clear(); // Clear the window
+    m_RenderFramebuffer->ClearAttachment(1, -7);
 
     EnvMapSceneRenderer::GetGeoPass()->GetSpecification().TargetFramebuffer = m_RenderFramebuffer;
 

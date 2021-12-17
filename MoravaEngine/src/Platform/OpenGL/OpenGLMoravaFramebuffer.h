@@ -69,7 +69,7 @@ public:
 	void Resize(uint32_t width, uint32_t height);
 
 	// virtual methods from OpenGLFramebufferHazel2D
-	virtual void ClearAttachment(uint32_t attachmentIndex, int value) override { Log::GetLogger()->error("Method not yet implemented!"); }
+	virtual void ClearAttachment(uint32_t attachmentIndex, int value) override;
 	virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override;
 
 private:

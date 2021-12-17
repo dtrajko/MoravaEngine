@@ -36,5 +36,7 @@ void main()
 	Output.Thickness = a_Thickness;
 	Output.Fade = a_Fade;
 
+	v_EntityID = a_EntityID;
+
 	gl_Position = u_ViewProjection * vec4(a_WorldPosition, 1.0);
 }

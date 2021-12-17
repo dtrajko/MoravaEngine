@@ -73,7 +73,7 @@ FramebufferTexture::FramebufferTexture(unsigned int width, unsigned int height, 
 		break;
 	case AttachmentFormat::RED_INTEGER:
 		m_Attachment = GL_COLOR_ATTACHMENT0 + orderID;
-		m_Spec.InternalFormat = GL_R32I,
+		m_Spec.InternalFormat = GL_R16I/*GL_R32I*/,
 		m_Spec.Format = GL_RED_INTEGER;
 		m_Spec.Type = GL_UNSIGNED_BYTE;
 		break;

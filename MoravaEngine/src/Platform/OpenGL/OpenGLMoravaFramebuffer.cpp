@@ -11,6 +11,23 @@
 
 static const uint32_t s_MaxFramebufferSize = 8192;
 
+namespace Utils
+{
+
+	static GLenum HazelFBTextureFormatToGL(AttachmentFormat format)
+	{
+		switch (format)
+		{
+			case AttachmentFormat::RGBA8:       return GL_RGBA8;
+			case AttachmentFormat::RED_INTEGER: return GL_RED_INTEGER;
+		}
+
+		H2M_CORE_ASSERT(false);
+		return 0;
+	}
+
+}
+
 OpenGLMoravaFramebuffer::OpenGLMoravaFramebuffer()
 {
 	m_FBO = 0;
@@ -314,6 +331,23 @@ void OpenGLMoravaFramebuffer::Resize(uint32_t width, uint32_t height)
 	m_FramebufferSpecs.Height = height;
 
 	Generate(m_FramebufferSpecs.Width, m_FramebufferSpecs.Height);
+}
+
+void OpenGLMoravaFramebuffer::ClearAttachment(uint32_t attachmentIndex, int value)
+{
+	if (attachmentIndex >= m_ColorAttachmentSpecs.size())
+	{
+		Log::GetLogger()->error("attachmentIndex [{0}] does not exist in m_ColorAttachmentSpecs!", attachmentIndex);
+	}
+
+	if (attachmentIndex >= m_TextureAttachmentsColor.size())
+	{
+		Log::GetLogger()->error("attachmentIndex [{0}] does not exist in m_TextureAttachmentsColor!", attachmentIndex);
+	}
+
+	auto& spec = m_ColorAttachmentSpecs[attachmentIndex];
+	uint32_t rendererID = m_TextureAttachmentsColor[attachmentIndex]->GetRendererID();
+	glClearTexImage(rendererID, 0, Utils::HazelFBTextureFormatToGL(spec.attachmentFormat), GL_INT, &value);
 }
 
 uint32_t OpenGLMoravaFramebuffer::GetColorAttachmentRendererID(uint32_t index) const

@@ -299,6 +299,8 @@ const char* Util::FormatToString(GLenum format)
 	{
 		case GL_RGBA8:                    return "GL_RGBA8";
 		case GL_RGBA:                     return "GL_RGBA";
+		case GL_R8I:                      return "GL_R8I";
+		case GL_R16I:                     return "GL_R16I";
 		case GL_R32I:                     return "GL_R32I";
 		case GL_RED_INTEGER:              return "GL_RED_INTEGER";
 		case GL_DEPTH24_STENCIL8:         return "GL_DEPTH24_STENCIL8";
