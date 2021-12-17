@@ -1226,7 +1226,25 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 ImGui::Text(buffer);
                 ImGui::Separator();
 
-                sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
+                // sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
+                // ImGui::Text(buffer);
+                // ImGui::Separator();
+
+                // int mouseInViewportX = mp->m_ScreenMouseX - (int)m_ViewportBounds[0].x;
+                // int mouseInViewportY = mp->m_ScreenMouseY - (int)m_ViewportBounds[0].y;
+                // sprintf(buffer, "Viewport Mouse [ %i %i ]", mouseInViewportX, mouseInViewportY);
+                // ImGui::Text(buffer);
+                // ImGui::Separator();
+
+                int viewportTitlebarHeight = 22;
+                auto [mouseX, mouseY] = GetMouseViewportSpace();
+                int absMouseX = (mouseX * m_ViewportMainSize.x + m_ViewportMainSize.x) / 2;
+                int absMouseY = (m_ViewportMainSize.y - mouseY * m_ViewportMainSize.y) / 2;
+                absMouseX = absMouseX < 0 ? 0 : absMouseX;
+                absMouseY = absMouseY < 0 ? 0 : absMouseY;
+                absMouseX = absMouseX > m_ViewportMainSize.x ? m_ViewportMainSize.x : absMouseX;
+                absMouseY = absMouseY > m_ViewportMainSize.y ? m_ViewportMainSize.y : absMouseY;
+                sprintf(buffer, "Mouse Viewport Space [ %i %i ]", absMouseX, absMouseY);
                 ImGui::Text(buffer);
                 ImGui::Separator();
 
@@ -2168,6 +2186,7 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
     if (e.GetMouseButton() == (int)MouseH2M::ButtonLeft && !ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !Input::IsKeyPressed(KeyH2M::LeftAlt))
     {
         auto [mouseX, mouseY] = GetMouseViewportSpace();
+
         if (mouseX > -1.0f && mouseX < 1.0f && mouseY > -1.0f && mouseY < 1.0f)
         {
             auto [origin, direction] = CastRay(mouseX, mouseY);
