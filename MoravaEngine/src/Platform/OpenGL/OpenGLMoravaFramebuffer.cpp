@@ -14,7 +14,7 @@ static const uint32_t s_MaxFramebufferSize = 8192;
 namespace Utils
 {
 
-	static GLenum HazelFBTextureFormatToGL(AttachmentFormat format)
+	static GLenum AttachmentFormatToGLenum(AttachmentFormat format)
 	{
 		switch (format)
 		{
@@ -347,7 +347,7 @@ void OpenGLMoravaFramebuffer::ClearAttachment(uint32_t attachmentIndex, int valu
 
 	auto& spec = m_ColorAttachmentSpecs[attachmentIndex];
 	uint32_t rendererID = m_TextureAttachmentsColor[attachmentIndex]->GetRendererID();
-	glClearTexImage(rendererID, 0, Utils::HazelFBTextureFormatToGL(spec.attachmentFormat), GL_INT, &value);
+	glClearTexImage(rendererID, 0, Utils::AttachmentFormatToGLenum(spec.attachmentFormat), GL_INT, &value);
 }
 
 uint32_t OpenGLMoravaFramebuffer::GetColorAttachmentRendererID(uint32_t index) const

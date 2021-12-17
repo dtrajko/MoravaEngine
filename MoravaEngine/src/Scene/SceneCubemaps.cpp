@@ -10,7 +10,7 @@
 
 SceneCubemaps::SceneCubemaps()
 {
-	sceneSettings.cameraPosition = glm::vec3(0.0f, 6.0f, 15.0f);
+	sceneSettings.cameraPosition = glm::vec3(0.0f, 2.0f, 15.0f);
 	sceneSettings.cameraStartYaw   = -90.0f;
     sceneSettings.cameraStartPitch = -20.0f;
 	sceneSettings.cameraMoveSpeed  = 1.0f;
@@ -27,7 +27,9 @@ SceneCubemaps::SceneCubemaps()
     m_Raycast->m_Color = { 1.0f, 0.0f, 1.0f, 1.0f };
 
     if (m_AABBEnabled)
+    {
         m_CubeAABB = new AABB(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+    }
 
     m_PivotCube = new Pivot(glm::vec3(0.0f), glm::vec3(2.0f));
     m_PivotScene = new Pivot(glm::vec3(0.0f), glm::vec3(60.0f));

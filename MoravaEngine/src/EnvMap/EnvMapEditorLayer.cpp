@@ -2569,7 +2569,9 @@ void EnvMapEditorLayer::OnRender(Window* mainWindow)
 
     m_RenderFramebuffer->Bind();
     m_RenderFramebuffer->Clear(); // Clear the window
-    m_RenderFramebuffer->ClearAttachment(1, -7);
+
+    // Clear entity ID attachment to -1
+    m_RenderFramebuffer->ClearAttachment(1, -1);
 
     EnvMapSceneRenderer::GetGeoPass()->GetSpecification().TargetFramebuffer = m_RenderFramebuffer;
 
