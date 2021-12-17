@@ -1364,7 +1364,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         minBound.x += viewportOffset.x;
         minBound.y += viewportOffset.y;
 
-        ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+        // ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+        ImVec2 maxBound = { minBound.x + m_ViewportSize.x, minBound.y + m_ViewportSize.y };
         m_ViewportBounds[0] = { minBound.x, minBound.y };
         m_ViewportBounds[1] = { maxBound.x, maxBound.y };
 
