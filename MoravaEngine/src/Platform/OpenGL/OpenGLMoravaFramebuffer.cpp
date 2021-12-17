@@ -24,7 +24,7 @@ OpenGLMoravaFramebuffer::OpenGLMoravaFramebuffer()
 	m_FramebufferSpecs.Samples = 1;
 	m_FramebufferSpecs.SwapChainTarget = false;
 
-	m_TextureAttachmentsColor = std::vector<FramebufferTexture*>();
+	m_TextureAttachmentsColor = std::vector<H2M::RefH2M<FramebufferTexture>>();
 	m_AttachmentDepth = nullptr;
 	m_AttachmentStencil = nullptr;
 	m_AttachmentDepthAndStencil = nullptr;
@@ -167,7 +167,9 @@ void OpenGLMoravaFramebuffer::Release()
 	// Log::GetLogger()->info("OpenGLMoravaFramebuffer::Release");
 
 	for (auto& textureAttachment : m_TextureAttachmentsColor)
-		delete textureAttachment;
+	{
+		// delete textureAttachment;
+	}
 
 	m_TextureAttachmentsColor.clear();
 
@@ -179,7 +181,7 @@ void OpenGLMoravaFramebuffer::Release()
 void OpenGLMoravaFramebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentFormat attachmentFormat)
 {
-	FramebufferTexture* texture = new FramebufferTexture(width, height, isMultisample,
+	H2M::RefH2M<FramebufferTexture> texture = H2M::RefH2M<FramebufferTexture>::Create(width, height, isMultisample,
 		attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
 	m_TextureAttachmentsColor.push_back(texture);
 
@@ -250,7 +252,7 @@ bool OpenGLMoravaFramebuffer::CheckStatus()
 	return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
 }
 
-FramebufferTexture* OpenGLMoravaFramebuffer::GetTextureAttachmentColor(unsigned int orderID)
+H2M::RefH2M<FramebufferTexture> OpenGLMoravaFramebuffer::GetTextureAttachmentColor(unsigned int orderID)
 {
 	if (m_TextureAttachmentsColor.size() < (size_t)orderID + 1)
 	{

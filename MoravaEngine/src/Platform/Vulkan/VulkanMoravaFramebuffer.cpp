@@ -22,7 +22,7 @@ VulkanMoravaFramebuffer::VulkanMoravaFramebuffer()
 	m_FramebufferSpecs.Samples = 1;
 	m_FramebufferSpecs.SwapChainTarget = false;
 
-	m_TextureAttachmentsColor = std::vector<FramebufferTexture*>();
+	m_TextureAttachmentsColor = std::vector<H2M::RefH2M<FramebufferTexture>>();
 	m_AttachmentDepth = nullptr;
 	m_AttachmentStencil = nullptr;
 	m_AttachmentDepthAndStencil = nullptr;
@@ -177,7 +177,9 @@ void VulkanMoravaFramebuffer::Release()
 	// Log::GetLogger()->info("VulkanMoravaFramebuffer::Release");
 
 	for (auto& textureAttachment : m_TextureAttachmentsColor)
-		delete textureAttachment;
+	{
+		// delete textureAttachment;
+	}
 
 	m_TextureAttachmentsColor.clear();
 
@@ -189,7 +191,7 @@ void VulkanMoravaFramebuffer::Release()
 void VulkanMoravaFramebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentFormat attachmentFormat)
 {
-	FramebufferTexture* texture = new FramebufferTexture(width, height, isMultisample,
+	H2M::RefH2M<FramebufferTexture> texture = H2M::RefH2M<FramebufferTexture>::Create(width, height, isMultisample,
 		attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
 	m_TextureAttachmentsColor.push_back(texture);
 
@@ -262,7 +264,7 @@ bool VulkanMoravaFramebuffer::CheckStatus()
 	return false;
 }
 
-FramebufferTexture* VulkanMoravaFramebuffer::GetTextureAttachmentColor(unsigned int orderID)
+H2M::RefH2M<FramebufferTexture> VulkanMoravaFramebuffer::GetTextureAttachmentColor(unsigned int orderID)
 {
 	if (m_TextureAttachmentsColor.size() < (size_t)orderID + 1)
 	{

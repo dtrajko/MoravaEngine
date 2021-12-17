@@ -1085,7 +1085,7 @@ H2M::RefH2M<H2M::RenderPassH2M> EnvMapSceneRenderer::GetFinalRenderPass()
     return s_Data.CompositePass;
 }
 
-FramebufferTexture* EnvMapSceneRenderer::GetFinalColorBuffer()
+H2M::RefH2M<FramebufferTexture> EnvMapSceneRenderer::GetFinalColorBuffer()
 {
     auto targetFramebuffer = static_cast<H2M::RefH2M<MoravaFramebuffer>>(s_Data.CompositePass->GetSpecification().TargetFramebuffer);
 

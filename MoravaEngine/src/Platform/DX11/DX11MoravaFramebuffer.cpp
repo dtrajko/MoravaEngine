@@ -189,7 +189,7 @@ void DX11MoravaFramebuffer::Release()
 void DX11MoravaFramebuffer::CreateTextureAttachmentColor(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentFormat attachmentFormat)
 {
-	//	FramebufferTexture* texture = new FramebufferTexture(width, height, isMultisample,
+	//	H2M::RefH2M<FramebufferTexture> texture = H2M::RefH2M<FramebufferTexture>::Create(width, height, isMultisample,
 	//		attachmentFormat, (unsigned int)m_TextureAttachmentsColor.size());
 	//	m_TextureAttachmentsColor.push_back(texture);
 	//	
@@ -201,27 +201,39 @@ void DX11MoravaFramebuffer::CreateAttachmentDepth(unsigned int width, unsigned i
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	//	if (attachmentType == AttachmentType::Texture)
+	//	{
 	//		m_AttachmentDepth = H2M::RefH2M<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
+	//	}
 	//	else if (attachmentType == AttachmentType::Renderbuffer)
+	//	{
 	//		m_AttachmentDepth = H2M::RefH2M<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
+	//	}
 }
 
 void DX11MoravaFramebuffer::CreateAttachmentStencil(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
+	{
 		m_AttachmentStencil = H2M::RefH2M<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
+	}
 	else if (attachmentType == AttachmentType::Renderbuffer)
+	{
 		m_AttachmentStencil = H2M::RefH2M<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
+	}
 }
 
 void DX11MoravaFramebuffer::CreateAttachmentDepthAndStencil(unsigned int width, unsigned int height, bool isMultisample,
 	AttachmentType attachmentType, AttachmentFormat attachmentFormat)
 {
 	if (attachmentType == AttachmentType::Texture)
+	{
 		m_AttachmentDepthAndStencil = H2M::RefH2M<FramebufferTexture>::Create(width, height, isMultisample, attachmentFormat, 0);
+	}
 	else if (attachmentType == AttachmentType::Renderbuffer)
+	{
 		m_AttachmentDepthAndStencil = H2M::RefH2M<Renderbuffer>::Create(width, height, attachmentFormat, 0, m_FBO);
+	}
 }
 
 void DX11MoravaFramebuffer::Bind() const
@@ -262,7 +274,7 @@ bool DX11MoravaFramebuffer::CheckStatus()
 	return false;
 }
 
-FramebufferTexture* DX11MoravaFramebuffer::GetTextureAttachmentColor(unsigned int orderID)
+H2M::RefH2M<FramebufferTexture> DX11MoravaFramebuffer::GetTextureAttachmentColor(unsigned int orderID)
 {
 	if (m_TextureAttachmentsColor.size() < (size_t)orderID + 1)
 	{

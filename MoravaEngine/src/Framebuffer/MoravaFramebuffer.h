@@ -49,7 +49,7 @@ public:
 	virtual void AddDepthAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat) = 0;
 	virtual void AddColorAttachment(FramebufferSpecification specs) = 0; // the generic one based on FramebufferSpecification
 	virtual void AddDepthAttachment(FramebufferSpecification specs) = 0;
-	virtual FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0) = 0;
+	virtual H2M::RefH2M<FramebufferTexture> GetTextureAttachmentColor(unsigned int orderID = 0) = 0;
 	virtual H2M::RefH2M<Attachment> GetAttachmentDepth() = 0;
 	virtual H2M::RefH2M<Attachment> GetAttachmentStencil() = 0;
 	virtual H2M::RefH2M<Attachment> GetAttachmentDepthAndStencil() = 0;

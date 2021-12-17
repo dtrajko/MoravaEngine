@@ -66,7 +66,7 @@ public:
 	static std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath);
 
 	static H2M::RefH2M<H2M::RenderPassH2M> GetFinalRenderPass();
-	static FramebufferTexture* GetFinalColorBuffer(); // originally returns H2M::RefH2M<H2M::Texture2D_H2M>
+	static H2M::RefH2M<FramebufferTexture> GetFinalColorBuffer(); // originally returns H2M::RefH2M<H2M::Texture2D_H2M>
 
 	// TODO: Temp
 	static uint32_t GetFinalColorBufferRendererID();

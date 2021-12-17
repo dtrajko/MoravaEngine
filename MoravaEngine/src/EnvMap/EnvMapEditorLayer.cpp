@@ -243,8 +243,8 @@ void EnvMapEditorLayer::SetupRenderFramebuffer()
 
     m_RenderFramebuffer = MoravaFramebuffer::Create(width, height);
     m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
-    // m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::RED_INTEGER);
+    // m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Color);
+    m_RenderFramebuffer->AddColorAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::RED_INTEGER);
     m_RenderFramebuffer->AddDepthAttachmentSpecification(width, height, AttachmentType::Texture, AttachmentFormat::Depth);
     m_RenderFramebuffer->Generate(width, height);
 

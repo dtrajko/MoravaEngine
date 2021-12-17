@@ -39,7 +39,7 @@ public:
 	virtual void AddDepthAttachmentSpecification(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat) override;
 	virtual void AddColorAttachment(FramebufferSpecification specs) override; // the generic one based on FramebufferSpecification
 	virtual void AddDepthAttachment(FramebufferSpecification specs) override; // the generic one based on FramebufferSpecification
-	virtual FramebufferTexture* GetTextureAttachmentColor(unsigned int orderID = 0) override;
+	virtual H2M::RefH2M<FramebufferTexture> GetTextureAttachmentColor(unsigned int orderID = 0) override;
 	virtual H2M::RefH2M<Attachment> GetAttachmentDepth() override;
 	virtual H2M::RefH2M<Attachment> GetAttachmentStencil() override;
 	virtual H2M::RefH2M<Attachment> GetAttachmentDepthAndStencil() override;
@@ -79,7 +79,7 @@ private:
 	std::vector<FramebufferSpecification> m_ColorAttachmentSpecs;
 	std::vector<FramebufferSpecification> m_RenderbufferAttachmentSpec;
 
-	std::vector<FramebufferTexture*> m_TextureAttachmentsColor;
+	std::vector< H2M::RefH2M<FramebufferTexture>> m_TextureAttachmentsColor;
 	H2M::RefH2M<Attachment> m_AttachmentDepth;
 	H2M::RefH2M<Attachment> m_AttachmentStencil;
 	H2M::RefH2M<Attachment> m_AttachmentDepthAndStencil;
