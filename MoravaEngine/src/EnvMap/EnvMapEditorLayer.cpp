@@ -405,13 +405,22 @@ void EnvMapEditorLayer::OnUpdate(float ts)
     {
         case SceneState::Edit:
         {
-            if (m_ViewportPanelFocused)
+            if (m_ViewportFocused)
             {
                 // m_CameraContoller.OnUpdate(ts);
                 m_EditorCamera->OnUpdate(ts);
             }
 
             m_ActiveScene->OnUpdateEditor(ts, *m_EditorCamera);
+
+            // Calculate mouse coordinates within the viewport
+            auto [mx, my] = ImGui::GetMousePos();
+            mx -= m_ViewportBounds[0].x;
+            my -= m_ViewportBounds[0].y;
+            glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+
+            int mouseX = (int)mx;
+            int mouseY = (int)my;
 
             m_EditorScene->OnRenderEditor(H2M::RefH2M<H2M::SceneRendererH2M>(), ts, *m_EditorCamera);
 
@@ -428,7 +437,7 @@ void EnvMapEditorLayer::OnUpdate(float ts)
         }
         case SceneState::Play:
         {
-            if (m_ViewportPanelFocused)
+            if (m_ViewportFocused)
             {
                 m_EditorCamera->OnUpdate(ts);
             }
@@ -441,7 +450,7 @@ void EnvMapEditorLayer::OnUpdate(float ts)
         }
         case SceneState::Pause:
         {
-            if (m_ViewportPanelFocused)
+            if (m_ViewportFocused)
             {
                 m_EditorCamera->OnUpdate(ts);
             }
@@ -500,8 +509,8 @@ void EnvMapEditorLayer::OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float t
 
     Scene::s_ImGuizmoTransform = &m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
 
-    m_ViewportSize.x = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
-    m_ViewportSize.y = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+    // m_ViewportSize.x = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+    // m_ViewportSize.y = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
     if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
     {
@@ -529,8 +538,8 @@ void EnvMapEditorLayer::OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float 
 
     Scene::s_ImGuizmoTransform = &m_CurrentlySelectedTransform; // moved from SceneHazelEnvMap
 
-    m_ViewportSize.x = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
-    m_ViewportSize.y = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+    // m_ViewportSize.x = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+    // m_ViewportSize.y = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
     if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f) {
         m_ActiveCamera->SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
@@ -1226,25 +1235,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 ImGui::Text(buffer);
                 ImGui::Separator();
 
-                // sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
-                // ImGui::Text(buffer);
-                // ImGui::Separator();
-
-                // int mouseInViewportX = mp->m_ScreenMouseX - (int)m_ViewportBounds[0].x;
-                // int mouseInViewportY = mp->m_ScreenMouseY - (int)m_ViewportBounds[0].y;
-                // sprintf(buffer, "Viewport Mouse [ %i %i ]", mouseInViewportX, mouseInViewportY);
-                // ImGui::Text(buffer);
-                // ImGui::Separator();
-
-                int viewportTitlebarHeight = 22;
-                auto [mouseX, mouseY] = GetMouseViewportSpace();
-                int absMouseX = (mouseX * m_ViewportMainSize.x + m_ViewportMainSize.x) / 2;
-                int absMouseY = (m_ViewportMainSize.y - mouseY * m_ViewportMainSize.y) / 2;
-                absMouseX = absMouseX < 0 ? 0 : absMouseX;
-                absMouseY = absMouseY < 0 ? 0 : absMouseY;
-                absMouseX = absMouseX > m_ViewportMainSize.x ? m_ViewportMainSize.x : absMouseX;
-                absMouseY = absMouseY > m_ViewportMainSize.y ? m_ViewportMainSize.y : absMouseY;
-                sprintf(buffer, "Mouse Viewport Space [ %i %i ]", absMouseX, absMouseY);
+                sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
                 ImGui::Text(buffer);
                 ImGui::Separator();
 
@@ -1284,6 +1275,42 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         ImGui::End();
     }
     
+    {
+        ImGui::Begin("Viewport Bounds");
+        {
+            char buffer[100];
+
+            sprintf(buffer, "Render framebuffer size [ %i %i ]", (int)m_ViewportSize.x, (int)m_ViewportSize.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "ViewportBounds Min [ %i %i ]", (int)m_ViewportBounds[0].x, (int)m_ViewportBounds[0].y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            sprintf(buffer, "ViewportBounds Max [ %i %i ]", (int)m_ViewportBounds[1].x, (int)m_ViewportBounds[1].y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            glm::vec2 viewportBoundsDiff = m_ViewportBounds[1] - m_ViewportBounds[0];
+            sprintf(buffer, "ViewportBounds Diff [ %i %i ]", (int)viewportBoundsDiff.x, (int)viewportBoundsDiff.y);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+
+            auto [mouseX, mouseY] = GetMouseViewportSpace();
+            int absMouseX = (mouseX * m_ViewportSize.x + m_ViewportSize.x) / 2;
+            int absMouseY = (m_ViewportSize.y - mouseY * m_ViewportSize.y) / 2;
+            absMouseX = absMouseX < 0 ? 0 : absMouseX;
+            absMouseY = absMouseY < 0 ? 0 : absMouseY;
+            absMouseX = absMouseX > m_ViewportSize.x ? m_ViewportSize.x : absMouseX;
+            absMouseY = absMouseY > m_ViewportSize.y ? m_ViewportSize.y : absMouseY;
+            sprintf(buffer, "Mouse Coordinates in Viewport [ %i %i ]", absMouseX, absMouseY);
+            ImGui::Text(buffer);
+            ImGui::Separator();
+        }
+        ImGui::End();
+    }
+
     if (m_ShowWindowImGuiMetrics)
     {
         ImGui::ShowMetricsWindow();
@@ -1294,18 +1321,20 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
     // TheCherno ImGui Viewport displaying the framebuffer content
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-    ImGui::Begin("Viewport");
+    ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     {
-        m_ViewportPanelMouseOver = ImGui::IsWindowHovered();
-        m_ViewportPanelFocused = ImGui::IsWindowFocused();
+        auto viewportOffset = ImGui::GetCursorPos(); // Includes tab bar
+
+        m_ViewportFocused = ImGui::IsWindowFocused();
+        m_ViewportHovered = ImGui::IsWindowHovered();
 
         ImGuiWrapper::SetViewportEnabled(true);
-        ImGuiWrapper::SetViewportHovered(m_ViewportPanelMouseOver);
-        ImGuiWrapper::SetViewportFocused(m_ViewportPanelFocused);
+        ImGuiWrapper::SetViewportHovered(m_ViewportHovered);
+        ImGuiWrapper::SetViewportFocused(m_ViewportFocused);
 
         // Calculate Viewport bounds (used in EnvMapEditorLayer::CastRay)
-        auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
-        auto viewportSize = ImGui::GetContentRegionAvail();
+        auto viewportPanelSize = ImGui::GetContentRegionAvail();
+        m_ViewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
         ImVec2 screen_pos = ImGui::GetCursorScreenPos();
 
@@ -1316,9 +1345,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         m_ImGuiViewport.MouseX = (int)ImGui::GetMousePos().x;
         m_ImGuiViewport.MouseY = (int)ImGui::GetMousePos().y;
 
-        glm::vec2 viewportPanelSize = glm::vec2(viewportSize.x, viewportSize.y);
-
-        ResizeViewport(viewportPanelSize);
+        ResizeViewport();
 
         uint64_t textureID;
         if (m_PostProcessingEnabled)
@@ -1329,22 +1356,22 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         {
             textureID = m_RenderFramebuffer->GetTextureAttachmentColor()->GetID();
         }
-        ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportMainSize.x, m_ViewportMainSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-
-        UpdateImGuizmo(mainWindow);
+        ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
         auto windowSize = ImGui::GetWindowSize();
         ImVec2 minBound = ImGui::GetWindowPos();
 
         minBound.x += viewportOffset.x;
-        // minBound.y += viewportOffset.y;
+        minBound.y += viewportOffset.y;
 
         ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
         m_ViewportBounds[0] = { minBound.x, minBound.y };
         m_ViewportBounds[1] = { maxBound.x, maxBound.y };
 
-        SetViewportBounds(m_ViewportBounds);
+        // SetViewportBounds(m_ViewportBounds);
         m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
+
+        UpdateImGuizmo(mainWindow);
 
         UI_Toolbar();
     }
@@ -1839,7 +1866,7 @@ void EnvMapEditorLayer::NewScene()
     m_SceneHierarchyPanel->SetContext(m_ActiveScene);
     m_EditorScenePath = std::filesystem::path();
 
-    OnNewScene(m_ViewportMainSize);
+    OnNewScene(m_ViewportSize);
 
     SetupLights();
 }
@@ -2014,7 +2041,7 @@ void EnvMapEditorLayer::SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transfor
     }
 }
 
-void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize)
+void EnvMapEditorLayer::ResizeViewport()
 {
     float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
 
@@ -2022,13 +2049,13 @@ void EnvMapEditorLayer::ResizeViewport(glm::vec2 viewportPanelSize)
     if (currentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
     m_ResizeViewport.lastTime = currentTimestamp;
 
-    if (viewportPanelSize != m_ViewportMainSize && viewportPanelSize.x > 0 && viewportPanelSize.y > 0)
+    if (m_ViewportSize != m_ViewportSizePrevious && m_ViewportSize.x > 0 && m_ViewportSize.y > 0)
     {
-        m_RenderFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
-        m_PostProcessingFramebuffer->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
-        m_RenderFramebufferTempH2M->Resize((uint32_t)viewportPanelSize.x, (uint32_t)viewportPanelSize.y);
+        m_RenderFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        m_PostProcessingFramebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+        m_RenderFramebufferTempH2M->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
-        m_ViewportMainSize = glm::vec2(viewportPanelSize.x, viewportPanelSize.y);
+        m_ViewportSizePrevious = glm::vec2(m_ViewportSize.x, m_ViewportSize.y);
     }
 }
 
@@ -2036,7 +2063,7 @@ void EnvMapEditorLayer::OnEvent(H2M::EventH2M& e)
 {
     if (m_SceneState == SceneState::Edit)
     {
-        if (m_ViewportPanelMouseOver)
+        if (m_ViewportHovered)
         {
             GetMainCameraComponent().Camera.OnEvent(e);
         }
@@ -2061,7 +2088,7 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
     bool control = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl);
     bool shift = Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift);
 
-    if (m_ViewportPanelFocused)
+    if (m_ViewportFocused)
     {
         switch (e.GetKeyCode())
         {
@@ -2306,8 +2333,8 @@ std::pair<float, float> EnvMapEditorLayer::GetMouseViewportSpace()
     auto [mx, my] = ImGui::GetMousePos(); // Input::GetMousePosition();
     mx -= m_ViewportBounds[0].x;
     my -= m_ViewportBounds[0].y;
-    m_ViewportSize.x = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
-    m_ViewportSize.y = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
+    // m_ViewportSize.x = m_ViewportBounds[1].x - m_ViewportBounds[0].x;
+    // m_ViewportSize.y = m_ViewportBounds[1].y - m_ViewportBounds[0].y;
 
     return { (mx / m_ViewportSize.x) * 2.0f - 1.0f, ((my / m_ViewportSize.y) * 2.0f - 1.0f) * -1.0f };
 }

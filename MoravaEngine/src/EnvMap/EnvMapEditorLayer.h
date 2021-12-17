@@ -133,7 +133,7 @@ public:
 
 	// from SceneHazelEnvMap
 	void SetupRenderFramebuffer();
-	void ResizeViewport(glm::vec2 viewportPanelSize);
+	void ResizeViewport();
 
 	H2M::CameraH2M* GetActiveCamera() const { return m_ActiveCamera; }
 
@@ -166,7 +166,7 @@ public:
 
 	// viewports public
 	glm::vec2 m_ImGuiViewportMain;
-	glm::vec2 m_ViewportMainSize;
+	glm::vec2 m_ViewportSizePrevious = { 0.0f, 0.0f };
 	H2M::RefH2M<MoravaFramebuffer> m_RenderFramebuffer;
 	H2M::RefH2M<MoravaFramebuffer> m_PostProcessingFramebuffer;
 
@@ -211,8 +211,8 @@ private:
 	bool m_ViewportEnvMapHovered;
 	glm::vec2 m_ViewportEnvMapSize;
 
-	bool m_ViewportPanelMouseOver = false;
-	bool m_ViewportPanelFocused = false;
+	bool m_ViewportFocused = false;
+	bool m_ViewportHovered = false;
 
 	// Used in EnvMapEditorLayer::CastRay
 	glm::vec2 m_ViewportSize = { 0.0f, 0.0f };
