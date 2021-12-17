@@ -196,7 +196,7 @@ namespace H2M
 
 	OpenGLFramebufferH2M::~OpenGLFramebufferH2M()
 	{
-		GLuint rendererID = m_RendererID;
+		// GLuint rendererID = m_RendererID;
 		// HazelRenderer::Submit([rendererID]() {});
 
 		glDeleteFramebuffers(1, &m_RendererID);

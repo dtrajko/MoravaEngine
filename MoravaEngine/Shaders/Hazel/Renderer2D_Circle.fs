@@ -7,7 +7,8 @@
 #version 450 core
 
 layout(location = 0) out vec4 o_Color;
-layout(location = 1) out int o_EntityID;
+// layout(location = 1) out int o_EntityID;
+layout(location = 1) out vec4 o_Color2; // output to 2nd color attachment of the render framebuffer
 
 struct VertexOutput
 {
@@ -36,5 +37,7 @@ void main()
 	o_Color = Input.Color;
 	o_Color.a *= circle;
 
-	o_EntityID = v_EntityID;
+	// o_EntityID = v_EntityID;
+
+	o_Color2 = vec4(0.0, 1.0, 1.0, 1.0); // output to 2nd color attachment of the render framebuffer
 }

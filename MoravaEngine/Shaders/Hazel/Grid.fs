@@ -3,6 +3,7 @@
 #version 430
 
 layout(location = 0) out vec4 color;
+layout(location = 1) out vec4 color2; // output to 2nd color attachment of the render framebuffer
 
 uniform float u_Scale;
 uniform float u_Res;
@@ -22,4 +23,6 @@ void main()
 
 	float x = grid(v_TexCoord * scale, resolution);
 	color = vec4(vec3(0.4), 0.5) * (1.0 - x);
+
+	color2 = vec4(0.0, 0.0, 0.0, 0.0); // output to 2nd color attachment of the render framebuffer
 }
