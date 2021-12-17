@@ -18,6 +18,9 @@
 
 namespace H2M
 {
+	// extern const std::filesystem::path g_AssetPath;
+	static const std::filesystem::path g_AssetPath = ".";
+
 	SceneHierarchyPanelH2M::SceneHierarchyPanelH2M(RefH2M<SceneH2M> scene)
 	{
 		SetContext(scene);
@@ -747,6 +750,24 @@ namespace H2M
 		DrawComponent<SpriteRendererComponentH2M>("Sprite Renderer", entity, [](auto& component)
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+
+			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
+					RefH2M<Texture2D_H2M> texture = Texture2D_H2M::Create(texturePath.string());
+					if (texture->Loaded())
+						component.Texture = texture;
+					else
+						H2M_WARN("Could not load texture {0}", texturePath.filename().string());
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+			ImGui::DragFloat("Tiling Factor", &component.TilingFactor, 0.1f, 0.0f, 100.0f);
 		});
 
 		DrawComponent<CircleRendererComponentH2M>("Circle Renderer", entity, [](auto& component)

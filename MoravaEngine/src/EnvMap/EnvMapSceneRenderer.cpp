@@ -855,6 +855,18 @@ void EnvMapSceneRenderer::GeometryPass()
     {
         // RendererBasic::SetLineThickness(2.0f);
 
+        // BEGIN Draw Sprites
+        {
+            auto view = s_EditorLayer->GetActiveScene()->GetRegistry().view<H2M::TransformComponentH2M, H2M::SpriteRendererComponentH2M>();
+            for (auto entity : view)
+            {
+                auto [transform, sprite] = view.get<H2M::TransformComponentH2M, H2M::SpriteRendererComponentH2M>(entity);
+
+                H2M::Renderer2D_H2M::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+            }
+        }
+        // END Draw Sprites
+
         // BEGIN Draw Circles
         {
             auto view = s_EditorLayer->GetActiveScene()->GetRegistry().view<H2M::TransformComponentH2M, H2M::CircleRendererComponentH2M>();

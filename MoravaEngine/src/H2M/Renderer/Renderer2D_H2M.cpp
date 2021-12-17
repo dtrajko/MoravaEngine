@@ -111,6 +111,7 @@ namespace H2M
 	{
 		// H2M_PROFILE_FUNCTION();
 
+		// Sprites / quads
 		s_Data.QuadVertexArray = VertexArrayH2M::Create();
 
 		s_Data.QuadVertexBuffer = VertexBufferH2M::Create(s_Data.MaxVertices * sizeof(QuadVertex));
