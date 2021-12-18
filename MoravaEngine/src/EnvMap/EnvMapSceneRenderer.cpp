@@ -854,6 +854,7 @@ void EnvMapSceneRenderer::GeometryPass()
     H2M::Renderer2D_H2M::BeginScene(viewProj, true);
     {
         // RendererBasic::SetLineThickness(2.0f);
+        RendererBasic::EnableDepthTest();
 
         // BEGIN Draw Sprites
         {
