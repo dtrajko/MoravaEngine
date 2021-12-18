@@ -61,6 +61,7 @@ namespace H2M
 		// static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height); // Removed in Hazel Live 18.03.2021 #2
 
 		virtual void SetData(void* data, uint32_t size);
+
 		static uint32_t GetBPP(ImageFormatH2M format);
 	};
 

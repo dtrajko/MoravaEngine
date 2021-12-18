@@ -1,6 +1,7 @@
 #include "TextureH2M.h"
 
 #include "H2M/Platform/OpenGL/OpenGLTextureH2M.h"
+#include "H2M/Platform/OpenGL/OpenGLTexture2D_Hazel2D.h"
 #include "H2M/Platform/Vulkan/VulkanTextureH2M.h"
 #include "RendererAPI_H2M.h"
 
@@ -19,7 +20,7 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 			case RendererAPITypeH2M::None:   return RefH2M<Texture2D_H2M>();
-			case RendererAPITypeH2M::OpenGL: return RefH2M<OpenGLTexture2D_H2M>::Create(format, width, height, data);
+			case RendererAPITypeH2M::OpenGL: return RefH2M<OpenGLTexture2D_Hazel2D>::Create(width, height);
 			case RendererAPITypeH2M::Vulkan: return RefH2M<VulkanTexture2D_H2M>::Create(format, width, height, data);
 			case RendererAPITypeH2M::DX11:   return RefH2M<DX11Texture2D>::Create(format, width, height, data);
 		}

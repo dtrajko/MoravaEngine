@@ -167,6 +167,8 @@ namespace H2M
 		uint32_t whiteTextureData = 0xffffffff;
 		s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
+		// s_Data.WhiteTexture = Texture2D_H2M::Create("Textures/plain.png");
+
 		int32_t samplers[s_Data.MaxTextureSlots];
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
 			samplers[i] = i;
@@ -268,8 +270,8 @@ namespace H2M
 		s_Data.CameraBuffer.ViewProjection = viewProj;
 		s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
-		s_Data.QuadShader->Bind();
-		s_Data.QuadShader->SetMat4("u_ViewProjection", viewProj);
+		// s_Data.QuadShader->Bind();
+		// s_Data.QuadShader->SetMat4("u_ViewProjection", viewProj);
 
 		StartBatch();
 	}

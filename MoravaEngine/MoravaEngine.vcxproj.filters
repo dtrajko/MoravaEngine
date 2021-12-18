@@ -942,6 +942,9 @@
     <ClCompile Include="src\H2M\Renderer\Renderer2D_LinesH2M.cpp">
       <Filter>H2M\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLTexture2D_Hazel2D.cpp">
+      <Filter>H2M\Platform\OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2014,6 +2017,9 @@
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\Renderer2D_LinesH2M.h">
       <Filter>H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLTexture2D_Hazel2D.h">
+      <Filter>H2M\Platform\OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

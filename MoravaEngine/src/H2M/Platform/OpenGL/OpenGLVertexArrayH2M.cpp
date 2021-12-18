@@ -47,26 +47,29 @@ namespace H2M
 
 	OpenGLVertexArrayH2M::~OpenGLVertexArrayH2M()
 	{
-		GLuint rendererID = m_RendererID;
-		RendererH2M::Submit([rendererID]() {
-			glDeleteVertexArrays(1, &rendererID);
-		});
+		// GLuint rendererID = m_RendererID;
+		// RendererH2M::Submit([rendererID]() {});
+		{
+			glDeleteVertexArrays(1, &m_RendererID);
+		}
 	}
 
 	void OpenGLVertexArrayH2M::Bind() const
 	{
-		RefH2M<const OpenGLVertexArrayH2M> instance = this;
-		RendererH2M::Submit([instance]() {
-			glBindVertexArray(instance->m_RendererID);
-		});
+		// RefH2M<const OpenGLVertexArrayH2M> instance = this;
+		// RendererH2M::Submit([instance]() {});
+		{
+			glBindVertexArray(m_RendererID);
+		}
 	}
 
 	void OpenGLVertexArrayH2M::Unbind() const
 	{
-		RefH2M<const OpenGLVertexArrayH2M> instance = this;
-		RendererH2M::Submit([this]() {
+		// RefH2M<const OpenGLVertexArrayH2M> instance = this;
+		// RendererH2M::Submit([this]() {});
+		{
 			glBindVertexArray(0);
-		});
+		}
 	}
 
 	void OpenGLVertexArrayH2M::AddVertexBuffer(const RefH2M<VertexBufferH2M>& vertexBuffer)

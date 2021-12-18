@@ -202,6 +202,7 @@
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLRenderPassH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLShaderH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLTextureH2M.cpp" />
+    <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLTexture2D_Hazel2D.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLUniformBufferH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLVertexArrayH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLVertexBufferH2M.cpp" />
@@ -641,6 +642,7 @@
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLRenderPassH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLShaderH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLTextureH2M.h" />
+    <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLTexture2D_Hazel2D.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLUniformBufferH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLVertexArrayH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLVertexBufferH2M.h" />
