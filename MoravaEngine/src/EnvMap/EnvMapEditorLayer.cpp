@@ -28,6 +28,7 @@ H2M::RefH2M<H2M::Texture2D_H2M> EnvMapEditorLayer::s_CheckerboardTexture;
 H2M::RefH2M<EnvMapMaterial> EnvMapEditorLayer::s_DefaultMaterial;
 H2M::RefH2M<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
 
+static const std::filesystem::path g_AssetPath = ".";
 
 EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 {
@@ -1362,19 +1363,34 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         }
         ImGui::Image((void*)(intptr_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
 
-        auto windowSize = ImGui::GetWindowSize();
-        ImVec2 minBound = ImGui::GetWindowPos();
+        // BEGIN Viewport Drop target
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+            {
+                const wchar_t* path = (const wchar_t*)payload->Data;
+                OpenScene(std::filesystem::path(g_AssetPath) / path);
+            }
+            ImGui::EndDragDropTarget();
+        }    // END Viewport Drop target
 
-        minBound.x += viewportOffset.x;
-        minBound.y += viewportOffset.y;
+        // BEGIN Calculate Viewport bounds
+        {
+            auto windowSize = ImGui::GetWindowSize();
+            ImVec2 minBound = ImGui::GetWindowPos();
 
-        // ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
-        ImVec2 maxBound = { minBound.x + m_ViewportSize.x, minBound.y + m_ViewportSize.y };
-        m_ViewportBounds[0] = { minBound.x, minBound.y };
-        m_ViewportBounds[1] = { maxBound.x, maxBound.y };
+            minBound.x += viewportOffset.x;
+            minBound.y += viewportOffset.y;
 
-        // SetViewportBounds(m_ViewportBounds);
-        m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
+            // ImVec2 maxBound = { minBound.x + windowSize.x, minBound.y + windowSize.y };
+            ImVec2 maxBound = { minBound.x + m_ViewportSize.x, minBound.y + m_ViewportSize.y };
+            m_ViewportBounds[0] = { minBound.x, minBound.y };
+            m_ViewportBounds[1] = { maxBound.x, maxBound.y };
+
+            // SetViewportBounds(m_ViewportBounds);
+            m_AllowViewportCameraEvents = ImGui::IsMouseHoveringRect(minBound, maxBound); // EditorLayer
+        }
+        // END Calculate Viewport bounds
 
         UpdateImGuizmo(mainWindow);
 
