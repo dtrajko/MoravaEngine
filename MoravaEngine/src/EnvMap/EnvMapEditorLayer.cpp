@@ -310,7 +310,8 @@ void EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh submesh)
 {
     EntitySelection::s_SelectionContext.push_back(submesh);
 
-    if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Mesh) {
+    if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Mesh)
+    {
         Log::GetLogger()->debug("SelectionContext[0].Mesh->MeshName: '{0}'", EntitySelection::s_SelectionContext[0].Mesh->MeshName);
     }
 }
@@ -1647,16 +1648,24 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
 
     // ImGizmo switching modes
     if (Input::IsKeyPressed(KeyH2M::D1))
+    {
         Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+    }
 
     if (Input::IsKeyPressed(KeyH2M::D2))
+    {
         Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
+    }
 
     if (Input::IsKeyPressed(KeyH2M::D3))
+    {
         Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
+    }
 
     if (Input::IsKeyPressed(KeyH2M::D4))
+    {
         Scene::s_ImGuizmoType = -1;
+    }
 
     // Dirty fix: m_SelectionContext not decremented when mesh entity is removed from the scene
     size_t selectionContextSize = EntitySelection::s_SelectionContext.size();
@@ -1684,7 +1693,8 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
         bool snap = Input::IsKeyPressed(KeyH2M::LeftControl);
         float snapValue = 1.0f; // Snap to 0.5m for translation/scale
         // Snap to 45 degrees for rotation
-        if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE) {
+        if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE)
+        {
             snapValue = 45.0f;
         }
 
@@ -2305,6 +2315,10 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
             H2M::EntityH2M entity = { (entt::entity)m_EntityID, m_ActiveScene.Raw() };
             SelectedSubmesh selectedSubmesh = SelectedSubmesh{ entity, H2M::RefH2M<H2M::SubmeshH2M>(), 0 };
             AddSubmeshToSelectionContext(selectedSubmesh);
+            if (Scene::s_ImGuizmoType == -1)
+            {
+                Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+            }
         }
     }
     // END Mouse picking based on RED_INTEGER framebuffer attachment
