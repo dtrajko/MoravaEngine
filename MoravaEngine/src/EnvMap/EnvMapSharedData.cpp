@@ -22,8 +22,8 @@ H2M::RefH2M<ShadowMap> EnvMapSharedData::s_ShadowMapDirLight;
 H2M::RefH2M<MoravaShader> EnvMapSharedData::s_ShaderHazelPBR;
 H2M::RefH2M<MoravaShader> EnvMapSharedData::s_ShaderOutline;
 
-H2M::EntityH2M EnvMapSharedData::s_PointLightEntity;
+// H2M::EntityH2M EnvMapSharedData::s_PointLightEntity;
 H2M::RefH2M<OmniShadowMap> EnvMapSharedData::s_OmniShadowMapPointLight;
 
-H2M::EntityH2M EnvMapSharedData::s_SpotLightEntity;
+// H2M::EntityH2M EnvMapSharedData::s_SpotLightEntity;
 H2M::RefH2M<OmniShadowMap> EnvMapSharedData::s_OmniShadowMapSpotLight;

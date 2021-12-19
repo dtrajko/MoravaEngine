@@ -153,7 +153,7 @@ namespace H2M {
 
 		if (entity.HasComponent<TagComponentH2M>())
 		{
-			out << YAML::Key << "TagComponent";
+			out << YAML::Key << "TagComponentH2M";
 			out << YAML::BeginMap; // TagComponent
 
 			auto& tag = entity.GetComponent<TagComponentH2M>().Tag;

@@ -206,34 +206,21 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
 void EnvMapEditorLayer::SetupLights()
 {
-    //  if (!m_DirectionalLightEntity.IsValid())
-    //  {
-    //      m_ActiveScene->DestroyEntity(m_DirectionalLightEntity);
-    //  }
-    //  if (!EnvMapSharedData::s_PointLightEntity.IsValid())
-    //  {
-    //      m_ActiveScene->DestroyEntity(EnvMapSharedData::s_PointLightEntity);
-    //  }
-    //  if (!EnvMapSharedData::s_SpotLightEntity.IsValid())
-    //  {
-    //      m_ActiveScene->DestroyEntity(EnvMapSharedData::s_SpotLightEntity);
-    //  }
-
-    m_DirectionalLightEntity = CreateEntity("Directional Light");
-    auto& tc = m_DirectionalLightEntity.GetComponent<H2M::TransformComponentH2M>();
+    H2M::EntityH2M directionalLightEntity = CreateEntity("Directional Light");
+    auto& tc = directionalLightEntity.GetComponent<H2M::TransformComponentH2M>();
     // tc.Rotation = EnvMapSceneRenderer::GetActiveLight().Direction;
     tc.Rotation = glm::normalize(glm::vec3(-0.05f, -0.85f, -0.05f));
     // m_DirectionalLightEntity.AddComponent<H2M::MeshComponentH2M>(meshQuad);
-    auto& dlc = m_DirectionalLightEntity.AddComponent<H2M::DirectionalLightComponentH2M>();
-
-    EnvMapSharedData::s_PointLightEntity = CreateEntity("Point Light");
+    auto& dlc = directionalLightEntity.AddComponent<H2M::DirectionalLightComponentH2M>();
+    
+    H2M::EntityH2M pointLightEntity = CreateEntity("Point Light");
     // m_PointLightEntity.AddComponent<H2M::MeshComponentH2M>(meshQuad);
-    auto& plc = EnvMapSharedData::s_PointLightEntity.AddComponent<H2M::PointLightComponentH2M>();
-
-    EnvMapSharedData::s_SpotLightEntity = CreateEntity("Spot Light");
+    auto& plc = pointLightEntity.AddComponent<H2M::PointLightComponentH2M>();
+    
+    H2M::EntityH2M spotLightEntity = CreateEntity("Spot Light");
     // m_SpotLightEntity.AddComponent<H2M::MeshComponentH2M>(meshQuad);
-    auto& slc = EnvMapSharedData::s_SpotLightEntity.AddComponent<H2M::SpotLightComponentH2M>();
-    auto& sltc = EnvMapSharedData::s_SpotLightEntity.GetComponent<H2M::TransformComponentH2M>();
+    auto& slc = spotLightEntity.AddComponent<H2M::SpotLightComponentH2M>();
+    auto& sltc = spotLightEntity.GetComponent<H2M::TransformComponentH2M>();
     sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
@@ -463,13 +450,16 @@ void EnvMapEditorLayer::OnUpdate(float ts)
 
     CameraSyncECS();
 
-    if (m_DirectionalLightEntity.HasComponent<H2M::TransformComponentH2M>())
+    if (GetDirectionalLightEntities().size())
     {
-        auto& tc = m_DirectionalLightEntity.GetComponent<H2M::TransformComponentH2M>();
-        EnvMapSceneRenderer::GetActiveLight().Direction = glm::eulerAngles(glm::quat(tc.Rotation));
+        if (GetDirectionalLightEntities().at(0).HasComponent<H2M::TransformComponentH2M>())
+        {
+            auto& tc = GetDirectionalLightEntities().at(0).GetComponent<H2M::TransformComponentH2M>();
+            EnvMapSceneRenderer::GetActiveLight().Direction = glm::eulerAngles(glm::quat(tc.Rotation));
 
-        m_LightDirection = glm::eulerAngles(glm::quat(tc.Rotation));
-        EnvMapSharedData::s_DirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
+            m_LightDirection = glm::eulerAngles(glm::quat(tc.Rotation));
+            EnvMapSharedData::s_DirLightTransform = Util::CalculateLightTransform(m_LightProjectionMatrix, m_LightDirection);
+        }
     }
 
     OnUpdateEditor(m_EditorScene, ts);
@@ -1023,10 +1013,14 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
                     EnvMapSceneRenderer::SetActiveLight(light);
 
-                    if (light.Direction != lightPrev.Direction) {
-                        auto& tc = m_DirectionalLightEntity.GetComponent<H2M::TransformComponentH2M>();
-                        tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
-                        lightPrev = light;
+                    if (light.Direction != lightPrev.Direction)
+                    {
+                        if (GetDirectionalLightEntities().size())
+                        {
+                            auto& tc = GetDirectionalLightEntities().at(0).GetComponent<H2M::TransformComponentH2M>();
+                            tc.Rotation = glm::eulerAngles(glm::quat(glm::radians(light.Direction)));
+                            lightPrev = light;
+                        }
                     }
 
                     ImGui::Columns(1);
@@ -1276,9 +1270,10 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         }
         ImGui::End();
     }
-    
+   
+    if (m_ShowViewportBounds)
     {
-        ImGui::Begin("Viewport Bounds");
+        ImGui::Begin("Viewport Bounds", &m_ShowViewportBounds);
         {
             char buffer[100];
 
@@ -1372,7 +1367,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 OpenScene(std::filesystem::path(g_AssetPath) / path);
             }
             ImGui::EndDragDropTarget();
-        }    // END Viewport Drop target
+        }
+        // END Viewport Drop target
 
         // BEGIN Calculate Viewport bounds
         {
@@ -1393,11 +1389,11 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
         // END Calculate Viewport bounds
 
         UpdateImGuizmo(mainWindow);
-
-        UI_Toolbar();
     }
     ImGui::End();
     ImGui::PopStyleVar();
+
+    UI_Toolbar();
 
     ImVec2 workPos = ImGui::GetMainViewport()->Pos;
     m_WorkPosImGui = glm::vec2(workPos.x, workPos.y);
@@ -1591,6 +1587,10 @@ void EnvMapEditorLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
                 m_ShowWindowMousePicker = !m_ShowWindowMousePicker;
             }
 
+            if (ImGui::MenuItem("Viewport Bounds")) {
+                m_ShowViewportBounds = !m_ShowViewportBounds;
+            }
+
             if (ImGui::MenuItem("Viewport Info")) {
                 m_ShowWindowViewportInfo = !m_ShowWindowViewportInfo;
             }
@@ -1686,7 +1686,8 @@ void EnvMapEditorLayer::UpdateImGuizmo(Window* mainWindow)
     // Dirty fix: m_SelectionContext not decremented when mesh entity is removed from the scene
     size_t selectionContextSize = EntitySelection::s_SelectionContext.size();
     auto meshEntities = m_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
-    if (selectionContextSize > meshEntities.size()) {
+    if (selectionContextSize > meshEntities.size())
+    {
         selectionContextSize = meshEntities.size();
     }
 
@@ -1925,7 +1926,7 @@ void EnvMapEditorLayer::OpenScene(const std::filesystem::path& path)
 
     if (path.extension().string() != ".hazel")
     {
-        H2M_WARN("Could not load {0} - not a scene file", path.filename().string());
+        Log::GetLogger()->warn("Could not load {0} - not a scene file", path.filename().string());
         return;
     }
 
@@ -2161,7 +2162,8 @@ bool EnvMapEditorLayer::OnKeyPressedEvent(H2M::KeyPressedEventH2M& e)
                 ShowBoundingBoxes(m_UIShowBoundingBoxes, m_UIShowBoundingBoxesOnTop);
                 break;
             case (int)KeyCodeH2M::D:
-                if (EntitySelection::s_SelectionContext.size()) {
+                if (EntitySelection::s_SelectionContext.size())
+                {
                     H2M::EntityH2M selectedEntity = EntitySelection::s_SelectionContext[0].Entity;
                     m_EditorScene->DuplicateEntity(selectedEntity);
                 }
@@ -2317,7 +2319,7 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
 
     // BEGIN Mouse picking based on RED_INTEGER framebuffer attachment
     m_MouseCoordsInViewportFlipY = GetMouseCoordsInViewportFlipY();
-
+    
     m_EntityID = -1;
     if (m_MouseCoordsInViewportFlipY.first > 0 && m_MouseCoordsInViewportFlipY.second > 0 &&
         m_MouseCoordsInViewportFlipY.first < m_ViewportSize.x && m_MouseCoordsInViewportFlipY.second < m_ViewportSize.y)
@@ -2325,15 +2327,18 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
         m_RenderFramebuffer->Bind(); // required
         m_EntityID = m_RenderFramebuffer->ReadPixel(1, m_MouseCoordsInViewportFlipY.first, m_MouseCoordsInViewportFlipY.second);
         m_RenderFramebuffer->Unbind();
-
-        if (m_EntityID != -1)
+    
+        if (m_EntityID > -1 && m_EntityID < std::numeric_limits<short>::max())
         {
-            H2M::EntityH2M entity = { (entt::entity)m_EntityID, m_ActiveScene.Raw() };
-            SelectedSubmesh selectedSubmesh = SelectedSubmesh{ entity, H2M::RefH2M<H2M::SubmeshH2M>(), 0 };
-            AddSubmeshToSelectionContext(selectedSubmesh);
-            if (Scene::s_ImGuizmoType == -1)
+            H2M::EntityH2M entity = { (entt::entity)m_EntityID, m_EditorScene.Raw() };
+            if (entity.IsValid())
             {
-                Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+                SelectedSubmesh selectedSubmesh = SelectedSubmesh{ entity, H2M::RefH2M<H2M::SubmeshH2M>(), 0 };
+                AddSubmeshToSelectionContext(selectedSubmesh);
+                if (Scene::s_ImGuizmoType == -1)
+                {
+                    Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+                }
             }
         }
     }
@@ -2376,7 +2381,8 @@ void EnvMapEditorLayer::OnEntityDeleted(H2M::EntityH2M e)
 {
     if (EntitySelection::s_SelectionContext.size())
     {
-        if (EntitySelection::s_SelectionContext[0].Entity == e) {
+        if (EntitySelection::s_SelectionContext[0].Entity == e)
+        {
             EntitySelection::s_SelectionContext.clear();
             m_EditorScene->SetSelectedEntity({});
         }
@@ -2481,8 +2487,14 @@ void EnvMapEditorLayer::OnRenderShadow(Window* mainWindow)
 void EnvMapEditorLayer::OnRenderShadowOmni(Window* mainWindow)
 {
     // render all point and spot lights here, create a loop for multiple lights
-    RenderShadowOmniSingleLight(mainWindow, EnvMapSharedData::s_PointLightEntity, EnvMapSharedData::s_OmniShadowMapPointLight);
-    RenderShadowOmniSingleLight(mainWindow, EnvMapSharedData::s_SpotLightEntity, EnvMapSharedData::s_OmniShadowMapSpotLight);
+    if (GetPointLightEntities().size())
+    {
+        RenderShadowOmniSingleLight(mainWindow, GetPointLightEntities().at(0), EnvMapSharedData::s_OmniShadowMapPointLight);
+    }
+    if (GetSpotLightEntities().size())
+    {
+        RenderShadowOmniSingleLight(mainWindow, GetSpotLightEntities().at(0), EnvMapSharedData::s_OmniShadowMapSpotLight);
+    }
 }
 
 void EnvMapEditorLayer::OnRenderCascadedShadowMaps(Window* mainWindow)
@@ -2563,7 +2575,8 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(H2M::RefH2M<MoravaShader> shad
             auto& meshComponent = entity.GetComponent<H2M::MeshComponentH2M>();
 
             glm::mat4 entityTransform = glm::mat4(1.0f);
-            if (entity && entity.HasComponent<H2M::TransformComponentH2M>()) {
+            if (entity && entity.HasComponent<H2M::TransformComponentH2M>())
+            {
                 entityTransform = entity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
             }
 
@@ -2728,4 +2741,43 @@ void EnvMapEditorLayer::OnRenderRuntime()
 {
     EnvMapSceneRenderer::GeometryPass();
     EnvMapSceneRenderer::CompositePass();
+}
+
+std::vector<H2M::EntityH2M> EnvMapEditorLayer::GetDirectionalLightEntities()
+{
+    std::vector<H2M::EntityH2M> directionalLightEntities = std::vector<H2M::EntityH2M>();
+    auto view = m_ActiveScene->GetRegistry().view<H2M::DirectionalLightComponentH2M>();
+    for (auto entity : view)
+    {
+        directionalLightEntities.push_back(H2M::EntityH2M{ entity, m_ActiveScene.Raw() });
+    }
+
+    if (directionalLightEntities.size() == 0)
+    {
+        // Log::GetLogger()->warn("DirectionalLightEntity not found in scene registry!");
+    }
+
+    return directionalLightEntities;
+}
+
+std::vector<H2M::EntityH2M> EnvMapEditorLayer::GetPointLightEntities()
+{
+    std::vector<H2M::EntityH2M> pointLightEntities = std::vector<H2M::EntityH2M>();
+    auto view = m_ActiveScene->GetRegistry().view<H2M::PointLightComponentH2M>();
+    for (auto entity : view)
+    {
+        pointLightEntities.push_back(H2M::EntityH2M{ entity, m_ActiveScene.Raw() });
+    }
+    return pointLightEntities;
+}
+
+std::vector<H2M::EntityH2M> EnvMapEditorLayer::GetSpotLightEntities()
+{
+    std::vector<H2M::EntityH2M> spotLightEntities = std::vector<H2M::EntityH2M>();
+    auto view = m_ActiveScene->GetRegistry().view<H2M::SpotLightComponentH2M>();
+    for (auto entity : view)
+    {
+        spotLightEntities.push_back(H2M::EntityH2M{ entity, m_ActiveScene.Raw() });
+    }
+    return spotLightEntities;
 }

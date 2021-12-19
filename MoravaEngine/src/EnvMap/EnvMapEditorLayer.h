@@ -152,6 +152,10 @@ private:
 	std::pair<int, int> GetMouseCoordsInViewport();
 	std::pair<int, int> GetMouseCoordsInViewportFlipY();
 
+	std::vector<H2M::EntityH2M> GetDirectionalLightEntities();
+	std::vector<H2M::EntityH2M> GetPointLightEntities();
+	std::vector<H2M::EntityH2M> GetSpotLightEntities();
+
 public:
 	std::string m_Filepath;
 	Scene* m_Scene;
@@ -226,7 +230,7 @@ private:
 
 	H2M::RefH2M<H2M::TextureCubeH2M> m_SkyboxTexture;
 
-	H2M::EntityH2M m_DirectionalLightEntity;
+	// H2M::EntityH2M m_DirectionalLightEntity;
 	glm::mat4 m_LightProjectionMatrix;
 	glm::vec3 m_LightDirection; // temporary, use DirectionalLightComponent
 	/** END properties Hazelnut/EditorLayer **/
@@ -302,7 +306,10 @@ private:
 	bool m_ShowWindowMousePicker    = false;
 	bool m_ShowWindowViewportInfo   = false;
 	bool m_ShowWindowImGuiMetrics   = false;
+	bool m_ShowViewportBounds       = true;
 
 	std::string m_EnvMapFilename = "File Path";
+
+	friend class EnvMapSceneRenderer;
 
 };

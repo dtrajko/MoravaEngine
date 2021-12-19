@@ -147,7 +147,7 @@ namespace H2M
 
 			ImGui::Begin("Properties");
 			{
-				if (EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity.HasComponent<TagComponentH2M>())
+				if (EntitySelection::s_SelectionContext.size())
 				{
 					DrawComponents(EntitySelection::s_SelectionContext[0].Entity);
 				}

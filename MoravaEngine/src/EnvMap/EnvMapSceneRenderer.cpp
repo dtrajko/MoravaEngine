@@ -538,35 +538,41 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(H2M::RefH2M<MoravaShader> shad
     shaderHazelPBR->SetInt("spotLightCount", 1);
 
     // Point lights / Omni directional shadows
-    if (EnvMapSharedData::s_PointLightEntity.HasComponent<H2M::PointLightComponentH2M>())
+    if (s_EditorLayer->GetPointLightEntities().size() > 0)
     {
-        auto& plc = EnvMapSharedData::s_PointLightEntity.GetComponent<H2M::PointLightComponentH2M>();
-        auto& tc = EnvMapSharedData::s_PointLightEntity.GetComponent<H2M::TransformComponentH2M>();
-        shaderHazelPBR->SetBool("pointLights[0].base.enabled", plc.Enabled);
-        shaderHazelPBR->SetFloat3("pointLights[0].base.color", plc.Color);
-        shaderHazelPBR->SetFloat("pointLights[0].base.ambientIntensity", plc.AmbientIntensity);
-        shaderHazelPBR->SetFloat("pointLights[0].base.diffuseIntensity", plc.DiffuseIntensity);
-        shaderHazelPBR->SetFloat3("pointLights[0].position", tc.Translation);
-        shaderHazelPBR->SetFloat("pointLights[0].constant", plc.Constant);
-        shaderHazelPBR->SetFloat("pointLights[0].linear", plc.Linear);
-        shaderHazelPBR->SetFloat("pointLights[0].exponent", plc.Exponent);
+        if (s_EditorLayer->GetPointLightEntities().at(0).HasComponent<H2M::PointLightComponentH2M>())
+        {
+            auto& plc = s_EditorLayer->GetPointLightEntities().at(0).GetComponent<H2M::PointLightComponentH2M>();
+            auto& tc = s_EditorLayer->GetPointLightEntities().at(0).GetComponent<H2M::TransformComponentH2M>();
+            shaderHazelPBR->SetBool("pointLights[0].base.enabled", plc.Enabled);
+            shaderHazelPBR->SetFloat3("pointLights[0].base.color", plc.Color);
+            shaderHazelPBR->SetFloat("pointLights[0].base.ambientIntensity", plc.AmbientIntensity);
+            shaderHazelPBR->SetFloat("pointLights[0].base.diffuseIntensity", plc.DiffuseIntensity);
+            shaderHazelPBR->SetFloat3("pointLights[0].position", tc.Translation);
+            shaderHazelPBR->SetFloat("pointLights[0].constant", plc.Constant);
+            shaderHazelPBR->SetFloat("pointLights[0].linear", plc.Linear);
+            shaderHazelPBR->SetFloat("pointLights[0].exponent", plc.Exponent);
+        }
     }
 
     // Spot lights / Omni directional shadows
-    if (EnvMapSharedData::s_SpotLightEntity.HasComponent<H2M::SpotLightComponentH2M>())
+    if (s_EditorLayer->GetSpotLightEntities().size() > 0)
     {
-        auto& slc = EnvMapSharedData::s_SpotLightEntity.GetComponent<H2M::SpotLightComponentH2M>();
-        auto& tc = EnvMapSharedData::s_SpotLightEntity.GetComponent<H2M::TransformComponentH2M>();
-        shaderHazelPBR->SetBool("spotLights[0].base.base.enabled", slc.Enabled);
-        shaderHazelPBR->SetFloat3("spotLights[0].base.base.color", slc.Color);
-        shaderHazelPBR->SetFloat("spotLights[0].base.base.ambientIntensity", slc.AmbientIntensity);
-        shaderHazelPBR->SetFloat("spotLights[0].base.base.diffuseIntensity", slc.DiffuseIntensity);
-        shaderHazelPBR->SetFloat3("spotLights[0].base.position", tc.Translation);
-        shaderHazelPBR->SetFloat("spotLights[0].base.constant", slc.Constant);
-        shaderHazelPBR->SetFloat("spotLights[0].base.linear", slc.Linear);
-        shaderHazelPBR->SetFloat("spotLights[0].base.exponent", slc.Exponent);
-        shaderHazelPBR->SetFloat3("spotLights[0].direction", tc.Rotation);
-        shaderHazelPBR->SetFloat("spotLights[0].edge", slc.Edge);
+        if (s_EditorLayer->GetSpotLightEntities().at(0).HasComponent<H2M::SpotLightComponentH2M>())
+        {
+            auto& slc = s_EditorLayer->GetSpotLightEntities().at(0).GetComponent<H2M::SpotLightComponentH2M>();
+            auto& tc = s_EditorLayer->GetSpotLightEntities().at(0).GetComponent<H2M::TransformComponentH2M>();
+            shaderHazelPBR->SetBool("spotLights[0].base.base.enabled", slc.Enabled);
+            shaderHazelPBR->SetFloat3("spotLights[0].base.base.color", slc.Color);
+            shaderHazelPBR->SetFloat("spotLights[0].base.base.ambientIntensity", slc.AmbientIntensity);
+            shaderHazelPBR->SetFloat("spotLights[0].base.base.diffuseIntensity", slc.DiffuseIntensity);
+            shaderHazelPBR->SetFloat3("spotLights[0].base.position", tc.Translation);
+            shaderHazelPBR->SetFloat("spotLights[0].base.constant", slc.Constant);
+            shaderHazelPBR->SetFloat("spotLights[0].base.linear", slc.Linear);
+            shaderHazelPBR->SetFloat("spotLights[0].base.exponent", slc.Exponent);
+            shaderHazelPBR->SetFloat3("spotLights[0].direction", tc.Rotation);
+            shaderHazelPBR->SetFloat("spotLights[0].edge", slc.Edge);
+        }
     }
 
     shaderHazelPBR->Validate();
@@ -804,8 +810,12 @@ void EnvMapSceneRenderer::GeometryPass()
                     EnvMapSharedData::s_ShaderHazelPBR->SetInt("u_OmniShadowMaps[0].shadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow_omni"));
 
                     float farPlane = 1000.0f;
-                    if (EnvMapSharedData::s_PointLightEntity.HasComponent<H2M::PointLightComponentH2M>()) {
-                        farPlane = EnvMapSharedData::s_PointLightEntity.GetComponent<H2M::PointLightComponentH2M>().FarPlane;
+                    if (s_EditorLayer->GetPointLightEntities().size() > 0)
+                    {
+                        if (s_EditorLayer->GetPointLightEntities().at(0).HasComponent<H2M::PointLightComponentH2M>())
+                        {
+                            farPlane = s_EditorLayer->GetPointLightEntities().at(0).GetComponent<H2M::PointLightComponentH2M>().FarPlane;
+                        }
                     }
                     EnvMapSharedData::s_ShaderHazelPBR->SetFloat("u_OmniShadowMaps[0].farPlane", farPlane);
                 }
@@ -815,8 +825,12 @@ void EnvMapSceneRenderer::GeometryPass()
                     EnvMapSharedData::s_ShaderHazelPBR->SetInt("u_OmniShadowMaps[1].shadowMap", EnvMapSharedData::s_SamplerSlots.at("shadow_omni") + 1);
 
                     float farPlane = 1000.0f;
-                    if (EnvMapSharedData::s_SpotLightEntity.HasComponent<H2M::SpotLightComponentH2M>()) {
-                        farPlane = EnvMapSharedData::s_SpotLightEntity.GetComponent<H2M::SpotLightComponentH2M>().FarPlane;
+                    if (s_EditorLayer->GetSpotLightEntities().size() > 0)
+                    {
+                        if (s_EditorLayer->GetSpotLightEntities().at(0).HasComponent<H2M::SpotLightComponentH2M>())
+                        {
+                            farPlane = s_EditorLayer->GetSpotLightEntities().at(0).GetComponent<H2M::SpotLightComponentH2M>().FarPlane;
+                        }
                     }
                     EnvMapSharedData::s_ShaderHazelPBR->SetFloat("u_OmniShadowMaps[1].farPlane", farPlane);
                 }
