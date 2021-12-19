@@ -175,6 +175,19 @@ namespace H2M {
 			out << YAML::EndMap; // TransformComponent
 		}
 
+		if (entity.HasComponent<MeshComponentH2M>())
+		{
+			out << YAML::Key << "MeshComponentH2M";
+			out << YAML::BeginMap; // MeshComponentH2M
+
+			auto& mc = entity.GetComponent<MeshComponentH2M>();
+			out << YAML::Key << "FilePath" << YAML::Value << mc.FilePath;
+			out << YAML::Key << "CastShadows" << YAML::Value << mc.CastShadows;
+			out << YAML::Key << "ReceiveShadows" << YAML::Value << mc.ReceiveShadows;
+
+			out << YAML::EndMap; // MeshComponentH2M
+		}
+
 		if (entity.HasComponent<CameraComponentH2M>())
 		{
 			out << YAML::Key << "CameraComponentH2M";
@@ -242,14 +255,67 @@ namespace H2M {
 			out << YAML::BeginMap; // BoxCollider2DComponent
 
 			auto& bc2dComponent = entity.GetComponent<BoxCollider2DComponentH2M>();
-			out << YAML::Key << "Offset" << YAML::Value << bc2dComponent.Offset;
-			out << YAML::Key << "Size" << YAML::Value << bc2dComponent.Size;
-			out << YAML::Key << "Density" << YAML::Value << bc2dComponent.Density;
-			out << YAML::Key << "Friction" << YAML::Value << bc2dComponent.Friction;
+			out << YAML::Key << "Offset"      << YAML::Value << bc2dComponent.Offset;
+			out << YAML::Key << "Size"        << YAML::Value << bc2dComponent.Size;
+			out << YAML::Key << "Density"     << YAML::Value << bc2dComponent.Density;
+			out << YAML::Key << "Friction"    << YAML::Value << bc2dComponent.Friction;
 			out << YAML::Key << "Restitution" << YAML::Value << bc2dComponent.Restitution;
 			out << YAML::Key << "RestitutionThreshold" << YAML::Value << bc2dComponent.RestitutionThreshold;
 
 			out << YAML::EndMap; // BoxCollider2DComponent
+		}
+
+		if (entity.HasComponent<DirectionalLightComponentH2M>())
+		{
+			out << YAML::Key << "DirectionalLightComponentH2M";
+			out << YAML::BeginMap; // DirectionalLightComponentH2M
+
+			auto& directionalLightComponent = entity.GetComponent<DirectionalLightComponentH2M>();
+			out << YAML::Key << "Radiance"    << YAML::Value << directionalLightComponent.Radiance;
+			out << YAML::Key << "Intensity"   << YAML::Value << directionalLightComponent.Intensity;
+			out << YAML::Key << "CastShadows" << YAML::Value << directionalLightComponent.CastShadows;
+			out << YAML::Key << "SoftShadows" << YAML::Value << directionalLightComponent.SoftShadows;
+			out << YAML::Key << "LightSize"   << YAML::Value << directionalLightComponent.LightSize;
+
+			out << YAML::EndMap; // DirectionalLightComponentH2M
+		}
+
+		if (entity.HasComponent<PointLightComponentH2M>())
+		{
+			out << YAML::Key << "PointLightComponentH2M";
+			out << YAML::BeginMap; // PointLightComponentH2M
+
+			auto& pointLightComponent = entity.GetComponent<PointLightComponentH2M>();
+			out << YAML::Key << "Enabled"          << YAML::Value << pointLightComponent.Enabled;
+			out << YAML::Key << "Color"            << YAML::Value << pointLightComponent.Color;
+			out << YAML::Key << "AmbientIntensity" << YAML::Value << pointLightComponent.AmbientIntensity;
+			out << YAML::Key << "DiffuseIntensity" << YAML::Value << pointLightComponent.DiffuseIntensity;
+			out << YAML::Key << "Constant"         << YAML::Value << pointLightComponent.Constant;
+			out << YAML::Key << "Linear"           << YAML::Value << pointLightComponent.Linear;
+			out << YAML::Key << "Exponent"         << YAML::Value << pointLightComponent.Exponent;
+			out << YAML::Key << "FarPlane"         << YAML::Value << pointLightComponent.FarPlane;
+
+			out << YAML::EndMap; // PointLightComponentH2M
+		}
+
+		if (entity.HasComponent<SpotLightComponentH2M>())
+		{
+			out << YAML::Key << "SpotLightComponentH2M";
+			out << YAML::BeginMap; // SpotLightComponentH2M
+
+			auto& spotLightComponent = entity.GetComponent<SpotLightComponentH2M>();
+			out << YAML::Key << "Enabled"          << YAML::Value << spotLightComponent.Enabled;
+			out << YAML::Key << "Color"            << YAML::Value << spotLightComponent.Color;
+			out << YAML::Key << "AmbientIntensity" << YAML::Value << spotLightComponent.AmbientIntensity;
+			out << YAML::Key << "DiffuseIntensity" << YAML::Value << spotLightComponent.DiffuseIntensity;
+			out << YAML::Key << "Constant"         << YAML::Value << spotLightComponent.Constant;
+			out << YAML::Key << "Linear"           << YAML::Value << spotLightComponent.Linear;
+			out << YAML::Key << "Exponent"         << YAML::Value << spotLightComponent.Exponent;
+			out << YAML::Key << "Edge"             << YAML::Value << spotLightComponent.Edge;
+			out << YAML::Key << "EdgeProcessed"    << YAML::Value << spotLightComponent.EdgeProcessed;
+			out << YAML::Key << "FarPlane"         << YAML::Value << spotLightComponent.FarPlane;
+
+			out << YAML::EndMap; // SpotLightComponentH2M
 		}
 
 		out << YAML::EndMap; // Entity
@@ -297,7 +363,9 @@ namespace H2M {
 		}
 
 		if (!data["Scene"])
+		{
 			return false;
+		}
 
 		std::string sceneName = data["Scene"].as<std::string>();
 		// H2M_CORE_TRACE("Deserializing scene '{0}'", sceneName);
@@ -313,7 +381,9 @@ namespace H2M {
 				std::string name;
 				auto tagComponent = entity["TagComponentH2M"];
 				if (tagComponent)
+				{
 					name = tagComponent["Tag"].as<std::string>();
+				}
 
 				// H2M_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 				Log::GetLogger()->trace("Deserialized entity with ID = {0}, name = {1}", uuid, name);
@@ -326,8 +396,17 @@ namespace H2M {
 					// Entities always have transforms
 					auto& tc = deserializedEntity.GetComponent<TransformComponentH2M>();
 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
-					tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
-					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
+					tc.Rotation    = transformComponent["Rotation"].as<glm::vec3>();
+					tc.Scale       = transformComponent["Scale"].as<glm::vec3>();
+				}
+
+				auto meshComponent = entity["MeshComponentH2M"];
+				if (meshComponent)
+				{
+					auto& mc = deserializedEntity.AddComponent<MeshComponentH2M>();
+					mc.FilePath = meshComponent["FilePath"].as<std::string>();
+					mc.CastShadows = meshComponent["CastShadows"].as<bool>();
+					mc.ReceiveShadows = meshComponent["ReceiveShadows"].as<bool>();
 				}
 
 				auto cameraComponent = entity["CameraComponentH2M"];
@@ -361,9 +440,9 @@ namespace H2M {
 				if (circleRendererComponent)
 				{
 					auto& crc = deserializedEntity.AddComponent<CircleRendererComponentH2M>();
-					crc.Color = circleRendererComponent["Color"].as<glm::vec4>();
+					crc.Color     = circleRendererComponent["Color"].as<glm::vec4>();
 					crc.Thickness = circleRendererComponent["Thickness"].as<float>();
-					crc.Fade = circleRendererComponent["Fade"].as<float>();
+					crc.Fade      = circleRendererComponent["Fade"].as<float>();
 				}
 
 				auto rigidbody2DComponent = entity["Rigidbody2DComponentH2M"];
@@ -378,12 +457,53 @@ namespace H2M {
 				if (boxCollider2DComponent)
 				{
 					auto& bc2d = deserializedEntity.AddComponent<BoxCollider2DComponentH2M>();
-					bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
-					bc2d.Size = boxCollider2DComponent["Size"].as<glm::vec2>();
-					bc2d.Density = boxCollider2DComponent["Density"].as<float>();
-					bc2d.Friction = boxCollider2DComponent["Friction"].as<float>();
-					bc2d.Restitution = boxCollider2DComponent["Restitution"].as<float>();
+					bc2d.Offset               = boxCollider2DComponent["Offset"].as<glm::vec2>();
+					bc2d.Size                 = boxCollider2DComponent["Size"].as<glm::vec2>();
+					bc2d.Density              = boxCollider2DComponent["Density"].as<float>();
+					bc2d.Friction             = boxCollider2DComponent["Friction"].as<float>();
+					bc2d.Restitution          = boxCollider2DComponent["Restitution"].as<float>();
 					bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
+				}
+
+				auto directionalLightComponent = entity["DirectionalLightComponentH2M"];
+				if (directionalLightComponent)
+				{
+					auto& dlc = deserializedEntity.AddComponent<DirectionalLightComponentH2M>();
+					dlc.Radiance    = directionalLightComponent["Radiance"].as<glm::vec3>();
+					dlc.Intensity   = directionalLightComponent["Intensity"].as<float>();
+					dlc.CastShadows = directionalLightComponent["CastShadows"].as<bool>();
+					dlc.SoftShadows = directionalLightComponent["SoftShadows"].as<bool>();
+					dlc.LightSize   = directionalLightComponent["LightSize"].as<float>();
+				}
+
+				auto pointLightComponent = entity["PointLightComponentH2M"];
+				if (pointLightComponent)
+				{
+					auto& plc = deserializedEntity.AddComponent<PointLightComponentH2M>();
+					plc.Enabled          = pointLightComponent["Enabled"].as<bool>();
+					plc.Color            = pointLightComponent["Color"].as<glm::vec3>();
+					plc.AmbientIntensity = pointLightComponent["AmbientIntensity"].as<float>();
+					plc.DiffuseIntensity = pointLightComponent["DiffuseIntensity"].as<float>();
+					plc.Constant         = pointLightComponent["Constant"].as<float>();
+					plc.Linear           = pointLightComponent["Linear"].as<float>();
+					plc.Exponent         = pointLightComponent["Exponent"].as<float>();
+					plc.FarPlane         = pointLightComponent["FarPlane"].as<float>();
+				}
+
+				auto spotLightComponent = entity["SpotLightComponentH2M"];
+				if (spotLightComponent)
+				{
+					auto& slc = deserializedEntity.AddComponent<SpotLightComponentH2M>();
+					slc.Enabled          = spotLightComponent["Enabled"].as<bool>();
+					slc.Color            = spotLightComponent["Color"].as<glm::vec3>();
+					slc.AmbientIntensity = spotLightComponent["AmbientIntensity"].as<float>();
+					slc.DiffuseIntensity = spotLightComponent["DiffuseIntensity"].as<float>();
+					slc.Constant         = spotLightComponent["Constant"].as<float>();
+					slc.Linear           = spotLightComponent["Linear"].as<float>();
+					slc.Exponent         = spotLightComponent["Exponent"].as<float>();
+					slc.Edge             = spotLightComponent["Edge"].as<float>();
+					slc.EdgeProcessed    = spotLightComponent["EdgeProcessed"].as<float>();
+					slc.FarPlane         = spotLightComponent["FarPlane"].as<float>();
 				}
 			}
 		}

@@ -621,10 +621,13 @@ namespace H2M
 			ImGui::Text("File Path");
 			ImGui::NextColumn();
 			ImGui::PushItemWidth(-1);
-			if (mc.Mesh) {
-				ImGui::InputText("##meshfilepath", (char*)mc.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+			if (mc.Mesh)
+			{
+				// ImGui::InputText("##meshfilepath", (char*)mc.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
+				ImGui::InputText("##meshfilepath", (char*)mc.FilePath.c_str(), 256, ImGuiInputTextFlags_ReadOnly);
 			}
-			else {
+			else
+			{
 				ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
 			}
 
@@ -653,10 +656,12 @@ namespace H2M
 
 			if (!meshFilepath.empty())
 			{
+				mc.FilePath = meshFilepath;
 				mc.Mesh = RefH2M<MeshH2M>::Create(meshFilepath, RefH2M<MoravaShader>(), RefH2M<MaterialH2M>(), false);
 
 				auto materialDataVector = MaterialLibrary::s_MaterialData;
-				for (auto materialData : materialDataVector) {
+				for (auto materialData : materialDataVector)
+				{
 					Log::GetLogger()->debug("* * * * * SceneHierarchyPanel Material name: '{0}'", materialData->Name);
 				}
 

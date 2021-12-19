@@ -108,10 +108,12 @@ namespace H2M
 
 	struct MeshComponentH2M
 	{
-		RefH2M<MeshH2M> Mesh;
+		std::string FilePath = "";
 
 		bool CastShadows = true;    // MeshRenderer property in Unity
 		bool ReceiveShadows = true; // MeshRenderer property in Unity
+
+		RefH2M<MeshH2M> Mesh;
 
 		MeshComponentH2M() = default;
 		MeshComponentH2M(const MeshComponentH2M& other) = default;
