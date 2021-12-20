@@ -201,7 +201,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
     // H2M::MeshH2M* meshQuad = new H2M::MeshH2M("Models/Primitives/quad.obj", m_ShaderHazelPBR, nullptr, false);
 
-    SetupLights();
+    // SetupLights();
 }
 
 void EnvMapEditorLayer::SetupLights()
@@ -1899,7 +1899,7 @@ void EnvMapEditorLayer::NewScene()
 
     OnNewScene(m_ViewportSize);
 
-    SetupLights();
+    // SetupLights();
 }
 
 void EnvMapEditorLayer::OpenScene()
@@ -1940,9 +1940,18 @@ void EnvMapEditorLayer::OpenScene(const std::filesystem::path& path)
 
         m_ActiveScene = m_EditorScene;
         m_EditorScenePath = path;
-    }
 
-    SetupLights();
+        // Create MeshH2M objects for each deserialized MeshComponentH2M
+        bool isAnimated = false;
+        auto meshEntities = m_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
+        for (auto entt : meshEntities)
+        {
+            H2M::EntityH2M entity{ entt, m_EditorScene.Raw() };
+            auto& meshComponent = entity.GetComponent<H2M::MeshComponentH2M>();
+            meshComponent.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create(meshComponent.FilePath,
+                EnvMapSharedData::s_ShaderHazelPBR, s_DefaultMaterial, isAnimated);
+        }
+    }
 }
 
 void EnvMapEditorLayer::SaveScene()

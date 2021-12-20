@@ -49,6 +49,10 @@ namespace H2M
 
 	void SceneHierarchyPanelH2M::SetSelected(EntityH2M entity)
 	{
+		// if MeshComponent is not available in entity
+		EntitySelection::s_SelectionContext.clear();
+		EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new SubmeshH2M(), 0 });
+
 		if (entity.HasComponent<MeshComponentH2M>())
 		{
 			// if MeshComponent is available in entity
@@ -63,19 +67,15 @@ namespace H2M
 						EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, submesh, 0 });
 					}
 				}
-				else if (EnvMapEditorLayer::s_SelectionMode == SelectionMode::SubMesh) {
+				else if (EnvMapEditorLayer::s_SelectionMode == SelectionMode::SubMesh)
+				{
 					// Do nothing...
 				}
-				else {
+				else
+				{
 					// Do nothing...
 				}
 			}
-		}
-		else
-		{
-			// if MeshComponent is not available in entity
-			EntitySelection::s_SelectionContext.clear();
-			EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new SubmeshH2M(), 0 });
 		}
 	}
 
@@ -621,7 +621,7 @@ namespace H2M
 			ImGui::Text("File Path");
 			ImGui::NextColumn();
 			ImGui::PushItemWidth(-1);
-			if (mc.Mesh)
+			if (mc.Mesh || !mc.FilePath.empty())
 			{
 				// ImGui::InputText("##meshfilepath", (char*)mc.Mesh->GetFilePath().c_str(), 256, ImGuiInputTextFlags_ReadOnly);
 				ImGui::InputText("##meshfilepath", (char*)mc.FilePath.c_str(), 256, ImGuiInputTextFlags_ReadOnly);

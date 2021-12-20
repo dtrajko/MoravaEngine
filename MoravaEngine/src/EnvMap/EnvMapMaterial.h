@@ -46,7 +46,7 @@ private:
 	{
 		glm::vec3 Color = { 0.972f, 0.96f, 0.915f }; // Silver, from https://docs.unrealengine.com/en-us/Engine/Rendering/Materials/PhysicallyBased
 		H2M::RefH2M<H2M::Texture2D_H2M> TextureMap;
-		bool SRGB = false;
+		bool SRGB = true;
 		bool UseTexture = false;
 	};
 	AlbedoInput m_AlbedoInput;

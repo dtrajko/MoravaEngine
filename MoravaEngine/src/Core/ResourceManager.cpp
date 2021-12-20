@@ -340,7 +340,7 @@ H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadTexture2D_H2M(std::string f
         // A cache MISS
         try
         {
-            texture = H2M::Texture2D_H2M::Create(filePath);
+            texture = H2M::Texture2D_H2M::Create(filePath, true);
             s_HazelTextures2D.insert(std::make_pair(filePath, texture));
             Log::GetLogger()->info("ResourceManager: A texture created and stored in cache [key: '{0}']", filePath);
         }

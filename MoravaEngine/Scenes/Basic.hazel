@@ -1,13 +1,159 @@
 Scene: Untitled
 Entities:
-  - Entity: 13870245463324715802
+  - Entity: 7604559001011564755
+    TagComponentH2M:
+      Tag: Column_02
+    TransformComponentH2M:
+      Translation: [-20, 20, 0]
+      Rotation: [0, 0, 0]
+      Scale: [2, 20, 2]
+    MeshComponentH2M:
+      FilePath: Models\Primitives\cube.obj
+      CastShadows: true
+      ReceiveShadows: true
+  - Entity: 7604559001011564755
+    TagComponentH2M:
+      Tag: Column_01
+    TransformComponentH2M:
+      Translation: [18, 20, 0]
+      Rotation: [0, 0, 0]
+      Scale: [2, 20, 2]
+    MeshComponentH2M:
+      FilePath: Models\Primitives\cube.obj
+      CastShadows: true
+      ReceiveShadows: true
+  - Entity: 14233385804147051428
+    TagComponentH2M:
+      Tag: Spaceship
+    TransformComponentH2M:
+      Translation: [-0.110442162, 30.4240437, 2.98023224e-08]
+      Rotation: [0, 0, 2.50407516e-06]
+      Scale: [0.999997914, 1, 0.999997795]
+    MeshComponentH2M:
+      FilePath: Models\PardCode\spaceship.obj
+      CastShadows: true
+      ReceiveShadows: true
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [1.5, 1.5]
+      Density: 1
+      Friction: 0.200000003
+      Restitution: 0.800000012
+      RestitutionThreshold: 2
+  - Entity: 2312403580208294659
+    TagComponentH2M:
+      Tag: Camera
+    TransformComponentH2M:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponentH2M:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 60.0000038
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1000
+        OrthographicFar: 1000
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 8818167355083693185
+    TagComponentH2M:
+      Tag: Directional Light
+    TransformComponentH2M:
+      Translation: [0, 40, 0]
+      Rotation: [-0.0567504317, -1.25930929, 0.22829856]
+      Scale: [0.999832749, 0.99984026, 0.999834001]
+    DirectionalLightComponentH2M:
+      Radiance: [1, 1, 1]
+      Intensity: 1
+      CastShadows: true
+      SoftShadows: true
+      LightSize: 0.5
+  - Entity: 10598115614197030947
+    TagComponentH2M:
+      Tag: Point Light
+    TransformComponentH2M:
+      Translation: [11.9516983, 53.9717178, 7.76421738]
+      Rotation: [0, 0, 3.20187645e-08]
+      Scale: [1.9999603, 1.9999603, 2]
+    MeshComponentH2M:
+      FilePath: Models\PardCode\sphere.obj
+      CastShadows: true
+      ReceiveShadows: true
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Density: 1
+      Friction: 0.200000003
+      Restitution: 0.699999988
+      RestitutionThreshold: 2
+    PointLightComponentH2M:
+      Enabled: true
+      Color: [0.978902936, 0.247823507, 0]
+      AmbientIntensity: 50
+      DiffuseIntensity: 10
+      Constant: 4
+      Linear: 2
+      Exponent: 1
+      FarPlane: 1000
+  - Entity: 3340967441956775028
+    TagComponentH2M:
+      Tag: Spot Light
+    TransformComponentH2M:
+      Translation: [-14.1245871, 45.0012703, 5.29217339]
+      Rotation: [-0.00176053308, -1.55330992, 4.66045869e-08]
+      Scale: [2.00028849, 1.99992573, 2.00013423]
+    MeshComponentH2M:
+      FilePath: Models\Primitives\cone.obj
+      CastShadows: true
+      ReceiveShadows: true
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Density: 1
+      Friction: 0.200000003
+      Restitution: 0.800000012
+      RestitutionThreshold: 2
+    SpotLightComponentH2M:
+      Enabled: true
+      Color: [0, 0.809536695, 1]
+      AmbientIntensity: 40
+      DiffuseIntensity: 1
+      Constant: 4
+      Linear: 2
+      Exponent: 1
+      Edge: 0
+      EdgeProcessed: 0
+      FarPlane: 1000
+  - Entity: 11568851815102906645
     TagComponentH2M:
       Tag: Platform
     TransformComponentH2M:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [10, 1, 10]
+      Scale: [6, 1, 6]
     MeshComponentH2M:
-      FilePath: Models\Primitives\cube.obj
-      CastShadows: true
+      FilePath: Models\PardCode\plane.obj
+      CastShadows: false
       ReceiveShadows: true
+    Rigidbody2DComponentH2M:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [10, 0.100000001]
+      Density: 1
+      Friction: 0.200000003
+      Restitution: 0.800000012
+      RestitutionThreshold: 2
