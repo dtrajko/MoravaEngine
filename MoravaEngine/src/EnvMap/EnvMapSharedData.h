@@ -39,6 +39,4 @@ public:
 
 	static H2M::RefH2M<ShadowMap> s_ShadowMapDirLight;
 
-private:
-
 };
