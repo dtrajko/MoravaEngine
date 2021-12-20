@@ -44,6 +44,7 @@ void RendererVoxelTerrain::SetShaders()
 	Log::GetLogger()->info("RendererVoxelTerrain: shaderOmniShadow compiled [programID={0}]", shaderOmniShadow->GetProgramID());
 }
 
+// BEGIN shadow render passes
 void RendererVoxelTerrain::RenderPassShadow(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	if (!scene->GetSettings().enableShadows) return;
@@ -114,6 +115,7 @@ void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window* mainW
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+// END shadow render passes
 
 void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
@@ -306,6 +308,31 @@ void RendererVoxelTerrain::BeginFrame()
 {
 }
 
+// BEGIN water render passes
+void RendererVoxelTerrain::RenderWaterEffects(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+	if (!scene->GetSettings().enableWaterEffects) return;
+
+	// TODO
+
+	RenderPassWaterReflection(mainWindow, scene, projectionMatrix);
+
+	// TODO
+
+	RenderPassWaterRefraction(mainWindow, scene, projectionMatrix);
+}
+
+void RendererVoxelTerrain::RenderPassWaterReflection(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+
+}
+
+void RendererVoxelTerrain::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
+{
+
+}
+// END water render passes
+
 void RendererVoxelTerrain::WaitAndRender(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
 	{
@@ -320,5 +347,10 @@ void RendererVoxelTerrain::WaitAndRender(float deltaTime, Window* mainWindow, Sc
 		Profiler profiler("RVT::RenderPass");
 		RenderPassMain(mainWindow, scene, projectionMatrix);
 		scene->GetProfilerResults()->insert(std::make_pair(profiler.GetName(), profiler.Stop()));
+	}
+
+	{
+		Profiler profiler("RVT::RenderWaterEffects");
+		RenderWaterEffects(deltaTime, mainWindow, scene, projectionMatrix);
 	}
 }
