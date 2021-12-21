@@ -201,27 +201,24 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
     // H2M::MeshH2M* meshQuad = new H2M::MeshH2M("Models/Primitives/quad.obj", m_ShaderHazelPBR, nullptr, false);
 
-    // SetupLights();
+    SetupLights();
 }
 
 void EnvMapEditorLayer::SetupLights()
 {
     H2M::EntityH2M directionalLightEntity = CreateEntity("Directional Light");
-    auto& tc = directionalLightEntity.GetComponent<H2M::TransformComponentH2M>();
-    // tc.Rotation = EnvMapSceneRenderer::GetActiveLight().Direction;
-    tc.Rotation = glm::normalize(glm::vec3(-0.05f, -0.85f, -0.05f));
-    // m_DirectionalLightEntity.AddComponent<H2M::MeshComponentH2M>(meshQuad);
     auto& dlc = directionalLightEntity.AddComponent<H2M::DirectionalLightComponentH2M>();
-    
-    H2M::EntityH2M pointLightEntity = CreateEntity("Point Light");
-    // m_PointLightEntity.AddComponent<H2M::MeshComponentH2M>(meshQuad);
-    auto& plc = pointLightEntity.AddComponent<H2M::PointLightComponentH2M>();
-    
-    H2M::EntityH2M spotLightEntity = CreateEntity("Spot Light");
-    // m_SpotLightEntity.AddComponent<H2M::MeshComponentH2M>(meshQuad);
-    auto& slc = spotLightEntity.AddComponent<H2M::SpotLightComponentH2M>();
-    auto& sltc = spotLightEntity.GetComponent<H2M::TransformComponentH2M>();
-    sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
+    auto& tc = directionalLightEntity.GetComponent<H2M::TransformComponentH2M>();
+    tc.Rotation = glm::normalize(glm::vec3(-0.05f, -0.85f, -0.05f));
+    tc.Translation = glm::vec3(0.0f, 15.0f, 0.0f);
+
+    // H2M::EntityH2M pointLightEntity = CreateEntity("Point Light");
+    // auto& plc = pointLightEntity.AddComponent<H2M::PointLightComponentH2M>();
+
+    // H2M::EntityH2M spotLightEntity = CreateEntity("Spot Light");
+    // auto& slc = spotLightEntity.AddComponent<H2M::SpotLightComponentH2M>();
+    // auto& sltc = spotLightEntity.GetComponent<H2M::TransformComponentH2M>();
+    // sltc.Rotation = glm::normalize(glm::vec3(0.0f, -1.0f, 0.0f));
 }
 
 void EnvMapEditorLayer::SetupRenderFramebuffer()
