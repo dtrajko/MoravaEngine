@@ -80,7 +80,7 @@ void Renderer::SetShaders()
 
 	H2M::RefH2M<MoravaShader> shaderWater = MoravaShader::Create("Shaders/water.vert", "Shaders/water.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("water", shaderWater));
-	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
+	printf("Renderer: Water fshader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
 	H2M::RefH2M<MoravaShader> shaderPBR = MoravaShader::Create("Shaders/PBR.vert", "Shaders/PBR.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("pbr", shaderPBR));
@@ -246,7 +246,7 @@ void Renderer::RenderPassWaterReflection(Window* mainWindow, Scene* scene, glm::
 	shaderMain->Validate();
 
 	EnableCulling();
-	std::string passType ="water";
+	std::string passType = "water";
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

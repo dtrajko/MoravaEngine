@@ -127,7 +127,7 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     SetupTextures();
     SetupMeshes();
 
-    SetWaterManager(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
+    // SetWaterManager(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 
     m_IsRequiredMapUpdate = true;
     m_IsRequiredMapRebuild = true;
@@ -587,20 +587,24 @@ void SceneProceduralLandmass::Dig(bool* keys, float timestep)
     if (timestep - m_DigCooldown.lastTime < m_DigCooldown.cooldown) return;
     m_DigCooldown.lastTime = timestep;
 
-    if (keys[GLFW_KEY_F]) {
+    if (keys[GLFW_KEY_F])
+    {
         bool vectorModified = false;
 
-        for (auto it = m_TerrainSL->m_Voxels.begin(); it != m_TerrainSL->m_Voxels.end(); ) {
+        for (auto it = m_TerrainSL->m_Voxels.begin(); it != m_TerrainSL->m_Voxels.end(); )
+        {
             if (glm::distance(m_Player->GetPosition(), (glm::vec3)it->second->position) < m_DigDistance)
             {
                 it = m_TerrainSL->m_Voxels.erase(it++);
                 vectorModified = true;
             }
-            else {
+            else
+            {
                 ++it;
             }
         }
-        if (vectorModified) {
+        if (vectorModified)
+        {
             m_RenderInstanced->CreateVertexData();
         }
     }
@@ -705,7 +709,8 @@ void SceneProceduralLandmass::AddVoxel()
         m_RenderInstanced->CreateVertexData();
         Log::GetLogger()->info("New voxel at position [ {0} {1} {2} ] added!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
     }
-    else {
+    else
+    {
         Log::GetLogger()->warn("Voxel at position [ {0} {1} {2} ] already exists!", addPositionInt.x, addPositionInt.y, addPositionInt.z);
     }
 }

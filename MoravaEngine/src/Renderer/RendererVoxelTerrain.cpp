@@ -190,7 +190,7 @@ void RendererVoxelTerrain::RenderWaterEffects(float deltaTime, Window* mainWindo
 	}
 	scene->GetWaterManager()->SetWaterMoveFactor(waterMoveFactor);
 
-	float distance = 2.0f * (scene->GetCamera()->GetPosition().y - scene->GetWaterManager()->GetWaterHeight());
+	float distance = 2.0f * (scene->GetCamera()->GetPosition().y - scene->GetSettings().waterHeight);
 	glm::vec3 cameraPosition = scene->GetCamera()->GetPosition();
 	glm::vec3 cameraPositionInverse = scene->GetCamera()->GetPosition();
 	cameraPositionInverse.y -= distance;
@@ -211,7 +211,7 @@ void RendererVoxelTerrain::RenderPassWaterReflection(Window* mainWindow, Scene* 
 
 	scene->GetWaterManager()->GetReflectionFramebuffer()->Bind();
 
-	// Clear the window
+	// Clear the window																									
 	RendererBasic::Clear();
 
 	H2M::RefH2M<ShaderMain> shaderMain = RendererBasic::GetShaders()["main"];
@@ -241,8 +241,7 @@ void RendererVoxelTerrain::RenderPassWaterReflection(Window* mainWindow, Scene* 
 	shaderMain->SetInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->SetInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->SetInt("shadowMap", scene->GetTextureSlots()["shadow"]);
-	// shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetWaterManager()->GetWaterHeight())); // reflection clip plane
-	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, 0)); // reflection clip plane
+	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetSettings().waterHeight)); // reflection clip plane
 	shaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();
 
@@ -287,8 +286,7 @@ void RendererVoxelTerrain::RenderPassWaterRefraction(Window* mainWindow, Scene* 
 	shaderMain->SetInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->SetInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->SetInt("shadowMap", scene->GetTextureSlots()["shadow"]);
-	// shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
-	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 0)); // refraction clip plane
+	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetSettings().waterHeight)); // refraction clip plane
 	shaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();
 
@@ -496,10 +494,10 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	std::string passType = "main";
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 
-	shaderMain->Unbind();
-	shaderMarchingCubes->Unbind();
-	shaderRenderInstanced->Unbind();
-	shaderBasic->Unbind();
+	// shaderMain->Unbind();
+	// shaderMarchingCubes->Unbind();
+	// shaderRenderInstanced->Unbind();
+	// shaderBasic->Unbind();
 
 	/**** BEGIN render water ****/
 	EnableTransparency();
