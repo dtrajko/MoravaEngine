@@ -137,6 +137,8 @@ void Renderer::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::mat4 pro
 
 void Renderer::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
+	if (!scene->GetSettings().enableOmniShadows) return;
+
 	RendererBasic::GetShaders()["omniShadow"]->Bind();
 
 	glViewport(0, 0, light->GetShadowMap()->GetShadowWidth(), light->GetShadowMap()->GetShadowHeight());
@@ -311,6 +313,8 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 		scene->GetSkybox()->Draw(modelMatrix, scene->GetCamera()->GetViewMatrix(), projectionMatrix);
 	}
 
+	/**** BEGIN shaderMain ****/
+
 	H2M::RefH2M<ShaderMain> shaderMain = (H2M::RefH2M<ShaderMain>)RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
 
@@ -326,6 +330,7 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 	shaderMain->SetMat4("projection", projectionMatrix);
 	shaderMain->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
 
+	// Directional Light
 	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
 	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
 	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
@@ -350,6 +355,8 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
 
 	shaderMain->Unbind();
+
+	/**** END shaderMain ****/
 
 	EnableTransparency();
 

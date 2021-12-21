@@ -65,11 +65,11 @@ void SceneEiffel::SetSkybox()
 void SceneEiffel::SetupTextures()
 {
 	textures.insert(std::make_pair("sponzaFloorDiffuse", TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_diff.tga", false, false)));
-	textures.insert(std::make_pair("sponzaFloorNormal", TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_ddn.tga", false, false)));
-	textures.insert(std::make_pair("sponzaCeilDiffuse", TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_diff.tga", false, false)));
-	textures.insert(std::make_pair("sponzaCeilNormal",  TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_ddn.tga", false, false)));
-	textures.insert(std::make_pair("water",             TextureLoader::Get()->GetTexture("Textures/water.png", false, false)));
-	textures.insert(std::make_pair("pyramid",           TextureLoader::Get()->GetTexture("Textures/pyramid.png", false, false)));
+	textures.insert(std::make_pair("sponzaFloorNormal",  TextureLoader::Get()->GetTexture("Textures/sponza_floor_a_ddn.tga", false, false)));
+	textures.insert(std::make_pair("sponzaCeilDiffuse",  TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_diff.tga", false, false)));
+	textures.insert(std::make_pair("sponzaCeilNormal",   TextureLoader::Get()->GetTexture("Textures/sponza_ceiling_a_ddn.tga", false, false)));
+	textures.insert(std::make_pair("water",              TextureLoader::Get()->GetTexture("Textures/water.png", false, false)));
+	textures.insert(std::make_pair("pyramid",            TextureLoader::Get()->GetTexture("Textures/pyramid.png", false, false)));
 }
 
 void SceneEiffel::SetupMeshes()
@@ -189,7 +189,8 @@ void SceneEiffel::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	textures["sponzaFloorDiffuse"]->Bind(textureSlots["diffuse"]);
 	textures["sponzaFloorNormal"]->Bind(textureSlots["normal"]);
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	if (passType != "shadow") {
+	if (passType != "shadow")
+	{
 		meshes["quadLarge"]->Render();
 	}
 

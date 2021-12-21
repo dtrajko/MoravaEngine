@@ -3,9 +3,11 @@
 #include "Scene/SceneProceduralLandmass.h"
 
 #include "Camera/CameraControllerVoxelTerrain.h"
+#include "Core/Application.h"
 #include "Core/MousePicker.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Mesh/Block.h"
+#include "Mesh/Tile2D.h"
 #include "Terrain/NoiseSL.h"
 #include "Terrain/TerrainSL.h"
 
@@ -20,10 +22,10 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     sceneSettings.waterWaveSpeed = 0.05f;
     sceneSettings.enablePointLights  = true;
     sceneSettings.enableSpotLights   = true;
-    sceneSettings.enableOmniShadows  = false;
-    sceneSettings.enableSkybox       = false;
     sceneSettings.enableShadows      = false;
-    sceneSettings.enableWaterEffects = false;
+    sceneSettings.enableOmniShadows  = false;
+    sceneSettings.enableWaterEffects = true;
+    sceneSettings.enableSkybox       = false;
     sceneSettings.enableParticles    = false;
     sceneSettings.farPlane = 500.0f;
 
@@ -125,6 +127,8 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     SetupTextures();
     SetupMeshes();
 
+    SetWaterManager(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
+
     m_IsRequiredMapUpdate = true;
     m_IsRequiredMapRebuild = true;
 
@@ -174,7 +178,6 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     m_CubeColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     m_DeleteVoxelCodeGLFW = GLFW_KEY_TAB;
-
 }
 
 void SceneProceduralLandmass::SetCamera()
@@ -189,6 +192,7 @@ void SceneProceduralLandmass::SetupTextures()
 {
     ResourceManager::LoadTexture("diffuse", "Textures/plain.png");
     ResourceManager::LoadTexture("normal", "Textures/normal_map_default.png");
+    ResourceManager::LoadTexture("water", "Textures/water.png");
 }
 
 void SceneProceduralLandmass::SetupTextureSlots()
@@ -213,6 +217,9 @@ void SceneProceduralLandmass::SetupMeshes()
 
     Block* floor_color = new Block(glm::vec3(m_MapGenConf.mapChunkSize, 0.1f, m_MapGenConf.mapChunkSize));
     meshes.insert(std::make_pair("floor_color", floor_color));
+
+    Tile2D* m_Tile2D = new Tile2D();
+    meshes.insert(std::make_pair("water", m_Tile2D));
 }
 
 void SceneProceduralLandmass::UpdateImGui(float timestep, Window* mainWindow)
@@ -463,6 +470,30 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window* mainWindow)
 
             ImGui::SliderInt("Height Map Multiplier", &m_HeightMapMultiplier, 0, 20);
             ImGui::SliderFloat("Sea Level", &m_SeaLevel, -10.0f, 10.0f);
+
+            if (ImGui::SliderFloat("Water Height", &sceneSettings.waterHeight, -10.0f, 10.0f))
+            {
+                m_WaterManager->SetWaterHeight(m_SeaLevel);
+            }
+        }
+    }
+    ImGui::End();
+
+    ImGui::Begin("Framebuffers");
+    {
+        if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImVec2 imageSize(96.0f, 96.0f);
+
+            ImGui::Text("Shadow Map");
+            ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
+
+            ImGui::Text("Water Reflection\nColor Attachment");
+            ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
+            ImGui::Text("Water Refraction\nColor Attachment");
+            ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
+            ImGui::Text("Water Refraction\nDepth Attachment");
+            ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
         }
     }
     ImGui::End();
@@ -490,11 +521,16 @@ void SceneProceduralLandmass::Update(float timestep, Window* mainWindow)
     m_DeleteMode = mainWindow->getKeys()[m_DeleteVoxelCodeGLFW];
     m_RenderInstanced->SetDeleteMode(&m_DeleteMode);
 
-    if (m_UnlockRotation != m_UnlockRotationPrev) {
+    if (m_UnlockRotation != m_UnlockRotationPrev)
+    {
         if (m_UnlockRotation)
+        {
             mainWindow->SetCursorDisabled();
+        }
         else
+        {
             mainWindow->SetCursorNormal();
+        }
         m_UnlockRotationPrev = m_UnlockRotation;
     }
 }
@@ -579,7 +615,8 @@ void SceneProceduralLandmass::CastRay(bool* keys, bool* buttons, float timestep)
     if (true || keys[GLFW_KEY_C] || buttons[GLFW_MOUSE_BUTTON_1])
     {
         m_IntersectPositionVector = GetRayIntersectPositions(timestep, m_Camera);
-        if (m_IntersectPositionVector.size() > 0) {
+        if (m_IntersectPositionVector.size() > 0)
+        {
             m_RenderInstanced->CreateVertexData();
         }
     }
@@ -598,16 +635,19 @@ std::vector<glm::vec3> SceneProceduralLandmass::GetRayIntersectPositions(float t
     float distance;
     glm::ivec3 position;
 
-    for (auto it = m_TerrainSL->m_Voxels.begin(); it != m_TerrainSL->m_Voxels.end(); it++) {
+    for (auto it = m_TerrainSL->m_Voxels.begin(); it != m_TerrainSL->m_Voxels.end(); it++)
+    {
         position = it->second->position;
         bool isSelected = AABB::IntersectRayAab(m_Camera->GetPosition(), MousePicker::Get()->GetCurrentRay(),
             (glm::vec3)position - glm::vec3(1.0f, 1.0f, 1.0f), (glm::vec3)position + glm::vec3(1.0f, 1.0f, 1.0f), glm::vec2(0.0f));
-        if (isSelected) {
+        if (isSelected)
+        {
             rayIntersectPositions.push_back(position);
         
             // find position nearest to camera
             distance = glm::distance((glm::vec3)position, camera->GetPosition());
-            if (distance < minimalDistance) {
+            if (distance < minimalDistance)
+            {
                 minimalDistance = distance;
                 m_IntersectPosition = position;
             }
@@ -619,8 +659,10 @@ std::vector<glm::vec3> SceneProceduralLandmass::GetRayIntersectPositions(float t
 
 bool SceneProceduralLandmass::IsRayIntersectPosition(glm::vec3 position)
 {
-    for (auto rayIntersectPosition : m_IntersectPositionVector) {
-        if (position == rayIntersectPosition) {
+    for (auto rayIntersectPosition : m_IntersectPositionVector)
+    {
+        if (position == rayIntersectPosition)
+        {
             return true;
         }
     }
@@ -633,13 +675,15 @@ void SceneProceduralLandmass::OnClick(bool* keys, bool* buttons, float timestep)
     if (timestep - m_OnClickCooldown.lastTime < m_OnClickCooldown.cooldown) return;
     m_OnClickCooldown.lastTime = timestep;
 
-    if (buttons[GLFW_MOUSE_BUTTON_1]) {
-
+    if (buttons[GLFW_MOUSE_BUTTON_1])
+    {
         // Delete current voxel
-        if (keys[m_DeleteVoxelCodeGLFW]) {
+        if (keys[m_DeleteVoxelCodeGLFW])
+        {
             DeleteVoxel();
         }
-        else {
+        else
+        {
             AddVoxel();
         }
     }
@@ -651,7 +695,8 @@ void SceneProceduralLandmass::AddVoxel()
     glm::vec3 addPositionFloat = (glm::vec3)m_IntersectPosition - m_Camera->GetFront();
     glm::ivec3 addPositionInt = glm::ivec3(std::round(addPositionFloat.x), std::round(addPositionFloat.y), std::round(addPositionFloat.z));
 
-    if (IsPositionVacant(addPositionInt)) {
+    if (IsPositionVacant(addPositionInt))
+    {
         TerrainVoxel::Voxel* voxel = new TerrainVoxel::Voxel();
         voxel->position = addPositionInt;
         voxel->color = glm::vec4(m_CubeColor);
@@ -670,7 +715,8 @@ void SceneProceduralLandmass::DeleteVoxel()
     if (m_IntersectPosition == glm::ivec3(-1, -1, -1)) return;
 
     auto voxelEntry = m_TerrainSL->m_Voxels.find(m_TerrainSL->GetVoxelMapKey(m_IntersectPosition));
-    if (voxelEntry != m_TerrainSL->m_Voxels.end()) {
+    if (voxelEntry != m_TerrainSL->m_Voxels.end())
+    {
         glm::ivec3 deletePosition = voxelEntry->second->position;
         m_TerrainSL->m_Voxels.erase(voxelEntry);
         m_IntersectPosition = glm::ivec3(-1, -1, -1);
@@ -681,9 +727,12 @@ void SceneProceduralLandmass::DeleteVoxel()
 
 bool SceneProceduralLandmass::IsPositionVacant(glm::ivec3 queryPosition)
 {
-    for (auto voxel : m_TerrainSL->m_Voxels) {
+    for (auto voxel : m_TerrainSL->m_Voxels)
+    {
         if (voxel.second->position == queryPosition)
+        {
             return false;
+        }
     }
     return true;
 }
@@ -698,13 +747,15 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
 
     RendererBasic::EnableTransparency();
 
-    if (passType == "shadow_omni") {
+    if (passType == "shadow_omni")
+    {
         shaderOmniShadow->Bind();
     }
 
     if (passType == "main")
     {
-        if (m_DrawGizmos) {
+        if (m_DrawGizmos)
+        {
             shaderBasic->Bind();
             shaderBasic->SetMat4("model", glm::mat4(1.0f));
             m_PivotScene->Draw(shaderBasic, projectionMatrix, m_Camera->GetViewMatrix());
@@ -716,34 +767,37 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
         shaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
         ResourceManager::GetTexture("normal")->Bind(textureSlots["normal"]);
 
-        switch (m_MapGenConf.drawMode) {
-        case MapGenerator::DrawMode::HeightMap:
-            model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            shaderMain->SetMat4("model", model);
-            ResourceManager::GetTexture("heightMap")->Bind(textureSlots["diffuse"]);
-            shaderMain->SetFloat("tilingFactor", 1.0f / m_MapGenConf.mapChunkSize);
-            // Log::GetLogger()->info("SceneProceduralLandmass::Render heightMap ID = {0}", ResourceManager::GetTexture("heightMap")->GetID());
-            meshes["floor_height"]->Render();
-            break;
-        case MapGenerator::DrawMode::ColorMap:
-            model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            shaderMain->SetMat4("model", model);
-            ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
-            shaderMain->SetFloat("tilingFactor", 1.0f / m_MapGenConf.mapChunkSize);
-            // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
-            meshes["floor_height"]->Render();
-            break;
-        case MapGenerator::DrawMode::Mesh:
-            model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
-            model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            model = glm::scale(model, glm::vec3(-1.0f, 1.0f, 1.0f));
-            shaderMain->SetMat4("model", model);
-            ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
-            shaderMain->SetFloat("tilingFactor", 1.0f);
-            // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
-            if (m_RenderTerrainMesh && m_TerrainSL->GetMapGenerator()->GetMesh() != nullptr)
-                m_TerrainSL->GetMapGenerator()->GetMesh()->Render();
-            break;
+        switch (m_MapGenConf.drawMode)
+        {
+            case MapGenerator::DrawMode::HeightMap:
+                model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+                shaderMain->SetMat4("model", model);
+                ResourceManager::GetTexture("heightMap")->Bind(textureSlots["diffuse"]);
+                shaderMain->SetFloat("tilingFactor", 1.0f / m_MapGenConf.mapChunkSize);
+                // Log::GetLogger()->info("SceneProceduralLandmass::Render heightMap ID = {0}", ResourceManager::GetTexture("heightMap")->GetID());
+                meshes["floor_height"]->Render();
+                break;
+            case MapGenerator::DrawMode::ColorMap:
+                model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+                shaderMain->SetMat4("model", model);
+                ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
+                shaderMain->SetFloat("tilingFactor", 1.0f / m_MapGenConf.mapChunkSize);
+                // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
+                meshes["floor_height"]->Render();
+                break;
+            case MapGenerator::DrawMode::Mesh:
+                model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
+                model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+                model = glm::scale(model, glm::vec3(-1.0f, 1.0f, 1.0f));
+                shaderMain->SetMat4("model", model);
+                ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
+                shaderMain->SetFloat("tilingFactor", 1.0f);
+                // Log::GetLogger()->info("SceneProceduralLandmass::Render colorMap ID = {0}", ResourceManager::GetTexture("colorMap")->GetID());
+                if (m_RenderTerrainMesh && m_TerrainSL->GetMapGenerator()->GetMesh() != nullptr)
+                {
+                    m_TerrainSL->GetMapGenerator()->GetMesh()->Render();
+                }
+                break;
         }
     }
 
@@ -762,7 +816,9 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
     shaderMain->SetMat4("model", model);
 
     if (m_RenderPlayer)
+    {
         m_Player->Render();
+    }
 
     /**** END Render Player ****/
 
@@ -783,9 +839,53 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
     m_RenderInstanced->m_Texture->Bind(0);
 
     if (m_RenderTerrainVoxel)
+    {
         m_RenderInstanced->Render();
+    }
 
     /**** END render Terrain ****/
+}
+
+void SceneProceduralLandmass::RenderWater(glm::mat4 projectionMatrix, std::string passType,
+    std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
+{
+    if (!sceneSettings.enableWaterEffects) return;
+
+    H2M::RefH2M<MoravaShader> shaderWater = shaders["water"];
+
+    /* Water Tile */
+    shaderWater->Bind();
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, sceneSettings.waterHeight, 0.0f));
+    model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::scale(model, glm::vec3(30.0f));
+    glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+    // shaderWater->SetMat4("model", model);
+    // shaderWater->SetMat4("view", m_Camera->GetViewMatrix());
+    m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
+    m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
+    m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
+    textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
+    textures["waterNormal"]->Bind(textureSlots["normal"]);
+    shaderWater->SetInt("reflectionTexture", textureSlots["reflection"]);
+    shaderWater->SetInt("refractionTexture", textureSlots["refraction"]);
+    shaderWater->SetInt("normalMap", textureSlots["normal"]);
+    shaderWater->SetInt("depthMap", textureSlots["depth"]);
+    shaderWater->SetInt("dudvMap", textureSlots["DuDv"]);
+
+    shaderWater->SetFloat3("lightColor", LightManager::directionalLight.GetColor());
+    shaderWater->SetFloat3("lightPosition", -sceneSettings.directionalLight.direction);
+    shaderWater->SetFloat3("eyePosition", m_Camera->GetPosition());
+    shaderWater->SetFloat("waterLevel", sceneSettings.waterHeight);
+    shaderWater->SetFloat4("waterColor", glm::vec4(0.0f, 0.4f, 0.8f, 1.0f));
+
+    materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+    meshes["water"]->Render();
+
+    shaderWater->Unbind();
 }
 
 SceneProceduralLandmass::~SceneProceduralLandmass()
