@@ -245,6 +245,11 @@ void RendererVoxelTerrain::RenderPassWaterReflection(Window* mainWindow, Scene* 
 	shaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();
 
+	H2M::RefH2M<MoravaShader> shaderRenderInstanced = RendererBasic::GetShaders()["render_instanced"];
+	shaderRenderInstanced->Bind();
+	shaderRenderInstanced->SetFloat4("clipPlane", glm::vec4(0.0f, 1.0f, 0.0f, -scene->GetSettings().waterHeight)); // reflection clip plane
+	shaderRenderInstanced->Validate();
+
 	EnableCulling();
 	std::string passType = "water";
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
@@ -289,6 +294,11 @@ void RendererVoxelTerrain::RenderPassWaterRefraction(Window* mainWindow, Scene* 
 	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetSettings().waterHeight)); // refraction clip plane
 	shaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();
+
+	H2M::RefH2M<MoravaShader> shaderRenderInstanced = RendererBasic::GetShaders()["render_instanced"];
+	shaderRenderInstanced->Bind();
+	shaderRenderInstanced->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetSettings().waterHeight)); // refraction clip plane
+	shaderRenderInstanced->Validate();
 
 	std::string passType = "water";
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
@@ -479,6 +489,9 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 
 	shaderRenderInstanced->SetFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
 	shaderRenderInstanced->SetFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
+
+	shaderRenderInstanced->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+
 	shaderRenderInstanced->Validate();
 	/**** END shaderRenderInstanced ****/
 

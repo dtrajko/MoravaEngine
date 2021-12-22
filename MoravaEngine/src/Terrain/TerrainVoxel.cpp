@@ -46,7 +46,9 @@ void TerrainVoxel::Generate(glm::vec3 scale)
 void TerrainVoxel::Release()
 {
 	for (auto voxel : m_Voxels)
+	{
 		delete voxel.second;
+	}
 
 	m_Voxels.clear();
 }

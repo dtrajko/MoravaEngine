@@ -13,9 +13,14 @@ out vec4 vColor;
 
 uniform mat4 projection;
 uniform mat4 view;
+uniform vec4 clipPlane;
+
 
 void main()
 {
+    vec4 WorldPosition = aModel * vec4(aPosition, 1.0);
+	gl_ClipDistance[0] = dot(WorldPosition, clipPlane);
+
     vTexCoord = aTexCoord;
     vNormal = aNormal;
     vFragPos = (aModel * vec4(aPosition, 1.0)).xyz;

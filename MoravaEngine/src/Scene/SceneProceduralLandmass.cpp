@@ -18,7 +18,7 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     sceneSettings.cameraStartYaw = 0.0f;
     sceneSettings.cameraStartPitch = 0.0f;
     sceneSettings.cameraMoveSpeed = 1.0f;
-    sceneSettings.waterHeight = 0.0f;
+    sceneSettings.waterHeight = 0.4f;
     sceneSettings.waterWaveSpeed = 0.05f;
     sceneSettings.enablePointLights  = true;
     sceneSettings.enableSpotLights   = true;
@@ -751,13 +751,15 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
     H2M::RefH2M<MoravaShader> shaderBasic = shaders["basic"];
 
     RendererBasic::EnableTransparency();
+    RendererBasic::DisableCulling();
 
     if (passType == "shadow_omni")
     {
         shaderOmniShadow->Bind();
     }
 
-    if (passType == "main")
+    if (passType == "main" || passType == "water")
+    // if (true)
     {
         if (m_DrawGizmos)
         {
@@ -775,6 +777,7 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
         switch (m_MapGenConf.drawMode)
         {
             case MapGenerator::DrawMode::HeightMap:
+                model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
                 model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
                 shaderMain->SetMat4("model", model);
                 ResourceManager::GetTexture("heightMap")->Bind(textureSlots["diffuse"]);
@@ -783,6 +786,7 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
                 meshes["floor_height"]->Render();
                 break;
             case MapGenerator::DrawMode::ColorMap:
+                model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
                 model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
                 shaderMain->SetMat4("model", model);
                 ResourceManager::GetTexture("colorMap")->Bind(textureSlots["diffuse"]);
@@ -792,6 +796,7 @@ void SceneProceduralLandmass::Render(Window* mainWindow, glm::mat4 projectionMat
                 break;
             case MapGenerator::DrawMode::Mesh:
                 model = glm::translate(model, glm::vec3(0.0f, 5.0f, 0.0f));
+                model = glm::translate(model, glm::vec3(0.0f, -5.0f, 0.0f));
                 model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
                 model = glm::scale(model, glm::vec3(-1.0f, 1.0f, 1.0f));
                 shaderMain->SetMat4("model", model);
