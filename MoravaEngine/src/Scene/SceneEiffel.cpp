@@ -335,6 +335,9 @@ void SceneEiffel::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	shaderWater->SetFloat("waterLevel", sceneSettings.waterHeight);
 	shaderWater->SetFloat4("waterColor", glm::vec4(0.0f, 0.4f, 0.8f, 1.0f));
 
+	// shaderWater->SetFloat("nearPlane", sceneSettings.nearPlane);
+	// shaderWater->SetFloat("farPlane", sceneSettings.farPlane);
+
 	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	meshes["water"]->Render();
 

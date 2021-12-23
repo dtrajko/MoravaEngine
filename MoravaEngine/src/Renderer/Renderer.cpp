@@ -78,9 +78,9 @@ void Renderer::SetShaders()
 	RendererBasic::GetShaders().insert(std::make_pair("omniShadow", shaderOmniShadow));
 	printf("Renderer: OmniShadow shader compiled [programID=%d]\n", shaderOmniShadow->GetProgramID());
 
-	H2M::RefH2M<MoravaShader> shaderWater = MoravaShader::Create("Shaders/water.vert", "Shaders/water.frag");
+	H2M::RefH2M<MoravaShader> shaderWater = MoravaShader::Create("Shaders/waterOriginal.vert", "Shaders/waterOriginal.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("water", shaderWater));
-	printf("Renderer: Water fshader compiled [programID=%d]\n", shaderWater->GetProgramID());
+	printf("Renderer: Water shader compiled [programID=%d]\n", shaderWater->GetProgramID());
 
 	H2M::RefH2M<MoravaShader> shaderPBR = MoravaShader::Create("Shaders/PBR.vert", "Shaders/PBR.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("pbr", shaderPBR));
@@ -176,7 +176,7 @@ void Renderer::RenderWaterEffects(float deltaTime, Window* mainWindow, Scene* sc
 	glEnable(GL_CLIP_DISTANCE0);
 
 	float waterMoveFactor = scene->GetWaterManager()->GetWaterMoveFactor();
-	waterMoveFactor += WaterManager::m_WaveSpeed * deltaTime;
+	waterMoveFactor += WaterManager::m_WaveSpeed * deltaTime * 0.2f;
 	if (waterMoveFactor >= 1.0f)
 	{
 		waterMoveFactor = waterMoveFactor - 1.0f;
@@ -383,8 +383,8 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 
 	scene->GetWaterManager()->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["depth"]);
 	scene->GetTextures()["waterDuDv"]->Bind(scene->GetTextureSlots()["DuDv"]);
-	shaderWater->SetFloat("nearPlane", scene->GetSettings().nearPlane);
-	shaderWater->SetFloat("farPlane", scene->GetSettings().farPlane);
+	// shaderWater->SetFloat("nearPlane", scene->GetSettings().nearPlane);
+	// shaderWater->SetFloat("farPlane", scene->GetSettings().farPlane);
 	shaderWater->SetInt("reflectionTexture", scene->GetTextureSlots()["reflection"]);
 	shaderWater->SetInt("refractionTexture", scene->GetTextureSlots()["refraction"]);
 	shaderWater->SetInt("normalMap", scene->GetTextureSlots()["normal"]);

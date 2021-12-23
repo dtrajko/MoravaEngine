@@ -1,4 +1,4 @@
-#version 400 core
+#version 330
 
 in vec4 clipSpace;
 in vec2 textureCoords;
@@ -10,24 +10,32 @@ layout (location = 1) out vec4 out_BrightColor;
 
 uniform sampler2D reflectionTexture;
 uniform sampler2D refractionTexture;
-uniform sampler2D dudvMap;
 uniform sampler2D normalMap;
+uniform sampler2D dudvMap;
 uniform sampler2D depthMap;
 uniform vec3 lightColor;
 uniform float moveFactor;
+uniform float nearPlane;
+uniform float farPlane;
 
-const float waveStrength = 0.02;
+uniform vec3 eyePosition; // same as cameraPosition
+
+uniform float waterLevel;
+uniform vec4 waterColor;
+
+const float waveStrength = 0.01;
 const float shineDamper = 20.0;
 const float reflectivity = 0.5;
+const vec3 waterColorTM = vec3(0.0, 0.5, 0.8);
 
 void main(void)
 {
 	vec2 ndc = (clipSpace.xy / clipSpace.w) / 2.0 + 0.5;
 	vec2 refractTexCoords = vec2(ndc.x, ndc.y);
 	vec2 reflectTexCoords = vec2(ndc.x, -ndc.y);
-	
-	float near = 1.0;
-	float far = 2000.0;
+
+	float near = 0.1;   // nearPlane;
+	float far = 2000.0; // farPlane;
 	float depth = texture(depthMap, refractTexCoords).r;
 	float floorDistance = 2.0 * near * far / (far + near - (2.0 * depth - 1.0) * (far - near));
 
@@ -66,8 +74,14 @@ void main(void)
 	vec3 specularHighlights = lightColor * specular * reflectivity * waterDepth;
 
 	out_Color = mix(reflectColor, refractColor, refractiveFactor);
-	out_Color = mix(out_Color, vec4(0.0, 0.3, 0.5, 1.0), 0.2) + vec4(specularHighlights, 0.0);
+	out_Color = mix(out_Color, waterColor, 0.2) + vec4(specularHighlights, 0.0);
 	out_Color.a = waterDepth;
+
+	// Add a blue tint under the water level
+    if (eyePosition.y < waterLevel)
+	{
+		out_Color = mix(out_Color, waterColor, 0.5);
+	}
 
 	out_BrightColor = vec4(0.0, 0.0, 1.0, 1.0);
 }
