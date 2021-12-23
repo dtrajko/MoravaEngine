@@ -28,7 +28,7 @@ namespace H2M
 		static void BeginScene(const CameraH2M& camera, const glm::mat4& transform);
 		static void BeginScene(const EditorCameraH2M& camera);
 		// static void BeginScene(const OrthographicCamera& camera); // TODO: Remove
-		static void BeginScene(const glm::mat4& viewProj, bool depthTest); // Used by EnvMapSceneRenderer
+		static void BeginScene(const glm::mat4& viewProj, bool depthTest);
 		static void EndScene();
 		static void Flush();
 
@@ -48,16 +48,17 @@ namespace H2M
 
 		static void DrawCircle(const glm::mat4& transform, const glm::vec4& color, float thickness = 1.0f, float fade = 0.005f, int entityID = -1);
 
+		static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, int entityID = -1);
+
 		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponentH2M& src, int entityID);
 
-		static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color); // Used by EnvMapSceneRenderer
 
 		// Stats
 		struct Statistics
 		{
 			uint32_t DrawCalls = 0;
 			uint32_t QuadCount = 0;
-			uint32_t LineCount = 0; // Used by EnvMapSceneRenderer
+			uint32_t LineCount = 0;
 
 			uint32_t GetTotalVertexCount() const { return QuadCount * 4; }
 			uint32_t GetTotalIndexCount() const { return QuadCount * 6; }

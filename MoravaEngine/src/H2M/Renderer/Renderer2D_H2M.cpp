@@ -43,7 +43,7 @@ namespace H2M
 		int EntityID;
 	};
 
-	struct LineVertex // Used by EnvMapSceneRenderer
+	struct LineVertex
 	{
 		glm::vec3 Position;
 		glm::vec4 Color;
@@ -249,7 +249,7 @@ namespace H2M
 
 		delete[] s_Data.QuadVertexBufferBase;
 		delete[] s_Data.CircleVertexBufferBase;
-		delete[] s_Data.LineVertexBufferBase; // used by EnvMapSceneRenderer
+		delete[] s_Data.LineVertexBufferBase;
 	}
 
 	//	void Renderer2D_H2M::BeginScene(const OrthographicCamera& camera)
@@ -546,20 +546,16 @@ namespace H2M
 		return s_Data.Stats;
 	}
 
-	// Used by EnvMapSceneRenderer
-	void Renderer2D_H2M::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
+	void Renderer2D_H2M::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, int entityID)
 	{
-		if (s_Data.LineVertexCount >= s_Data.MaxLineIndices)
-		{
-			// NextBatch();
-		}
-
 		s_Data.LineVertexBufferPtr->Position = p0;
 		s_Data.LineVertexBufferPtr->Color = color;
+		s_Data.LineVertexBufferPtr->EntityID = entityID;
 		s_Data.LineVertexBufferPtr++;
 
 		s_Data.LineVertexBufferPtr->Position = p1;
 		s_Data.LineVertexBufferPtr->Color = color;
+		s_Data.LineVertexBufferPtr->EntityID = entityID;
 		s_Data.LineVertexBufferPtr++;
 
 		s_Data.LineVertexCount += 2;

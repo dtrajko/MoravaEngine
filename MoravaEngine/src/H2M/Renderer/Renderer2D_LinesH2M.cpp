@@ -44,6 +44,13 @@ namespace H2M
 
 		glm::mat4 CameraViewProj;
 		bool DepthTest = true;
+
+		struct CameraData
+		{
+			glm::mat4 ViewProjection;
+		};
+		CameraData CameraBuffer;
+		RefH2M<UniformBufferH2M> CameraUniformBuffer;
 	};
 
 	static Renderer2DDataLines s_Data;
@@ -60,7 +67,7 @@ namespace H2M
 			}
 			else
 			{
-				s_Data.LineShader = MoravaShader::Create("Shaders/Hazel/Renderer2D_Line.vs", "Shaders/Hazel/Renderer2D_Line.fs");
+				s_Data.LineShader = MoravaShader::Create("Shaders/Hazel/Renderer2D_Line_Old.vs", "Shaders/Hazel/Renderer2D_Line.fs");
 			}
 
 			PipelineSpecificationH2M pipelineSpecLines;
