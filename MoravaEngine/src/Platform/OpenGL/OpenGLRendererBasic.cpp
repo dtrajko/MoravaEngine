@@ -13,11 +13,6 @@ OpenGLRendererBasic::~OpenGLRendererBasic()
 {
 }
 
-void OpenGLRendererBasic::RendererInfo(WindowProps& windowProps)
-{
-	windowProps.Title += " [Renderer: OpenGL]";
-}
-
 void OpenGLRendererBasic::Init(Scene* scene)
 {
 	SetUniforms();
@@ -45,50 +40,9 @@ void OpenGLRendererBasic::SetShaders()
 {
 }
 
-void OpenGLRendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow)
+void OpenGLRendererBasic::RendererInfo(WindowProps& windowProps)
 {
-	glDisable(GL_CLIP_DISTANCE0);
-
-	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
-
-	// Clear the window
-	Clear(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
-
-	// Rendering here
-}
-
-void OpenGLRendererBasic::Clear()
-{
-	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void OpenGLRendererBasic::Clear(float r, float g, float b, float a)
-{
-	glClearColor(r, g, b, a);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-}
-
-void OpenGLRendererBasic::SetLineThickness(float thickness)
-{
-	glLineWidth(thickness);
-}
-
-void OpenGLRendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr)
-{
-	glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, indicesPtr, baseVertexLocation);
-}
-
-void OpenGLRendererBasic::DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount)
-{
-	vertexArray->Bind();
-	glDrawArrays(GL_LINES, 0, vertexCount);
-}
-
-void OpenGLRendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
-{
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
+	windowProps.Title += " [Renderer: OpenGL]";
 }
 
 void OpenGLRendererBasic::InitDebug()
@@ -160,6 +114,11 @@ void OpenGLRendererBasic::EnableBlend()
 	glEnable(GL_BLEND);
 }
 
+void OpenGLRendererBasic::DisableBlend()
+{
+	glDisable(GL_BLEND);
+}
+
 void OpenGLRendererBasic::EnableWireframe()
 {
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -176,16 +135,34 @@ void OpenGLRendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 	glViewport(0, 0, width, height);
 }
 
-void OpenGLRendererBasic::DisableBlend()
+void OpenGLRendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
-	glDisable(GL_BLEND);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 }
 
-void OpenGLRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)
+void OpenGLRendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow)
 {
-	float aspectRatio = scene->GetCameraController()->GetAspectRatio();
-	*projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio, scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-	s_ProjectionMatrix = *projectionMatrix;
+	glDisable(GL_CLIP_DISTANCE0);
+
+	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
+
+	// Clear the window
+	Clear(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
+
+	// Rendering here
+}
+
+void OpenGLRendererBasic::Clear()
+{
+	glClearColor(s_BgColor.r, s_BgColor.g, s_BgColor.b, s_BgColor.a);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void OpenGLRendererBasic::Clear(float r, float g, float b, float a)
+{
+	glClearColor(r, g, b, a);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 }
 
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
@@ -214,6 +191,27 @@ void OpenGLRendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type
 	}
 }
 
+void OpenGLRendererBasic::SetLineThickness(float thickness)
+{
+	glLineWidth(thickness);
+}
+
+void OpenGLRendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr)
+{
+	glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, indicesPtr, baseVertexLocation);
+}
+
+void OpenGLRendererBasic::DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount)
+{
+	vertexArray->Bind();
+	glDrawArrays(GL_LINES, 0, vertexCount);
+}
+
+void OpenGLRendererBasic::SetLineWidth(float width)
+{
+	glLineWidth(width);
+}
+
 void OpenGLRendererBasic::SetPolygonMode(PolygonMode polygonMode)
 {
 	switch (polygonMode)
@@ -228,4 +226,11 @@ void OpenGLRendererBasic::SetPolygonMode(PolygonMode polygonMode)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		break;
 	}
+}
+
+void OpenGLRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)
+{
+	float aspectRatio = scene->GetCameraController()->GetAspectRatio();
+	*projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio, scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+	s_ProjectionMatrix = *projectionMatrix;
 }

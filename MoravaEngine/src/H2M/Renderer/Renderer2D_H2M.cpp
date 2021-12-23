@@ -188,7 +188,9 @@ namespace H2M
 
 		int32_t samplers[s_Data.MaxTextureSlots];
 		for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
+		{
 			samplers[i] = i;
+		}
 
 		// s_Data.QuadShader = ShaderH2M::Create("assets/shaders/Renderer2D_Quad.glsl");
 		// s_Data.CircleShader = ShaderH2M::Create("assets/shaders/Renderer2D_Circle.glsl");
@@ -214,31 +216,33 @@ namespace H2M
 				s_Data.LineShader = ShaderH2M::Create("Resources/Shaders/Renderer2D_Line.glsl"); // not in use, only for constructor testing
 			}
 
-			PipelineSpecificationH2M pipelineSpec;
-			pipelineSpec.Layout = {
-				{ ShaderDataTypeH2M::Float3, "a_Position" },
-				{ ShaderDataTypeH2M::Float4, "a_Color" }
-			};
-			s_Data.LinePipeline = PipelineH2M::Create(pipelineSpec);
-
-			s_Data.LineVertexBuffer = VertexBufferH2M::Create(s_Data.MaxLineVertices * sizeof(LineVertex));
-			s_Data.LineVertexBuffer->SetLayout({
-				{ ShaderDataTypeH2M::Float3, "a_Position" },
-				{ ShaderDataTypeH2M::Float4, "a_Color" }
-			});
-
-			s_Data.LineVertexArray = VertexArrayH2M::Create();
-			s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
-
-			s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxLineVertices];
-
-			uint32_t* lineIndices = new uint32_t[s_Data.MaxLineIndices];
-			for (uint32_t i = 0; i < s_Data.MaxLineIndices; i++)
-				lineIndices[i] = i;
-
-			s_Data.LineIndexBuffer = IndexBufferH2M::Create(lineIndices, s_Data.MaxLineIndices);
-
-			delete[] lineIndices;
+			//	PipelineSpecificationH2M pipelineSpec;
+			//	pipelineSpec.Layout = {
+			//		{ ShaderDataTypeH2M::Float3, "a_Position" },
+			//		{ ShaderDataTypeH2M::Float4, "a_Color" },
+			//		{ ShaderDataTypeH2M::Int,    "a_EntityID" }
+			//	};
+			//	s_Data.LinePipeline = PipelineH2M::Create(pipelineSpec);
+			//	
+			//	s_Data.LineVertexBuffer = VertexBufferH2M::Create(s_Data.MaxLineVertices * sizeof(LineVertex));
+			//	s_Data.LineVertexBuffer->SetLayout({
+			//		{ ShaderDataTypeH2M::Float3, "a_Position" },
+			//		{ ShaderDataTypeH2M::Float4, "a_Color" },
+			//		{ ShaderDataTypeH2M::Int,    "a_EntityID" }
+			//	});
+			//	
+			//	s_Data.LineVertexArray = VertexArrayH2M::Create();
+			//	s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
+			//	
+			//	s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxLineVertices];
+			//	
+			//	uint32_t* lineIndices = new uint32_t[s_Data.MaxLineIndices];
+			//	for (uint32_t i = 0; i < s_Data.MaxLineIndices; i++)
+			//		lineIndices[i] = i;
+			//	
+			//	s_Data.LineIndexBuffer = IndexBufferH2M::Create(lineIndices, s_Data.MaxLineIndices);
+			//	
+			//	delete[] lineIndices;
 		}
 		// END Lines
 	}

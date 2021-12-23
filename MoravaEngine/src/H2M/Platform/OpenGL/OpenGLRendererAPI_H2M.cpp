@@ -133,4 +133,9 @@ namespace H2M
 		glDrawArrays(GL_LINES, 0, vertexCount);
 	}
 
+	void RendererAPI_H2M::SetLineWidth(float width)
+	{
+		glLineWidth(width);
+	}
+
 }

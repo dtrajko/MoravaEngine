@@ -60,6 +60,8 @@ namespace H2M
 		virtual void DrawIndexed(uint32_t indexCount, PrimitiveTypeH2M type, bool depthTest = true) = 0;
 		virtual void DrawLines(RefH2M<VertexArrayH2M> vertexArray, uint32_t vertexCount) = 0;
 
+		virtual void SetLineWidth(float width) = 0;
+
 		virtual std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) = 0;
 
 		virtual RendererCapabilitiesH2M& GetCapabilities() = 0;

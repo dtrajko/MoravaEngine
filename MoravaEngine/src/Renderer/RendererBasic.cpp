@@ -105,19 +105,6 @@ void RendererBasic::Clear(float r, float g, float b, float a)
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
-void RendererBasic::SetLineThickness(float thickness)
-{
-	switch (H2M::RendererAPI_H2M::Current())
-	{
-		case H2M::RendererAPITypeH2M::None:   return;
-		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::SetLineThickness(thickness);
-		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::SetLineThickness(thickness);
-		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetLineThickness(thickness);
-	}
-	Log::GetLogger()->error("Unknown RendererAPI");
-	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
-}
-
 bool RendererBasic::GetVulkanSupported()
 {
 	bool vulkanSupported = glfwVulkanSupported();
@@ -409,6 +396,32 @@ void RendererBasic::DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t 
 	case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DrawLines(vertexArray, vertexCount);
 	case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DrawLines(vertexArray, vertexCount);
 		// case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DrawIndexed(count, type, depthTest);
+	}
+	Log::GetLogger()->error("Unknown RendererAPI");
+	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+}
+
+void RendererBasic::SetLineThickness(float thickness)
+{
+	switch (H2M::RendererAPI_H2M::Current())
+	{
+	case H2M::RendererAPITypeH2M::None:   return;
+	case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::SetLineThickness(thickness);
+	case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::SetLineThickness(thickness);
+	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetLineThickness(thickness);
+	}
+	Log::GetLogger()->error("Unknown RendererAPI");
+	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+}
+
+void RendererBasic::SetLineWidth(float width)
+{
+	switch (H2M::RendererAPI_H2M::Current())
+	{
+	case H2M::RendererAPITypeH2M::None:   return;
+	case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::SetLineWidth(width);
+	case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::SetLineWidth(width);
+	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetLineWidth(width);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");

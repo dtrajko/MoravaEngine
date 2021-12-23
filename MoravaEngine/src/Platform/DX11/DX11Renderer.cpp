@@ -998,6 +998,11 @@ void DX11Renderer::DrawLines(H2M::RefH2M<H2M::VertexArrayH2M> vertexArray, uint3
 	Log::GetLogger()->warn("DX11Renderer::DrawLines: Method not yet supported!");
 }
 
+void DX11Renderer::SetLineWidth(float width)
+{
+	Log::GetLogger()->warn("DX11Renderer::SetLineWidth: Method not yet supported!");
+}
+
 H2M::RendererCapabilitiesH2M& DX11Renderer::GetCapabilities()
 {
 	return H2M::RendererCapabilitiesH2M{};

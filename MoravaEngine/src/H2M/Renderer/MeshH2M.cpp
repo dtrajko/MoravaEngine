@@ -461,7 +461,8 @@ namespace H2M
 					albedoColor = { aiColor.r, aiColor.g, aiColor.b };
 				}
 
-				mi->Set("u_MaterialUniforms.AlbedoColor", albedoColor);
+				// mi->Set("u_MaterialUniforms.AlbedoColor", albedoColor);
+				m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", albedoColor);
 
 				float shininess, metalness;
 				// aiMaterial->Get(AI_MATKEY_SHININESS, shininess);
@@ -550,7 +551,7 @@ namespace H2M
 				else
 				{
 					m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
-					mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b }); // redundant
+					// mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b }); // redundant
 					Log::GetLogger()->info("    No albedo map");
 				}
 
@@ -558,7 +559,8 @@ namespace H2M
 				{
 					// HZ_MESH_LOG("    No albedo map");
 					Log::GetLogger()->info("    No normal map");
-					mi->Set("u_AlbedoTexture", whiteTexture);
+					m_MeshShader->SetInt("u_AlbedoTexture", whiteTexture);
+					// mi->Set("u_AlbedoTexture", whiteTexture);
 
 					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
@@ -568,7 +570,7 @@ namespace H2M
 
 				// Normal maps
 				m_MeshShader->SetFloat("u_MaterialUniforms.NormalTexToggle", 0.0f);
-				mi->Set("u_MaterialUniforms.NormalTexToggle", 0.0f); // redundant
+				// mi->Set("u_MaterialUniforms.NormalTexToggle", 0.0f); // redundant
 
 				bool hasNormalMap = aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS;
 				fallback = !hasNormalMap;
@@ -626,7 +628,8 @@ namespace H2M
 					// HZ_MESH_LOG("    No normal map");
 					Log::GetLogger()->info("    No normal map");
 
-					mi->Set("u_NormalTexture", whiteTexture);
+					m_MeshShader->SetInt("u_NormalTexture", whiteTexture);
+					// mi->Set("u_NormalTexture", whiteTexture);
 
 					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
@@ -859,7 +862,8 @@ namespace H2M
 				{
 					HZ_MESH_LOG("    No metalness map");
 
-					mi->Set("u_MetalnessTexture", whiteTexture);
+					m_MeshShader->SetInt("u_MetalnessTexture", whiteTexture);
+					// mi->Set("u_MetalnessTexture", whiteTexture);
 
 					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{

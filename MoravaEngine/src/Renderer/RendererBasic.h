@@ -65,6 +65,8 @@ public:
 	static void DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest);
 	static void DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount);
 
+	static void SetLineWidth(float width);
+
 	// static void SetSpirVEnabled(bool enabled) { s_SpirV_Enabled = enabled; }
 	static bool GetVulkanSupported();
 

@@ -471,10 +471,14 @@ namespace H2M
 		}
 	}
 
-	void OpenGLRendererH2M::DrawLines(H2M::RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount)
+	void OpenGLRendererH2M::DrawLines(RefH2M<VertexArrayH2M> vertexArray, uint32_t vertexCount)
 	{
 		vertexArray->Bind();
 		glDrawArrays(GL_LINES, 0, vertexCount);
+	}
+
+	void OpenGLRendererH2M::SetLineWidth(float width)
+	{
 	}
 
 	RendererCapabilitiesH2M& OpenGLRendererH2M::GetCapabilities()

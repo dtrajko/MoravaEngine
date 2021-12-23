@@ -1428,6 +1428,11 @@ namespace H2M
 		Log::GetLogger()->warn("VulkanRendererH2M::DrawLines: Method not yet supported!");
 	}
 
+	void VulkanRendererH2M::SetLineWidth(float width)
+	{
+		Log::GetLogger()->warn("VulkanRendererH2M::SetLineWidth: Method not yet supported!");
+	}
+
 	void VulkanRendererH2M::SubmitFullscreenQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material)
 	{
 		RefH2M<VulkanMaterialH2M> vulkanMaterial = material.As<VulkanMaterialH2M>();

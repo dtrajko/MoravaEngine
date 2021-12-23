@@ -16,11 +16,6 @@ VulkanRendererBasic::~VulkanRendererBasic()
 {
 }
 
-void VulkanRendererBasic::RendererInfo(WindowProps& windowProps)
-{
-	windowProps.Title += " [Renderer: Vulkan]";
-}
-
 void VulkanRendererBasic::Init(Scene* scene)
 {
 	SetUniforms();
@@ -47,40 +42,9 @@ void VulkanRendererBasic::SetShaders()
 {
 }
 
-void VulkanRendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow)
+void VulkanRendererBasic::RendererInfo(WindowProps& windowProps)
 {
-	// throw std::logic_error("The method or operation is not implemented.");
-	Log::GetLogger()->warn("VulkanRendererBasic::RenderPassMain: Method not yet supported!");
-}
-
-void VulkanRendererBasic::Clear()
-{
-	// Log::GetLogger()->warn("VulkanRendererBasic::Clear(): Method not yet supported!");
-}
-
-void VulkanRendererBasic::Clear(float r, float g, float b, float a)
-{
-	// Log::GetLogger()->warn("VulkanRendererBasic::Clear(r, g, b, a): Method not yet supported!");
-}
-
-void VulkanRendererBasic::SetLineThickness(float thickness)
-{
-	Log::GetLogger()->warn("VulkanRendererBasic::SetLineThickness: Method not yet supported!");
-}
-
-void VulkanRendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr)
-{
-	Log::GetLogger()->warn("VulkanRendererBasic::DrawIndexed: Method not yet implemented!");
-}
-
-void VulkanRendererBasic::DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount)
-{
-	Log::GetLogger()->warn("VulkanRendererBasic::DrawLines: Method not yet supported!");
-}
-
-void VulkanRendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
-{
-	Log::GetLogger()->warn("VulkanRendererBasic::SetDefaultFramebuffer: Method not yet supported!");
+	windowProps.Title += " [Renderer: Vulkan]";
 }
 
 void VulkanRendererBasic::InitDebug()
@@ -149,6 +113,11 @@ void VulkanRendererBasic::EnableBlend()
 	Log::GetLogger()->warn("VulkanRendererBasic::EnableBlend: Method not yet supported!");
 }
 
+void VulkanRendererBasic::DisableBlend()
+{
+	Log::GetLogger()->warn("VulkanRendererBasic::DisableBlend: Method not yet implemented!");
+}
+
 void VulkanRendererBasic::EnableWireframe()
 {
 	// throw std::logic_error("The method or operation is not implemented.");
@@ -187,16 +156,25 @@ void VulkanRendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 	// vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
 
-void VulkanRendererBasic::DisableBlend()
+void VulkanRendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
-	Log::GetLogger()->warn("VulkanRendererBasic::DisableBlend: Method not yet implemented!");
+	Log::GetLogger()->warn("VulkanRendererBasic::SetDefaultFramebuffer: Method not yet supported!");
 }
 
-void VulkanRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)
+void VulkanRendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Window* mainWindow)
 {
-	float aspectRatio = scene->GetCameraController()->GetAspectRatio();
-	*projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio, scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
-	s_ProjectionMatrix = *projectionMatrix;
+	// throw std::logic_error("The method or operation is not implemented.");
+	Log::GetLogger()->warn("VulkanRendererBasic::RenderPassMain: Method not yet supported!");
+}
+
+void VulkanRendererBasic::Clear()
+{
+	// Log::GetLogger()->warn("VulkanRendererBasic::Clear(): Method not yet supported!");
+}
+
+void VulkanRendererBasic::Clear(float r, float g, float b, float a)
+{
+	// Log::GetLogger()->warn("VulkanRendererBasic::Clear(r, g, b, a): Method not yet supported!");
 }
 
 // Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
@@ -206,6 +184,34 @@ void VulkanRendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type
 	Log::GetLogger()->warn("VulkanRendererBasic::DrawIndexed: Method not yet supported!");
 }
 
+void VulkanRendererBasic::SetLineThickness(float thickness)
+{
+	Log::GetLogger()->warn("VulkanRendererBasic::SetLineThickness: Method not yet supported!");
+}
+
+void VulkanRendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr)
+{
+	Log::GetLogger()->warn("VulkanRendererBasic::DrawIndexed: Method not yet implemented!");
+}
+
+void VulkanRendererBasic::DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount)
+{
+	Log::GetLogger()->warn("VulkanRendererBasic::DrawLines: Method not yet supported!");
+}
+
+void VulkanRendererBasic::SetLineWidth(float width)
+{
+	Log::GetLogger()->warn("VulkanRendererBasic::SetLineWidth: Method not yet supported!");
+}
+
 void VulkanRendererBasic::SetPolygonMode(PolygonMode polygonMode)
 {
+	Log::GetLogger()->warn("VulkanRendererBasic::SetPolygonMode: Method not yet implemented!");
+}
+
+void VulkanRendererBasic::UpdateProjectionMatrix(glm::mat4* projectionMatrix, Scene* scene)
+{
+	float aspectRatio = scene->GetCameraController()->GetAspectRatio();
+	*projectionMatrix = glm::perspective(glm::radians(scene->GetFOV()), aspectRatio, scene->GetSettings().nearPlane, scene->GetSettings().farPlane);
+	s_ProjectionMatrix = *projectionMatrix;
 }

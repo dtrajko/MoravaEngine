@@ -53,6 +53,10 @@ namespace H2M
 			glDrawArrays(GL_LINES, 0, vertexCount);
 		}
 
+		inline static void SetLineWidth(float width)
+		{
+		}
+
 	};
 
 }

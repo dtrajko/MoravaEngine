@@ -8,7 +8,6 @@
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Renderer/ShaderH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
-#include "H2M/Renderer/Renderer2D_LinesH2M.h"
 #include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
@@ -211,8 +210,6 @@ void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene, EnvMa
     s_Data.BRDFLUT = H2M::Texture2D_H2M::Create("Textures/Hazel/BRDF_LUT.tga");
 
     s_Renderer2D = H2M::RefH2M<H2M::Renderer2D_H2M>::Create();
-
-    H2M::Renderer2D_LinesH2M::Init();
 }
 
 void EnvMapSceneRenderer::SetupShaders()
@@ -894,18 +891,32 @@ void EnvMapSceneRenderer::GeometryPass()
         }
         // END Draw Circles
 
+        // BEGIN Draw Lines
+        {
+            H2M::Renderer2D_H2M::DrawLine(glm::vec3(0.0f), glm::vec3(5.0f), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), -1);
+
+            //  auto view = s_EditorLayer->GetActiveScene()->GetRegistry().view<H2M::TransformComponentH2M, H2M::CircleRendererComponentH2M>();
+            //  for (auto entity : view)
+            //  {
+            //      auto [transform, circle] = view.get<H2M::TransformComponentH2M, H2M::CircleRendererComponentH2M>(entity);
+            //  
+            //      H2M::Renderer2D_H2M::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+            //  }
+        }
+        // END Draw Lines
+
     }
     H2M::Renderer2D_H2M::EndScene();
     // END Renderer2D_H2M
 
-    // BEGIN Renderer2D_LinesH2M
-    H2M::Renderer2D_LinesH2M::BeginScene(viewProj, true);
+    // BEGIN Draw Lines Renderer2D
+    H2M::Renderer2D_H2M::BeginScene(viewProj, true);
     {
         // BEGIN Draw Lines
         if (EnvMapSharedData::s_DisplayRay)
         {
             glm::vec3 camPosition = s_EditorLayer->GetActiveCamera()->GetPosition();
-            H2M::Renderer2D_LinesH2M::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+            H2M::Renderer2D_H2M::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
         }
         // END Draw Lines
     
@@ -928,8 +939,8 @@ void EnvMapSceneRenderer::GeometryPass()
         }
         // END Draw AABB Bounding Boxes
     }
-    H2M::Renderer2D_LinesH2M::EndScene();
-    // END Renderer2D_LinesH2M
+    H2M::Renderer2D_H2M::EndScene();
+    // END Draw Lines Renderer2D
 
     GetGeoPass()->GetSpecification().TargetFramebuffer->Bind();
 }

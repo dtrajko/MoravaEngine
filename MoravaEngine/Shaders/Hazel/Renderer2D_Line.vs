@@ -1,3 +1,6 @@
+// - Hazel 2D -
+// Renderer2D Line Shader
+// --------------------------
 // #type vertex
 #version 450 core
 
@@ -21,7 +24,6 @@ layout (location = 1) out flat int v_EntityID;
 void main()
 {
 	Output.Color = a_Color;
-
 	v_EntityID = a_EntityID;
 
 	gl_Position = u_ViewProjection * vec4(a_Position, 1.0);

@@ -51,6 +51,8 @@ public:
 	virtual void DrawIndexed(uint32_t indexCount, H2M::PrimitiveTypeH2M type, bool depthTest = true) override;
 	virtual void DrawLines(H2M::RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount) override;
 
+	virtual void SetLineWidth(float width) override;
+
 	virtual std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) override;
 
 	virtual H2M::RendererCapabilitiesH2M& GetCapabilities() override;
