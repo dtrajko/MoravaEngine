@@ -988,6 +988,16 @@ void DX11Renderer::RenderQuad(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2
 {
 }
 
+void DX11Renderer::DrawIndexed(uint32_t indexCount, H2M::PrimitiveTypeH2M type, bool depthTest)
+{
+	Log::GetLogger()->warn("DX11Renderer::DrawIndexed: Method not yet supported!");
+}
+
+void DX11Renderer::DrawLines(H2M::RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount)
+{
+	Log::GetLogger()->warn("DX11Renderer::DrawLines: Method not yet supported!");
+}
+
 H2M::RendererCapabilitiesH2M& DX11Renderer::GetCapabilities()
 {
 	return H2M::RendererCapabilitiesH2M{};

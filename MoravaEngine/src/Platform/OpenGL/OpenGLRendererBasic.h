@@ -51,6 +51,7 @@ public:
 	static void SetLineThickness(float thickness); // RendererAPI::SetLineThickness
 
 	static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr = nullptr);
+	static void DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount);
 
 	// Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
 	static void DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest);

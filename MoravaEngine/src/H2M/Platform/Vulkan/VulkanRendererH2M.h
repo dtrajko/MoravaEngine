@@ -39,14 +39,17 @@ namespace H2M
 		virtual void RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform) override;
 		virtual void RenderQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform) override;
 
+		virtual void DrawIndexed(uint32_t indexCount, PrimitiveTypeH2M type, bool depthTest = true) override;
+		virtual void DrawLines(RefH2M<VertexArrayH2M> vertexArray, uint32_t vertexCount) override;
+
 		virtual std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) override;
 
 		virtual RendererCapabilitiesH2M& GetCapabilities() override;
 
 		static void SubmitMeshTemp(const RefH2M<MeshH2M>& mesh, const glm::mat4& transform = glm::mat4(1.0f)); // to be removed from VulkanRendererH2M
-		static void OnResize(uint32_t width, uint32_t height);                                                // to be removed from VulkanRendererH2M
-		static uint32_t GetViewportWidth();                                                                   // to be removed from VulkanRendererH2M
-		static uint32_t GetViewportHeight();                                                                  // to be removed from VulkanRendererH2M
+		static void OnResize(uint32_t width, uint32_t height);                                                 // to be removed from VulkanRendererH2M
+		static uint32_t GetViewportWidth();                                                                    // to be removed from VulkanRendererH2M
+		static uint32_t GetViewportHeight();                                                                   // to be removed from VulkanRendererH2M
 
 		static void RenderMeshVulkan(RefH2M<MeshH2M> mesh, VkCommandBuffer commandBuffer);
 

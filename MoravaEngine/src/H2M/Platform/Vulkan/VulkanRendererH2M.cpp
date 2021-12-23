@@ -1418,6 +1418,16 @@ namespace H2M
 		}
 	}
 
+	void VulkanRendererH2M::DrawIndexed(uint32_t indexCount, PrimitiveTypeH2M type, bool depthTest)
+	{
+		Log::GetLogger()->warn("VulkanRendererH2M::DrawIndexed: Method not yet supported!");
+	}
+
+	void VulkanRendererH2M::DrawLines(RefH2M<VertexArrayH2M> vertexArray, uint32_t vertexCount)
+	{
+		Log::GetLogger()->warn("VulkanRendererH2M::DrawLines: Method not yet supported!");
+	}
+
 	void VulkanRendererH2M::SubmitFullscreenQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material)
 	{
 		RefH2M<VulkanMaterialH2M> vulkanMaterial = material.As<VulkanMaterialH2M>();

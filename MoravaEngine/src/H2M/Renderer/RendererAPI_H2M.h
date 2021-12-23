@@ -6,9 +6,10 @@
 
 #pragma once
 
-#include "RendererCapabilitiesH2M.h"
-#include "RendererTypesH2M.h"
-#include "SceneEnvironmentH2M.h"
+#include "H2M/Renderer/RendererCapabilitiesH2M.h"
+#include "H2M/Renderer/RendererTypesH2M.h"
+#include "H2M/Renderer/SceneEnvironmentH2M.h"
+#include "H2M/Renderer/VertexArrayH2M.h"
 
 #include <cstdint>
 #include <string>
@@ -56,13 +57,15 @@ namespace H2M
 		virtual void RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform) = 0;
 		virtual void RenderQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform) = 0;
 
+		virtual void DrawIndexed(uint32_t indexCount, PrimitiveTypeH2M type, bool depthTest = true) = 0;
+		virtual void DrawLines(RefH2M<VertexArrayH2M> vertexArray, uint32_t vertexCount) = 0;
+
 		virtual std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) = 0;
 
 		virtual RendererCapabilitiesH2M& GetCapabilities() = 0;
 
 		static void Clear(float r, float g, float b, float a);
 		static void SetClearColor(float r, float g, float b, float a);
-		static void DrawIndexed(uint32_t count, PrimitiveTypeH2M type, bool depthTest = true);
 		static void SetLineThickness(float thickness);
 
 		static RendererAPITypeH2M Current() { return s_CurrentRendererAPI; }

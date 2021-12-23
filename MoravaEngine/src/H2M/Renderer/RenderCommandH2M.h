@@ -47,6 +47,12 @@ namespace H2M
 			glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
 		}
 
+		inline static void DrawLines(RefH2M<VertexArrayH2M> vertexArray, uint32_t vertexCount)
+		{
+			vertexArray->Bind();
+			glDrawArrays(GL_LINES, 0, vertexCount);
+		}
+
 	};
 
 }

@@ -445,6 +445,38 @@ namespace H2M
 		}
 	}
 
+	void OpenGLRendererH2M::DrawIndexed(uint32_t indexCount, PrimitiveTypeH2M type, bool depthTest)
+	{
+		if (!depthTest)
+		{
+			glDisable(GL_DEPTH_TEST);
+		}
+
+		GLenum glPrimitiveType = 0;
+		switch (type)
+		{
+		case PrimitiveTypeH2M::Triangles:
+			glPrimitiveType = GL_TRIANGLES;
+			break;
+		case PrimitiveTypeH2M::Lines:
+			glPrimitiveType = GL_LINES;
+			break;
+		}
+
+		glDrawElements(glPrimitiveType, indexCount, GL_UNSIGNED_INT, nullptr);
+
+		if (!depthTest)
+		{
+			glEnable(GL_DEPTH_TEST);
+		}
+	}
+
+	void OpenGLRendererH2M::DrawLines(H2M::RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount)
+	{
+		vertexArray->Bind();
+		glDrawArrays(GL_LINES, 0, vertexCount);
+	}
+
 	RendererCapabilitiesH2M& OpenGLRendererH2M::GetCapabilities()
 	{
 		return s_Data->RenderCaps;

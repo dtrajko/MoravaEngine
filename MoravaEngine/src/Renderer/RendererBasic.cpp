@@ -401,6 +401,19 @@ void RendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 }
 
+void RendererBasic::DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount)
+{
+	switch (H2M::RendererAPI_H2M::Current())
+	{
+	case H2M::RendererAPITypeH2M::None:   return;
+	case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::DrawLines(vertexArray, vertexCount);
+	case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DrawLines(vertexArray, vertexCount);
+		// case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DrawIndexed(count, type, depthTest);
+	}
+	Log::GetLogger()->error("Unknown RendererAPI");
+	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+}
+
 void RendererBasic::SetPolygonMode(PolygonMode polygonMode)
 {
 	switch (H2M::RendererAPI_H2M::Current())

@@ -34,6 +34,9 @@ namespace H2M
 		virtual void RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform) override;
 		virtual void RenderQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform) override;
 
+		virtual void DrawIndexed(uint32_t indexCount, PrimitiveTypeH2M type, bool depthTest = true) override;
+		virtual void DrawLines(RefH2M<VertexArrayH2M> vertexArray, uint32_t vertexCount) override;
+
 		virtual std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) override;
 
 		virtual RendererCapabilitiesH2M& GetCapabilities() override;

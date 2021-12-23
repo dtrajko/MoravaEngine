@@ -79,6 +79,12 @@ void OpenGLRendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLo
 	glDrawElementsBaseVertex(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, indicesPtr, baseVertexLocation);
 }
 
+void OpenGLRendererBasic::DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount)
+{
+	vertexArray->Bind();
+	glDrawArrays(GL_LINES, 0, vertexCount);
+}
+
 void OpenGLRendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -96,10 +96,17 @@ namespace H2M
 		glClearColor(r, g, b, a);
 	}
 
-	void RendererAPI_H2M::DrawIndexed(uint32_t count, PrimitiveTypeH2M type, bool depthTest)
+	void RendererAPI_H2M::SetLineThickness(float thickness)
+	{
+		glLineWidth(thickness);
+	}
+
+	void RendererAPI_H2M::DrawIndexed(uint32_t indexCount, PrimitiveTypeH2M type, bool depthTest)
 	{
 		if (!depthTest)
+		{
 			glDisable(GL_DEPTH_TEST);
+		}
 
 		GLenum glPrimitiveType = 0;
 		switch (type)
@@ -112,15 +119,18 @@ namespace H2M
 				break;
 		}
 
-		glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(glPrimitiveType, indexCount, GL_UNSIGNED_INT, nullptr);
 
 		if (!depthTest)
+		{
 			glEnable(GL_DEPTH_TEST);
+		}
 	}
 
-	void RendererAPI_H2M::SetLineThickness(float thickness)
+	void RendererAPI_H2M::DrawLines(RefH2M<VertexArrayH2M> vertexArray, uint32_t vertexCount)
 	{
-		glLineWidth(thickness);
+		vertexArray->Bind();
+		glDrawArrays(GL_LINES, 0, vertexCount);
 	}
 
 }

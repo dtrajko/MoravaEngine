@@ -73,6 +73,11 @@ void VulkanRendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLo
 	Log::GetLogger()->warn("VulkanRendererBasic::DrawIndexed: Method not yet implemented!");
 }
 
+void VulkanRendererBasic::DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t vertexCount)
+{
+	Log::GetLogger()->warn("VulkanRendererBasic::DrawLines: Method not yet supported!");
+}
+
 void VulkanRendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int height)
 {
 	Log::GetLogger()->warn("VulkanRendererBasic::SetDefaultFramebuffer: Method not yet supported!");

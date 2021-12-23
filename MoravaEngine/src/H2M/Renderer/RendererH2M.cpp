@@ -254,7 +254,7 @@ namespace H2M
 	{
 		// HazelRenderer::Submit([=]() {});
 		{
-			RendererAPI_H2M::DrawIndexed(count, type, depthTest);
+			s_RendererAPI->DrawIndexed(count, type, depthTest);
 		}
 	}
 	/**** END to be removed from HazelRenderer ****/
