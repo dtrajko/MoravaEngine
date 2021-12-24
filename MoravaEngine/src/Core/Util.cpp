@@ -28,7 +28,7 @@ void Util::OpenGLLogMessage(GLenum source, GLenum type, GLuint id, GLenum severi
 		Log::GetLogger()->info("[Util OpenGL Debug LOW] {0}", message);
 		break;
 	case GL_DEBUG_SEVERITY_NOTIFICATION:
-		Log::GetLogger()->trace("[Util OpenGL Debug NOTIFICATION] {0}", message);
+		// Log::GetLogger()->trace("[Util OpenGL Debug NOTIFICATION] {0}", message);
 		break;
 	}
 }

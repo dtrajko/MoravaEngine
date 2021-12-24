@@ -875,6 +875,7 @@ void EnvMapSceneRenderer::GeometryPass()
                 auto [transform, sprite] = view.get<H2M::TransformComponentH2M, H2M::SpriteRendererComponentH2M>(entity);
 
                 H2M::Renderer2D_H2M::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+                H2M::Renderer2D_H2M::DrawRect(transform.GetTransform(), glm::vec4(8.0f, 6.0f, 4.0f, 1.0f), (int)entity);
             }
         }
         // END Draw Sprites
@@ -893,9 +894,11 @@ void EnvMapSceneRenderer::GeometryPass()
 
         // BEGIN Draw Lines
         {
-            H2M::Renderer2D_H2M::DrawLine(glm::vec3(0.0f, 0.0f, 8.0f), glm::vec3(0.0f, 0.0f, -16.0f), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), -1);
+            H2M::Renderer2D_H2M::DrawLine(glm::vec3(0.0f, 0.0f, 8.0f), glm::vec3(0.0f, 0.0f, -16.0f), glm::vec4(0.6f, 0.2f, 0.8f, 1.0f), -1);
 
-            H2M::Renderer2D_H2M::DrawRect(glm::vec3(0.0f), glm::vec3(5.0f), glm::vec4(0.0f, 1.0f, 1.0f, 1.0f), -1);
+            H2M::Renderer2D_H2M::DrawRect(glm::vec3(0.0f), glm::vec3(5.0f), glm::vec4(0.4f, 0.6f, 0.8f, 1.0f), -1);
+
+            H2M::Renderer2D_H2M::DrawRect(glm::mat4(1.0f), glm::vec4(4.0f, 8.0f, 4.0f, 1.0f), -1);
 
             //  auto view = s_EditorLayer->GetActiveScene()->GetRegistry().view<H2M::TransformComponentH2M, H2M::CircleRendererComponentH2M>();
             //  for (auto entity : view)

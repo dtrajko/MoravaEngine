@@ -585,6 +585,17 @@ namespace H2M
 
 	void Renderer2D_H2M::DrawRect(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
+		glm::vec3 lineVertices[4];
+
+		for (size_t i = 0; i < 4; i++)
+		{
+			lineVertices[i] = transform * s_Data.QuadVertexPositions[i];
+		}
+
+		DrawLine(lineVertices[0], lineVertices[1], color, entityID);
+		DrawLine(lineVertices[1], lineVertices[2], color, entityID);
+		DrawLine(lineVertices[2], lineVertices[3], color, entityID);
+		DrawLine(lineVertices[3], lineVertices[0], color, entityID);
 	}
 
 	float Renderer2D_H2M::GetLineWidth()
