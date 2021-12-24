@@ -45,6 +45,8 @@ void EnvMapEditorLayer::Init()
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
+    // glEnable(GL_LINE_SMOOTH);
+
     EnvMapSharedData::s_Scene = m_Scene;
 
     EnvMapSharedData::s_SamplerSlots = std::map<std::string, unsigned int>();

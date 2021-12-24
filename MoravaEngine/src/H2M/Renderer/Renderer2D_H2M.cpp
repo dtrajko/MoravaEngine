@@ -85,6 +85,8 @@ namespace H2M
 		LineVertex* LineVertexBufferBase = nullptr;
 		LineVertex* LineVertexBufferPtr = nullptr;
 
+		float LineWidth = 5.0f;
+
 		static const uint32_t MaxLines = 1000; // 10000;
 		static const uint32_t MaxLineVertices = MaxLines * 2;
 		static const uint32_t MaxLineIndices = MaxLines * 6;
@@ -353,6 +355,7 @@ namespace H2M
 			s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
 
 			s_Data.LineShader->Bind();
+			// RenderCommandH2M::SetLineWidth(s_Data.LineWidth);
 			RenderCommandH2M::DrawLines(s_Data.LineVertexArray, s_Data.LineVertexCount);
 			s_Data.Stats.DrawCalls++;
 		}
@@ -565,6 +568,33 @@ namespace H2M
 		s_Data.LineVertexCount += 2;
 
 		s_Data.Stats.LineCount++;
+	}
+
+	void Renderer2D_H2M::DrawRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color, int entityID)
+	{
+		glm::vec3 p0 = glm::vec3(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
+		glm::vec3 p1 = glm::vec3(position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z);
+		glm::vec3 p2 = glm::vec3(position.x + size.x * 0.5f, position.y + size.y * 0.5f, position.z);
+		glm::vec3 p3 = glm::vec3(position.x - size.x * 0.5f, position.y + size.y * 0.5f, position.z);
+
+		DrawLine(p0, p1, color, entityID);
+		DrawLine(p1, p2, color, entityID);
+		DrawLine(p2, p3, color, entityID);
+		DrawLine(p3, p0, color, entityID);
+	}
+
+	void Renderer2D_H2M::DrawRect(const glm::mat4& transform, const glm::vec4& color, int entityID)
+	{
+	}
+
+	float Renderer2D_H2M::GetLineWidth()
+	{
+		return s_Data.LineWidth;
+	}
+
+	void Renderer2D_H2M::SetLineWidth(float width)
+	{
+		s_Data.LineWidth = width;
 	}
 
 }

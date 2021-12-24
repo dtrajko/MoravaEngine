@@ -59,6 +59,8 @@ public:
 	static void Clear();
 	static void Clear(float r, float g, float b, float a);
 
+	static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr = nullptr);
+
 	static void SetLineThickness(float thickness); // RendererAPI::SetLineThickness
 
 	// Obsolete method in vulkan branch 237c6703 (OpenGL-specific)
@@ -72,8 +74,6 @@ public:
 
 	static void SetRendererContext(H2M::RefH2M<H2M::RendererContextH2M> rendererContext) { s_RendererContext = rendererContext; }
 	static H2M::RefH2M<H2M::RendererContextH2M> GetRendererContext() { return s_RendererContext; }
-
-	static void DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation, uint32_t baseVertexLocation, void* indicesPtr = nullptr);
 
 	enum class PolygonMode
 	{

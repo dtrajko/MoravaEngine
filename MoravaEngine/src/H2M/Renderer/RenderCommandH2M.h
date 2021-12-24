@@ -55,6 +55,7 @@ namespace H2M
 
 		inline static void SetLineWidth(float width)
 		{
+			glLineWidth(width);
 		}
 
 	};

@@ -33,7 +33,6 @@ void OpenGLRendererBasic::SetUniforms()
 	s_Uniforms.insert(std::make_pair("farPlane", 0));
 	s_Uniforms.insert(std::make_pair("normalMap", 0));
 	s_Uniforms.insert(std::make_pair("lightPosition", 0));
-
 }
 
 void OpenGLRendererBasic::SetShaders()
@@ -50,6 +49,9 @@ void OpenGLRendererBasic::InitDebug()
 	glDebugMessageCallback(Util::OpenGLLogMessage, nullptr);
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+	// glEnable(GL_LINE_SMOOTH);
+	// glLineWidth(1.0f);
 }
 
 void OpenGLRendererBasic::EnableCulling()

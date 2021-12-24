@@ -9,7 +9,7 @@
 #include "H2M/Core/AssertH2M.h"
 
 
-namespace H2M {
-
+namespace H2M
+{
 
 }

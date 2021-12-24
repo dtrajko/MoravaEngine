@@ -71,6 +71,8 @@ void Application::OnInit()
 
 	m_Renderer->Init(m_Scene);
 
+	RendererBasic::InitDebug();
+
 	m_ImGuiLayer = H2M::ImGuiLayerH2M::Create();
 	PushOverlay(m_ImGuiLayer);
 
