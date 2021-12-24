@@ -21,6 +21,7 @@
  * CircleRendererComponentH2M
  * Rigidbody2DComponentH2M
  * BoxCollider2DComponentH2M
+ * CircleCollider2DComponentH2M
  */
 
 #pragma once
@@ -267,6 +268,24 @@ namespace H2M
 
 		BoxCollider2DComponentH2M() = default;
 		BoxCollider2DComponentH2M(const BoxCollider2DComponentH2M& other) = default;
+	};
+
+	struct CircleCollider2DComponentH2M
+	{
+		glm::vec2 Offset = { 0.0f, 0.0f };
+		float Radius = 0.5f;
+
+		// TODO (Yan): move into physics material in the future maybe
+		float Density = 1.0f;
+		float Friction = 0.5f;
+		float Restitution = 0.0f;
+		float RestitutionThreshold = 0.5f;
+
+		// Storage for runtime
+		void* RuntimeFixture = nullptr;
+
+		CircleCollider2DComponentH2M() = default;
+		CircleCollider2DComponentH2M(const CircleCollider2DComponentH2M& other) = default;
 	};
 
 }

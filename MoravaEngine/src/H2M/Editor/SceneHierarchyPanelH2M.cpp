@@ -600,6 +600,15 @@ namespace H2M
 				}
 			}
 
+			if (!EntitySelection::s_SelectionContext[0].Entity.HasComponent<CircleCollider2DComponentH2M>())
+			{
+				if (ImGui::Button("Circle Collider 2D"))
+				{
+					EntitySelection::s_SelectionContext[0].Entity.AddComponent<CircleCollider2DComponentH2M>();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+
 			ImGui::EndPopup();
 		}
 
@@ -903,6 +912,18 @@ namespace H2M
 			ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
 			ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f);
 		});
+
+		DrawComponent<CircleCollider2DComponentH2M>("Circle Collider 2D", entity, [](CircleCollider2DComponentH2M& component)
+			{
+				// BoxCollider2D Type
+				ImGui::DragFloat2("Offset", glm::value_ptr(component.Offset));
+				ImGui::DragFloat("Radius", &component.Radius, 0.01f, 0.0f, 1.0f);
+
+				ImGui::DragFloat("Density", &component.Density, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("Friction", &component.Friction, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("Restitution", &component.Restitution, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("Restitution Threshold", &component.RestitutionThreshold, 0.01f, 0.0f);
+			});
 
 		/****
 		{

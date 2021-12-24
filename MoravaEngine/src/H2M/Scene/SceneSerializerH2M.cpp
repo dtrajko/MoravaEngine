@@ -213,6 +213,59 @@ namespace H2M {
 			out << YAML::EndMap; // CameraComponent
 		}
 
+		if (entity.HasComponent<DirectionalLightComponentH2M>())
+		{
+			out << YAML::Key << "DirectionalLightComponentH2M";
+			out << YAML::BeginMap; // DirectionalLightComponentH2M
+
+			auto& directionalLightComponent = entity.GetComponent<DirectionalLightComponentH2M>();
+			out << YAML::Key << "Radiance" << YAML::Value << directionalLightComponent.Radiance;
+			out << YAML::Key << "Intensity" << YAML::Value << directionalLightComponent.Intensity;
+			out << YAML::Key << "CastShadows" << YAML::Value << directionalLightComponent.CastShadows;
+			out << YAML::Key << "SoftShadows" << YAML::Value << directionalLightComponent.SoftShadows;
+			out << YAML::Key << "LightSize" << YAML::Value << directionalLightComponent.LightSize;
+
+			out << YAML::EndMap; // DirectionalLightComponentH2M
+		}
+
+		if (entity.HasComponent<PointLightComponentH2M>())
+		{
+			out << YAML::Key << "PointLightComponentH2M";
+			out << YAML::BeginMap; // PointLightComponentH2M
+
+			auto& pointLightComponent = entity.GetComponent<PointLightComponentH2M>();
+			out << YAML::Key << "Enabled" << YAML::Value << pointLightComponent.Enabled;
+			out << YAML::Key << "Color" << YAML::Value << pointLightComponent.Color;
+			out << YAML::Key << "AmbientIntensity" << YAML::Value << pointLightComponent.AmbientIntensity;
+			out << YAML::Key << "DiffuseIntensity" << YAML::Value << pointLightComponent.DiffuseIntensity;
+			out << YAML::Key << "Constant" << YAML::Value << pointLightComponent.Constant;
+			out << YAML::Key << "Linear" << YAML::Value << pointLightComponent.Linear;
+			out << YAML::Key << "Exponent" << YAML::Value << pointLightComponent.Exponent;
+			out << YAML::Key << "FarPlane" << YAML::Value << pointLightComponent.FarPlane;
+
+			out << YAML::EndMap; // PointLightComponentH2M
+		}
+
+		if (entity.HasComponent<SpotLightComponentH2M>())
+		{
+			out << YAML::Key << "SpotLightComponentH2M";
+			out << YAML::BeginMap; // SpotLightComponentH2M
+
+			auto& spotLightComponent = entity.GetComponent<SpotLightComponentH2M>();
+			out << YAML::Key << "Enabled" << YAML::Value << spotLightComponent.Enabled;
+			out << YAML::Key << "Color" << YAML::Value << spotLightComponent.Color;
+			out << YAML::Key << "AmbientIntensity" << YAML::Value << spotLightComponent.AmbientIntensity;
+			out << YAML::Key << "DiffuseIntensity" << YAML::Value << spotLightComponent.DiffuseIntensity;
+			out << YAML::Key << "Constant" << YAML::Value << spotLightComponent.Constant;
+			out << YAML::Key << "Linear" << YAML::Value << spotLightComponent.Linear;
+			out << YAML::Key << "Exponent" << YAML::Value << spotLightComponent.Exponent;
+			out << YAML::Key << "Edge" << YAML::Value << spotLightComponent.Edge;
+			out << YAML::Key << "EdgeProcessed" << YAML::Value << spotLightComponent.EdgeProcessed;
+			out << YAML::Key << "FarPlane" << YAML::Value << spotLightComponent.FarPlane;
+
+			out << YAML::EndMap; // SpotLightComponentH2M
+		}
+
 		if (entity.HasComponent<SpriteRendererComponentH2M>())
 		{
 			out << YAML::Key << "SpriteRendererComponentH2M";
@@ -265,57 +318,20 @@ namespace H2M {
 			out << YAML::EndMap; // BoxCollider2DComponent
 		}
 
-		if (entity.HasComponent<DirectionalLightComponentH2M>())
+		if (entity.HasComponent<CircleCollider2DComponentH2M>())
 		{
-			out << YAML::Key << "DirectionalLightComponentH2M";
-			out << YAML::BeginMap; // DirectionalLightComponentH2M
+			out << YAML::Key << "CircleCollider2DComponentH2M";
+			out << YAML::BeginMap; // CircleCollider2DComponentH2M
 
-			auto& directionalLightComponent = entity.GetComponent<DirectionalLightComponentH2M>();
-			out << YAML::Key << "Radiance"    << YAML::Value << directionalLightComponent.Radiance;
-			out << YAML::Key << "Intensity"   << YAML::Value << directionalLightComponent.Intensity;
-			out << YAML::Key << "CastShadows" << YAML::Value << directionalLightComponent.CastShadows;
-			out << YAML::Key << "SoftShadows" << YAML::Value << directionalLightComponent.SoftShadows;
-			out << YAML::Key << "LightSize"   << YAML::Value << directionalLightComponent.LightSize;
+			auto& cc2dComponent = entity.GetComponent<CircleCollider2DComponentH2M>();
+			out << YAML::Key << "Offset" << YAML::Value << cc2dComponent.Offset;
+			out << YAML::Key << "Radius" << YAML::Value << cc2dComponent.Radius;
+			out << YAML::Key << "Density" << YAML::Value << cc2dComponent.Density;
+			out << YAML::Key << "Friction" << YAML::Value << cc2dComponent.Friction;
+			out << YAML::Key << "Restitution" << YAML::Value << cc2dComponent.Restitution;
+			out << YAML::Key << "RestitutionThreshold" << YAML::Value << cc2dComponent.RestitutionThreshold;
 
-			out << YAML::EndMap; // DirectionalLightComponentH2M
-		}
-
-		if (entity.HasComponent<PointLightComponentH2M>())
-		{
-			out << YAML::Key << "PointLightComponentH2M";
-			out << YAML::BeginMap; // PointLightComponentH2M
-
-			auto& pointLightComponent = entity.GetComponent<PointLightComponentH2M>();
-			out << YAML::Key << "Enabled"          << YAML::Value << pointLightComponent.Enabled;
-			out << YAML::Key << "Color"            << YAML::Value << pointLightComponent.Color;
-			out << YAML::Key << "AmbientIntensity" << YAML::Value << pointLightComponent.AmbientIntensity;
-			out << YAML::Key << "DiffuseIntensity" << YAML::Value << pointLightComponent.DiffuseIntensity;
-			out << YAML::Key << "Constant"         << YAML::Value << pointLightComponent.Constant;
-			out << YAML::Key << "Linear"           << YAML::Value << pointLightComponent.Linear;
-			out << YAML::Key << "Exponent"         << YAML::Value << pointLightComponent.Exponent;
-			out << YAML::Key << "FarPlane"         << YAML::Value << pointLightComponent.FarPlane;
-
-			out << YAML::EndMap; // PointLightComponentH2M
-		}
-
-		if (entity.HasComponent<SpotLightComponentH2M>())
-		{
-			out << YAML::Key << "SpotLightComponentH2M";
-			out << YAML::BeginMap; // SpotLightComponentH2M
-
-			auto& spotLightComponent = entity.GetComponent<SpotLightComponentH2M>();
-			out << YAML::Key << "Enabled"          << YAML::Value << spotLightComponent.Enabled;
-			out << YAML::Key << "Color"            << YAML::Value << spotLightComponent.Color;
-			out << YAML::Key << "AmbientIntensity" << YAML::Value << spotLightComponent.AmbientIntensity;
-			out << YAML::Key << "DiffuseIntensity" << YAML::Value << spotLightComponent.DiffuseIntensity;
-			out << YAML::Key << "Constant"         << YAML::Value << spotLightComponent.Constant;
-			out << YAML::Key << "Linear"           << YAML::Value << spotLightComponent.Linear;
-			out << YAML::Key << "Exponent"         << YAML::Value << spotLightComponent.Exponent;
-			out << YAML::Key << "Edge"             << YAML::Value << spotLightComponent.Edge;
-			out << YAML::Key << "EdgeProcessed"    << YAML::Value << spotLightComponent.EdgeProcessed;
-			out << YAML::Key << "FarPlane"         << YAML::Value << spotLightComponent.FarPlane;
-
-			out << YAML::EndMap; // SpotLightComponentH2M
+			out << YAML::EndMap; // CircleCollider2DComponentH2M
 		}
 
 		out << YAML::EndMap; // Entity
@@ -429,6 +445,47 @@ namespace H2M {
 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 				}
 
+				auto directionalLightComponent = entity["DirectionalLightComponentH2M"];
+				if (directionalLightComponent)
+				{
+					auto& dlc = deserializedEntity.AddComponent<DirectionalLightComponentH2M>();
+					dlc.Radiance = directionalLightComponent["Radiance"].as<glm::vec3>();
+					dlc.Intensity = directionalLightComponent["Intensity"].as<float>();
+					dlc.CastShadows = directionalLightComponent["CastShadows"].as<bool>();
+					dlc.SoftShadows = directionalLightComponent["SoftShadows"].as<bool>();
+					dlc.LightSize = directionalLightComponent["LightSize"].as<float>();
+				}
+
+				auto pointLightComponent = entity["PointLightComponentH2M"];
+				if (pointLightComponent)
+				{
+					auto& plc = deserializedEntity.AddComponent<PointLightComponentH2M>();
+					plc.Enabled = pointLightComponent["Enabled"].as<bool>();
+					plc.Color = pointLightComponent["Color"].as<glm::vec3>();
+					plc.AmbientIntensity = pointLightComponent["AmbientIntensity"].as<float>();
+					plc.DiffuseIntensity = pointLightComponent["DiffuseIntensity"].as<float>();
+					plc.Constant = pointLightComponent["Constant"].as<float>();
+					plc.Linear = pointLightComponent["Linear"].as<float>();
+					plc.Exponent = pointLightComponent["Exponent"].as<float>();
+					plc.FarPlane = pointLightComponent["FarPlane"].as<float>();
+				}
+
+				auto spotLightComponent = entity["SpotLightComponentH2M"];
+				if (spotLightComponent)
+				{
+					auto& slc = deserializedEntity.AddComponent<SpotLightComponentH2M>();
+					slc.Enabled = spotLightComponent["Enabled"].as<bool>();
+					slc.Color = spotLightComponent["Color"].as<glm::vec3>();
+					slc.AmbientIntensity = spotLightComponent["AmbientIntensity"].as<float>();
+					slc.DiffuseIntensity = spotLightComponent["DiffuseIntensity"].as<float>();
+					slc.Constant = spotLightComponent["Constant"].as<float>();
+					slc.Linear = spotLightComponent["Linear"].as<float>();
+					slc.Exponent = spotLightComponent["Exponent"].as<float>();
+					slc.Edge = spotLightComponent["Edge"].as<float>();
+					slc.EdgeProcessed = spotLightComponent["EdgeProcessed"].as<float>();
+					slc.FarPlane = spotLightComponent["FarPlane"].as<float>();
+				}
+
 				auto spriteRendererComponent = entity["SpriteRendererComponentH2M"];
 				if (spriteRendererComponent)
 				{
@@ -465,45 +522,16 @@ namespace H2M {
 					bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
 				}
 
-				auto directionalLightComponent = entity["DirectionalLightComponentH2M"];
-				if (directionalLightComponent)
+				auto circleCollider2DComponent = entity["CircleCollider2DComponentH2M"];
+				if (circleCollider2DComponent)
 				{
-					auto& dlc = deserializedEntity.AddComponent<DirectionalLightComponentH2M>();
-					dlc.Radiance    = directionalLightComponent["Radiance"].as<glm::vec3>();
-					dlc.Intensity   = directionalLightComponent["Intensity"].as<float>();
-					dlc.CastShadows = directionalLightComponent["CastShadows"].as<bool>();
-					dlc.SoftShadows = directionalLightComponent["SoftShadows"].as<bool>();
-					dlc.LightSize   = directionalLightComponent["LightSize"].as<float>();
-				}
-
-				auto pointLightComponent = entity["PointLightComponentH2M"];
-				if (pointLightComponent)
-				{
-					auto& plc = deserializedEntity.AddComponent<PointLightComponentH2M>();
-					plc.Enabled          = pointLightComponent["Enabled"].as<bool>();
-					plc.Color            = pointLightComponent["Color"].as<glm::vec3>();
-					plc.AmbientIntensity = pointLightComponent["AmbientIntensity"].as<float>();
-					plc.DiffuseIntensity = pointLightComponent["DiffuseIntensity"].as<float>();
-					plc.Constant         = pointLightComponent["Constant"].as<float>();
-					plc.Linear           = pointLightComponent["Linear"].as<float>();
-					plc.Exponent         = pointLightComponent["Exponent"].as<float>();
-					plc.FarPlane         = pointLightComponent["FarPlane"].as<float>();
-				}
-
-				auto spotLightComponent = entity["SpotLightComponentH2M"];
-				if (spotLightComponent)
-				{
-					auto& slc = deserializedEntity.AddComponent<SpotLightComponentH2M>();
-					slc.Enabled          = spotLightComponent["Enabled"].as<bool>();
-					slc.Color            = spotLightComponent["Color"].as<glm::vec3>();
-					slc.AmbientIntensity = spotLightComponent["AmbientIntensity"].as<float>();
-					slc.DiffuseIntensity = spotLightComponent["DiffuseIntensity"].as<float>();
-					slc.Constant         = spotLightComponent["Constant"].as<float>();
-					slc.Linear           = spotLightComponent["Linear"].as<float>();
-					slc.Exponent         = spotLightComponent["Exponent"].as<float>();
-					slc.Edge             = spotLightComponent["Edge"].as<float>();
-					slc.EdgeProcessed    = spotLightComponent["EdgeProcessed"].as<float>();
-					slc.FarPlane         = spotLightComponent["FarPlane"].as<float>();
+					auto& cc2d = deserializedEntity.AddComponent<CircleCollider2DComponentH2M>();
+					cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
+					cc2d.Radius = circleCollider2DComponent["Radius"].as<float>();
+					cc2d.Density = circleCollider2DComponent["Density"].as<float>();
+					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
+					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
+					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
 				}
 			}
 		}

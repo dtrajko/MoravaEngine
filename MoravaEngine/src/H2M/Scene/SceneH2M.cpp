@@ -27,6 +27,7 @@
 #include <box2d/b2_body.h>
 #include <box2d/b2_fixture.h>
 #include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_circle_shape.h>
 
 #include <string>
 #include <unordered_map>
@@ -204,6 +205,7 @@ namespace H2M
 		CopyComponentHazel2D<CircleRendererComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentHazel2D<Rigidbody2DComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
 		CopyComponentHazel2D<BoxCollider2DComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
+		CopyComponentHazel2D<CircleCollider2DComponentH2M>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		return newScene;
 	}
@@ -234,6 +236,7 @@ namespace H2M
 		CopyComponentIfExists<CircleRendererComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<Rigidbody2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 		CopyComponentIfExists<BoxCollider2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
+		CopyComponentIfExists<CircleCollider2DComponentH2M>(newEntity.m_EntityHandle, entity.m_EntityHandle, m_Registry);
 	}
 
 	/**
@@ -275,6 +278,7 @@ namespace H2M
 		CopyComponent<CircleRendererComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<Rigidbody2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
 		CopyComponent<BoxCollider2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
+		CopyComponent<CircleCollider2DComponentH2M>(target->m_Registry, m_Registry, enttMap);
 
 		target->SetPhysics2DGravity(GetPhysics2DGravity());
 	}
@@ -377,6 +381,24 @@ namespace H2M
 				fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
 				body->CreateFixture(&fixtureDef);
 			}
+
+			if (entity.HasComponent<CircleCollider2DComponentH2M>())
+			{
+				auto& cc2d = entity.GetComponent<CircleCollider2DComponentH2M>();
+
+				b2CircleShape circleShape;
+				circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
+				circleShape.m_radius = cc2d.Radius * transform.Scale.x;
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &circleShape;
+				fixtureDef.density = cc2d.Density;
+				fixtureDef.friction = cc2d.Friction;
+				fixtureDef.restitution = cc2d.Restitution;
+				fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
+				body->CreateFixture(&fixtureDef);
+			}
+
 		}
 
 		// -----------------------------------------
@@ -1099,6 +1121,10 @@ namespace H2M
 			entityClone.AddComponent<BoxCollider2DComponentH2M>(entity.GetComponent<BoxCollider2DComponentH2M>());
 		}
 
+		if (entity.HasComponent<CircleCollider2DComponentH2M>()) {
+			entityClone.AddComponent<CircleCollider2DComponentH2M>(entity.GetComponent<CircleCollider2DComponentH2M>());
+		}
+
 		Log::GetLogger()->warn("Method SceneH2M::CopyEntity implemented poorly [Tag: '{0}']", entity.GetComponent<TagComponentH2M>().Tag);
 
 		return entityClone;
@@ -1188,6 +1214,11 @@ namespace H2M
 
 	template<>
 	void SceneH2M::OnComponentAdded<BoxCollider2DComponentH2M>(EntityH2M entity, BoxCollider2DComponentH2M& component)
+	{
+	}
+
+	template<>
+	void SceneH2M::OnComponentAdded<CircleCollider2DComponentH2M>(EntityH2M entity, CircleCollider2DComponentH2M& component)
 	{
 	}
 
