@@ -73,6 +73,8 @@ public:
 	bool OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e); // EditorLayer::OnMouseButtonPressedEvent()
 	bool OnMouseScrolled(H2M::MouseScrolledEventH2M& e);
 
+	void OnOverlayRender();
+
 	void NewScene();
 	void OpenScene();
 	void OpenScene(const std::filesystem::path& path);

@@ -84,7 +84,9 @@ void Mesh::Generate(glm::vec3 scale)
 void Mesh::Update(glm::vec3 scale)
 {
 	if (scale != m_Scale)
+	{
 		Generate(scale);
+	}
 }
 
 void Mesh::OnUpdate(H2M::TimestepH2M ts, bool debug)

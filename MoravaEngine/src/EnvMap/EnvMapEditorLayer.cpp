@@ -2356,6 +2356,11 @@ bool EnvMapEditorLayer::OnMouseScrolled(H2M::MouseScrolledEventH2M& e)
     return true;
 }
 
+void EnvMapEditorLayer::OnOverlayRender()
+{
+
+}
+
 void EnvMapEditorLayer::OnSelected(const SelectedSubmesh& selectionContext)
 {
     // TODO: move to SceneHazelEnvMap

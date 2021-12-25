@@ -116,9 +116,8 @@ void SceneCottage::SetupModels()
 	Model* cottage = new Model("Models/cottage.obj");
 	models.insert(std::make_pair("cottage", cottage));
 
-	Sphere* sphere = new Sphere();
-	sphere->Create();
-	meshes.insert(std::make_pair("sphere", sphere));
+	Model* sphere = new Model("Models/Primitives/sphere.obj");
+	models.insert(std::make_pair("sphere", sphere));
 }
 
 void SceneCottage::Update(float timestep, Window* mainWindow)
@@ -158,7 +157,6 @@ void SceneCottage::UpdateImGui(float timestep, Window* mainWindow)
 	}
 	ImGui::End();
 
-	ImGui::Begin("Lights");
 	{
 		SDirectionalLight directionalLight;
 		SPointLight pointLights[4];
@@ -204,40 +202,47 @@ void SceneCottage::UpdateImGui(float timestep, Window* mainWindow)
 		pointLights[2].linear = LightManager::pointLights[2].GetLinear();
 		pointLights[2].exponent = LightManager::pointLights[2].GetExponent();
 
-		if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+		if (m_ShowWindowLights)
 		{
-			ImGui::Checkbox("    DL Enabled",           &directionalLight.base.enabled);
-			ImGui::ColorEdit3(  "DL Color",             glm::value_ptr(directionalLight.base.color));
-			ImGui::SliderFloat3("DL Direction",         glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
-			ImGui::SliderFloat( "DL Ambient Intensity", &directionalLight.base.ambientIntensity, -10.0f, 10.0f);
-			ImGui::SliderFloat( "DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, -10.0f, 10.0f);
+			ImGui::Begin("Lights", &m_ShowWindowLights);
+			{
+				if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::Checkbox("    DL Enabled", &directionalLight.base.enabled);
+					ImGui::ColorEdit3("DL Color", glm::value_ptr(directionalLight.base.color));
+					ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
+					ImGui::SliderFloat("DL Ambient Intensity", &directionalLight.base.ambientIntensity, -10.0f, 10.0f);
+					ImGui::SliderFloat("DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, -10.0f, 10.0f);
 
-			ImGui::Checkbox(    "PL 0 Enabled",           &pointLights[0].base.enabled);
-			ImGui::ColorEdit3(  "PL 0 Color",             glm::value_ptr(pointLights[0].base.color));
-			ImGui::SliderFloat3("PL 0 Position",          glm::value_ptr(pointLights[0].position), -20.0f, 20.0f);
-			ImGui::SliderFloat( "PL 0 Ambient Intensity", &pointLights[0].base.ambientIntensity, -20.0f, 20.0f);
-			ImGui::SliderFloat( "PL 0 Diffuse Intensity", &pointLights[0].base.diffuseIntensity, -20.0f, 20.0f);
-			ImGui::SliderFloat( "PL 0 Constant",          &pointLights[0].constant, -2.0f, 2.0f);
-			ImGui::SliderFloat( "PL 0 Linear",            &pointLights[0].linear, -2.0f, 2.0f);
-			ImGui::SliderFloat( "PL 0 Exponent",          &pointLights[0].exponent, -2.0f, 2.0f);
+					ImGui::Checkbox("PL 0 Enabled", &pointLights[0].base.enabled);
+					ImGui::ColorEdit3("PL 0 Color", glm::value_ptr(pointLights[0].base.color));
+					ImGui::SliderFloat3("PL 0 Position", glm::value_ptr(pointLights[0].position), -20.0f, 20.0f);
+					ImGui::SliderFloat("PL 0 Ambient Intensity", &pointLights[0].base.ambientIntensity, -20.0f, 20.0f);
+					ImGui::SliderFloat("PL 0 Diffuse Intensity", &pointLights[0].base.diffuseIntensity, -20.0f, 20.0f);
+					ImGui::SliderFloat("PL 0 Constant", &pointLights[0].constant, -2.0f, 2.0f);
+					ImGui::SliderFloat("PL 0 Linear", &pointLights[0].linear, -2.0f, 2.0f);
+					ImGui::SliderFloat("PL 0 Exponent", &pointLights[0].exponent, -2.0f, 2.0f);
 
-			ImGui::Checkbox(    "PL 1 Enabled",           &pointLights[1].base.enabled);
-			ImGui::ColorEdit3(  "PL 1 Color",             glm::value_ptr(pointLights[1].base.color));
-			ImGui::SliderFloat3("PL 1 Position",          glm::value_ptr(pointLights[1].position), -20.0f, 20.0f);
-			ImGui::SliderFloat( "PL 1 Ambient Intensity", &pointLights[1].base.ambientIntensity, -20.0f, 20.0f);
-			ImGui::SliderFloat( "PL 1 Diffuse Intensity", &pointLights[1].base.diffuseIntensity, -20.0f, 20.0f);
-			ImGui::SliderFloat( "PL 1 Constant",          &pointLights[1].constant, -2.0f, 2.0f);
-			ImGui::SliderFloat( "PL 1 Linear",            &pointLights[1].linear, -2.0f, 2.0f);
-			ImGui::SliderFloat( "PL 1 Exponent",          &pointLights[1].exponent, -2.0f, 2.0f);
+					ImGui::Checkbox("PL 1 Enabled", &pointLights[1].base.enabled);
+					ImGui::ColorEdit3("PL 1 Color", glm::value_ptr(pointLights[1].base.color));
+					ImGui::SliderFloat3("PL 1 Position", glm::value_ptr(pointLights[1].position), -20.0f, 20.0f);
+					ImGui::SliderFloat("PL 1 Ambient Intensity", &pointLights[1].base.ambientIntensity, -20.0f, 20.0f);
+					ImGui::SliderFloat("PL 1 Diffuse Intensity", &pointLights[1].base.diffuseIntensity, -20.0f, 20.0f);
+					ImGui::SliderFloat("PL 1 Constant", &pointLights[1].constant, -2.0f, 2.0f);
+					ImGui::SliderFloat("PL 1 Linear", &pointLights[1].linear, -2.0f, 2.0f);
+					ImGui::SliderFloat("PL 1 Exponent", &pointLights[1].exponent, -2.0f, 2.0f);
 
-			ImGui::Checkbox("PL 2 Enabled",              &pointLights[2].base.enabled);
-			ImGui::ColorEdit3("PL 2 Color",              glm::value_ptr(pointLights[2].base.color));
-			ImGui::SliderFloat3("PL 2 Position",         glm::value_ptr(pointLights[2].position), -20.0f, 20.0f);
-			ImGui::SliderFloat("PL 2 Ambient Intensity", &pointLights[2].base.ambientIntensity, -20.0f, 20.0f);
-			ImGui::SliderFloat("PL 2 Diffuse Intensity", &pointLights[2].base.diffuseIntensity, -20.0f, 20.0f);
-			ImGui::SliderFloat("PL 2 Constant",          &pointLights[2].constant, -2.0f, 2.0f);
-			ImGui::SliderFloat("PL 2 Linear",            &pointLights[2].linear, -2.0f, 2.0f);
-			ImGui::SliderFloat("PL 2 Exponent",          &pointLights[2].exponent, -2.0f, 2.0f);
+					ImGui::Checkbox("PL 2 Enabled", &pointLights[2].base.enabled);
+					ImGui::ColorEdit3("PL 2 Color", glm::value_ptr(pointLights[2].base.color));
+					ImGui::SliderFloat3("PL 2 Position", glm::value_ptr(pointLights[2].position), -20.0f, 20.0f);
+					ImGui::SliderFloat("PL 2 Ambient Intensity", &pointLights[2].base.ambientIntensity, -20.0f, 20.0f);
+					ImGui::SliderFloat("PL 2 Diffuse Intensity", &pointLights[2].base.diffuseIntensity, -20.0f, 20.0f);
+					ImGui::SliderFloat("PL 2 Constant", &pointLights[2].constant, -2.0f, 2.0f);
+					ImGui::SliderFloat("PL 2 Linear", &pointLights[2].linear, -2.0f, 2.0f);
+					ImGui::SliderFloat("PL 2 Exponent", &pointLights[2].exponent, -2.0f, 2.0f);
+				}
+			}
+			ImGui::End();
 		}
 
 		LightManager::directionalLight.SetEnabled(directionalLight.base.enabled);
@@ -273,19 +278,169 @@ void SceneCottage::UpdateImGui(float timestep, Window* mainWindow)
 		LightManager::pointLights[2].SetLinear(pointLights[2].linear);
 		LightManager::pointLights[2].SetExponent(pointLights[2].exponent);
 	}
-	ImGui::End();
 
-	ImGui::Begin("Framebuffers");
+	if (m_ShowWindowFramebuffers)
 	{
-		if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+		ImGui::Begin("Framebuffers", &m_ShowWindowFramebuffers);
 		{
-			ImVec2 imageSize(96.0f, 96.0f);
+			if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImVec2 imageSize(96.0f, 96.0f);
 
-			ImGui::Text("Shadow Map");
-			ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
+				ImGui::Text("Shadow Map");
+				ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
+			}
+		}
+		ImGui::End();
+	}
+}
+
+// Demonstrate using DockSpace() to create an explicit docking node within an existing window.
+// Note that you already dock windows into each others _without_ a DockSpace() by just moving windows 
+// from their title bar (or by holding SHIFT if io.ConfigDockingWithShift is set).
+// DockSpace() is only useful to construct to a central location for your application.
+void SceneCottage::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
+{
+	static bool opt_fullscreen_persistant = true;
+	bool opt_fullscreen = opt_fullscreen_persistant;
+	static ImGuiDockNodeFlags dockspace_flags =
+		ImGuiDockNodeFlags_None |
+		ImGuiDockNodeFlags_PassthruCentralNode |
+		ImGuiDockNodeFlags_NoDockingInCentralNode;
+
+	// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+	// because it would be confusing to have two docking targets within each others.
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	if (opt_fullscreen)
+	{
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->Pos);
+		ImGui::SetNextWindowSize(viewport->Size);
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	}
+
+	// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background and handle the pass-thru hole, so we ask Begin() to not render a background.
+	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+	{
+		window_flags |= ImGuiWindowFlags_NoBackground;
+	}
+
+	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
+	// all active windows docked into it will lose their parent and become undocked.
+	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
+	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::Begin("DockSpace Demo", p_open, window_flags);
+	ImGui::PopStyleVar();
+
+	if (opt_fullscreen)
+	{
+		ImGui::PopStyleVar(2);
+	}
+
+	// DockSpace
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+	{
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+	}
+	else
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		ImGui::Text("ERROR: Docking is not enabled! See Demo > Configuration.");
+		ImGui::Text("Set io.ConfigFlags |= ImGuiConfigFlags_DockingEnable in your code, or ");
+		ImGui::SameLine(0.0f, 0.0f);
+		if (ImGui::SmallButton("click here"))
+		{
+			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 		}
 	}
+
+	RenderImGuiMenu(mainWindow, dockspace_flags);
+
 	ImGui::End();
+}
+
+void SceneCottage::RenderImGuiMenu(Window* mainWindow, ImGuiDockNodeFlags dockspaceFlags)
+{
+	if (ImGui::BeginMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("Exit")) mainWindow->SetShouldClose(true);
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Edit"))
+		{
+			ImGui::MenuItem("Undo");
+			ImGui::MenuItem("Redo");
+			ImGui::MenuItem("Cut");
+			ImGui::MenuItem("Copy");
+			ImGui::MenuItem("Paste");
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("View"))
+		{
+			if (ImGui::MenuItem("Lights", "Ctrl+S"))
+			{
+				m_ShowWindowLights = !m_ShowWindowLights;
+			}
+
+			if (ImGui::MenuItem("Framebuffers", "Ctrl+F"))
+			{
+				m_ShowWindowFramebuffers = !m_ShowWindowFramebuffers;
+			}
+
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Docking"))
+		{
+			// Disabling fullscreen would allow the window to be moved to the front of other windows, 
+			// which we can't undo at the moment without finer window depth/z control.
+			//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
+
+			if (ImGui::MenuItem("Flag: NoSplit", "", (dockspaceFlags & ImGuiDockNodeFlags_NoSplit) != 0))
+				dockspaceFlags ^= ImGuiDockNodeFlags_NoSplit;
+			if (ImGui::MenuItem("Flag: NoResize", "", (dockspaceFlags & ImGuiDockNodeFlags_NoResize) != 0))
+				dockspaceFlags ^= ImGuiDockNodeFlags_NoResize;
+			if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspaceFlags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))
+				dockspaceFlags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
+			if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))
+				dockspaceFlags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+			if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspaceFlags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))
+				dockspaceFlags ^= ImGuiDockNodeFlags_AutoHideTabBar;
+			ImGui::EndMenu();
+		}
+
+		ImGui::TextDisabled("(?)");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::BeginTooltip();
+			ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+			ImGui::TextUnformatted("When docking is enabled, you can ALWAYS dock MOST window into another! Try it now!" "\n\n"
+				" > if io.ConfigDockingWithShift==false (default):" "\n"
+				"   drag windows from title bar to dock" "\n"
+				" > if io.ConfigDockingWithShift==true:" "\n"
+				"   drag windows from anywhere and hold Shift to dock" "\n\n"
+				"This demo app has nothing to do with it!" "\n\n"
+				"This demo app only demonstrate the use of ImGui::DockSpace() which allows you to manually create a docking node _within_ another window. This is useful so you can decorateyour main //   application window (e.g. with a menu bar)." "\n\n"
+				"ImGui::DockSpace() comes with one hard constraint: it needs to be submitted _before_ any window which may be docked into it. Therefore, if you use a dock spot as the centralpoint of //  your application, you'll probably want it to be part of the very first window you are submitting to imgui every frame." "\n\n"
+				"(NB: because of this constraint, the implicit \"Debug\" window can not be docked into an explicit DockSpace() node, because that window is submitted as part of the NewFrame( call.	An //easy workaround is that you can create your own implicit \"Debug##2\" window after calling DockSpace() and leave it in the window stack for anyone to use.)");
+			ImGui::PopTextWrapPos();
+			ImGui::EndTooltip();
+		}
+
+		ImGui::EndMenuBar();
+	}
 }
 
 void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
@@ -300,16 +455,21 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 
 	/* Sphere model */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 3.0f, 0.0f));
+	model = glm::translate(model, glm::vec3(4.0f, 3.0f, -6.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(2.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
-	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
-	meshes["sphere"]->Render();
+	textures["crateDiffuse"]->Bind(textureSlots["diffuse"]);
+	textures["crateNormal"]->Bind(textureSlots["normal"]);
+
+	if (passType == "main")
+	{
+		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	}
+
+	models["sphere"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	/* Cube Left */
 	model = glm::mat4(1.0f);
@@ -321,7 +481,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	textures["brick"]->Bind(textureSlots["diffuse"]);
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-	materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+	if (passType == "main")
+	{
+		materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	}
+
 	meshes["cube"]->Render();
 
 	/* Cube Right */
@@ -334,7 +499,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	textures["crateDiffuse"]->Bind(textureSlots["diffuse"]);
 	textures["crateNormal"]->Bind(textureSlots["normal"]);
-	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+	if (passType == "main")
+	{
+		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	}
+
 	meshes["cube"]->Render();
 
 	/* Cube Front */
@@ -347,7 +517,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	textures["crateDiffuse"]->Bind(textureSlots["diffuse"]);
 	textures["crateNormal"]->Bind(textureSlots["normal"]);
-	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+	if (passType == "main")
+	{
+		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	}
+
 	meshes["cube"]->Render();
 
 	/* Cottage */
@@ -358,7 +533,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 	model = glm::scale(model, glm::vec3(1.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+	if (passType == "main")
+	{
+		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	}
+
 	models["cottage"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
 
 	if (passType == "main")
@@ -370,7 +550,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["sponzaFloorDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaFloorNormal"]->Bind(textureSlots["normal"]);
-		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+		if (passType == "main")
+		{
+			materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
+
 		meshes["quadLarge"]->Render();
 
 		/* Floor 2nd */
@@ -380,7 +565,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["sponzaFloorDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaFloorNormal"]->Bind(textureSlots["normal"]);
-		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+		if (passType == "main")
+		{
+			materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
+
 		meshes["quadLarge"]->Render();
 
 		/* Floor 3nd */
@@ -389,7 +579,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 		model = glm::scale(model, glm::vec3(1.0f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["grass"]->Bind(textureSlots["diffuse"]);
-		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+		if (passType == "main")
+		{
+			materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
+
 		meshes["quadLarge"]->Render();
 
 		/* Wall Right */
@@ -402,7 +597,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["sponzaWallDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaWallNormal"]->Bind(textureSlots["normal"]);
-		materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+		if (passType == "main")
+		{
+			materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
+
 		// meshList["quadLarge"]->RenderMesh();
 
 		/* Wall Left */
@@ -415,7 +615,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["sponzaWallDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaWallNormal"]->Bind(textureSlots["normal"]);
-		materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+		if (passType == "main")
+		{
+			materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
+
 		meshes["quadLarge"]->Render();
 
 		/* Wall Back */
@@ -428,7 +633,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["sponzaWallDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaWallNormal"]->Bind(textureSlots["normal"]);
-		materials["shiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+		if (passType == "main")
+		{
+			materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
+
 		meshes["quadLarge"]->Render();
 
 		/* Ceil */
@@ -439,7 +649,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaCeilNormal"]->Bind(textureSlots["normal"]);
-		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+		if (passType == "main")
+		{
+			materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
+
 		meshes["quadLarge"]->Render();
 
 		/* Ceil 2nd */
@@ -450,7 +665,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
 		textures["sponzaCeilNormal"]->Bind(textureSlots["normal"]);
-		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+		if (passType == "main")
+		{
+			materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
+
 		meshes["quadLarge"]->Render();
 
 		/* ShadowMap display */
@@ -462,7 +682,12 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		shaderMain->SetInt("albedoMap", textureSlots["shadow"]);
 		shaderMain->SetInt("normalMap", textureSlots["shadow"]);
-		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+
+		if (passType == "main")
+		{
+			materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
+
 		meshes["quad"]->Render();
 	}
 }
