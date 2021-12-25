@@ -89,13 +89,16 @@ public:
 	virtual ~Scene();
 
 	virtual void Update(float timestep, Window* mainWindow);
-	virtual void OnWindowResize(H2M::WindowResizeEventH2M& e);
 	virtual void UpdateImGui(float timestep, Window* mainWindow) = 0;
+
+	virtual void OnWindowResize(H2M::WindowResizeEventH2M& e);
 	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
+
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) = 0;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) {};
+
 	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
 	virtual inline bool IsWaterOnScene() { return false; };
 
