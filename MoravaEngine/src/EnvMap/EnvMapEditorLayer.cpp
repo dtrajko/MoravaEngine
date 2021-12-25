@@ -608,28 +608,6 @@ H2M::RefH2M<MoravaShader> EnvMapEditorLayer::GetShaderPBR_Static()
     return MoravaShaderLibrary::Get("HazelPBR_Static");
 }
 
-void EnvMapEditorLayer::DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest)
-{
-    if (!depthTest)
-        glDisable(GL_DEPTH_TEST);
-
-    GLenum glPrimitiveType = 0;
-    switch (type)
-    {
-    case H2M::PrimitiveTypeH2M::Triangles:
-        glPrimitiveType = GL_TRIANGLES;
-        break;
-    case H2M::PrimitiveTypeH2M::Lines:
-        glPrimitiveType = GL_LINES;
-        break;
-    }
-
-    glDrawElements(glPrimitiveType, count, GL_UNSIGNED_INT, nullptr);
-
-    if (!depthTest)
-        glEnable(GL_DEPTH_TEST);
-}
-
 void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 {
     // if (m_FullscreenEnabled) return;

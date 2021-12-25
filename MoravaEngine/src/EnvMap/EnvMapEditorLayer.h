@@ -128,7 +128,6 @@ public:
 	inline bool* GetDisplayRay() { return &EnvMapSharedData::s_DisplayRay; };
 
 	// Renderer
-	void DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool depthTest);
 	void SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
 	// from SceneHazelEnvMap

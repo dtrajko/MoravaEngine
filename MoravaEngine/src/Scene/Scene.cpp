@@ -372,6 +372,13 @@ void Scene::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 
 	}
 
+	RenderImGuiMenu(mainWindow, dockspace_flags);
+
+	ImGui::End();
+}
+
+void Scene::RenderImGuiMenu(Window* mainWindow, ImGuiDockNodeFlags dockspaceFlags)
+{
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
@@ -396,11 +403,16 @@ void Scene::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 			// which we can't undo at the moment without finer window depth/z control.
 			//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
 
-			if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
-			if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
-			if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
-			if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
-			if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
+			if (ImGui::MenuItem("Flag: NoSplit", "", (dockspaceFlags & ImGuiDockNodeFlags_NoSplit) != 0))
+				dockspaceFlags ^= ImGuiDockNodeFlags_NoSplit;
+			if (ImGui::MenuItem("Flag: NoResize", "", (dockspaceFlags & ImGuiDockNodeFlags_NoResize) != 0))
+				dockspaceFlags ^= ImGuiDockNodeFlags_NoResize;
+			if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspaceFlags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))
+				dockspaceFlags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
+			if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))
+				dockspaceFlags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+			if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspaceFlags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))
+				dockspaceFlags ^= ImGuiDockNodeFlags_AutoHideTabBar;
 			ImGui::EndMenu();
 		}
 
@@ -424,8 +436,6 @@ void Scene::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 
 		ImGui::EndMenuBar();
 	}
-
-	ImGui::End();
 }
 
 Camera* Scene::GetCamera()

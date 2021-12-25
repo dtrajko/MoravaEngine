@@ -117,11 +117,16 @@ public:
 	bool GetFlag(MaterialFlag flag) const { return (uint32_t)flag & m_MaterialFlags; }
 	void SetFlag(MaterialFlag flag, bool value);
 
+	float GetShininess() { return m_Shininess; }
+	float GetSpecularIntensity() { return m_SpecularIntensity; }
+
 public:
 	int m_AlbedoMap;      // sampler2D, texture slot - diffuse/albedo
 	int m_SpecularMap;    // sampler2D, texture slot
 	int m_NormalMap;      // sampler2D, texture slot
 	float m_Shininess;
+
+	float m_SpecularIntensity;
 
 private:
 	H2M::RefH2M<MoravaTexture> m_TextureAlbedo;
@@ -146,8 +151,6 @@ private:
 	int m_HeightMap;           // sampler2D, texture slot
 	int m_AmbientOcclusionMap; // sampler2D, texture slot
 	int m_EmissionMap;         // sampler2D, texture slot
-
-	float m_SpecularIntensity;
 
 	// From Hazel/Renderer/Material
 	uint32_t m_MaterialFlags;
