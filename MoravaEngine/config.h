@@ -1,10 +1,10 @@
 #pragma once
 
 
-#define SCENE_COTTAGE
+// #define SCENE_COTTAGE
 // #define SCENE_EIFFEL
 // #define SCENE_SPONZA
-// #define SCENE_TERRAIN
+#define SCENE_TERRAIN
 // #define SCENE_PBR
 // #define SCENE_LEARN_OPENGL
 // #define SCENE_BULLET
