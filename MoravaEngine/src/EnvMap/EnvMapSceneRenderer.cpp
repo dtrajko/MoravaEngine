@@ -861,6 +861,39 @@ void EnvMapSceneRenderer::GeometryPass()
         }
     }
 
+    // BEGIN Draw Lines Renderer2D
+    H2M::Renderer2D_H2M::BeginScene(viewProj, true);
+    {
+        // BEGIN Draw Lines
+        if (EnvMapSharedData::s_DisplayRay)
+        {
+            glm::vec3 camPosition = s_EditorLayer->GetActiveCamera()->GetPosition();
+            H2M::Renderer2D_H2M::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
+        }
+        // END Draw Lines
+
+        // BEGIN Draw AABB Bounding Boxes
+        if (EntitySelection::s_SelectionContext.size())
+        {
+            for (auto selection : EntitySelection::s_SelectionContext)
+            {
+                if (selection.Mesh) {
+                    H2M::EntityH2M meshEntity = selection.Entity;
+                    glm::mat4 transform = glm::mat4(1.0f);
+                    if (meshEntity.HasComponent<H2M::TransformComponentH2M>())
+                    {
+                        transform = meshEntity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
+                    }
+                    glm::vec4 color = EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
+                    H2M::RendererH2M::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
+                }
+            }
+        }
+        // END Draw AABB Bounding Boxes
+    }
+    H2M::Renderer2D_H2M::EndScene();
+    // END Draw Lines Renderer2D
+
     // BEGIN Renderer2D_H2M
     H2M::Renderer2D_H2M::BeginScene(viewProj, true);
     {
@@ -912,38 +945,30 @@ void EnvMapSceneRenderer::GeometryPass()
     H2M::Renderer2D_H2M::EndScene();
     // END Renderer2D_H2M
 
-    // BEGIN Draw Lines Renderer2D
+    /**** BEGIN EnvMapEditorLayer::OnOverlayRender ****/
+    // H2M::Renderer2D_H2M::BeginScene(*s_EditorLayer->m_EditorCamera);
     H2M::Renderer2D_H2M::BeginScene(viewProj, true);
     {
-        // BEGIN Draw Lines
-        if (EnvMapSharedData::s_DisplayRay)
-        {
-            glm::vec3 camPosition = s_EditorLayer->GetActiveCamera()->GetPosition();
-            H2M::Renderer2D_H2M::DrawLine(EnvMapSharedData::s_NewRay, EnvMapSharedData::s_NewRay + glm::vec3(1.0f, 0.0f, 0.0f) * 100.0f, glm::vec4(0.0f, 1.0f, 1.0f, 1.0f));
-        }
-        // END Draw Lines
+        auto view = s_EditorLayer->GetActiveScene()->GetAllEntitiesWith<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>();
     
-        // BEGIN Draw AABB Bounding Boxes
-        if (EntitySelection::s_SelectionContext.size())
+        for (auto entity : view)
         {
-            for (auto selection : EntitySelection::s_SelectionContext)
-            {
-                if (selection.Mesh) {
-                    H2M::EntityH2M meshEntity = selection.Entity;
-                    glm::mat4 transform = glm::mat4(1.0f);
-                    if (meshEntity.HasComponent<H2M::TransformComponentH2M>())
-                    {
-                        transform = meshEntity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
-                    }
-                    glm::vec4 color = EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity ? glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) : glm::vec4(0.2f, 0.9f, 0.2f, 1.0f);
-                    H2M::RendererH2M::DrawAABB(selection.Mesh->BoundingBox, transform * selection.Mesh->Transform, color);
-                }
-            }
+            auto [tc, cc2d] = view.get<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>(entity);
+    
+            glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, 0.1f);
+            glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
+    
+            glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation);
+            transform = glm::scale(transform, scale);
+    
+            // H2M::Renderer2D_H2M::DrawCircle(tc.GetTransform(), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f, 0.0f, (int)entity);
+            H2M::Renderer2D_H2M::DrawCircle(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), /*thickness=*/0.1f, /*fade=*/0.01f, (int)entity);
         }
-        // END Draw AABB Bounding Boxes
     }
     H2M::Renderer2D_H2M::EndScene();
-    // END Draw Lines Renderer2D
+    /**** BEGIN EnvMapEditorLayer::OnOverlayRender ****/
+
+    // s_EditorLayer->OnOverlayRender();
 
     GetGeoPass()->GetSpecification().TargetFramebuffer->Bind();
 }

@@ -2358,16 +2358,28 @@ bool EnvMapEditorLayer::OnMouseScrolled(H2M::MouseScrolledEventH2M& e)
 
 void EnvMapEditorLayer::OnOverlayRender()
 {
-    auto view = m_ActiveScene->GetAllEntitiesWith<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>();
-
-    H2M::Renderer2D_H2M::BeginScene(*m_EditorCamera);
-
-    for (auto entity : view)
-    {
-        auto [ transform, cc2d ] = view.get<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>(entity);
-    }
-
-    H2M::Renderer2D_H2M::EndScene();
+    //  glm::mat4 viewProj = m_EditorCamera->GetViewProjection();
+    //  
+    //  // H2M::Renderer2D_H2M::BeginScene(*m_EditorCamera);
+    //  H2M::Renderer2D_H2M::BeginScene(viewProj, true);
+    //  {
+    //      auto view = m_ActiveScene->GetAllEntitiesWith<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>();
+    //  
+    //      for (auto entity : view)
+    //      {
+    //          auto [tc, cc2d] = view.get<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>(entity);
+    //  
+    //          glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, 0.001f);
+    //          glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
+    //  
+    //          glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation);
+    //          transform = glm::scale(transform, scale);
+    //  
+    //          H2M::Renderer2D_H2M::DrawCircle(tc.GetTransform(), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f, 0.0f, (int)entity);
+    //          // H2M::Renderer2D_H2M::DrawCircle(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), /*thickness=*/0.05f, /*fade=*/0.005f, /*entityID=*/-1);
+    //      }
+    //  }
+    //  H2M::Renderer2D_H2M::EndScene();
 }
 
 void EnvMapEditorLayer::OnSelected(const SelectedSubmesh& selectionContext)
@@ -2621,7 +2633,7 @@ void EnvMapEditorLayer::OnRender(Window* mainWindow)
     OnRenderEditor();
     // OnRenderRuntime()
 
-    OnOverlayRender();
+    // OnOverlayRender();
 
     m_RenderFramebuffer->Unbind();
 }
