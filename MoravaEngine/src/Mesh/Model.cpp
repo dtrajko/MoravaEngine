@@ -20,7 +20,7 @@ Model::Model(const std::string& fileName, const std::string& texturesPath)
 
 void Model::LoadModel(const std::string& fileName, const std::string& texturesPath)
 {
-	Log::GetLogger()->info("Loading model '{0}'. Textures path '{1}", fileName, texturesPath);
+	Log::GetLogger()->info("Loading model '{0}'. Textures path '{1}'", fileName, texturesPath);
 
 	m_TexturesPath = (texturesPath != "") ? texturesPath : "Textures";
 	m_Scale = glm::vec3(1.0f);
