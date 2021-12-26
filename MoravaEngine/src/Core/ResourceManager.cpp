@@ -326,7 +326,7 @@ H2M::RefH2M<Material> ResourceManager::HotLoadMaterial(std::string materialName)
     return materialIterator->second;
 }
 
-H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadTexture2D_H2M(std::string filePath)
+H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadTexture2D_H2M(std::string filePath, bool sRGB)
 {
     H2M::RefH2M<H2M::Texture2D_H2M> texture;
 
@@ -340,7 +340,7 @@ H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadTexture2D_H2M(std::string f
         // A cache MISS
         try
         {
-            texture = H2M::Texture2D_H2M::Create(filePath, true);
+            texture = H2M::Texture2D_H2M::Create(filePath, sRGB);
             s_HazelTextures2D.insert(std::make_pair(filePath, texture));
             Log::GetLogger()->info("ResourceManager: A texture created and stored in cache [key: '{0}']", filePath);
         }

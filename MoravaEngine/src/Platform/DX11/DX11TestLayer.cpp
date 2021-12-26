@@ -123,15 +123,15 @@ void DX11TestLayer::OnAttach()
 
 	RenderObject renderObjectTerrain;
 	renderObjectTerrain.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create("Models/PardCode/terrain.obj");
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/sand.jpg"));
-	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png"));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/sand.jpg", true));
+	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png", false));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
 	renderObjectTerrain.Transform = glm::scale(renderObjectTerrain.Transform, glm::vec3(4.0f));
 	renderObjectTerrain.PipelineType = RenderObject::PipelineType::Unlit;
 	m_RenderObjects.push_back(renderObjectTerrain);
 
 	// ---- other assets ----
-	ResourceManager::LoadTexture2D_H2M("Textures/PardCode/sky.jpg");
+	ResourceManager::LoadTexture2D_H2M("Textures/PardCode/sky.jpg", true);
 
 	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/wood.jpg");
 	// ResourceManager::LoadHazelTexture2D("Textures/PardCode/normal_blank.png");

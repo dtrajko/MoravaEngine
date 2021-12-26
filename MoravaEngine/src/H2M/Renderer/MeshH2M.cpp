@@ -461,8 +461,8 @@ namespace H2M
 					albedoColor = { aiColor.r, aiColor.g, aiColor.b };
 				}
 
-				// mi->Set("u_MaterialUniforms.AlbedoColor", albedoColor);
 				m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", albedoColor);
+				mi->Set("u_MaterialUniforms.AlbedoColor", albedoColor);
 
 				float shininess, metalness;
 				// aiMaterial->Get(AI_MATKEY_SHININESS, shininess);
@@ -508,7 +508,7 @@ namespace H2M
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
 						// texture = Texture2D_H2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2D_H2M(texturePath);
+						texture = ResourceManager::LoadTexture2D_H2M(texturePath, true);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ALBEDO map failed to load. Loading the default texture placeholder instead.");
@@ -551,7 +551,7 @@ namespace H2M
 				else
 				{
 					m_MeshShader->SetFloat3("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
-					// mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b }); // redundant
+					mi->Set("u_MaterialUniforms.AlbedoColor", glm::vec3{ aiColor.r, aiColor.g, aiColor.b }); // redundant
 					Log::GetLogger()->info("    No albedo map");
 				}
 
@@ -559,8 +559,9 @@ namespace H2M
 				{
 					// HZ_MESH_LOG("    No albedo map");
 					Log::GetLogger()->info("    No normal map");
-					m_MeshShader->SetInt("u_AlbedoTexture", whiteTexture);
-					// mi->Set("u_AlbedoTexture", whiteTexture);
+
+					m_MeshShader->SetInt("u_AlbedoTexture", whiteTexture->GetID());
+					mi->Set("u_AlbedoTexture", whiteTexture->GetID());
 
 					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
@@ -570,7 +571,7 @@ namespace H2M
 
 				// Normal maps
 				m_MeshShader->SetFloat("u_MaterialUniforms.NormalTexToggle", 0.0f);
-				// mi->Set("u_MaterialUniforms.NormalTexToggle", 0.0f); // redundant
+				mi->Set("u_MaterialUniforms.NormalTexToggle", 0.0f); // redundant
 
 				bool hasNormalMap = aiMaterial->GetTexture(aiTextureType_NORMALS, 0, &aiTexPath) == AI_SUCCESS;
 				fallback = !hasNormalMap;
@@ -587,7 +588,7 @@ namespace H2M
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
 						// texture = Texture2D_H2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2D_H2M(texturePath);
+						texture = ResourceManager::LoadTexture2D_H2M(texturePath, false);
 						m_Textures.push_back(texture);
 					}
 					catch (...) {
@@ -628,8 +629,8 @@ namespace H2M
 					// HZ_MESH_LOG("    No normal map");
 					Log::GetLogger()->info("    No normal map");
 
-					m_MeshShader->SetInt("u_NormalTexture", whiteTexture);
-					// mi->Set("u_NormalTexture", whiteTexture);
+					m_MeshShader->SetInt("u_NormalTexture", whiteTexture->GetID());
+					mi->Set("u_NormalTexture", whiteTexture->GetID());
 
 					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
@@ -657,7 +658,7 @@ namespace H2M
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
 						// texture = Texture2D_H2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2D_H2M(texturePath);
+						texture = ResourceManager::LoadTexture2D_H2M(texturePath, false);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The ROUGHNESS map failed to load. Loading the default texture placeholder instead.");
@@ -714,7 +715,7 @@ namespace H2M
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
 						// texture = Texture2D_H2M::Create(texturePath, false);
-						texture = ResourceManager::LoadTexture2D_H2M(texturePath);
+						texture = ResourceManager::LoadTexture2D_H2M(texturePath, false);
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
@@ -814,7 +815,7 @@ namespace H2M
 							RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 							try {
 								// texture = Texture2D_H2M::Create(texturePath, false);
-								texture = ResourceManager::LoadTexture2D_H2M(texturePath);
+								texture = ResourceManager::LoadTexture2D_H2M(texturePath, false);
 							}
 							catch (...) {
 								Log::GetLogger()->warn("The METALNESS map failed to load. Loading the default texture placeholder instead.");
@@ -862,8 +863,8 @@ namespace H2M
 				{
 					HZ_MESH_LOG("    No metalness map");
 
-					m_MeshShader->SetInt("u_MetalnessTexture", whiteTexture);
-					// mi->Set("u_MetalnessTexture", whiteTexture);
+					m_MeshShader->SetInt("u_MetalnessTexture", whiteTexture->GetID());
+					mi->Set("u_MetalnessTexture", whiteTexture->GetID());
 
 					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{

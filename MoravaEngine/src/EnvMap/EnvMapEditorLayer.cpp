@@ -91,7 +91,7 @@ void EnvMapEditorLayer::Init()
     // Create the light material
     s_LightMaterial = MaterialLibrary::CreateDefaultMaterial("MAT_LIGHT");
     // Load Hazel/Renderer/HazelTexture
-    s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2D_H2M("Textures/light_bulb.png");
+    s_LightMaterial->GetAlbedoInput().TextureMap = ResourceManager::LoadTexture2D_H2M("Textures/light_bulb.png", true);
     s_LightMaterial->GetAlbedoInput().UseTexture = true;
     MaterialLibrary::AddEnvMapMaterial(s_LightMaterial->GetUUID(), s_LightMaterial);
 
