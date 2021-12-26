@@ -109,7 +109,7 @@ namespace H2M
 
 		void OnViewportResize(uint32_t width, uint32_t height);
 
-		void GetPrimaryCameraEntity();
+		EntityH2M GetPrimaryCameraEntity();
 
 		template<typename T>
 		void OnComponentAdded(EntityH2M entity, T& component);

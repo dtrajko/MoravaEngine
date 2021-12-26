@@ -947,25 +947,78 @@ void EnvMapSceneRenderer::GeometryPass()
 
     /**** BEGIN EnvMapEditorLayer::OnOverlayRender ****/
     // H2M::Renderer2D_H2M::BeginScene(*s_EditorLayer->m_EditorCamera);
-    H2M::Renderer2D_H2M::BeginScene(viewProj, true);
-    {
-        auto view = s_EditorLayer->GetActiveScene()->GetAllEntitiesWith<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>();
-    
-        for (auto entity : view)
+    {    
+        // NOT WORKING
+        if (s_EditorLayer->m_SceneState == EnvMapEditorLayer::SceneState::Play)
         {
-            auto [tc, cc2d] = view.get<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>(entity);
-    
-            glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, 0.1f);
-            glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
-    
-            glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation);
-            transform = glm::scale(transform, scale);
-    
-            // H2M::Renderer2D_H2M::DrawCircle(tc.GetTransform(), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), 1.0f, 0.0f, (int)entity);
-            H2M::Renderer2D_H2M::DrawCircle(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), /*thickness=*/0.1f, /*fade=*/0.01f, (int)entity);
+            H2M::EntityH2M camera = s_EditorLayer->GetActiveScene()->GetPrimaryCameraEntity();
+            // H2M::Renderer2D_H2M::BeginScene(camera.GetComponent<H2M::CameraComponentH2M>().Camera, camera.GetComponent<H2M::TransformComponentH2M>().GetTransform());
         }
+        else
+        {
+            // H2M::Renderer2D_H2M::BeginScene(*s_EditorLayer->m_EditorCamera);
+        }
+
+        // NOT WORKING
+        // H2M::CameraH2M camera = *s_EditorLayer->GetActiveCamera();
+        // H2M::Renderer2D_H2M::BeginScene(camera, camera.GetViewMatrix());
+
+        // NOT WORKING
+        // H2M::Renderer2D_H2M::BeginScene(*s_EditorLayer->GetEditorCamera());
+
+        // NOT WORKING
+        // H2M::Renderer2D_H2M::BeginScene(s_EditorLayer->GetEditorCamera()->GetViewProjection(), true);
+
+        // WORKING
+        glm::mat4 viewProj = s_EditorLayer->GetActiveCamera()->GetViewProjection();
+        H2M::Renderer2D_H2M::BeginScene(viewProj, true);
+
+
+        if (s_EditorLayer->m_ShowPhysicsColliders)
+        {
+            // BEGIN Box Colliders
+            {
+                auto view = s_EditorLayer->GetActiveScene()->GetAllEntitiesWith<H2M::TransformComponentH2M, H2M::BoxCollider2DComponentH2M>();
+
+                for (auto entity : view)
+                {
+                    auto [tc, bc2d] = view.get<H2M::TransformComponentH2M, H2M::BoxCollider2DComponentH2M>(entity);
+
+                    glm::vec3 translation = tc.Translation + glm::vec3(bc2d.Offset, 0.05f);
+                    float rotation = tc.Rotation.z;
+                    glm::vec3 scale = tc.Scale * glm::vec3(bc2d.Size * 2.0f, 1.0f);
+
+                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation);
+                    transform = glm::rotate(transform, rotation, glm::vec3(0.0f, 0.0f, 1.0f));
+                    transform = glm::scale(transform, scale);
+
+                    H2M::Renderer2D_H2M::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), -1);
+                }
+            }
+            // END Box Colliders
+
+            // BEGIN Circle Colliders
+            {
+                auto view = s_EditorLayer->GetActiveScene()->GetAllEntitiesWith<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>();
+
+                for (auto entity : view)
+                {
+                    auto [tc, cc2d] = view.get<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>(entity);
+
+                    glm::vec3 translation = tc.Translation + glm::vec3(cc2d.Offset, 0.05f);
+                    glm::vec3 scale = tc.Scale * glm::vec3(cc2d.Radius * 2.0f);
+
+                    glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation);
+                    transform = glm::scale(transform, scale);
+
+                    H2M::Renderer2D_H2M::DrawCircle(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), /*thickness=*/0.1f, /*fade=*/0.01f, -1);
+                }
+            }
+            // END Circle Colliders
+        }
+
+        H2M::Renderer2D_H2M::EndScene();
     }
-    H2M::Renderer2D_H2M::EndScene();
     /**** BEGIN EnvMapEditorLayer::OnOverlayRender ****/
 
     // s_EditorLayer->OnOverlayRender();

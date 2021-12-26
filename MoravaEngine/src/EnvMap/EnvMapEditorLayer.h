@@ -138,6 +138,8 @@ public:
 
 	H2M::CameraH2M* GetActiveCamera() const { return m_ActiveCamera; }
 
+	H2M::EditorCameraH2M* GetEditorCamera() const { return m_EditorCamera; }
+
 	H2M::RefH2M<H2M::SceneH2M> GetActiveScene() { return m_ActiveScene; }
 
 private:
@@ -243,6 +245,8 @@ private:
 	glm::vec3 m_NewDir;
 
 	glm::vec2 m_WorkPosImGui; // window offset on monitor real estate
+
+	bool m_ShowPhysicsColliders = true;
 
 	enum class SceneState
 	{

@@ -1,0 +1,370 @@
+Scene: Untitled
+Entities:
+  - Entity: 9221334712258186515
+    TagComponentH2M:
+      Tag: Platform
+    TransformComponentH2M:
+      Translation: [24.5, 25.5, 0]
+      Rotation: [0, 0, 1.57079637]
+      Scale: [49.9995804, 0.999984264, 1]
+    SpriteRendererComponentH2M:
+      Color: [0, 0.354483128, 1, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 3678798022489143755
+    TagComponentH2M:
+      Tag: Platform
+    TransformComponentH2M:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [50, 1, 1]
+    SpriteRendererComponentH2M:
+      Color: [0, 0.354483128, 1, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 1823287092635870913
+    TagComponentH2M:
+      Tag: Square
+    TransformComponentH2M:
+      Translation: [-5.0473175, 41.1265602, 0]
+      Rotation: [0, 0, 3.14060068]
+      Scale: [0.999979556, 0.999979556, 1]
+    SpriteRendererComponentH2M:
+      Color: [0.793248951, 0, 0.562303543, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.600000024, 0.600000024]
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 7946309204888505587
+    TagComponentH2M:
+      Tag: Square
+    TransformComponentH2M:
+      Translation: [-1.79083943, 42.1038818, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.999979556, 0.999979556, 1]
+    SpriteRendererComponentH2M:
+      Color: [0.793248951, 0, 0.562303543, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.600000024, 0.600000024]
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 4090776773406961127
+    TagComponentH2M:
+      Tag: Circle
+    TransformComponentH2M:
+      Translation: [3.31001759, 40.6348343, 0]
+      Rotation: [0, 0, 0.221362114]
+      Scale: [0.999999344, 0.999999344, 1]
+    CircleRendererComponentH2M:
+      Color: [1, 0.202380896, 0, 1]
+      Thickness: 1
+      Fade: 0
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponentH2M:
+      Offset: [0, 0]
+      Radius: 0.699999988
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 4571462795559158870
+    TagComponentH2M:
+      Tag: Circle
+    TransformComponentH2M:
+      Translation: [2.223629, 44.037899, 2.32830644e-10]
+      Rotation: [0, 0, -1.23290634]
+      Scale: [1, 1, 1]
+    CircleRendererComponentH2M:
+      Color: [1, 0.202380896, 0, 1]
+      Thickness: 1
+      Fade: 0
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponentH2M:
+      Offset: [0, 0]
+      Radius: 0.699999988
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 13644194875749682281
+    TagComponentH2M:
+      Tag: Circle
+    TransformComponentH2M:
+      Translation: [0.210612535, 41.24683, -1.86264515e-09]
+      Rotation: [0, 0, 2.84207845]
+      Scale: [0.999984503, 0.999984503, 1]
+    CircleRendererComponentH2M:
+      Color: [1, 0.202380896, 0, 1]
+      Thickness: 1
+      Fade: 0
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponentH2M:
+      Offset: [0, 0]
+      Radius: 0.699999988
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 8217029296397354777
+    TagComponentH2M:
+      Tag: Circle
+    TransformComponentH2M:
+      Translation: [-1.60123062, 47.8727264, 0]
+      Rotation: [0, 0, -1.55971849]
+      Scale: [1, 1, 1]
+    CircleRendererComponentH2M:
+      Color: [1, 0.202380896, 0, 1]
+      Thickness: 1
+      Fade: 0
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponentH2M:
+      Offset: [0, 0]
+      Radius: 0.699999988
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 5957516297149573594
+    TagComponentH2M:
+      Tag: Circle
+    TransformComponentH2M:
+      Translation: [4.95635986, 43.4767761, 9.31322575e-10]
+      Rotation: [0, 0, 0.506478548]
+      Scale: [1, 1, 1]
+    CircleRendererComponentH2M:
+      Color: [1, 0.202380896, 0, 1]
+      Thickness: 1
+      Fade: 0
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponentH2M:
+      Offset: [0, 0]
+      Radius: 0.699999988
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 1898983053121121759
+    TagComponentH2M:
+      Tag: Circle
+    TransformComponentH2M:
+      Translation: [1.27557611, 47.3131409, 0]
+      Rotation: [0, 0, 1.20565605]
+      Scale: [0.99999994, 0.99999994, 1]
+    CircleRendererComponentH2M:
+      Color: [1, 0.202380896, 0, 1]
+      Thickness: 1
+      Fade: 0
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponentH2M:
+      Offset: [0, 0]
+      Radius: 0.699999988
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 6791270364097995814
+    TagComponentH2M:
+      Tag: Square
+    TransformComponentH2M:
+      Translation: [-3.83749366, 45.2343712, 0]
+      Rotation: [0, 0, -0.00123596191]
+      Scale: [0.999979556, 0.999979556, 1]
+    SpriteRendererComponentH2M:
+      Color: [0.793248951, 0, 0.562303543, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.600000024, 0.600000024]
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 9718120389172947094
+    TagComponentH2M:
+      Tag: Square
+    TransformComponentH2M:
+      Translation: [-0.294043332, 45.2873955, 0]
+      Rotation: [0, 0, -3.14069557]
+      Scale: [0.999970436, 0.999970436, 1]
+    SpriteRendererComponentH2M:
+      Color: [0.793248951, 0, 0.562303543, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.600000024, 0.600000024]
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 3246485519698365142
+    TagComponentH2M:
+      Tag: Square
+    TransformComponentH2M:
+      Translation: [-2.39799643, 38.5712128, 0]
+      Rotation: [0, 0, 1.5707953]
+      Scale: [0.999961317, 0.999961317, 1]
+    SpriteRendererComponentH2M:
+      Color: [0.793248951, 0, 0.562303543, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.600000024, 0.600000024]
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 13745831168516481231
+    TagComponentH2M:
+      Tag: Square
+    TransformComponentH2M:
+      Translation: [7.65659475, 45.5592842, 0]
+      Rotation: [0, 0, -1.57178688]
+      Scale: [0.999969661, 0.999969661, 1]
+    SpriteRendererComponentH2M:
+      Color: [0.793248951, 0, 0.562303543, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.600000024, 0.600000024]
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 1069186827618191872
+    TagComponentH2M:
+      Tag: Square
+    TransformComponentH2M:
+      Translation: [-7.14121056, 44.3940125, 0]
+      Rotation: [0, 0, -3.13997555]
+      Scale: [0.99999696, 0.99999696, 1]
+    SpriteRendererComponentH2M:
+      Color: [0.793248951, 0, 0.562303543, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.600000024, 0.600000024]
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 3930684026224803798
+    TagComponentH2M:
+      Tag: Platform
+    TransformComponentH2M:
+      Translation: [-24.5, 25.5, 0]
+      Rotation: [0, 0, 1.57079637]
+      Scale: [49.9996262, 0.999984443, 1]
+    SpriteRendererComponentH2M:
+      Color: [0, 0.354483128, 1, 1]
+    Rigidbody2DComponentH2M:
+      BodyType: Static
+      FixedRotation: false
+    BoxCollider2DComponentH2M:
+      Offset: [0, 0]
+      Size: [0.5, 0.5]
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 3930684026224803798
+    TagComponentH2M:
+      Tag: Circle
+    TransformComponentH2M:
+      Translation: [3.29837513, 46.1832123, 0]
+      Rotation: [0, 0, -3.02255058]
+      Scale: [0.999999464, 0.999999464, 1]
+    CircleRendererComponentH2M:
+      Color: [1, 0.202380896, 0, 1]
+      Thickness: 1
+      Fade: 0
+    Rigidbody2DComponentH2M:
+      BodyType: Dynamic
+      FixedRotation: false
+    CircleCollider2DComponentH2M:
+      Offset: [0, 0]
+      Radius: 0.699999988
+      Density: 1
+      Friction: 0.100000001
+      Restitution: 0.899999976
+      RestitutionThreshold: 2
+  - Entity: 10010379797568032071
+    TagComponentH2M:
+      Tag: Directional Light
+    TransformComponentH2M:
+      Translation: [0, 15, 0]
+      Rotation: [-0.0586210378, -0.996557653, -0.0586210378]
+      Scale: [1, 1, 1]
+    DirectionalLightComponentH2M:
+      Radiance: [1, 1, 1]
+      Intensity: 1
+      CastShadows: true
+      SoftShadows: true
+      LightSize: 0.5
+  - Entity: 8341162824818483603
+    TagComponentH2M:
+      Tag: Camera
+    TransformComponentH2M:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponentH2M:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 60.0000038
+        PerspectiveNear: 0.00999999978
+        PerspectiveFar: 1000
+        OrthographicSize: 10
+        OrthographicNear: -1000
+        OrthographicFar: 1000
+      Primary: true
+      FixedAspectRatio: false

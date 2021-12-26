@@ -388,7 +388,7 @@ namespace H2M
 
 				b2CircleShape circleShape;
 				circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
-				circleShape.m_radius = cc2d.Radius * transform.Scale.x;
+				circleShape.m_radius = transform.Scale.x * cc2d.Radius;
 
 				b2FixtureDef fixtureDef;
 				fixtureDef.shape = &circleShape;
@@ -685,8 +685,16 @@ namespace H2M
 		}
 	}
 
-	void SceneH2M::GetPrimaryCameraEntity()
+	EntityH2M SceneH2M::GetPrimaryCameraEntity()
 	{
+		auto view = m_Registry.view<CameraComponentH2M>();
+		for (auto entity : view)
+		{
+			const auto& camera = view.get<CameraComponentH2M>(entity);
+			if (camera.Primary)
+				return EntityH2M{ entity, this };
+		}
+		return {};
 	}
 
 	void SceneH2M::OnRenderRuntime(RefH2M<SceneRendererH2M> renderer, TimestepH2M ts)

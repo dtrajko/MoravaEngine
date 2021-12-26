@@ -259,9 +259,9 @@ namespace H2M
 
 		// TODO (Yan): move into physics material in the future maybe
 		float Density = 1.0f;
-		float Friction = 0.5f;
-		float Restitution = 0.0f;
-		float RestitutionThreshold = 0.5f;
+		float Friction = 0.2f;
+		float Restitution = 0.8f;
+		float RestitutionThreshold = 2.0f;
 
 		// Storage for runtime
 		void* RuntimeFixture = nullptr;
@@ -277,9 +277,9 @@ namespace H2M
 
 		// TODO (Yan): move into physics material in the future maybe
 		float Density = 1.0f;
-		float Friction = 0.5f;
-		float Restitution = 0.0f;
-		float RestitutionThreshold = 0.5f;
+		float Friction = 0.2f;
+		float Restitution = 0.8f;
+		float RestitutionThreshold = 2.0f;
 
 		// Storage for runtime
 		void* RuntimeFixture = nullptr;

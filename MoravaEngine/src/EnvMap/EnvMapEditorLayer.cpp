@@ -193,8 +193,10 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
 
     H2M::EntityH2M cameraEntity = CreateEntity("Camera");
     cameraEntity.AddComponent<H2M::CameraComponentH2M>(*m_RuntimeCamera);
-
     m_ActiveCamera = m_RuntimeCamera;
+
+    // cameraEntity.AddComponent<H2M::CameraComponentH2M>(*m_EditorCamera);
+    // m_ActiveCamera = m_EditorCamera;
 
     Log::GetLogger()->debug("cameraEntity UUID: {0}", cameraEntity.GetUUID());
 
@@ -1150,6 +1152,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 if (ImGui::Checkbox("Enable Event Logging", &eventLoggingEnabled)) {
                     Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
                 }
+
+                if (ImGui::Checkbox("Show Physics Colliders", &m_ShowPhysicsColliders));
 
                 float fovDegrees = GetMainCameraComponent().Camera.GetPerspectiveVerticalFOV();
                 if (ImGui::DragFloat("FOV", &fovDegrees, 1.0f, -60.0f, 180.0f)) {
