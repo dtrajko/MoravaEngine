@@ -2358,7 +2358,16 @@ bool EnvMapEditorLayer::OnMouseScrolled(H2M::MouseScrolledEventH2M& e)
 
 void EnvMapEditorLayer::OnOverlayRender()
 {
+    auto view = m_ActiveScene->GetAllEntitiesWith<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>();
 
+    H2M::Renderer2D_H2M::BeginScene(*m_EditorCamera);
+
+    for (auto entity : view)
+    {
+        auto [ transform, cc2d ] = view.get<H2M::TransformComponentH2M, H2M::CircleCollider2DComponentH2M>(entity);
+    }
+
+    H2M::Renderer2D_H2M::EndScene();
 }
 
 void EnvMapEditorLayer::OnSelected(const SelectedSubmesh& selectionContext)
@@ -2611,6 +2620,8 @@ void EnvMapEditorLayer::OnRender(Window* mainWindow)
 
     OnRenderEditor();
     // OnRenderRuntime()
+
+    OnOverlayRender();
 
     m_RenderFramebuffer->Unbind();
 }

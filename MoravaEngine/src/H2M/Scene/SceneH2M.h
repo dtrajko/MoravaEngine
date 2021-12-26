@@ -134,10 +134,10 @@ namespace H2M
 		float& GetSkyboxLod() { return m_SkyboxLod; }
 		float GetSkyboxLod() const { return m_SkyboxLod; }
 
-		template<typename T>
+		template<typename... Components>
 		auto GetAllEntitiesWith()
 		{
-			return m_Registry.view<T>();
+			return m_Registry.view<Components...>();
 		}
 
 		EntityH2M FindEntityByTag(const std::string& tag);
