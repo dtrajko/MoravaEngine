@@ -100,9 +100,15 @@ void SceneSponza::UpdateImGui(float timestep, Window* mainWindow)
 			ImGui::SliderFloat("Water Level", &sceneSettings.waterHeight, -4.0f, 20.0f);
 			m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
 
-			if (ImGui::SliderFloat("Wave Speed", &sceneSettings.waterWaveSpeed, -1.0f, 1.0f))
+			if (ImGui::SliderFloat("Water Wave Speed", &sceneSettings.waterWaveSpeed, -1.0f, 1.0f))
 			{
-				m_WaterManager->m_WaveSpeed = sceneSettings.waterWaveSpeed;
+				m_WaterManager->SetWaveSpeed(sceneSettings.waterWaveSpeed);
+			}
+
+			glm::vec4 waterColor = m_WaterManager->GetWaterColor();
+			if (ImGui::ColorEdit4("Water Color", (float*)&waterColor))
+			{
+				m_WaterManager->SetWaterColor(waterColor);
 			}
 		}
 		ImGui::End();

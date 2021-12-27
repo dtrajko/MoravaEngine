@@ -100,10 +100,26 @@ void SceneTerrain::UpdateImGui(float timestep, Window* mainWindow)
 		{
 			ImGui::Begin("Scene Settings", &m_ShowWindowSceneSettings);
 			{
-				ImGuiWrapper::Property("Water level", sceneSettings.waterHeight, 0.1f, -20.0f, 100.0f, PropertyFlag::DragProperty);
+				ImGuiWrapper::Property("Water Level", sceneSettings.waterHeight, 0.02f, -20.0f, 100.0f, PropertyFlag::DragProperty);
+
+				if (ImGui::DragFloat("Water Wave Speed", &sceneSettings.waterWaveSpeed, 0.01f, -1.0f, 1.0f, "%.2f"))
+				{
+					m_WaterManager->SetWaveSpeed(sceneSettings.waterWaveSpeed);
+				}
+
+				glm::vec4 waterColor = m_WaterManager->GetWaterColor();
+				if (ImGui::ColorEdit4("Water Color", (float*)&waterColor))
+				{
+					m_WaterManager->SetWaterColor(waterColor);
+				}
+
+				ImGui::Separator();
+
 				ImGui::SliderFloat3("Terrain scale", glm::value_ptr(m_TerrainScale), -4.0f, 4.0f);
 				ImGuiWrapper::Property("Tiling Factor", m_Tiling_Factor, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
+
 				ImGui::Separator();
+
 				ImGui::SliderFloat3("DirLight Direction", glm::value_ptr(dirLightDirection), -1.0f, 1.0f);
 				ImGui::ColorEdit3("DirLight Color", glm::value_ptr(dirLightColor));
 			}
