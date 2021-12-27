@@ -102,13 +102,15 @@ void SceneTerrain::UpdateImGui(float timestep, Window* mainWindow)
 			{
 				ImGuiWrapper::Property("Water Level", sceneSettings.waterHeight, 0.02f, -20.0f, 100.0f, PropertyFlag::DragProperty);
 
-				if (ImGui::DragFloat("Water Wave Speed", &sceneSettings.waterWaveSpeed, 0.01f, -1.0f, 1.0f, "%.2f"))
+				ImGui::Text("Water Wave Speed");
+				if (ImGui::DragFloat("##water_wave_speed", &sceneSettings.waterWaveSpeed, 0.01f, -1.0f, 1.0f, "%.2f"))
 				{
 					m_WaterManager->SetWaveSpeed(sceneSettings.waterWaveSpeed);
 				}
 
+				ImGui::Text("Water Color");
 				glm::vec4 waterColor = m_WaterManager->GetWaterColor();
-				if (ImGui::ColorEdit4("Water Color", (float*)&waterColor))
+				if (ImGui::ColorEdit4("##water_color", (float*)&waterColor))
 				{
 					m_WaterManager->SetWaterColor(waterColor);
 				}
@@ -360,14 +362,20 @@ void SceneTerrain::RenderWater(glm::mat4 projectionMatrix, std::string passType,
 	model = glm::scale(model, glm::vec3(256.0f, 1.0f, 256.0f));
 
 	shaderWater->SetMat4("model", model);
+
 	m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(textureSlots["reflection"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(textureSlots["refraction"]);
 	m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(textureSlots["depth"]);
+
 	shaderWater->SetInt("reflectionTexture", textureSlots["reflection"]);
 	shaderWater->SetInt("refractionTexture", textureSlots["refraction"]);
+
 	textures["normalMapDefault"]->Bind(textureSlots["normal"]);
 	textures["waterDuDv"]->Bind(textureSlots["DuDv"]);
+
 	shaderWater->SetFloat3("lightColor", LightManager::directionalLight.GetColor());
+	shaderWater->SetFloat4("waterColor", m_WaterManager->GetWaterColor());
+	shaderWater->SetFloat("moveFactor", m_WaterManager->GetWaterMoveFactor());
 
 	meshes["water"]->Render();
 }
