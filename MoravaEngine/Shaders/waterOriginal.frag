@@ -74,7 +74,7 @@ void main(void)
 	vec3 specularHighlights = lightColor * specular * reflectivity * waterDepth;
 
 	out_Color = mix(reflectColor, refractColor, refractiveFactor);
-	out_Color = mix(out_Color, waterColor, 0.2) + vec4(specularHighlights, 0.0);
+	out_Color = mix(out_Color, waterColor, 0.4) + vec4(specularHighlights, 0.0);
 	out_Color.a = waterDepth;
 
 	// Add a blue tint under the water level
