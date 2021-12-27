@@ -129,8 +129,9 @@ void Mesh::Clear()
 		printf("Mesh::Clear VAO destroyed...\n");
 	}
 
-	for (uint32_t i = 0; i < m_VertexAttribArrayCount; i++) {
-		glDisableVertexAttribArray(i);
+	for (uint32_t i = 0; i < m_VertexAttribArrayCount; i++)
+	{
+		// glDisableVertexAttribArray(i);
 	}
 }
 

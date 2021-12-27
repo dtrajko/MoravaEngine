@@ -26,6 +26,7 @@ private:
 	virtual void SetupModels() override;
 
 private:
+	bool m_ShowWindowCamera = true;
 	bool m_ShowWindowLights = true;
 	bool m_ShowWindowFramebuffers = true;
 
