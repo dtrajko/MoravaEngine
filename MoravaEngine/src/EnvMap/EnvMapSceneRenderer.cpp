@@ -931,6 +931,8 @@ void EnvMapSceneRenderer::GeometryPass()
             //  H2M::Renderer2D_H2M::DrawRect(glm::vec3(0.0f), glm::vec3(5.0f), glm::vec4(0.4f, 0.6f, 0.8f, 1.0f), -1);
             //  H2M::Renderer2D_H2M::DrawRect(glm::mat4(1.0f), glm::vec4(4.0f, 8.0f, 4.0f, 1.0f), -1);
 
+            // H2M::Renderer2D_H2M::DrawLineWithTriangles(glm::vec3(0.0f), glm::vec3(5.0f), glm::vec4(1.0f, 0.0f, 1.0f, 1.0f), -1);
+
             //  auto view = s_EditorLayer->GetActiveScene()->GetRegistry().view<H2M::TransformComponentH2M, H2M::CircleRendererComponentH2M>();
             //  for (auto entity : view)
             //  {
@@ -993,6 +995,7 @@ void EnvMapSceneRenderer::GeometryPass()
                     transform = glm::scale(transform, scale);
 
                     H2M::Renderer2D_H2M::DrawRect(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), -1);
+                    // H2M::Renderer2D_H2M::DrawRectWithTriangles(transform, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f), -1);
                 }
             }
             // END Box Colliders

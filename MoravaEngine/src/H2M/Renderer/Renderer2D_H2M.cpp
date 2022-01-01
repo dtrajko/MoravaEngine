@@ -570,6 +570,40 @@ namespace H2M
 		s_Data.Stats.LineCount++;
 	}
 
+	void Renderer2D_H2M::DrawLineWithTriangles(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color, int entityID)
+	{
+		if (s_Data.QuadIndexCount >= Renderer2DData::MaxIndices)
+		{
+			NextBatch();
+		}
+
+		float width = 0.1f;
+
+		s_Data.QuadVertexBufferPtr->Position = glm::vec3(p0.x, p0.y, p0.z);
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = glm::vec3(p1.x, p1.y, p1.z);
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = glm::vec3(p1.x, p1.y, p1.z);
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadVertexBufferPtr->Position = glm::vec3(p0.x, p0.y, p0.z);
+		s_Data.QuadVertexBufferPtr->Color = color;
+		s_Data.QuadVertexBufferPtr->EntityID = entityID;
+		s_Data.QuadVertexBufferPtr++;
+
+		s_Data.QuadIndexCount += 6;
+
+		s_Data.Stats.QuadCount++;
+	}
+
 	void Renderer2D_H2M::DrawRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color, int entityID)
 	{
 		glm::vec3 p0 = glm::vec3(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
@@ -598,6 +632,21 @@ namespace H2M
 		DrawLine(lineVertices[3], lineVertices[0], color, entityID);
 	}
 
+	void Renderer2D_H2M::DrawRectWithTriangles(const glm::mat4& transform, const glm::vec4& color, int entityID)
+	{
+		glm::vec3 lineVertices[4];
+
+		for (size_t i = 0; i < 4; i++)
+		{
+			lineVertices[i] = transform * s_Data.QuadVertexPositions[i];
+		}
+
+		DrawLineWithTriangles(lineVertices[0], lineVertices[1], color, entityID);
+		DrawLineWithTriangles(lineVertices[1], lineVertices[2], color, entityID);
+		DrawLineWithTriangles(lineVertices[2], lineVertices[3], color, entityID);
+		DrawLineWithTriangles(lineVertices[3], lineVertices[0], color, entityID);
+	}
+ 
 	float Renderer2D_H2M::GetLineWidth()
 	{
 		return s_Data.LineWidth;
