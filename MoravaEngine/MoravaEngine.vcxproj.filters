@@ -2044,15 +2044,13 @@
     <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.h">
       <Filter>EnvMapVulkan</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
-      <Filter>Water</Filter>
-    </ClInclude>
     <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanImGuiLayer.h">
       <Filter>EnvMapVulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanRenderer.h">
       <Filter>EnvMapVulkan</Filter>
     </ClInclude>
+    <ClInclude Include="config.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
