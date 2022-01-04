@@ -167,6 +167,8 @@
     <ClCompile Include="src\Editor\SceneObjectLight.cpp" />
     <ClCompile Include="src\Editor\SceneObjectParticleSystem.cpp" />
     <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanEditorLayer.cpp" />
+    <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanImGuiLayer.cpp" />
+    <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanRenderer.cpp" />
     <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapEditorLayer.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapMaterial.cpp" />
@@ -594,6 +596,8 @@
     <ClInclude Include="src\Editor\SceneObjectLight.h" />
     <ClInclude Include="src\Editor\SceneObjectParticleSystem.h" />
     <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanEditorLayer.h" />
+    <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanImGuiLayer.h" />
+    <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanRenderer.h" />
     <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.h" />
     <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h" />
     <ClInclude Include="src\EnvMap\EnvMapMaterial.h" />

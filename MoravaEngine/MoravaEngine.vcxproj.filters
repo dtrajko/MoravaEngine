@@ -954,6 +954,12 @@
     <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.cpp">
       <Filter>EnvMapVulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanImGuiLayer.cpp">
+      <Filter>EnvMapVulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanRenderer.cpp">
+      <Filter>EnvMapVulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1489,7 +1495,6 @@
       <Filter>HazelVulkan</Filter>
     </ClInclude>
     <ClInclude Include="main.h" />
-    <ClInclude Include="config.h" />
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan.h">
       <Filter>Vendors\ImGui\backends</Filter>
     </ClInclude>
@@ -2037,6 +2042,15 @@
       <Filter>H2M\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.h">
+      <Filter>EnvMapVulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Water</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanImGuiLayer.h">
+      <Filter>EnvMapVulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanRenderer.h">
       <Filter>EnvMapVulkan</Filter>
     </ClInclude>
   </ItemGroup>

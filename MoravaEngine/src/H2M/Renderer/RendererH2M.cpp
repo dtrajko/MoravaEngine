@@ -15,8 +15,9 @@
 #include "H2M/Renderer/SceneRendererH2M.h"
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
 
-#include "Renderer/RendererBasic.h"
+#include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "Platform/DX11/DX11Renderer.h"
+#include "Renderer/RendererBasic.h"
 
 
 namespace H2M
@@ -102,7 +103,15 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 			case RendererAPITypeH2M::OpenGL: return new OpenGLRendererH2M();
-			case RendererAPITypeH2M::Vulkan: return new VulkanRendererH2M();
+			case RendererAPITypeH2M::Vulkan:
+				switch (Application::Get()->GetSceneProperties().Name)
+				{
+					case SceneName::HAZEL_VULKAN: return new VulkanRendererH2M();
+					case SceneName::ENV_MAP_VULKAN: return new EnvMapVulkanRenderer();
+				}
+				Log::GetLogger()->error("Unknown RendererAPI");
+				H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+
 			case RendererAPITypeH2M::DX11:   return new DX11Renderer();
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");

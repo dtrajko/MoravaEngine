@@ -2,12 +2,14 @@
 
 #include "H2M/Core/BaseH2M.h"
 #include "H2M/Editor/EditorLayerVulkanH2M.h"
-#include "H2M/Project/UserPreferencesH2M.h"
-#include "H2M/Renderer/RendererAPI_H2M.h"
-
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Platform/Vulkan/VulkanTestLayer.h"
+#include "H2M/Project/UserPreferencesH2M.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RendererH2M.h"
+
+#include "EnvMapVulkan/EnvMapVulkanEditorLayer.h"
+#include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 
 #include "Core/Timer.h"
 #include "Platform/DX11/DX11TestLayer.h"
@@ -53,8 +55,8 @@ Application* Application::Get()
 
 void Application::OnInit()
 {
-	SceneProperties sceneProperties = Application::SetSceneProperties();
-	InitializeScene(sceneProperties);
+	m_SceneProperties = Application::SetSceneProperties();
+	InitializeScene(m_SceneProperties);
 
 	// Projection matrix
 	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
@@ -81,8 +83,19 @@ void Application::OnInit()
 	switch (H2M::RendererAPI_H2M::Current())
 	{
 		case H2M::RendererAPITypeH2M::Vulkan:
-			PushLayer(new H2M::VulkanTestLayer("VulkanTestLayer")); // to be removed
-			PushLayer(new H2M::EditorLayerVulkanH2M(H2M::RefH2M<H2M::UserPreferencesH2M>::Create())); // used in Hazel-dev
+			switch (m_SceneProperties.Name)
+			{
+				case SceneName::HAZEL_VULKAN:
+					PushLayer(new H2M::VulkanTestLayer("VulkanTestLayer")); // to be removed
+					break;
+				case SceneName::ENV_MAP_VULKAN:
+					// PushLayer(new H2M::VulkanTestLayer("VulkanTestLayer")); // to be removed
+					PushLayer(new EnvMapVulkanEditorLayer(H2M::RefH2M<H2M::UserPreferencesH2M>::Create())); // Used in SCENE_ENV_MAP_VULKAN
+					break;
+				default:
+					// PushLayer(new H2M::EditorLayerVulkanH2M(H2M::RefH2M<H2M::UserPreferencesH2M>::Create())); // Used in Hazel-dev
+					break;
+			}
 			break;
 		case H2M::RendererAPITypeH2M::DX11:
 			PushLayer(new DX11TestLayer("DX11TestLayer"));
@@ -175,7 +188,16 @@ void Application::Run()
 			{
 			case H2M::RendererAPITypeH2M::Vulkan:
 				// m_Scene->OnRenderEditor(deltaTime, *(H2M::EditorCamera*)m_Scene->GetCamera());
-				H2M::VulkanRendererH2M::Draw(m_Scene->GetCamera()); // replace with m_Scene->OnRenderEditor()
+				switch (m_SceneProperties.Name)
+				{
+					case SceneName::HAZEL_VULKAN:
+						H2M::VulkanRendererH2M::Draw(m_Scene->GetCamera()); // replace with m_Scene->OnRenderEditor()
+						break;
+					case SceneName::ENV_MAP_VULKAN:
+						EnvMapVulkanRenderer::Draw(m_Scene->GetCamera()); // replace with m_Scene->OnRenderEditor()
+						// TODO EnvMapVulkanRenderer::Render() (?)
+						break;
+				}
 				break;
 			case H2M::RendererAPITypeH2M::DX11:
 				DX11Renderer::Draw(m_Scene->GetCamera());

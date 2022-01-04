@@ -41,7 +41,8 @@ public:
 	void Run();
 	void OnShutdown();
 
-	SceneProperties Application::SetSceneProperties();
+	SceneProperties SetSceneProperties();
+	SceneProperties GetSceneProperties() { return m_SceneProperties; }
 	void InitializeScene(SceneProperties sceneProperties); // TODO: Initialize Scene and Renderer here
 
 	void OnEvent(H2M::EventH2M& e);
@@ -95,5 +96,7 @@ private:
 
 	float m_TimeStep = 0;
 	float m_LastFrameTime = 0;
+
+	SceneProperties m_SceneProperties;
 
 };
