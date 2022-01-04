@@ -166,6 +166,8 @@
     <ClCompile Include="src\Editor\SceneObject.cpp" />
     <ClCompile Include="src\Editor\SceneObjectLight.cpp" />
     <ClCompile Include="src\Editor\SceneObjectParticleSystem.cpp" />
+    <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanEditorLayer.cpp" />
+    <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapEditorLayer.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapMaterial.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapSceneRenderer.cpp" />
@@ -188,6 +190,7 @@
     <ClCompile Include="src\H2M\Editor\ContentBrowserPanelH2M.cpp" />
     <ClCompile Include="src\H2M\Editor\EditorCameraH2M.cpp" />
     <ClCompile Include="src\H2M\Editor\EditorLayerVulkanH2M.cpp" />
+    <ClCompile Include="src\H2M\Editor\PanelManagerH2M.cpp" />
     <ClCompile Include="src\H2M\Editor\SceneHierarchyPanelH2M.cpp" />
     <ClCompile Include="src\H2M\ImGui\ImGuiLayerH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLContextH2M.cpp" />
@@ -487,6 +490,7 @@
     <ClCompile Include="src\Scene\SceneEditor.cpp" />
     <ClCompile Include="src\Scene\SceneEditorImGuizmo.cpp" />
     <ClCompile Include="src\Scene\SceneEiffel.cpp" />
+    <ClCompile Include="src\Scene\SceneEnvMapVulkan.cpp" />
     <ClCompile Include="src\Scene\SceneFramebuffers.cpp" />
     <ClCompile Include="src\Scene\SceneHazelEnvMap.cpp" />
     <ClCompile Include="src\Scene\SceneHazelVulkan.cpp" />
@@ -589,6 +593,8 @@
     <ClInclude Include="src\Editor\SceneObject.h" />
     <ClInclude Include="src\Editor\SceneObjectLight.h" />
     <ClInclude Include="src\Editor\SceneObjectParticleSystem.h" />
+    <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanEditorLayer.h" />
+    <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.h" />
     <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h" />
     <ClInclude Include="src\EnvMap\EnvMapMaterial.h" />
     <ClInclude Include="src\EnvMap\EnvMapSceneRenderer.h" />
@@ -627,6 +633,7 @@
     <ClInclude Include="src\H2M\Editor\ContentBrowserPanelH2M.h" />
     <ClInclude Include="src\H2M\Editor\EditorCameraH2M.h" />
     <ClInclude Include="src\H2M\Editor\EditorLayerVulkanH2M.h" />
+    <ClInclude Include="src\H2M\Editor\PanelManagerH2M.h" />
     <ClInclude Include="src\H2M\Editor\SceneHierarchyPanelH2M.h" />
     <ClInclude Include="src\H2M\ImGui\ImGuiH2M.h" />
     <ClInclude Include="src\H2M\ImGui\ImGuiLayerH2M.h" />
@@ -943,6 +950,7 @@
     <ClInclude Include="src\Scene\SceneEditor.h" />
     <ClInclude Include="src\Scene\SceneEditorImGuizmo.h" />
     <ClInclude Include="src\Scene\SceneEiffel.h" />
+    <ClInclude Include="src\Scene\SceneEnvMapVulkan.h" />
     <ClInclude Include="src\Scene\SceneFramebuffers.h" />
     <ClInclude Include="src\Scene\SceneHazelEnvMap.h" />
     <ClInclude Include="src\Scene\SceneHazelVulkan.h" />

@@ -26,6 +26,8 @@ namespace H2M {
 		None = 0,
 		Scene,
 		Mesh,
+		StaticMesh,
+		MeshSource,
 		Material,
 		Texture,
 		EnvMap,
@@ -35,12 +37,15 @@ namespace H2M {
 
 		inline AssetTypeH2M AssetTypeFromString(const std::string& assetType)
 		{
-			if (assetType == "None")     return AssetTypeH2M::None;
-			if (assetType == "Scene")    return AssetTypeH2M::Scene;
-			if (assetType == "Mesh")     return AssetTypeH2M::Mesh;
-			if (assetType == "Material") return AssetTypeH2M::Material;
-			if (assetType == "Texture")  return AssetTypeH2M::Texture;
-			if (assetType == "EnvMap")   return AssetTypeH2M::EnvMap;
+			if (assetType == "None")       return AssetTypeH2M::None;
+			if (assetType == "Scene")      return AssetTypeH2M::Scene;
+			if (assetType == "Mesh")       return AssetTypeH2M::Mesh;
+			if (assetType == "StaticMesh") return AssetTypeH2M::StaticMesh;
+			if (assetType == "MeshAsset")  return AssetTypeH2M::MeshSource; // Deprecated
+			if (assetType == "MeshSource") return AssetTypeH2M::MeshSource;
+			if (assetType == "Material")   return AssetTypeH2M::Material;
+			if (assetType == "Texture")    return AssetTypeH2M::Texture;
+			if (assetType == "EnvMap")     return AssetTypeH2M::EnvMap;
 
 			H2M_CORE_ASSERT(false, "Unknown Asset Type");
 			return AssetTypeH2M::None;

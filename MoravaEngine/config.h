@@ -26,9 +26,10 @@
 // #define SCENE_ANIM_PBR
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
-#define SCENE_HAZEL_ENV_MAP
+// #define SCENE_HAZEL_ENV_MAP
 // #define SCENE_DX11
 // #define SCENE_HAZEL_VULKAN
+#define SCENE_ENV_MAP_VULKAN
 
 
 enum class SceneName
@@ -62,6 +63,7 @@ enum class SceneName
 	HAZEL_ENV_MAP,
 	HAZEL_VULKAN,
 	DX11,
+	ENV_MAP_VULKAN
 };
 
 
@@ -155,10 +157,13 @@ struct SceneProperties
 #elif defined(SCENE_HAZEL_ENV_MAP)
 #include "Scene/SceneHazelEnvMap.h"
 #include "Renderer/RendererECS.h"
-#elif defined(SCENE_HAZEL_VULKAN)
-#include "Scene/SceneHazelVulkan.h"
-#include "Renderer/RendererTrivial.h"
 #elif defined(SCENE_DX11)
 #include "Scene/SceneDX11.h"
 #include "Renderer/RendererTrivial.h"
+#elif defined(SCENE_HAZEL_VULKAN)
+#include "Scene/SceneHazelVulkan.h"
+#include "Renderer/RendererTrivial.h"
+#elif defined(SCENE_ENV_MAP_VULKAN)
+#include "Scene/SceneEnvMapVulkan.h"
+#include "Renderer/RendererECS.h"
 #endif

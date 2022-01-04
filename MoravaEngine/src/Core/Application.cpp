@@ -542,14 +542,18 @@ SceneProperties Application::SetSceneProperties()
 	sceneProperties.Scene = new SceneHazelEnvMap();
 	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererECS());
 	sceneProperties.Name = SceneName::HAZEL_ENV_MAP;
-#elif defined(SCENE_HAZEL_VULKAN)
-	sceneProperties.Scene = new SceneHazelVulkan();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::HAZEL_VULKAN;
 #elif defined(SCENE_DX11)
 	sceneProperties.Scene = new SceneDX11();
 	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
 	sceneProperties.Name = SceneName::HAZEL_VULKAN;
+#elif defined(SCENE_HAZEL_VULKAN)
+	sceneProperties.Scene = new SceneHazelVulkan();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
+	sceneProperties.Name = SceneName::HAZEL_VULKAN;
+#elif defined(SCENE_ENV_MAP_VULKAN)
+	sceneProperties.Scene = new SceneEnvMapVulkan();
+	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererECS());
+	sceneProperties.Name = SceneName::ENV_MAP_VULKAN;
 #else
 	sceneProperties.Scene = nullptr;
 	sceneProperties.Renderer = nullptr;

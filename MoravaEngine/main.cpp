@@ -3,7 +3,8 @@
 
 void SelectRendererAPI()
 {
-#if defined(SCENE_HAZEL_VULKAN) 
+#if defined(SCENE_HAZEL_VULKAN) ||\
+	defined(SCENE_ENV_MAP_VULKAN)
 	H2M::RendererAPI_H2M::SetAPI(H2M::RendererAPITypeH2M::Vulkan);
 #elif defined(SCENE_DX11) 
 	H2M::RendererAPI_H2M::SetAPI(H2M::RendererAPITypeH2M::DX11);

@@ -26,7 +26,7 @@ namespace H2M
 		virtual void OnDetach() = 0;
 		virtual void OnUpdate(TimestepH2M ts) = 0;
 		virtual void OnEvent(EventH2M& event) = 0;
-		virtual void OnRender() = 0;
+		virtual void OnRender() = 0; // should we remove the pure virtual method LayerH2M::OnRender and why?
 		virtual void OnImGuiRender() = 0;
 
 		inline const std::string& GetName() const { return m_DebugName; }

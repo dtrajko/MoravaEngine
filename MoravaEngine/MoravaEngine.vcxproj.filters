@@ -942,6 +942,18 @@
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLTexture2D_Hazel2D.cpp">
       <Filter>H2M\Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="src\Scene\SceneEnvMapVulkan.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanEditorLayer.cpp">
+      <Filter>EnvMapVulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Editor\PanelManagerH2M.cpp">
+      <Filter>H2M\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.cpp">
+      <Filter>EnvMapVulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2015,6 +2027,18 @@
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLTexture2D_Hazel2D.h">
       <Filter>H2M\Platform\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="src\Scene\SceneEnvMapVulkan.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanEditorLayer.h">
+      <Filter>EnvMapVulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Editor\PanelManagerH2M.h">
+      <Filter>H2M\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.h">
+      <Filter>EnvMapVulkan</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Scene">
@@ -2349,6 +2373,9 @@
     </Filter>
     <Filter Include="H2M\Platform\Windows">
       <UniqueIdentifier>{9f3e24ef-98e5-4f9b-aefd-25b43a6d3014}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="EnvMapVulkan">
+      <UniqueIdentifier>{b1a228fe-2ba0-4952-b3df-4385bd4b84dd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
