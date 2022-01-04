@@ -42,6 +42,7 @@ Its current purpose is to experiment with various CG concepts and techniques:
 ## Installation
 Build automation based on CMake (in progress)
 
+<!--
 ### Mac OS requirements
 
 ```
@@ -53,6 +54,7 @@ brew install cmake gcc git doxygen
 ```
 sudo dnf install git cmake make libXmu-devel libXi-devel libGL-devel mesa-libGL-devel mesa-libGLU-devel libXrandr-devel libXinerama-devel libXcursor-devel doxygen
 ```
+-->
 
 ### Project setup:
 ```
