@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{16E236FD-AB4C-36D0-A733-E5EE8CA79A07}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>ExampleApp</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DefineConstants>TRACE;DEBUG;HZ_PLATFORM_WINDOWS;HZ_DEBUG</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>ExampleApp</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'MinSizeRel|x64'">
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'RelWithDebInfo|x64'">
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>true</DefineDebug>
+    <OutputPath>D:\workspace\cpp\MoravaEngine\MoravaEngine\build\Debug\</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+    <PlatformToolset>v142</PlatformToolset>
+    <AssemblyName>ExampleApp</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DefineConstants>TRACE;DEBUG;HZ_PLATFORM_WINDOWS;HZ_DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <LangVersion>3</LangVersion>
+    <Optimize>false</Optimize>
+    <WarningLevel>3</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <OutputPath>D:\workspace\cpp\MoravaEngine\MoravaEngine\build\Release\</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+    <PlatformToolset>v142</PlatformToolset>
+    <AssemblyName>ExampleApp</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <DebugType>none</DebugType>
+    <DefineConstants>TRACE;HZ_PLATFORM_WINDOWS;HZ_DEBUG</DefineConstants>
+    <ErrorReport>queue</ErrorReport>
+    <LangVersion>3</LangVersion>
+    <Optimize>true</Optimize>
+    <WarningLevel>1</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <OutputPath>D:\workspace\cpp\MoravaEngine\MoravaEngine\build\MinSizeRel\</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+    <PlatformToolset>v142</PlatformToolset>
+    <AssemblyName>ExampleApp</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <DebugType>none</DebugType>
+    <DefineConstants>TRACE;HZ_PLATFORM_WINDOWS;HZ_DEBUG</DefineConstants>
+    <LangVersion>3</LangVersion>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <DebugSymbols>true</DebugSymbols>
+    <DefineDebug>true</DefineDebug>
+    <OutputPath>D:\workspace\cpp\MoravaEngine\MoravaEngine\build\RelWithDebInfo\</OutputPath>
+    <PlatformTarget>x64</PlatformTarget>
+    <PlatformToolset>v142</PlatformToolset>
+    <AssemblyName>ExampleApp</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <DebugType>full</DebugType>
+    <DefineConstants>TRACE;HZ_PLATFORM_WINDOWS;HZ_DEBUG</DefineConstants>
+    <LangVersion>3</LangVersion>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.CSharp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.CSharp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <Target Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Name="CustomCommand_Debug_d0a343d9727b9e1ca0abe78fce1fbaea" Inputs="D:/workspace/cpp/MoravaEngine/MoravaEngine/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CSharpUtilities.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\WindowsPaths.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCSharpCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCXXCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeRCCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeSystem.cmake" Outputs="D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\generate.stamp">
+    <Exec Command="echo Building Custom Rule D:/workspace/cpp/MoravaEngine/MoravaEngine/CMakeLists.txt" />
+    <Exec Command="setlocal&#xA;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SD:/workspace/cpp/MoravaEngine/MoravaEngine -BD:/workspace/cpp/MoravaEngine/MoravaEngine/build --check-stamp-file D:/workspace/cpp/MoravaEngine/MoravaEngine/build/CMakeFiles/generate.stamp&#xA;if %errorlevel% neq 0 goto :cmEnd&#xA;:cmEnd&#xA;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#xA;:cmErrorLevel&#xA;exit /b %1&#xA;:cmDone&#xA;if %errorlevel% neq 0 goto :VCEnd" />
+  </Target>
+  <Target Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Name="CustomCommand_Release_d0a343d9727b9e1ca0abe78fce1fbaea" Inputs="D:/workspace/cpp/MoravaEngine/MoravaEngine/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CSharpUtilities.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\WindowsPaths.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCSharpCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCXXCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeRCCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeSystem.cmake" Outputs="D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\generate.stamp">
+    <Exec Command="echo Building Custom Rule D:/workspace/cpp/MoravaEngine/MoravaEngine/CMakeLists.txt" />
+    <Exec Command="setlocal&#xA;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SD:/workspace/cpp/MoravaEngine/MoravaEngine -BD:/workspace/cpp/MoravaEngine/MoravaEngine/build --check-stamp-file D:/workspace/cpp/MoravaEngine/MoravaEngine/build/CMakeFiles/generate.stamp&#xA;if %errorlevel% neq 0 goto :cmEnd&#xA;:cmEnd&#xA;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#xA;:cmErrorLevel&#xA;exit /b %1&#xA;:cmDone&#xA;if %errorlevel% neq 0 goto :VCEnd" />
+  </Target>
+  <Target Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Name="CustomCommand_MinSizeRel_d0a343d9727b9e1ca0abe78fce1fbaea" Inputs="D:/workspace/cpp/MoravaEngine/MoravaEngine/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CSharpUtilities.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\WindowsPaths.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCSharpCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCXXCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeRCCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeSystem.cmake" Outputs="D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\generate.stamp">
+    <Exec Command="echo Building Custom Rule D:/workspace/cpp/MoravaEngine/MoravaEngine/CMakeLists.txt" />
+    <Exec Command="setlocal&#xA;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SD:/workspace/cpp/MoravaEngine/MoravaEngine -BD:/workspace/cpp/MoravaEngine/MoravaEngine/build --check-stamp-file D:/workspace/cpp/MoravaEngine/MoravaEngine/build/CMakeFiles/generate.stamp&#xA;if %errorlevel% neq 0 goto :cmEnd&#xA;:cmEnd&#xA;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#xA;:cmErrorLevel&#xA;exit /b %1&#xA;:cmDone&#xA;if %errorlevel% neq 0 goto :VCEnd" />
+  </Target>
+  <Target Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Name="CustomCommand_RelWithDebInfo_d0a343d9727b9e1ca0abe78fce1fbaea" Inputs="D:/workspace/cpp/MoravaEngine/MoravaEngine/CMakeLists.txt;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCSharpInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\CSharpUtilities.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-3.16\Modules\Platform\WindowsPaths.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCSharpCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeCXXCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeRCCompiler.cmake;D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\3.16.2\CMakeSystem.cmake" Outputs="D:\workspace\cpp\MoravaEngine\MoravaEngine\build\CMakeFiles\generate.stamp">
+    <Exec Command="echo Building Custom Rule D:/workspace/cpp/MoravaEngine/MoravaEngine/CMakeLists.txt" />
+    <Exec Command="setlocal&#xA;&quot;C:\Program Files\CMake\bin\cmake.exe&quot; -SD:/workspace/cpp/MoravaEngine/MoravaEngine -BD:/workspace/cpp/MoravaEngine/MoravaEngine/build --check-stamp-file D:/workspace/cpp/MoravaEngine/MoravaEngine/build/CMakeFiles/generate.stamp&#xA;if %errorlevel% neq 0 goto :cmEnd&#xA;:cmEnd&#xA;endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone&#xA;:cmErrorLevel&#xA;exit /b %1&#xA;:cmDone&#xA;if %errorlevel% neq 0 goto :VCEnd" />
+  </Target>
+  <ItemGroup>
+    <Compile Include="src\BasicController.cs" />
+    <Compile Include="src\MapGenerator.cs" />
+    <Compile Include="src\Noise.cs" />
+    <Compile Include="src\PlayerCube.cs" />
+    <Compile Include="src\RandomColor.cs" />
+    <Compile Include="src\Script.cs" />
+    <Compile Include="src\Sink.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="D:\workspace\cpp\MoravaEngine\MoravaEngine\build\ZERO_CHECK.vcxproj">
+      <Project>{AA2539BE-5E32-3CD4-8828-D42B48766B4B}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'MinSizeRel'">
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'RelWithDebInfo'">
+  </PropertyGroup>
+  <PropertyGroup>
+    <BuildDependsOn>
+      CustomCommand_Debug_d0a343d9727b9e1ca0abe78fce1fbaea;
+      CustomCommand_MinSizeRel_d0a343d9727b9e1ca0abe78fce1fbaea;
+      CustomCommand_RelWithDebInfo_d0a343d9727b9e1ca0abe78fce1fbaea;
+      CustomCommand_Release_d0a343d9727b9e1ca0abe78fce1fbaea;
+      $(BuildDependsOn)
+</BuildDependsOn>
+  </PropertyGroup>
+</Project>

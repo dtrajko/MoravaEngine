@@ -59,49 +59,105 @@ sudo dnf install git cmake make libXmu-devel libXi-devel libGL-devel mesa-libGL-
 ### Project setup:
 ```
 $ git clone --recursive https://github.com/dtrajko/MoravaEngine.git
+```
 
-$ cd MoravaEngine/vendor/cross-platform/assimp/contrib/zlib
+* Open the MoravaEngine/build/Sandbox.sln in Visual Studio, build projects ExampleApp and Hazel-ScriptCore, and close the solution.
+
+* Open the solution MoravaEngine.sln in root folder.
+
+* In order to use make on Windows, install GnuWin http://gnuwin32.sourceforge.net/downlinks/make.php
+
+* Build the MoravaEngine with CMake
+
+```
+$ cd MoravaEngine
+```
+
+```
+$ mkdir ./MoravaEngine/build
+$ cd ./MoravaEngine/build
+$ cmake ..
+$ make
+```
+
+* Build assimp project in MoravaEngine solution in Visual Studio.
+
+* Build GLFW project in MoravaEngine solution in Visual Studio.
+
+* Build zlibstatic project in MoravaEngine solution in Visual Studio.
+
+* Build IrrXML project in MoravaEngine solution in Visual Studio.
+
+* Build box2d project in MoravaEngine solution in Visual Studio.
+
+* Use Python to run
+```
+$ python ./vendor/cross-platform/shaderc/utils/git-sync-deps
+```
+
+* Build shaderc with CMake
+```
+$ cd ./vendor/cross-platform/shaderc
+$ cmake .
+```
+
+* Open solution ./vendor/cross-platform/shaderc/shaderc.sln and build it in Visual Studio.
+
+```
+$ cd ./vendor/DirectXTex
+$ cmake .
+```
+
+* Build DirectXTex in MoravaEngine solution in Visual Studio.
+
+* Build yaml-cpp project in MoravaEngine solution in Visual Studio.
+
+* Build all spirv-cross-* projects in MoravaEngine solution in Visual Studio.
+
+* Build BulletCollision project in MoravaEngine solution in Visual Studio.
+* Build LinearMath project in MoravaEngine solution in Visual Studio.
+* Build BulletDynamics project in MoravaEngine solution in Visual Studio.
+
+<!--
+* Install assimp with cmake
+```
+$ cd vendor/cross-platform/assimp
+$ cmake .
+$ make
+```
+
+* Install GLFW
+```
+$ cd ./vendor/cross-platform/glfw
+$ cmake .
+```
+
+```
+$ cd ./vendor/cross-platform/assimp/contrib/zlib
 $ cmake .
 $ make
 
-$ cd MoravaEngine/vendor/cross-platform/assimp
+$ cd ./vendor/cross-platform/bullet3
 $ cmake .
 $ make
 
-$ cd MoravaEngine/vendor/cross-platform/glfw
-$ cmake .
-$ make
-
-$ cd MoravaEngine/vendor/cross-platform/bullet3
-$ cmake .
-$ make
-
-$ MoravaEngine/vendor/cross-platform/shaderc/utils/git-sync-deps
-$ MoravaEngine/vendor/cross-platform/shaderc
-$ cmake .
-$ make
-
-$ cd MoravaEngine/vendor/box2d
+$ cd ./vendor/box2d
 $ ./build.sh
 
-$ cd MoravaEngine/vendor/cross-platform/SPIRV-Cross
+$ cd ./vendor/cross-platform/SPIRV-Cross
 $ cd cmake .
 
-$ cd MoravaEngine/vendor/cross-platform/yaml-cpp
+$ cd ./vendor/cross-platform/yaml-cpp
 $ mkdir build
 $ cd build
 $ cmake ..
-
-$ mkdir MoravaEngine/MoravaEngine/build
-$ cd MoravaEngine/MoravaEngine/build
-$ cmake ..
-$ make
 ```
 
 ### Fetching submodules for the main project cloned without submodules:
 ```
 git submodule update --init --recursive
 ```
+-->
 
 ## Keyboard and Mouse shortcuts
 

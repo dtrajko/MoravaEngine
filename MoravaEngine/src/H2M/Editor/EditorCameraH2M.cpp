@@ -12,6 +12,8 @@
 
 #include "Core/Input.h"
 
+#include <algorithm>
+
 
 namespace H2M {
 

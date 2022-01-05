@@ -73,20 +73,21 @@ elseif(UNIX)
 		./src/Hazel/Core/*.cpp
 		./src/Hazel/Core/Math/*.cpp
 		./src/Hazel/Events/*.cpp
-		./src/Hazel/Hazel-ScriptCore/*.cpp
-		./src/Hazel/Hazel-ScriptCore/src/*.cpp
-		./src/Hazel/Hazel-ScriptCore/src/Hazel/*.cpp
-		./src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/*.cpp
-		./src/Hazel/Hazel-ScriptCore/src/Hazel/Math/*.cpp
-		./src/Hazel/Hazel-ScriptCore/src/Hazel/Scene/*.cpp
-		./src/Hazel/Hazel-ScriptCore/Properties/*.cpp
 		./src/Hazel/Scene/*.cpp
-		./src/Hazel/ExampleApp/*.cpp
-		./src/Hazel/ExampleApp/src/*.cpp
-		./src/Hazel/ExampleApp/Properties/*.cpp
 		./src/Hazel/ImGui/*.cpp
 		./src/Hazel/Asset/*.cpp
 		./src/ImGui/*.cpp
+
+		./src/H2M/Hazel-ScriptCore/*.cpp
+		./src/H2M/Hazel-ScriptCore/src/*.cpp
+		./src/H2M/Hazel-ScriptCore/src/Hazel/*.cpp
+		./src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/*.cpp
+		./src/H2M/Hazel-ScriptCore/src/Hazel/Math/*.cpp
+		./src/H2M/Hazel-ScriptCore/src/Hazel/Scene/*.cpp
+		./src/H2M/Hazel-ScriptCore/Properties/*.cpp
+		./src/H2M/ExampleApp/*.cpp
+		./src/H2M/ExampleApp/src/*.cpp
+		./src/H2M/ExampleApp/Properties/*.cpp
 
 		../vendor/ImGui/imgui.cpp
 		../vendor/ImGui/imgui_demo.cpp
@@ -748,6 +749,7 @@ SET(DirectXTex_SRCS
 	../vendor/DirectXTex/DirectXTex/DirectXTexMipmaps.cpp
 	../vendor/DirectXTex/DirectXTex/DirectXTexMisc.cpp
 	../vendor/DirectXTex/DirectXTex/DirectXTexNormalMaps.cpp
+	../vendor/DirectXTex/DirectXTex/DirectXTexP.h
 	../vendor/DirectXTex/DirectXTex/DirectXTexPMAlpha.cpp
 	../vendor/DirectXTex/DirectXTex/DirectXTexResize.cpp
 	../vendor/DirectXTex/DirectXTex/DirectXTexTGA.cpp
@@ -791,7 +793,7 @@ add_library(box2d				STATIC "${box2d_SRCS}")
 
 add_library(shaderc				STATIC "${shaderc_SRCS}")
 
-add_library(DirectXTex          STATIC "${DirectXTex_SRCS}")
+#	add_library(DirectXTex          STATIC "${DirectXTex_SRCS}")
 
 #	add_library(Hazel-ScriptCore	SHARED "${Hazel-ScriptCore_SRCS}")
 #	add_library(ExampleApp			SHARED "${ExampleApp_SRCS}")
@@ -853,10 +855,10 @@ add_dependencies("${PROJECT_NAME}" glfw3)
 add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
 add_dependencies("${PROJECT_NAME}" yaml-cpp)
 add_dependencies("${PROJECT_NAME}" box2d)
-add_dependencies("${PROJECT_NAME}" DirectXTex)
-# add_dependencies("${PROJECT_NAME}" shaderc)
-# add_dependencies("${PROJECT_NAME}" Hazel-ScriptCore)
-# add_dependencies("${PROJECT_NAME}" ExampleApp)
+#	add_dependencies("${PROJECT_NAME}" DirectXTex)
+#	add_dependencies("${PROJECT_NAME}" shaderc)
+#	add_dependencies("${PROJECT_NAME}" Hazel-ScriptCore)
+#	add_dependencies("${PROJECT_NAME}" ExampleApp)
 
 set_target_properties("${PROJECT_NAME}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 set_target_properties(BulletDynamics	PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
@@ -976,22 +978,22 @@ target_link_directories(
 
 #	target_include_directories(
 #		Hazel-ScriptCore PUBLIC
-#		../MoravaEngine/Hazel/ScriptCore
+#		../MoravaEngine/src/H2M/Hazel-ScriptCore
 #	)
 #	
 #	target_include_directories(
 #		ExampleApp PUBLIC
-#		../MoravaEngine/Hazel/ExampleApp
+#		../MoravaEngine/src/H2M/ExampleApp
 #	)
 #	
 #	target_link_directories(
 #		Hazel-ScriptCore PUBLIC
-#		../MoravaEngine/Hazel/ScriptCore
+#		../MoravaEngine/src/H2M/Hazel-ScriptCore
 #	)
 #	
 #	target_link_directories(
 #		ExampleApp PUBLIC
-#		../MoravaEngine/Hazel/ExampleApp
+#		../MoravaEngine/src/H2M/ExampleApp
 #	)
 
 # -- BEGIN Main project
@@ -1123,31 +1125,31 @@ if(WIN32)
 	include(CSharpUtilities)
 
 	SET(ExampleApp_SRCS
-		../MoravaEngine/src/Hazel/ExampleApp/src/BasicController.cs
-		../MoravaEngine/src/Hazel/ExampleApp/src/MapGenerator.cs
-		../MoravaEngine/src/Hazel/ExampleApp/src/Noise.cs
-		../MoravaEngine/src/Hazel/ExampleApp/src/PlayerCube.cs
-		../MoravaEngine/src/Hazel/ExampleApp/src/RandomColor.cs
-		../MoravaEngine/src/Hazel/ExampleApp/src/Script.cs
-		../MoravaEngine/src/Hazel/ExampleApp/src/Sink.cs
+		../MoravaEngine/src/H2M/ExampleApp/src/BasicController.cs
+		../MoravaEngine/src/H2M/ExampleApp/src/MapGenerator.cs
+		../MoravaEngine/src/H2M/ExampleApp/src/Noise.cs
+		../MoravaEngine/src/H2M/ExampleApp/src/PlayerCube.cs
+		../MoravaEngine/src/H2M/ExampleApp/src/RandomColor.cs
+		../MoravaEngine/src/H2M/ExampleApp/src/Script.cs
+		../MoravaEngine/src/H2M/ExampleApp/src/Sink.cs
 	)
 
 	SET(Hazel-ScriptCore_SRCS
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Math/Matrix4.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Math/Noise.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector2.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector3.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Math/Vector4.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Color.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Material.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Mesh.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/MeshFactory.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Renderer/Texture2D.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Scene/Component.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Entity.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/Input.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/KeyCodes.cs
-		../MoravaEngine/src/Hazel/Hazel-ScriptCore/src/Hazel/SpriteRenderer.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Math/Matrix4.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Math/Noise.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Math/Vector2.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Math/Vector3.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Math/Vector4.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/Color.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/Material.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/Mesh.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/MeshFactory.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/Texture2D.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Scene/Component.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Entity.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Input.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/KeyCodes.cs
+		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/SpriteRenderer.cs
 	)
 
 	add_library(ExampleApp			SHARED "${ExampleApp_SRCS}")
