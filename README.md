@@ -39,10 +39,113 @@ Its current purpose is to experiment with various CG concepts and techniques:
 * [Sebastian Lague](https://twitter.com/sebastianlague) [ [Sebastian Lague YouTube channel](https://www.youtube.com/c/SebastianLague) ]
 * [ilya73](https://www.cgtrader.com/ilya73 ) [ [Gladiator free VR](https://www.cgtrader.com/free-3d-models/character/man/gladiator-7ac625db-88c2-46ed-a2f1-182fd1f79739) ]
 
+<!-- Installation & setup -->
+
 ## Installation
 Build automation based on CMake (in progress)
 
+### Project setup:
+```
+$ git clone --recursive https://github.com/dtrajko/MoravaEngine.git
+```
+
+* In order to use make on Windows, install GnuWin http://gnuwin32.sourceforge.net/downlinks/make.php
+
+```
+$ cd MoravaEngine
+```
+
+* Build the MoravaEngine with CMake
+
+```
+$ mkdir ./MoravaEngine/build
+$ cd ./MoravaEngine/build
+$ cmake ..
+$ make
+```
+
+* Open the solution ./MoravaEngine/build/MoravaEngine.sln
+
+* Build assimp with CMake
+```
+$ cd ./vendor/cross-platform/assimp
+$ cmake .
+```
+
+* Install GLFW
+```
+$ cd ./vendor/cross-platform/glfw
+$ cmake .
+```
+
+* Build shaderc - use python to run
+```
+$ python ./vendor/cross-platform/shaderc/utils/git-sync-deps
+```
+
+* Build shaderc with CMake
+```
+$ cd ./vendor/cross-platform/shaderc
+$ cmake .
+```
+
+* Open solution vendor/cross-platform/shaderc/shaderc.sln and build it in Visual Studio.
+
+```
+$ cd ./vendor/DirectXTex
+$ cmake .
+```
+
+* Open solution vendor/DirectXTex/DirectXTex.sln in Visual Studio and build it.
+
+* Build yaml-cpp project in MoravaEngine solution in Visual Studio.
+
+* Build all spirv-cross-* projects in MoravaEngine solution in Visual Studio.
+
+* Build BulletCollision project in MoravaEngine solution in Visual Studio.
+* Build LinearMath project in MoravaEngine solution in Visual Studio.
+* Build BulletDynamics project in MoravaEngine solution in Visual Studio.
+
+<!-- Help section -->
+
+## Keyboard and Mouse shortcuts
+
+* Add Mesh or Model: Left CTRL + Left Mouse Button  
+* Camera Rotation: Right Mouse Button  
+* Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up  
+* Fast Movement: Left SHIFT + W|A|S|D|Q|E  
+* Enable Gizmo: TAB + Left Mouse Button  
+* Toggle Gizmo Modes: 1) Translate, 2) Scale, 3) Rotate, 4) Disable  
+* Scene Save: Left CTRL + S  
+* Scene Reset: Left CTRL + R  
+* Scene Load: Left CTRL + L  
+* Toggle Wireframe Mode: R  
+* Copy scene object: Left CTRL + C  
+
+<!-- Gallery (images) section -->
+
+## Images
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2021-09-15_04-36-54.jpg)
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2021-03-23_07-35-56.jpg)
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-10-14_16-14-02.jpg)
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-10-14_16-23-01.jpg)
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-09-21_03-46-55.jpg)
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-03-19-2106.jpg)
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-03-18-0101.jpg)
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-08-12_16-53-48.png)
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-07-08_0158.jpg)
+
 <!--
+
 ### Mac OS requirements
 
 ```
@@ -54,71 +157,17 @@ brew install cmake gcc git doxygen
 ```
 sudo dnf install git cmake make libXmu-devel libXi-devel libGL-devel mesa-libGL-devel mesa-libGLU-devel libXrandr-devel libXinerama-devel libXcursor-devel doxygen
 ```
--->
 
-### Project setup:
+* Build the Sandbox solution with CMake:
 ```
-$ git clone --recursive https://github.com/dtrajko/MoravaEngine.git
-```
-
-* Open the MoravaEngine/build/Sandbox.sln in Visual Studio, build projects ExampleApp and Hazel-ScriptCore, and close the solution.
-
-* Open the solution MoravaEngine.sln in root folder.
-
-* In order to use make on Windows, install GnuWin http://gnuwin32.sourceforge.net/downlinks/make.php
-
-* Build the MoravaEngine with CMake
-
-```
-$ cd MoravaEngine
-```
-
-```
-$ mkdir ./MoravaEngine/build
-$ cd ./MoravaEngine/build
+$ mkdir ./Sandbox/build
+$ cd ./Sandbox/build
 $ cmake ..
-$ make
 ```
 
-* Build assimp project in MoravaEngine solution in Visual Studio.
+* Open the Sandbox/build/Sandbox.sln in Visual Studio, build projects ExampleApp and Hazel-ScriptCore, and close the solution.
 
-* Build GLFW project in MoravaEngine solution in Visual Studio.
 
-* Build zlibstatic project in MoravaEngine solution in Visual Studio.
-
-* Build IrrXML project in MoravaEngine solution in Visual Studio.
-
-* Build box2d project in MoravaEngine solution in Visual Studio.
-
-* Use Python to run
-```
-$ python ./vendor/cross-platform/shaderc/utils/git-sync-deps
-```
-
-* Build shaderc with CMake
-```
-$ cd ./vendor/cross-platform/shaderc
-$ cmake .
-```
-
-* Open solution ./vendor/cross-platform/shaderc/shaderc.sln and build it in Visual Studio.
-
-```
-$ cd ./vendor/DirectXTex
-$ cmake .
-```
-
-* Build DirectXTex in MoravaEngine solution in Visual Studio.
-
-* Build yaml-cpp project in MoravaEngine solution in Visual Studio.
-
-* Build all spirv-cross-* projects in MoravaEngine solution in Visual Studio.
-
-* Build BulletCollision project in MoravaEngine solution in Visual Studio.
-* Build LinearMath project in MoravaEngine solution in Visual Studio.
-* Build BulletDynamics project in MoravaEngine solution in Visual Studio.
-
-<!--
 * Install assimp with cmake
 ```
 $ cd vendor/cross-platform/assimp
@@ -126,11 +175,15 @@ $ cmake .
 $ make
 ```
 
+* Build assimp project in MoravaEngine solution in Visual Studio.
+
 * Install GLFW
 ```
 $ cd ./vendor/cross-platform/glfw
 $ cmake .
 ```
+
+* Build GLFW project in MoravaEngine solution in Visual Studio.
 
 ```
 $ cd ./vendor/cross-platform/assimp/contrib/zlib
@@ -157,38 +210,13 @@ $ cmake ..
 ```
 git submodule update --init --recursive
 ```
+
+* Build DirectXTex in MoravaEngine solution in Visual Studio.
+
+* Build zlibstatic project in MoravaEngine solution in Visual Studio.
+
+* Build IrrXML project in MoravaEngine solution in Visual Studio.
+
+* Build box2d project in MoravaEngine solution in Visual Studio.
+
 -->
-
-## Keyboard and Mouse shortcuts
-
-* Add Mesh or Model: Left CTRL + Left Mouse Button  
-* Camera Rotation: Right Mouse Button  
-* Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up  
-* Fast Movement: Left SHIFT + W|A|S|D|Q|E  
-* Enable Gizmo: TAB + Left Mouse Button  
-* Toggle Gizmo Modes: 1) Translate, 2) Scale, 3) Rotate, 4) Disable  
-* Scene Save: Left CTRL + S  
-* Scene Reset: Left CTRL + R  
-* Scene Load: Left CTRL + L  
-* Toggle Wireframe Mode: R  
-* Copy scene object: Left CTRL + C  
-
-## Images
-
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2021-09-15_04-36-54.jpg)
-
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2021-03-23_07-35-56.jpg)
-
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-10-14_16-14-02.jpg)
-
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-10-14_16-23-01.jpg)
-
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-09-21_03-46-55.jpg)
-
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-03-19-2106.jpg)
-
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-03-18-0101.jpg)
-
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-08-12_16-53-48.png)
-
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-07-08_0158.jpg)

@@ -13,6 +13,8 @@
 #include "Platform/DX11/DX11RendererBasic.h"
 #include "Platform/DX11/DX11Renderer.h"
 
+#include <Windows.h>
+
 #include <cmath>
 #include <exception>
 
@@ -320,8 +322,8 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hInstance = NULL;
-	wc.lpszClassName = className;
-	wc.lpszMenuName = menuName;
+	wc.lpszClassName = (LPCSTR)className;
+	wc.lpszMenuName = (LPCSTR)menuName;
 	wc.style = NULL;
 	wc.lpfnWndProc = &WndProc;
 
@@ -330,7 +332,7 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 		throw std::exception("Window not created successfully.");
 	}
 
-	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
+	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, (LPCSTR)className, (LPCSTR)windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
 		NULL, NULL, NULL, NULL);
 
 	if (!m_HWND)

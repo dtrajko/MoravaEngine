@@ -18,15 +18,71 @@ project("MoravaEngine" VERSION 0.0.1)
 
 if(WIN32)
 	file(GLOB SOURCES
-		./*.cpp
-		LearnOpenGL/*.cpp
-		SongHo/*.cpp
-		../vendor/ImGui/imgui.cpp
-		../vendor/ImGui/imgui_demo.cpp
-		../vendor/ImGui/imgui_draw.cpp
-		../vendor/ImGui/imgui_impl_dx11.cpp
-		../vendor/ImGui/imgui_impl_win32.cpp
-		../vendor/ImGui/imgui_widgets.cpp
+		./src/*.cpp
+		./src/Camera/*.cpp
+		./src/Core/*.cpp
+		./src/Data/*.cpp
+		./src/Deferred/*.cpp
+		./src/Editor/*.cpp
+		./src/EnvMap/*.cpp
+		./src/EnvMapVulkan/*.cpp
+		./src/Framebuffer/*.cpp
+		./src/H2M/*.cpp
+		./src/H2M/Asset/*.cpp
+		./src/H2M/Core/*.cpp
+		./src/H2M/Core/Events/*.cpp
+		./src/H2M/Core/Math/*.cpp
+		./src/H2M/Editor/*.cpp
+		./src/H2M/ExampleApp/*.cpp
+		./src/H2M/ExampleApp/Properties/*.cpp
+		./src/H2M/ExampleApp/src/*.cpp
+		./src/H2M/Hazel-ScriptCore/*.cpp
+		./src/H2M/Hazel-ScriptCore/Properties/*.cpp
+		./src/H2M/Hazel-ScriptCore/src/*.cpp
+		./src/H2M/Hazel-ScriptCore/src/Hazel/*.cpp
+		./src/H2M/Hazel-ScriptCore/src/Hazel/Math/*.cpp
+		./src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/*.cpp
+		./src/H2M/Hazel-ScriptCore/src/Hazel/Scene/*.cpp
+		./src/H2M/ImGui/*.cpp
+		./src/H2M/Platform/*.cpp
+		./src/H2M/Platform/OpenGL/*.cpp
+		./src/H2M/Platform/Vulkan/*.cpp
+		./src/H2M/Platform/Windows/*.cpp
+		./src/H2M/Project/*.cpp
+		./src/H2M/Renderer/*.cpp
+		./src/H2M/Scene/*.cpp
+		./src/H2M/Utilities/*.cpp
+		./src/Hazel/*.cpp
+		./src/HazelVulkan/*.cpp
+		./src/ImGui/*.cpp
+		./src/Instancing/*.cpp
+		./src/LearnOpenGL/*.cpp
+		./src/Light/*.cpp
+		./src/Material/*.cpp
+		./src/Mesh/*.cpp
+		./src/Misc/*.cpp
+		./src/Mono/*.cpp
+		./src/Mono/ConsoleGameLib/*.cpp
+		./src/Mono/GameInvoker/*.cpp
+		./src/Particle/*.cpp
+		./src/PerlinNoise/*.cpp
+		./src/Physics/*.cpp
+		./src/Platform/*.cpp
+		./src/Platform/DX11/*.cpp
+		./src/Platform/OpenGL/*.cpp
+		./src/Platform/Vulkan/*.cpp
+		./src/Platform/Windows/*.cpp
+		./src/Player/*.cpp
+		./src/PostProcessing/*.cpp
+		./src/Renderer/*.cpp
+		./src/Scene/*.cpp
+		./src/Shader/*.cpp
+		./src/Skybox/*.cpp
+		./src/SongHo/*.cpp
+		./src/SSAO/*.cpp
+		./src/Terrain/*.cpp
+		./src/Texture/*.cpp
+		./src/Water/*.cpp
 	)
 elseif(UNIX)
 	file(GLOB SOURCES
@@ -706,31 +762,31 @@ SET(box2d_SRCS
 	../vendor/box2d/src/rope/b2_rope.cpp
 )
 
-SET(shaderc_SRCS
-	../vendor/cross-platform/shaderc/libshaderc/src/shaderc.cc
-	../vendor/cross-platform/shaderc/libshaderc/src/shaderc_cpp_test.cc
-	../vendor/cross-platform/shaderc/libshaderc/src/shaderc_private_test.cc
-	../vendor/cross-platform/shaderc/libshaderc/src/shaderc_test.cc
-
-	../vendor/cross-platform/shaderc/libshaderc_util/src/args.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/compiler.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/compiler_test.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/counting_includer_test.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/file_finder.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/file_finder_test.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/format_test.cc
-	# ../vendor/cross-platform/shaderc/libshaderc_util/src/io.cc
-	# ../vendor/cross-platform/shaderc/libshaderc_util/src/io_test.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/message.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/message_test.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/mutex_test.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/resources.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/shader_stage.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/spirv_tools_wrapper.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/string_piece_test.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/version_profile.cc
-	../vendor/cross-platform/shaderc/libshaderc_util/src/version_profile_test.cc
-)
+#	SET(shaderc_SRCS
+#		../vendor/cross-platform/shaderc/libshaderc/src/shaderc.cc
+#		../vendor/cross-platform/shaderc/libshaderc/src/shaderc_cpp_test.cc
+#		../vendor/cross-platform/shaderc/libshaderc/src/shaderc_private_test.cc
+#		../vendor/cross-platform/shaderc/libshaderc/src/shaderc_test.cc
+#	
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/args.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/compiler.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/compiler_test.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/counting_includer_test.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/file_finder.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/file_finder_test.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/format_test.cc
+#		# ../vendor/cross-platform/shaderc/libshaderc_util/src/io.cc
+#		# ../vendor/cross-platform/shaderc/libshaderc_util/src/io_test.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/message.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/message_test.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/mutex_test.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/resources.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/shader_stage.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/spirv_tools_wrapper.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/string_piece_test.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/version_profile.cc
+#		../vendor/cross-platform/shaderc/libshaderc_util/src/version_profile_test.cc
+#	)
 
 SET(DirectXTex_SRCS
 	../vendor/DirectXTex/DirectXTex/BC.cpp
@@ -791,7 +847,7 @@ add_library(SPIRV-Cross			STATIC "${SPIRV-Cross_SRCS}")
 add_library(yaml-cpp			STATIC "${yaml-cpp_SRCS}")
 add_library(box2d				STATIC "${box2d_SRCS}")
 
-add_library(shaderc				STATIC "${shaderc_SRCS}")
+#	add_library(shaderc				STATIC "${shaderc_SRCS}")
 
 #	add_library(DirectXTex          STATIC "${DirectXTex_SRCS}")
 
@@ -828,9 +884,24 @@ add_library(shaderc				STATIC "${shaderc_SRCS}")
 
 if(WIN32)
 
-set_property(TARGET BulletDynamics PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-set_property(TARGET BulletCollision PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-set_property(TARGET LinearMath PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET assimp					PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")			
+set_property(TARGET box2d					PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET BulletCollision			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET BulletDynamics			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET LinearMath				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET glfw3					PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET irrXML					PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+#set_property(TARGET shaderc					PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET SPIRV-Cross				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET spirv-cross-core		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET spirv-cross-cpp			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET spirv-cross-glsl		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET spirv-cross-hlsl		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET spirv-cross-msl			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET spirv-cross-reflect		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET spirv-cross-util		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET yaml-cpp				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set_property(TARGET zlibstatic				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 endif()
 
@@ -964,17 +1035,17 @@ target_include_directories(
 	../vendor/box2d/src
 )
 
-target_include_directories(
-	shaderc PUBLIC
-	../vendor/cross-platform/shaderc/libshaderc/include
-	../vendor/cross-platform/shaderc/libshaderc_util/include
-)
+#	target_include_directories(
+#		shaderc PUBLIC
+#		../vendor/cross-platform/shaderc/libshaderc/include
+#		../vendor/cross-platform/shaderc/libshaderc_util/include
+#	)
 
-target_link_directories(
-	shaderc PUBLIC
-	../vendor/cross-platform/shaderc/libshaderc/$ENV{MORAVA_BUILD_TYPE}
-	../vendor/cross-platform/shaderc/libshaderc_util/$ENV{MORAVA_BUILD_TYPE}
-)
+#	target_link_directories(
+#		shaderc PUBLIC
+#		../vendor/cross-platform/shaderc/libshaderc/$ENV{MORAVA_BUILD_TYPE}
+#		../vendor/cross-platform/shaderc/libshaderc_util/$ENV{MORAVA_BUILD_TYPE}
+#	)
 
 #	target_include_directories(
 #		Hazel-ScriptCore PUBLIC
@@ -1036,7 +1107,8 @@ target_link_directories(
 	../vendor/cross-platform/bullet3/src/BulletDynamics  # Linux
 	../vendor/cross-platform/bullet3/src/BulletCollision # Linux
 	../vendor/cross-platform/bullet3/src/LinearMath      # Linux
-	../vendor/cross-platform/glew/build/lib
+	# ../vendor/cross-platform/glew/build/lib
+	../vendor/GLEW/lib
 	../vendor/cross-platform/assimp/lib/$ENV{MORAVA_BUILD_TYPE} # Win32
 	../vendor/cross-platform/assimp/bin                         # Linux
 	../vendor/cross-platform/glfw/src
@@ -1049,7 +1121,9 @@ target_link_directories(
 	../vendor/cross-platform/shaderc/libshaderc_util # Linux
 	../vendor/cross-platform/SPIRV-Cross/$ENV{MORAVA_BUILD_TYPE}
 	../vendor/Vulkan/1.2.148.1/Lib
-	../vendor/DirectXTex/build/bin/CMake/$ENV{MORAVA_BUILD_TYPE}
+	#../vendor/DirectXTex/build/bin/CMake/$ENV{MORAVA_BUILD_TYPE}
+	../vendor/DirectXTex/bin/CMake/$ENV{MORAVA_BUILD_TYPE}
+	../vendor/mono/lib/$ENV{MORAVA_BUILD_TYPE}
 	../${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
 )
 
@@ -1059,27 +1133,11 @@ if(WIN32)
 		opengl32.lib
 		glew32.lib
 		glfw3.lib
-		assimp-vc142-mt.lib
+		#assimp-vc142-mt.lib
+		assimp.lib
 		BulletDynamics.lib
 		BulletCollision.lib
 		LinearMath.lib
-	if ($ENV{MORAVA_BUILD_TYPE} == 'Debug')
-		spirv-cross-cored.lib		# Debug
-		spirv-cross-cppd.lib		# Debug
-		spirv-cross-glsld.lib		# Debug
-		spirv-cross-hlsld.lib		# Debug
-		spirv-cross-msld.lib		# Debug
-		spirv-cross-reflectd.lib	# Debug
-		spirv-cross-utild.lib		# Debug
-	elseif($ENV{MORAVA_BUILD_TYPE} == 'Release')
-		spirv-cross-core.lib		# Release
-		spirv-cross-cpp.lib			# Release
-		spirv-cross-glsl.lib		# Release
-		spirv-cross-hlsl.lib		# Release
-		spirv-cross-msl.lib			# Release
-		spirv-cross-reflect.lib		# Release
-		spirv-cross-util.lib		# Release
-	endif()
 	#	yaml-cppd.lib
 		yaml-cpp.lib
 		mono-2.0-sgen.lib
@@ -1089,7 +1147,14 @@ if(WIN32)
 		d3d11.lib
 		d3dcompiler.lib
 		DirectXTex.lib
-	)
+		spirv-cross-core.lib
+		spirv-cross-cpp.lib
+		spirv-cross-glsl.lib
+		spirv-cross-hlsl.lib
+		spirv-cross-msl.lib
+		spirv-cross-reflect.lib
+		spirv-cross-util.lib
+	)	
 elseif(UNIX)
 	target_link_libraries(
 		"${PROJECT_NAME}"
@@ -1108,51 +1173,64 @@ elseif(UNIX)
 	target_link_libraries("${PROJECT_NAME}" libglfw3.a dl pthread)
 endif()
 
-file(COPY ./assimp-vc142-mt.dll	DESTINATION ../build)
-file(COPY ./glew32.dll			DESTINATION ../build)
-file(COPY ./Models				DESTINATION ../build)
-file(COPY ./Shaders				DESTINATION ../build)
-file(COPY ./Textures			DESTINATION ../build)
+#	if ($ENV{MORAVA_BUILD_TYPE} == 'Debug')
+#		target_link_libraries(
+#			"${PROJECT_NAME}"
+#			spirv-cross-cored.lib		# Debug
+#			spirv-cross-cppd.lib		# Debug
+#			spirv-cross-glsld.lib		# Debug
+#			spirv-cross-hlsld.lib		# Debug
+#			spirv-cross-msld.lib		# Debug
+#			spirv-cross-reflectd.lib	# Debug
+#			spirv-cross-utild.lib		# Debug
+#		)
+#	elseif($ENV{MORAVA_BUILD_TYPE} == 'Release')
+#		target_link_libraries(
+#			"${PROJECT_NAME}"
+#			spirv-cross-core.lib		# Release
+#			spirv-cross-cpp.lib			# Release
+#			spirv-cross-glsl.lib		# Release
+#			spirv-cross-hlsl.lib		# Release
+#			spirv-cross-msl.lib			# Release
+#			spirv-cross-reflect.lib		# Release
+#			spirv-cross-util.lib		# Release
+#		)
+#	endif()
+
+#	file(COPY ./assimp-vc142-mt.dll		DESTINATION ../build)
+#	file(COPY ./glew32.dll				DESTINATION ../build)
+#	file(COPY ./Models					DESTINATION ../build)
+#	file(COPY ./Shaders					DESTINATION ../build)
+#	file(COPY ./Textures				DESTINATION ../build)
+
+
+# Build assimp with CMake
+execute_process(COMMAND cmake . WORKING_DIRECTORY ../vendor/cross-platform/assimp)
+
+# Build GLFW with CMake
+execute_process(COMMAND cmake . WORKING_DIRECTORY ../vendor/cross-platform/glfw)
+
+# Build shaderc - use python to run git-sync-deps
+execute_process(COMMAND python git-sync-deps WORKING_DIRECTORY ../vendor/cross-platform/shaderc/utils)
+# Build shaderc with CMake
+execute_process(COMMAND cmake . WORKING_DIRECTORY ../vendor/cross-platform/shaderc)
+
+# Build DirectXTex
+execute_process(COMMAND cmake . WORKING_DIRECTORY ../vendor/DirectXTex)
+
+# Build yaml-cpp
+execute_process(COMMAND cmake . WORKING_DIRECTORY ../vendor/cross-platform/yaml-cpp)
+
+# Delete directory bullet3/examples/ThirdPartyLibs to avoid ImGui conflicts in compilation
+file(REMOVE_RECURSE ../vendor/cross-platform/bullet3/examples/ThirdPartyLibs)
+
 
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
 
+set_property(TARGET "${PROJECT_NAME}" PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "..")
 
 if(WIN32)
 
-	project(Sandbox LANGUAGES CSharp)
-
-	# Include CMake utilities for CSharp, for WinForm and WPF application support.
-	include(CSharpUtilities)
-
-	SET(ExampleApp_SRCS
-		../MoravaEngine/src/H2M/ExampleApp/src/BasicController.cs
-		../MoravaEngine/src/H2M/ExampleApp/src/MapGenerator.cs
-		../MoravaEngine/src/H2M/ExampleApp/src/Noise.cs
-		../MoravaEngine/src/H2M/ExampleApp/src/PlayerCube.cs
-		../MoravaEngine/src/H2M/ExampleApp/src/RandomColor.cs
-		../MoravaEngine/src/H2M/ExampleApp/src/Script.cs
-		../MoravaEngine/src/H2M/ExampleApp/src/Sink.cs
-	)
-
-	SET(Hazel-ScriptCore_SRCS
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Math/Matrix4.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Math/Noise.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Math/Vector2.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Math/Vector3.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Math/Vector4.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/Color.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/Material.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/Mesh.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/MeshFactory.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/Texture2D.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Scene/Component.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Entity.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/Input.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/KeyCodes.cs
-		../MoravaEngine/src/H2M/Hazel-ScriptCore/src/Hazel/SpriteRenderer.cs
-	)
-
-	add_library(ExampleApp			SHARED "${ExampleApp_SRCS}")
-	add_library(Hazel-ScriptCore	SHARED "${Hazel-ScriptCore_SRCS}")
+set_property(TARGET	"${PROJECT_NAME}"		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 endif()
