@@ -305,11 +305,11 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 {
 	m_IsInitialized = false;
 
-	LPCSTR className = "WindowsWindow";
-	LPCSTR menuName = "";
-	std::string windowNameWStr = props.Title.c_str();
-	const char* windowNameWChar = windowNameWStr.c_str();
-	LPCSTR windowName = (LPCSTR)windowNameWChar;
+	LPCWSTR className = L"WindowsWindow";
+	LPCWSTR menuName = L"";
+	std::wstring windowNameWStr = Util::to_wstr(props.Title.c_str());
+	const wchar_t* windowNameWChar = windowNameWStr.c_str();
+	LPCWSTR windowName = (LPCWSTR)windowNameWChar;
 
 	WNDCLASSEX wc;
 	wc.cbClsExtra = NULL;
