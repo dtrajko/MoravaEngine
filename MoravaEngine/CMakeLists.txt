@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.8)
 
 if(WIN32)
 	add_compile_definitions(HZ_PLATFORM_WINDOWS)
@@ -16,303 +16,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 
 project("MoravaEngine" VERSION 0.0.1)
 
-if(WIN32)
-	file(GLOB SOURCES
-		./src/*.cpp
-		./src/Camera/*.cpp
-		./src/Core/*.cpp
-		./src/Data/*.cpp
-		./src/Deferred/*.cpp
-		./src/Editor/*.cpp
-		./src/EnvMap/*.cpp
-		./src/EnvMapVulkan/*.cpp
-		./src/Framebuffer/*.cpp
-		./src/H2M/*.cpp
-		./src/H2M/Asset/*.cpp
-		./src/H2M/Core/*.cpp
-		./src/H2M/Core/Events/*.cpp
-		./src/H2M/Core/Math/*.cpp
-		./src/H2M/Editor/*.cpp
-		./src/H2M/ExampleApp/*.cpp
-		./src/H2M/ExampleApp/Properties/*.cpp
-		./src/H2M/ExampleApp/src/*.cpp
-		./src/H2M/Hazel-ScriptCore/*.cpp
-		./src/H2M/Hazel-ScriptCore/Properties/*.cpp
-		./src/H2M/Hazel-ScriptCore/src/*.cpp
-		./src/H2M/Hazel-ScriptCore/src/Hazel/*.cpp
-		./src/H2M/Hazel-ScriptCore/src/Hazel/Math/*.cpp
-		./src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/*.cpp
-		./src/H2M/Hazel-ScriptCore/src/Hazel/Scene/*.cpp
-		./src/H2M/ImGui/*.cpp
-		./src/H2M/Platform/*.cpp
-		./src/H2M/Platform/OpenGL/*.cpp
-		./src/H2M/Platform/Vulkan/*.cpp
-		./src/H2M/Platform/Windows/*.cpp
-		./src/H2M/Project/*.cpp
-		./src/H2M/Renderer/*.cpp
-		./src/H2M/Scene/*.cpp
-		./src/H2M/Utilities/*.cpp
-		./src/Hazel/*.cpp
-		./src/HazelVulkan/*.cpp
-		./src/ImGui/*.cpp
-		./src/Instancing/*.cpp
-		./src/LearnOpenGL/*.cpp
-		./src/Light/*.cpp
-		./src/Material/*.cpp
-		./src/Mesh/*.cpp
-		./src/Misc/*.cpp
-		./src/Mono/*.cpp
-		./src/Mono/ConsoleGameLib/*.cpp
-		./src/Mono/GameInvoker/*.cpp
-		./src/Particle/*.cpp
-		./src/PerlinNoise/*.cpp
-		./src/Physics/*.cpp
-		./src/Platform/*.cpp
-		./src/Platform/DX11/*.cpp
-		./src/Platform/OpenGL/*.cpp
-		./src/Platform/Vulkan/*.cpp
-		./src/Platform/Windows/*.cpp
-		./src/Player/*.cpp
-		./src/PostProcessing/*.cpp
-		./src/Renderer/*.cpp
-		./src/Scene/*.cpp
-		./src/Shader/*.cpp
-		./src/Skybox/*.cpp
-		./src/SongHo/*.cpp
-		./src/SSAO/*.cpp
-		./src/Terrain/*.cpp
-		./src/Texture/*.cpp
-		./src/Water/*.cpp
-	)
-elseif(UNIX)
-	file(GLOB SOURCES
-		./*.cpp
-		./src/Mesh/*.cpp
-		./src/SSAO/*.cpp
-		./src/Renderer/*.cpp
-		./src/Framebuffer/*.cpp
-		./src/Misc/*.cpp
-		./src/Editor/*.cpp
-		./src/SongHo/*.cpp
-		./src/Physics/*.cpp
-		./src/PostProcessing/*.cpp
-		./src/LearnOpenGL/*.cpp
-		./src/Water/*.cpp
-		./src/Platform/*.cpp
-		./src/Platform/Vulkan/*.cpp
-		./src/Platform/Windows/*.cpp
-		./src/Terrain/*.cpp
-		./src/Material/*.cpp
-		./src/Skybox/*.cpp
-		./src/Texture/*.cpp
-		./src/Player/*.cpp
-		./src/Deferred/*.cpp
-		./src/EnvMap/*.cpp
-		./src/Core/*.cpp
-		./src/Light/*.cpp
-		./src/Camera/*.cpp
-		./src/Shader/*.cpp
-		./src/Particle/*.cpp
-		./src/Scene/*.cpp
-		./src/PerlinNoise/*.cpp
-		./src/Data/*.cpp
-		./src/Hazel/*.cpp
-		./src/Hazel/Script/*.cpp
-		./src/Hazel/Renderer/*.cpp
-		./src/Hazel/Editor/*.cpp
-		./src/Hazel/Utils/*.cpp
-		./src/Hazel/Physics/*.cpp
-		./src/Hazel/Platform/*.cpp
-		./src/Hazel/Platform/Vulkan/*.cpp
-		./src/Hazel/Platform/OpenGL/*.cpp
-		./src/Hazel/Platform/Windows/*.cpp
-		./src/Hazel/Core/*.cpp
-		./src/Hazel/Core/Math/*.cpp
-		./src/Hazel/Events/*.cpp
-		./src/Hazel/Scene/*.cpp
-		./src/Hazel/ImGui/*.cpp
-		./src/Hazel/Asset/*.cpp
-		./src/ImGui/*.cpp
-
-		./src/H2M/Hazel-ScriptCore/*.cpp
-		./src/H2M/Hazel-ScriptCore/src/*.cpp
-		./src/H2M/Hazel-ScriptCore/src/Hazel/*.cpp
-		./src/H2M/Hazel-ScriptCore/src/Hazel/Renderer/*.cpp
-		./src/H2M/Hazel-ScriptCore/src/Hazel/Math/*.cpp
-		./src/H2M/Hazel-ScriptCore/src/Hazel/Scene/*.cpp
-		./src/H2M/Hazel-ScriptCore/Properties/*.cpp
-		./src/H2M/ExampleApp/*.cpp
-		./src/H2M/ExampleApp/src/*.cpp
-		./src/H2M/ExampleApp/Properties/*.cpp
-
-		../vendor/ImGui/imgui.cpp
-		../vendor/ImGui/imgui_demo.cpp
-		../vendor/ImGui/imgui_draw.cpp
-		../vendor/ImGui/imgui_widgets.cpp
-	)
-endif()
-
-SET(BulletDynamics_SRCS
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Character/btKinematicCharacterController.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btConeTwistConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btContactConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btFixedConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btGearConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btGeneric6DofConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btGeneric6DofSpringConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btHinge2Constraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btHingeConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btPoint2PointConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolverMt.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btBatchedConstraints.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btSliderConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btSolve2LinearConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btTypedConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/ConstraintSolver/btUniversalConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Dynamics/btDiscreteDynamicsWorld.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Dynamics/btDiscreteDynamicsWorldMt.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Dynamics/btSimulationIslandManagerMt.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Dynamics/btRigidBody.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Dynamics/btSimpleDynamicsWorld.cpp
-	# ../vendor/cross-platform/bullet3/src/BulletDynamics/Dynamics/Bullet-C-API.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Vehicle/btRaycastVehicle.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Vehicle/btWheelInfo.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBody.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodyConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodyConstraintSolver.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodyDynamicsWorld.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodyFixedConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodyGearConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodyJointLimitConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodyJointMotor.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodyMLCPConstraintSolver.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodyPoint2Point.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodySliderConstraint.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/Featherstone/btMultiBodySphericalJointMotor.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/MLCPSolvers/btDantzigLCP.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/MLCPSolvers/btMLCPSolver.cpp
-	../vendor/cross-platform/bullet3/src/BulletDynamics/MLCPSolvers/btLemkeAlgorithm.cpp
-)
-
-SET(BulletCollision_SRCS
-	../vendor/cross-platform/bullet3/src/BulletCollision/BroadphaseCollision/btAxisSweep3.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/BroadphaseCollision/btBroadphaseProxy.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/BroadphaseCollision/btCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/BroadphaseCollision/btDbvt.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/BroadphaseCollision/btDbvtBroadphase.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/BroadphaseCollision/btDispatcher.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/BroadphaseCollision/btOverlappingPairCache.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/BroadphaseCollision/btQuantizedBvh.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/BroadphaseCollision/btSimpleBroadphase.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btActivatingCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btBoxBoxCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btBox2dBox2dCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btBoxBoxDetector.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btCollisionDispatcher.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btCollisionDispatcherMt.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btCollisionObject.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btCollisionWorld.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btCollisionWorldImporter.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btCompoundCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btCompoundCompoundCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btConvexConcaveCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btConvexConvexAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btConvexPlaneCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btConvex2dConvex2dAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btEmptyCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btGhostObject.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btHashedSimplePairCache.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btInternalEdgeUtility.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btInternalEdgeUtility.h
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btManifoldResult.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btSimulationIslandManager.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btSphereBoxCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btSphereSphereCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btSphereTriangleCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/btUnionFind.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionDispatch/SphereTriangleDetector.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btBoxShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btBox2dShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btBvhTriangleMeshShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btCapsuleShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btCollisionShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btCompoundShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btConcaveShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btConeShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btConvexHullShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btConvexInternalShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btConvexPointCloudShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btConvexPolyhedron.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btConvexShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btConvex2dShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btConvexTriangleMeshShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btCylinderShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btEmptyShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btHeightfieldTerrainShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btMiniSDF.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btMinkowskiSumShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btMultimaterialTriangleMeshShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btMultiSphereShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btOptimizedBvh.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btPolyhedralConvexShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btScaledBvhTriangleMeshShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btSdfCollisionShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btShapeHull.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btSphereShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btStaticPlaneShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btStridingMeshInterface.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btTetrahedronShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btTriangleBuffer.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btTriangleCallback.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btTriangleIndexVertexArray.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btTriangleIndexVertexMaterialArray.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btTriangleMesh.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btTriangleMeshShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/CollisionShapes/btUniformScalingShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/btContactProcessing.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/btGenericPoolAllocator.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/btGImpactBvh.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/btGImpactQuantizedBvh.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/btGImpactShape.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/btTriangleShapeEx.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/gim_box_set.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/gim_contact.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/gim_memory.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/Gimpact/gim_tri_collision.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btContinuousConvexCollision.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btConvexCast.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btGjkConvexCast.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btGjkEpa2.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btGjkPairDetector.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btMinkowskiPenetrationDepthSolver.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btPersistentManifold.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btRaycastCallback.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btSubSimplexConvexCast.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btVoronoiSimplexSolver.cpp
-	../vendor/cross-platform/bullet3/src/BulletCollision/NarrowPhaseCollision/btPolyhedralContactClipping.cpp
-)
-
-SET(LinearMath_SRCS
-	../vendor/cross-platform/bullet3/src/LinearMath/btAlignedAllocator.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/btConvexHull.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/btConvexHullComputer.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/btGeometryUtil.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/btPolarDecomposition.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/btQuickprof.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/btSerializer.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/btSerializer64.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/btThreads.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/btVector3.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/TaskScheduler/btTaskScheduler.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/TaskScheduler/btThreadSupportPosix.cpp
-	../vendor/cross-platform/bullet3/src/LinearMath/TaskScheduler/btThreadSupportWin32.cpp
-)
 
 SET(assimp_SRCS
 	../vendor/cross-platform/assimp/code/Common/Assimp.cpp
@@ -534,6 +237,34 @@ SET(assimp_SRCS
 	../vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcTriangleFans.cpp
 	../vendor/cross-platform/assimp/contrib/zip/src/zip.c
 )
+file(GLOB_RECURSE SOURCES ./src/*.cpp)
+#	source_group(src FILES ${SOURCES})
+source_group(TREE ../src PREFIX src FILES ${SOURCES})
+
+file(GLOB_RECURSE BulletDynamics_SRCS		../vendor/cross-platform/bullet3/src/BulletDynamics/*.cpp)
+file(GLOB_RECURSE BulletCollision_SRCS		../vendor/cross-platform/bullet3/src/BulletCollision/*.cpp)
+file(GLOB_RECURSE LinearMath_SRCS			../vendor/cross-platform/bullet3/src/LinearMath/*.cpp)
+#	file(GLOB_RECURSE assimp_SRCS
+#		../vendor/cross-platform/assimp/*.cpp
+#		../vendor/cross-platform/assimp/*.c
+#		../vendor/cross-platform/assimp/*.cc
+#	)
+file(GLOB_RECURSE yaml-cpp_SRCS				../vendor/cross-platform/yaml-cpp/src/*.cpp)
+file(GLOB_RECURSE box2d_SRCS
+	../vendor/box2d/src/*.cpp
+	../vendor/box2d/src/*.h
+)
+file(GLOB_RECURSE DirectXTex_SRCS			../vendor/DirectXTex/DirectXTex/*.cpp)
+file(GLOB_RECURSE zlibstatic_SRCS			../vendor/cross-platform/assimp/contrib/zlib/*.c)
+file(GLOB_RECURSE SPIRV-Cross_SRCS			../vendor/cross-platform/SPIRV-Cross/*.cpp)
+file(GLOB_RECURSE irrXML_SRCS				../vendor/cross-platform/assimp/contrib/irrXML/*.cpp)
+#	file(GLOB_RECURSE spirv-cross-core_SRCS		../vendor/cross-platform/SPIRV-Cross/*.cpp)
+#	file(GLOB_RECURSE spirv-cross-cpp_SRCS		../vendor/cross-platform/SPIRV-Cross/*.cpp)
+#	file(GLOB_RECURSE spirv-cross-glsl_SRCS		../vendor/cross-platform/SPIRV-Cross/*.cpp)
+#	file(GLOB_RECURSE spirv-cross-hlsl_SRCS		../vendor/cross-platform/SPIRV-Cross/*.cpp)
+#	file(GLOB_RECURSE spirv-cross-msl_SRCS		../vendor/cross-platform/SPIRV-Cross/*.cpp)
+#	file(GLOB_RECURSE spirv-cross-reflect_SRCS	../vendor/cross-platform/SPIRV-Cross/*.cpp)
+#	file(GLOB_RECURSE spirv-cross-util_SRCS		../vendor/cross-platform/SPIRV-Cross/*.cpp)
 
 if(WIN32)
 	SET(glfw3_SRCS	
@@ -583,10 +314,6 @@ elseif(UNIX)
 	)
 endif()
 
-SET(irrXML_SRCS
-	../vendor/cross-platform/assimp/contrib/irrXML/irrXML.cpp
-)
-
 SET(zlibstatic_SRCS	
 	../vendor/cross-platform/assimp/contrib/zlib/adler32.c
 	../vendor/cross-platform/assimp/contrib/zlib/compress.c
@@ -604,7 +331,6 @@ SET(zlibstatic_SRCS
 	../vendor/cross-platform/assimp/contrib/zlib/uncompr.c
 	../vendor/cross-platform/assimp/contrib/zlib/zutil.c
 )
-
 SET(spirv-cross-core_SRCS
 	../vendor/cross-platform/SPIRV-Cross/spirv_cross.cpp
 	../vendor/cross-platform/SPIRV-Cross/spirv_parser.cpp
@@ -672,147 +398,6 @@ SET(SPIRV-Cross_SRCS
 	../vendor/cross-platform/SPIRV-Cross/spirv_msl.cpp
 	../vendor/cross-platform/SPIRV-Cross/main.cpp
 )
-
-SET(yaml-cpp_SRCS
-	../vendor/cross-platform/yaml-cpp/src/binary.cpp
-	../vendor/cross-platform/yaml-cpp/src/convert.cpp
-	../vendor/cross-platform/yaml-cpp/src/depthguard.cpp
-	../vendor/cross-platform/yaml-cpp/src/directives.cpp
-	../vendor/cross-platform/yaml-cpp/src/emit.cpp
-	../vendor/cross-platform/yaml-cpp/src/emitfromevents.cpp
-	../vendor/cross-platform/yaml-cpp/src/emitter.cpp
-	../vendor/cross-platform/yaml-cpp/src/emitterstate.cpp
-	../vendor/cross-platform/yaml-cpp/src/emitterutils.cpp
-	../vendor/cross-platform/yaml-cpp/src/exceptions.cpp
-	../vendor/cross-platform/yaml-cpp/src/exp.cpp
-	../vendor/cross-platform/yaml-cpp/src/memory.cpp
-	../vendor/cross-platform/yaml-cpp/src/node.cpp
-	../vendor/cross-platform/yaml-cpp/src/node_data.cpp
-	../vendor/cross-platform/yaml-cpp/src/nodebuilder.cpp
-	../vendor/cross-platform/yaml-cpp/src/nodeevents.cpp
-	../vendor/cross-platform/yaml-cpp/src/null.cpp
-	../vendor/cross-platform/yaml-cpp/src/ostream_wrapper.cpp
-	../vendor/cross-platform/yaml-cpp/src/parse.cpp
-	../vendor/cross-platform/yaml-cpp/src/parser.cpp
-	../vendor/cross-platform/yaml-cpp/src/regex_yaml.cpp
-	../vendor/cross-platform/yaml-cpp/src/scanner.cpp
-	../vendor/cross-platform/yaml-cpp/src/scanscalar.cpp
-	../vendor/cross-platform/yaml-cpp/src/scantag.cpp
-	../vendor/cross-platform/yaml-cpp/src/scantoken.cpp
-	../vendor/cross-platform/yaml-cpp/src/simplekey.cpp
-	../vendor/cross-platform/yaml-cpp/src/singledocparser.cpp
-	../vendor/cross-platform/yaml-cpp/src/stream.cpp
-	../vendor/cross-platform/yaml-cpp/src/tag.cpp
-)
-
-SET(box2d_SRCS
-	../vendor/box2d/src/collision/b2_broad_phase.cpp
-	../vendor/box2d/src/collision/b2_chain_shape.cpp
-	../vendor/box2d/src/collision/b2_circle_shape.cpp
-	../vendor/box2d/src/collision/b2_collide_circle.cpp
-	../vendor/box2d/src/collision/b2_collide_edge.cpp
-	../vendor/box2d/src/collision/b2_collide_polygon.cpp
-	../vendor/box2d/src/collision/b2_collision.cpp
-	../vendor/box2d/src/collision/b2_distance.cpp
-	../vendor/box2d/src/collision/b2_dynamic_tree.cpp
-	../vendor/box2d/src/collision/b2_edge_shape.cpp
-	../vendor/box2d/src/collision/b2_polygon_shape.cpp
-	../vendor/box2d/src/collision/b2_time_of_impact.cpp
-	../vendor/box2d/src/common/b2_block_allocator.cpp
-	../vendor/box2d/src/common/b2_draw.cpp
-	../vendor/box2d/src/common/b2_math.cpp
-	../vendor/box2d/src/common/b2_settings.cpp
-	../vendor/box2d/src/common/b2_stack_allocator.cpp
-	../vendor/box2d/src/common/b2_timer.cpp
-	../vendor/box2d/src/dynamics/b2_body.cpp
-	../vendor/box2d/src/dynamics/b2_chain_circle_contact.cpp
-	../vendor/box2d/src/dynamics/b2_chain_circle_contact.h
-	../vendor/box2d/src/dynamics/b2_chain_polygon_contact.cpp
-	../vendor/box2d/src/dynamics/b2_chain_polygon_contact.h
-	../vendor/box2d/src/dynamics/b2_circle_contact.cpp
-	../vendor/box2d/src/dynamics/b2_circle_contact.h
-	../vendor/box2d/src/dynamics/b2_contact.cpp
-	../vendor/box2d/src/dynamics/b2_contact_manager.cpp
-	../vendor/box2d/src/dynamics/b2_contact_solver.cpp
-	../vendor/box2d/src/dynamics/b2_contact_solver.h
-	../vendor/box2d/src/dynamics/b2_distance_joint.cpp
-	../vendor/box2d/src/dynamics/b2_edge_circle_contact.cpp
-	../vendor/box2d/src/dynamics/b2_edge_circle_contact.h
-	../vendor/box2d/src/dynamics/b2_edge_polygon_contact.cpp
-	../vendor/box2d/src/dynamics/b2_edge_polygon_contact.h
-	../vendor/box2d/src/dynamics/b2_fixture.cpp
-	../vendor/box2d/src/dynamics/b2_friction_joint.cpp
-	../vendor/box2d/src/dynamics/b2_gear_joint.cpp
-	../vendor/box2d/src/dynamics/b2_island.cpp
-	../vendor/box2d/src/dynamics/b2_island.h
-	../vendor/box2d/src/dynamics/b2_joint.cpp
-	../vendor/box2d/src/dynamics/b2_motor_joint.cpp
-	../vendor/box2d/src/dynamics/b2_mouse_joint.cpp
-	../vendor/box2d/src/dynamics/b2_polygon_circle_contact.cpp
-	../vendor/box2d/src/dynamics/b2_polygon_circle_contact.h
-	../vendor/box2d/src/dynamics/b2_polygon_contact.cpp
-	../vendor/box2d/src/dynamics/b2_polygon_contact.h
-	../vendor/box2d/src/dynamics/b2_prismatic_joint.cpp
-	../vendor/box2d/src/dynamics/b2_pulley_joint.cpp
-	../vendor/box2d/src/dynamics/b2_revolute_joint.cpp
-	../vendor/box2d/src/dynamics/b2_weld_joint.cpp
-	../vendor/box2d/src/dynamics/b2_wheel_joint.cpp
-	../vendor/box2d/src/dynamics/b2_world.cpp
-	../vendor/box2d/src/dynamics/b2_world_callbacks.cpp
-	../vendor/box2d/src/rope/b2_rope.cpp
-)
-
-#	SET(shaderc_SRCS
-#		../vendor/cross-platform/shaderc/libshaderc/src/shaderc.cc
-#		../vendor/cross-platform/shaderc/libshaderc/src/shaderc_cpp_test.cc
-#		../vendor/cross-platform/shaderc/libshaderc/src/shaderc_private_test.cc
-#		../vendor/cross-platform/shaderc/libshaderc/src/shaderc_test.cc
-#	
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/args.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/compiler.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/compiler_test.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/counting_includer_test.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/file_finder.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/file_finder_test.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/format_test.cc
-#		# ../vendor/cross-platform/shaderc/libshaderc_util/src/io.cc
-#		# ../vendor/cross-platform/shaderc/libshaderc_util/src/io_test.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/message.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/message_test.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/mutex_test.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/resources.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/shader_stage.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/spirv_tools_wrapper.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/string_piece_test.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/version_profile.cc
-#		../vendor/cross-platform/shaderc/libshaderc_util/src/version_profile_test.cc
-#	)
-
-SET(DirectXTex_SRCS
-	../vendor/DirectXTex/DirectXTex/BC.cpp
-	../vendor/DirectXTex/DirectXTex/BC4BC5.cpp
-	../vendor/DirectXTex/DirectXTex/BC6HBC7.cpp
-	../vendor/DirectXTex/DirectXTex/BCDirectCompute.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexCompress.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexCompressGPU.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexConvert.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexD3D11.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexD3D12.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexDDS.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexFlipRotate.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexHDR.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexImage.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexMipmaps.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexMisc.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexNormalMaps.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexP.h
-	../vendor/DirectXTex/DirectXTex/DirectXTexPMAlpha.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexResize.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexTGA.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexUtil.cpp
-	../vendor/DirectXTex/DirectXTex/DirectXTexWIC.cpp
-)
-
 message("Environment variable 'MORAVA_BUILD_TYPE' = '" $ENV{MORAVA_BUILD_TYPE} "'")
 
 option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
