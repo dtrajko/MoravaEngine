@@ -13,8 +13,6 @@
 #include "Platform/DX11/DX11RendererBasic.h"
 #include "Platform/DX11/DX11Renderer.h"
 
-#include <Windows.h>
-
 #include <cmath>
 #include <exception>
 
@@ -307,11 +305,11 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 {
 	m_IsInitialized = false;
 
-	LPCWSTR className = L"WindowsWindow";
-	LPCWSTR menuName = L"";
-	std::wstring windowNameWStr = Util::to_wstr(props.Title.c_str());
-	const wchar_t* windowNameWChar = windowNameWStr.c_str();
-	LPCWSTR windowName = (LPCWSTR)windowNameWChar;
+	LPCSTR className = "WindowsWindow";
+	LPCSTR menuName = "";
+	std::string windowNameWStr = props.Title.c_str();
+	const char* windowNameWChar = windowNameWStr.c_str();
+	LPCSTR windowName = (LPCSTR)windowNameWChar;
 
 	WNDCLASSEX wc;
 	wc.cbClsExtra = NULL;
@@ -322,8 +320,8 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
 	wc.hInstance = NULL;
-	wc.lpszClassName = (LPCWSTR)className;
-	wc.lpszMenuName = (LPCWSTR)menuName;
+	wc.lpszClassName = className;
+	wc.lpszMenuName = menuName;
 	wc.style = NULL;
 	wc.lpfnWndProc = &WndProc;
 
@@ -332,7 +330,7 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 		throw std::exception("Window not created successfully.");
 	}
 
-	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, (LPCWSTR)className, (LPCWSTR)windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
+	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
 		NULL, NULL, NULL, NULL);
 
 	if (!m_HWND)
@@ -495,18 +493,18 @@ void WindowsWindow::Shutdown()
 {
 	switch (H2M::RendererAPI_H2M::Current())
 	{
-		case H2M::RendererAPITypeH2M::OpenGL:
-		case H2M::RendererAPITypeH2M::Vulkan:
-		{
-			glfwDestroyWindow(m_GLFW_Window);
-			glfwTerminate();
-			s_GLFWInitialized = false;
-		}
+	case H2M::RendererAPITypeH2M::OpenGL:
+	case H2M::RendererAPITypeH2M::Vulkan:
+	{
+		glfwDestroyWindow(m_GLFW_Window);
+		glfwTerminate();
+		s_GLFWInitialized = false;
+	}
+	break;
+	case H2M::RendererAPITypeH2M::DX11:
+		Release();
 		break;
-		case H2M::RendererAPITypeH2M::DX11:
-			Release();
-			break;
-		}
+	}
 }
 
 int WindowsWindow::m_ActionPrev;
@@ -660,24 +658,24 @@ void WindowsWindow::SetCallbacksHazelDev()
 
 			switch (action)
 			{
-				case GLFW_PRESS:
-				{
-					H2M::KeyPressedEventH2M event(key, 0);
-					data.EventCallback(event);
-					break;
-				}
-				case GLFW_RELEASE:
-				{
-					H2M::KeyReleasedEventH2M event(key);
-					data.EventCallback(event);
-					break;
-				}
-				case GLFW_REPEAT:
-				{
-					H2M::KeyPressedEventH2M event(key, 1);
-					data.EventCallback(event);
-					break;
-				}
+			case GLFW_PRESS:
+			{
+				H2M::KeyPressedEventH2M event(key, 0);
+				data.EventCallback(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				H2M::KeyReleasedEventH2M event(key);
+				data.EventCallback(event);
+				break;
+			}
+			case GLFW_REPEAT:
+			{
+				H2M::KeyPressedEventH2M event(key, 1);
+				data.EventCallback(event);
+				break;
+			}
 			}
 
 			// Support for the old way of handling events
@@ -701,18 +699,18 @@ void WindowsWindow::SetCallbacksHazelDev()
 
 			switch (action)
 			{
-				case GLFW_PRESS:
-				{
-					H2M::MouseButtonPressedEventH2M event(button);
-					data.EventCallback(event);
-					break;
-				}
-				case GLFW_RELEASE:
-				{
-					H2M::MouseButtonReleasedEventH2M event(button);
-					data.EventCallback(event);
-					break;
-				}
+			case GLFW_PRESS:
+			{
+				H2M::MouseButtonPressedEventH2M event(button);
+				data.EventCallback(event);
+				break;
+			}
+			case GLFW_RELEASE:
+			{
+				H2M::MouseButtonReleasedEventH2M event(button);
+				data.EventCallback(event);
+				break;
+			}
 			}
 
 			// Support for the old way of handling events
