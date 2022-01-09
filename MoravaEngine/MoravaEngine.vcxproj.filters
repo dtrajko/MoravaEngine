@@ -1,2880 +1,2899 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="pch.cpp" />
     <ClCompile Include="src\EnvMap\EnvMapEditorLayer.cpp">
-      <Filter>EnvMap</Filter>
+      <Filter>src\EnvMap</Filter>
     </ClCompile>
     <ClCompile Include="src\EnvMap\EnvMapMaterial.cpp">
-      <Filter>EnvMap</Filter>
+      <Filter>src\EnvMap</Filter>
     </ClCompile>
     <ClCompile Include="src\EnvMap\EnvMapSceneRenderer.cpp">
-      <Filter>EnvMap</Filter>
+      <Filter>src\EnvMap</Filter>
     </ClCompile>
     <ClCompile Include="src\Misc\BulletDebugDrawer.cpp">
-      <Filter>Misc</Filter>
+      <Filter>src\Misc</Filter>
     </ClCompile>
     <ClCompile Include="src\Data\Octree.cpp">
-      <Filter>Data</Filter>
+      <Filter>src\Data</Filter>
     </ClCompile>
     <ClCompile Include="src\Data\Quadtree.cpp">
-      <Filter>Data</Filter>
+      <Filter>src\Data</Filter>
     </ClCompile>
     <ClCompile Include="src\Water\WaterManager.cpp">
-      <Filter>Water</Filter>
+      <Filter>src\Water</Filter>
     </ClCompile>
     <ClCompile Include="src\Skybox\Skybox.cpp">
-      <Filter>Skybox</Filter>
+      <Filter>src\Skybox</Filter>
     </ClCompile>
     <ClCompile Include="src\PostProcessing\BlurEffect.cpp">
-      <Filter>PostProcessing</Filter>
+      <Filter>src\PostProcessing</Filter>
     </ClCompile>
     <ClCompile Include="src\Player\Player.cpp">
-      <Filter>Player</Filter>
+      <Filter>src\Player</Filter>
     </ClCompile>
     <ClCompile Include="src\Player\PlayerController.cpp">
-      <Filter>Player</Filter>
+      <Filter>src\Player</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\Renderer.cpp">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\RendererBasic.cpp">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\RendererECS.cpp">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\RendererEditor.cpp">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\RendererOmniShadows.cpp">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\RendererPBR.cpp">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\RendererTrivial.cpp">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\RendererVoxelTerrain.cpp">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Particle\Particle.cpp">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClCompile>
     <ClCompile Include="src\Particle\ParticleMaster.cpp">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClCompile>
     <ClCompile Include="src\Particle\ParticleRenderer.cpp">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClCompile>
     <ClCompile Include="src\Particle\ParticleRendererInstanced.cpp">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClCompile>
     <ClCompile Include="src\Particle\ParticleSystemCherno.cpp">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClCompile>
     <ClCompile Include="src\Particle\ParticleSystemThinMatrix.cpp">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClCompile>
     <ClCompile Include="src\Particle\ParticleTexture.cpp">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClCompile>
     <ClCompile Include="src\Camera\Camera.cpp">
-      <Filter>Camera</Filter>
+      <Filter>src\Camera</Filter>
     </ClCompile>
     <ClCompile Include="src\Camera\CameraController.cpp">
-      <Filter>Camera</Filter>
+      <Filter>src\Camera</Filter>
     </ClCompile>
     <ClCompile Include="src\Camera\CameraControllerVoxelTerrain.cpp">
-      <Filter>Camera</Filter>
+      <Filter>src\Camera</Filter>
     </ClCompile>
     <ClCompile Include="src\Camera\RuntimeCamera.cpp">
-      <Filter>Camera</Filter>
+      <Filter>src\Camera</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\AABB.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\Scene.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneAnimPBR.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneAsteroids.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneBullet.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneCottage.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneCubemaps.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneDeferred.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneEditor.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneEditorImGuizmo.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneEiffel.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneFramebuffers.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneHazelEnvMap.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneInstanced.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneJoey.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneMarchingCubes.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneNanosuit.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneOmniShadows.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneParticles.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\ScenePBR.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneProceduralLandmass.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneSponza.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneSSAO.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneTerrain.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneVoxelTerrain.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneVoxelTerrainSL.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Application.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Framebuffer\Attachment.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Block.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Cone.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Cylinder.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Pyramid.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Ring.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Ring90.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader\MoravaShader.cpp">
-      <Filter>Shader</Filter>
+      <Filter>src\Shader</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader\MoravaShaderLibrary.cpp">
-      <Filter>Shader</Filter>
+      <Filter>src\Shader</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader\ShaderMain.cpp">
-      <Filter>Shader</Filter>
+      <Filter>src\Shader</Filter>
     </ClCompile>
     <ClCompile Include="src\Shader\ShaderPBR.cpp">
-      <Filter>Shader</Filter>
+      <Filter>src\Shader</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\TextureAtlas.cpp">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\TextureCubemap.cpp">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\TextureCubemapFaces.cpp">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\TextureGenerator.cpp">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\TextureLoader.cpp">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\TextureSampler.cpp">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClCompile>
     <ClCompile Include="src\Framebuffer\Cubemap.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="src\Framebuffer\FramebufferTexture.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="src\Framebuffer\FramebufferTextureCubemap.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="src\Framebuffer\FramebufferWater.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Cube.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\CubeNanosuit.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\CubeSkybox.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\RadianceHDR.cpp">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\SubTexture2D.cpp">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClCompile>
     <ClCompile Include="src\Terrain\EndlessTerrain.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\Terrain\TerrainBase.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\Terrain\TerrainHeightMap.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\Terrain\TerrainMarchingCubes.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\Terrain\TerrainSL.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\Terrain\TerrainVoxel.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\Terrain\MapGenerator.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\Terrain\MeshGenerator.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\Terrain\NoiseSL.cpp">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="src\Material\Material.cpp">
-      <Filter>Material</Filter>
+      <Filter>src\Material</Filter>
     </ClCompile>
     <ClCompile Include="src\Material\MaterialInstance.cpp">
-      <Filter>Material</Filter>
+      <Filter>src\Material</Filter>
     </ClCompile>
     <ClCompile Include="src\Material\MaterialWorkflowPBR.cpp">
-      <Filter>Material</Filter>
+      <Filter>src\Material</Filter>
     </ClCompile>
     <ClCompile Include="src\Light\DirectionalLight.cpp">
-      <Filter>Light</Filter>
+      <Filter>src\Light</Filter>
     </ClCompile>
     <ClCompile Include="src\Light\Light.cpp">
-      <Filter>Light</Filter>
+      <Filter>src\Light</Filter>
     </ClCompile>
     <ClCompile Include="src\Light\LightManager.cpp">
-      <Filter>Light</Filter>
+      <Filter>src\Light</Filter>
     </ClCompile>
     <ClCompile Include="src\Light\PointLight.cpp">
-      <Filter>Light</Filter>
+      <Filter>src\Light</Filter>
     </ClCompile>
     <ClCompile Include="src\Light\SpotLight.cpp">
-      <Filter>Light</Filter>
+      <Filter>src\Light</Filter>
     </ClCompile>
     <ClCompile Include="src\Editor\EntitySelection.cpp">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\Editor\Gizmo.cpp">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\Editor\Pivot.cpp">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\Editor\SceneObject.cpp">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\Editor\SceneObjectLight.cpp">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\Editor\SceneObjectParticleSystem.cpp">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\GeometryFactory.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Grid.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\HazelFullscreenQuad.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\QuadInstanced.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\QuadSSAO.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\SkinnedMesh.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\MousePicker.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\ResourceManager.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\InsertionSort.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Log.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Math.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Random.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Raycast.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Timer.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Transform.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\Util.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Mesh.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\MeshData.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\MeshUnity.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Model.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Quad.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Sphere.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\Tile2D.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\ImGui\ImGuiWrapper.cpp">
-      <Filter>ImGui</Filter>
+      <Filter>src\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
-      <Filter>Platform\Windows</Filter>
+      <Filter>src\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\LearnOpenGL\MeshJoey.cpp">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\LearnOpenGL\MeshSSAO.cpp">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\LearnOpenGL\ModelJoey.cpp">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\LearnOpenGL\ModelSSAO.cpp">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\LearnOpenGL\SphereJoey.cpp">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\LearnOpenGL\TextureJoey.cpp">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\SongHo\CylinderSongHo.cpp">
-      <Filter>SongHo</Filter>
+      <Filter>src\SongHo</Filter>
     </ClCompile>
     <ClCompile Include="src\Deferred\GBuffer.cpp">
-      <Filter>Deferred</Filter>
+      <Filter>src\Deferred</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneDeferredOGL.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\RendererDeferredOGL.cpp">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Deferred\FramebufferSSAO.cpp">
-      <Filter>Deferred</Filter>
+      <Filter>src\Deferred</Filter>
     </ClCompile>
     <ClCompile Include="src\SSAO\GBufferSSAO.cpp">
-      <Filter>SSAO</Filter>
+      <Filter>src\SSAO</Filter>
     </ClCompile>
     <ClCompile Include="src\SSAO\SSAO.cpp">
-      <Filter>SSAO</Filter>
+      <Filter>src\SSAO</Filter>
     </ClCompile>
     <ClCompile Include="src\Framebuffer\OmniShadowMap.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="src\Material\MaterialLibrary.cpp">
-      <Filter>Material</Filter>
+      <Filter>src\Material</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandBuffer.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanCommandPool.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanDescriptorSet.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanIndexBuffer.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanDevice.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanSwapchain.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Physics\SpartanPhysics.cpp">
-      <Filter>Physics</Filter>
+      <Filter>src\Physics</Filter>
     </ClCompile>
     <ClCompile Include="src\EnvMap\EnvMapSharedData.cpp">
-      <Filter>EnvMap</Filter>
+      <Filter>src\EnvMap</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanPipeline.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\MoravaVulkanRenderPass.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneHazelVulkan.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneBloom.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLRendererBasic.cpp">
-      <Filter>Platform\OpenGL</Filter>
+      <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanRendererBasic.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Instancing\RenderInstanced.cpp">
-      <Filter>Instancing</Filter>
+      <Filter>src\Instancing</Filter>
     </ClCompile>
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp">
-      <Filter>HazelVulkan</Filter>
+      <Filter>src\HazelVulkan</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan.cpp">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_dx11.cpp">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_glfw.cpp">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_opengl3.cpp">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_win32.cpp">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\imgui.cpp">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\imgui_demo.cpp">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\imgui_draw.cpp">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\imgui_widgets.cpp">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.cpp">
-      <Filter>Vendors\ImGuizmo</Filter>
+      <Filter>vendors\ImGuizmo</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_dx12.cpp">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.cpp">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaShader.cpp">
-      <Filter>Platform\OpenGL</Filter>
+      <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanMoravaShader.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneDX11.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Allocator.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Buffer.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11ComputePipeline.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Context.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Device.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Framebuffer.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Image.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11ImGuiLayer.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11IndexBuffer.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Material.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Memory.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Pipeline.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11RenderCommandBuffer.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Renderer.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11RendererAPI.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11RenderPass.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Shader.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11SwapChain.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11TestLayer.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Utils.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11VertexBuffer.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11RendererBasic.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11ConstantBuffer.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Texture2D.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11TextureCube.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11PixelShader.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11VertexShader.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11InputSystem.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11CameraFP.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11Mesh.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Framebuffer\MoravaFramebuffer.cpp">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaFramebuffer.cpp">
-      <Filter>Platform\OpenGL</Filter>
+      <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanMoravaFramebuffer.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11MoravaFramebuffer.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Texture\MoravaTexture.cpp">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLMoravaTexture.cpp">
-      <Filter>Platform\OpenGL</Filter>
+      <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanMoravaTexture.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\DX11\DX11MoravaTexture.cpp">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClCompile>
     <ClCompile Include="src\Editor\MaterialEditorPanel.cpp">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\Mono\GameInvoker\CsBind.cpp">
-      <Filter>Mono\GameInvoker</Filter>
+      <Filter>src\Mono\GameInvoker</Filter>
     </ClCompile>
     <ClCompile Include="src\Mono\GameInvoker\CsGame.cpp">
-      <Filter>Mono\GameInvoker</Filter>
+      <Filter>src\Mono\GameInvoker</Filter>
     </ClCompile>
     <ClCompile Include="src\Mono\ConsoleGameLib\GameConsole.cpp">
-      <Filter>Mono\ConsoleGameLib</Filter>
+      <Filter>src\Mono\ConsoleGameLib</Filter>
     </ClCompile>
     <ClCompile Include="src\Mono\ConsoleGameLib\GConsole.cpp">
-      <Filter>Mono\ConsoleGameLib</Filter>
+      <Filter>src\Mono\ConsoleGameLib</Filter>
     </ClCompile>
     <ClCompile Include="src\Mono\ConsoleGameLib\RWord.cpp">
-      <Filter>Mono\ConsoleGameLib</Filter>
+      <Filter>src\Mono\ConsoleGameLib</Filter>
     </ClCompile>
     <ClCompile Include="src\Mono\ConsoleGameLib\RandomWord.cpp">
-      <Filter>Mono\ConsoleGameLib</Filter>
+      <Filter>src\Mono\ConsoleGameLib</Filter>
     </ClCompile>
     <ClCompile Include="src\Mesh\MoravaTinyMesh.cpp">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClCompile>
     <ClCompile Include="src\Core\MoravaLayer.cpp">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\Vulkan\VulkanSkyboxCube.cpp">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.cpp">
-      <Filter>Vendors\VulkanMemoryAllocator</Filter>
+      <Filter>vendors\VulkanMemoryAllocator</Filter>
     </ClCompile>
     <ClCompile Include="..\vendor\ImGui\imgui_tables.cpp">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Core\TimestepH2M.cpp">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Editor\SceneHierarchyPanelH2M.cpp">
-      <Filter>H2M\Editor</Filter>
+      <Filter>src\H2M\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanAllocatorH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanFramebufferH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRendererH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanShaderH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTestLayer.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\CameraH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\ImageH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\MaterialH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\MeshH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\PipelineH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\RendererH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\SceneRendererH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\SceneRendererVulkan.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\ShaderH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\TextureH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Scene\EntityH2M.cpp">
-      <Filter>H2M\Scene</Filter>
+      <Filter>src\H2M\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Scene\SceneCameraH2M.cpp">
-      <Filter>H2M\Scene</Filter>
+      <Filter>src\H2M\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Scene\SceneH2M.cpp">
-      <Filter>H2M\Scene</Filter>
+      <Filter>src\H2M\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\FramebufferH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Core\LogH2M.cpp">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\ShaderUniformH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\RendererAPI_H2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\RenderCommandBufferH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\SceneEnvironmentH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRenderCommandBufferH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanContextH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanDeviceH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanSwapChainH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Core\UUID_H2M.cpp">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanTextureH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLTextureH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLImageH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanImageH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanMaterialH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLMaterialH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Core\HashH2M.cpp">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\VertexBufferH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanVertexBufferH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLVertexBufferH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\IndexBufferH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLIndexBufferH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanIndexBufferH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Editor\EditorCameraH2M.cpp">
-      <Filter>H2M\Editor</Filter>
+      <Filter>src\H2M\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\Renderer2D_H2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\VertexArrayH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\RenderPassH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRenderPassH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLRenderPassH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLVertexArrayH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\RenderCommandQueueH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\RendererContextH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLRendererH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanComputePipelineH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\PipelineComputeH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\SceneRendererVulkanH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Utilities\StringUtilsH2M.cpp">
-      <Filter>H2M\Utilities</Filter>
+      <Filter>src\H2M\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLContextH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLPipelineH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanPipelineH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanDiagnosticsH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLFramebufferH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Core\LayerH2M.cpp">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\ImGui\ImGuiLayerH2M.cpp">
-      <Filter>H2M\ImGui</Filter>
+      <Filter>src\H2M\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Core\LayerStackH2M.cpp">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLShaderH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Editor\EditorLayerVulkanH2M.cpp">
-      <Filter>H2M\Editor</Filter>
+      <Filter>src\H2M\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Project\UserPreferencesH2M.cpp">
-      <Filter>H2M\Project</Filter>
+      <Filter>src\H2M\Project</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Editor\ContentBrowserPanelH2M.cpp">
-      <Filter>H2M\Editor</Filter>
+      <Filter>src\H2M\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLImGuiLayerH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanImGuiLayerH2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\ShaderCacheH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Windows\WindowsInputH2M.cpp">
-      <Filter>H2M\Platform\Windows</Filter>
+      <Filter>src\H2M\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLRendererAPI_H2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanRendererAPI_H2M.cpp">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Renderer\UniformBufferH2M.cpp">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLUniformBufferH2M.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Scene\SceneSerializerH2M.cpp">
-      <Filter>H2M\Scene</Filter>
+      <Filter>src\H2M\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\Windows\WindowsFileDialogsH2M.cpp">
-      <Filter>H2M\Platform\Windows</Filter>
+      <Filter>src\H2M\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLTexture2D_Hazel2D.cpp">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Scene\SceneEnvMapVulkan.cpp">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClCompile>
     <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanEditorLayer.cpp">
-      <Filter>EnvMapVulkan</Filter>
+      <Filter>src\EnvMapVulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\H2M\Editor\PanelManagerH2M.cpp">
-      <Filter>H2M\Editor</Filter>
+      <Filter>src\H2M\Editor</Filter>
     </ClCompile>
     <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.cpp">
-      <Filter>EnvMapVulkan</Filter>
+      <Filter>src\EnvMapVulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanImGuiLayer.cpp">
-      <Filter>EnvMapVulkan</Filter>
+      <Filter>src\EnvMapVulkan</Filter>
     </ClCompile>
     <ClCompile Include="src\EnvMapVulkan\EnvMapVulkanRenderer.cpp">
-      <Filter>EnvMapVulkan</Filter>
+      <Filter>src\EnvMapVulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\pch.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h" />
     <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h">
-      <Filter>EnvMap</Filter>
+      <Filter>src\EnvMap</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMap\EnvMapMaterial.h">
-      <Filter>EnvMap</Filter>
+      <Filter>src\EnvMap</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMap\EnvMapSceneRenderer.h">
-      <Filter>EnvMap</Filter>
+      <Filter>src\EnvMap</Filter>
     </ClInclude>
     <ClInclude Include="src\Misc\BulletDebugDrawer.h">
-      <Filter>Misc</Filter>
+      <Filter>src\Misc</Filter>
     </ClInclude>
     <ClInclude Include="src\PerlinNoise\PerlinNoise.hpp">
-      <Filter>PerlinNoise</Filter>
+      <Filter>src\PerlinNoise</Filter>
     </ClInclude>
     <ClInclude Include="src\Data\Octree.h">
-      <Filter>Data</Filter>
+      <Filter>src\Data</Filter>
     </ClInclude>
     <ClInclude Include="src\Data\Quadtree.h">
-      <Filter>Data</Filter>
+      <Filter>src\Data</Filter>
     </ClInclude>
     <ClInclude Include="src\Water\WaterManager.h">
-      <Filter>Water</Filter>
+      <Filter>src\Water</Filter>
     </ClInclude>
     <ClInclude Include="src\Skybox\Skybox.h">
-      <Filter>Skybox</Filter>
+      <Filter>src\Skybox</Filter>
     </ClInclude>
     <ClInclude Include="src\PostProcessing\BlurEffect.h">
-      <Filter>PostProcessing</Filter>
+      <Filter>src\PostProcessing</Filter>
     </ClInclude>
     <ClInclude Include="src\Player\Player.h">
-      <Filter>Player</Filter>
+      <Filter>src\Player</Filter>
     </ClInclude>
     <ClInclude Include="src\Player\PlayerController.h">
-      <Filter>Player</Filter>
+      <Filter>src\Player</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\Renderer.h">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererBasic.h">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererECS.h">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererEditor.h">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererOmniShadows.h">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererPBR.h">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererTrivial.h">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererVoxelTerrain.h">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Particle\Particle.h">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClInclude>
     <ClInclude Include="src\Particle\ParticleMaster.h">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClInclude>
     <ClInclude Include="src\Particle\ParticleRenderer.h">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClInclude>
     <ClInclude Include="src\Particle\ParticleRendererInstanced.h">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClInclude>
     <ClInclude Include="src\Particle\ParticleSettings.h">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClInclude>
     <ClInclude Include="src\Particle\ParticleSystemCherno.h">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClInclude>
     <ClInclude Include="src\Particle\ParticleSystemThinMatrix.h">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClInclude>
     <ClInclude Include="src\Particle\ParticleTexture.h">
-      <Filter>Particle</Filter>
+      <Filter>src\Particle</Filter>
     </ClInclude>
     <ClInclude Include="src\Camera\Camera.h">
-      <Filter>Camera</Filter>
+      <Filter>src\Camera</Filter>
     </ClInclude>
     <ClInclude Include="src\Camera\CameraController.h">
-      <Filter>Camera</Filter>
+      <Filter>src\Camera</Filter>
     </ClInclude>
     <ClInclude Include="src\Camera\CameraControllerVoxelTerrain.h">
-      <Filter>Camera</Filter>
+      <Filter>src\Camera</Filter>
     </ClInclude>
     <ClInclude Include="src\Camera\RuntimeCamera.h">
-      <Filter>Camera</Filter>
+      <Filter>src\Camera</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\AABB.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\Scene.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneAnimPBR.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneAsteroids.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneBullet.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneCottage.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneCubemaps.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneDeferred.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneEditor.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneEditorImGuizmo.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneEiffel.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneFramebuffers.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneHazelEnvMap.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneInstanced.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneJoey.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneMarchingCubes.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneNanosuit.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneOmniShadows.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneParticles.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\ScenePBR.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneProceduralLandmass.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneSponza.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneSSAO.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneTerrain.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneVoxelTerrain.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneVoxelTerrainSL.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Application.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\Attachment.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Block.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Cone.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Cylinder.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Pyramid.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Ring.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Ring90.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Shader\MoravaShader.h">
-      <Filter>Shader</Filter>
+      <Filter>src\Shader</Filter>
     </ClInclude>
     <ClInclude Include="src\Shader\MoravaShaderLibrary.h">
-      <Filter>Shader</Filter>
+      <Filter>src\Shader</Filter>
     </ClInclude>
     <ClInclude Include="src\Shader\ShaderMain.h">
-      <Filter>Shader</Filter>
+      <Filter>src\Shader</Filter>
     </ClInclude>
     <ClInclude Include="src\Shader\ShaderPBR.h">
-      <Filter>Shader</Filter>
+      <Filter>src\Shader</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\CommonStructs.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\CommonValues.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\TextureAtlas.h">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\TextureCubemap.h">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\TextureCubemapFaces.h">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\TextureGenerator.h">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\TextureLoader.h">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\TextureSampler.h">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\Cubemap.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\FramebufferTexture.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\FramebufferTextureCubemap.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\FramebufferWater.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\Renderbuffer.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Cube.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\CubeNanosuit.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\CubeSkybox.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\RadianceHDR.h">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\SubTexture2D.h">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Terrain\EndlessTerrain.h">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="src\Terrain\TerrainBase.h">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="src\Terrain\TerrainHeightMap.h">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="src\Terrain\TerrainMarchingCubes.h">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="src\Terrain\TerrainSL.h">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="src\Terrain\TerrainVoxel.h">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="src\Terrain\MapGenerator.h">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="src\Terrain\MeshGenerator.h">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="src\Terrain\NoiseSL.h">
-      <Filter>Terrain</Filter>
+      <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="src\Material\Material.h">
-      <Filter>Material</Filter>
+      <Filter>src\Material</Filter>
     </ClInclude>
     <ClInclude Include="src\Material\MaterialInstance.h">
-      <Filter>Material</Filter>
+      <Filter>src\Material</Filter>
     </ClInclude>
     <ClInclude Include="src\Material\MaterialWorkflowPBR.h">
-      <Filter>Material</Filter>
+      <Filter>src\Material</Filter>
     </ClInclude>
     <ClInclude Include="src\Light\DirectionalLight.h">
-      <Filter>Light</Filter>
+      <Filter>src\Light</Filter>
     </ClInclude>
     <ClInclude Include="src\Light\Light.h">
-      <Filter>Light</Filter>
+      <Filter>src\Light</Filter>
     </ClInclude>
     <ClInclude Include="src\Light\LightManager.h">
-      <Filter>Light</Filter>
+      <Filter>src\Light</Filter>
     </ClInclude>
     <ClInclude Include="src\Light\PointLight.h">
-      <Filter>Light</Filter>
+      <Filter>src\Light</Filter>
     </ClInclude>
     <ClInclude Include="src\Light\SpotLight.h">
-      <Filter>Light</Filter>
+      <Filter>src\Light</Filter>
     </ClInclude>
     <ClInclude Include="src\Editor\EntitySelection.h">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\Editor\Gizmo.h">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\Editor\Pivot.h">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\Editor\SceneObject.h">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\Editor\SceneObjectLight.h">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\Editor\SceneObjectParticleSystem.h">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\GeometryFactory.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Grid.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\HazelFullscreenQuad.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\QuadInstanced.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\QuadSSAO.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\SkinnedMesh.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\MousePicker.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\ResourceManager.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Input.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\InsertionSort.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Log.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Math.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Profiler.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Random.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Raycast.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Timer.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Transform.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Util.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\Window.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Mesh.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\MeshData.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\MeshUnity.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Model.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Quad.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Sphere.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\Tile2D.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\VertexInstanced.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\VertexTBN.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\ImGui\ImGuiWrapper.h">
-      <Filter>ImGui</Filter>
+      <Filter>src\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
-      <Filter>Platform\Windows</Filter>
+      <Filter>src\Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\LearnOpenGL\camera.h">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\LearnOpenGL\LearnOpenGLStructs.h">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\LearnOpenGL\MeshJoey.h">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\LearnOpenGL\MeshSSAO.h">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\LearnOpenGL\ModelJoey.h">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\LearnOpenGL\ModelSSAO.h">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\LearnOpenGL\SphereJoey.h">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\LearnOpenGL\TextureJoey.h">
-      <Filter>LearnOpenGL</Filter>
+      <Filter>src\LearnOpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\SongHo\CylinderSongHo.h">
-      <Filter>SongHo</Filter>
+      <Filter>src\SongHo</Filter>
     </ClInclude>
     <ClInclude Include="src\Deferred\GBuffer.h">
-      <Filter>Deferred</Filter>
+      <Filter>src\Deferred</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneDeferredOGL.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\RendererDeferredOGL.h">
-      <Filter>Renderer</Filter>
+      <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Deferred\FramebufferSSAO.h">
-      <Filter>Deferred</Filter>
+      <Filter>src\Deferred</Filter>
     </ClInclude>
     <ClInclude Include="src\SSAO\GBufferSSAO.h">
-      <Filter>SSAO</Filter>
+      <Filter>src\SSAO</Filter>
     </ClInclude>
     <ClInclude Include="src\SSAO\SSAO.h">
-      <Filter>SSAO</Filter>
+      <Filter>src\SSAO</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\OmniShadowMap.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\ShadowMap.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="src\Material\MaterialLibrary.h">
-      <Filter>Material</Filter>
+      <Filter>src\Material</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandBuffer.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanCommandPool.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanDescriptorSet.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanIndexBuffer.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanVertexBuffer.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanDevice.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanSwapchain.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Physics\SpartanPhysics.h">
-      <Filter>Physics</Filter>
+      <Filter>src\Physics</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMap\EnvMapSharedData.h">
-      <Filter>EnvMap</Filter>
+      <Filter>src\EnvMap</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanPipeline.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\MoravaVulkanRenderPass.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneHazelVulkan.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneBloom.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLRendererBasic.h">
-      <Filter>Platform\OpenGL</Filter>
+      <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanRendererBasic.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Instancing\RenderInstanced.h">
-      <Filter>Instancing</Filter>
+      <Filter>src\Instancing</Filter>
     </ClInclude>
     <ClInclude Include="src\HazelVulkan\VulkanWeekRenderer.h">
-      <Filter>HazelVulkan</Filter>
+      <Filter>src\HazelVulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\HazelVulkan\ExampleVertex.h">
-      <Filter>HazelVulkan</Filter>
+      <Filter>src\HazelVulkan</Filter>
     </ClInclude>
-    <ClInclude Include="main.h" />
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan.h">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_dx11.h">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_glfw.h">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_opengl3.h">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_win32.h">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imconfig.h">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imgui.h">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imgui_internal.h">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imstb_rectpack.h">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imstb_textedit.h">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\imstb_truetype.h">
-      <Filter>Vendors\ImGui</Filter>
+      <Filter>vendors\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\cross-platform\ImGuizmo\ImGuizmo.h">
-      <Filter>Vendors\ImGuizmo</Filter>
+      <Filter>vendors\ImGuizmo</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_dx12.h">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\ImGui\backends\imgui_impl_vulkan_with_textures.h">
-      <Filter>Vendors\ImGui\backends</Filter>
+      <Filter>vendors\ImGui\backends</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaShader.h">
-      <Filter>Platform\OpenGL</Filter>
+      <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanMoravaShader.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneDX11.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Allocator.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Buffer.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11ComputePipeline.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Context.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Device.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Framebuffer.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Image.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11ImGuiLayer.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11IndexBuffer.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Material.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Memory.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Pipeline.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11RenderCommandBuffer.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Renderer.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11RendererAPI.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11RenderPass.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Shader.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11SwapChain.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11TestLayer.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Utils.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11VertexBuffer.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11RendererBasic.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11ConstantBuffer.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Texture2D.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11TextureCube.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11PixelShader.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11VertexShader.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11InputSystem.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11InputListener.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11CameraFP.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11Mesh.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11VertexLayout.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Framebuffer\MoravaFramebuffer.h">
-      <Filter>Framebuffer</Filter>
+      <Filter>src\Framebuffer</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaFramebuffer.h">
-      <Filter>Platform\OpenGL</Filter>
+      <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanMoravaFramebuffer.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11MoravaFramebuffer.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Texture\MoravaTexture.h">
-      <Filter>Texture</Filter>
+      <Filter>src\Texture</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLMoravaTexture.h">
-      <Filter>Platform\OpenGL</Filter>
+      <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanMoravaTexture.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\DX11\DX11MoravaTexture.h">
-      <Filter>Platform\DX11</Filter>
+      <Filter>src\Platform\DX11</Filter>
     </ClInclude>
     <ClInclude Include="src\Editor\MaterialEditorPanel.h">
-      <Filter>Editor</Filter>
+      <Filter>src\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\Mono\ConsoleGameLib\GameConsole.h">
-      <Filter>Mono\ConsoleGameLib</Filter>
+      <Filter>src\Mono\ConsoleGameLib</Filter>
     </ClInclude>
     <ClInclude Include="src\Mono\ConsoleGameLib\RandomWord.h">
-      <Filter>Mono\ConsoleGameLib</Filter>
+      <Filter>src\Mono\ConsoleGameLib</Filter>
     </ClInclude>
     <ClInclude Include="src\Mono\GameInvoker\CsBind.h">
-      <Filter>Mono\GameInvoker</Filter>
+      <Filter>src\Mono\GameInvoker</Filter>
     </ClInclude>
     <ClInclude Include="src\Mono\GameInvoker\CsGame.h">
-      <Filter>Mono\GameInvoker</Filter>
+      <Filter>src\Mono\GameInvoker</Filter>
     </ClInclude>
     <ClInclude Include="src\Mono\ConsoleGameLib\ConsoleGameLib.h">
-      <Filter>Mono\ConsoleGameLib</Filter>
+      <Filter>src\Mono\ConsoleGameLib</Filter>
     </ClInclude>
     <ClInclude Include="src\Mono\ConsoleGameLib\GConsole.h">
-      <Filter>Mono\ConsoleGameLib</Filter>
+      <Filter>src\Mono\ConsoleGameLib</Filter>
     </ClInclude>
     <ClInclude Include="src\Mono\ConsoleGameLib\WinInclude.h">
-      <Filter>Mono\ConsoleGameLib</Filter>
+      <Filter>src\Mono\ConsoleGameLib</Filter>
     </ClInclude>
     <ClInclude Include="src\Mono\ConsoleGameLib\RWord.h">
-      <Filter>Mono\ConsoleGameLib</Filter>
+      <Filter>src\Mono\ConsoleGameLib</Filter>
     </ClInclude>
     <ClInclude Include="src\Mesh\MoravaTinyMesh.h">
-      <Filter>Mesh</Filter>
+      <Filter>src\Mesh</Filter>
     </ClInclude>
     <ClInclude Include="src\Core\MoravaLayer.h">
-      <Filter>Core</Filter>
+      <Filter>src\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Platform\Vulkan\VulkanSkyboxCube.h">
-      <Filter>Platform\Vulkan</Filter>
+      <Filter>src\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.h">
-      <Filter>Vendors\VulkanMemoryAllocator</Filter>
+      <Filter>vendors\VulkanMemoryAllocator</Filter>
     </ClInclude>
     <ClInclude Include="src\Hazel\Renderer\UI\MSDFData.h">
-      <Filter>Hazel\Renderer\UI</Filter>
+      <Filter>src\Hazel\Renderer\UI</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\miniaudio\include\dr_wav.h">
-      <Filter>Vendors\miniaudio</Filter>
+      <Filter>vendors\miniaudio</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\miniaudio\include\miniaudio.h">
-      <Filter>Vendors\miniaudio</Filter>
+      <Filter>vendors\miniaudio</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\miniaudio\include\miniaudio_engine.h">
-      <Filter>Vendors\miniaudio</Filter>
+      <Filter>vendors\miniaudio</Filter>
     </ClInclude>
     <ClInclude Include="..\vendor\miniaudio\include\miniaudio_incl.h">
-      <Filter>Vendors\miniaudio</Filter>
+      <Filter>vendors\miniaudio</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\Events\ApplicationEventH2M.h">
-      <Filter>H2M\Core\Events</Filter>
+      <Filter>src\H2M\Core\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\Events\EventH2M.h">
-      <Filter>H2M\Core\Events</Filter>
+      <Filter>src\H2M\Core\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\Events\KeyEventH2M.h">
-      <Filter>H2M\Core\Events</Filter>
+      <Filter>src\H2M\Core\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\Events\MouseEventH2M.h">
-      <Filter>H2M\Core\Events</Filter>
+      <Filter>src\H2M\Core\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\Math\AABB_H2M.h">
-      <Filter>H2M\Core\Math</Filter>
+      <Filter>src\H2M\Core\Math</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\BaseH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\BufferH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\RefH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\TimestepH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Editor\SceneHierarchyPanelH2M.h">
-      <Filter>H2M\Editor</Filter>
+      <Filter>src\H2M\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\ImGui\ImGuiH2M.h">
-      <Filter>H2M\ImGui</Filter>
+      <Filter>src\H2M\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanAllocatorH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanFramebufferH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRendererH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanShaderH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanTestLayer.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\CameraH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\ImageH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\MaterialH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\MeshH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\PipelineH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\RendererH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\SceneRendererH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\SceneRendererVulkan.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\ShaderH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\TextureH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Scene\ComponentsH2M.h">
-      <Filter>H2M\Scene</Filter>
+      <Filter>src\H2M\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Scene\EntityH2M.h">
-      <Filter>H2M\Scene</Filter>
+      <Filter>src\H2M\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Scene\SceneCameraH2M.h">
-      <Filter>H2M\Scene</Filter>
+      <Filter>src\H2M\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Scene\SceneH2M.h">
-      <Filter>H2M\Scene</Filter>
+      <Filter>src\H2M\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\FramebufferH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\AssertH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\LogH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\ShaderUniformH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\RendererTypesH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\RendererAPI_H2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\RenderCommandBufferH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\RendererCapabilitiesH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\SceneEnvironmentH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRenderCommandBufferH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanContextH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanDeviceH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanSwapChainH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Asset\AssetH2M.h">
-      <Filter>H2M\Asset</Filter>
+      <Filter>src\H2M\Asset</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Asset\AssetTypesH2M.h">
-      <Filter>H2M\Asset</Filter>
+      <Filter>src\H2M\Asset</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\UUID_H2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanTextureH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLTextureH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLImageH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanImageH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanMaterialH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLMaterialH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\HashH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\VertexBufferH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanVertexBufferH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLVertexBufferH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\IndexBufferH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLIndexBufferH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanIndexBufferH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Editor\EditorCameraH2M.h">
-      <Filter>H2M\Editor</Filter>
+      <Filter>src\H2M\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\KeyCodesH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\MouseCodesH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\Renderer2D_H2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\VertexArrayH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\RenderPassH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRenderPassH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLRenderPassH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLVertexArrayH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\RenderCommandQueueH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\RendererContextH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLRendererH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanComputePipelineH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\PipelineComputeH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\SceneRendererVulkanH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Utilities\StringUtilsH2M.h">
-      <Filter>H2M\Utilities</Filter>
+      <Filter>src\H2M\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLContextH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLPipelineH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanPipelineH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\TimerH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanDiagnosticsH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\RenderCommandH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLFramebufferH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\LayerH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\ImGui\ImGuiLayerH2M.h">
-      <Filter>H2M\ImGui</Filter>
+      <Filter>src\H2M\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\LayerStackH2M.h">
-      <Filter>H2M\Core</Filter>
+      <Filter>src\H2M\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLShaderH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Core\Math\RayH2M.h">
-      <Filter>H2M\Core\Math</Filter>
+      <Filter>src\H2M\Core\Math</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Editor\EditorLayerVulkanH2M.h">
-      <Filter>H2M\Editor</Filter>
+      <Filter>src\H2M\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Project\UserPreferencesH2M.h">
-      <Filter>H2M\Project</Filter>
+      <Filter>src\H2M\Project</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Editor\ContentBrowserPanelH2M.h">
-      <Filter>H2M\Editor</Filter>
+      <Filter>src\H2M\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Asset\AssetMetadataH2M.h">
-      <Filter>H2M\Asset</Filter>
+      <Filter>src\H2M\Asset</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLImGuiLayerH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanImGuiLayerH2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Utilities\FileSystemH2M.h">
-      <Filter>H2M\Utilities</Filter>
+      <Filter>src\H2M\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\ShaderCacheH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanRendererAPI_H2M.h">
-      <Filter>H2M\Platform\Vulkan</Filter>
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Scene\ScriptableEntityH2M.h">
-      <Filter>H2M\Scene</Filter>
+      <Filter>src\H2M\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Renderer\UniformBufferH2M.h">
-      <Filter>H2M\Renderer</Filter>
+      <Filter>src\H2M\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLUniformBufferH2M.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Scene\SceneSerializerH2M.h">
-      <Filter>H2M\Scene</Filter>
+      <Filter>src\H2M\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Utilities\FileDialogsH2M.h">
-      <Filter>H2M\Utilities</Filter>
+      <Filter>src\H2M\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLTexture2D_Hazel2D.h">
-      <Filter>H2M\Platform\OpenGL</Filter>
+      <Filter>src\H2M\Platform\OpenGL</Filter>
     </ClInclude>
     <ClInclude Include="src\Scene\SceneEnvMapVulkan.h">
-      <Filter>Scene</Filter>
+      <Filter>src\Scene</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanEditorLayer.h">
-      <Filter>EnvMapVulkan</Filter>
+      <Filter>src\EnvMapVulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\H2M\Editor\PanelManagerH2M.h">
-      <Filter>H2M\Editor</Filter>
+      <Filter>src\H2M\Editor</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanSceneRenderer.h">
-      <Filter>EnvMapVulkan</Filter>
+      <Filter>src\EnvMapVulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanImGuiLayer.h">
-      <Filter>EnvMapVulkan</Filter>
+      <Filter>src\EnvMapVulkan</Filter>
     </ClInclude>
     <ClInclude Include="src\EnvMapVulkan\EnvMapVulkanRenderer.h">
-      <Filter>EnvMapVulkan</Filter>
+      <Filter>src\EnvMapVulkan</Filter>
     </ClInclude>
-    <ClInclude Include="config.h" />
+    <ClInclude Include="src\config.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\main.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\pch.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\resource.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stb_image.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\stb_image_write.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Scene">
-      <UniqueIdentifier>{c3f2e82c-4f6a-4a1e-9265-36233d6e7de5}</UniqueIdentifier>
+    <Filter Include="src">
+      <UniqueIdentifier>{5cc1f3d4-f611-447e-a8b3-af5422f9b6b8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Renderer">
-      <UniqueIdentifier>{2bc20e84-4e62-4180-8158-69cad9f92c96}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader">
-      <UniqueIdentifier>{d0b26742-b39e-4373-a778-1f82bad0dd47}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Light">
-      <UniqueIdentifier>{a1c4fd28-f0a8-4279-84f5-7d8efd5c7e6c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Material">
-      <UniqueIdentifier>{7cae81c5-191e-4f87-b92d-106056996405}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="LearnOpenGL">
-      <UniqueIdentifier>{70fddf24-9111-4cf0-b645-69795cbd12a0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ImGui">
-      <UniqueIdentifier>{26c09032-6431-40e4-aea4-e0387d07933c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Particle">
-      <UniqueIdentifier>{fd7493ea-185d-42c8-bbc8-3db57a28c37d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Water">
+    <Filter Include="src\Water">
       <UniqueIdentifier>{2b1d8f9c-5467-45ba-a9e6-57b27c42b350}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Skybox">
-      <UniqueIdentifier>{3ce9836d-cbfb-4e7b-82ca-790210fb8bc8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Misc">
-      <UniqueIdentifier>{f98702ee-42c5-40bb-8d27-cf5617304eca}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Editor">
-      <UniqueIdentifier>{ca1a9e2f-c6d6-492e-8d60-e3af3cf4f1d1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PerlinNoise">
-      <UniqueIdentifier>{dbfdba99-a8bc-4267-ad45-40ae3edc4c3b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Camera">
+    <Filter Include="src\Camera">
       <UniqueIdentifier>{fafafe81-ebab-49de-a8f8-f6765a565f6d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Player">
-      <UniqueIdentifier>{e038b3e3-f988-4252-b109-ef5684319fd8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Data">
-      <UniqueIdentifier>{c1ea4d8e-74b2-4a75-bf05-1c6abc7214e6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel">
-      <UniqueIdentifier>{7b3e4f94-2dfa-4d14-b645-f18409733f0a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Core">
-      <UniqueIdentifier>{e053c5c1-9585-4c6a-82e8-6a391773a618}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Renderer">
-      <UniqueIdentifier>{aa5ede13-8d0a-4deb-bd4b-c3087818310b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="PostProcessing">
-      <UniqueIdentifier>{29da581e-1ade-4f5d-9017-46c95e57f366}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Platform">
-      <UniqueIdentifier>{42db03f0-bce2-49ee-9e26-41ea8b165e57}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Platform\Windows">
-      <UniqueIdentifier>{3852b832-d027-483b-bbcd-6019fd477d75}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Scene">
-      <UniqueIdentifier>{e165e3e5-7964-4fb5-b138-f5088f5674d9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Platform">
-      <UniqueIdentifier>{dbda6cda-1a09-4cea-93be-39f556584c6a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Platform\OpenGL">
-      <UniqueIdentifier>{baeaae74-6311-4e23-b857-93ce0dcabd26}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Core\Math">
-      <UniqueIdentifier>{a84cc739-cf0b-42e7-af74-a36f25a75eb4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Utils">
-      <UniqueIdentifier>{031d2f53-87a8-40ce-b31f-54b4c795af02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Platform\Windows">
-      <UniqueIdentifier>{ac34d5fa-e881-4163-b64f-264ba7d4025e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Script">
-      <UniqueIdentifier>{2a43787b-f64f-487a-acd0-d4aed4f5e77a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Editor">
-      <UniqueIdentifier>{9fbe7e4a-378d-4b7e-8ff7-5cd4e3f806de}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\ImGui">
-      <UniqueIdentifier>{85960568-1b09-4a7d-b4d4-0a4c5567f69e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\ExampleApp">
-      <UniqueIdentifier>{4e0cdee5-9044-420f-a212-6d9454330fac}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\ExampleApp\Properties">
-      <UniqueIdentifier>{e9a6fc49-b180-49e3-a39b-40232dee4135}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\ScriptCore">
-      <UniqueIdentifier>{57836ef2-6a3e-4d99-97e1-1aa391c5ee3f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\ScriptCore\Properties">
-      <UniqueIdentifier>{1818e1d5-faea-46f6-a602-0478652d0f92}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\ScriptCore\Math">
-      <UniqueIdentifier>{7fc183f9-5416-499c-bd3c-5abd06574a4d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\ScriptCore\Renderer">
-      <UniqueIdentifier>{e15f45ac-01da-44fc-b5f0-294f8f197f55}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\ScriptCore\Scene">
-      <UniqueIdentifier>{3b7f3ca6-b0ee-42a1-a4b2-e5a1fb50e9b1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="EnvMap">
-      <UniqueIdentifier>{fdbce3fc-8bff-48ca-8689-4070b29a1e54}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Physics">
-      <UniqueIdentifier>{dff8738b-62be-4a44-87e8-9156b51321aa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Core">
+    <Filter Include="src\Core">
       <UniqueIdentifier>{c12df6c2-9bc0-4a5f-9691-d9cea6400cb9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Framebuffer">
-      <UniqueIdentifier>{1557624c-a4a3-462a-933a-dc43da41b798}</UniqueIdentifier>
+    <Filter Include="src\Data">
+      <UniqueIdentifier>{c1ea4d8e-74b2-4a75-bf05-1c6abc7214e6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Mesh">
-      <UniqueIdentifier>{5bc36ffa-09a4-4405-8331-13dbc8599f65}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Texture">
-      <UniqueIdentifier>{0e61b564-ff23-4486-831f-aba4eab69adc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Terrain">
-      <UniqueIdentifier>{cad5a15f-3c79-4ab5-867f-68481af6dc01}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="SongHo">
-      <UniqueIdentifier>{0712e484-7c09-4c16-82a2-fd97a48b56b5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Platform\Vulkan">
-      <UniqueIdentifier>{a695ef4d-47ed-4fc1-bfdc-88fe1201473f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Deferred">
+    <Filter Include="src\Deferred">
       <UniqueIdentifier>{5f6a158c-cd8a-4a62-862c-c58a72b6f68a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="SSAO">
-      <UniqueIdentifier>{cd00ca42-9ed6-43da-958a-e9b60e9b9d05}</UniqueIdentifier>
+    <Filter Include="src\Editor">
+      <UniqueIdentifier>{ca1a9e2f-c6d6-492e-8d60-e3af3cf4f1d1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Hazel\Asset">
-      <UniqueIdentifier>{80ca6d47-775a-4dc3-ae10-7eea90846fbe}</UniqueIdentifier>
+    <Filter Include="src\EnvMap">
+      <UniqueIdentifier>{fdbce3fc-8bff-48ca-8689-4070b29a1e54}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Platform\Vulkan">
-      <UniqueIdentifier>{f2f242b6-2ea7-4121-8530-370abb9fd364}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Physics">
-      <UniqueIdentifier>{a159bf0c-5951-4118-8982-d832c351dc77}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources">
-      <UniqueIdentifier>{65432256-d30e-476b-889b-d3645c27ff4c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Hazel">
-      <UniqueIdentifier>{106a9f9c-85c3-4c1d-bc6a-b539697f660f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Hazel\Shaders">
-      <UniqueIdentifier>{09be69c6-ba34-4d3e-b9ad-a4b1b3c22397}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Shaders">
-      <UniqueIdentifier>{1fa4af93-d603-45ed-84e4-2102fed20030}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Shaders\Hazel">
-      <UniqueIdentifier>{22005396-2ef0-4cf0-9115-977f55abfdc3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Shaders\LearnOpenGL">
-      <UniqueIdentifier>{52877ba7-4942-4935-aefe-37bc94546c52}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Shaders\OGLdev">
-      <UniqueIdentifier>{2708a105-dcf7-4d98-b932-8b7f6093e5f2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Shaders\PBR">
-      <UniqueIdentifier>{ce93b422-7888-4f20-9c11-9a8751876ac9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Shaders\ThinMatrix">
-      <UniqueIdentifier>{a275f58a-ad39-4823-b341-9a396d6be34c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Shaders\OGLdev\tutorial35">
-      <UniqueIdentifier>{1111f9db-5bae-40a8-84a4-0d2d37e8727b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Utilities">
-      <UniqueIdentifier>{fa67dff0-a132-4634-8470-f07ec0efd85c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HazelVulkan">
-      <UniqueIdentifier>{b7257be0-34e9-4612-9c63-03c744fcae83}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Platform\OpenGL">
-      <UniqueIdentifier>{4d8994d9-f496-48d5-b144-74f08a3d3b14}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Instancing">
-      <UniqueIdentifier>{669491ea-2cbc-40e0-8685-ea3969a776e9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Vendors">
-      <UniqueIdentifier>{f36e2cf0-7915-4a03-b277-1214cf3da7db}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Vendors\ImGui">
-      <UniqueIdentifier>{7fcfc96c-4c98-4532-b843-6ffbfb59b405}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Vendors\ImGui\backends">
-      <UniqueIdentifier>{00ef5fdc-947e-4a1e-adea-dd38e49bc4e2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Vendors\ImGui\examples">
-      <UniqueIdentifier>{61ec46df-85d3-44ac-8d73-f22af228d671}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Vendors\ImGuizmo">
-      <UniqueIdentifier>{f53b9175-4036-4c31-b324-8758066de1d3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Platform\DX11">
-      <UniqueIdentifier>{64aef6e8-8cf5-46f9-824e-d2d07f335955}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Resources\Shaders\HLSL">
-      <UniqueIdentifier>{32e7d3f1-5c4b-4175-86a2-30365e119cbf}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mono">
-      <UniqueIdentifier>{c70370b3-f4b5-4122-ad01-8390d4f3353e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mono\ConsoleGameLib">
-      <UniqueIdentifier>{f3a512dd-32cc-4fe8-a669-82392e0ac78f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Mono\GameInvoker">
-      <UniqueIdentifier>{c402bd23-da64-42be-a977-8b03868f15d8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Project">
-      <UniqueIdentifier>{940ae9b4-0db9-4f68-aaa6-65a958be1585}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Editor\EditorConsole">
-      <UniqueIdentifier>{d8872329-450d-4470-a5bb-f8b5356632ef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Audio">
-      <UniqueIdentifier>{3c47e9eb-23f0-42a6-b224-6657eeb8066d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Physics\3D">
-      <UniqueIdentifier>{b65bf2cf-6391-4825-a8ce-af8ad466668d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Renderer\UI">
-      <UniqueIdentifier>{71f0272a-1be8-4aec-bb32-4fdb80f426ab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Vendors\VulkanMemoryAllocator">
-      <UniqueIdentifier>{6eb26f9f-107c-41da-bb1d-8123f8ee09c3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Core\Events">
-      <UniqueIdentifier>{6d8235e9-9746-4efb-8ca6-bc61062b9288}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Audio\AudioEvents">
-      <UniqueIdentifier>{b9804550-3a3b-4df6-ac8e-253db7294af1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Audio\Editor">
-      <UniqueIdentifier>{ef45476a-9ec7-4796-941c-4dfd0abddfa1}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Audio\DSP">
-      <UniqueIdentifier>{3d75bce1-885f-4400-8bf6-d59c00a999af}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Audio\DSP\Components">
-      <UniqueIdentifier>{4e0ffa46-fee6-44da-9ad8-4870839ff810}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Audio\DSP\Filters">
-      <UniqueIdentifier>{82c54c78-6ca6-4d0a-9d85-13cb5130e8f0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Audio\DSP\Reverb">
-      <UniqueIdentifier>{f6f4684c-3177-4131-bc0d-0908a2bdd99f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Audio\DSP\Spatializer">
-      <UniqueIdentifier>{0c9c2e73-9752-4d0f-9843-97288cac5513}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Debug">
-      <UniqueIdentifier>{53698a45-27e0-4c02-aeeb-b3af3013c10c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Vendors\miniaudio">
-      <UniqueIdentifier>{31fd0167-4843-422b-9367-8eb11a536b82}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Physics\2D">
-      <UniqueIdentifier>{9f86e88a-0018-482e-bed5-058ecb64bd15}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Physics\3D\Debug">
-      <UniqueIdentifier>{5ae02c7c-9faa-4a7d-8235-c3b4684c945d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Math">
-      <UniqueIdentifier>{80bc6bcb-d620-4081-9ba9-dc909649399c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Hazel\Editor\NodeGraphEditor">
-      <UniqueIdentifier>{144489a1-b854-47d3-9e28-1e6b67d6c737}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M">
-      <UniqueIdentifier>{81a5ed68-d72c-4ff7-a71d-9c46aea3510b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Renderer">
-      <UniqueIdentifier>{f79df5c7-be61-4c28-b42e-48a348ba8922}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Scene">
-      <UniqueIdentifier>{9eceaf39-f78d-4fe3-a8a2-7064a6acaf70}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Editor">
-      <UniqueIdentifier>{b985c86e-3b0e-4e32-9083-14b9845ac5bb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Platform">
-      <UniqueIdentifier>{b101aa77-a2f5-4c92-a83a-11a485ba60e7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Platform\Vulkan">
-      <UniqueIdentifier>{543f76bb-5480-48f8-99ea-a8f0ebe3ba21}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\ImGui">
-      <UniqueIdentifier>{83bb75a4-8da3-433b-ad2d-82c452dc99fb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Core">
-      <UniqueIdentifier>{484ec253-83b8-4df8-822a-b8fae121c9cb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Core\Events">
-      <UniqueIdentifier>{c1e5183e-9f24-4f20-a89f-c1868844bb9e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Core\Math">
-      <UniqueIdentifier>{b350be4a-e97c-4058-a8e5-39f5cce0a24f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Asset">
-      <UniqueIdentifier>{30a42a39-33b8-4c05-b5bc-c76761eef31f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Platform\OpenGL">
-      <UniqueIdentifier>{54ef7588-c6fd-41f7-ba99-91cc37c7a4b5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Utilities">
-      <UniqueIdentifier>{b0d79515-9e21-4d0a-aa2e-e2ef02f050f5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Project">
-      <UniqueIdentifier>{fd8626a3-b58b-43eb-b944-92b1b7eccbf2}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="H2M\Platform\Windows">
-      <UniqueIdentifier>{9f3e24ef-98e5-4f9b-aefd-25b43a6d3014}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="EnvMapVulkan">
+    <Filter Include="src\EnvMapVulkan">
       <UniqueIdentifier>{b1a228fe-2ba0-4952-b3df-4385bd4b84dd}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="MoravaEngine.rc" />
+    <Filter Include="src\Framebuffer">
+      <UniqueIdentifier>{1557624c-a4a3-462a-933a-dc43da41b798}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M">
+      <UniqueIdentifier>{81a5ed68-d72c-4ff7-a71d-9c46aea3510b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Renderer">
+      <UniqueIdentifier>{f79df5c7-be61-4c28-b42e-48a348ba8922}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Scene">
+      <UniqueIdentifier>{9eceaf39-f78d-4fe3-a8a2-7064a6acaf70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Editor">
+      <UniqueIdentifier>{b985c86e-3b0e-4e32-9083-14b9845ac5bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Platform">
+      <UniqueIdentifier>{b101aa77-a2f5-4c92-a83a-11a485ba60e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Platform\Vulkan">
+      <UniqueIdentifier>{543f76bb-5480-48f8-99ea-a8f0ebe3ba21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Platform\OpenGL">
+      <UniqueIdentifier>{54ef7588-c6fd-41f7-ba99-91cc37c7a4b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Platform\Windows">
+      <UniqueIdentifier>{9f3e24ef-98e5-4f9b-aefd-25b43a6d3014}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\ImGui">
+      <UniqueIdentifier>{83bb75a4-8da3-433b-ad2d-82c452dc99fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Core">
+      <UniqueIdentifier>{484ec253-83b8-4df8-822a-b8fae121c9cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Core\Events">
+      <UniqueIdentifier>{c1e5183e-9f24-4f20-a89f-c1868844bb9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Core\Math">
+      <UniqueIdentifier>{b350be4a-e97c-4058-a8e5-39f5cce0a24f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Asset">
+      <UniqueIdentifier>{30a42a39-33b8-4c05-b5bc-c76761eef31f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Utilities">
+      <UniqueIdentifier>{b0d79515-9e21-4d0a-aa2e-e2ef02f050f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Project">
+      <UniqueIdentifier>{fd8626a3-b58b-43eb-b944-92b1b7eccbf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel">
+      <UniqueIdentifier>{7b3e4f94-2dfa-4d14-b645-f18409733f0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Core">
+      <UniqueIdentifier>{e053c5c1-9585-4c6a-82e8-6a391773a618}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Core\Math">
+      <UniqueIdentifier>{a84cc739-cf0b-42e7-af74-a36f25a75eb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Core\Events">
+      <UniqueIdentifier>{6d8235e9-9746-4efb-8ca6-bc61062b9288}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Renderer">
+      <UniqueIdentifier>{aa5ede13-8d0a-4deb-bd4b-c3087818310b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Renderer\UI">
+      <UniqueIdentifier>{71f0272a-1be8-4aec-bb32-4fdb80f426ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Scene">
+      <UniqueIdentifier>{e165e3e5-7964-4fb5-b138-f5088f5674d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Platform">
+      <UniqueIdentifier>{dbda6cda-1a09-4cea-93be-39f556584c6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Platform\OpenGL">
+      <UniqueIdentifier>{baeaae74-6311-4e23-b857-93ce0dcabd26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Platform\Windows">
+      <UniqueIdentifier>{ac34d5fa-e881-4163-b64f-264ba7d4025e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Platform\Vulkan">
+      <UniqueIdentifier>{a695ef4d-47ed-4fc1-bfdc-88fe1201473f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Utils">
+      <UniqueIdentifier>{031d2f53-87a8-40ce-b31f-54b4c795af02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Script">
+      <UniqueIdentifier>{2a43787b-f64f-487a-acd0-d4aed4f5e77a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Editor">
+      <UniqueIdentifier>{9fbe7e4a-378d-4b7e-8ff7-5cd4e3f806de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Editor\EditorConsole">
+      <UniqueIdentifier>{d8872329-450d-4470-a5bb-f8b5356632ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Editor\NodeGraphEditor">
+      <UniqueIdentifier>{144489a1-b854-47d3-9e28-1e6b67d6c737}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\ImGui">
+      <UniqueIdentifier>{85960568-1b09-4a7d-b4d4-0a4c5567f69e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\ExampleApp">
+      <UniqueIdentifier>{4e0cdee5-9044-420f-a212-6d9454330fac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\ExampleApp\Properties">
+      <UniqueIdentifier>{e9a6fc49-b180-49e3-a39b-40232dee4135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\ScriptCore">
+      <UniqueIdentifier>{57836ef2-6a3e-4d99-97e1-1aa391c5ee3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\ScriptCore\Properties">
+      <UniqueIdentifier>{1818e1d5-faea-46f6-a602-0478652d0f92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\ScriptCore\Math">
+      <UniqueIdentifier>{7fc183f9-5416-499c-bd3c-5abd06574a4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\ScriptCore\Renderer">
+      <UniqueIdentifier>{e15f45ac-01da-44fc-b5f0-294f8f197f55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\ScriptCore\Scene">
+      <UniqueIdentifier>{3b7f3ca6-b0ee-42a1-a4b2-e5a1fb50e9b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Asset">
+      <UniqueIdentifier>{80ca6d47-775a-4dc3-ae10-7eea90846fbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Physics">
+      <UniqueIdentifier>{a159bf0c-5951-4118-8982-d832c351dc77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Physics\3D">
+      <UniqueIdentifier>{b65bf2cf-6391-4825-a8ce-af8ad466668d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Physics\3D\Debug">
+      <UniqueIdentifier>{5ae02c7c-9faa-4a7d-8235-c3b4684c945d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Physics\2D">
+      <UniqueIdentifier>{9f86e88a-0018-482e-bed5-058ecb64bd15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Utilities">
+      <UniqueIdentifier>{fa67dff0-a132-4634-8470-f07ec0efd85c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Project">
+      <UniqueIdentifier>{940ae9b4-0db9-4f68-aaa6-65a958be1585}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Audio">
+      <UniqueIdentifier>{3c47e9eb-23f0-42a6-b224-6657eeb8066d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Audio\AudioEvents">
+      <UniqueIdentifier>{b9804550-3a3b-4df6-ac8e-253db7294af1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Audio\Editor">
+      <UniqueIdentifier>{ef45476a-9ec7-4796-941c-4dfd0abddfa1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Audio\DSP">
+      <UniqueIdentifier>{3d75bce1-885f-4400-8bf6-d59c00a999af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Audio\DSP\Components">
+      <UniqueIdentifier>{4e0ffa46-fee6-44da-9ad8-4870839ff810}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Audio\DSP\Filters">
+      <UniqueIdentifier>{82c54c78-6ca6-4d0a-9d85-13cb5130e8f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Audio\DSP\Reverb">
+      <UniqueIdentifier>{f6f4684c-3177-4131-bc0d-0908a2bdd99f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Audio\DSP\Spatializer">
+      <UniqueIdentifier>{0c9c2e73-9752-4d0f-9843-97288cac5513}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Debug">
+      <UniqueIdentifier>{53698a45-27e0-4c02-aeeb-b3af3013c10c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Hazel\Math">
+      <UniqueIdentifier>{80bc6bcb-d620-4081-9ba9-dc909649399c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\HazelVulkan">
+      <UniqueIdentifier>{b7257be0-34e9-4612-9c63-03c744fcae83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\ImGui">
+      <UniqueIdentifier>{26c09032-6431-40e4-aea4-e0387d07933c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Instancing">
+      <UniqueIdentifier>{669491ea-2cbc-40e0-8685-ea3969a776e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\LearnOpenGL">
+      <UniqueIdentifier>{70fddf24-9111-4cf0-b645-69795cbd12a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Light">
+      <UniqueIdentifier>{a1c4fd28-f0a8-4279-84f5-7d8efd5c7e6c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Material">
+      <UniqueIdentifier>{7cae81c5-191e-4f87-b92d-106056996405}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Mesh">
+      <UniqueIdentifier>{5bc36ffa-09a4-4405-8331-13dbc8599f65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Misc">
+      <UniqueIdentifier>{f98702ee-42c5-40bb-8d27-cf5617304eca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Mono">
+      <UniqueIdentifier>{c70370b3-f4b5-4122-ad01-8390d4f3353e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Mono\ConsoleGameLib">
+      <UniqueIdentifier>{f3a512dd-32cc-4fe8-a669-82392e0ac78f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Mono\GameInvoker">
+      <UniqueIdentifier>{c402bd23-da64-42be-a977-8b03868f15d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Particle">
+      <UniqueIdentifier>{fd7493ea-185d-42c8-bbc8-3db57a28c37d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\PerlinNoise">
+      <UniqueIdentifier>{dbfdba99-a8bc-4267-ad45-40ae3edc4c3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Physics">
+      <UniqueIdentifier>{dff8738b-62be-4a44-87e8-9156b51321aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Platform">
+      <UniqueIdentifier>{42db03f0-bce2-49ee-9e26-41ea8b165e57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Platform\Windows">
+      <UniqueIdentifier>{3852b832-d027-483b-bbcd-6019fd477d75}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Platform\Vulkan">
+      <UniqueIdentifier>{f2f242b6-2ea7-4121-8530-370abb9fd364}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Platform\OpenGL">
+      <UniqueIdentifier>{4d8994d9-f496-48d5-b144-74f08a3d3b14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Platform\DX11">
+      <UniqueIdentifier>{64aef6e8-8cf5-46f9-824e-d2d07f335955}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Player">
+      <UniqueIdentifier>{e038b3e3-f988-4252-b109-ef5684319fd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\PostProcessing">
+      <UniqueIdentifier>{29da581e-1ade-4f5d-9017-46c95e57f366}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Renderer">
+      <UniqueIdentifier>{2bc20e84-4e62-4180-8158-69cad9f92c96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Scene">
+      <UniqueIdentifier>{c3f2e82c-4f6a-4a1e-9265-36233d6e7de5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Shader">
+      <UniqueIdentifier>{d0b26742-b39e-4373-a778-1f82bad0dd47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Skybox">
+      <UniqueIdentifier>{3ce9836d-cbfb-4e7b-82ca-790210fb8bc8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\SongHo">
+      <UniqueIdentifier>{0712e484-7c09-4c16-82a2-fd97a48b56b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\SSAO">
+      <UniqueIdentifier>{cd00ca42-9ed6-43da-958a-e9b60e9b9d05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Terrain">
+      <UniqueIdentifier>{cad5a15f-3c79-4ab5-867f-68481af6dc01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Texture">
+      <UniqueIdentifier>{0e61b564-ff23-4486-831f-aba4eab69adc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources">
+      <UniqueIdentifier>{65432256-d30e-476b-889b-d3645c27ff4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Hazel">
+      <UniqueIdentifier>{106a9f9c-85c3-4c1d-bc6a-b539697f660f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Hazel\Shaders">
+      <UniqueIdentifier>{09be69c6-ba34-4d3e-b9ad-a4b1b3c22397}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Shaders">
+      <UniqueIdentifier>{1fa4af93-d603-45ed-84e4-2102fed20030}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Shaders\Hazel">
+      <UniqueIdentifier>{22005396-2ef0-4cf0-9115-977f55abfdc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Shaders\LearnOpenGL">
+      <UniqueIdentifier>{52877ba7-4942-4935-aefe-37bc94546c52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Shaders\OGLdev">
+      <UniqueIdentifier>{2708a105-dcf7-4d98-b932-8b7f6093e5f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Shaders\OGLdev\tutorial35">
+      <UniqueIdentifier>{1111f9db-5bae-40a8-84a4-0d2d37e8727b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Shaders\PBR">
+      <UniqueIdentifier>{ce93b422-7888-4f20-9c11-9a8751876ac9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Shaders\ThinMatrix">
+      <UniqueIdentifier>{a275f58a-ad39-4823-b341-9a396d6be34c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\Shaders\HLSL">
+      <UniqueIdentifier>{32e7d3f1-5c4b-4175-86a2-30365e119cbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendors">
+      <UniqueIdentifier>{f36e2cf0-7915-4a03-b277-1214cf3da7db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendors\ImGui">
+      <UniqueIdentifier>{7fcfc96c-4c98-4532-b843-6ffbfb59b405}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendors\ImGui\backends">
+      <UniqueIdentifier>{00ef5fdc-947e-4a1e-adea-dd38e49bc4e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendors\ImGui\examples">
+      <UniqueIdentifier>{61ec46df-85d3-44ac-8d73-f22af228d671}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendors\ImGuizmo">
+      <UniqueIdentifier>{f53b9175-4036-4c31-b324-8758066de1d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendors\VulkanMemoryAllocator">
+      <UniqueIdentifier>{6eb26f9f-107c-41da-bb1d-8123f8ee09c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendors\miniaudio">
+      <UniqueIdentifier>{31fd0167-4843-422b-9367-8eb11a536b82}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="assets\shaders\BloomBlend.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\BloomBlur.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\Collider.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\EnvironmentIrradiance.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\EnvironmentMipFilter.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\EquirectangularToCubeMap.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\Grid.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\HazelPBR_Anim.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\HazelPBR_Static.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\HazelPBR_Static_NoTexture.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\HazelSimple.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\Outline.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\Outline_Anim.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\Renderer2D.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\Renderer2D_Circle.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\Renderer2D_Line.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\SceneComposite.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\SceneCompositeMS.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\shader.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\ShadowMap.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\ShadowMap_Anim.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\Skybox.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\Texture.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\VulkanTriangle.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="Shaders\asteroids.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\asteroids.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\asteroids_planet.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\basic.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\basic.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\cubemap.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\cubemap.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\directional_shadow_map.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\directional_shadow_map.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\editor_object.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\editor_object.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\framebuffers_scene.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\framebuffers_scene.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\framebuffers_screen.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\framebuffers_screen.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\gizmo.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\gizmo.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\glass.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\glass.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\HybridAnimPBR.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\HybridAnimPBR.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\instanced.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\instanced.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\learnopengl.PBR.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\marching_cubes.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\marching_cubes.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\nanosuit.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\nanosuit.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\omni_shadow_map.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\omni_shadow_map.geom">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\omni_shadow_map.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\PBR.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\PBR.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\render_instanced.fs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\render_instanced.vs">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\shader.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\shader.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\skybox.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\skybox.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\skybox_joey.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\skybox_joey.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\water.frag">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\water.vert">
-      <Filter>Resources\Shaders</Filter>
+      <Filter>resources\Shaders</Filter>
     </None>
     <None Include="Shaders\Hazel\EnvironmentIrradiance.cs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\EnvironmentMipFilter.cs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\EquirectangularToCubeMap.cs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Grid.fs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Grid.vs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\HazelPBR.fs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\HazelPBR_Anim.vs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\HazelPBR_Static.vs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\HDR.fs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\HDR.vs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Outline.fs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Outline.vs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Renderer2D.fs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Renderer2D.glsl">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Renderer2D.vs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Renderer2D_Line.fs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Renderer2D_Line.vs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\SceneComposite.fs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\SceneComposite.vs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Skybox.fs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\Hazel\Skybox.vs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
     <None Include="Shaders\OGLdev\skinning.fs">
-      <Filter>Resources\Shaders\OGLdev</Filter>
+      <Filter>resources\Shaders\OGLdev</Filter>
     </None>
     <None Include="Shaders\OGLdev\skinning.vs">
-      <Filter>Resources\Shaders\OGLdev</Filter>
+      <Filter>resources\Shaders\OGLdev</Filter>
     </None>
     <None Include="Shaders\OGLdev\tutorial35\forward_basic.fs">
-      <Filter>Resources\Shaders\OGLdev\tutorial35</Filter>
+      <Filter>resources\Shaders\OGLdev\tutorial35</Filter>
     </None>
     <None Include="Shaders\OGLdev\tutorial35\forward_basic.vs">
-      <Filter>Resources\Shaders\OGLdev\tutorial35</Filter>
+      <Filter>resources\Shaders\OGLdev\tutorial35</Filter>
     </None>
     <None Include="Shaders\OGLdev\tutorial35\geometry_pass.fs">
-      <Filter>Resources\Shaders\OGLdev\tutorial35</Filter>
+      <Filter>resources\Shaders\OGLdev\tutorial35</Filter>
     </None>
     <None Include="Shaders\OGLdev\tutorial35\geometry_pass.vs">
-      <Filter>Resources\Shaders\OGLdev\tutorial35</Filter>
+      <Filter>resources\Shaders\OGLdev\tutorial35</Filter>
     </None>
     <None Include="Shaders\PBR\brdf.fs">
-      <Filter>Resources\Shaders\PBR</Filter>
+      <Filter>resources\Shaders\PBR</Filter>
     </None>
     <None Include="Shaders\PBR\brdf.vs">
-      <Filter>Resources\Shaders\PBR</Filter>
+      <Filter>resources\Shaders\PBR</Filter>
     </None>
     <None Include="Shaders\PBR\cubemap.vs">
-      <Filter>Resources\Shaders\PBR</Filter>
+      <Filter>resources\Shaders\PBR</Filter>
     </None>
     <None Include="Shaders\PBR\editor_object_pbr.fs">
-      <Filter>Resources\Shaders\PBR</Filter>
+      <Filter>resources\Shaders\PBR</Filter>
     </None>
     <None Include="Shaders\PBR\equirectangular_to_cubemap.fs">
-      <Filter>Resources\Shaders\PBR</Filter>
+      <Filter>resources\Shaders\PBR</Filter>
     </None>
     <None Include="Shaders\PBR\irradiance_convolution.fs">
-      <Filter>Resources\Shaders\PBR</Filter>
+      <Filter>resources\Shaders\PBR</Filter>
     </None>
     <None Include="Shaders\PBR\prefilter.fs">
-      <Filter>Resources\Shaders\PBR</Filter>
+      <Filter>resources\Shaders\PBR</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\blur.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\blur_horizontal.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\blur_vertical.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\flare.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\flare.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\font.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\font.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\gui.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\gui.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\particle.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\particle.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\particle_instanced.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\particle_instanced.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\sun.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\sun.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\terrain.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\terrain.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\terrain_low_poly.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\terrain_low_poly.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\water.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\water.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\water_low_poly.fs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\ThinMatrix\water_low_poly.vs">
-      <Filter>Resources\Shaders\ThinMatrix</Filter>
+      <Filter>resources\Shaders\ThinMatrix</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\2.2.2.background.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\2.2.2.background.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\2.2.2.pbr.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\2.2.2.pbr.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\2.2.3.pbr.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\4.2.lighting_maps.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\4.2.lighting_maps.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\6.2.cubemaps.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\6.2.cubemaps.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\6.2.cubemaps_nanosuit.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\6.2.skybox.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\6.2.skybox.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\8.2.deferred_light_box.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\8.2.deferred_light_box.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\8.2.deferred_shading.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\8.2.deferred_shading.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\8.2.g_buffer.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\8.2.g_buffer.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\ssao.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\ssao.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\ssao_blur.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\ssao_geometry.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\ssao_geometry.vs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="Shaders\LearnOpenGL\ssao_lighting.fs">
-      <Filter>Resources\Shaders\LearnOpenGL</Filter>
+      <Filter>resources\Shaders\LearnOpenGL</Filter>
     </None>
     <None Include="assets\shaders\VulkanWeekMesh.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="assets\shaders\VulkanWeekTriangle.glsl">
-      <Filter>Resources\Hazel\Shaders</Filter>
+      <Filter>resources\Hazel\Shaders</Filter>
     </None>
     <None Include="Shaders\Hazel\HazelPBR_Static_CSM.fs">
-      <Filter>Resources\Shaders\Hazel</Filter>
+      <Filter>resources\Shaders\Hazel</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\HLSL\DirectionalLightPixelShader.hlsl">
-      <Filter>Resources\Shaders\HLSL</Filter>
+      <Filter>resources\Shaders\HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\HLSL\DirectionalLightVertexShader.hlsl">
-      <Filter>Resources\Shaders\HLSL</Filter>
+      <Filter>resources\Shaders\HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\HLSL\DirLightBumpPS.hlsl">
-      <Filter>Resources\Shaders\HLSL</Filter>
+      <Filter>resources\Shaders\HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\HLSL\DirLightBumpVS.hlsl">
-      <Filter>Resources\Shaders\HLSL</Filter>
+      <Filter>resources\Shaders\HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\HLSL\Triangle.hlsl">
-      <Filter>Resources\Shaders\HLSL</Filter>
+      <Filter>resources\Shaders\HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\HLSL\BasicPixelShader.hlsl">
-      <Filter>Resources\Shaders\HLSL</Filter>
+      <Filter>resources\Shaders\HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\HLSL\BasicVertexShader.hlsl">
-      <Filter>Resources\Shaders\HLSL</Filter>
+      <Filter>resources\Shaders\HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\HLSL\MediumPixelShader.hlsl">
-      <Filter>Resources\Shaders\HLSL</Filter>
+      <Filter>resources\Shaders\HLSL</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\HLSL\MediumVertexShader.hlsl">
-      <Filter>Resources\Shaders\HLSL</Filter>
+      <Filter>resources\Shaders\HLSL</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

@@ -133,11 +133,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="src\Camera\Camera.cpp" />
     <ClCompile Include="src\Camera\CameraController.cpp" />
     <ClCompile Include="src\Camera\CameraControllerVoxelTerrain.cpp" />
@@ -283,6 +278,7 @@
     <ClCompile Include="src\Light\LightManager.cpp" />
     <ClCompile Include="src\Light\PointLight.cpp" />
     <ClCompile Include="src\Light\SpotLight.cpp" />
+    <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Material\Material.cpp" />
     <ClCompile Include="src\Material\MaterialInstance.cpp" />
     <ClCompile Include="src\Material\MaterialLibrary.cpp" />
@@ -324,6 +320,7 @@
     <ClCompile Include="src\Particle\ParticleSystemCherno.cpp" />
     <ClCompile Include="src\Particle\ParticleSystemThinMatrix.cpp" />
     <ClCompile Include="src\Particle\ParticleTexture.cpp" />
+    <ClCompile Include="src\pch.cpp" />
     <ClCompile Include="src\Physics\SpartanPhysics.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11.cpp" />
     <ClCompile Include="src\Platform\DX11\DX11Allocator.cpp" />
@@ -559,13 +556,11 @@
     <ClInclude Include="..\vendor\miniaudio\include\miniaudio_engine.h" />
     <ClInclude Include="..\vendor\miniaudio\include\miniaudio_incl.h" />
     <ClInclude Include="..\vendor\VulkanMemoryAllocator\vk_mem_alloc.h" />
-    <ClInclude Include="config.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="pch.h" />
     <ClInclude Include="src\Camera\Camera.h" />
     <ClInclude Include="src\Camera\CameraController.h" />
     <ClInclude Include="src\Camera\CameraControllerVoxelTerrain.h" />
     <ClInclude Include="src\Camera\RuntimeCamera.h" />
+    <ClInclude Include="src\config.h" />
     <ClInclude Include="src\Core\AABB.h" />
     <ClInclude Include="src\Core\Application.h" />
     <ClInclude Include="src\Core\CommonStructs.h" />
@@ -737,6 +732,7 @@
     <ClInclude Include="src\Light\LightManager.h" />
     <ClInclude Include="src\Light\PointLight.h" />
     <ClInclude Include="src\Light\SpotLight.h" />
+    <ClInclude Include="src\main.h" />
     <ClInclude Include="src\Material\Material.h" />
     <ClInclude Include="src\Material\MaterialInstance.h" />
     <ClInclude Include="src\Material\MaterialLibrary.h" />
@@ -783,6 +779,7 @@
     <ClInclude Include="src\Particle\ParticleSystemCherno.h" />
     <ClInclude Include="src\Particle\ParticleSystemThinMatrix.h" />
     <ClInclude Include="src\Particle\ParticleTexture.h" />
+    <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\PerlinNoise\PerlinNoise.hpp" />
     <ClInclude Include="src\Physics\SpartanPhysics.h" />
     <ClInclude Include="src\Platform\DX11\DX11.h" />
@@ -941,6 +938,7 @@
     <ClInclude Include="src\Renderer\RendererPBR.h" />
     <ClInclude Include="src\Renderer\RendererTrivial.h" />
     <ClInclude Include="src\Renderer\RendererVoxelTerrain.h" />
+    <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\Scene\Scene.h" />
     <ClInclude Include="src\Scene\SceneAnimPBR.h" />
     <ClInclude Include="src\Scene\SceneAsteroids.h" />
@@ -979,6 +977,8 @@
     <ClInclude Include="src\SongHo\CylinderSongHo.h" />
     <ClInclude Include="src\SSAO\GBufferSSAO.h" />
     <ClInclude Include="src\SSAO\SSAO.h" />
+    <ClInclude Include="src\stb_image.h" />
+    <ClInclude Include="src\stb_image_write.h" />
     <ClInclude Include="src\Terrain\EndlessTerrain.h" />
     <ClInclude Include="src\Terrain\MapGenerator.h" />
     <ClInclude Include="src\Terrain\MeshGenerator.h" />
@@ -998,9 +998,6 @@
     <ClInclude Include="src\Texture\TextureLoader.h" />
     <ClInclude Include="src\Texture\TextureSampler.h" />
     <ClInclude Include="src\Water\WaterManager.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="MoravaEngine.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\vendor\cross-platform\assimp\code\assimp.vcxproj">
