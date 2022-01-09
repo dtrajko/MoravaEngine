@@ -14,7 +14,7 @@
 #include <string>
 
 
-class Skybox
+class Skybox : public H2M::RefCountedH2M
 {
 
 public:

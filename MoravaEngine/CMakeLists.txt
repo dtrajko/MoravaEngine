@@ -11,9 +11,6 @@ add_compile_definitions(HZ_DEBUG)
 
 set(MSVC_INCREMENTAL_DEFAULT ON)
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-
 project("MoravaEngine" VERSION 0.0.1)
 
 
@@ -57,10 +54,11 @@ set_property(SOURCE ${RESOURCES} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
 file(GLOB_RECURSE BulletDynamics_SRCS		${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/BulletDynamics/*.cpp)
 file(GLOB_RECURSE BulletCollision_SRCS		${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/BulletCollision/*.cpp)
 file(GLOB_RECURSE LinearMath_SRCS			${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/LinearMath/*.cpp)
-file(GLOB_RECURSE yaml-cpp_SRCS				${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp/src/*.cpp)
 file(GLOB_RECURSE box2d_SRCS				${ROOT_PATH_ABS}/vendor/box2d/src/*.cpp)
-file(GLOB_RECURSE DirectXTex_SRCS			${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/*.cpp)
+file(GLOB_RECURSE box2d_SRCS				${ROOT_PATH_ABS}/vendor/box2d/src/*.cpp)
 file(GLOB_RECURSE SPIRV-Cross_SRCS			${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/*.cpp)
+file(GLOB_RECURSE yaml-cpp_SRCS				${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp/src/*.cpp)
+#	file(GLOB_RECURSE glfw3_SRCS				${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/*.c)
 #	file(GLOB_RECURSE zlibstatic_SRCS			${ROOT_PATH_ABS}/vendor/cross-platform/assimp/contrib/zlib/*.c)
 #	file(GLOB_RECURSE irrXML_SRCS				${ROOT_PATH_ABS}/vendor/cross-platform/assimp/contrib/irrXML/*.cpp)
 #	file(GLOB_RECURSE spirv-cross-core_SRCS		${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/*.cpp)
@@ -71,6 +69,54 @@ file(GLOB_RECURSE SPIRV-Cross_SRCS			${ROOT_PATH_ABS}/vendor/cross-platform/SPIR
 #	file(GLOB_RECURSE spirv-cross-reflect_SRCS	${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/*.cpp)
 #	file(GLOB_RECURSE spirv-cross-util_SRCS		${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/*.cpp)
 
+
+##	if(WIN32)
+##		SET(glfw3_SRCS	
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/context.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/init.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/input.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/monitor.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/vulkan.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_init.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_monitor.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_thread.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_time.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_window.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/window.c
+##			)
+##	elseif(UNIX)
+##		SET(glfw3_SRCS
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/glfw_config.h
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include/GLFW/glfw3.h
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include/GLFW/glfw3native.h
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/internal.h
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/mappings.h
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/context.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/init.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/input.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/monitor.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/vulkan.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/window.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_platform.h
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.h
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.h
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.h
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.h
+##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_init.c
+##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.c
+##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_monitor.c
+##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_time.c
+##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_thread.c
+##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_window.c
+##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c
+##		)
+##	endif()
 
 SET(spirv-cross-core_SRCS
 	${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/spirv_cross.cpp
@@ -149,13 +195,12 @@ set(CMAKE_GENERATOR_PLATFORM, x64)
 
 unset(CMAKE_IMPORT_LIBRARY_SUFFIX)
 
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
 
 add_library(box2d				STATIC "${box2d_SRCS}")
 add_library(BulletCollision		STATIC "${BulletCollision_SRCS}")
 add_library(BulletDynamics		STATIC "${BulletDynamics_SRCS}")
 add_library(LinearMath			STATIC "${LinearMath_SRCS}")
+##	add_library(glfw3				STATIC "${glfw3_SRCS}")
 add_library(SPIRV-Cross			STATIC "${SPIRV-Cross_SRCS}")
 add_library(spirv-cross-core	STATIC "${spirv-cross-core_SRCS}")
 add_library(spirv-cross-cpp		STATIC "${spirv-cross-cpp_SRCS}")
@@ -165,8 +210,7 @@ add_library(spirv-cross-msl		STATIC "${spirv-cross-msl_SRCS}")
 add_library(spirv-cross-reflect	STATIC "${spirv-cross-reflect_SRCS}")
 add_library(spirv-cross-util	STATIC "${spirv-cross-util_SRCS}")
 add_library(yaml-cpp			STATIC "${yaml-cpp_SRCS}")
-#	add_library(assimp			STATIC "${assimp_SRCS}")
-#	add_library(glfw3				STATIC "${glfw3_SRCS}")
+#	add_library(assimp				STATIC "${assimp_SRCS}")
 #	add_library(irrXML				STATIC "${irrXML_SRCS}")
 #	add_library(zlibstatic			STATIC "${zlibstatic_SRCS}")
 #	add_library(shaderc				STATIC "${shaderc_SRCS}")
@@ -200,66 +244,6 @@ add_library(yaml-cpp			STATIC "${yaml-cpp_SRCS}")
 #		"System.Net.Http"
 #		"System.Xml"
 #	)
-
-
-if(WIN32)
-	set_property(TARGET box2d					PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET BulletCollision			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET BulletDynamics			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET LinearMath				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET SPIRV-Cross				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET spirv-cross-core		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET spirv-cross-cpp			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET spirv-cross-glsl		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET spirv-cross-hlsl		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET spirv-cross-msl			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET spirv-cross-reflect		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET spirv-cross-util		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	set_property(TARGET yaml-cpp				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	#	set_property(TARGET assimp				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")			
-	#	set_property(TARGET glfw3				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	#	set_property(TARGET irrXML				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	#	set_property(TARGET shaderc				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	#	set_property(TARGET zlibstatic			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
-
-# add_dependencies(assimp irrXML)
-# add_dependencies(assimp zlibstatic)
-# add_dependencies("${PROJECT_NAME}" assimp)
-# add_dependencies("${PROJECT_NAME}" glfw3)
-
-add_executable(${PROJECT_NAME} ${SOURCES} ${SOURCES_IMGUI} ${SOURCES_IMGUIZMO} ${RESOURCES} ${SOURCES_MINIAUDIO} ${SOURCES_VMA})
-
-add_dependencies("${PROJECT_NAME}" box2d)
-add_dependencies("${PROJECT_NAME}" BulletCollision)
-add_dependencies("${PROJECT_NAME}" BulletDynamics)
-add_dependencies("${PROJECT_NAME}" LinearMath)
-add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
-add_dependencies(SPIRV-Cross spirv-cross-core)
-add_dependencies(SPIRV-Cross spirv-cross-cpp)
-add_dependencies(SPIRV-Cross spirv-cross-glsl)
-add_dependencies(SPIRV-Cross spirv-cross-hlsl)
-add_dependencies(SPIRV-Cross spirv-cross-msl)
-add_dependencies(SPIRV-Cross spirv-cross-reflect)
-add_dependencies(SPIRV-Cross spirv-cross-util)
-add_dependencies("${PROJECT_NAME}" yaml-cpp)
-
-#	add_dependencies("${PROJECT_NAME}" DirectXTex)
-#	add_dependencies("${PROJECT_NAME}" shaderc)
-#	add_dependencies("${PROJECT_NAME}" Hazel-ScriptCore)
-#	add_dependencies("${PROJECT_NAME}" ExampleApp)
-
-set_target_properties("${PROJECT_NAME}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
-set_target_properties(BulletDynamics	PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
-set_target_properties(BulletCollision   PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
-set_target_properties(LinearMath		PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
-#	set_target_properties(assimp		PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
-#	set_target_properties(glfw3			PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
-
-#	target_compile_definitions(glfw3 PRIVATE _GLFW_USE_CONFIG_H)
-
-target_compile_features("${PROJECT_NAME}"	PRIVATE cxx_std_17)
-#	target_compile_features(assimp				PRIVATE cxx_std_17)
 
 
 target_include_directories(
@@ -387,6 +371,84 @@ target_include_directories(
 #		../MoravaEngine/src/H2M/ExampleApp
 #	)
 
+################################################################################
+
+add_executable(${PROJECT_NAME} ${SOURCES} ${SOURCES_IMGUI} ${SOURCES_IMGUIZMO} ${RESOURCES} ${SOURCES_MINIAUDIO} ${SOURCES_VMA})
+
+add_dependencies(SPIRV-Cross spirv-cross-core)
+add_dependencies(SPIRV-Cross spirv-cross-cpp)
+add_dependencies(SPIRV-Cross spirv-cross-glsl)
+add_dependencies(SPIRV-Cross spirv-cross-hlsl)
+add_dependencies(SPIRV-Cross spirv-cross-msl)
+add_dependencies(SPIRV-Cross spirv-cross-reflect)
+add_dependencies(SPIRV-Cross spirv-cross-util)
+add_dependencies("${PROJECT_NAME}" box2d)
+add_dependencies("${PROJECT_NAME}" BulletCollision)
+add_dependencies("${PROJECT_NAME}" BulletDynamics)
+add_dependencies("${PROJECT_NAME}" LinearMath)
+add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
+add_dependencies("${PROJECT_NAME}" yaml-cpp)
+#	add_dependencies(assimp irrXML)
+#	add_dependencies(assimp zlibstatic)
+#	add_dependencies("${PROJECT_NAME}" assimp)
+#	add_dependencies("${PROJECT_NAME}" glfw3)
+#	add_dependencies("${PROJECT_NAME}" glfw3)
+#	add_dependencies("${PROJECT_NAME}" DirectXTex)
+#	add_dependencies("${PROJECT_NAME}" shaderc)
+#	add_dependencies("${PROJECT_NAME}" Hazel-ScriptCore)
+#	add_dependencies("${PROJECT_NAME}" ExampleApp)
+
+if(WIN32)
+	set_property(TARGET box2d					PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET BulletCollision			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET BulletDynamics			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET LinearMath				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	##	set_property(TARGET glfw3					PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET SPIRV-Cross				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET spirv-cross-core		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET spirv-cross-cpp			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET spirv-cross-glsl		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET spirv-cross-hlsl		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET spirv-cross-msl			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET spirv-cross-reflect		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET spirv-cross-util		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET yaml-cpp				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	#	set_property(TARGET assimp				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	#	set_property(TARGET irrXML				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	#	set_property(TARGET shaderc				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	#	set_property(TARGET zlibstatic			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+	##	set_property(TARGET	glfw3					PROPERTY USE_MSVC_RUNTIME_LIBRARY_DLL "OFF")
+
+	set_property(TARGET	"${PROJECT_NAME}"		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
+set_target_properties("${PROJECT_NAME}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+#	set_target_properties(BulletDynamics	PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+#	set_target_properties(BulletCollision   PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+#	set_target_properties(LinearMath		PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+#	set_target_properties(glfw3				PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+#	set_target_properties(assimp			PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+
+set_target_properties("${PROJECT_NAME}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+#	set_target_properties(BulletDynamics	PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+#	set_target_properties(BulletCollision   PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+#	set_target_properties(LinearMath		PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+#	set_target_properties(glfw3				PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+#	set_target_properties(assimp			PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
+
+#	target_compile_definitions(glfw3 PRIVATE _GLFW_USE_CONFIG_H)
+#	target_compile_definitions(glfw3 PRIVATE _GLFW_WIN32)
+
+target_compile_features("${PROJECT_NAME}"	PRIVATE cxx_std_17)
+#	target_compile_features(assimp				PRIVATE cxx_std_17)
+
+target_compile_features("${PROJECT_NAME}"	PRIVATE cxx_std_17)
+
 # -- BEGIN Main project
 
 target_include_directories(
@@ -498,7 +560,7 @@ if(UNIX)
 		libGLEW.so # -lGLEW
 		libGLU.so  # -lGLU
 		libGL.so   # -lGL
-		#libglfw3.a
+		# libglfw3.a
 		libassimp.so
 		libBulletDynamics.a
 		libBulletCollision.a
@@ -541,14 +603,16 @@ endif()
 #	file(COPY ./Shaders					DESTINATION ../build)
 #	file(COPY ./Textures				DESTINATION ../build)
 
+############################################################################
 
 # Build assimp with CMake
-execute_process(COMMAND cmake ./CMakeLists.txt WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/assimp)
+execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/assimp)
 execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/assimp)
 
 # Build GLFW with CMake
 execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
-execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
+execute_process(COMMAND cmake -S . -B . -DBUILD_SHARED_LIBS=OFF WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
+
 
 # Build shaderc - use python to run git-sync-deps
 execute_process(COMMAND python git-sync-deps WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/utils)
@@ -572,9 +636,3 @@ file(REMOVE_RECURSE ${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/examples/Thir
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
 
 set_property(TARGET "${PROJECT_NAME}" PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "..")
-
-if(WIN32)
-
-set_property(TARGET	"${PROJECT_NAME}"		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
-endif()

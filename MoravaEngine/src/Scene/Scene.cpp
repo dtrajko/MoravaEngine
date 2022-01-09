@@ -445,7 +445,6 @@ Camera* Scene::GetCamera()
 
 Scene::~Scene()
 {
-	delete m_Skybox;
 	delete m_CameraController;
 	delete m_Camera;
 	delete m_WaterManager;

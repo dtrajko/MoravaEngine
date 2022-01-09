@@ -97,34 +97,34 @@ public:
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) = 0;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
-		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) {};
+		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) {}
 
 	virtual void OnWindowResize(H2M::WindowResizeEventH2M& e);
 
-	virtual inline bool IsWaterOnScene() { return false; };
+	virtual inline bool IsWaterOnScene() { return false; }
 
-	inline bool IsWireframeEnabled() { return m_WireframeEnabled; };
+	inline bool IsWireframeEnabled() { return m_WireframeEnabled; }
 
 	// Getters
 	Camera* GetCamera();
-	inline CameraController* GetCameraController() const { return m_CameraController; };
-	static inline SceneSettings GetSettings() { return sceneSettings; };
-	std::map<std::string, H2M::RefH2M<MoravaTexture>> GetTextures() const { return textures; };
-	std::map<std::string, GLuint> GetTextureSlots() const { return textureSlots; };
-	inline std::map<std::string, Material*> GetMaterials() const { return materials; };
-	inline std::map<std::string, Model*> GetModels() const { return models; };
-	inline std::map<std::string, Mesh*> GetMeshes() const { return meshes; };
-	inline WaterManager* GetWaterManager() const { return m_WaterManager; };
-	inline Skybox* GetSkybox() const { return m_Skybox; };
+	inline CameraController* GetCameraController() const { return m_CameraController; }
+	static inline SceneSettings GetSettings() { return sceneSettings; }
+	std::map<std::string, H2M::RefH2M<MoravaTexture>> GetTextures() const { return textures; }
+	std::map<std::string, GLuint> GetTextureSlots() const { return textureSlots; }
+	inline std::map<std::string, Material*> GetMaterials() const { return materials; }
+	inline std::map<std::string, Model*> GetModels() const { return models; }
+	inline std::map<std::string, Mesh*> GetMeshes() const { return meshes; }
+	inline WaterManager* GetWaterManager() const { return m_WaterManager; }
+	inline H2M::RefH2M<Skybox> GetSkybox() const { return m_Skybox; }
 	inline float GetFOV() { return m_FOV; };
-	inline std::map<std::string, float>* GetProfilerResults() { return &m_ProfilerResults; };
+	inline std::map<std::string, float>* GetProfilerResults() { return &m_ProfilerResults; }
 
 	// Setters
 	virtual void SetCamera();
 	virtual void SetLightManager();
 	virtual void SetWaterManager(int width, int height);
-	inline void SetWireframeEnabled(bool wireframeEnabled) { m_WireframeEnabled = wireframeEnabled; };
-	inline void SetFOV(float FOV) { m_FOV = FOV; };
+	inline void SetWireframeEnabled(bool wireframeEnabled) { m_WireframeEnabled = wireframeEnabled; }
+	inline void SetFOV(float FOV) { m_FOV = FOV; }
 
 private:
 	virtual void SetupTextures();
@@ -150,7 +150,7 @@ protected:
 	Camera* m_Camera;
 	CameraController* m_CameraController;
 
-	Skybox* m_Skybox;
+	H2M::RefH2M<Skybox> m_Skybox;
 	std::vector<std::string> skyboxFaces;
 
 	WaterManager* m_WaterManager;
