@@ -39,19 +39,19 @@ source_group(TREE ../../vendor/cross-platform/ImGuizmo PREFIX vendor/ImGuizmo FI
 file(GLOB_RECURSE SOURCES_IMGUIZMO_EXAMPLE ../vendor/cross-platform/ImGuizmo/example/*.cpp)
 set_property(SOURCE ${SOURCES_IMGUIZMO_EXAMPLE} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
 
+# Vendors/miniaudio ../vendor/miniaudio/include
+file(GLOB_RECURSE SOURCES_MINIAUDIO ../vendor/miniaudio/*.c ../vendor/miniaudio/*.h)
+source_group(TREE ../../vendor/miniaudio PREFIX vendor/miniaudio FILES ${SOURCES_MINIAUDIO})
+#set_property(SOURCE ../../vendor/miniaudio/include/stb_vorbis.c PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
 
-#	# Vendors/miniaudio ../vendor/miniaudio/include
-#	file(GLOB_RECURSE SOURCES_MINIAUDIO ../vendor/miniaudio/include/*.c ../vendor/miniaudio/include/*.h)
-#	source_group(TREE ../../vendor/miniaudio PREFIX src/Vendor/miniaudio/include FILES ${SOURCES_MINIAUDIO})
-#	
-#	# Vendors/VulkanMemoryAllocator vendor/VulkanMemoryAllocator
-#	file(GLOB_RECURSE SOURCES_VMA ../vendor/VulkanMemoryAllocator/*.cpp vendor/VulkanMemoryAllocator/*.h)
-#	source_group(TREE ../../vendor/VulkanMemoryAllocator PREFIX src/Vendor/VulkanMemoryAllocator FILES ${SOURCES_VMA})
+# Vendors/VulkanMemoryAllocator vendor/VulkanMemoryAllocator
+file(GLOB_RECURSE SOURCES_VMA ../vendor/VulkanMemoryAllocator/*.cpp ../vendor/VulkanMemoryAllocator/*.h)
+source_group(TREE ../../vendor/VulkanMemoryAllocator PREFIX vendor/VulkanMemoryAllocator FILES ${SOURCES_VMA})
 
-#	# src/Resources
-#	file(GLOB_RECURSE RESOURCES ./Resources/Shaders/*.glsl)
-#	source_group(TREE ../Resources PREFIX src/Resources FILES ${RESOURCES})
-#	set_property(SOURCE ${RESOURCES} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
+# src/Resources
+file(GLOB_RECURSE RESOURCES ./Resources/Shaders/*.glsl)
+source_group(TREE ../Resources PREFIX resources FILES ${RESOURCES})
+set_property(SOURCE ${RESOURCES} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
 
 
 file(GLOB_RECURSE BulletDynamics_SRCS		${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/BulletDynamics/*.cpp)
@@ -228,7 +228,7 @@ endif()
 # add_dependencies("${PROJECT_NAME}" assimp)
 # add_dependencies("${PROJECT_NAME}" glfw3)
 
-add_executable("${PROJECT_NAME}" "${SOURCES}" "${SOURCES_IMGUI}" "${SOURCES_IMGUIZMO}")
+add_executable(${PROJECT_NAME} ${SOURCES} ${SOURCES_IMGUI} ${SOURCES_IMGUIZMO} ${RESOURCES} ${SOURCES_MINIAUDIO} ${SOURCES_VMA})
 
 add_dependencies("${PROJECT_NAME}" box2d)
 add_dependencies("${PROJECT_NAME}" BulletCollision)
@@ -421,32 +421,42 @@ target_include_directories(
 	${ROOT_PATH_ABS}/vendor/NvidiaAftermath/include
 )
 
-target_link_directories(
-	"${PROJECT_NAME}" PUBLIC
+SET(LINK_DIRS_CROSS_PLATFORM
 	${ROOT_PATH_ABS}/${PROJECT_NAME}/build/$ENV{MORAVA_BUILD_TYPE}
-	${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/lib                 # Win32
-	${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/BulletDynamics  # Linux
-	${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/BulletCollision # Linux
-	${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/LinearMath      # Linux
-	# ${ROOT_PATH_ABS}/vendor/cross-platform/glew/build/lib
 	${ROOT_PATH_ABS}/vendor/GLEW/lib
-	${ROOT_PATH_ABS}/vendor/cross-platform/assimp/lib/$ENV{MORAVA_BUILD_TYPE} # Win32
-	${ROOT_PATH_ABS}/vendor/cross-platform/assimp/bin                         # Linux
-	# ${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src
 	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/$ENV{MORAVA_BUILD_TYPE}
 	${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp
-	${ROOT_PATH_ABS}/vendor/box2d/bin/$ENV{MORAVA_BUILD_TYPE} # Win32
-	${ROOT_PATH_ABS}/vendor/box2d/build/bin # Linux
-	${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/libshaderc/$ENV{MORAVA_BUILD_TYPE}      # Win32
-	${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/libshaderc_util/$ENV{MORAVA_BUILD_TYPE} # Win32
-	${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/libshaderc      # Linux
-	${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/libshaderc_util # Linux
 	${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/$ENV{MORAVA_BUILD_TYPE}
 	${ROOT_PATH_ABS}/vendor/Vulkan/1.2.148.1/Lib
-	#${ROOT_PATH_ABS}/vendor/DirectXTex/build/bin/CMake/$ENV{MORAVA_BUILD_TYPE}
 	${ROOT_PATH_ABS}/vendor/DirectXTex/bin/CMake/$ENV{MORAVA_BUILD_TYPE}
 	${ROOT_PATH_ABS}/vendor/mono/lib/$ENV{MORAVA_BUILD_TYPE}
 )
+
+if(WIN32)
+	target_link_directories(
+		${PROJECT_NAME} PUBLIC
+		${LINK_DIRS_CROSS_PLATFORM}
+		${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/lib                                     # Win32
+		${ROOT_PATH_ABS}/vendor/cross-platform/assimp/lib/$ENV{MORAVA_BUILD_TYPE}              # Win32
+		${ROOT_PATH_ABS}/vendor/box2d/bin/$ENV{MORAVA_BUILD_TYPE}                              # Win32
+		${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/libshaderc/$ENV{MORAVA_BUILD_TYPE}      # Win32
+		${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/libshaderc_util/$ENV{MORAVA_BUILD_TYPE} # Win32
+	)
+endif()
+
+if(UNIX)
+	target_link_directories(
+		${PROJECT_NAME} PUBLIC
+		${LINK_DIRS_CROSS_PLATFORM}
+		${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/BulletDynamics  # Linux
+		${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/BulletCollision # Linux
+		${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/LinearMath      # Linux
+		${ROOT_PATH_ABS}/vendor/cross-platform/assimp/bin                  # Linux
+		${ROOT_PATH_ABS}/vendor/box2d/build/bin                            # Linux
+		${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/libshaderc          # Linux
+		${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/libshaderc_util     # Linux
+	)
+endif()
 
 if(WIN32)
 	target_link_libraries(
