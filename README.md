@@ -74,6 +74,7 @@ $ cmake .
 ```
 $ cd ./vendor/cross-platform/glfw
 $ cmake .
+$ cmake --build .
 ```
 
 * Build shaderc - use python to run
@@ -141,80 +142,3 @@ $ cmake .
 ![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-08-12_16-53-48.png)
 
 ![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2020-07-08_0158.jpg)
-
-<!--
-
-### Mac OS requirements
-
-```
-brew install cmake gcc git doxygen
-```
-
-### Linux requirements:
-
-```
-sudo dnf install git cmake make libXmu-devel libXi-devel libGL-devel mesa-libGL-devel mesa-libGLU-devel libXrandr-devel libXinerama-devel libXcursor-devel doxygen
-```
-
-* Build the Sandbox solution with CMake:
-```
-$ mkdir ./Sandbox/build
-$ cd ./Sandbox/build
-$ cmake ..
-```
-
-* Open the Sandbox/build/Sandbox.sln in Visual Studio, build projects ExampleApp and Hazel-ScriptCore, and close the solution.
-
-
-* Install assimp with cmake
-```
-$ cd vendor/cross-platform/assimp
-$ cmake .
-$ cmake --build .
-```
-
-* Build assimp project in MoravaEngine solution in Visual Studio.
-
-* Install GLFW
-```
-$ cd ./vendor/cross-platform/glfw
-$ cmake .
-```
-
-* Build GLFW project in MoravaEngine solution in Visual Studio.
-
-```
-$ cd ./vendor/cross-platform/assimp/contrib/zlib
-$ cmake .
-$ cmake --build .
-
-$ cd ./vendor/cross-platform/bullet3
-$ cmake .
-$ cmake --build .
-
-$ cd ./vendor/box2d
-$ ./build.sh
-
-$ cd ./vendor/cross-platform/SPIRV-Cross
-$ cd cmake .
-
-$ cd ./vendor/cross-platform/yaml-cpp
-$ mkdir build
-$ cd build
-$ cmake ..
-```
-
-### Fetching submodules for the main project cloned without submodules:
-```
-git submodule update --init --recursive
-```
-
-* Build DirectXTex in MoravaEngine solution in Visual Studio.
-
-* Build zlibstatic project in MoravaEngine solution in Visual Studio.
-
-* Build IrrXML project in MoravaEngine solution in Visual Studio.
-
-* Build box2d project in MoravaEngine solution in Visual Studio.
-
--->
