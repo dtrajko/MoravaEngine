@@ -24,8 +24,8 @@
 #define COMMONVALS
 #endif // !COMMONVALS
 
-#include "../../stb_image.h"
-#include "../../stb_image_write.h"
+#include "stb_image.h"
+#include "stb_image_write.h"
 
 const float numPI = 3.14159265358979323846f;
 const float toRadians = numPI / 180.0f;

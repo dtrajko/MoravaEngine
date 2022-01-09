@@ -10,7 +10,7 @@
 #include "VulkanImageH2M.h"
 #include "VulkanRendererH2M.h"
 
-#include "../stb_image.h"
+#include "stb_image.h"
 
 
 namespace H2M {

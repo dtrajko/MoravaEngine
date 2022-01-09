@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../pch.h"
+#include "pch.h"
 
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"

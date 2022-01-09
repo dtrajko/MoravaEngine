@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "../../../pch.h"
+#include "pch.h"
 
 #include "H2M/Renderer/MeshH2M.h"
 #include "H2M/Scene/SceneH2M.h"

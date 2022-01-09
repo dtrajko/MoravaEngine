@@ -1,7 +1,7 @@
 #include "Texture/TextureCubemapFaces.h"
 
 #include <GL/glew.h>
-#include "../../stb_image.h"
+#include "stb_image.h"
 
 #include <stdexcept>
 

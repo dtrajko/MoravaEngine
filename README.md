@@ -49,8 +49,6 @@ Build automation based on CMake (in progress)
 $ git clone --recursive https://github.com/dtrajko/MoravaEngine.git
 ```
 
-* In order to use make on Windows, install GnuWin http://gnuwin32.sourceforge.net/downlinks/make.php
-
 ```
 $ cd MoravaEngine
 ```
@@ -61,7 +59,7 @@ $ cd MoravaEngine
 $ mkdir ./MoravaEngine/build
 $ cd ./MoravaEngine/build
 $ cmake ..
-$ make
+$ cmake --build ..
 ```
 
 * Open the solution ./MoravaEngine/build/MoravaEngine.sln
@@ -172,7 +170,7 @@ $ cmake ..
 ```
 $ cd vendor/cross-platform/assimp
 $ cmake .
-$ make
+$ cmake --build .
 ```
 
 * Build assimp project in MoravaEngine solution in Visual Studio.
@@ -188,11 +186,11 @@ $ cmake .
 ```
 $ cd ./vendor/cross-platform/assimp/contrib/zlib
 $ cmake .
-$ make
+$ cmake --build .
 
 $ cd ./vendor/cross-platform/bullet3
 $ cmake .
-$ make
+$ cmake --build .
 
 $ cd ./vendor/box2d
 $ ./build.sh

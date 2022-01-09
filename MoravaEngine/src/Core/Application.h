@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "../../config.h"
+#include "config.h"
 
 #include "H2M/Core/LayerStackH2M.h"
 #include "H2M/Core/Events/ApplicationEventH2M.h"

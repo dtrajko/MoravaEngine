@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "../../../pch.h"
+#include "pch.h"
 
 #include "H2M/Renderer/RendererContextH2M.h"
 #include "H2M/Renderer/RenderCommandQueueH2M.h"

@@ -6,7 +6,7 @@
 
 #include "H2M/Platform/OpenGL/OpenGLTexture2D_Hazel2D.h"
 
-#include "../stb_image.h"
+#include "stb_image.h"
 
 
 namespace H2M

@@ -21,6 +21,39 @@ get_filename_component(ROOT_PATH_ABS ".." ABSOLUTE)
 message("ROOT_PATH_ABS: ${ROOT_PATH_ABS}")
 
 
+file(GLOB_RECURSE SOURCES ./src/*.cpp ./src/*.h)
+source_group(TREE ../src PREFIX src FILES ${SOURCES})
+
+# src/Vendors/ImGui ../vendor/ImGui
+file(GLOB_RECURSE SOURCES_IMGUI ../vendor/ImGui/*.cpp)
+source_group(TREE ../../vendor/ImGui PREFIX vendor/ImGui FILES ${SOURCES_IMGUI})
+set_property(SOURCE ../../vendor/ImGui/main.cpp PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
+set_property(SOURCE ../../vendor/ImGui/backends/imgui_impl_dx12.cpp PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
+set_property(SOURCE ../../vendor/ImGui/backends/imgui_impl_vulkan.cpp PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
+file(GLOB_RECURSE SOURCES_IMGUI_EXAMPLES ../vendor/ImGui/examples/*.cpp)
+set_property(SOURCE ${SOURCES_IMGUI_EXAMPLES} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
+
+# Vendors/ImGuizmo ../vendor/cross-platform/ImGuizmo
+file(GLOB_RECURSE SOURCES_IMGUIZMO ../vendor/cross-platform/ImGuizmo/*.cpp ../vendor/cross-platform/ImGuizmo/*.h)
+source_group(TREE ../../vendor/cross-platform/ImGuizmo PREFIX vendor/ImGuizmo FILES ${SOURCES_IMGUIZMO})
+file(GLOB_RECURSE SOURCES_IMGUIZMO_EXAMPLE ../vendor/cross-platform/ImGuizmo/example/*.cpp)
+set_property(SOURCE ${SOURCES_IMGUIZMO_EXAMPLE} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
+
+
+#	# Vendors/miniaudio ../vendor/miniaudio/include
+#	file(GLOB_RECURSE SOURCES_MINIAUDIO ../vendor/miniaudio/include/*.c ../vendor/miniaudio/include/*.h)
+#	source_group(TREE ../../vendor/miniaudio PREFIX src/Vendor/miniaudio/include FILES ${SOURCES_MINIAUDIO})
+#	
+#	# Vendors/VulkanMemoryAllocator vendor/VulkanMemoryAllocator
+#	file(GLOB_RECURSE SOURCES_VMA ../vendor/VulkanMemoryAllocator/*.cpp vendor/VulkanMemoryAllocator/*.h)
+#	source_group(TREE ../../vendor/VulkanMemoryAllocator PREFIX src/Vendor/VulkanMemoryAllocator FILES ${SOURCES_VMA})
+
+#	# src/Resources
+#	file(GLOB_RECURSE RESOURCES ./Resources/Shaders/*.glsl)
+#	source_group(TREE ../Resources PREFIX src/Resources FILES ${RESOURCES})
+#	set_property(SOURCE ${RESOURCES} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
+
+
 SET(assimp_SRCS
 	${ROOT_PATH_ABS}/vendor/cross-platform/assimp/code/Common/Assimp.cpp
 	${ROOT_PATH_ABS}/vendor/cross-platform/assimp/code/CApi/CInterfaceIOWrapper.cpp
@@ -241,36 +274,6 @@ SET(assimp_SRCS
 	${ROOT_PATH_ABS}/vendor/cross-platform/assimp/contrib/Open3DGC/o3dgcTriangleFans.cpp
 	${ROOT_PATH_ABS}/vendor/cross-platform/assimp/contrib/zip/src/zip.c
 )
-
-
-file(GLOB_RECURSE SOURCES ./src/*.cpp ./src/*.h)
-source_group(TREE ../src PREFIX src FILES ${SOURCES})
-
-# src/Resources
-file(GLOB_RECURSE RESOURCES ./Resources/Shaders/*.glsl)
-source_group(TREE ../Resources PREFIX src/Resources FILES ${RESOURCES})
-set_property(SOURCE ${RESOURCES} PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
-
-# src/Vendors/ImGui ../vendor/ImGui
-file(GLOB_RECURSE SOURCES_IMGUI ../vendor/ImGui/*.cpp)
-source_group(TREE ../../vendor/ImGui PREFIX src/Vendor/ImGui FILES ${SOURCES_IMGUI})
-
-# Vendors/ImGuizmo ../vendor/cross-platform/ImGuizmo
-file(GLOB_RECURSE SOURCES_IMGUIZMO ../vendor/cross-platform/ImGuizmo/*.cpp ../vendor/cross-platform/ImGuizmo/*.h)
-source_group(TREE ../../vendor/cross-platform/ImGuizmo PREFIX src/Vendor/ImGuizmo FILES ${SOURCES_IMGUIZMO})
-
-# Vendors/miniaudio ../vendor/miniaudio/include
-file(GLOB_RECURSE SOURCES_MINIAUDIO ../vendor/miniaudio/include/*.c ../vendor/miniaudio/include/*.h)
-source_group(TREE ../../vendor/miniaudio PREFIX src/Vendor/miniaudio/include FILES ${SOURCES_MINIAUDIO})
-
-# Vendors/VulkanMemoryAllocator vendor/VulkanMemoryAllocator
-file(GLOB_RECURSE SOURCES_VMA ../vendor/VulkanMemoryAllocator/*.cpp vendor/VulkanMemoryAllocator/*.h)
-source_group(TREE ../../vendor/VulkanMemoryAllocator PREFIX src/Vendor/VulkanMemoryAllocator FILES ${SOURCES_VMA})
-
-
-set_property(SOURCE ../../vendor/ImGui/backends/imgui_impl_dx12.cpp PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
-set_property(SOURCE ../../vendor/ImGui/backends/imgui_impl_vulkan.cpp PROPERTY VS_SETTINGS "ExcludedFromBuild=true")
-
 
 file(GLOB_RECURSE BulletDynamics_SRCS		${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/BulletDynamics/*.cpp)
 file(GLOB_RECURSE BulletCollision_SRCS		${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/BulletCollision/*.cpp)
@@ -532,7 +535,7 @@ add_dependencies(SPIRV-Cross spirv-cross-msl)
 add_dependencies(SPIRV-Cross spirv-cross-reflect)
 add_dependencies(SPIRV-Cross spirv-cross-util)
 
-add_executable("${PROJECT_NAME}" "${SOURCES}")
+add_executable("${PROJECT_NAME}" "${SOURCES}" "${SOURCES_IMGUI}" "${SOURCES_IMGUIZMO}")
 
 add_dependencies("${PROJECT_NAME}" BulletDynamics)
 add_dependencies("${PROJECT_NAME}" BulletCollision)
@@ -749,8 +752,9 @@ if(WIN32)
 		opengl32.lib
 		glew32.lib
 		glfw3.lib
-		#assimp-vc142-mt.lib
-		assimp.lib
+		#assimp.lib
+		assimp-vc142-mt.lib
+		assimp-vc142-mtd.lib
 		BulletDynamics.lib
 		BulletCollision.lib
 		LinearMath.lib
@@ -821,7 +825,8 @@ endif()
 
 
 # Build assimp with CMake
-execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/assimp)
+execute_process(COMMAND cmake ./CMakeLists.txt WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/assimp)
+execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/assimp)
 
 # Build GLFW with CMake
 execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
@@ -839,6 +844,10 @@ execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-
 
 # Delete directory bullet3/examples/ThirdPartyLibs/imgui to avoid ImGui conflicts in compilation
 file(REMOVE_RECURSE ${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/examples/ThirdPartyLibs/imgui)
+
+
+# dirty fix for missing C:/Windows/System32/vulkan-1.dll until better solution
+# file(COPY ./vulkan-1.dll DESTINATION C:/Windows/System32)
 
 
 set_property(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY VS_STARTUP_PROJECT "${PROJECT_NAME}")
