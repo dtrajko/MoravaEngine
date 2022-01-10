@@ -60,7 +60,7 @@ void SceneTerrain::SetSkybox()
 	skyboxFaces.push_back("Textures/skybox_4/bottom.png");
 	skyboxFaces.push_back("Textures/skybox_4/back.png");
 	skyboxFaces.push_back("Textures/skybox_4/front.png");
-	m_Skybox = new Skybox(skyboxFaces);
+	m_Skybox = std::make_shared<Skybox>(skyboxFaces);
 }
 
 void SceneTerrain::SetupTextures()

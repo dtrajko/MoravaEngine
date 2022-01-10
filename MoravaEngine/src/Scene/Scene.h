@@ -115,7 +115,7 @@ public:
 	inline std::map<std::string, Model*> GetModels() const { return models; }
 	inline std::map<std::string, Mesh*> GetMeshes() const { return meshes; }
 	inline WaterManager* GetWaterManager() const { return m_WaterManager; }
-	inline H2M::RefH2M<Skybox> GetSkybox() const { return m_Skybox; }
+	inline std::shared_ptr<Skybox> GetSkybox() const { return m_Skybox; }
 	inline float GetFOV() { return m_FOV; };
 	inline std::map<std::string, float>* GetProfilerResults() { return &m_ProfilerResults; }
 
@@ -150,7 +150,7 @@ protected:
 	Camera* m_Camera;
 	CameraController* m_CameraController;
 
-	H2M::RefH2M<Skybox> m_Skybox;
+	std::shared_ptr<Skybox> m_Skybox;
 	std::vector<std::string> skyboxFaces;
 
 	WaterManager* m_WaterManager;

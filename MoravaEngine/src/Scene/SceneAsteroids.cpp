@@ -103,7 +103,7 @@ void SceneAsteroids::SetSkybox()
 	skyboxFaces.push_back("Textures/skybox_1/back.jpg");
 	skyboxFaces.push_back("Textures/skybox_1/front.jpg");
 
-	m_Skybox = new Skybox(skyboxFaces);
+	m_Skybox = std::make_shared<Skybox>(skyboxFaces);
 }
 
 void SceneAsteroids::SetupModels()

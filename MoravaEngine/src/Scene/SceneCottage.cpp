@@ -22,8 +22,8 @@ SceneCottage::SceneCottage()
 
 	sceneSettings.directionalLight.base.ambientIntensity = 0.2f;
 	sceneSettings.directionalLight.base.diffuseIntensity = 0.8f;
-	sceneSettings.directionalLight.direction = glm::vec3(-0.8f, -1.2f, 0.8f);
-	sceneSettings.lightProjectionMatrix = glm::ortho(-16.0f, 16.0f, -16.0f, 16.0f, -16.0f, 16.0f);
+	sceneSettings.directionalLight.direction = glm::vec3(-0.4f, -2.0f, 0.8f);
+	sceneSettings.lightProjectionMatrix = glm::ortho(-24.0f, 24.0f, -24.0f, 24.0f, -24.0f, 24.0f);
 
 	sceneSettings.pointLights[0].base.enabled = true;
 	sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -79,7 +79,7 @@ void SceneCottage::SetSkybox()
 	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_dn.tga");
 	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_bk.tga");
 	skyboxFaces.push_back("Textures/Skybox/cupertin-lake_ft.tga");
-	m_Skybox = new Skybox(skyboxFaces);
+	m_Skybox = std::make_shared<Skybox>(skyboxFaces);
 }
 
 void SceneCottage::SetupTextures()
@@ -116,8 +116,8 @@ void SceneCottage::SetupModels()
 	Model* cottage = new Model("Models/cottage.obj");
 	models.insert(std::make_pair("cottage", cottage));
 
-	Model* sphere = new Model("Models/Primitives/sphere.obj");
-	models.insert(std::make_pair("sphere", sphere));
+	Sphere* sphere = new Sphere();
+	meshes.insert(std::make_pair("sphere", sphere));
 }
 
 void SceneCottage::Update(float timestep, Window* mainWindow)
@@ -463,21 +463,21 @@ void SceneCottage::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
 
 	/* Sphere model */
 	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(4.0f, 3.0f, -6.0f));
+	model = glm::translate(model, glm::vec3(4.0f, 2.4f, -5.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 	model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-	model = glm::scale(model, glm::vec3(2.0f));
+	model = glm::scale(model, glm::vec3(4.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
-	textures["crateDiffuse"]->Bind(textureSlots["diffuse"]);
-	textures["crateNormal"]->Bind(textureSlots["normal"]);
+	textures["sponzaCeilDiffuse"]->Bind(textureSlots["diffuse"]);
+	textures["sponzaCeilNormal"]->Bind(textureSlots["normal"]);
 
 	if (passType == "main")
 	{
 		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
 	}
 
-	models["sphere"]->Render(textureSlots["diffuse"], textureSlots["normal"], sceneSettings.enableNormalMaps);
+	meshes["sphere"]->Render();
 
 	/* Cube Left */
 	model = glm::mat4(1.0f);
