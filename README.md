@@ -59,10 +59,29 @@ $ cd MoravaEngine
 $ mkdir ./MoravaEngine/build
 $ cd ./MoravaEngine/build
 $ cmake ..
-$ cmake --build ..
+<!-- $ cmake --build .. -->
 ```
 
+* Open solution vendor/DirectXTex/DirectXTex.sln in Visual Studio.
+For projects DirectXTex, texassemble, texconv, texdiag
+Set Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library
+- Debug: Multi-threaded Debug (/MTd)
+- Release: Multi-threaded (/MT)
+Build projects DirectXTex, texassemble, texconv, texdiag.
+
+
+* Open solution vendor/cross-platform/glfw/GLFW.sln in Visual Studio.
+For project glfw
+Set Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library
+- Debug: Multi-threaded Debug (/MTd)
+- Release: Multi-threaded (/MT)
+Build project glfw
+
+
 * Open the solution ./MoravaEngine/build/MoravaEngine.sln
+* Build the project MoravaEngine.
+
+<!--
 
 * Build assimp with CMake
 ```
@@ -95,8 +114,6 @@ $ cd ./vendor/DirectXTex
 $ cmake .
 ```
 
-* Open solution vendor/DirectXTex/DirectXTex.sln in Visual Studio and build it.
-
 * Build yaml-cpp project in MoravaEngine solution in Visual Studio.
 
 * Build all spirv-cross-* projects in MoravaEngine solution in Visual Studio.
@@ -104,6 +121,8 @@ $ cmake .
 * Build BulletCollision project in MoravaEngine solution in Visual Studio.
 * Build LinearMath project in MoravaEngine solution in Visual Studio.
 * Build BulletDynamics project in MoravaEngine solution in Visual Studio.
+
+-->
 
 <!-- Help section -->
 

@@ -610,20 +610,24 @@ execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-
 execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/assimp)
 
 # Build GLFW with CMake
-execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
-execute_process(COMMAND cmake -S . -B . -DBUILD_SHARED_LIBS=OFF WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
-
+# file(COPY ${ROOT_PATH_ABS}/${PROJECT_NAME}/CMake/GLFW/CMakeLists.txt DESTINATION ${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src)
+execute_process(COMMAND cmake -S . -B . -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
+execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
 
 # Build shaderc - use python to run git-sync-deps
 execute_process(COMMAND python git-sync-deps WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/utils)
 # Build shaderc with CMake
-execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/shaderc)
+execute_process(COMMAND cmake -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_TESTS=ON . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/shaderc)
+execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/shaderc)
 
 # Build DirectXTex
-execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
+# file(COPY ${ROOT_PATH_ABS}/${PROJECT_NAME}/CMake/DirectXTex/CMakeLists.txt DESTINATION ${ROOT_PATH_ABS}/vendor/DirectXTex)
+execute_process(COMMAND cmake -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
+execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
 
 # Build yaml-cpp
 execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp)
+execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp)
 
 # Delete directory bullet3/examples/ThirdPartyLibs/imgui to avoid ImGui conflicts in compilation
 file(REMOVE_RECURSE ${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/examples/ThirdPartyLibs/imgui)
