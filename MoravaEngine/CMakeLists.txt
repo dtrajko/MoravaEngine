@@ -77,9 +77,9 @@ file(GLOB_RECURSE yaml-cpp_SRCS				${ROOT_PATH_ABS}/vendor/cross-platform/yaml-c
 ##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/init.c
 ##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/input.c
 ##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/monitor.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c		
 ##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/vulkan.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.c
+##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.c		
 ##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_init.c
 ##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.c
 ##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_monitor.c
@@ -117,6 +117,48 @@ file(GLOB_RECURSE yaml-cpp_SRCS				${ROOT_PATH_ABS}/vendor/cross-platform/yaml-c
 ##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c
 ##		)
 ##	endif()
+
+SET(glfw3_SRCS
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/context.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/init.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/input.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/monitor.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c		
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/vulkan.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.c		
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_init.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_monitor.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_thread.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_time.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_window.c
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/window.c
+)
+
+SET(DirectXTex_SRCS
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/BC.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/BC4BC5.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/BC6HBC7.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexCompress.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexConvert.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexDDS.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexHDR.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexImage.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexMipmaps.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexMisc.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexNormalMaps.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexPMAlpha.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexResize.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexTGA.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexUtil.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexFlipRotate.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexWIC.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/BCDirectCompute.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexCompressGPU.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexD3D11.cpp
+	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/DirectXTexD3D12.cpp
+)
 
 SET(spirv-cross-core_SRCS
 	${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/spirv_cross.cpp
@@ -185,6 +227,9 @@ SET(SPIRV-Cross_SRCS
 	${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/spirv_msl.cpp
 	${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/main.cpp
 )
+
+##########################################################################################
+
 message("Environment variable 'MORAVA_BUILD_TYPE' = '" $ENV{MORAVA_BUILD_TYPE} "'")
 
 option(USE_MSVC_INCREMENTAL_LINKING "Use MSVC Incremental Linking" OFF)
@@ -200,7 +245,8 @@ add_library(box2d				STATIC "${box2d_SRCS}")
 add_library(BulletCollision		STATIC "${BulletCollision_SRCS}")
 add_library(BulletDynamics		STATIC "${BulletDynamics_SRCS}")
 add_library(LinearMath			STATIC "${LinearMath_SRCS}")
-##	add_library(glfw3				STATIC "${glfw3_SRCS}")
+add_library(DirectXTex          STATIC "${DirectXTex_SRCS}")
+add_library(glfw3               STATIC "${glfw3_SRCS}")
 add_library(SPIRV-Cross			STATIC "${SPIRV-Cross_SRCS}")
 add_library(spirv-cross-core	STATIC "${spirv-cross-core_SRCS}")
 add_library(spirv-cross-cpp		STATIC "${spirv-cross-cpp_SRCS}")
@@ -214,7 +260,6 @@ add_library(yaml-cpp			STATIC "${yaml-cpp_SRCS}")
 #	add_library(irrXML				STATIC "${irrXML_SRCS}")
 #	add_library(zlibstatic			STATIC "${zlibstatic_SRCS}")
 #	add_library(shaderc				STATIC "${shaderc_SRCS}")
-#	add_library(DirectXTex          STATIC "${DirectXTex_SRCS}")
 #	add_library(Hazel-ScriptCore	SHARED "${Hazel-ScriptCore_SRCS}")
 #	add_library(ExampleApp			SHARED "${ExampleApp_SRCS}")
 
@@ -288,6 +333,17 @@ target_link_directories(
 	${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/LinearMath # Linux
 )
 
+target_include_directories(
+	glfw3 PUBLIC
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src
+)
+
+target_link_directories(
+	glfw3 PUBLIC
+	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src
+)
+
 target_link_directories(
 	SPIRV-Cross PUBLIC
 	${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross
@@ -317,12 +373,6 @@ target_include_directories(
 #		${ROOT_PATH_ABS}/vendor/cross-platform/assimp/contrib/rapidjson/include
 #	)
 
-#	target_include_directories(
-#		glfw3 PUBLIC
-#		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include
-#		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src
-#	)
-
 #	target_link_directories(
 #		assimp PUBLIC
 #		${ROOT_PATH_ABS}/vendor/cross-platform/assimp/lib/$ENV{MORAVA_BUILD_TYPE} # Win32
@@ -332,11 +382,6 @@ target_include_directories(
 #	target_link_directories(
 #		zlibstatic PUBLIC
 #		${ROOT_PATH_ABS}/vendor/cross-platform/assimp/contrib/zlib/$ENV{MORAVA_BUILD_TYPE}
-#	)
-
-#	target_link_directories(
-#		glfw3 PUBLIC
-#		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src
 #	)
 
 #	target_include_directories(
@@ -386,14 +431,13 @@ add_dependencies("${PROJECT_NAME}" box2d)
 add_dependencies("${PROJECT_NAME}" BulletCollision)
 add_dependencies("${PROJECT_NAME}" BulletDynamics)
 add_dependencies("${PROJECT_NAME}" LinearMath)
+#	add_dependencies("${PROJECT_NAME}" DirectXTex)
+#	add_dependencies("${PROJECT_NAME}" glfw3)
 add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
 add_dependencies("${PROJECT_NAME}" yaml-cpp)
 #	add_dependencies(assimp irrXML)
 #	add_dependencies(assimp zlibstatic)
 #	add_dependencies("${PROJECT_NAME}" assimp)
-#	add_dependencies("${PROJECT_NAME}" glfw3)
-#	add_dependencies("${PROJECT_NAME}" glfw3)
-#	add_dependencies("${PROJECT_NAME}" DirectXTex)
 #	add_dependencies("${PROJECT_NAME}" shaderc)
 #	add_dependencies("${PROJECT_NAME}" Hazel-ScriptCore)
 #	add_dependencies("${PROJECT_NAME}" ExampleApp)
@@ -403,7 +447,8 @@ if(WIN32)
 	set_property(TARGET BulletCollision			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	set_property(TARGET BulletDynamics			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	set_property(TARGET LinearMath				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	##	set_property(TARGET glfw3					PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET DirectXTex              PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set_property(TARGET glfw3					PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	set_property(TARGET SPIRV-Cross				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	set_property(TARGET spirv-cross-core		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	set_property(TARGET spirv-cross-cpp			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
@@ -418,7 +463,7 @@ if(WIN32)
 	#	set_property(TARGET shaderc				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	#	set_property(TARGET zlibstatic			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-	##	set_property(TARGET	glfw3					PROPERTY USE_MSVC_RUNTIME_LIBRARY_DLL "OFF")
+	set_property(TARGET	glfw3					PROPERTY USE_MSVC_RUNTIME_LIBRARY_DLL "OFF")
 
 	set_property(TARGET	"${PROJECT_NAME}"		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -441,7 +486,7 @@ set_target_properties("${PROJECT_NAME}" PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBU
 #	set_target_properties(glfw3				PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 #	set_target_properties(assimp			PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ../build RUNTIME_OUTPUT_DIRECTORY_RELEASE ../build)
 
-#	target_compile_definitions(glfw3 PRIVATE _GLFW_USE_CONFIG_H)
+target_compile_definitions(glfw3 PRIVATE _GLFW_USE_CONFIG_H)
 #	target_compile_definitions(glfw3 PRIVATE _GLFW_WIN32)
 
 target_compile_features("${PROJECT_NAME}"	PRIVATE cxx_std_17)
@@ -611,19 +656,19 @@ execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendo
 
 # Build GLFW with CMake
 # file(COPY ${ROOT_PATH_ABS}/${PROJECT_NAME}/CMake/GLFW/CMakeLists.txt DESTINATION ${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src)
-execute_process(COMMAND cmake -S . -B . -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
-execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
+# execute_process(COMMAND cmake -S . -B . -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
+# execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
+
+# Build DirectXTex
+# file(COPY ${ROOT_PATH_ABS}/${PROJECT_NAME}/CMake/DirectXTex/CMakeLists.txt DESTINATION ${ROOT_PATH_ABS}/vendor/DirectXTex)
+# execute_process(COMMAND cmake -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
+# execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
 
 # Build shaderc - use python to run git-sync-deps
 execute_process(COMMAND python git-sync-deps WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/utils)
 # Build shaderc with CMake
 execute_process(COMMAND cmake -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_TESTS=ON . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/shaderc)
 execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/shaderc)
-
-# Build DirectXTex
-# file(COPY ${ROOT_PATH_ABS}/${PROJECT_NAME}/CMake/DirectXTex/CMakeLists.txt DESTINATION ${ROOT_PATH_ABS}/vendor/DirectXTex)
-execute_process(COMMAND cmake -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
-execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
 
 # Build yaml-cpp
 execute_process(COMMAND cmake . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp)
