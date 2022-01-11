@@ -66,7 +66,7 @@ Change Runtime Library to either
 "Multi-threaded (/MT)" (Release)  
 (All projects in MoravaEngine solution should have the Runtime Library option set to either **/MTd** (Debug) or **/MT** (Release))
 
-* Build the project **glfw3**
+* Build projects **DirectXTex** and **glfw3**
 
 * Build the project **MoravaEngine**  
 

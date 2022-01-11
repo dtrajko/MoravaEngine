@@ -661,8 +661,8 @@ execute_process(COMMAND cmake -S . -B . -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECT
 
 # Build DirectXTex
 # file(COPY ${ROOT_PATH_ABS}/${PROJECT_NAME}/CMake/DirectXTex/CMakeLists.txt DESTINATION ${ROOT_PATH_ABS}/vendor/DirectXTex)
-# execute_process(COMMAND cmake -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
-# execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
+execute_process(COMMAND cmake -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
+execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/DirectXTex)
 
 # Build shaderc - use python to run git-sync-deps
 execute_process(COMMAND python git-sync-deps WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/shaderc/utils)
