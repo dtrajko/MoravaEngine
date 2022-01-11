@@ -431,7 +431,7 @@ add_dependencies("${PROJECT_NAME}" box2d)
 add_dependencies("${PROJECT_NAME}" BulletCollision)
 add_dependencies("${PROJECT_NAME}" BulletDynamics)
 add_dependencies("${PROJECT_NAME}" LinearMath)
-#	add_dependencies("${PROJECT_NAME}" DirectXTex)
+add_dependencies("${PROJECT_NAME}" DirectXTex)
 #	add_dependencies("${PROJECT_NAME}" glfw3)
 add_dependencies("${PROJECT_NAME}" SPIRV-Cross)
 add_dependencies("${PROJECT_NAME}" yaml-cpp)
@@ -656,7 +656,7 @@ execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendo
 
 # Build GLFW with CMake
 # file(COPY ${ROOT_PATH_ABS}/${PROJECT_NAME}/CMake/GLFW/CMakeLists.txt DESTINATION ${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src)
-# execute_process(COMMAND cmake -S . -B . -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
+execute_process(COMMAND cmake -S . -B . -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
 # execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
 
 # Build DirectXTex

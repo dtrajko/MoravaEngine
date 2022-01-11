@@ -59,15 +59,16 @@ $ cmake ..
 ```
 * Open the solution ./MoravaEngine/build/MoravaEngine.sln
 
-* Change Runtime Library from **Multi-threaded DLL** to **Multi-threaded** for projects DirectXTex and glfw  
+* Change Runtime Library from **Multi-threaded DLL** to **Multi-threaded** for the project **glfw3**  
 Go to Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library  
-Change Runtime Library to  
+Change Runtime Library to either  
 "Multi-threaded Debug (/MTd)" (Debug) or  
-"Multi-threaded (/MT)" (Release)
+"Multi-threaded (/MT)" (Release)  
+(All projects in MoravaEngine solution should have the Runtime Library option set to either **/MTd** (Debug) or **/MT** (Release))
 
-* Build projects DirectXTex and glfw
+* Build the project **glfw3**
 
-* Build the project MoravaEngine.  
+* Build the project **MoravaEngine**  
 
 
 <!--
