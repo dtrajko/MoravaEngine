@@ -5,7 +5,7 @@
 
 It currently supports the following graphics APIs:
 
-- OpenGL 3.3+
+- OpenGL 4.5+
 - Vulkan 1.2
 - DirectX 11
 
@@ -31,13 +31,13 @@ Its current purpose is to experiment with various CG concepts and techniques:
 * Skeletal animation
 
 ## Credits
-* Yan Chernikov a.k.a. [TheCherno](https://twitter.com/thecherno) [ [Hazel](https://github.com/TheCherno/Hazel) ]
-* [ThinMatrix](https://twitter.com/ThinMatrix/ ) [ [ThinMatrix YouTube channel](https://www.youtube.com/user/ThinMatrix) ]
-* [Ben Cook](https://www.udemy.com/user/ben-cook-19/) [ Vulkan and OpenGL courses on Udemy ]
-* [Joey de Vries](https://twitter.com/JoeyDeVriez) [ [learnopengl.com](https://learnopengl.com/) ]
-* [Sascha Willems](https://twitter.com/SaschaWillems2) [ [Vulkan C++ examples and demos](https://github.com/SaschaWillems/Vulkan) ]
-* [Sebastian Lague](https://twitter.com/sebastianlague) [ [Sebastian Lague YouTube channel](https://www.youtube.com/c/SebastianLague) ]
-* [ilya73](https://www.cgtrader.com/ilya73 ) [ [Gladiator free VR](https://www.cgtrader.com/free-3d-models/character/man/gladiator-7ac625db-88c2-46ed-a2f1-182fd1f79739) ]
+* Yan Chernikov a.k.a. <a href="https://twitter.com/thecherno" target="_blank">TheCherno</a> [ <a href="https://github.com/TheCherno/Hazel" target="_blank">Hazel</a> ]
+* <a href="https://twitter.com/ThinMatrix/" target="_blank">ThinMatrix</a> [ <a href="https://www.youtube.com/user/ThinMatrix" target="_blank">ThinMatrix YouTube channel</a> ]
+* <a href="https://www.udemy.com/user/ben-cook-19/" target="_blank">Ben Cook</a> [ Vulkan and OpenGL courses on Udemy ]
+* <a href="https://twitter.com/JoeyDeVriez" target="_blank">Joey de Vries</a> [ <a href="https://learnopengl.com/" target="_blank">learnopengl.com</a> ]
+* <a href="https://twitter.com/SaschaWillems2" target="_blank">Sascha Willems</a> [ <a href="https://github.com/SaschaWillems/Vulkan" target="_blank">Vulkan C++ examples and demos</a> ]
+* <a href="https://twitter.com/sebastianlague" target="_blank">Sebastian Lague</a> [ <a href="https://www.youtube.com/c/SebastianLague" target="_blank">Sebastian Lague YouTube channel</a> ]
+* <a href="https://www.cgtrader.com/ilya73" target="_blank">ilya73</a> [ <a href="https://www.cgtrader.com/free-3d-models/character/man/gladiator-7ac625db-88c2-46ed-a2f1-182fd1f79739" target="_blank">Gladiator free VR</a> ]
 
 <!-- Installation & setup -->
 

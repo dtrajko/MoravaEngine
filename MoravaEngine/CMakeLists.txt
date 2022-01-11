@@ -55,7 +55,6 @@ file(GLOB_RECURSE BulletDynamics_SRCS		${ROOT_PATH_ABS}/vendor/cross-platform/bu
 file(GLOB_RECURSE BulletCollision_SRCS		${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/BulletCollision/*.cpp)
 file(GLOB_RECURSE LinearMath_SRCS			${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src/LinearMath/*.cpp)
 file(GLOB_RECURSE box2d_SRCS				${ROOT_PATH_ABS}/vendor/box2d/src/*.cpp)
-file(GLOB_RECURSE box2d_SRCS				${ROOT_PATH_ABS}/vendor/box2d/src/*.cpp)
 file(GLOB_RECURSE SPIRV-Cross_SRCS			${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/*.cpp)
 file(GLOB_RECURSE yaml-cpp_SRCS				${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp/src/*.cpp)
 #	file(GLOB_RECURSE glfw3_SRCS				${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/*.c)
@@ -70,71 +69,46 @@ file(GLOB_RECURSE yaml-cpp_SRCS				${ROOT_PATH_ABS}/vendor/cross-platform/yaml-c
 #	file(GLOB_RECURSE spirv-cross-util_SRCS		${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross/*.cpp)
 
 
-##	if(WIN32)
-##		SET(glfw3_SRCS	
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/context.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/init.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/input.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/monitor.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c		
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/vulkan.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.c		
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_init.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_monitor.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_thread.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_time.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_window.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/window.c
-##			)
-##	elseif(UNIX)
-##		SET(glfw3_SRCS
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/glfw_config.h
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include/GLFW/glfw3.h
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include/GLFW/glfw3native.h
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/internal.h
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/mappings.h
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/context.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/init.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/input.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/monitor.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/vulkan.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/window.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_platform.h
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.h
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.h
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.h
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.h
-##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_init.c
-##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.c
-##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_monitor.c
-##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_time.c
-##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_thread.c
-##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_window.c
-##			#${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.c
-##			${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c
-##		)
-##	endif()
-
-SET(glfw3_SRCS
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/context.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/init.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/input.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/monitor.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c		
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/vulkan.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.c		
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_init.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_monitor.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_thread.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_time.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_window.c
-	${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/window.c
-)
+if(WIN32)
+	SET(glfw3_SRCS
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/context.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/init.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/input.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/monitor.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c		
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/vulkan.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.c		
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_init.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_monitor.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_thread.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_time.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_window.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/window.c
+	)
+elseif(UNIX)
+	SET(glfw3_SRCS
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/glfw_config.h
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include/GLFW/glfw3.h
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include/GLFW/glfw3native.h
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/internal.h
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/mappings.h
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/context.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/init.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/input.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/monitor.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/vulkan.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/window.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_platform.h
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/win32_joystick.h
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/wgl_context.h
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.h
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.h
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/egl_context.c
+		${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src/osmesa_context.c
+	)
+endif()
 
 SET(DirectXTex_SRCS
 	${ROOT_PATH_ABS}/vendor/DirectXTex/DirectXTex/BC.cpp
@@ -463,8 +437,6 @@ if(WIN32)
 	#	set_property(TARGET shaderc				PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	#	set_property(TARGET zlibstatic			PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-	set_property(TARGET	glfw3					PROPERTY USE_MSVC_RUNTIME_LIBRARY_DLL "OFF")
-
 	set_property(TARGET	"${PROJECT_NAME}"		PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
@@ -656,7 +628,7 @@ execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendo
 
 # Build GLFW with CMake
 # file(COPY ${ROOT_PATH_ABS}/${PROJECT_NAME}/CMake/GLFW/CMakeLists.txt DESTINATION ${ROOT_PATH_ABS}/vendor/cross-platform/glfw/src)
-execute_process(COMMAND cmake -S . -B . -DBUILD_SHARED_LIBS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
+execute_process(COMMAND cmake -S . -B . -DBUILD_SHARED_LIBS=OFF -DGLFW_BUILD_EXAMPLES=OFF -DGLFW_BUILD_TESTS=OFF -DGLFW_BUILD_DOCS=OFF . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
 # execute_process(COMMAND cmake --build . WORKING_DIRECTORY ${ROOT_PATH_ABS}/vendor/cross-platform/glfw)
 
 # Build DirectXTex

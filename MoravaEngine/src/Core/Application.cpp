@@ -75,8 +75,11 @@ void Application::OnInit()
 
 	RendererBasic::InitDebug();
 
-	m_ImGuiLayer = H2M::ImGuiLayerH2M::Create();
-	PushOverlay(m_ImGuiLayer);
+	if (m_EnableImGui)
+	{
+		m_ImGuiLayer = H2M::ImGuiLayerH2M::Create();
+		PushOverlay(m_ImGuiLayer);
+	}
 
 	H2M::RendererH2M::Init();
 
@@ -182,7 +185,10 @@ void Application::Run()
 
 			m_Renderer->WaitAndRender(deltaTime, m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
 
-			m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
+			if (m_EnableImGui)
+			{
+				m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
+			}
 
 			switch (H2M::RendererAPI_H2M::Current())
 			{
@@ -204,7 +210,10 @@ void Application::Run()
 				break;
 			}
 
-			H2M::RendererH2M::Submit([=]() { m_ImGuiLayer->End(); });
+			if (m_EnableImGui)
+			{
+				H2M::RendererH2M::Submit([=]() { m_ImGuiLayer->End(); });
+			}
 
 			// Swap buffers and poll events
 			m_Window->SwapBuffers();
@@ -281,7 +290,10 @@ bool Application::OnWindowClose(H2M::WindowCloseEventH2M& e)
 
 void Application::OnShutdown()
 {
-	delete m_ImGuiLayer;
+	if (m_EnableImGui)
+	{
+		delete m_ImGuiLayer;
+	}
 
 	if (m_Scene != nullptr) delete m_Scene;
 	delete m_Renderer;

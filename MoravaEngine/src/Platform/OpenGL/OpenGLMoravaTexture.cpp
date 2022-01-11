@@ -43,6 +43,7 @@ OpenGLMoravaTexture::OpenGLMoravaTexture(const char* fileLoc, bool flipVert, boo
 	m_Spec.Texture_Mag_Filter = filter;
 	m_Spec.FlipVertically = flipVert;
 	m_Spec.IsSampler = isSampler;
+	m_Spec.IsSRGB = false;
 
 	try {
 		Load(m_Spec.FlipVertically);
@@ -186,7 +187,7 @@ void OpenGLMoravaTexture::CreateAPISpecific()
 	}
 	else
 	{
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
+		glGenTextures(1, &m_ID);
 		glBindTexture(GL_TEXTURE_2D, m_ID);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S);

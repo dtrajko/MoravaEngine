@@ -151,7 +151,7 @@ void FramebufferTexture::OpenGLCreate()
 	}
 	else
 	{
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
+		glGenTextures(1, &m_ID);
 		glBindTexture(GL_TEXTURE_2D, m_ID);
 
 		glTexImage2D(GL_TEXTURE_2D, m_Level, m_Spec.InternalFormat, m_Width, m_Height, m_Spec.Border, m_Spec.Format, m_Spec.Type, nullptr);
