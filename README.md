@@ -48,80 +48,75 @@ Build automation based on CMake (in progress)
 ```
 $ git clone --recursive https://github.com/dtrajko/MoravaEngine.git
 ```
-
 ```
 $ cd MoravaEngine
 ```
-
 * Build the MoravaEngine with CMake
-
 ```
 $ mkdir ./MoravaEngine/build
 $ cd ./MoravaEngine/build
 $ cmake ..
-<!-- $ cmake --build .. -->
 ```
+* Open the solution ./MoravaEngine/build/MoravaEngine.sln
+
+* Change Runtime Library from **Multi-threaded DLL** to **Multi-threaded** for projects DirectXTex and glfw  
+Go to Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library  
+Change Runtime Library to  
+"Multi-threaded Debug (/MTd)" (Debug) or  
+"Multi-threaded (/MT)" (Release)
+
+* Build projects DirectXTex and glfw
+
+* Build the project MoravaEngine.  
+
+
+<!--
 
 * Open solution vendor/DirectXTex/DirectXTex.sln in Visual Studio.
-For projects DirectXTex, texassemble, texconv, texdiag
-Set Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library
-- Debug: Multi-threaded Debug (/MTd)
-- Release: Multi-threaded (/MT)
-Build projects DirectXTex, texassemble, texconv, texdiag.
+- For projects DirectXTex, texassemble, texconv, texdiag
+set Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library
+  Debug: Multi-threaded Debug (/MTd)
+  Release: Multi-threaded (/MT)
+- Build projects DirectXTex, texassemble, texconv, texdiag.
 
 
 * Open solution vendor/cross-platform/glfw/GLFW.sln in Visual Studio.
-For project glfw
-Set Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library
-- Debug: Multi-threaded Debug (/MTd)
-- Release: Multi-threaded (/MT)
-Build project glfw
-
-
-* Open the solution ./MoravaEngine/build/MoravaEngine.sln
-* Build the project MoravaEngine.
-
-<!--
+- For project glfw
+set Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library
+  Debug: Multi-threaded Debug (/MTd)
+  Release: Multi-threaded (/MT)
+- Build project glfw
 
 * Build assimp with CMake
 ```
 $ cd ./vendor/cross-platform/assimp
 $ cmake .
 ```
-
 * Install GLFW
 ```
 $ cd ./vendor/cross-platform/glfw
 $ cmake .
 $ cmake --build .
 ```
-
 * Build shaderc - use python to run
 ```
 $ python ./vendor/cross-platform/shaderc/utils/git-sync-deps
 ```
-
 * Build shaderc with CMake
 ```
 $ cd ./vendor/cross-platform/shaderc
 $ cmake .
 ```
-
 * Open solution vendor/cross-platform/shaderc/shaderc.sln and build it in Visual Studio.
-
 ```
 $ cd ./vendor/DirectXTex
 $ cmake .
 ```
-
 * Build yaml-cpp project in MoravaEngine solution in Visual Studio.
-
 * Build all spirv-cross-* projects in MoravaEngine solution in Visual Studio.
-
 * Build BulletCollision project in MoravaEngine solution in Visual Studio.
 * Build LinearMath project in MoravaEngine solution in Visual Studio.
 * Build BulletDynamics project in MoravaEngine solution in Visual Studio.
-
 -->
 
 <!-- Help section -->
