@@ -5,8 +5,8 @@
 // #define SCENE_EIFFEL
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
-#define SCENE_PBR
-// #define SCENE_LEARN_OPENGL
+// #define SCENE_PBR
+#define SCENE_LEARN_OPENGL
 // #define SCENE_BULLET
 // #define SCENE_INSTANCED
 // #define SCENE_ASTEROIDS
