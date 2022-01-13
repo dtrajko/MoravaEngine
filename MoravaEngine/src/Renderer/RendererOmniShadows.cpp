@@ -149,7 +149,10 @@ void RendererOmniShadows::RenderPassMain(Window* mainWindow, Scene* scene, glm::
 	shaderMain->SetInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->SetInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->SetInt("shadowMap", scene->GetTextureSlots()["shadow"]);
-	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+
+	// clip plane for rendering to screen
+	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
+
 	shaderMain->SetFloat("tilingFactor", 1.0f);
 	shaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();

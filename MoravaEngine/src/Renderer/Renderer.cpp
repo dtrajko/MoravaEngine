@@ -325,6 +325,14 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 	RendererBasic::GetUniforms()["specularIntensity"] = shaderMain->GetUniformLocationMaterialSpecularIntensity();
 	RendererBasic::GetUniforms()["shininess"] = shaderMain->GetUniformLocationMaterialShininess();
 
+	RendererBasic::GetUniforms()["albedoMap"] = shaderMain->GetUniformLocation("albedoMap");
+	RendererBasic::GetUniforms()["normalMap"] = shaderMain->GetUniformLocation("normalMap");
+	RendererBasic::GetUniforms()["shadowMap"] = shaderMain->GetUniformLocation("shadowMap");
+	RendererBasic::GetUniforms()["clipPlane"] = shaderMain->GetUniformLocation("clipPlane");
+	RendererBasic::GetUniforms()["tilingFactor"] = shaderMain->GetUniformLocation("tilingFactor");
+	RendererBasic::GetUniforms()["tintColor"] = shaderMain->GetUniformLocation("tintColor");
+	RendererBasic::GetUniforms()["dirLightTransform"] = shaderMain->GetUniformLocation("dirLightTransform");
+
 	shaderMain->SetMat4("model", glm::mat4(1.0f));
 	shaderMain->SetMat4("view", scene->GetCamera()->GetViewMatrix());
 	shaderMain->SetMat4("projection", projectionMatrix);
@@ -340,7 +348,8 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 	shaderMain->SetInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->SetInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->SetInt("shadowMap", scene->GetTextureSlots()["shadow"]);
-	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+	// clip plane for rendering to screen
+	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
 	shaderMain->SetFloat("tilingFactor", 1.0f);
 	shaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();

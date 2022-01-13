@@ -941,7 +941,8 @@ void SceneAnimPBR::SetupUniforms()
     m_ShaderMain->SetInt("albedoMap", textureSlots["diffuse"]);
     m_ShaderMain->SetInt("normalMap", textureSlots["normal"]);
     m_ShaderMain->SetInt("shadowMap", textureSlots["shadow"]);
-    m_ShaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000.0f));
+    // clip plane for rendering to screen
+    m_ShaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
     m_ShaderMain->SetFloat("tilingFactor", 1.0f);
     m_ShaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     m_ShaderMain->Validate();

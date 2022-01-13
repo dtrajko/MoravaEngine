@@ -395,7 +395,10 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	{
 		shaderMain->SetInt("shadowMap", scene->GetTextureSlots()["shadow"]);
 	}
-	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+
+	// clip plane for rendering to screen
+	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
+
 	shaderMain->SetFloat("tilingFactor", 1.0f);
 	shaderMain->Validate();
 	/**** END shaderMain ****/
@@ -466,8 +469,13 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	shaderMarchingCubes->SetInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMarchingCubes->SetInt("normalMap", scene->GetTextureSlots()["normal"]);
 	if (scene->GetSettings().enableShadows)
+	{
 		shaderMarchingCubes->SetInt("shadowMap", scene->GetTextureSlots()["shadow"]);
-	shaderMarchingCubes->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+	}
+
+	// clip plane for rendering to screen
+	shaderMarchingCubes->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
+
 	shaderMarchingCubes->SetFloat("tilingFactor", 1.0f);
 	shaderMarchingCubes->Validate();
 	/**** END shaderMarchingCubes ****/
@@ -490,7 +498,8 @@ void RendererVoxelTerrain::RenderPassMain(Window* mainWindow, Scene* scene, glm:
 	shaderRenderInstanced->SetFloat("material.specularIntensity", ResourceManager::s_MaterialSpecular);  // TODO - use material attribute
 	shaderRenderInstanced->SetFloat("material.shininess", ResourceManager::s_MaterialShininess); // TODO - use material attribute
 
-	shaderRenderInstanced->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+	// clip plane for rendering to screen
+	shaderRenderInstanced->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
 
 	shaderRenderInstanced->Validate();
 	/**** END shaderRenderInstanced ****/

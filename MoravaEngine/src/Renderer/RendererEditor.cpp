@@ -371,7 +371,9 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     shaderEditor->SetMat4("view", scene->GetCamera()->GetViewMatrix());
     shaderEditor->SetMat4("projection", *projectionMatrix);
     shaderEditor->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    shaderEditor->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+    // clip plane for rendering to screen
+    shaderEditor->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
+
     shaderEditor->SetInt("pointLightCount", LightManager::pointLightCount);
     shaderEditor->SetInt("spotLightCount", LightManager::spotLightCount);
     // Eye position / camera direction
@@ -481,7 +483,8 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     shaderEditorPBR->SetMat4("projection", *projectionMatrix);
     shaderEditorPBR->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
     shaderEditorPBR->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
-    shaderEditorPBR->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+    // clip plane for rendering to screen
+    shaderEditorPBR->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
     shaderEditorPBR->SetFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
     shaderEditorPBR->SetFloat4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
@@ -565,7 +568,8 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
 
     shaderSkinning->SetMat4("view", scene->GetCamera()->GetViewMatrix());
     shaderSkinning->SetMat4("projection", *projectionMatrix);
-    shaderSkinning->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, -10000));
+    // clip plane for rendering to screen
+    shaderSkinning->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
     shaderSkinning->SetFloat3("gEyeWorldPos", scene->GetCamera()->GetPosition());
     shaderSkinning->SetFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
     shaderSkinning->SetFloat4("waterColor", scene->GetWaterManager()->GetWaterColor());
