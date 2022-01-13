@@ -65,7 +65,7 @@ void RendererPBR::SetUniforms()
 
 void RendererPBR::SetShaders()
 {
-	H2M::RefH2M<MoravaShader> shaderMain = MoravaShader::Create("Shaders/shader.vert", "Shaders/shader.frag");
+	H2M::RefH2M<ShaderMain> shaderMain = H2M::RefH2M<ShaderMain>::Create("Shaders/shader.vert", "Shaders/shader.frag");
 	RendererBasic::GetShaders().insert(std::make_pair("main", shaderMain));
 	printf("Renderer: Main shader compiled [programID=%d]\n", shaderMain->GetProgramID());
 

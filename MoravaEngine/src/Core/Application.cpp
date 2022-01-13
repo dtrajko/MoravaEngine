@@ -81,7 +81,9 @@ void Application::OnInit()
 		PushOverlay(m_ImGuiLayer);
 	}
 
+#if defined(OPENGL_4_5_PLUS)
 	H2M::RendererH2M::Init();
+#endif
 
 	switch (H2M::RendererAPI_H2M::Current())
 	{

@@ -54,6 +54,7 @@ H2M::RefH2M<OpenGLMoravaShader> OpenGLMoravaShader::Create(const char* vertexLoc
 	H2M::RefH2M<OpenGLMoravaShader> result = H2M::RefH2M<OpenGLMoravaShader>::Create(vertexLocation, fragmentLocation, forceCompile);
 
 	s_AllShaders.push_back(result);
+
 	return result;
 }
 

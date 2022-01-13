@@ -2,10 +2,10 @@
 
 
 // #define SCENE_COTTAGE
-#define SCENE_EIFFEL
+// #define SCENE_EIFFEL
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
-// #define SCENE_PBR
+#define SCENE_PBR
 // #define SCENE_LEARN_OPENGL
 // #define SCENE_BULLET
 // #define SCENE_INSTANCED
@@ -157,13 +157,16 @@ struct SceneProperties
 #elif defined(SCENE_HAZEL_ENV_MAP)
 #include "Scene/SceneHazelEnvMap.h"
 #include "Renderer/RendererECS.h"
+#define OPENGL_4_5_PLUS // allows the use of 'ultramodern' OpenGL 4.5+ functions e.g. glCreateTextures
 #elif defined(SCENE_DX11)
 #include "Scene/SceneDX11.h"
 #include "Renderer/RendererTrivial.h"
 #elif defined(SCENE_HAZEL_VULKAN)
 #include "Scene/SceneHazelVulkan.h"
 #include "Renderer/RendererTrivial.h"
+#define OPENGL_4_5_PLUS // allows the use of 'ultramodern' OpenGL 4.5+ functions e.g. glCreateTextures
 #elif defined(SCENE_ENV_MAP_VULKAN)
 #include "Scene/SceneEnvMapVulkan.h"
 #include "Renderer/RendererECS.h"
+#define OPENGL_4_5_PLUS // allows the use of 'ultramodern' OpenGL 4.5+ functions e.g. glCreateTextures
 #endif

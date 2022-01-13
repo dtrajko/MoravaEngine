@@ -92,7 +92,12 @@ private:
 	H2M::LayerStackH2M m_LayerStack;
 
 	H2M::ImGuiLayerH2M* m_ImGuiLayer;
+
+#if defined(OPENGL_4_5_PLUS)
 	bool m_EnableImGui = true;
+#else
+	bool m_EnableImGui = true;
+#endif
 
 	float m_TimeStep = 0;
 	float m_LastFrameTime = 0;

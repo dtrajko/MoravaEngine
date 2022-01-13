@@ -77,7 +77,7 @@ void ShaderMain::SetPointLights(PointLight* pointLights, unsigned int lightCount
 			uniformPointLight[i].uniformExponent);
 
 		pointLights[i].GetShadowMap()->ReadTexture(textureUnit + offset + i);
-		glUniform1i(uniformOmniShadowMap[offset + i].shadowMap, textureUnit + offset + i);
+		// glUniform1i(uniformOmniShadowMap[offset + i].shadowMap, textureUnit + offset + i);
 		glUniform1f(uniformOmniShadowMap[offset + i].farPlane, pointLights[i].GetFarPlane());
 	}
 }
