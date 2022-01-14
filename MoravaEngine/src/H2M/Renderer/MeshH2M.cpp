@@ -593,7 +593,7 @@ namespace H2M
 					}
 					catch (...) {
 						Log::GetLogger()->warn("The NORMAL map failed to load. Loading the default texture placeholder instead.");
-						texture = Texture2D_H2M::Create("Textures/normal_map_default.png");
+						texture = Texture2D_H2M::Create("Textures/normal_map_default.png", false);
 					}
 
 					if (texture && texture->Loaded())
@@ -1231,7 +1231,7 @@ namespace H2M
 	{
 		if (!m_BaseTexture) {
 			try {
-				m_BaseTexture = Texture2D_H2M::Create("Textures/plain.png");
+				m_BaseTexture = Texture2D_H2M::Create("Textures/plain.png", false);
 			}
 			catch (...) {
 				Log::GetLogger()->warn("Failed to load the base texture!");

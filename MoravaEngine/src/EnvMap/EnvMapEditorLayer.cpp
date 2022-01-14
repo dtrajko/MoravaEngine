@@ -151,11 +151,11 @@ void EnvMapEditorLayer::Init()
 
 void EnvMapEditorLayer::OnAttach()
 {
-    s_CheckerboardTexture = H2M::Texture2D_H2M::Create("Textures/Hazel/Checkerboard.tga");
-    m_PlayButtonTex = H2M::Texture2D_H2M::Create("Textures/Hazel/PlayButton.png");
+    s_CheckerboardTexture = H2M::Texture2D_H2M::Create("Textures/Hazel/Checkerboard.tga", false);
+    m_PlayButtonTex = H2M::Texture2D_H2M::Create("Textures/Hazel/PlayButton.png", false);
 
-    m_IconPlay = H2M::Texture2D_H2M::Create("Resources/Icons/PlayButton.png");
-    m_IconStop = H2M::Texture2D_H2M::Create("Resources/Icons/StopButton.png");
+    m_IconPlay = H2M::Texture2D_H2M::Create("Resources/Icons/PlayButton.png", false);
+    m_IconStop = H2M::Texture2D_H2M::Create("Resources/Icons/StopButton.png", false);
 }
 
 EnvMapEditorLayer::~EnvMapEditorLayer()

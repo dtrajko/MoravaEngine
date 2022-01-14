@@ -11,6 +11,11 @@
 
 namespace H2M
 {
+	VulkanImage2D_H2M::VulkanImage2D_H2M(ImageSpecificationH2M specification)
+		: m_Specification(specification)
+	{
+		H2M_CORE_VERIFY(m_Specification.Width > 0 && m_Specification.Height > 0);
+	}
 
 	VulkanImage2D_H2M::VulkanImage2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height)
 		: m_Format(format), m_Width(width), m_Height(height)

@@ -207,7 +207,7 @@ void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene, EnvMa
     targetFramebufferComp->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
     s_Data.CompositePass = H2M::RenderPassH2M::Create(compRenderPassSpec);
 
-    s_Data.BRDFLUT = H2M::Texture2D_H2M::Create("Textures/Hazel/BRDF_LUT.tga");
+    s_Data.BRDFLUT = H2M::Texture2D_H2M::Create("Textures/Hazel/BRDF_LUT.tga", false);
 
     s_Renderer2D = H2M::RefH2M<H2M::Renderer2D_H2M>::Create();
 }
@@ -329,7 +329,7 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
     H2M::RefH2M<H2M::OpenGLTextureCubeH2M> envUnfiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize).As<H2M::OpenGLTextureCubeH2M>();
     // RefH2M<OpenGLShaderH2M> equirectangularConversionShader = RendererH2M::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShaderH2M>();
     H2M::RefH2M<H2M::OpenGLShaderH2M> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<H2M::OpenGLShaderH2M>();
-    s_EnvEquirect = H2M::Texture2D_H2M::Create(filepath);
+    s_EnvEquirect = H2M::Texture2D_H2M::Create(filepath, false);
 
     // H2M_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
     if (s_EnvEquirect->GetFormat() != H2M::ImageFormatH2M::RGBA32F)
@@ -668,7 +668,7 @@ void EnvMapSceneRenderer::OnImGuiRender()
                 std::string filename = Application::Get()->OpenFile("");
                 if (!filename.empty())
                 {
-                    s_BloomDirtTexture = H2M::Texture2D_H2M::Create(filename);
+                    s_BloomDirtTexture = H2M::Texture2D_H2M::Create(filename, false);
                 }
             }
         }

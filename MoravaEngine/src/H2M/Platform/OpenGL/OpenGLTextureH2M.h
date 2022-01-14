@@ -20,6 +20,7 @@ namespace H2M
 	public:
 		OpenGLTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data);
 		OpenGLTexture2D_H2M(const std::string& path, bool srgb);
+		OpenGLTexture2D_H2M(const std::string& path, TexturePropertiesH2M properties = TexturePropertiesH2M());
 		// OpenGLTexture2D(HazelImageFormat format, uint32_t width, uint32_t height, TextureWrap wrap);
 		virtual ~OpenGLTexture2D_H2M();
 

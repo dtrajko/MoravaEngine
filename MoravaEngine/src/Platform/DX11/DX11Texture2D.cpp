@@ -180,6 +180,10 @@ DX11Texture2D::DX11Texture2D(H2M::ImageFormatH2M format, uint32_t width, uint32_
 	H2M_CORE_ASSERT(false);
 }
 
+DX11Texture2D::DX11Texture2D(const std::string& path, H2M::TexturePropertiesH2M properties)
+{
+}
+
 DX11Texture2D::~DX11Texture2D()
 {
 	Release();

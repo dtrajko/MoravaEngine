@@ -41,4 +41,17 @@ namespace H2M
 		return RefH2M<Image2D_H2M>();
 	}
 
+	RefH2M<Image2D_H2M> Image2D_H2M::Create(ImageSpecificationH2M specification, const void* data)
+	{
+		switch (RendererAPI_H2M::Current())
+		{
+		case RendererAPITypeH2M::None:   return RefH2M<Image2D_H2M>();
+		case RendererAPITypeH2M::OpenGL: return RefH2M<OpenGLImage2D_H2M>::Create(specification);
+		case RendererAPITypeH2M::Vulkan: return RefH2M<VulkanImage2D_H2M>::Create(specification);
+		case RendererAPITypeH2M::DX11:   return RefH2M<DX11Image2D>::Create(specification);
+		}
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+		return RefH2M<Image2D_H2M>();
+	}
+
 }

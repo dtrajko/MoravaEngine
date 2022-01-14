@@ -70,6 +70,7 @@ namespace H2M
 	public:
 		static RefH2M<Texture2D_H2M> Create(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr);
 		static RefH2M<Texture2D_H2M> Create(const std::string& path, bool srgb = false);
+		static RefH2M<Texture2D_H2M> Create(const std::string& path, TexturePropertiesH2M properties = TexturePropertiesH2M());
 		// static RefH2M<Texture2D_H2M> Create(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrap wrap = TextureWrapH2M::Clamp);
 
 		virtual RefH2M<Image2D_H2M> GetImage() const = 0;

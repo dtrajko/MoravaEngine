@@ -772,7 +772,7 @@ namespace H2M
 				{
 					const wchar_t* path = (const wchar_t*)payload->Data;
 					std::filesystem::path texturePath = std::filesystem::path(g_AssetPath) / path;
-					RefH2M<Texture2D_H2M> texture = Texture2D_H2M::Create(texturePath.string());
+					RefH2M<Texture2D_H2M> texture = Texture2D_H2M::Create(texturePath.string(), false);
 					if (texture->Loaded())
 						component.Texture = texture;
 					else

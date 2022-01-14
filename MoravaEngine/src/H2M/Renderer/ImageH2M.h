@@ -108,6 +108,7 @@ namespace H2M
 	public:
 		static RefH2M<Image2D_H2M> Create(ImageFormatH2M format, uint32_t width, uint32_t height, BufferH2M buffer);
 		static RefH2M<Image2D_H2M> Create(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data = nullptr);
+		static RefH2M<Image2D_H2M> Create(ImageSpecificationH2M specification, const void* data = nullptr);
 	};
 
 	namespace Utils {

@@ -70,9 +70,9 @@ glm::vec3& DX11Material::GetVector3(const std::string& name) { glm::vec3 v;  ret
 glm::vec4& DX11Material::GetVector4(const std::string& name) { glm::vec4 v;  return v; }
 glm::mat3& DX11Material::GetMatrix3(const std::string& name) { glm::mat3 v;  return v; }
 glm::mat4& DX11Material::GetMatrix4(const std::string& name) { glm::mat4 v;  return v; }
-H2M::RefH2M<H2M::Texture2D_H2M> DX11Material::GetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2D_H2M::Create(path); }
+H2M::RefH2M<H2M::Texture2D_H2M> DX11Material::GetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2D_H2M::Create(path, false); }
 H2M::RefH2M<H2M::TextureCubeH2M> DX11Material::TryGetTextureCube(const std::string& name) { std::string path = ""; return H2M::TextureCubeH2M::Create(path); }
-H2M::RefH2M<H2M::Texture2D_H2M> DX11Material::TryGetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2D_H2M::Create(path); }
+H2M::RefH2M<H2M::Texture2D_H2M> DX11Material::TryGetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2D_H2M::Create(path, false); }
 H2M::RefH2M<H2M::TextureCubeH2M> DX11Material::GetTextureCube(const std::string& name) { std::string path = ""; return H2M::TextureCubeH2M::Create(path); }
 void DX11Material::UpdateForRendering() {}
 

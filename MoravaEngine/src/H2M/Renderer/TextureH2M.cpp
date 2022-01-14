@@ -43,6 +43,19 @@ namespace H2M
 		return RefH2M<Texture2D_H2M>();
 	}
 
+	RefH2M<Texture2D_H2M> Texture2D_H2M::Create(const std::string& path, TexturePropertiesH2M properties)
+	{
+		switch (RendererAPI_H2M::Current())
+		{
+		case RendererAPITypeH2M::None: return RefH2M<Texture2D_H2M>();
+		case RendererAPITypeH2M::OpenGL: return RefH2M<OpenGLTexture2D_H2M>::Create(path, properties);
+		case RendererAPITypeH2M::Vulkan: return RefH2M<VulkanTexture2D_H2M>::Create(path, properties);
+		case RendererAPITypeH2M::DX11: return RefH2M<DX11Texture2D>::Create(path, properties);
+		}
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+		return RefH2M<Texture2D_H2M>();
+	}
+
 	/**** BEGIN Method removed in Vulkan branch ****
 	RefH2M<Texture2D_H2M> Texture2D_H2M::Create(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrap wrap)
 	{

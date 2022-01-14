@@ -395,7 +395,7 @@ namespace H2M
 		// s_Data.EnvironmentMap = RendererH2M::CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
 		s_Data.EnvironmentMap = RendererH2M::CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
 
-		s_Data.BRDFLut = Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga");
+		s_Data.BRDFLut = Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga", false);
 
 		// RendererH2M::Submit([environment]() mutable {});
 		{
@@ -1187,7 +1187,7 @@ namespace H2M
 			s_Data.envUnfiltered = TextureCubeH2M::Create(ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize);
 		}
 
-		s_Data.envEquirect = Texture2D_H2M::Create(filepath);
+		s_Data.envEquirect = Texture2D_H2M::Create(filepath, false);
 		// ImageFormatH2M envEquirectImageFormat = s_Data.envEquirect->GetFormat(); // Vulkan Live 18.03.2021 #2: s_Data.envEquirect->GetImage()->GetFormat();
 
 		/****

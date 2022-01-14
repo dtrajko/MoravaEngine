@@ -151,7 +151,7 @@ namespace H2M
 		uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 		s_Data->m_FullscreenQuadIndexBuffer = IndexBufferH2M::Create(indices, 6 * sizeof(uint32_t));
 
-		s_Data->BRDFLut = Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga");
+		s_Data->BRDFLut = Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga", false);
 
 		// Renderer2D::Init();
 	}
@@ -268,7 +268,7 @@ namespace H2M
 		RefH2M<OpenGLTextureCubeH2M> envUnfiltered = TextureCubeH2M::Create(ImageFormatH2M::RGBA32F, cubemapSize, cubemapSize).As<OpenGLTextureCubeH2M>();
 		// RefH2M<OpenGLShaderH2M> equirectangularConversionShader = RendererH2M::GetShaderLibrary()->Get("EquirectangularToCubeMap").As<OpenGLShaderH2M>();
 		RefH2M<OpenGLShaderH2M> equirectangularConversionShader = ResourceManager::GetShader("Hazel/EquirectangularToCubeMap").As<OpenGLShaderH2M>();
-		RefH2M<Texture2D_H2M> envEquirect = Texture2D_H2M::Create(filepath);
+		RefH2M<Texture2D_H2M> envEquirect = Texture2D_H2M::Create(filepath, false);
 
 		// HZ_CORE_ASSERT(envEquirect->GetFormat() == ImageFormat::RGBA32F, "Texture is not HDR!");
 		if (envEquirect->GetFormat() != ImageFormatH2M::RGBA16F)

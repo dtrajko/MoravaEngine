@@ -214,6 +214,38 @@ namespace H2M {
 		SetImageLayout(cmdbuffer, image, oldImageLayout, newImageLayout, subresourceRange, srcStageMask, dstStageMask);
 	}
 
+	//////////////////////////////////////////////////////////////////////////////////
+	// Texture2D
+	//////////////////////////////////////////////////////////////////////////////////
+
+	VulkanTexture2D_H2M::VulkanTexture2D_H2M(const std::string& path, TexturePropertiesH2M properties)
+		: m_Path(path), m_Properties(properties)
+	{
+		bool loaded = LoadImageH2M(path);
+		H2M_CORE_ASSERT(loaded);
+		if (!loaded)
+		{
+			// TODO(Yan): move this to asset manager
+			LoadImageH2M("Resources/Textures/ErrorTexture.png");
+		}
+
+		ImageSpecificationH2M imageSpec;
+		imageSpec.Format = m_Format;
+		imageSpec.Width = m_Width;
+		imageSpec.Height = m_Height;
+		imageSpec.Mips = GetMipLevelCount();
+		imageSpec.DebugName = properties.DebugName;
+		m_Image = Image2D_H2M::Create(imageSpec);
+
+		H2M_CORE_ASSERT(m_Format != ImageFormatH2M::None);
+
+		// RefH2M<VulkanTexture2D_H2M> instance = this;
+		// RendererH2M::Submit([instance]() mutable {});
+		{
+			Invalidate();
+		}
+	}
+
 	VulkanTexture2D_H2M::VulkanTexture2D_H2M(const std::string& path, bool srgb, TextureWrapH2M wrap)
 		: m_Path(path)
 	{
@@ -304,6 +336,33 @@ namespace H2M {
 			vkDestroySampler(vulkanDevice, m_DescriptorImageInfo.sampler, nullptr);
 			vkFreeMemory(vulkanDevice, m_DeviceMemory, nullptr);
 		}
+	}
+
+	bool VulkanTexture2D_H2M::LoadImageH2M(const std::string& path)
+	{
+		int width, height, channels;
+
+		if (stbi_is_hdr(path.c_str()))
+		{
+			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Size = width * height * 4 * sizeof(float);
+			m_Format = ImageFormatH2M::RGBA32F;
+		}
+		else
+		{
+			//stbi_set_flip_vertically_on_load(1);
+			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Size = width * height * 4;
+			m_Format = ImageFormatH2M::RGBA;
+		}
+
+		H2M_CORE_ASSERT(m_ImageData.Data, "Failed to load image!");
+		if (!m_ImageData.Data)
+			return false;
+
+		m_Width = width;
+		m_Height = height;
+		return true;
 	}
 
 	void VulkanTexture2D_H2M::Invalidate()
@@ -514,7 +573,8 @@ namespace H2M {
 
 	uint32_t VulkanTexture2D_H2M::GetMipLevelCount() const
 	{
-		return Utils::MipCount(m_Width, m_Height);
+		// return Utils::MipCount(m_Width, m_Height);
+		return Utils::CalculateMipCount(m_Width, m_Height);
 	}
 
 	std::pair<uint32_t, uint32_t> VulkanTexture2D_H2M::GetMipSize(uint32_t mip) const

@@ -25,6 +25,7 @@ public:
 	DX11Texture2D(const std::string& path, bool srgb = false, H2M::TextureWrapH2M wrap = H2M::TextureWrapH2M::Clamp);
 	DX11Texture2D(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, H2M::TextureWrapH2M wrap = H2M::TextureWrapH2M::Clamp);
 	DX11Texture2D(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, H2M::TextureWrapH2M wrap = H2M::TextureWrapH2M::Clamp);
+	DX11Texture2D(const std::string& path, H2M::TexturePropertiesH2M properties = H2M::TexturePropertiesH2M());
 	virtual ~DX11Texture2D();
 
 	void Invalidate();

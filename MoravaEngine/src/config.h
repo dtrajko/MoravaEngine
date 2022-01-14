@@ -6,7 +6,7 @@
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
 // #define SCENE_PBR
-#define SCENE_LEARN_OPENGL
+// #define SCENE_LEARN_OPENGL
 // #define SCENE_BULLET
 // #define SCENE_INSTANCED
 // #define SCENE_ASTEROIDS
@@ -29,7 +29,7 @@
 // #define SCENE_HAZEL_ENV_MAP
 // #define SCENE_DX11
 // #define SCENE_HAZEL_VULKAN
-// #define SCENE_ENV_MAP_VULKAN
+#define SCENE_ENV_MAP_VULKAN
 
 
 enum class SceneName

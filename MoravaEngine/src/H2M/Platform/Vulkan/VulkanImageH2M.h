@@ -29,6 +29,7 @@ namespace H2M
 	class VulkanImage2D_H2M : public Image2D_H2M
 	{
 	public:
+		VulkanImage2D_H2M(ImageSpecificationH2M specification);
 		VulkanImage2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height);
 		virtual ~VulkanImage2D_H2M();
 

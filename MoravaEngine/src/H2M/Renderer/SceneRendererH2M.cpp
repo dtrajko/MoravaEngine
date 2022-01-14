@@ -247,7 +247,7 @@ namespace H2M
 		RefH2M<TextureCubeH2M> envUnfiltered = TextureCubeH2M::Create(ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize);
 		if (!equirectangularConversionShader)
 			equirectangularConversionShader = ShaderH2M::Create("Resources/Shaders/EquirectangularToCubeMap.glsl");
-		RefH2M<Texture2D_H2M> envEquirect = Texture2D_H2M::Create(filepath);
+		RefH2M<Texture2D_H2M> envEquirect = Texture2D_H2M::Create(filepath, false);
 		H2M_CORE_ASSERT(envEquirect->GetFormat() == ImageFormatH2M::RGBA16F, "Texture is not HDR!");
 
 		equirectangularConversionShader->Bind();
@@ -632,7 +632,7 @@ namespace H2M
 					std::string filename = Application::Get()->OpenFile("");
 					if (!filename.empty())
 					{
-						m_BloomDirtTexture = Texture2D_H2M::Create(filename);
+						m_BloomDirtTexture = Texture2D_H2M::Create(filename, false);
 					}
 				}
 			}

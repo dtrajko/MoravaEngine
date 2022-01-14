@@ -22,6 +22,7 @@ namespace H2M
 		VulkanTexture2D_H2M(const std::string& path, bool srgb = false, TextureWrapH2M wrap = TextureWrapH2M::Clamp);
 		VulkanTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, TextureWrapH2M wrap = TextureWrapH2M::Clamp);
 		VulkanTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrapH2M wrap = TextureWrapH2M::Clamp);
+		VulkanTexture2D_H2M(const std::string& path, TexturePropertiesH2M properties = TexturePropertiesH2M());
 		virtual ~VulkanTexture2D_H2M();
 
 		void Invalidate();
@@ -62,10 +63,15 @@ namespace H2M
 		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 
 	private:
+		bool LoadImageH2M(const std::string& path);
+
+	private:
 		std::string m_Path;
 		uint32_t m_Width;
 		uint32_t m_Height;
 		uint32_t m_Channels;
+
+		TexturePropertiesH2M m_Properties;
 
 		BufferH2M m_ImageData;
 

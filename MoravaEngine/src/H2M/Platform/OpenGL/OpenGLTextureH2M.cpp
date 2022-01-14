@@ -197,6 +197,10 @@ namespace H2M
 		Util::CheckOpenGLErrors("OpenGLTexture2D_H2M::OpenGLTexture2D_H2M");
 	}
 
+	OpenGLTexture2D_H2M::OpenGLTexture2D_H2M(const std::string& path, TexturePropertiesH2M properties)
+	{
+	}
+
 	/**** BEGIN Method removed in Vulkan branch ****
 	OpenGLTexture2D_H2M::OpenGLTexture2D_H2M(ImageFormatH2M format, uint32_t width, uint32_t height, TextureWrap wrap)
 		: m_Format(format), m_Width(width), m_Height(height), m_Wrap(wrap)
