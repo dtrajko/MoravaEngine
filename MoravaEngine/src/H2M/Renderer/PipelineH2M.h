@@ -33,6 +33,7 @@ namespace H2M
 		RefH2M<ShaderH2M> Shader;
 		VertexBufferLayoutH2M Layout;
 		RefH2M<RenderPassH2M> RenderPass;
+		float LineWidth = 1.0f;
 
 		std::string DebugName;
 	};

@@ -16,7 +16,7 @@
 namespace H2M
 {
 
-	class ContentBrowserPanelH2M
+	class ContentBrowserPanelH2M : public RefCountedH2M // TODO: ContentBrowserPanelH2M => EditorPanelH2M => RefCountedH2M
 	{
 	public:
 		ContentBrowserPanelH2M();

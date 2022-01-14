@@ -25,18 +25,23 @@ struct aiNode;
 namespace H2M
 {
 
-	class SceneHierarchyPanelH2M
+	class SceneHierarchyPanelH2M : public RefCountedH2M // TODO: SceneHierarchyPanelH2M => EditorPanel => RefCountedH2M
 	{
 	public:
 		SceneHierarchyPanelH2M() = default;
 		SceneHierarchyPanelH2M(RefH2M<SceneH2M> scene);
 		~SceneHierarchyPanelH2M();
 
+		static void Init();
+		static void Shutdown();
+
 		void SetContext(RefH2M<SceneH2M> scene);
 		RefH2M<SceneH2M> GetContext() { return m_Context; };
 		void SetSelected(EntityH2M entity);
 		void SetSelectionChangedCallback(const std::function<void(EntityH2M)>& func) { m_SelectionChangedCallback = func; }
 		void SetEntityDeletedCallback(const std::function<void(EntityH2M)>& func) { m_EntityDeletedCallback = func; }
+		void SetMeshAssetConvertCallback(const std::function<void(EntityH2M, RefH2M<MeshH2M>)>& func) { m_MeshAssetConvertCallback = func; } // TODO: MeshH2M => MeshSourceH2M
+		void SetInvalidMetadataCallback(const std::function<void(EntityH2M, AssetHandleH2M)>& func) { m_InvalidMetadataCallback = func; }
 
 		EntityH2M GetSelectedEntity() const { return m_SelectionContext; }
 		void SetSelectedEntity(EntityH2M entity) { m_SelectionContext = entity; }
@@ -56,6 +61,12 @@ namespace H2M
 
 		std::function<void(EntityH2M)> m_SelectionChangedCallback;
 		std::function<void(EntityH2M)> m_EntityDeletedCallback;
+		std::function<void(EntityH2M, RefH2M<MeshH2M>)> m_MeshAssetConvertCallback; // TODO: MeshH2M => MeshSourceH2M
+		std::function<void(EntityH2M, AssetHandleH2M)> m_InvalidMetadataCallback;
+
+		static RefH2M<Texture2D_H2M> s_PencilIcon;
+		static RefH2M<Texture2D_H2M> s_PlusIcon;
+		static RefH2M<Texture2D_H2M> s_GearIcon;
 
 	};
 

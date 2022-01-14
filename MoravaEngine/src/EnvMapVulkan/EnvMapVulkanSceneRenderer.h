@@ -18,4 +18,12 @@ public:
 
 	// TODO Implement all SceneRenderer methods
 
+	void SetLineWidth(float width);
+
+
+private:
+	float m_LineWidth = 2.0f;
+
+	H2M::RefH2M<H2M::PipelineH2M> m_GeometryWireframePipeline;
+
 };

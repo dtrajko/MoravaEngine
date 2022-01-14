@@ -18,6 +18,10 @@
 
 namespace H2M
 {
+	RefH2M<Texture2D_H2M>SceneHierarchyPanelH2M::s_PencilIcon;
+	RefH2M<Texture2D_H2M>SceneHierarchyPanelH2M::s_PlusIcon;
+	RefH2M<Texture2D_H2M>SceneHierarchyPanelH2M::s_GearIcon;
+
 	// extern const std::filesystem::path g_AssetPath;
 	static const std::filesystem::path g_AssetPath = ".";
 
@@ -28,6 +32,20 @@ namespace H2M
 
 	SceneHierarchyPanelH2M::~SceneHierarchyPanelH2M()
 	{
+	}
+
+	void SceneHierarchyPanelH2M::Init()
+	{
+		s_PencilIcon = Texture2D_H2M::Create("Resources/Editor/pencil_icon.png", false);
+		s_PlusIcon = Texture2D_H2M::Create("Resources/Editor/plus_icon.png", false);
+		s_GearIcon = Texture2D_H2M::Create("Resources/Editor/gear_icon.png", false);
+	}
+
+	void SceneHierarchyPanelH2M::Shutdown()
+	{
+		s_PencilIcon.Reset();
+		s_PlusIcon.Reset();
+		s_GearIcon.Reset();
 	}
 
 	void SceneHierarchyPanelH2M::SetContext(RefH2M<SceneH2M> scene)

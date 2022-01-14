@@ -62,7 +62,6 @@ public:
 
 	void UI_NewScene();
 
-	// void OnCreateMeshFromMeshSource(H2M::EntityH2M entity, H2M::RefH2M<H2M::MeshSourceH2M> meshSource);
 	void SceneHierarchyInvalidMetadataCallback(H2M::EntityH2M entity, H2M::AssetHandleH2M handle);
 private:
 	std::pair<float, float> GetMouseViewportSpace(bool primaryViewport);
@@ -79,6 +78,9 @@ private:
 
 	void OnSelected(const SelectedSubmesh& selectionContext);
 	void OnEntityDeleted(H2M::EntityH2M e);
+	// void OnCreateMeshFromMeshSource(H2M::EntityH2M entity, H2M::RefH2M<H2M::MeshSourceH2M> meshSource);
+	void OnCreateMeshFromMeshSource(H2M::EntityH2M entity, H2M::RefH2M<H2M::MeshH2M> mesh);
+
 	H2M::RayH2M CastMouseRay();
 
 	void OnScenePlay();
@@ -205,14 +207,14 @@ private:
 	bool m_ShowCreateNewMeshPopup = false;
 	struct CreateNewMeshPopupData
 	{
-		// H2M::RefH2M<H2M::MeshSourceH2M> MeshToCreate;
+		H2M::RefH2M<H2M::MeshH2M> MeshToCreate; // TODO: MeshH2M => MeshSourceH2M
 		std::array<char, 256> CreateMeshFilenameBuffer;
 		H2M::EntityH2M TargetEntity;
 
 		CreateNewMeshPopupData()
 		{
 			CreateMeshFilenameBuffer.fill(0);
-			// MeshToCreate = nullptr;
+			MeshToCreate = nullptr;
 			TargetEntity = {};
 		}
 

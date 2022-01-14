@@ -1,6 +1,8 @@
 #include "EnvMapVulkanEditorLayer.h"
 
 #include "H2M/Renderer/Renderer2D_H2M.h"
+#include "H2M/Editor/ContentBrowserPanelH2M.h"
+#include "H2M/Editor/SceneHierarchyPanelH2M.h"
 
 
 EnvMapVulkanEditorLayer::EnvMapVulkanEditorLayer(const H2M::RefH2M<H2M::UserPreferencesH2M>& userPreferences)
@@ -37,7 +39,30 @@ void EnvMapVulkanEditorLayer::OnAttach()
 
 	m_PointLightIcon = H2M::Texture2D_H2M::Create("Resources/Editor/Icons/PointLight.png", false);
 
+	/////////// Configure Panels ///////////
 
+	H2M::RefH2M<H2M::SceneHierarchyPanelH2M> sceneHierarchyPanel = H2M::RefH2M<H2M::SceneHierarchyPanelH2M>::Create(m_EditorScene);
+
+	sceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapVulkanEditorLayer::SelectEntity, this, std::placeholders::_1));
+	sceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvMapVulkanEditorLayer::OnEntityDeleted, this, std::placeholders::_1));
+	sceneHierarchyPanel->SetMeshAssetConvertCallback(std::bind(&EnvMapVulkanEditorLayer::OnCreateMeshFromMeshSource, this, std::placeholders::_1, std::placeholders::_2));
+	sceneHierarchyPanel->SetInvalidMetadataCallback(std::bind(&EnvMapVulkanEditorLayer::SceneHierarchyInvalidMetadataCallback, this, std::placeholders::_1, std::placeholders::_2));
+
+	H2M::RefH2M<H2M::ContentBrowserPanelH2M> contentBrowserPanel = H2M::RefH2M<H2M::ContentBrowserPanelH2M>::Create();
+
+	////////////////////////////////////////////////////////
+
+	m_Renderer2D = H2M::RefH2M<H2M::Renderer2D_H2M>::Create();
+
+	m_ViewportRenderer = H2M::RefH2M<EnvMapVulkanSceneRenderer>::Create(m_CurrentScene);
+	m_SecondViewportRenderer = H2M::RefH2M<EnvMapVulkanSceneRenderer>::Create(m_CurrentScene);
+	m_FocusedRenderer = m_ViewportRenderer;
+
+	m_Renderer2D->SetLineWidth(m_LineWidth);
+	m_ViewportRenderer->SetLineWidth(m_LineWidth);
+	UpdateSceneRendererSettings();
+
+	H2M::SceneHierarchyPanelH2M::Init();
 }
 
 void EnvMapVulkanEditorLayer::OnDetach()
@@ -163,6 +188,13 @@ void EnvMapVulkanEditorLayer::OnSelected(const SelectedSubmesh& selectionContext
 
 void EnvMapVulkanEditorLayer::OnEntityDeleted(H2M::EntityH2M e)
 {
+}
+
+void EnvMapVulkanEditorLayer::OnCreateMeshFromMeshSource(H2M::EntityH2M entity, H2M::RefH2M<H2M::MeshH2M> mesh)
+{
+	m_ShowCreateNewMeshPopup = true;
+	m_CreateNewMeshPopupData.MeshToCreate = mesh;
+	m_CreateNewMeshPopupData.TargetEntity = entity;
 }
 
 H2M::RayH2M EnvMapVulkanEditorLayer::CastMouseRay()
