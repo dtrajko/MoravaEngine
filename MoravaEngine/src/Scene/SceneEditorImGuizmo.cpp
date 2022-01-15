@@ -580,6 +580,63 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 
     MousePicker* mp = MousePicker::Get();
 
+    if (m_ShowWindowTransform)
+    {
+        ImGui::Begin("Transform", &m_ShowWindowTransform);
+        {
+            {
+                ImGui::Separator();
+                ImGui::Text("Transform");
+                ImGui::Separator();
+
+                //  auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+                //  glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+                //  char buffer[100];
+                //  sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+                //  ImGui::Text(buffer);
+                //  sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
+                //  ImGui::Text(buffer);
+                //  sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+                //  ImGui::Text(buffer);
+
+                if (m_Transform_ImGuizmo != nullptr)
+                {
+                    auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+                    glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
+
+                    bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location, 0.0f, 100.0f);
+                    bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", RotationDegrees, 0.0f, 100.0f);
+                    bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", Scale, 1.0f, 100.0f);
+
+                    if (isTranslationChanged || isRotationChanged || isScaleChanged) {
+                        ImGuizmo::RecomposeMatrixFromComponents(
+                            glm::value_ptr(Location),
+                            glm::value_ptr(RotationDegrees),
+                            glm::value_ptr(Scale),
+                            glm::value_ptr(*m_Transform_ImGuizmo));
+                    }
+                }
+            }
+            //  ImGui::NewLine();
+            //  {
+            //      ImGui::Separator();
+            //      ImGui::Text("Selected Object Transform");
+            //      ImGui::Separator();
+            //  
+            //      auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(m_SceneObjects[m_SelectedIndex]->transform);
+            //      glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+            //      char buffer[100];
+            //      sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+            //      ImGui::Text(buffer);
+            //      sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
+            //      ImGui::Text(buffer);
+            //      sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+            //      ImGui::Text(buffer);
+            //  }
+        }
+        ImGui::End();
+    }
+
     if (m_ShowWindowSceneEditor)
     {
         ImGui::Begin("Scene Editor", &m_ShowWindowSceneEditor);
@@ -869,59 +926,58 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::End();
     }
 
-    if (m_ShowWindowTransform)
+    if (m_ShowWindowFramebuffers)
     {
-        ImGui::Begin("Transform", &m_ShowWindowTransform);
+        ImGui::Begin("Framebuffers", &m_ShowWindowFramebuffers);
         {
+            if (ImGui::CollapsingHeader("Display Info"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
             {
-                ImGui::Separator();
-                ImGui::Text("Transform");
-                ImGui::Separator();
+                ImVec2 imageSize(96.0f, 96.0f);
 
-                //  auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
-                //  glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
-                //  char buffer[100];
-                //  sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
-                //  ImGui::Text(buffer);
-                //  sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
-                //  ImGui::Text(buffer);
-                //  sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
-                //  ImGui::Text(buffer);
+                ImGui::Text("Shadow Map");
+                ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
 
-                if (m_Transform_ImGuizmo != nullptr)
+                if (m_IsViewportEnabled)
                 {
-                    auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
-                    glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
-
-                    bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location, 0.0f, 100.0f);
-                    bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", RotationDegrees, 0.0f, 100.0f);
-                    bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", Scale, 1.0f, 100.0f);
-
-                    if (isTranslationChanged || isRotationChanged || isScaleChanged) {
-                        ImGuizmo::RecomposeMatrixFromComponents(
-                            glm::value_ptr(Location),
-                            glm::value_ptr(RotationDegrees),
-                            glm::value_ptr(Scale),
-                            glm::value_ptr(*m_Transform_ImGuizmo));
-                    }
+                    ImGui::Text("Viewport");
+                    ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
                 }
+
+                /****
+                if (ImGui::CollapsingHeader("Omni Shadow Maps"))
+                {
+                    ImGui::Text("Omni Shadow Map 0\n(Point Light 0)");
+                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[0].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 1\n(Point Light 1)");
+                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[1].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 2\n(Point Light 2)");
+                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[2].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 3\n(Point Light 3)");
+                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[3].GetShadowMap()->GetTextureID(), imageSize);
+
+                    ImGui::Text("Omni Shadow Map 4\n(Spot Light 0)");
+                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[0].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 5\n(Spot Light 1)");
+                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[1].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 6\n(Spot Light 2)");
+                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[2].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 7\n(Spot Light 3)");
+                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetTextureID(), imageSize);
+                }
+                ****/
+
+                ImGui::Text("Water Reflection\nColor Attachment");
+                ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
+                ImGui::Text("Water Refraction\nColor Attachment");
+                ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
+                ImGui::Text("Water Refraction\nDepth Attachment");
+                ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
+
+                ImGui::Text("Blur Effect Horizontal");
+                // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetHorizontalOutputTexture()->GetID(), imageSize);
+                ImGui::Text("Blur Effect Vertical");
+                // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetVerticalOutputTexture()->GetID(), imageSize);
             }
-            //  ImGui::NewLine();
-            //  {
-            //      ImGui::Separator();
-            //      ImGui::Text("Selected Object Transform");
-            //      ImGui::Separator();
-            //  
-            //      auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(m_SceneObjects[m_SelectedIndex]->transform);
-            //      glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
-            //      char buffer[100];
-            //      sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
-            //      ImGui::Text(buffer);
-            //      sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
-            //      ImGui::Text(buffer);
-            //      sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
-            //      ImGui::Text(buffer);
-            //  }
         }
         ImGui::End();
     }
@@ -1086,62 +1142,6 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
                     std::string textLine = "TextureID: " + std::to_string(it->first) + " Particles: " + std::to_string(it->second);
                     ImGui::Text(textLine.c_str());
                 }
-            }
-        }
-        ImGui::End();
-    }
-
-    if (m_ShowWindowFramebuffers)
-    {
-        ImGui::Begin("Framebuffers", &m_ShowWindowFramebuffers);
-        {
-            if (ImGui::CollapsingHeader("Display Info"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
-            {
-                ImVec2 imageSize(96.0f, 96.0f);
-
-                ImGui::Text("Shadow Map");
-                ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
-
-                if (m_IsViewportEnabled)
-                {
-                    ImGui::Text("Viewport");
-                    ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
-                }
-
-                /****
-                if (ImGui::CollapsingHeader("Omni Shadow Maps"))
-                {
-                    ImGui::Text("Omni Shadow Map 0\n(Point Light 0)");
-                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[0].GetShadowMap()->GetTextureID(), imageSize);
-                    ImGui::Text("Omni Shadow Map 1\n(Point Light 1)");
-                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[1].GetShadowMap()->GetTextureID(), imageSize);
-                    ImGui::Text("Omni Shadow Map 2\n(Point Light 2)");
-                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[2].GetShadowMap()->GetTextureID(), imageSize);
-                    ImGui::Text("Omni Shadow Map 3\n(Point Light 3)");
-                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[3].GetShadowMap()->GetTextureID(), imageSize);
-
-                    ImGui::Text("Omni Shadow Map 4\n(Spot Light 0)");
-                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[0].GetShadowMap()->GetTextureID(), imageSize);
-                    ImGui::Text("Omni Shadow Map 5\n(Spot Light 1)");
-                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[1].GetShadowMap()->GetTextureID(), imageSize);
-                    ImGui::Text("Omni Shadow Map 6\n(Spot Light 2)");
-                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[2].GetShadowMap()->GetTextureID(), imageSize);
-                    ImGui::Text("Omni Shadow Map 7\n(Spot Light 3)");
-                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetTextureID(), imageSize);
-                }
-                ****/
-
-                ImGui::Text("Water Reflection\nColor Attachment");
-                ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
-                ImGui::Text("Water Refraction\nColor Attachment");
-                ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
-                ImGui::Text("Water Refraction\nDepth Attachment");
-                ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
-
-                ImGui::Text("Blur Effect Horizontal");
-                // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetHorizontalOutputTexture()->GetID(), imageSize);
-                ImGui::Text("Blur Effect Vertical");
-                // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetVerticalOutputTexture()->GetID(), imageSize);
             }
         }
         ImGui::End();
@@ -1615,11 +1615,11 @@ void SceneEditorImGuizmo::RenderImGuiMenu(Window* mainWindow, ImGuiDockNodeFlags
             // which we can't undo at the moment without finer window depth/z control.
             //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
 
-            if (ImGui::MenuItem("Flag: NoSplit", "", (dockspaceFlags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspaceFlags ^= ImGuiDockNodeFlags_NoSplit;
-            if (ImGui::MenuItem("Flag: NoResize", "", (dockspaceFlags & ImGuiDockNodeFlags_NoResize) != 0))                dockspaceFlags ^= ImGuiDockNodeFlags_NoResize;
-            if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspaceFlags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspaceFlags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
-            if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspaceFlags ^= ImGuiDockNodeFlags_PassthruCentralNode;
-            if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspaceFlags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspaceFlags ^= ImGuiDockNodeFlags_AutoHideTabBar;
+            if (ImGui::MenuItem("Flag: NoSplit", "", (dockspaceFlags & ImGuiDockNodeFlags_NoSplit) != 0)) dockspaceFlags ^= ImGuiDockNodeFlags_NoSplit;
+            if (ImGui::MenuItem("Flag: NoResize", "", (dockspaceFlags & ImGuiDockNodeFlags_NoResize) != 0)) dockspaceFlags ^= ImGuiDockNodeFlags_NoResize;
+            if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspaceFlags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0)) dockspaceFlags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
+            if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode) != 0)) dockspaceFlags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+            if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspaceFlags & ImGuiDockNodeFlags_AutoHideTabBar) != 0)) dockspaceFlags ^= ImGuiDockNodeFlags_AutoHideTabBar;
             ImGui::EndMenu();
         }
 

@@ -23,9 +23,11 @@ public:
 	SceneEditor();
     virtual ~SceneEditor() override;
 
+	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
+	virtual void RenderImGuiMenu(Window* mainWindow, ImGuiDockNodeFlags dockspaceFlags) override;
+
 	virtual void Update(float timestep, Window* mainWindow) override;
 	virtual void UpdateImGui(float timestep, Window* mainWindow) override;
-	virtual void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) override;
 	virtual void Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
     inline H2M::RefH2M<MoravaFramebuffer> GetRenderFramebuffer() { return m_RenderFramebuffer; };
@@ -189,5 +191,23 @@ private:
 	H2M::RefH2M<MoravaTexture> m_LoadedTexture;
 	std::string m_LoadedTextureFilepath;
 	bool m_UseLoadedTexture;
+
+	bool m_ShowWindowSceneEditor = true;
+	bool m_ShowWindowRenderer = true;
+	bool m_ShowWindowLights = true;
+	bool m_ShowWindowSceneSettings = true;
+	bool m_ShowWindowTextures = true;
+	bool m_ShowWindowTransform = true;
+	bool m_ShowWindowMaterial = true;
+	bool m_ShowWindowObjectProperties = true;
+	bool m_ShowWindowParticles = true;
+	bool m_ShowWindowFramebuffers = true;
+
+	bool m_ShowWindowExperimentalSection = false;
+	bool m_ShowWindowViewportInfo = false;
+	bool m_ShowWindowDearImGuiMetricsDebugger = false;
+	bool m_ShowWindowHelp = false;
+	bool m_ShowWindowProfiler = false;
+	bool m_ShowWindowMousePicker = false;
 
 };
