@@ -119,7 +119,7 @@ private:
     std::vector<H2M::RefH2M<MoravaTexture>> m_Textures;
 
     std::map<std::string, unsigned int> m_BoneMapping; // maps a bone name to its index
-    unsigned int m_NumBones;
+    unsigned int m_NumBones = 0;
     std::vector<BoneInfo> m_BoneInfo;
     glm::mat4 m_GlobalInverseTransform;
 

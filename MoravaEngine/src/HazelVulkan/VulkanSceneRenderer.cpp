@@ -158,7 +158,7 @@ void VulkanSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene)
     // targetFramebufferComp->Generate(compFramebufferSpec.Width, compFramebufferSpec.Height);
     s_Data.CompositePass = H2M::RenderPassH2M::Create(compRenderPassSpec);
 
-    s_Data.BRDFLUT = H2M::Texture2D_H2M::Create("Textures/Hazel/BRDF_LUT.tga");
+    s_Data.BRDFLUT = H2M::Texture2D_H2M::Create("Textures/Hazel/BRDF_LUT.tga", false);
 }
 
 void VulkanSceneRenderer::SetupShaders()
@@ -260,7 +260,7 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> Vu
     const uint32_t irradianceMapSize = 32;
 
     s_EnvUnfiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize, true);
-    s_EnvEquirect = H2M::Texture2D_H2M::Create(filepath);
+    s_EnvEquirect = H2M::Texture2D_H2M::Create(filepath, false);
 
     if (s_EnvEquirect->GetFormat() != H2M::ImageFormatH2M::RGBA16F) {
         Log::GetLogger()->error("Texture is not HDR!");
