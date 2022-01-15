@@ -308,73 +308,91 @@ void OpenGLMoravaShader::SetBool(const std::string& name, bool value)
 
 void OpenGLMoravaShader::SetFloat(const std::string& name, float value)
 {
-	auto uniformLocation = GetUniformLocation(name);
-	if (uniformLocation != -1) {
-		glUniform1f(uniformLocation, value);
-	}
-	else {
-		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat() failed [name='{0}', location='{1}']", name, uniformLocation);
-	}
+	//	auto uniformLocation = GetUniformLocation(name);
+	//	if (uniformLocation != -1) {
+	//		glUniform1f(uniformLocation, value);
+	//	}
+	//	else {
+	//		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat() failed [name='{0}', location='{1}']", name, uniformLocation);
+	//	}
+
+	int32_t location = GetUniformLocation(name);
+	glUniform1f(location, value);
 }
 
 void OpenGLMoravaShader::SetFloat2(const std::string& name, const glm::vec2& value)
 {
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1) {
-		glUniform2f(location, value.x, value.y);
-	}
-	else {
-		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat2 - uniform '{0}' not found!", name);
-	}
+	//	glUseProgram(programID);
+	//	auto location = glGetUniformLocation(programID, name.c_str());
+	//	if (location != -1) {
+	//		glUniform2f(location, value.x, value.y);
+	//	}
+	//	else {
+	//		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat2 - uniform '{0}' not found!", name);
+	//	}
+
+	int32_t location = GetUniformLocation(name);
+	glUniform2f(location, value.x, value.y);
 }
 
 void OpenGLMoravaShader::SetFloat3(const std::string& name, const glm::vec3& value)
 {
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1) {
-		glUniform3f(location, value.x, value.y, value.z);
-	}
-	else {
-		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat3 - uniform '{0}' not found!", name);
-	}
+	//	glUseProgram(programID);
+	//	auto location = glGetUniformLocation(programID, name.c_str());
+	//	if (location != -1) {
+	//		glUniform3f(location, value.x, value.y, value.z);
+	//	}
+	//	else {
+	//		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat3 - uniform '{0}' not found!", name);
+	//	}
+
+	int32_t location = GetUniformLocation(name);
+	glUniform3f(location, value.x, value.y, value.z);
 }
 
 void OpenGLMoravaShader::SetFloat4(const std::string& name, const glm::vec4& value)
 {
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1) {
-		glUniform4f(location, value.x, value.y, value.z, value.w);
-	}
-	else {
-		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat4 - uniform '{0}' not found!", name);
-	}
+	//	glUseProgram(programID);
+	//	auto location = glGetUniformLocation(programID, name.c_str());
+	//	if (location != -1) {
+	//		glUniform4f(location, value.x, value.y, value.z, value.w);
+	//	}
+	//	else {
+	//		Log::GetLogger()->error("OpenGLMoravaShader::SetFloat4 - uniform '{0}' not found!", name);
+	//	}
+
+	int32_t location = GetUniformLocation(name);
+	glUniform4f(location, value.x, value.y, value.z, value.w);
 }
 
 void OpenGLMoravaShader::SetMat4(const std::string& name, const glm::mat4& value)
 {
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1) {
-		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&value);
-	}
-	else {
-		Log::GetLogger()->error("OpenGLMoravaShader::SetMat4 - uniform '{0}' not found!", name);
-	}
+	//	glUseProgram(programID);
+	//	auto location = glGetUniformLocation(programID, name.c_str());
+	//	if (location != -1) {
+	//		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&value);
+	//	}
+	//	else {
+	//		Log::GetLogger()->error("OpenGLMoravaShader::SetMat4 - uniform '{0}' not found!", name);
+	//	}
+
+	int32_t location = GetUniformLocation(name);
+	glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&value);
 }
 
 void OpenGLMoravaShader::UploadUniformMat4(const std::string& name, const glm::mat4& values)
 {
-	glUseProgram(programID);
-	auto location = glGetUniformLocation(programID, name.c_str());
-	if (location != -1) {
-		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
-	}
-	else {
-		Log::GetLogger()->error("OpenGLMoravaShader::UploadUniformMat4 - uniform '{0}' not found!", name);
-	}
+	//	glUseProgram(programID);
+	//	auto location = glGetUniformLocation(programID, name.c_str());
+	//	if (location != -1) {
+	//		glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
+	//	}
+	//	else {
+	//		Log::GetLogger()->error("OpenGLMoravaShader::UploadUniformMat4 - uniform '{0}' not found!", name);
+	//	}
+
+	int32_t location = GetUniformLocation(name);
+	glUniformMatrix4fv(location, 1, GL_FALSE, (const float*)&values);
 }
 
 void OpenGLMoravaShader::SetMat4FromRenderThread(const std::string& name, const glm::mat4& value, bool bind)

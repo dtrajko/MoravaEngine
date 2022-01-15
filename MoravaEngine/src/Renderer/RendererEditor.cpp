@@ -23,8 +23,8 @@ void RendererEditor::Init(Scene* scene)
 {
     m_IsViewportEnabled = ((SceneEditor*)scene)->m_IsViewportEnabled;
 
-	SetUniforms();
 	SetShaders();
+	SetUniforms();
 }
 
 void RendererEditor::SetUniforms()
@@ -560,6 +560,8 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
         snprintf(locBuff, sizeof(locBuff), "omniShadowMaps[%d].farPlane", textureSlotOffset + i);
         shaderEditorPBR->SetFloat(locBuff, LightManager::spotLights[i].GetFarPlane());
     }
+
+    shaderEditorPBR->Validate();
     /**** End editor_object_pbr ****/
 
     /**** Begin skinning ****/

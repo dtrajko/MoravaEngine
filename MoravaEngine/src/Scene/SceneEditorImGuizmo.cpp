@@ -580,220 +580,367 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 
     MousePicker* mp = MousePicker::Get();
 
-    ImGui::Begin("Transform");
+    if (m_ShowWindowSceneEditor)
     {
+        ImGui::Begin("Scene Editor", &m_ShowWindowSceneEditor);
         {
-            ImGui::Separator();
-            ImGui::Text("Transform");
-            ImGui::Separator();
-
-            //  auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
-            //  glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
-            //  char buffer[100];
-            //  sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
-            //  ImGui::Text(buffer);
-            //  sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
-            //  ImGui::Text(buffer);
-            //  sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
-            //  ImGui::Text(buffer);
-
-            if (m_Transform_ImGuizmo != nullptr)
+            if (ImGui::CollapsingHeader("Add Mesh"))
             {
-                auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
-                glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
+                ImGui::RadioButton("Cube", &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
+                ImGui::RadioButton("Pyramid", &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
+                ImGui::RadioButton("Sphere", &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
+                ImGui::RadioButton("Cylinder", &m_CurrentObjectTypeID, MESH_TYPE_CYLINDER);
+                ImGui::RadioButton("Cone", &m_CurrentObjectTypeID, MESH_TYPE_CONE);
+                ImGui::RadioButton("Ring", &m_CurrentObjectTypeID, MESH_TYPE_RING);
+                ImGui::RadioButton("Bob Lamp", &m_CurrentObjectTypeID, MESH_TYPE_BOB_LAMP);
+                ImGui::RadioButton("Anim Boy", &m_CurrentObjectTypeID, MESH_TYPE_ANIM_BOY);
+                ImGui::RadioButton("Terrain", &m_CurrentObjectTypeID, MESH_TYPE_TERRAIN);
+                ImGui::RadioButton("Water", &m_CurrentObjectTypeID, MESH_TYPE_WATER);
+                ImGui::RadioButton("Buster Drone", &m_CurrentObjectTypeID, MESH_TYPE_DRONE);
+                ImGui::RadioButton("M1911 Pistol", &m_CurrentObjectTypeID, MESH_TYPE_M1911);
+            }
 
-                bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location,        0.0f, 100.0f);
-                bool isRotationChanged    = ImGuiWrapper::DrawVec3Control("Rotation",    RotationDegrees, 0.0f, 100.0f);
-                bool isScaleChanged       = ImGuiWrapper::DrawVec3Control("Scale",       Scale,           1.0f, 100.0f);
-
-                if (isTranslationChanged || isRotationChanged || isScaleChanged) {
-                    ImGuizmo::RecomposeMatrixFromComponents(
-                        glm::value_ptr(Location),
-                        glm::value_ptr(RotationDegrees),
-                        glm::value_ptr(Scale),
-                        glm::value_ptr(*m_Transform_ImGuizmo));
-                }
+            if (ImGui::CollapsingHeader("Add Model"))
+            {
+                ImGui::RadioButton("Stone Carved", &m_CurrentObjectTypeID, MODEL_STONE_CARVED);
+                ImGui::RadioButton("Old Stove", &m_CurrentObjectTypeID, MODEL_OLD_STOVE);
+                ImGui::RadioButton("Buddha", &m_CurrentObjectTypeID, MODEL_BUDDHA);
+                ImGui::RadioButton("HHeli", &m_CurrentObjectTypeID, MODEL_HHELI);
+                ImGui::RadioButton("Jeep", &m_CurrentObjectTypeID, MODEL_JEEP);
+                ImGui::RadioButton("Damaged Helmet", &m_CurrentObjectTypeID, MODEL_DAMAGED_HELMET);
+                ImGui::RadioButton("SF Helmet", &m_CurrentObjectTypeID, MODEL_SF_HELMET);
+                ImGui::RadioButton("Cerberus", &m_CurrentObjectTypeID, MODEL_CERBERUS);
+                ImGui::RadioButton("Pine", &m_CurrentObjectTypeID, MODEL_PINE);
+                ImGui::RadioButton("Boulder", &m_CurrentObjectTypeID, MODEL_BOULDER);
+            }
+            if (ImGui::CollapsingHeader("Add Particle System"))
+            {
+                ImGui::RadioButton("Particle System", &m_CurrentObjectTypeID, PARTICLE_SYSTEM);
             }
         }
-        //  ImGui::NewLine();
-        //  {
-        //      ImGui::Separator();
-        //      ImGui::Text("Selected Object Transform");
-        //      ImGui::Separator();
-        //  
-        //      auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(m_SceneObjects[m_SelectedIndex]->transform);
-        //      glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
-        //      char buffer[100];
-        //      sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
-        //      ImGui::Text(buffer);
-        //      sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
-        //      ImGui::Text(buffer);
-        //      sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
-        //      ImGui::Text(buffer);
-        //  }
+        ImGui::End();
     }
-    ImGui::End();
 
-    ImGui::Begin("Object Properties");
+    if (m_ShowWindowRenderer)
     {
-        if (ImGui::CollapsingHeader("Show Details"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
+        ImGui::Begin("Renderer", &m_ShowWindowRenderer);
         {
-            if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
-            {
-                std::string objectName = "Name: " + m_SceneObjects[m_SelectedIndex]->name;
-                ImGui::Text(objectName.c_str());
-                ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
-                ImGui::Checkbox("Cast Shadow", &m_SceneObjects[m_SelectedIndex]->castShadow);
-                ImGui::Checkbox("Receive Shadows", &m_SceneObjects[m_SelectedIndex]->receiveShadows);
-            }
+            ImGui::Checkbox("Enable Shadows", &sceneSettings.enableShadows);
+            ImGui::Checkbox("Enable Omni Shadows", &sceneSettings.enableOmniShadows);
+            ImGui::Checkbox("Enable Water Effects", &sceneSettings.enableWaterEffects);
+            ImGui::Checkbox("Enable Particles", &sceneSettings.enableParticles);
         }
+        ImGui::End();
     }
-    ImGui::End();
 
-    ImGui::Begin("Material");
+    if (m_ShowWindowLights)
     {
-        m_ColorEdit = &m_SceneObjects[m_SelectedIndex]->color;
-        ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
-
-        // Begin TextureName ImGui drop-down list
-        std::vector<const char*> itemsTexture;
-        std::map<std::string, std::string>::iterator itTexture;
-        for (itTexture = ResourceManager::GetTextureInfo()->begin(); itTexture != ResourceManager::GetTextureInfo()->end(); itTexture++)
-            itemsTexture.push_back(itTexture->first.c_str());
-
-        m_TextureNameEdit = &m_SceneObjects[m_SelectedIndex]->textureName;
-        static const char* currentItemTexture = m_TextureNameEdit->c_str();
-
-        if (ImGui::BeginCombo("Texture Name", currentItemTexture))
+        ImGui::Begin("Lights", &m_ShowWindowLights);
         {
-            for (int n = 0; n < itemsTexture.size(); n++)
+            ImGui::Checkbox("Display Light Sources", &m_DisplayLightSources);
+
+            ImGui::Separator();
+
+            ImGui::Text("Light Directions");
+            ImGui::Separator();
+            char buffer[100];
+            sprintf(buffer, "DL:   X %.2f Y %.2f Z %.2f", m_DirectionDirLight.x, m_DirectionDirLight.y, m_DirectionDirLight.z);
+            ImGui::Text(buffer);
+
+            for (int i = 0; i < m_DirectionsSpotLight.size(); i++) {
+                sprintf(buffer, "SL %i: X %.2f Y %.2f Z %.2f", i, m_DirectionsSpotLight[i].x, m_DirectionsSpotLight[i].y, m_DirectionsSpotLight[i].z);
+                ImGui::Text(buffer);
+            }
+
+            ImGui::Separator();
+
+            if (ImGui::CollapsingHeader("Directional Light"))
             {
-                bool isSelected = (currentItemTexture == itemsTexture[n]);
-                if (ImGui::Selectable(itemsTexture[n], isSelected))
+                // Directional Light
+                SDirectionalLight directionalLight;
+                directionalLight.base.enabled = LightManager::directionalLight.GetEnabled();
+                directionalLight.base.color = LightManager::directionalLight.GetColor();
+                directionalLight.base.ambientIntensity = LightManager::directionalLight.GetAmbientIntensity();
+                directionalLight.base.diffuseIntensity = LightManager::directionalLight.GetDiffuseIntensity();
+                directionalLight.direction = LightManager::directionalLight.GetDirection();
+
+                ImGui::Checkbox("DL Enabled", &directionalLight.base.enabled);
+                ImGui::ColorEdit3("DL Color", glm::value_ptr(directionalLight.base.color));
+                ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
+                ImGui::SliderFloat("DL Ambient Intensity", &directionalLight.base.ambientIntensity, -5.0f, 5.0f);
+                ImGui::SliderFloat("DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, -5.0f, 5.0f);
+
+                // Shutdown directional light (it appears it's better to do it here than in shader
+                if (directionalLight.base.enabled != m_DirLightEnabledPrev)
                 {
-                    currentItemTexture = itemsTexture[n];
-                    if (m_SelectedIndex < m_SceneObjects.size())
-                        m_SceneObjects[m_SelectedIndex]->textureName = itemsTexture[n];
+                    if (directionalLight.base.enabled)
+                        directionalLight.base.color = m_DirLightColorPrev;
                     else
-                        m_SelectedIndex = m_SceneObjects.size() > 0 ? (unsigned int)m_SceneObjects.size() - 1 : 0;
+                        directionalLight.base.color = glm::vec3(0.0f, 0.0f, 0.0f);
+
+                    m_DirLightEnabledPrev = directionalLight.base.enabled;
                 }
-                if (isSelected)
-                {
-                    ImGui::SetItemDefaultFocus();
-                }
+
+                LightManager::directionalLight.SetEnabled(directionalLight.base.enabled);
+                LightManager::directionalLight.SetColor(directionalLight.base.color);
+                LightManager::directionalLight.SetAmbientIntensity(directionalLight.base.ambientIntensity);
+                LightManager::directionalLight.SetDiffuseIntensity(directionalLight.base.diffuseIntensity);
+                // LightManager::directionalLight.SetDirection(directionalLight.direction);
             }
-            ImGui::EndCombo();
-        }
-        // End TextureName ImGui drop-down list
 
-        m_TilingFactorEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
-        m_MaterialNameEdit = &m_SceneObjects[m_SelectedIndex]->materialName;
-
-        ImGui::SliderFloat("Tiling Factor", m_TilingFactorEdit, 0.0f, 10.0f);
-
-        // Begin MaterialName ImGui drop-down list
-        std::vector<const char*> itemsMaterial;
-        std::map<std::string, TextureInfo>::iterator itMaterial;
-        for (itMaterial = ResourceManager::GetMaterialInfo()->begin(); itMaterial != ResourceManager::GetMaterialInfo()->end(); itMaterial++)
-            itemsMaterial.push_back(itMaterial->first.c_str());
-        static const char* currentItemMaterial = m_MaterialNameEdit->c_str();
-        if (ImGui::BeginCombo("Material Name", currentItemMaterial))
-        {
-            for (int n = 0; n < itemsMaterial.size(); n++)
+            if (ImGui::CollapsingHeader("Point Lights"))
             {
-                bool isSelectedMaterial = (currentItemMaterial == itemsMaterial[n]);
-                if (ImGui::Selectable(itemsMaterial[n], isSelectedMaterial))
+                ImGui::Indent();
+
+                // Point Lights
+                SPointLight pointLights[4];
+                char locBuff[100] = { '\0' };
+                for (unsigned int pl = 0; pl < LightManager::pointLightCount; pl++)
                 {
-                    currentItemMaterial = itemsMaterial[n];
-                    if (m_SelectedIndex < m_SceneObjects.size())
-                        m_SceneObjects[m_SelectedIndex]->materialName = itemsMaterial[n];
-                    else
-                        m_SelectedIndex = m_SceneObjects.size() > 0 ? (unsigned int)m_SceneObjects.size() - 1 : 0;
+                    pointLights[pl].base.enabled = LightManager::pointLights[pl].GetEnabled();
+                    pointLights[pl].base.color = LightManager::pointLights[pl].GetColor();
+                    pointLights[pl].base.ambientIntensity = LightManager::pointLights[pl].GetAmbientIntensity();
+                    pointLights[pl].base.diffuseIntensity = LightManager::pointLights[pl].GetDiffuseIntensity();
+                    pointLights[pl].position = LightManager::pointLights[pl].GetPosition();
+                    pointLights[pl].constant = LightManager::pointLights[pl].GetConstant();
+                    pointLights[pl].linear = LightManager::pointLights[pl].GetLinear();
+                    pointLights[pl].exponent = LightManager::pointLights[pl].GetExponent();
+
+                    snprintf(locBuff, sizeof(locBuff), "Point Light %i", pl);
+                    if (ImGui::CollapsingHeader(locBuff))
+                    {
+                        snprintf(locBuff, sizeof(locBuff), "PL %i Enabled", pl);
+                        ImGui::Checkbox(locBuff, &pointLights[pl].base.enabled);
+                        snprintf(locBuff, sizeof(locBuff), "PL %i Color", pl);
+                        ImGui::ColorEdit3(locBuff, glm::value_ptr(pointLights[pl].base.color));
+                        snprintf(locBuff, sizeof(locBuff), "PL %i Position", pl);
+                        ImGui::SliderFloat3(locBuff, glm::value_ptr(pointLights[pl].position), -100.0f, 100.0f);
+                        snprintf(locBuff, sizeof(locBuff), "PL %i Ambient Intensity", pl);
+                        ImGui::SliderFloat(locBuff, &pointLights[pl].base.ambientIntensity, -5.0f, 5.0f);
+                        snprintf(locBuff, sizeof(locBuff), "PL %i Diffuse Intensity", pl);
+                        ImGui::SliderFloat(locBuff, &pointLights[pl].base.diffuseIntensity, -5.0f, 5.0f);
+                        snprintf(locBuff, sizeof(locBuff), "PL %i Constant", pl);
+                        ImGui::SliderFloat(locBuff, &pointLights[pl].constant, -1.0f, 6.0f);
+                        snprintf(locBuff, sizeof(locBuff), "PL %i Linear", pl);
+                        ImGui::SliderFloat(locBuff, &pointLights[pl].linear, -1.0f, 6.0f);
+                        snprintf(locBuff, sizeof(locBuff), "PL %i Exponent", pl);
+                        ImGui::SliderFloat(locBuff, &pointLights[pl].exponent, -1.0f, 6.0f);
+                    }
+
+                    LightManager::pointLights[pl].SetEnabled(pointLights[pl].base.enabled);
+                    LightManager::pointLights[pl].SetColor(pointLights[pl].base.color);
+                    LightManager::pointLights[pl].SetAmbientIntensity(pointLights[pl].base.ambientIntensity);
+                    LightManager::pointLights[pl].SetDiffuseIntensity(pointLights[pl].base.diffuseIntensity);
+                    LightManager::pointLights[pl].SetPosition(pointLights[pl].position);
+                    LightManager::pointLights[pl].SetConstant(pointLights[pl].constant);
+                    LightManager::pointLights[pl].SetLinear(pointLights[pl].linear);
+                    LightManager::pointLights[pl].SetExponent(pointLights[pl].exponent);
                 }
-                if (isSelectedMaterial)
+                ImGui::Unindent();
+            }
+
+            if (ImGui::CollapsingHeader("Spot Lights"))
+            {
+                ImGui::Indent();
+
+                // Spot Lights
+                SSpotLight spotLights[4];
+                char locBuff[100] = { '\0' };
+                for (unsigned int sl = 0; sl < LightManager::spotLightCount; sl++)
                 {
-                    ImGui::SetItemDefaultFocus();
+                    spotLights[sl].base.base.enabled = LightManager::spotLights[sl].GetBasePL()->GetEnabled();
+                    spotLights[sl].base.base.color = LightManager::spotLights[sl].GetBasePL()->GetColor();
+                    spotLights[sl].base.base.ambientIntensity = LightManager::spotLights[sl].GetBasePL()->GetAmbientIntensity();
+                    spotLights[sl].base.base.diffuseIntensity = LightManager::spotLights[sl].GetBasePL()->GetDiffuseIntensity();
+                    spotLights[sl].base.position = LightManager::spotLights[sl].GetBasePL()->GetPosition();
+                    spotLights[sl].base.constant = LightManager::spotLights[sl].GetBasePL()->GetConstant();
+                    spotLights[sl].base.linear = LightManager::spotLights[sl].GetBasePL()->GetLinear();
+                    spotLights[sl].base.exponent = LightManager::spotLights[sl].GetBasePL()->GetExponent();
+                    spotLights[sl].direction = LightManager::spotLights[sl].GetDirection();
+                    spotLights[sl].edge = LightManager::spotLights[sl].GetEdge();
+
+                    snprintf(locBuff, sizeof(locBuff), "Spot Light %i", sl);
+                    if (ImGui::CollapsingHeader(locBuff))
+                    {
+                        snprintf(locBuff, sizeof(locBuff), "SL %i Enabled", sl);
+                        ImGui::Checkbox(locBuff, &spotLights[sl].base.base.enabled);
+                        snprintf(locBuff, sizeof(locBuff), "SL %i Color", sl);
+                        ImGui::ColorEdit3(locBuff, glm::value_ptr(spotLights[sl].base.base.color));
+                        snprintf(locBuff, sizeof(locBuff), "SL %i Position", sl);
+                        ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].base.position), -100.0f, 100.0f);
+                        snprintf(locBuff, sizeof(locBuff), "SL %i Direction", sl);
+                        ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].direction), -1.0f, 1.0f);
+                        snprintf(locBuff, sizeof(locBuff), "SL %i Edge", sl);
+                        ImGui::SliderFloat(locBuff, &spotLights[sl].edge, -2.0f, 2.0f);
+                        snprintf(locBuff, sizeof(locBuff), "SL %i Ambient Intensity", sl);
+                        ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.ambientIntensity, -5.0f, 5.0f);
+                        snprintf(locBuff, sizeof(locBuff), "SL %i Diffuse Intensity", sl);
+                        ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.diffuseIntensity, -5.0f, 5.0f);
+                        snprintf(locBuff, sizeof(locBuff), "SL %i Constant", sl);
+                        ImGui::SliderFloat(locBuff, &spotLights[sl].base.constant, -1.0f, 6.0f);
+                        snprintf(locBuff, sizeof(locBuff), "SL %i Linear", sl);
+                        ImGui::SliderFloat(locBuff, &spotLights[sl].base.linear, -1.0f, 6.0f);
+                        snprintf(locBuff, sizeof(locBuff), "SL %i Exponent", sl);
+                        ImGui::SliderFloat(locBuff, &spotLights[sl].base.exponent, -1.0f, 6.0f);
+                    }
+
+                    LightManager::spotLights[sl].GetBasePL()->SetEnabled(spotLights[sl].base.base.enabled);
+                    LightManager::spotLights[sl].GetBasePL()->SetColor(spotLights[sl].base.base.color);
+                    LightManager::spotLights[sl].GetBasePL()->SetAmbientIntensity(spotLights[sl].base.base.ambientIntensity);
+                    LightManager::spotLights[sl].GetBasePL()->SetDiffuseIntensity(spotLights[sl].base.base.diffuseIntensity);
+                    LightManager::spotLights[sl].GetBasePL()->SetPosition(spotLights[sl].base.position);
+                    LightManager::spotLights[sl].GetBasePL()->SetConstant(spotLights[sl].base.constant);
+                    LightManager::spotLights[sl].GetBasePL()->SetLinear(spotLights[sl].base.linear);
+                    LightManager::spotLights[sl].GetBasePL()->SetExponent(spotLights[sl].base.exponent);
+                    // LightManager::spotLights[sl].SetDirection(spotLights[sl].direction);
+                    LightManager::spotLights[sl].SetEdge(spotLights[sl].edge);
+                }
+                ImGui::Unindent();
+            }
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowSceneSettings)
+    {
+        ImGui::Begin("Scene Settings", &m_ShowWindowSceneSettings);
+        {
+            float FOV = GetFOV();
+            ImGui::SliderFloat("FOV", &FOV, 1.0f, 120.0f);
+            SetFOV(FOV);
+
+            glm::vec4 waterColor = m_WaterManager->GetWaterColor();
+            ImGui::ColorEdit4("Water Color", (float*)&waterColor);
+            m_WaterManager->SetWaterColor(waterColor);
+
+            if (ImGui::CollapsingHeader("Select HDRI"))
+            {
+                ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
+                ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
+                ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
+                ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
+                ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
+                ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
+                ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
+                ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
+                ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
+                ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
+
+                ImGui::SliderInt("Blur Level", &m_BlurLevel, 0, 10);
+                ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
+                ImGui::SliderFloat("Skybox Rotation Speed", &m_SkyboxRotationSpeed, -20.0f, 20.0f);
+            }
+
+            if (ImGui::CollapsingHeader("Cube Maps"))
+            {
+                ImGui::Checkbox("Use Cube Maps", &m_UseCubeMaps);
+                ImGui::RadioButton("Environment Map", &m_PBR_Map_Edit, PBR_MAP_ENVIRONMENT);
+                ImGui::RadioButton("Irradiance Map", &m_PBR_Map_Edit, PBR_MAP_IRRADIANCE);
+                ImGui::RadioButton("Prefilter Map", &m_PBR_Map_Edit, PBR_MAP_PREFILTER);
+            }
+
+            if (ImGui::CollapsingHeader("Editor Elements"))
+            {
+                ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
+                ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
+                ImGui::Separator();
+                int sceneObjectCount = (int)m_SceneObjects.size();
+                ImGui::SliderInt("Scene Objects Count", &sceneObjectCount, 0, 100);
+            }
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowTextures)
+    {
+        ImGui::Begin("Textures", &m_ShowWindowTextures);
+        {
+            if (ImGui::CollapsingHeader("Display Info"))
+            {
+                ImVec2 imageSize(96.0f, 96.0f);
+
+                for (std::map<std::string, H2M::RefH2M<MoravaTexture>>::iterator it = textures.begin(); it != textures.end(); ++it)
+                {
+                    ImGui::Text(it->first.c_str());
+                    ImGui::Image((void*)(intptr_t)it->second->GetID(), imageSize);
                 }
             }
-            ImGui::EndCombo();
         }
-        // End MaterialName ImGui drop-down list
-
-        m_TilingFactorMaterialEdit = &m_SceneObjects[m_SelectedIndex]->tilingFMaterial;
-        ImGui::SliderFloat("Material Tiling Factor", m_TilingFactorMaterialEdit, 0.0f, 10.0f);
+        ImGui::End();
     }
-    ImGui::End();
 
-    ImGui::Begin("Scene Settings");
+    if (m_ShowWindowTransform)
     {
-        float FOV = GetFOV();
-        ImGui::SliderFloat("FOV", &FOV, 1.0f, 120.0f);
-        SetFOV(FOV);
-
-        glm::vec4 waterColor = m_WaterManager->GetWaterColor();
-        ImGui::ColorEdit4("Water Color", (float*)&waterColor);
-        m_WaterManager->SetWaterColor(waterColor);
-
-        if (ImGui::CollapsingHeader("Select HDRI"))
+        ImGui::Begin("Transform", &m_ShowWindowTransform);
         {
-            ImGui::RadioButton("Greenwich Park", &m_HDRI_Edit, HDRI_GREENWICH_PARK);
-            ImGui::RadioButton("San Giuseppe Bridge", &m_HDRI_Edit, HDRI_SAN_GIUSEPPE_BRIDGE);
-            ImGui::RadioButton("Tropical Beach", &m_HDRI_Edit, HDRI_TROPICAL_BEACH);
-            ImGui::RadioButton("Vignaioli Night", &m_HDRI_Edit, HDRI_VIGNAIOLI_NIGHT);
-            ImGui::RadioButton("Early Eve & Warm Sky", &m_HDRI_Edit, HDRI_EARLY_EVE_WARM_SKY);
-            ImGui::RadioButton("Birchwood", &m_HDRI_Edit, HDRI_BIRCHWOOD);
-            ImGui::RadioButton("Pink Sunrise", &m_HDRI_Edit, HDRI_PINK_SUNRISE);
-            ImGui::RadioButton("Rooitou Park", &m_HDRI_Edit, HDRI_ROOITOU_PARK);
-            ImGui::RadioButton("Venice Dawn", &m_HDRI_Edit, HDRI_VENICE_DAWN);
-            ImGui::RadioButton("Peppermint Powerplant", &m_HDRI_Edit, HDRI_PEPPERMINT_POWERPLANT);
+            {
+                ImGui::Separator();
+                ImGui::Text("Transform");
+                ImGui::Separator();
 
-            ImGui::SliderInt("Blur Level", &m_BlurLevel, 0, 10);
-            ImGui::SliderFloat("Skybox LOD", &m_SkyboxLOD, 0.0f, 6.0f);
-            ImGui::SliderFloat("Skybox Rotation Speed", &m_SkyboxRotationSpeed, -20.0f, 20.0f);            
-        }
+                //  auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+                //  glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+                //  char buffer[100];
+                //  sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+                //  ImGui::Text(buffer);
+                //  sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
+                //  ImGui::Text(buffer);
+                //  sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+                //  ImGui::Text(buffer);
 
-        if (ImGui::CollapsingHeader("Cube Maps"))
-        {
-            ImGui::Checkbox("Use Cube Maps", &m_UseCubeMaps);
-            ImGui::RadioButton("Environment Map", &m_PBR_Map_Edit, PBR_MAP_ENVIRONMENT);
-            ImGui::RadioButton("Irradiance Map", &m_PBR_Map_Edit, PBR_MAP_IRRADIANCE);
-            ImGui::RadioButton("Prefilter Map", &m_PBR_Map_Edit, PBR_MAP_PREFILTER);
-        }
+                if (m_Transform_ImGuizmo != nullptr)
+                {
+                    auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(*m_Transform_ImGuizmo);
+                    glm::vec3 RotationDegrees = glm::degrees(glm::eulerAngles(Rotation));
 
-        if (ImGui::CollapsingHeader("Editor Elements"))
-        {
-            ImGui::Checkbox("Display Line Elements", &m_DisplayLineElements);
-            ImGui::Checkbox("Orthographic View", &m_OrthographicViewEnabled);
-            ImGui::Separator();
-            int sceneObjectCount = (int)m_SceneObjects.size();
-            ImGui::SliderInt("Scene Objects Count", &sceneObjectCount, 0, 100);
+                    bool isTranslationChanged = ImGuiWrapper::DrawVec3Control("Translation", Location, 0.0f, 100.0f);
+                    bool isRotationChanged = ImGuiWrapper::DrawVec3Control("Rotation", RotationDegrees, 0.0f, 100.0f);
+                    bool isScaleChanged = ImGuiWrapper::DrawVec3Control("Scale", Scale, 1.0f, 100.0f);
+
+                    if (isTranslationChanged || isRotationChanged || isScaleChanged) {
+                        ImGuizmo::RecomposeMatrixFromComponents(
+                            glm::value_ptr(Location),
+                            glm::value_ptr(RotationDegrees),
+                            glm::value_ptr(Scale),
+                            glm::value_ptr(*m_Transform_ImGuizmo));
+                    }
+                }
+            }
+            //  ImGui::NewLine();
+            //  {
+            //      ImGui::Separator();
+            //      ImGui::Text("Selected Object Transform");
+            //      ImGui::Separator();
+            //  
+            //      auto [Location, Rotation, Scale] = Math::GetTransformDecomposition(m_SceneObjects[m_SelectedIndex]->transform);
+            //      glm::vec3 RotationF3 = glm::degrees(glm::eulerAngles(Rotation));
+            //      char buffer[100];
+            //      sprintf(buffer, "Location  X %.2f Y %.2f Z %.2f", Location.x, Location.y, Location.z);
+            //      ImGui::Text(buffer);
+            //      sprintf(buffer, "Rotation  X %.2f Y %.2f Z %.2f", RotationF3.x, RotationF3.y, RotationF3.z);
+            //      ImGui::Text(buffer);
+            //      sprintf(buffer, "Scale     X %.2f Y %.2f Z %.2f", Scale.x, Scale.y, Scale.z);
+            //      ImGui::Text(buffer);
+            //  }
         }
+        ImGui::End();
     }
-    ImGui::End();
 
-    ImGui::Begin("Particles");
+    if (m_ShowWindowMaterial)
     {
-        if (ImGui::CollapsingHeader("Particle System Settings"))
+        ImGui::Begin("Material", &m_ShowWindowMaterial);
         {
-            glm::vec3 positionSOPS = glm::vec3(0.0f);
-            glm::vec3 scaleSOPS = glm::vec3(1.0f);
-            if (m_CurrentSOPS != nullptr) {
-                positionSOPS = m_CurrentSOPS->position;
-                scaleSOPS = m_CurrentSOPS->scale;
-            }
-            ImGui::SliderFloat3("Origin Area Position", glm::value_ptr(positionSOPS), -20.0f, 20.0f);
-            ImGui::SliderFloat3("Origin Area Scale", glm::value_ptr(scaleSOPS), 0.0f, 20.0f);
-            if (m_CurrentSOPS != nullptr) {
-                m_CurrentSOPS->position = positionSOPS;
-                m_CurrentSOPS->scale = scaleSOPS;
-            }
+            m_ColorEdit = &m_SceneObjects[m_SelectedIndex]->color;
+            ImGui::ColorEdit4("Color", (float*)m_ColorEdit);
 
-            // Begin ParticleTextureName ImGui drop-down list
+            // Begin TextureName ImGui drop-down list
             std::vector<const char*> itemsTexture;
             std::map<std::string, std::string>::iterator itTexture;
             for (itTexture = ResourceManager::GetTextureInfo()->begin(); itTexture != ResourceManager::GetTextureInfo()->end(); itTexture++)
                 itemsTexture.push_back(itTexture->first.c_str());
-            static const char* currentItemTexture = m_ParticleSettingsEdit->textureName.c_str();
+
+            m_TextureNameEdit = &m_SceneObjects[m_SelectedIndex]->textureName;
+            static const char* currentItemTexture = m_TextureNameEdit->c_str();
 
             if (ImGui::BeginCombo("Texture Name", currentItemTexture))
             {
@@ -803,7 +950,10 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
                     if (ImGui::Selectable(itemsTexture[n], isSelected))
                     {
                         currentItemTexture = itemsTexture[n];
-                        m_ParticleSettingsEdit->textureName = std::string(itemsTexture[n]);
+                        if (m_SelectedIndex < m_SceneObjects.size())
+                            m_SceneObjects[m_SelectedIndex]->textureName = itemsTexture[n];
+                        else
+                            m_SelectedIndex = m_SceneObjects.size() > 0 ? (unsigned int)m_SceneObjects.size() - 1 : 0;
                     }
                     if (isSelected)
                     {
@@ -812,250 +962,358 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
                 }
                 ImGui::EndCombo();
             }
-            // End ParticleTextureName ImGui drop-down list
+            // End TextureName ImGui drop-down list
 
-            ImGui::SliderInt(  "Number of Rows",       &m_ParticleSettingsEdit->numRows,                   1, 10);
-            ImGui::SliderInt("Particles Per Second",   &m_ParticleSettingsEdit->PPS,                       0, m_MaxInstances);
-            ImGui::SliderFloat3("Direction",           glm::value_ptr(m_ParticleSettingsEdit->direction), -1.0f, 1.0f);
-            ImGui::SliderFloat("Intensity",            &m_ParticleSettingsEdit->intensity,                 0.0f, 20.0f);
-            ImGui::SliderFloat("Gravity Complient",    &m_ParticleSettingsEdit->gravityComplient,         -40.0f, 40.0f);
-            ImGui::SliderFloat("Life Length",          &m_ParticleSettingsEdit->lifeLength,                0.0f, 20.0f);
-            ImGui::SliderFloat("Diameter",             &m_ParticleSettingsEdit->diameter,                  0.0f, 1.0f);
+            m_TilingFactorEdit = &m_SceneObjects[m_SelectedIndex]->tilingFactor;
+            m_MaterialNameEdit = &m_SceneObjects[m_SelectedIndex]->materialName;
 
-            ImGui::Separator();
-            ImGui::Checkbox("Instanced Rendering", &m_ParticleSettingsEdit->instanced);
-            std::map<int, int> counts = std::map<int, int>();
-            if (m_CurrentSOPS != nullptr) {
-                counts = m_CurrentSOPS->GetMaster()->GetCounts();
+            ImGui::SliderFloat("Tiling Factor", m_TilingFactorEdit, 0.0f, 10.0f);
+
+            // Begin MaterialName ImGui drop-down list
+            std::vector<const char*> itemsMaterial;
+            std::map<std::string, TextureInfo>::iterator itMaterial;
+            for (itMaterial = ResourceManager::GetMaterialInfo()->begin(); itMaterial != ResourceManager::GetMaterialInfo()->end(); itMaterial++)
+                itemsMaterial.push_back(itMaterial->first.c_str());
+            static const char* currentItemMaterial = m_MaterialNameEdit->c_str();
+            if (ImGui::BeginCombo("Material Name", currentItemMaterial))
+            {
+                for (int n = 0; n < itemsMaterial.size(); n++)
+                {
+                    bool isSelectedMaterial = (currentItemMaterial == itemsMaterial[n]);
+                    if (ImGui::Selectable(itemsMaterial[n], isSelectedMaterial))
+                    {
+                        currentItemMaterial = itemsMaterial[n];
+                        if (m_SelectedIndex < m_SceneObjects.size())
+                            m_SceneObjects[m_SelectedIndex]->materialName = itemsMaterial[n];
+                        else
+                            m_SelectedIndex = m_SceneObjects.size() > 0 ? (unsigned int)m_SceneObjects.size() - 1 : 0;
+                    }
+                    if (isSelectedMaterial)
+                    {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
             }
-            for (auto it = counts.begin(); it != counts.end(); it++) {
+            // End MaterialName ImGui drop-down list
+
+            m_TilingFactorMaterialEdit = &m_SceneObjects[m_SelectedIndex]->tilingFMaterial;
+            ImGui::SliderFloat("Material Tiling Factor", m_TilingFactorMaterialEdit, 0.0f, 10.0f);
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowObjectProperties)
+    {
+        ImGui::Begin("Object Properties", &m_ShowWindowObjectProperties);
+        {
+            if (ImGui::CollapsingHeader("Show Details"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
+            {
+                if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
+                {
+                    std::string objectName = "Name: " + m_SceneObjects[m_SelectedIndex]->name;
+                    ImGui::Text(objectName.c_str());
+                    ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
+                    ImGui::Checkbox("Cast Shadow", &m_SceneObjects[m_SelectedIndex]->castShadow);
+                    ImGui::Checkbox("Receive Shadows", &m_SceneObjects[m_SelectedIndex]->receiveShadows);
+                }
+            }
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowParticles)
+    {
+        ImGui::Begin("Particles", &m_ShowWindowParticles);
+        {
+            if (ImGui::CollapsingHeader("Particle System Settings"))
+            {
+                glm::vec3 positionSOPS = glm::vec3(0.0f);
+                glm::vec3 scaleSOPS = glm::vec3(1.0f);
+                if (m_CurrentSOPS != nullptr) {
+                    positionSOPS = m_CurrentSOPS->position;
+                    scaleSOPS = m_CurrentSOPS->scale;
+                }
+                ImGui::SliderFloat3("Origin Area Position", glm::value_ptr(positionSOPS), -20.0f, 20.0f);
+                ImGui::SliderFloat3("Origin Area Scale", glm::value_ptr(scaleSOPS), 0.0f, 20.0f);
+                if (m_CurrentSOPS != nullptr) {
+                    m_CurrentSOPS->position = positionSOPS;
+                    m_CurrentSOPS->scale = scaleSOPS;
+                }
+
+                // Begin ParticleTextureName ImGui drop-down list
+                std::vector<const char*> itemsTexture;
+                std::map<std::string, std::string>::iterator itTexture;
+                for (itTexture = ResourceManager::GetTextureInfo()->begin(); itTexture != ResourceManager::GetTextureInfo()->end(); itTexture++)
+                    itemsTexture.push_back(itTexture->first.c_str());
+                static const char* currentItemTexture = m_ParticleSettingsEdit->textureName.c_str();
+
+                if (ImGui::BeginCombo("Texture Name", currentItemTexture))
+                {
+                    for (int n = 0; n < itemsTexture.size(); n++)
+                    {
+                        bool isSelected = (currentItemTexture == itemsTexture[n]);
+                        if (ImGui::Selectable(itemsTexture[n], isSelected))
+                        {
+                            currentItemTexture = itemsTexture[n];
+                            m_ParticleSettingsEdit->textureName = std::string(itemsTexture[n]);
+                        }
+                        if (isSelected)
+                        {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
+                // End ParticleTextureName ImGui drop-down list
+
+                ImGui::SliderInt("Number of Rows", &m_ParticleSettingsEdit->numRows, 1, 10);
+                ImGui::SliderInt("Particles Per Second", &m_ParticleSettingsEdit->PPS, 0, m_MaxInstances);
+                ImGui::SliderFloat3("Direction", glm::value_ptr(m_ParticleSettingsEdit->direction), -1.0f, 1.0f);
+                ImGui::SliderFloat("Intensity", &m_ParticleSettingsEdit->intensity, 0.0f, 20.0f);
+                ImGui::SliderFloat("Gravity Complient", &m_ParticleSettingsEdit->gravityComplient, -40.0f, 40.0f);
+                ImGui::SliderFloat("Life Length", &m_ParticleSettingsEdit->lifeLength, 0.0f, 20.0f);
+                ImGui::SliderFloat("Diameter", &m_ParticleSettingsEdit->diameter, 0.0f, 1.0f);
+
                 ImGui::Separator();
-                std::string textLine = "TextureID: " + std::to_string(it->first) + " Particles: " + std::to_string(it->second);
-                ImGui::Text(textLine.c_str());
+                ImGui::Checkbox("Instanced Rendering", &m_ParticleSettingsEdit->instanced);
+                std::map<int, int> counts = std::map<int, int>();
+                if (m_CurrentSOPS != nullptr) {
+                    counts = m_CurrentSOPS->GetMaster()->GetCounts();
+                }
+                for (auto it = counts.begin(); it != counts.end(); it++) {
+                    ImGui::Separator();
+                    std::string textLine = "TextureID: " + std::to_string(it->first) + " Particles: " + std::to_string(it->second);
+                    ImGui::Text(textLine.c_str());
+                }
             }
         }
+        ImGui::End();
     }
-    ImGui::End();
 
-    ImGui::Begin("Help");
+    if (m_ShowWindowFramebuffers)
     {
-        if (ImGui::CollapsingHeader("Show Details"))
+        ImGui::Begin("Framebuffers", &m_ShowWindowFramebuffers);
         {
-            ImGui::Text("* Fast Movement: Left SHIFT + W|A|S|D|Q|E");
-            ImGui::Text("* Toggle Gizmo Modes: 1) Translate, 2) Scale, 3) Rotate, 4) Disable");
-            ImGui::Text("* Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up");
-            ImGui::Separator();
-            ImGui::Text("* Left CTRL + S - Scene Save");
-            ImGui::Text("* Left CTRL + R - Scene Reset");
-            ImGui::Text("* Left CTRL + L - Scene Load");
-            ImGui::Text("* Left CTRL + C - Copy scene object");
-            ImGui::Text("* Left CTRL + P - Capture a screenshot");
-            ImGui::Text("* Left CTRL + Left Mouse Button - Add Mesh or Model");
-            ImGui::Text("* Left SHIFT + R - Toggle Wireframe Mode");
-            ImGui::Text("* Right Mouse Button - Camera Rotation");
-            ImGui::Text("* TAB + Left Mouse Button - Enable Gizmo");
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Renderer");
-    {
-        ImGui::Checkbox("Enable Shadows", &sceneSettings.enableShadows);
-        ImGui::Checkbox("Enable Omni Shadows", &sceneSettings.enableOmniShadows);
-        ImGui::Checkbox("Enable Water Effects", &sceneSettings.enableWaterEffects);
-        ImGui::Checkbox("Enable Particles", &sceneSettings.enableParticles);
-    }
-    ImGui::End();
-
-    ImGui::Begin("Profiler");
-    {
-        float realFPS = Timer::Get()->GetRealFPS();
-        std::string sRealFPS = "Real FPS: " + std::to_string(realFPS);
-
-        float deltaTimeMS = Timer::Get()->GetDeltaTime() * 1000.0f;
-        std::string sDeltaTimeMS = "Delta Time: " + std::to_string(deltaTimeMS) + " ms";
-
-        if (ImGui::CollapsingHeader("Timer"))
-        {
-            ImGui::Text(sRealFPS.c_str());
-            ImGui::Text(sDeltaTimeMS.c_str());
-        }
-
-        if (ImGui::CollapsingHeader("Active Render Passes"))
-        {
-            ImGui::Indent();
-            for (auto& renderPassName : m_ActiveRenderPasses)
-                ImGui::Text(renderPassName.c_str());
-            ImGui::Unindent();
-        }
-
-        m_ActiveRenderPasses.clear();
-
-        // print profiler results
-        if (ImGui::CollapsingHeader("Profiler results:"))
-        {
-            // profiler results
-            for (auto& profilerResult : m_ProfilerResults)
+            if (ImGui::CollapsingHeader("Display Info"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
             {
-                char label[100];
-                strcpy(label, "%.2fms ");
-                strcat(label, profilerResult.first.c_str());
-                ImGui::Text(label, profilerResult.second);
+                ImVec2 imageSize(96.0f, 96.0f);
+
+                ImGui::Text("Shadow Map");
+                ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
+
+                if (m_IsViewportEnabled)
+                {
+                    ImGui::Text("Viewport");
+                    ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+                }
+
+                /****
+                if (ImGui::CollapsingHeader("Omni Shadow Maps"))
+                {
+                    ImGui::Text("Omni Shadow Map 0\n(Point Light 0)");
+                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[0].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 1\n(Point Light 1)");
+                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[1].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 2\n(Point Light 2)");
+                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[2].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 3\n(Point Light 3)");
+                    ImGui::Image((void*)(intptr_t)LightManager::pointLights[3].GetShadowMap()->GetTextureID(), imageSize);
+
+                    ImGui::Text("Omni Shadow Map 4\n(Spot Light 0)");
+                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[0].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 5\n(Spot Light 1)");
+                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[1].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 6\n(Spot Light 2)");
+                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[2].GetShadowMap()->GetTextureID(), imageSize);
+                    ImGui::Text("Omni Shadow Map 7\n(Spot Light 3)");
+                    ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetTextureID(), imageSize);
+                }
+                ****/
+
+                ImGui::Text("Water Reflection\nColor Attachment");
+                ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
+                ImGui::Text("Water Refraction\nColor Attachment");
+                ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
+                ImGui::Text("Water Refraction\nDepth Attachment");
+                ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
+
+                ImGui::Text("Blur Effect Horizontal");
+                // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetHorizontalOutputTexture()->GetID(), imageSize);
+                ImGui::Text("Blur Effect Vertical");
+                // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetVerticalOutputTexture()->GetID(), imageSize);
             }
-            m_ProfilerResults.clear();
         }
+        ImGui::End();
     }
-    ImGui::End();
 
-    ImGui::Begin("Mouse Picker");
+    if (m_ShowWindowExperimentalSection)
     {
-        if (ImGui::CollapsingHeader("Display Info"))
+        ImGui::Begin("Experimental Section", &m_ShowWindowExperimentalSection);
         {
-            char buffer[100];
-
-            sprintf(buffer, "Main Window [ X %i Y %i ]", m_ImGuiMainViewportX, m_ImGuiMainViewportY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
-            ImGui::Text(buffer);
-            ImGui::Separator();
-
-            sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
-            ImGui::Text(buffer);
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Scene Editor");
-    {
-        if (ImGui::CollapsingHeader("Add Mesh"))
-        {
-            ImGui::RadioButton("Cube",         &m_CurrentObjectTypeID, MESH_TYPE_CUBE);
-            ImGui::RadioButton("Pyramid",      &m_CurrentObjectTypeID, MESH_TYPE_PYRAMID);
-            ImGui::RadioButton("Sphere",       &m_CurrentObjectTypeID, MESH_TYPE_SPHERE);
-            ImGui::RadioButton("Cylinder",     &m_CurrentObjectTypeID, MESH_TYPE_CYLINDER);
-            ImGui::RadioButton("Cone",         &m_CurrentObjectTypeID, MESH_TYPE_CONE);
-            ImGui::RadioButton("Ring",         &m_CurrentObjectTypeID, MESH_TYPE_RING);
-            ImGui::RadioButton("Bob Lamp",     &m_CurrentObjectTypeID, MESH_TYPE_BOB_LAMP);
-            ImGui::RadioButton("Anim Boy",     &m_CurrentObjectTypeID, MESH_TYPE_ANIM_BOY);
-            ImGui::RadioButton("Terrain",      &m_CurrentObjectTypeID, MESH_TYPE_TERRAIN);
-            ImGui::RadioButton("Water",        &m_CurrentObjectTypeID, MESH_TYPE_WATER);
-            ImGui::RadioButton("Buster Drone", &m_CurrentObjectTypeID, MESH_TYPE_DRONE);
-            ImGui::RadioButton("M1911 Pistol", &m_CurrentObjectTypeID, MESH_TYPE_M1911);
-        }
-
-        if (ImGui::CollapsingHeader("Add Model"))
-        {
-            ImGui::RadioButton("Stone Carved",   &m_CurrentObjectTypeID, MODEL_STONE_CARVED);
-            ImGui::RadioButton("Old Stove",      &m_CurrentObjectTypeID, MODEL_OLD_STOVE);
-            ImGui::RadioButton("Buddha",         &m_CurrentObjectTypeID, MODEL_BUDDHA);
-            ImGui::RadioButton("HHeli",          &m_CurrentObjectTypeID, MODEL_HHELI);
-            ImGui::RadioButton("Jeep",           &m_CurrentObjectTypeID, MODEL_JEEP);
-            ImGui::RadioButton("Damaged Helmet", &m_CurrentObjectTypeID, MODEL_DAMAGED_HELMET);
-            ImGui::RadioButton("SF Helmet",      &m_CurrentObjectTypeID, MODEL_SF_HELMET);
-            ImGui::RadioButton("Cerberus",       &m_CurrentObjectTypeID, MODEL_CERBERUS);
-            ImGui::RadioButton("Pine",           &m_CurrentObjectTypeID, MODEL_PINE);
-            ImGui::RadioButton("Boulder",        &m_CurrentObjectTypeID, MODEL_BOULDER);
-        }
-        if (ImGui::CollapsingHeader("Add Particle System"))
-        {
-            ImGui::RadioButton("Particle System", &m_CurrentObjectTypeID, PARTICLE_SYSTEM);
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Textures");
-    {
-        if (ImGui::CollapsingHeader("Display Info"))
-        {
-            ImVec2 imageSize(64.0f, 64.0f);
-
-            for (std::map<std::string, H2M::RefH2M<MoravaTexture>>::iterator it = textures.begin(); it != textures.end(); ++it)
+            if (ImGui::CollapsingHeader("Details"))
             {
-                ImGui::Text(it->first.c_str());
-                ImGui::Image((void*)(intptr_t)it->second->GetID(), imageSize);
+                ImGui::Text("File");
+                std::string fullpath = (m_LoadedFile != "") ? m_LoadedFile : "None";
+                size_t found = fullpath.find_last_of("/\\");
+                std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
+                ImGui::Text(path.c_str()); ImGui::SameLine();
+
+                if (ImGui::Button("...##Mesh"))
+                {
+                    m_LoadedFile = Application::Get()->OpenFile("");
+                    if (m_LoadedFile != "")
+                    {
+                        Log::GetLogger()->info("ImGui OpenFile - filename: '{0}'", m_LoadedFile);
+                    }
+                }
+
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+                ImGui::Image(m_LoadedTexture ? (void*)(intptr_t)m_LoadedTexture->GetID() : (void*)(intptr_t)ResourceManager::HotLoadTexture("Checkerboard")->GetID(), ImVec2(64, 64));
+                ImGui::PopStyleVar();
+                if (ImGui::IsItemHovered())
+                {
+                    if (m_LoadedTexture)
+                    {
+                        ImGui::BeginTooltip();
+                        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+                        ImGui::TextUnformatted(m_LoadedTextureFilepath.c_str());
+                        ImGui::PopTextWrapPos();
+                        ImGui::Image((void*)(intptr_t)m_LoadedTexture->GetID(), ImVec2(384, 384));
+                        ImGui::EndTooltip();
+                    }
+                    if (ImGui::IsItemClicked())
+                    {
+                        std::string filename = Application::Get()->OpenFile("");
+                        if (filename != "")
+                            m_LoadedTexture = MoravaTexture::Create(filename.c_str(), false);
+                    }
+                }
+                ImGui::SameLine();
+                ImGui::Checkbox("Use##NormalMap", &m_UseLoadedTexture);
             }
         }
+        ImGui::End();
     }
-    ImGui::End();
 
-    ImGui::Begin("Framebuffers");
+    if (m_ShowWindowDearImGuiMetricsDebugger)
     {
-        if (ImGui::CollapsingHeader("Display Info"), nullptr, ImGuiTreeNodeFlags_DefaultOpen)
+        ImGui::ShowMetricsWindow(&m_ShowWindowDearImGuiMetricsDebugger);
+    }
+
+    if (m_ShowWindowHelp)
+    {
+        ImGui::Begin("Help", &m_ShowWindowHelp);
         {
-            ImVec2 imageSize(96.0f, 96.0f);
-
-            ImGui::Text("Shadow Map");
-            ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
-
-            if (m_IsViewportEnabled)
+            if (ImGui::CollapsingHeader("Show Details"))
             {
-                ImGui::Text("Viewport");
-                ImGui::Image((void*)(intptr_t)m_RenderFramebuffer->GetTextureAttachmentColor()->GetID(), imageSize);
+                ImGui::Text("* Fast Movement: Left SHIFT + W|A|S|D|Q|E");
+                ImGui::Text("* Toggle Gizmo Modes: 1) Translate, 2) Scale, 3) Rotate, 4) Disable");
+                ImGui::Text("* Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up");
+                ImGui::Separator();
+                ImGui::Text("* Left CTRL + S - Scene Save");
+                ImGui::Text("* Left CTRL + R - Scene Reset");
+                ImGui::Text("* Left CTRL + L - Scene Load");
+                ImGui::Text("* Left CTRL + C - Copy scene object");
+                ImGui::Text("* Left CTRL + P - Capture a screenshot");
+                ImGui::Text("* Left CTRL + Left Mouse Button - Add Mesh or Model");
+                ImGui::Text("* Left SHIFT + R - Toggle Wireframe Mode");
+                ImGui::Text("* Right Mouse Button - Camera Rotation");
+                ImGui::Text("* TAB + Left Mouse Button - Enable Gizmo");
             }
-
-            /****
-            if (ImGui::CollapsingHeader("Omni Shadow Maps"))
-            {
-                ImGui::Text("Omni Shadow Map 0\n(Point Light 0)");
-                ImGui::Image((void*)(intptr_t)LightManager::pointLights[0].GetShadowMap()->GetTextureID(), imageSize);
-                ImGui::Text("Omni Shadow Map 1\n(Point Light 1)");
-                ImGui::Image((void*)(intptr_t)LightManager::pointLights[1].GetShadowMap()->GetTextureID(), imageSize);
-                ImGui::Text("Omni Shadow Map 2\n(Point Light 2)");
-                ImGui::Image((void*)(intptr_t)LightManager::pointLights[2].GetShadowMap()->GetTextureID(), imageSize);
-                ImGui::Text("Omni Shadow Map 3\n(Point Light 3)");
-                ImGui::Image((void*)(intptr_t)LightManager::pointLights[3].GetShadowMap()->GetTextureID(), imageSize);
-
-                ImGui::Text("Omni Shadow Map 4\n(Spot Light 0)");
-                ImGui::Image((void*)(intptr_t)LightManager::spotLights[0].GetShadowMap()->GetTextureID(), imageSize);
-                ImGui::Text("Omni Shadow Map 5\n(Spot Light 1)");
-                ImGui::Image((void*)(intptr_t)LightManager::spotLights[1].GetShadowMap()->GetTextureID(), imageSize);
-                ImGui::Text("Omni Shadow Map 6\n(Spot Light 2)");
-                ImGui::Image((void*)(intptr_t)LightManager::spotLights[2].GetShadowMap()->GetTextureID(), imageSize);
-                ImGui::Text("Omni Shadow Map 7\n(Spot Light 3)");
-                ImGui::Image((void*)(intptr_t)LightManager::spotLights[3].GetShadowMap()->GetTextureID(), imageSize);
-            }
-            ****/
-
-            ImGui::Text("Water Reflection\nColor Attachment");
-            ImGui::Image((void*)(intptr_t)m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
-            ImGui::Text("Water Refraction\nColor Attachment");
-            ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->GetID(), imageSize);
-            ImGui::Text("Water Refraction\nDepth Attachment");
-            ImGui::Image((void*)(intptr_t)m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->GetID(), imageSize);
-
-            ImGui::Text("Blur Effect Horizontal");
-            // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetHorizontalOutputTexture()->GetID(), imageSize);
-            ImGui::Text("Blur Effect Vertical");
-            // ImGui::Image((void*)(intptr_t)m_BlurEffect->GetVerticalOutputTexture()->GetID(), imageSize);
         }
+        ImGui::End();
     }
-    ImGui::End();
 
-    if (m_IsViewportEnabled)
+    if (m_ShowWindowProfiler)
     {
-        ImGui::Begin("Viewport Info");
+        ImGui::Begin("Profiler", &m_ShowWindowProfiler);
+        {
+            float realFPS = Timer::Get()->GetRealFPS();
+            std::string sRealFPS = "Real FPS: " + std::to_string(realFPS);
+
+            float deltaTimeMS = Timer::Get()->GetDeltaTime() * 1000.0f;
+            std::string sDeltaTimeMS = "Delta Time: " + std::to_string(deltaTimeMS) + " ms";
+
+            if (ImGui::CollapsingHeader("Timer"))
+            {
+                ImGui::Text(sRealFPS.c_str());
+                ImGui::Text(sDeltaTimeMS.c_str());
+            }
+
+            if (ImGui::CollapsingHeader("Active Render Passes"))
+            {
+                ImGui::Indent();
+                for (auto& renderPassName : m_ActiveRenderPasses)
+                    ImGui::Text(renderPassName.c_str());
+                ImGui::Unindent();
+            }
+
+            m_ActiveRenderPasses.clear();
+
+            // print profiler results
+            if (ImGui::CollapsingHeader("Profiler results:"))
+            {
+                // profiler results
+                for (auto& profilerResult : m_ProfilerResults)
+                {
+                    char label[100];
+                    strcpy(label, "%.2fms ");
+                    strcat(label, profilerResult.first.c_str());
+                    ImGui::Text(label, profilerResult.second);
+                }
+                m_ProfilerResults.clear();
+            }
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowMousePicker)
+    {
+        ImGui::Begin("Mouse Picker", &m_ShowWindowMousePicker);
+        {
+            if (ImGui::CollapsingHeader("Display Info"))
+            {
+                char buffer[100];
+
+                sprintf(buffer, "Main Window [ X %i Y %i ]", m_ImGuiMainViewportX, m_ImGuiMainViewportY);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
+                ImGui::Text(buffer);
+                ImGui::Separator();
+
+                sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
+                ImGui::Text(buffer);
+            }
+        }
+        ImGui::End();
+    }
+
+    if (m_ShowWindowViewportInfo)
+    {
+        ImGui::Begin("Viewport Info", &m_ShowWindowViewportInfo);
         {
             glm::ivec2 colorAttachmentSize = glm::ivec2(
                 m_RenderFramebuffer->GetTextureAttachmentColor()->GetWidth(),
@@ -1069,217 +1327,6 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
         }
         ImGui::End();
     }
-
-    ImGui::Begin("Lights");
-    {
-        ImGui::Checkbox("Display Light Sources", &m_DisplayLightSources);
-
-        ImGui::Separator();
-
-        ImGui::Text("Light Directions");
-        ImGui::Separator();
-        char buffer[100];
-        sprintf(buffer, "DL:   X %.2f Y %.2f Z %.2f", m_DirectionDirLight.x, m_DirectionDirLight.y, m_DirectionDirLight.z);
-        ImGui::Text(buffer);
-
-        for (int i = 0; i < m_DirectionsSpotLight.size(); i++) {
-            sprintf(buffer, "SL %i: X %.2f Y %.2f Z %.2f", i, m_DirectionsSpotLight[i].x, m_DirectionsSpotLight[i].y, m_DirectionsSpotLight[i].z);
-            ImGui::Text(buffer);
-        }
-
-        ImGui::Separator();
-
-        if (ImGui::CollapsingHeader("Directional Light"))
-        {
-            // Directional Light
-            SDirectionalLight directionalLight;
-            directionalLight.base.enabled = LightManager::directionalLight.GetEnabled();
-            directionalLight.base.color = LightManager::directionalLight.GetColor();
-            directionalLight.base.ambientIntensity = LightManager::directionalLight.GetAmbientIntensity();
-            directionalLight.base.diffuseIntensity = LightManager::directionalLight.GetDiffuseIntensity();
-            directionalLight.direction = LightManager::directionalLight.GetDirection();
-
-            ImGui::Checkbox("DL Enabled", &directionalLight.base.enabled);
-            ImGui::ColorEdit3("DL Color", glm::value_ptr(directionalLight.base.color));
-            ImGui::SliderFloat3("DL Direction", glm::value_ptr(directionalLight.direction), -1.0f, 1.0f);
-            ImGui::SliderFloat("DL Ambient Intensity", &directionalLight.base.ambientIntensity, -5.0f, 5.0f);
-            ImGui::SliderFloat("DL Diffuse Intensity", &directionalLight.base.diffuseIntensity, -5.0f, 5.0f);
-
-            // Shutdown directional light (it appears it's better to do it here than in shader
-            if (directionalLight.base.enabled != m_DirLightEnabledPrev)
-            {
-                if (directionalLight.base.enabled)
-                    directionalLight.base.color = m_DirLightColorPrev;
-                else
-                    directionalLight.base.color = glm::vec3(0.0f, 0.0f, 0.0f);
-
-                m_DirLightEnabledPrev = directionalLight.base.enabled;
-            }
-
-            LightManager::directionalLight.SetEnabled(directionalLight.base.enabled);
-            LightManager::directionalLight.SetColor(directionalLight.base.color);
-            LightManager::directionalLight.SetAmbientIntensity(directionalLight.base.ambientIntensity);
-            LightManager::directionalLight.SetDiffuseIntensity(directionalLight.base.diffuseIntensity);
-            // LightManager::directionalLight.SetDirection(directionalLight.direction);
-        }
-
-        if (ImGui::CollapsingHeader("Point Lights"))
-        {
-            ImGui::Indent();
-
-            // Point Lights
-            SPointLight pointLights[4];
-            char locBuff[100] = { '\0' };
-            for (unsigned int pl = 0; pl < LightManager::pointLightCount; pl++)
-            {
-                pointLights[pl].base.enabled = LightManager::pointLights[pl].GetEnabled();
-                pointLights[pl].base.color = LightManager::pointLights[pl].GetColor();
-                pointLights[pl].base.ambientIntensity = LightManager::pointLights[pl].GetAmbientIntensity();
-                pointLights[pl].base.diffuseIntensity = LightManager::pointLights[pl].GetDiffuseIntensity();
-                pointLights[pl].position = LightManager::pointLights[pl].GetPosition();
-                pointLights[pl].constant = LightManager::pointLights[pl].GetConstant();
-                pointLights[pl].linear = LightManager::pointLights[pl].GetLinear();
-                pointLights[pl].exponent = LightManager::pointLights[pl].GetExponent();
-
-                snprintf(locBuff, sizeof(locBuff), "Point Light %i", pl);
-                if (ImGui::CollapsingHeader(locBuff))
-                {
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Enabled", pl);
-                    ImGui::Checkbox(locBuff, &pointLights[pl].base.enabled);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Color", pl);
-                    ImGui::ColorEdit3(locBuff, glm::value_ptr(pointLights[pl].base.color));
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Position", pl);
-                    ImGui::SliderFloat3(locBuff, glm::value_ptr(pointLights[pl].position), -100.0f, 100.0f);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Ambient Intensity", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].base.ambientIntensity, -5.0f, 5.0f);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Diffuse Intensity", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].base.diffuseIntensity, -5.0f, 5.0f);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Constant", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].constant, -1.0f, 6.0f);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Linear", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].linear,   -1.0f, 6.0f);
-                    snprintf(locBuff, sizeof(locBuff), "PL %i Exponent", pl);
-                    ImGui::SliderFloat(locBuff, &pointLights[pl].exponent, -1.0f, 6.0f);
-                }
-
-                LightManager::pointLights[pl].SetEnabled(pointLights[pl].base.enabled);
-                LightManager::pointLights[pl].SetColor(pointLights[pl].base.color);
-                LightManager::pointLights[pl].SetAmbientIntensity(pointLights[pl].base.ambientIntensity);
-                LightManager::pointLights[pl].SetDiffuseIntensity(pointLights[pl].base.diffuseIntensity);
-                LightManager::pointLights[pl].SetPosition(pointLights[pl].position);
-                LightManager::pointLights[pl].SetConstant(pointLights[pl].constant);
-                LightManager::pointLights[pl].SetLinear(pointLights[pl].linear);
-                LightManager::pointLights[pl].SetExponent(pointLights[pl].exponent);
-            }
-            ImGui::Unindent();
-        }
-
-        if (ImGui::CollapsingHeader("Spot Lights"))
-        {
-            ImGui::Indent();
-
-            // Spot Lights
-            SSpotLight spotLights[4];
-            char locBuff[100] = { '\0' };
-            for (unsigned int sl = 0; sl < LightManager::spotLightCount; sl++)
-            {
-                spotLights[sl].base.base.enabled = LightManager::spotLights[sl].GetBasePL()->GetEnabled();
-                spotLights[sl].base.base.color = LightManager::spotLights[sl].GetBasePL()->GetColor();
-                spotLights[sl].base.base.ambientIntensity = LightManager::spotLights[sl].GetBasePL()->GetAmbientIntensity();
-                spotLights[sl].base.base.diffuseIntensity = LightManager::spotLights[sl].GetBasePL()->GetDiffuseIntensity();
-                spotLights[sl].base.position = LightManager::spotLights[sl].GetBasePL()->GetPosition();
-                spotLights[sl].base.constant = LightManager::spotLights[sl].GetBasePL()->GetConstant();
-                spotLights[sl].base.linear = LightManager::spotLights[sl].GetBasePL()->GetLinear();
-                spotLights[sl].base.exponent = LightManager::spotLights[sl].GetBasePL()->GetExponent();
-                spotLights[sl].direction = LightManager::spotLights[sl].GetDirection();
-                spotLights[sl].edge = LightManager::spotLights[sl].GetEdge();
-
-                snprintf(locBuff, sizeof(locBuff), "Spot Light %i", sl);
-                if (ImGui::CollapsingHeader(locBuff))
-                {
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Enabled", sl);
-                    ImGui::Checkbox(locBuff, &spotLights[sl].base.base.enabled);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Color", sl);
-                    ImGui::ColorEdit3(locBuff, glm::value_ptr(spotLights[sl].base.base.color));
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Position", sl);
-                    ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].base.position), -100.0f, 100.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Direction", sl);
-                    ImGui::SliderFloat3(locBuff, glm::value_ptr(spotLights[sl].direction), -1.0f, 1.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Edge", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].edge, -2.0f, 2.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Ambient Intensity", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.ambientIntensity, -5.0f, 5.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Diffuse Intensity", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.base.diffuseIntensity, -5.0f, 5.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Constant", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.constant, -1.0f, 6.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Linear", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.linear,   -1.0f, 6.0f);
-                    snprintf(locBuff, sizeof(locBuff), "SL %i Exponent", sl);
-                    ImGui::SliderFloat(locBuff, &spotLights[sl].base.exponent, -1.0f, 6.0f);
-                }
-
-                LightManager::spotLights[sl].GetBasePL()->SetEnabled(spotLights[sl].base.base.enabled);
-                LightManager::spotLights[sl].GetBasePL()->SetColor(spotLights[sl].base.base.color);
-                LightManager::spotLights[sl].GetBasePL()->SetAmbientIntensity(spotLights[sl].base.base.ambientIntensity);
-                LightManager::spotLights[sl].GetBasePL()->SetDiffuseIntensity(spotLights[sl].base.base.diffuseIntensity);
-                LightManager::spotLights[sl].GetBasePL()->SetPosition(spotLights[sl].base.position);
-                LightManager::spotLights[sl].GetBasePL()->SetConstant(spotLights[sl].base.constant);
-                LightManager::spotLights[sl].GetBasePL()->SetLinear(spotLights[sl].base.linear);
-                LightManager::spotLights[sl].GetBasePL()->SetExponent(spotLights[sl].base.exponent);
-                // LightManager::spotLights[sl].SetDirection(spotLights[sl].direction);
-                LightManager::spotLights[sl].SetEdge(spotLights[sl].edge);
-            }
-            ImGui::Unindent();
-        }
-    }
-    ImGui::End();
-
-    ImGui::Begin("Experimental Section");
-    {
-        if (ImGui::CollapsingHeader("Details"))
-        {
-            ImGui::Text("File");
-            std::string fullpath = (m_LoadedFile != "") ? m_LoadedFile : "None";
-            size_t found = fullpath.find_last_of("/\\");
-            std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
-            ImGui::Text(path.c_str()); ImGui::SameLine();
-
-            if (ImGui::Button("...##Mesh"))
-            {
-                m_LoadedFile = Application::Get()->OpenFile("");
-                if (m_LoadedFile != "")
-                {
-                    Log::GetLogger()->info("ImGui OpenFile - filename: '{0}'", m_LoadedFile);
-                }
-            }
-
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-            ImGui::Image(m_LoadedTexture ? (void*)(intptr_t)m_LoadedTexture->GetID() : (void*)(intptr_t)ResourceManager::HotLoadTexture("Checkerboard")->GetID(), ImVec2(64, 64));
-            ImGui::PopStyleVar();
-            if (ImGui::IsItemHovered())
-            {
-                if (m_LoadedTexture)
-                {
-                    ImGui::BeginTooltip();
-                    ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-                    ImGui::TextUnformatted(m_LoadedTextureFilepath.c_str());
-                    ImGui::PopTextWrapPos();
-                    ImGui::Image((void*)(intptr_t)m_LoadedTexture->GetID(), ImVec2(384, 384));
-                    ImGui::EndTooltip();
-                }
-                if (ImGui::IsItemClicked())
-                {
-                    std::string filename = Application::Get()->OpenFile("");
-                    if (filename != "")
-                        m_LoadedTexture = MoravaTexture::Create(filename.c_str(), false);
-                }
-            }
-            ImGui::SameLine();
-            ImGui::Checkbox("Use##NormalMap", &m_UseLoadedTexture);
-        }
-    }
-    ImGui::End();
 
     // Mesh Hierarchy / Mesh Debug
     for (auto& object : m_SceneObjects) {
@@ -1329,8 +1376,6 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::End();
         ImGui::PopStyleVar();
     }
-
-    ImGui::ShowMetricsWindow();
 }
 
 void SceneEditorImGuizmo::UpdateImGuizmo(Window* mainWindow)
@@ -1451,6 +1496,11 @@ void SceneEditorImGuizmo::ShowExampleAppDockSpace(bool* p_open, Window* mainWind
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     }
 
+    RenderImGuiMenu(mainWindow, dockspace_flags);
+}
+
+void SceneEditorImGuizmo::RenderImGuiMenu(Window* mainWindow, ImGuiDockNodeFlags dockspaceFlags)
+{
     if (ImGui::BeginMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -1469,17 +1519,107 @@ void SceneEditorImGuizmo::ShowExampleAppDockSpace(bool* p_open, Window* mainWind
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("View"))
+        {
+            if (ImGui::MenuItem("Scene Editor"))
+            {
+                m_ShowWindowSceneEditor = !m_ShowWindowSceneEditor;
+            }
+
+            if (ImGui::MenuItem("Renderer"))
+            {
+                m_ShowWindowRenderer = !m_ShowWindowRenderer;
+            }
+
+            if (ImGui::MenuItem("Lights"))
+            {
+                m_ShowWindowLights = !m_ShowWindowLights;
+            }
+
+            if (ImGui::MenuItem("Scene Settings"))
+            {
+                m_ShowWindowSceneSettings = !m_ShowWindowSceneSettings;
+            }
+
+            if (ImGui::MenuItem("Textures"))
+            {
+                m_ShowWindowTextures = !m_ShowWindowTextures;
+            }
+
+            if (ImGui::MenuItem("Transform"))
+            {
+                m_ShowWindowTransform = !m_ShowWindowTransform;
+            }
+
+            if (ImGui::MenuItem("Material"))
+            {
+                m_ShowWindowMaterial = !m_ShowWindowMaterial;
+            }
+
+            if (ImGui::MenuItem("Material"))
+            {
+                m_ShowWindowMaterial = !m_ShowWindowMaterial;
+            }
+
+            if (ImGui::MenuItem("Object Properties"))
+            {
+                m_ShowWindowObjectProperties = !m_ShowWindowObjectProperties;
+            }
+
+            if (ImGui::MenuItem("Particles"))
+            {
+                m_ShowWindowParticles = !m_ShowWindowParticles;
+            }
+
+            if (ImGui::MenuItem("Framebuffers"))
+            {
+                m_ShowWindowFramebuffers = !m_ShowWindowFramebuffers;
+            }
+
+            if (ImGui::MenuItem("Experimental Section"))
+            {
+                m_ShowWindowExperimentalSection = !m_ShowWindowExperimentalSection;
+            }
+
+            if (ImGui::MenuItem("Experimental Section"))
+            {
+                m_ShowWindowExperimentalSection = !m_ShowWindowExperimentalSection;
+            }
+
+            if (ImGui::MenuItem("DearImGui Metrics/Debugger"))
+            {
+                m_ShowWindowDearImGuiMetricsDebugger = !m_ShowWindowDearImGuiMetricsDebugger;
+            }
+
+            if (ImGui::MenuItem("Help"))
+            {
+                m_ShowWindowHelp = !m_ShowWindowHelp;
+            }
+
+            if (ImGui::MenuItem("Profiler"))
+            {
+                m_ShowWindowProfiler = !m_ShowWindowProfiler;
+            }
+
+            if (ImGui::MenuItem("Mouse Picker"))
+            {
+                m_ShowWindowMousePicker = !m_ShowWindowMousePicker;
+            }
+
+            ImGui::EndMenu();
+        }
+
         if (ImGui::BeginMenu("Docking"))
         {
             // Disabling fullscreen would allow the window to be moved to the front of other windows, 
             // which we can't undo at the moment without finer window depth/z control.
             //ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
 
-            if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
-            if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
-            if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
-            if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
-            if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
+            if (ImGui::MenuItem("Flag: NoSplit", "", (dockspaceFlags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspaceFlags ^= ImGuiDockNodeFlags_NoSplit;
+            if (ImGui::MenuItem("Flag: NoResize", "", (dockspaceFlags & ImGuiDockNodeFlags_NoResize) != 0))                dockspaceFlags ^= ImGuiDockNodeFlags_NoResize;
+            if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspaceFlags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspaceFlags ^= ImGuiDockNodeFlags_NoDockingInCentralNode;
+            if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspaceFlags ^= ImGuiDockNodeFlags_PassthruCentralNode;
+            if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspaceFlags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspaceFlags ^= ImGuiDockNodeFlags_AutoHideTabBar;
             ImGui::EndMenu();
         }
 
