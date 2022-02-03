@@ -19,39 +19,6 @@
 namespace H2M
 {
 
-	struct QuadVertex
-	{
-		glm::vec3 Position;
-		glm::vec4 Color;
-		glm::vec2 TexCoord;
-		float TexIndex;
-		float TilingFactor;
-		
-		// Editor-only
-		int EntityID;
-	};
-
-	struct CircleVertex
-	{
-		glm::vec3 WorldPosition;
-		glm::vec3 LocalPosition;
-		glm::vec4 Color;
-		float Thickness;
-		float Fade;
-
-		// Editor-only
-		int EntityID;
-	};
-
-	struct LineVertex
-	{
-		glm::vec3 Position;
-		glm::vec4 Color;
-
-		// Editor-only
-		int EntityID;
-	};
-
 	struct Renderer2DData
 	{
 		static const uint32_t MaxQuads = 20000;
@@ -69,12 +36,12 @@ namespace H2M
 		RefH2M<ShaderH2M> CircleShader;
 
 		uint32_t QuadIndexCount = 0;
-		QuadVertex* QuadVertexBufferBase = nullptr;
-		QuadVertex* QuadVertexBufferPtr = nullptr;
+		Renderer2D_H2M::QuadVertex* QuadVertexBufferBase = nullptr;
+		Renderer2D_H2M::QuadVertex* QuadVertexBufferPtr = nullptr;
 
 		uint32_t CircleIndexCount = 0;
-		CircleVertex* CircleVertexBufferBase = nullptr;
-		CircleVertex* CircleVertexBufferPtr = nullptr;
+		Renderer2D_H2M::CircleVertex* CircleVertexBufferBase = nullptr;
+		Renderer2D_H2M::CircleVertex* CircleVertexBufferPtr = nullptr;
 
 		RefH2M<VertexArrayH2M> LineVertexArray;
 		RefH2M<VertexBufferH2M> LineVertexBuffer;
@@ -82,8 +49,8 @@ namespace H2M
 
 		uint32_t LineVertexCount = 0;
 		// uint32_t LineIndexCount = 0;
-		LineVertex* LineVertexBufferBase = nullptr;
-		LineVertex* LineVertexBufferPtr = nullptr;
+		Renderer2D_H2M::LineVertex* LineVertexBufferBase = nullptr;
+		Renderer2D_H2M::LineVertex* LineVertexBufferPtr = nullptr;
 
 		float LineWidth = 5.0f;
 
@@ -111,7 +78,26 @@ namespace H2M
 
 	static Renderer2DData s_Data;
 
-	void Renderer2D_H2M::Init()
+	Renderer2D_H2M::Renderer2D_H2M(const Renderer2DSpecificationH2M& specification)
+		: m_Specification(specification)
+	{
+		Init_EnvMapVulkan();
+	}
+
+	Renderer2D_H2M::~Renderer2D_H2M()
+	{
+		Shutdown_EnvMapVulkan();
+	}
+
+	void Renderer2D_H2M::Init_EnvMapVulkan()
+	{
+	}
+
+	void Renderer2D_H2M::Shutdown_EnvMapVulkan()
+	{
+	}
+
+	void Renderer2D_H2M::InitObsolete()
 	{
 		// H2M_PROFILE_FUNCTION();
 
@@ -249,7 +235,7 @@ namespace H2M
 		// END Lines
 	}
 
-	void Renderer2D_H2M::Shutdown()
+	void Renderer2D_H2M::ShutdownObsolete()
 	{
 		// H2M_PROFILE_FUNCTION();
 

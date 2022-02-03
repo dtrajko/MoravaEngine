@@ -100,7 +100,7 @@ void EnvMapEditorLayer::Init()
     SetupShaders();
 
     bool depthTest = true;
-    H2M::Renderer2D_H2M::Init();
+    H2M::Renderer2D_H2M::InitObsolete();
 
     m_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(m_EditorScene);
     m_SceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapEditorLayer::SelectEntity, this, std::placeholders::_1));

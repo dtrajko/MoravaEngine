@@ -14,7 +14,7 @@
 // #define SCENE_FRAMEBUFFERS
 // #define SCENE_CUBEMAPS
 // #define SCENE_PARTICLES
-#define SCENE_OMNI_SHADOWS
+// #define SCENE_OMNI_SHADOWS
 // #define SCENE_VOXEL_TERRAIN
 // #define SCENE_PROCEDURAL_LANDMASS
 // #define SCENE_VOXEL_TERRAIN_SL
@@ -29,7 +29,7 @@
 // #define SCENE_HAZEL_ENV_MAP
 // #define SCENE_DX11
 // #define SCENE_HAZEL_VULKAN
-// #define SCENE_ENV_MAP_VULKAN
+#define SCENE_ENV_MAP_VULKAN
 
 
 enum class SceneName

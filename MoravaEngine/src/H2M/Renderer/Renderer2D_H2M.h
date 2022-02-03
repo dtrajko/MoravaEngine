@@ -19,11 +19,22 @@
 namespace H2M
 {
 
+	struct Renderer2DSpecificationH2M
+	{
+		bool SwapChainTarget = false;
+	};
+
 	class Renderer2D_H2M : public RefCountedH2M
 	{
 	public:
-		static void Init();
-		static void Shutdown();
+		Renderer2D_H2M(const Renderer2DSpecificationH2M& specification = Renderer2DSpecificationH2M());
+		virtual ~Renderer2D_H2M();
+
+		void Init_EnvMapVulkan();
+		void Shutdown_EnvMapVulkan();
+
+		static void InitObsolete();
+		static void ShutdownObsolete();
 
 		static void BeginScene(const CameraH2M& camera, const glm::mat4& transform);
 		static void BeginScene(const EditorCameraH2M& camera);
@@ -78,6 +89,53 @@ namespace H2M
 	private:
 		static void StartBatch();
 		static void NextBatch();
+
+	public:
+		struct QuadVertex
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+			glm::vec2 TexCoord;
+			float TexIndex;
+			float TilingFactor;
+
+			// Editor-only
+			int EntityID;
+		};
+
+		struct CircleVertex
+		{
+			glm::vec3 WorldPosition;
+			glm::vec3 LocalPosition;
+			glm::vec4 Color;
+			float Thickness;
+			float Fade;
+
+			// Editor-only
+			int EntityID;
+		};
+
+		struct LineVertex
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+
+			// Editor-only
+			int EntityID;
+		};
+
+	private:
+		Renderer2DSpecificationH2M m_Specification;
+
+		RefH2M<PipelineH2M> m_QuadPipeline;
+		RefH2M<VertexBufferH2M> m_QuadVertexBuffer;
+		RefH2M<IndexBufferH2M> m_QuadIndexBuffer;
+		RefH2M<MaterialH2M> m_QuadMaterial;
+
+		uint32_t m_QuadIndexCount = 0;
+		QuadVertex* m_QuadVertexBufferBase = nullptr;
+		QuadVertex* m_QuadVertexBufferPtr = nullptr;
+
 	};
 
 }

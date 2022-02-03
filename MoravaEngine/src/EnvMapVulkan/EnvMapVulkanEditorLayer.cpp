@@ -40,13 +40,18 @@ void EnvMapVulkanEditorLayer::OnAttach()
 	m_PointLightIcon = H2M::Texture2D_H2M::Create("Resources/Editor/Icons/PointLight.png", false);
 
 	/////////// Configure Panels ///////////
+	// m_PanelManager = CreateScope<PanelManager>();
 
 	H2M::RefH2M<H2M::SceneHierarchyPanelH2M> sceneHierarchyPanel = H2M::RefH2M<H2M::SceneHierarchyPanelH2M>::Create(m_EditorScene);
-
 	sceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapVulkanEditorLayer::SelectEntity, this, std::placeholders::_1));
 	sceneHierarchyPanel->SetEntityDeletedCallback(std::bind(&EnvMapVulkanEditorLayer::OnEntityDeleted, this, std::placeholders::_1));
 	sceneHierarchyPanel->SetMeshAssetConvertCallback(std::bind(&EnvMapVulkanEditorLayer::OnCreateMeshFromMeshSource, this, std::placeholders::_1, std::placeholders::_2));
 	sceneHierarchyPanel->SetInvalidMetadataCallback(std::bind(&EnvMapVulkanEditorLayer::SceneHierarchyInvalidMetadataCallback, this, std::placeholders::_1, std::placeholders::_2));
+
+	// m_PanelManager->AddPanel<ECSDebugPanel>(ECS_DEBUG_PANEL_ID, "ECS Debug", false, m_EditorScene);
+	// m_PanelManager->AddPanel<EditorConsolePanel>(CONSOLE_PANEL_ID, "Log", true);
+	// m_PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
+	// m_PanelManager->AddPanel<ProjectSettingsWindow>(PROJECT_SETTINGS_PANEL_ID, "Project Settings", false);
 
 	H2M::RefH2M<H2M::ContentBrowserPanelH2M> contentBrowserPanel = H2M::RefH2M<H2M::ContentBrowserPanelH2M>::Create();
 
