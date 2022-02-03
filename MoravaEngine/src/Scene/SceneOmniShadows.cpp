@@ -272,36 +272,30 @@ void SceneOmniShadows::UpdateImGui(float timestep, Window* mainWindow)
 void SceneOmniShadows::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::string passType,
 	std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms)
 {
-    H2M::RefH2M<MoravaShader> shaderMain = shaders["main"];
-    H2M::RefH2M<MoravaShader> shaderOmniShadow = shaders["omniShadow"];
+    H2M::RefH2M<MoravaShader> shader;
 
-    glm::mat4 model = glm::mat4(1.0f);
-
-    if (passType == "shadow_omni")
-    {
-        shaderOmniShadow->Bind();
-    }
+    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
+    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
 
     if (passType == "main")
     {
-        shaderMain->Bind();
+        shader = shaders["main"];
+    }
+    else if (passType == "shadow_omni")
+    {
+        shader = shaders["omniShadow"];
+    }
 
-        model = glm::mat4(1.0f);
-        shaderMain->SetMat4("model", model);
-        ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
-        ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
+    shader->Bind();
+    shader->SetMat4("model", glm::mat4(1.0f));
+
+    if (passType == "main")
+    {
         meshes["floor"]->Render();
     }
 
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(0.0f, 2.0f, 0.0f));
-    shaderMain->SetMat4("model", model);
-    if (passType == "shadow_omni")
-    {
-        shaderOmniShadow->SetMat4("model", model);
-    }
-    ResourceManager::GetTexture("crate")->Bind(textureSlots["diffuse"]);
-    ResourceManager::GetTexture("crateNormal")->Bind(textureSlots["normal"]);
+    glm::mat4 modelCube = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 2.0f, 0.0f));
+    shader->SetMat4("model", modelCube);
     meshes["cube"]->Render();
 }
 
