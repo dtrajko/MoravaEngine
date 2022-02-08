@@ -10,9 +10,10 @@
 
 // #include "Hazel/Renderer/OrthographicCamera.h"
 
-#include "H2M/Renderer/TextureH2M.h"
-#include "H2M/Renderer/CameraH2M.h"
 #include "H2M/Editor/EditorCameraH2M.h"
+#include "H2M/Renderer/CameraH2M.h"
+#include "H2M/Renderer/RenderCommandBufferH2M.h"
+#include "H2M/Renderer/TextureH2M.h"
 
 #include "H2M/Scene/ComponentsH2M.h"
 
@@ -126,6 +127,7 @@ namespace H2M
 
 	private:
 		Renderer2DSpecificationH2M m_Specification;
+		RefH2M<RenderCommandBufferH2M> m_RenderCommandBuffer;
 
 		RefH2M<PipelineH2M> m_QuadPipeline;
 		RefH2M<VertexBufferH2M> m_QuadVertexBuffer;

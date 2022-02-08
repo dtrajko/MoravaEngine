@@ -50,6 +50,7 @@ namespace H2M
 		uint32_t Height = 0;
 		FramebufferFormatH2M Format = FramebufferFormatH2M::None;
 		glm::vec4 ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+		bool ClearOnLoad = true;
 		FramebufferAttachmentSpecificationH2M Attachments;
 		uint32_t Samples = 1; // multisampling
 
