@@ -32,7 +32,13 @@ namespace H2M
 	{
 		RefH2M<ShaderH2M> Shader;
 		VertexBufferLayoutH2M Layout;
+		VertexBufferLayoutH2M InstanceLayout;
 		RefH2M<RenderPassH2M> RenderPass;
+		PrimitiveTopologyH2M Topology = PrimitiveTopologyH2M::Triangles;
+		bool BackfaceCulling = true;
+		bool DepthTest = true;
+		bool DepthWrite = true;
+		bool Wireframe = false;
 		float LineWidth = 1.0f;
 
 		std::string DebugName;

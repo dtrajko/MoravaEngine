@@ -91,7 +91,7 @@ namespace H2M
 		static void StartBatch();
 		static void NextBatch();
 
-	public:
+	private:
 		struct QuadVertex
 		{
 			glm::vec3 Position;
@@ -99,6 +99,23 @@ namespace H2M
 			glm::vec2 TexCoord;
 			float TexIndex;
 			float TilingFactor;
+
+			// Editor-only
+			int EntityID;
+		};
+
+		struct TextVertex
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+			glm::vec2 TexCoord;
+			float TexIndex;
+		};
+
+		struct LineVertex
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
 
 			// Editor-only
 			int EntityID;
@@ -116,16 +133,15 @@ namespace H2M
 			int EntityID;
 		};
 
-		struct LineVertex
-		{
-			glm::vec3 Position;
-			glm::vec4 Color;
+		static const uint32_t MaxQuads = 200000;
+		static const uint32_t MaxVertices = MaxQuads * 4;
+		static const uint32_t MaxIndices = MaxQuads * 6;
+		static const uint32_t MaxTextureSlots = 32; // TODO: RenderCaps
 
-			// Editor-only
-			int EntityID;
-		};
+		static const uint32_t MaxLines = 10000;
+		static const uint32_t MaxLineVertices = MaxLines * 2;
+		static const uint32_t MaxLineIndices = MaxLines * 6;
 
-	private:
 		Renderer2DSpecificationH2M m_Specification;
 		RefH2M<RenderCommandBufferH2M> m_RenderCommandBuffer;
 
@@ -137,6 +153,8 @@ namespace H2M
 		uint32_t m_QuadIndexCount = 0;
 		QuadVertex* m_QuadVertexBufferBase = nullptr;
 		QuadVertex* m_QuadVertexBufferPtr = nullptr;
+
+		friend struct Renderer2DData;
 
 	};
 

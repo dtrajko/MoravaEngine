@@ -18,6 +18,17 @@
 namespace H2M
 {
 
+	class FramebufferH2M;
+
+	enum class FramebufferBlendModeH2M
+	{
+		None = 0,
+		OneZero,
+		SrcAlphaOneMinusSrcAlpha,
+		Additive,
+		Zero_SrcColor
+	};
+
 	enum class FramebufferFormatH2M
 	{
 		None    = 0,
@@ -31,6 +42,8 @@ namespace H2M
 		FramebufferTextureSpecificationH2M(ImageFormatH2M format) : Format(format) {}
 
 		ImageFormatH2M Format = ImageFormatH2M::None;
+		bool Blend = true;
+		FramebufferBlendModeH2M BlendMode = FramebufferBlendModeH2M::SrcAlphaOneMinusSrcAlpha;
 		// TODO: filtering/wrap
 	};
 
@@ -57,8 +70,25 @@ namespace H2M
 		// TODO: Temp, needs scale
 		bool NoResize = false;
 
+		// Master switch (individual attachments can be disabled in FramebufferTextureSpecification)
+		bool Blend = true;
+		// None means use BlendMode in FramebufferTextureSpecification
+		FramebufferBlendModeH2M BlendMode = FramebufferBlendModeH2M::None;
+
 		// SwapChainTarget = screen buffer (i.e. no framebuffer)
 		bool SwapChainTarget = false;
+
+		// Note: these are used to attach multi-layered depth images and color image arrays
+		RefH2M<Image2D_H2M> ExistingImage;
+		std::vector<uint32_t> ExistingImageLayers;
+
+		// Specify existing images to attach instead of creating
+		// new images. attachment index -> image
+		std::map<uint32_t, RefH2M<Image2D_H2M>> ExistingImages;
+
+		// At the moment this will just create a new render pass
+		// with an existing framebuffer
+		RefH2M<FramebufferH2M> ExistingFramebuffer;
 
 		std::string DebugName;
 	};

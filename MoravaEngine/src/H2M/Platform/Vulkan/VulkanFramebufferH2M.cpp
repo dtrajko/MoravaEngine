@@ -36,6 +36,33 @@ namespace H2M
 		m_Attachments.emplace_back(Image2D_H2M::Create(ImageFormatH2M::Depth, m_Width, m_Height));
 
 		Resize((uint32_t)(m_Width * spec.Scale), (uint32_t)(m_Height * spec.Scale), true);
+		// ResizeEnvMapVulkan((uint32_t)(m_Width * spec.Scale), (uint32_t)(m_Height * spec.Scale), true);
+	}
+
+	void VulkanFramebufferH2M::ResizeEnvMapVulkan(uint32_t width, uint32_t height, bool forceRecreate)
+	{
+		if (!forceRecreate && (m_Width == width && m_Height == height))
+			return;
+
+		m_Width = width * m_Specification.Scale;
+		m_Height = height * m_Specification.Scale;
+		if (!m_Specification.SwapChainTarget)
+		{
+			Invalidate();
+		}
+		else
+		{
+			VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
+			m_RenderPass = swapChain.GetRenderPass();
+
+			m_ClearValues.clear();
+			m_ClearValues.emplace_back().color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		}
+
+		for (auto& callback : m_ResizeCallbacks)
+		{
+			callback(this);
+		}
 	}
 
 	void VulkanFramebufferH2M::Resize(uint32_t width, uint32_t height, bool forceRecreate)
@@ -261,5 +288,13 @@ namespace H2M
 	void VulkanFramebufferH2M::AddResizeCallback(const std::function<void(RefH2M<FramebufferH2M>)>& func)
 	{
 		m_ResizeCallbacks.push_back(func);
+	}
+
+	void VulkanFramebufferH2M::Invalidate()
+	{
+	}
+
+	void VulkanFramebufferH2M::RT_Invalidate()
+	{
 	}
 }

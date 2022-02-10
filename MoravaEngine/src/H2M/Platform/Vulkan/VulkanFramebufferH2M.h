@@ -18,6 +18,7 @@ namespace H2M {
 		VulkanFramebufferH2M(const FramebufferSpecificationH2M& spec);
 
 		virtual void Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
+		void ResizeEnvMapVulkan(uint32_t width, uint32_t height, bool forceRecreate = false);
 		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
 
 		virtual void AddResizeCallback(const std::function<void(RefH2M<FramebufferH2M>)>& func) override;
@@ -45,6 +46,9 @@ namespace H2M {
 		size_t GetColorAttachmentCount() const { return m_Attachments.size(); }
 		const std::vector<VkClearValue>& GetVulkanClearValues() const { return m_ClearValues; }
 		virtual const FramebufferSpecificationH2M& GetSpecification() const override { return m_Specification; }
+
+		void Invalidate();
+		void RT_Invalidate();
 
 		// virtual methods from OpenGLFramebufferHazel2D
 		virtual void ClearAttachment(uint32_t attachmentIndex, int value) override { Log::GetLogger()->error("Method not yet implemented!"); }
