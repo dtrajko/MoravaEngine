@@ -83,8 +83,11 @@ namespace H2M
 	Renderer2D_H2M::Renderer2D_H2M(const Renderer2DSpecificationH2M& specification)
 		: m_Specification(specification)
 	{
+#if defined(SCENE_ENV_MAP_VULKAN)
+		Init_EnvMapVulkan();
+#else
 		InitObsolete();
-		// Init_EnvMapVulkan();
+#endif
 	}
 
 	Renderer2D_H2M::~Renderer2D_H2M()
