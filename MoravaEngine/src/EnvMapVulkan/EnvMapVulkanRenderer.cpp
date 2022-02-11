@@ -223,11 +223,15 @@ void EnvMapVulkanRenderer::Init()
 
 	/**** BEGIN: to be removed from VulkanRenderer ****/
 	{
-		H2M::FramebufferSpecificationH2M spec;
-		spec.DebugName = "Viewport";
-		spec.Width = s_ViewportWidth;
-		spec.Height = s_ViewportHeight;
-		s_Framebuffer = H2M::FramebufferH2M::Create(spec);
+		H2M::FramebufferSpecificationH2M framebufferSpec;
+		framebufferSpec.Attachments = { H2M::ImageFormatH2M::RGBA32F, H2M::ImageFormatH2M::Depth };
+		framebufferSpec.Samples = 1;
+		framebufferSpec.ClearOnLoad = false;
+		framebufferSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 1.0f };
+		framebufferSpec.DebugName = "Viewport";
+		framebufferSpec.Width = s_ViewportWidth;
+		framebufferSpec.Height = s_ViewportHeight;
+		s_Framebuffer = H2M::FramebufferH2M::Create(framebufferSpec);
 		s_Framebuffer->AddResizeCallback([](H2M::RefH2M<H2M::FramebufferH2M> framebuffer)
 		{
 			// H2M::RendererH2M::Submit([framebuffer]() mutable {});
@@ -274,12 +278,13 @@ void EnvMapVulkanRenderer::Init()
 
 	/**** BEGIN: to be removed from VulkanRenderer ****/
 	{
-		H2M::FramebufferSpecificationH2M spec;
-		spec.DebugName = "CompositeFramebuffer";
-		spec.SwapChainTarget = true;
-		spec.Width = s_ViewportWidth;
-		spec.Height = s_ViewportHeight;
-		s_CompositeFramebuffer = H2M::FramebufferH2M::Create(spec);
+		H2M::FramebufferSpecificationH2M framebufferSpec;
+		framebufferSpec.Attachments = { H2M::ImageFormatH2M::RGBA, H2M::ImageFormatH2M::Depth };
+		framebufferSpec.DebugName = "CompositeFramebuffer";
+		framebufferSpec.SwapChainTarget = true;
+		framebufferSpec.Width = s_ViewportWidth;
+		framebufferSpec.Height = s_ViewportHeight;
+		s_CompositeFramebuffer = H2M::FramebufferH2M::Create(framebufferSpec);
 		s_CompositeFramebuffer->AddResizeCallback([](H2M::RefH2M<H2M::FramebufferH2M> framebuffer)
 		{
 			// H2M::RendererH2M::Submit([framebuffer]() mutable {});

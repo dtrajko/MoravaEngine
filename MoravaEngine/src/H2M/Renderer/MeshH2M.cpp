@@ -929,7 +929,20 @@ namespace H2M
 			Log::GetLogger()->info("H2M::MeshH2M: Creating a Pipeline...");
 
 			pipelineSpecification.Layout = m_VertexBufferLayout;
+
+			FramebufferSpecificationH2M framebufferSpec;
+			framebufferSpec.Attachments = { ImageFormatH2M::RGBA32F, ImageFormatH2M::Depth };
+			framebufferSpec.Samples = 1;
+			framebufferSpec.ClearOnLoad = false;
+			framebufferSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 1.0f };
+			framebufferSpec.DebugName = "MeshH2M Framebuffer";
+
+			RefH2M<FramebufferH2M> framebuffer = FramebufferH2M::Create(framebufferSpec);
+
 			RenderPassSpecificationH2M renderPassSpec = {};
+			renderPassSpec.TargetFramebuffer = framebuffer;
+			renderPassSpec.DebugName = "MeshH2M";
+
 			pipelineSpecification.RenderPass = RenderPassH2M::Create(renderPassSpec);
 			m_Pipeline = PipelineH2M::Create(pipelineSpecification);
 		}

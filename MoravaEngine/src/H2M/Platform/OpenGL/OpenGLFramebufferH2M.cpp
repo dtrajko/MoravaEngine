@@ -266,7 +266,11 @@ namespace H2M
 			glDrawBuffer(GL_NONE);
 		}
 
-		H2M_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
+		// H2M_CORE_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete!");
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			Log::GetLogger()->error("OpenGLFramebufferH2M::Invalidate: Framebuffer is incomplete!");
+		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
