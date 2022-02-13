@@ -132,18 +132,10 @@ namespace H2M
 				{ ShaderDataTypeH2M::Float, "a_TexIndex" },
 				{ ShaderDataTypeH2M::Float, "a_TilingFactor" }
 			};
-			// m_QuadPipeline = PipelineH2M::Create(pipelineSpecification);
+			m_QuadPipeline = PipelineH2M::Create(pipelineSpecification);
 
 			m_QuadVertexBuffer = VertexBufferH2M::Create(MaxVertices * sizeof(QuadVertex));
-
-		}
-
-		/*********************************
-
-		{
-
 			m_QuadVertexBufferBase = new QuadVertex[MaxVertices];
-
 			uint32_t* quadIndices = new uint32_t[MaxIndices];
 
 			uint32_t offset = 0;
@@ -160,11 +152,14 @@ namespace H2M
 				offset += 4;
 			}
 
-			m_QuadIndexBuffer = IndexBuffer::Create(quadIndices, MaxIndices);
+			m_QuadIndexBuffer = IndexBufferH2M::Create(quadIndices, MaxIndices);
 			delete[] quadIndices;
 		}
 
-		m_WhiteTexture = Renderer::GetWhiteTexture();
+		m_WhiteTexture = RendererH2M::GetWhiteTexture();
+
+		/*********************************
+
 
 		// Set all texture slots to 0
 		m_TextureSlots[0] = m_WhiteTexture;

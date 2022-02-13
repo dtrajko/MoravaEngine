@@ -3,7 +3,6 @@
  * @author  Yan Chernikov (TheCherno)
  * @licence Apache License 2.0
  */
-
 #define _CRT_SECURE_NO_WARNINGS
 
 #pragma once
@@ -14,8 +13,9 @@
 #include "H2M/Renderer/CameraH2M.h"
 #include "H2M/Renderer/RenderCommandBufferH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
-
+#include "H2M/Renderer/UniformBufferSetH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
+
 
 namespace H2M
 {
@@ -145,6 +145,9 @@ namespace H2M
 		Renderer2DSpecificationH2M m_Specification;
 		RefH2M<RenderCommandBufferH2M> m_RenderCommandBuffer;
 
+		RefH2M<Texture2D_H2M> m_WhiteTexture;
+
+		// Quad
 		RefH2M<PipelineH2M> m_QuadPipeline;
 		RefH2M<VertexBufferH2M> m_QuadVertexBuffer;
 		RefH2M<IndexBufferH2M> m_QuadIndexBuffer;
@@ -153,6 +156,57 @@ namespace H2M
 		uint32_t m_QuadIndexCount = 0;
 		QuadVertex* m_QuadVertexBufferBase = nullptr;
 		QuadVertex* m_QuadVertexBufferPtr = nullptr;
+
+		// Circle
+		RefH2M<PipelineH2M> m_CirclePipeline;
+		RefH2M<MaterialH2M> m_CircleMaterial;
+		RefH2M<VertexBufferH2M> m_CircleVertexBuffer;
+		uint32_t m_CircleIndexCount = 0;
+		CircleVertex* m_CircleVertexBufferBase = nullptr;
+		CircleVertex* m_CircleVertexBufferPtr = nullptr;
+
+		std::array<RefH2M<Texture2D_H2M>, MaxTextureSlots> m_TextureSlots;
+		uint32_t m_TextureSlotIndex = 1; // 0 = white texture
+
+		glm::vec4 m_QuadVertexPositions[4];
+
+		// Lines
+		RefH2M<PipelineH2M> m_LinePipeline;
+		RefH2M<PipelineH2M> m_LineOnTopPipeline;
+		RefH2M<VertexBufferH2M> m_LineVertexBuffer;
+		RefH2M<IndexBufferH2M> m_LineIndexBuffer;
+		RefH2M<Material> m_LineMaterial;
+
+		uint32_t m_LineIndexCount = 0;
+		LineVertex* m_LineVertexBufferBase = nullptr;
+		LineVertex* m_LineVertexBufferPtr = nullptr;
+
+		// Text
+		RefH2M<PipelineH2M> m_TextPipeline;
+		RefH2M<VertexBufferH2M> m_TextVertexBuffer;
+		RefH2M<IndexBufferH2M> m_TextIndexBuffer;
+		RefH2M<Material> m_TextMaterial;
+		std::array<RefH2M<Texture2D_H2M>, MaxTextureSlots> m_FontTextureSlots;
+		uint32_t m_FontTextureSlotIndex = 0;
+
+		uint32_t m_TextIndexCount = 0;
+		TextVertex* m_TextVertexBufferBase = nullptr;
+		TextVertex* m_TextVertexBufferPtr = nullptr;
+
+		glm::mat4 m_CameraViewProj;
+		glm::mat4 m_CameraView;
+		bool m_DepthTest = true;
+
+		float m_LineWidth = 1.0f;
+
+		// Statistics m_Stats;
+
+		RefH2M<UniformBufferSetH2M> m_UniformBufferSet;
+
+		struct UBCamera
+		{
+			glm::mat4 ViewProjection;
+		};
 
 		friend struct Renderer2DData;
 

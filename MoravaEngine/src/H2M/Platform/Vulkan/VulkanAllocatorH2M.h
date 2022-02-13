@@ -3,11 +3,12 @@
  * @author  Yan Chernikov (TheCherno)
  * @licence Apache License 2.0
  */
-
 #pragma once
 
 #include "H2M/Platform/Vulkan/VulkanH2M.h"
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
+
+#include "VulkanMemoryAllocator/vk_mem_alloc.h"
 
 #include <string>
 
@@ -28,6 +29,8 @@ namespace H2M
 		VulkanAllocatorH2M(const std::string& tag);
 		VulkanAllocatorH2M(const RefH2M<VulkanDeviceH2M>& device, const std::string& tag = "");
 		~VulkanAllocatorH2M();
+
+		void DestroyBuffer(VkBuffer buffer, VmaAllocation allocation);
 
 		void Allocate(VkMemoryRequirements requirements, VkDeviceMemory* dest, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 	private:

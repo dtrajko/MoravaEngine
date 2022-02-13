@@ -95,6 +95,7 @@ namespace H2M
 
 	static RendererDataH2M* s_Data = new RendererDataH2M();
 	static RenderCommandQueueH2M* s_CommandQueue = nullptr;
+	static RenderCommandQueueH2M s_ResourceFreeQueue[3];
 
 	// static std::unordered_map<size_t, RefH2M<Pipeline>> s_PipelineCache;
 
@@ -600,12 +601,6 @@ namespace H2M
 		s_RendererAPI->RenderQuad(pipeline, material, transform);
 	}
 
-	// disabled in some versions of Hazel-dev
-	RendererConfigH2M& RendererH2M::GetConfig()
-	{
-		return s_Data->Config;
-	}
-
 	RefH2M<Texture2D_H2M> RendererH2M::GetWhiteTexture()
 	{
 		return s_Data->WhiteTexture;
@@ -620,6 +615,18 @@ namespace H2M
 	RendererAPI_H2M* RendererH2M::GetRendererAPI()
 	{
 		return s_RendererAPI;
+	}
+
+	RenderCommandQueueH2M& RendererH2M::GetRenderResourceReleaseQueue(uint32_t index)
+	{
+		return s_ResourceFreeQueue[index];
+	}
+
+	// disabled in some versions of Hazel-dev
+	RendererConfigH2M& RendererH2M::GetConfig()
+	{
+		static RendererConfigH2M config;
+		return config;
 	}
 
 }

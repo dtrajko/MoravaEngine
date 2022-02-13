@@ -3,7 +3,6 @@
  * @author  Yan Chernikov (TheCherno)
  * @licence Apache License 2.0
  */
-
 #include "VulkanAllocatorH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -21,6 +20,15 @@
 namespace H2M
 {
 
+	struct VulkanAllocatorData
+	{
+		VmaAllocator Allocator;
+		uint64_t TotalAllocatedBytes = 0;
+	};
+
+	static VulkanAllocatorData* s_Data = nullptr;
+
+
 	VulkanAllocatorH2M::VulkanAllocatorH2M(const RefH2M<VulkanDeviceH2M>& device, const std::string& tag)
 		: m_Device(device), m_Tag(tag)
 	{
@@ -33,6 +41,13 @@ namespace H2M
 
 	VulkanAllocatorH2M::~VulkanAllocatorH2M()
 	{
+	}
+
+	void VulkanAllocatorH2M::DestroyBuffer(VkBuffer buffer, VmaAllocation allocation)
+	{
+		H2M_CORE_ASSERT(buffer);
+		H2M_CORE_ASSERT(allocation);
+		vmaDestroyBuffer(s_Data->Allocator, buffer, allocation);
 	}
 
 	void VulkanAllocatorH2M::Allocate(VkMemoryRequirements requirements, VkDeviceMemory* dest, VkMemoryPropertyFlags flags /*= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT*/)

@@ -19,6 +19,8 @@ namespace H2M
 		virtual ~OpenGLUniformBufferH2M();
 
 		virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
+		virtual void RT_SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
+		virtual uint32_t GetBinding() const override;
 
 	private:
 		uint32_t m_RendererID = 0;

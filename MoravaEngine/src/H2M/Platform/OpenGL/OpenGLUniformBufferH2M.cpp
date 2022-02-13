@@ -6,6 +6,8 @@
 
 #include "OpenGLUniformBufferH2M.h"
 
+#include "Core/Log.h"
+
 
 namespace H2M
 {
@@ -22,10 +24,20 @@ namespace H2M
 		glDeleteBuffers(1, &m_RendererID);
 	}
 
-
 	void OpenGLUniformBufferH2M::SetData(const void* data, uint32_t size, uint32_t offset)
 	{
 		glNamedBufferSubData(m_RendererID, offset, size, data);
+	}
+
+	void OpenGLUniformBufferH2M::RT_SetData(const void* data, uint32_t size, uint32_t offset)
+	{
+		glNamedBufferSubData(m_RendererID, offset, size, data);
+	}
+
+	uint32_t OpenGLUniformBufferH2M::GetBinding() const
+	{
+		Log::GetLogger()->error("OpenGLUniformBufferH2M::GetBinding method not implemented!");
+		return uint32_t();
 	}
 
 }

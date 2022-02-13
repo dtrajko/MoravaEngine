@@ -964,6 +964,15 @@
     <ClCompile Include="src\pch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Renderer\UniformBufferSetH2M.cpp">
+      <Filter>src\H2M\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanUniformBufferSetH2M.cpp">
+      <Filter>src\H2M\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Platform\Vulkan\VulkanUniformBufferH2M.cpp">
+      <Filter>src\H2M\Platform\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h">
@@ -2069,6 +2078,15 @@
     </ClInclude>
     <ClInclude Include="src\stb_image_write.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Renderer\UniformBufferSetH2M.h">
+      <Filter>src\H2M\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanUniformBufferSetH2M.h">
+      <Filter>src\H2M\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Platform\Vulkan\VulkanUniformBufferH2M.h">
+      <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

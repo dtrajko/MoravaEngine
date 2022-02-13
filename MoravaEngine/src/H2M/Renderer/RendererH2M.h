@@ -3,7 +3,6 @@
  * @author  Yan Chernikov (TheCherno)
  * @licence Apache License 2.0
  */
-
 #define _CRT_SECURE_NO_WARNINGS
 
 #pragma once
@@ -97,6 +96,27 @@ namespace H2M
 			return s_Instance->m_CommandQueue.Allocate(fn, size);
 		}*/
 
+		template<typename FuncT>
+		static void SubmitResourceFree(FuncT&& func)
+		{
+			auto renderCmd = [](void* ptr) {
+				auto pFunc = (FuncT*)ptr;
+				(*pFunc)();
+
+				// NOTE: Instead of destroying we could try and enforce all items to be trivally destructible
+				// however some items like uniforms which contain std::strings still exist for now
+				// static_assert(std::is_trivially_destructible_v<FuncT>, "FuncT must be trivially destructible");
+				pFunc->~FuncT();
+			};
+
+			Submit([renderCmd, func]()
+			{
+				const uint32_t index = RendererH2M::GetCurrentFrameIndex();
+				auto storageBuffer = GetRenderResourceReleaseQueue(index).Allocate(renderCmd, sizeof(func));
+				new (storageBuffer) FuncT(std::forward<FuncT>((FuncT&&)func));
+			});
+		}
+
 		static void WaitAndRender();
 
 		static void SubmitQuad(RefH2M<MaterialH2M> material, const glm::mat4& transform = glm::mat4(1.0f));
@@ -117,6 +137,8 @@ namespace H2M
 		static uint32_t GetCurrentFrameIndex();
 
 		static RendererConfigH2M& GetConfig();
+
+		static RenderCommandQueueH2M& GetRenderResourceReleaseQueue(uint32_t index);
 
 		static RendererAPI_H2M* GetRendererAPI();
 
