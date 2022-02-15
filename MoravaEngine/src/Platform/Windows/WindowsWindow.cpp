@@ -82,7 +82,7 @@ void WindowsWindow::Init(const WindowProps& props)
 	}
 
 	m_RendererContext = H2M::RendererContextH2M::Create(this);
-	m_RendererContext->Create();
+	m_RendererContext->Init();
 
 	RendererBasic::SetRendererContext(m_RendererContext);
 

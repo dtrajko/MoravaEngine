@@ -30,11 +30,15 @@ namespace H2M
 
 	VulkanContextH2M::~VulkanContextH2M()
 	{
+		m_Device->Destroy();
+
+		// vkDestroyInstance(s_VulkanInstance, nullptr);
+		// s_VulkanInstance = nullptr;
 	}
 
-	void VulkanContextH2M::Create()
+	void VulkanContextH2M::Init()
 	{
-		MORAVA_CORE_INFO("VulkanContextH2M::Create");
+		MORAVA_CORE_INFO("VulkanContextH2M::Init");
 
 		H2M_CORE_ASSERT(glfwVulkanSupported(), "GLFW must support Vulkan!");
 
@@ -129,6 +133,8 @@ namespace H2M
 		uint32_t width = m_Window->GetWidth();
 		uint32_t height = m_Window->GetHeight();
 		m_SwapChain.Create(&width, &height);
+
+		VulkanAllocatorH2M::Init(m_Device);
 
 		// Pipeline Cache
 		VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};

@@ -11,9 +11,9 @@ DX11Context::DX11Context(Window* window)
 {
 }
 
-void DX11Context::Create()
+void DX11Context::Init()
 {
-	MORAVA_CORE_INFO("DX11Context::Create");
+	MORAVA_CORE_INFO("DX11Context::Init");
 
 	D3D_DRIVER_TYPE driver_types[] =
 	{

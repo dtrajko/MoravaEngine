@@ -38,12 +38,12 @@ namespace H2M
 		RefH2M<ShaderH2M> CircleShader;
 
 		uint32_t QuadIndexCount = 0;
-		Renderer2D_H2M::QuadVertex* QuadVertexBufferBase = nullptr;
-		Renderer2D_H2M::QuadVertex* QuadVertexBufferPtr = nullptr;
+		Renderer2D_H2M::QuadVertexH2M* QuadVertexBufferBase = nullptr;
+		Renderer2D_H2M::QuadVertexH2M* QuadVertexBufferPtr = nullptr;
 
 		uint32_t CircleIndexCount = 0;
-		Renderer2D_H2M::CircleVertex* CircleVertexBufferBase = nullptr;
-		Renderer2D_H2M::CircleVertex* CircleVertexBufferPtr = nullptr;
+		Renderer2D_H2M::CircleVertexH2M* CircleVertexBufferBase = nullptr;
+		Renderer2D_H2M::CircleVertexH2M* CircleVertexBufferPtr = nullptr;
 
 		RefH2M<VertexArrayH2M> LineVertexArray;
 		RefH2M<VertexBufferH2M> LineVertexBuffer;
@@ -51,8 +51,8 @@ namespace H2M
 
 		uint32_t LineVertexCount = 0;
 		// uint32_t LineIndexCount = 0;
-		Renderer2D_H2M::LineVertex* LineVertexBufferBase = nullptr;
-		Renderer2D_H2M::LineVertex* LineVertexBufferPtr = nullptr;
+		Renderer2D_H2M::LineVertexH2M* LineVertexBufferBase = nullptr;
+		Renderer2D_H2M::LineVertexH2M* LineVertexBufferPtr = nullptr;
 
 		float LineWidth = 5.0f;
 
@@ -134,8 +134,8 @@ namespace H2M
 			};
 			m_QuadPipeline = PipelineH2M::Create(pipelineSpecification);
 
-			m_QuadVertexBuffer = VertexBufferH2M::Create(MaxVertices * sizeof(QuadVertex));
-			m_QuadVertexBufferBase = new QuadVertex[MaxVertices];
+			m_QuadVertexBuffer = VertexBufferH2M::Create(MaxVertices * sizeof(QuadVertexH2M));
+			m_QuadVertexBufferBase = new QuadVertexH2M[MaxVertices];
 			uint32_t* quadIndices = new uint32_t[MaxIndices];
 
 			uint32_t offset = 0;
@@ -158,62 +158,63 @@ namespace H2M
 
 		m_WhiteTexture = RendererH2M::GetWhiteTexture();
 
-		/*********************************
-
-
 		// Set all texture slots to 0
 		m_TextureSlots[0] = m_WhiteTexture;
 
 		m_QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
 		m_QuadVertexPositions[1] = { -0.5f,  0.5f, 0.0f, 1.0f };
-		m_QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };
-		m_QuadVertexPositions[3] = {  0.5f, -0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
+		m_QuadVertexPositions[3] = { 0.5f, -0.5f, 0.0f, 1.0f };
 
 		// Lines
 		{
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.DebugName = "Renderer2D-Line";
-			pipelineSpecification.Shader = Renderer::GetShaderLibrary()->Get("Renderer2D_Line");
+			PipelineSpecificationH2M pipelineSpecification;
+			pipelineSpecification.DebugName = "Renderer2D_H2M-Line";
+			pipelineSpecification.Shader = RendererH2M::GetShaderLibrary()->Get("Renderer2D_Line");
 			pipelineSpecification.RenderPass = renderPass;
-			pipelineSpecification.Topology = PrimitiveTopology::Lines;
+			pipelineSpecification.Topology = PrimitiveTopologyH2M::Lines;
 			pipelineSpecification.LineWidth = 2.0f;
 			pipelineSpecification.Layout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float4, "a_Color" }
+				{ ShaderDataTypeH2M::Float3, "a_Position" },
+				{ ShaderDataTypeH2M::Float4, "a_Color" }
 			};
-			m_LinePipeline = Pipeline::Create(pipelineSpecification);
-			pipelineSpecification.DepthTest = false;
-			m_LineOnTopPipeline = Pipeline::Create(pipelineSpecification);
 
-			m_LineVertexBuffer = VertexBuffer::Create(MaxLineVertices * sizeof(LineVertex));
-			m_LineVertexBufferBase = new LineVertex[MaxLineVertices];
+			m_LinePipeline = PipelineH2M::Create(pipelineSpecification);
+
+			pipelineSpecification.DepthTest = false;
+			m_LineOnTopPipeline = PipelineH2M::Create(pipelineSpecification);
+
+			m_LineVertexBuffer = VertexBufferH2M::Create(MaxLineVertices * sizeof(LineVertexH2M));
+			m_LineVertexBufferBase = new LineVertexH2M[MaxLineVertices];
 
 			uint32_t* lineIndices = new uint32_t[MaxLineIndices];
 			for (uint32_t i = 0; i < MaxLineIndices; i++)
+			{
 				lineIndices[i] = i;
+			}
 
-			m_LineIndexBuffer = IndexBuffer::Create(lineIndices, MaxLineIndices);
+			m_LineIndexBuffer = IndexBufferH2M::Create(lineIndices, MaxLineIndices);
 			delete[] lineIndices;
 		}
 
 		// Text
 		{
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.DebugName = "Renderer2D-Text";
-			pipelineSpecification.Shader = Renderer::GetShaderLibrary()->Get("Renderer2D_Text");
+			PipelineSpecificationH2M pipelineSpecification;
+			pipelineSpecification.DebugName = "Renderer2D_H2M-Text";
+			pipelineSpecification.Shader = RendererH2M::GetShaderLibrary()->Get("Renderer2D_Text");
 			pipelineSpecification.RenderPass = renderPass;
 			pipelineSpecification.BackfaceCulling = false;
 			pipelineSpecification.Layout = {
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float4, "a_Color" },
-				{ ShaderDataType::Float2, "a_TexCoord" },
-				{ ShaderDataType::Float, "a_TexIndex" }
+				{ ShaderDataTypeH2M::Float3, "a_Position" },
+				{ ShaderDataTypeH2M::Float4, "a_Color" },
+				{ ShaderDataTypeH2M::Float2, "a_TexCoord" },
+				{ ShaderDataTypeH2M::Float, "a_TexIndex" }
 			};
 
-			m_TextPipeline = Pipeline::Create(pipelineSpecification);
-			m_TextMaterial = Material::Create(pipelineSpecification.Shader);
-			m_TextVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(TextVertex));
-			m_TextVertexBufferBase = new TextVertex[MaxVertices];
+			m_TextPipeline = PipelineH2M::Create(pipelineSpecification);
+			m_TextMaterial = MaterialH2M::Create(pipelineSpecification.Shader);
+			m_TextVertexBuffer = VertexBufferH2M::Create(MaxVertices * sizeof(TextVertexH2M));
+			m_TextVertexBufferBase = new TextVertexH2M[MaxVertices];
 
 			uint32_t* textQuadIndices = new uint32_t[MaxIndices];
 
@@ -231,38 +232,36 @@ namespace H2M
 				offset += 4;
 			}
 
-			m_TextIndexBuffer = IndexBuffer::Create(textQuadIndices, MaxIndices);
+			m_TextIndexBuffer = IndexBufferH2M::Create(textQuadIndices, MaxIndices);
 			delete[] textQuadIndices;
 		}
 
 		// Circles
 		{
-			PipelineSpecification pipelineSpecification;
-			pipelineSpecification.DebugName = "Renderer2D-Circle";
-			pipelineSpecification.Shader = Renderer::GetShaderLibrary()->Get("Renderer2D_Circle");
+			PipelineSpecificationH2M pipelineSpecification;
+			pipelineSpecification.DebugName = "Renderer2D_H2M-Circle";
+			pipelineSpecification.Shader = RendererH2M::GetShaderLibrary()->Get("Renderer2D_Circle");
 			pipelineSpecification.BackfaceCulling = false;
 			pipelineSpecification.RenderPass = renderPass;
 			pipelineSpecification.Layout = {
-				{ ShaderDataType::Float3, "a_WorldPosition" },
-				{ ShaderDataType::Float,  "a_Thickness" },
-				{ ShaderDataType::Float2, "a_LocalPosition" },
-				{ ShaderDataType::Float4, "a_Color" }
+				{ ShaderDataTypeH2M::Float3, "a_WorldPosition" },
+				{ ShaderDataTypeH2M::Float,  "a_Thickness" },
+				{ ShaderDataTypeH2M::Float2, "a_LocalPosition" },
+				{ ShaderDataTypeH2M::Float4, "a_Color" }
 			};
-			m_CirclePipeline = Pipeline::Create(pipelineSpecification);
-			m_CircleMaterial = Material::Create(pipelineSpecification.Shader);
+			m_CirclePipeline = PipelineH2M::Create(pipelineSpecification);
+			m_CircleMaterial = MaterialH2M::Create(pipelineSpecification.Shader);
 
-			m_CircleVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(QuadVertex));
-			m_CircleVertexBufferBase = new CircleVertex[MaxVertices];
+			m_CircleVertexBuffer = VertexBufferH2M::Create(MaxVertices * sizeof(QuadVertexH2M));
+			m_CircleVertexBufferBase = new CircleVertexH2M[MaxVertices];
 		}
 
-		uint32_t framesInFlight = Renderer::GetConfig().FramesInFlight;
-		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
+		uint32_t framesInFlight = RendererH2M::GetConfig().FramesInFlight;
+		m_UniformBufferSet = UniformBufferSetH2M::Create(framesInFlight);
 		m_UniformBufferSet->Create(sizeof(UBCamera), 0);
 
-		m_QuadMaterial = Material::Create(m_QuadPipeline->GetSpecification().Shader, "QuadMaterial");
-		m_LineMaterial = Material::Create(m_LinePipeline->GetSpecification().Shader, "LineMaterial");
-
-		*********************************/
+		m_QuadMaterial = MaterialH2M::Create(m_QuadPipeline->GetSpecification().Shader, "QuadMaterial");
+		m_LineMaterial = MaterialH2M::Create(m_LinePipeline->GetSpecification().Shader, "LineMaterial");
 	}
 
 	void Renderer2D_H2M::Shutdown_EnvMapVulkan()
@@ -276,7 +275,7 @@ namespace H2M
 		// Sprites / quads
 		s_Data.QuadVertexArray = VertexArrayH2M::Create();
 
-		s_Data.QuadVertexBuffer = VertexBufferH2M::Create(s_Data.MaxVertices * sizeof(QuadVertex));
+		s_Data.QuadVertexBuffer = VertexBufferH2M::Create(s_Data.MaxVertices * sizeof(QuadVertexH2M));
 		s_Data.QuadVertexBuffer->SetLayout({
 			{ ShaderDataTypeH2M::Float3, "a_Position"     },
 			{ ShaderDataTypeH2M::Float4, "a_Color"        },
@@ -287,7 +286,7 @@ namespace H2M
 		});
 		s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
 
-		s_Data.QuadVertexBufferBase = new QuadVertex[s_Data.MaxVertices];
+		s_Data.QuadVertexBufferBase = new QuadVertexH2M[s_Data.MaxVertices];
 
 		uint32_t* quadIndices = new uint32_t[s_Data.MaxIndices];
 
@@ -312,7 +311,7 @@ namespace H2M
 		// Circles
 		s_Data.CircleVertexArray = VertexArrayH2M::Create();
 
-		s_Data.CircleVertexBuffer = VertexBufferH2M::Create(s_Data.MaxVertices * sizeof(CircleVertex));
+		s_Data.CircleVertexBuffer = VertexBufferH2M::Create(s_Data.MaxVertices * sizeof(CircleVertexH2M));
 		s_Data.CircleVertexBuffer->SetLayout({
 			{ ShaderDataTypeH2M::Float3, "a_WorldPosition" },
 			{ ShaderDataTypeH2M::Float3, "a_LocalPosition" },
@@ -323,12 +322,12 @@ namespace H2M
 		});
 		s_Data.CircleVertexArray->AddVertexBuffer(s_Data.CircleVertexBuffer);
 		s_Data.CircleVertexArray->SetIndexBuffer(quadIB); // Use quad IB
-		s_Data.CircleVertexBufferBase = new CircleVertex[s_Data.MaxVertices];
+		s_Data.CircleVertexBufferBase = new CircleVertexH2M[s_Data.MaxVertices];
 
 		// Lines
 		s_Data.LineVertexArray = VertexArrayH2M::Create();
 
-		s_Data.LineVertexBuffer = VertexBufferH2M::Create(s_Data.MaxVertices * sizeof(LineVertex));
+		s_Data.LineVertexBuffer = VertexBufferH2M::Create(s_Data.MaxVertices * sizeof(LineVertexH2M));
 		s_Data.LineVertexBuffer->SetLayout({
 			{ ShaderDataTypeH2M::Float3, "a_Position" },
 			{ ShaderDataTypeH2M::Float4, "a_Color"    },
@@ -336,7 +335,7 @@ namespace H2M
 		});
 
 		s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
-		s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxVertices];
+		s_Data.LineVertexBufferBase = new LineVertexH2M[s_Data.MaxVertices];
 
 		//-----------------------------------------------------------------------
 

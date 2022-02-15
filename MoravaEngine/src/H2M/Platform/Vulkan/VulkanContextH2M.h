@@ -27,20 +27,20 @@ namespace H2M
 		VulkanContextH2M(Window* window);
 		virtual ~VulkanContextH2M();
 
-		virtual void Create() override;
-		virtual void SwapBuffers() override;
-
-		virtual void OnResize(uint32_t width, uint32_t height) override;
-
-		virtual void BeginFrame() override;
+		virtual void Init() override;
 
 		RefH2M<VulkanDeviceH2M> GetDevice() { return m_Device; }
-		VulkanSwapChainH2M& GetSwapChain() { return m_SwapChain; }
 
 		static VkInstance GetInstance() { return s_VulkanInstance; }
 
 		static RefH2M<VulkanContextH2M> Get() { return RefH2M<VulkanContextH2M>(RendererH2M::GetContext()); }
 		static RefH2M<VulkanDeviceH2M> GetCurrentDevice() { return Get()->GetDevice(); }
+
+		// virtual void Create() override;                               // TODO: remove the method (replace with Init)
+		virtual void SwapBuffers() override;                             // TODO: remove the method
+		virtual void OnResize(uint32_t width, uint32_t height) override; // TODO: remove the method
+		virtual void BeginFrame() override;                              // TODO: remove the method
+		VulkanSwapChainH2M& GetSwapChain() { return m_SwapChain; }       // TODO: remove the method
 
 	private:
 		Window* m_Window;

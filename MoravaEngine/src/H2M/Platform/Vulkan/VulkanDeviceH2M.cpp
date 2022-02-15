@@ -311,6 +311,15 @@ namespace H2M
 	{
 	}
 
+	void VulkanDeviceH2M::Destroy()
+	{
+		vkDestroyCommandPool(m_LogicalDevice, m_CommandPool, nullptr);
+		vkDestroyCommandPool(m_LogicalDevice, m_ComputeCommandPool, nullptr);
+
+		vkDeviceWaitIdle(m_LogicalDevice);
+		vkDestroyDevice(m_LogicalDevice, nullptr);
+	}
+
 	VkCommandBuffer VulkanDeviceH2M::GetCommandBuffer(bool begin, bool compute)
 	{
 		VkCommandBuffer cmdBuffer;

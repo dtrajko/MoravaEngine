@@ -30,9 +30,32 @@ namespace H2M
 		VulkanAllocatorH2M(const RefH2M<VulkanDeviceH2M>& device, const std::string& tag = "");
 		~VulkanAllocatorH2M();
 
+		VmaAllocation AllocateBuffer(VkBufferCreateInfo bufferCreateInfo, VmaMemoryUsage usage, VkBuffer& outBuffer);
+		VmaAllocation AllocateImage(VkImageCreateInfo imageCreateInfo, VmaMemoryUsage usage, VkImage& outImage);
+		void Free(VmaAllocation allocation);
+		void DestroyImage(VkImage image, VmaAllocation allocation);
 		void DestroyBuffer(VkBuffer buffer, VmaAllocation allocation);
 
+		template<typename T>
+		T* MapMemory(VmaAllocation allocation)
+		{
+			T* mappedMemory;
+			vmaMapMemory(VulkanAllocator::GetVMAAllocator(), allocation, (void**)&mappedMemory);
+			return mappedMemory;
+		}
+
+		void UnmapMemory(VmaAllocation allocation);
+
+		static void DumpStats();
+		static GPUMemoryStatsH2M GetStats();
+
 		void Allocate(VkMemoryRequirements requirements, VkDeviceMemory* dest, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+		static void Init(RefH2M<VulkanDeviceH2M> device);
+		static void Shutdown();
+
+		static VmaAllocator& GetVMAAllocator();
+
 	private:
 		RefH2M<VulkanDeviceH2M> m_Device;
 		std::string m_Tag;

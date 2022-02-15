@@ -21,7 +21,7 @@ namespace H2M
 		virtual RefH2M<UniformBufferH2M> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) = 0;
 		virtual void Set(RefH2M<UniformBufferH2M> uniformBuffer, uint32_t set = 0, uint32_t frame = 0) = 0;
 
-		static RefH2M<UniformBufferH2M> Create(uint32_t frames);
+		static RefH2M<UniformBufferSetH2M> Create(uint32_t frames);
 	};
 
 }

@@ -23,13 +23,15 @@ namespace H2M
 		RendererContextH2M() = default;
 		virtual ~RendererContextH2M() = default;
 
-		virtual void Create() = 0;
-		virtual void BeginFrame() = 0;
-		virtual void SwapBuffers() = 0;
-
-		virtual void OnResize(uint32_t width, uint32_t height) = 0;
+		virtual void Init() = 0;
 
 		static RefH2M<RendererContextH2M> Create(Window* window);
+
+		// virtual void Create() = 0;                               // TODO: remove the method (replace with Init)
+		virtual void SwapBuffers() = 0;                             // TODO: remove the method
+		virtual void OnResize(uint32_t width, uint32_t height) = 0; // TODO: remove the method
+		virtual void BeginFrame() = 0;                              // TODO: remove the method
+
 	};
 
 }

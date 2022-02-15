@@ -18,9 +18,9 @@ namespace H2M {
 
 	OpenGLContextH2M::~OpenGLContextH2M() {}
 
-	void OpenGLContextH2M::Create()
+	void OpenGLContextH2M::Init()
 	{
-		Log::GetLogger()->info("OpenGLContextH2M::Create");
+		Log::GetLogger()->info("OpenGLContextH2M::Init");
 
 		// Set context for GLEW to use
 		glfwMakeContextCurrent(m_Window->GetHandle());

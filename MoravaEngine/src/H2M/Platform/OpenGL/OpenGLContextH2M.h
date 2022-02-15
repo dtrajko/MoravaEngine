@@ -22,10 +22,12 @@ namespace H2M
 		OpenGLContextH2M(Window* window);
 		virtual ~OpenGLContextH2M();
 
-		virtual void Create() override;
-		virtual void BeginFrame() override {}
-		virtual void SwapBuffers() override;
-		virtual void OnResize(uint32_t width, uint32_t height) override {}
+		virtual void Init() override;
+
+		// virtual void Create() override;                                 // TODO: remove the method
+		virtual void SwapBuffers() override;                               // TODO: remove the method
+		virtual void OnResize(uint32_t width, uint32_t height) override {} // TODO: remove the method
+		virtual void BeginFrame() override {}                              // TODO: remove the method
 
 	private:
 		Window* m_Window;

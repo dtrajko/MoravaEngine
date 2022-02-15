@@ -27,12 +27,12 @@ public:
 	DX11Context(Window* window);
 	virtual ~DX11Context();
 
-	virtual void Create() override;
-	virtual void SwapBuffers() override;
+	virtual void Init() override;
 
-	virtual void OnResize(uint32_t width, uint32_t height) override;
-
-	virtual void BeginFrame() override;
+	// virtual void Create() override;                               // TODO: remove the method (replace with Init)
+	virtual void SwapBuffers() override;                             // TODO: remove the method
+	virtual void OnResize(uint32_t width, uint32_t height) override; // TODO: remove the method
+	virtual void BeginFrame() override;                              // TODO: remove the method
 
 	H2M::RefH2M<DX11Device> GetDevice() { return m_Device; }
 	std::shared_ptr<DX11SwapChain> GetSwapChain() { return m_SwapChain; }

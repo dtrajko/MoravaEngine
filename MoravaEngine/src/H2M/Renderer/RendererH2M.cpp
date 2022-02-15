@@ -145,6 +145,12 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Outline.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
+
+			// Renderer2D_H2M
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Renderer2D.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Renderer2D_Line.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Renderer2D_Circle.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Renderer2D_Text.glsl");
 		}
 
 		// Compile shaders

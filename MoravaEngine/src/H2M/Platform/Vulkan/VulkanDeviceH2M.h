@@ -72,6 +72,8 @@ namespace H2M {
 		VulkanDeviceH2M(const RefH2M<VulkanPhysicalDeviceH2M>& physicalDevice, VkPhysicalDeviceFeatures enabledFeatures);
 		~VulkanDeviceH2M();
 
+		void Destroy();
+
 		VkQueue GetGraphicsQueue() { return m_Queue; } // the Graphics Queue
 		VkQueue GetComputeQueue() { return m_ComputeQueue; }
 
