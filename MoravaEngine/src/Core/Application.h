@@ -35,7 +35,7 @@ public:
 
 	static Application* Get();
 
-	void InitWindow(WindowProps& props);
+	void InitWindow(WindowSpecification& windowSpecification);
 
 	void OnInit();
 	void Run();

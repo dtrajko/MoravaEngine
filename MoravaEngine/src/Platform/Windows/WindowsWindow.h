@@ -11,9 +11,10 @@ class WindowsWindow : public Window, public DX11InputListener
 {
 	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
 public:
-	WindowsWindow(const WindowProps& props);
+	WindowsWindow(const WindowSpecification& windowSpecification);
 	virtual ~WindowsWindow();
 
+	virtual void Init();
 	virtual void ProcessEvents() override;
 	virtual void SwapBuffers() override;
 
@@ -43,11 +44,10 @@ public:
 	void OnUpdate() override;
 
 private:
-	virtual void Init(const WindowProps& props);
 	virtual void Shutdown();
 
-	void InitGLFW(const WindowProps& props);
-	void InitDX11(const WindowProps& props);
+	void InitGLFW(const WindowSpecification& windowSpecification);
+	void InitDX11(const WindowSpecification& windowSpecification);
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
 	/**** BEGIN DirectX 11 methods ****/
@@ -125,6 +125,8 @@ private:
 	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
 
 	GLFWwindow* m_GLFW_Window;
+
+	WindowSpecification m_Specification;
 
 	struct WindowData
 	{

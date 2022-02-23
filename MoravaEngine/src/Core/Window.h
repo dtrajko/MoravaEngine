@@ -11,19 +11,18 @@
 #include <string>
 
 
-struct WindowProps
+struct WindowSpecification
 {
-	std::string Title;
-	uint32_t Width;
-	uint32_t Height;
+	std::string Title = "Untitled";
+	uint32_t Width = 1280;
+	uint32_t Height = 720;
+	bool Decorated = true;
+	bool Fullscreen = false;
+	bool VSync = true;
 
-	WindowProps(
-		const std::string& title = "Untitled",
-		uint32_t width = 1280,
-		uint32_t height = 720)
-		: Title(title), Width(width), Height(height)
-	{
-	}
+	WindowSpecification(std::string title = "Untitled", uint32_t width = 1280, uint32_t height = 720)
+	: Title(title), Width(width), Height(height) {}
+
 };
 
 class Window
@@ -55,7 +54,7 @@ public:
 
 	virtual void SetInputMode(bool cursorEnabled) = 0;
 
-	static Window* Create(const WindowProps& props = WindowProps());
+	static Window* Create(const WindowSpecification& windowSpecification = WindowSpecification());
 
 	/**** END Window Hazel version - a platform independent Window interface ****/
 

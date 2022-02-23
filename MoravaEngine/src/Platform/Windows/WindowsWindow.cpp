@@ -18,16 +18,17 @@
 #include <exception>
 
 
-Window* Window::Create(const WindowProps& props)
+Window* Window::Create(const WindowSpecification& windowSpecification)
 {
-	return new WindowsWindow(props);
+	return new WindowsWindow(windowSpecification);
 }
 
-WindowsWindow::WindowsWindow(const WindowProps& props)
+WindowsWindow::WindowsWindow(const WindowSpecification& windowSpecification)
+	: m_Specification(windowSpecification)
 {
 	m_EventLoggingEnabled = false;
 
-	Init(props);
+	Init();
 }
 
 WindowsWindow::~WindowsWindow()
@@ -44,11 +45,11 @@ static void GLFWErrorCallback(int error, const char* description)
 
 static bool s_GLFWInitialized = false;
 
-void WindowsWindow::Init(const WindowProps& props)
+void WindowsWindow::Init()
 {
-	m_Data.Title = props.Title;
-	m_Data.Width = props.Width;
-	m_Data.Height = props.Height;
+	m_Data.Title = m_Specification.Title;
+	m_Data.Width = m_Specification.Width;
+	m_Data.Height = m_Specification.Height;
 
 	xChange = 0.0f;
 	yChange = 0.0f;
@@ -69,16 +70,16 @@ void WindowsWindow::Init(const WindowProps& props)
 	mouseFirstMoved = true;
 	mouseCursorAboveWindow = false;
 
-	Log::GetLogger()->info("Creating window - title: '{0}', size: [{1}x{2}]", props.Title, props.Width, props.Height);
+	Log::GetLogger()->info("Creating window - title: '{0}', size: [{1}x{2}]", m_Specification.Title, m_Specification.Width, m_Specification.Height);
 
 	switch (H2M::RendererAPI_H2M::Current())
 	{
 	case H2M::RendererAPITypeH2M::OpenGL:
 	case H2M::RendererAPITypeH2M::Vulkan:
-		InitGLFW(props);
+		InitGLFW(m_Specification);
 		break;
 	case H2M::RendererAPITypeH2M::DX11:
-		InitDX11(props);
+		InitDX11(m_Specification);
 		break;
 	}
 
@@ -106,7 +107,7 @@ void WindowsWindow::Init(const WindowProps& props)
 	// SetCallbacks();
 }
 
-void WindowsWindow::InitGLFW(const WindowProps& props)
+void WindowsWindow::InitGLFW(const WindowSpecification& props)
 {
 	// Initialize GLFW
 	if (!s_GLFWInitialized)
@@ -150,7 +151,18 @@ void WindowsWindow::InitGLFW(const WindowProps& props)
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glEnable(GL_MULTISAMPLE);
 
-	m_GLFW_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
+	if (m_Specification.Fullscreen)
+	{
+		GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+		m_GLFW_Window = glfwCreateWindow(mode->width, mode->height, m_Data.Title.c_str(), primaryMonitor, nullptr);
+		m_GLFW_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
+	}
+	else
+	{
+		m_GLFW_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
+	}
+
 	if (!m_GLFW_Window)
 	{
 		glfwTerminate();
@@ -310,7 +322,7 @@ void WindowsWindow::SetHWND(HWND hwnd)
 }
 
 // A DirectX 11 method
-void WindowsWindow::InitDX11(const WindowProps& props)
+void WindowsWindow::InitDX11(const WindowSpecification& windowSpecification)
 {
 	m_IsInitialized = false;
 
@@ -318,7 +330,7 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 
 	LPCWSTR className = L"WindowsWindow";
 	LPCWSTR menuName = L"";
-	std::wstring windowNameWStr = Util::to_wstr(props.Title.c_str());
+	std::wstring windowNameWStr = Util::to_wstr(windowSpecification.Title.c_str());
 	const wchar_t* windowNameWChar = windowNameWStr.c_str();
 	LPCWSTR windowName = (LPCWSTR)windowNameWChar;
 
@@ -341,7 +353,7 @@ void WindowsWindow::InitDX11(const WindowProps& props)
 		throw std::exception("Window not created successfully.");
 	}
 
-	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
+	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, windowSpecification.Width, windowSpecification.Height,
 		NULL, NULL, NULL, NULL);
 
 #else

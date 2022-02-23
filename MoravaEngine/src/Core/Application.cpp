@@ -35,7 +35,7 @@ Application* Application::Create(const ApplicationSpecification& specification, 
 	Application::Get()->m_Specification = specification;
 	Application::Get()->m_ProjectPath = projectPath;
 
-	Application::Get()->InitWindow(WindowProps(specification.Name, specification.WindowWidth, specification.WindowHeight));
+	Application::Get()->InitWindow(WindowSpecification{});
 
 	return Application::Get();
 }
@@ -301,11 +301,11 @@ void Application::OnShutdown()
 	delete m_Renderer;
 }
 
-void Application::InitWindow(WindowProps& props)
+void Application::InitWindow(WindowSpecification& windowSpecification)
 {
-	RendererBasic::AppendRendererInfo(props);
+	RendererBasic::AppendRendererInfo(windowSpecification);
 
-	m_Window = Window::Create(props);
+	m_Window = Window::Create(windowSpecification);
 	m_Window->SetEventCallback(APP_BIND_EVENT_FN(Application::OnEvent));
 }
 

@@ -53,14 +53,14 @@ void RendererBasic::SetShaders()
 {
 }
 
-void RendererBasic::AppendRendererInfo(WindowProps& windowProps)
+void RendererBasic::AppendRendererInfo(WindowSpecification& windowSpecification)
 {
 	switch (H2M::RendererAPI_H2M::Current())
 	{
 		case H2M::RendererAPITypeH2M::None:   return;
-		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::RendererInfo(windowProps);
-		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::RendererInfo(windowProps);
-		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::RendererInfo(windowProps);
+		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::RendererInfo(windowSpecification);
+		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::RendererInfo(windowSpecification);
+		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::RendererInfo(windowSpecification);
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
