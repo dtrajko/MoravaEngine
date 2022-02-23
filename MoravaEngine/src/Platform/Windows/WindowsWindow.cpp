@@ -3,6 +3,7 @@
 #include "H2M/Core/Events/KeyEventH2M.h"
 #include "H2M/Core/Events/MouseEventH2M.h"
 #include "H2M/Core/Events/ApplicationEventH2M.h"
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -84,11 +85,15 @@ void WindowsWindow::Init(const WindowProps& props)
 	m_RendererContext = H2M::RendererContextH2M::Create(this);
 	m_RendererContext->Init();
 
-	RendererBasic::SetRendererContext(m_RendererContext);
+	H2M::RefH2M<H2M::VulkanContextH2M> context = m_RendererContext.As<H2M::VulkanContextH2M>();
 
-	// Ref<H2M::VulkanContext> context = m_RendererContext.As<H2M::VulkanContext>();
 	// m_SwapChain.Init(H2M::VulkanContextH2M::GetInstance(), context->GetDevice());
-	// m_SwapChain.InitSurface(m_Window);
+	// m_SwapChain.InitSurface(m_GLFW_Window);
+
+	uint32_t width = m_Data.Width, height = m_Data.Height;
+	// m_SwapChain.Create(&width, &height, m_Data.VSync);
+
+	// RendererBasic::SetRendererContext(m_RendererContext);
 
 	SetVSync(true);
 
@@ -189,6 +194,8 @@ void WindowsWindow::ProcessEvents()
 void WindowsWindow::SwapBuffers()
 {
 	m_RendererContext->SwapBuffers();
+
+	// m_SwapChain.Present();
 }
 
 void WindowsWindow::SetVSync(bool enabled)

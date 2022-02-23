@@ -209,7 +209,6 @@ void DX11SwapChain::SetFullScreen(bool fullscreenEnabled, uint32_t width, uint32
 
 void DX11SwapChain::BeginFrame()
 {
-	// TODO
 }
 
 void DX11SwapChain::ClearRenderTargetColor(float red, float green, float blue, float alpha)

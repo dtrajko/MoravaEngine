@@ -32,8 +32,8 @@ namespace H2M
 	{
 		m_Device->Destroy();
 
-		// vkDestroyInstance(s_VulkanInstance, nullptr);
-		// s_VulkanInstance = nullptr;
+		vkDestroyInstance(s_VulkanInstance, nullptr);
+		s_VulkanInstance = nullptr;
 	}
 
 	void VulkanContextH2M::Init()
@@ -60,11 +60,18 @@ namespace H2M
 		{
 			instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 			instanceExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+			instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 		}
+
+		VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
+		VkValidationFeaturesEXT features = {};
+		features.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+		features.enabledValidationFeatureCount = 1;
+		features.pEnabledValidationFeatures = enables;
 
 		VkInstanceCreateInfo instanceCreateInfo = {};
 		instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		instanceCreateInfo.pNext = NULL;
+		instanceCreateInfo.pNext = nullptr;// &features;
 		instanceCreateInfo.pApplicationInfo = &appInfo;
 		instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
 		instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
@@ -96,7 +103,7 @@ namespace H2M
 			}
 			else
 			{
-				MORAVA_CORE_ERROR("Validation layer VK_LAYER_LUNARG_standard_validation not present, validation is disabled");
+				MORAVA_CORE_ERROR("Validation layer VK_LAYER_KHRONOS_validation not present, validation is disabled");
 			}
 		}
 
@@ -122,11 +129,14 @@ namespace H2M
 		VkPhysicalDeviceFeatures enabledFeatures;
 		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
 		enabledFeatures.samplerAnisotropy = true;
+		enabledFeatures.wideLines = true;
+		enabledFeatures.fillModeNonSolid = true;
+		enabledFeatures.pipelineStatisticsQuery = true;
 		m_Device = RefH2M<VulkanDeviceH2M>::Create(m_PhysicalDevice, enabledFeatures);
 
 		// Why is this here?
 		m_Allocator = VulkanAllocatorH2M(m_Device, std::string("Default"));
-		
+
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
 		m_SwapChain.InitSurface(m_Window->GetHandle());
 
