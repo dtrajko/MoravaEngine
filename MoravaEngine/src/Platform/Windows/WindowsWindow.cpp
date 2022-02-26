@@ -104,7 +104,7 @@ void WindowsWindow::Init()
 		/**** END Move to WindowsWindow class ****/
 	}
 
-	// RendererBasic::SetRendererContext(m_RendererContext);
+	RendererBasic::SetRendererContext(m_RendererContext);
 
 	SetVSync(true);
 
