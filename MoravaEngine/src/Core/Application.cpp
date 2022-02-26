@@ -81,9 +81,16 @@ void Application::OnInit()
 		PushOverlay(m_ImGuiLayer);
 	}
 
+	if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
+	{
 #if defined(OPENGL_4_5_PLUS)
-	H2M::RendererH2M::Init();
+		H2M::RendererH2M::Init();
 #endif
+	}
+	else
+	{
+		H2M::RendererH2M::Init();
+	}
 
 	switch (H2M::RendererAPI_H2M::Current())
 	{

@@ -165,9 +165,7 @@ struct SceneProperties
 #elif defined(SCENE_HAZEL_VULKAN)
 #include "Scene/SceneHazelVulkan.h"
 #include "Renderer/RendererTrivial.h"
-#define OPENGL_4_5_PLUS // allows the use of 'ultramodern' OpenGL 4.5+ functions e.g. glCreateTextures
 #elif defined(SCENE_ENV_MAP_VULKAN)
 #include "Scene/SceneEnvMapVulkan.h"
 #include "Renderer/RendererECS.h"
-#define OPENGL_4_5_PLUS // allows the use of 'ultramodern' OpenGL 4.5+ functions e.g. glCreateTextures
 #endif

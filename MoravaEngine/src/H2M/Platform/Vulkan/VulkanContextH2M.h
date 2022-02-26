@@ -28,6 +28,7 @@ namespace H2M
 		virtual ~VulkanContextH2M();
 
 		virtual void Init() override;
+		void InitPartTwoTemp();
 
 		RefH2M<VulkanDeviceH2M> GetDevice() { return m_Device; }
 

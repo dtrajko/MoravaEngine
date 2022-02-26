@@ -137,6 +137,18 @@ namespace H2M
 		// Why is this here?
 		m_Allocator = VulkanAllocatorH2M(m_Device, std::string("Default"));
 
+		// InitPartTwoTemp();
+
+		// Pipeline Cache
+		VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
+		pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+		VK_CHECK_RESULT_H2M(vkCreatePipelineCache(m_Device->GetVulkanDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
+	}
+
+	void VulkanContextH2M::InitPartTwoTemp()
+	{
+		/**** BEGIN Move to WindowsWindow class ****/
+
 		m_SwapChain.Init(s_VulkanInstance, m_Device);
 		m_SwapChain.InitSurface(m_Window->GetHandle());
 
@@ -146,10 +158,7 @@ namespace H2M
 
 		VulkanAllocatorH2M::Init(m_Device);
 
-		// Pipeline Cache
-		VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
-		pipelineCacheCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-		VK_CHECK_RESULT_H2M(vkCreatePipelineCache(m_Device->GetVulkanDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
+		/**** END Move to WindowsWindow class ****/
 	}
 
 	void VulkanContextH2M::OnResize(uint32_t width, uint32_t height)
