@@ -579,8 +579,8 @@ namespace H2M
 	{
 		// RendererH2M::Submit([]() {});
 		{
-			RefH2M<VulkanContextH2M> context = VulkanContextH2M::Get();
-			VulkanSwapChainH2M& swapChain = context->GetSwapChain();
+			// RefH2M<VulkanContextH2M> context = VulkanContextH2M::Get();
+			VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};
 			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -708,8 +708,8 @@ namespace H2M
 	{
 		// RendererH2M::Submit([=]() {});
 		{
-			RefH2M<VulkanContextH2M> context = VulkanContextH2M::Get();
-			VulkanSwapChainH2M& swapChain = context->GetSwapChain();
+			// RefH2M<VulkanContextH2M> context = VulkanContextH2M::Get();
+			VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};
 			cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -776,8 +776,8 @@ namespace H2M
 	{
 		// RendererH2M::Submit([=]() {});
 		{
-			RefH2M<VulkanContextH2M> context = VulkanContextH2M::Get();
-			VulkanSwapChainH2M& swapChain = context->GetSwapChain();
+			// RefH2M<VulkanContextH2M> context = VulkanContextH2M::Get();
+			VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 			VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 
 			VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -893,8 +893,8 @@ namespace H2M
 
 	void VulkanRendererH2M::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers)
 	{
-		RefH2M<VulkanContextH2M> context = VulkanContextH2M::Get();
-		VulkanSwapChainH2M& swapChain = context->GetSwapChain();
+		// RefH2M<VulkanContextH2M> context = VulkanContextH2M::Get();
+		VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 
 		uint32_t width = swapChain.GetWidth();
 		uint32_t height = swapChain.GetHeight();

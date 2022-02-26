@@ -317,7 +317,7 @@ namespace H2M
 			pipelineCreateInfo.pViewportState = &viewportState;
 			pipelineCreateInfo.pDepthStencilState = &depthStencilState;
 			/**** BEGIN Non-composite ****/
-			pipelineCreateInfo.renderPass = VulkanContextH2M::Get()->GetSwapChain().GetRenderPass();
+			pipelineCreateInfo.renderPass = Application::Get()->GetWindow()->GetSwapChain().GetRenderPass();
 			/**** END Non-composite ****/
 			/**** BEGIN Composite ****
 			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();

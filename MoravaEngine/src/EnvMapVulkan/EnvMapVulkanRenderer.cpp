@@ -582,7 +582,7 @@ void EnvMapVulkanRenderer::BeginFrame()
 	// H2M::RendererH2M::Submit([]() {});
 	{
 		H2M::RefH2M<H2M::VulkanContextH2M> context = H2M::VulkanContextH2M::Get();
-		H2M::VulkanSwapChainH2M& swapChain = context->GetSwapChain();
+		H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 
 		VkCommandBufferBeginInfo cmdBufInfo = {};
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -710,8 +710,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 {
 	// H2M::RendererH2M::Submit([=]() {});
 	{
-		H2M::RefH2M<H2M::VulkanContextH2M> context = H2M::VulkanContextH2M::Get();
-		H2M::VulkanSwapChainH2M& swapChain = context->GetSwapChain();
+		// H2M::RefH2M<H2M::VulkanContextH2M> context = H2M::VulkanContextH2M::Get();
+		H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 
 		VkCommandBufferBeginInfo cmdBufInfo = {};
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -778,8 +778,8 @@ void EnvMapVulkanRenderer::CompositePass()
 {
 	// H2M::RendererH2M::Submit([=]() {});
 	{
-		H2M::RefH2M<H2M::VulkanContextH2M> context = H2M::VulkanContextH2M::Get();
-		H2M::VulkanSwapChainH2M& swapChain = context->GetSwapChain();
+		// H2M::RefH2M<H2M::VulkanContextH2M> context = H2M::VulkanContextH2M::Get();
+		H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 		VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 
 		VkCommandBufferBeginInfo cmdBufInfo = {};
@@ -895,8 +895,8 @@ void EnvMapVulkanRenderer::CompositePass()
 
 void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers)
 {
-	H2M::RefH2M<H2M::VulkanContextH2M> context = H2M::VulkanContextH2M::Get();
-	H2M::VulkanSwapChainH2M& swapChain = context->GetSwapChain();
+	// H2M::RefH2M<H2M::VulkanContextH2M> context = H2M::VulkanContextH2M::Get();
+	H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 
 	uint32_t width = swapChain.GetWidth();
 	uint32_t height = swapChain.GetHeight();

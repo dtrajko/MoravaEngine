@@ -87,7 +87,18 @@ void WindowsWindow::Init()
 	m_RendererContext->Init();
 
 	/**** BEGIN Move to WindowsWindow class ****/
-	m_RendererContext.As<H2M::VulkanContextH2M>()->InitPartTwoTemp();
+
+	H2M::RefH2M<H2M::VulkanContextH2M> context = m_RendererContext.As<H2M::VulkanContextH2M>();
+
+	m_SwapChain.Init(context->GetInstance(), context->GetDevice());
+	m_SwapChain.InitSurface(m_GLFW_Window);
+
+	uint32_t width = GetWidth();
+	uint32_t height = GetHeight();
+	m_SwapChain.Create(&width, &height);
+
+	H2M::VulkanAllocatorH2M::Init(context->GetDevice());
+
 	/**** END Move to WindowsWindow class ****/
 
 	// RendererBasic::SetRendererContext(m_RendererContext);

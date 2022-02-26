@@ -145,35 +145,19 @@ namespace H2M
 		VK_CHECK_RESULT_H2M(vkCreatePipelineCache(m_Device->GetVulkanDevice(), &pipelineCacheCreateInfo, nullptr, &m_PipelineCache));
 	}
 
-	void VulkanContextH2M::InitPartTwoTemp()
-	{
-		/**** BEGIN Move to WindowsWindow class ****/
-
-		m_SwapChain.Init(s_VulkanInstance, m_Device);
-		m_SwapChain.InitSurface(m_Window->GetHandle());
-
-		uint32_t width = m_Window->GetWidth();
-		uint32_t height = m_Window->GetHeight();
-		m_SwapChain.Create(&width, &height);
-
-		VulkanAllocatorH2M::Init(m_Device);
-
-		/**** END Move to WindowsWindow class ****/
-	}
-
 	void VulkanContextH2M::OnResize(uint32_t width, uint32_t height)
 	{
-		m_SwapChain.OnResize(width, height);
+		m_Window->GetSwapChain().OnResize(width, height);
 	}
 
 	void VulkanContextH2M::BeginFrame()
 	{
-		m_SwapChain.BeginFrame();
+		m_Window->GetSwapChain().BeginFrame();
 	}
 
 	void VulkanContextH2M::SwapBuffers()
 	{
-		m_SwapChain.Present();
+		m_Window->GetSwapChain().Present();
 	}
 
 }

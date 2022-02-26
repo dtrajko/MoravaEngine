@@ -28,7 +28,6 @@ namespace H2M
 		virtual ~VulkanContextH2M();
 
 		virtual void Init() override;
-		void InitPartTwoTemp();
 
 		RefH2M<VulkanDeviceH2M> GetDevice() { return m_Device; }
 
@@ -41,7 +40,7 @@ namespace H2M
 		virtual void SwapBuffers() override;                             // TODO: remove the method
 		virtual void OnResize(uint32_t width, uint32_t height) override; // TODO: remove the method
 		virtual void BeginFrame() override;                              // TODO: remove the method
-		VulkanSwapChainH2M& GetSwapChain() { return m_SwapChain; }       // TODO: remove the method
+		// VulkanSwapChainH2M& GetSwapChain() { return m_SwapChain; }    // TODO: remove the method
 
 	private:
 		Window* m_Window;
@@ -56,7 +55,7 @@ namespace H2M
 		VkPipelineCache m_PipelineCache;
 
 		VulkanAllocatorH2M m_Allocator;
-		VulkanSwapChainH2M m_SwapChain;
+		// VulkanSwapChainH2M m_SwapChain;
 
 	};
 }

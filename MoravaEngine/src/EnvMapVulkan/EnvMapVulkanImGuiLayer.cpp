@@ -164,9 +164,9 @@ void EnvMapVulkanImGuiLayer::OnAttach()
 		init_info.DescriptorPool = m_DescriptorPool;
 		init_info.Allocator = nullptr;
 		init_info.MinImageCount = 2; // vulkanContext->GetSwapChain().GetImageCount();
-		init_info.ImageCount = vulkanContext->GetSwapChain().GetImageCount();
+		init_info.ImageCount = app->GetWindow()->GetSwapChain().GetImageCount();
 		init_info.CheckVkResultFn = check_vk_result;
-		ImGui_ImplVulkan_Init(&init_info, vulkanContext->GetSwapChain().GetRenderPass());
+		ImGui_ImplVulkan_Init(&init_info, app->GetWindow()->GetSwapChain().GetRenderPass());
 
 		// Load Fonts
 		// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
