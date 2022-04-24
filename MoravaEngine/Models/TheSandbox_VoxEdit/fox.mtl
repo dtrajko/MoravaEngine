@@ -1,0 +1,10 @@
+# Exported by VoxEdit Beta e2de1723
+
+newmtl PlainTexture
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Tr 1.000000
+illum 1
+Ns 0.000000
+map_Kd fox.png
