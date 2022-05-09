@@ -487,7 +487,7 @@ void DX11Renderer::RenderImGui()
 
 		if (DX11TestLayer::s_ShowWindowAssetManager)
 		{
-			DX11TestLayer::s_ContentBrowserPanel->OnImGuiRender(&DX11TestLayer::s_ShowWindowAssetManager);
+			DX11TestLayer::s_ContentBrowserPanel->OnImGuiRender(DX11TestLayer::s_ShowWindowAssetManager);
 		}
 
 		if (DX11TestLayer::s_ShowWindowMaterialEditor)

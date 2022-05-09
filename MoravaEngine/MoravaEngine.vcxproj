@@ -635,6 +635,7 @@
     <ClInclude Include="src\H2M\Editor\ContentBrowserPanelH2M.h" />
     <ClInclude Include="src\H2M\Editor\EditorCameraH2M.h" />
     <ClInclude Include="src\H2M\Editor\EditorLayerVulkanH2M.h" />
+    <ClInclude Include="src\H2M\Editor\EditorPanelH2M.h" />
     <ClInclude Include="src\H2M\Editor\PanelManagerH2M.h" />
     <ClInclude Include="src\H2M\Editor\SceneHierarchyPanelH2M.h" />
     <ClInclude Include="src\H2M\ImGui\ImGuiH2M.h" />

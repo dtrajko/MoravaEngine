@@ -1,5 +1,12 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #pragma once
 
+#include "H2M/Editor/EditorPanelH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
 #include "Core/CommonStructs.h"
 
@@ -16,13 +23,13 @@
 namespace H2M
 {
 
-	class ContentBrowserPanelH2M : public RefCountedH2M // TODO: ContentBrowserPanelH2M => EditorPanelH2M => RefCountedH2M
+	class ContentBrowserPanelH2M : public EditorPanelH2M // TODO: ContentBrowserPanelH2M => EditorPanelH2M => RefCountedH2M
 	{
 	public:
 		ContentBrowserPanelH2M();
 		~ContentBrowserPanelH2M();
 
-		void OnImGuiRender(bool* p_open = (bool*)0);
+		virtual void OnImGuiRender(bool& isOpen) override;
 
 	private:
 		std::vector<std::filesystem::directory_entry> GetDirectoryEntriesCached(std::filesystem::path currentDirectory);

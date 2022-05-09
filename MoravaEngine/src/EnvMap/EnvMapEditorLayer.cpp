@@ -684,7 +684,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
     if (m_ShowWindowAssetManager)
     {
-        m_ContentBrowserPanel->OnImGuiRender(&m_ShowWindowAssetManager);
+        m_ContentBrowserPanel->OnImGuiRender(m_ShowWindowAssetManager);
     }
 
     if (m_ShowWindowMaterialEditor)

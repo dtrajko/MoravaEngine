@@ -1,3 +1,9 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
 
 #include "Core/Log.h"
@@ -25,9 +31,9 @@ namespace H2M
 	{
 	}
 
-	void ContentBrowserPanelH2M::OnImGuiRender(bool* p_open)
+	void ContentBrowserPanelH2M::OnImGuiRender(bool& isOpen)
 	{
-		ImGui::Begin("Content Browser", p_open);
+		ImGui::Begin("Content Browser", &isOpen);
 
 		ImVec2 panelSize = ImGui::GetWindowSize();
 

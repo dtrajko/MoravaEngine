@@ -1,9 +1,22 @@
+/**
+ * @package H2M (Hazel to Morava)
+ * @author  Yan Chernikov (TheCherno)
+ * @licence Apache License 2.0
+ */
+
 #include "EnvMapVulkanEditorLayer.h"
 
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
+#include "H2M/Editor/PanelManagerH2M.h"
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
 
+
+#define SCENE_HIERARCHY_PANEL_ID "SceneHierarchyPanel"
+// #define ECS_DEBUG_PANEL_ID "ECSDebugPanel"
+// #define CONSOLE_PANEL_ID "EditorConsolePanel"
+#define CONTENT_BROWSER_PANEL_ID "ContentBrowserPanel"
+// #define PROJECT_SETTINGS_PANEL_ID "ProjectSettingsPanel"
 
 EnvMapVulkanEditorLayer::EnvMapVulkanEditorLayer(const H2M::RefH2M<H2M::UserPreferencesH2M>& userPreferences)
 {
@@ -40,7 +53,7 @@ void EnvMapVulkanEditorLayer::OnAttach()
 	m_PointLightIcon = H2M::Texture2D_H2M::Create("Resources/Editor/Icons/PointLight.png", false);
 
 	/////////// Configure Panels ///////////
-	// m_PanelManager = CreateScope<PanelManager>();
+	m_PanelManager = CreateScopeH2M<H2M::PanelManagerH2M>();
 
 	H2M::RefH2M<H2M::SceneHierarchyPanelH2M> sceneHierarchyPanel = H2M::RefH2M<H2M::SceneHierarchyPanelH2M>::Create(m_EditorScene);
 	sceneHierarchyPanel->SetSelectionChangedCallback(std::bind(&EnvMapVulkanEditorLayer::SelectEntity, this, std::placeholders::_1));
@@ -50,7 +63,7 @@ void EnvMapVulkanEditorLayer::OnAttach()
 
 	// m_PanelManager->AddPanel<ECSDebugPanel>(ECS_DEBUG_PANEL_ID, "ECS Debug", false, m_EditorScene);
 	// m_PanelManager->AddPanel<EditorConsolePanel>(CONSOLE_PANEL_ID, "Log", true);
-	// m_PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
+	m_PanelManager->AddPanel<H2M::ContentBrowserPanelH2M>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 	// m_PanelManager->AddPanel<ProjectSettingsWindow>(PROJECT_SETTINGS_PANEL_ID, "Project Settings", false);
 
 	H2M::RefH2M<H2M::ContentBrowserPanelH2M> contentBrowserPanel = H2M::RefH2M<H2M::ContentBrowserPanelH2M>::Create();
