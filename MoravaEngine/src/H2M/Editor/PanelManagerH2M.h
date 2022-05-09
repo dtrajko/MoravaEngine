@@ -60,6 +60,10 @@ namespace H2M
 			return AddPanel<TPanel>(PanelDataH2M{ strID, displayName, RefH2M<TPanel>::Create(std::forward<TArgs>(args)...), isOpenByDefault });
 		}
 
+		void OnProjectChanged(const RefH2M<ProjectH2M>& project)
+		{
+		}
+
 	private:
 		std::unordered_map<uint32_t, PanelDataH2M> m_Panels;
 

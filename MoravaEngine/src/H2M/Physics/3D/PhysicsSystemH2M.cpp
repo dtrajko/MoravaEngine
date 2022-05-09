@@ -4,10 +4,18 @@
  * @licence Apache License 2.0
  */
 
-#include "PanelManagerH2M.h"
+#include "PhysicsSystemH2M.h"
 
 
 namespace H2M
 {
+
+	void PhysicsSystemH2M::Init()
+	{
+	}
+
+	void PhysicsSystemH2M::Shutdown()
+	{
+	}
 
 }

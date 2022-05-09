@@ -973,6 +973,21 @@
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanUniformBufferH2M.cpp">
       <Filter>src\H2M\Platform\Vulkan</Filter>
     </ClCompile>
+    <ClCompile Include="src\H2M\Project\ProjectH2M.cpp">
+      <Filter>src\H2M\Project</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Project\ProjectSerializerH2M.cpp">
+      <Filter>src\H2M\Project</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Asset\AssetManagerH2M.cpp">
+      <Filter>src\H2M\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Physics\3D\PhysicsSystemH2M.cpp">
+      <Filter>src\H2M\Physics\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\H2M\Script\ScriptEngineH2M.cpp">
+      <Filter>src\H2M\Script</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\EnvMap\EnvMapEditorLayer.h">
@@ -2091,6 +2106,21 @@
     <ClInclude Include="src\H2M\Editor\EditorPanelH2M.h">
       <Filter>src\H2M\Editor</Filter>
     </ClInclude>
+    <ClInclude Include="src\H2M\Project\ProjectH2M.h">
+      <Filter>src\H2M\Project</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Project\ProjectSerializerH2M.h">
+      <Filter>src\H2M\Project</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Asset\AssetManagerH2M.h">
+      <Filter>src\H2M\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Physics\3D\PhysicsSystemH2M.h">
+      <Filter>src\H2M\Physics\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="src\H2M\Script\ScriptEngineH2M.h">
+      <Filter>src\H2M\Script</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -2431,6 +2461,15 @@
     </Filter>
     <Filter Include="vendors\miniaudio">
       <UniqueIdentifier>{31fd0167-4843-422b-9367-8eb11a536b82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Physics">
+      <UniqueIdentifier>{026addfd-1cf4-41a9-8850-dc91ff84659b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Physics\3D">
+      <UniqueIdentifier>{fd83cd2c-0e52-4c66-b659-e1f217b24cb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\H2M\Script">
+      <UniqueIdentifier>{0860debc-6fe8-40ac-993c-efa870a0f5fe}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

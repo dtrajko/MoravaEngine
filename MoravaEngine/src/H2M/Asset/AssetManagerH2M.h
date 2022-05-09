@@ -4,10 +4,19 @@
  * @licence Apache License 2.0
  */
 
-#include "PanelManagerH2M.h"
+#pragma once
 
 
 namespace H2M
 {
+
+	class AssetManagerH2M
+	{
+
+	public:
+		static void Init();
+		static void Shutdown();
+
+	};
 
 }

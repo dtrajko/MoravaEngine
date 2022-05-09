@@ -103,6 +103,7 @@ private:
 
 	void UpdateSceneRendererSettings();
 	void QueueSceneTransition(const std::string& scene);
+
 private:
 	H2M::RefH2M<H2M::UserPreferencesH2M> m_UserPreferences;
 

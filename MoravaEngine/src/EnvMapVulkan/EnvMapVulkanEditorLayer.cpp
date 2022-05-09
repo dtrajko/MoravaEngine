@@ -10,7 +10,16 @@
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "H2M/Editor/PanelManagerH2M.h"
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
+#include "H2M/Project/ProjectH2M.h"
+#include "H2M/Project/ProjectSerializerH2M.h"
+#include "H2M/Script/ScriptEngineH2M.h"
 
+
+#define MAX_PROJECT_NAME_LENGTH 255
+#define MAX_PROJECT_FILEPATH_LENGTH 512
+
+static char* s_ProjectNameBuffer = new char[MAX_PROJECT_NAME_LENGTH];
+static char* s_ProjectFilePathBuffer = new char[MAX_PROJECT_FILEPATH_LENGTH];
 
 #define SCENE_HIERARCHY_PANEL_ID "SceneHierarchyPanel"
 // #define ECS_DEBUG_PANEL_ID "ECSDebugPanel"
@@ -18,7 +27,9 @@
 #define CONTENT_BROWSER_PANEL_ID "ContentBrowserPanel"
 // #define PROJECT_SETTINGS_PANEL_ID "ProjectSettingsPanel"
 
+
 EnvMapVulkanEditorLayer::EnvMapVulkanEditorLayer(const H2M::RefH2M<H2M::UserPreferencesH2M>& userPreferences)
+	: m_UserPreferences(userPreferences)
 {
 }
 
@@ -72,15 +83,30 @@ void EnvMapVulkanEditorLayer::OnAttach()
 
 	m_Renderer2D = H2M::RefH2M<H2M::Renderer2D_H2M>::Create();
 
+	if (!m_UserPreferences->StartupProject.empty())
+	{
+		OpenProject(m_UserPreferences->StartupProject);
+	}
+	else
+	{
+		H2M_CORE_VERIFY(false, "No project provided!");
+	}
+
 	m_ViewportRenderer = H2M::RefH2M<EnvMapVulkanSceneRenderer>::Create(m_CurrentScene);
 	m_SecondViewportRenderer = H2M::RefH2M<EnvMapVulkanSceneRenderer>::Create(m_CurrentScene);
 	m_FocusedRenderer = m_ViewportRenderer;
 
+	// AssetEditorPanel::RegisterDefaultEditors();
+
 	m_Renderer2D->SetLineWidth(m_LineWidth);
 	m_ViewportRenderer->SetLineWidth(m_LineWidth);
 	UpdateSceneRendererSettings();
+	// AudioEventsEditor::Init();
 
+	// UI::Widgets::Init();
 	H2M::SceneHierarchyPanelH2M::Init();
+
+	// s_HazelInstallPath = FileSystem::GetEnvironmentVariable("HAZEL_DIR");
 }
 
 void EnvMapVulkanEditorLayer::OnDetach()
@@ -128,6 +154,43 @@ void EnvMapVulkanEditorLayer::OpenProject()
 
 void EnvMapVulkanEditorLayer::OpenProject(const std::string& filepath)
 {
+	if (H2M::ProjectH2M::GetActive())
+	{
+		CloseProject();
+	}
+
+	H2M::RefH2M<H2M::ProjectH2M> project = H2M::RefH2M<H2M::ProjectH2M>::Create();
+	H2M::ProjectSerializerH2M serializer(project);
+	serializer.Deserialize(filepath);
+	H2M::ProjectH2M::SetActive(project);
+
+	// H2M::ScriptEngineH2M::LoadAppAssembly((H2M::ProjectH2M::GetScriptModuleFilePath()).string());
+
+	m_PanelManager->OnProjectChanged(project);
+
+	if (!project->GetConfig().StartScene.empty())
+	{
+		OpenScene((H2M::ProjectH2M::GetAssetDirectory() / project->GetConfig().StartScene).string());
+	}
+	else
+	{
+		NewScene();
+	}
+
+	if (m_EditorScene)
+	{
+		m_EditorScene->SetSelectedEntity({});
+	}
+	m_SelectionContext.clear();
+
+	// H2M::FileSystemH2M::StartWatching();
+
+	// Reset cameras
+	m_EditorCamera = H2M::EditorCameraH2M(glm::radians(45.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+	m_SecondEditorCamera = H2M::EditorCameraH2M(glm::radians(45.0f), 1280.0f / 720.0f, 0.1f, 1000.0f);
+
+	memset(s_ProjectNameBuffer, 0, MAX_PROJECT_NAME_LENGTH);
+	memset(s_ProjectFilePathBuffer, 0, MAX_PROJECT_FILEPATH_LENGTH);
 }
 
 void EnvMapVulkanEditorLayer::CreateProject(std::filesystem::path projectPath)

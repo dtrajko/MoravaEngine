@@ -99,9 +99,6 @@ namespace H2M
 			glm::vec2 TexCoord;
 			float TexIndex;
 			float TilingFactor;
-
-			// Editor-only
-			int EntityID;
 		};
 
 		struct TextVertexH2M
@@ -116,12 +113,38 @@ namespace H2M
 		{
 			glm::vec3 Position;
 			glm::vec4 Color;
+		};
+
+		struct CircleVertexH2M
+		{
+			glm::vec3 WorldPosition;
+			float Thickness;
+			glm::vec2 LocalPosition;
+			glm::vec4 Color;
+		};
+
+		struct QuadVertexH2M_Editor
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+			glm::vec2 TexCoord;
+			float TexIndex;
+			float TilingFactor;
 
 			// Editor-only
 			int EntityID;
 		};
 
-		struct CircleVertexH2M
+		struct LineVertexH2M_Editor
+		{
+			glm::vec3 Position;
+			glm::vec4 Color;
+
+			// Editor-only
+			int EntityID;
+		};
+
+		struct CircleVertexH2M_Editor
 		{
 			glm::vec3 WorldPosition;
 			glm::vec3 LocalPosition;

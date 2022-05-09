@@ -178,6 +178,7 @@
     <ClCompile Include="src\Framebuffer\OmniShadowMap.cpp" />
     <ClCompile Include="src\Framebuffer\Renderbuffer.cpp" />
     <ClCompile Include="src\Framebuffer\ShadowMap.cpp" />
+    <ClCompile Include="src\H2M\Asset\AssetManagerH2M.cpp" />
     <ClCompile Include="src\H2M\Core\HashH2M.cpp" />
     <ClCompile Include="src\H2M\Core\LayerH2M.cpp" />
     <ClCompile Include="src\H2M\Core\LayerStackH2M.cpp" />
@@ -190,6 +191,7 @@
     <ClCompile Include="src\H2M\Editor\PanelManagerH2M.cpp" />
     <ClCompile Include="src\H2M\Editor\SceneHierarchyPanelH2M.cpp" />
     <ClCompile Include="src\H2M\ImGui\ImGuiLayerH2M.cpp" />
+    <ClCompile Include="src\H2M\Physics\3D\PhysicsSystemH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLContextH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLFramebufferH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\OpenGL\OpenGLImageH2M.cpp" />
@@ -231,6 +233,8 @@
     <ClCompile Include="src\H2M\Platform\Vulkan\VulkanVertexBufferH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Windows\WindowsFileDialogsH2M.cpp" />
     <ClCompile Include="src\H2M\Platform\Windows\WindowsInputH2M.cpp" />
+    <ClCompile Include="src\H2M\Project\ProjectH2M.cpp" />
+    <ClCompile Include="src\H2M\Project\ProjectSerializerH2M.cpp" />
     <ClCompile Include="src\H2M\Project\UserPreferencesH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\CameraH2M.cpp" />
     <ClCompile Include="src\H2M\Renderer\FramebufferH2M.cpp" />
@@ -266,6 +270,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\H2M\Script\ScriptEngineH2M.cpp" />
     <ClCompile Include="src\H2M\Utilities\StringUtilsH2M.cpp" />
     <ClCompile Include="src\HazelVulkan\VulkanWeekRenderer.cpp" />
     <ClCompile Include="src\ImGui\ImGuiWrapper.cpp" />
@@ -611,6 +616,7 @@
     <ClInclude Include="src\Framebuffer\Renderbuffer.h" />
     <ClInclude Include="src\Framebuffer\ShadowMap.h" />
     <ClInclude Include="src\H2M\Asset\AssetH2M.h" />
+    <ClInclude Include="src\H2M\Asset\AssetManagerH2M.h" />
     <ClInclude Include="src\H2M\Asset\AssetMetadataH2M.h" />
     <ClInclude Include="src\H2M\Asset\AssetTypesH2M.h" />
     <ClInclude Include="src\H2M\Core\AssertH2M.h" />
@@ -640,6 +646,7 @@
     <ClInclude Include="src\H2M\Editor\SceneHierarchyPanelH2M.h" />
     <ClInclude Include="src\H2M\ImGui\ImGuiH2M.h" />
     <ClInclude Include="src\H2M\ImGui\ImGuiLayerH2M.h" />
+    <ClInclude Include="src\H2M\Physics\3D\PhysicsSystemH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLContextH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLFramebufferH2M.h" />
     <ClInclude Include="src\H2M\Platform\OpenGL\OpenGLImageH2M.h" />
@@ -678,6 +685,8 @@
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanUniformBufferH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanUniformBufferSetH2M.h" />
     <ClInclude Include="src\H2M\Platform\Vulkan\VulkanVertexBufferH2M.h" />
+    <ClInclude Include="src\H2M\Project\ProjectH2M.h" />
+    <ClInclude Include="src\H2M\Project\ProjectSerializerH2M.h" />
     <ClInclude Include="src\H2M\Project\UserPreferencesH2M.h" />
     <ClInclude Include="src\H2M\Renderer\CameraH2M.h" />
     <ClInclude Include="src\H2M\Renderer\FramebufferH2M.h" />
@@ -718,6 +727,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="src\H2M\Scene\ScriptableEntityH2M.h" />
+    <ClInclude Include="src\H2M\Script\ScriptEngineH2M.h" />
     <ClInclude Include="src\H2M\Utilities\FileDialogsH2M.h" />
     <ClInclude Include="src\H2M\Utilities\FileSystemH2M.h" />
     <ClInclude Include="src\H2M\Utilities\StringUtilsH2M.h" />
