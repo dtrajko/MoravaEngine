@@ -46,7 +46,7 @@ Build automation based on CMake (in progress)
 
 ### Project setup:
 
-* Install <a href="[https://twitter.com/ThinMatrix/](https://cmake.org/download/)" target="_blank">CMake</a>
+* Install <a href="https://cmake.org/download/" target="_blank">CMake</a>
 
 ```
 $ git clone --recursive https://github.com/dtrajko/MoravaEngine.git
