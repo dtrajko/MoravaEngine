@@ -120,7 +120,7 @@ namespace H2M
 				}
 
 				// Right-click on blank space
-				if (ImGui::BeginPopupContextWindow(0, 1, false))
+				if (ImGui::BeginPopupContextWindow(0, 1))
 				{
 					if (ImGui::BeginMenu("Create"))
 					{
@@ -428,7 +428,6 @@ namespace H2M
 			ImGuiTreeNodeFlags_DefaultOpen |
 			ImGuiTreeNodeFlags_Framed |
 			ImGuiTreeNodeFlags_SpanAvailWidth |
-			ImGuiTreeNodeFlags_AllowItemOverlap |
 			ImGuiTreeNodeFlags_FramePadding;
 
 		if (entity.HasComponent<T>())
@@ -437,7 +436,7 @@ namespace H2M
 			ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
-			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+			float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 			ImGui::Separator();
 			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
 			ImGui::PopStyleVar();
@@ -506,9 +505,9 @@ namespace H2M
 		// ID
 		ImGui::SameLine();
 		ImGui::TextDisabled("%llx", id);
-		float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+		float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 		ImVec2 textSize = ImGui::CalcTextSize("Add Component");
-		ImGui::SameLine(contentRegionAvailable.x - (textSize.x + GImGui->Style.FramePadding.y));
+		ImGui::SameLine(contentRegionAvailable.x - (textSize.x + ImGui::GetStyle().FramePadding.y));
 
 		if (ImGui::Button("Add Component")) {
 			ImGui::OpenPopup("AddComponentPanel");
@@ -658,7 +657,7 @@ namespace H2M
 				ImGui::InputText("##meshfilepath", (char*)"Null", 256, ImGuiInputTextFlags_ReadOnly);
 			}
 
-			std::string meshFilepath = "";
+			std::string meshFilepath;
 
 			if (ImGui::BeginDragDropTarget())
 			{
@@ -668,7 +667,7 @@ namespace H2M
 					size_t itemSize = payload->DataSize;
 					Log::GetLogger()->debug("END DRAG & DROP FILE '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
 
-					meshFilepath = std::string{ itemPath.begin(), itemPath.end() };
+					meshFilepath = Util::to_str(itemPath.c_str());
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -678,7 +677,12 @@ namespace H2M
 
 			if (ImGui::Button("...##openmesh"))
 			{
-				meshFilepath = Application::Get()->OpenFile();
+				std::wstring fileW = Application::Get()->OpenFile();
+				if (!fileW.empty())
+				{
+					std::string file = Util::ToUtf8(fileW);
+					meshFilepath = file;
+				}
 			}
 
 			if (!meshFilepath.empty())
@@ -870,9 +874,12 @@ namespace H2M
 			ImGui::NextColumn();
 			if (ImGui::Button("...##openenv"))
 			{
-				std::string file = Application::Get()->OpenFile("*.hdr");
-				if (!file.empty())
+				std::wstring fileW = Application::Get()->OpenFile(L"*.hdr");
+				if (!fileW.empty())
+				{
+					std::string file = Util::ToUtf8(fileW);
 					slc.SceneEnvironment = EnvironmentH2M::Load(file);
+				}
 			}
 			ImGui::Columns(1);
 

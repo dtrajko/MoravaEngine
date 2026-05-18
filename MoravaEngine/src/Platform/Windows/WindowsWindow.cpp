@@ -336,13 +336,12 @@ void WindowsWindow::InitDX11(const WindowSpecification& windowSpecification)
 {
 	m_IsInitialized = false;
 
-#if defined UNICODE
 
-	LPCWSTR className = L"WindowsWindow";
-	LPCWSTR menuName = L"";
+	LPCSTR className = "WindowsWindow";
+	LPCSTR menuName = "";
 	std::wstring windowNameWStr = Util::to_wstr(windowSpecification.Title.c_str());
 	const wchar_t* windowNameWChar = windowNameWStr.c_str();
-	LPCWSTR windowName = (LPCWSTR)windowNameWChar;
+	LPCSTR windowName = (LPCSTR)windowNameWChar;
 
 	WNDCLASSEX wc;
 	wc.cbClsExtra = NULL;
@@ -366,37 +365,35 @@ void WindowsWindow::InitDX11(const WindowSpecification& windowSpecification)
 	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, windowSpecification.Width, windowSpecification.Height,
 		NULL, NULL, NULL, NULL);
 
-#else
 
-	LPCSTR className = "WindowsWindow";
-	LPCSTR menuName = "";
-	std::string windowNameWStr = props.Title.c_str();
-	const char* windowNameWChar = windowNameWStr.c_str();
-	LPCSTR windowName = (LPCSTR)windowNameWChar;
+//	LPCSTR className = "WindowsWindow";
+//	LPCSTR menuName = "";
+//	std::string windowNameWStr = props.Title.c_str();
+//	const char* windowNameWChar = windowNameWStr.c_str();
+//	LPCSTR windowName = (LPCSTR)windowNameWChar;
+//
+//	WNDCLASSEX wc;
+//	wc.cbClsExtra = NULL;
+//	wc.cbSize = sizeof(WNDCLASSEX);
+//	wc.cbWndExtra = NULL;
+//	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
+//	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+//	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+//	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
+//	wc.hInstance = NULL;
+//	wc.lpszClassName = className;
+//	wc.lpszMenuName = menuName;
+//	wc.style = NULL;
+//	wc.lpfnWndProc = &WndProc;
+//
+//	if (!::RegisterClassEx(&wc)) // If the registration of class fails, the function returns false
+//	{
+//		throw std::exception("Window not created successfully.");
+//	}
+//
+//	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
+//		NULL, NULL, NULL, NULL);
 
-	WNDCLASSEX wc;
-	wc.cbClsExtra = NULL;
-	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.cbWndExtra = NULL;
-	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hInstance = NULL;
-	wc.lpszClassName = className;
-	wc.lpszMenuName = menuName;
-	wc.style = NULL;
-	wc.lpfnWndProc = &WndProc;
-
-	if (!::RegisterClassEx(&wc)) // If the registration of class fails, the function returns false
-	{
-		throw std::exception("Window not created successfully.");
-	}
-
-	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
-		NULL, NULL, NULL, NULL);
-
-#endif
 
 	if (!m_HWND)
 	{

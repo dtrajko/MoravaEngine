@@ -89,11 +89,9 @@ namespace H2M
 			case ImageFormatH2M::RGBA16F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 			case ImageFormatH2M::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 			}
-			Log::GetLogger()->error("VulkanImageFormat: HazelImageFormat not supported: '{0}'!", format);
+			Log::GetLogger()->error("VulkanImageFormat: HazelImageFormat not supported: '{0}'!", static_cast<int>(format));
 			// HZ_CORE_ASSERT(false);
 			return VK_FORMAT_UNDEFINED;
 		}
-
 	}
-
 }

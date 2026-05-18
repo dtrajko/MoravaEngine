@@ -30,8 +30,8 @@ namespace H2M
 		virtual void RT_SetData(void* buffer, uint32_t size, uint32_t offset = 0) override;
 		virtual void Bind() const override {}
 
-		virtual const VertexBufferLayoutH2M& GetLayout() const override { return VertexBufferLayoutH2M(); }
-		virtual void SetLayout(const VertexBufferLayoutH2M& layout) override {}
+		virtual const VertexBufferLayoutH2M& GetLayout() const override { return m_Layout; }
+		virtual void SetLayout(const VertexBufferLayoutH2M& layout) override { m_Layout = layout; }
 
 		virtual unsigned int GetSize() const override { return m_Size; }
 		virtual uint32_t GetRendererID() const override { return 0; }
@@ -46,6 +46,7 @@ namespace H2M
 		VkDeviceMemory m_DeviceMemory;
 		VmaAllocation m_MemoryAllocation;
 
+		VertexBufferLayoutH2M m_Layout;
 	};
 
 }

@@ -29,7 +29,7 @@ namespace H2M
 		return RefH2M<Texture2D_H2M>();
 	}
 
-	RefH2M<Texture2D_H2M> Texture2D_H2M::Create(const std::string& path, bool srgb)
+	RefH2M<Texture2D_H2M> Texture2D_H2M::Create(const std::wstring& path, bool srgb)
 	{
 		switch (RendererAPI_H2M::Current())
 		{

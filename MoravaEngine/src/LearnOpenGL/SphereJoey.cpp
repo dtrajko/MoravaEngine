@@ -1,6 +1,8 @@
 #include "SphereJoey.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+
 #include <GL/glew.h>
 
 #include <cmath>

@@ -2,6 +2,7 @@
 
 #include "H2M/Scene/SceneCameraH2M.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include "glm/glm.hpp"
 
 

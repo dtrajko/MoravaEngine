@@ -6,7 +6,7 @@
 #include "H2M/Renderer/TextureH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
-#include "../../ImGuizmo/ImGuizmo.h"
+#include "../../ImGuizmo/src/ImGuizmo.h"
 
 #include "Core/Application.h"
 #include "Core/Input.h"

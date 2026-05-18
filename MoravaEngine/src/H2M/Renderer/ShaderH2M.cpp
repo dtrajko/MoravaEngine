@@ -147,22 +147,15 @@ namespace H2M
 	{
 	}
 
-	const std::string& ShaderUniformH2M::UniformTypeToString(ShaderUniformTypeH2M type)
+	std::string ShaderUniformH2M::UniformTypeToString(ShaderUniformTypeH2M type)
 	{
-		if (type == ShaderUniformTypeH2M::Bool)
+		switch (type)
 		{
-			return "Boolean";
+		case ShaderUniformTypeH2M::Bool:  return "Boolean";
+		case ShaderUniformTypeH2M::Int:   return "Int";
+		case ShaderUniformTypeH2M::Float: return "Float";
+		default:                          return "None";
 		}
-		else if (type == ShaderUniformTypeH2M::Int)
-		{
-			return "Int";
-		}
-		else if (type == ShaderUniformTypeH2M::Float)
-		{
-			return "Float";
-		}
-
-		return "None";
 	}
 
 }

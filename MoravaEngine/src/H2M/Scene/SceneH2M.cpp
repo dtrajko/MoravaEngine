@@ -19,6 +19,7 @@
 #include "Core/Math.h"
 #include "EnvMap/EnvMapSceneRenderer.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 
 // Box2D

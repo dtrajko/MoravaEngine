@@ -3,7 +3,7 @@
 #include "Core/Application.h"
 #include "EnvMap/EnvMapEditorLayer.h"
 
-#include "../../ImGuizmo/ImGuizmo.h"
+#include "../../ImGuizmo/src/ImGuizmo.h"
 
 #include <cwchar>
 

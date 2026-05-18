@@ -36,7 +36,7 @@ public:
 	static std::string SpaceToUnderscore(std::string text);
 
 	// convert from const char* to const wchar_t*
-	static std::wstring to_wstr(const char* mbstr);
+	static std::wstring to_wstr(const wchar_t* mbstr);
 	// convert from const wchar_t* to const char*
 	static std::string to_str(const wchar_t* wcstr);
 
@@ -49,5 +49,6 @@ public:
 
 	static const char* AttachmentFormatToString(AttachmentFormat attachmentFormat);
 	static const char* FormatToString(GLenum format);
+	static std::string ToUtf8(const std::wstring& wstr);
 
 };

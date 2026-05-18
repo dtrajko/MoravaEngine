@@ -2,7 +2,7 @@
 
 #include "Scene/SceneEditorImGuizmo.h"
 
-#include "../../ImGuizmo/ImGuizmo.h"
+#include "../../ImGuizmo/src/ImGuizmo.h"
 
 #include "Core/Application.h"
 #include "Core/Input.h"
@@ -11,6 +11,7 @@
 #include "Core/MousePicker.h"
 #include "Core/Profiler.h"
 #include "Core/Timer.h"
+#include "Core/Util.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Mesh/Block.h"
 #include "Mesh/Cone.h"
@@ -1161,7 +1162,8 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
 
                 if (ImGui::Button("...##Mesh"))
                 {
-                    m_LoadedFile = Application::Get()->OpenFile("");
+                    std::wstring loadedFileW = Application::Get()->OpenFile(L"");
+                    m_LoadedFile = Util::ToUtf8(loadedFileW);
                     if (m_LoadedFile != "")
                     {
                         Log::GetLogger()->info("ImGui OpenFile - filename: '{0}'", m_LoadedFile);
@@ -1184,7 +1186,8 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
                     }
                     if (ImGui::IsItemClicked())
                     {
-                        std::string filename = Application::Get()->OpenFile("");
+                        std::wstring filenameW = Application::Get()->OpenFile(L"");
+                        std::string filename = Util::ToUtf8(filenameW);
                         if (filename != "")
                             m_LoadedTexture = MoravaTexture::Create(filename.c_str(), false);
                     }

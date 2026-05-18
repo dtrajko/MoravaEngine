@@ -18,7 +18,7 @@
 #include "Renderer/RendererBasic.h"
 #include "Shader/MoravaShaderLibrary.h"
 
-#include "cross-platform/ImGuizmo/ImGuizmo.h"
+#include "cross-platform/ImGuizmo/src/ImGuizmo.h"
 
 #include <filesystem>
 
@@ -946,7 +946,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
                     if (ImGui::Button("Load Environment Map"))
                     {
-                        m_EnvMapFilename = Application::Get()->OpenFile("*.hdr");
+                        std::wstring envMapFilenameW = Application::Get()->OpenFile(L"*.hdr");
+                        m_EnvMapFilename = Util::ToUtf8(envMapFilenameW);
                         if (m_EnvMapFilename != "")
                         {
                             EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
@@ -1017,7 +1018,8 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     ImGui::Text(fileName.c_str()); ImGui::SameLine();
                     if (ImGui::Button("...##Mesh"))
                     {
-                        std::string fullPath = Application::Get()->OpenFile();
+                        std::wstring fullPathW = Application::Get()->OpenFile();
+                        std::string fullPath = Util::ToUtf8(fullPathW);
                         if (fullPath != "")
                         {
                             H2M::EntityH2M entity = LoadEntity(fullPath);
@@ -1399,7 +1401,16 @@ void EnvMapEditorLayer::UI_Toolbar()
 
     ImGui::SameLine((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
 
-    if (ImGui::ImageButton((ImTextureID)(uint64_t)(icon->GetID()), ImVec2(size, size), ImVec2(0, 0), ImVec2(1, 1), -1, ImVec4(0, 0, 0, 0), ImVec4(0.9f, 0.9f, 0.9f, 1.0f)))
+    ImTextureRef iconRef = ImTextureRef(icon);
+    if (ImGui::ImageButton(
+        "icon_button",
+        iconRef,
+        ImVec2(size, size),
+        ImVec2(0.0f, 0.0f),
+        ImVec2(1.0f, 1.0f),
+        ImVec4(0.0f, 0.0f, 0.0f, 0.0f),
+        ImVec4(0.9f, 0.9f, 0.9f, 1.0f)
+    ))
     {
         if (m_SceneState == SceneState::Edit)
         {

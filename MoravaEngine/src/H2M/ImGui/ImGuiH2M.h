@@ -4,7 +4,8 @@
 
 #include "H2M/Renderer/TextureH2M.h"
 
-#include "../../ImGui/imgui.h"
+#include "../../../vendor/ImGui/imgui.h"
+#include "../../../vendor/ImGui/imgui_compat.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -112,7 +113,7 @@ namespace H2M::UI
 	{
 		bool modified = false;
 
-		ImGui::Text(label);
+	 ImGui::Text(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -187,7 +188,7 @@ namespace H2M::UI
 		memset(s_IDBuffer + 2, 0, 14);
 		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
 		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
-		if (ImGui::DragFloat3(s_IDBuffer, glm::value_ptr(value), delta))
+		if (ImGui::DragFloat3(s_IDBuffer, const_cast<float*>(glm::value_ptr(value)), delta))
 			modified = true;
 
 		ImGui::PopItemWidth();
@@ -209,7 +210,7 @@ namespace H2M::UI
 		memset(s_IDBuffer + 2, 0, 14);
 		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
 		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
-		if (ImGui::ColorEdit3(s_IDBuffer, glm::value_ptr(value))) {
+		if (ImGui::ColorEdit3(s_IDBuffer, const_cast<float*>(glm::value_ptr(value)))) {
 			modified = true;
 		}
 
@@ -232,7 +233,7 @@ namespace H2M::UI
 		memset(s_IDBuffer + 2, 0, 14);
 		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
 		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
-		if (ImGui::DragFloat3(s_IDBuffer, glm::value_ptr(value), delta))
+		if (ImGui::DragFloat3(s_IDBuffer, const_cast<float*>(glm::value_ptr(value)), delta))
 			modified = true;
 
 		ImGui::PopItemWidth();
@@ -254,7 +255,7 @@ namespace H2M::UI
 		memset(s_IDBuffer + 2, 0, 14);
 		// _itoa_s(s_Counter++, s_IDBuffer + 2, 16, 16);
 		sprintf(s_IDBuffer + 2, "%d", s_Counter++);
-		if (ImGui::DragFloat4(s_IDBuffer, glm::value_ptr(value), delta))
+		if (ImGui::DragFloat4(s_IDBuffer, const_cast<float*>(glm::value_ptr(value)), delta))
 			modified = true;
 
 		ImGui::PopItemWidth();

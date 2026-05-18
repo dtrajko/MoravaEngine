@@ -69,7 +69,7 @@ void MaterialEditorPanel::OnImGuiRender(bool* p_open)
 	}
 
 	// Right-click on blank space
-	if (ImGui::BeginPopupContextWindow(0, 1, false))
+	if (ImGui::BeginPopupContextWindow(0, 1))
 	{
 		if (ImGui::MenuItem("Create a Material"))
 		{

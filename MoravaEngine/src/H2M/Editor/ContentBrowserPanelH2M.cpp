@@ -96,7 +96,6 @@ namespace H2M
 		const ImVec2 iconSize = ImVec2{ m_TableCellWidth - cellMarginWidth, m_TableCellWidth - cellMarginWidth };
 		const ImVec2 iconUV0 = ImVec2(0, 0);
 		const ImVec2 iconUV1 = ImVec2(1, 1);
-		const int iconFramePadding = -1;
 		const ImVec4 iconBgColor = ImVec4(0, 0, 0, 0);
 		const ImVec4 iconTintColor = ImVec4(1, 1, 1, 1);
 
@@ -118,7 +117,15 @@ namespace H2M
 			ImGui::PushID(imageButtonID++);
 			ImTextureID dirIconTextureID = m_TextureDirectory->GetImTextureID();
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-			if (ImGui::ImageButton(dirIconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding/*, iconBgColor, iconTintColor*/))
+			if (ImGui::ImageButton(
+				"DirIcon",
+				dirIconTextureID,
+				iconSize,
+				iconUV0,
+				iconUV1,
+				ImVec4(0, 0, 0, 0),   // bg_col (transparent)
+				ImVec4(1, 1, 1, 1)    // tint_col (normal)
+			))
 			{
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
 				Log::GetLogger()->info("m_CurrentDirectory: '{0}'", m_CurrentDirectory.string().c_str());
@@ -146,7 +153,7 @@ namespace H2M
 				ImTextureID iconTextureID = iconTexture->GetImTextureID();
 
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-				ImGui::ImageButton(iconTextureID, iconSize, iconUV0, iconUV1, iconFramePadding, iconBgColor, iconTintColor);
+				ImGui::ImageButton("DirIcon", iconTextureID, iconSize, iconUV0, iconUV1, ImVec4(0, 0, 0, 0), ImVec4(1, 1, 1, 1));
 
 				if (ImGui::BeginDragDropSource())
 				{

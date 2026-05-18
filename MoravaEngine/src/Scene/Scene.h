@@ -26,12 +26,14 @@
 #include "Texture/TextureLoader.h"
 #include "Water/WaterManager.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 
 #include <vector>
 #include <map>
 #include <string>
 
+#include "../../vendor/ImGui/imgui_internal.h"
 
 struct SceneSettings
 {

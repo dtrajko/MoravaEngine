@@ -89,7 +89,7 @@ namespace H2M::Utils {
 	VkResult res = (f);												              \
 	if (res != VK_SUCCESS)											              \
 	{																              \
-		H2M_CORE_ERROR("VkResult is '{0}' in {1}:{2}", res, __FILE__ , __LINE__); \
+		H2M_CORE_ERROR("VkResult is '{0}' in {1}:{2}", (int)res, __FILE__ , __LINE__); \
 		H2M_CORE_ASSERT(res == VK_SUCCESS);										  \
 	}																			  \
 }

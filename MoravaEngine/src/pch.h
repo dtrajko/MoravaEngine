@@ -42,6 +42,7 @@
 #include "H2M/Scene/EntityH2M.h"
 
 // GLM
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/type_ptr.hpp>
 
 // C++

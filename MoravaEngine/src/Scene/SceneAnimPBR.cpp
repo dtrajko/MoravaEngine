@@ -12,7 +12,7 @@
 
 #include "H2M/Renderer/RendererH2M.h"
 
-#include "../../ImGuizmo/ImGuizmo.h"
+#include "../../ImGuizmo/src/ImGuizmo.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/matrix_decompose.hpp>

@@ -123,7 +123,7 @@ namespace H2M
 		uint32_t GetSize() const { return m_Size; }
 		uint32_t GetOffset() const { return m_Offset; }
 
-		static const std::string& UniformTypeToString(ShaderUniformTypeH2M type);
+		static std::string UniformTypeToString(ShaderUniformTypeH2M type);
 
 	private:
 		std::string m_Name;

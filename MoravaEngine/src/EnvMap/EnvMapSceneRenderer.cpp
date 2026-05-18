@@ -665,7 +665,8 @@ void EnvMapSceneRenderer::OnImGuiRender()
         {
             if (ImGui::IsItemClicked())
             {
-                std::string filename = Application::Get()->OpenFile("");
+                std::wstring filenameW = Application::Get()->OpenFile(L"");
+                std::string filename = Util::ToUtf8(filenameW);
                 if (!filename.empty())
                 {
                     s_BloomDirtTexture = H2M::Texture2D_H2M::Create(filename, false);
@@ -687,10 +688,10 @@ void EnvMapSceneRenderer::OnImGuiRender()
         H2M::UI::Property("Blur Sharpness", s_Options.HBAOBlurSharpness, 0.5f, 0.0f, 100.f);
         H2M::UI::EndPropertyGrid();
 
-        float size = ImGui::GetContentRegionAvailWidth();
+        float size = ImGui::GetContentRegionAvail().x;
         if (s_ResourcesCreated)
         {
-            float size = ImGui::GetContentRegionAvailWidth();
+            float size = ImGui::GetContentRegionAvail().x;
             auto image = s_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
             // H2M::UI::Image(image, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
         }
@@ -723,7 +724,7 @@ void EnvMapSceneRenderer::OnImGuiRender()
             // auto fb = s_ShadowPassPipelines[cascadeIndex]->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
             // auto image = fb->GetDepthImage();
 
-            float size = ImGui::GetContentRegionAvailWidth(); // (float)fb->GetWidth() * 0.5f, (float)fb->GetHeight() * 0.5f
+            float size = ImGui::GetContentRegionAvail().x; // (float)fb->GetWidth() * 0.5f, (float)fb->GetHeight() * 0.5f
             H2M::UI::BeginPropertyGrid();
             H2M::UI::PropertySlider("Cascade Index", cascadeIndex, 0, 3);
             H2M::UI::EndPropertyGrid();
@@ -739,7 +740,7 @@ void EnvMapSceneRenderer::OnImGuiRender()
 
     if (H2M::UI::BeginTreeNode("Compute Bloom"))
     {
-        float size = ImGui::GetContentRegionAvailWidth();
+        float size = ImGui::GetContentRegionAvail().x;
         if (s_ResourcesCreated)
         {
             static int tex = 0;

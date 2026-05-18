@@ -3,7 +3,9 @@
 
 #include "Shader/MoravaShader.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+
 #include <glm/ext/quaternion_float.hpp>
 
 #include <iostream>

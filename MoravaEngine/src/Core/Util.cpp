@@ -117,11 +117,25 @@ glm::mat4 Util::CalculateLightTransform(glm::mat4 lightProjectionMatrix, glm::ve
 void Util::CheckOpenGLErrors(const std::string& label)
 {
 	GLenum error = glGetError();
-	const GLubyte* errorString = glewGetErrorString(error);
 
 	while (error != GL_NO_ERROR)
 	{
-		Log::GetLogger()->error("[{0}] OpenGL Error code: {1}, Message: '{2}'", label, error, errorString);
+		const char* errorString = "Unknown OpenGL Error";
+
+		switch (error)
+		{
+		case GL_INVALID_ENUM:      errorString = "GL_INVALID_ENUM"; break;
+		case GL_INVALID_VALUE:     errorString = "GL_INVALID_VALUE"; break;
+		case GL_INVALID_OPERATION: errorString = "GL_INVALID_OPERATION"; break;
+		case GL_OUT_OF_MEMORY:     errorString = "GL_OUT_OF_MEMORY"; break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION: errorString = "GL_INVALID_FRAMEBUFFER_OPERATION"; break;
+		}
+
+		Log::GetLogger()->error(
+			"[{}] OpenGL Error code: {}, Message: '{}'",
+			label, error, errorString
+		);
+
 		error = glGetError();
 	}
 }
@@ -136,60 +150,17 @@ std::string Util::SpaceToUnderscore(std::string text)
 	return text;
 }
 
-// convert from const char* to const wchar_t*
-// https://www.youtube.com/watch?v=DZyzPSwe5l4
-std::wstring Util::to_wstr(const char* mbstr)
-{
-	// not required, but nice to have
-	// use underscored "en_US" instead of 
-	// hyphened "en-US" for compatibility with GNU g++
-#ifdef _MSC_VER
-	std::setlocale(LC_ALL, "en-US"); // Microsoft Visual Studio
-#else
-	std::setlocale(LC_ALL, "en_US"); // GNU g++
-#endif
+#include <Windows.h>
 
-	if (mbstr == NULL || strlen(mbstr) == 0)
+std::wstring Util::to_wstr(const wchar_t* mbstr)
+{
+	if (!mbstr || *mbstr == L'\0')
 	{
 		std::cerr << "Invalid input parameter!" << std::endl;
 		return L"";
 	}
 
-	std::mbstate_t state{}; // conversion state
-
-	const char* p = mbstr;
-
-	// get the number of characters
-	// when successfully converted
-	// mbsrtowcs - [multi byte string] to [wide char string]
-	// https://en.cppreference.com/w/cpp/string/multibyte/mbsrtowcs
-	size_t clen = mbsrtowcs(NULL, &p, 0 /* ignore */, &state);
-		// + 1 is redundant because std::wstring manages the terminating null character
-
-	// failed to calculate
-	// the character length of the converted string 
-	if (clen == 0 || clen == static_cast<size_t>(-1))
-	{
-		std::cerr << "Failed to compute clen!" << std::endl;
-		return L""; // empty wstring
-	}
-
-	// reserve clen characters
-	// wstring reserves +1 character (termination char)
-	std::wstring rlt(clen, L'\0');
-
-	size_t converted = mbsrtowcs(&rlt[0], &mbstr, rlt.size(), &state);
-
-	// conversion failed
-	if (converted == static_cast<std::size_t>(-1))
-	{
-		std::cerr << "The mbsrtowcs() conversion failed!" << std::endl;
-		return L"";
-	}
-	else
-	{
-		return rlt;
-	}
+	return std::wstring(mbstr);
 }
 
 // convert from const wchar_t* to const char*
@@ -288,7 +259,7 @@ const char* Util::AttachmentFormatToString(AttachmentFormat attachmentFormat)
 	case AttachmentFormat::SRGB:               return "SRGB";
 	case AttachmentFormat::Stencil:            return "Stencil";
 	default:
-		Log::GetLogger()->error("AttachmentFormat '{0}' undefined", attachmentFormat);
+		Log::GetLogger()->error("AttachmentFormat '{0}' undefined", static_cast<int>(attachmentFormat));
 		return "None";
 	}
 }
@@ -297,18 +268,40 @@ const char* Util::FormatToString(GLenum format)
 {
 	switch (format)
 	{
-		case GL_RGBA8:                    return "GL_RGBA8";
-		case GL_RGBA:                     return "GL_RGBA";
-		case GL_R8I:                      return "GL_R8I";
-		case GL_R16I:                     return "GL_R16I";
-		case GL_R32I:                     return "GL_R32I";
-		case GL_RED_INTEGER:              return "GL_RED_INTEGER";
-		case GL_DEPTH24_STENCIL8:         return "GL_DEPTH24_STENCIL8";
-		case GL_INT:                      return "GL_INT";
-		case GL_DEPTH_STENCIL_ATTACHMENT: return "GL_DEPTH_STENCIL_ATTACHMENT";
+	case GL_RGBA8:                    return "GL_RGBA8";
+	case GL_RGBA:                     return "GL_RGBA";
+	case GL_R8I:                      return "GL_R8I";
+	case GL_R16I:                     return "GL_R16I";
+	case GL_R32I:                     return "GL_R32I";
+	case GL_RED_INTEGER:              return "GL_RED_INTEGER";
+	case GL_DEPTH24_STENCIL8:         return "GL_DEPTH24_STENCIL8";
+	case GL_INT:                      return "GL_INT";
+	case GL_DEPTH_STENCIL_ATTACHMENT: return "GL_DEPTH_STENCIL_ATTACHMENT";
 	default:
 		Log::GetLogger()->error("AttachmentFormat '{0}' undefined", format);
 		return "UNDEFINED";
 	}
-
 }
+
+std::string Util::ToUtf8(const std::wstring & wstr)
+{
+		if (wstr.empty()) return {};
+
+		int size = WideCharToMultiByte(
+			CP_UTF8, 0,
+			wstr.c_str(), -1,
+			nullptr, 0,
+			nullptr, nullptr);
+
+		std::string result(size, 0);
+
+		WideCharToMultiByte(
+			CP_UTF8, 0,
+			wstr.c_str(), -1,
+			result.data(), size,
+			nullptr, nullptr);
+
+		result.pop_back(); // remove null terminator
+		return result;
+}
+

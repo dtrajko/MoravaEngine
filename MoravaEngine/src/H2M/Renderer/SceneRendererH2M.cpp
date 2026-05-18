@@ -15,9 +15,31 @@
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <Windows.h>
+
 
 namespace H2M
 {
+	static std::string WStringToUTF8(const std::wstring& wstr)
+	{
+		int sizeNeeded = WideCharToMultiByte(
+			CP_UTF8, 0,
+			wstr.c_str(), (int)wstr.size(),
+			nullptr, 0,
+			nullptr, nullptr
+		);
+
+		std::string result(sizeNeeded, 0);
+
+		WideCharToMultiByte(
+			CP_UTF8, 0,
+			wstr.c_str(), (int)wstr.size(),
+			result.data(), sizeNeeded,
+			nullptr, nullptr
+		);
+
+		return result;
+	}
 
 	struct SceneRendererDataH2M
 	{
@@ -629,10 +651,12 @@ namespace H2M
 			{
 				if (ImGui::IsItemClicked())
 				{
-					std::string filename = Application::Get()->OpenFile("");
+					std::wstring filename = Application::Get()->OpenFile(L"All\0*.*\0");
+
 					if (!filename.empty())
 					{
-						m_BloomDirtTexture = Texture2D_H2M::Create(filename, false);
+						std::string filenameStr = WStringToUTF8(filename);
+						m_BloomDirtTexture = Texture2D_H2M::Create(filenameStr, false);
 					}
 				}
 			}
@@ -651,10 +675,10 @@ namespace H2M
 			UI::Property("Blur Sharpness", m_Options.HBAOBlurSharpness, 0.5f, 0.0f, 100.f);
 			UI::EndPropertyGrid();
 
-			float size = ImGui::GetContentRegionAvailWidth();
+			float size = ImGui::GetContentRegionAvail().x;
 			if (m_ResourcesCreated)
 			{
-				float size = ImGui::GetContentRegionAvailWidth();
+				float size = ImGui::GetContentRegionAvail().x;
 				auto image = m_GeometryPipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
 				// UI::Image(image, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
 			}
@@ -687,7 +711,7 @@ namespace H2M
 				auto fb = m_ShadowPassPipelines[cascadeIndex]->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer;
 				auto image = fb->GetDepthImage();
 
-				float size = ImGui::GetContentRegionAvailWidth(); // (float)fb->GetWidth() * 0.5f, (float)fb->GetHeight() * 0.5f
+				float size = ImGui::GetContentRegionAvail().x; // (float)fb->GetWidth() * 0.5f, (float)fb->GetHeight() * 0.5f
 				UI::BeginPropertyGrid();
 				UI::PropertySlider("Cascade Index", cascadeIndex, 0, 3);
 				UI::EndPropertyGrid();
@@ -703,7 +727,7 @@ namespace H2M
 
 		if (UI::BeginTreeNode("Compute Bloom"))
 		{
-			float size = ImGui::GetContentRegionAvailWidth();
+			float size = ImGui::GetContentRegionAvail().x;
 			if (m_ResourcesCreated)
 			{
 				static int tex = 0;

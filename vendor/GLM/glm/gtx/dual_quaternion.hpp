@@ -20,12 +20,10 @@
 #include "../gtc/constants.hpp"
 #include "../gtc/quaternion.hpp"
 
-#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
-#	ifndef GLM_ENABLE_EXPERIMENTAL
-#		pragma message("GLM: GLM_GTX_dual_quaternion is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it.")
-#	else
-#		pragma message("GLM: GLM_GTX_dual_quaternion extension included")
-#	endif
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#	error "GLM: GLM_GTX_dual_quaternion is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
+#elif GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
+#	pragma message("GLM: GLM_GTX_dual_quaternion extension included")
 #endif
 
 namespace glm
@@ -49,42 +47,42 @@ namespace glm
 
 		typedef length_t length_type;
 		/// Return the count of components of a dual quaternion
-		GLM_FUNC_DECL static GLM_CONSTEXPR length_type length(){return 2;}
+		GLM_FUNC_DECL static constexpr length_type length(){return 2;}
 
-		GLM_FUNC_DECL part_type & operator[](length_type i);
-		GLM_FUNC_DECL part_type const& operator[](length_type i) const;
+		GLM_FUNC_DECL GLM_CONSTEXPR part_type & operator[](length_type i) noexcept;
+		GLM_FUNC_DECL GLM_CONSTEXPR part_type const& operator[](length_type i) const noexcept;
 
 		// -- Implicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat() GLM_DEFAULT;
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tdualquat<T, Q> const& d) GLM_DEFAULT;
+		GLM_DEFAULTED_DEFAULT_CTOR_DECL GLM_CONSTEXPR tdualquat() GLM_DEFAULT_CTOR;
+		GLM_CTOR_DECL tdualquat(tdualquat<T, Q> const& d) = default;
 		template<qualifier P>
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(tdualquat<T, P> const& d);
+		GLM_CTOR_DECL tdualquat(tdualquat<T, P> const& d);
 
 		// -- Explicit basic constructors --
 
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(qua<T, Q> const& real);
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(qua<T, Q> const& orientation, vec<3, T, Q> const& translation);
-		GLM_FUNC_DECL GLM_CONSTEXPR tdualquat(qua<T, Q> const& real, qua<T, Q> const& dual);
+		GLM_CTOR_DECL tdualquat(qua<T, Q> const& real);
+		GLM_CTOR_DECL tdualquat(qua<T, Q> const& orientation, vec<3, T, Q> const& translation);
+		GLM_CTOR_DECL tdualquat(qua<T, Q> const& real, qua<T, Q> const& dual);
 
 		// -- Conversion constructors --
 
 		template<typename U, qualifier P>
-		GLM_FUNC_DECL GLM_CONSTEXPR GLM_EXPLICIT tdualquat(tdualquat<U, P> const& q);
+		GLM_CTOR_DECL GLM_EXPLICIT tdualquat(tdualquat<U, P> const& q);
 
-		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR tdualquat(mat<2, 4, T, Q> const& holder_mat);
-		GLM_FUNC_DECL GLM_EXPLICIT GLM_CONSTEXPR tdualquat(mat<3, 4, T, Q> const& aug_mat);
+		GLM_CTOR_DECL GLM_EXPLICIT tdualquat(mat<2, 4, T, Q> const& holder_mat);
+		GLM_CTOR_DECL GLM_EXPLICIT tdualquat(mat<3, 4, T, Q> const& aug_mat);
 
 		// -- Unary arithmetic operators --
 
-		GLM_FUNC_DECL tdualquat<T, Q> & operator=(tdualquat<T, Q> const& m) GLM_DEFAULT;
+		GLM_FUNC_DISCARD_DECL tdualquat<T, Q> & operator=(tdualquat<T, Q> const& m) = default;
 
 		template<typename U>
-		GLM_FUNC_DECL tdualquat<T, Q> & operator=(tdualquat<U, Q> const& m);
+		GLM_FUNC_DISCARD_DECL tdualquat<T, Q> & operator=(tdualquat<U, Q> const& m);
 		template<typename U>
-		GLM_FUNC_DECL tdualquat<T, Q> & operator*=(U s);
+		GLM_FUNC_DISCARD_DECL tdualquat<T, Q> & operator*=(U s);
 		template<typename U>
-		GLM_FUNC_DECL tdualquat<T, Q> & operator/=(U s);
+		GLM_FUNC_DISCARD_DECL tdualquat<T, Q> & operator/=(U s);
 	};
 
 	// -- Unary bit operators --
@@ -270,5 +268,29 @@ namespace glm
 
 	/// @}
 } //namespace glm
+
+
+#if GLM_CONFIG_CTOR_INIT == GLM_DISABLE
+static_assert(std::is_trivially_default_constructible<glm::dualquat>::value);
+static_assert(std::is_trivially_default_constructible<glm::lowp_dualquat>::value);
+static_assert(std::is_trivially_default_constructible<glm::mediump_dualquat>::value);
+static_assert(std::is_trivially_default_constructible<glm::highp_dualquat>::value);
+#endif
+static_assert(std::is_trivially_copy_assignable<glm::dualquat>::value);
+static_assert(std::is_trivially_copy_assignable<glm::lowp_dualquat>::value);
+static_assert(std::is_trivially_copy_assignable<glm::mediump_dualquat>::value);
+static_assert(std::is_trivially_copy_assignable<glm::highp_dualquat>::value);
+static_assert(std::is_trivially_copyable<glm::dualquat>::value);
+static_assert(std::is_trivially_copyable<glm::lowp_dualquat>::value);
+static_assert(std::is_trivially_copyable<glm::mediump_dualquat>::value);
+static_assert(std::is_trivially_copyable<glm::highp_dualquat>::value);
+static_assert(std::is_copy_constructible<glm::dualquat>::value);
+static_assert(std::is_copy_constructible<glm::lowp_dualquat>::value);
+static_assert(std::is_copy_constructible<glm::mediump_dualquat>::value);
+static_assert(std::is_copy_constructible<glm::highp_dualquat>::value);
+static_assert(glm::dualquat::length() == 2);
+static_assert(glm::lowp_dualquat::length() == 2);
+static_assert(glm::mediump_dualquat::length() == 2);
+static_assert(glm::highp_dualquat::length() == 2);
 
 #include "dual_quaternion.inl"

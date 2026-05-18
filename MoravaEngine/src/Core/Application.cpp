@@ -19,6 +19,7 @@
 	#define GLFW_EXPOSE_NATIVE_WIN32
 	#include <GLFW/glfw3native.h>
 	#include <Windows.h>
+	#include <commdlg.h>
 #endif
 
 #include <imgui.h>
@@ -326,7 +327,7 @@ void Application::InitializeScene(SceneProperties sceneProperties)
 void Application::ClassifyEvents()
 {
 	H2M::WindowResizeEventH2M e(1280, 720);
-	Log::GetLogger()->debug(e);
+	Log::GetLogger()->debug("WindowResizeEvent: {}x{}", e.GetWidth(), e.GetHeight());
 
 	if (e.IsInCategory(H2M::EventCategoryApplication))
 	{
@@ -339,17 +340,17 @@ void Application::ClassifyEvents()
 	}
 }
 
-std::string Application::OpenFile(const char* filter) const
+std::wstring Application::OpenFile(const wchar_t* filter) const
 {
 
 #if defined(HZ_PLATFORM_WINDOWS)
 
-	OPENFILENAMEA ofn;        // common dialog box structure
-	CHAR szFile[260] = { 0 }; // if using TCHAR macros
+	OPENFILENAMEW ofn;        // common dialog box structure
+	wchar_t szFile[260] = { 0 }; // if using TCHAR macros
 
 	// Initialize OPENFILENAME
-	ZeroMemory(&ofn, sizeof(OPENFILENAME));
-	ofn.lStructSize = sizeof(OPENFILENAME);
+	ZeroMemory(&ofn, sizeof(OPENFILENAMEW));
+	ofn.lStructSize = sizeof(OPENFILENAMEW);
 	switch (H2M::RendererAPI_H2M::Current())
 	{
 		case H2M::RendererAPITypeH2M::OpenGL:
@@ -366,27 +367,27 @@ std::string Application::OpenFile(const char* filter) const
 	ofn.nFilterIndex = 1;
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
-	if (GetOpenFileNameA(&ofn) == TRUE)
+	if (GetOpenFileNameW(&ofn) == TRUE)
 	{
 		return ofn.lpstrFile;
 	}
 
 #endif
 
-	return std::string();
+	return std::wstring();
 }
 
-std::string Application::SaveFile(const char* filter) const
+std::wstring Application::SaveFile(const wchar_t* filter) const
 {
 
 #if defined(HZ_PLATFORM_WINDOWS)
 
-	OPENFILENAMEA ofn;        // common dialog box structure
-	CHAR szFile[260] = { 0 }; // if using TCHAR macros
+	OPENFILENAMEW ofn;        // common dialog box structure
+	wchar_t szFile[260] = { 0 }; // if using TCHAR macros
 
 	// Initialize OPENFILENAME
-	ZeroMemory(&ofn, sizeof(OPENFILENAME));
-	ofn.lStructSize = sizeof(OPENFILENAME);
+	ZeroMemory(&ofn, sizeof(OPENFILENAMEW));
+	ofn.lStructSize = sizeof(OPENFILENAMEW);
 	switch (H2M::RendererAPI_H2M::Current())
 	{
 		case H2M::RendererAPITypeH2M::OpenGL:
@@ -403,14 +404,14 @@ std::string Application::SaveFile(const char* filter) const
 	ofn.nFilterIndex = 1;
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
-	if (GetSaveFileNameA(&ofn) == TRUE)
+	if (GetSaveFileNameW(&ofn) == TRUE)
 	{
 		return ofn.lpstrFile;
 	}
 
 #endif
 
-	return std::string();
+	return std::wstring();
 }
 
 void Application::OnImGuiRender(bool* p_open)
