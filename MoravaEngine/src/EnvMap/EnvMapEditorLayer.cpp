@@ -198,7 +198,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     // cameraEntity.AddComponent<H2M::CameraComponentH2M>(*m_EditorCamera);
     // m_ActiveCamera = m_EditorCamera;
 
-    Log::GetLogger()->debug("cameraEntity UUID: {0}", cameraEntity.GetUUID());
+    Log::GetLogger()->debug("cameraEntity UUID: {0}", static_cast<uint64_t>(cameraEntity.GetUUID()));
 
     // auto mapGenerator = CreateEntity("Map Generator");
     // mapGenerator.AddComponent<H2M::ScriptComponent>("Example.MapGenerator");
@@ -929,16 +929,27 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     {
                         if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
                         {
-                            std::wstring itemPath = std::wstring((const wchar_t*)payload->Data);
-                            size_t itemSize = payload->DataSize;
-                            Log::GetLogger()->debug("END DRAG & DROP FILE '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
+                            const char* pathData = static_cast<const char*>(payload->Data);
 
-                            m_EnvMapFilename = std::string{ itemPath.begin(), itemPath.end() };
-                            if (m_EnvMapFilename != "")
+                            std::string itemPath(pathData);
+                            size_t itemSize = payload->DataSize;
+
+                            Log::GetLogger()->debug(
+                                "END DRAG & DROP FILE '{0}', size: {1}",
+                                itemPath,
+                                itemSize
+                            );
+
+                            m_EnvMapFilename = itemPath;
+
+                            if (!m_EnvMapFilename.empty())
                             {
-                                EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
+                                EnvMapSceneRenderer::SetEnvironment(
+                                    EnvMapSceneRenderer::Load(m_EnvMapFilename)
+                                );
                             }
                         }
+
                         ImGui::EndDragDropTarget();
                     }
 

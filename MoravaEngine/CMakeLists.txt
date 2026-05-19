@@ -33,7 +33,6 @@ if(MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     add_compile_options(
         /std:c++17
-        /utf-8
     )
 endif()
 
@@ -223,11 +222,19 @@ target_include_directories(tinyobjloader INTERFACE
 
 # ---------------- GLEW ----------------
 
+set(GLEW_DIR ${ROOT_PATH_ABS}/vendor/GLEW)
+
 add_library(glew INTERFACE)
 
 target_include_directories(glew INTERFACE
-    ${ROOT_PATH_ABS}/vendor/GLEW/include
+    ${GLEW_DIR}/include
 )
+
+target_link_libraries(glew INTERFACE
+    ${GLEW_DIR}/lib/glew32s.lib
+)
+
+target_compile_definitions(glew INTERFACE GLEW_STATIC)
 
 # ---------------- VMA ----------------
 
@@ -360,6 +367,8 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src
     FILES ${HEADERS}
 )
 
+target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
+
 # =========================================================
 # ENGINE INCLUDES
 # =========================================================
@@ -410,11 +419,33 @@ target_link_libraries(${PROJECT_NAME}
 # GLFW
 # =========================================================
 
-if(TARGET glfw)
-    target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
-elseif(TARGET glfw3)
-    target_link_libraries(${PROJECT_NAME} PRIVATE glfw3)
-endif()
+# Engine uses ONLY this:
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
+
+# =========================================================
+# GLEW
+# =========================================================
+
+# Engine uses ONLY this:
+target_link_libraries(${PROJECT_NAME} PRIVATE glew)
+
+# =========================================================
+# VULKAN
+# =========================================================
+
+set(VULKAN_DIR ${ROOT_PATH_ABS}/vendor/Vulkan/1.2.148.1)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${VULKAN_DIR}/Include
+)
+
+target_link_directories(${PROJECT_NAME} PRIVATE
+    ${VULKAN_DIR}/Lib
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    vulkan-1
+)
 
 # =========================================================
 # BOX2D
@@ -509,6 +540,24 @@ if(TARGET DirectXTex)
 endif()
 
 # =========================================================
+# VULKAN
+# =========================================================
+
+set(VULKAN_DIR ${ROOT_PATH_ABS}/vendor/Vulkan/1.2.148.1)
+
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${VULKAN_DIR}/Include
+)
+
+target_link_directories(${PROJECT_NAME} PRIVATE
+    ${VULKAN_DIR}/Lib
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    vulkan-1
+)
+
+# =========================================================
 # WINDOWS SYSTEM LIBS
 # =========================================================
 
@@ -521,7 +570,6 @@ if(WIN32)
         opengl32
         d3d11
         d3dcompiler
-        vulkan-1
 
     )
 

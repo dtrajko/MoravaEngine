@@ -17,6 +17,8 @@
 #include <cmath>
 #include <exception>
 
+#define UNICODE
+#define _UNICODE
 
 Window* Window::Create(const WindowSpecification& windowSpecification)
 {
@@ -186,7 +188,7 @@ void WindowsWindow::InitGLFW(const WindowSpecification& props)
 	SetCallbacksHazelDev();
 }
 
-inline std::pair<float, float> WindowsWindow::GetWindowPos() const
+inline std::pair<int, int> WindowsWindow::GetWindowPos() const
 {
 	int x, y;
 	glfwGetWindowPos(m_GLFW_Window, &x, &y);
@@ -336,75 +338,45 @@ void WindowsWindow::InitDX11(const WindowSpecification& windowSpecification)
 {
 	m_IsInitialized = false;
 
+	const wchar_t* className = L"WindowsWindow";
+	const wchar_t* menuName = L"";
 
-	LPCSTR className = "WindowsWindow";
-	LPCSTR menuName = "";
-	std::wstring windowNameWStr = Util::to_wstr(windowSpecification.Title.c_str());
-	const wchar_t* windowNameWChar = windowNameWStr.c_str();
-	LPCSTR windowName = (LPCSTR)windowNameWChar;
+	std::wstring windowNameWStr = Util::to_wstr(windowSpecification.Title);
+	LPCWSTR windowName = windowNameWStr.c_str();
 
-	WNDCLASSEX wc;
-	wc.cbClsExtra = NULL;
-	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.cbWndExtra = NULL;
-	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-	wc.hInstance = NULL;
+	WNDCLASSEXW wc = {};
+	wc.cbSize = sizeof(WNDCLASSEXW);
+	wc.lpfnWndProc = &WndProc;
+	wc.hInstance = GetModuleHandle(nullptr);
 	wc.lpszClassName = className;
 	wc.lpszMenuName = menuName;
-	wc.style = NULL;
-	wc.lpfnWndProc = &WndProc;
+	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wc.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
+	wc.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
+	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 
-	if (!::RegisterClassEx(&wc)) // If the registration of class fails, the function returns false
-	{
+	if (!RegisterClassExW(&wc))
 		throw std::exception("Window not created successfully.");
-	}
 
-	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, windowSpecification.Width, windowSpecification.Height,
-		NULL, NULL, NULL, NULL);
-
-
-//	LPCSTR className = "WindowsWindow";
-//	LPCSTR menuName = "";
-//	std::string windowNameWStr = props.Title.c_str();
-//	const char* windowNameWChar = windowNameWStr.c_str();
-//	LPCSTR windowName = (LPCSTR)windowNameWChar;
-//
-//	WNDCLASSEX wc;
-//	wc.cbClsExtra = NULL;
-//	wc.cbSize = sizeof(WNDCLASSEX);
-//	wc.cbWndExtra = NULL;
-//	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
-//	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-//	wc.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-//	wc.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
-//	wc.hInstance = NULL;
-//	wc.lpszClassName = className;
-//	wc.lpszMenuName = menuName;
-//	wc.style = NULL;
-//	wc.lpfnWndProc = &WndProc;
-//
-//	if (!::RegisterClassEx(&wc)) // If the registration of class fails, the function returns false
-//	{
-//		throw std::exception("Window not created successfully.");
-//	}
-//
-//	m_HWND = ::CreateWindowEx(WS_EX_OVERLAPPEDWINDOW, className, windowName, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, props.Width, props.Height,
-//		NULL, NULL, NULL, NULL);
-
+	m_HWND = CreateWindowExW(
+		WS_EX_OVERLAPPEDWINDOW,
+		className,
+		windowName,
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, CW_USEDEFAULT,
+		windowSpecification.Width,
+		windowSpecification.Height,
+		nullptr, nullptr,
+		GetModuleHandle(nullptr),
+		nullptr
+	);
 
 	if (!m_HWND)
-	{
 		throw std::exception("Window not created successfully.");
-	}
 
-	// Show up the window
-	::ShowWindow(m_HWND, SW_SHOW);
-	::UpdateWindow(m_HWND);
+	ShowWindow(m_HWND, SW_SHOW);
+	UpdateWindow(m_HWND);
 
-	// Set this flag to true to indicate that the window is initialized and running
 	m_IsRunning = true;
 }
 

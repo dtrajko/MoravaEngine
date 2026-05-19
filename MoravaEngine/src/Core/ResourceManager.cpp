@@ -360,31 +360,36 @@ void ResourceManager::AddShader(std::string name, H2M::RefH2M<MoravaShader> shad
     }
 }
 
-const H2M::RefH2M<MoravaShader>& ResourceManager::GetShader(std::string name)
+H2M::RefH2M<MoravaShader> ResourceManager::GetShader(std::string name)
 {
-    if (s_ShaderCacheByTitle.find(name) != s_ShaderCacheByTitle.end()) {
-        return s_ShaderCacheByTitle.find(name)->second;
-    }
-    return H2M::RefH2M<MoravaShader>();
+    auto it = s_ShaderCacheByTitle.find(name);
+    if (it != s_ShaderCacheByTitle.end())
+        return it->second;
+
+    return {};
 }
 
-const H2M::RefH2M<MoravaShader>& ResourceManager::CreateOrLoadShader(MoravaShaderSpecification moravaShaderSpecification)
+H2M::RefH2M<MoravaShader> ResourceManager::CreateOrLoadShader(MoravaShaderSpecification spec)
 {
-    H2M::RefH2M<MoravaShader> moravaShader;
+    const std::string& key = spec.PixelShaderPath;
 
-    std::string pixelShaderPath = moravaShaderSpecification.PixelShaderPath;
-    std::map<std::string, H2M::RefH2M<MoravaShader>>::iterator entry = s_ShadersCacheByFilepath.find(pixelShaderPath);
-    if (entry != s_ShadersCacheByFilepath.end()) {
-        // A cache HIT
-        moravaShader = entry->second;
-        Log::GetLogger()->info("ResourceManager: A shader loaded from the cache [key: '{0}']", pixelShaderPath);
-    }
-    else {
-        // A cache MISS
-        moravaShader = MoravaShader::Create(moravaShaderSpecification);
-        s_ShadersCacheByFilepath.insert(std::make_pair(pixelShaderPath, moravaShader));
-        Log::GetLogger()->info("ResourceManager: A shader created and stored in cache [key: '{0}']", pixelShaderPath);
+    auto it = s_ShadersCacheByFilepath.find(key);
+    if (it != s_ShadersCacheByFilepath.end())
+    {
+        Log::GetLogger()->info(
+            "ResourceManager: Shader loaded from cache [key: '{0}']",
+            key
+        );
+        return it->second;
     }
 
-    return moravaShader;
+    auto shader = MoravaShader::Create(spec);
+    s_ShadersCacheByFilepath[key] = shader;
+
+    Log::GetLogger()->info(
+        "ResourceManager: Shader created and cached [key: '{0}']",
+        key
+    );
+
+    return shader;
 }

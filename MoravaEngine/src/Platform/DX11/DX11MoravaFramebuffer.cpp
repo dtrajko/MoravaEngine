@@ -119,7 +119,7 @@ void DX11MoravaFramebuffer::Generate(unsigned int width, unsigned int height)
 			Log::GetLogger()->debug("DX11MoravaFramebuffer::Generate AttachmentFormat::{0}, Multisample: {1}, {2}x{3}]", attachmentFormatName, m_Multisample, width, height);
 			break;
 		default:
-			Log::GetLogger()->error("Color attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->error("Color attachment format '{0}' not supported.", static_cast<int>(attachmentSpecs.attachmentFormat));
 			break;
 		}
 
@@ -166,7 +166,7 @@ void DX11MoravaFramebuffer::Generate(unsigned int width, unsigned int height)
 				m_Multisample, width, height);
 			break;
 		default:
-			Log::GetLogger()->error("Depth attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->error("Depth attachment format '{0}' not supported.", static_cast<int>(attachmentSpecs.attachmentFormat));
 			break;
 		}
 	}

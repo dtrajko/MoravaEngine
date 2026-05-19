@@ -35,8 +35,8 @@ public:
 
 	static std::string SpaceToUnderscore(std::string text);
 
-	// convert from const char* to const wchar_t*
-	static std::wstring to_wstr(const wchar_t* mbstr);
+	static std::wstring to_wstr(const std::string& str);
+
 	// convert from const wchar_t* to const char*
 	static std::string to_str(const wchar_t* wcstr);
 

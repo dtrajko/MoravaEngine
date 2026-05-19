@@ -61,15 +61,15 @@ void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Texture2D
 void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::TextureCubeH2M>& texture) {}
 void DX11Material::Set(const std::string& name, const H2M::RefH2M<H2M::Image2D_H2M>& image) {}
 
-float& DX11Material::GetFloat(const std::string& name) { float v;  return v; }
-int32_t& DX11Material::GetInt(const std::string& name) { int32_t v;  return v; }
-uint32_t& DX11Material::GetUInt(const std::string& name) { uint32_t v;  return v; }
-bool& DX11Material::GetBool(const std::string& name) { bool v;  return v; }
-glm::vec2& DX11Material::GetVector2(const std::string& name) { glm::vec2 v;  return v; }
-glm::vec3& DX11Material::GetVector3(const std::string& name) { glm::vec3 v;  return v; }
-glm::vec4& DX11Material::GetVector4(const std::string& name) { glm::vec4 v;  return v; }
-glm::mat3& DX11Material::GetMatrix3(const std::string& name) { glm::mat3 v;  return v; }
-glm::mat4& DX11Material::GetMatrix4(const std::string& name) { glm::mat4 v;  return v; }
+float DX11Material::GetFloat(const std::string& name) { return 0.0f; }
+int32_t DX11Material::GetInt(const std::string& name) { return 0; }
+uint32_t DX11Material::GetUInt(const std::string& name) { return 0; }
+bool DX11Material::GetBool(const std::string& name) { return false; }
+glm::vec2 DX11Material::GetVector2(const std::string& name) { return glm::vec2(0.0f); }
+glm::vec3 DX11Material::GetVector3(const std::string& name) { return glm::vec3(0.0f); }
+glm::vec4 DX11Material::GetVector4(const std::string& name) { return glm::vec4(0.0f); }
+glm::mat3 DX11Material::GetMatrix3(const std::string& name) { return glm::mat3(0.0f); }
+glm::mat4 DX11Material::GetMatrix4(const std::string& name) { return glm::mat4(0.0f); }
 H2M::RefH2M<H2M::Texture2D_H2M> DX11Material::GetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2D_H2M::Create(path, false); }
 H2M::RefH2M<H2M::TextureCubeH2M> DX11Material::TryGetTextureCube(const std::string& name) { std::string path = ""; return H2M::TextureCubeH2M::Create(path); }
 H2M::RefH2M<H2M::Texture2D_H2M> DX11Material::TryGetTexture2D(const std::string& name) { std::string path = ""; return H2M::Texture2D_H2M::Create(path, false); }

@@ -34,7 +34,7 @@ namespace H2M {
 			return m_ExecutionGPUTimes[frameIndex][queryIndex / 2];
 		}
 
-		virtual const PipelineStatisticsH2M& GetPipelineStatistics(uint32_t frameIndex) const override;
+		virtual PipelineStatisticsH2M GetPipelineStatistics(uint32_t frameIndex) const;
 
 		virtual uint64_t BeginTimestampQuery() override;
 		virtual void EndTimestampQuery(uint64_t queryID) override;

@@ -1058,7 +1058,8 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
                         }
                         if (ImGui::IsItemClicked())
                         {
-                            std::string filename = Application::Get()->OpenFile("");
+                            std::wstring filenameW = Application::Get()->OpenFile(L"");
+                            std::string filename = Util::ToUtf8(filenameW);
                             if (filename != "")
                                 m_LoadedTexture = MoravaTexture::Create(filename.c_str(), false);
                         }

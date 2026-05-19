@@ -210,47 +210,47 @@ namespace H2M
 		m_Images[slot] = image;
 	}
 
-	float& OpenGLMaterialH2M::GetFloat(const std::string& name)
+	float OpenGLMaterialH2M::GetFloat(const std::string& name)
 	{
 		return Get<float>(name);
 	}
 
-	int32_t& OpenGLMaterialH2M::GetInt(const std::string& name)
+	int32_t OpenGLMaterialH2M::GetInt(const std::string& name)
 	{
 		return Get<int32_t>(name);
 	}
 
-	uint32_t& OpenGLMaterialH2M::GetUInt(const std::string& name)
+	uint32_t OpenGLMaterialH2M::GetUInt(const std::string& name)
 	{
 		return Get<uint32_t>(name);
 	}
 
-	bool& OpenGLMaterialH2M::GetBool(const std::string& name)
+	bool OpenGLMaterialH2M::GetBool(const std::string& name)
 	{
 		return Get<bool>(name);
 	}
 
-	glm::vec2& OpenGLMaterialH2M::GetVector2(const std::string& name)
+	glm::vec2 OpenGLMaterialH2M::GetVector2(const std::string& name)
 	{
 		return Get<glm::vec2>(name);
 	}
 
-	glm::vec3& OpenGLMaterialH2M::GetVector3(const std::string& name)
+	glm::vec3 OpenGLMaterialH2M::GetVector3(const std::string& name)
 	{
 		return Get<glm::vec3>(name);
 	}
 
-	glm::vec4& OpenGLMaterialH2M::GetVector4(const std::string& name)
+	glm::vec4 OpenGLMaterialH2M::GetVector4(const std::string& name)
 	{
 		return Get<glm::vec4>(name);
 	}
 
-	glm::mat3& OpenGLMaterialH2M::GetMatrix3(const std::string& name)
+	glm::mat3 OpenGLMaterialH2M::GetMatrix3(const std::string& name)
 	{
 		return Get<glm::mat3>(name);
 	}
 
-	glm::mat4& OpenGLMaterialH2M::GetMatrix4(const std::string& name)
+	glm::mat4 OpenGLMaterialH2M::GetMatrix4(const std::string& name)
 	{
 		return Get<glm::mat4>(name);
 	}

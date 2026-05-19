@@ -24,6 +24,9 @@
 #include <string>
 #include <unordered_map>
 
+ // Box2D
+#include <box2d/box2d.h>
+
 
 class b2World;
 
@@ -223,7 +226,7 @@ namespace H2M
 		bool m_IsPlaying = false;
 		bool m_ShouldSimulate = false;
 
-		b2World* m_PhysicsWorld = nullptr;
+		b2WorldId m_WorldId;
 
 		friend class EntityH2M;
 		friend class SceneRendererH2M;

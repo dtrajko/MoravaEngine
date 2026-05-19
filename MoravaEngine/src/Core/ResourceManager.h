@@ -30,10 +30,10 @@ public:
 	static H2M::RefH2M<H2M::Texture2D_H2M> LoadTexture2D_H2M(std::string filePath, bool sRGB);
 
 	static void AddShader(std::string name, H2M::RefH2M<MoravaShader> shader);
-	static const H2M::RefH2M<MoravaShader>& GetShader(std::string name);
+	static H2M::RefH2M<MoravaShader> GetShader(std::string name);
 
 	// Caching shaders
-	static const H2M::RefH2M<MoravaShader>& CreateOrLoadShader(MoravaShaderSpecification moravaShaderSpecification);
+	static H2M::RefH2M<MoravaShader> CreateOrLoadShader(MoravaShaderSpecification moravaShaderSpecification);
 
 public:
 	static float s_MaterialSpecular;

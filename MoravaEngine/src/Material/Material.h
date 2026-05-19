@@ -76,15 +76,15 @@ public:
 	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::TextureCubeH2M>& texture) override {};
 	virtual void Set(const std::string& name, const H2M::RefH2M<H2M::Image2D_H2M>& image) override {};
 
-	virtual float& GetFloat(const std::string& name) override { return m_Float; }
-	virtual int32_t& GetInt(const std::string& name) override { return m_int32_t; }
-	virtual uint32_t& GetUInt(const std::string& name) override { return m_uint32_t; }
-	virtual bool& GetBool(const std::string& name) override { return m_bool; }
-	virtual glm::vec2& GetVector2(const std::string& name) override { return m_glm_vec2; }
-	virtual glm::vec3& GetVector3(const std::string& name) override { return m_glm_vec3; }
-	virtual glm::vec4& GetVector4(const std::string& name) override { return m_glm_vec4; }
-	virtual glm::mat3& GetMatrix3(const std::string& name) override { return m_glm_mat3; }
-	virtual glm::mat4& GetMatrix4(const std::string& name) override { return m_glm_mat4; }
+	virtual float GetFloat(const std::string& name) override { return m_Float; }
+	virtual int32_t GetInt(const std::string& name) override { return m_int32_t; }
+	virtual uint32_t GetUInt(const std::string& name) override { return m_uint32_t; }
+	virtual bool GetBool(const std::string& name) override { return m_bool; }
+	virtual glm::vec2 GetVector2(const std::string& name) override { return m_glm_vec2; }
+	virtual glm::vec3 GetVector3(const std::string& name) override { return m_glm_vec3; }
+	virtual glm::vec4 GetVector4(const std::string& name) override { return m_glm_vec4; }
+	virtual glm::mat3 GetMatrix3(const std::string& name) override { return m_glm_mat3; }
+	virtual glm::mat4 GetMatrix4(const std::string& name) override { return m_glm_mat4; }
 
 	virtual H2M::RefH2M<H2M::Texture2D_H2M> GetTexture2D(const std::string& name) override { return H2M::RefH2M<H2M::Texture2D_H2M>(); };
 	virtual H2M::RefH2M<H2M::TextureCubeH2M> GetTextureCube(const std::string& name) override { return H2M::RefH2M<H2M::TextureCubeH2M>(); };

@@ -649,14 +649,13 @@ void DX11Renderer::DrawComponent(const std::string name)
 		ImGuiTreeNodeFlags_DefaultOpen |
 		ImGuiTreeNodeFlags_Framed |
 		ImGuiTreeNodeFlags_SpanAvailWidth |
-		ImGuiTreeNodeFlags_AllowItemOverlap |
 		ImGuiTreeNodeFlags_FramePadding;
 
 	// auto& component = entity.GetComponent<T>();
 	ImVec2 contentRegionAvailable = ImGui::GetContentRegionAvail();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
-	float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+	float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 	ImGui::Separator();
 	bool open = ImGui::TreeNodeEx((void*)typeid(0).hash_code(), treeNodeFlags, name.c_str());
 	ImGui::PopStyleVar();

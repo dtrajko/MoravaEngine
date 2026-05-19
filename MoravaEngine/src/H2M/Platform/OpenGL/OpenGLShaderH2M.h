@@ -54,8 +54,8 @@ namespace H2M
 
 		virtual const std::string& GetName() const override { return m_Name; }
 
-		virtual const std::unordered_map<std::string, ShaderBufferH2M>& GetShaderBuffers() const override { return m_Buffers; }
-		virtual const std::unordered_map<std::string, ShaderResourceDeclarationH2M>& GetResources() const override { return m_Resources; }
+		virtual std::unordered_map<std::string, ShaderBufferH2M> GetShaderBuffers() const override { return m_Buffers; }
+		virtual std::unordered_map<std::string, ShaderResourceDeclarationH2M> GetResources() const override { return m_Resources; }
 
 		const ShaderResourceDeclarationH2M* GetShaderResource(const std::string& name);
 

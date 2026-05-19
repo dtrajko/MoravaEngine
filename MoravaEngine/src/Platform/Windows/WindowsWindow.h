@@ -22,7 +22,7 @@ public:
 	inline uint32_t GetHeight() const override { return m_Data.Height; };
 
 	virtual std::pair<uint32_t, uint32_t> GetSize() const override { return { m_Data.Width, m_Data.Height }; }
-	virtual std::pair<float, float> GetWindowPos() const override;
+	virtual std::pair<int, int> GetWindowPos() const override;
 
 	// Window attributes
 	virtual void SetEventCallback(const EventCallbackFn& callback) override;

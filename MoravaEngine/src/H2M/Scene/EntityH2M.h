@@ -57,13 +57,14 @@ namespace H2M
 		template<typename... T>
 		bool HasComponent()
 		{
-			return m_Scene->m_Registry.has<T...>(m_EntityHandle);
+			return m_Scene->m_Registry.all_of<T...>(m_EntityHandle);
 		}
 
 		template<typename... T>
 		bool HasComponent() const
 		{
-			return m_Scene->m_Registry.has<T...>(m_EntityHandle);
+			// entt::registry uses all_of<T...> instead of has<T...>
+			return m_Scene->m_Registry.all_of<T...>(m_EntityHandle);
 		}
 
 		template<typename T>

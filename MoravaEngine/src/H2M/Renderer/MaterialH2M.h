@@ -58,15 +58,15 @@ namespace H2M {
 		virtual void Set(const std::string& name, const RefH2M<TextureCubeH2M>& texture) = 0;
 		virtual void Set(const std::string& name, const RefH2M<Image2D_H2M>& image) = 0;
 
-		virtual float& GetFloat(const std::string& name) = 0;
-		virtual int32_t& GetInt(const std::string& name) = 0;
-		virtual uint32_t& GetUInt(const std::string& name) = 0;
-		virtual bool& GetBool(const std::string& name) = 0;
-		virtual glm::vec2& GetVector2(const std::string& name) = 0;
-		virtual glm::vec3& GetVector3(const std::string& name) = 0;
-		virtual glm::vec4& GetVector4(const std::string& name) = 0;
-		virtual glm::mat3& GetMatrix3(const std::string& name) = 0;
-		virtual glm::mat4& GetMatrix4(const std::string& name) = 0;
+		virtual float GetFloat(const std::string& name) = 0;
+		virtual int32_t GetInt(const std::string& name) = 0;
+		virtual uint32_t GetUInt(const std::string& name) = 0;
+		virtual bool GetBool(const std::string& name) = 0;
+		virtual glm::vec2 GetVector2(const std::string& name) = 0;
+		virtual glm::vec3 GetVector3(const std::string& name) = 0;
+		virtual glm::vec4 GetVector4(const std::string& name) = 0;
+		virtual glm::mat3 GetMatrix3(const std::string& name) = 0;
+		virtual glm::mat4 GetMatrix4(const std::string& name) = 0;
 
 		virtual RefH2M<Texture2D_H2M> GetTexture2D(const std::string& name) = 0;
 		virtual RefH2M<TextureCubeH2M> GetTextureCube(const std::string& name) = 0;

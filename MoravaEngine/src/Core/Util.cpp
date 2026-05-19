@@ -152,15 +152,22 @@ std::string Util::SpaceToUnderscore(std::string text)
 
 #include <Windows.h>
 
-std::wstring Util::to_wstr(const wchar_t* mbstr)
+std::wstring Util::to_wstr(const std::string& str)
 {
-	if (!mbstr || *mbstr == L'\0')
+	if (str.empty())
 	{
-		std::cerr << "Invalid input parameter!" << std::endl;
 		return L"";
 	}
 
-	return std::wstring(mbstr);
+	int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
+	std::wstring result(size_needed, 0);
+	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, result.data(), size_needed);
+
+	// remove null terminator added by Windows API
+	if (!result.empty())
+		result.pop_back();
+
+	return result;
 }
 
 // convert from const wchar_t* to const char*

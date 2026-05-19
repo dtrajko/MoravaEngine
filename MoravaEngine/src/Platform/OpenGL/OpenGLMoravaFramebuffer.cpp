@@ -137,7 +137,7 @@ void OpenGLMoravaFramebuffer::Generate(unsigned int width, unsigned int height)
 				attachmentFormatName, m_Multisample, colorAttachmentIndex, width, height);
 			break;
 		default:
-			Log::GetLogger()->error("Color attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->error("Color attachment format '{0}' not supported.", static_cast<int>(attachmentSpecs.attachmentFormat));
 			break;
 		}
 
@@ -174,7 +174,7 @@ void OpenGLMoravaFramebuffer::Generate(unsigned int width, unsigned int height)
 			Log::GetLogger()->debug("OpenGLMoravaFramebuffer::Generate [AttachmentFormat::Stencil, Multisample: {0}, {1}x{2}]", m_Multisample, width, height);
 			break;
 		default:
-			Log::GetLogger()->error("Depth attachment format '{0}' not supported.", attachmentSpecs.attachmentFormat);
+			Log::GetLogger()->error("Depth attachment format '{0}' not supported.", static_cast<int>(attachmentSpecs.attachmentFormat));
 			break;
 		}
 	}

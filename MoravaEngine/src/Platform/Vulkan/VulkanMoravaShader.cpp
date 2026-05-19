@@ -110,14 +110,14 @@ void VulkanMoravaShader::SetMat3(const std::string& name, const glm::mat3& mat)
 
 void VulkanMoravaShader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-const std::unordered_map<std::string, H2M::ShaderBufferH2M>& VulkanMoravaShader::GetShaderBuffers() const
+std::unordered_map<std::string, H2M::ShaderBufferH2M> VulkanMoravaShader::GetShaderBuffers() const
 {
-	return std::unordered_map<std::string, H2M::ShaderBufferH2M>();
+	return {};
 }
 
-const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& VulkanMoravaShader::GetResources() const
+std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M> VulkanMoravaShader::GetResources() const
 {
-	return std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>();
+	return {};
 }
 
 void VulkanMoravaShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}

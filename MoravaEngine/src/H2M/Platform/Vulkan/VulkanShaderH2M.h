@@ -71,8 +71,8 @@ namespace H2M
 		virtual size_t GetHash() const override;
 
 		virtual const std::string& GetName() const override { return m_Name; }
-		virtual const std::unordered_map<std::string, ShaderBufferH2M>& GetShaderBuffers() const override { return m_Buffers; }
-		virtual const std::unordered_map<std::string, ShaderResourceDeclarationH2M>& GetResources() const override;
+		virtual std::unordered_map<std::string, ShaderBufferH2M> GetShaderBuffers() const override { return m_Buffers; }
+		virtual std::unordered_map<std::string, ShaderResourceDeclarationH2M> GetResources() const override;
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) override;
 
 		// Vulkan-specific

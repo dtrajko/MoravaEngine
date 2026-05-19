@@ -609,7 +609,7 @@ namespace H2M
 		case VK_SHADER_STAGE_FRAGMENT_BIT: return ".cached_vulkan.frag";
 		case VK_SHADER_STAGE_COMPUTE_BIT:  return ".cached_vulkan.comp";
 		}
-		Log::GetLogger()->error("Invalid VkShaderStageFlagBits value '{0}'!", stage);
+		Log::GetLogger()->error("Invalid VkShaderStageFlagBits value '{0}'!", static_cast<int>(stage));
 		H2M_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");
 		return "";
 	}
@@ -622,7 +622,7 @@ namespace H2M
 		case VK_SHADER_STAGE_FRAGMENT_BIT: return shaderc_fragment_shader;
 		case VK_SHADER_STAGE_COMPUTE_BIT:  return shaderc_compute_shader;
 		}
-		Log::GetLogger()->error("Invalid VkShaderStageFlagBits value '{0}'!", stage);
+		Log::GetLogger()->error("Invalid VkShaderStageFlagBits value '{0}'!", static_cast<int>(stage));
 		H2M_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");
 		return (shaderc_shader_kind)-1;
 	}
@@ -794,12 +794,9 @@ namespace H2M
 
 	void VulkanShaderH2M::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-	// const std::unordered_map<std::string, Hazel::ShaderBuffer>& VulkanShaderH2M::GetShaderBuffers() const { return {}; }
+	// std::unordered_map<std::string, ShaderBufferH2M> VulkanShaderH2M::GetShaderBuffers() const {}
 
-	const std::unordered_map<std::string, ShaderResourceDeclarationH2M>& VulkanShaderH2M::GetResources() const
-	{
-		return {};
-	}
+	// std::unordered_map<std::string, ShaderResourceDeclarationH2M> VulkanShaderH2M::GetResources() const {}
 
 	void VulkanShaderH2M::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 

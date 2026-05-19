@@ -22,14 +22,6 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 
-// Box2D
-#include <box2d/box2d.h>
-#include <box2d/b2_world.h>
-#include <box2d/b2_body.h>
-#include <box2d/b2_fixture.h>
-#include <box2d/b2_polygon_shape.h>
-#include <box2d/b2_circle_shape.h>
-
 #include <string>
 #include <unordered_map>
 
@@ -46,39 +38,8 @@ namespace H2M
 
 	struct SceneComponent
 	{
-		UUID SceneID;
+		UUID_H2M SceneID;
 	};
-
-	// TODO: move to physics file
-	class ContactListener : public b2ContactListener
-	{
-	public:
-		virtual void BeginContact(b2Contact* contact) override
-		{
-			EntityH2M& a = *(EntityH2M*)contact->GetFixtureA()->GetBody()->GetUserData().pointer;
-			EntityH2M& b = *(EntityH2M*)contact->GetFixtureB()->GetBody()->GetUserData().pointer;
-		}
-
-		virtual void EndContact(b2Contact* contact) override
-		{
-			EntityH2M& a = *(EntityH2M*)contact->GetFixtureA()->GetBody()->GetUserData().pointer;
-			EntityH2M& b = *(EntityH2M*)contact->GetFixtureB()->GetBody()->GetUserData().pointer;
-		}
-
-		virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override
-		{
-			B2_NOT_USED(contact);
-			B2_NOT_USED(oldManifold);
-		}
-
-		virtual void PostSolve(b2Contact* contact, const b2ContactImpulse* impulse) override
-		{
-			B2_NOT_USED(contact);
-			B2_NOT_USED(impulse);
-		}
-	};
-
-	static ContactListener s_Box2DContactListener;
 
 	struct Box2DWorldComponent
 	{
@@ -97,9 +58,9 @@ namespace H2M
 	{
 		switch (bodyType)
 		{
-			case Rigidbody2DComponentH2M::BodyType::Static:		return b2_staticBody;
-			case Rigidbody2DComponentH2M::BodyType::Dynamic:	return b2_dynamicBody;
-			case Rigidbody2DComponentH2M::BodyType::Kinematic:	return b2_kinematicBody;
+		case Rigidbody2DComponentH2M::BodyType::Static:		return b2_staticBody;
+		case Rigidbody2DComponentH2M::BodyType::Dynamic:	return b2_dynamicBody;
+		case Rigidbody2DComponentH2M::BodyType::Kinematic:	return b2_kinematicBody;
 		}
 		H2M_CORE_ASSERT(false, "Unknown body type!");
 		return b2_staticBody;
@@ -121,11 +82,11 @@ namespace H2M
 	template<typename T>
 	static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
 	{
-		if (registry.has<T>(src))
-		{
-			auto& srcComponent = registry.get<T>(src);
-			registry.emplace_or_replace<T>(dst, srcComponent);
-		}
+		// if (registry.has<T>(src))
+		// {
+		// 	auto& srcComponent = registry.get<T>(src);
+		// 	registry.emplace_or_replace<T>(dst, srcComponent);
+		// }
 	}
 
 	template<typename Component>
@@ -333,7 +294,7 @@ namespace H2M
 
 		entity.AddComponent<TagComponentH2M>(name);
 
-		Log::GetLogger()->debug("CreateEntityWithID uuid = '{0}', name = '{1}'", uuid, name);
+		Log::GetLogger()->debug("CreateEntityWithID uuid = '{0}', name = '{1}'", static_cast<int>(uuid), name);
 
 		// H2M_CORE_ASSERT(EntityMapH2M.find(uuid) == EntityMapH2M.end());
 		auto& entityMapH2M = runtimeMap ? s_RuntimeEntityIDMap : s_EntityIDMap;
@@ -348,8 +309,13 @@ namespace H2M
 
 	void SceneH2M::OnRuntimeStart()
 	{
-		b2Vec2 gravity = b2Vec2{ 0.0f, -9.81f };
-		m_PhysicsWorld = new b2World(gravity);
+		// 1. Initialize the world definition
+		b2WorldDef worldDef = b2DefaultWorldDef();
+
+		worldDef.gravity = b2Vec2{ 0.0f, -9.81f };
+
+		// 2. Create the world and get the ID
+		m_WorldId = b2CreateWorld(&worldDef);
 
 		auto view = m_Registry.view<Rigidbody2DComponentH2M>();
 		for (auto e : view)
@@ -360,44 +326,44 @@ namespace H2M
 
 			b2BodyDef bodyDef;
 			bodyDef.type = Rigidbody2DTypeToBox2DBody(rb2d.Type);
-			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
-			bodyDef.angle = transform.Rotation.z;
+			// bodyDef.position = b2Vec2(transform.Translation.x, transform.Translation.y);
+			// bodyDef.angle = transform.Rotation.z;
 
-			b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
-			body->SetFixedRotation(rb2d.FixedRotation);
-			rb2d.RuntimeBody = body;
+			// b2Body* body = m_PhysicsWorld->CreateBody(&bodyDef);
+			// body->SetFixedRotation(rb2d.FixedRotation);
+			// rb2d.RuntimeBody = body;
 
 			if (entity.HasComponent<BoxCollider2DComponentH2M>())
 			{
 				auto& bc2d = entity.GetComponent<BoxCollider2DComponentH2M>();
 
-				b2PolygonShape boxShape;
-				boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y);
+				// b2PolygonShape boxShape;
+				// boxShape.SetAsBox(bc2d.Size.x * transform.Scale.x, bc2d.Size.y * transform.Scale.y);
 
-				b2FixtureDef fixtureDef;
-				fixtureDef.shape = &boxShape;
-				fixtureDef.density = bc2d.Density;
-				fixtureDef.friction = bc2d.Friction;
-				fixtureDef.restitution = bc2d.Restitution;
-				fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
-				body->CreateFixture(&fixtureDef);
+				// b2FixtureDef fixtureDef;
+				// fixtureDef.shape = &boxShape;
+				// fixtureDef.density = bc2d.Density;
+				// fixtureDef.friction = bc2d.Friction;
+				// fixtureDef.restitution = bc2d.Restitution;
+				// fixtureDef.restitutionThreshold = bc2d.RestitutionThreshold;
+				// body->CreateFixture(&fixtureDef);
 			}
 
 			if (entity.HasComponent<CircleCollider2DComponentH2M>())
 			{
 				auto& cc2d = entity.GetComponent<CircleCollider2DComponentH2M>();
 
-				b2CircleShape circleShape;
-				circleShape.m_p.Set(cc2d.Offset.x, cc2d.Offset.y);
-				circleShape.m_radius = transform.Scale.x * cc2d.Radius;
+				// b2CircleShape circleShape;
+				// circleShape.m_p = b2Vec2(cc2d.Offset.x, cc2d.Offset.y);
+				// circleShape.m_radius = transform.Scale.x * cc2d.Radius;
 
-				b2FixtureDef fixtureDef;
-				fixtureDef.shape = &circleShape;
-				fixtureDef.density = cc2d.Density;
-				fixtureDef.friction = cc2d.Friction;
-				fixtureDef.restitution = cc2d.Restitution;
-				fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
-				body->CreateFixture(&fixtureDef);
+				// b2FixtureDef fixtureDef;
+				// fixtureDef.shape = &circleShape;
+				// fixtureDef.density = cc2d.Density;
+				// fixtureDef.friction = cc2d.Friction;
+				// fixtureDef.restitution = cc2d.Restitution;
+				// fixtureDef.restitutionThreshold = cc2d.RestitutionThreshold;
+				// body->CreateFixture(&fixtureDef);
 			}
 
 		}
@@ -411,8 +377,8 @@ namespace H2M
 
 	void SceneH2M::OnRuntimeStop()
 	{
-		delete m_PhysicsWorld;
-		m_PhysicsWorld = nullptr;
+		// delete m_PhysicsWorld;
+		// m_PhysicsWorld = nullptr;
 
 		// -----------------------------------------
 		m_IsPlaying = false;
@@ -441,20 +407,20 @@ namespace H2M
 
 		switch (RendererAPI_H2M::Current())
 		{
-			case RendererAPITypeH2M::OpenGL:
-				moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
-				moravaShaderSpec.VertexShaderPath = "Shaders/Hazel/Skybox.vs";
-				moravaShaderSpec.FragmentShaderPath = "Shaders/Hazel/Skybox.fs";
-				break;
-			case RendererAPITypeH2M::Vulkan:
-				moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
-				moravaShaderSpec.HazelShaderPath = "Resources/Shaders/Skybox.glsl";
-				break;
-			case RendererAPITypeH2M::DX11:
-				moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
-				moravaShaderSpec.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
-				moravaShaderSpec.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
-				break;
+		case RendererAPITypeH2M::OpenGL:
+			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
+			moravaShaderSpec.VertexShaderPath = "Shaders/Hazel/Skybox.vs";
+			moravaShaderSpec.FragmentShaderPath = "Shaders/Hazel/Skybox.fs";
+			break;
+		case RendererAPITypeH2M::Vulkan:
+			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
+			moravaShaderSpec.HazelShaderPath = "Resources/Shaders/Skybox.glsl";
+			break;
+		case RendererAPITypeH2M::DX11:
+			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
+			moravaShaderSpec.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
+			moravaShaderSpec.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
+			break;
 		}
 		moravaShaderSpec.ForceCompile = false;
 		auto skyboxShader = MoravaShader::Create(moravaShaderSpec);
@@ -484,15 +450,15 @@ namespace H2M
 				EntityH2M e = { entity, this };
 				auto& tc = e.Transform();
 				auto& rb2d = e.GetComponent<Rigidbody2DComponentH2M>();
-				b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
+				// b2Body* body = static_cast<b2Body*>(rb2d.RuntimeBody);
 
-				auto& position = body->GetPosition();
+				// auto& position = body->GetPosition();
 				auto [translation, rotationQuat, scale] = Math::GetTransformDecomposition(tc.GetTransform());
 				glm::vec3 rotation = glm::eulerAngles(rotationQuat);
 
-				tc.GetTransform() = glm::translate(glm::mat4(1.0f), { position.x, position.y, tc.GetTransform()[3].z }) *
-					glm::toMat4(glm::quat({ rotation.x, rotation.y, body->GetAngle() })) *
-					glm::scale(glm::mat4(1.0f), scale);
+				// tc.GetTransform() = glm::translate(glm::mat4(1.0f), glm::vec3(position.x, position.y, tc.GetTransform()[3].z)) *
+				// 	glm::toMat4(glm::quat(glm::vec3(rotation.x, rotation.y, body->GetAngle()))) *
+				// 	glm::scale(glm::mat4(1.0f), scale);
 			}
 		}
 
@@ -508,10 +474,10 @@ namespace H2M
 
 		// Render entities
 		m_Registry.view<MeshComponentH2M>().each([=](auto entity, auto& mc)
-		{
-			// TODO: Should we render (logically)
-			::EnvMapSceneRenderer::SubmitEntity(EntityH2M{ entity, this });
-		});
+			{
+				// TODO: Should we render (logically)
+				::EnvMapSceneRenderer::SubmitEntity(EntityH2M{ entity, this });
+			});
 
 		SceneRendererH2M::EndScene();
 
@@ -521,17 +487,17 @@ namespace H2M
 		{
 			auto view = m_Registry.view<TransformComponentH2M, CameraComponentH2M>();
 
-			for (auto entity : view)
-			{
-				auto [transform, camera] = view.get<TransformComponentH2M, CameraComponentH2M>(entity);
-
-				if (camera.Primary)
-				{
-					mainCamera = &camera.Camera;
-					cameraTransform = transform.GetTransform();
-					break;
-				}
-			}
+			// for (auto entity : view)
+			// {
+			// 	auto [transform, camera] = view.get<TransformComponentH2M, CameraComponentH2M>(entity);
+			// 
+			// 	if (camera.Primary)
+			// 	{
+			// 		mainCamera = &camera.Camera;
+			// 		cameraTransform = transform.GetTransform();
+			// 		break;
+			// 	}
+			// }
 		}
 
 		if (mainCamera)
@@ -572,7 +538,7 @@ namespace H2M
 		{
 			const int32_t velocityIterations = 6;
 			const int32_t positionIterations = 2;
-			m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);
+			// m_PhysicsWorld->Step(ts, velocityIterations, positionIterations);
 
 			// Retrieve transform from Box2D
 			auto view = m_Registry.view<Rigidbody2DComponentH2M>();
@@ -582,11 +548,11 @@ namespace H2M
 				auto& transform = entity.GetComponent<TransformComponentH2M>();
 				auto& rb2d = entity.GetComponent<Rigidbody2DComponentH2M>();
 
-				b2Body* body = (b2Body*)rb2d.RuntimeBody;
-				const auto& position = body->GetPosition();
-				transform.Translation.x = position.x;
-				transform.Translation.y = position.y;
-				transform.Rotation.z = body->GetAngle();
+				// b2Body* body = (b2Body*)rb2d.RuntimeBody;
+				// const auto& position = body->GetPosition();
+				// transform.Translation.x = position.x;
+				// transform.Translation.y = position.y;
+				// transform.Rotation.z = body->GetAngle();
 			}
 		}
 
@@ -595,17 +561,17 @@ namespace H2M
 		glm::mat4 cameraTransform;
 		{
 			auto view = m_Registry.view<TransformComponentH2M, CameraComponentH2M>();
-			for (auto entity : view)
-			{
-				auto [transform, camera] = view.get<TransformComponentH2M, CameraComponentH2M>(entity);
-
-				if (camera.Primary)
-				{
-					mainCamera = &camera.Camera;
-					cameraTransform = transform.GetTransform();
-					break;
-				}
-			}
+			// for (auto entity : view)
+			// {
+			// 	auto [transform, camera] = view.get<TransformComponentH2M, CameraComponentH2M>(entity);
+			// 
+			// 	if (camera.Primary)
+			// 	{
+			// 		mainCamera = &camera.Camera;
+			// 		cameraTransform = transform.GetTransform();
+			// 		break;
+			// 	}
+			// }
 		}
 
 		if (mainCamera)
@@ -627,12 +593,12 @@ namespace H2M
 			// BEGIN Draw Circles
 			{
 				auto view = m_Registry.view<TransformComponentH2M, CircleRendererComponentH2M>();
-				for (auto entity : view)
-				{
-					auto [transform, circle] = view.get<TransformComponentH2M, CircleRendererComponentH2M>(entity);
-
-					H2M::Renderer2D_H2M::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
-				}
+				// for (auto entity : view)
+				// {
+				// 	auto [transform, circle] = view.get<TransformComponentH2M, CircleRendererComponentH2M>(entity);
+				// 
+				// 	H2M::Renderer2D_H2M::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+				// }
 			}
 			// END Draw Circles
 
@@ -659,12 +625,12 @@ namespace H2M
 		// BEGIN Draw Circles
 		{
 			auto view = m_Registry.view<TransformComponentH2M, CircleRendererComponentH2M>();
-			for (auto entity : view)
-			{
-				auto [transform, circle] = view.get<TransformComponentH2M, CircleRendererComponentH2M>(entity);
-
-				H2M::Renderer2D_H2M::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
-			}
+			// for (auto entity : view)
+			// {
+			// 	auto [transform, circle] = view.get<TransformComponentH2M, CircleRendererComponentH2M>(entity);
+			// 
+			// 	H2M::Renderer2D_H2M::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness, circle.Fade, (int)entity);
+			// }
 		}
 		// END Draw Circles
 
@@ -743,31 +709,6 @@ namespace H2M
 				SetSkybox(m_Environment.RadianceMap);
 			}
 		}
-
-		//	m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
-
-		//	auto group = m_Registry.group<MeshComponentH2M>(entt::get<TransformComponentH2M>);
-		//	renderer->SetScene(this);
-		//	renderer->BeginScene({ camera, cameraViewMatrix, 0.1f, 1000.0f, 45.0f }); //TODO: real values
-		//	for (auto entity : group)
-		//	{
-		//		auto [transformComponent, meshComponent] = group.get<TransformComponentH2M, MeshComponentH2M>(entity);
-		//		if (meshComponent.Mesh /* && !meshComponent.Mesh->IsFlagSet(AssetFlag::Missing) */)
-		//		{
-		//			meshComponent.Mesh->OnUpdate(ts, false);
-		//			EntityH2M e = EntityH2M(entity, this);
-		//			glm::mat4 transform = GetTransformRelativeToParent(e);
-		//	
-		//			if (e.HasComponent<RigidBodyComponentH2M>())
-		//			{
-		//				transform = e.Transform().GetTransform();
-		//			}
-		//	
-		//			// TODO: Should we render (logically)
-		//			renderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialTable, transform);
-		//		}
-		//	}
-		//	renderer->EndScene();
 	}
 
 	void SceneH2M::OnRenderEditor(RefH2M<SceneRendererH2M>, TimestepH2M ts, const EditorCameraH2M& editorCamera)
@@ -801,11 +742,6 @@ namespace H2M
 				}
 			}
 			SceneRendererVulkanH2M::EndScene();
-
-			// the following code replaces the VulkanRenderer::Draw() method
-			// VulkanRenderer::SetCamera((HazelCamera)editorCamera); // s_Data.SceneData.SceneCamera.Camera = *camera;
-			// VulkanRenderer::GeometryPass();
-			// VulkanRenderer::CompositePass();
 		}
 		else
 		{
@@ -840,32 +776,27 @@ namespace H2M
 				}
 			}
 
-			if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
+			auto group = m_Registry.group<MeshComponentH2M>(entt::get<TransformComponentH2M>);
+
+			SceneRendererH2M::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
+			for (auto entity : group)
 			{
-				m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
-
-				auto group = m_Registry.group<MeshComponentH2M>(entt::get<TransformComponentH2M>);
-
-				SceneRendererH2M::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
-				for (auto entity : group)
+				auto [meshComponent, transformComponent] = group.get<MeshComponentH2M, TransformComponentH2M>(entity);
+				if (meshComponent.Mesh)
 				{
-					auto [meshComponent, transformComponent] = group.get<MeshComponentH2M, TransformComponentH2M>(entity);
-					if (meshComponent.Mesh)
-					{
-						meshComponent.Mesh->OnUpdate(ts, false);
+					meshComponent.Mesh->OnUpdate(ts, false);
 
-						// TODO: Should we render (logically)
+					// TODO: Should we render (logically)
 
-						if (m_SelectedEntity == entity) {
-							SceneRendererH2M::SubmitSelectedMesh(meshComponent, transformComponent);
-						}
-						else {
-							SceneRendererH2M::SubmitMesh(meshComponent, transformComponent);
-						}
+					if (m_SelectedEntity == entity) {
+						SceneRendererH2M::SubmitSelectedMesh(meshComponent, transformComponent);
+					}
+					else {
+						SceneRendererH2M::SubmitMesh(meshComponent, transformComponent);
 					}
 				}
-				SceneRendererH2M::EndScene();
 			}
+			SceneRendererH2M::EndScene();
 		}
 	}
 
@@ -1230,5 +1161,4 @@ namespace H2M
 	void SceneH2M::OnComponentAdded<CircleCollider2DComponentH2M>(EntityH2M entity, CircleCollider2DComponentH2M& component)
 	{
 	}
-
 }

@@ -237,7 +237,7 @@ namespace H2M
 				{
 					auto vulkanFB = framebuffer.As<VulkanFramebufferH2M>();
 					const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
-					Log::GetLogger()->warn("Resizing framebuffer; image layout is {0}", imageInfo.imageLayout);
+					Log::GetLogger()->warn("Resizing framebuffer; image layout is {0}", static_cast<int>(imageInfo.imageLayout));
 					// s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 					s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 
@@ -289,7 +289,7 @@ namespace H2M
 				{
 					auto vulkanFB = framebuffer.As<VulkanFramebufferH2M>();
 					const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
-					H2M_CORE_WARN("Resizing framebuffer; image layout is {0}", imageInfo.imageLayout);
+					H2M_CORE_WARN("Resizing framebuffer; image layout is {0}", static_cast<int>(imageInfo.imageLayout));
 					s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 				}
 			});
@@ -1098,7 +1098,8 @@ namespace H2M
 							ImGui::Text(fileName.c_str()); ImGui::SameLine();
 							if (ImGui::Button("...##Mesh"))
 							{
-								std::string fullPath = Application::Get()->OpenFile();
+								std::wstring fullPathW = Application::Get()->OpenFile();
+								std::string fullPath = Util::ToUtf8(fullPathW.c_str());
 								if (fullPath != "")
 								{
 									// Hazel::Entity entity = LoadEntity(fullPath);
@@ -1541,8 +1542,7 @@ namespace H2M
 
 	int32_t& VulkanRendererH2M::GetSelectedDrawCall()
 	{
-		int32_t v;
-		return v; // TODO: s_Data.SelectedDrawCall;
+		return s_Data.SelectedDrawCall;
 	}
 
 	glm::vec3 VulkanRendererH2M::GetLightDirectionTemp()

@@ -21,7 +21,7 @@ RadianceHDR::RadianceHDR(const char* fileLoc)
 bool RadianceHDR::Load()
 {
 	stbi_set_flip_vertically_on_load(true);
-	m_Buffer = stbi_loadf(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
+	m_Buffer = stbi_loadf(m_FileLocation.c_str(), (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
 	if (!m_Buffer)
 	{
 		printf("Failed to load HDR image: '%s'\n", m_FileLocation);

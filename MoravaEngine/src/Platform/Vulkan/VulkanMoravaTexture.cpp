@@ -28,7 +28,7 @@ namespace Utils
 		case H2M::ImageFormatH2M::DEPTH24STENCIL8: return H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
 		}
 
-		Log::GetLogger()->error("VulkanImageFormat: ImageFormatH2M not supported: '{0}'!", format);
+		Log::GetLogger()->error("VulkanImageFormat: ImageFormatH2M not supported: '{0}'!", static_cast<int>(format));
 		// H2M_CORE_ASSERT(false);
 		return VK_FORMAT_UNDEFINED;
 	}

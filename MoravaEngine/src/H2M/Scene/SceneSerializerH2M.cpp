@@ -343,16 +343,15 @@ namespace H2M {
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-		m_Scene->m_Registry.each([&](auto entityID)
+
+		auto view = m_Scene->m_Registry.view<entt::entity>();
+
+		for (auto entityID : view)
 		{
 			EntityH2M entity = { entityID, m_Scene.Raw() };
-			if (!entity)
-			{
-				return;
-			}
-
 			SerializeEntity(out, entity);
-		});
+		}
+
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 

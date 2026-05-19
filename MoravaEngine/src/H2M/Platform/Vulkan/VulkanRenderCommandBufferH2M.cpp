@@ -227,19 +227,11 @@ namespace H2M {
 		}
 	}
 
-	const PipelineStatisticsH2M& VulkanRenderCommandBufferH2M::GetPipelineStatistics(uint32_t frameIndex) const
+	PipelineStatisticsH2M VulkanRenderCommandBufferH2M::GetPipelineStatistics(uint32_t frameIndex) const
 	{
 		Log::GetLogger()->warn("VulkanRenderCommandBuffer::GetPipelineStatistics - method not yet implemented!");
 
-		PipelineStatisticsH2M pipelineStatistics = {};
-		return pipelineStatistics;
-	}
-
-	uint64_t VulkanRenderCommandBufferH2M::BeginTimestampQuery()
-	{
-		Log::GetLogger()->warn("VulkanRenderCommandBuffer::BeginTimestampQuery - method not yet implemented!");
-
-		return uint64_t();
+		return {};
 	}
 
 	void VulkanRenderCommandBufferH2M::EndTimestampQuery(uint64_t queryID)

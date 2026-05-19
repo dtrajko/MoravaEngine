@@ -38,9 +38,9 @@ namespace H2M {
 		Log::GetLogger()->info("GLEW initialized.");
 
 		Log::GetLogger()->info("OpenGL Info:");
-		Log::GetLogger()->info("  Vendor: {0}", glGetString(GL_VENDOR));
-		Log::GetLogger()->info("  Renderer: {0}", glGetString(GL_RENDERER));
-		Log::GetLogger()->info("  Version: {0}", glGetString(GL_VERSION));
+		Log::GetLogger()->info("  Vendor: {0}",   reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+		Log::GetLogger()->info("  Renderer: {0}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+		Log::GetLogger()->info("  Version: {0}",  reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 
 #ifdef HZ_ENABLE_ASSERTS
 		int versionMajor;

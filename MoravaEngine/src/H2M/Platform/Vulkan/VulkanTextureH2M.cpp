@@ -27,7 +27,7 @@ namespace H2M {
 				case ImageFormatH2M::RGBA16F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 				case ImageFormatH2M::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 			}
-			Log::GetLogger()->error("TextureFormatToVkFormat: ImageFormatH2M '{0}' not supported!", format);
+			Log::GetLogger()->error("TextureFormatToVkFormat: ImageFormatH2M '{0}' not supported!", static_cast<int>(format));
 			H2M_CORE_ASSERT(false);
 			return VK_FORMAT_UNDEFINED;
 		}

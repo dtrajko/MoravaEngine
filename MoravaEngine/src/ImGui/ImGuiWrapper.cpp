@@ -29,7 +29,7 @@ bool ImGuiWrapper::DrawVec3Control(const std::string& label, glm::vec3& values, 
 	ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 
-	float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+	float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
 
 	bool isChangedX = false;
@@ -225,7 +225,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 				}
 				if (ImGui::IsItemClicked())
 				{
-					std::string filename = Application::Get()->OpenFile();
+					std::wstring filenameW = Application::Get()->OpenFile();
+					std::string filename = Util::ToUtf8(filenameW);
 					if (filename != "")
 					{
 						// material->GetAlbedoInput().TextureMap = H2M::Texture2D_H2M::Create(filename, material->GetAlbedoInput().SRGB);
@@ -298,7 +299,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 				}
 				if (ImGui::IsItemClicked())
 				{
-					std::string filename = Application::Get()->OpenFile();
+					std::wstring filenameW = Application::Get()->OpenFile();
+					std::string filename = Util::ToUtf8(filenameW);
 					if (filename != "")
 					{
 						// H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, false, false, "NormalMap" };
@@ -353,7 +355,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 				}
 				if (ImGui::IsItemClicked())
 				{
-					std::string filename = Application::Get()->OpenFile();
+					std::wstring filenameW = Application::Get()->OpenFile();
+					std::string filename = Util::ToUtf8(filenameW);
 					if (filename != "")
 					{
 						// H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, false, false, "MetalnessMap" };
@@ -411,7 +414,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 				}
 				if (ImGui::IsItemClicked())
 				{
-					std::string filename = Application::Get()->OpenFile();
+					std::wstring filenameW = Application::Get()->OpenFile();
+					std::string filename = Util::ToUtf8(filenameW);
 					if (filename != "")
 					{
 						// H2M::TexturePropertiesH2M textureProperties = { H2M::TextureWrapH2M::Repeat, H2M::TextureFilterH2M::Linear, true, false, false, "RoughnessMap" };
@@ -469,7 +473,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 				}
 				if (ImGui::IsItemClicked())
 				{
-					std::string filename = Application::Get()->OpenFile();
+					std::wstring filenameW = Application::Get()->OpenFile();
+					std::string filename = Util::ToUtf8(filenameW);
 					if (filename != "")
 					{
 						// H2M::TexturePropertiesH2M textureProperties = { H2M::TextureWrapH2M::Repeat, H2M::TextureFilterH2M::Linear, true, false, false, "AOMap" };
@@ -527,7 +532,8 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 				}
 				if (ImGui::IsItemClicked())
 				{
-					std::string filename = Application::Get()->OpenFile();
+					std::wstring filenameW = Application::Get()->OpenFile();
+					std::string filename = Util::ToUtf8(filenameW);
 					if (filename != "")
 					{
 						// H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, material->GetEmissiveInput().SRGB, false, "EmissiveMap" };
@@ -565,11 +571,14 @@ void ImGuiWrapper::DragAndDropTarget(H2M::RefH2M<H2M::Texture2D_H2M>& texture, b
 	{
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 		{
-			std::wstring itemPath = std::wstring((const wchar_t*)payload->Data);
+			std::wstring itemPath(
+				(const wchar_t*)payload->Data,
+				(const wchar_t*)payload->Data + (payload->DataSize / sizeof(wchar_t))
+			);
 			size_t itemSize = payload->DataSize;
 			Log::GetLogger()->debug("END DRAG & DROP FILE '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
 
-			std::string filename(itemPath.begin(), itemPath.end());
+			std::string filename = Util::to_str(itemPath.c_str());
 			if (filename != "")
 			{
 				// H2M::TextureProperties textureProperties = { H2M::TextureWrap::Repeat, H2M::TextureFilter::Linear, true, srgb, false, "DragAndDropTarget" };

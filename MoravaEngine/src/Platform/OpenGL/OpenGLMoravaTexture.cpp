@@ -114,15 +114,15 @@ bool OpenGLMoravaTexture::Load(bool flipVert)
 
 	stbi_set_flip_vertically_on_load(flipVert ? 1 : 0);
 
-	if (stbi_is_hdr(m_FileLocation))
+	if (stbi_is_hdr(m_FileLocation.c_str()))
 	{
 		Log::GetLogger()->info("Loading an HDR texture '{0}'", m_FileLocation);
-		m_Buffer = (byte*)stbi_loadf(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
+		m_Buffer = (byte*)stbi_loadf(m_FileLocation.c_str(), (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
 		m_Format = H2M::ImageFormatH2M::RGBA16F;
 	}
 	else
 	{
-		m_Buffer = stbi_load(m_FileLocation, (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
+		m_Buffer = stbi_load(m_FileLocation.c_str(), (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
 		m_Format = H2M::ImageFormatH2M::RGBA;
 	}
 
@@ -134,7 +134,7 @@ bool OpenGLMoravaTexture::Load(bool flipVert)
 
 	CreateAPISpecific();
 
-	float fileSize = GetFileSize(m_FileLocation) / (1024.0f * 1024.0f);
+	float fileSize = GetFileSize(m_FileLocation.c_str()) / (1024.0f * 1024.0f);
 	Log::GetLogger()->info("Loading texture '{0}' [ID={1}, size={2} MB]", m_FileLocation, m_ID, fileSize);
 
 	if (!m_Spec.IsSampler)
@@ -205,7 +205,7 @@ void OpenGLMoravaTexture::CreateAPISpecific()
 void OpenGLMoravaTexture::Save()
 {
 	CreateAPISpecific();
-	stbi_write_png(m_FileLocation, m_Spec.Width, m_Spec.Height, m_Spec.BitDepth, m_Buffer, m_Spec.Width * m_Spec.BitDepth);
+	stbi_write_png(m_FileLocation.c_str(), m_Spec.Width, m_Spec.Height, m_Spec.BitDepth, m_Buffer, m_Spec.Width * m_Spec.BitDepth);
 }
 
 int OpenGLMoravaTexture::GetRed(int x, int z)

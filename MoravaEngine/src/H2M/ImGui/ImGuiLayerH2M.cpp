@@ -42,7 +42,7 @@ namespace H2M
 					case SceneName::ENV_MAP_VULKAN:
 						return new EnvMapVulkanImGuiLayer("EnvMapVulkanImGuiLayer");
 				}
-				Log::GetLogger()->error("Unknown SceneName '{0}'", Application::Get()->GetSceneProperties().Name);
+				Log::GetLogger()->error("Unknown SceneName '{0}'", static_cast<int>(Application::Get()->GetSceneProperties().Name));
 				H2M_CORE_ASSERT(false, "Unknown SceneName");
 				break;
 			case RendererAPITypeH2M::DX11:   return new DX11ImGuiLayer("DX11ImGuiLayer");

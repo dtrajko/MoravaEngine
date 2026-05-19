@@ -106,10 +106,14 @@ namespace H2M
 				uint32_t entityCount = 0;
 				uint32_t meshCount = 0;
 
-				m_Context->m_Registry.each([&](auto entity)
+				auto view = m_Context->m_Registry.view<entt::entity>();
+
+				view.each([&](auto entity)
 					{
 						EntityH2M e(entity, m_Context.Raw());
-						if (e.HasComponent<IDComponentH2M>()) {
+
+						if (e.HasComponent<IDComponentH2M>())
+						{
 							DrawEntityNode(e);
 						}
 					});

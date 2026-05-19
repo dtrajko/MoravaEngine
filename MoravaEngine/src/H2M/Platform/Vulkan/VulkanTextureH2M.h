@@ -94,7 +94,10 @@ namespace H2M
 		VulkanTextureCubeH2M(const std::string& path);
 		virtual ~VulkanTextureCubeH2M();
 
-		virtual const std::string& GetPath() const override { return ""; }
+		virtual const std::string& GetPath() const override {
+			static const std::string empty;
+			return empty;
+		}
 
 		virtual void Bind(uint32_t slot = 0) const override {}
 
