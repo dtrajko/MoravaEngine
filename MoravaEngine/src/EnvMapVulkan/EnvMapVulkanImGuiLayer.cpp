@@ -22,7 +22,7 @@
 #endif
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_vulkan_with_textures.h"
+#include "backends/imgui_impl_vulkan.h"
 
 #include <GLFW/glfw3.h>
 
@@ -146,7 +146,8 @@ void EnvMapVulkanImGuiLayer::OnAttach()
 		init_info.MinImageCount = 2; // vulkanContext->GetSwapChain().GetImageCount();
 		init_info.ImageCount = app->GetWindow()->GetSwapChain().GetImageCount();
 		init_info.CheckVkResultFn = check_vk_result;
-		ImGui_ImplVulkan_Init(&init_info, app->GetWindow()->GetSwapChain().GetRenderPass());
+		// init_info.RenderPass = app->GetWindow()->GetSwapChain().GetRenderPass();
+		ImGui_ImplVulkan_Init(&init_info);
 
 		// Load Fonts
 		// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -168,12 +169,12 @@ void EnvMapVulkanImGuiLayer::OnAttach()
 			// Use any command queue
 
 			m_CommandBuffer = vulkanContext->GetCurrentDevice()->GetCommandBuffer(true);
-			ImGui_ImplVulkan_CreateFontsTexture(m_CommandBuffer);
+			// ImGui_ImplVulkan_CreateFontsTexture(m_CommandBuffer);
 			vulkanContext->GetCurrentDevice()->FlushCommandBuffer(m_CommandBuffer);
 
 			VkResult err = vkDeviceWaitIdle(device);
 			check_vk_result(err);
-			ImGui_ImplVulkan_DestroyFontUploadObjects();
+			// ImGui_ImplVulkan_DestroyFontUploadObjects();
 		}
 	}
 }

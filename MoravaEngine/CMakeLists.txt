@@ -385,6 +385,16 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 )
 
+target_sources(${PROJECT_NAME} PRIVATE
+    ${ROOT_PATH_ABS}/vendor/imgui/imgui.cpp
+    ${ROOT_PATH_ABS}/vendor/imgui/imgui_draw.cpp
+    ${ROOT_PATH_ABS}/vendor/imgui/imgui_tables.cpp
+    ${ROOT_PATH_ABS}/vendor/imgui/imgui_widgets.cpp
+    ${ROOT_PATH_ABS}/vendor/imgui/backends/imgui_impl_glfw.cpp
+    ${ROOT_PATH_ABS}/vendor/imgui/backends/imgui_impl_opengl3.cpp
+    ${ROOT_PATH_ABS}/vendor/imgui/backends/imgui_impl_vulkan.cpp
+)
+
 # =========================================================
 # ENGINE LINKS
 # =========================================================
