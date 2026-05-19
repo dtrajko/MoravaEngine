@@ -234,6 +234,11 @@ namespace H2M {
 		return {};
 	}
 
+	uint64_t VulkanRenderCommandBufferH2M::BeginTimestampQuery()
+	{
+		return 0;
+	}
+
 	void VulkanRenderCommandBufferH2M::EndTimestampQuery(uint64_t queryID)
 	{
 		Log::GetLogger()->warn("VulkanRenderCommandBuffer::EndTimestampQuery - method not yet implemented!");

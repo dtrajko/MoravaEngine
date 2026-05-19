@@ -15,8 +15,6 @@
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
 #include "H2M/Platform/Vulkan/VulkanAllocatorH2M.h"
 
-#include "VulkanMemoryAllocator/vk_mem_alloc.h"
-
 #include <vector>
 
 struct GLFWwindow;

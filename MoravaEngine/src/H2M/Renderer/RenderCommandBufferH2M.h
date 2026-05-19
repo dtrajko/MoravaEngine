@@ -25,7 +25,7 @@ namespace H2M
 		virtual void Submit() = 0;
 
 		virtual float GetExecutionGPUTime(uint32_t frameIndex, uint32_t queryIndex = 0) const = 0;
-		virtual PipelineStatisticsH2M GetPipelineStatistics(uint32_t frameIndex) const;
+		virtual PipelineStatisticsH2M GetPipelineStatistics(uint32_t frameIndex) const = 0;
 
 		virtual uint64_t BeginTimestampQuery() = 0;
 		virtual void EndTimestampQuery(uint64_t queryID) = 0;

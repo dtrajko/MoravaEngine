@@ -9,8 +9,6 @@
 
 #include "VulkanAllocatorH2M.h"
 
-#include "VulkanMemoryAllocator/vk_mem_alloc.h"
-
 
 namespace H2M
 {

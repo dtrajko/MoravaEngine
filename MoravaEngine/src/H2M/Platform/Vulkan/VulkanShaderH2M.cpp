@@ -796,7 +796,7 @@ namespace H2M
 
 	// std::unordered_map<std::string, ShaderBufferH2M> VulkanShaderH2M::GetShaderBuffers() const {}
 
-	// std::unordered_map<std::string, ShaderResourceDeclarationH2M> VulkanShaderH2M::GetResources() const {}
+	std::unordered_map<std::string, ShaderResourceDeclarationH2M> VulkanShaderH2M::GetResources() const { return {}; }
 
 	void VulkanShaderH2M::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 

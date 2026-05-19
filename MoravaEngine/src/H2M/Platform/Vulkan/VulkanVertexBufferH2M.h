@@ -13,8 +13,6 @@
 #include "VulkanAllocatorH2M.h"
 #include "H2M/Core/BufferH2M.h"
 
-#include "VulkanMemoryAllocator/vk_mem_alloc.h"
-
 
 namespace H2M
 {

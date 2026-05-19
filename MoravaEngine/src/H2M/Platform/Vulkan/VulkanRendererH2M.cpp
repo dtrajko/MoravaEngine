@@ -1468,7 +1468,7 @@ namespace H2M
 		}
 	}
 
-	RendererCapabilitiesH2M& VulkanRendererH2M::GetCapabilities()
+	RendererCapabilitiesH2M VulkanRendererH2M::GetCapabilities()
 	{
 		return s_Data.RenderCaps;
 	}

@@ -8,6 +8,7 @@
 #include "H2M/Platform/Vulkan/VulkanH2M.h"
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
 
+#define VMA_IMPLEMENTATION
 #include "VulkanMemoryAllocator/vk_mem_alloc.h"
 
 #include <string>
