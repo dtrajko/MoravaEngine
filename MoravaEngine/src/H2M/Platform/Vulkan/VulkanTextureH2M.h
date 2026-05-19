@@ -42,7 +42,7 @@ namespace H2M
 
 		BufferH2M GetWriteableBuffer() override;
 		bool Loaded() const override;
-		const std::string& GetPath() const override;
+		std::string GetPath() const override;
 		uint32_t GetMipLevelCount() const override;
 
 		void GenerateMips();
@@ -94,7 +94,7 @@ namespace H2M
 		VulkanTextureCubeH2M(const std::string& path);
 		virtual ~VulkanTextureCubeH2M();
 
-		virtual const std::string& GetPath() const override {
+		virtual std::string GetPath() const override {
 			static const std::string empty;
 			return empty;
 		}

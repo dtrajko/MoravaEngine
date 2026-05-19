@@ -16,7 +16,7 @@ public:
 	DX11TextureCube(const std::string& path);
 	virtual ~DX11TextureCube();
 
-	virtual const std::string& GetPath() const override { return ""; }
+	virtual std::string GetPath() const override { return ""; }
 
 	virtual void Bind(uint32_t slot = 0) const override {}
 

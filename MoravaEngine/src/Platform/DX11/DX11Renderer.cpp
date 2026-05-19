@@ -1004,7 +1004,7 @@ void DX11Renderer::SetLineWidth(float width)
 
 H2M::RendererCapabilitiesH2M& DX11Renderer::GetCapabilities()
 {
-	return H2M::RendererCapabilitiesH2M{};
+	return {};
 }
 
 //-----------------------------------------------------------------------------

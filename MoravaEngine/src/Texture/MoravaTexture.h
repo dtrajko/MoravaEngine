@@ -49,7 +49,7 @@ public:
 	virtual H2M::BufferH2M GetWriteableBuffer() = 0;
 	virtual void Resize(uint32_t width, uint32_t height) = 0;
 	virtual bool Loaded() const = 0;
-	virtual const std::string& GetPath() const = 0;
+	virtual std::string GetPath() const = 0;
 	virtual void Bind(uint32_t textureSlot = 0) const = 0;
 	virtual H2M::ImageFormatH2M GetFormat() const = 0;
 	virtual uint32_t GetMipLevelCount() const = 0;

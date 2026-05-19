@@ -559,7 +559,7 @@ namespace H2M {
 		return true;
 	}
 
-	const std::string& VulkanTexture2D_H2M::GetPath() const
+	std::string VulkanTexture2D_H2M::GetPath() const
 	{
 		return m_Path;
 	}

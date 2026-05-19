@@ -36,7 +36,7 @@ namespace H2M
 		virtual void Lock() override {};
 		virtual void Unlock() override {};
 		virtual BufferH2M GetWriteableBuffer() override { return BufferH2M(); }
-		virtual const std::string& GetPath() const override { return m_Path; }
+		virtual std::string GetPath() const override { return m_Path; }
 
 		virtual bool Loaded() const override { return m_IsLoaded; }
 

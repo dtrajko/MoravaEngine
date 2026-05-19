@@ -42,7 +42,7 @@ public:
 
 	H2M::BufferH2M GetWriteableBuffer() override;
 	bool Loaded() const override;
-	const std::string& GetPath() const override;
+	std::string GetPath() const override;
 	H2M::ImageFormatH2M GetFormat() const override;
 	uint32_t GetMipLevelCount() const override;
 	virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;

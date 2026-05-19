@@ -41,7 +41,7 @@ namespace H2M
 
 		virtual BufferH2M GetWriteableBuffer() override;
 
-		virtual const std::string& GetPath() const override { return m_FilePath; }
+		virtual std::string GetPath() const override { return m_FilePath; }
 
 		virtual bool Loaded() const override { return m_Loaded; }
 
@@ -96,7 +96,7 @@ namespace H2M
 		virtual uint32_t GetMipLevelCount() const override;
 		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 
-		virtual const std::string& GetPath() const override { return m_FilePath; }
+		virtual std::string GetPath() const override { return m_FilePath; }
 
 		virtual uint32_t GetID() const override { return m_RendererID; }
 		virtual uint64_t GetHash() const { return (uint64_t)m_RendererID; }

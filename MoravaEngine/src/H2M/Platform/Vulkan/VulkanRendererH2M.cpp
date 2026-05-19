@@ -239,7 +239,7 @@ namespace H2M
 					const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 					Log::GetLogger()->warn("Resizing framebuffer; image layout is {0}", static_cast<int>(imageInfo.imageLayout));
 					// s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
-					s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+					// s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 
 					auto shader = s_CompositePipeline->GetSpecification().Shader.As<VulkanShaderH2M>();
 
@@ -290,7 +290,7 @@ namespace H2M
 					auto vulkanFB = framebuffer.As<VulkanFramebufferH2M>();
 					const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 					H2M_CORE_WARN("Resizing framebuffer; image layout is {0}", static_cast<int>(imageInfo.imageLayout));
-					s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+					// s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 				}
 			});
 
@@ -387,7 +387,7 @@ namespace H2M
 
 			auto vulkanFB = s_Framebuffer.As<VulkanFramebufferH2M>();
 			const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
-			s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+			// s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		}
 
 		// s_Data.EnvironmentMap = RendererH2M::CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");

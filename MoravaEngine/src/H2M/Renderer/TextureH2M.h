@@ -84,7 +84,7 @@ namespace H2M
 
 		virtual bool Loaded() const = 0;
 
-		virtual const std::string& GetPath() const = 0;
+		virtual std::string GetPath() const = 0;
 
 		virtual TextureTypeH2M GetType() const override { return TextureTypeH2M::Texture2D; }
 
@@ -100,7 +100,7 @@ namespace H2M
 		// Used only by the OpenGL EnvMap scene. Scheduled for removal.
 		static RefH2M<TextureCubeH2M> Create(ImageFormatH2M format, uint32_t width, uint32_t height, bool notUsed);
 
-		virtual const std::string& GetPath() const = 0;
+		virtual std::string GetPath() const = 0;
 
 		virtual TextureTypeH2M GetType() const override { return TextureTypeH2M::TextureCube; }
 

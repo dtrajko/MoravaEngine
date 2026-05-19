@@ -34,7 +34,7 @@ public:
 	virtual H2M::BufferH2M GetWriteableBuffer() override { return H2M::BufferH2M(); }
 	virtual void Resize(uint32_t width, uint32_t height) override {}
 	virtual bool Loaded() const override { return m_Buffer ? true : false; }
-	virtual const std::string& GetPath() const override { return std::string(m_FileLocation); }
+	virtual std::string GetPath() const override { return std::string(m_FileLocation); }
 	virtual void Bind(uint32_t textureSlot = 0) const override;
 	virtual H2M::ImageFormatH2M GetFormat() const override { return H2M::ImageFormatH2M(); }
 	virtual uint32_t GetMipLevelCount() const override { return uint32_t(); }

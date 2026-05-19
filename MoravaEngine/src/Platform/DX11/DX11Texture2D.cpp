@@ -237,7 +237,7 @@ bool DX11Texture2D::Loaded() const
 	return true;
 }
 
-const std::string& DX11Texture2D::GetPath() const
+std::string DX11Texture2D::GetPath() const
 {
 	return m_Path;
 }
