@@ -72,7 +72,8 @@ void WindowsWindow::Init()
 	mouseFirstMoved = true;
 	mouseCursorAboveWindow = false;
 
-	Log::GetLogger()->info("Creating window - title: '{0}', size: [{1}x{2}]", m_Specification.Title, m_Specification.Width, m_Specification.Height);
+	Log::GetLogger()->info("[Window] Application working directory: {}", std::filesystem::current_path().string());
+	Log::GetLogger()->info("[Window] Creating window - title: '{0}', size: [{1}x{2}]", m_Specification.Title, m_Specification.Width, m_Specification.Height);
 
 	switch (H2M::RendererAPI_H2M::Current())
 	{

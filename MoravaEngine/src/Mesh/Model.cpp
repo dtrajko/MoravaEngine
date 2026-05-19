@@ -20,7 +20,7 @@ Model::Model(const std::string& fileName, const std::string& texturesPath)
 
 void Model::LoadModel(const std::string& fileName, const std::string& texturesPath)
 {
-	Log::GetLogger()->info("Loading model '{0}'. Textures path '{1}'", fileName, texturesPath);
+	Log::GetLogger()->info("[Model] Loading model '{0}'. Textures path '{1}'", fileName, texturesPath);
 
 	m_TexturesPath = (texturesPath != "") ? texturesPath : "Textures";
 	m_Scale = glm::vec3(1.0f);
@@ -37,7 +37,7 @@ void Model::LoadModel(const std::string& fileName, const std::string& texturesPa
 
 	if (!scene)
 	{
-		Log::GetLogger()->error("Model '{0}' failed to load: '{1}'", fileName, importer.GetErrorString());
+		Log::GetLogger()->error("[Model] Model '{0}' failed to load: '{1}'", fileName, importer.GetErrorString());
 		return;
 	}
 
@@ -45,13 +45,13 @@ void Model::LoadModel(const std::string& fileName, const std::string& texturesPa
 	long long start = std::chrono::time_point_cast<std::chrono::microseconds>(startTimepoint).time_since_epoch().count();
 	long long end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch().count();
 	float duration = (end - start) * 0.000001f;
-	Log::GetLogger()->info("Model loaded in {0} seconds.", duration);
+	Log::GetLogger()->info("[Model] Model loaded in {0} seconds.", duration);
 
-	Log::GetLogger()->info("Loading meshes...");
+	Log::GetLogger()->info("[Model] Loading meshes...");
 
 	LoadNode(scene->mRootNode, scene);
 
-	Log::GetLogger()->info("Loading materials...");
+	Log::GetLogger()->info("[Model] Loading materials...");
 
 	LoadMaterials(scene);
 }

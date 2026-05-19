@@ -24,7 +24,7 @@ bool RadianceHDR::Load()
 	m_Buffer = stbi_loadf(m_FileLocation.c_str(), (int*)&m_Spec.Width, (int*)&m_Spec.Height, &m_Spec.BitDepth, 0);
 	if (!m_Buffer)
 	{
-		printf("Failed to load HDR image: '%s'\n", m_FileLocation);
+		printf("Failed to load HDR image: '%s'\n", m_FileLocation.c_str());
 		return false;
 	}
 
@@ -43,7 +43,7 @@ bool RadianceHDR::Load()
 
 	// stbi_image_free(m_Buffer);
 
-	printf("Loading texture '%s' [ID=%d]\n", m_FileLocation, m_ID);
+	printf("Loading texture '%s' [ID=%d]\n", m_FileLocation.c_str(), m_ID);
 
 	return true;
 }

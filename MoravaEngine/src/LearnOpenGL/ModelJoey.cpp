@@ -43,6 +43,7 @@ void ModelJoey::loadModel(std::string const& path)
 {
     // read file via ASSIMP
     Assimp::Importer importer;
+
     const aiScene* scene = importer.ReadFile(path,
         aiProcess_Triangulate |
         aiProcess_FlipUVs |

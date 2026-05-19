@@ -36,10 +36,11 @@ void MoravaShaderLibrary::Load(const std::string& name, const std::string& compu
 	}
 }
 
-const H2M::RefH2M<MoravaShader>& MoravaShaderLibrary::Get(const std::string& name)
+H2M::RefH2M<MoravaShader> MoravaShaderLibrary::Get(const std::string& name)
 {
-	if (s_Shaders.find(name) != s_Shaders.end()) {
-		return s_Shaders[name];
+	if (auto it = s_Shaders.find(name); it != s_Shaders.end())
+	{
+		return it->second;
 	}
-	return H2M::RefH2M<MoravaShader>();
+	return {};
 }
