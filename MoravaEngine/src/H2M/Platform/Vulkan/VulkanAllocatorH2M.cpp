@@ -10,6 +10,9 @@
 
 #include "Core/Log.h"
 
+#define VMA_IMPLEMENTATION
+#include "VulkanMemoryAllocator/vk_mem_alloc.h"
+
 
 #if HZ_LOG_RENDERER_ALLOCATIONS
 #define HZ_ALLOCATOR_LOG(...) HZ_CORE_TRACE(__VA_ARGS__)
