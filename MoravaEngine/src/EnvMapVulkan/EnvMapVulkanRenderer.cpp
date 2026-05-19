@@ -1470,7 +1470,7 @@ void EnvMapVulkanRenderer::SubmitFullscreenQuad(H2M::RefH2M<H2M::PipelineH2M> pi
 	}
 }
 
-H2M::RendererCapabilitiesH2M& EnvMapVulkanRenderer::GetCapabilities()
+H2M::RendererCapabilitiesH2M EnvMapVulkanRenderer::GetCapabilities()
 {
 	return s_Data.RenderCaps;
 }

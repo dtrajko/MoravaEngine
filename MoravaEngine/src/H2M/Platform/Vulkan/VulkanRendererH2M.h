@@ -46,7 +46,7 @@ namespace H2M
 
 		virtual std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) override;
 
-		virtual RendererCapabilitiesH2M& GetCapabilities() override;
+		virtual RendererCapabilitiesH2M GetCapabilities() override;
 
 		static void SubmitMeshTemp(const RefH2M<MeshH2M>& mesh, const glm::mat4& transform = glm::mat4(1.0f)); // to be removed from VulkanRendererH2M
 		static void OnResize(uint32_t width, uint32_t height);                                                 // to be removed from VulkanRendererH2M

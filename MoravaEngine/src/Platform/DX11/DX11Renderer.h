@@ -55,7 +55,7 @@ public:
 
 	virtual std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) override;
 
-	virtual H2M::RendererCapabilitiesH2M& GetCapabilities() override;
+	virtual H2M::RendererCapabilitiesH2M GetCapabilities() override;
 
 	static void Update();
 

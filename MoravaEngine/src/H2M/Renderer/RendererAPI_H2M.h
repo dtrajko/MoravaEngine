@@ -64,7 +64,7 @@ namespace H2M
 
 		virtual std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) = 0;
 
-		virtual RendererCapabilitiesH2M& GetCapabilities() = 0;
+		virtual RendererCapabilitiesH2M GetCapabilities() = 0;
 
 		static void Clear(float r, float g, float b, float a);
 		static void SetClearColor(float r, float g, float b, float a);

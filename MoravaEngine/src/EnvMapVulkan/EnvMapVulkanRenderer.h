@@ -43,7 +43,7 @@ public:
 
 	virtual std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) override;
 
-	virtual H2M::RendererCapabilitiesH2M& GetCapabilities() override;
+	virtual H2M::RendererCapabilitiesH2M GetCapabilities() override;
 
 	static void SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform = glm::mat4(1.0f)); // to be removed from VulkanRendererH2M
 	static void OnResize(uint32_t width, uint32_t height);                                                 // to be removed from VulkanRendererH2M

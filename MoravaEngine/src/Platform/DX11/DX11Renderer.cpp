@@ -1002,7 +1002,7 @@ void DX11Renderer::SetLineWidth(float width)
 	Log::GetLogger()->warn("DX11Renderer::SetLineWidth: Method not yet supported!");
 }
 
-H2M::RendererCapabilitiesH2M& DX11Renderer::GetCapabilities()
+H2M::RendererCapabilitiesH2M DX11Renderer::GetCapabilities()
 {
 	return {};
 }

@@ -221,7 +221,7 @@ namespace H2M
 
 	}
 
-	RendererCapabilitiesH2M& RendererH2M::GetCapabilities()
+	RendererCapabilitiesH2M RendererH2M::GetCapabilities()
 	{
 		return s_RendererAPI->GetCapabilities();
 	}

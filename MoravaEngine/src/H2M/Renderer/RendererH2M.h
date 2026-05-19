@@ -58,7 +58,7 @@ namespace H2M
 
 		static std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath);
 
-		static RendererCapabilitiesH2M& GetCapabilities();
+		static RendererCapabilitiesH2M GetCapabilities();
 
 		static void Clear();                                                                   // TODO: to be removed from HazelRenderer
 		static void Clear(float r, float g, float b, float a = 1.0f);                          // TODO: to be removed from HazelRenderer

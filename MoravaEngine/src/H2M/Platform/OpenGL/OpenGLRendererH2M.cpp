@@ -481,7 +481,7 @@ namespace H2M
 	{
 	}
 
-	RendererCapabilitiesH2M& OpenGLRendererH2M::GetCapabilities()
+	RendererCapabilitiesH2M OpenGLRendererH2M::GetCapabilities()
 	{
 		return s_Data->RenderCaps;
 	}

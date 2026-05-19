@@ -41,7 +41,7 @@ namespace H2M
 
 		virtual std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath) override;
 
-		virtual RendererCapabilitiesH2M& GetCapabilities() override;
+		virtual RendererCapabilitiesH2M GetCapabilities() override;
 
 	};
 
