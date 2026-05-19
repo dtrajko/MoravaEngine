@@ -10,14 +10,19 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
 endif()
 
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    add_compile_options(/std:c++17)
+endif()
 
 # =========================================================
-# PLATFORM DEFINITIONS
+# PLATFORM DEFINES
 # =========================================================
 
 if(WIN32)
@@ -28,11 +33,6 @@ endif()
 
 add_compile_definitions(HZ_DEBUG)
 
-if(MSVC)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    add_compile_options(/std:c++17)
-endif()
-
 # =========================================================
 # ROOT
 # =========================================================
@@ -41,26 +41,26 @@ get_filename_component(ROOT_PATH_ABS ".." ABSOLUTE)
 message(STATUS "ROOT_PATH_ABS = ${ROOT_PATH_ABS}")
 
 # =========================================================
-# THIRD PARTY SUBDIRECTORIES
+# OPTIONAL SUBDIRECTORIES
 # =========================================================
 
-macro(add_optional_subdir path out)
-    if(EXISTS ${path}/CMakeLists.txt)
-        add_subdirectory(${path} ${CMAKE_BINARY_DIR}/${out})
+function(add_optional dir out)
+    if(EXISTS ${dir}/CMakeLists.txt)
+        add_subdirectory(${dir} ${CMAKE_BINARY_DIR}/${out})
     endif()
-endmacro()
+endfunction()
 
-add_optional_subdir(${ROOT_PATH_ABS}/vendor/cross-platform/glfw glfw)
-add_optional_subdir(${ROOT_PATH_ABS}/vendor/box2d box2d)
-add_optional_subdir(${ROOT_PATH_ABS}/vendor/cross-platform/bullet3 bullet3)
-add_optional_subdir(${ROOT_PATH_ABS}/vendor/cross-platform/assimp assimp)
-add_optional_subdir(${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp yaml-cpp)
-add_optional_subdir(${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross spirv-cross)
-add_optional_subdir(${ROOT_PATH_ABS}/vendor/cross-platform/shaderc shaderc)
-add_optional_subdir(${ROOT_PATH_ABS}/vendor/DirectXTex directxtex)
+add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/glfw glfw)
+add_optional(${ROOT_PATH_ABS}/vendor/box2d box2d)
+add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/bullet3 bullet3)
+add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/assimp assimp)
+add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp yaml-cpp)
+add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross spirv-cross)
+add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/shaderc shaderc)
+add_optional(${ROOT_PATH_ABS}/vendor/DirectXTex directxtex)
 
 # =========================================================
-# INTERFACE LIBRARIES
+# INTERFACE LIBS
 # =========================================================
 
 add_library(glm INTERFACE)
@@ -74,11 +74,6 @@ target_include_directories(spdlog INTERFACE ${ROOT_PATH_ABS}/vendor/spdlog/inclu
 
 add_library(tinyobjloader INTERFACE)
 target_include_directories(tinyobjloader INTERFACE ${ROOT_PATH_ABS}/vendor/tinyobjloader)
-
-add_library(VulkanMemoryAllocator INTERFACE)
-target_include_directories(VulkanMemoryAllocator INTERFACE
-    ${ROOT_PATH_ABS}/vendor/VulkanMemoryAllocator
-)
 
 add_library(mono INTERFACE)
 target_include_directories(mono INTERFACE ${ROOT_PATH_ABS}/vendor/mono/include)
@@ -111,7 +106,16 @@ target_link_libraries(glew INTERFACE
 target_compile_definitions(glew INTERFACE GLEW_STATIC)
 
 # =========================================================
-# IMGUI
+# VULKAN MEMORY ALLOCATOR (HEADER ONLY)
+# =========================================================
+
+add_library(VulkanMemoryAllocator INTERFACE)
+target_include_directories(VulkanMemoryAllocator INTERFACE
+    ${ROOT_PATH_ABS}/vendor/VulkanMemoryAllocator
+)
+
+# =========================================================
+# IMGUI CORE
 # =========================================================
 
 set(IMGUI_DIR ${ROOT_PATH_ABS}/vendor/ImGui)
@@ -122,14 +126,29 @@ add_library(imgui STATIC
     ${IMGUI_DIR}/imgui_tables.cpp
     ${IMGUI_DIR}/imgui_widgets.cpp
     ${IMGUI_DIR}/imgui_demo.cpp
-
-    ${IMGUI_DIR}/backends/imgui_impl_win32.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_dx11.cpp
 )
 
 target_include_directories(imgui PUBLIC
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
+)
+
+# =========================================================
+# IMGUI BACKENDS (ALL INCLUDED, FIXED HEADERS ISSUE)
+# =========================================================
+
+target_sources(imgui PRIVATE
+    ${IMGUI_DIR}/backends/imgui_impl_win32.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_dx11.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
+)
+
+# IMPORTANT: real dependencies exposed
+target_include_directories(imgui PUBLIC
+    ${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include
+    ${ROOT_PATH_ABS}/vendor/Vulkan/1.2.148.1/Include
 )
 
 # =========================================================
@@ -147,7 +166,7 @@ target_include_directories(ImGuizmo PUBLIC
 target_link_libraries(ImGuizmo PUBLIC imgui)
 
 # =========================================================
-# MAIN ENGINE SOURCES
+# MAIN ENGINE
 # =========================================================
 
 file(GLOB_RECURSE SRC CONFIGURE_DEPENDS
@@ -161,21 +180,7 @@ file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
 
 add_executable(${PROJECT_NAME} ${SRC} ${HEADERS})
 
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src
-    PREFIX "Source Files"
-    FILES ${SRC}
-)
-
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src
-    PREFIX "Header Files"
-    FILES ${HEADERS}
-)
-
 target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
-
-# =========================================================
-# ENGINE INCLUDE PATHS
-# =========================================================
 
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -185,34 +190,26 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 
 # =========================================================
-# VULKAN
-# =========================================================
-
-set(VULKAN_DIR ${ROOT_PATH_ABS}/vendor/Vulkan/1.2.148.1)
-
-target_link_directories(${PROJECT_NAME} PRIVATE ${VULKAN_DIR}/Lib)
-
-# =========================================================
-# MONO (Debug/Release split FIXED)
+# CORE LINKING (CLEAN ORDER)
 # =========================================================
 
 set(MONO_DIR ${ROOT_PATH_ABS}/vendor/mono)
 
-# =========================================================
-# SINGLE LINK BLOCK (IMPORTANT FIX)
-# =========================================================
-
 target_link_libraries(${PROJECT_NAME} PRIVATE
 
-    # Core engine libs
+    # UI
     imgui
     ImGuizmo
 
-    glm
-    entt
-    spdlog
-    tinyobjloader
+    # Core libs
+    glm entt spdlog tinyobjloader
+
+    # Graphics + window
+    glfw
+    vulkan-1
     glew
+
+    # Engine libs
     VulkanMemoryAllocator
     mono
     PhysX
@@ -220,66 +217,56 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Optick
     farbot
 
-    # Graphics / runtime
-    glfw
-    vulkan-1
-
     # System
     opengl32
     d3d11
     d3dcompiler
 
-    # Config-specific Mono
-    $<$<CONFIG:Debug>:${MONO_DIR}/lib/Debug/mono-2.0-sgen.lib>
-    $<$<CONFIG:Release>:${MONO_DIR}/lib/Release/mono-2.0-sgen.lib>
+    # Mono (config-specific)
+    debug ${MONO_DIR}/lib/Debug/mono-2.0-sgen.lib
+    optimized ${MONO_DIR}/lib/Release/mono-2.0-sgen.lib
 )
 
 # =========================================================
 # OPTIONAL LIBS
 # =========================================================
 
-if(TARGET box2d)
-    target_link_libraries(${PROJECT_NAME} PRIVATE box2d)
-endif()
-
-if(TARGET BulletDynamics)
-    target_link_libraries(${PROJECT_NAME} PRIVATE BulletDynamics)
-endif()
-
-if(TARGET BulletCollision)
-    target_link_libraries(${PROJECT_NAME} PRIVATE BulletCollision)
-endif()
-
-if(TARGET LinearMath)
-    target_link_libraries(${PROJECT_NAME} PRIVATE LinearMath)
-endif()
-
-if(TARGET assimp)
-    target_link_libraries(${PROJECT_NAME} PRIVATE assimp)
-endif()
-
-if(TARGET yaml-cpp)
-    target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp)
-endif()
-
-if(TARGET DirectXTex)
-    target_link_libraries(${PROJECT_NAME} PRIVATE DirectXTex)
-endif()
+foreach(lib
+    box2d BulletDynamics BulletCollision LinearMath
+    assimp yaml-cpp DirectXTex
+)
+    if(TARGET ${lib})
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${lib})
+    endif()
+endforeach()
 
 if(TARGET spirv-cross-core)
-    target_link_libraries(${PROJECT_NAME} PRIVATE spirv-cross-core spirv-cross-cpp spirv-cross-glsl spirv-cross-hlsl spirv-cross-msl spirv-cross-reflect spirv-cross-util)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        spirv-cross-core spirv-cross-cpp spirv-cross-glsl
+        spirv-cross-hlsl spirv-cross-msl spirv-cross-reflect spirv-cross-util
+    )
 endif()
 
 if(TARGET shaderc)
     target_link_libraries(${PROJECT_NAME} PRIVATE shaderc shaderc_util)
 endif()
 
-if(TARGET glfw)
-    target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
-endif()
+# =========================================================
+# VULKAN LIB DIR
+# =========================================================
+
+set(VULKAN_DIR ${ROOT_PATH_ABS}/vendor/Vulkan/1.2.148.1)
+
+target_link_directories(${PROJECT_NAME} PRIVATE ${VULKAN_DIR}/Lib)
 
 # =========================================================
-# POST BUILD (MONO DLL)
+# VMA IMPLEMENTATION RULE (IMPORTANT)
+# =========================================================
+# Make sure ONLY ONE .cpp file contains:
+# #define VMA_IMPLEMENTATION
+
+# =========================================================
+# POST BUILD
 # =========================================================
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
@@ -296,4 +283,4 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME}
 )
 
-message(STATUS "Configured MoravaEngine successfully")
+message(STATUS "MoravaEngine configured successfully")
