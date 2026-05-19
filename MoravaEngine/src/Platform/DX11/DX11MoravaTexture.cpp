@@ -49,7 +49,7 @@ DX11MoravaTexture::DX11MoravaTexture(const char* fileLoc, bool flipVert, bool is
 	}
 	// catch (const std::exception& e) {
 	catch (...) {
-		Log::GetLogger()->error("Failed to load a texture '{0}'!", m_FileLocation);
+		Log::GetLogger()->error("[DX11MoravaTexture] Failed to load a texture '{0}'!", m_FileLocation);
 		// throw std::runtime_error(e.what());
 	}
 }

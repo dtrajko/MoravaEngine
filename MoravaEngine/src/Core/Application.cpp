@@ -29,6 +29,7 @@ Application* Application::s_Instance = nullptr;
 
 Application::Application()
 {
+	// m_EnableImGui = false;
 }
 
 Application* Application::Create(const ApplicationSpecification& specification, std::string projectPath)

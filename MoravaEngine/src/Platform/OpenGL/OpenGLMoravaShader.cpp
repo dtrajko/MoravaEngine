@@ -134,7 +134,7 @@ std::string OpenGLMoravaShader::ReadFile(const char* fileLocation)
 
 	if (!fileStream.is_open())
 	{
-		LOG_ERROR("Failed to read '{0}'! File doesn't exist.", fileLocation);
+		LOG_ERROR("[OpenGLMoravaShader] Failed to read '{0}'! File doesn't exist.", fileLocation);
 		return "";
 	}
 

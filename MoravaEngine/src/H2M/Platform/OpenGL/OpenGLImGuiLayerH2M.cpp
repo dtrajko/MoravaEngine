@@ -66,6 +66,7 @@ namespace H2M
 		// io.ConfigViewportsNoTaskBarIcon = true;
 
 		ImGui_ImplGlfw_InitForOpenGL(Application::Get()->GetWindow()->GetHandle(), true); // OpenGL
+		ImGui_ImplOpenGL3_Init("#version 410"); // OpenGL
 		// ImGui_ImplGlfw_InitForVulkan(Application::Get()->GetWindow()->GetHandle(), true); // Vulkan
 
 		io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Bold.ttf", 16.0f);
@@ -85,8 +86,8 @@ namespace H2M
 		style.Colors[ImGuiCol_WindowBg] = ImVec4(0.15f, 0.15f, 0.15f, style.Colors[ImGuiCol_WindowBg].w);
 
 		// Setup Platform/Renderer bindings
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 410");
+		// ImGui_ImplGlfw_InitForOpenGL(window, true);
+		// ImGui_ImplOpenGL3_Init("#version 410");
 	}
 
 	void OpenGLImGuiLayerH2M::OnDetach()

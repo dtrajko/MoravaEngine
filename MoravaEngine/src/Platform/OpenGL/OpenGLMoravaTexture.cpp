@@ -50,7 +50,7 @@ OpenGLMoravaTexture::OpenGLMoravaTexture(const char* fileLoc, bool flipVert, boo
 	}
 	// catch (const std::exception& e) {
 	catch (...) {
-		Log::GetLogger()->error("Failed to load a texture '{0}'!", m_FileLocation);
+		Log::GetLogger()->error("[OpenGLMoravaTexture] Failed to load a texture '{0}'!", m_FileLocation);
 		// throw std::runtime_error(e.what());
 	}
 }
