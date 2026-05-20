@@ -232,9 +232,9 @@ void RendererVoxelTerrain::RenderPassWaterReflection(Window* mainWindow, Scene* 
 	shaderMain->SetMat4("projection", projectionMatrix);
 	shaderMain->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
 
-	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
-	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
-	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
+	// shaderMain->SetDirectionalLight(&LightManager::directionalLight);
+	// shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
+	// shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
 	shaderMain->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
 	LightManager::directionalLight.GetShadowMap()->ReadTexture(scene->GetTextureSlots()["shadow"]);
@@ -282,9 +282,9 @@ void RendererVoxelTerrain::RenderPassWaterRefraction(Window* mainWindow, Scene* 
 	shaderMain->SetMat4("projection", projectionMatrix);
 	shaderMain->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
 
-	shaderMain->SetDirectionalLight(&LightManager::directionalLight);
-	shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
-	shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
+	// shaderMain->SetDirectionalLight(&LightManager::directionalLight);
+	// shaderMain->SetPointLights(LightManager::pointLights, LightManager::pointLightCount, scene->GetTextureSlots()["omniShadow"], 0);
+	// shaderMain->SetSpotLights(LightManager::spotLights, LightManager::spotLightCount, scene->GetTextureSlots()["omniShadow"], LightManager::pointLightCount);
 	shaderMain->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
 
 	LightManager::directionalLight.GetShadowMap()->ReadTexture(scene->GetTextureSlots()["shadow"]);
