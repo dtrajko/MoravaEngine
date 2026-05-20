@@ -122,6 +122,7 @@ void SceneJoey::SetupMaterials()
 	textureInfoRustedIron.metallic  = "Textures/PBR/rusted_iron/metallic.png";
 	textureInfoRustedIron.roughness = "Textures/PBR/rusted_iron/roughness.png";
 	textureInfoRustedIron.ao        = "Textures/PBR/rusted_iron/ao.png";
+	textureInfoRustedIron.emissive  = "Textures/PBR/rusted_iron/emissive.png";
 	materials.insert(std::make_pair("rusted_iron", new Material(textureInfoRustedIron, m_MaterialSpecular, m_MaterialShininess)));
 
 	// gold

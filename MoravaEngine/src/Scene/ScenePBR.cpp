@@ -135,6 +135,7 @@ void ScenePBR::SetupMaterials()
 	textureInfoSilver.metallic = "Textures/PBR/silver/metallic.png";
 	textureInfoSilver.roughness = "Textures/PBR/silver/roughness.png";
 	textureInfoSilver.ao = "Textures/PBR/silver/ao.png";
+	textureInfoSilver.emissive = "Textures/PBR/silver/emissive.png";
 
 	materials.insert(std::make_pair("silver", new Material(textureInfoSilver, materialSpecular, materialShininess)));
 }
@@ -372,7 +373,7 @@ void ScenePBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::strin
 			model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 			model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
 			model = glm::scale(model, glm::vec3(1.0f));
-			glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
+			shaderPBR->SetMat4("model", model);
 
 			shaderPBR->SetFloat3("albedo", m_Albedo);
 			shaderPBR->SetFloat("metallic", ((float)v / 5.0f + m_Metallic) / 2.0f);
