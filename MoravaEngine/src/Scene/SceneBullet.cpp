@@ -227,13 +227,22 @@ void SceneBullet::Fire()
 
 	glm::vec3 rotation(0.0f, 0.0f, 0.0f);
 
-	glm::vec3 position = m_Camera->GetPosition() + glm::vec3(0.0f, -1.0f, 0.0f) + m_Camera->GetFront() * 2.0f;	
+	glm::vec3 position = m_Camera->GetPosition() + glm::vec3(0.0f, -1.0f, 0.0f) + m_Camera->GetFront() * 2.0f;
 	m_LatestBulletBody = AddRigidBodySphere(position, rotation, 1.5f, m_SphereMass, m_Bounciness);
 	m_SphereCount++;
 
 	// apply the force
 	glm::vec3 fireImpulse = m_Camera->GetDirection() * m_FireIntensity;
 	m_LatestBulletBody->applyCentralImpulse(btVector3(fireImpulse.x, fireImpulse.y, fireImpulse.z));
+
+	// Ensure the body is active so it responds to impulses
+	m_LatestBulletBody->activate(true);
+
+	// Single debug/diagnostic output (no redefinitions)
+	float invMass = m_LatestBulletBody->getInvMass();
+	int flags = m_LatestBulletBody->getCollisionFlags();
+	btVector3 lv = m_LatestBulletBody->getLinearVelocity();
+	printf("Fire: invMass=%.3f flags=0x%x linearVel=(%.3f,%.3f,%.3f)\n", invMass, flags, lv.getX(), lv.getY(), lv.getZ());
 }
 
 void SceneBullet::BulletSimulation(float timestep)
@@ -255,16 +264,23 @@ void SceneBullet::Update(float timestep, Window* mainWindow)
 		}
 	}
 
-	if (m_LatestBulletBody != nullptr)
+	if (m_LatestBulletBody)
 	{
-		btTransform bulletTransform;
-		m_LatestBulletBody->getMotionState()->getWorldTransform(bulletTransform);
-		glm::vec3 bulletPosition = glm::vec3(
-			bulletTransform.getOrigin().getX(),
-			bulletTransform.getOrigin().getY(),
-			bulletTransform.getOrigin().getZ()
-		);
-		LightManager::pointLights[0].SetPosition(bulletPosition);
+		btMotionState* motionState = m_LatestBulletBody->getMotionState();
+
+		if (motionState != nullptr)
+		{
+			btTransform bulletTransform;
+			motionState->getWorldTransform(bulletTransform);
+
+			glm::vec3 bulletPosition(
+				bulletTransform.getOrigin().getX(),
+				bulletTransform.getOrigin().getY(),
+				bulletTransform.getOrigin().getZ()
+			);
+
+			LightManager::pointLights[0].SetPosition(bulletPosition);
+		}
 	}
 
 	dynamicsWorld->setGravity(btVector3(0, btScalar(m_GravityIntensity), 0));
@@ -350,7 +366,10 @@ void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["silver_diffuse"]->Bind(textureSlots["diffuse"]);
 		textures["silver_normal"]->Bind(textureSlots["normal"]);
-		materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		if (passType == "main")
+		{
+			materials["dull"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
 		meshes["sphere"]->Render();
 	}
 
@@ -371,7 +390,11 @@ void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	textures["crate_diffuse"]->Bind(textureSlots["diffuse"]);
 	textures["crate_normal"]->Bind(textureSlots["normal"]);
-	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	if (passType == "main")
+	{
+		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	}
+
 	meshes["cube"]->Render();
 
 	/* Cube 2 */
@@ -389,7 +412,10 @@ void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	textures["crate_diffuse"]->Bind(textureSlots["diffuse"]);
 	textures["crate_normal"]->Bind(textureSlots["normal"]);
-	materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	if (passType == "main") 
+	{
+		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+	}
 	meshes["cube"]->Render();
 
 	btTransform plankTrans;
@@ -410,7 +436,10 @@ void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_plank"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);
-		materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		if (passType == "main") 
+		{
+			materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+		}
 
 		if (i % 4 == 0 || i % 4 == 1)
 			meshes["plank_1"]->Render();
@@ -508,17 +537,26 @@ void SceneBullet::BulletCleanup()
 
 	//delete dynamics world
 	delete dynamicsWorld;
+	dynamicsWorld = nullptr;
 
 	//delete solver
 	delete solver;
+	solver = nullptr;
 
 	//delete broadphase
 	delete overlappingPairCache;
+	overlappingPairCache = nullptr;
 
 	//delete dispatcher
 	delete dispatcher;
+	dispatcher = nullptr;
 
 	delete collisionConfiguration;
+	collisionConfiguration = nullptr;
+
+	//clear latest body pointer and debug drawer pointer to avoid dangling usage
+	m_LatestBulletBody = nullptr;
+	m_BulletDebugDrawer = nullptr;
 
 	//next line is optional: it will be cleared by the destructor when the array goes out of scope
 	m_CollisionShapes.clear();

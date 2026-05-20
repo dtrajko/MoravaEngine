@@ -32,67 +32,67 @@ SceneProceduralLandmass::SceneProceduralLandmass()
     // directional light
     sceneSettings.directionalLight.base.enabled = true;
     sceneSettings.directionalLight.base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    sceneSettings.directionalLight.direction = glm::vec3(0.6f, -0.5f, -0.6f);
     sceneSettings.directionalLight.base.ambientIntensity = 0.75f;
     sceneSettings.directionalLight.base.diffuseIntensity = 0.4f;
+    sceneSettings.directionalLight.direction = glm::vec3(0.6f, -0.5f, -0.6f);
     sceneSettings.lightProjectionMatrix = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, -40.0f, 40.0f);
 
     // point lights
     sceneSettings.pointLights[0].base.enabled = false;
     sceneSettings.pointLights[0].base.color = glm::vec3(1.0f, 1.0f, 0.0f);
-    sceneSettings.pointLights[0].position = glm::vec3(-1.0f, 4.0f, 1.0f);
     sceneSettings.pointLights[0].base.ambientIntensity = 1.0f;
     sceneSettings.pointLights[0].base.diffuseIntensity = 1.0f;
+    sceneSettings.pointLights[0].position = glm::vec3(-1.0f, 4.0f, 1.0f);
 
     sceneSettings.pointLights[1].base.enabled = false;
     sceneSettings.pointLights[1].base.color = glm::vec3(1.0f, 1.0f, 1.0f);
-    sceneSettings.pointLights[1].position = glm::vec3(5.0f, 2.0f, 5.0f);
     sceneSettings.pointLights[1].base.ambientIntensity = 1.0f;
     sceneSettings.pointLights[1].base.diffuseIntensity = 1.0f;
+    sceneSettings.pointLights[1].position = glm::vec3(5.0f, 2.0f, 5.0f);
 
     sceneSettings.pointLights[2].base.enabled = false;
     sceneSettings.pointLights[2].base.color = glm::vec3(0.0f, 1.0f, 1.0f);
-    sceneSettings.pointLights[2].position = glm::vec3(-2.0f, 4.0f, -2.0f);
     sceneSettings.pointLights[2].base.ambientIntensity = 1.0f;
     sceneSettings.pointLights[2].base.diffuseIntensity = 1.0f;
+    sceneSettings.pointLights[2].position = glm::vec3(-2.0f, 4.0f, -2.0f);
 
     sceneSettings.pointLights[3].base.enabled = false;
     sceneSettings.pointLights[3].base.color = glm::vec3(0.0f, 1.0f, 0.0f);
-    sceneSettings.pointLights[3].position = glm::vec3(5.0f, 2.0f, -5.0f);
     sceneSettings.pointLights[3].base.ambientIntensity = 1.0f;
     sceneSettings.pointLights[3].base.diffuseIntensity = 1.0f;
+    sceneSettings.pointLights[3].position = glm::vec3(5.0f, 2.0f, -5.0f);
 
     // spot lights
     sceneSettings.spotLights[0].base.base.enabled = false;
     sceneSettings.spotLights[0].base.base.color = glm::vec3(1.0f, 0.0f, 0.0f);
     sceneSettings.spotLights[0].base.position = glm::vec3(-5.0f, 2.0f, 0.0f);
-    sceneSettings.spotLights[0].direction = glm::vec3(1.0f, 0.0f, 0.0f);
     sceneSettings.spotLights[0].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[0].base.base.diffuseIntensity = 1.0f;
+    sceneSettings.spotLights[0].direction = glm::vec3(1.0f, 0.0f, 0.0f);
     sceneSettings.spotLights[0].edge = 0.5f;
 
     sceneSettings.spotLights[1].base.base.enabled = false;
     sceneSettings.spotLights[1].base.base.color = glm::vec3(1.0f, 1.0f, 0.0f);
     sceneSettings.spotLights[1].base.position = glm::vec3(5.0f, 2.0f, 0.0f);
-    sceneSettings.spotLights[1].direction = glm::vec3(-1.0f, 0.0f, 0.0f);
     sceneSettings.spotLights[1].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[1].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[1].edge = 0.5f;
+    sceneSettings.spotLights[1].direction = glm::vec3(-1.0f, 0.0f, 0.0f);
 
     sceneSettings.spotLights[2].base.base.enabled = false;
     sceneSettings.spotLights[2].base.base.color = glm::vec3(0.0f, 1.0f, 0.0f);
     sceneSettings.spotLights[2].base.position = glm::vec3(0.0f, 2.0f, -5.0f);
-    sceneSettings.spotLights[2].direction = glm::vec3(0.0f, 0.0f, 1.0f);
     sceneSettings.spotLights[2].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[2].base.base.diffuseIntensity = 1.0f;
     sceneSettings.spotLights[2].edge = 0.5f;
+    sceneSettings.spotLights[2].direction = glm::vec3(0.0f, 0.0f, 1.0f);
 
     sceneSettings.spotLights[3].base.base.enabled = false;
     sceneSettings.spotLights[3].base.base.color = glm::vec3(1.0f, 0.0f, 1.0f);
     sceneSettings.spotLights[3].base.position = glm::vec3(0.0f, 2.0f, 5.0f);
-    sceneSettings.spotLights[3].direction = glm::vec3(0.0f, 0.0f, -1.0f);
     sceneSettings.spotLights[3].base.base.ambientIntensity = 2.0f;
     sceneSettings.spotLights[3].base.base.diffuseIntensity = 1.0f;
+    sceneSettings.spotLights[3].direction = glm::vec3(0.0f, 0.0f, -1.0f);
     sceneSettings.spotLights[3].edge = 0.5f;
 
     ResourceManager::Init();
@@ -892,7 +892,7 @@ void SceneProceduralLandmass::RenderWater(glm::mat4 projectionMatrix, std::strin
     shaderWater->SetFloat("waterLevel", sceneSettings.waterHeight);
     shaderWater->SetFloat4("waterColor", glm::vec4(0.0f, 0.4f, 0.8f, 1.0f));
 
-    materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
+    // materials["superShiny"]->UseMaterial(uniforms["specularIntensity"], uniforms["shininess"]);
     meshes["water"]->Render();
 
     shaderWater->Unbind();

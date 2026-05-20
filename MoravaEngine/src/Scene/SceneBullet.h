@@ -34,12 +34,12 @@ private:
 	btTransform GetCollisionObjectTransform(int id);
 
 private:
-	btDiscreteDynamicsWorld* dynamicsWorld;
+	btDiscreteDynamicsWorld* dynamicsWorld = nullptr;
 	btAlignedObjectArray<btCollisionShape*> m_CollisionShapes;
-	btSequentialImpulseConstraintSolver* solver;
-	btBroadphaseInterface* overlappingPairCache;
-	btCollisionDispatcher* dispatcher;
-	btDefaultCollisionConfiguration* collisionConfiguration;
+	btSequentialImpulseConstraintSolver* solver = nullptr;
+	btBroadphaseInterface* overlappingPairCache = nullptr;
+	btCollisionDispatcher* dispatcher = nullptr;
+	btDefaultCollisionConfiguration* collisionConfiguration = nullptr;
 
 	int m_GravityIntensity = -5;
 	int m_SphereCount = 0;
@@ -56,8 +56,8 @@ private:
 	bool m_FireEnabled = true;
 	float m_LastTimestep = 0.0f;
 	float m_FireCooldown = 0.2f;
-	btRigidBody* m_LatestBulletBody;
-	BulletDebugDrawer* m_BulletDebugDrawer;
+	btRigidBody* m_LatestBulletBody = nullptr;
+	BulletDebugDrawer* m_BulletDebugDrawer = nullptr;
 	float m_TilingFactor = 0.25f;
 
 };

@@ -6,7 +6,7 @@
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
 // #define SCENE_PBR
-#define SCENE_LEARN_OPENGL
+// #define SCENE_LEARN_OPENGL
 // #define SCENE_BULLET
 // #define SCENE_INSTANCED
 // #define SCENE_ASTEROIDS
@@ -16,7 +16,7 @@
 // #define SCENE_PARTICLES
 // #define SCENE_OMNI_SHADOWS
 // #define SCENE_VOXEL_TERRAIN
-// #define SCENE_PROCEDURAL_LANDMASS
+#define SCENE_PROCEDURAL_LANDMASS
 // #define SCENE_VOXEL_TERRAIN_SL
 // #define SCENE_MARCHING_CUBES
 // #define SCENE_SSAO

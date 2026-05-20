@@ -66,7 +66,7 @@ private:
 
 	std::map<std::string, ModelJoey*> models;
 	std::map<std::string, MeshJoey*> meshesJoey;
-	NanosuitUniforms* nanosuitUniforms;
+	NanosuitUniforms* nanosuitUniforms = {};
 	float m_ModelRotationY = 0.0f;
 
 };
