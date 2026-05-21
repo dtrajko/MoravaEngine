@@ -82,7 +82,7 @@ private:
 	ApplicationSpecification m_Specification;
 	std::string m_ProjectPath;
 
-	Scene* m_Scene;
+	Scene* m_Scene = nullptr;
 	RendererBasic* m_Renderer;
 
 	// Hazel properties

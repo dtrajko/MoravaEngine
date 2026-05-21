@@ -51,4 +51,7 @@ public:
 	static const char* FormatToString(GLenum format);
 	static std::string ToUtf8(const std::wstring& wstr);
 
+	static bool IsValidMinFilter(GLint filter);
+	static bool IsValidMagFilter(GLint filter);
+
 };

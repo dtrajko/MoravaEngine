@@ -2850,8 +2850,10 @@ SceneEditorImGuizmo::~SceneEditorImGuizmo()
     SaveScene();
     CleanupGeometry();
     delete m_ParticleSettingsEdit;
+    m_ParticleSettingsEdit = nullptr;
     // delete m_ParticleSettingsPrev;
     delete m_CurrentSOPS;
+    m_CurrentSOPS = nullptr;
     delete m_PivotScene;
     delete m_Grid;
     delete m_Raycast;

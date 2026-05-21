@@ -3,6 +3,7 @@
 #include "H2M/Core/BaseH2M.h"
 
 #include "Core/Log.h"
+#include "Core/Util.h"
 
 #include <fstream>
 #include <exception>
@@ -192,8 +193,10 @@ void OpenGLMoravaTexture::CreateAPISpecific()
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_Spec.Texture_Wrap_T);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Spec.Texture_Min_Filter);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
+		if (Util::IsValidMinFilter(m_Spec.Texture_Min_Filter))
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, m_Spec.Texture_Min_Filter);
+		if (Util::IsValidMagFilter(m_Spec.Texture_Mag_Filter))
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
 
 		glTexImage2D(GL_TEXTURE_2D, m_Level, m_Spec.InternalFormat, m_Spec.Width, m_Spec.Height, m_Spec.Border, m_Spec.Format, m_Spec.Type, m_Buffer);
 		glGenerateMipmap(GL_TEXTURE_2D);

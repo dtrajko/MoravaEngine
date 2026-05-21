@@ -312,3 +312,32 @@ std::string Util::ToUtf8(const std::wstring & wstr)
 		return result;
 }
 
+bool Util::IsValidMinFilter(GLint filter)
+{
+	switch (filter)
+	{
+	case GL_NEAREST:
+	case GL_LINEAR:
+	case GL_NEAREST_MIPMAP_NEAREST:
+	case GL_LINEAR_MIPMAP_NEAREST:
+	case GL_NEAREST_MIPMAP_LINEAR:
+	case GL_LINEAR_MIPMAP_LINEAR:
+		return true;
+
+	default:
+		return false;
+	}
+}
+
+bool Util::IsValidMagFilter(GLint filter)
+{
+	switch (filter)
+	{
+	case GL_NEAREST:
+	case GL_LINEAR:
+		return true;
+
+	default:
+		return false;
+	}
+}

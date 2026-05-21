@@ -31,9 +31,9 @@ private:
 	ParticleSettings m_SettingsPrev;
 
 	// Particle System ThinMatrix
-	ParticleTexture* m_ParticleTexture;
-	ParticleSystemThinMatrix* m_System;
-	ParticleMaster* m_Master;
+	ParticleTexture* m_ParticleTexture = nullptr;
+	ParticleSystemThinMatrix* m_System = nullptr;
+	ParticleMaster* m_Master = nullptr;
 	EventCooldown m_Regenerate;
 	int m_MaxInstances;
 };

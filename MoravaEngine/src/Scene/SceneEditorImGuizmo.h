@@ -120,10 +120,10 @@ private:
 
 	float m_SkyboxLOD;
 
-	ParticleSettings* m_ParticleSettingsEdit;
-	ParticleSettings* m_ParticleSettingsPrev;
+	ParticleSettings* m_ParticleSettingsEdit = nullptr;
+	ParticleSettings* m_ParticleSettingsPrev = nullptr;
 
-	SceneObjectParticleSystem* m_CurrentSOPS;
+	SceneObjectParticleSystem* m_CurrentSOPS = nullptr;
 
 	int m_MaxInstances = 10000;
 

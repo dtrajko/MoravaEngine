@@ -16,7 +16,7 @@
 // #define SCENE_PARTICLES
 // #define SCENE_OMNI_SHADOWS
 // #define SCENE_VOXEL_TERRAIN
-#define SCENE_PROCEDURAL_LANDMASS
+// #define SCENE_PROCEDURAL_LANDMASS
 // #define SCENE_VOXEL_TERRAIN_SL
 // #define SCENE_MARCHING_CUBES
 // #define SCENE_SSAO
@@ -25,11 +25,11 @@
 // #define SCENE_DEFERRED_OGL
 // #define SCENE_ANIM_PBR
 // #define SCENE_EDITOR
-// #define SCENE_EDITOR_IMGUIZMO
-// #define SCENE_HAZEL_ENV_MAP
-// #define SCENE_DX11
-// #define SCENE_HAZEL_VULKAN
-// #define SCENE_ENV_MAP_VULKAN
+#define SCENE_EDITOR_IMGUIZMO
+// #define SCENE_HAZEL_ENV_MAP  // RendererH2M: Render pass cannot be null!
+// #define SCENE_DX11           // This version of DX11Texture2D constructor is not used in DirectX 11!
+// #define SCENE_HAZEL_VULKAN   // Assertion failed in imgui_impl_glfw.cpp:721
+// #define SCENE_ENV_MAP_VULKAN // Assertion failed in imgui_impl_glfw.cpp:721
 
 
 enum class SceneName

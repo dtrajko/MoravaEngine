@@ -1088,7 +1088,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
     m_ShaderBasic->SetMat4("projection", projectionMatrix);
     m_ShaderBasic->SetMat4("view", m_Camera->GetViewMatrix());
 
-    RendererBasic::SetLineThickness(4.0f);
+    RendererBasic::SetLineThickness(1.0f); // 4.0f generates "Operation is not valid from a preview context."
     RendererBasic::EnableMSAA();
 
     glm::mat4 AABB_Transform = Math::CreateTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
