@@ -63,6 +63,12 @@ set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT ON CACHE BOOL "" FORCE)
 set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)  # the engine only imports models
 
+# ---- Vulkan ----
+# Headers and vulkan-1.lib come from the installed Vulkan SDK (found through the VULKAN_SDK
+# environment variable), so they match the SDK's validation layers
+find_package(Vulkan REQUIRED)
+message(STATUS "Vulkan SDK: ${Vulkan_VERSION} (${Vulkan_INCLUDE_DIRS})")
+
 # ---- Bullet ----
 set(BUILD_BULLET2_DEMOS OFF CACHE BOOL "" FORCE)
 set(BUILD_CPU_DEMOS OFF CACHE BOOL "" FORCE)
@@ -146,7 +152,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS=)
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${ROOT_PATH_ABS}/vendor
-    ${ROOT_PATH_ABS}/vendor/Vulkan/1.2.148.1/Include
     ${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src
 )
 
@@ -212,8 +217,10 @@ target_include_directories(imgui PUBLIC
     ${IMGUI_DIR}
     ${IMGUI_DIR}/backends
     ${ROOT_PATH_ABS}/vendor/cross-platform/glfw/include
-    ${ROOT_PATH_ABS}/vendor/Vulkan/1.2.148.1/Include
 )
+
+# imgui_impl_vulkan.cpp needs the Vulkan headers (from the Vulkan SDK)
+target_link_libraries(imgui PUBLIC Vulkan::Headers)
 
 target_sources(imgui PRIVATE
     ${IMGUI_DIR}/backends/imgui_impl_win32.cpp
@@ -266,7 +273,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glm entt spdlog tinyobjloader
 
     glfw
-    vulkan-1
+    Vulkan::Vulkan
     glew
 
     VulkanMemoryAllocator
@@ -310,13 +317,6 @@ endif()
 if(TARGET shaderc)
     target_link_libraries(${PROJECT_NAME} PRIVATE shaderc shaderc_util)
 endif()
-
-# =========================================================
-# VULKAN LIBS
-# =========================================================
-
-set(VULKAN_DIR ${ROOT_PATH_ABS}/vendor/Vulkan/1.2.148.1)
-target_link_directories(${PROJECT_NAME} PRIVATE ${VULKAN_DIR}/Lib)
 
 # =========================================================
 # POST BUILD
