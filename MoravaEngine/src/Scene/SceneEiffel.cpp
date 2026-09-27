@@ -134,7 +134,7 @@ void SceneEiffel::UpdateImGui(float timestep, Window* mainWindow)
 				if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::Text("Water Level");
-					if (ImGui::SliderFloat("##water_level", &sceneSettings.waterHeight, -2.0f, 20.0f, "%.2f"))
+					if (ImGui::SliderFloat("##water_level", &sceneSettings.waterHeight, -2.0f, 20.0f, "%.3f"))
 					{
 						m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
 					}
@@ -194,7 +194,7 @@ void SceneEiffel::UpdateImGui(float timestep, Window* mainWindow)
 		{
 			if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImVec2 imageSize(96.0f, 96.0f);
+				ImVec2 imageSize(192.0f, 192.0f);
 
 				ImGui::Text("Shadow Map");
 				ImGui::Image((void*)(intptr_t)LightManager::directionalLight.GetShadowMap()->GetTextureID(), imageSize);
