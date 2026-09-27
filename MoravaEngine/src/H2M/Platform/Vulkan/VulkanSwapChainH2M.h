@@ -107,12 +107,13 @@ namespace H2M
 
 		struct
 		{
-			// Swap chain
-			VkSemaphore PresentComplete;
-			// Command buffer
-			VkSemaphore RenderComplete;
+			// Swap chain: signaled when the acquired image can be rendered to
+			VkSemaphore PresentComplete = VK_NULL_HANDLE;
 		} m_Semaphores;
-		VkSubmitInfo m_SubmitInfo;
+
+		// Command buffer: signaled when rendering is done, waited on by presentation. One per swapchain image,
+		// indexed by the acquired image: a presentation may keep using its semaphore until that image is acquired again.
+		std::vector<VkSemaphore> m_RenderCompleteSemaphores;
 
 		std::vector<VkFence> m_WaitFences;
 

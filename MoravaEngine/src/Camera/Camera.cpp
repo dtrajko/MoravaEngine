@@ -18,6 +18,9 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
 	m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
 
 	UpdateView();
+
+	// Valid projection from the start (otherwise it stays identity until the first SetViewportSize, i.e. window resize)
+	m_ProjectionMatrix = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
 }
 
 Camera::Camera(glm::vec3 position, float yaw, float pitch, float fovDegrees, float aspectRatio, float moveSpeed, float turnSpeed)
@@ -32,6 +35,9 @@ Camera::Camera(glm::vec3 position, float yaw, float pitch, float fovDegrees, flo
 	m_Front = glm::vec3(0.0f, 0.0f, -1.0f);
 
 	UpdateView();
+
+	// Valid projection from the start (otherwise it stays identity until the first SetViewportSize, i.e. window resize)
+	m_ProjectionMatrix = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
 }
 
 Camera::~Camera() {}

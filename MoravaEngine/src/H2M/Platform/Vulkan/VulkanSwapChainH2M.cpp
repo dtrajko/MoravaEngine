@@ -303,36 +303,31 @@ namespace H2M
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Synchronization Objects
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// Create() also runs on every resize: only create the synchronization objects that don't exist yet
+		// (they don't depend on the swapchain size; recreating them each time leaked the old ones).
+		// They are destroyed in Cleanup().
 		VkSemaphoreCreateInfo semaphoreCreateInfo{};
 		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-		// Create a semaphore used to synchronize image presentation
-		// Ensures that the image is displayed before we start submitting new commands to the queu
-		VK_CHECK_RESULT_H2M(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.PresentComplete));
-		// Create a semaphore used to synchronize command submission
-		// Ensures that the image is not presented until all commands have been sumbitted and executed
-		VK_CHECK_RESULT_H2M(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.RenderComplete));
 
-		// Set up submit info structure
-		// Semaphores will stay the same during application lifetime
-		// Command buffer submission info is set by each example
-		VkPipelineStageFlags pipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		// Signaled when the acquired image can be rendered to (waited on by the frame's queue submission)
+		if (m_Semaphores.PresentComplete == VK_NULL_HANDLE)
+		{
+			VK_CHECK_RESULT_H2M(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.PresentComplete));
+		}
 
-		m_SubmitInfo = {};
-		m_SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-		m_SubmitInfo.pWaitDstStageMask = &pipelineStageFlags;
-		m_SubmitInfo.waitSemaphoreCount = 1;
-		m_SubmitInfo.pWaitSemaphores = &m_Semaphores.PresentComplete;
-		m_SubmitInfo.signalSemaphoreCount = 1;
-		m_SubmitInfo.pSignalSemaphores = &m_Semaphores.RenderComplete;
+		// Signaled when rendering to an image is done (waited on by its presentation), one per swapchain image
+		while (m_RenderCompleteSemaphores.size() < m_ImageCount)
+		{
+			VK_CHECK_RESULT_H2M(vkCreateSemaphore(m_Device->GetVulkanDevice(), &semaphoreCreateInfo, nullptr, &m_RenderCompleteSemaphores.emplace_back()));
+		}
 
-		// Wait fences to sync command buffer access
+		// Wait fences to sync command buffer access (one per draw command buffer)
 		VkFenceCreateInfo fenceCreateInfo{};
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-		m_WaitFences.resize(m_DrawCommandBuffers.size());
-		for (auto& fence : m_WaitFences)
+		while (m_WaitFences.size() < m_DrawCommandBuffers.size())
 		{
-			VK_CHECK_RESULT_H2M(vkCreateFence(m_Device->GetVulkanDevice(), &fenceCreateInfo, nullptr, &fence));
+			VK_CHECK_RESULT_H2M(vkCreateFence(m_Device->GetVulkanDevice(), &fenceCreateInfo, nullptr, &m_WaitFences.emplace_back()));
 		}
 
 		CreateDepthStencil();
@@ -596,9 +591,12 @@ namespace H2M
 		VkSubmitInfo submitInfo = {};
 		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submitInfo.pWaitDstStageMask = &waitStageMask;
+		// The render-complete semaphore of the acquired image (see m_RenderCompleteSemaphores)
+		VkSemaphore renderComplete = m_RenderCompleteSemaphores[m_CurrentBufferIndex];
+
 		submitInfo.pWaitSemaphores = &m_Semaphores.PresentComplete;
 		submitInfo.waitSemaphoreCount = 1;
-		submitInfo.pSignalSemaphores = &m_Semaphores.RenderComplete;
+		submitInfo.pSignalSemaphores = &renderComplete;
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pCommandBuffers = &m_DrawCommandBuffers[m_CurrentBufferIndex];
 		submitInfo.commandBufferCount = 1;
@@ -609,7 +607,7 @@ namespace H2M
 		// Present the current buffer to the swap chain
 		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
 		// This ensures that the image is not presented to the windowing system until all commands have been submitted
-		VkResult result = QueuePresent(m_Device->GetGraphicsQueue(), m_CurrentBufferIndex, m_Semaphores.RenderComplete);
+		VkResult result = QueuePresent(m_Device->GetGraphicsQueue(), m_CurrentBufferIndex, renderComplete);
 
 		if (result != VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
 		{
@@ -675,6 +673,24 @@ namespace H2M
 
 		m_Surface = VK_NULL_HANDLE;
 		m_SwapChain = VK_NULL_HANDLE;
+
+		// Synchronization objects (created once in Create(), see there)
+		vkDeviceWaitIdle(device);
+		if (m_Semaphores.PresentComplete != VK_NULL_HANDLE)
+		{
+			vkDestroySemaphore(device, m_Semaphores.PresentComplete, nullptr);
+			m_Semaphores.PresentComplete = VK_NULL_HANDLE;
+		}
+		for (VkSemaphore semaphore : m_RenderCompleteSemaphores)
+		{
+			vkDestroySemaphore(device, semaphore, nullptr);
+		}
+		m_RenderCompleteSemaphores.clear();
+		for (VkFence fence : m_WaitFences)
+		{
+			vkDestroyFence(device, fence, nullptr);
+		}
+		m_WaitFences.clear();
 	}
 
 	void VulkanSwapChainH2M::FindImageFormatAndColorSpace()

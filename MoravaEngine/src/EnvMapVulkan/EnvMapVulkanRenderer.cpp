@@ -226,15 +226,8 @@ void EnvMapVulkanRenderer::Init()
 	// s_Data.m_ShaderLibrary->Load("Resources/Shaders/SceneComposite.glsl");
 	// s_Data.m_ShaderLibrary->Load("Resources/Shaders/HazelSimple.glsl");
 	// s_Data.m_ShaderLibrary->Load("Resources/Shaders/Outline.glsl");
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EquirectangularToCubeMap.glsl", true);
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentMipFilter.glsl", true);
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EnvironmentIrradiance.glsl", true);
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SceneComposite.glsl");
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Grid.glsl");
-	H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Outline.glsl");
+	// The shaders used here (EquirectangularToCubeMap, EnvironmentMipFilter, EnvironmentIrradiance, HazelPBR_Static,
+	// Skybox, Texture, SceneComposite, Grid, Outline) are already loaded by H2M::RendererH2M::Init()
 
 	H2M::SceneRendererH2M::Init();
 
@@ -581,12 +574,13 @@ void EnvMapVulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
 	writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 	writeDescriptors[0].pBufferInfo = &vulkanSkyboxShader->GetUniformBuffer(0, 0).Descriptor;
 
-	// H2M::RefH2M<H2M::VulkanTextureCubeH2M> envUnfilteredCubemap = s_Data.envUnfiltered.As<H2M::VulkanTextureCubeH2M>();
-	H2M::RefH2M<H2M::VulkanTextureCubeH2M> envFilteredCubemap = s_Data.envFiltered.As<H2M::VulkanTextureCubeH2M>();
+	// The skybox shows the unfiltered environment map: sharp at Skybox LOD 0, blurred at higher LODs
+	// (sampled from its mip chain). The prefiltered map (envFiltered) is for PBR reflections and is always slightly blurred.
+	H2M::RefH2M<H2M::VulkanTextureCubeH2M> envUnfilteredCubemap = s_Data.envUnfiltered.As<H2M::VulkanTextureCubeH2M>();
 	writeDescriptors[1] = *vulkanSkyboxShader->GetDescriptorSet("u_Texture");
 	writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
 	writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
-	writeDescriptors[1].pImageInfo = &envFilteredCubemap->GetVulkanDescriptorInfo();
+	writeDescriptors[1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
 
 	vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 
@@ -1104,7 +1098,9 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 						ImGui::AlignTextToFramePadding();
 
-						if (ImGuiWrapper::Property("Skybox LOD", s_Data.SceneData.SkyboxLod, 0.01f, 0.0f, 4.0f, PropertyFlag::DragProperty))
+						// Skybox blur: 0 = sharp, up to the environment map's last mip level (a single average color)
+						float maxSkyboxLod = s_Data.envUnfiltered ? (float)(s_Data.envUnfiltered->GetMipLevelCount() - 1) : 10.0f;
+						if (ImGuiWrapper::Property("Skybox LOD", s_Data.SceneData.SkyboxLod, 0.01f, 0.0f, maxSkyboxLod, PropertyFlag::DragProperty))
 						{
 							// SetSkyboxLOD(skyboxLOD);
 						}

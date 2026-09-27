@@ -49,7 +49,8 @@ void VulkanRendererBasic::RendererInfo(WindowSpecification& windowSpecification)
 
 void VulkanRendererBasic::InitDebug()
 {
-	Log::GetLogger()->warn("VulkanRendererBasic::InitDebug: Method not yet supported!");
+	// Nothing to do: in Vulkan, debug output comes from the validation layers,
+	// whose messenger callback is set up by VulkanContextH2M (VulkanDebugCallback)
 }
 
 void VulkanRendererBasic::EnableCulling()
@@ -90,7 +91,7 @@ void VulkanRendererBasic::ClearDepthBuffer()
 
 void VulkanRendererBasic::EnableDepthTest()
 {
-	Log::GetLogger()->warn("VulkanRendererBasic::EnableDepthTest: Method not yet supported!");
+	// Nothing to do: in Vulkan, depth testing is part of each pipeline's state (VkPipelineDepthStencilStateCreateInfo)
 }
 
 void VulkanRendererBasic::DisableDepthTest()
@@ -132,7 +133,9 @@ void VulkanRendererBasic::DisableWireframe()
 
 void VulkanRendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 {
-	Log::GetLogger()->warn("VulkanRendererBasic::SetViewportSize('{0}', '{1}'): Method not yet implemented!", width, height);
+	// Nothing to do here: in Vulkan the viewport is set per command buffer (vkCmdSetViewport, done by the renderers
+	// while recording each pass), and framebuffers/swapchain are resized through their own Resize/OnResize.
+	// The code below is an unused draft (it has no command buffer to record into).
 	return;
 
 	VkCommandBuffer commandBuffer{}; // TODO: get the CommandBuffer

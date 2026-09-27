@@ -13,6 +13,8 @@
 
 #include "Platform/DX11/DX11Shader.h"
 
+#include <filesystem>
+
 
 namespace H2M
 {
@@ -78,14 +80,23 @@ namespace H2M
 
 	void ShaderLibraryH2M::Load(const std::string& path, bool forceCompile)
 	{
+		// Shaders are keyed by name (the file name without extension). Check before creating the shader:
+		// creating it compiles/reflects it and allocates GPU resources, which was wasted for duplicates.
+		const std::string expectedName = std::filesystem::path(path).stem().string();
+		if (m_Shaders.find(expectedName) != m_Shaders.end())
+		{
+			Log::GetLogger()->trace("ShaderLibraryH2M::Load: shader '{0}' is already loaded", expectedName);
+			return;
+		}
+
 		Log::GetLogger()->info("ShaderLibraryH2M::Load(path: '{0}')", path);
 
 		auto shader = ShaderH2M::Create(path, forceCompile);
 		auto& name = shader->GetName();
-		// H2M_CORE_ASSERT(m_Shaders.find(name) == m_Shaders.end());
 
 		if (m_Shaders.find(name) != m_Shaders.end())
 		{
+			// Only reachable if a shader's name differs from its file name
 			Log::GetLogger()->warn("ShaderLibraryH2M::Load: the shader (path: '{0}', name: '{1}') already exists in ShaderLibraryH2M!", path, name);
 			return;
 		}
