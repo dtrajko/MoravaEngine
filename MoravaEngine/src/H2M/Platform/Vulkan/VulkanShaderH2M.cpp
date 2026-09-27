@@ -216,15 +216,14 @@ namespace H2M
 			auto bufferSize = compiler.get_declared_struct_size(bufferType);
 			int memberCount = static_cast<int>(bufferType.member_types.size());
 
-			uint32_t bufferOffset = 0;
-			if (m_PushConstantRanges.size())
-			{
-				bufferOffset = m_PushConstantRanges.back().Offset + m_PushConstantRanges.back().Size;
-			}
+			// The block's range starts at its first member's offset (e.g. "layout(offset = 64)" in the fragment
+			// Material block, after the vertex stage's 64-byte transform). Taking it from the SPIR-V instead of
+			// "end of the previous range" keeps it correct whatever order the stages are reflected in.
+			uint32_t bufferOffset = memberCount > 0 ? compiler.type_struct_member_offset(bufferType, 0) : 0;
 
 			auto& pushConstantRange = m_PushConstantRanges.emplace_back();
 			pushConstantRange.ShaderStage = shaderStage;
-			pushConstantRange.Size = static_cast<uint32_t>(bufferSize);
+			pushConstantRange.Size = static_cast<uint32_t>(bufferSize - bufferOffset);
 			pushConstantRange.Offset = bufferOffset;
 
 			// Skip empty push constant buffers - these are for the renderer only
@@ -823,7 +822,7 @@ namespace H2M
 
 	// std::unordered_map<std::string, ShaderBufferH2M> VulkanShaderH2M::GetShaderBuffers() const {}
 
-	std::unordered_map<std::string, ShaderResourceDeclarationH2M> VulkanShaderH2M::GetResources() const { return {}; }
+	const std::unordered_map<std::string, ShaderResourceDeclarationH2M>& VulkanShaderH2M::GetResources() const { static const std::unordered_map<std::string, ShaderResourceDeclarationH2M> s_Empty; return s_Empty; }
 
 	void VulkanShaderH2M::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 

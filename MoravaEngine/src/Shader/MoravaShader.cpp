@@ -260,18 +260,18 @@ GLint MoravaShader::GetUniformLocation(const std::string& name)
 	}
 }
 
-std::unordered_map<std::string, H2M::ShaderBufferH2M> MoravaShader::GetShaderBuffers() const
+const std::unordered_map<std::string, H2M::ShaderBufferH2M>& MoravaShader::GetShaderBuffers() const
 {
 	// OpenGLMaterial::FindUniformDeclaration requires at least 2 shader buffers
 	// std::unordered_map<std::string, H2M::ShaderBuffer> shaderBuffers = ;
 	// shaderBuffers.insert(std::make_pair("One", H2M::ShaderBuffer()));
 	// shaderBuffers.insert(std::make_pair("Two", H2M::ShaderBuffer()));
-	return {};
+	static const std::unordered_map<std::string, H2M::ShaderBufferH2M> s_Empty; return s_Empty;
 }
 
-std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M> MoravaShader::GetResources() const
+const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& MoravaShader::GetResources() const
 {
-	return {};
+	static const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M> s_Empty; return s_Empty;
 }
 
 void MoravaShader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback)

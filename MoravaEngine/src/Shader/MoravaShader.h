@@ -99,8 +99,8 @@ public:
 	virtual void Unbind();
 
 	virtual const std::string& GetName() const override { return m_Name; }
-	virtual std::unordered_map<std::string, H2M::ShaderBufferH2M> GetShaderBuffers() const override;
-	virtual std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M> GetResources() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderBufferH2M>& GetShaderBuffers() const override;
+	virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& GetResources() const override;
 
 	virtual void CreateFromString(const char* vertexCode, const char* fragmentCode);
 	virtual void CreateFromFiles(const char* vertexLocation, const char* fragmentLocation);

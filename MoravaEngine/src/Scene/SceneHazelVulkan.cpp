@@ -23,9 +23,9 @@
 
 SceneHazelVulkan::SceneHazelVulkan()
 {
-    sceneSettings.cameraPosition     = glm::vec3(0.0f, 0.0f, 100.0f);
-    sceneSettings.cameraStartYaw     = 0.0f;
-    sceneSettings.cameraStartPitch   = 0.0f;
+    sceneSettings.cameraPosition     = glm::vec3(-10.3f, 14.6f, -10.3f); // same view as the former Hazel editor camera
+    sceneSettings.cameraStartYaw     = 45.0f;  // looking towards the model at the origin
+    sceneSettings.cameraStartPitch   = 45.0f;  // positive = looking down (CameraController: front.y = -sin(pitch))
     sceneSettings.cameraMoveSpeed    = 2.0f;
     sceneSettings.waterHeight        = 0.0f;
     sceneSettings.waterWaveSpeed     = 0.05f;

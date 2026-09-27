@@ -72,7 +72,7 @@ namespace H2M
 
 		/**** BEGIN methods moved from VulkanTestLayer to VulkanRendererH2M ****/
 		static SceneRendererOptionsH2M& GetOptions(); // moved from VulkanTestLayer to VulkanRendererH2M
-		static void MapUniformBuffersVTL(RefH2M<MeshH2M> mesh, const EditorCameraH2M& camera);
+		static void MapUniformBuffersVTL(RefH2M<MeshH2M> mesh, CameraH2M& camera);
 		/**** END methods moved from VulkanTestLayer to VulkanRendererH2M ****/
 
 	public:

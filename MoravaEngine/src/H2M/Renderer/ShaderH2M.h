@@ -194,9 +194,9 @@ namespace H2M
 		static RefH2M<ShaderH2M> Create(const std::string& filepath, bool forceCompile = false);
 		static RefH2M<ShaderH2M> CreateFromString(const std::string& source);
 
-		virtual std::unordered_map<std::string, ShaderBufferH2M> GetShaderBuffers() const = 0;
+		virtual const std::unordered_map<std::string, ShaderBufferH2M>& GetShaderBuffers() const = 0;
 
-		virtual std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M> GetResources() const = 0;
+		virtual const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& GetResources() const = 0;
 
 		virtual void AddShaderReloadedCallback(const ShaderReloadedCallback& callback) = 0;
 

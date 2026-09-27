@@ -62,6 +62,7 @@ namespace H2M
 	static RefH2M<PipelineH2M> s_CompositePipeline;            // to be removed from VulkanRenderer
 	static RefH2M<PipelineH2M> s_MeshPipeline;                 // to be removed from VulkanRenderer
 	static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
+	static bool s_ViewportTextureNeedsUpdate = true;     // set when s_Framebuffer is (re)created; handled in the ImGui frame
 	static uint32_t s_ViewportWidth = 1280;              // to be removed from VulkanRenderer
 	static uint32_t s_ViewportHeight = 720;              // to be removed from VulkanRenderer
 	static std::vector<RefH2M<MeshH2M>> s_Meshes;         // to be removed from VulkanRenderer
@@ -143,6 +144,23 @@ namespace H2M
 	static VulkanRendererData s_Data;
 
 	/**** BEGIN to be removed from VulkanRenderer ****/
+	// Registers the viewport framebuffer's color image with the ImGui Vulkan backend (ImTextureID = VkDescriptorSet);
+	// without this, ImGui::Image in the Viewport window binds a null descriptor set
+	static void RegisterViewportTextureWithImGui()
+	{
+		if (s_TextureID)
+		{
+			// The old descriptor set may still be used by frames in flight (only happens on resize)
+			vkDeviceWaitIdle(VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+			ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)s_TextureID);
+		}
+
+		auto vulkanFB = s_Framebuffer.As<VulkanFramebufferH2M>();
+		const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
+		s_TextureID = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+		s_ViewportTextureNeedsUpdate = false;
+	}
+
 	void VulkanRendererH2M::SubmitMeshTemp(const RefH2M<MeshH2M>& mesh, const glm::mat4& transform)
 	{
 		// Temporary code - populate selected submesh
@@ -238,6 +256,9 @@ namespace H2M
 					auto vulkanFB = framebuffer.As<VulkanFramebufferH2M>();
 					const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 					Log::GetLogger()->warn("Resizing framebuffer; image layout is {0}", static_cast<int>(imageInfo.imageLayout));
+					// The ImGui texture for the viewport must point to the new image; ImGui may not be initialized yet here,
+					// so the texture is (re)registered in the ImGui frame (RegisterViewportTextureWithImGui)
+					s_ViewportTextureNeedsUpdate = true;
 					// s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 					// s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 
@@ -985,6 +1006,17 @@ namespace H2M
 				ImGui::Begin("Viewport");
 				auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
 				auto viewportSize = ImGui::GetContentRegionAvail();
+
+				// Tell the camera controller whether the mouse is over the viewport, so it can rotate the camera
+				// even though ImGui captures the mouse (same as EnvMapVulkanRenderer)
+				ImGuiWrapper::SetViewportEnabled(true);
+				ImGuiWrapper::SetViewportHovered(ImGui::IsWindowHovered());
+				ImGuiWrapper::SetViewportFocused(ImGui::IsWindowFocused());
+
+				if (s_ViewportTextureNeedsUpdate)
+				{
+					RegisterViewportTextureWithImGui();
+				}
 				ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
 
 				if (s_ViewportWidth != viewportSize.x || s_ViewportHeight != viewportSize.y)
@@ -1379,7 +1411,7 @@ namespace H2M
 				glm::mat4 worldTransform = transform * submesh->Transform;
 				BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
 				vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &worldTransform);
-				vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, &uniformStorageBuffer.Data);
+				vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 				vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
 			}
 		}
@@ -1562,7 +1594,7 @@ namespace H2M
 	}
 	/**** END code moved from VulkanTestLayer to VulkanRenderer****/
 
-	void VulkanRendererH2M::MapUniformBuffersVTL(RefH2M<MeshH2M> mesh, const EditorCameraH2M& camera)
+	void VulkanRendererH2M::MapUniformBuffersVTL(RefH2M<MeshH2M> mesh, CameraH2M& camera)
 	{
 		// Temporary code
 		s_Data.SceneData.SceneCamera.Camera = camera;
@@ -1604,7 +1636,8 @@ namespace H2M
 
 			{
 				void* ubPtr = shader->MapUniformBuffer(0, 0);
-				glm::mat4 viewProj = camera.GetViewProjection();
+				// GetViewMatrix() is virtual (the scene Camera rebuilds its view there), GetViewProjection() is not
+				glm::mat4 viewProj = camera.GetProjectionMatrix() * camera.GetViewMatrix();
 				memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
 				shader->UnmapUniformBuffer(0, 0);
 			}

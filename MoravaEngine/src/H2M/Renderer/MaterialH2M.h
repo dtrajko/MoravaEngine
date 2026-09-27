@@ -101,7 +101,7 @@ namespace H2M {
 		virtual RefH2M<ShaderH2M> GetShader() = 0;
 		virtual const std::string& GetName() const = 0;
 
-		BufferH2M GetUniformStorageBuffer() { return m_UniformStorageBuffer; }; // should it be located in HazelMaterial or VulkanMaterial?
+		virtual BufferH2M GetUniformStorageBuffer() { return m_UniformStorageBuffer; }; // virtual: VulkanMaterialH2M keeps its own storage buffer
 
 		// TODO: obsolete?
 		void Bind(); // Removed in more recent commits in Vulkan branch

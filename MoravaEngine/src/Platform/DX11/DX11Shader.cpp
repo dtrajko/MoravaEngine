@@ -476,9 +476,9 @@ void DX11Shader::SetMat4FromRenderThread(const std::string& name, const glm::mat
 
 void DX11Shader::SetIntArray(const std::string& name, int* values, uint32_t size) {}
 
-std::unordered_map<std::string, H2M::ShaderBufferH2M> DX11Shader::GetShaderBuffers() const { return {}; }
+const std::unordered_map<std::string, H2M::ShaderBufferH2M>& DX11Shader::GetShaderBuffers() const { static const std::unordered_map<std::string, H2M::ShaderBufferH2M> s_Empty; return s_Empty; }
 
-std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M> DX11Shader::GetResources() const { return {}; }
+const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M>& DX11Shader::GetResources() const { static const std::unordered_map<std::string, H2M::ShaderResourceDeclarationH2M> s_Empty; return s_Empty; }
 
 void DX11Shader::AddShaderReloadedCallback(const ShaderReloadedCallback& callback) {}
 

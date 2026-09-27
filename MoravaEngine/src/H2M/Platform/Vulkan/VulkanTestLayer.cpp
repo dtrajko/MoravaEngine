@@ -92,14 +92,15 @@ namespace H2M {
 	{
 		m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)VulkanRendererH2M::GetViewportWidth(), (float)VulkanRendererH2M::GetViewportHeight(), 0.01f, 1000.0f));
 
-		m_Camera.OnUpdate(ts);
-
 		for (RefH2M<MeshH2M> mesh : s_Meshes)
 		{
 			VulkanRendererH2M::SubmitMeshTemp(mesh); // the method should be removed from VulkanRendererH2M
 		}
 
-		VulkanRendererH2M::MapUniformBuffersVTL(s_Meshes[0], m_Camera);
+		// Use the scene camera (driven by the scene's CameraController: right mouse drag + WASD, like SceneEnvMapVulkan).
+		// VulkanRendererH2M::Draw() renders the skybox with the same camera, so mesh and skybox stay in sync.
+		// (m_Camera, the Hazel editor camera with Alt + mouse controls, is no longer used for rendering.)
+		VulkanRendererH2M::MapUniformBuffersVTL(s_Meshes[0], *Application::Get()->GetScene()->GetCamera());
 	}
 
 	void VulkanTestLayer::OnImGuiRender(::Window* mainWindow, ::Scene* scene)
@@ -135,7 +136,12 @@ namespace H2M {
 		ImVec2 viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
 		uint64_t textureID = 0; // m_Framebuffer->GetColorAttachmentRendererID();
-		ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ viewportSize.x, viewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		// The Viewport image is drawn by VulkanRendererH2M (same ImGui window); a null ImTextureID would make
+		// the ImGui Vulkan backend bind a null descriptor set
+		if (textureID)
+		{
+			ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ viewportSize.x, viewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		}
 
 		ImGui::End();
 		ImGui::PopStyleVar();
@@ -562,7 +568,12 @@ namespace H2M {
 		ImVec2 viewportSize = { viewportPanelSize.x, viewportPanelSize.y };
 
 		uint64_t textureID = 0; // m_Framebuffer->GetColorAttachmentRendererID();
-		ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ viewportSize.x, viewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		// The Viewport image is drawn by VulkanRendererH2M (same ImGui window); a null ImTextureID would make
+		// the ImGui Vulkan backend bind a null descriptor set
+		if (textureID)
+		{
+			ImGui::Image(reinterpret_cast<void*>(textureID), ImVec2{ viewportSize.x, viewportSize.y }, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+		}
 
 		ImGui::End();
 		ImGui::PopStyleVar();

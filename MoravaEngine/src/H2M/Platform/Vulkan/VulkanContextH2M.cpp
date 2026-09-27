@@ -147,11 +147,21 @@ namespace H2M
 
 	void VulkanContextH2M::OnResize(uint32_t width, uint32_t height)
 	{
-		m_Window->GetSwapChain().OnResize(width, height);
+		// The window resize event can arrive in the middle of a frame (the driver may dispatch window messages
+		// during present), after an image was acquired from the current swapchain. Recreating the swapchain
+		// then makes this frame submit to an image that was never acquired, so recreate it before the next acquire.
+		m_ResizePending = true;
+		m_PendingWidth = width;
+		m_PendingHeight = height;
 	}
 
 	void VulkanContextH2M::BeginFrame()
 	{
+		if (m_ResizePending)
+		{
+			m_ResizePending = false;
+			m_Window->GetSwapChain().OnResize(m_PendingWidth, m_PendingHeight);
+		}
 		m_Window->GetSwapChain().BeginFrame();
 	}
 

@@ -211,6 +211,9 @@ namespace H2M
 			.GetRenderPass();
 
 
+		// ImGui 1.92 creates its pipeline for this render pass; without it the pipeline is VK_NULL_HANDLE
+		initInfo.PipelineInfoMain.RenderPass = renderPass;
+
 		ImGui_ImplVulkan_Init(
 			&initInfo
 		);

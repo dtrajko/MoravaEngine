@@ -54,6 +54,10 @@ namespace H2M
 		VkDebugReportCallbackEXT m_DebugReportCallback = VK_NULL_HANDLE;
 		VkPipelineCache m_PipelineCache;
 
+		// Swapchain recreation requested by OnResize, applied in BeginFrame (see there)
+		bool m_ResizePending = false;
+		uint32_t m_PendingWidth = 0, m_PendingHeight = 0;
+
 		VulkanAllocatorH2M m_Allocator;
 		// VulkanSwapChainH2M m_SwapChain;
 

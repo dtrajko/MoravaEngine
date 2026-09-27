@@ -151,7 +151,7 @@ namespace H2M
 		virtual RefH2M<ShaderH2M> GetShader() override { return m_Shader; }
 		virtual const std::string& GetName() const override { return m_Name; }
 
-		BufferH2M GetUniformStorageBuffer() { return m_UniformStorageBuffer; }
+		virtual BufferH2M GetUniformStorageBuffer() override { return m_UniformStorageBuffer; }
 
 		void UpdateForRendering();
 		void InvalidateDescriptorSets();
