@@ -61,6 +61,7 @@ set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_INSTALL OFF CACHE BOOL "" FORCE)
 set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "" FORCE)
 set(ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT ON CACHE BOOL "" FORCE)
+set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)  # the engine only imports models
 
 # ---- Bullet ----
 set(BUILD_BULLET2_DEMOS OFF CACHE BOOL "" FORCE)
@@ -78,9 +79,14 @@ set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
 # OPTIONAL SUBDIRECTORY HELPER
 # =========================================================
 
+# Vendors are added with EXCLUDE_FROM_ALL: the solution contains, and "Build Solution" builds, only the
+# libraries the engine links (and what they depend on). Vendor tools, examples and tests are left out;
+# they can still be built from each vendor's own solution in the build folder (e.g. build/shaderc).
+# (The INSTALL project is not built either; vendor install rules are left as they are, since
+# shaderc's SHADERC_SKIP_INSTALL breaks glslang's.)
 function(add_optional dir out)
     if(EXISTS ${dir}/CMakeLists.txt)
-        add_subdirectory(${dir} ${CMAKE_BINARY_DIR}/${out})
+        add_subdirectory(${dir} ${CMAKE_BINARY_DIR}/${out} EXCLUDE_FROM_ALL)
     endif()
 endfunction()
 
