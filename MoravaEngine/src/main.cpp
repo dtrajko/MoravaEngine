@@ -1,5 +1,7 @@
 #include "main.h"
 
+#include "H2M/Core/LogH2M.h"
+
 
 void SelectRendererAPI()
 {
@@ -17,6 +19,7 @@ void SelectRendererAPI()
 int main()
 {
 	Log::Init();
+	H2M::LogH2M::Init(); // H2M_ERROR / H2M_CORE_ERROR and failed H2M asserts log through these loggers
 
 	SelectRendererAPI();
 

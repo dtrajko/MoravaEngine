@@ -100,11 +100,14 @@ namespace H2M
 		const ImVec4 iconTintColor = ImVec4(1, 1, 1, 1);
 
 		uint32_t columnCount = (uint32_t)panelSize.x / (uint32_t)m_TableCellWidth;
+		if (columnCount < 1) columnCount = 1; // panel narrower than one cell: still one column
 
-		if (columnCount >= 1)
+		// Also ends table #1's columns. Note: ImGui::Columns(1) means "no columns",
+		// so column widths can only be set when there are 2 or more columns.
+		ImGui::Columns(columnCount, 0, false);
+
+		if (columnCount > 1)
 		{
-			ImGui::Columns(columnCount, 0, false);
-
 			for (uint32_t i = 0; i < columnCount; i++)
 			{
 				ImGui::SetColumnWidth(i, m_TableCellWidth);

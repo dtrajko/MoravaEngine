@@ -1838,7 +1838,15 @@ void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
             for (auto emm_it = MaterialLibrary::s_EnvMapMaterials.begin(); emm_it != MaterialLibrary::s_EnvMapMaterials.end(); emm_it++)
             {
                 bool is_selected = (submeshMaterialName == materialNameStrings[emm_index]);
-                if (ImGui::Selectable(materialNameStrings.at(emm_index).c_str(), is_selected))
+
+                // Each entry gets its own ID (by index): materials can have an empty or duplicate name,
+                // and an empty label is not a valid ImGui ID at the root of the combo's popup window
+                const std::string& materialName = materialNameStrings.at(emm_index);
+                ImGui::PushID((int)emm_index);
+                bool clicked = ImGui::Selectable(materialName.empty() ? "(unnamed)" : materialName.c_str(), is_selected);
+                ImGui::PopID();
+
+                if (clicked)
                 {
                     submeshMaterialName = materialNameStrings[emm_index];
                     materialUUID = emm_it->second->GetUUID();

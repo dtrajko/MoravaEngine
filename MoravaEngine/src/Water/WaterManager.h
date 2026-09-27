@@ -30,15 +30,15 @@ public:
 	static float m_WaveSpeed;
 
 private:
-	FramebufferWater* m_ReflectionFB;
-	FramebufferWater* m_RefractionFB;
+	FramebufferWater* m_ReflectionFB = nullptr;
+	FramebufferWater* m_RefractionFB = nullptr;
 
-	int m_Width;
-	int m_Height;
+	int m_Width = 0;
+	int m_Height = 0;
 
-	float m_WaterHeight;
-	float m_MoveFactor;
+	float m_WaterHeight = 0.0f;
+	float m_MoveFactor = 0.0f;
 
-	glm::vec4 m_WaterColor;
+	glm::vec4 m_WaterColor = glm::vec4(0.0f, 0.6f, 1.0f, 1.0f);
 
 };

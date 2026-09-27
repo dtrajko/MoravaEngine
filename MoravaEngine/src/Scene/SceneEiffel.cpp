@@ -134,7 +134,7 @@ void SceneEiffel::UpdateImGui(float timestep, Window* mainWindow)
 				if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::Text("Water Level");
-					if (ImGui::SliderFloat("##water_level", &sceneSettings.waterHeight, -2.0f, 20.0f, "%.3f"))
+					if (ImGui::DragFloat("##water_level", &sceneSettings.waterHeight, 0.002f, -2.0f, 20.0f, "%.3f"))
 					{
 						m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
 					}

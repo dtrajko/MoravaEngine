@@ -150,13 +150,13 @@ protected:
 	float m_FOV;
 	float m_AspectRatio;
 
-	Camera* m_Camera;
-	CameraController* m_CameraController;
+	Camera* m_Camera = nullptr;
+	CameraController* m_CameraController = nullptr;
 
 	std::shared_ptr<Skybox> m_Skybox;
 	std::vector<std::string> skyboxFaces;
 
-	WaterManager* m_WaterManager;
+	WaterManager* m_WaterManager = nullptr; // stays null in scenes whose SetWaterManager() creates none
 
 	std::map<std::string, H2M::RefH2M<MoravaTexture>> textures;
 	std::map<std::string, GLuint> textureSlots;

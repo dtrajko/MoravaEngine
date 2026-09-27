@@ -897,6 +897,9 @@ namespace H2M
 
 	void SceneRendererH2M::ShadowMapPass()
 	{
+		// Cascaded shadow maps are not implemented yet: the render passes and shaders are never created
+		if (!s_Data.ShadowMapRenderPass[0]) return;
+
 		auto& directionalLights = s_Data.SceneData.SceneLightEnvironment.DirectionalLights;
 		if (directionalLights[0].Multiplier == 0.0f || !directionalLights[0].CastShadows)
 		{

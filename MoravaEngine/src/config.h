@@ -37,7 +37,7 @@ enum class GraphicsAPI
 
 
 // #define SCENE_COTTAGE
-#define SCENE_EIFFEL
+// #define SCENE_EIFFEL
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
 // #define SCENE_PBR
@@ -61,7 +61,7 @@ enum class GraphicsAPI
 // #define SCENE_ANIM_PBR
 // #define SCENE_EDITOR
 // #define SCENE_EDITOR_IMGUIZMO
-// #define SCENE_HAZEL_ENV_MAP  // RendererH2M: Render pass cannot be null!
+#define SCENE_HAZEL_ENV_MAP
 // #define SCENE_DX11           // This version of DX11Texture2D constructor is not used in DirectX 11!
 // #define SCENE_HAZEL_VULKAN   // Assertion failed in imgui_impl_glfw.cpp:721
 // #define SCENE_ENV_MAP_VULKAN // Assertion failed in imgui_impl_glfw.cpp:721

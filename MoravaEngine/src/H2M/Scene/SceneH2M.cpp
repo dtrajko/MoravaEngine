@@ -776,27 +776,9 @@ namespace H2M
 				}
 			}
 
-			auto group = m_Registry.group<MeshComponentH2M>(entt::get<TransformComponentH2M>);
-
-			SceneRendererH2M::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
-			for (auto entity : group)
-			{
-				auto [meshComponent, transformComponent] = group.get<MeshComponentH2M, TransformComponentH2M>(entity);
-				if (meshComponent.Mesh)
-				{
-					meshComponent.Mesh->OnUpdate(ts, false);
-
-					// TODO: Should we render (logically)
-
-					if (m_SelectedEntity == entity) {
-						SceneRendererH2M::SubmitSelectedMesh(meshComponent, transformComponent);
-					}
-					else {
-						SceneRendererH2M::SubmitMesh(meshComponent, transformComponent);
-					}
-				}
-			}
-			SceneRendererH2M::EndScene();
+			// Meshes are not submitted to SceneRendererH2M here: it is not initialized for OpenGL
+			// (SceneRendererH2M::Init() is disabled), and OpenGL scenes draw their meshes with their own
+			// renderer (e.g. EnvMapSceneRenderer). Before May 2026 this submission only ran for Vulkan.
 		}
 	}
 
