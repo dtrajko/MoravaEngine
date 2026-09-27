@@ -46,6 +46,7 @@ namespace H2M
 		{
 			uint32_t BindingPoint = 0;
 			uint32_t DescriptorSet = 0;
+			uint32_t ArraySize = 1; // number of descriptors in the binding, e.g. 32 for "sampler2D u_Textures[32]"
 			std::string Name;
 			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
 		};

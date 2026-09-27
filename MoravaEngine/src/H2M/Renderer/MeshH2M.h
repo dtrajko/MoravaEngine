@@ -192,6 +192,12 @@ namespace H2M
 			std::vector<VkWriteDescriptorSet> WriteDescriptors;
 		};
 		const MaterialDescriptor& GetDescriptorSet(uint32_t index) { return m_MaterialDescriptors[index]; }
+		// nullptr when the mesh has no material descriptor set for this index (e.g. a mesh without materials)
+		const MaterialDescriptor* FindDescriptorSet(uint32_t index) const
+		{
+			if (index >= m_MaterialDescriptors.size() || m_MaterialDescriptors[index].DescriptorSet.DescriptorSets.empty()) return nullptr;
+			return &m_MaterialDescriptors[index];
+		}
 
 		// VkDescriptorSet& GetDescriptorSet();
 		void* GetDescriptorSet();

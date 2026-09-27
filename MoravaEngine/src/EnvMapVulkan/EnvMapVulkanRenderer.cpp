@@ -33,6 +33,8 @@
 
 #include "ImGuizmo.h"
 
+#include <set>
+
 
 namespace Utils
 {
@@ -59,6 +61,25 @@ static H2M::RefH2M<H2M::FramebufferH2M> s_CompositeFramebuffer; // to be removed
 static H2M::RefH2M<H2M::PipelineH2M> s_CompositePipeline;            // to be removed from VulkanRenderer
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipeline;                 // to be removed from VulkanRenderer
 static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
+static bool s_ViewportTextureNeedsUpdate = false;     // the viewport framebuffer was recreated (resize)
+
+// ImGui::Image() needs the viewport framebuffer's color image registered with the ImGui Vulkan backend
+// (as a descriptor set). Called from OnImGuiRender, when the backend is initialized. After a resize the
+// framebuffer has a new image, so the old registration is replaced.
+static void RegisterViewportTextureWithImGui()
+{
+	if (s_TextureID)
+	{
+		// The old descriptor set may still be used by frames in flight (only happens on resize)
+		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+		ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)s_TextureID);
+	}
+
+	auto vulkanFB = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
+	const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
+	s_TextureID = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+	s_ViewportTextureNeedsUpdate = false;
+}
 static uint32_t s_ViewportWidth = 1280;              // to be removed from VulkanRenderer
 static uint32_t s_ViewportHeight = 720;              // to be removed from VulkanRenderer
 static std::vector<H2M::RefH2M<H2M::MeshH2M>> s_Meshes;         // to be removed from VulkanRenderer
@@ -239,8 +260,7 @@ void EnvMapVulkanRenderer::Init()
 				auto vulkanFB = framebuffer.As<H2M::VulkanFramebufferH2M>();
 				const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 				Log::GetLogger()->warn("Resizing framebuffer; image layout is {0}", static_cast<uint32_t>(imageInfo.imageLayout));
-				// s_TextureID = ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
-				// s_TextureID = ImGui_ImplVulkan_UpdateTextureInfo((VkDescriptorSet)s_TextureID, imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+				s_ViewportTextureNeedsUpdate = true; // re-register the new image with ImGui (see RegisterViewportTextureWithImGui)
 
 				auto shader = s_CompositePipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>();
 
@@ -490,11 +510,25 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, VkCo
 		auto& material = mesh->GetMaterials()[submesh->MaterialIndex];
 		H2M::BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
 
+		// The PBR pipeline needs the submesh's material descriptor set (set 0). Skip submeshes without one
+		// (drawing with a missing/null descriptor set is undefined behavior in Vulkan).
+		const H2M::MeshH2M::MaterialDescriptor* materialDescriptor = mesh->FindDescriptorSet(submesh->MaterialIndex);
+		if (!materialDescriptor || materialDescriptor->DescriptorSet.DescriptorSets[0] == VK_NULL_HANDLE)
+		{
+			static std::set<std::string> s_ReportedMeshes;
+			if (s_ReportedMeshes.insert(mesh->GetFilePath()).second)
+			{
+				Log::GetLogger()->warn("EnvMapVulkanRenderer: mesh '{0}' (submesh '{1}', material index {2}) has no material descriptor set - not drawn",
+					mesh->GetFilePath(), submesh->MeshName, submesh->MaterialIndex);
+			}
+			continue;
+		}
+
 		VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 		// Bind descriptor sets describing shader binding points
-		std::vector<VkDescriptorSet> descriptorSet = mesh->GetDescriptorSet(submesh->MaterialIndex).DescriptorSet.DescriptorSets;
+		const std::vector<VkDescriptorSet>& descriptorSet = materialDescriptor->DescriptorSet.DescriptorSets;
 		// std::vector<VkDescriptorSet> descriptorSet = material.As<VulkanMaterialH2M>()->GetDescriptorSet().DescriptorSets;
 		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet rendererDescriptorSet = s_Data.RendererDescriptorSetFeb2021;
 
@@ -987,6 +1021,10 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			ImGui::Begin("Viewport");
 			auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
 			auto viewportSize = ImGui::GetContentRegionAvail();
+			if (!s_TextureID || s_ViewportTextureNeedsUpdate)
+			{
+				RegisterViewportTextureWithImGui();
+			}
 			ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
 
 			if (s_ViewportWidth != viewportSize.x || s_ViewportHeight != viewportSize.y)
@@ -1795,6 +1833,12 @@ namespace Utils
 		default:
 			// Other source layouts aren't handled (yet)
 			break;
+		}
+
+		// Host writes are only covered by the HOST pipeline stage
+		if (imageMemoryBarrier.srcAccessMask & VK_ACCESS_HOST_WRITE_BIT)
+		{
+			srcStageMask |= VK_PIPELINE_STAGE_HOST_BIT;
 		}
 
 		// Put barrier inside setup command buffer

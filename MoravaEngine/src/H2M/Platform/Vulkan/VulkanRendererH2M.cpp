@@ -1795,6 +1795,12 @@ namespace H2M
 				break;
 			}
 
+			// Host writes are only covered by the HOST pipeline stage
+			if (imageMemoryBarrier.srcAccessMask & VK_ACCESS_HOST_WRITE_BIT)
+			{
+				srcStageMask |= VK_PIPELINE_STAGE_HOST_BIT;
+			}
+
 			// Put barrier inside setup command buffer
 			vkCmdPipelineBarrier(
 				cmdbuffer,

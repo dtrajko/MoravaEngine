@@ -316,12 +316,10 @@ namespace H2M
 			pipelineCreateInfo.pMultisampleState = &multisampleState;
 			pipelineCreateInfo.pViewportState = &viewportState;
 			pipelineCreateInfo.pDepthStencilState = &depthStencilState;
-			/**** BEGIN Non-composite ****/
-			pipelineCreateInfo.renderPass = Application::Get()->GetWindow()->GetSwapChain().GetRenderPass();
-			/**** END Non-composite ****/
-			/**** BEGIN Composite ****
+			// The pipeline must be created for the render pass it is used in: the target framebuffer's render pass.
+			// (For a framebuffer with SwapChainTarget, VulkanFramebufferH2M returns the swapchain's render pass.)
+			// Always using the swapchain's render pass made offscreen pipelines (meshes, skybox) incompatible.
 			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
-			/**** END Composite ****/
 			pipelineCreateInfo.pDynamicState = &dynamicState;
 
 			// What is this pipeline cache?

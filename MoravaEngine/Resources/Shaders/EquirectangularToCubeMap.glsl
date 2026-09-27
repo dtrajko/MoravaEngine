@@ -5,7 +5,7 @@
 
 const float PI = 3.141592;
 
-layout(binding = 0, rgba16f) restrict writeonly uniform imageCube o_CubeMap;
+layout(binding = 0, rgba32f) restrict writeonly uniform imageCube o_CubeMap; // must match the cube map's format (RGBA32F)
 layout(binding = 1) uniform sampler2D u_EquirectangularTex;
 
 vec3 GetCubeMapTexCoord()

@@ -186,6 +186,12 @@ namespace H2M {
 			break;
 		}
 
+		// Host writes are only covered by the HOST pipeline stage
+		if (imageMemoryBarrier.srcAccessMask & VK_ACCESS_HOST_WRITE_BIT)
+		{
+			srcStageMask |= VK_PIPELINE_STAGE_HOST_BIT;
+		}
+
 		// Put barrier inside setup command buffer
 		vkCmdPipelineBarrier(
 			cmdbuffer,
@@ -733,8 +739,9 @@ namespace H2M {
 		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 		VK_CHECK_RESULT_H2M(vkBindImageMemory(vulkanDevice, m_Image, m_DeviceMemory, 0));
 
-		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		// m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		// Cube maps start in GENERAL: compute shaders write them as storage images (which requires GENERAL)
+		// and they are sampled afterwards (allowed in GENERAL). GenerateMips(true) moves them to SHADER_READ_ONLY_OPTIMAL.
+		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
 		VkCommandBuffer layoutCmd = device->GetCommandBuffer(true);
 
@@ -848,11 +855,11 @@ namespace H2M {
 			mipSubRange.levelCount = 1;
 			mipSubRange.layerCount = 1;
 
-			// Prepare current mip level as image blit destination
+			// Mip 0 was written by a compute shader (in GENERAL): make it the blit source for mip 1
 			Utils::InsertImageMemoryBarrier(blitCmd, m_Image,
-				0, VK_ACCESS_TRANSFER_WRITE_BIT,
+				VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
 				VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
 				mipSubRange);
 		}
 
@@ -919,33 +926,19 @@ namespace H2M {
 			}
 		}
 
-		// After the loop, all mip layers are in TRANSFER_SRC layout, so transition all to SHADER_READ
+		// After the loop, all mip levels are in TRANSFER_SRC layout: transition them to the final layout,
+		// readable by fragment shaders (rendering) and compute shaders (e.g. the irradiance pass).
+		// (No transition from UNDEFINED here: that would allow the driver to discard the generated mips.)
 		VkImageSubresourceRange subresourceRange = {};
 		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		subresourceRange.layerCount = 6;
 		subresourceRange.levelCount = mipLevels;
 
 		Utils::InsertImageMemoryBarrier(blitCmd, m_Image,
-			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
+			VK_ACCESS_TRANSFER_READ_BIT | VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, readonly ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL,
-			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
 			subresourceRange);
-
-		if (readonly)
-		{
-			Utils::InsertImageMemoryBarrier(blitCmd, m_Image,
-				VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
-				// VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				subresourceRange);
-
-			SetImageLayout(
-				blitCmd, m_Image,
-				VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				subresourceRange,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-		}
 
 		VulkanContextH2M::GetCurrentDevice()->FlushCommandBuffer(blitCmd);
 

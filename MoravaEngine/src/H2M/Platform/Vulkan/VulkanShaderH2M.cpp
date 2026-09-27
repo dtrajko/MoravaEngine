@@ -42,6 +42,25 @@ namespace H2M
 		return ShaderUniformTypeH2M::None;
 	}
 
+	// Number of descriptors in a binding: 32 for "sampler2D u_Textures[32]", 1 for a non-array binding.
+	// (resource.type_id includes the array dimensions; base_type_id does not)
+	static uint32_t GetDescriptorArraySize(const spirv_cross::Compiler& compiler, const spirv_cross::Resource& resource)
+	{
+		const spirv_cross::SPIRType& type = compiler.get_type(resource.type_id);
+		return type.array.empty() ? 1 : std::max(1u, (uint32_t)type.array[0]);
+	}
+
+	// Total number of descriptors needed for a set of image bindings (arrays count every element)
+	static uint32_t GetDescriptorCount(const std::unordered_map<uint32_t, VulkanShaderH2M::ImageSamplerH2M>& imageSamplers)
+	{
+		uint32_t count = 0;
+		for (const auto& [binding, imageSampler] : imageSamplers)
+		{
+			count += imageSampler.ArraySize;
+		}
+		return count;
+	}
+
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderH2M::UniformBufferH2M*>> s_UniformBuffers; // set -> binding point -> buffer
 
 	// Very temporary attribute in Vulkan Week Day 5 Part 1
@@ -254,6 +273,7 @@ namespace H2M
 			// ImageSampler imageSampler;
 			imageSampler.BindingPoint = binding;
 			imageSampler.DescriptorSet = descriptorSet;
+			imageSampler.ArraySize = GetDescriptorArraySize(compiler, resource);
 			imageSampler.Name = name;
 			imageSampler.ShaderStage = shaderStage;
 			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
@@ -284,6 +304,7 @@ namespace H2M
 			// ImageSampler imageSampler;
 			imageSampler.BindingPoint = binding;
 			imageSampler.DescriptorSet = descriptorSet;
+			imageSampler.ArraySize = GetDescriptorArraySize(compiler, resource);
 			imageSampler.Name = name;
 			imageSampler.ShaderStage = shaderStage;
 			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
@@ -325,14 +346,14 @@ namespace H2M
 			{
 				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.ImageSamplers.size());
+				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.ImageSamplers);
 			}
 
 			if (shaderDescriptorSet.StorageImages.size())
 			{
 				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.StorageImages.size());
+				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.StorageImages);
 			}
 
 #if 0
@@ -379,7 +400,7 @@ namespace H2M
 			{
 				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
 				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				layoutBinding.descriptorCount = 1;
+				layoutBinding.descriptorCount = imageSampler.ArraySize; // must match the array size in the shader
 				layoutBinding.stageFlags = imageSampler.ShaderStage;
 				layoutBinding.pImmutableSamplers = nullptr;
 				layoutBinding.binding = binding;
@@ -398,7 +419,7 @@ namespace H2M
 			{
 				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
 				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				layoutBinding.descriptorCount = 1;
+				layoutBinding.descriptorCount = storageImage.ArraySize; // must match the array size in the shader
 				layoutBinding.stageFlags = storageImage.ShaderStage;
 				layoutBinding.pImmutableSamplers = nullptr;
 
@@ -528,13 +549,13 @@ namespace H2M
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.ImageSamplers.size()) * numberOfSets;
+				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.ImageSamplers) * numberOfSets;
 			}
 			if (shaderDescriptorSet.StorageImages.size())
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.StorageImages.size()) * numberOfSets;
+				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.StorageImages) * numberOfSets;
 			}
 
 		}
@@ -640,7 +661,13 @@ namespace H2M
 				auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
 				std::string cachedFilePath = path.string();
 
-				FILE* f = fopen(cachedFilePath.c_str(), "rb");
+				// Ignore a cached binary that is older than its .glsl source, so shader edits take effect
+				std::error_code sourceTimeError, cacheTimeError;
+				auto sourceTime = std::filesystem::last_write_time(p, sourceTimeError);
+				auto cacheTime = std::filesystem::last_write_time(path, cacheTimeError);
+				bool cacheIsStale = !sourceTimeError && !cacheTimeError && cacheTime < sourceTime;
+
+				FILE* f = cacheIsStale ? nullptr : fopen(cachedFilePath.c_str(), "rb");
 				if (f)
 				{
 					fseek(f, 0, SEEK_END);
