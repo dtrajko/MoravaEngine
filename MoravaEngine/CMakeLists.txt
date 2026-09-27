@@ -12,10 +12,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Debug CACHE STRING "" FORCE)
-endif()
-
 # =========================================================
 # MSVC RUNTIME LIBRARY (one switch for the engine and every vendor target)
 #   ON  = static runtime:  /MTd (Debug), /MT (Release)
@@ -44,21 +40,8 @@ set(YAML_MSVC_SHARED_RT ${MORAVA_SHARED_CRT} CACHE BOOL "" FORCE)             # 
 set(SHADERC_ENABLE_SHARED_CRT ${MORAVA_SHARED_CRT} CACHE BOOL "" FORCE)       # shaderc, glslang, spirv-tools
 set(USE_STATIC_CRT ${MORAVA_MSVC_STATIC_RUNTIME} CACHE BOOL "" FORCE)         # assimp
 
-if(MSVC)
-    add_compile_options(/std:c++17)
-endif()
-
-# =========================================================
-# PLATFORM DEFINES
-# =========================================================
-
-if(WIN32)
-    add_compile_definitions(HZ_PLATFORM_WINDOWS NOMINMAX WIN32_LEAN_AND_MEAN)
-elseif(UNIX)
-    add_compile_definitions(HZ_PLATFORM_LINUX)
-endif()
-
-add_compile_definitions(HZ_DEBUG)
+# Engine-only defines (platform, HZ_DEBUG/HZ_RELEASE) are set on the MoravaEngine target below,
+# so they don't leak into the vendor projects
 
 # =========================================================
 # ROOT PATH
@@ -85,7 +68,7 @@ set(BUILD_CPU_DEMOS OFF CACHE BOOL "" FORCE)
 set(BUILD_OPENGL3_DEMOS OFF CACHE BOOL "" FORCE)
 set(BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
 set(INSTALL_LIBS OFF CACHE BOOL "" FORCE)
-set(BUILD_BULLET3 OFF CACHE BOOL "" FORCE)
+set(BUILD_BULLET3 OFF CACHE BOOL "" FORCE)  # the engine only uses Bullet 2 (BulletDynamics, BulletCollision, LinearMath)
 set(BUILD_EXTRAS OFF CACHE BOOL "" FORCE)
 
 # ---- Shaderc ----
@@ -107,7 +90,10 @@ endfunction()
 
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/glfw glfw)
 add_optional(${ROOT_PATH_ABS}/vendor/box2d box2d)
+# bullet3 declares cmake_minimum_required(3.5); raise its policy version to avoid CMake's deprecation warning
+set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/bullet3 bullet3)
+unset(CMAKE_POLICY_VERSION_MINIMUM)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp yaml-cpp)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross spirv-cross)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/shaderc shaderc)
@@ -131,6 +117,18 @@ add_executable(${PROJECT_NAME} ${SRC} ${HEADERS})
 
 target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
 
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE HZ_PLATFORM_WINDOWS NOMINMAX WIN32_LEAN_AND_MEAN)
+elseif(UNIX)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE HZ_PLATFORM_LINUX)
+endif()
+
+# Debug: asserts and debug-only code; Release/RelWithDebInfo/MinSizeRel: HZ_RELEASE
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    $<$<CONFIG:Debug>:HZ_DEBUG>
+    $<$<NOT:$<CONFIG:Debug>>:HZ_RELEASE>
+)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${ROOT_PATH_ABS}/vendor
@@ -148,15 +146,6 @@ target_include_directories(glm INTERFACE ${ROOT_PATH_ABS}/vendor/GLM)
 add_library(tinyobjloader INTERFACE)
 target_include_directories(tinyobjloader INTERFACE ${ROOT_PATH_ABS}/vendor/tinyobjloader)
 
-# AFTER ALL subdirectories
-if(TARGET Bullet3Dynamics AND NOT TARGET BulletDynamics)
-    add_library(BulletDynamics ALIAS Bullet3Dynamics)
-endif()
-
-if(TARGET Bullet3Collision AND NOT TARGET BulletCollision)
-    add_library(BulletCollision ALIAS Bullet3Collision)
-endif()
-
 add_library(entt INTERFACE)
 target_include_directories(entt INTERFACE ${ROOT_PATH_ABS}/vendor/entt/include)
 
@@ -165,9 +154,6 @@ target_include_directories(spdlog INTERFACE ${ROOT_PATH_ABS}/vendor/spdlog/inclu
 
 add_library(mono INTERFACE)
 target_include_directories(mono INTERFACE ${ROOT_PATH_ABS}/vendor/mono/include)
-
-add_library(PhysX INTERFACE)
-target_include_directories(PhysX INTERFACE ${ROOT_PATH_ABS}/vendor/PhysX/include)
 
 add_library(NvidiaAftermath INTERFACE)
 target_include_directories(NvidiaAftermath INTERFACE ${ROOT_PATH_ABS}/vendor/NvidiaAftermath)
@@ -271,7 +257,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
     VulkanMemoryAllocator
     mono
-    PhysX
     NvidiaAftermath
     Optick
     farbot
@@ -323,15 +308,13 @@ target_link_directories(${PROJECT_NAME} PRIVATE ${VULKAN_DIR}/Lib)
 # POST BUILD
 # =========================================================
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/Models"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/Models"
-)
+# Models, Shaders, Textures etc. are not copied: the app runs with the source folder as its
+# working directory (VS_DEBUGGER_WORKING_DIRECTORY below) and loads them from there.
 
+# mono ships Debug and Release builds only; RelWithDebInfo and MinSizeRel use the Release one
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${MONO_DIR}/bin/$<CONFIG>/mono-2.0-sgen.dll"
+        "${MONO_DIR}/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/mono-2.0-sgen.dll"
         $<TARGET_FILE_DIR:${PROJECT_NAME}>
 )
 
@@ -355,6 +338,9 @@ if(MSVC)
         get_target_property(tgt_type ${tgt} TYPE)
         if(tgt_type MATCHES "^(STATIC_LIBRARY|SHARED_LIBRARY|MODULE_LIBRARY|OBJECT_LIBRARY|EXECUTABLE)$")
             set_target_properties(${tgt} PROPERTIES MSVC_RUNTIME_LIBRARY ${MORAVA_MSVC_RUNTIME})
+
+            # Compile the files within each project in parallel (MSBuild --parallel only runs projects in parallel)
+            target_compile_options(${tgt} PRIVATE $<$<COMPILE_LANGUAGE:C,CXX>:/MP>)
         endif()
     endforeach()
 endif()
