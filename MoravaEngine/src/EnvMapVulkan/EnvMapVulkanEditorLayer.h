@@ -30,8 +30,6 @@ public:
 	virtual void OnDetach() override;
 	virtual void OnUpdate(H2M::TimestepH2M ts) override;
 
-	virtual void OnRender() override; // should we remove the pure virtual method LayerH2M::OnRender and why?
-
 	virtual void OnImGuiRender() override;
 	virtual void OnEvent(H2M::EventH2M& e) override;
 

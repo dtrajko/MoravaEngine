@@ -13,54 +13,117 @@ DX11Texture2D::DX11Texture2D()
 }
 
 DX11Texture2D::DX11Texture2D(const wchar_t* fullPath)
+	:
+	m_TextureDX11(nullptr),
+	m_SamplerStateDX11(nullptr),
+	m_ShaderResourceViewDX11(nullptr)
 {
 	ID3D11Device* dx11Device = DX11Context::Get()->GetDX11Device();
 
+	if (!dx11Device)
+	{
+		throw std::runtime_error("DX11Texture2D: Invalid DX11 device.");
+	}
+
 	DirectX::ScratchImage image_data;
-	HRESULT res = DirectX::LoadFromWICFile(fullPath, DirectX::WIC_FLAGS_IGNORE_SRGB, nullptr, image_data);
 
-	if (SUCCEEDED(res))
+	HRESULT res = DirectX::LoadFromWICFile(
+		fullPath,
+		DirectX::WIC_FLAGS_IGNORE_SRGB,
+		nullptr,
+		image_data
+	);
+
+	if (FAILED(res))
 	{
-		res = DirectX::CreateTexture(dx11Device, image_data.GetImages(),
-			image_data.GetImageCount(), image_data.GetMetadata(), &m_TextureDX11);
+		std::string message =
+			"DX11Texture2D '" + Util::to_str(fullPath) + "' failed to load.";
 
-		if (FAILED(res)) throw std::exception("DX11Texture2D not created successfully.");
-
-		m_Path = Util::to_str(fullPath);
-		m_Width = (uint32_t)image_data.GetMetadata().width;
-		m_Height = (uint32_t)image_data.GetMetadata().height;
-		m_Size = glm::vec2(m_Width, m_Height);
-
-		D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
-		desc.Format = image_data.GetMetadata().format;
-		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		desc.Texture2D.MipLevels = (UINT)image_data.GetMetadata().mipLevels;
-		desc.Texture2D.MostDetailedMip = 0;
-
-		D3D11_SAMPLER_DESC sampler_desc = {};
-		sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-		sampler_desc.Filter = D3D11_FILTER_ANISOTROPIC;
-		sampler_desc.MinLOD = 0;
-		sampler_desc.MaxLOD = (FLOAT)image_data.GetMetadata().mipLevels;
-
-		res = dx11Device->CreateSamplerState(&sampler_desc, &m_SamplerStateDX11);
-		if (FAILED(res)) throw std::exception("DX11Texture2D SamplerState not created successfully.");
-
-		res = dx11Device->CreateShaderResourceView(m_TextureDX11, &desc, &m_ShaderResourceViewDX11);
-		if (FAILED(res)) throw std::exception("DX11Texture2D ShaderResourceView not created successfully.");
-	}
-	else
-	{
-		std::string message = "DX11Texture2D '" + Util::to_str(fullPath) + "' not created successfully.";
 		Log::GetLogger()->warn(message);
-		// throw std::exception(message.c_str());
+		throw std::runtime_error(message);
 	}
 
-	Log::GetLogger()->info("DX11Texture2D '{0}' successfully loaded!", Util::to_str(fullPath));
+	res = DirectX::CreateTexture(
+		dx11Device,
+		image_data.GetImages(),
+		image_data.GetImageCount(),
+		image_data.GetMetadata(),
+		&m_TextureDX11
+	);
 
-	// Invalidate(); // do we need an Invalidate method?
+	if (FAILED(res) || !m_TextureDX11)
+	{
+		throw std::runtime_error("DX11Texture2D: Texture creation failed.");
+	}
+
+	m_Path = Util::to_str(fullPath);
+	m_Width = static_cast<uint32_t>(image_data.GetMetadata().width);
+	m_Height = static_cast<uint32_t>(image_data.GetMetadata().height);
+	m_Size = glm::vec2(m_Width, m_Height);
+
+
+	// Shader Resource View
+	D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+	srv_desc.Format = image_data.GetMetadata().format;
+	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srv_desc.Texture2D.MostDetailedMip = 0;
+	srv_desc.Texture2D.MipLevels =
+		static_cast<UINT>(image_data.GetMetadata().mipLevels);
+
+
+	res = dx11Device->CreateShaderResourceView(
+		m_TextureDX11,
+		&srv_desc,
+		&m_ShaderResourceViewDX11
+	);
+
+	if (FAILED(res) || !m_ShaderResourceViewDX11)
+	{
+		throw std::runtime_error("DX11Texture2D: ShaderResourceView creation failed.");
+	}
+
+
+	// Sampler
+	D3D11_SAMPLER_DESC sampler_desc = {};
+
+	sampler_desc.Filter = D3D11_FILTER_ANISOTROPIC;
+
+	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+
+	sampler_desc.MaxAnisotropy = 16;
+
+	sampler_desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+	sampler_desc.MinLOD = 0;
+	sampler_desc.MaxLOD =
+		static_cast<float>(image_data.GetMetadata().mipLevels);
+
+	sampler_desc.MipLODBias = 0.0f;
+
+
+	res = dx11Device->CreateSamplerState(
+		&sampler_desc,
+		&m_SamplerStateDX11
+	);
+
+	if (FAILED(res) || !m_SamplerStateDX11)
+	{
+		throw std::runtime_error("DX11Texture2D: SamplerState creation failed.");
+	}
+
+
+	Log::GetLogger()->info(
+		"DX11Texture2D '{0}' successfully loaded!",
+		Util::to_str(fullPath)
+	);
+}
+
+DX11Texture2D::DX11Texture2D(const std::string& path, bool srgb, H2M::TextureWrapH2M wrap)
+	:
+	DX11Texture2D(Util::to_wstr(path).c_str())
+{
 }
 
 DX11Texture2D::DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type)
@@ -149,16 +212,6 @@ DX11Texture2D::DX11Texture2D(const glm::vec2& size, DX11Texture2D::Type type)
 	Log::GetLogger()->info("DX11Texture2D successfully created!");
 
 	// Invalidate(); // do we need an Invalidate method?
-}
-
-DX11Texture2D::DX11Texture2D(const std::string& path, bool srgb, H2M::TextureWrapH2M wrap)
-	: m_Path(path)
-{
-	Log::GetLogger()->error("This version of DX11Texture2D constructor is not used in DirectX 11!");
-
-	// Invalidate();
-
-	H2M_CORE_ASSERT(false);
 }
 
 DX11Texture2D::DX11Texture2D(H2M::ImageFormatH2M format, uint32_t width, uint32_t height, const void* data, H2M::TextureWrapH2M wrap) :

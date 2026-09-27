@@ -42,7 +42,6 @@ namespace H2M {
 		virtual void OnUpdate(TimestepH2M ts) override;
 		virtual void OnEvent(EventH2M& event) override;
 		virtual void OnImGuiRender(::Window* mainWindow, ::Scene* scene) override;
-		virtual void OnRender(::Window* mainWindow, ::Scene* scene) override;
 
 		void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 

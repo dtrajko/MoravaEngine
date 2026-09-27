@@ -4,9 +4,6 @@
 [submodule "vendor/cross-platform/bullet3"]
 	path = vendor/cross-platform/bullet3
 	url = https://github.com/bulletphysics/bullet3.git
-[submodule "vendor/cross-platform/glew"]
-	path = vendor/cross-platform/glew
-	url = https://github.com/nigels-com/glew.git
 [submodule "vendor/cross-platform/glfw"]
 	path = vendor/cross-platform/glfw
 	url = https://github.com/glfw/glfw.git

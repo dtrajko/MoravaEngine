@@ -162,11 +162,6 @@ namespace H2M {
 
 	void VulkanTestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow) {}
 
-	void VulkanTestLayer::OnRender(::Window* mainWindow, ::Scene* scene)
-	{
-		// VulkanRendererH2M::Draw(scene->GetCamera());
-	}
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/**** BEGIN this version of the OnAttach method is outdated ****

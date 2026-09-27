@@ -89,10 +89,6 @@ void DX11ImGuiLayer::OnEvent(H2M::EventH2M& event)
 {
 }
 
-void DX11ImGuiLayer::OnRender()
-{
-}
-
 void DX11ImGuiLayer::Begin()
 {
 	ImGuiIO& io = ImGui::GetIO();

@@ -135,11 +135,6 @@ namespace H2M
 	{
 	}
 
-	// this method seems to be obsolete
-	void EditorLayerVulkanH2M::OnRender()
-	{
-	}
-
 	void EditorLayerVulkanH2M::OnRender2D()
 	{
 	}

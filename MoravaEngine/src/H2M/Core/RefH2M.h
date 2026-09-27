@@ -140,6 +140,7 @@ namespace H2M {
 		template<typename... Args>
 		static RefH2M<T> Create(Args&&... args)
 		{
+			// Use braces to disambiguate constructor selection and avoid narrowing conversion errors
 			return RefH2M<T>(new T(std::forward<Args>(args)...));
 		}
 	private:

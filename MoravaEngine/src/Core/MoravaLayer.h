@@ -19,8 +19,6 @@ public:
 	virtual void OnDetach() = 0;
 	virtual void OnUpdate(H2M::TimestepH2M ts) = 0;
 	virtual void OnEvent(H2M::EventH2M& event) = 0;
-	virtual void OnRender() override {}; // Hazel version
-	virtual void OnRender(Window* mainWindow, Scene* scene) = 0; // MoravaEngine version
 	virtual void OnImGuiRender() override {}; // Hazel version
 	virtual void OnImGuiRender(Window* mainWindow, Scene* scene) = 0; // MoravaEngine version
 

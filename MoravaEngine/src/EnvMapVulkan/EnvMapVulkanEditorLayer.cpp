@@ -78,11 +78,6 @@ void EnvMapVulkanEditorLayer::OnUpdate(H2M::TimestepH2M ts)
 {
 }
 
-void EnvMapVulkanEditorLayer::OnRender()
-{
-	Log::GetLogger()->error("Method not implemented. TODO: Check if the method LayerH2M::OnRender is deprecated and why...");
-}
-
 void EnvMapVulkanEditorLayer::OnImGuiRender()
 {
 }

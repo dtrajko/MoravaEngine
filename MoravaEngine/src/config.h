@@ -1,7 +1,43 @@
 #pragma once
 
 
-// #define SCENE_COTTAGE
+// BEGIN compile the engine for only one graphics API
+
+#define GRAPHICS_API_VULKAN
+// #define GRAPHICS_API_OPENGL
+// #define GRAPHICS_API_DIRECTX11
+
+enum class GraphicsAPI
+{
+	None,
+	Vulkan,
+	OpenGL,
+	DirectX11,
+	DirectX12,
+	Metal,
+	WebGPU
+};
+
+#if defined(GRAPHICS_API_VULKAN)
+	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::Vulkan;
+#elif defined(GRAPHICS_API_OPENGL)
+	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::OpenGL;
+#elif defined(GRAPHICS_API_DIRECTX11)
+	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::DirectX11;
+#elif defined(GRAPHICS_API_DIRECTX12)
+	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::DirectX12;
+#elif defined(GRAPHICS_API_METAL)
+	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::Metal;
+#elif defined(GRAPHICS_API_WEBGPU)
+	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::WebGPU;
+#else
+	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::None;
+#endif
+
+// END compile the engine for only one graphics API
+
+
+#define SCENE_COTTAGE
 // #define SCENE_EIFFEL
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
@@ -25,7 +61,7 @@
 // #define SCENE_DEFERRED_OGL
 // #define SCENE_ANIM_PBR
 // #define SCENE_EDITOR
-#define SCENE_EDITOR_IMGUIZMO
+// #define SCENE_EDITOR_IMGUIZMO
 // #define SCENE_HAZEL_ENV_MAP  // RendererH2M: Render pass cannot be null!
 // #define SCENE_DX11           // This version of DX11Texture2D constructor is not used in DirectX 11!
 // #define SCENE_HAZEL_VULKAN   // Assertion failed in imgui_impl_glfw.cpp:721

@@ -1,0 +1,24 @@
+2026-09-27:
+
+From an Administrator terminal:
+chkdsk D: /f
+
+Then:
+git submodule update --init --force vendor/cross-platform/bullet3
+
+
+You're ready for chkdsk:
+1. Close Visual Studio and this session.
+2. In Terminal (Admin), run chkdsk D: /f.
+3. Answer N to force a dismount, then Y to check the volume at the next restart.
+4. Reboot.
+5. Afterwards, run git submodule update --init --force vendor/cross-platform/bullet3 to restore the damaged Bullet folder.
+
+
+Worth doing:
+1. Build GLEW from source. Download glew.c from the GLEW 2.1.0 release into vendor/GLEW/src/, switch CMake to it, and remove the prebuilt .lib files and the Debug workaround. This fixes the last GLEW warning and makes GLEW follow the runtime setting.
+2. Stop defining HZ_DEBUG in every configuration. Release builds currently keep debug asserts, and HZ_RELEASE is never defined.
+3. Fix the mono DLL copy for RelWithDebInfo and MinSizeRel. Those configurations currently fail after linking because there's no mono folder for them. Alternatively, limit the build to Debug and Release.
+4. Stop copying Models after every build. That's 191 MB each time, and Visual Studio already runs the program from the source folder where Models lives.
+5. Keep engine settings off the vendor projects. Set NOMINMAX, WIN32_LEAN_AND_MEAN, HZ_* and /std:c++17 on the MoravaEngine target only. That fixes the C4005 warning above.
+

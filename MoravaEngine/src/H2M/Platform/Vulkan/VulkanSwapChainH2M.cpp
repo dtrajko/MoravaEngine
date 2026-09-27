@@ -693,28 +693,28 @@ namespace H2M
 		// there is no preferered format, so we assume VK_FORMAT_B8G8R8A8_UNORM
 		if ((formatCount == 1) && (surfaceFormats[0].format == VK_FORMAT_UNDEFINED))
 		{
-			m_ColorFormat = VK_FORMAT_B8G8R8A8_UNORM;
+			m_ColorFormat = VK_FORMAT_R8G8B8A8_UNORM;
 			m_ColorSpace = surfaceFormats[0].colorSpace;
 		}
 		else
 		{
 			// iterate over the list of available surface format and
-			// check for the presence of VK_FORMAT_B8G8R8A8_UNORM
-			bool found_B8G8R8A8_UNORM = false;
+			// check for the presence of VK_FORMAT_c
+			bool found_R8G8B8A8_UNORM = false;
 			for (auto&& surfaceFormat : surfaceFormats)
 			{
-				if (surfaceFormat.format == VK_FORMAT_B8G8R8A8_UNORM)
+				if (surfaceFormat.format == VK_FORMAT_R8G8B8A8_UNORM)
 				{
 					m_ColorFormat = surfaceFormat.format;
 					m_ColorSpace = surfaceFormat.colorSpace;
-					found_B8G8R8A8_UNORM = true;
+					found_R8G8B8A8_UNORM = true;
 					break;
 				}
 			}
 
 			// in case VK_FORMAT_B8G8R8A8_UNORM is not available
 			// select the first available color format
-			if (!found_B8G8R8A8_UNORM)
+			if (!found_R8G8B8A8_UNORM)
 			{
 				m_ColorFormat = surfaceFormats[0].format;
 				m_ColorSpace = surfaceFormats[0].colorSpace;

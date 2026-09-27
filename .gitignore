@@ -386,3 +386,7 @@ vendor/cross-platform/glew
 vendor/cross-platform/glfw
 vendor/cross-platform/ImGuizmo
 vendor/PhysX
+
+# Claude Code personal settings
+.claude/settings.local.json
+.claude

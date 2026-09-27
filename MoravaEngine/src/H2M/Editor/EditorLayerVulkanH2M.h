@@ -41,8 +41,6 @@ namespace H2M
 		virtual void OnImGuiRender() override;
 		virtual void OnEvent(EventH2M& e) override;
 
-		virtual void OnRender() override; // this method seems to be obsolete
-
 		void OnRender2D();
 
 		bool OnKeyPressedEvent(KeyPressedEventH2M& e);

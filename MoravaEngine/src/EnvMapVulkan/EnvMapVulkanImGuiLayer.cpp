@@ -76,11 +76,95 @@ void EnvMapVulkanImGuiLayer::OnAttach()
 	// io.ConfigViewportsNoTaskBarIcon = true;
 
 	// Keyboard mapping. ImGui will use those indices to peek into the io.KeysDown[] array.
-	ImGui_ImplGlfw_InitForOpenGL(Application::Get()->GetWindow()->GetHandle(), true); // OpenGL
-	// ImGui_ImplGlfw_InitForVulkan(Application::Get()->GetWindow()->GetHandle(), true); // Vulkan
+	Application* app = Application::Get();
+	GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow()->GetHandle());
 
-	io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Bold.ttf", 16.0f);
-	io.FontDefault = io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Regular.ttf", 16.0f);
+	auto vulkanContext = H2M::VulkanContextH2M::Get();
+	auto device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+
+	auto currentDevice = H2M::VulkanContextH2M::GetCurrentDevice();
+
+	// Create Descriptor Pool
+	{
+		VkDescriptorPoolSize pool_sizes[] =
+		{
+			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+			{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+		};
+
+		VkDescriptorPoolCreateInfo pool_info = {};
+		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+		pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
+		pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+		pool_info.pPoolSizes = pool_sizes;
+		VkResult err = vkCreateDescriptorPool(device, &pool_info, nullptr, &m_DescriptorPool);
+		check_vk_result(err);
+	}
+
+	// Setup Platform/Renderer bindings
+	// ImGuiIO& io = ImGui::GetIO(); (void)io; // <-- REMOVE THIS LINE
+	// GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow()->GetHandle()); // <-- REMOVE THIS LINE
+
+	// Guard Vulkan/GLFW platform init to avoid double initialization/assert
+	if (ImGui::GetIO().BackendPlatformUserData == nullptr) {
+		ImGui_ImplGlfw_InitForVulkan(window, /*install_callbacks=*/true);
+	}
+	else {
+		// Backend already initialized for this ImGui context - skip re-init
+	}
+
+	ImGui_ImplVulkan_InitInfo init_info = {};
+	init_info.Instance = H2M::VulkanContextH2M::GetInstance();
+	init_info.PhysicalDevice = currentDevice->GetPhysicalDevice()->GetVulkanPhysicalDevice();
+	init_info.Device = currentDevice->GetVulkanDevice();
+	init_info.QueueFamily = currentDevice->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
+	init_info.Queue = currentDevice->GetGraphicsQueue();
+	init_info.PipelineCache = nullptr;
+	init_info.DescriptorPool = m_DescriptorPool;
+	init_info.Allocator = nullptr;
+	init_info.MinImageCount = 2; // vulkanContext->GetSwapChain().GetImageCount();
+	init_info.ImageCount = app->GetWindow()->GetSwapChain().GetImageCount();
+	init_info.CheckVkResultFn = check_vk_result;
+	init_info.PipelineInfoMain.RenderPass = app->GetWindow()->GetSwapChain().GetRenderPass();
+	ImGui_ImplVulkan_Init(&init_info);
+
+	// Load Fonts
+	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
+	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
+	// - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
+	// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
+	// - Read 'docs/FONTS.md' for more instructions and details.
+	// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
+	// io.Fonts->AddFontDefault();
+	// io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
+	// io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
+	// io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
+	// io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
+	// ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
+	// IM_ASSERT(font != NULL);
+
+	// Upload Fonts
+	{
+		// Use any command queue
+
+		m_CommandBuffer = vulkanContext->GetCurrentDevice()->GetCommandBuffer(true);
+		// ImGui_ImplVulkan_CreateFontsTexture(m_CommandBuffer);
+		vulkanContext->GetCurrentDevice()->FlushCommandBuffer(m_CommandBuffer);
+
+		VkResult err = vkDeviceWaitIdle(device);
+		check_vk_result(err);
+		// ImGui_ImplVulkan_DestroyFontUploadObjects();
+	}
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
@@ -95,88 +179,6 @@ void EnvMapVulkanImGuiLayer::OnAttach()
 
 	// HazelRenderer::Submit([]{
 	// });
-
-	{
-		Application* app = Application::Get();
-		GLFWwindow* window = static_cast<GLFWwindow*>(app->GetWindow()->GetHandle());
-
-		auto vulkanContext = H2M::VulkanContextH2M::Get();
-		auto device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
-
-		auto currentDevice = H2M::VulkanContextH2M::GetCurrentDevice();
-
-		// Create Descriptor Pool
-		{
-			VkDescriptorPoolSize pool_sizes[] =
-			{
-				{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-				{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
-			};
-
-			VkDescriptorPoolCreateInfo pool_info = {};
-			pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-			pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-			pool_info.maxSets = 1000 * IM_ARRAYSIZE(pool_sizes);
-			pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
-			pool_info.pPoolSizes = pool_sizes;
-			VkResult err = vkCreateDescriptorPool(device, &pool_info, nullptr, &m_DescriptorPool);
-			check_vk_result(err);
-		}
-
-		// Setup Platform/Renderer bindings
-		ImGui_ImplGlfw_InitForVulkan(window, true);
-		ImGui_ImplVulkan_InitInfo init_info = {};
-		init_info.Instance = H2M::VulkanContextH2M::GetInstance();
-		init_info.PhysicalDevice = currentDevice->GetPhysicalDevice()->GetVulkanPhysicalDevice();
-		init_info.Device = currentDevice->GetVulkanDevice();
-		init_info.QueueFamily = currentDevice->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
-		init_info.Queue = currentDevice->GetGraphicsQueue();
-		init_info.PipelineCache = nullptr;
-		init_info.DescriptorPool = m_DescriptorPool;
-		init_info.Allocator = nullptr;
-		init_info.MinImageCount = 2; // vulkanContext->GetSwapChain().GetImageCount();
-		init_info.ImageCount = app->GetWindow()->GetSwapChain().GetImageCount();
-		init_info.CheckVkResultFn = check_vk_result;
-		// init_info.RenderPass = app->GetWindow()->GetSwapChain().GetRenderPass();
-		ImGui_ImplVulkan_Init(&init_info);
-
-		// Load Fonts
-		// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
-		// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
-		// - If the file cannot be loaded, the function will return NULL. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
-		// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
-		// - Read 'docs/FONTS.md' for more instructions and details.
-		// - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
-		// io.Fonts->AddFontDefault();
-		// io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf", 16.0f);
-		// io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
-		// io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf", 16.0f);
-		// io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
-		// ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-		// IM_ASSERT(font != NULL);
-
-		// Upload Fonts
-		{
-			// Use any command queue
-
-			m_CommandBuffer = vulkanContext->GetCurrentDevice()->GetCommandBuffer(true);
-			// ImGui_ImplVulkan_CreateFontsTexture(m_CommandBuffer);
-			vulkanContext->GetCurrentDevice()->FlushCommandBuffer(m_CommandBuffer);
-
-			VkResult err = vkDeviceWaitIdle(device);
-			check_vk_result(err);
-			// ImGui_ImplVulkan_DestroyFontUploadObjects();
-		}
-	}
 }
 
 void EnvMapVulkanImGuiLayer::OnDetach()
@@ -238,10 +240,6 @@ void EnvMapVulkanImGuiLayer::OnUpdate(H2M::TimestepH2M ts)
 }
 
 void EnvMapVulkanImGuiLayer::OnEvent(H2M::EventH2M& event)
-{
-}
-
-void EnvMapVulkanImGuiLayer::OnRender()
 {
 }
 

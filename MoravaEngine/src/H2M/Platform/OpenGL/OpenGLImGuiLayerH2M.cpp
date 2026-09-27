@@ -65,8 +65,14 @@ namespace H2M
 		// io.ConfigViewportsNoAutoMerge = true;
 		// io.ConfigViewportsNoTaskBarIcon = true;
 
-		ImGui_ImplGlfw_InitForOpenGL(Application::Get()->GetWindow()->GetHandle(), true); // OpenGL
-		ImGui_ImplOpenGL3_Init("#version 410"); // OpenGL
+		// GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get()->GetWindow()->GetHandle());
+		// Guard backend init to avoid double initialization for the same ImGui context
+		// if (io.BackendPlatformUserData == nullptr) {
+		    ImGui_ImplGlfw_InitForOpenGL(window, /*install_callbacks=*/true); // OpenGL
+		    ImGui_ImplOpenGL3_Init("#version 410"); // OpenGL
+		// } else {
+		    // Backend already initialized for this ImGui context - skip re-init
+		// }
 		// ImGui_ImplGlfw_InitForVulkan(Application::Get()->GetWindow()->GetHandle(), true); // Vulkan
 
 		io.Fonts->AddFontFromFileTTF("Fonts/opensans/OpenSans-Bold.ttf", 16.0f);
@@ -102,10 +108,6 @@ namespace H2M
 	}
 
 	void OpenGLImGuiLayerH2M::OnEvent(EventH2M& event)
-	{
-	}
-
-	void OpenGLImGuiLayerH2M::OnRender()
 	{
 	}
 

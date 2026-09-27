@@ -280,11 +280,6 @@ void DX11TestLayer::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
 {
 }
 
-void DX11TestLayer::OnRender(Window* mainWindow, Scene* scene)
-{
-	DX11Renderer::Draw(scene->GetCamera());
-}
-
 void DX11TestLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 {
 }

@@ -19,7 +19,6 @@ public:
 	virtual void OnDetach();
 	virtual void OnUpdate(H2M::TimestepH2M ts) override;
 	virtual void OnEvent(H2M::EventH2M& event) override;
-	virtual void OnRender() override;
 	virtual void OnImGuiRender() override;
 
 private:

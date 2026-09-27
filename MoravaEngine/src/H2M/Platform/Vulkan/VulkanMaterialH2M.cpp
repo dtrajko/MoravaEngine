@@ -59,19 +59,20 @@ namespace H2M
 	void VulkanMaterialH2M::AllocateStorage()
 	{
 		const auto& shaderBuffers = m_Shader->GetShaderBuffers();
-
-		if (shaderBuffers.size() > 0)
-		{
-			uint32_t size = 0;
-			for (auto [name, shaderBuffer] : shaderBuffers)
-			{
-				size += shaderBuffer.Size;
-			}
-
-			const ShaderBufferH2M& buffer = (*shaderBuffers.begin()).second;
-			m_UniformStorageBuffer.Allocate(size);
-			m_UniformStorageBuffer.ZeroInitialize();
+		
+		uint32_t size = 0;
+		for (auto [name, shaderBuffer] : shaderBuffers) {
+			size += shaderBuffer.Size;
 		}
+		
+		if (size == 0) {
+			Log::GetLogger()->warn("Shader has no material buffers - cannot set uniforms!");
+			// Don't allocate minimum buffer; leave it uninitialized or throw
+		} else {
+			m_UniformStorageBuffer.Allocate(size);
+		}
+		
+		m_UniformStorageBuffer.ZeroInitialize();
 	}
 
 	void VulkanMaterialH2M::Init()

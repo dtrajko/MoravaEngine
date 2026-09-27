@@ -28,7 +28,6 @@ namespace H2M
 		virtual void OnDetach() override;
 		virtual void OnUpdate(TimestepH2M ts) override;
 		virtual void OnEvent(EventH2M& event) override;
-		virtual void OnRender() override;
 		virtual void OnImGuiRender() override;
 
 	private:

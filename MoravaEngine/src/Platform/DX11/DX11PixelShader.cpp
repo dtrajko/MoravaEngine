@@ -42,19 +42,50 @@ void DX11PixelShader::BindConstantBuffer(H2M::RefH2M<DX11ConstantBuffer> constan
 
 void DX11PixelShader::SetTextures(const std::vector<H2M::RefH2M<H2M::TextureH2M>>& textures)
 {
+	constexpr size_t MaxTextures = 32;
+	
 	size_t textureCount = textures.size();
-
-	ID3D11ShaderResourceView* list_res[32];
-	ID3D11SamplerState* list_sampler[32];
-
-	for (unsigned int i = 0; i < textureCount; i++)
+	
+	if (textureCount > MaxTextures)
 	{
-		list_res[i] = textures[i].As<DX11Texture2D>()->m_ShaderResourceViewDX11;
-		list_sampler[i] = textures[i].As<DX11Texture2D>()->m_SamplerStateDX11;
+		throw std::runtime_error("DX11PixelShader::SetTextures - Too many textures bound");
 	}
-
-	DX11Context::Get()->GetDX11DeviceContext()->PSSetShaderResources(0, (UINT)textureCount, list_res);
-	DX11Context::Get()->GetDX11DeviceContext()->PSSetSamplers(0, (UINT)textureCount, list_sampler);
+	
+	ID3D11ShaderResourceView* list_res[MaxTextures] = {};
+	ID3D11SamplerState* list_sampler[MaxTextures] = {};
+	
+	for (size_t i = 0; i < textureCount; ++i)
+	{
+		auto texture = textures[i].As<DX11Texture2D>();
+		
+		if (!texture)
+		{
+			throw std::runtime_error("DX11PixelShader::SetTextures - Invalid DX11Texture2D");
+		}
+		
+		if (!texture->m_ShaderResourceViewDX11)
+		{
+			throw std::runtime_error("DX11PixelShader::SetTextures - Missing ShaderResourceView");
+		}
+		
+		if (!texture->m_SamplerStateDX11)
+		{
+			throw std::runtime_error("DX11PixelShader::SetTextures - Missing SamplerState");
+		}
+		
+		list_res[i] = texture->m_ShaderResourceViewDX11;
+		list_sampler[i] = texture->m_SamplerStateDX11;
+	}
+	
+	auto context = DX11Context::Get()->GetDX11DeviceContext();
+	
+	if (!context)
+	{
+		throw std::runtime_error("DX11PixelShader::SetTextures - Invalid DeviceContext");
+	}
+	
+	context->PSSetShaderResources(0, static_cast<UINT>(textureCount), list_res);
+	context->PSSetSamplers(0, static_cast<UINT>(textureCount), list_sampler);
 }
 
 bool DX11PixelShader::CompileDX11Shader(const wchar_t* fileName)

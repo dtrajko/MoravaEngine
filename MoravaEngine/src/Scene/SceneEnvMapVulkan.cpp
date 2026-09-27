@@ -275,7 +275,7 @@ void SceneEnvMapVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, s
     }
 
     if (passType == "main") {
-        m_EnvMapVulkanEditorLayer->OnRender();
+        m_EnvMapVulkanEditorLayer->OnRender2D();
     }
 
     if (passType == "post_processing") {

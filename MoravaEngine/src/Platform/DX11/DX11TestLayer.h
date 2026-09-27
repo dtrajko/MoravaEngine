@@ -59,8 +59,6 @@ public:
 
 	virtual void OnEvent(H2M::EventH2M& event) override;
 
-	virtual void OnRender(Window* mainWindow, Scene* scene) override;
-
 	void ShowExampleAppDockSpace(bool* p_open, Window* mainWindow);
 
 	void Render(const glm::vec4& clearColor, std::shared_ptr<DX11CameraFP> camera);
