@@ -90,6 +90,7 @@ public:
 	virtual void SetShouldClose(bool shouldClose) = 0;
 	virtual void SetCursorDisabled() = 0;
 	virtual void SetCursorNormal() = 0;
+	virtual void SetCursorCaptured(bool captured) = 0; // hide and lock the cursor, read raw mouse motion (e.g. while rotating the camera)
 	virtual bool GetShouldClose() = 0;
 
 	virtual void SetEventLogging(bool enabled) = 0;

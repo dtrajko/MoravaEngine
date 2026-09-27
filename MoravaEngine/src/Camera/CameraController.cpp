@@ -67,19 +67,45 @@ void CameraController::KeyControl(bool* keys, float deltaTime)
 
 void CameraController::MouseControl(bool* buttons, float xChange, float yChange)
 {
-	// Don't rotate the camera while ImGui is using the mouse:
-	// - scene rendered in an ImGui "Viewport" window: the viewport must be hovered or focused
-	// - scene rendered directly to the screen: the mouse must not be over (or captured by) an ImGui window
-	if (ImGuiWrapper::GetViewportEnabled())
+	Window* window = Application::Get()->GetWindow();
+	bool rightButtonDown = Input::IsMouseButtonPressed(MouseH2M::ButtonRight);
+
+	// Rotation ends when the right button is released: the cursor reappears where the drag started
+	if (m_Rotating && !rightButtonDown)
 	{
-		if (!ImGuiWrapper::CanViewportReceiveEvents()) return;
-	}
-	else if (ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().WantCaptureMouse)
-	{
+		m_Rotating = false;
+		window->SetCursorCaptured(false);
+		if (ImGui::GetCurrentContext() != nullptr)
+		{
+			ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+		}
 		return;
 	}
 
-	if (Input::IsMouseButtonPressed(MouseH2M::ButtonRight))
+	// Rotation starts when the right button is pressed over the scene, not while ImGui is using the mouse:
+	// - scene rendered in an ImGui "Viewport" window: the viewport must be hovered or focused
+	// - scene rendered directly to the screen: the mouse must not be over (or captured by) an ImGui window
+	if (!m_Rotating && rightButtonDown)
+	{
+		if (ImGuiWrapper::GetViewportEnabled())
+		{
+			if (!ImGuiWrapper::CanViewportReceiveEvents()) return;
+		}
+		else if (ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().WantCaptureMouse)
+		{
+			return;
+		}
+
+		m_Rotating = true;
+		window->SetCursorCaptured(true); // hide and lock the cursor, read raw mouse motion
+		if (ImGui::GetCurrentContext() != nullptr)
+		{
+			// ImGui still receives the hidden cursor's position: keep panels from reacting to it while rotating
+			ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
+		}
+	}
+
+	if (m_Rotating)
 	{
 		m_Camera->SetYaw(m_Camera->GetYaw() + xChange * m_TurnSpeed);
 		m_Camera->SetPitch(m_Camera->GetPitch() - yChange * m_TurnSpeed);

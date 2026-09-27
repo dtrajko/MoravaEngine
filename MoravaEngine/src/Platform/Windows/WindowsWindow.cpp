@@ -211,7 +211,10 @@ void WindowsWindow::ProcessEvents()
 
 		//ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
 		//glfwSetCursor(m_GLFW_Window, m_ImGuiMouseCursors[imgui_cursor] ? m_ImGuiMouseCursors[imgui_cursor] : m_ImGuiMouseCursors[ImGuiMouseCursor_Arrow]);
-		glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		if (!m_CursorCaptured)
+		{
+			glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+		}
 	}
 	break;
 	case H2M::RendererAPITypeH2M::DX11:
@@ -602,6 +605,29 @@ void WindowsWindow::SetCursorDisabled()
 void WindowsWindow::SetCursorNormal()
 {
 	glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void WindowsWindow::SetCursorCaptured(bool captured)
+{
+	// GLFW cursor modes only apply to the OpenGL/Vulkan (GLFW) window
+	if (H2M::RendererAPI_H2M::Current() != H2M::RendererAPITypeH2M::OpenGL &&
+		H2M::RendererAPI_H2M::Current() != H2M::RendererAPITypeH2M::Vulkan) return;
+
+	if (captured == m_CursorCaptured) return;
+	m_CursorCaptured = captured;
+
+	// Disabled cursor: hidden and locked, movement keeps being reported without screen edges.
+	// When it is re-enabled, GLFW puts the cursor back where it was when the capture started.
+	glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, captured ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+
+	// Raw motion bypasses the OS pointer acceleration (only used while the cursor is disabled)
+	if (glfwRawMouseMotionSupported())
+	{
+		glfwSetInputMode(m_GLFW_Window, GLFW_RAW_MOUSE_MOTION, captured ? GLFW_TRUE : GLFW_FALSE);
+	}
+
+	// The cursor position jumps when the mode changes; start measuring movement again from the next position
+	mouseFirstMoved = true;
 }
 
 bool WindowsWindow::GetShouldClose()

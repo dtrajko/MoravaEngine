@@ -1,6 +1,5 @@
 #pragma once
 
-
 // BEGIN compile the engine for only one graphics API
 
 #define GRAPHICS_API_VULKAN

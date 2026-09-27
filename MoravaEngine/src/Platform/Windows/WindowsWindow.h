@@ -99,6 +99,7 @@ public:
 	virtual void SetShouldClose(bool shouldClose) override;
 	virtual void SetCursorDisabled() override;
 	virtual void SetCursorNormal() override;
+	virtual void SetCursorCaptured(bool captured) override;
 	virtual bool GetShouldClose() override;
 
 	bool* getKeysPrev() { return keys_prev; }; // previous states of keys
@@ -169,6 +170,7 @@ private:
 	bool mouseFirstMoved;
 	bool mouseCursorAboveWindow;
 	float m_CursorIgnoreLimit;
+	bool m_CursorCaptured = false;
 
 	bool m_EventLoggingEnabled;
 

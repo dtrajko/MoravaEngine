@@ -49,6 +49,7 @@ protected:
 	float m_MouseDeltaY = 0.0f;
 
 	bool m_UnlockRotation; // Left SHIFT for mouse rotation
+	bool m_Rotating = false; // right mouse button drag in progress (cursor captured)
 
 	// Hazel Camera::MouseRotate
 	glm::vec2 m_InitialMousePosition;
