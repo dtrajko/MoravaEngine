@@ -72,7 +72,7 @@ namespace H2M
 		template<typename FuncT>
 		static void Submit(FuncT&& func)
 		{
-#if 0
+#if 1
 			// dtrajko: call lambda immediately instead of storing it to the render command buffer
 			func();
 #else

@@ -66,6 +66,7 @@ public:
 	static inline void SetViewportHovered(bool viewportHovered) { s_ViewportHovered = viewportHovered; }
 	static inline void SetViewportFocused(bool viewportFocused) { s_ViewportFocused = viewportFocused; }
 
+	static inline bool const GetViewportEnabled() { return s_ViewportEnabled; }
 	static inline bool const GetViewportHovered() { return s_ViewportHovered; }
 	static inline bool const GetViewportFocused() { return s_ViewportFocused; }
 	static bool const CanViewportReceiveEvents();

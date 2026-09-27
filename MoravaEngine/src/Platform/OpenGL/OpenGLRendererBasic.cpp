@@ -50,6 +50,11 @@ void OpenGLRendererBasic::InitDebug()
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 
+	// NVIDIA 131218: "Program/shader state performance warning ... being recompiled based on GL state"
+	// One-time driver recompile on first use; informational only.
+	GLuint ignoredIds[] = { 131218 };
+	glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_PERFORMANCE, GL_DONT_CARE, 1, ignoredIds, GL_FALSE);
+
 	// glEnable(GL_LINE_SMOOTH);
 	// glLineWidth(1.0f);
 }

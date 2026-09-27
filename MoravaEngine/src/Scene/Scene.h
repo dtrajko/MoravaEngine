@@ -80,6 +80,7 @@ struct SceneSettings
 	// water
 	float waterHeight;
 	float waterWaveSpeed;
+	float underwaterFogDensity = 0.06f; // fog when the camera is below waterHeight
 };
 
 class LightManager;

@@ -37,8 +37,8 @@ enum class GraphicsAPI
 // END compile the engine for only one graphics API
 
 
-#define SCENE_COTTAGE
-// #define SCENE_EIFFEL
+// #define SCENE_COTTAGE
+#define SCENE_EIFFEL
 // #define SCENE_SPONZA
 // #define SCENE_TERRAIN
 // #define SCENE_PBR

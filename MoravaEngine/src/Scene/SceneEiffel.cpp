@@ -134,7 +134,7 @@ void SceneEiffel::UpdateImGui(float timestep, Window* mainWindow)
 				if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::Text("Water Level");
-					if (ImGui::DragFloat("##water_level", &sceneSettings.waterHeight, 0.02f, -2.0f, 20.0f, "%.2f"))
+					if (ImGui::SliderFloat("##water_level", &sceneSettings.waterHeight, -2.0f, 20.0f, "%.2f"))
 					{
 						m_WaterManager->SetWaterHeight(sceneSettings.waterHeight);
 					}
@@ -151,6 +151,9 @@ void SceneEiffel::UpdateImGui(float timestep, Window* mainWindow)
 					{
 						m_WaterManager->SetWaterColor(waterColor);
 					}
+
+					ImGui::Text("Underwater Fog Density");
+					ImGui::DragFloat("##underwater_fog_density", &sceneSettings.underwaterFogDensity, 0.002f, 0.0f, 0.5f, "%.3f");
 
 					ImGui::Separator();
 

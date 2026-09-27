@@ -81,6 +81,10 @@ uniform vec3 eyePosition; // same as cameraPosition
 uniform float waterLevel;
 uniform vec4 waterColor;
 
+uniform bool underwater;           // camera is below the water level
+uniform float underwaterFogDensity;
+uniform vec3 underwaterFogColor;
+
 vec3 sampleOffsetDirections[20] = vec3[]
 (
 	vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1),
@@ -276,4 +280,12 @@ void main()
 	}
 
 	FragColor = texColor * tintColor * finalColor;
+
+	// Underwater: fade toward the fog color with distance from the camera
+	if (underwater)
+	{
+		float distanceToEye = length(vFragPos - eyePosition);
+		float fogFactor = 1.0 - exp(-underwaterFogDensity * distanceToEye);
+		FragColor.rgb = mix(FragColor.rgb, underwaterFogColor, clamp(fogFactor, 0.0, 1.0));
+	}
 }

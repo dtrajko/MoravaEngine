@@ -67,6 +67,18 @@ void CameraController::KeyControl(bool* keys, float deltaTime)
 
 void CameraController::MouseControl(bool* buttons, float xChange, float yChange)
 {
+	// Don't rotate the camera while ImGui is using the mouse:
+	// - scene rendered in an ImGui "Viewport" window: the viewport must be hovered or focused
+	// - scene rendered directly to the screen: the mouse must not be over (or captured by) an ImGui window
+	if (ImGuiWrapper::GetViewportEnabled())
+	{
+		if (!ImGuiWrapper::CanViewportReceiveEvents()) return;
+	}
+	else if (ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().WantCaptureMouse)
+	{
+		return;
+	}
+
 	if (Input::IsMouseButtonPressed(MouseH2M::ButtonRight))
 	{
 		m_Camera->SetYaw(m_Camera->GetYaw() + xChange * m_TurnSpeed);

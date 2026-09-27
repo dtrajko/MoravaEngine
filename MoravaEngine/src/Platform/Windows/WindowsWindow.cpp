@@ -57,7 +57,7 @@ void WindowsWindow::Init()
 	yChange = 0.0f;
 	xChangeReset = 0.0f;
 	yChangeReset = 0.0f;
-	m_CursorIgnoreLimit = 5.0f;
+	m_CursorIgnoreLimit = 0.0f; // no dead zone: small movements count, they are summed per frame
 
 	for (size_t i = 0; i < 1024; i++) {
 		keys[i] = false;
@@ -203,6 +203,10 @@ void WindowsWindow::ProcessEvents()
 	case H2M::RendererAPITypeH2M::OpenGL:
 	case H2M::RendererAPITypeH2M::Vulkan:
 	{
+		// Mouse movement is summed per frame: start from zero, then the cursor callbacks add this frame's movement
+		xChange = 0.0f;
+		yChange = 0.0f;
+
 		glfwPollEvents();
 
 		//ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
@@ -838,8 +842,9 @@ void WindowsWindow::CursorPosCallback(GLFWwindow* window, double xpos, double yp
 		theWindow->mouseFirstMoved = false;
 	}
 
-	theWindow->xChange = (GLfloat)xpos - theWindow->lastX;
-	theWindow->yChange = theWindow->lastY - (GLfloat)ypos;
+	// Add to this frame's movement (several cursor events can arrive within one frame)
+	theWindow->xChange += (GLfloat)xpos - theWindow->lastX;
+	theWindow->yChange += theWindow->lastY - (GLfloat)ypos;
 
 	theWindow->xChangeReset = theWindow->xChange;
 	theWindow->yChangeReset = theWindow->yChange;

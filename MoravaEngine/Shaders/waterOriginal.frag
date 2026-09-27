@@ -77,10 +77,13 @@ void main(void)
 	out_Color = mix(out_Color, waterColor, 0.4) + vec4(specularHighlights, 0.0);
 	out_Color.a = waterDepth;
 
-	// Add a blue tint under the water level
-    if (eyePosition.y < waterLevel)
+	// Seen from below the water level: skip the reflection texture (mirrored view, meant for above the water)
+	// and look up through the surface instead. When the camera is underwater the refraction pass renders
+	// the scene above the water, so refractColor shows it, rippled by the distortion and tinted by the water color.
+	if (eyePosition.y < waterLevel)
 	{
-		out_Color = mix(out_Color, waterColor, 0.5);
+		float shimmer = 0.85 + 0.3 * (normalMapColor.r - 0.5) + 0.3 * (normalMapColor.g - 0.5);
+		out_Color = vec4(mix(refractColor.rgb, waterColor.rgb, 0.4) * shimmer, 1.0);
 	}
 
 	out_BrightColor = vec4(0.0, 0.0, 1.0, 1.0);

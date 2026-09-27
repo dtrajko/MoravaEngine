@@ -260,8 +260,21 @@ void Renderer::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::
 	scene->GetWaterManager()->GetRefractionFramebuffer()->GetColorAttachment()->Bind(scene->GetTextureSlots()["refraction"]);
 	scene->GetWaterManager()->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(scene->GetTextureSlots()["depth"]);
 
+	// The refraction texture holds what is seen through the water surface:
+	// from above the water that is the scene below it, from underwater it is the scene above it (and the sky)
+	float waterHeight = scene->GetWaterManager()->GetWaterHeight();
+	bool underwater = scene->GetCamera()->GetPosition().y < waterHeight;
+
 	// Clear the window
 	RendererBasic::Clear();
+
+	if (underwater && scene->GetSettings().enableSkybox)
+	{
+		glm::mat4 modelMatrixSkybox = glm::mat4(1.0f);
+		float angleRadians = glm::radians((GLfloat)glfwGetTime());
+		modelMatrixSkybox = glm::rotate(modelMatrixSkybox, angleRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		scene->GetSkybox()->Draw(modelMatrixSkybox, scene->GetCamera()->GetViewMatrix(), projectionMatrix);
+	}
 
 	H2M::RefH2M<ShaderMain> shaderMain = RendererBasic::GetShaders()["main"];
 	shaderMain->Bind();
@@ -286,7 +299,10 @@ void Renderer::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::
 	shaderMain->SetInt("albedoMap", scene->GetTextureSlots()["diffuse"]);
 	shaderMain->SetInt("normalMap", scene->GetTextureSlots()["normal"]);
 	shaderMain->SetInt("shadowMap", scene->GetTextureSlots()["shadow"]);
-	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, scene->GetWaterManager()->GetWaterHeight())); // refraction clip plane
+	// refraction clip plane: keep geometry below the water (camera above it) or above the water (camera underwater)
+	shaderMain->SetFloat4("clipPlane", underwater
+		? glm::vec4(0.0f, 1.0f, 0.0f, -waterHeight)
+		: glm::vec4(0.0f, -1.0f, 0.0f, waterHeight));
 	shaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 	shaderMain->Validate();
 
@@ -302,10 +318,24 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 
 	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
-	// Clear the window
-	RendererBasic::Clear();
+	// Underwater: camera below the water plane (scenes with water effects only)
+	bool underwater = scene->GetSettings().enableWaterEffects &&
+		scene->GetCamera()->GetPosition().y < scene->GetWaterManager()->GetWaterHeight();
+	glm::vec3 waterColor = glm::vec3(scene->GetWaterManager()->GetWaterColor());
+	glm::vec3 underwaterFogColor = waterColor * 0.4f; // deeper, darker shade of the water color
+	glm::vec4 underwaterTint = glm::vec4(glm::mix(glm::vec3(1.0f), waterColor, 0.5f), 1.0f);
 
-	if (scene->GetSettings().enableSkybox)
+	// Clear the window (underwater: to the fog color, which also replaces the skybox)
+	if (underwater)
+	{
+		RendererBasic::Clear(underwaterFogColor.r, underwaterFogColor.g, underwaterFogColor.b, 1.0f);
+	}
+	else
+	{
+		RendererBasic::Clear();
+	}
+
+	if (scene->GetSettings().enableSkybox && !underwater)
 	{
 		glm::mat4 modelMatrix = glm::mat4(1.0f);
 		float angleRadians = glm::radians((GLfloat)glfwGetTime());
@@ -351,7 +381,10 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 	// clip plane for rendering to screen
 	shaderMain->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
 	shaderMain->SetFloat("tilingFactor", 1.0f);
-	shaderMain->SetFloat4("tintColor", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	shaderMain->SetFloat4("tintColor", underwater ? underwaterTint : glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+	shaderMain->SetInt("underwater", underwater ? 1 : 0);
+	shaderMain->SetFloat("underwaterFogDensity", scene->GetSettings().underwaterFogDensity);
+	shaderMain->SetFloat3("underwaterFogColor", underwaterFogColor);
 	shaderMain->Validate();
 
 	glm::vec3 lowerLight = scene->GetCamera()->GetPosition();
@@ -362,6 +395,9 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 
 	scene->GetSettings().enableCulling ? EnableCulling() : DisableCulling();
 	scene->Render(mainWindow, projectionMatrix, passType, RendererBasic::GetShaders(), RendererBasic::GetUniforms());
+
+	// The reflection/refraction passes reuse this shader program next frame, so switch the fog off again
+	shaderMain->SetInt("underwater", 0);
 
 	shaderMain->Unbind();
 
