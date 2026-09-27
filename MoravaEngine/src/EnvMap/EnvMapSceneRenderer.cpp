@@ -311,6 +311,46 @@ void EnvMapSceneRenderer::SetEnvironment(H2M::EnvironmentH2M environment)
 }
 
 /****
+ * HDR environment maps differ in absolute brightness by several stops, so one fixed exposure can't suit them all.
+ * Returns the exposure that maps the log-average luminance of the equirectangular map to middle grey (0.18),
+ * computed on a small mip level and weighted by the solid angle of each texel row.
+ ****/
+static float ComputeAutoExposure(const H2M::RefH2M<H2M::Texture2D_H2M>& equirect)
+{
+    uint32_t width = equirect->GetWidth();
+    uint32_t height = equirect->GetHeight();
+    if (width == 0 || height == 0) return 1.0f;
+
+    GLint level = 0;
+    while ((width >> level) > 128 && (height >> level) > 1) level++;
+    GLint levelWidth = 0, levelHeight = 0;
+    glGetTextureLevelParameteriv(equirect->GetID(), level, GL_TEXTURE_WIDTH, &levelWidth);
+    glGetTextureLevelParameteriv(equirect->GetID(), level, GL_TEXTURE_HEIGHT, &levelHeight);
+    if (levelWidth <= 0 || levelHeight <= 0) return 1.0f; // the texture has no mip chain this deep
+
+    std::vector<float> pixels((size_t)levelWidth * levelHeight * 3);
+    glGetTextureImage(equirect->GetID(), level, GL_RGB, GL_FLOAT, (GLsizei)(pixels.size() * sizeof(float)), pixels.data());
+
+    double sumLogLuminance = 0.0, sumWeight = 0.0;
+    for (GLint y = 0; y < levelHeight; y++)
+    {
+        const double weight = glm::sin(glm::pi<double>() * (y + 0.5) / levelHeight); // equirect rows shrink towards the poles
+        for (GLint x = 0; x < levelWidth; x++)
+        {
+            const float* p = &pixels[((size_t)y * levelWidth + x) * 3];
+            const double luminance = 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2];
+            sumLogLuminance += weight * glm::log(glm::max(luminance, 0.0) + 1e-4);
+            sumWeight += weight;
+        }
+    }
+
+    const double averageLuminance = glm::exp(sumLogLuminance / sumWeight);
+    const float exposure = glm::clamp((float)(0.18 / averageLuminance), 0.05f, 20.0f);
+    Log::GetLogger()->info("Environment map auto exposure: average luminance {0}, exposure {1}", averageLuminance, exposure);
+    return exposure;
+}
+
+/****
  * Moved from EnvironmentMap
  * This version doesn't give satisfying results, OpenGLRenderer::CreateEnvironmentMap() is probably better
  ****/
@@ -336,6 +376,8 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
     {
         Log::GetLogger()->error("Texture is not HDR!");
     }
+
+    EnvMapSharedData::s_EnvMapAutoExposure = ComputeAutoExposure(s_EnvEquirect);
 
     equirectangularConversionShader->Bind();
     s_EnvEquirect->Bind(1);
@@ -428,7 +470,8 @@ void EnvMapSceneRenderer::RenderSkybox()
 
     s_ShaderSkybox->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
     s_ShaderSkybox->SetFloat("u_TextureLod", s_EditorLayer->GetActiveScene()->GetSkyboxLod());
-    s_ShaderSkybox->SetFloat("u_Exposure", s_EditorLayer->GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    s_ShaderSkybox->SetFloat("u_Exposure", s_EditorLayer->GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::GetAutoExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    s_ShaderSkybox->SetFloat("u_Gamma", EnvMapSharedData::s_DisplayGamma);
 
     EnvMapSharedData::s_SkyboxCube->Render();
 
@@ -512,7 +555,8 @@ void EnvMapSceneRenderer::UpdateShaderPBRUniforms(H2M::RefH2M<MoravaShader> shad
     shaderHazelPBR->SetFloat("u_MaterialUniforms.AOTexToggle", envMapMaterial->GetAOInput().UseTexture ? 1.0f : 0.0f);
 
     // apply exposure to Shaders/Hazel/HazelPBR_Anim, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    shaderHazelPBR->SetFloat("u_Exposure", s_EditorLayer->GetMainCameraComponent().Camera.GetExposure()); // originally used in Shaders/Hazel/SceneComposite
+    shaderHazelPBR->SetFloat("u_Exposure", s_EditorLayer->GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::GetAutoExposure()); // originally used in Shaders/Hazel/SceneComposite
+    shaderHazelPBR->SetFloat("u_Gamma", EnvMapSharedData::s_DisplayGamma);
 
     shaderHazelPBR->SetFloat("u_TilingFactor", envMapMaterial->GetTilingFactor());
 

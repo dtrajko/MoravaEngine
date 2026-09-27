@@ -64,8 +64,12 @@ namespace H2M
 			auto decl = FindUniformDeclaration(name);
 			if (!decl)
 			{
-				// H2M_CORE_ASSERT(decl, "Could not find uniform!");
-				Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
+				// A shader without reflected uniform buffers (plain OpenGL GLSL) gives the material no uniform storage,
+				// so there is nothing to write into; such values are set directly on the shader instead.
+				if (m_UniformStorageBuffer.Size > 0)
+				{
+					Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
+				}
 				return;
 			}
 
@@ -95,7 +99,13 @@ namespace H2M
 			if (!decl)
 			{
 				// H2M_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
-				Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
+				if (m_UniformStorageBuffer.Size > 0)
+				{
+					Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
+				}
+				static T s_Default{};
+				s_Default = T{};
+				return s_Default;
 			}
 			auto& buffer = m_UniformStorageBuffer;
 			return buffer.Read<T>(decl->GetOffset());
@@ -109,12 +119,14 @@ namespace H2M
 			{
 				// H2M_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
 				Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
+				return RefH2M<T>();
 			}
 			uint32_t slot = decl->GetRegister();
 			if (slot >= m_Textures.size())
 			{
 				// H2M_CORE_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
 				Log::GetLogger()->error("Texture slot '{0}' is invalid!", slot);
+				return RefH2M<T>();
 			}
 			return RefH2M<T>(m_Textures[slot]);
 		}

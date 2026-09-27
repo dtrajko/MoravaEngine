@@ -676,7 +676,10 @@ void ImGui_ImplOpenGL3_UpdateTexture(ImTextureData* tex)
     // Backup GL_UNPACK state that we modify, restore on exit.
     GLint last_unpack_row_length = 0; (void)last_unpack_row_length;
     GLint last_unpack_alignment = 0; (void)last_unpack_alignment;
-    if (tex->Status == ImTextureStatus_WantCreate || tex->Status == ImTextureStatus_WantUpdates)
+    // MoravaEngine fix: remember whether we changed the state, because tex->Status is set to OK below
+    // and the original restore check (on tex->Status) never fired, leaking GL_UNPACK_ROW_LENGTH = tex->Width.
+    const bool restore_unpack_state = (tex->Status == ImTextureStatus_WantCreate || tex->Status == ImTextureStatus_WantUpdates);
+    if (restore_unpack_state)
     {
 #ifdef GL_UNPACK_ROW_LENGTH // Not on WebGL/ES
         GL_CALL(glGetIntegerv(GL_UNPACK_ROW_LENGTH, &last_unpack_row_length));
@@ -750,7 +753,7 @@ void ImGui_ImplOpenGL3_UpdateTexture(ImTextureData* tex)
         ImGui_ImplOpenGL3_DestroyTexture(tex);
 
     // Restore GL_UNPACK state
-    if (tex->Status == ImTextureStatus_WantCreate || tex->Status == ImTextureStatus_WantUpdates)
+    if (restore_unpack_state)
     {
 #ifdef GL_UNPACK_ROW_LENGTH
         GL_CALL(glPixelStorei(GL_UNPACK_ROW_LENGTH, last_unpack_row_length));

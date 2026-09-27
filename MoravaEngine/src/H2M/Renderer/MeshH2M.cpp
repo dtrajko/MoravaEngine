@@ -82,7 +82,13 @@ namespace H2M
 
 		virtual void write(const char* message) override
 		{
-			Log::GetLogger()->error("Assimp error: {0}", message);
+			// Assimp prefixes messages with "Warn, " or "Error, " and ends them with a newline
+			std::string text(message);
+			while (!text.empty() && (text.back() == '\n' || text.back() == '\r')) text.pop_back();
+			if (text.rfind("Warn", 0) == 0)
+				Log::GetLogger()->warn("Assimp: {0}", text);
+			else
+				Log::GetLogger()->error("Assimp: {0}", text);
 		}
 	};
 
@@ -932,6 +938,9 @@ namespace H2M
 
 			FramebufferSpecificationH2M framebufferSpec;
 			framebufferSpec.Attachments = { ImageFormatH2M::RGBA32F, ImageFormatH2M::Depth };
+			// Placeholder render target (never drawn into); a 0x0 size makes glTextureStorage2D fail with GL_INVALID_VALUE
+			framebufferSpec.Width = 1;
+			framebufferSpec.Height = 1;
 			framebufferSpec.Samples = 1;
 			framebufferSpec.ClearOnLoad = false;
 			framebufferSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 1.0f };
@@ -1025,9 +1034,15 @@ namespace H2M
 	}
 	/**** END removed in Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
 
+	bool MeshH2M::HasAnimations() const
+	{
+		return m_Scene && m_Scene->mAnimations && m_Scene->mNumAnimations > 0;
+	}
+
 	void MeshH2M::OnUpdate(TimestepH2M ts, bool debug)
 	{
-		if (m_IsAnimated)
+		// m_IsAnimated can be switched on in the UI; only animate models that actually have animations
+		if (m_IsAnimated && HasAnimations())
 		{
 			if (m_AnimationPlaying)
 			{
@@ -1235,7 +1250,7 @@ namespace H2M
 		textureInfoDefault.normal    = "Textures/normal_map_default.png";
 		textureInfoDefault.metallic  = "Textures/plain.png";
 		textureInfoDefault.roughness = "Textures/plain.png";
-		textureInfoDefault.emissive  = "Texture/plain.png";
+		textureInfoDefault.emissive  = "Textures/plain.png";
 		textureInfoDefault.ao        = "Textures/plain.png";
 		m_BaseMaterial = RefH2M<Material>::Create(textureInfoDefault, 0.0f, 0.0f);
 	}

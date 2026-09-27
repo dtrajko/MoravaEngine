@@ -11,6 +11,8 @@ H2M::RefH2M<Quad> EnvMapSharedData::s_Quad;
 bool EnvMapSharedData::s_DisplayOutline;
 bool EnvMapSharedData::s_DisplayWireframe;
 float EnvMapSharedData::s_SkyboxExposureFactor;
+float EnvMapSharedData::s_EnvMapAutoExposure = 1.0f;
+bool EnvMapSharedData::s_AutoExposureEnabled = true;
 bool EnvMapSharedData::s_RadiancePrefilter;
 float EnvMapSharedData::s_EnvMapRotation;
 glm::mat4 EnvMapSharedData::s_DirLightTransform;

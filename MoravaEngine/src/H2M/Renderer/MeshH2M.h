@@ -212,6 +212,8 @@ namespace H2M
 		// const std::vector<RefH2M<MaterialInstanceH2M>>& GetMaterials() const { return m_Materials; }
 
 		bool& IsAnimated() { return m_IsAnimated; }
+		// True only if the loaded model file actually contains animations (IsAnimated() is a user-editable flag)
+		bool HasAnimations() const;
 		const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 
 		// Setters

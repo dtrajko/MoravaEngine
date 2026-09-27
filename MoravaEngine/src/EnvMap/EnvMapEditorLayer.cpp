@@ -118,7 +118,7 @@ void EnvMapEditorLayer::Init()
 
     EnvMapSharedData::s_DisplayOutline = false;
     EnvMapSharedData::s_DisplayWireframe = false;
-    EnvMapSharedData::s_SkyboxExposureFactor = 0.5f;
+    EnvMapSharedData::s_SkyboxExposureFactor = 1.0f;
     EnvMapSharedData::s_RadiancePrefilter = false;
     EnvMapSharedData::s_EnvMapRotation = 180.0f;
     EnvMapSharedData::s_DisplayHazelGrid = true;
@@ -373,7 +373,8 @@ void EnvMapEditorLayer::UpdateUniforms()
     EnvMapSceneRenderer::s_ShaderSkybox->SetInt("u_Texture", EnvMapSharedData::s_SamplerSlots.at("u_Texture"));
     EnvMapSceneRenderer::s_ShaderSkybox->SetFloat("u_TextureLod", m_EditorScene->GetSkyboxLod());
     // apply exposure to Shaders/Hazel/Skybox, considering that Shaders/Hazel/SceneComposite is not yet enabled
-    EnvMapSceneRenderer::s_ShaderSkybox->SetFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    EnvMapSceneRenderer::s_ShaderSkybox->SetFloat("u_Exposure", GetMainCameraComponent().Camera.GetExposure() * EnvMapSharedData::GetAutoExposure() * EnvMapSharedData::s_SkyboxExposureFactor); // originally used in Shaders/Hazel/SceneComposite
+    EnvMapSceneRenderer::s_ShaderSkybox->SetFloat("u_Gamma", EnvMapSharedData::s_DisplayGamma);
     /**** END Shaders/Hazel/Skybox ****/
 
     /**** BEGIN Shaders/Hazel/Outline ****/
@@ -983,6 +984,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
                     ImGuiWrapper::Property("Exposure", GetMainCameraComponent().Camera.GetExposure(), 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
                     ImGuiWrapper::Property("Skybox Exposure Factor", EnvMapSharedData::s_SkyboxExposureFactor, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
+                    ImGuiWrapper::Property("Auto Exposure", EnvMapSharedData::s_AutoExposureEnabled);
 
                     ImGuiWrapper::Property("Radiance Prefiltering", EnvMapSharedData::s_RadiancePrefilter);
                     ImGuiWrapper::Property("Env Map Rotation", EnvMapSharedData::s_EnvMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
@@ -1045,7 +1047,11 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                         if (meshComponent.Mesh)
                         {
                             ImGui::SameLine();
+                            // Only meaningful for models that contain animations (switching it on for a static
+                            // model made MeshH2M::OnUpdate read an animation that doesn't exist)
+                            ImGui::BeginDisabled(!meshComponent.Mesh->HasAnimations());
                             ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
+                            ImGui::EndDisabled();
                         }
                     }
                 }

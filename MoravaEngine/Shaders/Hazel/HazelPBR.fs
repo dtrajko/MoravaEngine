@@ -100,6 +100,7 @@ uniform float u_BloomThreshold;
 // uniform float u_AOTexToggle;        // TODO: move to Material struct
 
 uniform float u_Exposure;
+uniform float u_Gamma;
 
 uniform float u_TilingFactor;
 
@@ -617,6 +618,13 @@ void main()
 	color = vec4(lightContribution + iblContribution, 1.0);
 	color.rgb += m_Params.Emissive;
 	color.rgb *= u_Exposure; // originally used in Shaders/Hazel/SceneComposite
+	// Optional tonemapping + gamma correction (linear HDR -> display) for renderers without a composite pass; 0.0 (default) = off
+	if (u_Gamma > 0.0)
+	{
+		vec3 x = max(color.rgb, vec3(0.0)) * 0.6; // 0.6 = pre-exposure of the ACES fit
+		x = clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); // ACES filmic (Narkowicz fit)
+		color.rgb = pow(x, vec3(1.0 / u_Gamma));
+	}
 
 	if (u_WireframeMode.Enabled)
 	{

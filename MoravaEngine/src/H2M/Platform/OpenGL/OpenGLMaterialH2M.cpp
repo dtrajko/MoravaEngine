@@ -262,12 +262,14 @@ namespace H2M
 		{
 			// H2M_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
 			Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
+			return RefH2M<Texture2D_H2M>();
 		}
 		uint32_t slot = decl->GetRegister();
 		if (slot >= m_Texture2Ds.size())
 		{
 			// H2M_CORE_ASSERT(slot < m_Texture2Ds.size(), "Texture slot is invalid");
 			Log::GetLogger()->error("Texture slot '{0}' is invalid!", slot);
+			return RefH2M<Texture2D_H2M>();
 		}
 
 		return m_Texture2Ds[slot];

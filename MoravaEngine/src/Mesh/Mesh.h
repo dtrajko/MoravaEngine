@@ -71,7 +71,7 @@ protected:
 	// Hazel/Renderer/Mesh
 	std::string m_FilePath;
 
-	const aiScene* m_Scene; // Moved from HazelMesh
+	const aiScene* m_Scene = nullptr; // Moved from HazelMesh (null until a model file is loaded)
 
 	uint32_t m_VertexAttribArrayCount = 0;
 

@@ -1013,6 +1013,13 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 			ImGui::Begin("Viewport");
+
+			// Tell ImGuiWrapper the scene is shown in this ImGui window, so camera input (CameraController)
+			// works while the viewport is hovered/focused, instead of being blocked as "mouse over an ImGui window"
+			ImGuiWrapper::SetViewportEnabled(true);
+			ImGuiWrapper::SetViewportHovered(ImGui::IsWindowHovered());
+			ImGuiWrapper::SetViewportFocused(ImGui::IsWindowFocused());
+
 			auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
 			auto viewportSize = ImGui::GetContentRegionAvail();
 			if (!s_TextureID || s_ViewportTextureNeedsUpdate)

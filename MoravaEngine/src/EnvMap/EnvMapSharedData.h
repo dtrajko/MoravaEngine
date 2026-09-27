@@ -21,6 +21,12 @@ public:
 	static bool s_DisplayOutline;
 	static bool s_DisplayWireframe;
 	static float s_SkyboxExposureFactor;
+	// Display gamma applied in the Skybox and HazelPBR shaders (u_Gamma), since the SceneComposite pass is not enabled
+	static constexpr float s_DisplayGamma = 2.2f;
+	// Exposure computed from the loaded environment map (maps its average luminance to middle grey)
+	static float s_EnvMapAutoExposure;
+	static bool s_AutoExposureEnabled;
+	static float GetAutoExposure() { return s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f; }
 	static bool s_RadiancePrefilter;
 	static float s_EnvMapRotation;
 	static glm::mat4 s_DirLightTransform; // sent to shaders as an uniform dirLightTransform / u_DirLightTransform
