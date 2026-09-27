@@ -135,6 +135,14 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     $<$<NOT:$<CONFIG:Debug>>:HZ_RELEASE>
 )
 
+# Precompiled header: stable third-party and standard headers, included first in every source file
+# (src/PrecompiledHeader.h; the older src/pch.h is an ordinary header some engine headers include)
+target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/PrecompiledHeader.h)
+
+# Many sources #define this at their top; the precompiled header now comes first, so define it for the whole target.
+# Defined empty ("=") to match those #defines exactly, otherwise MSVC warns about a redefinition (C4005).
+target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS=)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${ROOT_PATH_ABS}/vendor
