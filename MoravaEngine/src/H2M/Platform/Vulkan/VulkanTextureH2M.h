@@ -27,7 +27,8 @@ namespace H2M
 
 		void Invalidate();
 
-		ImageFormatH2M GetFormat() const override { return m_Image->GetFormat(); };
+		// m_Image is only created by the TexturePropertiesH2M constructor; the other constructors only set m_Format
+		ImageFormatH2M GetFormat() const override { return m_Image ? m_Image->GetFormat() : m_Format; };
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
 
@@ -117,6 +118,8 @@ namespace H2M
 		VkImageView CreateImageViewSingleMip(uint32_t mip);
 
 		void GenerateMips(bool readonly = false);
+		// Moves all mip levels back to GENERAL (e.g. after GenerateMips(true)) so compute shaders can write the cubemap again
+		void TransitionToGeneralLayout();
 
 		// abstract methods in TextureH2M
 		virtual uint32_t GetID() const override { return uint32_t(); /* Not implemented */ }

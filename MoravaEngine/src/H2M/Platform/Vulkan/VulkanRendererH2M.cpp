@@ -60,6 +60,10 @@ namespace H2M
 	static RefH2M<FramebufferH2M> s_Framebuffer;          // to be removed from VulkanRenderer
 	static RefH2M<FramebufferH2M> s_CompositeFramebuffer; // to be removed from VulkanRenderer
 	static RefH2M<PipelineH2M> s_CompositePipeline;            // to be removed from VulkanRenderer
+	// The Viewport panel shows this image: s_Framebuffer (linear HDR scene) after exposure, tonemapping and gamma
+	static RefH2M<FramebufferH2M> s_ViewportCompositeFramebuffer;
+	static RefH2M<PipelineH2M> s_ViewportCompositePipeline;
+	static float s_Exposure = 1.0f;
 	static RefH2M<PipelineH2M> s_MeshPipeline;                 // to be removed from VulkanRenderer
 	static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
 	static bool s_ViewportTextureNeedsUpdate = true;     // set when s_Framebuffer is (re)created; handled in the ImGui frame
@@ -155,7 +159,7 @@ namespace H2M
 			ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)s_TextureID);
 		}
 
-		auto vulkanFB = s_Framebuffer.As<VulkanFramebufferH2M>();
+		auto vulkanFB = s_ViewportCompositeFramebuffer.As<VulkanFramebufferH2M>(); // the tonemapped image
 		const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 		s_TextureID = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 		s_ViewportTextureNeedsUpdate = false;
@@ -329,6 +333,35 @@ namespace H2M
 			s_CompositePipeline = PipelineH2M::Create(pipelineSpecification);
 		}
 		/**** END: to be removed from VulkanRenderer ****/
+
+		// Offscreen composite for the Viewport panel (exposure, tonemapping, gamma), see ViewportCompositePass
+		{
+			FramebufferSpecificationH2M framebufferSpec;
+			framebufferSpec.Attachments = { ImageFormatH2M::RGBA, ImageFormatH2M::Depth };
+			framebufferSpec.Samples = 1;
+			framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+			framebufferSpec.DebugName = "ViewportComposite";
+			framebufferSpec.Width = s_ViewportWidth;
+			framebufferSpec.Height = s_ViewportHeight;
+			s_ViewportCompositeFramebuffer = FramebufferH2M::Create(framebufferSpec);
+			s_ViewportCompositeFramebuffer->AddResizeCallback([](RefH2M<FramebufferH2M> framebuffer)
+			{
+				s_ViewportTextureNeedsUpdate = true; // re-register the new image with ImGui (see RegisterViewportTextureWithImGui)
+			});
+
+			PipelineSpecificationH2M pipelineSpecification;
+			pipelineSpecification.Layout = {
+				{ ShaderDataTypeH2M::Float3, "a_Position" },
+				{ ShaderDataTypeH2M::Float2, "a_TexCoord" },
+			};
+			pipelineSpecification.Shader = RendererH2M::GetShaderLibrary()->Get("SceneComposite");
+
+			RenderPassSpecificationH2M renderPassSpec;
+			renderPassSpec.TargetFramebuffer = s_ViewportCompositeFramebuffer;
+			pipelineSpecification.RenderPass = RenderPassH2M::Create(renderPassSpec);
+			pipelineSpecification.DebugName = "ViewportComposite";
+			s_ViewportCompositePipeline = PipelineH2M::Create(pipelineSpecification);
+		}
 
 		/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
 		RenderPassSpecificationH2M renderPassSpec;
@@ -790,7 +823,57 @@ namespace H2M
 			s_Meshes.clear();
 
 			vkCmdEndRenderPass(drawCommandBuffer);
+
+			ViewportCompositePass(drawCommandBuffer);
 		}
+	}
+
+	// Draws s_Framebuffer (linear HDR) into s_ViewportCompositeFramebuffer with exposure, ACES tonemapping and gamma
+	// (Resources/Shaders/SceneComposite.glsl). The Viewport panel shows the result.
+	void VulkanRendererH2M::ViewportCompositePass(VkCommandBuffer commandBuffer)
+	{
+		RefH2M<VulkanFramebufferH2M> framebuffer = s_ViewportCompositeFramebuffer.As<VulkanFramebufferH2M>();
+		RefH2M<VulkanPipelineH2M> vulkanPipeline = s_ViewportCompositePipeline.As<VulkanPipelineH2M>();
+		VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+		uint32_t width = framebuffer->GetWidth();
+		uint32_t height = framebuffer->GetHeight();
+
+		VkClearValue clearValues[2];
+		clearValues[0].color = { {0.1f, 0.1f, 0.1f, 1.0f} };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
+		renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
+		renderPassBeginInfo.renderArea.extent.width = width;
+		renderPassBeginInfo.renderArea.extent.height = height;
+		renderPassBeginInfo.clearValueCount = 2; // Color + depth
+		renderPassBeginInfo.pClearValues = clearValues;
+
+		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		VkViewport viewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		VkRect2D scissor = { { 0, 0 }, { width, height } };
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+		VkBuffer vertexBuffer = s_Data.QuadVertexBuffer.As<VulkanVertexBufferH2M>()->GetVulkanBuffer();
+		VkDeviceSize offsets[1] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+		vkCmdBindIndexBuffer(commandBuffer, s_Data.QuadIndexBuffer.As<VulkanIndexBufferH2M>()->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+
+		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &s_Exposure);
+
+		// QuadDescriptorSet samples s_Framebuffer's color image (rewritten when s_Framebuffer is resized)
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_Data.QuadDescriptorSet.DescriptorSets.size(), s_Data.QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
+
+		vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+
+		vkCmdEndRenderPass(commandBuffer);
 	}
 
 	void VulkanRendererH2M::CompositePass()
@@ -888,7 +971,7 @@ namespace H2M
 			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-			float exposure = 0.8f; // s_Data.Exposure;
+			float exposure = s_Exposure;
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &exposure);
 
 			// Bind descriptor sets describing shader binding points
@@ -1107,8 +1190,7 @@ namespace H2M
 							ImGuiWrapper::Property("Light Direction", s_Data.SceneData.LightDirectionTemp, 0.01f, -1.0f, 1.0f, PropertyFlag::DragProperty);
 							ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
 							ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
-							float exposure = 0.8f; // s_Data.Exposure;
-							ImGuiWrapper::Property("Exposure", exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+							ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
 
 							float radiancePrefilter = 1.0f; // EnvMapSharedData::s_RadiancePrefilter
 							ImGuiWrapper::Property("Radiance Prefiltering", radiancePrefilter);
@@ -1203,6 +1285,7 @@ namespace H2M
 		if (s_ViewportFBNeedsResize)
 		{
 			s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
+			s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 			s_ViewportFBNeedsResize = false;
 		}
 

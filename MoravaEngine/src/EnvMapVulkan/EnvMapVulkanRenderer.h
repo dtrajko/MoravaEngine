@@ -55,6 +55,7 @@ public:
 	static void RenderSkybox(VkCommandBuffer commandBuffer);
 
 	static void Draw(H2M::CameraH2M* camera); // TODO: there should be no parameters
+	static void ViewportCompositePass(VkCommandBuffer commandBuffer);
 	static void GeometryPass();
 	static void CompositePass();
 	static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers);

@@ -33,6 +33,9 @@
 
 #include "ImGuizmo.h"
 
+#include "stb_image.h"
+
+#include <filesystem>
 #include <set>
 
 
@@ -59,6 +62,9 @@ static VkCommandBuffer s_CompositeCommandBuffer;     // to be removed from Vulka
 static H2M::RefH2M<H2M::FramebufferH2M> s_Framebuffer;          // to be removed from VulkanRenderer
 static H2M::RefH2M<H2M::FramebufferH2M> s_CompositeFramebuffer; // to be removed from VulkanRenderer
 static H2M::RefH2M<H2M::PipelineH2M> s_CompositePipeline;            // to be removed from VulkanRenderer
+// The Viewport panel shows this image: s_Framebuffer (linear HDR scene) after exposure, tonemapping and gamma
+static H2M::RefH2M<H2M::FramebufferH2M> s_ViewportCompositeFramebuffer;
+static H2M::RefH2M<H2M::PipelineH2M> s_ViewportCompositePipeline;
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipeline;                 // to be removed from VulkanRenderer
 static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
 static bool s_ViewportTextureNeedsUpdate = false;     // the viewport framebuffer was recreated (resize)
@@ -75,7 +81,8 @@ static void RegisterViewportTextureWithImGui()
 		ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)s_TextureID);
 	}
 
-	auto vulkanFB = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
+	// The tonemapped image (not the linear HDR s_Framebuffer)
+	auto vulkanFB = s_ViewportCompositeFramebuffer.As<H2M::VulkanFramebufferH2M>();
 	const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 	s_TextureID = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 	s_ViewportTextureNeedsUpdate = false;
@@ -159,6 +166,88 @@ struct VulkanRendererData
 };
 
 static VulkanRendererData s_Data;
+
+// Compute pipelines, descriptor sets and single-mip views used by CreateEnvironmentMap.
+// Created on the first call and reused by every later load (the output cubemaps are reused too).
+struct EnvMapComputeResources
+{
+	H2M::RefH2M<H2M::VulkanComputePipelineH2M> EquirectPipeline;
+	H2M::RefH2M<H2M::VulkanComputePipelineH2M> MipFilterPipeline;
+	H2M::RefH2M<H2M::VulkanComputePipelineH2M> IrradiancePipeline;
+	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet EquirectDescriptorSet;
+	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet MipFilterDescriptorSets; // one set per envFiltered mip level
+	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet IrradianceDescriptorSet;
+	std::vector<VkDescriptorImageInfo> MipImageInfos;                        // single-mip storage views of envFiltered
+};
+static EnvMapComputeResources s_EnvMapCompute;
+
+// The skybox descriptor set is allocated once; it is (re)written only when the environment map changes,
+// never while frames that use it may still be in flight
+static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_SkyboxDescriptorSet;
+static bool s_SkyboxDescriptorSetNeedsUpdate = true;
+
+// Environment map shown in the Environment panel, and a map requested from the UI (loaded at the start of the next Draw)
+static std::string s_EnvMapFilename;
+static std::string s_PendingEnvMapFilename;
+
+// Exposure applied in the composite pass: user exposure * auto exposure (from the loaded environment map)
+static float s_Exposure = 1.0f;
+static bool s_AutoExposureEnabled = true;
+static float s_EnvMapAutoExposure = 1.0f;
+
+/****
+ * HDR environment maps differ in absolute brightness by several stops, so one fixed exposure can't suit them all.
+ * Returns the exposure that maps the log-average luminance of the equirectangular map to middle grey (0.18),
+ * weighted by the solid angle of each row (rows shrink towards the poles). Samples at most ~256x128 pixels.
+ ****/
+static float ComputeAutoExposure(H2M::RefH2M<H2M::Texture2D_H2M> equirect)
+{
+	H2M::BufferH2M pixels = equirect->GetWriteableBuffer();
+	uint32_t width = equirect->GetWidth(), height = equirect->GetHeight();
+	if (!pixels.Data || width == 0 || height == 0 || equirect->GetFormat() != H2M::ImageFormatH2M::RGBA32F ||
+		pixels.Size < (uint64_t)width * height * 4 * sizeof(float))
+	{
+		return 1.0f;
+	}
+
+	const float* rgba = (const float*)pixels.Data;
+	uint32_t stepX = glm::max(1u, width / 256), stepY = glm::max(1u, height / 128);
+	double sumLogLuminance = 0.0, sumWeight = 0.0;
+	for (uint32_t y = 0; y < height; y += stepY)
+	{
+		const double weight = glm::sin(glm::pi<double>() * (y + 0.5) / height);
+		for (uint32_t x = 0; x < width; x += stepX)
+		{
+			const float* p = &rgba[((size_t)y * width + x) * 4];
+			const double luminance = 0.2126 * p[0] + 0.7152 * p[1] + 0.0722 * p[2];
+			sumLogLuminance += weight * glm::log(glm::max(luminance, 0.0) + 1e-4);
+			sumWeight += weight;
+		}
+	}
+
+	const double averageLuminance = glm::exp(sumLogLuminance / sumWeight);
+	const float exposure = glm::clamp((float)(0.18 / averageLuminance), 0.05f, 20.0f);
+	Log::GetLogger()->info("Environment map auto exposure: average luminance {0}, exposure {1}", averageLuminance, exposure);
+	return exposure;
+}
+
+// Loads an .hdr file as the scene environment (called at the start of a frame, see Draw)
+static void LoadEnvironmentMap(const std::string& filepath)
+{
+	if (!std::filesystem::exists(filepath) || !stbi_is_hdr(filepath.c_str()))
+	{
+		Log::GetLogger()->error("Environment map '{0}' was not loaded: the file does not exist or is not an HDR image. Keeping the current one.", filepath);
+		return;
+	}
+
+	// The environment cubemaps are rewritten in place: nothing in flight may still be reading them
+	vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+
+	s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap(filepath);
+	H2M::RendererH2M::SetSceneEnvironment(H2M::RefH2M<H2M::EnvironmentH2M>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), H2M::RefH2M<H2M::Image2D_H2M>());
+	s_SkyboxDescriptorSetNeedsUpdate = true;
+	s_EnvMapFilename = filepath;
+}
 
 /**** BEGIN to be removed from VulkanRenderer ****/
 void EnvMapVulkanRenderer::SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform)
@@ -324,6 +413,35 @@ void EnvMapVulkanRenderer::Init()
 	}
 	/**** END: to be removed from VulkanRenderer ****/
 
+	// Offscreen composite for the Viewport panel (exposure, tonemapping, gamma), see ViewportCompositePass
+	{
+		H2M::FramebufferSpecificationH2M framebufferSpec;
+		framebufferSpec.Attachments = { H2M::ImageFormatH2M::RGBA, H2M::ImageFormatH2M::Depth };
+		framebufferSpec.Samples = 1;
+		framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+		framebufferSpec.DebugName = "ViewportComposite";
+		framebufferSpec.Width = s_ViewportWidth;
+		framebufferSpec.Height = s_ViewportHeight;
+		s_ViewportCompositeFramebuffer = H2M::FramebufferH2M::Create(framebufferSpec);
+		s_ViewportCompositeFramebuffer->AddResizeCallback([](H2M::RefH2M<H2M::FramebufferH2M> framebuffer)
+		{
+			s_ViewportTextureNeedsUpdate = true; // re-register the new image with ImGui (see RegisterViewportTextureWithImGui)
+		});
+
+		H2M::PipelineSpecificationH2M pipelineSpecification;
+		pipelineSpecification.Layout = {
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+		};
+		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("SceneComposite");
+
+		H2M::RenderPassSpecificationH2M renderPassSpec;
+		renderPassSpec.TargetFramebuffer = s_ViewportCompositeFramebuffer;
+		pipelineSpecification.RenderPass = H2M::RenderPassH2M::Create(renderPassSpec);
+		pipelineSpecification.DebugName = "ViewportComposite";
+		s_ViewportCompositePipeline = H2M::PipelineH2M::Create(pipelineSpecification);
+	}
+
 	/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
 	H2M::RenderPassSpecificationH2M renderPassSpec;
 	H2M::FramebufferSpecificationH2M framebufferSpec;
@@ -408,7 +526,8 @@ void EnvMapVulkanRenderer::Init()
 	// s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 	// s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
 	// s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
-	s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap("Textures/HDR/newport_loft.hdr");
+	s_EnvMapFilename = "Textures/HDR/newport_loft.hdr";
+	s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap(s_EnvMapFilename);
 
 	s_Data.BRDFLut = H2M::Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga", false);
 
@@ -566,23 +685,36 @@ void EnvMapVulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
 	memcpy(ubPtr, &skyboxUniformCamera, sizeof(SkyboxUniformCamera));
 	vulkanSkyboxShader->UnmapUniformBuffer(0, 0);
 
-	std::array<VkWriteDescriptorSet, 2> writeDescriptors;
-	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet descriptorSet = vulkanSkyboxShader->CreateDescriptorSets();
+	// Allocated once (previously a new descriptor pool was created every frame and never freed)
+	if (!s_SkyboxDescriptorSet.Pool)
+	{
+		s_SkyboxDescriptorSet = vulkanSkyboxShader->CreateDescriptorSets();
+		s_SkyboxDescriptorSetNeedsUpdate = true;
+	}
+	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet& descriptorSet = s_SkyboxDescriptorSet;
 
-	writeDescriptors[0] = *vulkanSkyboxShader->GetDescriptorSet("Camera");
-	writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
-	writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
-	writeDescriptors[0].pBufferInfo = &vulkanSkyboxShader->GetUniformBuffer(0, 0).Descriptor;
+	// Written only when the environment map changed (the device is idle then, see LoadEnvironmentMap):
+	// updating a descriptor set used by frames in flight is not allowed
+	if (s_SkyboxDescriptorSetNeedsUpdate)
+	{
+		std::array<VkWriteDescriptorSet, 2> writeDescriptors;
 
-	// The skybox shows the unfiltered environment map: sharp at Skybox LOD 0, blurred at higher LODs
-	// (sampled from its mip chain). The prefiltered map (envFiltered) is for PBR reflections and is always slightly blurred.
-	H2M::RefH2M<H2M::VulkanTextureCubeH2M> envUnfilteredCubemap = s_Data.envUnfiltered.As<H2M::VulkanTextureCubeH2M>();
-	writeDescriptors[1] = *vulkanSkyboxShader->GetDescriptorSet("u_Texture");
-	writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
-	writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
-	writeDescriptors[1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
+		writeDescriptors[0] = *vulkanSkyboxShader->GetDescriptorSet("Camera");
+		writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+		writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
+		writeDescriptors[0].pBufferInfo = &vulkanSkyboxShader->GetUniformBuffer(0, 0).Descriptor;
 
-	vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+		// The skybox shows the unfiltered environment map: sharp at Skybox LOD 0, blurred at higher LODs
+		// (sampled from its mip chain). The prefiltered map (envFiltered) is for PBR reflections and is always slightly blurred.
+		H2M::RefH2M<H2M::VulkanTextureCubeH2M> envUnfilteredCubemap = s_Data.envUnfiltered.As<H2M::VulkanTextureCubeH2M>();
+		writeDescriptors[1] = *vulkanSkyboxShader->GetDescriptorSet("u_Texture");
+		writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+		writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
+		writeDescriptors[1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
+
+		vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+		s_SkyboxDescriptorSetNeedsUpdate = false;
+	}
 
 	H2M::RefH2M<H2M::VulkanVertexBufferH2M> vulkanSkyboxCubeVB = s_Data.VulkanSkyboxCube->m_VertexBuffer.As<H2M::VulkanVertexBufferH2M>();
 	VkBuffer skyboxCubeVertexVkBuffer = vulkanSkyboxCubeVB->GetVulkanBuffer();
@@ -799,7 +931,58 @@ void EnvMapVulkanRenderer::GeometryPass()
 		s_Meshes.clear();
 
 		vkCmdEndRenderPass(drawCommandBuffer);
+
+		ViewportCompositePass(drawCommandBuffer);
 	}
+}
+
+// Draws s_Framebuffer (linear HDR) into s_ViewportCompositeFramebuffer with exposure, ACES tonemapping and gamma
+// (Resources/Shaders/SceneComposite.glsl). The Viewport panel shows the result.
+void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
+{
+	H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_ViewportCompositeFramebuffer.As<H2M::VulkanFramebufferH2M>();
+	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_ViewportCompositePipeline.As<H2M::VulkanPipelineH2M>();
+	VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+	uint32_t width = framebuffer->GetWidth();
+	uint32_t height = framebuffer->GetHeight();
+
+	VkClearValue clearValues[2];
+	clearValues[0].color = { {0.1f, 0.1f, 0.1f, 1.0f} };
+	clearValues[1].depthStencil = { 1.0f, 0 };
+
+	VkRenderPassBeginInfo renderPassBeginInfo = {};
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
+	renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
+	renderPassBeginInfo.renderArea.extent.width = width;
+	renderPassBeginInfo.renderArea.extent.height = height;
+	renderPassBeginInfo.clearValueCount = 2; // Color + depth
+	renderPassBeginInfo.pClearValues = clearValues;
+
+	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	VkViewport viewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+	VkRect2D scissor = { { 0, 0 }, { width, height } };
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+	VkBuffer vertexBuffer = s_Data.QuadVertexBuffer.As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+	VkDeviceSize offsets[1] = { 0 };
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+	vkCmdBindIndexBuffer(commandBuffer, s_Data.QuadIndexBuffer.As<H2M::VulkanIndexBufferH2M>()->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+
+	float exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
+	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &exposure);
+
+	// QuadDescriptorSet samples s_Framebuffer's color image (rewritten when s_Framebuffer is resized)
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_Data.QuadDescriptorSet.DescriptorSets.size(), s_Data.QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
+
+	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+
+	vkCmdEndRenderPass(commandBuffer);
 }
 
 void EnvMapVulkanRenderer::CompositePass()
@@ -897,7 +1080,7 @@ void EnvMapVulkanRenderer::CompositePass()
 		VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-		float exposure = 0.8f; // s_Data.Exposure;
+		float exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &exposure);
 
 		// Bind descriptor sets describing shader binding points
@@ -1071,21 +1254,31 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					{
 						ImGui::Columns(2);
 
-						ImGui::InputText("##envmapfilepath", "", 256, ImGuiInputTextFlags_ReadOnly);
+						// Currently loaded environment map (file name only; the full path is in the tooltip)
+						std::string envMapName = std::filesystem::path(s_EnvMapFilename).filename().string();
+						char envMapNameBuffer[256] = {};
+						strncpy(envMapNameBuffer, envMapName.c_str(), sizeof(envMapNameBuffer) - 1);
+						ImGui::InputText("##envmapfilepath", envMapNameBuffer, sizeof(envMapNameBuffer), ImGuiInputTextFlags_ReadOnly);
+						if (ImGui::IsItemHovered() && !s_EnvMapFilename.empty())
+						{
+							ImGui::SetTooltip("%s", s_EnvMapFilename.c_str());
+						}
 
+						// Drop an .hdr file from the Content Browser here to load it
 						if (ImGui::BeginDragDropTarget())
 						{
 							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
 							{
-								std::wstring itemPath = std::wstring((const wchar_t*)payload->Data);
-								size_t itemSize = payload->DataSize;
-								Log::GetLogger()->debug("END DRAG & DROP FILE '{0}', size: {1}", Util::to_str(itemPath.c_str()).c_str(), itemSize);
-
-								//	m_EnvMapFilename = std::string{ itemPath.begin(), itemPath.end() };
-								//	if (m_EnvMapFilename != "")
-								//	{
-								//		EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
-								//	}
+								std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
+								Log::GetLogger()->debug("END DRAG & DROP FILE '{0}'", itemPath);
+								if (std::filesystem::path(itemPath).extension() == ".hdr")
+								{
+									s_PendingEnvMapFilename = itemPath;
+								}
+								else
+								{
+									Log::GetLogger()->warn("Only .hdr files can be used as environment maps ('{0}')", itemPath);
+								}
 							}
 							ImGui::EndDragDropTarget();
 						}
@@ -1094,11 +1287,11 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 						if (ImGui::Button("Load Environment Map"))
 						{
-							//	m_EnvMapFilename = Application::Get()->OpenFile("*.hdr");
-							//	if (m_EnvMapFilename != "")
-							//	{
-							//		EnvMapSceneRenderer::SetEnvironment(EnvMapSceneRenderer::Load(m_EnvMapFilename));
-							//	}
+							std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"*.hdr"));
+							if (!filepath.empty())
+							{
+								s_PendingEnvMapFilename = filepath; // loaded at the start of the next frame (see Draw)
+							}
 						}
 
 						ImGui::NextColumn();
@@ -1118,8 +1311,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						ImGuiWrapper::Property("Light Direction", s_Data.SceneData.LightDirectionTemp, 0.01f, -1.0f, 1.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
 						ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
-						float exposure = 0.8f; // s_Data.Exposure;
-						ImGuiWrapper::Property("Exposure", exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+						ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+						ImGuiWrapper::Property("Auto Exposure", s_AutoExposureEnabled);
 
 						float radiancePrefilter = 1.0f; // EnvMapSharedData::s_RadiancePrefilter
 						ImGuiWrapper::Property("Radiance Prefiltering", radiancePrefilter);
@@ -1209,11 +1402,21 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 // TODO: Temporary method until composite rendering is enabled
 void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 {
+	// An environment map requested from the UI (button or drag & drop) is loaded here, before any command buffer
+	// of this frame is recorded, not in the middle of the ImGui pass that requested it
+	if (!s_PendingEnvMapFilename.empty())
+	{
+		std::string filepath = s_PendingEnvMapFilename;
+		s_PendingEnvMapFilename.clear();
+		LoadEnvironmentMap(filepath);
+	}
+
 	s_Data.SceneData.SceneCamera.Camera = *camera;
 
 	if (s_ViewportFBNeedsResize)
 	{
 		s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
+		s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_ViewportFBNeedsResize = false;
 	}
 
@@ -1226,153 +1429,136 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
 	const uint32_t cubemapSize = 1024;
 	const uint32_t irradianceMapSize = 32;
 
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	VkQueue computeQueue = H2M::VulkanContextH2M::GetCurrentDevice()->GetComputeQueue();
+
+	// The output cubemaps are created once and rewritten by every load, so descriptor sets that reference them
+	// (skybox, PBR set 1) stay valid. The caller must make sure nothing in flight still reads them (see LoadEnvironmentMap).
 	if (!s_Data.envUnfiltered)
 	{
 		s_Data.envUnfiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize);
 	}
-
-	s_Data.envEquirect = H2M::Texture2D_H2M::Create(filepath, false);
-	// ImageFormatH2M envEquirectImageFormat = s_Data.envEquirect->GetFormat(); // Vulkan Live 18.03.2021 #2: s_Data.envEquirect->GetImage()->GetFormat();
-
-	/****
-	H2M_CORE_ASSERT(s_Data.envEquirect->GetFormat() == ImageFormatH2M::RGBA16F, "Texture is not HDR!");
-	if (envEquirectImageFormat != ImageFormatH2M::RGBA16F)
+	if (!s_Data.envFiltered)
 	{
-		Log::GetLogger()->error("Texture '{0}' is not HDR (format: '{1}')!", filepath, envEquirectImageFormat);
-		return std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>>();
+		s_Data.envFiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize);
 	}
-	****/
+	if (!s_Data.irradianceMap)
+	{
+		s_Data.irradianceMap = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, irradianceMapSize, irradianceMapSize);
+	}
+
+	H2M::RefH2M<H2M::VulkanTextureCubeH2M> envUnfilteredCubemap = s_Data.envUnfiltered.As<H2M::VulkanTextureCubeH2M>();
+	H2M::RefH2M<H2M::VulkanTextureCubeH2M> envFilteredCubemap = s_Data.envFiltered.As<H2M::VulkanTextureCubeH2M>();
+	H2M::RefH2M<H2M::VulkanTextureCubeH2M> irradianceCubemap = s_Data.irradianceMap.As<H2M::VulkanTextureCubeH2M>();
+
+	// Loaded as 32-bit float (full dynamic range)
+	s_Data.envEquirect = H2M::Texture2D_H2M::Create(filepath, false);
+	s_EnvMapAutoExposure = ComputeAutoExposure(s_Data.envEquirect);
+
+	uint32_t mipFilterLevels = s_MipMapsEnabled ? glm::min(11u, envFilteredCubemap->GetMipLevelCount()) : 1;
+
+	// First call: create the compute pipelines, their descriptor sets and the single-mip views (reused by later loads)
+	if (!s_EnvMapCompute.EquirectPipeline)
+	{
+		s_EnvMapCompute.EquirectPipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(H2M::RendererH2M::GetShaderLibrary()->Get("EquirectangularToCubeMap"));
+		s_EnvMapCompute.MipFilterPipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(H2M::RendererH2M::GetShaderLibrary()->Get("EnvironmentMipFilter"));
+		s_EnvMapCompute.IrradiancePipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(H2M::RendererH2M::GetShaderLibrary()->Get("EnvironmentIrradiance"));
+
+		s_EnvMapCompute.EquirectDescriptorSet = s_EnvMapCompute.EquirectPipeline->GetShader()->CreateDescriptorSets();
+		s_EnvMapCompute.MipFilterDescriptorSets = s_EnvMapCompute.MipFilterPipeline->GetShader()->CreateDescriptorSets(0, mipFilterLevels);
+		s_EnvMapCompute.IrradianceDescriptorSet = s_EnvMapCompute.IrradiancePipeline->GetShader()->CreateDescriptorSets();
+
+		s_EnvMapCompute.MipImageInfos.resize(mipFilterLevels);
+		for (uint32_t i = 0; i < mipFilterLevels; i++)
+		{
+			VkDescriptorImageInfo& mipImageInfo = s_EnvMapCompute.MipImageInfos[i];
+			mipImageInfo = envFilteredCubemap->GetVulkanDescriptorInfo();
+			mipImageInfo.imageView = envFilteredCubemap->CreateImageViewSingleMip(i);
+			mipImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+		}
+	}
+	mipFilterLevels = (uint32_t)s_EnvMapCompute.MipImageInfos.size();
+
+	// After a previous load these cubemaps are in SHADER_READ_ONLY (GenerateMips(true)); compute shaders write them in GENERAL
+	envUnfilteredCubemap->TransitionToGeneralLayout();
+	irradianceCubemap->TransitionToGeneralLayout();
 
 	// Convert equirectangular to cubemap
-	H2M::RefH2M<H2M::ShaderH2M> equirectangularConversionShader = H2M::RendererH2M::GetShaderLibrary()->Get("EquirectangularToCubeMap");
-	H2M::RefH2M<H2M::VulkanComputePipelineH2M> equirectangularConversionPipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(equirectangularConversionShader);
-
-	// H2M::RendererH2M::Submit([equirectangularConversionPipeline, envUnfiltered, envEquirect, cubemapSize]() mutable {});
 	{
-		VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
-		H2M::RefH2M<H2M::VulkanShaderH2M> shader = equirectangularConversionPipeline->GetShader();
+		H2M::RefH2M<H2M::VulkanShaderH2M> shader = s_EnvMapCompute.EquirectPipeline->GetShader();
+		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet& descriptorSet = s_EnvMapCompute.EquirectDescriptorSet;
 
 		std::array<VkWriteDescriptorSet, 2> writeDescriptors;
-		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet descriptorSet = shader->CreateDescriptorSets();
 
-		H2M::RefH2M<H2M::VulkanTextureCubeH2M> envUnfilteredCubemap = s_Data.envUnfiltered.As<H2M::VulkanTextureCubeH2M>();
 		writeDescriptors[0] = *shader->GetDescriptorSet("o_CubeMap");
-		writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+		writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data();
 		writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 		writeDescriptors[0].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
 
 		H2M::RefH2M<H2M::VulkanTexture2D_H2M> envEquirectVK = s_Data.envEquirect.As<H2M::VulkanTexture2D_H2M>();
 		writeDescriptors[1] = *shader->GetDescriptorSet("u_EquirectangularTex");
-		writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+		writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data();
 		writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 		writeDescriptors[1].pImageInfo = &envEquirectVK->GetVulkanDescriptorInfo();
 
 		vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
-		equirectangularConversionPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
-
-		VkQueue computeQueue = H2M::VulkanContextH2M::GetCurrentDevice()->GetComputeQueue();
+		s_EnvMapCompute.EquirectPipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), cubemapSize / 32, cubemapSize / 32, 6);
 		vkQueueWaitIdle(computeQueue);
 
 		envUnfilteredCubemap->GenerateMips(true);
 	}
 
-	// MipFiltering
-	H2M::RefH2M<H2M::ShaderH2M> environmentMipFilterShader = H2M::RendererH2M::GetShaderLibrary()->Get("EnvironmentMipFilter");
-	H2M::RefH2M<H2M::VulkanComputePipelineH2M> environmentMipFilterPipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(environmentMipFilterShader);
-
-	if (!s_Data.envFiltered)
+	// Mip filtering (prefiltered radiance for PBR reflections: one roughness per mip level)
 	{
-		s_Data.envFiltered = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize);
-	}
+		H2M::RefH2M<H2M::VulkanShaderH2M> shader = s_EnvMapCompute.MipFilterPipeline->GetShader();
+		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet& descriptorSet = s_EnvMapCompute.MipFilterDescriptorSets;
 
-	// H2M::RendererH2M::Submit([environmentMipFilterPipeline, cubemapSize, envFiltered, envUnfiltered]() mutable {});
-	{
-		VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
-		H2M::RefH2M<H2M::VulkanShaderH2M> shader = environmentMipFilterPipeline->GetShader();
-
-		H2M::RefH2M<H2M::VulkanTextureCubeH2M> envFilteredCubemap = s_Data.envFiltered.As<H2M::VulkanTextureCubeH2M>();
-		VkDescriptorImageInfo imageInfo = envFilteredCubemap->GetVulkanDescriptorInfo();
-
-		uint32_t totalMipLevels = s_MipMapsEnabled ? 11 : 1;
-
-		std::vector<VkWriteDescriptorSet> writeDescriptors;
-		std::vector<VkDescriptorImageInfo> mipImageInfos;
-
-		writeDescriptors.resize(totalMipLevels * 2);
-		mipImageInfos.resize(totalMipLevels);
-
-		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet descriptorSet = shader->CreateDescriptorSets(0, totalMipLevels);
-
-		for (uint32_t i = 0; i < totalMipLevels; i++)
+		std::vector<VkWriteDescriptorSet> writeDescriptors(mipFilterLevels * 2);
+		for (uint32_t i = 0; i < mipFilterLevels; i++)
 		{
-			VkDescriptorImageInfo& mipImageInfo = mipImageInfos[i];
-			mipImageInfo = imageInfo;
-			mipImageInfo.imageView = envFilteredCubemap->CreateImageViewSingleMip(i);
-			mipImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-
 			writeDescriptors[i * 2 + 0] = *shader->GetDescriptorSet("outputTexture");
 			writeDescriptors[i * 2 + 0].dstSet = descriptorSet.DescriptorSets[i];
-			writeDescriptors[i * 2 + 0].pImageInfo = &mipImageInfo;
+			writeDescriptors[i * 2 + 0].pImageInfo = &s_EnvMapCompute.MipImageInfos[i];
 
-			H2M::RefH2M<H2M::VulkanTextureCubeH2M> envUnfilteredCubemap = s_Data.envUnfiltered.As<H2M::VulkanTextureCubeH2M>();
 			writeDescriptors[i * 2 + 1] = *shader->GetDescriptorSet("inputTexture");
 			writeDescriptors[i * 2 + 1].dstSet = descriptorSet.DescriptorSets[i];
 			writeDescriptors[i * 2 + 1].pImageInfo = &envUnfilteredCubemap->GetVulkanDescriptorInfo();
 		}
-
 		vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 
-		environmentMipFilterPipeline->Begin(); // begin compute pass
+		s_EnvMapCompute.MipFilterPipeline->Begin(); // begin compute pass
 		const float deltaRoughness = 1.0f / glm::max((float)s_Data.envFiltered->GetMipLevelCount() - 1.0f, 1.0f);
-		for (uint32_t i = 0, size = cubemapSize; i < totalMipLevels; i++, size /= 2)
+		for (uint32_t i = 0, size = cubemapSize; i < mipFilterLevels; i++, size /= 2)
 		{
 			uint32_t numGroups = glm::max(1u, size / 32);
 			float roughness = i * deltaRoughness;
 			roughness = glm::max(roughness, 0.05f);
-			environmentMipFilterPipeline->SetPushConstants(&roughness, sizeof(float));
-			environmentMipFilterPipeline->Dispatch(descriptorSet.DescriptorSets[i], numGroups, numGroups, 6);
+			s_EnvMapCompute.MipFilterPipeline->SetPushConstants(&roughness, sizeof(float));
+			s_EnvMapCompute.MipFilterPipeline->Dispatch(descriptorSet.DescriptorSets[i], numGroups, numGroups, 6);
 		}
-		environmentMipFilterPipeline->End();
-
-		VkQueue computeQueue = H2M::VulkanContextH2M::GetCurrentDevice()->GetComputeQueue();
+		s_EnvMapCompute.MipFilterPipeline->End();
 		vkQueueWaitIdle(computeQueue);
 	}
 
-	// Irradiance map
-	H2M::RefH2M<H2M::ShaderH2M> environmentIrradianceShader = H2M::RendererH2M::GetShaderLibrary()->Get("EnvironmentIrradiance");
-	H2M::RefH2M<H2M::VulkanComputePipelineH2M> environmentIrradiancePipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(environmentIrradianceShader);
-
-
-	if (!s_Data.irradianceMap)
+	// Irradiance map (diffuse lighting)
 	{
-		// s_Data.irradianceMap = TextureCubeH2M::Create(ImageFormatH2M::RGBA16F, cubemapSize, cubemapSize);
-		s_Data.irradianceMap = H2M::TextureCubeH2M::Create(H2M::ImageFormatH2M::RGBA16F, irradianceMapSize, irradianceMapSize);
-	}
-
-	// H2M::RendererH2M::Submit([environmentIrradiancePipeline, envFilteredCubemap, s_Data.irradianceMap, irradianceMapSize]() mutable {});
-	{
-		VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
-		H2M::RefH2M<H2M::VulkanShaderH2M> shader = environmentIrradiancePipeline->GetShader();
+		H2M::RefH2M<H2M::VulkanShaderH2M> shader = s_EnvMapCompute.IrradiancePipeline->GetShader();
+		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet& descriptorSet = s_EnvMapCompute.IrradianceDescriptorSet;
 
 		std::array<VkWriteDescriptorSet, 2> writeDescriptors;
-		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet descriptorSet = shader->CreateDescriptorSets();
 
-		H2M::RefH2M<H2M::VulkanTextureCubeH2M> irradianceCubemap = s_Data.irradianceMap.As<H2M::VulkanTextureCubeH2M>();
 		writeDescriptors[0] = *shader->GetDescriptorSet("o_IrradianceMap");
 		writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data();
 		writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 		writeDescriptors[0].pImageInfo = &irradianceCubemap->GetVulkanDescriptorInfo();
 
-		H2M::RefH2M<H2M::VulkanTextureCubeH2M> envFilteredCubemap = s_Data.envFiltered.As<H2M::VulkanTextureCubeH2M>();
 		writeDescriptors[1] = *shader->GetDescriptorSet("u_RadianceMap");
 		writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data();
 		writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
 		writeDescriptors[1].pImageInfo = &envFilteredCubemap->GetVulkanDescriptorInfo();
 
 		vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
-		environmentIrradiancePipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), irradianceCubemap->GetWidth() / 32, irradianceCubemap->GetHeight() / 32, 6);
-
-		VkQueue computeQueue = H2M::VulkanContextH2M::GetCurrentDevice()->GetComputeQueue();
+		s_EnvMapCompute.IrradiancePipeline->Execute(descriptorSet.DescriptorSets.data(), (uint32_t)descriptorSet.DescriptorSets.size(), irradianceCubemap->GetWidth() / 32, irradianceCubemap->GetHeight() / 32, 6);
 		vkQueueWaitIdle(computeQueue);
 
 		irradianceCubemap->GenerateMips(true);
@@ -1380,6 +1566,7 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
 
 	return { s_Data.envFiltered, s_Data.irradianceMap };
 }
+
 
 void EnvMapVulkanRenderer::RenderMeshWithoutMaterial(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform)
 {

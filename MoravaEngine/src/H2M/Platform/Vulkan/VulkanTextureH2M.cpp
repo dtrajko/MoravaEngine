@@ -259,12 +259,12 @@ namespace H2M {
 
 		if (stbi_is_hdr(path.c_str()))
 		{
-			// m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
-			// m_ImageData.Size = width * height * 4 * sizeof(float);
-			// m_Format = ImageFormatH2M::RGBA16F;
-			m_ImageData.Data = (byte*)stbi_load(path.c_str(), &width, &height, &channels, 4);
-			m_ImageData.Size = width * height * 4;
-			m_Format = ImageFormatH2M::RGBA;
+			// Keep the full dynamic range (stbi_load would clamp to 8 bits); equirectangular maps are not flipped.
+			// The flip flag is global stb state, so it is set explicitly here (the LDR branch below turns it on).
+			stbi_set_flip_vertically_on_load(0);
+			m_ImageData.Data = (byte*)stbi_loadf(path.c_str(), &width, &height, &channels, 4);
+			m_ImageData.Size = width * height * 4 * sizeof(float);
+			m_Format = ImageFormatH2M::RGBA32F;
 		}
 		else
 		{
@@ -836,6 +836,35 @@ namespace H2M {
 		VkImageView result;
 		VK_CHECK_RESULT_H2M(vkCreateImageView(vulkanDevice, &view, nullptr, &result));
 		return result;
+	}
+
+	void VulkanTextureCubeH2M::TransitionToGeneralLayout()
+	{
+		VkImageLayout currentLayout = m_DescriptorImageInfo.imageLayout;
+		if (currentLayout == VK_IMAGE_LAYOUT_GENERAL)
+		{
+			return;
+		}
+
+		VkCommandBuffer cmd = VulkanContextH2M::GetCurrentDevice()->GetCommandBuffer(true);
+
+		VkImageSubresourceRange subresourceRange = {};
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		subresourceRange.baseMipLevel = 0;
+		subresourceRange.levelCount = GetMipLevelCount();
+		subresourceRange.baseArrayLayer = 0;
+		subresourceRange.layerCount = 6;
+
+		// Previous contents are read by shaders only; they are about to be overwritten by compute shaders
+		Utils::InsertImageMemoryBarrier(cmd, m_Image,
+			VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT,
+			currentLayout, VK_IMAGE_LAYOUT_GENERAL,
+			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+			subresourceRange);
+
+		VulkanContextH2M::GetCurrentDevice()->FlushCommandBuffer(cmd);
+
+		m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 	}
 
 	void VulkanTextureCubeH2M::GenerateMips(bool readonly)

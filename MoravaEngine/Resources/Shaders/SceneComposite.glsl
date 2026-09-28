@@ -40,16 +40,13 @@ layout(push_constant) uniform Uniforms
 void main()
 {
 	const float gamma     = 2.2;
-	const float pureWhite = 1.0;
 
 	vec3 color = texture(u_Texture, Input.TexCoord).rgb * u_Uniforms.Exposure;
-	// Reinhard tonemapping operator.
-	// see: "Photographic Tone Reproduction for Digital Images", eq. 4
-	float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
-	float mappedLuminance = (luminance * (1.0 + luminance / (pureWhite * pureWhite))) / (1.0 + luminance);
 
-	// Scale color by ratio of average luminances.
-	vec3 mappedColor = (mappedLuminance / luminance) * color;
+	// ACES filmic tonemapping (Narkowicz fit, with its 0.6 pre-exposure). The previous Reinhard version used
+	// pureWhite = 1.0, which reduces to the identity: HDR values above 1.0 were simply clipped.
+	vec3 x = max(color, vec3(0.0)) * 0.6;
+	vec3 mappedColor = clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
 
 	// Gamma correction.
 	o_Color = vec4(pow(mappedColor, vec3(1.0 / gamma)), 1.0);
