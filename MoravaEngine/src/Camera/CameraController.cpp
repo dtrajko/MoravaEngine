@@ -23,8 +23,11 @@ void CameraController::KeyControl(bool* keys, float deltaTime)
 	// Don't move the camera when using Ctrl+S or Ctrl+D in Editor
 	if (Input::IsKeyPressed(KeyH2M::LeftControl)) return;
 
-	// Move the camera only the viewport accepts events, i.e. in focus or hovered (mouse over)
-	if (!ImGuiWrapper::CanViewportReceiveEvents()) return;
+	// Move the camera only the viewport accepts events, i.e. in focus or hovered (mouse over),
+	// or while rotating with the right mouse button: right click doesn't focus the ImGui viewport window,
+	// and during the rotation ImGui ignores the (hidden) mouse, so the viewport is neither focused nor hovered then.
+	// The rotation can only start over the viewport (see MouseControl).
+	if (!m_Rotating && !ImGuiWrapper::CanViewportReceiveEvents()) return;
 
 	float velocity = m_MoveSpeed * deltaTime;
 

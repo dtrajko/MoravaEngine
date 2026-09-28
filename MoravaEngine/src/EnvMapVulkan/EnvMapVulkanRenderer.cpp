@@ -279,6 +279,7 @@ struct LoadedMeshVulkan
 };
 static std::vector<LoadedMeshVulkan> s_LoadedMeshes;
 static int s_SelectedMeshIndex = -1;
+static int s_SelectedSubmeshIndex = -1; // submesh of the selected mesh; -1 = none (the Material Editor then lists all materials)
 static std::string s_PendingMeshFilename;  // requested from the UI, loaded at the start of the next Draw
 static int s_PendingRemoveMeshIndex = -1;  // requested from the UI, removed at the start of the next Draw
 
@@ -359,6 +360,7 @@ static void LoadMesh(const std::string& filepath)
 
 	s_LoadedMeshes.push_back(entry);
 	s_SelectedMeshIndex = (int)s_LoadedMeshes.size() - 1;
+	s_SelectedSubmeshIndex = -1;
 	Log::GetLogger()->info("Mesh '{0}' loaded: {1} submeshes, {2} materials", filepath, mesh->GetSubmeshes().size(), mesh->GetMaterials().size());
 }
 
@@ -510,6 +512,10 @@ static void OnImGuiRenderMeshes()
 		std::string name = std::filesystem::path(s_LoadedMeshes[i].FilePath).filename().string();
 		if (ImGui::Selectable(name.c_str(), s_SelectedMeshIndex == i))
 		{
+			if (s_SelectedMeshIndex != i)
+			{
+				s_SelectedSubmeshIndex = -1;
+			}
 			s_SelectedMeshIndex = i;
 		}
 		if (ImGui::IsItemHovered())
@@ -533,6 +539,49 @@ static void OnImGuiRenderMeshes()
 		{
 			s_PendingRemoveMeshIndex = s_SelectedMeshIndex; // removed at the start of the next frame (see Draw)
 		}
+
+		// Submeshes (as in SceneHazelEnvMap): select one to edit its material in the Material Editor,
+		// and choose which of the model's materials it is drawn with
+		auto& submeshes = entry.Mesh->GetSubmeshes();
+		auto& materials = entry.Mesh->GetMaterials();
+
+		ImGui::Separator();
+		ImGui::Text("Submeshes (%d)", (int)submeshes.size());
+
+		for (int s = 0; s < (int)submeshes.size(); s++)
+		{
+			H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[s];
+			ImGui::PushID(1000 + s);
+
+			std::string submeshName = !submesh->MeshName.empty() ? submesh->MeshName :
+				(!submesh->NodeName.empty() ? submesh->NodeName : "Submesh " + std::to_string(s));
+			if (ImGui::Selectable(submeshName.c_str(), s_SelectedSubmeshIndex == s, 0, ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0.0f)))
+			{
+				s_SelectedSubmeshIndex = (s_SelectedSubmeshIndex == s) ? -1 : s; // click again to show all materials
+			}
+
+			// Material used by this submesh
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(-1.0f);
+			auto materialName = [&](uint32_t index) {
+				return index < materials.size() && !materials[index]->GetName().empty() ? materials[index]->GetName() : "Material " + std::to_string(index);
+			};
+			if (ImGui::BeginCombo("##material", materialName(submesh->MaterialIndex).c_str()))
+			{
+				for (uint32_t m = 0; m < (uint32_t)materials.size(); m++)
+				{
+					ImGui::PushID((int)m);
+					if (ImGui::Selectable(materialName(m).c_str(), submesh->MaterialIndex == m))
+					{
+						submesh->MaterialIndex = m; // used by RenderMeshVulkan from the next frame
+					}
+					ImGui::PopID();
+				}
+				ImGui::EndCombo();
+			}
+
+			ImGui::PopID();
+		}
 	}
 
 	ImGui::End();
@@ -555,14 +604,46 @@ static void OnImGuiRenderMaterialEditor()
 
 	static const char* s_MapLabels[4] = { "Use Albedo Map", "Use Normal Map", "Use Metalness Map", "Use Roughness Map" };
 
+	// With a submesh selected (Meshes panel), only the material that submesh is drawn with is shown
+	auto& submeshes = entry.Mesh->GetSubmeshes();
+	int selectedMaterial = -1;
+	if (s_SelectedSubmeshIndex >= 0 && s_SelectedSubmeshIndex < (int)submeshes.size())
+	{
+		H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[s_SelectedSubmeshIndex];
+		selectedMaterial = (int)submesh->MaterialIndex;
+
+		std::string submeshName = !submesh->MeshName.empty() ? submesh->MeshName :
+			(!submesh->NodeName.empty() ? submesh->NodeName : "Submesh " + std::to_string(s_SelectedSubmeshIndex));
+		ImGui::Text("Submesh: %s", submeshName.c_str());
+
+		int sharedBy = 0;
+		for (auto& other : submeshes)
+		{
+			sharedBy += other->MaterialIndex == submesh->MaterialIndex ? 1 : 0;
+		}
+		if (sharedBy > 1)
+		{
+			ImGui::TextDisabled("This material is used by %d submeshes: changes apply to all of them.", sharedBy);
+		}
+	}
+	else
+	{
+		ImGui::TextDisabled("All materials (select a submesh in the Meshes panel to edit only its material)");
+	}
+
 	for (uint32_t m = 0; m < (uint32_t)materials.size(); m++)
 	{
+		if (selectedMaterial >= 0 && (int)m != selectedMaterial)
+		{
+			continue;
+		}
+
 		ImGui::PushID((int)m);
 
 		H2M::RefH2M<H2M::VulkanMaterialH2M> material = materials[m].As<H2M::VulkanMaterialH2M>();
 		std::string name = material->GetName().empty() ? "(unnamed)" : material->GetName();
 
-		if (ImGui::CollapsingHeader(name.c_str(), m == 0 ? ImGuiTreeNodeFlags_DefaultOpen : 0))
+		if (ImGui::CollapsingHeader(name.c_str(), (m == 0 || selectedMaterial >= 0) ? ImGuiTreeNodeFlags_DefaultOpen : 0))
 		{
 			glm::vec3& albedoColor = material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
 			float& metalness = material->Get<float>("u_MaterialUniforms.Metalness");
@@ -1804,6 +1885,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 			s_LoadedMeshes.erase(s_LoadedMeshes.begin() + s_PendingRemoveMeshIndex);
 			s_PendingMaterialTextures.clear(); // their mesh indices refer to the list before the removal
 			s_SelectedMeshIndex = glm::min(s_SelectedMeshIndex, (int)s_LoadedMeshes.size() - 1);
+			s_SelectedSubmeshIndex = -1;
 		}
 		s_PendingRemoveMeshIndex = -1;
 	}
