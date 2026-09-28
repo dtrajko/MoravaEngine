@@ -291,8 +291,8 @@ namespace H2M
 		ImGui::NewFrame();
 
 
-		// Optional:
-		// ImGuizmo::BeginFrame();
+		// Required once per frame: without it ImGuizmo draws the gizmo but never registers hovering/dragging
+		ImGuizmo::BeginFrame();
 	}
 
 	void VulkanImGuiLayerH2M::End()

@@ -29,7 +29,11 @@ namespace H2M
             float u = glm::dot(E2, DAO) * invdet;
             float v = -glm::dot(E1, DAO) * invdet;
             t = glm::dot(AO, N) * invdet;
-            return (det >= 1e-6f && t >= 0.0f && u >= 0.0f && v >= 0.0f && (u + v) <= 1.0f);
+            // Front-facing test relative to the lengths of Direction and N (det = |Direction| |N| cos(angle)):
+            // the previous absolute threshold (det >= 1e-6) rejected every triangle of models with small units,
+            // e.g. Cerberus (N = 2 x triangle area)
+            float scale = glm::length(Direction) * glm::length(N);
+            return (det > 0.0f && det >= 1e-6f * scale && t >= 0.0f && u >= 0.0f && v >= 0.0f && (u + v) <= 1.0f);
         }
 
         bool IntersectsAABB(const AABB_H2M& aabb, float& t) const

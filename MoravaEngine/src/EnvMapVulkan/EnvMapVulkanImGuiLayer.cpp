@@ -210,7 +210,8 @@ void EnvMapVulkanImGuiLayer::Begin()
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
-	// ImGuizmo::BeginFrame();
+	// Required once per frame: without it ImGuizmo draws the gizmo but never registers hovering/dragging
+	ImGuizmo::BeginFrame();
 
 	// ImGui::ShowDemoWindow();
 }

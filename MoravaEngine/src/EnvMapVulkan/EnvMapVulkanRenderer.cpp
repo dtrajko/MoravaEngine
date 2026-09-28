@@ -277,11 +277,13 @@ struct LoadedMeshVulkan
 	std::vector<std::array<bool, 4>> MaterialHasMap; // per material: albedo, normal, metalness, roughness map available (from the model or assigned)
 	std::vector<std::array<H2M::RefH2M<H2M::Texture2D_H2M>, 4>> MaterialTextures; // maps assigned in the Material Editor (kept alive here)
 
+	// Composed with ImGuizmo's own convention (Euler angles in degrees), so the gizmo (Manipulate +
+	// DecomposeMatrixToComponents) and the values in the Meshes panel round-trip exactly
 	glm::mat4 GetTransform() const
 	{
-		return glm::translate(glm::mat4(1.0f), Translation) *
-			glm::toMat4(glm::quat(glm::radians(Rotation))) *
-			glm::scale(glm::mat4(1.0f), Scale);
+		glm::mat4 transform;
+		ImGuizmo::RecomposeMatrixFromComponents(&Translation.x, &Rotation.x, &Scale.x, glm::value_ptr(transform));
+		return transform;
 	}
 };
 static std::vector<LoadedMeshVulkan> s_LoadedMeshes;
@@ -289,6 +291,65 @@ static int s_SelectedMeshIndex = -1;
 static int s_SelectedSubmeshIndex = -1; // submesh of the selected mesh; -1 = none (the Material Editor then lists all materials)
 static std::string s_PendingMeshFilename;  // requested from the UI, loaded at the start of the next Draw
 static int s_PendingRemoveMeshIndex = -1;  // requested from the UI, removed at the start of the next Draw
+
+// Screen rectangle of the scene image in the Viewport window (for the gizmo and mouse picking)
+static ImVec2 s_ViewportImageMin = ImVec2(0.0f, 0.0f);
+static ImVec2 s_ViewportImageSize = ImVec2(0.0f, 0.0f);
+
+// Selects the mesh and submesh under the mouse: a ray through the cursor is tested against every submesh's bounding box,
+// then its triangles (as in SceneHazelEnvMap); the nearest hit wins. Nothing hit clears the selection.
+// ndcX, ndcY: cursor position in normalized device coordinates of the viewport (-1..1, +y up)
+static void PickMesh(float ndcX, float ndcY)
+{
+	H2M::CameraH2M& camera = s_Data.SceneData.SceneCamera.Camera;
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 inverseViewProjection = glm::inverse(camera.GetProjectionMatrix() * view);
+
+	glm::vec3 origin = glm::vec3(glm::inverse(view)[3]); // camera position
+	glm::vec4 farPoint = inverseViewProjection * glm::vec4(ndcX, ndcY, 1.0f, 1.0f);
+	glm::vec3 direction = glm::normalize(glm::vec3(farPoint) / farPoint.w - origin);
+
+	float nearestT = std::numeric_limits<float>::max();
+	int hitMesh = -1, hitSubmesh = -1;
+
+	for (int m = 0; m < (int)s_LoadedMeshes.size(); m++)
+	{
+		LoadedMeshVulkan& entry = s_LoadedMeshes[m];
+		glm::mat4 meshTransform = entry.GetTransform();
+		auto& submeshes = entry.Mesh->GetSubmeshes();
+
+		for (int s = 0; s < (int)submeshes.size(); s++)
+		{
+			// Ray in the submesh's local space; the direction is not renormalized, so t is the same distance
+			// along the world ray for every submesh and the hits can be compared
+			glm::mat4 toLocal = glm::inverse(meshTransform * submeshes[s]->Transform);
+			H2M::RayH2M ray = { glm::vec3(toLocal * glm::vec4(origin, 1.0f)), glm::mat3(toLocal) * direction };
+
+			float t;
+			if (!ray.IntersectsAABB(submeshes[s]->BoundingBox, t) || t < 0.0f || t >= nearestT)
+			{
+				continue;
+			}
+
+			const auto triangles = entry.Mesh->GetTriangleCache((uint32_t)s);
+			if (triangles.empty())
+			{
+				nearestT = t; hitMesh = m; hitSubmesh = s; // no triangle data: the bounding box has to do
+				continue;
+			}
+			for (const auto& triangle : triangles)
+			{
+				if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t) && t >= 0.0f && t < nearestT)
+				{
+					nearestT = t; hitMesh = m; hitSubmesh = s;
+				}
+			}
+		}
+	}
+
+	s_SelectedMeshIndex = hitMesh;
+	s_SelectedSubmeshIndex = hitSubmesh;
+}
 
 static const char* s_MaterialMapToggles[4] = {
 	"u_MaterialUniforms.AlbedoTexToggle",
@@ -1077,6 +1138,7 @@ void EnvMapVulkanRenderer::Init()
 	Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
 	s_Data.SceneData.SkyboxLod = 0.0f;
+	Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE; // as in SceneHazelEnvMap (keys 1/2/3/4 switch the mode)
 	s_Data.SceneData.LightDirectionTemp = { 0.5f, 0.5f, 0.5f };
 
 	OnResize(s_ViewportWidth, s_ViewportHeight); // to be removed from VulkanRenderer
@@ -1785,6 +1847,9 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				RegisterViewportTextureWithImGui();
 			}
 			ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
+			s_ViewportImageMin = ImGui::GetItemRectMin();
+			s_ViewportImageSize = ImGui::GetItemRectSize();
+			bool viewportImageHovered = ImGui::IsItemHovered();
 
 			// Compare whole pixels: the panel size can be fractional (DPI scaling, docking), and comparing the float size with
 			// the stored integer size requested a framebuffer resize every frame. A collapsed/hidden panel has no area: keep the size.
@@ -1799,6 +1864,17 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 			Window* mainWindow = Application::Get()->GetWindow();
 			UpdateImGuizmo(mainWindow);
+
+			// Mouse picking: left click on the scene (not on the gizmo, not with Alt) selects the mesh/submesh under the cursor
+			if (viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
+				!Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+			{
+				ImVec2 mouse = ImGui::GetMousePos();
+				// The image is shown vertically flipped (see ImGui::Image above), so its top edge is NDC y = +1
+				float ndcX = (mouse.x - s_ViewportImageMin.x) / s_ViewportImageSize.x * 2.0f - 1.0f;
+				float ndcY = 1.0f - (mouse.y - s_ViewportImageMin.y) / s_ViewportImageSize.y * 2.0f;
+				PickMesh(ndcX, ndcY);
+			}
 
 			ImGui::End();
 			ImGui::PopStyleVar();
@@ -2293,55 +2369,53 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 {
 	// BEGIN ImGuizmo
 
-	// ImGizmo switching modes
-	if (Input::IsKeyPressed(KeyH2M::D1))
-		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-	if (Input::IsKeyPressed(KeyH2M::D2))
-		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
-
-	if (Input::IsKeyPressed(KeyH2M::D3))
-		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
-
-	if (Input::IsKeyPressed(KeyH2M::D4))
-		Scene::s_ImGuizmoType = -1;
-
-	// ImGuizmo
-	if (Scene::s_ImGuizmoType != -1)
+	// Gizmo mode: 1 translate, 2 rotate, 3 scale, 4 hide (not while typing into an ImGui text field)
+	if (!ImGui::GetIO().WantTextInput)
 	{
-		float rw = (float)ImGui::GetWindowWidth();
-		float rh = (float)ImGui::GetWindowHeight();
-		ImGuizmo::SetOrthographic(false);
-		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, rw, rh);
+		if (Input::IsKeyPressed(KeyH2M::D1))
+			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
-		if (s_SelectedSubmesh) {
-			s_Transform_ImGuizmo = &s_SelectedSubmesh->Transform; // Connect to model transform
-		}
+		if (Input::IsKeyPressed(KeyH2M::D2))
+			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
 
-		// Snapping
-		bool snap = Input::IsKeyPressed(KeyH2M::LeftControl);
-		float snapValue = 1.0f; // Snap to 0.5m for translation/scale
-		// Snap to 45 degrees for rotation
-		if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE) {
-			snapValue = 45.0f;
-		}
+		if (Input::IsKeyPressed(KeyH2M::D3))
+			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
 
-		float snapValues[3] = { snapValue, snapValue, snapValue };
-
-		if (s_Transform_ImGuizmo != nullptr) // TODO: specify display criteria here
-		{
-			ImGuizmo::Manipulate(
-				glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
-				glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
-				(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-				ImGuizmo::WORLD,
-				glm::value_ptr(*s_Transform_ImGuizmo),
-				nullptr,
-				snap ? snapValues : nullptr);
-		}
+		if (Input::IsKeyPressed(KeyH2M::D4))
+			Scene::s_ImGuizmoType = -1;
 	}
-	// END ImGuizmo
+
+	// The gizmo moves the mesh selected in the Meshes panel (or picked with the mouse)
+	if (Scene::s_ImGuizmoType == -1 || s_SelectedMeshIndex < 0 || s_SelectedMeshIndex >= (int)s_LoadedMeshes.size() ||
+		s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
+	{
+		return;
+	}
+	LoadedMeshVulkan& entry = s_LoadedMeshes[s_SelectedMeshIndex];
+
+	ImGuizmo::SetOrthographic(false);
+	ImGuizmo::SetDrawlist();
+	// The scene image, not the whole window (which includes the tab bar)
+	ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
+
+	// Snapping with Ctrl: 1 unit for translation/scale, 45 degrees for rotation
+	bool snap = Input::IsKeyPressed(KeyH2M::LeftControl);
+	float snapValue = Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE ? 45.0f : 1.0f;
+	float snapValues[3] = { snapValue, snapValue, snapValue };
+
+	glm::mat4 transform = entry.GetTransform();
+	if (ImGuizmo::Manipulate(
+		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
+		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
+		(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+		ImGuizmo::WORLD,
+		glm::value_ptr(transform),
+		nullptr,
+		snap ? snapValues : nullptr))
+	{
+		// Back into the values shown (and editable) in the Meshes panel
+		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform), &entry.Translation.x, &entry.Rotation.x, &entry.Scale.x);
+	}
 }
 
 /**** BEGIN to be removed from VulkanRenderer ****/
