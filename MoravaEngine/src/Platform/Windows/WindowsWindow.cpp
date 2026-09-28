@@ -318,6 +318,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		}
 		break;
 	}
+	case WM_INPUT:
+	{
+		// Raw mouse motion (registered in InitDX11), used for camera rotation while the cursor is captured
+		RAWINPUT raw = {};
+		UINT size = sizeof(raw);
+		if (::GetRawInputData((HRAWINPUT)lparam, RID_INPUT, &raw, &size, sizeof(RAWINPUTHEADER)) != (UINT)-1 &&
+			raw.header.dwType == RIM_TYPEMOUSE && !(raw.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE))
+		{
+			DX11InputSystem::Get()->AddRawMouseDelta(raw.data.mouse.lLastX, raw.data.mouse.lLastY);
+		}
+		return ::DefWindowProc(hwnd, msg, wparam, lparam); // required for WM_INPUT cleanup
+	}
 	case WM_DESTROY:
 	{
 		// Event fired when the window is destroyed
@@ -384,6 +396,9 @@ void WindowsWindow::InitDX11(const WindowSpecification& windowSpecification)
 
 	ShowWindow(m_HWND, SW_SHOW);
 	UpdateWindow(m_HWND);
+
+	// Relative mouse motion for camera rotation (DX11CameraFP), see WM_INPUT in WndProc
+	DX11InputSystem::Get()->RegisterRawMouseInput(m_HWND);
 
 	m_IsRunning = true;
 }

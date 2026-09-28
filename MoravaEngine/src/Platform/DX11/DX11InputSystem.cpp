@@ -131,6 +131,21 @@ DX11InputSystem* DX11InputSystem::Get()
 	return &system;
 }
 
+void DX11InputSystem::RegisterRawMouseInput(HWND hwnd)
+{
+	// Generic desktop controls (0x01) / mouse (0x02): the window receives WM_INPUT with relative mouse motion
+	RAWINPUTDEVICE rawInputDevice = {};
+	rawInputDevice.usUsagePage = 0x01;
+	rawInputDevice.usUsage = 0x02;
+	rawInputDevice.dwFlags = 0;
+	rawInputDevice.hwndTarget = hwnd;
+
+	if (!::RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice)))
+	{
+		Log::GetLogger()->error("DX11InputSystem::RegisterRawMouseInput - RegisterRawInputDevices failed (error {0})", ::GetLastError());
+	}
+}
+
 void DX11InputSystem::ShowCursor(bool show)
 {
 	::ShowCursor(show);

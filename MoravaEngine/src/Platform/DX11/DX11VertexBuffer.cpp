@@ -34,12 +34,12 @@ DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t stride, uint32_t count)
 
 DX11VertexBuffer::DX11VertexBuffer(void* data, uint32_t size, H2M::VertexBufferUsageH2M usage)
 {
-	Log::GetLogger()->error("DX11VertexBuffer::DX11VertexBuffer not implemented yet!");
+	Log::GetLogger()->warn("DX11VertexBuffer::DX11VertexBuffer not implemented yet!");
 }
 
 DX11VertexBuffer::DX11VertexBuffer(uint32_t size, H2M::VertexBufferUsageH2M usage)
 {
-	Log::GetLogger()->error("DX11VertexBuffer::DX11VertexBuffer not implemented yet!");
+	Log::GetLogger()->warn("DX11VertexBuffer::DX11VertexBuffer not implemented yet!");
 }
 
 DX11VertexBuffer::~DX11VertexBuffer()

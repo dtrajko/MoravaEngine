@@ -49,13 +49,17 @@ private:
 	void UpdateProjection();
 	void UpdateView();
 
+	// Right mouse drag rotation: the cursor is hidden and locked in place, raw mouse motion turns the camera
+	void BeginRotation();
+	void EndRotation();
+
 private:
 	float m_MoveSpeed = 2.0f;
-	float m_TurnSpeed = 5.0f;
+	float m_MouseSensitivity = 0.15f; // degrees per raw mouse unit (independent of the frame rate)
 	float m_SpeedBoost = 4.0f;
 	bool m_SpeedBoostEnabled = false;
 	bool m_CameraRotationEnabled = false;
 
-	bool m_Enabled;
+	bool m_Enabled = true;
 
 };

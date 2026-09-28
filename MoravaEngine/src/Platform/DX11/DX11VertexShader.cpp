@@ -83,19 +83,6 @@ void DX11VertexShader::SetTextures(const std::vector<H2M::RefH2M<H2M::TextureH2M
 		throw std::runtime_error("DX11VertexShader::SetTextures - Invalid DeviceContext");
 	}
 
-	for (size_t i = 0; i < textureCount; ++i)
-	{
-		auto srv = list_res[i];
-
-		if (!srv)
-			continue;
-
-		ULONG refs = srv->AddRef();
-		srv->Release();
-
-		std::cout << "SRV[" << i << "] RefCount = " << refs << std::endl;
-	}
-
 	context->VSSetShaderResources(
 		0,
 		static_cast<UINT>(textureCount),
@@ -107,8 +94,6 @@ void DX11VertexShader::SetTextures(const std::vector<H2M::RefH2M<H2M::TextureH2M
 		auto sampler = list_sampler[i];
 
 		assert(sampler != nullptr);
-
-		std::cout << "Sampler[" << i << "] = " << sampler << std::endl;
 	}
 
 	context->VSSetSamplers(

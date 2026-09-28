@@ -5,7 +5,10 @@
 
 #include "Core/Application.h"
 #include "Core/Timer.h"
+#include "ImGui/ImGuiWrapper.h"
 #include "Platform/Windows/WindowsWindow.h"
+
+#include "imgui.h"
 
 
 DX11CameraFP::DX11CameraFP() : DX11CameraFP(glm::mat4(1.0f))
@@ -35,10 +38,62 @@ DX11CameraFP::~DX11CameraFP()
 
 void DX11CameraFP::OnUpdate(H2M::TimestepH2M ts)
 {
-	float width  = (float)Application::Get()->GetWindow()->GetWidth();
-	float height = (float)Application::Get()->GetWindow()->GetHeight();
+	// Always consume the raw motion, so movement made before a drag starts is not applied
+	glm::vec2 rawMouseDelta = DX11InputSystem::Get()->ConsumeRawMouseDelta();
+
+	if (m_CameraRotationEnabled)
+	{
+		// The button-up can be missed (e.g. the window lost focus during the drag): check the physical button
+		if (!(::GetAsyncKeyState(VK_RBUTTON) & 0x8000))
+		{
+			EndRotation();
+		}
+		else
+		{
+			// The view is lookAt(+m_Front) with a left-handed projection, so the visible direction is -m_Front:
+			// decreasing yaw turns right, decreasing pitch looks down
+			m_Yaw -= rawMouseDelta.x * m_MouseSensitivity;
+			m_Pitch -= rawMouseDelta.y * m_MouseSensitivity;
+		}
+	}
 
 	UpdateView();
+}
+
+void DX11CameraFP::BeginRotation()
+{
+	HWND hwnd = Application::Get()->GetWindow()->GetHWND();
+
+	// Lock the cursor where the drag started (it reappears there) and keep receiving mouse input outside the window
+	POINT cursorPos = {};
+	::GetCursorPos(&cursorPos);
+	RECT clipRect = { cursorPos.x, cursorPos.y, cursorPos.x + 1, cursorPos.y + 1 };
+	::ClipCursor(&clipRect);
+	::SetCapture(hwnd);
+	::ShowCursor(FALSE);
+
+	// ImGui still sees the (hidden) cursor: keep panels from reacting to it while rotating
+	if (ImGui::GetCurrentContext() != nullptr)
+	{
+		ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
+	}
+
+	DX11InputSystem::Get()->ConsumeRawMouseDelta();
+	m_CameraRotationEnabled = true;
+}
+
+void DX11CameraFP::EndRotation()
+{
+	m_CameraRotationEnabled = false;
+
+	::ClipCursor(nullptr);
+	::ReleaseCapture();
+	::ShowCursor(TRUE);
+
+	if (ImGui::GetCurrentContext() != nullptr)
+	{
+		ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+	}
 }
 
 //	DX11CameraFP* DX11CameraFP::Get()
@@ -144,36 +199,7 @@ void DX11CameraFP::OnKeyUp(int key)
 // DX11InputListener API
 void DX11CameraFP::OnMouseMove(const glm::vec2& mousePosDelta, const glm::vec2& mousePosAbs)
 {
-	if (!m_Enabled) return;
-
-	if (!m_CameraRotationEnabled) return;
-
-	WindowsWindow* windowsWindow = (WindowsWindow*)Application::Get()->GetWindow();
-	RECT windowRECT = windowsWindow->GetClientWindowRect();
-
-	// Log::GetLogger()->info("Window RECT: Left: {0}, Right: {1}, Top: {2}, Bottom: {3}", windowRECT.left, windowRECT.right, windowRECT.top, windowRECT.bottom);
-	// Log::GetLogger()->info("mousePosDelta: {0}x{1}, mousePosAbs: [{2}x{3}])", mousePosDelta.x, mousePosDelta.y, mousePosAbs.x, mousePosAbs.y);
-
-	// A dirty hack to prevent sudden jumps in delta mouse position
-	// if (abs(mousePosDelta.x) < 4.0f && abs(mousePosDelta.y) < 4.0f) {}
-
-	float turnVelocity = m_TurnSpeed * Timer::Get()->GetDeltaTime();
-
-	// absolute mouse position (new)
-	glm::vec2 centralMousePos = glm::vec2(
-		windowRECT.left + ((windowRECT.right - windowRECT.left) / 2.0f),
-		windowRECT.top + ((windowRECT.bottom - windowRECT.top) / 2.0f));
-
-	// delta mouse position (old)
-	// m_Yaw -= mousePosDelta.x * turnVelocity;
-	// m_Pitch -= mousePosDelta.y * turnVelocity;
-
-	m_Yaw -= (mousePosAbs.x - centralMousePos.x) * turnVelocity;
-	m_Pitch -= (mousePosAbs.y - centralMousePos.y) * turnVelocity;
-
-	// if (windowsWindow->IsInFocus() && DX11InputSystem::Get()->IsMouseCursorAboveViewport()) {}
-
-	DX11InputSystem::Get()->SetCursorPosition(centralMousePos);
+	// Rotation uses raw mouse motion (see OnUpdate): the cursor position is locked while rotating
 }
 
 // DX11InputListener API
@@ -184,7 +210,12 @@ void DX11CameraFP::OnLeftMouseDown(const glm::vec2& mousePos)
 // DX11InputListener API
 void DX11CameraFP::OnRightMouseDown(const glm::vec2& mousePos)
 {
-	m_CameraRotationEnabled = true;
+	if (!m_Enabled || m_CameraRotationEnabled) return;
+
+	// Only start rotating over the scene (DX11Renderer's "Viewport" window), not over other ImGui panels
+	if (!ImGuiWrapper::CanViewportReceiveEvents()) return;
+
+	BeginRotation();
 }
 
 // DX11InputListener API
@@ -195,5 +226,8 @@ void DX11CameraFP::OnLeftMouseUp(const glm::vec2& mousePos)
 // DX11InputListener API
 void DX11CameraFP::OnRightMouseUp(const glm::vec2& mousePos)
 {
-	m_CameraRotationEnabled = false;
+	if (m_CameraRotationEnabled)
+	{
+		EndRotation();
+	}
 }
