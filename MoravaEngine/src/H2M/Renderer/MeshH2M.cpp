@@ -140,7 +140,9 @@ namespace H2M
 
 		m_Scene = scene;
 
-		m_IsAnimated = scene->mAnimations != nullptr;
+		// The Vulkan PBR pipeline only has the static vertex layout (no skinning yet): animated models are loaded
+		// with static vertices there and shown in their bind pose (HasAnimations() still reports the animations)
+		m_IsAnimated = scene->mAnimations != nullptr && RendererAPI_H2M::Current() != RendererAPITypeH2M::Vulkan;
 		// m_MaterialInstance = std::make_shared<MaterialInstance>(m_BaseMaterial);
 
 		if (!m_MeshShader)
@@ -168,7 +170,7 @@ namespace H2M
 				MoravaShaderSpecification moravaShaderSpecificationHazelVulkan;
 				moravaShaderSpecificationHazelVulkan.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
 				moravaShaderSpecificationHazelVulkan.HazelShaderPath = "Resources/Shaders/HazelPBR_Static.glsl";
-				moravaShaderSpecificationHazelVulkan.ForceCompile = true;
+				moravaShaderSpecificationHazelVulkan.ForceCompile = false; // the shader cache is recompiled when the source is newer
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
 			}
@@ -490,6 +492,11 @@ namespace H2M
 				HZ_MESH_LOG("    ROUGHNESS = {0}", roughness);
 				HZ_MESH_LOG("    METALNESS = {0}", metalness);
 
+				// Material values used when there is no roughness/metalness map (Vulkan reads them from the material;
+				// the m_MeshShader->SetFloat calls below only apply to OpenGL)
+				mi->Set("u_MaterialUniforms.Roughness", roughness);
+				mi->Set("u_MaterialUniforms.Metalness", metalness);
+
 				// BEGIN the material data section
 				RefH2M<SubmeshH2M> submeshPtr = RefH2M<SubmeshH2M>();
 				if (i < m_Submeshes.size()) {
@@ -706,6 +713,13 @@ namespace H2M
 					Log::GetLogger()->info("    No roughness map");
 
 					m_MeshShader->SetFloat("u_MaterialUniforms.Roughness", roughness);
+
+					// The shader samples u_RoughnessTexture: bind a placeholder like for the other maps
+					// (an unwritten descriptor is invalid in Vulkan)
+					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
+					{
+						AddMaterialTextureWriteDescriptor(i, "u_RoughnessTexture", whiteTexture);
+					}
 				}
 
 #if 0
@@ -838,7 +852,7 @@ namespace H2M
 
 								if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 								{
-									AddMaterialTextureWriteDescriptor(0, "u_MetalnessTexture", texture); // TODO: to be removed from MeshH2M
+									AddMaterialTextureWriteDescriptor(i, "u_MetalnessTexture", texture); // TODO: to be removed from MeshH2M
 								}
 								else
 								{

@@ -294,7 +294,7 @@ vec3 LightingTemp(vec3 F0)
 	for(int i = 0; i < LightCount; i++)
 	{
 		vec3 Li = lights.Direction; // vec3(-0.5, 0.5, 0.5); // 
-		vec3 Lradiance = vec3(1.0, 1.0, 1.0) * 2.0; //  lights.Radiance * lights.Multiplier;
+		vec3 Lradiance = lights.Radiance * lights.Multiplier; // Light Radiance / Light Multiplier in the Environment panel
 		vec3 Lh = normalize(Li + m_Params.View);
 
 		// Calculate angles between surface normal and various light vectors.
@@ -339,20 +339,15 @@ void main()
 {
 	//	Standard PBR inputs
 
-	// Temporary (values are not updated through the uniform buffer)
-	float u_MaterialUniforms_AlbedoTexToggle = 1.0;
-	float u_MaterialUniforms_NormalTexToggle = 1.0;
-	float u_MaterialUniforms_MetalnessTexToggle = 1.0;
-	float u_MaterialUniforms_RoughnessTexToggle = 1.0;
-
-	m_Params.Albedo = u_MaterialUniforms_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, Input.TexCoord).rgb : u_MaterialUniforms.AlbedoColor;
-	m_Params.Metalness = u_MaterialUniforms_MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, Input.TexCoord).r : u_MaterialUniforms.Metalness;
-	m_Params.Roughness = u_MaterialUniforms_RoughnessTexToggle > 0.5 ?  texture(u_RoughnessTexture, Input.TexCoord).r : u_MaterialUniforms.Roughness;
+	// Texture toggles and values come from the material (push constants, editable in the Material Editor)
+	m_Params.Albedo = u_MaterialUniforms.AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, Input.TexCoord).rgb : u_MaterialUniforms.AlbedoColor;
+	m_Params.Metalness = u_MaterialUniforms.MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, Input.TexCoord).r : u_MaterialUniforms.Metalness;
+	m_Params.Roughness = u_MaterialUniforms.RoughnessTexToggle > 0.5 ?  texture(u_RoughnessTexture, Input.TexCoord).r : u_MaterialUniforms.Roughness;
 	m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
 
 	// Normals (either from vertex or map)
 	m_Params.Normal = normalize(Input.Normal);
-	if (u_MaterialUniforms_NormalTexToggle > 0.5)
+	if (u_MaterialUniforms.NormalTexToggle > 0.5)
 	{
 		m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, Input.TexCoord).rgb - 1.0);
 		m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);

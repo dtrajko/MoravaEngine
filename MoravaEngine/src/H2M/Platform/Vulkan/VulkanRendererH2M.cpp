@@ -1102,10 +1102,14 @@ namespace H2M
 				}
 				ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
 
-				if (s_ViewportWidth != viewportSize.x || s_ViewportHeight != viewportSize.y)
+				// Compare whole pixels: the panel size can be fractional (DPI scaling, docking), and comparing the float size with
+				// the stored integer size requested a framebuffer resize every frame. A collapsed/hidden panel has no area: keep the size.
+				uint32_t viewportWidth = (uint32_t)glm::max(viewportSize.x, 0.0f);
+				uint32_t viewportHeight = (uint32_t)glm::max(viewportSize.y, 0.0f);
+				if (viewportWidth > 0 && viewportHeight > 0 && (s_ViewportWidth != viewportWidth || s_ViewportHeight != viewportHeight))
 				{
-					s_ViewportWidth = (uint32_t)viewportSize.x;
-					s_ViewportHeight = (uint32_t)viewportSize.y;
+					s_ViewportWidth = viewportWidth;
+					s_ViewportHeight = viewportHeight;
 					s_ViewportFBNeedsResize = true;
 				}
 

@@ -17,6 +17,7 @@
 #include "H2M/Platform/Vulkan/VulkanTestLayer.h"
 #include "H2M/Platform/Vulkan/VulkanTextureH2M.h"
 #include "H2M/Platform/Vulkan/VulkanVertexBufferH2M.h"
+#include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
@@ -35,6 +36,10 @@
 
 #include "stb_image.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+
+#include <algorithm>
 #include <filesystem>
 #include <set>
 
@@ -89,7 +94,7 @@ static void RegisterViewportTextureWithImGui()
 }
 static uint32_t s_ViewportWidth = 1280;              // to be removed from VulkanRenderer
 static uint32_t s_ViewportHeight = 720;              // to be removed from VulkanRenderer
-static std::vector<H2M::RefH2M<H2M::MeshH2M>> s_Meshes;         // to be removed from VulkanRenderer
+static std::vector<std::pair<H2M::RefH2M<H2M::MeshH2M>, glm::mat4>> s_Meshes; // meshes submitted for this frame, with their transforms
 
 static H2M::RefH2M<H2M::SubmeshH2M> s_SelectedSubmesh;
 static glm::mat4* s_Transform_ImGuizmo = nullptr;
@@ -249,6 +254,409 @@ static void LoadEnvironmentMap(const std::string& filepath)
 	s_EnvMapFilename = filepath;
 }
 
+// Light (Environment panel) and environment map rotation, used by the PBR shader
+static glm::vec3 s_LightRadiance = glm::vec3(1.0f);
+static float s_LightMultiplier = 1.0f;
+static float s_EnvMapRotation = 0.0f; // degrees, applied to the PBR environment lookups (as in SceneHazelEnvMap)
+
+// Meshes loaded from the Meshes panel: the Vulkan counterpart of the mesh entities in SceneHazelEnvMap
+struct LoadedMeshVulkan
+{
+	H2M::RefH2M<H2M::MeshH2M> Mesh;
+	std::string FilePath;
+	glm::vec3 Translation = glm::vec3(0.0f);
+	glm::vec3 Rotation = glm::vec3(0.0f); // degrees
+	glm::vec3 Scale = glm::vec3(1.0f);
+	std::vector<std::array<bool, 4>> MaterialHasMap; // per material: albedo, normal, metalness, roughness map available (from the model or assigned)
+	std::vector<std::array<H2M::RefH2M<H2M::Texture2D_H2M>, 4>> MaterialTextures; // maps assigned in the Material Editor (kept alive here)
+
+	glm::mat4 GetTransform() const
+	{
+		return glm::translate(glm::mat4(1.0f), Translation) *
+			glm::toMat4(glm::quat(glm::radians(Rotation))) *
+			glm::scale(glm::mat4(1.0f), Scale);
+	}
+};
+static std::vector<LoadedMeshVulkan> s_LoadedMeshes;
+static int s_SelectedMeshIndex = -1;
+static std::string s_PendingMeshFilename;  // requested from the UI, loaded at the start of the next Draw
+static int s_PendingRemoveMeshIndex = -1;  // requested from the UI, removed at the start of the next Draw
+
+static const char* s_MaterialMapToggles[4] = {
+	"u_MaterialUniforms.AlbedoTexToggle",
+	"u_MaterialUniforms.NormalTexToggle",
+	"u_MaterialUniforms.MetalnessTexToggle",
+	"u_MaterialUniforms.RoughnessTexToggle",
+};
+
+// Material texture bindings in HazelPBR_Static.glsl (set 0), in the same order as s_MaterialMapToggles
+static const char* s_MaterialTextureNames[4] = { "u_AlbedoTexture", "u_NormalTexture", "u_MetalnessTexture", "u_RoughnessTexture" };
+
+// A map assigned in the Material Editor (button or drag & drop), applied at the start of the next Draw
+struct PendingMaterialTexture
+{
+	int MeshIndex;
+	uint32_t MaterialIndex;
+	uint32_t Slot; // 0 albedo, 1 normal, 2 metalness, 3 roughness
+	std::string FilePath;
+};
+static std::vector<PendingMaterialTexture> s_PendingMaterialTextures;
+
+static bool IsImageFile(const std::string& filepath)
+{
+	static const std::set<std::string> s_Extensions = { ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".psd", ".gif" };
+	std::string extension = std::filesystem::path(filepath).extension().string();
+	std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+	return s_Extensions.find(extension) != s_Extensions.end();
+}
+
+static bool IsModelFile(const std::string& filepath)
+{
+	static const std::set<std::string> s_Extensions = { ".fbx", ".obj", ".gltf", ".glb", ".dae", ".3ds", ".blend", ".ply", ".stl", ".x", ".md5mesh" };
+	std::string extension = std::filesystem::path(filepath).extension().string();
+	std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+	return s_Extensions.find(extension) != s_Extensions.end();
+}
+
+// Loads a model file and adds it to the scene (called at the start of a frame, see Draw)
+static void LoadMesh(const std::string& filepath)
+{
+	if (!std::filesystem::exists(filepath) || !IsModelFile(filepath))
+	{
+		Log::GetLogger()->error("Mesh '{0}' was not loaded: the file does not exist or is not a supported model file.", filepath);
+		return;
+	}
+
+	H2M::RefH2M<H2M::MeshH2M> mesh = H2M::RefH2M<H2M::MeshH2M>::Create(filepath);
+	if (!mesh || mesh->GetSubmeshes().empty())
+	{
+		Log::GetLogger()->error("Mesh '{0}' was not loaded: no geometry found.", filepath);
+		return;
+	}
+
+	// On Vulkan, MeshH2M loads animated models with the static vertex layout (see MeshH2M::Create)
+	if (mesh->HasAnimations())
+	{
+		Log::GetLogger()->warn("Mesh '{0}' has animations: shown in its bind pose (skinning is not supported by the Vulkan PBR pipeline yet).", filepath);
+	}
+
+	LoadedMeshVulkan entry;
+	entry.Mesh = mesh;
+	entry.FilePath = filepath;
+
+	// Which texture maps the model provided (the loader turns the toggle on for each map it found)
+	for (auto& material : mesh->GetMaterials())
+	{
+		H2M::RefH2M<H2M::VulkanMaterialH2M> vulkanMaterial = material.As<H2M::VulkanMaterialH2M>();
+		std::array<bool, 4> hasMap = {};
+		for (uint32_t i = 0; i < 4; i++)
+		{
+			hasMap[i] = vulkanMaterial->Get<float>(s_MaterialMapToggles[i]) > 0.5f;
+		}
+		entry.MaterialHasMap.push_back(hasMap);
+	}
+	entry.MaterialTextures.resize(entry.MaterialHasMap.size());
+
+	s_LoadedMeshes.push_back(entry);
+	s_SelectedMeshIndex = (int)s_LoadedMeshes.size() - 1;
+	Log::GetLogger()->info("Mesh '{0}' loaded: {1} submeshes, {2} materials", filepath, mesh->GetSubmeshes().size(), mesh->GetMaterials().size());
+}
+
+// Loads an image and binds it as a material's albedo/normal/metalness/roughness map (called at the start of a frame, see Draw)
+static void ApplyMaterialTexture(const PendingMaterialTexture& request)
+{
+	if (request.MeshIndex < 0 || request.MeshIndex >= (int)s_LoadedMeshes.size() || request.Slot >= 4)
+	{
+		return;
+	}
+	LoadedMeshVulkan& entry = s_LoadedMeshes[request.MeshIndex];
+	auto& materials = entry.Mesh->GetMaterials();
+	if (request.MaterialIndex >= materials.size())
+	{
+		return;
+	}
+
+	if (!std::filesystem::exists(request.FilePath) || !IsImageFile(request.FilePath))
+	{
+		Log::GetLogger()->error("Map '{0}' was not loaded: the file does not exist or is not a supported image.", request.FilePath);
+		return;
+	}
+
+	const H2M::MeshH2M::MaterialDescriptor* materialDescriptor = entry.Mesh->FindDescriptorSet(request.MaterialIndex);
+	if (!materialDescriptor)
+	{
+		Log::GetLogger()->error("Map '{0}' was not loaded: material {1} has no descriptor set.", request.FilePath, request.MaterialIndex);
+		return;
+	}
+
+	// Albedo is color data (sRGB); normal, metalness and roughness maps are linear data
+	H2M::RefH2M<H2M::Texture2D_H2M> texture;
+	try
+	{
+		texture = H2M::Texture2D_H2M::Create(request.FilePath, request.Slot == 0);
+	}
+	catch (...)
+	{
+		Log::GetLogger()->error("Map '{0}' could not be loaded.", request.FilePath);
+		return;
+	}
+
+	H2M::RefH2M<H2M::VulkanShaderH2M> shader = entry.Mesh->GetMeshShader().As<H2M::VulkanShaderH2M>();
+	const VkWriteDescriptorSet* binding = shader->GetDescriptorSet(s_MaterialTextureNames[request.Slot]);
+	if (!binding)
+	{
+		Log::GetLogger()->error("Map '{0}' was not loaded: '{1}' not found in the shader.", request.FilePath, s_MaterialTextureNames[request.Slot]);
+		return;
+	}
+
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+
+	// The descriptor set may be used by frames in flight: updating it is only allowed when the GPU no longer uses it
+	vkDeviceWaitIdle(device);
+
+	VkWriteDescriptorSet write = *binding;
+	write.dstSet = materialDescriptor->DescriptorSet.DescriptorSets[0];
+	write.descriptorCount = 1;
+	write.pImageInfo = &texture.As<H2M::VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
+	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+
+	entry.MaterialTextures[request.MaterialIndex][request.Slot] = texture; // keeps the image alive while the set uses it
+	entry.MaterialHasMap[request.MaterialIndex][request.Slot] = true;
+	materials[request.MaterialIndex].As<H2M::VulkanMaterialH2M>()->Get<float>(s_MaterialMapToggles[request.Slot]) = 1.0f;
+
+	Log::GetLogger()->info("Map '{0}' assigned to {1} of material '{2}'", request.FilePath, s_MaterialTextureNames[request.Slot], materials[request.MaterialIndex]->GetName());
+}
+
+// Every mesh has its own shader instance (see MeshH2M::Create), so the camera and light uniform buffers
+// referenced by its material descriptor sets are updated per mesh
+static void UpdateMeshUniforms(const H2M::RefH2M<H2M::MeshH2M>& mesh)
+{
+	H2M::RefH2M<H2M::VulkanShaderH2M> shader = const_cast<H2M::RefH2M<H2M::MeshH2M>&>(mesh)->GetMeshShader().As<H2M::VulkanShaderH2M>();
+	H2M::CameraH2M& camera = s_Data.SceneData.SceneCamera.Camera;
+
+	// set 0, binding 0: Camera
+	glm::mat4 viewProjection = camera.GetViewProjection();
+	void* ubPtr = shader->MapUniformBuffer(0, 0);
+	memcpy(ubPtr, &viewProjection, sizeof(glm::mat4));
+	shader->UnmapUniformBuffer(0, 0);
+
+	// set 0, binding 1: Environment (std140: Light { vec3 Direction; vec3 Radiance; float Multiplier; }, vec3 u_CameraPosition)
+	struct Light
+	{
+		glm::vec3 Direction;
+		float Padding = 0.0f;
+		glm::vec3 Radiance;
+		float Multiplier;
+	};
+	struct EnvironmentUB
+	{
+		Light Lights;
+		glm::vec3 CameraPosition;
+	};
+	EnvironmentUB ub;
+	ub.Lights.Direction = s_Data.SceneData.LightDirectionTemp;
+	ub.Lights.Radiance = s_LightRadiance;
+	ub.Lights.Multiplier = s_LightMultiplier;
+	ub.CameraPosition = camera.GetPosition();
+
+	ubPtr = shader->MapUniformBuffer(1, 0);
+	memcpy(ubPtr, &ub, sizeof(EnvironmentUB));
+	shader->UnmapUniformBuffer(1, 0);
+}
+
+static void OnImGuiRenderMeshes()
+{
+	ImGui::SetNextWindowSize(ImVec2(420.0f, 320.0f), ImGuiCond_FirstUseEver);
+	ImGui::Begin("Meshes");
+
+	if (ImGui::Button("Load Mesh"))
+	{
+		std::string filepath = Util::ToUtf8(Application::Get()->OpenFile());
+		if (!filepath.empty())
+		{
+			s_PendingMeshFilename = filepath; // loaded at the start of the next frame (see Draw)
+		}
+	}
+	// A model file dropped from the Content Browser onto the button is loaded too
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		{
+			std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
+			if (IsModelFile(itemPath))
+			{
+				s_PendingMeshFilename = itemPath;
+			}
+			else
+			{
+				Log::GetLogger()->warn("'{0}' is not a supported model file", itemPath);
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+	ImGui::SameLine();
+	ImGui::TextDisabled("(or drop a model here from the Content Browser)");
+
+	ImGui::Separator();
+
+	if (s_LoadedMeshes.empty())
+	{
+		ImGui::TextDisabled("No meshes loaded");
+	}
+
+	for (int i = 0; i < (int)s_LoadedMeshes.size(); i++)
+	{
+		ImGui::PushID(i);
+		std::string name = std::filesystem::path(s_LoadedMeshes[i].FilePath).filename().string();
+		if (ImGui::Selectable(name.c_str(), s_SelectedMeshIndex == i))
+		{
+			s_SelectedMeshIndex = i;
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("%s", s_LoadedMeshes[i].FilePath.c_str());
+		}
+		ImGui::PopID();
+	}
+
+	if (s_SelectedMeshIndex >= 0 && s_SelectedMeshIndex < (int)s_LoadedMeshes.size())
+	{
+		LoadedMeshVulkan& entry = s_LoadedMeshes[s_SelectedMeshIndex];
+
+		ImGui::Separator();
+		ImGui::Text("Transform");
+		ImGui::DragFloat3("Translation", &entry.Translation.x, 0.1f);
+		ImGui::DragFloat3("Rotation", &entry.Rotation.x, 1.0f);
+		ImGui::DragFloat3("Scale", &entry.Scale.x, 0.01f, 0.001f, 1000.0f);
+
+		if (ImGui::Button("Remove Mesh"))
+		{
+			s_PendingRemoveMeshIndex = s_SelectedMeshIndex; // removed at the start of the next frame (see Draw)
+		}
+	}
+
+	ImGui::End();
+}
+
+// Edits the selected mesh's material values in place (they are pushed as push constants for every draw)
+static void OnImGuiRenderMaterialEditor()
+{
+	ImGui::Begin("Material Editor");
+
+	if (s_SelectedMeshIndex < 0 || s_SelectedMeshIndex >= (int)s_LoadedMeshes.size())
+	{
+		ImGui::TextDisabled("Select a mesh in the Meshes panel");
+		ImGui::End();
+		return;
+	}
+
+	LoadedMeshVulkan& entry = s_LoadedMeshes[s_SelectedMeshIndex];
+	auto& materials = entry.Mesh->GetMaterials();
+
+	static const char* s_MapLabels[4] = { "Use Albedo Map", "Use Normal Map", "Use Metalness Map", "Use Roughness Map" };
+
+	for (uint32_t m = 0; m < (uint32_t)materials.size(); m++)
+	{
+		ImGui::PushID((int)m);
+
+		H2M::RefH2M<H2M::VulkanMaterialH2M> material = materials[m].As<H2M::VulkanMaterialH2M>();
+		std::string name = material->GetName().empty() ? "(unnamed)" : material->GetName();
+
+		if (ImGui::CollapsingHeader(name.c_str(), m == 0 ? ImGuiTreeNodeFlags_DefaultOpen : 0))
+		{
+			glm::vec3& albedoColor = material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
+			float& metalness = material->Get<float>("u_MaterialUniforms.Metalness");
+			float& roughness = material->Get<float>("u_MaterialUniforms.Roughness");
+
+			ImGui::ColorEdit3("Albedo Color", &albedoColor.x);
+			ImGui::SliderFloat("Metalness", &metalness, 0.0f, 1.0f);
+			ImGui::SliderFloat("Roughness", &roughness, 0.0f, 1.0f);
+
+			for (uint32_t i = 0; i < 4; i++)
+			{
+				ImGui::PushID((int)i);
+				ImGui::Separator();
+
+				bool hasMap = m < entry.MaterialHasMap.size() && entry.MaterialHasMap[m][i];
+				H2M::RefH2M<H2M::Texture2D_H2M> assignedMap = m < entry.MaterialTextures.size() ? entry.MaterialTextures[m][i] : H2M::RefH2M<H2M::Texture2D_H2M>();
+
+				// Thumbnail of a map assigned here (maps that came with the model have no texture object in this list);
+				// also a drop target for images from the Content Browser
+				const ImVec2 thumbnailSize(64.0f, 64.0f);
+				ImTextureID thumbnail = assignedMap ? assignedMap->GetImTextureID() : ImTextureID{};
+				if (thumbnail)
+				{
+					ImGui::Image(thumbnail, thumbnailSize, ImVec2(0, 1), ImVec2(1, 0)); // the Vulkan loader flips LDR images
+				}
+				else
+				{
+					ImGui::Button(hasMap ? "model\nmap" : "no map", thumbnailSize);
+				}
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+					{
+						std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
+						if (IsImageFile(itemPath))
+						{
+							s_PendingMaterialTextures.push_back({ s_SelectedMeshIndex, m, i, itemPath });
+						}
+						else
+						{
+							Log::GetLogger()->warn("'{0}' is not a supported image file", itemPath);
+						}
+					}
+					ImGui::EndDragDropTarget();
+				}
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("%s", assignedMap ? assignedMap->GetPath().c_str() : "Drop an image from the Content Browser here");
+				}
+
+				ImGui::SameLine();
+				ImGui::BeginGroup();
+				{
+					float& toggle = material->Get<float>(s_MaterialMapToggles[i]);
+					bool enabled = toggle > 0.5f;
+
+					ImGui::BeginDisabled(!hasMap);
+					if (ImGui::Checkbox(s_MapLabels[i], &enabled))
+					{
+						toggle = enabled ? 1.0f : 0.0f;
+					}
+					ImGui::EndDisabled();
+
+					if (ImGui::Button("Load..."))
+					{
+						std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"Images\0*.png;*.jpg;*.jpeg;*.tga;*.bmp\0All\0*.*\0"));
+						if (!filepath.empty())
+						{
+							s_PendingMaterialTextures.push_back({ s_SelectedMeshIndex, m, i, filepath }); // applied at the start of the next frame
+						}
+					}
+					if (assignedMap)
+					{
+						ImGui::SameLine();
+						ImGui::TextDisabled("%s", std::filesystem::path(assignedMap->GetPath()).filename().string().c_str());
+					}
+					else if (!hasMap)
+					{
+						ImGui::SameLine();
+						ImGui::TextDisabled("(no map in the model)");
+					}
+				}
+				ImGui::EndGroup();
+
+				ImGui::PopID();
+			}
+		}
+
+		ImGui::PopID();
+	}
+
+	ImGui::End();
+}
+
 /**** BEGIN to be removed from VulkanRenderer ****/
 void EnvMapVulkanRenderer::SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform)
 {
@@ -256,7 +664,7 @@ void EnvMapVulkanRenderer::SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh,
 	// std::vector<Submesh> submeshes = mesh->GetSubmeshes();
 	// s_SelectedSubmesh = &submeshes.at(0);
 
-	s_Meshes.push_back(mesh);
+	s_Meshes.push_back({ mesh, transform });
 
 	// VulkanRendererData::DrawCommand drawCommand = {};
 	// drawCommand.Mesh = mesh;
@@ -574,7 +982,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	// delete s_Data;
 }
 
-void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, VkCommandBuffer commandBuffer)
+void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform, VkCommandBuffer commandBuffer)
 {
 	/**** BEGIN keep smart references alive ****/
 	H2M::RefH2M<H2M::TextureCubeH2M> envUnfiltered = s_Data.envUnfiltered;
@@ -620,6 +1028,7 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, VkCo
 	for (H2M::RefH2M<H2M::SubmeshH2M> submesh : submeshes)
 	{
 		auto& material = mesh->GetMaterials()[submesh->MaterialIndex];
+		material->Set("u_MaterialUniforms.EnvMapRotation", s_EnvMapRotation); // global setting (Environment panel)
 		H2M::BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
 
 		// The PBR pipeline needs the submesh's material descriptor set (set 0). Skip submeshes without one
@@ -655,8 +1064,7 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, VkCo
 		// Push Constants
 		// glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
-		glm::mat4 submeshTransform = submesh->Transform;
-		submeshTransform = glm::scale(submeshTransform, glm::vec3(0.2f));
+		glm::mat4 submeshTransform = transform * submesh->Transform; // mesh transform (Meshes panel) * node transform from the model
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submeshTransform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 		vkCmdDrawIndexed(commandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
@@ -923,9 +1331,9 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		EnvMapVulkanRenderer::RenderSkybox(drawCommandBuffer); // in progress
 
-		for (auto& mesh : s_Meshes)
+		for (auto& [mesh, transform] : s_Meshes)
 		{
-			RenderMeshVulkan(mesh, drawCommandBuffer);
+			RenderMeshVulkan(mesh, transform, drawCommandBuffer);
 		}
 
 		s_Meshes.clear();
@@ -1211,10 +1619,14 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			}
 			ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
 
-			if (s_ViewportWidth != viewportSize.x || s_ViewportHeight != viewportSize.y)
+			// Compare whole pixels: the panel size can be fractional (DPI scaling, docking), and comparing the float size with
+			// the stored integer size requested a framebuffer resize every frame. A collapsed/hidden panel has no area: keep the size.
+			uint32_t viewportWidth = (uint32_t)glm::max(viewportSize.x, 0.0f);
+			uint32_t viewportHeight = (uint32_t)glm::max(viewportSize.y, 0.0f);
+			if (viewportWidth > 0 && viewportHeight > 0 && (s_ViewportWidth != viewportWidth || s_ViewportHeight != viewportHeight))
 			{
-				s_ViewportWidth = (uint32_t)viewportSize.x;
-				s_ViewportHeight = (uint32_t)viewportSize.y;
+				s_ViewportWidth = viewportWidth;
+				s_ViewportHeight = viewportHeight;
 				s_ViewportFBNeedsResize = true;
 			}
 
@@ -1234,8 +1646,15 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			bool showSceneHierarchyPanel = true;
 			// H2M::VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
 
-			bool showContentBrowserPanel = true;
-			// VulkanTestLayer::s_ContentBrowserPanel->OnImGuiRender(&showContentBrowserPanel);
+			// Content Browser (shared with SceneHazelEnvMap): drag .hdr files onto the Environment panel and
+			// model files onto the Meshes panel's "Load Mesh" button
+			static H2M::ContentBrowserPanelH2M* s_ContentBrowserPanel = nullptr;
+			static bool s_ShowContentBrowserPanel = true;
+			if (!s_ContentBrowserPanel)
+			{
+				s_ContentBrowserPanel = new H2M::ContentBrowserPanelH2M();
+			}
+			s_ContentBrowserPanel->OnImGuiRender(&s_ShowContentBrowserPanel);
 
 			bool showMaterialEditorPanel = true;
 			// H2M::VulkanTestLayer::s_MaterialEditorPanel->OnImGuiRender(&showMaterialEditorPanel);
@@ -1305,58 +1724,22 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							// SetSkyboxLOD(skyboxLOD);
 						}
 
-						H2M::LightH2M light; // = EnvMapSceneRenderer::GetActiveLight();
-						H2M::LightH2M lightPrev = light;
-
 						ImGuiWrapper::Property("Light Direction", s_Data.SceneData.LightDirectionTemp, 0.01f, -1.0f, 1.0f, PropertyFlag::DragProperty);
-						ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
-						ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
+						ImGuiWrapper::Property("Light Radiance", s_LightRadiance, PropertyFlag::ColorProperty);
+						ImGuiWrapper::Property("Light Multiplier", s_LightMultiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Auto Exposure", s_AutoExposureEnabled);
-
-						float radiancePrefilter = 1.0f; // EnvMapSharedData::s_RadiancePrefilter
-						ImGuiWrapper::Property("Radiance Prefiltering", radiancePrefilter);
-						float envMapRotation = 0.0f; // EnvMapSharedData::s_EnvMapRotation;
-						ImGuiWrapper::Property("Env Map Rotation", envMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
+						ImGuiWrapper::Property("Env Map Rotation", s_EnvMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
 
 						ImGui::Columns(1);
-					}
-
-					ImGui::Separator();
-
-					{
-						ImGui::Text("Mesh");
-
-						// H2M::RefH2M<Hazel::Entity> meshEntity;
-						std::string meshFullPath = "None";
-
-						std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
-						ImGui::Text(fileName.c_str()); ImGui::SameLine();
-						if (ImGui::Button("...##Mesh"))
-						{
-							std::wstring fullPathW = Application::Get()->OpenFile();
-							std::string fullPath = Util::ToUtf8(fullPathW);
-							if (fullPath != "")
-							{
-								// Hazel::Entity entity = LoadEntity(fullPath);
-							}
-						}
-
-						//	auto meshEntities = m_EditorScene->GetAllEntitiesWith<Hazel::MeshComponent>();
-						//	if (meshEntities.size())
-						//	{
-						//		meshEntity = GetMeshEntity();
-						//		auto& meshComponent = meshEntity->GetComponent<Hazel::MeshComponent>();
-						//		if (meshComponent.Mesh) {
-						//			ImGui::SameLine();
-						//			ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
-						//		}
-						//	}
 					}
 				}
 			}
 			ImGui::End();
 			/**** END Environment ****/
+
+			OnImGuiRenderMeshes();
+			OnImGuiRenderMaterialEditor();
 
 			/**** BEGIN DockSpace menu bar ****/
 
@@ -1411,7 +1794,39 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		LoadEnvironmentMap(filepath);
 	}
 
+	// Mesh removal / loading requested from the Meshes panel
+	if (s_PendingRemoveMeshIndex >= 0)
+	{
+		if (s_PendingRemoveMeshIndex < (int)s_LoadedMeshes.size())
+		{
+			// The mesh's buffers and descriptor sets may still be used by frames in flight
+			vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+			s_LoadedMeshes.erase(s_LoadedMeshes.begin() + s_PendingRemoveMeshIndex);
+			s_PendingMaterialTextures.clear(); // their mesh indices refer to the list before the removal
+			s_SelectedMeshIndex = glm::min(s_SelectedMeshIndex, (int)s_LoadedMeshes.size() - 1);
+		}
+		s_PendingRemoveMeshIndex = -1;
+	}
+	if (!s_PendingMeshFilename.empty())
+	{
+		std::string filepath = s_PendingMeshFilename;
+		s_PendingMeshFilename.clear();
+		LoadMesh(filepath);
+	}
+	// Maps assigned in the Material Editor
+	for (const PendingMaterialTexture& request : s_PendingMaterialTextures)
+	{
+		ApplyMaterialTexture(request);
+	}
+	s_PendingMaterialTextures.clear();
+
 	s_Data.SceneData.SceneCamera.Camera = *camera;
+
+	for (LoadedMeshVulkan& entry : s_LoadedMeshes)
+	{
+		UpdateMeshUniforms(entry.Mesh);
+		SubmitMeshTemp(entry.Mesh, entry.GetTransform());
+	}
 
 	if (s_ViewportFBNeedsResize)
 	{

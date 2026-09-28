@@ -60,6 +60,8 @@ namespace H2M
 		}
 
 		virtual uint32_t GetID() const override { return uint32_t(0); /* Not implemented */ }
+		// For ImGui::Image/ImageButton: the texture registered with the ImGui Vulkan backend (a descriptor set), created on first use
+		virtual ImTextureID GetImTextureID() override;
 
 		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const override;
 
@@ -84,6 +86,7 @@ namespace H2M
 		ImageFormatH2M m_Format = ImageFormatH2M::None;
 
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
+		VkDescriptorSet m_ImGuiDescriptorSet = VK_NULL_HANDLE; // see GetImTextureID
 
 		bool m_MipsGenerated = false;
 	};

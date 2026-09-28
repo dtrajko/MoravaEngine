@@ -67,6 +67,16 @@ namespace H2M
 
 	void VulkanFramebufferH2M::Resize(uint32_t width, uint32_t height, bool forceRecreate)
 	{
+		// A zero-sized image is invalid (and allocating 0 bytes fails), e.g. when the viewport panel is collapsed
+		if (width == 0 || height == 0)
+		{
+			return;
+		}
+		if (!forceRecreate && m_Framebuffer && width == m_Width && height == m_Height)
+		{
+			return;
+		}
+
 		m_Width = width;
 		m_Height = height;
 
@@ -79,9 +89,26 @@ namespace H2M
 			{
 				auto device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
+				// Release everything the previous size created (previously only the VkFramebuffer was destroyed, so every
+				// resize leaked the images, their memory, views, sampler and render pass until the GPU ran out of memory)
 				if (m_Framebuffer) {
+					// Frames in flight may still use the old attachments
+					vkDeviceWaitIdle(device);
+
 					vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
 					m_Framebuffer = nullptr;
+
+					vkDestroyImageView(device, m_ColorAttachment.view, nullptr);
+					vkDestroyImage(device, m_ColorAttachment.image, nullptr);
+					vkFreeMemory(device, m_ColorAttachment.mem, nullptr);
+					vkDestroySampler(device, m_ColorAttachmentSampler, nullptr);
+
+					vkDestroyImageView(device, m_DepthAttachment.view, nullptr);
+					vkDestroyImage(device, m_DepthAttachment.image, nullptr);
+					vkFreeMemory(device, m_DepthAttachment.mem, nullptr);
+
+					vkDestroyRenderPass(device, m_RenderPass, nullptr);
+					m_RenderPass = nullptr;
 				}
 
 				VulkanAllocatorH2M allocator(std::string("Framebuffer"));

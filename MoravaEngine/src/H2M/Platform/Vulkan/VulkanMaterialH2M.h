@@ -95,6 +95,9 @@ namespace H2M
 			{
 				// H2M_CORE_ASSERT(decl, "Could not find uniform with name 'x'");
 				Log::GetLogger()->error("Could not find uniform with name '{0}'!", name);
+				static T s_Default{};
+				s_Default = T{};
+				return s_Default;
 			}
 			auto& buffer = m_UniformStorageBuffer;
 			return buffer.Read<T>(decl->GetOffset());

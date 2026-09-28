@@ -1,5 +1,7 @@
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
 
+#include "H2M/Renderer/RendererAPI_H2M.h"
+
 #include "Core/Log.h"
 #include "Core/Timer.h"
 #include "Core/Util.h"
@@ -94,8 +96,11 @@ namespace H2M
 		const float cellMarginWidth = 8.0f * 2;
 
 		const ImVec2 iconSize = ImVec2{ m_TableCellWidth - cellMarginWidth, m_TableCellWidth - cellMarginWidth };
-		const ImVec2 iconUV0 = ImVec2(0, 0);
-		const ImVec2 iconUV1 = ImVec2(1, 1);
+		// The Vulkan texture loader flips LDR images vertically on load (for model texture coordinates),
+		// so the icons are drawn with flipped UVs there
+		const bool flipIcons = RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan;
+		const ImVec2 iconUV0 = flipIcons ? ImVec2(0, 1) : ImVec2(0, 0);
+		const ImVec2 iconUV1 = flipIcons ? ImVec2(1, 0) : ImVec2(1, 1);
 		const ImVec4 iconBgColor = ImVec4(0, 0, 0, 0);
 		const ImVec4 iconTintColor = ImVec4(1, 1, 1, 1);
 

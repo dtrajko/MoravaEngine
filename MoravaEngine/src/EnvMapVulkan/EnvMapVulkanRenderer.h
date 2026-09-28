@@ -50,7 +50,7 @@ public:
 	static uint32_t GetViewportWidth();                                                                    // to be removed from VulkanRendererH2M
 	static uint32_t GetViewportHeight();                                                                   // to be removed from VulkanRendererH2M
 
-	static void RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, VkCommandBuffer commandBuffer);
+	static void RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform, VkCommandBuffer commandBuffer);
 
 	static void RenderSkybox(VkCommandBuffer commandBuffer);
 

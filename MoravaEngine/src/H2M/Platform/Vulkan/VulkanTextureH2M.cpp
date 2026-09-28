@@ -12,6 +12,9 @@
 
 #include "stb_image.h"
 
+#include "imgui.h"
+#include "backends/imgui_impl_vulkan.h"
+
 
 namespace H2M {
 
@@ -23,6 +26,7 @@ namespace H2M {
 			{
 				// case ImageFormatH2M::RGB: return VK_FORMAT_R8G8B8_UNORM;
 				case ImageFormatH2M::RGBA: return VK_FORMAT_R8G8B8A8_UNORM;
+				case ImageFormatH2M::SRGB: return VK_FORMAT_R8G8B8A8_SRGB; // 4 channels, like RGBA
 				// case ImageFormatH2M::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
 				case ImageFormatH2M::RGBA16F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 				case ImageFormatH2M::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
@@ -271,7 +275,8 @@ namespace H2M {
 			stbi_set_flip_vertically_on_load(1);
 			m_ImageData.Data = stbi_load(path.c_str(), &width, &height, &channels, 4);
 			m_ImageData.Size = width * height * 4;
-			m_Format = ImageFormatH2M::RGBA;
+			// Color textures (e.g. albedo) are sRGB encoded: an sRGB format makes the GPU convert them to linear when sampled
+			m_Format = srgb ? ImageFormatH2M::SRGB : ImageFormatH2M::RGBA;
 		}
 
 		if (!m_ImageData.Data)
@@ -337,11 +342,27 @@ namespace H2M {
 		{
 			auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
+			// Only while the ImGui Vulkan backend is alive (it frees all its descriptor sets on shutdown)
+			if (m_ImGuiDescriptorSet && ImGui::GetCurrentContext() && ImGui::GetIO().BackendRendererUserData)
+			{
+				ImGui_ImplVulkan_RemoveTexture(m_ImGuiDescriptorSet);
+			}
+
 			vkDestroyImageView(vulkanDevice, m_DescriptorImageInfo.imageView, nullptr);
 			vkDestroyImage(vulkanDevice, m_VkImage, nullptr);
 			vkDestroySampler(vulkanDevice, m_DescriptorImageInfo.sampler, nullptr);
 			vkFreeMemory(vulkanDevice, m_DeviceMemory, nullptr);
 		}
+	}
+
+	ImTextureID VulkanTexture2D_H2M::GetImTextureID()
+	{
+		// ImGui's Vulkan backend identifies textures by descriptor set (the base version returns an OpenGL texture ID)
+		if (!m_ImGuiDescriptorSet && m_DescriptorImageInfo.imageView && ImGui::GetCurrentContext() && ImGui::GetIO().BackendRendererUserData)
+		{
+			m_ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(m_DescriptorImageInfo.sampler, m_DescriptorImageInfo.imageView, m_DescriptorImageInfo.imageLayout);
+		}
+		return (ImTextureID)(uintptr_t)m_ImGuiDescriptorSet;
 	}
 
 	bool VulkanTexture2D_H2M::LoadImageH2M(const std::string& path)
