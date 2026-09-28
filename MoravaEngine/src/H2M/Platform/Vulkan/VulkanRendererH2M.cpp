@@ -593,22 +593,31 @@ namespace H2M
 		memcpy(ubPtr, &skyboxUniformCamera, sizeof(SkyboxUniformCamera));
 		vulkanSkyboxShader->UnmapUniformBuffer(0, 0);
 
-		std::array<VkWriteDescriptorSet, 2> writeDescriptors;
-		VulkanShaderH2M::ShaderMaterialDescriptorSet descriptorSet = vulkanSkyboxShader->CreateDescriptorSets();
+		// Allocated and written once: previously a new descriptor pool was created every frame and never freed.
+		// It references the camera uniform buffer and the environment cubemap, which don't change in this scene
+		// (updating a set while frames in flight use it would not be allowed anyway).
+		static VulkanShaderH2M::ShaderMaterialDescriptorSet s_SkyboxDescriptorSet;
+		if (!s_SkyboxDescriptorSet.Pool)
+		{
+			s_SkyboxDescriptorSet = vulkanSkyboxShader->CreateDescriptorSets();
 
-		writeDescriptors[0] = *vulkanSkyboxShader->GetDescriptorSet("Camera");
-		writeDescriptors[0].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
-		writeDescriptors[0].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
-		writeDescriptors[0].pBufferInfo = &vulkanSkyboxShader->GetUniformBuffer(0, 0).Descriptor;
+			std::array<VkWriteDescriptorSet, 2> writeDescriptors;
 
-		// RefH2M<VulkanTextureCubeH2M> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCubeH2M>();
-		RefH2M<VulkanTextureCubeH2M> envFilteredCubemap = s_Data.envFiltered.As<VulkanTextureCubeH2M>();
-		writeDescriptors[1] = *vulkanSkyboxShader->GetDescriptorSet("u_Texture");
-		writeDescriptors[1].dstSet = *descriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
-		writeDescriptors[1].descriptorCount = (uint32_t)descriptorSet.DescriptorSets.size();
-		writeDescriptors[1].pImageInfo = &envFilteredCubemap->GetVulkanDescriptorInfo();
+			writeDescriptors[0] = *vulkanSkyboxShader->GetDescriptorSet("Camera");
+			writeDescriptors[0].dstSet = *s_SkyboxDescriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+			writeDescriptors[0].descriptorCount = (uint32_t)s_SkyboxDescriptorSet.DescriptorSets.size();
+			writeDescriptors[0].pBufferInfo = &vulkanSkyboxShader->GetUniformBuffer(0, 0).Descriptor;
 
-		vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+			// RefH2M<VulkanTextureCubeH2M> envUnfilteredCubemap = s_Data.envUnfiltered.As<VulkanTextureCubeH2M>();
+			RefH2M<VulkanTextureCubeH2M> envFilteredCubemap = s_Data.envFiltered.As<VulkanTextureCubeH2M>();
+			writeDescriptors[1] = *vulkanSkyboxShader->GetDescriptorSet("u_Texture");
+			writeDescriptors[1].dstSet = *s_SkyboxDescriptorSet.DescriptorSets.data(); // Should this be set inside the shader?
+			writeDescriptors[1].descriptorCount = (uint32_t)s_SkyboxDescriptorSet.DescriptorSets.size();
+			writeDescriptors[1].pImageInfo = &envFilteredCubemap->GetVulkanDescriptorInfo();
+
+			vkUpdateDescriptorSets(device, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
+		}
+		VulkanShaderH2M::ShaderMaterialDescriptorSet& descriptorSet = s_SkyboxDescriptorSet;
 
 		RefH2M<VulkanVertexBufferH2M> vulkanSkyboxCubeVB = s_Data.VulkanSkyboxCube->m_VertexBuffer.As<VulkanVertexBufferH2M>();
 		VkBuffer skyboxCubeVertexVkBuffer = vulkanSkyboxCubeVB->GetVulkanBuffer();
