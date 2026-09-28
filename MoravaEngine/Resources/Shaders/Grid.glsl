@@ -31,7 +31,6 @@ void main()
 #version 450 core
 
 layout(location = 0) out vec4 color;
-layout(location = 1) out vec4 unused;
 
 layout (push_constant) uniform Settings
 {
@@ -51,5 +50,4 @@ void main()
 {
 	float x = grid(v_TexCoord * u_Settings.Scale, u_Settings.Size);
 	color = vec4(vec3(0.2), 0.5) * (1.0 - x);
-	unused = vec4(0.0);
 }

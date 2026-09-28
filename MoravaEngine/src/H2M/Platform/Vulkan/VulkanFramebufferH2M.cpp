@@ -65,6 +65,39 @@ namespace H2M
 		}
 	}
 
+	// Color attachment format from the specification (first non-depth attachment). Scene framebuffers use a float
+	// format so HDR values above 1.0 survive until exposure/tonemapping; specs without a color format stay 8-bit.
+	static VkFormat GetColorAttachmentFormat(const FramebufferSpecificationH2M& spec)
+	{
+		ImageFormatH2M format = ImageFormatH2M::RGBA;
+		for (const auto& attachment : spec.Attachments.Attachments)
+		{
+			if (attachment.Format != ImageFormatH2M::None && !Utils::IsDepthFormat(attachment.Format))
+			{
+				format = attachment.Format;
+				break;
+			}
+		}
+
+		switch (format)
+		{
+			case ImageFormatH2M::RGBA16F:
+				return VK_FORMAT_R16G16B16A16_SFLOAT;
+			case ImageFormatH2M::RGBA32F:
+			{
+				// The pipelines blend into the color attachment and the composite pass samples it with linear filtering:
+				// guaranteed for 16-bit float, optional for 32-bit float
+				VkFormatProperties properties;
+				vkGetPhysicalDeviceFormatProperties(VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetVulkanPhysicalDevice(),
+					VK_FORMAT_R32G32B32A32_SFLOAT, &properties);
+				const VkFormatFeatureFlags required = VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+				return (properties.optimalTilingFeatures & required) == required ? VK_FORMAT_R32G32B32A32_SFLOAT : VK_FORMAT_R16G16B16A16_SFLOAT;
+			}
+			default:
+				return VK_FORMAT_R8G8B8A8_UNORM;
+		}
+	}
+
 	void VulkanFramebufferH2M::Resize(uint32_t width, uint32_t height, bool forceRecreate)
 	{
 		// A zero-sized image is invalid (and allocating 0 bytes fails), e.g. when the viewport panel is collapsed
@@ -117,7 +150,8 @@ namespace H2M
 
 				// COLOR ATTACHMENT
 				{
-					const VkFormat COLOR_BUFFER_FORMAT = VK_FORMAT_R8G8B8A8_UNORM;
+					// Previously always VK_FORMAT_R8G8B8A8_UNORM, whatever the specification asked for
+					const VkFormat COLOR_BUFFER_FORMAT = GetColorAttachmentFormat(m_Specification);
 
 					VkImageCreateInfo imageCreateInfo = {};
 					imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;

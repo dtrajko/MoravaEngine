@@ -250,6 +250,8 @@ namespace H2M
 		{
 			FramebufferSpecificationH2M spec;
 			spec.DebugName = "Viewport";
+			// HDR scene color (tonemapped by ViewportCompositePass), 16-bit float is enough and supports blending everywhere
+			spec.Attachments = { ImageFormatH2M::RGBA16F, ImageFormatH2M::Depth };
 			spec.Width = s_ViewportWidth;
 			spec.Height = s_ViewportHeight;
 			s_Framebuffer = FramebufferH2M::Create(spec);

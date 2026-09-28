@@ -70,6 +70,13 @@ static H2M::RefH2M<H2M::PipelineH2M> s_CompositePipeline;            // to be re
 // The Viewport panel shows this image: s_Framebuffer (linear HDR scene) after exposure, tonemapping and gamma
 static H2M::RefH2M<H2M::FramebufferH2M> s_ViewportCompositeFramebuffer;
 static H2M::RefH2M<H2M::PipelineH2M> s_ViewportCompositePipeline;
+
+// Editor grid on the ground plane (Resources/Shaders/Grid.glsl), as in SceneHazelEnvMap
+static H2M::RefH2M<H2M::PipelineH2M> s_GridPipeline;
+static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_GridDescriptorSet; // allocated and written once (camera uniform buffer)
+static bool s_DisplayGrid = true;
+static float s_GridScale = 16.025f; // cells across the grid (it spans 32 x 32 units)
+static float s_GridSize = 0.025f;   // line width, as a fraction of a cell
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipeline;                 // to be removed from VulkanRenderer
 static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
 static bool s_ViewportTextureNeedsUpdate = false;     // the viewport framebuffer was recreated (resize)
@@ -931,6 +938,24 @@ void EnvMapVulkanRenderer::Init()
 		s_ViewportCompositePipeline = H2M::PipelineH2M::Create(pipelineSpecification);
 	}
 
+	// Editor grid: drawn into the scene framebuffer after the meshes (see RenderGrid)
+	{
+		H2M::PipelineSpecificationH2M pipelineSpecification;
+		pipelineSpecification.Layout = {
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+		};
+		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("Grid");
+		pipelineSpecification.BackfaceCulling = false; // visible from above and below
+		pipelineSpecification.DepthWrite = false;      // transparent: tested against the meshes, but hides nothing behind it
+
+		H2M::RenderPassSpecificationH2M renderPassSpec;
+		renderPassSpec.TargetFramebuffer = s_Framebuffer;
+		pipelineSpecification.RenderPass = H2M::RenderPassH2M::Create(renderPassSpec);
+		pipelineSpecification.DebugName = "Grid";
+		s_GridPipeline = H2M::PipelineH2M::Create(pipelineSpecification);
+	}
+
 	/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
 	H2M::RenderPassSpecificationH2M renderPassSpec;
 	H2M::FramebufferSpecificationH2M framebufferSpec;
@@ -1419,10 +1444,71 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		s_Meshes.clear();
 
+		// Transparent, so after the opaque meshes
+		if (s_DisplayGrid)
+		{
+			RenderGrid(drawCommandBuffer);
+		}
+
 		vkCmdEndRenderPass(drawCommandBuffer);
 
 		ViewportCompositePass(drawCommandBuffer);
 	}
+}
+
+// Editor grid on the ground plane (y = 0), 32 x 32 units, like RenderHazelGrid in SceneHazelEnvMap
+void EnvMapVulkanRenderer::RenderGrid(VkCommandBuffer commandBuffer)
+{
+	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_GridPipeline.As<H2M::VulkanPipelineH2M>();
+	H2M::RefH2M<H2M::VulkanShaderH2M> shader = s_GridPipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>();
+	VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+	// Camera uniform buffer (set 0, binding 0)
+	struct GridCamera
+	{
+		glm::mat4 ViewProjection;
+		glm::mat4 InverseViewProjection;
+	} camera;
+	camera.ViewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
+	camera.InverseViewProjection = glm::inverse(camera.ViewProjection);
+	void* ubPtr = shader->MapUniformBuffer(0, 0);
+	memcpy(ubPtr, &camera, sizeof(GridCamera));
+	shader->UnmapUniformBuffer(0, 0);
+
+	// The descriptor set only references the uniform buffer, so it is written once
+	if (!s_GridDescriptorSet.Pool)
+	{
+		s_GridDescriptorSet = shader->CreateDescriptorSets();
+
+		VkWriteDescriptorSet write = *shader->GetDescriptorSet("Camera");
+		write.dstSet = s_GridDescriptorSet.DescriptorSets[0];
+		write.descriptorCount = 1;
+		write.pBufferInfo = &shader->GetUniformBuffer(0, 0).Descriptor;
+		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+	}
+
+	VkBuffer vertexBuffer = s_Data.QuadVertexBuffer.As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+	VkDeviceSize offsets[1] = { 0 };
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+	vkCmdBindIndexBuffer(commandBuffer, s_Data.QuadIndexBuffer.As<H2M::VulkanIndexBufferH2M>()->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, s_GridDescriptorSet.DescriptorSets.data(), 0, nullptr);
+
+	// The quad spans -1..1 in XY at z = 0.1: lay it on the ground plane (rotated into XZ, lifted back to y = 0) and scale it to 32 x 32
+	glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.1f, 0.0f)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(16.0f, 1.0f, 16.0f)) *
+		glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &transform);
+
+	struct GridSettings
+	{
+		float Scale;
+		float Size;
+	} settings = { s_GridScale, s_GridSize };
+	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(GridSettings), &settings);
+
+	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 }
 
 // Draws s_Framebuffer (linear HDR) into s_ViewportCompositeFramebuffer with exposure, ACES tonemapping and gamma
@@ -1811,6 +1897,9 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Auto Exposure", s_AutoExposureEnabled);
 						ImGuiWrapper::Property("Env Map Rotation", s_EnvMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
+						ImGuiWrapper::Property("Display Grid", s_DisplayGrid);
+						ImGuiWrapper::Property("Grid Scale", s_GridScale, 0.1f, 1.0f, 256.0f, PropertyFlag::DragProperty);
+						ImGuiWrapper::Property("Grid Line Width", s_GridSize, 0.001f, 0.001f, 0.5f, PropertyFlag::DragProperty);
 
 						ImGui::Columns(1);
 					}
