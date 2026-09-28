@@ -328,7 +328,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 		{
 			DX11InputSystem::Get()->AddRawMouseDelta(raw.data.mouse.lLastX, raw.data.mouse.lLastY);
 		}
-		return ::DefWindowProc(hwnd, msg, wparam, lparam); // required for WM_INPUT cleanup
+		return ::DefWindowProcW(hwnd, msg, wparam, lparam); // required for WM_INPUT cleanup
 	}
 	case WM_DESTROY:
 	{
@@ -340,7 +340,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	}
 	default:
 	{
-		return ::DefWindowProc(hwnd, msg, wparam, lparam);
+		// The window class is registered with RegisterClassExW, so use the wide default procedure explicitly:
+		// the project is built without UNICODE, where DefWindowProc means DefWindowProcA, which reads the
+		// UTF-16 window title as ANSI and stops after the first character ("M")
+		return ::DefWindowProcW(hwnd, msg, wparam, lparam);
 	}
 	}
 
