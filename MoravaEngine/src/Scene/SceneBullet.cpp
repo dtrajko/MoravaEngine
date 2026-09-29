@@ -1,13 +1,26 @@
 #include "Scene/SceneBullet.h"
 
 #include "Core/Profiler.h"
+#include "Core/Timer.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "LearnOpenGL/SphereJoey.h"
 #include "Mesh/Block.h"
 #include "Mesh/MeshData.h"
 #include "Mesh/Sphere.h"
 
+#include <glm/gtc/type_ptr.hpp>
+
 #include <string>
+
+
+// Model matrix (position and rotation) of a rigid body. Previously the rotation was built by using the quaternion's
+// x/y/z components as Euler angles, which gives wrong orientations as soon as bodies tumble.
+static glm::mat4 BulletTransformToMatrix(const btTransform& transform)
+{
+	btScalar matrix[16];
+	transform.getOpenGLMatrix(matrix); // column-major, like glm
+	return glm::make_mat4(matrix);
+}
 
 
 SceneBullet::SceneBullet()
@@ -152,23 +165,27 @@ void SceneBullet::BulletSetup()
 	// Wall 4
 	AddRigidBodyBox(glm::vec3( 52.0f, 12.0f,   0.0f), rotation, glm::vec3(2.0f, 10.0f, 50.0f), 0.0f, m_Bounciness);
 	// Cube 1
-	AddRigidBodyBox(glm::vec3( 40.0f,  3.0f,  40.0f), rotation, glm::vec3(3.0f), 20.0f, 0.2f);
+	AddRigidBodyBox(glm::vec3( 40.0f,  5.0f,  40.0f), rotation, glm::vec3(3.0f), 20.0f, 0.2f); // resting on the floor (floor top y = 2 + half size 3)
 	// Cube 2
 	AddRigidBodyBox(glm::vec3(-40.0f,  8.0f, -40.0f), rotation, glm::vec3(4.0f), 40.0f, 0.2f);
 
 	m_SpheresOffset += 7;
 	m_PlankOffset = 7;
 
+	// The floor box (half height 2, centered at y = 0) has its top at y = 2: the tower starts on it, not inside it
+	// (previously the lowest planks were created inside the floor and the solver pushed the whole stack up at startup)
+	const float towerBase = 2.0f + 0.5f; // floor top + half plank thickness
+
 	for (int i = 0; i < m_PlankFloors; i++)
 	{
 		// Plank 1
-		AddRigidBodyBox(glm::vec3(-4.0f, i * 2.0f + 0.0f,  0.0f), rotation, glm::vec3(0.5f, 0.5f, 6.0f), m_PlankMass, m_PlankBounciness);
+		AddRigidBodyBox(glm::vec3(-4.0f, towerBase + i * 2.0f + 0.0f,  0.0f), rotation, glm::vec3(0.5f, 0.5f, 6.0f), m_PlankMass, m_PlankBounciness);
 		// Plank 2
-		AddRigidBodyBox(glm::vec3( 4.0f, i * 2.0f + 0.0f,  0.0f), rotation, glm::vec3(0.5f, 0.5f, 6.0f), m_PlankMass, m_PlankBounciness);
+		AddRigidBodyBox(glm::vec3( 4.0f, towerBase + i * 2.0f + 0.0f,  0.0f), rotation, glm::vec3(0.5f, 0.5f, 6.0f), m_PlankMass, m_PlankBounciness);
 		// Plank 3
-		AddRigidBodyBox(glm::vec3(0.0f, i * 2.0f + 1.0f, -4.0f),  rotation, glm::vec3(6.0f, 0.5f, 0.5f), m_PlankMass, m_PlankBounciness);
+		AddRigidBodyBox(glm::vec3(0.0f, towerBase + i * 2.0f + 1.0f, -4.0f),  rotation, glm::vec3(6.0f, 0.5f, 0.5f), m_PlankMass, m_PlankBounciness);
 		// Plank 4
-		AddRigidBodyBox(glm::vec3( 0.0f, i * 2.0f + 1.0f,  4.0f), rotation, glm::vec3(6.0f, 0.5f, 0.5f), m_PlankMass, m_PlankBounciness);
+		AddRigidBodyBox(glm::vec3( 0.0f, towerBase + i * 2.0f + 1.0f,  4.0f), rotation, glm::vec3(6.0f, 0.5f, 0.5f), m_PlankMass, m_PlankBounciness);
 	}
 
 	m_SpheresOffset += 4 * m_PlankFloors;
@@ -192,11 +209,9 @@ btRigidBody* SceneBullet::AddRigidBody(btCollisionShape* collisionShape, glm::ve
 {
 	m_CollisionShapes.push_back(collisionShape);
 
+	// Rotation from Euler angles (radians). Previously each setRotation replaced the previous one (only Z was applied).
 	btQuaternion quatRotation;
-	quatRotation.getIdentity();
-	quatRotation.setRotation(btVector3(1.0f, 0.0f, 0.0f), rotation.x);
-	quatRotation.setRotation(btVector3(0.0f, 1.0f, 0.0f), rotation.y);
-	quatRotation.setRotation(btVector3(0.0f, 0.0f, 1.0f), rotation.z);
+	quatRotation.setEulerZYX(rotation.z, rotation.y, rotation.x);
 
 	btTransform shapeTransform;
 	shapeTransform.setIdentity();
@@ -245,22 +260,32 @@ void SceneBullet::Fire()
 	printf("Fire: invMass=%.3f flags=0x%x linearVel=(%.3f,%.3f,%.3f)\n", invMass, flags, lv.getX(), lv.getY(), lv.getZ());
 }
 
-void SceneBullet::BulletSimulation(float timestep)
+// deltaTime: seconds since the previous frame. Bullet advances in fixed 1/60 s substeps; up to 10 of them per frame
+// keep the simulation in real time down to 6 FPS (deltaTime is clamped to 0.1 s in Update)
+void SceneBullet::BulletSimulation(float deltaTime)
 {
 	dynamicsWorld->debugDrawWorld();
-	dynamicsWorld->stepSimulation(timestep, 2);
+	dynamicsWorld->stepSimulation(deltaTime, 10);
 }
 
 void SceneBullet::Update(float timestep, Window* mainWindow)
 {
 	Scene::Update(timestep, mainWindow);
 
+	// `timestep` is the absolute time since startup (and uninitialized garbage on the first frame), not the frame time.
+	// Bullet needs the time since the previous frame: passing the absolute time (-4.3e8 on the first frame) broke its
+	// internal time accumulator for good, so stepSimulation never ran a substep and the whole world stayed frozen.
+	// (Timer::GetDeltaTime() is not usable here either: it measures the time since the last frame within the FPS cap.)
+	float currentTime = Timer::Get()->GetCurrentTimestamp(); // updated by Scene::Update above
+	float deltaTime = m_LastPhysicsTimestamp < 0.0f ? 0.0f : glm::clamp(currentTime - m_LastPhysicsTimestamp, 0.0f, 0.1f); // no huge step after a hitch/breakpoint
+	m_LastPhysicsTimestamp = currentTime;
+
 	if (mainWindow->getMouseButtons()[GLFW_MOUSE_BUTTON_LEFT])
 	{
-		if (timestep - m_LastTimestep > m_FireCooldown)
+		if (currentTime - m_LastTimestep > m_FireCooldown)
 		{
 			Fire();
-			m_LastTimestep = timestep;
+			m_LastTimestep = currentTime;
 		}
 	}
 
@@ -287,7 +312,7 @@ void SceneBullet::Update(float timestep, Window* mainWindow)
 
 	{
 		Profiler profiler("SceneBullet::BulletSimulation");
-		BulletSimulation(timestep);
+		BulletSimulation(deltaTime);
 		m_ProfilerResults.insert(std::make_pair(profiler.GetName(), profiler.Stop()));
 	}
 }
@@ -353,15 +378,7 @@ void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	{
 		/* Sphere bullet */
 		sphereTrans = GetCollisionObjectTransform(i + m_SpheresOffset);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(
-			float(sphereTrans.getOrigin().getX()),
-			float(sphereTrans.getOrigin().getY()),
-			float(sphereTrans.getOrigin().getZ())
-		));
-		model = glm::rotate(model, sphereTrans.getRotation().getX(), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, sphereTrans.getRotation().getY(), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, sphereTrans.getRotation().getZ(), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = BulletTransformToMatrix(sphereTrans); // position and rotation of the rigid body
 		model = glm::scale(model, glm::vec3(1.5f));
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["silver_diffuse"]->Bind(textureSlots["diffuse"]);
@@ -377,15 +394,7 @@ void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 
 	/* Cube 1 */
 	cubeTrans = GetCollisionObjectTransform(5);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(
-		float(cubeTrans.getOrigin().getX()),
-		float(cubeTrans.getOrigin().getY()),
-		float(cubeTrans.getOrigin().getZ())
-	));
-	model = glm::rotate(model, cubeTrans.getRotation().getX(), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, cubeTrans.getRotation().getY(), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, cubeTrans.getRotation().getZ(), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = BulletTransformToMatrix(cubeTrans); // position and rotation of the rigid body
 	model = glm::scale(model, glm::vec3(6.0f, 6.0f, 6.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	textures["crate_diffuse"]->Bind(textureSlots["diffuse"]);
@@ -399,15 +408,7 @@ void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 
 	/* Cube 2 */
 	cubeTrans = GetCollisionObjectTransform(6);
-	model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(
-		float(cubeTrans.getOrigin().getX()),
-		float(cubeTrans.getOrigin().getY()),
-		float(cubeTrans.getOrigin().getZ())
-	));
-	model = glm::rotate(model, cubeTrans.getRotation().getX(), glm::vec3(1.0f, 0.0f, 0.0f));
-	model = glm::rotate(model, cubeTrans.getRotation().getY(), glm::vec3(0.0f, 1.0f, 0.0f));
-	model = glm::rotate(model, cubeTrans.getRotation().getZ(), glm::vec3(0.0f, 0.0f, 1.0f));
+	model = BulletTransformToMatrix(cubeTrans); // position and rotation of the rigid body
 	model = glm::scale(model, glm::vec3(8.0f, 8.0f, 8.0f));
 	glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 	textures["crate_diffuse"]->Bind(textureSlots["diffuse"]);
@@ -424,15 +425,7 @@ void SceneBullet::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::st
 	{
 		/* Plank */
 		plankTrans = GetCollisionObjectTransform(m_PlankOffset + i);
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(
-			float(plankTrans.getOrigin().getX()),
-			float(plankTrans.getOrigin().getY()),
-			float(plankTrans.getOrigin().getZ())
-			));
-		model = glm::rotate(model, plankTrans.getRotation().getX(), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, plankTrans.getRotation().getY(), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::rotate(model, plankTrans.getRotation().getZ(), glm::vec3(0.0f, 0.0f, 1.0f));
+		model = BulletTransformToMatrix(plankTrans); // position and rotation of the rigid body
 		glUniformMatrix4fv(uniforms["model"], 1, GL_FALSE, glm::value_ptr(model));
 		textures["texture_plank"]->Bind(textureSlots["diffuse"]);
 		textures["normalMapDefault"]->Bind(textureSlots["normal"]);

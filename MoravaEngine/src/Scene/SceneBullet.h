@@ -21,7 +21,7 @@ public:
 
 private:
 	void BulletSetup();
-	void BulletSimulation(float timestep);
+	void BulletSimulation(float deltaTime);
 	void BulletCleanup();
 	virtual void SetSkybox() override;
 	virtual void SetupTextures() override;
@@ -46,15 +46,16 @@ private:
 	int m_SphereCountMax = 100;
 	int m_SpheresOffset = 0;
 	float m_Bounciness = 0.6f;
-	float m_SphereMass = 4.0f;
+	float m_SphereMass = 8.0f;
 	int m_PlankOffset = 0;
 	int m_PlankFloors = 10;
 	float m_PlankMass = 4.0f;
 	float m_PlankBounciness = 0.0f;
-	float m_FireIntensity = 100.0f;
-	float m_FireIntensityMax = 200.0f;
+	float m_FireIntensity = 400.0f;    // impulse applied to a fired sphere
+	float m_FireIntensityMax = 800.0f; // slider range in the Settings panel
 	bool m_FireEnabled = true;
-	float m_LastTimestep = 0.0f;
+	float m_LastTimestep = 0.0f;          // time of the last Fire (cooldown)
+	float m_LastPhysicsTimestamp = -1.0f; // time of the previous physics step (-1: first frame)
 	float m_FireCooldown = 0.2f;
 	btRigidBody* m_LatestBulletBody = nullptr;
 	BulletDebugDrawer* m_BulletDebugDrawer = nullptr;

@@ -28,21 +28,21 @@ public:
 private:
 	static Timer* s_Instance;
 
-	float m_CurrentTimestamp; // time in seconds
+	float m_CurrentTimestamp = 0.0f; // time in seconds (initialized: it was read before the first Update(), giving garbage like -4.3e8)
 
 	// Render
-	float m_TargetFPS;
-	float m_RealFPS;
-	float m_LastFrameTimestamp;
-	float m_DeltaTime;
-	bool m_CanRender;
+	float m_TargetFPS = 0.0f;
+	float m_RealFPS = 0.0f;
+	float m_LastFrameTimestamp = 0.0f;
+	float m_DeltaTime = 0.0f;
+	bool m_CanRender = false;
 
 	// Update
-	float m_TargetUpdateRate;
-	float m_RealUpdateRate;
-	float m_LastUpdateTimestamp;
-	float m_DeltaTimeUpdate;
-	bool m_CanUpdate;
+	float m_TargetUpdateRate = 0.0f;
+	float m_RealUpdateRate = 0.0f;
+	float m_LastUpdateTimestamp = 0.0f;
+	float m_DeltaTimeUpdate = 0.0f;
+	bool m_CanUpdate = false;
 
 	// Using chrono for DirectX 11 as GLFW is not available for it
 #ifdef _WIN32
