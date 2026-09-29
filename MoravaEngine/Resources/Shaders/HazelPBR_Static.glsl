@@ -96,6 +96,8 @@ layout (binding = 2) uniform sampler2D u_AlbedoTexture;
 layout (binding = 3) uniform sampler2D u_NormalTexture;
 layout (binding = 4) uniform sampler2D u_MetalnessTexture;
 layout (binding = 5) uniform sampler2D u_RoughnessTexture;
+layout (binding = 6) uniform sampler2D u_EmissiveTexture;
+layout (binding = 7) uniform sampler2D u_AOTexture;
 
 // Environment maps
 layout (set = 1, binding = 0) uniform samplerCube u_EnvRadianceTex;
@@ -118,6 +120,13 @@ layout (push_constant) uniform Material
 	float NormalTexToggle;
 	float MetalnessTexToggle;
 	float RoughnessTexToggle;
+
+	// Offsets 108..127: the push constant block ends at 128 bytes, the minimum maxPushConstantsSize guaranteed by Vulkan
+	float TilingFactor;       // texture coordinate scale (0 is treated as 1)
+	float EmissiveTexToggle;
+	float AOTexToggle;
+	float EmissiveIntensity;  // multiplies the emissive map (HDR values above 1 are fine)
+	float MetalRoughPacked;   // 1: glTF metallicRoughness map (roughness in G, metalness in B); 0: both maps read from R
 } u_MaterialUniforms;
 
 struct PBRParameters
@@ -340,16 +349,20 @@ void main()
 	//	Standard PBR inputs
 
 	// Texture toggles and values come from the material (push constants, editable in the Material Editor)
-	m_Params.Albedo = u_MaterialUniforms.AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, Input.TexCoord).rgb : u_MaterialUniforms.AlbedoColor;
-	m_Params.Metalness = u_MaterialUniforms.MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, Input.TexCoord).r : u_MaterialUniforms.Metalness;
-	m_Params.Roughness = u_MaterialUniforms.RoughnessTexToggle > 0.5 ?  texture(u_RoughnessTexture, Input.TexCoord).r : u_MaterialUniforms.Roughness;
+	float tiling = u_MaterialUniforms.TilingFactor > 0.0 ? u_MaterialUniforms.TilingFactor : 1.0;
+	vec2 texCoord = Input.TexCoord * tiling;
+	bool packed = u_MaterialUniforms.MetalRoughPacked > 0.5;
+
+	m_Params.Albedo = u_MaterialUniforms.AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, texCoord).rgb : u_MaterialUniforms.AlbedoColor;
+	m_Params.Metalness = u_MaterialUniforms.MetalnessTexToggle > 0.5 ? (packed ? texture(u_MetalnessTexture, texCoord).b : texture(u_MetalnessTexture, texCoord).r) : u_MaterialUniforms.Metalness;
+	m_Params.Roughness = u_MaterialUniforms.RoughnessTexToggle > 0.5 ? (packed ? texture(u_RoughnessTexture, texCoord).g : texture(u_RoughnessTexture, texCoord).r) : u_MaterialUniforms.Roughness;
 	m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
 
 	// Normals (either from vertex or map)
 	m_Params.Normal = normalize(Input.Normal);
 	if (u_MaterialUniforms.NormalTexToggle > 0.5)
 	{
-		m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, Input.TexCoord).rgb - 1.0);
+		m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, texCoord).rgb - 1.0);
 		m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);
 	}
 
@@ -365,8 +378,13 @@ void main()
 	vec3 lightContribution = LightingTemp(F0);
 	vec3 iblContribution = IBL(F0, Lr);
 
-	// color = vec4(lightContribution, 1.0);
-	color = vec4(lightContribution + iblContribution, 1.0);
+	// Ambient occlusion darkens only the indirect (environment) light; the map is linear data in R
+	float ao = u_MaterialUniforms.AOTexToggle > 0.5 ? texture(u_AOTexture, texCoord).r : 1.0;
+
+	// Emission is added on top of the lit surface (the map is sRGB color data, decoded by the sampler)
+	vec3 emissive = u_MaterialUniforms.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_MaterialUniforms.EmissiveIntensity : vec3(0.0);
+
+	color = vec4(lightContribution + iblContribution * ao + emissive, 1.0);
 
 	// color = vec4(Input.WorldPosition, 1.0);
 	// color = texture(u_RoughnessTexture, Input.TexCoord);

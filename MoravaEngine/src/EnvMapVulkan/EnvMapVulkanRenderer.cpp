@@ -70,6 +70,34 @@ static H2M::RefH2M<H2M::PipelineH2M> s_CompositePipeline;            // to be re
 // The Viewport panel shows this image: s_Framebuffer (linear HDR scene) after exposure, tonemapping and gamma
 static H2M::RefH2M<H2M::FramebufferH2M> s_ViewportCompositeFramebuffer;
 static H2M::RefH2M<H2M::PipelineH2M> s_ViewportCompositePipeline;
+static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_ViewportCompositeDescriptorSet; // scene, bloom, lens dirt (ViewportComposite.glsl)
+
+// Bloom (Resources/Shaders/BloomPass.glsl), with the settings of SceneHazelEnvMap's "Bloom Settings" panel. The bright parts of
+// the scene are downsampled into a chain of half-resolution levels and upsampled back, which spreads them into a wide glow
+// that the viewport composite adds to the scene.
+struct BloomSettingsVulkan
+{
+	bool Enabled = true;
+	float Threshold = 1.0f;     // brightness (after exposure) where bloom starts
+	float Knee = 0.1f;          // soft transition below the threshold
+	float UpsampleScale = 1.0f; // radius of the upsample filter: larger values spread the glow further
+	float Intensity = 1.0f;
+	float DirtIntensity = 1.0f; // lens dirt texture, lit by the bloom
+};
+static BloomSettingsVulkan s_BloomSettings;
+static const uint32_t s_BloomLevelCount = 6; // level i is 1/2^(i+1) of the viewport size
+static H2M::RefH2M<H2M::FramebufferH2M> s_BloomDownFramebuffers[s_BloomLevelCount];
+static H2M::RefH2M<H2M::FramebufferH2M> s_BloomUpFramebuffers[s_BloomLevelCount - 1]; // the result is s_BloomUpFramebuffers[0]
+static H2M::RefH2M<H2M::PipelineH2M> s_BloomPipeline;
+static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_BloomDescriptorSets; // one per pass: prefilter, downsamples, upsamples
+static bool s_BloomChainRendered = false; // the composite samples the chain, so it is rendered at least once even when disabled
+static H2M::RefH2M<H2M::Texture2D_H2M> s_BloomDirtTexture;
+static std::string s_PendingBloomDirtFilename; // requested from the UI, loaded at the start of the next Draw
+
+static void CreateBloomResources();
+static void ResizeBloomResources();
+static void WriteBloomDescriptorSets();
+static void RecordBloomPasses(VkCommandBuffer commandBuffer);
 
 // Editor grid on the ground plane (Resources/Shaders/Grid.glsl), as in SceneHazelEnvMap
 static H2M::RefH2M<H2M::PipelineH2M> s_GridPipeline;
@@ -274,8 +302,8 @@ struct LoadedMeshVulkan
 	glm::vec3 Translation = glm::vec3(0.0f);
 	glm::vec3 Rotation = glm::vec3(0.0f); // degrees
 	glm::vec3 Scale = glm::vec3(1.0f);
-	std::vector<std::array<bool, 4>> MaterialHasMap; // per material: albedo, normal, metalness, roughness map available (from the model or assigned)
-	std::vector<std::array<H2M::RefH2M<H2M::Texture2D_H2M>, 4>> MaterialTextures; // maps assigned in the Material Editor (kept alive here)
+	std::vector<std::array<bool, 6>> MaterialHasMap; // per material: albedo, normal, metalness, roughness, emissive, AO map available (from the model or assigned)
+	std::vector<std::array<H2M::RefH2M<H2M::Texture2D_H2M>, 6>> MaterialTextures; // maps assigned in the Material Editor (kept alive here)
 
 	// Composed with ImGuizmo's own convention (Euler angles in degrees), so the gizmo (Manipulate +
 	// DecomposeMatrixToComponents) and the values in the Meshes panel round-trip exactly
@@ -351,22 +379,31 @@ static void PickMesh(float ndcX, float ndcY)
 	s_SelectedSubmeshIndex = hitSubmesh;
 }
 
-static const char* s_MaterialMapToggles[4] = {
+// Material map slots: albedo, normal, metalness, roughness, emissive, ambient occlusion
+static const uint32_t s_MaterialMapCount = 6;
+
+static const char* s_MaterialMapToggles[s_MaterialMapCount] = {
 	"u_MaterialUniforms.AlbedoTexToggle",
 	"u_MaterialUniforms.NormalTexToggle",
 	"u_MaterialUniforms.MetalnessTexToggle",
 	"u_MaterialUniforms.RoughnessTexToggle",
+	"u_MaterialUniforms.EmissiveTexToggle",
+	"u_MaterialUniforms.AOTexToggle",
 };
 
 // Material texture bindings in HazelPBR_Static.glsl (set 0), in the same order as s_MaterialMapToggles
-static const char* s_MaterialTextureNames[4] = { "u_AlbedoTexture", "u_NormalTexture", "u_MetalnessTexture", "u_RoughnessTexture" };
+static const char* s_MaterialTextureNames[s_MaterialMapCount] = {
+	"u_AlbedoTexture", "u_NormalTexture", "u_MetalnessTexture", "u_RoughnessTexture", "u_EmissiveTexture", "u_AOTexture" };
+
+// Albedo and emissive maps are color data (sRGB); the others are linear data
+static bool IsColorMapSlot(uint32_t slot) { return slot == 0 || slot == 4; }
 
 // A map assigned in the Material Editor (button or drag & drop), applied at the start of the next Draw
 struct PendingMaterialTexture
 {
 	int MeshIndex;
 	uint32_t MaterialIndex;
-	uint32_t Slot; // 0 albedo, 1 normal, 2 metalness, 3 roughness
+	uint32_t Slot; // 0 albedo, 1 normal, 2 metalness, 3 roughness, 4 emissive, 5 ambient occlusion
 	std::string FilePath;
 };
 static std::vector<PendingMaterialTexture> s_PendingMaterialTextures;
@@ -417,8 +454,8 @@ static void LoadMesh(const std::string& filepath)
 	for (auto& material : mesh->GetMaterials())
 	{
 		H2M::RefH2M<H2M::VulkanMaterialH2M> vulkanMaterial = material.As<H2M::VulkanMaterialH2M>();
-		std::array<bool, 4> hasMap = {};
-		for (uint32_t i = 0; i < 4; i++)
+		std::array<bool, s_MaterialMapCount> hasMap = {};
+		for (uint32_t i = 0; i < s_MaterialMapCount; i++)
 		{
 			hasMap[i] = vulkanMaterial->Get<float>(s_MaterialMapToggles[i]) > 0.5f;
 		}
@@ -432,10 +469,10 @@ static void LoadMesh(const std::string& filepath)
 	Log::GetLogger()->info("Mesh '{0}' loaded: {1} submeshes, {2} materials", filepath, mesh->GetSubmeshes().size(), mesh->GetMaterials().size());
 }
 
-// Loads an image and binds it as a material's albedo/normal/metalness/roughness map (called at the start of a frame, see Draw)
+// Loads an image and binds it as one of a material's maps (called at the start of a frame, see Draw)
 static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 {
-	if (request.MeshIndex < 0 || request.MeshIndex >= (int)s_LoadedMeshes.size() || request.Slot >= 4)
+	if (request.MeshIndex < 0 || request.MeshIndex >= (int)s_LoadedMeshes.size() || request.Slot >= s_MaterialMapCount)
 	{
 		return;
 	}
@@ -459,11 +496,10 @@ static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 		return;
 	}
 
-	// Albedo is color data (sRGB); normal, metalness and roughness maps are linear data
 	H2M::RefH2M<H2M::Texture2D_H2M> texture;
 	try
 	{
-		texture = H2M::Texture2D_H2M::Create(request.FilePath, request.Slot == 0);
+		texture = H2M::Texture2D_H2M::Create(request.FilePath, IsColorMapSlot(request.Slot));
 	}
 	catch (...)
 	{
@@ -670,7 +706,8 @@ static void OnImGuiRenderMaterialEditor()
 	LoadedMeshVulkan& entry = s_LoadedMeshes[s_SelectedMeshIndex];
 	auto& materials = entry.Mesh->GetMaterials();
 
-	static const char* s_MapLabels[4] = { "Use Albedo Map", "Use Normal Map", "Use Metalness Map", "Use Roughness Map" };
+	static const char* s_MapLabels[s_MaterialMapCount] = {
+		"Use Albedo Map", "Use Normal Map", "Use Metalness Map", "Use Roughness Map", "Use Emissive Map", "Use AO Map" };
 
 	// With a submesh selected (Meshes panel), only the material that submesh is drawn with is shown
 	auto& submeshes = entry.Mesh->GetSubmeshes();
@@ -721,7 +758,25 @@ static void OnImGuiRenderMaterialEditor()
 			ImGui::SliderFloat("Metalness", &metalness, 0.0f, 1.0f);
 			ImGui::SliderFloat("Roughness", &roughness, 0.0f, 1.0f);
 
-			for (uint32_t i = 0; i < 4; i++)
+			float& tilingFactor = material->Get<float>("u_MaterialUniforms.TilingFactor");
+			float& emissiveIntensity = material->Get<float>("u_MaterialUniforms.EmissiveIntensity");
+			float& metalRoughPacked = material->Get<float>("u_MaterialUniforms.MetalRoughPacked");
+
+			ImGui::DragFloat("Tiling Factor", &tilingFactor, 0.01f, 0.01f, 100.0f);
+			ImGui::DragFloat("Emissive Intensity", &emissiveIntensity, 0.05f, 0.0f, 100.0f);
+
+			bool packed = metalRoughPacked > 0.5f;
+			if (ImGui::Checkbox("Packed Metalness/Roughness Map", &packed))
+			{
+				metalRoughPacked = packed ? 1.0f : 0.0f;
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("glTF metallicRoughness map: roughness is read from G and metalness from B (otherwise both from R).\n"
+					"Assign the same map to both the metalness and the roughness slot.");
+			}
+
+			for (uint32_t i = 0; i < s_MaterialMapCount; i++)
 			{
 				ImGui::PushID((int)i);
 				ImGui::Separator();
@@ -990,13 +1045,15 @@ void EnvMapVulkanRenderer::Init()
 			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
 			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
 		};
-		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("SceneComposite");
+		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("ViewportComposite");
 
 		H2M::RenderPassSpecificationH2M renderPassSpec;
 		renderPassSpec.TargetFramebuffer = s_ViewportCompositeFramebuffer;
 		pipelineSpecification.RenderPass = H2M::RenderPassH2M::Create(renderPassSpec);
 		pipelineSpecification.DebugName = "ViewportComposite";
 		s_ViewportCompositePipeline = H2M::PipelineH2M::Create(pipelineSpecification);
+
+		CreateBloomResources(); // also writes s_ViewportCompositeDescriptorSet
 	}
 
 	// Editor grid: drawn into the scene framebuffer after the meshes (see RenderGrid)
@@ -1514,6 +1571,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		vkCmdEndRenderPass(drawCommandBuffer);
 
+		RecordBloomPasses(drawCommandBuffer);
 		ViewportCompositePass(drawCommandBuffer);
 	}
 }
@@ -1573,6 +1631,228 @@ void EnvMapVulkanRenderer::RenderGrid(VkCommandBuffer commandBuffer)
 	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 }
 
+static uint32_t BloomLevelSize(uint32_t viewportSize, uint32_t level)
+{
+	return std::max<uint32_t>(viewportSize >> (level + 1), 1);
+}
+
+static void CreateBloomResources()
+{
+	for (uint32_t i = 0; i < s_BloomLevelCount; i++)
+	{
+		H2M::FramebufferSpecificationH2M framebufferSpec;
+		framebufferSpec.Attachments = { H2M::ImageFormatH2M::RGBA16F, H2M::ImageFormatH2M::Depth }; // VulkanFramebufferH2M always has a depth attachment
+		framebufferSpec.Samples = 1;
+		framebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+		framebufferSpec.Width = BloomLevelSize(s_ViewportWidth, i);
+		framebufferSpec.Height = BloomLevelSize(s_ViewportHeight, i);
+
+		framebufferSpec.DebugName = "BloomDown" + std::to_string(i);
+		s_BloomDownFramebuffers[i] = H2M::FramebufferH2M::Create(framebufferSpec);
+
+		if (i < s_BloomLevelCount - 1)
+		{
+			framebufferSpec.DebugName = "BloomUp" + std::to_string(i);
+			s_BloomUpFramebuffers[i] = H2M::FramebufferH2M::Create(framebufferSpec);
+		}
+	}
+
+	// All levels have the same formats, so their render passes are compatible and one pipeline draws into any of them
+	H2M::PipelineSpecificationH2M pipelineSpecification;
+	pipelineSpecification.Layout = {
+		{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+		{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+	};
+	pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("BloomPass");
+	H2M::RenderPassSpecificationH2M renderPassSpec;
+	renderPassSpec.TargetFramebuffer = s_BloomDownFramebuffers[0];
+	pipelineSpecification.RenderPass = H2M::RenderPassH2M::Create(renderPassSpec);
+	pipelineSpecification.DebugName = "Bloom";
+	s_BloomPipeline = H2M::PipelineH2M::Create(pipelineSpecification);
+
+	uint32_t passCount = 2 * s_BloomLevelCount - 1;
+	s_BloomDescriptorSets = pipelineSpecification.Shader.As<H2M::VulkanShaderH2M>()->CreateDescriptorSets(0, passCount);
+	s_ViewportCompositeDescriptorSet = s_ViewportCompositePipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>()->CreateDescriptorSets();
+
+	try
+	{
+		s_BloomDirtTexture = H2M::Texture2D_H2M::Create("Textures/dirt.png", true);
+	}
+	catch (...)
+	{
+		Log::GetLogger()->warn("Lens dirt texture 'Textures/dirt.png' could not be loaded.");
+	}
+	if (!s_BloomDirtTexture)
+	{
+		s_BloomDirtTexture = H2M::RendererH2M::GetWhiteTexture();
+	}
+
+	WriteBloomDescriptorSets();
+}
+
+// Called after the viewport framebuffers were resized
+static void ResizeBloomResources()
+{
+	for (uint32_t i = 0; i < s_BloomLevelCount; i++)
+	{
+		uint32_t width = BloomLevelSize(s_ViewportWidth, i);
+		uint32_t height = BloomLevelSize(s_ViewportHeight, i);
+		s_BloomDownFramebuffers[i]->Resize(width, height);
+		if (i < s_BloomLevelCount - 1)
+		{
+			s_BloomUpFramebuffers[i]->Resize(width, height);
+		}
+	}
+
+	// The descriptor sets may be used by frames in flight
+	vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+	WriteBloomDescriptorSets();
+	s_BloomChainRendered = false; // new images: no content (and no valid layout) until the chain is rendered
+}
+
+// Which image every bloom pass reads, and the composite's scene/bloom/dirt images
+static void WriteBloomDescriptorSets()
+{
+	auto imageInfo = [](const H2M::RefH2M<H2M::FramebufferH2M>& framebuffer) -> const VkDescriptorImageInfo*
+	{
+		return &framebuffer.As<H2M::VulkanFramebufferH2M>()->GetVulkanDescriptorInfo();
+	};
+
+	std::vector<VkWriteDescriptorSet> writes;
+
+	H2M::RefH2M<H2M::VulkanShaderH2M> bloomShader = s_BloomPipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>();
+	const VkWriteDescriptorSet* textureBinding = bloomShader->GetDescriptorSet("u_Texture");
+	const VkWriteDescriptorSet* bloomTextureBinding = bloomShader->GetDescriptorSet("u_BloomTexture");
+
+	auto addPass = [&](uint32_t pass, const VkDescriptorImageInfo* texture, const VkDescriptorImageInfo* bloomTexture)
+	{
+		VkWriteDescriptorSet write = *textureBinding;
+		write.dstSet = s_BloomDescriptorSets.DescriptorSets[pass];
+		write.descriptorCount = 1;
+		write.pImageInfo = texture;
+		writes.push_back(write);
+
+		write = *bloomTextureBinding;
+		write.dstSet = s_BloomDescriptorSets.DescriptorSets[pass];
+		write.descriptorCount = 1;
+		write.pImageInfo = bloomTexture; // only read by the upsample passes, but every binding needs a valid image
+		writes.push_back(write);
+	};
+
+	uint32_t pass = 0;
+	addPass(pass++, imageInfo(s_Framebuffer), imageInfo(s_Framebuffer)); // prefilter: scene -> down 0
+	for (uint32_t i = 1; i < s_BloomLevelCount; i++)
+	{
+		addPass(pass++, imageInfo(s_BloomDownFramebuffers[i - 1]), imageInfo(s_BloomDownFramebuffers[i - 1])); // down i-1 -> down i
+	}
+	for (int i = (int)s_BloomLevelCount - 2; i >= 0; i--)
+	{
+		// up i = down i + (the smallest level, or up i+1) upsampled
+		const VkDescriptorImageInfo* smaller = i == (int)s_BloomLevelCount - 2 ? imageInfo(s_BloomDownFramebuffers[i + 1]) : imageInfo(s_BloomUpFramebuffers[i + 1]);
+		addPass(pass++, imageInfo(s_BloomDownFramebuffers[i]), smaller);
+	}
+
+	H2M::RefH2M<H2M::VulkanShaderH2M> compositeShader = s_ViewportCompositePipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>();
+	const VkDescriptorImageInfo* compositeImages[3] = {
+		imageInfo(s_Framebuffer),
+		imageInfo(s_BloomUpFramebuffers[0]),
+		&s_BloomDirtTexture.As<H2M::VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo(),
+	};
+	const char* compositeBindings[3] = { "u_Texture", "u_BloomTexture", "u_BloomDirtTexture" };
+	for (uint32_t i = 0; i < 3; i++)
+	{
+		VkWriteDescriptorSet write = *compositeShader->GetDescriptorSet(compositeBindings[i]);
+		write.dstSet = s_ViewportCompositeDescriptorSet.DescriptorSets[0];
+		write.descriptorCount = 1;
+		write.pImageInfo = compositeImages[i];
+		writes.push_back(write);
+	}
+
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
+}
+
+// Prefilter, downsample and upsample passes (BloomPass.glsl), each a fullscreen quad drawn into one level of the chain.
+// Every render pass ends with its image in SHADER_READ_ONLY layout, ready for the next pass to sample.
+static void RecordBloomPasses(VkCommandBuffer commandBuffer)
+{
+	if (!s_BloomSettings.Enabled && s_BloomChainRendered)
+	{
+		return; // the composite multiplies the (old) bloom by 0
+	}
+
+	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_BloomPipeline.As<H2M::VulkanPipelineH2M>();
+	VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+	VkBuffer vertexBuffer = s_Data.QuadVertexBuffer.As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+	VkBuffer indexBuffer = s_Data.QuadIndexBuffer.As<H2M::VulkanIndexBufferH2M>()->GetVulkanBuffer();
+
+	struct BloomUniforms
+	{
+		glm::vec4 Params;
+		float UpsampleScale;
+		float Exposure;
+		int Mode;
+	} uniforms;
+	float knee = std::max(s_BloomSettings.Knee, 1.0e-4f);
+	float threshold = s_BloomSettings.Threshold;
+	uniforms.Params = { threshold, threshold - knee, knee * 2.0f, 0.25f / knee };
+	uniforms.UpsampleScale = s_BloomSettings.UpsampleScale;
+	uniforms.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
+
+	enum { ModePrefilter = 0, ModeDownsample = 1, ModeUpsample = 2 };
+
+	auto drawPass = [&](const H2M::RefH2M<H2M::FramebufferH2M>& target, uint32_t pass, int mode)
+	{
+		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = target.As<H2M::VulkanFramebufferH2M>();
+		uint32_t width = framebuffer->GetWidth();
+		uint32_t height = framebuffer->GetHeight();
+
+		VkClearValue clearValues[2];
+		clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
+		renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
+		renderPassBeginInfo.renderArea.extent.width = width;
+		renderPassBeginInfo.renderArea.extent.height = height;
+		renderPassBeginInfo.clearValueCount = 2; // Color + depth
+		renderPassBeginInfo.pClearValues = clearValues;
+		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		VkViewport viewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		VkRect2D scissor = { { 0, 0 }, { width, height } };
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+		VkDeviceSize offsets[1] = { 0 };
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+		vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+
+		uniforms.Mode = mode;
+		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(BloomUniforms), &uniforms);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &s_BloomDescriptorSets.DescriptorSets[pass], 0, nullptr);
+
+		vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+		vkCmdEndRenderPass(commandBuffer);
+	};
+
+	// Same pass order as in WriteBloomDescriptorSets
+	uint32_t pass = 0;
+	drawPass(s_BloomDownFramebuffers[0], pass++, ModePrefilter);
+	for (uint32_t i = 1; i < s_BloomLevelCount; i++)
+	{
+		drawPass(s_BloomDownFramebuffers[i], pass++, ModeDownsample);
+	}
+	for (int i = (int)s_BloomLevelCount - 2; i >= 0; i--)
+	{
+		drawPass(s_BloomUpFramebuffers[i], pass++, ModeUpsample);
+	}
+
+	s_BloomChainRendered = true;
+}
+
 // Draws s_Framebuffer (linear HDR) into s_ViewportCompositeFramebuffer with exposure, ACES tonemapping and gamma
 // (Resources/Shaders/SceneComposite.glsl). The Viewport panel shows the result.
 void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
@@ -1611,11 +1891,19 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
 
-	float exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
-	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &exposure);
+	struct CompositeUniforms
+	{
+		float Exposure;
+		float BloomIntensity;
+		float BloomDirtIntensity;
+	} uniforms;
+	uniforms.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
+	uniforms.BloomIntensity = s_BloomSettings.Enabled ? s_BloomSettings.Intensity : 0.0f;
+	uniforms.BloomDirtIntensity = s_BloomSettings.Enabled ? s_BloomSettings.DirtIntensity : 0.0f;
+	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(CompositeUniforms), &uniforms);
 
-	// QuadDescriptorSet samples s_Framebuffer's color image (rewritten when s_Framebuffer is resized)
-	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_Data.QuadDescriptorSet.DescriptorSets.size(), s_Data.QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
+	// Scene, bloom and lens dirt images (rewritten when the framebuffers are resized, see WriteBloomDescriptorSets)
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, s_ViewportCompositeDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
 	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 
@@ -1980,6 +2268,51 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						ImGui::Columns(1);
 					}
 				}
+
+				// Same settings as "Bloom Settings" in SceneHazelEnvMap's Scene Renderer panel
+				if (ImGui::CollapsingHeader("Bloom Settings", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::Columns(2);
+					ImGui::AlignTextToFramePadding();
+					ImGuiWrapper::Property("Bloom Enabled", s_BloomSettings.Enabled);
+					ImGuiWrapper::Property("Threshold", s_BloomSettings.Threshold, 0.01f, 0.0f, 20.0f, PropertyFlag::DragProperty);
+					ImGuiWrapper::Property("Knee", s_BloomSettings.Knee, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
+					ImGuiWrapper::Property("Upsample Scale", s_BloomSettings.UpsampleScale, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
+					ImGuiWrapper::Property("Intensity", s_BloomSettings.Intensity, 0.05f, 0.0f, 20.0f, PropertyFlag::DragProperty);
+					ImGuiWrapper::Property("Dirt Intensity", s_BloomSettings.DirtIntensity, 0.05f, 0.0f, 20.0f, PropertyFlag::DragProperty);
+					ImGui::Columns(1);
+
+					// Lens dirt texture: click the thumbnail (or drop an image on it) to choose another one
+					ImTextureID dirtThumbnail = s_BloomDirtTexture ? s_BloomDirtTexture->GetImTextureID() : ImTextureID{};
+					bool clicked = dirtThumbnail ? ImGui::ImageButton("##bloomdirt", dirtThumbnail, ImVec2(64.0f, 64.0f), ImVec2(0, 1), ImVec2(1, 0))
+						: ImGui::Button("Dirt", ImVec2(64.0f, 64.0f));
+					if (clicked)
+					{
+						std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"Images\0*.png;*.jpg;*.jpeg;*.tga;*.bmp\0All\0*.*\0"));
+						if (!filepath.empty())
+						{
+							s_PendingBloomDirtFilename = filepath;
+						}
+					}
+					if (ImGui::BeginDragDropTarget())
+					{
+						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+						{
+							std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
+							if (IsImageFile(itemPath))
+							{
+								s_PendingBloomDirtFilename = itemPath;
+							}
+						}
+						ImGui::EndDragDropTarget();
+					}
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Lens dirt: %s\nClick to load another image, or drop one from the Content Browser", s_BloomDirtTexture ? s_BloomDirtTexture->GetPath().c_str() : "");
+					}
+					ImGui::SameLine();
+					ImGui::TextDisabled("Lens dirt texture");
+				}
 			}
 			ImGui::End();
 			/**** END Environment ****/
@@ -2060,6 +2393,23 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_PendingMeshFilename.clear();
 		LoadMesh(filepath);
 	}
+	// Lens dirt texture chosen in the Bloom settings
+	if (!s_PendingBloomDirtFilename.empty())
+	{
+		std::string filepath = s_PendingBloomDirtFilename;
+		s_PendingBloomDirtFilename.clear();
+		try
+		{
+			H2M::RefH2M<H2M::Texture2D_H2M> texture = H2M::Texture2D_H2M::Create(filepath, true);
+			vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice()); // the composite descriptor set may be in use
+			s_BloomDirtTexture = texture;
+			WriteBloomDescriptorSets();
+		}
+		catch (...)
+		{
+			Log::GetLogger()->error("Lens dirt texture '{0}' could not be loaded.", filepath);
+		}
+	}
 	// Maps assigned in the Material Editor
 	for (const PendingMaterialTexture& request : s_PendingMaterialTextures)
 	{
@@ -2067,6 +2417,9 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	}
 	s_PendingMaterialTextures.clear();
 
+	// The aspect ratio must follow the viewport panel, not the window (Scene::OnWindowResize sets the window size),
+	// otherwise resizing the panel in one dimension stretches the scene. The FOV is vertical, as in SceneHazelEnvMap.
+	camera->SetViewportSize((float)s_ViewportWidth, (float)s_ViewportHeight);
 	s_Data.SceneData.SceneCamera.Camera = *camera;
 
 	for (LoadedMeshVulkan& entry : s_LoadedMeshes)
@@ -2079,6 +2432,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
+		ResizeBloomResources();
 		s_ViewportFBNeedsResize = false;
 	}
 

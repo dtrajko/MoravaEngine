@@ -60,6 +60,45 @@ namespace H2M
 
 	// glm::mat4 Mat4FromAssimpMat4(const aiMatrix4x4& matrix) moved to Math class
 
+	// Loads a material map for the Vulkan-only maps below; returns an empty reference if the file is missing or fails to load
+	static RefH2M<Texture2D_H2M> LoadMaterialMap(const std::string& texturePath, bool srgb)
+	{
+		if (!std::filesystem::exists(texturePath))
+		{
+			Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
+			return RefH2M<Texture2D_H2M>();
+		}
+		try
+		{
+			RefH2M<Texture2D_H2M> texture = ResourceManager::LoadTexture2D_H2M(texturePath, srgb);
+			return texture && texture->Loaded() ? texture : RefH2M<Texture2D_H2M>();
+		}
+		catch (...)
+		{
+			Log::GetLogger()->error("    Could not load texture: {0}", texturePath);
+			return RefH2M<Texture2D_H2M>();
+		}
+	}
+
+	// Texture paths in a model file are relative to the model. Some models keep their maps in Textures/PBR/<model name>/
+	// instead (e.g. Models/DamagedHelmet.gltf -> Textures/PBR/DamagedHelmet/), which is tried when the first path does not exist.
+	static std::string ResolveTexturePath(const std::string& modelPath, const std::string& texturePath)
+	{
+		std::filesystem::path path = std::filesystem::path(modelPath).parent_path() / texturePath;
+		if (std::filesystem::exists(path))
+		{
+			return path.string();
+		}
+
+		std::filesystem::path fallback = std::filesystem::path("Textures/PBR") / std::filesystem::path(modelPath).stem() / std::filesystem::path(texturePath).filename();
+		if (std::filesystem::exists(fallback))
+		{
+			return fallback.string();
+		}
+
+		return path.string();
+	}
+
 	static const uint32_t s_MeshImportFlags =
 		aiProcess_CalcTangentSpace |        // Create binormals/tangents just in case
 		aiProcess_Triangulate |             // Make sure we're triangles
@@ -494,6 +533,13 @@ namespace H2M
 
 				// Material values used when there is no roughness/metalness map (Vulkan reads them from the material;
 				// the m_MeshShader->SetFloat calls below only apply to OpenGL)
+				if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
+				{
+					// PBR formats (glTF) store the values directly
+					float factor;
+					if (aiMaterial->Get(AI_MATKEY_METALLIC_FACTOR, factor) == AI_SUCCESS) metalness = factor;
+					if (aiMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, factor) == AI_SUCCESS) roughness = factor;
+				}
 				mi->Set("u_MaterialUniforms.Roughness", roughness);
 				mi->Set("u_MaterialUniforms.Metalness", metalness);
 
@@ -512,10 +558,7 @@ namespace H2M
 				if (hasAlbedoMap)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::filesystem::path path = m_FilePath;
-					auto parentPath = path.parent_path();
-					parentPath /= std::string(aiTexPath.data);
-					std::string texturePath = parentPath.string();
+					std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
 					HZ_MESH_LOG("    Albedo map path = '{0}'", texturePath);
 
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
@@ -592,10 +635,7 @@ namespace H2M
 				if (hasNormalMap)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::filesystem::path path = m_FilePath;
-					auto parentPath = path.parent_path();
-					parentPath /= std::string(aiTexPath.data);
-					std::string texturePath = parentPath.string();
+					std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
 					HZ_MESH_LOG("    Normal map path = '{0}'", texturePath);
 
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
@@ -656,17 +696,21 @@ namespace H2M
 				// m_MeshShader->SetFloat("u_MaterialUniforms.RoughnessTexToggle", 0.0f);
 
 				bool hasRoughnessMap = aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS;
+				// PBR formats (glTF: the metallicRoughness map, roughness in G) - Vulkan only, the OpenGL shader reads roughness from R
+				if (!hasRoughnessMap && RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
+				{
+					hasRoughnessMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &aiTexPath) == AI_SUCCESS;
+				}
 				fallback = !hasRoughnessMap;
+				std::string roughnessTexturePath;
 
-				if (aiMaterial->GetTexture(aiTextureType_SHININESS, 0, &aiTexPath) == AI_SUCCESS)
+				if (hasRoughnessMap)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::filesystem::path path = m_FilePath;
-					auto parentPath = path.parent_path();
-					parentPath /= std::string(aiTexPath.data);
-					std::string texturePath = parentPath.string();
+					std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
 					// HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
 					HZ_MESH_LOG("    Roughness map path = '{0}'", texturePath);
+					roughnessTexturePath = texturePath;
 
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
@@ -727,10 +771,7 @@ namespace H2M
 				if (aiMaterial->Get("$raw.ReflectionFactor|file", aiPTI_String, 0, aiTexPath) == AI_SUCCESS)
 				{
 					// TODO: Temp - this should be handled by Hazel's filesystem
-					std::filesystem::path path = m_FilePath;
-					auto parentPath = path.parent_path();
-					parentPath /= std::string(aiTexPath.data);
-					std::string texturePath = parentPath.string();
+					std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
 
 					RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
 					try {
@@ -826,10 +867,7 @@ namespace H2M
 						if (key == "$raw.ReflectionFactor|file")
 						{
 							// TODO: Temp - this should be handled by Hazel's filesystem
-							std::filesystem::path path = m_FilePath;
-							auto parentPath = path.parent_path();
-							parentPath /= str;
-							std::string texturePath = parentPath.string();
+							std::string texturePath = ResolveTexturePath(m_FilePath, str);
 							HZ_MESH_LOG("    Metalness map path = '{0}'", texturePath);
 
 							RefH2M<Texture2D_H2M> texture = RefH2M<Texture2D_H2M>();
@@ -869,6 +907,26 @@ namespace H2M
 					}
 				}
 
+				// PBR formats (glTF: the metallicRoughness map, metalness in B) - Vulkan only, the OpenGL shader reads metalness from R
+				std::string metalnessTexturePath;
+				if (!metalnessTextureFound && RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan &&
+					aiMaterial->GetTexture(aiTextureType_METALNESS, 0, &aiTexPath) == AI_SUCCESS)
+				{
+					metalnessTexturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
+					HZ_MESH_LOG("    Metalness map path = '{0}'", metalnessTexturePath);
+
+					RefH2M<Texture2D_H2M> texture = LoadMaterialMap(metalnessTexturePath, false);
+					if (texture)
+					{
+						metalnessTextureFound = true;
+						m_Textures.push_back(texture);
+						mi->Set("u_MetalnessTexture", texture);
+						AddMaterialTextureWriteDescriptor(i, "u_MetalnessTexture", texture); // TODO: to be removed from MeshH2M
+						mi->Set("u_MaterialUniforms.MetalnessTexToggle", 1.0f);
+						MaterialLibrary::AddTextureToEnvMapMaterial(MaterialTextureType::Metalness, metalnessTexturePath, materialData->EnvMapMaterialRef);
+					}
+				}
+
 				if (!metalnessTextureFound)
 				{
 					Log::GetLogger()->info("    No metalness map");
@@ -889,6 +947,66 @@ namespace H2M
 					if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 					{
 						AddMaterialTextureWriteDescriptor(i, "u_MetalnessTexture", whiteTexture); // TODO: to be removed from MeshH2M
+					}
+				}
+
+				// Emissive, ambient occlusion, tiling (Vulkan PBR shader, HazelPBR_Static.glsl)
+				if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
+				{
+					mi->Set("u_MaterialUniforms.TilingFactor", 1.0f);
+
+					// glTF packs metalness (B) and roughness (G) into one map; grayscale maps read the same in any channel
+					bool packed = !roughnessTexturePath.empty() && roughnessTexturePath == metalnessTexturePath;
+					mi->Set("u_MaterialUniforms.MetalRoughPacked", packed ? 1.0f : 0.0f);
+
+					// Emissive map: color data (sRGB)
+					RefH2M<Texture2D_H2M> emissiveTexture;
+					if (aiMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &aiTexPath) == AI_SUCCESS)
+					{
+						std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
+						HZ_MESH_LOG("    Emissive map path = '{0}'", texturePath);
+						emissiveTexture = LoadMaterialMap(texturePath, true);
+					}
+					if (emissiveTexture)
+					{
+						// glTF: the map is multiplied by emissiveFactor
+						float intensity = 1.0f;
+						aiColor3D emissiveColor;
+						if (aiMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissiveColor) == AI_SUCCESS)
+						{
+							intensity = glm::max(emissiveColor.r, glm::max(emissiveColor.g, emissiveColor.b));
+						}
+						m_Textures.push_back(emissiveTexture);
+						AddMaterialTextureWriteDescriptor(i, "u_EmissiveTexture", emissiveTexture);
+						mi->Set("u_MaterialUniforms.EmissiveTexToggle", 1.0f);
+						mi->Set("u_MaterialUniforms.EmissiveIntensity", intensity > 0.0f ? intensity : 1.0f);
+					}
+					else
+					{
+						AddMaterialTextureWriteDescriptor(i, "u_EmissiveTexture", whiteTexture); // placeholder, the toggle is off
+						mi->Set("u_MaterialUniforms.EmissiveTexToggle", 0.0f);
+						mi->Set("u_MaterialUniforms.EmissiveIntensity", 1.0f);
+					}
+
+					// Ambient occlusion map: linear data. glTF's occlusionTexture arrives as LIGHTMAP
+					RefH2M<Texture2D_H2M> aoTexture;
+					if (aiMaterial->GetTexture(aiTextureType_AMBIENT_OCCLUSION, 0, &aiTexPath) == AI_SUCCESS ||
+						aiMaterial->GetTexture(aiTextureType_LIGHTMAP, 0, &aiTexPath) == AI_SUCCESS)
+					{
+						std::string texturePath = ResolveTexturePath(m_FilePath, aiTexPath.data);
+						HZ_MESH_LOG("    AO map path = '{0}'", texturePath);
+						aoTexture = LoadMaterialMap(texturePath, false);
+					}
+					if (aoTexture)
+					{
+						m_Textures.push_back(aoTexture);
+						AddMaterialTextureWriteDescriptor(i, "u_AOTexture", aoTexture);
+						mi->Set("u_MaterialUniforms.AOTexToggle", 1.0f);
+					}
+					else
+					{
+						AddMaterialTextureWriteDescriptor(i, "u_AOTexture", whiteTexture); // placeholder, the toggle is off
+						mi->Set("u_MaterialUniforms.AOTexToggle", 0.0f);
 					}
 				}
 			}
