@@ -149,6 +149,10 @@ namespace H2M
 		AABB_H2M BoundingBox;
 
 		std::string NodeName, MeshName;
+
+		// The submesh has bone weights: its skinned vertices are already in model space (the bone matrices include the
+		// node transforms), so it is drawn with the mesh transform only, not with Transform
+		bool IsRigged = false;
 	};
 
 	class MeshH2M : public Mesh
@@ -215,6 +219,23 @@ namespace H2M
 		// True only if the loaded model file actually contains animations (IsAnimated() is a user-editable flag)
 		bool HasAnimations() const;
 		const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
+
+		// Animation playback (Meshes panel in SceneEnvMapVulkan). Times are in animation ticks.
+		// True if the vertex buffer has bone IDs and weights (the model was loaded with animations)
+		bool IsSkinned() const { return !m_AnimatedVertices.empty(); }
+		uint32_t GetBoneCount() const { return m_BoneCount; }
+		// The bone matrices start with the inverse root node transform (see ReadNodeHierarchy): rigged submeshes are drawn with
+		// the mesh transform * this root transform (unit scale / axis conversion of the file)
+		glm::mat4 GetRootTransform() const { return glm::inverse(m_InverseTransform); }
+		uint32_t GetAnimationCount() const;
+		std::string GetAnimationName(uint32_t index) const;
+		uint32_t GetAnimationIndex() const { return m_AnimationIndex; }
+		void SetAnimationIndex(uint32_t index); // also restarts the animation
+		float GetAnimationDuration() const;
+		float GetAnimationTicksPerSecond() const;
+		float& AnimationTime() { return m_AnimationTime; }
+		float& TimeMultiplier() { return m_TimeMultiplier; }
+		bool& AnimationPlaying() { return m_AnimationPlaying; }
 
 		// Setters
 		inline void SetBaseMaterial(RefH2M<MaterialH2M> baseMaterial) { m_BaseMaterial = baseMaterial; }
@@ -283,6 +304,7 @@ namespace H2M
 		float m_WorldTime = 0.0f;
 		float m_TimeMultiplier = 1.0f;
 		bool m_AnimationPlaying = true;
+		uint32_t m_AnimationIndex = 0; // which of the file's animations is played
 
 		friend class RendererH2M;
 		friend class SceneHierarchyPanelH2M;

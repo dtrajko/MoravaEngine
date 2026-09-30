@@ -327,7 +327,8 @@ vec3 LightingTemp(vec3 F0)
 
 vec3 IBL(vec3 F0, vec3 Lr)
 {
-	vec3 irradiance = texture(u_EnvIrradianceTex, m_Params.Normal).rgb;
+	// The environment rotation applies to the diffuse lighting too (not only to the reflections), so both match the skybox
+	vec3 irradiance = texture(u_EnvIrradianceTex, RotateVectorAboutY(u_MaterialUniforms.EnvMapRotation, m_Params.Normal)).rgb;
 	vec3 F = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
 	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
 	vec3 diffuseIBL = m_Params.Albedo * irradiance;

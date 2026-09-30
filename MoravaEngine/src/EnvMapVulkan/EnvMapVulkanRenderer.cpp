@@ -82,6 +82,7 @@ struct BloomSettingsVulkan
 	float Knee = 0.1f;          // soft transition below the threshold
 	float UpsampleScale = 1.0f; // radius of the upsample filter: larger values spread the glow further
 	float Intensity = 1.0f;
+	bool DirtEnabled = true;    // lens dirt on/off (the texture and intensity are kept)
 	float DirtIntensity = 1.0f; // lens dirt texture, lit by the bloom
 };
 static BloomSettingsVulkan s_BloomSettings;
@@ -106,6 +107,7 @@ static bool s_DisplayGrid = true;
 static float s_GridScale = 16.025f; // cells across the grid (it spans 32 x 32 units)
 static float s_GridSize = 0.025f;   // line width, as a fraction of a cell
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipeline;                 // to be removed from VulkanRenderer
+static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnim; // skinned meshes (HazelPBR_Anim.glsl): vertex layout with bone IDs and weights
 static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
 static bool s_ViewportTextureNeedsUpdate = false;     // the viewport framebuffer was recreated (resize)
 
@@ -440,10 +442,9 @@ static void LoadMesh(const std::string& filepath)
 		return;
 	}
 
-	// On Vulkan, MeshH2M loads animated models with the static vertex layout (see MeshH2M::Create)
 	if (mesh->HasAnimations())
 	{
-		Log::GetLogger()->warn("Mesh '{0}' has animations: shown in its bind pose (skinning is not supported by the Vulkan PBR pipeline yet).", filepath);
+		Log::GetLogger()->info("Mesh '{0}': {1} animation(s), {2} bones", filepath, mesh->GetAnimationCount(), mesh->GetBoneCount());
 	}
 
 	LoadedMeshVulkan entry;
@@ -568,6 +569,20 @@ static void UpdateMeshUniforms(const H2M::RefH2M<H2M::MeshH2M>& mesh)
 	ubPtr = shader->MapUniformBuffer(1, 0);
 	memcpy(ubPtr, &ub, sizeof(EnvironmentUB));
 	shader->UnmapUniformBuffer(1, 0);
+
+	// set 0, binding 8: bone matrices of the current animation frame (HazelPBR_Anim.glsl, up to 128)
+	H2M::RefH2M<H2M::MeshH2M> meshRef = mesh;
+	if (meshRef->IsSkinned())
+	{
+		const std::vector<glm::mat4>& boneTransforms = meshRef->GetBoneTransforms();
+		size_t boneCount = std::min<size_t>(boneTransforms.size(), 128);
+		if (boneCount > 0)
+		{
+			ubPtr = shader->MapUniformBuffer(8, 0);
+			memcpy(ubPtr, boneTransforms.data(), boneCount * sizeof(glm::mat4));
+			shader->UnmapUniformBuffer(8, 0);
+		}
+	}
 }
 
 static void OnImGuiRenderMeshes()
@@ -642,6 +657,67 @@ static void OnImGuiRenderMeshes()
 		if (ImGui::Button("Remove Mesh"))
 		{
 			s_PendingRemoveMeshIndex = s_SelectedMeshIndex; // removed at the start of the next frame (see Draw)
+		}
+
+		// Animation playback (skinned meshes), like the Animation section of the Mesh Debug panel in SceneHazelEnvMap
+		H2M::RefH2M<H2M::MeshH2M> mesh = entry.Mesh;
+		if (mesh->HasAnimations() && mesh->IsSkinned())
+		{
+			ImGui::Separator();
+			ImGui::Text("Animation");
+
+			ImGui::Checkbox("Animated", &mesh->IsAnimated());
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Off: the model is shown in its bind pose");
+			}
+
+			ImGui::BeginDisabled(!mesh->IsAnimated());
+			{
+				uint32_t animationCount = mesh->GetAnimationCount();
+				if (animationCount > 1)
+				{
+					if (ImGui::BeginCombo("Clip", mesh->GetAnimationName(mesh->GetAnimationIndex()).c_str()))
+					{
+						for (uint32_t a = 0; a < animationCount; a++)
+						{
+							ImGui::PushID((int)a);
+							if (ImGui::Selectable(mesh->GetAnimationName(a).c_str(), mesh->GetAnimationIndex() == a))
+							{
+								mesh->SetAnimationIndex(a);
+							}
+							ImGui::PopID();
+						}
+						ImGui::EndCombo();
+					}
+				}
+				else
+				{
+					ImGui::TextDisabled("Clip: %s", mesh->GetAnimationName(0).c_str());
+				}
+
+				if (ImGui::Button(mesh->AnimationPlaying() ? "Pause" : "Play", ImVec2(60.0f, 0.0f)))
+				{
+					mesh->AnimationPlaying() = !mesh->AnimationPlaying();
+				}
+				ImGui::SameLine();
+				if (ImGui::Button("Restart"))
+				{
+					mesh->AnimationTime() = 0.0f;
+				}
+
+				// Scrub through the animation (in seconds; MeshH2M keeps the time in animation ticks)
+				float ticksPerSecond = mesh->GetAnimationTicksPerSecond();
+				float durationSeconds = mesh->GetAnimationDuration() / ticksPerSecond;
+				float timeSeconds = mesh->AnimationTime() / ticksPerSecond;
+				if (ImGui::SliderFloat("Time", &timeSeconds, 0.0f, durationSeconds, "%.2f s"))
+				{
+					mesh->AnimationTime() = timeSeconds * ticksPerSecond;
+				}
+				ImGui::DragFloat("Time Scale", &mesh->TimeMultiplier(), 0.01f, 0.0f, 10.0f, "%.2fx");
+				ImGui::TextDisabled("Duration %.2f s (%.0f ticks at %.0f/s), %u bones", durationSeconds, mesh->GetAnimationDuration(), ticksPerSecond, mesh->GetBoneCount());
+			}
+			ImGui::EndDisabled();
 		}
 
 		// Submeshes (as in SceneHazelEnvMap): select one to edit its material in the Material Editor,
@@ -987,6 +1063,20 @@ void EnvMapVulkanRenderer::Init()
 		pipelineSpecification.RenderPass = H2M::RenderPassH2M::Create(renderPassSpec);
 		pipelineSpecification.DebugName = "PBR-Static";
 		s_MeshPipeline = H2M::PipelineH2M::Create(pipelineSpecification);
+
+		// Skinned meshes: same render pass, vertex layout of MeshH2M's AnimatedVertex
+		pipelineSpecification.Layout = {
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Tangent" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Binormal" },
+			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+			{ H2M::ShaderDataTypeH2M::Int4,   "a_BoneIndices" },
+			{ H2M::ShaderDataTypeH2M::Float4, "a_BoneWeights" },
+		};
+		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Anim");
+		pipelineSpecification.DebugName = "PBR-Anim";
+		s_MeshPipelineAnim = H2M::PipelineH2M::Create(pipelineSpecification);
 	}
 	/**** END: to be removed from VulkanRenderer ****/
 
@@ -1235,7 +1325,9 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 	H2M::RefH2M<VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<VulkanPipeline>();
 	/**** END Non-composite ****/
 	/**** BEGIN Composite ****/
-	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_MeshPipeline.As<H2M::VulkanPipelineH2M>(); // to be removed from VulkanRenderer
+	// Skinned meshes have a different vertex layout (bone IDs and weights) and shader
+	bool skinned = mesh->IsSkinned();
+	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = (skinned ? s_MeshPipelineAnim : s_MeshPipeline).As<H2M::VulkanPipelineH2M>(); // to be removed from VulkanRenderer
 	/**** END Composite ****/
 
 	VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
@@ -1289,7 +1381,9 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 		// Push Constants
 		// glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
-		glm::mat4 submeshTransform = transform * submesh->Transform; // mesh transform (Meshes panel) * node transform from the model
+		// Mesh transform (Meshes panel) * node transform from the model. Rigged submeshes: the bone matrices already
+		// place the skinned vertices relative to the root node, so the root node transform replaces the node transform.
+		glm::mat4 submeshTransform = (skinned && submesh->IsRigged) ? transform * mesh->GetRootTransform() : transform * submesh->Transform;
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submeshTransform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 		vkCmdDrawIndexed(commandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
@@ -1364,8 +1458,12 @@ void EnvMapVulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipelineLayout, 0, (uint32_t)descriptorSet.DescriptorSets.size(), descriptorSet.DescriptorSets.data(), 0, nullptr);
 
 	// push constants
-	float skyboxLod = s_Data.SceneData.SkyboxLod;
-	vkCmdPushConstants(commandBuffer, skyboxPipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &skyboxLod);
+	struct SkyboxUniforms
+	{
+		float TextureLod;
+		float Rotation; // degrees around Y: the same rotation as the PBR environment lookups
+	} skyboxUniforms = { s_Data.SceneData.SkyboxLod, s_EnvMapRotation };
+	vkCmdPushConstants(commandBuffer, skyboxPipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SkyboxUniforms), &skyboxUniforms);
 
 	vkCmdDrawIndexed(commandBuffer, s_Data.VulkanSkyboxCube->m_IndexCount, 1, 0, 0, 0);
 }
@@ -1899,7 +1997,7 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	} uniforms;
 	uniforms.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
 	uniforms.BloomIntensity = s_BloomSettings.Enabled ? s_BloomSettings.Intensity : 0.0f;
-	uniforms.BloomDirtIntensity = s_BloomSettings.Enabled ? s_BloomSettings.DirtIntensity : 0.0f;
+	uniforms.BloomDirtIntensity = (s_BloomSettings.Enabled && s_BloomSettings.DirtEnabled) ? s_BloomSettings.DirtIntensity : 0.0f;
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(CompositeUniforms), &uniforms);
 
 	// Scene, bloom and lens dirt images (rewritten when the framebuffers are resized, see WriteBloomDescriptorSets)
@@ -2260,7 +2358,19 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						ImGuiWrapper::Property("Light Multiplier", s_LightMultiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Auto Exposure", s_AutoExposureEnabled);
-						ImGuiWrapper::Property("Env Map Rotation", s_EnvMapRotation, 1.0f, -360.0f, 360.0f, PropertyFlag::DragProperty);
+						// No drag limits (min = max = 0): the value wraps around, so it can be dragged endlessly in both directions
+						if (ImGuiWrapper::Property("Env Map Rotation", s_EnvMapRotation, 1.0f, 0.0f, 0.0f, PropertyFlag::DragProperty))
+						{
+							s_EnvMapRotation = std::fmod(s_EnvMapRotation, 360.0f);
+							if (s_EnvMapRotation < 0.0f)
+							{
+								s_EnvMapRotation += 360.0f;
+							}
+						}
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("Turns the environment around the vertical axis (yaw, degrees):\nskybox, reflections and environment lighting together");
+						}
 						ImGuiWrapper::Property("Display Grid", s_DisplayGrid);
 						ImGuiWrapper::Property("Grid Scale", s_GridScale, 0.1f, 1.0f, 256.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Grid Line Width", s_GridSize, 0.001f, 0.001f, 0.5f, PropertyFlag::DragProperty);
@@ -2279,7 +2389,10 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					ImGuiWrapper::Property("Knee", s_BloomSettings.Knee, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
 					ImGuiWrapper::Property("Upsample Scale", s_BloomSettings.UpsampleScale, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
 					ImGuiWrapper::Property("Intensity", s_BloomSettings.Intensity, 0.05f, 0.0f, 20.0f, PropertyFlag::DragProperty);
+					ImGuiWrapper::Property("Lens Dirt", s_BloomSettings.DirtEnabled);
+					ImGui::BeginDisabled(!s_BloomSettings.DirtEnabled);
 					ImGuiWrapper::Property("Dirt Intensity", s_BloomSettings.DirtIntensity, 0.05f, 0.0f, 20.0f, PropertyFlag::DragProperty);
+					ImGui::EndDisabled();
 					ImGui::Columns(1);
 
 					// Lens dirt texture: click the thumbnail (or drop an image on it) to choose another one
@@ -2422,8 +2535,18 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	camera->SetViewportSize((float)s_ViewportWidth, (float)s_ViewportHeight);
 	s_Data.SceneData.SceneCamera.Camera = *camera;
 
+	// Frame time for the animations (clamped: a long stall, e.g. loading a model, would otherwise skip ahead)
+	static auto s_LastAnimationUpdate = std::chrono::steady_clock::now();
+	auto now = std::chrono::steady_clock::now();
+	float deltaTime = std::min(std::chrono::duration<float>(now - s_LastAnimationUpdate).count(), 0.1f);
+	s_LastAnimationUpdate = now;
+
 	for (LoadedMeshVulkan& entry : s_LoadedMeshes)
 	{
+		if (entry.Mesh->IsSkinned())
+		{
+			entry.Mesh->OnUpdate(H2M::TimestepH2M(deltaTime), false); // bone matrices of the current frame (bind pose when not animated)
+		}
 		UpdateMeshUniforms(entry.Mesh);
 		SubmitMeshTemp(entry.Mesh, entry.GetTransform());
 	}

@@ -120,6 +120,16 @@ void CameraController::MouseScrollControl(bool* keys, float deltaTime, float xOf
 	if (abs(yOffset) < 0.1f || abs(yOffset) > 10.0f)
 		return;
 
+	// Zoom follows the mouse, not the keyboard focus: only when the cursor is over the viewport
+	// (or over the scene when there is no Viewport window), or while rotating with the right button
+	// (ImGui ignores the hidden cursor then, so the viewport doesn't report hovered). The scroll offset
+	// was already read (and reset) by Update, so a scroll over a panel is dropped, not saved for later.
+	bool overScene = ImGuiWrapper::GetViewportEnabled()
+		? ImGuiWrapper::GetViewportHovered()
+		: !(ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().WantCaptureMouse);
+	if (!m_Rotating && !overScene)
+		return;
+
 	GLfloat velocity = m_MoveSpeed * yOffset;
 
 	if (Input::IsKeyPressed(KeyH2M::LeftShift))

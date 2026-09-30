@@ -634,8 +634,12 @@ namespace H2M
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, skyboxPipelineLayout, 0, (uint32_t)descriptorSet.DescriptorSets.size(), descriptorSet.DescriptorSets.data(), 0, nullptr);
 
 		// push constants
-		float skyboxLod = s_Data.SceneData.SkyboxLod;
-		vkCmdPushConstants(commandBuffer, skyboxPipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &skyboxLod);
+		struct SkyboxUniforms
+		{
+			float TextureLod;
+			float Rotation; // Skybox.glsl: degrees around Y (not used in this scene)
+		} skyboxUniforms = { s_Data.SceneData.SkyboxLod, 0.0f };
+		vkCmdPushConstants(commandBuffer, skyboxPipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SkyboxUniforms), &skyboxUniforms);
 
 		vkCmdDrawIndexed(commandBuffer, s_Data.VulkanSkyboxCube->m_IndexCount, 1, 0, 0, 0);
 	}

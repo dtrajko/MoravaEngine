@@ -390,3 +390,4 @@ vendor/PhysX
 # Claude Code personal settings
 .claude/settings.local.json
 .claude
+MoravaEngine/Resources/Shaders/cached

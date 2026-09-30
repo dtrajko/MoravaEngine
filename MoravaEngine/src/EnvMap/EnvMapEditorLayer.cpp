@@ -2387,6 +2387,12 @@ bool EnvMapEditorLayer::OnMouseScrolled(H2M::MouseScrolledEventH2M& e)
         return false;
     }
 
+    // Zoom only when the mouse is over the viewport (scrolling a panel must not move the camera)
+    if (!m_ViewportHovered)
+    {
+        return false;
+    }
+
     float velocity = m_CameraMoveSpeed * offsetY;
 
     m_ActiveCamera->SetPosition(m_ActiveCamera->GetPosition() + m_ActiveCamera->GetFront() * velocity);

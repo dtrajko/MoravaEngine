@@ -179,9 +179,8 @@ namespace H2M
 
 		m_Scene = scene;
 
-		// The Vulkan PBR pipeline only has the static vertex layout (no skinning yet): animated models are loaded
-		// with static vertices there and shown in their bind pose (HasAnimations() still reports the animations)
-		m_IsAnimated = scene->mAnimations != nullptr && RendererAPI_H2M::Current() != RendererAPITypeH2M::Vulkan;
+		// Animated models get the skinned vertex layout (bone IDs and weights) and the skinning shader, on OpenGL and Vulkan
+		m_IsAnimated = scene->mAnimations != nullptr;
 		// m_MaterialInstance = std::make_shared<MaterialInstance>(m_BaseMaterial);
 
 		if (!m_MeshShader)
@@ -208,7 +207,7 @@ namespace H2M
 			{
 				MoravaShaderSpecification moravaShaderSpecificationHazelVulkan;
 				moravaShaderSpecificationHazelVulkan.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
-				moravaShaderSpecificationHazelVulkan.HazelShaderPath = "Resources/Shaders/HazelPBR_Static.glsl";
+				moravaShaderSpecificationHazelVulkan.HazelShaderPath = m_IsAnimated ? "Resources/Shaders/HazelPBR_Anim.glsl" : "Resources/Shaders/HazelPBR_Static.glsl";
 				moravaShaderSpecificationHazelVulkan.ForceCompile = false; // the shader cache is recompiled when the source is newer
 
 				m_MeshShader = MoravaShader::Create(moravaShaderSpecificationHazelVulkan);
@@ -347,6 +346,29 @@ namespace H2M
 							m_StaticVertices[index.V3 + submesh->BaseVertex]);
 					}
 				}
+				else
+				{
+					// Animated meshes: the bind pose (mouse picking tests these triangles)
+					if (index.V1 + submesh->BaseVertex < m_AnimatedVertices.size() &&
+						index.V2 + submesh->BaseVertex < m_AnimatedVertices.size() &&
+						index.V3 + submesh->BaseVertex < m_AnimatedVertices.size())
+					{
+						auto toStatic = [](const AnimatedVertex& v)
+						{
+							VertexH2M vertex;
+							vertex.Position = v.Position;
+							vertex.Normal = v.Normal;
+							vertex.Tangent = v.Tangent;
+							vertex.Binormal = v.Binormal;
+							vertex.Texcoord = v.Texcoord;
+							return vertex;
+						};
+						m_TriangleCache[(uint32_t)m].emplace_back(
+							toStatic(m_AnimatedVertices[index.V1 + submesh->BaseVertex]),
+							toStatic(m_AnimatedVertices[index.V2 + submesh->BaseVertex]),
+							toStatic(m_AnimatedVertices[index.V3 + submesh->BaseVertex]));
+					}
+				}
 			}
 		}
 
@@ -403,6 +425,7 @@ namespace H2M
 			{
 				aiMesh* mesh = scene->mMeshes[m];
 				RefH2M<SubmeshH2M> submesh = m_Submeshes[m];
+				submesh->IsRigged = mesh->mNumBones > 0;
 
 				for (size_t i = 0; i < mesh->mNumBones; i++)
 				{
@@ -435,6 +458,12 @@ namespace H2M
 						}
 					}
 				}
+			}
+
+			// The Vulkan skinning shader (HazelPBR_Anim.glsl) has room for 128 bone matrices
+			if (m_BoneCount > 128)
+			{
+				Log::GetLogger()->warn("MeshH2M: '{0}' has {1} bones; the Vulkan skinning shader supports 128, the others are not animated.", m_FilePath, m_BoneCount);
 			}
 		}
 
@@ -491,6 +520,19 @@ namespace H2M
 						writeDescriptorSet.pBufferInfo = &ub1.Descriptor;
 						writeDescriptorSet.dstBinding = 1;
 						materialDescriptor.WriteDescriptors.push_back(writeDescriptorSet);
+
+						// HazelPBR_Anim.glsl: bone matrices (binding 8), written every frame by the renderer
+						if (m_IsAnimated)
+						{
+							auto& ub8 = shader.As<VulkanShaderH2M>()->GetUniformBuffer(8);
+							writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+							writeDescriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
+							writeDescriptorSet.descriptorCount = (uint32_t)materialDescriptor.DescriptorSet.DescriptorSets.size();
+							writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+							writeDescriptorSet.pBufferInfo = &ub8.Descriptor;
+							writeDescriptorSet.dstBinding = 8;
+							materialDescriptor.WriteDescriptors.push_back(writeDescriptorSet);
+						}
 					}
 				}
 				/**** END to be removed from MeshH2M ****/
@@ -1171,22 +1213,75 @@ namespace H2M
 		return m_Scene && m_Scene->mAnimations && m_Scene->mNumAnimations > 0;
 	}
 
+	uint32_t MeshH2M::GetAnimationCount() const
+	{
+		return HasAnimations() ? m_Scene->mNumAnimations : 0;
+	}
+
+	std::string MeshH2M::GetAnimationName(uint32_t index) const
+	{
+		if (index >= GetAnimationCount())
+		{
+			return std::string();
+		}
+		std::string name = m_Scene->mAnimations[index]->mName.C_Str();
+		return name.empty() ? "Animation " + std::to_string(index) : name;
+	}
+
+	void MeshH2M::SetAnimationIndex(uint32_t index)
+	{
+		if (index < GetAnimationCount())
+		{
+			m_AnimationIndex = index;
+			m_AnimationTime = 0.0f;
+		}
+	}
+
+	float MeshH2M::GetAnimationDuration() const
+	{
+		return m_AnimationIndex < GetAnimationCount() ? (float)m_Scene->mAnimations[m_AnimationIndex]->mDuration : 0.0f;
+	}
+
+	float MeshH2M::GetAnimationTicksPerSecond() const
+	{
+		if (m_AnimationIndex >= GetAnimationCount())
+		{
+			return 25.0f;
+		}
+		double ticksPerSecond = m_Scene->mAnimations[m_AnimationIndex]->mTicksPerSecond;
+		return ticksPerSecond != 0.0 ? (float)ticksPerSecond : 25.0f;
+	}
+
 	void MeshH2M::OnUpdate(TimestepH2M ts, bool debug)
 	{
 		// m_IsAnimated can be switched on in the UI; only animate models that actually have animations
 		if (m_IsAnimated && HasAnimations())
 		{
+			if (m_AnimationIndex >= m_Scene->mNumAnimations)
+			{
+				m_AnimationIndex = 0;
+			}
+			const aiAnimation* animation = m_Scene->mAnimations[m_AnimationIndex];
+
 			if (m_AnimationPlaying)
 			{
 				m_WorldTime += ts;
 
-				float ticksPerSecond = (float)(m_Scene->mAnimations[0]->mTicksPerSecond != 0 ? m_Scene->mAnimations[0]->mTicksPerSecond : 25.0f) * m_TimeMultiplier;
+				float ticksPerSecond = GetAnimationTicksPerSecond() * m_TimeMultiplier;
 				m_AnimationTime += ts * ticksPerSecond;
-				m_AnimationTime = fmod(m_AnimationTime, (float)m_Scene->mAnimations[0]->mDuration);
+				if (animation->mDuration > 0.0)
+				{
+					m_AnimationTime = fmod(m_AnimationTime, (float)animation->mDuration);
+				}
 			}
 
 			// TODO: We only need to recalc bones if rendering has been requested at the current animation frame
 			BoneTransform(m_AnimationTime);
+		}
+		else if (IsSkinned())
+		{
+			// Animation switched off: the skinned vertices still need bone matrices, those of the bind pose
+			BoneTransform(0.0f);
 		}
 	}
 
@@ -1487,7 +1582,7 @@ namespace H2M
 
 		if (m_IsAnimated && m_Scene->mAnimations)
 		{
-			animation = m_Scene->mAnimations[0];
+			animation = m_Scene->mAnimations[m_AnimationIndex < m_Scene->mNumAnimations ? m_AnimationIndex : 0];
 			nodeAnim = FindNodeAnim(animation, name);
 
 			if (nodeAnim)

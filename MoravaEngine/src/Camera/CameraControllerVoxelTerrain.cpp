@@ -4,6 +4,9 @@
 #include "Core/Application.h"
 #include "Core/CommonValues.h"
 #include "Core/Timer.h"
+#include "ImGui/ImGuiWrapper.h"
+
+#include "imgui.h"
 
 
 CameraControllerVoxelTerrain::CameraControllerVoxelTerrain()
@@ -44,6 +47,17 @@ void CameraControllerVoxelTerrain::MouseScrollControl(bool* keys, float deltaTim
 	m_Keys = keys;
 	m_xOffset = xOffset;
 	m_yOffset = yOffset;
+
+	// Zoom follows the mouse, not the keyboard focus: a scroll over an ImGui panel is dropped (same rule as
+	// CameraController::MouseScrollControl; this controller doesn't hide the cursor, so ImGui still sees it while rotating)
+	bool overScene = ImGuiWrapper::GetViewportEnabled()
+		? ImGuiWrapper::GetViewportHovered()
+		: !(ImGui::GetCurrentContext() != nullptr && ImGui::GetIO().WantCaptureMouse);
+	if (!overScene)
+	{
+		m_xOffset = 0.0f;
+		m_yOffset = 0.0f;
+	}
 }
 
 void CameraControllerVoxelTerrain::Update()

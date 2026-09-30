@@ -33,6 +33,7 @@ layout (binding = 1) uniform samplerCube u_Texture;
 layout (push_constant) uniform Uniforms
 {
 	float TextureLod;
+	float Rotation; // degrees around the vertical (Y) axis, same as EnvMapRotation in the PBR shaders
 } u_Uniforms;
 
 layout (location = 0) in vec3 v_Position;
@@ -72,9 +73,18 @@ vec4 SampleBlurred(vec3 direction, float lod)
 	return sum / weightSum;
 }
 
+vec3 RotateVectorAboutY(float angle, vec3 vec)
+{
+	angle = radians(angle);
+	mat3x3 rotationMatrix = { vec3(cos(angle), 0.0, sin(angle)),
+	                          vec3(0.0, 1.0, 0.0),
+	                          vec3(-sin(angle), 0.0, cos(angle)) };
+	return rotationMatrix * vec;
+}
+
 void main()
 {
-	vec3 direction = normalize(v_Position);
+	vec3 direction = RotateVectorAboutY(u_Uniforms.Rotation, normalize(v_Position));
 	float lod = u_Uniforms.TextureLod;
 
 	// LOD 0 is the sharp environment: a single sample (the cone would only be a fraction of a pixel wide)

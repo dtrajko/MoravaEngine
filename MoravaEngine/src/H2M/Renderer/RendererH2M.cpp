@@ -143,7 +143,7 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ViewportComposite.glsl"); // SceneEnvMapVulkan: composite with bloom
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/BloomPass.glsl");         // SceneEnvMapVulkan: bloom downsample/upsample chain
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
-			// RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Anim.glsl");
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Anim.glsl"); // skinned meshes (SceneEnvMapVulkan)
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Outline.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");

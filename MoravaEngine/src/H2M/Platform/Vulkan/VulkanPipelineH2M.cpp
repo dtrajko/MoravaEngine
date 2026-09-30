@@ -42,6 +42,10 @@ namespace H2M
 			case ShaderDataTypeH2M::Float2: return VK_FORMAT_R32G32_SFLOAT;
 			case ShaderDataTypeH2M::Float3: return VK_FORMAT_R32G32B32_SFLOAT;
 			case ShaderDataTypeH2M::Float4: return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case ShaderDataTypeH2M::Int:    return VK_FORMAT_R32_SINT;
+			case ShaderDataTypeH2M::Int2:   return VK_FORMAT_R32G32_SINT;
+			case ShaderDataTypeH2M::Int3:   return VK_FORMAT_R32G32B32_SINT;
+			case ShaderDataTypeH2M::Int4:   return VK_FORMAT_R32G32B32A32_SINT; // bone IDs (skinned meshes)
 		}
 		H2M_CORE_ASSERT(false);
 		return VK_FORMAT_UNDEFINED;
