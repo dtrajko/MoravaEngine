@@ -106,6 +106,42 @@ static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_GridDescriptorSet; //
 static bool s_DisplayGrid = true;
 static float s_GridScale = 16.025f; // cells across the grid (it spans 32 x 32 units)
 static float s_GridSize = 0.025f;   // line width, as a fraction of a cell
+
+// Editor overlays: selection outline, wireframe and bounding boxes (as "Display Outline / Wireframe / Bounding Boxes" in
+// SceneHazelEnvMap). They are drawn into two LDR framebuffers, which the viewport composite adds after tonemapping, so they
+// keep their colors (no exposure, tonemapping or bloom):
+// - overlay: wireframe (depth tested against all meshes, drawn there first) and bounding boxes (always on top)
+// - selection mask: silhouette of the selected mesh or submesh; the composite draws the outline around it
+enum OverlayScope { OverlayScopeOff = 0, OverlayScopeSelected = 1, OverlayScopeAll = 2 };
+static const char* s_OverlayScopeNames[] = { "Off", "Selected", "All" };
+
+struct EditorOverlaySettings
+{
+	bool Outline = true;
+	float OutlineWidth = 2.0f; // pixels (1..10)
+	glm::vec4 OutlineColor = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f);
+	int Wireframe = OverlayScopeOff;
+	glm::vec4 WireframeColor = glm::vec4(0.1f, 0.9f, 0.3f, 1.0f);
+	int BoundingBoxes = OverlayScopeOff;
+	glm::vec4 BoundingBoxColor = glm::vec4(0.2f, 0.6f, 1.0f, 1.0f);
+	glm::vec4 SelectedBoundingBoxColor = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f); // the selected submesh's box (all boxes of the selected mesh when no submesh is selected)
+	float LineWidth = 1.0f; // wireframe and bounding boxes (pixels, 1..10)
+};
+static EditorOverlaySettings s_OverlaySettings;
+static H2M::RefH2M<H2M::FramebufferH2M> s_OverlayFramebuffer;
+static H2M::RefH2M<H2M::FramebufferH2M> s_SelectionMaskFramebuffer;
+static H2M::RefH2M<H2M::PipelineH2M> s_OverlayDepthPipeline;        // meshes with color alpha 0: depth only, hides the wireframe behind them
+static H2M::RefH2M<H2M::PipelineH2M> s_OverlayDepthPipelineAnim;
+static H2M::RefH2M<H2M::PipelineH2M> s_WireframePipeline;
+static H2M::RefH2M<H2M::PipelineH2M> s_WireframePipelineAnim;
+static H2M::RefH2M<H2M::PipelineH2M> s_BoundingBoxPipeline;         // line list: unit cube edges (s_BoundingBoxVertexBuffer)
+static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskPipeline;
+static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskPipelineAnim;
+static H2M::RefH2M<H2M::VertexBufferH2M> s_BoundingBoxVertexBuffer;
+static const uint32_t s_BoundingBoxVertexCount = 24; // 12 edges
+
+static void CreateEditorOverlayResources();
+static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer);
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipeline;                 // to be removed from VulkanRenderer
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnim; // skinned meshes (HazelPBR_Anim.glsl): vertex layout with bone IDs and weights
 static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
@@ -306,6 +342,7 @@ struct LoadedMeshVulkan
 	glm::vec3 Scale = glm::vec3(1.0f);
 	std::vector<std::array<bool, 6>> MaterialHasMap; // per material: albedo, normal, metalness, roughness, emissive, AO map available (from the model or assigned)
 	std::vector<std::array<H2M::RefH2M<H2M::Texture2D_H2M>, 6>> MaterialTextures; // maps assigned in the Material Editor (kept alive here)
+	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet OverlayBoneDescriptorSet; // skinned meshes: the mesh's bone buffer for EditorOverlay_Anim.glsl
 
 	// Composed with ImGuizmo's own convention (Euler angles in degrees), so the gizmo (Manipulate +
 	// DecomposeMatrixToComponents) and the values in the Meshes panel round-trip exactly
@@ -937,6 +974,289 @@ static void OnImGuiRenderMaterialEditor()
 	ImGui::End();
 }
 
+// Where a submesh is drawn: mesh transform (Meshes panel) * node transform from the model. Rigged submeshes: the bone matrices
+// already place the skinned vertices relative to the root node, so the root node transform replaces the node transform.
+static glm::mat4 GetSubmeshTransform(H2M::RefH2M<H2M::MeshH2M> mesh, const H2M::RefH2M<H2M::SubmeshH2M>& submesh, const glm::mat4& transform)
+{
+	return (mesh->IsSkinned() && submesh->IsRigged) ? transform * mesh->GetRootTransform() : transform * submesh->Transform;
+}
+
+// Framebuffers, pipelines and the bounding box vertex buffer of the editor overlays (see EditorOverlaySettings)
+static void CreateEditorOverlayResources()
+{
+	H2M::FramebufferSpecificationH2M framebufferSpec;
+	framebufferSpec.Attachments = { H2M::ImageFormatH2M::RGBA, H2M::ImageFormatH2M::Depth };
+	framebufferSpec.Samples = 1;
+	framebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+	framebufferSpec.Width = s_ViewportWidth;
+	framebufferSpec.Height = s_ViewportHeight;
+	framebufferSpec.DebugName = "EditorOverlay";
+	s_OverlayFramebuffer = H2M::FramebufferH2M::Create(framebufferSpec);
+	framebufferSpec.DebugName = "SelectionMask";
+	s_SelectionMaskFramebuffer = H2M::FramebufferH2M::Create(framebufferSpec);
+
+	// Vertex layouts of MeshH2M's Vertex and AnimatedVertex (the overlay shaders read the position, and the bones)
+	H2M::VertexBufferLayoutH2M staticLayout = {
+		{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+		{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
+		{ H2M::ShaderDataTypeH2M::Float3, "a_Tangent" },
+		{ H2M::ShaderDataTypeH2M::Float3, "a_Binormal" },
+		{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+	};
+	H2M::VertexBufferLayoutH2M animLayout = {
+		{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+		{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
+		{ H2M::ShaderDataTypeH2M::Float3, "a_Tangent" },
+		{ H2M::ShaderDataTypeH2M::Float3, "a_Binormal" },
+		{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+		{ H2M::ShaderDataTypeH2M::Int4,   "a_BoneIndices" },
+		{ H2M::ShaderDataTypeH2M::Float4, "a_BoneWeights" },
+	};
+
+	auto createPipeline = [](const char* debugName, bool anim, const H2M::VertexBufferLayoutH2M& layout, const H2M::RefH2M<H2M::FramebufferH2M>& target,
+		H2M::PrimitiveTopologyH2M topology, bool wireframe, bool depthTest, bool depthWrite)
+	{
+		H2M::PipelineSpecificationH2M pipelineSpecification;
+		pipelineSpecification.Layout = layout;
+		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get(anim ? "EditorOverlay_Anim" : "EditorOverlay");
+		pipelineSpecification.Topology = topology;
+		pipelineSpecification.Wireframe = wireframe;
+		pipelineSpecification.BackfaceCulling = false; // the whole silhouette / all edges, also of open or single-sided meshes
+		pipelineSpecification.DepthTest = depthTest;
+		pipelineSpecification.DepthWrite = depthWrite;
+		pipelineSpecification.DebugName = debugName;
+		H2M::RenderPassSpecificationH2M renderPassSpec;
+		renderPassSpec.TargetFramebuffer = target;
+		pipelineSpecification.RenderPass = H2M::RenderPassH2M::Create(renderPassSpec);
+		return H2M::PipelineH2M::Create(pipelineSpecification);
+	};
+
+	const auto triangles = H2M::PrimitiveTopologyH2M::Triangles;
+	s_OverlayDepthPipeline      = createPipeline("OverlayDepth",      false, staticLayout, s_OverlayFramebuffer, triangles, false, true, true);
+	s_OverlayDepthPipelineAnim  = createPipeline("OverlayDepth-Anim", true,  animLayout,   s_OverlayFramebuffer, triangles, false, true, true);
+	s_WireframePipeline         = createPipeline("Wireframe",         false, staticLayout, s_OverlayFramebuffer, triangles, true,  true, false);
+	s_WireframePipelineAnim     = createPipeline("Wireframe-Anim",    true,  animLayout,   s_OverlayFramebuffer, triangles, true,  true, false);
+	s_BoundingBoxPipeline       = createPipeline("BoundingBox",       false, staticLayout, s_OverlayFramebuffer, H2M::PrimitiveTopologyH2M::Lines, false, false, false);
+	s_SelectionMaskPipeline     = createPipeline("SelectionMask",      false, staticLayout, s_SelectionMaskFramebuffer, triangles, false, false, false);
+	s_SelectionMaskPipelineAnim = createPipeline("SelectionMask-Anim", true,  animLayout,   s_SelectionMaskFramebuffer, triangles, false, false, false);
+
+	// Edges of the unit cube (0..1), scaled to each bounding box. The vertices have the static mesh layout (only the position
+	// is set), so the bounding box pipeline uses the same shader and vertex inputs as the others.
+	struct LineVertex
+	{
+		glm::vec3 Position;
+		glm::vec3 Unused[3]; // normal, tangent, binormal
+		glm::vec2 TexCoord;
+	};
+	glm::vec3 corners[8];
+	for (uint32_t i = 0; i < 8; i++)
+	{
+		corners[i] = glm::vec3((float)(i & 1), (float)((i >> 1) & 1), (float)((i >> 2) & 1));
+	}
+	const uint32_t edges[s_BoundingBoxVertexCount] = { 0,1, 2,3, 4,5, 6,7,  0,2, 1,3, 4,6, 5,7,  0,4, 1,5, 2,6, 3,7 };
+	LineVertex lines[s_BoundingBoxVertexCount] = {};
+	for (uint32_t i = 0; i < s_BoundingBoxVertexCount; i++)
+	{
+		lines[i].Position = corners[edges[i]];
+	}
+	s_BoundingBoxVertexBuffer = H2M::VertexBufferH2M::Create(lines, (uint32_t)sizeof(lines));
+}
+
+// Skinned meshes: a descriptor set of EditorOverlay_Anim.glsl that points to the mesh's own bone buffer (HazelPBR_Anim.glsl,
+// binding 8, updated every frame by UpdateMeshUniforms). Allocated on first use; the pool is destroyed when the mesh is removed.
+static VkDescriptorSet GetOverlayBoneDescriptorSet(LoadedMeshVulkan& entry)
+{
+	if (!entry.OverlayBoneDescriptorSet.Pool)
+	{
+		// The bone buffer, as written into the mesh's material descriptor sets (MeshH2M: binding 8 of every material)
+		const VkDescriptorBufferInfo* boneBuffer = nullptr;
+		if (const H2M::MeshH2M::MaterialDescriptor* materialDescriptor = entry.Mesh->FindDescriptorSet(0))
+		{
+			for (const VkWriteDescriptorSet& write : materialDescriptor->WriteDescriptors)
+			{
+				if (write.dstBinding == 8 && write.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
+				{
+					boneBuffer = write.pBufferInfo;
+				}
+			}
+		}
+		if (!boneBuffer)
+		{
+			return VK_NULL_HANDLE;
+		}
+
+		H2M::RefH2M<H2M::VulkanShaderH2M> overlayShader = H2M::RendererH2M::GetShaderLibrary()->Get("EditorOverlay_Anim").As<H2M::VulkanShaderH2M>();
+		entry.OverlayBoneDescriptorSet = overlayShader->CreateDescriptorSets();
+
+		VkWriteDescriptorSet write = *overlayShader->GetDescriptorSet("BoneTransforms");
+		write.dstSet = entry.OverlayBoneDescriptorSet.DescriptorSets[0];
+		write.descriptorCount = 1;
+		write.pBufferInfo = boneBuffer;
+		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+	}
+	return entry.OverlayBoneDescriptorSet.DescriptorSets[0];
+}
+
+// Draws a loaded mesh (all submeshes, or only submesh onlySubmesh) in one color with an overlay pipeline.
+// lineWidth: for the wireframe pipelines (dynamic state), 0 for the others.
+static void DrawMeshOverlay(VkCommandBuffer commandBuffer, LoadedMeshVulkan& entry, int onlySubmesh, const H2M::RefH2M<H2M::PipelineH2M>& staticPipeline,
+	const H2M::RefH2M<H2M::PipelineH2M>& animPipeline, const glm::vec4& color, const glm::mat4& viewProjection, float lineWidth = 0.0f)
+{
+	H2M::RefH2M<H2M::MeshH2M> mesh = entry.Mesh;
+	bool skinned = mesh->IsSkinned();
+	VkDescriptorSet boneDescriptorSet = skinned ? GetOverlayBoneDescriptorSet(entry) : VK_NULL_HANDLE;
+	if (skinned && !boneDescriptorSet)
+	{
+		return; // no bone buffer (the mesh isn't drawn by RenderMeshVulkan either)
+	}
+	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = (skinned ? animPipeline : staticPipeline).As<H2M::VulkanPipelineH2M>();
+	VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+	VkBuffer vertexBuffer = mesh->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+	VkDeviceSize offsets[1] = { 0 };
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+	vkCmdBindIndexBuffer(commandBuffer, mesh->GetIndexBuffer().As<H2M::VulkanIndexBufferH2M>()->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+	if (lineWidth > 0.0f)
+	{
+		vkCmdSetLineWidth(commandBuffer, lineWidth);
+	}
+	if (skinned)
+	{
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &boneDescriptorSet, 0, nullptr);
+	}
+	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+
+	glm::mat4 transform = entry.GetTransform();
+	auto& submeshes = mesh->GetSubmeshes();
+	for (int s = 0; s < (int)submeshes.size(); s++)
+	{
+		if (onlySubmesh >= 0 && s != onlySubmesh)
+		{
+			continue;
+		}
+		glm::mat4 mvp = viewProjection * GetSubmeshTransform(mesh, submeshes[s], transform);
+		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+		vkCmdDrawIndexed(commandBuffer, submeshes[s]->IndexCount, 1, submeshes[s]->BaseIndex, submeshes[s]->BaseVertex, 0);
+	}
+}
+
+// Draws the editor overlays into s_OverlayFramebuffer and s_SelectionMaskFramebuffer. Both are rendered every frame (cleared
+// when there is nothing to show): the viewport composite samples them, so they always need valid content.
+static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
+{
+	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
+	const bool hasSelection = s_SelectedMeshIndex >= 0 && s_SelectedMeshIndex < (int)s_LoadedMeshes.size();
+	const EditorOverlaySettings& settings = s_OverlaySettings;
+
+	// Wide lines are limited by the GPU (at least 8 px is guaranteed)
+	const float maxLineWidth = H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetProperties().limits.lineWidthRange[1];
+	const float lineWidth = glm::clamp(settings.LineWidth, 1.0f, maxLineWidth);
+
+	auto beginPass = [commandBuffer](const H2M::RefH2M<H2M::FramebufferH2M>& target)
+	{
+		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = target.As<H2M::VulkanFramebufferH2M>();
+		uint32_t width = framebuffer->GetWidth();
+		uint32_t height = framebuffer->GetHeight();
+
+		VkClearValue clearValues[2];
+		clearValues[0].color = { { 0.0f, 0.0f, 0.0f, 0.0f } };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
+		renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
+		renderPassBeginInfo.renderArea.extent.width = width;
+		renderPassBeginInfo.renderArea.extent.height = height;
+		renderPassBeginInfo.clearValueCount = 2; // Color + depth
+		renderPassBeginInfo.pClearValues = clearValues;
+		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		VkViewport viewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		VkRect2D scissor = { { 0, 0 }, { width, height } };
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+	};
+	auto inScope = [hasSelection](int scope, int meshIndex)
+	{
+		return scope == OverlayScopeAll || (scope == OverlayScopeSelected && hasSelection && meshIndex == s_SelectedMeshIndex);
+	};
+
+	// Wireframe and bounding boxes
+	beginPass(s_OverlayFramebuffer);
+	{
+		if (settings.Wireframe != OverlayScopeOff)
+		{
+			// Depth of every mesh first (color alpha 0 leaves the image unchanged), so edges hidden behind a mesh are hidden
+			for (LoadedMeshVulkan& entry : s_LoadedMeshes)
+			{
+				DrawMeshOverlay(commandBuffer, entry, -1, s_OverlayDepthPipeline, s_OverlayDepthPipelineAnim, glm::vec4(0.0f), viewProjection);
+			}
+
+			// The edges are pulled slightly towards the camera (clip z - bias * w), so they win the depth test against their own faces
+			glm::mat4 depthBias(1.0f);
+			depthBias[3][2] = -2.0e-5f;
+			for (int m = 0; m < (int)s_LoadedMeshes.size(); m++)
+			{
+				if (inScope(settings.Wireframe, m))
+				{
+					DrawMeshOverlay(commandBuffer, s_LoadedMeshes[m], -1, s_WireframePipeline, s_WireframePipelineAnim, settings.WireframeColor,
+						depthBias * viewProjection, lineWidth);
+				}
+			}
+		}
+
+		if (settings.BoundingBoxes != OverlayScopeOff)
+		{
+			H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_BoundingBoxPipeline.As<H2M::VulkanPipelineH2M>();
+			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+			VkBuffer vertexBuffer = s_BoundingBoxVertexBuffer.As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+			vkCmdSetLineWidth(commandBuffer, lineWidth);
+
+			for (int m = 0; m < (int)s_LoadedMeshes.size(); m++)
+			{
+				if (!inScope(settings.BoundingBoxes, m))
+				{
+					continue;
+				}
+				LoadedMeshVulkan& entry = s_LoadedMeshes[m];
+				glm::mat4 transform = entry.GetTransform();
+				auto& submeshes = entry.Mesh->GetSubmeshes();
+				for (int s = 0; s < (int)submeshes.size(); s++)
+				{
+					// Each submesh's box in its own space, so it turns with the mesh (as in SceneHazelEnvMap)
+					const H2M::AABB_H2M& box = submeshes[s]->BoundingBox;
+					glm::mat4 mvp = viewProjection * GetSubmeshTransform(entry.Mesh, submeshes[s], transform) *
+						glm::translate(glm::mat4(1.0f), box.Min) * glm::scale(glm::mat4(1.0f), box.Max - box.Min);
+
+					// The selection (the selected submesh, or the whole selected mesh when no submesh is selected) in its own color
+					bool selected = m == s_SelectedMeshIndex && (s_SelectedSubmeshIndex < 0 || s == s_SelectedSubmeshIndex);
+					glm::vec4 color = selected ? settings.SelectedBoundingBoxColor : settings.BoundingBoxColor;
+
+					vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+					vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+					vkCmdDraw(commandBuffer, s_BoundingBoxVertexCount, 1, 0, 0);
+				}
+			}
+		}
+	}
+	vkCmdEndRenderPass(commandBuffer);
+
+	// Silhouette of the selection: the selected submesh, or the whole mesh when no submesh is selected
+	beginPass(s_SelectionMaskFramebuffer);
+	if (settings.Outline && hasSelection)
+	{
+		LoadedMeshVulkan& entry = s_LoadedMeshes[s_SelectedMeshIndex];
+		int submesh = s_SelectedSubmeshIndex < (int)entry.Mesh->GetSubmeshes().size() ? s_SelectedSubmeshIndex : -1;
+		DrawMeshOverlay(commandBuffer, entry, submesh, s_SelectionMaskPipeline, s_SelectionMaskPipelineAnim, glm::vec4(1.0f), viewProjection);
+	}
+	vkCmdEndRenderPass(commandBuffer);
+}
+
 /**** BEGIN to be removed from VulkanRenderer ****/
 void EnvMapVulkanRenderer::SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform)
 {
@@ -1143,6 +1463,7 @@ void EnvMapVulkanRenderer::Init()
 		pipelineSpecification.DebugName = "ViewportComposite";
 		s_ViewportCompositePipeline = H2M::PipelineH2M::Create(pipelineSpecification);
 
+		CreateEditorOverlayResources(); // before CreateBloomResources: the composite samples the overlay and selection mask images
 		CreateBloomResources(); // also writes s_ViewportCompositeDescriptorSet
 	}
 
@@ -1381,9 +1702,7 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 		// Push Constants
 		// glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
-		// Mesh transform (Meshes panel) * node transform from the model. Rigged submeshes: the bone matrices already
-		// place the skinned vertices relative to the root node, so the root node transform replaces the node transform.
-		glm::mat4 submeshTransform = (skinned && submesh->IsRigged) ? transform * mesh->GetRootTransform() : transform * submesh->Transform;
+		glm::mat4 submeshTransform = GetSubmeshTransform(mesh, submesh, transform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submeshTransform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 		vkCmdDrawIndexed(commandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
@@ -1670,6 +1989,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 		vkCmdEndRenderPass(drawCommandBuffer);
 
 		RecordBloomPasses(drawCommandBuffer);
+		RecordEditorOverlayPasses(drawCommandBuffer);
 		ViewportCompositePass(drawCommandBuffer);
 	}
 }
@@ -1808,7 +2128,7 @@ static void ResizeBloomResources()
 	s_BloomChainRendered = false; // new images: no content (and no valid layout) until the chain is rendered
 }
 
-// Which image every bloom pass reads, and the composite's scene/bloom/dirt images
+// Which image every bloom pass reads, and the composite's scene/bloom/dirt/overlay/selection mask images
 static void WriteBloomDescriptorSets()
 {
 	auto imageInfo = [](const H2M::RefH2M<H2M::FramebufferH2M>& framebuffer) -> const VkDescriptorImageInfo*
@@ -1851,13 +2171,15 @@ static void WriteBloomDescriptorSets()
 	}
 
 	H2M::RefH2M<H2M::VulkanShaderH2M> compositeShader = s_ViewportCompositePipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>();
-	const VkDescriptorImageInfo* compositeImages[3] = {
+	const VkDescriptorImageInfo* compositeImages[5] = {
 		imageInfo(s_Framebuffer),
 		imageInfo(s_BloomUpFramebuffers[0]),
 		&s_BloomDirtTexture.As<H2M::VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo(),
+		imageInfo(s_OverlayFramebuffer),
+		imageInfo(s_SelectionMaskFramebuffer),
 	};
-	const char* compositeBindings[3] = { "u_Texture", "u_BloomTexture", "u_BloomDirtTexture" };
-	for (uint32_t i = 0; i < 3; i++)
+	const char* compositeBindings[5] = { "u_Texture", "u_BloomTexture", "u_BloomDirtTexture", "u_OverlayTexture", "u_SelectionMask" };
+	for (uint32_t i = 0; i < 5; i++)
 	{
 		VkWriteDescriptorSet write = *compositeShader->GetDescriptorSet(compositeBindings[i]);
 		write.dstSet = s_ViewportCompositeDescriptorSet.DescriptorSets[0];
@@ -1994,13 +2316,17 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 		float Exposure;
 		float BloomIntensity;
 		float BloomDirtIntensity;
+		float OutlineWidth;
+		glm::vec4 OutlineColor;
 	} uniforms;
 	uniforms.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
 	uniforms.BloomIntensity = s_BloomSettings.Enabled ? s_BloomSettings.Intensity : 0.0f;
 	uniforms.BloomDirtIntensity = (s_BloomSettings.Enabled && s_BloomSettings.DirtEnabled) ? s_BloomSettings.DirtIntensity : 0.0f;
+	uniforms.OutlineWidth = s_OverlaySettings.Outline ? s_OverlaySettings.OutlineWidth : 0.0f;
+	uniforms.OutlineColor = s_OverlaySettings.OutlineColor;
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(CompositeUniforms), &uniforms);
 
-	// Scene, bloom and lens dirt images (rewritten when the framebuffers are resized, see WriteBloomDescriptorSets)
+	// Scene, bloom, lens dirt, overlay and selection mask images (rewritten when the framebuffers are resized, see WriteBloomDescriptorSets)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, s_ViewportCompositeDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
 	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
@@ -2379,6 +2705,47 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					}
 				}
 
+				// Like "Display Outline / Wireframe / Bounding Boxes" in SceneHazelEnvMap
+				if (ImGui::CollapsingHeader("Selection and Overlays", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					EditorOverlaySettings& overlay = s_OverlaySettings;
+					ImGui::PushID("Overlays");
+
+					ImGui::Checkbox("Selection Outline", &overlay.Outline);
+					ImGui::BeginDisabled(!overlay.Outline);
+					ImGui::DragFloat("Outline Width", &overlay.OutlineWidth, 0.05f, 1.0f, 10.0f, "%.1f px", ImGuiSliderFlags_AlwaysClamp);
+					ImGui::ColorEdit4("Outline Color", &overlay.OutlineColor.x, ImGuiColorEditFlags_NoInputs);
+					ImGui::EndDisabled();
+
+					ImGui::Separator();
+					ImGui::Combo("Wireframe", &overlay.Wireframe, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
+					ImGui::ColorEdit4("Wireframe Color", &overlay.WireframeColor.x, ImGuiColorEditFlags_NoInputs);
+
+					ImGui::Separator();
+					ImGui::Combo("Bounding Boxes", &overlay.BoundingBoxes, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
+					ImGui::ColorEdit4("Selected Box", &overlay.SelectedBoundingBoxColor.x, ImGuiColorEditFlags_NoInputs);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Box of the selected submesh\n(all boxes of the selected mesh when no submesh is selected)");
+					}
+					ImGui::SameLine();
+					ImGui::ColorEdit4("Unselected Boxes", &overlay.BoundingBoxColor.x, ImGuiColorEditFlags_NoInputs);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("All other boxes: other meshes, and the other submeshes of the selected mesh.\n"
+							"Visible with Bounding Boxes = All, or after clearing the selection (click empty space).");
+					}
+
+					ImGui::Separator();
+					ImGui::DragFloat("Line Width", &overlay.LineWidth, 0.05f, 1.0f, 10.0f, "%.1f px", ImGuiSliderFlags_AlwaysClamp);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Wireframe and bounding box lines");
+					}
+
+					ImGui::PopID();
+				}
+
 				// Same settings as "Bloom Settings" in SceneHazelEnvMap's Scene Renderer panel
 				if (ImGui::CollapsingHeader("Bloom Settings", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
@@ -2493,6 +2860,10 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		{
 			// The mesh's buffers and descriptor sets may still be used by frames in flight
 			vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+			if (s_LoadedMeshes[s_PendingRemoveMeshIndex].OverlayBoneDescriptorSet.Pool)
+			{
+				vkDestroyDescriptorPool(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), s_LoadedMeshes[s_PendingRemoveMeshIndex].OverlayBoneDescriptorSet.Pool, nullptr);
+			}
 			s_LoadedMeshes.erase(s_LoadedMeshes.begin() + s_PendingRemoveMeshIndex);
 			s_PendingMaterialTextures.clear(); // their mesh indices refer to the list before the removal
 			s_SelectedMeshIndex = glm::min(s_SelectedMeshIndex, (int)s_LoadedMeshes.size() - 1);
@@ -2555,7 +2926,9 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
-		ResizeBloomResources();
+		s_OverlayFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
+		s_SelectionMaskFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
+		ResizeBloomResources(); // also rewrites the composite descriptor set
 		s_ViewportFBNeedsResize = false;
 	}
 

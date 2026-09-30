@@ -163,19 +163,18 @@ namespace H2M
 			// This pipeline will assemble vertex data as a triangle lists (though we only use one triangle)
 			VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
 			inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-			inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			inputAssemblyState.topology = Utils::GetVulkanTopology(m_Specification.Topology);
 
 			// Rasterization state
 			VkPipelineRasterizationStateCreateInfo rasterizationState = {};
 			rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-			rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-			// rasterizationState.polygonMode = VK_POLYGON_MODE_LINE;
-			rasterizationState.cullMode = VK_CULL_MODE_NONE;
+			rasterizationState.polygonMode = m_Specification.Wireframe ? VK_POLYGON_MODE_LINE : VK_POLYGON_MODE_FILL;
+			rasterizationState.cullMode = VK_CULL_MODE_NONE; // m_Specification.BackfaceCulling is not applied here: the existing pipelines rely on no culling
 			rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 			rasterizationState.depthClampEnable = VK_FALSE;
 			rasterizationState.rasterizerDiscardEnable = VK_FALSE;
 			rasterizationState.depthBiasEnable = VK_FALSE;
-			rasterizationState.lineWidth = 1.0f;
+			rasterizationState.lineWidth = m_Specification.LineWidth; // dynamic for line and wireframe pipelines (see below)
 
 			// Color blend state describes how blend factors are calculated (if used)
 			// We need one blend attachment state per color attachment (even if blending is not used)
@@ -208,6 +207,10 @@ namespace H2M
 			std::vector<VkDynamicState> dynamicStateEnables;
 			dynamicStateEnables.push_back(VK_DYNAMIC_STATE_VIEWPORT);
 			dynamicStateEnables.push_back(VK_DYNAMIC_STATE_SCISSOR);
+			if (m_Specification.Topology == PrimitiveTopologyH2M::Lines || m_Specification.Topology == PrimitiveTopologyH2M::LineStrip || m_Specification.Wireframe)
+			{
+				dynamicStateEnables.push_back(VK_DYNAMIC_STATE_LINE_WIDTH);
+			}
 			VkPipelineDynamicStateCreateInfo dynamicState = {};
 			dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 			dynamicState.pDynamicStates = dynamicStateEnables.data();
@@ -217,8 +220,8 @@ namespace H2M
 			// We only use depth tests and want depth tests and writes to be enabled and compare with less or equal
 			VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
 			depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-			depthStencilState.depthTestEnable = VK_TRUE;
-			depthStencilState.depthWriteEnable = VK_TRUE;
+			depthStencilState.depthTestEnable = m_Specification.DepthTest ? VK_TRUE : VK_FALSE;
+			depthStencilState.depthWriteEnable = m_Specification.DepthWrite ? VK_TRUE : VK_FALSE;
 			depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 			depthStencilState.depthBoundsTestEnable = VK_FALSE;
 			depthStencilState.back.failOp = VK_STENCIL_OP_KEEP;
