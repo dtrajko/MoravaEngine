@@ -30,12 +30,26 @@ namespace H2M
 		// RefH2M<VulkanMaterialH2M> instance = this;
 		// HazelRenderer::Submit([instance]() mutable {});
 		{
+			// The material's own descriptor set: the material set of the shader (set 1 of the mesh shaders, see
+			// VulkanShaderH2M::MaterialDescriptorSet), or set 0 of a single-set shader
 			auto shader = GetShader().As<VulkanShaderH2M>();
-			m_DescriptorSet = shader->CreateDescriptorSets();
+			const uint32_t materialSet = shader->GetMaterialDescriptorSetIndex();
+			m_DescriptorSet = shader->CreateDescriptorSets(materialSet);
 
-			for (uint32_t i = 0; i < shader->GetUniformBufferCount(); i++)
+			// Uniform buffers in that set (the mesh shaders have none: their buffers are per frame or per object)
+			std::vector<uint32_t> uniformBufferBindings;
+			auto descriptorSetIt = shader->GetShaderDescriptorSets().find(materialSet);
+			if (descriptorSetIt != shader->GetShaderDescriptorSets().end())
 			{
-				auto& uniformBuffer = shader->GetUniformBuffer(i);
+				for (const auto& [binding, uniformBuffer] : descriptorSetIt->second.UniformBuffers)
+				{
+					uniformBufferBindings.push_back(binding);
+				}
+			}
+
+			for (uint32_t binding : uniformBufferBindings)
+			{
+				auto& uniformBuffer = shader->GetUniformBuffer(binding, materialSet);
 				VkWriteDescriptorSet writeDescriptorSet = {};
 				writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				writeDescriptorSet.dstSet = *m_DescriptorSet.DescriptorSets.data();
@@ -103,14 +117,14 @@ namespace H2M
 		// });
 		{
 			auto shader = GetShader().As<VulkanShaderH2M>();
-			m_DescriptorSet = shader->CreateDescriptorSets();
+			m_DescriptorSet = shader->CreateDescriptorSets(shader->GetMaterialDescriptorSetIndex());
 		}
 	}
 
 	void VulkanMaterialH2M::Invalidate()
 	{
 		auto shader = m_Shader.As<VulkanShaderH2M>();
-		m_DescriptorSet = shader->CreateDescriptorSets();
+		m_DescriptorSet = shader->CreateDescriptorSets(shader->GetMaterialDescriptorSetIndex());
 
 		RefH2M<VulkanShaderH2M> vulkanShader = m_Shader.As<VulkanShaderH2M>();
 		for (uint32_t i = 0; i < vulkanShader->GetUniformBufferCount(); i++)
@@ -180,7 +194,7 @@ namespace H2M
 		m_Textures.push_back(texture);
 		// HazelRenderer::Submit([instance, name, texture]() mutable {});
 		{
-			const VkWriteDescriptorSet* wds = GetShader().As<VulkanShaderH2M>()->GetDescriptorSet(name);
+			const VkWriteDescriptorSet* wds = GetShader().As<VulkanShaderH2M>()->GetDescriptorSet(name, GetShader().As<VulkanShaderH2M>()->GetMaterialDescriptorSetIndex());
 			H2M_CORE_ASSERT(wds);
 
 			VkWriteDescriptorSet descriptorSet = *wds;
@@ -208,7 +222,7 @@ namespace H2M
 		//		m_Textures.resize(resource->GetRegister() + 1);
 		//	m_Textures[resource->GetRegister()] = texture;
 		//	
-		//	const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
+		//	const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name, m_Shader.As<VulkanShaderH2M>()->GetMaterialDescriptorSetIndex());
 		//	H2M_CORE_ASSERT(wds);
 		//	m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::Texture2D, *wds, {}, texture.As<HazelTexture>() /*, nullptr */ }));
 		//	m_PendingDescriptors.push_back(m_ResidentDescriptors.back());
@@ -233,7 +247,7 @@ namespace H2M
 
 		m_TextureArrays[binding][arrayIndex] = texture;
 
-		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name, m_Shader.As<VulkanShaderH2M>()->GetMaterialDescriptorSetIndex());
 		H2M_CORE_ASSERT(wds);
 		if (m_ResidentDescriptorArrays.find(binding) == m_ResidentDescriptorArrays.end())
 		{
@@ -264,7 +278,7 @@ namespace H2M
 			m_Textures.resize(resource->GetRegister() + 1);
 		m_Textures[resource->GetRegister()] = texture;
 
-		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name, m_Shader.As<VulkanShaderH2M>()->GetMaterialDescriptorSetIndex());
 		H2M_CORE_ASSERT(wds);
 		m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::TextureCube, *wds, {}, texture.As<TextureH2M>() /*, nullptr */ }));
 		m_PendingDescriptors.push_back(m_ResidentDescriptors.back());
@@ -272,7 +286,7 @@ namespace H2M
 
 	void VulkanMaterialH2M::SetVulkanDescriptor(const std::string& name, const VkDescriptorImageInfo& imageInfo)
 	{
-		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name, m_Shader.As<VulkanShaderH2M>()->GetMaterialDescriptorSetIndex());
 		H2M_CORE_ASSERT(wds);
 
 		if (m_ImageInfos.find(name) != m_ImageInfos.end())
@@ -302,7 +316,7 @@ namespace H2M
 		m_Images[resource->GetRegister()] = image;
 		m_ImageHashes[resource->GetRegister()] = image->GetHash();
 
-		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
+		const VkWriteDescriptorSet* wds = m_Shader.As<VulkanShaderH2M>()->GetDescriptorSet(name, m_Shader.As<VulkanShaderH2M>()->GetMaterialDescriptorSetIndex());
 		H2M_CORE_ASSERT(wds);
 		// m_ResidentDescriptors.push_back(std::make_shared<PendingDescriptor>(PendingDescriptor{ PendingDescriptorType::TextureCube, *wds, {}, texture.As<HazelTexture>() /* , nullptr */ }));
 		m_PendingDescriptors.push_back(m_ResidentDescriptors.back());

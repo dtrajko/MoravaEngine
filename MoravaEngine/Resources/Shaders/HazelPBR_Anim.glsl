@@ -9,6 +9,11 @@
 // - Frostbite's SIGGRAPH 2014 paper (https://seblagarde.wordpress.com/2015/07/14/siggraph-2014-moving-frostbite-to-physically-based-rendering/)
 // - Michał Siejak's PBR project (https://github.com/Nadrin)
 // - My implementation from years ago in the Sparky engine (https://github.com/TheCherno/Sparky)
+// Descriptor sets (Vulkan), ordered by how often they change (see VulkanShaderH2M::FrameDescriptorSet):
+// - set 0, per frame:    Camera, SceneData (light, camera position, environment rotation), environment maps, BRDF LUT
+// - set 1, per material: the material's texture maps
+// - set 2, per object:   bone matrices (HazelPBR_Anim.glsl only)
+// Push constants: the transform (vertex stage) and the material values (fragment stage).
 #type vertex
 #version 450 core
 
@@ -23,14 +28,16 @@ layout(location = 4) in vec2 a_TexCoord;
 layout(location = 5) in ivec4 a_BoneIndices;
 layout(location = 6) in vec4 a_BoneWeights;
 
-layout (std140, binding = 0) uniform Camera
+// Set 0, per frame
+layout (std140, set = 0, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjectionMatrix;
 };
 
 // Final bone matrices of the current animation frame (MeshH2M::GetBoneTransforms), updated every frame
+// Set 2, per object: final bone matrices of the current animation frame (MeshH2M::GetBoneTransforms), updated every frame
 const int MAX_BONES = 128;
-layout (std140, binding = 8) uniform BoneTransforms
+layout (std140, set = 2, binding = 0) uniform BoneTransforms
 {
 	mat4 u_BoneTransforms[MAX_BONES];
 };
@@ -111,34 +118,30 @@ layout (location = 0) in VertexOutput Input;
 
 layout(location = 0) out vec4 color;
 
-layout (std140, binding = 1) uniform Environment
+// Set 0, per frame: shared by every mesh
+layout (std140, set = 0, binding = 1) uniform SceneData
 {
-	Light lights;
-	vec3 u_CameraPosition; // Offset = 32
+	Light lights;             // offset 0 (32 bytes)
+	vec3 u_CameraPosition;    // offset 32
+	float u_EnvMapRotation;   // offset 44: degrees around Y, applied to the environment lookups
 };
+layout (set = 0, binding = 2) uniform samplerCube u_EnvRadianceTex;
+layout (set = 0, binding = 3) uniform samplerCube u_EnvIrradianceTex;
+layout (set = 0, binding = 4) uniform sampler2D u_BRDFLUTTexture;
 
-// PBR texture inputs
-layout (binding = 2) uniform sampler2D u_AlbedoTexture;
-layout (binding = 3) uniform sampler2D u_NormalTexture;
-layout (binding = 4) uniform sampler2D u_MetalnessTexture;
-layout (binding = 5) uniform sampler2D u_RoughnessTexture;
-layout (binding = 6) uniform sampler2D u_EmissiveTexture;
-layout (binding = 7) uniform sampler2D u_AOTexture;
-
-// Environment maps
-layout (set = 1, binding = 0) uniform samplerCube u_EnvRadianceTex;
-layout (set = 1, binding = 1) uniform samplerCube u_EnvIrradianceTex;
-
-// BRDF LUT
-layout (set = 1, binding = 2) uniform sampler2D u_BRDFLUTTexture;
+// Set 1, per material: PBR texture maps
+layout (set = 1, binding = 0) uniform sampler2D u_AlbedoTexture;
+layout (set = 1, binding = 1) uniform sampler2D u_NormalTexture;
+layout (set = 1, binding = 2) uniform sampler2D u_MetalnessTexture;
+layout (set = 1, binding = 3) uniform sampler2D u_RoughnessTexture;
+layout (set = 1, binding = 4) uniform sampler2D u_EmissiveTexture;
+layout (set = 1, binding = 5) uniform sampler2D u_AOTexture;
 
 layout (push_constant) uniform Material
 {
 	layout (offset = 64) vec3 AlbedoColor;
 	float Metalness;
 	float Roughness;
-
-	float EnvMapRotation;
 
 	// Toggles
 	float RadiancePrefilter;
@@ -147,7 +150,7 @@ layout (push_constant) uniform Material
 	float MetalnessTexToggle;
 	float RoughnessTexToggle;
 
-	// Offsets 108..127: the push constant block ends at 128 bytes, the minimum maxPushConstantsSize guaranteed by Vulkan
+	// Offsets 104..123 (the whole block ends at 124 bytes; 128 is the minimum maxPushConstantsSize guaranteed by Vulkan)
 	float TilingFactor;       // texture coordinate scale (0 is treated as 1)
 	float EmissiveTexToggle;
 	float AOTexToggle;
@@ -354,7 +357,7 @@ vec3 LightingTemp(vec3 F0)
 vec3 IBL(vec3 F0, vec3 Lr)
 {
 	// The environment rotation applies to the diffuse lighting too (not only to the reflections), so both match the skybox
-	vec3 irradiance = texture(u_EnvIrradianceTex, RotateVectorAboutY(u_MaterialUniforms.EnvMapRotation, m_Params.Normal)).rgb;
+	vec3 irradiance = texture(u_EnvIrradianceTex, RotateVectorAboutY(u_EnvMapRotation, m_Params.Normal)).rgb;
 	vec3 F = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
 	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
 	vec3 diffuseIBL = m_Params.Albedo * irradiance;
@@ -362,7 +365,7 @@ vec3 IBL(vec3 F0, vec3 Lr)
 	int envRadianceTexLevels = textureQueryLevels(u_EnvRadianceTex);
 	float NoV = clamp(m_Params.NdotV, 0.0, 1.0);
 	vec3 R = 2.0 * dot(m_Params.View, m_Params.Normal) * m_Params.Normal - m_Params.View;
-	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_MaterialUniforms.EnvMapRotation, Lr), m_Params.Roughness * envRadianceTexLevels).rgb;
+	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, Lr), m_Params.Roughness * envRadianceTexLevels).rgb;
 
 	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
 	vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;

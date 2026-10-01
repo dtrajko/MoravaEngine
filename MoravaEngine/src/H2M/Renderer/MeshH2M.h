@@ -195,6 +195,7 @@ namespace H2M
 			VulkanShaderH2M::ShaderMaterialDescriptorSet DescriptorSet;
 			std::vector<VkWriteDescriptorSet> WriteDescriptors;
 		};
+		// Material descriptor sets (set 1 of the mesh shaders, VulkanShaderH2M::MaterialDescriptorSet): one per material, texture maps only
 		const MaterialDescriptor& GetDescriptorSet(uint32_t index) { return m_MaterialDescriptors[index]; }
 		// nullptr when the mesh has no material descriptor set for this index (e.g. a mesh without materials)
 		const MaterialDescriptor* FindDescriptorSet(uint32_t index) const
@@ -205,6 +206,10 @@ namespace H2M
 
 		// VkDescriptorSet& GetDescriptorSet();
 		void* GetDescriptorSet();
+
+		// Per-object descriptor set (set 2, VulkanShaderH2M::ObjectDescriptorSet) of a skinned mesh: its bone matrices
+		// (the BoneTransforms uniform buffer of this mesh's shader). VK_NULL_HANDLE for static meshes.
+		VkDescriptorSet GetObjectDescriptorSet() const { return m_ObjectDescriptorSet.DescriptorSets.empty() ? VK_NULL_HANDLE : m_ObjectDescriptorSet.DescriptorSets[0]; }
 
 		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, RefH2M<Texture2D_H2M> texture);
 		// void UpdateAllDescriptors();
@@ -297,6 +302,7 @@ namespace H2M
 		std::unordered_map<uint32_t, std::vector<TriangleH2M>> m_TriangleCache;
 
 		std::vector<MaterialDescriptor> m_MaterialDescriptors;
+		VulkanShaderH2M::ShaderMaterialDescriptorSet m_ObjectDescriptorSet; // skinned meshes: bone matrices (set 2)
 
 		// Animation
 		bool m_IsAnimated = false;

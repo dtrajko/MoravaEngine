@@ -16,6 +16,7 @@
 #include <shaderc/shaderc.hpp>
 #include <spirv_glsl.hpp>
 
+#include <algorithm>
 #include <filesystem>
 
 
@@ -603,16 +604,35 @@ namespace H2M
 	}
 
 	// does not exist in Vulkan Week version, added later
+	// The pipeline layout's set layouts, indexed by set number (element i is set i). m_DescriptorSetLayouts is an unordered map,
+	// so the sets are put in order explicitly. A set number the shader doesn't use (e.g. sets 0 and 2 only) gets an empty layout.
 	std::vector<VkDescriptorSetLayout> VulkanShaderH2M::GetAllDescriptorSetLayouts()
 	{
-		std::vector<VkDescriptorSetLayout> result;
-		result.reserve(m_DescriptorSetLayouts.size());
-		for (auto [set, layout] : m_DescriptorSetLayouts)
+		uint32_t setCount = 0;
+		for (const auto& [set, layout] : m_DescriptorSetLayouts)
 		{
-			result.emplace_back(layout);
+			setCount = std::max(setCount, set + 1);
 		}
 
+		std::vector<VkDescriptorSetLayout> result(setCount, VK_NULL_HANDLE);
+		for (uint32_t set = 0; set < setCount; set++)
+		{
+			auto it = m_DescriptorSetLayouts.find(set);
+			if (it == m_DescriptorSetLayouts.end())
+			{
+				VkDescriptorSetLayoutCreateInfo emptyLayout = {};
+				emptyLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+				VK_CHECK_RESULT_H2M(vkCreateDescriptorSetLayout(VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), &emptyLayout, nullptr, &m_DescriptorSetLayouts[set]));
+				it = m_DescriptorSetLayouts.find(set);
+			}
+			result[set] = it->second;
+		}
 		return result;
+	}
+
+	uint32_t VulkanShaderH2M::GetMaterialDescriptorSetIndex() const
+	{
+		return m_ShaderDescriptorSets.size() > 1 && m_ShaderDescriptorSets.find(MaterialDescriptorSet) != m_ShaderDescriptorSets.end() ? MaterialDescriptorSet : 0;
 	}
 
 	VulkanShaderH2M::UniformBufferH2M& VulkanShaderH2M::GetUniformBuffer(uint32_t binding, uint32_t set)

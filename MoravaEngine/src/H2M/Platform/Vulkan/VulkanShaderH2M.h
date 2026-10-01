@@ -107,6 +107,19 @@ namespace H2M
 
 		const std::vector<PushConstantRangeH2M>& GetPushConstantRanges() const { return m_PushConstantRanges; }
 
+		// Descriptor set layout of the mesh shaders (HazelPBR_Static.glsl, HazelPBR_Anim.glsl), ordered by how often they change:
+		// - set 0, per frame: camera, scene data (lights, camera position), environment maps, BRDF LUT; bound once for all meshes
+		// - set 1, per material: the material's texture maps
+		// - set 2, per object: data of one mesh instance (bone matrices of a skinned mesh)
+		// The transform (vertex stage) and the material values (fragment stage) are push constants.
+		static constexpr uint32_t FrameDescriptorSet = 0;
+		static constexpr uint32_t MaterialDescriptorSet = 1;
+		static constexpr uint32_t ObjectDescriptorSet = 2;
+
+		// The set a material allocates and writes its textures into: set 1 for shaders with the layout above, set 0 for
+		// single-set shaders (skybox, composite, ...)
+		uint32_t GetMaterialDescriptorSetIndex() const;
+
 		struct ShaderMaterialDescriptorSet
 		{
 			VkDescriptorPool Pool = nullptr;

@@ -82,7 +82,7 @@ struct BloomSettingsVulkan
 	float Knee = 0.1f;          // soft transition below the threshold
 	float UpsampleScale = 1.0f; // radius of the upsample filter: larger values spread the glow further
 	float Intensity = 1.0f;
-	bool DirtEnabled = true;    // lens dirt on/off (the texture and intensity are kept)
+	bool DirtEnabled = false;   // lens dirt on/off (the texture and intensity are kept)
 	float DirtIntensity = 1.0f; // lens dirt texture, lit by the bloom
 };
 static BloomSettingsVulkan s_BloomSettings;
@@ -176,7 +176,9 @@ struct VulkanRendererData
 {
 	VkCommandBuffer ActiveCommandBuffer = nullptr;
 	H2M::RefH2M<H2M::Texture2D_H2M> BRDFLut;
-	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet RendererDescriptorSetFeb2021;
+	// Per-frame descriptor set of the mesh shaders (set 0, H2M::VulkanShaderH2M::FrameDescriptorSet): camera, scene data,
+	// environment maps and BRDF LUT. Allocated once, bound once per frame for all meshes (see GeometryPass).
+	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet FrameDescriptorSet;
 	// std::unordered_map<SceneRenderer*, std::vector<H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet>> RendererDescriptorSet;
 
 	H2M::RefH2M<H2M::VertexBufferH2M> QuadVertexBuffer;
@@ -342,7 +344,6 @@ struct LoadedMeshVulkan
 	glm::vec3 Scale = glm::vec3(1.0f);
 	std::vector<std::array<bool, 6>> MaterialHasMap; // per material: albedo, normal, metalness, roughness, emissive, AO map available (from the model or assigned)
 	std::vector<std::array<H2M::RefH2M<H2M::Texture2D_H2M>, 6>> MaterialTextures; // maps assigned in the Material Editor (kept alive here)
-	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet OverlayBoneDescriptorSet; // skinned meshes: the mesh's bone buffer for EditorOverlay_Anim.glsl
 
 	// Composed with ImGuizmo's own convention (Euler angles in degrees), so the gizmo (Manipulate +
 	// DecomposeMatrixToComponents) and the values in the Meshes panel round-trip exactly
@@ -430,7 +431,7 @@ static const char* s_MaterialMapToggles[s_MaterialMapCount] = {
 	"u_MaterialUniforms.AOTexToggle",
 };
 
-// Material texture bindings in HazelPBR_Static.glsl (set 0), in the same order as s_MaterialMapToggles
+// Material texture bindings in HazelPBR_Static.glsl (set 1, the material set), in the same order as s_MaterialMapToggles
 static const char* s_MaterialTextureNames[s_MaterialMapCount] = {
 	"u_AlbedoTexture", "u_NormalTexture", "u_MetalnessTexture", "u_RoughnessTexture", "u_EmissiveTexture", "u_AOTexture" };
 
@@ -443,7 +444,7 @@ struct PendingMaterialTexture
 	int MeshIndex;
 	uint32_t MaterialIndex;
 	uint32_t Slot; // 0 albedo, 1 normal, 2 metalness, 3 roughness, 4 emissive, 5 ambient occlusion
-	std::string FilePath;
+	std::string FilePath; // empty: remove the map (see RemoveMaterialTexture)
 };
 static std::vector<PendingMaterialTexture> s_PendingMaterialTextures;
 
@@ -507,7 +508,43 @@ static void LoadMesh(const std::string& filepath)
 	Log::GetLogger()->info("Mesh '{0}' loaded: {1} submeshes, {2} materials", filepath, mesh->GetSubmeshes().size(), mesh->GetMaterials().size());
 }
 
-// Loads an image and binds it as one of a material's maps (called at the start of a frame, see Draw)
+// Removes one of a material's maps, whether it came with the model or was assigned in the Material Editor (called at the start
+// of a frame, see Draw): the slot gets the white placeholder used for missing maps, and the material uses its value instead
+// (albedo color, metalness, roughness; no emissive, no ambient occlusion, the surface normal)
+static void RemoveMaterialTexture(const PendingMaterialTexture& request)
+{
+	LoadedMeshVulkan& entry = s_LoadedMeshes[request.MeshIndex];
+	auto& materials = entry.Mesh->GetMaterials();
+
+	const H2M::MeshH2M::MaterialDescriptor* materialDescriptor = entry.Mesh->FindDescriptorSet(request.MaterialIndex);
+	H2M::RefH2M<H2M::VulkanShaderH2M> shader = entry.Mesh->GetMeshShader().As<H2M::VulkanShaderH2M>();
+	const VkWriteDescriptorSet* binding = shader->GetDescriptorSet(s_MaterialTextureNames[request.Slot], H2M::VulkanShaderH2M::MaterialDescriptorSet);
+	if (!materialDescriptor || !binding)
+	{
+		return;
+	}
+
+	H2M::RefH2M<H2M::Texture2D_H2M> placeholder = H2M::RendererH2M::GetWhiteTexture();
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+
+	// The descriptor set may be used by frames in flight: updating it is only allowed when the GPU no longer uses it
+	vkDeviceWaitIdle(device);
+
+	VkWriteDescriptorSet write = *binding;
+	write.dstSet = materialDescriptor->DescriptorSet.DescriptorSets[0];
+	write.descriptorCount = 1;
+	write.pImageInfo = &placeholder.As<H2M::VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
+	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+
+	entry.MaterialTextures[request.MaterialIndex][request.Slot] = H2M::RefH2M<H2M::Texture2D_H2M>();
+	entry.MaterialHasMap[request.MaterialIndex][request.Slot] = false;
+	materials[request.MaterialIndex].As<H2M::VulkanMaterialH2M>()->Get<float>(s_MaterialMapToggles[request.Slot]) = 0.0f;
+
+	Log::GetLogger()->info("{0} removed from material '{1}'", s_MaterialTextureNames[request.Slot], materials[request.MaterialIndex]->GetName());
+}
+
+// Loads an image and binds it as one of a material's maps (called at the start of a frame, see Draw).
+// A request without a file path removes the map instead.
 static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 {
 	if (request.MeshIndex < 0 || request.MeshIndex >= (int)s_LoadedMeshes.size() || request.Slot >= s_MaterialMapCount)
@@ -518,6 +555,12 @@ static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 	auto& materials = entry.Mesh->GetMaterials();
 	if (request.MaterialIndex >= materials.size())
 	{
+		return;
+	}
+
+	if (request.FilePath.empty())
+	{
+		RemoveMaterialTexture(request);
 		return;
 	}
 
@@ -546,7 +589,7 @@ static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 	}
 
 	H2M::RefH2M<H2M::VulkanShaderH2M> shader = entry.Mesh->GetMeshShader().As<H2M::VulkanShaderH2M>();
-	const VkWriteDescriptorSet* binding = shader->GetDescriptorSet(s_MaterialTextureNames[request.Slot]);
+	const VkWriteDescriptorSet* binding = shader->GetDescriptorSet(s_MaterialTextureNames[request.Slot], H2M::VulkanShaderH2M::MaterialDescriptorSet);
 	if (!binding)
 	{
 		Log::GetLogger()->error("Map '{0}' was not loaded: '{1}' not found in the shader.", request.FilePath, s_MaterialTextureNames[request.Slot]);
@@ -571,20 +614,22 @@ static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 	Log::GetLogger()->info("Map '{0}' assigned to {1} of material '{2}'", request.FilePath, s_MaterialTextureNames[request.Slot], materials[request.MaterialIndex]->GetName());
 }
 
-// Every mesh has its own shader instance (see MeshH2M::Create), so the camera and light uniform buffers
-// referenced by its material descriptor sets are updated per mesh
-static void UpdateMeshUniforms(const H2M::RefH2M<H2M::MeshH2M>& mesh)
+// Per-frame uniform buffers of the mesh shaders (set 0): written once per frame, read by every mesh. They belong to the
+// HazelPBR_Static shader in the shader library, whose buffers the per-frame descriptor set points to (see Init).
+static void UpdateFrameUniforms()
 {
-	H2M::RefH2M<H2M::VulkanShaderH2M> shader = const_cast<H2M::RefH2M<H2M::MeshH2M>&>(mesh)->GetMeshShader().As<H2M::VulkanShaderH2M>();
+	H2M::RefH2M<H2M::VulkanShaderH2M> shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
 	H2M::CameraH2M& camera = s_Data.SceneData.SceneCamera.Camera;
+	const uint32_t frameSet = H2M::VulkanShaderH2M::FrameDescriptorSet;
 
-	// set 0, binding 0: Camera
+	// binding 0: Camera (vertex stage)
 	glm::mat4 viewProjection = camera.GetViewProjection();
-	void* ubPtr = shader->MapUniformBuffer(0, 0);
+	void* ubPtr = shader->MapUniformBuffer(0, frameSet);
 	memcpy(ubPtr, &viewProjection, sizeof(glm::mat4));
-	shader->UnmapUniformBuffer(0, 0);
+	shader->UnmapUniformBuffer(0, frameSet);
 
-	// set 0, binding 1: Environment (std140: Light { vec3 Direction; vec3 Radiance; float Multiplier; }, vec3 u_CameraPosition)
+	// binding 1: SceneData (fragment stage), std140: Light { vec3 Direction; vec3 Radiance; float Multiplier; },
+	// vec3 u_CameraPosition, float u_EnvMapRotation
 	struct Light
 	{
 		glm::vec3 Direction;
@@ -592,33 +637,42 @@ static void UpdateMeshUniforms(const H2M::RefH2M<H2M::MeshH2M>& mesh)
 		glm::vec3 Radiance;
 		float Multiplier;
 	};
-	struct EnvironmentUB
+	struct SceneDataUB
 	{
 		Light Lights;
 		glm::vec3 CameraPosition;
+		float EnvMapRotation;
 	};
-	EnvironmentUB ub;
+	SceneDataUB ub;
 	ub.Lights.Direction = s_Data.SceneData.LightDirectionTemp;
 	ub.Lights.Radiance = s_LightRadiance;
 	ub.Lights.Multiplier = s_LightMultiplier;
 	ub.CameraPosition = camera.GetPosition();
+	ub.EnvMapRotation = s_EnvMapRotation;
 
-	ubPtr = shader->MapUniformBuffer(1, 0);
-	memcpy(ubPtr, &ub, sizeof(EnvironmentUB));
-	shader->UnmapUniformBuffer(1, 0);
+	ubPtr = shader->MapUniformBuffer(1, frameSet);
+	memcpy(ubPtr, &ub, sizeof(SceneDataUB));
+	shader->UnmapUniformBuffer(1, frameSet);
+}
 
-	// set 0, binding 8: bone matrices of the current animation frame (HazelPBR_Anim.glsl, up to 128)
+// Per-object uniform buffers (set 2): the bone matrices of the current animation frame of a skinned mesh (up to 128).
+// Every mesh has its own shader instance (see MeshH2M::Create), so every skinned mesh has its own bone buffer.
+static void UpdateObjectUniforms(const H2M::RefH2M<H2M::MeshH2M>& mesh)
+{
 	H2M::RefH2M<H2M::MeshH2M> meshRef = mesh;
-	if (meshRef->IsSkinned())
+	if (!meshRef->IsSkinned() || meshRef->GetObjectDescriptorSet() == VK_NULL_HANDLE)
 	{
-		const std::vector<glm::mat4>& boneTransforms = meshRef->GetBoneTransforms();
-		size_t boneCount = std::min<size_t>(boneTransforms.size(), 128);
-		if (boneCount > 0)
-		{
-			ubPtr = shader->MapUniformBuffer(8, 0);
-			memcpy(ubPtr, boneTransforms.data(), boneCount * sizeof(glm::mat4));
-			shader->UnmapUniformBuffer(8, 0);
-		}
+		return;
+	}
+
+	const std::vector<glm::mat4>& boneTransforms = meshRef->GetBoneTransforms();
+	size_t boneCount = std::min<size_t>(boneTransforms.size(), 128);
+	if (boneCount > 0)
+	{
+		H2M::RefH2M<H2M::VulkanShaderH2M> shader = meshRef->GetMeshShader().As<H2M::VulkanShaderH2M>();
+		void* ubPtr = shader->MapUniformBuffer(0, H2M::VulkanShaderH2M::ObjectDescriptorSet);
+		memcpy(ubPtr, boneTransforms.data(), boneCount * sizeof(glm::mat4));
+		shader->UnmapUniformBuffer(0, H2M::VulkanShaderH2M::ObjectDescriptorSet);
 	}
 }
 
@@ -951,6 +1005,20 @@ static void OnImGuiRenderMaterialEditor()
 							s_PendingMaterialTextures.push_back({ s_SelectedMeshIndex, m, i, filepath }); // applied at the start of the next frame
 						}
 					}
+
+					// Remove the map (from the model or assigned here); the material then uses its value
+					if (hasMap)
+					{
+						ImGui::SameLine();
+						if (ImGui::Button("Remove"))
+						{
+							s_PendingMaterialTextures.push_back({ s_SelectedMeshIndex, m, i, std::string() }); // applied at the start of the next frame
+						}
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("Remove this map: the material uses its value instead\n(the model file is not changed)");
+						}
+					}
 					if (assignedMap)
 					{
 						ImGui::SameLine();
@@ -1062,41 +1130,6 @@ static void CreateEditorOverlayResources()
 	s_BoundingBoxVertexBuffer = H2M::VertexBufferH2M::Create(lines, (uint32_t)sizeof(lines));
 }
 
-// Skinned meshes: a descriptor set of EditorOverlay_Anim.glsl that points to the mesh's own bone buffer (HazelPBR_Anim.glsl,
-// binding 8, updated every frame by UpdateMeshUniforms). Allocated on first use; the pool is destroyed when the mesh is removed.
-static VkDescriptorSet GetOverlayBoneDescriptorSet(LoadedMeshVulkan& entry)
-{
-	if (!entry.OverlayBoneDescriptorSet.Pool)
-	{
-		// The bone buffer, as written into the mesh's material descriptor sets (MeshH2M: binding 8 of every material)
-		const VkDescriptorBufferInfo* boneBuffer = nullptr;
-		if (const H2M::MeshH2M::MaterialDescriptor* materialDescriptor = entry.Mesh->FindDescriptorSet(0))
-		{
-			for (const VkWriteDescriptorSet& write : materialDescriptor->WriteDescriptors)
-			{
-				if (write.dstBinding == 8 && write.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER)
-				{
-					boneBuffer = write.pBufferInfo;
-				}
-			}
-		}
-		if (!boneBuffer)
-		{
-			return VK_NULL_HANDLE;
-		}
-
-		H2M::RefH2M<H2M::VulkanShaderH2M> overlayShader = H2M::RendererH2M::GetShaderLibrary()->Get("EditorOverlay_Anim").As<H2M::VulkanShaderH2M>();
-		entry.OverlayBoneDescriptorSet = overlayShader->CreateDescriptorSets();
-
-		VkWriteDescriptorSet write = *overlayShader->GetDescriptorSet("BoneTransforms");
-		write.dstSet = entry.OverlayBoneDescriptorSet.DescriptorSets[0];
-		write.descriptorCount = 1;
-		write.pBufferInfo = boneBuffer;
-		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
-	}
-	return entry.OverlayBoneDescriptorSet.DescriptorSets[0];
-}
-
 // Draws a loaded mesh (all submeshes, or only submesh onlySubmesh) in one color with an overlay pipeline.
 // lineWidth: for the wireframe pipelines (dynamic state), 0 for the others.
 static void DrawMeshOverlay(VkCommandBuffer commandBuffer, LoadedMeshVulkan& entry, int onlySubmesh, const H2M::RefH2M<H2M::PipelineH2M>& staticPipeline,
@@ -1104,7 +1137,9 @@ static void DrawMeshOverlay(VkCommandBuffer commandBuffer, LoadedMeshVulkan& ent
 {
 	H2M::RefH2M<H2M::MeshH2M> mesh = entry.Mesh;
 	bool skinned = mesh->IsSkinned();
-	VkDescriptorSet boneDescriptorSet = skinned ? GetOverlayBoneDescriptorSet(entry) : VK_NULL_HANDLE;
+	// EditorOverlay_Anim.glsl declares the bone matrices exactly like set 2 of HazelPBR_Anim.glsl (one uniform buffer at
+	// binding 0, vertex stage), only as its set 0: the set layouts are identical, so the mesh's per-object set is bound directly
+	VkDescriptorSet boneDescriptorSet = skinned ? mesh->GetObjectDescriptorSet() : VK_NULL_HANDLE;
 	if (skinned && !boneDescriptorSet)
 	{
 		return; // no bone buffer (the mesh isn't drawn by RenderMeshVulkan either)
@@ -1201,7 +1236,13 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 			{
 				if (inScope(settings.Wireframe, m))
 				{
-					DrawMeshOverlay(commandBuffer, s_LoadedMeshes[m], -1, s_WireframePipeline, s_WireframePipelineAnim, settings.WireframeColor,
+					// "Selected": the selected submesh, or the whole mesh when no submesh is selected (like the selection outline)
+					int onlySubmesh = -1;
+					if (settings.Wireframe == OverlayScopeSelected && s_SelectedSubmeshIndex < (int)s_LoadedMeshes[m].Mesh->GetSubmeshes().size())
+					{
+						onlySubmesh = s_SelectedSubmeshIndex;
+					}
+					DrawMeshOverlay(commandBuffer, s_LoadedMeshes[m], onlySubmesh, s_WireframePipeline, s_WireframePipelineAnim, settings.WireframeColor,
 						depthBias * viewProjection, lineWidth);
 				}
 			}
@@ -1228,6 +1269,13 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 				auto& submeshes = entry.Mesh->GetSubmeshes();
 				for (int s = 0; s < (int)submeshes.size(); s++)
 				{
+					// "Selected": the selected submesh's box, or all boxes of the mesh when no submesh is selected (like the wireframe)
+					if (settings.BoundingBoxes == OverlayScopeSelected && s_SelectedSubmeshIndex >= 0 &&
+						s_SelectedSubmeshIndex < (int)submeshes.size() && s != s_SelectedSubmeshIndex)
+					{
+						continue;
+					}
+
 					// Each submesh's box in its own space, so it turns with the mesh (as in SceneHazelEnvMap)
 					const H2M::AABB_H2M& box = submeshes[s]->BoundingBox;
 					glm::mat4 mvp = viewProjection * GetSubmeshTransform(entry.Mesh, submeshes[s], transform) *
@@ -1576,9 +1624,23 @@ void EnvMapVulkanRenderer::Init()
 
 	// H2M::RendererH2M::Submit([environment]() mutable {});
 	{
+		// The per-frame set (set 0) is shared by the static and the skinned mesh pipelines: set 0 is declared identically in
+		// HazelPBR_Static.glsl and HazelPBR_Anim.glsl, so a set allocated with one shader's layout is valid for both
 		auto shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static");
 		H2M::RefH2M<H2M::VulkanShaderH2M> pbrShader = shader.As<H2M::VulkanShaderH2M>();
-		s_Data.RendererDescriptorSetFeb2021 = pbrShader->CreateDescriptorSets(1);
+		const uint32_t frameSet = H2M::VulkanShaderH2M::FrameDescriptorSet;
+		s_Data.FrameDescriptorSet = pbrShader->CreateDescriptorSets(frameSet);
+
+		// Camera and SceneData uniform buffers (written every frame, see UpdateFrameUniforms); the environment maps are
+		// written in SetSceneEnvironment
+		std::array<VkWriteDescriptorSet, 2> writes = { *pbrShader->GetDescriptorSet("Camera", frameSet), *pbrShader->GetDescriptorSet("SceneData", frameSet) };
+		writes[0].dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+		writes[0].descriptorCount = 1;
+		writes[0].pBufferInfo = &pbrShader->GetUniformBuffer(0, frameSet).Descriptor;
+		writes[1].dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+		writes[1].descriptorCount = 1;
+		writes[1].pBufferInfo = &pbrShader->GetUniformBuffer(1, frameSet).Descriptor;
+		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 	}
 
 	H2M::RendererH2M::SetSceneEnvironment(H2M::RefH2M<H2M::EnvironmentH2M>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), H2M::RefH2M<H2M::Image2D_H2M>());
@@ -1662,14 +1724,30 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 	VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 	vkCmdBindIndexBuffer(commandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
+	VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+
+	// Set 0 (per frame) was bound once for all meshes in GeometryPass. It stays bound across the static and skinned
+	// pipelines: their layouts declare set 0 and the push constants identically ("compatible for set 0").
+
+	// Set 2 (per object): the bone matrices of a skinned mesh
+	if (skinned)
+	{
+		VkDescriptorSet objectDescriptorSet = mesh->GetObjectDescriptorSet();
+		if (objectDescriptorSet == VK_NULL_HANDLE)
+		{
+			return; // no bone buffer: the skinned vertices can't be placed
+		}
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, H2M::VulkanShaderH2M::ObjectDescriptorSet, 1, &objectDescriptorSet, 0, nullptr);
+	}
+
 	auto& submeshes = mesh->GetSubmeshes();
 	for (H2M::RefH2M<H2M::SubmeshH2M> submesh : submeshes)
 	{
 		auto& material = mesh->GetMaterials()[submesh->MaterialIndex];
-		material->Set("u_MaterialUniforms.EnvMapRotation", s_EnvMapRotation); // global setting (Environment panel)
 		H2M::BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
 
-		// The PBR pipeline needs the submesh's material descriptor set (set 0). Skip submeshes without one
+		// Set 1 (per material): the texture maps of the submesh's material. Skip submeshes without one
 		// (drawing with a missing/null descriptor set is undefined behavior in Vulkan).
 		const H2M::MeshH2M::MaterialDescriptor* materialDescriptor = mesh->FindDescriptorSet(submesh->MaterialIndex);
 		if (!materialDescriptor || materialDescriptor->DescriptorSet.DescriptorSets[0] == VK_NULL_HANDLE)
@@ -1682,22 +1760,8 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 			}
 			continue;
 		}
-
-		VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
-		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-
-		// Bind descriptor sets describing shader binding points
-		const std::vector<VkDescriptorSet>& descriptorSet = materialDescriptor->DescriptorSet.DescriptorSets;
-		// std::vector<VkDescriptorSet> descriptorSet = material.As<VulkanMaterialH2M>()->GetDescriptorSet().DescriptorSets;
-		H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet rendererDescriptorSet = s_Data.RendererDescriptorSetFeb2021;
-
-		std::array<VkDescriptorSet, 2> descriptorSets = {
-			*descriptorSet.data(),
-			*rendererDescriptorSet.DescriptorSets.data(),
-		};
-
-		// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)mesh->GetDescriptorSet();
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, H2M::VulkanShaderH2M::MaterialDescriptorSet, 1,
+			&materialDescriptor->DescriptorSet.DescriptorSets[0], 0, nullptr);
 
 		// Push Constants
 		// glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -1893,21 +1957,21 @@ void EnvMapVulkanRenderer::SetSceneEnvironment(H2M::RefH2M<H2M::EnvironmentH2M> 
 		H2M::RefH2M<H2M::VulkanTextureCubeH2M> radianceMap = environment->RadianceMap.As<H2M::VulkanTextureCubeH2M>();
 		H2M::RefH2M<H2M::VulkanTextureCubeH2M> irradianceMap = environment->IrradianceMap.As<H2M::VulkanTextureCubeH2M>();
 
-		writeDescriptors[0] = *pbrShader->GetDescriptorSet("u_EnvRadianceTex", 1);
-		writeDescriptors[0].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
-		writeDescriptors[0].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
+		writeDescriptors[0] = *pbrShader->GetDescriptorSet("u_EnvRadianceTex", H2M::VulkanShaderH2M::FrameDescriptorSet);
+		writeDescriptors[0].dstSet = *s_Data.FrameDescriptorSet.DescriptorSets.data();
+		writeDescriptors[0].descriptorCount = (uint32_t)s_Data.FrameDescriptorSet.DescriptorSets.size();
 		auto& radianceMapImageInfo = radianceMap->GetVulkanDescriptorInfo();
 		writeDescriptors[0].pImageInfo = &radianceMapImageInfo;
 
-		writeDescriptors[1] = *pbrShader->GetDescriptorSet("u_EnvIrradianceTex", 1);
-		writeDescriptors[1].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
-		writeDescriptors[1].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
+		writeDescriptors[1] = *pbrShader->GetDescriptorSet("u_EnvIrradianceTex", H2M::VulkanShaderH2M::FrameDescriptorSet);
+		writeDescriptors[1].dstSet = *s_Data.FrameDescriptorSet.DescriptorSets.data();
+		writeDescriptors[1].descriptorCount = (uint32_t)s_Data.FrameDescriptorSet.DescriptorSets.size();
 		auto& irradianceMapImageInfo = irradianceMap->GetVulkanDescriptorInfo();
 		writeDescriptors[1].pImageInfo = &irradianceMapImageInfo;
 
-		writeDescriptors[2] = *pbrShader->GetDescriptorSet("u_BRDFLUTTexture", 1);
-		writeDescriptors[2].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
-		writeDescriptors[2].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
+		writeDescriptors[2] = *pbrShader->GetDescriptorSet("u_BRDFLUTTexture", H2M::VulkanShaderH2M::FrameDescriptorSet);
+		writeDescriptors[2].dstSet = *s_Data.FrameDescriptorSet.DescriptorSets.data();
+		writeDescriptors[2].descriptorCount = (uint32_t)s_Data.FrameDescriptorSet.DescriptorSets.size();
 		auto& brdfLutImageInfo = s_Data.BRDFLut.As<H2M::VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
 		writeDescriptors[2].pImageInfo = &brdfLutImageInfo;
 
@@ -1972,6 +2036,11 @@ void EnvMapVulkanRenderer::GeometryPass()
 		vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
 		EnvMapVulkanRenderer::RenderSkybox(drawCommandBuffer); // in progress
+
+		// Set 0 (per frame: camera, scene data, environment maps) is bound once, for all meshes
+		VkPipelineLayout meshPipelineLayout = s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
+		vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshPipelineLayout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
+			s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
 		for (auto& [mesh, transform] : s_Meshes)
 		{
@@ -2719,10 +2788,18 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 					ImGui::Separator();
 					ImGui::Combo("Wireframe", &overlay.Wireframe, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Selected: the selected submesh, or the whole model when no submesh is selected\nAll: every loaded model");
+					}
 					ImGui::ColorEdit4("Wireframe Color", &overlay.WireframeColor.x, ImGuiColorEditFlags_NoInputs);
 
 					ImGui::Separator();
 					ImGui::Combo("Bounding Boxes", &overlay.BoundingBoxes, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Selected: the selected submesh's box, or all boxes of the model when no submesh is selected\nAll: the boxes of every loaded model");
+					}
 					ImGui::ColorEdit4("Selected Box", &overlay.SelectedBoundingBoxColor.x, ImGuiColorEditFlags_NoInputs);
 					if (ImGui::IsItemHovered())
 					{
@@ -2733,7 +2810,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::SetTooltip("All other boxes: other meshes, and the other submeshes of the selected mesh.\n"
-							"Visible with Bounding Boxes = All, or after clearing the selection (click empty space).");
+							"Only drawn with Bounding Boxes = All.");
 					}
 
 					ImGui::Separator();
@@ -2860,10 +2937,6 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		{
 			// The mesh's buffers and descriptor sets may still be used by frames in flight
 			vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
-			if (s_LoadedMeshes[s_PendingRemoveMeshIndex].OverlayBoneDescriptorSet.Pool)
-			{
-				vkDestroyDescriptorPool(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), s_LoadedMeshes[s_PendingRemoveMeshIndex].OverlayBoneDescriptorSet.Pool, nullptr);
-			}
 			s_LoadedMeshes.erase(s_LoadedMeshes.begin() + s_PendingRemoveMeshIndex);
 			s_PendingMaterialTextures.clear(); // their mesh indices refer to the list before the removal
 			s_SelectedMeshIndex = glm::min(s_SelectedMeshIndex, (int)s_LoadedMeshes.size() - 1);
@@ -2918,9 +2991,10 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		{
 			entry.Mesh->OnUpdate(H2M::TimestepH2M(deltaTime), false); // bone matrices of the current frame (bind pose when not animated)
 		}
-		UpdateMeshUniforms(entry.Mesh);
+		UpdateObjectUniforms(entry.Mesh);
 		SubmitMeshTemp(entry.Mesh, entry.GetTransform());
 	}
+	UpdateFrameUniforms();
 
 	if (s_ViewportFBNeedsResize)
 	{
@@ -3110,11 +3184,10 @@ void EnvMapVulkanRenderer::RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2
 			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
 			vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-			// Bind descriptor sets describing shader binding points
+			// Bind descriptor sets describing shader binding points: set 0 per frame, set 1 the material's own set
 			std::array<VkDescriptorSet, 2> descriptorSets = {
-				// mesh->GetDescriptorSet(submesh->MaterialIndex).DescriptorSet.DescriptorSets[0],
+				s_Data.FrameDescriptorSet.DescriptorSets[0],
 				material->GetDescriptorSet().DescriptorSets[0],
-				s_Data.RendererDescriptorSetFeb2021.DescriptorSets[0],
 			};
 			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
@@ -3309,80 +3382,9 @@ void EnvMapVulkanRenderer::MapUniformBuffersVTL(H2M::RefH2M<H2M::MeshH2M> mesh, 
 
 	H2M::RendererH2M::BeginRenderPass(s_Data.GeoPass);
 
-	auto viewProjection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix() * s_Data.SceneData.SceneCamera.ViewMatrix;
-	// glm::vec3 cameraPosition = glm::inverse(s_Data.SceneData.SceneCamera.ViewMatrix)[3];
-	glm::vec3 cameraPosition = camera.GetPosition();
-
-	// float skyboxLod = s_Data.ActiveScene->GetSkyboxLod();
-	// H2M::RendererH2M::Submit([viewProjection, cameraPosition]() {});
-	{
-		auto inverseVP = glm::inverse(viewProjection);
-		// auto shader = s_Data.GridMaterial->GetShader().As<H2M::VulkanShaderH2M>();
-		// void* ubPtr = shader->MapUniformBuffer(0);
-		struct ViewProj
-		{
-			glm::mat4 ViewProjection;
-			glm::mat4 InverseViewProjection;
-		};
-		ViewProj viewProj;
-		viewProj.ViewProjection = viewProjection;
-		viewProj.InverseViewProjection = inverseVP;
-		// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
-		// shader->UnmapUniformBuffer(0);
-
-		// shader = s_Data.SkyboxMaterial->GetShader().As<H2M::VulkanShaderH2M>();
-		// ubPtr = shader->MapUniformBuffer(0);
-		// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
-		// shader->UnmapUniformBuffer(0);
-
-		// shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
-		// ubPtr = shader->MapUniformBuffer(0);
-		// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
-		// shader->UnmapUniformBuffer(0);
-
-		H2M::RefH2M<H2M::VulkanShaderH2M> shader = mesh->GetMeshShader().As<H2M::VulkanShaderH2M>();
-
-		{
-			void* ubPtr = shader->MapUniformBuffer(0, 0);
-			glm::mat4 viewProj = camera.GetViewProjection();
-			memcpy(ubPtr, &viewProj, sizeof(glm::mat4));
-			shader->UnmapUniformBuffer(0, 0);
-		}
-
-		struct Light
-		{
-			glm::vec3 Direction;
-			float Padding = 0.0f;
-			glm::vec3 Radiance;
-			float Multiplier;
-		};
-
-		struct UB
-		{
-			Light lights;
-			glm::vec3 u_CameraPosition;
-			// glm::vec4 u_AlbedoColorUB;
-		};
-
-		UB ub;
-		ub.lights =
-		{
-			{ 0.5f, 0.5f, 0.5f },
-			0.0f,
-			{ 1.0f, 1.0f, 1.0f },
-			1.0f
-		};
-
-		ub.lights.Direction = EnvMapVulkanRenderer::GetLightDirectionTemp();
-		ub.u_CameraPosition = cameraPosition;
-		// ub.u_AlbedoColorUB = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-
-		// Log::GetLogger()->info("Light Direction: {0}, {1}, {2}", ub.lights.Direction.x, ub.lights.Direction.y, ub.lights.Direction.z);
-
-		void* ubPtr = shader->MapUniformBuffer(1, 0);
-		memcpy(ubPtr, &ub, sizeof(UB));
-		shader->UnmapUniformBuffer(1, 0);
-	}
+	// Camera and scene data are per frame (set 0), shared by every mesh
+	UpdateFrameUniforms();
+	UpdateObjectUniforms(mesh);
 }
 
 namespace Utils

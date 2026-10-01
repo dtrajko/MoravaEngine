@@ -497,42 +497,10 @@ namespace H2M
 				{
 					// HazelRenderer::Submit([instance, shader, i]() mutable {});
 					{
+						// The material set (set 1) holds only the texture maps (written below with AddMaterialTextureWriteDescriptor).
+						// Camera and scene data are in the renderer's per-frame set (set 0), the bone matrices in the per-object set (set 2).
 						MaterialDescriptor& materialDescriptor = m_MaterialDescriptors[i];
-						materialDescriptor.DescriptorSet = shader.As<VulkanShaderH2M>()->CreateDescriptorSets();
-
-						// EXAMPLE:
-						// std::vector<VkWriteDescriptorSet> writeDescriptorSets = Renderer::GetWriteDescriptorSet(pipelineSpecification.Shader);
-						auto& ub0 = shader.As<VulkanShaderH2M>()->GetUniformBuffer(0);
-						VkWriteDescriptorSet writeDescriptorSet = {};
-						writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-						writeDescriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
-						writeDescriptorSet.descriptorCount = (uint32_t)materialDescriptor.DescriptorSet.DescriptorSets.size();
-						writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-						writeDescriptorSet.pBufferInfo = &ub0.Descriptor;
-						writeDescriptorSet.dstBinding = 0;
-						materialDescriptor.WriteDescriptors.push_back(writeDescriptorSet);
-
-						auto& ub1 = shader.As<VulkanShaderH2M>()->GetUniformBuffer(1);
-						writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-						writeDescriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
-						writeDescriptorSet.descriptorCount = (uint32_t)materialDescriptor.DescriptorSet.DescriptorSets.size();
-						writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-						writeDescriptorSet.pBufferInfo = &ub1.Descriptor;
-						writeDescriptorSet.dstBinding = 1;
-						materialDescriptor.WriteDescriptors.push_back(writeDescriptorSet);
-
-						// HazelPBR_Anim.glsl: bone matrices (binding 8), written every frame by the renderer
-						if (m_IsAnimated)
-						{
-							auto& ub8 = shader.As<VulkanShaderH2M>()->GetUniformBuffer(8);
-							writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-							writeDescriptorSet.dstSet = *materialDescriptor.DescriptorSet.DescriptorSets.data();
-							writeDescriptorSet.descriptorCount = (uint32_t)materialDescriptor.DescriptorSet.DescriptorSets.size();
-							writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-							writeDescriptorSet.pBufferInfo = &ub8.Descriptor;
-							writeDescriptorSet.dstBinding = 8;
-							materialDescriptor.WriteDescriptors.push_back(writeDescriptorSet);
-						}
+						materialDescriptor.DescriptorSet = shader.As<VulkanShaderH2M>()->CreateDescriptorSets(VulkanShaderH2M::MaterialDescriptorSet);
 					}
 				}
 				/**** END to be removed from MeshH2M ****/
@@ -764,7 +732,7 @@ namespace H2M
 						texture = LoadBaseTexture();
 					}
 
-					if (texture->Loaded())
+					if (texture && texture->Loaded()) // null when the file is missing or failed to load
 					{
 						m_Textures[i] = texture;
 						mi->Set("u_RoughnessTexture", texture); // VulkanMaterial::FindResourceDeclaration - no resources found (name 'u_RoughnessTexture')!
@@ -922,7 +890,7 @@ namespace H2M
 								texture = LoadBaseTexture();
 							}
 
-							if (texture->Loaded())
+							if (texture && texture->Loaded()) // null when the file is missing or failed to load
 							{
 								metalnessTextureFound = true;
 
@@ -1070,6 +1038,22 @@ namespace H2M
 
 		/**** END Materials ****/
 
+		// Per-object descriptor set of a skinned mesh (set 2): the bone matrices, updated every frame by the renderer
+		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan && m_IsAnimated)
+		{
+			RefH2M<VulkanShaderH2M> vulkanShader = m_MeshShader.As<VulkanShaderH2M>();
+			if (vulkanShader->HasDescriptorSet(VulkanShaderH2M::ObjectDescriptorSet))
+			{
+				m_ObjectDescriptorSet = vulkanShader->CreateDescriptorSets(VulkanShaderH2M::ObjectDescriptorSet);
+
+				VkWriteDescriptorSet writeDescriptorSet = *vulkanShader->GetDescriptorSet("BoneTransforms", VulkanShaderH2M::ObjectDescriptorSet);
+				writeDescriptorSet.dstSet = m_ObjectDescriptorSet.DescriptorSets[0];
+				writeDescriptorSet.descriptorCount = 1;
+				writeDescriptorSet.pBufferInfo = &vulkanShader->GetUniformBuffer(0, VulkanShaderH2M::ObjectDescriptorSet).Descriptor;
+				vkUpdateDescriptorSets(VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &writeDescriptorSet, 0, nullptr);
+			}
+		}
+
 		Log::GetLogger()->info("H2M::MeshH2M: Creating a Vertex Buffer...");
 
 		if (m_IsAnimated)
@@ -1165,7 +1149,7 @@ namespace H2M
 			MaterialDescriptor& materialDescriptor = m_MaterialDescriptors[index];
 
 			RefH2M<ShaderH2M> shader = m_Materials[index]->GetShader();
-			const VkWriteDescriptorSet* wds = shader.As<VulkanShaderH2M>()->GetDescriptorSet(name);
+			const VkWriteDescriptorSet* wds = shader.As<VulkanShaderH2M>()->GetDescriptorSet(name, VulkanShaderH2M::MaterialDescriptorSet);
 			H2M_CORE_ASSERT(wds);
 
 			VkWriteDescriptorSet descriptorSet = *wds;

@@ -78,7 +78,9 @@ namespace H2M
 	{
 		VkCommandBuffer ActiveCommandBuffer = nullptr;
 		RefH2M<Texture2D_H2M> BRDFLut;
-		VulkanShaderH2M::ShaderMaterialDescriptorSet RendererDescriptorSetFeb2021;
+		// Per-frame descriptor set of the mesh shaders (set 0, VulkanShaderH2M::FrameDescriptorSet): camera, scene data,
+		// environment maps and BRDF LUT
+		VulkanShaderH2M::ShaderMaterialDescriptorSet FrameDescriptorSet;
 		// std::unordered_map<SceneRenderer*, std::vector<VulkanShaderH2M::ShaderMaterialDescriptorSet>> RendererDescriptorSet;
 
 		RefH2M<VertexBufferH2M> QuadVertexBuffer;
@@ -455,9 +457,21 @@ namespace H2M
 
 		// RendererH2M::Submit([environment]() mutable {});
 		{
+			// Set 0 of the mesh shaders: per frame. The Camera and SceneData buffers belong to the library's HazelPBR_Static
+			// shader (written every frame in MapUniformBuffersVTL); the environment maps are written in SetSceneEnvironment.
 			auto shader = RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static");
 			RefH2M<VulkanShaderH2M> pbrShader = shader.As<VulkanShaderH2M>();
-			s_Data.RendererDescriptorSetFeb2021 = pbrShader->CreateDescriptorSets(1);
+			const uint32_t frameSet = VulkanShaderH2M::FrameDescriptorSet;
+			s_Data.FrameDescriptorSet = pbrShader->CreateDescriptorSets(frameSet);
+
+			std::array<VkWriteDescriptorSet, 2> writes = { *pbrShader->GetDescriptorSet("Camera", frameSet), *pbrShader->GetDescriptorSet("SceneData", frameSet) };
+			writes[0].dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+			writes[0].descriptorCount = 1;
+			writes[0].pBufferInfo = &pbrShader->GetUniformBuffer(0, frameSet).Descriptor;
+			writes[1].dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+			writes[1].descriptorCount = 1;
+			writes[1].pBufferInfo = &pbrShader->GetUniformBuffer(1, frameSet).Descriptor;
+			vkUpdateDescriptorSets(VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 		}
 
 		RendererH2M::SetSceneEnvironment(RefH2M<EnvironmentH2M>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), RefH2M<Image2D_H2M>());
@@ -547,14 +561,12 @@ namespace H2M
 			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-			// Bind descriptor sets describing shader binding points
+			// Bind descriptor sets describing shader binding points: set 0 per frame, set 1 the material's texture maps
 			std::vector<VkDescriptorSet> descriptorSet = mesh->GetDescriptorSet(submesh->MaterialIndex).DescriptorSet.DescriptorSets;
-			// std::vector<VkDescriptorSet> descriptorSet = material.As<VulkanMaterialH2M>()->GetDescriptorSet().DescriptorSets;
-			VulkanShaderH2M::ShaderMaterialDescriptorSet rendererDescriptorSet = s_Data.RendererDescriptorSetFeb2021;
 
 			std::array<VkDescriptorSet, 2> descriptorSets = {
+				*s_Data.FrameDescriptorSet.DescriptorSets.data(),
 				*descriptorSet.data(),
-				*rendererDescriptorSet.DescriptorSets.data(),
 			};
 
 			// VkDescriptorSet* descriptorSet = (VkDescriptorSet*)mesh->GetDescriptorSet();
@@ -750,21 +762,21 @@ namespace H2M
 			RefH2M<VulkanTextureCubeH2M> radianceMap = environment->RadianceMap.As<VulkanTextureCubeH2M>();
 			RefH2M<VulkanTextureCubeH2M> irradianceMap = environment->IrradianceMap.As<VulkanTextureCubeH2M>();
 
-			writeDescriptors[0] = *pbrShader->GetDescriptorSet("u_EnvRadianceTex", 1);
-			writeDescriptors[0].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
-			writeDescriptors[0].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
+			writeDescriptors[0] = *pbrShader->GetDescriptorSet("u_EnvRadianceTex", VulkanShaderH2M::FrameDescriptorSet);
+			writeDescriptors[0].dstSet = *s_Data.FrameDescriptorSet.DescriptorSets.data();
+			writeDescriptors[0].descriptorCount = (uint32_t)s_Data.FrameDescriptorSet.DescriptorSets.size();
 			auto& radianceMapImageInfo = radianceMap->GetVulkanDescriptorInfo();
 			writeDescriptors[0].pImageInfo = &radianceMapImageInfo;
 
-			writeDescriptors[1] = *pbrShader->GetDescriptorSet("u_EnvIrradianceTex", 1);
-			writeDescriptors[1].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
-			writeDescriptors[1].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
+			writeDescriptors[1] = *pbrShader->GetDescriptorSet("u_EnvIrradianceTex", VulkanShaderH2M::FrameDescriptorSet);
+			writeDescriptors[1].dstSet = *s_Data.FrameDescriptorSet.DescriptorSets.data();
+			writeDescriptors[1].descriptorCount = (uint32_t)s_Data.FrameDescriptorSet.DescriptorSets.size();
 			auto& irradianceMapImageInfo = irradianceMap->GetVulkanDescriptorInfo();
 			writeDescriptors[1].pImageInfo = &irradianceMapImageInfo;
 
-			writeDescriptors[2] = *pbrShader->GetDescriptorSet("u_BRDFLUTTexture", 1);
-			writeDescriptors[2].dstSet = *s_Data.RendererDescriptorSetFeb2021.DescriptorSets.data();
-			writeDescriptors[2].descriptorCount = (uint32_t)s_Data.RendererDescriptorSetFeb2021.DescriptorSets.size();
+			writeDescriptors[2] = *pbrShader->GetDescriptorSet("u_BRDFLUTTexture", VulkanShaderH2M::FrameDescriptorSet);
+			writeDescriptors[2].dstSet = *s_Data.FrameDescriptorSet.DescriptorSets.data();
+			writeDescriptors[2].descriptorCount = (uint32_t)s_Data.FrameDescriptorSet.DescriptorSets.size();
 			auto& brdfLutImageInfo = s_Data.BRDFLut.As<VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
 			writeDescriptors[2].pImageInfo = &brdfLutImageInfo;
 
@@ -1503,10 +1515,10 @@ namespace H2M
 				vkCmdBindPipeline(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 				// Bind descriptor sets describing shader binding points
+				// Set 0 per frame, set 1 the material's own set
 				std::array<VkDescriptorSet, 2> descriptorSets = {
-					// mesh->GetDescriptorSet(submesh->MaterialIndex).DescriptorSet.DescriptorSets[0],
+					s_Data.FrameDescriptorSet.DescriptorSets[0],
 					material->GetDescriptorSet().DescriptorSets[0],
-					s_Data.RendererDescriptorSetFeb2021.DescriptorSets[0],
 				};
 				vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
@@ -1734,7 +1746,8 @@ namespace H2M
 			// memcpy(ubPtr, &viewProj, sizeof(ViewProj));
 			// shader->UnmapUniformBuffer(0);
 
-			RefH2M<VulkanShaderH2M> shader = mesh->GetMeshShader().As<VulkanShaderH2M>();
+			// Per-frame uniform buffers (set 0), shared by every mesh: they belong to the library's HazelPBR_Static shader
+			RefH2M<VulkanShaderH2M> shader = RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<VulkanShaderH2M>();
 
 			{
 				void* ubPtr = shader->MapUniformBuffer(0, 0);
@@ -1752,11 +1765,11 @@ namespace H2M
 				float Multiplier;
 			};
 
-			struct UB
+			struct UB // SceneData
 			{
 				Light lights;
 				glm::vec3 u_CameraPosition;
-				// glm::vec4 u_AlbedoColorUB;
+				float u_EnvMapRotation = 0.0f;
 			};
 
 			UB ub;
