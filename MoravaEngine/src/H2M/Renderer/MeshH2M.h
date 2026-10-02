@@ -194,6 +194,7 @@ namespace H2M
 		{
 			VulkanShaderH2M::ShaderMaterialDescriptorSet DescriptorSet;
 			std::vector<VkWriteDescriptorSet> WriteDescriptors;
+			std::unordered_map<std::string, RefH2M<Texture2D_H2M>> Textures; // last texture written to each binding (e.g. "u_AlbedoTexture")
 		};
 		// Material descriptor sets (set 1 of the mesh shaders, VulkanShaderH2M::MaterialDescriptorSet): one per material, texture maps only
 		const MaterialDescriptor& GetDescriptorSet(uint32_t index) { return m_MaterialDescriptors[index]; }

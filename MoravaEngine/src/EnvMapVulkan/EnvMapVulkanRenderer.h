@@ -10,6 +10,7 @@
 
 #include "H2M/Renderer/CameraH2M.h"
 #include "H2M/Renderer/MeshH2M.h"
+#include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RendererCapabilitiesH2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
@@ -45,12 +46,13 @@ public:
 
 	virtual H2M::RendererCapabilitiesH2M GetCapabilities() override;
 
-	static void SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform = glm::mat4(1.0f)); // to be removed from VulkanRendererH2M
+	// materials: the Material Library material of each submesh (same order as the mesh's submeshes)
+	static void SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials); // to be removed from VulkanRendererH2M
 	static void OnResize(uint32_t width, uint32_t height);                                                 // to be removed from VulkanRendererH2M
 	static uint32_t GetViewportWidth();                                                                    // to be removed from VulkanRendererH2M
 	static uint32_t GetViewportHeight();                                                                   // to be removed from VulkanRendererH2M
 
-	static void RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform, VkCommandBuffer commandBuffer);
+	static void RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer);
 
 	static void RenderSkybox(VkCommandBuffer commandBuffer);
 

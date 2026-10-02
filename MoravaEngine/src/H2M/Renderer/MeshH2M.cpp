@@ -1158,6 +1158,7 @@ namespace H2M
 			auto& imageInfo = texture.As<VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
 			descriptorSet.pImageInfo = &imageInfo;
 			materialDescriptor.WriteDescriptors.push_back(descriptorSet);
+			materialDescriptor.Textures[name] = texture;
 		}
 	}
 

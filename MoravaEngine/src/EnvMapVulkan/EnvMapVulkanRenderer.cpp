@@ -5,6 +5,7 @@
  */
 
 #include "EnvMapVulkanRenderer.h"
+#include "EnvMapVulkanMaterialLibrary.h"
 
 #include "H2M/Platform/Vulkan/VulkanH2M.h"
 #include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
@@ -25,6 +26,7 @@
 #include "Platform/Vulkan/VulkanSkyboxCube.h"
 
 #include "imgui.h"
+#include "imgui_internal.h" // BeginDragDropTargetCustom (the Meshes panel as one drop area)
 
 #if !defined(IMGUI_IMPL_API)
 	#define IMGUI_IMPL_API
@@ -37,10 +39,12 @@
 #include "stb_image.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/component_wise.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 #include <algorithm>
 #include <filesystem>
+#include <optional>
 #include <set>
 
 
@@ -167,7 +171,14 @@ static void RegisterViewportTextureWithImGui()
 }
 static uint32_t s_ViewportWidth = 1280;              // to be removed from VulkanRenderer
 static uint32_t s_ViewportHeight = 720;              // to be removed from VulkanRenderer
-static std::vector<std::pair<H2M::RefH2M<H2M::MeshH2M>, glm::mat4>> s_Meshes; // meshes submitted for this frame, with their transforms
+// Meshes submitted for this frame, with their transforms and the material of each submesh
+struct SubmittedMesh
+{
+	H2M::RefH2M<H2M::MeshH2M> Mesh;
+	glm::mat4 Transform;
+	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> Materials;
+};
+static std::vector<SubmittedMesh> s_Meshes;
 
 static H2M::RefH2M<H2M::SubmeshH2M> s_SelectedSubmesh;
 static glm::mat4* s_Transform_ImGuizmo = nullptr;
@@ -342,8 +353,8 @@ struct LoadedMeshVulkan
 	glm::vec3 Translation = glm::vec3(0.0f);
 	glm::vec3 Rotation = glm::vec3(0.0f); // degrees
 	glm::vec3 Scale = glm::vec3(1.0f);
-	std::vector<std::array<bool, 6>> MaterialHasMap; // per material: albedo, normal, metalness, roughness, emissive, AO map available (from the model or assigned)
-	std::vector<std::array<H2M::RefH2M<H2M::Texture2D_H2M>, 6>> MaterialTextures; // maps assigned in the Material Editor (kept alive here)
+	// Material slots: the Material Library material each submesh is drawn with (same order as the mesh's submeshes)
+	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> SubmeshMaterials;
 
 	// Composed with ImGuizmo's own convention (Euler angles in degrees), so the gizmo (Manipulate +
 	// DecomposeMatrixToComponents) and the values in the Meshes panel round-trip exactly
@@ -356,29 +367,66 @@ struct LoadedMeshVulkan
 };
 static std::vector<LoadedMeshVulkan> s_LoadedMeshes;
 static int s_SelectedMeshIndex = -1;
-static int s_SelectedSubmeshIndex = -1; // submesh of the selected mesh; -1 = none (the Material Editor then lists all materials)
+static int s_SelectedSubmeshIndex = -1; // submesh of the selected mesh; -1 = none
 static std::string s_PendingMeshFilename;  // requested from the UI, loaded at the start of the next Draw
+static std::optional<glm::vec3> s_PendingMeshGroundPosition; // dropped on the viewport: where the model is placed (see LoadMesh)
 static int s_PendingRemoveMeshIndex = -1;  // requested from the UI, removed at the start of the next Draw
 
 // Screen rectangle of the scene image in the Viewport window (for the gizmo and mouse picking)
 static ImVec2 s_ViewportImageMin = ImVec2(0.0f, 0.0f);
 static ImVec2 s_ViewportImageSize = ImVec2(0.0f, 0.0f);
 
-// Selects the mesh and submesh under the mouse: a ray through the cursor is tested against every submesh's bounding box,
-// then its triangles (as in SceneHazelEnvMap); the nearest hit wins. Nothing hit clears the selection.
-// ndcX, ndcY: cursor position in normalized device coordinates of the viewport (-1..1, +y up)
-static void PickMesh(float ndcX, float ndcY)
+// Mouse position in normalized device coordinates of the scene image in the Viewport window (-1..1, +y up).
+// The image is shown vertically flipped (see ImGui::Image in OnImGuiRender), so its top edge is NDC y = +1.
+static glm::vec2 GetViewportMouseNdc()
+{
+	ImVec2 mouse = ImGui::GetMousePos();
+	return glm::vec2((mouse.x - s_ViewportImageMin.x) / s_ViewportImageSize.x * 2.0f - 1.0f,
+		1.0f - (mouse.y - s_ViewportImageMin.y) / s_ViewportImageSize.y * 2.0f);
+}
+
+// World space ray from the camera through a point of the viewport (NDC)
+static void GetCameraRay(float ndcX, float ndcY, glm::vec3& origin, glm::vec3& direction)
 {
 	H2M::CameraH2M& camera = s_Data.SceneData.SceneCamera.Camera;
 	glm::mat4 view = camera.GetViewMatrix();
 	glm::mat4 inverseViewProjection = glm::inverse(camera.GetProjectionMatrix() * view);
 
-	glm::vec3 origin = glm::vec3(glm::inverse(view)[3]); // camera position
+	origin = glm::vec3(glm::inverse(view)[3]); // camera position
 	glm::vec4 farPoint = inverseViewProjection * glm::vec4(ndcX, ndcY, 1.0f, 1.0f);
-	glm::vec3 direction = glm::normalize(glm::vec3(farPoint) / farPoint.w - origin);
+	direction = glm::normalize(glm::vec3(farPoint) / farPoint.w - origin);
+}
+
+// Where a model dropped on the viewport goes: the point under the cursor on the ground plane (y = 0, the editor grid), or a few
+// units in front of the camera when the cursor ray doesn't meet the ground nearby (looking at the sky or along the horizon)
+static glm::vec3 GetDropGroundPosition(float ndcX, float ndcY)
+{
+	glm::vec3 origin, direction;
+	GetCameraRay(ndcX, ndcY, origin, direction);
+
+	const float maxDistance = 100.0f;
+	if (direction.y < -1e-4f)
+	{
+		float t = -origin.y / direction.y;
+		if (t > 0.0f && t < maxDistance)
+		{
+			return origin + direction * t;
+		}
+	}
+	return origin + direction * 5.0f;
+}
+
+// Finds the mesh and submesh under the mouse: a ray through the cursor is tested against every submesh's bounding box,
+// then its triangles (as in SceneHazelEnvMap); the nearest hit wins. hitMesh/hitSubmesh are -1 when nothing is hit.
+// ndcX, ndcY: cursor position in normalized device coordinates of the viewport (-1..1, +y up)
+static void RaycastSubmesh(float ndcX, float ndcY, int& hitMesh, int& hitSubmesh)
+{
+	glm::vec3 origin, direction;
+	GetCameraRay(ndcX, ndcY, origin, direction);
 
 	float nearestT = std::numeric_limits<float>::max();
-	int hitMesh = -1, hitSubmesh = -1;
+	hitMesh = -1;
+	hitSubmesh = -1;
 
 	for (int m = 0; m < (int)s_LoadedMeshes.size(); m++)
 	{
@@ -415,36 +463,25 @@ static void PickMesh(float ndcX, float ndcY)
 		}
 	}
 
-	s_SelectedMeshIndex = hitMesh;
-	s_SelectedSubmeshIndex = hitSubmesh;
 }
 
-// Material map slots: albedo, normal, metalness, roughness, emissive, ambient occlusion
-static const uint32_t s_MaterialMapCount = 6;
+// Selects the mesh and submesh under the mouse. Nothing hit clears the selection.
+static void PickMesh(float ndcX, float ndcY)
+{
+	RaycastSubmesh(ndcX, ndcY, s_SelectedMeshIndex, s_SelectedSubmeshIndex);
+}
 
-static const char* s_MaterialMapToggles[s_MaterialMapCount] = {
-	"u_MaterialUniforms.AlbedoTexToggle",
-	"u_MaterialUniforms.NormalTexToggle",
-	"u_MaterialUniforms.MetalnessTexToggle",
-	"u_MaterialUniforms.RoughnessTexToggle",
-	"u_MaterialUniforms.EmissiveTexToggle",
-	"u_MaterialUniforms.AOTexToggle",
-};
+// Material Library (the materials themselves are in EnvMapVulkanMaterialLibrary)
+static H2M::RefH2M<EnvMapVulkanMaterial> s_SelectedMaterial;      // edited in the Material Editor
+static H2M::RefH2M<EnvMapVulkanMaterial> s_PendingDeleteMaterial; // requested from the UI, deleted at the start of the next Draw
+static const char* s_MaterialPayload = "VULKAN_LIBRARY_MATERIAL";    // drag & drop payload: an index into EnvMapVulkanMaterialLibrary::GetMaterials()
 
-// Material texture bindings in HazelPBR_Static.glsl (set 1, the material set), in the same order as s_MaterialMapToggles
-static const char* s_MaterialTextureNames[s_MaterialMapCount] = {
-	"u_AlbedoTexture", "u_NormalTexture", "u_MetalnessTexture", "u_RoughnessTexture", "u_EmissiveTexture", "u_AOTexture" };
-
-// Albedo and emissive maps are color data (sRGB); the others are linear data
-static bool IsColorMapSlot(uint32_t slot) { return slot == 0 || slot == 4; }
-
-// A map assigned in the Material Editor (button or drag & drop), applied at the start of the next Draw
+// A map assigned or removed in the Material Editor (button or drag & drop), applied at the start of the next Draw
 struct PendingMaterialTexture
 {
-	int MeshIndex;
-	uint32_t MaterialIndex;
-	uint32_t Slot; // 0 albedo, 1 normal, 2 metalness, 3 roughness, 4 emissive, 5 ambient occlusion
-	std::string FilePath; // empty: remove the map (see RemoveMaterialTexture)
+	H2M::RefH2M<EnvMapVulkanMaterial> Material;
+	uint32_t Slot;        // EnvMapVulkanMaterial::Map
+	std::string FilePath; // empty: remove the map
 };
 static std::vector<PendingMaterialTexture> s_PendingMaterialTextures;
 
@@ -464,8 +501,45 @@ static bool IsModelFile(const std::string& filepath)
 	return s_Extensions.find(extension) != s_Extensions.end();
 }
 
-// Loads a model file and adds it to the scene (called at the start of a frame, see Draw)
-static void LoadMesh(const std::string& filepath)
+// Number of submeshes, over all loaded meshes, drawn with the material
+static int CountMaterialUsers(const H2M::RefH2M<EnvMapVulkanMaterial>& material)
+{
+	int count = 0;
+	for (const LoadedMeshVulkan& entry : s_LoadedMeshes)
+	{
+		count += (int)std::count(entry.SubmeshMaterials.begin(), entry.SubmeshMaterials.end(), material);
+	}
+	return count;
+}
+
+// The Material Editor follows the selection: selecting a submesh (Meshes panel or viewport) selects the material it is drawn with
+static void SyncSelectedMaterial()
+{
+	static int s_LastMeshIndex = -1;
+	static int s_LastSubmeshIndex = -1;
+	if (s_SelectedMeshIndex == s_LastMeshIndex && s_SelectedSubmeshIndex == s_LastSubmeshIndex)
+	{
+		return;
+	}
+	s_LastMeshIndex = s_SelectedMeshIndex;
+	s_LastSubmeshIndex = s_SelectedSubmeshIndex;
+
+	if (s_SelectedMeshIndex >= 0 && s_SelectedMeshIndex < (int)s_LoadedMeshes.size())
+	{
+		const auto& slots = s_LoadedMeshes[s_SelectedMeshIndex].SubmeshMaterials;
+		if (s_SelectedSubmeshIndex >= 0 && s_SelectedSubmeshIndex < (int)slots.size())
+		{
+			s_SelectedMaterial = slots[s_SelectedSubmeshIndex];
+		}
+	}
+}
+
+static glm::mat4 GetSubmeshTransform(H2M::RefH2M<H2M::MeshH2M> mesh, const H2M::RefH2M<H2M::SubmeshH2M>& submesh, const glm::mat4& transform);
+
+// Loads a model file and adds it to the scene (called at the start of a frame, see Draw). With a ground position (a model dropped
+// on the viewport), the model stands on that point: the bottom center of its bounding box is placed there, rather than its origin.
+// A model far too large or too small for the view (e.g. modeled in millimeters) is also scaled to fit (see below).
+static void LoadMesh(const std::string& filepath, std::optional<glm::vec3> groundPosition = std::nullopt)
 {
 	if (!std::filesystem::exists(filepath) || !IsModelFile(filepath))
 	{
@@ -489,78 +563,81 @@ static void LoadMesh(const std::string& filepath)
 	entry.Mesh = mesh;
 	entry.FilePath = filepath;
 
-	// Which texture maps the model provided (the loader turns the toggle on for each map it found)
-	for (auto& material : mesh->GetMaterials())
+	// The model's materials go into the Material Library (reused if this model was loaded before); each submesh starts
+	// with the material the model assigns to it, or the library's Default material if the model has none for it
+	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> modelMaterials = EnvMapVulkanMaterialLibrary::ImportMeshMaterials(mesh);
+	for (auto& submesh : mesh->GetSubmeshes())
 	{
-		H2M::RefH2M<H2M::VulkanMaterialH2M> vulkanMaterial = material.As<H2M::VulkanMaterialH2M>();
-		std::array<bool, s_MaterialMapCount> hasMap = {};
-		for (uint32_t i = 0; i < s_MaterialMapCount; i++)
-		{
-			hasMap[i] = vulkanMaterial->Get<float>(s_MaterialMapToggles[i]) > 0.5f;
-		}
-		entry.MaterialHasMap.push_back(hasMap);
+		entry.SubmeshMaterials.push_back(submesh->MaterialIndex < modelMaterials.size() ?
+			modelMaterials[submesh->MaterialIndex] : EnvMapVulkanMaterialLibrary::GetDefaultMaterial());
 	}
-	entry.MaterialTextures.resize(entry.MaterialHasMap.size());
+
+	if (groundPosition)
+	{
+		// Bounding box of the model at rest: the corners of every submesh's bounding box, placed as they are drawn
+		glm::vec3 boundsMin(std::numeric_limits<float>::max());
+		glm::vec3 boundsMax(-std::numeric_limits<float>::max());
+		for (auto& submesh : mesh->GetSubmeshes())
+		{
+			glm::mat4 submeshTransform = GetSubmeshTransform(mesh, submesh, glm::mat4(1.0f));
+			const H2M::AABB_H2M& box = submesh->BoundingBox;
+			for (int corner = 0; corner < 8; corner++)
+			{
+				glm::vec3 point((corner & 1) ? box.Max.x : box.Min.x, (corner & 2) ? box.Max.y : box.Min.y, (corner & 4) ? box.Max.z : box.Min.z);
+				glm::vec3 placed = glm::vec3(submeshTransform * glm::vec4(point, 1.0f));
+				boundsMin = glm::min(boundsMin, placed);
+				boundsMax = glm::max(boundsMax, placed);
+			}
+		}
+
+		if (boundsMin.x <= boundsMax.x)
+		{
+			// Fit to the view, only for extreme cases: a model that can't fit in the view at all (larger than 10x the distance from the
+			// camera to the drop point, e.g. modeled in millimeters) or would be a few pixels (smaller than 1/200 of that distance)
+			// gets a uniform scale that makes it a quarter of the distance. Every other model keeps its scale of 1.
+			float size = glm::compMax(boundsMax - boundsMin);
+			glm::vec3 cameraPosition = glm::vec3(glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix())[3]);
+			float distance = glm::max(glm::length(*groundPosition - cameraPosition), 1.0f);
+			if (size > 0.0f && (size > distance * 10.0f || size < distance * 0.005f))
+			{
+				entry.Scale = glm::vec3(distance * 0.25f / size);
+				Log::GetLogger()->info("Mesh '{0}' is {1} units across: scaled by {2} to fit the view (set Scale to 1 for its original size)",
+					filepath, size, entry.Scale.x);
+			}
+
+			// The bottom center of the (scaled) bounding box goes to the drop point
+			glm::vec3 bottomCenter((boundsMin.x + boundsMax.x) * 0.5f, boundsMin.y, (boundsMin.z + boundsMax.z) * 0.5f);
+			entry.Translation = *groundPosition - bottomCenter * entry.Scale;
+		}
+		else
+		{
+			entry.Translation = *groundPosition;
+		}
+	}
 
 	s_LoadedMeshes.push_back(entry);
 	s_SelectedMeshIndex = (int)s_LoadedMeshes.size() - 1;
 	s_SelectedSubmeshIndex = -1;
-	Log::GetLogger()->info("Mesh '{0}' loaded: {1} submeshes, {2} materials", filepath, mesh->GetSubmeshes().size(), mesh->GetMaterials().size());
+	Log::GetLogger()->info("Mesh '{0}' loaded: {1} submeshes, {2} materials", filepath, mesh->GetSubmeshes().size(), modelMaterials.size());
 }
 
-// Removes one of a material's maps, whether it came with the model or was assigned in the Material Editor (called at the start
-// of a frame, see Draw): the slot gets the white placeholder used for missing maps, and the material uses its value instead
-// (albedo color, metalness, roughness; no emissive, no ambient occlusion, the surface normal)
-static void RemoveMaterialTexture(const PendingMaterialTexture& request)
-{
-	LoadedMeshVulkan& entry = s_LoadedMeshes[request.MeshIndex];
-	auto& materials = entry.Mesh->GetMaterials();
-
-	const H2M::MeshH2M::MaterialDescriptor* materialDescriptor = entry.Mesh->FindDescriptorSet(request.MaterialIndex);
-	H2M::RefH2M<H2M::VulkanShaderH2M> shader = entry.Mesh->GetMeshShader().As<H2M::VulkanShaderH2M>();
-	const VkWriteDescriptorSet* binding = shader->GetDescriptorSet(s_MaterialTextureNames[request.Slot], H2M::VulkanShaderH2M::MaterialDescriptorSet);
-	if (!materialDescriptor || !binding)
-	{
-		return;
-	}
-
-	H2M::RefH2M<H2M::Texture2D_H2M> placeholder = H2M::RendererH2M::GetWhiteTexture();
-	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
-
-	// The descriptor set may be used by frames in flight: updating it is only allowed when the GPU no longer uses it
-	vkDeviceWaitIdle(device);
-
-	VkWriteDescriptorSet write = *binding;
-	write.dstSet = materialDescriptor->DescriptorSet.DescriptorSets[0];
-	write.descriptorCount = 1;
-	write.pImageInfo = &placeholder.As<H2M::VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
-	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-
-	entry.MaterialTextures[request.MaterialIndex][request.Slot] = H2M::RefH2M<H2M::Texture2D_H2M>();
-	entry.MaterialHasMap[request.MaterialIndex][request.Slot] = false;
-	materials[request.MaterialIndex].As<H2M::VulkanMaterialH2M>()->Get<float>(s_MaterialMapToggles[request.Slot]) = 0.0f;
-
-	Log::GetLogger()->info("{0} removed from material '{1}'", s_MaterialTextureNames[request.Slot], materials[request.MaterialIndex]->GetName());
-}
-
-// Loads an image and binds it as one of a material's maps (called at the start of a frame, see Draw).
-// A request without a file path removes the map instead.
+// Loads an image and binds it as one of a material's maps, or removes the map when the request has no file path
+// (called at the start of a frame, see Draw)
 static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 {
-	if (request.MeshIndex < 0 || request.MeshIndex >= (int)s_LoadedMeshes.size() || request.Slot >= s_MaterialMapCount)
+	H2M::RefH2M<EnvMapVulkanMaterial> material = request.Material;
+	if (!material || request.Slot >= EnvMapVulkanMaterial::MapCount)
 	{
 		return;
 	}
-	LoadedMeshVulkan& entry = s_LoadedMeshes[request.MeshIndex];
-	auto& materials = entry.Mesh->GetMaterials();
-	if (request.MaterialIndex >= materials.size())
-	{
-		return;
-	}
+
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
 	if (request.FilePath.empty())
 	{
-		RemoveMaterialTexture(request);
+		vkDeviceWaitIdle(device); // the descriptor set may be used by frames in flight
+		material->RemoveMap(request.Slot);
+		Log::GetLogger()->info("{0} removed from material '{1}'", EnvMapVulkanMaterial::GetMapTextureName(request.Slot), material->GetName());
 		return;
 	}
 
@@ -570,17 +647,10 @@ static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 		return;
 	}
 
-	const H2M::MeshH2M::MaterialDescriptor* materialDescriptor = entry.Mesh->FindDescriptorSet(request.MaterialIndex);
-	if (!materialDescriptor)
-	{
-		Log::GetLogger()->error("Map '{0}' was not loaded: material {1} has no descriptor set.", request.FilePath, request.MaterialIndex);
-		return;
-	}
-
 	H2M::RefH2M<H2M::Texture2D_H2M> texture;
 	try
 	{
-		texture = H2M::Texture2D_H2M::Create(request.FilePath, IsColorMapSlot(request.Slot));
+		texture = H2M::Texture2D_H2M::Create(request.FilePath, EnvMapVulkanMaterial::IsColorMap(request.Slot));
 	}
 	catch (...)
 	{
@@ -588,30 +658,32 @@ static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 		return;
 	}
 
-	H2M::RefH2M<H2M::VulkanShaderH2M> shader = entry.Mesh->GetMeshShader().As<H2M::VulkanShaderH2M>();
-	const VkWriteDescriptorSet* binding = shader->GetDescriptorSet(s_MaterialTextureNames[request.Slot], H2M::VulkanShaderH2M::MaterialDescriptorSet);
-	if (!binding)
+	vkDeviceWaitIdle(device); // the descriptor set may be used by frames in flight
+	material->SetMap(request.Slot, texture);
+
+	Log::GetLogger()->info("Map '{0}' assigned to {1} of material '{2}'", request.FilePath, EnvMapVulkanMaterial::GetMapTextureName(request.Slot), material->GetName());
+}
+
+// Deletes a material from the library (called at the start of a frame, see Draw). Submeshes that used it get the Default material.
+static void DeleteMaterial(H2M::RefH2M<EnvMapVulkanMaterial> material)
+{
+	vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice()); // its descriptor set may be used by frames in flight
+
+	int users = CountMaterialUsers(material);
+	EnvMapVulkanMaterialLibrary::Remove(material);
+	if (users > 0)
 	{
-		Log::GetLogger()->error("Map '{0}' was not loaded: '{1}' not found in the shader.", request.FilePath, s_MaterialTextureNames[request.Slot]);
-		return;
+		H2M::RefH2M<EnvMapVulkanMaterial> replacement = EnvMapVulkanMaterialLibrary::GetDefaultMaterial(); // a new one if the Default was deleted
+		for (LoadedMeshVulkan& entry : s_LoadedMeshes)
+		{
+			std::replace(entry.SubmeshMaterials.begin(), entry.SubmeshMaterials.end(), material, replacement);
+		}
 	}
-
-	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
-
-	// The descriptor set may be used by frames in flight: updating it is only allowed when the GPU no longer uses it
-	vkDeviceWaitIdle(device);
-
-	VkWriteDescriptorSet write = *binding;
-	write.dstSet = materialDescriptor->DescriptorSet.DescriptorSets[0];
-	write.descriptorCount = 1;
-	write.pImageInfo = &texture.As<H2M::VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
-	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
-
-	entry.MaterialTextures[request.MaterialIndex][request.Slot] = texture; // keeps the image alive while the set uses it
-	entry.MaterialHasMap[request.MaterialIndex][request.Slot] = true;
-	materials[request.MaterialIndex].As<H2M::VulkanMaterialH2M>()->Get<float>(s_MaterialMapToggles[request.Slot]) = 1.0f;
-
-	Log::GetLogger()->info("Map '{0}' assigned to {1} of material '{2}'", request.FilePath, s_MaterialTextureNames[request.Slot], materials[request.MaterialIndex]->GetName());
+	if (s_SelectedMaterial == material)
+	{
+		s_SelectedMaterial = H2M::RefH2M<EnvMapVulkanMaterial>();
+	}
+	Log::GetLogger()->info("Material '{0}' deleted ({1} submeshes now use the Default material)", material->GetName(), users);
 }
 
 // Per-frame uniform buffers of the mesh shaders (set 0): written once per frame, read by every mesh. They belong to the
@@ -676,6 +748,42 @@ static void UpdateObjectUniforms(const H2M::RefH2M<H2M::MeshH2M>& mesh)
 	}
 }
 
+static bool IsEnvironmentMapFile(const std::string& filepath)
+{
+	std::string extension = std::filesystem::path(filepath).extension().string();
+	std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+	return extension == ".hdr";
+}
+
+// Accepts a file dragged from the Content Browser over the current drop target, if accepts(path) is true. While dragging, an
+// accepted file outlines the drop area (highlightMin..highlightMax) and any other file shows what can be dropped there
+// (expected, e.g. "a model file"). Returns true once an accepted file is dropped, with its path in filepath.
+static bool AcceptFileDrop(const ImVec2& highlightMin, const ImVec2& highlightMax, bool (*accepts)(const std::string&), const char* expected,
+	std::string& filepath)
+{
+	const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM",
+		ImGuiDragDropFlags_AcceptBeforeDelivery | ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
+	if (!payload)
+	{
+		return false;
+	}
+
+	std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
+	if (!accepts(itemPath))
+	{
+		ImGui::SetTooltip("'%s' can't be dropped here: drop %s", std::filesystem::path(itemPath).filename().string().c_str(), expected);
+		return false;
+	}
+
+	ImGui::GetForegroundDrawList()->AddRect(highlightMin, highlightMax, ImGui::GetColorU32(ImGuiCol_DragDropTarget), 0.0f, 0, 2.0f);
+	if (!payload->IsDelivery())
+	{
+		return false;
+	}
+	filepath = itemPath;
+	return true;
+}
+
 static void OnImGuiRenderMeshes()
 {
 	ImGui::SetNextWindowSize(ImVec2(420.0f, 320.0f), ImGuiCond_FirstUseEver);
@@ -689,31 +797,32 @@ static void OnImGuiRenderMeshes()
 			s_PendingMeshFilename = filepath; // loaded at the start of the next frame (see Draw)
 		}
 	}
-	// A model file dropped from the Content Browser onto the button is loaded too
-	if (ImGui::BeginDragDropTarget())
-	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-		{
-			std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
-			if (IsModelFile(itemPath))
-			{
-				s_PendingMeshFilename = itemPath;
-			}
-			else
-			{
-				Log::GetLogger()->warn("'{0}' is not a supported model file", itemPath);
-			}
-		}
-		ImGui::EndDragDropTarget();
-	}
 	ImGui::SameLine();
-	ImGui::TextDisabled("(or drop a model here from the Content Browser)");
+	ImGui::TextDisabled("or drop a model here (?)");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Drag a model file from the Content Browser:\n"
+			"- anywhere on this panel: placed at the scene origin\n"
+			"- onto the viewport: placed standing on the ground under the cursor");
+	}
 
 	ImGui::Separator();
 
+	// Empty scene: a large box that says where models can be dropped
 	if (s_LoadedMeshes.empty())
 	{
-		ImGui::TextDisabled("No meshes loaded");
+		ImVec2 boxMin = ImGui::GetCursorScreenPos();
+		ImVec2 boxSize(ImGui::GetContentRegionAvail().x, glm::max(ImGui::GetContentRegionAvail().y, 80.0f));
+		ImVec2 boxMax(boxMin.x + boxSize.x, boxMin.y + boxSize.y);
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		drawList->AddRect(boxMin, boxMax, ImGui::GetColorU32(ImGuiCol_TextDisabled), 6.0f, 0, 1.5f);
+
+		const char* hint = "Drop a model here\n(.obj, .fbx, .gltf, .glb, .dae...)";
+		ImVec2 textSize = ImGui::CalcTextSize(hint);
+		ImGui::SetCursorScreenPos(ImVec2(boxMin.x + (boxSize.x - textSize.x) * 0.5f, boxMin.y + (boxSize.y - textSize.y) * 0.5f));
+		ImGui::TextDisabled("%s", hint);
+		ImGui::SetCursorScreenPos(boxMin);
+		ImGui::Dummy(boxSize);
 	}
 
 	for (int i = 0; i < (int)s_LoadedMeshes.size(); i++)
@@ -811,15 +920,38 @@ static void OnImGuiRenderMeshes()
 			ImGui::EndDisabled();
 		}
 
-		// Submeshes (as in SceneHazelEnvMap): select one to edit its material in the Material Editor,
-		// and choose which of the model's materials it is drawn with
+		// Material slots, one per submesh: select a submesh to edit its material in the Material Editor. The dropdown, or a
+		// material dropped from the Material Library, chooses which library material the submesh is drawn with.
 		auto& submeshes = entry.Mesh->GetSubmeshes();
-		auto& materials = entry.Mesh->GetMaterials();
+		const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
+
+		// Assigns a library material to a submesh; the Material Editor follows if that submesh is selected
+		auto assignMaterial = [&](int s, H2M::RefH2M<EnvMapVulkanMaterial> material) {
+			entry.SubmeshMaterials[s] = material; // used by RenderMeshVulkan from the next frame
+			if (s == s_SelectedSubmeshIndex)
+			{
+				s_SelectedMaterial = material;
+			}
+		};
+		auto acceptMaterialDrop = [&](int s) {
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_MaterialPayload))
+				{
+					uint32_t index = *(const uint32_t*)payload->Data;
+					if (index < materials.size())
+					{
+						assignMaterial(s, materials[index]);
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+		};
 
 		ImGui::Separator();
 		ImGui::Text("Submeshes (%d)", (int)submeshes.size());
 
-		for (int s = 0; s < (int)submeshes.size(); s++)
+		for (int s = 0; s < (int)submeshes.size() && s < (int)entry.SubmeshMaterials.size(); s++)
 		{
 			H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[s];
 			ImGui::PushID(1000 + s);
@@ -828,213 +960,383 @@ static void OnImGuiRenderMeshes()
 				(!submesh->NodeName.empty() ? submesh->NodeName : "Submesh " + std::to_string(s));
 			if (ImGui::Selectable(submeshName.c_str(), s_SelectedSubmeshIndex == s, 0, ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0.0f)))
 			{
-				s_SelectedSubmeshIndex = (s_SelectedSubmeshIndex == s) ? -1 : s; // click again to show all materials
+				s_SelectedSubmeshIndex = (s_SelectedSubmeshIndex == s) ? -1 : s; // click again to deselect
 			}
+			acceptMaterialDrop(s);
 
-			// Material used by this submesh
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(-1.0f);
-			auto materialName = [&](uint32_t index) {
-				return index < materials.size() && !materials[index]->GetName().empty() ? materials[index]->GetName() : "Material " + std::to_string(index);
-			};
-			if (ImGui::BeginCombo("##material", materialName(submesh->MaterialIndex).c_str()))
+			if (ImGui::BeginCombo("##material", entry.SubmeshMaterials[s]->GetName().c_str()))
 			{
 				for (uint32_t m = 0; m < (uint32_t)materials.size(); m++)
 				{
 					ImGui::PushID((int)m);
-					if (ImGui::Selectable(materialName(m).c_str(), submesh->MaterialIndex == m))
+					if (ImGui::Selectable(materials[m]->GetName().c_str(), entry.SubmeshMaterials[s] == materials[m]))
 					{
-						submesh->MaterialIndex = m; // used by RenderMeshVulkan from the next frame
+						assignMaterial(s, materials[m]);
 					}
 					ImGui::PopID();
 				}
 				ImGui::EndCombo();
 			}
+			acceptMaterialDrop(s);
 
 			ImGui::PopID();
 		}
+
+		if (s_SelectedMaterial)
+		{
+			std::string label = "Apply '" + s_SelectedMaterial->GetName() + "' to all submeshes";
+			if (ImGui::Button(label.c_str()))
+			{
+				std::fill(entry.SubmeshMaterials.begin(), entry.SubmeshMaterials.end(), s_SelectedMaterial);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The material shown in the Material Editor");
+			}
+		}
+	}
+
+	// The whole panel is a drop area for model files (loaded at the scene origin)
+	ImVec2 panelMin = ImGui::GetWindowPos();
+	ImVec2 panelMax(panelMin.x + ImGui::GetWindowSize().x, panelMin.y + ImGui::GetWindowSize().y);
+	if (ImGui::BeginDragDropTargetCustom(ImRect(panelMin, panelMax), ImGui::GetID("##MeshesPanelDropArea")))
+	{
+		std::string filepath;
+		if (AcceptFileDrop(panelMin, panelMax, IsModelFile, "a model file", filepath))
+		{
+			s_PendingMeshFilename = filepath; // loaded at the start of the next frame (see Draw)
+			s_PendingMeshGroundPosition.reset();
+		}
+		ImGui::EndDragDropTarget();
 	}
 
 	ImGui::End();
 }
 
-// Edits the selected mesh's material values in place (they are pushed as push constants for every draw)
-static void OnImGuiRenderMaterialEditor()
+// All materials of the scene: create, duplicate, delete, and drag onto a submesh (Meshes panel or viewport) to assign
+static void OnImGuiRenderMaterialLibrary()
 {
-	ImGui::Begin("Material Editor");
+	ImGui::Begin("Material Library");
 
-	if (s_SelectedMeshIndex < 0 || s_SelectedMeshIndex >= (int)s_LoadedMeshes.size())
+	SyncSelectedMaterial();
+
+	// Renaming in place (double-click, F2, the Rename button or the context menu): the row turns into a text field.
+	// Enter or clicking elsewhere applies the name, Escape cancels.
+	static EnvMapVulkanMaterial* s_RenamingMaterial = nullptr;
+	static bool s_RenameNeedsFocus = false;
+	static char s_RenameBuffer[128] = "";
+	auto startRename = [](const H2M::RefH2M<EnvMapVulkanMaterial>& material) {
+		s_RenamingMaterial = const_cast<EnvMapVulkanMaterial*>(material.Raw());
+		s_RenameNeedsFocus = true;
+		strncpy_s(s_RenameBuffer, material->GetName().c_str(), sizeof(s_RenameBuffer) - 1);
+	};
+
+	// Duplicating adds to the material list, so a request from a row is carried out after the list is drawn
+	H2M::RefH2M<EnvMapVulkanMaterial> duplicateRequest = H2M::RefH2M<EnvMapVulkanMaterial>();
+
+	if (ImGui::Button("New Material"))
 	{
-		ImGui::TextDisabled("Select a mesh in the Meshes panel");
-		ImGui::End();
-		return;
+		s_SelectedMaterial = EnvMapVulkanMaterialLibrary::CreateMaterial();
+		startRename(s_SelectedMaterial); // a new material usually gets a name right away
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(!s_SelectedMaterial);
+	if (ImGui::Button("Rename"))
+	{
+		startRename(s_SelectedMaterial);
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Rename the selected material (or double-click it, or press F2)");
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Duplicate"))
+	{
+		duplicateRequest = s_SelectedMaterial;
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("An independent copy of the selected material, with the same values and maps");
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Delete"))
+	{
+		s_PendingDeleteMaterial = s_SelectedMaterial; // deleted at the start of the next frame (see Draw)
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Submeshes that use the selected material get the Default material");
+	}
+	ImGui::EndDisabled();
+
+	static char s_Filter[64] = "";
+	ImGui::SetNextItemWidth(-1.0f);
+	ImGui::InputTextWithHint("##filter", "Filter by name", s_Filter, sizeof(s_Filter));
+
+	ImGui::Separator();
+
+	std::string filter = s_Filter;
+	std::transform(filter.begin(), filter.end(), filter.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+
+	const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
+	if (materials.empty())
+	{
+		ImGui::TextDisabled("No materials. Load a model or click New Material.");
 	}
 
-	LoadedMeshVulkan& entry = s_LoadedMeshes[s_SelectedMeshIndex];
-	auto& materials = entry.Mesh->GetMaterials();
-
-	static const char* s_MapLabels[s_MaterialMapCount] = {
-		"Use Albedo Map", "Use Normal Map", "Use Metalness Map", "Use Roughness Map", "Use Emissive Map", "Use AO Map" };
-
-	// With a submesh selected (Meshes panel), only the material that submesh is drawn with is shown
-	auto& submeshes = entry.Mesh->GetSubmeshes();
-	int selectedMaterial = -1;
-	if (s_SelectedSubmeshIndex >= 0 && s_SelectedSubmeshIndex < (int)submeshes.size())
-	{
-		H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[s_SelectedSubmeshIndex];
-		selectedMaterial = (int)submesh->MaterialIndex;
-
-		std::string submeshName = !submesh->MeshName.empty() ? submesh->MeshName :
-			(!submesh->NodeName.empty() ? submesh->NodeName : "Submesh " + std::to_string(s_SelectedSubmeshIndex));
-		ImGui::Text("Submesh: %s", submeshName.c_str());
-
-		int sharedBy = 0;
-		for (auto& other : submeshes)
-		{
-			sharedBy += other->MaterialIndex == submesh->MaterialIndex ? 1 : 0;
-		}
-		if (sharedBy > 1)
-		{
-			ImGui::TextDisabled("This material is used by %d submeshes: changes apply to all of them.", sharedBy);
-		}
-	}
-	else
-	{
-		ImGui::TextDisabled("All materials (select a submesh in the Meshes panel to edit only its material)");
-	}
-
+	const float countColumnWidth = ImGui::CalcTextSize("000 uses").x;
 	for (uint32_t m = 0; m < (uint32_t)materials.size(); m++)
 	{
-		if (selectedMaterial >= 0 && (int)m != selectedMaterial)
+		const H2M::RefH2M<EnvMapVulkanMaterial>& material = materials[m];
+
+		std::string lowerName = material->GetName();
+		std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+		if (!filter.empty() && lowerName.find(filter) == std::string::npos)
 		{
 			continue;
 		}
 
 		ImGui::PushID((int)m);
+		ImVec2 rowSize(ImGui::GetContentRegionAvail().x - countColumnWidth, 0.0f);
 
-		H2M::RefH2M<H2M::VulkanMaterialH2M> material = materials[m].As<H2M::VulkanMaterialH2M>();
-		std::string name = material->GetName().empty() ? "(unnamed)" : material->GetName();
-
-		if (ImGui::CollapsingHeader(name.c_str(), (m == 0 || selectedMaterial >= 0) ? ImGuiTreeNodeFlags_DefaultOpen : 0))
+		if (s_RenamingMaterial == material.Raw())
 		{
-			glm::vec3& albedoColor = material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
-			float& metalness = material->Get<float>("u_MaterialUniforms.Metalness");
-			float& roughness = material->Get<float>("u_MaterialUniforms.Roughness");
-
-			ImGui::ColorEdit3("Albedo Color", &albedoColor.x);
-			ImGui::SliderFloat("Metalness", &metalness, 0.0f, 1.0f);
-			ImGui::SliderFloat("Roughness", &roughness, 0.0f, 1.0f);
-
-			float& tilingFactor = material->Get<float>("u_MaterialUniforms.TilingFactor");
-			float& emissiveIntensity = material->Get<float>("u_MaterialUniforms.EmissiveIntensity");
-			float& metalRoughPacked = material->Get<float>("u_MaterialUniforms.MetalRoughPacked");
-
-			ImGui::DragFloat("Tiling Factor", &tilingFactor, 0.01f, 0.01f, 100.0f);
-			ImGui::DragFloat("Emissive Intensity", &emissiveIntensity, 0.05f, 0.0f, 100.0f);
-
-			bool packed = metalRoughPacked > 0.5f;
-			if (ImGui::Checkbox("Packed Metalness/Roughness Map", &packed))
+			ImGui::SetNextItemWidth(rowSize.x);
+			if (s_RenameNeedsFocus)
 			{
-				metalRoughPacked = packed ? 1.0f : 0.0f;
+				ImGui::SetKeyboardFocusHere();
+				s_RenameNeedsFocus = false;
 			}
-			if (ImGui::IsItemHovered())
+			bool entered = ImGui::InputText("##rename", s_RenameBuffer, sizeof(s_RenameBuffer),
+				ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll);
+			if (entered || (ImGui::IsItemDeactivated() && !ImGui::IsKeyPressed(ImGuiKey_Escape)))
 			{
-				ImGui::SetTooltip("glTF metallicRoughness map: roughness is read from G and metalness from B (otherwise both from R).\n"
-					"Assign the same map to both the metalness and the roughness slot.");
+				EnvMapVulkanMaterialLibrary::Rename(material, s_RenameBuffer);
+				s_RenamingMaterial = nullptr;
 			}
-
-			for (uint32_t i = 0; i < s_MaterialMapCount; i++)
+			else if (ImGui::IsItemDeactivated())
 			{
-				ImGui::PushID((int)i);
-				ImGui::Separator();
+				s_RenamingMaterial = nullptr; // Escape: keep the old name
+			}
+		}
+		else if (ImGui::Selectable(material->GetName().c_str(), s_SelectedMaterial == material, ImGuiSelectableFlags_AllowDoubleClick, rowSize))
+		{
+			s_SelectedMaterial = material;
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				startRename(material);
+			}
+		}
 
-				bool hasMap = m < entry.MaterialHasMap.size() && entry.MaterialHasMap[m][i];
-				H2M::RefH2M<H2M::Texture2D_H2M> assignedMap = m < entry.MaterialTextures.size() ? entry.MaterialTextures[m][i] : H2M::RefH2M<H2M::Texture2D_H2M>();
+		if (ImGui::BeginPopupContextItem("##materialContextMenu"))
+		{
+			s_SelectedMaterial = material;
+			if (ImGui::MenuItem("Rename", "F2"))
+			{
+				startRename(material);
+			}
+			if (ImGui::MenuItem("Duplicate"))
+			{
+				duplicateRequest = material;
+			}
+			if (ImGui::MenuItem("Delete"))
+			{
+				s_PendingDeleteMaterial = material; // deleted at the start of the next frame (see Draw)
+			}
+			ImGui::EndPopup();
+		}
 
-				// Thumbnail of a map assigned here (maps that came with the model have no texture object in this list);
-				// also a drop target for images from the Content Browser
-				const ImVec2 thumbnailSize(64.0f, 64.0f);
-				ImTextureID thumbnail = assignedMap ? assignedMap->GetImTextureID() : ImTextureID{};
-				if (thumbnail)
+		if (s_RenamingMaterial != material.Raw() && ImGui::BeginDragDropSource())
+		{
+			ImGui::SetDragDropPayload(s_MaterialPayload, &m, sizeof(uint32_t));
+			ImGui::Text("%s", material->GetName().c_str());
+			ImGui::EndDragDropSource();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			std::string origin = material->GetSourceFile().empty() ? "Created in the editor" : "Imported from " + material->GetSourceFile();
+			ImGui::SetTooltip("%s\nDrag onto a submesh in the Meshes panel or the viewport to assign it", origin.c_str());
+		}
+
+		int users = CountMaterialUsers(material);
+		ImGui::SameLine();
+		if (users > 0)
+		{
+			ImGui::TextDisabled("%d %s", users, users == 1 ? "use" : "uses");
+		}
+		else
+		{
+			ImGui::TextDisabled("unused");
+		}
+		ImGui::PopID();
+	}
+
+	// F2 renames the selected material while this panel has focus (and no text field is being edited)
+	if (s_SelectedMaterial && !s_RenamingMaterial && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
+		!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_F2, false))
+	{
+		startRename(s_SelectedMaterial);
+	}
+
+	if (duplicateRequest)
+	{
+		s_SelectedMaterial = EnvMapVulkanMaterialLibrary::Duplicate(duplicateRequest);
+	}
+
+	ImGui::End();
+}
+
+// Edits the selected library material in place: every submesh drawn with it changes (values are push constants of every
+// draw; maps are written to the material's descriptor set at the start of the next frame)
+static void OnImGuiRenderMaterialEditor()
+{
+	ImGui::Begin("Material Editor");
+
+	SyncSelectedMaterial();
+
+	H2M::RefH2M<EnvMapVulkanMaterial> material = s_SelectedMaterial;
+	if (!material)
+	{
+		ImGui::TextDisabled("Select a material in the Material Library,\nor a submesh in the Meshes panel or the viewport");
+		ImGui::End();
+		return;
+	}
+
+	// Name (renamed when editing ends; names stay unique in the library)
+	static char s_NameBuffer[128] = "";
+	static EnvMapVulkanMaterial* s_NameBufferMaterial = nullptr;
+	if (s_NameBufferMaterial != material.Raw() || !ImGui::IsAnyItemActive())
+	{
+		strncpy_s(s_NameBuffer, material->GetName().c_str(), sizeof(s_NameBuffer) - 1);
+		s_NameBufferMaterial = material.Raw();
+	}
+	ImGui::InputText("Name", s_NameBuffer, sizeof(s_NameBuffer));
+	if (ImGui::IsItemDeactivatedAfterEdit())
+	{
+		EnvMapVulkanMaterialLibrary::Rename(material, s_NameBuffer);
+	}
+
+	int users = CountMaterialUsers(material);
+	if (users > 1)
+	{
+		ImGui::TextDisabled("Used by %d submeshes: changes apply to all of them.", users);
+	}
+	else if (users == 0)
+	{
+		ImGui::TextDisabled("Not used by any submesh.");
+	}
+
+	ImGui::Separator();
+
+	glm::vec3& albedoColor = material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
+	float& metalness = material->Get<float>("u_MaterialUniforms.Metalness");
+	float& roughness = material->Get<float>("u_MaterialUniforms.Roughness");
+
+	ImGui::ColorEdit3("Albedo Color", &albedoColor.x);
+	ImGui::SliderFloat("Metalness", &metalness, 0.0f, 1.0f);
+	ImGui::SliderFloat("Roughness", &roughness, 0.0f, 1.0f);
+
+	float& tilingFactor = material->Get<float>("u_MaterialUniforms.TilingFactor");
+	float& emissiveIntensity = material->Get<float>("u_MaterialUniforms.EmissiveIntensity");
+	float& metalRoughPacked = material->Get<float>("u_MaterialUniforms.MetalRoughPacked");
+
+	ImGui::DragFloat("Tiling Factor", &tilingFactor, 0.01f, 0.01f, 100.0f);
+	ImGui::DragFloat("Emissive Intensity", &emissiveIntensity, 0.05f, 0.0f, 100.0f);
+
+	bool packed = metalRoughPacked > 0.5f;
+	if (ImGui::Checkbox("Packed Metalness/Roughness Map", &packed))
+	{
+		metalRoughPacked = packed ? 1.0f : 0.0f;
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("glTF metallicRoughness map: roughness is read from G and metalness from B (otherwise both from R).\n"
+			"Assign the same map to both the metalness and the roughness slot.");
+	}
+
+	static const char* s_MapLabels[EnvMapVulkanMaterial::MapCount] = {
+		"Use Albedo Map", "Use Normal Map", "Use Metalness Map", "Use Roughness Map", "Use Emissive Map", "Use AO Map" };
+
+	for (uint32_t i = 0; i < EnvMapVulkanMaterial::MapCount; i++)
+	{
+		ImGui::PushID((int)i);
+		ImGui::Separator();
+
+		H2M::RefH2M<H2M::Texture2D_H2M> map = material->GetMap(i);
+
+		// Thumbnail of the map; also a drop target for images from the Content Browser
+		const ImVec2 thumbnailSize(64.0f, 64.0f);
+		ImTextureID thumbnail = map ? map->GetImTextureID() : ImTextureID{};
+		if (thumbnail)
+		{
+			ImGui::Image(thumbnail, thumbnailSize, ImVec2(0, 1), ImVec2(1, 0)); // the Vulkan loader flips LDR images
+		}
+		else
+		{
+			ImGui::Button(map ? "map" : "no map", thumbnailSize);
+		}
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+			{
+				std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
+				if (IsImageFile(itemPath))
 				{
-					ImGui::Image(thumbnail, thumbnailSize, ImVec2(0, 1), ImVec2(1, 0)); // the Vulkan loader flips LDR images
+					s_PendingMaterialTextures.push_back({ material, i, itemPath }); // applied at the start of the next frame
 				}
 				else
 				{
-					ImGui::Button(hasMap ? "model\nmap" : "no map", thumbnailSize);
+					Log::GetLogger()->warn("'{0}' is not a supported image file", itemPath);
 				}
-				if (ImGui::BeginDragDropTarget())
+			}
+			ImGui::EndDragDropTarget();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("%s", map ? map->GetPath().c_str() : "Drop an image from the Content Browser here");
+		}
+
+		ImGui::SameLine();
+		ImGui::BeginGroup();
+		{
+			float& toggle = material->Get<float>(EnvMapVulkanMaterial::GetMapToggleName(i));
+			bool enabled = toggle > 0.5f;
+
+			ImGui::BeginDisabled(!map);
+			if (ImGui::Checkbox(s_MapLabels[i], &enabled))
+			{
+				toggle = enabled ? 1.0f : 0.0f;
+			}
+			ImGui::EndDisabled();
+
+			if (ImGui::Button("Load..."))
+			{
+				std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"Images\0*.png;*.jpg;*.jpeg;*.tga;*.bmp\0All\0*.*\0"));
+				if (!filepath.empty())
 				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-					{
-						std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
-						if (IsImageFile(itemPath))
-						{
-							s_PendingMaterialTextures.push_back({ s_SelectedMeshIndex, m, i, itemPath });
-						}
-						else
-						{
-							Log::GetLogger()->warn("'{0}' is not a supported image file", itemPath);
-						}
-					}
-					ImGui::EndDragDropTarget();
+					s_PendingMaterialTextures.push_back({ material, i, filepath }); // applied at the start of the next frame
+				}
+			}
+
+			// Remove the map; the material then uses its value
+			if (map)
+			{
+				ImGui::SameLine();
+				if (ImGui::Button("Remove"))
+				{
+					s_PendingMaterialTextures.push_back({ material, i, std::string() }); // applied at the start of the next frame
 				}
 				if (ImGui::IsItemHovered())
 				{
-					ImGui::SetTooltip("%s", assignedMap ? assignedMap->GetPath().c_str() : "Drop an image from the Content Browser here");
+					ImGui::SetTooltip("Remove this map: the material uses its value instead\n(the model file is not changed)");
 				}
-
 				ImGui::SameLine();
-				ImGui::BeginGroup();
-				{
-					float& toggle = material->Get<float>(s_MaterialMapToggles[i]);
-					bool enabled = toggle > 0.5f;
-
-					ImGui::BeginDisabled(!hasMap);
-					if (ImGui::Checkbox(s_MapLabels[i], &enabled))
-					{
-						toggle = enabled ? 1.0f : 0.0f;
-					}
-					ImGui::EndDisabled();
-
-					if (ImGui::Button("Load..."))
-					{
-						std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"Images\0*.png;*.jpg;*.jpeg;*.tga;*.bmp\0All\0*.*\0"));
-						if (!filepath.empty())
-						{
-							s_PendingMaterialTextures.push_back({ s_SelectedMeshIndex, m, i, filepath }); // applied at the start of the next frame
-						}
-					}
-
-					// Remove the map (from the model or assigned here); the material then uses its value
-					if (hasMap)
-					{
-						ImGui::SameLine();
-						if (ImGui::Button("Remove"))
-						{
-							s_PendingMaterialTextures.push_back({ s_SelectedMeshIndex, m, i, std::string() }); // applied at the start of the next frame
-						}
-						if (ImGui::IsItemHovered())
-						{
-							ImGui::SetTooltip("Remove this map: the material uses its value instead\n(the model file is not changed)");
-						}
-					}
-					if (assignedMap)
-					{
-						ImGui::SameLine();
-						ImGui::TextDisabled("%s", std::filesystem::path(assignedMap->GetPath()).filename().string().c_str());
-					}
-					else if (!hasMap)
-					{
-						ImGui::SameLine();
-						ImGui::TextDisabled("(no map in the model)");
-					}
-				}
-				ImGui::EndGroup();
-
-				ImGui::PopID();
+				ImGui::TextDisabled("%s", std::filesystem::path(map->GetPath()).filename().string().c_str());
 			}
 		}
+		ImGui::EndGroup();
 
 		ImGui::PopID();
 	}
@@ -1306,13 +1608,13 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 }
 
 /**** BEGIN to be removed from VulkanRenderer ****/
-void EnvMapVulkanRenderer::SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform)
+void EnvMapVulkanRenderer::SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials)
 {
 	// Temporary code - populate selected submesh
 	// std::vector<Submesh> submeshes = mesh->GetSubmeshes();
 	// s_SelectedSubmesh = &submeshes.at(0);
 
-	s_Meshes.push_back({ mesh, transform });
+	s_Meshes.push_back({ mesh, transform, materials });
 
 	// VulkanRendererData::DrawCommand drawCommand = {};
 	// drawCommand.Mesh = mesh;
@@ -1680,7 +1982,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	// delete s_Data;
 }
 
-void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform, VkCommandBuffer commandBuffer)
+void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer)
 {
 	/**** BEGIN keep smart references alive ****/
 	H2M::RefH2M<H2M::TextureCubeH2M> envUnfiltered = s_Data.envUnfiltered;
@@ -1742,26 +2044,20 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 	}
 
 	auto& submeshes = mesh->GetSubmeshes();
-	for (H2M::RefH2M<H2M::SubmeshH2M> submesh : submeshes)
+	for (size_t s = 0; s < submeshes.size() && s < materials.size(); s++)
 	{
-		auto& material = mesh->GetMaterials()[submesh->MaterialIndex];
+		H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[s];
+		H2M::RefH2M<EnvMapVulkanMaterial> material = materials[s];
 		H2M::BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
 
-		// Set 1 (per material): the texture maps of the submesh's material. Skip submeshes without one
-		// (drawing with a missing/null descriptor set is undefined behavior in Vulkan).
-		const H2M::MeshH2M::MaterialDescriptor* materialDescriptor = mesh->FindDescriptorSet(submesh->MaterialIndex);
-		if (!materialDescriptor || materialDescriptor->DescriptorSet.DescriptorSets[0] == VK_NULL_HANDLE)
+		// Set 1 (per material): the texture maps of the submesh's library material
+		VkDescriptorSet materialDescriptorSet = material->GetDescriptorSet();
+		if (materialDescriptorSet == VK_NULL_HANDLE)
 		{
-			static std::set<std::string> s_ReportedMeshes;
-			if (s_ReportedMeshes.insert(mesh->GetFilePath()).second)
-			{
-				Log::GetLogger()->warn("EnvMapVulkanRenderer: mesh '{0}' (submesh '{1}', material index {2}) has no material descriptor set - not drawn",
-					mesh->GetFilePath(), submesh->MeshName, submesh->MaterialIndex);
-			}
-			continue;
+			continue; // drawing with a missing descriptor set is undefined behavior in Vulkan
 		}
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, H2M::VulkanShaderH2M::MaterialDescriptorSet, 1,
-			&materialDescriptor->DescriptorSet.DescriptorSets[0], 0, nullptr);
+			&materialDescriptorSet, 0, nullptr);
 
 		// Push Constants
 		// glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -2042,9 +2338,9 @@ void EnvMapVulkanRenderer::GeometryPass()
 		vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshPipelineLayout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
 			s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
-		for (auto& [mesh, transform] : s_Meshes)
+		for (const SubmittedMesh& submitted : s_Meshes)
 		{
-			RenderMeshVulkan(mesh, transform, drawCommandBuffer);
+			RenderMeshVulkan(submitted.Mesh, submitted.Transform, submitted.Materials, drawCommandBuffer);
 		}
 
 		s_Meshes.clear();
@@ -2632,6 +2928,50 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			s_ViewportImageSize = ImGui::GetItemRectSize();
 			bool viewportImageHovered = ImGui::IsItemHovered();
 
+			// Drop onto the scene:
+			// - a material from the Material Library: the submesh under the cursor gets it and becomes the selection
+			//   (so the Material Editor shows the material)
+			// - a model file from the Content Browser: placed standing on the ground under the cursor (see LoadMesh)
+			// - an .hdr file from the Content Browser: loaded as the environment map
+			if (ImGui::BeginDragDropTarget())
+			{
+				glm::vec2 ndc = GetViewportMouseNdc();
+
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_MaterialPayload))
+				{
+					uint32_t index = *(const uint32_t*)payload->Data;
+					const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
+
+					int hitMesh, hitSubmesh;
+					RaycastSubmesh(ndc.x, ndc.y, hitMesh, hitSubmesh);
+
+					if (index < materials.size() && hitMesh >= 0 && hitSubmesh >= 0 && hitSubmesh < (int)s_LoadedMeshes[hitMesh].SubmeshMaterials.size())
+					{
+						s_LoadedMeshes[hitMesh].SubmeshMaterials[hitSubmesh] = materials[index];
+						s_SelectedMeshIndex = hitMesh;
+						s_SelectedSubmeshIndex = hitSubmesh;
+					}
+				}
+
+				ImVec2 imageMax(s_ViewportImageMin.x + s_ViewportImageSize.x, s_ViewportImageMin.y + s_ViewportImageSize.y);
+				auto isSceneFile = [](const std::string& path) { return IsModelFile(path) || IsEnvironmentMapFile(path); };
+				std::string droppedPath;
+				if (AcceptFileDrop(s_ViewportImageMin, imageMax, isSceneFile, "a model file or an .hdr environment map", droppedPath))
+				{
+					// loaded at the start of the next frame (see Draw)
+					if (IsEnvironmentMapFile(droppedPath))
+					{
+						s_PendingEnvMapFilename = droppedPath;
+					}
+					else
+					{
+						s_PendingMeshFilename = droppedPath;
+						s_PendingMeshGroundPosition = GetDropGroundPosition(ndc.x, ndc.y);
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+
 			// Compare whole pixels: the panel size can be fractional (DPI scaling, docking), and comparing the float size with
 			// the stored integer size requested a framebuffer resize every frame. A collapsed/hidden panel has no area: keep the size.
 			uint32_t viewportWidth = (uint32_t)glm::max(viewportSize.x, 0.0f);
@@ -2650,11 +2990,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			if (viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
 				!Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 			{
-				ImVec2 mouse = ImGui::GetMousePos();
-				// The image is shown vertically flipped (see ImGui::Image above), so its top edge is NDC y = +1
-				float ndcX = (mouse.x - s_ViewportImageMin.x) / s_ViewportImageSize.x * 2.0f - 1.0f;
-				float ndcY = 1.0f - (mouse.y - s_ViewportImageMin.y) / s_ViewportImageSize.y * 2.0f;
-				PickMesh(ndcX, ndcY);
+				glm::vec2 ndc = GetViewportMouseNdc();
+				PickMesh(ndc.x, ndc.y);
 			}
 
 			ImGui::End();
@@ -2875,6 +3212,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			/**** END Environment ****/
 
 			OnImGuiRenderMeshes();
+			OnImGuiRenderMaterialLibrary();
 			OnImGuiRenderMaterialEditor();
 
 			/**** BEGIN DockSpace menu bar ****/
@@ -2938,7 +3276,6 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 			// The mesh's buffers and descriptor sets may still be used by frames in flight
 			vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
 			s_LoadedMeshes.erase(s_LoadedMeshes.begin() + s_PendingRemoveMeshIndex);
-			s_PendingMaterialTextures.clear(); // their mesh indices refer to the list before the removal
 			s_SelectedMeshIndex = glm::min(s_SelectedMeshIndex, (int)s_LoadedMeshes.size() - 1);
 			s_SelectedSubmeshIndex = -1;
 		}
@@ -2947,8 +3284,10 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	if (!s_PendingMeshFilename.empty())
 	{
 		std::string filepath = s_PendingMeshFilename;
+		std::optional<glm::vec3> groundPosition = s_PendingMeshGroundPosition;
 		s_PendingMeshFilename.clear();
-		LoadMesh(filepath);
+		s_PendingMeshGroundPosition.reset();
+		LoadMesh(filepath, groundPosition);
 	}
 	// Lens dirt texture chosen in the Bloom settings
 	if (!s_PendingBloomDirtFilename.empty())
@@ -2967,12 +3306,17 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 			Log::GetLogger()->error("Lens dirt texture '{0}' could not be loaded.", filepath);
 		}
 	}
-	// Maps assigned in the Material Editor
+	// Maps assigned or removed in the Material Editor, then a material deleted in the Material Library
 	for (const PendingMaterialTexture& request : s_PendingMaterialTextures)
 	{
 		ApplyMaterialTexture(request);
 	}
 	s_PendingMaterialTextures.clear();
+	if (s_PendingDeleteMaterial)
+	{
+		DeleteMaterial(s_PendingDeleteMaterial);
+		s_PendingDeleteMaterial = H2M::RefH2M<EnvMapVulkanMaterial>();
+	}
 
 	// The aspect ratio must follow the viewport panel, not the window (Scene::OnWindowResize sets the window size),
 	// otherwise resizing the panel in one dimension stretches the scene. The FOV is vertical, as in SceneHazelEnvMap.
@@ -2992,7 +3336,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 			entry.Mesh->OnUpdate(H2M::TimestepH2M(deltaTime), false); // bone matrices of the current frame (bind pose when not animated)
 		}
 		UpdateObjectUniforms(entry.Mesh);
-		SubmitMeshTemp(entry.Mesh, entry.GetTransform());
+		SubmitMeshTemp(entry.Mesh, entry.GetTransform(), entry.SubmeshMaterials);
 	}
 	UpdateFrameUniforms();
 

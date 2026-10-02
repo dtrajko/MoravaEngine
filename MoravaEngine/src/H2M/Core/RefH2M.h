@@ -116,6 +116,10 @@ namespace H2M {
 		operator bool() { return m_Instance != nullptr; }
 		operator bool() const { return m_Instance != nullptr; }
 
+		// Identity: the same instance. Without these, a == b compiled through operator bool and compared only whether both were set.
+		bool operator==(const RefH2M<T>& other) const { return m_Instance == other.m_Instance; }
+		bool operator!=(const RefH2M<T>& other) const { return m_Instance != other.m_Instance; }
+
 		T* operator->() { return m_Instance; }
 		const T* operator->() const { return m_Instance; }
 
