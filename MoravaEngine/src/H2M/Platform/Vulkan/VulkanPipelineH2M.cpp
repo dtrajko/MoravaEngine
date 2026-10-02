@@ -300,11 +300,31 @@ namespace H2M
 			}
 			/**** END Composite ****/
 
+			// Per-instance attributes (InstanceLayout): binding 1, at the locations after the per-vertex ones
+			std::vector<VkVertexInputBindingDescription> vertexInputBindings = { vertexInputBinding };
+			VertexBufferLayoutH2M& instanceLayout = m_Specification.InstanceLayout;
+			if (instanceLayout.GetElementCount())
+			{
+				VkVertexInputBindingDescription& instanceInputBinding = vertexInputBindings.emplace_back();
+				instanceInputBinding.binding = 1;
+				instanceInputBinding.stride = instanceLayout.GetStride();
+				instanceInputBinding.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+
+				for (auto element : instanceLayout)
+				{
+					VkVertexInputAttributeDescription& attribute = vertexInputAttributes.emplace_back();
+					attribute.binding = 1;
+					attribute.location = location++;
+					attribute.format = ShaderDataTypeToVulkanFormat(element.Type);
+					attribute.offset = element.Offset;
+				}
+			}
+
 			// Vertex input state used for pipeline creation
 			VkPipelineVertexInputStateCreateInfo vertexInputState = {};
 			vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-			vertexInputState.vertexBindingDescriptionCount = 1;
-			vertexInputState.pVertexBindingDescriptions = &vertexInputBinding;
+			vertexInputState.vertexBindingDescriptionCount = (uint32_t)vertexInputBindings.size();
+			vertexInputState.pVertexBindingDescriptions = vertexInputBindings.data();
 			vertexInputState.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttributes.size());
 			vertexInputState.pVertexAttributeDescriptions = vertexInputAttributes.data();
 

@@ -144,6 +144,7 @@ namespace H2M
 		uint32_t BaseIndex;
 		uint32_t MaterialIndex;
 		uint32_t IndexCount;
+		uint32_t VertexCount = 0; // vertices of this submesh in the mesh's vertex buffer, from BaseVertex
 
 		glm::mat4 Transform;
 		AABB_H2M BoundingBox;

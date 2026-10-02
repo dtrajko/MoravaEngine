@@ -131,7 +131,15 @@ struct EditorOverlaySettings
 	int BoundingBoxes = OverlayScopeOff;
 	glm::vec4 BoundingBoxColor = glm::vec4(0.2f, 0.6f, 1.0f, 1.0f);
 	glm::vec4 SelectedBoundingBoxColor = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f); // the selected submesh's box (all boxes of the selected mesh when no submesh is selected)
-	float LineWidth = 1.0f; // wireframe and bounding boxes (pixels, 1..10)
+	float LineWidth = 1.0f; // wireframe, bounding boxes, and the normal/tangent/bitangent lines (pixels, 1..10)
+
+	// Vertex vectors: a line per vertex along its normal, tangent and/or bitangent
+	int Vectors = OverlayScopeOff;
+	bool ShowNormals = true;
+	bool ShowTangents = false;
+	bool ShowBitangents = false;
+	float VectorLength = 2.0f; // percent of the model's size (its bounding box diagonal), so it suits models of any scale
+	int VectorColorMode = 0;   // 0: by vector (tangent red, bitangent green, normal blue), 1: by direction (xyz as rgb)
 };
 static EditorOverlaySettings s_OverlaySettings;
 static H2M::RefH2M<H2M::FramebufferH2M> s_OverlayFramebuffer;
@@ -143,6 +151,8 @@ static H2M::RefH2M<H2M::PipelineH2M> s_WireframePipelineAnim;
 static H2M::RefH2M<H2M::PipelineH2M> s_BoundingBoxPipeline;         // line list: unit cube edges (s_BoundingBoxVertexBuffer)
 static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskPipeline;
 static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskPipelineAnim;
+static H2M::RefH2M<H2M::PipelineH2M> s_VectorsPipeline;             // line per vertex, instanced: the mesh's vertex buffer is per-instance data
+static H2M::RefH2M<H2M::PipelineH2M> s_VectorsPipelineAnim;
 static H2M::RefH2M<H2M::VertexBufferH2M> s_BoundingBoxVertexBuffer;
 static const uint32_t s_BoundingBoxVertexCount = 24; // 12 edges
 
@@ -1417,6 +1427,26 @@ static void CreateEditorOverlayResources()
 	s_SelectionMaskPipeline     = createPipeline("SelectionMask",      false, staticLayout, s_SelectionMaskFramebuffer, triangles, false, false, false);
 	s_SelectionMaskPipelineAnim = createPipeline("SelectionMask-Anim", true,  animLayout,   s_SelectionMaskFramebuffer, triangles, false, false, false);
 
+	// Normal, tangent and bitangent lines: no per-vertex input; the mesh vertex layout is the per-instance input (binding 1),
+	// so one instance is one mesh vertex and its two line vertices come from gl_VertexIndex (see EditorVectors.glsl)
+	auto createVectorsPipeline = [](const char* debugName, const char* shaderName, const H2M::VertexBufferLayoutH2M& meshLayout)
+	{
+		H2M::PipelineSpecificationH2M pipelineSpecification;
+		pipelineSpecification.InstanceLayout = meshLayout;
+		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get(shaderName);
+		pipelineSpecification.Topology = H2M::PrimitiveTopologyH2M::Lines;
+		pipelineSpecification.BackfaceCulling = false;
+		pipelineSpecification.DepthTest = true; // hidden behind meshes (the depth pass of RecordEditorOverlayPasses)
+		pipelineSpecification.DepthWrite = false;
+		pipelineSpecification.DebugName = debugName;
+		H2M::RenderPassSpecificationH2M renderPassSpec;
+		renderPassSpec.TargetFramebuffer = s_OverlayFramebuffer;
+		pipelineSpecification.RenderPass = H2M::RenderPassH2M::Create(renderPassSpec);
+		return H2M::PipelineH2M::Create(pipelineSpecification);
+	};
+	s_VectorsPipeline     = createVectorsPipeline("Vectors",      "EditorVectors",      staticLayout);
+	s_VectorsPipelineAnim = createVectorsPipeline("Vectors-Anim", "EditorVectors_Anim", animLayout);
+
 	// Edges of the unit cube (0..1), scaled to each bounding box. The vertices have the static mesh layout (only the position
 	// is set), so the bounding box pipeline uses the same shader and vertex inputs as the others.
 	struct LineVertex
@@ -1485,6 +1515,84 @@ static void DrawMeshOverlay(VkCommandBuffer commandBuffer, LoadedMeshVulkan& ent
 	}
 }
 
+// Draws a loaded mesh's normal, tangent or bitangent lines (vectorIndex 0, 1, 2): one line per vertex of every submesh (or
+// only of submesh onlySubmesh), lineLength long in world units
+static void DrawMeshVectors(VkCommandBuffer commandBuffer, LoadedMeshVulkan& entry, int onlySubmesh, uint32_t vectorIndex, float lineLength,
+	int colorMode, const glm::mat4& viewProjection, float lineWidth)
+{
+	H2M::RefH2M<H2M::MeshH2M> mesh = entry.Mesh;
+	bool skinned = mesh->IsSkinned();
+	VkDescriptorSet boneDescriptorSet = skinned ? mesh->GetObjectDescriptorSet() : VK_NULL_HANDLE;
+	if (skinned && !boneDescriptorSet)
+	{
+		return;
+	}
+	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = (skinned ? s_VectorsPipelineAnim : s_VectorsPipeline).As<H2M::VulkanPipelineH2M>();
+	VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+	// The mesh's vertex buffer as the per-instance input (binding 1); binding 0 has no attributes, the same buffer is bound there
+	VkBuffer vertexBuffer = mesh->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+	VkBuffer buffers[2] = { vertexBuffer, vertexBuffer };
+	VkDeviceSize offsets[2] = { 0, 0 };
+	vkCmdBindVertexBuffers(commandBuffer, 0, 2, buffers, offsets);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+	vkCmdSetLineWidth(commandBuffer, lineWidth);
+	if (skinned)
+	{
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &boneDescriptorSet, 0, nullptr);
+	}
+
+	struct VectorsPushConstants
+	{
+		glm::mat4 ViewProjection;
+		glm::vec4 Model[4]; // model matrix columns; w: length, vector, color mode, unused (see EditorVectors.glsl)
+	} pushConstants;
+	pushConstants.ViewProjection = viewProjection;
+
+	glm::mat4 transform = entry.GetTransform();
+	auto& submeshes = mesh->GetSubmeshes();
+	for (int s = 0; s < (int)submeshes.size(); s++)
+	{
+		if ((onlySubmesh >= 0 && s != onlySubmesh) || submeshes[s]->VertexCount == 0)
+		{
+			continue;
+		}
+		glm::mat4 model = GetSubmeshTransform(mesh, submeshes[s], transform);
+		for (int c = 0; c < 4; c++)
+		{
+			pushConstants.Model[c] = glm::vec4(glm::vec3(model[c]), 0.0f);
+		}
+		pushConstants.Model[0].w = lineLength;
+		pushConstants.Model[1].w = (float)vectorIndex;
+		pushConstants.Model[2].w = (float)colorMode;
+		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(pushConstants), &pushConstants);
+
+		// Two vertices per line, one instance per mesh vertex: firstInstance selects the submesh's vertices in the buffer
+		vkCmdDraw(commandBuffer, 2, submeshes[s]->VertexCount, 0, submeshes[s]->BaseVertex);
+	}
+}
+
+// Size of a loaded mesh as placed in the scene: the diagonal of the bounding box of all its submesh boxes (world space)
+static float GetMeshWorldSize(LoadedMeshVulkan& entry)
+{
+	glm::vec3 boundsMin(std::numeric_limits<float>::max());
+	glm::vec3 boundsMax(-std::numeric_limits<float>::max());
+	glm::mat4 transform = entry.GetTransform();
+	for (auto& submesh : entry.Mesh->GetSubmeshes())
+	{
+		glm::mat4 submeshTransform = GetSubmeshTransform(entry.Mesh, submesh, transform);
+		const H2M::AABB_H2M& box = submesh->BoundingBox;
+		for (int corner = 0; corner < 8; corner++)
+		{
+			glm::vec3 point((corner & 1) ? box.Max.x : box.Min.x, (corner & 2) ? box.Max.y : box.Min.y, (corner & 4) ? box.Max.z : box.Min.z);
+			glm::vec3 placed = glm::vec3(submeshTransform * glm::vec4(point, 1.0f));
+			boundsMin = glm::min(boundsMin, placed);
+			boundsMax = glm::max(boundsMax, placed);
+		}
+	}
+	return boundsMin.x <= boundsMax.x ? glm::length(boundsMax - boundsMin) : 1.0f;
+}
+
 // Draws the editor overlays into s_OverlayFramebuffer and s_SelectionMaskFramebuffer. Both are rendered every frame (cleared
 // when there is nothing to show): the viewport composite samples them, so they always need valid content.
 static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
@@ -1530,17 +1638,24 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 	// Wireframe and bounding boxes
 	beginPass(s_OverlayFramebuffer);
 	{
-		if (settings.Wireframe != OverlayScopeOff)
+		const bool showVectors = settings.Vectors != OverlayScopeOff && (settings.ShowNormals || settings.ShowTangents || settings.ShowBitangents);
+
+		// The edges and vector lines are pulled slightly towards the camera (clip z - bias * w), so they win the depth test
+		// against their own faces
+		glm::mat4 depthBias(1.0f);
+		depthBias[3][2] = -2.0e-5f;
+
+		if (settings.Wireframe != OverlayScopeOff || showVectors)
 		{
-			// Depth of every mesh first (color alpha 0 leaves the image unchanged), so edges hidden behind a mesh are hidden
+			// Depth of every mesh first (color alpha 0 leaves the image unchanged), so lines hidden behind a mesh are hidden
 			for (LoadedMeshVulkan& entry : s_LoadedMeshes)
 			{
 				DrawMeshOverlay(commandBuffer, entry, -1, s_OverlayDepthPipeline, s_OverlayDepthPipelineAnim, glm::vec4(0.0f), viewProjection);
 			}
+		}
 
-			// The edges are pulled slightly towards the camera (clip z - bias * w), so they win the depth test against their own faces
-			glm::mat4 depthBias(1.0f);
-			depthBias[3][2] = -2.0e-5f;
+		if (settings.Wireframe != OverlayScopeOff)
+		{
 			for (int m = 0; m < (int)s_LoadedMeshes.size(); m++)
 			{
 				if (inScope(settings.Wireframe, m))
@@ -1553,6 +1668,32 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 					}
 					DrawMeshOverlay(commandBuffer, s_LoadedMeshes[m], onlySubmesh, s_WireframePipeline, s_WireframePipelineAnim, settings.WireframeColor,
 						depthBias * viewProjection, lineWidth);
+				}
+			}
+		}
+
+		if (showVectors)
+		{
+			const bool show[3] = { settings.ShowNormals, settings.ShowTangents, settings.ShowBitangents };
+			for (int m = 0; m < (int)s_LoadedMeshes.size(); m++)
+			{
+				if (!inScope(settings.Vectors, m))
+				{
+					continue;
+				}
+				// "Selected": the selected submesh, or the whole mesh when no submesh is selected (like the wireframe)
+				int onlySubmesh = -1;
+				if (settings.Vectors == OverlayScopeSelected && s_SelectedSubmeshIndex < (int)s_LoadedMeshes[m].Mesh->GetSubmeshes().size())
+				{
+					onlySubmesh = s_SelectedSubmeshIndex;
+				}
+				float length = GetMeshWorldSize(s_LoadedMeshes[m]) * settings.VectorLength * 0.01f;
+				for (uint32_t v = 0; v < 3; v++)
+				{
+					if (show[v])
+					{
+						DrawMeshVectors(commandBuffer, s_LoadedMeshes[m], onlySubmesh, v, length, settings.VectorColorMode, depthBias * viewProjection, lineWidth);
+					}
 				}
 			}
 		}
@@ -3158,10 +3299,34 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					}
 
 					ImGui::Separator();
+					ImGui::Combo("Vertex Vectors", &overlay.Vectors, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("A line per vertex along its normal, tangent and/or bitangent\n"
+							"Selected: the selected submesh, or the whole model when no submesh is selected\nAll: every loaded model");
+					}
+					ImGui::BeginDisabled(overlay.Vectors == OverlayScopeOff);
+					ImGui::Checkbox("Normals", &overlay.ShowNormals);
+					ImGui::SameLine();
+					ImGui::Checkbox("Tangents", &overlay.ShowTangents);
+					ImGui::SameLine();
+					ImGui::Checkbox("Bitangents", &overlay.ShowBitangents);
+					ImGui::DragFloat("Vector Length", &overlay.VectorLength, 0.05f, 0.1f, 50.0f, "%.1f %% of model size", ImGuiSliderFlags_AlwaysClamp);
+					static const char* s_VectorColorModes[] = { "By Vector", "By Direction" };
+					ImGui::Combo("Vector Colors", &overlay.VectorColorMode, s_VectorColorModes, IM_ARRAYSIZE(s_VectorColorModes));
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("By Vector: tangent red, bitangent green, normal blue (tangent space x, y, z)\n"
+							"By Direction: the world direction as a color (x red, y green, z blue)\n"
+							"Lines are darker at the vertex and brighter at the tip");
+					}
+					ImGui::EndDisabled();
+
+					ImGui::Separator();
 					ImGui::DragFloat("Line Width", &overlay.LineWidth, 0.05f, 1.0f, 10.0f, "%.1f px", ImGuiSliderFlags_AlwaysClamp);
 					if (ImGui::IsItemHovered())
 					{
-						ImGui::SetTooltip("Wireframe and bounding box lines");
+						ImGui::SetTooltip("Wireframe, bounding box and vertex vector lines");
 					}
 
 					ImGui::PopID();
