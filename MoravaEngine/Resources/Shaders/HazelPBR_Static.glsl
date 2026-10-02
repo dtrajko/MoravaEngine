@@ -10,7 +10,7 @@
 // - Michał Siejak's PBR project (https://github.com/Nadrin)
 // - My implementation from years ago in the Sparky engine (https://github.com/TheCherno/Sparky)
 // Descriptor sets (Vulkan), ordered by how often they change (see VulkanShaderH2M::FrameDescriptorSet):
-// - set 0, per frame:    Camera, SceneData (light, camera position, environment rotation), environment maps, BRDF LUT
+// - set 0, per frame:    Camera, SceneData (camera position, environment rotation), environment maps, BRDF LUT, Lights
 // - set 1, per material: the material's texture maps
 // - set 2, per object:   bone matrices (HazelPBR_Anim.glsl only)
 // Push constants: the transform (vertex stage) and the material values (fragment stage).
@@ -66,15 +66,41 @@ void main()
 const float PI = 3.141592;
 const float Epsilon = 0.00001;
 
-const int LightCount = 1;
-
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
 
-struct Light {
-	vec3 Direction;
-	vec3 Radiance;
-	float Multiplier;
+// Lights (EnvMapVulkanLights.h): the std140 layouts must match EnvMapVulkanLightsGPU byte for byte
+const int MaxPointLights = 16;
+const int MaxSpotLights = 16;
+
+struct DirectionalLight
+{
+	vec3 Direction;  // towards the light
+	float Intensity; // 0 when the sun is disabled
+	vec3 Color;
+	float Padding;
+};
+
+struct PointLight
+{
+	vec3 Position;
+	float Intensity;
+	vec3 Color;
+	float Range;     // the light reaches exactly zero here
+};
+
+struct SpotLight
+{
+	vec3 Position;
+	float Intensity;
+	vec3 Color;
+	float Range;
+	vec3 Direction;  // the direction the light travels
+	float CosOuter;
+	float CosInner;
+	float Padding0;  // three floats, not a vec3: a std140 vec3 would be aligned to 16 bytes
+	float Padding1;
+	float Padding2;
 };
 
 struct VertexOutput
@@ -94,13 +120,21 @@ layout(location = 0) out vec4 color;
 // Set 0, per frame: shared by every mesh
 layout (std140, set = 0, binding = 1) uniform SceneData
 {
-	Light lights;             // offset 0 (32 bytes)
-	vec3 u_CameraPosition;    // offset 32
-	float u_EnvMapRotation;   // offset 44: degrees around Y, applied to the environment lookups
+	vec3 u_CameraPosition;    // offset 0
+	float u_EnvMapRotation;   // offset 12: degrees around Y, applied to the environment lookups
 };
 layout (set = 0, binding = 2) uniform samplerCube u_EnvRadianceTex;
 layout (set = 0, binding = 3) uniform samplerCube u_EnvIrradianceTex;
 layout (set = 0, binding = 4) uniform sampler2D u_BRDFLUTTexture;
+layout (std140, set = 0, binding = 5) uniform Lights
+{
+	DirectionalLight u_Sun;                    // offset 0 (32 bytes)
+	int u_PointLightCount;                     // offset 32
+	int u_SpotLightCount;                      // offset 36
+	ivec2 u_LightsPadding;                     // offset 40
+	PointLight u_PointLights[MaxPointLights];  // offset 48 (32 bytes each)
+	SpotLight u_SpotLights[MaxSpotLights];     // offset 560 (64 bytes each)
+};
 
 // Set 1, per material: PBR texture maps
 layout (set = 1, binding = 0) uniform sampler2D u_AlbedoTexture;
@@ -271,59 +305,78 @@ vec3 RotateVectorAboutY(float angle, vec3 vec)
     return rotationMatrix * vec;
 }
 
-vec3 Lighting(vec3 F0)
+// Cook-Torrance BRDF for one light. L points from the surface towards the light; radiance is the light that arrives
+// at the surface (attenuation and cone already applied).
+vec3 EvaluateBRDF(vec3 F0, vec3 L, vec3 radiance)
 {
-	vec3 result = vec3(0.0);
-	for(int i = 0; i < LightCount; i++)
+	float cosLi = max(0.0, dot(m_Params.Normal, L));
+	if (cosLi <= 0.0)
 	{
-		vec3 Li = lights.Direction;
-		vec3 Lradiance = lights.Radiance * lights.Multiplier;
-		vec3 Lh = normalize(Li + m_Params.View);
-
-		// Calculate angles between surface normal and various light vectors.
-		float cosLi = max(0.0, dot(m_Params.Normal, Li));
-		float cosLh = max(0.0, dot(m_Params.Normal, Lh));
-
-		vec3 F = fresnelSchlick(F0, max(0.0, dot(Lh, m_Params.View)));
-		float D = ndfGGX(cosLh, m_Params.Roughness);
-		float G = gaSchlickGGX(cosLi, m_Params.NdotV, m_Params.Roughness);
-
-		vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-		vec3 diffuseBRDF = kd * m_Params.Albedo;
-
-		// Cook-Torrance
-		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
-
-		result += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+		return vec3(0.0);
 	}
-	return result;
+	vec3 Lh = normalize(L + m_Params.View);
+	float cosLh = max(0.0, dot(m_Params.Normal, Lh));
+
+	vec3 F = fresnelSchlick(F0, max(0.0, dot(Lh, m_Params.View)));
+	float D = ndfGGX(cosLh, m_Params.Roughness);
+	float G = gaSchlickGGX(cosLi, m_Params.NdotV, m_Params.Roughness);
+
+	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+	vec3 diffuseBRDF = kd * m_Params.Albedo;
+	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
+
+	return (diffuseBRDF + specularBRDF) * radiance * cosLi;
 }
 
-vec3 LightingTemp(vec3 F0)
+// Inverse-square falloff, windowed to reach exactly zero at the light's range (Karis 2013, "Real Shading in Unreal Engine 4").
+// The distance is clamped to 1 cm, so a surface at the light's position doesn't get infinite light.
+float DistanceAttenuation(float distance, float range)
 {
-	vec3 result = vec3(0.0);
-	for(int i = 0; i < LightCount; i++)
+	float ratio = distance / range;
+	float ratio2 = ratio * ratio;
+	float window = clamp(1.0 - ratio2 * ratio2, 0.0, 1.0);
+	return window * window / max(distance * distance, 0.0001);
+}
+
+// Direct light from the sun, the point lights and the spot lights (lists packed by EnvMapVulkanLightEnvironment::Pack)
+vec3 Lighting(vec3 F0)
+{
+	vec3 result = EvaluateBRDF(F0, u_Sun.Direction, u_Sun.Color * u_Sun.Intensity);
+
+	int pointLightCount = min(u_PointLightCount, MaxPointLights);
+	for (int i = 0; i < pointLightCount; i++)
 	{
-		vec3 Li = lights.Direction; // vec3(-0.5, 0.5, 0.5); // 
-		vec3 Lradiance = lights.Radiance * lights.Multiplier; // Light Radiance / Light Multiplier in the Environment panel
-		vec3 Lh = normalize(Li + m_Params.View);
-
-		// Calculate angles between surface normal and various light vectors.
-		float cosLi = max(0.0, dot(m_Params.Normal, Li));
-		float cosLh = max(0.0, dot(m_Params.Normal, Lh));
-
-		vec3 F = fresnelSchlick(F0, max(0.0, dot(Lh, m_Params.View)));
-		float D = ndfGGX(cosLh, m_Params.Roughness);
-		float G = gaSchlickGGX(cosLi, m_Params.NdotV, m_Params.Roughness);
-
-		vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-		vec3 diffuseBRDF = kd * m_Params.Albedo;
-
-		// Cook-Torrance
-		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
-
-		result += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+		vec3 toLight = u_PointLights[i].Position - Input.WorldPosition;
+		float distance = length(toLight);
+		if (distance >= u_PointLights[i].Range)
+		{
+			continue;
+		}
+		vec3 L = toLight / max(distance, Epsilon);
+		float attenuation = DistanceAttenuation(distance, u_PointLights[i].Range);
+		result += EvaluateBRDF(F0, L, u_PointLights[i].Color * u_PointLights[i].Intensity * attenuation);
 	}
+
+	int spotLightCount = min(u_SpotLightCount, MaxSpotLights);
+	for (int i = 0; i < spotLightCount; i++)
+	{
+		vec3 toLight = u_SpotLights[i].Position - Input.WorldPosition;
+		float distance = length(toLight);
+		if (distance >= u_SpotLights[i].Range)
+		{
+			continue;
+		}
+		vec3 L = toLight / max(distance, Epsilon);
+		// Full intensity inside the inner cone, a smooth fade to zero at the outer cone
+		float cone = smoothstep(u_SpotLights[i].CosOuter, u_SpotLights[i].CosInner, dot(-L, u_SpotLights[i].Direction));
+		if (cone <= 0.0)
+		{
+			continue;
+		}
+		float attenuation = DistanceAttenuation(distance, u_SpotLights[i].Range);
+		result += EvaluateBRDF(F0, L, u_SpotLights[i].Color * u_SpotLights[i].Intensity * attenuation * cone);
+	}
+
 	return result;
 }
 
@@ -378,7 +431,7 @@ void main()
 	// Fresnel reflectance, metals use albedo
 	vec3 F0 = mix(Fdielectric, m_Params.Albedo, m_Params.Metalness);
 
-	vec3 lightContribution = LightingTemp(F0);
+	vec3 lightContribution = Lighting(F0);
 	vec3 iblContribution = IBL(F0, Lr);
 
 	// Ambient occlusion darkens only the indirect (environment) light; the map is linear data in R

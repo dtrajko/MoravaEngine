@@ -62,7 +62,6 @@ public:
 	static void GeometryPass();
 	static void CompositePass();
 	static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers);
-	static glm::vec3 GetLightDirectionTemp();
 
 	// static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
 	static void UpdateImGuizmo(Window* mainWindow);

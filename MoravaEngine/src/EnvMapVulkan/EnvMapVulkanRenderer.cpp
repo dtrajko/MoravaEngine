@@ -5,6 +5,7 @@
  */
 
 #include "EnvMapVulkanRenderer.h"
+#include "EnvMapVulkanLights.h"
 #include "EnvMapVulkanMaterialLibrary.h"
 
 #include "Core/ResourceManager.h"
@@ -215,7 +216,6 @@ struct VulkanRendererData
 		H2M::SceneRendererCameraH2M SceneCamera;
 		H2M::EnvironmentH2M SceneEnvironment;
 		float SkyboxLod;
-		glm::vec3 LightDirectionTemp;
 	} SceneData;
 
 	std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> EnvironmentMap;
@@ -352,9 +352,8 @@ static void LoadEnvironmentMap(const std::string& filepath)
 	s_EnvMapFilename = filepath;
 }
 
-// Light (Environment panel) and environment map rotation, used by the PBR shader
-static glm::vec3 s_LightRadiance = glm::vec3(1.0f);
-static float s_LightMultiplier = 1.0f;
+// The scene's lights (the Lights uniform buffer of the PBR shaders) and the environment map rotation
+static EnvMapVulkanLightEnvironment s_Lights;
 static float s_EnvMapRotation = 0.0f; // degrees, applied to the PBR environment lookups (as in SceneHazelEnvMap)
 
 // Meshes loaded from the Meshes panel: the Vulkan counterpart of the mesh entities in SceneHazelEnvMap
@@ -695,6 +694,24 @@ static void DeleteMaterial(H2M::RefH2M<EnvMapVulkanMaterial> material)
 	Log::GetLogger()->info("Material '{0}' deleted ({1} submeshes now use the Default material)", material->GetName(), users);
 }
 
+// The sun turns with the environment map (EnvMapVulkanDirectionalLight::FollowEnvironmentRotation). Checked once per frame,
+// so every way of changing the rotation (Environment panel, code) is covered. The shaders look the environment up at
+// RotateVectorAboutY(rotation, worldDirection), so a direction of the map has the azimuth (map azimuth + rotation) in
+// the world: a rotation change of N degrees moves the sun by N degrees of azimuth.
+static void SyncSunWithEnvironmentRotation()
+{
+	static float s_LastEnvMapRotation = s_EnvMapRotation;
+	float delta = s_EnvMapRotation - s_LastEnvMapRotation;
+	s_LastEnvMapRotation = s_EnvMapRotation;
+	if (delta == 0.0f || !s_Lights.Sun.FollowEnvironmentRotation)
+	{
+		return;
+	}
+	// The rotation wraps around at 360 degrees: 359 -> 1 is a change of +2, not -358
+	delta = std::remainder(delta, 360.0f);
+	s_Lights.Sun.Azimuth = std::remainder(s_Lights.Sun.Azimuth + delta, 360.0f); // stays in -180..180
+}
+
 // Per-frame uniform buffers of the mesh shaders (set 0): written once per frame, read by every mesh. They belong to the
 // HazelPBR_Static shader in the shader library, whose buffers the per-frame descriptor set points to (see Init).
 static void UpdateFrameUniforms()
@@ -709,31 +726,28 @@ static void UpdateFrameUniforms()
 	memcpy(ubPtr, &viewProjection, sizeof(glm::mat4));
 	shader->UnmapUniformBuffer(0, frameSet);
 
-	// binding 1: SceneData (fragment stage), std140: Light { vec3 Direction; vec3 Radiance; float Multiplier; },
-	// vec3 u_CameraPosition, float u_EnvMapRotation
-	struct Light
-	{
-		glm::vec3 Direction;
-		float Padding = 0.0f;
-		glm::vec3 Radiance;
-		float Multiplier;
-	};
+	// binding 1: SceneData (fragment stage), std140: vec3 u_CameraPosition, float u_EnvMapRotation
 	struct SceneDataUB
 	{
-		Light Lights;
 		glm::vec3 CameraPosition;
 		float EnvMapRotation;
 	};
 	SceneDataUB ub;
-	ub.Lights.Direction = s_Data.SceneData.LightDirectionTemp;
-	ub.Lights.Radiance = s_LightRadiance;
-	ub.Lights.Multiplier = s_LightMultiplier;
 	ub.CameraPosition = camera.GetPosition();
 	ub.EnvMapRotation = s_EnvMapRotation;
 
 	ubPtr = shader->MapUniformBuffer(1, frameSet);
 	memcpy(ubPtr, &ub, sizeof(SceneDataUB));
 	shader->UnmapUniformBuffer(1, frameSet);
+
+	// binding 5: Lights (fragment stage), see EnvMapVulkanLightsGPU
+	SyncSunWithEnvironmentRotation();
+	EnvMapVulkanLightsGPU::LightsUB lights;
+	s_Lights.Pack(lights);
+
+	ubPtr = shader->MapUniformBuffer(5, frameSet);
+	memcpy(ubPtr, &lights, sizeof(EnvMapVulkanLightsGPU::LightsUB));
+	shader->UnmapUniformBuffer(5, frameSet);
 }
 
 // Per-object uniform buffers (set 2): the bone matrices of the current animation frame of a skinned mesh (up to 128).
@@ -791,6 +805,543 @@ static bool AcceptFileDrop(const ImVec2& highlightMin, const ImVec2& highlightMa
 	}
 	filepath = itemPath;
 	return true;
+}
+
+// The selected light: the sun, or an index into the point or spot light list. Lights and meshes share one selection
+// (one gizmo): selecting a light clears the mesh selection and selecting a mesh clears the light selection.
+enum class LightKind { None, Sun, Point, Spot };
+static LightKind s_SelectedLightKind = LightKind::None;
+static int s_SelectedLightIndex = 0;
+static bool s_ShowLightGizmos = true; // light icons and shapes in the viewport
+
+static void SelectLight(LightKind kind, int index = 0)
+{
+	s_SelectedLightKind = kind;
+	s_SelectedLightIndex = index;
+	if (kind != LightKind::None)
+	{
+		s_SelectedMeshIndex = -1;
+		s_SelectedSubmeshIndex = -1;
+	}
+}
+
+// Called once per frame: a mesh selected anywhere (Meshes panel, viewport, a dropped model) clears the light selection,
+// and a selection that no longer exists (a deleted light) is cleared
+static void SyncLightSelection()
+{
+	static int s_LastMeshIndex = -1;
+	static int s_LastSubmeshIndex = -1;
+	if (s_SelectedMeshIndex >= 0 && (s_SelectedMeshIndex != s_LastMeshIndex || s_SelectedSubmeshIndex != s_LastSubmeshIndex))
+	{
+		s_SelectedLightKind = LightKind::None;
+	}
+	s_LastMeshIndex = s_SelectedMeshIndex;
+	s_LastSubmeshIndex = s_SelectedSubmeshIndex;
+
+	if ((s_SelectedLightKind == LightKind::Point && s_SelectedLightIndex >= (int)s_Lights.PointLights.size()) ||
+		(s_SelectedLightKind == LightKind::Spot && s_SelectedLightIndex >= (int)s_Lights.SpotLights.size()))
+	{
+		s_SelectedLightKind = LightKind::None;
+	}
+}
+
+// Points the sun at the brightest light source of the environment map (the sun of an outdoor HDR, a bright window
+// indoors) and gives it that light's color. The intensity stays as it is.
+static void AlignSunToEnvironment()
+{
+	H2M::RefH2M<H2M::Texture2D_H2M> equirect = s_Data.envEquirect;
+	if (!equirect)
+	{
+		return;
+	}
+	H2M::BufferH2M pixels = equirect->GetWriteableBuffer();
+	uint32_t width = equirect->GetWidth(), height = equirect->GetHeight();
+	glm::vec3 mapDirection, color;
+	if (!pixels.Data || equirect->GetFormat() != H2M::ImageFormatH2M::RGBA32F || pixels.Size < (uint64_t)width * height * 4 * sizeof(float) ||
+		!FindBrightestDirection((const float*)pixels.Data, width, height, mapDirection, color))
+	{
+		Log::GetLogger()->warn("Align to Environment: the environment map's pixels are not available");
+		return;
+	}
+
+	// The shaders look the environment up at RotateVectorAboutY(rotation, worldDirection): undo that rotation
+	float angle = glm::radians(s_EnvMapRotation);
+	float c = std::cos(angle), s = std::sin(angle);
+	glm::vec3 worldDirection(c * mapDirection.x + s * mapDirection.z, mapDirection.y, -s * mapDirection.x + c * mapDirection.z);
+
+	s_Lights.Sun.SetDirection(worldDirection);
+	s_Lights.Sun.Color = color;
+	Log::GetLogger()->info("Sun aligned to the environment: azimuth {0}, elevation {1}, color ({2}, {3}, {4})",
+		s_Lights.Sun.Azimuth, s_Lights.Sun.Elevation, color.r, color.g, color.b);
+}
+
+// Where the sun's icon is drawn: in the sky, far away in the sun's direction from the camera, so it moves like the
+// skybox (after "Align to Environment" it sits on the sun of the HDR map)
+static glm::vec3 GetSunIconPosition()
+{
+	glm::vec3 cameraPosition = glm::vec3(glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix())[3]);
+	return cameraPosition + s_Lights.Sun.GetDirection() * 1000.0f;
+}
+
+// World position -> viewport pixel (same NDC convention as GetViewportMouseNdc). False behind the camera.
+static bool ProjectToViewport(const glm::mat4& viewProjection, const glm::vec3& position, ImVec2& pixel)
+{
+	glm::vec4 clip = viewProjection * glm::vec4(position, 1.0f);
+	if (clip.w <= 1e-4f)
+	{
+		return false;
+	}
+	glm::vec2 ndc = glm::vec2(clip) / clip.w;
+	pixel = ImVec2(s_ViewportImageMin.x + (ndc.x + 1.0f) * 0.5f * s_ViewportImageSize.x,
+		s_ViewportImageMin.y + (1.0f - ndc.y) * 0.5f * s_ViewportImageSize.y);
+	return true;
+}
+
+// A world space line; a line with an end behind the camera is skipped (the shapes are made of short segments)
+static void DrawWorldLine(ImDrawList* drawList, const glm::mat4& viewProjection, const glm::vec3& a, const glm::vec3& b, ImU32 color, float thickness = 1.5f)
+{
+	ImVec2 pa, pb;
+	if (ProjectToViewport(viewProjection, a, pa) && ProjectToViewport(viewProjection, b, pb))
+	{
+		drawList->AddLine(pa, pb, color, thickness);
+	}
+}
+
+// A world space circle in the plane spanned by the unit vectors u and v
+static void DrawWorldCircle(ImDrawList* drawList, const glm::mat4& viewProjection, const glm::vec3& center, const glm::vec3& u, const glm::vec3& v,
+	float radius, ImU32 color, int segments = 48)
+{
+	const float step = glm::two_pi<float>() / segments;
+	for (int i = 0; i < segments; i++)
+	{
+		glm::vec3 a = center + radius * (std::cos(i * step) * u + std::sin(i * step) * v);
+		glm::vec3 b = center + radius * (std::cos((i + 1) * step) * u + std::sin((i + 1) * step) * v);
+		DrawWorldLine(drawList, viewProjection, a, b, color);
+	}
+}
+
+// Two unit vectors perpendicular to the unit vector w and to each other
+static void GetPerpendicularAxes(const glm::vec3& w, glm::vec3& u, glm::vec3& v)
+{
+	glm::vec3 up = std::abs(w.y) > 0.99f ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+	u = glm::normalize(glm::cross(up, w));
+	v = glm::cross(w, u);
+}
+
+// The light's color at full brightness (a dark red light still gets a clearly red icon); gray when disabled
+static ImU32 GetLightGizmoColor(const glm::vec3& color, bool enabled, float alpha = 1.0f)
+{
+	if (!enabled)
+	{
+		return ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, alpha));
+	}
+	float maxChannel = std::max(color.r, std::max(color.g, color.b));
+	glm::vec3 c = maxChannel > 1e-3f ? color / maxChannel : glm::vec3(1.0f);
+	return ImGui::ColorConvertFloat4ToU32(ImVec4(c.r, c.g, c.b, alpha));
+}
+
+// An icon: a disc in the light's color (a ring when disabled) on a dark backdrop, with rays; a white ring when selected.
+// The rays and the ring have dark outlines, so a white icon stays visible on a bright sky.
+static void DrawLightIcon(ImDrawList* drawList, const ImVec2& center, ImU32 color, bool enabled, bool selected, int rays)
+{
+	const float radius = 6.0f;
+	drawList->AddCircleFilled(center, radius + 3.0f, IM_COL32(0, 0, 0, 150));
+	if (enabled)
+	{
+		drawList->AddCircleFilled(center, radius, color);
+	}
+	else
+	{
+		drawList->AddCircle(center, radius, color, 0, 2.0f);
+	}
+	for (int i = 0; i < rays; i++)
+	{
+		float a = glm::two_pi<float>() * i / rays;
+		ImVec2 d(std::cos(a), std::sin(a));
+		ImVec2 from(center.x + d.x * (radius + 4.0f), center.y + d.y * (radius + 4.0f));
+		ImVec2 to(center.x + d.x * (radius + 8.0f), center.y + d.y * (radius + 8.0f));
+		drawList->AddLine(from, to, IM_COL32(0, 0, 0, 150), 4.0f);
+		drawList->AddLine(from, to, color, 2.0f);
+	}
+	if (selected)
+	{
+		drawList->AddCircle(center, radius + 11.0f, IM_COL32(0, 0, 0, 150), 0, 4.0f);
+		drawList->AddCircle(center, radius + 11.0f, IM_COL32(255, 255, 255, 230), 0, 2.0f);
+	}
+}
+
+// Light gizmos over the viewport image. Not depth tested (as editor light gizmos in Unity and Unreal), so a light is
+// never lost behind a model:
+// - every light: an icon in its color (8 rays: point light, 4 rays and an aim line: spot light, 12 rays: the sun)
+// - the selected point light: its range as three circles
+// - the selected spot light: its range and outer cone (solid), inner cone (faint)
+// - the selected sun: an arrow ending at the world origin, in the direction its light travels
+static void DrawLightGizmos()
+{
+	if (!s_ShowLightGizmos || s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
+	{
+		return;
+	}
+	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	drawList->PushClipRect(s_ViewportImageMin, ImVec2(s_ViewportImageMin.x + s_ViewportImageSize.x, s_ViewportImageMin.y + s_ViewportImageSize.y), true);
+
+	// Shapes of the selected light first, icons on top
+	if (s_SelectedLightKind == LightKind::Sun)
+	{
+		ImU32 color = GetLightGizmoColor(s_Lights.Sun.Color, s_Lights.Sun.Enabled, 0.8f);
+		glm::vec3 from = s_Lights.Sun.GetDirection() * 2.0f;
+		glm::vec3 to = glm::vec3(0.0f);
+		DrawWorldLine(drawList, viewProjection, from, to, color, 2.0f);
+		glm::vec3 u, v;
+		glm::vec3 travel = -s_Lights.Sun.GetDirection();
+		GetPerpendicularAxes(travel, u, v);
+		for (int i = 0; i < 4; i++) // arrowhead at the origin
+		{
+			float a = glm::half_pi<float>() * i;
+			DrawWorldLine(drawList, viewProjection, to, to - travel * 0.4f + (std::cos(a) * u + std::sin(a) * v) * 0.15f, color, 2.0f);
+		}
+	}
+	else if (s_SelectedLightKind == LightKind::Point)
+	{
+		const EnvMapVulkanPointLight& light = s_Lights.PointLights[s_SelectedLightIndex];
+		ImU32 color = GetLightGizmoColor(light.Color, light.Enabled, 0.7f);
+		const glm::vec3 x(1.0f, 0.0f, 0.0f), y(0.0f, 1.0f, 0.0f), z(0.0f, 0.0f, 1.0f);
+		DrawWorldCircle(drawList, viewProjection, light.Position, x, y, light.Range, color);
+		DrawWorldCircle(drawList, viewProjection, light.Position, x, z, light.Range, color);
+		DrawWorldCircle(drawList, viewProjection, light.Position, y, z, light.Range, color);
+	}
+	else if (s_SelectedLightKind == LightKind::Spot)
+	{
+		const EnvMapVulkanSpotLight& light = s_Lights.SpotLights[s_SelectedLightIndex];
+		glm::vec3 direction = light.GetDirection();
+		glm::vec3 u, v;
+		GetPerpendicularAxes(direction, u, v);
+		auto drawCone = [&](float angle, ImU32 color, int sides) {
+			// The cone ends where it meets the range sphere
+			float halfAngle = glm::radians(glm::clamp(angle, 0.1f, 89.0f));
+			glm::vec3 center = light.Position + direction * (light.Range * std::cos(halfAngle));
+			float radius = light.Range * std::sin(halfAngle);
+			DrawWorldCircle(drawList, viewProjection, center, u, v, radius, color);
+			for (int i = 0; i < sides; i++)
+			{
+				float a = glm::two_pi<float>() * i / sides;
+				DrawWorldLine(drawList, viewProjection, light.Position, center + radius * (std::cos(a) * u + std::sin(a) * v), color);
+			}
+		};
+		drawCone(light.OuterAngle, GetLightGizmoColor(light.Color, light.Enabled, 0.8f), 8);
+		drawCone(light.InnerAngle, GetLightGizmoColor(light.Color, light.Enabled, 0.3f), 4);
+	}
+
+	ImVec2 pixel;
+	if (ProjectToViewport(viewProjection, GetSunIconPosition(), pixel))
+	{
+		DrawLightIcon(drawList, pixel, GetLightGizmoColor(s_Lights.Sun.Color, s_Lights.Sun.Enabled), s_Lights.Sun.Enabled,
+			s_SelectedLightKind == LightKind::Sun, 12);
+	}
+	for (int i = 0; i < (int)s_Lights.PointLights.size(); i++)
+	{
+		const EnvMapVulkanPointLight& light = s_Lights.PointLights[i];
+		if (ProjectToViewport(viewProjection, light.Position, pixel))
+		{
+			DrawLightIcon(drawList, pixel, GetLightGizmoColor(light.Color, light.Enabled), light.Enabled,
+				s_SelectedLightKind == LightKind::Point && s_SelectedLightIndex == i, 8);
+		}
+	}
+	for (int i = 0; i < (int)s_Lights.SpotLights.size(); i++)
+	{
+		const EnvMapVulkanSpotLight& light = s_Lights.SpotLights[i];
+		ImU32 color = GetLightGizmoColor(light.Color, light.Enabled);
+		DrawWorldLine(drawList, viewProjection, light.Position, light.Position + light.GetDirection() * 0.75f, color, 2.0f);
+		if (ProjectToViewport(viewProjection, light.Position, pixel))
+		{
+			DrawLightIcon(drawList, pixel, color, light.Enabled, s_SelectedLightKind == LightKind::Spot && s_SelectedLightIndex == i, 4);
+		}
+	}
+
+	drawList->PopClipRect();
+}
+
+// The light whose icon is under the mouse (the nearest one within 12 pixels)
+static bool PickLightIcon(LightKind& kind, int& index)
+{
+	if (!s_ShowLightGizmos)
+	{
+		return false;
+	}
+	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
+	const ImVec2 mouse = ImGui::GetMousePos();
+	float nearest = 12.0f * 12.0f;
+	bool found = false;
+	auto test = [&](const glm::vec3& position, LightKind k, int i) {
+		ImVec2 pixel;
+		if (ProjectToViewport(viewProjection, position, pixel))
+		{
+			float dx = pixel.x - mouse.x, dy = pixel.y - mouse.y;
+			if (dx * dx + dy * dy < nearest)
+			{
+				nearest = dx * dx + dy * dy;
+				kind = k;
+				index = i;
+				found = true;
+			}
+		}
+	};
+	test(GetSunIconPosition(), LightKind::Sun, 0);
+	for (int i = 0; i < (int)s_Lights.PointLights.size(); i++)
+	{
+		test(s_Lights.PointLights[i].Position, LightKind::Point, i);
+	}
+	for (int i = 0; i < (int)s_Lights.SpotLights.size(); i++)
+	{
+		test(s_Lights.SpotLights[i].Position, LightKind::Spot, i);
+	}
+	return found;
+}
+
+// The gizmo for the selected point or spot light: 1 moves it; 2 aims a spot light (any mode moves a point light)
+static void ManipulateSelectedLight(int gizmoType, bool snap)
+{
+	bool isSpot = s_SelectedLightKind == LightKind::Spot;
+	glm::vec3& position = isSpot ? s_Lights.SpotLights[s_SelectedLightIndex].Position : s_Lights.PointLights[s_SelectedLightIndex].Position;
+	ImGuizmo::OPERATION operation = isSpot && gizmoType == ImGuizmo::OPERATION::ROTATE ? ImGuizmo::OPERATION::ROTATE : ImGuizmo::OPERATION::TRANSLATE;
+
+	// Local Z is the spot's direction
+	glm::mat4 transform(1.0f);
+	if (isSpot)
+	{
+		glm::vec3 z = s_Lights.SpotLights[s_SelectedLightIndex].GetDirection(), x, y;
+		GetPerpendicularAxes(z, x, y);
+		transform[0] = glm::vec4(x, 0.0f);
+		transform[1] = glm::vec4(y, 0.0f);
+		transform[2] = glm::vec4(z, 0.0f);
+	}
+	transform[3] = glm::vec4(position, 1.0f);
+
+	float snapValue = operation == ImGuizmo::OPERATION::ROTATE ? 15.0f : 0.5f;
+	float snapValues[3] = { snapValue, snapValue, snapValue };
+	if (ImGuizmo::Manipulate(
+		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
+		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
+		operation,
+		ImGuizmo::WORLD,
+		glm::value_ptr(transform),
+		nullptr,
+		snap ? snapValues : nullptr))
+	{
+		position = glm::vec3(transform[3]);
+		if (isSpot && operation == ImGuizmo::OPERATION::ROTATE)
+		{
+			s_Lights.SpotLights[s_SelectedLightIndex].SetDirection(glm::vec3(transform[2]));
+		}
+	}
+}
+
+static void LightNameProperty(std::string& name)
+{
+	char buffer[128] = {};
+	strncpy_s(buffer, name.c_str(), sizeof(buffer) - 1);
+	ImGui::Text("Name");
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+	if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
+	{
+		name = buffer;
+	}
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+}
+
+static void LightRangeProperty(float& range)
+{
+	ImGuiWrapper::Property("Range", range, 0.05f, 0.01f, 1000.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The distance where the light fades out completely");
+	}
+}
+
+// The sun, point lights and spot lights: add, delete, enable and edit
+static void OnImGuiRenderLights()
+{
+	ImGui::Begin("Lights");
+
+	// New lights appear 3 units in front of the camera
+	glm::mat4 cameraTransform = glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix());
+	glm::vec3 spawnPosition = glm::vec3(cameraTransform[3]) - glm::normalize(glm::vec3(cameraTransform[2])) * 3.0f;
+	if (glm::any(glm::isnan(spawnPosition)))
+	{
+		spawnPosition = glm::vec3(0.0f); // the camera has no valid view matrix yet
+	}
+
+	ImGui::BeginDisabled(!s_Lights.CanAddPointLight());
+	if (ImGui::Button("Add Point Light") && s_Lights.AddPointLight(spawnPosition))
+	{
+		SelectLight(LightKind::Point, (int)s_Lights.PointLights.size() - 1);
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Up to %u point lights", EnvMapVulkanLightsGPU::MaxPointLights);
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(!s_Lights.CanAddSpotLight());
+	if (ImGui::Button("Add Spot Light") && s_Lights.AddSpotLight(spawnPosition))
+	{
+		SelectLight(LightKind::Spot, (int)s_Lights.SpotLights.size() - 1);
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Up to %u spot lights (pointing down when added)", EnvMapVulkanLightsGPU::MaxSpotLights);
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(s_SelectedLightKind != LightKind::Point && s_SelectedLightKind != LightKind::Spot);
+	if (ImGui::Button("Delete"))
+	{
+		if (s_SelectedLightKind == LightKind::Point)
+		{
+			s_Lights.PointLights.erase(s_Lights.PointLights.begin() + s_SelectedLightIndex);
+		}
+		else
+		{
+			s_Lights.SpotLights.erase(s_Lights.SpotLights.begin() + s_SelectedLightIndex);
+		}
+		SelectLight(LightKind::None);
+	}
+	ImGui::EndDisabled();
+
+	ImGui::Checkbox("Show in Viewport", &s_ShowLightGizmos);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Light icons (click one to select the light) and the selected light's range and cone");
+	}
+
+	// The light list: a checkbox (enabled) and a selectable name per light
+	auto lightRow = [](const char* name, bool& enabled, LightKind kind, int index) {
+		ImGui::PushID((int)kind * 1000 + index);
+		ImGui::Checkbox("##Enabled", &enabled);
+		ImGui::SameLine();
+		if (ImGui::Selectable(name, s_SelectedLightKind == kind && s_SelectedLightIndex == index))
+		{
+			SelectLight(kind, index);
+		}
+		ImGui::PopID();
+	};
+
+	ImGui::Separator();
+	if (ImGui::BeginChild("LightList", ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8.0f), ImGuiChildFlags_Borders))
+	{
+		lightRow("Sun", s_Lights.Sun.Enabled, LightKind::Sun, 0);
+		for (int i = 0; i < (int)s_Lights.PointLights.size(); i++)
+		{
+			lightRow(s_Lights.PointLights[i].Name.c_str(), s_Lights.PointLights[i].Enabled, LightKind::Point, i);
+		}
+		for (int i = 0; i < (int)s_Lights.SpotLights.size(); i++)
+		{
+			lightRow(s_Lights.SpotLights[i].Name.c_str(), s_Lights.SpotLights[i].Enabled, LightKind::Spot, i);
+		}
+	}
+	ImGui::EndChild();
+
+	// Properties of the selected light
+	ImGui::Separator();
+	if (s_SelectedLightKind == LightKind::None)
+	{
+		ImGui::TextDisabled("Select a light in the list,\nor click its icon in the viewport");
+		ImGui::End();
+		return;
+	}
+
+	if (s_SelectedLightKind == LightKind::Sun)
+	{
+		ImGui::BeginDisabled(!s_Data.envEquirect);
+		if (ImGui::Button("Align to Environment"))
+		{
+			AlignSunToEnvironment();
+		}
+		ImGui::EndDisabled();
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			ImGui::SetTooltip("Points the sun at the brightest light of the environment map\n(the sun outdoors, a bright window indoors) and takes its color");
+		}
+	}
+
+	ImGui::Columns(2);
+	if (s_SelectedLightKind == LightKind::Sun)
+	{
+		EnvMapVulkanDirectionalLight& sun = s_Lights.Sun;
+		ImGuiWrapper::Property("Enabled", sun.Enabled);
+		ImGuiWrapper::Property("Color", sun.Color, PropertyFlag::ColorProperty);
+		ImGuiWrapper::Property("Intensity", sun.Intensity, 0.01f, 0.0f, 20.0f, PropertyFlag::DragProperty);
+		ImGuiWrapper::Property("Azimuth", sun.Azimuth, 0.5f, -180.0f, 180.0f, PropertyFlag::DragProperty);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Compass direction of the sun (degrees around the vertical axis, 0 = +Z, 90 = +X)");
+		}
+		ImGuiWrapper::Property("Elevation", sun.Elevation, 0.5f, -90.0f, 90.0f, PropertyFlag::DragProperty);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Height of the sun above the horizon (degrees, 90 = straight overhead)");
+		}
+		ImGuiWrapper::Property("Follow Env Rotation", sun.FollowEnvironmentRotation);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Env Map Rotation (Environment panel) turns the sun too,\nso a sun aligned to the environment stays on the sun of the map");
+		}
+	}
+	else if (s_SelectedLightKind == LightKind::Point)
+	{
+		EnvMapVulkanPointLight& light = s_Lights.PointLights[s_SelectedLightIndex];
+		LightNameProperty(light.Name);
+		ImGuiWrapper::Property("Enabled", light.Enabled);
+		ImGuiWrapper::Property("Color", light.Color, PropertyFlag::ColorProperty);
+		ImGuiWrapper::Property("Intensity", light.Intensity, 0.1f, 0.0f, 10000.0f, PropertyFlag::DragProperty);
+		ImGuiWrapper::Property("Position", light.Position, 0.05f, 0.0f, 0.0f, PropertyFlag::DragProperty);
+		LightRangeProperty(light.Range);
+	}
+	else
+	{
+		EnvMapVulkanSpotLight& light = s_Lights.SpotLights[s_SelectedLightIndex];
+		LightNameProperty(light.Name);
+		ImGuiWrapper::Property("Enabled", light.Enabled);
+		ImGuiWrapper::Property("Color", light.Color, PropertyFlag::ColorProperty);
+		ImGuiWrapper::Property("Intensity", light.Intensity, 0.1f, 0.0f, 10000.0f, PropertyFlag::DragProperty);
+		ImGuiWrapper::Property("Position", light.Position, 0.05f, 0.0f, 0.0f, PropertyFlag::DragProperty);
+		LightRangeProperty(light.Range);
+		ImGuiWrapper::Property("Azimuth", light.Azimuth, 0.5f, -180.0f, 180.0f, PropertyFlag::DragProperty);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Compass direction the spot points to (degrees around the vertical axis, 0 = +Z, 90 = +X)");
+		}
+		ImGuiWrapper::Property("Elevation", light.Elevation, 0.5f, -90.0f, 90.0f, PropertyFlag::DragProperty);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Tilt of the spot (degrees, -90 = straight down, 0 = horizontal)");
+		}
+		// The inner cone always stays inside the outer one: dragging either one past the other moves both
+		if (ImGuiWrapper::Property("Inner Angle", light.InnerAngle, 0.2f, 0.0f, 89.0f, PropertyFlag::DragProperty))
+		{
+			light.OuterAngle = std::max(light.OuterAngle, light.InnerAngle);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Half-angle of the fully lit cone (degrees)");
+		}
+		if (ImGuiWrapper::Property("Outer Angle", light.OuterAngle, 0.2f, 0.1f, 89.0f, PropertyFlag::DragProperty))
+		{
+			light.InnerAngle = std::min(light.InnerAngle, light.OuterAngle);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Half-angle where the light fades out completely (degrees)");
+		}
+		ImGui::Columns(1);
+		ImGui::TextDisabled("Viewport gizmo: 1 moves the light, 2 aims it");
+	}
+	ImGui::Columns(1);
+
+	ImGui::End();
 }
 
 static void OnImGuiRenderMeshes()
@@ -2081,15 +2632,18 @@ void EnvMapVulkanRenderer::Init()
 		const uint32_t frameSet = H2M::VulkanShaderH2M::FrameDescriptorSet;
 		s_Data.FrameDescriptorSet = pbrShader->CreateDescriptorSets(frameSet);
 
-		// Camera and SceneData uniform buffers (written every frame, see UpdateFrameUniforms); the environment maps are
-		// written in SetSceneEnvironment
-		std::array<VkWriteDescriptorSet, 2> writes = { *pbrShader->GetDescriptorSet("Camera", frameSet), *pbrShader->GetDescriptorSet("SceneData", frameSet) };
-		writes[0].dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
-		writes[0].descriptorCount = 1;
-		writes[0].pBufferInfo = &pbrShader->GetUniformBuffer(0, frameSet).Descriptor;
-		writes[1].dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
-		writes[1].descriptorCount = 1;
-		writes[1].pBufferInfo = &pbrShader->GetUniformBuffer(1, frameSet).Descriptor;
+		// Camera, SceneData and Lights uniform buffers (written every frame, see UpdateFrameUniforms); the environment maps
+		// are written in SetSceneEnvironment
+		const char* bufferNames[] = { "Camera", "SceneData", "Lights" };
+		const uint32_t bufferBindings[] = { 0, 1, 5 };
+		std::array<VkWriteDescriptorSet, 3> writes;
+		for (size_t i = 0; i < writes.size(); i++)
+		{
+			writes[i] = *pbrShader->GetDescriptorSet(bufferNames[i], frameSet);
+			writes[i].dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+			writes[i].descriptorCount = 1;
+			writes[i].pBufferInfo = &pbrShader->GetUniformBuffer(bufferBindings[i], frameSet).Descriptor;
+		}
 		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 	}
 
@@ -2119,7 +2673,6 @@ void EnvMapVulkanRenderer::Init()
 
 	s_Data.SceneData.SkyboxLod = 0.0f;
 	Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE; // as in SceneHazelEnvMap (keys 1/2/3/4 switch the mode)
-	s_Data.SceneData.LightDirectionTemp = { 0.5f, 0.5f, 0.5f };
 
 	OnResize(s_ViewportWidth, s_ViewportHeight); // to be removed from VulkanRenderer
 }
@@ -3131,15 +3684,29 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				s_ViewportFBNeedsResize = true;
 			}
 
+			SyncLightSelection();
+			DrawLightGizmos();
+
 			Window* mainWindow = Application::Get()->GetWindow();
 			UpdateImGuizmo(mainWindow);
 
-			// Mouse picking: left click on the scene (not on the gizmo, not with Alt) selects the mesh/submesh under the cursor
+			// Mouse picking: left click on the scene (not on the gizmo, not with Alt) selects the light icon or else the
+			// mesh/submesh under the cursor
 			if (viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
 				!Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 			{
-				glm::vec2 ndc = GetViewportMouseNdc();
-				PickMesh(ndc.x, ndc.y);
+				LightKind lightKind;
+				int lightIndex;
+				if (PickLightIcon(lightKind, lightIndex))
+				{
+					SelectLight(lightKind, lightIndex);
+				}
+				else
+				{
+					glm::vec2 ndc = GetViewportMouseNdc();
+					PickMesh(ndc.x, ndc.y);
+					SelectLight(LightKind::None);
+				}
 			}
 
 			ImGui::End();
@@ -3233,9 +3800,6 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							// SetSkyboxLOD(skyboxLOD);
 						}
 
-						ImGuiWrapper::Property("Light Direction", s_Data.SceneData.LightDirectionTemp, 0.01f, -1.0f, 1.0f, PropertyFlag::DragProperty);
-						ImGuiWrapper::Property("Light Radiance", s_LightRadiance, PropertyFlag::ColorProperty);
-						ImGuiWrapper::Property("Light Multiplier", s_LightMultiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Auto Exposure", s_AutoExposureEnabled);
 						// No drag limits (min = max = 0): the value wraps around, so it can be dragged endlessly in both directions
@@ -3386,6 +3950,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			OnImGuiRenderMeshes();
 			OnImGuiRenderMaterialLibrary();
 			OnImGuiRenderMaterialEditor();
+			OnImGuiRenderLights();
 
 			/**** BEGIN DockSpace menu bar ****/
 
@@ -3841,7 +4406,17 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 			Scene::s_ImGuizmoType = -1;
 	}
 
-	// The gizmo moves the mesh selected in the Meshes panel (or picked with the mouse)
+	// The gizmo moves the selected point or spot light, or else the mesh selected in the Meshes panel (or picked with the mouse)
+	if (Scene::s_ImGuizmoType != -1 && (s_SelectedLightKind == LightKind::Point || s_SelectedLightKind == LightKind::Spot) &&
+		s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+	{
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
+		ManipulateSelectedLight(Scene::s_ImGuizmoType, Input::IsKeyPressed(KeyH2M::LeftControl));
+		return;
+	}
+
 	if (Scene::s_ImGuizmoType == -1 || s_SelectedMeshIndex < 0 || s_SelectedMeshIndex >= (int)s_LoadedMeshes.size() ||
 		s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
 	{
@@ -3891,10 +4466,6 @@ int32_t& EnvMapVulkanRenderer::GetSelectedDrawCall()
 	return s_Data.SelectedDrawCall;
 }
 
-glm::vec3 EnvMapVulkanRenderer::GetLightDirectionTemp()
-{
-	return s_Data.SceneData.LightDirectionTemp;
-}
 
 void EnvMapVulkanRenderer::SetCamera(H2M::CameraH2M& camera)
 {

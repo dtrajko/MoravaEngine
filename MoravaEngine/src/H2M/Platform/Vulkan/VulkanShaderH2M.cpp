@@ -637,8 +637,10 @@ namespace H2M
 
 	VulkanShaderH2M::UniformBufferH2M& VulkanShaderH2M::GetUniformBuffer(uint32_t binding, uint32_t set)
 	{
-		H2M_CORE_ASSERT(m_ShaderDescriptorSets.at(set).UniformBuffers.size() > binding);
-		return m_ShaderDescriptorSets.at(set).UniformBuffers[binding];
+		// Keyed by binding point: bindings don't have to be contiguous (set 0 of the PBR shaders uses 0, 1 and 5)
+		auto& uniformBuffers = m_ShaderDescriptorSets.at(set).UniformBuffers;
+		H2M_CORE_ASSERT(uniformBuffers.find(binding) != uniformBuffers.end());
+		return uniformBuffers.at(binding);
 	}
 
 	static const char* VkShaderStageCachedFileExtension(VkShaderStageFlagBits stage)

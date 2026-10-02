@@ -1959,7 +1959,11 @@ void ImGui_ImplVulkanH_CreateOrResizeWindow(VkInstance instance, VkPhysicalDevic
     check_vk_result(err);
 
     // Transition the images to the correct layout for rendering
-    for (uint32_t i = 0; i < wd->ImageCount; i++)
+    // MoravaEngine patch: only for dynamic rendering, whose barrier in ImGui_ImplVulkan_RenderWindow expects PRESENT_SRC.
+    // The render pass path starts from VK_IMAGE_LAYOUT_UNDEFINED and doesn't need it, and transitioning images that
+    // were never acquired from the swapchain is invalid (validation: "layout transition on presentable VkImage ...
+    // has not been acquired").
+    for (uint32_t i = 0; wd->UseDynamicRendering && i < wd->ImageCount; i++)
     {
         VkImageMemoryBarrier barrier = {};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
