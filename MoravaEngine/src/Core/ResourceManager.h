@@ -6,6 +6,7 @@
 #include "Texture/MoravaTexture.h"
 
 #include <map>
+#include <tuple>
 
 
 class ResourceManager
@@ -26,8 +27,12 @@ public:
 	static inline std::map<std::string, TextureInfo>* GetMaterialInfo() { return &s_MaterialInfo; };
 	static inline std::map<std::string, H2M::RefH2M<MoravaShader>>* GetShaders() { return &s_ShaderCacheByTitle; };
 
-	// Loading Texture2D_H2M
+	// Loading Texture2D_H2M through the texture cache. A file is loaded once per color space: sRGB (color data, e.g. albedo)
+	// and linear (raw data, e.g. roughness) are different GPU formats, so one file can be cached as both.
 	static H2M::RefH2M<H2M::Texture2D_H2M> LoadTexture2D_H2M(std::string filePath, bool sRGB);
+	// Removes the cached textures nobody else uses any more (only the cache holds them), which frees their GPU memory.
+	// The GPU must not be using them: call it when the device is idle. Returns the number of textures released.
+	static uint32_t PurgeUnusedTextures2D();
 
 	static void AddShader(std::string name, H2M::RefH2M<MoravaShader> shader);
 	static H2M::RefH2M<MoravaShader> GetShader(std::string name);
@@ -47,7 +52,16 @@ private:
 	static std::map<std::string, H2M::RefH2M<MoravaTexture>> s_Textures;
 	static std::map<std::string, H2M::RefH2M<Material>> s_Materials;
 
-	static std::map<std::string, H2M::RefH2M<H2M::Texture2D_H2M>> s_HazelTextures2D;
+	// Texture cache key: the file (normalized path, see NormalizeTexturePath) and the color space
+	struct TextureCacheKey
+	{
+		std::string Path;
+		bool SRGB;
+		bool operator<(const TextureCacheKey& other) const { return std::tie(Path, SRGB) < std::tie(other.Path, other.SRGB); }
+	};
+	static std::string NormalizeTexturePath(const std::string& filePath);
+
+	static std::map<TextureCacheKey, H2M::RefH2M<H2M::Texture2D_H2M>> s_HazelTextures2D;
 
 	static std::map<std::string, H2M::RefH2M<MoravaShader>> s_ShaderCacheByTitle;
 

@@ -7,6 +7,8 @@
 #include "EnvMapVulkanRenderer.h"
 #include "EnvMapVulkanMaterialLibrary.h"
 
+#include "Core/ResourceManager.h"
+
 #include "H2M/Platform/Vulkan/VulkanH2M.h"
 #include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -647,12 +649,9 @@ static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 		return;
 	}
 
-	H2M::RefH2M<H2M::Texture2D_H2M> texture;
-	try
-	{
-		texture = H2M::Texture2D_H2M::Create(request.FilePath, EnvMapVulkanMaterial::IsColorMap(request.Slot));
-	}
-	catch (...)
+	// Through the texture cache: an image already loaded (by a model or another material) in this slot's color space is shared
+	H2M::RefH2M<H2M::Texture2D_H2M> texture = ResourceManager::LoadTexture2D_H2M(request.FilePath, EnvMapVulkanMaterial::IsColorMap(request.Slot));
+	if (!texture || !texture->Loaded())
 	{
 		Log::GetLogger()->error("Map '{0}' could not be loaded.", request.FilePath);
 		return;
@@ -1295,7 +1294,15 @@ static void OnImGuiRenderMaterialEditor()
 		}
 		if (ImGui::IsItemHovered())
 		{
-			ImGui::SetTooltip("%s", map ? map->GetPath().c_str() : "Drop an image from the Content Browser here");
+			const char* colorSpace = EnvMapVulkanMaterial::IsColorMap(i) ? "sRGB (color data)" : "linear (raw data)";
+			if (map)
+			{
+				ImGui::SetTooltip("%s\n%s", map->GetPath().c_str(), colorSpace);
+			}
+			else
+			{
+				ImGui::SetTooltip("Drop an image from the Content Browser here\nLoaded as %s", colorSpace);
+			}
 		}
 
 		ImGui::SameLine();
@@ -3268,6 +3275,9 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		LoadEnvironmentMap(filepath);
 	}
 
+	// Set when a change below may leave cached textures unused (a mesh removed, a map replaced or removed, a material deleted)
+	bool texturesMayBeUnused = false;
+
 	// Mesh removal / loading requested from the Meshes panel
 	if (s_PendingRemoveMeshIndex >= 0)
 	{
@@ -3278,6 +3288,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 			s_LoadedMeshes.erase(s_LoadedMeshes.begin() + s_PendingRemoveMeshIndex);
 			s_SelectedMeshIndex = glm::min(s_SelectedMeshIndex, (int)s_LoadedMeshes.size() - 1);
 			s_SelectedSubmeshIndex = -1;
+			texturesMayBeUnused = true;
 		}
 		s_PendingRemoveMeshIndex = -1;
 	}
@@ -3310,12 +3321,25 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	for (const PendingMaterialTexture& request : s_PendingMaterialTextures)
 	{
 		ApplyMaterialTexture(request);
+		texturesMayBeUnused = true;
 	}
 	s_PendingMaterialTextures.clear();
 	if (s_PendingDeleteMaterial)
 	{
 		DeleteMaterial(s_PendingDeleteMaterial);
 		s_PendingDeleteMaterial = H2M::RefH2M<EnvMapVulkanMaterial>();
+		texturesMayBeUnused = true;
+	}
+
+	// Free the GPU memory of textures nothing uses any more. Each change above waited for the device to be idle, and no
+	// command buffer of this frame has been recorded yet, so no frame in flight can still sample them.
+	if (texturesMayBeUnused)
+	{
+		uint32_t released = ResourceManager::PurgeUnusedTextures2D();
+		if (released > 0)
+		{
+			Log::GetLogger()->info("{0} unused texture(s) released", released);
+		}
 	}
 
 	// The aspect ratio must follow the viewport panel, not the window (Scene::OnWindowResize sets the window size),

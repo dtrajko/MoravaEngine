@@ -2,6 +2,9 @@
 
 #include "Texture/TextureLoader.h"
 
+#include <algorithm>
+#include <filesystem>
+
 
 std::map<std::string, std::string> ResourceManager::s_TextureInfo;
 std::map<std::string, TextureInfo> ResourceManager::s_MaterialInfo;
@@ -12,7 +15,7 @@ std::map<std::string, H2M::RefH2M<Material>> ResourceManager::s_Materials;
 float ResourceManager::s_MaterialSpecular = 1.0f;
 float ResourceManager::s_MaterialShininess = 256.0f;
 
-std::map<std::string, H2M::RefH2M<H2M::Texture2D_H2M>> ResourceManager::s_HazelTextures2D;
+std::map<ResourceManager::TextureCacheKey, H2M::RefH2M<H2M::Texture2D_H2M>> ResourceManager::s_HazelTextures2D;
 
 std::map<std::string, H2M::RefH2M<MoravaShader>> ResourceManager::s_ShaderCacheByTitle;
 
@@ -326,31 +329,66 @@ H2M::RefH2M<Material> ResourceManager::HotLoadMaterial(std::string materialName)
     return materialIterator->second;
 }
 
+// Every spelling of a file gives the same key: absolute (relative paths are relative to the working directory), with "." and ".."
+// resolved, forward slashes, and lowercase (Windows paths are not case-sensitive)
+std::string ResourceManager::NormalizeTexturePath(const std::string& filePath)
+{
+    std::error_code error;
+    std::filesystem::path path = std::filesystem::weakly_canonical(std::filesystem::absolute(std::filesystem::path(filePath), error), error);
+    std::string normalized = error ? filePath : path.generic_string();
+
+    std::replace(normalized.begin(), normalized.end(), '\\', '/');
+    std::transform(normalized.begin(), normalized.end(), normalized.begin(), [](unsigned char c) { return (char)std::tolower(c); });
+    return normalized;
+}
+
 H2M::RefH2M<H2M::Texture2D_H2M> ResourceManager::LoadTexture2D_H2M(std::string filePath, bool sRGB)
 {
-    H2M::RefH2M<H2M::Texture2D_H2M> texture;
+    TextureCacheKey key = { NormalizeTexturePath(filePath), sRGB };
 
-    std::map<std::string, H2M::RefH2M<H2M::Texture2D_H2M>>::iterator entry = s_HazelTextures2D.find(filePath);
+    auto entry = s_HazelTextures2D.find(key);
     if (entry != s_HazelTextures2D.end()) {
         // A cache HIT
-        texture = entry->second;
-        // Log::GetLogger()->info("ResourceManager: A texture loaded from the cache [key: '{0}']", filePath);
-    }
-    else {
-        // A cache MISS
-        try
-        {
-            texture = H2M::Texture2D_H2M::Create(filePath, sRGB);
-            s_HazelTextures2D.insert(std::make_pair(filePath, texture));
-            Log::GetLogger()->info("ResourceManager: A texture created and stored in cache [key: '{0}']", filePath);
-        }
-        catch (...)
-        {
-            Log::GetLogger()->warn("Failed to create a texture '{0}'!", filePath);
-        }
+        return entry->second;
     }
 
+    // A cache MISS
+    H2M::RefH2M<H2M::Texture2D_H2M> texture;
+    try
+    {
+        texture = H2M::Texture2D_H2M::Create(filePath, sRGB);
+    }
+    catch (...)
+    {
+        Log::GetLogger()->warn("Failed to create a texture '{0}'!", filePath);
+        return H2M::RefH2M<H2M::Texture2D_H2M>();
+    }
+
+    // A file that could not be read is not cached, so a later request tries again
+    if (texture && texture->Loaded()) {
+        s_HazelTextures2D.insert(std::make_pair(key, texture));
+        Log::GetLogger()->info("ResourceManager: A texture created and stored in cache [key: '{0}', {1}]", key.Path, sRGB ? "sRGB" : "linear");
+    }
     return texture;
+}
+
+uint32_t ResourceManager::PurgeUnusedTextures2D()
+{
+    uint32_t released = 0;
+    for (auto it = s_HazelTextures2D.begin(); it != s_HazelTextures2D.end();)
+    {
+        if (it->second->GetRefCount() == 1) // the cache's own reference
+        {
+            Log::GetLogger()->info("ResourceManager: Texture released from the cache [key: '{0}', {1}]", it->first.Path, it->first.SRGB ? "sRGB" : "linear");
+            it = s_HazelTextures2D.erase(it);
+            released++;
+        }
+        else
+        {
+            ++it;
+        }
+    }
+    return released;
 }
 
 void ResourceManager::AddShader(std::string name, H2M::RefH2M<MoravaShader> shader)
