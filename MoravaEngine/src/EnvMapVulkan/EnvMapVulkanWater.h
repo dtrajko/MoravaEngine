@@ -16,6 +16,19 @@ namespace H2M
 	class Texture2D_H2M;
 }
 
+// std140 layout of the SceneData uniform block (set 0, binding 1, Include/FrameSet.glslh): the camera position, the
+// environment rotation and the water volume the meshes are seen through (off in the scene pass)
+struct EnvMapVulkanSceneDataGPU
+{
+	glm::vec3 CameraPosition = glm::vec3(0.0f);
+	float EnvMapRotation = 0.0f;
+	glm::vec4 WaterVolumeBounds = glm::vec4(0.0f);     // center x, center z, half size x, half size z
+	glm::vec4 WaterVolumeParams = glm::vec4(0.0f);     // x = height, y = 1 when on
+	glm::vec4 WaterVolumeAbsorption = glm::vec4(0.0f); // rgb per meter
+	glm::vec4 WaterVolumeScatter = glm::vec4(0.0f);    // rgb
+};
+static_assert(sizeof(EnvMapVulkanSceneDataGPU) == 80, "EnvMapVulkanSceneDataGPU must match SceneData in Include/FrameSet.glslh");
+
 /**
  * The water plane of SceneEnvMapVulkan: one flat, axis-aligned rectangle at a height (Resources/Shaders/Water.glsl).
  * There is at most one per scene; it exists while Enabled is set (Add Water / Remove Water in the Water panel).
@@ -41,11 +54,17 @@ struct EnvMapVulkanWaterSettings
 
 	// Seeing into the water (refraction): light is absorbed along its path through the water, red first (Beer-Lambert)
 	glm::vec3 Transmittance = glm::vec3(0.55f, 0.85f, 0.88f); // the part of each color that is left after Clarity meters
-	float Clarity = 1.5f;               // meters (larger: clearer water, the bottom stays visible deeper)
+	float Clarity = 4.0f;               // meters (larger: clearer water, the bottom stays visible deeper)
 	float RefractionStrength = 1.0f;    // how much the waves bend the view into the water
 	float EdgeSoftness = 0.3f;          // meters of water over which the surface fades in at the shore
 	float FoamAmount = 0.6f;            // foam along the shore and around objects (0: none)
 	float FoamWidth = 0.4f;             // meters of water depth that get foam
+
+	// Seen from below: 0 is physical (the sky only within Snell's window, about 49 degrees around the vertical, a mirror
+	// of the water outside it); at 0.5 the window covers the whole sky and only grazing views are mirrored; at 1 the
+	// mirror fades to a tenth too, so the surface is see-through up to the horizon. The default 0.48 looks natural:
+	// nearly the whole sky, with a trace of the mirror left near the horizon.
+	float TransparencyFromBelow = 0.48f;
 
 	// Planar reflection: the scene drawn again from the camera mirrored in the water plane (the environment map fills in
 	// where that image has nothing: the sky, and what is outside the view)
@@ -69,6 +88,8 @@ struct EnvMapVulkanWaterSettings
  * its per-frame descriptor set (set 0 with the mirrored camera); the caller binds it and draws the meshes with the usual
  * pipelines; EndReflectionPass ends it. The mirrored view is also flipped vertically: a mirror reverses the winding of
  * the triangles, the flip turns it back, so back-face culling keeps working (the water samples the image flipped).
+ * From above the water it holds what is above the surface; from under the water what is under it (the mirror the
+ * surface is outside Snell's window), with the water between the surface and each mesh applied by the PBR shaders.
  */
 class EnvMapVulkanWater
 {
@@ -87,7 +108,7 @@ public:
 	void Update(const EnvMapVulkanWaterSettings& settings, float deltaTime, const glm::mat4& view, const glm::mat4& projection,
 		const glm::vec3& cameraPosition, float envMapRotation, VkDescriptorSet frameDescriptorSet);
 
-	// This frame draws the planar reflection (it is enabled, and the camera is above the water)
+	// This frame draws the planar reflection (it is enabled; from above the water or from under it)
 	bool IsReflectionActive() const { return m_ReflectionActive; }
 	// Begins the reflection render pass (outside any render pass) and returns the reflection's per-frame set (set 0)
 	VkDescriptorSet BeginReflectionPass(VkCommandBuffer commandBuffer);
@@ -95,11 +116,16 @@ public:
 	// Outside a render pass: copies the scene framebuffer's color and depth into the textures the water samples, and leaves
 	// the framebuffer's attachments in the layouts its continue render pass expects
 	void CopyScene(VkCommandBuffer commandBuffer, H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuffer);
+	// Inside the scene's continue render pass, before Record: the water volume over the scene (a full-screen pass, see
+	// WaterFog.glsl): the underwater fog, and the water seen from the side or across the waterline
+	void RecordVolume(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet);
 	// Draws the water inside the scene's render pass; frameDescriptorSet is the per-frame set (set 0)
 	void Record(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet, const EnvMapVulkanWaterSettings& settings);
 
 private:
 	H2M::RefH2M<H2M::PipelineH2M> m_Pipeline;
+	H2M::RefH2M<H2M::PipelineH2M> m_VolumePipeline;              // WaterFog.glsl
+	H2M::RefH2M<H2M::VertexBufferH2M> m_FullscreenTriangle;     // for the volume pass
 	H2M::RefH2M<H2M::VertexBufferH2M> m_VertexBuffer;
 	H2M::RefH2M<H2M::IndexBufferH2M> m_IndexBuffer;
 	H2M::RefH2M<H2M::Texture2D_H2M> m_NormalMap;

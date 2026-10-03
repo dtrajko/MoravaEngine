@@ -226,6 +226,7 @@ float DistanceAttenuation(float distance, float range)
 }
 
 #include "Shadows.glslh"
+#include "WaterVolume.glslh"
 
 
 // Shadows Only (Lights panel): the selected light's shadow, white = lit, black = in shadow, dark gray = the light doesn't
@@ -383,6 +384,18 @@ void main()
 	vec3 emissive = u_MaterialUniforms.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_MaterialUniforms.EmissiveIntensity : vec3(0.0);
 
 	color = vec4(lightContribution + iblContribution * ao + emissive, 1.0);
+
+	// The water between the camera and the mesh, when this pass has it (the water's reflection pass under the water)
+	if (u_WaterVolumeParams.y > 0.5)
+	{
+		vec3 toMesh = Input.WorldPosition - u_CameraPosition;
+		float distance = length(toMesh);
+		if (distance > 0.0)
+		{
+			color.rgb = ApplyWaterVolumeTo(color.rgb, u_CameraPosition, toMesh / distance, distance, u_WaterVolumeParams.x,
+				u_WaterVolumeBounds, u_WaterVolumeAbsorption.rgb, u_WaterVolumeScatter.rgb);
+		}
+	}
 	if (u_ShowCascades > 0.5 && u_ShadowsEnabled > 0.5)
 	{
 		color.rgb *= CascadeDebugColor(Input.WorldPosition);

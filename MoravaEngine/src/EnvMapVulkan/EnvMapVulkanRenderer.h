@@ -57,6 +57,8 @@ public:
 	static void RenderSkybox(VkCommandBuffer commandBuffer);
 
 	static void Draw(H2M::CameraH2M* camera); // TODO: there should be no parameters
+	// The environment map (HDR) loaded at startup: set by the scene before Init (SceneEnvMapVulkan, from its user preferences)
+	static void SetEnvironmentMapFile(const std::string& filepath);
 	static void ViewportCompositePass(VkCommandBuffer commandBuffer);
 	static void RenderGrid(VkCommandBuffer commandBuffer);
 	static void GeometryPass();

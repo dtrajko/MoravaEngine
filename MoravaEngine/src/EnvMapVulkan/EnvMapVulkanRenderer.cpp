@@ -827,18 +827,14 @@ static void UpdateFrameUniforms()
 	memcpy(ubPtr, &viewProjection, sizeof(glm::mat4));
 	shader->UnmapUniformBuffer(0, frameSet);
 
-	// binding 1: SceneData (fragment stage), std140: vec3 u_CameraPosition, float u_EnvMapRotation
-	struct SceneDataUB
-	{
-		glm::vec3 CameraPosition;
-		float EnvMapRotation;
-	};
-	SceneDataUB ub;
+	// binding 1: SceneData (fragment stage), see EnvMapVulkanSceneDataGPU
+	// (the water volume stays off: in the scene pass the water's full-screen pass adds it, see EnvMapVulkanWater)
+	EnvMapVulkanSceneDataGPU ub;
 	ub.CameraPosition = camera.GetPosition();
 	ub.EnvMapRotation = s_EnvMapRotation;
 
 	ubPtr = shader->MapUniformBuffer(1, frameSet);
-	memcpy(ubPtr, &ub, sizeof(SceneDataUB));
+	memcpy(ubPtr, &ub, sizeof(ub));
 	shader->UnmapUniformBuffer(1, frameSet);
 
 	// binding 5: Lights (fragment stage), see EnvMapVulkanLightsGPU
@@ -2137,12 +2133,26 @@ static void OnImGuiRenderWater()
 	ImGui::Columns(1);
 
 	ImGui::Separator();
+	ImGui::Text("Under the Water");
+	ImGui::Columns(2);
+	ImGuiWrapper::Property("Transparency", water.TransparencyFromBelow, 0.0f, 1.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The surface seen from under the water. 0 is physical: the sky shows only within Snell's window\n"
+			"(about 49 degrees around the vertical), outside it the surface mirrors the water below.\n"
+			"0.5: the window covers the whole sky (only grazing views are mirrored); 1: the mirror fades too.\n"
+			"How far you see through the water itself is its Clarity (Into the Water).");
+	}
+	ImGui::Columns(1);
+
+	ImGui::Separator();
 	ImGui::Text("Reflection");
 	ImGui::Columns(2);
 	ImGuiWrapper::Property("Planar Reflection", water.PlanarReflection);
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip("The scene reflected in the water (drawn a second time, from the camera mirrored in the water).\n"
+		ImGui::SetTooltip("The scene reflected in the water (drawn a second time, from the camera mirrored in the water);\n"
+			"from under the water, the mirror the surface is outside Snell's window.\n"
 			"Off: only the environment map is reflected");
 	}
 	ImGui::Text("Resolution");
@@ -3574,9 +3584,13 @@ void EnvMapVulkanRenderer::Init()
 	// s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
 	// s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
 	// s_EnvMapFilename = "Textures/HDR/newport_loft.hdr";
-	// An outdoor map with a real sun (a compact disc, about 7,000x brighter than anything else), at which the sun is
-	// aligned at startup (see Draw)
-	s_EnvMapFilename = "Textures/HDR/rooitou_park_4k.hdr";
+	// The scene's choice (SetEnvironmentMapFile, from SceneEnvMapVulkan's user preferences); without one, an outdoor map
+	// with a real sun (a compact disc, about 7,000x brighter than anything else). A real sun is extracted and the sun light
+	// aligned to it at startup (see Draw).
+	if (s_EnvMapFilename.empty())
+	{
+		s_EnvMapFilename = "Textures/HDR/rooitou_park_4k.hdr";
+	}
 	s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap(s_EnvMapFilename);
 
 	s_Data.BRDFLut = H2M::Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga", false);
@@ -3639,6 +3653,11 @@ void EnvMapVulkanRenderer::Init()
 	Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE; // as in SceneHazelEnvMap (keys 1/2/3/4 switch the mode)
 
 	OnResize(s_ViewportWidth, s_ViewportHeight); // to be removed from VulkanRenderer
+}
+
+void EnvMapVulkanRenderer::SetEnvironmentMapFile(const std::string& filepath)
+{
+	s_EnvMapFilename = filepath;
 }
 
 void EnvMapVulkanRenderer::Shutdown()
@@ -4353,6 +4372,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 			vkCmdSetViewport(drawCommandBuffer, 0, 1, &viewport);
 			vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
+			s_Water.RecordVolume(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0]); // underwater fog, the water seen from the side
 			s_Water.Record(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], s_WaterSettings);
 		}
 

@@ -7,8 +7,10 @@
 //   first (Beer-Lambert), and the water body scatters its own color into the view (more of it the more water)
 // - the sun: a GGX highlight on the waves, in the sun's shadow where something shadows the water
 // - edges: the surface fades in over the first centimeters of water (no hard line at the shore), with foam there
+// - from below: Snell's window (the sky, squeezed into the cone light can leave the water through), total internal
+//   reflection outside it, and the water between the camera and the surface (see Include/WaterCommon.glslh)
 // Descriptor sets: set 0 is the per-frame set shared with the PBR shaders (declared identically, see
-// Include/FrameCamera.glslh and Include/FrameSet.glslh); set 1 is the water's own (normal map, settings, scene copy).
+// Include/FrameCamera.glslh and Include/FrameSet.glslh); set 1 is the water's own (Include/WaterCommon.glslh).
 #type vertex
 #version 450 core
 
@@ -43,44 +45,7 @@ layout (location = 0) out vec4 color;
 #include "Include/FrameSet.glslh"
 #include "Include/Shadows.glslh"
 
-// Set 1: the water's own resources
-layout (set = 1, binding = 0) uniform sampler2D u_WaterNormalMap; // x in R, up in B, z in G
-layout (std140, set = 1, binding = 1) uniform WaterSettings
-{
-	vec4 u_WaveOffsets;     // offset 0: xy = normal map layer 1 offset, zw = layer 2 (in normal map tiles, scrolled every frame)
-	vec3 u_ScatterColor;    // offset 16: the color of the light the water body sends back up (darker = deeper, clearer water)
-	float u_Roughness;      // offset 28: of the surface (the sun highlight and the blur of the reflection)
-	float u_WaveScale1;     // offset 32: world size of one tile of normal map layer 1
-	float u_WaveScale2;     // offset 36: of layer 2
-	float u_WaveStrength;   // offset 40: steepness of the waves (scales the normals' slope)
-	float u_ReflectionStrength; // offset 44: multiplies the environment reflection (1 = physically based)
-	vec4 u_DepthParams;     // offset 48: depth -> view space z: z = y / (depth * z - x); w = the water height
-	vec3 u_Absorption;      // offset 64: per meter, per color
-	float u_RefractionStrength; // offset 76: how much the waves bend the view into the water
-	float u_EdgeSoftness;   // offset 80: meters of water over which the surface fades in
-	float u_FoamAmount;     // offset 84: 0 = no foam
-	float u_FoamWidth;      // offset 88: meters of water that get foam
-	float u_PlanarReflection;     // offset 92: 1 = u_ReflectionTexture holds this frame's reflection
-	float u_ReflectionDistortion; // offset 96: how much the waves bend the reflection
-	float u_SettingsPadding0;     // offsets 100..111: the block is 112 bytes, as WaterSettingsUB
-	float u_SettingsPadding1;
-	float u_SettingsPadding2;
-};
-// The opaque scene before the water (copied from the scene framebuffer every frame)
-layout (set = 1, binding = 2) uniform sampler2D u_SceneColor;
-layout (set = 1, binding = 3) uniform sampler2D u_SceneDepth;
-// The planar reflection: the scene seen by the camera mirrored in the water plane, flipped vertically; transparent where
-// nothing was drawn (the sky: the environment map fills in)
-layout (set = 1, binding = 4) uniform sampler2D u_ReflectionTexture;
-
-vec3 RotateVectorAboutY(float angle, vec3 vec)
-{
-	angle = radians(angle);
-	mat3x3 rotationMatrix = { vec3(cos(angle), 0.0, sin(angle)),
-	                          vec3(0.0, 1.0, 0.0),
-	                          vec3(-sin(angle), 0.0, cos(angle)) };
-	return rotationMatrix * vec;
-}
+#include "Include/WaterCommon.glslh"
 
 // GGX / Trowbridge-Reitz normal distribution (alpha = roughness^2)
 float DistributionGGX(float NdotH, float roughness)
@@ -125,15 +90,84 @@ void main()
 {
 	vec3 N = WaveNormal(v_WorldPosition.xz);
 	vec3 V = normalize(u_CameraPosition - v_WorldPosition);
-	bool fromBelow = V.y < 0.0;
-	// Seen from below, the surface faces down (the underwater look comes in a later phase)
-	if (fromBelow)
-	{
-		N = -N;
-	}
-	float NdotV = max(dot(N, V), Epsilon);
 	float roughness = max(u_Roughness, 0.02);
 	vec3 up = vec3(0.0, 1.0, 0.0);
+
+	// Seen from below (the camera under the water): the surface faces down, toward the camera
+	if (V.y < 0.0)
+	{
+		// Half the wave slope: near the edge of Snell's window every small tilt switches between the sky and the mirror,
+		// and the full slope breaks the window into blotches
+		N = -normalize(vec3(N.x * 0.5, N.y, N.z * 0.5));
+		vec3 I = -V; // from the camera up to the surface
+		vec2 waveSlope = WaveNormal(v_WorldPosition.xz).xz; // the full slope of the waves (N above is calmed for the window)
+		vec2 belowUV = gl_FragCoord.xy / vec2(textureSize(u_SceneColor, 0));
+		float distanceToSurface = length(u_CameraPosition - v_WorldPosition);
+
+		// The mirror: outside Snell's window the surface reflects all light back down (total internal reflection), so it
+		// shows the scene under the water, mirrored: the planar reflection of this frame (the mirrored meshes, already
+		// dimmed by the water between them and the surface), the water's own light where it has nothing
+		vec3 waterLight = WaterScatteredLight(0.0);
+		vec3 mirror = waterLight;
+		if (u_PlanarReflection > 0.5)
+		{
+			float surfaceDepth = ViewDepth(gl_FragCoord.z);
+			vec2 reflectionBend = N.xz * u_ReflectionDistortion * 0.03 / max(surfaceDepth * 0.1, 1.0);
+			vec2 reflectionUV = clamp(vec2(belowUV.x, 1.0 - belowUV.y) + reflectionBend, vec2(0.001), vec2(0.999));
+			vec4 planar = texture(u_ReflectionTexture, reflectionUV);
+			mirror = mix(waterLight, planar.rgb, clamp(planar.a, 0.0, 1.0));
+		}
+		vec3 surfaceColor = mirror;
+
+		// Snell's law: light gets out of the water (index of refraction 1.33) only within about 49 degrees of the vertical
+		// (Snell's window). Transparency from Below, up to 0.5, lowers the index toward 1 (no bending): the window widens
+		// until only grazing views are mirrored, as any surface is at a grazing angle; from 0.5 to 1 the mirror itself
+		// fades (to a tenth of its physical strength), so the surface is see-through up to the horizon.
+		float eta = mix(1.33, 1.0, clamp(u_TransparencyFromBelow * 2.0, 0.0, 1.0));
+		float mirrorStrength = 1.0 - 0.9 * clamp(u_TransparencyFromBelow * 2.0 - 1.0, 0.0, 1.0);
+		vec3 transmitted = refract(I, N, eta);
+		if (dot(transmitted, transmitted) > 1e-6)
+		{
+			// The sky in the refracted direction (the whole sky squeezed into the window), and what stands above the
+			// water from the scene copy (bent by the waves) in front of it
+			int levels = textureQueryLevels(u_EnvRadianceTex);
+			vec3 above = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, transmitted), roughness * levels).rgb;
+			vec2 bentUV = clamp(belowUV + N.xz * u_RefractionStrength * 0.04, vec2(0.0), vec2(1.0));
+			if (texture(u_SceneDepth, bentUV).r < 1.0)
+			{
+				above = texture(u_SceneColor, bentUV).rgb;
+			}
+			// Fresnel on the way out of the denser medium: Schlick with the angle on the air side, rising to 1 at the
+			// edge of the window
+			float F = FresnelWater(dot(transmitted, -N)) * mirrorStrength;
+			surfaceColor = mix(above, mirror, F);
+		}
+		// The sun glittering through the surface: where the sun shows at this transparency (refracted with the window's
+		// index), each wave facet bends the view by its own slope, so the sun breaks into glints that move with the waves.
+		// A GGX lobe a few degrees wide (it integrates to the sun's irradiance); shadowed where something above the water
+		// hides the sun; dimmed by the light the surface reflects back at that angle.
+		if (u_Sun.Intensity > 0.0 && u_Sun.Direction.y > 0.0)
+		{
+			vec3 flatTransmitted = refract(I, vec3(0.0, -1.0, 0.0), eta);
+			if (dot(flatTransmitted, flatTransmitted) > 1e-6)
+			{
+				vec3 glintDirection = normalize(flatTransmitted + vec3(waveSlope.x, 0.0, waveSlope.y) * (WaterIndexOfRefraction - 1.0) * 1.5);
+				float leaving = 1.0 - FresnelWater(flatTransmitted.y) * mirrorStrength;
+				float alignment = max(dot(glintDirection, u_Sun.Direction), 0.0);
+				surfaceColor += u_Sun.Color * u_Sun.Intensity * SunShadow(v_WorldPosition, up) * DistributionGGX(alignment, max(roughness, 0.2)) * leaving;
+			}
+		}
+
+		// The water between the camera and the surface
+		color = vec4(ApplyWaterVolume(surfaceColor, u_CameraPosition, I, distanceToSurface), 1.0);
+		if (u_ShadowDebug.x > 0.5)
+		{
+			color = vec4(vec3(0.2), 1.0); // Shadows Only: not lit by the lights
+		}
+		return;
+	}
+
+	float NdotV = max(dot(N, V), Epsilon);
 
 	// How much water the view crosses before it reaches the scene behind the surface: the scene's view depth here minus
 	// the surface's, along the view ray (both are view space depths, so their ratio scales the distance to the surface)
@@ -157,8 +191,7 @@ void main()
 		refractedDepth = sceneDepth;
 	}
 	vec3 refracted = texture(u_SceneColor, refractedUV).rgb;
-	// Seen from below: the scene above the surface, no water between (the underwater fog is a later phase)
-	float refractedPath = fromBelow ? 0.0 : max(refractedDepth - surfaceDepth, 0.0) * pathPerDepth;
+	float refractedPath = max(refractedDepth - surfaceDepth, 0.0) * pathPerDepth;
 
 	// The sun: shadowed like any surface (with the flat surface normal: the waves don't move the shadow)
 	vec3 sunRadiance = vec3(0.0);
@@ -183,7 +216,7 @@ void main()
 
 	// The planar reflection over it: the mirrored scene at this point of the screen (the image is flipped vertically),
 	// bent by the waves like the refraction; its alpha says where it has something (its edges blend into the sky)
-	if (u_PlanarReflection > 0.5 && !fromBelow)
+	if (u_PlanarReflection > 0.5)
 	{
 		vec2 reflectionBend = N.xz * u_ReflectionDistortion * 0.03 / max(surfaceDepth * 0.1, 1.0);
 		vec2 reflectionUV = clamp(vec2(screenUV.x, 1.0 - screenUV.y) + reflectionBend, vec2(0.001), vec2(0.999));
@@ -208,7 +241,7 @@ void main()
 	vec3 surface = F * reflection + (1.0 - F) * underwater + specular;
 
 	// The depth of water under the surface (vertical), for the foam and the edges
-	float verticalDepth = fromBelow ? 1e6 : waterPath * max(V.y, 0.0);
+	float verticalDepth = waterPath * max(V.y, 0.0);
 
 	// Foam where the water is shallow (the shore, around objects in the water): the wave pattern decides where, so it
 	// breaks up and moves with the waves; lit like a white, rough surface
@@ -221,7 +254,7 @@ void main()
 	}
 
 	// Edges: over the first EdgeSoftness of water the surface fades into the scene behind it (no hard line at the shore)
-	float edge = fromBelow ? 1.0 : clamp(verticalDepth / u_EdgeSoftness, 0.0, 1.0);
+	float edge = clamp(verticalDepth / u_EdgeSoftness, 0.0, 1.0);
 	color = vec4(mix(texture(u_SceneColor, screenUV).rgb, surface, edge), 1.0);
 
 	// Shadows Only (Lights panel): the sun's shadow on the water, gray for the other lights (they don't light the water yet)

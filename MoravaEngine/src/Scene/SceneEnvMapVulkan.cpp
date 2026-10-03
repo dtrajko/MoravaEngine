@@ -14,6 +14,7 @@
 #include "Core/Timer.h"
 #include "Core/Util.h"
 #include "EnvMapVulkan/EnvMapVulkanEditorLayer.h"
+#include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "Mesh/Block.h"
 #include "Shader/MoravaShader.h"
 
@@ -119,6 +120,7 @@ SceneEnvMapVulkan::SceneEnvMapVulkan()
 
     H2M::RefH2M<H2M::UserPreferencesH2M> userPreferences = H2M::RefH2M<H2M::UserPreferencesH2M>::Create();
     userPreferences->FilePath = "Textures/HDR/umhlanga_sunrise_4k.hdr";
+    EnvMapVulkanRenderer::SetEnvironmentMapFile(userPreferences->FilePath); // the scene is created before the renderer's Init
     m_EnvMapVulkanEditorLayer = new EnvMapVulkanEditorLayer(userPreferences);
 
     SetupMeshes();

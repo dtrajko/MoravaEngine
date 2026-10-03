@@ -45,6 +45,13 @@ layout (std140, set = 0, binding = 1) uniform SceneData
 {
 	vec3 u_CameraPosition;    // offset 0
 	float u_EnvMapRotation;   // offset 12: degrees around Y, applied to the environment lookups
+	// The water volume the meshes are seen through in this pass (Include/WaterVolume.glslh). Off in the scene pass (there
+	// a full-screen pass adds it, WaterFog.glsl); on in the water's reflection pass under the water, whose mirrored camera
+	// is above the surface: the water its rays cross is the way from the surface down to the mirrored mesh.
+	vec4 u_WaterVolumeBounds;     // offset 16: the water rectangle: center x, center z, half size x, half size z
+	vec4 u_WaterVolumeParams;     // offset 32: x = the water height, y = 1 when the volume is on
+	vec4 u_WaterVolumeAbsorption; // offset 48: rgb, per meter
+	vec4 u_WaterVolumeScatter;    // offset 64: rgb, the water's scatter color
 };
 layout (set = 0, binding = 2) uniform samplerCube u_EnvRadianceTex;
 layout (set = 0, binding = 3) uniform samplerCube u_EnvIrradianceTex;

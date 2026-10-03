@@ -39,9 +39,12 @@ struct WaterSettingsUB
 	float FoamWidth;
 	float PlanarReflection;    // 1: the planar reflection image of this frame is valid
 	float ReflectionDistortion;
-	float Padding[3];
+	float TransparencyFromBelow;
+	float Padding[2];
+	glm::mat4 InverseViewProjection; // the camera's clip space -> world (the volume pass rebuilds positions from depth)
+	glm::vec4 WaterBounds;           // the rectangle: center x, center z, half size x, half size z
 };
-static_assert(sizeof(WaterSettingsUB) == 112, "WaterSettingsUB must match the std140 layout of WaterSettings in Water.glsl");
+static_assert(sizeof(WaterSettingsUB) == 192, "WaterSettingsUB must match the std140 layout of WaterSettings in Include/WaterCommon.glslh");
 
 static constexpr uint32_t WaterSet = 1; // the water's own descriptor set (set 0 is the per-frame set)
 static constexpr uint32_t FrameSet = 0; // the per-frame set (the reflection's own, with the mirrored camera)
@@ -113,6 +116,12 @@ static VkImageMemoryBarrier ImageBarrier(VkImage image, VkImageAspectFlags aspec
 	return barrier;
 }
 
+// Beer-Lambert: Transmittance is left after Clarity meters, so the absorption per meter is -ln(Transmittance) / Clarity
+static glm::vec3 GetAbsorption(const EnvMapVulkanWaterSettings& settings)
+{
+	return -glm::log(glm::clamp(settings.Transmittance, glm::vec3(0.001f), glm::vec3(1.0f))) / std::max(settings.Clarity, 0.01f);
+}
+
 glm::mat4 EnvMapVulkanWaterSettings::GetTransform() const
 {
 	return glm::translate(glm::mat4(1.0f), glm::vec3(Center.x, Height, Center.y)) * glm::scale(glm::mat4(1.0f), glm::vec3(Size.x, 1.0f, Size.y));
@@ -134,6 +143,15 @@ void EnvMapVulkanWater::Create(H2M::RefH2M<H2M::FramebufferH2M> targetFramebuffe
 	pipelineSpecification.RenderPass = H2M::RenderPassH2M::Create(renderPassSpec);
 	pipelineSpecification.DebugName = "Water";
 	m_Pipeline = H2M::PipelineH2M::Create(pipelineSpecification);
+
+	// The volume pass: a full-screen triangle over the whole image (no depth test: it rewrites every pixel from the copy)
+	pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("WaterFog");
+	pipelineSpecification.DepthTest = false;
+	pipelineSpecification.DepthWrite = false;
+	pipelineSpecification.DebugName = "WaterVolume";
+	m_VolumePipeline = H2M::PipelineH2M::Create(pipelineSpecification);
+	glm::vec3 triangle[3] = { { -1.0f, -1.0f, 0.0f }, { 3.0f, -1.0f, 0.0f }, { -1.0f, 3.0f, 0.0f } };
+	m_FullscreenTriangle = H2M::VertexBufferH2M::Create(triangle, sizeof(triangle));
 
 	// A unit square in XZ, facing up (counter-clockwise seen from above)
 	glm::vec3 vertices[4] = { { -0.5f, 0.0f, -0.5f }, { -0.5f, 0.0f, 0.5f }, { 0.5f, 0.0f, 0.5f }, { 0.5f, 0.0f, -0.5f } };
@@ -202,7 +220,7 @@ void EnvMapVulkanWater::CreateReflection()
 	H2M::RefH2M<H2M::VulkanShaderH2M> pbrShader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
 	m_ReflectionFrameSet = pbrShader->CreateDescriptorSets(FrameSet);
 	CreateUniformBuffer(m_ReflectionCamera, sizeof(glm::mat4));
-	CreateUniformBuffer(m_ReflectionSceneData, sizeof(glm::vec4));
+	CreateUniformBuffer(m_ReflectionSceneData, sizeof(EnvMapVulkanSceneDataGPU));
 	std::array<VkWriteDescriptorSet, 2> writes;
 	writes[0] = *pbrShader->GetDescriptorSet("Camera", FrameSet);
 	writes[0].dstSet = m_ReflectionFrameSet.DescriptorSets[0];
@@ -266,6 +284,8 @@ void EnvMapVulkanWater::Destroy()
 		m_DepthSampler = VK_NULL_HANDLE;
 	}
 	m_Pipeline = H2M::RefH2M<H2M::PipelineH2M>();
+	m_VolumePipeline = H2M::RefH2M<H2M::PipelineH2M>();
+	m_FullscreenTriangle = H2M::RefH2M<H2M::VertexBufferH2M>();
 	m_VertexBuffer = H2M::RefH2M<H2M::VertexBufferH2M>();
 	m_IndexBuffer = H2M::RefH2M<H2M::IndexBufferH2M>();
 	m_NormalMap = H2M::RefH2M<H2M::Texture2D_H2M>();
@@ -366,8 +386,10 @@ void EnvMapVulkanWater::WriteSceneCopyDescriptors()
 void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float deltaTime, const glm::mat4& view, const glm::mat4& projection,
 	const glm::vec3& cameraPosition, float envMapRotation, VkDescriptorSet frameDescriptorSet)
 {
-	// Planar reflection: only from above the water (from below, the surface mirrors the underwater scene: a later phase)
-	m_ReflectionActive = settings.PlanarReflection && cameraPosition.y > settings.Height;
+	// Planar reflection: from above the water what is above the surface; from under the water what is under it (the
+	// surface is a mirror there outside Snell's window)
+	const bool cameraBelow = cameraPosition.y < settings.Height;
+	m_ReflectionActive = settings.PlanarReflection;
 	if (m_ReflectionActive)
 	{
 		uint32_t divisor = settings.ReflectionDivisor == 1 || settings.ReflectionDivisor == 4 ? settings.ReflectionDivisor : 2;
@@ -384,10 +406,11 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 		glm::mat4 reflectedView = view * mirror;
 
 		// Oblique near plane (Lengyel, "Oblique View Frustum Depth Projection and Clipping"): the near plane becomes the
-		// water plane, so nothing under the water gets into the reflection. Vulkan clips at depth 0, so the plane goes to
-		// clip z = 0; the far plane is kept through the far corner of the frustum on the side the plane faces. The plane
-		// is a few centimeters under the surface, so things standing in the water reflect down to the waterline.
-		glm::vec4 plane = glm::vec4(0.0f, 1.0f, 0.0f, -(h - 0.03f)); // keeps y >= h - 0.03
+		// water plane, so nothing on the camera's side of the water gets into the reflection. Vulkan clips at depth 0, so
+		// the plane goes to clip z = 0; the far plane is kept through the far corner of the frustum on the side the plane
+		// faces. The plane is a few centimeters past the surface, so things standing in the water reflect to the waterline.
+		glm::vec4 plane = cameraBelow ? glm::vec4(0.0f, -1.0f, 0.0f, h + 0.03f)  // keeps y <= h + 0.03
+		                              : glm::vec4(0.0f, 1.0f, 0.0f, -(h - 0.03f)); // keeps y >= h - 0.03
 		glm::vec4 C = glm::transpose(glm::inverse(reflectedView)) * plane; // in the mirrored camera's view space
 		glm::mat4 obliqueProjection = projection;
 		auto signOf = [](float v) { return v >= 0.0f ? 1.0f : -1.0f; };
@@ -406,8 +429,19 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 		// the image flipped)
 		glm::mat4 viewProjection = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, -1.0f, 1.0f)) * obliqueProjection * reflectedView;
 		WriteUniformBuffer(m_ReflectionCamera, &viewProjection, sizeof(glm::mat4));
-		glm::vec4 sceneData = glm::vec4(cameraPosition.x, 2.0f * h - cameraPosition.y, cameraPosition.z, envMapRotation);
-		WriteUniformBuffer(m_ReflectionSceneData, &sceneData, sizeof(glm::vec4));
+		// The mirrored camera; under the water also the water volume, so the PBR shaders dim each mirrored mesh by the water
+		// between it and the surface (the rays of the mirrored camera, above the surface, cross exactly that water)
+		EnvMapVulkanSceneDataGPU sceneData;
+		sceneData.CameraPosition = glm::vec3(cameraPosition.x, 2.0f * h - cameraPosition.y, cameraPosition.z);
+		sceneData.EnvMapRotation = envMapRotation;
+		if (cameraBelow)
+		{
+			sceneData.WaterVolumeBounds = glm::vec4(settings.Center.x, settings.Center.y, settings.Size.x * 0.5f, settings.Size.y * 0.5f);
+			sceneData.WaterVolumeParams = glm::vec4(h, 1.0f, 0.0f, 0.0f);
+			sceneData.WaterVolumeAbsorption = glm::vec4(GetAbsorption(settings), 0.0f);
+			sceneData.WaterVolumeScatter = glm::vec4(settings.ScatterColor, 0.0f);
+		}
+		WriteUniformBuffer(m_ReflectionSceneData, &sceneData, sizeof(sceneData));
 
 		// The rest of set 0 (environment maps, BRDF LUT, lights, shadows) as in the main per-frame set
 		std::array<VkCopyDescriptorSet, 8> copies;
@@ -446,14 +480,17 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 	// z = B / (depth C - A). The depth buffer holds the normalized device depth as it is (Vulkan doesn't remap it).
 	ub.DepthParams = glm::vec4(projection[2][2], projection[3][2], projection[2][3], settings.Height);
 	// Beer-Lambert: Transmittance is left after Clarity meters, so the absorption per meter is -ln(Transmittance) / Clarity
-	ub.Absorption = -glm::log(glm::clamp(settings.Transmittance, glm::vec3(0.001f), glm::vec3(1.0f))) / std::max(settings.Clarity, 0.01f);
+	ub.Absorption = GetAbsorption(settings);
 	ub.RefractionStrength = settings.RefractionStrength;
 	ub.EdgeSoftness = std::max(settings.EdgeSoftness, 0.001f);
 	ub.FoamAmount = settings.FoamAmount;
 	ub.FoamWidth = std::max(settings.FoamWidth, 0.001f);
 	ub.PlanarReflection = m_ReflectionActive ? 1.0f : 0.0f;
 	ub.ReflectionDistortion = settings.ReflectionDistortion;
-	ub.Padding[0] = ub.Padding[1] = ub.Padding[2] = 0.0f;
+	ub.TransparencyFromBelow = glm::clamp(settings.TransparencyFromBelow, 0.0f, 1.0f);
+	ub.Padding[0] = ub.Padding[1] = 0.0f;
+	ub.InverseViewProjection = glm::inverse(projection * view);
+	ub.WaterBounds = glm::vec4(settings.Center.x, settings.Center.y, settings.Size.x * 0.5f, settings.Size.y * 0.5f);
 
 	H2M::RefH2M<H2M::VulkanShaderH2M> shader = m_Pipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>();
 	void* data = shader->MapUniformBuffer(1, WaterSet);
@@ -539,6 +576,20 @@ VkDescriptorSet EnvMapVulkanWater::BeginReflectionPass(VkCommandBuffer commandBu
 void EnvMapVulkanWater::EndReflectionPass(VkCommandBuffer commandBuffer)
 {
 	vkCmdEndRenderPass(commandBuffer); // leaves the image in SHADER_READ_ONLY, for the water
+}
+
+void EnvMapVulkanWater::RecordVolume(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet)
+{
+	H2M::RefH2M<H2M::VulkanPipelineH2M> pipeline = m_VolumePipeline.As<H2M::VulkanPipelineH2M>();
+	VkPipelineLayout layout = pipeline->GetVulkanPipelineLayout();
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetVulkanPipeline());
+	// Both sets are declared in WaterFog.glsl exactly as in Water.glsl, so the water's sets are valid here
+	VkDescriptorSet sets[2] = { frameDescriptorSet, m_DescriptorSet.DescriptorSets[0] };
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 2, sets, 0, nullptr);
+	VkBuffer vertexBuffer = m_FullscreenTriangle.As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+	VkDeviceSize offset = 0;
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
+	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 }
 
 void EnvMapVulkanWater::Record(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet, const EnvMapVulkanWaterSettings& settings)
