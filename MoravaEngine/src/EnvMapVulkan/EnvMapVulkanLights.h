@@ -67,6 +67,10 @@ struct EnvMapVulkanDirectionalLight
 	// to the HDR map stays on the sun of the map
 	bool FollowEnvironmentRotation = true;
 	bool CastShadows = true; // cascaded shadow maps, see EnvMapVulkanShadows.h
+	// Editor only (a directional light has no position; this doesn't change the light): the icon is drawn in the sky until
+	// it is moved with the gizmo, then at IconPosition
+	bool IconMoved = false;
+	glm::vec3 IconPosition = glm::vec3(0.0f);
 
 	glm::vec3 GetDirection() const { return DirectionFromAngles(Azimuth, Elevation); }
 	void SetDirection(const glm::vec3& towardsLight) { AnglesFromDirection(towardsLight, Azimuth, Elevation); }

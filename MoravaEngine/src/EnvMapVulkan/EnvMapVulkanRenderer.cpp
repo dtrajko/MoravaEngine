@@ -461,6 +461,9 @@ struct LoadedMeshVulkan
 	glm::vec3 Scale = glm::vec3(1.0f);
 	// Material slots: the Material Library material each submesh is drawn with (same order as the mesh's submeshes)
 	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> SubmeshMaterials;
+	// Each submesh's transform (its place in the model) as loaded from the file, for "Reset Part". The current ones are the
+	// submeshes' own (SubmeshH2M::Transform): every loaded model has its own MeshH2M, so editing them changes only this model.
+	std::vector<glm::mat4> OriginalSubmeshTransforms;
 
 	// Composed with ImGuizmo's own convention (Euler angles in degrees), so the gizmo (Manipulate +
 	// DecomposeMatrixToComponents) and the values in the Meshes panel round-trip exactly
@@ -681,6 +684,7 @@ static void LoadMesh(const std::string& filepath, std::optional<glm::vec3> groun
 	{
 		entry.SubmeshMaterials.push_back(submesh->MaterialIndex < modelMaterials.size() ?
 			modelMaterials[submesh->MaterialIndex] : EnvMapVulkanMaterialLibrary::GetDefaultMaterial());
+		entry.OriginalSubmeshTransforms.push_back(submesh->Transform);
 	}
 
 	if (groundPosition)
@@ -992,12 +996,29 @@ static void AlignSunToEnvironment()
 		s_Lights.Sun.Azimuth, s_Lights.Sun.Elevation, color.r, color.g, color.b, s_Lights.Sun.Intensity);
 }
 
-// Where the sun's icon is drawn: in the sky, far away in the sun's direction from the camera, so it moves like the
-// skybox (after "Align to Environment" it sits on the sun of the HDR map)
+// Where the sun's icon is drawn: in the sky, far away in the sun's direction from the camera, so it moves like the skybox
+// (after "Align to Environment" it sits on the sun of the HDR map); once moved with the gizmo, at its icon position
+// (editor only: a directional light has no position)
 static glm::vec3 GetSunIconPosition()
 {
+	if (s_Lights.Sun.IconMoved)
+	{
+		return s_Lights.Sun.IconPosition;
+	}
 	glm::vec3 cameraPosition = glm::vec3(glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix())[3]);
 	return cameraPosition + s_Lights.Sun.GetDirection() * 1000.0f;
+}
+
+// Where the sun's gizmo, arrow and aim line are: at the icon once it was moved; before that on the same line from the
+// camera as the sky icon (so on top of it on screen), 10 units away, where dragging moves it at a usable scale
+static glm::vec3 GetSunGizmoPosition()
+{
+	if (s_Lights.Sun.IconMoved)
+	{
+		return s_Lights.Sun.IconPosition;
+	}
+	glm::vec3 cameraPosition = glm::vec3(glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix())[3]);
+	return cameraPosition + s_Lights.Sun.GetDirection() * 10.0f;
 }
 
 // World position -> viewport pixel (same NDC convention as GetViewportMouseNdc). False behind the camera.
@@ -1115,14 +1136,15 @@ static void DrawLightGizmos()
 	// Shapes of the selected light first, icons on top
 	if (s_SelectedLightKind == LightKind::Sun)
 	{
+		// An arrow from the icon in the direction the light travels
 		ImU32 color = GetLightGizmoColor(s_Lights.Sun.Color, s_Lights.Sun.Enabled, 0.8f);
-		glm::vec3 from = s_Lights.Sun.GetDirection() * 2.0f;
-		glm::vec3 to = glm::vec3(0.0f);
+		glm::vec3 travel = -s_Lights.Sun.GetDirection();
+		glm::vec3 from = GetSunGizmoPosition();
+		glm::vec3 to = from + travel * 2.0f;
 		DrawWorldLine(drawList, viewProjection, from, to, color, 2.0f);
 		glm::vec3 u, v;
-		glm::vec3 travel = -s_Lights.Sun.GetDirection();
 		GetPerpendicularAxes(travel, u, v);
-		for (int i = 0; i < 4; i++) // arrowhead at the origin
+		for (int i = 0; i < 4; i++) // arrowhead
 		{
 			float a = glm::half_pi<float>() * i;
 			DrawWorldLine(drawList, viewProjection, to, to - travel * 0.4f + (std::cos(a) * u + std::sin(a) * v) * 0.15f, color, 2.0f);
@@ -1162,6 +1184,8 @@ static void DrawLightGizmos()
 	std::vector<int> pointShadowSlots, spotShadowSlots;
 	GetShadowSlotsPerLight(pointShadowSlots, spotShadowSlots);
 	ImVec2 pixel;
+	DrawWorldLine(drawList, viewProjection, GetSunGizmoPosition(), GetSunGizmoPosition() - s_Lights.Sun.GetDirection() * 0.75f,
+		GetLightGizmoColor(s_Lights.Sun.Color, s_Lights.Sun.Enabled), 2.0f); // aim line, as a spot light's
 	if (ProjectToViewport(viewProjection, GetSunIconPosition(), pixel))
 	{
 		DrawLightIcon(drawList, pixel, GetLightGizmoColor(s_Lights.Sun.Color, s_Lights.Sun.Enabled), s_Lights.Sun.Enabled,
@@ -1226,6 +1250,40 @@ static bool PickLightIcon(LightKind& kind, int& index)
 		test(s_Lights.SpotLights[i].Position, LightKind::Spot, i);
 	}
 	return found;
+}
+
+// The gizmo for the selected sun, at its icon: 1 moves the icon (editor only, the sun has no position), 2 turns the sun.
+// Its local Z axis points towards the sun. The first change detaches the icon from the sky: from then on it stays where
+// it is (rotating the sky icon would otherwise move it, and the gizmo with it, while turning).
+static void ManipulateSun(int gizmoType, bool snap)
+{
+	const ImGuizmo::OPERATION operation = gizmoType == ImGuizmo::OPERATION::TRANSLATE ? ImGuizmo::OPERATION::TRANSLATE : ImGuizmo::OPERATION::ROTATE;
+	glm::vec3 z = s_Lights.Sun.GetDirection(), x, y;
+	GetPerpendicularAxes(z, x, y);
+	glm::mat4 transform(1.0f);
+	transform[0] = glm::vec4(x, 0.0f);
+	transform[1] = glm::vec4(y, 0.0f);
+	transform[2] = glm::vec4(z, 0.0f);
+	transform[3] = glm::vec4(GetSunGizmoPosition(), 1.0f);
+
+	float snapValue = operation == ImGuizmo::OPERATION::ROTATE ? 15.0f : 0.5f;
+	float snapValues[3] = { snapValue, snapValue, snapValue };
+	if (ImGuizmo::Manipulate(
+		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
+		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
+		operation,
+		ImGuizmo::WORLD,
+		glm::value_ptr(transform),
+		nullptr,
+		snap ? snapValues : nullptr))
+	{
+		s_Lights.Sun.IconPosition = glm::vec3(transform[3]);
+		s_Lights.Sun.IconMoved = true;
+		if (operation == ImGuizmo::OPERATION::ROTATE)
+		{
+			s_Lights.Sun.SetDirection(glm::vec3(transform[2])); // azimuth and elevation follow (azimuth in -180..180)
+		}
+	}
 }
 
 // The gizmo for the selected point or spot light: 1 moves it; 2 aims a spot light (any mode moves a point light)
@@ -1859,6 +1917,28 @@ static void OnImGuiRenderLights()
 
 	if (s_SelectedLightKind == LightKind::Sun)
 	{
+		ImGui::TextDisabled("Viewport gizmo: 1 moves the sun's icon (only the icon:\nthe sun has no position), 2 turns the sun");
+		if (ImGui::Button("Icon to View"))
+		{
+			glm::mat4 cameraTransform = glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix());
+			s_Lights.Sun.IconPosition = glm::vec3(cameraTransform[3]) - glm::normalize(glm::vec3(cameraTransform[2])) * 10.0f;
+			s_Lights.Sun.IconMoved = true;
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Puts the sun's icon 10 units in front of the camera (when the sun is behind you)");
+		}
+		ImGui::SameLine();
+		ImGui::BeginDisabled(!s_Lights.Sun.IconMoved);
+		if (ImGui::Button("Reset Icon"))
+		{
+			s_Lights.Sun.IconMoved = false;
+		}
+		ImGui::EndDisabled();
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			ImGui::SetTooltip("Back in the sky, in the sun's direction");
+		}
 		OnImGuiRenderShadowSettings();
 	}
 	else
@@ -1867,6 +1947,18 @@ static void OnImGuiRenderLights()
 	}
 
 	ImGui::End();
+}
+
+// A part (submesh) of a model that the gizmo and the Part Transform fields move on their own: a model with more than one
+// part, and not a rigged part of a skinned model (the skeleton places those, see GetSubmeshTransform)
+static bool CanManipulateSubmesh(const LoadedMeshVulkan& entry, int submeshIndex)
+{
+	const auto& submeshes = entry.Mesh->GetSubmeshes();
+	if (submeshIndex < 0 || submeshIndex >= (int)submeshes.size() || submeshes.size() < 2)
+	{
+		return false;
+	}
+	return !(entry.Mesh->IsSkinned() && submeshes[submeshIndex]->IsRigged);
 }
 
 static void OnImGuiRenderMeshes()
@@ -1938,6 +2030,44 @@ static void OnImGuiRenderMeshes()
 		ImGui::DragFloat3("Translation", &entry.Translation.x, 0.1f);
 		ImGui::DragFloat3("Rotation", &entry.Rotation.x, 1.0f);
 		ImGui::DragFloat3("Scale", &entry.Scale.x, 0.01f, 0.001f, 1000.0f);
+
+		// The selected part's place in the model (the viewport gizmo moves it too)
+		if (s_SelectedSubmeshIndex >= 0 && s_SelectedSubmeshIndex < (int)entry.Mesh->GetSubmeshes().size())
+		{
+			H2M::RefH2M<H2M::SubmeshH2M> part = entry.Mesh->GetSubmeshes()[s_SelectedSubmeshIndex];
+			ImGui::Separator();
+			const std::string partName = !part->MeshName.empty() ? part->MeshName : (!part->NodeName.empty() ? part->NodeName : "Submesh " + std::to_string(s_SelectedSubmeshIndex));
+			ImGui::Text("Part Transform: %s", partName.c_str());
+			if (CanManipulateSubmesh(entry, s_SelectedSubmeshIndex))
+			{
+				glm::vec3 translation, rotation, scale;
+				ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(part->Transform), &translation.x, &rotation.x, &scale.x);
+				bool changed = ImGui::DragFloat3("Translation##Part", &translation.x, 0.1f);
+				changed |= ImGui::DragFloat3("Rotation##Part", &rotation.x, 1.0f);
+				changed |= ImGui::DragFloat3("Scale##Part", &scale.x, 0.01f, 0.001f, 1000.0f);
+				if (changed)
+				{
+					ImGuizmo::RecomposeMatrixFromComponents(&translation.x, &rotation.x, &scale.x, glm::value_ptr(part->Transform));
+				}
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("Relative to the model. Shift + click in the viewport selects the whole model");
+				}
+				if (ImGui::Button("Reset Part") && s_SelectedSubmeshIndex < (int)entry.OriginalSubmeshTransforms.size())
+				{
+					part->Transform = entry.OriginalSubmeshTransforms[s_SelectedSubmeshIndex];
+				}
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("Back to its place in the model file");
+				}
+			}
+			else
+			{
+				ImGui::TextDisabled(entry.Mesh->GetSubmeshes().size() < 2 ? "The model has a single part: the Transform above moves it"
+					: "A rigged part: the skeleton places it (the gizmo moves the whole model)");
+			}
+		}
 
 		if (ImGui::Button("Remove Mesh"))
 		{
@@ -4610,6 +4740,11 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					glm::vec2 ndc = GetViewportMouseNdc();
 					PickMesh(ndc.x, ndc.y);
 					SelectLight(LightKind::None);
+					// Shift + click: the whole model (the gizmo moves the model, not the part under the mouse)
+					if (Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift))
+					{
+						s_SelectedSubmeshIndex = -1;
+					}
 				}
 			}
 
@@ -5376,13 +5511,19 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 	}
 
 	// The gizmo moves the selected point or spot light, or else the mesh selected in the Meshes panel (or picked with the mouse)
-	if (Scene::s_ImGuizmoType != -1 && (s_SelectedLightKind == LightKind::Point || s_SelectedLightKind == LightKind::Spot) &&
-		s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+	if (Scene::s_ImGuizmoType != -1 && s_SelectedLightKind != LightKind::None && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 	{
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
-		ManipulateSelectedLight(Scene::s_ImGuizmoType, Input::IsKeyPressed(KeyH2M::LeftControl));
+		if (s_SelectedLightKind == LightKind::Sun)
+		{
+			ManipulateSun(Scene::s_ImGuizmoType, Input::IsKeyPressed(KeyH2M::LeftControl));
+		}
+		else
+		{
+			ManipulateSelectedLight(Scene::s_ImGuizmoType, Input::IsKeyPressed(KeyH2M::LeftControl));
+		}
 		return;
 	}
 
@@ -5402,6 +5543,29 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 	bool snap = Input::IsKeyPressed(KeyH2M::LeftControl);
 	float snapValue = Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE ? 45.0f : 1.0f;
 	float snapValues[3] = { snapValue, snapValue, snapValue };
+
+	// A selected part of a multi-part model: the gizmo moves the part. It sits at the center of the part's bounding box
+	// (as in SceneHazelEnvMap): imported parts often have their origin at the model's origin, far from the part, and would
+	// turn around it. world = model * part * T(center); after the gizmo: part = model^-1 * world * T(-center)
+	if (CanManipulateSubmesh(entry, s_SelectedSubmeshIndex))
+	{
+		H2M::RefH2M<H2M::SubmeshH2M> part = entry.Mesh->GetSubmeshes()[s_SelectedSubmeshIndex];
+		const glm::mat4 model = entry.GetTransform();
+		const glm::vec3 center = (part->BoundingBox.Min + part->BoundingBox.Max) * 0.5f;
+		glm::mat4 world = model * part->Transform * glm::translate(glm::mat4(1.0f), center);
+		if (ImGuizmo::Manipulate(
+			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
+			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
+			(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+			ImGuizmo::WORLD,
+			glm::value_ptr(world),
+			nullptr,
+			snap ? snapValues : nullptr))
+		{
+			part->Transform = glm::inverse(model) * world * glm::translate(glm::mat4(1.0f), -center);
+		}
+		return;
+	}
 
 	glm::mat4 transform = entry.GetTransform();
 	if (ImGuizmo::Manipulate(
