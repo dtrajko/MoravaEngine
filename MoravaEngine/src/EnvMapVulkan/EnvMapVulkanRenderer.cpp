@@ -2136,6 +2136,37 @@ static void OnImGuiRenderWater()
 	}
 	ImGui::Columns(1);
 
+	ImGui::Separator();
+	ImGui::Text("Reflection");
+	ImGui::Columns(2);
+	ImGuiWrapper::Property("Planar Reflection", water.PlanarReflection);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The scene reflected in the water (drawn a second time, from the camera mirrored in the water).\n"
+			"Off: only the environment map is reflected");
+	}
+	ImGui::Text("Resolution");
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+	const char* resolutions[] = { "Full", "Half", "Quarter" };
+	int resolution = water.ReflectionDivisor == 1 ? 0 : (water.ReflectionDivisor == 4 ? 2 : 1);
+	if (ImGui::Combo("##ReflectionResolution", &resolution, resolutions, IM_ARRAYSIZE(resolutions)))
+	{
+		water.ReflectionDivisor = resolution == 0 ? 1 : (resolution == 2 ? 4 : 2);
+	}
+	ImGui::PopItemWidth();
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Of the reflection image, relative to the viewport (the waves hide most of the difference)");
+	}
+	ImGui::NextColumn();
+	ImGuiWrapper::Property("Distortion", water.ReflectionDistortion, 0.0f, 3.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How much the waves bend the reflection");
+	}
+	ImGui::Columns(1);
+
 	ImGui::End();
 }
 
@@ -4235,6 +4266,21 @@ void EnvMapVulkanRenderer::GeometryPass()
 			s_ShadowMapViewerRequest.Active = false; // requested again by the panel while it shows the viewer
 		}
 
+		// The water's planar reflection: the meshes seen by the camera mirrored in the water plane, into the water's
+		// reflection image (with the usual pipelines; its own per-frame set holds the mirrored camera)
+		if (s_WaterSettings.Enabled && s_Water.IsReflectionActive())
+		{
+			VkDescriptorSet reflectionFrameSet = s_Water.BeginReflectionPass(drawCommandBuffer);
+			VkPipelineLayout reflectionLayout = s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
+			vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, reflectionLayout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
+				&reflectionFrameSet, 0, nullptr);
+			for (const SubmittedModel& submitted : s_SubmittedModels)
+			{
+				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer);
+			}
+			s_Water.EndReflectionPass(drawCommandBuffer);
+		}
+
 		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
 
 		uint32_t width = framebuffer->GetWidth();
@@ -5455,7 +5501,9 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	UpdateFrameUniforms();
 	if (s_WaterSettings.Enabled)
 	{
-		s_Water.Update(s_WaterSettings, deltaTime, s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix());
+		H2M::CameraH2M& sceneCamera = s_Data.SceneData.SceneCamera.Camera;
+		s_Water.Update(s_WaterSettings, deltaTime, sceneCamera.GetViewMatrix(), sceneCamera.GetProjectionMatrix(), sceneCamera.GetPosition(),
+			s_EnvMapRotation, s_Data.FrameDescriptorSet.DescriptorSets[0]);
 	}
 
 	if (s_ViewportFBNeedsResize)

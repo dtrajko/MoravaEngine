@@ -47,6 +47,12 @@ struct EnvMapVulkanWaterSettings
 	float FoamAmount = 0.6f;            // foam along the shore and around objects (0: none)
 	float FoamWidth = 0.4f;             // meters of water depth that get foam
 
+	// Planar reflection: the scene drawn again from the camera mirrored in the water plane (the environment map fills in
+	// where that image has nothing: the sky, and what is outside the view)
+	bool PlanarReflection = true;
+	uint32_t ReflectionDivisor = 2;     // the reflection image is the viewport size / this (1 full, 2 half, 4 quarter)
+	float ReflectionDistortion = 1.0f;  // how much the waves bend the reflection
+
 	// The unit square of the water mesh -> the rectangle in the world
 	glm::mat4 GetTransform() const;
 };
@@ -58,6 +64,11 @@ struct EnvMapVulkanWaterSettings
  * Per frame, in the scene framebuffer (created with CopySource): the opaque meshes and the sky are drawn, the render pass
  * ends, CopyScene copies its color and depth, the continue render pass begins and Record draws the water. The water reads
  * the copies: the scene through the surface (refraction) and how much water is in front of it (absorption, edges, foam).
+ *
+ * Planar reflection, before the scene pass: BeginReflectionPass starts the reflection framebuffer's render pass and returns
+ * its per-frame descriptor set (set 0 with the mirrored camera); the caller binds it and draws the meshes with the usual
+ * pipelines; EndReflectionPass ends it. The mirrored view is also flipped vertically: a mirror reverses the winding of
+ * the triangles, the flip turns it back, so back-face culling keeps working (the water samples the image flipped).
  */
 class EnvMapVulkanWater
 {
@@ -67,11 +78,20 @@ public:
 	void Destroy();
 	bool IsValid() const { return (bool)m_Pipeline; }
 
-	// Recreates the scene copies for a new size of the scene framebuffer (call after resizing it)
+	// Recreates the scene copies and the reflection image for a new size of the scene framebuffer (call after resizing it)
 	void Resize(uint32_t width, uint32_t height);
 
-	// Moves the waves and writes the settings for this frame; projection: the camera's (to turn depth into distance)
-	void Update(const EnvMapVulkanWaterSettings& settings, float deltaTime, const glm::mat4& projection);
+	// Moves the waves and writes the settings and the mirrored camera for this frame. view, projection and cameraPosition:
+	// the camera's; frameDescriptorSet: the main per-frame set (set 0), whose environment, light and shadow bindings the
+	// reflection's set 0 shares.
+	void Update(const EnvMapVulkanWaterSettings& settings, float deltaTime, const glm::mat4& view, const glm::mat4& projection,
+		const glm::vec3& cameraPosition, float envMapRotation, VkDescriptorSet frameDescriptorSet);
+
+	// This frame draws the planar reflection (it is enabled, and the camera is above the water)
+	bool IsReflectionActive() const { return m_ReflectionActive; }
+	// Begins the reflection render pass (outside any render pass) and returns the reflection's per-frame set (set 0)
+	VkDescriptorSet BeginReflectionPass(VkCommandBuffer commandBuffer);
+	void EndReflectionPass(VkCommandBuffer commandBuffer);
 	// Outside a render pass: copies the scene framebuffer's color and depth into the textures the water samples, and leaves
 	// the framebuffer's attachments in the layouts its continue render pass expects
 	void CopyScene(VkCommandBuffer commandBuffer, H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuffer);
@@ -102,6 +122,18 @@ private:
 	VkFormat m_ColorFormat = VK_FORMAT_UNDEFINED, m_DepthFormat = VK_FORMAT_UNDEFINED;
 	VkSampler m_ColorSampler = VK_NULL_HANDLE; // linear (the distorted refraction)
 	VkSampler m_DepthSampler = VK_NULL_HANDLE; // nearest (depth values are not filtered)
+
+	// Planar reflection: its framebuffer (the scene framebuffer's formats, so the mesh pipelines draw into it), its
+	// per-frame set 0 (allocated with the PBR shader's layout) and the two buffers that differ from the main set's
+	void CreateReflection();
+	void ResizeReflection();
+	void WriteReflectionDescriptor();
+	H2M::RefH2M<H2M::FramebufferH2M> m_ReflectionFramebuffer;
+	uint32_t m_ReflectionDivisor = 2;
+	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet m_ReflectionFrameSet;
+	H2M::VulkanShaderH2M::UniformBufferH2M m_ReflectionCamera;    // binding 0: the mirrored view projection
+	H2M::VulkanShaderH2M::UniformBufferH2M m_ReflectionSceneData; // binding 1: the mirrored camera position
+	bool m_ReflectionActive = false;
 };
 
 // Where the ray (origin + t * direction) meets the water rectangle: false when it misses it (or the water doesn't exist)

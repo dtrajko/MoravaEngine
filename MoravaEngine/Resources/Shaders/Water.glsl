@@ -60,11 +60,18 @@ layout (std140, set = 1, binding = 1) uniform WaterSettings
 	float u_EdgeSoftness;   // offset 80: meters of water over which the surface fades in
 	float u_FoamAmount;     // offset 84: 0 = no foam
 	float u_FoamWidth;      // offset 88: meters of water that get foam
-	float u_SettingsPadding;
+	float u_PlanarReflection;     // offset 92: 1 = u_ReflectionTexture holds this frame's reflection
+	float u_ReflectionDistortion; // offset 96: how much the waves bend the reflection
+	float u_SettingsPadding0;     // offsets 100..111: the block is 112 bytes, as WaterSettingsUB
+	float u_SettingsPadding1;
+	float u_SettingsPadding2;
 };
 // The opaque scene before the water (copied from the scene framebuffer every frame)
 layout (set = 1, binding = 2) uniform sampler2D u_SceneColor;
 layout (set = 1, binding = 3) uniform sampler2D u_SceneDepth;
+// The planar reflection: the scene seen by the camera mirrored in the water plane, flipped vertically; transparent where
+// nothing was drawn (the sky: the environment map fills in)
+layout (set = 1, binding = 4) uniform sampler2D u_ReflectionTexture;
 
 vec3 RotateVectorAboutY(float angle, vec3 vec)
 {
@@ -172,7 +179,18 @@ void main()
 	vec3 R = reflect(-V, N);
 	R.y = abs(R.y);
 	int radianceLevels = textureQueryLevels(u_EnvRadianceTex);
-	vec3 reflection = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, R), roughness * radianceLevels).rgb * u_ReflectionStrength;
+	vec3 reflection = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, R), roughness * radianceLevels).rgb;
+
+	// The planar reflection over it: the mirrored scene at this point of the screen (the image is flipped vertically),
+	// bent by the waves like the refraction; its alpha says where it has something (its edges blend into the sky)
+	if (u_PlanarReflection > 0.5 && !fromBelow)
+	{
+		vec2 reflectionBend = N.xz * u_ReflectionDistortion * 0.03 / max(surfaceDepth * 0.1, 1.0);
+		vec2 reflectionUV = clamp(vec2(screenUV.x, 1.0 - screenUV.y) + reflectionBend, vec2(0.001), vec2(0.999));
+		vec4 planar = texture(u_ReflectionTexture, reflectionUV);
+		reflection = mix(reflection, planar.rgb, clamp(planar.a, 0.0, 1.0));
+	}
+	reflection *= u_ReflectionStrength;
 	float F = FresnelWater(NdotV);
 
 	// The sun's highlight on the waves (GGX)
