@@ -20,8 +20,9 @@ void AnglesFromDirection(const glm::vec3& direction, float& azimuth, float& elev
 
 /**
  * The brightest light source of an equirectangular HDR environment map (RGBA32F, rows from the top), used by
- * "Align to Environment". Finds the brightest pixel, then takes the luminance- and solid-angle-weighted center of all
- * pixels at least half as bright: the center of the sun disc (or of a bright window), not one noisy pixel.
+ * "Align to Environment": the brightest region above the horizon (a block of about 17 x 17 degrees with the most light),
+ * then the luminance-weighted center of its pixels at least half as bright as its peak: the center of the sun disc, or
+ * of a bright window in a map without a sun. Below the horizon are only reflections (a sunlit floor), never the sun.
  * direction: in the map's own space (EquirectangularToCubeMap.glsl), before the environment rotation.
  * color: the average color of those pixels, scaled so the brightest channel is 1.
  * Returns false for an empty or uniformly black map.
@@ -40,6 +41,7 @@ struct EnvMapVulkanDirectionalLight
 	// Turns with the environment map: rotating the skybox by N degrees adds N degrees to the azimuth, so a sun aligned
 	// to the HDR map stays on the sun of the map
 	bool FollowEnvironmentRotation = true;
+	bool CastShadows = true; // cascaded shadow maps, see EnvMapVulkanShadows.h
 
 	glm::vec3 GetDirection() const { return DirectionFromAngles(Azimuth, Elevation); }
 	void SetDirection(const glm::vec3& towardsLight) { AnglesFromDirection(towardsLight, Azimuth, Elevation); }

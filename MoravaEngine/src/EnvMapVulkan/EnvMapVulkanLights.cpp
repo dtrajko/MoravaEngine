@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <vector>
 
 
 glm::vec3 DirectionFromAngles(float azimuth, float elevation)
@@ -38,20 +39,83 @@ bool FindBrightestDirection(const float* rgba, uint32_t width, uint32_t height, 
 	}
 
 	auto luminance = [](const float* p) { return 0.2126f * p[0] + 0.7152f * p[1] + 0.0722f * p[2]; };
+	const float pi = glm::pi<float>();
 
-	// Every pixel, not a sampled grid: a sun disc can be only a few pixels wide
-	float maxLuminance = 0.0f;
-	for (size_t i = 0; i < (size_t)width * height; i++)
+	// 1. The light of each cell of a coarse grid (64 x 32 cells, about 5.6 degrees each), every pixel weighted by the
+	//    part of the sphere it covers (less near the poles). Every pixel counts: a sun disc can be a few pixels wide.
+	const int gridWidth = 64, gridHeight = 32;
+	std::vector<double> cells((size_t)gridWidth * gridHeight, 0.0);
+	for (uint32_t y = 0; y < height; y++)
 	{
-		maxLuminance = std::max(maxLuminance, luminance(&rgba[i * 4]));
+		const double solidAngle = std::sin(pi * (y + 0.5f) / height);
+		const int cellY = (int)((uint64_t)y * gridHeight / height);
+		for (uint32_t x = 0; x < width; x++)
+		{
+			cells[(size_t)cellY * gridWidth + (size_t)x * gridWidth / width] += luminance(&rgba[((size_t)y * width + x) * 4]) * solidAngle;
+		}
 	}
-	if (maxLuminance <= 0.0f)
+
+	// 2. The brightest block of 3 x 3 cells (the map wraps around horizontally), above the horizon: a sun is never below
+	//    it, while sunlit floors and other reflections are. Not the brightest pixel overall, and not the average of all
+	//    bright pixels (in a map without a sun they are scattered over several windows and patches of light).
+	int bestX = 0, bestY = 0;
+	double best = 0.0;
+	for (int rows : { gridHeight / 2, gridHeight }) // above the horizon; the whole map only if the sky is black
+	{
+		for (int cy = 0; cy < rows; cy++)
+		{
+			for (int cx = 0; cx < gridWidth; cx++)
+			{
+				double sum = 0.0;
+				for (int dy = -1; dy <= 1; dy++)
+				{
+					if (cy + dy < 0 || cy + dy >= gridHeight)
+					{
+						continue;
+					}
+					for (int dx = -1; dx <= 1; dx++)
+					{
+						sum += cells[(size_t)(cy + dy) * gridWidth + (cx + dx + gridWidth) % gridWidth];
+					}
+				}
+				if (sum > best)
+				{
+					best = sum;
+					bestX = cx;
+					bestY = cy;
+				}
+			}
+		}
+		if (best > 0.0)
+		{
+			break;
+		}
+	}
+	if (best <= 0.0)
 	{
 		return false;
 	}
 
+	// 3. In that block: the pixels at least half as bright as its brightest pixel (the sun disc, or a bright window),
+	//    their luminance-weighted center and their average color
+	auto inBlock = [&](uint32_t x, uint32_t y) {
+		int cellY = (int)((uint64_t)y * gridHeight / height);
+		int cellX = (int)((uint64_t)x * gridWidth / width);
+		return std::abs(cellY - bestY) <= 1 && ((cellX - bestX + gridWidth + 1) % gridWidth) <= 2;
+	};
+	float maxLuminance = 0.0f;
+	for (uint32_t y = 0; y < height; y++)
+	{
+		for (uint32_t x = 0; x < width; x++)
+		{
+			if (inBlock(x, y))
+			{
+				maxLuminance = std::max(maxLuminance, luminance(&rgba[((size_t)y * width + x) * 4]));
+			}
+		}
+	}
+
 	// Pixel (x, y) -> direction, as in EquirectangularToCubeMap.glsl: u = phi / 2pi + 0.5, v = theta / pi
-	const float pi = glm::pi<float>();
 	const float threshold = maxLuminance * 0.5f;
 	glm::dvec3 weightedDirection(0.0);
 	glm::dvec3 weightedColor(0.0);
@@ -65,12 +129,12 @@ bool FindBrightestDirection(const float* rgba, uint32_t width, uint32_t height, 
 		{
 			const float* p = &rgba[((size_t)y * width + x) * 4];
 			const float l = luminance(p);
-			if (l < threshold)
+			if (l < threshold || !inBlock(x, y))
 			{
 				continue;
 			}
 			const float phi = ((x + 0.5f) / width - 0.5f) * 2.0f * pi;
-			const double weight = (double)l * sinTheta; // pixels near the poles cover less of the sphere
+			const double weight = (double)l * sinTheta;
 			weightedDirection += weight * glm::dvec3(sinTheta * std::cos(phi), cosTheta, sinTheta * std::sin(phi));
 			weightedColor += (double)sinTheta * glm::dvec3(p[0], p[1], p[2]);
 			weightSum += sinTheta;

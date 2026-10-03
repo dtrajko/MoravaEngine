@@ -10,7 +10,8 @@
 // - Michał Siejak's PBR project (https://github.com/Nadrin)
 // - My implementation from years ago in the Sparky engine (https://github.com/TheCherno/Sparky)
 // Descriptor sets (Vulkan), ordered by how often they change (see VulkanShaderH2M::FrameDescriptorSet):
-// - set 0, per frame:    Camera, SceneData (camera position, environment rotation), environment maps, BRDF LUT, Lights
+// - set 0, per frame:    Camera, SceneData (camera position, environment rotation), environment maps, BRDF LUT, Lights,
+//                        the sun's shadow map and its cascades
 // - set 1, per material: the material's texture maps
 // - set 2, per object:   bone matrices (HazelPBR_Anim.glsl only)
 // Push constants: the transform (vertex stage) and the material values (fragment stage).
@@ -161,6 +162,20 @@ layout (std140, set = 0, binding = 5) uniform Lights
 	ivec2 u_LightsPadding;                     // offset 40
 	PointLight u_PointLights[MaxPointLights];  // offset 48 (32 bytes each)
 	SpotLight u_SpotLights[MaxSpotLights];     // offset 560 (64 bytes each)
+};
+// The sun's cascaded shadow map (EnvMapVulkanShadows.h): a layer per cascade, compared in the sampler (1 lit, 0 shadow)
+layout (set = 0, binding = 6) uniform sampler2DArrayShadow u_ShadowMap;
+layout (std140, set = 0, binding = 7) uniform Shadows
+{
+	mat4 u_CascadeViewProjection[4]; // offset 0: world -> shadow map clip space, per cascade
+	vec4 u_CascadeSplits;            // offset 256: where each cascade ends (distance along the camera's view direction)
+	vec4 u_CascadeTexelSizes;        // offset 272: world size of a shadow map texel, per cascade
+	vec3 u_CameraForward;            // offset 288
+	float u_ShadowsEnabled;          // offset 300: 0 = no shadows this frame
+	float u_NormalBias;              // offset 304: in texels
+	float u_ShadowSoftness;          // offset 308: PCF tap spacing in texels
+	float u_ShowCascades;            // offset 312: 1 = tint the scene by cascade
+	float u_ShadowMapTexelSize;      // offset 316: 1 / resolution (texture coordinate units)
 };
 
 // Set 1, per material: PBR texture maps
@@ -365,10 +380,102 @@ float DistanceAttenuation(float distance, float range)
 	return window * window / max(distance * distance, 0.0001);
 }
 
+// The cascade a point at this view distance belongs to (the last one beyond the shadow distance)
+int GetShadowCascade(float viewDistance)
+{
+	for (int i = 0; i < 3; i++)
+	{
+		if (viewDistance < u_CascadeSplits[i])
+		{
+			return i;
+		}
+	}
+	return 3;
+}
+
+// How much of the sun reaches the point in one cascade: 1 lit, 0 in shadow
+float SampleShadowCascade(int cascade, vec3 worldPosition, vec3 geometryNormal)
+{
+	// Normal offset: look the map up from a point slightly off the surface (more on surfaces that turn away from the
+	// sun, and in proportion to the cascade's texel size), so a lit surface doesn't shadow itself ("shadow acne")
+	float cosTheta = clamp(dot(geometryNormal, u_Sun.Direction), 0.0, 1.0);
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	vec3 position = worldPosition + geometryNormal * (u_NormalBias * u_CascadeTexelSizes[cascade] * (0.25 + sinTheta));
+
+	vec4 clip = u_CascadeViewProjection[cascade] * vec4(position, 1.0);
+	vec3 shadowCoord = clip.xyz / clip.w;
+	vec2 uv = shadowCoord.xy * 0.5 + 0.5;
+	if (shadowCoord.z >= 1.0)
+	{
+		return 1.0; // beyond the cascade's far plane: nothing can shadow it
+	}
+
+	// PCF: a 5x5 grid of comparisons, each one already a blend of 2x2 texels (the sampler's linear filter)
+	float lit = 0.0;
+	vec2 pcfStep = vec2(u_ShadowSoftness * u_ShadowMapTexelSize);
+	for (int y = -2; y <= 2; y++)
+	{
+		for (int x = -2; x <= 2; x++)
+		{
+			lit += texture(u_ShadowMap, vec4(uv + vec2(x, y) * pcfStep, float(cascade), shadowCoord.z));
+		}
+	}
+	return lit / 25.0;
+}
+
+// The sun's shadow at the fragment: 1 lit, 0 in shadow. Near the end of a cascade it blends into the next one (no
+// visible seam), and the shadows fade out before the shadow distance (no hard end).
+float SunShadow(vec3 worldPosition, vec3 geometryNormal)
+{
+	if (u_ShadowsEnabled < 0.5)
+	{
+		return 1.0;
+	}
+	float viewDistance = dot(worldPosition - u_CameraPosition, u_CameraForward);
+	float shadowDistance = u_CascadeSplits[3];
+	if (viewDistance >= shadowDistance)
+	{
+		return 1.0;
+	}
+
+	int cascade = GetShadowCascade(viewDistance);
+	float shadow = SampleShadowCascade(cascade, worldPosition, geometryNormal);
+
+	// Blend zone: the last tenth of the cascade (the next cascade covers it too, see ComputeShadowCascades)
+	if (cascade < 3)
+	{
+		float start = cascade == 0 ? 0.0 : u_CascadeSplits[cascade - 1];
+		float blendStart = u_CascadeSplits[cascade] - 0.1 * (u_CascadeSplits[cascade] - start);
+		if (viewDistance > blendStart)
+		{
+			float t = (viewDistance - blendStart) / (u_CascadeSplits[cascade] - blendStart);
+			shadow = mix(shadow, SampleShadowCascade(cascade + 1, worldPosition, geometryNormal), t);
+		}
+	}
+
+	// Fade out over the last tenth of the shadow distance
+	float fadeStart = shadowDistance * 0.9;
+	return mix(shadow, 1.0, clamp((viewDistance - fadeStart) / (shadowDistance - fadeStart), 0.0, 1.0));
+}
+
+// Show Cascades: red, green, blue, yellow
+vec3 CascadeDebugColor(vec3 worldPosition)
+{
+	const vec3 colors[4] = vec3[4](vec3(1.0, 0.3, 0.3), vec3(0.3, 1.0, 0.3), vec3(0.3, 0.5, 1.0), vec3(1.0, 1.0, 0.3));
+	float viewDistance = dot(worldPosition - u_CameraPosition, u_CameraForward);
+	return viewDistance < u_CascadeSplits[3] ? colors[GetShadowCascade(viewDistance)] : vec3(1.0);
+}
+
 // Direct light from the sun, the point lights and the spot lights (lists packed by EnvMapVulkanLightEnvironment::Pack)
 vec3 Lighting(vec3 F0)
 {
-	vec3 result = EvaluateBRDF(F0, u_Sun.Direction, u_Sun.Color * u_Sun.Intensity);
+	// The sun, through its shadow map (sampled only where the sun can reach the surface at all)
+	vec3 result = vec3(0.0);
+	if (u_Sun.Intensity > 0.0 && dot(m_Params.Normal, u_Sun.Direction) > 0.0)
+	{
+		float shadow = SunShadow(Input.WorldPosition, normalize(Input.Normal));
+		result = EvaluateBRDF(F0, u_Sun.Direction, u_Sun.Color * u_Sun.Intensity * shadow);
+	}
 
 	int pointLightCount = min(u_PointLightCount, MaxPointLights);
 	for (int i = 0; i < pointLightCount; i++)
@@ -468,6 +575,10 @@ void main()
 	vec3 emissive = u_MaterialUniforms.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_MaterialUniforms.EmissiveIntensity : vec3(0.0);
 
 	color = vec4(lightContribution + iblContribution * ao + emissive, 1.0);
+	if (u_ShowCascades > 0.5 && u_ShadowsEnabled > 0.5)
+	{
+		color.rgb *= CascadeDebugColor(Input.WorldPosition);
+	}
 
 	// color = vec4(Input.WorldPosition, 1.0);
 	// color = texture(u_RoughnessTexture, Input.TexCoord);

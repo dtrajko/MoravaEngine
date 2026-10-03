@@ -6,6 +6,7 @@
 
 #include "EnvMapVulkanRenderer.h"
 #include "EnvMapVulkanLights.h"
+#include "EnvMapVulkanShadows.h"
 #include "EnvMapVulkanMaterialLibrary.h"
 
 #include "Core/ResourceManager.h"
@@ -355,6 +356,14 @@ static void LoadEnvironmentMap(const std::string& filepath)
 
 // The scene's lights (the Lights uniform buffer of the PBR shaders) and the environment map rotation
 static EnvMapVulkanLightEnvironment s_Lights;
+// Cascaded shadow maps of the sun (see EnvMapVulkanShadows.h)
+static EnvMapVulkanShadowMap s_ShadowMap;
+static EnvMapVulkanShadowSettings s_ShadowSettings;
+static EnvMapVulkanShadowPipeline s_ShadowPipeline;     // ShadowDepth.glsl (static meshes)
+static EnvMapVulkanShadowPipeline s_ShadowPipelineAnim; // ShadowDepth_Anim.glsl (skinned meshes)
+static std::array<EnvMapVulkanShadowCascade, ShadowCascadeCount> s_ShadowCascades; // this frame's, see RecordShadowPasses
+static bool s_ShadowsRendered = false; // the shadow map holds this frame's cascades
+static void WriteShadowMapDescriptor();
 static float s_EnvMapRotation = 0.0f; // degrees, applied to the PBR environment lookups (as in SceneHazelEnvMap)
 
 // Meshes loaded from the Meshes panel: the Vulkan counterpart of the mesh entities in SceneHazelEnvMap
@@ -1178,6 +1187,67 @@ static glm::vec3 GetLightSpawnTarget()
 	return glm::any(glm::isnan(target)) ? glm::vec3(0.0f) : target; // NaN: the camera has no valid view matrix yet
 }
 
+// The shadow map's cascades in the Lights panel ("Show Shadow Map"): the scene seen from the sun, darker = closer to the sun
+static bool s_ShowShadowMap = false;
+static int s_ShadowMapShownCascade = 0;
+static std::array<ImTextureID, ShadowCascadeCount> s_ShadowMapTextureIDs = {};
+static VkImageView s_ShadowMapTexturesView = VK_NULL_HANDLE; // the shadow map the IDs were registered for
+
+static void DrawShadowMapCascades()
+{
+	if (!s_ShadowMap.IsValid())
+	{
+		return;
+	}
+	// Registered with the ImGui Vulkan backend once per shadow map (again after it is recreated)
+	if (s_ShadowMapTexturesView != s_ShadowMap.GetDisplayView(0))
+	{
+		for (uint32_t i = 0; i < ShadowCascadeCount; i++)
+		{
+			if (s_ShadowMapTextureIDs[i])
+			{
+				ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)s_ShadowMapTextureIDs[i]);
+			}
+			s_ShadowMapTextureIDs[i] = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(s_ShadowMap.GetDisplaySampler(), s_ShadowMap.GetDisplayView(i),
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		}
+		s_ShadowMapTexturesView = s_ShadowMap.GetDisplayView(0);
+	}
+
+	if (!s_ShadowsRendered)
+	{
+		ImGui::TextDisabled("No shadows this frame (sun off, Cast Shadows off or no models)");
+		return;
+	}
+	// One cascade at a time, as large as the panel allows
+	for (int i = 0; i < (int)ShadowCascadeCount; i++)
+	{
+		if (i > 0)
+		{
+			ImGui::SameLine();
+		}
+		char label[16];
+		snprintf(label, sizeof(label), "%d##ShadowCascade", i);
+		ImGui::RadioButton(label, &s_ShadowMapShownCascade, i);
+	}
+	const EnvMapVulkanShadowCascade& cascade = s_ShadowCascades[s_ShadowMapShownCascade];
+	ImGui::TextDisabled("Up to %.1f units from the camera, %.1f mm per texel", cascade.SplitDistance, cascade.TexelWorldSize * 1000.0f);
+	const float size = glm::max(ImGui::GetContentRegionAvail().x, 16.0f);
+	ImGui::Image(s_ShadowMapTextureIDs[s_ShadowMapShownCascade], ImVec2(size, size));
+}
+
+// An azimuth drag without limits (as Env Map Rotation): it can be dragged endlessly in both directions and wraps around
+// to stay in -180..180
+static bool AzimuthProperty(float& azimuth)
+{
+	if (ImGuiWrapper::Property("Azimuth", azimuth, 0.5f, 0.0f, 0.0f, PropertyFlag::DragProperty)) // min = max = 0: no limits
+	{
+		azimuth = std::remainder(azimuth, 360.0f);
+		return true;
+	}
+	return false;
+}
+
 static void LightNameProperty(std::string& name)
 {
 	char buffer[128] = {};
@@ -1309,7 +1379,7 @@ static void OnImGuiRenderLights()
 		ImGuiWrapper::Property("Enabled", sun.Enabled);
 		ImGuiWrapper::Property("Color", sun.Color, PropertyFlag::ColorProperty);
 		ImGuiWrapper::Property("Intensity", sun.Intensity, 0.01f, 0.0f, 20.0f, PropertyFlag::DragProperty);
-		ImGuiWrapper::Property("Azimuth", sun.Azimuth, 0.5f, -180.0f, 180.0f, PropertyFlag::DragProperty);
+		AzimuthProperty(sun.Azimuth);
 		if (ImGui::IsItemHovered())
 		{
 			ImGui::SetTooltip("Compass direction of the sun (degrees around the vertical axis, 0 = +Z, 90 = +X)");
@@ -1319,6 +1389,7 @@ static void OnImGuiRenderLights()
 		{
 			ImGui::SetTooltip("Height of the sun above the horizon (degrees, 90 = straight overhead)");
 		}
+		ImGuiWrapper::Property("Cast Shadows", sun.CastShadows);
 		ImGuiWrapper::Property("Follow Env Rotation", sun.FollowEnvironmentRotation);
 		if (ImGui::IsItemHovered())
 		{
@@ -1344,7 +1415,7 @@ static void OnImGuiRenderLights()
 		ImGuiWrapper::Property("Intensity", light.Intensity, 0.1f, 0.0f, 10000.0f, PropertyFlag::DragProperty);
 		ImGuiWrapper::Property("Position", light.Position, 0.05f, 0.0f, 0.0f, PropertyFlag::DragProperty);
 		LightRangeProperty(light.Range);
-		ImGuiWrapper::Property("Azimuth", light.Azimuth, 0.5f, -180.0f, 180.0f, PropertyFlag::DragProperty);
+		AzimuthProperty(light.Azimuth);
 		if (ImGui::IsItemHovered())
 		{
 			ImGui::SetTooltip("Compass direction the spot points to (degrees around the vertical axis, 0 = +Z, 90 = +X)");
@@ -1375,6 +1446,15 @@ static void OnImGuiRenderLights()
 		ImGui::TextDisabled("Viewport gizmo: 1 moves the light, 2 aims it");
 	}
 	ImGui::Columns(1);
+
+	if (s_SelectedLightKind == LightKind::Sun)
+	{
+		ImGui::Checkbox("Show Shadow Map", &s_ShowShadowMap);
+		if (s_ShowShadowMap)
+		{
+			DrawShadowMapCascades();
+		}
+	}
 
 	ImGui::End();
 }
@@ -2653,10 +2733,36 @@ void EnvMapVulkanRenderer::Init()
 	// s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap("Textures/HDR/pink_sunrise_4k.hdr");
 	// s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap("Textures/HDR/umhlanga_sunrise_4k.hdr");
 	// s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap("Textures/HDR/venice_dawn_1_4k.hdr");
-	s_EnvMapFilename = "Textures/HDR/newport_loft.hdr";
+	// s_EnvMapFilename = "Textures/HDR/newport_loft.hdr";
+	// An outdoor map with a real sun (a compact disc, about 7,000x brighter than anything else), at which the sun is
+	// aligned at startup (see Draw)
+	s_EnvMapFilename = "Textures/HDR/rooitou_park_4k.hdr";
 	s_Data.EnvironmentMap = H2M::RendererH2M::CreateEnvironmentMap(s_EnvMapFilename);
 
 	s_Data.BRDFLut = H2M::Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga", false);
+
+	s_ShadowMap.Create(s_ShadowSettings.Resolution);
+	{
+		// The mesh vertex layouts (MeshH2M's Vertex and AnimatedVertex), as in the PBR pipelines
+		H2M::VertexBufferLayoutH2M staticLayout = {
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Tangent" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Binormal" },
+			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+		};
+		H2M::VertexBufferLayoutH2M animLayout = {
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Tangent" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Binormal" },
+			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+			{ H2M::ShaderDataTypeH2M::Int4,   "a_BoneIndices" },
+			{ H2M::ShaderDataTypeH2M::Float4, "a_BoneWeights" },
+		};
+		s_ShadowPipeline.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth").As<H2M::VulkanShaderH2M>(), staticLayout, { 0 }, s_ShadowMap.GetRenderPass());
+		s_ShadowPipelineAnim.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth_Anim").As<H2M::VulkanShaderH2M>(), animLayout, { 0, 5, 6 }, s_ShadowMap.GetRenderPass());
+	}
 
 	// H2M::RendererH2M::Submit([environment]() mutable {});
 	{
@@ -2669,9 +2775,9 @@ void EnvMapVulkanRenderer::Init()
 
 		// Camera, SceneData and Lights uniform buffers (written every frame, see UpdateFrameUniforms); the environment maps
 		// are written in SetSceneEnvironment
-		const char* bufferNames[] = { "Camera", "SceneData", "Lights" };
-		const uint32_t bufferBindings[] = { 0, 1, 5 };
-		std::array<VkWriteDescriptorSet, 3> writes;
+		const char* bufferNames[] = { "Camera", "SceneData", "Lights", "Shadows" };
+		const uint32_t bufferBindings[] = { 0, 1, 5, 7 };
+		std::array<VkWriteDescriptorSet, 4> writes;
 		for (size_t i = 0; i < writes.size(); i++)
 		{
 			writes[i] = *pbrShader->GetDescriptorSet(bufferNames[i], frameSet);
@@ -2680,6 +2786,8 @@ void EnvMapVulkanRenderer::Init()
 			writes[i].pBufferInfo = &pbrShader->GetUniformBuffer(bufferBindings[i], frameSet).Descriptor;
 		}
 		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
+
+		WriteShadowMapDescriptor();
 	}
 
 	H2M::RendererH2M::SetSceneEnvironment(H2M::RefH2M<H2M::EnvironmentH2M>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), H2M::RefH2M<H2M::Image2D_H2M>());
@@ -2714,6 +2822,9 @@ void EnvMapVulkanRenderer::Init()
 
 void EnvMapVulkanRenderer::Shutdown()
 {
+	s_ShadowPipelineAnim.Destroy();
+	s_ShadowPipeline.Destroy();
+	s_ShadowMap.Destroy();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
 	// delete s_Data;
 }
@@ -2803,6 +2914,171 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 		vkCmdDrawIndexed(commandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
 	}
+}
+
+// The Shadows uniform buffer of the PBR shaders (set 0, binding 7, std140). Written right after the cascades are computed
+// (see RecordShadowPasses), still before the frame is submitted, so the shaders use this frame's cascades.
+static void WriteShadowUniforms()
+{
+	struct ShadowsUB
+	{
+		glm::mat4 CascadeViewProjection[ShadowCascadeCount];
+		glm::vec4 CascadeSplits;
+		glm::vec4 CascadeTexelSizes;
+		glm::vec3 CameraForward;
+		float ShadowsEnabled;
+		float NormalBias;
+		float Softness;
+		float ShowCascades;
+		float ShadowMapTexelSize;
+	};
+	static_assert(sizeof(ShadowsUB) == 320, "std140 layout mismatch with the Shadows block of the PBR shaders");
+
+	ShadowsUB ub = {};
+	glm::mat4 cameraTransform = glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix());
+	for (uint32_t i = 0; i < ShadowCascadeCount; i++)
+	{
+		ub.CascadeViewProjection[i] = s_ShadowCascades[i].ViewProjection;
+		ub.CascadeSplits[i] = s_ShadowCascades[i].SplitDistance;
+		ub.CascadeTexelSizes[i] = s_ShadowCascades[i].TexelWorldSize;
+	}
+	ub.CameraForward = -glm::normalize(glm::vec3(cameraTransform[2]));
+	ub.ShadowsEnabled = s_ShadowsRendered ? 1.0f : 0.0f;
+	ub.NormalBias = s_ShadowSettings.NormalBias;
+	ub.Softness = s_ShadowSettings.Softness;
+	ub.ShowCascades = s_ShadowSettings.ShowCascades ? 1.0f : 0.0f;
+	ub.ShadowMapTexelSize = s_ShadowMap.IsValid() ? 1.0f / (float)s_ShadowMap.GetResolution() : 0.0f;
+
+	H2M::RefH2M<H2M::VulkanShaderH2M> shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
+	void* ubPtr = shader->MapUniformBuffer(7, H2M::VulkanShaderH2M::FrameDescriptorSet);
+	memcpy(ubPtr, &ub, sizeof(ShadowsUB));
+	shader->UnmapUniformBuffer(7, H2M::VulkanShaderH2M::FrameDescriptorSet);
+}
+
+// The sun's shadow map in the per-frame set of the PBR shaders (set 0, binding 6): all cascades, with the comparison
+// sampler. Written at startup and whenever the shadow map is recreated (resolution change).
+static void WriteShadowMapDescriptor()
+{
+	H2M::RefH2M<H2M::VulkanShaderH2M> shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
+	VkDescriptorImageInfo imageInfo = { s_ShadowMap.GetCompareSampler(), s_ShadowMap.GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+	VkWriteDescriptorSet write = *shader->GetDescriptorSet("u_ShadowMap", H2M::VulkanShaderH2M::FrameDescriptorSet);
+	write.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+	write.descriptorCount = 1;
+	write.pImageInfo = &imageInfo;
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+}
+
+// The shadow map cascades of the sun (see EnvMapVulkanShadows.h), recorded at the start of the frame, before the geometry
+// pass that samples them. Every submitted mesh casts; the grid and the skybox don't.
+static void RecordShadowPasses(VkCommandBuffer commandBuffer)
+{
+	s_ShadowsRendered = false;
+	if (!s_ShadowMap.IsValid() || !s_Lights.Sun.Enabled || !s_Lights.Sun.CastShadows || s_Lights.Sun.Intensity <= 0.0f ||
+		!s_ShadowPipeline.Pipeline || !s_ShadowPipelineAnim.Pipeline)
+	{
+		WriteShadowUniforms(); // shadows off
+		return;
+	}
+
+	// The camera's view: position, direction and the rays through the 4 corners of the viewport
+	H2M::CameraH2M& camera = s_Data.SceneData.SceneCamera.Camera;
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 cameraTransform = glm::inverse(view);
+	glm::mat4 inverseViewProjection = glm::inverse(camera.GetProjectionMatrix() * view);
+	glm::vec3 cameraPosition = glm::vec3(cameraTransform[3]);
+	glm::vec3 cameraForward = -glm::normalize(glm::vec3(cameraTransform[2]));
+	std::array<glm::vec3, 4> cornerRays;
+	for (int c = 0; c < 4; c++)
+	{
+		glm::vec4 p = inverseViewProjection * glm::vec4((c & 1) ? 1.0f : -1.0f, (c & 2) ? 1.0f : -1.0f, 0.5f, 1.0f);
+		cornerRays[c] = glm::normalize(glm::vec3(p) / p.w - cameraPosition);
+	}
+	if (glm::any(glm::isnan(cameraPosition)) || glm::any(glm::isnan(cornerRays[0])))
+	{
+		WriteShadowUniforms(); // the camera has no valid matrices yet (first frame): no shadows
+		return;
+	}
+
+	// All casters, in world space (each submesh's bounding box, transformed)
+	glm::vec3 boundsMin(std::numeric_limits<float>::max());
+	glm::vec3 boundsMax(-std::numeric_limits<float>::max());
+	for (const SubmittedMesh& submitted : s_Meshes)
+	{
+		for (const H2M::RefH2M<H2M::SubmeshH2M>& submesh : submitted.Mesh->GetSubmeshes())
+		{
+			glm::mat4 transform = GetSubmeshTransform(submitted.Mesh, submesh, submitted.Transform);
+			for (int c = 0; c < 8; c++)
+			{
+				glm::vec3 corner((c & 1) ? submesh->BoundingBox.Max.x : submesh->BoundingBox.Min.x, (c & 2) ? submesh->BoundingBox.Max.y : submesh->BoundingBox.Min.y,
+					(c & 4) ? submesh->BoundingBox.Max.z : submesh->BoundingBox.Min.z);
+				glm::vec3 world = glm::vec3(transform * glm::vec4(corner, 1.0f));
+				boundsMin = glm::min(boundsMin, world);
+				boundsMax = glm::max(boundsMax, world);
+			}
+		}
+	}
+
+	s_ShadowSettings.Resolution = s_ShadowMap.GetResolution();
+	ComputeShadowCascades(cameraPosition, cameraForward, cornerRays, camera.GetPerspectiveNearClip(), s_ShadowSettings, s_Lights.Sun.GetDirection(),
+		boundsMin, boundsMax, s_ShadowCascades);
+
+	const uint32_t resolution = s_ShadowMap.GetResolution();
+	for (uint32_t cascade = 0; cascade < ShadowCascadeCount; cascade++)
+	{
+		VkClearValue clearValue = {};
+		clearValue.depthStencil = { 1.0f, 0 };
+		VkRenderPassBeginInfo beginInfo = {};
+		beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		beginInfo.renderPass = s_ShadowMap.GetRenderPass();
+		beginInfo.framebuffer = s_ShadowMap.GetFramebuffer(cascade);
+		beginInfo.renderArea.extent = { resolution, resolution };
+		beginInfo.clearValueCount = 1;
+		beginInfo.pClearValues = &clearValue;
+		vkCmdBeginRenderPass(commandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		VkViewport viewport = { 0.0f, 0.0f, (float)resolution, (float)resolution, 0.0f, 1.0f };
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		VkRect2D scissor = { { 0, 0 }, { resolution, resolution } };
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+		vkCmdSetDepthBias(commandBuffer, s_ShadowSettings.DepthBias, 0.0f, s_ShadowSettings.SlopeBias);
+
+		for (const SubmittedMesh& submitted : s_Meshes)
+		{
+			H2M::RefH2M<H2M::MeshH2M> mesh = submitted.Mesh;
+			const bool skinned = mesh->IsSkinned();
+			const EnvMapVulkanShadowPipeline& pipeline = skinned ? s_ShadowPipelineAnim : s_ShadowPipeline;
+			if (skinned)
+			{
+				VkDescriptorSet boneDescriptorSet = mesh->GetObjectDescriptorSet();
+				if (boneDescriptorSet == VK_NULL_HANDLE)
+				{
+					continue; // no bone buffer: the skinned vertices can't be placed
+				}
+				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, 0, 1, &boneDescriptorSet, 0, nullptr);
+			}
+			else
+			{
+				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+			}
+
+			VkBuffer vertexBuffer = mesh->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+			VkDeviceSize offset = 0;
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
+			vkCmdBindIndexBuffer(commandBuffer, H2M::RefH2M<H2M::VulkanIndexBufferH2M>(mesh->GetIndexBuffer())->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+			for (const H2M::RefH2M<H2M::SubmeshH2M>& submesh : mesh->GetSubmeshes())
+			{
+				glm::mat4 matrices[2] = { s_ShadowCascades[cascade].ViewProjection, GetSubmeshTransform(mesh, submesh, submitted.Transform) };
+				vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
+				vkCmdDrawIndexed(commandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
+			}
+		}
+
+		vkCmdEndRenderPass(commandBuffer);
+	}
+	s_ShadowsRendered = true;
+	WriteShadowUniforms();
 }
 
 void EnvMapVulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
@@ -3025,6 +3301,9 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 		VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+
+		// The sun's shadow map first: the geometry pass below samples it
+		RecordShadowPasses(drawCommandBuffer);
 
 		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
 
@@ -4038,6 +4317,14 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 // TODO: Temporary method until composite rendering is enabled
 void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 {
+	// At startup the sun points at the sun of the default environment map, once its pixels are available
+	static bool s_SunAlignedAtStartup = false;
+	if (!s_SunAlignedAtStartup && s_Data.envEquirect)
+	{
+		AlignSunToEnvironment();
+		s_SunAlignedAtStartup = true;
+	}
+
 	// An environment map requested from the UI (button or drag & drop) is loaded here, before any command buffer
 	// of this frame is recorded, not in the middle of the ImGui pass that requested it
 	if (!s_PendingEnvMapFilename.empty())
