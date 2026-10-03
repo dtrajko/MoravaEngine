@@ -60,7 +60,7 @@ struct EnvMapVulkanSpotLight
 	std::string Name;
 	bool Enabled = true;
 	glm::vec3 Color = glm::vec3(1.0f);
-	float Intensity = 10.0f;
+	float Intensity = 30.0f; // a spot is added 3 units above a surface (a point light 1.5): about the same light arrives
 	glm::vec3 Position = glm::vec3(0.0f);
 	float Range = 10.0f;
 	// Where the spot points (the direction the light travels); the default points straight down

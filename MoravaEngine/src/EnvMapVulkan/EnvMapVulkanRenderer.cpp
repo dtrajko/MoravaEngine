@@ -295,6 +295,7 @@ static std::string s_PendingEnvMapFilename;
 
 // Exposure applied in the composite pass: user exposure * auto exposure (from the loaded environment map)
 static float s_Exposure = 1.0f;
+static float s_TonemapHuePreservation = 0.5f; // 0: ACES per channel (bright colors turn white), 1: hue-preserving (ViewportComposite.glsl)
 static bool s_AutoExposureEnabled = true;
 static float s_EnvMapAutoExposure = 1.0f;
 
@@ -430,7 +431,8 @@ static glm::vec3 GetDropGroundPosition(float ndcX, float ndcY)
 // Finds the mesh and submesh under the mouse: a ray through the cursor is tested against every submesh's bounding box,
 // then its triangles (as in SceneHazelEnvMap); the nearest hit wins. hitMesh/hitSubmesh are -1 when nothing is hit.
 // ndcX, ndcY: cursor position in normalized device coordinates of the viewport (-1..1, +y up)
-static void RaycastSubmesh(float ndcX, float ndcY, int& hitMesh, int& hitSubmesh)
+// hitPosition (optional): the world position of the hit, when something is hit
+static void RaycastSubmesh(float ndcX, float ndcY, int& hitMesh, int& hitSubmesh, glm::vec3* hitPosition = nullptr)
 {
 	glm::vec3 origin, direction;
 	GetCameraRay(ndcX, ndcY, origin, direction);
@@ -474,6 +476,10 @@ static void RaycastSubmesh(float ndcX, float ndcY, int& hitMesh, int& hitSubmesh
 		}
 	}
 
+	if (hitPosition && hitMesh >= 0)
+	{
+		*hitPosition = origin + direction * nearestT;
+	}
 }
 
 // Selects the mesh and submesh under the mouse. Nothing hit clears the selection.
@@ -1137,6 +1143,41 @@ static void ManipulateSelectedLight(int gizmoType, bool snap)
 	}
 }
 
+// Where a new light goes: where the camera looks, so the light is within reach of its default range:
+// - the model surface at the center of the viewport
+// - else the ground (y = 0) there, when it's not too far
+// - else (the camera looks over the scene, e.g. horizontally) the point of the view ray nearest the models' center,
+//   at the models' height
+static glm::vec3 GetLightSpawnTarget()
+{
+	int hitMesh, hitSubmesh;
+	glm::vec3 target;
+	RaycastSubmesh(0.0f, 0.0f, hitMesh, hitSubmesh, &target);
+	if (hitMesh < 0)
+	{
+		glm::vec3 origin, direction;
+		GetCameraRay(0.0f, 0.0f, origin, direction);
+		direction = glm::normalize(direction);
+		float groundT = direction.y < -1e-4f ? -origin.y / direction.y : -1.0f;
+		if (groundT > 0.0f && groundT < 50.0f)
+		{
+			target = origin + direction * groundT;
+		}
+		else
+		{
+			glm::vec3 sceneCenter(0.0f);
+			for (const LoadedMeshVulkan& entry : s_LoadedMeshes)
+			{
+				sceneCenter += entry.Translation / (float)s_LoadedMeshes.size();
+			}
+			float t = glm::max(glm::dot(sceneCenter - origin, direction), 1.0f);
+			target = origin + direction * t;
+			target.y = sceneCenter.y;
+		}
+	}
+	return glm::any(glm::isnan(target)) ? glm::vec3(0.0f) : target; // NaN: the camera has no valid view matrix yet
+}
+
 static void LightNameProperty(std::string& name)
 {
 	char buffer[128] = {};
@@ -1166,16 +1207,10 @@ static void OnImGuiRenderLights()
 {
 	ImGui::Begin("Lights");
 
-	// New lights appear 3 units in front of the camera
-	glm::mat4 cameraTransform = glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix());
-	glm::vec3 spawnPosition = glm::vec3(cameraTransform[3]) - glm::normalize(glm::vec3(cameraTransform[2])) * 3.0f;
-	if (glm::any(glm::isnan(spawnPosition)))
-	{
-		spawnPosition = glm::vec3(0.0f); // the camera has no valid view matrix yet
-	}
+	// New lights go above GetLightSpawnTarget(): a point light 1.5 units above it, a spot light 3 units above it, pointing down
 
 	ImGui::BeginDisabled(!s_Lights.CanAddPointLight());
-	if (ImGui::Button("Add Point Light") && s_Lights.AddPointLight(spawnPosition))
+	if (ImGui::Button("Add Point Light") && s_Lights.AddPointLight(GetLightSpawnTarget() + glm::vec3(0.0f, 1.5f, 0.0f)))
 	{
 		SelectLight(LightKind::Point, (int)s_Lights.PointLights.size() - 1);
 	}
@@ -1186,7 +1221,7 @@ static void OnImGuiRenderLights()
 	}
 	ImGui::SameLine();
 	ImGui::BeginDisabled(!s_Lights.CanAddSpotLight());
-	if (ImGui::Button("Add Spot Light") && s_Lights.AddSpotLight(spawnPosition))
+	if (ImGui::Button("Add Spot Light") && s_Lights.AddSpotLight(GetLightSpawnTarget() + glm::vec3(0.0f, 3.0f, 0.0f)))
 	{
 		SelectLight(LightKind::Spot, (int)s_Lights.SpotLights.size() - 1);
 	}
@@ -3384,12 +3419,14 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 		float BloomDirtIntensity;
 		float OutlineWidth;
 		glm::vec4 OutlineColor;
+		float HuePreservation;
 	} uniforms;
 	uniforms.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
 	uniforms.BloomIntensity = s_BloomSettings.Enabled ? s_BloomSettings.Intensity : 0.0f;
 	uniforms.BloomDirtIntensity = (s_BloomSettings.Enabled && s_BloomSettings.DirtEnabled) ? s_BloomSettings.DirtIntensity : 0.0f;
 	uniforms.OutlineWidth = s_OverlaySettings.Outline ? s_OverlaySettings.OutlineWidth : 0.0f;
 	uniforms.OutlineColor = s_OverlaySettings.OutlineColor;
+	uniforms.HuePreservation = s_TonemapHuePreservation;
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(CompositeUniforms), &uniforms);
 
 	// Scene, bloom, lens dirt, overlay and selection mask images (rewritten when the framebuffers are resized, see WriteBloomDescriptorSets)
@@ -3802,6 +3839,11 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 						ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Auto Exposure", s_AutoExposureEnabled);
+						ImGuiWrapper::Property("Preserve Hue", s_TonemapHuePreservation, 0.01f, 0.0f, 1.0f, PropertyFlag::DragProperty);
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("How bright colors are tonemapped:\n0 = per channel (a bright colored light turns white at its center, as on film)\n1 = hue-preserving (keeps the light's color all the way to the center)");
+						}
 						// No drag limits (min = max = 0): the value wraps around, so it can be dragged endlessly in both directions
 						if (ImGuiWrapper::Property("Env Map Rotation", s_EnvMapRotation, 1.0f, 0.0f, 0.0f, PropertyFlag::DragProperty))
 						{

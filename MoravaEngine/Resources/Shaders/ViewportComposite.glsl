@@ -1,4 +1,4 @@
-// Viewport composite (Vulkan, SceneEnvMapVulkan): the linear HDR scene plus bloom, then exposure, ACES tonemapping
+// Viewport composite (Vulkan, SceneEnvMapVulkan): the linear HDR scene plus bloom, then exposure, ACES tonemapping (optionally hue-preserving)
 // and gamma. Same as SceneComposite.glsl (still used by SceneHazelVulkan), with the bloom inputs added.
 // The editor overlays (wireframe, bounding boxes) and the selection outline are added after tonemapping, so they keep
 // their exact colors: exposure, tonemapping and bloom don't apply to them.
@@ -46,7 +46,27 @@ layout(push_constant) uniform Uniforms
 	float BloomDirtIntensity;
 	float OutlineWidth;       // pixels; 0 = no outline
 	vec4 OutlineColor;
+	float HuePreservation;    // 0: ACES per channel (bright colors turn white), 1: hue-preserving ACES (see Tonemap)
 } u_Uniforms;
+
+// ACES filmic tonemapping (Narkowicz fit, with its 0.6 pre-exposure), per channel
+vec3 ACES(vec3 color)
+{
+	vec3 x = max(color, vec3(0.0)) * 0.6;
+	return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
+}
+
+// Per channel, the brightest channel of a bright color reaches 1 first while the others keep rising, so a bright red
+// light turns white at its center (as film does). The hue-preserving version tonemaps only the brightest channel and
+// scales the whole color by the same factor: the ratios between the channels (hue and saturation) stay as lit.
+vec3 Tonemap(vec3 color)
+{
+	color = max(color, vec3(0.0));
+	vec3 perChannel = ACES(color);
+	float peak = max(color.r, max(color.g, color.b));
+	vec3 huePreserving = peak > 0.0 ? color * (ACES(vec3(peak)).r / peak) : vec3(0.0);
+	return mix(perChannel, huePreserving, clamp(u_Uniforms.HuePreservation, 0.0, 1.0));
+}
 
 // 1 on pixels just outside the selection's silhouette (within OutlineWidth pixels of it), 0 elsewhere
 float SelectionOutline()
@@ -91,9 +111,7 @@ void main()
 	color += bloom * u_Uniforms.BloomIntensity;
 	color += bloom * dirt * u_Uniforms.BloomDirtIntensity;
 
-	// ACES filmic tonemapping (Narkowicz fit, with its 0.6 pre-exposure)
-	vec3 x = max(color, vec3(0.0)) * 0.6;
-	vec3 mappedColor = clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0);
+	vec3 mappedColor = Tonemap(color);
 
 	vec3 displayColor = pow(mappedColor, vec3(1.0 / gamma));
 
