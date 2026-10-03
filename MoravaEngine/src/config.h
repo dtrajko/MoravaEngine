@@ -45,7 +45,7 @@ enum class GraphicsAPI
 // #define SCENE_BULLET
 // #define SCENE_INSTANCED
 // #define SCENE_ASTEROIDS
-#define SCENE_NANOSUIT
+// #define SCENE_NANOSUIT
 // #define SCENE_FRAMEBUFFERS
 // #define SCENE_CUBEMAPS
 // #define SCENE_PARTICLES
@@ -64,7 +64,7 @@ enum class GraphicsAPI
 // #define SCENE_HAZEL_ENV_MAP
 // #define SCENE_DX11
 // #define SCENE_HAZEL_VULKAN
-// #define SCENE_ENV_MAP_VULKAN
+#define SCENE_ENV_MAP_VULKAN
 
 
 enum class SceneName

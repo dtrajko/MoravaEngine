@@ -443,6 +443,11 @@ Camera* Scene::GetCamera()
 	return m_Camera;
 }
 
+bool Scene::IsCameraUnderwater()
+{
+	return HasWaterEffects() && m_WaterManager && m_Camera && m_Camera->GetPosition().y < m_WaterManager->GetWaterHeight();
+}
+
 Scene::~Scene()
 {
 	delete m_CameraController;

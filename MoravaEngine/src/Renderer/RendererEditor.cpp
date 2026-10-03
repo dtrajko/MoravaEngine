@@ -163,7 +163,7 @@ void RendererEditor::RenderPassOmniShadow(PointLight* light, Window* mainWindow,
 
 void RendererEditor::RenderPassWaterReflection(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-    if (!scene->GetSettings().enableWaterEffects) return;
+    if (!scene->HasWaterEffects()) return;
 
     glViewport(0, 0, scene->GetWaterManager()->GetFramebufferWidth(), scene->GetWaterManager()->GetFramebufferHeight());
 
@@ -207,7 +207,7 @@ void RendererEditor::RenderPassWaterReflection(Window* mainWindow, Scene* scene,
 
 void RendererEditor::RenderPassWaterRefraction(Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-    if (!scene->GetSettings().enableWaterEffects) return;
+    if (!scene->HasWaterEffects()) return;
 
     glViewport(0, 0, scene->GetWaterManager()->GetFramebufferWidth(), scene->GetWaterManager()->GetFramebufferHeight());
 
@@ -276,8 +276,7 @@ void RendererEditor::RenderOmniShadows(Window* mainWindow, Scene* scene, glm::ma
 
 void RendererEditor::RenderWaterEffects(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-    if (!scene->GetSettings().enableWaterEffects) return;
-    if (!scene->IsWaterOnScene()) return;
+    if (!scene->HasWaterEffects()) return;
 
     glEnable(GL_CLIP_DISTANCE0);
 
@@ -378,7 +377,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     shaderEditor->SetInt("spotLightCount", LightManager::spotLightCount);
     // Eye position / camera direction
     shaderEditor->SetFloat3("eyePosition", scene->GetCamera()->GetPosition());
-    shaderEditor->SetFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderEditor->SetBool("underwater", scene->IsCameraUnderwater());
     shaderEditor->SetFloat4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
     // Directional Light
@@ -485,7 +484,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     shaderEditorPBR->SetMat4("dirLightTransform", LightManager::directionalLight.CalculateLightTransform());
     // clip plane for rendering to screen
     shaderEditorPBR->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
-    shaderEditorPBR->SetFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderEditorPBR->SetBool("underwater", scene->IsCameraUnderwater());
     shaderEditorPBR->SetFloat4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
     shaderEditorPBR->SetInt("pointSpotLightCount", LightManager::pointLightCount + LightManager::spotLightCount);
@@ -573,7 +572,7 @@ void RendererEditor::RenderStageSetUniforms(Scene* scene, glm::mat4* projectionM
     // clip plane for rendering to screen
     shaderSkinning->SetFloat4("clipPlane", glm::vec4(0.0f, -1.0f, 0.0f, 10000.0f));
     shaderSkinning->SetFloat3("gEyeWorldPos", scene->GetCamera()->GetPosition());
-    shaderSkinning->SetFloat("waterLevel", scene->GetWaterManager()->GetWaterHeight());
+    shaderSkinning->SetBool("underwater", scene->IsCameraUnderwater());
     shaderSkinning->SetFloat4("waterColor", scene->GetWaterManager()->GetWaterColor());
 
     // Directional Light

@@ -78,7 +78,7 @@ uniform float tilingFactor;
 
 uniform OmniShadowMap omniShadowMaps[MAX_LIGHTS];
 
-uniform float waterLevel;
+uniform bool underwater; // camera below the water surface (scenes with water only, see Scene::IsCameraUnderwater)
 uniform vec4 waterColor;
 
 vec3 sampleOffsetDirections[20] = vec3[]
@@ -388,7 +388,7 @@ void main()
     FragColor = vec4(color, 1.0);
 
 	// Add a blue tint under the water level
-    if (eyePosition.y < waterLevel)
+    if (underwater)
 	{
 		FragColor = mix(FragColor, waterColor, 0.5);
 	}

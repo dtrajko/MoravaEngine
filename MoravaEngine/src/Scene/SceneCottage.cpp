@@ -13,7 +13,7 @@ SceneCottage::SceneCottage()
 	sceneSettings.enableOmniShadows  = true;
 	sceneSettings.enablePointLights  = true;
 	sceneSettings.enableSpotLights   = true;
-	sceneSettings.enableWaterEffects = true;
+	sceneSettings.enableWaterEffects = false; // no water surface in this scene
 	sceneSettings.enableSkybox       = true;
 	sceneSettings.enableNormalMaps   = true;
 	sceneSettings.cameraPosition = glm::vec3(0.0f, 25.0f, 15.0f);

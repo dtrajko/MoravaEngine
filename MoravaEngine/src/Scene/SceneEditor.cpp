@@ -2257,7 +2257,7 @@ void SceneEditor::SetUniformsShaderWater(H2M::RefH2M<MoravaShader> shaderWater, 
     ResourceManager::GetTexture("waterDuDv")->Bind(3);
     ResourceManager::GetTexture("none")->Bind(4);
 
-    if (sceneSettings.enableWaterEffects) {
+    if (HasWaterEffects()) {
         m_WaterManager->GetReflectionFramebuffer()->GetColorAttachment()->Bind(0);
         m_WaterManager->GetRefractionFramebuffer()->GetColorAttachment()->Bind(1);
         m_WaterManager->GetRefractionFramebuffer()->GetDepthAttachment()->Bind(4);

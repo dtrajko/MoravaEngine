@@ -58,7 +58,7 @@ uniform vec3 gEyeWorldPos;
 uniform float gMatSpecularIntensity;
 uniform float gSpecularPower;
 
-uniform float waterLevel;
+uniform bool underwater; // camera below the water surface (scenes with water only, see Scene::IsCameraUnderwater)
 uniform vec4 waterColor;
 
 vec4 CalcLightInternal(BaseLight Light, vec3 LightDirection, VSOutput In)
@@ -138,7 +138,7 @@ void main()
     FragColor = texture(gColorMap, In.TexCoord.xy) * TotalLight;
 
 	// Add a blue tint under the water level
-    if (gEyeWorldPos.y < waterLevel)
+    if (underwater)
 	{
 		FragColor = mix(FragColor, waterColor, 0.5);
 	}

@@ -171,7 +171,7 @@ void Renderer::RenderPassOmniShadow(PointLight* light, Window* mainWindow, Scene
 
 void Renderer::RenderWaterEffects(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	if (!scene->GetSettings().enableWaterEffects) return;
+	if (!scene->HasWaterEffects()) return;
 
 	glEnable(GL_CLIP_DISTANCE0);
 
@@ -318,9 +318,8 @@ void Renderer::RenderPassMain(Window* mainWindow, Scene* scene, glm::mat4 projec
 
 	glViewport(0, 0, (GLsizei)mainWindow->GetWidth(), (GLsizei)mainWindow->GetHeight());
 
-	// Underwater: camera below the water plane (scenes with water effects only)
-	bool underwater = scene->GetSettings().enableWaterEffects &&
-		scene->GetCamera()->GetPosition().y < scene->GetWaterManager()->GetWaterHeight();
+	// Underwater: camera below the water surface (scenes with a water surface only, see Scene::IsWaterOnScene)
+	bool underwater = scene->IsCameraUnderwater();
 	glm::vec3 waterColor = glm::vec3(scene->GetWaterManager()->GetWaterColor());
 	glm::vec3 underwaterFogColor = waterColor * 0.4f; // deeper, darker shade of the water color
 	glm::vec4 underwaterTint = glm::vec4(glm::mix(glm::vec3(1.0f), waterColor, 0.5f), 1.0f);

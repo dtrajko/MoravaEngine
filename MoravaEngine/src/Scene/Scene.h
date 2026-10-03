@@ -104,7 +104,12 @@ public:
 
 	virtual void OnWindowResize(H2M::WindowResizeEventH2M& e);
 
+	// The scene has a water surface: scenes that draw one override this (a quad or a ground plane is not water)
 	virtual inline bool IsWaterOnScene() { return false; }
+	// Water reflection / refraction passes and underwater effects: enabled in the settings and a water surface on the scene
+	bool HasWaterEffects() { return sceneSettings.enableWaterEffects && IsWaterOnScene(); }
+	// The camera is below the water surface (never in a scene without water effects): underwater tint and fog
+	bool IsCameraUnderwater();
 
 	inline bool IsWireframeEnabled() { return m_WireframeEnabled; }
 

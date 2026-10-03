@@ -20,6 +20,7 @@ public:
 		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
 	virtual void RenderWater(glm::mat4 projectionMatrix, std::string passType,
 		std::map<std::string, H2M::RefH2M<MoravaShader>> shaders, std::map<std::string, int> uniforms) override;
+	virtual bool IsWaterOnScene() override { return true; } // a water surface at waterHeight (see RenderWater)
 
 private:
 	virtual void SetSkybox() override;

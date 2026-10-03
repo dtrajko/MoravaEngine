@@ -178,7 +178,7 @@ void RendererVoxelTerrain::RenderPassOmniShadow(PointLight* light, Window* mainW
 // BEGIN water render passes
 void RendererVoxelTerrain::RenderWaterEffects(float deltaTime, Window* mainWindow, Scene* scene, glm::mat4 projectionMatrix)
 {
-	if (!scene->GetSettings().enableWaterEffects) return;
+	if (!scene->HasWaterEffects()) return;
 
 	glEnable(GL_CLIP_DISTANCE0);
 
