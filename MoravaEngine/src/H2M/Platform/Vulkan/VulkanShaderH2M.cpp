@@ -18,10 +18,84 @@
 
 #include <algorithm>
 #include <filesystem>
+#include <fstream>
+#include <regex>
+#include <set>
+#include <sstream>
 
 
 namespace H2M
 {
+
+	static bool ReadTextFile(const std::filesystem::path& path, std::string& text)
+	{
+		std::ifstream in(path, std::ios::in | std::ios::binary);
+		if (!in)
+		{
+			return false;
+		}
+		std::stringstream buffer;
+		buffer << in.rdbuf();
+		text = buffer.str();
+		return true;
+	}
+
+	// #include "file" in shaders: the path is relative to the file that includes it (e.g. "Include/PBR_FrameSet.glslh")
+	class ShaderIncluderH2M : public shaderc::CompileOptions::IncluderInterface
+	{
+		struct IncludeData
+		{
+			std::string Name;
+			std::string Content;
+		};
+
+	public:
+		shaderc_include_result* GetInclude(const char* requestedSource, shaderc_include_type type, const char* requestingSource, size_t includeDepth) override
+		{
+			std::filesystem::path path = std::filesystem::path(requestingSource).parent_path() / requestedSource;
+			IncludeData* data = new IncludeData();
+			if (ReadTextFile(path, data->Content))
+			{
+				data->Name = path.lexically_normal().generic_string();
+			}
+			else
+			{
+				data->Content = "cannot open include file '" + path.generic_string() + "'"; // an empty name reports the content as the error
+			}
+			return new shaderc_include_result{ data->Name.c_str(), data->Name.size(), data->Content.c_str(), data->Content.size(), data };
+		}
+
+		void ReleaseInclude(shaderc_include_result* result) override
+		{
+			delete static_cast<IncludeData*>(result->user_data);
+			delete result;
+		}
+	};
+
+	// The files a shader includes, directly or through other includes (so editing one recompiles the shaders using it)
+	static void CollectShaderIncludes(const std::filesystem::path& file, std::set<std::filesystem::path>& includes)
+	{
+		std::string text;
+		if (!ReadTextFile(file, text))
+		{
+			return;
+		}
+		static const std::regex s_IncludePattern("^[ \\t]*#[ \\t]*include[ \\t]+\"([^\"]+)\"");
+		std::istringstream lines(text);
+		std::string line;
+		std::smatch match;
+		while (std::getline(lines, line))
+		{
+			if (std::regex_search(line, match, s_IncludePattern))
+			{
+				std::filesystem::path include = (file.parent_path() / match[1].str()).lexically_normal();
+				if (includes.insert(include).second)
+				{
+					CollectShaderIncludes(include, includes);
+				}
+			}
+		}
+	}
 
 	static ShaderUniformTypeH2M SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
 	{
@@ -682,9 +756,20 @@ namespace H2M
 				auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
 				std::string cachedFilePath = path.string();
 
-				// Ignore a cached binary that is older than its .glsl source, so shader edits take effect
+				// Ignore a cached binary that is older than its .glsl source or a file it includes, so shader edits take effect
 				std::error_code sourceTimeError, cacheTimeError;
 				auto sourceTime = std::filesystem::last_write_time(p, sourceTimeError);
+				std::set<std::filesystem::path> includes;
+				CollectShaderIncludes(p, includes);
+				for (const std::filesystem::path& include : includes)
+				{
+					std::error_code includeTimeError;
+					auto includeTime = std::filesystem::last_write_time(include, includeTimeError);
+					if (!includeTimeError && includeTime > sourceTime)
+					{
+						sourceTime = includeTime;
+					}
+				}
 				auto cacheTime = std::filesystem::last_write_time(path, cacheTimeError);
 				bool cacheIsStale = !sourceTimeError && !cacheTimeError && cacheTime < sourceTime;
 
@@ -706,6 +791,7 @@ namespace H2M
 				shaderc::Compiler compiler;
 				shaderc::CompileOptions options;
 				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+				options.SetIncluder(std::make_unique<ShaderIncluderH2M>());
 
 				const bool optimize = false;
 				if (optimize)

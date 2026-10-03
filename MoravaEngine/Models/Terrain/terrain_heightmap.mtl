@@ -1,0 +1,6 @@
+# Terrain material: the color map as the albedo
+newmtl TerrainMaterial
+Kd 1.0 1.0 1.0
+Ks 0.0 0.0 0.0
+Ns 10.0
+map_Kd terrain_color.png

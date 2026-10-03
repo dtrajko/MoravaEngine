@@ -142,6 +142,17 @@ namespace H2M
 
 					vkDestroyRenderPass(device, m_RenderPass, nullptr);
 					m_RenderPass = nullptr;
+
+					if (m_ContinueFramebuffer)
+					{
+						vkDestroyFramebuffer(device, m_ContinueFramebuffer, nullptr);
+						m_ContinueFramebuffer = nullptr;
+					}
+					if (m_ContinueRenderPass)
+					{
+						vkDestroyRenderPass(device, m_ContinueRenderPass, nullptr);
+						m_ContinueRenderPass = nullptr;
+					}
 				}
 
 				VulkanAllocatorH2M allocator(std::string("Framebuffer"));
@@ -152,6 +163,7 @@ namespace H2M
 				{
 					// Previously always VK_FORMAT_R8G8B8A8_UNORM, whatever the specification asked for
 					const VkFormat COLOR_BUFFER_FORMAT = GetColorAttachmentFormat(m_Specification);
+					m_ColorFormat = COLOR_BUFFER_FORMAT;
 
 					VkImageCreateInfo imageCreateInfo = {};
 					imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -166,6 +178,10 @@ namespace H2M
 					imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 					// We will sample directly from the color attachment
 					imageCreateInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+					if (m_Specification.CopySource)
+					{
+						imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+					}
 
 					VK_CHECK_RESULT_H2M(vkCreateImage(device, &imageCreateInfo, nullptr, &m_ColorAttachment.image));
 
@@ -220,6 +236,7 @@ namespace H2M
 				// DEPTH ATTACHMENT
 				{
 					VkFormat depthFormat = VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
+					m_DepthFormat = depthFormat;
 
 					VkImageCreateInfo imageCreateInfo = {};
 					imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -234,6 +251,10 @@ namespace H2M
 					imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 					// We will sample directly from the depth attachment
 					imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+					if (m_Specification.CopySource)
+					{
+						imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+					}
 
 					VK_CHECK_RESULT_H2M(vkCreateImage(device, &imageCreateInfo, nullptr, &m_DepthAttachment.image));
 					VkMemoryRequirements memoryRequirements;
@@ -261,7 +282,8 @@ namespace H2M
 					attachmentDescriptions[1].format = depthFormat;
 					attachmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
 					attachmentDescriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-					attachmentDescriptions[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					// Kept when it is copied from (or drawn into again by the continue render pass)
+					attachmentDescriptions[1].storeOp = m_Specification.CopySource ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					attachmentDescriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					attachmentDescriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					attachmentDescriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -322,6 +344,24 @@ namespace H2M
 				framebufferCreateInfo.layers = 1;
 
 				VK_CHECK_RESULT_H2M(vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &m_Framebuffer));
+
+				// The continue render pass: the same attachments, loaded instead of cleared (compatible with m_RenderPass)
+				if (m_Specification.CopySource)
+				{
+					std::array<VkAttachmentDescription, 2> continueAttachments = attachmentDescriptions;
+					continueAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+					continueAttachments[0].initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					continueAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+					continueAttachments[1].initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+					VkRenderPassCreateInfo continueRenderPassInfo = renderPassInfo;
+					continueRenderPassInfo.pAttachments = continueAttachments.data();
+					VK_CHECK_RESULT_H2M(vkCreateRenderPass(device, &continueRenderPassInfo, nullptr, &m_ContinueRenderPass));
+
+					VkFramebufferCreateInfo continueFramebufferInfo = framebufferCreateInfo;
+					continueFramebufferInfo.renderPass = m_ContinueRenderPass;
+					VK_CHECK_RESULT_H2M(vkCreateFramebuffer(device, &continueFramebufferInfo, nullptr, &m_ContinueFramebuffer));
+				}
 
 				// Fill a descriptor for later use in a descriptor set
 				m_DescriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

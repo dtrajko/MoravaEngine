@@ -144,6 +144,7 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/BloomPass.glsl");         // SceneEnvMapVulkan: bloom downsample/upsample chain
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Anim.glsl"); // skinned meshes (SceneEnvMapVulkan)
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Water.glsl");         // SceneEnvMapVulkan: the water plane
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Outline.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EditorOverlay.glsl");      // SceneEnvMapVulkan: wireframe, bounding boxes, selection mask
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/EditorOverlay_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes

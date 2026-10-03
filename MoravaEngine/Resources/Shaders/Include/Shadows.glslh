@@ -1,0 +1,156 @@
+// Shadow lookups: the sun's cascades, spot and point lights (1 lit, 0 in shadow). Needs Include/FrameSet.glslh.
+#ifndef SHADOWS_GLSLH
+#define SHADOWS_GLSLH
+
+// The cascade a point at this view distance belongs to (the last one beyond the shadow distance)
+int GetShadowCascade(float viewDistance)
+{
+	for (int i = 0; i < 3; i++)
+	{
+		if (viewDistance < u_CascadeSplits[i])
+		{
+			return i;
+		}
+	}
+	return 3;
+}
+
+// How much of the sun reaches the point in one cascade: 1 lit, 0 in shadow
+float SampleShadowCascade(int cascade, vec3 worldPosition, vec3 geometryNormal)
+{
+	// Normal offset: look the map up from a point slightly off the surface (more on surfaces that turn away from the
+	// sun, and in proportion to the cascade's texel size), so a lit surface doesn't shadow itself ("shadow acne")
+	float cosTheta = clamp(dot(geometryNormal, u_Sun.Direction), 0.0, 1.0);
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	vec3 position = worldPosition + geometryNormal * (u_NormalBias * u_CascadeTexelSizes[cascade] * (0.25 + sinTheta));
+
+	vec4 clip = u_CascadeViewProjection[cascade] * vec4(position, 1.0);
+	vec3 shadowCoord = clip.xyz / clip.w;
+	vec2 uv = shadowCoord.xy * 0.5 + 0.5;
+	if (shadowCoord.z >= 1.0)
+	{
+		return 1.0; // beyond the cascade's far plane: nothing can shadow it
+	}
+
+	// PCF: a 5x5 grid of comparisons, each one already a blend of 2x2 texels (the sampler's linear filter)
+	float lit = 0.0;
+	vec2 pcfStep = vec2(u_ShadowSoftness * u_ShadowMapTexelSize);
+	for (int y = -2; y <= 2; y++)
+	{
+		for (int x = -2; x <= 2; x++)
+		{
+			lit += texture(u_ShadowMap, vec4(uv + vec2(x, y) * pcfStep, float(cascade), shadowCoord.z));
+		}
+	}
+	return lit / 25.0;
+}
+
+// The sun's shadow at the fragment: 1 lit, 0 in shadow. Near the end of a cascade it blends into the next one (no
+// visible seam), and the shadows fade out before the shadow distance (no hard end).
+float SunShadow(vec3 worldPosition, vec3 geometryNormal)
+{
+	if (u_ShadowsEnabled < 0.5)
+	{
+		return 1.0;
+	}
+	float viewDistance = dot(worldPosition - u_CameraPosition, u_CameraForward);
+	float shadowDistance = u_CascadeSplits[3];
+	if (viewDistance >= shadowDistance)
+	{
+		return 1.0;
+	}
+
+	int cascade = GetShadowCascade(viewDistance);
+	float shadow = SampleShadowCascade(cascade, worldPosition, geometryNormal);
+
+	// Blend zone: the last tenth of the cascade (the next cascade covers it too, see ComputeShadowCascades)
+	if (cascade < 3)
+	{
+		float start = cascade == 0 ? 0.0 : u_CascadeSplits[cascade - 1];
+		float blendStart = u_CascadeSplits[cascade] - 0.1 * (u_CascadeSplits[cascade] - start);
+		if (viewDistance > blendStart)
+		{
+			float t = (viewDistance - blendStart) / (u_CascadeSplits[cascade] - blendStart);
+			shadow = mix(shadow, SampleShadowCascade(cascade + 1, worldPosition, geometryNormal), t);
+		}
+	}
+
+	// Fade out over the last tenth of the shadow distance
+	float fadeStart = shadowDistance * 0.9;
+	return mix(shadow, 1.0, clamp((viewDistance - fadeStart) / (shadowDistance - fadeStart), 0.0, 1.0));
+}
+
+// Show Cascades: red, green, blue, yellow
+vec3 CascadeDebugColor(vec3 worldPosition)
+{
+	const vec3 colors[4] = vec3[4](vec3(1.0, 0.3, 0.3), vec3(0.3, 1.0, 0.3), vec3(0.3, 0.5, 1.0), vec3(1.0, 1.0, 0.3));
+	float viewDistance = dot(worldPosition - u_CameraPosition, u_CameraForward);
+	return viewDistance < u_CascadeSplits[3] ? colors[GetShadowCascade(viewDistance)] : vec3(1.0);
+}
+
+// The shadow of a spot light (1 lit, 0 in shadow): its layer of the spot light shadow maps, like a sun cascade but in a
+// perspective map. distance: from the light to the fragment.
+float SpotShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 L, float distance)
+{
+	// Normal offset, in proportion to the size of a shadow map texel at this distance
+	float cosTheta = clamp(dot(geometryNormal, L), 0.0, 1.0);
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	float texel = 2.0 * distance * u_SpotShadowTanHalfFov[slot] * u_LocalShadowParams.z;
+	vec3 position = worldPosition + geometryNormal * (u_LocalShadowParams.x * texel * (0.25 + sinTheta));
+
+	vec4 clip = u_SpotShadowViewProjection[slot] * vec4(position, 1.0);
+	if (clip.w <= 0.0)
+	{
+		return 1.0;
+	}
+	vec3 shadowCoord = clip.xyz / clip.w;
+	if (shadowCoord.z >= 1.0)
+	{
+		return 1.0;
+	}
+	vec2 uv = shadowCoord.xy * 0.5 + 0.5;
+
+	float lit = 0.0;
+	vec2 pcfStep = vec2(u_LocalShadowParams.y * u_LocalShadowParams.z);
+	for (int y = -2; y <= 2; y++)
+	{
+		for (int x = -2; x <= 2; x++)
+		{
+			lit += texture(u_SpotShadowMaps, vec4(uv + vec2(x, y) * pcfStep, float(slot), shadowCoord.z));
+		}
+	}
+	return lit / 25.0;
+}
+
+// The shadow of a point light (1 lit, 0 in shadow): its cube in the point light shadow maps. The cube is looked up with the
+// direction from the light; the depth to compare is the perspective depth of the largest coordinate of that offset (the
+// view depth in the face the direction selects, see ComputePointShadowFaceViewProjections).
+float PointShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 lightPosition, vec3 L, float distance)
+{
+	// Normal offset, in proportion to the size of a cube face texel at this distance (90 degree faces)
+	float cosTheta = clamp(dot(geometryNormal, L), 0.0, 1.0);
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	float texel = 2.0 * distance * u_LocalShadowParams.w;
+	vec3 offset = worldPosition + geometryNormal * (u_LocalShadowParams.x * texel * (0.25 + sinTheta)) - lightPosition;
+
+	float z = max(abs(offset.x), max(abs(offset.y), abs(offset.z)));
+	float depth = u_PointShadowDepthParams[slot].x - u_PointShadowDepthParams[slot].y / z;
+
+	// PCF: a 5 x 5 grid of directions around the offset, on the plane perpendicular to it, a texel apart
+	vec3 axis = abs(offset.y) < 0.99 * length(offset) ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+	vec3 tangent = normalize(cross(axis, offset));
+	vec3 bitangent = normalize(cross(offset, tangent));
+	float pcfStep = u_LocalShadowParams.y * 2.0 * z * u_LocalShadowParams.w;
+	float lit = 0.0;
+	for (int y = -2; y <= 2; y++)
+	{
+		for (int x = -2; x <= 2; x++)
+		{
+			vec3 direction = offset + (tangent * float(x) + bitangent * float(y)) * pcfStep;
+			lit += texture(u_PointShadowMaps, vec4(direction, float(slot)), depth);
+		}
+	}
+	return lit / 25.0;
+}
+
+#endif

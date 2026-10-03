@@ -90,6 +90,10 @@ namespace H2M
 		// with an existing framebuffer
 		RefH2M<FramebufferH2M> ExistingFramebuffer;
 
+		// Vulkan: the color and depth attachments can be copied from between two render passes, and a second render pass
+		// continues drawing into them (VulkanFramebufferH2M::GetContinueRenderPass). Depth is kept after the render pass.
+		bool CopySource = false;
+
 		std::string DebugName;
 	};
 

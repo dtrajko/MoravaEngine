@@ -43,6 +43,17 @@ namespace H2M {
 		VkRenderPass GetRenderPass() const { return m_RenderPass; }
 		VkFramebuffer GetVulkanFramebuffer() const { return m_Framebuffer; }
 
+		// Specification.CopySource: the attachments' images (to copy from between render passes), and a render pass (with its
+		// framebuffer) that loads them instead of clearing, to continue drawing after the copy. The continue render pass is
+		// compatible with GetRenderPass(), so the same pipelines draw in both. It expects the color attachment in
+		// SHADER_READ_ONLY_OPTIMAL and depth in DEPTH_STENCIL_ATTACHMENT_OPTIMAL (the layouts GetRenderPass() leaves them in).
+		VkImage GetColorVulkanImage() const { return m_ColorAttachment.image; }
+		VkImage GetDepthVulkanImage() const { return m_DepthAttachment.image; }
+		VkFormat GetColorVulkanFormat() const { return m_ColorFormat; }
+		VkFormat GetDepthVulkanFormat() const { return m_DepthFormat; }
+		VkRenderPass GetContinueRenderPass() const { return m_ContinueRenderPass; }
+		VkFramebuffer GetContinueVulkanFramebuffer() const { return m_ContinueFramebuffer; }
+
 		size_t GetColorAttachmentCount() const { return m_Attachments.size(); }
 		const std::vector<VkClearValue>& GetVulkanClearValues() const { return m_ClearValues; }
 		virtual const FramebufferSpecificationH2M& GetSpecification() const override { return m_Specification; }
@@ -76,6 +87,10 @@ namespace H2M {
 		VkSampler m_ColorAttachmentSampler;
 		VkRenderPass m_RenderPass = nullptr;
 		VkFramebuffer m_Framebuffer = nullptr;
+		VkRenderPass m_ContinueRenderPass = nullptr;   // Specification.CopySource only
+		VkFramebuffer m_ContinueFramebuffer = nullptr;
+		VkFormat m_ColorFormat = VK_FORMAT_UNDEFINED;
+		VkFormat m_DepthFormat = VK_FORMAT_UNDEFINED;
 		VkDescriptorImageInfo m_DescriptorImageInfo;
 
 		std::vector<std::function<void(RefH2M<FramebufferH2M>)>> m_ResizeCallbacks;

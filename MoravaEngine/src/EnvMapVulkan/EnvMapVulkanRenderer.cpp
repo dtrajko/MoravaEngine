@@ -8,6 +8,7 @@
 #include "EnvMapVulkanLights.h"
 #include "EnvMapVulkanShadows.h"
 #include "EnvMapVulkanMaterialLibrary.h"
+#include "EnvMapVulkanWater.h"
 
 #include "Core/ResourceManager.h"
 
@@ -581,12 +582,6 @@ static void RaycastMesh(float ndcX, float ndcY, int& hitModel, int& hitMesh, glm
 	}
 }
 
-// Selects the model and mesh under the mouse. Nothing hit clears the selection.
-static void PickMesh(float ndcX, float ndcY)
-{
-	RaycastMesh(ndcX, ndcY, s_SelectedModelIndex, s_SelectedMeshIndex);
-}
-
 // Material Library (the materials themselves are in EnvMapVulkanMaterialLibrary)
 static H2M::RefH2M<EnvMapVulkanMaterial> s_SelectedMaterial;      // edited in the Material Editor
 static H2M::RefH2M<EnvMapVulkanMaterial> s_PendingDeleteMaterial; // requested from the UI, deleted at the start of the next Draw
@@ -926,12 +921,30 @@ static int s_SelectedLightIndex = 0;
 static bool s_ShowLightGizmos = true; // light icons and shapes in the viewport
 static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light's shadow (see ShadowDebugValue in the PBR shaders)
 
+// The water plane (Water panel, see EnvMapVulkanWater.h). It joins the same selection: selecting it clears the light and
+// model selection, and selecting a light or a model clears it.
+static EnvMapVulkanWaterSettings s_WaterSettings;
+static EnvMapVulkanWater s_Water;
+static bool s_WaterSelected = false;
+
 static void SelectLight(LightKind kind, int index = 0)
 {
 	s_SelectedLightKind = kind;
 	s_SelectedLightIndex = index;
 	if (kind != LightKind::None)
 	{
+		s_SelectedModelIndex = -1;
+		s_SelectedMeshIndex = -1;
+		s_WaterSelected = false;
+	}
+}
+
+static void SelectWater()
+{
+	s_WaterSelected = s_WaterSettings.Enabled;
+	if (s_WaterSelected)
+	{
+		s_SelectedLightKind = LightKind::None;
 		s_SelectedModelIndex = -1;
 		s_SelectedMeshIndex = -1;
 	}
@@ -946,6 +959,7 @@ static void SyncLightSelection()
 	if (s_SelectedModelIndex >= 0 && (s_SelectedModelIndex != s_LastModelIndex || s_SelectedMeshIndex != s_LastMeshIndex))
 	{
 		s_SelectedLightKind = LightKind::None;
+		s_WaterSelected = false;
 	}
 	s_LastModelIndex = s_SelectedModelIndex;
 	s_LastMeshIndex = s_SelectedMeshIndex;
@@ -954,6 +968,10 @@ static void SyncLightSelection()
 		(s_SelectedLightKind == LightKind::Spot && s_SelectedLightIndex >= (int)s_Lights.SpotLights.size()))
 	{
 		s_SelectedLightKind = LightKind::None;
+	}
+	if (!s_WaterSettings.Enabled)
+	{
+		s_WaterSelected = false; // the water was removed
 	}
 }
 
@@ -1218,6 +1236,34 @@ static void DrawLightGizmos()
 }
 
 // The light whose icon is under the mouse (the nearest one within 12 pixels)
+// The selected water's border: an orange rectangle (made of short segments, so the parts in front of the camera show when
+// the rest is behind it)
+static void DrawWaterOutline()
+{
+	if (!s_WaterSelected || s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
+	{
+		return;
+	}
+	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	drawList->PushClipRect(s_ViewportImageMin, ImVec2(s_ViewportImageMin.x + s_ViewportImageSize.x, s_ViewportImageMin.y + s_ViewportImageSize.y), true);
+	const glm::mat4 transform = s_WaterSettings.GetTransform();
+	const glm::vec3 corners[4] = {
+		glm::vec3(transform * glm::vec4(-0.5f, 0.0f, -0.5f, 1.0f)), glm::vec3(transform * glm::vec4(0.5f, 0.0f, -0.5f, 1.0f)),
+		glm::vec3(transform * glm::vec4(0.5f, 0.0f, 0.5f, 1.0f)), glm::vec3(transform * glm::vec4(-0.5f, 0.0f, 0.5f, 1.0f)) };
+	const int segments = 32;
+	for (int side = 0; side < 4; side++)
+	{
+		const glm::vec3& a = corners[side];
+		const glm::vec3& b = corners[(side + 1) % 4];
+		for (int i = 0; i < segments; i++)
+		{
+			DrawWorldLine(drawList, viewProjection, glm::mix(a, b, (float)i / segments), glm::mix(a, b, (float)(i + 1) / segments), IM_COL32(255, 140, 0, 255), 2.0f);
+		}
+	}
+	drawList->PopClipRect();
+}
+
 static bool PickLightIcon(LightKind& kind, int& index)
 {
 	if (!s_ShowLightGizmos)
@@ -1947,6 +1993,148 @@ static void OnImGuiRenderLights()
 	{
 		OnImGuiRenderLocalShadowSettings();
 	}
+
+	ImGui::End();
+}
+
+// The water plane: add / remove it, its place and size, the waves and the look (EnvMapVulkanWaterSettings)
+static void OnImGuiRenderWater()
+{
+	ImGui::SetNextWindowSize(ImVec2(320.0f, 420.0f), ImGuiCond_FirstUseEver);
+	ImGui::Begin("Water");
+	EnvMapVulkanWaterSettings& water = s_WaterSettings;
+
+	if (!water.Enabled)
+	{
+		if (ImGui::Button("Add Water"))
+		{
+			// Under the center of the view, at the height of the ground plane
+			glm::vec3 target = GetLightSpawnTarget();
+			water.Center = glm::vec2(target.x, target.z);
+			water.Enabled = true;
+			SelectWater();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("One water plane per scene: a rectangle with waves and reflections,\nmoved and resized with the gizmo when selected");
+		}
+		ImGui::TextDisabled("No water on the scene");
+		ImGui::End();
+		return;
+	}
+
+	if (ImGui::Button("Remove Water"))
+	{
+		water.Enabled = false;
+		s_WaterSelected = false;
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(s_WaterSelected);
+	if (ImGui::Button("Select"))
+	{
+		SelectWater();
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Selects the water for the gizmo (or click it in the viewport):\n1 move (height and position), 3 resize");
+	}
+
+	ImGui::Columns(2);
+	ImGuiWrapper::Property("Height", water.Height, 0.05f, 0.0f, 0.0f, PropertyFlag::DragProperty); // min = max = 0: no limits
+	ImGuiWrapper::Property("Center X", water.Center.x, 0.1f, 0.0f, 0.0f, PropertyFlag::DragProperty);
+	ImGuiWrapper::Property("Center Z", water.Center.y, 0.1f, 0.0f, 0.0f, PropertyFlag::DragProperty);
+	ImGuiWrapper::Property("Size X", water.Size.x, 0.1f, 0.1f, 10000.0f, PropertyFlag::DragProperty);
+	ImGuiWrapper::Property("Size Z", water.Size.y, 0.1f, 0.1f, 10000.0f, PropertyFlag::DragProperty);
+	ImGui::Columns(1);
+
+	ImGui::Separator();
+	ImGui::Text("Waves");
+	ImGui::Columns(2);
+	if (ImGuiWrapper::Property("Direction", water.WaveDirection, 0.5f, 0.0f, 0.0f, PropertyFlag::DragProperty)) // no limits, wraps
+	{
+		water.WaveDirection = std::remainder(water.WaveDirection, 360.0f);
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Degrees around the vertical axis: where the waves move");
+	}
+	ImGuiWrapper::Property("Speed", water.WaveSpeed, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("World units per second (the ripples move a bit slower, in another direction)");
+	}
+	ImGuiWrapper::Property("Strength", water.WaveStrength, 0.0f, 1.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Steepness of the waves: 0 is a mirror");
+	}
+	ImGuiWrapper::Property("Wave Size", water.WaveScale1, 0.05f, 0.1f, 100.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("World size of the larger wave pattern");
+	}
+	ImGuiWrapper::Property("Ripple Size", water.WaveScale2, 0.05f, 0.1f, 100.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("World size of the smaller wave pattern");
+	}
+	ImGui::Columns(1);
+
+	ImGui::Separator();
+	ImGui::Text("Look");
+	ImGui::Columns(2);
+	ImGuiWrapper::Property("Scatter Color", water.ScatterColor, PropertyFlag::ColorProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The light the water body sends back up: dark blue-green for deep, clear water,\nbrighter and greener or browner for shallow or murky water");
+	}
+	ImGuiWrapper::Property("Roughness", water.Roughness, 0.01f, 0.5f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Small: a sharp sun highlight and a clear reflection; larger: a wider highlight and a blurred reflection");
+	}
+	ImGuiWrapper::Property("Reflection", water.ReflectionStrength, 0.0f, 2.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Strength of the reflected environment (1 = physically based)");
+	}
+	ImGui::Columns(1);
+
+	ImGui::Separator();
+	ImGui::Text("Into the Water");
+	ImGui::Columns(2);
+	ImGuiWrapper::Property("Tint", water.Transmittance, PropertyFlag::ColorProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The color light keeps after Clarity meters of water: what is under the water\nturns this color with depth (water absorbs red first)");
+	}
+	ImGuiWrapper::Property("Clarity", water.Clarity, 0.01f, 0.05f, 100.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Meters: larger values let you see deeper into the water");
+	}
+	ImGuiWrapper::Property("Refraction", water.RefractionStrength, 0.0f, 3.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How much the waves bend the view of what is under the water");
+	}
+	ImGuiWrapper::Property("Edge Softness", water.EdgeSoftness, 0.0f, 2.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Meters of water over which the surface fades in at the shore (no hard line)");
+	}
+	ImGuiWrapper::Property("Foam", water.FoamAmount, 0.0f, 1.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Foam along the shore and around objects standing in the water");
+	}
+	ImGuiWrapper::Property("Foam Width", water.FoamWidth, 0.01f, 3.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Meters of water depth that get foam");
+	}
+	ImGui::Columns(1);
 
 	ImGui::End();
 }
@@ -3116,10 +3304,11 @@ void EnvMapVulkanRenderer::Init()
 	/**** BEGIN: to be removed from VulkanRenderer ****/
 	{
 		H2M::FramebufferSpecificationH2M framebufferSpec;
-		framebufferSpec.Attachments = { H2M::ImageFormatH2M::RGBA32F, H2M::ImageFormatH2M::Depth };
+		framebufferSpec.Attachments = { H2M::ImageFormatH2M::RGBA16F, H2M::ImageFormatH2M::Depth }; // linear HDR: half floats are plenty
 		framebufferSpec.Samples = 1;
 		framebufferSpec.ClearOnLoad = false;
 		framebufferSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 1.0f };
+		framebufferSpec.CopySource = true; // the water copies its color and depth (see GeometryPass)
 		framebufferSpec.DebugName = "Viewport";
 		framebufferSpec.Width = s_ViewportWidth;
 		framebufferSpec.Height = s_ViewportHeight;
@@ -3265,6 +3454,9 @@ void EnvMapVulkanRenderer::Init()
 		pipelineSpecification.DebugName = "Grid";
 		s_GridPipeline = H2M::PipelineH2M::Create(pipelineSpecification);
 	}
+
+	// Water: drawn into the scene framebuffer after the opaque meshes (see GeometryPass)
+	s_Water.Create(s_Framebuffer);
 
 	/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
 	H2M::RenderPassSpecificationH2M renderPassSpec;
@@ -3426,6 +3618,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_SpotShadowMaps.Destroy();
 	s_PointShadowMaps.Destroy();
 	s_ShadowMapViewer.Destroy();
+	s_Water.Destroy();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
 	// delete s_Data;
 }
@@ -4097,7 +4290,27 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		s_SubmittedModels.clear();
 
-		// Transparent, so after the opaque meshes
+		// The water: it looks into the opaque scene drawn so far. The render pass ends, its color and depth are copied
+		// for the water to read, and the framebuffer's continue render pass (which loads the attachments instead of
+		// clearing them) takes over for the water and the rest.
+		if (s_WaterSettings.Enabled)
+		{
+			vkCmdEndRenderPass(drawCommandBuffer);
+			s_Water.CopyScene(drawCommandBuffer, s_Framebuffer);
+
+			VkRenderPassBeginInfo continueBeginInfo = renderPassBeginInfo;
+			continueBeginInfo.renderPass = framebuffer->GetContinueRenderPass();
+			continueBeginInfo.framebuffer = framebuffer->GetContinueVulkanFramebuffer();
+			continueBeginInfo.clearValueCount = 0;
+			continueBeginInfo.pClearValues = nullptr;
+			vkCmdBeginRenderPass(drawCommandBuffer, &continueBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			vkCmdSetViewport(drawCommandBuffer, 0, 1, &viewport);
+			vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
+
+			s_Water.Record(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], s_WaterSettings);
+		}
+
+		// Transparent, so after the opaque meshes and the water
 		if (s_DisplayGrid)
 		{
 			RenderGrid(drawCommandBuffer);
@@ -4741,6 +4954,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 			SyncLightSelection();
 			DrawLightGizmos();
+			DrawWaterOutline();
 
 			Window* mainWindow = Application::Get()->GetWindow();
 			UpdateImGuizmo(mainWindow);
@@ -4759,8 +4973,19 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				else
 				{
 					glm::vec2 ndc = GetViewportMouseNdc();
-					PickMesh(ndc.x, ndc.y);
+					glm::vec3 meshHit;
+					RaycastMesh(ndc.x, ndc.y, s_SelectedModelIndex, s_SelectedMeshIndex, &meshHit);
 					SelectLight(LightKind::None);
+					s_WaterSelected = false;
+					// The water, when it is in front of the model under the cursor (or there is none)
+					glm::vec3 rayOrigin, rayDirection;
+					GetCameraRay(ndc.x, ndc.y, rayOrigin, rayDirection);
+					float waterT;
+					if (RaycastWater(s_WaterSettings, rayOrigin, rayDirection, waterT) &&
+						(s_SelectedModelIndex < 0 || waterT < glm::length(meshHit - rayOrigin)))
+					{
+						SelectWater();
+					}
 					// Shift + click: the whole model (the gizmo moves the model, not the part under the mouse)
 					if (Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift))
 					{
@@ -5026,6 +5251,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			OnImGuiRenderMaterialLibrary();
 			OnImGuiRenderMaterialEditor();
 			OnImGuiRenderLights();
+			OnImGuiRenderWater();
 
 			/**** BEGIN DockSpace menu bar ****/
 
@@ -5227,10 +5453,15 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		SubmitModelTemp(entry.Model, entry.GetTransform(), entry.MeshMaterials);
 	}
 	UpdateFrameUniforms();
+	if (s_WaterSettings.Enabled)
+	{
+		s_Water.Update(s_WaterSettings, deltaTime, s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix());
+	}
 
 	if (s_ViewportFBNeedsResize)
 	{
 		s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
+		s_Water.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
 		s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_OverlayFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_SelectionMaskFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
@@ -5569,6 +5800,36 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 		else
 		{
 			ManipulateSelectedLight(Scene::s_ImGuizmoType, Input::IsKeyPressed(KeyH2M::LeftControl));
+		}
+		return;
+	}
+
+	// The water: translate moves it (its position and height), scale resizes it. It doesn't turn: it is an axis-aligned rectangle.
+	if (Scene::s_ImGuizmoType != -1 && s_WaterSelected && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+	{
+		if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE)
+		{
+			return;
+		}
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
+		float snapValues[3] = { 1.0f, 1.0f, 1.0f };
+		glm::mat4 transform = s_WaterSettings.GetTransform();
+		if (ImGuizmo::Manipulate(
+			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
+			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
+			(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+			ImGuizmo::WORLD,
+			glm::value_ptr(transform),
+			nullptr,
+			Input::IsKeyPressed(KeyH2M::LeftControl) ? snapValues : nullptr))
+		{
+			glm::vec3 translation, rotation, scale;
+			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform), &translation.x, &rotation.x, &scale.x);
+			s_WaterSettings.Center = glm::vec2(translation.x, translation.z);
+			s_WaterSettings.Height = translation.y;
+			s_WaterSettings.Size = glm::max(glm::vec2(scale.x, scale.z), glm::vec2(0.1f));
 		}
 		return;
 	}

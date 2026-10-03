@@ -1,0 +1,11 @@
+// Set 0, per frame (vertex stage): the camera. Shaders that bind the per-frame descriptor set (s_Data.FrameDescriptorSet)
+// declare set 0 exactly like this (with Include/FrameSet.glslh in the fragment stage), so their set 0 layouts are identical.
+#ifndef FRAME_CAMERA_GLSLH
+#define FRAME_CAMERA_GLSLH
+
+layout (std140, set = 0, binding = 0) uniform Camera
+{
+	mat4 u_ViewProjectionMatrix;
+};
+
+#endif

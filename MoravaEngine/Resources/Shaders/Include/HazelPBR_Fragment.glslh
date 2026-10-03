@@ -1,0 +1,418 @@
+// The fragment stage of the PBR shaders (HazelPBR_Static.glsl and HazelPBR_Anim.glsl): the same for static and skinned meshes
+
+const float PI = 3.141592;
+const float Epsilon = 0.00001;
+
+// Constant normal incidence Fresnel factor for all dielectrics.
+const vec3 Fdielectric = vec3(0.04);
+
+
+struct VertexOutput
+{
+	vec3 WorldPosition;
+    vec3 Normal;
+	vec2 TexCoord;
+	mat3 WorldNormals;
+	mat3 WorldTransform;
+	vec3 Binormal;
+};
+
+layout (location = 0) in VertexOutput Input;
+
+layout(location = 0) out vec4 color;
+// Set 0, per frame: shared by every mesh
+#include "FrameSet.glslh"
+
+// Set 1, per material: PBR texture maps
+layout (set = 1, binding = 0) uniform sampler2D u_AlbedoTexture;
+layout (set = 1, binding = 1) uniform sampler2D u_NormalTexture;
+layout (set = 1, binding = 2) uniform sampler2D u_MetalnessTexture;
+layout (set = 1, binding = 3) uniform sampler2D u_RoughnessTexture;
+layout (set = 1, binding = 4) uniform sampler2D u_EmissiveTexture;
+layout (set = 1, binding = 5) uniform sampler2D u_AOTexture;
+
+layout (push_constant) uniform Material
+{
+	layout (offset = 64) vec3 AlbedoColor;
+	float Metalness;
+	float Roughness;
+
+	// Toggles
+	float RadiancePrefilter;
+	float AlbedoTexToggle;
+	float NormalTexToggle;
+	float MetalnessTexToggle;
+	float RoughnessTexToggle;
+
+	// Offsets 104..123 (the whole block ends at 124 bytes; 128 is the minimum maxPushConstantsSize guaranteed by Vulkan)
+	float TilingFactor;       // texture coordinate scale (0 is treated as 1)
+	float EmissiveTexToggle;
+	float AOTexToggle;
+	float EmissiveIntensity;  // multiplies the emissive map (HDR values above 1 are fine)
+	float MetalRoughPacked;   // 1: glTF metallicRoughness map (roughness in G, metalness in B); 0: both maps read from R
+} u_MaterialUniforms;
+
+struct PBRParameters
+{
+	vec3 Albedo;
+	vec3 Normal;
+	float Metalness;
+	float Roughness;
+
+	vec3 View;
+	float NdotV;
+};
+
+PBRParameters m_Params;
+
+// GGX/Towbridge-Reitz normal distribution function.
+// Uses Disney's reparametrization of alpha = roughness^2
+float ndfGGX(float cosLh, float roughness)
+{
+	float alpha = roughness * roughness;
+	float alphaSq = alpha * alpha;
+
+	float denom = (cosLh * cosLh) * (alphaSq - 1.0) + 1.0;
+	return alphaSq / (PI * denom * denom);
+}
+
+// Single term for separable Schlick-GGX below.
+float gaSchlickG1(float cosTheta, float k)
+{
+	return cosTheta / (cosTheta * (1.0 - k) + k);
+}
+
+// Schlick-GGX approximation of geometric attenuation function using Smith's method.
+float gaSchlickGGX(float cosLi, float NdotV, float roughness)
+{
+	float r = roughness + 1.0;
+	float k = (r * r) / 8.0; // Epic suggests using this roughness remapping for analytic lights.
+	return gaSchlickG1(cosLi, k) * gaSchlickG1(NdotV, k);
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float nom   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
+}
+
+// Shlick's approximation of the Fresnel factor.
+vec3 fresnelSchlick(vec3 F0, float cosTheta)
+{
+	return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+vec3 fresnelSchlickRoughness(vec3 F0, float cosTheta, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+} 
+
+// ---------------------------------------------------------------------------------------------------
+// The following code (from Unreal Engine 4's paper) shows how to filter the environment map
+// for different roughnesses. This is mean to be computed offline and stored in cube map mips,
+// so turning this on online will cause poor performance
+float RadicalInverse_VdC(uint bits) 
+{
+    bits = (bits << 16u) | (bits >> 16u);
+    bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+    bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+    bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+    bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+    return float(bits) * 2.3283064365386963e-10; // / 0x100000000
+}
+
+vec2 Hammersley(uint i, uint N)
+{
+    return vec2(float(i)/float(N), RadicalInverse_VdC(i));
+}
+
+vec3 ImportanceSampleGGX(vec2 Xi, float Roughness, vec3 N)
+{
+	float a = Roughness * Roughness;
+	float Phi = 2 * PI * Xi.x;
+	float CosTheta = sqrt( (1 - Xi.y) / ( 1 + (a*a - 1) * Xi.y ) );
+	float SinTheta = sqrt( 1 - CosTheta * CosTheta );
+	vec3 H;
+	H.x = SinTheta * cos( Phi );
+	H.y = SinTheta * sin( Phi );
+	H.z = CosTheta;
+	vec3 UpVector = abs(N.z) < 0.999 ? vec3(0,0,1) : vec3(1,0,0);
+	vec3 TangentX = normalize( cross( UpVector, N ) );
+	vec3 TangentY = cross( N, TangentX );
+	// Tangent to world space
+	return TangentX * H.x + TangentY * H.y + N * H.z;
+}
+
+float TotalWeight = 0.0;
+
+vec3 PrefilterEnvMap(float Roughness, vec3 R)
+{
+	vec3 N = R;
+	vec3 V = R;
+	vec3 PrefilteredColor = vec3(0.0);
+	int NumSamples = 1024;
+	for(int i = 0; i < NumSamples; i++)
+	{
+		vec2 Xi = Hammersley(i, NumSamples);
+		vec3 H = ImportanceSampleGGX(Xi, Roughness, N);
+		vec3 L = 2 * dot(V, H) * H - V;
+		float NoL = clamp(dot(N, L), 0.0, 1.0);
+		if (NoL > 0)
+		{
+			// PrefilteredColor += texture(u_EnvRadianceTex, L).rgb * NoL;
+			TotalWeight += NoL;
+		}
+	}
+	return PrefilteredColor / TotalWeight;
+}
+
+// ---------------------------------------------------------------------------------------------------
+
+vec3 RotateVectorAboutY(float angle, vec3 vec)
+{
+    angle = radians(angle);
+    mat3x3 rotationMatrix ={vec3(cos(angle),0.0,sin(angle)),
+                            vec3(0.0,1.0,0.0),
+                            vec3(-sin(angle),0.0,cos(angle))};
+    return rotationMatrix * vec;
+}
+
+// Cook-Torrance BRDF for one light. L points from the surface towards the light; radiance is the light that arrives
+// at the surface (attenuation and cone already applied).
+vec3 EvaluateBRDF(vec3 F0, vec3 L, vec3 radiance)
+{
+	float cosLi = max(0.0, dot(m_Params.Normal, L));
+	if (cosLi <= 0.0)
+	{
+		return vec3(0.0);
+	}
+	vec3 Lh = normalize(L + m_Params.View);
+	float cosLh = max(0.0, dot(m_Params.Normal, Lh));
+
+	vec3 F = fresnelSchlick(F0, max(0.0, dot(Lh, m_Params.View)));
+	float D = ndfGGX(cosLh, m_Params.Roughness);
+	float G = gaSchlickGGX(cosLi, m_Params.NdotV, m_Params.Roughness);
+
+	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+	vec3 diffuseBRDF = kd * m_Params.Albedo;
+	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
+
+	return (diffuseBRDF + specularBRDF) * radiance * cosLi;
+}
+
+// Inverse-square falloff, windowed to reach exactly zero at the light's range (Karis 2013, "Real Shading in Unreal Engine 4").
+// The distance is clamped to 1 cm, so a surface at the light's position doesn't get infinite light.
+float DistanceAttenuation(float distance, float range)
+{
+	float ratio = distance / range;
+	float ratio2 = ratio * ratio;
+	float window = clamp(1.0 - ratio2 * ratio2, 0.0, 1.0);
+	return window * window / max(distance * distance, 0.0001);
+}
+
+#include "Shadows.glslh"
+
+
+// Shadows Only (Lights panel): the selected light's shadow, white = lit, black = in shadow, dark gray = the light doesn't
+// reach the surface (outside its range or cone, or facing away). u_ShadowDebug: x = 1 sun, 2 point, 3 spot, 4 the light
+// is off; y = the light's index in u_PointLights / u_SpotLights.
+float ShadowDebugValue()
+{
+	const float notReached = 0.2;
+	int mode = int(u_ShadowDebug.x);
+	int index = int(u_ShadowDebug.y);
+	vec3 N = normalize(Input.Normal);
+	if (mode == 1)
+	{
+		return dot(N, u_Sun.Direction) > 0.0 ? SunShadow(Input.WorldPosition, N) : notReached;
+	}
+	if (mode == 2 && index < u_PointLightCount)
+	{
+		vec3 toLight = u_PointLights[index].Position - Input.WorldPosition;
+		float distance = length(toLight);
+		vec3 L = toLight / max(distance, Epsilon);
+		if (distance >= u_PointLights[index].Range || dot(N, L) <= 0.0)
+		{
+			return notReached;
+		}
+		return u_PointLights[index].ShadowIndex >= 0.0 ? PointShadow(int(u_PointLights[index].ShadowIndex), Input.WorldPosition, N, u_PointLights[index].Position, L, distance) : 1.0;
+	}
+	if (mode == 3 && index < u_SpotLightCount)
+	{
+		vec3 toLight = u_SpotLights[index].Position - Input.WorldPosition;
+		float distance = length(toLight);
+		vec3 L = toLight / max(distance, Epsilon);
+		if (distance >= u_SpotLights[index].Range || dot(N, L) <= 0.0 || dot(-L, u_SpotLights[index].Direction) <= u_SpotLights[index].CosOuter)
+		{
+			return notReached;
+		}
+		return u_SpotLights[index].ShadowIndex >= 0.0 ? SpotShadow(int(u_SpotLights[index].ShadowIndex), Input.WorldPosition, N, L, distance) : 1.0;
+	}
+	return notReached;
+}
+
+// Direct light from the sun, the point lights and the spot lights (lists packed by EnvMapVulkanLightEnvironment::Pack)
+vec3 Lighting(vec3 F0)
+{
+	// The sun, through its shadow map (sampled only where the sun can reach the surface at all)
+	vec3 result = vec3(0.0);
+	if (u_Sun.Intensity > 0.0 && dot(m_Params.Normal, u_Sun.Direction) > 0.0)
+	{
+		float shadow = SunShadow(Input.WorldPosition, normalize(Input.Normal));
+		result = EvaluateBRDF(F0, u_Sun.Direction, u_Sun.Color * u_Sun.Intensity * shadow);
+	}
+
+	int pointLightCount = min(u_PointLightCount, MaxPointLights);
+	for (int i = 0; i < pointLightCount; i++)
+	{
+		vec3 toLight = u_PointLights[i].Position - Input.WorldPosition;
+		float distance = length(toLight);
+		if (distance >= u_PointLights[i].Range)
+		{
+			continue;
+		}
+		vec3 L = toLight / max(distance, Epsilon);
+		float attenuation = DistanceAttenuation(distance, u_PointLights[i].Range);
+		if (u_PointLights[i].ShadowIndex >= 0.0 && dot(m_Params.Normal, L) > 0.0)
+		{
+			attenuation *= PointShadow(int(u_PointLights[i].ShadowIndex), Input.WorldPosition, normalize(Input.Normal), u_PointLights[i].Position, L, distance);
+		}
+		result += EvaluateBRDF(F0, L, u_PointLights[i].Color * u_PointLights[i].Intensity * attenuation);
+	}
+
+	int spotLightCount = min(u_SpotLightCount, MaxSpotLights);
+	for (int i = 0; i < spotLightCount; i++)
+	{
+		vec3 toLight = u_SpotLights[i].Position - Input.WorldPosition;
+		float distance = length(toLight);
+		if (distance >= u_SpotLights[i].Range)
+		{
+			continue;
+		}
+		vec3 L = toLight / max(distance, Epsilon);
+		// Full intensity inside the inner cone, a smooth fade to zero at the outer cone
+		float cone = smoothstep(u_SpotLights[i].CosOuter, u_SpotLights[i].CosInner, dot(-L, u_SpotLights[i].Direction));
+		if (cone <= 0.0)
+		{
+			continue;
+		}
+		float attenuation = DistanceAttenuation(distance, u_SpotLights[i].Range);
+		if (u_SpotLights[i].ShadowIndex >= 0.0 && dot(m_Params.Normal, L) > 0.0)
+		{
+			attenuation *= SpotShadow(int(u_SpotLights[i].ShadowIndex), Input.WorldPosition, normalize(Input.Normal), L, distance);
+		}
+		result += EvaluateBRDF(F0, L, u_SpotLights[i].Color * u_SpotLights[i].Intensity * attenuation * cone);
+	}
+
+	return result;
+}
+
+vec3 IBL(vec3 F0, vec3 Lr)
+{
+	// The environment rotation applies to the diffuse lighting too (not only to the reflections), so both match the skybox
+	vec3 irradiance = texture(u_EnvIrradianceTex, RotateVectorAboutY(u_EnvMapRotation, m_Params.Normal)).rgb;
+	vec3 F = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
+	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+	vec3 diffuseIBL = m_Params.Albedo * irradiance;
+
+	int envRadianceTexLevels = textureQueryLevels(u_EnvRadianceTex);
+	float NoV = clamp(m_Params.NdotV, 0.0, 1.0);
+	vec3 R = 2.0 * dot(m_Params.View, m_Params.Normal) * m_Params.Normal - m_Params.View;
+	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, Lr), m_Params.Roughness * envRadianceTexLevels).rgb;
+
+	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
+	vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
+	vec3 specularIBL = specularIrradiance * (F0 * specularBRDF.x + specularBRDF.y);
+
+	return kd * diffuseIBL + specularIBL;
+}
+
+void main()
+{
+	//	Standard PBR inputs
+
+	// Texture toggles and values come from the material (push constants, editable in the Material Editor)
+	float tiling = u_MaterialUniforms.TilingFactor > 0.0 ? u_MaterialUniforms.TilingFactor : 1.0;
+	vec2 texCoord = Input.TexCoord * tiling;
+	bool packed = u_MaterialUniforms.MetalRoughPacked > 0.5;
+
+	m_Params.Albedo = u_MaterialUniforms.AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, texCoord).rgb : u_MaterialUniforms.AlbedoColor;
+	m_Params.Metalness = u_MaterialUniforms.MetalnessTexToggle > 0.5 ? (packed ? texture(u_MetalnessTexture, texCoord).b : texture(u_MetalnessTexture, texCoord).r) : u_MaterialUniforms.Metalness;
+	m_Params.Roughness = u_MaterialUniforms.RoughnessTexToggle > 0.5 ? (packed ? texture(u_RoughnessTexture, texCoord).g : texture(u_RoughnessTexture, texCoord).r) : u_MaterialUniforms.Roughness;
+	m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
+
+	// Normals (either from vertex or map)
+	m_Params.Normal = normalize(Input.Normal);
+	if (u_MaterialUniforms.NormalTexToggle > 0.5)
+	{
+		m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, texCoord).rgb - 1.0);
+		m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);
+	}
+
+	m_Params.View = normalize(u_CameraPosition - Input.WorldPosition);
+	m_Params.NdotV = max(dot(m_Params.Normal, m_Params.View), 0.0);
+
+	// Specular reflection vector
+	vec3 Lr = 2.0 * m_Params.NdotV * m_Params.Normal - m_Params.View;
+
+	// Fresnel reflectance, metals use albedo
+	vec3 F0 = mix(Fdielectric, m_Params.Albedo, m_Params.Metalness);
+
+	vec3 lightContribution = Lighting(F0);
+	vec3 iblContribution = IBL(F0, Lr);
+
+	// Ambient occlusion darkens only the indirect (environment) light; the map is linear data in R
+	float ao = u_MaterialUniforms.AOTexToggle > 0.5 ? texture(u_AOTexture, texCoord).r : 1.0;
+
+	// Emission is added on top of the lit surface (the map is sRGB color data, decoded by the sampler)
+	vec3 emissive = u_MaterialUniforms.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_MaterialUniforms.EmissiveIntensity : vec3(0.0);
+
+	color = vec4(lightContribution + iblContribution * ao + emissive, 1.0);
+	if (u_ShowCascades > 0.5 && u_ShadowsEnabled > 0.5)
+	{
+		color.rgb *= CascadeDebugColor(Input.WorldPosition);
+	}
+	if (u_ShadowDebug.x > 0.5)
+	{
+		color = vec4(vec3(ShadowDebugValue()), 1.0); // shown as it is: the composite skips exposure, bloom and tonemapping
+	}
+
+	// color = vec4(Input.WorldPosition, 1.0);
+	// color = texture(u_RoughnessTexture, Input.TexCoord);
+	// color = vec4(F0, 1.0);
+	// color = vec4(m_Params.View, 1.0);
+
+	// vec3 albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb;
+	// color = vec4(albedo, 1);
+
+	/**** BEGIN main() from VulkanWeekMesh ****/
+	// m_Params.Albedo = texture(u_AlbedoTexture, Input.TexCoord).rgb;
+	// 
+	// // Normals (either from vertex or map)
+	// m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, Input.TexCoord).rgb - 1.0);
+	// m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);
+	// 
+	// float ambient = 0.2;
+	// vec3 lightDir = vec3(-1.0, 1.0, 0.0);
+	// float intensity = clamp(dot(lightDir, m_Params.Normal), ambient, 1.0);
+	// 
+	// color = vec4(m_Params.Albedo, 1.0);
+	// color.rgb *= intensity;
+
+	/**** END main() from VulkanWeekMesh ****/
+}
