@@ -132,6 +132,9 @@ namespace H2M
 		enabledFeatures.wideLines = true;
 		enabledFeatures.fillModeNonSolid = true;
 		enabledFeatures.pipelineStatisticsQuery = true;
+		// Cube map arrays (samplerCubeArrayShadow): the point light shadow maps of SceneEnvMapVulkan, when the GPU has them
+		enabledFeatures.imageCubeArray = m_PhysicalDevice->GetFeatures().imageCubeArray;
+		MORAVA_CORE_INFO("Vulkan device feature imageCubeArray: {0}", enabledFeatures.imageCubeArray ? "enabled" : "not supported");
 		m_Device = RefH2M<VulkanDeviceH2M>::Create(m_PhysicalDevice, enabledFeatures);
 
 		// Why is this here?

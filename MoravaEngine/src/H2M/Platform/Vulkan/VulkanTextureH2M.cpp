@@ -315,8 +315,8 @@ namespace H2M {
 		m_Width = width;
 		m_Height = height;
 
-		// H2M_CORE_ASSERT(format == ImageFormat::RGBA);
-		uint32_t size = width * height * 4;
+		// The size of the image in the given format (RGBA: 4 bytes per pixel, RGBA32F: 16)
+		uint32_t size = Utils::GetImageMemorySize(format, width, height);
 
 		m_ImageData = BufferH2M::Copy(data, size);
 		memcpy(m_ImageData.Data, data, m_ImageData.Size);

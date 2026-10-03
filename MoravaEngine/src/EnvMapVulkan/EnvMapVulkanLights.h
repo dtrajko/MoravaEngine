@@ -29,6 +29,31 @@ void AnglesFromDirection(const glm::vec3& direction, float& azimuth, float& elev
  */
 bool FindBrightestDirection(const float* rgba, uint32_t width, uint32_t height, glm::vec3& direction, glm::vec3& color);
 
+// A sun taken out of an environment map (ExtractSun), as a directional light
+struct EnvMapVulkanExtractedSun
+{
+	bool Found = false;
+	glm::vec3 Direction = glm::vec3(0.0f, 1.0f, 0.0f); // towards the sun, in the map's own space (before the environment rotation)
+	glm::vec3 Color = glm::vec3(1.0f);                 // brightest channel 1
+	float Intensity = 0.0f;                            // the removed light, as EnvMapVulkanDirectionalLight::Intensity
+	float PeakToAverage = 0.0f;                        // how much brighter than the map's average the sun's brightest pixel was
+	uint32_t PixelCount = 0;                           // pixels dimmed
+};
+
+/**
+ * Takes a real sun out of an equirectangular HDR map (RGBA32F, rows from the top), in place, before the environment
+ * lighting is built from the map, and returns its light as a directional light. The sun then casts shadows with all of
+ * its light, and isn't counted twice (once in the environment lighting, where nothing can shadow it, and once as the
+ * directional light).
+ * - A sun: a compact source above the horizon, at least 1000x brighter than the map's average. A bright window or sky
+ *   is not one (newport_loft.hdr has none; rooitou_park_4k.hdr's sun is 80,000x brighter than the average).
+ * - Removed: the pixels within 5 degrees of the brightest one (the disc and its glow) that are brighter than 50x the
+ *   average. They are dimmed to that level, so the skybox still shows a bright sun; the light above it goes to the
+ *   directional light, intensity = irradiance / pi (EnvironmentIrradiance.glsl bakes in a white Lambertian surface).
+ * Returns false (and leaves the pixels as they are) when the map has no sun.
+ */
+bool ExtractSun(float* rgba, uint32_t width, uint32_t height, EnvMapVulkanExtractedSun& sun);
+
 struct EnvMapVulkanDirectionalLight
 {
 	bool Enabled = true;
@@ -52,9 +77,10 @@ struct EnvMapVulkanPointLight
 	std::string Name;
 	bool Enabled = true;
 	glm::vec3 Color = glm::vec3(1.0f);
-	float Intensity = 10.0f;
+	float Intensity = 3.0f; // added 1.5 units above a surface: about 1.3 arrives there (a brighter light saturates a white surface)
 	glm::vec3 Position = glm::vec3(0.0f);
 	float Range = 10.0f; // the light reaches exactly zero here
+	bool CastShadows = false; // see MaxShadowedPointLights (EnvMapVulkanShadows.h)
 };
 
 struct EnvMapVulkanSpotLight
@@ -62,7 +88,7 @@ struct EnvMapVulkanSpotLight
 	std::string Name;
 	bool Enabled = true;
 	glm::vec3 Color = glm::vec3(1.0f);
-	float Intensity = 30.0f; // a spot is added 3 units above a surface (a point light 1.5): about the same light arrives
+	float Intensity = 10.0f; // added 3 units above a surface (a point light 1.5): about the same light arrives, 1.1
 	glm::vec3 Position = glm::vec3(0.0f);
 	float Range = 10.0f;
 	// Where the spot points (the direction the light travels); the default points straight down
@@ -71,6 +97,7 @@ struct EnvMapVulkanSpotLight
 	// Half-angles of the cone (degrees): full intensity inside InnerAngle, fading to zero at OuterAngle
 	float InnerAngle = 20.0f;
 	float OuterAngle = 30.0f;
+	bool CastShadows = false; // see MaxShadowedSpotLights (EnvMapVulkanShadows.h)
 
 	glm::vec3 GetDirection() const { return DirectionFromAngles(Azimuth, Elevation); }
 	void SetDirection(const glm::vec3& direction) { AnglesFromDirection(direction, Azimuth, Elevation); }
@@ -99,6 +126,8 @@ namespace EnvMapVulkanLightsGPU
 		float Intensity;
 		glm::vec3 Color;
 		float Range;
+		float ShadowIndex;   // the light's cube in the point light shadow maps, -1: no shadows
+		float Padding[3];
 	};
 
 	struct SpotLight
@@ -110,7 +139,8 @@ namespace EnvMapVulkanLightsGPU
 		glm::vec3 Direction; // the direction the light travels
 		float CosOuter;
 		float CosInner;
-		float Padding[3];    // three floats, not a vec3: a std140 vec3 would be aligned to 16 bytes
+		float ShadowIndex;   // the light's layer in the spot light shadow maps, -1: no shadows
+		float Padding[2];    // floats, not a vector: a std140 vec2 / vec3 would be aligned (and move the fields)
 	};
 
 	struct LightsUB
@@ -124,9 +154,9 @@ namespace EnvMapVulkanLightsGPU
 	};
 
 	static_assert(sizeof(DirectionalLight) == 32, "std140 layout mismatch");
-	static_assert(sizeof(PointLight) == 32, "std140 layout mismatch");
+	static_assert(sizeof(PointLight) == 48, "std140 layout mismatch");
 	static_assert(sizeof(SpotLight) == 64, "std140 layout mismatch");
-	static_assert(sizeof(LightsUB) == 48 + 32 * MaxPointLights + 64 * MaxSpotLights, "std140 layout mismatch");
+	static_assert(sizeof(LightsUB) == 48 + 48 * MaxPointLights + 64 * MaxSpotLights, "std140 layout mismatch");
 }
 
 /**
@@ -143,13 +173,18 @@ public:
 	bool CanAddPointLight() const { return PointLights.size() < EnvMapVulkanLightsGPU::MaxPointLights; }
 	bool CanAddSpotLight() const { return SpotLights.size() < EnvMapVulkanLightsGPU::MaxSpotLights; }
 
-	// A new light with a unique name ("Point Light 1"...), or nullptr when the list is full.
-	// The pointer is valid until the list changes.
-	EnvMapVulkanPointLight* AddPointLight(const glm::vec3& position);
-	EnvMapVulkanSpotLight* AddSpotLight(const glm::vec3& position);
+	// A new light with a unique name ("Point Light 1"...), or nullptr when the list is full. It casts shadows when fewer
+	// than maxShadowed lights of its kind do. The pointer is valid until the list changes.
+	EnvMapVulkanPointLight* AddPointLight(const glm::vec3& position, uint32_t maxShadowed);
+	EnvMapVulkanSpotLight* AddSpotLight(const glm::vec3& position, uint32_t maxShadowed);
 
-	// Fills the uniform buffer: directions normalized, cone angles as cosines, values clamped to valid ranges
-	void Pack(EnvMapVulkanLightsGPU::LightsUB& out) const;
+	uint32_t CountShadowedPointLights() const;
+	uint32_t CountShadowedSpotLights() const;
+
+	// Fills the uniform buffer: directions normalized, cone angles as cosines, values clamped to valid ranges.
+	// pointShadowSlots / spotShadowSlots: per light (same order as the lists), its shadow slot this frame or -1
+	// (empty: no shadows)
+	void Pack(EnvMapVulkanLightsGPU::LightsUB& out, const std::vector<int>& pointShadowSlots = {}, const std::vector<int>& spotShadowSlots = {}) const;
 
 private:
 	uint32_t m_NextPointLightNumber = 1;

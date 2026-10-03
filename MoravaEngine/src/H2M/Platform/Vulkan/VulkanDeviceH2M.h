@@ -41,6 +41,7 @@ namespace H2M {
 		const VkPhysicalDeviceMemoryProperties& GetMemoryProperties() const { return m_MemoryProperties; }
 
 		VkFormat GetDepthFormat() const { return m_DepthFormat; }
+		const VkPhysicalDeviceFeatures& GetFeatures() const { return m_Features; } // supported by the GPU
 
 		static RefH2M<VulkanPhysicalDeviceH2M> Select();
 
@@ -117,6 +118,9 @@ namespace H2M {
 		RefH2M<VulkanPhysicalDeviceH2M> m_PhysicalDevice;
 		VkPhysicalDeviceFeatures m_EnabledFeatures;
 		VkCommandPool m_CommandPool, m_ComputeCommandPool;
+
+	public:
+		const VkPhysicalDeviceFeatures& GetEnabledFeatures() const { return m_EnabledFeatures; }
 
 		VkQueue m_Queue; // a.k.a. Graphics Queue (default)
 		VkQueue m_ComputeQueue;

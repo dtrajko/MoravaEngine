@@ -87,7 +87,11 @@ struct PointLight
 	vec3 Position;
 	float Intensity;
 	vec3 Color;
-	float Range;     // the light reaches exactly zero here
+	float Range;       // the light reaches exactly zero here
+	float ShadowIndex; // the light's cube in u_PointShadowMaps, -1: no shadows
+	float Padding0;
+	float Padding1;
+	float Padding2;
 };
 
 struct SpotLight
@@ -99,8 +103,8 @@ struct SpotLight
 	vec3 Direction;  // the direction the light travels
 	float CosOuter;
 	float CosInner;
-	float Padding0;  // three floats, not a vec3: a std140 vec3 would be aligned to 16 bytes
-	float Padding1;
+	float ShadowIndex; // the light's layer in u_SpotShadowMaps, -1: no shadows
+	float Padding1;    // floats, not a vector: a std140 vec2 / vec3 would be aligned (and move the fields)
 	float Padding2;
 };
 
@@ -133,8 +137,8 @@ layout (std140, set = 0, binding = 5) uniform Lights
 	int u_PointLightCount;                     // offset 32
 	int u_SpotLightCount;                      // offset 36
 	ivec2 u_LightsPadding;                     // offset 40
-	PointLight u_PointLights[MaxPointLights];  // offset 48 (32 bytes each)
-	SpotLight u_SpotLights[MaxSpotLights];     // offset 560 (64 bytes each)
+	PointLight u_PointLights[MaxPointLights];  // offset 48 (48 bytes each)
+	SpotLight u_SpotLights[MaxSpotLights];     // offset 816 (64 bytes each)
 };
 // The sun's cascaded shadow map (EnvMapVulkanShadows.h): a layer per cascade, compared in the sampler (1 lit, 0 shadow)
 layout (set = 0, binding = 6) uniform sampler2DArrayShadow u_ShadowMap;
@@ -149,7 +153,15 @@ layout (std140, set = 0, binding = 7) uniform Shadows
 	float u_ShadowSoftness;          // offset 308: PCF tap spacing in texels
 	float u_ShowCascades;            // offset 312: 1 = tint the scene by cascade
 	float u_ShadowMapTexelSize;      // offset 316: 1 / resolution (texture coordinate units)
+	// Spot and point light shadows (a slot per shadowed light, see the lights' ShadowIndex)
+	mat4 u_SpotShadowViewProjection[4]; // offset 320: world -> spot shadow map clip space
+	vec4 u_PointShadowDepthParams[4];   // offset 576: depth = x - y / z (z: largest coordinate of the offset from the light)
+	vec4 u_SpotShadowTanHalfFov;        // offset 640: tan(field of view / 2) of each spot slot
+	vec4 u_LocalShadowParams;           // offset 656: normal bias (texels), softness (texels), 1 / spot resolution, 1 / point resolution
+	vec4 u_ShadowDebug;                 // offset 672: Shadows Only view, see ShadowDebugValue
 };
+layout (set = 0, binding = 8) uniform sampler2DArrayShadow u_SpotShadowMaps;  // a layer per shadowed spot light
+layout (set = 0, binding = 9) uniform samplerCubeArrayShadow u_PointShadowMaps; // a cube per shadowed point light
 
 // Set 1, per material: PBR texture maps
 layout (set = 1, binding = 0) uniform sampler2D u_AlbedoTexture;
@@ -439,6 +451,109 @@ vec3 CascadeDebugColor(vec3 worldPosition)
 	return viewDistance < u_CascadeSplits[3] ? colors[GetShadowCascade(viewDistance)] : vec3(1.0);
 }
 
+// The shadow of a spot light (1 lit, 0 in shadow): its layer of the spot light shadow maps, like a sun cascade but in a
+// perspective map. distance: from the light to the fragment.
+float SpotShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 L, float distance)
+{
+	// Normal offset, in proportion to the size of a shadow map texel at this distance
+	float cosTheta = clamp(dot(geometryNormal, L), 0.0, 1.0);
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	float texel = 2.0 * distance * u_SpotShadowTanHalfFov[slot] * u_LocalShadowParams.z;
+	vec3 position = worldPosition + geometryNormal * (u_LocalShadowParams.x * texel * (0.25 + sinTheta));
+
+	vec4 clip = u_SpotShadowViewProjection[slot] * vec4(position, 1.0);
+	if (clip.w <= 0.0)
+	{
+		return 1.0;
+	}
+	vec3 shadowCoord = clip.xyz / clip.w;
+	if (shadowCoord.z >= 1.0)
+	{
+		return 1.0;
+	}
+	vec2 uv = shadowCoord.xy * 0.5 + 0.5;
+
+	float lit = 0.0;
+	vec2 pcfStep = vec2(u_LocalShadowParams.y * u_LocalShadowParams.z);
+	for (int y = -2; y <= 2; y++)
+	{
+		for (int x = -2; x <= 2; x++)
+		{
+			lit += texture(u_SpotShadowMaps, vec4(uv + vec2(x, y) * pcfStep, float(slot), shadowCoord.z));
+		}
+	}
+	return lit / 25.0;
+}
+
+// The shadow of a point light (1 lit, 0 in shadow): its cube in the point light shadow maps. The cube is looked up with the
+// direction from the light; the depth to compare is the perspective depth of the largest coordinate of that offset (the
+// view depth in the face the direction selects, see ComputePointShadowFaceViewProjections).
+float PointShadow(int slot, vec3 worldPosition, vec3 geometryNormal, vec3 lightPosition, vec3 L, float distance)
+{
+	// Normal offset, in proportion to the size of a cube face texel at this distance (90 degree faces)
+	float cosTheta = clamp(dot(geometryNormal, L), 0.0, 1.0);
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	float texel = 2.0 * distance * u_LocalShadowParams.w;
+	vec3 offset = worldPosition + geometryNormal * (u_LocalShadowParams.x * texel * (0.25 + sinTheta)) - lightPosition;
+
+	float z = max(abs(offset.x), max(abs(offset.y), abs(offset.z)));
+	float depth = u_PointShadowDepthParams[slot].x - u_PointShadowDepthParams[slot].y / z;
+
+	// PCF: a 5 x 5 grid of directions around the offset, on the plane perpendicular to it, a texel apart
+	vec3 axis = abs(offset.y) < 0.99 * length(offset) ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+	vec3 tangent = normalize(cross(axis, offset));
+	vec3 bitangent = normalize(cross(offset, tangent));
+	float pcfStep = u_LocalShadowParams.y * 2.0 * z * u_LocalShadowParams.w;
+	float lit = 0.0;
+	for (int y = -2; y <= 2; y++)
+	{
+		for (int x = -2; x <= 2; x++)
+		{
+			vec3 direction = offset + (tangent * float(x) + bitangent * float(y)) * pcfStep;
+			lit += texture(u_PointShadowMaps, vec4(direction, float(slot)), depth);
+		}
+	}
+	return lit / 25.0;
+}
+
+// Shadows Only (Lights panel): the selected light's shadow, white = lit, black = in shadow, dark gray = the light doesn't
+// reach the surface (outside its range or cone, or facing away). u_ShadowDebug: x = 1 sun, 2 point, 3 spot, 4 the light
+// is off; y = the light's index in u_PointLights / u_SpotLights.
+float ShadowDebugValue()
+{
+	const float notReached = 0.2;
+	int mode = int(u_ShadowDebug.x);
+	int index = int(u_ShadowDebug.y);
+	vec3 N = normalize(Input.Normal);
+	if (mode == 1)
+	{
+		return dot(N, u_Sun.Direction) > 0.0 ? SunShadow(Input.WorldPosition, N) : notReached;
+	}
+	if (mode == 2 && index < u_PointLightCount)
+	{
+		vec3 toLight = u_PointLights[index].Position - Input.WorldPosition;
+		float distance = length(toLight);
+		vec3 L = toLight / max(distance, Epsilon);
+		if (distance >= u_PointLights[index].Range || dot(N, L) <= 0.0)
+		{
+			return notReached;
+		}
+		return u_PointLights[index].ShadowIndex >= 0.0 ? PointShadow(int(u_PointLights[index].ShadowIndex), Input.WorldPosition, N, u_PointLights[index].Position, L, distance) : 1.0;
+	}
+	if (mode == 3 && index < u_SpotLightCount)
+	{
+		vec3 toLight = u_SpotLights[index].Position - Input.WorldPosition;
+		float distance = length(toLight);
+		vec3 L = toLight / max(distance, Epsilon);
+		if (distance >= u_SpotLights[index].Range || dot(N, L) <= 0.0 || dot(-L, u_SpotLights[index].Direction) <= u_SpotLights[index].CosOuter)
+		{
+			return notReached;
+		}
+		return u_SpotLights[index].ShadowIndex >= 0.0 ? SpotShadow(int(u_SpotLights[index].ShadowIndex), Input.WorldPosition, N, L, distance) : 1.0;
+	}
+	return notReached;
+}
+
 // Direct light from the sun, the point lights and the spot lights (lists packed by EnvMapVulkanLightEnvironment::Pack)
 vec3 Lighting(vec3 F0)
 {
@@ -461,6 +576,10 @@ vec3 Lighting(vec3 F0)
 		}
 		vec3 L = toLight / max(distance, Epsilon);
 		float attenuation = DistanceAttenuation(distance, u_PointLights[i].Range);
+		if (u_PointLights[i].ShadowIndex >= 0.0 && dot(m_Params.Normal, L) > 0.0)
+		{
+			attenuation *= PointShadow(int(u_PointLights[i].ShadowIndex), Input.WorldPosition, normalize(Input.Normal), u_PointLights[i].Position, L, distance);
+		}
 		result += EvaluateBRDF(F0, L, u_PointLights[i].Color * u_PointLights[i].Intensity * attenuation);
 	}
 
@@ -481,6 +600,10 @@ vec3 Lighting(vec3 F0)
 			continue;
 		}
 		float attenuation = DistanceAttenuation(distance, u_SpotLights[i].Range);
+		if (u_SpotLights[i].ShadowIndex >= 0.0 && dot(m_Params.Normal, L) > 0.0)
+		{
+			attenuation *= SpotShadow(int(u_SpotLights[i].ShadowIndex), Input.WorldPosition, normalize(Input.Normal), L, distance);
+		}
 		result += EvaluateBRDF(F0, L, u_SpotLights[i].Color * u_SpotLights[i].Intensity * attenuation * cone);
 	}
 
@@ -551,6 +674,10 @@ void main()
 	if (u_ShowCascades > 0.5 && u_ShadowsEnabled > 0.5)
 	{
 		color.rgb *= CascadeDebugColor(Input.WorldPosition);
+	}
+	if (u_ShadowDebug.x > 0.5)
+	{
+		color = vec4(vec3(ShadowDebugValue()), 1.0); // shown as it is: the composite skips exposure, bloom and tonemapping
 	}
 
 	// color = vec4(Input.WorldPosition, 1.0);

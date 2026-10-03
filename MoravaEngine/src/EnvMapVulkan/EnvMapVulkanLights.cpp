@@ -152,31 +152,143 @@ bool FindBrightestDirection(const float* rgba, uint32_t width, uint32_t height, 
 	return true;
 }
 
-EnvMapVulkanPointLight* EnvMapVulkanLightEnvironment::AddPointLight(const glm::vec3& position)
+// Pixel (x, y) of an equirectangular map -> unit direction, as in EquirectangularToCubeMap.glsl
+static glm::vec3 EquirectangularDirection(float x, float y, uint32_t width, uint32_t height)
+{
+	const float pi = glm::pi<float>();
+	const float theta = pi * (y + 0.5f) / height;
+	const float phi = ((x + 0.5f) / width - 0.5f) * 2.0f * pi;
+	return glm::vec3(std::sin(theta) * std::cos(phi), std::cos(theta), std::sin(theta) * std::sin(phi));
+}
+
+bool ExtractSun(float* rgba, uint32_t width, uint32_t height, EnvMapVulkanExtractedSun& sun)
+{
+	sun = EnvMapVulkanExtractedSun();
+	if (!rgba || width < 2 || height < 2)
+	{
+		return false;
+	}
+	auto luminance = [](const float* p) { return 0.2126f * p[0] + 0.7152f * p[1] + 0.0722f * p[2]; };
+	const double pi = glm::pi<double>();
+	const double pixelSolidAngle = (2.0 * pi / width) * (pi / height); // times sin(theta) of the pixel's row
+
+	// The map's average (over the sphere) and its brightest pixel above the horizon
+	double sum = 0.0, area = 0.0;
+	float peak = 0.0f;
+	uint32_t peakX = 0, peakY = 0;
+	for (uint32_t y = 0; y < height; y++)
+	{
+		const double sinTheta = std::sin(pi * (y + 0.5) / height);
+		for (uint32_t x = 0; x < width; x++)
+		{
+			const float l = luminance(&rgba[((size_t)y * width + x) * 4]);
+			sum += l * sinTheta;
+			area += sinTheta;
+			if (y < height / 2 && l > peak)
+			{
+				peak = l;
+				peakX = x;
+				peakY = y;
+			}
+		}
+	}
+	const double average = sum / area;
+	if (average <= 0.0 || peak < 1000.0 * average)
+	{
+		return false; // no sun: nothing in the sky stands out that much
+	}
+
+	// The disc and its glow: pixels within 5 degrees of the peak, brighter than 50x the average
+	const float threshold = (float)(50.0 * average);
+	const glm::vec3 center = EquirectangularDirection((float)peakX, (float)peakY, width, height);
+	const float cosRadius = std::cos(glm::radians(5.0f));
+	const int rowRadius = (int)std::ceil(5.0 / 180.0 * height) + 1;
+	const int firstRow = std::max((int)peakY - rowRadius, 0);
+	const int lastRow = std::min((int)peakY + rowRadius, (int)height - 1);
+
+	glm::dvec3 removed(0.0);           // irradiance taken out (rgb)
+	glm::dvec3 weightedDirection(0.0);
+	for (int y = firstRow; y <= lastRow; y++)
+	{
+		const double solidAngle = pixelSolidAngle * std::sin(pi * (y + 0.5) / height);
+		for (uint32_t x = 0; x < width; x++)
+		{
+			float* p = &rgba[((size_t)y * width + x) * 4];
+			const float l = luminance(p);
+			if (l <= threshold)
+			{
+				continue;
+			}
+			const glm::vec3 direction = EquirectangularDirection((float)x, (float)y, width, height);
+			if (glm::dot(direction, center) < cosRadius)
+			{
+				continue;
+			}
+			// Dimmed to the threshold (same color); the light above it is moved to the directional light
+			const float keep = threshold / l;
+			const glm::dvec3 taken = glm::dvec3(p[0], p[1], p[2]) * (1.0 - keep) * solidAngle;
+			removed += taken;
+			weightedDirection += glm::dvec3(direction) * (0.2126 * taken.r + 0.7152 * taken.g + 0.0722 * taken.b);
+			p[0] *= keep;
+			p[1] *= keep;
+			p[2] *= keep;
+			sun.PixelCount++;
+		}
+	}
+	const double maxChannel = std::max(removed.r, std::max(removed.g, removed.b));
+	if (sun.PixelCount == 0 || maxChannel <= 0.0)
+	{
+		return false;
+	}
+
+	sun.Found = true;
+	sun.Direction = glm::normalize(glm::vec3(weightedDirection));
+	sun.Color = glm::vec3(removed / maxChannel);
+	sun.Intensity = (float)(maxChannel / pi);
+	sun.PeakToAverage = (float)(peak / average);
+	return true;
+}
+
+EnvMapVulkanPointLight* EnvMapVulkanLightEnvironment::AddPointLight(const glm::vec3& position, uint32_t maxShadowed)
 {
 	if (!CanAddPointLight())
 	{
 		return nullptr;
 	}
+	const bool castShadows = CountShadowedPointLights() < maxShadowed;
 	EnvMapVulkanPointLight& light = PointLights.emplace_back();
 	light.Name = "Point Light " + std::to_string(m_NextPointLightNumber++);
 	light.Position = position;
+	light.CastShadows = castShadows;
 	return &light;
 }
 
-EnvMapVulkanSpotLight* EnvMapVulkanLightEnvironment::AddSpotLight(const glm::vec3& position)
+EnvMapVulkanSpotLight* EnvMapVulkanLightEnvironment::AddSpotLight(const glm::vec3& position, uint32_t maxShadowed)
 {
 	if (!CanAddSpotLight())
 	{
 		return nullptr;
 	}
+	const bool castShadows = CountShadowedSpotLights() < maxShadowed;
 	EnvMapVulkanSpotLight& light = SpotLights.emplace_back();
 	light.Name = "Spot Light " + std::to_string(m_NextSpotLightNumber++);
 	light.Position = position;
+	light.CastShadows = castShadows;
 	return &light;
 }
 
-void EnvMapVulkanLightEnvironment::Pack(EnvMapVulkanLightsGPU::LightsUB& out) const
+uint32_t EnvMapVulkanLightEnvironment::CountShadowedPointLights() const
+{
+	return (uint32_t)std::count_if(PointLights.begin(), PointLights.end(), [](const EnvMapVulkanPointLight& light) { return light.CastShadows; });
+}
+
+uint32_t EnvMapVulkanLightEnvironment::CountShadowedSpotLights() const
+{
+	return (uint32_t)std::count_if(SpotLights.begin(), SpotLights.end(), [](const EnvMapVulkanSpotLight& light) { return light.CastShadows; });
+}
+
+void EnvMapVulkanLightEnvironment::Pack(EnvMapVulkanLightsGPU::LightsUB& out, const std::vector<int>& pointShadowSlots,
+	const std::vector<int>& spotShadowSlots) const
 {
 	using namespace EnvMapVulkanLightsGPU;
 
@@ -189,8 +301,9 @@ void EnvMapVulkanLightEnvironment::Pack(EnvMapVulkanLightsGPU::LightsUB& out) co
 	const float minRange = 0.01f; // the falloff window divides by the range
 
 	uint32_t pointCount = 0;
-	for (const EnvMapVulkanPointLight& light : PointLights)
+	for (size_t i = 0; i < PointLights.size(); i++)
 	{
+		const EnvMapVulkanPointLight& light = PointLights[i];
 		if (!light.Enabled || pointCount == MaxPointLights)
 		{
 			continue;
@@ -200,12 +313,14 @@ void EnvMapVulkanLightEnvironment::Pack(EnvMapVulkanLightsGPU::LightsUB& out) co
 		gpu.Intensity = std::max(light.Intensity, 0.0f);
 		gpu.Color = light.Color;
 		gpu.Range = std::max(light.Range, minRange);
+		gpu.ShadowIndex = i < pointShadowSlots.size() ? (float)pointShadowSlots[i] : -1.0f;
 	}
 	out.PointLightCount = (int32_t)pointCount;
 
 	uint32_t spotCount = 0;
-	for (const EnvMapVulkanSpotLight& light : SpotLights)
+	for (size_t i = 0; i < SpotLights.size(); i++)
 	{
+		const EnvMapVulkanSpotLight& light = SpotLights[i];
 		if (!light.Enabled || spotCount == MaxSpotLights)
 		{
 			continue;
@@ -223,6 +338,7 @@ void EnvMapVulkanLightEnvironment::Pack(EnvMapVulkanLightsGPU::LightsUB& out) co
 		gpu.Direction = light.GetDirection();
 		gpu.CosOuter = std::cos(glm::radians(outer));
 		gpu.CosInner = std::cos(glm::radians(inner));
+		gpu.ShadowIndex = i < spotShadowSlots.size() ? (float)spotShadowSlots[i] : -1.0f;
 	}
 	out.SpotLightCount = (int32_t)spotCount;
 }

@@ -356,13 +356,98 @@ static void LoadEnvironmentMap(const std::string& filepath)
 
 // The scene's lights (the Lights uniform buffer of the PBR shaders) and the environment map rotation
 static EnvMapVulkanLightEnvironment s_Lights;
+// A real sun is taken out of a loaded environment map and moved to the directional sun (see ExtractSun)
+static bool s_ExtractSunFromEnvironment = true;
+static EnvMapVulkanExtractedSun s_ExtractedSun;   // of the current environment map
+static bool s_PendingSunAlign = true;             // align the sun at the start of the next Draw (startup, a sun extracted)
 // Cascaded shadow maps of the sun (see EnvMapVulkanShadows.h)
 static EnvMapVulkanShadowMap s_ShadowMap;
 static EnvMapVulkanShadowSettings s_ShadowSettings;
 static EnvMapVulkanShadowPipeline s_ShadowPipeline;     // ShadowDepth.glsl (static meshes)
 static EnvMapVulkanShadowPipeline s_ShadowPipelineAnim; // ShadowDepth_Anim.glsl (skinned meshes)
+// Shadow maps of the spot and point lights (see EnvMapVulkanShadows.h): a layer per shadowed spot light, a cube per
+// shadowed point light (only when the GPU supports cube map arrays)
+static EnvMapVulkanShadowMap s_SpotShadowMaps;
+static EnvMapVulkanShadowMap s_PointShadowMaps;
+static EnvMapVulkanLocalShadowSettings s_LocalShadowSettings;
+
+// World bounds of each submitted mesh (same order as s_Meshes), for the shadow passes: the cascades are fitted around all
+// of them, and a spot or point light draws only the meshes within its range. Computed once per frame.
+static std::vector<std::pair<glm::vec3, glm::vec3>> s_ShadowCasterBounds;
+// Their union, this frame (min > max: no meshes)
+static glm::vec3 s_ShadowCasterBoundsMin = glm::vec3(1.0f);
+static glm::vec3 s_ShadowCasterBoundsMax = glm::vec3(-1.0f);
+static glm::uvec2 s_PendingLocalShadowResolutions = glm::uvec2(0); // spot, point: chosen in the Lights panel, applied in Draw (0: none)
+// The spot / point shadow map viewer of the Lights panel: requested while the panel shows it, recorded with the next frame
+static EnvMapVulkanShadowMapViewer s_ShadowMapViewer;
+struct ShadowMapViewerRequest
+{
+	bool Active = false;
+	bool Cube = false;      // a point light's cube (or a spot light's map)
+	uint32_t BaseLayer = 0;
+	float Near = 0.0f;
+	float Far = 1.0f;
+};
+static ShadowMapViewerRequest s_ShadowMapViewerRequest;
+
+// This frame's shadow slots of the spot and point lights: which light (index into s_Lights.SpotLights / PointLights) has
+// which layer of s_SpotShadowMaps / which cube of s_PointShadowMaps, and their matrices. The first lights in the list that
+// shine (enabled, intensity above 0) and have Cast Shadows on get the slots.
+struct LocalShadowSlots
+{
+	uint32_t SpotCount = 0;
+	uint32_t PointCount = 0;
+	std::array<int, MaxShadowedSpotLights> SpotLight = {};
+	std::array<int, MaxShadowedPointLights> PointLight = {};
+	std::array<glm::mat4, MaxShadowedSpotLights> SpotViewProjection = {};
+	std::array<std::array<glm::mat4, 6>, MaxShadowedPointLights> PointFaceViewProjection = {};
+	uint32_t MeshesDrawn = 0; // over all local light passes, this frame
+};
+static LocalShadowSlots s_LocalShadowSlots;
+
+static void AssignLocalShadowSlots()
+{
+	LocalShadowSlots& slots = s_LocalShadowSlots;
+	slots.SpotCount = 0;
+	slots.PointCount = 0;
+	for (int i = 0; i < (int)s_Lights.SpotLights.size() && slots.SpotCount < MaxShadowedSpotLights && s_SpotShadowMaps.IsValid(); i++)
+	{
+		const EnvMapVulkanSpotLight& light = s_Lights.SpotLights[i];
+		if (light.Enabled && light.CastShadows && light.Intensity > 0.0f)
+		{
+			slots.SpotViewProjection[slots.SpotCount] = ComputeSpotShadowViewProjection(light.Position, light.GetDirection(), light.OuterAngle, light.Range);
+			slots.SpotLight[slots.SpotCount++] = i;
+		}
+	}
+	for (int i = 0; i < (int)s_Lights.PointLights.size() && slots.PointCount < MaxShadowedPointLights && s_PointShadowMaps.IsValid(); i++)
+	{
+		const EnvMapVulkanPointLight& light = s_Lights.PointLights[i];
+		if (light.Enabled && light.CastShadows && light.Intensity > 0.0f)
+		{
+			slots.PointFaceViewProjection[slots.PointCount] = ComputePointShadowFaceViewProjections(light.Position, light.Range);
+			slots.PointLight[slots.PointCount++] = i;
+		}
+	}
+}
+
+// Each light's shadow slot (same order as s_Lights.PointLights / SpotLights), -1 without one: for packing the Lights buffer
+static void GetShadowSlotsPerLight(std::vector<int>& pointSlots, std::vector<int>& spotSlots)
+{
+	pointSlots.assign(s_Lights.PointLights.size(), -1);
+	spotSlots.assign(s_Lights.SpotLights.size(), -1);
+	for (uint32_t slot = 0; slot < s_LocalShadowSlots.PointCount; slot++)
+	{
+		pointSlots[s_LocalShadowSlots.PointLight[slot]] = (int)slot;
+	}
+	for (uint32_t slot = 0; slot < s_LocalShadowSlots.SpotCount; slot++)
+	{
+		spotSlots[s_LocalShadowSlots.SpotLight[slot]] = (int)slot;
+	}
+}
+
 static std::array<EnvMapVulkanShadowCascade, ShadowCascadeCount> s_ShadowCascades; // this frame's, see RecordShadowPasses
 static bool s_ShadowsRendered = false; // the shadow map holds this frame's cascades
+static uint32_t s_PendingShadowResolution = 0; // chosen in the Lights panel, applied at the start of the next Draw
 static void WriteShadowMapDescriptor();
 static float s_EnvMapRotation = 0.0f; // degrees, applied to the PBR environment lookups (as in SceneHazelEnvMap)
 
@@ -757,8 +842,13 @@ static void UpdateFrameUniforms()
 
 	// binding 5: Lights (fragment stage), see EnvMapVulkanLightsGPU
 	SyncSunWithEnvironmentRotation();
+	// The shadow slots of the spot and point lights first: the packed lights carry them (the shadow passes, recorded later
+	// this frame, use the same ones)
+	AssignLocalShadowSlots();
+	std::vector<int> pointShadowSlots, spotShadowSlots;
+	GetShadowSlotsPerLight(pointShadowSlots, spotShadowSlots);
 	EnvMapVulkanLightsGPU::LightsUB lights;
-	s_Lights.Pack(lights);
+	s_Lights.Pack(lights, pointShadowSlots, spotShadowSlots);
 
 	ubPtr = shader->MapUniformBuffer(5, frameSet);
 	memcpy(ubPtr, &lights, sizeof(EnvMapVulkanLightsGPU::LightsUB));
@@ -828,6 +918,7 @@ enum class LightKind { None, Sun, Point, Spot };
 static LightKind s_SelectedLightKind = LightKind::None;
 static int s_SelectedLightIndex = 0;
 static bool s_ShowLightGizmos = true; // light icons and shapes in the viewport
+static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light's shadow (see ShadowDebugValue in the PBR shaders)
 
 static void SelectLight(LightKind kind, int index = 0)
 {
@@ -869,14 +960,25 @@ static void AlignSunToEnvironment()
 	{
 		return;
 	}
-	H2M::BufferH2M pixels = equirect->GetWriteableBuffer();
-	uint32_t width = equirect->GetWidth(), height = equirect->GetHeight();
 	glm::vec3 mapDirection, color;
-	if (!pixels.Data || equirect->GetFormat() != H2M::ImageFormatH2M::RGBA32F || pixels.Size < (uint64_t)width * height * 4 * sizeof(float) ||
-		!FindBrightestDirection((const float*)pixels.Data, width, height, mapDirection, color))
+	if (s_ExtractedSun.Found)
 	{
-		Log::GetLogger()->warn("Align to Environment: the environment map's pixels are not available");
-		return;
+		// The sun taken out of the map: its direction, color and intensity (the directional sun now carries its light)
+		mapDirection = s_ExtractedSun.Direction;
+		color = s_ExtractedSun.Color;
+		s_Lights.Sun.Intensity = s_ExtractedSun.Intensity;
+	}
+	else
+	{
+		// No sun in the map: the brightest region (a window, bright sky), direction and color only
+		H2M::BufferH2M pixels = equirect->GetWriteableBuffer();
+		uint32_t width = equirect->GetWidth(), height = equirect->GetHeight();
+		if (!pixels.Data || equirect->GetFormat() != H2M::ImageFormatH2M::RGBA32F || pixels.Size < (uint64_t)width * height * 4 * sizeof(float) ||
+			!FindBrightestDirection((const float*)pixels.Data, width, height, mapDirection, color))
+		{
+			Log::GetLogger()->warn("Align to Environment: the environment map's pixels are not available");
+			return;
+		}
 	}
 
 	// The shaders look the environment up at RotateVectorAboutY(rotation, worldDirection): undo that rotation
@@ -886,8 +988,8 @@ static void AlignSunToEnvironment()
 
 	s_Lights.Sun.SetDirection(worldDirection);
 	s_Lights.Sun.Color = color;
-	Log::GetLogger()->info("Sun aligned to the environment: azimuth {0}, elevation {1}, color ({2}, {3}, {4})",
-		s_Lights.Sun.Azimuth, s_Lights.Sun.Elevation, color.r, color.g, color.b);
+	Log::GetLogger()->info("Sun aligned to the environment: azimuth {0}, elevation {1}, color ({2}, {3}, {4}), intensity {5}",
+		s_Lights.Sun.Azimuth, s_Lights.Sun.Elevation, color.r, color.g, color.b, s_Lights.Sun.Intensity);
 }
 
 // Where the sun's icon is drawn: in the sky, far away in the sun's direction from the camera, so it moves like the
@@ -957,7 +1059,8 @@ static ImU32 GetLightGizmoColor(const glm::vec3& color, bool enabled, float alph
 
 // An icon: a disc in the light's color (a ring when disabled) on a dark backdrop, with rays; a white ring when selected.
 // The rays and the ring have dark outlines, so a white icon stays visible on a bright sky.
-static void DrawLightIcon(ImDrawList* drawList, const ImVec2& center, ImU32 color, bool enabled, bool selected, int rays)
+// castsShadow: a small half-dark disc at the lower right (the light casts shadows this frame)
+static void DrawLightIcon(ImDrawList* drawList, const ImVec2& center, ImU32 color, bool enabled, bool selected, int rays, bool castsShadow)
 {
 	const float radius = 6.0f;
 	drawList->AddCircleFilled(center, radius + 3.0f, IM_COL32(0, 0, 0, 150));
@@ -982,6 +1085,14 @@ static void DrawLightIcon(ImDrawList* drawList, const ImVec2& center, ImU32 colo
 	{
 		drawList->AddCircle(center, radius + 11.0f, IM_COL32(0, 0, 0, 150), 0, 4.0f);
 		drawList->AddCircle(center, radius + 11.0f, IM_COL32(255, 255, 255, 230), 0, 2.0f);
+	}
+	if (castsShadow)
+	{
+		const ImVec2 mark(center.x + radius + 7.0f, center.y + radius + 7.0f);
+		drawList->AddCircleFilled(mark, 5.5f, IM_COL32(0, 0, 0, 200));
+		drawList->PathArcTo(mark, 4.0f, -glm::half_pi<float>(), glm::half_pi<float>(), 10); // lit half (right)
+		drawList->PathFillConvex(IM_COL32(255, 255, 255, 230));
+		drawList->AddCircle(mark, 4.0f, IM_COL32(255, 255, 255, 230), 0, 1.0f);
 	}
 }
 
@@ -1048,11 +1159,13 @@ static void DrawLightGizmos()
 		drawCone(light.InnerAngle, GetLightGizmoColor(light.Color, light.Enabled, 0.3f), 4);
 	}
 
+	std::vector<int> pointShadowSlots, spotShadowSlots;
+	GetShadowSlotsPerLight(pointShadowSlots, spotShadowSlots);
 	ImVec2 pixel;
 	if (ProjectToViewport(viewProjection, GetSunIconPosition(), pixel))
 	{
 		DrawLightIcon(drawList, pixel, GetLightGizmoColor(s_Lights.Sun.Color, s_Lights.Sun.Enabled), s_Lights.Sun.Enabled,
-			s_SelectedLightKind == LightKind::Sun, 12);
+			s_SelectedLightKind == LightKind::Sun, 12, s_ShadowsRendered);
 	}
 	for (int i = 0; i < (int)s_Lights.PointLights.size(); i++)
 	{
@@ -1060,7 +1173,7 @@ static void DrawLightGizmos()
 		if (ProjectToViewport(viewProjection, light.Position, pixel))
 		{
 			DrawLightIcon(drawList, pixel, GetLightGizmoColor(light.Color, light.Enabled), light.Enabled,
-				s_SelectedLightKind == LightKind::Point && s_SelectedLightIndex == i, 8);
+				s_SelectedLightKind == LightKind::Point && s_SelectedLightIndex == i, 8, pointShadowSlots[i] >= 0);
 		}
 	}
 	for (int i = 0; i < (int)s_Lights.SpotLights.size(); i++)
@@ -1070,7 +1183,8 @@ static void DrawLightGizmos()
 		DrawWorldLine(drawList, viewProjection, light.Position, light.Position + light.GetDirection() * 0.75f, color, 2.0f);
 		if (ProjectToViewport(viewProjection, light.Position, pixel))
 		{
-			DrawLightIcon(drawList, pixel, color, light.Enabled, s_SelectedLightKind == LightKind::Spot && s_SelectedLightIndex == i, 4);
+			DrawLightIcon(drawList, pixel, color, light.Enabled, s_SelectedLightKind == LightKind::Spot && s_SelectedLightIndex == i, 4,
+				spotShadowSlots[i] >= 0);
 		}
 	}
 
@@ -1157,6 +1271,23 @@ static void ManipulateSelectedLight(int gizmoType, bool snap)
 // - else the ground (y = 0) there, when it's not too far
 // - else (the camera looks over the scene, e.g. horizontally) the point of the view ray nearest the models' center,
 //   at the models' height
+// The range of a new point or spot light at this position: far enough to reach every loaded model (the distance to the
+// farthest corner of their bounds), at least 10, at most 1000 (the Range drag's limit). Without models: 10.
+static float GetDefaultLightRange(const glm::vec3& position)
+{
+	float range = 10.0f;
+	if (glm::all(glm::lessThanEqual(s_ShadowCasterBoundsMin, s_ShadowCasterBoundsMax)))
+	{
+		for (int c = 0; c < 8; c++)
+		{
+			glm::vec3 corner((c & 1) ? s_ShadowCasterBoundsMax.x : s_ShadowCasterBoundsMin.x, (c & 2) ? s_ShadowCasterBoundsMax.y : s_ShadowCasterBoundsMin.y,
+				(c & 4) ? s_ShadowCasterBoundsMax.z : s_ShadowCasterBoundsMin.z);
+			range = std::max(range, glm::length(corner - position));
+		}
+	}
+	return std::min(range, 1000.0f);
+}
+
 static glm::vec3 GetLightSpawnTarget()
 {
 	int hitMesh, hitSubmesh;
@@ -1191,7 +1322,7 @@ static glm::vec3 GetLightSpawnTarget()
 static bool s_ShowShadowMap = false;
 static int s_ShadowMapShownCascade = 0;
 static std::array<ImTextureID, ShadowCascadeCount> s_ShadowMapTextureIDs = {};
-static VkImageView s_ShadowMapTexturesView = VK_NULL_HANDLE; // the shadow map the IDs were registered for
+static uint32_t s_ShadowMapTexturesGeneration = 0; // the shadow map the IDs were registered for (EnvMapVulkanShadowMap::GetGeneration)
 
 static void DrawShadowMapCascades()
 {
@@ -1200,7 +1331,7 @@ static void DrawShadowMapCascades()
 		return;
 	}
 	// Registered with the ImGui Vulkan backend once per shadow map (again after it is recreated)
-	if (s_ShadowMapTexturesView != s_ShadowMap.GetDisplayView(0))
+	if (s_ShadowMapTexturesGeneration != s_ShadowMap.GetGeneration())
 	{
 		for (uint32_t i = 0; i < ShadowCascadeCount; i++)
 		{
@@ -1211,7 +1342,7 @@ static void DrawShadowMapCascades()
 			s_ShadowMapTextureIDs[i] = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(s_ShadowMap.GetDisplaySampler(), s_ShadowMap.GetDisplayView(i),
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
-		s_ShadowMapTexturesView = s_ShadowMap.GetDisplayView(0);
+		s_ShadowMapTexturesGeneration = s_ShadowMap.GetGeneration();
 	}
 
 	if (!s_ShadowsRendered)
@@ -1248,6 +1379,268 @@ static bool AzimuthProperty(float& azimuth)
 	return false;
 }
 
+// The sun's shadow settings, in the Lights panel when the sun is selected
+static void OnImGuiRenderShadowSettings()
+{
+	if (!ImGui::CollapsingHeader("Shadows", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		return;
+	}
+	EnvMapVulkanShadowSettings& settings = s_ShadowSettings;
+
+	ImGui::Columns(2);
+	ImGuiWrapper::Property("Distance", settings.Distance, 0.5f, 2.0f, 1000.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Shadows reach this far from the camera (they fade out before it).\nShorter: sharper shadows, as the cascades cover less");
+	}
+
+	// Resolution: the shadow map is recreated at the start of the next frame
+	static const uint32_t s_Resolutions[] = { 1024, 2048, 4096 };
+	static const char* s_ResolutionLabels[] = { "1024 (16 MB)", "2048 (64 MB)", "4096 (256 MB)" };
+	uint32_t resolution = s_PendingShadowResolution ? s_PendingShadowResolution : s_ShadowMap.GetResolution();
+	int selected = 1;
+	for (int i = 0; i < 3; i++)
+	{
+		if (s_Resolutions[i] == resolution)
+		{
+			selected = i;
+		}
+	}
+	ImGui::Text("Resolution");
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+	if (ImGui::BeginCombo("##ShadowResolution", s_ResolutionLabels[selected]))
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (ImGui::Selectable(s_ResolutionLabels[i], i == selected))
+			{
+				s_PendingShadowResolution = s_Resolutions[i] != s_ShadowMap.GetResolution() ? s_Resolutions[i] : 0;
+			}
+		}
+		ImGui::EndCombo();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Of each of the 4 cascades (GPU memory for all of them)");
+	}
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+
+	ImGuiWrapper::Property("Split", settings.SplitLambda, 0.0f, 1.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How the distance is split into cascades:\n0 = equal parts, 1 = short near ones (sharp close to the camera), long far ones");
+	}
+	ImGuiWrapper::Property("Softness", settings.Softness, 0.0f, 4.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Width of the soft shadow edge (spacing of the 5 x 5 PCF samples, in shadow map texels)");
+	}
+	ImGuiWrapper::Property("Depth Bias", settings.DepthBias, 0.0f, 10.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Pushes the shadow map's depth away from the sun: removes \"shadow acne\" (stripes on lit surfaces).\nToo much detaches shadows from the objects (\"peter panning\")");
+	}
+	ImGuiWrapper::Property("Slope Bias", settings.SlopeBias, 0.0f, 10.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Depth bias that grows on surfaces at a grazing angle to the sun, where acne appears first");
+	}
+	ImGuiWrapper::Property("Normal Bias", settings.NormalBias, 0.0f, 5.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Looks the shadow map up this many texels off the surface, along its normal: removes acne\nwithout detaching the shadows as much as the depth bias");
+	}
+	ImGuiWrapper::Property("Show Cascades", settings.ShowCascades);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Tints the scene by cascade: red, green, blue, yellow (nearest to farthest)");
+	}
+	ImGui::Columns(1);
+
+	if (ImGui::Button("Reset Shadow Settings"))
+	{
+		EnvMapVulkanShadowSettings defaults;
+		defaults.ShowCascades = settings.ShowCascades; // a view option, not a setting
+		s_PendingShadowResolution = defaults.Resolution != s_ShadowMap.GetResolution() ? defaults.Resolution : 0;
+		defaults.Resolution = s_ShadowMap.GetResolution(); // applied with the next frame, see above
+		settings = defaults;
+	}
+
+	ImGui::Checkbox("Show Shadow Map", &s_ShowShadowMap);
+	if (s_ShowShadowMap)
+	{
+		DrawShadowMapCascades();
+	}
+}
+
+// "Cast Shadows" of a point or spot light: off when all shadow slots of its kind are taken by other lights
+static void LocalCastShadowsProperty(bool& castShadows, uint32_t shadowedCount, uint32_t maxShadowed, bool available, const char* kind)
+{
+	const bool full = !castShadows && shadowedCount >= maxShadowed;
+	ImGui::BeginDisabled(full || !available);
+	ImGuiWrapper::Property("Cast Shadows", castShadows);
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		if (!available)
+		{
+			ImGui::SetTooltip("Not available: the GPU doesn't support cube map arrays (imageCubeArray)");
+		}
+		else
+		{
+			ImGui::SetTooltip("%u of %u %s lights cast shadows%s", shadowedCount, maxShadowed, kind, full ? ": all shadow slots are taken" : "");
+		}
+	}
+}
+
+// A resolution combo (the map is recreated at the start of the next frame): labels "<resolution> (<memory>)"
+static void ShadowResolutionProperty(const char* label, uint32_t current, const uint32_t (&resolutions)[3], const char* const (&labels)[3], uint32_t& pending)
+{
+	uint32_t shown = pending ? pending : current;
+	int selected = 1;
+	for (int i = 0; i < 3; i++)
+	{
+		if (resolutions[i] == shown)
+		{
+			selected = i;
+		}
+	}
+	ImGui::Text("%s", label);
+	ImGui::NextColumn();
+	ImGui::PushItemWidth(-1);
+	ImGui::PushID(label);
+	if (ImGui::BeginCombo("##Resolution", labels[selected]))
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (ImGui::Selectable(labels[i], i == selected))
+			{
+				pending = resolutions[i] != current ? resolutions[i] : 0;
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopID();
+	ImGui::PopItemWidth();
+	ImGui::NextColumn();
+}
+
+// The shadow settings of the spot and point lights (shared by all of them), and the selected light's shadow map
+static void OnImGuiRenderLocalShadowSettings()
+{
+	if (!ImGui::CollapsingHeader("Shadows (Spot and Point Lights)", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		return;
+	}
+	EnvMapVulkanLocalShadowSettings& settings = s_LocalShadowSettings;
+
+	ImGui::Columns(2);
+	static const uint32_t s_SpotResolutions[3] = { 512, 1024, 2048 };
+	static const char* const s_SpotLabels[3] = { "512 (4 MB)", "1024 (16 MB)", "2048 (64 MB)" };
+	static const uint32_t s_PointResolutions[3] = { 256, 512, 1024 };
+	static const char* const s_PointLabels[3] = { "256 (6 MB)", "512 (24 MB)", "1024 (96 MB)" };
+	ShadowResolutionProperty("Spot Resolution", s_SpotShadowMaps.GetResolution(), s_SpotResolutions, s_SpotLabels, s_PendingLocalShadowResolutions.x);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Of each spot light's shadow map (GPU memory for all %u)", MaxShadowedSpotLights);
+	}
+	ShadowResolutionProperty("Point Resolution", s_PointShadowMaps.IsValid() ? s_PointShadowMaps.GetResolution() : settings.PointResolution,
+		s_PointResolutions, s_PointLabels, s_PendingLocalShadowResolutions.y);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Of each cube face of a point light's shadow map (GPU memory for all %u cubes)", MaxShadowedPointLights);
+	}
+	ImGuiWrapper::Property("Softness", settings.Softness, 0.0f, 4.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Width of the soft shadow edge (spacing of the 5 x 5 PCF samples, in shadow map texels)");
+	}
+	ImGuiWrapper::Property("Depth Bias", settings.DepthBias, 0.0f, 10.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Removes \"shadow acne\" (stripes on lit surfaces); too much detaches shadows from the objects");
+	}
+	ImGuiWrapper::Property("Slope Bias", settings.SlopeBias, 0.0f, 10.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Depth bias that grows on surfaces at a grazing angle to the light");
+	}
+	ImGuiWrapper::Property("Normal Bias", settings.NormalBias, 0.0f, 5.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Looks the shadow map up this many texels off the surface, along its normal");
+	}
+	ImGui::Columns(1);
+
+	if (ImGui::Button("Reset Shadow Settings##Local"))
+	{
+		EnvMapVulkanLocalShadowSettings defaults;
+		s_PendingLocalShadowResolutions.x = defaults.SpotResolution != s_SpotShadowMaps.GetResolution() ? defaults.SpotResolution : 0;
+		s_PendingLocalShadowResolutions.y = s_PointShadowMaps.IsValid() && defaults.PointResolution != s_PointShadowMaps.GetResolution() ? defaults.PointResolution : 0;
+		defaults.SpotResolution = settings.SpotResolution; // applied with the next frame, see above
+		defaults.PointResolution = settings.PointResolution;
+		settings = defaults;
+	}
+
+	// The selected light's shadow map, drawn by the viewer with the next frame (see EnvMapVulkanShadowMapViewer)
+	ImGui::Checkbox("Show Shadow Map", &s_ShowShadowMap);
+	if (!s_ShowShadowMap)
+	{
+		return;
+	}
+	const bool spot = s_SelectedLightKind == LightKind::Spot;
+	int slot = -1;
+	float range = 1.0f;
+	if (spot)
+	{
+		for (uint32_t i = 0; i < s_LocalShadowSlots.SpotCount; i++)
+		{
+			slot = s_LocalShadowSlots.SpotLight[i] == s_SelectedLightIndex ? (int)i : slot;
+		}
+		range = s_Lights.SpotLights[s_SelectedLightIndex].Range;
+	}
+	else
+	{
+		for (uint32_t i = 0; i < s_LocalShadowSlots.PointCount; i++)
+		{
+			slot = s_LocalShadowSlots.PointLight[i] == s_SelectedLightIndex ? (int)i : slot;
+		}
+		range = s_Lights.PointLights[s_SelectedLightIndex].Range;
+	}
+	if (slot < 0 || !s_ShadowMapViewer.IsValid())
+	{
+		ImGui::TextDisabled("No shadow map this frame (Cast Shadows off, light off,\nor all shadow slots taken)");
+		return;
+	}
+
+	s_ShadowMapViewerRequest.Active = true;
+	s_ShadowMapViewerRequest.Cube = !spot;
+	s_ShadowMapViewerRequest.BaseLayer = spot ? (uint32_t)slot : (uint32_t)slot * 6;
+	s_ShadowMapViewerRequest.Near = GetLocalShadowNearPlane(range);
+	s_ShadowMapViewerRequest.Far = std::max(range, 0.02f);
+
+	static ImTextureID s_ViewerTextureID = 0;
+	if (!s_ViewerTextureID)
+	{
+		s_ViewerTextureID = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(s_ShadowMapViewer.GetSampler(), s_ShadowMapViewer.GetView(),
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	}
+	const float width = glm::max(ImGui::GetContentRegionAvail().x, 16.0f);
+	ImGui::TextDisabled(spot ? "Seen from the light, darker = closer to it" : "The 6 cube faces: -X +Z +X -Z, +Y above, -Y below; darker = closer");
+	if (spot)
+	{
+		// The spot map is the left square of the viewer image
+		ImGui::Image(s_ViewerTextureID, ImVec2(width, width), ImVec2(0.0f, 0.0f), ImVec2(0.75f, 1.0f));
+	}
+	else
+	{
+		ImGui::Image(s_ViewerTextureID, ImVec2(width, width * 0.75f));
+	}
+}
+
 static void LightNameProperty(std::string& name)
 {
 	char buffer[128] = {};
@@ -1280,9 +1673,13 @@ static void OnImGuiRenderLights()
 	// New lights go above GetLightSpawnTarget(): a point light 1.5 units above it, a spot light 3 units above it, pointing down
 
 	ImGui::BeginDisabled(!s_Lights.CanAddPointLight());
-	if (ImGui::Button("Add Point Light") && s_Lights.AddPointLight(GetLightSpawnTarget() + glm::vec3(0.0f, 1.5f, 0.0f)))
+	if (ImGui::Button("Add Point Light"))
 	{
-		SelectLight(LightKind::Point, (int)s_Lights.PointLights.size() - 1);
+		if (EnvMapVulkanPointLight* light = s_Lights.AddPointLight(GetLightSpawnTarget() + glm::vec3(0.0f, 1.5f, 0.0f), MaxShadowedPointLights))
+		{
+			light->Range = GetDefaultLightRange(light->Position);
+			SelectLight(LightKind::Point, (int)s_Lights.PointLights.size() - 1);
+		}
 	}
 	ImGui::EndDisabled();
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
@@ -1291,9 +1688,13 @@ static void OnImGuiRenderLights()
 	}
 	ImGui::SameLine();
 	ImGui::BeginDisabled(!s_Lights.CanAddSpotLight());
-	if (ImGui::Button("Add Spot Light") && s_Lights.AddSpotLight(GetLightSpawnTarget() + glm::vec3(0.0f, 3.0f, 0.0f)))
+	if (ImGui::Button("Add Spot Light"))
 	{
-		SelectLight(LightKind::Spot, (int)s_Lights.SpotLights.size() - 1);
+		if (EnvMapVulkanSpotLight* light = s_Lights.AddSpotLight(GetLightSpawnTarget() + glm::vec3(0.0f, 3.0f, 0.0f), MaxShadowedSpotLights))
+		{
+			light->Range = GetDefaultLightRange(light->Position);
+			SelectLight(LightKind::Spot, (int)s_Lights.SpotLights.size() - 1);
+		}
 	}
 	ImGui::EndDisabled();
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
@@ -1320,6 +1721,13 @@ static void OnImGuiRenderLights()
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("Light icons (click one to select the light) and the selected light's range and cone");
+	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Shadows Only", &s_ShowShadowsOnly);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The viewport shows only the selected light's shadow, whatever the other lights and the exposure:\n"
+			"white = lit, black = in shadow, dark gray = the light doesn't reach (out of range or cone, or facing away)");
 	}
 
 	// The light list: a checkbox (enabled) and a selectable name per light
@@ -1405,6 +1813,7 @@ static void OnImGuiRenderLights()
 		ImGuiWrapper::Property("Intensity", light.Intensity, 0.1f, 0.0f, 10000.0f, PropertyFlag::DragProperty);
 		ImGuiWrapper::Property("Position", light.Position, 0.05f, 0.0f, 0.0f, PropertyFlag::DragProperty);
 		LightRangeProperty(light.Range);
+		LocalCastShadowsProperty(light.CastShadows, s_Lights.CountShadowedPointLights(), MaxShadowedPointLights, s_PointShadowMaps.IsValid(), "point");
 	}
 	else
 	{
@@ -1442,6 +1851,7 @@ static void OnImGuiRenderLights()
 		{
 			ImGui::SetTooltip("Half-angle where the light fades out completely (degrees)");
 		}
+		LocalCastShadowsProperty(light.CastShadows, s_Lights.CountShadowedSpotLights(), MaxShadowedSpotLights, s_SpotShadowMaps.IsValid(), "spot");
 		ImGui::Columns(1);
 		ImGui::TextDisabled("Viewport gizmo: 1 moves the light, 2 aims it");
 	}
@@ -1449,11 +1859,11 @@ static void OnImGuiRenderLights()
 
 	if (s_SelectedLightKind == LightKind::Sun)
 	{
-		ImGui::Checkbox("Show Shadow Map", &s_ShowShadowMap);
-		if (s_ShowShadowMap)
-		{
-			DrawShadowMapCascades();
-		}
+		OnImGuiRenderShadowSettings();
+	}
+	else
+	{
+		OnImGuiRenderLocalShadowSettings();
 	}
 
 	ImGui::End();
@@ -2458,6 +2868,62 @@ void EnvMapVulkanRenderer::OnResize(uint32_t width, uint32_t height)
 }
 /**** END to be removed from VulkanRenderer ****/
 
+// The sun's shadow map and its pipelines (the pipelines are built for the shadow map's render pass, so they are recreated
+// with it). writeDescriptor: point set 0 of the PBR shaders at the new map (at startup set 0 doesn't exist yet). Nothing in
+// flight may still use the old shadow map.
+static void CreateShadowMap(uint32_t resolution, bool writeDescriptor)
+{
+	s_ShadowPipelineAnim.Destroy();
+	s_ShadowPipeline.Destroy();
+	s_ShadowMap.Create(resolution, ShadowCascadeCount);
+	s_ShadowSettings.Resolution = resolution;
+	{
+		// The mesh vertex layouts (MeshH2M's Vertex and AnimatedVertex), as in the PBR pipelines
+		H2M::VertexBufferLayoutH2M staticLayout = {
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Tangent" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Binormal" },
+			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+		};
+		H2M::VertexBufferLayoutH2M animLayout = {
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Tangent" },
+			{ H2M::ShaderDataTypeH2M::Float3, "a_Binormal" },
+			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
+			{ H2M::ShaderDataTypeH2M::Int4,   "a_BoneIndices" },
+			{ H2M::ShaderDataTypeH2M::Float4, "a_BoneWeights" },
+		};
+		s_ShadowPipeline.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth").As<H2M::VulkanShaderH2M>(), staticLayout, { 0 }, s_ShadowMap.GetRenderPass());
+		s_ShadowPipelineAnim.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth_Anim").As<H2M::VulkanShaderH2M>(), animLayout, { 0, 5, 6 }, s_ShadowMap.GetRenderPass());
+	}
+	if (writeDescriptor)
+	{
+		WriteShadowMapDescriptor();
+	}
+	Log::GetLogger()->info("Shadow map: {0} cascades of {1} x {1}", ShadowCascadeCount, resolution);
+}
+
+// The spot and point light shadow maps. Point lights need cube map arrays (the imageCubeArray device feature): without
+// them only spot lights cast shadows. Nothing in flight may still use the old maps.
+static void CreateLocalShadowMaps()
+{
+	s_SpotShadowMaps.Create(s_LocalShadowSettings.SpotResolution, MaxShadowedSpotLights);
+	if (H2M::VulkanContextH2M::GetCurrentDevice()->GetEnabledFeatures().imageCubeArray)
+	{
+		s_PointShadowMaps.Create(s_LocalShadowSettings.PointResolution, 6 * MaxShadowedPointLights, true);
+	}
+	else
+	{
+		s_PointShadowMaps.Destroy();
+		Log::GetLogger()->warn("Point light shadows are not available: the GPU doesn't support cube map arrays (imageCubeArray)");
+	}
+	Log::GetLogger()->info("Local light shadow maps: {0} spot lights at {1} x {1}, {2} point lights at {3} x {3} per cube face",
+		MaxShadowedSpotLights, s_LocalShadowSettings.SpotResolution, s_PointShadowMaps.IsValid() ? MaxShadowedPointLights : 0,
+		s_LocalShadowSettings.PointResolution);
+}
+
 void EnvMapVulkanRenderer::Init()
 {
 	/**** BEGIN: to be removed from VulkanRenderer ****/
@@ -2741,28 +3207,9 @@ void EnvMapVulkanRenderer::Init()
 
 	s_Data.BRDFLut = H2M::Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga", false);
 
-	s_ShadowMap.Create(s_ShadowSettings.Resolution);
-	{
-		// The mesh vertex layouts (MeshH2M's Vertex and AnimatedVertex), as in the PBR pipelines
-		H2M::VertexBufferLayoutH2M staticLayout = {
-			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
-			{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
-			{ H2M::ShaderDataTypeH2M::Float3, "a_Tangent" },
-			{ H2M::ShaderDataTypeH2M::Float3, "a_Binormal" },
-			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
-		};
-		H2M::VertexBufferLayoutH2M animLayout = {
-			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
-			{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
-			{ H2M::ShaderDataTypeH2M::Float3, "a_Tangent" },
-			{ H2M::ShaderDataTypeH2M::Float3, "a_Binormal" },
-			{ H2M::ShaderDataTypeH2M::Float2, "a_TexCoord" },
-			{ H2M::ShaderDataTypeH2M::Int4,   "a_BoneIndices" },
-			{ H2M::ShaderDataTypeH2M::Float4, "a_BoneWeights" },
-		};
-		s_ShadowPipeline.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth").As<H2M::VulkanShaderH2M>(), staticLayout, { 0 }, s_ShadowMap.GetRenderPass());
-		s_ShadowPipelineAnim.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowDepth_Anim").As<H2M::VulkanShaderH2M>(), animLayout, { 0, 5, 6 }, s_ShadowMap.GetRenderPass());
-	}
+	CreateShadowMap(s_ShadowSettings.Resolution, false); // the descriptor is written with the rest of set 0, below
+	CreateLocalShadowMaps();
+	s_ShadowMapViewer.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowMapView").As<H2M::VulkanShaderH2M>());
 
 	// H2M::RendererH2M::Submit([environment]() mutable {});
 	{
@@ -2825,6 +3272,9 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_ShadowPipelineAnim.Destroy();
 	s_ShadowPipeline.Destroy();
 	s_ShadowMap.Destroy();
+	s_SpotShadowMaps.Destroy();
+	s_PointShadowMaps.Destroy();
+	s_ShadowMapViewer.Destroy();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
 	// delete s_Data;
 }
@@ -2931,8 +3381,14 @@ static void WriteShadowUniforms()
 		float Softness;
 		float ShowCascades;
 		float ShadowMapTexelSize;
+		glm::mat4 SpotShadowViewProjection[MaxShadowedSpotLights];
+		glm::vec4 PointShadowDepthParams[MaxShadowedPointLights]; // xy used
+		glm::vec4 SpotShadowTanHalfFov;
+		glm::vec4 LocalShadowParams; // normal bias, softness, 1 / spot resolution, 1 / point resolution
+		glm::vec4 ShadowDebug;       // Shadows Only: x = 1 sun, 2 point, 3 spot, 4 light off (0: normal view); y = index in the packed lights
 	};
-	static_assert(sizeof(ShadowsUB) == 320, "std140 layout mismatch with the Shadows block of the PBR shaders");
+	static_assert(sizeof(ShadowsUB) == 688, "std140 layout mismatch with the Shadows block of the PBR shaders");
+	static_assert(MaxShadowedSpotLights == 4 && MaxShadowedPointLights == 4, "the Shadows block of the PBR shaders has 4 slots of each");
 
 	ShadowsUB ub = {};
 	glm::mat4 cameraTransform = glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix());
@@ -2949,6 +3405,48 @@ static void WriteShadowUniforms()
 	ub.ShowCascades = s_ShadowSettings.ShowCascades ? 1.0f : 0.0f;
 	ub.ShadowMapTexelSize = s_ShadowMap.IsValid() ? 1.0f / (float)s_ShadowMap.GetResolution() : 0.0f;
 
+	for (uint32_t slot = 0; slot < s_LocalShadowSlots.SpotCount; slot++)
+	{
+		const EnvMapVulkanSpotLight& light = s_Lights.SpotLights[s_LocalShadowSlots.SpotLight[slot]];
+		ub.SpotShadowViewProjection[slot] = s_LocalShadowSlots.SpotViewProjection[slot];
+		ub.SpotShadowTanHalfFov[slot] = std::tan(glm::radians(GetSpotShadowFieldOfView(light.OuterAngle) * 0.5f));
+	}
+	for (uint32_t slot = 0; slot < s_LocalShadowSlots.PointCount; slot++)
+	{
+		const EnvMapVulkanPointLight& light = s_Lights.PointLights[s_LocalShadowSlots.PointLight[slot]];
+		ub.PointShadowDepthParams[slot] = glm::vec4(GetPointShadowDepthParams(light.Range), 0.0f, 0.0f);
+	}
+	// Shadows Only: the selected light, by its index among the packed lights (Pack leaves out the lights that are off)
+	if (s_ShowShadowsOnly && s_SelectedLightKind != LightKind::None)
+	{
+		if (s_SelectedLightKind == LightKind::Sun)
+		{
+			ub.ShadowDebug = glm::vec4(s_Lights.Sun.Enabled ? 1.0f : 4.0f, 0.0f, 0.0f, 0.0f);
+		}
+		else
+		{
+			const bool point = s_SelectedLightKind == LightKind::Point;
+			int packedIndex = 0;
+			bool enabled = false;
+			for (int i = 0; i <= s_SelectedLightIndex; i++)
+			{
+				bool on = point ? s_Lights.PointLights[i].Enabled : s_Lights.SpotLights[i].Enabled;
+				if (i == s_SelectedLightIndex)
+				{
+					enabled = on;
+				}
+				else if (on)
+				{
+					packedIndex++;
+				}
+			}
+			ub.ShadowDebug = glm::vec4(enabled ? (point ? 2.0f : 3.0f) : 4.0f, (float)packedIndex, 0.0f, 0.0f);
+		}
+	}
+	ub.LocalShadowParams = glm::vec4(s_LocalShadowSettings.NormalBias, s_LocalShadowSettings.Softness,
+		s_SpotShadowMaps.IsValid() ? 1.0f / (float)s_SpotShadowMaps.GetResolution() : 0.0f,
+		s_PointShadowMaps.IsValid() ? 1.0f / (float)s_PointShadowMaps.GetResolution() : 0.0f);
+
 	H2M::RefH2M<H2M::VulkanShaderH2M> shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
 	void* ubPtr = shader->MapUniformBuffer(7, H2M::VulkanShaderH2M::FrameDescriptorSet);
 	memcpy(ubPtr, &ub, sizeof(ShadowsUB));
@@ -2960,17 +3458,131 @@ static void WriteShadowUniforms()
 static void WriteShadowMapDescriptor()
 {
 	H2M::RefH2M<H2M::VulkanShaderH2M> shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
-	VkDescriptorImageInfo imageInfo = { s_ShadowMap.GetCompareSampler(), s_ShadowMap.GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
-	VkWriteDescriptorSet write = *shader->GetDescriptorSet("u_ShadowMap", H2M::VulkanShaderH2M::FrameDescriptorSet);
-	write.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
-	write.descriptorCount = 1;
-	write.pImageInfo = &imageInfo;
-	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+	// The sun's cascades, the spot light maps and the point light cubes (bindings 6, 8, 9)
+	const EnvMapVulkanShadowMap* maps[3] = { &s_ShadowMap, &s_SpotShadowMaps, &s_PointShadowMaps };
+	const char* names[3] = { "u_ShadowMap", "u_SpotShadowMaps", "u_PointShadowMaps" };
+	std::array<VkDescriptorImageInfo, 3> imageInfos;
+	std::vector<VkWriteDescriptorSet> writes;
+	for (int i = 0; i < 3; i++)
+	{
+		if (!maps[i]->IsValid())
+		{
+			continue;
+		}
+		imageInfos[i] = { maps[i]->GetCompareSampler(), maps[i]->GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		VkWriteDescriptorSet write = *shader->GetDescriptorSet(names[i], H2M::VulkanShaderH2M::FrameDescriptorSet);
+		write.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+		write.descriptorCount = 1;
+		write.pImageInfo = &imageInfos[i];
+		writes.push_back(write);
+	}
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
+}
+
+
+static void ComputeShadowCasterBounds(glm::vec3& totalMin, glm::vec3& totalMax)
+{
+	totalMin = glm::vec3(std::numeric_limits<float>::max());
+	totalMax = glm::vec3(-std::numeric_limits<float>::max());
+	s_ShadowCasterBounds.clear();
+	for (const SubmittedMesh& submitted : s_Meshes)
+	{
+		glm::vec3 meshMin(std::numeric_limits<float>::max());
+		glm::vec3 meshMax(-std::numeric_limits<float>::max());
+		for (const H2M::RefH2M<H2M::SubmeshH2M>& submesh : submitted.Mesh->GetSubmeshes())
+		{
+			glm::mat4 transform = GetSubmeshTransform(submitted.Mesh, submesh, submitted.Transform);
+			for (int c = 0; c < 8; c++)
+			{
+				glm::vec3 corner((c & 1) ? submesh->BoundingBox.Max.x : submesh->BoundingBox.Min.x, (c & 2) ? submesh->BoundingBox.Max.y : submesh->BoundingBox.Min.y,
+					(c & 4) ? submesh->BoundingBox.Max.z : submesh->BoundingBox.Min.z);
+				glm::vec3 world = glm::vec3(transform * glm::vec4(corner, 1.0f));
+				meshMin = glm::min(meshMin, world);
+				meshMax = glm::max(meshMax, world);
+			}
+		}
+		s_ShadowCasterBounds.push_back({ meshMin, meshMax });
+		totalMin = glm::min(totalMin, meshMin);
+		totalMax = glm::max(totalMax, meshMax);
+	}
+	s_ShadowCasterBoundsMin = totalMin;
+	s_ShadowCasterBoundsMax = totalMax;
+}
+
+// Starts a depth-only pass into one layer of a shadow map (cleared to the far plane)
+static void BeginShadowPass(VkCommandBuffer commandBuffer, const EnvMapVulkanShadowMap& shadowMap, uint32_t layer, float depthBias, float slopeBias)
+{
+	const uint32_t resolution = shadowMap.GetResolution();
+	VkClearValue clearValue = {};
+	clearValue.depthStencil = { 1.0f, 0 };
+	VkRenderPassBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	beginInfo.renderPass = shadowMap.GetRenderPass();
+	beginInfo.framebuffer = shadowMap.GetFramebuffer(layer);
+	beginInfo.renderArea.extent = { resolution, resolution };
+	beginInfo.clearValueCount = 1;
+	beginInfo.pClearValues = &clearValue;
+	vkCmdBeginRenderPass(commandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+	VkViewport viewport = { 0.0f, 0.0f, (float)resolution, (float)resolution, 0.0f, 1.0f };
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+	VkRect2D scissor = { { 0, 0 }, { resolution, resolution } };
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+	vkCmdSetDepthBias(commandBuffer, depthBias, 0.0f, slopeBias);
+}
+
+// Draws the submitted meshes into the current shadow pass. With a light sphere (center, radius), only the meshes whose
+// bounds reach into it: a spot or point light can't shadow anything beyond its range. The shadow pipelines were built for
+// the sun's render pass; the spot and point light passes are compatible with it (one depth attachment of the same format).
+// Returns the number of meshes drawn.
+static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4& viewProjection, const glm::vec3* lightCenter = nullptr, float lightRadius = 0.0f)
+{
+	uint32_t drawn = 0;
+	for (size_t m = 0; m < s_Meshes.size(); m++)
+	{
+		if (lightCenter)
+		{
+			// Distance from the light to the nearest point of the mesh's bounds
+			const glm::vec3 nearest = glm::clamp(*lightCenter, s_ShadowCasterBounds[m].first, s_ShadowCasterBounds[m].second);
+			if (glm::length(nearest - *lightCenter) > lightRadius)
+			{
+				continue;
+			}
+		}
+
+		H2M::RefH2M<H2M::MeshH2M> mesh = s_Meshes[m].Mesh;
+		const bool skinned = mesh->IsSkinned();
+		const EnvMapVulkanShadowPipeline& pipeline = skinned ? s_ShadowPipelineAnim : s_ShadowPipeline;
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
+		if (skinned)
+		{
+			VkDescriptorSet boneDescriptorSet = mesh->GetObjectDescriptorSet();
+			if (boneDescriptorSet == VK_NULL_HANDLE)
+			{
+				continue; // no bone buffer: the skinned vertices can't be placed
+			}
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, 0, 1, &boneDescriptorSet, 0, nullptr);
+		}
+
+		VkBuffer vertexBuffer = mesh->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+		VkDeviceSize offset = 0;
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
+		vkCmdBindIndexBuffer(commandBuffer, H2M::RefH2M<H2M::VulkanIndexBufferH2M>(mesh->GetIndexBuffer())->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
+		for (const H2M::RefH2M<H2M::SubmeshH2M>& submesh : mesh->GetSubmeshes())
+		{
+			glm::mat4 matrices[2] = { viewProjection, GetSubmeshTransform(mesh, submesh, s_Meshes[m].Transform) };
+			vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
+			vkCmdDrawIndexed(commandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
+		}
+		drawn++;
+	}
+	return drawn;
 }
 
 // The shadow map cascades of the sun (see EnvMapVulkanShadows.h), recorded at the start of the frame, before the geometry
 // pass that samples them. Every submitted mesh casts; the grid and the skybox don't.
-static void RecordShadowPasses(VkCommandBuffer commandBuffer)
+static void RecordShadowPasses(VkCommandBuffer commandBuffer, const glm::vec3& boundsMin, const glm::vec3& boundsMax)
 {
 	s_ShadowsRendered = false;
 	if (!s_ShadowMap.IsValid() || !s_Lights.Sun.Enabled || !s_Lights.Sun.CastShadows || s_Lights.Sun.Intensity <= 0.0f ||
@@ -2999,86 +3611,50 @@ static void RecordShadowPasses(VkCommandBuffer commandBuffer)
 		return;
 	}
 
-	// All casters, in world space (each submesh's bounding box, transformed)
-	glm::vec3 boundsMin(std::numeric_limits<float>::max());
-	glm::vec3 boundsMax(-std::numeric_limits<float>::max());
-	for (const SubmittedMesh& submitted : s_Meshes)
-	{
-		for (const H2M::RefH2M<H2M::SubmeshH2M>& submesh : submitted.Mesh->GetSubmeshes())
-		{
-			glm::mat4 transform = GetSubmeshTransform(submitted.Mesh, submesh, submitted.Transform);
-			for (int c = 0; c < 8; c++)
-			{
-				glm::vec3 corner((c & 1) ? submesh->BoundingBox.Max.x : submesh->BoundingBox.Min.x, (c & 2) ? submesh->BoundingBox.Max.y : submesh->BoundingBox.Min.y,
-					(c & 4) ? submesh->BoundingBox.Max.z : submesh->BoundingBox.Min.z);
-				glm::vec3 world = glm::vec3(transform * glm::vec4(corner, 1.0f));
-				boundsMin = glm::min(boundsMin, world);
-				boundsMax = glm::max(boundsMax, world);
-			}
-		}
-	}
-
 	s_ShadowSettings.Resolution = s_ShadowMap.GetResolution();
 	ComputeShadowCascades(cameraPosition, cameraForward, cornerRays, camera.GetPerspectiveNearClip(), s_ShadowSettings, s_Lights.Sun.GetDirection(),
 		boundsMin, boundsMax, s_ShadowCascades);
 
-	const uint32_t resolution = s_ShadowMap.GetResolution();
 	for (uint32_t cascade = 0; cascade < ShadowCascadeCount; cascade++)
 	{
-		VkClearValue clearValue = {};
-		clearValue.depthStencil = { 1.0f, 0 };
-		VkRenderPassBeginInfo beginInfo = {};
-		beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		beginInfo.renderPass = s_ShadowMap.GetRenderPass();
-		beginInfo.framebuffer = s_ShadowMap.GetFramebuffer(cascade);
-		beginInfo.renderArea.extent = { resolution, resolution };
-		beginInfo.clearValueCount = 1;
-		beginInfo.pClearValues = &clearValue;
-		vkCmdBeginRenderPass(commandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-		VkViewport viewport = { 0.0f, 0.0f, (float)resolution, (float)resolution, 0.0f, 1.0f };
-		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-		VkRect2D scissor = { { 0, 0 }, { resolution, resolution } };
-		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-		vkCmdSetDepthBias(commandBuffer, s_ShadowSettings.DepthBias, 0.0f, s_ShadowSettings.SlopeBias);
-
-		for (const SubmittedMesh& submitted : s_Meshes)
-		{
-			H2M::RefH2M<H2M::MeshH2M> mesh = submitted.Mesh;
-			const bool skinned = mesh->IsSkinned();
-			const EnvMapVulkanShadowPipeline& pipeline = skinned ? s_ShadowPipelineAnim : s_ShadowPipeline;
-			if (skinned)
-			{
-				VkDescriptorSet boneDescriptorSet = mesh->GetObjectDescriptorSet();
-				if (boneDescriptorSet == VK_NULL_HANDLE)
-				{
-					continue; // no bone buffer: the skinned vertices can't be placed
-				}
-				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, 0, 1, &boneDescriptorSet, 0, nullptr);
-			}
-			else
-			{
-				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
-			}
-
-			VkBuffer vertexBuffer = mesh->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
-			VkDeviceSize offset = 0;
-			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
-			vkCmdBindIndexBuffer(commandBuffer, H2M::RefH2M<H2M::VulkanIndexBufferH2M>(mesh->GetIndexBuffer())->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
-
-			for (const H2M::RefH2M<H2M::SubmeshH2M>& submesh : mesh->GetSubmeshes())
-			{
-				glm::mat4 matrices[2] = { s_ShadowCascades[cascade].ViewProjection, GetSubmeshTransform(mesh, submesh, submitted.Transform) };
-				vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
-				vkCmdDrawIndexed(commandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
-			}
-		}
-
+		BeginShadowPass(commandBuffer, s_ShadowMap, cascade, s_ShadowSettings.DepthBias, s_ShadowSettings.SlopeBias);
+		DrawShadowCasters(commandBuffer, s_ShadowCascades[cascade].ViewProjection);
 		vkCmdEndRenderPass(commandBuffer);
 	}
 	s_ShadowsRendered = true;
 	WriteShadowUniforms();
+}
+
+// The shadow maps of the spot lights (one pass each) and point lights (6 passes each, one per cube face), after the sun's
+static void RecordLocalShadowPasses(VkCommandBuffer commandBuffer)
+{
+	// The slots were assigned when the Lights buffer was packed (UpdateFrameUniforms)
+	LocalShadowSlots& slots = s_LocalShadowSlots;
+	slots.MeshesDrawn = 0;
+	if (!s_ShadowPipeline.Pipeline || !s_ShadowPipelineAnim.Pipeline)
+	{
+		return;
+	}
+	const EnvMapVulkanLocalShadowSettings& settings = s_LocalShadowSettings;
+
+	for (uint32_t slot = 0; slot < slots.SpotCount; slot++)
+	{
+		const EnvMapVulkanSpotLight& light = s_Lights.SpotLights[slots.SpotLight[slot]];
+		BeginShadowPass(commandBuffer, s_SpotShadowMaps, slot, settings.DepthBias, settings.SlopeBias);
+		slots.MeshesDrawn += DrawShadowCasters(commandBuffer, slots.SpotViewProjection[slot], &light.Position, light.Range);
+		vkCmdEndRenderPass(commandBuffer);
+	}
+
+	for (uint32_t slot = 0; slot < slots.PointCount; slot++)
+	{
+		const EnvMapVulkanPointLight& light = s_Lights.PointLights[slots.PointLight[slot]];
+		for (uint32_t face = 0; face < 6; face++)
+		{
+			BeginShadowPass(commandBuffer, s_PointShadowMaps, slot * 6 + face, settings.DepthBias, settings.SlopeBias);
+			slots.MeshesDrawn += DrawShadowCasters(commandBuffer, slots.PointFaceViewProjection[slot][face], &light.Position, light.Range);
+			vkCmdEndRenderPass(commandBuffer);
+		}
+	}
 }
 
 void EnvMapVulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
@@ -3302,8 +3878,18 @@ void EnvMapVulkanRenderer::GeometryPass()
 		VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 		VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
 
-		// The sun's shadow map first: the geometry pass below samples it
-		RecordShadowPasses(drawCommandBuffer);
+		// The shadow maps first (the sun's, then the spot and point lights'): the geometry pass below samples them
+		glm::vec3 casterBoundsMin, casterBoundsMax;
+		ComputeShadowCasterBounds(casterBoundsMin, casterBoundsMax);
+		RecordShadowPasses(drawCommandBuffer, casterBoundsMin, casterBoundsMax);
+		RecordLocalShadowPasses(drawCommandBuffer);
+		if (s_ShadowMapViewerRequest.Active)
+		{
+			const EnvMapVulkanShadowMap& map = s_ShadowMapViewerRequest.Cube ? s_PointShadowMaps : s_SpotShadowMaps;
+			s_ShadowMapViewer.Record(drawCommandBuffer, map, s_ShadowMapViewerRequest.Cube, s_ShadowMapViewerRequest.BaseLayer,
+				s_ShadowMapViewerRequest.Near, s_ShadowMapViewerRequest.Far);
+			s_ShadowMapViewerRequest.Active = false; // requested again by the panel while it shows the viewer
+		}
 
 		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
 
@@ -3699,6 +4285,7 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 		float OutlineWidth;
 		glm::vec4 OutlineColor;
 		float HuePreservation;
+		float RawScene;
 	} uniforms;
 	uniforms.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
 	uniforms.BloomIntensity = s_BloomSettings.Enabled ? s_BloomSettings.Intensity : 0.0f;
@@ -3706,6 +4293,7 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	uniforms.OutlineWidth = s_OverlaySettings.Outline ? s_OverlaySettings.OutlineWidth : 0.0f;
 	uniforms.OutlineColor = s_OverlaySettings.OutlineColor;
 	uniforms.HuePreservation = s_TonemapHuePreservation;
+	uniforms.RawScene = s_ShowShadowsOnly && s_SelectedLightKind != LightKind::None ? 1.0f : 0.0f;
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(CompositeUniforms), &uniforms);
 
 	// Scene, bloom, lens dirt, overlay and selection mask images (rewritten when the framebuffers are resized, see WriteBloomDescriptorSets)
@@ -4118,6 +4706,16 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 						ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Auto Exposure", s_AutoExposureEnabled);
+						if (ImGuiWrapper::Property("Extract Sun", s_ExtractSunFromEnvironment))
+						{
+							s_PendingEnvMapFilename = s_EnvMapFilename; // reloaded with or without its sun
+						}
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip(s_ExtractedSun.Found
+								? "This map's sun is moved to the directional sun (intensity %.2f), so it casts shadows with all its light\nand isn't counted twice. Off: the map keeps its sun (the directional sun adds to it)."
+								: "A real sun in a map (far brighter than the rest) is moved to the directional sun,\nso it casts shadows with all its light. This map has no sun.", s_ExtractedSun.Intensity);
+						}
 						ImGuiWrapper::Property("Preserve Hue", s_TonemapHuePreservation, 0.01f, 0.0f, 1.0f, PropertyFlag::DragProperty);
 						if (ImGui::IsItemHovered())
 						{
@@ -4317,12 +4915,38 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 // TODO: Temporary method until composite rendering is enabled
 void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 {
-	// At startup the sun points at the sun of the default environment map, once its pixels are available
-	static bool s_SunAlignedAtStartup = false;
-	if (!s_SunAlignedAtStartup && s_Data.envEquirect)
+	// The sun points at the sun of the environment map: at startup, and after loading a map whose sun was taken out of
+	// it (its light now has to come from the directional sun), once the map's pixels are available
+	if (s_PendingSunAlign && s_Data.envEquirect)
 	{
 		AlignSunToEnvironment();
-		s_SunAlignedAtStartup = true;
+		s_PendingSunAlign = false;
+	}
+
+	// A shadow map resolution chosen in the Lights panel: the map is recreated before any command buffer of this frame is
+	// recorded (its descriptor in set 0 can't change while a recorded frame uses it)
+	if (s_PendingShadowResolution != 0)
+	{
+		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+		CreateShadowMap(s_PendingShadowResolution, true);
+		s_PendingShadowResolution = 0;
+	}
+
+	// Spot / point shadow map resolutions chosen in the Lights panel (recreated as the sun's, see above)
+	if (s_PendingLocalShadowResolutions != glm::uvec2(0))
+	{
+		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+		if (s_PendingLocalShadowResolutions.x)
+		{
+			s_LocalShadowSettings.SpotResolution = s_PendingLocalShadowResolutions.x;
+		}
+		if (s_PendingLocalShadowResolutions.y)
+		{
+			s_LocalShadowSettings.PointResolution = s_PendingLocalShadowResolutions.y;
+		}
+		CreateLocalShadowMaps();
+		WriteShadowMapDescriptor();
+		s_PendingLocalShadowResolutions = glm::uvec2(0);
 	}
 
 	// An environment map requested from the UI (button or drag & drop) is loaded here, before any command buffer
@@ -4466,6 +5090,22 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
 
 	// Loaded as 32-bit float (full dynamic range)
 	s_Data.envEquirect = H2M::Texture2D_H2M::Create(filepath, false);
+
+	// A real sun is taken out of the map before the environment lighting is built from it, and moved to the directional
+	// sun (see ExtractSun): the texture is recreated from the edited pixels
+	s_ExtractedSun = EnvMapVulkanExtractedSun();
+	{
+		H2M::BufferH2M pixels = s_Data.envEquirect->GetWriteableBuffer();
+		uint32_t width = s_Data.envEquirect->GetWidth(), height = s_Data.envEquirect->GetHeight();
+		if (s_ExtractSunFromEnvironment && pixels.Data && s_Data.envEquirect->GetFormat() == H2M::ImageFormatH2M::RGBA32F &&
+			pixels.Size >= (uint64_t)width * height * 4 * sizeof(float) && ExtractSun((float*)pixels.Data, width, height, s_ExtractedSun))
+		{
+			s_Data.envEquirect = H2M::Texture2D_H2M::Create(H2M::ImageFormatH2M::RGBA32F, width, height, pixels.Data);
+			s_PendingSunAlign = true;
+			Log::GetLogger()->info("Sun extracted from '{0}': {1} pixels, {2}x brighter than the map's average, intensity {3}",
+				filepath, s_ExtractedSun.PixelCount, s_ExtractedSun.PeakToAverage, s_ExtractedSun.Intensity);
+		}
+	}
 	s_EnvMapAutoExposure = ComputeAutoExposure(s_Data.envEquirect);
 
 	uint32_t mipFilterLevels = s_MipMapsEnabled ? glm::min(11u, envFilteredCubemap->GetMipLevelCount()) : 1;

@@ -97,21 +97,96 @@ void ComputeShadowCascades(const glm::vec3& cameraPosition, const glm::vec3& cam
 	}
 }
 
-void EnvMapVulkanShadowMap::Create(uint32_t resolution)
+float GetLocalShadowNearPlane(float range)
+{
+	return std::max(range * 0.005f, 0.01f);
+}
+
+glm::mat4 ComputeSpotShadowViewProjection(const glm::vec3& position, const glm::vec3& direction, float outerAngle, float range)
+{
+	const glm::vec3 forward = glm::normalize(direction);
+	const glm::vec3 up = std::abs(forward.y) > 0.99f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+	glm::mat4 view = glm::lookAt(position, position + forward, up);
+	glm::mat4 projection = glm::perspectiveRH_ZO(glm::radians(GetSpotShadowFieldOfView(outerAngle)), 1.0f, GetLocalShadowNearPlane(range),
+		std::max(range, 0.02f));
+	return projection * view;
+}
+
+float GetSpotShadowFieldOfView(float outerAngle)
+{
+	// The outer half-angle is at most 89 degrees (see EnvMapVulkanLightEnvironment::Pack)
+	return std::min(2.0f * std::clamp(outerAngle, 0.1f, 89.0f) + 5.0f, 170.0f);
+}
+
+glm::vec2 GetPointShadowDepthParams(float range)
+{
+	const float n = GetLocalShadowNearPlane(range), f = std::max(range, 0.02f);
+	return glm::vec2(f / (f - n), f * n / (f - n));
+}
+
+std::array<glm::mat4, 6> ComputePointShadowFaceViewProjections(const glm::vec3& position, float range)
+{
+	// Per face (layer order +X, -X, +Y, -Y, +Z, -Z): the major axis F, and the directions R and D along which the face's
+	// s and t texture coordinates grow (Vulkan spec, Cube Map Face Selection: e.g. +X: sc = -rz, tc = -ry).
+	// The view looks down F with R as its x axis and D as its y axis: then a perspective projection gives
+	// ndc.x = dot(r, R) / dot(r, F) = 2s - 1 and ndc.y = dot(r, D) / dot(r, F) = 2t - 1, and Vulkan's viewport puts ndc
+	// (-1, -1) at the top left texel (s, t = 0), as the lookup expects. (R, D, -F) is right-handed for every face.
+	struct Face { glm::vec3 F, R, D; };
+	static const Face faces[6] = {
+		{ { 1.0f,  0.0f,  0.0f }, {  0.0f, 0.0f, -1.0f }, { 0.0f, -1.0f,  0.0f } }, // +X: sc = -rz, tc = -ry
+		{ {-1.0f,  0.0f,  0.0f }, {  0.0f, 0.0f,  1.0f }, { 0.0f, -1.0f,  0.0f } }, // -X: sc = +rz, tc = -ry
+		{ { 0.0f,  1.0f,  0.0f }, {  1.0f, 0.0f,  0.0f }, { 0.0f,  0.0f,  1.0f } }, // +Y: sc = +rx, tc = +rz
+		{ { 0.0f, -1.0f,  0.0f }, {  1.0f, 0.0f,  0.0f }, { 0.0f,  0.0f, -1.0f } }, // -Y: sc = +rx, tc = -rz
+		{ { 0.0f,  0.0f,  1.0f }, {  1.0f, 0.0f,  0.0f }, { 0.0f, -1.0f,  0.0f } }, // +Z: sc = +rx, tc = -ry
+		{ { 0.0f,  0.0f, -1.0f }, { -1.0f, 0.0f,  0.0f }, { 0.0f, -1.0f,  0.0f } }, // -Z: sc = -rx, tc = -ry
+	};
+	const glm::mat4 projection = glm::perspectiveRH_ZO(glm::radians(90.0f), 1.0f, GetLocalShadowNearPlane(range), std::max(range, 0.02f));
+	std::array<glm::mat4, 6> matrices;
+	for (int i = 0; i < 6; i++)
+	{
+		const Face& face = faces[i];
+		// Rows of the view rotation: R, D, -F (camera space x, y, z); then the translation to the light's position
+		glm::mat4 view(1.0f);
+		view[0] = glm::vec4(face.R.x, face.D.x, -face.F.x, 0.0f);
+		view[1] = glm::vec4(face.R.y, face.D.y, -face.F.y, 0.0f);
+		view[2] = glm::vec4(face.R.z, face.D.z, -face.F.z, 0.0f);
+		view[3] = glm::vec4(-glm::dot(face.R, position), -glm::dot(face.D, position), glm::dot(face.F, position), 1.0f);
+		matrices[i] = projection * view;
+	}
+	return matrices;
+}
+
+float PointShadowDepth(const glm::vec3& offset, float range)
+{
+	// The largest coordinate is the distance along the face's major axis (the view depth); perspectiveRH_ZO maps a view
+	// depth z to far / (far - near) - far * near / ((far - near) * z)
+	const glm::vec2 params = GetPointShadowDepthParams(range);
+	const float z = std::max(std::abs(offset.x), std::max(std::abs(offset.y), std::abs(offset.z)));
+	return params.x - params.y / z;
+}
+
+void EnvMapVulkanShadowMap::Create(uint32_t resolution, uint32_t layerCount, bool cubeArray)
 {
 	Destroy();
 
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 	m_Resolution = resolution;
+	m_LayerCount = layerCount;
+	m_CubeArray = cubeArray;
+	m_Generation++;
+	m_LayerViews.assign(layerCount, VK_NULL_HANDLE);
+	m_DisplayViews.assign(layerCount, VK_NULL_HANDLE);
+	m_Framebuffers.assign(layerCount, VK_NULL_HANDLE);
 
-	// One depth image, a layer per cascade
+	// One depth image, a layer per shadow map (6 per cube)
 	VkImageCreateInfo imageInfo = {};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.flags = cubeArray ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : 0;
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
 	imageInfo.format = Format;
 	imageInfo.extent = { resolution, resolution, 1 };
 	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = ShadowCascadeCount;
+	imageInfo.arrayLayers = layerCount;
 	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	imageInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -124,11 +199,13 @@ void EnvMapVulkanShadowMap::Create(uint32_t resolution)
 	VkImageViewCreateInfo viewInfo = {};
 	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	viewInfo.image = m_Image;
-	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+	viewInfo.viewType = cubeArray ? VK_IMAGE_VIEW_TYPE_CUBE_ARRAY : VK_IMAGE_VIEW_TYPE_2D_ARRAY;
 	viewInfo.format = Format;
-	viewInfo.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, ShadowCascadeCount };
+	viewInfo.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, layerCount };
 	VK_CHECK_RESULT_H2M(vkCreateImageView(device, &viewInfo, nullptr, &m_ArrayView));
-	for (uint32_t i = 0; i < ShadowCascadeCount; i++)
+	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+	VK_CHECK_RESULT_H2M(vkCreateImageView(device, &viewInfo, nullptr, &m_FlatArrayView));
+	for (uint32_t i = 0; i < layerCount; i++)
 	{
 		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		viewInfo.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, i, 1 };
@@ -181,7 +258,7 @@ void EnvMapVulkanShadowMap::Create(uint32_t resolution)
 	renderPassInfo.pDependencies = dependencies.data();
 	VK_CHECK_RESULT_H2M(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass));
 
-	for (uint32_t i = 0; i < ShadowCascadeCount; i++)
+	for (uint32_t i = 0; i < layerCount; i++)
 	{
 		VkFramebufferCreateInfo framebufferInfo = {};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -229,7 +306,7 @@ void EnvMapVulkanShadowMap::Create(uint32_t resolution)
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.image = m_Image;
-	barrier.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, ShadowCascadeCount };
+	barrier.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, layerCount };
 	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 	vulkanDevice->FlushCommandBuffer(commandBuffer);
 }
@@ -261,6 +338,8 @@ void EnvMapVulkanShadowMap::Destroy()
 		view = VK_NULL_HANDLE;
 	}
 	vkDestroyImageView(device, m_ArrayView, nullptr);
+	vkDestroyImageView(device, m_FlatArrayView, nullptr);
+	m_FlatArrayView = VK_NULL_HANDLE;
 	H2M::VulkanAllocatorH2M allocator(std::string("ShadowMap"));
 	allocator.DestroyImage(m_Image, m_Allocation);
 
@@ -270,6 +349,10 @@ void EnvMapVulkanShadowMap::Destroy()
 	m_Image = VK_NULL_HANDLE;
 	m_Allocation = nullptr;
 	m_Resolution = 0;
+	m_LayerCount = 0;
+	m_LayerViews.clear();
+	m_DisplayViews.clear();
+	m_Framebuffers.clear();
 }
 
 static VkFormat ToVulkanFormat(H2M::ShaderDataTypeH2M type)
@@ -396,4 +479,175 @@ void EnvMapVulkanShadowPipeline::Destroy()
 		vkDestroyPipelineLayout(device, Layout, nullptr);
 		Layout = VK_NULL_HANDLE;
 	}
+}
+
+void EnvMapVulkanShadowMapViewer::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader)
+{
+	Destroy();
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	m_Shader = shader;
+
+	// The output: written by the compute shader, sampled by ImGui
+	VkImageCreateInfo imageInfo = {};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.format = VK_FORMAT_R8G8B8A8_UNORM;
+	imageInfo.extent = { Width, Height, 1 };
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageInfo.usage = VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	H2M::VulkanAllocatorH2M allocator(std::string("ShadowMapViewer"));
+	m_Allocation = allocator.AllocateImage(imageInfo, VMA_MEMORY_USAGE_GPU_ONLY, m_Image);
+
+	VkImageViewCreateInfo viewInfo = {};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = m_Image;
+	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.format = imageInfo.format;
+	viewInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	VK_CHECK_RESULT_H2M(vkCreateImageView(device, &viewInfo, nullptr, &m_View));
+
+	VkSamplerCreateInfo samplerInfo = {};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR;
+	samplerInfo.minFilter = VK_FILTER_LINEAR;
+	samplerInfo.addressModeU = samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_Sampler));
+
+	// Compute pipeline, from the shader's reflection
+	std::vector<VkDescriptorSetLayout> setLayouts = shader->GetAllDescriptorSetLayouts();
+	std::vector<VkPushConstantRange> pushConstantRanges;
+	for (const auto& range : shader->GetPushConstantRanges())
+	{
+		pushConstantRanges.push_back({ (VkShaderStageFlags)range.ShaderStage, range.Offset, range.Size });
+	}
+	VkPipelineLayoutCreateInfo layoutInfo = {};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	layoutInfo.setLayoutCount = (uint32_t)setLayouts.size();
+	layoutInfo.pSetLayouts = setLayouts.data();
+	layoutInfo.pushConstantRangeCount = (uint32_t)pushConstantRanges.size();
+	layoutInfo.pPushConstantRanges = pushConstantRanges.data();
+	VK_CHECK_RESULT_H2M(vkCreatePipelineLayout(device, &layoutInfo, nullptr, &m_Layout));
+
+	VkComputePipelineCreateInfo pipelineInfo = {};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+	pipelineInfo.stage = shader->GetPipelineShaderStageCreateInfos()[0];
+	pipelineInfo.layout = m_Layout;
+	VK_CHECK_RESULT_H2M(vkCreateComputePipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_Pipeline));
+
+	m_DescriptorSet = shader->CreateDescriptorSets(0);
+	m_BoundMap = nullptr;
+
+	// Cleared to the viewer's background, and in the layout ImGui samples
+	H2M::RefH2M<H2M::VulkanDeviceH2M> vulkanDevice = H2M::VulkanContextH2M::GetCurrentDevice();
+	VkCommandBuffer commandBuffer = vulkanDevice->GetCommandBuffer(true);
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.srcQueueFamilyIndex = barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = m_Image;
+	barrier.subresourceRange = viewInfo.subresourceRange;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	VkClearColorValue clearColor = { { 0.1f, 0.1f, 0.1f, 1.0f } };
+	vkCmdClearColorImage(commandBuffer, m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &viewInfo.subresourceRange);
+	barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	vulkanDevice->FlushCommandBuffer(commandBuffer);
+}
+
+void EnvMapVulkanShadowMapViewer::Record(VkCommandBuffer commandBuffer, const EnvMapVulkanShadowMap& shadowMap, bool cube, uint32_t baseLayer,
+	float nearPlane, float farPlane)
+{
+	if (!IsValid() || !shadowMap.IsValid() || m_DescriptorSet.DescriptorSets.empty())
+	{
+		return;
+	}
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+
+	// Point the descriptor set at this shadow map (when it changed: another map, or the map was recreated). The previous
+	// frame is finished (one frame in flight), and the set is bound below, after the update.
+	if (m_BoundMap != &shadowMap || m_BoundGeneration != shadowMap.GetGeneration())
+	{
+		VkDescriptorImageInfo input = { shadowMap.GetDisplaySampler(), shadowMap.GetFlatArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+		VkDescriptorImageInfo output = { VK_NULL_HANDLE, m_View, VK_IMAGE_LAYOUT_GENERAL };
+		std::array<VkWriteDescriptorSet, 2> writes = { *m_Shader->GetDescriptorSet("u_ShadowMap"), *m_Shader->GetDescriptorSet("o_View") };
+		writes[0].dstSet = writes[1].dstSet = m_DescriptorSet.DescriptorSets[0];
+		writes[0].descriptorCount = writes[1].descriptorCount = 1;
+		writes[0].pImageInfo = &input;
+		writes[1].pImageInfo = &output;
+		vkUpdateDescriptorSets(device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
+		m_BoundMap = &shadowMap;
+		m_BoundGeneration = shadowMap.GetGeneration();
+	}
+
+	// The shadow passes' depth writes before the compute shader reads them; the output from sampled (last frame's UI) to written
+	VkMemoryBarrier depthBarrier = {};
+	depthBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+	depthBarrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	depthBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	VkImageMemoryBarrier outputBarrier = {};
+	outputBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	outputBarrier.srcQueueFamilyIndex = outputBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	outputBarrier.image = m_Image;
+	outputBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	outputBarrier.oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	outputBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+	outputBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	outputBarrier.dstAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+		0, 1, &depthBarrier, 0, nullptr, 1, &outputBarrier);
+
+	struct Settings
+	{
+		int32_t Mode;
+		int32_t BaseLayer;
+		float Near;
+		float Far;
+	} settings = { cube ? 1 : 0, (int32_t)baseLayer, nearPlane, farPlane };
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_Pipeline);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_Layout, 0, 1, m_DescriptorSet.DescriptorSets.data(), 0, nullptr);
+	vkCmdPushConstants(commandBuffer, m_Layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(Settings), &settings);
+	vkCmdDispatch(commandBuffer, (Width + 15) / 16, (Height + 15) / 16, 1);
+
+	// Written before ImGui samples it
+	outputBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+	outputBarrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	outputBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+	outputBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &outputBarrier);
+}
+
+void EnvMapVulkanShadowMapViewer::Destroy()
+{
+	if (!IsValid())
+	{
+		return;
+	}
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	if (m_DescriptorSet.Pool)
+	{
+		vkDestroyDescriptorPool(device, m_DescriptorSet.Pool, nullptr);
+	}
+	m_DescriptorSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
+	vkDestroyPipeline(device, m_Pipeline, nullptr);
+	vkDestroyPipelineLayout(device, m_Layout, nullptr);
+	vkDestroySampler(device, m_Sampler, nullptr);
+	vkDestroyImageView(device, m_View, nullptr);
+	H2M::VulkanAllocatorH2M allocator(std::string("ShadowMapViewer"));
+	allocator.DestroyImage(m_Image, m_Allocation);
+	m_Pipeline = VK_NULL_HANDLE;
+	m_Layout = VK_NULL_HANDLE;
+	m_Sampler = VK_NULL_HANDLE;
+	m_View = VK_NULL_HANDLE;
+	m_Image = VK_NULL_HANDLE;
+	m_Allocation = nullptr;
+	m_BoundMap = nullptr;
 }

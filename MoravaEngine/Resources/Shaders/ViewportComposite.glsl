@@ -47,6 +47,7 @@ layout(push_constant) uniform Uniforms
 	float OutlineWidth;       // pixels; 0 = no outline
 	vec4 OutlineColor;
 	float HuePreservation;    // 0: ACES per channel (bright colors turn white), 1: hue-preserving ACES (see Tonemap)
+	float RawScene;           // 1: the scene as it is, without exposure, bloom and tonemapping (Shadows Only view)
 } u_Uniforms;
 
 // ACES filmic tonemapping (Narkowicz fit, with its 0.6 pre-exposure), per channel
@@ -112,6 +113,10 @@ void main()
 	color += bloom * dirt * u_Uniforms.BloomDirtIntensity;
 
 	vec3 mappedColor = Tonemap(color);
+	if (u_Uniforms.RawScene > 0.5)
+	{
+		mappedColor = clamp(texture(u_Texture, Input.TexCoord).rgb, 0.0, 1.0);
+	}
 
 	vec3 displayColor = pow(mappedColor, vec3(1.0 / gamma));
 
