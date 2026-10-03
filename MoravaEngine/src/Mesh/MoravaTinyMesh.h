@@ -1,12 +1,12 @@
 #pragma once
 
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 
 
 /**
  * This class shares the interface with HazelMesh, but uses tinyobjloader for loading meshes, instead of assimp
  */
-class MoravaTinyMesh : public H2M::MeshH2M
+class MoravaTinyMesh : public H2M::ModelH2M
 {
 public:
 	MoravaTinyMesh(const std::string& filepath, H2M::RefH2M<MoravaShader> shader, H2M::RefH2M<H2M::MaterialH2M> material, bool isAnimated);

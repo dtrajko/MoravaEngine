@@ -190,7 +190,7 @@ void EnvMapVulkanEditorLayer::OnEntityDeleted(H2M::EntityH2M e)
 {
 }
 
-void EnvMapVulkanEditorLayer::OnCreateMeshFromMeshSource(H2M::EntityH2M entity, H2M::RefH2M<H2M::MeshH2M> mesh)
+void EnvMapVulkanEditorLayer::OnCreateMeshFromMeshSource(H2M::EntityH2M entity, H2M::RefH2M<H2M::ModelH2M> mesh)
 {
 	m_ShowCreateNewMeshPopup = true;
 	m_CreateNewMeshPopupData.MeshToCreate = mesh;

@@ -3,7 +3,7 @@
 #type vertex
 #version 450 core
 
-// The mesh vertex (MeshH2M's AnimatedVertex), per instance
+// The mesh vertex (ModelH2M's AnimatedVertex), per instance
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
 layout(location = 2) in vec3 a_Tangent;

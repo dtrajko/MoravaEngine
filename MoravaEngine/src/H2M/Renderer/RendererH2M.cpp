@@ -408,7 +408,7 @@ namespace H2M
 		/**** END the old version of the method ****/
 	}
 
-	void RendererH2M::SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<MaterialInstanceH2M> overrideMaterial)
+	void RendererH2M::SubmitMesh(RefH2M<ModelH2M> mesh, const glm::mat4& transform, RefH2M<MaterialInstanceH2M> overrideMaterial)
 	{
 		// auto material = overrideMaterial ? overrideMaterial : mesh->GetMaterialInstance();
 		// auto shader = material->GetShader();
@@ -418,7 +418,7 @@ namespace H2M
 		mesh->GetIndexBuffer()->Bind();
 
 		auto& materials = mesh->GetMaterials();
-		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (RefH2M<MeshH2M> submesh : mesh->GetMeshes())
 		{
 			// Material
 			auto material = overrideMaterial ? overrideMaterial : materials[submesh->MaterialIndex];
@@ -453,13 +453,13 @@ namespace H2M
 		}
 	}
 
-	void RendererH2M::SubmitMeshWithShader(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<ShaderH2M> shader)
+	void RendererH2M::SubmitMeshWithShader(RefH2M<ModelH2M> mesh, const glm::mat4& transform, RefH2M<ShaderH2M> shader)
 	{
 		mesh->GetVertexBuffer()->Bind();
 		mesh->GetPipeline()->Bind();
 		mesh->GetIndexBuffer()->Bind();
 
-		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (RefH2M<MeshH2M> submesh : mesh->GetMeshes())
 		{
 			if (mesh->IsAnimated())
 			{
@@ -476,9 +476,9 @@ namespace H2M
 		}
 	}
 
-	void RendererH2M::DrawAABB(RefH2M<MeshH2M> mesh, const glm::mat4& transform, const glm::vec4& color)
+	void RendererH2M::DrawAABB(RefH2M<ModelH2M> mesh, const glm::mat4& transform, const glm::vec4& color)
 	{
-		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (RefH2M<MeshH2M> submesh : mesh->GetMeshes())
 		{
 			auto& aabb = submesh->BoundingBox;
 			auto aabbTransform = transform * submesh->Transform;
@@ -599,14 +599,14 @@ namespace H2M
 		s_RendererAPI->EndFrame();
 	}
 
-	void RendererH2M::RenderMeshWithoutMaterial(RefH2M<Pipeline> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
+	void RendererH2M::RenderMeshWithoutMaterial(RefH2M<Pipeline> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderMeshWithoutMaterial(pipeline, mesh, transform);
 	}
 
 #endif
 
-	void RendererH2M::RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
+	void RendererH2M::RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform)
 	{
 		s_RendererAPI->RenderMesh(pipeline, mesh, transform);
 	}

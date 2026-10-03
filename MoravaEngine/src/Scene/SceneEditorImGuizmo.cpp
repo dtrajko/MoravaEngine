@@ -1334,7 +1334,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
     // Mesh Hierarchy / Mesh Debug
     for (auto& object : m_SceneObjects) {
         if (m_AnimPBRMeshes.find(object->m_TypeID) != m_AnimPBRMeshes.end()) { // is it a animated PBR mesh?
-            ((H2M::MeshH2M*)object->mesh)->OnImGuiRender();
+            ((H2M::ModelH2M*)object->mesh)->OnImGuiRender();
         }
     }
 
@@ -1886,7 +1886,7 @@ Mesh* SceneEditorImGuizmo::CreateNewMesh(int meshTypeID, glm::vec3 scale, std::s
         *name = "drone";
         break;
     case MESH_TYPE_M1911:
-        mesh = new H2M::MeshH2M("Models/M1911/m1911.fbx", H2M::RefH2M<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
+        mesh = new H2M::ModelH2M("Models/M1911/m1911.fbx", H2M::RefH2M<MoravaShader>(RendererBasic::GetShaders()["hybrid_anim_pbr"]), (*ResourceManager::GetMaterials())["M1911"], true);
         *name = "M1911";
         break;
     default:
@@ -2376,7 +2376,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(H2M::RefH2M<MoravaShade
 
     m_MaterialWorkflowPBR->BindTextures(m_SamplerSlots["irradiance"]);
 
-    H2M::MeshH2M* meshAnimPBR = (H2M::MeshH2M*)sceneObject->mesh;
+    H2M::ModelH2M* meshAnimPBR = (H2M::ModelH2M*)sceneObject->mesh;
 
     float deltaTime = Timer::Get()->GetDeltaTime();
     meshAnimPBR->OnUpdate(deltaTime);
@@ -2388,7 +2388,7 @@ void SceneEditorImGuizmo::SetUniformsShaderHybridAnimPBR(H2M::RefH2M<MoravaShade
     auto& materials = meshAnimPBR->GetMaterials();
 
     int submeshIndex = 0;
-    for (H2M::RefH2M<H2M::SubmeshH2M> submesh : meshAnimPBR->GetSubmeshes())
+    for (H2M::RefH2M<H2M::MeshH2M> submesh : meshAnimPBR->GetMeshes())
     {
         // Material
         auto material = materials[submesh->MaterialIndex];

@@ -30,7 +30,7 @@
 #include "Platform/Vulkan/VulkanSkyboxCube.h"
 
 #include "imgui.h"
-#include "imgui_internal.h" // BeginDragDropTargetCustom (the Meshes panel as one drop area)
+#include "imgui_internal.h" // BeginDragDropTargetCustom (the Models and Meshes panel as one drop area)
 
 #if !defined(IMGUI_IMPL_API)
 	#define IMGUI_IMPL_API
@@ -119,7 +119,7 @@ static float s_GridSize = 0.025f;   // line width, as a fraction of a cell
 // SceneHazelEnvMap). They are drawn into two LDR framebuffers, which the viewport composite adds after tonemapping, so they
 // keep their colors (no exposure, tonemapping or bloom):
 // - overlay: wireframe (depth tested against all meshes, drawn there first) and bounding boxes (always on top)
-// - selection mask: silhouette of the selected mesh or submesh; the composite draws the outline around it
+// - selection mask: silhouette of the selected model or mesh; the composite draws the outline around it
 enum OverlayScope { OverlayScopeOff = 0, OverlayScopeSelected = 1, OverlayScopeAll = 2 };
 static const char* s_OverlayScopeNames[] = { "Off", "Selected", "All" };
 
@@ -132,7 +132,7 @@ struct EditorOverlaySettings
 	glm::vec4 WireframeColor = glm::vec4(0.1f, 0.9f, 0.3f, 1.0f);
 	int BoundingBoxes = OverlayScopeOff;
 	glm::vec4 BoundingBoxColor = glm::vec4(0.2f, 0.6f, 1.0f, 1.0f);
-	glm::vec4 SelectedBoundingBoxColor = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f); // the selected submesh's box (all boxes of the selected mesh when no submesh is selected)
+	glm::vec4 SelectedBoundingBoxColor = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f); // the selected mesh's box (all boxes of the selected model when no mesh is selected)
 	float LineWidth = 1.0f; // wireframe, bounding boxes, and the normal/tangent/bitangent lines (pixels, 1..10)
 
 	// Vertex vectors: a line per vertex along its normal, tangent and/or bitangent
@@ -153,7 +153,7 @@ static H2M::RefH2M<H2M::PipelineH2M> s_WireframePipelineAnim;
 static H2M::RefH2M<H2M::PipelineH2M> s_BoundingBoxPipeline;         // line list: unit cube edges (s_BoundingBoxVertexBuffer)
 static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskPipeline;
 static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskPipelineAnim;
-static H2M::RefH2M<H2M::PipelineH2M> s_VectorsPipeline;             // line per vertex, instanced: the mesh's vertex buffer is per-instance data
+static H2M::RefH2M<H2M::PipelineH2M> s_VectorsPipeline;             // line per vertex, instanced: the model's vertex buffer is per-instance data
 static H2M::RefH2M<H2M::PipelineH2M> s_VectorsPipelineAnim;
 static H2M::RefH2M<H2M::VertexBufferH2M> s_BoundingBoxVertexBuffer;
 static const uint32_t s_BoundingBoxVertexCount = 24; // 12 edges
@@ -161,7 +161,7 @@ static const uint32_t s_BoundingBoxVertexCount = 24; // 12 edges
 static void CreateEditorOverlayResources();
 static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer);
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipeline;                 // to be removed from VulkanRenderer
-static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnim; // skinned meshes (HazelPBR_Anim.glsl): vertex layout with bone IDs and weights
+static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnim; // skinned models (HazelPBR_Anim.glsl): vertex layout with bone IDs and weights
 static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
 static bool s_ViewportTextureNeedsUpdate = false;     // the viewport framebuffer was recreated (resize)
 
@@ -185,16 +185,16 @@ static void RegisterViewportTextureWithImGui()
 }
 static uint32_t s_ViewportWidth = 1280;              // to be removed from VulkanRenderer
 static uint32_t s_ViewportHeight = 720;              // to be removed from VulkanRenderer
-// Meshes submitted for this frame, with their transforms and the material of each submesh
-struct SubmittedMesh
+// Models submitted for this frame, with their transforms and the material of each mesh
+struct SubmittedModel
 {
-	H2M::RefH2M<H2M::MeshH2M> Mesh;
+	H2M::RefH2M<H2M::ModelH2M> Model;
 	glm::mat4 Transform;
 	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> Materials;
 };
-static std::vector<SubmittedMesh> s_Meshes;
+static std::vector<SubmittedModel> s_SubmittedModels;
 
-static H2M::RefH2M<H2M::SubmeshH2M> s_SelectedSubmesh;
+static H2M::RefH2M<H2M::MeshH2M> s_SelectedMesh;
 static glm::mat4* s_Transform_ImGuizmo = nullptr;
 
 struct VulkanRendererData
@@ -257,7 +257,7 @@ struct VulkanRendererData
 
 	struct DrawCommand
 	{
-		H2M::RefH2M<H2M::MeshH2M> Mesh;
+		H2M::RefH2M<H2M::ModelH2M> Model;
 		H2M::RefH2M<H2M::MaterialH2M> Material;
 		glm::mat4 Transform;
 	};
@@ -363,18 +363,18 @@ static bool s_PendingSunAlign = true;             // align the sun at the start 
 // Cascaded shadow maps of the sun (see EnvMapVulkanShadows.h)
 static EnvMapVulkanShadowMap s_ShadowMap;
 static EnvMapVulkanShadowSettings s_ShadowSettings;
-static EnvMapVulkanShadowPipeline s_ShadowPipeline;     // ShadowDepth.glsl (static meshes)
-static EnvMapVulkanShadowPipeline s_ShadowPipelineAnim; // ShadowDepth_Anim.glsl (skinned meshes)
+static EnvMapVulkanShadowPipeline s_ShadowPipeline;     // ShadowDepth.glsl (static models)
+static EnvMapVulkanShadowPipeline s_ShadowPipelineAnim; // ShadowDepth_Anim.glsl (skinned models)
 // Shadow maps of the spot and point lights (see EnvMapVulkanShadows.h): a layer per shadowed spot light, a cube per
 // shadowed point light (only when the GPU supports cube map arrays)
 static EnvMapVulkanShadowMap s_SpotShadowMaps;
 static EnvMapVulkanShadowMap s_PointShadowMaps;
 static EnvMapVulkanLocalShadowSettings s_LocalShadowSettings;
 
-// World bounds of each submitted mesh (same order as s_Meshes), for the shadow passes: the cascades are fitted around all
-// of them, and a spot or point light draws only the meshes within its range. Computed once per frame.
+// World bounds of each submitted model (same order as s_SubmittedModels), for the shadow passes: the cascades are fitted around all
+// of them, and a spot or point light draws only the models within its range. Computed once per frame.
 static std::vector<std::pair<glm::vec3, glm::vec3>> s_ShadowCasterBounds;
-// Their union, this frame (min > max: no meshes)
+// Their union, this frame (min > max: no models)
 static glm::vec3 s_ShadowCasterBoundsMin = glm::vec3(1.0f);
 static glm::vec3 s_ShadowCasterBoundsMax = glm::vec3(-1.0f);
 static glm::uvec2 s_PendingLocalShadowResolutions = glm::uvec2(0); // spot, point: chosen in the Lights panel, applied in Draw (0: none)
@@ -401,7 +401,7 @@ struct LocalShadowSlots
 	std::array<int, MaxShadowedPointLights> PointLight = {};
 	std::array<glm::mat4, MaxShadowedSpotLights> SpotViewProjection = {};
 	std::array<std::array<glm::mat4, 6>, MaxShadowedPointLights> PointFaceViewProjection = {};
-	uint32_t MeshesDrawn = 0; // over all local light passes, this frame
+	uint32_t ModelsDrawn = 0; // over all local light passes, this frame
 };
 static LocalShadowSlots s_LocalShadowSlots;
 
@@ -451,22 +451,23 @@ static uint32_t s_PendingShadowResolution = 0; // chosen in the Lights panel, ap
 static void WriteShadowMapDescriptor();
 static float s_EnvMapRotation = 0.0f; // degrees, applied to the PBR environment lookups (as in SceneHazelEnvMap)
 
-// Meshes loaded from the Meshes panel: the Vulkan counterpart of the mesh entities in SceneHazelEnvMap
-struct LoadedMeshVulkan
+// Models loaded from the Models and Meshes panel: the Vulkan counterpart of the mesh entities in SceneHazelEnvMap.
+// Terms: a model is a loaded model file (an H2M::ModelH2M); a mesh is one part of it (an H2M::MeshH2M).
+struct LoadedModelVulkan
 {
-	H2M::RefH2M<H2M::MeshH2M> Mesh;
+	H2M::RefH2M<H2M::ModelH2M> Model;
 	std::string FilePath;
 	glm::vec3 Translation = glm::vec3(0.0f);
 	glm::vec3 Rotation = glm::vec3(0.0f); // degrees
 	glm::vec3 Scale = glm::vec3(1.0f);
-	// Material slots: the Material Library material each submesh is drawn with (same order as the mesh's submeshes)
-	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> SubmeshMaterials;
-	// Each submesh's transform (its place in the model) as loaded from the file, for "Reset Part". The current ones are the
-	// submeshes' own (SubmeshH2M::Transform): every loaded model has its own MeshH2M, so editing them changes only this model.
-	std::vector<glm::mat4> OriginalSubmeshTransforms;
+	// Material slots: the Material Library material each mesh is drawn with (same order as the model's meshes)
+	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> MeshMaterials;
+	// Each mesh's transform (its place in the model) as loaded from the file, for "Reset Mesh". The current ones are the
+	// meshes' own (MeshH2M::Transform): every loaded model has its own ModelH2M, so editing them changes only this model.
+	std::vector<glm::mat4> OriginalMeshTransforms;
 
 	// Composed with ImGuizmo's own convention (Euler angles in degrees), so the gizmo (Manipulate +
-	// DecomposeMatrixToComponents) and the values in the Meshes panel round-trip exactly
+	// DecomposeMatrixToComponents) and the values in the Models and Meshes panel round-trip exactly
 	glm::mat4 GetTransform() const
 	{
 		glm::mat4 transform;
@@ -474,12 +475,13 @@ struct LoadedMeshVulkan
 		return transform;
 	}
 };
-static std::vector<LoadedMeshVulkan> s_LoadedMeshes;
-static int s_SelectedMeshIndex = -1;
-static int s_SelectedSubmeshIndex = -1; // submesh of the selected mesh; -1 = none
-static std::string s_PendingMeshFilename;  // requested from the UI, loaded at the start of the next Draw
-static std::optional<glm::vec3> s_PendingMeshGroundPosition; // dropped on the viewport: where the model is placed (see LoadMesh)
-static int s_PendingRemoveMeshIndex = -1;  // requested from the UI, removed at the start of the next Draw
+static std::vector<LoadedModelVulkan> s_LoadedModels;
+static int s_SelectedModelIndex = -1;
+static int s_SelectedMeshIndex = -1; // mesh of the selected model; -1 = none
+static std::string s_PendingModelFilename;  // requested from the UI, loaded at the start of the next Draw
+static std::optional<glm::vec3> s_PendingModelGroundPosition; // dropped on the viewport: where the model is placed (see LoadModel)
+static int s_PendingRemoveModelIndex = -1;  // requested from the UI, removed at the start of the next Draw
+static int s_PendingRemoveMeshIndex = -1; // a part of the selected model, requested from the UI, removed at the start of the next Draw
 
 // Screen rectangle of the scene image in the Viewport window (for the gizmo and mouse picking)
 static ImVec2 s_ViewportImageMin = ImVec2(0.0f, 0.0f);
@@ -525,64 +527,64 @@ static glm::vec3 GetDropGroundPosition(float ndcX, float ndcY)
 	return origin + direction * 5.0f;
 }
 
-// Finds the mesh and submesh under the mouse: a ray through the cursor is tested against every submesh's bounding box,
-// then its triangles (as in SceneHazelEnvMap); the nearest hit wins. hitMesh/hitSubmesh are -1 when nothing is hit.
+// Finds the model and mesh under the mouse: a ray through the cursor is tested against every mesh's bounding box,
+// then its triangles (as in SceneHazelEnvMap); the nearest hit wins. hitModel/hitMesh are -1 when nothing is hit.
 // ndcX, ndcY: cursor position in normalized device coordinates of the viewport (-1..1, +y up)
 // hitPosition (optional): the world position of the hit, when something is hit
-static void RaycastSubmesh(float ndcX, float ndcY, int& hitMesh, int& hitSubmesh, glm::vec3* hitPosition = nullptr)
+static void RaycastMesh(float ndcX, float ndcY, int& hitModel, int& hitMesh, glm::vec3* hitPosition = nullptr)
 {
 	glm::vec3 origin, direction;
 	GetCameraRay(ndcX, ndcY, origin, direction);
 
 	float nearestT = std::numeric_limits<float>::max();
+	hitModel = -1;
 	hitMesh = -1;
-	hitSubmesh = -1;
 
-	for (int m = 0; m < (int)s_LoadedMeshes.size(); m++)
+	for (int m = 0; m < (int)s_LoadedModels.size(); m++)
 	{
-		LoadedMeshVulkan& entry = s_LoadedMeshes[m];
-		glm::mat4 meshTransform = entry.GetTransform();
-		auto& submeshes = entry.Mesh->GetSubmeshes();
+		LoadedModelVulkan& entry = s_LoadedModels[m];
+		glm::mat4 modelTransform = entry.GetTransform();
+		auto& meshes = entry.Model->GetMeshes();
 
-		for (int s = 0; s < (int)submeshes.size(); s++)
+		for (int s = 0; s < (int)meshes.size(); s++)
 		{
-			// Ray in the submesh's local space; the direction is not renormalized, so t is the same distance
-			// along the world ray for every submesh and the hits can be compared
-			glm::mat4 toLocal = glm::inverse(meshTransform * submeshes[s]->Transform);
+			// Ray in the mesh's local space; the direction is not renormalized, so t is the same distance
+			// along the world ray for every mesh and the hits can be compared
+			glm::mat4 toLocal = glm::inverse(modelTransform * meshes[s]->Transform);
 			H2M::RayH2M ray = { glm::vec3(toLocal * glm::vec4(origin, 1.0f)), glm::mat3(toLocal) * direction };
 
 			float t;
-			if (!ray.IntersectsAABB(submeshes[s]->BoundingBox, t) || t < 0.0f || t >= nearestT)
+			if (!ray.IntersectsAABB(meshes[s]->BoundingBox, t) || t < 0.0f || t >= nearestT)
 			{
 				continue;
 			}
 
-			const auto triangles = entry.Mesh->GetTriangleCache((uint32_t)s);
+			const auto triangles = entry.Model->GetTriangleCache((uint32_t)s);
 			if (triangles.empty())
 			{
-				nearestT = t; hitMesh = m; hitSubmesh = s; // no triangle data: the bounding box has to do
+				nearestT = t; hitModel = m; hitMesh = s; // no triangle data: the bounding box has to do
 				continue;
 			}
 			for (const auto& triangle : triangles)
 			{
 				if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t) && t >= 0.0f && t < nearestT)
 				{
-					nearestT = t; hitMesh = m; hitSubmesh = s;
+					nearestT = t; hitModel = m; hitMesh = s;
 				}
 			}
 		}
 	}
 
-	if (hitPosition && hitMesh >= 0)
+	if (hitPosition && hitModel >= 0)
 	{
 		*hitPosition = origin + direction * nearestT;
 	}
 }
 
-// Selects the mesh and submesh under the mouse. Nothing hit clears the selection.
+// Selects the model and mesh under the mouse. Nothing hit clears the selection.
 static void PickMesh(float ndcX, float ndcY)
 {
-	RaycastSubmesh(ndcX, ndcY, s_SelectedMeshIndex, s_SelectedSubmeshIndex);
+	RaycastMesh(ndcX, ndcY, s_SelectedModelIndex, s_SelectedMeshIndex);
 }
 
 // Material Library (the materials themselves are in EnvMapVulkanMaterialLibrary)
@@ -615,91 +617,91 @@ static bool IsModelFile(const std::string& filepath)
 	return s_Extensions.find(extension) != s_Extensions.end();
 }
 
-// Number of submeshes, over all loaded meshes, drawn with the material
+// Number of meshes, over all loaded models, drawn with the material
 static int CountMaterialUsers(const H2M::RefH2M<EnvMapVulkanMaterial>& material)
 {
 	int count = 0;
-	for (const LoadedMeshVulkan& entry : s_LoadedMeshes)
+	for (const LoadedModelVulkan& entry : s_LoadedModels)
 	{
-		count += (int)std::count(entry.SubmeshMaterials.begin(), entry.SubmeshMaterials.end(), material);
+		count += (int)std::count(entry.MeshMaterials.begin(), entry.MeshMaterials.end(), material);
 	}
 	return count;
 }
 
-// The Material Editor follows the selection: selecting a submesh (Meshes panel or viewport) selects the material it is drawn with
+// The Material Editor follows the selection: selecting a mesh (Models and Meshes panel or viewport) selects the material it is drawn with
 static void SyncSelectedMaterial()
 {
+	static int s_LastModelIndex = -1;
 	static int s_LastMeshIndex = -1;
-	static int s_LastSubmeshIndex = -1;
-	if (s_SelectedMeshIndex == s_LastMeshIndex && s_SelectedSubmeshIndex == s_LastSubmeshIndex)
+	if (s_SelectedModelIndex == s_LastModelIndex && s_SelectedMeshIndex == s_LastMeshIndex)
 	{
 		return;
 	}
+	s_LastModelIndex = s_SelectedModelIndex;
 	s_LastMeshIndex = s_SelectedMeshIndex;
-	s_LastSubmeshIndex = s_SelectedSubmeshIndex;
 
-	if (s_SelectedMeshIndex >= 0 && s_SelectedMeshIndex < (int)s_LoadedMeshes.size())
+	if (s_SelectedModelIndex >= 0 && s_SelectedModelIndex < (int)s_LoadedModels.size())
 	{
-		const auto& slots = s_LoadedMeshes[s_SelectedMeshIndex].SubmeshMaterials;
-		if (s_SelectedSubmeshIndex >= 0 && s_SelectedSubmeshIndex < (int)slots.size())
+		const auto& slots = s_LoadedModels[s_SelectedModelIndex].MeshMaterials;
+		if (s_SelectedMeshIndex >= 0 && s_SelectedMeshIndex < (int)slots.size())
 		{
-			s_SelectedMaterial = slots[s_SelectedSubmeshIndex];
+			s_SelectedMaterial = slots[s_SelectedMeshIndex];
 		}
 	}
 }
 
-static glm::mat4 GetSubmeshTransform(H2M::RefH2M<H2M::MeshH2M> mesh, const H2M::RefH2M<H2M::SubmeshH2M>& submesh, const glm::mat4& transform);
+static glm::mat4 GetMeshTransform(H2M::RefH2M<H2M::ModelH2M> model, const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform);
 
 // Loads a model file and adds it to the scene (called at the start of a frame, see Draw). With a ground position (a model dropped
 // on the viewport), the model stands on that point: the bottom center of its bounding box is placed there, rather than its origin.
 // A model far too large or too small for the view (e.g. modeled in millimeters) is also scaled to fit (see below).
-static void LoadMesh(const std::string& filepath, std::optional<glm::vec3> groundPosition = std::nullopt)
+static void LoadModel(const std::string& filepath, std::optional<glm::vec3> groundPosition = std::nullopt)
 {
 	if (!std::filesystem::exists(filepath) || !IsModelFile(filepath))
 	{
-		Log::GetLogger()->error("Mesh '{0}' was not loaded: the file does not exist or is not a supported model file.", filepath);
+		Log::GetLogger()->error("Model '{0}' was not loaded: the file does not exist or is not a supported model file.", filepath);
 		return;
 	}
 
-	H2M::RefH2M<H2M::MeshH2M> mesh = H2M::RefH2M<H2M::MeshH2M>::Create(filepath);
-	if (!mesh || mesh->GetSubmeshes().empty())
+	H2M::RefH2M<H2M::ModelH2M> model = H2M::RefH2M<H2M::ModelH2M>::Create(filepath);
+	if (!model || model->GetMeshes().empty())
 	{
-		Log::GetLogger()->error("Mesh '{0}' was not loaded: no geometry found.", filepath);
+		Log::GetLogger()->error("Model '{0}' was not loaded: no geometry found.", filepath);
 		return;
 	}
 
-	if (mesh->HasAnimations())
+	if (model->HasAnimations())
 	{
-		Log::GetLogger()->info("Mesh '{0}': {1} animation(s), {2} bones", filepath, mesh->GetAnimationCount(), mesh->GetBoneCount());
+		Log::GetLogger()->info("Model '{0}': {1} animation(s), {2} bones", filepath, model->GetAnimationCount(), model->GetBoneCount());
 	}
 
-	LoadedMeshVulkan entry;
-	entry.Mesh = mesh;
+	LoadedModelVulkan entry;
+	entry.Model = model;
 	entry.FilePath = filepath;
 
-	// The model's materials go into the Material Library (reused if this model was loaded before); each submesh starts
+	// The model's materials go into the Material Library (reused if this model was loaded before); each mesh starts
 	// with the material the model assigns to it, or the library's Default material if the model has none for it
-	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> modelMaterials = EnvMapVulkanMaterialLibrary::ImportMeshMaterials(mesh);
-	for (auto& submesh : mesh->GetSubmeshes())
+	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> modelMaterials = EnvMapVulkanMaterialLibrary::ImportModelMaterials(model);
+	for (auto& mesh : model->GetMeshes())
 	{
-		entry.SubmeshMaterials.push_back(submesh->MaterialIndex < modelMaterials.size() ?
-			modelMaterials[submesh->MaterialIndex] : EnvMapVulkanMaterialLibrary::GetDefaultMaterial());
-		entry.OriginalSubmeshTransforms.push_back(submesh->Transform);
+		entry.MeshMaterials.push_back(mesh->MaterialIndex < modelMaterials.size() ?
+			modelMaterials[mesh->MaterialIndex] : EnvMapVulkanMaterialLibrary::GetDefaultMaterial());
+		entry.OriginalMeshTransforms.push_back(mesh->Transform);
 	}
 
 	if (groundPosition)
 	{
-		// Bounding box of the model at rest: the corners of every submesh's bounding box, placed as they are drawn
+		// Bounding box of the model at rest: the corners of every mesh's bounding box, placed as they are drawn
 		glm::vec3 boundsMin(std::numeric_limits<float>::max());
 		glm::vec3 boundsMax(-std::numeric_limits<float>::max());
-		for (auto& submesh : mesh->GetSubmeshes())
+		for (auto& mesh : model->GetMeshes())
 		{
-			glm::mat4 submeshTransform = GetSubmeshTransform(mesh, submesh, glm::mat4(1.0f));
-			const H2M::AABB_H2M& box = submesh->BoundingBox;
+			glm::mat4 meshTransform = GetMeshTransform(model, mesh, glm::mat4(1.0f));
+			const H2M::AABB_H2M& box = mesh->BoundingBox;
 			for (int corner = 0; corner < 8; corner++)
 			{
 				glm::vec3 point((corner & 1) ? box.Max.x : box.Min.x, (corner & 2) ? box.Max.y : box.Min.y, (corner & 4) ? box.Max.z : box.Min.z);
-				glm::vec3 placed = glm::vec3(submeshTransform * glm::vec4(point, 1.0f));
+				glm::vec3 placed = glm::vec3(meshTransform * glm::vec4(point, 1.0f));
 				boundsMin = glm::min(boundsMin, placed);
 				boundsMax = glm::max(boundsMax, placed);
 			}
@@ -716,7 +718,7 @@ static void LoadMesh(const std::string& filepath, std::optional<glm::vec3> groun
 			if (size > 0.0f && (size > distance * 10.0f || size < distance * 0.005f))
 			{
 				entry.Scale = glm::vec3(distance * 0.25f / size);
-				Log::GetLogger()->info("Mesh '{0}' is {1} units across: scaled by {2} to fit the view (set Scale to 1 for its original size)",
+				Log::GetLogger()->info("Model '{0}' is {1} units across: scaled by {2} to fit the view (set Scale to 1 for its original size)",
 					filepath, size, entry.Scale.x);
 			}
 
@@ -730,10 +732,10 @@ static void LoadMesh(const std::string& filepath, std::optional<glm::vec3> groun
 		}
 	}
 
-	s_LoadedMeshes.push_back(entry);
-	s_SelectedMeshIndex = (int)s_LoadedMeshes.size() - 1;
-	s_SelectedSubmeshIndex = -1;
-	Log::GetLogger()->info("Mesh '{0}' loaded: {1} submeshes, {2} materials", filepath, mesh->GetSubmeshes().size(), modelMaterials.size());
+	s_LoadedModels.push_back(entry);
+	s_SelectedModelIndex = (int)s_LoadedModels.size() - 1;
+	s_SelectedMeshIndex = -1;
+	Log::GetLogger()->info("Model '{0}' loaded: {1} meshes, {2} materials", filepath, model->GetMeshes().size(), modelMaterials.size());
 }
 
 // Loads an image and binds it as one of a material's maps, or removes the map when the request has no file path
@@ -776,7 +778,7 @@ static void ApplyMaterialTexture(const PendingMaterialTexture& request)
 	Log::GetLogger()->info("Map '{0}' assigned to {1} of material '{2}'", request.FilePath, EnvMapVulkanMaterial::GetMapTextureName(request.Slot), material->GetName());
 }
 
-// Deletes a material from the library (called at the start of a frame, see Draw). Submeshes that used it get the Default material.
+// Deletes a material from the library (called at the start of a frame, see Draw). Meshes that used it get the Default material.
 static void DeleteMaterial(H2M::RefH2M<EnvMapVulkanMaterial> material)
 {
 	vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice()); // its descriptor set may be used by frames in flight
@@ -786,16 +788,16 @@ static void DeleteMaterial(H2M::RefH2M<EnvMapVulkanMaterial> material)
 	if (users > 0)
 	{
 		H2M::RefH2M<EnvMapVulkanMaterial> replacement = EnvMapVulkanMaterialLibrary::GetDefaultMaterial(); // a new one if the Default was deleted
-		for (LoadedMeshVulkan& entry : s_LoadedMeshes)
+		for (LoadedModelVulkan& entry : s_LoadedModels)
 		{
-			std::replace(entry.SubmeshMaterials.begin(), entry.SubmeshMaterials.end(), material, replacement);
+			std::replace(entry.MeshMaterials.begin(), entry.MeshMaterials.end(), material, replacement);
 		}
 	}
 	if (s_SelectedMaterial == material)
 	{
 		s_SelectedMaterial = H2M::RefH2M<EnvMapVulkanMaterial>();
 	}
-	Log::GetLogger()->info("Material '{0}' deleted ({1} submeshes now use the Default material)", material->GetName(), users);
+	Log::GetLogger()->info("Material '{0}' deleted ({1} meshes now use the Default material)", material->GetName(), users);
 }
 
 // The sun turns with the environment map (EnvMapVulkanDirectionalLight::FollowEnvironmentRotation). Checked once per frame,
@@ -859,21 +861,21 @@ static void UpdateFrameUniforms()
 	shader->UnmapUniformBuffer(5, frameSet);
 }
 
-// Per-object uniform buffers (set 2): the bone matrices of the current animation frame of a skinned mesh (up to 128).
-// Every mesh has its own shader instance (see MeshH2M::Create), so every skinned mesh has its own bone buffer.
-static void UpdateObjectUniforms(const H2M::RefH2M<H2M::MeshH2M>& mesh)
+// Per-object uniform buffers (set 2): the bone matrices of the current animation frame of a skinned model (up to 128).
+// Every model has its own shader instance (see ModelH2M::Create), so every skinned model has its own bone buffer.
+static void UpdateObjectUniforms(const H2M::RefH2M<H2M::ModelH2M>& model)
 {
-	H2M::RefH2M<H2M::MeshH2M> meshRef = mesh;
-	if (!meshRef->IsSkinned() || meshRef->GetObjectDescriptorSet() == VK_NULL_HANDLE)
+	H2M::RefH2M<H2M::ModelH2M> modelRef = model;
+	if (!modelRef->IsSkinned() || modelRef->GetObjectDescriptorSet() == VK_NULL_HANDLE)
 	{
 		return;
 	}
 
-	const std::vector<glm::mat4>& boneTransforms = meshRef->GetBoneTransforms();
+	const std::vector<glm::mat4>& boneTransforms = modelRef->GetBoneTransforms();
 	size_t boneCount = std::min<size_t>(boneTransforms.size(), 128);
 	if (boneCount > 0)
 	{
-		H2M::RefH2M<H2M::VulkanShaderH2M> shader = meshRef->GetMeshShader().As<H2M::VulkanShaderH2M>();
+		H2M::RefH2M<H2M::VulkanShaderH2M> shader = modelRef->GetMeshShader().As<H2M::VulkanShaderH2M>();
 		void* ubPtr = shader->MapUniformBuffer(0, H2M::VulkanShaderH2M::ObjectDescriptorSet);
 		memcpy(ubPtr, boneTransforms.data(), boneCount * sizeof(glm::mat4));
 		shader->UnmapUniformBuffer(0, H2M::VulkanShaderH2M::ObjectDescriptorSet);
@@ -916,8 +918,8 @@ static bool AcceptFileDrop(const ImVec2& highlightMin, const ImVec2& highlightMa
 	return true;
 }
 
-// The selected light: the sun, or an index into the point or spot light list. Lights and meshes share one selection
-// (one gizmo): selecting a light clears the mesh selection and selecting a mesh clears the light selection.
+// The selected light: the sun, or an index into the point or spot light list. Lights and models share one selection
+// (one gizmo): selecting a light clears the model selection and selecting a model or mesh clears the light selection.
 enum class LightKind { None, Sun, Point, Spot };
 static LightKind s_SelectedLightKind = LightKind::None;
 static int s_SelectedLightIndex = 0;
@@ -930,23 +932,23 @@ static void SelectLight(LightKind kind, int index = 0)
 	s_SelectedLightIndex = index;
 	if (kind != LightKind::None)
 	{
+		s_SelectedModelIndex = -1;
 		s_SelectedMeshIndex = -1;
-		s_SelectedSubmeshIndex = -1;
 	}
 }
 
-// Called once per frame: a mesh selected anywhere (Meshes panel, viewport, a dropped model) clears the light selection,
+// Called once per frame: a model or mesh selected anywhere (Models and Meshes panel, viewport, a dropped model) clears the light selection,
 // and a selection that no longer exists (a deleted light) is cleared
 static void SyncLightSelection()
 {
+	static int s_LastModelIndex = -1;
 	static int s_LastMeshIndex = -1;
-	static int s_LastSubmeshIndex = -1;
-	if (s_SelectedMeshIndex >= 0 && (s_SelectedMeshIndex != s_LastMeshIndex || s_SelectedSubmeshIndex != s_LastSubmeshIndex))
+	if (s_SelectedModelIndex >= 0 && (s_SelectedModelIndex != s_LastModelIndex || s_SelectedMeshIndex != s_LastMeshIndex))
 	{
 		s_SelectedLightKind = LightKind::None;
 	}
+	s_LastModelIndex = s_SelectedModelIndex;
 	s_LastMeshIndex = s_SelectedMeshIndex;
-	s_LastSubmeshIndex = s_SelectedSubmeshIndex;
 
 	if ((s_SelectedLightKind == LightKind::Point && s_SelectedLightIndex >= (int)s_Lights.PointLights.size()) ||
 		(s_SelectedLightKind == LightKind::Spot && s_SelectedLightIndex >= (int)s_Lights.SpotLights.size()))
@@ -1348,10 +1350,10 @@ static float GetDefaultLightRange(const glm::vec3& position)
 
 static glm::vec3 GetLightSpawnTarget()
 {
-	int hitMesh, hitSubmesh;
+	int hitModel, hitMesh;
 	glm::vec3 target;
-	RaycastSubmesh(0.0f, 0.0f, hitMesh, hitSubmesh, &target);
-	if (hitMesh < 0)
+	RaycastMesh(0.0f, 0.0f, hitModel, hitMesh, &target);
+	if (hitModel < 0)
 	{
 		glm::vec3 origin, direction;
 		GetCameraRay(0.0f, 0.0f, origin, direction);
@@ -1364,9 +1366,9 @@ static glm::vec3 GetLightSpawnTarget()
 		else
 		{
 			glm::vec3 sceneCenter(0.0f);
-			for (const LoadedMeshVulkan& entry : s_LoadedMeshes)
+			for (const LoadedModelVulkan& entry : s_LoadedModels)
 			{
-				sceneCenter += entry.Translation / (float)s_LoadedMeshes.size();
+				sceneCenter += entry.Translation / (float)s_LoadedModels.size();
 			}
 			float t = glm::max(glm::dot(sceneCenter - origin, direction), 1.0f);
 			target = origin + direction * t;
@@ -1949,29 +1951,29 @@ static void OnImGuiRenderLights()
 	ImGui::End();
 }
 
-// A part (submesh) of a model that the gizmo and the Part Transform fields move on their own: a model with more than one
-// part, and not a rigged part of a skinned model (the skeleton places those, see GetSubmeshTransform)
-static bool CanManipulateSubmesh(const LoadedMeshVulkan& entry, int submeshIndex)
+// A mesh (a part of a model) that the gizmo and the Mesh Transform fields move on their own: a model with more than one
+// part, and not a rigged part of a skinned model (the skeleton places those, see GetMeshTransform)
+static bool CanManipulateMesh(const LoadedModelVulkan& entry, int meshIndex)
 {
-	const auto& submeshes = entry.Mesh->GetSubmeshes();
-	if (submeshIndex < 0 || submeshIndex >= (int)submeshes.size() || submeshes.size() < 2)
+	const auto& meshes = entry.Model->GetMeshes();
+	if (meshIndex < 0 || meshIndex >= (int)meshes.size() || meshes.size() < 2)
 	{
 		return false;
 	}
-	return !(entry.Mesh->IsSkinned() && submeshes[submeshIndex]->IsRigged);
+	return !(entry.Model->IsSkinned() && meshes[meshIndex]->IsRigged);
 }
 
-static void OnImGuiRenderMeshes()
+static void OnImGuiRenderModelsAndMeshes()
 {
 	ImGui::SetNextWindowSize(ImVec2(420.0f, 320.0f), ImGuiCond_FirstUseEver);
-	ImGui::Begin("Meshes");
+	ImGui::Begin("Models and Meshes");
 
-	if (ImGui::Button("Load Mesh"))
+	if (ImGui::Button("Load Model"))
 	{
 		std::string filepath = Util::ToUtf8(Application::Get()->OpenFile());
 		if (!filepath.empty())
 		{
-			s_PendingMeshFilename = filepath; // loaded at the start of the next frame (see Draw)
+			s_PendingModelFilename = filepath; // loaded at the start of the next frame (see Draw)
 		}
 	}
 	ImGui::SameLine();
@@ -1986,7 +1988,7 @@ static void OnImGuiRenderMeshes()
 	ImGui::Separator();
 
 	// Empty scene: a large box that says where models can be dropped
-	if (s_LoadedMeshes.empty())
+	if (s_LoadedModels.empty())
 	{
 		ImVec2 boxMin = ImGui::GetCursorScreenPos();
 		ImVec2 boxSize(ImGui::GetContentRegionAvail().x, glm::max(ImGui::GetContentRegionAvail().y, 80.0f));
@@ -2002,28 +2004,28 @@ static void OnImGuiRenderMeshes()
 		ImGui::Dummy(boxSize);
 	}
 
-	for (int i = 0; i < (int)s_LoadedMeshes.size(); i++)
+	for (int i = 0; i < (int)s_LoadedModels.size(); i++)
 	{
 		ImGui::PushID(i);
-		std::string name = std::filesystem::path(s_LoadedMeshes[i].FilePath).filename().string();
-		if (ImGui::Selectable(name.c_str(), s_SelectedMeshIndex == i))
+		std::string name = std::filesystem::path(s_LoadedModels[i].FilePath).filename().string();
+		if (ImGui::Selectable(name.c_str(), s_SelectedModelIndex == i))
 		{
-			if (s_SelectedMeshIndex != i)
+			if (s_SelectedModelIndex != i)
 			{
-				s_SelectedSubmeshIndex = -1;
+				s_SelectedMeshIndex = -1;
 			}
-			s_SelectedMeshIndex = i;
+			s_SelectedModelIndex = i;
 		}
 		if (ImGui::IsItemHovered())
 		{
-			ImGui::SetTooltip("%s", s_LoadedMeshes[i].FilePath.c_str());
+			ImGui::SetTooltip("%s", s_LoadedModels[i].FilePath.c_str());
 		}
 		ImGui::PopID();
 	}
 
-	if (s_SelectedMeshIndex >= 0 && s_SelectedMeshIndex < (int)s_LoadedMeshes.size())
+	if (s_SelectedModelIndex >= 0 && s_SelectedModelIndex < (int)s_LoadedModels.size())
 	{
-		LoadedMeshVulkan& entry = s_LoadedMeshes[s_SelectedMeshIndex];
+		LoadedModelVulkan& entry = s_LoadedModels[s_SelectedModelIndex];
 
 		ImGui::Separator();
 		ImGui::Text("Transform");
@@ -2032,19 +2034,19 @@ static void OnImGuiRenderMeshes()
 		ImGui::DragFloat3("Scale", &entry.Scale.x, 0.01f, 0.001f, 1000.0f);
 
 		// The selected part's place in the model (the viewport gizmo moves it too)
-		if (s_SelectedSubmeshIndex >= 0 && s_SelectedSubmeshIndex < (int)entry.Mesh->GetSubmeshes().size())
+		if (s_SelectedMeshIndex >= 0 && s_SelectedMeshIndex < (int)entry.Model->GetMeshes().size())
 		{
-			H2M::RefH2M<H2M::SubmeshH2M> part = entry.Mesh->GetSubmeshes()[s_SelectedSubmeshIndex];
+			H2M::RefH2M<H2M::MeshH2M> part = entry.Model->GetMeshes()[s_SelectedMeshIndex];
 			ImGui::Separator();
-			const std::string partName = !part->MeshName.empty() ? part->MeshName : (!part->NodeName.empty() ? part->NodeName : "Submesh " + std::to_string(s_SelectedSubmeshIndex));
-			ImGui::Text("Part Transform: %s", partName.c_str());
-			if (CanManipulateSubmesh(entry, s_SelectedSubmeshIndex))
+			const std::string partName = !part->MeshName.empty() ? part->MeshName : (!part->NodeName.empty() ? part->NodeName : "Mesh " + std::to_string(s_SelectedMeshIndex));
+			ImGui::Text("Mesh Transform: %s", partName.c_str());
+			if (CanManipulateMesh(entry, s_SelectedMeshIndex))
 			{
 				glm::vec3 translation, rotation, scale;
 				ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(part->Transform), &translation.x, &rotation.x, &scale.x);
-				bool changed = ImGui::DragFloat3("Translation##Part", &translation.x, 0.1f);
-				changed |= ImGui::DragFloat3("Rotation##Part", &rotation.x, 1.0f);
-				changed |= ImGui::DragFloat3("Scale##Part", &scale.x, 0.01f, 0.001f, 1000.0f);
+				bool changed = ImGui::DragFloat3("Translation##Mesh", &translation.x, 0.1f);
+				changed |= ImGui::DragFloat3("Rotation##Mesh", &rotation.x, 1.0f);
+				changed |= ImGui::DragFloat3("Scale##Mesh", &scale.x, 0.01f, 0.001f, 1000.0f);
 				if (changed)
 				{
 					ImGuizmo::RecomposeMatrixFromComponents(&translation.x, &rotation.x, &scale.x, glm::value_ptr(part->Transform));
@@ -2053,9 +2055,9 @@ static void OnImGuiRenderMeshes()
 				{
 					ImGui::SetTooltip("Relative to the model. Shift + click in the viewport selects the whole model");
 				}
-				if (ImGui::Button("Reset Part") && s_SelectedSubmeshIndex < (int)entry.OriginalSubmeshTransforms.size())
+				if (ImGui::Button("Reset Mesh") && s_SelectedMeshIndex < (int)entry.OriginalMeshTransforms.size())
 				{
-					part->Transform = entry.OriginalSubmeshTransforms[s_SelectedSubmeshIndex];
+					part->Transform = entry.OriginalMeshTransforms[s_SelectedMeshIndex];
 				}
 				if (ImGui::IsItemHovered())
 				{
@@ -2064,42 +2066,61 @@ static void OnImGuiRenderMeshes()
 			}
 			else
 			{
-				ImGui::TextDisabled(entry.Mesh->GetSubmeshes().size() < 2 ? "The model has a single part: the Transform above moves it"
-					: "A rigged part: the skeleton places it (the gizmo moves the whole model)");
+				ImGui::TextDisabled(entry.Model->GetMeshes().size() < 2 ? "The model has a single mesh: the Transform above moves it"
+					: "A rigged mesh: the skeleton places it (the gizmo moves the whole model)");
 			}
 		}
 
+		if (ImGui::Button("Remove Model"))
+		{
+			s_PendingRemoveModelIndex = s_SelectedModelIndex; // removed at the start of the next frame (see Draw)
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Removes the whole model, with all its meshes");
+		}
+		ImGui::SameLine();
+		const bool canRemoveMesh = s_SelectedMeshIndex >= 0 && s_SelectedMeshIndex < (int)entry.Model->GetMeshes().size() &&
+			entry.Model->GetMeshes().size() > 1;
+		ImGui::BeginDisabled(!canRemoveMesh);
 		if (ImGui::Button("Remove Mesh"))
 		{
 			s_PendingRemoveMeshIndex = s_SelectedMeshIndex; // removed at the start of the next frame (see Draw)
 		}
+		ImGui::EndDisabled();
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			ImGui::SetTooltip(canRemoveMesh ? "Removes only the selected mesh, a part of the model" :
+				entry.Model->GetMeshes().size() > 1 ? "Select a mesh (a part of the model) below or in the viewport" :
+				"The model has a single mesh: use Remove Model");
+		}
 
-		// Animation playback (skinned meshes), like the Animation section of the Mesh Debug panel in SceneHazelEnvMap
-		H2M::RefH2M<H2M::MeshH2M> mesh = entry.Mesh;
-		if (mesh->HasAnimations() && mesh->IsSkinned())
+		// Animation playback (skinned models), like the Animation section of the Mesh Debug panel in SceneHazelEnvMap
+		H2M::RefH2M<H2M::ModelH2M> model = entry.Model;
+		if (model->HasAnimations() && model->IsSkinned())
 		{
 			ImGui::Separator();
 			ImGui::Text("Animation");
 
-			ImGui::Checkbox("Animated", &mesh->IsAnimated());
+			ImGui::Checkbox("Animated", &model->IsAnimated());
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("Off: the model is shown in its bind pose");
 			}
 
-			ImGui::BeginDisabled(!mesh->IsAnimated());
+			ImGui::BeginDisabled(!model->IsAnimated());
 			{
-				uint32_t animationCount = mesh->GetAnimationCount();
+				uint32_t animationCount = model->GetAnimationCount();
 				if (animationCount > 1)
 				{
-					if (ImGui::BeginCombo("Clip", mesh->GetAnimationName(mesh->GetAnimationIndex()).c_str()))
+					if (ImGui::BeginCombo("Clip", model->GetAnimationName(model->GetAnimationIndex()).c_str()))
 					{
 						for (uint32_t a = 0; a < animationCount; a++)
 						{
 							ImGui::PushID((int)a);
-							if (ImGui::Selectable(mesh->GetAnimationName(a).c_str(), mesh->GetAnimationIndex() == a))
+							if (ImGui::Selectable(model->GetAnimationName(a).c_str(), model->GetAnimationIndex() == a))
 							{
-								mesh->SetAnimationIndex(a);
+								model->SetAnimationIndex(a);
 							}
 							ImGui::PopID();
 						}
@@ -2108,42 +2129,42 @@ static void OnImGuiRenderMeshes()
 				}
 				else
 				{
-					ImGui::TextDisabled("Clip: %s", mesh->GetAnimationName(0).c_str());
+					ImGui::TextDisabled("Clip: %s", model->GetAnimationName(0).c_str());
 				}
 
-				if (ImGui::Button(mesh->AnimationPlaying() ? "Pause" : "Play", ImVec2(60.0f, 0.0f)))
+				if (ImGui::Button(model->AnimationPlaying() ? "Pause" : "Play", ImVec2(60.0f, 0.0f)))
 				{
-					mesh->AnimationPlaying() = !mesh->AnimationPlaying();
+					model->AnimationPlaying() = !model->AnimationPlaying();
 				}
 				ImGui::SameLine();
 				if (ImGui::Button("Restart"))
 				{
-					mesh->AnimationTime() = 0.0f;
+					model->AnimationTime() = 0.0f;
 				}
 
-				// Scrub through the animation (in seconds; MeshH2M keeps the time in animation ticks)
-				float ticksPerSecond = mesh->GetAnimationTicksPerSecond();
-				float durationSeconds = mesh->GetAnimationDuration() / ticksPerSecond;
-				float timeSeconds = mesh->AnimationTime() / ticksPerSecond;
+				// Scrub through the animation (in seconds; ModelH2M keeps the time in animation ticks)
+				float ticksPerSecond = model->GetAnimationTicksPerSecond();
+				float durationSeconds = model->GetAnimationDuration() / ticksPerSecond;
+				float timeSeconds = model->AnimationTime() / ticksPerSecond;
 				if (ImGui::SliderFloat("Time", &timeSeconds, 0.0f, durationSeconds, "%.2f s"))
 				{
-					mesh->AnimationTime() = timeSeconds * ticksPerSecond;
+					model->AnimationTime() = timeSeconds * ticksPerSecond;
 				}
-				ImGui::DragFloat("Time Scale", &mesh->TimeMultiplier(), 0.01f, 0.0f, 10.0f, "%.2fx");
-				ImGui::TextDisabled("Duration %.2f s (%.0f ticks at %.0f/s), %u bones", durationSeconds, mesh->GetAnimationDuration(), ticksPerSecond, mesh->GetBoneCount());
+				ImGui::DragFloat("Time Scale", &model->TimeMultiplier(), 0.01f, 0.0f, 10.0f, "%.2fx");
+				ImGui::TextDisabled("Duration %.2f s (%.0f ticks at %.0f/s), %u bones", durationSeconds, model->GetAnimationDuration(), ticksPerSecond, model->GetBoneCount());
 			}
 			ImGui::EndDisabled();
 		}
 
-		// Material slots, one per submesh: select a submesh to edit its material in the Material Editor. The dropdown, or a
-		// material dropped from the Material Library, chooses which library material the submesh is drawn with.
-		auto& submeshes = entry.Mesh->GetSubmeshes();
+		// Material slots, one per mesh: select a mesh to edit its material in the Material Editor. The dropdown, or a
+		// material dropped from the Material Library, chooses which library material the mesh is drawn with.
+		auto& meshes = entry.Model->GetMeshes();
 		const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
 
-		// Assigns a library material to a submesh; the Material Editor follows if that submesh is selected
+		// Assigns a library material to a mesh; the Material Editor follows if that mesh is selected
 		auto assignMaterial = [&](int s, H2M::RefH2M<EnvMapVulkanMaterial> material) {
-			entry.SubmeshMaterials[s] = material; // used by RenderMeshVulkan from the next frame
-			if (s == s_SelectedSubmeshIndex)
+			entry.MeshMaterials[s] = material; // used by RenderModelVulkan from the next frame
+			if (s == s_SelectedMeshIndex)
 			{
 				s_SelectedMaterial = material;
 			}
@@ -2164,29 +2185,29 @@ static void OnImGuiRenderMeshes()
 		};
 
 		ImGui::Separator();
-		ImGui::Text("Submeshes (%d)", (int)submeshes.size());
+		ImGui::Text("Meshes (%d)", (int)meshes.size());
 
-		for (int s = 0; s < (int)submeshes.size() && s < (int)entry.SubmeshMaterials.size(); s++)
+		for (int s = 0; s < (int)meshes.size() && s < (int)entry.MeshMaterials.size(); s++)
 		{
-			H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[s];
+			H2M::RefH2M<H2M::MeshH2M> mesh = meshes[s];
 			ImGui::PushID(1000 + s);
 
-			std::string submeshName = !submesh->MeshName.empty() ? submesh->MeshName :
-				(!submesh->NodeName.empty() ? submesh->NodeName : "Submesh " + std::to_string(s));
-			if (ImGui::Selectable(submeshName.c_str(), s_SelectedSubmeshIndex == s, 0, ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0.0f)))
+			std::string meshName = !mesh->MeshName.empty() ? mesh->MeshName :
+				(!mesh->NodeName.empty() ? mesh->NodeName : "Mesh " + std::to_string(s));
+			if (ImGui::Selectable(meshName.c_str(), s_SelectedMeshIndex == s, 0, ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0.0f)))
 			{
-				s_SelectedSubmeshIndex = (s_SelectedSubmeshIndex == s) ? -1 : s; // click again to deselect
+				s_SelectedMeshIndex = (s_SelectedMeshIndex == s) ? -1 : s; // click again to deselect
 			}
 			acceptMaterialDrop(s);
 
 			ImGui::SameLine();
 			ImGui::SetNextItemWidth(-1.0f);
-			if (ImGui::BeginCombo("##material", entry.SubmeshMaterials[s]->GetName().c_str()))
+			if (ImGui::BeginCombo("##material", entry.MeshMaterials[s]->GetName().c_str()))
 			{
 				for (uint32_t m = 0; m < (uint32_t)materials.size(); m++)
 				{
 					ImGui::PushID((int)m);
-					if (ImGui::Selectable(materials[m]->GetName().c_str(), entry.SubmeshMaterials[s] == materials[m]))
+					if (ImGui::Selectable(materials[m]->GetName().c_str(), entry.MeshMaterials[s] == materials[m]))
 					{
 						assignMaterial(s, materials[m]);
 					}
@@ -2201,10 +2222,10 @@ static void OnImGuiRenderMeshes()
 
 		if (s_SelectedMaterial)
 		{
-			std::string label = "Apply '" + s_SelectedMaterial->GetName() + "' to all submeshes";
+			std::string label = "Apply '" + s_SelectedMaterial->GetName() + "' to all meshes";
 			if (ImGui::Button(label.c_str()))
 			{
-				std::fill(entry.SubmeshMaterials.begin(), entry.SubmeshMaterials.end(), s_SelectedMaterial);
+				std::fill(entry.MeshMaterials.begin(), entry.MeshMaterials.end(), s_SelectedMaterial);
 			}
 			if (ImGui::IsItemHovered())
 			{
@@ -2216,13 +2237,13 @@ static void OnImGuiRenderMeshes()
 	// The whole panel is a drop area for model files (loaded at the scene origin)
 	ImVec2 panelMin = ImGui::GetWindowPos();
 	ImVec2 panelMax(panelMin.x + ImGui::GetWindowSize().x, panelMin.y + ImGui::GetWindowSize().y);
-	if (ImGui::BeginDragDropTargetCustom(ImRect(panelMin, panelMax), ImGui::GetID("##MeshesPanelDropArea")))
+	if (ImGui::BeginDragDropTargetCustom(ImRect(panelMin, panelMax), ImGui::GetID("##ModelsAndMeshesPanelDropArea")))
 	{
 		std::string filepath;
 		if (AcceptFileDrop(panelMin, panelMax, IsModelFile, "a model file", filepath))
 		{
-			s_PendingMeshFilename = filepath; // loaded at the start of the next frame (see Draw)
-			s_PendingMeshGroundPosition.reset();
+			s_PendingModelFilename = filepath; // loaded at the start of the next frame (see Draw)
+			s_PendingModelGroundPosition.reset();
 		}
 		ImGui::EndDragDropTarget();
 	}
@@ -2230,7 +2251,7 @@ static void OnImGuiRenderMeshes()
 	ImGui::End();
 }
 
-// All materials of the scene: create, duplicate, delete, and drag onto a submesh (Meshes panel or viewport) to assign
+// All materials of the scene: create, duplicate, delete, and drag onto a mesh (Models and Meshes panel or viewport) to assign
 static void OnImGuiRenderMaterialLibrary()
 {
 	ImGui::Begin("Material Library");
@@ -2282,7 +2303,7 @@ static void OnImGuiRenderMaterialLibrary()
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 	{
-		ImGui::SetTooltip("Submeshes that use the selected material get the Default material");
+		ImGui::SetTooltip("Meshes that use the selected material get the Default material");
 	}
 	ImGui::EndDisabled();
 
@@ -2372,7 +2393,7 @@ static void OnImGuiRenderMaterialLibrary()
 		if (ImGui::IsItemHovered())
 		{
 			std::string origin = material->GetSourceFile().empty() ? "Created in the editor" : "Imported from " + material->GetSourceFile();
-			ImGui::SetTooltip("%s\nDrag onto a submesh in the Meshes panel or the viewport to assign it", origin.c_str());
+			ImGui::SetTooltip("%s\nDrag onto a mesh in the Models and Meshes panel or the viewport to assign it", origin.c_str());
 		}
 
 		int users = CountMaterialUsers(material);
@@ -2403,7 +2424,7 @@ static void OnImGuiRenderMaterialLibrary()
 	ImGui::End();
 }
 
-// Edits the selected library material in place: every submesh drawn with it changes (values are push constants of every
+// Edits the selected library material in place: every mesh drawn with it changes (values are push constants of every
 // draw; maps are written to the material's descriptor set at the start of the next frame)
 static void OnImGuiRenderMaterialEditor()
 {
@@ -2414,7 +2435,7 @@ static void OnImGuiRenderMaterialEditor()
 	H2M::RefH2M<EnvMapVulkanMaterial> material = s_SelectedMaterial;
 	if (!material)
 	{
-		ImGui::TextDisabled("Select a material in the Material Library,\nor a submesh in the Meshes panel or the viewport");
+		ImGui::TextDisabled("Select a material in the Material Library,\nor a mesh in the Models and Meshes panel or the viewport");
 		ImGui::End();
 		return;
 	}
@@ -2436,11 +2457,11 @@ static void OnImGuiRenderMaterialEditor()
 	int users = CountMaterialUsers(material);
 	if (users > 1)
 	{
-		ImGui::TextDisabled("Used by %d submeshes: changes apply to all of them.", users);
+		ImGui::TextDisabled("Used by %d meshes: changes apply to all of them.", users);
 	}
 	else if (users == 0)
 	{
-		ImGui::TextDisabled("Not used by any submesh.");
+		ImGui::TextDisabled("Not used by any mesh.");
 	}
 
 	ImGui::Separator();
@@ -2567,11 +2588,11 @@ static void OnImGuiRenderMaterialEditor()
 	ImGui::End();
 }
 
-// Where a submesh is drawn: mesh transform (Meshes panel) * node transform from the model. Rigged submeshes: the bone matrices
+// Where a mesh is drawn: model transform (Models and Meshes panel) * node transform from the model file. Rigged meshes: the bone matrices
 // already place the skinned vertices relative to the root node, so the root node transform replaces the node transform.
-static glm::mat4 GetSubmeshTransform(H2M::RefH2M<H2M::MeshH2M> mesh, const H2M::RefH2M<H2M::SubmeshH2M>& submesh, const glm::mat4& transform)
+static glm::mat4 GetMeshTransform(H2M::RefH2M<H2M::ModelH2M> model, const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform)
 {
-	return (mesh->IsSkinned() && submesh->IsRigged) ? transform * mesh->GetRootTransform() : transform * submesh->Transform;
+	return (model->IsSkinned() && mesh->IsRigged) ? transform * model->GetRootTransform() : transform * mesh->Transform;
 }
 
 // Framebuffers, pipelines and the bounding box vertex buffer of the editor overlays (see EditorOverlaySettings)
@@ -2588,7 +2609,7 @@ static void CreateEditorOverlayResources()
 	framebufferSpec.DebugName = "SelectionMask";
 	s_SelectionMaskFramebuffer = H2M::FramebufferH2M::Create(framebufferSpec);
 
-	// Vertex layouts of MeshH2M's Vertex and AnimatedVertex (the overlay shaders read the position, and the bones)
+	// Vertex layouts of ModelH2M's Vertex and AnimatedVertex (the overlay shaders read the position, and the bones)
 	H2M::VertexBufferLayoutH2M staticLayout = {
 		{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
 		{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
@@ -2675,27 +2696,27 @@ static void CreateEditorOverlayResources()
 	s_BoundingBoxVertexBuffer = H2M::VertexBufferH2M::Create(lines, (uint32_t)sizeof(lines));
 }
 
-// Draws a loaded mesh (all submeshes, or only submesh onlySubmesh) in one color with an overlay pipeline.
+// Draws a loaded model (all meshes, or only mesh onlyMesh) in one color with an overlay pipeline.
 // lineWidth: for the wireframe pipelines (dynamic state), 0 for the others.
-static void DrawMeshOverlay(VkCommandBuffer commandBuffer, LoadedMeshVulkan& entry, int onlySubmesh, const H2M::RefH2M<H2M::PipelineH2M>& staticPipeline,
+static void DrawModelOverlay(VkCommandBuffer commandBuffer, LoadedModelVulkan& entry, int onlyMesh, const H2M::RefH2M<H2M::PipelineH2M>& staticPipeline,
 	const H2M::RefH2M<H2M::PipelineH2M>& animPipeline, const glm::vec4& color, const glm::mat4& viewProjection, float lineWidth = 0.0f)
 {
-	H2M::RefH2M<H2M::MeshH2M> mesh = entry.Mesh;
-	bool skinned = mesh->IsSkinned();
+	H2M::RefH2M<H2M::ModelH2M> model = entry.Model;
+	bool skinned = model->IsSkinned();
 	// EditorOverlay_Anim.glsl declares the bone matrices exactly like set 2 of HazelPBR_Anim.glsl (one uniform buffer at
-	// binding 0, vertex stage), only as its set 0: the set layouts are identical, so the mesh's per-object set is bound directly
-	VkDescriptorSet boneDescriptorSet = skinned ? mesh->GetObjectDescriptorSet() : VK_NULL_HANDLE;
+	// binding 0, vertex stage), only as its set 0: the set layouts are identical, so the model's per-object set is bound directly
+	VkDescriptorSet boneDescriptorSet = skinned ? model->GetObjectDescriptorSet() : VK_NULL_HANDLE;
 	if (skinned && !boneDescriptorSet)
 	{
-		return; // no bone buffer (the mesh isn't drawn by RenderMeshVulkan either)
+		return; // no bone buffer (the model isn't drawn by RenderModelVulkan either)
 	}
 	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = (skinned ? animPipeline : staticPipeline).As<H2M::VulkanPipelineH2M>();
 	VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
 
-	VkBuffer vertexBuffer = mesh->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+	VkBuffer vertexBuffer = model->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
 	VkDeviceSize offsets[1] = { 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
-	vkCmdBindIndexBuffer(commandBuffer, mesh->GetIndexBuffer().As<H2M::VulkanIndexBufferH2M>()->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindIndexBuffer(commandBuffer, model->GetIndexBuffer().As<H2M::VulkanIndexBufferH2M>()->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
 	if (lineWidth > 0.0f)
 	{
@@ -2708,27 +2729,27 @@ static void DrawMeshOverlay(VkCommandBuffer commandBuffer, LoadedMeshVulkan& ent
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
 
 	glm::mat4 transform = entry.GetTransform();
-	auto& submeshes = mesh->GetSubmeshes();
-	for (int s = 0; s < (int)submeshes.size(); s++)
+	auto& meshes = model->GetMeshes();
+	for (int s = 0; s < (int)meshes.size(); s++)
 	{
-		if (onlySubmesh >= 0 && s != onlySubmesh)
+		if (onlyMesh >= 0 && s != onlyMesh)
 		{
 			continue;
 		}
-		glm::mat4 mvp = viewProjection * GetSubmeshTransform(mesh, submeshes[s], transform);
+		glm::mat4 mvp = viewProjection * GetMeshTransform(model, meshes[s], transform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
-		vkCmdDrawIndexed(commandBuffer, submeshes[s]->IndexCount, 1, submeshes[s]->BaseIndex, submeshes[s]->BaseVertex, 0);
+		vkCmdDrawIndexed(commandBuffer, meshes[s]->IndexCount, 1, meshes[s]->BaseIndex, meshes[s]->BaseVertex, 0);
 	}
 }
 
-// Draws a loaded mesh's normal, tangent or bitangent lines (vectorIndex 0, 1, 2): one line per vertex of every submesh (or
-// only of submesh onlySubmesh), lineLength long in world units
-static void DrawMeshVectors(VkCommandBuffer commandBuffer, LoadedMeshVulkan& entry, int onlySubmesh, uint32_t vectorIndex, float lineLength,
+// Draws a loaded model's normal, tangent or bitangent lines (vectorIndex 0, 1, 2): one line per vertex of every mesh (or
+// only of mesh onlyMesh), lineLength long in world units
+static void DrawModelVectors(VkCommandBuffer commandBuffer, LoadedModelVulkan& entry, int onlyMesh, uint32_t vectorIndex, float lineLength,
 	int colorMode, const glm::mat4& viewProjection, float lineWidth)
 {
-	H2M::RefH2M<H2M::MeshH2M> mesh = entry.Mesh;
-	bool skinned = mesh->IsSkinned();
-	VkDescriptorSet boneDescriptorSet = skinned ? mesh->GetObjectDescriptorSet() : VK_NULL_HANDLE;
+	H2M::RefH2M<H2M::ModelH2M> model = entry.Model;
+	bool skinned = model->IsSkinned();
+	VkDescriptorSet boneDescriptorSet = skinned ? model->GetObjectDescriptorSet() : VK_NULL_HANDLE;
 	if (skinned && !boneDescriptorSet)
 	{
 		return;
@@ -2736,8 +2757,8 @@ static void DrawMeshVectors(VkCommandBuffer commandBuffer, LoadedMeshVulkan& ent
 	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = (skinned ? s_VectorsPipelineAnim : s_VectorsPipeline).As<H2M::VulkanPipelineH2M>();
 	VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
 
-	// The mesh's vertex buffer as the per-instance input (binding 1); binding 0 has no attributes, the same buffer is bound there
-	VkBuffer vertexBuffer = mesh->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+	// The model's vertex buffer as the per-instance input (binding 1); binding 0 has no attributes, the same buffer is bound there
+	VkBuffer vertexBuffer = model->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
 	VkBuffer buffers[2] = { vertexBuffer, vertexBuffer };
 	VkDeviceSize offsets[2] = { 0, 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 2, buffers, offsets);
@@ -2756,42 +2777,42 @@ static void DrawMeshVectors(VkCommandBuffer commandBuffer, LoadedMeshVulkan& ent
 	pushConstants.ViewProjection = viewProjection;
 
 	glm::mat4 transform = entry.GetTransform();
-	auto& submeshes = mesh->GetSubmeshes();
-	for (int s = 0; s < (int)submeshes.size(); s++)
+	auto& meshes = model->GetMeshes();
+	for (int s = 0; s < (int)meshes.size(); s++)
 	{
-		if ((onlySubmesh >= 0 && s != onlySubmesh) || submeshes[s]->VertexCount == 0)
+		if ((onlyMesh >= 0 && s != onlyMesh) || meshes[s]->VertexCount == 0)
 		{
 			continue;
 		}
-		glm::mat4 model = GetSubmeshTransform(mesh, submeshes[s], transform);
+		glm::mat4 meshMatrix = GetMeshTransform(model, meshes[s], transform);
 		for (int c = 0; c < 4; c++)
 		{
-			pushConstants.Model[c] = glm::vec4(glm::vec3(model[c]), 0.0f);
+			pushConstants.Model[c] = glm::vec4(glm::vec3(meshMatrix[c]), 0.0f);
 		}
 		pushConstants.Model[0].w = lineLength;
 		pushConstants.Model[1].w = (float)vectorIndex;
 		pushConstants.Model[2].w = (float)colorMode;
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(pushConstants), &pushConstants);
 
-		// Two vertices per line, one instance per mesh vertex: firstInstance selects the submesh's vertices in the buffer
-		vkCmdDraw(commandBuffer, 2, submeshes[s]->VertexCount, 0, submeshes[s]->BaseVertex);
+		// Two vertices per line, one instance per mesh vertex: firstInstance selects the mesh's vertices in the buffer
+		vkCmdDraw(commandBuffer, 2, meshes[s]->VertexCount, 0, meshes[s]->BaseVertex);
 	}
 }
 
-// Size of a loaded mesh as placed in the scene: the diagonal of the bounding box of all its submesh boxes (world space)
-static float GetMeshWorldSize(LoadedMeshVulkan& entry)
+// Size of a loaded model as placed in the scene: the diagonal of the bounding box of all its mesh boxes (world space)
+static float GetModelWorldSize(LoadedModelVulkan& entry)
 {
 	glm::vec3 boundsMin(std::numeric_limits<float>::max());
 	glm::vec3 boundsMax(-std::numeric_limits<float>::max());
 	glm::mat4 transform = entry.GetTransform();
-	for (auto& submesh : entry.Mesh->GetSubmeshes())
+	for (auto& mesh : entry.Model->GetMeshes())
 	{
-		glm::mat4 submeshTransform = GetSubmeshTransform(entry.Mesh, submesh, transform);
-		const H2M::AABB_H2M& box = submesh->BoundingBox;
+		glm::mat4 meshTransform = GetMeshTransform(entry.Model, mesh, transform);
+		const H2M::AABB_H2M& box = mesh->BoundingBox;
 		for (int corner = 0; corner < 8; corner++)
 		{
 			glm::vec3 point((corner & 1) ? box.Max.x : box.Min.x, (corner & 2) ? box.Max.y : box.Min.y, (corner & 4) ? box.Max.z : box.Min.z);
-			glm::vec3 placed = glm::vec3(submeshTransform * glm::vec4(point, 1.0f));
+			glm::vec3 placed = glm::vec3(meshTransform * glm::vec4(point, 1.0f));
 			boundsMin = glm::min(boundsMin, placed);
 			boundsMax = glm::max(boundsMax, placed);
 		}
@@ -2804,7 +2825,7 @@ static float GetMeshWorldSize(LoadedMeshVulkan& entry)
 static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 {
 	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
-	const bool hasSelection = s_SelectedMeshIndex >= 0 && s_SelectedMeshIndex < (int)s_LoadedMeshes.size();
+	const bool hasSelection = s_SelectedModelIndex >= 0 && s_SelectedModelIndex < (int)s_LoadedModels.size();
 	const EditorOverlaySettings& settings = s_OverlaySettings;
 
 	// Wide lines are limited by the GPU (at least 8 px is guaranteed)
@@ -2836,9 +2857,9 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 		VkRect2D scissor = { { 0, 0 }, { width, height } };
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 	};
-	auto inScope = [hasSelection](int scope, int meshIndex)
+	auto inScope = [hasSelection](int scope, int modelIndex)
 	{
-		return scope == OverlayScopeAll || (scope == OverlayScopeSelected && hasSelection && meshIndex == s_SelectedMeshIndex);
+		return scope == OverlayScopeAll || (scope == OverlayScopeSelected && hasSelection && modelIndex == s_SelectedModelIndex);
 	};
 
 	// Wireframe and bounding boxes
@@ -2854,25 +2875,25 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 		if (settings.Wireframe != OverlayScopeOff || showVectors)
 		{
 			// Depth of every mesh first (color alpha 0 leaves the image unchanged), so lines hidden behind a mesh are hidden
-			for (LoadedMeshVulkan& entry : s_LoadedMeshes)
+			for (LoadedModelVulkan& entry : s_LoadedModels)
 			{
-				DrawMeshOverlay(commandBuffer, entry, -1, s_OverlayDepthPipeline, s_OverlayDepthPipelineAnim, glm::vec4(0.0f), viewProjection);
+				DrawModelOverlay(commandBuffer, entry, -1, s_OverlayDepthPipeline, s_OverlayDepthPipelineAnim, glm::vec4(0.0f), viewProjection);
 			}
 		}
 
 		if (settings.Wireframe != OverlayScopeOff)
 		{
-			for (int m = 0; m < (int)s_LoadedMeshes.size(); m++)
+			for (int m = 0; m < (int)s_LoadedModels.size(); m++)
 			{
 				if (inScope(settings.Wireframe, m))
 				{
-					// "Selected": the selected submesh, or the whole mesh when no submesh is selected (like the selection outline)
-					int onlySubmesh = -1;
-					if (settings.Wireframe == OverlayScopeSelected && s_SelectedSubmeshIndex < (int)s_LoadedMeshes[m].Mesh->GetSubmeshes().size())
+					// "Selected": the selected mesh, or the whole model when no mesh is selected (like the selection outline)
+					int onlyMesh = -1;
+					if (settings.Wireframe == OverlayScopeSelected && s_SelectedMeshIndex < (int)s_LoadedModels[m].Model->GetMeshes().size())
 					{
-						onlySubmesh = s_SelectedSubmeshIndex;
+						onlyMesh = s_SelectedMeshIndex;
 					}
-					DrawMeshOverlay(commandBuffer, s_LoadedMeshes[m], onlySubmesh, s_WireframePipeline, s_WireframePipelineAnim, settings.WireframeColor,
+					DrawModelOverlay(commandBuffer, s_LoadedModels[m], onlyMesh, s_WireframePipeline, s_WireframePipelineAnim, settings.WireframeColor,
 						depthBias * viewProjection, lineWidth);
 				}
 			}
@@ -2881,24 +2902,24 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 		if (showVectors)
 		{
 			const bool show[3] = { settings.ShowNormals, settings.ShowTangents, settings.ShowBitangents };
-			for (int m = 0; m < (int)s_LoadedMeshes.size(); m++)
+			for (int m = 0; m < (int)s_LoadedModels.size(); m++)
 			{
 				if (!inScope(settings.Vectors, m))
 				{
 					continue;
 				}
-				// "Selected": the selected submesh, or the whole mesh when no submesh is selected (like the wireframe)
-				int onlySubmesh = -1;
-				if (settings.Vectors == OverlayScopeSelected && s_SelectedSubmeshIndex < (int)s_LoadedMeshes[m].Mesh->GetSubmeshes().size())
+				// "Selected": the selected mesh, or the whole model when no mesh is selected (like the wireframe)
+				int onlyMesh = -1;
+				if (settings.Vectors == OverlayScopeSelected && s_SelectedMeshIndex < (int)s_LoadedModels[m].Model->GetMeshes().size())
 				{
-					onlySubmesh = s_SelectedSubmeshIndex;
+					onlyMesh = s_SelectedMeshIndex;
 				}
-				float length = GetMeshWorldSize(s_LoadedMeshes[m]) * settings.VectorLength * 0.01f;
+				float length = GetModelWorldSize(s_LoadedModels[m]) * settings.VectorLength * 0.01f;
 				for (uint32_t v = 0; v < 3; v++)
 				{
 					if (show[v])
 					{
-						DrawMeshVectors(commandBuffer, s_LoadedMeshes[m], onlySubmesh, v, length, settings.VectorColorMode, depthBias * viewProjection, lineWidth);
+						DrawModelVectors(commandBuffer, s_LoadedModels[m], onlyMesh, v, length, settings.VectorColorMode, depthBias * viewProjection, lineWidth);
 					}
 				}
 			}
@@ -2914,31 +2935,31 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
 			vkCmdSetLineWidth(commandBuffer, lineWidth);
 
-			for (int m = 0; m < (int)s_LoadedMeshes.size(); m++)
+			for (int m = 0; m < (int)s_LoadedModels.size(); m++)
 			{
 				if (!inScope(settings.BoundingBoxes, m))
 				{
 					continue;
 				}
-				LoadedMeshVulkan& entry = s_LoadedMeshes[m];
+				LoadedModelVulkan& entry = s_LoadedModels[m];
 				glm::mat4 transform = entry.GetTransform();
-				auto& submeshes = entry.Mesh->GetSubmeshes();
-				for (int s = 0; s < (int)submeshes.size(); s++)
+				auto& meshes = entry.Model->GetMeshes();
+				for (int s = 0; s < (int)meshes.size(); s++)
 				{
-					// "Selected": the selected submesh's box, or all boxes of the mesh when no submesh is selected (like the wireframe)
-					if (settings.BoundingBoxes == OverlayScopeSelected && s_SelectedSubmeshIndex >= 0 &&
-						s_SelectedSubmeshIndex < (int)submeshes.size() && s != s_SelectedSubmeshIndex)
+					// "Selected": the selected mesh's box, or all boxes of the model when no mesh is selected (like the wireframe)
+					if (settings.BoundingBoxes == OverlayScopeSelected && s_SelectedMeshIndex >= 0 &&
+						s_SelectedMeshIndex < (int)meshes.size() && s != s_SelectedMeshIndex)
 					{
 						continue;
 					}
 
-					// Each submesh's box in its own space, so it turns with the mesh (as in SceneHazelEnvMap)
-					const H2M::AABB_H2M& box = submeshes[s]->BoundingBox;
-					glm::mat4 mvp = viewProjection * GetSubmeshTransform(entry.Mesh, submeshes[s], transform) *
+					// Each mesh's box in its own space, so it turns with the model (as in SceneHazelEnvMap)
+					const H2M::AABB_H2M& box = meshes[s]->BoundingBox;
+					glm::mat4 mvp = viewProjection * GetMeshTransform(entry.Model, meshes[s], transform) *
 						glm::translate(glm::mat4(1.0f), box.Min) * glm::scale(glm::mat4(1.0f), box.Max - box.Min);
 
-					// The selection (the selected submesh, or the whole selected mesh when no submesh is selected) in its own color
-					bool selected = m == s_SelectedMeshIndex && (s_SelectedSubmeshIndex < 0 || s == s_SelectedSubmeshIndex);
+					// The selection (the selected mesh, or the whole selected model when no mesh is selected) in its own color
+					bool selected = m == s_SelectedModelIndex && (s_SelectedMeshIndex < 0 || s == s_SelectedMeshIndex);
 					glm::vec4 color = selected ? settings.SelectedBoundingBoxColor : settings.BoundingBoxColor;
 
 					vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
@@ -2950,30 +2971,30 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 	}
 	vkCmdEndRenderPass(commandBuffer);
 
-	// Silhouette of the selection: the selected submesh, or the whole mesh when no submesh is selected
+	// Silhouette of the selection: the selected mesh, or the whole model when no mesh is selected
 	beginPass(s_SelectionMaskFramebuffer);
 	if (settings.Outline && hasSelection)
 	{
-		LoadedMeshVulkan& entry = s_LoadedMeshes[s_SelectedMeshIndex];
-		int submesh = s_SelectedSubmeshIndex < (int)entry.Mesh->GetSubmeshes().size() ? s_SelectedSubmeshIndex : -1;
-		DrawMeshOverlay(commandBuffer, entry, submesh, s_SelectionMaskPipeline, s_SelectionMaskPipelineAnim, glm::vec4(1.0f), viewProjection);
+		LoadedModelVulkan& entry = s_LoadedModels[s_SelectedModelIndex];
+		int mesh = s_SelectedMeshIndex < (int)entry.Model->GetMeshes().size() ? s_SelectedMeshIndex : -1;
+		DrawModelOverlay(commandBuffer, entry, mesh, s_SelectionMaskPipeline, s_SelectionMaskPipelineAnim, glm::vec4(1.0f), viewProjection);
 	}
 	vkCmdEndRenderPass(commandBuffer);
 }
 
 /**** BEGIN to be removed from VulkanRenderer ****/
-void EnvMapVulkanRenderer::SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials)
+void EnvMapVulkanRenderer::SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials)
 {
-	// Temporary code - populate selected submesh
-	// std::vector<Submesh> submeshes = mesh->GetSubmeshes();
+	// Temporary code - populate selected mesh
+	// std::vector<Submesh> submeshes = mesh->GetMeshes();
 	// s_SelectedSubmesh = &submeshes.at(0);
 
-	s_Meshes.push_back({ mesh, transform, materials });
+	s_SubmittedModels.push_back({ model, transform, materials });
 
 	// VulkanRendererData::DrawCommand drawCommand = {};
 	// drawCommand.Mesh = mesh;
 	// drawCommand.Transform = transform;
-	s_Data.DrawList.push_back({ mesh, H2M::RefH2M<H2M::MaterialH2M>(), transform });
+	s_Data.DrawList.push_back({ model, H2M::RefH2M<H2M::MaterialH2M>(), transform });
 }
 /**** END to be removed from VulkanRenderer ****/
 
@@ -3008,7 +3029,7 @@ static void CreateShadowMap(uint32_t resolution, bool writeDescriptor)
 	s_ShadowMap.Create(resolution, ShadowCascadeCount);
 	s_ShadowSettings.Resolution = resolution;
 	{
-		// The mesh vertex layouts (MeshH2M's Vertex and AnimatedVertex), as in the PBR pipelines
+		// The mesh vertex layouts (ModelH2M's Vertex and AnimatedVertex), as in the PBR pipelines
 		H2M::VertexBufferLayoutH2M staticLayout = {
 			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
 			{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
@@ -3144,7 +3165,7 @@ void EnvMapVulkanRenderer::Init()
 		pipelineSpecification.DebugName = "PBR-Static";
 		s_MeshPipeline = H2M::PipelineH2M::Create(pipelineSpecification);
 
-		// Skinned meshes: same render pass, vertex layout of MeshH2M's AnimatedVertex
+		// Skinned models: same render pass, vertex layout of ModelH2M's AnimatedVertex
 		pipelineSpecification.Layout = {
 			{ H2M::ShaderDataTypeH2M::Float3, "a_Position" },
 			{ H2M::ShaderDataTypeH2M::Float3, "a_Normal" },
@@ -3409,7 +3430,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	// delete s_Data;
 }
 
-void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer)
+void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer)
 {
 	/**** BEGIN keep smart references alive ****/
 	H2M::RefH2M<H2M::TextureCubeH2M> envUnfiltered = s_Data.envUnfiltered;
@@ -3437,19 +3458,19 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 	H2M::RefH2M<VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<VulkanPipeline>();
 	/**** END Non-composite ****/
 	/**** BEGIN Composite ****/
-	// Skinned meshes have a different vertex layout (bone IDs and weights) and shader
-	bool skinned = mesh->IsSkinned();
+	// Skinned models have a different vertex layout (bone IDs and weights) and shader
+	bool skinned = model->IsSkinned();
 	H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = (skinned ? s_MeshPipelineAnim : s_MeshPipeline).As<H2M::VulkanPipelineH2M>(); // to be removed from VulkanRenderer
 	/**** END Composite ****/
 
 	VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
 
-	auto vulkanMeshVB = mesh->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>();
+	auto vulkanMeshVB = model->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>();
 	VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
 	VkDeviceSize offsets[1] = { 0 };
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vbMeshBuffer, offsets);
 
-	auto vulkanMeshIB = H2M::RefH2M<H2M::VulkanIndexBufferH2M>(mesh->GetIndexBuffer());
+	auto vulkanMeshIB = H2M::RefH2M<H2M::VulkanIndexBufferH2M>(model->GetIndexBuffer());
 	VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 	vkCmdBindIndexBuffer(commandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
@@ -3459,10 +3480,10 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 	// Set 0 (per frame) was bound once for all meshes in GeometryPass. It stays bound across the static and skinned
 	// pipelines: their layouts declare set 0 and the push constants identically ("compatible for set 0").
 
-	// Set 2 (per object): the bone matrices of a skinned mesh
+	// Set 2 (per object): the bone matrices of a skinned model
 	if (skinned)
 	{
-		VkDescriptorSet objectDescriptorSet = mesh->GetObjectDescriptorSet();
+		VkDescriptorSet objectDescriptorSet = model->GetObjectDescriptorSet();
 		if (objectDescriptorSet == VK_NULL_HANDLE)
 		{
 			return; // no bone buffer: the skinned vertices can't be placed
@@ -3470,14 +3491,14 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, H2M::VulkanShaderH2M::ObjectDescriptorSet, 1, &objectDescriptorSet, 0, nullptr);
 	}
 
-	auto& submeshes = mesh->GetSubmeshes();
-	for (size_t s = 0; s < submeshes.size() && s < materials.size(); s++)
+	auto& meshes = model->GetMeshes();
+	for (size_t s = 0; s < meshes.size() && s < materials.size(); s++)
 	{
-		H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[s];
+		H2M::RefH2M<H2M::MeshH2M> mesh = meshes[s];
 		H2M::RefH2M<EnvMapVulkanMaterial> material = materials[s];
 		H2M::BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
 
-		// Set 1 (per material): the texture maps of the submesh's library material
+		// Set 1 (per material): the texture maps of the mesh's library material
 		VkDescriptorSet materialDescriptorSet = material->GetDescriptorSet();
 		if (materialDescriptorSet == VK_NULL_HANDLE)
 		{
@@ -3489,10 +3510,10 @@ void EnvMapVulkanRenderer::RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, cons
 		// Push Constants
 		// glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
-		glm::mat4 submeshTransform = GetSubmeshTransform(mesh, submesh, transform);
-		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &submeshTransform);
+		glm::mat4 meshTransform = GetMeshTransform(model, mesh, transform);
+		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &meshTransform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
-		vkCmdDrawIndexed(commandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
+		vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
 	}
 }
 
@@ -3615,25 +3636,25 @@ static void ComputeShadowCasterBounds(glm::vec3& totalMin, glm::vec3& totalMax)
 	totalMin = glm::vec3(std::numeric_limits<float>::max());
 	totalMax = glm::vec3(-std::numeric_limits<float>::max());
 	s_ShadowCasterBounds.clear();
-	for (const SubmittedMesh& submitted : s_Meshes)
+	for (const SubmittedModel& submitted : s_SubmittedModels)
 	{
-		glm::vec3 meshMin(std::numeric_limits<float>::max());
-		glm::vec3 meshMax(-std::numeric_limits<float>::max());
-		for (const H2M::RefH2M<H2M::SubmeshH2M>& submesh : submitted.Mesh->GetSubmeshes())
+		glm::vec3 modelMin(std::numeric_limits<float>::max());
+		glm::vec3 modelMax(-std::numeric_limits<float>::max());
+		for (const H2M::RefH2M<H2M::MeshH2M>& mesh : submitted.Model->GetMeshes())
 		{
-			glm::mat4 transform = GetSubmeshTransform(submitted.Mesh, submesh, submitted.Transform);
+			glm::mat4 transform = GetMeshTransform(submitted.Model, mesh, submitted.Transform);
 			for (int c = 0; c < 8; c++)
 			{
-				glm::vec3 corner((c & 1) ? submesh->BoundingBox.Max.x : submesh->BoundingBox.Min.x, (c & 2) ? submesh->BoundingBox.Max.y : submesh->BoundingBox.Min.y,
-					(c & 4) ? submesh->BoundingBox.Max.z : submesh->BoundingBox.Min.z);
+				glm::vec3 corner((c & 1) ? mesh->BoundingBox.Max.x : mesh->BoundingBox.Min.x, (c & 2) ? mesh->BoundingBox.Max.y : mesh->BoundingBox.Min.y,
+					(c & 4) ? mesh->BoundingBox.Max.z : mesh->BoundingBox.Min.z);
 				glm::vec3 world = glm::vec3(transform * glm::vec4(corner, 1.0f));
-				meshMin = glm::min(meshMin, world);
-				meshMax = glm::max(meshMax, world);
+				modelMin = glm::min(modelMin, world);
+				modelMax = glm::max(modelMax, world);
 			}
 		}
-		s_ShadowCasterBounds.push_back({ meshMin, meshMax });
-		totalMin = glm::min(totalMin, meshMin);
-		totalMax = glm::max(totalMax, meshMax);
+		s_ShadowCasterBounds.push_back({ modelMin, modelMax });
+		totalMin = glm::min(totalMin, modelMin);
+		totalMax = glm::max(totalMax, modelMax);
 	}
 	s_ShadowCasterBoundsMin = totalMin;
 	s_ShadowCasterBoundsMax = totalMax;
@@ -3661,18 +3682,18 @@ static void BeginShadowPass(VkCommandBuffer commandBuffer, const EnvMapVulkanSha
 	vkCmdSetDepthBias(commandBuffer, depthBias, 0.0f, slopeBias);
 }
 
-// Draws the submitted meshes into the current shadow pass. With a light sphere (center, radius), only the meshes whose
+// Draws the submitted models into the current shadow pass. With a light sphere (center, radius), only the models whose
 // bounds reach into it: a spot or point light can't shadow anything beyond its range. The shadow pipelines were built for
 // the sun's render pass; the spot and point light passes are compatible with it (one depth attachment of the same format).
-// Returns the number of meshes drawn.
+// Returns the number of models drawn.
 static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4& viewProjection, const glm::vec3* lightCenter = nullptr, float lightRadius = 0.0f)
 {
 	uint32_t drawn = 0;
-	for (size_t m = 0; m < s_Meshes.size(); m++)
+	for (size_t m = 0; m < s_SubmittedModels.size(); m++)
 	{
 		if (lightCenter)
 		{
-			// Distance from the light to the nearest point of the mesh's bounds
+			// Distance from the light to the nearest point of the model's bounds
 			const glm::vec3 nearest = glm::clamp(*lightCenter, s_ShadowCasterBounds[m].first, s_ShadowCasterBounds[m].second);
 			if (glm::length(nearest - *lightCenter) > lightRadius)
 			{
@@ -3680,13 +3701,13 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 			}
 		}
 
-		H2M::RefH2M<H2M::MeshH2M> mesh = s_Meshes[m].Mesh;
-		const bool skinned = mesh->IsSkinned();
+		H2M::RefH2M<H2M::ModelH2M> model = s_SubmittedModels[m].Model;
+		const bool skinned = model->IsSkinned();
 		const EnvMapVulkanShadowPipeline& pipeline = skinned ? s_ShadowPipelineAnim : s_ShadowPipeline;
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
 		if (skinned)
 		{
-			VkDescriptorSet boneDescriptorSet = mesh->GetObjectDescriptorSet();
+			VkDescriptorSet boneDescriptorSet = model->GetObjectDescriptorSet();
 			if (boneDescriptorSet == VK_NULL_HANDLE)
 			{
 				continue; // no bone buffer: the skinned vertices can't be placed
@@ -3694,16 +3715,16 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Layout, 0, 1, &boneDescriptorSet, 0, nullptr);
 		}
 
-		VkBuffer vertexBuffer = mesh->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+		VkBuffer vertexBuffer = model->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
 		VkDeviceSize offset = 0;
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
-		vkCmdBindIndexBuffer(commandBuffer, H2M::RefH2M<H2M::VulkanIndexBufferH2M>(mesh->GetIndexBuffer())->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(commandBuffer, H2M::RefH2M<H2M::VulkanIndexBufferH2M>(model->GetIndexBuffer())->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-		for (const H2M::RefH2M<H2M::SubmeshH2M>& submesh : mesh->GetSubmeshes())
+		for (const H2M::RefH2M<H2M::MeshH2M>& mesh : model->GetMeshes())
 		{
-			glm::mat4 matrices[2] = { viewProjection, GetSubmeshTransform(mesh, submesh, s_Meshes[m].Transform) };
+			glm::mat4 matrices[2] = { viewProjection, GetMeshTransform(model, mesh, s_SubmittedModels[m].Transform) };
 			vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
-			vkCmdDrawIndexed(commandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
+			vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
 		}
 		drawn++;
 	}
@@ -3711,7 +3732,7 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 }
 
 // The shadow map cascades of the sun (see EnvMapVulkanShadows.h), recorded at the start of the frame, before the geometry
-// pass that samples them. Every submitted mesh casts; the grid and the skybox don't.
+// pass that samples them. Every submitted model casts; the grid and the skybox don't.
 static void RecordShadowPasses(VkCommandBuffer commandBuffer, const glm::vec3& boundsMin, const glm::vec3& boundsMax)
 {
 	s_ShadowsRendered = false;
@@ -3760,7 +3781,7 @@ static void RecordLocalShadowPasses(VkCommandBuffer commandBuffer)
 {
 	// The slots were assigned when the Lights buffer was packed (UpdateFrameUniforms)
 	LocalShadowSlots& slots = s_LocalShadowSlots;
-	slots.MeshesDrawn = 0;
+	slots.ModelsDrawn = 0;
 	if (!s_ShadowPipeline.Pipeline || !s_ShadowPipelineAnim.Pipeline)
 	{
 		return;
@@ -3771,7 +3792,7 @@ static void RecordLocalShadowPasses(VkCommandBuffer commandBuffer)
 	{
 		const EnvMapVulkanSpotLight& light = s_Lights.SpotLights[slots.SpotLight[slot]];
 		BeginShadowPass(commandBuffer, s_SpotShadowMaps, slot, settings.DepthBias, settings.SlopeBias);
-		slots.MeshesDrawn += DrawShadowCasters(commandBuffer, slots.SpotViewProjection[slot], &light.Position, light.Range);
+		slots.ModelsDrawn += DrawShadowCasters(commandBuffer, slots.SpotViewProjection[slot], &light.Position, light.Range);
 		vkCmdEndRenderPass(commandBuffer);
 	}
 
@@ -3781,7 +3802,7 @@ static void RecordLocalShadowPasses(VkCommandBuffer commandBuffer)
 		for (uint32_t face = 0; face < 6; face++)
 		{
 			BeginShadowPass(commandBuffer, s_PointShadowMaps, slot * 6 + face, settings.DepthBias, settings.SlopeBias);
-			slots.MeshesDrawn += DrawShadowCasters(commandBuffer, slots.PointFaceViewProjection[slot][face], &light.Position, light.Range);
+			slots.ModelsDrawn += DrawShadowCasters(commandBuffer, slots.PointFaceViewProjection[slot][face], &light.Position, light.Range);
 			vkCmdEndRenderPass(commandBuffer);
 		}
 	}
@@ -4069,12 +4090,12 @@ void EnvMapVulkanRenderer::GeometryPass()
 		vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshPipelineLayout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
 			s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
-		for (const SubmittedMesh& submitted : s_Meshes)
+		for (const SubmittedModel& submitted : s_SubmittedModels)
 		{
-			RenderMeshVulkan(submitted.Mesh, submitted.Transform, submitted.Materials, drawCommandBuffer);
+			RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer);
 		}
 
-		s_Meshes.clear();
+		s_SubmittedModels.clear();
 
 		// Transparent, so after the opaque meshes
 		if (s_DisplayGrid)
@@ -4664,9 +4685,9 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			bool viewportImageHovered = ImGui::IsItemHovered();
 
 			// Drop onto the scene:
-			// - a material from the Material Library: the submesh under the cursor gets it and becomes the selection
+			// - a material from the Material Library: the mesh under the cursor gets it and becomes the selection
 			//   (so the Material Editor shows the material)
-			// - a model file from the Content Browser: placed standing on the ground under the cursor (see LoadMesh)
+			// - a model file from the Content Browser: placed standing on the ground under the cursor (see LoadModel)
 			// - an .hdr file from the Content Browser: loaded as the environment map
 			if (ImGui::BeginDragDropTarget())
 			{
@@ -4677,14 +4698,14 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					uint32_t index = *(const uint32_t*)payload->Data;
 					const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
 
-					int hitMesh, hitSubmesh;
-					RaycastSubmesh(ndc.x, ndc.y, hitMesh, hitSubmesh);
+					int hitModel, hitMesh;
+					RaycastMesh(ndc.x, ndc.y, hitModel, hitMesh);
 
-					if (index < materials.size() && hitMesh >= 0 && hitSubmesh >= 0 && hitSubmesh < (int)s_LoadedMeshes[hitMesh].SubmeshMaterials.size())
+					if (index < materials.size() && hitModel >= 0 && hitMesh >= 0 && hitMesh < (int)s_LoadedModels[hitModel].MeshMaterials.size())
 					{
-						s_LoadedMeshes[hitMesh].SubmeshMaterials[hitSubmesh] = materials[index];
+						s_LoadedModels[hitModel].MeshMaterials[hitMesh] = materials[index];
+						s_SelectedModelIndex = hitModel;
 						s_SelectedMeshIndex = hitMesh;
-						s_SelectedSubmeshIndex = hitSubmesh;
 					}
 				}
 
@@ -4700,8 +4721,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					}
 					else
 					{
-						s_PendingMeshFilename = droppedPath;
-						s_PendingMeshGroundPosition = GetDropGroundPosition(ndc.x, ndc.y);
+						s_PendingModelFilename = droppedPath;
+						s_PendingModelGroundPosition = GetDropGroundPosition(ndc.x, ndc.y);
 					}
 				}
 				ImGui::EndDragDropTarget();
@@ -4725,7 +4746,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			UpdateImGuizmo(mainWindow);
 
 			// Mouse picking: left click on the scene (not on the gizmo, not with Alt) selects the light icon or else the
-			// mesh/submesh under the cursor
+			// model/mesh under the cursor
 			if (viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
 				!Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 			{
@@ -4743,7 +4764,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					// Shift + click: the whole model (the gizmo moves the model, not the part under the mouse)
 					if (Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift))
 					{
-						s_SelectedSubmeshIndex = -1;
+						s_SelectedMeshIndex = -1;
 					}
 				}
 			}
@@ -4762,7 +4783,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			// H2M::VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
 
 			// Content Browser (shared with SceneHazelEnvMap): drag .hdr files onto the Environment panel and
-			// model files onto the Meshes panel's "Load Mesh" button
+			// model files onto the Models and Meshes panel's "Load Model" button
 			static H2M::ContentBrowserPanelH2M* s_ContentBrowserPanel = nullptr;
 			static bool s_ShowContentBrowserPanel = true;
 			if (!s_ContentBrowserPanel)
@@ -4893,7 +4914,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					ImGui::Combo("Wireframe", &overlay.Wireframe, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
 					if (ImGui::IsItemHovered())
 					{
-						ImGui::SetTooltip("Selected: the selected submesh, or the whole model when no submesh is selected\nAll: every loaded model");
+						ImGui::SetTooltip("Selected: the selected mesh, or the whole model when no mesh is selected\nAll: every loaded model");
 					}
 					ImGui::ColorEdit4("Wireframe Color", &overlay.WireframeColor.x, ImGuiColorEditFlags_NoInputs);
 
@@ -4901,18 +4922,18 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					ImGui::Combo("Bounding Boxes", &overlay.BoundingBoxes, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
 					if (ImGui::IsItemHovered())
 					{
-						ImGui::SetTooltip("Selected: the selected submesh's box, or all boxes of the model when no submesh is selected\nAll: the boxes of every loaded model");
+						ImGui::SetTooltip("Selected: the selected mesh's box, or all boxes of the model when no mesh is selected\nAll: the boxes of every loaded model");
 					}
 					ImGui::ColorEdit4("Selected Box", &overlay.SelectedBoundingBoxColor.x, ImGuiColorEditFlags_NoInputs);
 					if (ImGui::IsItemHovered())
 					{
-						ImGui::SetTooltip("Box of the selected submesh\n(all boxes of the selected mesh when no submesh is selected)");
+						ImGui::SetTooltip("Box of the selected mesh\n(all boxes of the selected model when no mesh is selected)");
 					}
 					ImGui::SameLine();
 					ImGui::ColorEdit4("Unselected Boxes", &overlay.BoundingBoxColor.x, ImGuiColorEditFlags_NoInputs);
 					if (ImGui::IsItemHovered())
 					{
-						ImGui::SetTooltip("All other boxes: other meshes, and the other submeshes of the selected mesh.\n"
+						ImGui::SetTooltip("All other boxes: other models, and the other meshes of the selected model.\n"
 							"Only drawn with Bounding Boxes = All.");
 					}
 
@@ -4921,7 +4942,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::SetTooltip("A line per vertex along its normal, tangent and/or bitangent\n"
-							"Selected: the selected submesh, or the whole model when no submesh is selected\nAll: every loaded model");
+							"Selected: the selected mesh, or the whole model when no mesh is selected\nAll: every loaded model");
 					}
 					ImGui::BeginDisabled(overlay.Vectors == OverlayScopeOff);
 					ImGui::Checkbox("Normals", &overlay.ShowNormals);
@@ -5001,7 +5022,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			ImGui::End();
 			/**** END Environment ****/
 
-			OnImGuiRenderMeshes();
+			OnImGuiRenderModelsAndMeshes();
 			OnImGuiRenderMaterialLibrary();
 			OnImGuiRenderMaterialEditor();
 			OnImGuiRenderLights();
@@ -5093,30 +5114,55 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		LoadEnvironmentMap(filepath);
 	}
 
-	// Set when a change below may leave cached textures unused (a mesh removed, a map replaced or removed, a material deleted)
+	// Set when a change below may leave cached textures unused (a model or mesh removed, a map replaced or removed, a material deleted)
 	bool texturesMayBeUnused = false;
 
-	// Mesh removal / loading requested from the Meshes panel
+	// Model / mesh removal and model loading requested from the Models and Meshes panel
 	if (s_PendingRemoveMeshIndex >= 0)
 	{
-		if (s_PendingRemoveMeshIndex < (int)s_LoadedMeshes.size())
+		if (s_SelectedModelIndex >= 0 && s_SelectedModelIndex < (int)s_LoadedModels.size())
 		{
-			// The mesh's buffers and descriptor sets may still be used by frames in flight
-			vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
-			s_LoadedMeshes.erase(s_LoadedMeshes.begin() + s_PendingRemoveMeshIndex);
-			s_SelectedMeshIndex = glm::min(s_SelectedMeshIndex, (int)s_LoadedMeshes.size() - 1);
-			s_SelectedSubmeshIndex = -1;
-			texturesMayBeUnused = true;
+			// Only a part of the selected model: its geometry stays in the model's buffers, so nothing on the GPU is freed
+			LoadedModelVulkan& entry = s_LoadedModels[s_SelectedModelIndex];
+			const int index = s_PendingRemoveMeshIndex;
+			if (index < (int)entry.Model->GetMeshes().size() && entry.Model->GetMeshes().size() > 1)
+			{
+				Log::GetLogger()->info("Mesh '{0}' removed from model '{1}'", entry.Model->GetMeshes()[index]->MeshName, entry.FilePath);
+				entry.Model->RemoveMesh((uint32_t)index);
+				if (index < (int)entry.MeshMaterials.size())
+				{
+					entry.MeshMaterials.erase(entry.MeshMaterials.begin() + index);
+				}
+				if (index < (int)entry.OriginalMeshTransforms.size())
+				{
+					entry.OriginalMeshTransforms.erase(entry.OriginalMeshTransforms.begin() + index);
+				}
+				s_SelectedMeshIndex = -1;
+				texturesMayBeUnused = true; // its material may have no other users
+			}
 		}
 		s_PendingRemoveMeshIndex = -1;
 	}
-	if (!s_PendingMeshFilename.empty())
+	if (s_PendingRemoveModelIndex >= 0)
 	{
-		std::string filepath = s_PendingMeshFilename;
-		std::optional<glm::vec3> groundPosition = s_PendingMeshGroundPosition;
-		s_PendingMeshFilename.clear();
-		s_PendingMeshGroundPosition.reset();
-		LoadMesh(filepath, groundPosition);
+		if (s_PendingRemoveModelIndex < (int)s_LoadedModels.size())
+		{
+			// The model's buffers and descriptor sets may still be used by frames in flight
+			vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+			s_LoadedModels.erase(s_LoadedModels.begin() + s_PendingRemoveModelIndex);
+			s_SelectedModelIndex = glm::min(s_SelectedModelIndex, (int)s_LoadedModels.size() - 1);
+			s_SelectedMeshIndex = -1;
+			texturesMayBeUnused = true;
+		}
+		s_PendingRemoveModelIndex = -1;
+	}
+	if (!s_PendingModelFilename.empty())
+	{
+		std::string filepath = s_PendingModelFilename;
+		std::optional<glm::vec3> groundPosition = s_PendingModelGroundPosition;
+		s_PendingModelFilename.clear();
+		s_PendingModelGroundPosition.reset();
+		LoadModel(filepath, groundPosition);
 	}
 	// Lens dirt texture chosen in the Bloom settings
 	if (!s_PendingBloomDirtFilename.empty())
@@ -5171,14 +5217,14 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	float deltaTime = std::min(std::chrono::duration<float>(now - s_LastAnimationUpdate).count(), 0.1f);
 	s_LastAnimationUpdate = now;
 
-	for (LoadedMeshVulkan& entry : s_LoadedMeshes)
+	for (LoadedModelVulkan& entry : s_LoadedModels)
 	{
-		if (entry.Mesh->IsSkinned())
+		if (entry.Model->IsSkinned())
 		{
-			entry.Mesh->OnUpdate(H2M::TimestepH2M(deltaTime), false); // bone matrices of the current frame (bind pose when not animated)
+			entry.Model->OnUpdate(H2M::TimestepH2M(deltaTime), false); // bone matrices of the current frame (bind pose when not animated)
 		}
-		UpdateObjectUniforms(entry.Mesh);
-		SubmitMeshTemp(entry.Mesh, entry.GetTransform(), entry.SubmeshMaterials);
+		UpdateObjectUniforms(entry.Model);
+		SubmitModelTemp(entry.Model, entry.GetTransform(), entry.MeshMaterials);
 	}
 	UpdateFrameUniforms();
 
@@ -5356,11 +5402,11 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
 }
 
 
-void EnvMapVulkanRenderer::RenderMeshWithoutMaterial(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform)
+void EnvMapVulkanRenderer::RenderMeshWithoutMaterial(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform)
 {
 }
 
-void EnvMapVulkanRenderer::RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform)
+void EnvMapVulkanRenderer::RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform)
 {
 	// H2M::RendererH2M::Submit([mesh, transform]() mutable {});
 	{
@@ -5368,19 +5414,19 @@ void EnvMapVulkanRenderer::RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2
 
 		VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
 
-		auto vulkanMeshVB = mesh->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>();
+		auto vulkanMeshVB = model->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>();
 		VkBuffer vbMeshBuffer = vulkanMeshVB->GetVulkanBuffer();
 		VkDeviceSize offsets[1] = { 0 };
 		vkCmdBindVertexBuffers(s_Data.ActiveCommandBuffer, 0, 1, &vbMeshBuffer, offsets);
 
-		auto vulkanMeshIB = H2M::RefH2M<H2M::VulkanIndexBufferH2M>(mesh->GetIndexBuffer());
+		auto vulkanMeshIB = H2M::RefH2M<H2M::VulkanIndexBufferH2M>(model->GetIndexBuffer());
 		VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		std::vector<H2M::RefH2M<H2M::SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
-		for (H2M::RefH2M<H2M::SubmeshH2M> submesh : submeshes)
+		std::vector<H2M::RefH2M<H2M::MeshH2M>>& meshes = model->GetMeshes();
+		for (H2M::RefH2M<H2M::MeshH2M> mesh : meshes)
 		{
-			auto& material = mesh->GetMaterials()[submesh->MaterialIndex].As<H2M::VulkanMaterialH2M>();
+			auto& material = model->GetMaterials()[mesh->MaterialIndex].As<H2M::VulkanMaterialH2M>();
 			material->UpdateForRendering();
 
 			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
@@ -5393,11 +5439,11 @@ void EnvMapVulkanRenderer::RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2
 			};
 			vkCmdBindDescriptorSets(s_Data.ActiveCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
-			glm::mat4 worldTransform = transform * submesh->Transform;
+			glm::mat4 worldTransform = transform * mesh->Transform;
 			H2M::BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
 			vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &worldTransform);
 			vkCmdPushConstants(s_Data.ActiveCommandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
-			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, submesh->IndexCount, 1, submesh->BaseIndex, submesh->BaseVertex, 0);
+			vkCmdDrawIndexed(s_Data.ActiveCommandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
 		}
 	}
 }
@@ -5510,7 +5556,7 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 			Scene::s_ImGuizmoType = -1;
 	}
 
-	// The gizmo moves the selected point or spot light, or else the mesh selected in the Meshes panel (or picked with the mouse)
+	// The gizmo moves the selected point or spot light, or else the model or mesh selected in the Models and Meshes panel (or picked with the mouse)
 	if (Scene::s_ImGuizmoType != -1 && s_SelectedLightKind != LightKind::None && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 	{
 		ImGuizmo::SetOrthographic(false);
@@ -5527,12 +5573,12 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 		return;
 	}
 
-	if (Scene::s_ImGuizmoType == -1 || s_SelectedMeshIndex < 0 || s_SelectedMeshIndex >= (int)s_LoadedMeshes.size() ||
+	if (Scene::s_ImGuizmoType == -1 || s_SelectedModelIndex < 0 || s_SelectedModelIndex >= (int)s_LoadedModels.size() ||
 		s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
 	{
 		return;
 	}
-	LoadedMeshVulkan& entry = s_LoadedMeshes[s_SelectedMeshIndex];
+	LoadedModelVulkan& entry = s_LoadedModels[s_SelectedModelIndex];
 
 	ImGuizmo::SetOrthographic(false);
 	ImGuizmo::SetDrawlist();
@@ -5547,12 +5593,12 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 	// A selected part of a multi-part model: the gizmo moves the part. It sits at the center of the part's bounding box
 	// (as in SceneHazelEnvMap): imported parts often have their origin at the model's origin, far from the part, and would
 	// turn around it. world = model * part * T(center); after the gizmo: part = model^-1 * world * T(-center)
-	if (CanManipulateSubmesh(entry, s_SelectedSubmeshIndex))
+	if (CanManipulateMesh(entry, s_SelectedMeshIndex))
 	{
-		H2M::RefH2M<H2M::SubmeshH2M> part = entry.Mesh->GetSubmeshes()[s_SelectedSubmeshIndex];
-		const glm::mat4 model = entry.GetTransform();
+		H2M::RefH2M<H2M::MeshH2M> part = entry.Model->GetMeshes()[s_SelectedMeshIndex];
+		const glm::mat4 modelMatrix = entry.GetTransform();
 		const glm::vec3 center = (part->BoundingBox.Min + part->BoundingBox.Max) * 0.5f;
-		glm::mat4 world = model * part->Transform * glm::translate(glm::mat4(1.0f), center);
+		glm::mat4 world = modelMatrix * part->Transform * glm::translate(glm::mat4(1.0f), center);
 		if (ImGuizmo::Manipulate(
 			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
 			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
@@ -5562,7 +5608,7 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 			nullptr,
 			snap ? snapValues : nullptr))
 		{
-			part->Transform = glm::inverse(model) * world * glm::translate(glm::mat4(1.0f), -center);
+			part->Transform = glm::inverse(modelMatrix) * world * glm::translate(glm::mat4(1.0f), -center);
 		}
 		return;
 	}
@@ -5577,7 +5623,7 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 		nullptr,
 		snap ? snapValues : nullptr))
 	{
-		// Back into the values shown (and editable) in the Meshes panel
+		// Back into the values shown (and editable) in the Models and Meshes panel
 		ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform), &entry.Translation.x, &entry.Rotation.x, &entry.Scale.x);
 	}
 }
@@ -5612,7 +5658,7 @@ H2M::SceneRendererOptionsH2M& EnvMapVulkanRenderer::GetOptions()
 }
 /**** END code moved from VulkanTestLayer to VulkanRenderer****/
 
-void EnvMapVulkanRenderer::MapUniformBuffersVTL(H2M::RefH2M<H2M::MeshH2M> mesh, const H2M::EditorCameraH2M& camera)
+void EnvMapVulkanRenderer::MapUniformBuffersVTL(H2M::RefH2M<H2M::ModelH2M> model, const H2M::EditorCameraH2M& camera)
 {
 	// Temporary code
 	s_Data.SceneData.SceneCamera.Camera = camera;
@@ -5621,7 +5667,7 @@ void EnvMapVulkanRenderer::MapUniformBuffersVTL(H2M::RefH2M<H2M::MeshH2M> mesh, 
 
 	// Camera and scene data are per frame (set 0), shared by every mesh
 	UpdateFrameUniforms();
-	UpdateObjectUniforms(mesh);
+	UpdateObjectUniforms(model);
 }
 
 namespace Utils

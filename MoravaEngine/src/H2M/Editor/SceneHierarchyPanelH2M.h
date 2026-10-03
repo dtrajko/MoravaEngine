@@ -8,7 +8,7 @@
 
 #include "pch.h"
 
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Scene/SceneH2M.h"
 #include "H2M/Scene/EntityH2M.h"
 
@@ -40,7 +40,7 @@ namespace H2M
 		void SetSelected(EntityH2M entity);
 		void SetSelectionChangedCallback(const std::function<void(EntityH2M)>& func) { m_SelectionChangedCallback = func; }
 		void SetEntityDeletedCallback(const std::function<void(EntityH2M)>& func) { m_EntityDeletedCallback = func; }
-		void SetMeshAssetConvertCallback(const std::function<void(EntityH2M, RefH2M<MeshH2M>)>& func) { m_MeshAssetConvertCallback = func; } // TODO: MeshH2M => MeshSourceH2M
+		void SetMeshAssetConvertCallback(const std::function<void(EntityH2M, RefH2M<ModelH2M>)>& func) { m_MeshAssetConvertCallback = func; } // TODO: ModelH2M => MeshSourceH2M
 		void SetInvalidMetadataCallback(const std::function<void(EntityH2M, AssetHandleH2M)>& func) { m_InvalidMetadataCallback = func; }
 
 		EntityH2M GetSelectedEntity() const { return m_SelectionContext; }
@@ -61,7 +61,7 @@ namespace H2M
 
 		std::function<void(EntityH2M)> m_SelectionChangedCallback;
 		std::function<void(EntityH2M)> m_EntityDeletedCallback;
-		std::function<void(EntityH2M, RefH2M<MeshH2M>)> m_MeshAssetConvertCallback; // TODO: MeshH2M => MeshSourceH2M
+		std::function<void(EntityH2M, RefH2M<ModelH2M>)> m_MeshAssetConvertCallback; // TODO: ModelH2M => MeshSourceH2M
 		std::function<void(EntityH2M, AssetHandleH2M)> m_InvalidMetadataCallback;
 
 		static RefH2M<Texture2D_H2M> s_PencilIcon;

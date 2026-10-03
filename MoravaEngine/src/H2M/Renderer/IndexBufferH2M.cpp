@@ -8,7 +8,7 @@
 
 #include "H2M/Platform/OpenGL/OpenGLIndexBufferH2M.h"
 #include "H2M/Platform/Vulkan/VulkanIndexBufferH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "Platform/DX11/DX11IndexBuffer.h"

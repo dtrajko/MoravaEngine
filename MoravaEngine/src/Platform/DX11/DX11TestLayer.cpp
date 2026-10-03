@@ -17,8 +17,8 @@
 std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
 glm::vec2 DX11TestLayer::s_StartMousePosition;
 H2M::RefH2M<DX11Mesh> DX11TestLayer::s_Mesh;
-H2M::RefH2M<H2M::MeshH2M> DX11TestLayer::s_MeshLight;
-H2M::RefH2M<H2M::MeshH2M> DX11TestLayer::s_SkyboxSphere;
+H2M::RefH2M<H2M::ModelH2M> DX11TestLayer::s_MeshLight;
+H2M::RefH2M<H2M::ModelH2M> DX11TestLayer::s_SkyboxSphere;
 // Render meshes with materials
 std::vector<RenderObject> DX11TestLayer::s_RenderObjectsWithMaterials;
 std::vector<H2M::RefH2M<DX11Material>> DX11TestLayer::s_ListMaterials;
@@ -75,11 +75,11 @@ void DX11TestLayer::OnAttach()
 
 	DX11InputSystem::Get()->ShowCursor(m_ShowMouseCursor = true);
 
-	H2M::RefH2M<H2M::MeshH2M> meshSphere = H2M::RefH2M<H2M::MeshH2M>::Create("Models/PardCode/sphere_hq.obj");
+	H2M::RefH2M<H2M::ModelH2M> meshSphere = H2M::RefH2M<H2M::ModelH2M>::Create("Models/PardCode/sphere_hq.obj");
 
 	/*
 	RenderObject renderObjectGladiator;
-	renderObjectGladiator.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create("Models/Gladiator/Gladiator.fbx");
+	renderObjectGladiator.Mesh = H2M::RefH2M<H2M::ModelH2M>::Create("Models/Gladiator/Gladiator.fbx");
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_weapon_BaseColor.jpg"));
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_weapon_Normal.jpg"));
 	renderObjectGladiator.Textures.push_back(ResourceManager::LoadHazelTexture2D("Models/Gladiator/Gladiator_BaseColor.jpg"));
@@ -91,7 +91,7 @@ void DX11TestLayer::OnAttach()
 	m_RenderObjects.push_back(renderObjectGladiator);
 
 	RenderObject renderObjectCerberus;
-	renderObjectCerberus.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx");
+	renderObjectCerberus.Mesh = H2M::RefH2M<H2M::ModelH2M>::Create("Models/Cerberus/CerberusMaterials.fbx");
 	renderObjectCerberus.Textures.push_back(renderObjectCerberus.Mesh->GetTextures().at(0));
 	renderObjectCerberus.Textures.push_back(renderObjectCerberus.Mesh->GetTextures().at(1));
 	renderObjectCerberus.Transform = glm::mat4(1.0f);
@@ -122,7 +122,7 @@ void DX11TestLayer::OnAttach()
 	*/
 
 	RenderObject renderObjectTerrain;
-	renderObjectTerrain.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create("Models/PardCode/terrain.obj");
+	renderObjectTerrain.Mesh = H2M::RefH2M<H2M::ModelH2M>::Create("Models/PardCode/terrain.obj");
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/sand.jpg", true));
 	renderObjectTerrain.Textures.push_back(ResourceManager::LoadTexture2D_H2M("Textures/PardCode/normal_blank.png", false));
 	renderObjectTerrain.Transform = glm::mat4(1.0f);
@@ -427,12 +427,12 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 					continue;
 				}
 
-				std::vector<H2M::RefH2M<H2M::SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
+				std::vector<H2M::RefH2M<H2M::MeshH2M>>& submeshes = mesh->GetMeshes();
 				float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
 				// for (Hazel::Submesh& submesh : submeshes)
 				for (uint32_t i = 0; i < submeshes.size(); i++)
 				{
-					H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[i];
+					H2M::RefH2M<H2M::MeshH2M> submesh = submeshes[i];
 					auto transform = entity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
 					H2M::RayH2M ray = {
 						glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
@@ -443,7 +443,7 @@ bool DX11TestLayer::OnLeftMouseDownEventHandler(const glm::vec2& mousePos)
 					bool intersects = ray.IntersectsAABB(submesh->BoundingBox, t);
 					if (intersects)
 					{
-						const auto& triangleCache = ((H2M::MeshH2M*)mesh.Raw())->GetTriangleCache(i);
+						const auto& triangleCache = ((H2M::ModelH2M*)mesh.Raw())->GetTriangleCache(i);
 						if (triangleCache.size())
 						{
 							for (const auto& triangle : triangleCache)

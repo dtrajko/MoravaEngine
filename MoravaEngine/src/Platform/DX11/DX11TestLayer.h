@@ -7,7 +7,7 @@
 #include "H2M/Core/TimestepH2M.h"
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Scene/EntityH2M.h"
 
 #include "DX11Pipeline.h"
@@ -35,7 +35,7 @@ struct RenderObject
 		Unlit,
 		Light,
 	};
-	H2M::RefH2M<H2M::MeshH2M> Mesh;
+	H2M::RefH2M<H2M::ModelH2M> Mesh;
 	H2M::RefH2M<DX11Mesh> MeshDX11;
 	std::vector<H2M::RefH2M<H2M::Texture2D_H2M>> Textures;
 	glm::mat4 Transform;
@@ -88,8 +88,8 @@ public:
 
 public:
 	static H2M::RefH2M<DX11Mesh> s_Mesh;
-	static H2M::RefH2M<H2M::MeshH2M> s_MeshLight;
-	static H2M::RefH2M<H2M::MeshH2M> s_SkyboxSphere;
+	static H2M::RefH2M<H2M::ModelH2M> s_MeshLight;
+	static H2M::RefH2M<H2M::ModelH2M> s_SkyboxSphere;
 	// render meshes with materials
 	static std::vector<RenderObject> s_RenderObjectsWithMaterials;
 	static std::vector<H2M::RefH2M<DX11Material>> s_ListMaterials;

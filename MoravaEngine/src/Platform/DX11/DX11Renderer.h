@@ -3,7 +3,7 @@
 #pragma once
 
 #include "H2M/Renderer/CameraH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "DX11Texture2D.h"
@@ -44,8 +44,8 @@ public:
 
 	virtual void SetSceneEnvironment(H2M::RefH2M<H2M::EnvironmentH2M> environment, H2M::RefH2M<H2M::Image2D_H2M> shadow) override;
 
-	virtual void RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform) override;
-	virtual void RenderMeshWithoutMaterial(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform) override;
+	virtual void RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::ModelH2M> mesh, const glm::mat4& transform) override;
+	virtual void RenderMeshWithoutMaterial(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::ModelH2M> mesh, const glm::mat4& transform) override;
 	virtual void RenderQuad(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MaterialH2M> material, const glm::mat4& transform) override;
 
 	virtual void DrawIndexed(uint32_t indexCount, H2M::PrimitiveTypeH2M type, bool depthTest = true) override;

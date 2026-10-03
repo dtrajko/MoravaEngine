@@ -60,7 +60,7 @@ namespace H2M
 
 			if (entityMap.find(selectedEntityID) != entityMap.end()) {
 				entt::entity entityID = entityMap.at(selectedEntityID);
-				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ EntityH2M(entityID, scene.Raw()), new SubmeshH2M(), 0 }));
+				EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh({ EntityH2M(entityID, scene.Raw()), new MeshH2M(), 0 }));
 			}
 		}
 	}
@@ -69,7 +69,7 @@ namespace H2M
 	{
 		// if MeshComponent is not available in entity
 		EntitySelection::s_SelectionContext.clear();
-		EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new SubmeshH2M(), 0 });
+		EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, new MeshH2M(), 0 });
 
 		if (entity.HasComponent<MeshComponentH2M>())
 		{
@@ -80,7 +80,7 @@ namespace H2M
 				if (EnvMapEditorLayer::s_SelectionMode == SelectionMode::Entity)
 				{
 					EntitySelection::s_SelectionContext.clear();
-					for (RefH2M<SubmeshH2M> submesh : meshComponent.Mesh->GetSubmeshes())
+					for (RefH2M<MeshH2M> submesh : meshComponent.Mesh->GetMeshes())
 					{
 						EnvMapEditorLayer::AddSubmeshToSelectionContext(SelectedSubmesh{ entity, submesh, 0 });
 					}
@@ -284,7 +284,7 @@ namespace H2M
 
 		auto mesh = entity.GetComponent<MeshComponentH2M>().Mesh;
 
-		std::vector<RefH2M<SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
+		std::vector<RefH2M<MeshH2M>>& submeshes = mesh->GetMeshes();
 
 		for (int i = 0; i < submeshes.size(); i++)
 		{
@@ -362,12 +362,12 @@ namespace H2M
 			}
 
 			if (submeshDeleted && submeshSelected) {
-				Log::GetLogger()->debug("SceneHierarchyPanel DeleteSubmesh('{0}')", submeshes[i]->MeshName);
-				mesh->DeleteSubmesh(submeshes[i]);
+				Log::GetLogger()->debug("SceneHierarchyPanel DeleteMesh('{0}')", submeshes[i]->MeshName);
+				mesh->DeleteMesh(submeshes[i]);
 			}
 
 			if (submeshCloned && submeshSelected) {
-				mesh->CloneSubmesh(submeshes[i]);
+				mesh->CloneMesh(submeshes[i]);
 			}
 		}
 	}
@@ -396,7 +396,7 @@ namespace H2M
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			uint32_t meshIndex = node->mMeshes[i];
-			((MeshH2M*)mesh)->GetSubmeshes()[meshIndex]->Transform = transform;
+			((ModelH2M*)mesh)->GetMeshes()[meshIndex]->Transform = transform;
 		}
 
 		if (ImGui::TreeNode(node->mName.C_Str()))
@@ -692,7 +692,7 @@ namespace H2M
 			if (!meshFilepath.empty())
 			{
 				mc.FilePath = meshFilepath;
-				mc.Mesh = RefH2M<MeshH2M>::Create(meshFilepath, RefH2M<MoravaShader>(), RefH2M<MaterialH2M>(), false);
+				mc.Mesh = RefH2M<ModelH2M>::Create(meshFilepath, RefH2M<MoravaShader>(), RefH2M<MaterialH2M>(), false);
 
 				auto materialDataVector = MaterialLibrary::s_MaterialData;
 				for (auto materialData : materialDataVector)

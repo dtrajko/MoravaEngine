@@ -70,14 +70,14 @@ private:
 	struct SelectedSubmesh
 	{
 		H2M::EntityH2M Entity;
-		H2M::SubmeshH2M* Mesh = nullptr;
+		H2M::MeshH2M* Mesh = nullptr;
 		float Distance = 0.0f;
 	};
 
 	void OnSelected(const SelectedSubmesh& selectionContext);
 	void OnEntityDeleted(H2M::EntityH2M e);
 	// void OnCreateMeshFromMeshSource(H2M::EntityH2M entity, H2M::RefH2M<H2M::MeshSourceH2M> meshSource);
-	void OnCreateMeshFromMeshSource(H2M::EntityH2M entity, H2M::RefH2M<H2M::MeshH2M> mesh);
+	void OnCreateMeshFromMeshSource(H2M::EntityH2M entity, H2M::RefH2M<H2M::ModelH2M> mesh);
 
 	H2M::RayH2M CastMouseRay();
 
@@ -205,7 +205,7 @@ private:
 	bool m_ShowCreateNewMeshPopup = false;
 	struct CreateNewMeshPopupData
 	{
-		H2M::RefH2M<H2M::MeshH2M> MeshToCreate; // TODO: MeshH2M => MeshSourceH2M
+		H2M::RefH2M<H2M::ModelH2M> MeshToCreate; // TODO: ModelH2M => MeshSourceH2M
 		std::array<char, 256> CreateMeshFilenameBuffer;
 		H2M::EntityH2M TargetEntity;
 

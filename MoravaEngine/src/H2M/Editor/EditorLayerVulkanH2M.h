@@ -14,7 +14,7 @@
 #include "H2M/Core/Math/RayH2M.h"
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
 #include "H2M/Project/UserPreferencesH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
 #include "H2M/Scene/EntityH2M.h"
 
@@ -77,7 +77,7 @@ namespace H2M
 		struct SelectedSubmesh
 		{
 			EntityH2M entity;
-			SubmeshH2M* Mesh = nullptr;
+			MeshH2M* Mesh = nullptr;
 			float Distance = 0.0f;
 		};
 

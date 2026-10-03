@@ -392,7 +392,7 @@ void EnvMapVulkanShadowPipeline::Create(H2M::RefH2M<H2M::VulkanShaderH2M> shader
 	layoutInfo.pPushConstantRanges = pushConstantRanges.data();
 	VK_CHECK_RESULT_H2M(vkCreatePipelineLayout(device, &layoutInfo, nullptr, &Layout));
 
-	// Vertex input: the mesh's full vertex (stride), with only the attributes the shader reads
+	// Vertex input: the model's full vertex (stride), with only the attributes the shader reads
 	VkVertexInputBindingDescription binding = { 0, vertexLayout.GetStride(), VK_VERTEX_INPUT_RATE_VERTEX };
 	std::vector<VkVertexInputAttributeDescription> attributes;
 	uint32_t location = 0;

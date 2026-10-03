@@ -9,7 +9,7 @@
 #pragma once
 
 #include "H2M/Renderer/CameraH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RendererCapabilitiesH2M.h"
@@ -33,8 +33,8 @@ public:
 
 	virtual void SetSceneEnvironment(H2M::RefH2M<H2M::EnvironmentH2M> environment, H2M::RefH2M<H2M::Image2D_H2M> shadow) override;
 
-	virtual void RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform) override;
-	virtual void RenderMeshWithoutMaterial(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform) override;
+	virtual void RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform) override;
+	virtual void RenderMeshWithoutMaterial(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform) override;
 	virtual void RenderQuad(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MaterialH2M> material, const glm::mat4& transform) override;
 
 	virtual void DrawIndexed(uint32_t indexCount, H2M::PrimitiveTypeH2M type, bool depthTest = true) override;
@@ -46,13 +46,13 @@ public:
 
 	virtual H2M::RendererCapabilitiesH2M GetCapabilities() override;
 
-	// materials: the Material Library material of each submesh (same order as the mesh's submeshes)
-	static void SubmitMeshTemp(const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials); // to be removed from VulkanRendererH2M
+	// materials: the Material Library material of each mesh (same order as the model's meshes)
+	static void SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials); // to be removed from VulkanRendererH2M
 	static void OnResize(uint32_t width, uint32_t height);                                                 // to be removed from VulkanRendererH2M
 	static uint32_t GetViewportWidth();                                                                    // to be removed from VulkanRendererH2M
 	static uint32_t GetViewportHeight();                                                                   // to be removed from VulkanRendererH2M
 
-	static void RenderMeshVulkan(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer);
+	static void RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer);
 
 	static void RenderSkybox(VkCommandBuffer commandBuffer);
 
@@ -72,7 +72,7 @@ public:
 
 	/**** BEGIN methods moved from VulkanTestLayer to VulkanRendererH2M ****/
 	static H2M::SceneRendererOptionsH2M& GetOptions(); // moved from VulkanTestLayer to VulkanRendererH2M
-	static void MapUniformBuffersVTL(H2M::RefH2M<H2M::MeshH2M> mesh, const H2M::EditorCameraH2M& camera);
+	static void MapUniformBuffersVTL(H2M::RefH2M<H2M::ModelH2M> model, const H2M::EditorCameraH2M& camera);
 	/**** END methods moved from VulkanTestLayer to VulkanRendererH2M ****/
 
 public:

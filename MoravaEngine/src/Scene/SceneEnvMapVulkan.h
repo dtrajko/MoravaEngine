@@ -2,7 +2,7 @@
 
 #include "H2M/Core/Events/KeyEventH2M.h"
 #include "H2M/Core/RefH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Scene/EntityH2M.h"
 
 #include "Framebuffer/MoravaFramebuffer.h"

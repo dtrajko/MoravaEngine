@@ -80,7 +80,7 @@ static H2M::RefH2M<MoravaFramebuffer> s_PostProcessingFramebuffer;
 
 // ImGuizmo
 static glm::mat4* s_ImGuizmoTransform = nullptr;
-static H2M::RefH2M<H2M::SubmeshH2M> s_SelectedSubmesh;
+static H2M::RefH2M<H2M::MeshH2M> s_SelectedSubmesh;
 static SelectionMode s_SelectionMode = SelectionMode::Entity;
 
 /**** END variables from Scene.cpp ****/
@@ -106,7 +106,7 @@ static glm::vec2 s_ImGuiViewportMain;
 void DX11Renderer::SubmitMesh(RenderObject renderObject)
 {
 	// Temporary code - populate selected submesh
-	std::vector<H2M::RefH2M<H2M::SubmeshH2M>>& submeshes = renderObject.Mesh->GetSubmeshes();
+	std::vector<H2M::RefH2M<H2M::MeshH2M>>& submeshes = renderObject.Mesh->GetMeshes();
 	s_SelectedSubmesh = submeshes[0];
 
 	s_RenderObjects.push_back(renderObject);
@@ -983,11 +983,11 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> DX
 	return std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>>();
 }
 
-void DX11Renderer::RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform)
+void DX11Renderer::RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::ModelH2M> mesh, const glm::mat4& transform)
 {
 }
 
-void DX11Renderer::RenderMeshWithoutMaterial(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform)
+void DX11Renderer::RenderMeshWithoutMaterial(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2M::RefH2M<H2M::ModelH2M> mesh, const glm::mat4& transform)
 {
 }
 
@@ -1383,7 +1383,7 @@ void DX11Renderer::RenderMesh(RenderObject renderObject)
 	pipeline->Bind();
 	dx11meshIB->Bind();
 
-	for (H2M::RefH2M<H2M::SubmeshH2M> submesh : renderObject.Mesh->GetSubmeshes())
+	for (H2M::RefH2M<H2M::MeshH2M> submesh : renderObject.Mesh->GetMeshes())
 	{
 		// World/Model/Transform matrix
 		s_ConstantBufferLayout.Model = renderObject.Transform;

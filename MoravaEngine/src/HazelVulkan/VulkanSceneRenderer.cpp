@@ -220,11 +220,11 @@ void VulkanSceneRenderer::EndScene()
     FlushDrawList();
 }
 
-void VulkanSceneRenderer::SubmitMesh(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform, H2M::RefH2M<H2M::MaterialH2M> overrideMaterial)
+void VulkanSceneRenderer::SubmitMesh(H2M::RefH2M<H2M::ModelH2M> mesh, const glm::mat4& transform, H2M::RefH2M<H2M::MaterialH2M> overrideMaterial)
 {
 }
 
-void VulkanSceneRenderer::SubmitSelectedMesh(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform)
+void VulkanSceneRenderer::SubmitSelectedMesh(H2M::RefH2M<H2M::ModelH2M> mesh, const glm::mat4& transform)
 {
 }
 
@@ -354,7 +354,7 @@ void VulkanSceneRenderer::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 }
 
-void VulkanSceneRenderer::RenderOutline(H2M::RefH2M<H2M::ShaderH2M> shader, H2M::EntityH2M entity, const glm::mat4& entityTransform, H2M::SubmeshH2M& submesh)
+void VulkanSceneRenderer::RenderOutline(H2M::RefH2M<H2M::ShaderH2M> shader, H2M::EntityH2M entity, const glm::mat4& entityTransform, H2M::MeshH2M& submesh)
 {
     if (!EnvMapSharedData::s_DisplayOutline) return;
 
@@ -538,7 +538,7 @@ void VulkanSceneRenderer::GeometryPass()
     //              H2M::RefH2M<EnvMapMaterial> envMapMaterial = /    H2M::RefH2M<EnvMapMaterial>/();
     //              std::string materialUUID;
     //  
-    //              for (H2M::Submesh& submesh : meshComponent.Mesh->GetSubmeshes())
+    //              for (H2M::Submesh& submesh : meshComponent.Mesh->GetMeshes())
     //              {
     //                  materialUUID = MaterialLibrary::GetSubmeshMaterialUUID//  (meshComponent.Mesh.Raw(), submesh, &entity);
     //  
@@ -678,7 +678,7 @@ H2M::RefH2M<H2M::RenderPassH2M> VulkanSceneRenderer::GetCompositePass()
     return s_Data.CompositePass;
 }
 
-void VulkanSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, H2M::MeshH2M* mesh)
+void VulkanSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, H2M::ModelH2M* mesh)
 {
     // s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
     VulkanSceneRendererData::DrawCommand drawCommand;
@@ -700,7 +700,7 @@ void VulkanSceneRenderer::SetActiveLight(H2M::LightH2M& light)
     s_Data.SceneData.ActiveLight = light;
 }
 
-void VulkanSceneRenderer::AddToDrawList(std::string name, H2M::RefH2M<H2M::MeshH2M> mesh, H2M::EntityH2M entity, glm::mat4 transform)
+void VulkanSceneRenderer::AddToDrawList(std::string name, H2M::RefH2M<H2M::ModelH2M> mesh, H2M::EntityH2M entity, glm::mat4 transform)
 {
     s_Data.DrawList.push_back({ name, mesh.Raw(), entity.GetMaterial(), transform });
 }

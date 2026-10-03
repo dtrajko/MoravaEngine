@@ -30,8 +30,8 @@ namespace H2M
 
 		virtual void SetSceneEnvironment(RefH2M<EnvironmentH2M> environment, RefH2M<Image2D_H2M> shadow) override;
 
-		virtual void RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform) override;
-		virtual void RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform) override;
+		virtual void RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform) override;
+		virtual void RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform) override;
 		virtual void RenderQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform) override;
 
 		virtual void DrawIndexed(uint32_t indexCount, PrimitiveTypeH2M type, bool depthTest = true) override;

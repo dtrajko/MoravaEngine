@@ -69,9 +69,9 @@ namespace H2M
 	static bool s_ViewportTextureNeedsUpdate = true;     // set when s_Framebuffer is (re)created; handled in the ImGui frame
 	static uint32_t s_ViewportWidth = 1280;              // to be removed from VulkanRenderer
 	static uint32_t s_ViewportHeight = 720;              // to be removed from VulkanRenderer
-	static std::vector<RefH2M<MeshH2M>> s_Meshes;         // to be removed from VulkanRenderer
+	static std::vector<RefH2M<ModelH2M>> s_Meshes;         // to be removed from VulkanRenderer
 
-	static RefH2M<SubmeshH2M> s_SelectedSubmesh;
+	static RefH2M<MeshH2M> s_SelectedSubmesh;
 	static glm::mat4* s_Transform_ImGuizmo = nullptr;
 
 	struct VulkanRendererData
@@ -135,7 +135,7 @@ namespace H2M
 
 		struct DrawCommand
 		{
-			RefH2M<MeshH2M> Mesh;
+			RefH2M<ModelH2M> Mesh;
 			RefH2M<MaterialH2M> Material;
 			glm::mat4 Transform;
 		};
@@ -167,10 +167,10 @@ namespace H2M
 		s_ViewportTextureNeedsUpdate = false;
 	}
 
-	void VulkanRendererH2M::SubmitMeshTemp(const RefH2M<MeshH2M>& mesh, const glm::mat4& transform)
+	void VulkanRendererH2M::SubmitMeshTemp(const RefH2M<ModelH2M>& mesh, const glm::mat4& transform)
 	{
 		// Temporary code - populate selected submesh
-		// std::vector<Submesh> submeshes = mesh->GetSubmeshes();
+		// std::vector<Submesh> submeshes = mesh->GetMeshes();
 		// s_SelectedSubmesh = &submeshes.at(0);
 
 		s_Meshes.push_back(mesh);
@@ -510,7 +510,7 @@ namespace H2M
 		// delete s_Data;
 	}
 
-	void VulkanRendererH2M::RenderMeshVulkan(RefH2M<MeshH2M> mesh, VkCommandBuffer commandBuffer)
+	void VulkanRendererH2M::RenderMeshVulkan(RefH2M<ModelH2M> mesh, VkCommandBuffer commandBuffer)
 	{
 		/**** BEGIN keep smart references alive ****/
 		RefH2M<TextureCubeH2M> envUnfiltered = s_Data.envUnfiltered;
@@ -552,8 +552,8 @@ namespace H2M
 		VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 		vkCmdBindIndexBuffer(commandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-		auto& submeshes = mesh->GetSubmeshes();
-		for (RefH2M<SubmeshH2M> submesh : submeshes)
+		auto& submeshes = mesh->GetMeshes();
+		for (RefH2M<MeshH2M> submesh : submeshes)
 		{
 			auto& material = mesh->GetMaterials()[submesh->MaterialIndex];
 			BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
@@ -1484,11 +1484,11 @@ namespace H2M
 		return { s_Data.envFiltered, s_Data.irradianceMap };
 	}
 
-	void VulkanRendererH2M::RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
+	void VulkanRendererH2M::RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform)
 	{
 	}
 
-	void VulkanRendererH2M::RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
+	void VulkanRendererH2M::RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform)
 	{
 		// RendererH2M::Submit([mesh, transform]() mutable {});
 		{
@@ -1505,8 +1505,8 @@ namespace H2M
 			VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 			vkCmdBindIndexBuffer(s_Data.ActiveCommandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-			std::vector<RefH2M<SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
-			for (RefH2M<SubmeshH2M> submesh : submeshes)
+			std::vector<RefH2M<MeshH2M>>& submeshes = mesh->GetMeshes();
+			for (RefH2M<MeshH2M> submesh : submeshes)
 			{
 				auto& material = mesh->GetMaterials()[submesh->MaterialIndex].As<VulkanMaterialH2M>();
 				material->UpdateForRendering();
@@ -1708,7 +1708,7 @@ namespace H2M
 	}
 	/**** END code moved from VulkanTestLayer to VulkanRenderer****/
 
-	void VulkanRendererH2M::MapUniformBuffersVTL(RefH2M<MeshH2M> mesh, CameraH2M& camera)
+	void VulkanRendererH2M::MapUniformBuffersVTL(RefH2M<ModelH2M> mesh, CameraH2M& camera)
 	{
 		// Temporary code
 		s_Data.SceneData.SceneCamera.Camera = camera;

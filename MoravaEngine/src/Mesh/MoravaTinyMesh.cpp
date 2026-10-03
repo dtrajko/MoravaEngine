@@ -18,7 +18,7 @@ struct std::hash<H2M::VertexH2M>
 };
 
 MoravaTinyMesh::MoravaTinyMesh(const std::string& filepath, H2M::RefH2M<MoravaShader> shader, H2M::RefH2M<H2M::MaterialH2M> material, bool isAnimated)
-	: H2M::MeshH2M(filepath, shader, material, isAnimated)
+	: H2M::ModelH2M(filepath, shader, material, isAnimated)
 {
 	/****
 	tinyobj::attrib_t attrib;

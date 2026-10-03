@@ -35,8 +35,8 @@ layout (std140, set = 0, binding = 0) uniform Camera
 	mat4 u_ViewProjectionMatrix;
 };
 
-// Final bone matrices of the current animation frame (MeshH2M::GetBoneTransforms), updated every frame
-// Set 2, per object: final bone matrices of the current animation frame (MeshH2M::GetBoneTransforms), updated every frame
+// Final bone matrices of the current animation frame (ModelH2M::GetBoneTransforms), updated every frame
+// Set 2, per object: final bone matrices of the current animation frame (ModelH2M::GetBoneTransforms), updated every frame
 const int MAX_BONES = 128;
 layout (std140, set = 2, binding = 0) uniform BoneTransforms
 {

@@ -27,8 +27,8 @@ namespace H2M
 		static void SubmitMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent);
 		static void SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent);
 
-		static void SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<MaterialH2M> overrideMaterial = RefH2M<MaterialH2M>());
-		static void SubmitSelectedMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitMesh(RefH2M<ModelH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<MaterialH2M> overrideMaterial = RefH2M<MaterialH2M>());
+		static void SubmitSelectedMesh(RefH2M<ModelH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 		static SceneRendererOptionsH2M& GetOptions();
 private:

@@ -101,7 +101,7 @@ namespace H2M
 
 		struct DrawCommand
 		{
-			RefH2M<MeshH2M> Mesh;
+			RefH2M<ModelH2M> Mesh;
 			RefH2M<MaterialH2M> Material;
 			glm::mat4 Transform;
 		};
@@ -247,13 +247,13 @@ namespace H2M
 		SubmitSelectedMesh(meshComponent.Mesh, transformComponent.GetTransform());
 	}
 
-	void SceneRendererH2M::SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<MaterialH2M> overrideMaterial)
+	void SceneRendererH2M::SubmitMesh(RefH2M<ModelH2M> mesh, const glm::mat4& transform, RefH2M<MaterialH2M> overrideMaterial)
 	{
 		// TODO: Culling, sorting, etc.
 		s_Data.DrawList.push_back({ mesh, overrideMaterial, transform });
 	}
 
-	void SceneRendererH2M::SubmitSelectedMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform)
+	void SceneRendererH2M::SubmitSelectedMesh(RefH2M<ModelH2M> mesh, const glm::mat4& transform)
 	{
 		s_Data.SelectedMeshDrawList.push_back({ mesh, RefH2M<MaterialH2M>(), transform });
 		// s_Data.ShadowPassDrawList.push_back({ mesh, RefH2M<MaterialH2M>, transform });

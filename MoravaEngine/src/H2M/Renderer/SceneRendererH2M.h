@@ -11,7 +11,7 @@
 #include "RenderCommandBufferH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
 #include "H2M/Scene/SceneH2M.h"
-#include "MeshH2M.h"
+#include "ModelH2M.h"
 #include "RenderPassH2M.h"
 
 
@@ -80,8 +80,8 @@ namespace H2M
 		static void SubmitSelectedMesh(MeshComponentH2M meshComponent, TransformComponentH2M transformComponent);
 
 		// new?
-		static void SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<MaterialH2M> overrideMaterial = RefH2M<MaterialH2M>());
-		static void SubmitSelectedMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+		static void SubmitMesh(RefH2M<ModelH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f), RefH2M<MaterialH2M> overrideMaterial = RefH2M<MaterialH2M>());
+		static void SubmitSelectedMesh(RefH2M<ModelH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 		static std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath);
 

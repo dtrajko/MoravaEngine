@@ -290,7 +290,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoM1911.ao        = "Textures/PBR/silver/ao.png";
 
     m_BaseMaterial_M1911 = H2M::RefH2M<Material>::Create(textureInfoM1911, materialSpecular, materialShininess);
-    m_MeshAnimPBR_M1911 = H2M::RefH2M<H2M::MeshH2M>::Create("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
+    m_MeshAnimPBR_M1911 = H2M::RefH2M<H2M::ModelH2M>::Create("Models/M1911/m1911.fbx", m_ShaderHybridAnimPBR, m_BaseMaterial_M1911, true);
 
     m_MeshAnimPBR_M1911->SetTimeMultiplier(1.0f);
 
@@ -316,7 +316,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoBobLamp.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_BobLamp = H2M::RefH2M<Material>::Create(textureInfoBobLamp, materialSpecular, materialShininess);
-    m_MeshAnimPBR_BobLamp = H2M::RefH2M<H2M::MeshH2M>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
+    m_MeshAnimPBR_BobLamp = H2M::RefH2M<H2M::ModelH2M>::Create("Models/OGLdev/BobLamp/boblampclean.md5mesh", m_ShaderHybridAnimPBR, m_BaseMaterial_BobLamp, true);
     m_MeshAnimPBR_BobLamp->SetTimeMultiplier(1.0f);
 
     m_Entities["BobLamp"].Transform.Scale = m_Entities["BobLamp"].Init.Transform.Scale;
@@ -341,7 +341,7 @@ void SceneAnimPBR::SetupMeshes()
     textureInfoAnimBoy.ao        = "Textures/PBR/non_reflective/ao.png";
 
     m_BaseMaterial_AnimBoy = H2M::RefH2M<Material>::Create(textureInfoAnimBoy, materialSpecular, materialShininess);
-    m_MeshAnimPBR_AnimBoy = H2M::RefH2M<H2M::MeshH2M>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
+    m_MeshAnimPBR_AnimBoy = H2M::RefH2M<H2M::ModelH2M>::Create("Models/ThinMatrix/AnimatedCharacter/AnimatedCharacter.dae", m_ShaderHybridAnimPBR, m_BaseMaterial_AnimBoy, true);
     m_MeshAnimPBR_AnimBoy->SetTimeMultiplier(800.0f);
 
     m_Entities["AnimBoy"].Transform.Scale = m_Entities["AnimBoy"].Init.Transform.Scale;
@@ -1041,7 +1041,7 @@ void SceneAnimPBR::Render(Window* mainWindow, glm::mat4 projectionMatrix, std::s
         auto& materials = m_MeshAnimPBR_BobLamp->GetMaterials();
 
         int submeshIndex = 0;
-        for (H2M::RefH2M<H2M::SubmeshH2M> submesh : m_MeshAnimPBR_BobLamp->GetSubmeshes())
+        for (H2M::RefH2M<H2M::MeshH2M> submesh : m_MeshAnimPBR_BobLamp->GetMeshes())
         {
             // Material
             auto material = materials[submesh->MaterialIndex];

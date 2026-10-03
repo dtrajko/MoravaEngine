@@ -4,7 +4,7 @@
 
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
 #include "H2M/Core/Events/KeyEventH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Scene/EntityH2M.h"
 
 #include "H2M/Platform/Vulkan/VulkanTestLayer.h"

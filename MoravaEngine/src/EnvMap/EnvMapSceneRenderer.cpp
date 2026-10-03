@@ -8,7 +8,7 @@
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Renderer/ShaderH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
 #include "H2M/Scene/SceneH2M.h"
@@ -101,7 +101,7 @@ struct EnvMapSceneRendererData
     struct DrawCommand
     {
         std::string Name;
-        H2M::RefH2M<H2M::MeshH2M> MeshPtr;
+        H2M::RefH2M<H2M::ModelH2M> MeshPtr;
         Material* MaterialPtr;
         glm::mat4 Transform;
     };
@@ -508,7 +508,7 @@ void EnvMapSceneRenderer::RenderHazelGrid()
     RendererBasic::EnableMSAA();
 }
 
-void EnvMapSceneRenderer::RenderOutline(H2M::RefH2M<MoravaShader> shader, H2M::EntityH2M entity, const glm::mat4& entityTransform, H2M::RefH2M<H2M::SubmeshH2M> submesh)
+void EnvMapSceneRenderer::RenderOutline(H2M::RefH2M<MoravaShader> shader, H2M::EntityH2M entity, const glm::mat4& entityTransform, H2M::RefH2M<H2M::MeshH2M> submesh)
 {
     if (!EnvMapSharedData::s_DisplayOutline) return;
 
@@ -880,7 +880,7 @@ void EnvMapSceneRenderer::GeometryPass()
                 H2M::RefH2M<EnvMapMaterial> envMapMaterial = H2M::RefH2M<EnvMapMaterial>();
                 std::string materialUUID;
 
-                for (H2M::RefH2M<H2M::SubmeshH2M> submesh : meshComponent.Mesh->GetSubmeshes())
+                for (H2M::RefH2M<H2M::MeshH2M> submesh : meshComponent.Mesh->GetMeshes())
                 {
                     materialUUID = MaterialLibrary::GetSubmeshMaterialUUID(meshComponent.Mesh.Raw(), submesh, entity);
 
@@ -1220,7 +1220,7 @@ H2M::RefH2M<H2M::RenderPassH2M> EnvMapSceneRenderer::GetCompositePass()
     return s_Data.CompositePass;
 }
 
-void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, H2M::RefH2M<H2M::MeshH2M> mesh)
+void EnvMapSceneRenderer::CreateDrawCommand(std::string fileNameNoExt, H2M::RefH2M<H2M::ModelH2M> mesh)
 {
     // s_Data.DrawList.clear(); // doesn't work for multiple meshes on the scene
     EnvMapSceneRendererData::DrawCommand drawCommand;
@@ -1242,7 +1242,7 @@ void EnvMapSceneRenderer::SetActiveLight(H2M::LightH2M& light)
     s_Data.SceneData.ActiveLight = light;
 }
 
-void EnvMapSceneRenderer::AddToDrawList(std::string name, H2M::RefH2M<H2M::MeshH2M> mesh, H2M::EntityH2M entity, glm::mat4 transform)
+void EnvMapSceneRenderer::AddToDrawList(std::string name, H2M::RefH2M<H2M::ModelH2M> mesh, H2M::EntityH2M entity, glm::mat4 transform)
 {
     s_Data.DrawList.push_back({ name, mesh.Raw(), entity.GetMaterial(), transform });
 }

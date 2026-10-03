@@ -31,15 +31,15 @@ H2M::RefH2M<MaterialData> MaterialLibrary::AddNewMaterial(std::string name)
         name = NewMaterialName();
     }
 
-	return CreateMaterialData(name, H2M::RefH2M<H2M::SubmeshH2M>());
+	return CreateMaterialData(name, H2M::RefH2M<H2M::MeshH2M>());
 }
 
-H2M::RefH2M<MaterialData> MaterialLibrary::AddNewMaterial(H2M::RefH2M<H2M::MaterialH2M> material, H2M::RefH2M<H2M::SubmeshH2M> submesh)
+H2M::RefH2M<MaterialData> MaterialLibrary::AddNewMaterial(H2M::RefH2M<H2M::MaterialH2M> material, H2M::RefH2M<H2M::MeshH2M> submesh)
 {
     return CreateMaterialData(material->GetName(), submesh);
 }
 
-H2M::RefH2M<MaterialData> MaterialLibrary::CreateMaterialData(std::string name, H2M::RefH2M<H2M::SubmeshH2M> submesh)
+H2M::RefH2M<MaterialData> MaterialLibrary::CreateMaterialData(std::string name, H2M::RefH2M<H2M::MeshH2M> submesh)
 {
     H2M::RefH2M<MaterialData> materialData = H2M::RefH2M<MaterialData>::Create();
 
@@ -204,7 +204,7 @@ H2M::RefH2M<EnvMapMaterial> MaterialLibrary::CreateDefaultMaterial(std::string m
     return envMapMaterial;
 }
 
-void MaterialLibrary::LoadEnvMapMaterials(H2M::RefH2M<H2M::MeshH2M> mesh, H2M::EntityH2M entity)
+void MaterialLibrary::LoadEnvMapMaterials(H2M::RefH2M<H2M::ModelH2M> mesh, H2M::EntityH2M entity)
 {
     //  for (auto material : m_EnvMapMaterials) {
     //      delete material.second;
@@ -212,9 +212,9 @@ void MaterialLibrary::LoadEnvMapMaterials(H2M::RefH2M<H2M::MeshH2M> mesh, H2M::E
     //  
     //  m_EnvMapMaterials.clear();
 
-    std::vector<H2M::RefH2M<H2M::SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
+    std::vector<H2M::RefH2M<H2M::MeshH2M>>& submeshes = mesh->GetMeshes();
 
-    for (H2M::RefH2M<H2M::SubmeshH2M> submesh : submeshes)
+    for (H2M::RefH2M<H2M::MeshH2M> submesh : submeshes)
     {
         std::string materialUUID = GetSubmeshMaterialUUID(mesh, submesh, entity);
 
@@ -241,7 +241,7 @@ void MaterialLibrary::LoadEnvMapMaterials(H2M::RefH2M<H2M::MeshH2M> mesh, H2M::E
     }
 }
 
-SubmeshUUID MaterialLibrary::GetSubmeshUUID(H2M::EntityH2M entity, H2M::RefH2M<H2M::SubmeshH2M> submesh)
+SubmeshUUID MaterialLibrary::GetSubmeshUUID(H2M::EntityH2M entity, H2M::RefH2M<H2M::MeshH2M> submesh)
 {
     std::string entityHandle = entity ? std::to_string(entity.GetHandle()) : "0000";
     SubmeshUUID submeshUUID = "E_" + entityHandle + "_S_" + submesh->MeshName;
@@ -249,7 +249,7 @@ SubmeshUUID MaterialLibrary::GetSubmeshUUID(H2M::EntityH2M entity, H2M::RefH2M<H
     return submeshUUID;
 }
 
-void MaterialLibrary::SetDefaultMaterialToSubmeshes(H2M::RefH2M<H2M::MeshH2M> mesh, H2M::EntityH2M entity, H2M::RefH2M<EnvMapMaterial> defaultMaterial)
+void MaterialLibrary::SetDefaultMaterialToSubmeshes(H2M::RefH2M<H2M::ModelH2M> mesh, H2M::EntityH2M entity, H2M::RefH2M<EnvMapMaterial> defaultMaterial)
 {
     if (!defaultMaterial)
     {
@@ -257,7 +257,7 @@ void MaterialLibrary::SetDefaultMaterialToSubmeshes(H2M::RefH2M<H2M::MeshH2M> me
         return;
     }
 
-    for (auto submesh : mesh->GetSubmeshes())
+    for (auto submesh : mesh->GetMeshes())
     {
         SubmeshUUID submeshUUID = GetSubmeshUUID(entity, submesh);
         MaterialUUID materialUUID = defaultMaterial->GetUUID();
@@ -270,9 +270,9 @@ void MaterialLibrary::SetDefaultMaterialToSubmeshes(H2M::RefH2M<H2M::MeshH2M> me
  * Instead of just assigning the default material to each submesh, this method tries to detect the correct material and assign to the submesh
  * If it fails to do so, it loads the default material
  */
-void MaterialLibrary::SetMaterialsToSubmeshes(H2M::RefH2M<H2M::MeshH2M> mesh, H2M::EntityH2M entity, H2M::RefH2M<EnvMapMaterial> defaultMaterial)
+void MaterialLibrary::SetMaterialsToSubmeshes(H2M::RefH2M<H2M::ModelH2M> mesh, H2M::EntityH2M entity, H2M::RefH2M<EnvMapMaterial> defaultMaterial)
 {
-    for (H2M::RefH2M<H2M::SubmeshH2M> submesh : mesh->GetSubmeshes())
+    for (H2M::RefH2M<H2M::MeshH2M> submesh : mesh->GetMeshes())
     {
         bool correctMaterialFound = false;
         // Let's try to detect a correct material from the list of loaded materials in MaterialLibrary
@@ -320,7 +320,7 @@ void MaterialLibrary::AddMaterialFromComponent(H2M::EntityH2M entity)
     }
 }
 
-MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(H2M::RefH2M<H2M::MeshH2M> mesh, H2M::RefH2M<H2M::SubmeshH2M> submesh, H2M::EntityH2M entity)
+MaterialUUID MaterialLibrary::GetSubmeshMaterialUUID(H2M::RefH2M<H2M::ModelH2M> mesh, H2M::RefH2M<H2M::MeshH2M> submesh, H2M::EntityH2M entity)
 {
     MaterialUUID materialUUID = "";
 

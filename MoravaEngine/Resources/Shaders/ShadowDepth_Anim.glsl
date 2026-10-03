@@ -4,7 +4,7 @@
 #type vertex
 #version 450 core
 
-// The mesh vertex (MeshH2M's AnimatedVertex)
+// The mesh vertex (ModelH2M's AnimatedVertex)
 layout(location = 0) in vec3 a_Position;
 layout(location = 5) in ivec4 a_BoneIndices;
 layout(location = 6) in vec4 a_BoneWeights;

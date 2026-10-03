@@ -56,7 +56,7 @@ namespace H2M {
 		/**** END moved to VulkanRenderer ****/
 
 	private:
-		static std::vector<RefH2M<MeshH2M>> s_Meshes;
+		static std::vector<RefH2M<ModelH2M>> s_Meshes;
 		RefH2M<Texture2D_H2M> m_Texture;
 		EditorCameraH2M m_Camera;
 

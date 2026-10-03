@@ -25,8 +25,8 @@ public:
 	static void BeginScene(H2M::SceneH2M* scene, const H2M::SceneRendererCameraH2M& camera);
 	static void EndScene();
 
-	static void SubmitMesh(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f), H2M::RefH2M<H2M::MaterialH2M> overrideMaterial = H2M::RefH2M<H2M::MaterialH2M>());
-	static void SubmitSelectedMesh(H2M::RefH2M<H2M::MeshH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
+	static void SubmitMesh(H2M::RefH2M<H2M::ModelH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f), H2M::RefH2M<H2M::MaterialH2M> overrideMaterial = H2M::RefH2M<H2M::MaterialH2M>());
+	static void SubmitSelectedMesh(H2M::RefH2M<H2M::ModelH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 	static std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath);
 
@@ -45,10 +45,10 @@ public:
 	static H2M::RefH2M<H2M::ShaderH2M> GetShaderComposite();
 	static H2M::RefH2M<H2M::RenderPassH2M> GetGeoPass();
 	static H2M::RefH2M<H2M::RenderPassH2M> GetCompositePass();
-	static void CreateDrawCommand(std::string fileNameNoExt, H2M::MeshH2M* mesh);
+	static void CreateDrawCommand(std::string fileNameNoExt, H2M::ModelH2M* mesh);
 	static H2M::LightH2M& GetActiveLight();
 	static void SetActiveLight(H2M::LightH2M& light);
-	static void AddToDrawList(std::string name, H2M::RefH2M<H2M::MeshH2M> mesh, H2M::EntityH2M entity, glm::mat4 transform);
+	static void AddToDrawList(std::string name, H2M::RefH2M<H2M::ModelH2M> mesh, H2M::EntityH2M entity, glm::mat4 transform);
 	static H2M::EnvironmentH2M Load(const std::string& filepath);
 	static void SetEnvironment(H2M::EnvironmentH2M environment);
 	static H2M::RefH2M<H2M::ShaderH2M> GetShaderSkybox() { return s_ShaderSkybox; }
@@ -73,7 +73,7 @@ public:
 private:
 	static void RenderSkybox();
 	static void RenderHazelGrid();
-	static void RenderOutline(H2M::RefH2M<H2M::ShaderH2M> shader, H2M::EntityH2M entity, const glm::mat4& entityTransform, H2M::SubmeshH2M& submesh);
+	static void RenderOutline(H2M::RefH2M<H2M::ShaderH2M> shader, H2M::EntityH2M entity, const glm::mat4& entityTransform, H2M::MeshH2M& submesh);
 	static void UpdateShaderPBRUniforms(H2M::RefH2M<H2M::ShaderH2M> shaderHazelPBR, H2M::RefH2M<EnvMapMaterial> envMapMaterial);
 
 public:

@@ -52,8 +52,8 @@ namespace H2M
 
 		static void SetSceneEnvironment(RefH2M<EnvironmentH2M> environment, RefH2M<Image2D_H2M> shadow);
 
-		static void RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform);
-		static void RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform);
+		static void RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform);
+		static void RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform);
 		static void RenderQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform);
 
 		static std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> CreateEnvironmentMap(const std::string& filepath);
@@ -120,10 +120,10 @@ namespace H2M
 		static void WaitAndRender();
 
 		static void SubmitQuad(RefH2M<MaterialH2M> material, const glm::mat4& transform = glm::mat4(1.0f));
-		static void SubmitMesh(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<MaterialInstanceH2M> overrideMaterial = RefH2M<MaterialInstanceH2M>());
-		static void SubmitMeshWithShader(RefH2M<MeshH2M> mesh, const glm::mat4& transform, RefH2M<ShaderH2M> shader);
+		static void SubmitMesh(RefH2M<ModelH2M> mesh, const glm::mat4& transform, RefH2M<MaterialInstanceH2M> overrideMaterial = RefH2M<MaterialInstanceH2M>());
+		static void SubmitMeshWithShader(RefH2M<ModelH2M> mesh, const glm::mat4& transform, RefH2M<ShaderH2M> shader);
 
-		static void DrawAABB(RefH2M<MeshH2M> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		static void DrawAABB(RefH2M<ModelH2M> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		static void DrawAABB(const AABB_H2M& aabb, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 
 		static RefH2M<Texture2D_H2M> GetWhiteTexture();

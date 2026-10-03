@@ -47,7 +47,7 @@ namespace H2M {
 
 		struct DrawCommand
 		{
-			RefH2M<MeshH2M> Mesh;
+			RefH2M<ModelH2M> Mesh;
 			RefH2M<MaterialH2M> Material;
 			glm::mat4 Transform;
 		};
@@ -63,7 +63,7 @@ namespace H2M {
 
 	static SceneRendererData s_Data;
 
-	std::vector<RefH2M<MeshH2M>> VulkanTestLayer::s_Meshes;
+	std::vector<RefH2M<ModelH2M>> VulkanTestLayer::s_Meshes;
 
 	VulkanTestLayer::VulkanTestLayer()
 		: m_Camera(glm::perspectiveFov(glm::radians(45.0f), 1280.0f, 720.0f, 0.1f, 1000.0f))
@@ -83,7 +83,7 @@ namespace H2M {
 		s_SceneHierarchyPanel = new H2M::SceneHierarchyPanelH2M(s_Scene);
 		s_ContentBrowserPanel = new H2M::ContentBrowserPanelH2M();
 		s_MaterialEditorPanel = new MaterialEditorPanel();
-		s_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+		s_Meshes.push_back(RefH2M<ModelH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 	}
 
 	void VulkanTestLayer::OnDetach() {}
@@ -92,7 +92,7 @@ namespace H2M {
 	{
 		m_Camera.SetProjectionMatrix(glm::perspectiveFov(glm::radians(45.0f), (float)VulkanRendererH2M::GetViewportWidth(), (float)VulkanRendererH2M::GetViewportHeight(), 0.01f, 1000.0f));
 
-		for (RefH2M<MeshH2M> mesh : s_Meshes)
+		for (RefH2M<ModelH2M> mesh : s_Meshes)
 		{
 			VulkanRendererH2M::SubmitMeshTemp(mesh); // the method should be removed from VulkanRendererH2M
 		}
@@ -181,10 +181,10 @@ namespace H2M {
 
 		s_MaterialEditorPanel = new MaterialEditorPanel();
 
-		// m_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Gladiator/Gladiator.fbx"));
-		// m_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Hazel/TestSceneVulkan.fbx"));
-		// m_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Hazel/Sphere1m.fbx"));
-		s_Meshes.push_back(RefH2M<MeshH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
+		// m_Meshes.push_back(RefH2M<ModelH2M>::Create("Models/Gladiator/Gladiator.fbx"));
+		// m_Meshes.push_back(RefH2M<ModelH2M>::Create("Models/Hazel/TestSceneVulkan.fbx"));
+		// m_Meshes.push_back(RefH2M<ModelH2M>::Create("Models/Hazel/Sphere1m.fbx"));
+		s_Meshes.push_back(RefH2M<ModelH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 
 		/**** BEGIN the code that is not used anymore ****
 		RenderPassSpecification renderPassSpec;

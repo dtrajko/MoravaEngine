@@ -1,6 +1,6 @@
 #pragma once
 
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Material/MaterialWorkflowPBR.h"
@@ -67,9 +67,9 @@ private:
 	H2M::RefH2M<MoravaShader> m_ShaderEnvIrradiance;
 	H2M::RefH2M<MoravaShader> m_ShaderBasic;
 
-	H2M::RefH2M<H2M::MeshH2M> m_MeshAnimPBR_M1911;
-	H2M::RefH2M<H2M::MeshH2M> m_MeshAnimPBR_BobLamp;
-	H2M::RefH2M<H2M::MeshH2M> m_MeshAnimPBR_AnimBoy;
+	H2M::RefH2M<H2M::ModelH2M> m_MeshAnimPBR_M1911;
+	H2M::RefH2M<H2M::ModelH2M> m_MeshAnimPBR_BobLamp;
+	H2M::RefH2M<H2M::ModelH2M> m_MeshAnimPBR_AnimBoy;
 
 	H2M::RefH2M<Material> m_BaseMaterial_M1911;
 	H2M::RefH2M<Material> m_BaseMaterial_BobLamp;

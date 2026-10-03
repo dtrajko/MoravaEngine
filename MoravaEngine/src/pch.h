@@ -27,7 +27,7 @@
 #include "H2M/Core/Math/RayH2M.h"
 #include "H2M/Core/RefH2M.h"
 #include "H2M/Editor/EditorCameraH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Renderer/MaterialH2M.h"
 #include "H2M/Renderer/ShaderH2M.h"
 #include "H2M/Renderer/IndexBufferH2M.h"

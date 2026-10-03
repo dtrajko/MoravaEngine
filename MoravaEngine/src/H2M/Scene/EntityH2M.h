@@ -11,7 +11,7 @@
 #include "H2M/Core/AssertH2M.h"
 #include "H2M/Scene/ComponentsH2M.h"
 
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Scene/SceneH2M.h"
 
 #include "Core/Log.h"

@@ -8,7 +8,7 @@
 
 #include "H2M/Core/BaseH2M.h"
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"

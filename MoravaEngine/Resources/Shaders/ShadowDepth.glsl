@@ -3,7 +3,7 @@
 #type vertex
 #version 450 core
 
-// The mesh vertex (MeshH2M's Vertex): only the position is read
+// The mesh vertex (ModelH2M's Vertex): only the position is read
 layout(location = 0) in vec3 a_Position;
 
 layout (push_constant) uniform Transform

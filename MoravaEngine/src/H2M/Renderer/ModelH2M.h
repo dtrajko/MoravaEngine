@@ -129,39 +129,42 @@ namespace H2M
 			: V0(v0), V1(v1), V2(v2) {}
 	};
 
-	class MeshH2M;
+	class ModelH2M;
 	class EntityH2M;
 
-	class SubmeshH2M : public Mesh
+	// A mesh: one part of a model, with a single material (one aiMesh of the model file). Its vertices and indices are a range
+	// of the model's shared vertex and index buffers.
+	class MeshH2M : public Mesh
 	{
 	public:
-		void Render(RefH2M<MeshH2M> parentMesh, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
+		void Render(RefH2M<ModelH2M> parentModel, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, uint32_t samplerSlot,
 			const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, EntityH2M entity, bool wireframeEnabledScene = false, bool wireframeEnabledModel = false);
-		void RenderOutline(RefH2M<MeshH2M> parentMesh, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, EntityH2M entity);
+		void RenderOutline(RefH2M<ModelH2M> parentModel, RefH2M<MoravaShader> shader, const glm::mat4& entityTransform, EntityH2M entity);
 
 	public:
 		uint32_t BaseVertex;
 		uint32_t BaseIndex;
 		uint32_t MaterialIndex;
 		uint32_t IndexCount;
-		uint32_t VertexCount = 0; // vertices of this submesh in the mesh's vertex buffer, from BaseVertex
+		uint32_t VertexCount = 0; // vertices of this mesh in the model's vertex buffer, from BaseVertex
 
 		glm::mat4 Transform;
 		AABB_H2M BoundingBox;
 
 		std::string NodeName, MeshName;
 
-		// The submesh has bone weights: its skinned vertices are already in model space (the bone matrices include the
-		// node transforms), so it is drawn with the mesh transform only, not with Transform
+		// The mesh has bone weights: its skinned vertices are already in model space (the bone matrices include the
+		// node transforms), so it is drawn with the model transform only, not with Transform
 		bool IsRigged = false;
 	};
 
-	class MeshH2M : public Mesh
+	// A model: a loaded model file (an aiScene), made of one or more meshes (GetMeshes), with its materials, skeleton and animations.
+	class ModelH2M : public Mesh
 	{
 	public:
-		MeshH2M(const std::string& filename);
-		MeshH2M(const std::string& filename, RefH2M<MoravaShader> shader, RefH2M<MaterialH2M> material, bool isAnimated);
-		virtual ~MeshH2M() override;
+		ModelH2M(const std::string& filename);
+		ModelH2M(const std::string& filename, RefH2M<MoravaShader> shader, RefH2M<MaterialH2M> material, bool isAnimated);
+		virtual ~ModelH2M() override;
 
 		virtual void Create() override;
 		virtual void OnUpdate(TimestepH2M ts, bool debug = false) override;
@@ -169,11 +172,11 @@ namespace H2M
 		void DumpVertexBuffer();
 
 		void Render(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials);
-		void RenderSubmeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, EntityH2M entity);
+		void RenderMeshes(uint32_t samplerSlot, const glm::mat4& transform, const std::map<std::string, RefH2M<EnvMapMaterial>>& envMapMaterials, EntityH2M entity);
 
 		// Getters
-		std::vector<RefH2M<SubmeshH2M>>& GetSubmeshes() { return m_Submeshes; }
-		const std::vector<RefH2M<SubmeshH2M>>& GetSubmeshes() const { return m_Submeshes; }
+		std::vector<RefH2M<MeshH2M>>& GetMeshes() { return m_Meshes; }
+		const std::vector<RefH2M<MeshH2M>>& GetMeshes() const { return m_Meshes; }
 
 		RefH2M<ShaderH2M> GetMeshShader() { return m_MeshShader; }
 		RefH2M<MaterialH2M> GetMaterial() { return m_BaseMaterial; }
@@ -190,7 +193,7 @@ namespace H2M
 		RefH2M<PipelineH2M> GetPipeline() { return m_Pipeline; }
 		const VertexBufferLayoutH2M& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
 
-		/**** BEGIN this code should be removed from MeshH2M Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
+		/**** BEGIN this code should be removed from ModelH2M Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
 		struct MaterialDescriptor
 		{
 			VulkanShaderH2M::ShaderMaterialDescriptorSet DescriptorSet;
@@ -199,7 +202,7 @@ namespace H2M
 		};
 		// Material descriptor sets (set 1 of the mesh shaders, VulkanShaderH2M::MaterialDescriptorSet): one per material, texture maps only
 		const MaterialDescriptor& GetDescriptorSet(uint32_t index) { return m_MaterialDescriptors[index]; }
-		// nullptr when the mesh has no material descriptor set for this index (e.g. a mesh without materials)
+		// nullptr when the model has no material descriptor set for this index (e.g. a model without materials)
 		const MaterialDescriptor* FindDescriptorSet(uint32_t index) const
 		{
 			if (index >= m_MaterialDescriptors.size() || m_MaterialDescriptors[index].DescriptorSet.DescriptorSets.empty()) return nullptr;
@@ -209,15 +212,15 @@ namespace H2M
 		// VkDescriptorSet& GetDescriptorSet();
 		void* GetDescriptorSet();
 
-		// Per-object descriptor set (set 2, VulkanShaderH2M::ObjectDescriptorSet) of a skinned mesh: its bone matrices
-		// (the BoneTransforms uniform buffer of this mesh's shader). VK_NULL_HANDLE for static meshes.
+		// Per-object descriptor set (set 2, VulkanShaderH2M::ObjectDescriptorSet) of a skinned model: its bone matrices
+		// (the BoneTransforms uniform buffer of this model's shader). VK_NULL_HANDLE for static models.
 		VkDescriptorSet GetObjectDescriptorSet() const { return m_ObjectDescriptorSet.DescriptorSets.empty() ? VK_NULL_HANDLE : m_ObjectDescriptorSet.DescriptorSets[0]; }
 
 		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, RefH2M<Texture2D_H2M> texture);
 		// void UpdateAllDescriptors();
 		void UpdateAllDescriptorSets(); // Vulkan branch, february 2021
 
-		/**** END this code should be removed from MeshH2M Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
+		/**** END this code should be removed from ModelH2M Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
 
 		// std::vector<RefH2M<MaterialInstanceH2M>> GetMaterials() { return m_Materials; }
 		// const std::vector<RefH2M<MaterialInstanceH2M>>& GetMaterials() const { return m_Materials; }
@@ -227,12 +230,12 @@ namespace H2M
 		bool HasAnimations() const;
 		const std::vector<glm::mat4>& GetBoneTransforms() { return m_BoneTransforms; }
 
-		// Animation playback (Meshes panel in SceneEnvMapVulkan). Times are in animation ticks.
+		// Animation playback (Models and Meshes panel in SceneEnvMapVulkan). Times are in animation ticks.
 		// True if the vertex buffer has bone IDs and weights (the model was loaded with animations)
 		bool IsSkinned() const { return !m_AnimatedVertices.empty(); }
 		uint32_t GetBoneCount() const { return m_BoneCount; }
-		// The bone matrices start with the inverse root node transform (see ReadNodeHierarchy): rigged submeshes are drawn with
-		// the mesh transform * this root transform (unit scale / axis conversion of the file)
+		// The bone matrices start with the inverse root node transform (see ReadNodeHierarchy): rigged meshes are drawn with
+		// the model transform * this root transform (unit scale / axis conversion of the file)
 		glm::mat4 GetRootTransform() const { return glm::inverse(m_InverseTransform); }
 		uint32_t GetAnimationCount() const;
 		std::string GetAnimationName(uint32_t index) const;
@@ -248,8 +251,11 @@ namespace H2M
 		inline void SetBaseMaterial(RefH2M<MaterialH2M> baseMaterial) { m_BaseMaterial = baseMaterial; }
 		inline void SetTimeMultiplier(float timeMultiplier) { m_TimeMultiplier = timeMultiplier; }
 
-		void DeleteSubmesh(RefH2M<SubmeshH2M> submesh);
-		void CloneSubmesh(RefH2M<SubmeshH2M> submesh);
+		void DeleteMesh(RefH2M<MeshH2M> mesh);
+		// Removes one part of the model (its geometry stays in the shared vertex/index buffers, just no longer drawn).
+		// The triangle cache is keyed by mesh index, so the entries after it move down by one.
+		void RemoveMesh(uint32_t index);
+		void CloneMesh(RefH2M<MeshH2M> mesh);
 
 	private:
 		void BoneTransform(float time);
@@ -276,7 +282,7 @@ namespace H2M
 		VertexBufferLayoutH2M m_VertexBufferLayout;
 
 		std::vector<glm::mat4> m_BoneTransforms;
-		std::vector<RefH2M<SubmeshH2M>> m_Submeshes;
+		std::vector<RefH2M<MeshH2M>> m_Meshes;
 
 		// Materials
 		RefH2M<MoravaShader> m_MeshShader;
@@ -304,7 +310,7 @@ namespace H2M
 		std::unordered_map<uint32_t, std::vector<TriangleH2M>> m_TriangleCache;
 
 		std::vector<MaterialDescriptor> m_MaterialDescriptors;
-		VulkanShaderH2M::ShaderMaterialDescriptorSet m_ObjectDescriptorSet; // skinned meshes: bone matrices (set 2)
+		VulkanShaderH2M::ShaderMaterialDescriptorSet m_ObjectDescriptorSet; // skinned models: bone matrices (set 2)
 
 		// Animation
 		bool m_IsAnimated = false;

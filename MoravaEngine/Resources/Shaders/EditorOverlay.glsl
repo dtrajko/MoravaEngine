@@ -5,7 +5,7 @@
 #version 450 core
 
 layout(location = 0) in vec3 a_Position;
-// Not used: declared so the inputs match the mesh vertex layout (MeshH2M's Vertex)
+// Not used: declared so the inputs match the mesh vertex layout (ModelH2M's Vertex)
 layout(location = 1) in vec3 a_Normal;
 layout(location = 2) in vec3 a_Tangent;
 layout(location = 3) in vec3 a_Binormal;

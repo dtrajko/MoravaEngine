@@ -80,10 +80,10 @@ public:
 	static H2M::RefH2M<MoravaShader> GetShaderComposite();
 	static H2M::RefH2M<H2M::RenderPassH2M> GetGeoPass();
 	static H2M::RefH2M<H2M::RenderPassH2M> GetCompositePass();
-	static void CreateDrawCommand(std::string fileNameNoExt, H2M::RefH2M<H2M::MeshH2M> mesh);
+	static void CreateDrawCommand(std::string fileNameNoExt, H2M::RefH2M<H2M::ModelH2M> mesh);
 	static H2M::LightH2M& GetActiveLight();
 	static void SetActiveLight(H2M::LightH2M& light);
-	static void AddToDrawList(std::string name, H2M::RefH2M<H2M::MeshH2M> mesh, H2M::EntityH2M entity, glm::mat4 transform);
+	static void AddToDrawList(std::string name, H2M::RefH2M<H2M::ModelH2M> mesh, H2M::EntityH2M entity, glm::mat4 transform);
 	static H2M::EnvironmentH2M Load(const std::string& filepath);
 	static void SetEnvironment(H2M::EnvironmentH2M environment);
 	static H2M::RefH2M<MoravaShader> GetShaderSkybox() { return s_ShaderSkybox; }
@@ -109,7 +109,7 @@ public:
 private:
 	static void RenderSkybox();
 	static void RenderHazelGrid();
-	static void RenderOutline(H2M::RefH2M<MoravaShader> shader, H2M::EntityH2M entity, const glm::mat4& entityTransform, H2M::RefH2M<H2M::SubmeshH2M> submesh);
+	static void RenderOutline(H2M::RefH2M<MoravaShader> shader, H2M::EntityH2M entity, const glm::mat4& entityTransform, H2M::RefH2M<H2M::MeshH2M> submesh);
 	static void UpdateShaderPBRUniforms(H2M::RefH2M<MoravaShader> shaderHazelPBR, H2M::RefH2M<EnvMapMaterial> envMapMaterial);
 
 public:

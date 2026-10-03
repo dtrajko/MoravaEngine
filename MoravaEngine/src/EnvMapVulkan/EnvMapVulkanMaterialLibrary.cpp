@@ -43,7 +43,7 @@ static const char* s_FloatValueNames[] = {
 };
 
 // Library materials are created with the shared HazelPBR_Static shader (shader library), so their descriptor sets don't depend
-// on any mesh's own shader instance. Set 1 is declared identically in HazelPBR_Anim, so skinned meshes can bind them too.
+// on any model's own shader instance. Set 1 is declared identically in HazelPBR_Anim, so skinned models can bind them too.
 static H2M::RefH2M<H2M::VulkanShaderH2M> GetMaterialShader()
 {
 	return H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
@@ -153,19 +153,19 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Duplicate(H2M::Re
 	return material;
 }
 
-std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> EnvMapVulkanMaterialLibrary::ImportMeshMaterials(H2M::RefH2M<H2M::MeshH2M> mesh)
+std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> EnvMapVulkanMaterialLibrary::ImportModelMaterials(H2M::RefH2M<H2M::ModelH2M> model)
 {
 	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> result;
 	H2M::Texture2D_H2M* whiteTexture = H2M::RendererH2M::GetWhiteTexture().Raw();
 
-	auto& meshMaterials = mesh->GetMaterials();
-	for (uint32_t i = 0; i < (uint32_t)meshMaterials.size(); i++)
+	auto& modelMaterials = model->GetMaterials();
+	for (uint32_t i = 0; i < (uint32_t)modelMaterials.size(); i++)
 	{
 		// Already imported with an earlier copy of this model
 		H2M::RefH2M<EnvMapVulkanMaterial> material;
 		for (auto& existing : s_Materials)
 		{
-			if (existing->m_SourceFile == mesh->GetFilePath() && existing->m_SourceIndex == i)
+			if (existing->m_SourceFile == model->GetFilePath() && existing->m_SourceIndex == i)
 			{
 				material = existing;
 				break;
@@ -177,12 +177,12 @@ std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> EnvMapVulkanMaterialLibrary::Impo
 			continue;
 		}
 
-		H2M::RefH2M<H2M::VulkanMaterialH2M> source = meshMaterials[i].As<H2M::VulkanMaterialH2M>();
+		H2M::RefH2M<H2M::VulkanMaterialH2M> source = modelMaterials[i].As<H2M::VulkanMaterialH2M>();
 		// Unnamed materials are named after the model ("boblampclean Material 2"), so they can be told apart in the library
 		std::string name = !source->GetName().empty() ? source->GetName() :
-			std::filesystem::path(mesh->GetFilePath()).stem().string() + " Material " + std::to_string(i);
+			std::filesystem::path(model->GetFilePath()).stem().string() + " Material " + std::to_string(i);
 		material = CreateMaterial(name);
-		material->m_SourceFile = mesh->GetFilePath();
+		material->m_SourceFile = model->GetFilePath();
 		material->m_SourceIndex = i;
 
 		material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor") = source->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
@@ -191,16 +191,16 @@ std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> EnvMapVulkanMaterialLibrary::Impo
 			material->Get<float>(valueName) = source->Get<float>(valueName);
 		}
 
-		// The maps the model loader bound to the mesh's own material set (missing maps got the white placeholder)
-		const H2M::MeshH2M::MaterialDescriptor* meshDescriptor = mesh->FindDescriptorSet(i);
+		// The maps the model loader bound to the model's own material set (missing maps got the white placeholder)
+		const H2M::ModelH2M::MaterialDescriptor* modelDescriptor = model->FindDescriptorSet(i);
 		for (uint32_t slot = 0; slot < EnvMapVulkanMaterial::MapCount; slot++)
 		{
 			float toggle = material->Get<float>(s_MapToggleNames[slot]);
 			H2M::RefH2M<H2M::Texture2D_H2M> texture;
-			if (meshDescriptor)
+			if (modelDescriptor)
 			{
-				auto textureIt = meshDescriptor->Textures.find(s_MapTextureNames[slot]);
-				if (textureIt != meshDescriptor->Textures.end()) texture = textureIt->second;
+				auto textureIt = modelDescriptor->Textures.find(s_MapTextureNames[slot]);
+				if (textureIt != modelDescriptor->Textures.end()) texture = textureIt->second;
 			}
 			if (texture && texture.Raw() != whiteTexture)
 			{

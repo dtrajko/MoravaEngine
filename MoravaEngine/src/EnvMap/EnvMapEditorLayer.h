@@ -64,7 +64,7 @@ public:
 
 	void DisplaySubmeshMaterialSelector(bool* p_open);
 
-	void UpdateSubmeshMaterialMap(H2M::EntityH2M entity, H2M::SubmeshH2M* submesh);
+	void UpdateSubmeshMaterialMap(H2M::EntityH2M entity, H2M::MeshH2M* submesh);
 
 	// EditorLayer
 	void OnEvent(H2M::EventH2M& e);
@@ -130,7 +130,7 @@ public:
 	inline bool* GetDisplayRay() { return &EnvMapSharedData::s_DisplayRay; };
 
 	// Renderer
-	void SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transform, Material* overrideMaterial);
+	void SubmitMesh(H2M::ModelH2M* mesh, const glm::mat4& transform, Material* overrideMaterial);
 
 	// from SceneHazelEnvMap
 	void SetupRenderFramebuffer();

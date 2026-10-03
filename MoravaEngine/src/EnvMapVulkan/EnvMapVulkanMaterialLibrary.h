@@ -2,7 +2,7 @@
 
 #include "H2M/Core/RefH2M.h"
 #include "H2M/Platform/Vulkan/VulkanMaterialH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
 
 #include <array>
@@ -12,7 +12,7 @@
 
 /**
  * A material of the Vulkan Material Library (SceneEnvMapVulkan). It exists independently of any model and can be used by
- * any number of submeshes of any meshes:
+ * any number of meshes of any models:
  * - values (albedo color, metalness, roughness, toggles...): the uniform storage of a VulkanMaterialH2M, pushed as push constants
  * - texture maps: the material's own descriptor set, set 1 of the mesh shaders (VulkanShaderH2M::MaterialDescriptorSet)
  */
@@ -78,12 +78,12 @@ public:
 	static H2M::RefH2M<EnvMapVulkanMaterial> CreateMaterial(const std::string& name = "New Material");
 	// A copy with the same values and maps, independent of the original ("Duplicate")
 	static H2M::RefH2M<EnvMapVulkanMaterial> Duplicate(H2M::RefH2M<EnvMapVulkanMaterial> material);
-	// The library's materials for each of a mesh's own materials (same order as MeshH2M::GetMaterials), imported if needed
-	static std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> ImportMeshMaterials(H2M::RefH2M<H2M::MeshH2M> mesh);
-	// The fallback for submeshes whose model has no material for them (created on first use)
+	// The library's materials for each of a model's own materials (same order as ModelH2M::GetMaterials), imported if needed
+	static std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> ImportModelMaterials(H2M::RefH2M<H2M::ModelH2M> model);
+	// The fallback for meshes whose model has no material for them (created on first use)
 	static H2M::RefH2M<EnvMapVulkanMaterial> GetDefaultMaterial();
 
-	// Removes the material from the library. Callers make sure no submesh uses it any more, and that the GPU is idle.
+	// Removes the material from the library. Callers make sure no mesh uses it any more, and that the GPU is idle.
 	static void Remove(H2M::RefH2M<EnvMapVulkanMaterial> material);
 	static void Clear();
 

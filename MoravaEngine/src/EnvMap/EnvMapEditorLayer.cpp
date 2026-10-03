@@ -203,7 +203,7 @@ void EnvMapEditorLayer::SetupContextData(Scene* scene)
     // auto mapGenerator = CreateEntity("Map Generator");
     // mapGenerator.AddComponent<H2M::ScriptComponent>("Example.MapGenerator");
 
-    // H2M::MeshH2M* meshQuad = new H2M::MeshH2M("Models/Primitives/quad.obj", m_ShaderHazelPBR, nullptr, false);
+    // H2M::ModelH2M* meshQuad = new H2M::ModelH2M("Models/Primitives/quad.obj", m_ShaderHazelPBR, nullptr, false);
 
     SetupLights();
 }
@@ -268,7 +268,7 @@ H2M::EntityH2M EnvMapEditorLayer::LoadEntity(std::string fullPath)
 
     Log::GetLogger()->debug("EnvMapEditorLayer::LoadMesh: fullPath '{0}' fileName '{1}' fileNameNoExt '{2}'", fullPath, fileName, fileNameNoExt);
 
-    H2M::RefH2M<H2M::MeshH2M> mesh = H2M::RefH2M<H2M::MeshH2M>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, H2M::RefH2M<H2M::MaterialH2M>(), isAnimated);
+    H2M::RefH2M<H2M::ModelH2M> mesh = H2M::RefH2M<H2M::ModelH2M>::Create(fullPath, EnvMapSharedData::s_ShaderHazelPBR, H2M::RefH2M<H2M::MaterialH2M>(), isAnimated);
 
     mesh->SetTimeMultiplier(1.0f);
 
@@ -482,7 +482,7 @@ void EnvMapEditorLayer::OnUpdateEditor(H2M::RefH2M<H2M::SceneH2M> scene, float t
     for (auto entt : meshEntities)
     {
         H2M::EntityH2M entity{ entt, m_ActiveScene.Raw() };
-        H2M::RefH2M<H2M::MeshH2M> mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
+        H2M::RefH2M<H2M::ModelH2M> mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
         if (mesh)
         {
             mesh->OnUpdate(timestep, false);
@@ -524,7 +524,7 @@ void EnvMapEditorLayer::OnUpdateRuntime(H2M::RefH2M<H2M::SceneH2M> scene, float 
     for (auto entt : meshEntities)
     {
         H2M::EntityH2M entity{ entt, m_EditorScene.Raw() };
-        H2M::RefH2M<H2M::MeshH2M> mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
+        H2M::RefH2M<H2M::ModelH2M> mesh = entity.GetComponent<H2M::MeshComponentH2M>().Mesh;
 
         mesh->OnUpdate(timestep, false);
     }
@@ -1048,7 +1048,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                         {
                             ImGui::SameLine();
                             // Only meaningful for models that contain animations (switching it on for a static
-                            // model made MeshH2M::OnUpdate read an animation that doesn't exist)
+                            // model made ModelH2M::OnUpdate read an animation that doesn't exist)
                             ImGui::BeginDisabled(!meshComponent.Mesh->HasAnimations());
                             ImGui::Checkbox("Is Animated", &meshComponent.Mesh->IsAnimated());
                             ImGui::EndDisabled();
@@ -1883,7 +1883,7 @@ void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
     ImGui::End();
 }
 
-void EnvMapEditorLayer::UpdateSubmeshMaterialMap(H2M::EntityH2M entity, H2M::SubmeshH2M* submesh)
+void EnvMapEditorLayer::UpdateSubmeshMaterialMap(H2M::EntityH2M entity, H2M::MeshH2M* submesh)
 {
     SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, submesh);
 
@@ -1958,14 +1958,14 @@ void EnvMapEditorLayer::OpenScene(const std::filesystem::path& path)
         m_ActiveScene = m_EditorScene;
         m_EditorScenePath = path;
 
-        // Create MeshH2M objects for each deserialized MeshComponentH2M
+        // Create ModelH2M objects for each deserialized MeshComponentH2M
         bool isAnimated = false;
         auto meshEntities = m_EditorScene->GetAllEntitiesWith<H2M::MeshComponentH2M>();
         for (auto entt : meshEntities)
         {
             H2M::EntityH2M entity{ entt, m_EditorScene.Raw() };
             auto& meshComponent = entity.GetComponent<H2M::MeshComponentH2M>();
-            meshComponent.Mesh = H2M::RefH2M<H2M::MeshH2M>::Create(meshComponent.FilePath,
+            meshComponent.Mesh = H2M::RefH2M<H2M::ModelH2M>::Create(meshComponent.FilePath,
                 EnvMapSharedData::s_ShaderHazelPBR, s_DefaultMaterial, isAnimated);
         }
     }
@@ -2071,10 +2071,10 @@ void EnvMapEditorLayer::SelectEntity(H2M::EntityH2M e)
 {
 }
 
-void EnvMapEditorLayer::SubmitMesh(H2M::MeshH2M* mesh, const glm::mat4& transform, Material* overrideMaterial)
+void EnvMapEditorLayer::SubmitMesh(H2M::ModelH2M* mesh, const glm::mat4& transform, Material* overrideMaterial)
 {
     auto& materials = mesh->GetMaterials();
-    for (H2M::RefH2M<H2M::SubmeshH2M> submesh : mesh->GetSubmeshes())
+    for (H2M::RefH2M<H2M::MeshH2M> submesh : mesh->GetMeshes())
     {
         // Material
         auto material = materials[submesh->MaterialIndex];
@@ -2288,12 +2288,12 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
                     continue;
                 }
 
-                std::vector<H2M::RefH2M<H2M::SubmeshH2M>>& submeshes = mesh->GetSubmeshes();
+                std::vector<H2M::RefH2M<H2M::MeshH2M>>& submeshes = mesh->GetMeshes();
                 float lastT = std::numeric_limits<float>::max(); // Distance between camera and intersection in CastRay
                 // for (H2M::Submesh& submesh : submeshes)
                 for (uint32_t i = 0; i < submeshes.size(); i++)
                 {
-                    H2M::RefH2M<H2M::SubmeshH2M> submesh = submeshes[i];
+                    H2M::RefH2M<H2M::MeshH2M> submesh = submeshes[i];
                     auto transform = entity.GetComponent<H2M::TransformComponentH2M>().GetTransform();
                     H2M::RayH2M ray = {
                         glm::inverse(transform * submesh->Transform) * glm::vec4(origin, 1.0f),
@@ -2304,7 +2304,7 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
                     bool intersects = ray.IntersectsAABB(submesh->BoundingBox, t);
                     if (intersects)
                     {
-                        const auto& triangleCache = ((H2M::MeshH2M*)mesh.Raw())->GetTriangleCache(i);
+                        const auto& triangleCache = ((H2M::ModelH2M*)mesh.Raw())->GetTriangleCache(i);
                         if (triangleCache.size())
                         {
                             for (const auto& triangle : triangleCache)
@@ -2359,7 +2359,7 @@ bool EnvMapEditorLayer::OnMouseButtonPressed(H2M::MouseButtonPressedEventH2M& e)
             H2M::EntityH2M entity = { (entt::entity)m_EntityID, m_EditorScene.Raw() };
             if (entity.IsValid())
             {
-                SelectedSubmesh selectedSubmesh = SelectedSubmesh{ entity, H2M::RefH2M<H2M::SubmeshH2M>(), 0 };
+                SelectedSubmesh selectedSubmesh = SelectedSubmesh{ entity, H2M::RefH2M<H2M::MeshH2M>(), 0 };
                 AddSubmeshToSelectionContext(selectedSubmesh);
                 if (Scene::s_ImGuizmoType == -1)
                 {
@@ -2640,7 +2640,7 @@ void EnvMapEditorLayer::RenderSubmeshesShadowPass(H2M::RefH2M<MoravaShader> shad
 
             if (meshComponent.Mesh && meshComponent.CastShadows)
             {
-                for (H2M::RefH2M<H2M::SubmeshH2M> submesh : meshComponent.Mesh->GetSubmeshes())
+                for (H2M::RefH2M<H2M::MeshH2M> submesh : meshComponent.Mesh->GetMeshes())
                 {
                     // Render Submesh
                     meshComponent.Mesh->GetVertexBuffer()->Bind();

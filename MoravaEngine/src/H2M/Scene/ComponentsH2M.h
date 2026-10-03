@@ -27,7 +27,7 @@
 #pragma once
 
 #include "H2M/Renderer/CameraH2M.h"
-#include "H2M/Renderer/MeshH2M.h"
+#include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Renderer/SceneEnvironmentH2M.h"
 #include "H2M/Scene/SceneCameraH2M.h"
 
@@ -41,7 +41,7 @@
 
 namespace H2M
 {
-	class MeshH2M;
+	class ModelH2M;
 	class SceneCameraH2M;
 
 	struct IDComponentH2M
@@ -114,14 +114,14 @@ namespace H2M
 		bool CastShadows = true;    // MeshRenderer property in Unity
 		bool ReceiveShadows = true; // MeshRenderer property in Unity
 
-		RefH2M<MeshH2M> Mesh;
+		RefH2M<ModelH2M> Mesh;
 
 		MeshComponentH2M() = default;
 		MeshComponentH2M(const MeshComponentH2M& other) = default;
-		MeshComponentH2M(const RefH2M<MeshH2M>& mesh)
+		MeshComponentH2M(const RefH2M<ModelH2M>& mesh)
 			: Mesh(mesh) {}
 
-		operator RefH2M<MeshH2M>() { return Mesh; }
+		operator RefH2M<ModelH2M>() { return Mesh; }
 	};
 
 	struct CameraComponentH2M

@@ -33,7 +33,7 @@ namespace H2M
 
 	class PipelineH2M;
 	class MaterialH2M;
-	class MeshH2M;
+	class ModelH2M;
 	class RenderPassH2M;
 
 
@@ -53,8 +53,8 @@ namespace H2M
 
 		virtual void SetSceneEnvironment(RefH2M<EnvironmentH2M> environment, RefH2M<Image2D_H2M> shadow) = 0;
 
-		virtual void RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform) = 0;
-		virtual void RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform) = 0;
+		virtual void RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform) = 0;
+		virtual void RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform) = 0;
 		virtual void RenderQuad(RefH2M<PipelineH2M> pipeline, RefH2M<MaterialH2M> material, const glm::mat4& transform) = 0;
 
 		virtual void DrawIndexed(uint32_t indexCount, PrimitiveTypeH2M type, bool depthTest = true) = 0;

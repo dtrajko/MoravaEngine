@@ -350,14 +350,14 @@ namespace H2M
 		return { envFiltered, irradianceMap };
 	}
 
-	void OpenGLRendererH2M::RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
+	void OpenGLRendererH2M::RenderMesh(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform)
 	{
 		mesh->GetVertexBuffer()->Bind();
 		pipeline->Bind();
 		mesh->GetIndexBuffer()->Bind();
 
 		auto& materials = mesh->GetMaterials();
-		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (RefH2M<MeshH2M> submesh : mesh->GetMeshes())
 		{
 			// Material
 			auto material = materials[submesh->MaterialIndex].As<OpenGLMaterialH2M>();
@@ -388,7 +388,7 @@ namespace H2M
 		}
 	}
 
-	void OpenGLRendererH2M::RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<MeshH2M> mesh, const glm::mat4& transform)
+	void OpenGLRendererH2M::RenderMeshWithoutMaterial(RefH2M<PipelineH2M> pipeline, RefH2M<ModelH2M> mesh, const glm::mat4& transform)
 	{
 		mesh->GetVertexBuffer()->Bind();
 		pipeline->Bind();
@@ -397,7 +397,7 @@ namespace H2M
 		auto shader = pipeline->GetSpecification().Shader;
 		shader->Bind();
 
-		for (RefH2M<SubmeshH2M> submesh : mesh->GetSubmeshes())
+		for (RefH2M<MeshH2M> submesh : mesh->GetMeshes())
 		{
 			if (false && mesh->IsAnimated())
 			{
