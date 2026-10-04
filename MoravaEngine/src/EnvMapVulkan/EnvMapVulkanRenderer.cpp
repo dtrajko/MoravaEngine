@@ -2302,13 +2302,10 @@ static void LightRangeProperty(float& range)
 	}
 }
 
-// The sun, point lights and spot lights: add, delete, enable and edit
-static void OnImGuiRenderLights()
+// The selected light's properties (the sun, a point or a spot light), edited on this frame's copy (s_Lights) and written
+// back into its entity at the end. Used by the Lights panel and the Properties panel.
+static void LightPropertiesControls()
 {
-	ImGui::Begin("Lights");
-
-	// The panel edits s_Lights (this frame's copy of the light entities): what changed goes back into the entities at the
-	// end. Adding and deleting work on the entities directly, then read them again.
 	EnvMapVulkanLightEnvironment before = s_Lights;
 	auto commitAll = [&before]() {
 		CommitSun(before.Sun);
@@ -2322,102 +2319,9 @@ static void OnImGuiRenderLights()
 		}
 	};
 
-	// New lights go above GetLightSpawnTarget(): a point light 1.5 units above it, a spot light 3 units above it, pointing down
-
-	ImGui::BeginDisabled(!s_Lights.CanAddPointLight());
-	if (ImGui::Button("Add Point Light"))
-	{
-		commitAll();
-		if (EnvMapVulkanPointLight* light = s_Lights.AddPointLight(GetLightSpawnTarget() + glm::vec3(0.0f, 1.5f, 0.0f), MaxShadowedPointLights))
-		{
-			light->Range = GetDefaultLightRange(light->Position);
-			s_SelectedEntity = CreatePointLightEntity(*light);
-		}
-		ExtractLights();
-		before = s_Lights;
-	}
-	ImGui::EndDisabled();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Up to %u point lights", EnvMapVulkanLightsGPU::MaxPointLights);
-	}
-	ImGui::SameLine();
-	ImGui::BeginDisabled(!s_Lights.CanAddSpotLight());
-	if (ImGui::Button("Add Spot Light"))
-	{
-		commitAll();
-		if (EnvMapVulkanSpotLight* light = s_Lights.AddSpotLight(GetLightSpawnTarget() + glm::vec3(0.0f, 3.0f, 0.0f), MaxShadowedSpotLights))
-		{
-			light->Range = GetDefaultLightRange(light->Position);
-			s_SelectedEntity = CreateSpotLightEntity(*light);
-		}
-		ExtractLights();
-		before = s_Lights;
-	}
-	ImGui::EndDisabled();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Up to %u spot lights (pointing down when added)", EnvMapVulkanLightsGPU::MaxSpotLights);
-	}
-	ImGui::SameLine();
-	ImGui::BeginDisabled(s_SelectedLightKind != LightKind::Point && s_SelectedLightKind != LightKind::Spot);
-	if (ImGui::Button("Delete"))
-	{
-		commitAll();
-		s_Scene.DestroyEntity(GetLightEntity(s_SelectedLightKind, s_SelectedLightIndex));
-		s_SelectedEntity = NoEntity;
-		ExtractLights();
-		before = s_Lights;
-	}
-	ImGui::EndDisabled();
-
-	ImGui::Checkbox("Show in Viewport", &s_ShowLightGizmos);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Light icons (click one to select the light) and the selected light's range and cone");
-	}
-	ImGui::SameLine();
-	ImGui::Checkbox("Shadows Only", &s_ShowShadowsOnly);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The viewport shows only the selected light's shadow, whatever the other lights and the exposure:\n"
-			"white = lit, black = in shadow, dark gray = the light doesn't reach (out of range or cone, or facing away)");
-	}
-
-	// The light list: a checkbox (enabled) and a selectable name per light
-	auto lightRow = [](const char* name, bool& enabled, LightKind kind, int index) {
-		ImGui::PushID((int)kind * 1000 + index);
-		ImGui::Checkbox("##Enabled", &enabled);
-		ImGui::SameLine();
-		if (ImGui::Selectable(name, s_SelectedLightKind == kind && s_SelectedLightIndex == index))
-		{
-			SelectLight(kind, index);
-		}
-		ImGui::PopID();
-	};
-
-	ImGui::Separator();
-	if (ImGui::BeginChild("LightList", ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8.0f), ImGuiChildFlags_Borders))
-	{
-		lightRow("Sun", s_Lights.Sun.Enabled, LightKind::Sun, 0);
-		for (int i = 0; i < (int)s_Lights.PointLights.size(); i++)
-		{
-			lightRow(s_Lights.PointLights[i].Name.c_str(), s_Lights.PointLights[i].Enabled, LightKind::Point, i);
-		}
-		for (int i = 0; i < (int)s_Lights.SpotLights.size(); i++)
-		{
-			lightRow(s_Lights.SpotLights[i].Name.c_str(), s_Lights.SpotLights[i].Enabled, LightKind::Spot, i);
-		}
-	}
-	ImGui::EndChild();
-
-	// Properties of the selected light
-	ImGui::Separator();
 	if (s_SelectedLightKind == LightKind::None)
 	{
 		ImGui::TextDisabled("Select a light in the list,\nor click its icon in the viewport");
-		commitAll();
-		ImGui::End();
 		return;
 	}
 
@@ -2545,11 +2449,218 @@ static void OnImGuiRenderLights()
 		OnImGuiRenderLocalShadowSettings();
 	}
 
+
 	commitAll();
+}
+
+// The sun, point lights and spot lights: add, delete, enable and edit
+static void OnImGuiRenderLights()
+{
+	ImGui::Begin("Lights");
+
+	// The panel edits s_Lights (this frame's copy of the light entities): what changed goes back into the entities at the
+	// end. Adding and deleting work on the entities directly, then read them again.
+	EnvMapVulkanLightEnvironment before = s_Lights;
+	auto commitAll = [&before]() {
+		CommitSun(before.Sun);
+		for (int i = 0; i < (int)s_Lights.PointLights.size() && i < (int)before.PointLights.size(); i++)
+		{
+			CommitPointLight(i, before.PointLights[i]);
+		}
+		for (int i = 0; i < (int)s_Lights.SpotLights.size() && i < (int)before.SpotLights.size(); i++)
+		{
+			CommitSpotLight(i, before.SpotLights[i]);
+		}
+	};
+
+	// New lights go above GetLightSpawnTarget(): a point light 1.5 units above it, a spot light 3 units above it, pointing down
+
+	ImGui::BeginDisabled(!s_Lights.CanAddPointLight());
+	if (ImGui::Button("Add Point Light"))
+	{
+		commitAll();
+		if (EnvMapVulkanPointLight* light = s_Lights.AddPointLight(GetLightSpawnTarget() + glm::vec3(0.0f, 1.5f, 0.0f), MaxShadowedPointLights))
+		{
+			light->Range = GetDefaultLightRange(light->Position);
+			s_SelectedEntity = CreatePointLightEntity(*light);
+		}
+		ExtractLights();
+		before = s_Lights;
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Up to %u point lights", EnvMapVulkanLightsGPU::MaxPointLights);
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(!s_Lights.CanAddSpotLight());
+	if (ImGui::Button("Add Spot Light"))
+	{
+		commitAll();
+		if (EnvMapVulkanSpotLight* light = s_Lights.AddSpotLight(GetLightSpawnTarget() + glm::vec3(0.0f, 3.0f, 0.0f), MaxShadowedSpotLights))
+		{
+			light->Range = GetDefaultLightRange(light->Position);
+			s_SelectedEntity = CreateSpotLightEntity(*light);
+		}
+		ExtractLights();
+		before = s_Lights;
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Up to %u spot lights (pointing down when added)", EnvMapVulkanLightsGPU::MaxSpotLights);
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(s_SelectedLightKind != LightKind::Point && s_SelectedLightKind != LightKind::Spot);
+	if (ImGui::Button("Delete"))
+	{
+		commitAll();
+		s_Scene.DestroyEntity(GetLightEntity(s_SelectedLightKind, s_SelectedLightIndex));
+		s_SelectedEntity = NoEntity;
+		ExtractLights();
+		before = s_Lights;
+	}
+	ImGui::EndDisabled();
+
+	ImGui::Checkbox("Show in Viewport", &s_ShowLightGizmos);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Light icons (click one to select the light) and the selected light's range and cone");
+	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Shadows Only", &s_ShowShadowsOnly);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The viewport shows only the selected light's shadow, whatever the other lights and the exposure:\n"
+			"white = lit, black = in shadow, dark gray = the light doesn't reach (out of range or cone, or facing away)");
+	}
+
+	// The light list: a checkbox (enabled) and a selectable name per light
+	auto lightRow = [](const char* name, bool& enabled, LightKind kind, int index) {
+		ImGui::PushID((int)kind * 1000 + index);
+		ImGui::Checkbox("##Enabled", &enabled);
+		ImGui::SameLine();
+		if (ImGui::Selectable(name, s_SelectedLightKind == kind && s_SelectedLightIndex == index))
+		{
+			SelectLight(kind, index);
+		}
+		ImGui::PopID();
+	};
+
+	ImGui::Separator();
+	if (ImGui::BeginChild("LightList", ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8.0f), ImGuiChildFlags_Borders))
+	{
+		lightRow("Sun", s_Lights.Sun.Enabled, LightKind::Sun, 0);
+		for (int i = 0; i < (int)s_Lights.PointLights.size(); i++)
+		{
+			lightRow(s_Lights.PointLights[i].Name.c_str(), s_Lights.PointLights[i].Enabled, LightKind::Point, i);
+		}
+		for (int i = 0; i < (int)s_Lights.SpotLights.size(); i++)
+		{
+			lightRow(s_Lights.SpotLights[i].Name.c_str(), s_Lights.SpotLights[i].Enabled, LightKind::Spot, i);
+		}
+	}
+	ImGui::EndChild();
+
+	// Properties of the selected light
+	ImGui::Separator();
+	commitAll();
+	LightPropertiesControls();
 	ImGui::End();
 }
 
 // The water plane: add / remove it, its place and size, the waves and the look (EnvMapVulkanWaterSettings)
+// The environment's settings: the map (load, or drop an .hdr), the skybox blur, exposure, Extract Sun, tonemapping and the
+// rotation, written into the environment entity (see CommitEnvironment). Used by the Environment and the Properties panels.
+static void EnvironmentControls()
+{
+	ImGui::Columns(2);
+
+	// Currently loaded environment map (file name only; the full path is in the tooltip)
+	std::string envMapName = std::filesystem::path(s_EnvMapFilename).filename().string();
+	char envMapNameBuffer[256] = {};
+	strncpy(envMapNameBuffer, envMapName.c_str(), sizeof(envMapNameBuffer) - 1);
+	ImGui::InputText("##envmapfilepath", envMapNameBuffer, sizeof(envMapNameBuffer), ImGuiInputTextFlags_ReadOnly);
+	if (ImGui::IsItemHovered() && !s_EnvMapFilename.empty())
+	{
+		ImGui::SetTooltip("%s", s_EnvMapFilename.c_str());
+	}
+
+	// Drop an .hdr file from the Content Browser here to load it
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+		{
+			std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
+			Log::GetLogger()->debug("END DRAG & DROP FILE '{0}'", itemPath);
+			if (std::filesystem::path(itemPath).extension() == ".hdr")
+			{
+				s_PendingEnvMapFilename = itemPath;
+			}
+			else
+			{
+				Log::GetLogger()->warn("Only .hdr files can be used as environment maps ('{0}')", itemPath);
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+
+	ImGui::NextColumn();
+
+	if (ImGui::Button("Load Environment Map"))
+	{
+		std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"*.hdr"));
+		if (!filepath.empty())
+		{
+			s_PendingEnvMapFilename = filepath; // loaded at the start of the next frame (see Draw)
+		}
+	}
+
+	ImGui::NextColumn();
+
+	ImGui::AlignTextToFramePadding();
+
+	// Skybox blur: 0 = sharp, up to the environment map's last mip level (a single average color)
+	float maxSkyboxLod = s_Data.envUnfiltered ? (float)(s_Data.envUnfiltered->GetMipLevelCount() - 1) : 10.0f;
+	if (ImGuiWrapper::Property("Skybox LOD", s_Data.SceneData.SkyboxLod, 0.01f, 0.0f, maxSkyboxLod, PropertyFlag::DragProperty))
+	{
+		// SetSkyboxLOD(skyboxLOD);
+	}
+
+	ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
+	ImGuiWrapper::Property("Auto Exposure", s_AutoExposureEnabled);
+	if (ImGuiWrapper::Property("Extract Sun", s_ExtractSunFromEnvironment))
+	{
+		s_PendingEnvMapFilename = s_EnvMapFilename; // reloaded with or without its sun
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip(s_ExtractedSun.Found
+			? "This map's sun is moved to the directional sun (intensity %.2f), so it casts shadows with all its light\nand isn't counted twice. Off: the map keeps its sun (the directional sun adds to it)."
+			: "A real sun in a map (far brighter than the rest) is moved to the directional sun,\nso it casts shadows with all its light. This map has no sun.", s_ExtractedSun.Intensity);
+	}
+	ImGuiWrapper::Property("Preserve Hue", s_TonemapHuePreservation, 0.01f, 0.0f, 1.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How bright colors are tonemapped:\n0 = per channel (a bright colored light turns white at its center, as on film)\n1 = hue-preserving (keeps the light's color all the way to the center)");
+	}
+	// No drag limits (min = max = 0): the value wraps around, so it can be dragged endlessly in both directions
+	if (ImGuiWrapper::Property("Env Map Rotation", s_EnvMapRotation, 1.0f, 0.0f, 0.0f, PropertyFlag::DragProperty))
+	{
+		s_EnvMapRotation = std::fmod(s_EnvMapRotation, 360.0f);
+		if (s_EnvMapRotation < 0.0f)
+		{
+			s_EnvMapRotation += 360.0f;
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Turns the environment around the vertical axis (yaw, degrees):\nskybox, reflections and environment lighting together");
+	}
+	ImGui::Columns(1);
+	CommitEnvironment(); // the settings edited above, into the environment entity
+}
+
 // A row of three drags like ImGui::DragFloat3, with components that can be locked (shown grayed out)
 static bool DragFloat3Locked(const char* label, glm::vec3& value, float speed, const bool locked[3], float min = 0.0f, float max = 0.0f,
 	const char* lockedTooltip = nullptr)
@@ -2618,51 +2729,10 @@ static void WaterTransformControls(EnvMapVulkanWaterSettings& water)
 	}
 }
 
-static void OnImGuiRenderWater()
+// The water's settings: its transform, the waves, the swell, its look, seeing into it and from under it, the caustics and
+// the reflection. Edits the given settings (the caller writes them back into the water entity, see CommitWater).
+static void WaterSettingsControls(EnvMapVulkanWaterSettings& water)
 {
-	ImGui::SetNextWindowSize(ImVec2(320.0f, 420.0f), ImGuiCond_FirstUseEver);
-	ImGui::Begin("Water");
-	// The panel edits s_WaterSettings (this frame's copy of the water entity) and writes it back at the end
-	EnvMapVulkanWaterSettings& water = s_WaterSettings;
-	const EnvMapVulkanWaterSettings before = s_WaterSettings;
-
-	if (!water.Enabled)
-	{
-		if (ImGui::Button("Add Water"))
-		{
-			// Under the center of the view, at the height of the ground plane
-			glm::vec3 target = GetLightSpawnTarget();
-			EnvMapVulkanWaterSettings settings = water;
-			settings.Center = glm::vec2(target.x, target.z);
-			CreateWaterEntity(settings);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("One water plane per scene: a rectangle with waves and reflections,\nmoved and resized with the gizmo when selected");
-		}
-		ImGui::TextDisabled("No water on the scene");
-		ImGui::End();
-		return;
-	}
-
-	if (ImGui::Button("Remove Water"))
-	{
-		RemoveWaterEntity();
-		ImGui::End();
-		return;
-	}
-	ImGui::SameLine();
-	ImGui::BeginDisabled(s_WaterSelected);
-	if (ImGui::Button("Select"))
-	{
-		SelectWater();
-	}
-	ImGui::EndDisabled();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Selects the water for the gizmo (or click it in the viewport):\n1 move (height and position), 3 resize");
-	}
-
 	WaterTransformControls(water);
 
 	ImGui::Separator();
@@ -2857,6 +2927,55 @@ static void OnImGuiRenderWater()
 	}
 	ImGui::Columns(1);
 
+}
+
+static void OnImGuiRenderWater()
+{
+	ImGui::SetNextWindowSize(ImVec2(320.0f, 420.0f), ImGuiCond_FirstUseEver);
+	ImGui::Begin("Water");
+	// The panel edits s_WaterSettings (this frame's copy of the water entity) and writes it back at the end
+	EnvMapVulkanWaterSettings& water = s_WaterSettings;
+	const EnvMapVulkanWaterSettings before = s_WaterSettings;
+
+	if (!water.Enabled)
+	{
+		if (ImGui::Button("Add Water"))
+		{
+			// Under the center of the view, at the height of the ground plane
+			glm::vec3 target = GetLightSpawnTarget();
+			EnvMapVulkanWaterSettings settings = water;
+			settings.Center = glm::vec2(target.x, target.z);
+			CreateWaterEntity(settings);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("One water plane per scene: a rectangle with waves and reflections,\nmoved and resized with the gizmo when selected");
+		}
+		ImGui::TextDisabled("No water on the scene");
+		ImGui::End();
+		return;
+	}
+
+	if (ImGui::Button("Remove Water"))
+	{
+		RemoveWaterEntity();
+		ImGui::End();
+		return;
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(s_WaterSelected);
+	if (ImGui::Button("Select"))
+	{
+		SelectWater();
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Selects the water for the gizmo (or click it in the viewport):\n1 move (height and position), 3 resize");
+	}
+
+	WaterSettingsControls(water);
+
 	CommitWater(before);
 	ImGui::End();
 }
@@ -2876,6 +2995,224 @@ static bool CanManipulateMesh(EnvMapVulkanEntityID modelEntity, int meshIndex)
 		return false;
 	}
 	return !(model->IsSkinned() && meshes[meshIndex]->IsRigged);
+}
+
+// A model's properties: its transform, the selected part's transform (when a part of it is selected), removing the model or
+// the part, the animation (skinned models) and the material slots of its parts. Used by the Models and Meshes panel and the
+// Properties panel.
+static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
+{
+	const int selectedMeshIndex = GetSelectedModel() == selectedModel ? GetSelectedMeshIndex() : -1;
+	H2M::RefH2M<H2M::ModelH2M> model = GetModel(selectedModel);
+	TransformComponent& entry = s_Scene.Get<TransformComponent>(selectedModel);
+
+	ImGui::Separator();
+	ImGui::Text("Transform");
+	ImGui::DragFloat3("Translation", &entry.Translation.x, 0.1f);
+	ImGui::DragFloat3("Rotation", &entry.Rotation.x, 1.0f);
+	ImGui::DragFloat3("Scale", &entry.Scale.x, 0.01f, 0.001f, 1000.0f);
+
+	// The selected part's place in the model (the viewport gizmo moves it too)
+	const EnvMapVulkanEntityID selectedPart = selectedMeshIndex >= 0 ? s_SelectedEntity : NoEntity;
+	if (selectedPart != NoEntity && selectedMeshIndex < (int)model->GetMeshes().size())
+	{
+		ImGui::Separator();
+		ImGui::Text("Mesh Transform: %s", s_Scene.Get<NameComponent>(selectedPart).Name.c_str());
+		if (CanManipulateMesh(selectedModel, selectedMeshIndex))
+		{
+			TransformComponent& partTransform = s_Scene.Get<TransformComponent>(selectedPart);
+			ImGui::DragFloat3("Translation##Mesh", &partTransform.Translation.x, 0.1f);
+			ImGui::DragFloat3("Rotation##Mesh", &partTransform.Rotation.x, 1.0f);
+			ImGui::DragFloat3("Scale##Mesh", &partTransform.Scale.x, 0.01f, 0.001f, 1000.0f);
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Relative to the model. Shift + click in the viewport selects the whole model");
+			}
+			if (ImGui::Button("Reset Mesh"))
+			{
+				SetPartMatrix(selectedPart, s_Scene.Get<MeshPartComponent>(selectedPart).OriginalTransform);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Back to its place in the model file");
+			}
+		}
+		else
+		{
+			ImGui::TextDisabled(model->GetMeshes().size() < 2 ? "The model has a single mesh: the Transform above moves it"
+				: "A rigged mesh: the skeleton places it (the gizmo moves the whole model)");
+		}
+	}
+
+	if (ImGui::Button("Remove Model"))
+	{
+		s_PendingRemoveEntity = selectedModel; // removed at the start of the next frame (see Draw)
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Removes the whole model, with all its meshes");
+	}
+	ImGui::SameLine();
+	const bool canRemoveMesh = selectedPart != NoEntity && model->GetMeshes().size() > 1;
+	ImGui::BeginDisabled(!canRemoveMesh);
+	if (ImGui::Button("Remove Mesh"))
+	{
+		s_PendingRemoveEntity = selectedPart; // removed at the start of the next frame (see Draw)
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip(canRemoveMesh ? "Removes only the selected mesh, a part of the model" :
+			model->GetMeshes().size() > 1 ? "Select a mesh (a part of the model) below or in the viewport" :
+			"The model has a single mesh: use Remove Model");
+	}
+
+	// Animation playback (skinned models), like the Animation section of the Mesh Debug panel in SceneHazelEnvMap
+	if (model->HasAnimations() && model->IsSkinned())
+	{
+		ImGui::Separator();
+		ImGui::Text("Animation");
+
+		ImGui::Checkbox("Animated", &model->IsAnimated());
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Off: the model is shown in its bind pose");
+		}
+
+		ImGui::BeginDisabled(!model->IsAnimated());
+		{
+			uint32_t animationCount = model->GetAnimationCount();
+			if (animationCount > 1)
+			{
+				if (ImGui::BeginCombo("Clip", model->GetAnimationName(model->GetAnimationIndex()).c_str()))
+				{
+					for (uint32_t a = 0; a < animationCount; a++)
+					{
+						ImGui::PushID((int)a);
+						if (ImGui::Selectable(model->GetAnimationName(a).c_str(), model->GetAnimationIndex() == a))
+						{
+							model->SetAnimationIndex(a);
+						}
+						ImGui::PopID();
+					}
+					ImGui::EndCombo();
+				}
+			}
+			else
+			{
+				ImGui::TextDisabled("Clip: %s", model->GetAnimationName(0).c_str());
+			}
+
+			if (ImGui::Button(model->AnimationPlaying() ? "Pause" : "Play", ImVec2(60.0f, 0.0f)))
+			{
+				model->AnimationPlaying() = !model->AnimationPlaying();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Restart"))
+			{
+				model->AnimationTime() = 0.0f;
+			}
+
+			// Scrub through the animation (in seconds; ModelH2M keeps the time in animation ticks)
+			float ticksPerSecond = model->GetAnimationTicksPerSecond();
+			float durationSeconds = model->GetAnimationDuration() / ticksPerSecond;
+			float timeSeconds = model->AnimationTime() / ticksPerSecond;
+			if (ImGui::SliderFloat("Time", &timeSeconds, 0.0f, durationSeconds, "%.2f s"))
+			{
+				model->AnimationTime() = timeSeconds * ticksPerSecond;
+			}
+			ImGui::DragFloat("Time Scale", &model->TimeMultiplier(), 0.01f, 0.0f, 10.0f, "%.2fx");
+			ImGui::TextDisabled("Duration %.2f s (%.0f ticks at %.0f/s), %u bones", durationSeconds, model->GetAnimationDuration(), ticksPerSecond, model->GetBoneCount());
+		}
+		ImGui::EndDisabled();
+	}
+
+	// Material slots, one per mesh: select a mesh to edit its material in the Material Editor. The dropdown, or a
+	// material dropped from the Material Library, chooses which library material the mesh is drawn with.
+	const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
+	const std::vector<EnvMapVulkanEntityID> parts = s_Scene.GetChildren(selectedModel); // a copy: the loop below doesn't change it
+
+	// Assigns a library material to a part; the Material Editor follows if that part is selected
+	auto assignMaterial = [&](EnvMapVulkanEntityID partEntity, H2M::RefH2M<EnvMapVulkanMaterial> material) {
+		s_Scene.Get<MeshPartComponent>(partEntity).Material = material; // drawn with it from the next frame
+		if (partEntity == s_SelectedEntity)
+		{
+			s_SelectedMaterial = material;
+		}
+	};
+	auto acceptMaterialDrop = [&](EnvMapVulkanEntityID s) {
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_MaterialPayload))
+			{
+				uint32_t index = *(const uint32_t*)payload->Data;
+				if (index < materials.size())
+				{
+					assignMaterial(s, materials[index]);
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+	};
+
+	ImGui::Separator();
+	ImGui::Text("Meshes (%d)", (int)model->GetMeshes().size());
+
+	for (EnvMapVulkanEntityID s : parts)
+	{
+		MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(s);
+		if (!part)
+		{
+			continue;
+		}
+		ImGui::PushID((void*)(uintptr_t)s);
+
+		const std::string& meshName = s_Scene.Get<NameComponent>(s).Name;
+		if (ImGui::Selectable(meshName.c_str(), s_SelectedEntity == s, 0, ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0.0f)))
+		{
+			s_SelectedEntity = (s_SelectedEntity == s) ? selectedModel : s; // click again to deselect (back to the whole model)
+		}
+		acceptMaterialDrop(s);
+
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(-1.0f);
+		const H2M::RefH2M<EnvMapVulkanMaterial> partMaterial = part->Material ? part->Material : EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
+		if (ImGui::BeginCombo("##material", partMaterial->GetName().c_str()))
+		{
+			for (uint32_t m = 0; m < (uint32_t)materials.size(); m++)
+			{
+				ImGui::PushID((int)m);
+				if (ImGui::Selectable(materials[m]->GetName().c_str(), partMaterial == materials[m]))
+				{
+					assignMaterial(s, materials[m]);
+				}
+				ImGui::PopID();
+			}
+			ImGui::EndCombo();
+		}
+		acceptMaterialDrop(s);
+
+		ImGui::PopID();
+	}
+
+	if (s_SelectedMaterial)
+	{
+		std::string label = "Apply '" + s_SelectedMaterial->GetName() + "' to all meshes";
+		if (ImGui::Button(label.c_str()))
+		{
+			for (EnvMapVulkanEntityID partEntity : parts)
+			{
+				if (MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(partEntity))
+				{
+					part->Material = s_SelectedMaterial;
+				}
+			}
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The material shown in the Material Editor");
+		}
+	}
 }
 
 static void OnImGuiRenderModelsAndMeshes()
@@ -2975,216 +3312,7 @@ static void OnImGuiRenderModelsAndMeshes()
 
 	if (selectedModel != NoEntity)
 	{
-		H2M::RefH2M<H2M::ModelH2M> model = GetModel(selectedModel);
-		TransformComponent& entry = s_Scene.Get<TransformComponent>(selectedModel);
-
-		ImGui::Separator();
-		ImGui::Text("Transform");
-		ImGui::DragFloat3("Translation", &entry.Translation.x, 0.1f);
-		ImGui::DragFloat3("Rotation", &entry.Rotation.x, 1.0f);
-		ImGui::DragFloat3("Scale", &entry.Scale.x, 0.01f, 0.001f, 1000.0f);
-
-		// The selected part's place in the model (the viewport gizmo moves it too)
-		const EnvMapVulkanEntityID selectedPart = selectedMeshIndex >= 0 ? s_SelectedEntity : NoEntity;
-		if (selectedPart != NoEntity && selectedMeshIndex < (int)model->GetMeshes().size())
-		{
-			ImGui::Separator();
-			ImGui::Text("Mesh Transform: %s", s_Scene.Get<NameComponent>(selectedPart).Name.c_str());
-			if (CanManipulateMesh(selectedModel, selectedMeshIndex))
-			{
-				TransformComponent& partTransform = s_Scene.Get<TransformComponent>(selectedPart);
-				ImGui::DragFloat3("Translation##Mesh", &partTransform.Translation.x, 0.1f);
-				ImGui::DragFloat3("Rotation##Mesh", &partTransform.Rotation.x, 1.0f);
-				ImGui::DragFloat3("Scale##Mesh", &partTransform.Scale.x, 0.01f, 0.001f, 1000.0f);
-				if (ImGui::IsItemHovered())
-				{
-					ImGui::SetTooltip("Relative to the model. Shift + click in the viewport selects the whole model");
-				}
-				if (ImGui::Button("Reset Mesh"))
-				{
-					SetPartMatrix(selectedPart, s_Scene.Get<MeshPartComponent>(selectedPart).OriginalTransform);
-				}
-				if (ImGui::IsItemHovered())
-				{
-					ImGui::SetTooltip("Back to its place in the model file");
-				}
-			}
-			else
-			{
-				ImGui::TextDisabled(model->GetMeshes().size() < 2 ? "The model has a single mesh: the Transform above moves it"
-					: "A rigged mesh: the skeleton places it (the gizmo moves the whole model)");
-			}
-		}
-
-		if (ImGui::Button("Remove Model"))
-		{
-			s_PendingRemoveEntity = selectedModel; // removed at the start of the next frame (see Draw)
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Removes the whole model, with all its meshes");
-		}
-		ImGui::SameLine();
-		const bool canRemoveMesh = selectedPart != NoEntity && model->GetMeshes().size() > 1;
-		ImGui::BeginDisabled(!canRemoveMesh);
-		if (ImGui::Button("Remove Mesh"))
-		{
-			s_PendingRemoveEntity = selectedPart; // removed at the start of the next frame (see Draw)
-		}
-		ImGui::EndDisabled();
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		{
-			ImGui::SetTooltip(canRemoveMesh ? "Removes only the selected mesh, a part of the model" :
-				model->GetMeshes().size() > 1 ? "Select a mesh (a part of the model) below or in the viewport" :
-				"The model has a single mesh: use Remove Model");
-		}
-
-		// Animation playback (skinned models), like the Animation section of the Mesh Debug panel in SceneHazelEnvMap
-		if (model->HasAnimations() && model->IsSkinned())
-		{
-			ImGui::Separator();
-			ImGui::Text("Animation");
-
-			ImGui::Checkbox("Animated", &model->IsAnimated());
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Off: the model is shown in its bind pose");
-			}
-
-			ImGui::BeginDisabled(!model->IsAnimated());
-			{
-				uint32_t animationCount = model->GetAnimationCount();
-				if (animationCount > 1)
-				{
-					if (ImGui::BeginCombo("Clip", model->GetAnimationName(model->GetAnimationIndex()).c_str()))
-					{
-						for (uint32_t a = 0; a < animationCount; a++)
-						{
-							ImGui::PushID((int)a);
-							if (ImGui::Selectable(model->GetAnimationName(a).c_str(), model->GetAnimationIndex() == a))
-							{
-								model->SetAnimationIndex(a);
-							}
-							ImGui::PopID();
-						}
-						ImGui::EndCombo();
-					}
-				}
-				else
-				{
-					ImGui::TextDisabled("Clip: %s", model->GetAnimationName(0).c_str());
-				}
-
-				if (ImGui::Button(model->AnimationPlaying() ? "Pause" : "Play", ImVec2(60.0f, 0.0f)))
-				{
-					model->AnimationPlaying() = !model->AnimationPlaying();
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Restart"))
-				{
-					model->AnimationTime() = 0.0f;
-				}
-
-				// Scrub through the animation (in seconds; ModelH2M keeps the time in animation ticks)
-				float ticksPerSecond = model->GetAnimationTicksPerSecond();
-				float durationSeconds = model->GetAnimationDuration() / ticksPerSecond;
-				float timeSeconds = model->AnimationTime() / ticksPerSecond;
-				if (ImGui::SliderFloat("Time", &timeSeconds, 0.0f, durationSeconds, "%.2f s"))
-				{
-					model->AnimationTime() = timeSeconds * ticksPerSecond;
-				}
-				ImGui::DragFloat("Time Scale", &model->TimeMultiplier(), 0.01f, 0.0f, 10.0f, "%.2fx");
-				ImGui::TextDisabled("Duration %.2f s (%.0f ticks at %.0f/s), %u bones", durationSeconds, model->GetAnimationDuration(), ticksPerSecond, model->GetBoneCount());
-			}
-			ImGui::EndDisabled();
-		}
-
-		// Material slots, one per mesh: select a mesh to edit its material in the Material Editor. The dropdown, or a
-		// material dropped from the Material Library, chooses which library material the mesh is drawn with.
-		const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
-		const std::vector<EnvMapVulkanEntityID> parts = s_Scene.GetChildren(selectedModel); // a copy: the loop below doesn't change it
-
-		// Assigns a library material to a part; the Material Editor follows if that part is selected
-		auto assignMaterial = [&](EnvMapVulkanEntityID partEntity, H2M::RefH2M<EnvMapVulkanMaterial> material) {
-			s_Scene.Get<MeshPartComponent>(partEntity).Material = material; // drawn with it from the next frame
-			if (partEntity == s_SelectedEntity)
-			{
-				s_SelectedMaterial = material;
-			}
-		};
-		auto acceptMaterialDrop = [&](EnvMapVulkanEntityID s) {
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_MaterialPayload))
-				{
-					uint32_t index = *(const uint32_t*)payload->Data;
-					if (index < materials.size())
-					{
-						assignMaterial(s, materials[index]);
-					}
-				}
-				ImGui::EndDragDropTarget();
-			}
-		};
-
-		ImGui::Separator();
-		ImGui::Text("Meshes (%d)", (int)model->GetMeshes().size());
-
-		for (EnvMapVulkanEntityID s : parts)
-		{
-			MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(s);
-			if (!part)
-			{
-				continue;
-			}
-			ImGui::PushID((void*)(uintptr_t)s);
-
-			const std::string& meshName = s_Scene.Get<NameComponent>(s).Name;
-			if (ImGui::Selectable(meshName.c_str(), s_SelectedEntity == s, 0, ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0.0f)))
-			{
-				s_SelectedEntity = (s_SelectedEntity == s) ? selectedModel : s; // click again to deselect (back to the whole model)
-			}
-			acceptMaterialDrop(s);
-
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(-1.0f);
-			const H2M::RefH2M<EnvMapVulkanMaterial> partMaterial = part->Material ? part->Material : EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
-			if (ImGui::BeginCombo("##material", partMaterial->GetName().c_str()))
-			{
-				for (uint32_t m = 0; m < (uint32_t)materials.size(); m++)
-				{
-					ImGui::PushID((int)m);
-					if (ImGui::Selectable(materials[m]->GetName().c_str(), partMaterial == materials[m]))
-					{
-						assignMaterial(s, materials[m]);
-					}
-					ImGui::PopID();
-				}
-				ImGui::EndCombo();
-			}
-			acceptMaterialDrop(s);
-
-			ImGui::PopID();
-		}
-
-		if (s_SelectedMaterial)
-		{
-			std::string label = "Apply '" + s_SelectedMaterial->GetName() + "' to all meshes";
-			if (ImGui::Button(label.c_str()))
-			{
-				for (EnvMapVulkanEntityID partEntity : parts)
-				{
-					if (MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(partEntity))
-					{
-						part->Material = s_SelectedMaterial;
-					}
-				}
-			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("The material shown in the Material Editor");
-			}
-		}
+		ModelPropertiesControls(selectedModel);
 	}
 
 	// The whole panel is a drop area for model files (loaded at the scene origin)
@@ -3199,6 +3327,535 @@ static void OnImGuiRenderModelsAndMeshes()
 			s_PendingModelGroundPosition.reset();
 		}
 		ImGui::EndDragDropTarget();
+	}
+
+	ImGui::End();
+}
+
+
+// ---- Scene Hierarchy and Properties panels ----
+// Scene Hierarchy: every entity of the scene in its tree (the environment, the sun, lights, the water, models with their
+// parts). Click selects (shared with the viewport); double-click or F2 renames; Delete or the context menu removes; drag an
+// entity onto another to make it its child (it keeps its place in the world), onto the empty area below the tree to move it
+// back to the top; drop a model file to load it, a material onto a part (or a model: all its parts) to assign it.
+// Properties: the selected entity's settings.
+
+enum class EntityKind { Other, Environment, Sun, PointLight, SpotLight, Water, Model, Part };
+
+static EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
+{
+	if (s_Scene.Has<ModelComponent>(entity))       return EntityKind::Model;
+	if (s_Scene.Has<MeshPartComponent>(entity))    return EntityKind::Part;
+	if (s_Scene.Has<PointLightComponent>(entity))  return EntityKind::PointLight;
+	if (s_Scene.Has<SpotLightComponent>(entity))   return EntityKind::SpotLight;
+	if (s_Scene.Has<SunComponent>(entity))         return EntityKind::Sun;
+	if (s_Scene.Has<WaterComponent>(entity))       return EntityKind::Water;
+	if (s_Scene.Has<EnvironmentComponent>(entity)) return EntityKind::Environment;
+	return EntityKind::Other;
+}
+
+static const char* GetEntityKindName(EntityKind kind)
+{
+	switch (kind)
+	{
+		case EntityKind::Environment: return "Environment";
+		case EntityKind::Sun:         return "Sun";
+		case EntityKind::PointLight:  return "Point Light";
+		case EntityKind::SpotLight:   return "Spot Light";
+		case EntityKind::Water:       return "Water";
+		case EntityKind::Model:       return "Model";
+		case EntityKind::Part:        return "Mesh (part of a model)";
+		default:                      return "Entity";
+	}
+}
+
+// The marker drawn in front of an entity's name in the hierarchy
+static ImU32 GetEntityKindColor(EntityKind kind)
+{
+	switch (kind)
+	{
+		case EntityKind::Environment: return IM_COL32(110, 200, 120, 255);
+		case EntityKind::Sun:         return IM_COL32(255, 210, 60, 255);
+		case EntityKind::PointLight:  return IM_COL32(255, 150, 60, 255);
+		case EntityKind::SpotLight:   return IM_COL32(90, 200, 255, 255);
+		case EntityKind::Water:       return IM_COL32(60, 120, 230, 255);
+		case EntityKind::Model:       return IM_COL32(200, 200, 210, 255);
+		case EntityKind::Part:        return IM_COL32(140, 140, 150, 255);
+		default:                      return IM_COL32(128, 128, 128, 255);
+	}
+}
+
+// Entities that can be dragged under another entity, and the ones that can take children. A part stays in its model, the
+// environment, the sun and the water stay at the top (the water is always level: a parent could tilt it).
+static bool CanBeReparented(EntityKind kind)
+{
+	return kind == EntityKind::Model || kind == EntityKind::PointLight || kind == EntityKind::SpotLight;
+}
+
+static bool CanHaveChildren(EntityKind kind)
+{
+	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight;
+}
+
+static bool CanBeDeleted(EntityKind kind)
+{
+	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
+		kind == EntityKind::Water;
+}
+
+// Removes an entity (and its children): a model or a part at the start of the next frame (its GPU resources may be in use),
+// a light or the water right away
+static void DeleteEntity(EnvMapVulkanEntityID entity)
+{
+	switch (GetEntityKind(entity))
+	{
+		case EntityKind::Model:
+			s_PendingRemoveEntity = entity;
+			break;
+		case EntityKind::Part:
+		{
+			H2M::RefH2M<H2M::ModelH2M> model = GetModel(s_Scene.GetParent(entity));
+			if (model && model->GetMeshes().size() > 1)
+			{
+				s_PendingRemoveEntity = entity;
+			}
+			else
+			{
+				Log::GetLogger()->warn("'{0}' is the model's only mesh: remove the model instead", s_Scene.Get<NameComponent>(entity).Name);
+			}
+			break;
+		}
+		case EntityKind::PointLight:
+		case EntityKind::SpotLight:
+			s_Scene.DestroyEntity(entity);
+			if (!s_Scene.Exists(s_SelectedEntity))
+			{
+				s_SelectedEntity = NoEntity;
+			}
+			ExtractLights();
+			break;
+		case EntityKind::Water:
+			RemoveWaterEntity();
+			break;
+		default:
+			break;
+	}
+}
+
+// New lights and the water go where the camera looks (see GetLightSpawnTarget), selected
+static void AddPointLightAtView()
+{
+	if (EnvMapVulkanPointLight* light = s_Lights.AddPointLight(GetLightSpawnTarget() + glm::vec3(0.0f, 1.5f, 0.0f), MaxShadowedPointLights))
+	{
+		light->Range = GetDefaultLightRange(light->Position);
+		s_SelectedEntity = CreatePointLightEntity(*light);
+	}
+	ExtractLights();
+}
+
+static void AddSpotLightAtView()
+{
+	if (EnvMapVulkanSpotLight* light = s_Lights.AddSpotLight(GetLightSpawnTarget() + glm::vec3(0.0f, 3.0f, 0.0f), MaxShadowedSpotLights))
+	{
+		light->Range = GetDefaultLightRange(light->Position);
+		s_SelectedEntity = CreateSpotLightEntity(*light);
+	}
+	ExtractLights();
+}
+
+static void AddWaterAtView()
+{
+	glm::vec3 target = GetLightSpawnTarget();
+	EnvMapVulkanWaterSettings settings;
+	settings.Center = glm::vec2(target.x, target.z);
+	CreateWaterEntity(settings);
+}
+
+static const char* s_EntityPayload = "VULKAN_SCENE_ENTITY"; // drag & drop payload: an EnvMapVulkanEntityID
+static bool s_RevealSelection = false; // this frame: open the selected entity's parents in the tree and scroll to it
+static EnvMapVulkanEntityID s_RenamingEntity = NoEntity;   // the entity whose name is being edited in the hierarchy
+static char s_RenameBuffer[128] = {};
+
+static void StartRenaming(EnvMapVulkanEntityID entity)
+{
+	s_RenamingEntity = entity;
+	strncpy_s(s_RenameBuffer, s_Scene.Get<NameComponent>(entity).Name.c_str(), sizeof(s_RenameBuffer) - 1);
+}
+
+// A material dropped onto a part (that part) or a model (all its parts)
+static void AcceptMaterialDropOnEntity(EnvMapVulkanEntityID entity)
+{
+	const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_MaterialPayload);
+	if (!payload)
+	{
+		return;
+	}
+	const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
+	uint32_t index = *(const uint32_t*)payload->Data;
+	if (index >= materials.size())
+	{
+		return;
+	}
+	if (MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(entity))
+	{
+		part->Material = materials[index];
+	}
+	else if (s_Scene.Has<ModelComponent>(entity))
+	{
+		for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
+		{
+			if (MeshPartComponent* childPart = s_Scene.TryGet<MeshPartComponent>(child))
+			{
+				childPart->Material = materials[index];
+			}
+		}
+	}
+	else
+	{
+		return;
+	}
+	s_SelectedEntity = entity;
+	s_SelectedMaterial = materials[index];
+}
+
+// What the tree asks for while it's drawn (applied after it, so the tree isn't changed while it's walked)
+struct HierarchyRequests
+{
+	EnvMapVulkanEntityID Delete = NoEntity;
+	EnvMapVulkanEntityID Reparent = NoEntity;
+	EnvMapVulkanEntityID NewParent = NoEntity;
+};
+
+static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& requests)
+{
+	const EntityKind kind = GetEntityKind(entity);
+	const std::string& name = s_Scene.Get<NameComponent>(entity).Name;
+	const std::vector<EnvMapVulkanEntityID>& children = s_Scene.GetChildren(entity);
+	const bool selected = s_SelectedEntity == entity;
+
+	ImGui::PushID((void*)(uintptr_t)entity);
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
+	if (selected)
+	{
+		flags |= ImGuiTreeNodeFlags_Selected;
+	}
+	if (children.empty())
+	{
+		flags |= ImGuiTreeNodeFlags_Leaf;
+	}
+	if (kind != EntityKind::Model)
+	{
+		flags |= ImGuiTreeNodeFlags_DefaultOpen;
+	}
+	// Room for the marker in front of the name ("##" keeps the ID stable while the name changes)
+	const std::string label = "    " + (s_RenamingEntity == entity ? std::string() : name) + "##node";
+	if (s_RevealSelection && s_Scene.IsDescendantOf(s_SelectedEntity, entity))
+	{
+		ImGui::SetNextItemOpen(true); // a parent of the selection (e.g. a model whose part was clicked in the viewport)
+	}
+	const bool open = ImGui::TreeNodeEx(label.c_str(), flags);
+	if (s_RevealSelection && selected)
+	{
+		ImGui::SetScrollHereY(0.5f);
+	}
+	const ImVec2 itemMin = ImGui::GetItemRectMin();
+	const ImVec2 itemMax = ImGui::GetItemRectMax();
+
+	if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsItemToggledOpen())
+	{
+		s_SelectedEntity = entity;
+	}
+	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+	{
+		StartRenaming(entity);
+	}
+	if (ImGui::IsItemHovered())
+	{
+		if (const ModelComponent* model = s_Scene.TryGet<ModelComponent>(entity))
+		{
+			ImGui::SetTooltip("%s\n%s", GetEntityKindName(kind), model->FilePath.c_str());
+		}
+		else
+		{
+			ImGui::SetTooltip("%s", GetEntityKindName(kind));
+		}
+	}
+
+	// Drag the entity onto another to make it a child
+	if (CanBeReparented(kind) && ImGui::BeginDragDropSource())
+	{
+		ImGui::SetDragDropPayload(s_EntityPayload, &entity, sizeof(entity));
+		ImGui::Text("%s", name.c_str());
+		ImGui::EndDragDropSource();
+	}
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (CanHaveChildren(kind))
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_EntityPayload))
+			{
+				requests.Reparent = *(const EnvMapVulkanEntityID*)payload->Data;
+				requests.NewParent = entity;
+			}
+		}
+		AcceptMaterialDropOnEntity(entity);
+		ImGui::EndDragDropTarget();
+	}
+
+	// Context menu
+	if (ImGui::BeginPopupContextItem("##context"))
+	{
+		s_SelectedEntity = entity;
+		if (ImGui::MenuItem("Rename", "F2"))
+		{
+			StartRenaming(entity);
+		}
+		if (ImGui::MenuItem("Move to Top Level", nullptr, false, CanBeReparented(kind) && s_Scene.GetParent(entity) != NoEntity))
+		{
+			requests.Reparent = entity;
+			requests.NewParent = NoEntity;
+		}
+		ImGui::Separator();
+		if (ImGui::MenuItem("Delete", "Delete", false, CanBeDeleted(kind)))
+		{
+			requests.Delete = entity;
+		}
+		ImGui::EndPopup();
+	}
+
+	// The marker, and the name field while renaming
+	const float markerX = itemMin.x + ImGui::GetTreeNodeToLabelSpacing() + 5.0f;
+	const float centerY = (itemMin.y + itemMax.y) * 0.5f;
+	ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(markerX, centerY), 4.5f, GetEntityKindColor(kind));
+	if (s_RenamingEntity == entity)
+	{
+		ImGui::SameLine(markerX - ImGui::GetWindowPos().x + ImGui::GetScrollX() + 10.0f);
+		ImGui::SetNextItemWidth(-1.0f);
+		if (ImGui::IsWindowAppearing() || !ImGui::IsAnyItemActive())
+		{
+			ImGui::SetKeyboardFocusHere();
+		}
+		if (ImGui::InputText("##rename", s_RenameBuffer, sizeof(s_RenameBuffer), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
+		{
+			if (s_RenameBuffer[0] != '\0')
+			{
+				s_Scene.Get<NameComponent>(entity).Name = s_RenameBuffer;
+			}
+			s_RenamingEntity = NoEntity;
+		}
+		else if (ImGui::IsKeyPressed(ImGuiKey_Escape) || (ImGui::IsItemDeactivated() && !ImGui::IsItemDeactivatedAfterEdit()))
+		{
+			s_RenamingEntity = NoEntity;
+		}
+		else if (ImGui::IsItemDeactivatedAfterEdit())
+		{
+			if (s_RenameBuffer[0] != '\0')
+			{
+				s_Scene.Get<NameComponent>(entity).Name = s_RenameBuffer; // clicking elsewhere applies the name too
+			}
+			s_RenamingEntity = NoEntity;
+		}
+	}
+
+	if (open)
+	{
+		for (EnvMapVulkanEntityID child : std::vector<EnvMapVulkanEntityID>(children)) // a copy: the tree isn't changed while it's drawn, but be safe
+		{
+			DrawHierarchyNode(child, requests);
+		}
+		ImGui::TreePop();
+	}
+	ImGui::PopID();
+}
+
+static void OnImGuiRenderSceneHierarchy()
+{
+	ImGui::SetNextWindowSize(ImVec2(320.0f, 360.0f), ImGuiCond_FirstUseEver);
+	ImGui::Begin("Scene Hierarchy");
+
+	// Add: a model file, a light, the water
+	if (ImGui::Button("Add..."))
+	{
+		ImGui::OpenPopup("##AddEntity");
+	}
+	if (ImGui::BeginPopup("##AddEntity"))
+	{
+		if (ImGui::MenuItem("Model..."))
+		{
+			std::string filepath = Util::ToUtf8(Application::Get()->OpenFile());
+			if (!filepath.empty())
+			{
+				s_PendingModelFilename = filepath; // loaded at the start of the next frame (see Draw)
+				s_PendingModelGroundPosition.reset();
+			}
+		}
+		if (ImGui::MenuItem("Point Light", nullptr, false, s_Lights.CanAddPointLight()))
+		{
+			AddPointLightAtView();
+		}
+		if (ImGui::MenuItem("Spot Light", nullptr, false, s_Lights.CanAddSpotLight()))
+		{
+			AddSpotLightAtView();
+		}
+		if (ImGui::MenuItem("Water", nullptr, false, s_WaterEntity == NoEntity))
+		{
+			AddWaterAtView();
+		}
+		ImGui::EndPopup();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Load a model, add a point or spot light (up to %u each), or the water (one per scene).\n"
+			"Models can also be dropped here or onto the viewport from the Content Browser", EnvMapVulkanLightsGPU::MaxPointLights);
+	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Light Icons", &s_ShowLightGizmos);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Light icons in the viewport (click one to select the light), and the selected light's range and cone");
+	}
+	ImGui::Separator();
+
+	// The tree; a new selection (from anywhere: the viewport, the Properties panel) is revealed in it
+	static EnvMapVulkanEntityID s_LastSelected = NoEntity;
+	s_RevealSelection = s_SelectedEntity != s_LastSelected && s_SelectedEntity != NoEntity;
+	s_LastSelected = s_SelectedEntity;
+	HierarchyRequests requests;
+	ImGui::BeginChild("##HierarchyTree", ImVec2(0.0f, 0.0f), ImGuiChildFlags_None);
+	for (EnvMapVulkanEntityID root : std::vector<EnvMapVulkanEntityID>(s_Scene.GetRoots()))
+	{
+		DrawHierarchyNode(root, requests);
+	}
+	// The empty area below the tree: drop an entity there to move it to the top level, a model file to load it
+	ImVec2 freeSize = ImGui::GetContentRegionAvail();
+	ImGui::InvisibleButton("##HierarchyFreeArea", ImVec2(std::max(freeSize.x, 1.0f), std::max(freeSize.y, 40.0f)));
+	if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+	{
+		s_SelectedEntity = NoEntity;
+	}
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_EntityPayload))
+		{
+			requests.Reparent = *(const EnvMapVulkanEntityID*)payload->Data;
+			requests.NewParent = NoEntity;
+		}
+		std::string filepath;
+		if (AcceptFileDrop(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), IsModelFile, "a model file", filepath))
+		{
+			s_PendingModelFilename = filepath; // loaded at the start of the next frame (see Draw)
+			s_PendingModelGroundPosition.reset();
+		}
+		ImGui::EndDragDropTarget();
+	}
+	ImGui::EndChild();
+
+	// Keys, while the panel has the focus: F2 renames the selected entity, Delete removes it
+	if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && s_RenamingEntity == NoEntity && s_Scene.Exists(s_SelectedEntity))
+	{
+		if (ImGui::IsKeyPressed(ImGuiKey_F2))
+		{
+			StartRenaming(s_SelectedEntity);
+		}
+		if (ImGui::IsKeyPressed(ImGuiKey_Delete) && CanBeDeleted(GetEntityKind(s_SelectedEntity)))
+		{
+			requests.Delete = s_SelectedEntity;
+		}
+	}
+
+	// The requests, now that the tree is drawn
+	if (requests.Reparent != NoEntity)
+	{
+		if (!s_Scene.SetParent(requests.Reparent, requests.NewParent, true))
+		{
+			Log::GetLogger()->warn("'{0}' can't be moved under one of its own children", s_Scene.Get<NameComponent>(requests.Reparent).Name);
+		}
+		ExtractLights();
+	}
+	if (requests.Delete != NoEntity)
+	{
+		DeleteEntity(requests.Delete);
+	}
+
+	ImGui::End();
+}
+
+static void OnImGuiRenderProperties()
+{
+	ImGui::SetNextWindowSize(ImVec2(360.0f, 520.0f), ImGuiCond_FirstUseEver);
+	ImGui::Begin("Properties");
+
+	const EnvMapVulkanEntityID entity = s_SelectedEntity;
+	if (!s_Scene.Exists(entity))
+	{
+		ImGui::TextDisabled("Select an entity in the Scene Hierarchy,\nor click it in the viewport");
+		ImGui::End();
+		return;
+	}
+	const EntityKind kind = GetEntityKind(entity);
+
+	// The name (point and spot lights have it with their settings below) and the kind
+	if (kind != EntityKind::PointLight && kind != EntityKind::SpotLight)
+	{
+		char buffer[128] = {};
+		strncpy_s(buffer, s_Scene.Get<NameComponent>(entity).Name.c_str(), sizeof(buffer) - 1);
+		ImGui::SetNextItemWidth(-90.0f);
+		if (ImGui::InputText("##EntityName", buffer, sizeof(buffer)) && buffer[0] != '\0')
+		{
+			s_Scene.Get<NameComponent>(entity).Name = buffer;
+		}
+		ImGui::SameLine();
+	}
+	ImGui::TextDisabled("%s", GetEntityKindName(kind));
+	ImGui::Separator();
+
+	switch (kind)
+	{
+		case EntityKind::Model:
+			ModelPropertiesControls(entity);
+			break;
+		case EntityKind::Part:
+			ModelPropertiesControls(s_Scene.GetParent(entity));
+			break;
+		case EntityKind::Sun:
+		case EntityKind::PointLight:
+		case EntityKind::SpotLight:
+			if (kind != EntityKind::Sun)
+			{
+				if (ImGui::Button("Delete Light"))
+				{
+					DeleteEntity(entity);
+					ImGui::End();
+					return;
+				}
+				ImGui::SameLine();
+			}
+			ImGui::Checkbox("Shadows Only", &s_ShowShadowsOnly);
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The viewport shows only the selected light's shadow, whatever the other lights and the exposure:\n"
+					"white = lit, black = in shadow, dark gray = the light doesn't reach (out of range or cone, or facing away)");
+			}
+			LightPropertiesControls();
+			break;
+		case EntityKind::Water:
+		{
+			if (ImGui::Button("Remove Water"))
+			{
+				RemoveWaterEntity();
+				ImGui::End();
+				return;
+			}
+			const EnvMapVulkanWaterSettings before = s_WaterSettings;
+			WaterSettingsControls(s_WaterSettings);
+			CommitWater(before);
+			break;
+		}
+		case EntityKind::Environment:
+			EnvironmentControls();
+			break;
+		default:
+			break;
 	}
 
 	ImGui::End();
@@ -3346,7 +4003,7 @@ static void OnImGuiRenderMaterialLibrary()
 		if (ImGui::IsItemHovered())
 		{
 			std::string origin = material->GetSourceFile().empty() ? "Created in the editor" : "Imported from " + material->GetSourceFile();
-			ImGui::SetTooltip("%s\nDrag onto a mesh in the Models and Meshes panel or the viewport to assign it", origin.c_str());
+			ImGui::SetTooltip("%s\nDrag onto a mesh in the Scene Hierarchy, the Properties panel or the viewport to assign it", origin.c_str());
 		}
 
 		int users = CountMaterialUsers(material);
@@ -3388,7 +4045,7 @@ static void OnImGuiRenderMaterialEditor()
 	H2M::RefH2M<EnvMapVulkanMaterial> material = s_SelectedMaterial;
 	if (!material)
 	{
-		ImGui::TextDisabled("Select a material in the Material Library,\nor a mesh in the Models and Meshes panel or the viewport");
+		ImGui::TextDisabled("Select a material in the Material Library,\nor a mesh in the Scene Hierarchy or the viewport");
 		ImGui::End();
 		return;
 	}
@@ -5844,89 +6501,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					{
+						EnvironmentControls();
 						ImGui::Columns(2);
-
-						// Currently loaded environment map (file name only; the full path is in the tooltip)
-						std::string envMapName = std::filesystem::path(s_EnvMapFilename).filename().string();
-						char envMapNameBuffer[256] = {};
-						strncpy(envMapNameBuffer, envMapName.c_str(), sizeof(envMapNameBuffer) - 1);
-						ImGui::InputText("##envmapfilepath", envMapNameBuffer, sizeof(envMapNameBuffer), ImGuiInputTextFlags_ReadOnly);
-						if (ImGui::IsItemHovered() && !s_EnvMapFilename.empty())
-						{
-							ImGui::SetTooltip("%s", s_EnvMapFilename.c_str());
-						}
-
-						// Drop an .hdr file from the Content Browser here to load it
-						if (ImGui::BeginDragDropTarget())
-						{
-							if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-							{
-								std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
-								Log::GetLogger()->debug("END DRAG & DROP FILE '{0}'", itemPath);
-								if (std::filesystem::path(itemPath).extension() == ".hdr")
-								{
-									s_PendingEnvMapFilename = itemPath;
-								}
-								else
-								{
-									Log::GetLogger()->warn("Only .hdr files can be used as environment maps ('{0}')", itemPath);
-								}
-							}
-							ImGui::EndDragDropTarget();
-						}
-
-						ImGui::NextColumn();
-
-						if (ImGui::Button("Load Environment Map"))
-						{
-							std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"*.hdr"));
-							if (!filepath.empty())
-							{
-								s_PendingEnvMapFilename = filepath; // loaded at the start of the next frame (see Draw)
-							}
-						}
-
-						ImGui::NextColumn();
-
-						ImGui::AlignTextToFramePadding();
-
-						// Skybox blur: 0 = sharp, up to the environment map's last mip level (a single average color)
-						float maxSkyboxLod = s_Data.envUnfiltered ? (float)(s_Data.envUnfiltered->GetMipLevelCount() - 1) : 10.0f;
-						if (ImGuiWrapper::Property("Skybox LOD", s_Data.SceneData.SkyboxLod, 0.01f, 0.0f, maxSkyboxLod, PropertyFlag::DragProperty))
-						{
-							// SetSkyboxLOD(skyboxLOD);
-						}
-
-						ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
-						ImGuiWrapper::Property("Auto Exposure", s_AutoExposureEnabled);
-						if (ImGuiWrapper::Property("Extract Sun", s_ExtractSunFromEnvironment))
-						{
-							s_PendingEnvMapFilename = s_EnvMapFilename; // reloaded with or without its sun
-						}
-						if (ImGui::IsItemHovered())
-						{
-							ImGui::SetTooltip(s_ExtractedSun.Found
-								? "This map's sun is moved to the directional sun (intensity %.2f), so it casts shadows with all its light\nand isn't counted twice. Off: the map keeps its sun (the directional sun adds to it)."
-								: "A real sun in a map (far brighter than the rest) is moved to the directional sun,\nso it casts shadows with all its light. This map has no sun.", s_ExtractedSun.Intensity);
-						}
-						ImGuiWrapper::Property("Preserve Hue", s_TonemapHuePreservation, 0.01f, 0.0f, 1.0f, PropertyFlag::DragProperty);
-						if (ImGui::IsItemHovered())
-						{
-							ImGui::SetTooltip("How bright colors are tonemapped:\n0 = per channel (a bright colored light turns white at its center, as on film)\n1 = hue-preserving (keeps the light's color all the way to the center)");
-						}
-						// No drag limits (min = max = 0): the value wraps around, so it can be dragged endlessly in both directions
-						if (ImGuiWrapper::Property("Env Map Rotation", s_EnvMapRotation, 1.0f, 0.0f, 0.0f, PropertyFlag::DragProperty))
-						{
-							s_EnvMapRotation = std::fmod(s_EnvMapRotation, 360.0f);
-							if (s_EnvMapRotation < 0.0f)
-							{
-								s_EnvMapRotation += 360.0f;
-							}
-						}
-						if (ImGui::IsItemHovered())
-						{
-							ImGui::SetTooltip("Turns the environment around the vertical axis (yaw, degrees):\nskybox, reflections and environment lighting together");
-						}
 						ImGuiWrapper::Property("Display Grid", s_DisplayGrid);
 						ImGuiWrapper::Property("Grid Scale", s_GridScale, 0.1f, 1.0f, 256.0f, PropertyFlag::DragProperty);
 						ImGuiWrapper::Property("Grid Line Width", s_GridSize, 0.001f, 0.001f, 0.5f, PropertyFlag::DragProperty);
@@ -5934,7 +6510,6 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						ImGui::Columns(1);
 					}
 				}
-				CommitEnvironment(); // the environment settings edited above, into the environment entity
 
 				// Like "Display Outline / Wireframe / Bounding Boxes" in SceneHazelEnvMap
 				if (ImGui::CollapsingHeader("Selection and Overlays", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
@@ -6061,11 +6636,14 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			ImGui::End();
 			/**** END Environment ****/
 
-			OnImGuiRenderModelsAndMeshes();
+			// Retired: their functions are in the Scene Hierarchy and Properties panels (the functions are kept, not shown)
+			// OnImGuiRenderModelsAndMeshes();
+			// OnImGuiRenderLights();
+			// OnImGuiRenderWater();
+			OnImGuiRenderSceneHierarchy();
+			OnImGuiRenderProperties();
 			OnImGuiRenderMaterialLibrary();
 			OnImGuiRenderMaterialEditor();
-			OnImGuiRenderLights();
-			OnImGuiRenderWater();
 
 			/**** BEGIN DockSpace menu bar ****/
 
