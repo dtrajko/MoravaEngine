@@ -270,12 +270,23 @@ float ShadowDebugValue()
 // Direct light from the sun, the point lights and the spot lights (lists packed by EnvMapVulkanLightEnvironment::Pack)
 vec3 Lighting(vec3 F0)
 {
-	// The sun, through its shadow map (sampled only where the sun can reach the surface at all)
+	// The sun, through its shadow map (sampled only where the sun can reach the surface at all). Under the water its light
+	// comes in steeper (bent by the surface), dimmed by the water on its way down and focused by the waves (caustics).
 	vec3 result = vec3(0.0);
-	if (u_Sun.Intensity > 0.0 && dot(m_Params.Normal, u_Sun.Direction) > 0.0)
+	if (u_Sun.Intensity > 0.0)
 	{
-		float shadow = SunShadow(Input.WorldPosition, normalize(Input.Normal));
-		result = EvaluateBRDF(F0, u_Sun.Direction, u_Sun.Color * u_Sun.Intensity * shadow);
+		vec3 sunDirection = u_Sun.Direction;
+		vec3 sunRadiance = u_Sun.Color * u_Sun.Intensity;
+		vec3 underWater;
+		if (WaterSunlightAt(Input.WorldPosition, sunDirection, underWater))
+		{
+			sunRadiance *= underWater;
+		}
+		if (dot(m_Params.Normal, sunDirection) > 0.0 && dot(sunRadiance, sunRadiance) > 0.0)
+		{
+			float shadow = SunShadow(Input.WorldPosition, normalize(Input.Normal));
+			result = EvaluateBRDF(F0, sunDirection, sunRadiance * shadow);
+		}
 	}
 
 	int pointLightCount = min(u_PointLightCount, MaxPointLights);
@@ -382,6 +393,9 @@ void main()
 
 	// Emission is added on top of the lit surface (the map is sRGB color data, decoded by the sampler)
 	vec3 emissive = u_MaterialUniforms.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_MaterialUniforms.EmissiveIntensity : vec3(0.0);
+
+	// Under the water the sky's light is dimmed by the water above (the sun's is in Lighting)
+	iblContribution *= WaterSkylightAt(Input.WorldPosition);
 
 	color = vec4(lightContribution + iblContribution * ao + emissive, 1.0);
 

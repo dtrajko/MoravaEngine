@@ -57,6 +57,66 @@ float WaterSunEntering()
 	return 1.0 - (0.02 + 0.98 * pow(1.0 - cosTheta, 5.0));
 }
 
+// The caustics at a point depth meters under the surface, lit by sunlight traveling in direction travel: the light the
+// waves focus there, relative to a flat surface (1). The map (WaterCaustics.glsl) is laid out by where the sun's ray
+// entered the water; it fades out at its edges and over the first part of the focus depth (right under the surface the
+// rays haven't gathered yet).
+float WaterCaustics(vec3 position, vec3 travel, float depth)
+{
+	float strength = u_CausticsParams.x;
+	if (strength <= 0.0)
+	{
+		return 1.0;
+	}
+	vec2 entry = position.xz - travel.xz * (depth / max(-travel.y, 0.05));
+	vec2 uv = (entry - u_CausticsRegion.xy) * u_CausticsRegion.z;
+	vec2 edge = min(uv, 1.0 - uv);
+	float fade = clamp(min(edge.x, edge.y) * u_CausticsRegion.w, 0.0, 1.0) * clamp(depth / u_CausticsParams.y, 0.0, 1.0);
+	// A 3x3 tent filter (four bilinear lookups between the texels): softens the single texels where the rays meet in a point
+	vec2 texel = 0.5 / vec2(textureSize(u_CausticsMap, 0));
+	float light = 0.25 * (texture(u_CausticsMap, uv + vec2(-texel.x, -texel.y)).r + texture(u_CausticsMap, uv + vec2(texel.x, -texel.y)).r +
+		texture(u_CausticsMap, uv + vec2(-texel.x, texel.y)).r + texture(u_CausticsMap, uv + vec2(texel.x, texel.y)).r);
+	return max(mix(1.0, light, strength * fade), 0.0);
+}
+
+// How deep a point is under the scene's water: false above the water or outside its rectangle (or with no water)
+bool WaterDepthAt(vec3 position, out float depth)
+{
+	depth = u_WaterVolumeParams.x - position.y;
+	vec4 bounds = u_WaterVolumeBounds;
+	return u_WaterVolumeParams.z > 0.5 && depth > 0.0 && abs(position.x - bounds.x) <= bounds.z && abs(position.z - bounds.y) <= bounds.w;
+}
+
+// The sun under the water, at a point there: the direction its light comes from (bent toward the vertical by the
+// surface) and the part of it left there: what the surface lets in, dimmed on the slanted way down (Beer-Lambert),
+// gathered and spread by the waves (caustics). False where the point isn't under the water.
+bool WaterSunlightAt(vec3 position, out vec3 lightDirection, out vec3 transmittance)
+{
+	float depth;
+	if (!WaterDepthAt(position, depth))
+	{
+		return false;
+	}
+	if (u_Sun.Direction.y <= 0.0)
+	{
+		lightDirection = u_Sun.Direction;
+		transmittance = vec3(0.0); // the sun is below the horizon: none of its light gets into the water
+		return true;
+	}
+	vec3 travel = WaterSunTravelDirection();
+	lightDirection = -travel;
+	float path = depth / max(-travel.y, 0.05);
+	transmittance = WaterSunEntering() * exp(-u_WaterVolumeAbsorption.rgb * path) * WaterCaustics(position, travel, depth);
+	return true;
+}
+
+// The sky's light under the water, at a point there: dimmed by the water above it (1 where the point isn't under the water)
+vec3 WaterSkylightAt(vec3 position)
+{
+	float depth;
+	return WaterDepthAt(position, depth) ? exp(-u_WaterVolumeAbsorption.rgb * depth) : vec3(1.0);
+}
+
 // Henyey-Greenstein phase function, times 4 pi (1 on average over all directions)
 float WaterPhase(float cosTheta)
 {

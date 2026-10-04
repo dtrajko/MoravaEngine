@@ -17,17 +17,20 @@ namespace H2M
 }
 
 // std140 layout of the SceneData uniform block (set 0, binding 1, Include/FrameSet.glslh): the camera position, the
-// environment rotation and the water volume the meshes are seen through (off in the scene pass)
+// environment rotation, the scene's water (the light under it, see FillWaterSceneData) and the water volume the meshes
+// are seen through (off in the scene pass)
 struct EnvMapVulkanSceneDataGPU
 {
 	glm::vec3 CameraPosition = glm::vec3(0.0f);
 	float EnvMapRotation = 0.0f;
 	glm::vec4 WaterVolumeBounds = glm::vec4(0.0f);     // center x, center z, half size x, half size z
-	glm::vec4 WaterVolumeParams = glm::vec4(0.0f);     // x = height, y = 1 when on
+	glm::vec4 WaterVolumeParams = glm::vec4(0.0f);     // x = height, y = 1 when the volume is on, z = 1 when the scene has water
 	glm::vec4 WaterVolumeAbsorption = glm::vec4(0.0f); // rgb per meter
 	glm::vec4 WaterVolumeScatter = glm::vec4(0.0f);    // rgb
+	glm::vec4 CausticsRegion = glm::vec4(0.0f);        // the caustics map's corner (x, z), 1 / its size, 1 / fade width (map units)
+	glm::vec4 CausticsParams = glm::vec4(0.0f);        // x = strength (0: no caustics this frame), y = focus depth
 };
-static_assert(sizeof(EnvMapVulkanSceneDataGPU) == 80, "EnvMapVulkanSceneDataGPU must match SceneData in Include/FrameSet.glslh");
+static_assert(sizeof(EnvMapVulkanSceneDataGPU) == 112, "EnvMapVulkanSceneDataGPU must match SceneData in Include/FrameSet.glslh");
 
 /**
  * The water plane of SceneEnvMapVulkan: one flat, axis-aligned rectangle at a height (Resources/Shaders/Water.glsl).
@@ -72,6 +75,14 @@ struct EnvMapVulkanWaterSettings
 	uint32_t ReflectionDivisor = 2;     // the reflection image is the viewport size / this (1 full, 2 half, 4 quarter)
 	float ReflectionDistortion = 1.0f;  // how much the waves bend the reflection
 
+	// Caustics: the waves focus the sun's light into bright lines on what is under the water (Resources/Shaders/WaterCaustics.glsl).
+	// They are computed over a square around the camera (CausticsArea meters across, kept over the water) and fade out at
+	// its edges.
+	bool Caustics = true;
+	float CausticsStrength = 1.0f;      // 1 = as the waves focus the light; more exaggerates the pattern
+	float CausticsFocus = 2.0f;         // meters under the surface where the pattern is computed (deeper: sharper, brighter lines)
+	float CausticsArea = 40.0f;         // meters: the size of the square around the camera that gets caustics
+
 	// The unit square of the water mesh -> the rectangle in the world
 	glm::mat4 GetTransform() const;
 };
@@ -102,11 +113,11 @@ public:
 	// Recreates the scene copies and the reflection image for a new size of the scene framebuffer (call after resizing it)
 	void Resize(uint32_t width, uint32_t height);
 
-	// Moves the waves and writes the settings and the mirrored camera for this frame. view, projection and cameraPosition:
-	// the camera's; frameDescriptorSet: the main per-frame set (set 0), whose environment, light and shadow bindings the
-	// reflection's set 0 shares.
+	// Moves the waves and writes the settings, the mirrored camera and the caustics for this frame. view, projection and
+	// cameraPosition: the camera's; sunDirection: toward the sun (pointing down when the sun is off); frameDescriptorSet:
+	// the main per-frame set (set 0), whose environment, light, shadow and caustics bindings the reflection's set 0 shares.
 	void Update(const EnvMapVulkanWaterSettings& settings, float deltaTime, const glm::mat4& view, const glm::mat4& projection,
-		const glm::vec3& cameraPosition, float envMapRotation, VkDescriptorSet frameDescriptorSet);
+		const glm::vec3& cameraPosition, float envMapRotation, const glm::vec3& sunDirection, VkDescriptorSet frameDescriptorSet);
 
 	// This frame draws the planar reflection (it is enabled; from above the water or from under it)
 	bool IsReflectionActive() const { return m_ReflectionActive; }
@@ -121,6 +132,13 @@ public:
 	void RecordVolume(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet);
 	// Draws the water inside the scene's render pass; frameDescriptorSet is the per-frame set (set 0)
 	void Record(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet, const EnvMapVulkanWaterSettings& settings);
+
+	// This frame draws the caustics (they are enabled and the sun is up)
+	bool IsCausticsActive() const { return m_CausticsActive; }
+	// Outside a render pass, before the passes that draw the meshes: renders this frame's caustics map
+	void RecordCaustics(VkCommandBuffer commandBuffer);
+	// The caustics map, for the per-frame set (set 0, binding 10); valid from Create on, whether the water exists or not
+	const VkDescriptorImageInfo& GetCausticsDescriptorInfo() const { return m_CausticsDescriptor; }
 
 private:
 	H2M::RefH2M<H2M::PipelineH2M> m_Pipeline;
@@ -160,7 +178,39 @@ private:
 	H2M::VulkanShaderH2M::UniformBufferH2M m_ReflectionCamera;    // binding 0: the mirrored view projection
 	H2M::VulkanShaderH2M::UniformBufferH2M m_ReflectionSceneData; // binding 1: the mirrored camera position
 	bool m_ReflectionActive = false;
+
+	// Caustics (WaterCaustics.glsl): the map (R16F, additive), its render pass, framebuffer and pipeline, the normal map's
+	// set, and this frame's push constants (see Update)
+	void CreateCaustics();
+	void DestroyCaustics();
+	VkImage m_CausticsImage = VK_NULL_HANDLE;
+	VkDeviceMemory m_CausticsMemory = VK_NULL_HANDLE;
+	VkImageView m_CausticsView = VK_NULL_HANDLE;
+	VkSampler m_CausticsSampler = VK_NULL_HANDLE;
+	VkRenderPass m_CausticsRenderPass = VK_NULL_HANDLE;
+	VkFramebuffer m_CausticsFramebuffer = VK_NULL_HANDLE;
+	VkPipelineLayout m_CausticsLayout = VK_NULL_HANDLE;
+	VkPipeline m_CausticsPipeline = VK_NULL_HANDLE;
+	VkDescriptorImageInfo m_CausticsDescriptor = {};
+	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet m_CausticsSet;
+	struct CausticsPushConstants
+	{
+		glm::vec4 Region;      // corner x, corner z, size, resolution
+		glm::vec4 Grid;        // corner x, corner z, cell size, cells per side
+		glm::vec4 WaveOffsets;
+		glm::vec4 Waves;       // tile size 1, tile size 2, strength, unused
+		glm::vec4 Sun;         // toward the sun, focus depth
+		glm::vec4 Lod;         // normal map mip level of layer 1, 2
+	} m_CausticsConstants = {};
+	uint32_t m_CausticsGridVertices = 0;
+	bool m_CausticsActive = false;
 };
+
+// The scene's water in the per-frame SceneData (see Include/WaterVolume.glslh): where it is, what it does to light and the
+// caustics map's place and strength this frame (sunDirection: toward the sun). The water volume (WaterVolumeParams.y) is
+// left off: the caller turns it on in the passes whose meshes are seen through the water.
+void FillWaterSceneData(const EnvMapVulkanWaterSettings& settings, const glm::vec3& cameraPosition, const glm::vec3& sunDirection,
+	EnvMapVulkanSceneDataGPU& data);
 
 // Where the ray (origin + t * direction) meets the water rectangle: false when it misses it (or the water doesn't exist)
 bool RaycastWater(const EnvMapVulkanWaterSettings& settings, const glm::vec3& origin, const glm::vec3& direction, float& t);

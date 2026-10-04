@@ -48,10 +48,14 @@ layout (std140, set = 0, binding = 1) uniform SceneData
 	// The water volume the meshes are seen through in this pass (Include/WaterVolume.glslh). Off in the scene pass (there
 	// a full-screen pass adds it, WaterFog.glsl); on in the water's reflection pass under the water, whose mirrored camera
 	// is above the surface: the water its rays cross is the way from the surface down to the mirrored mesh.
+	// The scene's water (z = 1 when it has one) is set in every pass: the light under it (the sun bent and dimmed on its
+	// way down, the caustics) lights the meshes there.
 	vec4 u_WaterVolumeBounds;     // offset 16: the water rectangle: center x, center z, half size x, half size z
-	vec4 u_WaterVolumeParams;     // offset 32: x = the water height, y = 1 when the volume is on
+	vec4 u_WaterVolumeParams;     // offset 32: x = the water height, y = 1 when the volume is on, z = 1 when the scene has water
 	vec4 u_WaterVolumeAbsorption; // offset 48: rgb, per meter
 	vec4 u_WaterVolumeScatter;    // offset 64: rgb, the water's scatter color
+	vec4 u_CausticsRegion;        // offset 80: the caustics map (u_CausticsMap): xy = its corner (min x, min z), z = 1 / its size, w = 1 / fade width (map units)
+	vec4 u_CausticsParams;        // offset 96: x = strength (0 = no caustics this frame), y = the focus depth (meters)
 };
 layout (set = 0, binding = 2) uniform samplerCube u_EnvRadianceTex;
 layout (set = 0, binding = 3) uniform samplerCube u_EnvIrradianceTex;
@@ -87,5 +91,7 @@ layout (std140, set = 0, binding = 7) uniform Shadows
 };
 layout (set = 0, binding = 8) uniform sampler2DArrayShadow u_SpotShadowMaps;  // a layer per shadowed spot light
 layout (set = 0, binding = 9) uniform samplerCubeArrayShadow u_PointShadowMaps; // a cube per shadowed point light
+// The light the waves focus under the water (WaterCaustics.glsl): 1 = the light of a flat surface
+layout (set = 0, binding = 10) uniform sampler2D u_CausticsMap;
 
 #endif

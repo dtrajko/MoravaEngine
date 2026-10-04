@@ -813,6 +813,16 @@ static void SyncSunWithEnvironmentRotation()
 	s_Lights.Sun.Azimuth = std::remainder(s_Lights.Sun.Azimuth + delta, 360.0f); // stays in -180..180
 }
 
+// The water plane (Water panel, see EnvMapVulkanWater.h)
+static EnvMapVulkanWaterSettings s_WaterSettings;
+static EnvMapVulkanWater s_Water;
+
+// Toward the sun for the water (the light that gets into it, the caustics): pointing down while the sun is off
+static glm::vec3 GetWaterSunDirection()
+{
+	return s_Lights.Sun.Enabled && s_Lights.Sun.Intensity > 0.0f ? s_Lights.Sun.GetDirection() : glm::vec3(0.0f, -1.0f, 0.0f);
+}
+
 // Per-frame uniform buffers of the mesh shaders (set 0): written once per frame, read by every mesh. They belong to the
 // HazelPBR_Static shader in the shader library, whose buffers the per-frame descriptor set points to (see Init).
 static void UpdateFrameUniforms()
@@ -827,11 +837,12 @@ static void UpdateFrameUniforms()
 	memcpy(ubPtr, &viewProjection, sizeof(glm::mat4));
 	shader->UnmapUniformBuffer(0, frameSet);
 
-	// binding 1: SceneData (fragment stage), see EnvMapVulkanSceneDataGPU
-	// (the water volume stays off: in the scene pass the water's full-screen pass adds it, see EnvMapVulkanWater)
+	// binding 1: SceneData (fragment stage), see EnvMapVulkanSceneDataGPU: with the water, the light under it (the
+	// water volume stays off: in the scene pass the water's full-screen pass adds it, see EnvMapVulkanWater)
 	EnvMapVulkanSceneDataGPU ub;
 	ub.CameraPosition = camera.GetPosition();
 	ub.EnvMapRotation = s_EnvMapRotation;
+	FillWaterSceneData(s_WaterSettings, camera.GetPosition(), GetWaterSunDirection(), ub);
 
 	ubPtr = shader->MapUniformBuffer(1, frameSet);
 	memcpy(ubPtr, &ub, sizeof(ub));
@@ -917,10 +928,8 @@ static int s_SelectedLightIndex = 0;
 static bool s_ShowLightGizmos = true; // light icons and shapes in the viewport
 static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light's shadow (see ShadowDebugValue in the PBR shaders)
 
-// The water plane (Water panel, see EnvMapVulkanWater.h). It joins the same selection: selecting it clears the light and
-// model selection, and selecting a light or a model clears it.
-static EnvMapVulkanWaterSettings s_WaterSettings;
-static EnvMapVulkanWater s_Water;
+// The water plane (Water panel, see EnvMapVulkanWater.h, declared with the per-frame uniforms). It joins the same
+// selection: selecting it clears the light and model selection, and selecting a light or a model clears it.
 static bool s_WaterSelected = false;
 
 static void SelectLight(LightKind kind, int index = 0)
@@ -2144,6 +2153,38 @@ static void OnImGuiRenderWater()
 			"How far you see through the water itself is its Clarity (Into the Water).");
 	}
 	ImGui::Columns(1);
+
+	ImGui::Separator();
+	ImGui::Text("Caustics");
+	ImGui::PushID("Caustics"); // the labels are the widget ids, and the waves have a Strength too
+	ImGui::Columns(2);
+	ImGuiWrapper::Property("Caustics", water.Caustics);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The waves bend the sun's light as it enters the water and focus it into moving bright lines\n"
+			"on what is under the water (computed from the waves themselves, around the camera)");
+	}
+	ImGui::BeginDisabled(!water.Caustics);
+	ImGuiWrapper::Property("Strength", water.CausticsStrength, 0.0f, 3.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("1: as the waves focus the light; more exaggerates the pattern, less fades it");
+	}
+	ImGuiWrapper::Property("Focus Depth", water.CausticsFocus, 0.01f, 0.1f, 20.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Meters under the surface where the pattern is computed: the deeper, the more the rays\n"
+			"have gathered (sharper, brighter lines). Shallower than this, the caustics fade in from the surface.");
+	}
+	ImGuiWrapper::Property("Area", water.CausticsArea, 0.5f, 2.0f, 500.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Meters: the square around the camera that gets caustics (they fade out at its edges).\n"
+			"Smaller: finer detail (the same map covers less water)");
+	}
+	ImGui::EndDisabled();
+	ImGui::Columns(1);
+	ImGui::PopID();
 
 	ImGui::Separator();
 	ImGui::Text("Reflection");
@@ -3623,6 +3664,13 @@ void EnvMapVulkanRenderer::Init()
 		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 
 		WriteShadowMapDescriptor();
+
+		// binding 10: the water's caustics map (it exists from s_Water.Create on, with or without water on the scene)
+		VkWriteDescriptorSet causticsWrite = *pbrShader->GetDescriptorSet("u_CausticsMap", frameSet);
+		causticsWrite.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+		causticsWrite.descriptorCount = 1;
+		causticsWrite.pImageInfo = &s_Water.GetCausticsDescriptorInfo();
+		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &causticsWrite, 0, nullptr);
 	}
 
 	H2M::RendererH2M::SetSceneEnvironment(H2M::RefH2M<H2M::EnvironmentH2M>::Create(s_Data.EnvironmentMap.first, s_Data.EnvironmentMap.second), H2M::RefH2M<H2M::Image2D_H2M>());
@@ -4283,6 +4331,12 @@ void EnvMapVulkanRenderer::GeometryPass()
 			s_ShadowMapViewer.Record(drawCommandBuffer, map, s_ShadowMapViewerRequest.Cube, s_ShadowMapViewerRequest.BaseLayer,
 				s_ShadowMapViewerRequest.Near, s_ShadowMapViewerRequest.Far);
 			s_ShadowMapViewerRequest.Active = false; // requested again by the panel while it shows the viewer
+		}
+
+		// The water's caustics: the meshes under the water (in the reflection and the scene pass) are lit through them
+		if (s_WaterSettings.Enabled)
+		{
+			s_Water.RecordCaustics(drawCommandBuffer);
 		}
 
 		// The water's planar reflection: the meshes seen by the camera mirrored in the water plane, into the water's
@@ -5523,7 +5577,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		H2M::CameraH2M& sceneCamera = s_Data.SceneData.SceneCamera.Camera;
 		s_Water.Update(s_WaterSettings, deltaTime, sceneCamera.GetViewMatrix(), sceneCamera.GetProjectionMatrix(), sceneCamera.GetPosition(),
-			s_EnvMapRotation, s_Data.FrameDescriptorSet.DescriptorSets[0]);
+			s_EnvMapRotation, GetWaterSunDirection(), s_Data.FrameDescriptorSet.DescriptorSets[0]);
 	}
 
 	if (s_ViewportFBNeedsResize)

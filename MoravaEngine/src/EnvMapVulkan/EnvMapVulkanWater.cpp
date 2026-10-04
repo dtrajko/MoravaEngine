@@ -122,6 +122,53 @@ static glm::vec3 GetAbsorption(const EnvMapVulkanWaterSettings& settings)
 	return -glm::log(glm::clamp(settings.Transmittance, glm::vec3(0.001f), glm::vec3(1.0f))) / std::max(settings.Clarity, 0.01f);
 }
 
+static constexpr uint32_t CausticsResolution = 1024; // texels per side of the caustics map
+// Grid cells per side over the map (a margin is added around it): a cell is a few texels, so a triangle stays wider than a
+// texel until the waves squeeze it a lot (a smaller one lands on a single texel, or on none: bright dots and gaps)
+static constexpr uint32_t CausticsGridCells = 384;
+
+static bool IsCausticsOn(const EnvMapVulkanWaterSettings& settings, const glm::vec3& sunDirection)
+{
+	return settings.Caustics && settings.CausticsStrength > 0.0f && sunDirection.y > 0.01f;
+}
+
+// The caustics map's square: centered on the camera and kept over the water (on the water's center along a side shorter
+// than the square), its corner snapped to the grid's cell size, so the grid samples the waves at the same places while the
+// camera moves (no shimmering). Returns the corner (x, z), the size and the cell size.
+static glm::vec4 GetCausticsRegion(const EnvMapVulkanWaterSettings& settings, const glm::vec3& cameraPosition)
+{
+	float size = std::max(std::min(settings.CausticsArea, std::max(settings.Size.x, settings.Size.y)), 0.5f);
+	float cellSize = size / (float)CausticsGridCells;
+	glm::vec2 camera = glm::vec2(cameraPosition.x, cameraPosition.z);
+	glm::vec2 center;
+	for (int axis = 0; axis < 2; axis++)
+	{
+		float freedom = (settings.Size[axis] - size) * 0.5f; // how far the square's center can be from the water's
+		center[axis] = freedom > 0.0f ? glm::clamp(camera[axis], settings.Center[axis] - freedom, settings.Center[axis] + freedom) : settings.Center[axis];
+	}
+	glm::vec2 corner = glm::floor((center - size * 0.5f) / cellSize) * cellSize;
+	return glm::vec4(corner, size, cellSize);
+}
+
+void FillWaterSceneData(const EnvMapVulkanWaterSettings& settings, const glm::vec3& cameraPosition, const glm::vec3& sunDirection,
+	EnvMapVulkanSceneDataGPU& data)
+{
+	if (!settings.Enabled)
+	{
+		return;
+	}
+	data.WaterVolumeBounds = glm::vec4(settings.Center.x, settings.Center.y, settings.Size.x * 0.5f, settings.Size.y * 0.5f);
+	data.WaterVolumeParams = glm::vec4(settings.Height, 0.0f, 1.0f, 0.0f);
+	data.WaterVolumeAbsorption = glm::vec4(GetAbsorption(settings), 0.0f);
+	data.WaterVolumeScatter = glm::vec4(settings.ScatterColor, 0.0f);
+	if (IsCausticsOn(settings, sunDirection))
+	{
+		glm::vec4 region = GetCausticsRegion(settings, cameraPosition);
+		data.CausticsRegion = glm::vec4(region.x, region.y, 1.0f / region.z, 10.0f); // fades out over the outer tenth
+		data.CausticsParams = glm::vec4(settings.CausticsStrength, std::max(settings.CausticsFocus, 0.05f), 0.0f, 0.0f);
+	}
+}
+
 glm::mat4 EnvMapVulkanWaterSettings::GetTransform() const
 {
 	return glm::translate(glm::mat4(1.0f), glm::vec3(Center.x, Height, Center.y)) * glm::scale(glm::mat4(1.0f), glm::vec3(Size.x, 1.0f, Size.y));
@@ -203,7 +250,218 @@ void EnvMapVulkanWater::Create(H2M::RefH2M<H2M::FramebufferH2M> targetFramebuffe
 	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_DepthSampler));
 
 	CreateReflection();
+	CreateCaustics();
 	Resize(targetFramebuffer->GetWidth(), targetFramebuffer->GetHeight());
+}
+
+void EnvMapVulkanWater::CreateCaustics()
+{
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	const VkFormat format = VK_FORMAT_R16_SFLOAT;
+
+	// The map: one channel, the light relative to a flat surface (drawn into, then sampled by the PBR shaders)
+	VkImageCreateInfo imageInfo = {};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.format = format;
+	imageInfo.extent = { CausticsResolution, CausticsResolution, 1 };
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+	imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	VK_CHECK_RESULT_H2M(vkCreateImage(device, &imageInfo, nullptr, &m_CausticsImage));
+	VkMemoryRequirements requirements;
+	vkGetImageMemoryRequirements(device, m_CausticsImage, &requirements);
+	H2M::VulkanAllocatorH2M allocator(std::string("WaterCaustics"));
+	allocator.Allocate(requirements, &m_CausticsMemory);
+	VK_CHECK_RESULT_H2M(vkBindImageMemory(device, m_CausticsImage, m_CausticsMemory, 0));
+
+	VkImageViewCreateInfo viewInfo = {};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = m_CausticsImage;
+	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.format = format;
+	viewInfo.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	VK_CHECK_RESULT_H2M(vkCreateImageView(device, &viewInfo, nullptr, &m_CausticsView));
+
+	VkSamplerCreateInfo samplerInfo = {};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR;
+	samplerInfo.minFilter = VK_FILTER_LINEAR;
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+	samplerInfo.addressModeU = samplerInfo.addressModeV = samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+	samplerInfo.maxLod = 0.0f;
+	samplerInfo.maxAnisotropy = 1.0f;
+	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_CausticsSampler));
+	m_CausticsDescriptor = { m_CausticsSampler, m_CausticsView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL };
+
+	// Cleared, drawn with additive blending, then left for the PBR shaders to sample
+	VkAttachmentDescription attachment = {};
+	attachment.format = format;
+	attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; // the previous frame's map is never needed
+	attachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	VkAttachmentReference colorReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+	VkSubpassDescription subpass = {};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorReference;
+	std::array<VkSubpassDependency, 2> dependencies = {};
+	// The previous frame's shaders must be done reading the map before it is cleared and drawn again
+	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[0].dstSubpass = 0;
+	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	// The map must be written before the meshes' fragment shaders sample it
+	dependencies[1].srcSubpass = 0;
+	dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	VkRenderPassCreateInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &attachment;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = (uint32_t)dependencies.size();
+	renderPassInfo.pDependencies = dependencies.data();
+	VK_CHECK_RESULT_H2M(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_CausticsRenderPass));
+
+	VkFramebufferCreateInfo framebufferInfo = {};
+	framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	framebufferInfo.renderPass = m_CausticsRenderPass;
+	framebufferInfo.attachmentCount = 1;
+	framebufferInfo.pAttachments = &m_CausticsView;
+	framebufferInfo.width = CausticsResolution;
+	framebufferInfo.height = CausticsResolution;
+	framebufferInfo.layers = 1;
+	VK_CHECK_RESULT_H2M(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_CausticsFramebuffer));
+
+	// The pipeline: no vertex buffer (the grid comes from the vertex index), no culling (the waves can fold a triangle
+	// over), additive blending (the light of all the triangles that land on a texel adds up)
+	H2M::RefH2M<H2M::VulkanShaderH2M> shader = H2M::RendererH2M::GetShaderLibrary()->Get("WaterCaustics").As<H2M::VulkanShaderH2M>();
+	std::vector<VkDescriptorSetLayout> setLayouts = shader->GetAllDescriptorSetLayouts();
+	std::vector<VkPushConstantRange> pushConstantRanges;
+	for (const auto& range : shader->GetPushConstantRanges())
+	{
+		pushConstantRanges.push_back({ (VkShaderStageFlags)range.ShaderStage, range.Offset, range.Size });
+	}
+	VkPipelineLayoutCreateInfo layoutInfo = {};
+	layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	layoutInfo.setLayoutCount = (uint32_t)setLayouts.size();
+	layoutInfo.pSetLayouts = setLayouts.data();
+	layoutInfo.pushConstantRangeCount = (uint32_t)pushConstantRanges.size();
+	layoutInfo.pPushConstantRanges = pushConstantRanges.data();
+	VK_CHECK_RESULT_H2M(vkCreatePipelineLayout(device, &layoutInfo, nullptr, &m_CausticsLayout));
+
+	VkPipelineVertexInputStateCreateInfo vertexInput = {};
+	vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
+	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+	VkViewport viewport = { 0.0f, 0.0f, (float)CausticsResolution, (float)CausticsResolution, 0.0f, 1.0f };
+	VkRect2D scissor = { { 0, 0 }, { CausticsResolution, CausticsResolution } };
+	VkPipelineViewportStateCreateInfo viewportState = {};
+	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportState.viewportCount = 1;
+	viewportState.pViewports = &viewport;
+	viewportState.scissorCount = 1;
+	viewportState.pScissors = &scissor;
+	VkPipelineRasterizationStateCreateInfo rasterization = {};
+	rasterization.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterization.polygonMode = VK_POLYGON_MODE_FILL;
+	rasterization.cullMode = VK_CULL_MODE_NONE;
+	rasterization.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	rasterization.lineWidth = 1.0f;
+	VkPipelineMultisampleStateCreateInfo multisample = {};
+	multisample.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	VkPipelineColorBlendAttachmentState blend = {};
+	blend.blendEnable = VK_TRUE;
+	blend.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend.colorBlendOp = VK_BLEND_OP_ADD;
+	blend.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	blend.alphaBlendOp = VK_BLEND_OP_ADD;
+	blend.colorWriteMask = VK_COLOR_COMPONENT_R_BIT;
+	VkPipelineColorBlendStateCreateInfo colorBlend = {};
+	colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	colorBlend.attachmentCount = 1;
+	colorBlend.pAttachments = &blend;
+	const std::vector<VkPipelineShaderStageCreateInfo>& stages = shader->GetPipelineShaderStageCreateInfos();
+	VkGraphicsPipelineCreateInfo pipelineInfo = {};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineInfo.stageCount = (uint32_t)stages.size();
+	pipelineInfo.pStages = stages.data();
+	pipelineInfo.pVertexInputState = &vertexInput;
+	pipelineInfo.pInputAssemblyState = &inputAssembly;
+	pipelineInfo.pViewportState = &viewportState;
+	pipelineInfo.pRasterizationState = &rasterization;
+	pipelineInfo.pMultisampleState = &multisample;
+	pipelineInfo.pDepthStencilState = &depthStencil;
+	pipelineInfo.pColorBlendState = &colorBlend;
+	pipelineInfo.layout = m_CausticsLayout;
+	pipelineInfo.renderPass = m_CausticsRenderPass;
+	pipelineInfo.subpass = 0;
+	VK_CHECK_RESULT_H2M(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_CausticsPipeline));
+
+	// The normal map, as the water's
+	m_CausticsSet = shader->CreateDescriptorSets(0);
+	VkWriteDescriptorSet write = *shader->GetDescriptorSet("u_WaterNormalMap", 0);
+	write.dstSet = m_CausticsSet.DescriptorSets[0];
+	write.descriptorCount = 1;
+	write.pImageInfo = &m_NormalMap.As<H2M::VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
+	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+
+	// Valid to sample before the first caustics pass: cleared to 1 (the light of a flat surface)
+	H2M::RefH2M<H2M::VulkanDeviceH2M> vulkanDevice = H2M::VulkanContextH2M::GetCurrentDevice();
+	VkCommandBuffer commandBuffer = vulkanDevice->GetCommandBuffer(true);
+	VkImageMemoryBarrier barrier = ImageBarrier(m_CausticsImage, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_UNDEFINED,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 0, VK_ACCESS_TRANSFER_WRITE_BIT);
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	VkClearColorValue one = { { 1.0f, 1.0f, 1.0f, 1.0f } };
+	vkCmdClearColorImage(commandBuffer, m_CausticsImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &one, 1, &viewInfo.subresourceRange);
+	barrier = ImageBarrier(m_CausticsImage, VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT);
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	vulkanDevice->FlushCommandBuffer(commandBuffer);
+}
+
+void EnvMapVulkanWater::DestroyCaustics()
+{
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	if (m_CausticsPipeline) vkDestroyPipeline(device, m_CausticsPipeline, nullptr);
+	if (m_CausticsLayout) vkDestroyPipelineLayout(device, m_CausticsLayout, nullptr);
+	if (m_CausticsFramebuffer) vkDestroyFramebuffer(device, m_CausticsFramebuffer, nullptr);
+	if (m_CausticsRenderPass) vkDestroyRenderPass(device, m_CausticsRenderPass, nullptr);
+	if (m_CausticsSampler) vkDestroySampler(device, m_CausticsSampler, nullptr);
+	if (m_CausticsView) vkDestroyImageView(device, m_CausticsView, nullptr);
+	if (m_CausticsImage) vkDestroyImage(device, m_CausticsImage, nullptr);
+	if (m_CausticsMemory) vkFreeMemory(device, m_CausticsMemory, nullptr);
+	m_CausticsPipeline = VK_NULL_HANDLE;
+	m_CausticsLayout = VK_NULL_HANDLE;
+	m_CausticsFramebuffer = VK_NULL_HANDLE;
+	m_CausticsRenderPass = VK_NULL_HANDLE;
+	m_CausticsSampler = VK_NULL_HANDLE;
+	m_CausticsView = VK_NULL_HANDLE;
+	m_CausticsImage = VK_NULL_HANDLE;
+	m_CausticsMemory = VK_NULL_HANDLE;
+	m_CausticsDescriptor = {};
+	m_CausticsSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
+	m_CausticsActive = false;
 }
 
 void EnvMapVulkanWater::CreateReflection()
@@ -269,6 +527,7 @@ void EnvMapVulkanWater::Destroy()
 {
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 	DestroyCopyImages();
+	DestroyCaustics();
 	DestroyUniformBuffer(m_ReflectionCamera);
 	DestroyUniformBuffer(m_ReflectionSceneData);
 	m_ReflectionFrameSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
@@ -384,7 +643,7 @@ void EnvMapVulkanWater::WriteSceneCopyDescriptors()
 }
 
 void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float deltaTime, const glm::mat4& view, const glm::mat4& projection,
-	const glm::vec3& cameraPosition, float envMapRotation, VkDescriptorSet frameDescriptorSet)
+	const glm::vec3& cameraPosition, float envMapRotation, const glm::vec3& sunDirection, VkDescriptorSet frameDescriptorSet)
 {
 	// Planar reflection: from above the water what is above the surface; from under the water what is under it (the
 	// surface is a mirror there outside Snell's window)
@@ -429,22 +688,21 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 		// the image flipped)
 		glm::mat4 viewProjection = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, -1.0f, 1.0f)) * obliqueProjection * reflectedView;
 		WriteUniformBuffer(m_ReflectionCamera, &viewProjection, sizeof(glm::mat4));
-		// The mirrored camera; under the water also the water volume, so the PBR shaders dim each mirrored mesh by the water
-		// between it and the surface (the rays of the mirrored camera, above the surface, cross exactly that water)
+		// The mirrored camera and the water (the light under it as in the scene pass, the caustics around the real camera);
+		// under the water also the water volume, so the PBR shaders dim each mirrored mesh by the water between it and the
+		// surface (the rays of the mirrored camera, above the surface, cross exactly that water)
 		EnvMapVulkanSceneDataGPU sceneData;
 		sceneData.CameraPosition = glm::vec3(cameraPosition.x, 2.0f * h - cameraPosition.y, cameraPosition.z);
 		sceneData.EnvMapRotation = envMapRotation;
+		FillWaterSceneData(settings, cameraPosition, sunDirection, sceneData);
 		if (cameraBelow)
 		{
-			sceneData.WaterVolumeBounds = glm::vec4(settings.Center.x, settings.Center.y, settings.Size.x * 0.5f, settings.Size.y * 0.5f);
-			sceneData.WaterVolumeParams = glm::vec4(h, 1.0f, 0.0f, 0.0f);
-			sceneData.WaterVolumeAbsorption = glm::vec4(GetAbsorption(settings), 0.0f);
-			sceneData.WaterVolumeScatter = glm::vec4(settings.ScatterColor, 0.0f);
+			sceneData.WaterVolumeParams.y = 1.0f;
 		}
 		WriteUniformBuffer(m_ReflectionSceneData, &sceneData, sizeof(sceneData));
 
-		// The rest of set 0 (environment maps, BRDF LUT, lights, shadows) as in the main per-frame set
-		std::array<VkCopyDescriptorSet, 8> copies;
+		// The rest of set 0 (environment maps, BRDF LUT, lights, shadows, caustics) as in the main per-frame set
+		std::array<VkCopyDescriptorSet, 9> copies;
 		for (uint32_t i = 0; i < (uint32_t)copies.size(); i++)
 		{
 			VkCopyDescriptorSet& copy = copies[i];
@@ -496,6 +754,52 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 	void* data = shader->MapUniformBuffer(1, WaterSet);
 	memcpy(data, &ub, sizeof(ub));
 	shader->UnmapUniformBuffer(1, WaterSet);
+
+	// Caustics: the grid over the map's square (the same square FillWaterSceneData gives the PBR shaders), with a margin
+	// around it as wide as the waves can move the light at the focus depth (light from there lands inside)
+	m_CausticsActive = IsCausticsOn(settings, sunDirection);
+	if (m_CausticsActive)
+	{
+		glm::vec4 region = GetCausticsRegion(settings, cameraPosition);
+		float cellSize = region.w;
+		float focus = std::max(settings.CausticsFocus, 0.05f);
+		uint32_t marginCells = (uint32_t)glm::clamp(std::ceil(focus * 0.3f / cellSize), 4.0f, 192.0f);
+		uint32_t cellsPerSide = CausticsGridCells + 2 * marginCells;
+		m_CausticsGridVertices = cellsPerSide * cellsPerSide * 6;
+
+		m_CausticsConstants.Region = glm::vec4(region.x, region.y, region.z, (float)CausticsResolution);
+		m_CausticsConstants.Grid = glm::vec4(region.x - marginCells * cellSize, region.y - marginCells * cellSize, cellSize, (float)cellsPerSide);
+		m_CausticsConstants.WaveOffsets = m_WaveOffsets;
+		m_CausticsConstants.Waves = glm::vec4(ub.WaveScale1, ub.WaveScale2, settings.WaveStrength, 0.0f);
+		m_CausticsConstants.Sun = glm::vec4(glm::normalize(sunDirection), focus);
+		// The normal map's mip level whose texels are about a grid cell: smaller waves would only add noise between the samples
+		float normalMapSize = (float)std::max(m_NormalMap->GetWidth(), 1u);
+		m_CausticsConstants.Lod = glm::vec4(std::max(std::log2(cellSize * normalMapSize / ub.WaveScale1), 0.0f),
+			std::max(std::log2(cellSize * normalMapSize / ub.WaveScale2), 0.0f), 0.0f, 0.0f);
+	}
+}
+
+void EnvMapVulkanWater::RecordCaustics(VkCommandBuffer commandBuffer)
+{
+	if (!m_CausticsActive || !m_CausticsPipeline)
+	{
+		return;
+	}
+	VkClearValue clearValue = {};
+	clearValue.color = { { 0.0f, 0.0f, 0.0f, 0.0f } }; // no light until the triangles bring it
+	VkRenderPassBeginInfo beginInfo = {};
+	beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	beginInfo.renderPass = m_CausticsRenderPass;
+	beginInfo.framebuffer = m_CausticsFramebuffer;
+	beginInfo.renderArea.extent = { CausticsResolution, CausticsResolution };
+	beginInfo.clearValueCount = 1;
+	beginInfo.pClearValues = &clearValue;
+	vkCmdBeginRenderPass(commandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_CausticsPipeline);
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_CausticsLayout, 0, 1, &m_CausticsSet.DescriptorSets[0], 0, nullptr);
+	vkCmdPushConstants(commandBuffer, m_CausticsLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CausticsPushConstants), &m_CausticsConstants);
+	vkCmdDraw(commandBuffer, m_CausticsGridVertices, 1, 0, 0);
+	vkCmdEndRenderPass(commandBuffer);
 }
 
 void EnvMapVulkanWater::CopyScene(VkCommandBuffer commandBuffer, H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuffer)
