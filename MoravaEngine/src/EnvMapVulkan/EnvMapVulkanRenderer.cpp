@@ -9,6 +9,7 @@
 #include "EnvMapVulkanShadows.h"
 #include "EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkanWater.h"
+#include "EnvMapVulkanScene.h"
 
 #include "Core/ResourceManager.h"
 
@@ -3664,6 +3665,9 @@ void EnvMapVulkanRenderer::Init()
 
 	// Water: drawn into the scene framebuffer after the opaque meshes (see GeometryPass)
 	s_Water.Create(s_Framebuffer);
+
+	// The scene (EnvMapVulkanScene, being introduced): its operations are checked once at startup
+	EnvMapVulkanScene::SelfTest();
 
 	/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
 	H2M::RenderPassSpecificationH2M renderPassSpec;
