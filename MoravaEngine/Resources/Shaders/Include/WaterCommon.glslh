@@ -32,7 +32,7 @@ vec3 WaterScatteredLight(float depthBelowSurface)
 
 vec3 ApplyWaterVolume(vec3 color, vec3 origin, vec3 direction, float tMax)
 {
-	return ApplyWaterVolumeTo(color, origin, direction, tMax, u_DepthParams.w, u_WaterBounds, u_Absorption, u_ScatterColor);
+	return ApplyWaterVolumeTo(color, origin, direction, tMax, u_DepthParams.w, u_WaterBounds, u_WaterRotation, u_Absorption, u_ScatterColor);
 }
 
 #endif

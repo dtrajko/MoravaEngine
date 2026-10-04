@@ -407,7 +407,7 @@ void main()
 		if (distance > 0.0)
 		{
 			color.rgb = ApplyWaterVolumeTo(color.rgb, u_CameraPosition, toMesh / distance, distance, u_WaterVolumeParams.x,
-				u_WaterVolumeBounds, u_WaterVolumeAbsorption.rgb, u_WaterVolumeScatter.rgb);
+				u_WaterVolumeBounds, u_WaterVolumeParams.w, u_WaterVolumeAbsorption.rgb, u_WaterVolumeScatter.rgb);
 		}
 	}
 	if (u_ShowCascades > 0.5 && u_ShadowsEnabled > 0.5)

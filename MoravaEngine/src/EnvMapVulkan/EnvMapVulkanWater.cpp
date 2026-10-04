@@ -41,7 +41,8 @@ struct WaterSettingsUB
 	float PlanarReflection;    // 1: the planar reflection image of this frame is valid
 	float ReflectionDistortion;
 	float TransparencyFromBelow;
-	float Padding[2];
+	float WaterRotation;       // radians around Y
+	float Padding;
 	glm::mat4 InverseViewProjection; // the camera's clip space -> world (the volume pass rebuilds positions from depth)
 	glm::vec4 WaterBounds;           // the rectangle: center x, center z, half size x, half size z
 	glm::vec4 GerstnerParams;        // x = the number of Gerstner waves
@@ -150,13 +151,14 @@ static bool IsCausticsOn(const EnvMapVulkanWaterSettings& settings, const glm::v
 // camera moves (no shimmering). Returns the corner (x, z), the size and the cell size.
 static glm::vec4 GetCausticsRegion(const EnvMapVulkanWaterSettings& settings, const glm::vec3& cameraPosition)
 {
-	float size = std::max(std::min(settings.CausticsArea, std::max(settings.Size.x, settings.Size.y)), 0.5f);
+	glm::vec2 halfExtents = settings.GetWorldHalfExtents(); // the square is aligned with the world: kept inside the water's bounding box
+	float size = std::max(std::min(settings.CausticsArea, 2.0f * std::max(halfExtents.x, halfExtents.y)), 0.5f);
 	float cellSize = size / (float)CausticsGridCells;
 	glm::vec2 camera = glm::vec2(cameraPosition.x, cameraPosition.z);
 	glm::vec2 center;
 	for (int axis = 0; axis < 2; axis++)
 	{
-		float freedom = (settings.Size[axis] - size) * 0.5f; // how far the square's center can be from the water's
+		float freedom = halfExtents[axis] - size * 0.5f; // how far the square's center can be from the water's
 		center[axis] = freedom > 0.0f ? glm::clamp(camera[axis], settings.Center[axis] - freedom, settings.Center[axis] + freedom) : settings.Center[axis];
 	}
 	glm::vec2 corner = glm::floor((center - size * 0.5f) / cellSize) * cellSize;
@@ -171,7 +173,7 @@ void FillWaterSceneData(const EnvMapVulkanWaterSettings& settings, const glm::ve
 		return;
 	}
 	data.WaterVolumeBounds = glm::vec4(settings.Center.x, settings.Center.y, settings.Size.x * 0.5f, settings.Size.y * 0.5f);
-	data.WaterVolumeParams = glm::vec4(settings.Height, 0.0f, 1.0f, 0.0f);
+	data.WaterVolumeParams = glm::vec4(settings.Height, 0.0f, 1.0f, glm::radians(settings.Rotation));
 	data.WaterVolumeAbsorption = glm::vec4(GetAbsorption(settings), 0.0f);
 	data.WaterVolumeScatter = glm::vec4(settings.ScatterColor, 0.0f);
 	if (IsCausticsOn(settings, sunDirection))
@@ -184,7 +186,16 @@ void FillWaterSceneData(const EnvMapVulkanWaterSettings& settings, const glm::ve
 
 glm::mat4 EnvMapVulkanWaterSettings::GetTransform() const
 {
-	return glm::translate(glm::mat4(1.0f), glm::vec3(Center.x, Height, Center.y)) * glm::scale(glm::mat4(1.0f), glm::vec3(Size.x, 1.0f, Size.y));
+	return glm::translate(glm::mat4(1.0f), glm::vec3(Center.x, Height, Center.y)) *
+		glm::rotate(glm::mat4(1.0f), glm::radians(Rotation), glm::vec3(0.0f, 1.0f, 0.0f)) *
+		glm::scale(glm::mat4(1.0f), glm::vec3(Size.x, 1.0f, Size.y));
+}
+
+glm::vec2 EnvMapVulkanWaterSettings::GetWorldHalfExtents() const
+{
+	float c = std::abs(std::cos(glm::radians(Rotation)));
+	float s = std::abs(std::sin(glm::radians(Rotation)));
+	return glm::vec2(c * Size.x + s * Size.y, s * Size.x + c * Size.y) * 0.5f;
 }
 
 void EnvMapVulkanWater::Create(H2M::RefH2M<H2M::FramebufferH2M> targetFramebuffer)
@@ -793,7 +804,8 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 	ub.PlanarReflection = m_ReflectionActive ? 1.0f : 0.0f;
 	ub.ReflectionDistortion = settings.ReflectionDistortion;
 	ub.TransparencyFromBelow = glm::clamp(settings.TransparencyFromBelow, 0.0f, 1.0f);
-	ub.Padding[0] = ub.Padding[1] = 0.0f;
+	ub.WaterRotation = glm::radians(settings.Rotation);
+	ub.Padding = 0.0f;
 	ub.InverseViewProjection = glm::inverse(projection * view);
 	ub.WaterBounds = glm::vec4(settings.Center.x, settings.Center.y, settings.Size.x * 0.5f, settings.Size.y * 0.5f);
 
@@ -1014,6 +1026,10 @@ bool RaycastWater(const EnvMapVulkanWaterSettings& settings, const glm::vec3& or
 	{
 		return false;
 	}
+	// In the rectangle's own frame (turned back by its rotation, as WaterLocalXZ in Include/WaterVolume.glslh)
 	glm::vec3 hit = origin + direction * t;
-	return std::abs(hit.x - settings.Center.x) <= settings.Size.x * 0.5f && std::abs(hit.z - settings.Center.y) <= settings.Size.y * 0.5f;
+	glm::vec2 offset = glm::vec2(hit.x, hit.z) - settings.Center;
+	float angle = glm::radians(settings.Rotation);
+	glm::vec2 local = glm::vec2(std::cos(angle) * offset.x - std::sin(angle) * offset.y, std::sin(angle) * offset.x + std::cos(angle) * offset.y);
+	return std::abs(local.x) <= settings.Size.x * 0.5f && std::abs(local.y) <= settings.Size.y * 0.5f;
 }

@@ -9,8 +9,18 @@
 const float WaterIndexOfRefraction = 1.33;
 const float WaterForwardScattering = 0.75; // Henyey-Greenstein g: water scatters light mostly forward
 
-// The part of the ray origin + t * direction (0 <= t <= tMax) inside the water; false when the ray misses it
-bool WaterVolumeSegment(vec3 origin, vec3 direction, float tMax, float height, vec4 bounds, out float t0, out float t1)
+// A horizontal offset (from the water's center, or a direction) in the water's own frame: turned back by the water's
+// rotation (radians around Y, as EnvMapVulkanWaterSettings::GetTransform turns the rectangle)
+vec2 WaterLocalXZ(vec2 offset, float rotation)
+{
+	float c = cos(rotation);
+	float s = sin(rotation);
+	return vec2(c * offset.x - s * offset.y, s * offset.x + c * offset.y);
+}
+
+// The part of the ray origin + t * direction (0 <= t <= tMax) inside the water; false when the ray misses it. bounds and
+// rotation: the rectangle (center x, center z, half size x, half size z) and its turn around Y (radians).
+bool WaterVolumeSegment(vec3 origin, vec3 direction, float tMax, float height, vec4 bounds, float rotation, out float t0, out float t1)
 {
 	t0 = 0.0;
 	t1 = tMax;
@@ -23,20 +33,22 @@ bool WaterVolumeSegment(vec3 origin, vec3 direction, float tMax, float height, v
 		float tSurface = (height - origin.y) / direction.y;
 		if (direction.y > 0.0) t1 = min(t1, tSurface); else t0 = max(t0, tSurface);
 	}
+	// The sides, in the water's own frame (centered, axis-aligned)
+	vec2 localOrigin = WaterLocalXZ(origin.xz - bounds.xy, rotation);
+	vec2 localDirection = WaterLocalXZ(direction.xz, rotation);
 	for (int axis = 0; axis < 2; axis++)
 	{
-		float o = axis == 0 ? origin.x : origin.z;
-		float d = axis == 0 ? direction.x : direction.z;
-		float center = axis == 0 ? bounds.x : bounds.y;
+		float o = localOrigin[axis];
+		float d = localDirection[axis];
 		float halfSize = axis == 0 ? bounds.z : bounds.w;
 		if (abs(d) < 1e-6)
 		{
-			if (abs(o - center) > halfSize) return false;
+			if (abs(o) > halfSize) return false;
 		}
 		else
 		{
-			float ta = (center - halfSize - o) / d;
-			float tb = (center + halfSize - o) / d;
+			float ta = (-halfSize - o) / d;
+			float tb = (halfSize - o) / d;
 			t0 = max(t0, min(ta, tb));
 			t1 = min(t1, max(ta, tb));
 		}
@@ -84,7 +96,8 @@ bool WaterDepthAt(vec3 position, out float depth)
 {
 	depth = u_WaterVolumeParams.x - position.y;
 	vec4 bounds = u_WaterVolumeBounds;
-	return u_WaterVolumeParams.z > 0.5 && depth > 0.0 && abs(position.x - bounds.x) <= bounds.z && abs(position.z - bounds.y) <= bounds.w;
+	vec2 local = WaterLocalXZ(position.xz - bounds.xy, u_WaterVolumeParams.w);
+	return u_WaterVolumeParams.z > 0.5 && depth > 0.0 && abs(local.x) <= bounds.z && abs(local.y) <= bounds.w;
 }
 
 // The sun under the water, at a point there: the direction its light comes from (bent toward the vertical by the
@@ -157,10 +170,10 @@ vec3 WaterVolumeLight(float depthBelowSurface, vec3 scatterColor, vec3 absorptio
 
 // What is seen at distance tMax along the ray, through the water the ray crosses: its light is absorbed along the way
 // (Beer-Lambert) and the water's scattered light takes its place (lit as at the middle of the path's depth)
-vec3 ApplyWaterVolumeTo(vec3 color, vec3 origin, vec3 direction, float tMax, float height, vec4 bounds, vec3 absorption, vec3 scatterColor)
+vec3 ApplyWaterVolumeTo(vec3 color, vec3 origin, vec3 direction, float tMax, float height, vec4 bounds, float rotation, vec3 absorption, vec3 scatterColor)
 {
 	float t0, t1;
-	if (!WaterVolumeSegment(origin, direction, tMax, height, bounds, t0, t1))
+	if (!WaterVolumeSegment(origin, direction, tMax, height, bounds, rotation, t0, t1))
 	{
 		return color;
 	}

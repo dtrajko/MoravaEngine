@@ -24,7 +24,8 @@ struct EnvMapVulkanSceneDataGPU
 	glm::vec3 CameraPosition = glm::vec3(0.0f);
 	float EnvMapRotation = 0.0f;
 	glm::vec4 WaterVolumeBounds = glm::vec4(0.0f);     // center x, center z, half size x, half size z
-	glm::vec4 WaterVolumeParams = glm::vec4(0.0f);     // x = height, y = 1 when the volume is on, z = 1 when the scene has water
+	glm::vec4 WaterVolumeParams = glm::vec4(0.0f);     // x = height, y = 1 when the volume is on, z = 1 when the scene has water,
+	                                                   // w = the rectangle's turn around Y (radians)
 	glm::vec4 WaterVolumeAbsorption = glm::vec4(0.0f); // rgb per meter
 	glm::vec4 WaterVolumeScatter = glm::vec4(0.0f);    // rgb
 	glm::vec4 CausticsRegion = glm::vec4(0.0f);        // the caustics map's corner (x, z), 1 / its size, 1 / fade width (map units)
@@ -40,8 +41,9 @@ struct EnvMapVulkanWaterSettings
 {
 	bool Enabled = false;
 	glm::vec2 Center = glm::vec2(0.0f);       // world X and Z
-	glm::vec2 Size = glm::vec2(40.0f);        // along X and Z
+	glm::vec2 Size = glm::vec2(40.0f);        // along the rectangle's own X and Z
 	float Height = 0.0f;                      // world Y of the surface
+	float Rotation = 0.0f;                    // degrees around Y (the water is always level: it turns only around Y)
 
 	// Waves: two layers of the same normal map, at different scales, moving in different directions
 	float WaveDirection = 30.0f;  // degrees around Y; the second layer moves 70 degrees off it
@@ -91,8 +93,11 @@ struct EnvMapVulkanWaterSettings
 	float CausticsFocus = 2.0f;         // meters under the surface where the pattern is computed (deeper: sharper, brighter lines)
 	float CausticsArea = 40.0f;         // meters: the size of the square around the camera that gets caustics
 
-	// The unit square of the water mesh -> the rectangle in the world
+	// The unit square of the water mesh -> the rectangle in the world (Translation: center and height, Rotation: around Y,
+	// Scale: the size, as the transform of a model whose mesh is 1 m wide)
 	glm::mat4 GetTransform() const;
+	// Half the size of the rectangle along the world's X and Z (of its bounding box, when it is turned)
+	glm::vec2 GetWorldHalfExtents() const;
 };
 
 /**

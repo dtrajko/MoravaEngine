@@ -28,10 +28,10 @@ layout (std140, set = WATER_SETTINGS_SET, binding = 1) uniform WaterSettings
 	float u_PlanarReflection;     // offset 92: 1 = u_ReflectionTexture holds this frame's reflection
 	float u_ReflectionDistortion; // offset 96: how much the waves bend the reflection
 	float u_TransparencyFromBelow; // offset 100: 0 = physical Snell's window, 1 = the surface is see-through from below
-	float u_SettingsPadding1;     // offsets 104..111
-	float u_SettingsPadding2;
+	float u_WaterRotation;        // offset 104: the rectangle's turn around Y (radians)
+	float u_SettingsPadding;      // offset 108
 	mat4 u_InverseViewProjection; // offset 112: clip space -> world (the camera's), to rebuild positions from depth
-	vec4 u_WaterBounds;           // offset 176: the water rectangle: center x, center z, half size x, half size z
+	vec4 u_WaterBounds;           // offset 176: the water rectangle: center x, center z, half size x, half size z (turned by u_WaterRotation)
 	vec4 u_GerstnerParams;        // offset 192: x = the number of Gerstner waves (0: a flat surface)
 	// offset 208: per wave i, [2i] = direction x, direction z, wave number k (2 pi / wavelength), amplitude (meters);
 	// [2i + 1] = phase (radians, advanced every frame), steepness Q (how far the surface moves toward the crests)

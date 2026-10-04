@@ -51,7 +51,8 @@ layout (std140, set = 0, binding = 1) uniform SceneData
 	// The scene's water (z = 1 when it has one) is set in every pass: the light under it (the sun bent and dimmed on its
 	// way down, the caustics) lights the meshes there.
 	vec4 u_WaterVolumeBounds;     // offset 16: the water rectangle: center x, center z, half size x, half size z
-	vec4 u_WaterVolumeParams;     // offset 32: x = the water height, y = 1 when the volume is on, z = 1 when the scene has water
+	vec4 u_WaterVolumeParams;     // offset 32: x = the water height, y = 1 when the volume is on, z = 1 when the scene has water,
+	                              // w = the rectangle's turn around Y (radians)
 	vec4 u_WaterVolumeAbsorption; // offset 48: rgb, per meter
 	vec4 u_WaterVolumeScatter;    // offset 64: rgb, the water's scatter color
 	vec4 u_CausticsRegion;        // offset 80: the caustics map (u_CausticsMap): xy = its corner (min x, min z), z = 1 / its size, w = 1 / fade width (map units)

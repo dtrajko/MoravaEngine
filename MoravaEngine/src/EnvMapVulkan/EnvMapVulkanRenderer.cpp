@@ -2003,6 +2003,74 @@ static void OnImGuiRenderLights()
 }
 
 // The water plane: add / remove it, its place and size, the waves and the look (EnvMapVulkanWaterSettings)
+// A row of three drags like ImGui::DragFloat3, with components that can be locked (shown grayed out)
+static bool DragFloat3Locked(const char* label, glm::vec3& value, float speed, const bool locked[3], float min = 0.0f, float max = 0.0f,
+	const char* lockedTooltip = nullptr)
+{
+	ImGui::PushID(label);
+	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+	const float width = (ImGui::CalcItemWidth() - 2.0f * spacing) / 3.0f;
+	bool changed = false;
+	for (int i = 0; i < 3; i++)
+	{
+		if (i > 0)
+		{
+			ImGui::SameLine(0.0f, spacing);
+		}
+		ImGui::PushID(i);
+		ImGui::BeginDisabled(locked[i]);
+		ImGui::SetNextItemWidth(width);
+		changed |= ImGui::DragFloat("##value", &value[i], speed, min, max, "%.3f");
+		ImGui::EndDisabled();
+		if (locked[i] && lockedTooltip && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			ImGui::SetTooltip("%s", lockedTooltip);
+		}
+		ImGui::PopID();
+	}
+	ImGui::SameLine(0.0f, spacing);
+	ImGui::TextUnformatted(label);
+	ImGui::PopID();
+	return changed;
+}
+
+// The water's transform, as a model's (Translation, Rotation, Scale) with the components it doesn't have locked: it is
+// always level (it turns only around Y) and flat (no height scale). Translation is its center and the height of the
+// surface; Scale is its size in meters (the water mesh is a 1 m square). Used by the Water and the Models and Meshes panels.
+static void WaterTransformControls(EnvMapVulkanWaterSettings& water)
+{
+	const bool translationLocked[3] = { false, false, false };
+	const bool rotationLocked[3] = { true, false, true };
+	const bool scaleLocked[3] = { false, true, false };
+
+	glm::vec3 translation(water.Center.x, water.Height, water.Center.y);
+	if (DragFloat3Locked("Translation", translation, 0.05f, translationLocked))
+	{
+		water.Center = glm::vec2(translation.x, translation.z);
+		water.Height = translation.y;
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The center of the water; Y is the height of the surface");
+	}
+
+	glm::vec3 rotation(0.0f, water.Rotation, 0.0f);
+	if (DragFloat3Locked("Rotation", rotation, 0.5f, rotationLocked, 0.0f, 0.0f, "Water is always level: it turns only around Y"))
+	{
+		water.Rotation = std::remainder(rotation.y, 360.0f);
+	}
+
+	glm::vec3 scale(water.Size.x, 1.0f, water.Size.y);
+	if (DragFloat3Locked("Scale", scale, 0.1f, scaleLocked, 0.1f, 10000.0f, "A flat surface: its height doesn't scale"))
+	{
+		water.Size = glm::max(glm::vec2(scale.x, scale.z), glm::vec2(0.1f));
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The size of the water in meters, along its own X and Z");
+	}
+}
+
 static void OnImGuiRenderWater()
 {
 	ImGui::SetNextWindowSize(ImVec2(320.0f, 420.0f), ImGuiCond_FirstUseEver);
@@ -2045,13 +2113,7 @@ static void OnImGuiRenderWater()
 		ImGui::SetTooltip("Selects the water for the gizmo (or click it in the viewport):\n1 move (height and position), 3 resize");
 	}
 
-	ImGui::Columns(2);
-	ImGuiWrapper::Property("Height", water.Height, 0.05f, 0.0f, 0.0f, PropertyFlag::DragProperty); // min = max = 0: no limits
-	ImGuiWrapper::Property("Center X", water.Center.x, 0.1f, 0.0f, 0.0f, PropertyFlag::DragProperty);
-	ImGuiWrapper::Property("Center Z", water.Center.y, 0.1f, 0.0f, 0.0f, PropertyFlag::DragProperty);
-	ImGuiWrapper::Property("Size X", water.Size.x, 0.1f, 0.1f, 10000.0f, PropertyFlag::DragProperty);
-	ImGuiWrapper::Property("Size Z", water.Size.y, 0.1f, 0.1f, 10000.0f, PropertyFlag::DragProperty);
-	ImGui::Columns(1);
+	WaterTransformControls(water);
 
 	ImGui::Separator();
 	ImGui::Text("Waves");
@@ -2283,6 +2345,42 @@ static void OnImGuiRenderModelsAndMeshes()
 	}
 
 	ImGui::Separator();
+
+	// The water: listed first (there is at most one). Not a model: no material slots (it has its own shaders, set in the
+	// Water panel) and only the transform it has (it is always level and axis-aligned: no rotation, no height scale).
+	if (s_WaterSettings.Enabled)
+	{
+		if (ImGui::Selectable("[Water]", s_WaterSelected))
+		{
+			SelectWater();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The scene's water plane (its look in the Water panel)");
+		}
+		if (s_WaterSelected)
+		{
+			EnvMapVulkanWaterSettings& water = s_WaterSettings;
+			ImGui::Separator();
+			ImGui::Text("Transform");
+			WaterTransformControls(water);
+			if (ImGui::Button("Remove Water"))
+			{
+				water.Enabled = false;
+				s_WaterSelected = false;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Edit in Water Panel"))
+			{
+				ImGui::SetWindowFocus("Water");
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Waves, swell, color, caustics and reflection");
+			}
+		}
+		ImGui::Separator();
+	}
 
 	// Empty scene: a large box that says where models can be dropped
 	if (s_LoadedModels.empty())
@@ -5961,32 +6059,45 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 		return;
 	}
 
-	// The water: translate moves it (its position and height), scale resizes it. It doesn't turn: it is an axis-aligned rectangle.
+	// The water: translate moves it (its position and height), rotate turns it around Y only (it is always level), scale
+	// resizes it along its own X and Z (a flat surface: no height scale)
 	if (Scene::s_ImGuizmoType != -1 && s_WaterSelected && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 	{
-		if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE)
+		ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)Scene::s_ImGuizmoType;
+		ImGuizmo::MODE mode = ImGuizmo::WORLD;
+		float snap = 1.0f;
+		if (operation == ImGuizmo::OPERATION::ROTATE)
 		{
-			return;
+			operation = ImGuizmo::OPERATION::ROTATE_Y;
+			snap = 45.0f;
+		}
+		else if (operation == ImGuizmo::OPERATION::SCALE)
+		{
+			operation = ImGuizmo::OPERATION::SCALE_X | ImGuizmo::OPERATION::SCALE_Z;
+			mode = ImGuizmo::LOCAL; // along the water's own sides
 		}
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist();
 		ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
-		float snapValues[3] = { 1.0f, 1.0f, 1.0f };
+		float snapValues[3] = { snap, snap, snap };
 		glm::mat4 transform = s_WaterSettings.GetTransform();
 		if (ImGuizmo::Manipulate(
 			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
 			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
-			(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-			ImGuizmo::WORLD,
+			operation,
+			mode,
 			glm::value_ptr(transform),
 			nullptr,
 			Input::IsKeyPressed(KeyH2M::LeftControl) ? snapValues : nullptr))
 		{
-			glm::vec3 translation, rotation, scale;
-			ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(transform), &translation.x, &rotation.x, &scale.x);
-			s_WaterSettings.Center = glm::vec2(translation.x, translation.z);
-			s_WaterSettings.Height = translation.y;
-			s_WaterSettings.Size = glm::max(glm::vec2(scale.x, scale.z), glm::vec2(0.1f));
+			// Read back from the matrix's columns (Euler angles would turn a Y rotation past 90 degrees into 180, y, 180):
+			// the water's X side is the first column (cos, 0, -sin) * size x, its Z side the third
+			const glm::vec3 sideX = glm::vec3(transform[0]);
+			const glm::vec3 sideZ = glm::vec3(transform[2]);
+			s_WaterSettings.Center = glm::vec2(transform[3].x, transform[3].z);
+			s_WaterSettings.Height = transform[3].y;
+			s_WaterSettings.Rotation = glm::degrees(std::atan2(-sideX.z, sideX.x));
+			s_WaterSettings.Size = glm::max(glm::vec2(glm::length(sideX), glm::length(sideZ)), glm::vec2(0.1f));
 		}
 		return;
 	}
