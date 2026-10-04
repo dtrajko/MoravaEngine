@@ -11,6 +11,7 @@
 layout(location = 0) in vec3 a_Position; // a triangle covering the screen (clip space)
 
 #include "Include/FrameCamera.glslh"
+#include "Include/WaterSettings.glslh" // unused here: declared in both stages as in Water.glsl, so set 1's layouts are identical
 
 void main()
 {

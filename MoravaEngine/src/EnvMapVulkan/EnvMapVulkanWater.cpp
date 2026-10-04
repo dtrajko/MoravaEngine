@@ -14,6 +14,7 @@
 
 #include "Core/Log.h"
 
+#include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <array>
@@ -43,8 +44,20 @@ struct WaterSettingsUB
 	float Padding[2];
 	glm::mat4 InverseViewProjection; // the camera's clip space -> world (the volume pass rebuilds positions from depth)
 	glm::vec4 WaterBounds;           // the rectangle: center x, center z, half size x, half size z
+	glm::vec4 GerstnerParams;        // x = the number of Gerstner waves
+	glm::vec4 GerstnerWaves[8];      // per wave: (direction x, direction z, wave number, amplitude), (phase, steepness, 0, 0)
 };
-static_assert(sizeof(WaterSettingsUB) == 192, "WaterSettingsUB must match the std140 layout of WaterSettings in Include/WaterCommon.glslh");
+static_assert(sizeof(WaterSettingsUB) == 336, "WaterSettingsUB must match the std140 layout of WaterSettings in Include/WaterSettings.glslh");
+
+// The swell (Gerstner waves): the longest wave goes along WaveDirection; the others are shorter and turned off it, so the
+// crests cross and the pattern doesn't repeat visibly. Their heights are in proportion to their lengths (the same
+// steepness), together SwellHeight.
+static constexpr int SwellWaveCount = 4;
+static constexpr float SwellLengths[SwellWaveCount] = { 1.0f, 0.61f, 0.37f, 0.23f }; // of SwellLength
+static constexpr float SwellAngles[SwellWaveCount] = { 0.0f, 32.0f, -41.0f, 67.0f }; // degrees off WaveDirection
+
+// The surface's grid: cells per side over the water rectangle (the waves move its vertices)
+static constexpr uint32_t WaterGridCells = 256;
 
 static constexpr uint32_t WaterSet = 1; // the water's own descriptor set (set 0 is the per-frame set)
 static constexpr uint32_t FrameSet = 0; // the per-frame set (the reflection's own, with the mirrored camera)
@@ -200,11 +213,42 @@ void EnvMapVulkanWater::Create(H2M::RefH2M<H2M::FramebufferH2M> targetFramebuffe
 	glm::vec3 triangle[3] = { { -1.0f, -1.0f, 0.0f }, { 3.0f, -1.0f, 0.0f }, { -1.0f, 3.0f, 0.0f } };
 	m_FullscreenTriangle = H2M::VertexBufferH2M::Create(triangle, sizeof(triangle));
 
-	// A unit square in XZ, facing up (counter-clockwise seen from above)
-	glm::vec3 vertices[4] = { { -0.5f, 0.0f, -0.5f }, { -0.5f, 0.0f, 0.5f }, { 0.5f, 0.0f, 0.5f }, { 0.5f, 0.0f, -0.5f } };
-	uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
-	m_VertexBuffer = H2M::VertexBufferH2M::Create(vertices, sizeof(vertices));
-	m_IndexBuffer = H2M::IndexBufferH2M::Create(indices, sizeof(indices));
+	// The wireframe: the surface's triangles as lines, over the surface (pulled toward the camera by a depth bias, so the
+	// lines win against the surface they lie on), not hiding anything
+	pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("WaterWireframe");
+	pipelineSpecification.DepthTest = true;
+	pipelineSpecification.DepthWrite = false;
+	pipelineSpecification.Wireframe = true;
+	pipelineSpecification.DepthBiasConstant = -4.0f;
+	pipelineSpecification.DepthBiasSlope = -2.0f;
+	pipelineSpecification.DebugName = "WaterWireframe";
+	m_WireframePipeline = H2M::PipelineH2M::Create(pipelineSpecification);
+
+	// A grid over the unit square in XZ, facing up (counter-clockwise seen from above): the waves move its vertices
+	const uint32_t verticesPerSide = WaterGridCells + 1;
+	std::vector<glm::vec3> vertices;
+	vertices.reserve(verticesPerSide * verticesPerSide);
+	for (uint32_t z = 0; z < verticesPerSide; z++)
+	{
+		for (uint32_t x = 0; x < verticesPerSide; x++)
+		{
+			vertices.push_back({ (float)x / WaterGridCells - 0.5f, 0.0f, (float)z / WaterGridCells - 0.5f });
+		}
+	}
+	std::vector<uint32_t> indices;
+	indices.reserve(WaterGridCells * WaterGridCells * 6);
+	for (uint32_t z = 0; z < WaterGridCells; z++)
+	{
+		for (uint32_t x = 0; x < WaterGridCells; x++)
+		{
+			uint32_t corner = z * verticesPerSide + x; // the cell's corner at the smallest x and z
+			uint32_t cell[6] = { corner, corner + verticesPerSide, corner + verticesPerSide + 1, corner + verticesPerSide + 1, corner + 1, corner };
+			indices.insert(indices.end(), cell, cell + 6);
+		}
+	}
+	m_VertexBuffer = H2M::VertexBufferH2M::Create(vertices.data(), (uint32_t)(vertices.size() * sizeof(glm::vec3)));
+	m_IndexBuffer = H2M::IndexBufferH2M::Create(indices.data(), (uint32_t)(indices.size() * sizeof(uint32_t)));
+	m_IndexCount = (uint32_t)indices.size();
 
 	// Linear data (the slopes of the waves), not sRGB color
 	m_NormalMap = H2M::Texture2D_H2M::Create("Textures/water/waterNormal.png", false);
@@ -418,13 +462,15 @@ void EnvMapVulkanWater::CreateCaustics()
 	pipelineInfo.subpass = 0;
 	VK_CHECK_RESULT_H2M(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_CausticsPipeline));
 
-	// The normal map, as the water's
+	// The normal map and the settings (for the swell): the water's own
 	m_CausticsSet = shader->CreateDescriptorSets(0);
-	VkWriteDescriptorSet write = *shader->GetDescriptorSet("u_WaterNormalMap", 0);
-	write.dstSet = m_CausticsSet.DescriptorSets[0];
-	write.descriptorCount = 1;
-	write.pImageInfo = &m_NormalMap.As<H2M::VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
-	vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+	H2M::RefH2M<H2M::VulkanShaderH2M> waterShader = m_Pipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>();
+	std::array<VkWriteDescriptorSet, 2> writes = { *shader->GetDescriptorSet("u_WaterNormalMap", 0), *shader->GetDescriptorSet("WaterSettings", 0) };
+	writes[0].dstSet = writes[1].dstSet = m_CausticsSet.DescriptorSets[0];
+	writes[0].descriptorCount = writes[1].descriptorCount = 1;
+	writes[0].pImageInfo = &m_NormalMap.As<H2M::VulkanTexture2D_H2M>()->GetVulkanDescriptorInfo();
+	writes[1].pBufferInfo = &waterShader->GetUniformBuffer(1, WaterSet).Descriptor;
+	vkUpdateDescriptorSets(device, (uint32_t)writes.size(), writes.data(), 0, nullptr);
 
 	// Valid to sample before the first caustics pass: cleared to 1 (the light of a flat surface)
 	H2M::RefH2M<H2M::VulkanDeviceH2M> vulkanDevice = H2M::VulkanContextH2M::GetCurrentDevice();
@@ -544,6 +590,7 @@ void EnvMapVulkanWater::Destroy()
 	}
 	m_Pipeline = H2M::RefH2M<H2M::PipelineH2M>();
 	m_VolumePipeline = H2M::RefH2M<H2M::PipelineH2M>();
+	m_WireframePipeline = H2M::RefH2M<H2M::PipelineH2M>();
 	m_FullscreenTriangle = H2M::RefH2M<H2M::VertexBufferH2M>();
 	m_VertexBuffer = H2M::RefH2M<H2M::VertexBufferH2M>();
 	m_IndexBuffer = H2M::RefH2M<H2M::IndexBufferH2M>();
@@ -750,6 +797,33 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 	ub.InverseViewProjection = glm::inverse(projection * view);
 	ub.WaterBounds = glm::vec4(settings.Center.x, settings.Center.y, settings.Size.x * 0.5f, settings.Size.y * 0.5f);
 
+	// The swell. Each wave travels at the speed of a deep water wave of its length (angular frequency sqrt(g k): a wave
+	// twice as long is 1.4x faster); its phase is kept in 0..2 pi, so it doesn't lose precision over time. The steepness
+	// is shared: Q k A of all the waves adds up to SwellSteepness, so at 1 the sharpest crests just close (no loops).
+	std::memset(ub.GerstnerWaves, 0, sizeof(ub.GerstnerWaves));
+	ub.GerstnerParams = glm::vec4(0.0f);
+	if (settings.SwellHeight > 0.0f && settings.SwellLength > 0.0f)
+	{
+		float lengthSum = 0.0f;
+		for (float ratio : SwellLengths)
+		{
+			lengthSum += ratio;
+		}
+		const float gravity = 9.81f;
+		const float steepness = glm::clamp(settings.SwellSteepness, 0.0f, 1.0f);
+		for (int i = 0; i < SwellWaveCount; i++)
+		{
+			float wavelength = std::max(settings.SwellLength * SwellLengths[i], 0.1f);
+			float k = glm::two_pi<float>() / wavelength;
+			float amplitude = settings.SwellHeight * SwellLengths[i] / lengthSum;
+			float angle = glm::radians(settings.WaveDirection + SwellAngles[i]);
+			m_SwellPhases[i] = std::fmod(m_SwellPhases[i] - std::sqrt(gravity * k) * deltaTime, glm::two_pi<float>()); // moves along the direction
+			ub.GerstnerWaves[2 * i] = glm::vec4(std::cos(angle), std::sin(angle), k, amplitude);
+			ub.GerstnerWaves[2 * i + 1] = glm::vec4(m_SwellPhases[i], steepness / (k * amplitude * SwellWaveCount), 0.0f, 0.0f);
+		}
+		ub.GerstnerParams.x = (float)SwellWaveCount;
+	}
+
 	H2M::RefH2M<H2M::VulkanShaderH2M> shader = m_Pipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>();
 	void* data = shader->MapUniformBuffer(1, WaterSet);
 	memcpy(data, &ub, sizeof(ub));
@@ -896,7 +970,8 @@ void EnvMapVulkanWater::RecordVolume(VkCommandBuffer commandBuffer, VkDescriptor
 	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 }
 
-void EnvMapVulkanWater::Record(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet, const EnvMapVulkanWaterSettings& settings)
+void EnvMapVulkanWater::Record(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet, const EnvMapVulkanWaterSettings& settings,
+	float wireframeLineWidth)
 {
 	H2M::RefH2M<H2M::VulkanPipelineH2M> pipeline = m_Pipeline.As<H2M::VulkanPipelineH2M>();
 	VkPipelineLayout layout = pipeline->GetVulkanPipelineLayout();
@@ -913,7 +988,19 @@ void EnvMapVulkanWater::Record(VkCommandBuffer commandBuffer, VkDescriptorSet fr
 	VkDeviceSize offset = 0;
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
 	vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer.As<H2M::VulkanIndexBufferH2M>()->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
-	vkCmdDrawIndexed(commandBuffer, 6, 1, 0, 0, 0);
+	vkCmdDrawIndexed(commandBuffer, m_IndexCount, 1, 0, 0, 0);
+
+	// The wireframe over it: the same grid and sets, the same transform (the vertex stage is shared)
+	if (settings.Wireframe && m_WireframePipeline)
+	{
+		H2M::RefH2M<H2M::VulkanPipelineH2M> wireframe = m_WireframePipeline.As<H2M::VulkanPipelineH2M>();
+		VkPipelineLayout wireframeLayout = wireframe->GetVulkanPipelineLayout();
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, wireframe->GetVulkanPipeline());
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, wireframeLayout, 0, 2, sets, 0, nullptr);
+		vkCmdPushConstants(commandBuffer, wireframeLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &transform);
+		vkCmdSetLineWidth(commandBuffer, wireframeLineWidth); // a dynamic state of line-mode pipelines
+		vkCmdDrawIndexed(commandBuffer, m_IndexCount, 1, 0, 0, 0);
+	}
 }
 
 bool RaycastWater(const EnvMapVulkanWaterSettings& settings, const glm::vec3& origin, const glm::vec3& direction, float& t)

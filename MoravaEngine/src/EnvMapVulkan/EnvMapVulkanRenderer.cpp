@@ -2087,6 +2087,33 @@ static void OnImGuiRenderWater()
 	ImGui::Columns(1);
 
 	ImGui::Separator();
+	ImGui::Text("Swell");
+	ImGui::Columns(2);
+	ImGuiWrapper::Property("Swell Height", water.SwellHeight, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Meters: the most the surface rises above its level. Gerstner waves move the surface's vertices\n"
+			"(the waves above only shade it); 0 keeps it flat");
+	}
+	ImGuiWrapper::Property("Swell Length", water.SwellLength, 0.1f, 1.0f, 200.0f, PropertyFlag::DragProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Meters: the wavelength of the longest of the four waves (the others are shorter and cross it).\n"
+			"Longer waves travel faster, as on real water");
+	}
+	ImGuiWrapper::Property("Steepness", water.SwellSteepness, 0.0f, 1.0f, PropertyFlag::SliderProperty);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("0: round, rolling waves; 1: sharp crests and wide troughs (the surface moves toward the crests)");
+	}
+	ImGuiWrapper::Property("Wireframe", water.Wireframe);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Draws the surface's grid over it, where the waves move it (brighter on the crests)");
+	}
+	ImGui::Columns(1);
+
+	ImGui::Separator();
 	ImGui::Text("Look");
 	ImGui::Columns(2);
 	ImGuiWrapper::Property("Scatter Color", water.ScatterColor, PropertyFlag::ColorProperty);
@@ -4427,7 +4454,14 @@ void EnvMapVulkanRenderer::GeometryPass()
 			vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
 			s_Water.RecordVolume(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0]); // underwater fog, the water seen from the side
-			s_Water.Record(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], s_WaterSettings);
+			// The water's wireframe: its own toggle (Water panel), or the editor's (Environment panel, Wireframe: All, or
+			// Selected while the water is selected), with the editor's line width
+			EnvMapVulkanWaterSettings waterDrawSettings = s_WaterSettings;
+			waterDrawSettings.Wireframe = s_WaterSettings.Wireframe || s_OverlaySettings.Wireframe == OverlayScopeAll ||
+				(s_OverlaySettings.Wireframe == OverlayScopeSelected && s_WaterSelected);
+			const float maxLineWidth = H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetProperties().limits.lineWidthRange[1];
+			s_Water.Record(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], waterDrawSettings,
+				glm::clamp(s_OverlaySettings.LineWidth, 1.0f, maxLineWidth));
 		}
 
 		// Transparent, so after the opaque meshes and the water
@@ -5259,7 +5293,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					ImGui::Combo("Wireframe", &overlay.Wireframe, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
 					if (ImGui::IsItemHovered())
 					{
-						ImGui::SetTooltip("Selected: the selected mesh, or the whole model when no mesh is selected\nAll: every loaded model");
+						ImGui::SetTooltip("Selected: the selected mesh, or the whole model when no mesh is selected (the water's grid\n"
+							"when the water is selected)\nAll: every loaded model and the water");
 					}
 					ImGui::ColorEdit4("Wireframe Color", &overlay.WireframeColor.x, ImGuiColorEditFlags_NoInputs);
 

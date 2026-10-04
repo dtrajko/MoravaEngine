@@ -1,6 +1,7 @@
-// Water surface (SceneEnvMapVulkan, see EnvMapVulkanWater.h): a flat rectangle at the water height, drawn into the HDR
-// scene image after the opaque meshes, from a copy of them (their color and depth).
-// - waves: two normal map layers, scrolling in different directions at different scales
+// Water surface (SceneEnvMapVulkan, see EnvMapVulkanWater.h): a grid over the water rectangle, drawn into the HDR scene
+// image after the opaque meshes, from a copy of them (their color and depth).
+// - waves: the swell, Gerstner waves that move the grid's vertices (Include/WaterSettings.glslh), and the ripples on it,
+//   two normal map layers scrolling in different directions at different scales
 // - reflection: the environment map (the same prefiltered radiance the PBR shaders use), blended by Schlick Fresnel
 //   (water reflects 2% straight down, all of the light at grazing angles)
 // - refraction: the scene behind the surface, bent by the waves; light is absorbed on its way through the water, red
@@ -14,23 +15,7 @@
 #type vertex
 #version 450 core
 
-layout(location = 0) in vec3 a_Position; // a unit square in XZ (-0.5..0.5), y = 0
-
-#include "Include/FrameCamera.glslh"
-
-layout (push_constant) uniform Transform
-{
-	mat4 u_Transform; // the square -> the water rectangle (size, position, height)
-};
-
-layout (location = 0) out vec3 v_WorldPosition;
-
-void main()
-{
-	vec4 worldPosition = u_Transform * vec4(a_Position, 1.0);
-	v_WorldPosition = worldPosition.xyz;
-	gl_Position = u_ViewProjectionMatrix * worldPosition;
-}
+#include "Include/WaterVertex.glslh"
 
 #type fragment
 #version 450 core
@@ -38,7 +23,8 @@ void main()
 const float PI = 3.141592;
 const float Epsilon = 0.00001;
 
-layout (location = 0) in vec3 v_WorldPosition;
+layout (location = 0) in vec3 v_WorldPosition; // on the moved surface
+layout (location = 1) in vec2 v_RestXZ;        // the point's place on the flat surface
 
 layout (location = 0) out vec4 color;
 
@@ -77,18 +63,20 @@ float ViewDepth(float depth)
 	return -u_DepthParams.y / (depth * u_DepthParams.z - u_DepthParams.x);
 }
 
-// The wave normal: two normal map layers, each a slope in X and Z, added (the up component is then normalized back)
-vec3 WaveNormal(vec2 worldXZ)
+// The wave normal: the swell's tilt (the Gerstner waves, computed per pixel: the grid would flatten it) plus the ripples',
+// two normal map layers, each a tilt in X and Z (the up component is then normalized back). restXZ: the point's place on
+// the flat surface (the ripples ride on the swell).
+vec3 WaveNormal(vec2 restXZ)
 {
-	vec3 a = texture(u_WaterNormalMap, worldXZ / u_WaveScale1 + u_WaveOffsets.xy).rbg * 2.0 - 1.0; // x, up, z
-	vec3 b = texture(u_WaterNormalMap, worldXZ / u_WaveScale2 + u_WaveOffsets.zw).rbg * 2.0 - 1.0;
-	vec2 slope = (a.xz / max(a.y, 0.1) + b.xz / max(b.y, 0.1)) * u_WaveStrength;
+	vec3 a = texture(u_WaterNormalMap, restXZ / u_WaveScale1 + u_WaveOffsets.xy).rbg * 2.0 - 1.0; // x, up, z
+	vec3 b = texture(u_WaterNormalMap, restXZ / u_WaveScale2 + u_WaveOffsets.zw).rbg * 2.0 - 1.0;
+	vec2 slope = (a.xz / max(a.y, 0.1) + b.xz / max(b.y, 0.1)) * u_WaveStrength + GerstnerTilt(restXZ);
 	return normalize(vec3(slope.x, 1.0, slope.y));
 }
 
 void main()
 {
-	vec3 N = WaveNormal(v_WorldPosition.xz);
+	vec3 N = WaveNormal(v_RestXZ);
 	vec3 V = normalize(u_CameraPosition - v_WorldPosition);
 	float roughness = max(u_Roughness, 0.02);
 	vec3 up = vec3(0.0, 1.0, 0.0);
@@ -100,7 +88,7 @@ void main()
 		// and the full slope breaks the window into blotches
 		N = -normalize(vec3(N.x * 0.5, N.y, N.z * 0.5));
 		vec3 I = -V; // from the camera up to the surface
-		vec2 waveSlope = WaveNormal(v_WorldPosition.xz).xz; // the full slope of the waves (N above is calmed for the window)
+		vec2 waveSlope = WaveNormal(v_RestXZ).xz; // the full slope of the waves (N above is calmed for the window)
 		vec2 belowUV = gl_FragCoord.xy / vec2(textureSize(u_SceneColor, 0));
 		float distanceToSurface = length(u_CameraPosition - v_WorldPosition);
 
@@ -248,7 +236,7 @@ void main()
 	if (u_FoamAmount > 0.0)
 	{
 		float shallow = 1.0 - clamp(verticalDepth / u_FoamWidth, 0.0, 1.0);
-		float pattern = texture(u_WaterNormalMap, v_WorldPosition.xz / (u_WaveScale2 * 0.5) + u_WaveOffsets.zw * 2.0).r;
+		float pattern = texture(u_WaterNormalMap, v_RestXZ / (u_WaveScale2 * 0.5) + u_WaveOffsets.zw * 2.0).r;
 		float foam = smoothstep(1.0 - shallow, 1.0 - shallow + 0.15, pattern) * shallow * u_FoamAmount;
 		surface = mix(surface, vec3(0.9) * incoming, clamp(foam, 0.0, 1.0));
 	}

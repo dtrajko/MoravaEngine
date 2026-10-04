@@ -10,13 +10,16 @@
 #version 450 core
 
 layout (set = 0, binding = 0) uniform sampler2D u_WaterNormalMap; // x in R, up in B, z in G (as in Water.glsl)
+// Binding 1: the water's settings (the same buffer as the water's), for the Gerstner waves
+#define WATER_SETTINGS_SET 0
+#include "Include/WaterSettings.glslh"
 
 layout (push_constant) uniform Caustics
 {
 	vec4 u_Region;      // the map: xy = its corner in the world (min x, min z), z = its size (square), w = its resolution (texels)
 	vec4 u_Grid;        // the grid: xy = its corner (the map's with a margin around it), z = the cell size, w = cells per side
-	vec4 u_WaveOffsets; // normal map layer 1 offset in xy, layer 2 in zw (as the water's)
-	vec4 u_Waves;       // x, y = world size of a normal map tile (layer 1, 2), z = wave strength, w = unused
+	vec4 u_RippleOffsets; // normal map layer 1 offset in xy, layer 2 in zw (as the water's u_WaveOffsets)
+	vec4 u_Ripples;       // x, y = world size of a normal map tile (layer 1, 2), z = wave strength, w = unused
 	vec4 u_Sun;         // xyz = toward the sun, w = the focus depth (meters under the surface)
 	vec4 u_Lod;         // x, y = the normal map mip level of layer 1, 2 (the waves smaller than a grid cell are left out)
 };
@@ -25,12 +28,13 @@ layout (location = 0) out vec2 v_SourceTexel;
 
 const float WaterIndexOfRefraction = 1.33;
 
-// The wave normal, as in Water.glsl (two normal map layers, their slopes added), at a mip level that matches the grid
+// The wave normal, as in Water.glsl (the swell's tilt plus the two normal map layers'), the ripples at a mip level that
+// matches the grid. The swell moves the surface too; its focusing comes from its tilt, the small shift of the point is left out.
 vec3 WaveNormal(vec2 worldXZ)
 {
-	vec3 a = textureLod(u_WaterNormalMap, worldXZ / u_Waves.x + u_WaveOffsets.xy, u_Lod.x).rbg * 2.0 - 1.0; // x, up, z
-	vec3 b = textureLod(u_WaterNormalMap, worldXZ / u_Waves.y + u_WaveOffsets.zw, u_Lod.y).rbg * 2.0 - 1.0;
-	vec2 slope = (a.xz / max(a.y, 0.1) + b.xz / max(b.y, 0.1)) * u_Waves.z;
+	vec3 a = textureLod(u_WaterNormalMap, worldXZ / u_Ripples.x + u_RippleOffsets.xy, u_Lod.x).rbg * 2.0 - 1.0; // x, up, z
+	vec3 b = textureLod(u_WaterNormalMap, worldXZ / u_Ripples.y + u_RippleOffsets.zw, u_Lod.y).rbg * 2.0 - 1.0;
+	vec2 slope = (a.xz / max(a.y, 0.1) + b.xz / max(b.y, 0.1)) * u_Ripples.z + GerstnerTilt(worldXZ);
 	return normalize(vec3(slope.x, 1.0, slope.y));
 }
 

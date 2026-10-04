@@ -40,6 +40,10 @@ namespace H2M
 		bool DepthWrite = true;
 		bool Wireframe = false;
 		float LineWidth = 1.0f;
+		// Depth bias (Vulkan units; both 0: off). Negative values pull the primitives toward the camera, e.g. a wireframe
+		// drawn over the same surface
+		float DepthBiasConstant = 0.0f;
+		float DepthBiasSlope = 0.0f;
 
 		std::string DebugName;
 	};

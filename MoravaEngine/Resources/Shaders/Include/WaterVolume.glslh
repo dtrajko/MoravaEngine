@@ -89,9 +89,12 @@ bool WaterDepthAt(vec3 position, out float depth)
 
 // The sun under the water, at a point there: the direction its light comes from (bent toward the vertical by the
 // surface) and the part of it left there: what the surface lets in, dimmed on the slanted way down (Beer-Lambert),
-// gathered and spread by the waves (caustics). False where the point isn't under the water.
+// gathered and spread by the waves (caustics). False where the point isn't under the water (the sun as it is: GLSL
+// copies out parameters back even when they aren't written, so they always get a value).
 bool WaterSunlightAt(vec3 position, out vec3 lightDirection, out vec3 transmittance)
 {
+	lightDirection = u_Sun.Direction;
+	transmittance = vec3(1.0);
 	float depth;
 	if (!WaterDepthAt(position, depth))
 	{
@@ -99,7 +102,6 @@ bool WaterSunlightAt(vec3 position, out vec3 lightDirection, out vec3 transmitta
 	}
 	if (u_Sun.Direction.y <= 0.0)
 	{
-		lightDirection = u_Sun.Direction;
 		transmittance = vec3(0.0); // the sun is below the horizon: none of its light gets into the water
 		return true;
 	}

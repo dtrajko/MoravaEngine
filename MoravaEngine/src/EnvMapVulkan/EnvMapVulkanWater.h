@@ -50,6 +50,14 @@ struct EnvMapVulkanWaterSettings
 	float WaveScale1 = 7.0f;      // world size of one normal map tile, layer 1 (larger waves)
 	float WaveScale2 = 2.5f;      // layer 2 (ripples)
 
+	// Swell: Gerstner waves that move the surface's vertices (the normal map layers above only shade it). Four waves around
+	// WaveDirection, the longest SwellLength long and the others shorter, each traveling at the speed of a real deep water
+	// wave of its length (longer waves are faster).
+	float SwellHeight = 0.25f;    // meters: the most the surface rises above its level (0: flat)
+	float SwellLength = 12.0f;    // meters: the wavelength of the longest wave
+	float SwellSteepness = 0.5f;  // 0: round waves; 1: sharp crests (the surface moves toward them, the troughs widen)
+	bool Wireframe = false;       // draws the surface's grid over it, where the waves moved it
+
 	// Look
 	glm::vec3 ScatterColor = glm::vec3(0.012f, 0.045f, 0.055f); // light the water body sends back up (linear)
 	float Roughness = 0.06f;            // the sun highlight's size and the reflection's blur
@@ -130,8 +138,10 @@ public:
 	// Inside the scene's continue render pass, before Record: the water volume over the scene (a full-screen pass, see
 	// WaterFog.glsl): the underwater fog, and the water seen from the side or across the waterline
 	void RecordVolume(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet);
-	// Draws the water inside the scene's render pass; frameDescriptorSet is the per-frame set (set 0)
-	void Record(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet, const EnvMapVulkanWaterSettings& settings);
+	// Draws the water inside the scene's render pass (and its wireframe, when the settings ask for it, with lines
+	// wireframeLineWidth pixels wide); frameDescriptorSet is the per-frame set (set 0)
+	void Record(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet, const EnvMapVulkanWaterSettings& settings,
+		float wireframeLineWidth = 1.0f);
 
 	// This frame draws the caustics (they are enabled and the sun is up)
 	bool IsCausticsActive() const { return m_CausticsActive; }
@@ -143,9 +153,12 @@ public:
 private:
 	H2M::RefH2M<H2M::PipelineH2M> m_Pipeline;
 	H2M::RefH2M<H2M::PipelineH2M> m_VolumePipeline;              // WaterFog.glsl
+	H2M::RefH2M<H2M::PipelineH2M> m_WireframePipeline;           // WaterWireframe.glsl
 	H2M::RefH2M<H2M::VertexBufferH2M> m_FullscreenTriangle;     // for the volume pass
-	H2M::RefH2M<H2M::VertexBufferH2M> m_VertexBuffer;
+	H2M::RefH2M<H2M::VertexBufferH2M> m_VertexBuffer;           // the surface's grid over the unit square
 	H2M::RefH2M<H2M::IndexBufferH2M> m_IndexBuffer;
+	uint32_t m_IndexCount = 0;
+	float m_SwellPhases[4] = {};                                 // radians, advanced every frame (wrapped)
 	H2M::RefH2M<H2M::Texture2D_H2M> m_NormalMap;
 	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet m_DescriptorSet;
 	glm::vec4 m_WaveOffsets = glm::vec4(0.0f); // in normal map tiles: layer 1 in xy, layer 2 in zw

@@ -1,0 +1,23 @@
+// The vertex stage of the water surface (Water.glsl) and of its wireframe (WaterWireframe.glsl): a grid over the unit
+// square, placed on the water rectangle and moved by the Gerstner waves (Include/WaterSettings.glslh)
+
+layout(location = 0) in vec3 a_Position; // a grid over the unit square in XZ (-0.5..0.5), y = 0
+
+#include "FrameCamera.glslh"
+#include "WaterSettings.glslh"
+
+layout (push_constant) uniform Transform
+{
+	mat4 u_Transform; // the square -> the water rectangle (size, position, height)
+};
+
+layout (location = 0) out vec3 v_WorldPosition; // where the waves moved the point
+layout (location = 1) out vec2 v_RestXZ;        // where it is on the flat surface (the waves and ripples are looked up there)
+
+void main()
+{
+	vec3 rest = (u_Transform * vec4(a_Position, 1.0)).xyz;
+	v_WorldPosition = rest + GerstnerDisplacement(rest.xz);
+	v_RestXZ = rest.xz;
+	gl_Position = u_ViewProjectionMatrix * vec4(v_WorldPosition, 1.0);
+}

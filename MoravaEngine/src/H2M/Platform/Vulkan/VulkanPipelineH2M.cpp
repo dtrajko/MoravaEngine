@@ -173,7 +173,9 @@ namespace H2M
 			rasterizationState.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 			rasterizationState.depthClampEnable = VK_FALSE;
 			rasterizationState.rasterizerDiscardEnable = VK_FALSE;
-			rasterizationState.depthBiasEnable = VK_FALSE;
+			rasterizationState.depthBiasEnable = (m_Specification.DepthBiasConstant != 0.0f || m_Specification.DepthBiasSlope != 0.0f) ? VK_TRUE : VK_FALSE;
+			rasterizationState.depthBiasConstantFactor = m_Specification.DepthBiasConstant;
+			rasterizationState.depthBiasSlopeFactor = m_Specification.DepthBiasSlope;
 			rasterizationState.lineWidth = m_Specification.LineWidth; // dynamic for line and wireframe pipelines (see below)
 
 			// Color blend state describes how blend factors are calculated (if used)
@@ -438,7 +440,9 @@ namespace H2M
 			rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
 			rasterizationState.depthClampEnable = VK_FALSE;
 			rasterizationState.rasterizerDiscardEnable = VK_FALSE;
-			rasterizationState.depthBiasEnable = VK_FALSE;
+			rasterizationState.depthBiasEnable = (m_Specification.DepthBiasConstant != 0.0f || m_Specification.DepthBiasSlope != 0.0f) ? VK_TRUE : VK_FALSE;
+			rasterizationState.depthBiasConstantFactor = m_Specification.DepthBiasConstant;
+			rasterizationState.depthBiasSlopeFactor = m_Specification.DepthBiasSlope;
 			rasterizationState.lineWidth = m_Specification.LineWidth; // this is dynamic
 
 			// Color blend state describes how blend factors are calculated (if used)

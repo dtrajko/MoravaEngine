@@ -260,7 +260,15 @@ namespace H2M
 			uint32_t size = static_cast<uint32_t>(compiler.get_declared_struct_size(bufferType));
 
 			ShaderDescriptorSetH2M& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
-			H2M_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end());
+			// A block declared in several stages (e.g. the water settings in the vertex and the fragment stage) is one
+			// binding, visible to all of them
+			auto existingBuffer = shaderDescriptorSet.UniformBuffers.find(binding);
+			if (existingBuffer != shaderDescriptorSet.UniformBuffers.end())
+			{
+				H2M_CORE_ASSERT(existingBuffer->second.Size == size, "A uniform block shared by several stages must be declared identically");
+				existingBuffer->second.ShaderStage = (VkShaderStageFlagBits)(existingBuffer->second.ShaderStage | shaderStage);
+				continue;
+			}
 
 			// UniformBuffer& buffer = shaderDescriptorSet.UniformBuffers[bindingPoint];
 			UniformBufferH2M& buffer = shaderDescriptorSet.UniformBuffers[binding];
@@ -341,7 +349,12 @@ namespace H2M
 			uint32_t dimension = type.image.dim;
 
 			ShaderDescriptorSetH2M& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
-			H2M_CORE_ASSERT(shaderDescriptorSet.ImageSamplers.find(binding) == shaderDescriptorSet.ImageSamplers.end());
+			auto existingSampler = shaderDescriptorSet.ImageSamplers.find(binding);
+			if (existingSampler != shaderDescriptorSet.ImageSamplers.end())
+			{
+				existingSampler->second.ShaderStage = (VkShaderStageFlagBits)(existingSampler->second.ShaderStage | shaderStage); // as uniform blocks
+				continue;
+			}
 
 			auto& imageSampler = shaderDescriptorSet.ImageSamplers[binding];
 			// ImageSampler imageSampler;
