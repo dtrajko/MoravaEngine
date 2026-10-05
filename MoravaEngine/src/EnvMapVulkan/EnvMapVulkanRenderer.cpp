@@ -10,6 +10,7 @@
 #include "EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
+#include "EnvMapVulkanSceneSerializer.h"
 
 #include "Core/ResourceManager.h"
 
@@ -362,6 +363,7 @@ static EnvMapVulkanLightEnvironment s_Lights;
 static bool s_ExtractSunFromEnvironment = true;
 static EnvMapVulkanExtractedSun s_ExtractedSun;   // of the current environment map
 static bool s_PendingSunAlign = true;             // align the sun at the start of the next Draw (startup, a sun extracted)
+static bool s_KeepSunOnNextEnvironmentLoad = false; // an opened scene's map: its saved sun is not turned to the map's sun
 // Cascaded shadow maps of the sun (see EnvMapVulkanShadows.h)
 static EnvMapVulkanShadowMap s_ShadowMap;
 static EnvMapVulkanShadowSettings s_ShadowSettings;
@@ -862,6 +864,7 @@ static void LoadModel(const std::string& filepath, std::optional<glm::vec3> grou
 		EnvMapVulkanEntityID partEntity = s_Scene.CreateEntity(name, entity);
 		MeshPartComponent& part = s_Scene.Add<MeshPartComponent>(partEntity);
 		part.MeshIndex = m;
+		part.SourceMeshIndex = m;
 		part.Material = mesh->MaterialIndex < modelMaterials.size() ? modelMaterials[mesh->MaterialIndex] : EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
 		part.OriginalTransform = mesh->Transform;
 		TransformComponent& partTransform = s_Scene.Get<TransformComponent>(partEntity);
@@ -3341,6 +3344,26 @@ static void OnImGuiRenderModelsAndMeshes()
 }
 
 
+// ---- Scene files (.mscene, see EnvMapVulkanSceneSerializer.h) ----
+// The scene is saved with its materials (those with unsaved changes go to the Material Library's folder first, so the
+// scene can refer to their files) and the renderer's look settings (shadows, bloom). New and Open ask before unsaved
+// changes are lost. The last scene opened or saved is opened again at startup.
+
+static std::string s_SceneFilePath;           // empty: never saved ("Untitled")
+static std::string s_SceneName = "Untitled";
+static std::string s_SavedSceneText;          // the scene as last saved, opened or created (unsaved changes: it differs)
+static bool s_SceneHasUnsavedChanges = false;
+static const char* s_EditorStateFile = "assets/cache/EnvMapVulkanEditor.yaml"; // the last scene (opened again at startup)
+
+// A scene operation requested from the File menu or a shortcut, carried out at the start of the next Draw (it replaces
+// models and materials the frame may be drawing); New and Open first ask about unsaved changes
+enum class SceneOperation { None, New, Open };
+static SceneOperation s_PendingSceneOperation = SceneOperation::None;
+static std::string s_PendingScenePath;
+static bool s_SceneOperationConfirmed = false; // the unsaved changes question was answered
+static bool s_AskAboutUnsavedChanges = false;  // opens the question (see OnImGuiRenderUnsavedChangesPopup)
+
+
 // ---- Scene Hierarchy and Properties panels ----
 // Scene Hierarchy: every entity of the scene in its tree (the environment, the sun, lights, the water, models with their
 // parts). Click selects (shared with the viewport); double-click or F2 renames; Delete or the context menu removes; drag an
@@ -3718,6 +3741,12 @@ static void OnImGuiRenderSceneHierarchy()
 	}
 	ImGui::SameLine();
 	ImGui::Checkbox("Light Icons", &s_ShowLightGizmos);
+	ImGui::TextDisabled("Scene: %s%s", s_SceneName.c_str(), s_SceneHasUnsavedChanges ? " *" : "");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("%s%s", s_SceneFilePath.empty() ? "Not saved yet (File > Save Scene)" : s_SceneFilePath.c_str(),
+			s_SceneHasUnsavedChanges ? "\n* unsaved changes" : "");
+	}
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("Light icons in the viewport (click one to select the light), and the selected light's range and cone");
@@ -3867,6 +3896,533 @@ static void OnImGuiRenderProperties()
 	}
 
 	ImGui::End();
+}
+
+static void WriteRenderSettings(YAML::Emitter& out)
+{
+	const EnvMapVulkanShadowSettings& shadows = s_ShadowSettings;
+	out << YAML::Key << "Shadows" << YAML::Value << YAML::BeginMap;
+	out << YAML::Key << "Distance" << YAML::Value << shadows.Distance;
+	out << YAML::Key << "Resolution" << YAML::Value << shadows.Resolution;
+	out << YAML::Key << "SplitLambda" << YAML::Value << shadows.SplitLambda;
+	out << YAML::Key << "Softness" << YAML::Value << shadows.Softness;
+	out << YAML::Key << "DepthBias" << YAML::Value << shadows.DepthBias;
+	out << YAML::Key << "SlopeBias" << YAML::Value << shadows.SlopeBias;
+	out << YAML::Key << "NormalBias" << YAML::Value << shadows.NormalBias;
+	out << YAML::EndMap;
+
+	const EnvMapVulkanLocalShadowSettings& local = s_LocalShadowSettings;
+	out << YAML::Key << "LocalShadows" << YAML::Value << YAML::BeginMap;
+	out << YAML::Key << "SpotResolution" << YAML::Value << local.SpotResolution;
+	out << YAML::Key << "PointResolution" << YAML::Value << local.PointResolution;
+	out << YAML::Key << "Softness" << YAML::Value << local.Softness;
+	out << YAML::Key << "DepthBias" << YAML::Value << local.DepthBias;
+	out << YAML::Key << "SlopeBias" << YAML::Value << local.SlopeBias;
+	out << YAML::Key << "NormalBias" << YAML::Value << local.NormalBias;
+	out << YAML::EndMap;
+
+	const BloomSettingsVulkan& bloom = s_BloomSettings;
+	out << YAML::Key << "Bloom" << YAML::Value << YAML::BeginMap;
+	out << YAML::Key << "Enabled" << YAML::Value << bloom.Enabled;
+	out << YAML::Key << "Threshold" << YAML::Value << bloom.Threshold;
+	out << YAML::Key << "Knee" << YAML::Value << bloom.Knee;
+	out << YAML::Key << "UpsampleScale" << YAML::Value << bloom.UpsampleScale;
+	out << YAML::Key << "Intensity" << YAML::Value << bloom.Intensity;
+	out << YAML::Key << "DirtEnabled" << YAML::Value << bloom.DirtEnabled;
+	out << YAML::Key << "DirtIntensity" << YAML::Value << bloom.DirtIntensity;
+	out << YAML::EndMap;
+}
+
+template<typename T>
+static void ReadSetting(const YAML::Node& node, const char* key, T& value)
+{
+	if (node && node[key])
+	{
+		value = node[key].as<T>();
+	}
+}
+
+static void ReadRenderSettings(const YAML::Node& settings)
+{
+	if (!settings)
+	{
+		return;
+	}
+	// Shadow map resolutions are recreated at the start of the next Draw (the maps' descriptors may be in use)
+	if (YAML::Node shadows = settings["Shadows"])
+	{
+		EnvMapVulkanShadowSettings& s = s_ShadowSettings;
+		ReadSetting(shadows, "Distance", s.Distance);
+		ReadSetting(shadows, "SplitLambda", s.SplitLambda);
+		ReadSetting(shadows, "Softness", s.Softness);
+		ReadSetting(shadows, "DepthBias", s.DepthBias);
+		ReadSetting(shadows, "SlopeBias", s.SlopeBias);
+		ReadSetting(shadows, "NormalBias", s.NormalBias);
+		uint32_t resolution = s.Resolution;
+		ReadSetting(shadows, "Resolution", resolution);
+		s_PendingShadowResolution = resolution != s_ShadowMap.GetResolution() ? resolution : 0;
+	}
+	if (YAML::Node local = settings["LocalShadows"])
+	{
+		EnvMapVulkanLocalShadowSettings& s = s_LocalShadowSettings;
+		ReadSetting(local, "Softness", s.Softness);
+		ReadSetting(local, "DepthBias", s.DepthBias);
+		ReadSetting(local, "SlopeBias", s.SlopeBias);
+		ReadSetting(local, "NormalBias", s.NormalBias);
+		uint32_t spot = s.SpotResolution, point = s.PointResolution;
+		ReadSetting(local, "SpotResolution", spot);
+		ReadSetting(local, "PointResolution", point);
+		s_PendingLocalShadowResolutions = glm::uvec2(spot != s.SpotResolution ? spot : 0, point != s.PointResolution ? point : 0);
+	}
+	if (YAML::Node bloom = settings["Bloom"])
+	{
+		BloomSettingsVulkan& b = s_BloomSettings;
+		ReadSetting(bloom, "Enabled", b.Enabled);
+		ReadSetting(bloom, "Threshold", b.Threshold);
+		ReadSetting(bloom, "Knee", b.Knee);
+		ReadSetting(bloom, "UpsampleScale", b.UpsampleScale);
+		ReadSetting(bloom, "Intensity", b.Intensity);
+		ReadSetting(bloom, "DirtEnabled", b.DirtEnabled);
+		ReadSetting(bloom, "DirtIntensity", b.DirtIntensity);
+	}
+}
+
+static std::string SerializeCurrentScene()
+{
+	return EnvMapVulkanSceneSerializer::Serialize(s_Scene, s_SceneName, WriteRenderSettings);
+}
+
+// The current scene's text becomes the "saved" state: no unsaved changes
+static void MarkSceneSaved()
+{
+	s_SavedSceneText = SerializeCurrentScene();
+	s_SceneHasUnsavedChanges = false;
+}
+
+static void RememberLastScene(const std::string& filepath)
+{
+	YAML::Emitter out;
+	out << YAML::BeginMap << YAML::Key << "LastScene" << YAML::Value << filepath << YAML::EndMap;
+	std::error_code error;
+	std::filesystem::create_directories(std::filesystem::path(s_EditorStateFile).parent_path(), error);
+	std::ofstream file(s_EditorStateFile);
+	if (file)
+	{
+		file << out.c_str() << "\n";
+	}
+}
+
+static std::string GetLastScene()
+{
+	try
+	{
+		YAML::Node root = YAML::LoadFile(s_EditorStateFile);
+		return root["LastScene"].as<std::string>("");
+	}
+	catch (const std::exception&)
+	{
+		return std::string(); // no editor state yet
+	}
+}
+
+// Writes the scene file (its file name made by MakeFileName, with the .mscene extension); its materials with unsaved
+// changes are saved first, so the file refers to their saved files
+static bool SaveSceneTo(const std::string& requestedPath)
+{
+	std::filesystem::path path(requestedPath);
+	path.replace_filename(EnvMapVulkanMaterialLibrary::MakeFileName(path.stem().string(), "Scene") + EnvMapVulkanSceneSerializer::FileExtension);
+
+	std::set<EnvMapVulkanMaterial*> saved;
+	bool materialsOk = true;
+	s_Scene.Each<MeshPartComponent>([&](EnvMapVulkanEntityID, MeshPartComponent& part) {
+		if (part.Material && part.Material->HasUnsavedChanges() && saved.insert(part.Material.Raw()).second)
+		{
+			materialsOk &= EnvMapVulkanMaterialLibrary::Save(part.Material);
+		}
+	});
+	if (!materialsOk)
+	{
+		Log::GetLogger()->warn("Scene: a material could not be saved; the scene refers to it by ID only (see above)");
+	}
+
+	s_SceneName = path.stem().string();
+	const std::string text = SerializeCurrentScene();
+	std::error_code error;
+	if (!path.parent_path().empty())
+	{
+		std::filesystem::create_directories(path.parent_path(), error);
+	}
+	std::ofstream file(path);
+	if (!file)
+	{
+		Log::GetLogger()->error("Scene could not be saved: '{0}' can't be written", path.string());
+		return false;
+	}
+	file << text;
+	file.close();
+
+	s_SceneFilePath = EnvMapVulkanSceneSerializer::ToStoredPath(path.string());
+	s_SavedSceneText = text;
+	s_SceneHasUnsavedChanges = false;
+	RememberLastScene(s_SceneFilePath);
+	Log::GetLogger()->info("Scene '{0}' saved to '{1}' ({2} entities, {3} material(s) saved with it)", s_SceneName, s_SceneFilePath,
+		s_Scene.GetEntityCount(), saved.size());
+	return true;
+}
+
+static std::wstring GetScenesFolderForDialog()
+{
+	std::error_code error;
+	std::filesystem::create_directories(EnvMapVulkanSceneSerializer::ScenesFolder, error);
+	return std::filesystem::absolute(EnvMapVulkanSceneSerializer::ScenesFolder, error).wstring();
+}
+
+static void SaveSceneAs()
+{
+	const std::wstring folder = GetScenesFolderForDialog();
+	std::string filepath = Util::ToUtf8(Application::Get()->SaveFile(L"Scene (*.mscene)\0*.mscene\0", L"mscene", folder.c_str()));
+	if (!filepath.empty())
+	{
+		SaveSceneTo(filepath);
+	}
+}
+
+static void SaveScene()
+{
+	if (s_SceneFilePath.empty())
+	{
+		SaveSceneAs();
+	}
+	else
+	{
+		SaveSceneTo(s_SceneFilePath);
+	}
+}
+
+// Everything of the current scene goes (the GPU idle first: its models may be in flight)
+static void ClearScene()
+{
+	vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+	s_Scene.Clear();
+	s_SelectedEntity = NoEntity;
+	s_PendingRemoveEntity = NoEntity;
+	s_RenamingEntity = NoEntity;
+}
+
+// A model entity read from a scene file: its model is loaded, the meshes the scene removed are removed again, and each
+// part gets its mesh index, its original transform and its material (by ID; else from its file; else the model's own)
+static bool AttachModel(EnvMapVulkanEntityID entity, const std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanSceneSerializer::MaterialRef>& materialRefs)
+{
+	ModelComponent& component = s_Scene.Get<ModelComponent>(entity);
+	if (!std::filesystem::exists(component.FilePath) || !IsModelFile(component.FilePath))
+	{
+		Log::GetLogger()->error("Scene: model '{0}' was not found", component.FilePath);
+		return false;
+	}
+	H2M::RefH2M<H2M::ModelH2M> model = H2M::RefH2M<H2M::ModelH2M>::Create(component.FilePath);
+	if (!model || model->GetMeshes().empty())
+	{
+		Log::GetLogger()->error("Scene: model '{0}' could not be loaded", component.FilePath);
+		return false;
+	}
+	s_Scene.Get<ModelComponent>(entity).Model = model;
+
+	const uint32_t meshCount = (uint32_t)model->GetMeshes().size();
+	std::vector<glm::mat4> originalTransforms;
+	for (const auto& mesh : model->GetMeshes())
+	{
+		originalTransforms.push_back(mesh->Transform);
+	}
+	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> modelMaterials = EnvMapVulkanMaterialLibrary::ImportModelMaterials(model);
+
+	// The parts the scene has (one whose mesh the model file no longer has is dropped)
+	std::vector<EnvMapVulkanEntityID> parts;
+	for (EnvMapVulkanEntityID child : std::vector<EnvMapVulkanEntityID>(s_Scene.GetChildren(entity)))
+	{
+		if (const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(child))
+		{
+			if (part->SourceMeshIndex < meshCount)
+			{
+				parts.push_back(child);
+			}
+			else
+			{
+				Log::GetLogger()->warn("Scene: model '{0}' has no mesh {1} any more; part '{2}' dropped", component.FilePath, part->SourceMeshIndex,
+					s_Scene.Get<NameComponent>(child).Name);
+				s_Scene.DestroyEntity(child);
+			}
+		}
+	}
+	if (parts.empty())
+	{
+		// No parts in the file: one per mesh, as when the model is loaded
+		for (uint32_t m = 0; m < meshCount; m++)
+		{
+			const H2M::RefH2M<H2M::MeshH2M>& mesh = model->GetMeshes()[m];
+			std::string name = !mesh->MeshName.empty() ? mesh->MeshName : (!mesh->NodeName.empty() ? mesh->NodeName : "Mesh " + std::to_string(m));
+			EnvMapVulkanEntityID partEntity = s_Scene.CreateEntity(name, entity);
+			MeshPartComponent& part = s_Scene.Add<MeshPartComponent>(partEntity);
+			part.MeshIndex = part.SourceMeshIndex = m;
+			s_Scene.Get<TransformComponent>(partEntity).SetMatrix(mesh->Transform);
+			parts.push_back(partEntity);
+		}
+	}
+	std::set<uint32_t> kept;
+	for (EnvMapVulkanEntityID part : parts)
+	{
+		kept.insert(s_Scene.Get<MeshPartComponent>(part).SourceMeshIndex);
+	}
+	// The meshes removed in the scene (none of its parts uses them), from the last, so the indices before stay valid
+	if (!kept.empty())
+	{
+		for (int m = (int)meshCount - 1; m >= 0; m--)
+		{
+			if (kept.find((uint32_t)m) == kept.end())
+			{
+				model->RemoveMesh((uint32_t)m);
+			}
+		}
+	}
+
+	for (EnvMapVulkanEntityID partEntity : parts)
+	{
+		MeshPartComponent& part = s_Scene.Get<MeshPartComponent>(partEntity);
+		part.MeshIndex = (uint32_t)std::distance(kept.begin(), kept.find(part.SourceMeshIndex)); // its place among the kept meshes
+		part.OriginalTransform = originalTransforms[part.SourceMeshIndex];
+		part.AppliedTransform.SetMatrix(part.OriginalTransform); // the mesh keeps its exact matrix unless the part was moved
+
+		auto ref = materialRefs.find(partEntity);
+		H2M::RefH2M<EnvMapVulkanMaterial> material;
+		if (ref != materialRefs.end())
+		{
+			material = EnvMapVulkanMaterialLibrary::FindByID(ref->second.ID);
+			if (!material && !ref->second.File.empty() && std::filesystem::exists(ref->second.File))
+			{
+				material = EnvMapVulkanMaterialLibrary::Load(ref->second.File);
+			}
+			if (!material)
+			{
+				Log::GetLogger()->warn("Scene: part '{0}': its material (ID {1}, '{2}') was not found; the model's own is used",
+					s_Scene.Get<NameComponent>(partEntity).Name, ref->second.ID, ref->second.File);
+			}
+		}
+		if (!material)
+		{
+			const auto& mesh = model->GetMeshes()[part.MeshIndex];
+			material = mesh->MaterialIndex < modelMaterials.size() ? modelMaterials[mesh->MaterialIndex] : EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
+		}
+		part.Material = material;
+	}
+	return true;
+}
+
+static void NewSceneNow()
+{
+	ClearScene();
+	// The environment's settings back to their defaults (the map stays: loading it again would take a while)
+	const EnvironmentComponent defaults;
+	s_EnvMapRotation = defaults.Rotation;
+	s_Exposure = defaults.Exposure;
+	s_AutoExposureEnabled = defaults.AutoExposure;
+	s_TonemapHuePreservation = defaults.HuePreservation;
+	s_ExtractSunFromEnvironment = defaults.ExtractSun;
+	s_Data.SceneData.SkyboxLod = defaults.SkyboxLod;
+	CreateEnvironmentEntity();
+	CreateSunEntity();
+	s_PendingSunAlign = true; // the sun on the map's sun, as at startup
+	s_SceneFilePath.clear();
+	s_SceneName = "Untitled";
+	ExtractLights();
+	ExtractWater();
+	MarkSceneSaved();
+	Log::GetLogger()->info("New scene");
+}
+
+static bool OpenSceneNow(const std::string& filepath)
+{
+	// Read into a scratch scene first: a file that can't be read leaves the current scene as it is
+	{
+		EnvMapVulkanScene check;
+		std::string name, error;
+		YAML::Node settings;
+		std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanSceneSerializer::MaterialRef> refs;
+		if (!EnvMapVulkanSceneSerializer::Deserialize(filepath, check, name, settings, refs, error))
+		{
+			Log::GetLogger()->error("Scene '{0}' could not be opened: {1}", filepath, error);
+			return false;
+		}
+	}
+
+	ClearScene();
+	std::string name, error;
+	YAML::Node settings;
+	std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanSceneSerializer::MaterialRef> materialRefs;
+	EnvMapVulkanSceneSerializer::Deserialize(filepath, s_Scene, name, settings, materialRefs, error);
+
+	// The models (an entity whose model can't be loaded is removed, with its children)
+	std::vector<EnvMapVulkanEntityID> models;
+	s_Scene.Each<ModelComponent>([&](EnvMapVulkanEntityID entity, ModelComponent&) { models.push_back(entity); });
+	for (EnvMapVulkanEntityID entity : models)
+	{
+		if (s_Scene.Exists(entity) && !AttachModel(entity, materialRefs))
+		{
+			s_Scene.DestroyEntity(entity);
+		}
+	}
+
+	// A scene always has an environment and a sun
+	if (s_Scene.FindFirst<EnvironmentComponent>() == NoEntity)
+	{
+		CreateEnvironmentEntity();
+	}
+	if (s_Scene.FindFirst<SunComponent>() == NoEntity)
+	{
+		CreateSunEntity();
+	}
+	// The saved sun stays as it is: a map loaded for the scene doesn't turn it to the map's sun
+	const EnvironmentComponent& environment = s_Scene.Get<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
+	s_PendingSunAlign = false;
+	s_KeepSunOnNextEnvironmentLoad = !environment.FilePath.empty() && environment.FilePath != s_EnvMapFilename;
+
+	ReadRenderSettings(settings);
+	s_SceneName = name;
+	s_SceneFilePath = EnvMapVulkanSceneSerializer::ToStoredPath(filepath);
+	ExtractEnvironment();
+	ExtractLights();
+	ExtractWater();
+	ApplyPartTransforms();
+	MarkSceneSaved();
+	RememberLastScene(s_SceneFilePath);
+	Log::GetLogger()->info("Scene '{0}' opened from '{1}': {2} entities", s_SceneName, s_SceneFilePath, s_Scene.GetEntityCount());
+	return true;
+}
+
+// New and Open, from the File menu or a shortcut (asks about unsaved changes first)
+static void RequestNewScene()
+{
+	s_PendingSceneOperation = SceneOperation::New;
+	s_SceneOperationConfirmed = !s_SceneHasUnsavedChanges;
+	s_AskAboutUnsavedChanges = s_SceneHasUnsavedChanges;
+}
+
+static void RequestOpenScene(const std::string& filepath = "")
+{
+	std::string path = filepath;
+	if (path.empty())
+	{
+		const std::wstring folder = GetScenesFolderForDialog();
+		path = Util::ToUtf8(Application::Get()->OpenFile(L"Scene (*.mscene)\0*.mscene\0", folder.c_str()));
+	}
+	if (path.empty())
+	{
+		return;
+	}
+	s_PendingSceneOperation = SceneOperation::Open;
+	s_PendingScenePath = path;
+	s_SceneOperationConfirmed = !s_SceneHasUnsavedChanges;
+	s_AskAboutUnsavedChanges = s_SceneHasUnsavedChanges;
+}
+
+// The question before New or Open drops unsaved changes: Save (then go on), Don't Save, Cancel
+static void OnImGuiRenderUnsavedChangesPopup()
+{
+	if (s_AskAboutUnsavedChanges)
+	{
+		ImGui::OpenPopup("Unsaved Changes##Scene");
+		s_AskAboutUnsavedChanges = false;
+	}
+	if (ImGui::BeginPopupModal("Unsaved Changes##Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::Text("Save the changes to the scene '%s'?", s_SceneName.c_str());
+		ImGui::TextDisabled("They are lost otherwise.");
+		ImGui::Separator();
+		if (ImGui::Button("Save", ImVec2(110.0f, 0.0f)))
+		{
+			SaveScene();
+			s_SceneOperationConfirmed = !s_SceneHasUnsavedChanges; // a cancelled Save As keeps the scene
+			if (!s_SceneOperationConfirmed)
+			{
+				s_PendingSceneOperation = SceneOperation::None;
+			}
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Don't Save", ImVec2(110.0f, 0.0f)))
+		{
+			s_SceneOperationConfirmed = true;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel", ImVec2(110.0f, 0.0f)) || ImGui::IsKeyPressed(ImGuiKey_Escape))
+		{
+			s_PendingSceneOperation = SceneOperation::None;
+			ImGui::CloseCurrentPopup();
+		}
+		ImGui::EndPopup();
+	}
+}
+
+// At the start of Draw: the startup scene (once), and New / Open once confirmed
+static void ProcessSceneOperations()
+{
+	static bool s_StartupDone = false;
+	if (!s_StartupDone)
+	{
+		s_StartupDone = true;
+		const std::string lastScene = GetLastScene();
+		if (lastScene.empty() || !std::filesystem::exists(lastScene) || !OpenSceneNow(lastScene))
+		{
+			MarkSceneSaved(); // the startup scene (environment and sun) has nothing to save yet
+		}
+	}
+	if (s_PendingSceneOperation == SceneOperation::None || !s_SceneOperationConfirmed)
+	{
+		return;
+	}
+	const SceneOperation operation = s_PendingSceneOperation;
+	s_PendingSceneOperation = SceneOperation::None;
+	s_SceneOperationConfirmed = false;
+	if (operation == SceneOperation::New)
+	{
+		NewSceneNow();
+	}
+	else
+	{
+		OpenSceneNow(s_PendingScenePath);
+	}
+}
+
+// Unsaved changes: the scene's text compared with the saved one, a few times a second
+static void UpdateSceneUnsavedChanges()
+{
+	static double s_LastCheck = -1.0;
+	const double now = ImGui::GetTime();
+	if (now - s_LastCheck < 0.3)
+	{
+		return;
+	}
+	s_LastCheck = now;
+	s_SceneHasUnsavedChanges = SerializeCurrentScene() != s_SavedSceneText;
+}
+
+void EnvMapVulkanRenderer::NewScene()
+{
+	RequestNewScene();
+}
+
+void EnvMapVulkanRenderer::OpenScene()
+{
+	RequestOpenScene();
+}
+
+void EnvMapVulkanRenderer::SaveScene()
+{
+	::SaveScene();
+}
+
+void EnvMapVulkanRenderer::SaveSceneAs()
+{
+	::SaveSceneAs();
 }
 
 // All materials of the scene: create, duplicate, delete, and drag onto a mesh (Models and Meshes panel or viewport) to assign
@@ -6751,6 +7307,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			// OnImGuiRenderModelsAndMeshes();
 			// OnImGuiRenderLights();
 			// OnImGuiRenderWater();
+			UpdateSceneUnsavedChanges();
+			OnImGuiRenderUnsavedChangesPopup();
 			OnImGuiRenderSceneHierarchy();
 			OnImGuiRenderProperties();
 			OnImGuiRenderMaterialLibrary();
@@ -6760,6 +7318,27 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 			if (ImGui::BeginMenuBar())
 			{
+				if (ImGui::BeginMenu("File"))
+				{
+					if (ImGui::MenuItem("New Scene", "Ctrl+N"))
+					{
+						RequestNewScene();
+					}
+					if (ImGui::MenuItem("Open Scene...", "Ctrl+O"))
+					{
+						RequestOpenScene();
+					}
+					ImGui::Separator();
+					if (ImGui::MenuItem("Save Scene", "Ctrl+S"))
+					{
+						::SaveScene();
+					}
+					if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S"))
+					{
+						::SaveSceneAs();
+					}
+					ImGui::EndMenu();
+				}
 				if (ImGui::BeginMenu("Docking"))
 				{
 					// Disabling fullscreen would allow the window to be moved to the front of other windows,
@@ -6931,6 +7510,8 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		uint32_t materialCount = EnvMapVulkanMaterialLibrary::LoadFolder(EnvMapVulkanMaterialLibrary::MaterialsFolder);
 		Log::GetLogger()->info("{0} material(s) loaded from '{1}'", materialCount, EnvMapVulkanMaterialLibrary::MaterialsFolder);
 	}
+	// The startup scene, and New / Open from the File menu (after the project's materials: the scene refers to them)
+	ProcessSceneOperations();
 	// Material files loaded from the Material Library
 	if (!s_PendingMaterialFiles.empty())
 	{
@@ -7057,11 +7638,12 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
 			pixels.Size >= (uint64_t)width * height * 4 * sizeof(float) && ExtractSun((float*)pixels.Data, width, height, s_ExtractedSun))
 		{
 			s_Data.envEquirect = H2M::Texture2D_H2M::Create(H2M::ImageFormatH2M::RGBA32F, width, height, pixels.Data);
-			s_PendingSunAlign = true;
+			s_PendingSunAlign = !s_KeepSunOnNextEnvironmentLoad;
 			Log::GetLogger()->info("Sun extracted from '{0}': {1} pixels, {2}x brighter than the map's average, intensity {3}",
 				filepath, s_ExtractedSun.PixelCount, s_ExtractedSun.PeakToAverage, s_ExtractedSun.Intensity);
 		}
 	}
+	s_KeepSunOnNextEnvironmentLoad = false; // only for the map of the scene that asked for it
 	s_EnvMapAutoExposure = ComputeAutoExposure(s_Data.envEquirect);
 
 	uint32_t mipFilterLevels = s_MipMapsEnabled ? glm::min(11u, envFilteredCubemap->GetMipLevelCount()) : 1;

@@ -341,7 +341,7 @@ void Application::ClassifyEvents()
 	}
 }
 
-std::wstring Application::OpenFile(const wchar_t* filter) const
+std::wstring Application::OpenFile(const wchar_t* filter, const wchar_t* initialDirectory) const
 {
 
 #if defined(HZ_PLATFORM_WINDOWS)
@@ -364,6 +364,7 @@ std::wstring Application::OpenFile(const wchar_t* filter) const
 	}
 	ofn.lpstrFile = szFile;
 	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrInitialDir = initialDirectory;
 	ofn.lpstrFilter = filter;
 	ofn.nFilterIndex = 1;
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
@@ -378,7 +379,7 @@ std::wstring Application::OpenFile(const wchar_t* filter) const
 	return std::wstring();
 }
 
-std::wstring Application::SaveFile(const wchar_t* filter, const wchar_t* defaultExtension) const
+std::wstring Application::SaveFile(const wchar_t* filter, const wchar_t* defaultExtension, const wchar_t* initialDirectory) const
 {
 
 #if defined(HZ_PLATFORM_WINDOWS)
@@ -404,6 +405,7 @@ std::wstring Application::SaveFile(const wchar_t* filter, const wchar_t* default
 	ofn.lpstrFilter = filter;
 	ofn.nFilterIndex = 1;
 	ofn.lpstrDefExt = defaultExtension;
+	ofn.lpstrInitialDir = initialDirectory;
 	// A new file name can be typed (OFN_FILEMUSTEXIST is for opening); an existing file is overwritten only after asking
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
 

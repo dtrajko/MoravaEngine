@@ -78,7 +78,8 @@ struct ModelComponent
 // entity, its parent).
 struct MeshPartComponent
 {
-	uint32_t MeshIndex = 0;                            // in the model's meshes
+	uint32_t MeshIndex = 0;                            // in the model's meshes (shifts when other parts are removed)
+	uint32_t SourceMeshIndex = 0;                      // in the model file's meshes (stable: saved scenes match parts by it)
 	H2M::RefH2M<EnvMapVulkanMaterial> Material;        // from the Material Library (by ID in saved scenes, see Phase 4)
 	glm::mat4 OriginalTransform = glm::mat4(1.0f);     // as loaded from the file (Reset Mesh)
 	// Runtime: the transform last written into the model's mesh (the part's transform is written again only when it

@@ -1,5 +1,7 @@
 #include "EnvMapVulkanEditorLayer.h"
 
+#include "EnvMapVulkanRenderer.h"
+
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
@@ -124,12 +126,15 @@ void EnvMapVulkanEditorLayer::CloseProject(bool unloadProject)
 {
 }
 
+// The scene operations (Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, see SceneEnvMapVulkan) are the renderer's: it owns the scene
 void EnvMapVulkanEditorLayer::NewScene(const std::string& name)
 {
+	EnvMapVulkanRenderer::NewScene();
 }
 
 void EnvMapVulkanEditorLayer::OpenScene()
 {
+	EnvMapVulkanRenderer::OpenScene();
 }
 
 void EnvMapVulkanEditorLayer::OpenScene(const std::string& filepath)
@@ -142,10 +147,12 @@ void EnvMapVulkanEditorLayer::OpenScene(const H2M::AssetMetadataH2M& assetMetada
 
 void EnvMapVulkanEditorLayer::SaveScene()
 {
+	EnvMapVulkanRenderer::SaveScene();
 }
 
 void EnvMapVulkanEditorLayer::SaveSceneAs()
 {
+	EnvMapVulkanRenderer::SaveSceneAs();
 }
 
 void EnvMapVulkanEditorLayer::UI_WelcomePopup()

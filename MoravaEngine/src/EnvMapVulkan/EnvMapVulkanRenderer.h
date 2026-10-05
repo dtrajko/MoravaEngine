@@ -57,6 +57,13 @@ public:
 	static void RenderSkybox(VkCommandBuffer commandBuffer);
 
 	static void Draw(H2M::CameraH2M* camera); // TODO: there should be no parameters
+
+	// Scene files (.mscene): New and Open ask about unsaved changes and happen at the start of the next Draw; Save writes
+	// the scene (and its materials with unsaved changes), Save As asks for the file first
+	static void NewScene();
+	static void OpenScene();
+	static void SaveScene();
+	static void SaveSceneAs();
 	// The environment map (HDR) loaded at startup: set by the scene before Init (SceneEnvMapVulkan, from its user preferences)
 	static void SetEnvironmentMapFile(const std::string& filepath);
 	static void ViewportCompositePass(VkCommandBuffer commandBuffer);

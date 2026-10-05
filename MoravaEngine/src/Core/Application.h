@@ -62,9 +62,10 @@ public:
 	inline void SetScene(Scene* scene) { m_Scene = scene; }
 	inline void SetRenderer(RendererBasic* renderer) { m_Renderer = renderer; }
 
-	std::wstring OpenFile(const wchar_t* filter = L"All\0*.*\0") const;
+	// initialDirectory (optional): the folder the dialog starts in
+	std::wstring OpenFile(const wchar_t* filter = L"All\0*.*\0", const wchar_t* initialDirectory = nullptr) const;
 	// defaultExtension (e.g. L"mscene", no dot): added to a typed file name without an extension
-	std::wstring SaveFile(const wchar_t* filter = L"All\0*.*\0", const wchar_t* defaultExtension = nullptr) const;
+	std::wstring SaveFile(const wchar_t* filter = L"All\0*.*\0", const wchar_t* defaultExtension = nullptr, const wchar_t* initialDirectory = nullptr) const;
 
 	void OnImGuiRender(bool* p_open = (bool*)0);
 
