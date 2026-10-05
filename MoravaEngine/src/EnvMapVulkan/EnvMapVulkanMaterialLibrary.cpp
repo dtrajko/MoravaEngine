@@ -6,9 +6,15 @@
 #include "H2M/Renderer/RendererH2M.h"
 
 #include "Core/Log.h"
+#include "Core/ResourceManager.h"
+
+#include <yaml-cpp/yaml.h>
 
 #include <algorithm>
+#include <cctype>
 #include <filesystem>
+#include <fstream>
+#include <random>
 
 
 std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> EnvMapVulkanMaterialLibrary::s_Materials;
@@ -59,8 +65,20 @@ const char* EnvMapVulkanMaterial::GetMapToggleName(uint32_t slot)
 	return slot < MapCount ? s_MapToggleNames[slot] : "";
 }
 
+// A random material ID (0 is "none")
+static uint64_t NewMaterialID()
+{
+	static std::mt19937_64 s_Generator(std::random_device{}());
+	uint64_t id = 0;
+	while (id == 0)
+	{
+		id = s_Generator();
+	}
+	return id;
+}
+
 EnvMapVulkanMaterial::EnvMapVulkanMaterial(const std::string& name)
-	: m_Name(name)
+	: m_ID(NewMaterialID()), m_Name(name)
 {
 	H2M::RefH2M<H2M::ShaderH2M> shader = GetMaterialShader().As<H2M::ShaderH2M>();
 	m_Values = H2M::RefH2M<H2M::VulkanMaterialH2M>::Create(shader, name);
@@ -165,7 +183,9 @@ std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> EnvMapVulkanMaterialLibrary::Impo
 		H2M::RefH2M<EnvMapVulkanMaterial> material;
 		for (auto& existing : s_Materials)
 		{
-			if (existing->m_SourceFile == model->GetFilePath() && existing->m_SourceIndex == i)
+			std::error_code error;
+			if (existing->m_SourceIndex == i && !existing->m_SourceFile.empty() &&
+				std::filesystem::weakly_canonical(existing->m_SourceFile, error) == std::filesystem::weakly_canonical(model->GetFilePath(), error))
 			{
 				material = existing;
 				break;
@@ -279,4 +299,369 @@ std::string EnvMapVulkanMaterialLibrary::MakeUniqueName(const std::string& name)
 			return candidate;
 		}
 	}
+}
+
+// Material files
+
+static const char* s_MapKeys[EnvMapVulkanMaterial::MapCount] = { "Albedo", "Normal", "Metalness", "Roughness", "Emissive", "AmbientOcclusion" };
+
+// The values in a file, by key (the uniform without "u_MaterialUniforms."); the map toggles are kept with the maps
+struct MaterialValueKey
+{
+	const char* Key;
+	const char* Uniform;
+};
+static const MaterialValueKey s_ValueKeys[] = {
+	{ "Metalness",         "u_MaterialUniforms.Metalness" },
+	{ "Roughness",         "u_MaterialUniforms.Roughness" },
+	{ "TilingFactor",      "u_MaterialUniforms.TilingFactor" },
+	{ "EmissiveIntensity", "u_MaterialUniforms.EmissiveIntensity" },
+	{ "MetalRoughPacked",  "u_MaterialUniforms.MetalRoughPacked" },
+	{ "RadiancePrefilter", "u_MaterialUniforms.RadiancePrefilter" },
+};
+
+// A path as stored in a file: relative to the working directory (the project folder) when it is inside it, with forward slashes
+static std::string ToStoredPath(const std::string& path)
+{
+	if (path.empty())
+	{
+		return path;
+	}
+	std::error_code error;
+	std::filesystem::path absolute = std::filesystem::weakly_canonical(path, error);
+	if (error)
+	{
+		return std::filesystem::path(path).generic_string();
+	}
+	std::filesystem::path relative = absolute.lexically_relative(std::filesystem::current_path(error));
+	std::filesystem::path stored = (!relative.empty() && *relative.begin() != "..") ? relative : absolute;
+	return stored.generic_string();
+}
+
+static uint64_t HashBytes(uint64_t hash, const void* data, size_t size)
+{
+	const unsigned char* bytes = (const unsigned char*)data;
+	for (size_t i = 0; i < size; i++)
+	{
+		hash = (hash ^ bytes[i]) * 1099511628211ull; // FNV-1a
+	}
+	return hash;
+}
+
+uint64_t EnvMapVulkanMaterial::ComputeContentHash() const
+{
+	// The values are read through the material's uniform storage, which has no const access
+	EnvMapVulkanMaterial& self = const_cast<EnvMapVulkanMaterial&>(*this);
+	uint64_t hash = 14695981039346656037ull;
+	hash = HashBytes(hash, m_Name.data(), m_Name.size());
+	const glm::vec3 albedo = self.Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
+	hash = HashBytes(hash, &albedo, sizeof(albedo));
+	for (const char* name : s_FloatValueNames)
+	{
+		float value = self.Get<float>(name);
+		hash = HashBytes(hash, &value, sizeof(value));
+	}
+	for (uint32_t slot = 0; slot < MapCount; slot++)
+	{
+		std::string path = m_Maps[slot] ? m_Maps[slot]->GetPath() : std::string();
+		hash = HashBytes(hash, &slot, sizeof(slot));
+		hash = HashBytes(hash, path.data(), path.size());
+	}
+	return hash;
+}
+
+// Whether a material file is named after the material: <name>.mmat, or <name>_2.mmat... (taken when it was saved)
+static bool FileFollowsName(const std::string& filepath, const std::string& materialName)
+{
+	const std::string wanted = EnvMapVulkanMaterialLibrary::MakeFileName(materialName, "Material");
+	const std::string stem = std::filesystem::path(filepath).stem().string();
+	if (stem == wanted)
+	{
+		return true;
+	}
+	if (stem.size() <= wanted.size() + 1 || stem.compare(0, wanted.size() + 1, wanted + "_") != 0)
+	{
+		return false;
+	}
+	const std::string suffix = stem.substr(wanted.size() + 1);
+	return std::all_of(suffix.begin(), suffix.end(), [](char c) { return std::isdigit((unsigned char)c) != 0; });
+}
+
+bool EnvMapVulkanMaterial::HasUnsavedChanges() const
+{
+	// Never saved, changed since, or its file is still named after an earlier name (Save renames it)
+	return m_FilePath.empty() || ComputeContentHash() != m_SavedHash || !FileFollowsName(m_FilePath, m_Name);
+}
+
+H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::FindByID(uint64_t id)
+{
+	for (auto& material : s_Materials)
+	{
+		if (material->m_ID == id)
+		{
+			return material;
+		}
+	}
+	return H2M::RefH2M<EnvMapVulkanMaterial>();
+}
+
+std::string EnvMapVulkanMaterialLibrary::MakeFileName(const std::string& name, const std::string& fallback)
+{
+	std::string result;
+	bool pendingSeparator = false;
+	for (char c : name)
+	{
+		if (!(std::isalnum((unsigned char)c) || c == '-' || c == '_' || c == '.'))
+		{
+			// A space or a character not allowed: a run of them is one '_' (none at the start or the end)
+			pendingSeparator = !result.empty();
+			continue;
+		}
+		if (pendingSeparator)
+		{
+			result += '_';
+			pendingSeparator = false;
+		}
+		result += c;
+	}
+	return result.empty() ? fallback : result;
+}
+
+bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> material, const std::string& filepath)
+{
+	if (!material)
+	{
+		return false;
+	}
+	const std::string wantedName = MakeFileName(material->m_Name, "Material");
+	std::string path = filepath.empty() ? material->m_FilePath : filepath;
+	std::string folder = MaterialsFolder;
+	std::string previousFile; // the material's file, replaced by a file with its new name (renamed material)
+	if (!filepath.empty())
+	{
+		// A file name chosen in a dialog follows the same rule as the generated ones (the folder is kept as it is)
+		std::filesystem::path chosen(filepath);
+		chosen.replace_filename(MakeFileName(chosen.stem().string(), "Material") + chosen.extension().string());
+		path = chosen.string();
+	}
+	else if (!path.empty())
+	{
+		// The file follows the material's name: a renamed material moves to <new name>.mmat in the same folder
+		if (!FileFollowsName(path, material->m_Name))
+		{
+			previousFile = path;
+			folder = std::filesystem::path(path).parent_path().generic_string();
+			path.clear();
+		}
+	}
+	if (path.empty())
+	{
+		// A file of its own: <name>.mmat in the materials folder (or the folder of its previous file), <name>_2.mmat...
+		// when that one is taken
+		const std::string base = (folder.empty() ? std::string(".") : folder) + "/" + wantedName;
+		path = base + FileExtension;
+		for (uint32_t n = 2; ; n++)
+		{
+			std::error_code existsError;
+			// The material's own previous file doesn't count (a rename that only changes upper / lower case)
+			bool taken = std::filesystem::exists(path) &&
+				!(!previousFile.empty() && std::filesystem::exists(previousFile) && std::filesystem::equivalent(path, previousFile, existsError));
+			for (auto& other : s_Materials)
+			{
+				taken |= other != material && !other->m_FilePath.empty() && std::filesystem::path(other->m_FilePath) == std::filesystem::path(path);
+			}
+			if (!taken)
+			{
+				break;
+			}
+			path = base + "_" + std::to_string(n) + FileExtension;
+		}
+	}
+
+	YAML::Emitter out;
+	out << YAML::BeginMap;
+	out << YAML::Key << "Material" << YAML::Value << YAML::BeginMap;
+	out << YAML::Key << "Version" << YAML::Value << 1;
+	out << YAML::Key << "ID" << YAML::Value << material->m_ID;
+	out << YAML::Key << "Name" << YAML::Value << material->m_Name;
+	if (!material->m_SourceFile.empty())
+	{
+		out << YAML::Key << "Source" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "File" << YAML::Value << ToStoredPath(material->m_SourceFile);
+		out << YAML::Key << "Index" << YAML::Value << material->m_SourceIndex;
+		out << YAML::EndMap;
+	}
+	const glm::vec3 albedo = material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
+	out << YAML::Key << "AlbedoColor" << YAML::Value << YAML::Flow << YAML::BeginSeq << albedo.r << albedo.g << albedo.b << YAML::EndSeq;
+	for (const MaterialValueKey& value : s_ValueKeys)
+	{
+		out << YAML::Key << value.Key << YAML::Value << material->Get<float>(value.Uniform);
+	}
+	out << YAML::Key << "Maps" << YAML::Value << YAML::BeginMap;
+	for (uint32_t slot = 0; slot < EnvMapVulkanMaterial::MapCount; slot++)
+	{
+		H2M::RefH2M<H2M::Texture2D_H2M> map = material->m_Maps[slot];
+		if (!map)
+		{
+			continue;
+		}
+		if (map->GetPath().empty())
+		{
+			Log::GetLogger()->warn("Material '{0}': its {1} map has no file (embedded in the model?) and isn't saved", material->m_Name, s_MapKeys[slot]);
+			continue;
+		}
+		out << YAML::Key << s_MapKeys[slot] << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "File" << YAML::Value << ToStoredPath(map->GetPath());
+		out << YAML::Key << "Enabled" << YAML::Value << (material->Get<float>(s_MapToggleNames[slot]) > 0.5f);
+		out << YAML::EndMap;
+	}
+	out << YAML::EndMap; // Maps
+	out << YAML::EndMap; // Material
+	out << YAML::EndMap;
+
+	std::error_code error;
+	std::filesystem::path parent = std::filesystem::path(path).parent_path();
+	if (!parent.empty())
+	{
+		std::filesystem::create_directories(parent, error);
+	}
+	std::ofstream file(path);
+	if (!file)
+	{
+		Log::GetLogger()->error("Material '{0}' could not be saved: '{1}' can't be written", material->m_Name, path);
+		return false;
+	}
+	file << out.c_str() << "\n";
+	file.close();
+
+	// A renamed material: its old file goes (the new one has everything)
+	if (!previousFile.empty() && std::filesystem::exists(previousFile) && !std::filesystem::equivalent(previousFile, path, error))
+	{
+		std::filesystem::remove(previousFile, error);
+		Log::GetLogger()->info("Material '{0}': its previous file '{1}' was removed (renamed)", material->m_Name, previousFile);
+	}
+
+	material->m_FilePath = ToStoredPath(path);
+	material->m_SavedHash = material->ComputeContentHash();
+	Log::GetLogger()->info("Material '{0}' saved to '{1}'", material->m_Name, material->m_FilePath);
+	return true;
+}
+
+H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::string& filepath)
+{
+	YAML::Node root;
+	try
+	{
+		root = YAML::LoadFile(filepath);
+	}
+	catch (const std::exception& e)
+	{
+		Log::GetLogger()->error("Material file '{0}' could not be read: {1}", filepath, e.what());
+		return H2M::RefH2M<EnvMapVulkanMaterial>();
+	}
+	YAML::Node node = root["Material"];
+	if (!node || !node["ID"])
+	{
+		Log::GetLogger()->error("'{0}' is not a material file (it has no Material with an ID)", filepath);
+		return H2M::RefH2M<EnvMapVulkanMaterial>();
+	}
+
+	const uint64_t id = node["ID"].as<uint64_t>();
+	const std::string name = node["Name"] ? node["Name"].as<std::string>() : std::filesystem::path(filepath).stem().string();
+
+	// The library's material with this ID (reloaded in place), or a new one
+	H2M::RefH2M<EnvMapVulkanMaterial> material = FindByID(id);
+	if (material)
+	{
+		if (material->m_Name != name)
+		{
+			material->m_Name.clear(); // the material's own name doesn't count as taken
+			material->m_Name = MakeUniqueName(name);
+		}
+	}
+	else
+	{
+		material = CreateMaterial(name);
+		material->m_ID = id;
+	}
+
+	if (YAML::Node source = node["Source"])
+	{
+		material->m_SourceFile = source["File"].as<std::string>("");
+		material->m_SourceIndex = source["Index"].as<uint32_t>(0);
+	}
+	YAML::Node albedo = node["AlbedoColor"];
+	if (albedo && albedo.IsSequence() && albedo.size() == 3)
+	{
+		material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor") = glm::vec3(albedo[0].as<float>(), albedo[1].as<float>(), albedo[2].as<float>());
+	}
+	for (const MaterialValueKey& value : s_ValueKeys)
+	{
+		if (node[value.Key])
+		{
+			material->Get<float>(value.Uniform) = node[value.Key].as<float>();
+		}
+	}
+
+	YAML::Node maps = node["Maps"];
+	for (uint32_t slot = 0; slot < EnvMapVulkanMaterial::MapCount; slot++)
+	{
+		YAML::Node map = maps ? maps[s_MapKeys[slot]] : YAML::Node();
+		const std::string mapFile = map ? map["File"].as<std::string>("") : std::string();
+		H2M::RefH2M<H2M::Texture2D_H2M> texture;
+		if (!mapFile.empty())
+		{
+			if (std::filesystem::exists(mapFile))
+			{
+				// Through the texture cache: an image already loaded in this slot's color space is shared
+				texture = ResourceManager::LoadTexture2D_H2M(mapFile, EnvMapVulkanMaterial::IsColorMap(slot));
+			}
+			if (!texture || !texture->Loaded())
+			{
+				Log::GetLogger()->warn("Material '{0}': its {1} map '{2}' could not be loaded", material->m_Name, s_MapKeys[slot], mapFile);
+				texture = H2M::RefH2M<H2M::Texture2D_H2M>();
+			}
+		}
+		if (texture)
+		{
+			material->SetMap(slot, texture);
+			material->Get<float>(s_MapToggleNames[slot]) = map["Enabled"].as<bool>(true) ? 1.0f : 0.0f;
+		}
+		else if (material->HasMap(slot))
+		{
+			material->RemoveMap(slot);
+		}
+		else
+		{
+			material->Get<float>(s_MapToggleNames[slot]) = 0.0f;
+		}
+	}
+
+	material->m_FilePath = ToStoredPath(filepath);
+	material->m_SavedHash = material->ComputeContentHash();
+	return material;
+}
+
+uint32_t EnvMapVulkanMaterialLibrary::LoadFolder(const std::string& folder)
+{
+	std::error_code error;
+	if (!std::filesystem::is_directory(folder, error))
+	{
+		return 0;
+	}
+	std::vector<std::filesystem::path> files;
+	for (const auto& entry : std::filesystem::directory_iterator(folder, error))
+	{
+		if (entry.is_regular_file() && entry.path().extension() == FileExtension)
+		{
+			files.push_back(entry.path());
+		}
+	}
+	std::sort(files.begin(), files.end()); // a stable order in the library
+	uint32_t loaded = 0;
+	for (const auto& file : files)
+	{
+		loaded += Load(file.string()) ? 1 : 0;
+	}
+	return loaded;
 }

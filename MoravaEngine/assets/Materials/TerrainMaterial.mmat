@@ -1,0 +1,18 @@
+Material:
+  Version: 1
+  ID: 9605982881184810903
+  Name: TerrainMaterial
+  Source:
+    File: Models/Terrain/terrain_heightmap.obj
+    Index: 1
+  AlbedoColor: [1, 1, 1]
+  Metalness: 0
+  Roughness: 0.6837722
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Maps:
+    Albedo:
+      File: Models/Terrain/terrain_color.png
+      Enabled: true

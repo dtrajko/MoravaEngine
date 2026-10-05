@@ -378,7 +378,7 @@ std::wstring Application::OpenFile(const wchar_t* filter) const
 	return std::wstring();
 }
 
-std::wstring Application::SaveFile(const wchar_t* filter) const
+std::wstring Application::SaveFile(const wchar_t* filter, const wchar_t* defaultExtension) const
 {
 
 #if defined(HZ_PLATFORM_WINDOWS)
@@ -400,10 +400,12 @@ std::wstring Application::SaveFile(const wchar_t* filter) const
 			break;
 	}
 	ofn.lpstrFile = szFile;
-	ofn.nMaxFile = sizeof(szFile);
+	ofn.nMaxFile = (DWORD)(sizeof(szFile) / sizeof(szFile[0])); // in characters, not bytes
 	ofn.lpstrFilter = filter;
 	ofn.nFilterIndex = 1;
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+	ofn.lpstrDefExt = defaultExtension;
+	// A new file name can be typed (OFN_FILEMUSTEXIST is for opening); an existing file is overwritten only after asking
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
 
 	if (GetSaveFileNameW(&ofn) == TRUE)
 	{

@@ -706,6 +706,14 @@ struct PendingMaterialTexture
 	std::string FilePath; // empty: remove the map
 };
 static std::vector<PendingMaterialTexture> s_PendingMaterialTextures;
+// Material files to load (Load... or dropped on the Material Library), at the start of the next Draw: a file may replace
+// the values and maps of a material in use
+static std::vector<std::string> s_PendingMaterialFiles;
+
+static bool IsMaterialFile(const std::string& filepath)
+{
+	return std::filesystem::path(filepath).extension() == EnvMapVulkanMaterialLibrary::FileExtension;
+}
 
 static bool IsImageFile(const std::string& filepath)
 {
@@ -3917,6 +3925,91 @@ static void OnImGuiRenderMaterialLibrary()
 	}
 	ImGui::EndDisabled();
 
+	// Material files (.mmat): one file per material. The result of a save shows below the buttons for a few seconds.
+	static std::string s_SaveStatus;
+	static double s_SaveStatusTime = -100.0;
+	auto setStatus = [](const std::string& status) {
+		s_SaveStatus = status;
+		s_SaveStatusTime = ImGui::GetTime();
+	};
+	auto saveOne = [&setStatus](H2M::RefH2M<EnvMapVulkanMaterial> material, const std::string& filepath) {
+		if (EnvMapVulkanMaterialLibrary::Save(material, filepath))
+		{
+			setStatus("Saved '" + material->GetName() + "' to " + material->GetFilePath());
+		}
+		else
+		{
+			setStatus("'" + material->GetName() + "' could not be saved (see the log)");
+		}
+	};
+	ImGui::BeginDisabled(!s_SelectedMaterial);
+	if (ImGui::Button("Save"))
+	{
+		saveOne(s_SelectedMaterial, "");
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Saves the selected material to its file, or (never saved) to %s/<name>%s\n"
+			"(file names have no spaces: \"My Material\" is saved as My_Material%s)",
+			EnvMapVulkanMaterialLibrary::MaterialsFolder, EnvMapVulkanMaterialLibrary::FileExtension, EnvMapVulkanMaterialLibrary::FileExtension);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Save As..."))
+	{
+		std::string filepath = Util::ToUtf8(Application::Get()->SaveFile(L"Material (*.mmat)\0*.mmat\0", L"mmat"));
+		if (!filepath.empty())
+		{
+			saveOne(s_SelectedMaterial, filepath);
+		}
+	}
+	ImGui::EndDisabled();
+	ImGui::SameLine();
+	if (ImGui::Button("Save All"))
+	{
+		uint32_t saved = 0, failed = 0;
+		for (const auto& material : EnvMapVulkanMaterialLibrary::GetMaterials())
+		{
+			if (material->HasUnsavedChanges())
+			{
+				EnvMapVulkanMaterialLibrary::Save(material) ? saved++ : failed++;
+			}
+		}
+		Log::GetLogger()->info("Save All: {0} material(s) saved, {1} failed", saved, failed);
+		if (saved == 0 && failed == 0)
+		{
+			setStatus("All materials are already saved (nothing marked *)");
+		}
+		else
+		{
+			setStatus("Saved " + std::to_string(saved) + " material" + (saved == 1 ? "" : "s") + " (one file each)" +
+				(failed > 0 ? ", " + std::to_string(failed) + " could not be saved (see the log)" : ""));
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Saves every material with unsaved changes (marked *), each to its own file;\n"
+			"one never saved goes to %s", EnvMapVulkanMaterialLibrary::MaterialsFolder);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Load..."))
+	{
+		std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"Material (*.mmat)\0*.mmat\0"));
+		if (!filepath.empty())
+		{
+			s_PendingMaterialFiles.push_back(filepath); // loaded at the start of the next frame (see Draw)
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Loads a material file (or drop .mmat files onto this panel). A file of a material already in the\n"
+			"library (the same ID) reloads it; the others are added. %s is loaded at startup.", EnvMapVulkanMaterialLibrary::MaterialsFolder);
+	}
+
+	if (ImGui::GetTime() - s_SaveStatusTime < 5.0)
+	{
+		ImGui::TextDisabled("%s", s_SaveStatus.c_str());
+	}
+
 	static char s_Filter[64] = "";
 	ImGui::SetNextItemWidth(-1.0f);
 	ImGui::InputTextWithHint("##filter", "Filter by name", s_Filter, sizeof(s_Filter));
@@ -3967,7 +4060,8 @@ static void OnImGuiRenderMaterialLibrary()
 				s_RenamingMaterial = nullptr; // Escape: keep the old name
 			}
 		}
-		else if (ImGui::Selectable(material->GetName().c_str(), s_SelectedMaterial == material, ImGuiSelectableFlags_AllowDoubleClick, rowSize))
+		else if (ImGui::Selectable((material->GetName() + (material->HasUnsavedChanges() ? " *" : "") + "##material").c_str(),
+			s_SelectedMaterial == material, ImGuiSelectableFlags_AllowDoubleClick, rowSize))
 		{
 			s_SelectedMaterial = material;
 			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -4003,7 +4097,10 @@ static void OnImGuiRenderMaterialLibrary()
 		if (ImGui::IsItemHovered())
 		{
 			std::string origin = material->GetSourceFile().empty() ? "Created in the editor" : "Imported from " + material->GetSourceFile();
-			ImGui::SetTooltip("%s\nDrag onto a mesh in the Scene Hierarchy, the Properties panel or the viewport to assign it", origin.c_str());
+			std::string file = material->GetFilePath().empty() ? "Not saved yet (*)" :
+				"File: " + material->GetFilePath() + (material->HasUnsavedChanges() ? " (unsaved changes *)" : "");
+			ImGui::SetTooltip("%s\n%s\nDrag onto a mesh in the Scene Hierarchy, the Properties panel or the viewport to assign it",
+				origin.c_str(), file.c_str());
 		}
 
 		int users = CountMaterialUsers(material);
@@ -4029,6 +4126,19 @@ static void OnImGuiRenderMaterialLibrary()
 	if (duplicateRequest)
 	{
 		s_SelectedMaterial = EnvMapVulkanMaterialLibrary::Duplicate(duplicateRequest);
+	}
+
+	// The whole panel is a drop area for material files
+	ImVec2 panelMin = ImGui::GetWindowPos();
+	ImVec2 panelMax(panelMin.x + ImGui::GetWindowSize().x, panelMin.y + ImGui::GetWindowSize().y);
+	if (ImGui::BeginDragDropTargetCustom(ImRect(panelMin, panelMax), ImGui::GetID("##MaterialLibraryDropArea")))
+	{
+		std::string filepath;
+		if (AcceptFileDrop(panelMin, panelMax, IsMaterialFile, "a material file (.mmat)", filepath))
+		{
+			s_PendingMaterialFiles.push_back(filepath); // loaded at the start of the next frame (see Draw)
+		}
+		ImGui::EndDragDropTarget();
 	}
 
 	ImGui::End();
@@ -4877,6 +4987,7 @@ void EnvMapVulkanRenderer::Init()
 	EnvMapVulkanScene::SelfTest();
 	CreateEnvironmentEntity();
 	CreateSunEntity();
+
 	ExtractLights();
 	ExtractWater();
 
@@ -6811,6 +6922,29 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		{
 			Log::GetLogger()->error("Lens dirt texture '{0}' could not be loaded.", filepath);
 		}
+	}
+	// The project's materials (saved in the Material Library), at the start of the first frame, as models and maps are loaded
+	static bool s_ProjectMaterialsLoaded = false;
+	if (!s_ProjectMaterialsLoaded)
+	{
+		s_ProjectMaterialsLoaded = true;
+		uint32_t materialCount = EnvMapVulkanMaterialLibrary::LoadFolder(EnvMapVulkanMaterialLibrary::MaterialsFolder);
+		Log::GetLogger()->info("{0} material(s) loaded from '{1}'", materialCount, EnvMapVulkanMaterialLibrary::MaterialsFolder);
+	}
+	// Material files loaded from the Material Library
+	if (!s_PendingMaterialFiles.empty())
+	{
+		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice()); // a material's descriptor set may be in use
+		for (const std::string& filepath : s_PendingMaterialFiles)
+		{
+			if (H2M::RefH2M<EnvMapVulkanMaterial> material = EnvMapVulkanMaterialLibrary::Load(filepath))
+			{
+				s_SelectedMaterial = material;
+				Log::GetLogger()->info("Material '{0}' loaded from '{1}'", material->GetName(), filepath);
+			}
+		}
+		s_PendingMaterialFiles.clear();
+		texturesMayBeUnused = true; // replaced maps
 	}
 	// Maps assigned or removed in the Material Editor, then a material deleted in the Material Library
 	for (const PendingMaterialTexture& request : s_PendingMaterialTextures)

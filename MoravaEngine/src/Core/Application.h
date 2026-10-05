@@ -63,7 +63,8 @@ public:
 	inline void SetRenderer(RendererBasic* renderer) { m_Renderer = renderer; }
 
 	std::wstring OpenFile(const wchar_t* filter = L"All\0*.*\0") const;
-	std::wstring SaveFile(const wchar_t* filter = L"All\0*.*\0") const;
+	// defaultExtension (e.g. L"mscene", no dot): added to a typed file name without an extension
+	std::wstring SaveFile(const wchar_t* filter = L"All\0*.*\0", const wchar_t* defaultExtension = nullptr) const;
 
 	void OnImGuiRender(bool* p_open = (bool*)0);
 
