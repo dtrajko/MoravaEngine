@@ -1988,51 +1988,101 @@ static void ManipulateSun(int gizmoType, bool snap)
 }
 
 // The gizmo for the selected point or spot light: 1 moves it; 2 aims a spot light (any mode moves a point light)
+// The Range of a point or spot light entity (null: not one)
+static float* GetLightRange(EnvMapVulkanEntityID entity)
+{
+	if (PointLightComponent* point = s_Scene.TryGet<PointLightComponent>(entity))
+	{
+		return &point->Range;
+	}
+	if (SpotLightComponent* spot = s_Scene.TryGet<SpotLightComponent>(entity))
+	{
+		return &spot->Range;
+	}
+	return nullptr;
+}
+
+static constexpr float MinLightRange = 0.1f;
+static constexpr float MaxLightRange = 1000.0f; // the Range drag's limit
+
+// How much the gizmo scaled the selected light's range this frame (1: not scaled); a multi-selection is scaled by it
+// around the light (see UpdateImGuizmo)
+static float s_LightGizmoScale = 1.0f;
+
+// The gizmo on the selected point or spot light, which works on the light entity's transform like on any entity:
+// translate moves it, rotate turns it (a spot light's beam; turning a point light changes nothing in its light, but turns
+// a multi-selection around it), scale changes its Range (one handle: a light has one reach, the same in every direction)
 static void ManipulateSelectedLight(int gizmoType, bool snap)
 {
-	bool isSpot = s_SelectedLightKind == LightKind::Spot;
-	glm::vec3& position = isSpot ? s_Lights.SpotLights[s_SelectedLightIndex].Position : s_Lights.PointLights[s_SelectedLightIndex].Position;
-	ImGuizmo::OPERATION operation = isSpot && gizmoType == ImGuizmo::OPERATION::ROTATE ? ImGuizmo::OPERATION::ROTATE : ImGuizmo::OPERATION::TRANSLATE;
-
-	// Local Z is the spot's direction
-	glm::mat4 transform(1.0f);
-	if (isSpot)
+	s_LightGizmoScale = 1.0f;
+	const EnvMapVulkanEntityID entity = GetLightEntity(s_SelectedLightKind, s_SelectedLightIndex);
+	float* range = GetLightRange(entity);
+	if (!range)
 	{
-		glm::vec3 z = s_Lights.SpotLights[s_SelectedLightIndex].GetDirection(), x, y;
-		GetPerpendicularAxes(z, x, y);
-		transform[0] = glm::vec4(x, 0.0f);
-		transform[1] = glm::vec4(y, 0.0f);
-		transform[2] = glm::vec4(z, 0.0f);
+		return;
 	}
-	transform[3] = glm::vec4(position, 1.0f);
 
-	float snapValue = operation == ImGuizmo::OPERATION::ROTATE ? 15.0f : 0.5f;
+	// The light's world matrix without scale: the gizmo's axes, and a scale handle that starts at 1
+	glm::mat4 transform = s_Scene.GetWorldTransform(entity);
+	for (int axis = 0; axis < 3; axis++)
+	{
+		transform[axis] = glm::vec4(glm::normalize(glm::vec3(transform[axis])), 0.0f);
+	}
+
+	ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)gizmoType;
+	ImGuizmo::MODE mode = ImGuizmo::WORLD;
+	float snapValue = 0.5f;
+	if (operation == ImGuizmo::OPERATION::ROTATE)
+	{
+		snapValue = 15.0f;
+	}
+	else if (operation == ImGuizmo::OPERATION::SCALE)
+	{
+		operation = ImGuizmo::OPERATION::SCALE_X; // one handle, along the light's own X axis
+		mode = ImGuizmo::LOCAL;
+		snapValue = 0.1f;
+	}
+	// ImGuizmo scales relative to the start of the drag: the range then is the range at the start times the handle's scale
+	static float s_RangeAtDragStart = 0.0f;
+	if (!ImGuizmo::IsUsing())
+	{
+		s_RangeAtDragStart = *range;
+	}
+
 	float snapValues[3] = { snapValue, snapValue, snapValue };
-	if (ImGuizmo::Manipulate(
+	if (!ImGuizmo::Manipulate(
 		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
 		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
 		operation,
-		ImGuizmo::WORLD,
+		mode,
 		glm::value_ptr(transform),
 		nullptr,
 		snap ? snapValues : nullptr))
 	{
-		const EnvMapVulkanSpotLight spotBefore = isSpot ? s_Lights.SpotLights[s_SelectedLightIndex] : EnvMapVulkanSpotLight();
-		const EnvMapVulkanPointLight pointBefore = isSpot ? EnvMapVulkanPointLight() : s_Lights.PointLights[s_SelectedLightIndex];
-		position = glm::vec3(transform[3]);
-		if (isSpot && operation == ImGuizmo::OPERATION::ROTATE)
-		{
-			s_Lights.SpotLights[s_SelectedLightIndex].SetDirection(glm::vec3(transform[2]));
-		}
-		if (isSpot)
-		{
-			CommitSpotLight(s_SelectedLightIndex, spotBefore);
-		}
-		else
-		{
-			CommitPointLight(s_SelectedLightIndex, pointBefore);
-		}
+		return;
 	}
+
+	if (operation == ImGuizmo::OPERATION::SCALE_X)
+	{
+		const float newRange = glm::clamp(s_RangeAtDragStart * glm::length(glm::vec3(transform[0])), MinLightRange, MaxLightRange);
+		s_LightGizmoScale = newRange / *range;
+		*range = newRange;
+	}
+	else if (operation == ImGuizmo::OPERATION::TRANSLATE)
+	{
+		SetEntityPosition(entity, glm::vec3(transform[3])); // only the position: the rotation isn't recomposed from Euler angles
+	}
+	else
+	{
+		// Rotated: the light's own scale (normally 1) is kept
+		const glm::mat4 world = s_Scene.GetWorldTransform(entity);
+		for (int axis = 0; axis < 3; axis++)
+		{
+			transform[axis] *= glm::length(glm::vec3(world[axis]));
+		}
+		s_Scene.SetWorldTransform(entity, transform);
+	}
+	ExtractLights();
 }
 
 // Where a new light goes: where the camera looks, so the light is within reach of its default range:

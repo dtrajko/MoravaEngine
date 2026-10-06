@@ -5,7 +5,7 @@ Material:
   Parent:
     ID: 5294835396988308064
     File: assets/Materials/Wall_Material.mmat
-  Overrides: [MetalnessMap, RoughnessMap]
+  Overrides: [AlbedoMap, NormalMap, MetalnessMap, RoughnessMap, AmbientOcclusionMap]
   AlbedoColor: [0.8, 0.8, 0.8]
   Metalness: 0
   Roughness: -1.236068
@@ -15,17 +15,17 @@ Material:
   RadiancePrefilter: 0
   Maps:
     Albedo:
-      File: Textures/PBR/harsh_bricks/harshbricks-albedo.png
+      File: Textures/PBR/wall/albedo.png
       Enabled: true
     Normal:
-      File: Textures/PBR/harsh_bricks/harshbricks-normal.png
+      File: Textures/PBR/wall/normal.png
       Enabled: true
     Metalness:
-      File: Textures/PBR/silver/metallic.png
+      File: Textures/PBR/wall/roughness.png
       Enabled: true
     Roughness:
-      File: Textures/PBR/silver/roughness.png
+      File: Textures/PBR/wall/roughness.png
       Enabled: true
     AmbientOcclusion:
-      File: Textures/PBR/harsh_bricks/harshbricks-ao2.png
+      File: Textures/PBR/wall/ao.png
       Enabled: true

@@ -81,9 +81,9 @@ Entities:
     Name: Floor
     Parent: 0
     Transform:
-      Translation: [-0.05635643, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [20.000006, 1, 20.000006]
+      Translation: [-0.09082785, 0, 0]
+      Rotation: [0.0076953648, 0, 0]
+      Scale: [20.000332, 1, 20.000355]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 2893940528764979990
@@ -103,9 +103,9 @@ Entities:
     Name: Wall 01
     Parent: 0
     Transform:
-      Translation: [0, 19, -19.02542]
-      Rotation: [0, -0, -90]
-      Scale: [20.000013, 20.000013, 0.99994147]
+      Translation: [0.23718667, 19, -19]
+      Rotation: [-180, -8.386739e-06, -90]
+      Scale: [19.999882, 19.999762, 0.9998501]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 1081673283594027113
@@ -147,9 +147,9 @@ Entities:
     Name: Spot Light 1
     Parent: 0
     Transform:
-      Translation: [6.335957, 12.758692, 4.64478]
-      Rotation: [46.63391, 40.467793, -81.07302]
-      Scale: [0.99990594, 0.9999485, 0.9999301]
+      Translation: [5.317996, 3.7510982, 2.1279955]
+      Rotation: [21.704876, 40.649227, -100.29636]
+      Scale: [0.99990034, 0.99996144, 0.9999368]
     SpotLight:
       Enabled: true
       Color: [0.98370814, 0.44607842, 1]
@@ -162,12 +162,46 @@ Entities:
     Name: Point Light 1
     Parent: 0
     Transform:
-      Translation: [-5.5598726, 14.369078, 2.317315]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
+      Translation: [-3.5146475, 4.7840796, 2.8060248]
+      Rotation: [0.0035349433, 0.8791499, -0.0013447462]
+      Scale: [0.9999168, 1, 0.99993414]
     PointLight:
       Enabled: true
       Color: [0.6764706, 1, 1]
       Intensity: 500
       Range: 7.52
       CastShadows: true
+  - ID: 7305799606647957717
+    Name: Water
+    Parent: 0
+    Transform:
+      Translation: [0.3280673, 5.948389, 0.28522825]
+      Rotation: [0, -0, 0]
+      Scale: [40, 1, 40]
+    Water:
+      WaveDirection: 30
+      WaveSpeed: 0.5
+      WaveStrength: 0.25
+      WaveScale1: 7
+      WaveScale2: 2.5
+      SwellHeight: 0.25
+      SwellLength: 12
+      SwellSteepness: 0.5
+      Wireframe: false
+      ScatterColor: [0.012, 0.045, 0.055]
+      Roughness: 0.06
+      ReflectionStrength: 1
+      Transmittance: [0.55, 0.85, 0.88]
+      Clarity: 4
+      RefractionStrength: 1
+      EdgeSoftness: 0.3
+      FoamAmount: 0.6
+      FoamWidth: 0.4
+      TransparencyFromBelow: 0.48
+      PlanarReflection: true
+      ReflectionDivisor: 2
+      ReflectionDistortion: 1
+      Caustics: true
+      CausticsStrength: 1
+      CausticsFocus: 2
+      CausticsArea: 40
