@@ -147,9 +147,9 @@ Entities:
     Name: Spot Light 1
     Parent: 0
     Transform:
-      Translation: [5.317996, 3.7510982, 2.1279955]
-      Rotation: [21.704876, 40.649227, -100.29636]
-      Scale: [0.99990034, 0.99996144, 0.9999368]
+      Translation: [5.317996, 7.201666, 2.1279955]
+      Rotation: [21.704874, 40.649204, -100.29633]
+      Scale: [0.9999004, 0.9999614, 0.9999368]
     SpotLight:
       Enabled: true
       Color: [0.98370814, 0.44607842, 1]
@@ -162,7 +162,7 @@ Entities:
     Name: Point Light 1
     Parent: 0
     Transform:
-      Translation: [-3.5146475, 4.7840796, 2.8060248]
+      Translation: [-3.5146475, 13.729389, 2.8060248]
       Rotation: [0.0035349433, 0.8791499, -0.0013447462]
       Scale: [0.9999168, 1, 0.99993414]
     PointLight:

@@ -1987,7 +1987,6 @@ static void ManipulateSun(int gizmoType, bool snap)
 	}
 }
 
-// The gizmo for the selected point or spot light: 1 moves it; 2 aims a spot light (any mode moves a point light)
 // The Range of a point or spot light entity (null: not one)
 static float* GetLightRange(EnvMapVulkanEntityID entity)
 {
@@ -2004,6 +2003,21 @@ static float* GetLightRange(EnvMapVulkanEntityID entity)
 
 static constexpr float MinLightRange = 0.1f;
 static constexpr float MaxLightRange = 1000.0f; // the Range drag's limit
+
+// The point and spot lights under a scaled entity (a model) are scaled with it, by the hierarchy; their Range then too,
+// by the uniform scale (see MoveLightWith). Not under a light: its children don't scale with it (its matrix isn't scaled).
+static void ScaleChildLightRanges(EnvMapVulkanEntityID entity, float scale)
+{
+	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
+	{
+		if (float* range = GetLightRange(child))
+		{
+			*range = glm::clamp(*range * scale, MinLightRange, MaxLightRange);
+			continue;
+		}
+		ScaleChildLightRanges(child, scale);
+	}
+}
 
 // How much the gizmo scaled the selected light's range this frame (1: not scaled); a multi-selection is scaled by it
 // around the light (see UpdateImGuizmo)
@@ -3181,6 +3195,22 @@ static bool CanManipulateMesh(EnvMapVulkanEntityID modelEntity, int meshIndex)
 	return !(model->IsSkinned() && meshes[meshIndex]->IsRigged);
 }
 
+// A Scale drag of a model's or a part's transform: the point and spot lights under the entity get their Range scaled by
+// the change's uniform scale, as with the gizmo (see ScaleChildLightRanges)
+static void ScaleDragScalingChildLights(const char* label, EnvMapVulkanEntityID entity, glm::vec3& scale)
+{
+	const glm::vec3 before = scale;
+	if (ImGui::DragFloat3(label, &scale.x, 0.01f, 0.001f, 1000.0f) && scale != before)
+	{
+		const float volumeBefore = std::abs(before.x * before.y * before.z);
+		if (volumeBefore > 0.0f)
+		{
+			ScaleChildLightRanges(entity, std::cbrt(std::abs(scale.x * scale.y * scale.z) / volumeBefore));
+			ExtractLights();
+		}
+	}
+}
+
 // A model's properties: its transform, the selected part's transform (when a part of it is selected), removing the model or
 // the part, the animation (skinned models) and the material slots of its parts. Used by the Models and Meshes panel and the
 // Properties panel.
@@ -3194,7 +3224,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 	ImGui::Text("Transform");
 	ImGui::DragFloat3("Translation", &entry.Translation.x, 0.1f);
 	ImGui::DragFloat3("Rotation", &entry.Rotation.x, 1.0f);
-	ImGui::DragFloat3("Scale", &entry.Scale.x, 0.01f, 0.001f, 1000.0f);
+	ScaleDragScalingChildLights("Scale", selectedModel, entry.Scale);
 
 	// The selected part's place in the model (the viewport gizmo moves it too)
 	const EnvMapVulkanEntityID selectedPart = selectedMeshIndex >= 0 ? s_SelectedEntity : NoEntity;
@@ -3207,7 +3237,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 			TransformComponent& partTransform = s_Scene.Get<TransformComponent>(selectedPart);
 			ImGui::DragFloat3("Translation##Mesh", &partTransform.Translation.x, 0.1f);
 			ImGui::DragFloat3("Rotation##Mesh", &partTransform.Rotation.x, 1.0f);
-			ImGui::DragFloat3("Scale##Mesh", &partTransform.Scale.x, 0.01f, 0.001f, 1000.0f);
+			ScaleDragScalingChildLights("Scale##Mesh", selectedPart, partTransform.Scale);
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("Relative to the model. Ctrl + click in the viewport selects the whole model");
@@ -8446,8 +8476,8 @@ static void ManipulatePrimarySelection()
 }
 
 // Multi-selection: what the gizmo moves for a selected entity, as it does for the primary one (see
-// ManipulatePrimarySelection): a model, a point or spot light, a part the gizmo can move on its own, or else the part's
-// model (a part of a single-mesh model, a rigged part). NoEntity: it doesn't move (the sun, the water, the environment).
+// ManipulatePrimarySelection): a model, a point or spot light, the water, a part the gizmo can move on its own, or else
+// the part's model (a part of a single-mesh model, a rigged part). NoEntity: it doesn't move (the sun, the environment).
 static EnvMapVulkanEntityID GetMovedEntity(EnvMapVulkanEntityID entity)
 {
 	switch (GetEntityKind(entity))
@@ -8455,6 +8485,7 @@ static EnvMapVulkanEntityID GetMovedEntity(EnvMapVulkanEntityID entity)
 		case EntityKind::Model:
 		case EntityKind::PointLight:
 		case EntityKind::SpotLight:
+		case EntityKind::Water:
 			return entity;
 		case EntityKind::Part:
 		{
@@ -8488,6 +8519,51 @@ static void SetMovableWorldMatrix(EnvMapVulkanEntityID entity, const glm::mat4& 
 	{
 		s_Scene.SetWorldTransform(entity, world);
 	}
+}
+
+// A point or spot light moved with a multi-selection: it moves and turns with it, but isn't scaled: its Range is, by the
+// change's uniform scale (the cube root of its volume change: a light's reach is the same in every direction)
+static void MoveLightWith(EnvMapVulkanEntityID entity, const glm::mat4& delta)
+{
+	const glm::mat4 old = s_Scene.GetWorldTransform(entity);
+	const glm::mat4 moved = delta * old;
+
+	// Its axes without the change's scale (and the shear a non-uniform scale gives a turned light), the Y axis (the
+	// light's direction) kept; then its own scale (normally 1)
+	const glm::vec3 y = glm::normalize(glm::vec3(moved[1]));
+	const glm::vec3 x = glm::normalize(glm::vec3(moved[0]) - glm::dot(glm::vec3(moved[0]), y) * y);
+	const glm::vec3 z = glm::cross(x, y);
+	glm::mat4 world = moved;
+	world[0] = glm::vec4(x * glm::length(glm::vec3(old[0])), 0.0f);
+	world[1] = glm::vec4(y * glm::length(glm::vec3(old[1])), 0.0f);
+	world[2] = glm::vec4(z * glm::length(glm::vec3(old[2])), 0.0f);
+	s_Scene.SetWorldTransform(entity, world);
+
+	const float scale = std::cbrt(std::abs(glm::determinant(glm::mat3(delta))));
+	float* range = GetLightRange(entity);
+	if (range && std::abs(scale - 1.0f) > 1e-5f)
+	{
+		*range = glm::clamp(*range * scale, MinLightRange, MaxLightRange);
+	}
+}
+
+// The water moved with a multi-selection, only as its own gizmo can move it: translated in X, Y and Z, turned only
+// around Y (the part of the change that turns its X side around Y; it stays level), sized only along its own X and Z
+// (its sides' new lengths; never in height)
+static void MoveWaterWith(EnvMapVulkanEntityID entity, const glm::mat4& delta)
+{
+	const glm::mat4 moved = delta * s_Scene.GetWorldTransform(entity);
+	const glm::vec3 sideX = glm::vec3(moved[0]);
+	const glm::vec3 sideZ = glm::vec3(moved[2]);
+	EnvMapVulkanWaterSettings& settings = s_Scene.Get<WaterComponent>(entity).Settings;
+	settings.Center = glm::vec2(moved[3].x, moved[3].z);
+	settings.Height = moved[3].y;
+	if (glm::length(glm::vec2(sideX.x, sideX.z)) > 1e-4f)
+	{
+		settings.Rotation = glm::degrees(std::atan2(-sideX.z, sideX.x));
+	}
+	settings.Size = glm::max(glm::vec2(glm::length(sideX), glm::length(sideZ)), glm::vec2(0.1f));
+	s_Scene.SetWorldTransform(entity, settings.GetTransform());
 }
 
 // An entity under another moved entity moves with that one (it isn't moved twice)
@@ -8537,30 +8613,78 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 	}
 	const EnvMapVulkanEntityID primary = GetMovedEntity(s_SelectedEntity);
 	const bool moveOthers = moved.size() > 1 && primary != NoEntity;
-	const glm::mat4 before = moveOthers ? GetMovableWorldMatrix(primary) : glm::mat4(1.0f);
+	const glm::mat4 before = primary != NoEntity ? GetMovableWorldMatrix(primary) : glm::mat4(1.0f);
+	s_LightGizmoScale = 1.0f; // set by the light gizmo when it scales a light's Range
 
 	ManipulatePrimarySelection();
 
-	if (moveOthers && s_Scene.Exists(primary))
+	if (primary == NoEntity || !s_Scene.Exists(primary))
 	{
-		const glm::mat4 after = GetMovableWorldMatrix(primary);
-		if (after != before)
+		return;
+	}
+	const glm::mat4 after = GetMovableWorldMatrix(primary);
+	if (after == before && s_LightGizmoScale == 1.0f)
+	{
+		return;
+	}
+	glm::mat4 delta = after * glm::inverse(before);
+	if (s_LightGizmoScale != 1.0f)
+	{
+		// The primary light's Range was scaled (its matrix doesn't change): the others scale around the light
+		const glm::vec3 center = GetEntityPosition(primary);
+		delta = glm::translate(glm::mat4(1.0f), center) * glm::scale(glm::mat4(1.0f), glm::vec3(s_LightGizmoScale)) *
+			glm::translate(glm::mat4(1.0f), -center);
+	}
+	const float uniformScale = std::cbrt(std::abs(glm::determinant(glm::mat3(delta))));
+	const bool scaled = std::abs(uniformScale - 1.0f) > 1e-5f;
+
+	if (!moveOthers)
+	{
+		if (scaled && !GetLightRange(primary))
 		{
-			const glm::mat4 delta = after * glm::inverse(before);
-			if (HasMovedAncestor(primary, moved))
+			ScaleChildLightRanges(primary, uniformScale);
+			ExtractLights();
+		}
+		return;
+	}
+
+	if (HasMovedAncestor(primary, moved))
+	{
+		SetMovableWorldMatrix(primary, before); // a moved parent of it moves it (below)
+	}
+	for (EnvMapVulkanEntityID entity : moved)
+	{
+		if (!s_Scene.Exists(entity) || HasMovedAncestor(entity, moved))
+		{
+			continue;
+		}
+		if (GetLightRange(entity))
+		{
+			if (entity != primary)
 			{
-				SetMovableWorldMatrix(primary, before); // a moved parent of it moves it (below)
+				MoveLightWith(entity, delta);
 			}
-			for (EnvMapVulkanEntityID entity : moved)
+			continue;
+		}
+		if (s_Scene.Has<WaterComponent>(entity))
+		{
+			if (entity != primary)
 			{
-				if (entity != primary && s_Scene.Exists(entity) && !HasMovedAncestor(entity, moved))
-				{
-					SetMovableWorldMatrix(entity, delta * GetMovableWorldMatrix(entity));
-				}
+				MoveWaterWith(entity, delta);
 			}
-			ExtractLights(); // moved lights
+			continue;
+		}
+		if (entity != primary)
+		{
+			SetMovableWorldMatrix(entity, delta * GetMovableWorldMatrix(entity));
+		}
+		if (scaled)
+		{
+			ScaleChildLightRanges(entity, uniformScale);
 		}
 	}
+	ExtractLights(); // moved lights
+	ExtractWater();  // the moved water
 }
 
 /**** BEGIN to be removed from VulkanRenderer ****/
