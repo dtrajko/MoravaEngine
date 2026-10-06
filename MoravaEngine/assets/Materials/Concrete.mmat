@@ -1,0 +1,27 @@
+Material:
+  Version: 1
+  ID: 13790279153822762488
+  Name: Concrete
+  AlbedoColor: [0.8, 0.8, 0.8]
+  Metalness: 0
+  Roughness: 0.5
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Maps:
+    Albedo:
+      File: Textures/PBR/concrete3/concrete3-albedo.png
+      Enabled: true
+    Normal:
+      File: Textures/PBR/concrete3/concrete3-Normal-dx.png
+      Enabled: true
+    Metalness:
+      File: Textures/PBR/concrete3/concrete3-Metallic.png
+      Enabled: true
+    Roughness:
+      File: Textures/PBR/concrete3/concrete3-Roughness.png
+      Enabled: true
+    AmbientOcclusion:
+      File: Textures/PBR/concrete3/concrete3-ao.png
+      Enabled: true

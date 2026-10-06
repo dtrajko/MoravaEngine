@@ -1,0 +1,18 @@
+Material:
+  Version: 1
+  ID: 18433893619201708249
+  Name: jeep_army.jpg
+  Source:
+    File: Models/OGLdev/jeep/jeep.obj
+    Index: 1
+  AlbedoColor: [0.8, 0.8, 0.8]
+  Metalness: 0
+  Roughness: 1
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Maps:
+    Albedo:
+      File: Textures/OGLdev/jeep/jeep_army.jpg
+      Enabled: true

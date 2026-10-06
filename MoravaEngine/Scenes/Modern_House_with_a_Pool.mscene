@@ -1,0 +1,355 @@
+Scene:
+  Version: 1
+  Name: Modern_House_with_a_Pool
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 5742738880482696519
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      Rotation: 0
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 1715668346217924911
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [41.3981, 27.316973, -65.492546]
+      Scale: [1, 1, 1]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 0.28021637
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 10239212353360456367
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [50, 1, 50]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 5641040960122181036
+    Name: Cube
+    Parent: 10239212353360456367
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17065537760613550702
+        File: assets/Materials/Material.mmat
+        Name: Material
+  - ID: 2849525514744189101
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 0, -20]
+      Rotation: [0, -0, 0]
+      Scale: [80, 1, 100]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 9436166991761912528
+    Name: Cube
+    Parent: 2849525514744189101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 12859635324297946334
+        File: assets/Materials/Lawn.mmat
+        Name: Lawn
+  - ID: 1951738087840420355
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [20.035513, 20, 0]
+      Rotation: [0, -0, 0]
+      Scale: [30, 1, 50]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 3864468783066216926
+    Name: Cube
+    Parent: 1951738087840420355
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17065537760613550702
+        File: assets/Materials/Material.mmat
+        Name: Material
+  - ID: 16227985267209366948
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [20.215828, 41.97825, 0]
+      Rotation: [0, -0, 0]
+      Scale: [30, 1, 50]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 2126677957734585233
+    Name: Cube
+    Parent: 16227985267209366948
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13790279153822762488
+        File: assets/Materials/Concrete.mmat
+        Name: Concrete
+  - ID: 2150241225097887303
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [0, 11, -48.93774]
+      Rotation: [0, -0, 0]
+      Scale: [50, 10, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 14626498310834830774
+    Name: Cube
+    Parent: 2150241225097887303
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13790279153822762488
+        File: assets/Materials/Concrete.mmat
+        Name: Concrete
+  - ID: 13540167329656183
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [20.249514, 31.130424, -49.140022]
+      Rotation: [0, -0, 0]
+      Scale: [30, 10, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 4595313762896779302
+    Name: Cube
+    Parent: 13540167329656183
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13790279153822762488
+        File: assets/Materials/Concrete.mmat
+        Name: Concrete
+  - ID: 3050316826399507235
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [49.220688, 21.327675, 0.22119713]
+      Rotation: [0.00041845997, 89.99995, 0.0001042736]
+      Scale: [50, 19.999998, 0.9999967]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 17817818241837793003
+    Name: Cube
+    Parent: 3050316826399507235
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13790279153822762488
+        File: assets/Materials/Concrete.mmat
+        Name: Concrete
+  - ID: 9914487251046779526
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [20.09578, 31.065601, 48.92505]
+      Rotation: [0, -0, 0]
+      Scale: [30, 10, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 17096347954005794539
+    Name: Cube
+    Parent: 9914487251046779526
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13790279153822762488
+        File: assets/Materials/Concrete.mmat
+        Name: Concrete
+  - ID: 819914968083686992
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, 48.85562]
+      Rotation: [0, -0, 0]
+      Scale: [50, 10, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 17612613996271832887
+    Name: Cube
+    Parent: 819914968083686992
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13790279153822762488
+        File: assets/Materials/Concrete.mmat
+        Name: Concrete
+  - ID: 7910525885193995830
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-48.941727, 11, 0.08180857]
+      Rotation: [179.99976, 89.99995, 179.99976]
+      Scale: [50.000023, 9.999999, 0.9999984]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 6839885989627425995
+    Name: Cube
+    Parent: 7910525885193995830
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 13790279153822762488
+        File: assets/Materials/Concrete.mmat
+        Name: Concrete
+  - ID: 2453215113977125485
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-8.807848, 11, 0.08180857]
+      Rotation: [179.99976, 89.99995, 179.99976]
+      Scale: [50.000023, 9.999999, 0.9999984]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 10504058478484710553
+    Name: Cube
+    Parent: 2453215113977125485
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17065537760613550702
+        File: assets/Materials/Material.mmat
+        Name: Material
+  - ID: 9318088398799075780
+    Name: Water
+    Parent: 0
+    Transform:
+      Translation: [-28.63448, 15.311228, -0.062562466]
+      Rotation: [0, -0, 0]
+      Scale: [40, 1, 98]
+    Water:
+      WaveDirection: 30
+      WaveSpeed: 0.5
+      WaveStrength: 0
+      WaveScale1: 7
+      WaveScale2: 2.5
+      SwellHeight: 0.36
+      SwellLength: 12.4
+      SwellSteepness: 0.385
+      Wireframe: false
+      ScatterColor: [0.012, 0.045, 0.055]
+      Roughness: 0.06
+      ReflectionStrength: 1
+      Transmittance: [0.55, 0.85, 0.88]
+      Clarity: 4
+      RefractionStrength: 1
+      EdgeSoftness: 0.3
+      FoamAmount: 0.6
+      FoamWidth: 0.4
+      TransparencyFromBelow: 0.48
+      PlanarReflection: true
+      ReflectionDivisor: 2
+      ReflectionDistortion: 1
+      Caustics: true
+      CausticsStrength: 1
+      CausticsFocus: 2
+      CausticsArea: 40
+  - ID: 10418463170883253392
+    Name: jeep.obj
+    Parent: 0
+    Transform:
+      Translation: [23.878153, 0.31414485, -97.16856]
+      Rotation: [-179.9999, -0, -179.9999]
+      Scale: [0.06119999, 0.061200023, 0.06119999]
+    Model:
+      File: Models/OGLdev/jeep/jeep.obj
+  - ID: 13808673170240062775
+    Name: Group
+    Parent: 10418463170883253392
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 18433893619201708249
+        File: assets/Materials/jeep_army.jpg.mmat
+        Name: jeep_army.jpg

@@ -1,0 +1,24 @@
+Material:
+  Version: 1
+  ID: 12859635324297946334
+  Name: Lawn
+  AlbedoColor: [0.8, 0.8, 0.8]
+  Metalness: 0
+  Roughness: 0.5
+  TilingFactor: 10
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Maps:
+    Albedo:
+      File: Textures/PBR/grass/albedo.png
+      Enabled: true
+    Normal:
+      File: Textures/PBR/grass/normal.png
+      Enabled: true
+    Roughness:
+      File: Textures/PBR/grass/roughness.png
+      Enabled: true
+    AmbientOcclusion:
+      File: Textures/PBR/grass/ao.png
+      Enabled: true

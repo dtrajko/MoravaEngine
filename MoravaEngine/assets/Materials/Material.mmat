@@ -1,0 +1,16 @@
+Material:
+  Version: 1
+  ID: 17065537760613550702
+  Name: Material
+  Source:
+    File: Models/Primitives/cube.obj
+    Index: 1
+  AlbedoColor: [0.8, 0.8, 0.8]
+  Metalness: 0
+  Roughness: -0.79999995
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Maps:
+    {}
