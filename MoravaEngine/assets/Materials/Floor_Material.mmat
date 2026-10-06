@@ -1,0 +1,30 @@
+Material:
+  Version: 1
+  ID: 16625749967610680966
+  Name: Floor_Material
+  Source:
+    File: Models/Primitives/cube.obj
+    Index: 1
+  AlbedoColor: [0.8, 0.8, 0.8]
+  Metalness: 0
+  Roughness: -0.79999995
+  TilingFactor: 4
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Maps:
+    Albedo:
+      File: Textures/PBR/aged_planks_1/agedplanks1-albedo.png
+      Enabled: true
+    Normal:
+      File: Textures/PBR/aged_planks_1/agedplanks1-normal4-ue.png
+      Enabled: true
+    Metalness:
+      File: Textures/PBR/aged_planks_1/agedplanks1-metalness.png
+      Enabled: true
+    Roughness:
+      File: Textures/PBR/aged_planks_1/agedplanks1-roughness.png
+      Enabled: true
+    AmbientOcclusion:
+      File: Textures/PBR/aged_planks_1/agedplanks1-ao.png
+      Enabled: true

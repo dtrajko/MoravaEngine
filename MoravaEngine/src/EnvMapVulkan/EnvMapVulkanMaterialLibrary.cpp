@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <fstream>
 #include <random>
+#include <set>
 
 
 std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> EnvMapVulkanMaterialLibrary::s_Materials;
@@ -150,10 +151,9 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::CreateMaterial(co
 	return material;
 }
 
-H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Duplicate(H2M::RefH2M<EnvMapVulkanMaterial> source)
+// The values and maps of source into a new material (its descriptor set isn't in use yet)
+static void CopyValuesAndMaps(H2M::RefH2M<EnvMapVulkanMaterial> material, H2M::RefH2M<EnvMapVulkanMaterial> source)
 {
-	H2M::RefH2M<EnvMapVulkanMaterial> material = CreateMaterial(source->GetName());
-
 	material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor") = source->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
 	for (const char* name : s_FloatValueNames)
 	{
@@ -168,75 +168,171 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Duplicate(H2M::Re
 			material->Get<float>(s_MapToggleNames[slot]) = toggle;
 		}
 	}
+}
+
+H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Duplicate(H2M::RefH2M<EnvMapVulkanMaterial> source)
+{
+	H2M::RefH2M<EnvMapVulkanMaterial> material = CreateMaterial(source->GetName());
+	CopyValuesAndMaps(material, source);
+	material->m_ParentID = source->m_ParentID;
+	material->m_Overrides = source->m_Overrides;
+	material->TakeResolvedSnapshot();
 	return material;
 }
 
-std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> EnvMapVulkanMaterialLibrary::ImportModelMaterials(H2M::RefH2M<H2M::ModelH2M> model)
+H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::CreateVariant(H2M::RefH2M<EnvMapVulkanMaterial> parent)
 {
-	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> result;
+	if (!parent)
+	{
+		return H2M::RefH2M<EnvMapVulkanMaterial>();
+	}
+	H2M::RefH2M<EnvMapVulkanMaterial> material = CreateMaterial(parent->GetName() + " (Variant)");
+	CopyValuesAndMaps(material, parent); // identical to its parent: nothing overridden yet
+	material->m_ParentID = parent->m_ID;
+	material->TakeResolvedSnapshot();
+	return material;
+}
+
+H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::GetParent(const H2M::RefH2M<EnvMapVulkanMaterial>& material)
+{
+	return material && material->m_ParentID != 0 ? FindByID(material->m_ParentID) : H2M::RefH2M<EnvMapVulkanMaterial>();
+}
+
+void EnvMapVulkanMaterialLibrary::ResetOverride(H2M::RefH2M<EnvMapVulkanMaterial> material, EnvMapVulkanMaterial::Property property)
+{
+	if (!material || !material->IsOverridden(property))
+	{
+		return;
+	}
+	material->m_Overrides &= ~(1u << property);
+	// Its current value counts as resolved, so ResolveVariants replaces it with the parent's rather than taking it as an edit
+	EnvMapVulkanMaterial::CopyProperty(material->m_Resolved, material->CaptureState(), property);
+}
+
+void EnvMapVulkanMaterialLibrary::Detach(H2M::RefH2M<EnvMapVulkanMaterial> material)
+{
+	if (material)
+	{
+		material->m_ParentID = 0;
+		material->m_Overrides = 0;
+	}
+}
+
+bool EnvMapVulkanMaterialLibrary::ResolveVariants(const std::function<void()>& beforeMapChange)
+{
+	bool mapChanged = false;
+	bool waited = false;
+	std::set<EnvMapVulkanMaterial*> visited; // also ends a loop of parents (only possible with edited files)
+	std::function<void(H2M::RefH2M<EnvMapVulkanMaterial>)> resolve = [&](H2M::RefH2M<EnvMapVulkanMaterial> material) {
+		if (!material->IsVariant() || !visited.insert(material.Raw()).second)
+		{
+			return;
+		}
+		H2M::RefH2M<EnvMapVulkanMaterial> parent = GetParent(material);
+		if (!parent)
+		{
+			return; // its parent isn't in the library: it keeps its values
+		}
+		resolve(parent); // a variant of a variant: the parent's values first
+
+		const EnvMapVulkanMaterial::State current = material->CaptureState();
+		const EnvMapVulkanMaterial::State inherited = parent->CaptureState();
+		for (uint32_t p = 0; p < EnvMapVulkanMaterial::PropertyCount; p++)
+		{
+			const EnvMapVulkanMaterial::Property property = (EnvMapVulkanMaterial::Property)p;
+			if (material->IsOverridden(property))
+			{
+				continue;
+			}
+			if (!EnvMapVulkanMaterial::PropertyEquals(current, material->m_Resolved, property))
+			{
+				material->m_Overrides |= 1u << property; // edited since the last resolve: now the variant's own value
+				continue;
+			}
+			if (EnvMapVulkanMaterial::PropertyEquals(current, inherited, property))
+			{
+				continue;
+			}
+			if (property >= EnvMapVulkanMaterial::FirstMapProperty)
+			{
+				const uint32_t slot = property - EnvMapVulkanMaterial::FirstMapProperty;
+				if (current.Maps[slot] != inherited.Maps[slot])
+				{
+					if (!waited)
+					{
+						beforeMapChange(); // the descriptor set may be used by frames in flight
+						waited = true;
+					}
+					mapChanged = true;
+				}
+			}
+			material->ApplyProperty(inherited, property);
+		}
+		material->TakeResolvedSnapshot();
+	};
+	for (const auto& material : std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>(s_Materials))
+	{
+		resolve(material);
+	}
+	return mapChanged;
+}
+
+H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::ImportModelMaterial(H2M::RefH2M<H2M::ModelH2M> model, uint32_t i)
+{
+	auto& modelMaterials = model->GetMaterials();
+	if (i >= (uint32_t)modelMaterials.size())
+	{
+		return GetDefaultMaterial();
+	}
 	H2M::Texture2D_H2M* whiteTexture = H2M::RendererH2M::GetWhiteTexture().Raw();
 
-	auto& modelMaterials = model->GetMaterials();
-	for (uint32_t i = 0; i < (uint32_t)modelMaterials.size(); i++)
+	// Already imported with an earlier copy of this model (or loaded from its saved file)
+	for (auto& existing : s_Materials)
 	{
-		// Already imported with an earlier copy of this model
-		H2M::RefH2M<EnvMapVulkanMaterial> material;
-		for (auto& existing : s_Materials)
+		std::error_code error;
+		if (existing->m_SourceIndex == i && !existing->m_SourceFile.empty() &&
+			std::filesystem::weakly_canonical(existing->m_SourceFile, error) == std::filesystem::weakly_canonical(model->GetFilePath(), error))
 		{
-			std::error_code error;
-			if (existing->m_SourceIndex == i && !existing->m_SourceFile.empty() &&
-				std::filesystem::weakly_canonical(existing->m_SourceFile, error) == std::filesystem::weakly_canonical(model->GetFilePath(), error))
-			{
-				material = existing;
-				break;
-			}
+			return existing;
 		}
-		if (material)
-		{
-			result.push_back(material);
-			continue;
-		}
+	}
+	H2M::RefH2M<H2M::VulkanMaterialH2M> source = modelMaterials[i].As<H2M::VulkanMaterialH2M>();
+	// Unnamed materials are named after the model ("boblampclean Material 2"), so they can be told apart in the library
+	std::string name = !source->GetName().empty() ? source->GetName() :
+		std::filesystem::path(model->GetFilePath()).stem().string() + " Material " + std::to_string(i);
+	H2M::RefH2M<EnvMapVulkanMaterial> material = CreateMaterial(name);
+	material->m_SourceFile = model->GetFilePath();
+	material->m_SourceIndex = i;
 
-		H2M::RefH2M<H2M::VulkanMaterialH2M> source = modelMaterials[i].As<H2M::VulkanMaterialH2M>();
-		// Unnamed materials are named after the model ("boblampclean Material 2"), so they can be told apart in the library
-		std::string name = !source->GetName().empty() ? source->GetName() :
-			std::filesystem::path(model->GetFilePath()).stem().string() + " Material " + std::to_string(i);
-		material = CreateMaterial(name);
-		material->m_SourceFile = model->GetFilePath();
-		material->m_SourceIndex = i;
-
-		material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor") = source->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
-		for (const char* valueName : s_FloatValueNames)
-		{
-			material->Get<float>(valueName) = source->Get<float>(valueName);
-		}
-
-		// The maps the model loader bound to the model's own material set (missing maps got the white placeholder)
-		const H2M::ModelH2M::MaterialDescriptor* modelDescriptor = model->FindDescriptorSet(i);
-		for (uint32_t slot = 0; slot < EnvMapVulkanMaterial::MapCount; slot++)
-		{
-			float toggle = material->Get<float>(s_MapToggleNames[slot]);
-			H2M::RefH2M<H2M::Texture2D_H2M> texture;
-			if (modelDescriptor)
-			{
-				auto textureIt = modelDescriptor->Textures.find(s_MapTextureNames[slot]);
-				if (textureIt != modelDescriptor->Textures.end()) texture = textureIt->second;
-			}
-			if (texture && texture.Raw() != whiteTexture)
-			{
-				material->SetMap(slot, texture);
-				material->Get<float>(s_MapToggleNames[slot]) = toggle;
-			}
-			else
-			{
-				material->Get<float>(s_MapToggleNames[slot]) = 0.0f; // nothing to sample
-			}
-		}
-
-		result.push_back(material);
+	material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor") = source->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
+	for (const char* valueName : s_FloatValueNames)
+	{
+		material->Get<float>(valueName) = source->Get<float>(valueName);
 	}
 
-	return result;
+	// The maps the model loader bound to the model's own material set (missing maps got the white placeholder)
+	const H2M::ModelH2M::MaterialDescriptor* modelDescriptor = model->FindDescriptorSet(i);
+	for (uint32_t slot = 0; slot < EnvMapVulkanMaterial::MapCount; slot++)
+	{
+		float toggle = material->Get<float>(s_MapToggleNames[slot]);
+		H2M::RefH2M<H2M::Texture2D_H2M> texture;
+		if (modelDescriptor)
+		{
+			auto textureIt = modelDescriptor->Textures.find(s_MapTextureNames[slot]);
+			if (textureIt != modelDescriptor->Textures.end()) texture = textureIt->second;
+		}
+		if (texture && texture.Raw() != whiteTexture)
+		{
+			material->SetMap(slot, texture);
+			material->Get<float>(s_MapToggleNames[slot]) = toggle;
+		}
+		else
+		{
+			material->Get<float>(s_MapToggleNames[slot]) = 0.0f; // nothing to sample
+		}
+	}
+
+	return material;
 }
 
 H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::GetDefaultMaterial()
@@ -250,6 +346,13 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::GetDefaultMateria
 
 void EnvMapVulkanMaterialLibrary::Remove(H2M::RefH2M<EnvMapVulkanMaterial> material)
 {
+	for (auto& other : s_Materials)
+	{
+		if (material && other->m_ParentID == material->m_ID && other != material)
+		{
+			Detach(other); // keeps the values it has now
+		}
+	}
 	s_Materials.erase(std::remove(s_Materials.begin(), s_Materials.end(), material), s_Materials.end());
 	if (s_DefaultMaterial == material)
 	{
@@ -348,24 +451,150 @@ static uint64_t HashBytes(uint64_t hash, const void* data, size_t size)
 	return hash;
 }
 
-uint64_t EnvMapVulkanMaterial::ComputeContentHash() const
+// Properties (variants)
+
+// The value properties are s_ValueKeys, in the order of EnvMapVulkanMaterial::Property
+static_assert(sizeof(s_ValueKeys) / sizeof(s_ValueKeys[0]) == EnvMapVulkanMaterial::FirstMapProperty - EnvMapVulkanMaterial::MetalnessProperty,
+	"s_ValueKeys must list the value properties of EnvMapVulkanMaterial::Property");
+
+static const char* s_MapPropertyKeys[EnvMapVulkanMaterial::MapCount] = {
+	"AlbedoMap", "NormalMap", "MetalnessMap", "RoughnessMap", "EmissiveMap", "AmbientOcclusionMap" };
+
+const char* EnvMapVulkanMaterial::GetPropertyKey(Property property)
 {
-	// The values are read through the material's uniform storage, which has no const access
-	EnvMapVulkanMaterial& self = const_cast<EnvMapVulkanMaterial&>(*this);
-	uint64_t hash = 14695981039346656037ull;
-	hash = HashBytes(hash, m_Name.data(), m_Name.size());
-	const glm::vec3 albedo = self.Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
-	hash = HashBytes(hash, &albedo, sizeof(albedo));
-	for (const char* name : s_FloatValueNames)
+	if (property == AlbedoColorProperty)
 	{
-		float value = self.Get<float>(name);
-		hash = HashBytes(hash, &value, sizeof(value));
+		return "AlbedoColor";
+	}
+	if (property < FirstMapProperty)
+	{
+		return s_ValueKeys[property - MetalnessProperty].Key;
+	}
+	return property < PropertyCount ? s_MapPropertyKeys[property - FirstMapProperty] : "";
+}
+
+uint32_t EnvMapVulkanMaterial::GetOverrideCount() const
+{
+	uint32_t count = 0;
+	for (uint32_t p = 0; p < PropertyCount; p++)
+	{
+		count += IsOverridden((Property)p) ? 1 : 0;
+	}
+	return count;
+}
+
+EnvMapVulkanMaterial::State EnvMapVulkanMaterial::CaptureState()
+{
+	State state;
+	state.AlbedoColor = Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
+	for (uint32_t i = 0; i < (uint32_t)state.Values.size(); i++)
+	{
+		state.Values[i] = Get<float>(s_ValueKeys[i].Uniform);
 	}
 	for (uint32_t slot = 0; slot < MapCount; slot++)
 	{
-		std::string path = m_Maps[slot] ? m_Maps[slot]->GetPath() : std::string();
-		hash = HashBytes(hash, &slot, sizeof(slot));
-		hash = HashBytes(hash, path.data(), path.size());
+		state.Maps[slot] = m_Maps[slot];
+		state.Toggles[slot] = Get<float>(s_MapToggleNames[slot]);
+	}
+	return state;
+}
+
+bool EnvMapVulkanMaterial::PropertyEquals(const State& a, const State& b, Property property)
+{
+	if (property == AlbedoColorProperty)
+	{
+		return a.AlbedoColor == b.AlbedoColor;
+	}
+	if (property < FirstMapProperty)
+	{
+		return a.Values[property - MetalnessProperty] == b.Values[property - MetalnessProperty];
+	}
+	const uint32_t slot = property - FirstMapProperty;
+	return a.Maps[slot] == b.Maps[slot] && a.Toggles[slot] == b.Toggles[slot];
+}
+
+void EnvMapVulkanMaterial::CopyProperty(State& to, const State& from, Property property)
+{
+	if (property == AlbedoColorProperty)
+	{
+		to.AlbedoColor = from.AlbedoColor;
+	}
+	else if (property < FirstMapProperty)
+	{
+		to.Values[property - MetalnessProperty] = from.Values[property - MetalnessProperty];
+	}
+	else
+	{
+		const uint32_t slot = property - FirstMapProperty;
+		to.Maps[slot] = from.Maps[slot];
+		to.Toggles[slot] = from.Toggles[slot];
+	}
+}
+
+void EnvMapVulkanMaterial::ApplyProperty(const State& state, Property property)
+{
+	if (property == AlbedoColorProperty)
+	{
+		Get<glm::vec3>("u_MaterialUniforms.AlbedoColor") = state.AlbedoColor;
+	}
+	else if (property < FirstMapProperty)
+	{
+		Get<float>(s_ValueKeys[property - MetalnessProperty].Uniform) = state.Values[property - MetalnessProperty];
+	}
+	else
+	{
+		const uint32_t slot = property - FirstMapProperty;
+		if (m_Maps[slot] != state.Maps[slot])
+		{
+			if (state.Maps[slot])
+			{
+				SetMap(slot, state.Maps[slot]);
+			}
+			else
+			{
+				RemoveMap(slot);
+			}
+		}
+		Get<float>(s_MapToggleNames[slot]) = state.Toggles[slot];
+	}
+}
+
+void EnvMapVulkanMaterial::TakeResolvedSnapshot()
+{
+	m_Resolved = CaptureState();
+}
+
+uint64_t EnvMapVulkanMaterial::ComputeContentHash() const
+{
+	// The values are read through the material's uniform storage, which has no const access
+	const State state = const_cast<EnvMapVulkanMaterial&>(*this).CaptureState();
+	uint64_t hash = 14695981039346656037ull;
+	hash = HashBytes(hash, m_Name.data(), m_Name.size());
+	hash = HashBytes(hash, &m_ParentID, sizeof(m_ParentID));
+	hash = HashBytes(hash, &m_Overrides, sizeof(m_Overrides));
+	for (uint32_t p = 0; p < PropertyCount; p++)
+	{
+		const Property property = (Property)p;
+		if (IsVariant() && !IsOverridden(property))
+		{
+			continue; // the parent's value: changing the parent doesn't change the variant
+		}
+		hash = HashBytes(hash, &p, sizeof(p));
+		if (property == AlbedoColorProperty)
+		{
+			hash = HashBytes(hash, &state.AlbedoColor, sizeof(state.AlbedoColor));
+		}
+		else if (property < FirstMapProperty)
+		{
+			hash = HashBytes(hash, &state.Values[property - MetalnessProperty], sizeof(float));
+		}
+		else
+		{
+			const uint32_t slot = property - FirstMapProperty;
+			std::string path = state.Maps[slot] ? state.Maps[slot]->GetPath() : std::string();
+			hash = HashBytes(hash, path.data(), path.size());
+			hash = HashBytes(hash, &state.Toggles[slot], sizeof(float));
+		}
 	}
 	return hash;
 }
@@ -433,6 +662,13 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 	{
 		return false;
 	}
+	// A variant refers to its parent by ID: a parent never saved would be missing when the variant is loaded again
+	H2M::RefH2M<EnvMapVulkanMaterial> parentMaterial = GetParent(material);
+	if (parentMaterial && parentMaterial->m_FilePath.empty() && parentMaterial != material)
+	{
+		Log::GetLogger()->info("Material '{0}': its parent '{1}' was never saved; saving it first", material->m_Name, parentMaterial->m_Name);
+		Save(parentMaterial);
+	}
 	const std::string wantedName = MakeFileName(material->m_Name, "Material");
 	std::string path = filepath.empty() ? material->m_FilePath : filepath;
 	std::string folder = MaterialsFolder;
@@ -490,6 +726,27 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 		out << YAML::Key << "File" << YAML::Value << ToStoredPath(material->m_SourceFile);
 		out << YAML::Key << "Index" << YAML::Value << material->m_SourceIndex;
 		out << YAML::EndMap;
+	}
+	if (material->IsVariant())
+	{
+		// The parent, and the properties the variant overrides. All values and maps are written below (the inherited ones
+		// as the parent has them now): they are what the variant shows if its parent can't be found.
+		out << YAML::Key << "Parent" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "ID" << YAML::Value << material->m_ParentID;
+		if (parentMaterial && !parentMaterial->m_FilePath.empty())
+		{
+			out << YAML::Key << "File" << YAML::Value << parentMaterial->m_FilePath;
+		}
+		out << YAML::EndMap;
+		out << YAML::Key << "Overrides" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+		for (uint32_t p = 0; p < EnvMapVulkanMaterial::PropertyCount; p++)
+		{
+			if (material->IsOverridden((EnvMapVulkanMaterial::Property)p))
+			{
+				out << EnvMapVulkanMaterial::GetPropertyKey((EnvMapVulkanMaterial::Property)p);
+			}
+		}
+		out << YAML::EndSeq;
 	}
 	const glm::vec3 albedo = material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
 	out << YAML::Key << "AlbedoColor" << YAML::Value << YAML::Flow << YAML::BeginSeq << albedo.r << albedo.g << albedo.b << YAML::EndSeq;
@@ -637,31 +894,38 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 		}
 	}
 
-	material->m_FilePath = ToStoredPath(filepath);
-	material->m_SavedHash = material->ComputeContentHash();
-	return material;
-}
-
-uint32_t EnvMapVulkanMaterialLibrary::LoadFolder(const std::string& folder)
-{
-	std::error_code error;
-	if (!std::filesystem::is_directory(folder, error))
+	// A variant: its parent (loaded from its file if it isn't in the library yet) and its overrides
+	material->m_ParentID = 0;
+	material->m_Overrides = 0;
+	if (YAML::Node parentNode = node["Parent"])
 	{
-		return 0;
-	}
-	std::vector<std::filesystem::path> files;
-	for (const auto& entry : std::filesystem::directory_iterator(folder, error))
-	{
-		if (entry.is_regular_file() && entry.path().extension() == FileExtension)
+		const uint64_t parentID = parentNode["ID"].as<uint64_t>(0);
+		material->m_ParentID = parentID != material->m_ID ? parentID : 0;
+		const std::string parentFile = parentNode["File"].as<std::string>("");
+		if (material->m_ParentID != 0 && !FindByID(material->m_ParentID) && !parentFile.empty() && std::filesystem::exists(parentFile))
 		{
-			files.push_back(entry.path());
+			Load(parentFile); // this material is in the library already, so a loop of parents ends here
+		}
+		if (material->m_ParentID != 0 && !FindByID(material->m_ParentID))
+		{
+			Log::GetLogger()->warn("Material '{0}' is a variant of a material that isn't loaded (ID {1}, '{2}'); it keeps its own values",
+				material->m_Name, material->m_ParentID, parentFile);
+		}
+		for (const YAML::Node& key : node["Overrides"])
+		{
+			const std::string name = key.as<std::string>("");
+			for (uint32_t p = 0; p < EnvMapVulkanMaterial::PropertyCount; p++)
+			{
+				if (name == EnvMapVulkanMaterial::GetPropertyKey((EnvMapVulkanMaterial::Property)p))
+				{
+					material->m_Overrides |= 1u << p;
+				}
+			}
 		}
 	}
-	std::sort(files.begin(), files.end()); // a stable order in the library
-	uint32_t loaded = 0;
-	for (const auto& file : files)
-	{
-		loaded += Load(file.string()) ? 1 : 0;
-	}
-	return loaded;
+
+	material->m_FilePath = ToStoredPath(filepath);
+	material->TakeResolvedSnapshot(); // the values from the file are not edits: inherited ones follow the parent from now on
+	material->m_SavedHash = material->ComputeContentHash();
+	return material;
 }

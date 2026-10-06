@@ -464,7 +464,7 @@ static EnvMapVulkanScene s_Scene;
 static EnvMapVulkanEntityID s_SelectedEntity = NoEntity;
 static std::string s_PendingModelFilename;  // requested from the UI, loaded at the start of the next Draw
 static std::optional<glm::vec3> s_PendingModelGroundPosition; // dropped on the viewport: where the model is placed (see LoadModel)
-static EnvMapVulkanEntityID s_PendingRemoveEntity = NoEntity; // a model or a part, requested from the UI, removed at the start of the next Draw
+static std::vector<EnvMapVulkanEntityID> s_PendingRemoveEntities; // models and parts, requested from the UI, removed at the start of the next Draw
 
 static void CollectModels(EnvMapVulkanEntityID entity, std::vector<EnvMapVulkanEntityID>& models)
 {
@@ -530,11 +530,120 @@ static EnvMapVulkanEntityID FindPart(EnvMapVulkanEntityID model, int meshIndex)
 	return NoEntity;
 }
 
-// Selects a model, or one of its parts (meshIndex >= 0)
-static void SelectModel(EnvMapVulkanEntityID model, int meshIndex = -1)
+// Multi-selection: s_Selection is every selected entity, s_SelectedEntity (one of them) the primary one, which the
+// Properties panel, the Material Editor and the gizmo work with (the gizmo moves the others along, see UpdateImGuizmo).
+// Code that sets only s_SelectedEntity (a model loaded, a light added, a deselection) selects that entity alone:
+// s_Selection follows at the next SyncSelection. Ctrl + click adds or removes an entity, Shift + click (Scene Hierarchy)
+// selects a range of rows.
+static std::vector<EnvMapVulkanEntityID> s_Selection;
+static EnvMapVulkanEntityID s_SelectionAnchor = NoEntity; // where a Shift + click range starts (the last plain or Ctrl click)
+
+template<typename T>
+static bool Contains(const std::vector<T>& values, const T& value)
+{
+	return std::find(values.begin(), values.end(), value) != values.end();
+}
+
+// Removed entities leave the selection; a primary entity that isn't in s_Selection (set on its own) is the selection
+static void SyncSelection()
+{
+	s_Selection.erase(std::remove_if(s_Selection.begin(), s_Selection.end(),
+		[](EnvMapVulkanEntityID entity) { return !s_Scene.Exists(entity); }), s_Selection.end());
+	if (s_SelectedEntity != NoEntity && !s_Scene.Exists(s_SelectedEntity))
+	{
+		s_SelectedEntity = s_Selection.empty() ? NoEntity : s_Selection.back();
+	}
+	if (s_SelectedEntity == NoEntity)
+	{
+		s_Selection.clear();
+	}
+	else if (!Contains(s_Selection, s_SelectedEntity))
+	{
+		s_Selection = { s_SelectedEntity };
+	}
+}
+
+static bool IsSelected(EnvMapVulkanEntityID entity)
+{
+	if (entity == NoEntity)
+	{
+		return false;
+	}
+	// Before SyncSelection, a primary entity set on its own is the whole selection
+	return entity == s_SelectedEntity || (Contains(s_Selection, s_SelectedEntity) && Contains(s_Selection, entity));
+}
+
+static const std::vector<EnvMapVulkanEntityID>& GetSelection()
+{
+	SyncSelection();
+	return s_Selection;
+}
+
+// A plain click: the entity alone (NoEntity: nothing)
+static void SelectOnly(EnvMapVulkanEntityID entity)
+{
+	s_SelectedEntity = entity;
+	s_Selection.clear();
+	if (entity != NoEntity)
+	{
+		s_Selection.push_back(entity);
+	}
+	s_SelectionAnchor = entity;
+}
+
+// Ctrl + click: adds the entity (it becomes the primary one) or removes it (the last selected one becomes primary)
+static void ToggleSelected(EnvMapVulkanEntityID entity)
+{
+	if (entity == NoEntity)
+	{
+		return;
+	}
+	SyncSelection();
+	auto it = std::find(s_Selection.begin(), s_Selection.end(), entity);
+	if (it != s_Selection.end())
+	{
+		s_Selection.erase(it);
+		s_SelectedEntity = s_Selection.empty() ? NoEntity : s_Selection.back();
+	}
+	else
+	{
+		s_Selection.push_back(entity);
+		s_SelectedEntity = entity;
+	}
+	s_SelectionAnchor = entity;
+}
+
+// The meshes of a model to show as selected: { -1 } when the model itself is selected, else the mesh indices of its
+// selected parts (empty: nothing of it is selected)
+static std::vector<int> GetSelectedMeshes(EnvMapVulkanEntityID model)
+{
+	if (IsSelected(model))
+	{
+		return { -1 };
+	}
+	std::vector<int> meshes;
+	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(model))
+	{
+		const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(child);
+		if (part && IsSelected(child))
+		{
+			meshes.push_back((int)part->MeshIndex);
+		}
+	}
+	return meshes;
+}
+
+// The part of a model's mesh, or the model itself (meshIndex < 0, or no part for that mesh)
+static EnvMapVulkanEntityID GetModelOrPart(EnvMapVulkanEntityID model, int meshIndex)
 {
 	EnvMapVulkanEntityID part = meshIndex >= 0 ? FindPart(model, meshIndex) : NoEntity;
-	s_SelectedEntity = part != NoEntity ? part : model;
+	return part != NoEntity ? part : model;
+}
+
+// Selects a model, or one of its parts (meshIndex >= 0), alone
+static void SelectModel(EnvMapVulkanEntityID model, int meshIndex = -1)
+{
+	SelectOnly(GetModelOrPart(model, meshIndex));
 }
 
 // The material each mesh of a model is drawn with (in the model's mesh order; the Default material for a mesh without a part)
@@ -854,9 +963,9 @@ static void LoadModel(const std::string& filepath, std::optional<glm::vec3> grou
 	modelComponent.FilePath = filepath;
 	modelComponent.Model = model;
 
-	// The model's materials go into the Material Library (reused if this model was loaded before); each mesh starts
-	// with the material the model assigns to it, or the library's Default material if the model has none for it
-	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> modelMaterials = EnvMapVulkanMaterialLibrary::ImportModelMaterials(model);
+	// The model's materials its meshes use go into the Material Library (reused if this model was loaded before); each
+	// mesh starts with the material the model assigns to it, or the library's Default material if the model has none for it
+	std::set<EnvMapVulkanMaterial*> usedMaterials;
 	for (uint32_t m = 0; m < (uint32_t)model->GetMeshes().size(); m++)
 	{
 		const H2M::RefH2M<H2M::MeshH2M>& mesh = model->GetMeshes()[m];
@@ -865,7 +974,8 @@ static void LoadModel(const std::string& filepath, std::optional<glm::vec3> grou
 		MeshPartComponent& part = s_Scene.Add<MeshPartComponent>(partEntity);
 		part.MeshIndex = m;
 		part.SourceMeshIndex = m;
-		part.Material = mesh->MaterialIndex < modelMaterials.size() ? modelMaterials[mesh->MaterialIndex] : EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
+		part.Material = EnvMapVulkanMaterialLibrary::ImportModelMaterial(model, mesh->MaterialIndex);
+		usedMaterials.insert(part.Material.Raw());
 		part.OriginalTransform = mesh->Transform;
 		TransformComponent& partTransform = s_Scene.Get<TransformComponent>(partEntity);
 		partTransform.SetMatrix(mesh->Transform);
@@ -918,7 +1028,7 @@ static void LoadModel(const std::string& filepath, std::optional<glm::vec3> grou
 	}
 
 	s_SelectedEntity = entity;
-	Log::GetLogger()->info("Model '{0}' loaded: {1} meshes, {2} materials", filepath, model->GetMeshes().size(), modelMaterials.size());
+	Log::GetLogger()->info("Model '{0}' loaded: {1} meshes, {2} materials", filepath, model->GetMeshes().size(), usedMaterials.size());
 }
 
 // Loads an image and binds it as one of a material's maps, or removes the map when the request has no file path
@@ -983,6 +1093,22 @@ static void DeleteMaterial(H2M::RefH2M<EnvMapVulkanMaterial> material)
 		s_SelectedMaterial = H2M::RefH2M<EnvMapVulkanMaterial>();
 	}
 	Log::GetLogger()->info("Material '{0}' deleted ({1} meshes now use the Default material)", material->GetName(), users);
+}
+
+// "Make Unique": the part gets a new variant of its material. It looks the same and follows the material until one of its
+// properties is edited, which then applies to this part only (and to other parts given the variant).
+static void MakePartMaterialUnique(EnvMapVulkanEntityID partEntity)
+{
+	MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(partEntity);
+	if (!part)
+	{
+		return;
+	}
+	H2M::RefH2M<EnvMapVulkanMaterial> parent = part->Material ? part->Material : EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
+	part->Material = EnvMapVulkanMaterialLibrary::CreateVariant(parent); // a new descriptor set: no frame in flight uses it
+	s_SelectedMaterial = part->Material;
+	Log::GetLogger()->info("Part '{0}': its material is now '{1}', a variant of '{2}'",
+		s_Scene.Get<NameComponent>(partEntity).Name, part->Material->GetName(), parent->GetName());
 }
 
 // Lights are entities (SunComponent, PointLightComponent, SpotLightComponent): their position is the transform's
@@ -1493,10 +1619,7 @@ static void SelectWater()
 // selection follow the selected entity
 static void SyncLightSelection()
 {
-	if (!s_Scene.Exists(s_SelectedEntity))
-	{
-		s_SelectedEntity = NoEntity; // the entity was removed
-	}
+	SyncSelection(); // removed entities leave the selection
 	ExtractLights();
 	ExtractWater();
 }
@@ -3037,7 +3160,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 			ImGui::DragFloat3("Scale##Mesh", &partTransform.Scale.x, 0.01f, 0.001f, 1000.0f);
 			if (ImGui::IsItemHovered())
 			{
-				ImGui::SetTooltip("Relative to the model. Shift + click in the viewport selects the whole model");
+				ImGui::SetTooltip("Relative to the model. Ctrl + click in the viewport selects the whole model");
 			}
 			if (ImGui::Button("Reset Mesh"))
 			{
@@ -3057,7 +3180,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 
 	if (ImGui::Button("Remove Model"))
 	{
-		s_PendingRemoveEntity = selectedModel; // removed at the start of the next frame (see Draw)
+		s_PendingRemoveEntities.push_back(selectedModel); // removed at the start of the next frame (see Draw)
 	}
 	if (ImGui::IsItemHovered())
 	{
@@ -3068,7 +3191,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 	ImGui::BeginDisabled(!canRemoveMesh);
 	if (ImGui::Button("Remove Mesh"))
 	{
-		s_PendingRemoveEntity = selectedPart; // removed at the start of the next frame (see Draw)
+		s_PendingRemoveEntities.push_back(selectedPart); // removed at the start of the next frame (see Draw)
 	}
 	ImGui::EndDisabled();
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
@@ -3181,7 +3304,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 		const std::string& meshName = s_Scene.Get<NameComponent>(s).Name;
 		if (ImGui::Selectable(meshName.c_str(), s_SelectedEntity == s, 0, ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0.0f)))
 		{
-			s_SelectedEntity = (s_SelectedEntity == s) ? selectedModel : s; // click again to deselect (back to the whole model)
+			SelectOnly((s_SelectedEntity == s) ? selectedModel : s); // click again to deselect (back to the whole model)
 		}
 		acceptMaterialDrop(s);
 
@@ -3204,6 +3327,21 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 		acceptMaterialDrop(s);
 
 		ImGui::PopID();
+	}
+
+	// The selected part's own material: a variant of the one it has, which it can then change without changing other meshes
+	if (s_Scene.GetParent(s_SelectedEntity) == selectedModel && s_Scene.Has<MeshPartComponent>(s_SelectedEntity))
+	{
+		const std::string& partName = s_Scene.Get<NameComponent>(s_SelectedEntity).Name;
+		if (ImGui::Button(("Make Unique: '" + partName + "'").c_str()))
+		{
+			MakePartMaterialUnique(s_SelectedEntity);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Gives this mesh a variant of its material: it looks the same and follows the material's changes,\n"
+				"but the properties you edit in the Material Editor apply to this mesh only");
+		}
 	}
 
 	if (s_SelectedMaterial)
@@ -3347,13 +3485,12 @@ static void OnImGuiRenderModelsAndMeshes()
 // ---- Scene files (.mscene, see EnvMapVulkanSceneSerializer.h) ----
 // The scene is saved with its materials (those with unsaved changes go to the Material Library's folder first, so the
 // scene can refer to their files) and the renderer's look settings (shadows, bloom). New and Open ask before unsaved
-// changes are lost. The last scene opened or saved is opened again at startup.
+// changes are lost. The engine starts with an empty scene and no materials: a scene brings the materials it uses.
 
 static std::string s_SceneFilePath;           // empty: never saved ("Untitled")
 static std::string s_SceneName = "Untitled";
 static std::string s_SavedSceneText;          // the scene as last saved, opened or created (unsaved changes: it differs)
 static bool s_SceneHasUnsavedChanges = false;
-static const char* s_EditorStateFile = "assets/cache/EnvMapVulkanEditor.yaml"; // the last scene (opened again at startup)
 
 // A scene operation requested from the File menu or a shortcut, carried out at the start of the next Draw (it replaces
 // models and materials the frame may be drawing); New and Open first ask about unsaved changes
@@ -3441,14 +3578,14 @@ static void DeleteEntity(EnvMapVulkanEntityID entity)
 	switch (GetEntityKind(entity))
 	{
 		case EntityKind::Model:
-			s_PendingRemoveEntity = entity;
+			s_PendingRemoveEntities.push_back(entity);
 			break;
 		case EntityKind::Part:
 		{
 			H2M::RefH2M<H2M::ModelH2M> model = GetModel(s_Scene.GetParent(entity));
 			if (model && model->GetMeshes().size() > 1)
 			{
-				s_PendingRemoveEntity = entity;
+				s_PendingRemoveEntities.push_back(entity);
 			}
 			else
 			{
@@ -3459,10 +3596,7 @@ static void DeleteEntity(EnvMapVulkanEntityID entity)
 		case EntityKind::PointLight:
 		case EntityKind::SpotLight:
 			s_Scene.DestroyEntity(entity);
-			if (!s_Scene.Exists(s_SelectedEntity))
-			{
-				s_SelectedEntity = NoEntity;
-			}
+			SyncSelection();
 			ExtractLights();
 			break;
 		case EntityKind::Water:
@@ -3513,6 +3647,40 @@ static void StartRenaming(EnvMapVulkanEntityID entity)
 	strncpy_s(s_RenameBuffer, s_Scene.Get<NameComponent>(entity).Name.c_str(), sizeof(s_RenameBuffer) - 1);
 }
 
+// A material dropped onto a part (that part) or a model (all its parts). Dropped onto one of several selected entities,
+// it goes to all of them (every selected part, and every part of a selected model), and the selection stays.
+static void AssignMaterialToDropTarget(EnvMapVulkanEntityID target, H2M::RefH2M<EnvMapVulkanMaterial> material)
+{
+	const bool toSelection = IsSelected(target) && GetSelection().size() > 1;
+	const std::vector<EnvMapVulkanEntityID> targets = toSelection ? GetSelection() : std::vector<EnvMapVulkanEntityID>{ target };
+	for (EnvMapVulkanEntityID entity : targets)
+	{
+		if (MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(entity))
+		{
+			part->Material = material;
+		}
+		else if (s_Scene.Has<ModelComponent>(entity))
+		{
+			for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
+			{
+				if (MeshPartComponent* childPart = s_Scene.TryGet<MeshPartComponent>(child))
+				{
+					childPart->Material = material;
+				}
+			}
+		}
+	}
+	if (toSelection)
+	{
+		s_SelectedEntity = target;
+	}
+	else
+	{
+		SelectOnly(target);
+	}
+	s_SelectedMaterial = material;
+}
+
 // A material dropped onto a part (that part) or a model (all its parts)
 static void AcceptMaterialDropOnEntity(EnvMapVulkanEntityID entity)
 {
@@ -3527,42 +3695,76 @@ static void AcceptMaterialDropOnEntity(EnvMapVulkanEntityID entity)
 	{
 		return;
 	}
-	if (MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(entity))
-	{
-		part->Material = materials[index];
-	}
-	else if (s_Scene.Has<ModelComponent>(entity))
-	{
-		for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
-		{
-			if (MeshPartComponent* childPart = s_Scene.TryGet<MeshPartComponent>(child))
-			{
-				childPart->Material = materials[index];
-			}
-		}
-	}
-	else
+	if (!s_Scene.Has<MeshPartComponent>(entity) && !s_Scene.Has<ModelComponent>(entity))
 	{
 		return;
 	}
-	s_SelectedEntity = entity;
-	s_SelectedMaterial = materials[index];
+	AssignMaterialToDropTarget(entity, materials[index]);
+}
+
+// Deletes every selected entity that can be deleted (the sun and the environment stay). Lights and the water go right
+// away, models and parts at the start of the next frame (see DeleteEntity).
+static void DeleteSelectedEntities()
+{
+	const std::vector<EnvMapVulkanEntityID> selection = GetSelection(); // a copy: deleting changes the selection
+	for (EnvMapVulkanEntityID entity : selection)
+	{
+		if (s_Scene.Exists(entity) && CanBeDeleted(GetEntityKind(entity)))
+		{
+			DeleteEntity(entity);
+		}
+	}
 }
 
 // What the tree asks for while it's drawn (applied after it, so the tree isn't changed while it's walked)
 struct HierarchyRequests
 {
-	EnvMapVulkanEntityID Delete = NoEntity;
+	bool DeleteSelection = false; // every selected entity that can be deleted
 	EnvMapVulkanEntityID Reparent = NoEntity;
 	EnvMapVulkanEntityID NewParent = NoEntity;
 };
+
+// The rows of the tree as drawn (open nodes only), top to bottom: last frame's, for Shift + click ranges, and this frame's
+static std::vector<EnvMapVulkanEntityID> s_HierarchyRows;
+static std::vector<EnvMapVulkanEntityID> s_HierarchyRowsDrawing;
+
+// Shift + click: the rows from the anchor (the last plain or Ctrl click) to the clicked one; Ctrl + Shift adds them
+static void SelectHierarchyRange(EnvMapVulkanEntityID entity, bool add)
+{
+	auto anchor = std::find(s_HierarchyRows.begin(), s_HierarchyRows.end(), s_SelectionAnchor);
+	auto clicked = std::find(s_HierarchyRows.begin(), s_HierarchyRows.end(), entity);
+	if (anchor == s_HierarchyRows.end() || clicked == s_HierarchyRows.end())
+	{
+		SelectOnly(entity); // no anchor (yet): the row alone
+		return;
+	}
+	const EnvMapVulkanEntityID keepAnchor = s_SelectionAnchor;
+	if (!add)
+	{
+		s_Selection.clear();
+	}
+	else
+	{
+		SyncSelection();
+	}
+	for (auto it = std::min(anchor, clicked); it <= std::max(anchor, clicked); ++it)
+	{
+		if (!Contains(s_Selection, *it))
+		{
+			s_Selection.push_back(*it);
+		}
+	}
+	s_SelectedEntity = entity;
+	s_SelectionAnchor = keepAnchor;
+}
 
 static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& requests)
 {
 	const EntityKind kind = GetEntityKind(entity);
 	const std::string& name = s_Scene.Get<NameComponent>(entity).Name;
 	const std::vector<EnvMapVulkanEntityID>& children = s_Scene.GetChildren(entity);
-	const bool selected = s_SelectedEntity == entity;
+	const bool selected = IsSelected(entity);
+	s_HierarchyRowsDrawing.push_back(entity);
 
 	ImGui::PushID((void*)(uintptr_t)entity);
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
@@ -3585,16 +3787,29 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 		ImGui::SetNextItemOpen(true); // a parent of the selection (e.g. a model whose part was clicked in the viewport)
 	}
 	const bool open = ImGui::TreeNodeEx(label.c_str(), flags);
-	if (s_RevealSelection && selected)
+	if (s_RevealSelection && entity == s_SelectedEntity)
 	{
 		ImGui::SetScrollHereY(0.5f);
 	}
 	const ImVec2 itemMin = ImGui::GetItemRectMin();
 	const ImVec2 itemMax = ImGui::GetItemRectMax();
 
+	// Click: the entity alone; Ctrl + click adds or removes it; Shift + click selects the rows from the last clicked one
 	if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsItemToggledOpen())
 	{
-		s_SelectedEntity = entity;
+		const ImGuiIO& io = ImGui::GetIO();
+		if (io.KeyShift)
+		{
+			SelectHierarchyRange(entity, io.KeyCtrl);
+		}
+		else if (io.KeyCtrl)
+		{
+			ToggleSelected(entity);
+		}
+		else
+		{
+			SelectOnly(entity);
+		}
 	}
 	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 	{
@@ -3636,7 +3851,15 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 	// Context menu
 	if (ImGui::BeginPopupContextItem("##context"))
 	{
-		s_SelectedEntity = entity;
+		// On a selected row the menu is for the whole selection (Delete); on another row, for that entity alone
+		if (!IsSelected(entity))
+		{
+			SelectOnly(entity);
+		}
+		else if (s_SelectedEntity != entity)
+		{
+			s_SelectedEntity = entity;
+		}
 		if (ImGui::MenuItem("Rename", "F2"))
 		{
 			StartRenaming(entity);
@@ -3647,9 +3870,11 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 			requests.NewParent = NoEntity;
 		}
 		ImGui::Separator();
-		if (ImGui::MenuItem("Delete", "Delete", false, CanBeDeleted(kind)))
+		const size_t selectedCount = GetSelection().size();
+		const std::string deleteLabel = selectedCount > 1 ? "Delete " + std::to_string(selectedCount) + " Selected" : std::string("Delete");
+		if (ImGui::MenuItem(deleteLabel.c_str(), "Delete", false, selectedCount > 1 || CanBeDeleted(kind)))
 		{
-			requests.Delete = entity;
+			requests.DeleteSelection = true;
 		}
 		ImGui::EndPopup();
 	}
@@ -3759,16 +3984,19 @@ static void OnImGuiRenderSceneHierarchy()
 	s_LastSelected = s_SelectedEntity;
 	HierarchyRequests requests;
 	ImGui::BeginChild("##HierarchyTree", ImVec2(0.0f, 0.0f), ImGuiChildFlags_None);
+	SyncSelection();
+	s_HierarchyRowsDrawing.clear();
 	for (EnvMapVulkanEntityID root : std::vector<EnvMapVulkanEntityID>(s_Scene.GetRoots()))
 	{
 		DrawHierarchyNode(root, requests);
 	}
+	s_HierarchyRows.swap(s_HierarchyRowsDrawing);
 	// The empty area below the tree: drop an entity there to move it to the top level, a model file to load it
 	ImVec2 freeSize = ImGui::GetContentRegionAvail();
 	ImGui::InvisibleButton("##HierarchyFreeArea", ImVec2(std::max(freeSize.x, 1.0f), std::max(freeSize.y, 40.0f)));
-	if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+	if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift)
 	{
-		s_SelectedEntity = NoEntity;
+		SelectOnly(NoEntity);
 	}
 	if (ImGui::BeginDragDropTarget())
 	{
@@ -3787,16 +4015,16 @@ static void OnImGuiRenderSceneHierarchy()
 	}
 	ImGui::EndChild();
 
-	// Keys, while the panel has the focus: F2 renames the selected entity, Delete removes it
+	// Keys, while the panel has the focus: F2 renames the selected (primary) entity, Delete removes the selected ones
 	if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && s_RenamingEntity == NoEntity && s_Scene.Exists(s_SelectedEntity))
 	{
 		if (ImGui::IsKeyPressed(ImGuiKey_F2))
 		{
 			StartRenaming(s_SelectedEntity);
 		}
-		if (ImGui::IsKeyPressed(ImGuiKey_Delete) && CanBeDeleted(GetEntityKind(s_SelectedEntity)))
+		if (ImGui::IsKeyPressed(ImGuiKey_Delete))
 		{
-			requests.Delete = s_SelectedEntity;
+			requests.DeleteSelection = true;
 		}
 	}
 
@@ -3809,9 +4037,9 @@ static void OnImGuiRenderSceneHierarchy()
 		}
 		ExtractLights();
 	}
-	if (requests.Delete != NoEntity)
+	if (requests.DeleteSelection)
 	{
-		DeleteEntity(requests.Delete);
+		DeleteSelectedEntities();
 	}
 
 	ImGui::End();
@@ -3844,6 +4072,15 @@ static void OnImGuiRenderProperties()
 		ImGui::SameLine();
 	}
 	ImGui::TextDisabled("%s", GetEntityKindName(kind));
+	if (const size_t selectedCount = GetSelection().size(); selectedCount > 1)
+	{
+		ImGui::TextDisabled("%zu entities selected: these are the properties of the last one clicked.", selectedCount);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The gizmo moves all selected models, meshes and lights together, Delete removes them,\n"
+				"and a material dropped onto one of them goes to all of them");
+		}
+	}
 	ImGui::Separator();
 
 	switch (kind)
@@ -3999,32 +4236,6 @@ static void MarkSceneSaved()
 	s_SceneHasUnsavedChanges = false;
 }
 
-static void RememberLastScene(const std::string& filepath)
-{
-	YAML::Emitter out;
-	out << YAML::BeginMap << YAML::Key << "LastScene" << YAML::Value << filepath << YAML::EndMap;
-	std::error_code error;
-	std::filesystem::create_directories(std::filesystem::path(s_EditorStateFile).parent_path(), error);
-	std::ofstream file(s_EditorStateFile);
-	if (file)
-	{
-		file << out.c_str() << "\n";
-	}
-}
-
-static std::string GetLastScene()
-{
-	try
-	{
-		YAML::Node root = YAML::LoadFile(s_EditorStateFile);
-		return root["LastScene"].as<std::string>("");
-	}
-	catch (const std::exception&)
-	{
-		return std::string(); // no editor state yet
-	}
-}
-
 // Writes the scene file (its file name made by MakeFileName, with the .mscene extension); its materials with unsaved
 // changes are saved first, so the file refers to their saved files
 static bool SaveSceneTo(const std::string& requestedPath)
@@ -4032,12 +4243,26 @@ static bool SaveSceneTo(const std::string& requestedPath)
 	std::filesystem::path path(requestedPath);
 	path.replace_filename(EnvMapVulkanMaterialLibrary::MakeFileName(path.stem().string(), "Scene") + EnvMapVulkanSceneSerializer::FileExtension);
 
-	std::set<EnvMapVulkanMaterial*> saved;
+	// The parts' materials, and the parents of variants (a variant inherits from its parent's saved file when it is
+	// loaded), parents first: a variant's file refers to its parent's file
+	std::set<EnvMapVulkanMaterial*> visited;
 	bool materialsOk = true;
+	uint32_t savedCount = 0;
 	s_Scene.Each<MeshPartComponent>([&](EnvMapVulkanEntityID, MeshPartComponent& part) {
-		if (part.Material && part.Material->HasUnsavedChanges() && saved.insert(part.Material.Raw()).second)
+		std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> chain;
+		for (H2M::RefH2M<EnvMapVulkanMaterial> material = part.Material; material && visited.insert(material.Raw()).second;
+			material = EnvMapVulkanMaterialLibrary::GetParent(material))
 		{
-			materialsOk &= EnvMapVulkanMaterialLibrary::Save(part.Material);
+			chain.push_back(material);
+		}
+		for (auto it = chain.rbegin(); it != chain.rend(); ++it)
+		{
+			if ((*it)->HasUnsavedChanges())
+			{
+				const bool ok = EnvMapVulkanMaterialLibrary::Save(*it);
+				materialsOk &= ok;
+				savedCount += ok ? 1 : 0;
+			}
 		}
 	});
 	if (!materialsOk)
@@ -4064,9 +4289,8 @@ static bool SaveSceneTo(const std::string& requestedPath)
 	s_SceneFilePath = EnvMapVulkanSceneSerializer::ToStoredPath(path.string());
 	s_SavedSceneText = text;
 	s_SceneHasUnsavedChanges = false;
-	RememberLastScene(s_SceneFilePath);
 	Log::GetLogger()->info("Scene '{0}' saved to '{1}' ({2} entities, {3} material(s) saved with it)", s_SceneName, s_SceneFilePath,
-		s_Scene.GetEntityCount(), saved.size());
+		s_Scene.GetEntityCount(), savedCount);
 	return true;
 }
 
@@ -4105,7 +4329,7 @@ static void ClearScene()
 	vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
 	s_Scene.Clear();
 	s_SelectedEntity = NoEntity;
-	s_PendingRemoveEntity = NoEntity;
+	s_PendingRemoveEntities.clear();
 	s_RenamingEntity = NoEntity;
 }
 
@@ -4133,8 +4357,6 @@ static bool AttachModel(EnvMapVulkanEntityID entity, const std::unordered_map<En
 	{
 		originalTransforms.push_back(mesh->Transform);
 	}
-	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> modelMaterials = EnvMapVulkanMaterialLibrary::ImportModelMaterials(model);
-
 	// The parts the scene has (one whose mesh the model file no longer has is dropped)
 	std::vector<EnvMapVulkanEntityID> parts;
 	for (EnvMapVulkanEntityID child : std::vector<EnvMapVulkanEntityID>(s_Scene.GetChildren(entity)))
@@ -4184,12 +4406,16 @@ static bool AttachModel(EnvMapVulkanEntityID entity, const std::unordered_map<En
 		}
 	}
 
+	// The parts' materials: first those the scene refers to (in the library, or loaded from their files), then the
+	// model's own for the others. In this order, a saved edit of one of the model's materials is reused rather than
+	// imported again from the model next to it.
 	for (EnvMapVulkanEntityID partEntity : parts)
 	{
 		MeshPartComponent& part = s_Scene.Get<MeshPartComponent>(partEntity);
 		part.MeshIndex = (uint32_t)std::distance(kept.begin(), kept.find(part.SourceMeshIndex)); // its place among the kept meshes
 		part.OriginalTransform = originalTransforms[part.SourceMeshIndex];
 		part.AppliedTransform.SetMatrix(part.OriginalTransform); // the mesh keeps its exact matrix unless the part was moved
+		part.Material = H2M::RefH2M<EnvMapVulkanMaterial>();
 
 		auto ref = materialRefs.find(partEntity);
 		H2M::RefH2M<EnvMapVulkanMaterial> material;
@@ -4206,12 +4432,15 @@ static bool AttachModel(EnvMapVulkanEntityID entity, const std::unordered_map<En
 					s_Scene.Get<NameComponent>(partEntity).Name, ref->second.ID, ref->second.File);
 			}
 		}
-		if (!material)
-		{
-			const auto& mesh = model->GetMeshes()[part.MeshIndex];
-			material = mesh->MaterialIndex < modelMaterials.size() ? modelMaterials[mesh->MaterialIndex] : EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
-		}
 		part.Material = material;
+	}
+	for (EnvMapVulkanEntityID partEntity : parts)
+	{
+		MeshPartComponent& part = s_Scene.Get<MeshPartComponent>(partEntity);
+		if (!part.Material)
+		{
+			part.Material = EnvMapVulkanMaterialLibrary::ImportModelMaterial(model, model->GetMeshes()[part.MeshIndex]->MaterialIndex);
+		}
 	}
 	return true;
 }
@@ -4292,7 +4521,6 @@ static bool OpenSceneNow(const std::string& filepath)
 	ExtractWater();
 	ApplyPartTransforms();
 	MarkSceneSaved();
-	RememberLastScene(s_SceneFilePath);
 	Log::GetLogger()->info("Scene '{0}' opened from '{1}': {2} entities", s_SceneName, s_SceneFilePath, s_Scene.GetEntityCount());
 	return true;
 }
@@ -4362,18 +4590,14 @@ static void OnImGuiRenderUnsavedChangesPopup()
 	}
 }
 
-// At the start of Draw: the startup scene (once), and New / Open once confirmed
+// At the start of Draw: New / Open once confirmed
 static void ProcessSceneOperations()
 {
 	static bool s_StartupDone = false;
 	if (!s_StartupDone)
 	{
 		s_StartupDone = true;
-		const std::string lastScene = GetLastScene();
-		if (lastScene.empty() || !std::filesystem::exists(lastScene) || !OpenSceneNow(lastScene))
-		{
-			MarkSceneSaved(); // the startup scene (environment and sun) has nothing to save yet
-		}
+		MarkSceneSaved(); // the startup scene (environment and sun) has nothing to save yet
 	}
 	if (s_PendingSceneOperation == SceneOperation::None || !s_SceneOperationConfirmed)
 	{
@@ -4445,6 +4669,7 @@ static void OnImGuiRenderMaterialLibrary()
 
 	// Duplicating adds to the material list, so a request from a row is carried out after the list is drawn
 	H2M::RefH2M<EnvMapVulkanMaterial> duplicateRequest = H2M::RefH2M<EnvMapVulkanMaterial>();
+	H2M::RefH2M<EnvMapVulkanMaterial> variantRequest = H2M::RefH2M<EnvMapVulkanMaterial>();
 
 	if (ImGui::Button("New Material"))
 	{
@@ -4558,7 +4783,7 @@ static void OnImGuiRenderMaterialLibrary()
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("Loads a material file (or drop .mmat files onto this panel). A file of a material already in the\n"
-			"library (the same ID) reloads it; the others are added. %s is loaded at startup.", EnvMapVulkanMaterialLibrary::MaterialsFolder);
+			"library (the same ID) reloads it; the others are added. Saved materials are in %s.", EnvMapVulkanMaterialLibrary::MaterialsFolder);
 	}
 
 	if (ImGui::GetTime() - s_SaveStatusTime < 5.0)
@@ -4637,6 +4862,15 @@ static void OnImGuiRenderMaterialLibrary()
 			{
 				duplicateRequest = material;
 			}
+			if (ImGui::MenuItem("Create Variant"))
+			{
+				variantRequest = material;
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("A new material that inherits everything from this one (including later changes)\n"
+					"until you override some of its properties in the Material Editor");
+			}
 			if (ImGui::MenuItem("Delete"))
 			{
 				s_PendingDeleteMaterial = material; // deleted at the start of the next frame (see Draw)
@@ -4653,6 +4887,12 @@ static void OnImGuiRenderMaterialLibrary()
 		if (ImGui::IsItemHovered())
 		{
 			std::string origin = material->GetSourceFile().empty() ? "Created in the editor" : "Imported from " + material->GetSourceFile();
+			if (material->IsVariant())
+			{
+				H2M::RefH2M<EnvMapVulkanMaterial> parent = EnvMapVulkanMaterialLibrary::GetParent(material);
+				origin = "Variant of " + (parent ? "'" + parent->GetName() + "'" : std::string("a material that isn't loaded")) +
+					", " + std::to_string(material->GetOverrideCount()) + " overridden properties";
+			}
 			std::string file = material->GetFilePath().empty() ? "Not saved yet (*)" :
 				"File: " + material->GetFilePath() + (material->HasUnsavedChanges() ? " (unsaved changes *)" : "");
 			ImGui::SetTooltip("%s\n%s\nDrag onto a mesh in the Scene Hierarchy, the Properties panel or the viewport to assign it",
@@ -4682,6 +4922,10 @@ static void OnImGuiRenderMaterialLibrary()
 	if (duplicateRequest)
 	{
 		s_SelectedMaterial = EnvMapVulkanMaterialLibrary::Duplicate(duplicateRequest);
+	}
+	if (variantRequest)
+	{
+		s_SelectedMaterial = EnvMapVulkanMaterialLibrary::CreateVariant(variantRequest);
 	}
 
 	// The whole panel is a drop area for material files
@@ -4740,23 +4984,117 @@ static void OnImGuiRenderMaterialEditor()
 		ImGui::TextDisabled("Not used by any mesh.");
 	}
 
+	// The selected mesh's own material: a variant of this one (see MakePartMaterialUnique)
+	const MeshPartComponent* selectedPart = s_Scene.TryGet<MeshPartComponent>(s_SelectedEntity);
+	if (selectedPart && selectedPart->Material == material)
+	{
+		if (ImGui::Button("Make Unique"))
+		{
+			MakePartMaterialUnique(s_SelectedEntity);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Gives the selected mesh ('%s') a variant of this material: it looks the same and follows this\n"
+				"material's changes, but the properties you edit then apply to that mesh only",
+				s_Scene.Get<NameComponent>(s_SelectedEntity).Name.c_str());
+		}
+	}
+
+	// A variant: its parent, and which properties it overrides. Inherited properties are grayed out (editing one overrides
+	// it); overridden ones have a Reset button that makes them inherited again.
+	const bool variant = material->IsVariant();
+	H2M::RefH2M<EnvMapVulkanMaterial> parent = EnvMapVulkanMaterialLibrary::GetParent(material);
+	if (variant)
+	{
+		ImGui::Separator();
+		if (parent)
+		{
+			ImGui::TextDisabled("Variant of");
+			ImGui::SameLine();
+			if (ImGui::SmallButton(parent->GetName().c_str()))
+			{
+				s_SelectedMaterial = parent;
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Edit the parent material (its changes apply to this variant's inherited properties)");
+			}
+		}
+		else
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "Variant of a material that isn't loaded: it keeps its values");
+		}
+		ImGui::SameLine();
+		if (ImGui::SmallButton("Make Independent"))
+		{
+			EnvMapVulkanMaterialLibrary::Detach(material);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("This material keeps its current values but no longer follows its parent");
+		}
+		const uint32_t overrides = material->GetOverrideCount();
+		ImGui::TextDisabled("%u overridden propert%s. Grayed ones are inherited: edit one to override it.", overrides, overrides == 1 ? "y" : "ies");
+	}
+
+	// Around each property's controls: grayed while inherited, a Reset button when overridden
+	auto beginProperty = [&](EnvMapVulkanMaterial::Property property) {
+		const bool inherited = variant && !material->IsOverridden(property);
+		if (inherited)
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+		}
+		return inherited;
+	};
+	auto endProperty = [&](EnvMapVulkanMaterial::Property property, bool inherited) {
+		if (inherited)
+		{
+			ImGui::PopStyleVar();
+		}
+		else if (variant)
+		{
+			ImGui::SameLine();
+			ImGui::PushID((int)property);
+			if (ImGui::SmallButton("Reset"))
+			{
+				EnvMapVulkanMaterialLibrary::ResetOverride(material, property); // the parent's value from the next frame
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Overridden. Reset: inherit it from '%s' again", parent ? parent->GetName().c_str() : "the parent");
+			}
+			ImGui::PopID();
+		}
+	};
+
 	ImGui::Separator();
 
 	glm::vec3& albedoColor = material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
 	float& metalness = material->Get<float>("u_MaterialUniforms.Metalness");
 	float& roughness = material->Get<float>("u_MaterialUniforms.Roughness");
 
+	bool inherited = beginProperty(EnvMapVulkanMaterial::AlbedoColorProperty);
 	ImGui::ColorEdit3("Albedo Color", &albedoColor.x);
+	endProperty(EnvMapVulkanMaterial::AlbedoColorProperty, inherited);
+	inherited = beginProperty(EnvMapVulkanMaterial::MetalnessProperty);
 	ImGui::SliderFloat("Metalness", &metalness, 0.0f, 1.0f);
+	endProperty(EnvMapVulkanMaterial::MetalnessProperty, inherited);
+	inherited = beginProperty(EnvMapVulkanMaterial::RoughnessProperty);
 	ImGui::SliderFloat("Roughness", &roughness, 0.0f, 1.0f);
+	endProperty(EnvMapVulkanMaterial::RoughnessProperty, inherited);
 
 	float& tilingFactor = material->Get<float>("u_MaterialUniforms.TilingFactor");
 	float& emissiveIntensity = material->Get<float>("u_MaterialUniforms.EmissiveIntensity");
 	float& metalRoughPacked = material->Get<float>("u_MaterialUniforms.MetalRoughPacked");
 
+	inherited = beginProperty(EnvMapVulkanMaterial::TilingFactorProperty);
 	ImGui::DragFloat("Tiling Factor", &tilingFactor, 0.01f, 0.01f, 100.0f);
+	endProperty(EnvMapVulkanMaterial::TilingFactorProperty, inherited);
+	inherited = beginProperty(EnvMapVulkanMaterial::EmissiveIntensityProperty);
 	ImGui::DragFloat("Emissive Intensity", &emissiveIntensity, 0.05f, 0.0f, 100.0f);
+	endProperty(EnvMapVulkanMaterial::EmissiveIntensityProperty, inherited);
 
+	inherited = beginProperty(EnvMapVulkanMaterial::MetalRoughPackedProperty);
 	bool packed = metalRoughPacked > 0.5f;
 	if (ImGui::Checkbox("Packed Metalness/Roughness Map", &packed))
 	{
@@ -4767,6 +5105,7 @@ static void OnImGuiRenderMaterialEditor()
 		ImGui::SetTooltip("glTF metallicRoughness map: roughness is read from G and metalness from B (otherwise both from R).\n"
 			"Assign the same map to both the metalness and the roughness slot.");
 	}
+	endProperty(EnvMapVulkanMaterial::MetalRoughPackedProperty, inherited);
 
 	static const char* s_MapLabels[EnvMapVulkanMaterial::MapCount] = {
 		"Use Albedo Map", "Use Normal Map", "Use Metalness Map", "Use Roughness Map", "Use Emissive Map", "Use AO Map" };
@@ -4776,6 +5115,7 @@ static void OnImGuiRenderMaterialEditor()
 		ImGui::PushID((int)i);
 		ImGui::Separator();
 
+		const bool mapInherited = beginProperty(EnvMapVulkanMaterial::GetMapProperty(i));
 		H2M::RefH2M<H2M::Texture2D_H2M> map = material->GetMap(i);
 
 		// Thumbnail of the map; also a drop target for images from the Content Browser
@@ -4857,6 +5197,7 @@ static void OnImGuiRenderMaterialEditor()
 			}
 		}
 		ImGui::EndGroup();
+		endProperty(EnvMapVulkanMaterial::GetMapProperty(i), mapInherited);
 
 		ImGui::PopID();
 	}
@@ -5102,10 +5443,23 @@ static float GetModelWorldSize(EnvMapVulkanEntityID entry)
 static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 {
 	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
-	const EnvMapVulkanEntityID selectedModel = GetSelectedModel();
-	const int selectedMesh = GetSelectedMeshIndex();
-	const bool hasSelection = selectedModel != NoEntity;
 	const std::vector<EnvMapVulkanEntityID> models = GetModels();
+	// What of each model is selected: { -1 } the whole model, or mesh indices of its selected parts (see GetSelectedMeshes)
+	SyncSelection();
+	std::map<EnvMapVulkanEntityID, std::vector<int>> selectedMeshes;
+	for (EnvMapVulkanEntityID m : models)
+	{
+		std::vector<int> meshes = GetSelectedMeshes(m);
+		if (!meshes.empty())
+		{
+			selectedMeshes[m] = std::move(meshes);
+		}
+	}
+	auto getSelectedMeshes = [&selectedMeshes](EnvMapVulkanEntityID model) -> const std::vector<int>& {
+		static const std::vector<int> s_None;
+		auto it = selectedMeshes.find(model);
+		return it != selectedMeshes.end() ? it->second : s_None;
+	};
 	const EditorOverlaySettings& settings = s_OverlaySettings;
 
 	// Wide lines are limited by the GPU (at least 8 px is guaranteed)
@@ -5137,9 +5491,14 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 		VkRect2D scissor = { { 0, 0 }, { width, height } };
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 	};
-	auto inScope = [hasSelection, selectedModel](int scope, EnvMapVulkanEntityID model)
+	auto inScope = [&getSelectedMeshes](int scope, EnvMapVulkanEntityID model)
 	{
-		return scope == OverlayScopeAll || (scope == OverlayScopeSelected && hasSelection && model == selectedModel);
+		return scope == OverlayScopeAll || (scope == OverlayScopeSelected && !getSelectedMeshes(model).empty());
+	};
+	// The meshes of a model in scope to draw: "Selected" its selected meshes (-1: the whole model), "All" the whole model
+	auto meshesInScope = [&getSelectedMeshes](int scope, EnvMapVulkanEntityID model)
+	{
+		return scope == OverlayScopeSelected ? getSelectedMeshes(model) : std::vector<int>{ -1 };
 	};
 
 	// Wireframe and bounding boxes
@@ -5167,10 +5526,12 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 			{
 				if (inScope(settings.Wireframe, m))
 				{
-					// "Selected": the selected mesh, or the whole model when no mesh is selected (like the selection outline)
-					int onlyMesh = settings.Wireframe == OverlayScopeSelected ? selectedMesh : -1;
-					DrawModelOverlay(commandBuffer, m, onlyMesh, s_WireframePipeline, s_WireframePipelineAnim, settings.WireframeColor,
-						depthBias * viewProjection, lineWidth);
+					// "Selected": the selected meshes, or the whole model when it is selected (like the selection outline)
+					for (int onlyMesh : meshesInScope(settings.Wireframe, m))
+					{
+						DrawModelOverlay(commandBuffer, m, onlyMesh, s_WireframePipeline, s_WireframePipelineAnim, settings.WireframeColor,
+							depthBias * viewProjection, lineWidth);
+					}
 				}
 			}
 		}
@@ -5184,14 +5545,16 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 				{
 					continue;
 				}
-				// "Selected": the selected mesh, or the whole model when no mesh is selected (like the wireframe)
-				int onlyMesh = settings.Vectors == OverlayScopeSelected ? selectedMesh : -1;
+				// "Selected": the selected meshes, or the whole model when it is selected (like the wireframe)
 				float length = GetModelWorldSize(m) * settings.VectorLength * 0.01f;
-				for (uint32_t v = 0; v < 3; v++)
+				for (int onlyMesh : meshesInScope(settings.Vectors, m))
 				{
-					if (show[v])
+					for (uint32_t v = 0; v < 3; v++)
 					{
-						DrawModelVectors(commandBuffer, m, onlyMesh, v, length, settings.VectorColorMode, depthBias * viewProjection, lineWidth);
+						if (show[v])
+						{
+							DrawModelVectors(commandBuffer, m, onlyMesh, v, length, settings.VectorColorMode, depthBias * viewProjection, lineWidth);
+						}
 					}
 				}
 			}
@@ -5216,10 +5579,14 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 				H2M::RefH2M<H2M::ModelH2M> model = GetModel(m);
 				glm::mat4 transform = s_Scene.GetWorldTransform(m);
 				auto& meshes = model->GetMeshes();
+				const std::vector<int>& modelSelection = getSelectedMeshes(m);
+				const bool wholeModelSelected = Contains(modelSelection, -1);
 				for (int s = 0; s < (int)meshes.size(); s++)
 				{
-					// "Selected": the selected mesh's box, or all boxes of the model when no mesh is selected (like the wireframe)
-					if (settings.BoundingBoxes == OverlayScopeSelected && selectedMesh >= 0 && s != selectedMesh)
+					// The selection (the selected meshes, or the whole model when it is selected) in its own color
+					const bool selected = wholeModelSelected || Contains(modelSelection, s);
+					// "Selected": the selected meshes' boxes, or all boxes of a selected model (like the wireframe)
+					if (settings.BoundingBoxes == OverlayScopeSelected && !selected)
 					{
 						continue;
 					}
@@ -5229,8 +5596,6 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 					glm::mat4 mvp = viewProjection * GetMeshTransform(model, meshes[s], transform) *
 						glm::translate(glm::mat4(1.0f), box.Min) * glm::scale(glm::mat4(1.0f), box.Max - box.Min);
 
-					// The selection (the selected mesh, or the whole selected model when no mesh is selected) in its own color
-					bool selected = m == selectedModel && (selectedMesh < 0 || s == selectedMesh);
 					glm::vec4 color = selected ? settings.SelectedBoundingBoxColor : settings.BoundingBoxColor;
 
 					vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
@@ -5244,9 +5609,15 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 
 	// Silhouette of the selection: the selected mesh, or the whole model when no mesh is selected
 	beginPass(s_SelectionMaskFramebuffer);
-	if (settings.Outline && hasSelection)
+	if (settings.Outline)
 	{
-		DrawModelOverlay(commandBuffer, selectedModel, selectedMesh, s_SelectionMaskPipeline, s_SelectionMaskPipelineAnim, glm::vec4(1.0f), viewProjection);
+		for (const auto& [model, meshes] : selectedMeshes)
+		{
+			for (int mesh : meshes)
+			{
+				DrawModelOverlay(commandBuffer, model, mesh, s_SelectionMaskPipeline, s_SelectionMaskPipelineAnim, glm::vec4(1.0f), viewProjection);
+			}
+		}
 	}
 	vkCmdEndRenderPass(commandBuffer);
 }
@@ -7052,8 +7423,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					EnvMapVulkanEntityID hitPart = hitModel != NoEntity ? FindPart(hitModel, hitMesh) : NoEntity;
 					if (index < materials.size() && hitPart != NoEntity)
 					{
-						s_Scene.Get<MeshPartComponent>(hitPart).Material = materials[index];
-						s_SelectedEntity = hitPart;
+						AssignMaterialToDropTarget(hitPart, materials[index]);
 					}
 				}
 
@@ -7094,40 +7464,54 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			Window* mainWindow = Application::Get()->GetWindow();
 			UpdateImGuizmo(mainWindow);
 
-			// Mouse picking: left click on the scene (not on the gizmo, not with Alt) selects the light icon or else the
-			// model/mesh under the cursor
+			// Mouse picking: left click on the scene (not on the gizmo, not with Alt) selects the light icon, or else the
+			// mesh under the cursor (or the water in front of it). Ctrl or Shift + click adds it to the selection or removes
+			// it (as in Unity); a double click selects the whole model of the mesh.
 			if (viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
 				!Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 			{
+				const bool toggle = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl) ||
+					Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift);
+				EnvMapVulkanEntityID clicked = NoEntity;
+				EnvMapVulkanEntityID clickedModel = NoEntity;
 				LightKind lightKind;
 				int lightIndex;
 				if (PickLightIcon(lightKind, lightIndex))
 				{
-					SelectLight(lightKind, lightIndex);
+					clicked = GetLightEntity(lightKind, lightIndex);
 				}
 				else
 				{
 					glm::vec2 ndc = GetViewportMouseNdc();
 					glm::vec3 meshHit;
-					EnvMapVulkanEntityID hitModel;
 					int hitMesh;
-					RaycastMesh(ndc.x, ndc.y, hitModel, hitMesh, &meshHit);
-					SelectModel(hitModel, hitMesh); // replaces any selection (NoEntity: nothing under the cursor)
+					RaycastMesh(ndc.x, ndc.y, clickedModel, hitMesh, &meshHit);
+					clicked = clickedModel != NoEntity ? GetModelOrPart(clickedModel, hitMesh) : NoEntity;
 					// The water, when it is in front of the model under the cursor (or there is none)
 					glm::vec3 rayOrigin, rayDirection;
 					GetCameraRay(ndc.x, ndc.y, rayOrigin, rayDirection);
 					float waterT;
-					if (RaycastWater(s_WaterSettings, rayOrigin, rayDirection, waterT) &&
-						(hitModel == NoEntity || waterT < glm::length(meshHit - rayOrigin)))
+					if (s_WaterEntity != NoEntity && RaycastWater(s_WaterSettings, rayOrigin, rayDirection, waterT) &&
+						(clickedModel == NoEntity || waterT < glm::length(meshHit - rayOrigin)))
 					{
-						SelectWater();
-					}
-					// Shift + click: the whole model (the gizmo moves the model, not the part under the mouse)
-					if ((Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift)) && GetSelectedModel() != NoEntity)
-					{
-						s_SelectedEntity = GetSelectedModel();
+						clicked = s_WaterEntity;
+						clickedModel = NoEntity;
 					}
 				}
+				if (toggle)
+				{
+					ToggleSelected(clicked); // nothing under the cursor: the selection stays
+				}
+				else if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && clickedModel != NoEntity)
+				{
+					SelectOnly(clickedModel); // the gizmo moves the model, not the part under the mouse
+				}
+				else
+				{
+					SelectOnly(clicked); // NoEntity: nothing under the cursor deselects
+				}
+				ExtractLights(); // the selected light's kind and the water's selection follow the primary entity
+				ExtractWater();
 			}
 
 			ImGui::End();
@@ -7431,10 +7815,14 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	bool texturesMayBeUnused = false;
 
 	// Model / mesh removal and model loading requested from the Models and Meshes panel
-	if (s_PendingRemoveEntity != NoEntity)
+	const std::vector<EnvMapVulkanEntityID> removeEntities = std::move(s_PendingRemoveEntities);
+	s_PendingRemoveEntities.clear();
+	for (EnvMapVulkanEntityID entity : removeEntities)
 	{
-		const EnvMapVulkanEntityID entity = s_PendingRemoveEntity;
-		s_PendingRemoveEntity = NoEntity;
+		if (!s_Scene.Exists(entity))
+		{
+			continue; // removed with its model (both were selected), or twice in the list
+		}
 		if (const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(entity))
 		{
 			// Only a part of a model: its geometry stays in the model's buffers, so nothing on the GPU is freed. The mesh
@@ -7466,12 +7854,8 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		{
 			// The model's buffers and descriptor sets may still be used by frames in flight
 			vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
-			const bool wasSelected = GetSelectedModel() == entity;
 			s_Scene.DestroyEntity(entity);
-			if (wasSelected)
-			{
-				s_SelectedEntity = NoEntity;
-			}
+			SyncSelection(); // the model and its parts leave the selection
 			texturesMayBeUnused = true;
 		}
 	}
@@ -7502,15 +7886,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 			Log::GetLogger()->error("Lens dirt texture '{0}' could not be loaded.", filepath);
 		}
 	}
-	// The project's materials (saved in the Material Library), at the start of the first frame, as models and maps are loaded
-	static bool s_ProjectMaterialsLoaded = false;
-	if (!s_ProjectMaterialsLoaded)
-	{
-		s_ProjectMaterialsLoaded = true;
-		uint32_t materialCount = EnvMapVulkanMaterialLibrary::LoadFolder(EnvMapVulkanMaterialLibrary::MaterialsFolder);
-		Log::GetLogger()->info("{0} material(s) loaded from '{1}'", materialCount, EnvMapVulkanMaterialLibrary::MaterialsFolder);
-	}
-	// The startup scene, and New / Open from the File menu (after the project's materials: the scene refers to them)
+	// New / Open from the File menu (an opened scene loads the material files it refers to)
 	ProcessSceneOperations();
 	// Material files loaded from the Material Library
 	if (!s_PendingMaterialFiles.empty())
@@ -7538,6 +7914,12 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		DeleteMaterial(s_PendingDeleteMaterial);
 		s_PendingDeleteMaterial = H2M::RefH2M<EnvMapVulkanMaterial>();
+		texturesMayBeUnused = true;
+	}
+	// Material variants get their parents' inherited values and maps (after every change above), and an inherited
+	// property edited since the last frame becomes an override
+	if (EnvMapVulkanMaterialLibrary::ResolveVariants([] { vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice()); }))
+	{
 		texturesMayBeUnused = true;
 	}
 
@@ -7893,26 +8275,9 @@ H2M::RendererCapabilitiesH2M EnvMapVulkanRenderer::GetCapabilities()
 	return s_Data.RenderCaps;
 }
 
-void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
+// The gizmo on the primary selected entity (s_SelectedEntity): a light (the sun turns), the water, a part of a model or a model
+static void ManipulatePrimarySelection()
 {
-	// BEGIN ImGuizmo
-
-	// Gizmo mode: 1 translate, 2 rotate, 3 scale, 4 hide (not while typing into an ImGui text field)
-	if (!ImGui::GetIO().WantTextInput)
-	{
-		if (Input::IsKeyPressed(KeyH2M::D1))
-			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-		if (Input::IsKeyPressed(KeyH2M::D2))
-			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
-
-		if (Input::IsKeyPressed(KeyH2M::D3))
-			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
-
-		if (Input::IsKeyPressed(KeyH2M::D4))
-			Scene::s_ImGuizmoType = -1;
-	}
-
 	// The gizmo moves the selected point or spot light, or else the model or mesh selected in the Models and Meshes panel (or picked with the mouse)
 	if (Scene::s_ImGuizmoType != -1 && s_SelectedLightKind != LightKind::None && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 	{
@@ -8027,6 +8392,124 @@ void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
 	{
 		// Back into the values shown (and editable) in the Models and Meshes panel
 		s_Scene.SetWorldTransform(selectedModel, transform);
+	}
+}
+
+// Multi-selection: what the gizmo moves for a selected entity, as it does for the primary one (see
+// ManipulatePrimarySelection): a model, a point or spot light, a part the gizmo can move on its own, or else the part's
+// model (a part of a single-mesh model, a rigged part). NoEntity: it doesn't move (the sun, the water, the environment).
+static EnvMapVulkanEntityID GetMovedEntity(EnvMapVulkanEntityID entity)
+{
+	switch (GetEntityKind(entity))
+	{
+		case EntityKind::Model:
+		case EntityKind::PointLight:
+		case EntityKind::SpotLight:
+			return entity;
+		case EntityKind::Part:
+		{
+			const EnvMapVulkanEntityID model = s_Scene.GetParent(entity);
+			return CanManipulateMesh(model, (int)s_Scene.Get<MeshPartComponent>(entity).MeshIndex) ? entity : model;
+		}
+		default:
+			return NoEntity;
+	}
+}
+
+// The world matrix of a moved entity (a part's: its mesh matrix, which drawing uses, in its model)
+
+static glm::mat4 GetMovableWorldMatrix(EnvMapVulkanEntityID entity)
+{
+	if (const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(entity))
+	{
+		const EnvMapVulkanEntityID model = s_Scene.GetParent(entity);
+		return s_Scene.GetWorldTransform(model) * GetModel(model)->GetMeshes()[part->MeshIndex]->Transform;
+	}
+	return s_Scene.GetWorldTransform(entity);
+}
+
+static void SetMovableWorldMatrix(EnvMapVulkanEntityID entity, const glm::mat4& world)
+{
+	if (s_Scene.Has<MeshPartComponent>(entity))
+	{
+		SetPartMatrix(entity, glm::inverse(s_Scene.GetWorldTransform(s_Scene.GetParent(entity))) * world);
+	}
+	else
+	{
+		s_Scene.SetWorldTransform(entity, world);
+	}
+}
+
+// An entity under another moved entity moves with that one (it isn't moved twice)
+static bool HasMovedAncestor(EnvMapVulkanEntityID entity, const std::vector<EnvMapVulkanEntityID>& moved)
+{
+	for (EnvMapVulkanEntityID parent = s_Scene.GetParent(entity); parent != NoEntity; parent = s_Scene.GetParent(parent))
+	{
+		if (Contains(moved, parent))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
+{
+	// BEGIN ImGuizmo
+
+	// Gizmo mode: 1 translate, 2 rotate, 3 scale, 4 hide (not while typing into an ImGui text field)
+	if (!ImGui::GetIO().WantTextInput)
+	{
+		if (Input::IsKeyPressed(KeyH2M::D1))
+			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+
+		if (Input::IsKeyPressed(KeyH2M::D2))
+			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
+
+		if (Input::IsKeyPressed(KeyH2M::D3))
+			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
+
+		if (Input::IsKeyPressed(KeyH2M::D4))
+			Scene::s_ImGuizmoType = -1;
+	}
+
+	// The gizmo is on the primary selected entity. The other selected entities that can move go along: the change of the
+	// primary entity's world matrix (a translation, a rotation around the gizmo, a scale) is applied to each of them.
+	SyncSelection();
+	std::vector<EnvMapVulkanEntityID> moved; // what moves for the selected entities, once each
+	for (EnvMapVulkanEntityID entity : s_Selection)
+	{
+		const EnvMapVulkanEntityID movedEntity = GetMovedEntity(entity);
+		if (movedEntity != NoEntity && !Contains(moved, movedEntity))
+		{
+			moved.push_back(movedEntity);
+		}
+	}
+	const EnvMapVulkanEntityID primary = GetMovedEntity(s_SelectedEntity);
+	const bool moveOthers = moved.size() > 1 && primary != NoEntity;
+	const glm::mat4 before = moveOthers ? GetMovableWorldMatrix(primary) : glm::mat4(1.0f);
+
+	ManipulatePrimarySelection();
+
+	if (moveOthers && s_Scene.Exists(primary))
+	{
+		const glm::mat4 after = GetMovableWorldMatrix(primary);
+		if (after != before)
+		{
+			const glm::mat4 delta = after * glm::inverse(before);
+			if (HasMovedAncestor(primary, moved))
+			{
+				SetMovableWorldMatrix(primary, before); // a moved parent of it moves it (below)
+			}
+			for (EnvMapVulkanEntityID entity : moved)
+			{
+				if (entity != primary && s_Scene.Exists(entity) && !HasMovedAncestor(entity, moved))
+				{
+					SetMovableWorldMatrix(entity, delta * GetMovableWorldMatrix(entity));
+				}
+			}
+			ExtractLights(); // moved lights
+		}
 	}
 }
 

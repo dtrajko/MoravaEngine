@@ -1,0 +1,173 @@
+Scene:
+  Version: 1
+  Name: Old_Stove_Corner
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 17358315660792784881
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      Rotation: 0
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 9634820204705747951
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [38.47463, 41.173023, 15.236968]
+      Rotation: [6.3585095, 4.2268596, -67.19816]
+      Scale: [0.9999569, 1.0002319, 0.99995977]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 1.35
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: true
+  - ID: 12228696566621569181
+    Name: udmheheqx_LOD0.fbx
+    Parent: 0
+    Transform:
+      Translation: [0, 0.9983078, 0]
+      Rotation: [0.00014750258, 51.875263, 0.00010018851]
+      Scale: [0.20000012, 0.20000003, 0.2]
+    Model:
+      File: Models/Old_Stove/udmheheqx_LOD0.fbx
+  - ID: 14284572191162203289
+    Name: Aset_other__S_udmheheqx_LOD0
+    Parent: 12228696566621569181
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 8817962342593065839
+        File: assets/Materials/Old_Stove_Material.mmat
+        Name: Old_Stove_Material
+  - ID: 13093752142883883979
+    Name: Floor
+    Parent: 0
+    Transform:
+      Translation: [-0.05635643, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [20.000006, 1, 20.000006]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 2893940528764979990
+    Name: Cube
+    Parent: 13093752142883883979
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 16625749967610680966
+        File: assets/Materials/Floor_Material.mmat
+        Name: Floor_Material
+  - ID: 4858856740664828933
+    Name: Wall 01
+    Parent: 0
+    Transform:
+      Translation: [0, 19, -19.02542]
+      Rotation: [0, -0, -90]
+      Scale: [20.000013, 20.000013, 0.99994147]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 1081673283594027113
+    Name: Cube
+    Parent: 4858856740664828933
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 3349825478151956020
+        File: assets/Materials/Wall_Material_Variant.mmat
+        Name: Wall_Material (Variant)
+  - ID: 16738116975417454179
+    Name: Wall 02
+    Parent: 0
+    Transform:
+      Translation: [-18.765696, 19, 0]
+      Rotation: [90, 0, 0]
+      Scale: [0.99997306, 19.999966, 19.999966]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 9783654704771516249
+    Name: Cube
+    Parent: 16738116975417454179
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 5294835396988308064
+        File: assets/Materials/Wall_Material.mmat
+        Name: Wall_Material
+  - ID: 15652542399786044124
+    Name: Spot Light 1
+    Parent: 0
+    Transform:
+      Translation: [6.335957, 12.758692, 4.64478]
+      Rotation: [46.63391, 40.467793, -81.07302]
+      Scale: [0.99990594, 0.9999485, 0.9999301]
+    SpotLight:
+      Enabled: true
+      Color: [0.98370814, 0.44607842, 1]
+      Intensity: 200
+      Range: 37.16
+      InnerAngle: 21.8
+      OuterAngle: 27.8
+      CastShadows: true
+  - ID: 17609660640847487716
+    Name: Point Light 1
+    Parent: 0
+    Transform:
+      Translation: [-5.5598726, 14.369078, 2.317315]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: true
+      Color: [0.6764706, 1, 1]
+      Intensity: 500
+      Range: 7.52
+      CastShadows: true
