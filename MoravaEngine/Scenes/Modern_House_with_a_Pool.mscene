@@ -60,8 +60,8 @@ Entities:
     Parent: 0
     Transform:
       Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [50, 1, 50]
+      Rotation: [0, -0, 0]
+      Scale: [50, 1, 51]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 5641040960122181036
@@ -81,9 +81,9 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [0, 0, -20]
+      Translation: [0, -2, -50]
       Rotation: [0, -0, 0]
-      Scale: [80, 1, 100]
+      Scale: [100, 1, 150]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 9436166991761912528
@@ -103,9 +103,9 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [20.035513, 20, 0]
+      Translation: [20, 20, 0]
       Rotation: [0, -0, 0]
-      Scale: [30, 1, 50]
+      Scale: [30, 1, 49]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 3864468783066216926
@@ -125,9 +125,9 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [20.215828, 41.97825, 0]
+      Translation: [20, 40, 0]
       Rotation: [0, -0, 0]
-      Scale: [30, 1, 50]
+      Scale: [30, 1, 51]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 2126677957734585233
@@ -147,7 +147,7 @@ Entities:
     Name: cube.obj
     Parent: 0
     Transform:
-      Translation: [0, 11, -48.93774]
+      Translation: [0, 11, -50]
       Rotation: [0, -0, 0]
       Scale: [50, 10, 1]
     Model:
@@ -169,7 +169,7 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [20.249514, 31.130424, -49.140022]
+      Translation: [20, 31.130424, -50]
       Rotation: [0, -0, 0]
       Scale: [30, 10, 1]
     Model:
@@ -191,9 +191,9 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [49.220688, 21.327675, 0.22119713]
-      Rotation: [0.00041845997, 89.99995, 0.0001042736]
-      Scale: [50, 19.999998, 0.9999967]
+      Translation: [48, 30, -26]
+      Rotation: [0.00041844347, 89.99995, 0.000104272265]
+      Scale: [23, 9, 0.9999967]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 17817818241837793003
@@ -206,14 +206,102 @@ Entities:
     MeshPart:
       SourceMeshIndex: 0
       Material:
-        ID: 13790279153822762488
-        File: assets/Materials/Concrete.mmat
-        Name: Concrete
+        ID: 1706394913290854299
+        File: assets/Materials/Glass.mmat
+        Name: Glass
+  - ID: 8990740850954830848
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [48, 30, 26]
+      Rotation: [0.0004184448, 89.99995, 0.000104272556]
+      Scale: [23, 9, 0.9999967]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 7435748702291062261
+    Name: Cube
+    Parent: 8990740850954830848
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1706394913290854299
+        File: assets/Materials/Glass.mmat
+        Name: Glass
+  - ID: 14838799936320785028
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [48, 10, 26]
+      Rotation: [0.00041844547, 89.99995, 0.000104272556]
+      Scale: [23, 9, 0.9999967]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 3094300302916485404
+    Name: Cube
+    Parent: 14838799936320785028
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1706394913290854299
+        File: assets/Materials/Glass.mmat
+        Name: Glass
+  - ID: 13727552869569639211
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [48, 10, -26]
+      Rotation: [0.00041844547, 89.99995, 0.000104272556]
+      Scale: [23, 9, 0.9999967]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 4474732877175944463
+    Name: Cube
+    Parent: 13727552869569639211
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1706394913290854299
+        File: assets/Materials/Glass.mmat
+        Name: Glass
+  - ID: 83128751350222773
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-8, 30, 25.994488]
+      Rotation: [0.00041844978, 89.99995, 0.00010427312]
+      Scale: [23, 9, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 1209302558373624001
+    Name: Cube
+    Parent: 83128751350222773
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1706394913290854299
+        File: assets/Materials/Glass.mmat
+        Name: Glass
   - ID: 9914487251046779526
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [20.09578, 31.065601, 48.92505]
+      Translation: [20, 30, 50]
       Rotation: [0, -0, 0]
       Scale: [30, 10, 1]
     Model:
@@ -235,7 +323,7 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [0, 11, 48.85562]
+      Translation: [0, 11, 50]
       Rotation: [0, -0, 0]
       Scale: [50, 10, 1]
     Model:
@@ -257,9 +345,9 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [-48.941727, 11, 0.08180857]
+      Translation: [-50, 11, 0.08180857]
       Rotation: [179.99976, 89.99995, 179.99976]
-      Scale: [50.000023, 9.999999, 0.9999984]
+      Scale: [51, 9.999999, 0.9999984]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 6839885989627425995
@@ -279,7 +367,7 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [-8.807848, 11, 0.08180857]
+      Translation: [-9, 10, 0]
       Rotation: [179.99976, 89.99995, 179.99976]
       Scale: [50.000023, 9.999999, 0.9999984]
     Model:
@@ -353,3 +441,134 @@ Entities:
         ID: 18433893619201708249
         File: assets/Materials/jeep_army.jpg.mmat
         Name: jeep_army.jpg
+  - ID: 11461458677072285593
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [47.974037, 20, 0]
+      Rotation: [0, -0, 0]
+      Scale: [2, 20, 4]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 4697986437189020127
+    Name: Cube
+    Parent: 11461458677072285593
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17065537760613550702
+        File: assets/Materials/Material.mmat
+        Name: Material
+  - ID: 15121055714260398186
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-7.9667797, 20, 0]
+      Rotation: [0, -0, 0]
+      Scale: [2, 20, 4]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 3083923710410790282
+    Name: Cube
+    Parent: 15121055714260398186
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 17065537760613550702
+        File: assets/Materials/Material.mmat
+        Name: Material
+  - ID: 12482023984395378101
+    Name: boblampclean.md5mesh
+    Parent: 0
+    Transform:
+      Translation: [-2.956262, 21.144989, -12.295704]
+      Rotation: [0.0012987793, -84.88376, -0.000604843]
+      Scale: [0.25, 0.25, 0.25]
+    Model:
+      File: Models/OGLdev/BobLamp/boblampclean.md5mesh
+  - ID: 13169064096900924839
+    Name: guard1_body.tga.msh
+    Parent: 12482023984395378101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 8408710726602542071
+        File: assets/Materials/boblampclean_Material_0.mmat
+        Name: boblampclean Material 0
+  - ID: 12593351114970523257
+    Name: guard1_face.tga.msh
+    Parent: 12482023984395378101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 4565868493778467549
+        File: assets/Materials/boblampclean_Material_1.mmat
+        Name: boblampclean Material 1
+  - ID: 4274497873136564276
+    Name: guard1_helmet.tga.msh
+    Parent: 12482023984395378101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 9089882857363342016
+        File: assets/Materials/boblampclean_Material_2.mmat
+        Name: boblampclean Material 2
+  - ID: 10640052417051742422
+    Name: iron_grill.tga.msh
+    Parent: 12482023984395378101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 8264326595956978879
+        File: assets/Materials/boblampclean_Material_3.mmat
+        Name: boblampclean Material 3
+  - ID: 6161498728669421663
+    Name: round_grill.tga.msh
+    Parent: 12482023984395378101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 8727219883362958949
+        File: assets/Materials/boblampclean_Material_4.mmat
+        Name: boblampclean Material 4
+  - ID: 9172939395387500265
+    Name: guard1_body.tga.msh
+    Parent: 12482023984395378101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 12929421976780088567
+        File: assets/Materials/boblampclean_Material_5.mmat
+        Name: boblampclean Material 5

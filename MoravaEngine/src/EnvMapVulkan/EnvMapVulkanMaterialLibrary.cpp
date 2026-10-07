@@ -154,6 +154,11 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::CreateMaterial(co
 // The values and maps of source into a new material (its descriptor set isn't in use yet)
 static void CopyValuesAndMaps(H2M::RefH2M<EnvMapVulkanMaterial> material, H2M::RefH2M<EnvMapVulkanMaterial> source)
 {
+	material->SetSurface(source->GetSurface());
+	for (uint32_t g = 0; g < EnvMapVulkanMaterial::GlassValueCount; g++)
+	{
+		material->GetGlassValue((EnvMapVulkanMaterial::GlassValue)g) = source->GetGlassValue((EnvMapVulkanMaterial::GlassValue)g);
+	}
 	material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor") = source->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
 	for (const char* name : s_FloatValueNames)
 	{
@@ -253,7 +258,7 @@ bool EnvMapVulkanMaterialLibrary::ResolveVariants(const std::function<void()>& b
 			{
 				continue;
 			}
-			if (property >= EnvMapVulkanMaterial::FirstMapProperty)
+			if (EnvMapVulkanMaterial::IsMapProperty(property))
 			{
 				const uint32_t slot = property - EnvMapVulkanMaterial::FirstMapProperty;
 				if (current.Maps[slot] != inherited.Maps[slot])
@@ -460,6 +465,11 @@ static_assert(sizeof(s_ValueKeys) / sizeof(s_ValueKeys[0]) == EnvMapVulkanMateri
 static const char* s_MapPropertyKeys[EnvMapVulkanMaterial::MapCount] = {
 	"AlbedoMap", "NormalMap", "MetalnessMap", "RoughnessMap", "EmissiveMap", "AmbientOcclusionMap" };
 
+// The glass values in files (under Glass:) and as variant overrides, in the order of EnvMapVulkanMaterial::GlassValue
+static const char* s_GlassKeys[EnvMapVulkanMaterial::GlassValueCount] = { "IOR", "Thickness", "CastShadows", "Solid" };
+static const char* s_GlassPropertyKeys[EnvMapVulkanMaterial::GlassValueCount] = { "GlassIOR", "GlassThickness", "GlassCastShadows", "GlassSolid" };
+static const float s_GlassDefaults[EnvMapVulkanMaterial::GlassValueCount] = { 1.5f, 0.2f, 0.0f, 1.0f };
+
 const char* EnvMapVulkanMaterial::GetPropertyKey(Property property)
 {
 	if (property == AlbedoColorProperty)
@@ -470,7 +480,15 @@ const char* EnvMapVulkanMaterial::GetPropertyKey(Property property)
 	{
 		return s_ValueKeys[property - MetalnessProperty].Key;
 	}
-	return property < PropertyCount ? s_MapPropertyKeys[property - FirstMapProperty] : "";
+	if (IsMapProperty(property))
+	{
+		return s_MapPropertyKeys[property - FirstMapProperty];
+	}
+	if (property == SurfaceProperty)
+	{
+		return "Surface";
+	}
+	return IsGlassProperty(property) ? s_GlassPropertyKeys[property - FirstGlassProperty] : "";
 }
 
 uint32_t EnvMapVulkanMaterial::GetOverrideCount() const
@@ -496,6 +514,8 @@ EnvMapVulkanMaterial::State EnvMapVulkanMaterial::CaptureState()
 		state.Maps[slot] = m_Maps[slot];
 		state.Toggles[slot] = Get<float>(s_MapToggleNames[slot]);
 	}
+	state.SurfaceType = m_Surface;
+	state.Glass = m_GlassValues;
 	return state;
 }
 
@@ -508,6 +528,14 @@ bool EnvMapVulkanMaterial::PropertyEquals(const State& a, const State& b, Proper
 	if (property < FirstMapProperty)
 	{
 		return a.Values[property - MetalnessProperty] == b.Values[property - MetalnessProperty];
+	}
+	if (property == SurfaceProperty)
+	{
+		return a.SurfaceType == b.SurfaceType;
+	}
+	if (IsGlassProperty(property))
+	{
+		return a.Glass[property - FirstGlassProperty] == b.Glass[property - FirstGlassProperty];
 	}
 	const uint32_t slot = property - FirstMapProperty;
 	return a.Maps[slot] == b.Maps[slot] && a.Toggles[slot] == b.Toggles[slot];
@@ -522,6 +550,14 @@ void EnvMapVulkanMaterial::CopyProperty(State& to, const State& from, Property p
 	else if (property < FirstMapProperty)
 	{
 		to.Values[property - MetalnessProperty] = from.Values[property - MetalnessProperty];
+	}
+	else if (property == SurfaceProperty)
+	{
+		to.SurfaceType = from.SurfaceType;
+	}
+	else if (IsGlassProperty(property))
+	{
+		to.Glass[property - FirstGlassProperty] = from.Glass[property - FirstGlassProperty];
 	}
 	else
 	{
@@ -540,6 +576,14 @@ void EnvMapVulkanMaterial::ApplyProperty(const State& state, Property property)
 	else if (property < FirstMapProperty)
 	{
 		Get<float>(s_ValueKeys[property - MetalnessProperty].Uniform) = state.Values[property - MetalnessProperty];
+	}
+	else if (property == SurfaceProperty)
+	{
+		m_Surface = state.SurfaceType;
+	}
+	else if (IsGlassProperty(property))
+	{
+		m_GlassValues[property - FirstGlassProperty] = state.Glass[property - FirstGlassProperty];
 	}
 	else
 	{
@@ -587,6 +631,14 @@ uint64_t EnvMapVulkanMaterial::ComputeContentHash() const
 		else if (property < FirstMapProperty)
 		{
 			hash = HashBytes(hash, &state.Values[property - MetalnessProperty], sizeof(float));
+		}
+		else if (property == SurfaceProperty)
+		{
+			hash = HashBytes(hash, &state.SurfaceType, sizeof(state.SurfaceType));
+		}
+		else if (IsGlassProperty(property))
+		{
+			hash = HashBytes(hash, &state.Glass[property - FirstGlassProperty], sizeof(float));
 		}
 		else
 		{
@@ -754,6 +806,13 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 	{
 		out << YAML::Key << value.Key << YAML::Value << material->Get<float>(value.Uniform);
 	}
+	out << YAML::Key << "Surface" << YAML::Value << (material->IsGlass() ? "Glass" : "Opaque");
+	out << YAML::Key << "Glass" << YAML::Value << YAML::BeginMap;
+	for (uint32_t g = 0; g < EnvMapVulkanMaterial::GlassValueCount; g++)
+	{
+		out << YAML::Key << s_GlassKeys[g] << YAML::Value << material->m_GlassValues[g];
+	}
+	out << YAML::EndMap;
 	out << YAML::Key << "Maps" << YAML::Value << YAML::BeginMap;
 	for (uint32_t slot = 0; slot < EnvMapVulkanMaterial::MapCount; slot++)
 	{
@@ -860,6 +919,13 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 		}
 	}
 
+	// Files written before glass existed have neither: an opaque material with the default glass values
+	material->m_Surface = node["Surface"].as<std::string>("Opaque") == "Glass" ? EnvMapVulkanMaterial::Surface::Glass : EnvMapVulkanMaterial::Surface::Opaque;
+	YAML::Node glass = node["Glass"];
+	for (uint32_t g = 0; g < EnvMapVulkanMaterial::GlassValueCount; g++)
+	{
+		material->m_GlassValues[g] = glass && glass[s_GlassKeys[g]] ? glass[s_GlassKeys[g]].as<float>() : s_GlassDefaults[g];
+	}
 	YAML::Node maps = node["Maps"];
 	for (uint32_t slot = 0; slot < EnvMapVulkanMaterial::MapCount; slot++)
 	{

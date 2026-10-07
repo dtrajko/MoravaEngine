@@ -48,6 +48,30 @@ public:
 	// Binds the white placeholder and turns the toggle off: the shader uses the material's value instead
 	void RemoveMap(uint32_t slot);
 
+	// The surface: how light meets the material
+	// - Opaque: the PBR shaders. Light is reflected (specular) or scattered back (diffuse, the albedo); nothing passes through.
+	// - Glass: Glass_Static.glsl. Light passes through it, bent by its index of refraction: what's behind is seen through it,
+	//   moved by the refraction, tinted by the albedo color (or map), blurred by the roughness (frosted glass) and rippled
+	//   by the normal map; it reflects the environment and the lights more at grazing angles (Fresnel). Metalness and AO
+	//   don't apply. Drawn after the opaque meshes and the water, sorted back to front (see EnvMapVulkanGlass).
+	enum class Surface : uint32_t { Opaque = 0, Glass = 1 };
+	// The glass values (used only by glass)
+	enum GlassValue : uint32_t
+	{
+		GlassIOR = 0,     // index of refraction: 1 (air: no bending), 1.33 water, 1.5 glass, 2.42 diamond
+		GlassThickness,   // meters the light travels inside the glass: how far what's behind seems to move
+		GlassCastShadows, // 1: casts a shadow like an opaque mesh; 0: lets the light through (no shadow)
+		GlassSolid,       // 1: a solid body (a block, a ball): the light bends entering and leaving, as through a lens;
+		                  // 0: thin (a pane, a shell, a hollow vase): what's behind only shifts a little
+		GlassValueCount
+	};
+	Surface GetSurface() const { return m_Surface; }
+	void SetSurface(Surface surface) { m_Surface = surface; }
+	bool IsGlass() const { return m_Surface == Surface::Glass; }
+	// Edited in place by the Material Editor, like Get<float>
+	float& GetGlassValue(GlassValue value) { return m_GlassValues[value]; }
+	float GetGlassValue(GlassValue value) const { return m_GlassValues[value]; }
+
 	// Where an imported material came from (empty for materials created in the editor)
 	const std::string& GetSourceFile() const { return m_SourceFile; }
 	uint32_t GetSourceIndex() const { return m_SourceIndex; }
@@ -71,9 +95,14 @@ public:
 		AlbedoColorProperty = 0,
 		MetalnessProperty, RoughnessProperty, TilingFactorProperty, EmissiveIntensityProperty, MetalRoughPackedProperty, RadiancePrefilterProperty,
 		FirstMapProperty, // a map slot's property (its texture and its toggle): FirstMapProperty + Map
-		PropertyCount = FirstMapProperty + MapCount
+		SurfaceProperty = FirstMapProperty + MapCount,
+		FirstGlassProperty, // a glass value's property: FirstGlassProperty + GlassValue
+		PropertyCount = FirstGlassProperty + GlassValueCount
 	};
 	static Property GetMapProperty(uint32_t slot) { return (Property)(FirstMapProperty + slot); }
+	static Property GetGlassProperty(GlassValue value) { return (Property)(FirstGlassProperty + value); }
+	static bool IsMapProperty(Property property) { return property >= FirstMapProperty && property < FirstMapProperty + MapCount; }
+	static bool IsGlassProperty(Property property) { return property >= FirstGlassProperty && property < PropertyCount; }
 	static const char* GetPropertyKey(Property property); // as in material files: "AlbedoColor", "Metalness"... "AlbedoMap"...
 
 	bool IsVariant() const { return m_ParentID != 0; }
@@ -93,6 +122,8 @@ private:
 		std::array<float, FirstMapProperty - MetalnessProperty> Values{}; // [property - MetalnessProperty]
 		std::array<H2M::RefH2M<H2M::Texture2D_H2M>, MapCount> Maps;
 		std::array<float, MapCount> Toggles{};
+		Surface SurfaceType = Surface::Opaque;
+		std::array<float, GlassValueCount> Glass{};
 	};
 	State CaptureState();
 	static bool PropertyEquals(const State& a, const State& b, Property property);
@@ -112,6 +143,8 @@ private:
 	std::string m_Name;
 	H2M::RefH2M<H2M::VulkanMaterialH2M> m_Values; // created with the shared HazelPBR_Static shader; also owns the material descriptor set
 	std::array<H2M::RefH2M<H2M::Texture2D_H2M>, MapCount> m_Maps; // keeps the bound images alive (null: placeholder bound)
+	Surface m_Surface = Surface::Opaque;
+	std::array<float, GlassValueCount> m_GlassValues = { 1.5f, 0.2f, 0.0f, 1.0f }; // see GlassValue
 
 	std::string m_SourceFile;
 	uint32_t m_SourceIndex = 0;

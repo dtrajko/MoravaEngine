@@ -9,6 +9,7 @@
 #include "EnvMapVulkanShadows.h"
 #include "EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkanProfiler.h"
+#include "EnvMapVulkanGlass.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
 #include "EnvMapVulkanSceneSerializer.h"
@@ -1414,6 +1415,21 @@ static void SyncSunWithEnvironmentRotation()
 // The water plane (Water panel, see EnvMapVulkanWater.h)
 static EnvMapVulkanWaterSettings s_WaterSettings; // this frame's, from the water entity (see ExtractWater)
 static EnvMapVulkanWater s_Water;
+
+// Glass (see EnvMapVulkanGlass): the meshes whose material is glass, drawn after the opaque meshes and the water. The
+// scene pass collects them (CollectGlassDraws) and draws them sorted back to front (RecordGlassPass): each glass mesh
+// shows what was drawn before it, so a farther one is drawn first. Static meshes only: a skinned mesh with a glass
+// material is drawn with its material as opaque.
+static EnvMapVulkanGlass s_Glass;
+struct GlassDraw
+{
+	H2M::RefH2M<H2M::ModelH2M> Model; // keeps the buffers alive until the draw is recorded
+	uint32_t MeshIndex = 0;
+	glm::mat4 Transform = glm::mat4(1.0f); // the mesh's, as drawn
+	H2M::RefH2M<EnvMapVulkanMaterial> Material;
+	float Distance = 0.0f; // from the camera to the center of the mesh's bounds
+};
+static std::vector<GlassDraw> s_GlassDraws;
 static EnvMapVulkanEntityID s_WaterEntity = NoEntity; // the scene's water (at most one), NoEntity: none
 static bool s_WaterSelected = false; // the water entity is the selected entity (see ExtractWater)
 
@@ -5525,18 +5541,91 @@ static void OnImGuiRenderMaterialEditor()
 
 	ImGui::Separator();
 
+	// The surface: opaque (PBR) or glass, and the glass values
+	bool inherited = beginProperty(EnvMapVulkanMaterial::SurfaceProperty);
+	int surface = material->IsGlass() ? 1 : 0;
+	if (ImGui::Combo("Surface", &surface, "Opaque\0Glass\0"))
+	{
+		material->SetSurface(surface == 1 ? EnvMapVulkanMaterial::Surface::Glass : EnvMapVulkanMaterial::Surface::Opaque);
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Opaque: light is reflected or scattered back, nothing passes through.\n"
+			"Glass: light passes through it, bent by its index of refraction. The albedo color (or map) tints it,\n"
+			"the roughness frosts it, the normal map ripples it. Metalness and AO don't apply.");
+	}
+	endProperty(EnvMapVulkanMaterial::SurfaceProperty, inherited);
+	const bool glass = material->IsGlass();
+	if (glass)
+	{
+		float& ior = material->GetGlassValue(EnvMapVulkanMaterial::GlassIOR);
+		float& thickness = material->GetGlassValue(EnvMapVulkanMaterial::GlassThickness);
+		float& castShadows = material->GetGlassValue(EnvMapVulkanMaterial::GlassCastShadows);
+		float& solid = material->GetGlassValue(EnvMapVulkanMaterial::GlassSolid);
+
+		ImGui::Indent();
+		inherited = beginProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassSolid));
+		int shape = solid > 0.5f ? 0 : 1;
+		if (ImGui::Combo("Shape", &shape, "Solid\0Thin\0"))
+		{
+			solid = shape == 0 ? 1.0f : 0.0f;
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Solid: a block, a ball, a bottle full of liquid. The light bends entering and leaving, as through\n"
+				"a lens: what's behind it is squeezed and turned around, more toward its outline.\n"
+				"Thin: a pane, a shell, a hollow vase. What's behind only shifts a little.");
+		}
+		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassSolid), inherited);
+		inherited = beginProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassIOR));
+		ImGui::SliderFloat("Index of Refraction", &ior, 1.0f, 2.5f, "%.2f");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("How much the light bends entering it, and how much it reflects head-on.\n"
+				"1.00 air (no bending), 1.33 water, 1.50 glass, 1.77 sapphire, 2.42 diamond");
+		}
+		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassIOR), inherited);
+		inherited = beginProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassThickness));
+		ImGui::DragFloat("Thickness", &thickness, 0.005f, 0.0f, 10.0f, "%.3f m");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("How far the light travels inside the glass: how far what's behind it seems to move.\n"
+				"A window pane: about 0.01 m; a glass block or a vase: its size");
+		}
+		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassThickness), inherited);
+		inherited = beginProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassCastShadows));
+		bool shadows = castShadows > 0.5f;
+		if (ImGui::Checkbox("Cast Shadows", &shadows))
+		{
+			castShadows = shadows ? 1.0f : 0.0f;
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Off: the light passes through (no shadow). On: a full shadow, as an opaque mesh casts");
+		}
+		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassCastShadows), inherited);
+		ImGui::Unindent();
+		ImGui::Separator();
+	}
+
 	glm::vec3& albedoColor = material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
 	float& metalness = material->Get<float>("u_MaterialUniforms.Metalness");
 	float& roughness = material->Get<float>("u_MaterialUniforms.Roughness");
 
-	bool inherited = beginProperty(EnvMapVulkanMaterial::AlbedoColorProperty);
-	ImGui::ColorEdit3("Albedo Color", &albedoColor.x);
+	inherited = beginProperty(EnvMapVulkanMaterial::AlbedoColorProperty);
+	ImGui::ColorEdit3(glass ? "Tint Color" : "Albedo Color", &albedoColor.x);
+	if (glass && ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The albedo color: for glass, the color of the light that passes through it (white: clear)");
+	}
 	endProperty(EnvMapVulkanMaterial::AlbedoColorProperty, inherited);
 	inherited = beginProperty(EnvMapVulkanMaterial::MetalnessProperty);
+	ImGui::BeginDisabled(glass);
 	ImGui::SliderFloat("Metalness", &metalness, 0.0f, 1.0f);
+	ImGui::EndDisabled();
 	endProperty(EnvMapVulkanMaterial::MetalnessProperty, inherited);
 	inherited = beginProperty(EnvMapVulkanMaterial::RoughnessProperty);
-	ImGui::SliderFloat("Roughness", &roughness, 0.0f, 1.0f);
+	ImGui::SliderFloat(glass ? "Roughness (Frost)" : "Roughness", &roughness, 0.0f, 1.0f);
 	endProperty(EnvMapVulkanMaterial::RoughnessProperty, inherited);
 
 	float& tilingFactor = material->Get<float>("u_MaterialUniforms.TilingFactor");
@@ -6370,6 +6459,7 @@ void EnvMapVulkanRenderer::Init()
 
 	// Water: drawn into the scene framebuffer after the opaque meshes (see GeometryPass)
 	s_Water.Create(s_Framebuffer);
+	s_Glass.Create(s_Framebuffer);
 
 	// The scene (EnvMapVulkanScene, being introduced): its operations are checked once at startup
 	EnvMapVulkanScene::SelfTest();
@@ -6556,6 +6646,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_PointShadowMaps.Destroy();
 	s_ShadowMapViewer.Destroy();
 	s_Water.Destroy();
+	s_Glass.Destroy();
 	EnvMapVulkanProfiler::Shutdown();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
 	// delete s_Data;
@@ -6627,6 +6718,10 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 	{
 		H2M::RefH2M<H2M::MeshH2M> mesh = meshes[s];
 		H2M::RefH2M<EnvMapVulkanMaterial> material = materials[s];
+		if (material->IsGlass() && !skinned)
+		{
+			continue; // drawn after the opaque meshes and the water (see RecordGlassPass)
+		}
 		H2M::BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
 
 		// Set 1 (per material): the texture maps of the mesh's library material
@@ -6853,8 +6948,17 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
 		vkCmdBindIndexBuffer(commandBuffer, H2M::RefH2M<H2M::VulkanIndexBufferH2M>(model->GetIndexBuffer())->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-		for (const H2M::RefH2M<H2M::MeshH2M>& mesh : model->GetMeshes())
+		const auto& meshes = model->GetMeshes();
+		const auto& materials = s_SubmittedModels[m].Materials;
+		for (size_t s = 0; s < meshes.size(); s++)
 		{
+			const H2M::RefH2M<H2M::MeshH2M>& mesh = meshes[s];
+			// Glass lets the light through, unless its material says it casts a shadow (as an opaque mesh would)
+			if (!skinned && s < materials.size() && materials[s]->IsGlass() &&
+				materials[s]->GetGlassValue(EnvMapVulkanMaterial::GlassCastShadows) < 0.5f)
+			{
+				continue;
+			}
 			glm::mat4 matrices[2] = { viewProjection, GetMeshTransform(model, mesh, s_SubmittedModels[m].Transform) };
 			vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
 			vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
@@ -7170,6 +7274,122 @@ void EnvMapVulkanRenderer::SetSceneEnvironment(H2M::RefH2M<H2M::EnvironmentH2M> 
 	}
 }
 
+// The glass meshes of the submitted models, sorted back to front (see s_GlassDraws)
+static void CollectGlassDraws()
+{
+	s_GlassDraws.clear();
+	const glm::vec3 cameraPosition = s_Data.SceneData.SceneCamera.Camera.GetPosition();
+	for (const SubmittedModel& submitted : s_SubmittedModels)
+	{
+		if (submitted.Model->IsSkinned())
+		{
+			continue; // drawn as opaque (see RenderModelVulkan)
+		}
+		const auto& meshes = submitted.Model->GetMeshes();
+		for (uint32_t s = 0; s < (uint32_t)meshes.size() && s < (uint32_t)submitted.Materials.size(); s++)
+		{
+			if (!submitted.Materials[s]->IsGlass())
+			{
+				continue;
+			}
+			GlassDraw draw;
+			draw.Model = submitted.Model;
+			draw.MeshIndex = s;
+			draw.Transform = GetMeshTransform(submitted.Model, meshes[s], submitted.Transform);
+			draw.Material = submitted.Materials[s];
+			const glm::vec3 center = glm::vec3(draw.Transform * glm::vec4((meshes[s]->BoundingBox.Min + meshes[s]->BoundingBox.Max) * 0.5f, 1.0f));
+			draw.Distance = glm::length(center - cameraPosition);
+			s_GlassDraws.push_back(draw);
+		}
+	}
+	std::sort(s_GlassDraws.begin(), s_GlassDraws.end(), [](const GlassDraw& a, const GlassDraw& b) { return a.Distance > b.Distance; });
+}
+
+// The glass meshes, inside the scene pass after the water: the pass ends, the scene is copied (EnvMapVulkanGlass::CopyScene),
+// and the framebuffer's continue render pass takes over for the glass and what comes after it
+static void RecordGlassPass(VkCommandBuffer commandBuffer, const VkRenderPassBeginInfo& sceneBeginInfo, const VkViewport& viewport, const VkRect2D& scissor)
+{
+	vkCmdEndRenderPass(commandBuffer);
+	{
+		EnvMapVulkanProfiler::Scope copyScope(commandBuffer, "Glass Copy", "The render pass ends and the scene so far (the water too) is "
+			"copied for the glass to look through, then shrunk step by step into smaller copies (a mip chain): rough glass "
+			"reads a smaller, blurrier one. Blits, no draw calls.");
+		s_Glass.CopyScene(commandBuffer, s_Framebuffer);
+	}
+
+	H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
+	VkRenderPassBeginInfo continueBeginInfo = sceneBeginInfo;
+	continueBeginInfo.renderPass = framebuffer->GetContinueRenderPass();
+	continueBeginInfo.framebuffer = framebuffer->GetContinueVulkanFramebuffer();
+	continueBeginInfo.clearValueCount = 0;
+	continueBeginInfo.pClearValues = nullptr;
+	vkCmdBeginRenderPass(commandBuffer, &continueBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	EnvMapVulkanProfiler::CountRenderPass(continueBeginInfo.renderArea.extent.width, continueBeginInfo.renderArea.extent.height);
+	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+	EnvMapVulkanProfiler::Scope glassScope(commandBuffer, "Glass", "The glass meshes, farthest first: each reads the scene copy where its "
+		"refraction bends the view, tints it, blurs it by its roughness, and adds the environment's reflection and the "
+		"lights' highlights (more at grazing angles). Glass behind glass isn't in the copy, so it isn't seen through.");
+	H2M::RefH2M<H2M::VulkanPipelineH2M> pipeline = s_Glass.GetPipeline().As<H2M::VulkanPipelineH2M>();
+	VkPipelineLayout layout = pipeline->GetVulkanPipelineLayout();
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetVulkanPipeline());
+	// Set 0 again: the glass layout's push constants differ from the mesh pipelines', so their sets aren't "compatible"
+	// (the set itself is: Glass_Static.glsl declares set 0 as the PBR shaders do)
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
+		s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
+	VkDescriptorSet copySet = s_Glass.GetSceneCopySet();
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, EnvMapVulkanGlass::SceneCopySet, 1, &copySet, 0, nullptr);
+
+	H2M::ModelH2M* boundModel = nullptr;
+	for (GlassDraw& draw : s_GlassDraws)
+	{
+		VkDescriptorSet materialSet = draw.Material->GetDescriptorSet();
+		if (materialSet == VK_NULL_HANDLE)
+		{
+			continue;
+		}
+		if (draw.Model.Raw() != boundModel)
+		{
+			VkBuffer vertexBuffer = draw.Model->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+			VkDeviceSize offset = 0;
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
+			vkCmdBindIndexBuffer(commandBuffer, H2M::RefH2M<H2M::VulkanIndexBufferH2M>(draw.Model->GetIndexBuffer())->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			boundModel = draw.Model.Raw();
+		}
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, H2M::VulkanShaderH2M::MaterialDescriptorSet, 1,
+			&materialSet, 0, nullptr);
+
+		EnvMapVulkanMaterial& material = *draw.Material;
+		GlassPushConstants values;
+		values.TintColor = material.Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
+		values.IOR = material.GetGlassValue(EnvMapVulkanMaterial::GlassIOR);
+		values.Roughness = material.Get<float>("u_MaterialUniforms.Roughness");
+		values.Thickness = material.GetGlassValue(EnvMapVulkanMaterial::GlassThickness);
+		values.AlbedoTexToggle = material.Get<float>("u_MaterialUniforms.AlbedoTexToggle");
+		values.NormalTexToggle = material.Get<float>("u_MaterialUniforms.NormalTexToggle");
+		values.RoughnessTexToggle = material.Get<float>("u_MaterialUniforms.RoughnessTexToggle");
+		values.TilingFactor = material.Get<float>("u_MaterialUniforms.TilingFactor");
+		values.EmissiveTexToggle = material.Get<float>("u_MaterialUniforms.EmissiveTexToggle");
+		values.EmissiveIntensity = material.Get<float>("u_MaterialUniforms.EmissiveIntensity");
+		values.MetalRoughPacked = material.Get<float>("u_MaterialUniforms.MetalRoughPacked");
+		values.SceneCopyLevels = (float)s_Glass.GetCopyLevels();
+		values.Solid = material.GetGlassValue(EnvMapVulkanMaterial::GlassSolid);
+		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &draw.Transform);
+		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(values), &values);
+
+		const H2M::RefH2M<H2M::MeshH2M>& mesh = draw.Model->GetMeshes()[draw.MeshIndex];
+		vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
+		EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
+	}
+	s_GlassDraws.clear();
+
+	// The mesh pipelines' set 0 again, for what comes after (the grid binds its own sets)
+	VkPipelineLayout meshLayout = s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
+	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshLayout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
+		s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
+}
+
 void EnvMapVulkanRenderer::GeometryPass()
 {
 	// H2M::RendererH2M::Submit([=]() {});
@@ -7291,6 +7511,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer);
 			}
 		}
+		CollectGlassDraws();
 
 		s_SubmittedModels.clear();
 
@@ -7332,6 +7553,12 @@ void EnvMapVulkanRenderer::GeometryPass()
 				"without blending: it computes what's behind it.");
 			s_Water.Record(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], waterDrawSettings,
 				glm::clamp(s_OverlaySettings.LineWidth, 1.0f, maxLineWidth));
+		}
+
+		// Glass: it looks into everything drawn so far, the water too
+		if (!s_GlassDraws.empty())
+		{
+			RecordGlassPass(drawCommandBuffer, renderPassBeginInfo, viewport, scissor);
 		}
 
 		// Transparent, so after the opaque meshes and the water
@@ -8372,6 +8599,11 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			if (ImGui::IsWindowFocused())
 			{
 				HandleCopyPasteKeys(); // Ctrl+C, Ctrl+V: copy and paste the selected models, meshes and lights
+				// Delete: the selected entities, as in the Scene Hierarchy (not while typing in a field)
+				if (!ImGui::GetIO().WantTextInput && s_RenamingEntity == NoEntity && ImGui::IsKeyPressed(ImGuiKey_Delete, false))
+				{
+					DeleteSelectedEntities();
+				}
 			}
 
 			auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
@@ -8965,6 +9197,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_Water.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
+		s_Glass.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
 		s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_OverlayFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_SelectionMaskFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
