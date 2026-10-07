@@ -13,6 +13,7 @@
 #include "H2M/Renderer/RendererH2M.h"
 
 #include "Core/Log.h"
+#include "EnvMapVulkanProfiler.h"
 
 #include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -881,10 +882,12 @@ void EnvMapVulkanWater::RecordCaustics(VkCommandBuffer commandBuffer)
 	beginInfo.clearValueCount = 1;
 	beginInfo.pClearValues = &clearValue;
 	vkCmdBeginRenderPass(commandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	EnvMapVulkanProfiler::CountRenderPass(beginInfo.renderArea.extent.width, beginInfo.renderArea.extent.height);
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_CausticsPipeline);
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_CausticsLayout, 0, 1, &m_CausticsSet.DescriptorSets[0], 0, nullptr);
 	vkCmdPushConstants(commandBuffer, m_CausticsLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(CausticsPushConstants), &m_CausticsConstants);
 	vkCmdDraw(commandBuffer, m_CausticsGridVertices, 1, 0, 0);
+	EnvMapVulkanProfiler::CountDraw(m_CausticsGridVertices / 3);
 	vkCmdEndRenderPass(commandBuffer);
 }
 
@@ -954,6 +957,7 @@ VkDescriptorSet EnvMapVulkanWater::BeginReflectionPass(VkCommandBuffer commandBu
 	beginInfo.clearValueCount = 2;
 	beginInfo.pClearValues = clearValues;
 	vkCmdBeginRenderPass(commandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	EnvMapVulkanProfiler::CountRenderPass(beginInfo.renderArea.extent.width, beginInfo.renderArea.extent.height);
 
 	VkViewport viewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -980,6 +984,7 @@ void EnvMapVulkanWater::RecordVolume(VkCommandBuffer commandBuffer, VkDescriptor
 	VkDeviceSize offset = 0;
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
 	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+	EnvMapVulkanProfiler::CountDraw(1);
 }
 
 void EnvMapVulkanWater::Record(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet, const EnvMapVulkanWaterSettings& settings,
@@ -1001,6 +1006,7 @@ void EnvMapVulkanWater::Record(VkCommandBuffer commandBuffer, VkDescriptorSet fr
 	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
 	vkCmdBindIndexBuffer(commandBuffer, m_IndexBuffer.As<H2M::VulkanIndexBufferH2M>()->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
 	vkCmdDrawIndexed(commandBuffer, m_IndexCount, 1, 0, 0, 0);
+	EnvMapVulkanProfiler::CountDraw(m_IndexCount / 3);
 
 	// The wireframe over it: the same grid and sets, the same transform (the vertex stage is shared)
 	if (settings.Wireframe && m_WireframePipeline)
@@ -1012,6 +1018,7 @@ void EnvMapVulkanWater::Record(VkCommandBuffer commandBuffer, VkDescriptorSet fr
 		vkCmdPushConstants(commandBuffer, wireframeLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &transform);
 		vkCmdSetLineWidth(commandBuffer, wireframeLineWidth); // a dynamic state of line-mode pipelines
 		vkCmdDrawIndexed(commandBuffer, m_IndexCount, 1, 0, 0, 0);
+		EnvMapVulkanProfiler::CountDraw(m_IndexCount / 3);
 	}
 }
 

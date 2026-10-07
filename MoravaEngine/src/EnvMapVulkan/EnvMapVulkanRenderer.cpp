@@ -8,6 +8,7 @@
 #include "EnvMapVulkanLights.h"
 #include "EnvMapVulkanShadows.h"
 #include "EnvMapVulkanMaterialLibrary.h"
+#include "EnvMapVulkanProfiler.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
 #include "EnvMapVulkanSceneSerializer.h"
@@ -5811,6 +5812,7 @@ static void DrawModelOverlay(VkCommandBuffer commandBuffer, EnvMapVulkanEntityID
 		glm::mat4 mvp = viewProjection * GetMeshTransform(model, meshes[s], transform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
 		vkCmdDrawIndexed(commandBuffer, meshes[s]->IndexCount, 1, meshes[s]->BaseIndex, meshes[s]->BaseVertex, 0);
+		EnvMapVulkanProfiler::CountDraw(meshes[s]->IndexCount / 3);
 	}
 }
 
@@ -5868,6 +5870,7 @@ static void DrawModelVectors(VkCommandBuffer commandBuffer, EnvMapVulkanEntityID
 
 		// Two vertices per line, one instance per mesh vertex: firstInstance selects the mesh's vertices in the buffer
 		vkCmdDraw(commandBuffer, 2, meshes[s]->VertexCount, 0, meshes[s]->BaseVertex);
+		EnvMapVulkanProfiler::CountDraw(0);
 	}
 }
 
@@ -5940,6 +5943,7 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 		renderPassBeginInfo.clearValueCount = 2; // Color + depth
 		renderPassBeginInfo.pClearValues = clearValues;
 		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		EnvMapVulkanProfiler::CountRenderPass(renderPassBeginInfo.renderArea.extent.width, renderPassBeginInfo.renderArea.extent.height);
 
 		VkViewport viewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -6056,6 +6060,7 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 					vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
 					vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
 					vkCmdDraw(commandBuffer, s_BoundingBoxVertexCount, 1, 0, 0);
+					EnvMapVulkanProfiler::CountDraw(0);
 				}
 			}
 		}
@@ -6178,6 +6183,7 @@ void EnvMapVulkanRenderer::Init()
 		s_ImGuiCommandBuffer = H2M::VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
 		s_CompositeCommandBuffer = H2M::VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
 	}
+	EnvMapVulkanProfiler::Init();
 	/**** END: to be removed from VulkanRenderer ****/
 
 	// s_Data = VulkanRendererData{};
@@ -6550,6 +6556,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_PointShadowMaps.Destroy();
 	s_ShadowMapViewer.Destroy();
 	s_Water.Destroy();
+	EnvMapVulkanProfiler::Shutdown();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
 	// delete s_Data;
 }
@@ -6638,6 +6645,7 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &meshTransform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 		vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
+		EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
 	}
 }
 
@@ -6798,6 +6806,7 @@ static void BeginShadowPass(VkCommandBuffer commandBuffer, const EnvMapVulkanSha
 	beginInfo.clearValueCount = 1;
 	beginInfo.pClearValues = &clearValue;
 	vkCmdBeginRenderPass(commandBuffer, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	EnvMapVulkanProfiler::CountRenderPass(beginInfo.renderArea.extent.width, beginInfo.renderArea.extent.height);
 
 	VkViewport viewport = { 0.0f, 0.0f, (float)resolution, (float)resolution, 0.0f, 1.0f };
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -6849,6 +6858,7 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 			glm::mat4 matrices[2] = { viewProjection, GetMeshTransform(model, mesh, s_SubmittedModels[m].Transform) };
 			vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
 			vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
+			EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
 		}
 		drawn++;
 	}
@@ -6890,8 +6900,13 @@ static void RecordShadowPasses(VkCommandBuffer commandBuffer, const glm::vec3& b
 	ComputeShadowCascades(cameraPosition, cameraForward, cornerRays, camera.GetPerspectiveNearClip(), s_ShadowSettings, s_Lights.Sun.GetDirection(),
 		boundsMin, boundsMax, s_ShadowCascades);
 
+	EnvMapVulkanProfiler::Scope sunScope(commandBuffer, "Sun Shadows", "The sun's shadow map: the scene's depth seen from the sun, one cascade "
+		"at a time (each covers a farther part of the view, at a lower density). Depth only, no color: the meshes' "
+		"fragment shaders do almost nothing, so the cost is mostly vertices.");
 	for (uint32_t cascade = 0; cascade < ShadowCascadeCount; cascade++)
 	{
+		EnvMapVulkanProfiler::Scope cascadeScope(commandBuffer, "Cascade " + std::to_string(cascade), "One layer of the sun's shadow map: every "
+			"shadow caster drawn from the sun into it, with the cascade's light view and projection.");
 		BeginShadowPass(commandBuffer, s_ShadowMap, cascade, s_ShadowSettings.DepthBias, s_ShadowSettings.SlopeBias);
 		DrawShadowCasters(commandBuffer, s_ShadowCascades[cascade].ViewProjection);
 		vkCmdEndRenderPass(commandBuffer);
@@ -6912,22 +6927,37 @@ static void RecordLocalShadowPasses(VkCommandBuffer commandBuffer)
 	}
 	const EnvMapVulkanLocalShadowSettings& settings = s_LocalShadowSettings;
 
-	for (uint32_t slot = 0; slot < slots.SpotCount; slot++)
+	if (slots.SpotCount > 0)
 	{
-		const EnvMapVulkanSpotLight& light = s_Lights.SpotLights[slots.SpotLight[slot]];
-		BeginShadowPass(commandBuffer, s_SpotShadowMaps, slot, settings.DepthBias, settings.SlopeBias);
-		slots.ModelsDrawn += DrawShadowCasters(commandBuffer, slots.SpotViewProjection[slot], &light.Position, light.Range);
-		vkCmdEndRenderPass(commandBuffer);
+		EnvMapVulkanProfiler::Scope spotScope(commandBuffer, "Spot Light Shadows", "A shadow map per shadow-casting spot light: depth seen "
+			"from the light through its cone (one perspective view). Only the models within the light's range are drawn.");
+		for (uint32_t slot = 0; slot < slots.SpotCount; slot++)
+		{
+			const EnvMapVulkanSpotLight& light = s_Lights.SpotLights[slots.SpotLight[slot]];
+			EnvMapVulkanProfiler::Scope lightScope(commandBuffer, light.Name.empty() ? "Spot Light " + std::to_string(slot) : light.Name,
+				"One spot light's shadow map (one render pass).");
+			BeginShadowPass(commandBuffer, s_SpotShadowMaps, slot, settings.DepthBias, settings.SlopeBias);
+			slots.ModelsDrawn += DrawShadowCasters(commandBuffer, slots.SpotViewProjection[slot], &light.Position, light.Range);
+			vkCmdEndRenderPass(commandBuffer);
+		}
 	}
 
-	for (uint32_t slot = 0; slot < slots.PointCount; slot++)
+	if (slots.PointCount > 0)
 	{
-		const EnvMapVulkanPointLight& light = s_Lights.PointLights[slots.PointLight[slot]];
-		for (uint32_t face = 0; face < 6; face++)
+		EnvMapVulkanProfiler::Scope pointScope(commandBuffer, "Point Light Shadows", "A cube shadow map per shadow-casting point light: it "
+			"shines in every direction, so the scene is drawn 6 times, once per cube face (90 degree views). The most "
+			"expensive light to shadow.");
+		for (uint32_t slot = 0; slot < slots.PointCount; slot++)
 		{
-			BeginShadowPass(commandBuffer, s_PointShadowMaps, slot * 6 + face, settings.DepthBias, settings.SlopeBias);
-			slots.ModelsDrawn += DrawShadowCasters(commandBuffer, slots.PointFaceViewProjection[slot][face], &light.Position, light.Range);
-			vkCmdEndRenderPass(commandBuffer);
+			const EnvMapVulkanPointLight& light = s_Lights.PointLights[slots.PointLight[slot]];
+			EnvMapVulkanProfiler::Scope lightScope(commandBuffer, light.Name.empty() ? "Point Light " + std::to_string(slot) : light.Name,
+				"One point light's cube shadow map: 6 render passes, one per face.");
+			for (uint32_t face = 0; face < 6; face++)
+			{
+				BeginShadowPass(commandBuffer, s_PointShadowMaps, slot * 6 + face, settings.DepthBias, settings.SlopeBias);
+				slots.ModelsDrawn += DrawShadowCasters(commandBuffer, slots.PointFaceViewProjection[slot][face], &light.Position, light.Range);
+				vkCmdEndRenderPass(commandBuffer);
+			}
 		}
 	}
 }
@@ -7008,6 +7038,7 @@ void EnvMapVulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
 	vkCmdPushConstants(commandBuffer, skyboxPipelineLayout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(SkyboxUniforms), &skyboxUniforms);
 
 	vkCmdDrawIndexed(commandBuffer, s_Data.VulkanSkyboxCube->m_IndexCount, 1, 0, 0, 0);
+	EnvMapVulkanProfiler::CountDraw(s_Data.VulkanSkyboxCube->m_IndexCount / 3);
 }
 
 void EnvMapVulkanRenderer::BeginFrame()
@@ -7152,6 +7183,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
 		VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+		EnvMapVulkanProfiler::BeginFrame(drawCommandBuffer, swapChain.GetCurrentBufferIndex());
 
 		// The shadow maps first (the sun's, then the spot and point lights'): the geometry pass below samples them
 		glm::vec3 casterBoundsMin, casterBoundsMax;
@@ -7161,6 +7193,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 		if (s_ShadowMapViewerRequest.Active)
 		{
 			const EnvMapVulkanShadowMap& map = s_ShadowMapViewerRequest.Cube ? s_PointShadowMaps : s_SpotShadowMaps;
+			EnvMapVulkanProfiler::Scope viewerScope(drawCommandBuffer, "Shadow Map Viewer", "The Lights panel's preview of a spot or point "
+				"light's shadow map, turned into a visible image (only while the preview is shown).");
 			s_ShadowMapViewer.Record(drawCommandBuffer, map, s_ShadowMapViewerRequest.Cube, s_ShadowMapViewerRequest.BaseLayer,
 				s_ShadowMapViewerRequest.Near, s_ShadowMapViewerRequest.Far);
 			s_ShadowMapViewerRequest.Active = false; // requested again by the panel while it shows the viewer
@@ -7169,6 +7203,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 		// The water's caustics: the meshes under the water (in the reflection and the scene pass) are lit through them
 		if (s_WaterSettings.Enabled)
 		{
+			EnvMapVulkanProfiler::Scope causticsScope(drawCommandBuffer, "Water Caustics", "The light pattern the water's waves focus onto "
+				"what's under it: a grid of rays from the sun bent by the surface, added up into a texture the mesh shaders sample.");
 			s_Water.RecordCaustics(drawCommandBuffer);
 		}
 
@@ -7176,6 +7212,9 @@ void EnvMapVulkanRenderer::GeometryPass()
 		// reflection image (with the usual pipelines; its own per-frame set holds the mirrored camera)
 		if (s_WaterSettings.Enabled && s_Water.IsReflectionActive())
 		{
+			EnvMapVulkanProfiler::BeginScope(drawCommandBuffer, "Water Reflection", "The scene mirrored in the water plane, drawn into its "
+				"own image with the usual mesh pipelines (a second camera below the water). Costs about as much as the scene's "
+				"meshes again, at the reflection image's size.");
 			VkDescriptorSet reflectionFrameSet = s_Water.BeginReflectionPass(drawCommandBuffer);
 			VkPipelineLayout reflectionLayout = s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
 			vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, reflectionLayout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
@@ -7185,6 +7224,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer);
 			}
 			s_Water.EndReflectionPass(drawCommandBuffer);
+			EnvMapVulkanProfiler::EndScope(drawCommandBuffer);
 		}
 
 		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
@@ -7208,7 +7248,10 @@ void EnvMapVulkanRenderer::GeometryPass()
 		renderPassBeginInfo.pClearValues = clearValues;
 		renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
 
+		EnvMapVulkanProfiler::BeginScope(drawCommandBuffer, "Scene", "The main view, in HDR (16-bit float color): the skybox, the meshes "
+			"with full PBR lighting (image-based light, the sun, point and spot lights, shadows), then the water and the grid.");
 		vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		EnvMapVulkanProfiler::CountRenderPass(renderPassBeginInfo.renderArea.extent.width, renderPassBeginInfo.renderArea.extent.height);
 
 		// Update dynamic viewport state
 		VkViewport viewport = {};
@@ -7228,16 +7271,25 @@ void EnvMapVulkanRenderer::GeometryPass()
 		scissor.offset.y = 0;
 		vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
-		EnvMapVulkanRenderer::RenderSkybox(drawCommandBuffer); // in progress
+		{
+			EnvMapVulkanProfiler::Scope skyboxScope(drawCommandBuffer, "Skybox", "The environment map on a cube around the camera: the "
+				"background wherever no mesh is drawn.");
+			EnvMapVulkanRenderer::RenderSkybox(drawCommandBuffer); // in progress
+		}
 
 		// Set 0 (per frame: camera, scene data, environment maps) is bound once, for all meshes
 		VkPipelineLayout meshPipelineLayout = s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
 		vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, meshPipelineLayout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
 			s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
-		for (const SubmittedModel& submitted : s_SubmittedModels)
 		{
-			RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer);
+			EnvMapVulkanProfiler::Scope meshesScope(drawCommandBuffer, "Opaque Meshes", "Every mesh of every model, one draw call per mesh, "
+				"with its material: the PBR fragment shader runs for each covered pixel (more than once where meshes overlap and a "
+				"farther one is drawn first). Usually the biggest part of the frame.");
+			for (const SubmittedModel& submitted : s_SubmittedModels)
+			{
+				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer);
+			}
 		}
 
 		s_SubmittedModels.clear();
@@ -7248,7 +7300,12 @@ void EnvMapVulkanRenderer::GeometryPass()
 		if (s_WaterSettings.Enabled)
 		{
 			vkCmdEndRenderPass(drawCommandBuffer);
-			s_Water.CopyScene(drawCommandBuffer, s_Framebuffer);
+			{
+				EnvMapVulkanProfiler::Scope copyScope(drawCommandBuffer, "Scene Copy", "The render pass ends and the scene's color and depth are "
+					"copied, so the water can read what's behind and under it (a shader can't read the image it is drawing into). "
+					"A plain memory copy: no draw calls.");
+				s_Water.CopyScene(drawCommandBuffer, s_Framebuffer);
+			}
 
 			VkRenderPassBeginInfo continueBeginInfo = renderPassBeginInfo;
 			continueBeginInfo.renderPass = framebuffer->GetContinueRenderPass();
@@ -7256,16 +7313,23 @@ void EnvMapVulkanRenderer::GeometryPass()
 			continueBeginInfo.clearValueCount = 0;
 			continueBeginInfo.pClearValues = nullptr;
 			vkCmdBeginRenderPass(drawCommandBuffer, &continueBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			EnvMapVulkanProfiler::CountRenderPass(continueBeginInfo.renderArea.extent.width, continueBeginInfo.renderArea.extent.height);
 			vkCmdSetViewport(drawCommandBuffer, 0, 1, &viewport);
 			vkCmdSetScissor(drawCommandBuffer, 0, 1, &scissor);
 
+			EnvMapVulkanProfiler::BeginScope(drawCommandBuffer, "Water Volume", "Underwater fog and the water seen from the side: a full-screen "
+				"triangle that rewrites every pixel from the scene copy, darkening what's under the water by its depth.");
 			s_Water.RecordVolume(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0]); // underwater fog, the water seen from the side
+			EnvMapVulkanProfiler::EndScope(drawCommandBuffer);
 			// The water's wireframe: its own toggle (Water panel), or the editor's (Environment panel, Wireframe: All, or
 			// Selected while the water is selected), with the editor's line width
 			EnvMapVulkanWaterSettings waterDrawSettings = s_WaterSettings;
 			waterDrawSettings.Wireframe = s_WaterSettings.Wireframe || s_OverlaySettings.Wireframe == OverlayScopeAll ||
 				(s_OverlaySettings.Wireframe == OverlayScopeSelected && s_WaterSelected);
 			const float maxLineWidth = H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetProperties().limits.lineWidthRange[1];
+			EnvMapVulkanProfiler::Scope surfaceScope(drawCommandBuffer, "Water Surface", "The water's mesh, moved by the swell: refraction from "
+				"the scene copy, the planar reflection, foam and the sun's highlight, mixed by the Fresnel factor. Transparent "
+				"without blending: it computes what's behind it.");
 			s_Water.Record(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], waterDrawSettings,
 				glm::clamp(s_OverlaySettings.LineWidth, 1.0f, maxLineWidth));
 		}
@@ -7273,14 +7337,31 @@ void EnvMapVulkanRenderer::GeometryPass()
 		// Transparent, so after the opaque meshes and the water
 		if (s_DisplayGrid)
 		{
+			EnvMapVulkanProfiler::Scope gridScope(drawCommandBuffer, "Grid", "The editor's ground grid: one quad, blended over the scene "
+				"without writing depth.");
 			RenderGrid(drawCommandBuffer);
 		}
 
 		vkCmdEndRenderPass(drawCommandBuffer);
+		EnvMapVulkanProfiler::EndScope(drawCommandBuffer); // Scene
 
-		RecordBloomPasses(drawCommandBuffer);
-		RecordEditorOverlayPasses(drawCommandBuffer);
-		ViewportCompositePass(drawCommandBuffer);
+		if (s_BloomSettings.Enabled || !s_BloomChainRendered)
+		{
+			EnvMapVulkanProfiler::Scope bloomScope(drawCommandBuffer, "Bloom", "The glow around bright light: the brightest parts of the "
+				"scene are blurred by shrinking them step by step to small images and growing them back (a mip chain), one "
+				"full-screen quad per step.");
+			RecordBloomPasses(drawCommandBuffer);
+		}
+		{
+			EnvMapVulkanProfiler::Scope overlayScope(drawCommandBuffer, "Editor Overlay", "Editor drawings that aren't part of the scene: "
+				"wireframes, normals, bounding boxes, and the selection's silhouette (a mask the composite turns into the outline).");
+			RecordEditorOverlayPasses(drawCommandBuffer);
+		}
+		{
+			EnvMapVulkanProfiler::Scope compositeScope(drawCommandBuffer, "Viewport Composite", "The HDR scene becomes the image you see: "
+				"bloom and lens dirt added, exposure, tonemapping to the screen's range, the overlay and the selection outline on top.");
+			ViewportCompositePass(drawCommandBuffer);
+		}
 	}
 }
 
@@ -7337,6 +7418,7 @@ void EnvMapVulkanRenderer::RenderGrid(VkCommandBuffer commandBuffer)
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(GridSettings), &settings);
 
 	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+	EnvMapVulkanProfiler::CountDraw(s_Data.QuadIndexBuffer->GetCount() / 3);
 }
 
 static uint32_t BloomLevelSize(uint32_t viewportSize, uint32_t level)
@@ -7529,6 +7611,7 @@ static void RecordBloomPasses(VkCommandBuffer commandBuffer)
 		renderPassBeginInfo.clearValueCount = 2; // Color + depth
 		renderPassBeginInfo.pClearValues = clearValues;
 		vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+		EnvMapVulkanProfiler::CountRenderPass(renderPassBeginInfo.renderArea.extent.width, renderPassBeginInfo.renderArea.extent.height);
 
 		VkViewport viewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -7545,6 +7628,7 @@ static void RecordBloomPasses(VkCommandBuffer commandBuffer)
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, &s_BloomDescriptorSets.DescriptorSets[pass], 0, nullptr);
 
 		vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+		EnvMapVulkanProfiler::CountDraw(s_Data.QuadIndexBuffer->GetCount() / 3);
 		vkCmdEndRenderPass(commandBuffer);
 	};
 
@@ -7588,6 +7672,7 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	renderPassBeginInfo.pClearValues = clearValues;
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	EnvMapVulkanProfiler::CountRenderPass(renderPassBeginInfo.renderArea.extent.width, renderPassBeginInfo.renderArea.extent.height);
 
 	VkViewport viewport = { 0.0f, 0.0f, (float)width, (float)height, 0.0f, 1.0f };
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
@@ -7624,6 +7709,7 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, s_ViewportCompositeDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
 	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+	EnvMapVulkanProfiler::CountDraw(s_Data.QuadIndexBuffer->GetCount() / 3);
 
 	vkCmdEndRenderPass(commandBuffer);
 }
@@ -7667,7 +7753,11 @@ void EnvMapVulkanRenderer::CompositePass()
 		// renderPassBeginInfo.framebuffer = framebuffer->GetVulkanFramebuffer();
 		renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
 
+		// No pipeline statistics query here: its secondary command buffers can't run while one is active
+		EnvMapVulkanProfiler::BeginScope(drawCommandBuffer, "Window + UI", "The window's image: the viewport image and every ImGui panel "
+			"(text, buttons, this one too) drawn into the swapchain image that goes to the screen.", false);
 		vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+		EnvMapVulkanProfiler::CountRenderPass(renderPassBeginInfo.renderArea.extent.width, renderPassBeginInfo.renderArea.extent.height);
 		// vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 		VkCommandBuffer commandBuffer = s_CompositeCommandBuffer;
@@ -7730,6 +7820,7 @@ void EnvMapVulkanRenderer::CompositePass()
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_Data.QuadDescriptorSet.DescriptorSets.size(), s_Data.QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
 		vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
+		EnvMapVulkanProfiler::CountDraw(s_Data.QuadIndexBuffer->GetCount() / 3);
 
 		VK_CHECK_RESULT_H2M(vkEndCommandBuffer(commandBuffer));
 
@@ -7742,9 +7833,442 @@ void EnvMapVulkanRenderer::CompositePass()
 		vkCmdExecuteCommands(drawCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
 		vkCmdEndRenderPass(drawCommandBuffer);
+		EnvMapVulkanProfiler::EndScope(drawCommandBuffer); // Window + UI
+		EnvMapVulkanProfiler::EndFrame(drawCommandBuffer);
 
 		VK_CHECK_RESULT_H2M(vkEndCommandBuffer(drawCommandBuffer));
 	}
+}
+
+// Renderer Stats panel: the frame rate, the CPU and GPU frame times and their history, what the GPU did this frame pass
+// by pass (from EnvMapVulkanProfiler: GPU time, draw calls, triangles, render passes, pipeline statistics), the scene's
+// size and the GPU. Hovering a pass explains what it does.
+static bool s_ShowRendererStats = true;
+static bool s_ShowViewportFps = true;
+
+// Colors of the top-level passes (the timeline and the table's markers)
+static ImU32 GetPassColor(int index)
+{
+	static const ImU32 colors[] = {
+		IM_COL32(86, 156, 214, 255), IM_COL32(220, 160, 70, 255), IM_COL32(120, 190, 110, 255), IM_COL32(200, 100, 160, 255),
+		IM_COL32(90, 200, 200, 255), IM_COL32(230, 110, 90, 255), IM_COL32(160, 140, 230, 255), IM_COL32(200, 200, 90, 255),
+		IM_COL32(150, 150, 160, 255), IM_COL32(100, 210, 160, 255), IM_COL32(240, 140, 180, 255), IM_COL32(130, 170, 90, 255),
+	};
+	return colors[index % (sizeof(colors) / sizeof(colors[0]))];
+}
+
+static std::string FormatCount(uint64_t value)
+{
+	char text[32];
+	if (value >= 10000000ull)
+	{
+		snprintf(text, sizeof(text), "%.1fM", value / 1.0e6);
+	}
+	else if (value >= 10000ull)
+	{
+		snprintf(text, sizeof(text), "%.1fK", value / 1.0e3);
+	}
+	else
+	{
+		snprintf(text, sizeof(text), "%llu", (unsigned long long)value);
+	}
+	return text;
+}
+
+// The CPU and GPU frame times of the last frames as two lines, with the 60 and 30 FPS marks
+static void DrawFrameTimeGraph(float height)
+{
+	const auto& cpu = EnvMapVulkanProfiler::GetCpuHistory();
+	const auto& gpu = EnvMapVulkanProfiler::GetGpuHistory();
+	const uint32_t offset = EnvMapVulkanProfiler::GetHistoryOffset();
+	const uint32_t count = EnvMapVulkanProfiler::HistorySize;
+
+	float maxMs = 1000.0f / 60.0f;
+	for (uint32_t i = 0; i < count; i++)
+	{
+		maxMs = std::max(maxMs, std::max(cpu[i], gpu[i]));
+	}
+	maxMs = std::min(maxMs * 1.1f, 100.0f); // a stall (loading a model) doesn't flatten the rest
+
+	const ImVec2 size(ImGui::GetContentRegionAvail().x, height);
+	const ImVec2 min = ImGui::GetCursorScreenPos();
+	const ImVec2 max(min.x + size.x, min.y + size.y);
+	ImGui::InvisibleButton("##FrameTimeGraph", size);
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	drawList->AddRectFilled(min, max, IM_COL32(25, 25, 30, 255), 3.0f);
+	drawList->PushClipRect(min, max, true);
+
+	auto yOf = [&](float ms) { return max.y - (std::min(ms, maxMs) / maxMs) * (size.y - 2.0f) - 1.0f; };
+	for (float fps : { 60.0f, 30.0f })
+	{
+		const float ms = 1000.0f / fps;
+		if (ms < maxMs)
+		{
+			const float y = yOf(ms);
+			drawList->AddLine(ImVec2(min.x, y), ImVec2(max.x, y), IM_COL32(255, 255, 255, 50));
+			char label[16];
+			snprintf(label, sizeof(label), "%.0f FPS", fps);
+			drawList->AddText(ImVec2(min.x + 4.0f, y - ImGui::GetTextLineHeight()), IM_COL32(255, 255, 255, 90), label);
+		}
+	}
+	auto drawLine = [&](const std::array<float, EnvMapVulkanProfiler::HistorySize>& values, ImU32 color) {
+		std::vector<ImVec2> points;
+		points.reserve(count);
+		for (uint32_t i = 0; i < count; i++)
+		{
+			const float x = min.x + size.x * (float)i / (float)(count - 1);
+			points.push_back(ImVec2(x, yOf(values[(offset + i) % count])));
+		}
+		drawList->AddPolyline(points.data(), (int)points.size(), color, ImDrawFlags_None, 1.5f);
+	};
+	const ImU32 cpuColor = IM_COL32(230, 180, 80, 255);
+	const ImU32 gpuColor = IM_COL32(90, 170, 240, 255);
+	drawLine(cpu, cpuColor);
+	drawLine(gpu, gpuColor);
+	drawList->PopClipRect();
+
+	if (ImGui::IsItemHovered())
+	{
+		// The frame under the cursor
+		const float t = (ImGui::GetIO().MousePos.x - min.x) / size.x;
+		const uint32_t i = (uint32_t)glm::clamp(t * (count - 1) + 0.5f, 0.0f, (float)(count - 1));
+		const float cpuMs = cpu[(offset + i) % count];
+		const float gpuMs = gpu[(offset + i) % count];
+		ImGui::SetTooltip("%u frames ago\nFrame (CPU): %.2f ms (%.0f FPS)\nGPU: %.2f ms", count - 1 - i, cpuMs, cpuMs > 0.0f ? 1000.0f / cpuMs : 0.0f, gpuMs);
+	}
+	ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(cpuColor), "Frame (CPU)");
+	ImGui::SameLine();
+	ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(gpuColor), "GPU");
+	ImGui::SameLine();
+	ImGui::TextDisabled("last %u frames, up to %.1f ms", count, maxMs);
+}
+
+// The GPU frame as a bar: each top-level pass as wide as its share of the GPU time
+static void DrawGpuTimeline(const EnvMapVulkanProfiler::FrameResults& results)
+{
+	double total = 0.0;
+	for (const auto& scope : results.Scopes)
+	{
+		if (scope.Depth == 0)
+		{
+			total += scope.SmoothedGpuMs;
+		}
+	}
+	const ImVec2 size(ImGui::GetContentRegionAvail().x, 18.0f);
+	const ImVec2 min = ImGui::GetCursorScreenPos();
+	ImGui::InvisibleButton("##GpuTimeline", size);
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	drawList->AddRectFilled(min, ImVec2(min.x + size.x, min.y + size.y), IM_COL32(25, 25, 30, 255), 3.0f);
+	if (total <= 0.0)
+	{
+		return;
+	}
+	const float mouseX = ImGui::GetIO().MousePos.x;
+	const bool hovered = ImGui::IsItemHovered();
+	float x = min.x;
+	int top = 0;
+	for (const auto& scope : results.Scopes)
+	{
+		if (scope.Depth != 0)
+		{
+			continue;
+		}
+		const float width = (float)(scope.SmoothedGpuMs / total) * size.x;
+		const ImVec2 a(x, min.y), b(x + width, min.y + size.y);
+		drawList->AddRectFilled(a, b, GetPassColor(top));
+		if (width > 40.0f)
+		{
+			drawList->PushClipRect(a, b, true);
+			drawList->AddText(ImVec2(a.x + 3.0f, a.y + 2.0f), IM_COL32(20, 20, 20, 255), scope.Name.c_str());
+			drawList->PopClipRect();
+		}
+		if (hovered && mouseX >= a.x && mouseX < b.x)
+		{
+			ImGui::SetTooltip("%s: %.3f ms (%.0f%% of the GPU frame)", scope.Name.c_str(), scope.SmoothedGpuMs, 100.0 * scope.SmoothedGpuMs / total);
+		}
+		x += width;
+		top++;
+	}
+}
+
+// The tooltip of a pass: what it does, and the GPU's statistics for a top-level one
+static void PassTooltip(const EnvMapVulkanProfiler::ScopeResult& scope)
+{
+	ImGui::BeginTooltip();
+	ImGui::PushTextWrapPos(ImGui::GetFontSize() * 30.0f);
+	ImGui::Text("%s", scope.Name.c_str());
+	if (scope.Description)
+	{
+		ImGui::Separator();
+		ImGui::TextUnformatted(scope.Description);
+	}
+	if (scope.HasStatistics)
+	{
+		using P = EnvMapVulkanProfiler;
+		ImGui::Separator();
+		ImGui::TextDisabled("Pipeline statistics (counted by the GPU)");
+		ImGui::Text("Vertices read: %s", FormatCount(scope.Statistics[P::InputVertices]).c_str());
+		ImGui::Text("Vertex shader runs: %s", FormatCount(scope.Statistics[P::VertexShaderInvocations]).c_str());
+		ImGui::Text("Primitives assembled: %s", FormatCount(scope.Statistics[P::InputPrimitives]).c_str());
+		ImGui::Text("Primitives rasterized: %s (the rest were culled or off screen)", FormatCount(scope.Statistics[P::ClippingPrimitives]).c_str());
+		ImGui::Text("Fragment shader runs: %s", FormatCount(scope.Statistics[P::FragmentShaderInvocations]).c_str());
+		const uint64_t pixels = (uint64_t)scope.TargetWidth * scope.TargetHeight;
+		if (pixels > 0 && scope.RenderPasses == 1)
+		{
+			ImGui::Text("Shading per pixel: %.2fx (%u x %u target)", (double)scope.Statistics[P::FragmentShaderInvocations] / pixels,
+				scope.TargetWidth, scope.TargetHeight);
+			ImGui::TextDisabled("Above 1: overdraw, pixels shaded more than once");
+		}
+	}
+	ImGui::PopTextWrapPos();
+	ImGui::EndTooltip();
+}
+
+static void OnImGuiRenderRendererStats()
+{
+	if (!s_ShowRendererStats)
+	{
+		return;
+	}
+	ImGui::SetNextWindowSize(ImVec2(460.0f, 640.0f), ImGuiCond_FirstUseEver);
+	if (!ImGui::Begin("Renderer Stats", &s_ShowRendererStats))
+	{
+		ImGui::End();
+		return;
+	}
+	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
+	const double cpuMs = EnvMapVulkanProfiler::GetSmoothedCpuFrameMs();
+	const double gpuMs = results.SmoothedGpuMs;
+
+	// The frame rate, and what limits it
+	ImGui::SetWindowFontScale(1.6f);
+	ImGui::Text("%.0f FPS", EnvMapVulkanProfiler::GetFps());
+	ImGui::SetWindowFontScale(1.0f);
+	ImGui::SameLine();
+	ImGui::BeginGroup();
+	ImGui::Text("Frame: %.2f ms", cpuMs);
+	if (results.Valid)
+	{
+		ImGui::Text("GPU:   %.2f ms", gpuMs);
+	}
+	else
+	{
+		ImGui::TextDisabled("GPU: no timestamps on this device");
+	}
+	ImGui::EndGroup();
+	if (results.Valid && cpuMs > 0.0)
+	{
+		const bool gpuBound = gpuMs > cpuMs * 0.75;
+		ImGui::TextColored(gpuBound ? ImVec4(0.55f, 0.75f, 1.0f, 1.0f) : ImVec4(1.0f, 0.8f, 0.45f, 1.0f), gpuBound ? "GPU-bound" : "CPU-bound");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip(gpuBound
+				? "The GPU's work takes most of the frame: fewer or cheaper pixels and passes (resolution, shadows, reflections) "
+				  "raise the frame rate."
+				: "The GPU finishes early and waits: the frame time is the CPU's (the editor UI, scene updates, recording "
+				  "commands, waiting for the GPU at the end of each frame). Cheaper GPU work won't raise the frame rate much.");
+		}
+		ImGui::SameLine();
+		ImGui::TextDisabled("(GPU busy %.0f%% of the frame)", 100.0 * std::min(gpuMs / cpuMs, 1.0));
+	}
+	ImGui::Checkbox("FPS in the viewport", &s_ShowViewportFps);
+
+	ImGui::Spacing();
+	DrawFrameTimeGraph(80.0f);
+
+	// The passes
+	ImGui::Spacing();
+	ImGui::SeparatorText("GPU passes (last finished frame)");
+	if (!results.Valid)
+	{
+		ImGui::TextDisabled("The GPU's timestamps aren't available: only the counts are shown");
+	}
+	DrawGpuTimeline(results);
+	ImGui::TextDisabled("%u draw calls, %s triangles, %u render passes", results.Draws, FormatCount(results.Triangles).c_str(), results.RenderPasses);
+
+	// Top-level passes that ran before but not in this frame (turned off: no water, no point light shadows...)
+	static std::vector<std::pair<std::string, const char*>> s_KnownPasses;
+	for (const auto& scope : results.Scopes)
+	{
+		if (scope.Depth == 0 && std::find_if(s_KnownPasses.begin(), s_KnownPasses.end(), [&](const auto& p) { return p.first == scope.Name; }) == s_KnownPasses.end())
+		{
+			s_KnownPasses.push_back({ scope.Name, scope.Description });
+		}
+	}
+
+	const ImGuiTableFlags tableFlags = ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable;
+	if (ImGui::BeginTable("##Passes", 6, tableFlags))
+	{
+		ImGui::TableSetupColumn("Pass", ImGuiTableColumnFlags_WidthStretch);
+		ImGui::TableSetupColumn("GPU ms");
+		ImGui::TableSetupColumn("%");
+		ImGui::TableSetupColumn("Draws");
+		ImGui::TableSetupColumn("Triangles");
+		ImGui::TableSetupColumn("Target");
+		ImGui::TableHeadersRow();
+
+		const double total = gpuMs > 0.0 ? gpuMs : 1.0;
+		int top = -1;
+		// The scopes are in recording order, a parent before its children: a tree node per scope; a closed node skips its
+		// children (the scopes after it with a greater depth), an open one is popped when its subtree ends
+		const auto& scopes = results.Scopes;
+		std::vector<int> openDepths; // the open tree nodes that have children
+		for (size_t i = 0; i < scopes.size();)
+		{
+			const auto& scope = scopes[i];
+			top += scope.Depth == 0 ? 1 : 0;
+			const bool hasChildren = i + 1 < scopes.size() && scopes[i + 1].Depth > scope.Depth;
+
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::PushID((int)i);
+			if (scope.Depth == 0)
+			{
+				// The pass's color in the timeline
+				const ImVec2 p = ImGui::GetCursorScreenPos();
+				const float h = ImGui::GetTextLineHeight();
+				ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y + 2.0f), ImVec2(p.x + 4.0f, p.y + h - 2.0f), GetPassColor(top));
+				ImGui::SetCursorScreenPos(ImVec2(p.x + 8.0f, p.y));
+			}
+			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanFullWidth;
+			flags |= hasChildren ? (scope.Depth == 0 ? ImGuiTreeNodeFlags_DefaultOpen : 0) : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
+			const bool open = ImGui::TreeNodeEx(scope.Name.c_str(), flags);
+			if (hasChildren && open)
+			{
+				openDepths.push_back(scope.Depth);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				PassTooltip(scope);
+			}
+			ImGui::TableNextColumn();
+			ImGui::Text("%.3f", scope.SmoothedGpuMs);
+			ImGui::TableNextColumn();
+			ImGui::Text("%.0f", 100.0 * scope.SmoothedGpuMs / total);
+			ImGui::TableNextColumn();
+			ImGui::Text("%u", scope.Draws);
+			ImGui::TableNextColumn();
+			ImGui::Text("%s", FormatCount(scope.Triangles).c_str());
+			ImGui::TableNextColumn();
+			if (scope.TargetWidth > 0)
+			{
+				ImGui::Text(scope.RenderPasses > 1 ? "%ux%u (x%u)" : "%ux%u", scope.TargetWidth, scope.TargetHeight, scope.RenderPasses);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("%u render pass(es); the last one drew into a %u x %u image", scope.RenderPasses, scope.TargetWidth, scope.TargetHeight);
+				}
+			}
+			else
+			{
+				ImGui::TextDisabled("-");
+			}
+			ImGui::PopID();
+
+			size_t next = i + 1;
+			if (hasChildren && !open)
+			{
+				while (next < scopes.size() && scopes[next].Depth > scope.Depth)
+				{
+					next++;
+				}
+			}
+			const int nextDepth = next < scopes.size() ? scopes[next].Depth : -1;
+			while (!openDepths.empty() && openDepths.back() >= nextDepth)
+			{
+				ImGui::TreePop();
+				openDepths.pop_back();
+			}
+			i = next;
+		}
+
+		// Passes that didn't run in this frame
+		for (const auto& [name, description] : s_KnownPasses)
+		{
+			bool ran = false;
+			for (const auto& scope : scopes)
+			{
+				ran |= scope.Depth == 0 && scope.Name == name;
+			}
+			if (ran)
+			{
+				continue;
+			}
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::TextDisabled("    %s (off)", name.c_str());
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Not running in this frame%s%s", description ? ":\n" : "", description ? description : "");
+			}
+		}
+		ImGui::EndTable();
+	}
+	ImGui::TextDisabled("Hover a pass for what it does and the GPU's counts");
+
+	// The scene
+	ImGui::Spacing();
+	ImGui::SeparatorText("Scene");
+	uint32_t modelCount = 0, meshCount = 0;
+	uint64_t triangleCount = 0;
+	for (EnvMapVulkanEntityID model : GetModels())
+	{
+		if (H2M::RefH2M<H2M::ModelH2M> modelRef = GetModel(model))
+		{
+			modelCount++;
+			for (const auto& mesh : modelRef->GetMeshes())
+			{
+				meshCount++;
+				triangleCount += mesh->IndexCount / 3;
+			}
+		}
+	}
+	ImGui::Text("%u models, %u meshes, %s triangles", modelCount, meshCount, FormatCount(triangleCount).c_str());
+	ImGui::Text("%zu point lights (%u with shadows), %zu spot lights (%u with shadows)", s_Lights.PointLights.size(), s_LocalShadowSlots.PointCount,
+		s_Lights.SpotLights.size(), s_LocalShadowSlots.SpotCount);
+	ImGui::Text("Viewport: %u x %u", s_Framebuffer.As<H2M::VulkanFramebufferH2M>()->GetWidth(), s_Framebuffer.As<H2M::VulkanFramebufferH2M>()->GetHeight());
+
+	// The GPU
+	ImGui::Spacing();
+	ImGui::SeparatorText("GPU");
+	const VkPhysicalDeviceProperties& properties = H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
+	ImGui::Text("%s", properties.deviceName);
+	ImGui::Text("Vulkan %u.%u.%u", VK_API_VERSION_MAJOR(properties.apiVersion), VK_API_VERSION_MINOR(properties.apiVersion),
+		VK_API_VERSION_PATCH(properties.apiVersion));
+	if (properties.vendorID == 0x10DE) // NVIDIA's driver version encoding
+	{
+		ImGui::SameLine();
+		ImGui::Text(", driver %u.%u", (properties.driverVersion >> 22) & 0x3FF, (properties.driverVersion >> 14) & 0xFF);
+	}
+	ImGui::TextDisabled("Timestamps: %s, pipeline statistics: %s", EnvMapVulkanProfiler::IsSupported() ? "yes" : "no",
+		EnvMapVulkanProfiler::AreStatisticsSupported() ? "yes" : "no");
+
+	ImGui::End();
+}
+
+// The frame rate in the viewport's top-left corner
+static void DrawViewportFps()
+{
+	if (!s_ShowViewportFps || s_ViewportImageSize.x <= 0.0f)
+	{
+		return;
+	}
+	char text[64];
+	const auto& results = EnvMapVulkanProfiler::GetResults();
+	if (results.Valid)
+	{
+		snprintf(text, sizeof(text), "%.0f FPS  %.2f ms  GPU %.2f ms", EnvMapVulkanProfiler::GetFps(), EnvMapVulkanProfiler::GetSmoothedCpuFrameMs(),
+			results.SmoothedGpuMs);
+	}
+	else
+	{
+		snprintf(text, sizeof(text), "%.0f FPS  %.2f ms", EnvMapVulkanProfiler::GetFps(), EnvMapVulkanProfiler::GetSmoothedCpuFrameMs());
+	}
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	const ImVec2 textSize = ImGui::CalcTextSize(text);
+	const ImVec2 position(s_ViewportImageMin.x + 8.0f, s_ViewportImageMin.y + 8.0f);
+	drawList->AddRectFilled(ImVec2(position.x - 5.0f, position.y - 3.0f), ImVec2(position.x + textSize.x + 5.0f, position.y + textSize.y + 3.0f),
+		IM_COL32(0, 0, 0, 140), 4.0f);
+	drawList->AddText(position, IM_COL32(235, 235, 235, 255), text);
 }
 
 void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers)
@@ -7918,6 +8442,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 			SyncLightSelection();
 			DrawLightGizmos();
+			DrawViewportFps();
 			DrawWaterOutline();
 
 			Window* mainWindow = Application::Get()->GetWindow();
@@ -8156,6 +8681,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			OnImGuiRenderProperties();
 			OnImGuiRenderMaterialLibrary();
 			OnImGuiRenderMaterialEditor();
+			OnImGuiRenderRendererStats();
 
 			/**** BEGIN DockSpace menu bar ****/
 
@@ -8180,6 +8706,12 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					{
 						::SaveSceneAs();
 					}
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("View"))
+				{
+					ImGui::MenuItem("Renderer Stats", nullptr, &s_ShowRendererStats);
+					ImGui::MenuItem("FPS in the Viewport", nullptr, &s_ShowViewportFps);
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("Docking"))
