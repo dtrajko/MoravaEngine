@@ -59,7 +59,7 @@ Entities:
     Name: Water
     Parent: 0
     Transform:
-      Translation: [-1.0488797e-06, 0, -5.722046e-05]
+      Translation: [-1.0488797e-06, 4.949684, -5.722046e-05]
       Rotation: [0, -0, 0]
       Scale: [40, 1, 40]
     Water:
@@ -93,9 +93,9 @@ Entities:
     Name: boblampclean.md5mesh
     Parent: 0
     Transform:
-      Translation: [-0.4731013, 1.2655875e-05, 6.850934]
-      Rotation: [0.0003478828, 46.55606, 0.0005700092]
-      Scale: [0.20000042, 0.20000044, 0.19999996]
+      Translation: [-3.7702148, 1.2655875e-05, -3.5042262]
+      Rotation: [-0.00016740481, -14.509013, 0.00040487468]
+      Scale: [0.20000042, 0.20000044, 0.19999997]
     Model:
       File: Models/OGLdev/BobLamp/boblampclean.md5mesh
   - ID: 2124087839669999244
@@ -189,9 +189,9 @@ Entities:
     Name: Gladiator_weapon
     Parent: 1755925884914266768
     Transform:
-      Translation: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
+      Translation: [19.736816, -0.00010462343, -14.565355]
+      Rotation: [-0.00055530516, -61.065125, 0.00030142616]
+      Scale: [1.0000026, 1.0000033, 1.0000049]
     MeshPart:
       SourceMeshIndex: 0
       Material:
@@ -202,9 +202,9 @@ Entities:
     Name: Gladiator
     Parent: 1755925884914266768
     Transform:
-      Translation: [-6.866455e-05, -8.0035534e-11, -3.8146973e-05]
-      Rotation: [-1.4330315e-10, 3.4150908e-06, -3.1266087e-10]
-      Scale: [1.0000011, 0.9999994, 1.0000006]
+      Translation: [19.736752, -0.000104623185, -14.56554]
+      Rotation: [-0.0005553069, -61.065132, 0.0003014252]
+      Scale: [1.000003, 1.0000025, 1.0000051]
     MeshPart:
       SourceMeshIndex: 1
       Material:

@@ -10,6 +10,7 @@
 #include "EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkanProfiler.h"
 #include "EnvMapVulkanGlass.h"
+#include "EnvMapVulkanGBuffer.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
 #include "EnvMapVulkanSceneSerializer.h"
@@ -648,7 +649,7 @@ static void SelectModel(EnvMapVulkanEntityID model, int meshIndex = -1)
 	SelectOnly(GetModelOrPart(model, meshIndex));
 }
 
-// Ctrl + double click in the viewport: every part of the model joins the selection, with the clicked one as the primary
+// Ctrl or Shift + double click in the viewport: every part of the model joins the selection, with the clicked one as the primary
 // entity. The model itself leaves the selection, so the gizmo doesn't move its parts twice. A model without parts is
 // selected itself.
 static void AddModelPartsToSelection(EnvMapVulkanEntityID model, EnvMapVulkanEntityID clicked)
@@ -1457,6 +1458,9 @@ static EnvMapVulkanWater s_Water;
 // shows what was drawn before it, so a farther one is drawn first. Static meshes only: a skinned mesh with a glass
 // material is drawn with its material as opaque.
 static EnvMapVulkanGlass s_Glass;
+// The G-buffer (see EnvMapVulkanGBuffer): normals, roughness, motion and the scene's depth, written by a prepass before the
+// scene pass. For now the prepass only clears them (Phase A of docs/rendering/SSAO_GI_RayTracing_Guide.html).
+static EnvMapVulkanGBuffer s_GBuffer;
 struct GlassDraw
 {
 	H2M::RefH2M<H2M::ModelH2M> Model; // keeps the buffers alive until the draw is recorded
@@ -6496,6 +6500,7 @@ void EnvMapVulkanRenderer::Init()
 	// Water: drawn into the scene framebuffer after the opaque meshes (see GeometryPass)
 	s_Water.Create(s_Framebuffer);
 	s_Glass.Create(s_Framebuffer);
+	s_GBuffer.Create(s_Framebuffer);
 
 	// The scene (EnvMapVulkanScene, being introduced): its operations are checked once at startup
 	EnvMapVulkanScene::SelfTest();
@@ -6683,6 +6688,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_ShadowMapViewer.Destroy();
 	s_Water.Destroy();
 	s_Glass.Destroy();
+	s_GBuffer.Destroy();
 	EnvMapVulkanProfiler::Shutdown();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
 	// delete s_Data;
@@ -7481,6 +7487,16 @@ void EnvMapVulkanRenderer::GeometryPass()
 			}
 			s_Water.EndReflectionPass(drawCommandBuffer);
 			EnvMapVulkanProfiler::EndScope(drawCommandBuffer);
+		}
+
+		// The G-buffer prepass: the opaque meshes' normals, roughness, motion and depth, before the scene pass
+		{
+			EnvMapVulkanProfiler::Scope prepassScope(drawCommandBuffer, "G-Buffer Prepass", "The surface data of every pixel (normal, "
+				"roughness, motion, depth) for the effects that need it before or after the lighting, such as ambient occlusion. "
+				"For now it only clears its images: the meshes aren't drawn into it yet.");
+			s_GBuffer.BeginPass(drawCommandBuffer);
+			EnvMapVulkanProfiler::CountRenderPass(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());
+			s_GBuffer.EndPass(drawCommandBuffer);
 		}
 
 		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
@@ -8718,8 +8734,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 			// Mouse picking: left click on the scene (not on the gizmo, not with Alt) selects the light icon, or else the
 			// mesh under the cursor (or the water in front of it). Ctrl or Shift + click adds it to the selection or removes
-			// it (as in Unity); a double click selects the whole model of the mesh, and Ctrl + double click adds all the
-			// model's meshes (parts) to the selection.
+			// it (as in Unity); a double click selects the whole model of the mesh, and Ctrl or Shift + double click adds
+			// all the model's meshes (parts) to the selection.
 			if (viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
 				!Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 			{
@@ -8751,8 +8767,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						clickedModel = NoEntity;
 					}
 				}
-				const bool ctrl = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl);
-				if (ctrl && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && clickedModel != NoEntity)
+				if (toggle && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && clickedModel != NoEntity)
 				{
 					AddModelPartsToSelection(clickedModel, clicked); // before the toggle: its first click toggled the mesh already
 				}
@@ -9240,6 +9255,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_Framebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_Water.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
 		s_Glass.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
+		s_GBuffer.Resize(s_Framebuffer); // after s_Framebuffer: it shares its depth image
 		s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_OverlayFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_SelectionMaskFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
