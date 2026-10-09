@@ -38,6 +38,9 @@ namespace H2M
 		bool BackfaceCulling = true;
 		bool DepthTest = true;
 		bool DepthWrite = true;
+		// Vulkan: the depth test passes for an equal depth only, e.g. a pass that shades what a depth prepass wrote (each pixel
+		// once); otherwise less or equal
+		bool DepthEqual = false;
 		bool Wireframe = false;
 		float LineWidth = 1.0f;
 		// Depth bias (Vulkan units; both 0: off). Negative values pull the primitives toward the camera, e.g. a wireframe

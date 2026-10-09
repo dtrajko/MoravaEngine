@@ -94,6 +94,10 @@ namespace H2M
 		// continues drawing into them (VulkanFramebufferH2M::GetContinueRenderPass). Depth is kept after the render pass.
 		bool CopySource = false;
 
+		// Vulkan: the render pass loads the depth instead of clearing it (expected in DEPTH_STENCIL_ATTACHMENT_OPTIMAL), for a
+		// framebuffer whose depth a prepass wrote earlier in the frame. The color is still cleared.
+		bool LoadDepth = false;
+
 		std::string DebugName;
 	};
 

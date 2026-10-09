@@ -168,6 +168,10 @@ static void CreateEditorOverlayResources();
 static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer);
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipeline;                 // to be removed from VulkanRenderer
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnim; // skinned models (HazelPBR_Anim.glsl): vertex layout with bone IDs and weights
+// The same with depth EQUAL and no depth write: the scene pass, after the G-buffer prepass wrote the depth. The two above
+// draw where there is no prepass (the water's reflection) and lend their layouts to the prepass pipelines.
+static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineDepthEqual;
+static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnimDepthEqual;
 static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
 static bool s_ViewportTextureNeedsUpdate = false;     // the viewport framebuffer was recreated (resize)
 
@@ -1459,7 +1463,8 @@ static EnvMapVulkanWater s_Water;
 // material is drawn with its material as opaque.
 static EnvMapVulkanGlass s_Glass;
 // The G-buffer (see EnvMapVulkanGBuffer): normals, roughness, motion and the scene's depth, written by a prepass before the
-// scene pass (Phase A of docs/rendering/SSAO_GI_RayTracing_Guide.html). The scene pass doesn't use its depth yet.
+// scene pass (Phase A of docs/rendering/SSAO_GI_RayTracing_Guide.html). The scene pass loads that depth and draws the
+// opaque meshes with depth EQUAL (s_MeshPipelineDepthEqual), so their PBR shader runs once per pixel.
 static EnvMapVulkanGBuffer s_GBuffer;
 struct GlassDraw
 {
@@ -6351,6 +6356,7 @@ void EnvMapVulkanRenderer::Init()
 		framebufferSpec.ClearOnLoad = false;
 		framebufferSpec.ClearColor = { 0.1f, 0.5f, 0.5f, 1.0f };
 		framebufferSpec.CopySource = true; // the water copies its color and depth (see GeometryPass)
+		framebufferSpec.LoadDepth = true;  // the G-buffer prepass writes the depth (see s_GBuffer)
 		framebufferSpec.DebugName = "Viewport";
 		framebufferSpec.Width = s_ViewportWidth;
 		framebufferSpec.Height = s_ViewportHeight;
@@ -6409,6 +6415,17 @@ void EnvMapVulkanRenderer::Init()
 		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Anim");
 		pipelineSpecification.DebugName = "PBR-Anim";
 		s_MeshPipelineAnim = H2M::PipelineH2M::Create(pipelineSpecification);
+
+		// The scene pass: only the surfaces the G-buffer prepass kept in front (depth EQUAL, no write), so the PBR shader
+		// runs once per pixel. Same shaders, so the layouts match the pipelines above.
+		pipelineSpecification.DepthEqual = true;
+		pipelineSpecification.DepthWrite = false;
+		pipelineSpecification.DebugName = "PBR-Anim-DepthEqual";
+		s_MeshPipelineAnimDepthEqual = H2M::PipelineH2M::Create(pipelineSpecification);
+		pipelineSpecification.Layout = s_MeshPipeline->GetSpecification().Layout;
+		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static");
+		pipelineSpecification.DebugName = "PBR-Static-DepthEqual";
+		s_MeshPipelineDepthEqual = H2M::PipelineH2M::Create(pipelineSpecification);
 	}
 	/**** END: to be removed from VulkanRenderer ****/
 
@@ -6740,8 +6757,16 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 	VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 	vkCmdBindIndexBuffer(commandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-	// The G-buffer prepass pipelines have the PBR pipelines' layouts: everything bound below is valid for both
-	VkPipeline pipeline = pass == MeshPass::GBuffer ? s_GBuffer.GetPipeline(skinned) : vulkanPipeline->GetVulkanPipeline();
+	// The pipelines of all passes have the PBR pipelines' layouts: everything bound below is valid for each of them
+	VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline(); // MeshPass::WaterReflection
+	if (pass == MeshPass::GBuffer)
+	{
+		pipeline = s_GBuffer.GetPipeline(skinned);
+	}
+	else if (pass == MeshPass::Scene)
+	{
+		pipeline = (skinned ? s_MeshPipelineAnimDepthEqual : s_MeshPipelineDepthEqual).As<H2M::VulkanPipelineH2M>()->GetVulkanPipeline();
+	}
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 	// Set 0 (per frame) was bound once for all meshes in GeometryPass. It stays bound across the static and skinned
@@ -7486,7 +7511,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 				&reflectionFrameSet, 0, nullptr);
 			for (const SubmittedModel& submitted : s_SubmittedModels)
 			{
-				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer);
+				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::WaterReflection);
 			}
 			s_Water.EndReflectionPass(drawCommandBuffer);
 			EnvMapVulkanProfiler::EndScope(drawCommandBuffer);
@@ -7555,7 +7580,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		{
 			EnvMapVulkanProfiler::Scope skyboxScope(drawCommandBuffer, "Skybox", "The environment map on a cube around the camera: the "
-				"background wherever no mesh is drawn.");
+				"background wherever no mesh is drawn (only those pixels are shaded: the prepass's depth hides the rest).");
 			EnvMapVulkanRenderer::RenderSkybox(drawCommandBuffer); // in progress
 		}
 
@@ -7566,11 +7591,11 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		{
 			EnvMapVulkanProfiler::Scope meshesScope(drawCommandBuffer, "Opaque Meshes", "Every mesh of every model, one draw call per mesh, "
-				"with its material: the PBR fragment shader runs for each covered pixel (more than once where meshes overlap and a "
-				"farther one is drawn first). Usually the biggest part of the frame.");
+				"with its material: the PBR fragment shader runs once for each covered pixel (the depth test keeps only the surface "
+				"the G-buffer prepass found in front). Usually the biggest part of the frame.");
 			for (const SubmittedModel& submitted : s_SubmittedModels)
 			{
-				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer);
+				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::Scene);
 			}
 		}
 		CollectGlassDraws();

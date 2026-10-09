@@ -281,12 +281,13 @@ namespace H2M
 					attachmentDescriptions[1].flags = 0;
 					attachmentDescriptions[1].format = depthFormat;
 					attachmentDescriptions[1].samples = VK_SAMPLE_COUNT_1_BIT;
-					attachmentDescriptions[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+					// Specification.LoadDepth: written by a prepass earlier in the frame, which leaves it in the attachment layout
+					attachmentDescriptions[1].loadOp = m_Specification.LoadDepth ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_CLEAR;
 					// Kept when it is copied from (or drawn into again by the continue render pass)
 					attachmentDescriptions[1].storeOp = m_Specification.CopySource ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 					attachmentDescriptions[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					attachmentDescriptions[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-					attachmentDescriptions[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+					attachmentDescriptions[1].initialLayout = m_Specification.LoadDepth ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
 					attachmentDescriptions[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				}
 
