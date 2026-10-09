@@ -145,6 +145,8 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Anim.glsl"); // skinned meshes (SceneEnvMapVulkan)
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Glass_Static.glsl"); // SceneEnvMapVulkan: meshes with a glass material
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/GBufferPrepass_Static.glsl"); // SceneEnvMapVulkan: the G-buffer prepass
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/GBufferPrepass_Anim.glsl");   // SceneEnvMapVulkan: the G-buffer prepass (skinned)
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Water.glsl");         // SceneEnvMapVulkan: the water plane
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/WaterFog.glsl");      // SceneEnvMapVulkan: the water volume (underwater fog)
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/WaterCaustics.glsl"); // SceneEnvMapVulkan: the light the waves focus under the water

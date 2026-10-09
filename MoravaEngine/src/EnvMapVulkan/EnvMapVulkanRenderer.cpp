@@ -1459,7 +1459,7 @@ static EnvMapVulkanWater s_Water;
 // material is drawn with its material as opaque.
 static EnvMapVulkanGlass s_Glass;
 // The G-buffer (see EnvMapVulkanGBuffer): normals, roughness, motion and the scene's depth, written by a prepass before the
-// scene pass. For now the prepass only clears them (Phase A of docs/rendering/SSAO_GI_RayTracing_Guide.html).
+// scene pass (Phase A of docs/rendering/SSAO_GI_RayTracing_Guide.html). The scene pass doesn't use its depth yet.
 static EnvMapVulkanGBuffer s_GBuffer;
 struct GlassDraw
 {
@@ -6501,6 +6501,7 @@ void EnvMapVulkanRenderer::Init()
 	s_Water.Create(s_Framebuffer);
 	s_Glass.Create(s_Framebuffer);
 	s_GBuffer.Create(s_Framebuffer);
+	s_GBuffer.CreatePipelines(s_MeshPipeline, s_MeshPipelineAnim);
 
 	// The scene (EnvMapVulkanScene, being introduced): its operations are checked once at startup
 	EnvMapVulkanScene::SelfTest();
@@ -6694,7 +6695,8 @@ void EnvMapVulkanRenderer::Shutdown()
 	// delete s_Data;
 }
 
-void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer)
+void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
+	MeshPass pass)
 {
 	/**** BEGIN keep smart references alive ****/
 	H2M::RefH2M<H2M::TextureCubeH2M> envUnfiltered = s_Data.envUnfiltered;
@@ -6738,7 +6740,8 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 	VkBuffer ibBuffer = vulkanMeshIB->GetVulkanBuffer();
 	vkCmdBindIndexBuffer(commandBuffer, ibBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-	VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
+	// The G-buffer prepass pipelines have the PBR pipelines' layouts: everything bound below is valid for both
+	VkPipeline pipeline = pass == MeshPass::GBuffer ? s_GBuffer.GetPipeline(skinned) : vulkanPipeline->GetVulkanPipeline();
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
 	// Set 0 (per frame) was bound once for all meshes in GeometryPass. It stays bound across the static and skinned
@@ -7492,10 +7495,17 @@ void EnvMapVulkanRenderer::GeometryPass()
 		// The G-buffer prepass: the opaque meshes' normals, roughness, motion and depth, before the scene pass
 		{
 			EnvMapVulkanProfiler::Scope prepassScope(drawCommandBuffer, "G-Buffer Prepass", "The surface data of every pixel (normal, "
-				"roughness, motion, depth) for the effects that need it before or after the lighting, such as ambient occlusion. "
-				"For now it only clears its images: the meshes aren't drawn into it yet.");
+				"roughness, motion, depth) for the effects that need it before or after the lighting, such as ambient occlusion: "
+				"the opaque meshes drawn once more, with a cheap shader that only reads their normal and roughness maps.");
 			s_GBuffer.BeginPass(drawCommandBuffer);
 			EnvMapVulkanProfiler::CountRenderPass(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());
+			VkPipelineLayout prepassLayout = s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
+			vkCmdBindDescriptorSets(drawCommandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, prepassLayout, H2M::VulkanShaderH2M::FrameDescriptorSet, 1,
+				s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
+			for (const SubmittedModel& submitted : s_SubmittedModels)
+			{
+				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::GBuffer);
+			}
 			s_GBuffer.EndPass(drawCommandBuffer);
 		}
 

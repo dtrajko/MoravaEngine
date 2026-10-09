@@ -18,42 +18,8 @@
 #type vertex
 #version 450 core
 
-layout(location = 0) in vec3 a_Position;
-layout(location = 1) in vec3 a_Normal;
-layout(location = 2) in vec3 a_Tangent;
-layout(location = 3) in vec3 a_Binormal;
-layout(location = 4) in vec2 a_TexCoord;
-
-#include "Include/FrameCamera.glslh"
-
-layout (push_constant) uniform Transform
-{
-	mat4 u_Transform;
-};
-
-struct VertexOutput
-{
-	vec3 WorldPosition;
-    vec3 Normal;
-	vec2 TexCoord;
-	mat3 WorldNormals;
-	mat3 WorldTransform;
-	vec3 Binormal;
-};
-
-layout (location = 0) out VertexOutput Output;
-
-void main()
-{
-	Output.WorldPosition = vec3(u_Transform * vec4(a_Position, 1.0));
-    Output.Normal = mat3(u_Transform) * a_Normal;
-	Output.TexCoord = a_TexCoord;//vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
-	Output.WorldNormals = mat3(u_Transform) * mat3(a_Tangent, a_Binormal, a_Normal);
-	Output.WorldTransform = mat3(u_Transform);
-	Output.Binormal = a_Binormal;
-
-	gl_Position = u_ViewProjectionMatrix * u_Transform * vec4(a_Position, 1.0);
-}
+// Shared with the G-buffer prepass (GBufferPrepass_Static.glsl): bit-identical positions for the depth EQUAL test
+#include "Include/MeshVertex_Static.glslh"
 
 // ---------------------------------------------------------------------------------------------------
 

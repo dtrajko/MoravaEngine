@@ -1,0 +1,21 @@
+// The fragment stage of the G-buffer prepass (GBufferPrepass_Static.glsl and GBufferPrepass_Anim.glsl, see
+// EnvMapVulkanGBuffer): the surface data of the opaque meshes, into the G-buffer's color attachments. The depth is written
+// by the fixed-function depth test, from the vertex stage shared with the PBR shaders.
+//
+// The prepass pipelines use the PBR pipelines' layouts, so the frame set (0), the material set (1), the bone set (2) and
+// the push constants bound for the scene pass work here unchanged.
+
+#include "MeshVertexOutput.glslh"
+#include "MeshMaterial.glslh"
+
+layout (location = 0) in VertexOutput Input;
+
+layout (location = 0) out vec4 o_NormalRoughness; // xyz = world-space shading normal, w = roughness
+layout (location = 1) out vec2 o_Motion;          // screen-space motion in UV units (not written yet: 0)
+
+void main()
+{
+	vec2 texCoord = MaterialTexCoord(Input.TexCoord);
+	o_NormalRoughness = vec4(MaterialNormal(texCoord, Input.Normal, Input.WorldNormals), MaterialRoughness(texCoord));
+	o_Motion = vec2(0.0); // the motion vectors come with the previous frame's transforms (Phase A, step 3)
+}

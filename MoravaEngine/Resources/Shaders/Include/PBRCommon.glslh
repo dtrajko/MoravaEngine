@@ -12,15 +12,7 @@ const float Epsilon = 0.00001;
 const vec3 Fdielectric = vec3(0.04);
 
 
-struct VertexOutput
-{
-	vec3 WorldPosition;
-    vec3 Normal;
-	vec2 TexCoord;
-	mat3 WorldNormals;
-	mat3 WorldTransform;
-	vec3 Binormal;
-};
+#include "MeshVertexOutput.glslh"
 
 layout (location = 0) in VertexOutput Input;
 
@@ -29,12 +21,7 @@ layout(location = 0) out vec4 color;
 #include "FrameSet.glslh"
 
 // Set 1, per material: PBR texture maps
-layout (set = 1, binding = 0) uniform sampler2D u_AlbedoTexture;
-layout (set = 1, binding = 1) uniform sampler2D u_NormalTexture;
-layout (set = 1, binding = 2) uniform sampler2D u_MetalnessTexture;
-layout (set = 1, binding = 3) uniform sampler2D u_RoughnessTexture;
-layout (set = 1, binding = 4) uniform sampler2D u_EmissiveTexture;
-layout (set = 1, binding = 5) uniform sampler2D u_AOTexture;
+#include "MaterialMaps.glslh"
 
 
 struct PBRParameters

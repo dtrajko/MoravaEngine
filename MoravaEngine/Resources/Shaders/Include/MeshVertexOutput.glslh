@@ -1,0 +1,16 @@
+// What the mesh vertex stages (Include/MeshVertex_Static.glslh, Include/MeshVertex_Anim.glslh) pass to the fragment stages
+// (the PBR shaders, the G-buffer prepass): the same struct on both sides, at location 0.
+#ifndef MESH_VERTEX_OUTPUT_GLSLH
+#define MESH_VERTEX_OUTPUT_GLSLH
+
+struct VertexOutput
+{
+	vec3 WorldPosition;
+	vec3 Normal;
+	vec2 TexCoord;
+	mat3 WorldNormals;
+	mat3 WorldTransform;
+	vec3 Binormal;
+};
+
+#endif

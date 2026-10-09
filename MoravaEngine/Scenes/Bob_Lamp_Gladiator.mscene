@@ -35,7 +35,7 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/umhlanga_sunrise_4k.hdr
-      Rotation: 0
+      Rotation: 122
       Exposure: 1
       AutoExposure: true
       HuePreservation: 0.5
@@ -45,21 +45,21 @@ Entities:
     Name: Sun
     Parent: 0
     Transform:
-      Translation: [0, 0, 0]
-      Rotation: [41.3981, 27.316973, -65.492546]
-      Scale: [1, 1, 1]
+      Translation: [-0.5234867, 12.861429, 10.894756]
+      Rotation: [-87.716225, -3.8581364, -4.014951]
+      Scale: [0.9999966, 0.9999923, 0.99999857]
     Sun:
       Enabled: true
       Color: [1, 0.2515118, 0]
       Intensity: 0.28021637
       FollowEnvironmentRotation: true
       CastShadows: true
-      IconPlaced: false
+      IconPlaced: true
   - ID: 6096167231677972316
     Name: Water
     Parent: 0
     Transform:
-      Translation: [-1.0488797e-06, 4.949684, -5.722046e-05]
+      Translation: [-1.0488797e-06, 8.112285, -5.722046e-05]
       Rotation: [0, -0, 0]
       Scale: [40, 1, 40]
     Water:

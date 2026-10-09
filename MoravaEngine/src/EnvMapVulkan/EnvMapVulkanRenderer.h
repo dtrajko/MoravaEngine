@@ -52,7 +52,11 @@ public:
 	static uint32_t GetViewportWidth();                                                                    // to be removed from VulkanRendererH2M
 	static uint32_t GetViewportHeight();                                                                   // to be removed from VulkanRendererH2M
 
-	static void RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer);
+	// Which pipelines draw a model's opaque meshes: the PBR shaders (the scene and the water reflection) or the G-buffer
+	// prepass shaders (the same layouts, so the same descriptor sets and push constants)
+	enum class MeshPass { Scene, GBuffer };
+	static void RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
+		MeshPass pass = MeshPass::Scene);
 
 	static void RenderSkybox(VkCommandBuffer commandBuffer);
 

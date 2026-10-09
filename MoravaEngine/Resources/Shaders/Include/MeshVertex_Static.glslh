@@ -1,0 +1,33 @@
+// The vertex stage of static meshes, shared by HazelPBR_Static.glsl and GBufferPrepass_Static.glsl. The scene pass tests
+// its depth EQUAL against the prepass's, so both must compute bit-identical positions: one source, and gl_Position is
+// invariant (the compiler may not optimize it differently in the two pipelines).
+
+layout(location = 0) in vec3 a_Position;
+layout(location = 1) in vec3 a_Normal;
+layout(location = 2) in vec3 a_Tangent;
+layout(location = 3) in vec3 a_Binormal;
+layout(location = 4) in vec2 a_TexCoord;
+
+#include "FrameCamera.glslh"
+#include "MeshVertexOutput.glslh"
+
+layout (push_constant) uniform Transform
+{
+	mat4 u_Transform;
+};
+
+layout (location = 0) out VertexOutput Output;
+
+invariant gl_Position;
+
+void main()
+{
+	Output.WorldPosition = vec3(u_Transform * vec4(a_Position, 1.0));
+	Output.Normal = mat3(u_Transform) * a_Normal;
+	Output.TexCoord = a_TexCoord;//vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
+	Output.WorldNormals = mat3(u_Transform) * mat3(a_Tangent, a_Binormal, a_Normal);
+	Output.WorldTransform = mat3(u_Transform);
+	Output.Binormal = a_Binormal;
+
+	gl_Position = u_ViewProjectionMatrix * u_Transform * vec4(a_Position, 1.0);
+}

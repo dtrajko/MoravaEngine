@@ -2,10 +2,12 @@
 
 #include "H2M/Core/RefH2M.h"
 #include "H2M/Renderer/FramebufferH2M.h"
+#include "H2M/Renderer/PipelineH2M.h"
 
 #include <vulkan/vulkan.h>
 
 #include <cstdint>
+#include <string>
 
 
 /**
@@ -19,8 +21,12 @@
  *   1  motion              RG16F    screen-space motion in UV units, this frame's position minus the previous one's
  *   2  depth               the scene framebuffer's depth image (this module only makes a view of it), cleared to 1
  *
+ * The prepass pipelines (GBufferPrepass_Static.glsl, GBufferPrepass_Anim.glsl) share the vertex stages of the PBR shaders
+ * and are created with the PBR pipelines' layouts and vertex layouts: the renderer draws the meshes into the G-buffer with
+ * the same frame, material and bone sets and push constants as in the scene pass (RenderModelVulkan, MeshPass::GBuffer).
+ *
  * Owns: the normal and motion images, the render pass (created once: the formats don't change), the view of the scene's
- * depth and the framebuffer. After the render pass the normal and motion images are in SHADER_READ_ONLY_OPTIMAL and the
+ * depth, the framebuffer and the two prepass pipelines (not their layouts: those belong to the PBR pipelines). After the render pass the normal and motion images are in SHADER_READ_ONLY_OPTIMAL and the
  * depth in DEPTH_STENCIL_ATTACHMENT_OPTIMAL.
  */
 class EnvMapVulkanGBuffer
@@ -31,6 +37,8 @@ public:
 	static constexpr uint32_t ColorAttachmentCount = 2;
 
 	void Create(H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuffer);
+	// The prepass pipelines for static and skinned meshes, with the layouts of these PBR pipelines (which must outlive them)
+	void CreatePipelines(H2M::RefH2M<H2M::PipelineH2M> staticMeshPipeline, H2M::RefH2M<H2M::PipelineH2M> skinnedMeshPipeline);
 	void Destroy();
 	// Follows the scene framebuffer: call after it was resized. Rebuilds when the size or the scene's depth image changed
 	// (waits for the GPU: the old images may be in use).
@@ -41,6 +49,7 @@ public:
 	void EndPass(VkCommandBuffer commandBuffer);
 
 	VkRenderPass GetRenderPass() const { return m_RenderPass; }
+	VkPipeline GetPipeline(bool skinned) const { return skinned ? m_SkinnedPipeline : m_StaticPipeline; }
 	uint32_t GetWidth() const { return m_Width; }
 	uint32_t GetHeight() const { return m_Height; }
 	// For descriptor sets that sample the G-buffer (nearest filtering, SHADER_READ_ONLY_OPTIMAL)
@@ -55,6 +64,7 @@ private:
 		VkImageView View = VK_NULL_HANDLE;
 	};
 	void CreateRenderPass();
+	VkPipeline CreatePipeline(const std::string& shaderName, H2M::RefH2M<H2M::PipelineH2M> meshPipeline);
 	void CreateAttachment(Attachment& attachment, VkFormat format);
 	void DestroyTargets(); // the images, the depth view and the framebuffer (not the render pass or the sampler)
 
@@ -65,5 +75,7 @@ private:
 	VkRenderPass m_RenderPass = VK_NULL_HANDLE;
 	VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
 	VkSampler m_Sampler = VK_NULL_HANDLE;
+	VkPipeline m_StaticPipeline = VK_NULL_HANDLE;
+	VkPipeline m_SkinnedPipeline = VK_NULL_HANDLE;
 	uint32_t m_Width = 0, m_Height = 0;
 };

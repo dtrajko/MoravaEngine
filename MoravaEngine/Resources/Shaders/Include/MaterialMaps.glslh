@@ -1,0 +1,12 @@
+// Set 1, per material: the PBR texture maps of an EnvMapVulkanMaterial (the PBR, glass and G-buffer prepass shaders)
+#ifndef MATERIAL_MAPS_GLSLH
+#define MATERIAL_MAPS_GLSLH
+
+layout (set = 1, binding = 0) uniform sampler2D u_AlbedoTexture;
+layout (set = 1, binding = 1) uniform sampler2D u_NormalTexture;
+layout (set = 1, binding = 2) uniform sampler2D u_MetalnessTexture;
+layout (set = 1, binding = 3) uniform sampler2D u_RoughnessTexture;
+layout (set = 1, binding = 4) uniform sampler2D u_EmissiveTexture;
+layout (set = 1, binding = 5) uniform sampler2D u_AOTexture;
+
+#endif

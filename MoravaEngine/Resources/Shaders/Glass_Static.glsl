@@ -27,15 +27,7 @@ layout (push_constant) uniform Transform
 	mat4 u_Transform;
 };
 
-struct VertexOutput
-{
-	vec3 WorldPosition;
-	vec3 Normal;
-	vec2 TexCoord;
-	mat3 WorldNormals;
-	mat3 WorldTransform;
-	vec3 Binormal;
-};
+#include "Include/MeshVertexOutput.glslh"
 
 layout (location = 0) out VertexOutput Output;
 // The camera's view-projection for the fragment stage, which projects the refracted point onto the screen. Passed on

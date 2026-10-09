@@ -1,49 +1,20 @@
 // The fragment stage of the PBR shaders (HazelPBR_Static.glsl and HazelPBR_Anim.glsl): the same for static and skinned meshes
 
 #include "PBRCommon.glslh"
-
-layout (push_constant) uniform Material
-{
-	layout (offset = 64) vec3 AlbedoColor;
-	float Metalness;
-	float Roughness;
-
-	// Toggles
-	float RadiancePrefilter;
-	float AlbedoTexToggle;
-	float NormalTexToggle;
-	float MetalnessTexToggle;
-	float RoughnessTexToggle;
-
-	// Offsets 104..123 (the whole block ends at 124 bytes; 128 is the minimum maxPushConstantsSize guaranteed by Vulkan)
-	float TilingFactor;       // texture coordinate scale (0 is treated as 1)
-	float EmissiveTexToggle;
-	float AOTexToggle;
-	float EmissiveIntensity;  // multiplies the emissive map (HDR values above 1 are fine)
-	float MetalRoughPacked;   // 1: glTF metallicRoughness map (roughness in G, metalness in B); 0: both maps read from R
-} u_MaterialUniforms;
+#include "MeshMaterial.glslh"
 
 void main()
 {
 	//	Standard PBR inputs
 
-	// Texture toggles and values come from the material (push constants, editable in the Material Editor)
-	float tiling = u_MaterialUniforms.TilingFactor > 0.0 ? u_MaterialUniforms.TilingFactor : 1.0;
-	vec2 texCoord = Input.TexCoord * tiling;
-	bool packed = u_MaterialUniforms.MetalRoughPacked > 0.5;
+	// Texture toggles and values come from the material (push constants, editable in the Material Editor), the same
+	// way as in the G-buffer prepass (Include/MeshMaterial.glslh)
+	vec2 texCoord = MaterialTexCoord(Input.TexCoord);
 
-	m_Params.Albedo = u_MaterialUniforms.AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, texCoord).rgb : u_MaterialUniforms.AlbedoColor;
-	m_Params.Metalness = u_MaterialUniforms.MetalnessTexToggle > 0.5 ? (packed ? texture(u_MetalnessTexture, texCoord).b : texture(u_MetalnessTexture, texCoord).r) : u_MaterialUniforms.Metalness;
-	m_Params.Roughness = u_MaterialUniforms.RoughnessTexToggle > 0.5 ? (packed ? texture(u_RoughnessTexture, texCoord).g : texture(u_RoughnessTexture, texCoord).r) : u_MaterialUniforms.Roughness;
-	m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
-
-	// Normals (either from vertex or map)
-	m_Params.Normal = normalize(Input.Normal);
-	if (u_MaterialUniforms.NormalTexToggle > 0.5)
-	{
-		m_Params.Normal = normalize(2.0 * texture(u_NormalTexture, texCoord).rgb - 1.0);
-		m_Params.Normal = normalize(Input.WorldNormals * m_Params.Normal);
-	}
+	m_Params.Albedo = MaterialAlbedo(texCoord);
+	m_Params.Metalness = MaterialMetalness(texCoord);
+	m_Params.Roughness = MaterialRoughness(texCoord);
+	m_Params.Normal = MaterialNormal(texCoord, Input.Normal, Input.WorldNormals);
 
 	m_Params.View = normalize(u_CameraPosition - Input.WorldPosition);
 	m_Params.NdotV = max(dot(m_Params.Normal, m_Params.View), 0.0);

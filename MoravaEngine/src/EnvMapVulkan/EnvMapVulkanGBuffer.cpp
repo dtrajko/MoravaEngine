@@ -3,8 +3,12 @@
 #include "H2M/Platform/Vulkan/VulkanAllocatorH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Platform/Vulkan/VulkanFramebufferH2M.h"
+#include "H2M/Platform/Vulkan/VulkanPipelineH2M.h"
+#include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
+#include "H2M/Renderer/RendererH2M.h"
 
 #include <array>
+#include <vector>
 
 
 static bool HasStencil(VkFormat format)
@@ -38,6 +42,14 @@ void EnvMapVulkanGBuffer::Create(H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuff
 void EnvMapVulkanGBuffer::Destroy()
 {
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	for (VkPipeline* pipeline : { &m_StaticPipeline, &m_SkinnedPipeline })
+	{
+		if (*pipeline)
+		{
+			vkDestroyPipeline(device, *pipeline, nullptr);
+			*pipeline = VK_NULL_HANDLE;
+		}
+	}
 	DestroyTargets();
 	if (m_RenderPass)
 	{
@@ -243,4 +255,111 @@ void EnvMapVulkanGBuffer::BeginPass(VkCommandBuffer commandBuffer)
 void EnvMapVulkanGBuffer::EndPass(VkCommandBuffer commandBuffer)
 {
 	vkCmdEndRenderPass(commandBuffer);
+}
+
+static VkFormat VertexAttributeFormat(H2M::ShaderDataTypeH2M type)
+{
+	switch (type)
+	{
+		case H2M::ShaderDataTypeH2M::Float:  return VK_FORMAT_R32_SFLOAT;
+		case H2M::ShaderDataTypeH2M::Float2: return VK_FORMAT_R32G32_SFLOAT;
+		case H2M::ShaderDataTypeH2M::Float3: return VK_FORMAT_R32G32B32_SFLOAT;
+		case H2M::ShaderDataTypeH2M::Float4: return VK_FORMAT_R32G32B32A32_SFLOAT;
+		case H2M::ShaderDataTypeH2M::Int:    return VK_FORMAT_R32_SINT;
+		case H2M::ShaderDataTypeH2M::Int2:   return VK_FORMAT_R32G32_SINT;
+		case H2M::ShaderDataTypeH2M::Int3:   return VK_FORMAT_R32G32B32_SINT;
+		case H2M::ShaderDataTypeH2M::Int4:   return VK_FORMAT_R32G32B32A32_SINT;
+		default:                             return VK_FORMAT_UNDEFINED;
+	}
+}
+
+void EnvMapVulkanGBuffer::CreatePipelines(H2M::RefH2M<H2M::PipelineH2M> staticMeshPipeline, H2M::RefH2M<H2M::PipelineH2M> skinnedMeshPipeline)
+{
+	m_StaticPipeline = CreatePipeline("GBufferPrepass_Static", staticMeshPipeline);
+	m_SkinnedPipeline = CreatePipeline("GBufferPrepass_Anim", skinnedMeshPipeline);
+}
+
+VkPipeline EnvMapVulkanGBuffer::CreatePipeline(const std::string& shaderName, H2M::RefH2M<H2M::PipelineH2M> meshPipeline)
+{
+	H2M::RefH2M<H2M::VulkanShaderH2M> shader = H2M::RendererH2M::GetShaderLibrary()->Get(shaderName).As<H2M::VulkanShaderH2M>();
+	const std::vector<VkPipelineShaderStageCreateInfo>& stages = shader->GetPipelineShaderStageCreateInfos();
+
+	// The vertex layout of the PBR pipeline: the same vertex buffers are bound
+	const H2M::VertexBufferLayoutH2M& vertexLayout = meshPipeline->GetSpecification().Layout;
+	VkVertexInputBindingDescription binding = { 0, vertexLayout.GetStride(), VK_VERTEX_INPUT_RATE_VERTEX };
+	std::vector<VkVertexInputAttributeDescription> attributes;
+	for (const H2M::VertexBufferElementH2M& element : vertexLayout)
+	{
+		attributes.push_back({ (uint32_t)attributes.size(), 0, VertexAttributeFormat(element.Type), element.Offset });
+	}
+	VkPipelineVertexInputStateCreateInfo vertexInput = {};
+	vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertexInput.vertexBindingDescriptionCount = 1;
+	vertexInput.pVertexBindingDescriptions = &binding;
+	vertexInput.vertexAttributeDescriptionCount = (uint32_t)attributes.size();
+	vertexInput.pVertexAttributeDescriptions = attributes.data();
+
+	VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
+	inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+	VkPipelineViewportStateCreateInfo viewportState = {};
+	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportState.viewportCount = 1;
+	viewportState.scissorCount = 1;
+
+	// As in the PBR pipelines: no culling (VulkanPipelineH2M draws meshes two-sided), so the same surfaces win the depth test
+	VkPipelineRasterizationStateCreateInfo rasterization = {};
+	rasterization.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterization.polygonMode = VK_POLYGON_MODE_FILL;
+	rasterization.cullMode = VK_CULL_MODE_NONE;
+	rasterization.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	rasterization.lineWidth = 1.0f;
+
+	VkPipelineMultisampleStateCreateInfo multisample = {};
+	multisample.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+
+	VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+	depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencil.depthTestEnable = VK_TRUE;
+	depthStencil.depthWriteEnable = VK_TRUE;
+	depthStencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+
+	// The data is written as it is (no blending)
+	std::array<VkPipelineColorBlendAttachmentState, ColorAttachmentCount> blendAttachments = {};
+	for (VkPipelineColorBlendAttachmentState& attachment : blendAttachments)
+	{
+		attachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	}
+	VkPipelineColorBlendStateCreateInfo colorBlend = {};
+	colorBlend.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	colorBlend.attachmentCount = (uint32_t)blendAttachments.size();
+	colorBlend.pAttachments = blendAttachments.data();
+
+	std::array<VkDynamicState, 2> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+	VkPipelineDynamicStateCreateInfo dynamicState = {};
+	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	dynamicState.dynamicStateCount = (uint32_t)dynamicStates.size();
+	dynamicState.pDynamicStates = dynamicStates.data();
+
+	VkGraphicsPipelineCreateInfo pipelineInfo = {};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineInfo.stageCount = (uint32_t)stages.size();
+	pipelineInfo.pStages = stages.data();
+	pipelineInfo.pVertexInputState = &vertexInput;
+	pipelineInfo.pInputAssemblyState = &inputAssembly;
+	pipelineInfo.pViewportState = &viewportState;
+	pipelineInfo.pRasterizationState = &rasterization;
+	pipelineInfo.pMultisampleState = &multisample;
+	pipelineInfo.pDepthStencilState = &depthStencil;
+	pipelineInfo.pColorBlendState = &colorBlend;
+	pipelineInfo.pDynamicState = &dynamicState;
+	pipelineInfo.layout = meshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
+	pipelineInfo.renderPass = m_RenderPass;
+	pipelineInfo.subpass = 0;
+
+	VkPipeline pipeline = VK_NULL_HANDLE;
+	VK_CHECK_RESULT_H2M(vkCreateGraphicsPipelines(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline));
+	return pipeline;
 }
