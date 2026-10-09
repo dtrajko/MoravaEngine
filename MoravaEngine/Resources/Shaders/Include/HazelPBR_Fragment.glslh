@@ -54,19 +54,19 @@ void main()
 	// Fresnel reflectance, metals use albedo
 	vec3 F0 = mix(Fdielectric, m_Params.Albedo, m_Params.Metalness);
 
-	vec3 lightContribution = Lighting(F0);
-	vec3 iblContribution = IBL(F0, Lr);
-
-	// Ambient occlusion darkens only the indirect (environment) light; the map is linear data in R
+	// Ambient occlusion darkens only the indirect light; the map is linear data in R
 	float ao = u_MaterialUniforms.AOTexToggle > 0.5 ? texture(u_AOTexture, texCoord).r : 1.0;
+
+	vec3 directLight = Lighting(F0);
+	vec3 indirectLight = IndirectLight(F0, Lr, ao);
 
 	// Emission is added on top of the lit surface (the map is sRGB color data, decoded by the sampler)
 	vec3 emissive = u_MaterialUniforms.EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, texCoord).rgb * u_MaterialUniforms.EmissiveIntensity : vec3(0.0);
 
 	// Under the water the sky's light is dimmed by the water above (the sun's is in Lighting)
-	iblContribution *= WaterSkylightAt(Input.WorldPosition);
+	indirectLight *= WaterSkylightAt(Input.WorldPosition);
 
-	color = vec4(lightContribution + iblContribution * ao + emissive, 1.0);
+	color = vec4(directLight + indirectLight + emissive, 1.0);
 
 	// The water between the camera and the mesh, when this pass has it (the water's reflection pass under the water)
 	if (u_WaterVolumeParams.y > 0.5)

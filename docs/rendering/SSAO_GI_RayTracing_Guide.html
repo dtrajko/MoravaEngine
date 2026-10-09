@@ -1,0 +1,1353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SSAO, GI and Hybrid Ray Tracing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: an engineering manual. One readable text column (48rem); diagrams, tables and code break out to the full 72rem width. */
+:root {
+  --bg: #f5f7fa; --surface: #ffffff; --ink: #1a2130; --muted: #5a6478; --line: #d6dce6; --code-bg: #eef1f6;
+  --accent: #2d5fc4; --accent-soft: #e6edfb; --warn: #b4581a; --warn-soft: #fbefe4; --ok: #24814f; --ok-soft: #e5f3ea;
+  /* diagram kinds */
+  --k-rp: #2d5fc4; --k-rp-bg: #eef3fd; --k-rp-hd: #dbe6fa;
+  --k-cs: #1f7d52; --k-cs-bg: #edf7f1; --k-cs-hd: #d6efe1;
+  --k-tr: #7553b8; --k-tr-bg: #f3effb; --k-tr-hd: #e5dcf6;
+  --k-img: #56637a; --k-img-bg: #f7f8fa; --k-img-hd: #e7ebf1;
+  --k-set: #a3378f; --k-set-bg: #fbeff8; --k-set-hd: #f4dcee;
+  --k-cpu: #6b7280; --k-cpu-bg: #f6f6f7; --k-cpu-hd: #e8e9ec;
+  --k-as: #8f6d0b; --k-as-bg: #fbf6e6; --k-as-hd: #f2e8c4;
+  --k-sh: #0d7884; --k-sh-bg: #ebf7f8; --k-sh-hd: #cfecef;
+  --k-key: #c2334f; --k-key-bg: #fdf0f2; --k-key-hd: #f8d9df;
+  --e-write: #d0481c; --e-read: #4d576b; --e-bind: #a3378f; --e-cpu: #7c8494; --e-copy: #7553b8; --e-inc: #0d7884;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "IBM Plex Mono", Consolas, "Cascadia Mono", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #11151c; --surface: #171c25; --ink: #dfe5ef; --muted: #98a2b5; --line: #2c3442; --code-bg: #1c222d;
+  --accent: #82a8ff; --accent-soft: #1b2640; --warn: #f0a160; --warn-soft: #2c2016; --ok: #6fd19c; --ok-soft: #15281e;
+  --k-rp: #82a8ff; --k-rp-bg: #161f33; --k-rp-hd: #1f2c4a;
+  --k-cs: #64cf98; --k-cs-bg: #13241b; --k-cs-hd: #1a3426;
+  --k-tr: #b9a0f2; --k-tr-bg: #1f1a2e; --k-tr-hd: #2b2342;
+  --k-img: #a7b4c9; --k-img-bg: #1a1f28; --k-img-hd: #242b37;
+  --k-set: #e98ad8; --k-set-bg: #2a1726; --k-set-hd: #3a1f35;
+  --k-cpu: #a3aab6; --k-cpu-bg: #1c1f25; --k-cpu-hd: #272b33;
+  --k-as: #e3c35e; --k-as-bg: #262012; --k-as-hd: #352d18;
+  --k-sh: #58c6d3; --k-sh-bg: #12262a; --k-sh-hd: #19353a;
+  --k-key: #ff8099; --k-key-bg: #2d171c; --k-key-hd: #422029;
+  --e-write: #ff8a5c; --e-read: #a4adbf; --e-bind: #e98ad8; --e-cpu: #8b93a3; --e-copy: #b9a0f2; --e-inc: #58c6d3;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #11151c; --surface: #171c25; --ink: #dfe5ef; --muted: #98a2b5; --line: #2c3442; --code-bg: #1c222d;
+  --accent: #82a8ff; --accent-soft: #1b2640; --warn: #f0a160; --warn-soft: #2c2016; --ok: #6fd19c; --ok-soft: #15281e;
+  --k-rp: #82a8ff; --k-rp-bg: #161f33; --k-rp-hd: #1f2c4a;
+  --k-cs: #64cf98; --k-cs-bg: #13241b; --k-cs-hd: #1a3426;
+  --k-tr: #b9a0f2; --k-tr-bg: #1f1a2e; --k-tr-hd: #2b2342;
+  --k-img: #a7b4c9; --k-img-bg: #1a1f28; --k-img-hd: #242b37;
+  --k-set: #e98ad8; --k-set-bg: #2a1726; --k-set-hd: #3a1f35;
+  --k-cpu: #a3aab6; --k-cpu-bg: #1c1f25; --k-cpu-hd: #272b33;
+  --k-as: #e3c35e; --k-as-bg: #262012; --k-as-hd: #352d18;
+  --k-sh: #58c6d3; --k-sh-bg: #12262a; --k-sh-hd: #19353a;
+  --k-key: #ff8099; --k-key-bg: #2d171c; --k-key-hd: #422029;
+  --e-write: #ff8a5c; --e-read: #a4adbf; --e-bind: #e98ad8; --e-cpu: #8b93a3; --e-copy: #b9a0f2; --e-inc: #58c6d3;
+  color-scheme: dark; }
+
+body { background: var(--bg); color: var(--ink); font: 15px/1.6 var(--f-body); }
+main { max-width: 72rem; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; }
+main > section { padding-block: 26px 10px; border-top: 1px solid var(--line); }
+main > section > * { max-width: 48rem; }
+main > section > figure, main > section > .wide { max-width: none; }
+h1, h2, h3, h4 { font-family: var(--f-display); text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.1rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 14px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+h3 { font-size: 1.2rem; font-weight: 600; margin: 22px 0 8px; color: var(--accent); }
+h4 { font-size: 1.02rem; font-weight: 600; margin: 14px 0 4px; }
+p { margin: 0 0 10px; }
+ul, ol { margin: 0 0 12px; padding-left: 1.3rem; }
+li { margin-bottom: 4px; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+code { font: 0.86em var(--f-mono); background: var(--code-bg); padding: 0.05em 0.3em; border-radius: 3px; overflow-wrap: anywhere; }
+pre { font: 12.5px/1.5 var(--f-mono); background: var(--code-bg); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; margin: 6px 0 14px; overflow-x: auto; }
+pre code { background: none; padding: 0; font-size: inherit; overflow-wrap: normal; }
+.c { color: var(--muted); }
+.table-wrap { overflow-x: auto; margin: 6px 0 16px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { border: 1px solid var(--line); padding: 6px 9px; text-align: left; vertical-align: top; }
+th { background: var(--code-bg); font-weight: 600; }
+td { background: var(--surface); }
+.box { border-radius: 6px; padding: 10px 14px; margin: 8px 0 14px; border: 1px solid var(--line); }
+.box > b:first-child { display: block; margin-bottom: 3px; font-family: var(--f-display); font-size: 1.02rem; }
+.box ul { margin-bottom: 0; }
+.note { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.warn { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 35%, var(--line)); }
+.ok { background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); }
+.warn > b:first-child { color: var(--warn); } .ok > b:first-child { color: var(--ok); } .note > b:first-child { color: var(--accent); }
+.tag { font: 600 0.8rem var(--f-mono); color: var(--surface); background: var(--accent); border-radius: 4px; padding: 2px 8px; position: relative; top: -3px; }
+.eq { text-align: center; font-size: 1.05rem; margin: 8px 0 12px; }
+
+header.hero { padding-block: 18px 26px; display: grid; gap: 14px; }
+.kicker { font: 600 0.78rem var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lede { font-size: 1.12rem; color: var(--muted); max-width: 48rem; }
+.meta { font-size: 0.86rem; color: var(--muted); max-width: 48rem; }
+nav.toc ol { columns: 2 18rem; column-gap: 32px; padding-left: 1.3rem; }
+nav.toc li { break-inside: avoid; }
+
+/* diagrams */
+figure { margin: 10px 0 22px; }
+figure .scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+figure svg { display: block; height: auto; max-width: 100%; }
+figcaption { font-size: 0.86rem; color: var(--muted); margin-top: 6px; max-width: 48rem; }
+svg .nb { stroke-width: 1.3; }
+svg .nt { font: 600 12px var(--f-body); fill: var(--ink); }
+svg .nl { font: 10.5px var(--f-mono); fill: var(--ink); }
+svg .nk { font: 600 8.5px var(--f-mono); letter-spacing: 0.06em; }
+svg .el { font: 10px var(--f-body); fill: var(--muted); }
+svg .elb { fill: var(--surface); }
+svg .e path { fill: none; }
+svg .e-w path { stroke: var(--e-write); stroke-width: 2; } svg .e-w polygon { fill: var(--e-write); }
+svg .e-r path { stroke: var(--e-read); stroke-width: 1.4; } svg .e-r polygon { fill: var(--e-read); }
+svg .e-b path { stroke: var(--e-bind); stroke-width: 1.4; stroke-dasharray: 5 3; } svg .e-b polygon { fill: var(--e-bind); }
+svg .e-c path { stroke: var(--e-cpu); stroke-width: 1.4; stroke-dasharray: 2 3; } svg .e-c polygon { fill: var(--e-cpu); }
+svg .e-x path { stroke: var(--e-copy); stroke-width: 2; } svg .e-x polygon { fill: var(--e-copy); }
+svg .e-i path { stroke: var(--e-inc); stroke-width: 1.4; stroke-dasharray: 1 3; stroke-linecap: round; } svg .e-i polygon { fill: var(--e-inc); }
+svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { fill: var(--e-read); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 0.84rem; margin: 8px 0 4px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 18px; height: 12px; border-radius: 3px; border: 1.5px solid; display: inline-block; }
+.ln { width: 26px; height: 0; border-top: 2px solid; display: inline-block; }
+@media (max-width: 640px) { body { font-size: 14.5px; } h2 { font-size: 1.45rem; } pre { font-size: 11.5px; } }
+</style>
+</head>
+<body>
+
+<main>
+<header class="hero">
+  <div class="kicker">MoravaEngine · Vulkan editor · SceneEnvMapVulkan</div>
+  <h1>SSAO, GI and Hybrid Ray Tracing</h1>
+  <p class="lede">An implementation guide written for this engine. For each phase it covers the theory, where the work plugs into the current renderer, the passes, pipelines, shaders, descriptor sets and framebuffers involved, the code, and how to check the result.</p>
+  <p class="meta">Written against commit <code>8ef98356</code> (October 2026). Target GPU for decisions: NVIDIA GeForce RTX 3070 Ti, Vulkan 1.4, with <code>VK_KHR_acceleration_structure</code>, <code>VK_KHR_ray_query</code>, <code>VK_KHR_ray_tracing_pipeline</code>, descriptor indexing and buffer device address available. Names that exist in the code are written as they are. Names of new classes, files and shaders are proposals.</p>
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><a href="#read">How to read this guide</a></li>
+      <li><a href="#today">The renderer today</a></li>
+      <li><a href="#theory">Theory primer</a></li>
+      <li><a href="#design">The design rule</a></li>
+      <li><a href="#phase-a">Phase A: G-buffer prepass</a></li>
+      <li><a href="#phase-b">Phase B: shared surface shading</a></li>
+      <li><a href="#phase-c">Phase C: probe volume</a></li>
+      <li><a href="#phase-d">Phase D: probe update</a></li>
+      <li><a href="#phase-e">Phase E: leaks and relocation</a></li>
+      <li><a href="#phase-f">Phase F: SSAO (GTAO)</a></li>
+      <li><a href="#phase-g">Phase G: ray tracing foundation</a></li>
+      <li><a href="#phase-h">Phase H: ray-traced effects</a></li>
+      <li><a href="#final">The final frame and checklist</a></li>
+      <li><a href="#refs">Glossary and references</a></li>
+    </ol>
+  </nav>
+</header>
+
+<section>
+  <h2>The short version</h2>
+  <p>Global illumination (GI) is the light that reaches a surface after bouncing off other surfaces. The engine currently takes all such light from the HDR environment map, so a room lit by one window is still lit by the whole sky from every side. This guide adds GI with a grid of <b>irradiance probes</b> (the DDGI technique). Each probe stores how much light arrives at its position from every direction, and shaders blend the 8 probes around a pixel.</p>
+  <p>The probes are updated by shooting rays from them. The engine has no ray tracing yet, so the first version gets these rays by rendering a small cube map at each probe and reading it in the ray directions. Later the same rays are traced in hardware. Everything that happens after the rays (blending, multiple bounces, leak prevention, sampling) is written once and kept. That shared core is <b>a ray buffer</b>, <b>one shading function</b> for any point in the scene, <b>a GPU material buffer</b>, and <b>a G-buffer</b> that later rays can start from.</p>
+</section>
+
+<section id="read">
+  <h2>1. How to read this guide</h2>
+  <p>Each phase chapter has the same parts: the <b>goal</b>, just enough <b>theory</b>, a <b>data-flow diagram</b>, what changes <b>in this engine</b>, <b>code</b> sketches, and a <b>check</b> that proves the phase works. The code is teaching code: correct and close to the engine's style, but names and details will change in the real implementation.</p>
+  <p>The phases are ordered by dependency: GI first (A–E), SSAO next (F), ray tracing last (G–H). Each phase ends with a renderer that builds and runs.</p>
+
+  <h3>Reading the diagrams</h3>
+  <p>Every box is one GPU or CPU object. Its color and the label in its top-right corner say what kind it is. Arrows show data flow: from the pass that writes a resource to the resource, and from the resource to the pass that reads it.</p>
+  <div class="legend wide" aria-label="Diagram legend: box kinds">
+    <span><i class="sw" style="border-color:var(--k-rp);background:var(--k-rp-bg)"></i>Render pass (graphics pipeline)</span>
+    <span><i class="sw" style="border-color:var(--k-cs);background:var(--k-cs-bg)"></i>Compute dispatch</span>
+    <span><i class="sw" style="border-color:var(--k-tr);background:var(--k-tr-bg)"></i>Transfer (copy)</span>
+    <span><i class="sw" style="border-color:var(--k-img);background:var(--k-img-bg)"></i>Image / framebuffer attachment</span>
+    <span><i class="sw" style="border-color:var(--k-img);background:var(--k-img-bg);border-style:dashed"></i>Buffer</span>
+    <span><i class="sw" style="border-color:var(--k-set);background:var(--k-set-bg)"></i>Descriptor set</span>
+    <span><i class="sw" style="border-color:var(--k-as);background:var(--k-as-bg)"></i>Acceleration structure</span>
+    <span><i class="sw" style="border-color:var(--k-sh);background:var(--k-sh-bg)"></i>Shader include</span>
+    <span><i class="sw" style="border-color:var(--k-cpu);background:var(--k-cpu-bg)"></i>CPU side</span>
+    <span><i class="sw" style="border-color:var(--k-key);background:var(--k-key-bg);border-width:2.5px"></i>Shared core (kept when ray tracing arrives)</span>
+  </div>
+  <div class="legend wide" aria-label="Diagram legend: arrows">
+    <span><i class="ln" style="border-color:var(--e-write)"></i>writes (attachment or storage write)</span>
+    <span><i class="ln" style="border-color:var(--e-read);border-top-width:1.5px"></i>reads (sampled or storage read)</span>
+    <span><i class="ln" style="border-color:var(--e-bind);border-top-style:dashed;border-top-width:1.5px"></i>bound through a descriptor set</span>
+    <span><i class="ln" style="border-color:var(--e-copy)"></i>copied (transfer)</span>
+    <span><i class="ln" style="border-color:var(--e-cpu);border-top-style:dotted"></i>CPU upload or build input</span>
+    <span><i class="ln" style="border-color:var(--e-inc);border-top-style:dotted"></i>shader includes the code</span>
+  </div>
+
+  <div class="box note"><b>Conventions in the engine and in this guide</b>
+  <ul>
+    <li>World space is Y-up and in meters. Light directions in the GPU structs point <i>towards</i> the light (<code>DirectionalLight.Direction</code> in <code>Include/FrameSet.glslh</code>).</li>
+    <li>The scene color target is linear HDR, <code>RGBA16F</code>. Tonemapping happens later, in <code>ViewportComposite.glsl</code>.</li>
+    <li>The environment irradiance cube <code>u_EnvIrradianceTex</code> stores irradiance already divided by π, so diffuse light is <code>albedo * irradiance</code> (see <code>IBL()</code> in <code>Include/PBRCommon.glslh</code>). The probes use the same convention, which allows an exact comparison in Phase C.</li>
+    <li>Only one frame is in flight (<code>VulkanSwapChainH2M::Present</code> waits for the frame's fence), so "history" resources from the previous frame need only one copy.</li>
+  </ul></div>
+</section>
+
+<section id="today">
+  <h2>2. The renderer today</h2>
+  <p><code>EnvMapVulkanRenderer::GeometryPass()</code> records the whole frame into one command buffer. The first diagram shows everything the main scene pass reads. The second shows what happens to the scene image afterwards.</p>
+  <figure>
+    <div class="scroll"><svg data-d="today_in" role="img" aria-label="Passes and resources that feed the scene pass"></svg></div>
+    <figcaption>Figure 1. Inputs of the scene pass. Shadow, caustic and environment passes write images. The images and the per-frame uniform buffers are bound in set 0. Set 0 is bound once per frame, set 1 per material.</figcaption>
+  </figure>
+  <figure>
+    <div class="scroll"><svg data-d="today_out" role="img" aria-label="Passes after the scene pass"></svg></div>
+    <figcaption>Figure 2. After the scene pass. <code>s_Framebuffer</code> stays the destination of the water, the water volume and the glass: each copies the scene first, then continues the render pass with a load operation. Bloom and the composite turn it into the image shown in the Viewport panel.</figcaption>
+  </figure>
+
+  <h3>2.1 Descriptor sets</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Set</th><th>Frequency</th><th>Contents</th></tr>
+    <tr><td>0</td><td>per frame</td><td>0 camera · 1 <code>SceneData</code> (camera position, env rotation, water volume, caustics) · 2 <code>u_EnvRadianceTex</code> · 3 <code>u_EnvIrradianceTex</code> · 4 <code>u_BRDFLUTTexture</code> · 5 <code>Lights</code> UBO · 6 <code>u_ShadowMap</code> (cascades) · 7 <code>Shadows</code> UBO · 8 <code>u_SpotShadowMaps</code> · 9 <code>u_PointShadowMaps</code> · 10 <code>u_CausticsMap</code></td></tr>
+    <tr><td>1</td><td>per material</td><td>texture maps of one <code>EnvMapVulkanMaterial</code> (albedo, normal, metalness, roughness, emissive, AO)</td></tr>
+    <tr><td>2</td><td>per skinned mesh</td><td>bone matrices</td></tr>
+    <tr><td>push constants</td><td>per draw</td><td>transform; material values; glass values (glass shader)</td></tr>
+  </table></div>
+
+  <h3>2.2 Where indirect light comes from now</h3>
+  <p>The PBR fragment shader adds direct light (sun, point and spot lights, with shadows) and then calls <code>IBL()</code>:</p>
+<pre><code>vec3 IBL(vec3 F0, vec3 Lr)
+{
+    vec3 irradiance = texture(u_EnvIrradianceTex, RotateVectorAboutY(u_EnvMapRotation, m_Params.Normal)).rgb;
+    vec3 F  = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
+    vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+    vec3 diffuseIBL = m_Params.Albedo * irradiance;
+    ...
+    vec3 specularIrradiance = textureLod(u_EnvRadianceTex, ..., m_Params.Roughness * envRadianceTexLevels).rgb;
+    vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
+    vec3 specularIBL = specularIrradiance * (F0 * specularBRDF.x + specularBRDF.y);
+    return kd * diffuseIBL + specularIBL;
+}</code></pre>
+  <p>The irradiance cube depends only on the <i>direction</i> of the normal, never on the <i>position</i>. A floor under a table gets exactly the same sky light as a floor in the open. The only occlusion is the material's AO texture, which knows the mesh's own crevices but not other objects. SSAO and GI fix this:</p>
+  <ul>
+    <li><b>SSAO</b> darkens indirect light where nearby geometry blocks it (corners, contact areas). It works in screen space and is cheap.</li>
+    <li><b>GI</b> replaces "sky light from all directions" with the light that actually arrives at the point, including light bounced off walls, with their color. It works in world space.</li>
+  </ul>
+  <div class="box note"><b>Existing code the new work builds on</b>
+  Compute pipelines exist (<code>VulkanComputePipelineH2M</code> for the environment map, and a hand-written compute pipeline in <code>EnvMapVulkanShadowMapViewer</code>). Point shadows already render a cube as 6 passes into a cube array (<code>RecordLocalShadowPasses</code>), which is what probe capture needs. <code>EnvMapVulkanGlass</code> and <code>EnvMapVulkanWater</code> show how a feature module owns its images, pipelines and descriptor sets. Shader includes work (<code>Resources/Shaders/Include/*.glslh</code>).</div>
+</section>
+
+<section id="theory">
+  <h2>3. Theory primer</h2>
+  <h3>3.1 The rendering equation, in words</h3>
+  <p>The light leaving a point <i>x</i> towards the eye is the light the point emits, plus all light arriving at <i>x</i> from every direction of the hemisphere above it, weighted by the material (the BRDF) and by the cosine of the angle to the normal:</p>
+  <p class="eq"><i>L</i><sub>o</sub>(<i>x</i>, ω<sub>o</sub>) = <i>L</i><sub>e</sub> + ∫<sub>Ω</sub> <i>f</i>(ω<sub>i</sub>, ω<sub>o</sub>) <i>L</i><sub>i</sub>(<i>x</i>, ω<sub>i</sub>) cos θ<sub>i</sub> dω<sub>i</sub></p>
+  <p>The incoming light <i>L</i><sub>i</sub> is itself the outgoing light of some other point. That recursion is global illumination. Real-time renderers split the integral:</p>
+  <ul>
+    <li><b>Direct light</b>: the few directions that point at a light source. Evaluated exactly, with shadow maps for visibility. The engine already does this.</li>
+    <li><b>Indirect light</b>: everything else. It is smooth on diffuse surfaces and is approximated: by the environment map today, by probes after this work.</li>
+  </ul>
+
+  <h3>3.2 Irradiance, and why diffuse light is cheap to store</h3>
+  <p>For a diffuse (Lambertian) surface the BRDF is a constant, <i>albedo</i>/π, so it moves out of the integral. What remains, ∫ <i>L</i><sub>i</sub> cos θ dω, is the <b>irradiance</b> <i>E</i>. It depends only on the position and the normal, and it is very smooth as a function of the normal, so an 8×8 octahedral map per probe is enough to store it.</p>
+  <p>Averaging the radiance of many rays with a cosine weight, Σ <i>L</i> cos θ / Σ cos θ, gives <i>E</i>/π. That is exactly the pre-divided convention of <code>u_EnvIrradianceTex</code>, so the probe result can replace the cube lookup without any extra factor.</p>
+
+  <h3>3.3 Ambient occlusion</h3>
+  <p>AO is the cosine-weighted fraction of the hemisphere above a point that is <i>not</i> blocked by nearby geometry. It is an approximation: it assumes blocked directions would have delivered as much light as open ones, and that blockers are black. It is still valuable because it captures small contact detail that probes, spaced a meter or more apart, cannot.</p>
+  <p>SSAO estimates AO from the depth buffer, so only what the camera sees can occlude. GTAO (Phase F) is a modern, physically based variant. With hardware ray tracing it becomes RTAO: short rays against the real scene.</p>
+
+  <h3>3.4 Probes</h3>
+  <p>A probe is a point in space that knows the irradiance arriving there from every direction. Probes form a regular 3D grid, the probe volume. To light a pixel, the shader finds the 8 probes of the grid cell that contains it, reads each probe's irradiance for the pixel's normal and blends them. The classic problem is <b>leaking</b>: a probe on the other side of a wall sees light the pixel doesn't. DDGI solves it by also storing, per probe and direction, the distance to the nearest surface, and ignoring a probe when the pixel is further from it than that surface (the Chebyshev test, Phase C).</p>
+
+  <h3>3.5 Ray tracing in Vulkan, in one paragraph</h3>
+  <p>The GPU builds a tree of bounding boxes over the triangles of each mesh (a <b>bottom-level acceleration structure</b>, BLAS) and one over all mesh instances of the scene (the <b>top-level acceleration structure</b>, TLAS). A shader can then ask "what does this ray hit first?" and gets the instance, triangle and barycentric coordinates. With <b>ray queries</b> (<code>VK_KHR_ray_query</code>) any shader can ask, including the compute shaders the engine already uses. The full <b>ray tracing pipeline</b> (<code>VK_KHR_ray_tracing_pipeline</code>) adds dedicated shader stages and is mostly needed for a path tracer.</p>
+</section>
+
+<section id="design">
+  <h2>4. The design rule: ray tracing replaces one step</h2>
+  <p>A hybrid renderer keeps rasterization for what the camera sees directly and uses rays for the effects rasterization handles badly. GI gains the most from rays. The decisions below make sure the GI from Phases A–E keeps working, unchanged, when rays arrive in Phases G–H.</p>
+  <figure>
+    <div class="scroll"><svg data-d="concept" role="img" aria-label="Ray buffer separating ray sources from probe processing"></svg></div>
+    <figcaption>Figure 3. The ray buffer separates where the rays come from (a raster capture now, ray queries later) from everything that uses them. The dashed loop is the feedback that produces multiple bounces: the next update shades its hits with the probes of the previous one.</figcaption>
+  </figure>
+
+  <h3>The five shared pieces</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Piece</th><th>Used by GI now</th><th>Used by ray tracing later</th><th>Phase</th></tr>
+    <tr><td><b>G-buffer prepass</b> (depth, normal, roughness, motion)</td><td>main pass shades each pixel once; debug views</td><td>RTAO and reflection rays start from these surfaces; denoisers read them</td><td>A</td></tr>
+    <tr><td><b>Indirect interfaces</b>: <code>IndirectDiffuse()</code>, <code>IndirectSpecular()</code>, an AO image</td><td>probes plug into <code>IndirectDiffuse()</code></td><td>RTAO and reflections plug into the same slots</td><td>A</td></tr>
+    <tr><td><b><code>ShadeSurfaceDiffuse()</code></b>: light any point in the scene</td><td>the probe capture's fragment shader</td><td>the code that runs at every ray hit</td><td>B</td></tr>
+    <tr><td><b>GPU material buffer</b> indexed by material index</td><td>the capture reads material values from it</td><td>a ray can hit any mesh, so it <i>must</i> look materials up by index</td><td>B</td></tr>
+    <tr><td><b>Ray buffer</b> per probe</td><td>filled from the capture cube</td><td>filled by ray queries</td><td>D</td></tr>
+  </table></div>
+
+  <h3>What the plan avoids</h3>
+  <ul>
+    <li><b>Voxel cone tracing and light propagation volumes.</b> They need a voxelized copy of the scene, a separate data path that ray tracing makes obsolete.</li>
+    <li><b>Baked lightmaps.</b> They need a second UV set per mesh, don't follow moving lights, and nothing of them carries over to ray tracing.</li>
+    <li><b>Screen-space GI as the main technique.</b> It only knows what is on screen, so light from behind the camera vanishes when you turn around.</li>
+    <li><b>Convolving the capture cube directly into the irradiance map.</b> It works, but ray tracing would make that code obsolete. Going through the ray buffer costs one small compute pass.</li>
+  </ul>
+</section>
+
+<section id="phase-a">
+  <h2><span class="tag">A</span>G-buffer prepass and the direct/indirect split</h2>
+  <p><b>Goal:</b> per-pixel depth, normal, roughness and motion before the main lighting pass, and a PBR shader whose indirect light comes from replaceable functions. The picture must look exactly the same afterwards.</p>
+  <figure>
+    <div class="scroll"><svg data-d="phaseA" role="img" aria-label="Phase A data flow"></svg></div>
+    <figcaption>Figure 4. Phase A. The prepass writes three attachments, one of which is the depth image of <code>s_Framebuffer</code> itself. The scene pass then loads that depth and tests with EQUAL, so each pixel runs the expensive PBR shader once. Both passes bind the same sets 0, 1 and 2.</figcaption>
+  </figure>
+
+  <h3>A.1 Why a prepass and not deferred shading</h3>
+  <p>The engine is a forward renderer with many special paths (water, glass, skinned meshes, the water's reflection pass that reuses the mesh pipelines). Converting it to deferred shading would touch all of them. A <b>depth + normal prepass</b> (as in Doom 2016 and many forward+ renderers) gives SSAO, SSR and ray tracing what they need while the lighting stays forward. It even saves time: with the depth already written, the main pass uses depth test <code>EQUAL</code> and shades each pixel exactly once.</p>
+
+  <h3>A.2 The new framebuffer</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Attachment</th><th>Format</th><th>Load / store</th><th>Contents</th></tr>
+    <tr><td>Normal + roughness</td><td><code>RGBA16F</code></td><td>clear / store</td><td>xyz = world-space shading normal (after the normal map), w = roughness</td></tr>
+    <tr><td>Motion</td><td><code>RG16F</code></td><td>clear / store</td><td>screen-space motion in UV units, current minus previous position</td></tr>
+    <tr><td>Depth</td><td>the depth image of <code>s_Framebuffer</code></td><td>clear / store</td><td>written here; the scene pass loads it and only tests</td></tr>
+  </table></div>
+  <p>World-space normals are used because the probes, the ray tracing and the shadows all work in world space. GTAO needs view space and converts with one matrix multiply.</p>
+  <div class="box warn"><b>Share the depth attachment</b>
+  The prepass must write the <i>same</i> depth image the scene pass tests. Create the prepass framebuffer with the existing depth image of <code>s_Framebuffer</code>, and change the scene pass's depth load operation from clear to load. Keep <code>CopySource = true</code> on the scene target: water and glass still copy depth after the opaque meshes.</div>
+
+  <h3>A.3 The prepass shaders</h3>
+  <p>The prepass draws only opaque meshes, static and skinned (bones in set 2, as now). It uses the PBR vertex shader and a small fragment shader that samples the normal and roughness maps. Water and glass are not part of it.</p>
+<pre><code><span class="c">// GBufferPrepass_Static.glsl (proposed), fragment stage</span>
+layout(location = 0) out vec4 o_NormalRoughness;
+layout(location = 1) out vec2 o_Motion;
+
+void main()
+{
+    vec3 N = GetShadingNormal();                <span class="c">// same code as the PBR shader: TBN * normal map</span>
+    float roughness = GetRoughness();           <span class="c">// map * value, clamped like the PBR shader does</span>
+    o_NormalRoughness = vec4(normalize(N), roughness);
+
+    vec2 uvNow  = (v_ClipNow.xy  / v_ClipNow.w)  * 0.5 + 0.5;
+    vec2 uvPrev = (v_ClipPrev.xy / v_ClipPrev.w) * 0.5 + 0.5;
+    o_Motion = uvNow - uvPrev;
+}</code></pre>
+  <div class="box warn"><b>Depth EQUAL needs bit-identical positions</b>
+  The prepass and the scene pass must compute <code>gl_Position</code> with exactly the same instructions, or <code>EQUAL</code> fails on some pixels (speckles). Put the position code in one shared include and declare <code>invariant gl_Position;</code> in both shaders. If alpha-tested materials are ever added, the prepass must <code>discard</code> exactly like the scene pass.</div>
+
+  <h3>A.4 Motion vectors</h3>
+  <p>Motion is first needed in Phase F (temporal filtering), but the prepass is the natural place to write it. Each draw needs the previous frame's model matrix: keep it in the render data the renderer extracts from <code>EnvMapVulkanScene</code> each frame (a <code>PreviousWorld</code> next to the world matrix). The renderer keeps the camera's previous view-projection and adds it to the camera UBO in set 0. Skinned meshes would also need the previous bone matrices; a first version can use the current ones (a small error on fast animation).</p>
+<pre><code><span class="c">// vertex stage, both prepass shaders</span>
+v_ClipNow  = u_ViewProjection         * u_Transform         * vec4(a_Position, 1.0);
+v_ClipPrev = u_PreviousViewProjection * u_PreviousTransform * vec4(a_Position, 1.0);</code></pre>
+
+  <h3>A.5 Splitting direct and indirect light</h3>
+  <p>Restructure <code>IBL()</code> in <code>Include/PBRCommon.glslh</code> into functions with one job each. Nothing changes visually; later phases only change the bodies.</p>
+<pre><code>vec3 IndirectDiffuse(vec3 P, vec3 N)       <span class="c">// irradiance / pi, same convention as u_EnvIrradianceTex</span>
+{
+    return texture(u_EnvIrradianceTex, RotateVectorAboutY(u_EnvMapRotation, N)).rgb;   <span class="c">// Phase C: probes</span>
+}
+
+vec3 IndirectSpecular(vec3 P, vec3 R, float roughness)
+{
+    int levels = textureQueryLevels(u_EnvRadianceTex);
+    return textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, R), roughness * levels).rgb;   <span class="c">// Phase H: RT reflections</span>
+}
+
+vec3 IndirectLight(vec3 F0, vec3 Lr, float ao)
+{
+    vec3 F  = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
+    vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+    vec2 brdf = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
+    vec3 diffuse  = m_Params.Albedo * IndirectDiffuse(m_Params.WorldPosition, m_Params.Normal);
+    vec3 specular = IndirectSpecular(m_Params.WorldPosition, Lr, m_Params.Roughness) * (F0 * brdf.x + brdf.y);
+    return (kd * diffuse) * ao + specular * SpecularOcclusion(ao);  <span class="c">// ao = 1 until Phase F</span>
+}</code></pre>
+
+  <h3>A.6 Debug views</h3>
+  <p>Add a Debug View combo. The Lights panel's "Shadows Only" already works through the composite's <code>RawScene</code> bypass; use the same mechanism for <b>Normals</b>, <b>Roughness</b>, <b>Linear Depth</b>, <b>Motion</b>, <b>Direct Only</b> and <b>Indirect Only</b>. These views are the main tool for checking every later phase.</p>
+  <div class="box ok"><b>Check</b>
+  Capture the same saved scene before and after, from the same camera. The images must be identical. The Rendering Stats panel gets a "G-Buffer Prepass" scope; the "Scene" scope should get cheaper in scenes with overdraw.</div>
+</section>
+
+<section id="phase-b">
+  <h2><span class="tag">B</span>One surface-shading function and a GPU material buffer</h2>
+  <p><b>Goal:</b> one GLSL function that computes the light leaving any surface point, usable from a fragment shader now and from a ray-hit compute shader later, plus the material data it needs in a form that can be indexed.</p>
+  <figure>
+    <div class="scroll"><svg data-d="phaseB" role="img" aria-label="Phase B data flow"></svg></div>
+    <figcaption>Figure 5. Phase B. The Material Library uploads a flat array of materials. <code>ShadeSurface.glslh</code> holds the only copy of the diffuse lighting code; three shaders include it, one of them only later.</figcaption>
+  </figure>
+
+  <h3>B.1 What a probe ray needs to know</h3>
+  <p>When a probe "looks" at a surface, it needs the light that surface sends back towards it. For GI only the <b>diffuse</b> part matters: probes store irradiance, which is smooth, and specular reflections depend on the viewer, so DDGI and similar systems shade ray hits as diffuse. The outgoing radiance of a hit point is:</p>
+  <p class="eq"><i>L</i> = emissive + (albedo / π) · (direct irradiance with shadows) + albedo · (probe irradiance at the hit)</p>
+  <p>The last term is the feedback that produces multiple bounces: each update adds the light the probes had last time.</p>
+<pre><code><span class="c">// Include/ShadeSurface.glslh (proposed)</span>
+struct SurfacePoint
+{
+    vec3 Position;
+    vec3 Normal;      <span class="c">// world space, facing the ray origin</span>
+    vec3 Albedo;
+    float Metalness;  <span class="c">// metals have no diffuse: albedo * (1 - metalness)</span>
+    vec3 Emissive;    <span class="c">// already multiplied by the emissive intensity</span>
+};
+
+vec3 ShadeSurfaceDiffuse(SurfacePoint s, vec3 toViewer, bool includeProbes)
+{
+    vec3 diffuseAlbedo = s.Albedo * (1.0 - s.Metalness);
+    vec3 E = vec3(0.0);                                              <span class="c">// direct irradiance</span>
+    E += SunIrradiance(s.Position, s.Normal);                        <span class="c">// cascades, see B.2</span>
+    for (int i = 0; i &lt; u_PointLightCount; i++) E += PointIrradiance(i, s.Position, s.Normal);  <span class="c">// with cube shadows</span>
+    for (int i = 0; i &lt; u_SpotLightCount;  i++) E += SpotIrradiance(i,  s.Position, s.Normal);  <span class="c">// with spot shadows</span>
+
+    vec3 L = s.Emissive + diffuseAlbedo / PI * E;
+    if (includeProbes)
+        L += diffuseAlbedo * SampleProbeIrradiance(s.Position, s.Normal, toViewer);   <span class="c">// Phase C</span>
+    return L;
+}</code></pre>
+  <p>The light loops match <code>PBRCommon.glslh</code> (windowed inverse-square falloff, smooth spot cones), without the specular BRDF. Factor them so both the PBR shader and <code>ShadeSurfaceDiffuse</code> call the same falloff and shadow functions; never copy them.</p>
+
+  <h3>B.2 Sun shadows away from the camera</h3>
+  <p>The four cascades follow the camera, but a probe ray can hit a surface outside all of them (behind the camera, far away). Pick a rule and keep it: outside the last cascade, treat the point as lit. Optionally add a fifth, coarse, static cascade covering the whole probe volume, rendered only when the volume or the sun changes. With ray tracing (Phase H) the problem disappears: trace a shadow ray to the sun instead.</p>
+
+  <h3>B.3 The GPU material buffer</h3>
+  <p>Today each material lives in its own descriptor set and the shader knows which material it is drawing. A probe capture could keep that model, but a ray hit cannot. Add one storage buffer with all materials of the <code>EnvMapVulkanMaterialLibrary</code>:</p>
+<pre><code><span class="c">// std430, one entry per material (proposed)</span>
+struct GPUMaterial
+{
+    vec4  AlbedoColor;        <span class="c">// rgb = color * average of the albedo map (see below)</span>
+    vec4  Emissive;           <span class="c">// rgb = emissive color * intensity</span>
+    float Metalness;
+    float Roughness;
+    uint  Flags;              <span class="c">// bit 0 = glass, bit 1 = double-sided, ...</span>
+    uint  AlbedoMapIndex;     <span class="c">// bindless index, Phase G (0xFFFFFFFF = none)</span>
+    uint  NormalMapIndex;
+    uint  RoughnessMapIndex;
+    uint  MetalnessMapIndex;
+    uint  EmissiveMapIndex;
+};</code></pre>
+  <ul>
+    <li>The library assigns each material a dense index. <code>MeshPartComponent</code> already references its material by ID, so the renderer maps ID → index when it extracts the draw list and passes the index as a push constant.</li>
+    <li>The library already keeps a content hash per material (used for the unsaved "*" marker). Re-upload an entry when its hash changes, and re-upload all entries after <code>ResolveVariants</code>.</li>
+    <li><b>The average-albedo trick.</b> Probes are low-frequency, so the capture doesn't need texture detail. Compute each albedo map's average color once (read its smallest mip) and store <code>color × average</code> in <code>AlbedoColor</code>. The same trick lets the first ray-traced version run before bindless textures exist.</li>
+  </ul>
+  <div class="box ok"><b>Check</b>
+  Add a temporary debug view in which the PBR shader returns <code>ShadeSurfaceDiffuse</code> (without probes) instead of its normal lighting, using the material buffer. Diffuse surfaces should look like a flatter version of the normal image: same lights and shadows, no reflections, no texture detail.</div>
+</section>
+
+<section id="phase-c">
+  <h2><span class="tag">C</span>The probe volume: storage and sampling</h2>
+  <p><b>Goal:</b> a probe grid that is part of the scene, the textures that hold its data, and the shader code that lights pixels from it. The probes are first filled from the environment map, which gives an exact correctness test.</p>
+  <figure>
+    <div class="scroll"><svg data-d="phaseC" role="img" aria-label="Phase C data flow"></svg></div>
+    <figcaption>Figure 6. Phase C. A one-time compute pass fills the atlases from the environment irradiance cube. The atlases are storage images while compute writes them and sampled images in set 0 (bindings 11–14) for every shader that lights a surface.</figcaption>
+  </figure>
+
+  <h3>C.1 The ECS component</h3>
+  <p>The probe volume is an entity like the water: selectable in the Scene Hierarchy, edited in Properties, moved and scaled with the gizmo, and saved in the <code>.mscene</code> file by <code>EnvMapVulkanSceneSerializer</code>.</p>
+<pre><code><span class="c">// EnvMapVulkanComponents.h (proposed)</span>
+struct ProbeVolumeComponent
+{
+    glm::ivec3 ProbeCounts = { 8, 4, 8 };   <span class="c">// the volume's size comes from the TransformComponent scale</span>
+    bool  Enabled = true;
+    int   RaysPerProbe = 192;
+    float Hysteresis = 0.97f;               <span class="c">// how much of the old value each update keeps</span>
+    float NormalBias = 0.25f;               <span class="c">// fractions of the probe spacing</span>
+    float ViewBias = 0.25f;
+    float BounceIntensity = 1.0f;
+    int   ProbesPerFrame = 16;              <span class="c">// update budget (Phase D)</span>
+    bool  Relocation = true;                <span class="c">// Phase E</span>
+};</code></pre>
+  <p>The probe at grid coordinate (<i>i</i>, <i>j</i>, <i>k</i>) sits at <code>origin + (i, j, k) * spacing + offset[i, j, k]</code>, where <code>origin</code> is the volume's minimum corner, <code>spacing = size / (counts - 1)</code>, and <code>offset</code> is zero until relocation (Phase E). Keep the volume axis-aligned at first (rotation locked, like the water's X and Z rotation); a rotated volume only needs the inverse rotation applied before the grid math.</p>
+
+  <h3>C.2 The atlases</h3>
+  <p>Each probe stores two small square maps of the sphere in the <b>octahedral mapping</b> (the sphere is projected onto an octahedron, which unfolds into a square with little distortion):</p>
+  <div class="table-wrap"><table>
+    <tr><th>Atlas</th><th>Per probe</th><th>Format</th><th>Contents</th></tr>
+    <tr><td>Irradiance</td><td>8×8 + 1 texel border = 10×10</td><td><code>RGBA16F</code></td><td>irradiance/π for a normal pointing in the texel direction, stored encoded (C.4)</td></tr>
+    <tr><td>Visibility</td><td>16×16 + 1 texel border = 18×18</td><td><code>RG16F</code></td><td>mean distance and mean squared distance to the nearest surface in the texel direction</td></tr>
+    <tr><td>Probe data</td><td>1 texel</td><td><code>RGBA16F</code></td><td>xyz = relocation offset, w = state (active or inactive) (Phase E)</td></tr>
+  </table></div>
+  <p>Probes are laid out as tiles: tile (<i>i</i> + <i>j</i>·countX, <i>k</i>) for probe (<i>i</i>, <i>j</i>, <i>k</i>), so the irradiance atlas is <code>countX·countY·10</code> by <code>countZ·10</code> texels. An 8×4×8 volume gives a 320×80 irradiance atlas (about 200 KB) and a 576×144 visibility atlas.</p>
+  <p>The one-texel border makes bilinear filtering work at tile edges. After every update, each border texel copies its neighbor across the octahedral seam: along an edge, the interior texel mirrored about the edge's midpoint; at a corner, the opposite interior corner.</p>
+<pre><code>vec2 SignNotZero(vec2 v) { return vec2(v.x &gt;= 0.0 ? 1.0 : -1.0, v.y &gt;= 0.0 ? 1.0 : -1.0); }
+
+vec2 OctEncode(vec3 n)          <span class="c">// unit vector -&gt; [-1, 1]^2</span>
+{
+    n /= abs(n.x) + abs(n.y) + abs(n.z);
+    vec2 p = n.xy;
+    if (n.z &lt; 0.0) p = (1.0 - abs(n.yx)) * SignNotZero(n.xy);
+    return p;
+}
+
+vec3 OctDecode(vec2 p)          <span class="c">// [-1, 1]^2 -&gt; unit vector</span>
+{
+    vec3 n = vec3(p, 1.0 - abs(p.x) - abs(p.y));
+    if (n.z &lt; 0.0) n.xy = (1.0 - abs(n.yx)) * SignNotZero(n.xy);
+    return normalize(n);
+}
+
+vec2 ProbeAtlasUV(ivec3 probe, vec3 dir, int interior, vec2 atlasSize)
+{
+    int tile = interior + 2;                                           <span class="c">// interior + border</span>
+    ivec2 tileCoord = ivec2(probe.x + probe.y * u_ProbeCounts.x, probe.z);
+    vec2 inTile = (OctEncode(dir) * 0.5 + 0.5) * float(interior) + 1.0; <span class="c">// skip the border</span>
+    return (vec2(tileCoord * tile) + inTile) / atlasSize;
+}</code></pre>
+
+  <h3>C.3 New set 0 bindings</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Binding</th><th>Resource</th></tr>
+    <tr><td>11</td><td><code>sampler2D u_ProbeIrradiance</code> (linear filtering, clamp)</td></tr>
+    <tr><td>12</td><td><code>sampler2D u_ProbeVisibility</code> (linear filtering, clamp)</td></tr>
+    <tr><td>13</td><td><code>ProbeVolume</code> UBO: origin, spacing, counts, biases, enabled flag, atlas sizes, irradiance encoding gamma</td></tr>
+    <tr><td>14</td><td><code>sampler2D u_ProbeData</code> (nearest; offsets and states)</td></tr>
+  </table></div>
+  <p>The water reflection pass copies bindings 2 and up from the main set each frame, so the new bindings reach it automatically and the reflection also shows GI. <code>VulkanShaderH2M</code> merges the stage flags of bindings shared by stages; declare the new bindings in <code>Include/FrameSet.glslh</code> so every set 0 shader agrees on the layout.</p>
+
+  <h3>C.4 Sampling: the heart of DDGI</h3>
+<pre><code>vec3 SampleProbeIrradiance(vec3 P, vec3 N, vec3 V)   <span class="c">// V: unit vector from P towards the viewer (or ray origin)</span>
+{
+    vec3 biasedP = P + (N * u_NormalBias + V * u_ViewBias) * u_ProbeSpacing;
+    ivec3 base  = clamp(ivec3(floor((biasedP - u_ProbeOrigin) / u_ProbeSpacing)), ivec3(0), u_ProbeCounts - 2);
+    vec3 alpha  = clamp((biasedP - (u_ProbeOrigin + vec3(base) * u_ProbeSpacing)) / u_ProbeSpacing, 0.0, 1.0);
+
+    vec3 sum = vec3(0.0); float weightSum = 0.0;
+    for (int i = 0; i &lt; 8; i++)
+    {
+        ivec3 offset = ivec3(i, i &gt;&gt; 1, i &gt;&gt; 2) &amp; 1;
+        ivec3 probe  = base + offset;
+        if (!ProbeIsActive(probe)) continue;
+        vec3 probePos = ProbePosition(probe);                 <span class="c">// grid position + relocation offset</span>
+
+        <span class="c">// 1. backface weight: a probe behind the surface counts less (smooth, never exactly 0)</span>
+        vec3 dirToProbe = normalize(probePos - P);
+        float w = pow(max(0.0001, (dot(dirToProbe, N) + 1.0) * 0.5), 2.0) + 0.2;
+
+        <span class="c">// 2. visibility (Chebyshev): is the point further from the probe than the probe's nearest surface?</span>
+        vec3 probeToPoint = biasedP - probePos;
+        float d = length(probeToPoint);
+        vec2 m = textureLod(u_ProbeVisibility, ProbeAtlasUV(probe, probeToPoint / d, 16, u_VisibilityAtlasSize), 0.0).rg;
+        float chebyshev = 1.0;
+        if (d &gt; m.x)
+        {
+            float variance = abs(m.x * m.x - m.y);
+            float delta = d - m.x;
+            chebyshev = variance / (variance + delta * delta);
+            chebyshev = chebyshev * chebyshev * chebyshev;      <span class="c">// sharpen</span>
+        }
+        w *= max(0.05, chebyshev);
+
+        <span class="c">// 3. crush tiny weights, then apply the trilinear weight</span>
+        const float crush = 0.2;
+        if (w &lt; crush) w *= w * w / (crush * crush);
+        vec3 tri = mix(1.0 - alpha, alpha, vec3(offset));
+        w *= tri.x * tri.y * tri.z;
+
+        <span class="c">// 4. read the irradiance for the normal, blend in a perceptual space</span>
+        vec3 irr = textureLod(u_ProbeIrradiance, ProbeAtlasUV(probe, N, 8, u_IrradianceAtlasSize), 0.0).rgb;
+        irr = pow(irr, vec3(u_IrradianceGamma * 0.5));         <span class="c">// stored as E^(1/gamma), gamma = 5</span>
+        sum += w * irr; weightSum += w;
+    }
+    if (weightSum &lt;= 0.0) return EnvironmentIrradiance(N);  <span class="c">// fallback</span>
+    vec3 r = sum / weightSum;
+    return r * r;                                           <span class="c">// back to linear</span>
+}</code></pre>
+  <p><b>Why the encoding?</b> Irradiance spans orders of magnitude. Blending in linear space lets one bright probe dominate and makes dark corners blotchy. DDGI stores <code>E<sup>1/5</sup></code>, blends in the square-root space of the decoded value, and squares at the end.</p>
+  <p><b>Outside the volume</b>, fade towards <code>EnvironmentIrradiance(N)</code> over the last half cell, so objects leaving the volume don't pop.</p>
+  <p><b>In <code>IndirectDiffuse()</code></b>: <code>return u_ProbesEnabled ? SampleProbeIrradiance(P, N, normalize(u_CameraPosition - P)) : EnvironmentIrradiance(N);</code></p>
+
+  <h3>C.5 Fill from the environment and visualize</h3>
+  <p>Before any capture exists, a compute pass fills every irradiance texel with <code>u_EnvIrradianceTex</code> in the texel's direction (with the environment rotation), encoded, and every visibility texel with a large distance (1.5 × the spacing, for both moments). Add a probe visualization: an instanced sphere per probe whose fragment shader reads the probe's irradiance for the sphere normal.</p>
+  <div class="box ok"><b>Check: this phase has an exact test</b>
+  After the environment fill, every probe holds the same irradiance as the cube, so the image inside the volume must match the image with probes off (differences only from the 8×8 resolution, invisible after tonemapping). Toggle Probes on and off. If anything shifts, the octahedral mapping, the atlas UVs or the encoding is wrong. The probe spheres must look like small copies of the sky's diffuse light, the same for every probe.</div>
+</section>
+
+<section id="phase-d">
+  <h2><span class="tag">D</span>Updating the probes through a ray buffer</h2>
+  <p><b>Goal:</b> real GI. Each update gives every probe in the batch a fresh set of rays, and compute passes blend them into the atlases. This is where the image changes: colored bounce light, dark interiors, emissive meshes lighting their surroundings.</p>
+  <figure>
+    <div class="scroll"><svg data-d="phaseD" role="img" aria-label="Phase D data flow"></svg></div>
+    <figcaption>Figure 7. Phase D, plus the relocation pass of Phase E. One render pass (the capture) and five compute dispatches per update. Only the capture and the resample know about cubes. Everything from the ray buffer on stays when ray tracing replaces them (Figure 11).</figcaption>
+  </figure>
+
+  <h3>D.1 The ray buffer</h3>
+  <p>An <code>RGBA16F</code> storage image, <code>RaysPerProbe</code> wide (e.g. 192), with one row per probe updated in this batch. Texel (<i>r</i>, <i>p</i>): rgb = radiance arriving at probe <i>p</i> along ray <i>r</i>, a = hit distance. Two special cases:</p>
+  <ul>
+    <li><b>Miss</b> (the ray reaches the sky): radiance = environment radiance in that direction, distance = a large value (e.g. 1e4).</li>
+    <li><b>Backface hit</b> (the ray hits the inside of a mesh): the probe is probably inside geometry. Store distance = −0.2 × <i>t</i>. The blend ignores these rays for irradiance, and relocation (Phase E) counts them.</li>
+  </ul>
+  <p>The ray directions are a <b>spherical Fibonacci</b> set (evenly spread points on a sphere), rotated by a new random rotation for every update, so successive updates sample different directions and the result converges instead of aliasing:</p>
+<pre><code>vec3 SphericalFibonacci(float i, float n)
+{
+    const float PHI = 1.61803398875;
+    float phi = 2.0 * PI * fract(i * (PHI - 1.0));
+    float cosTheta = 1.0 - (2.0 * i + 1.0) / n;
+    float sinTheta = sqrt(clamp(1.0 - cosTheta * cosTheta, 0.0, 1.0));
+    return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+}
+vec3 ProbeRayDirection(int ray) { return mat3(u_RandomRotation) * SphericalFibonacci(float(ray), float(u_RaysPerProbe)); }</code></pre>
+
+  <h3>D.2 Filling the ray buffer by rasterization</h3>
+  <ol>
+    <li><b>Capture</b>: for each probe of the batch, render a cube map at the probe position, 32×32 per face, into cube arrays (one cube per batch slot). Two color attachments, <code>RGBA16F</code> radiance and <code>R32F</code> signed distance, plus depth. This is the same 6-passes-per-cube pattern as the point shadows in <code>RecordLocalShadowPasses</code>, with a 90° perspective per face.</li>
+    <li><b>The capture shader</b> draws every opaque mesh (static and skinned) and the skybox. Its fragment stage builds a <code>SurfacePoint</code> from the material buffer, calls <code>ShadeSurfaceDiffuse(s, toProbe, true)</code>, and writes the radiance and <code>gl_FrontFacing ? dist : -0.2 * dist</code>. Culling must be off, or backfaces are never seen. The skybox writes the environment radiance and the large distance.</li>
+    <li><b>Resample</b> (compute, one thread per ray): read the cube in the ray direction and write the ray buffer. This is the only step that knows about cubes.</li>
+  </ol>
+<pre><code><span class="c">// ProbeResample.glsl (proposed), compute</span>
+layout(local_size_x = 64) in;
+void main()
+{
+    int ray = int(gl_GlobalInvocationID.x), slot = int(gl_GlobalInvocationID.y);
+    if (ray &gt;= u_RaysPerProbe) return;
+    vec3 dir = ProbeRayDirection(ray);
+    vec3 radiance = textureLod(u_CaptureRadiance, vec4(dir, float(slot)), 0.0).rgb;
+    float dist    = textureLod(u_CaptureDistance, vec4(dir, float(slot)), 0.0).r;   <span class="c">// nearest filtering</span>
+    imageStore(u_RayBuffer, ivec2(ray, slot), vec4(radiance, dist));
+}</code></pre>
+
+  <h3>D.3 The probe update module and its descriptor sets</h3>
+  <p>Like <code>EnvMapVulkanWater</code>, the probe system is a module (<code>EnvMapVulkanProbes</code>, proposed) that owns its images, pipelines and a private descriptor set for its compute passes:</p>
+  <div class="table-wrap"><table>
+    <tr><th>Pass</th><th>Pipeline</th><th>Sets</th><th>Reads</th><th>Writes</th></tr>
+    <tr><td>Capture (×6 per slot)</td><td>graphics, static + anim variants; no culling; 2 color + depth</td><td>0 (frame), 2 (bones); material index by push constant; material buffer in the probe set</td><td>lights, shadow maps, previous atlases, material buffer</td><td>capture radiance, distance, depth (cube array layers)</td></tr>
+    <tr><td>Resample</td><td>compute, 64×1</td><td>probe set</td><td>capture cubes (sampled)</td><td>ray buffer (storage)</td></tr>
+    <tr><td>Blend irradiance</td><td>compute, 8×8 per probe</td><td>probe set</td><td>ray buffer, irradiance atlas</td><td>irradiance atlas (storage, in place)</td></tr>
+    <tr><td>Blend visibility</td><td>compute, 16×16 per probe</td><td>probe set</td><td>ray buffer, visibility atlas</td><td>visibility atlas (storage, in place)</td></tr>
+    <tr><td>Relocate + classify</td><td>compute, 1 thread per probe</td><td>probe set</td><td>ray buffer</td><td>probe data</td></tr>
+    <tr><td>Borders</td><td>compute</td><td>probe set</td><td>atlases</td><td>atlas border texels</td></tr>
+  </table></div>
+  <p>The probe set (proposed): 0 <code>ProbeUpdate</code> UBO (batch slots → probe coordinates, random rotation, hysteresis), 1 capture radiance cube array (sampled), 2 capture distance cube array (sampled), 3 ray buffer (storage image), 4 irradiance atlas (storage image), 5 visibility atlas (storage image), 6 probe data (storage image), 7 material buffer (SSBO). The same images appear as sampled images in set 0, so each needs an image view for both uses, and a layout transition between them (<code>GENERAL</code> for storage, <code>SHADER_READ_ONLY_OPTIMAL</code> for sampling, or <code>GENERAL</code> throughout).</p>
+
+  <h3>D.4 Blending the rays into the atlases</h3>
+  <p>One workgroup per probe, one thread per irradiance texel (8×8) or visibility texel (16×16). Each thread loops over all rays of its probe.</p>
+<pre><code><span class="c">// ProbeBlendIrradiance.glsl (proposed), compute, local_size 8x8</span>
+void main()
+{
+    ivec3 probe = BatchProbe(int(gl_WorkGroupID.x));
+    vec2 octUV  = ((vec2(gl_LocalInvocationID.xy) + 0.5) / 8.0) * 2.0 - 1.0;
+    vec3 texelDir = OctDecode(octUV);
+
+    vec3 sum = vec3(0.0); float weightSum = 0.0;
+    for (int r = 0; r &lt; u_RaysPerProbe; r++)
+    {
+        vec4 ray = imageLoad(u_RayBuffer, ivec2(r, int(gl_WorkGroupID.x)));
+        if (ray.a &lt; 0.0) continue;                         <span class="c">// backface: skip</span>
+        float w = max(0.0, dot(texelDir, ProbeRayDirection(r)));
+        sum += ray.rgb * w; weightSum += w;
+    }
+    vec3 irradiance = weightSum &gt; 0.0 ? sum / weightSum : vec3(0.0);   <span class="c">// = E / pi</span>
+
+    ivec2 texel = ProbeTileOrigin(probe, 10) + 1 + ivec2(gl_LocalInvocationID.xy);
+    vec3 previous = pow(imageLoad(u_IrradianceAtlas, texel).rgb, vec3(u_IrradianceGamma));   <span class="c">// decode</span>
+    vec3 result = mix(irradiance, previous, u_Hysteresis);
+    imageStore(u_IrradianceAtlas, texel, vec4(pow(result, vec3(1.0 / u_IrradianceGamma)), 1.0));
+}</code></pre>
+  <p>The visibility blend uses the same loop with two changes: the weight is sharpened, <code>pow(max(0, dot(texelDir, rayDir)), 50.0)</code>, and it accumulates <code>d</code> and <code>d²</code> with <code>d = min(abs(ray.a), maxRayDistance)</code>, where <code>maxRayDistance</code> is about 1.5 × the spacing. A third small pass then updates the border texels of both atlases (C.2).</p>
+  <div class="box warn"><b>Practical details that matter</b>
+  <ul>
+    <li><b>Order and barriers</b>: the capture samples the atlases (bounce light) while the blend writes them. Within a frame the capture runs first, so a single atlas works. Keep the order strict with pipeline barriers: capture attachments → resample read, ray buffer write → blend read, blend write → border read/write, border write → fragment-shader sampling (scene pass and the next update's capture).</li>
+    <li><b>Large changes</b>: when a texel's irradiance changes a lot (a light switched on), lower its hysteresis, e.g. to 0.5 above a threshold, so lights respond quickly without flicker the rest of the time.</li>
+    <li><b>Energy</b>: the feedback loop converges because each bounce is multiplied by albedo &lt; 1. Clamp albedo in the material buffer to 0.9 and clamp very bright ray radiance before blending, or a strong emissive surface produces fireflies in the probes.</li>
+  </ul></div>
+  <div class="box note"><b>Cost and the update budget</b>
+  32×32×6 = 6144 pixels per probe is little; the real cost is draw calls, since every mesh is drawn 6 times per probe. Cull meshes per face against the face frustum and a maximum ray distance. With 16 probes per frame and 30 meshes that is still up to about 2900 draws per frame, so start with 4–8 probes per frame and measure in the Rendering Stats panel. This is the cost ray tracing removes: 192 rays per probe need no draw calls.</div>
+
+  <h3>D.5 Scheduling and invalidation</h3>
+  <ul>
+    <li><b>Round robin</b>: update <code>ProbesPerFrame</code> probes per frame, cycling through the volume. Every probe is updated every <i>count / budget</i> frames.</li>
+    <li><b>Dirty first</b>: the renderer already uses generation counters (for example, for shadow-map resolution changes). Keep a scene "lighting generation" that increases when a light, a model transform, a material or the environment changes, and mark the probes within reach of the change as dirty. Dirty probes go to the front of the queue.</li>
+    <li><b>Bake</b>: a button that updates all probes for about 32 iterations, the first with hysteresis 0, the rest with the normal value. That gives a converged, multi-bounce result for static scenes. Baked probe data can be saved next to the scene later.</li>
+  </ul>
+
+  <h3>D.6 Water and glass</h3>
+  <p>The capture leaves both out at first: glass counts as fully transparent and the water surface as absent. Underwater, the probes then see sky light through the water, and the existing <code>WaterVolume.glslh</code> absorption and caustics darken and color it, which is a reasonable first result. Later, add the water to the capture as an opaque, dark, blue-tinted surface, so probes below the surface receive less light.</p>
+  <div class="box ok"><b>Check</b>
+  Build a test scene: a closed box room with one opening, a red wall and a white floor, with the sun shining through the opening. With probes on, the room is dark except where the sun falls, the floor next to the red wall turns pink, and the sunspot on the floor lights the ceiling. Use Indirect Only to see the GI alone. Switch the sun off: the room must go almost black within a second or two (hysteresis), not stay lit.</div>
+</section>
+
+<section id="phase-e">
+  <h2><span class="tag">E</span>Light leaks, probe relocation and tuning</h2>
+  <p><b>Goal:</b> remove the typical probe artifacts. Most of this phase is tuning, but two features are needed: moving probes that lie inside geometry, and switching off probes that can't contribute. The relocation pass is part of Figure 7.</p>
+
+  <h3>E.1 Probes inside walls</h3>
+  <p>A regular grid ignores the scene, so some probes land inside walls or objects. Such a probe sees mostly backfaces, and the ray buffer already says so: count the rays with negative distance.</p>
+  <ul>
+    <li><b>Relocation</b>: if more than 25% of a probe's rays hit backfaces, move the probe a little beyond the closest backface, along that ray's direction. If its closest front-face hit is nearer than a minimum distance, move it away from that surface. Limit the offset to 45% of the spacing so the probe stays in its cell, and store it in the probe data image.</li>
+    <li><b>Classification</b>: if a probe is still inside, or no surface lies within a cell's reach, mark it <i>inactive</i>. Sampling skips inactive probes (<code>ProbeIsActive</code>), and so does the scheduler, which saves time.</li>
+    <li>Relocation and classification run for a few iterations after the volume moves or the geometry changes, then stop.</li>
+  </ul>
+
+  <h3>E.2 Bias</h3>
+  <p>The normal and view biases move the sample point off the surface before the visibility test. Too little causes dark blotches where a surface "occludes itself"; too much lets light leak through thin walls. Start with 0.2–0.3 of the spacing each. Document a rule for content: walls should be at least about a tenth of the probe spacing thick, and the spacing smaller than the rooms (1 m for interiors, 2–4 m outdoors).</p>
+
+  <h3>E.3 Debug views</h3>
+  <ul>
+    <li>Probe spheres colored by state (active, inactive, relocated), with the offset drawn as a line.</li>
+    <li>"Probe irradiance only": albedo forced to white, so the GI can be judged without textures.</li>
+    <li>A visibility view that shows each probe's mean distance as its sphere color.</li>
+  </ul>
+
+  <h3>E.4 Specular occlusion from the probes</h3>
+  <p>Reflections still come from the environment cube, so interiors reflect the bright sky (fixed for good in Phase H). A cheap improvement now: scale <code>IndirectSpecular</code> by the ratio of probe irradiance to environment irradiance in the reflection direction, clamped to [0, 1]. Dark rooms then get dark reflections. Reflection-probe systems use the same normalization idea.</p>
+</section>
+
+<section id="phase-f">
+  <h2><span class="tag">F</span>SSAO with GTAO and a reusable temporal filter</h2>
+  <p><b>Goal:</b> small-scale contact occlusion that probes can't provide, and a temporal filter that every later noisy effect (RTAO, ray-traced reflections) reuses.</p>
+  <figure>
+    <div class="scroll"><svg data-d="phaseF" role="img" aria-label="Phase F data flow"></svg></div>
+    <figcaption>Figure 8. Phase F. Five compute dispatches run between the G-buffer prepass and the scene pass. The final AO image is bound in set 0 at binding 15 and read by <code>IndirectLight()</code>. The history pair belongs to the reusable temporal filter.</figcaption>
+  </figure>
+
+  <h3>F.1 GTAO in short</h3>
+  <p>Ground Truth Ambient Occlusion (Jimenez et al., 2016) examines a few <i>slices</i> through the pixel, each a plane containing the view direction. In each slice it walks the depth buffer in both directions and finds the highest <i>horizon</i> angle the geometry reaches. The visible part of the hemisphere between the two horizons is integrated analytically, with the cosine weight, using the normal projected into the slice. The result is close to a ray-traced reference at a fraction of the cost.</p>
+<pre><code><span class="c">// per pixel, view space: P = position, V = normalize(-P), N = normal (from the G-buffer)</span>
+float visibility = 0.0;
+for (int s = 0; s &lt; SLICES; s++)
+{
+    float phi = (float(s) + noise.x) * PI / float(SLICES);
+    vec3 dir    = vec3(cos(phi), sin(phi), 0.0);
+    vec3 ortho  = dir - dot(dir, V) * V;
+    vec3 axis   = normalize(cross(ortho, V));
+    vec3 projN  = N - axis * dot(N, axis);
+    float projLen = length(projN);
+    float n = sign(dot(ortho, projN)) * acos(clamp(dot(projN, V) / projLen, -1.0, 1.0));
+
+    vec2 horizonCos = vec2(-1.0);                  <span class="c">// both sides</span>
+    for (int j = 0; j &lt; STEPS; j++)                <span class="c">// marched in screen space over the radius</span>
+        for (int side = 0; side &lt; 2; side++)
+        {
+            vec3 S = ViewPositionAt(uv + (side == 0 ? 1.0 : -1.0) * StepOffset(j, noise.y, dir.xy));
+            vec3 d = S - P; float len = length(d);
+            float c = dot(d / len, V);
+            c = mix(-1.0, c, Falloff(len));          <span class="c">// samples beyond the radius fade out</span>
+            horizonCos[side] = max(horizonCos[side], c);
+        }
+
+    float h0 = n + max(-acos(horizonCos.y) - n, -PI * 0.5);
+    float h1 = n + min( acos(horizonCos.x) - n,  PI * 0.5);
+    float a0 = -cos(2.0 * h0 - n) + cos(n) + 2.0 * h0 * sin(n);
+    float a1 = -cos(2.0 * h1 - n) + cos(n) + 2.0 * h1 * sin(n);
+    visibility += projLen * 0.25 * (a0 + a1);
+}
+float ao = visibility / float(SLICES);</code></pre>
+
+  <h3>F.2 The passes</h3>
+  <ol>
+    <li><b>Depth mips</b> (compute): a small mip chain of linear view depth, so distant samples read coarser mips (cache-friendly).</li>
+    <li><b>GTAO</b> (compute, half resolution): 2 slices × 8 steps per pixel, with per-pixel noise (interleaved gradient noise, rotated every frame) so the temporal filter averages different samples.</li>
+    <li><b>Spatial denoise</b>: a 5×5 bilateral blur whose weights fall off with depth and normal differences, so it never blurs across edges.</li>
+    <li><b>Temporal accumulation</b> (F.3).</li>
+    <li><b>Upsample</b> to full resolution with depth-aware weights: prefer the half-res samples whose depth is closest to the full-res depth.</li>
+  </ol>
+  <p>The result is one <code>R8</code> image, the <b>AO image</b> interface from Phase A, bound in set 0 at <b>binding 15</b> (<code>u_AOImage</code>). The PBR shader reads it at the pixel and passes it to <code>IndirectLight()</code>. The SSAO module (proposed <code>EnvMapVulkanSSAO</code>) owns a private compute set with the G-buffer images (sampled), the depth mips, the AO images (storage) and a small UBO (radius, intensity, falloff, frame index, projection parameters).</p>
+
+  <h3>F.3 The temporal filter as a reusable tool</h3>
+  <p>Write it as a small class (proposed <code>EnvMapVulkanTemporalFilter</code>) that takes a "current" image plus the G-buffer motion and depth, and owns a history image pair:</p>
+  <ul>
+    <li><b>Reproject</b>: <code>prevUV = uv - motion</code>; read the history there.</li>
+    <li><b>Reject on disocclusion</b>: compare the depth stored with the history to the current depth, and drop the history if they differ by more than a few percent.</li>
+    <li><b>Clamp</b>: limit the history to the min/max (or mean ± k·σ) of the current value's 3×3 neighborhood, which prevents ghosting when things move.</li>
+    <li><b>Blend</b>: <code>mix(current, history, 0.9)</code>, with a per-pixel sample count so freshly disoccluded pixels converge faster.</li>
+  </ul>
+  <p>With one frame in flight, a ping-pong pair is all the history it needs. RTAO and the ray-traced reflections in Phase H use the same class.</p>
+
+  <h3>F.4 Applying AO correctly</h3>
+  <ul>
+    <li><b>Indirect light only.</b> Direct light already has shadows; darkening it with AO looks dirty.</li>
+    <li><b>Combine with the material AO</b>: <code>ao = min(ssao, materialAO)</code>, since both describe the same kind of occlusion.</li>
+    <li><b>Multi-bounce</b> (Jimenez 2016): occluded areas on bright surfaces still receive light bounced inside the crevice. With <code>a = 2.0404·albedo − 0.3324</code>, <code>b = −4.7951·albedo + 0.6417</code>, <code>c = 2.7552·albedo + 0.6903</code>: <code>aoColored = max(vec3(ao), ((ao·a + b)·ao + c)·ao)</code>.</li>
+    <li><b>Specular occlusion</b> (Lagarde, Frostbite): <code>clamp(pow(NdotV + ao, exp2(−16·roughness − 1)) − 1 + ao, 0, 1)</code>, which fills the <code>SpecularOcclusion()</code> slot of Phase A.</li>
+    <li><b>With GI on</b>: the probes already handle large-scale occlusion, so use a smaller SSAO radius (about 0.5 m) to avoid darkening the same area twice.</li>
+  </ul>
+  <div class="box ok"><b>Check</b>
+  An AO debug view shows the raw, denoised and final images. A cube on a floor should get a soft dark contact line without a dark halo on the wall behind it (that would mean the bilateral filter is failing). Turn the camera quickly: there must be no smearing (the clamp) and no stuck dark shapes (the disocclusion test).</div>
+</section>
+
+<section id="phase-g">
+  <h2><span class="tag">G</span>Ray tracing foundation</h2>
+  <p><b>Goal:</b> the scene exists as acceleration structures, and a compute shader can trace a ray and learn everything about what it hit: position, normal, UV and material. The only visible change is a debug view.</p>
+  <figure>
+    <div class="scroll"><svg data-d="phaseG" role="img" aria-label="Phase G data flow"></svg></div>
+    <figcaption>Figure 9. Phase G. BLAS builds happen when models load; compute skinning, the skinned BLAS refit and the TLAS build run every frame. Set 3 collects everything a ray hit needs. Its layout is created by hand, like the shadow-map viewer's compute pipeline.</figcaption>
+  </figure>
+
+  <h3>G.1 Device setup</h3>
+  <p>In the H2M Vulkan device creation (<code>VulkanDeviceH2M</code>), enable when the GPU supports them:</p>
+  <ul>
+    <li>Extensions: <code>VK_KHR_acceleration_structure</code>, <code>VK_KHR_ray_query</code>, <code>VK_KHR_deferred_host_operations</code> (required by the acceleration structure extension), and later <code>VK_KHR_ray_tracing_pipeline</code> for the path tracer.</li>
+    <li>Features: <code>bufferDeviceAddress</code>, <code>accelerationStructure</code>, <code>rayQuery</code>, and from descriptor indexing <code>runtimeDescriptorArray</code>, <code>descriptorBindingPartiallyBound</code>, <code>descriptorBindingVariableDescriptorCount</code>, <code>shaderSampledImageArrayNonUniformIndexing</code>, <code>descriptorBindingSampledImageUpdateAfterBind</code>.</li>
+    <li>Keep a <code>RayTracingSupported</code> flag. Every ray-traced effect falls back to its raster version when it is false.</li>
+  </ul>
+
+  <h3>G.2 Buffers rays can read</h3>
+  <p>Vertex and index buffers need <code>VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT</code>, <code>VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR</code> and <code>VK_BUFFER_USAGE_STORAGE_BUFFER_BIT</code>, and their memory must be allocated with the device-address flag (with VMA: <code>VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT</code> on the allocator). That is a change in the H2M Vulkan vertex and index buffer classes. Shaders then read vertices through <code>GL_EXT_buffer_reference</code>.</p>
+
+  <h3>G.3 Skinned meshes need compute skinning</h3>
+  <p>Today skinning happens in the vertex shader (bones in set 2), so skinned vertices never exist in memory and can't go into an acceleration structure. Add a compute skinning pass that writes skinned vertices into a per-instance buffer every frame. The BLAS of a skinned instance is built once with <code>ALLOW_UPDATE</code> and <b>refitted</b> (a cheap update) every frame. The raster passes can later read the same buffer instead of skinning again.</p>
+
+  <h3>G.4 BLAS and TLAS from the ECS</h3>
+  <ul>
+    <li><b>BLAS</b>: one per model (<code>MeshH2M</code>), with one geometry per mesh part, built and <b>compacted</b> when the model loads. Part transforms (the Part Transform edits) go into the geometry's transform buffer.</li>
+    <li><b>TLAS</b>: rebuilt every frame from the render data the renderer already extracts from <code>EnvMapVulkanScene</code>. One <code>VkAccelerationStructureInstanceKHR</code> per model instance: the 3×4 world transform (glm is column-major and the Vulkan matrix is row-major, so transpose), <code>instanceCustomIndex</code> = index into a GPU instance table, a mask (bit 0 opaque, bit 1 glass, bit 2 water), and <code>VK_GEOMETRY_INSTANCE_TRIANGLE_FACING_CULL_DISABLE_BIT_KHR</code> for double-sided materials.</li>
+    <li><b>Instance table</b> (storage buffer): per instance, the vertex and index buffer addresses and the offset of its parts' material indices.</li>
+    <li>Barrier between the build and the first use: <code>VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR</code> → <code>VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT</code>, access <code>ACCELERATION_STRUCTURE_WRITE</code> → <code>ACCELERATION_STRUCTURE_READ</code>.</li>
+  </ul>
+
+  <h3>G.5 Bindless textures</h3>
+  <p><code>ResourceManager</code>'s texture cache already owns every 2D texture (keyed by path and sRGB). Give each cached texture a permanent slot in one large descriptor array (<code>sampler2D u_Textures[]</code>, partially bound, update-after-bind). The material buffer's map index fields (Phase B) point into it. Raster shaders keep their per-material sets; only ray hits use the array.</p>
+
+  <h3>G.6 Set 3 and shader reflection</h3>
+  <p>The new set 3 holds the TLAS, the instance table, the material buffer and the bindless array. <code>VulkanShaderH2M</code> builds layouts by reflection, and it may not handle runtime arrays and acceleration structures. The safe route is the one <code>EnvMapVulkanShadowMapViewer</code> already takes: create this set's layout and the compute pipelines that use it by hand.</p>
+
+  <h3>G.7 Tracing a ray from a compute shader</h3>
+<pre><code>#extension GL_EXT_ray_query : require
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_scalar_block_layout : require
+#extension GL_EXT_nonuniform_qualifier : require
+
+layout(set = 3, binding = 0) uniform accelerationStructureEXT u_TLAS;
+
+struct HitInfo { bool Hit; bool FrontFace; float T; int Instance; int Geometry; int Primitive; vec2 Bary; mat4x3 ObjectToWorld; };
+
+HitInfo TraceRay(vec3 origin, vec3 dir, float tMax, uint mask)
+{
+    rayQueryEXT rq;
+    rayQueryInitializeEXT(rq, u_TLAS, gl_RayFlagsOpaqueEXT, mask, origin, 0.001, dir, tMax);
+    while (rayQueryProceedEXT(rq)) {}                 <span class="c">// opaque only: no candidates to accept</span>
+    HitInfo h; h.Hit = rayQueryGetIntersectionTypeEXT(rq, true) == gl_RayQueryCommittedIntersectionTriangleEXT;
+    if (h.Hit)
+    {
+        h.T         = rayQueryGetIntersectionTEXT(rq, true);
+        h.FrontFace = rayQueryGetIntersectionFrontFaceEXT(rq, true);
+        h.Instance  = rayQueryGetIntersectionInstanceCustomIndexEXT(rq, true);
+        h.Geometry  = rayQueryGetIntersectionGeometryIndexEXT(rq, true);
+        h.Primitive = rayQueryGetIntersectionPrimitiveIndexEXT(rq, true);
+        h.Bary      = rayQueryGetIntersectionBarycentricsEXT(rq, true);
+        h.ObjectToWorld = rayQueryGetIntersectionObjectToWorldEXT(rq, true);
+    }
+    return h;
+}
+
+<span class="c">// Reconstruct the surface: fetch the 3 vertices through buffer references (the struct must match the
+// H2M static mesh vertex layout byte for byte), interpolate with (1 - b.x - b.y, b.x, b.y),
+// transform the position with ObjectToWorld and the normal with its inverse transpose,
+// read the GPUMaterial, sample textures with u_Textures[nonuniformEXT(index)] at a fixed LOD.</span></code></pre>
+  <div class="box ok"><b>Check: the primary-hit debug view</b>
+  A compute pass traces one ray per pixel from the camera and writes the hit's albedo and normal. It must match the G-buffer debug views of Phase A pixel for pixel (except for texture LOD). Move a model, play an animation: the view must follow, which proves the TLAS rebuild and the skinned refit.</div>
+</section>
+
+<section id="phase-h">
+  <h2><span class="tag">H</span>Ray-traced effects</h2>
+  <p><b>Goal:</b> replace the raster parts of GI, AO and reflections with rays, and keep the raster versions as fallbacks.</p>
+  <figure>
+    <div class="scroll"><svg data-d="phaseH" role="img" aria-label="Phase H data flow"></svg></div>
+    <figcaption>Figure 10. Phase H. Three ray-query compute passes. The probe trace writes the same ray buffer as the Phase D capture, and RTAO writes into the same AO image slot as GTAO, so everything to their right is unchanged.</figcaption>
+  </figure>
+
+  <h3>H.1 Probe rays: the payoff of the ray buffer</h3>
+  <p>A compute shader, one thread per ray and probe slot, replaces the capture and the resample of Phase D. It writes exactly the same ray buffer. The blend, the borders, the relocation, the scheduling and the sampling don't change at all.</p>
+<pre><code>void main()   <span class="c">// ProbeTrace.glsl (proposed)</span>
+{
+    int ray = int(gl_GlobalInvocationID.x), slot = int(gl_GlobalInvocationID.y);
+    vec3 origin = ProbePosition(BatchProbe(slot));
+    vec3 dir = ProbeRayDirection(ray);
+    HitInfo h = TraceRay(origin, dir, 1e4, MASK_OPAQUE);
+    vec4 result;
+    if (!h.Hit)            result = vec4(EnvironmentRadiance(dir), 1e4);
+    else if (!h.FrontFace) result = vec4(0.0, 0.0, 0.0, -0.2 * h.T);
+    else
+    {
+        SurfacePoint s = ReconstructSurface(h);
+        result = vec4(ShadeSurfaceDiffuse(s, -dir, true), h.T);   <span class="c">// the same function as the capture shader</span>
+    }
+    imageStore(u_RayBuffer, ivec2(ray, slot), result);
+}</code></pre>
+  <p>Two improvements become possible at the hit: <b>shadow rays</b> towards the sun and the local lights instead of shadow-map lookups (no cascade coverage problem, see B.2), and full textures through the bindless array. With no draw calls involved, the budget can grow from a few probes to hundreds per frame.</p>
+
+  <h3>H.2 RTAO</h3>
+  <p>From each G-buffer pixel, trace one short ray (length = the AO radius) in a cosine-weighted random direction around the normal, stopping at the first hit (<code>gl_RayFlagsTerminateOnFirstHitEXT</code>). The result is 0 or 1 per pixel; the Phase F temporal filter and spatial denoiser turn it into a smooth AO image. It writes into the same AO image (set 0, binding 15) as GTAO, so nothing else changes. Unlike GTAO, it sees geometry behind other geometry and off screen.</p>
+
+  <h3>H.3 Ray-traced reflections</h3>
+  <ol>
+    <li>From each G-buffer pixel with roughness below a threshold (e.g. 0.5), sample a reflection direction from the GGX distribution of its roughness.</li>
+    <li>Trace it. On a hit, shade with <code>ShadeSurfaceDiffuse</code> plus a simple specular term (the hit's own reflections come from the environment and the probes). On a miss, use <code>u_EnvRadianceTex</code>.</li>
+    <li>Denoise with the temporal filter (reflections reproject best along the reflected ray rather than with the surface motion) and a roughness-aware spatial blur.</li>
+    <li>Bind the result in set 0 (proposed binding 16) and read it in <code>IndirectSpecular()</code>. Above the roughness threshold, keep the environment lookup normalized by the probes (E.4).</li>
+  </ol>
+  <p>This fixes the last big GI problem of the raster version: interiors reflecting the outdoor sky. It also enables <b>glass behind glass</b> and <b>glass in the water reflection</b> (both current limits of the glass material), by tracing refraction rays with the glass mask.</p>
+
+  <h3>H.4 A path tracer as a reference view</h3>
+  <p>A path tracer follows each pixel's light path through many bounces and accumulates samples over frames while the camera stands still. It is too slow for the editor's normal view, but it is the <b>ground truth</b>: switch to it, let it converge, and compare it with the probes, GTAO and the reflections. With ray queries it can be a single compute "megakernel" reusing <code>TraceRay</code>, <code>ReconstructSurface</code> and the material buffer. The dedicated ray tracing pipeline is an option for performance later.</p>
+
+  <h3>H.5 What stays raster</h3>
+  <p>Primary visibility (what the camera sees), the main lighting pass, shadow maps for the camera view (shadow rays there are optional), water, bloom, overlays and the composite all stay as they are. That is what makes the renderer hybrid: rays are used only where they do better.</p>
+</section>
+
+<section id="final">
+  <h2>13. The final frame and checklist</h2>
+  <figure>
+    <div class="scroll"><svg data-d="final" role="img" aria-label="Order of passes in the final frame"></svg></div>
+    <figcaption>Figure 11. The frame after all phases, in submission order. The letter in each box is the phase that adds or changes it. With ray tracing off, step 5 runs the raster capture, step 8 runs GTAO, and step 9 is skipped.</figcaption>
+  </figure>
+
+  <h3>13.1 Descriptor sets after all phases</h3>
+  <div class="table-wrap wide"><table>
+    <tr><th>Set</th><th>Bound for</th><th>Bindings</th></tr>
+    <tr><td>0 (per frame)</td><td>every pass that lights a surface: PBR, prepass, capture, water, glass, probe spheres</td><td>0–10 as today · 11 <code>u_ProbeIrradiance</code> · 12 <code>u_ProbeVisibility</code> · 13 <code>ProbeVolume</code> UBO · 14 <code>u_ProbeData</code> · 15 <code>u_AOImage</code> · 16 <code>u_ReflectionImage</code> (Phase H)</td></tr>
+    <tr><td>1 (per material)</td><td>PBR and prepass draws</td><td>texture maps, unchanged</td></tr>
+    <tr><td>2 (per skinned mesh)</td><td>skinned draws, compute skinning</td><td>bone matrices, unchanged</td></tr>
+    <tr><td>3 (ray tracing)</td><td>ray-query compute passes only</td><td>0 TLAS · 1 instance table · 2 material buffer · 3 <code>u_Textures[]</code> (bindless)</td></tr>
+    <tr><td>Probe set (module)</td><td>probe resample, blend, borders, relocation, trace</td><td>ProbeUpdate UBO · capture cubes · ray buffer · atlases (storage) · probe data · material buffer</td></tr>
+    <tr><td>SSAO set (module)</td><td>depth mips, GTAO, denoise, upsample</td><td>G-buffer images · depth mips · AO images (storage) · SSAO UBO</td></tr>
+    <tr><td>Temporal set (module)</td><td>temporal filter instances (AO, RTAO, reflections)</td><td>current · history pair · motion · depth</td></tr>
+  </table></div>
+
+  <h3>13.2 The phases at a glance</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Phase</th><th>Delivers</th><th>Visible result</th><th>Depends on</th></tr>
+    <tr><td>A</td><td>G-buffer prepass, motion, direct/indirect split</td><td>none (debug views)</td><td>–</td></tr>
+    <tr><td>B</td><td><code>ShadeSurfaceDiffuse</code>, material buffer</td><td>none (debug view)</td><td>A</td></tr>
+    <tr><td>C</td><td>probe volume, atlases, sampling, environment fill</td><td>none by design (exact-match test)</td><td>A</td></tr>
+    <tr><td>D</td><td>ray buffer, capture, blend, bounces, scheduling, Bake</td><td><b>GI</b></td><td>B, C</td></tr>
+    <tr><td>E</td><td>relocation, classification, specular normalization</td><td>fewer leaks, darker interior reflections</td><td>D</td></tr>
+    <tr><td>F</td><td>GTAO, temporal filter</td><td><b>SSAO</b></td><td>A</td></tr>
+    <tr><td>G</td><td>RT device setup, BLAS/TLAS, compute skinning, bindless</td><td>primary-hit debug view</td><td>B</td></tr>
+    <tr><td>H</td><td>ray-traced probes, RTAO, reflections, path tracer</td><td><b>ray-traced GI, AO and reflections</b></td><td>D, F, G</td></tr>
+  </table></div>
+
+  <h3>13.3 Verification checklist</h3>
+  <ul>
+    <li>Every phase: before/after captures of the same saved scene (<code>.mscene</code>) from the same camera.</li>
+    <li>A: identical images. C: identical images with environment-filled probes.</li>
+    <li>D: the box-room test (dark room, colored bleed, quick response when the sun goes off).</li>
+    <li>F: a contact line without halos, no smearing on fast camera turns.</li>
+    <li>G: ray-traced primary hits equal the G-buffer.</li>
+    <li>H: ray-traced probes converge to the same image as the raster capture (within noise); the path tracer is the final judge.</li>
+    <li>Every new pass gets a profiler scope with a description, so the Rendering Stats panel shows its GPU time.</li>
+    <li>Every new setting is saved in <code>RenderSettings</code> of the <code>.mscene</code> file or in the <code>ProbeVolumeComponent</code>.</li>
+  </ul>
+
+  <h3>13.4 Common mistakes</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Symptom</th><th>Usual cause</th></tr>
+    <tr><td>Speckles after the prepass</td><td><code>gl_Position</code> not bit-identical between passes (missing <code>invariant</code>, different code)</td></tr>
+    <tr><td>Probes on: image shifts or rotates</td><td>octahedral mapping or atlas UVs wrong, environment rotation missing in the fill</td></tr>
+    <tr><td>Probes on: about 3× too bright or dark</td><td>π convention mixed up (irradiance vs irradiance/π)</td></tr>
+    <tr><td>Seams between probe texels</td><td>border texels not updated, or updated before the blend finished (missing barrier)</td></tr>
+    <tr><td>Light leaks through walls</td><td>bias too large, walls too thin for the spacing, visibility atlas not written</td></tr>
+    <tr><td>Dark blotches on flat walls</td><td>bias too small (self-occlusion in the Chebyshev test), probes inside the wall (enable relocation)</td></tr>
+    <tr><td>GI flickers or "boils"</td><td>hysteresis too low, ray directions not rotated per update, fireflies from emissive surfaces (clamp)</td></tr>
+    <tr><td>Room stays lit after the light is off</td><td>dirty tracking misses the change; hysteresis too high without the fast-change rule</td></tr>
+    <tr><td>Dark halos around objects (SSAO)</td><td>bilateral weights ignore depth; upsample not depth-aware</td></tr>
+    <tr><td>Ray hits in the wrong place</td><td>instance transform not transposed (glm column-major vs Vulkan row-major)</td></tr>
+    <tr><td>Animated meshes cast "frozen" GI</td><td>skinned BLAS not refitted, or compute skinning not run before the build</td></tr>
+  </table></div>
+</section>
+
+<section id="refs">
+  <h2>14. Glossary and references</h2>
+  <div class="table-wrap"><table>
+    <tr><td style="width:26%"><b>Albedo</b></td><td>the fraction of light a surface reflects diffusely, per color channel</td></tr>
+    <tr><td><b>BLAS / TLAS</b></td><td>bottom- / top-level acceleration structure: bounding-volume trees over the triangles of a mesh / over all instances of the scene</td></tr>
+    <tr><td><b>Chebyshev test</b></td><td>an upper bound on the probability that a point is visible, computed from the mean and variance of stored distances (as in variance shadow maps)</td></tr>
+    <tr><td><b>DDGI</b></td><td>Dynamic Diffuse Global Illumination: a probe grid with irradiance and distance moments, updated by rays</td></tr>
+    <tr><td><b>G-buffer</b></td><td>per-pixel surface attributes (depth, normal, roughness, motion) written before lighting</td></tr>
+    <tr><td><b>GTAO</b></td><td>Ground Truth Ambient Occlusion: horizon-based screen-space AO with analytic cosine-weighted integration</td></tr>
+    <tr><td><b>Hysteresis</b></td><td>the fraction of the old value kept in each update; trades stability for responsiveness</td></tr>
+    <tr><td><b>Irradiance</b></td><td>total incoming light at a point, cosine-weighted over the hemisphere around a normal</td></tr>
+    <tr><td><b>Octahedral mapping</b></td><td>a mapping of the sphere onto a square through an octahedron, with low distortion and simple math</td></tr>
+    <tr><td><b>Ray query</b></td><td>tracing a ray from any shader stage (here: compute) without a ray tracing pipeline</td></tr>
+    <tr><td><b>Refit</b></td><td>updating an acceleration structure's boxes for moved vertices without rebuilding its tree</td></tr>
+    <tr><td><b>Spherical Fibonacci</b></td><td>a deterministic, evenly spread set of points on a sphere, used for probe ray directions</td></tr>
+  </table></div>
+  <h3>References</h3>
+  <ul>
+    <li>Z. Majercik, J.-P. Guertin, D. Nowrouzezahrai, M. McGuire. <i>Dynamic Diffuse Global Illumination with Ray-Traced Irradiance Fields.</i> Journal of Computer Graphics Techniques (JCGT), 2019.</li>
+    <li>Z. Majercik, A. Marrs, J. Spjut, M. McGuire. <i>Scaling Probe-Based Real-Time Dynamic Global Illumination for Production.</i> JCGT, 2021 (relocation, classification, tuning).</li>
+    <li>NVIDIA RTXGI SDK: the DDGI reference implementation and its documentation.</li>
+    <li>J. Jimenez, X. Wu, A. Pesce, A. Jarabo. <i>Practical Real-Time Strategies for Accurate Indirect Occlusion.</i> SIGGRAPH 2016 course (GTAO, multi-bounce AO).</li>
+    <li>Intel XeGTAO: an open-source GTAO implementation.</li>
+    <li>S. Lagarde, C. de Rousiers. <i>Moving Frostbite to Physically Based Rendering 3.0.</i> SIGGRAPH 2014 course (specular occlusion).</li>
+    <li>Z. Cigolle, S. Donow, D. Evangelakos, M. Mara, M. McGuire, Q. Meyer. <i>A Survey of Efficient Representations for Independent Unit Vectors.</i> JCGT, 2014 (octahedral mapping).</li>
+    <li>B. Keinert, M. Innmann, M. Sänger, M. Stamminger. <i>Spherical Fibonacci Mapping.</i> ACM TOG (SIGGRAPH Asia), 2015.</li>
+    <li>J. T. Kajiya. <i>The Rendering Equation.</i> SIGGRAPH 1986.</li>
+    <li>Khronos: the Vulkan specification for <code>VK_KHR_acceleration_structure</code> and <code>VK_KHR_ray_query</code>; the GLSL extensions <code>GL_EXT_ray_query</code> and <code>GL_EXT_buffer_reference</code>.</li>
+  </ul>
+</section>
+</main>
+
+<script>
+(function () {
+  const NS = 'http://www.w3.org/2000/svg';
+  const HEAD = 22, ROW = 14, PAD = 8;
+  const TAG = { rp: 'PASS', cs: 'COMPUTE', tr: 'COPY', img: 'IMAGE', buf: 'BUFFER', set: 'SET', cpu: 'CPU', as: 'ACCEL', sh: 'INCLUDE', key: 'SHARED CORE', note: '' };
+  const NORMAL = { L: [-1, 0], R: [1, 0], T: [0, -1], B: [0, 1] };
+
+  // ---- diagram data: n = nodes {id, k(kind), x, y, w, t(title), l(lines), h?}; e = edges {f, t, k, l(label), fs/ts sides, fr/tr rows, fo/to offsets, d}
+  const D = {
+    today_in: { n: [
+      { id: 'cpu', k: 'cpu', x: 10, y: 10, w: 230, t: 'Render data (CPU)', l: ['ExtractLights, ExtractWater, ...'] },
+      { id: 'envc', k: 'cs', x: 10, y: 64, w: 230, t: 'Environment (on HDR load)', l: ['EquirectangularToCubeMap', 'EnvironmentMipFilter', 'EnvironmentIrradiance'] },
+      { id: 'sun', k: 'rp', x: 10, y: 150, w: 230, t: 'Sun shadow passes', l: ['RecordShadowPasses, 1 per cascade', 'ShadowDepth*.glsl, depth only', 'constant + slope depth bias'] },
+      { id: 'loc', k: 'rp', x: 10, y: 236, w: 230, t: 'Local shadow passes', l: ['RecordLocalShadowPasses', 'spot: 1 pass per layer', 'point: 6 passes per cube'] },
+      { id: 'cau', k: 'rp', x: 10, y: 322, w: 230, t: 'Water caustics', l: ['s_Water.RecordCaustics', 'WaterCaustics.glsl, additive'] },
+      { id: 'ubo', k: 'buf', x: 300, y: 10, w: 220, t: 'SceneData, Lights, Shadows', l: ['uniform buffers, per frame'] },
+      { id: 'rad', k: 'img', x: 300, y: 64, w: 220, t: 'Env radiance cube', l: ['mips = roughness levels'] },
+      { id: 'irr', k: 'img', x: 300, y: 118, w: 220, t: 'Env irradiance cube', l: ['irradiance / π'] },
+      { id: 'sm', k: 'img', x: 300, y: 172, w: 220, t: 'Cascade shadow map', l: ['depth 2D array, 4 layers'] },
+      { id: 'ssm', k: 'img', x: 300, y: 226, w: 220, t: 'Spot shadow maps', l: ['depth 2D array, 1024²'] },
+      { id: 'psm', k: 'img', x: 300, y: 280, w: 220, t: 'Point shadow maps', l: ['depth cube array, 512² / face'] },
+      { id: 'cm', k: 'img', x: 300, y: 334, w: 220, t: 'Caustics map', l: ['R16F, 1024²'] },
+      { id: 's0', k: 'set', x: 590, y: 10, w: 250, t: 'Set 0 (per frame)', l: ['0  camera UBO', '1  SceneData UBO', '2  u_EnvRadianceTex', '3  u_EnvIrradianceTex', '4  u_BRDFLUTTexture', '5  Lights UBO', '6  u_ShadowMap', '7  Shadows UBO', '8  u_SpotShadowMaps', '9  u_PointShadowMaps', '10 u_CausticsMap'] },
+      { id: 'sc', k: 'rp', x: 590, y: 222, w: 250, t: 'Scene pass', l: ['GeometryPass → s_Framebuffer', 'skybox: Skybox pipeline', 'meshes: s_MeshPipeline (+ anim)', 'HazelPBR_Static / _Anim.glsl', 'sets: 0 frame, 1 material, 2 bones', 'push: transform, material values'] },
+      { id: 's1', k: 'set', x: 590, y: 360, w: 250, t: 'Set 1 (per material)', l: ['albedo, normal, metalness,', 'roughness, emissive, AO maps'] },
+      { id: 'fb', k: 'img', x: 900, y: 250, w: 200, t: 's_Framebuffer', l: ['RGBA16F color + Depth', '"Viewport", CopySource'] }
+    ], e: [
+      { f: 'cpu', t: 'ubo', k: 'c' }, { f: 'envc', t: 'rad', k: 'w' }, { f: 'envc', t: 'irr', k: 'w' },
+      { f: 'sun', t: 'sm', k: 'w' }, { f: 'loc', t: 'ssm', k: 'w' }, { f: 'loc', t: 'psm', k: 'w' }, { f: 'cau', t: 'cm', k: 'w' },
+      { f: 'ubo', t: 's0', k: 'b', tr: 1 }, { f: 'ubo', t: 's0', k: 'b', tr: 5 }, { f: 'ubo', t: 's0', k: 'b', tr: 7 },
+      { f: 'rad', t: 's0', k: 'b', tr: 2 }, { f: 'irr', t: 's0', k: 'b', tr: 3 }, { f: 'sm', t: 's0', k: 'b', tr: 6 },
+      { f: 'ssm', t: 's0', k: 'b', tr: 8 }, { f: 'psm', t: 's0', k: 'b', tr: 9 }, { f: 'cm', t: 's0', k: 'b', tr: 10 },
+      { f: 's0', t: 'sc', k: 'b', l: 'bound once per frame' }, { f: 's1', t: 'sc', k: 'b', l: 'per draw' },
+      { f: 'sc', t: 'fb', k: 'w', l: 'clear, draw' }
+    ] },
+
+    today_out: { n: [
+      { id: 'fb', k: 'img', x: 10, y: 96, w: 190, h: 460, t: 's_Framebuffer', l: ['RGBA16F + Depth', 'one render pass,', 'continued with a load', 'op after each copy'] },
+      { id: 'l1', k: 'rp', x: 270, y: 10, w: 260, t: 'Water reflection pass', l: ['s_Water.BeginReflectionPass', 'mesh pipelines reused', 'own set 0: mirrored camera'] },
+      { id: 'l2', k: 'rp', x: 270, y: 96, w: 260, t: 'Scene pass', l: ['skybox + opaque meshes'] },
+      { id: 'l3', k: 'tr', x: 270, y: 160, w: 260, t: 'Copy for the water', l: ['s_Water.CopyScene', 'vkCmdCopyImage: color, depth'] },
+      { id: 'l4', k: 'rp', x: 270, y: 238, w: 260, t: 'Water volume', l: ['WaterFog.glsl, full screen', 'set 0 + water set 1'] },
+      { id: 'l5', k: 'rp', x: 270, y: 316, w: 260, t: 'Water surface', l: ['Water.glsl (Gerstner vertex)', 'set 1: normal map, WaterSettings'] },
+      { id: 'l6', k: 'rp', x: 270, y: 394, w: 260, t: 'Glass', l: ['EnvMapVulkanGlass copy + mips', 'Glass_Static.glsl, back to front', 'push: IOR, thickness, ...'] },
+      { id: 'l7', k: 'rp', x: 270, y: 486, w: 260, t: 'Bloom', l: ['RecordBloomPasses', 'BloomPass / Blur / Blend.glsl'] },
+      { id: 'l8', k: 'rp', x: 270, y: 564, w: 260, t: 'Viewport composite', l: ['ViewportComposite.glsl', 'exposure, tonemap (Preserve Hue)'] },
+      { id: 'r1', k: 'img', x: 610, y: 10, w: 240, t: 'Reflection framebuffer', l: ['RGBA16F + depth, 1 / divisor'] },
+      { id: 'r2', k: 'img', x: 610, y: 160, w: 240, t: 'Water scene copy', l: ['color + depth images'] },
+      { id: 'r3', k: 'img', x: 610, y: 394, w: 240, t: 'Glass scene copy', l: ['color with mip chain + depth'] },
+      { id: 'r4', k: 'img', x: 610, y: 486, w: 240, t: 'Bloom mip chain', l: ['bright parts, downsampled'] },
+      { id: 'r5', k: 'img', x: 610, y: 564, w: 240, t: 'Viewport composite FB', l: ['shown in the Viewport panel'] }
+    ], e: [
+      { f: 'l1', t: 'r1', k: 'w' }, { f: 'l2', t: 'fb', k: 'w', l: 'clear, draw' },
+      { f: 'fb', t: 'l3', k: 'x', l: 'source' }, { f: 'l3', t: 'r2', k: 'x', l: 'copy' },
+      { f: 'r2', t: 'l4', k: 'r', l: 'depth' }, { f: 'l4', t: 'fb', k: 'w', l: 'fog' },
+      { f: 'r1', t: 'l5', k: 'r', l: 'reflection', fo: -8, to: -8, lt: 0.8 }, { f: 'r2', t: 'l5', k: 'r', l: 'refraction', to: 8 }, { f: 'l5', t: 'fb', k: 'w', l: 'water' },
+      { f: 'fb', t: 'l6', k: 'x', l: 'copy source', fo: -14, to: -14 }, { f: 'l6', t: 'fb', k: 'w', l: 'glass', fo: 14, to: 14 },
+      { f: 'l6', t: 'r3', k: 'x', l: 'copy + mips', fo: -10, to: -10 }, { f: 'r3', t: 'l6', k: 'r', l: 'refraction', fo: 10, to: 10 },
+      { f: 'fb', t: 'l7', k: 'r', l: 'bright parts' }, { f: 'l7', t: 'r4', k: 'w' },
+      { f: 'fb', t: 'l8', k: 'r', l: 'HDR scene' }, { f: 'r4', t: 'l8', k: 'r', l: 'bloom' }, { f: 'l8', t: 'r5', k: 'w' }
+    ] },
+
+    concept: { n: [
+      { id: 'cap', k: 'rp', x: 10, y: 70, w: 230, t: 'Raster capture (Phase D)', l: ['cube per probe, 32² per face', 'resampled in the ray directions'] },
+      { id: 'rq', k: 'cs', x: 10, y: 170, w: 230, t: 'Ray queries (Phase H)', l: ['N rays per probe vs the TLAS', 'replaces the capture later'] },
+      { id: 'rb', k: 'key', x: 310, y: 115, w: 210, t: 'Ray buffer', l: ['RGBA16F: rays × probes', 'rgb radiance, a distance'] },
+      { id: 'bl', k: 'cs', x: 590, y: 70, w: 210, t: 'Blend + borders', l: ['hysteresis, E^(1/5) encoding'] },
+      { id: 'rl', k: 'cs', x: 590, y: 170, w: 210, t: 'Relocate + classify', l: ['backface ratio → offset, state'] },
+      { id: 'at', k: 'key', x: 870, y: 95, w: 230, t: 'Probe atlases', l: ['irradiance 8×8, visibility 16×16', 'probe data: offset, state'] },
+      { id: 'pbr', k: 'rp', x: 870, y: 195, w: 230, t: 'Every lit pixel', l: ['IndirectDiffuse() → 8 probes'] }
+    ], e: [
+      { f: 'cap', t: 'rb', k: 'w', l: 'now' }, { f: 'rq', t: 'rb', k: 'w', l: 'later' },
+      { f: 'rb', t: 'bl', k: 'r' }, { f: 'rb', t: 'rl', k: 'r' }, { f: 'bl', t: 'at', k: 'w' }, { f: 'rl', t: 'at', k: 'w' },
+      { f: 'at', t: 'pbr', k: 'b', fs: 'B', ts: 'T', l: 'set 0' },
+      { f: 'at', t: 'cap', k: 'b', fs: 'T', ts: 'T', d: 70, l: 'previous probes light the next capture: one more bounce per update' }
+    ] },
+
+    phaseA: { n: [
+      { id: 'cpu', k: 'cpu', x: 10, y: 10, w: 230, t: 'Render data (CPU)', l: ['World + PreviousWorld per draw', 'previous view-projection'] },
+      { id: 's0', k: 'set', x: 10, y: 92, w: 230, t: 'Set 0 (per frame)', l: ['0 camera + PrevViewProjection', '1–10 as today'] },
+      { id: 's1', k: 'set', x: 10, y: 172, w: 230, t: 'Set 1 (per material)', l: ['normal map, roughness map, ...'] },
+      { id: 's2', k: 'set', x: 10, y: 238, w: 230, t: 'Set 2 (bones)', l: ['skinned meshes only'] },
+      { id: 'pre', k: 'rp', x: 320, y: 30, w: 280, t: 'G-buffer prepass (new)', l: ['pipelines: prepass static + anim', 'GBufferPrepass_Static/Anim.glsl', 'vertex: shared, invariant position', 'depth: clear, write, compare LESS', 'opaque meshes, back-face culling'] },
+      { id: 'g1', k: 'img', x: 690, y: 10, w: 250, t: 'Normal + roughness', l: ['RGBA16F: xyz normal, w roughness'] },
+      { id: 'g2', k: 'img', x: 690, y: 66, w: 250, t: 'Motion', l: ['RG16F: uv now − uv previous'] },
+      { id: 'g3', k: 'img', x: 690, y: 122, w: 250, t: 'Depth (shared)', l: ['the depth image of s_Framebuffer'] },
+      { id: 'sc', k: 'rp', x: 320, y: 196, w: 280, t: 'Scene pass (changed)', l: ['s_MeshPipeline (+ anim), skybox', 'depth: load, compare EQUAL, no write', 'HazelPBR_*: IndirectLight()', 'color: clear'] },
+      { id: 'fb', k: 'img', x: 690, y: 214, w: 250, t: 's_Framebuffer color', l: ['RGBA16F, the lit scene'] },
+      { id: 'dbg', k: 'rp', x: 690, y: 300, w: 250, t: 'Viewport composite', l: ['debug views: Normals, Depth,', 'Motion, Direct / Indirect Only'] }
+    ], e: [
+      { f: 'cpu', t: 's0', k: 'c', l: 'upload' },
+      { f: 's0', t: 'pre', k: 'b', fo: -6 }, { f: 's1', t: 'pre', k: 'b' }, { f: 's2', t: 'pre', k: 'b' },
+      { f: 's0', t: 'sc', k: 'b', fo: 6 }, { f: 's1', t: 'sc', k: 'b', fo: 6 }, { f: 's2', t: 'sc', k: 'b', fo: 6 },
+      { f: 'pre', t: 'g1', k: 'w' }, { f: 'pre', t: 'g2', k: 'w' }, { f: 'pre', t: 'g3', k: 'w' },
+      { f: 'g3', t: 'sc', k: 'r', l: 'EQUAL test' }, { f: 'sc', t: 'fb', k: 'w' },
+      { f: 'g1', t: 'dbg', k: 'r', fs: 'R', ts: 'R', to: -10, d: 50 }, { f: 'g2', t: 'dbg', k: 'r', fs: 'R', ts: 'R', to: 6, d: 34 },
+      { f: 'fb', t: 'dbg', k: 'r' }
+    ] },
+
+    phaseB: { n: [
+      { id: 'ml', k: 'cpu', x: 10, y: 10, w: 260, t: 'EnvMapVulkanMaterialLibrary', l: ['hash changed / ResolveVariants', 'dense index per material', 'average albedo per map (once)'] },
+      { id: 'dl', k: 'cpu', x: 10, y: 110, w: 260, t: 'Draw list (render data)', l: ['MeshPart material ID → index', 'index → push constant per draw'] },
+      { id: 'mb', k: 'buf', x: 350, y: 10, w: 260, t: 'Material buffer (new)', l: ['std430 GPUMaterial[]', 'albedo × average, emissive', 'metalness, roughness, flags', 'bindless map indices (Phase G)'] },
+      { id: 's0', k: 'set', x: 350, y: 130, w: 260, t: 'Set 0 (per frame)', l: ['5 Lights · 6–9 shadow maps', '11–14 probes (Phase C)'] },
+      { id: 'inc', k: 'sh', x: 350, y: 222, w: 260, t: 'Include/ShadeSurface.glslh', l: ['SurfacePoint → diffuse radiance', 'sun, point, spot + shadows', '+ emissive + albedo × probes'] },
+      { id: 'c1', k: 'rp', x: 690, y: 10, w: 250, t: 'Probe capture (Phase D)', l: ['fragment shader'] },
+      { id: 'c2', k: 'cs', x: 690, y: 120, w: 250, t: 'Probe trace (Phase H)', l: ['ray hit in a compute shader'] },
+      { id: 'c3', k: 'rp', x: 690, y: 230, w: 250, t: 'Debug: surface shading view', l: ['PBR shader, temporary'] }
+    ], e: [
+      { f: 'ml', t: 'mb', k: 'c', l: 'staging copy' }, { f: 'dl', t: 'c1', k: 'c', l: 'material index', fs: 'R', ts: 'L', fo: 0, to: 8 },
+      { f: 'mb', t: 'c1', k: 'r', to: -6 }, { f: 'mb', t: 'c2', k: 'r' },
+      { f: 's0', t: 'inc', k: 'b', l: 'lights, shadows, probes' },
+      { f: 'inc', t: 'c1', k: 'i', to: 12 }, { f: 'inc', t: 'c2', k: 'i', to: 6 }, { f: 'inc', t: 'c3', k: 'i' }
+    ] },
+
+    phaseC: { n: [
+      { id: 'ecs', k: 'cpu', x: 10, y: 10, w: 240, t: 'ProbeVolumeComponent', l: ['counts, spacing (from scale)', 'biases, hysteresis, budget'] },
+      { id: 'ubo', k: 'buf', x: 10, y: 90, w: 240, t: 'ProbeVolume UBO', l: ['set 0, binding 13'] },
+      { id: 'env', k: 'img', x: 10, y: 156, w: 240, t: 'Env irradiance cube', l: ['set 0, binding 3'] },
+      { id: 'fill', k: 'cs', x: 320, y: 30, w: 270, t: 'Probe environment fill (once)', l: ['ProbeEnvFill.glsl', '1 thread per atlas texel', 'irradiance = encoded cube value', 'distance = 1.5 × spacing'] },
+      { id: 'brd', k: 'cs', x: 320, y: 160, w: 270, t: 'Probe borders', l: ['ProbeBorders.glsl', 'octahedral edge + corner copy'] },
+      { id: 'a1', k: 'key', x: 670, y: 10, w: 260, t: 'u_ProbeIrradiance', l: ['RGBA16F, 10×10 per probe · b11'] },
+      { id: 'a2', k: 'key', x: 670, y: 70, w: 260, t: 'u_ProbeVisibility', l: ['RG16F, 18×18 per probe · b12'] },
+      { id: 'a3', k: 'key', x: 670, y: 130, w: 260, t: 'u_ProbeData', l: ['RGBA16F, 1 texel per probe · b14'] },
+      { id: 'sc', k: 'rp', x: 670, y: 216, w: 260, t: 'Scene pass (PBR)', l: ['IndirectDiffuse()', '→ SampleProbeIrradiance()', '8 probes, Chebyshev weights'] },
+      { id: 'viz', k: 'rp', x: 670, y: 316, w: 260, t: 'Probe spheres (overlay)', l: ['instanced, irradiance by normal'] }
+    ], e: [
+      { f: 'ecs', t: 'ubo', k: 'c', l: 'upload' }, { f: 'env', t: 'fill', k: 'r' }, { f: 'ubo', t: 'fill', k: 'b' },
+      { f: 'fill', t: 'a1', k: 'w', l: 'storage' }, { f: 'fill', t: 'a2', k: 'w' },
+      { f: 'brd', t: 'a1', k: 'w', l: 'in place', to: 8 }, { f: 'brd', t: 'a2', k: 'w', to: 8 },
+      { f: 'a1', t: 'sc', k: 'b', fs: 'R', ts: 'R', to: -14, d: 60, l: 'sampled' }, { f: 'a2', t: 'sc', k: 'b', fs: 'R', ts: 'R', to: -2, d: 44 }, { f: 'a3', t: 'sc', k: 'b' },
+      { f: 'ubo', t: 'sc', k: 'b', fs: 'B', ts: 'L', fo: 60, d: 90 },
+      { f: 'a1', t: 'viz', k: 'b', fs: 'R', ts: 'R', d: 80 }
+    ] },
+
+    phaseD: { n: [
+      { id: 'bat', k: 'cpu', x: 10, y: 10, w: 240, t: 'Probe batch (CPU)', l: ['round robin, dirty probes first', 'ProbesPerFrame slots', 'new random rotation'] },
+      { id: 's0', k: 'set', x: 10, y: 100, w: 240, t: 'Set 0 (per frame)', l: ['lights + shadow maps', '11–14: probes of the last update'] },
+      { id: 'mb', k: 'buf', x: 10, y: 176, w: 240, t: 'Material buffer', l: ['GPUMaterial[] (Phase B)'] },
+      { id: 'dl', k: 'cpu', x: 10, y: 238, w: 240, t: 'Mesh draw list', l: ['opaque meshes, culled per face'] },
+      { id: 'note', k: 'note', x: 10, y: 316, w: 240, t: 'Barriers, in order', l: ['capture attachments → sampled', 'resample write → blend read', 'blend write → border read', 'borders → fragment sampling', '(scene pass, next capture)'] },
+      { id: 'cap', k: 'rp', x: 320, y: 10, w: 290, t: 'Probe capture', l: ['6 passes per probe slot', 'ProbeCapture_Static/Anim.glsl', 'frag: ShadeSurfaceDiffuse(s, v, true)', 'skybox: env radiance, far distance', 'cull none, 90° face projection', 'push: slot, face, material index'] },
+      { id: 'cr', k: 'img', x: 690, y: 10, w: 250, t: 'Capture radiance', l: ['RGBA16F cube array, 32²'] },
+      { id: 'cd', k: 'img', x: 690, y: 64, w: 250, t: 'Capture distance', l: ['R32F cube array, signed'] },
+      { id: 'cz', k: 'img', x: 690, y: 118, w: 250, t: 'Capture depth', l: ['depth cube array'] },
+      { id: 'rs', k: 'cs', x: 320, y: 170, w: 290, t: 'Resample', l: ['ProbeResample.glsl', '1 thread per ray, grid rays × slots'] },
+      { id: 'rb', k: 'key', x: 690, y: 196, w: 250, t: 'Ray buffer', l: ['RGBA16F storage, rays × slots', 'rgb radiance, a signed distance'] },
+      { id: 'bi', k: 'cs', x: 320, y: 270, w: 290, t: 'Blend irradiance', l: ['ProbeBlendIrradiance.glsl', '8×8 threads per probe', 'hysteresis, E^(1/5) encoding'] },
+      { id: 'bv', k: 'cs', x: 320, y: 360, w: 290, t: 'Blend visibility', l: ['ProbeBlendVisibility.glsl', '16×16 threads, d and d²'] },
+      { id: 'rl', k: 'cs', x: 320, y: 436, w: 290, t: 'Relocate + classify (Phase E)', l: ['ProbeRelocate.glsl', 'backface ratio → offset, state'] },
+      { id: 'br', k: 'cs', x: 320, y: 512, w: 290, t: 'Borders', l: ['ProbeBorders.glsl'] },
+      { id: 'ai', k: 'key', x: 690, y: 286, w: 250, t: 'u_ProbeIrradiance', l: ['storage now, sampled in set 0'] },
+      { id: 'av', k: 'key', x: 690, y: 366, w: 250, t: 'u_ProbeVisibility', l: ['storage now, sampled in set 0'] },
+      { id: 'ad', k: 'key', x: 690, y: 442, w: 250, t: 'u_ProbeData', l: ['offsets + states'] }
+    ], e: [
+      { f: 'bat', t: 'cap', k: 'c', l: 'slots' }, { f: 's0', t: 'cap', k: 'b' }, { f: 'mb', t: 'cap', k: 'r' }, { f: 'dl', t: 'cap', k: 'c', l: 'draws' },
+      { f: 'cap', t: 'cr', k: 'w' }, { f: 'cap', t: 'cd', k: 'w' }, { f: 'cap', t: 'cz', k: 'w' },
+      { f: 'cr', t: 'rs', k: 'r' }, { f: 'cd', t: 'rs', k: 'r' }, { f: 'rs', t: 'rb', k: 'w' },
+      { f: 'rb', t: 'bi', k: 'r' }, { f: 'rb', t: 'bv', k: 'r' }, { f: 'rb', t: 'rl', k: 'r' },
+      { f: 'bi', t: 'ai', k: 'w' }, { f: 'bv', t: 'av', k: 'w' }, { f: 'rl', t: 'ad', k: 'w' },
+      { f: 'br', t: 'ai', k: 'w', to: 10, l: 'borders' }, { f: 'br', t: 'av', k: 'w', to: 10 }
+    ] },
+
+    phaseF: { n: [
+      { id: 'd', k: 'img', x: 10, y: 10, w: 210, t: 'G-buffer depth', l: ['from Phase A'] },
+      { id: 'nrm', k: 'img', x: 10, y: 90, w: 210, t: 'Normal + roughness', l: ['from Phase A'] },
+      { id: 'mot', k: 'img', x: 10, y: 250, w: 210, t: 'Motion', l: ['from Phase A'] },
+      { id: 'noise', k: 'cpu', x: 10, y: 160, w: 210, t: 'Noise + frame index', l: ['IGN, rotated per frame'] },
+      { id: 'dm', k: 'cs', x: 290, y: 10, w: 260, t: 'Depth mips', l: ['GTAODepthMips.glsl', 'linear view depth, 5 mips'] },
+      { id: 'gt', k: 'cs', x: 290, y: 90, w: 260, t: 'GTAO (half resolution)', l: ['GTAO.glsl', '2 slices × 8 steps per pixel'] },
+      { id: 'dn', k: 'cs', x: 290, y: 170, w: 260, t: 'Spatial denoise', l: ['GTAODenoise.glsl', 'bilateral 5×5, depth + normal'] },
+      { id: 'tf', k: 'cs', x: 290, y: 250, w: 260, t: 'Temporal filter', l: ['EnvMapVulkanTemporalFilter', 'reproject, reject, clamp, blend'] },
+      { id: 'up', k: 'cs', x: 290, y: 330, w: 260, t: 'Upsample', l: ['depth-aware, half → full'] },
+      { id: 'i1', k: 'img', x: 630, y: 10, w: 230, t: 'Depth mip chain', l: ['R32F, 5 mips'] },
+      { id: 'i2', k: 'img', x: 630, y: 90, w: 230, t: 'AO raw', l: ['R8, half resolution'] },
+      { id: 'i3', k: 'img', x: 630, y: 170, w: 230, t: 'AO denoised', l: ['R8, half resolution'] },
+      { id: 'i4', k: 'img', x: 630, y: 250, w: 230, t: 'AO history', l: ['R8 + depth, ping-pong pair'] },
+      { id: 'ao', k: 'key', x: 630, y: 330, w: 230, t: 'AO image', l: ['R8 full res · set 0, binding 15'] },
+      { id: 'sc', k: 'rp', x: 630, y: 420, w: 230, t: 'Scene pass (PBR)', l: ['IndirectLight(F0, Lr, ao)', 'multi-bounce, spec. occlusion'] }
+    ], e: [
+      { f: 'd', t: 'dm', k: 'r' }, { f: 'dm', t: 'i1', k: 'w' }, { f: 'i1', t: 'gt', k: 'r' }, { f: 'nrm', t: 'gt', k: 'r' }, { f: 'noise', t: 'gt', k: 'c' },
+      { f: 'gt', t: 'i2', k: 'w' }, { f: 'i2', t: 'dn', k: 'r' }, { f: 'nrm', t: 'dn', k: 'r' }, { f: 'dn', t: 'i3', k: 'w' },
+      { f: 'i3', t: 'tf', k: 'r' }, { f: 'mot', t: 'tf', k: 'r' },
+      { f: 'tf', t: 'i4', k: 'w', fo: -6, to: -6, l: 'current' }, { f: 'i4', t: 'tf', k: 'r', fo: 8, to: 8, l: 'previous' },
+      { f: 'i4', t: 'up', k: 'r' }, { f: 'up', t: 'ao', k: 'w' }, { f: 'ao', t: 'sc', k: 'b', l: 'binding 15' }
+    ] },
+
+    phaseG: { n: [
+      { id: 'vb', k: 'buf', x: 10, y: 10, w: 250, t: 'Vertex + index buffers', l: ['+ SHADER_DEVICE_ADDRESS', '+ AS build input, + STORAGE'] },
+      { id: 'bones', k: 'buf', x: 10, y: 96, w: 250, t: 'Bone matrices', l: ['today: set 2 of the PBR shaders'] },
+      { id: 'ecs', k: 'cpu', x: 10, y: 170, w: 250, t: 'EnvMapVulkanScene', l: ['world transform per instance', 'mask: opaque, glass, water'] },
+      { id: 'mat', k: 'buf', x: 1060, y: 60, w: 230, t: 'Material buffer', l: ['GPUMaterial[] (Phase B)'] },
+      { id: 'tex', k: 'cpu', x: 1060, y: 124, w: 230, t: 'Texture cache', l: ['ResourceManager: each texture', 'gets a bindless slot'] },
+      { id: 'blas', k: 'as', x: 330, y: 10, w: 270, t: 'BLAS build (on model load)', l: ['one per model, geometry per part', 'compacted'] },
+      { id: 'skin', k: 'cs', x: 330, y: 90, w: 270, t: 'Compute skinning', l: ['Skinning.glsl, every frame', 'writes skinned vertices'] },
+      { id: 'refit', k: 'as', x: 330, y: 170, w: 270, t: 'Skinned BLAS refit', l: ['ALLOW_UPDATE, mode UPDATE'] },
+      { id: 'tlas', k: 'as', x: 330, y: 236, w: 270, t: 'TLAS build (every frame)', l: ['instances from the ECS', '3×4 transform (transposed)', 'custom index → instance table'] },
+      { id: 'itab', k: 'buf', x: 330, y: 330, w: 270, t: 'Instance table', l: ['VB/IB addresses, material offset'] },
+      { id: 's3', k: 'set', x: 690, y: 60, w: 280, t: 'Set 3: ray tracing (new)', l: ['0 accelerationStructureEXT u_TLAS', '1 instance table (SSBO)', '2 material buffer (SSBO)', '3 sampler2D u_Textures[] (bindless)'] },
+      { id: 'ph', k: 'cs', x: 690, y: 190, w: 280, t: 'Primary-hit debug', l: ['RTPrimaryHit.glsl (ray query)', '1 ray per pixel: albedo, normal'] },
+      { id: 'dimg', k: 'img', x: 690, y: 270, w: 280, t: 'Debug image', l: ['compare with the G-buffer views'] },
+      { id: 'note', k: 'note', x: 690, y: 336, w: 280, t: 'Notes', l: ['set 3 layout created by hand', 'barrier: AS build → compute read'] }
+    ], e: [
+      { f: 'vb', t: 'blas', k: 'c', l: 'build input' }, { f: 'vb', t: 'skin', k: 'r' }, { f: 'bones', t: 'skin', k: 'r' },
+      { f: 'skin', t: 'refit', k: 'w', l: 'skinned vertices' }, { f: 'blas', t: 'tlas', k: 'c', fs: 'R', ts: 'R', d: 40, l: 'address' },
+      { f: 'refit', t: 'tlas', k: 'c' }, { f: 'ecs', t: 'tlas', k: 'c', l: 'instances' }, { f: 'ecs', t: 'itab', k: 'c' },
+      { f: 'tlas', t: 's3', k: 'b', tr: 0 }, { f: 'itab', t: 's3', k: 'b', tr: 1 }, { f: 'mat', t: 's3', k: 'b', tr: 2, fs: 'L', ts: 'R' }, { f: 'tex', t: 's3', k: 'b', tr: 3, fs: 'L', ts: 'R' },
+      { f: 's3', t: 'ph', k: 'b' }, { f: 'ph', t: 'dimg', k: 'w' }
+    ] },
+
+    phaseH: { n: [
+      { id: 's3', k: 'set', x: 10, y: 10, w: 230, t: 'Set 3 (ray tracing)', l: ['TLAS, instances, materials,', 'bindless textures'] },
+      { id: 's0', k: 'set', x: 10, y: 90, w: 230, t: 'Set 0 (per frame)', l: ['lights, env maps, probes'] },
+      { id: 'gb', k: 'img', x: 10, y: 156, w: 230, t: 'G-buffer', l: ['depth, normal + rough., motion'] },
+      { id: 'bat', k: 'cpu', x: 10, y: 222, w: 230, t: 'Probe batch', l: ['slots + random rotation'] },
+      { id: 'pt', k: 'cs', x: 320, y: 10, w: 280, t: 'Probe trace', l: ['ProbeTrace.glsl (ray query)', 'replaces capture + resample', 'hit: ShadeSurfaceDiffuse()', 'shadow rays instead of maps'] },
+      { id: 'rt', k: 'cs', x: 320, y: 126, w: 280, t: 'RTAO', l: ['RTAO.glsl, 1 ray per pixel', 'cosine dir, stop at first hit'] },
+      { id: 'rr', k: 'cs', x: 320, y: 210, w: 280, t: 'RT reflections', l: ['RTReflections.glsl', 'GGX dir, roughness < 0.5'] },
+      { id: 'tf', k: 'cs', x: 320, y: 300, w: 280, t: 'Temporal + spatial denoise', l: ['the Phase F tools'] },
+      { id: 'rb', k: 'key', x: 680, y: 10, w: 250, t: 'Ray buffer (unchanged)', l: ['same format as Phase D'] },
+      { id: 'bl', k: 'cs', x: 680, y: 74, w: 250, t: 'Blend, borders, relocate', l: ['unchanged from Phases D–E'] },
+      { id: 'at', k: 'key', x: 680, y: 138, w: 250, t: 'Probe atlases', l: ['irradiance, visibility, data'] },
+      { id: 'ao', k: 'key', x: 680, y: 226, w: 250, t: 'AO image', l: ['same slot as GTAO (binding 15)'] },
+      { id: 'ri', k: 'img', x: 680, y: 290, w: 250, t: 'Reflection image', l: ['RGBA16F → IndirectSpecular()'] },
+      { id: 'sc', k: 'rp', x: 680, y: 370, w: 250, t: 'Scene pass (PBR)', l: ['raster, same structure'] }
+    ], e: [
+      { f: 's3', t: 'pt', k: 'b' }, { f: 's0', t: 'pt', k: 'b' }, { f: 'bat', t: 'pt', k: 'c' },
+      { f: 'pt', t: 'rb', k: 'w', l: 'same layout' }, { f: 'rb', t: 'bl', k: 'r' }, { f: 'bl', t: 'at', k: 'w' },
+      { f: 's3', t: 'rt', k: 'b' }, { f: 'gb', t: 'rt', k: 'r' }, { f: 'gb', t: 'rr', k: 'r' }, { f: 's3', t: 'rr', k: 'b' },
+      { f: 'rt', t: 'tf', k: 'w', fs: 'L', ts: 'L', d: 34, l: 'noisy AO' }, { f: 'rr', t: 'tf', k: 'w', l: 'noisy reflections' },
+      { f: 'tf', t: 'ao', k: 'w' }, { f: 'tf', t: 'ri', k: 'w' },
+      { f: 'at', t: 'sc', k: 'b', fs: 'R', ts: 'R', d: 70, to: -10 }, { f: 'ao', t: 'sc', k: 'b', fs: 'R', ts: 'R', d: 46, to: 4 }, { f: 'ri', t: 'sc', k: 'b' }
+    ] },
+
+    final: { n: [
+      { id: 'f1', k: 'cs', x: 10, y: 10, w: 340, t: '1  Compute skinning + BLAS refit · G' },
+      { id: 'f2', k: 'as', x: 10, y: 54, w: 340, t: '2  TLAS build · G' },
+      { id: 'f3', k: 'rp', x: 10, y: 98, w: 340, t: '3  Sun + local shadow passes' },
+      { id: 'f4', k: 'rp', x: 10, y: 142, w: 340, t: '4  Water caustics' },
+      { id: 'f5', k: 'cs', x: 10, y: 186, w: 340, t: '5  Probe update: capture or trace, blend · D/H' },
+      { id: 'f6', k: 'rp', x: 10, y: 230, w: 340, t: '6  Water reflection pass' },
+      { id: 'f7', k: 'rp', x: 10, y: 274, w: 340, t: '7  G-buffer prepass · A' },
+      { id: 'f8', k: 'cs', x: 430, y: 10, w: 340, t: '8  GTAO or RTAO + temporal filter · F/H' },
+      { id: 'f9', k: 'cs', x: 430, y: 54, w: 340, t: '9  RT reflections + denoise · H' },
+      { id: 'f10', k: 'rp', x: 430, y: 98, w: 340, t: '10 Scene pass, depth EQUAL · A' },
+      { id: 'f11', k: 'rp', x: 430, y: 142, w: 340, t: '11 Water volume, water, glass' },
+      { id: 'f12', k: 'rp', x: 430, y: 186, w: 340, t: '12 Bloom' },
+      { id: 'f13', k: 'rp', x: 430, y: 230, w: 340, t: '13 Overlays + viewport composite' }
+    ], e: [
+      { f: 'f1', t: 'f2', k: 's' }, { f: 'f2', t: 'f3', k: 's' }, { f: 'f3', t: 'f4', k: 's' }, { f: 'f4', t: 'f5', k: 's' }, { f: 'f5', t: 'f6', k: 's' }, { f: 'f6', t: 'f7', k: 's' },
+      { f: 'f7', t: 'f8', k: 's', fs: 'R', ts: 'L' },
+      { f: 'f8', t: 'f9', k: 's' }, { f: 'f9', t: 'f10', k: 's' }, { f: 'f10', t: 'f11', k: 's' }, { f: 'f11', t: 'f12', k: 's' }, { f: 'f12', t: 'f13', k: 's' }
+    ] }
+  };
+
+  function el(tag, attrs, parent) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  function fit(t, max) {
+    try { if (t.getComputedTextLength() > max) { t.setAttribute('textLength', max); t.setAttribute('lengthAdjust', 'spacingAndGlyphs'); } } catch (e) {}
+  }
+  function autoSides(a, b) {
+    if (b.x >= a.x + a.w - 4) return ['R', 'L'];
+    if (b.x + b.w <= a.x + 4) return ['L', 'R'];
+    return (b.y + b.H / 2 > a.y + a.H / 2) ? ['B', 'T'] : ['T', 'B'];
+  }
+  const rowY = (n, r) => n.y + HEAD + ROW * r + 7.5;
+  const isH = s => s === 'L' || s === 'R';
+  function point(n, side, ref, row, off) {
+    let x, y;
+    if (isH(side)) { x = side === 'L' ? n.x : n.x + n.w; y = (row != null ? rowY(n, row) : clamp(ref, n.y + 10, n.y + n.H - 10)) + (off || 0); }
+    else { y = side === 'T' ? n.y : n.y + n.H; x = clamp(ref, n.x + 14, n.x + n.w - 14) + (off || 0); }
+    return { x, y };
+  }
+  function anchors(a, b, e) {
+    const s = autoSides(a, b), sa = e.fs || s[0], sb = e.ts || s[1];
+    let refA, refB;
+    if (isH(sa) && isH(sb)) {
+      const lo = Math.max(a.y, b.y) + 10, hi = Math.min(a.y + a.H, b.y + b.H) - 10;
+      const m = lo <= hi ? (lo + hi) / 2 : null;
+      refA = m != null ? m : b.y + b.H / 2; refB = m != null ? m : a.y + a.H / 2;
+    } else if (!isH(sa) && !isH(sb)) {
+      const lo = Math.max(a.x, b.x) + 14, hi = Math.min(a.x + a.w, b.x + b.w) - 14;
+      const m = lo <= hi ? (lo + hi) / 2 : null;
+      refA = m != null ? m : b.x + b.w / 2; refB = m != null ? m : a.x + a.w / 2;
+    } else {
+      refA = isH(sa) ? b.y + b.H / 2 : b.x + b.w / 2;
+      refB = isH(sb) ? a.y + a.H / 2 : a.x + a.w / 2;
+    }
+    let A = point(a, sa, refA, e.fr, e.fo), B = point(b, sb, refB, e.tr, e.to);
+    if (e.tr != null && e.fr == null && isH(sa)) A = point(a, sa, B.y, null, e.fo);
+    return [A, B, sa, sb];
+  }
+  function bez(p0, c1, c2, p3, t) {
+    const u = 1 - t;
+    return { x: u*u*u*p0.x + 3*u*u*t*c1.x + 3*u*t*t*c2.x + t*t*t*p3.x, y: u*u*u*p0.y + 3*u*u*t*c1.y + 3*u*t*t*c2.y + t*t*t*p3.y };
+  }
+
+  function render(svg, spec) {
+    while (svg.firstChild) svg.removeChild(svg.firstChild);
+    const nodes = {}; let W = 0, Hh = 0;
+    spec.n.forEach(n => {
+      n.l = n.l || [];
+      n.H = n.h || (n.l.length ? HEAD + ROW * n.l.length + PAD : 30);
+      nodes[n.id] = n; W = Math.max(W, n.x + n.w); Hh = Math.max(Hh, n.y + n.H);
+    });
+    W += 12; Hh += 12;
+    svg.setAttribute('viewBox', `0 0 ${W} ${Hh}`);
+    svg.setAttribute('width', W);
+    svg.style.minWidth = Math.round(W * 0.68) + 'px';
+    const gE = el('g', {}, svg), gN = el('g', {}, svg), gL = el('g', {}, svg);
+
+    spec.n.forEach(n => {
+      const k = n.k, g = el('g', { class: 'n' }, gN);
+      const stroke = `var(--k-${k === 'buf' ? 'img' : k === 'note' ? 'cpu' : k})`;
+      const fill = `var(--k-${k === 'buf' ? 'img' : k === 'note' ? 'cpu' : k}-bg)`;
+      const head = `var(--k-${k === 'buf' ? 'img' : k === 'note' ? 'cpu' : k}-hd)`;
+      const r = el('rect', { x: n.x, y: n.y, width: n.w, height: n.H, rx: 5, class: 'nb', fill: fill, stroke: stroke }, g);
+      if (k === 'buf' || k === 'note') r.setAttribute('stroke-dasharray', '5 3');
+      if (k === 'key') r.setAttribute('stroke-width', '2.6');
+      if (n.l.length || true) {
+        const hb = n.l.length ? HEAD : 30;
+        el('path', { d: `M${n.x + 0.7} ${n.y + hb} V${n.y + 5} Q${n.x + 0.7} ${n.y + 0.7} ${n.x + 5} ${n.y + 0.7} H${n.x + n.w - 5} Q${n.x + n.w - 0.7} ${n.y + 0.7} ${n.x + n.w - 0.7} ${n.y + 5} V${n.y + hb} ${n.l.length ? 'Z' : `Q${n.x + n.w - 0.7} ${n.y + hb - 0.7} ${n.x + n.w - 5} ${n.y + hb - 0.7} H${n.x + 5} Q${n.x + 0.7} ${n.y + hb - 0.7} ${n.x + 0.7} ${n.y + hb - 5} Z`}`, fill: head }, g);
+      }
+      let tagW = 0;
+      if (TAG[k]) {
+        const tg = el('text', { x: n.x + n.w - 8, y: n.y + 14.5, 'text-anchor': 'end', class: 'nk', fill: stroke }, g);
+        tg.textContent = TAG[k];
+        try { tagW = tg.getComputedTextLength() + 10; } catch (e) { tagW = TAG[k].length * 6 + 10; }
+      }
+      const t = el('text', { x: n.x + 8, y: n.y + (n.l.length ? 15.5 : 19.5), class: 'nt' }, g);
+      t.textContent = n.t; fit(t, n.w - 16 - tagW);
+      n.l.forEach((line, i) => {
+        const tl = el('text', { x: n.x + 8, y: n.y + HEAD + ROW * i + 11.5, class: 'nl' }, g);
+        tl.textContent = line; fit(tl, n.w - 14);
+      });
+    });
+
+    spec.e.forEach(e => {
+      const a = nodes[e.f], b = nodes[e.t];
+      if (!a || !b) return;
+      const [A, B, sa, sb] = anchors(a, b, e);
+      const dist = Math.hypot(B.x - A.x, B.y - A.y);
+      const d = e.d || clamp(dist * 0.42, 22, 110);
+      const na = NORMAL[sa], nb = NORMAL[sb];
+      const tipBase = { x: B.x + nb[0] * 7, y: B.y + nb[1] * 7 };
+      const c1 = { x: A.x + na[0] * d, y: A.y + na[1] * d };
+      const c2 = { x: tipBase.x + nb[0] * Math.max(4, d - 7), y: tipBase.y + nb[1] * Math.max(4, d - 7) };
+      const g = el('g', { class: 'e e-' + e.k }, gE);
+      el('path', { d: `M${A.x} ${A.y} C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${tipBase.x} ${tipBase.y}` }, g);
+      const px = -nb[1], py = nb[0];
+      el('polygon', { points: `${B.x},${B.y} ${tipBase.x + px * 3.8},${tipBase.y + py * 3.8} ${tipBase.x - px * 3.8},${tipBase.y - py * 3.8}` }, g);
+      if (e.l) {
+        const m = bez(A, c1, c2, tipBase, e.lt || 0.5);
+        const lg = el('g', {}, gL);
+        const bg = el('rect', { class: 'elb', rx: 3 }, lg);
+        const tx = el('text', { x: m.x, y: m.y + 3.5, 'text-anchor': 'middle', class: 'el' }, lg);
+        tx.textContent = e.l;
+        try { const bb = tx.getBBox(); bg.setAttribute('x', bb.x - 3); bg.setAttribute('y', bb.y - 1); bg.setAttribute('width', bb.width + 6); bg.setAttribute('height', bb.height + 2); } catch (err) {}
+      }
+    });
+  }
+
+  function renderAll() {
+    document.querySelectorAll('svg[data-d]').forEach(svg => { const spec = D[svg.getAttribute('data-d')]; if (spec) render(svg, JSON.parse(JSON.stringify(spec))); });
+  }
+  renderAll();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(renderAll);
+})();
+</script>
+</body>
+</html>

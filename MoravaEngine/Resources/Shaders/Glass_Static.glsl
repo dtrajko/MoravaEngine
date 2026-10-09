@@ -191,10 +191,9 @@ void main()
 	}
 	vec3 transmitted = behind * tint;
 
-	// The environment's reflection (prefiltered by roughness, as in IBL) and the lights' highlights
+	// The indirect reflection (IndirectSpecular, as for the opaque meshes) and the lights' highlights
 	vec3 R = reflect(-V, N);
-	int radianceLevels = textureQueryLevels(u_EnvRadianceTex);
-	vec3 environment = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, R), roughness * radianceLevels).rgb;
+	vec3 environment = IndirectSpecular(Input.WorldPosition, R, roughness);
 	vec2 brdf = texture(u_BRDFLUTTexture, vec2(NdotV, 1.0 - roughness)).rg;
 	vec3 reflected = environment * (F0 * brdf.x + brdf.y) * WaterSkylightAt(Input.WorldPosition);
 	vec3 highlights = Lighting(F0);

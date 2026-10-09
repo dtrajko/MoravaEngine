@@ -1,0 +1,116 @@
+❯ Please create the implementation plan for SSAO and GI. It should be done in multiple phases, in logical time order.
+  Let me know which features need to be implemented to get working GI.
+
+  Ran 6 shell commands
+
+I checked how the renderer works now so the plan builds on it. Writing it up.
+
+  Ran 2 shell commands, wrote 1 memory
+
+SSAO and GI plan for SceneEnvMapVulkan
+
+Where the renderer is now
+
+- It's a forward renderer with a single scene target (RGBA16F + depth). There's no normal buffer, no depth prepass and no motion vectors.
+- All indirect light comes from the HDR environment. IBL() in PBRCommon.glslh samples the irradiance and radiance cubes. The only occlusion is the material's AO map, so light from the sky reaches places it shouldn't, like the inside of rooms and under objects. Both SSAO and GI fix this.
+- Two things help:
+  - Compute passes already exist (ShadowMapView, Bloom).
+  - Point shadows already render a cube in 6 passes. GI probes can reuse that pattern.
+- Only 1 frame is in flight, so a single copy of each history buffer is enough.
+
+Phases
+
+Phase 0: Foundation (no new effect yet)
+
+1. Depth + normal prepass: draw the opaque and skinned meshes once before the main pass, writing view-space normals (RGBA16F, or RG16 octahedral) and depth. The main pass can then use depth test EQUAL, so each pixel is shaded once. SSAO needs this data before lighting, which is why it can't come from the main pass itself.
+2. Split direct and indirect light in PBRCommon.glslh: turn IBL() into IndirectDiffuse() and IndirectSpecular(), so AO and GI can later replace or scale only the indirect part.
+3. Debug views (in the Rendering Stats panel or the composite): Normals, Linear Depth, Direct Only, Indirect Only.
+
+Result: the picture looks the same as before, and the debug views show the new buffers.
+
+Phase 1: SSAO
+
+1. GTAO (Ground Truth AO) in a compute pass at half resolution, using the prepass depth and normals. Settings: radius in meters, intensity, falloff, slice count.
+2. Denoise: a depth-aware bilateral blur, then a depth-aware upsample to full resolution, so dark halos don't bleed around object edges.
+3. Apply the AO only to the indirect light, combined with the material AO (min). Direct light keeps its shadows.
+4. UI and saving: an SSAO section with an AO debug view, saved in the .mscene RenderSettings.
+5. Check how it fits with existing effects: water (AO only on opaque meshes; the water reflection pass gets no AO, at least at first), glass (drawn after, unaffected), and caustics.
+
+Result: contact shadows in corners, under objects and in crevices.
+
+Phase 2: SSAO quality
+
+1. Temporal accumulation: reproject the previous frame using depth and last frame's view-projection (camera motion only at first), with a neighborhood clamp to avoid ghosting. This allows fewer samples per frame with a cleaner result.
+2. Motion vectors for moving and skinned meshes, written in the prepass. This is needed for animation and gizmo drags.
+3. Multi-bounce AO: AO tinted by albedo, so light surfaces don't go gray.
+4. Specular occlusion derived from the AO and roughness, so reflections of the sky don't glow in occluded areas.
+
+Phase 3: GI probe volume (data and sampling)
+
+1. ECS component ProbeVolume: bounds, probe spacing, enabled. It appears in the hierarchy and Properties, has a gizmo, and is saved in .mscene.
+2. Probe storage (DDGI-style): an irradiance atlas (8×8 octahedral texels per probe, RGBA16F) and a visibility atlas (16×16, mean distance and distance², RG16F).
+3. Sampling in the PBR shader: blend the 8 surrounding probes with trilinear, backface and Chebyshev visibility weights. Outside the volume, fall back to the environment irradiance.
+4. Initial fill from the environment cube, to check the sampling and the seams before any real lighting goes in.
+5. Probe visualization: spheres showing the irradiance per probe.
+
+Phase 4: Probe update (the actual GI)
+
+1. Capture: render a low-resolution cube (16–32 px per face) per probe with a simplified shader: albedo, direct sun with cascades, local lights with shadows, emissive, and the sky. The point-shadow 6-pass pattern is reused here.
+2. Multiple bounces: the capture shader also samples the previous probe irradiance, so every update adds another bounce.
+3. Convolution compute pass: cube → octahedral irradiance and distance moments, blended with hysteresis so changes fade in.
+4. Scheduling: update N probes per frame (time-slicing) and a Bake button for static scenes. Probes are marked dirty when lights, models or the environment change.
+5. Settings: bounce intensity and update budget, with a GPU timing scope in the profiler.
+
+Result: colored light bleeding between surfaces, dark interiors, and emissive meshes lighting their surroundings.
+
+Phase 5: Leaks and putting it together
+
+1. Probes inside geometry: detect them from their capture distances and disable or move them.
+2. Bias and leak tuning: normal and view bias for the visibility test, wall thickness guidelines.
+3. SSAO together with GI: the probes handle large-scale occlusion and SSAO handles small-scale detail, so SSAO switches to a smaller radius when GI is on, to avoid double darkening.
+4. Debug views: probe irradiance only, probe visibility, inactive probes.
+
+Phase 6: Indirect specular (completes GI)
+
+Right now reflections still show the outdoor sky inside rooms.
+1. Screen-space reflections for sharp nearby reflections.
+2. Local reflection probes (box-projected cubes, an ECS component) for everything that isn't on screen.
+3. Normalize the reflections by the probe irradiance, so reflections in dark areas are darkened too.
+
+Later options: SSGI (screen-space bounce for fine detail), hardware ray tracing for probe updates instead of cube rasterization, and frames in flight (#29).
+
+What working GI needs
+
+Six features are required for working diffuse GI:
+
+┌─────┬───────────────────────────────────────────────────────────────────────────────────────────┬───────┐
+│  #  │                                          Feature                                          │ Phase │
+├─────┼───────────────────────────────────────────────────────────────────────────────────────────┼───────┤
+│ 1   │ Separate direct and indirect light in the shaders                                         │ 0     │
+├─────┼───────────────────────────────────────────────────────────────────────────────────────────┼───────┤
+│ 2   │ Probe volume (ECS component, grid, saved in the scene)                                    │ 3     │
+├─────┼───────────────────────────────────────────────────────────────────────────────────────────┼───────┤
+│ 3   │ Probe storage: irradiance + visibility atlases                                            │ 3     │
+├─────┼───────────────────────────────────────────────────────────────────────────────────────────┼───────┤
+│ 4   │ Probe sampling with visibility weights (prevents most light leaks)                        │ 3     │
+├─────┼───────────────────────────────────────────────────────────────────────────────────────────┼───────┤
+│ 5   │ Probe capture with direct light and shadows, then convolution                             │ 4     │
+├─────┼───────────────────────────────────────────────────────────────────────────────────────────┼───────┤
+│ 6   │ Feedback of the previous probes (multiple bounces) + update scheduling and dirty tracking │ 4     │
+└─────┴───────────────────────────────────────────────────────────────────────────────────────────┴───────┘
+
+A few things aren't strictly needed:
+- Not needed for GI itself: the prepass, SSAO and motion vectors. They're needed for SSAO and they make GI look better (small-scale contact shadows the probes are too coarse to give).
+- Needed for complete GI: indirect specular (Phase 6). Without it, interiors get correct diffuse light but still reflect the outdoor sky.
+- No other "core" GI exists yet: RSM (from the earlier roadmap) gives only one bounce from the sun and only in screen space. The probes give multiple bounces from all lights, and they light moving objects for free, so I've left RSM out.
+
+Two decisions would help before starting:
+1. Is the probe-based approach OK? I'm recommending it over RSM and SSGI.
+2. Should probes update in real time with time-slicing, or be baked only? I recommend both, with Bake as the default for static scenes.
+
+I saved the plan to memory as proposed, not yet agreed. Phase 0 is a good first session: it has no visual payoff, but it sets up everything else.
+
+✻ Cogitated for 1m 47s · done 1:39 PM
+
+※ recap: I wrote a phased plan to add SSAO and probe-based GI (global illumination) to the Vulkan editor; it's in chat and saved to memory, and no code has changed. Next, tell me whether probe-based GI is OK and whether probes should update live or be baked, then we start Phase 0. (disable recaps in /config)
+

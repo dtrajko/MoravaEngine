@@ -1,6 +1,6 @@
 // What the mesh shaders' fragment stages share (HazelPBR_Fragment.glslh for opaque meshes, Glass_Static.glsl for glass):
 // the vertex outputs, the per-frame set 0 and the material maps of set 1, the Cook-Torrance BRDF, shadows, the light under
-// the water, and the lighting from the sun, the point and spot lights (Lighting) and the environment (IBL).
+// the water, the direct lighting from the sun, the point and spot lights (Lighting) and the indirect lighting (IndirectLight).
 // The including shader declares its material values (push constants) and main().
 #ifndef PBR_COMMON_GLSLH
 #define PBR_COMMON_GLSLH
@@ -319,24 +319,44 @@ vec3 Lighting(vec3 F0)
 	return result;
 }
 
-vec3 IBL(vec3 F0, vec3 Lr)
+// Indirect light: everything that doesn't come straight from the sun, the point or the spot lights. Each source has its own
+// function, so later work replaces one body without touching the rest: the probes (GI) replace IndirectDiffuse, ray-traced
+// reflections replace IndirectSpecular, and SSAO / RTAO feed the ao value (docs/rendering/SSAO_GI_RayTracing_Guide.html).
+
+// The light arriving at a surface point P with normal N, already divided by pi (the convention of u_EnvIrradianceTex),
+// so the diffuse light is albedo * IndirectDiffuse. Today: the environment only, the same at every position.
+vec3 IndirectDiffuse(vec3 P, vec3 N)
 {
 	// The environment rotation applies to the diffuse lighting too (not only to the reflections), so both match the skybox
-	vec3 irradiance = texture(u_EnvIrradianceTex, RotateVectorAboutY(u_EnvMapRotation, m_Params.Normal)).rgb;
+	return texture(u_EnvIrradianceTex, RotateVectorAboutY(u_EnvMapRotation, N)).rgb;
+}
+
+// The light reflected towards the viewer along the reflection vector R, blurred by roughness (the prefiltered mips)
+vec3 IndirectSpecular(vec3 P, vec3 R, float roughness)
+{
+	int envRadianceTexLevels = textureQueryLevels(u_EnvRadianceTex);
+	return textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, R), roughness * envRadianceTexLevels).rgb;
+}
+
+// How much of the indirect specular light an occluded point still reflects. For now the same as the diffuse occlusion,
+// which keeps the image as it was; Phase F replaces it with an estimate that depends on NdotV and roughness.
+float SpecularOcclusion(float ao)
+{
+	return ao;
+}
+
+// The indirect light leaving the surface towards the viewer (Lr: the reflection vector), with ambient occlusion ao
+vec3 IndirectLight(vec3 F0, vec3 Lr, float ao)
+{
 	vec3 F = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
 	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-	vec3 diffuseIBL = m_Params.Albedo * irradiance;
-
-	int envRadianceTexLevels = textureQueryLevels(u_EnvRadianceTex);
-	float NoV = clamp(m_Params.NdotV, 0.0, 1.0);
-	vec3 R = 2.0 * dot(m_Params.View, m_Params.Normal) * m_Params.Normal - m_Params.View;
-	vec3 specularIrradiance = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, Lr), m_Params.Roughness * envRadianceTexLevels).rgb;
+	vec3 diffuse = m_Params.Albedo * IndirectDiffuse(Input.WorldPosition, m_Params.Normal);
 
 	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
 	vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
-	vec3 specularIBL = specularIrradiance * (F0 * specularBRDF.x + specularBRDF.y);
+	vec3 specular = IndirectSpecular(Input.WorldPosition, Lr, m_Params.Roughness) * (F0 * specularBRDF.x + specularBRDF.y);
 
-	return kd * diffuseIBL + specularIBL;
+	return kd * diffuse * ao + specular * SpecularOcclusion(ao);
 }
 
 #endif

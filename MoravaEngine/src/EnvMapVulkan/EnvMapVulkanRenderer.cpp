@@ -648,6 +648,42 @@ static void SelectModel(EnvMapVulkanEntityID model, int meshIndex = -1)
 	SelectOnly(GetModelOrPart(model, meshIndex));
 }
 
+// Ctrl + double click in the viewport: every part of the model joins the selection, with the clicked one as the primary
+// entity. The model itself leaves the selection, so the gizmo doesn't move its parts twice. A model without parts is
+// selected itself.
+static void AddModelPartsToSelection(EnvMapVulkanEntityID model, EnvMapVulkanEntityID clicked)
+{
+	SyncSelection();
+	std::vector<EnvMapVulkanEntityID> parts;
+	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(model))
+	{
+		if (s_Scene.TryGet<MeshPartComponent>(child))
+		{
+			parts.push_back(child);
+		}
+	}
+	if (parts.empty())
+	{
+		parts.push_back(model);
+	}
+	else
+	{
+		s_Selection.erase(std::remove(s_Selection.begin(), s_Selection.end(), model), s_Selection.end());
+	}
+	EnvMapVulkanEntityID primary = Contains(parts, clicked) ? clicked : parts.back();
+	for (EnvMapVulkanEntityID part : parts)
+	{
+		if (part != primary && !Contains(s_Selection, part))
+		{
+			s_Selection.push_back(part);
+		}
+	}
+	s_Selection.erase(std::remove(s_Selection.begin(), s_Selection.end(), primary), s_Selection.end());
+	s_Selection.push_back(primary); // the primary entity is the last one, as after a Ctrl + click
+	s_SelectedEntity = primary;
+	s_SelectionAnchor = primary;
+}
+
 // The material each mesh of a model is drawn with (in the model's mesh order; the Default material for a mesh without a part)
 static std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> GetMeshMaterials(EnvMapVulkanEntityID model);
 
@@ -8682,7 +8718,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 
 			// Mouse picking: left click on the scene (not on the gizmo, not with Alt) selects the light icon, or else the
 			// mesh under the cursor (or the water in front of it). Ctrl or Shift + click adds it to the selection or removes
-			// it (as in Unity); a double click selects the whole model of the mesh.
+			// it (as in Unity); a double click selects the whole model of the mesh, and Ctrl + double click adds all the
+			// model's meshes (parts) to the selection.
 			if (viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
 				!Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 			{
@@ -8714,7 +8751,12 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						clickedModel = NoEntity;
 					}
 				}
-				if (toggle)
+				const bool ctrl = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl);
+				if (ctrl && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && clickedModel != NoEntity)
+				{
+					AddModelPartsToSelection(clickedModel, clicked); // before the toggle: its first click toggled the mesh already
+				}
+				else if (toggle)
 				{
 					ToggleSelected(clicked); // nothing under the cursor: the selection stays
 				}

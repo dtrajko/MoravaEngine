@@ -1,0 +1,33 @@
+Material:
+  Version: 1
+  ID: 121650102040955118
+  Name: Weapon
+  Source:
+    File: Models/Gladiator/Gladiator.fbx
+    Index: 0
+  AlbedoColor: [0.4, 0.4, 0.4]
+  Metalness: 0.5
+  Roughness: 0.7487672
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 0
+    Solid: 1
+  Maps:
+    Albedo:
+      File: Models/Gladiator/Gladiator_weapon_BaseColor.jpg
+      Enabled: true
+    Normal:
+      File: Models/Gladiator/Gladiator_weapon_Normal.jpg
+      Enabled: true
+    Metalness:
+      File: Models/Gladiator/Gladiator_weapon_Metallic.jpg
+      Enabled: true
+    Roughness:
+      File: Models/Gladiator/Gladiator_weapon_Roughness.jpg
+      Enabled: true

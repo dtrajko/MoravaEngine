@@ -1,0 +1,24 @@
+Material:
+  Version: 1
+  ID: 17141453610431905390
+  Name: boblampclean Material 3
+  Source:
+    File: Models/OGLdev/BobLamp/boblampclean.md5mesh
+    Index: 3
+  AlbedoColor: [0.8, 0.8, 0.8]
+  Metalness: 0
+  Roughness: 0.10557282
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 0
+    Solid: 1
+  Maps:
+    Albedo:
+      File: Models/OGLdev/BobLamp/iron_grill.tga
+      Enabled: true

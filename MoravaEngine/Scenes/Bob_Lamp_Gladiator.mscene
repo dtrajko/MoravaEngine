@@ -1,0 +1,213 @@
+Scene:
+  Version: 1
+  Name: Bob_Lamp_Gladiator
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 8632078198149446191
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      Rotation: 0
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 4065772081496315972
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [41.3981, 27.316973, -65.492546]
+      Scale: [1, 1, 1]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 0.28021637
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 6096167231677972316
+    Name: Water
+    Parent: 0
+    Transform:
+      Translation: [-1.0488797e-06, 0, -5.722046e-05]
+      Rotation: [0, -0, 0]
+      Scale: [40, 1, 40]
+    Water:
+      WaveDirection: 30
+      WaveSpeed: 0.5
+      WaveStrength: 0.25
+      WaveScale1: 7
+      WaveScale2: 2.5
+      SwellHeight: 0.25
+      SwellLength: 12
+      SwellSteepness: 0.5
+      Wireframe: false
+      ScatterColor: [0.012, 0.045, 0.055]
+      Roughness: 0.06
+      ReflectionStrength: 1
+      Transmittance: [0.55, 0.85, 0.88]
+      Clarity: 4
+      RefractionStrength: 1
+      EdgeSoftness: 0.3
+      FoamAmount: 0.6
+      FoamWidth: 0.4
+      TransparencyFromBelow: 0.48
+      PlanarReflection: true
+      ReflectionDivisor: 2
+      ReflectionDistortion: 1
+      Caustics: true
+      CausticsStrength: 1
+      CausticsFocus: 2
+      CausticsArea: 40
+  - ID: 8215585364991896563
+    Name: boblampclean.md5mesh
+    Parent: 0
+    Transform:
+      Translation: [-0.4731013, 1.2655875e-05, 6.850934]
+      Rotation: [0.0003478828, 46.55606, 0.0005700092]
+      Scale: [0.20000042, 0.20000044, 0.19999996]
+    Model:
+      File: Models/OGLdev/BobLamp/boblampclean.md5mesh
+  - ID: 2124087839669999244
+    Name: guard1_body.tga.msh
+    Parent: 8215585364991896563
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 14243720171169838144
+        File: assets/Materials/boblampclean_Material_0_2.mmat
+        Name: boblampclean Material 0
+  - ID: 4363649714586849680
+    Name: guard1_face.tga.msh
+    Parent: 8215585364991896563
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 16205316701220164571
+        File: assets/Materials/boblampclean_Material_1_2.mmat
+        Name: boblampclean Material 1
+  - ID: 4404183342938594485
+    Name: guard1_helmet.tga.msh
+    Parent: 8215585364991896563
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 2
+      Material:
+        ID: 3427177386669399491
+        File: assets/Materials/boblampclean_Material_2_2.mmat
+        Name: boblampclean Material 2
+  - ID: 1879016234326875636
+    Name: iron_grill.tga.msh
+    Parent: 8215585364991896563
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 3
+      Material:
+        ID: 17141453610431905390
+        File: assets/Materials/boblampclean_Material_3_2.mmat
+        Name: boblampclean Material 3
+  - ID: 3395526488162710749
+    Name: round_grill.tga.msh
+    Parent: 8215585364991896563
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 4
+      Material:
+        ID: 2561093599111850514
+        File: assets/Materials/boblampclean_Material_4_2.mmat
+        Name: boblampclean Material 4
+  - ID: 5609360985077066538
+    Name: guard1_body.tga.msh
+    Parent: 8215585364991896563
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 5
+      Material:
+        ID: 947720302589445807
+        File: assets/Materials/boblampclean_Material_5_2.mmat
+        Name: boblampclean Material 5
+  - ID: 1755925884914266768
+    Name: Gladiator.fbx
+    Parent: 0
+    Transform:
+      Translation: [4.921863, 1.2655913e-05, -0.24570829]
+      Rotation: [0.00035701873, 49.83181, 0.0004961693]
+      Scale: [0.08049998, 0.0804997, 0.080500014]
+    Model:
+      File: Models/Gladiator/Gladiator.fbx
+  - ID: 5257494682139644343
+    Name: Gladiator_weapon
+    Parent: 1755925884914266768
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 121650102040955118
+        File: assets/Materials/Weapon.mmat
+        Name: Weapon
+  - ID: 3890549341609365795
+    Name: Gladiator
+    Parent: 1755925884914266768
+    Transform:
+      Translation: [-6.866455e-05, -8.0035534e-11, -3.8146973e-05]
+      Rotation: [-1.4330315e-10, 3.4150908e-06, -3.1266087e-10]
+      Scale: [1.0000011, 0.9999994, 1.0000006]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 177060960786124132
+        File: assets/Materials/Gladiator1.mmat
+        Name: Gladiator1
