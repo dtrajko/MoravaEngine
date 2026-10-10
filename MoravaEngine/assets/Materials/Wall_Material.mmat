@@ -8,20 +8,32 @@ Material:
   AlbedoColor: [0.8, 0.8, 0.8]
   Metalness: 0
   Roughness: -1.236068
-  TilingFactor: 10
-  EmissiveIntensity: 1
+  TilingFactor: 1
+  EmissiveIntensity: 10
   MetalRoughPacked: 0
   RadiancePrefilter: 0
+  Surface: Opaque
+  Glass:
+    IOR: 1.5
+    Thickness: 0.2
+    CastShadows: 0
+    Solid: 1
   Maps:
     Albedo:
-      File: Textures/PBR/harsh_bricks/harshbricks-albedo.png
+      File: Textures/PBR/non_reflective/albedo.png
       Enabled: true
     Normal:
-      File: Textures/PBR/harsh_bricks/harshbricks-normal.png
+      File: Textures/PBR/non_reflective/normal.png
+      Enabled: true
+    Metalness:
+      File: Textures/PBR/non_reflective/metallic.png
       Enabled: true
     Roughness:
-      File: Textures/PBR/harsh_bricks/harshbricks-roughness.png
+      File: Textures/PBR/non_reflective/roughness.png
+      Enabled: true
+    Emissive:
+      File: Textures/PBR/non_reflective/emissive.png
       Enabled: true
     AmbientOcclusion:
-      File: Textures/PBR/harsh_bricks/harshbricks-ao2.png
+      File: Textures/PBR/non_reflective/ao.png
       Enabled: true

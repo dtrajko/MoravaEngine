@@ -177,6 +177,11 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "CastShadows" << YAML::Value << light->CastShadows;
 			out << YAML::EndMap;
 		}
+		if (scene.TryGet<CameraComponent>(entity))
+		{
+			// Its placement is the entity's transform
+			out << YAML::Key << "Camera" << YAML::Value << YAML::BeginMap << YAML::EndMap;
+		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
 			WriteWater(out, water->Settings);
@@ -327,6 +332,10 @@ namespace EnvMapVulkanSceneSerializer
 				{
 					WaterComponent& water = scene.Add<WaterComponent>(entity);
 					ReadWater(waterNode, water.Settings);
+				}
+				if (node["Camera"])
+				{
+					scene.Add<CameraComponent>(entity);
 				}
 				if (YAML::Node probesNode = node["ProbeVolume"])
 				{

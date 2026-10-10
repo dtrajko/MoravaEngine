@@ -137,4 +137,14 @@ layout (std430, set = 0, binding = 17) readonly buffer Materials
 	GPUMaterial u_Materials[];
 };
 
+// The BRDF lookup table for the environment's reflections: x = scale, y = bias of F0 (the texture was made for a gloss
+// model: its v axis is 1 - roughness). Read between the centers of its outermost texels: the texture's sampler repeats,
+// so at the very edge linear filtering would mix in the opposite edge. At NdotV = 1 (a surface seen head-on) that is
+// the grazing angle's strong reflection, a bright disc on whatever faces the camera.
+vec2 SampleBRDFLUT(float NdotV, float roughness)
+{
+	vec2 halfTexel = 0.5 / vec2(textureSize(u_BRDFLUTTexture, 0));
+	return texture(u_BRDFLUTTexture, clamp(vec2(NdotV, 1.0 - roughness), halfTexel, 1.0 - halfTexel)).rg;
+}
+
 #endif

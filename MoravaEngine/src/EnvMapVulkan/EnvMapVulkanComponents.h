@@ -137,6 +137,14 @@ struct ProbeVolumeComponent
 	EnvMapVulkanProbeVolumeSettings Settings;
 };
 
+// The camera the scene is seen through in the editor (one per scene). Its placement is the entity's transform:
+// translation = where it is, rotation = where it looks: x up and down (pitch), y around the vertical axis (0 looks along
+// -Z, positive turns to the left). It isn't rolled or scaled. Saved with the scene, so an opened scene is seen as it was.
+struct CameraComponent
+{
+	bool Unused = false; // a component needs a member: the scene's Add returns a reference to it
+};
+
 // The environment: the HDR map the scene is lit by and its skybox (one per scene)
 struct EnvironmentComponent
 {

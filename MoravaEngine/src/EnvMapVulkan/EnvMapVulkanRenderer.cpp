@@ -756,6 +756,67 @@ static void CreateEnvironmentEntity()
 	CommitEnvironment();
 }
 
+// The camera is an entity with a CameraComponent (one per scene, as the environment and the sun): its transform is where
+// the editor's camera is and where it looks. SyncCamera keeps the two the same, every frame: flying the camera in the
+// viewport moves the entity, and a transform that changed without the camera (edited in Properties, or an opened
+// scene's) moves the camera.
+static EnvMapVulkanEntityID s_CameraEntity = NoEntity;
+// The entity's transform as SyncCamera left it (a difference: something else changed it); none yet: the entity takes
+// the camera's placement
+static bool s_CameraEntitySynced = false;
+static glm::vec3 s_SyncedCameraTranslation = glm::vec3(0.0f);
+static glm::vec3 s_SyncedCameraRotation = glm::vec3(0.0f);
+
+// A scene without a camera entity gets one (a new scene, a scene saved before cameras were entities): where the
+// editor's camera is now, written by the next SyncCamera
+static void EnsureCameraEntity()
+{
+	s_CameraEntity = s_Scene.FindFirst<CameraComponent>();
+	if (s_CameraEntity == NoEntity)
+	{
+		s_CameraEntity = s_Scene.CreateEntity("Camera");
+		s_Scene.Add<CameraComponent>(s_CameraEntity);
+		s_CameraEntitySynced = false;
+	}
+	// The first entity of the Scene Hierarchy
+	if (s_Scene.GetRoots().empty() || s_Scene.GetRoots().front() != s_CameraEntity)
+	{
+		s_Scene.SetParent(s_CameraEntity, NoEntity, true, 0);
+	}
+}
+
+static void SyncCamera(H2M::CameraH2M* camera)
+{
+	EnsureCameraEntity();
+	TransformComponent& transform = s_Scene.Get<TransformComponent>(s_CameraEntity);
+	if (s_CameraEntitySynced && (transform.Translation != s_SyncedCameraTranslation || transform.Rotation != s_SyncedCameraRotation))
+	{
+		// The entity moved: the camera follows. The camera's yaw is measured from +X towards +Z (-90 looks along -Z).
+		transform.Rotation.x = glm::clamp(transform.Rotation.x, -89.0f, 89.0f);
+		transform.Rotation.z = 0.0f;
+		const float yaw = -transform.Rotation.y - 90.0f;
+		camera->SetPosition(transform.Translation);
+		camera->SetYaw(yaw);
+		camera->SetPitch(transform.Rotation.x);
+		// As the camera's controller does from the yaw and the pitch (it runs before the next frame is drawn, not this one)
+		camera->SetFront(glm::normalize(glm::vec3(std::cos(glm::radians(yaw)) * std::cos(glm::radians(transform.Rotation.x)),
+			std::sin(glm::radians(transform.Rotation.x)), std::sin(glm::radians(yaw)) * std::cos(glm::radians(transform.Rotation.x)))));
+		camera->OnUpdate(H2M::TimestepH2M(0.0f));
+	}
+	else
+	{
+		// The turn around the vertical axis, kept within -180 to 180
+		float turn = std::fmod(-camera->GetYaw() - 90.0f, 360.0f);
+		turn += turn > 180.0f ? -360.0f : (turn <= -180.0f ? 360.0f : 0.0f);
+		transform.Translation = camera->GetPosition();
+		transform.Rotation = glm::vec3(camera->GetPitch(), turn, 0.0f);
+	}
+	transform.Scale = glm::vec3(1.0f);
+	s_CameraEntitySynced = true;
+	s_SyncedCameraTranslation = transform.Translation;
+	s_SyncedCameraRotation = transform.Rotation;
+}
+
 
 // Screen rectangle of the scene image in the Viewport window (for the gizmo and mouse picking)
 static ImVec2 s_ViewportImageMin = ImVec2(0.0f, 0.0f);
@@ -4007,7 +4068,7 @@ static bool s_AskAboutUnsavedChanges = false;  // opens the question (see OnImGu
 // back to the top; drop a model file to load it, a material onto a part (or a model: all its parts) to assign it.
 // Properties: the selected entity's settings.
 
-enum class EntityKind { Other, Environment, Sun, PointLight, SpotLight, Water, ProbeVolume, Model, Part };
+enum class EntityKind { Other, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Model, Part };
 
 static EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
 {
@@ -4019,6 +4080,7 @@ static EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
 	if (s_Scene.Has<WaterComponent>(entity))       return EntityKind::Water;
 	if (s_Scene.Has<ProbeVolumeComponent>(entity)) return EntityKind::ProbeVolume;
 	if (s_Scene.Has<EnvironmentComponent>(entity)) return EntityKind::Environment;
+	if (s_Scene.Has<CameraComponent>(entity))      return EntityKind::Camera;
 	return EntityKind::Other;
 }
 
@@ -4028,6 +4090,7 @@ static const char* GetEntityKindName(EntityKind kind)
 	{
 		case EntityKind::Environment: return "Environment";
 		case EntityKind::Sun:         return "Sun";
+		case EntityKind::Camera:      return "Camera";
 		case EntityKind::PointLight:  return "Point Light";
 		case EntityKind::SpotLight:   return "Spot Light";
 		case EntityKind::Water:       return "Water";
@@ -4045,6 +4108,7 @@ static ImU32 GetEntityKindColor(EntityKind kind)
 	{
 		case EntityKind::Environment: return IM_COL32(110, 200, 120, 255);
 		case EntityKind::Sun:         return IM_COL32(255, 210, 60, 255);
+		case EntityKind::Camera:      return IM_COL32(240, 120, 170, 255);
 		case EntityKind::PointLight:  return IM_COL32(255, 150, 60, 255);
 		case EntityKind::SpotLight:   return IM_COL32(90, 200, 255, 255);
 		case EntityKind::Water:       return IM_COL32(60, 120, 230, 255);
@@ -5034,6 +5098,31 @@ static void OnImGuiRenderProperties()
 		case EntityKind::Environment:
 			EnvironmentControls();
 			break;
+		case EntityKind::Camera:
+		{
+			// Edited here, the camera follows in the next frame (see SyncCamera)
+			TransformComponent& transform = s_Scene.Get<TransformComponent>(entity);
+			ImGui::DragFloat3("Translation", &transform.Translation.x, 0.1f);
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Where the camera is. Flying it in the viewport changes these values too.");
+			}
+			ImGui::DragFloat2("Rotation", &transform.Rotation.x, 1.0f);
+			transform.Rotation.x = glm::clamp(transform.Rotation.x, -89.0f, 89.0f);
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Where the camera looks, in degrees.\n"
+					"X: up (positive) and down, -89 to 89.\n"
+					"Y: around the vertical axis: 0 looks along -Z, positive turns to the left.\n"
+					"The camera isn't rolled.");
+			}
+			ImGui::TextDisabled("Saved with the scene: an opened scene is seen from here.");
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Moving the camera alone doesn't count as an unsaved change: save the scene to keep the view.");
+			}
+			break;
+		}
 		default:
 			break;
 	}
@@ -5135,10 +5224,28 @@ static std::string SerializeCurrentScene()
 	return EnvMapVulkanSceneSerializer::Serialize(s_Scene, s_SceneName, WriteRenderSettings);
 }
 
+// The scene's text for telling whether it has unsaved changes: with the camera at the origin, so that looking around
+// isn't a change
+static std::string SerializeSceneForComparison()
+{
+	TransformComponent* cameraTransform = s_Scene.TryGet<TransformComponent>(s_Scene.FindFirst<CameraComponent>());
+	const TransformComponent kept = cameraTransform ? *cameraTransform : TransformComponent();
+	if (cameraTransform)
+	{
+		*cameraTransform = TransformComponent();
+	}
+	std::string text = SerializeCurrentScene();
+	if (cameraTransform)
+	{
+		*cameraTransform = kept;
+	}
+	return text;
+}
+
 // The current scene's text becomes the "saved" state: no unsaved changes
 static void MarkSceneSaved()
 {
-	s_SavedSceneText = SerializeCurrentScene();
+	s_SavedSceneText = SerializeSceneForComparison();
 	s_SceneHasUnsavedChanges = false;
 }
 
@@ -5193,8 +5300,7 @@ static bool SaveSceneTo(const std::string& requestedPath)
 	file.close();
 
 	s_SceneFilePath = EnvMapVulkanSceneSerializer::ToStoredPath(path.string());
-	s_SavedSceneText = text;
-	s_SceneHasUnsavedChanges = false;
+	MarkSceneSaved();
 	Log::GetLogger()->info("Scene '{0}' saved to '{1}' ({2} entities, {3} material(s) saved with it)", s_SceneName, s_SceneFilePath,
 		s_Scene.GetEntityCount(), savedCount);
 	return true;
@@ -5365,6 +5471,7 @@ static void NewSceneNow()
 	s_Data.SceneData.SkyboxLod = defaults.SkyboxLod;
 	CreateEnvironmentEntity();
 	CreateSunEntity();
+	EnsureCameraEntity(); // where the camera is now
 	s_PendingSunAlign = true; // the sun on the map's sun, as at startup
 	s_SceneFilePath.clear();
 	s_SceneName = "Untitled";
@@ -5414,6 +5521,16 @@ static bool OpenSceneNow(const std::string& filepath)
 	if (s_Scene.FindFirst<SunComponent>() == NoEntity)
 	{
 		CreateSunEntity();
+	}
+	// And a camera: the scene's own puts the editor's camera where it was saved (see SyncCamera, which finds the entity's
+	// transform changed); a scene without one gets one where the camera is now
+	const bool hadCamera = s_Scene.FindFirst<CameraComponent>() != NoEntity;
+	EnsureCameraEntity();
+	if (hadCamera)
+	{
+		// Also when the saved placement happens to be the one last synced: taken as changed
+		s_CameraEntitySynced = true;
+		s_SyncedCameraTranslation = glm::vec3(std::numeric_limits<float>::max());
 	}
 	// The saved sun stays as it is: a map loaded for the scene doesn't turn it to the map's sun
 	const EnvironmentComponent& environment = s_Scene.Get<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
@@ -5539,7 +5656,7 @@ static void UpdateSceneUnsavedChanges()
 		return;
 	}
 	s_LastCheck = now;
-	s_SceneHasUnsavedChanges = SerializeCurrentScene() != s_SavedSceneText;
+	s_SceneHasUnsavedChanges = SerializeSceneForComparison() != s_SavedSceneText;
 }
 
 void EnvMapVulkanRenderer::NewScene()
@@ -6950,6 +7067,7 @@ void EnvMapVulkanRenderer::Init()
 	EnvMapVulkanScene::SelfTest();
 	CreateEnvironmentEntity();
 	CreateSunEntity();
+	EnsureCameraEntity();
 
 	ExtractLights();
 	ExtractWater();
@@ -9781,6 +9899,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	ExtractLights();
 	ExtractWater();
 	ExtractProbeVolume();
+	SyncCamera(camera);
 
 	// The sun points at the sun of the environment map: at startup, and after loading a map whose sun was taken out of
 	// it (its light now has to come from the directional sun), once the map's pixels are available
