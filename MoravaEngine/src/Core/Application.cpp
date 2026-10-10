@@ -24,6 +24,8 @@
 
 #include <imgui.h>
 
+#include <chrono>
+
 
 Application* Application::s_Instance = nullptr;
 
@@ -163,9 +165,19 @@ void Application::Run()
 {
 	OnInit();
 
+	// --exit-after: counted from here, after the startup (the shaders may have been compiled)
+	const auto loopStart = std::chrono::steady_clock::now();
+
 	// Loop until window closed
 	while (m_Running = !m_Window->GetShouldClose())
 	{
+		if (m_CommandLine.ExitAfterSeconds > 0.0f &&
+			std::chrono::duration<float>(std::chrono::steady_clock::now() - loopStart).count() >= m_CommandLine.ExitAfterSeconds)
+		{
+			Log::GetLogger()->info("Closing after {0} s (--exit-after)", m_CommandLine.ExitAfterSeconds);
+			m_Window->SetShouldClose(true); // as if the window was closed: this frame is the last
+		}
+
 		float deltaTime = Timer::Get()->GetDeltaTime(); // can be used as H2M::Timestep
 
 		m_Window->ProcessEvents();

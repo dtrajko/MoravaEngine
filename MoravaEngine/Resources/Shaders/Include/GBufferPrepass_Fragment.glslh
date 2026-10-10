@@ -9,13 +9,17 @@
 #include "MeshMaterial.glslh"
 
 layout (location = 0) in VertexOutput Input;
+// From the vertex stage (Include/MeshVertexMotion.glslh): the clip-space position in this frame and in the previous one
+layout (location = 10) in vec4 v_ClipPosition;
+layout (location = 11) in vec4 v_PreviousClipPosition;
 
 layout (location = 0) out vec4 o_NormalRoughness; // xyz = world-space shading normal, w = roughness
-layout (location = 1) out vec2 o_Motion;          // screen-space motion in UV units (not written yet: 0)
+layout (location = 1) out vec2 o_Motion;          // screen-space motion in UV units: this frame's position minus the previous one's
 
 void main()
 {
 	vec2 texCoord = MaterialTexCoord(Input.TexCoord);
 	o_NormalRoughness = vec4(MaterialNormal(texCoord, Input.Normal, Input.WorldNormals), MaterialRoughness(texCoord));
-	o_Motion = vec2(0.0); // the motion vectors come with the previous frame's transforms (Phase A, step 3)
+	// NDC to UV is a scale by 0.5 (the offset cancels out). The camera, the mesh's transform and its bones all count.
+	o_Motion = (v_ClipPosition.xy / v_ClipPosition.w - v_PreviousClipPosition.xy / v_PreviousClipPosition.w) * 0.5;
 }

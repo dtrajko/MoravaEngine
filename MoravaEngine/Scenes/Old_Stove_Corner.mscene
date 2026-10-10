@@ -60,8 +60,8 @@ Entities:
     Parent: 0
     Transform:
       Translation: [0, 0.9983078, 0]
-      Rotation: [0.00014750258, 51.875263, 0.00010018851]
-      Scale: [0.20000012, 0.20000003, 0.2]
+      Rotation: [4.8079142e-05, -18.426497, 6.5196364e-05]
+      Scale: [0.20000003, 0.20000003, 0.20000003]
     Model:
       File: Models/Old_Stove/udmheheqx_LOD0.fbx
   - ID: 14284572191162203289
@@ -103,9 +103,9 @@ Entities:
     Name: Wall 01
     Parent: 0
     Transform:
-      Translation: [0.23718667, 19, -19]
-      Rotation: [-180, -8.386739e-06, -90]
-      Scale: [19.999882, 19.999762, 0.9998501]
+      Translation: [1.2342019, 19, -19]
+      Rotation: [179.9999, -8.386372e-06, -90]
+      Scale: [19.999882, 19, 0.99983233]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 1081673283594027113
@@ -118,9 +118,9 @@ Entities:
     MeshPart:
       SourceMeshIndex: 0
       Material:
-        ID: 3349825478151956020
-        File: assets/Materials/Wall_Material_Variant.mmat
-        Name: Wall_Material (Variant)
+        ID: 5294835396988308064
+        File: assets/Materials/Wall_Material.mmat
+        Name: Wall_Material
   - ID: 16738116975417454179
     Name: Wall 02
     Parent: 0
@@ -140,42 +140,42 @@ Entities:
     MeshPart:
       SourceMeshIndex: 0
       Material:
-        ID: 5294835396988308064
-        File: assets/Materials/Wall_Material.mmat
-        Name: Wall_Material
+        ID: 3349825478151956020
+        File: assets/Materials/Wall_Material_Transparent.mmat
+        Name: Wall_Material_Transparent
   - ID: 15652542399786044124
     Name: Spot Light 1
     Parent: 0
     Transform:
-      Translation: [5.317996, 7.201666, 2.1279955]
-      Rotation: [21.704874, 40.649204, -100.29633]
-      Scale: [0.9999004, 0.9999614, 0.9999368]
+      Translation: [5.9017067, 3.0817983, 5.777204]
+      Rotation: [57.69447, 39.87483, -76.582054]
+      Scale: [0.9999024, 0.99996513, 0.9999377]
     SpotLight:
       Enabled: true
       Color: [0.98370814, 0.44607842, 1]
       Intensity: 200
-      Range: 37.16
-      InnerAngle: 21.8
-      OuterAngle: 27.8
+      Range: 17.074749
+      InnerAngle: 29.8
+      OuterAngle: 37
       CastShadows: true
   - ID: 17609660640847487716
     Name: Point Light 1
     Parent: 0
     Transform:
-      Translation: [-3.5146475, 13.729389, 2.8060248]
-      Rotation: [0.0035349433, 0.8791499, -0.0013447462]
-      Scale: [0.9999168, 1, 0.99993414]
+      Translation: [-6.3927646, 4.59394, 3.7068033]
+      Rotation: [0.002407401, 38.925022, -0.0017775702]
+      Scale: [0.9999181, 0.99999994, 0.9999354]
     PointLight:
       Enabled: true
       Color: [0.6764706, 1, 1]
       Intensity: 500
-      Range: 7.52
+      Range: 10.339269
       CastShadows: true
   - ID: 7305799606647957717
     Name: Water
     Parent: 0
     Transform:
-      Translation: [0.3280673, 5.948389, 0.28522825]
+      Translation: [0.3280673, 7.284488, 0.28522825]
       Rotation: [0, -0, 0]
       Scale: [40, 1, 40]
     Water:

@@ -10,6 +10,7 @@ layout(location = 4) in vec2 a_TexCoord;
 
 #include "FrameCamera.glslh"
 #include "MeshVertexOutput.glslh"
+#include "MeshVertexMotion.glslh"
 
 layout (push_constant) uniform Transform
 {
@@ -30,4 +31,9 @@ void main()
 	Output.Binormal = a_Binormal;
 
 	gl_Position = u_ViewProjectionMatrix * u_Transform * vec4(a_Position, 1.0);
+
+#ifdef MESH_VERTEX_MOTION
+	v_ClipPosition = gl_Position;
+	v_PreviousClipPosition = u_PreviousViewProjectionMatrix * a_PreviousTransform * vec4(a_Position, 1.0);
+#endif
 }

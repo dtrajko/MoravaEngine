@@ -25,6 +25,13 @@ struct ApplicationSpecification
 	bool EnableImGui = true;
 };
 
+// Options from the command line (parsed in main.cpp)
+struct ApplicationCommandLine
+{
+	std::string ScenePath;         // --scene <file>: a scene to open at startup (SceneEnvMapVulkan: an .mscene file)
+	float ExitAfterSeconds = 0.0f; // --exit-after <seconds>: closes the window after this time in the main loop (0: never)
+};
+
 class Application
 {
 public:
@@ -62,6 +69,9 @@ public:
 	inline void SetScene(Scene* scene) { m_Scene = scene; }
 	inline void SetRenderer(RendererBasic* renderer) { m_Renderer = renderer; }
 
+	void SetCommandLine(const ApplicationCommandLine& commandLine) { m_CommandLine = commandLine; }
+	const ApplicationCommandLine& GetCommandLine() const { return m_CommandLine; }
+
 	// initialDirectory (optional): the folder the dialog starts in
 	std::wstring OpenFile(const wchar_t* filter = L"All\0*.*\0", const wchar_t* initialDirectory = nullptr) const;
 	// defaultExtension (e.g. L"mscene", no dot): added to a typed file name without an extension
@@ -82,6 +92,7 @@ private:
 	static Application* s_Instance;
 
 	ApplicationSpecification m_Specification;
+	ApplicationCommandLine m_CommandLine;
 	std::string m_ProjectPath;
 
 	Scene* m_Scene = nullptr;

@@ -253,7 +253,8 @@ namespace H2M
 					imageCreateInfo.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 					if (m_Specification.CopySource)
 					{
-						imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+						// Copied between render passes, and sampled after them (EnvMapVulkanGBuffer::MakeDepthReadable)
+						imageCreateInfo.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 					}
 
 					VK_CHECK_RESULT_H2M(vkCreateImage(device, &imageCreateInfo, nullptr, &m_DepthAttachment.image));

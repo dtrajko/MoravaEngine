@@ -11,12 +11,16 @@ layout(location = 6) in vec4 a_BoneWeights;
 
 #include "FrameCamera.glslh"
 #include "MeshVertexOutput.glslh"
+#include "MeshVertexMotion.glslh"
 
-// Set 2, per object: final bone matrices of the current animation frame (ModelH2M::GetBoneTransforms), updated every frame
+// Set 2, per object: final bone matrices of the current animation frame (ModelH2M::GetBoneTransforms), updated every frame,
+// then the previous frame's (for the motion vectors). The other skinned shaders (shadows, editor overlays) bind the same
+// buffer and declare only the first array.
 const int MAX_BONES = 128;
 layout (std140, set = 2, binding = 0) uniform BoneTransforms
 {
 	mat4 u_BoneTransforms[MAX_BONES];
+	mat4 u_PreviousBoneTransforms[MAX_BONES];
 };
 
 layout (push_constant) uniform Transform
@@ -52,4 +56,18 @@ void main()
 	Output.Binormal = mat3(boneTransform) * a_Binormal;
 
 	gl_Position = u_ViewProjectionMatrix * skinnedTransform * vec4(a_Position, 1.0);
+
+#ifdef MESH_VERTEX_MOTION
+	mat4 previousBoneTransform = mat4(1.0);
+	if (dot(a_BoneWeights, vec4(1.0)) > 0.0001)
+	{
+		ivec4 indices = min(a_BoneIndices, ivec4(MAX_BONES - 1));
+		previousBoneTransform  = u_PreviousBoneTransforms[indices.x] * a_BoneWeights.x;
+		previousBoneTransform += u_PreviousBoneTransforms[indices.y] * a_BoneWeights.y;
+		previousBoneTransform += u_PreviousBoneTransforms[indices.z] * a_BoneWeights.z;
+		previousBoneTransform += u_PreviousBoneTransforms[indices.w] * a_BoneWeights.w;
+	}
+	v_ClipPosition = gl_Position;
+	v_PreviousClipPosition = u_PreviousViewProjectionMatrix * a_PreviousTransform * previousBoneTransform * vec4(a_Position, 1.0);
+#endif
 }

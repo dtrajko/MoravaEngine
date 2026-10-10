@@ -56,6 +56,7 @@
 #include <filesystem>
 #include <optional>
 #include <set>
+#include <unordered_map>
 
 
 namespace Utils
@@ -201,8 +202,12 @@ struct SubmittedModel
 	H2M::RefH2M<H2M::ModelH2M> Model;
 	glm::mat4 Transform;
 	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> Materials;
+	uint32_t FirstDraw = 0; // its first mesh in s_PreviousDrawTransforms (mesh s is at FirstDraw + s)
 };
 static std::vector<SubmittedModel> s_SubmittedModels;
+// For the motion vectors: where every mesh of the submitted models was drawn in the previous frame (GetMeshTransform then),
+// one matrix per mesh in the order of s_SubmittedModels. The G-buffer prepass reads them per draw (see EnvMapVulkanGBuffer).
+static std::vector<glm::mat4> s_PreviousDrawTransforms;
 
 static H2M::RefH2M<H2M::MeshH2M> s_SelectedMesh;
 static glm::mat4* s_Transform_ImGuizmo = nullptr;
@@ -1558,10 +1563,16 @@ static void UpdateFrameUniforms()
 	H2M::CameraH2M& camera = s_Data.SceneData.SceneCamera.Camera;
 	const uint32_t frameSet = H2M::VulkanShaderH2M::FrameDescriptorSet;
 
-	// binding 0: Camera (vertex stage)
+	// binding 0: Camera (vertex stage), see Include/FrameCamera.glslh: the view-projection, then the previous frame's (the
+	// motion vectors of the G-buffer prepass; the first frame has no motion)
+	static glm::mat4 s_PreviousViewProjection;
+	static bool s_HasPreviousViewProjection = false;
 	glm::mat4 viewProjection = camera.GetViewProjection();
+	glm::mat4 cameraMatrices[2] = { viewProjection, s_HasPreviousViewProjection ? s_PreviousViewProjection : viewProjection };
+	s_PreviousViewProjection = viewProjection;
+	s_HasPreviousViewProjection = true;
 	void* ubPtr = shader->MapUniformBuffer(0, frameSet);
-	memcpy(ubPtr, &viewProjection, sizeof(glm::mat4));
+	memcpy(ubPtr, cameraMatrices, sizeof(cameraMatrices));
 	shader->UnmapUniformBuffer(0, frameSet);
 
 	// binding 1: SceneData (fragment stage), see EnvMapVulkanSceneDataGPU: with the water, the light under it (the
@@ -1590,10 +1601,13 @@ static void UpdateFrameUniforms()
 	shader->UnmapUniformBuffer(5, frameSet);
 }
 
-// Per-object uniform buffers (set 2): the bone matrices of the current animation frame of a skinned model (up to 128).
+// Per-object uniform buffers (set 2): the bone matrices of the current animation frame of a skinned model (up to 128), then
+// the previous frame's for the motion vectors (previousBoneTransforms; empty: the pose didn't change). See the BoneTransforms
+// block in Include/MeshVertex_Anim.glslh.
 // Every model has its own shader instance (see ModelH2M::Create), so every skinned model has its own bone buffer.
-static void UpdateObjectUniforms(const H2M::RefH2M<H2M::ModelH2M>& model)
+static void UpdateObjectUniforms(const H2M::RefH2M<H2M::ModelH2M>& model, const std::vector<glm::mat4>& previousBoneTransforms = {})
 {
+	static constexpr size_t MaxBones = 128;
 	H2M::RefH2M<H2M::ModelH2M> modelRef = model;
 	if (!modelRef->IsSkinned() || modelRef->GetObjectDescriptorSet() == VK_NULL_HANDLE)
 	{
@@ -1601,12 +1615,18 @@ static void UpdateObjectUniforms(const H2M::RefH2M<H2M::ModelH2M>& model)
 	}
 
 	const std::vector<glm::mat4>& boneTransforms = modelRef->GetBoneTransforms();
-	size_t boneCount = std::min<size_t>(boneTransforms.size(), 128);
+	size_t boneCount = std::min<size_t>(boneTransforms.size(), MaxBones);
 	if (boneCount > 0)
 	{
 		H2M::RefH2M<H2M::VulkanShaderH2M> shader = modelRef->GetMeshShader().As<H2M::VulkanShaderH2M>();
+		const bool hasPreviousArray = shader->GetUniformBuffer(0, H2M::VulkanShaderH2M::ObjectDescriptorSet).Size >= 2 * MaxBones * sizeof(glm::mat4);
 		void* ubPtr = shader->MapUniformBuffer(0, H2M::VulkanShaderH2M::ObjectDescriptorSet);
 		memcpy(ubPtr, boneTransforms.data(), boneCount * sizeof(glm::mat4));
+		if (hasPreviousArray)
+		{
+			const std::vector<glm::mat4>& previous = previousBoneTransforms.size() == boneTransforms.size() ? previousBoneTransforms : boneTransforms;
+			memcpy((uint8_t*)ubPtr + MaxBones * sizeof(glm::mat4), previous.data(), boneCount * sizeof(glm::mat4));
+		}
 		shader->UnmapUniformBuffer(0, H2M::VulkanShaderH2M::ObjectDescriptorSet);
 	}
 }
@@ -1649,6 +1669,14 @@ static bool AcceptFileDrop(const ImVec2& highlightMin, const ImVec2& highlightMa
 
 static bool s_ShowLightGizmos = true; // light icons and shapes in the viewport
 static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light's shadow (see ShadowDebugValue in the PBR shaders)
+
+// Debug views (Environment panel, Debug View): what the viewport shows instead of the finished image. The G-buffer views
+// are drawn by the viewport composite (ViewportComposite.glsl, GBufferView), the lighting views by the PBR shaders
+// (u_ShadowDebug.z).
+enum DebugView { DebugViewOff = 0, DebugViewNormals, DebugViewRoughness, DebugViewLinearDepth, DebugViewMotion, DebugViewDirectLight, DebugViewIndirectLight };
+static int s_DebugView = DebugViewOff;
+static float s_DebugViewDepthRange = 50.0f;  // Linear Depth: the distance shown as white (world units)
+static float s_DebugViewMotionScale = 20.0f; // Motion: the motion shown at full color (pixels per frame)
 
 
 // Selects a light of s_Lights; None deselects the selected light (a selected model stays selected)
@@ -5115,6 +5143,12 @@ static void ProcessSceneOperations()
 	{
 		s_StartupDone = true;
 		MarkSceneSaved(); // the startup scene (environment and sun) has nothing to save yet
+		// --scene on the command line: opened like File > Open (without it the engine starts empty)
+		const std::string& startupScene = Application::Get()->GetCommandLine().ScenePath;
+		if (!startupScene.empty())
+		{
+			RequestOpenScene(startupScene);
+		}
 	}
 	if (s_PendingSceneOperation == SceneOperation::None || !s_SceneOperationConfirmed)
 	{
@@ -6217,13 +6251,20 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 }
 
 /**** BEGIN to be removed from VulkanRenderer ****/
-void EnvMapVulkanRenderer::SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials)
+void EnvMapVulkanRenderer::SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials,
+	const std::vector<glm::mat4>& previousMeshTransforms)
 {
 	// Temporary code - populate selected mesh
 	// std::vector<Submesh> submeshes = mesh->GetMeshes();
 	// s_SelectedSubmesh = &submeshes.at(0);
 
-	s_SubmittedModels.push_back({ model, transform, materials });
+	s_SubmittedModels.push_back({ model, transform, materials, (uint32_t)s_PreviousDrawTransforms.size() });
+	H2M::RefH2M<H2M::ModelH2M> modelRef = model;
+	const auto& meshes = modelRef->GetMeshes();
+	for (size_t s = 0; s < meshes.size(); s++)
+	{
+		s_PreviousDrawTransforms.push_back(s < previousMeshTransforms.size() ? previousMeshTransforms[s] : GetMeshTransform(modelRef, meshes[s], transform));
+	}
 
 	// VulkanRendererData::DrawCommand drawCommand = {};
 	// drawCommand.Mesh = mesh;
@@ -6519,6 +6560,7 @@ void EnvMapVulkanRenderer::Init()
 	s_Glass.Create(s_Framebuffer);
 	s_GBuffer.Create(s_Framebuffer);
 	s_GBuffer.CreatePipelines(s_MeshPipeline, s_MeshPipelineAnim);
+	WriteBloomDescriptorSets(); // the viewport composite samples the G-buffer (debug views)
 
 	// The scene (EnvMapVulkanScene, being introduced): its operations are checked once at startup
 	EnvMapVulkanScene::SelfTest();
@@ -6713,7 +6755,7 @@ void EnvMapVulkanRenderer::Shutdown()
 }
 
 void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
-	MeshPass pass)
+	MeshPass pass, uint32_t firstDraw)
 {
 	/**** BEGIN keep smart references alive ****/
 	H2M::RefH2M<H2M::TextureCubeH2M> envUnfiltered = s_Data.envUnfiltered;
@@ -6809,7 +6851,9 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		glm::mat4 meshTransform = GetMeshTransform(model, mesh, transform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &meshTransform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
-		vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
+		// The prepass reads the mesh's previous transform per instance: the instance index picks it (see EnvMapVulkanGBuffer)
+		uint32_t firstInstance = pass == MeshPass::GBuffer ? firstDraw + (uint32_t)s : 0;
+		vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, firstInstance);
 		EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
 	}
 }
@@ -6833,7 +6877,8 @@ static void WriteShadowUniforms()
 		glm::vec4 PointShadowDepthParams[MaxShadowedPointLights]; // xy used
 		glm::vec4 SpotShadowTanHalfFov;
 		glm::vec4 LocalShadowParams; // normal bias, softness, 1 / spot resolution, 1 / point resolution
-		glm::vec4 ShadowDebug;       // Shadows Only: x = 1 sun, 2 point, 3 spot, 4 light off (0: normal view); y = index in the packed lights
+		glm::vec4 ShadowDebug;       // Shadows Only: x = 1 sun, 2 point, 3 spot, 4 light off (0: normal view); y = index in the packed lights;
+		                             // z = debug view: 1 the direct light only, 2 the indirect light only
 	};
 	static_assert(sizeof(ShadowsUB) == 688, "std140 layout mismatch with the Shadows block of the PBR shaders");
 	static_assert(MaxShadowedSpotLights == 4 && MaxShadowedPointLights == 4, "the Shadows block of the PBR shaders has 4 slots of each");
@@ -6891,6 +6936,7 @@ static void WriteShadowUniforms()
 			ub.ShadowDebug = glm::vec4(enabled ? (point ? 2.0f : 3.0f) : 4.0f, (float)packedIndex, 0.0f, 0.0f);
 		}
 	}
+	ub.ShadowDebug.z = s_DebugView == DebugViewDirectLight ? 1.0f : (s_DebugView == DebugViewIndirectLight ? 2.0f : 0.0f);
 	ub.LocalShadowParams = glm::vec4(s_LocalShadowSettings.NormalBias, s_LocalShadowSettings.Softness,
 		s_SpotShadowMaps.IsValid() ? 1.0f / (float)s_SpotShadowMaps.GetResolution() : 0.0f,
 		s_PointShadowMaps.IsValid() ? 1.0f / (float)s_PointShadowMaps.GetResolution() : 0.0f);
@@ -7522,6 +7568,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 			EnvMapVulkanProfiler::Scope prepassScope(drawCommandBuffer, "G-Buffer Prepass", "The surface data of every pixel (normal, "
 				"roughness, motion, depth) for the effects that need it before or after the lighting, such as ambient occlusion: "
 				"the opaque meshes drawn once more, with a cheap shader that only reads their normal and roughness maps.");
+			s_GBuffer.SetPreviousTransforms(s_PreviousDrawTransforms);
 			s_GBuffer.BeginPass(drawCommandBuffer);
 			EnvMapVulkanProfiler::CountRenderPass(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());
 			VkPipelineLayout prepassLayout = s_MeshPipeline.As<H2M::VulkanPipelineH2M>()->GetVulkanPipelineLayout();
@@ -7529,7 +7576,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 				s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
 			for (const SubmittedModel& submitted : s_SubmittedModels)
 			{
-				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::GBuffer);
+				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::GBuffer, submitted.FirstDraw);
 			}
 			s_GBuffer.EndPass(drawCommandBuffer);
 		}
@@ -7601,6 +7648,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 		CollectGlassDraws();
 
 		s_SubmittedModels.clear();
+		s_PreviousDrawTransforms.clear();
 
 		// The water: it looks into the opaque scene drawn so far. The render pass ends, its color and depth are copied
 		// for the water to read, and the framebuffer's continue render pass (which loads the attachments instead of
@@ -7658,6 +7706,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 
 		vkCmdEndRenderPass(drawCommandBuffer);
 		EnvMapVulkanProfiler::EndScope(drawCommandBuffer); // Scene
+		s_GBuffer.MakeDepthReadable(drawCommandBuffer); // the viewport composite samples it (the Linear Depth debug view)
 
 		if (s_BloomSettings.Enabled || !s_BloomChainRendered)
 		{
@@ -7873,6 +7922,17 @@ static void WriteBloomDescriptorSets()
 		write.pImageInfo = compositeImages[i];
 		writes.push_back(write);
 	}
+	// The G-buffer, for the debug views (created after the bloom resources: Init writes the sets again once it exists)
+	const VkDescriptorImageInfo gbufferImages[3] = { s_GBuffer.GetNormalRoughnessInfo(), s_GBuffer.GetMotionInfo(), s_GBuffer.GetDepthInfo() };
+	const char* gbufferBindings[3] = { "u_GBufferNormalRoughness", "u_GBufferMotion", "u_GBufferDepth" };
+	for (uint32_t i = 0; i < 3 && s_GBuffer.IsValid(); i++)
+	{
+		VkWriteDescriptorSet write = *compositeShader->GetDescriptorSet(gbufferBindings[i]);
+		write.dstSet = s_ViewportCompositeDescriptorSet.DescriptorSets[0];
+		write.descriptorCount = 1;
+		write.pImageInfo = &gbufferImages[i];
+		writes.push_back(write);
+	}
 
 	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 }
@@ -8009,7 +8069,11 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 		glm::vec4 OutlineColor;
 		float HuePreservation;
 		float RawScene;
+		float DebugView;
+		float Padding;
+		glm::vec4 DebugParams;
 	} uniforms;
+	static_assert(sizeof(CompositeUniforms) == 64, "layout mismatch with the Uniforms block of ViewportComposite.glsl");
 	uniforms.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
 	uniforms.BloomIntensity = s_BloomSettings.Enabled ? s_BloomSettings.Intensity : 0.0f;
 	uniforms.BloomDirtIntensity = (s_BloomSettings.Enabled && s_BloomSettings.DirtEnabled) ? s_BloomSettings.DirtIntensity : 0.0f;
@@ -8017,6 +8081,11 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	uniforms.OutlineColor = s_OverlaySettings.OutlineColor;
 	uniforms.HuePreservation = s_TonemapHuePreservation;
 	uniforms.RawScene = s_ShowShadowsOnly && s_SelectedLightKind != LightKind::None ? 1.0f : 0.0f;
+	// The G-buffer views have the numbers of ViewportComposite.glsl's GBufferView (the lighting views are the PBR shaders')
+	const glm::mat4& projection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix();
+	uniforms.DebugView = s_DebugView >= DebugViewNormals && s_DebugView <= DebugViewMotion ? (float)s_DebugView : 0.0f;
+	uniforms.Padding = 0.0f;
+	uniforms.DebugParams = glm::vec4(projection[2][2], projection[3][2], s_DebugViewDepthRange, s_DebugViewMotionScale);
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(CompositeUniforms), &uniforms);
 
 	// Scene, bloom, lens dirt, overlay and selection mask images (rewritten when the framebuffers are resized, see WriteBloomDescriptorSets)
@@ -8870,6 +8939,41 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					}
 				}
 
+				// What the viewport shows instead of the finished image: the G-buffer's contents, or one part of the lighting
+				if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::PushID("DebugView");
+					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0");
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
+							"  Normals: the world direction as a color (x red, y green, z blue; straight up is light green)\n"
+							"  Roughness: black = smooth, white = rough\n"
+							"  Linear Depth: the distance from the camera, black = near, white = Depth Range and beyond\n"
+							"  Motion: movement on the screen since the previous frame. Gray = none, more red = to the right,\n"
+							"  more green = down\n"
+							"Direct Light Only: the sun, point and spot lights. Indirect Light Only: the environment's light.\n"
+							"  Opaque meshes only: the water and glass are drawn as usual.");
+					}
+					if (s_DebugView == DebugViewLinearDepth)
+					{
+						ImGui::DragFloat("Depth Range", &s_DebugViewDepthRange, 0.5f, 1.0f, 1000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("The distance shown as white");
+						}
+					}
+					if (s_DebugView == DebugViewMotion)
+					{
+						ImGui::DragFloat("Motion Scale", &s_DebugViewMotionScale, 0.1f, 0.5f, 200.0f, "%.1f px", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("The movement per frame shown at full color (lower: small movements show up more)");
+						}
+					}
+					ImGui::PopID();
+				}
+
 				// Like "Display Outline / Wireframe / Bounding Boxes" in SceneHazelEnvMap
 				if (ImGui::CollapsingHeader("Selection and Overlays", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
@@ -9265,7 +9369,18 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	float deltaTime = std::min(std::chrono::duration<float>(now - s_LastAnimationUpdate).count(), 0.1f);
 	s_LastAnimationUpdate = now;
 
-	// The scene into the frame: the parts' transforms into their meshes, then every model with its materials
+	// The scene into the frame: the parts' transforms into their meshes, then every model with its materials. For the motion
+	// vectors each model is submitted with where its meshes and bones were in the previous frame (a model that's new, or
+	// was replaced, didn't move).
+	struct ModelMotionState
+	{
+		const H2M::ModelH2M* Model = nullptr;
+		std::vector<glm::mat4> MeshTransforms; // GetMeshTransform of each mesh
+		std::vector<glm::mat4> BoneTransforms; // skinned models
+	};
+	static std::unordered_map<EnvMapVulkanEntityID, ModelMotionState> s_PreviousModelStates;
+	std::unordered_map<EnvMapVulkanEntityID, ModelMotionState> modelStates; // this frame's: deleted models drop out
+
 	ApplyPartTransforms();
 	for (EnvMapVulkanEntityID entity : GetModels())
 	{
@@ -9274,9 +9389,28 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		{
 			model->OnUpdate(H2M::TimestepH2M(deltaTime), false); // bone matrices of the current frame (bind pose when not animated)
 		}
-		UpdateObjectUniforms(model);
-		SubmitModelTemp(model, s_Scene.GetWorldTransform(entity), GetMeshMaterials(entity));
+		glm::mat4 worldTransform = s_Scene.GetWorldTransform(entity);
+
+		ModelMotionState state;
+		state.Model = model.Raw();
+		for (const H2M::RefH2M<H2M::MeshH2M>& mesh : model->GetMeshes())
+		{
+			state.MeshTransforms.push_back(GetMeshTransform(model, mesh, worldTransform));
+		}
+		if (model->IsSkinned())
+		{
+			state.BoneTransforms = model->GetBoneTransforms();
+		}
+		auto previousIt = s_PreviousModelStates.find(entity);
+		const bool hasPrevious = previousIt != s_PreviousModelStates.end() && previousIt->second.Model == state.Model &&
+			previousIt->second.MeshTransforms.size() == state.MeshTransforms.size();
+		const ModelMotionState& previousState = hasPrevious ? previousIt->second : state;
+
+		UpdateObjectUniforms(model, previousState.BoneTransforms);
+		SubmitModelTemp(model, worldTransform, GetMeshMaterials(entity), previousState.MeshTransforms);
+		modelStates[entity] = std::move(state);
 	}
+	s_PreviousModelStates = std::move(modelStates);
 	UpdateFrameUniforms();
 	if (s_WaterSettings.Enabled)
 	{

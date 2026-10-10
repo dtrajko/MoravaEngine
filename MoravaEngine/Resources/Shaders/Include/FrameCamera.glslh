@@ -6,6 +6,7 @@
 layout (std140, set = 0, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjectionMatrix;
+	mat4 u_PreviousViewProjectionMatrix; // the previous frame's, for the motion vectors (Include/MeshVertexMotion.glslh)
 };
 
 #endif

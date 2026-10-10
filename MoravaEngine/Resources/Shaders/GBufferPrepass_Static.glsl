@@ -3,6 +3,8 @@
 #type vertex
 #version 450 core
 
+// The prepass also needs where each vertex was in the previous frame (the PBR shaders leave this out)
+#define MESH_VERTEX_MOTION
 #include "Include/MeshVertex_Static.glslh"
 
 // ---------------------------------------------------------------------------------------------------

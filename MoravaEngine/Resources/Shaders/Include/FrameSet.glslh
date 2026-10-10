@@ -88,7 +88,8 @@ layout (std140, set = 0, binding = 7) uniform Shadows
 	vec4 u_PointShadowDepthParams[4];   // offset 576: depth = x - y / z (z: largest coordinate of the offset from the light)
 	vec4 u_SpotShadowTanHalfFov;        // offset 640: tan(field of view / 2) of each spot slot
 	vec4 u_LocalShadowParams;           // offset 656: normal bias (texels), softness (texels), 1 / spot resolution, 1 / point resolution
-	vec4 u_ShadowDebug;                 // offset 672: Shadows Only view, see ShadowDebugValue
+	vec4 u_ShadowDebug;                 // offset 672: xy = Shadows Only view, see ShadowDebugValue; z = the lighting shown:
+	                                    // 1 the direct light only, 2 the indirect light only (0: all of it)
 };
 layout (set = 0, binding = 8) uniform sampler2DArrayShadow u_SpotShadowMaps;  // a layer per shadowed spot light
 layout (set = 0, binding = 9) uniform samplerCubeArrayShadow u_PointShadowMaps; // a cube per shadowed point light

@@ -7,9 +7,17 @@
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 
+#include <algorithm>
 #include <array>
+#include <cstring>
 #include <vector>
 
+
+// Vertex buffer binding and first attribute location of the previous transforms (a_PreviousTransform, see
+// Include/MeshVertexMotion.glslh: after the attributes of the static and the skinned vertex layout)
+static constexpr uint32_t PreviousTransformBinding = 1;
+static constexpr uint32_t PreviousTransformLocation = 7;
+static constexpr uint32_t InitialPreviousTransformCapacity = 1024; // draws
 
 static bool HasStencil(VkFormat format)
 {
@@ -36,6 +44,8 @@ void EnvMapVulkanGBuffer::Create(H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuff
 	samplerInfo.maxAnisotropy = 1.0f;
 	VK_CHECK_RESULT_H2M(vkCreateSampler(device, &samplerInfo, nullptr, &m_Sampler));
 
+	CreatePreviousTransformBuffer(InitialPreviousTransformCapacity);
+
 	Resize(sceneFramebuffer);
 }
 
@@ -51,6 +61,7 @@ void EnvMapVulkanGBuffer::Destroy()
 		}
 	}
 	DestroyTargets();
+	DestroyPreviousTransformBuffer();
 	if (m_RenderPass)
 	{
 		vkDestroyRenderPass(device, m_RenderPass, nullptr);
@@ -172,10 +183,13 @@ void EnvMapVulkanGBuffer::DestroyTargets()
 		vkDestroyFramebuffer(device, m_Framebuffer, nullptr);
 		m_Framebuffer = VK_NULL_HANDLE;
 	}
-	if (m_DepthView)
+	for (VkImageView* view : { &m_DepthView, &m_DepthSampleView })
 	{
-		vkDestroyImageView(device, m_DepthView, nullptr);
-		m_DepthView = VK_NULL_HANDLE;
+		if (*view)
+		{
+			vkDestroyImageView(device, *view, nullptr);
+			*view = VK_NULL_HANDLE;
+		}
 	}
 	for (Attachment* attachment : { &m_NormalRoughness, &m_Motion })
 	{
@@ -217,6 +231,9 @@ void EnvMapVulkanGBuffer::Resize(H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuff
 	viewInfo.subresourceRange = { (VkImageAspectFlags)(HasStencil(m_DepthFormat) ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_DEPTH_BIT),
 		0, 1, 0, 1 };
 	VK_CHECK_RESULT_H2M(vkCreateImageView(device, &viewInfo, nullptr, &m_DepthView));
+	// and one of the depth alone: a sampled view takes a single aspect
+	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	VK_CHECK_RESULT_H2M(vkCreateImageView(device, &viewInfo, nullptr, &m_DepthSampleView));
 
 	std::array<VkImageView, 3> views = { m_NormalRoughness.View, m_Motion.View, m_DepthView };
 	VkFramebufferCreateInfo framebufferInfo = {};
@@ -228,6 +245,54 @@ void EnvMapVulkanGBuffer::Resize(H2M::RefH2M<H2M::FramebufferH2M> sceneFramebuff
 	framebufferInfo.height = m_Height;
 	framebufferInfo.layers = 1;
 	VK_CHECK_RESULT_H2M(vkCreateFramebuffer(device, &framebufferInfo, nullptr, &m_Framebuffer));
+}
+
+void EnvMapVulkanGBuffer::CreatePreviousTransformBuffer(uint32_t capacity)
+{
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	VkBufferCreateInfo bufferInfo = {};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = (VkDeviceSize)capacity * sizeof(glm::mat4);
+	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	VK_CHECK_RESULT_H2M(vkCreateBuffer(device, &bufferInfo, nullptr, &m_PreviousTransformBuffer));
+	VkMemoryRequirements requirements;
+	vkGetBufferMemoryRequirements(device, m_PreviousTransformBuffer, &requirements);
+	H2M::VulkanAllocatorH2M allocator(std::string("GBuffer"));
+	allocator.Allocate(requirements, &m_PreviousTransformMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	VK_CHECK_RESULT_H2M(vkBindBufferMemory(device, m_PreviousTransformBuffer, m_PreviousTransformMemory, 0));
+	m_PreviousTransformCapacity = capacity;
+}
+
+void EnvMapVulkanGBuffer::DestroyPreviousTransformBuffer()
+{
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	if (m_PreviousTransformBuffer) vkDestroyBuffer(device, m_PreviousTransformBuffer, nullptr);
+	if (m_PreviousTransformMemory) vkFreeMemory(device, m_PreviousTransformMemory, nullptr);
+	m_PreviousTransformBuffer = VK_NULL_HANDLE;
+	m_PreviousTransformMemory = VK_NULL_HANDLE;
+	m_PreviousTransformCapacity = 0;
+}
+
+void EnvMapVulkanGBuffer::SetPreviousTransforms(const std::vector<glm::mat4>& transforms)
+{
+	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+	if (transforms.size() > m_PreviousTransformCapacity)
+	{
+		// The last frame's command buffer may still read the old buffer
+		vkDeviceWaitIdle(device);
+		uint32_t capacity = std::max((uint32_t)transforms.size(), m_PreviousTransformCapacity * 2);
+		DestroyPreviousTransformBuffer();
+		CreatePreviousTransformBuffer(capacity);
+	}
+	if (transforms.empty())
+	{
+		return;
+	}
+	VkDeviceSize size = transforms.size() * sizeof(glm::mat4);
+	void* mapped;
+	VK_CHECK_RESULT_H2M(vkMapMemory(device, m_PreviousTransformMemory, 0, size, 0, &mapped));
+	memcpy(mapped, transforms.data(), size);
+	vkUnmapMemory(device, m_PreviousTransformMemory);
 }
 
 void EnvMapVulkanGBuffer::BeginPass(VkCommandBuffer commandBuffer)
@@ -250,11 +315,33 @@ void EnvMapVulkanGBuffer::BeginPass(VkCommandBuffer commandBuffer)
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 	VkRect2D scissor = { { 0, 0 }, { m_Width, m_Height } };
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
+	// Stays bound for all draws of the pass: the meshes rebind only binding 0, their own vertices
+	VkDeviceSize offset = 0;
+	vkCmdBindVertexBuffers(commandBuffer, PreviousTransformBinding, 1, &m_PreviousTransformBuffer, &offset);
 }
 
 void EnvMapVulkanGBuffer::EndPass(VkCommandBuffer commandBuffer)
 {
 	vkCmdEndRenderPass(commandBuffer);
+}
+
+void EnvMapVulkanGBuffer::MakeDepthReadable(VkCommandBuffer commandBuffer)
+{
+	VkImageMemoryBarrier barrier = {};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.image = m_SceneDepthImage;
+	// A layout change of a depth / stencil image takes both aspects
+	barrier.subresourceRange = { (VkImageAspectFlags)(HasStencil(m_DepthFormat) ? VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT : VK_IMAGE_ASPECT_DEPTH_BIT),
+		0, 1, 0, 1 };
+	vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
 static VkFormat VertexAttributeFormat(H2M::ShaderDataTypeH2M type)
@@ -286,16 +373,25 @@ VkPipeline EnvMapVulkanGBuffer::CreatePipeline(const std::string& shaderName, H2
 
 	// The vertex layout of the PBR pipeline: the same vertex buffers are bound
 	const H2M::VertexBufferLayoutH2M& vertexLayout = meshPipeline->GetSpecification().Layout;
-	VkVertexInputBindingDescription binding = { 0, vertexLayout.GetStride(), VK_VERTEX_INPUT_RATE_VERTEX };
+	// and the previous transform of each draw (a mat4: four vec4 columns at consecutive locations), once per instance
+	std::array<VkVertexInputBindingDescription, 2> bindings = { {
+		{ 0, vertexLayout.GetStride(), VK_VERTEX_INPUT_RATE_VERTEX },
+		{ PreviousTransformBinding, (uint32_t)sizeof(glm::mat4), VK_VERTEX_INPUT_RATE_INSTANCE },
+	} };
 	std::vector<VkVertexInputAttributeDescription> attributes;
 	for (const H2M::VertexBufferElementH2M& element : vertexLayout)
 	{
 		attributes.push_back({ (uint32_t)attributes.size(), 0, VertexAttributeFormat(element.Type), element.Offset });
 	}
+	H2M_CORE_ASSERT(attributes.size() <= PreviousTransformLocation, "The previous transform's locations are taken by the vertex layout");
+	for (uint32_t column = 0; column < 4; column++)
+	{
+		attributes.push_back({ PreviousTransformLocation + column, PreviousTransformBinding, VK_FORMAT_R32G32B32A32_SFLOAT, column * (uint32_t)sizeof(glm::vec4) });
+	}
 	VkPipelineVertexInputStateCreateInfo vertexInput = {};
 	vertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInput.vertexBindingDescriptionCount = 1;
-	vertexInput.pVertexBindingDescriptions = &binding;
+	vertexInput.vertexBindingDescriptionCount = (uint32_t)bindings.size();
+	vertexInput.pVertexBindingDescriptions = bindings.data();
 	vertexInput.vertexAttributeDescriptionCount = (uint32_t)attributes.size();
 	vertexInput.pVertexAttributeDescriptions = attributes.data();
 

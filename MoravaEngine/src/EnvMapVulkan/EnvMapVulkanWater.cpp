@@ -535,7 +535,7 @@ void EnvMapVulkanWater::CreateReflection()
 	// the other bindings are copied from the main per-frame set every frame (see Update).
 	H2M::RefH2M<H2M::VulkanShaderH2M> pbrShader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
 	m_ReflectionFrameSet = pbrShader->CreateDescriptorSets(FrameSet);
-	CreateUniformBuffer(m_ReflectionCamera, sizeof(glm::mat4));
+	CreateUniformBuffer(m_ReflectionCamera, 2 * sizeof(glm::mat4)); // the Camera block: view-projection, previous view-projection
 	CreateUniformBuffer(m_ReflectionSceneData, sizeof(EnvMapVulkanSceneDataGPU));
 	std::array<VkWriteDescriptorSet, 2> writes;
 	writes[0] = *pbrShader->GetDescriptorSet("Camera", FrameSet);
@@ -746,7 +746,9 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 		// Flipped vertically: the mirror reversed the triangles' winding, the flip turns it back (and the water samples
 		// the image flipped)
 		glm::mat4 viewProjection = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f, -1.0f, 1.0f)) * obliqueProjection * reflectedView;
-		WriteUniformBuffer(m_ReflectionCamera, &viewProjection, sizeof(glm::mat4));
+		// The reflection writes no motion: its previous view-projection is this frame's
+		glm::mat4 cameraMatrices[2] = { viewProjection, viewProjection };
+		WriteUniformBuffer(m_ReflectionCamera, cameraMatrices, sizeof(cameraMatrices));
 		// The mirrored camera and the water (the light under it as in the scene pass, the caustics around the real camera);
 		// under the water also the water volume, so the PBR shaders dim each mirrored mesh by the water between it and the
 		// surface (the rays of the mirrored camera, above the surface, cross exactly that water)

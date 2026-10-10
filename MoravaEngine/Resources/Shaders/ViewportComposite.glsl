@@ -38,6 +38,10 @@ layout (binding = 1) uniform sampler2D u_BloomTexture;      // bloom (already ex
 layout (binding = 2) uniform sampler2D u_BloomDirtTexture;  // lens dirt, lit by the bloom
 layout (binding = 3) uniform sampler2D u_OverlayTexture;    // wireframe and bounding boxes (display colors, alpha = coverage)
 layout (binding = 4) uniform sampler2D u_SelectionMask;     // silhouette of the selected mesh/submesh (r = 1)
+// The G-buffer (see EnvMapVulkanGBuffer), for the debug views
+layout (binding = 5) uniform sampler2D u_GBufferNormalRoughness; // xyz = world-space normal (0: no surface, the sky), w = roughness
+layout (binding = 6) uniform sampler2D u_GBufferMotion;          // screen-space motion in UV units
+layout (binding = 7) uniform sampler2D u_GBufferDepth;           // the scene's depth
 
 layout(push_constant) uniform Uniforms
 {
@@ -48,6 +52,9 @@ layout(push_constant) uniform Uniforms
 	vec4 OutlineColor;
 	float HuePreservation;    // 0: ACES per channel (bright colors turn white), 1: hue-preserving ACES (see Tonemap)
 	float RawScene;           // 1: the scene as it is, without exposure, bloom and tonemapping (Shadows Only view)
+	float DebugView;          // a G-buffer view instead of the scene: 1 normals, 2 roughness, 3 linear depth, 4 motion (0: off)
+	vec4 DebugParams;         // xy = the projection matrix's [2][2] and [3][2] (depth -> distance), z = the distance shown as
+	                          // white (linear depth), w = the motion shown at full color, in pixels
 } u_Uniforms;
 
 // ACES filmic tonemapping (Narkowicz fit, with its 0.6 pre-exposure), per channel
@@ -101,6 +108,33 @@ float SelectionOutline()
 	return coverage;
 }
 
+// The G-buffer as a display color (shown as it is: no exposure, tonemapping or gamma, so the values can be read off the
+// screen). Where there is no surface (the sky): black, white in the depth view.
+vec3 GBufferView(int view)
+{
+	vec4 normalRoughness = texture(u_GBufferNormalRoughness, Input.TexCoord);
+	bool surface = dot(normalRoughness.xyz, normalRoughness.xyz) > 0.0;
+	if (view == 1)
+	{
+		// The world-space normal: x red, y green, z blue, from -1..1 to 0..1 (straight up is light green)
+		return surface ? normalize(normalRoughness.xyz) * 0.5 + 0.5 : vec3(0.0);
+	}
+	if (view == 2)
+	{
+		return surface ? vec3(normalRoughness.w) : vec3(0.0);
+	}
+	if (view == 3)
+	{
+		// The distance along the camera's view direction, from the depth and the projection's two depth terms
+		float depth = texture(u_GBufferDepth, Input.TexCoord).r;
+		float distance = u_Uniforms.DebugParams.y / (depth + u_Uniforms.DebugParams.x);
+		return depth < 1.0 ? vec3(clamp(distance / max(u_Uniforms.DebugParams.z, 0.001), 0.0, 1.0)) : vec3(1.0);
+	}
+	// Motion since the previous frame, in pixels: mid gray = none, more red = to the right, more green = down
+	vec2 pixels = texture(u_GBufferMotion, Input.TexCoord).rg * vec2(textureSize(u_GBufferMotion, 0));
+	return vec3(clamp(0.5 + pixels * 0.5 / max(u_Uniforms.DebugParams.w, 0.001), 0.0, 1.0), 0.5);
+}
+
 void main()
 {
 	const float gamma = 2.2;
@@ -119,6 +153,10 @@ void main()
 	}
 
 	vec3 displayColor = pow(mappedColor, vec3(1.0 / gamma));
+	if (u_Uniforms.DebugView > 0.5)
+	{
+		displayColor = GBufferView(int(u_Uniforms.DebugView + 0.5));
+	}
 
 	vec4 overlay = texture(u_OverlayTexture, Input.TexCoord);
 	displayColor = mix(displayColor, overlay.rgb, overlay.a);

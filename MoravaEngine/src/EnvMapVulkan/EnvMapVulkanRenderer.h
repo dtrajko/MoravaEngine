@@ -47,7 +47,10 @@ public:
 	virtual H2M::RendererCapabilitiesH2M GetCapabilities() override;
 
 	// materials: the Material Library material of each mesh (same order as the model's meshes)
-	static void SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials); // to be removed from VulkanRendererH2M
+	// previousMeshTransforms: where each mesh of the model was drawn in the previous frame, for the motion vectors (empty: where
+	// it's drawn now)
+	static void SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials,
+		const std::vector<glm::mat4>& previousMeshTransforms = {}); // to be removed from VulkanRendererH2M
 	static void OnResize(uint32_t width, uint32_t height);                                                 // to be removed from VulkanRendererH2M
 	static uint32_t GetViewportWidth();                                                                    // to be removed from VulkanRendererH2M
 	static uint32_t GetViewportHeight();                                                                   // to be removed from VulkanRendererH2M
@@ -57,7 +60,7 @@ public:
 	// test (no prepass there); GBuffer: the prepass shaders
 	enum class MeshPass { Scene, WaterReflection, GBuffer };
 	static void RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
-		MeshPass pass);
+		MeshPass pass, uint32_t firstDraw = 0); // firstDraw (MeshPass::GBuffer): the model's first mesh among the frame's previous transforms
 
 	static void RenderSkybox(VkCommandBuffer commandBuffer);
 

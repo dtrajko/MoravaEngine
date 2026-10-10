@@ -38,6 +38,15 @@ void main()
 	indirectLight *= WaterSkylightAt(Input.WorldPosition);
 
 	color = vec4(directLight + indirectLight + emissive, 1.0);
+	// Debug views (Environment panel): one part of the lighting by itself, exposed and tonemapped as usual
+	if (u_ShadowDebug.z > 1.5)
+	{
+		color.rgb = indirectLight;
+	}
+	else if (u_ShadowDebug.z > 0.5)
+	{
+		color.rgb = directLight;
+	}
 
 	// The water between the camera and the mesh, when this pass has it (the water's reflection pass under the water)
 	if (u_WaterVolumeParams.y > 0.5)

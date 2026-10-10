@@ -1,0 +1,17 @@
+// Motion vector inputs and outputs of the mesh vertex stages (Include/MeshVertex_Static.glslh, Include/MeshVertex_Anim.glslh),
+// compiled in only where MESH_VERTEX_MOTION is defined: the G-buffer prepass. The PBR shaders share the vertex stages
+// without it, and gl_Position stays the same expression in both (the scene pass's depth EQUAL test needs that).
+#ifndef MESH_VERTEX_MOTION_GLSLH
+#define MESH_VERTEX_MOTION_GLSLH
+
+#ifdef MESH_VERTEX_MOTION
+// Per draw, from an instance-rate vertex buffer (see EnvMapVulkanGBuffer): the mesh's transform in the previous frame
+// (what u_Transform was then). A mat4 takes four locations, 7 to 10, after the attributes of both vertex layouts.
+layout(location = 7) in mat4 a_PreviousTransform;
+
+// After the VertexOutput struct (locations 0 to 9)
+layout (location = 10) out vec4 v_ClipPosition;         // this frame's gl_Position
+layout (location = 11) out vec4 v_PreviousClipPosition; // the same vertex in the previous frame, with the previous camera
+#endif
+
+#endif
