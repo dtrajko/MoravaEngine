@@ -89,11 +89,37 @@ layout (std140, set = 0, binding = 7) uniform Shadows
 	vec4 u_SpotShadowTanHalfFov;        // offset 640: tan(field of view / 2) of each spot slot
 	vec4 u_LocalShadowParams;           // offset 656: normal bias (texels), softness (texels), 1 / spot resolution, 1 / point resolution
 	vec4 u_ShadowDebug;                 // offset 672: xy = Shadows Only view, see ShadowDebugValue; z = the lighting shown:
-	                                    // 1 the direct light only, 2 the indirect light only (0: all of it)
+	                                    // 1 the direct light only, 2 the indirect light only, 3 diffuse surface shading
+	                                    // (ShadeSurfaceDiffuse from the material buffer); 0: all of it
 };
 layout (set = 0, binding = 8) uniform sampler2DArrayShadow u_SpotShadowMaps;  // a layer per shadowed spot light
 layout (set = 0, binding = 9) uniform samplerCubeArrayShadow u_PointShadowMaps; // a cube per shadowed point light
 // The light the waves focus under the water (WaterCaustics.glsl): 1 = the light of a flat surface
 layout (set = 0, binding = 10) uniform sampler2D u_CausticsMap;
+
+// Bindings 11 to 16 are kept for the probes, the ambient occlusion and the reflections (docs/rendering/SSAO_GI_RayTracing_Guide.html)
+
+// The materials of the Material Library as plain values, one entry per material (EnvMapVulkanMaterialBuffer): what a
+// shader needs to know of a material it has no descriptor set for (set 1 holds one material's maps). A draw's entry is
+// u_MaterialUniforms.MaterialIndex. 64 bytes each, std430: must match EnvMapVulkanMaterialBuffer::GPUMaterial.
+struct GPUMaterial
+{
+	vec4 AlbedoColor;       // rgb: the albedo color, or the average color of the albedo map when it is used
+	vec4 Emissive;          // rgb: the average color of the emissive map * the emissive intensity (0 without the map)
+	float Metalness;        // the value, or the map's average
+	float Roughness;        // the value, or the map's average
+	uint Flags;             // bit 0: glass
+	// The maps in an array of all textures, for shaders that can reach any material (ray tracing): not used yet, all
+	// 0xFFFFFFFF (no map)
+	uint AlbedoMapIndex;
+	uint NormalMapIndex;
+	uint RoughnessMapIndex;
+	uint MetalnessMapIndex;
+	uint EmissiveMapIndex;
+};
+layout (std430, set = 0, binding = 17) readonly buffer Materials
+{
+	GPUMaterial u_Materials[];
+};
 
 #endif

@@ -11,6 +11,7 @@
 #include "EnvMapVulkanProfiler.h"
 #include "EnvMapVulkanGlass.h"
 #include "EnvMapVulkanGBuffer.h"
+#include "EnvMapVulkanMaterialBuffer.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
 #include "EnvMapVulkanSceneSerializer.h"
@@ -1471,6 +1472,22 @@ static EnvMapVulkanGlass s_Glass;
 // scene pass (Phase A of docs/rendering/SSAO_GI_RayTracing_Guide.html). The scene pass loads that depth and draws the
 // opaque meshes with depth EQUAL (s_MeshPipelineDepthEqual), so their PBR shader runs once per pixel.
 static EnvMapVulkanGBuffer s_GBuffer;
+
+// The Material Library's materials as plain values in one GPU buffer (see EnvMapVulkanMaterialBuffer): u_Materials in set 0,
+// for shaders that light a point without its material's descriptor set
+static EnvMapVulkanMaterialBuffer s_MaterialBuffer;
+
+// Points the per-frame set's material buffer binding to the buffer (at startup, and when a bigger buffer replaced it)
+static void WriteMaterialBufferDescriptor()
+{
+	H2M::RefH2M<H2M::VulkanShaderH2M> pbrShader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
+	const VkDescriptorBufferInfo bufferInfo = s_MaterialBuffer.GetDescriptorInfo();
+	VkWriteDescriptorSet write = *pbrShader->GetDescriptorSet("Materials", H2M::VulkanShaderH2M::FrameDescriptorSet);
+	write.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+	write.descriptorCount = 1;
+	write.pBufferInfo = &bufferInfo;
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+}
 struct GlassDraw
 {
 	H2M::RefH2M<H2M::ModelH2M> Model; // keeps the buffers alive until the draw is recorded
@@ -1673,7 +1690,8 @@ static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light'
 // Debug views (Environment panel, Debug View): what the viewport shows instead of the finished image. The G-buffer views
 // are drawn by the viewport composite (ViewportComposite.glsl, GBufferView), the lighting views by the PBR shaders
 // (u_ShadowDebug.z).
-enum DebugView { DebugViewOff = 0, DebugViewNormals, DebugViewRoughness, DebugViewLinearDepth, DebugViewMotion, DebugViewDirectLight, DebugViewIndirectLight };
+enum DebugView { DebugViewOff = 0, DebugViewNormals, DebugViewRoughness, DebugViewLinearDepth, DebugViewMotion, DebugViewDirectLight, DebugViewIndirectLight,
+	DebugViewSurfaceShading };
 static int s_DebugView = DebugViewOff;
 static float s_DebugViewDepthRange = 50.0f;  // Linear Depth: the distance shown as white (world units)
 static float s_DebugViewMotionScale = 20.0f; // Motion: the motion shown at full color (pixels per frame)
@@ -6695,6 +6713,10 @@ void EnvMapVulkanRenderer::Init()
 
 		WriteShadowMapDescriptor();
 
+		// binding 17: the material buffer
+		s_MaterialBuffer.Create();
+		WriteMaterialBufferDescriptor();
+
 		// binding 10: the water's caustics map (it exists from s_Water.Create on, with or without water on the scene)
 		VkWriteDescriptorSet causticsWrite = *pbrShader->GetDescriptorSet("u_CausticsMap", frameSet);
 		causticsWrite.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
@@ -6748,6 +6770,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_ShadowMapViewer.Destroy();
 	s_Water.Destroy();
 	s_Glass.Destroy();
+	s_MaterialBuffer.Destroy();
 	s_GBuffer.Destroy();
 	EnvMapVulkanProfiler::Shutdown();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
@@ -6878,7 +6901,7 @@ static void WriteShadowUniforms()
 		glm::vec4 SpotShadowTanHalfFov;
 		glm::vec4 LocalShadowParams; // normal bias, softness, 1 / spot resolution, 1 / point resolution
 		glm::vec4 ShadowDebug;       // Shadows Only: x = 1 sun, 2 point, 3 spot, 4 light off (0: normal view); y = index in the packed lights;
-		                             // z = debug view: 1 the direct light only, 2 the indirect light only
+		                             // z = debug view: 1 the direct light only, 2 the indirect light only, 3 diffuse surface shading
 	};
 	static_assert(sizeof(ShadowsUB) == 688, "std140 layout mismatch with the Shadows block of the PBR shaders");
 	static_assert(MaxShadowedSpotLights == 4 && MaxShadowedPointLights == 4, "the Shadows block of the PBR shaders has 4 slots of each");
@@ -6936,7 +6959,7 @@ static void WriteShadowUniforms()
 			ub.ShadowDebug = glm::vec4(enabled ? (point ? 2.0f : 3.0f) : 4.0f, (float)packedIndex, 0.0f, 0.0f);
 		}
 	}
-	ub.ShadowDebug.z = s_DebugView == DebugViewDirectLight ? 1.0f : (s_DebugView == DebugViewIndirectLight ? 2.0f : 0.0f);
+	ub.ShadowDebug.z = s_DebugView >= DebugViewDirectLight && s_DebugView <= DebugViewSurfaceShading ? (float)(s_DebugView - DebugViewDirectLight + 1) : 0.0f;
 	ub.LocalShadowParams = glm::vec4(s_LocalShadowSettings.NormalBias, s_LocalShadowSettings.Softness,
 		s_SpotShadowMaps.IsValid() ? 1.0f / (float)s_SpotShadowMaps.GetResolution() : 0.0f,
 		s_PointShadowMaps.IsValid() ? 1.0f / (float)s_PointShadowMaps.GetResolution() : 0.0f);
@@ -8943,7 +8966,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::PushID("DebugView");
-					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0");
+					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0");
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
@@ -8953,6 +8976,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							"  Motion: movement on the screen since the previous frame. Gray = none, more red = to the right,\n"
 							"  more green = down\n"
 							"Direct Light Only: the sun, point and spot lights. Indirect Light Only: the environment's light.\n"
+							"Diffuse Surface Shading: each surface as light that bounces sees it. One color per material (a map's\n"
+							"  average), the mesh's own normals, no reflections: what the probes and ray hits will be lit with.\n"
 							"  Opaque meshes only: the water and glass are drawn as usual.");
 					}
 					if (s_DebugView == DebugViewLinearDepth)
@@ -9411,6 +9436,11 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		modelStates[entity] = std::move(state);
 	}
 	s_PreviousModelStates = std::move(modelStates);
+	// The materials into their GPU buffer, each with its index (after this frame's edits, before anything is recorded)
+	if (s_MaterialBuffer.Update())
+	{
+		WriteMaterialBufferDescriptor(); // a bigger buffer: Update waited for the GPU
+	}
 	UpdateFrameUniforms();
 	if (s_WaterSettings.Enabled)
 	{

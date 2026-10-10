@@ -291,6 +291,30 @@ namespace H2M
 			MORAVA_CORE_TRACE("--------------------------");
 		}
 
+		// Storage buffers ("buffer" blocks): only the binding is reflected. The buffer itself belongs to whoever fills it
+		// and is written into the descriptor set by name (GetDescriptorSet), like an image.
+		MORAVA_CORE_TRACE("Storage Buffers:");
+		for (const spirv_cross::Resource& resource : resources.storage_buffers)
+		{
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
+			ShaderDescriptorSetH2M& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			auto existingBuffer = shaderDescriptorSet.StorageBuffers.find(binding);
+			if (existingBuffer != shaderDescriptorSet.StorageBuffers.end())
+			{
+				// Declared in several stages: one binding, visible to all of them
+				existingBuffer->second.ShaderStage = (VkShaderStageFlagBits)(existingBuffer->second.ShaderStage | shaderStage);
+				continue;
+			}
+			StorageBufferH2M& buffer = shaderDescriptorSet.StorageBuffers[binding];
+			buffer.BindingPoint = binding;
+			buffer.Name = resource.name;
+			buffer.ShaderStage = shaderStage;
+
+			MORAVA_CORE_TRACE("    {0} ({1}, {2})", resource.name, descriptorSet, binding);
+		}
+
 		MORAVA_CORE_TRACE("Push Constant Buffers:");
 		for (const auto& resource : resources.push_constant_buffers)
 		{
@@ -443,6 +467,13 @@ namespace H2M
 				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.StorageImages);
 			}
 
+			if (shaderDescriptorSet.StorageBuffers.size())
+			{
+				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.StorageBuffers.size());
+			}
+
 #if 0
 			// TODO: Move this to the centralized renderer
 			// Create the global descriptor pool
@@ -524,6 +555,27 @@ namespace H2M
 				set.descriptorCount = 1;
 				set.dstBinding = layoutBinding.binding;
 				// set.dstSet = descriptorSet;
+			}
+
+			for (auto& [binding, storageBuffer] : shaderDescriptorSet.StorageBuffers)
+			{
+				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.stageFlags = storageBuffer.ShaderStage;
+				layoutBinding.pImmutableSamplers = nullptr;
+				layoutBinding.binding = binding;
+
+				H2M_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
+				H2M_CORE_ASSERT(shaderDescriptorSet.ImageSamplers.find(binding) == shaderDescriptorSet.ImageSamplers.end(), "Binding is already present in m_ImageSamplers!");
+
+				// The buffer is the caller's: pBufferInfo is set when the set is written
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[storageBuffer.Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+				set.descriptorCount = 1;
+				set.dstBinding = layoutBinding.binding;
 			}
 
 			VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
@@ -643,6 +695,12 @@ namespace H2M
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.StorageImages) * numberOfSets;
+			}
+			if (shaderDescriptorSet.StorageBuffers.size())
+			{
+				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.StorageBuffers.size()) * numberOfSets;
 			}
 
 		}

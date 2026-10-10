@@ -39,7 +39,16 @@ void main()
 
 	color = vec4(directLight + indirectLight + emissive, 1.0);
 	// Debug views (Environment panel): one part of the lighting by itself, exposed and tonemapped as usual
-	if (u_ShadowDebug.z > 1.5)
+	if (u_ShadowDebug.z > 2.5)
+	{
+		// Diffuse Surface Shading: the surface as light that bounces sees it (Include/ShadeSurface.glslh), from the
+		// material buffer and the mesh's own normal: no texture detail, no normal map, no reflections
+		vec3 surfaceNormal = normalize(Input.Normal);
+		surfaceNormal = dot(surfaceNormal, m_Params.View) < 0.0 ? -surfaceNormal : surfaceNormal;
+		SurfacePoint surface = SurfaceFromMaterial(int(u_MaterialUniforms.MaterialIndex + 0.5), Input.WorldPosition, surfaceNormal);
+		color.rgb = ShadeSurfaceDiffuse(surface, true);
+	}
+	else if (u_ShadowDebug.z > 1.5)
 	{
 		color.rgb = indirectLight;
 	}

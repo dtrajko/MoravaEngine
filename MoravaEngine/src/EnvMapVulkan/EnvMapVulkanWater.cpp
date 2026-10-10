@@ -762,17 +762,19 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 		}
 		WriteUniformBuffer(m_ReflectionSceneData, &sceneData, sizeof(sceneData));
 
-		// The rest of set 0 (environment maps, BRDF LUT, lights, shadows, caustics) as in the main per-frame set
-		std::array<VkCopyDescriptorSet, 9> copies;
+		// The rest of set 0 (environment maps, BRDF LUT, lights, shadows, caustics: bindings 2 to 10, and the material
+		// buffer) as in the main per-frame set
+		const uint32_t copiedBindings[] = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 17 };
+		std::array<VkCopyDescriptorSet, 10> copies;
 		for (uint32_t i = 0; i < (uint32_t)copies.size(); i++)
 		{
 			VkCopyDescriptorSet& copy = copies[i];
 			copy = {};
 			copy.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
 			copy.srcSet = frameDescriptorSet;
-			copy.srcBinding = 2 + i;
+			copy.srcBinding = copiedBindings[i];
 			copy.dstSet = m_ReflectionFrameSet.DescriptorSets[0];
-			copy.dstBinding = 2 + i;
+			copy.dstBinding = copiedBindings[i];
 			copy.descriptorCount = 1;
 		}
 		vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 0, nullptr, (uint32_t)copies.size(), copies.data());

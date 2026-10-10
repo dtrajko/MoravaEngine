@@ -1,0 +1,194 @@
+// The light at any point of the scene, from its position, normal and material values alone: nothing here reads the vertex
+// outputs or a material's texture maps. So the same code can light a fragment (the PBR shaders, Include/PBRCommon.glslh),
+// what a probe sees (the probe capture) and, later, the point a ray hits in a compute shader
+// (docs/rendering/SSAO_GI_RayTracing_Guide.html, Phase B).
+// - SunLightAt, PointLightAt, SpotLightAt: the light arriving from one light, with its falloff, cone and shadow. The only
+//   copy of that code: the PBR shaders' Lighting() runs its BRDF on them, ShadeSurfaceDiffuse adds them up.
+// - IndirectDiffuse: the light arriving from everywhere else.
+// - ShadeSurfaceDiffuse: the light a surface point sends back, as a matte surface (no reflections).
+// Needs set 0 (Include/FrameSet.glslh): the lights, the shadow maps, the environment and the material buffer.
+#ifndef SHADE_SURFACE_GLSLH
+#define SHADE_SURFACE_GLSLH
+
+#include "FrameSet.glslh"
+
+const float Epsilon = 0.00001;
+
+vec3 RotateVectorAboutY(float angle, vec3 vec)
+{
+    angle = radians(angle);
+    mat3x3 rotationMatrix ={vec3(cos(angle),0.0,sin(angle)),
+                            vec3(0.0,1.0,0.0),
+                            vec3(-sin(angle),0.0,cos(angle))};
+    return rotationMatrix * vec;
+}
+
+// Inverse-square falloff, windowed to reach exactly zero at the light's range (Karis 2013, "Real Shading in Unreal Engine 4").
+// The distance is clamped to 1 cm, so a surface at the light's position doesn't get infinite light.
+float DistanceAttenuation(float distance, float range)
+{
+	float ratio = distance / range;
+	float ratio2 = ratio * ratio;
+	float window = clamp(1.0 - ratio2 * ratio2, 0.0, 1.0);
+	return window * window / max(distance * distance, 0.0001);
+}
+
+#include "Shadows.glslh"
+#include "WaterVolume.glslh"
+
+// The light arriving at a point P from one light. N is the normal the light is measured against (the shading normal),
+// geometryNormal the surface's own (the shadow lookups offset along it). L points from P towards the light; radiance is
+// what arrives: falloff, cone and shadow applied, not yet the angle to the surface (dot(N, L)).
+// False when nothing arrives: the light is off, out of range, outside the cone, or behind the surface.
+
+// The sun, through its shadow map. Under the water its light comes in steeper (bent by the surface), dimmed by the water
+// on its way down and focused by the waves (caustics).
+// Outside the sun's cascades (they follow the camera: behind it, or beyond the shadow distance) a point counts as lit.
+bool SunLightAt(vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec3 radiance)
+{
+	L = u_Sun.Direction;
+	radiance = vec3(0.0);
+	if (u_Sun.Intensity <= 0.0)
+	{
+		return false;
+	}
+	vec3 sunRadiance = u_Sun.Color * u_Sun.Intensity;
+	vec3 underWater;
+	if (WaterSunlightAt(P, L, underWater))
+	{
+		sunRadiance *= underWater;
+	}
+	if (dot(N, L) <= 0.0 || dot(sunRadiance, sunRadiance) <= 0.0)
+	{
+		return false;
+	}
+	radiance = sunRadiance * SunShadow(P, geometryNormal);
+	return true;
+}
+
+bool PointLightAt(int i, vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec3 radiance)
+{
+	L = vec3(0.0);
+	radiance = vec3(0.0);
+	vec3 toLight = u_PointLights[i].Position - P;
+	float distance = length(toLight);
+	if (distance >= u_PointLights[i].Range)
+	{
+		return false;
+	}
+	L = toLight / max(distance, Epsilon);
+	if (dot(N, L) <= 0.0)
+	{
+		return false;
+	}
+	float attenuation = DistanceAttenuation(distance, u_PointLights[i].Range);
+	if (u_PointLights[i].ShadowIndex >= 0.0)
+	{
+		attenuation *= PointShadow(int(u_PointLights[i].ShadowIndex), P, geometryNormal, u_PointLights[i].Position, L, distance);
+	}
+	radiance = u_PointLights[i].Color * u_PointLights[i].Intensity * attenuation;
+	return true;
+}
+
+bool SpotLightAt(int i, vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec3 radiance)
+{
+	L = vec3(0.0);
+	radiance = vec3(0.0);
+	vec3 toLight = u_SpotLights[i].Position - P;
+	float distance = length(toLight);
+	if (distance >= u_SpotLights[i].Range)
+	{
+		return false;
+	}
+	L = toLight / max(distance, Epsilon);
+	// Full intensity inside the inner cone, a smooth fade to zero at the outer cone
+	float cone = smoothstep(u_SpotLights[i].CosOuter, u_SpotLights[i].CosInner, dot(-L, u_SpotLights[i].Direction));
+	if (cone <= 0.0 || dot(N, L) <= 0.0)
+	{
+		return false;
+	}
+	float attenuation = DistanceAttenuation(distance, u_SpotLights[i].Range);
+	if (u_SpotLights[i].ShadowIndex >= 0.0)
+	{
+		attenuation *= SpotShadow(int(u_SpotLights[i].ShadowIndex), P, geometryNormal, L, distance);
+	}
+	radiance = u_SpotLights[i].Color * u_SpotLights[i].Intensity * attenuation * cone;
+	return true;
+}
+
+// Indirect light: everything that doesn't come straight from the sun, the point or the spot lights.
+// The light arriving at a surface point P with normal N, already divided by pi (the convention of u_EnvIrradianceTex),
+// so the diffuse light is albedo * IndirectDiffuse. Today: the environment only, the same at every position. The probes
+// (GI) replace this body.
+vec3 IndirectDiffuse(vec3 P, vec3 N)
+{
+	// The environment rotation applies to the diffuse lighting too (not only to the reflections), so both match the skybox
+	return texture(u_EnvIrradianceTex, RotateVectorAboutY(u_EnvMapRotation, N)).rgb;
+}
+
+// A point of a surface, with what its material is there
+struct SurfacePoint
+{
+	vec3 Position;
+	vec3 Normal;     // world space, facing whoever looks at the point (the camera, a probe, a ray's origin)
+	vec3 Albedo;
+	float Metalness; // metals have no diffuse light: albedo * (1 - metalness)
+	vec3 Emissive;   // already multiplied by the emissive intensity
+};
+
+// The surface point of a material of the material buffer (u_Materials, see Include/FrameSet.glslh): the material's
+// values, with each map replaced by its average color. Enough for light that bounces: it is blurred over the whole scene.
+SurfacePoint SurfaceFromMaterial(int materialIndex, vec3 position, vec3 normal)
+{
+	GPUMaterial material = u_Materials[materialIndex];
+	SurfacePoint surface;
+	surface.Position = position;
+	surface.Normal = normal;
+	surface.Albedo = material.AlbedoColor.rgb;
+	surface.Metalness = material.Metalness;
+	surface.Emissive = material.Emissive.rgb;
+	return surface;
+}
+
+// The light the point sends back, the same in every direction: what it emits, plus what it scatters back of the lights'
+// light and (includeIndirect) of the indirect light. No reflections: they depend on where the viewer is, and light that
+// bounces on is blurred enough not to miss them.
+// The lights are in the PBR shaders' units, where a matte surface returns albedo * radiance * dot(N, L) (no division by
+// pi), so this is what the PBR shaders show for a fully rough, non-metallic surface.
+vec3 ShadeSurfaceDiffuse(SurfacePoint surface, bool includeIndirect)
+{
+	vec3 diffuseAlbedo = surface.Albedo * (1.0 - surface.Metalness);
+
+	// The light arriving at the point from the lights, by the angle it arrives at
+	vec3 arriving = vec3(0.0);
+	vec3 L, radiance;
+	if (SunLightAt(surface.Position, surface.Normal, surface.Normal, L, radiance))
+	{
+		arriving += radiance * dot(surface.Normal, L);
+	}
+	int pointLightCount = min(u_PointLightCount, MaxPointLights);
+	for (int i = 0; i < pointLightCount; i++)
+	{
+		if (PointLightAt(i, surface.Position, surface.Normal, surface.Normal, L, radiance))
+		{
+			arriving += radiance * dot(surface.Normal, L);
+		}
+	}
+	int spotLightCount = min(u_SpotLightCount, MaxSpotLights);
+	for (int i = 0; i < spotLightCount; i++)
+	{
+		if (SpotLightAt(i, surface.Position, surface.Normal, surface.Normal, L, radiance))
+		{
+			arriving += radiance * dot(surface.Normal, L);
+		}
+	}
+	if (includeIndirect)
+	{
+		// Under the water the sky's light is dimmed by the water above (the sun's is in SunLightAt)
+		arriving += IndirectDiffuse(surface.Position, surface.Normal) * WaterSkylightAt(surface.Position);
+	}
+
+	return surface.Emissive + diffuseAlbedo * arriving;
+}
+
+#endif

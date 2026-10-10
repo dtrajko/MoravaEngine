@@ -333,10 +333,15 @@ void main()
   The prepass and the scene pass must compute <code>gl_Position</code> with exactly the same instructions, or <code>EQUAL</code> fails on some pixels (speckles). Put the position code in one shared include and declare <code>invariant gl_Position;</code> in both shaders. If alpha-tested materials are ever added, the prepass must <code>discard</code> exactly like the scene pass.</div>
 
   <h3>A.4 Motion vectors</h3>
-  <p>Motion is first needed in Phase F (temporal filtering), but the prepass is the natural place to write it. Each draw needs the previous frame's model matrix: keep it in the render data the renderer extracts from <code>EnvMapVulkanScene</code> each frame (a <code>PreviousWorld</code> next to the world matrix). The renderer keeps the camera's previous view-projection and adds it to the camera UBO in set 0. Skinned meshes would also need the previous bone matrices; a first version can use the current ones (a small error on fast animation).</p>
-<pre><code><span class="c">// vertex stage, both prepass shaders</span>
-v_ClipNow  = u_ViewProjection         * u_Transform         * vec4(a_Position, 1.0);
-v_ClipPrev = u_PreviousViewProjection * u_PreviousTransform * vec4(a_Position, 1.0);</code></pre>
+  <p>Motion is first needed in Phase F (temporal filtering), but the prepass is the natural place to write it. Each draw needs the previous frame's model matrix: the renderer remembers, per model entity, where each of its meshes was drawn last frame, and submits that next to the current transform. The camera's previous view-projection is a second matrix in the camera UBO in set 0. Skinned meshes also need the previous bone matrices: the bone UBO holds the current 128 matrices followed by the previous 128.</p>
+<pre><code><span class="c">// vertex stage, both prepass shaders (Include/MeshVertexMotion.glslh, compiled in with MESH_VERTEX_MOTION)</span>
+v_ClipPosition         = gl_Position;
+v_PreviousClipPosition = u_PreviousViewProjectionMatrix * a_PreviousTransform * vec4(a_Position, 1.0);
+
+<span class="c">// fragment stage: NDC to UV is a scale by 0.5</span>
+o_Motion = (v_ClipPosition.xy / v_ClipPosition.w - v_PreviousClipPosition.xy / v_PreviousClipPosition.w) * 0.5;</code></pre>
+  <div class="box note"><b>As built: the previous transform is a vertex attribute, not a push constant</b>
+  The mesh push constants are full (128 bytes, the guaranteed minimum: the transform, the material values and the material index of Phase B), and the prepass shares the PBR pipelines' layouts. So <code>a_PreviousTransform</code> comes from a second vertex buffer read once per instance: one <code>mat4</code> per draw, picked by the draw's <code>firstInstance</code> (<code>EnvMapVulkanGBuffer::SetPreviousTransforms</code>). Only the prepass pipelines know about it; the PBR shaders share the vertex stage with the motion code compiled out, and <code>gl_Position</code> is the same expression in both.</div>
 
   <h3>A.5 Splitting direct and indirect light</h3>
   <p>Restructure <code>IBL()</code> in <code>Include/PBRCommon.glslh</code> into functions with one job each. Nothing changes visually; later phases only change the bodies.</p>
@@ -362,7 +367,9 @@ vec3 IndirectLight(vec3 F0, vec3 Lr, float ao)
 }</code></pre>
 
   <h3>A.6 Debug views</h3>
-  <p>Add a Debug View combo. The Lights panel's "Shadows Only" already works through the composite's <code>RawScene</code> bypass; use the same mechanism for <b>Normals</b>, <b>Roughness</b>, <b>Linear Depth</b>, <b>Motion</b>, <b>Direct Only</b> and <b>Indirect Only</b>. These views are the main tool for checking every later phase.</p>
+  <p>The Environment panel has a <b>Debug View</b> combo. <b>Normals</b>, <b>Roughness</b>, <b>Linear Depth</b> and <b>Motion</b> are drawn by the viewport composite, which samples the G-buffer and shows the values as they are (no exposure, tonemapping or gamma). <b>Direct Light Only</b> and <b>Indirect Light Only</b> are a switch in the PBR shader (<code>u_ShadowDebug.z</code>) and are tonemapped as usual. Phase B adds <b>Diffuse Surface Shading</b>. These views are the main tool for checking every later phase.</p>
+  <div class="box note"><b>As built: sampling the scene's depth</b>
+  The G-buffer's depth is the scene framebuffer's depth image, which the scene pass leaves in an attachment layout. <code>EnvMapVulkanGBuffer::MakeDepthReadable</code> switches it to a read-only layout after the scene's render passes; from then until the frame ends, shaders can sample it. Effects that need the depth <i>before</i> the scene pass (SSAO, Phase F) need their own transition or a copy.</div>
   <div class="box ok"><b>Check</b>
   Capture the same saved scene before and after, from the same camera. The images must be identical. The Rendering Stats panel gets a "G-Buffer Prepass" scope; the "Scene" scope should get cheaper in scenes with overdraw.</div>
 </section>
@@ -377,59 +384,73 @@ vec3 IndirectLight(vec3 F0, vec3 Lr, float ao)
 
   <h3>B.1 What a probe ray needs to know</h3>
   <p>When a probe "looks" at a surface, it needs the light that surface sends back towards it. For GI only the <b>diffuse</b> part matters: probes store irradiance, which is smooth, and specular reflections depend on the viewer, so DDGI and similar systems shade ray hits as diffuse. The outgoing radiance of a hit point is:</p>
-  <p class="eq"><i>L</i> = emissive + (albedo / π) · (direct irradiance with shadows) + albedo · (probe irradiance at the hit)</p>
-  <p>The last term is the feedback that produces multiple bounces: each update adds the light the probes had last time.</p>
-<pre><code><span class="c">// Include/ShadeSurface.glslh (proposed)</span>
+  <p class="eq"><i>L</i> = emissive + albedo · (light arriving from the lights, with shadows) + albedo · (indirect light at the hit)</p>
+  <p>The last term is the feedback that produces multiple bounces: each update adds the light the probes had last time. Until the probes exist (Phase C) it is the environment's irradiance.</p>
+  <div class="box note"><b>As built: no division by π</b>
+  The textbook formula has <code>albedo / π</code> in the direct term. This engine's PBR shader uses light units in which a matte surface returns <code>albedo · radiance · cos θ</code>, and its irradiance map is already divided by π. <code>ShadeSurfaceDiffuse</code> uses the same units, so it gives exactly what the PBR shader shows for a fully rough, non-metallic surface.</div>
+<pre><code><span class="c">// Include/ShadeSurface.glslh (shortened)</span>
 struct SurfacePoint
 {
     vec3 Position;
-    vec3 Normal;      <span class="c">// world space, facing the ray origin</span>
+    vec3 Normal;      <span class="c">// world space, facing whoever looks at the point</span>
     vec3 Albedo;
     float Metalness;  <span class="c">// metals have no diffuse: albedo * (1 - metalness)</span>
     vec3 Emissive;    <span class="c">// already multiplied by the emissive intensity</span>
 };
 
-vec3 ShadeSurfaceDiffuse(SurfacePoint s, vec3 toViewer, bool includeProbes)
+<span class="c">// The light arriving at P from one light: falloff, cone, shadow and the light under the water applied.
+// L points to the light. False when nothing arrives (off, out of range, outside the cone, behind the surface).</span>
+bool SunLightAt  (       vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec3 radiance);
+bool PointLightAt(int i, vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec3 radiance);
+bool SpotLightAt (int i, vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec3 radiance);
+
+vec3 IndirectDiffuse(vec3 P, vec3 N);   <span class="c">// today the environment; the probes replace this body (Phase C)</span>
+
+vec3 ShadeSurfaceDiffuse(SurfacePoint s, bool includeIndirect)
 {
     vec3 diffuseAlbedo = s.Albedo * (1.0 - s.Metalness);
-    vec3 E = vec3(0.0);                                              <span class="c">// direct irradiance</span>
-    E += SunIrradiance(s.Position, s.Normal);                        <span class="c">// cascades, see B.2</span>
-    for (int i = 0; i &lt; u_PointLightCount; i++) E += PointIrradiance(i, s.Position, s.Normal);  <span class="c">// with cube shadows</span>
-    for (int i = 0; i &lt; u_SpotLightCount;  i++) E += SpotIrradiance(i,  s.Position, s.Normal);  <span class="c">// with spot shadows</span>
-
-    vec3 L = s.Emissive + diffuseAlbedo / PI * E;
-    if (includeProbes)
-        L += diffuseAlbedo * SampleProbeIrradiance(s.Position, s.Normal, toViewer);   <span class="c">// Phase C</span>
-    return L;
+    vec3 arriving = vec3(0.0);
+    vec3 L, radiance;
+    if (SunLightAt(s.Position, s.Normal, s.Normal, L, radiance)) arriving += radiance * dot(s.Normal, L);
+    for (int i = 0; i &lt; u_PointLightCount; i++)
+        if (PointLightAt(i, s.Position, s.Normal, s.Normal, L, radiance)) arriving += radiance * dot(s.Normal, L);
+    for (int i = 0; i &lt; u_SpotLightCount; i++)
+        if (SpotLightAt(i, s.Position, s.Normal, s.Normal, L, radiance)) arriving += radiance * dot(s.Normal, L);
+    if (includeIndirect)
+        arriving += IndirectDiffuse(s.Position, s.Normal) * WaterSkylightAt(s.Position);
+    return s.Emissive + diffuseAlbedo * arriving;
 }</code></pre>
-  <p>The light loops match <code>PBRCommon.glslh</code> (windowed inverse-square falloff, smooth spot cones), without the specular BRDF. Factor them so both the PBR shader and <code>ShadeSurfaceDiffuse</code> call the same falloff and shadow functions; never copy them.</p>
+  <p>The three light functions are the only copy of the falloff, cone and shadow code. The PBR shader's <code>Lighting()</code> in <code>PBRCommon.glslh</code> runs its Cook-Torrance BRDF on what they return; <code>ShadeSurfaceDiffuse</code> adds it up for a matte surface. <code>IndirectDiffuse</code> lives in the same file, so replacing its body with the probes (Phase C) changes the PBR shader and the bounced light together. The <code>toViewer</code> argument that probe sampling needs for its bias arrives with Phase C.</p>
 
   <h3>B.2 Sun shadows away from the camera</h3>
-  <p>The four cascades follow the camera, but a probe ray can hit a surface outside all of them (behind the camera, far away). Pick a rule and keep it: outside the last cascade, treat the point as lit. Optionally add a fifth, coarse, static cascade covering the whole probe volume, rendered only when the volume or the sun changes. With ray tracing (Phase H) the problem disappears: trace a shadow ray to the sun instead.</p>
+  <p>The four cascades follow the camera, but a probe ray can hit a surface outside all of them (behind the camera, far away). The rule, which <code>SunShadow</code> already follows: outside the cascades, the point counts as lit. Optionally add a fifth, coarse, static cascade covering the whole probe volume, rendered only when the volume or the sun changes. With ray tracing (Phase H) the problem disappears: trace a shadow ray to the sun instead.</p>
 
   <h3>B.3 The GPU material buffer</h3>
-  <p>Today each material lives in its own descriptor set and the shader knows which material it is drawing. A probe capture could keep that model, but a ray hit cannot. Add one storage buffer with all materials of the <code>EnvMapVulkanMaterialLibrary</code>:</p>
-<pre><code><span class="c">// std430, one entry per material (proposed)</span>
+  <p>Today each material lives in its own descriptor set and the shader knows which material it is drawing. A probe capture could keep that model, but a ray hit cannot. One storage buffer holds all materials of the <code>EnvMapVulkanMaterialLibrary</code> (<code>EnvMapVulkanMaterialBuffer</code>):</p>
+<pre><code><span class="c">// std430, 64 bytes, one entry per material (Include/FrameSet.glslh)</span>
 struct GPUMaterial
 {
-    vec4  AlbedoColor;        <span class="c">// rgb = color * average of the albedo map (see below)</span>
-    vec4  Emissive;           <span class="c">// rgb = emissive color * intensity</span>
-    float Metalness;
-    float Roughness;
-    uint  Flags;              <span class="c">// bit 0 = glass, bit 1 = double-sided, ...</span>
+    vec4  AlbedoColor;        <span class="c">// rgb = the albedo color, or the average of the albedo map when it is used</span>
+    vec4  Emissive;           <span class="c">// rgb = average of the emissive map * intensity (0 without the map)</span>
+    float Metalness;          <span class="c">// the value, or the map's average</span>
+    float Roughness;          <span class="c">// the value, or the map's average</span>
+    uint  Flags;              <span class="c">// bit 0 = glass</span>
     uint  AlbedoMapIndex;     <span class="c">// bindless index, Phase G (0xFFFFFFFF = none)</span>
     uint  NormalMapIndex;
     uint  RoughnessMapIndex;
     uint  MetalnessMapIndex;
     uint  EmissiveMapIndex;
-};</code></pre>
+};
+layout (std430, set = 0, binding = 17) readonly buffer Materials { GPUMaterial u_Materials[]; };</code></pre>
   <ul>
-    <li>The library assigns each material a dense index. <code>MeshPartComponent</code> already references its material by ID, so the renderer maps ID → index when it extracts the draw list and passes the index as a push constant.</li>
-    <li>The library already keeps a content hash per material (used for the unsaved "*" marker). Re-upload an entry when its hash changes, and re-upload all entries after <code>ResolveVariants</code>.</li>
-    <li><b>The average-albedo trick.</b> Probes are low-frequency, so the capture doesn't need texture detail. Compute each albedo map's average color once (read its smallest mip) and store <code>color × average</code> in <code>AlbedoColor</code>. The same trick lets the first ray-traced version run before bindless textures exist.</li>
+    <li><b>The index.</b> A material's index is its position in the library. <code>EnvMapVulkanMaterialBuffer::Update</code> writes it into each material's <code>MaterialIndex</code> value every frame, and it reaches the shader with the material's other push constants. That value took the last 4 bytes of the block: the mesh push constants are now exactly 128 bytes.</li>
+    <li><b>Uploading.</b> <code>Update</code> packs every material each frame and compares the result with what it uploaded last; the buffer is rewritten only when something differs. That needs no bookkeeping and can't miss a change (a variant following its parent, a map toggled). The content hash isn't used: for a variant it leaves out inherited values on purpose.</li>
+    <li><b>The average-color trick.</b> Probes are low-frequency, so bounced light doesn't need texture detail. Where a material uses a map, its entry holds the map's average color, computed once per image file from the pixels the texture keeps (color maps are averaged as linear colors). As in the PBR shader, a map replaces the material's value; they are not multiplied. The same trick lets the first ray-traced version run before bindless textures exist.</li>
   </ul>
+  <div class="box note"><b>As built: the material buffer is in set 0</b>
+  It is binding 17 of the per-frame set, not a binding of a separate probe set: every shader that lights a surface can read it, and compute passes with their own sets (the probe update, ray tracing) bind the same buffer. Bindings 11 to 16 stay free for the probes, the AO and the reflections. <code>VulkanShaderH2M</code>'s reflection learned storage buffers for this: it reflects the binding, and the caller supplies the buffer when it writes the set.</div>
   <div class="box ok"><b>Check</b>
-  Add a temporary debug view in which the PBR shader returns <code>ShadeSurfaceDiffuse</code> (without probes) instead of its normal lighting, using the material buffer. Diffuse surfaces should look like a flatter version of the normal image: same lights and shadows, no reflections, no texture detail.</div>
+  The Debug View combo has <b>Diffuse Surface Shading</b>: the PBR shader returns <code>ShadeSurfaceDiffuse</code> of a <code>SurfacePoint</code> built from the material buffer and the mesh's own normal. Surfaces look like a flatter version of the normal image: same lights and shadows, no reflections, one color per material. With the view off, the image is the same as before the light loops were factored out.</div>
 </section>
 
 <section id="phase-c">
@@ -500,7 +521,7 @@ vec2 ProbeAtlasUV(ivec3 probe, vec3 dir, int interior, vec2 atlasSize)
     <tr><td>13</td><td><code>ProbeVolume</code> UBO: origin, spacing, counts, biases, enabled flag, atlas sizes, irradiance encoding gamma</td></tr>
     <tr><td>14</td><td><code>sampler2D u_ProbeData</code> (nearest; offsets and states)</td></tr>
   </table></div>
-  <p>The water reflection pass copies bindings 2 and up from the main set each frame, so the new bindings reach it automatically and the reflection also shows GI. <code>VulkanShaderH2M</code> merges the stage flags of bindings shared by stages; declare the new bindings in <code>Include/FrameSet.glslh</code> so every set 0 shader agrees on the layout.</p>
+  <p>The water reflection pass has its own per-frame set and copies a fixed list of bindings from the main set each frame (2 to 10, and 17: see <code>EnvMapVulkanWater::Update</code>). Add the new bindings to that list, so the reflection also shows GI. <code>VulkanShaderH2M</code> merges the stage flags of bindings shared by stages; declare the new bindings in <code>Include/FrameSet.glslh</code> so every set 0 shader agrees on the layout.</p>
 
   <h3>C.4 Sampling: the heart of DDGI</h3>
 <pre><code>vec3 SampleProbeIrradiance(vec3 P, vec3 N, vec3 V)   <span class="c">// V: unit vector from P towards the viewer (or ray origin)</span>
@@ -588,7 +609,7 @@ vec3 ProbeRayDirection(int ray) { return mat3(u_RandomRotation) * SphericalFibon
   <h3>D.2 Filling the ray buffer by rasterization</h3>
   <ol>
     <li><b>Capture</b>: for each probe of the batch, render a cube map at the probe position, 32×32 per face, into cube arrays (one cube per batch slot). Two color attachments, <code>RGBA16F</code> radiance and <code>R32F</code> signed distance, plus depth. This is the same 6-passes-per-cube pattern as the point shadows in <code>RecordLocalShadowPasses</code>, with a 90° perspective per face.</li>
-    <li><b>The capture shader</b> draws every opaque mesh (static and skinned) and the skybox. Its fragment stage builds a <code>SurfacePoint</code> from the material buffer, calls <code>ShadeSurfaceDiffuse(s, toProbe, true)</code>, and writes the radiance and <code>gl_FrontFacing ? dist : -0.2 * dist</code>. Culling must be off, or backfaces are never seen. The skybox writes the environment radiance and the large distance.</li>
+    <li><b>The capture shader</b> draws every opaque mesh (static and skinned) and the skybox. Its fragment stage builds a <code>SurfacePoint</code> from the material buffer, calls <code>ShadeSurfaceDiffuse(s, true)</code>, and writes the radiance and <code>gl_FrontFacing ? dist : -0.2 * dist</code>. Culling must be off, or backfaces are never seen. The skybox writes the environment radiance and the large distance.</li>
     <li><b>Resample</b> (compute, one thread per ray): read the cube in the ray direction and write the ray buffer. This is the only step that knows about cubes.</li>
   </ol>
 <pre><code><span class="c">// ProbeResample.glsl (proposed), compute</span>
@@ -607,14 +628,14 @@ void main()
   <p>Like <code>EnvMapVulkanWater</code>, the probe system is a module (<code>EnvMapVulkanProbes</code>, proposed) that owns its images, pipelines and a private descriptor set for its compute passes:</p>
   <div class="table-wrap"><table>
     <tr><th>Pass</th><th>Pipeline</th><th>Sets</th><th>Reads</th><th>Writes</th></tr>
-    <tr><td>Capture (×6 per slot)</td><td>graphics, static + anim variants; no culling; 2 color + depth</td><td>0 (frame), 2 (bones); material index by push constant; material buffer in the probe set</td><td>lights, shadow maps, previous atlases, material buffer</td><td>capture radiance, distance, depth (cube array layers)</td></tr>
+    <tr><td>Capture (×6 per slot)</td><td>graphics, static + anim variants; no culling; 2 color + depth</td><td>0 (frame), 2 (bones); material index by push constant; material buffer in set 0 (binding 17)</td><td>lights, shadow maps, previous atlases, material buffer</td><td>capture radiance, distance, depth (cube array layers)</td></tr>
     <tr><td>Resample</td><td>compute, 64×1</td><td>probe set</td><td>capture cubes (sampled)</td><td>ray buffer (storage)</td></tr>
     <tr><td>Blend irradiance</td><td>compute, 8×8 per probe</td><td>probe set</td><td>ray buffer, irradiance atlas</td><td>irradiance atlas (storage, in place)</td></tr>
     <tr><td>Blend visibility</td><td>compute, 16×16 per probe</td><td>probe set</td><td>ray buffer, visibility atlas</td><td>visibility atlas (storage, in place)</td></tr>
     <tr><td>Relocate + classify</td><td>compute, 1 thread per probe</td><td>probe set</td><td>ray buffer</td><td>probe data</td></tr>
     <tr><td>Borders</td><td>compute</td><td>probe set</td><td>atlases</td><td>atlas border texels</td></tr>
   </table></div>
-  <p>The probe set (proposed): 0 <code>ProbeUpdate</code> UBO (batch slots → probe coordinates, random rotation, hysteresis), 1 capture radiance cube array (sampled), 2 capture distance cube array (sampled), 3 ray buffer (storage image), 4 irradiance atlas (storage image), 5 visibility atlas (storage image), 6 probe data (storage image), 7 material buffer (SSBO). The same images appear as sampled images in set 0, so each needs an image view for both uses, and a layout transition between them (<code>GENERAL</code> for storage, <code>SHADER_READ_ONLY_OPTIMAL</code> for sampling, or <code>GENERAL</code> throughout).</p>
+  <p>The probe set (proposed): 0 <code>ProbeUpdate</code> UBO (batch slots → probe coordinates, random rotation, hysteresis), 1 capture radiance cube array (sampled), 2 capture distance cube array (sampled), 3 ray buffer (storage image), 4 irradiance atlas (storage image), 5 visibility atlas (storage image), 6 probe data (storage image), 7 material buffer (SSBO, the same buffer as set 0's binding 17). The same images appear as sampled images in set 0, so each needs an image view for both uses, and a layout transition between them (<code>GENERAL</code> for storage, <code>SHADER_READ_ONLY_OPTIMAL</code> for sampling, or <code>GENERAL</code> throughout).</p>
 
   <h3>D.4 Blending the rays into the atlases</h3>
   <p>One workgroup per probe, one thread per irradiance texel (8×8) or visibility texel (16×16). Each thread loops over all rays of its probe.</p>
@@ -892,7 +913,7 @@ HitInfo TraceRay(vec3 origin, vec3 dir, float tMax, uint mask)
   <h3>13.1 Descriptor sets after all phases</h3>
   <div class="table-wrap wide"><table>
     <tr><th>Set</th><th>Bound for</th><th>Bindings</th></tr>
-    <tr><td>0 (per frame)</td><td>every pass that lights a surface: PBR, prepass, capture, water, glass, probe spheres</td><td>0–10 as today · 11 <code>u_ProbeIrradiance</code> · 12 <code>u_ProbeVisibility</code> · 13 <code>ProbeVolume</code> UBO · 14 <code>u_ProbeData</code> · 15 <code>u_AOImage</code> · 16 <code>u_ReflectionImage</code> (Phase H)</td></tr>
+    <tr><td>0 (per frame)</td><td>every pass that lights a surface: PBR, prepass, capture, water, glass, probe spheres</td><td>0–10 as today · 11 <code>u_ProbeIrradiance</code> · 12 <code>u_ProbeVisibility</code> · 13 <code>ProbeVolume</code> UBO · 14 <code>u_ProbeData</code> · 15 <code>u_AOImage</code> · 16 <code>u_ReflectionImage</code> (Phase H) · 17 <code>u_Materials</code> (material buffer, Phase B)</td></tr>
     <tr><td>1 (per material)</td><td>PBR and prepass draws</td><td>texture maps, unchanged</td></tr>
     <tr><td>2 (per skinned mesh)</td><td>skinned draws, compute skinning</td><td>bone matrices, unchanged</td></tr>
     <tr><td>3 (ray tracing)</td><td>ray-query compute passes only</td><td>0 TLAS · 1 instance table · 2 material buffer · 3 <code>u_Textures[]</code> (bindless)</td></tr>
@@ -1075,14 +1096,14 @@ HitInfo TraceRay(vec3 origin, vec3 dir, float tMax, uint mask)
     ] },
 
     phaseB: { n: [
-      { id: 'ml', k: 'cpu', x: 10, y: 10, w: 260, t: 'EnvMapVulkanMaterialLibrary', l: ['hash changed / ResolveVariants', 'dense index per material', 'average albedo per map (once)'] },
-      { id: 'dl', k: 'cpu', x: 10, y: 110, w: 260, t: 'Draw list (render data)', l: ['MeshPart material ID → index', 'index → push constant per draw'] },
-      { id: 'mb', k: 'buf', x: 350, y: 10, w: 260, t: 'Material buffer (new)', l: ['std430 GPUMaterial[]', 'albedo × average, emissive', 'metalness, roughness, flags', 'bindless map indices (Phase G)'] },
-      { id: 's0', k: 'set', x: 350, y: 130, w: 260, t: 'Set 0 (per frame)', l: ['5 Lights · 6–9 shadow maps', '11–14 probes (Phase C)'] },
+      { id: 'ml', k: 'cpu', x: 10, y: 10, w: 260, t: 'EnvMapVulkanMaterialLibrary', l: ['packed each frame, uploaded on change', 'index = position in the library', 'average color per map (once)'] },
+      { id: 'dl', k: 'cpu', x: 10, y: 110, w: 260, t: 'Draw list (render data)', l: ['material → its MaterialIndex value', 'pushed with the material values'] },
+      { id: 'mb', k: 'buf', x: 350, y: 10, w: 260, t: 'Material buffer (new)', l: ['std430 GPUMaterial[]', 'albedo: color or map average', 'emissive, metalness, roughness, flags', 'bindless map indices (Phase G)'] },
+      { id: 's0', k: 'set', x: 350, y: 130, w: 260, t: 'Set 0 (per frame)', l: ['5 Lights · 6–9 shadow maps', '11–14 probes (Phase C) · 17 materials'] },
       { id: 'inc', k: 'sh', x: 350, y: 222, w: 260, t: 'Include/ShadeSurface.glslh', l: ['SurfacePoint → diffuse radiance', 'sun, point, spot + shadows', '+ emissive + albedo × probes'] },
       { id: 'c1', k: 'rp', x: 690, y: 10, w: 250, t: 'Probe capture (Phase D)', l: ['fragment shader'] },
       { id: 'c2', k: 'cs', x: 690, y: 120, w: 250, t: 'Probe trace (Phase H)', l: ['ray hit in a compute shader'] },
-      { id: 'c3', k: 'rp', x: 690, y: 230, w: 250, t: 'Debug: surface shading view', l: ['PBR shader, temporary'] }
+      { id: 'c3', k: 'rp', x: 690, y: 230, w: 250, t: 'Debug: Diffuse Surface Shading', l: ['PBR shader, Debug View combo'] }
     ], e: [
       { f: 'ml', t: 'mb', k: 'c', l: 'staging copy' }, { f: 'dl', t: 'c1', k: 'c', l: 'material index', fs: 'R', ts: 'L', fo: 0, to: 8 },
       { f: 'mb', t: 'c1', k: 'r', to: -6 }, { f: 'mb', t: 'c2', k: 'r' },

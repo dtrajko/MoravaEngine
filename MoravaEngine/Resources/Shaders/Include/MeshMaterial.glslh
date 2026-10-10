@@ -19,12 +19,13 @@ layout (push_constant) uniform Material
 	float MetalnessTexToggle;
 	float RoughnessTexToggle;
 
-	// Offsets 104..123 (the whole block ends at 124 bytes; 128 is the minimum maxPushConstantsSize guaranteed by Vulkan)
+	// Offsets 104..127 (the whole block ends at 128 bytes: the minimum maxPushConstantsSize guaranteed by Vulkan. It is full.)
 	float TilingFactor;       // texture coordinate scale (0 is treated as 1)
 	float EmissiveTexToggle;
 	float AOTexToggle;
 	float EmissiveIntensity;  // multiplies the emissive map (HDR values above 1 are fine)
 	float MetalRoughPacked;   // 1: glTF metallicRoughness map (roughness in G, metalness in B); 0: both maps read from R
+	float MaterialIndex;      // the material's entry in u_Materials (Include/FrameSet.glslh), set by EnvMapVulkanMaterialBuffer
 } u_MaterialUniforms;
 
 // The texture coordinate with the material's tiling
