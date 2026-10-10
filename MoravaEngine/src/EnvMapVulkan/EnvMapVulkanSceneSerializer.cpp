@@ -181,6 +181,19 @@ namespace EnvMapVulkanSceneSerializer
 		{
 			WriteWater(out, water->Settings);
 		}
+		if (const ProbeVolumeComponent* probes = scene.TryGet<ProbeVolumeComponent>(entity))
+		{
+			// Its placement (center and size) is the entity's transform
+			const EnvMapVulkanProbeVolumeSettings& p = probes->Settings;
+			out << YAML::Key << "ProbeVolume" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Enabled" << YAML::Value << p.Enabled;
+			out << YAML::Key << "Counts" << YAML::Value << YAML::Flow << YAML::BeginSeq << p.Counts.x << p.Counts.y << p.Counts.z << YAML::EndSeq;
+			out << YAML::Key << "NormalBias" << YAML::Value << p.NormalBias;
+			out << YAML::Key << "ViewBias" << YAML::Value << p.ViewBias;
+			out << YAML::Key << "ShowProbes" << YAML::Value << p.ShowProbes;
+			out << YAML::Key << "ProbeRadius" << YAML::Value << p.ProbeRadius;
+			out << YAML::EndMap;
+		}
 		if (const EnvironmentComponent* environment = scene.TryGet<EnvironmentComponent>(entity))
 		{
 			out << YAML::Key << "Environment" << YAML::Value << YAML::BeginMap;
@@ -309,6 +322,19 @@ namespace EnvMapVulkanSceneSerializer
 				{
 					WaterComponent& water = scene.Add<WaterComponent>(entity);
 					ReadWater(waterNode, water.Settings);
+				}
+				if (YAML::Node probesNode = node["ProbeVolume"])
+				{
+					EnvMapVulkanProbeVolumeSettings& p = scene.Add<ProbeVolumeComponent>(entity).Settings;
+					Read(probesNode, "Enabled", p.Enabled);
+					if (YAML::Node counts = probesNode["Counts"]; counts && counts.IsSequence() && counts.size() == 3)
+					{
+						p.Counts = glm::ivec3(counts[0].as<int>(), counts[1].as<int>(), counts[2].as<int>());
+					}
+					Read(probesNode, "NormalBias", p.NormalBias);
+					Read(probesNode, "ViewBias", p.ViewBias);
+					Read(probesNode, "ShowProbes", p.ShowProbes);
+					Read(probesNode, "ProbeRadius", p.ProbeRadius);
 				}
 				if (YAML::Node environmentNode = node["Environment"])
 				{

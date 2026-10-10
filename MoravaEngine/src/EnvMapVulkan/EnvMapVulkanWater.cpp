@@ -762,10 +762,10 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 		}
 		WriteUniformBuffer(m_ReflectionSceneData, &sceneData, sizeof(sceneData));
 
-		// The rest of set 0 (environment maps, BRDF LUT, lights, shadows, caustics: bindings 2 to 10, and the material
-		// buffer) as in the main per-frame set
-		const uint32_t copiedBindings[] = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 17 };
-		std::array<VkCopyDescriptorSet, 10> copies;
+		// The rest of set 0 (environment maps, BRDF LUT, lights, shadows, caustics: bindings 2 to 10, the probe volume: 11
+		// to 14, and the material buffer) as in the main per-frame set
+		const uint32_t copiedBindings[] = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17 };
+		std::array<VkCopyDescriptorSet, 14> copies;
 		for (uint32_t i = 0; i < (uint32_t)copies.size(); i++)
 		{
 			VkCopyDescriptorSet& copy = copies[i];

@@ -97,7 +97,22 @@ layout (set = 0, binding = 9) uniform samplerCubeArrayShadow u_PointShadowMaps; 
 // The light the waves focus under the water (WaterCaustics.glsl): 1 = the light of a flat surface
 layout (set = 0, binding = 10) uniform sampler2D u_CausticsMap;
 
-// Bindings 11 to 16 are kept for the probes, the ambient occlusion and the reflections (docs/rendering/SSAO_GI_RayTracing_Guide.html)
+// The probe volume (EnvMapVulkanProbes, read with Include/Probes.glslh): a grid of points that each hold the light
+// arriving there from every direction. The atlases have a tile per probe (see Include/ProbeOctahedral.glslh).
+layout (set = 0, binding = 11) uniform sampler2D u_ProbeIrradiance; // rgb: the irradiance / pi, to the power 1 / gamma
+layout (set = 0, binding = 12) uniform sampler2D u_ProbeVisibility; // r: how far the probe sees in a direction (mean), g: mean of its square
+layout (std140, set = 0, binding = 13) uniform ProbeVolume
+{
+	vec4 u_ProbeOrigin;     // offset 0:  xyz = the position of probe (0, 0, 0), the volume's lowest corner; w = 1 when the
+	                        //            probes light the scene (0: the environment does, as without a probe volume)
+	vec4 u_ProbeSpacing;    // offset 16: xyz = from a probe to its neighbors; w = the irradiance encoding gamma
+	ivec4 u_ProbeCounts;    // offset 32: xyz = probes along each axis
+	vec4 u_ProbeBiases;     // offset 48: x = normal bias, y = view bias (fractions of the smallest spacing)
+	vec4 u_ProbeAtlasSizes; // offset 64: xy = the irradiance atlas in texels, zw = the visibility atlas
+};
+layout (set = 0, binding = 14) uniform sampler2D u_ProbeData;       // a texel per probe: xyz = its offset from the grid, w = 1 in use
+
+// Bindings 15 and 16 are kept for the ambient occlusion and the reflections (docs/rendering/SSAO_GI_RayTracing_Guide.html)
 
 // The materials of the Material Library as plain values, one entry per material (EnvMapVulkanMaterialBuffer): what a
 // shader needs to know of a material it has no descriptor set for (set 1 holds one material's maps). A draw's entry is

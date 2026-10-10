@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EnvMapVulkanProbes.h"
 #include "EnvMapVulkanWater.h"
 
 #include "H2M/Core/RefH2M.h"
@@ -125,6 +126,15 @@ struct SpotLightComponent
 struct WaterComponent
 {
 	EnvMapVulkanWaterSettings Settings;
+};
+
+// The probe volume (at most one per scene): a box with a grid of probes that hold the scene's indirect light (see
+// EnvMapVulkanProbes). Its placement is the entity's transform: translation = the box's center, scale = its size in
+// meters; it isn't turned (the rotation is kept at 0). The settings' own Center and Size are filled from the transform
+// before rendering.
+struct ProbeVolumeComponent
+{
+	EnvMapVulkanProbeVolumeSettings Settings;
 };
 
 // The environment: the HDR map the scene is lit by and its skybox (one per scene)

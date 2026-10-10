@@ -1,0 +1,116 @@
+// Reading the probe volume (docs/rendering/SSAO_GI_RayTracing_Guide.html, Phase C): the light arriving at a point from
+// everywhere around it, blended from the eight probes at the corners of the grid cell the point is in.
+// Needs set 0 (Include/FrameSet.glslh): the probe atlases and the ProbeVolume block.
+#ifndef PROBES_GLSLH
+#define PROBES_GLSLH
+
+#include "ProbeOctahedral.glslh"
+
+// Where a direction is in a probe's tile of an atlas, as a texture coordinate (interior: the tile's interior texels per
+// side, see Include/ProbeOctahedral.glslh)
+vec2 ProbeAtlasUV(ivec3 probe, vec3 direction, int interior, vec2 atlasSize)
+{
+	int tile = interior + 2; // with the border
+	vec2 inTile = (OctEncode(direction) * 0.5 + 0.5) * float(interior) + 1.0; // after the border
+	return (vec2(ProbeTile(probe, u_ProbeCounts.xyz) * tile) + inTile) / atlasSize;
+}
+
+// A probe's own values (u_ProbeData): xyz = how far it was moved from its place in the grid, w = 1 when it is in use
+vec4 ProbeData(ivec3 probe)
+{
+	return texelFetch(u_ProbeData, ProbeTile(probe, u_ProbeCounts.xyz), 0);
+}
+
+vec3 ProbePosition(ivec3 probe, vec4 data)
+{
+	return u_ProbeOrigin.xyz + vec3(probe) * u_ProbeSpacing.xyz + data.xyz;
+}
+
+// The irradiance a probe holds for a direction, as stored: the irradiance to the power 1 / gamma (u_ProbeSpacing.w)
+vec3 ProbeStoredIrradiance(ivec3 probe, vec3 direction)
+{
+	return textureLod(u_ProbeIrradiance, ProbeAtlasUV(probe, direction, ProbeIrradianceTexels, u_ProbeAtlasSizes.xy), 0.0).rgb;
+}
+
+// 1 inside the volume, fading to 0 over half a cell outside it: something that leaves the volume doesn't pop
+float ProbeVolumeWeight(vec3 P)
+{
+	vec3 volumeMax = u_ProbeOrigin.xyz + vec3(u_ProbeCounts.xyz - 1) * u_ProbeSpacing.xyz;
+	vec3 outside = max(max(u_ProbeOrigin.xyz - P, P - volumeMax), vec3(0.0)) / u_ProbeSpacing.xyz;
+	return 1.0 - clamp(max(outside.x, max(outside.y, outside.z)) * 2.0, 0.0, 1.0);
+}
+
+// The light arriving at a point P with normal N from the probes around it, divided by pi (as u_EnvIrradianceTex).
+// V: the unit vector from P towards whoever looks at it. False when no probe can say (the caller falls back).
+// Each of the eight probes counts by three things besides its distance: whether it is in front of the surface, whether
+// it can see the point (its visibility tile holds how far it sees in each direction), and whether it is in use.
+bool SampleProbeIrradiance(vec3 P, vec3 N, vec3 V, out vec3 irradiance)
+{
+	irradiance = vec3(0.0);
+	vec3 spacing = u_ProbeSpacing.xyz;
+	// The lookups start a little off the surface, towards the normal and the viewer: a point exactly on a wall would
+	// otherwise be judged by probes that see it at a grazing angle, or from behind
+	vec3 biasedP = P + (N * u_ProbeBiases.x + V * u_ProbeBiases.y) * min(spacing.x, min(spacing.y, spacing.z));
+	ivec3 base = clamp(ivec3(floor((biasedP - u_ProbeOrigin.xyz) / spacing)), ivec3(0), u_ProbeCounts.xyz - 2);
+	vec3 alpha = clamp((biasedP - (u_ProbeOrigin.xyz + vec3(base) * spacing)) / spacing, 0.0, 1.0);
+
+	vec3 sum = vec3(0.0);
+	float weightSum = 0.0;
+	for (int i = 0; i < 8; i++)
+	{
+		ivec3 offset = ivec3(i, i >> 1, i >> 2) & 1;
+		ivec3 probe = base + offset;
+		vec4 data = ProbeData(probe);
+		if (data.w < 0.5)
+		{
+			continue; // not in use (inside a wall, see the probes' relocation)
+		}
+		vec3 probePosition = ProbePosition(probe, data);
+
+		// 1. A probe behind the surface counts less (smoothly, and never nothing)
+		vec3 toProbe = normalize(probePosition - P);
+		float halfCosine = (dot(toProbe, N) + 1.0) * 0.5;
+		float weight = halfCosine * halfCosine + 0.2;
+
+		// 2. Visibility: is the point farther from the probe than what the probe sees in its direction? The tile holds
+		// the mean distance and the mean squared distance; Chebyshev's inequality turns them into how likely the probe
+		// still sees the point.
+		vec3 probeToPoint = biasedP - probePosition;
+		float distance = length(probeToPoint);
+		vec2 moments = textureLod(u_ProbeVisibility, ProbeAtlasUV(probe, probeToPoint / max(distance, 0.0001), ProbeVisibilityTexels, u_ProbeAtlasSizes.zw), 0.0).rg;
+		float visibility = 1.0;
+		if (distance > moments.x)
+		{
+			float variance = abs(moments.x * moments.x - moments.y);
+			float delta = distance - moments.x;
+			visibility = variance / (variance + delta * delta);
+			visibility = visibility * visibility * visibility; // sharper
+		}
+		weight *= max(0.05, visibility);
+
+		// 3. Very small weights get smaller still (a probe that barely counts shouldn't decide a dark corner's color),
+		// then the usual weight by distance
+		const float crush = 0.2;
+		if (weight < crush)
+		{
+			weight *= weight * weight / (crush * crush);
+		}
+		vec3 trilinear = mix(1.0 - alpha, alpha, vec3(offset));
+		weight *= trilinear.x * trilinear.y * trilinear.z;
+
+		// 4. The probe's irradiance for the normal. Stored to the power 1 / gamma; blended as its square root, so one
+		// bright probe doesn't drown its neighbors
+		vec3 stored = ProbeStoredIrradiance(probe, N);
+		sum += weight * pow(stored, vec3(u_ProbeSpacing.w * 0.5));
+		weightSum += weight;
+	}
+	if (weightSum <= 0.0)
+	{
+		return false;
+	}
+	vec3 blended = sum / weightSum;
+	irradiance = blended * blended;
+	return true;
+}
+
+#endif

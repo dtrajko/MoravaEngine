@@ -462,20 +462,19 @@ layout (std430, set = 0, binding = 17) readonly buffer Materials { GPUMaterial u
   </figure>
 
   <h3>C.1 The ECS component</h3>
-  <p>The probe volume is an entity like the water: selectable in the Scene Hierarchy, edited in Properties, moved and scaled with the gizmo, and saved in the <code>.mscene</code> file by <code>EnvMapVulkanSceneSerializer</code>.</p>
-<pre><code><span class="c">// EnvMapVulkanComponents.h (proposed)</span>
-struct ProbeVolumeComponent
+  <p>The probe volume is an entity like the water (at most one per scene): added from the Scene Hierarchy's Add menu, selectable there, edited in Properties, moved and sized with the gizmo (it can't be turned), and saved in the <code>.mscene</code> file by <code>EnvMapVulkanSceneSerializer</code>. Its box is the entity's transform: translation = center, scale = size in meters. <b>Fit to Scene</b> in its Properties sets both from the bounding box of all models, with a small margin, and the box is outlined in the viewport while the volume is selected.</p>
+<pre><code><span class="c">// EnvMapVulkanProbes.h: the component holds these settings (ProbeVolumeComponent in EnvMapVulkanComponents.h)</span>
+struct EnvMapVulkanProbeVolumeSettings
 {
-    glm::ivec3 ProbeCounts = { 8, 4, 8 };   <span class="c">// the volume's size comes from the TransformComponent scale</span>
-    bool  Enabled = true;
-    int   RaysPerProbe = 192;
-    float Hysteresis = 0.97f;               <span class="c">// how much of the old value each update keeps</span>
-    float NormalBias = 0.25f;               <span class="c">// fractions of the probe spacing</span>
+    bool  Enabled = true;                   <span class="c">// "Light the Scene": off = the environment lights it, as without a volume</span>
+    glm::vec3 Center, Size;                 <span class="c">// filled from the entity's transform each frame</span>
+    glm::ivec3 Counts = { 8, 4, 8 };        <span class="c">// 2 to 32, 16, 32 (the visibility atlas must fit the largest image size)</span>
+    float NormalBias = 0.25f;               <span class="c">// fractions of the smallest probe spacing</span>
     float ViewBias = 0.25f;
-    float BounceIntensity = 1.0f;
-    int   ProbesPerFrame = 16;              <span class="c">// update budget (Phase D)</span>
-    bool  Relocation = true;                <span class="c">// Phase E</span>
+    bool  ShowProbes = false;               <span class="c">// the probe balls</span>
+    float ProbeRadius = 0.12f;
 };</code></pre>
+  <p>The settings of the next phases (rays per probe, hysteresis, the update budget, relocation) are added when the code that reads them exists.</p>
   <p>The probe at grid coordinate (<i>i</i>, <i>j</i>, <i>k</i>) sits at <code>origin + (i, j, k) * spacing + offset[i, j, k]</code>, where <code>origin</code> is the volume's minimum corner, <code>spacing = size / (counts - 1)</code>, and <code>offset</code> is zero until relocation (Phase E). Keep the volume axis-aligned at first (rotation locked, like the water's X and Z rotation); a rotated volume only needs the inverse rotation applied before the grid math.</p>
 
   <h3>C.2 The atlases</h3>
@@ -518,10 +517,13 @@ vec2 ProbeAtlasUV(ivec3 probe, vec3 dir, int interior, vec2 atlasSize)
     <tr><th>Binding</th><th>Resource</th></tr>
     <tr><td>11</td><td><code>sampler2D u_ProbeIrradiance</code> (linear filtering, clamp)</td></tr>
     <tr><td>12</td><td><code>sampler2D u_ProbeVisibility</code> (linear filtering, clamp)</td></tr>
-    <tr><td>13</td><td><code>ProbeVolume</code> UBO: origin, spacing, counts, biases, enabled flag, atlas sizes, irradiance encoding gamma</td></tr>
+    <tr><td>13</td><td><code>ProbeVolume</code> UBO, 80 bytes: <code>u_ProbeOrigin</code> (w = 1 when the probes light the scene), <code>u_ProbeSpacing</code> (w = irradiance encoding gamma), <code>u_ProbeCounts</code>, <code>u_ProbeBiases</code>, <code>u_ProbeAtlasSizes</code></td></tr>
     <tr><td>14</td><td><code>sampler2D u_ProbeData</code> (nearest; offsets and states)</td></tr>
   </table></div>
-  <p>The water reflection pass has its own per-frame set and copies a fixed list of bindings from the main set each frame (2 to 10, and 17: see <code>EnvMapVulkanWater::Update</code>). Add the new bindings to that list, so the reflection also shows GI. <code>VulkanShaderH2M</code> merges the stage flags of bindings shared by stages; declare the new bindings in <code>Include/FrameSet.glslh</code> so every set 0 shader agrees on the layout.</p>
+  <p>The water reflection pass has its own per-frame set and copies a fixed list of bindings from the main set each frame (2 to 14, and 17: see <code>EnvMapVulkanWater::Update</code>). The probe bindings are in that list, so the reflection also shows GI. <code>VulkanShaderH2M</code> merges the stage flags of bindings shared by stages; declare the new bindings in <code>Include/FrameSet.glslh</code> so every set 0 shader agrees on the layout.</p>
+
+  <div class="box note"><b>As built: the atlases stay in one layout</b>
+  The three atlases are created as storage and sampled images and kept in <code>VK_IMAGE_LAYOUT_GENERAL</code>: compute passes write them and the mesh shaders sample them with no layout change in between. Phase D's updates inside a frame then need only memory barriers. When no scene has a probe volume, the smallest atlases (2×2×2 probes) stay bound and <code>u_ProbeOrigin.w</code> is 0.</div>
 
   <h3>C.4 Sampling: the heart of DDGI</h3>
 <pre><code>vec3 SampleProbeIrradiance(vec3 P, vec3 N, vec3 V)   <span class="c">// V: unit vector from P towards the viewer (or ray origin)</span>
@@ -576,9 +578,17 @@ vec2 ProbeAtlasUV(ivec3 probe, vec3 dir, int interior, vec2 atlasSize)
   <p><b>In <code>IndirectDiffuse()</code></b>: <code>return u_ProbesEnabled ? SampleProbeIrradiance(P, N, normalize(u_CameraPosition - P)) : EnvironmentIrradiance(N);</code></p>
 
   <h3>C.5 Fill from the environment and visualize</h3>
-  <p>Before any capture exists, a compute pass fills every irradiance texel with <code>u_EnvIrradianceTex</code> in the texel's direction (with the environment rotation), encoded, and every visibility texel with a large distance (1.5 × the spacing, for both moments). Add a probe visualization: an instanced sphere per probe whose fragment shader reads the probe's irradiance for the sphere normal.</p>
+  <p>Before any capture exists, a compute pass (<code>ProbeEnvFill.glsl</code>) fills every irradiance texel with <code>u_EnvIrradianceTex</code> in the texel's direction (with the environment rotation), encoded, and every visibility texel with a large distance (1.5 × a cell's diagonal, for both moments). It runs again when the probe counts, the volume's size, the environment map or its rotation change. The probe visualization (<b>Show Probes</b> in the volume's Properties) is a ball per probe whose fragment shader reads the probe's irradiance for the ball's normal.</p>
+  <div class="box note"><b>As built</b>
+  <ul>
+    <li><b>The fill writes the borders itself.</b> A border texel takes the direction of the interior texel it repeats (<code>ProbeBorderSource</code> in <code>Include/ProbeOctahedral.glslh</code>), so this phase needs no separate border pass. Phase D's border pass, which runs after the probes are blended, uses the same function.</li>
+    <li><b>The balls have no mesh.</b> <code>ProbeSpheres.glsl</code> draws one camera-facing square per probe (6 vertices, an instance per probe) and cuts the ball out in the fragment stage, which also writes the ball's depth.</li>
+    <li><b>The biases</b> are fractions of the smallest of the three probe spacings, not of each axis's own.</li>
+    <li><b><code>SampleProbeIrradiance</code></b> returns whether any probe could answer, and the caller (<code>IndirectDiffuse</code> in <code>Include/ShadeSurface.glslh</code>) falls back to the environment; <code>IndirectDiffuse</code> and <code>ShadeSurfaceDiffuse</code> gained the <code>V</code> / <code>ToViewer</code> argument the lookup's bias needs.</li>
+  </ul></div>
   <div class="box ok"><b>Check: this phase has an exact test</b>
-  After the environment fill, every probe holds the same irradiance as the cube, so the image inside the volume must match the image with probes off (differences only from the 8×8 resolution, invisible after tonemapping). Toggle Probes on and off. If anything shifts, the octahedral mapping, the atlas UVs or the encoding is wrong. The probe spheres must look like small copies of the sky's diffuse light, the same for every probe.</div>
+  After the environment fill, every probe holds the same irradiance as the cube, so the image inside the volume must match the image with probes off, up to the 8×8 resolution of a probe's tile. Toggle <b>Light the Scene</b>. If whole surfaces shift, the octahedral mapping, the atlas UVs or the encoding is wrong. The probe balls must look like small copies of the sky's diffuse light, the same for every probe.
+  Measured on <code>Old_Stove_Corner</code> without its water, a volume around the whole view: the mean difference is 1.1 of 255 per pixel, 88% of the pixels are within 2, the largest difference is 18, on normal-mapped surfaces where the normal changes from pixel to pixel. Two runs without a volume are identical.</div>
 </section>
 
 <section id="phase-d">

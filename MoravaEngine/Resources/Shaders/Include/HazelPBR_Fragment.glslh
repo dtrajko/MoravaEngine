@@ -45,7 +45,7 @@ void main()
 		// material buffer and the mesh's own normal: no texture detail, no normal map, no reflections
 		vec3 surfaceNormal = normalize(Input.Normal);
 		surfaceNormal = dot(surfaceNormal, m_Params.View) < 0.0 ? -surfaceNormal : surfaceNormal;
-		SurfacePoint surface = SurfaceFromMaterial(int(u_MaterialUniforms.MaterialIndex + 0.5), Input.WorldPosition, surfaceNormal);
+		SurfacePoint surface = SurfaceFromMaterial(int(u_MaterialUniforms.MaterialIndex + 0.5), Input.WorldPosition, surfaceNormal, m_Params.View);
 		color.rgb = ShadeSurfaceDiffuse(surface, true);
 	}
 	else if (u_ShadowDebug.z > 1.5)

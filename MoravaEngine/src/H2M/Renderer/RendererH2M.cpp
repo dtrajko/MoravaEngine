@@ -159,6 +159,8 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowDepth.glsl");      // SceneEnvMapVulkan: shadow map cascades
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowDepth_Anim.glsl"); // SceneEnvMapVulkan: the same for skinned meshes
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowMapView.glsl");    // SceneEnvMapVulkan: spot / point shadow map viewer
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeEnvFill.glsl");     // SceneEnvMapVulkan: the probe volume, filled from the environment
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeSpheres.glsl");     // SceneEnvMapVulkan: the probes shown as balls
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
 

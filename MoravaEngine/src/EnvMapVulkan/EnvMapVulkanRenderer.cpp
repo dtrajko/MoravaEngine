@@ -12,6 +12,7 @@
 #include "EnvMapVulkanGlass.h"
 #include "EnvMapVulkanGBuffer.h"
 #include "EnvMapVulkanMaterialBuffer.h"
+#include "EnvMapVulkanProbes.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
 #include "EnvMapVulkanSceneSerializer.h"
@@ -467,6 +468,7 @@ static bool s_ShadowsRendered = false; // the shadow map holds this frame's casc
 static uint32_t s_PendingShadowResolution = 0; // chosen in the Lights panel, applied at the start of the next Draw
 static void WriteShadowMapDescriptor();
 static float s_EnvMapRotation = 0.0f; // degrees, applied to the PBR environment lookups (as in SceneHazelEnvMap)
+static uint32_t s_EnvironmentVersion = 0; // changes whenever the environment's cube maps get new contents (CreateEnvironmentMap)
 
 // The scene (EnvMapVulkanScene, see EnvMapVulkanComponents.h): the renderer reads it every frame. Terms: a model is a
 // loaded model file (an H2M::ModelH2M), an entity with a ModelComponent; a mesh is one part of it (an H2M::MeshH2M), a
@@ -1477,6 +1479,27 @@ static EnvMapVulkanGBuffer s_GBuffer;
 // for shaders that light a point without its material's descriptor set
 static EnvMapVulkanMaterialBuffer s_MaterialBuffer;
 
+// The probe volume on the GPU (see EnvMapVulkanProbes): its atlases and ProbeVolume block are in set 0 (bindings 11 to 14),
+// read by IndirectDiffuse in Include/ShadeSurface.glslh
+static EnvMapVulkanProbes s_Probes;
+
+// Points the per-frame set's probe atlas bindings to the atlases (at startup, and when the probe counts changed)
+static void WriteProbeDescriptors()
+{
+	H2M::RefH2M<H2M::VulkanShaderH2M> pbrShader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
+	const VkDescriptorImageInfo imageInfos[3] = { s_Probes.GetIrradianceInfo(), s_Probes.GetVisibilityInfo(), s_Probes.GetProbeDataInfo() };
+	const char* names[3] = { "u_ProbeIrradiance", "u_ProbeVisibility", "u_ProbeData" };
+	std::array<VkWriteDescriptorSet, 3> writes;
+	for (size_t i = 0; i < writes.size(); i++)
+	{
+		writes[i] = *pbrShader->GetDescriptorSet(names[i], H2M::VulkanShaderH2M::FrameDescriptorSet);
+		writes[i].dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+		writes[i].descriptorCount = 1;
+		writes[i].pImageInfo = &imageInfos[i];
+	}
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
+}
+
 // Points the per-frame set's material buffer binding to the buffer (at startup, and when a bigger buffer replaced it)
 static void WriteMaterialBufferDescriptor()
 {
@@ -1566,6 +1589,180 @@ static void RemoveWaterEntity()
 	ExtractWater();
 }
 
+// The probe volume is an entity with a ProbeVolumeComponent, handled like the water: its settings, and its placement as
+// the entity's transform (translation: the box's center, scale: its size). Every frame ExtractProbeVolume reads it into
+// s_ProbeVolumeSettings (Exists when the scene has one); the Properties panel and the gizmo edit that copy and write it
+// back with CommitProbeVolume.
+static EnvMapVulkanProbeVolumeSettings s_ProbeVolumeSettings;
+static EnvMapVulkanEntityID s_ProbeVolumeEntity = NoEntity; // the scene's probe volume (at most one), NoEntity: none
+
+static glm::mat4 GetProbeVolumeTransform(const EnvMapVulkanProbeVolumeSettings& settings)
+{
+	return glm::translate(glm::mat4(1.0f), settings.Center) * glm::scale(glm::mat4(1.0f), settings.Size);
+}
+
+static void ExtractProbeVolume()
+{
+	s_ProbeVolumeEntity = s_Scene.FindFirst<ProbeVolumeComponent>();
+	if (s_ProbeVolumeEntity == NoEntity)
+	{
+		s_ProbeVolumeSettings.Exists = false;
+		return;
+	}
+	s_ProbeVolumeSettings = s_Scene.Get<ProbeVolumeComponent>(s_ProbeVolumeEntity).Settings;
+	const glm::mat4 world = s_Scene.GetWorldTransform(s_ProbeVolumeEntity);
+	s_ProbeVolumeSettings.Exists = true;
+	s_ProbeVolumeSettings.Center = glm::vec3(world[3]);
+	s_ProbeVolumeSettings.Size = glm::max(glm::vec3(glm::length(glm::vec3(world[0])), glm::length(glm::vec3(world[1])), glm::length(glm::vec3(world[2]))),
+		glm::vec3(0.1f));
+	s_ProbeVolumeSettings.Counts = s_ProbeVolumeSettings.GetCounts();
+}
+
+// Writes an edited s_ProbeVolumeSettings back into the entity (before: as it was read); the placement only when it changed
+static void CommitProbeVolume(const EnvMapVulkanProbeVolumeSettings& before)
+{
+	if (s_ProbeVolumeEntity == NoEntity || !s_Scene.Exists(s_ProbeVolumeEntity))
+	{
+		return;
+	}
+	s_ProbeVolumeSettings.Size = glm::max(s_ProbeVolumeSettings.Size, glm::vec3(0.1f));
+	s_ProbeVolumeSettings.Counts = s_ProbeVolumeSettings.GetCounts();
+	s_Scene.Get<ProbeVolumeComponent>(s_ProbeVolumeEntity).Settings = s_ProbeVolumeSettings;
+	if (s_ProbeVolumeSettings.Center != before.Center || s_ProbeVolumeSettings.Size != before.Size)
+	{
+		s_Scene.SetWorldTransform(s_ProbeVolumeEntity, GetProbeVolumeTransform(s_ProbeVolumeSettings));
+	}
+}
+
+// Adds the probe volume (one per scene) with these settings and selects it
+static void CreateProbeVolumeEntity(const EnvMapVulkanProbeVolumeSettings& settings)
+{
+	if (s_Scene.FindFirst<ProbeVolumeComponent>() != NoEntity)
+	{
+		return;
+	}
+	EnvMapVulkanEntityID entity = s_Scene.CreateEntity("Probe Volume");
+	s_Scene.Add<ProbeVolumeComponent>(entity).Settings = settings;
+	s_Scene.SetWorldTransform(entity, GetProbeVolumeTransform(settings));
+	s_SelectedEntity = entity;
+	ExtractProbeVolume();
+}
+
+static void RemoveProbeVolumeEntity()
+{
+	if (s_ProbeVolumeEntity != NoEntity)
+	{
+		s_Scene.DestroyEntity(s_ProbeVolumeEntity);
+		if (s_SelectedEntity == s_ProbeVolumeEntity)
+		{
+			s_SelectedEntity = NoEntity;
+		}
+	}
+	ExtractProbeVolume();
+}
+
+// The box around every mesh of every model of the scene, in the world (false: the scene has no models)
+static bool GetSceneModelBounds(glm::vec3& boundsMin, glm::vec3& boundsMax)
+{
+	boundsMin = glm::vec3(std::numeric_limits<float>::max());
+	boundsMax = glm::vec3(-std::numeric_limits<float>::max());
+	bool any = false;
+	for (EnvMapVulkanEntityID entity : GetModels())
+	{
+		H2M::RefH2M<H2M::ModelH2M> model = GetModel(entity);
+		const glm::mat4 world = s_Scene.GetWorldTransform(entity);
+		for (const H2M::RefH2M<H2M::MeshH2M>& mesh : model->GetMeshes())
+		{
+			const glm::mat4 transform = GetMeshTransform(model, mesh, world);
+			for (int c = 0; c < 8; c++)
+			{
+				const glm::vec3 corner((c & 1) ? mesh->BoundingBox.Max.x : mesh->BoundingBox.Min.x, (c & 2) ? mesh->BoundingBox.Max.y : mesh->BoundingBox.Min.y,
+					(c & 4) ? mesh->BoundingBox.Max.z : mesh->BoundingBox.Min.z);
+				const glm::vec3 position = glm::vec3(transform * glm::vec4(corner, 1.0f));
+				boundsMin = glm::min(boundsMin, position);
+				boundsMax = glm::max(boundsMax, position);
+				any = true;
+			}
+		}
+	}
+	return any;
+}
+
+// The Properties panel's controls of the probe volume
+static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
+{
+	ImGui::Checkbox("Light the Scene", &probes.Enabled);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("On: inside the box, surfaces get their indirect diffuse light from the probes around them.\n"
+			"Off: from the environment map, as without a probe volume.\n"
+			"The probes hold the environment's light only so far (they don't capture the scene yet), so both look the same:\n"
+			"toggling this is the test that the probes are stored and read correctly.");
+	}
+
+	ImGui::DragFloat3("Center", &probes.Center.x, 0.05f);
+	ImGui::DragFloat3("Size", &probes.Size.x, 0.05f, 0.1f, 1000.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The box the probes fill: the first and the last probe of each axis are on its sides.\n"
+			"The gizmo moves and sizes it too (it can't be turned). While the volume is selected, the box is outlined.");
+	}
+	glm::vec3 sceneMin, sceneMax;
+	const bool hasModels = GetSceneModelBounds(sceneMin, sceneMax);
+	ImGui::BeginDisabled(!hasModels);
+	if (ImGui::Button("Fit to Scene"))
+	{
+		// Around all models, a little larger: the outermost probes then stand just outside the surfaces, not in them
+		const glm::vec3 extent = sceneMax - sceneMin;
+		probes.Center = (sceneMin + sceneMax) * 0.5f;
+		probes.Size = extent * 1.05f + glm::vec3(0.2f);
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Sets the center and the size so the box holds every model of the scene, with a small margin.\n"
+			"The number of probes stays: in a larger box they stand farther apart (raise Probes to keep them close).");
+	}
+	ImGui::DragInt3("Probes", &probes.Counts.x, 0.1f, EnvMapVulkanProbeVolumeSettings::MinCount, 32, "%d", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Probes along X, Y and Z (up to %d, %d, %d). More probes follow the light's changes more closely,\n"
+			"and cost more memory and, once they capture the scene, more time to update.",
+			EnvMapVulkanProbeVolumeSettings::MaxCounts.x, EnvMapVulkanProbeVolumeSettings::MaxCounts.y, EnvMapVulkanProbeVolumeSettings::MaxCounts.z);
+	}
+	const glm::ivec3 counts = probes.GetCounts();
+	const glm::vec3 spacing = probes.GetSpacing();
+	const int tilesX = counts.x * counts.y;
+	ImGui::TextDisabled("%d probes, %.2f x %.2f x %.2f m apart", counts.x * counts.y * counts.z, spacing.x, spacing.y, spacing.z);
+	ImGui::TextDisabled("Atlases: irradiance %d x %d, visibility %d x %d", tilesX * (EnvMapVulkanProbes::IrradianceTexels + 2),
+		counts.z * (EnvMapVulkanProbes::IrradianceTexels + 2), tilesX * (EnvMapVulkanProbes::VisibilityTexels + 2),
+		counts.z * (EnvMapVulkanProbes::VisibilityTexels + 2));
+
+	ImGui::Separator();
+	ImGui::SliderFloat("Normal Bias", &probes.NormalBias, 0.0f, 1.0f, "%.2f");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How far from a surface its probe lookup starts, along the surface's normal (fractions of the\n"
+			"smallest probe spacing). Keeps a wall from being judged by the probes behind it.");
+	}
+	ImGui::SliderFloat("View Bias", &probes.ViewBias, 0.0f, 1.0f, "%.2f");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The same, towards the camera");
+	}
+
+	ImGui::Separator();
+	ImGui::Checkbox("Show Probes", &probes.ShowProbes);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("A ball at every probe, lit by that probe alone: it shows the light the probe holds for each\n"
+			"direction, as a white matte ball there would show it");
+	}
+	ImGui::BeginDisabled(!probes.ShowProbes);
+	ImGui::DragFloat("Probe Size", &probes.ProbeRadius, 0.005f, 0.01f, 2.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::EndDisabled();
+}
+
 // Toward the sun for the water (the light that gets into it, the caustics): pointing down while the sun is off
 static glm::vec3 GetWaterSunDirection()
 {
@@ -1602,6 +1799,12 @@ static void UpdateFrameUniforms()
 	ubPtr = shader->MapUniformBuffer(1, frameSet);
 	memcpy(ubPtr, &ub, sizeof(ub));
 	shader->UnmapUniformBuffer(1, frameSet);
+
+	// binding 13: ProbeVolume (fragment stage), see EnvMapVulkanProbes
+	const EnvMapVulkanProbes::ProbeVolumeUB probeVolume = s_Probes.GetUniforms();
+	ubPtr = shader->MapUniformBuffer(13, frameSet);
+	memcpy(ubPtr, &probeVolume, sizeof(probeVolume));
+	shader->UnmapUniformBuffer(13, frameSet);
 
 	// binding 5: Lights (fragment stage), see EnvMapVulkanLightsGPU
 	SyncSunWithEnvironmentRotation();
@@ -3696,7 +3899,7 @@ static bool s_AskAboutUnsavedChanges = false;  // opens the question (see OnImGu
 // back to the top; drop a model file to load it, a material onto a part (or a model: all its parts) to assign it.
 // Properties: the selected entity's settings.
 
-enum class EntityKind { Other, Environment, Sun, PointLight, SpotLight, Water, Model, Part };
+enum class EntityKind { Other, Environment, Sun, PointLight, SpotLight, Water, ProbeVolume, Model, Part };
 
 static EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
 {
@@ -3706,6 +3909,7 @@ static EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
 	if (s_Scene.Has<SpotLightComponent>(entity))   return EntityKind::SpotLight;
 	if (s_Scene.Has<SunComponent>(entity))         return EntityKind::Sun;
 	if (s_Scene.Has<WaterComponent>(entity))       return EntityKind::Water;
+	if (s_Scene.Has<ProbeVolumeComponent>(entity)) return EntityKind::ProbeVolume;
 	if (s_Scene.Has<EnvironmentComponent>(entity)) return EntityKind::Environment;
 	return EntityKind::Other;
 }
@@ -3719,6 +3923,7 @@ static const char* GetEntityKindName(EntityKind kind)
 		case EntityKind::PointLight:  return "Point Light";
 		case EntityKind::SpotLight:   return "Spot Light";
 		case EntityKind::Water:       return "Water";
+		case EntityKind::ProbeVolume: return "Probe Volume";
 		case EntityKind::Model:       return "Model";
 		case EntityKind::Part:        return "Mesh (part of a model)";
 		default:                      return "Entity";
@@ -3735,6 +3940,7 @@ static ImU32 GetEntityKindColor(EntityKind kind)
 		case EntityKind::PointLight:  return IM_COL32(255, 150, 60, 255);
 		case EntityKind::SpotLight:   return IM_COL32(90, 200, 255, 255);
 		case EntityKind::Water:       return IM_COL32(60, 120, 230, 255);
+		case EntityKind::ProbeVolume: return IM_COL32(190, 130, 255, 255);
 		case EntityKind::Model:       return IM_COL32(200, 200, 210, 255);
 		case EntityKind::Part:        return IM_COL32(140, 140, 150, 255);
 		default:                      return IM_COL32(128, 128, 128, 255);
@@ -3756,7 +3962,7 @@ static bool CanHaveChildren(EntityKind kind)
 static bool CanBeDeleted(EntityKind kind)
 {
 	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
-		kind == EntityKind::Water;
+		kind == EntityKind::Water || kind == EntityKind::ProbeVolume;
 }
 
 // Removes an entity (and its children): a model or a part at the start of the next frame (its GPU resources may be in use),
@@ -3790,6 +3996,9 @@ static void DeleteEntity(EnvMapVulkanEntityID entity)
 		case EntityKind::Water:
 			RemoveWaterEntity();
 			break;
+		case EntityKind::ProbeVolume:
+			RemoveProbeVolumeEntity();
+			break;
 		default:
 			break;
 	}
@@ -3822,6 +4031,15 @@ static void AddWaterAtView()
 	EnvMapVulkanWaterSettings settings;
 	settings.Center = glm::vec2(target.x, target.z);
 	CreateWaterEntity(settings);
+}
+
+// The probe volume goes around where the camera looks, standing on that point's height
+static void AddProbeVolumeAtView()
+{
+	EnvMapVulkanProbeVolumeSettings settings;
+	const glm::vec3 target = GetLightSpawnTarget();
+	settings.Center = target + glm::vec3(0.0f, settings.Size.y * 0.5f, 0.0f);
+	CreateProbeVolumeEntity(settings);
 }
 
 static const char* s_EntityPayload = "VULKAN_SCENE_ENTITY"; // drag & drop payload: an EnvMapVulkanEntityID
@@ -4515,11 +4733,15 @@ static void OnImGuiRenderSceneHierarchy()
 		{
 			AddWaterAtView();
 		}
+		if (ImGui::MenuItem("Probe Volume", nullptr, false, s_ProbeVolumeEntity == NoEntity))
+		{
+			AddProbeVolumeAtView();
+		}
 		ImGui::EndPopup();
 	}
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip("Load a model, add a point or spot light (up to %u each), or the water (one per scene).\n"
+		ImGui::SetTooltip("Load a model, add a point or spot light (up to %u each), the water or a probe volume (one each per scene).\n"
 			"Models can also be dropped here or onto the viewport from the Content Browser", EnvMapVulkanLightsGPU::MaxPointLights);
 	}
 	ImGui::SameLine();
@@ -4686,6 +4908,19 @@ static void OnImGuiRenderProperties()
 			const EnvMapVulkanWaterSettings before = s_WaterSettings;
 			WaterSettingsControls(s_WaterSettings);
 			CommitWater(before);
+			break;
+		}
+		case EntityKind::ProbeVolume:
+		{
+			if (ImGui::Button("Remove Probe Volume"))
+			{
+				RemoveProbeVolumeEntity();
+				ImGui::End();
+				return;
+			}
+			const EnvMapVulkanProbeVolumeSettings before = s_ProbeVolumeSettings;
+			ProbeVolumeControls(s_ProbeVolumeSettings);
+			CommitProbeVolume(before);
 			break;
 		}
 		case EntityKind::Environment:
@@ -6250,6 +6485,28 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 				}
 			}
 		}
+
+		// The probe volume's box, outlined while the volume is selected (it has no surface of its own to see). The
+		// overlay has its own depth, so the outline shows through the scene.
+		if (s_ProbeVolumeSettings.Exists && s_SelectedEntity == s_ProbeVolumeEntity)
+		{
+			H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_BoundingBoxPipeline.As<H2M::VulkanPipelineH2M>();
+			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+			VkBuffer vertexBuffer = s_BoundingBoxVertexBuffer.As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+			vkCmdSetLineWidth(commandBuffer, lineWidth);
+
+			// The pipeline's box is the unit cube from 0 to 1
+			const glm::mat4 mvp = viewProjection * glm::translate(glm::mat4(1.0f), s_ProbeVolumeSettings.GetOrigin()) *
+				glm::scale(glm::mat4(1.0f), s_ProbeVolumeSettings.Size);
+			const glm::vec4 color(0.75f, 0.51f, 1.0f, 1.0f); // the probe volume's color in the Scene Hierarchy
+			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+			vkCmdDraw(commandBuffer, s_BoundingBoxVertexCount, 1, 0, 0);
+			EnvMapVulkanProfiler::CountDraw(0);
+		}
 	}
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -6699,9 +6956,9 @@ void EnvMapVulkanRenderer::Init()
 
 		// Camera, SceneData and Lights uniform buffers (written every frame, see UpdateFrameUniforms); the environment maps
 		// are written in SetSceneEnvironment
-		const char* bufferNames[] = { "Camera", "SceneData", "Lights", "Shadows" };
-		const uint32_t bufferBindings[] = { 0, 1, 5, 7 };
-		std::array<VkWriteDescriptorSet, 4> writes;
+		const char* bufferNames[] = { "Camera", "SceneData", "Lights", "Shadows", "ProbeVolume" };
+		const uint32_t bufferBindings[] = { 0, 1, 5, 7, 13 };
+		std::array<VkWriteDescriptorSet, 5> writes;
 		for (size_t i = 0; i < writes.size(); i++)
 		{
 			writes[i] = *pbrShader->GetDescriptorSet(bufferNames[i], frameSet);
@@ -6716,6 +6973,10 @@ void EnvMapVulkanRenderer::Init()
 		// binding 17: the material buffer
 		s_MaterialBuffer.Create();
 		WriteMaterialBufferDescriptor();
+
+		// bindings 11, 12, 14: the probe volume's atlases (binding 13, its uniform buffer, is written above)
+		s_Probes.Create(s_Framebuffer);
+		WriteProbeDescriptors();
 
 		// binding 10: the water's caustics map (it exists from s_Water.Create on, with or without water on the scene)
 		VkWriteDescriptorSet causticsWrite = *pbrShader->GetDescriptorSet("u_CausticsMap", frameSet);
@@ -6771,6 +7032,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_Water.Destroy();
 	s_Glass.Destroy();
 	s_MaterialBuffer.Destroy();
+	s_Probes.Destroy();
 	s_GBuffer.Destroy();
 	EnvMapVulkanProfiler::Shutdown();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
@@ -7667,6 +7929,12 @@ void EnvMapVulkanRenderer::GeometryPass()
 			{
 				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::Scene);
 			}
+		}
+		if (s_Probes.ShowsSpheres())
+		{
+			EnvMapVulkanProfiler::Scope probesScope(drawCommandBuffer, "Probe Balls", "The probe volume's probes shown as balls (Show Probes): "
+				"one camera-facing square per probe, cut to a ball and lit by its probe in the fragment shader.");
+			s_Probes.RecordSpheres(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], s_Data.SceneData.SceneCamera.Camera.GetViewMatrix());
 		}
 		CollectGlassDraws();
 
@@ -9207,10 +9475,12 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 // TODO: Temporary method until composite rendering is enabled
 void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 {
-	// This frame's environment, lights and water, from the scene (see ExtractEnvironment, ExtractLights, ExtractWater)
+	// This frame's environment, lights, water and probe volume, from the scene (see ExtractEnvironment, ExtractLights,
+	// ExtractWater, ExtractProbeVolume)
 	ExtractEnvironment();
 	ExtractLights();
 	ExtractWater();
+	ExtractProbeVolume();
 
 	// The sun points at the sun of the environment map: at startup, and after loading a map whose sun was taken out of
 	// it (its light now has to come from the directional sun), once the map's pixels are available
@@ -9318,6 +9588,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	}
 	ExtractLights(); // after the scene changes above
 	ExtractWater();
+	ExtractProbeVolume();
 	// Lens dirt texture chosen in the Bloom settings
 	if (!s_PendingBloomDirtFilename.empty())
 	{
@@ -9440,6 +9711,12 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	if (s_MaterialBuffer.Update())
 	{
 		WriteMaterialBufferDescriptor(); // a bigger buffer: Update waited for the GPU
+	}
+	// The probe volume: atlases for its probe counts, filled from the environment when either changed
+	if (s_Data.irradianceMap && s_Probes.Update(s_ProbeVolumeSettings, s_Data.irradianceMap.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo(),
+		s_EnvMapRotation, s_EnvironmentVersion))
+	{
+		WriteProbeDescriptors(); // new atlases: Update waited for the GPU
 	}
 	UpdateFrameUniforms();
 	if (s_WaterSettings.Enabled)
@@ -9623,6 +9900,7 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
 		irradianceCubemap->GenerateMips(true);
 	}
 
+	s_EnvironmentVersion++; // what was made from the old maps (the probe volume's fill) is out of date
 	return { s_Data.envFiltered, s_Data.irradianceMap };
 }
 
@@ -9764,6 +10042,35 @@ H2M::RendererCapabilitiesH2M EnvMapVulkanRenderer::GetCapabilities()
 // The gizmo on the primary selected entity (s_SelectedEntity): a light (the sun turns), the water, a part of a model or a model
 static void ManipulatePrimarySelection()
 {
+	// The probe volume: translate moves its box, scale sizes it along the world's axes; it can't be turned
+	if (s_ProbeVolumeEntity != NoEntity && s_SelectedEntity == s_ProbeVolumeEntity)
+	{
+		const bool movable = Scene::s_ImGuizmoType == ImGuizmo::OPERATION::TRANSLATE || Scene::s_ImGuizmoType == ImGuizmo::OPERATION::SCALE;
+		if (movable && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
+			float snapValues[3] = { 1.0f, 1.0f, 1.0f };
+			glm::mat4 world = GetProbeVolumeTransform(s_ProbeVolumeSettings);
+			if (ImGuizmo::Manipulate(
+				glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
+				glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
+				(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
+				ImGuizmo::WORLD,
+				glm::value_ptr(world),
+				nullptr,
+				Input::IsKeyPressed(KeyH2M::LeftControl) ? snapValues : nullptr))
+			{
+				const EnvMapVulkanProbeVolumeSettings before = s_ProbeVolumeSettings;
+				s_ProbeVolumeSettings.Center = glm::vec3(world[3]);
+				s_ProbeVolumeSettings.Size = glm::vec3(glm::length(glm::vec3(world[0])), glm::length(glm::vec3(world[1])), glm::length(glm::vec3(world[2])));
+				CommitProbeVolume(before);
+			}
+		}
+		return;
+	}
+
 	// The gizmo moves the selected point or spot light, or else the model or mesh selected in the Models and Meshes panel (or picked with the mouse)
 	if (Scene::s_ImGuizmoType != -1 && s_SelectedLightKind != LightKind::None && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 	{

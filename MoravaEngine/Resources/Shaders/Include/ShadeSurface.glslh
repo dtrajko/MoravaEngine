@@ -4,9 +4,10 @@
 // (docs/rendering/SSAO_GI_RayTracing_Guide.html, Phase B).
 // - SunLightAt, PointLightAt, SpotLightAt: the light arriving from one light, with its falloff, cone and shadow. The only
 //   copy of that code: the PBR shaders' Lighting() runs its BRDF on them, ShadeSurfaceDiffuse adds them up.
-// - IndirectDiffuse: the light arriving from everywhere else.
+// - IndirectDiffuse: the light arriving from everywhere else: from the probe volume where there is one (Include/Probes.glslh),
+//   from the environment elsewhere.
 // - ShadeSurfaceDiffuse: the light a surface point sends back, as a matte surface (no reflections).
-// Needs set 0 (Include/FrameSet.glslh): the lights, the shadow maps, the environment and the material buffer.
+// Needs set 0 (Include/FrameSet.glslh): the lights, the shadow maps, the environment, the probes and the material buffer.
 #ifndef SHADE_SURFACE_GLSLH
 #define SHADE_SURFACE_GLSLH
 
@@ -35,6 +36,7 @@ float DistanceAttenuation(float distance, float range)
 
 #include "Shadows.glslh"
 #include "WaterVolume.glslh"
+#include "Probes.glslh"
 
 // The light arriving at a point P from one light. N is the normal the light is measured against (the shading normal),
 // geometryNormal the surface's own (the shadow lookups offset along it). L points from P towards the light; radiance is
@@ -116,14 +118,32 @@ bool SpotLightAt(int i, vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec
 	return true;
 }
 
-// Indirect light: everything that doesn't come straight from the sun, the point or the spot lights.
-// The light arriving at a surface point P with normal N, already divided by pi (the convention of u_EnvIrradianceTex),
-// so the diffuse light is albedo * IndirectDiffuse. Today: the environment only, the same at every position. The probes
-// (GI) replace this body.
-vec3 IndirectDiffuse(vec3 P, vec3 N)
+// The environment's light arriving at a surface with normal N, divided by pi: the same at every position
+vec3 EnvironmentIrradiance(vec3 N)
 {
 	// The environment rotation applies to the diffuse lighting too (not only to the reflections), so both match the skybox
 	return texture(u_EnvIrradianceTex, RotateVectorAboutY(u_EnvMapRotation, N)).rgb;
+}
+
+// Indirect light: everything that doesn't come straight from the sun, the point or the spot lights.
+// The light arriving at a surface point P with normal N, already divided by pi (the convention of u_EnvIrradianceTex),
+// so the diffuse light is albedo * IndirectDiffuse. V: the unit vector from P towards whoever looks at it.
+// Inside the probe volume: from the probes around the point, which know what stands around them. Elsewhere, and without a
+// probe volume: from the environment.
+vec3 IndirectDiffuse(vec3 P, vec3 N, vec3 V)
+{
+	vec3 environment = EnvironmentIrradiance(N);
+	if (u_ProbeOrigin.w < 0.5)
+	{
+		return environment;
+	}
+	float inVolume = ProbeVolumeWeight(P);
+	vec3 fromProbes;
+	if (inVolume <= 0.0 || !SampleProbeIrradiance(P, N, V, fromProbes))
+	{
+		return environment;
+	}
+	return mix(environment, fromProbes, inVolume);
 }
 
 // A point of a surface, with what its material is there
@@ -131,6 +151,7 @@ struct SurfacePoint
 {
 	vec3 Position;
 	vec3 Normal;     // world space, facing whoever looks at the point (the camera, a probe, a ray's origin)
+	vec3 ToViewer;   // unit vector from the point towards that viewer (the probes' lookups are biased towards it)
 	vec3 Albedo;
 	float Metalness; // metals have no diffuse light: albedo * (1 - metalness)
 	vec3 Emissive;   // already multiplied by the emissive intensity
@@ -138,12 +159,13 @@ struct SurfacePoint
 
 // The surface point of a material of the material buffer (u_Materials, see Include/FrameSet.glslh): the material's
 // values, with each map replaced by its average color. Enough for light that bounces: it is blurred over the whole scene.
-SurfacePoint SurfaceFromMaterial(int materialIndex, vec3 position, vec3 normal)
+SurfacePoint SurfaceFromMaterial(int materialIndex, vec3 position, vec3 normal, vec3 toViewer)
 {
 	GPUMaterial material = u_Materials[materialIndex];
 	SurfacePoint surface;
 	surface.Position = position;
 	surface.Normal = normal;
+	surface.ToViewer = toViewer;
 	surface.Albedo = material.AlbedoColor.rgb;
 	surface.Metalness = material.Metalness;
 	surface.Emissive = material.Emissive.rgb;
@@ -185,7 +207,7 @@ vec3 ShadeSurfaceDiffuse(SurfacePoint surface, bool includeIndirect)
 	if (includeIndirect)
 	{
 		// Under the water the sky's light is dimmed by the water above (the sun's is in SunLightAt)
-		arriving += IndirectDiffuse(surface.Position, surface.Normal) * WaterSkylightAt(surface.Position);
+		arriving += IndirectDiffuse(surface.Position, surface.Normal, surface.ToViewer) * WaterSkylightAt(surface.Position);
 	}
 
 	return surface.Emissive + diffuseAlbedo * arriving;

@@ -255,7 +255,7 @@ vec3 Lighting(vec3 F0)
 }
 
 // Indirect light: everything that doesn't come straight from the sun, the point or the spot lights. Each source has its own
-// function, so later work replaces one body without touching the rest: the probes (GI) replace IndirectDiffuse (in
+// function, so later work replaces one body without touching the rest: the probes (GI) are in IndirectDiffuse (in
 // Include/ShadeSurface.glslh), ray-traced reflections replace IndirectSpecular, and SSAO / RTAO feed the ao value
 // (docs/rendering/SSAO_GI_RayTracing_Guide.html).
 
@@ -278,7 +278,7 @@ vec3 IndirectLight(vec3 F0, vec3 Lr, float ao)
 {
 	vec3 F = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
 	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-	vec3 diffuse = m_Params.Albedo * IndirectDiffuse(Input.WorldPosition, m_Params.Normal);
+	vec3 diffuse = m_Params.Albedo * IndirectDiffuse(Input.WorldPosition, m_Params.Normal, m_Params.View);
 
 	// Sample BRDF Lut, 1.0 - roughness for y-coord because texture was generated (in Sparky) for gloss model
 	vec2 specularBRDF = texture(u_BRDFLUTTexture, vec2(m_Params.NdotV, 1.0 - m_Params.Roughness)).rg;
