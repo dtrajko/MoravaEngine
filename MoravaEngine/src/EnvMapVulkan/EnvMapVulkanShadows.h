@@ -89,6 +89,8 @@ glm::vec2 GetPointShadowDepthParams(float range);
  * largest coordinate (relative to the light): see PointShadowDepth.
  */
 std::array<glm::mat4, 6> ComputePointShadowFaceViewProjections(const glm::vec3& position, float range);
+// The same 6 faces with any near and far plane: a cube map drawn around a point (the probes' capture, see EnvMapVulkanProbes)
+std::array<glm::mat4, 6> ComputeCubeFaceViewProjections(const glm::vec3& position, float nearPlane, float farPlane);
 
 // The depth a point at offset (point - light position) has in its cube face: what the shader compares against
 float PointShadowDepth(const glm::vec3& offset, float range);

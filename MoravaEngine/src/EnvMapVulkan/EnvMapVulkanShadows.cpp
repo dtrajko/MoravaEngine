@@ -126,6 +126,11 @@ glm::vec2 GetPointShadowDepthParams(float range)
 
 std::array<glm::mat4, 6> ComputePointShadowFaceViewProjections(const glm::vec3& position, float range)
 {
+	return ComputeCubeFaceViewProjections(position, GetLocalShadowNearPlane(range), std::max(range, 0.02f));
+}
+
+std::array<glm::mat4, 6> ComputeCubeFaceViewProjections(const glm::vec3& position, float nearPlane, float farPlane)
+{
 	// Per face (layer order +X, -X, +Y, -Y, +Z, -Z): the major axis F, and the directions R and D along which the face's
 	// s and t texture coordinates grow (Vulkan spec, Cube Map Face Selection: e.g. +X: sc = -rz, tc = -ry).
 	// The view looks down F with R as its x axis and D as its y axis: then a perspective projection gives
@@ -140,7 +145,7 @@ std::array<glm::mat4, 6> ComputePointShadowFaceViewProjections(const glm::vec3& 
 		{ { 0.0f,  0.0f,  1.0f }, {  1.0f, 0.0f,  0.0f }, { 0.0f, -1.0f,  0.0f } }, // +Z: sc = +rx, tc = -ry
 		{ { 0.0f,  0.0f, -1.0f }, { -1.0f, 0.0f,  0.0f }, { 0.0f, -1.0f,  0.0f } }, // -Z: sc = -rx, tc = -ry
 	};
-	const glm::mat4 projection = glm::perspectiveRH_ZO(glm::radians(90.0f), 1.0f, GetLocalShadowNearPlane(range), std::max(range, 0.02f));
+	const glm::mat4 projection = glm::perspectiveRH_ZO(glm::radians(90.0f), 1.0f, nearPlane, farPlane);
 	std::array<glm::mat4, 6> matrices;
 	for (int i = 0; i < 6; i++)
 	{

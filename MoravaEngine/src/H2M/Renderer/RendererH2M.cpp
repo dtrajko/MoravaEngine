@@ -161,6 +161,12 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ShadowMapView.glsl");    // SceneEnvMapVulkan: spot / point shadow map viewer
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeEnvFill.glsl");     // SceneEnvMapVulkan: the probe volume, filled from the environment
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeSpheres.glsl");     // SceneEnvMapVulkan: the probes shown as balls
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeCapture_Static.glsl");   // SceneEnvMapVulkan: the probe update: the meshes into a cube around a probe
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeCapture_Anim.glsl");     // SceneEnvMapVulkan: the same for skinned meshes
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeResample.glsl");         // SceneEnvMapVulkan: the probe update: the cubes into the ray buffer
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBlendIrradiance.glsl");  // SceneEnvMapVulkan: the probe update: the rays into the irradiance atlas
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBlendVisibility.glsl");  // SceneEnvMapVulkan: the probe update: the rays into the visibility atlas
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBorders.glsl");          // SceneEnvMapVulkan: the probe update: the border texels of the updated tiles
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
 

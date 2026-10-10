@@ -1482,6 +1482,25 @@ static EnvMapVulkanMaterialBuffer s_MaterialBuffer;
 // The probe volume on the GPU (see EnvMapVulkanProbes): its atlases and ProbeVolume block are in set 0 (bindings 11 to 14),
 // read by IndirectDiffuse in Include/ShadeSurface.glslh
 static EnvMapVulkanProbes s_Probes;
+// The sun's shadow map of the whole probe volume, for the probes' capture (see RecordProbeUpdate): one orthographic map
+// around the volume, drawn in the frames that update probes. The sun's cascades (s_ShadowMap) follow the camera, so they
+// can't tell whether the sun reaches what a probe behind the camera sees.
+static EnvMapVulkanShadowMap s_ProbeSunShadowMap;
+static constexpr uint32_t ProbeSunShadowResolution = 2048;
+
+// FNV-1a over bytes, continued from hash: for the numbers that tell whether something changed (the probes' scene version)
+static constexpr uint64_t HashStart = 14695981039346656037ull;
+static uint64_t HashBytes(uint64_t hash, const void* data, size_t size)
+{
+	const unsigned char* bytes = static_cast<const unsigned char*>(data);
+	for (size_t i = 0; i < size; i++)
+	{
+		hash = (hash ^ bytes[i]) * 1099511628211ull;
+	}
+	return hash;
+}
+// The lights as packed for the shaders in the last frame (UpdateFrameUniforms), and whether the sun casts shadows
+static uint64_t s_LightsVersion = 0;
 
 // Points the per-frame set's probe atlas bindings to the atlases (at startup, and when the probe counts changed)
 static void WriteProbeDescriptors()
@@ -1696,8 +1715,8 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 	{
 		ImGui::SetTooltip("On: inside the box, surfaces get their indirect diffuse light from the probes around them.\n"
 			"Off: from the environment map, as without a probe volume.\n"
-			"The probes hold the environment's light only so far (they don't capture the scene yet), so both look the same:\n"
-			"toggling this is the test that the probes are stored and read correctly.");
+			"The probes keep capturing the scene either way. Until they have (and after Reset to Environment) they hold\n"
+			"the environment's light, and both look the same.");
 	}
 
 	ImGui::DragFloat3("Center", &probes.Center.x, 0.05f);
@@ -1705,7 +1724,9 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("The box the probes fill: the first and the last probe of each axis are on its sides.\n"
-			"The gizmo moves and sizes it too (it can't be turned). While the volume is selected, the box is outlined.");
+			"The gizmo moves and sizes it too (it can't be turned). While the volume is selected, the box is outlined.\n"
+			"Only surfaces inside the box are fully lit by the probes: just outside it the environment's light fades in\n"
+			"(over half a probe spacing). So a room's walls, floor and ceiling belong inside the box: see Fit to Scene.");
 	}
 	glm::vec3 sceneMin, sceneMax;
 	const bool hasModels = GetSceneModelBounds(sceneMin, sceneMax);
@@ -1727,7 +1748,7 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("Probes along X, Y and Z (up to %d, %d, %d). More probes follow the light's changes more closely,\n"
-			"and cost more memory and, once they capture the scene, more time to update.",
+			"and cost more memory and more time to update.",
 			EnvMapVulkanProbeVolumeSettings::MaxCounts.x, EnvMapVulkanProbeVolumeSettings::MaxCounts.y, EnvMapVulkanProbeVolumeSettings::MaxCounts.z);
 	}
 	const glm::ivec3 counts = probes.GetCounts();
@@ -1751,6 +1772,82 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 		ImGui::SetTooltip("The same, towards the camera");
 	}
 
+	// Capturing the scene into the probes
+	ImGui::Separator();
+	const EnvMapVulkanProbes::UpdateStatus status = s_Probes.GetStatus();
+	ImGui::BeginDisabled(!status.Supported);
+	ImGui::Checkbox("Update Automatically", &probes.AutoUpdate);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("On: whenever something changes (a light, a mesh, a material, the environment, the volume), the probes\n"
+			"capture the scene again, a few per frame, until the change has arrived in all of them. Then the updates stop.\n"
+			"Off: the probes keep what they hold until Bake.");
+	}
+	ImGui::SliderInt("Probes per Frame", &probes.ProbesPerFrame, 1, EnvMapVulkanProbeVolumeSettings::MaxProbesPerFrame, "%d", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Probes updated per frame while they follow a change. Each one draws the scene around it 6 times (a small\n"
+			"cube map), so more probes follow a change faster and cost more frame time: see Probe Update in Rendering Stats.");
+	}
+	ImGui::SliderInt("Rays per Probe", &probes.RaysPerProbe, EnvMapVulkanProbeVolumeSettings::MinRaysPerProbe,
+		EnvMapVulkanProbeVolumeSettings::MaxRaysPerProbe, "%d", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Directions a probe looks in per update (turned differently every update). More rays: less noise in the\n"
+			"probes' light, a little more compute time.");
+	}
+	ImGui::SliderFloat("Hysteresis", &probes.Hysteresis, 0.0f, 0.99f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("How much of its old light a probe keeps in an update, once it has followed a change. Higher: calmer light\n"
+			"(less noise from the few rays of one update) that takes longer to settle, and follows animated models more slowly.\n"
+			"Right after a change the probes keep nothing for %u rounds over all of them, so the new light gets around fast,\n"
+			"then the rounds are averaged up to this value (%u more rounds).",
+			EnvMapVulkanProbes::PropagationRounds, EnvMapVulkanProbes::GetSettleRounds(probes.GetHysteresis()));
+	}
+	if (ImGui::Button("Bake"))
+	{
+		s_Probes.RequestBake();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Updates every probe %u times, as many per frame as possible: the first half lets the light bounce around,\n"
+			"the second half is averaged into a calm result. For a scene that doesn't change. The frame rate drops while it runs.",
+			EnvMapVulkanProbes::BakeRounds);
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Reset to Environment"))
+	{
+		s_Probes.RequestReset();
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Every probe back to the environment's light, as if nothing stood around it.\n"
+			"With Update Automatically the capture then starts over; without it the probes stay like that until Bake.");
+	}
+	if (!status.Supported)
+	{
+		ImGui::TextDisabled("Not available: the GPU doesn't support cube map arrays");
+	}
+	else if (status.Baking)
+	{
+		ImGui::ProgressBar(status.BakeProgress, ImVec2(-1.0f, 0.0f), "Baking");
+	}
+	else if (status.UpdatesLeft > 0)
+	{
+		ImGui::TextDisabled("Updating %u probes per frame, %u frames to go", status.ProbesThisFrame,
+			(status.UpdatesLeft + (uint32_t)probes.GetProbesPerFrame() - 1) / (uint32_t)probes.GetProbesPerFrame());
+	}
+	else if (status.OutOfDate)
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.3f, 1.0f), "Out of date: the scene changed since the last update");
+	}
+	else
+	{
+		ImGui::TextDisabled(status.Captured ? "Up to date" : "The probes hold the environment's light");
+	}
+	ImGui::EndDisabled();
+
 	ImGui::Separator();
 	ImGui::Checkbox("Show Probes", &probes.ShowProbes);
 	if (ImGui::IsItemHovered())
@@ -1760,6 +1857,14 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 	}
 	ImGui::BeginDisabled(!probes.ShowProbes);
 	ImGui::DragFloat("Probe Size", &probes.ProbeRadius, 0.005f, 0.01f, 2.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
+	ImGui::Combo("Show", &probes.Show, "Light\0Visibility\0");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Light: the light the probe holds for each direction.\n"
+			"Visibility: how far the probe sees in each direction. White: nothing near (as far as a probe stores, 1.5 cells'\n"
+			"diagonals). Dark: a surface close by. The probes use it to tell which surfaces they can light, so a wall\n"
+			"between a probe and a surface should show as a dark side of the ball.");
+	}
 	ImGui::EndDisabled();
 }
 
@@ -1819,6 +1924,9 @@ static void UpdateFrameUniforms()
 	ubPtr = shader->MapUniformBuffer(5, frameSet);
 	memcpy(ubPtr, &lights, sizeof(EnvMapVulkanLightsGPU::LightsUB));
 	shader->UnmapUniformBuffer(5, frameSet);
+
+	const bool sunCastsShadows = s_Lights.Sun.CastShadows;
+	s_LightsVersion = HashBytes(HashBytes(HashStart, &lights, sizeof(lights)), &sunCastsShadows, sizeof(sunCastsShadows));
 }
 
 // Per-object uniform buffers (set 2): the bone matrices of the current animation frame of a skinned model (up to 128), then
@@ -5129,6 +5237,7 @@ static void ClearScene()
 	s_SelectedEntity = NoEntity;
 	s_PendingRemoveEntities.clear();
 	s_RenamingEntity = NoEntity;
+	s_Probes.RequestReset(); // what the probes captured belongs to the scene that goes
 }
 
 // A model entity read from a scene file: its model is loaded, the meshes the scene removed are removed again, and each
@@ -6977,6 +7086,9 @@ void EnvMapVulkanRenderer::Init()
 		// bindings 11, 12, 14: the probe volume's atlases (binding 13, its uniform buffer, is written above)
 		s_Probes.Create(s_Framebuffer);
 		WriteProbeDescriptors();
+		// The probes' own shadow map of the sun, in the capture's descriptor set
+		s_ProbeSunShadowMap.Create(ProbeSunShadowResolution, 1);
+		s_Probes.SetCaptureSunShadowMap({ s_ProbeSunShadowMap.GetCompareSampler(), s_ProbeSunShadowMap.GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
 
 		// binding 10: the water's caustics map (it exists from s_Water.Create on, with or without water on the scene)
 		VkWriteDescriptorSet causticsWrite = *pbrShader->GetDescriptorSet("u_CausticsMap", frameSet);
@@ -7033,6 +7145,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_Glass.Destroy();
 	s_MaterialBuffer.Destroy();
 	s_Probes.Destroy();
+	s_ProbeSunShadowMap.Destroy();
 	s_GBuffer.Destroy();
 	EnvMapVulkanProfiler::Shutdown();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
@@ -7467,6 +7580,190 @@ static void RecordLocalShadowPasses(VkCommandBuffer commandBuffer)
 	}
 }
 
+// Whether a box can be seen through a face of a cube map drawn around apex (face 0 to 5: +X, -X, +Y, -Y, +Z, -Z). A face
+// sees the pyramid of directions whose largest coordinate is along its axis; the box is tested against the pyramid's four
+// sides, so some boxes near its edges pass without being seen.
+static bool BoxTouchesCubeFace(const glm::vec3& boxMin, const glm::vec3& boxMax, const glm::vec3& apex, uint32_t face)
+{
+	const int axis = (int)face / 2;
+	const glm::vec3 low = boxMin - apex, high = boxMax - apex;
+	// The farthest the box reaches along the face's direction
+	const float along = face % 2 == 0 ? high[axis] : -low[axis];
+	if (along <= 0.0f)
+	{
+		return false;
+	}
+	for (int other = 0; other < 3; other++)
+	{
+		// The sides: along >= p[other] and along >= -p[other]
+		if (other != axis && (along < low[other] || along < -high[other]))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+// The probe volume's update of this frame (see EnvMapVulkanProbes): the probes of the batch capture the scene around
+// them, then compute passes blend what they saw into the atlases. Recorded after the lights' shadow maps and the caustics
+// (the captured surfaces are lit through them) and before everything that is lit by the probes.
+static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
+{
+	if (!s_Probes.HasCapture())
+	{
+		return;
+	}
+	EnvMapVulkanProfiler::Scope updateScope(commandBuffer, "Probe Update", "The probe volume's global illumination: a few probes per frame "
+		"look at the scene around them and take the light they see into their stored light. Only while something changed "
+		"(or during a bake): when the probes are up to date this pass is gone.");
+
+	// The sun's shadow map of the whole volume: an orthographic view from the sun, as wide as a sphere around the volume
+	// (so its size doesn't depend on the sun's direction) and deep enough for every shadow caster of the scene
+	const bool sunShadows = s_ProbeSunShadowMap.IsValid() && s_Lights.Sun.Enabled && s_Lights.Sun.CastShadows && s_Lights.Sun.Intensity > 0.0f &&
+		s_ShadowPipeline.Pipeline && s_ShadowPipelineAnim.Pipeline && !s_SubmittedModels.empty();
+	glm::mat4 sunViewProjection(1.0f);
+	float sunTexelWorldSize = 0.0f;
+	if (sunShadows)
+	{
+		const glm::vec3 towardsSun = s_Lights.Sun.GetDirection();
+		const glm::vec3 center = s_ProbeVolumeSettings.Center;
+		const float radius = 0.5f * glm::length(s_ProbeVolumeSettings.Size) * 1.25f;
+		// How far the casters and the sphere reach towards the sun and away from it, from the center
+		float towards = radius, away = -radius;
+		for (int c = 0; c < 8; c++)
+		{
+			const glm::vec3 corner((c & 1) ? s_ShadowCasterBoundsMax.x : s_ShadowCasterBoundsMin.x, (c & 2) ? s_ShadowCasterBoundsMax.y : s_ShadowCasterBoundsMin.y,
+				(c & 4) ? s_ShadowCasterBoundsMax.z : s_ShadowCasterBoundsMin.z);
+			const float distance = glm::dot(corner - center, towardsSun);
+			towards = std::max(towards, distance);
+			away = std::min(away, distance);
+		}
+		const float eyeDistance = towards + 1.0f;
+		const glm::vec3 up = std::abs(towardsSun.y) > 0.99f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+		const glm::mat4 view = glm::lookAt(center + towardsSun * eyeDistance, center, up);
+		sunViewProjection = glm::orthoRH_ZO(-radius, radius, -radius, radius, 0.0f, eyeDistance - away + 1.0f) * view;
+		sunTexelWorldSize = 2.0f * radius / (float)ProbeSunShadowResolution;
+
+		EnvMapVulkanProfiler::Scope sunScope(commandBuffer, "Probe Sun Shadow", "The sun's shadow map of the whole probe volume: every shadow "
+			"caster drawn once from the sun. The scene's own cascades only cover what the camera sees, and a probe also sees "
+			"what is behind the camera.");
+		BeginShadowPass(commandBuffer, s_ProbeSunShadowMap, 0, s_ShadowSettings.DepthBias, s_ShadowSettings.SlopeBias);
+		DrawShadowCasters(commandBuffer, sunViewProjection);
+		vkCmdEndRenderPass(commandBuffer);
+	}
+	s_Probes.SetCaptureSun(sunViewProjection, sunShadows, sunTexelWorldSize, ProbeSunShadowResolution, s_ShadowSettings.NormalBias);
+
+	// The meshes the probes see: the opaque ones (glass lets the light through; on a skinned mesh it is drawn as opaque, as
+	// in the scene pass). The water's surface is left out.
+	struct CaptureDraw
+	{
+		SubmittedModel* Submitted = nullptr;
+		uint32_t MeshIndex = 0;
+		glm::vec4 TransformRows[3];
+		float MaterialIndex = 0.0f;
+		bool Cull = false; // by its bounds (not a skinned mesh: its bones move it out of them)
+		glm::vec3 BoundsMin = glm::vec3(0.0f), BoundsMax = glm::vec3(0.0f); // in the world
+	};
+	std::vector<CaptureDraw> draws;
+	for (SubmittedModel& submitted : s_SubmittedModels)
+	{
+		const bool skinned = submitted.Model->IsSkinned();
+		if (skinned && submitted.Model->GetObjectDescriptorSet() == VK_NULL_HANDLE)
+		{
+			continue; // no bone buffer: the skinned vertices can't be placed
+		}
+		const auto& meshes = submitted.Model->GetMeshes();
+		for (uint32_t s = 0; s < (uint32_t)meshes.size() && s < (uint32_t)submitted.Materials.size(); s++)
+		{
+			if (submitted.Materials[s]->IsGlass() && !skinned)
+			{
+				continue;
+			}
+			const glm::mat4 transform = GetMeshTransform(submitted.Model, meshes[s], submitted.Transform);
+			const glm::mat4 rows = glm::transpose(transform);
+			CaptureDraw draw;
+			draw.Submitted = &submitted;
+			draw.MeshIndex = s;
+			draw.TransformRows[0] = rows[0];
+			draw.TransformRows[1] = rows[1];
+			draw.TransformRows[2] = rows[2];
+			draw.MaterialIndex = submitted.Materials[s]->Get<float>("u_MaterialUniforms.MaterialIndex");
+			draw.Cull = !skinned;
+			draw.BoundsMin = glm::vec3(std::numeric_limits<float>::max());
+			draw.BoundsMax = glm::vec3(-std::numeric_limits<float>::max());
+			for (int c = 0; c < 8; c++)
+			{
+				const glm::vec3 corner((c & 1) ? meshes[s]->BoundingBox.Max.x : meshes[s]->BoundingBox.Min.x, (c & 2) ? meshes[s]->BoundingBox.Max.y : meshes[s]->BoundingBox.Min.y,
+					(c & 4) ? meshes[s]->BoundingBox.Max.z : meshes[s]->BoundingBox.Min.z);
+				const glm::vec3 world = glm::vec3(transform * glm::vec4(corner, 1.0f));
+				draw.BoundsMin = glm::min(draw.BoundsMin, world);
+				draw.BoundsMax = glm::max(draw.BoundsMax, world);
+			}
+			draws.push_back(draw);
+		}
+	}
+
+	{
+		EnvMapVulkanProfiler::Scope captureScope(commandBuffer, "Probe Capture", "What each probe of this frame's batch sees: the meshes drawn "
+			"into a small cube map around it (6 render passes of 32 x 32 pixels per probe), lit as matte surfaces by the "
+			"lights and by the probes' own stored light. The cost is mostly draw calls: every mesh a face can see, per face.");
+		const VkDescriptorSet sets[2] = { s_Data.FrameDescriptorSet.DescriptorSets[0], s_Probes.GetCaptureSet() };
+		for (uint32_t slot = 0; slot < s_Probes.GetCaptureCount(); slot++)
+		{
+			const glm::vec3 probePosition = s_Probes.GetCaptureProbePosition(slot);
+			for (uint32_t face = 0; face < 6; face++)
+			{
+				EnvMapVulkanProbes::CapturePush push;
+				push.FaceViewProjection = s_Probes.BeginCaptureFace(commandBuffer, slot, face);
+				// Sets 0 and 1 stay bound across the static and the skinned pipeline (their layouts agree in them)
+				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, s_Probes.GetCaptureLayout(false), 0, 2, sets, 0, nullptr);
+
+				const SubmittedModel* boundModel = nullptr;
+				for (const CaptureDraw& draw : draws)
+				{
+					if (draw.Cull && !BoxTouchesCubeFace(draw.BoundsMin, draw.BoundsMax, probePosition, face))
+					{
+						continue;
+					}
+					H2M::RefH2M<H2M::ModelH2M> model = draw.Submitted->Model;
+					const bool skinned = model->IsSkinned();
+					const VkPipelineLayout layout = s_Probes.GetCaptureLayout(skinned);
+					if (boundModel != draw.Submitted)
+					{
+						vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, s_Probes.GetCapturePipeline(skinned));
+						if (skinned)
+						{
+							VkDescriptorSet boneDescriptorSet = model->GetObjectDescriptorSet();
+							vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, H2M::VulkanShaderH2M::ObjectDescriptorSet, 1,
+								&boneDescriptorSet, 0, nullptr);
+						}
+						VkBuffer vertexBuffer = model->GetVertexBuffer().As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+						VkDeviceSize offset = 0;
+						vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, &offset);
+						vkCmdBindIndexBuffer(commandBuffer, H2M::RefH2M<H2M::VulkanIndexBufferH2M>(model->GetIndexBuffer())->GetVulkanBuffer(), 0, VK_INDEX_TYPE_UINT32);
+						boundModel = draw.Submitted;
+					}
+					push.TransformRows[0] = draw.TransformRows[0];
+					push.TransformRows[1] = draw.TransformRows[1];
+					push.TransformRows[2] = draw.TransformRows[2];
+					push.ProbePositionMaterial = glm::vec4(probePosition, draw.MaterialIndex);
+					vkCmdPushConstants(commandBuffer, layout, EnvMapVulkanProbes::CapturePushStages, 0, sizeof(push), &push);
+
+					const H2M::RefH2M<H2M::MeshH2M>& mesh = model->GetMeshes()[draw.MeshIndex];
+					vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
+					EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
+				}
+				s_Probes.EndCaptureFace(commandBuffer);
+			}
+		}
+	}
+
+	EnvMapVulkanProfiler::Scope blendScope(commandBuffer, "Probe Blend", "Compute passes: each probe's cube map is read in the directions of "
+		"its rays, and the rays are mixed into the probe's stored light and into how far it sees (keeping part of the old "
+		"values, so the light stays calm). No draw calls.");
+	s_Probes.RecordBlend(commandBuffer);
+}
+
 void EnvMapVulkanRenderer::RenderSkybox(VkCommandBuffer commandBuffer)
 {
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
@@ -7828,6 +8125,9 @@ void EnvMapVulkanRenderer::GeometryPass()
 				"what's under it: a grid of rays from the sun bent by the surface, added up into a texture the mesh shaders sample.");
 			s_Water.RecordCaustics(drawCommandBuffer);
 		}
+
+		// The probe volume: this frame's batch of probes captures the scene and is blended into the atlases
+		RecordProbeUpdate(drawCommandBuffer);
 
 		// The water's planar reflection: the meshes seen by the camera mirrored in the water plane, into the water's
 		// reflection image (with the usual pipelines; its own per-frame set holds the mirrored camera)
@@ -9677,6 +9977,10 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	static std::unordered_map<EnvMapVulkanEntityID, ModelMotionState> s_PreviousModelStates;
 	std::unordered_map<EnvMapVulkanEntityID, ModelMotionState> modelStates; // this frame's: deleted models drop out
 
+	// For the probe volume: numbers that change whenever something its probes capture changed. Apart: what moves by
+	// itself (the skinned models), which the probes follow more calmly than an edit (see EnvMapVulkanProbes).
+	uint64_t probeSceneVersion = HashStart, probeAnimationVersion = HashStart;
+
 	ApplyPartTransforms();
 	for (EnvMapVulkanEntityID entity : GetModels())
 	{
@@ -9703,7 +10007,19 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		const ModelMotionState& previousState = hasPrevious ? previousIt->second : state;
 
 		UpdateObjectUniforms(model, previousState.BoneTransforms);
-		SubmitModelTemp(model, worldTransform, GetMeshMaterials(entity), previousState.MeshTransforms);
+		const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> meshMaterials = GetMeshMaterials(entity);
+		SubmitModelTemp(model, worldTransform, meshMaterials, previousState.MeshTransforms);
+
+		// The model, where its meshes are, its pose and which materials they have (the materials' values: below)
+		probeSceneVersion = HashBytes(probeSceneVersion, &state.Model, sizeof(state.Model));
+		uint64_t& motionVersion = model->IsSkinned() ? probeAnimationVersion : probeSceneVersion;
+		motionVersion = HashBytes(motionVersion, state.MeshTransforms.data(), state.MeshTransforms.size() * sizeof(glm::mat4));
+		motionVersion = HashBytes(motionVersion, state.BoneTransforms.data(), state.BoneTransforms.size() * sizeof(glm::mat4));
+		for (const H2M::RefH2M<EnvMapVulkanMaterial>& material : meshMaterials)
+		{
+			const EnvMapVulkanMaterial* materialPointer = material.Raw();
+			probeSceneVersion = HashBytes(probeSceneVersion, &materialPointer, sizeof(materialPointer));
+		}
 		modelStates[entity] = std::move(state);
 	}
 	s_PreviousModelStates = std::move(modelStates);
@@ -9712,9 +10028,22 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		WriteMaterialBufferDescriptor(); // a bigger buffer: Update waited for the GPU
 	}
-	// The probe volume: atlases for its probe counts, filled from the environment when either changed
-	if (s_Data.irradianceMap && s_Probes.Update(s_ProbeVolumeSettings, s_Data.irradianceMap.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo(),
-		s_EnvMapRotation, s_EnvironmentVersion))
+	// The probe volume: atlases for its probe counts, filled from the environment while new, and this frame's batch of
+	// probes to update when what they capture changed: the models (above), the materials' values, the lights (as of the
+	// last frame), the environment, the water the light passes through
+	{
+		const std::vector<EnvMapVulkanMaterialBuffer::GPUMaterial>& materialEntries = s_MaterialBuffer.GetEntries();
+		probeSceneVersion = HashBytes(probeSceneVersion, materialEntries.data(), materialEntries.size() * sizeof(EnvMapVulkanMaterialBuffer::GPUMaterial));
+		probeSceneVersion = HashBytes(probeSceneVersion, &s_LightsVersion, sizeof(s_LightsVersion));
+		probeSceneVersion = HashBytes(probeSceneVersion, &s_EnvironmentVersion, sizeof(s_EnvironmentVersion));
+		probeSceneVersion = HashBytes(probeSceneVersion, &s_EnvMapRotation, sizeof(s_EnvMapRotation));
+		const float waterHeight = s_WaterSettings.Enabled ? s_WaterSettings.Height : -std::numeric_limits<float>::max();
+		probeSceneVersion = HashBytes(probeSceneVersion, &waterHeight, sizeof(waterHeight));
+	}
+	if (s_Data.irradianceMap && s_Data.envFiltered &&
+		s_Probes.Update(s_ProbeVolumeSettings, s_Data.irradianceMap.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo(),
+			s_Data.envFiltered.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo(), s_EnvMapRotation, s_EnvironmentVersion, probeSceneVersion,
+			probeAnimationVersion))
 	{
 		WriteProbeDescriptors(); // new atlases: Update waited for the GPU
 	}

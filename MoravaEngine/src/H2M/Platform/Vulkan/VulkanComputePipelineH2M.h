@@ -29,6 +29,11 @@ namespace H2M
 
 		RefH2M<VulkanShaderH2M> GetShader() { return m_Shader; }
 
+		// For a dispatch recorded into the caller's own command buffer (Begin / Dispatch / End record into, and submit, one of
+		// the pipeline's)
+		VkPipeline GetVulkanPipeline() const { return m_ComputePipeline; }
+		VkPipelineLayout GetVulkanPipelineLayout() const { return m_ComputePipelineLayout; }
+
 		void SetPushConstants(const void* data, uint32_t size);
 		void CreatePipeline();
 

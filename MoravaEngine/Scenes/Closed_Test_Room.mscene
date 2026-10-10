@@ -1,0 +1,203 @@
+Scene:
+  Version: 1
+  Name: Closed_Test_Room
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 17358315660792784881
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      Rotation: 0
+      Exposure: 1
+      AutoExposure: false
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 9634820204705747951
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [38.47463, 41.173023, 15.236968]
+      Rotation: [6.3585095, 4.2268596, -67.19816]
+      Scale: [0.9999569, 1.0002319, 0.99995977]
+    Sun:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 4
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: true
+  - ID: 9502
+    Name: Floor
+    Parent: 0
+    Transform:
+      Translation: [0, 2.25, 20]
+      Rotation: [0, 0, 0]
+      Scale: [5.5, 0.25, 7.5]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 9503
+    Name: Cube
+    Parent: 9502
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 9504
+    Name: Ceiling
+    Parent: 0
+    Transform:
+      Translation: [0, 7.75, 20]
+      Rotation: [0, 0, 0]
+      Scale: [5.5, 0.25, 7.5]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 9505
+    Name: Cube
+    Parent: 9504
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 9506
+    Name: Back
+    Parent: 0
+    Transform:
+      Translation: [0, 5, 12.75]
+      Rotation: [0, 0, 0]
+      Scale: [5.5, 3, 0.25]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 9507
+    Name: Cube
+    Parent: 9506
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 9508
+    Name: Front
+    Parent: 0
+    Transform:
+      Translation: [0, 5, 27.25]
+      Rotation: [0, 0, 0]
+      Scale: [5.5, 3, 0.25]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 9509
+    Name: Cube
+    Parent: 9508
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 9510
+    Name: Left Red
+    Parent: 0
+    Transform:
+      Translation: [-5.25, 5, 20]
+      Rotation: [0, 0, 0]
+      Scale: [0.25, 3, 7.5]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 9511
+    Name: Cube
+    Parent: 9510
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7002
+        File: assets/Materials/Test_Red.mmat
+        Name: Test_Red
+  - ID: 9512
+    Name: Right
+    Parent: 0
+    Transform:
+      Translation: [5.25, 5, 20]
+      Rotation: [0, 0, 0]
+      Scale: [0.25, 3, 7.5]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 9513
+    Name: Cube
+    Parent: 9512
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 4242424242424242
+    Name: Probe Volume
+    Parent: 0
+    Transform:
+      Translation: [0, 5, 20]
+      Rotation: [0, 0, 0]
+      Scale: [10.2, 5.2, 14.2]
+    ProbeVolume:
+      Enabled: true
+      Counts: [6, 4, 8]
+      NormalBias: 0.25
+      ViewBias: 0.25
+      ShowProbes: false
+      ProbeRadius: 0.12

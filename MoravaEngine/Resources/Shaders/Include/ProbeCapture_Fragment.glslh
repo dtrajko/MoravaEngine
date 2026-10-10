@@ -1,0 +1,83 @@
+// The fragment stage of the probe capture (ProbeCapture_Static.glsl and ProbeCapture_Anim.glsl, see EnvMapVulkanProbes):
+// what a probe sees in one direction. The light the surface sends towards the probe, as a matte surface with its
+// material's average values (ShadeSurfaceDiffuse: the lights with their shadows, what the surface emits, and the light
+// the probes already hold, which is how light bounces more than once), and the surface's distance from the probe.
+// Seen from behind, a surface sends no light and gets a negative distance: the probe is probably inside a mesh.
+//
+// Sets: 0 the per-frame set, as in the PBR shaders; 1 the capture's own: the sun's shadow map of the whole probe volume.
+// The scene's cascades follow the camera, so they can't tell a probe behind the camera whether the sun reaches a
+// surface; this map covers everything the probes see, whatever the camera looks at.
+
+#include "FrameSet.glslh"
+#include "ProbeCapture.glslh"
+
+layout (std140, set = 1, binding = 0) uniform CaptureSun
+{
+	mat4 u_CaptureSunViewProjection; // world -> the map's clip space (an orthographic view from the sun)
+	vec4 u_CaptureSunParams;         // x = 1 when the map was drawn (0: the sun casts no shadows), y = the world size of
+	                                 // a texel, z = 1 / resolution, w = the normal bias (texels)
+};
+layout (set = 1, binding = 1) uniform sampler2DArrayShadow u_CaptureSunShadowMap; // one layer
+
+// How much of the sun reaches the point: 1 lit, 0 in shadow (as SampleShadowCascade in Include/Shadows.glslh, with a
+// smaller filter: the probes blur it anyway)
+float CaptureSunShadow(vec3 worldPosition, vec3 geometryNormal)
+{
+	if (u_CaptureSunParams.x < 0.5)
+	{
+		return 1.0;
+	}
+	float cosTheta = clamp(dot(geometryNormal, u_Sun.Direction), 0.0, 1.0);
+	float sinTheta = sqrt(1.0 - cosTheta * cosTheta);
+	vec3 position = worldPosition + geometryNormal * (u_CaptureSunParams.w * u_CaptureSunParams.y * (0.25 + sinTheta));
+
+	vec4 clip = u_CaptureSunViewProjection * vec4(position, 1.0);
+	vec3 shadowCoord = clip.xyz / clip.w;
+	vec2 uv = shadowCoord.xy * 0.5 + 0.5;
+	if (shadowCoord.z >= 1.0 || any(lessThan(uv, vec2(0.0))) || any(greaterThan(uv, vec2(1.0))))
+	{
+		return 1.0; // outside the map: nothing known, lit
+	}
+	float lit = 0.0;
+	for (int y = -1; y <= 1; y++)
+	{
+		for (int x = -1; x <= 1; x++)
+		{
+			lit += texture(u_CaptureSunShadowMap, vec4(uv + vec2(x, y) * u_CaptureSunParams.z, 0.0, shadowCoord.z));
+		}
+	}
+	return lit / 9.0;
+}
+
+// The sun's shadow from the map above, and the probes' light whether or not they light the scene (Light the Scene)
+#define SHADE_SURFACE_SUN_SHADOW CaptureSunShadow
+#define SHADE_SURFACE_PROBES_ALWAYS
+#include "ShadeSurface.glslh"
+
+layout (location = 0) in vec3 v_WorldPosition;
+layout (location = 1) in vec3 v_Normal;
+
+layout (location = 0) out vec4 o_Radiance; // rgb: the light the surface sends to the probe
+layout (location = 1) out float o_Distance; // from the probe; seen from behind: -0.2 * the distance
+
+// A surface never sends back all the light it gets: the light bouncing between the probes dies out
+const float MaxBounceAlbedo = 0.9;
+// Brighter than this is cut off: one ray hitting a small, very bright spot would flicker in the probe
+const float MaxRadiance = 100.0;
+
+void main()
+{
+	vec3 toProbe = u_Capture.ProbePositionMaterial.xyz - v_WorldPosition;
+	float distance = length(toProbe);
+	vec3 normal = normalize(v_Normal);
+	if (dot(normal, toProbe) < 0.0)
+	{
+		o_Radiance = vec4(0.0, 0.0, 0.0, 1.0);
+		o_Distance = -0.2 * distance;
+		return;
+	}
+	SurfacePoint surface = SurfaceFromMaterial(int(u_Capture.ProbePositionMaterial.w + 0.5), v_WorldPosition, normal, toProbe / max(distance, 0.0001));
+	surface.Albedo = min(surface.Albedo, vec3(MaxBounceAlbedo));
+	o_Radiance = vec4(min(ShadeSurfaceDiffuse(surface, true), vec3(MaxRadiance)), 1.0);
+	o_Distance = distance;
+}

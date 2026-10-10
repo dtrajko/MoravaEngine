@@ -12,7 +12,7 @@
 layout (push_constant) uniform Probes
 {
 	vec4 OriginRadius; // xyz: the position of probe (0, 0, 0); w: the balls' radius
-	vec4 Spacing;      // xyz: from a probe to its neighbors
+	vec4 Spacing;      // xyz: from a probe to its neighbors; w: what the balls show (0 the light, 1 how far the probe sees)
 	ivec4 Counts;      // xyz: probes along each axis
 	vec4 CameraRight;  // xyz: the camera's right and up directions in the world
 	vec4 CameraUp;
@@ -24,6 +24,7 @@ layout (location = 2) flat out vec4 v_CenterRadius;
 layout (location = 3) flat out vec3 v_CameraRight;
 layout (location = 4) flat out vec3 v_CameraUp;
 layout (location = 5) flat out mat4 v_ViewProjection;  // locations 5 to 8
+layout (location = 9) flat out float v_Show;
 
 const vec2 Corners[6] = vec2[6](vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(1.0, 1.0), vec2(-1.0, -1.0), vec2(1.0, 1.0), vec2(-1.0, 1.0));
 
@@ -44,6 +45,7 @@ void main()
 	v_CameraRight = u_Probes.CameraRight.xyz;
 	v_CameraUp = u_Probes.CameraUp.xyz;
 	v_ViewProjection = u_ViewProjectionMatrix;
+	v_Show = u_Probes.Spacing.w;
 	gl_Position = u_ViewProjectionMatrix * vec4(position, 1.0);
 }
 
@@ -61,6 +63,7 @@ layout (location = 2) flat in vec4 v_CenterRadius;
 layout (location = 3) flat in vec3 v_CameraRight;
 layout (location = 4) flat in vec3 v_CameraUp;
 layout (location = 5) flat in mat4 v_ViewProjection;
+layout (location = 9) flat in float v_Show;
 
 layout (location = 0) out vec4 o_Color;
 
@@ -81,6 +84,13 @@ void main()
 
 	// What the probe holds for the normal: the light arriving from that side, as a white matte surface sends it back.
 	// A probe that isn't in use is shown dark red.
-	vec3 irradiance = pow(ProbeStoredIrradiance(v_Probe, normal), vec3(u_ProbeSpacing.w));
-	o_Color = ProbeData(v_Probe).w > 0.5 ? vec4(irradiance, 1.0) : vec4(0.25, 0.0, 0.0, 1.0);
+	vec3 shown = pow(ProbeStoredIrradiance(v_Probe, normal), vec3(u_ProbeSpacing.w));
+	if (v_Show > 0.5)
+	{
+		// Visibility: how far the probe sees towards the normal, white = as far as it stores (1.5 x a cell's diagonal),
+		// dark = a surface close by
+		float seen = textureLod(u_ProbeVisibility, ProbeAtlasUV(v_Probe, normal, ProbeVisibilityTexels, u_ProbeAtlasSizes.zw), 0.0).r;
+		shown = vec3(seen / (1.5 * length(u_ProbeSpacing.xyz)));
+	}
+	o_Color = ProbeData(v_Probe).w > 0.5 ? vec4(shown, 1.0) : vec4(0.25, 0.0, 0.0, 1.0);
 }

@@ -190,8 +190,13 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "Counts" << YAML::Value << YAML::Flow << YAML::BeginSeq << p.Counts.x << p.Counts.y << p.Counts.z << YAML::EndSeq;
 			out << YAML::Key << "NormalBias" << YAML::Value << p.NormalBias;
 			out << YAML::Key << "ViewBias" << YAML::Value << p.ViewBias;
+			out << YAML::Key << "AutoUpdate" << YAML::Value << p.AutoUpdate;
+			out << YAML::Key << "ProbesPerFrame" << YAML::Value << p.ProbesPerFrame;
+			out << YAML::Key << "RaysPerProbe" << YAML::Value << p.RaysPerProbe;
+			out << YAML::Key << "Hysteresis" << YAML::Value << p.Hysteresis;
 			out << YAML::Key << "ShowProbes" << YAML::Value << p.ShowProbes;
 			out << YAML::Key << "ProbeRadius" << YAML::Value << p.ProbeRadius;
+			out << YAML::Key << "Show" << YAML::Value << p.Show;
 			out << YAML::EndMap;
 		}
 		if (const EnvironmentComponent* environment = scene.TryGet<EnvironmentComponent>(entity))
@@ -333,8 +338,13 @@ namespace EnvMapVulkanSceneSerializer
 					}
 					Read(probesNode, "NormalBias", p.NormalBias);
 					Read(probesNode, "ViewBias", p.ViewBias);
+					Read(probesNode, "AutoUpdate", p.AutoUpdate);
+					Read(probesNode, "ProbesPerFrame", p.ProbesPerFrame);
+					Read(probesNode, "RaysPerProbe", p.RaysPerProbe);
+					Read(probesNode, "Hysteresis", p.Hysteresis);
 					Read(probesNode, "ShowProbes", p.ShowProbes);
 					Read(probesNode, "ProbeRadius", p.ProbeRadius);
+					Read(probesNode, "Show", p.Show);
 				}
 				if (YAML::Node environmentNode = node["Environment"])
 				{

@@ -1,0 +1,19 @@
+// The push constants of the probe capture (ProbeCapture_Static.glsl, ProbeCapture_Anim.glsl, see EnvMapVulkanProbes):
+// one block for both stages, 128 bytes (the size Vulkan guarantees), so the mesh's transform is stored as its three
+// rows (its fourth is always 0, 0, 0, 1).
+#ifndef PROBE_CAPTURE_GLSLH
+#define PROBE_CAPTURE_GLSLH
+
+layout (push_constant) uniform Capture
+{
+	mat4 FaceViewProjection;    // world -> clip space of the cube face being drawn (a 90 degree view from the probe)
+	vec4 TransformRows[3];      // the mesh's transform
+	vec4 ProbePositionMaterial; // xyz = the probe's position; w = the mesh's entry in u_Materials
+} u_Capture;
+
+mat4 CaptureTransform()
+{
+	return transpose(mat4(u_Capture.TransformRows[0], u_Capture.TransformRows[1], u_Capture.TransformRows[2], vec4(0.0, 0.0, 0.0, 1.0)));
+}
+
+#endif

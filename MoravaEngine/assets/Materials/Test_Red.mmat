@@ -1,0 +1,11 @@
+Material:
+  Version: 1
+  ID: 7002
+  Name: Test_Red
+  AlbedoColor: [0.8, 0.05, 0.05]
+  Metalness: 0
+  Roughness: 0.9
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0

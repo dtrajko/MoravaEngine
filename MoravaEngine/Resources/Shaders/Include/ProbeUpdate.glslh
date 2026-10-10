@@ -1,0 +1,60 @@
+// What the compute passes of a probe update share (docs/rendering/SSAO_GI_RayTracing_Guide.html, Phase D; see
+// EnvMapVulkanProbes): the update's values, the batch of probes it updates and the directions of their rays.
+//
+// An update gives each probe of the batch a fresh set of rays. They are stored in the ray buffer: a row per probe of the
+// batch (its slot), a texel per ray: rgb = the light arriving at the probe along the ray, a = how far the ray got
+// (negative: it hit the back of a surface, so the probe is probably inside something). The passes that blend the rays
+// into the atlases read only this buffer: they don't know how it was filled (today from a small cube map drawn around
+// the probe, ProbeResample.glsl; later by ray tracing).
+#ifndef PROBE_UPDATE_GLSLH
+#define PROBE_UPDATE_GLSLH
+
+#include "ProbeOctahedral.glslh"
+
+// 96 bytes: must match EnvMapVulkanProbes' ProbeUpdatePush
+layout (push_constant) uniform ProbeUpdate
+{
+	vec4 RayRotation[3]; // xyz: the columns of the rotation this update's ray directions are turned by
+	ivec4 Counts;        // xyz = probes along each axis; w = the batch's first probe (its index, see BatchProbe)
+	ivec4 Batch;         // x = probes in the batch; y = rays per probe
+	vec4 Params;         // x = hysteresis: how much of a probe's old value stays (0: all new); y = the irradiance encoding
+	                     // gamma; z = the farthest distance the visibility stores; w = the environment's rotation (degrees)
+} u_Update;
+
+// A ray that hit nothing got this far (the sky)
+const float ProbeMissDistance = 10000.0;
+
+// Evenly spread points on the unit sphere: point i of n
+vec3 SphericalFibonacci(float i, float n)
+{
+	const float goldenRatio = 1.61803398875;
+	float phi = 6.28318530718 * fract(i * (goldenRatio - 1.0));
+	float cosTheta = 1.0 - (2.0 * i + 1.0) / n;
+	float sinTheta = sqrt(clamp(1.0 - cosTheta * cosTheta, 0.0, 1.0));
+	return vec3(cos(phi) * sinTheta, sin(phi) * sinTheta, cosTheta);
+}
+
+// The direction of a probe's ray in this update: the same set for every probe, turned differently in every update, so
+// that over several updates a probe looks in every direction
+vec3 ProbeRayDirection(int ray)
+{
+	mat3 rotation = mat3(u_Update.RayRotation[0].xyz, u_Update.RayRotation[1].xyz, u_Update.RayRotation[2].xyz);
+	return rotation * SphericalFibonacci(float(ray), float(u_Update.Batch.y));
+}
+
+// The probe in a slot of the batch: the probes are counted along x, then y, then z, and a batch is a run of them (from
+// the last probe it goes on with the first)
+ivec3 BatchProbe(int slot)
+{
+	ivec3 counts = u_Update.Counts.xyz;
+	int index = (u_Update.Counts.w + slot) % (counts.x * counts.y * counts.z);
+	return ivec3(index % counts.x, (index / counts.x) % counts.y, index / (counts.x * counts.y));
+}
+
+// The first texel (the border's corner) of a probe's tile in an atlas
+ivec2 ProbeTileOrigin(ivec3 probe, int interior)
+{
+	return ProbeTile(probe, u_Update.Counts.xyz) * (interior + 2);
+}
+
+#endif

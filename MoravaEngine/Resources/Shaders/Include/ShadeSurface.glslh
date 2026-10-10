@@ -46,6 +46,8 @@ float DistanceAttenuation(float distance, float range)
 // The sun, through its shadow map. Under the water its light comes in steeper (bent by the surface), dimmed by the water
 // on its way down and focused by the waves (caustics).
 // Outside the sun's cascades (they follow the camera: behind it, or beyond the shadow distance) a point counts as lit.
+// A shader with its own shadow map of the sun names its lookup in SHADE_SURFACE_SUN_SHADOW before including this file (the
+// probe capture: Include/ProbeCapture_Fragment.glslh).
 bool SunLightAt(vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec3 radiance)
 {
 	L = u_Sun.Direction;
@@ -64,7 +66,11 @@ bool SunLightAt(vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec3 radian
 	{
 		return false;
 	}
+#ifdef SHADE_SURFACE_SUN_SHADOW
+	radiance = sunRadiance * SHADE_SURFACE_SUN_SHADOW(P, geometryNormal);
+#else
 	radiance = sunRadiance * SunShadow(P, geometryNormal);
+#endif
 	return true;
 }
 
@@ -130,13 +136,16 @@ vec3 EnvironmentIrradiance(vec3 N)
 // so the diffuse light is albedo * IndirectDiffuse. V: the unit vector from P towards whoever looks at it.
 // Inside the probe volume: from the probes around the point, which know what stands around them. Elsewhere, and without a
 // probe volume: from the environment.
+// SHADE_SURFACE_PROBES_ALWAYS (the probe capture): from the probes also while they don't light the scene (u_ProbeOrigin.w).
 vec3 IndirectDiffuse(vec3 P, vec3 N, vec3 V)
 {
 	vec3 environment = EnvironmentIrradiance(N);
+#ifndef SHADE_SURFACE_PROBES_ALWAYS
 	if (u_ProbeOrigin.w < 0.5)
 	{
 		return environment;
 	}
+#endif
 	float inVolume = ProbeVolumeWeight(P);
 	vec3 fromProbes;
 	if (inVolume <= 0.0 || !SampleProbeIrradiance(P, N, V, fromProbes))
