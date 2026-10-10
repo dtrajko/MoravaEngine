@@ -114,3 +114,18 @@ I saved the plan to memory as proposed, not yet agreed. Phase 0 is a good first 
 
 ※ recap: I wrote a phased plan to add SSAO and probe-based GI (global illumination) to the Vulkan editor; it's in chat and saved to memory, and no code has changed. Next, tell me whether probe-based GI is OK and whether probes should update live or be baked, then we start Phase 0. (disable recaps in /config)
 
+-----------------------------------------------------
+
+┌─────────┬─────────────────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────┐
+│  Phase  │                                What it adds                                 │                               GI status                               │
+├─────────┼─────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+│ A, B, C │ G-buffer, shared shading, probe storage and sampling                        │ Done; no visible GI yet                                               │
+├─────────┼─────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+│ D       │ Probes capture the scene and blend it in, with multiple bounces             │ GI becomes visible                                                    │
+├─────────┼─────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+│ E       │ Fixes for light leaking through walls, probes stuck inside geometry, tuning │ GI is complete and usable                                             │
+├─────────┼─────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+│ F       │ SSAO (GTAO) and a reusable temporal filter                                  │ Small-scale contact shadows that the probes are too coarse to capture │
+├─────────┼─────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────┤
+│ G, H    │ Ray tracing foundation, then ray-traced probe updates, AO and reflections   │ Same GI, better quality and no capture limits                         │
+└─────────┴─────────────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────┘

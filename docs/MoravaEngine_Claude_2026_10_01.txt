@@ -1,0 +1,198 @@
+Here's where SceneEnvMapVulkan stands. I've also saved the plan to memory, so tomorrow's session can start straight on the Material Library.
+
+Done
+
+┌─────┬────────────────────────────────────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────┐
+│  #  │                                        Feature                                         │                                          Notes                                           │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 1   │ Environment map loading (button, drag and drop from the Content Browser)               │ True HDR, cached compute pipelines                                                       │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 2   │ Auto exposure, exposure, tone mapping, gamma                                           │ ACES in the viewport composite                                                           │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 3   │ Skybox LOD                                                                             │ Blurred sampling at LOD > 0                                                              │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 4   │ Skybox rotation around the vertical axis (yaw)                                         │ 0–360°, wraps around when dragged                                                        │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 5   │ HDR scene framebuffer                                                                  │ RGBA16F/32F                                                                              │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 6   │ Mesh loading and removal                                                               │ File dialog, drag and drop                                                               │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 7   │ Mesh transform                                                                         │ Meshes panel                                                                             │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 8   │ Submesh list with a material selector                                                  │                                                                                          │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 9   │ Material Editor                                                                        │ Values, toggles, thumbnails, Load per map; Remove per map (today)                        │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 10  │ Emissive, AO and tiling in the PBR shader                                              │ Packed glTF metal/roughness maps                                                         │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 11  │ Content Browser                                                                        │                                                                                          │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 12  │ Camera controls                                                                        │ Right-drag rotation, WASD                                                                │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 13  │ Viewport ignores mouse input over ImGui panels                                         │ Also in the voxel terrain controller                                                     │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 14  │ Viewport aspect ratio                                                                  │ Follows the panel size                                                                   │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 15  │ Light settings                                                                         │ Directional light only                                                                   │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 16  │ Editor grid                                                                            │                                                                                          │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 17  │ Transform gizmo (ImGuizmo)                                                             │                                                                                          │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 18  │ Mouse picking                                                                          │ Mesh and submesh                                                                         │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 19  │ Bloom                                                                                  │ Lens dirt off by default (today)                                                         │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 20  │ Lens dirt on/off                                                                       │                                                                                          │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 21  │ Skeletal animation                                                                     │ Up to 128 bones                                                                          │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 22  │ Animation UI                                                                           │                                                                                          │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ 25  │ Selection outline, wireframe, bounding boxes                                           │ Today: "Selected" means the selected submesh, or the whole model, for all three overlays │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ A   │ Descriptor sets: set 0 per frame, set 1 per material, set 2 per object (today, step 1) │ Both Vulkan scenes; pipeline layouts built in set order                                  │
+├─────┼────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────┤
+│ —   │ BusterDrone crash on missing textures (today)                                          │ Null checks for the roughness and metalness maps                                         │
+└─────┴────────────────────────────────────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────┘
+
+Not done yet
+
+┌─────┬─────────────────────────────────────────────────────┬─────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│  #  │                       Feature                       │     Effort      │                                                                        Notes                                                                         │
+├─────┼─────────────────────────────────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ B   │ Material Library (step 2, tomorrow)                 │ Medium          │ Materials independent of models, "New Material", slot dropdown lists all materials, "Apply to all submeshes"; replaces the per-mesh shader instances │
+├─────┼─────────────────────────────────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ C   │ Material Editor textures through the cache (step 3) │ Small           │ Cache key must include sRGB vs linear                                                                                                                │
+├─────┼─────────────────────────────────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 27  │ Material variants (step 4)                          │ Medium          │ "Make Unique" creates a variant that inherits each slot from its parent, plus "Duplicate" for a plain copy                                           │
+├─────┼─────────────────────────────────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 26  │ Material files and scene save/load (step 5)         │ Medium          │ Saves only overridden slots of variants                                                                                                              │
+├─────┼─────────────────────────────────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 23  │ Shadows (directional, then point/spot and cascaded) │ Large           │ Will use the per-frame set                                                                                                                           │
+├─────┼─────────────────────────────────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 24  │ Point and spot lights                               │ Medium to large │ Will use the per-frame set                                                                                                                           │
+├─────┼─────────────────────────────────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 28  │ Picking against the animated pose                   │ Small to medium │ Picking and boxes use the rest pose                                                                                                                  │
+├─────┼─────────────────────────────────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 29  │ Per-frame uniform buffers (frames in flight)        │ Small to medium │ Easier now with one per-frame set                                                                                                                    │
+├─────┼─────────────────────────────────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 30  │ Animation UI in SceneHazelEnvMap (OpenGL)           │ Small           │                                                                                                                                                      │
+├─────┼─────────────────────────────────────────────────────┼─────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 31  │ Bloom in SceneHazelEnvMap (OpenGL)                  │ Medium          │                                                                                                                                                      │
+└─────┴─────────────────────────────────────────────────────┴─────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+Summary: 25 features done (plus the crash fix) and 10 to do. Steps B, C, 27 and 26 make up the material system.
+
+Not committed yet: step 1, the Lens Dirt default, the "Selected" overlay changes, the BusterDrone fix and the Remove button. Commit them before tomorrow, or tell me then and I'll do it before starting the Material Library.
+
+-----------------------------------------------------------
+
+Refraction: no separate scene pass. The water reuses what the main pass has already drawn. The main scene render pass is split into two Vulkan render passes over the same framebuffer:
+
+1. Main pass: clears, then draws the sky and the opaque models.
+2. Copy, outside any render pass: color and depth go into the water's two textures.
+3. Continue pass: loads the same attachments instead of clearing them, then draws the water and the grid.
+
+The copy and the continue pass only happen while water exists; without water there's no split. The scene geometry is drawn once.
+
+Reflection: none yet; Phase 3 adds one. Today the water reflects only the environment map, which costs nothing extra. Phase 3 adds a separate pass that draws the scene again from the mirrored camera into its own half-resolution image. That pass is the cost you agreed was worth it.
+
+┌───────────────────────┬────────────────────────────────────────────┬───────────────────────────────────┬─────────────────────────────────────────────────────────────────────┐
+│                       │               OpenGL scenes                │            Vulkan, now            │                        Vulkan, after Phase 3                        │
+├───────────────────────┼────────────────────────────────────────────┼───────────────────────────────────┼─────────────────────────────────────────────────────────────────────┤
+│ Refraction            │ Separate full scene pass with a clip plane │ Copy of the main pass (no redraw) │ Same                                                                │
+├───────────────────────┼────────────────────────────────────────────┼───────────────────────────────────┼─────────────────────────────────────────────────────────────────────┤
+│ Reflection            │ Separate full scene pass, mirrored camera  │ Environment map only              │ Separate scene pass at half resolution, environment map as fallback │
+├───────────────────────┼────────────────────────────────────────────┼───────────────────────────────────┼─────────────────────────────────────────────────────────────────────┤
+│ Scene draws per frame │ 3                                          │ 1                                 │ 2                                                                   │
+└───────────────────────┴────────────────────────────────────────────┴───────────────────────────────────┴─────────────────────────────────────────────────────────────────────┘
+
+The reflection pass can't reuse the main pass like refraction does. A reflection shows the scene from a different viewpoint, from below the water plane looking up, and that view isn't in the main image. A screen-space shortcut would miss anything off-screen, which is why you chose planar reflection.
+
+-----------------------------------------------------------
+
+Here's the plan. I'd build Vulkan water as a new design that keeps the OpenGL version's good ideas, not as a line-by-line port. Underneath is what I'd do differently from OpenGL and why, followed by three questions.
+
+Phases
+
+Each phase ends with something you can see and test.
+
+Phase 1 – A water surface you can see, with no extra passes
+- Water object: a rectangle you add from a new Water panel, with Add/Remove, height, size, colors and wave settings. The gizmo moves it, and it can be selected like a model. For this scene, IsWaterOnScene() becomes "a water object exists", so it fits the check from today's fix.
+- Water shader, drawn after the opaque models into the HDR scene image:
+  - Two scrolling normal maps for the waves, using the existing waterNormal.png and waterDuDv.png.
+  - Reflections from the environment map (the same blurred sky the PBR shaders use), blended by a Fresnel term.
+  - A sun highlight from the directional light, shadowed by the existing sun shadow maps.
+- At this point it already looks like water, at almost no cost.
+
+Phase 2 – Refraction without re-drawing the scene
+- After the opaque models are drawn, copy the scene's color and depth into textures the water shader can read. This replaces OpenGL's second full scene render with a clip plane. Unity, Unreal and Godot all do it this way.
+- The water shader uses that copy for:
+  - Distorted refraction, skipping samples that land on objects in front of the water, so they don't smear into it.
+  - Depth-based color: the color depends on how much water the light passes through (Beer–Lambert absorption), so shallow water is clear and deep water is dark and tinted.
+  - Soft edges and foam where the water meets the shore or objects.
+
+Phase 3 – Planar reflection
+- A reflection image at half or quarter resolution, re-rendering the scene from a mirrored camera.
+- Mirrored camera: built from a true reflection matrix, so it works with any camera, including roll, and leaves the camera controller untouched.
+- Clipping: an oblique projection clips at the water plane, so the PBR shaders need no clip-plane changes.
+- Camera data for this pass: a second set of per-frame camera data. Today's single camera buffer can't hold two views in one frame. This also prepares for later reflection probes.
+- Pipeline compatibility: the reflection image uses the same formats as the scene image so the existing pipelines can draw into it. Variants with reversed winding are needed, because a mirror flips triangle winding.
+- Falls back to the environment map where the reflection image has no data (screen edges, Phase 3 turned off).
+
+Phase 4 – Underwater
+- Fog and absorption applied once in the composite pass from the scene depth, covering every object and the sky. OpenGL tints each object in its own shader instead.
+- The water surface seen from below shows the sky only within a cone overhead (Snell's window), and mirrors the underwater scene outside it (total internal reflection).
+- Handles the waterline when the camera crosses the surface.
+
+Phase 5 – Optional
+Waves in the geometry itself (Gerstner waves on a grid), caustics on underwater surfaces, flow maps.
+
+What I'd change from OpenGL
+
+┌────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────┐
+│                                 OpenGL                                 │                          Problem                           │                            Vulkan plan                            │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Refraction pass re-renders the whole scene                             │ Costs a full scene pass; the depth comes from a different  │ Reuse a copy of the opaque scene's color and depth                │
+│                                                                        │ render                                                     │                                                                   │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Reflection camera: move the camera down and flip its pitch             │ Fails with roll; changes the real camera mid-frame         │ A reflection matrix on a separate camera                          │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Clip-plane uniform in every shader                                     │ Every shader needs it                                      │ Oblique near-plane projection                                     │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Fresnel as pow(dot, 0.5) capped at 0.8                                 │ Not physically based                                       │ Schlick Fresnel, with water's base reflectance of 0.02            │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Fixed color blend (two mixes of 0.4), hard-coded color that ignores    │ Looks the same at any depth                                │ Absorption by thickness plus a scattering color, adjustable in    │
+│ waterColor                                                             │                                                            │ the panel                                                         │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Phong highlight from a point-light position                            │ Not tied to the real sun                                   │ GGX highlight from the directional sun, with shadows              │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Depth linearization uses OpenGL's −1..1 depth range                    │ Wrong in Vulkan, which uses 0..1                           │ Vulkan's range                                                    │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Alpha blending (alpha = max(depth, 0.5))                               │ Blending-order problems                                    │ Opaque water that combines refraction itself                      │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Global static wave speed and offset in WaterManager                    │ Shared state, frame-rate dependent                         │ Settings per water object, driven by time                         │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Constant blue bright-color output for bloom                            │ Hack                                                       │ HDR output; the existing bloom handles highlights                 │
+├────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────┤
+│ Reflection and refraction images sized once at startup                 │ Wrong after a viewport resize                              │ A fraction of the viewport, resized with it                       │
+└────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────┘
+
+Concerns
+
+- Cost: planar reflection draws the scene a second time each frame. Half resolution plus an on/off switch keeps it manageable, and the shadow maps are reused.
+- Scene image format: the scene renders to RGBA32F, which makes the per-frame copy and the reflection image heavy. RGBA16F is plenty for HDR. Switching is a small separate change, and I'd do it first.
+- Saving: like models, the water object won't be saved until scene save/load exists.
+
+Questions
+
+1. Number of water planes: is one per scene enough for now? Each plane at a different height needs its own reflection render. My recommendation is one now, more later.
+2. Reflection method: planar reflection (accurate, costs a scene pass) or screen-space reflection (cheap, but misses anything off-screen)? I recommend planar, with the environment map as fallback.
+3. Geometric waves (Phase 5): in scope now, or after the rest? I suggest after: normal maps look convincing for calm water.
+
+If the plan works for you, I'd start with Phase 1, after switching the scene image to RGBA16F. I can also publish the plan as a page if you want to keep it.
+
+-----------------------------------------------------------
+
+All changes committed, let's continue with Phase 5

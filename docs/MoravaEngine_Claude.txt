@@ -1,0 +1,196 @@
+MoravaEngine - summary of the Claude Code session
+=================================================
+
+Written summary of the changes made in this session, grouped by topic.
+Paths are relative to MoravaEngine/src unless stated otherwise.
+The work was committed by the user in several commits; the last topics
+(SceneBullet physics, Timer, ball tuning) were not committed yet when this
+summary was written.
+
+
+1. Build system (CMake, Visual Studio 2026)
+-------------------------------------------
+- Project builds with the "Visual Studio 18 2026" generator.
+- MSVC runtime chosen explicitly and consistently for the engine and all
+  vendors (option MORAVA_MSVC_STATIC_RUNTIME, /MTd - /MT).
+- /MP parallel compilation, precompiled header (src/PrecompiledHeader.h),
+  _CRT_SECURE_NO_WARNINGS defined empty (no C4005 warnings).
+- Vendors built as EXCLUDE_FROM_ALL; Bullet 2 only (BUILD_BULLET3 OFF);
+  CMAKE_POLICY_VERSION_MINIMUM 3.10 around bullet3; ASSIMP_NO_EXPORT.
+- GLEW 2.3.0 built from source (vendor/GLEW: CMakeLists.txt, include/GL,
+  src/glew.c); the prebuilt glew32s.lib and the GLEW submodule removed.
+- Vulkan found with find_package(Vulkan) (Vulkan SDK 1.4.357.0); the old
+  vendor/Vulkan folder removed.
+- Leftover build folders and stale files removed; submodules cleaned up.
+
+
+2. General engine fixes
+-----------------------
+- ImGui: empty-ID asserts, Columns(1) misuse, WantCaptureMouse handling.
+- vendor/ImGui/backends/imgui_impl_opengl3.cpp: UpdateTexture did not restore
+  GL_UNPACK_ROW_LENGTH (restore check ran after the status was changed); this
+  corrupted every texture uploaded later (e.g. environment maps loaded at
+  runtime). Marked as a local patch.
+- Camera: projection matrix initialized in both Camera constructors.
+- CameraController:
+  - relative mouse rotation, cursor capture while rotating (hidden, raw motion);
+  - keyboard movement also allowed during right-mouse rotation.
+- WaterManager / Scene pointer members initialized.
+- MeshH2M:
+  - crash when "Is Animated" was ticked for a model without animations
+    (HasAnimations());
+  - default emissive texture path typo (Texture/ -> Textures/);
+  - placeholder pipeline framebuffer had size 0x0.
+- OpenGLMaterialH2M / VulkanMaterialH2M: no error spam for shaders without
+  reflected uniform buffers; Get/GetResource/GetTexture2D no longer
+  dereference null.
+- ShaderH2M::GetShaderBuffers()/GetResources() return const references
+  (materials kept pointers into temporary copies - dangling pointers).
+- Assimp log messages logged at their real level (warning/error).
+- H2M/Core/Math/RayH2M.h: triangle intersection threshold made scale
+  independent (models with small units, e.g. Cerberus, could not be picked).
+
+
+3. SceneEiffel (OpenGL)
+-----------------------
+- Underwater blue tint, silhouettes, water level slider (drag, 3 decimals).
+- Objects above the water line no longer cut off when the camera is below water.
+- Larger preview images; NVIDIA debug message filter.
+
+
+4. SceneHazelEnvMap (OpenGL)
+----------------------------
+- Several crash and ImGui fixes (material selector IDs, empty IDs).
+- Environment map loading at runtime fixed (ImGui GL_UNPACK_ROW_LENGTH bug).
+- Dark rendering fixed:
+  - gamma correction and ACES tonemapping added to Skybox.fs and HazelPBR.fs
+    (opt-in uniform u_Gamma);
+  - skybox exposure factor 1.0;
+  - auto exposure computed from each loaded HDR map (log-average luminance,
+    solid-angle weighted), with an "Auto Exposure" checkbox.
+
+
+5. SceneDX11
+------------
+- DX11VertexShader: removed per-draw debug output (SRV RefCount / Sampler).
+- DX11CameraFP: camera rotation rewritten:
+  - Raw Input (WM_INPUT) mouse deltas;
+  - cursor hidden and clipped while rotating;
+  - rotation starts only over the viewport;
+  - frame-rate independent.
+- Window title showed only "M": WndProc used DefWindowProc (ANSI) for a
+  wide-character window -> DefWindowProcW.
+
+
+6. Vulkan (both Vulkan scenes)
+------------------------------
+- Validation errors fixed:
+  - image layouts, barriers, descriptor array sizes;
+  - render pass compatibility;
+  - per-swapchain-image semaphores;
+  - ImGui textures.
+- ImGui Vulkan pipeline was never created (render pass not passed to
+  ImGui_ImplVulkan_Init).
+- ImGuizmo::BeginFrame() was commented out in both Vulkan ImGui layers
+  (gizmo drawn but not interactive).
+- Swapchain recreation deferred to the start of a frame (resize events
+  arriving mid-frame).
+- Push constant ranges reflected from the SPIR-V member offsets; material
+  storage buffer getter made virtual; push of &Data instead of Data fixed.
+- VulkanFramebufferH2M::Resize:
+  - no longer leaks images/memory/views/sampler/render pass on every resize;
+  - ignores zero/unchanged sizes;
+  - viewport size compared in whole pixels (fractional sizes caused a resize
+    every frame -> out of GPU memory);
+  - colour format taken from the specification: the scene framebuffer is now
+    HDR (16/32-bit float) instead of 8-bit.
+- VulkanTexture2D_H2M:
+  - HDR files loaded as 32-bit float (were 8-bit);
+  - albedo textures sRGB;
+  - GetFormat() crash fixed;
+  - GetImTextureID() for ImGui.
+- VulkanTextureCubeH2M::TransitionToGeneralLayout() for recomputing cubemaps.
+- Skybox shader: multi-tap Gaussian blur for Skybox LOD > 0 (no visible
+  texel grid).
+- Composite shader: ACES tonemapping (the old Reinhard with pureWhite 1.0
+  only clipped).
+- Viewport shows an offscreen composite (exposure, tonemapping, gamma) in
+  both Vulkan scenes.
+
+
+7. SceneEnvMapVulkan (Vulkan editor)
+------------------------------------
+- Environment maps:
+  - Load Environment Map button and Content Browser drag & drop;
+  - deferred to the start of a frame;
+  - compute pipelines, descriptor sets and views cached;
+  - skybox descriptor set allocated once;
+  - auto exposure; exposure controls wired.
+- Meshes panel:
+  - load (file dialog or drag & drop) and remove meshes;
+  - transform (translation/rotation/scale);
+  - submesh list with a material selector per submesh;
+  - animated models shown in bind pose.
+- Material Editor:
+  - albedo colour, metalness, roughness and texture toggles per material
+    (edited live);
+  - albedo/normal/metalness/roughness maps assigned per material (Load... or
+    drag & drop) with thumbnails;
+  - shows only the selected submesh's material.
+- PBR shader: texture toggles and light radiance/multiplier taken from the
+  material/light settings (were hard-coded).
+- MeshH2M fixes for Vulkan:
+  - roughness/metalness values stored on the material;
+  - metalness map assigned to the right material;
+  - roughness placeholder map;
+  - shader cache used instead of recompiling per mesh.
+- Content Browser added (icons drawn with the correct orientation in Vulkan).
+- Editor grid on the ground plane, with Display Grid / Grid Scale / Grid Line
+  Width settings.
+- Transform gizmo (ImGuizmo):
+  - keys 1/2/3/4 = translate/rotate/scale/hide, Ctrl = snap;
+  - synchronized with the Meshes panel.
+- Mouse picking: left click selects the mesh and submesh under the cursor
+  (bounding box + triangle test, nearest hit).
+
+
+8. SceneHazelVulkan
+-------------------
+- Crash fixes: material lookups, ImGui pipeline, null descriptor sets.
+- Camera rotation uses the scene camera (right-drag + WASD), as in
+  SceneEnvMapVulkan.
+- HDR scene framebuffer (RGBA16F) and tonemapped viewport.
+- Skybox descriptor pool leak fixed (a new pool was created every frame).
+
+
+9. SceneBullet (Bullet physics)  [not committed yet]
+--------------------------------
+- Root cause of "the fired sphere does not move": the whole physics world
+  was frozen.
+  - Application passed Timer::GetCurrentTimestamp() before the timer was
+    updated. The uninitialized first value (about -4.3e8) was given to
+    stepSimulation as a time step.
+  - Bullet's float time accumulator could never reach 1/60 s again, so
+    stepSimulation returned 0 substeps forever.
+  - Also, the absolute time was passed where a frame delta is expected.
+- Fixes:
+  - real frame delta (clamped to 0.1 s), up to 10 fixed 1/60 s substeps;
+  - fire cooldown uses the current time;
+  - Core/Timer.h: all members initialized.
+- Rendering uses btTransform::getOpenGLMatrix (quaternion components were
+  used as Euler angles).
+- AddRigidBody rotation uses setEulerZYX (only Z was applied before).
+- Plank tower and crate 1 start on the floor (they were created inside the
+  floor and pushed up by the solver).
+- Ball made more destructive: mass 4 -> 8, fire intensity 100 -> 400
+  (slider maximum 200 -> 800).
+
+
+10. Suggested next steps
+------------------------
+- Scene save/load for SceneEnvMapVulkan (meshes, transforms, assigned maps).
+- Emissive, AO and tiling in the Vulkan PBR shader.
+- Selection outline / wireframe / bounding boxes in SceneEnvMapVulkan.
+- Per-submesh materials (separate material and descriptor set per submesh).
+- Pass Application's frame delta (m_TimeStep) to Scene::Update for all scenes.
+- Larger items: lights, shadows, bloom, skinned meshes in Vulkan.
