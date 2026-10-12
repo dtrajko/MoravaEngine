@@ -29,7 +29,7 @@ void main()
 {
 	int ray = int(gl_GlobalInvocationID.x);
 	int slot = int(gl_GlobalInvocationID.y);
-	if (ray >= u_Update.Batch.y || slot >= u_Update.Batch.x)
+	if (ray >= u_Update.Batch.y || !BatchSlotUsed(slot))
 	{
 		return;
 	}

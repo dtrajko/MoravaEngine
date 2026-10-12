@@ -717,6 +717,15 @@ void main()
     <li><b>Classification</b>: if a probe is still inside, or no surface lies within a cell's reach, mark it <i>inactive</i>. Sampling skips inactive probes (<code>ProbeIsActive</code>), and so does the scheduler, which saves time.</li>
     <li>Relocation and classification run for a few iterations after the volume moves or the geometry changes, then stop.</li>
   </ul>
+  <p><b>As built</b> (<code>ProbeRelocate.glsl</code>, <code>EnvMapVulkanProbes</code>; the <b>Relocate Probes</b> option of the probe volume):</p>
+  <ul>
+    <li>The pass runs after the blends, in the first 8 rounds after a static mesh or the volume changed. Those rounds keep nothing of the probes' old light (hysteresis 0), so a moved probe never keeps what it held in its old place. In the first of them every probe starts from the grid again.</li>
+    <li>In these rounds the ray directions aren't turned, so the same scene always gives the same placement, and the skinned meshes are left out of the capture: probes are placed by what stands still.</li>
+    <li>A probe inside a mesh moves along the ray with the nearest backface, to 0.15 of the smallest spacing beyond it. A probe closer than that to a front face backs away from it. The offset stays within 45% of the spacing; a probe that would have to go farther is switched off.</li>
+    <li>The raster capture needs the probes' positions on the CPU: the probe data image (<code>RGBA32F</code>) is copied into a buffer after the pass and read at the start of the next frame. With ray tracing (Phase H) the rays start from the probe data directly and the copy only serves the scheduler.</li>
+    <li>A switched-off probe keeps its slot in a batch but is left out (a bit per slot in the update's push constants): no capture, no blend. Probes with no surface in reach are <i>not</i> switched off: a skinned model can walk into their cells, and a raster capture can't check for that cheaply. That part waits for ray tracing.</li>
+    <li>To check: Show Probes with Show = <b>State</b> (green on the grid, yellow moved, red switched off), and the count under the update status.</li>
+  </ul>
 
   <h3>E.2 Bias</h3>
   <p>The normal and view biases move the sample point off the surface before the visibility test. Too little causes dark blotches where a surface "occludes itself"; too much lets light leak through thin walls. Start with 0.2–0.3 of the spacing each. Document a rule for content: walls should be at least about a tenth of the probe spacing thick, and the spacing smaller than the rooms (1 m for interiors, 2–4 m outdoors).</p>

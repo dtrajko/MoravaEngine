@@ -16,6 +16,10 @@ layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 void main()
 {
 	int slot = int(gl_WorkGroupID.x);
+	if (!BatchSlotUsed(slot))
+	{
+		return;
+	}
 	ivec2 quarter = ivec2(int(gl_WorkGroupID.y) & 1, int(gl_WorkGroupID.y) >> 1);
 	ivec2 interiorTexel = quarter * 8 + ivec2(gl_LocalInvocationID.xy) + 1; // after the border
 	vec3 texelDirection = ProbeTexelDirection(interiorTexel, ProbeVisibilityTexels);

@@ -167,6 +167,7 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBlendIrradiance.glsl");  // SceneEnvMapVulkan: the probe update: the rays into the irradiance atlas
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBlendVisibility.glsl");  // SceneEnvMapVulkan: the probe update: the rays into the visibility atlas
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBorders.glsl");          // SceneEnvMapVulkan: the probe update: the border texels of the updated tiles
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeRelocate.glsl");         // SceneEnvMapVulkan: the probe update: probes moved out of the meshes
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
 

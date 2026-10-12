@@ -11,14 +11,19 @@
 
 #include "ProbeOctahedral.glslh"
 
-// 96 bytes: must match EnvMapVulkanProbes' ProbeUpdatePush
+// 128 bytes: must match EnvMapVulkanProbes' ProbeUpdatePush
 layout (push_constant) uniform ProbeUpdate
 {
-	vec4 RayRotation[3]; // xyz: the columns of the rotation this update's ray directions are turned by
-	ivec4 Counts;        // xyz = probes along each axis; w = the batch's first probe (its index, see BatchProbe)
-	ivec4 Batch;         // x = probes in the batch; y = rays per probe
-	vec4 Params;         // x = hysteresis: how much of a probe's old value stays (0: all new); y = the irradiance encoding
-	                     // gamma; z = the farthest distance the visibility stores; w = the environment's rotation (degrees)
+	vec4 RayRotation[3];  // xyz: the columns of the rotation this update's ray directions are turned by
+	ivec4 Counts;         // xyz = probes along each axis; w = the batch's first probe (its index, see BatchProbe)
+	ivec4 Batch;          // x = slots in the batch; y = rays per probe; z = a bit per slot: 1 when its probe is updated
+	                      // (a probe that is switched off keeps its slot and is left out, see BatchSlotUsed)
+	vec4 Params;          // x = hysteresis: how much of a probe's old value stays (0: all new); y = the irradiance encoding
+	                      // gamma; z = the farthest distance the visibility stores; w = the environment's rotation (degrees)
+	vec4 Relocation;      // ProbeRelocate.glsl: xyz = from a probe to its neighbors; w = the closest a probe should stand
+	                      // to a surface (meters)
+	ivec4 RelocationMode; // x = 1: probes are moved out of the meshes, 0: all back onto the grid; y = the batch's first y
+	                      // slots start from the grid
 } u_Update;
 
 // A ray that hit nothing got this far (the sky)
@@ -49,6 +54,12 @@ ivec3 BatchProbe(int slot)
 	ivec3 counts = u_Update.Counts.xyz;
 	int index = (u_Update.Counts.w + slot) % (counts.x * counts.y * counts.z);
 	return ivec3(index % counts.x, (index / counts.x) % counts.y, index / (counts.x * counts.y));
+}
+
+// Whether a slot of the batch has a probe to update
+bool BatchSlotUsed(int slot)
+{
+	return slot < u_Update.Batch.x && ((u_Update.Batch.z >> slot) & 1) != 0;
 }
 
 // The first texel (the border's corner) of a probe's tile in an atlas

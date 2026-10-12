@@ -1866,6 +1866,18 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 			"then the rounds are averaged up to this value (%u more rounds).",
 			EnvMapVulkanProbes::PropagationRounds, EnvMapVulkanProbes::GetSettleRounds(probes.GetHysteresis()));
 	}
+	ImGui::Checkbox("Relocate Probes", &probes.RelocateProbes);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The grid ignores the scene, so some probes land inside walls or objects.\n"
+			"On: a probe that sees mostly the backs of surfaces is moved out through the nearest one, and a probe very close\n"
+			"to a surface backs away from it, never farther than 45%% of the probe spacing from its place in the grid.\n"
+			"A probe with no way out is switched off: nothing is lit by it, and it isn't updated.\n"
+			"Off: every probe stands where the grid puts it.\n"
+			"Done in the first %u rounds after a mesh or the volume changed; skinned models don't count.\n"
+			"Show Probes > State shows the result.",
+			EnvMapVulkanProbes::RelocationRounds);
+	}
 	if (ImGui::Button("Bake"))
 	{
 		s_Probes.RequestBake();
@@ -1907,6 +1919,10 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 	{
 		ImGui::TextDisabled(status.Captured ? "Up to date" : "The probes hold the environment's light");
 	}
+	if (status.Supported && probes.RelocateProbes)
+	{
+		ImGui::TextDisabled("%s%u probes moved, %u switched off", status.Relocating ? "Placing the probes: " : "", status.MovedProbes, status.UnusedProbes);
+	}
 	ImGui::EndDisabled();
 
 	ImGui::Separator();
@@ -1918,10 +1934,12 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 	}
 	ImGui::BeginDisabled(!probes.ShowProbes);
 	ImGui::DragFloat("Probe Size", &probes.ProbeRadius, 0.005f, 0.01f, 2.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
-	ImGui::Combo("Show", &probes.Show, "Light\0Visibility\0");
+	ImGui::Combo("Show", &probes.Show, "Light\0Visibility\0State\0");
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip("Light: the light the probe holds for each direction.\n"
+		ImGui::SetTooltip("State: green = the probe stands where the grid puts it, yellow = it was moved (out of a mesh, or away\n"
+			"from a surface), red = switched off (inside a mesh with no way out). See Relocate Probes.\n"
+			"Light: the light the probe holds for each direction.\n"
 			"Visibility: how far the probe sees in each direction. White: nothing near (as far as a probe stores, 1.5 cells'\n"
 			"diagonals). Dark: a surface close by. The probes use it to tell which surfaces they can light, so a wall\n"
 			"between a probe and a surface should show as a dark side of the ball.");
@@ -7790,6 +7808,10 @@ static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
 		{
 			continue; // no bone buffer: the skinned vertices can't be placed
 		}
+		if (skinned && s_Probes.IsRelocating())
+		{
+			continue; // the probes are placed by what stands still: a probe isn't moved out of a model that walks on
+		}
 		const auto& meshes = submitted.Model->GetMeshes();
 		for (uint32_t s = 0; s < (uint32_t)meshes.size() && s < (uint32_t)submitted.Materials.size(); s++)
 		{
@@ -7828,6 +7850,10 @@ static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
 		const VkDescriptorSet sets[2] = { s_Data.FrameDescriptorSet.DescriptorSets[0], s_Probes.GetCaptureSet() };
 		for (uint32_t slot = 0; slot < s_Probes.GetCaptureCount(); slot++)
 		{
+			if (!s_Probes.IsCaptureSlotUsed(slot))
+			{
+				continue; // its probe is switched off
+			}
 			const glm::vec3 probePosition = s_Probes.GetCaptureProbePosition(slot);
 			for (uint32_t face = 0; face < 6; face++)
 			{
@@ -10098,7 +10124,9 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 
 	// For the probe volume: numbers that change whenever something its probes capture changed. Apart: what moves by
 	// itself (the skinned models), which the probes follow more calmly than an edit (see EnvMapVulkanProbes).
-	uint64_t probeSceneVersion = HashStart, probeAnimationVersion = HashStart;
+	// And what decides where the probes can stand: the models that stand still, where their meshes are and which
+	// materials they have (glass isn't captured).
+	uint64_t probeSceneVersion = HashStart, probeAnimationVersion = HashStart, probeGeometryVersion = HashStart;
 
 	ApplyPartTransforms();
 	for (EnvMapVulkanEntityID entity : GetModels())
@@ -10139,6 +10167,16 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 			const EnvMapVulkanMaterial* materialPointer = material.Raw();
 			probeSceneVersion = HashBytes(probeSceneVersion, &materialPointer, sizeof(materialPointer));
 		}
+		if (!model->IsSkinned())
+		{
+			probeGeometryVersion = HashBytes(probeGeometryVersion, &state.Model, sizeof(state.Model));
+			probeGeometryVersion = HashBytes(probeGeometryVersion, state.MeshTransforms.data(), state.MeshTransforms.size() * sizeof(glm::mat4));
+			for (const H2M::RefH2M<EnvMapVulkanMaterial>& material : meshMaterials)
+			{
+				const EnvMapVulkanMaterial* materialPointer = material.Raw();
+				probeGeometryVersion = HashBytes(probeGeometryVersion, &materialPointer, sizeof(materialPointer));
+			}
+		}
 		modelStates[entity] = std::move(state);
 	}
 	s_PreviousModelStates = std::move(modelStates);
@@ -10162,7 +10200,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	if (s_Data.irradianceMap && s_Data.envFiltered &&
 		s_Probes.Update(s_ProbeVolumeSettings, s_Data.irradianceMap.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo(),
 			s_Data.envFiltered.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo(), s_EnvMapRotation, s_EnvironmentVersion, probeSceneVersion,
-			probeAnimationVersion))
+			probeGeometryVersion, probeAnimationVersion))
 	{
 		WriteProbeDescriptors(); // new atlases: Update waited for the GPU
 	}

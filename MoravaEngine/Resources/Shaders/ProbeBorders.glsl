@@ -24,6 +24,10 @@ ivec2 SideTexel(int side, int along, int tileSize)
 layout (local_size_x = 18, local_size_y = 4, local_size_z = 1) in;
 void main()
 {
+	if (!BatchSlotUsed(int(gl_WorkGroupID.x)))
+	{
+		return;
+	}
 	ivec3 probe = BatchProbe(int(gl_WorkGroupID.x));
 	int along = int(gl_LocalInvocationID.x);
 	int side = int(gl_LocalInvocationID.y);

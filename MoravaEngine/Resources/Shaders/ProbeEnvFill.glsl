@@ -11,7 +11,7 @@
 layout (binding = 0) uniform samplerCube u_EnvIrradianceTex;
 layout (binding = 1, rgba16f) restrict writeonly uniform image2D o_Irradiance; // per probe: 8 x 8 texels and a border
 layout (binding = 2, rg16f) restrict writeonly uniform image2D o_Visibility;   // per probe: 16 x 16 texels and a border
-layout (binding = 3, rgba16f) restrict writeonly uniform image2D o_ProbeData;  // per probe: 1 texel
+layout (binding = 3, rgba32f) restrict writeonly uniform image2D o_ProbeData;  // per probe: 1 texel
 
 layout (push_constant) uniform Uniforms
 {

@@ -15,6 +15,10 @@ layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 void main()
 {
 	int slot = int(gl_WorkGroupID.x);
+	if (!BatchSlotUsed(slot))
+	{
+		return;
+	}
 	ivec2 interiorTexel = ivec2(gl_LocalInvocationID.xy) + 1; // after the border
 	vec3 texelDirection = ProbeTexelDirection(interiorTexel, ProbeIrradianceTexels);
 

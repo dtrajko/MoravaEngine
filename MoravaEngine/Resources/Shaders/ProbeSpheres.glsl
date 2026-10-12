@@ -4,15 +4,21 @@
 // No mesh: one square per probe (6 vertices, an instance per probe) that faces the camera; the fragment stage cuts the
 // ball out of it and gives it the ball's depth.
 // Set 0 is the per-frame set, declared as in the PBR shaders (Include/FrameCamera.glslh, Include/FrameSet.glslh).
+// Set 1 is the balls' own: the probes' offsets from the grid for the vertex stage (set 0 has them for the fragment stage
+// only, and its layout is the same in every shader).
 #type vertex
 #version 450 core
 
 #include "Include/FrameCamera.glslh"
+#include "Include/ProbeOctahedral.glslh"
+
+layout (set = 1, binding = 0) uniform sampler2D u_ProbePlacement; // a texel per probe: xyz = its offset from the grid
 
 layout (push_constant) uniform Probes
 {
 	vec4 OriginRadius; // xyz: the position of probe (0, 0, 0); w: the balls' radius
-	vec4 Spacing;      // xyz: from a probe to its neighbors; w: what the balls show (0 the light, 1 how far the probe sees)
+	vec4 Spacing;      // xyz: from a probe to its neighbors; w: what the balls show (0 the light, 1 how far the probe
+	                   // sees, 2 its state)
 	ivec4 Counts;      // xyz: probes along each axis
 	vec4 CameraRight;  // xyz: the camera's right and up directions in the world
 	vec4 CameraUp;
@@ -34,7 +40,7 @@ void main()
 	ivec3 counts = u_Probes.Counts.xyz;
 	int index = gl_InstanceIndex;
 	ivec3 probe = ivec3(index % counts.x, (index / counts.x) % counts.y, index / (counts.x * counts.y));
-	vec3 center = u_Probes.OriginRadius.xyz + vec3(probe) * u_Probes.Spacing.xyz;
+	vec3 center = u_Probes.OriginRadius.xyz + vec3(probe) * u_Probes.Spacing.xyz + texelFetch(u_ProbePlacement, ProbeTile(probe, counts), 0).xyz;
 
 	vec2 corner = Corners[gl_VertexIndex];
 	vec3 position = center + (corner.x * u_Probes.CameraRight.xyz + corner.y * u_Probes.CameraUp.xyz) * u_Probes.OriginRadius.w;
@@ -92,5 +98,14 @@ void main()
 		float seen = textureLod(u_ProbeVisibility, ProbeAtlasUV(v_Probe, normal, ProbeVisibilityTexels, u_ProbeAtlasSizes.zw), 0.0).r;
 		shown = vec3(seen / (1.5 * length(u_ProbeSpacing.xyz)));
 	}
-	o_Color = ProbeData(v_Probe).w > 0.5 ? vec4(shown, 1.0) : vec4(0.25, 0.0, 0.0, 1.0);
+	vec4 data = ProbeData(v_Probe);
+	if (v_Show > 1.5)
+	{
+		// State: green = where the grid puts it, yellow = moved out of a mesh or away from a surface, red = switched off
+		// (inside a mesh with no way out). Shaded a little so the balls read as balls.
+		vec3 state = data.w < 0.5 ? vec3(0.8, 0.08, 0.08) : (dot(data.xyz, data.xyz) > 1.0e-8 ? vec3(1.0, 0.72, 0.1) : vec3(0.15, 0.7, 0.25));
+		o_Color = vec4(state * (0.6 + 0.4 * normal.y), 1.0);
+		return;
+	}
+	o_Color = data.w > 0.5 ? vec4(shown, 1.0) : vec4(0.25, 0.0, 0.0, 1.0);
 }
