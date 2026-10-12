@@ -155,6 +155,30 @@ vec3 IndirectDiffuse(vec3 P, vec3 N, vec3 V)
 	return mix(environment, fromProbes, inVolume);
 }
 
+// How much of the environment's light reaches a surface point P (normal N, viewer towards V) from around the direction
+// D: 1 under the open sky, towards 0 in a closed room. The probes know the light that really arrives from that side;
+// the environment map knows what would arrive with nothing in the way. Their ratio (by brightness, never above 1)
+// darkens the environment's reflection where the scene hides the environment. It is not a reflection of the room:
+// that needs rays (Phase H of docs/rendering/SSAO_GI_RayTracing_Guide.html).
+// 1 outside the probe volume, without one, and with the volume's Occlude Reflections off (u_ProbeBiases.z).
+float EnvironmentVisibility(vec3 P, vec3 N, vec3 V, vec3 D)
+{
+	if (u_ProbeOrigin.w < 0.5 || u_ProbeBiases.z < 0.5)
+	{
+		return 1.0;
+	}
+	float inVolume = ProbeVolumeWeight(P);
+	vec3 fromProbes;
+	if (inVolume <= 0.0 || !SampleProbeIrradiance(P, N, V, D, fromProbes))
+	{
+		return 1.0;
+	}
+	const vec3 brightness = vec3(0.2126, 0.7152, 0.0722);
+	float arriving = dot(fromProbes, brightness);
+	float unhidden = dot(EnvironmentIrradiance(D), brightness);
+	return mix(1.0, clamp(arriving / max(unhidden, 0.0001), 0.0, 1.0), inVolume);
+}
+
 // A point of a surface, with what its material is there
 struct SurfacePoint
 {

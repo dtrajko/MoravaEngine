@@ -23,7 +23,7 @@ void SelectRendererAPI()
 //   --scene <file>          open this scene at startup (SceneEnvMapVulkan: an .mscene file, e.g. Scenes/Old_Stove_Corner.mscene)
 //   --exit-after <seconds>  close the application after this time in the main loop
 //   --debug-view <number>   start with this debug view (SceneEnvMapVulkan: the entry of the Environment panel's Debug View
-//                           list, 0 = Off, e.g. 8 = Probe Irradiance Only)
+//                           list, 0 = Off, e.g. 8 = Probe Irradiance Only, 9 = Reflection Occlusion)
 static ApplicationCommandLine ParseCommandLine(int argc, char** argv)
 {
 	ApplicationCommandLine commandLine;

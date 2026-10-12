@@ -200,53 +200,6 @@ void SceneEnvMapVulkan::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow
     // m_EnvMapVulkanEditorLayer->ShowExampleAppDockSpace(p_open, mainWindow);
 }
 
-bool SceneEnvMapVulkan::OnKeyPressed(H2M::KeyPressedEventH2M& e)
-{
-    // Shortcuts
-    if (e.GetRepeatCount() > 0) {
-        return false;
-    }
-
-    bool control = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl);
-    bool shift = Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift);
-
-    switch (e.GetKeyCode())
-    {
-        case (int)KeyH2M::N:
-        {
-            if (control)
-            {
-                m_EnvMapVulkanEditorLayer->NewScene();
-            }
-            break;
-        }
-        case (int)KeyH2M::O:
-        {
-            if (control)
-            {
-                m_EnvMapVulkanEditorLayer->OpenScene();
-            }
-            break;
-        }
-        case (int)KeyH2M::S:
-        {
-            if (control)
-            {
-                if (shift)
-                {
-                    m_EnvMapVulkanEditorLayer->SaveSceneAs();
-                }
-                else
-                {
-                    m_EnvMapVulkanEditorLayer->SaveScene();
-                }
-            }
-            break;
-        }
-    }
-    return true;
-}
-
 void SceneEnvMapVulkan::OnEntitySelected(H2M::EntityH2M entity)
 {
     // auto& tc = entity.GetComponent<H2M::TransformComponent>();

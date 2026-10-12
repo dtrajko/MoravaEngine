@@ -200,6 +200,7 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "RaysPerProbe" << YAML::Value << p.RaysPerProbe;
 			out << YAML::Key << "Hysteresis" << YAML::Value << p.Hysteresis;
 			out << YAML::Key << "RelocateProbes" << YAML::Value << p.RelocateProbes;
+			out << YAML::Key << "OccludeReflections" << YAML::Value << p.OccludeReflections;
 			out << YAML::Key << "ShowProbes" << YAML::Value << p.ShowProbes;
 			out << YAML::Key << "ProbeRadius" << YAML::Value << p.ProbeRadius;
 			out << YAML::Key << "Show" << YAML::Value << p.Show;
@@ -353,6 +354,7 @@ namespace EnvMapVulkanSceneSerializer
 					Read(probesNode, "RaysPerProbe", p.RaysPerProbe);
 					Read(probesNode, "Hysteresis", p.Hysteresis);
 					Read(probesNode, "RelocateProbes", p.RelocateProbes);
+					Read(probesNode, "OccludeReflections", p.OccludeReflections);
 					Read(probesNode, "ShowProbes", p.ShowProbes);
 					Read(probesNode, "ProbeRadius", p.ProbeRadius);
 					Read(probesNode, "Show", p.Show);

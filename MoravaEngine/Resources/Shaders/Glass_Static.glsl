@@ -179,13 +179,13 @@ void main()
 	{
 		int levels = textureQueryLevels(u_EnvRadianceTex);
 		behind = textureLod(u_EnvRadianceTex, RotateVectorAboutY(u_EnvMapRotation, internalDirection), roughness * levels).rgb *
-			WaterSkylightAt(Input.WorldPosition);
+			EnvironmentVisibility(Input.WorldPosition, N, V, internalDirection) * WaterSkylightAt(Input.WorldPosition);
 	}
 	vec3 transmitted = behind * tint;
 
 	// The indirect reflection (IndirectSpecular, as for the opaque meshes) and the lights' highlights
 	vec3 R = reflect(-V, N);
-	vec3 environment = IndirectSpecular(Input.WorldPosition, R, roughness);
+	vec3 environment = IndirectSpecular(Input.WorldPosition, N, V, R, roughness);
 	vec2 brdf = SampleBRDFLUT(NdotV, roughness);
 	vec3 reflected = environment * (F0 * brdf.x + brdf.y) * WaterSkylightAt(Input.WorldPosition);
 	vec3 highlights = Lighting(F0);

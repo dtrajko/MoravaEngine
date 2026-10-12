@@ -30,8 +30,8 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [0.5012406, 11.363796, 8.942595]
-      Rotation: [-6.499986, -3.1000748, 0]
+      Translation: [0.27927315, 16.303885, 9.606931]
+      Rotation: [3.500049, 1.0996399, 0]
       Scale: [1, 1, 1]
     Camera:
       {}
@@ -44,7 +44,7 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/umhlanga_sunrise_4k.hdr
-      Rotation: 358
+      Rotation: 359
       Exposure: 1
       AutoExposure: true
       HuePreservation: 0.5
@@ -55,8 +55,8 @@ Entities:
     Parent: 0
     Transform:
       Translation: [0, 0, 0]
-      Rotation: [44.139908, 27.91321, -63.013424]
-      Scale: [0.99998695, 0.99999505, 0.9999873]
+      Rotation: [45.51296, 28.151096, -61.73615]
+      Scale: [0.9999687, 0.99999875, 0.9999573]
     Sun:
       Enabled: true
       Color: [1, 0.2515118, 0]
@@ -112,9 +112,9 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [11, 11, -8]
+      Translation: [11, 9, -8]
       Rotation: [0, -0, -90]
-      Scale: [8, 0.9999972, 1.9999207]
+      Scale: [10, 0.9999972, 1.9998946]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 12347905251721334247
@@ -224,7 +224,7 @@ Entities:
     Transform:
       Translation: [0, 11, -4.7683716e-06]
       Rotation: [0, -0, 0]
-      Scale: [25.399996, 25.4, 25.399862]
+      Scale: [18, 18, 18]
     ProbeVolume:
       Enabled: true
       Counts: [8, 8, 8]
@@ -234,6 +234,8 @@ Entities:
       ProbesPerFrame: 8
       RaysPerProbe: 192
       Hysteresis: 0.9
-      ShowProbes: false
+      RelocateProbes: true
+      OccludeReflections: true
+      ShowProbes: true
       ProbeRadius: 0.12
       Show: 0

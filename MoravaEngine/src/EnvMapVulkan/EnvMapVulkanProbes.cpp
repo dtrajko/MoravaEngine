@@ -1081,7 +1081,7 @@ EnvMapVulkanProbes::ProbeVolumeUB EnvMapVulkanProbes::GetUniforms() const
 	ub.Origin = glm::vec4(m_Settings.GetOrigin(), m_Settings.LightsScene() ? 1.0f : 0.0f);
 	ub.Spacing = glm::vec4(m_Settings.GetSpacing(), IrradianceGamma);
 	ub.Counts = glm::ivec4(m_Counts, 0);
-	ub.Biases = glm::vec4(m_Settings.NormalBias, m_Settings.ViewBias, 0.0f, 0.0f);
+	ub.Biases = glm::vec4(m_Settings.NormalBias, m_Settings.ViewBias, m_Settings.OccludeReflections ? 1.0f : 0.0f, 0.0f);
 	ub.AtlasSizes = glm::vec4((float)m_Irradiance.Width, (float)m_Irradiance.Height, (float)m_Visibility.Width, (float)m_Visibility.Height);
 	return ub;
 }

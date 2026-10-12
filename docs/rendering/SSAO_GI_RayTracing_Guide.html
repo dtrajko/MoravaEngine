@@ -766,6 +766,15 @@ void main()
 
   <h3>E.4 Specular occlusion from the probes</h3>
   <p>Reflections still come from the environment cube, so interiors reflect the bright sky (fixed for good in Phase H). A cheap improvement now: scale <code>IndirectSpecular</code> by the ratio of probe irradiance to environment irradiance in the reflection direction, clamped to [0, 1]. Dark rooms then get dark reflections. Reflection-probe systems use the same normalization idea.</p>
+  <p><b>As built:</b></p>
+  <ul>
+    <li><code>EnvironmentVisibility(P, N, V, D)</code> in <code>Include/ShadeSurface.glslh</code>: the probes' irradiance for the direction <code>D</code> divided by the environment's irradiance for it, <b>by brightness</b> (one number, so the reflection keeps the environment's color), never above 1. It fades to 1 at the volume's border like the diffuse light. <code>SampleProbeIrradiance()</code> got the direction as its own parameter: the probes are still weighted by the surface's normal, only the tile lookup uses the reflection vector.</li>
+    <li><code>IndirectSpecular(P, N, V, R, roughness)</code> multiplies the environment lookup by it. The opaque meshes and the glass (its reflection and its internal reflection) use it. The water doesn't: it has its planar reflection.</li>
+    <li>The probe volume's <b>Occlude Reflections</b> option (on by default, saved with the scene; <code>u_ProbeBiases.z</code>) and the Debug View <b>Reflection Occlusion</b> (<code>u_ShadowDebug.z</code> = 5; <code>--debug-view 9</code>), which shows the factor: white = all of the environment's reflection, black = none.</li>
+    <li><b>Measured</b> (the viewport's mean brightness, 0 to 255, auto exposure off). <code>Closed_Test_Room</code>: 65 without, 3 with (black, as a closed room without a lamp must be). The same room with a spot light: 90 without, 52 with, and the walls lose their bluish sky tint: what remains is the lamp's light and its bounce off the red wall.</li>
+    <li><b>The cost:</b> a second probe lookup per pixel (8 probes: 8 texel fetches and 16 filtered lookups).</li>
+    <li><b>The limit:</b> it only darkens. A room doesn't appear in its reflections, so a metal (which has no diffuse light) goes nearly black inside a room: the stove of <code>Old_Stove_Corner</code> shows only the lamps' highlights now. That is more correct than a stove reflecting the sky through the walls, but the room's reflection itself comes with Phase H. And because the factor never exceeds 1, a room brighter than the environment doesn't get brighter reflections.</li>
+  </ul>
 </section>
 
 <section id="phase-f">

@@ -47,6 +47,7 @@ struct EnvMapVulkanProbeVolumeSettings
 	int ProbesPerFrame = 8;                      // probes updated per frame while they follow a change (1 to MaxProbesPerFrame)
 	int RaysPerProbe = 192;                      // directions a probe looks in per update
 	float Hysteresis = 0.9f;                     // how much of a probe's old value an update keeps: higher is calmer and slower
+	bool OccludeReflections = true;              // the environment's reflection is darkened where the probes say the scene hides the environment
 	bool RelocateProbes = true;                  // probes inside a mesh are moved out of it, or switched off (off: all on the grid)
 	bool ShowProbes = false;                     // editor: a ball at every probe, lit by that probe
 	float ProbeRadius = 0.12f;                   // meters
@@ -134,7 +135,7 @@ public:
 		glm::vec4 Origin;     // w: 1 when the probes light the scene
 		glm::vec4 Spacing;    // w: the irradiance encoding gamma
 		glm::ivec4 Counts;
-		glm::vec4 Biases;     // x normal, y view
+		glm::vec4 Biases;     // x normal, y view, z = 1: the probes darken the environment's reflection
 		glm::vec4 AtlasSizes; // xy irradiance, zw visibility
 	};
 

@@ -42,9 +42,12 @@ float ProbeVolumeWeight(vec3 P)
 
 // The light arriving at a point P with normal N from the probes around it, divided by pi (as u_EnvIrradianceTex).
 // V: the unit vector from P towards whoever looks at it. False when no probe can say (the caller falls back).
+// D: the direction the light is asked for, as a surface at P facing D would receive it. The normal for the diffuse
+// light; the reflection vector for what the probes know about a reflection (EnvironmentVisibility in
+// Include/ShadeSurface.glslh).
 // Each of the eight probes counts by three things besides its distance: whether it is in front of the surface, whether
 // it can see the point (its visibility tile holds how far it sees in each direction), and whether it is in use.
-bool SampleProbeIrradiance(vec3 P, vec3 N, vec3 V, out vec3 irradiance)
+bool SampleProbeIrradiance(vec3 P, vec3 N, vec3 V, vec3 D, out vec3 irradiance)
 {
 	irradiance = vec3(0.0);
 	vec3 spacing = u_ProbeSpacing.xyz;
@@ -98,9 +101,9 @@ bool SampleProbeIrradiance(vec3 P, vec3 N, vec3 V, out vec3 irradiance)
 		vec3 trilinear = mix(1.0 - alpha, alpha, vec3(offset));
 		weight *= trilinear.x * trilinear.y * trilinear.z;
 
-		// 4. The probe's irradiance for the normal. Stored to the power 1 / gamma; blended as its square root, so one
+		// 4. The probe's irradiance for the direction. Stored to the power 1 / gamma; blended as its square root, so one
 		// bright probe doesn't drown its neighbors
-		vec3 stored = ProbeStoredIrradiance(probe, N);
+		vec3 stored = ProbeStoredIrradiance(probe, D);
 		sum += weight * pow(stored, vec3(u_ProbeSpacing.w * 0.5));
 		weightSum += weight;
 	}
@@ -111,6 +114,11 @@ bool SampleProbeIrradiance(vec3 P, vec3 N, vec3 V, out vec3 irradiance)
 	vec3 blended = sum / weightSum;
 	irradiance = blended * blended;
 	return true;
+}
+
+bool SampleProbeIrradiance(vec3 P, vec3 N, vec3 V, out vec3 irradiance)
+{
+	return SampleProbeIrradiance(P, N, V, N, irradiance);
 }
 
 #endif

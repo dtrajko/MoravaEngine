@@ -1837,6 +1837,16 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 			"What is left is a matter of the scene: a wall should be at least a tenth of the probe spacing thick,\n"
 			"and the probes closer together than the rooms are wide.");
 	}
+	ImGui::Checkbox("Occlude Reflections", &probes.OccludeReflections);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Reflections show the environment (the sky), also where the scene hides it: inside a room.\n"
+			"On: a reflection is darkened by what the probes know. They hold the light that really arrives from the\n"
+			"reflection's side; the environment map holds what would arrive with nothing in the way. The reflection is\n"
+			"multiplied by their ratio (by brightness, never above 1): a closed room stops reflecting the sky.\n"
+			"It only darkens: the room itself doesn't appear in the reflection (that needs ray tracing).\n"
+			"Debug View > Reflection Occlusion shows the factor.");
+	}
 
 	// Capturing the scene into the probes
 	ImGui::Separator();
@@ -2087,7 +2097,7 @@ static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light'
 // are drawn by the viewport composite (ViewportComposite.glsl, GBufferView), the lighting views by the PBR shaders
 // (u_ShadowDebug.z).
 enum DebugView { DebugViewOff = 0, DebugViewNormals, DebugViewRoughness, DebugViewLinearDepth, DebugViewMotion, DebugViewDirectLight, DebugViewIndirectLight,
-	DebugViewSurfaceShading, DebugViewProbeIrradiance, DebugViewCount };
+	DebugViewSurfaceShading, DebugViewProbeIrradiance, DebugViewReflectionOcclusion, DebugViewCount };
 static int s_DebugView = DebugViewOff; // --debug-view on the command line sets it at startup
 static float s_DebugViewDepthRange = 50.0f;  // Linear Depth: the distance shown as white (world units)
 static float s_DebugViewMotionScale = 20.0f; // Motion: the motion shown at full color (pixels per frame)
@@ -5266,6 +5276,48 @@ static std::string SerializeSceneForComparison()
 	return text;
 }
 
+// A short message over the bottom of the window that fades away by itself: what a command did when nothing else on the
+// screen shows it (saving a scene that had no changes left looks like nothing happened)
+static std::string s_NotificationText;
+static bool s_NotificationIsError = false;
+static double s_NotificationTime = -1000.0;     // ImGui's time when it appeared
+static const double NotificationSeconds = 3.0;  // an error stays twice as long
+static const double NotificationFadeSeconds = 0.6;
+
+static void ShowNotification(const std::string& text, bool isError = false)
+{
+	s_NotificationText = text;
+	s_NotificationIsError = isError;
+	s_NotificationTime = ImGui::GetTime();
+}
+
+static void OnImGuiRenderNotification()
+{
+	const double duration = s_NotificationIsError ? NotificationSeconds * 2.0 : NotificationSeconds;
+	const double age = ImGui::GetTime() - s_NotificationTime;
+	if (s_NotificationText.empty() || age >= duration)
+	{
+		return;
+	}
+	const float alpha = (float)glm::clamp((duration - age) / NotificationFadeSeconds, 0.0, 1.0);
+	const ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + viewport->Size.x * 0.5f, viewport->Pos.y + viewport->Size.y - 48.0f), ImGuiCond_Always, ImVec2(0.5f, 1.0f));
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::SetNextWindowBgAlpha(0.9f * alpha);
+	ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16.0f, 10.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 6.0f);
+	const ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize;
+	if (ImGui::Begin("##Notification", nullptr, flags))
+	{
+		ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
+		ImGui::TextColored(s_NotificationIsError ? ImVec4(1.0f, 0.45f, 0.4f, 1.0f) : ImVec4(0.55f, 0.9f, 0.55f, 1.0f), "%s", s_NotificationText.c_str());
+	}
+	ImGui::End();
+	ImGui::PopStyleVar(3);
+}
+
 // The current scene's text becomes the "saved" state: no unsaved changes
 static void MarkSceneSaved()
 {
@@ -5318,6 +5370,7 @@ static bool SaveSceneTo(const std::string& requestedPath)
 	if (!file)
 	{
 		Log::GetLogger()->error("Scene could not be saved: '{0}' can't be written", path.string());
+		ShowNotification("Scene could not be saved: '" + path.string() + "' can't be written", true);
 		return false;
 	}
 	file << text;
@@ -5327,6 +5380,8 @@ static bool SaveSceneTo(const std::string& requestedPath)
 	MarkSceneSaved();
 	Log::GetLogger()->info("Scene '{0}' saved to '{1}' ({2} entities, {3} material(s) saved with it)", s_SceneName, s_SceneFilePath,
 		s_Scene.GetEntityCount(), savedCount);
+	ShowNotification("Scene '" + s_SceneName + "' saved to " + s_SceneFilePath + (savedCount > 0 ? " (with " + std::to_string(savedCount) +
+		(savedCount == 1 ? " material)" : " materials)") : ""), !materialsOk);
 	return true;
 }
 
@@ -5635,6 +5690,37 @@ static void OnImGuiRenderUnsavedChangesPopup()
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
+	}
+}
+
+// The File menu's shortcuts: Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S. Not while typing in a field, and not while a question
+// is open (a popup)
+static void HandleSceneShortcutKeys()
+{
+	const ImGuiIO& io = ImGui::GetIO();
+	if (!io.KeyCtrl || io.KeyAlt || io.WantTextInput || s_RenamingEntity != NoEntity ||
+		ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
+	{
+		return;
+	}
+	if (ImGui::IsKeyPressed(ImGuiKey_S, false))
+	{
+		if (io.KeyShift)
+		{
+			SaveSceneAs();
+		}
+		else
+		{
+			SaveScene();
+		}
+	}
+	else if (!io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_N, false))
+	{
+		RequestNewScene();
+	}
+	else if (!io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_O, false))
+	{
+		RequestOpenScene();
 	}
 }
 
@@ -7513,7 +7599,7 @@ static void WriteShadowUniforms()
 			ub.ShadowDebug = glm::vec4(enabled ? (point ? 2.0f : 3.0f) : 4.0f, (float)packedIndex, 0.0f, 0.0f);
 		}
 	}
-	ub.ShadowDebug.z = s_DebugView >= DebugViewDirectLight && s_DebugView <= DebugViewProbeIrradiance ? (float)(s_DebugView - DebugViewDirectLight + 1) : 0.0f;
+	ub.ShadowDebug.z = s_DebugView >= DebugViewDirectLight && s_DebugView <= DebugViewReflectionOcclusion ? (float)(s_DebugView - DebugViewDirectLight + 1) : 0.0f;
 	ub.LocalShadowParams = glm::vec4(s_LocalShadowSettings.NormalBias, s_LocalShadowSettings.Softness,
 		s_SpotShadowMaps.IsValid() ? 1.0f / (float)s_SpotShadowMaps.GetResolution() : 0.0f,
 		s_PointShadowMaps.IsValid() ? 1.0f / (float)s_PointShadowMaps.GetResolution() : 0.0f);
@@ -9721,7 +9807,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::PushID("DebugView");
-					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0");
+					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0");
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
@@ -9737,7 +9823,10 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							"Probe Irradiance Only: the indirect diffuse light arriving at every surface, as a white matte surface\n"
 							"  would show it: no textures, no direct light, no reflections. From the probes inside the probe volume,\n"
 							"  from the environment elsewhere. For judging the global illumination by itself: leaks, blotches,\n"
-							"  the color a wall gives its surroundings.");
+							"  the color a wall gives its surroundings.\n"
+							"Reflection Occlusion: how much of the environment's reflection the probe volume lets through at each\n"
+							"  surface (its Occlude Reflections). White = all of it (open sky, or outside the volume),\n"
+							"  black = none (a closed room).");
 					}
 					if (s_DebugView == DebugViewLinearDepth)
 					{
@@ -9888,7 +9977,9 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 			// OnImGuiRenderLights();
 			// OnImGuiRenderWater();
 			UpdateSceneUnsavedChanges();
+			HandleSceneShortcutKeys();
 			OnImGuiRenderUnsavedChangesPopup();
+			OnImGuiRenderNotification();
 			OnImGuiRenderSceneHierarchy();
 			OnImGuiRenderProperties();
 			OnImGuiRenderMaterialLibrary();

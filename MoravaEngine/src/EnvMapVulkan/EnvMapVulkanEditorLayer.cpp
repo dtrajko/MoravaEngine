@@ -126,7 +126,7 @@ void EnvMapVulkanEditorLayer::CloseProject(bool unloadProject)
 {
 }
 
-// The scene operations (Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, see SceneEnvMapVulkan) are the renderer's: it owns the scene
+// The scene operations (Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, see HandleSceneShortcutKeys in EnvMapVulkanRenderer.cpp) are the renderer's: it owns the scene
 void EnvMapVulkanEditorLayer::NewScene(const std::string& name)
 {
 	EnvMapVulkanRenderer::NewScene();

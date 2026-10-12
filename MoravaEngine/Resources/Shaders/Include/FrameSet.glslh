@@ -90,7 +90,8 @@ layout (std140, set = 0, binding = 7) uniform Shadows
 	vec4 u_LocalShadowParams;           // offset 656: normal bias (texels), softness (texels), 1 / spot resolution, 1 / point resolution
 	vec4 u_ShadowDebug;                 // offset 672: xy = Shadows Only view, see ShadowDebugValue; z = the lighting shown:
 	                                    // 1 the direct light only, 2 the indirect light only, 3 diffuse surface shading
-	                                    // (ShadeSurfaceDiffuse from the material buffer); 0: all of it
+	                                    // (ShadeSurfaceDiffuse from the material buffer), 4 the probes' irradiance only,
+	                                    // 5 how much of the environment's reflection the probes let through; 0: all of it
 };
 layout (set = 0, binding = 8) uniform sampler2DArrayShadow u_SpotShadowMaps;  // a layer per shadowed spot light
 layout (set = 0, binding = 9) uniform samplerCubeArrayShadow u_PointShadowMaps; // a cube per shadowed point light
@@ -107,7 +108,8 @@ layout (std140, set = 0, binding = 13) uniform ProbeVolume
 	                        //            probes light the scene (0: the environment does, as without a probe volume)
 	vec4 u_ProbeSpacing;    // offset 16: xyz = from a probe to its neighbors; w = the irradiance encoding gamma
 	ivec4 u_ProbeCounts;    // offset 32: xyz = probes along each axis
-	vec4 u_ProbeBiases;     // offset 48: x = normal bias, y = view bias (fractions of the smallest spacing)
+	vec4 u_ProbeBiases;     // offset 48: x = normal bias, y = view bias (fractions of the smallest spacing); z = 1 when the
+	                        // probes darken the environment's reflection (EnvironmentVisibility in Include/ShadeSurface.glslh)
 	vec4 u_ProbeAtlasSizes; // offset 64: xy = the irradiance atlas in texels, zw = the visibility atlas
 };
 layout (set = 0, binding = 14) uniform sampler2D u_ProbeData;       // a texel per probe: xyz = its offset from the grid, w = 1 in use
