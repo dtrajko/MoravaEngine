@@ -36,8 +36,12 @@ struct EnvMapVulkanProbeVolumeSettings
 	glm::vec3 Center = glm::vec3(0.0f, 2.5f, 0.0f);
 	glm::vec3 Size = glm::vec3(10.0f, 5.0f, 10.0f); // meters
 	glm::ivec3 Counts = { 8, 4, 8 };
-	float NormalBias = 0.25f;                    // how far a lookup starts off the surface along its normal...
-	float ViewBias = 0.25f;                      // ...and towards the viewer (fractions of the smallest probe spacing)
+	// How far a lookup starts off the surface along its normal, and towards the viewer (fractions of the smallest probe
+	// spacing). Measured (docs/rendering/SSAO_GI_RayTracing_Guide.html, E.2): the view bias is what keeps the light
+	// outside a thin-walled room from showing along its edges; a normal bias above 0.25 gives blotches where two
+	// surfaces face each other closely.
+	float NormalBias = 0.25f;
+	float ViewBias = 0.5f;
 	// Capturing the scene into the probes
 	bool AutoUpdate = true;                      // the probes follow the scene: updated whenever something in it changed
 	int ProbesPerFrame = 8;                      // probes updated per frame while they follow a change (1 to MaxProbesPerFrame)

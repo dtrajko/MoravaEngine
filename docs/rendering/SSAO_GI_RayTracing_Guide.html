@@ -729,6 +729,26 @@ void main()
 
   <h3>E.2 Bias</h3>
   <p>The normal and view biases move the sample point off the surface before the visibility test. Too little causes dark blotches where a surface "occludes itself"; too much lets light leak through thin walls. Start with 0.2–0.3 of the spacing each. Document a rule for content: walls should be at least about a tenth of the probe spacing thick, and the spacing smaller than the rooms (1 m for interiors, 2–4 m outdoors).</p>
+  <p><b>As measured</b> (the closed test room, probes about 2 m apart, smallest spacing 1.73 m; the Diffuse Surface Shading view; brightness of the image from 0 to 255):</p>
+  <ul>
+    <li><b>Leaks.</b> The room with thin walls, the sun outside and no light inside should be black (about 5). What leaks in shows as bright lines along the room's edges: a point on one wall next to the corner is also judged by the probes behind the <i>other</i> wall, which see it at a grazing angle through that wall, where the visibility test is weak.</li>
+  </ul>
+  <table>
+    <tr><th>Normal / view bias</th><th>Walls 8 cm (0.05 of the spacing)</th><th>Walls 20 cm (0.12)</th></tr>
+    <tr><td>0 / 0</td><td>181</td><td>195</td></tr>
+    <tr><td>0.1 / 0.1</td><td>47</td><td>13</td></tr>
+    <tr><td>0.25 / 0.25</td><td>14.6</td><td>6.0</td></tr>
+    <tr><td>0.5 / 0.25</td><td>14.0</td><td>6.5</td></tr>
+    <tr><td>0.25 / 0.5 (the default now)</td><td>6.9</td><td>4.7</td></tr>
+    <tr><td>0.5 / 0.5</td><td>6.7</td><td>5.0</td></tr>
+  </table>
+  <ul>
+    <li>So the <b>view bias</b> is what helps: it takes the lookup away from both walls of a corner, the normal bias only from the point's own wall. It depends on the camera: looking along a wall it helps that wall's edge least.</li>
+    <li><b>Too much normal bias.</b> In the lit room with a slab 0.6 m above the floor, a normal bias of 0.5 (0.87 m) starts the lookup of the slab's underside below the floor, and the underside gets bright blotches. 0.25 doesn't.</li>
+    <li><b>Too little</b> didn't show as dark blotches here: since E.1 no probe stands closer than 0.15 of the spacing to a wall. Without bias the walls are only a little darker (the image's mean 39 against 46).</li>
+    <li>The defaults: normal bias 0.25, view bias 0.5 (it was 0.25). Scenes saved before keep their values.</li>
+    <li>The rule for content holds: with walls of a tenth of the spacing or more the room stays dark; thinner walls keep faint lines along the edges, which no bias removes. What the probes can't show at this spacing (the floor under the slab is hardly darker) is the job of the ambient occlusion in Phase F.</li>
+  </ul>
 
   <h3>E.3 Debug views</h3>
   <ul>

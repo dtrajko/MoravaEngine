@@ -198,6 +198,6 @@ Entities:
       Enabled: true
       Counts: [6, 4, 8]
       NormalBias: 0.25
-      ViewBias: 0.25
+      ViewBias: 0.5
       ShowProbes: false
       ProbeRadius: 0.12

@@ -1825,12 +1825,17 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("How far from a surface its probe lookup starts, along the surface's normal (fractions of the\n"
-			"smallest probe spacing). Keeps a wall from being judged by the probes behind it.");
+			"smallest probe spacing). Keeps a wall from being judged by the probes behind it.\n"
+			"Too little (0): light from behind a wall shows on it. Too much (0.5): the lookup of a surface facing a near\n"
+			"one (the underside of a table) starts beyond that one, and gets blotches. 0.25 suits both.");
 	}
 	ImGui::SliderFloat("View Bias", &probes.ViewBias, 0.0f, 1.0f, "%.2f");
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip("The same, towards the camera");
+		ImGui::SetTooltip("The same, towards the camera. This one takes a lookup away from both walls of a corner, where the light\n"
+			"from outside a room leaks in first (bright lines along the room's edges): 0.5 removes most of it.\n"
+			"What is left is a matter of the scene: a wall should be at least a tenth of the probe spacing thick,\n"
+			"and the probes closer together than the rooms are wide.");
 	}
 
 	// Capturing the scene into the probes
