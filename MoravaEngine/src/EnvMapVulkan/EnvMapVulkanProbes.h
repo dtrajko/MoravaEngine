@@ -168,6 +168,9 @@ public:
 	void RecordSpheres(VkCommandBuffer commandBuffer, VkDescriptorSet frameDescriptorSet, const glm::mat4& cameraView);
 	bool ShowsSpheres() const { return m_Settings.Exists && m_Settings.ShowProbes; }
 	uint32_t GetProbeCount() const { return (uint32_t)(m_Counts.x * m_Counts.y * m_Counts.z); }
+	// For the editor's lines from the grid to the moved probes: false for a probe (its index: along x, then y, then z)
+	// that stands where the grid puts it. inUse: false for a probe that is switched off.
+	bool GetProbeMove(uint32_t index, glm::vec3& onGrid, glm::vec3& position, bool& inUse) const;
 
 	// ---- This frame's update (after Update), recorded by the renderer in this order:
 	//   SetCaptureSun; for every slot and face: BeginCaptureFace, the meshes, EndCaptureFace; RecordBlend

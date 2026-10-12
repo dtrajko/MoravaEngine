@@ -756,6 +756,13 @@ void main()
     <li>"Probe irradiance only": albedo forced to white, so the GI can be judged without textures.</li>
     <li>A visibility view that shows each probe's mean distance as its sphere color.</li>
   </ul>
+  <p><b>As built:</b></p>
+  <ul>
+    <li><b>State</b> (the probe volume's Show Probes, Show = State; <code>ProbeSpheres.glsl</code>): green = on the grid, yellow = moved, red = switched off. A line joins each moved probe to its place in the grid. The lines are drawn in the editor's overlay pass with the bounding boxes' line pipeline, through the scene: the grid place of a probe that left a wall is inside that wall.</li>
+    <li><b>Probe Irradiance Only</b> (the Environment panel's Debug View; <code>u_ShadowDebug.z</code> = 4 in the PBR shaders): <code>IndirectDiffuse()</code> at every surface with a white albedo, no direct light and no reflections. Outside the probe volume it shows the environment's irradiance, as the lighting uses it there.</li>
+    <li><b>Visibility</b> (Show = Visibility, since Phase D): the balls show how far the probe sees in each direction, not one mean per probe: a near wall is the dark side of the ball.</li>
+    <li>For checks without the editor: <code>--debug-view &lt;number&gt;</code> on the command line starts with a debug view (the entry of the Debug View list, 8 = Probe Irradiance Only).</li>
+  </ul>
 
   <h3>E.4 Specular occlusion from the probes</h3>
   <p>Reflections still come from the environment cube, so interiors reflect the bright sky (fixed for good in Phase H). A cheap improvement now: scale <code>IndirectSpecular</code> by the ratio of probe irradiance to environment irradiance in the reflection direction, clamped to [0, 1]. Dark rooms then get dark reflections. Reflection-probe systems use the same normalization idea.</p>

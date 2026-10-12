@@ -547,6 +547,25 @@ glm::vec3 EnvMapVulkanProbes::GetCaptureProbePosition(uint32_t slot) const
 	return onGrid + glm::vec3(m_Placement[index]);
 }
 
+bool EnvMapVulkanProbes::GetProbeMove(uint32_t index, glm::vec3& onGrid, glm::vec3& position, bool& inUse) const
+{
+	if ((size_t)index >= m_Placement.size())
+	{
+		return false;
+	}
+	const glm::vec4& placement = m_Placement[index];
+	const glm::vec3 offset(placement);
+	if (glm::dot(offset, offset) <= 1.0e-8f)
+	{
+		return false;
+	}
+	const glm::ivec3 probe((int)index % m_Counts.x, ((int)index / m_Counts.x) % m_Counts.y, (int)index / (m_Counts.x * m_Counts.y));
+	onGrid = m_Settings.GetOrigin() + glm::vec3(probe) * m_Settings.GetSpacing();
+	position = onGrid + offset;
+	inUse = placement.w > 0.5f;
+	return true;
+}
+
 void EnvMapVulkanProbes::CreateCaptureResources()
 {
 	H2M::RefH2M<H2M::VulkanDeviceH2M> vulkanDevice = H2M::VulkanContextH2M::GetCurrentDevice();

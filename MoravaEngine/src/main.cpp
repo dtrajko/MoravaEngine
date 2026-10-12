@@ -22,6 +22,8 @@ void SelectRendererAPI()
 // Command line options:
 //   --scene <file>          open this scene at startup (SceneEnvMapVulkan: an .mscene file, e.g. Scenes/Old_Stove_Corner.mscene)
 //   --exit-after <seconds>  close the application after this time in the main loop
+//   --debug-view <number>   start with this debug view (SceneEnvMapVulkan: the entry of the Environment panel's Debug View
+//                           list, 0 = Off, e.g. 8 = Probe Irradiance Only)
 static ApplicationCommandLine ParseCommandLine(int argc, char** argv)
 {
 	ApplicationCommandLine commandLine;
@@ -47,7 +49,21 @@ static ApplicationCommandLine ParseCommandLine(int argc, char** argv)
 				commandLine.ExitAfterSeconds = seconds;
 			}
 		}
-		else if (option == "--scene" || option == "--exit-after")
+		else if (option == "--debug-view" && hasValue)
+		{
+			const char* value = argv[++i];
+			char* end = nullptr;
+			long view = std::strtol(value, &end, 10);
+			if (end == value || *end != '\0' || view < 0)
+			{
+				Log::GetLogger()->warn("Command line: --debug-view needs a number from 0 on, got '{0}' (ignored)", value);
+			}
+			else
+			{
+				commandLine.DebugView = (int)view;
+			}
+		}
+		else if (option == "--scene" || option == "--exit-after" || option == "--debug-view")
 		{
 			Log::GetLogger()->warn("Command line: {0} needs a value (ignored)", option);
 		}

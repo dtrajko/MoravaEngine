@@ -1943,7 +1943,8 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("State: green = the probe stands where the grid puts it, yellow = it was moved (out of a mesh, or away\n"
-			"from a surface), red = switched off (inside a mesh with no way out). See Relocate Probes.\n"
+			"from a surface), red = switched off (inside a mesh with no way out). A line joins a moved probe to its\n"
+			"place in the grid (drawn through the scene: that place is often inside a wall). See Relocate Probes.\n"
 			"Light: the light the probe holds for each direction.\n"
 			"Visibility: how far the probe sees in each direction. White: nothing near (as far as a probe stores, 1.5 cells'\n"
 			"diagonals). Dark: a surface close by. The probes use it to tell which surfaces they can light, so a wall\n"
@@ -2086,8 +2087,8 @@ static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light'
 // are drawn by the viewport composite (ViewportComposite.glsl, GBufferView), the lighting views by the PBR shaders
 // (u_ShadowDebug.z).
 enum DebugView { DebugViewOff = 0, DebugViewNormals, DebugViewRoughness, DebugViewLinearDepth, DebugViewMotion, DebugViewDirectLight, DebugViewIndirectLight,
-	DebugViewSurfaceShading };
-static int s_DebugView = DebugViewOff;
+	DebugViewSurfaceShading, DebugViewProbeIrradiance, DebugViewCount };
+static int s_DebugView = DebugViewOff; // --debug-view on the command line sets it at startup
 static float s_DebugViewDepthRange = 50.0f;  // Linear Depth: the distance shown as white (world units)
 static float s_DebugViewMotionScale = 20.0f; // Motion: the motion shown at full color (pixels per frame)
 
@@ -5645,6 +5646,8 @@ static void ProcessSceneOperations()
 	{
 		s_StartupDone = true;
 		MarkSceneSaved(); // the startup scene (environment and sun) has nothing to save yet
+		// --debug-view on the command line: the Environment panel's Debug View
+		s_DebugView = glm::clamp(Application::Get()->GetCommandLine().DebugView, 0, (int)DebugViewCount - 1);
 		// --scene on the command line: opened like File > Open (without it the engine starts empty)
 		const std::string& startupScene = Application::Get()->GetCommandLine().ScenePath;
 		if (!startupScene.empty())
@@ -6756,6 +6759,41 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 			vkCmdDraw(commandBuffer, s_BoundingBoxVertexCount, 1, 0, 0);
 			EnvMapVulkanProfiler::CountDraw(0);
 		}
+
+		// The probes' moves, while their balls show their state (Show Probes, Show = State): a line from each moved
+		// probe's place in the grid to where it stands now. Through the scene, as the outline above: the grid place of
+		// a probe that was moved out of a wall is inside that wall.
+		if (s_Probes.ShowsSpheres() && s_ProbeVolumeSettings.Show == EnvMapVulkanProbeVolumeSettings::ShowState)
+		{
+			H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_BoundingBoxPipeline.As<H2M::VulkanPipelineH2M>();
+			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+			VkBuffer vertexBuffer = s_BoundingBoxVertexBuffer.As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+			vkCmdSetLineWidth(commandBuffer, lineWidth);
+
+			for (uint32_t probe = 0; probe < s_Probes.GetProbeCount(); probe++)
+			{
+				glm::vec3 onGrid, position;
+				bool inUse = true;
+				if (!s_Probes.GetProbeMove(probe, onGrid, position, inUse))
+				{
+					continue;
+				}
+				// The pipeline's unit cube with its y and z sides folded away: what is left of its edges is the line
+				// from the cube's origin along its x side
+				glm::mat4 line(0.0f);
+				line[0] = glm::vec4(position - onGrid, 0.0f);
+				line[3] = glm::vec4(onGrid, 1.0f);
+				const glm::mat4 mvp = viewProjection * line;
+				const glm::vec4 color = inUse ? glm::vec4(1.0f, 0.72f, 0.1f, 1.0f) : glm::vec4(0.8f, 0.08f, 0.08f, 1.0f); // as the balls
+				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+				vkCmdDraw(commandBuffer, s_BoundingBoxVertexCount, 1, 0, 0);
+				EnvMapVulkanProfiler::CountDraw(0);
+			}
+		}
 	}
 	vkCmdEndRenderPass(commandBuffer);
 
@@ -7475,7 +7513,7 @@ static void WriteShadowUniforms()
 			ub.ShadowDebug = glm::vec4(enabled ? (point ? 2.0f : 3.0f) : 4.0f, (float)packedIndex, 0.0f, 0.0f);
 		}
 	}
-	ub.ShadowDebug.z = s_DebugView >= DebugViewDirectLight && s_DebugView <= DebugViewSurfaceShading ? (float)(s_DebugView - DebugViewDirectLight + 1) : 0.0f;
+	ub.ShadowDebug.z = s_DebugView >= DebugViewDirectLight && s_DebugView <= DebugViewProbeIrradiance ? (float)(s_DebugView - DebugViewDirectLight + 1) : 0.0f;
 	ub.LocalShadowParams = glm::vec4(s_LocalShadowSettings.NormalBias, s_LocalShadowSettings.Softness,
 		s_SpotShadowMaps.IsValid() ? 1.0f / (float)s_SpotShadowMaps.GetResolution() : 0.0f,
 		s_PointShadowMaps.IsValid() ? 1.0f / (float)s_PointShadowMaps.GetResolution() : 0.0f);
@@ -9683,7 +9721,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::PushID("DebugView");
-					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0");
+					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0");
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
@@ -9695,7 +9733,11 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							"Direct Light Only: the sun, point and spot lights. Indirect Light Only: the environment's light.\n"
 							"Diffuse Surface Shading: each surface as light that bounces sees it. One color per material (a map's\n"
 							"  average), the mesh's own normals, no reflections: what the probes and ray hits will be lit with.\n"
-							"  Opaque meshes only: the water and glass are drawn as usual.");
+							"  Opaque meshes only: the water and glass are drawn as usual.\n"
+							"Probe Irradiance Only: the indirect diffuse light arriving at every surface, as a white matte surface\n"
+							"  would show it: no textures, no direct light, no reflections. From the probes inside the probe volume,\n"
+							"  from the environment elsewhere. For judging the global illumination by itself: leaks, blotches,\n"
+							"  the color a wall gives its surroundings.");
 					}
 					if (s_DebugView == DebugViewLinearDepth)
 					{
