@@ -168,6 +168,12 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBlendVisibility.glsl");  // SceneEnvMapVulkan: the probe update: the rays into the visibility atlas
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeBorders.glsl");          // SceneEnvMapVulkan: the probe update: the border texels of the updated tiles
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ProbeRelocate.glsl");         // SceneEnvMapVulkan: the probe update: probes moved out of the meshes
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAODepth.glsl");             // SceneEnvMapVulkan: ambient occlusion: the depth buffer to linear depth
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAODepthMip.glsl");          // SceneEnvMapVulkan: ambient occlusion: the linear depth's smaller levels
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAOGTAO.glsl");              // SceneEnvMapVulkan: ambient occlusion: GTAO
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAODenoise.glsl");           // SceneEnvMapVulkan: ambient occlusion: the blur that keeps edges
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAOUpsample.glsl");          // SceneEnvMapVulkan: ambient occlusion: to the viewport's size
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/TemporalFilter_R8.glsl");     // SceneEnvMapVulkan: the temporal filter (one-channel images)
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
 

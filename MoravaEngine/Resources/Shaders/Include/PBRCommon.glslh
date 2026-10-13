@@ -269,11 +269,31 @@ vec3 IndirectSpecular(vec3 P, vec3 N, vec3 V, vec3 R, float roughness)
 	return environment * EnvironmentVisibility(P, N, V, R);
 }
 
-// How much of the indirect specular light an occluded point still reflects. For now the same as the diffuse occlusion,
-// which keeps the image as it was; Phase F replaces it with an estimate that depends on NdotV and roughness.
-float SpecularOcclusion(float ao)
+// The ambient occlusion image's value for the pixel being drawn (the image has the viewport's size; of a single white
+// texel its edge is read)
+float ScreenAmbientOcclusion()
 {
-	return ao;
+	return textureLod(u_AOImage, gl_FragCoord.xy / vec2(textureSize(u_AOImage, 0)), 0.0).r;
+}
+
+// How much of the indirect specular light an occluded point still reflects (Lagarde, Frostbite). The occlusion is known
+// for the whole half sphere over the surface; a reflection takes its light from a part of it: a narrow part around the
+// reflection vector on a smooth surface (less occluded than the average, most of all seen at a grazing angle), nearly all
+// of it on a rough one.
+float SpecularOcclusion(float ao, float NdotV, float roughness)
+{
+	return clamp(pow(NdotV + ao, exp2(-16.0 * roughness - 1.0)) - 1.0 + ao, 0.0, 1.0);
+}
+
+// The occlusion of the diffuse light with the light that bounces within the occluded place (Jimenez 2016): the plain
+// value assumes that light hitting a neighbor is lost, but a bright surface sends most of it on, and some arrives after
+// all. So a white crevice is lighter than a dark one, and takes its surface's color.
+vec3 MultiBounceOcclusion(float ao, vec3 albedo)
+{
+	vec3 a = 2.0404 * albedo - 0.3324;
+	vec3 b = -4.7951 * albedo + 0.6417;
+	vec3 c = 2.7552 * albedo + 0.6903;
+	return max(vec3(ao), ((ao * a + b) * ao + c) * ao);
 }
 
 // The indirect light leaving the surface towards the viewer (Lr: the reflection vector), with ambient occlusion ao
@@ -287,7 +307,7 @@ vec3 IndirectLight(vec3 F0, vec3 Lr, float ao)
 	vec2 specularBRDF = SampleBRDFLUT(m_Params.NdotV, m_Params.Roughness);
 	vec3 specular = IndirectSpecular(Input.WorldPosition, m_Params.Normal, m_Params.View, Lr, m_Params.Roughness) * (F0 * specularBRDF.x + specularBRDF.y);
 
-	return kd * diffuse * ao + specular * SpecularOcclusion(ao);
+	return kd * diffuse * MultiBounceOcclusion(ao, m_Params.Albedo) + specular * SpecularOcclusion(ao, m_Params.NdotV, m_Params.Roughness);
 }
 
 #endif

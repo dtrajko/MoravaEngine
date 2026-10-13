@@ -13,6 +13,7 @@
 #include "EnvMapVulkanGBuffer.h"
 #include "EnvMapVulkanMaterialBuffer.h"
 #include "EnvMapVulkanProbes.h"
+#include "EnvMapVulkanSSAO.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
 #include "EnvMapVulkanSceneSerializer.h"
@@ -1536,6 +1537,11 @@ static EnvMapVulkanGlass s_Glass;
 // opaque meshes with depth EQUAL (s_MeshPipelineDepthEqual), so their PBR shader runs once per pixel.
 static EnvMapVulkanGBuffer s_GBuffer;
 
+// Screen-space ambient occlusion (Phase F of the guide): compute passes between the G-buffer prepass and the scene pass
+// fill the AO image, u_AOImage in the mesh shaders' set 0 (binding 15). Settings: the Environment panel, saved with the scene.
+static EnvMapVulkanSSAO s_SSAO;
+static EnvMapVulkanSSAOSettings s_SSAOSettings;
+
 // The Material Library's materials as plain values in one GPU buffer (see EnvMapVulkanMaterialBuffer): u_Materials in set 0,
 // for shaders that light a point without its material's descriptor set
 static EnvMapVulkanMaterialBuffer s_MaterialBuffer;
@@ -1578,6 +1584,18 @@ static void WriteProbeDescriptors()
 		writes[i].pImageInfo = &imageInfos[i];
 	}
 	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
+}
+
+// Points the per-frame set's ambient occlusion binding to the AO image (at startup, and when the viewport was resized)
+static void WriteAmbientOcclusionDescriptor()
+{
+	H2M::RefH2M<H2M::VulkanShaderH2M> pbrShader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
+	const VkDescriptorImageInfo imageInfo = s_SSAO.GetAOInfo();
+	VkWriteDescriptorSet write = *pbrShader->GetDescriptorSet("u_AOImage", H2M::VulkanShaderH2M::FrameDescriptorSet);
+	write.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+	write.descriptorCount = 1;
+	write.pImageInfo = &imageInfo;
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
 }
 
 // Points the per-frame set's material buffer binding to the buffer (at startup, and when a bigger buffer replaced it)
@@ -2097,7 +2115,8 @@ static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light'
 // are drawn by the viewport composite (ViewportComposite.glsl, GBufferView), the lighting views by the PBR shaders
 // (u_ShadowDebug.z).
 enum DebugView { DebugViewOff = 0, DebugViewNormals, DebugViewRoughness, DebugViewLinearDepth, DebugViewMotion, DebugViewDirectLight, DebugViewIndirectLight,
-	DebugViewSurfaceShading, DebugViewProbeIrradiance, DebugViewReflectionOcclusion, DebugViewCount };
+	DebugViewSurfaceShading, DebugViewProbeIrradiance, DebugViewReflectionOcclusion, DebugViewAO, DebugViewAODenoised, DebugViewAORaw,
+	DebugViewCount };
 static int s_DebugView = DebugViewOff; // --debug-view on the command line sets it at startup
 static float s_DebugViewDepthRange = 50.0f;  // Linear Depth: the distance shown as white (world units)
 static float s_DebugViewMotionScale = 20.0f; // Motion: the motion shown at full color (pixels per frame)
@@ -5187,6 +5206,19 @@ static void WriteRenderSettings(YAML::Emitter& out)
 	out << YAML::Key << "NormalBias" << YAML::Value << local.NormalBias;
 	out << YAML::EndMap;
 
+	const EnvMapVulkanSSAOSettings& occlusion = s_SSAOSettings;
+	out << YAML::Key << "AmbientOcclusion" << YAML::Value << YAML::BeginMap;
+	out << YAML::Key << "Enabled" << YAML::Value << occlusion.Enabled;
+	out << YAML::Key << "Radius" << YAML::Value << occlusion.Radius;
+	out << YAML::Key << "Power" << YAML::Value << occlusion.Power;
+	out << YAML::Key << "Falloff" << YAML::Value << occlusion.Falloff;
+	out << YAML::Key << "Slices" << YAML::Value << occlusion.Slices;
+	out << YAML::Key << "Steps" << YAML::Value << occlusion.Steps;
+	out << YAML::Key << "Denoise" << YAML::Value << occlusion.Denoise;
+	out << YAML::Key << "Temporal" << YAML::Value << occlusion.Temporal;
+	out << YAML::Key << "HalfResolution" << YAML::Value << occlusion.HalfResolution;
+	out << YAML::EndMap;
+
 	const BloomSettingsVulkan& bloom = s_BloomSettings;
 	out << YAML::Key << "Bloom" << YAML::Value << YAML::BeginMap;
 	out << YAML::Key << "Enabled" << YAML::Value << bloom.Enabled;
@@ -5239,6 +5271,21 @@ static void ReadRenderSettings(const YAML::Node& settings)
 		ReadSetting(local, "SpotResolution", spot);
 		ReadSetting(local, "PointResolution", point);
 		s_PendingLocalShadowResolutions = glm::uvec2(spot != s.SpotResolution ? spot : 0, point != s.PointResolution ? point : 0);
+	}
+	// A scene saved before the ambient occlusion existed gets the defaults (the settings of the scene before don't stay)
+	s_SSAOSettings = EnvMapVulkanSSAOSettings();
+	if (YAML::Node occlusion = settings["AmbientOcclusion"])
+	{
+		EnvMapVulkanSSAOSettings& o = s_SSAOSettings;
+		ReadSetting(occlusion, "Enabled", o.Enabled);
+		ReadSetting(occlusion, "Radius", o.Radius);
+		ReadSetting(occlusion, "Power", o.Power);
+		ReadSetting(occlusion, "Falloff", o.Falloff);
+		ReadSetting(occlusion, "Slices", o.Slices);
+		ReadSetting(occlusion, "Steps", o.Steps);
+		ReadSetting(occlusion, "Denoise", o.Denoise);
+		ReadSetting(occlusion, "Temporal", o.Temporal);
+		ReadSetting(occlusion, "HalfResolution", o.HalfResolution);
 	}
 	if (YAML::Node bloom = settings["Bloom"])
 	{
@@ -7208,6 +7255,8 @@ void EnvMapVulkanRenderer::Init()
 	s_Glass.Create(s_Framebuffer);
 	s_GBuffer.Create(s_Framebuffer);
 	s_GBuffer.CreatePipelines(s_MeshPipeline, s_MeshPipelineAnim);
+	s_SSAO.Create();
+	s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution);
 	WriteBloomDescriptorSets(); // the viewport composite samples the G-buffer (debug views)
 
 	// The scene (EnvMapVulkanScene, being introduced): its operations are checked once at startup
@@ -7355,6 +7404,10 @@ void EnvMapVulkanRenderer::Init()
 		s_ProbeSunShadowMap.Create(ProbeSunShadowResolution, 1);
 		s_Probes.SetCaptureSunShadowMap({ s_ProbeSunShadowMap.GetCompareSampler(), s_ProbeSunShadowMap.GetArrayView(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL });
 
+		// binding 15: the ambient occlusion image (the water's reflection pass has none: a white texel)
+		WriteAmbientOcclusionDescriptor();
+		s_Water.SetReflectionAmbientOcclusion(s_SSAO.GetWhiteInfo());
+
 		// binding 10: the water's caustics map (it exists from s_Water.Create on, with or without water on the scene)
 		VkWriteDescriptorSet causticsWrite = *pbrShader->GetDescriptorSet("u_CausticsMap", frameSet);
 		causticsWrite.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
@@ -7411,6 +7464,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_MaterialBuffer.Destroy();
 	s_Probes.Destroy();
 	s_ProbeSunShadowMap.Destroy();
+	s_SSAO.Destroy();
 	s_GBuffer.Destroy();
 	EnvMapVulkanProfiler::Shutdown();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
@@ -7600,6 +7654,10 @@ static void WriteShadowUniforms()
 		}
 	}
 	ub.ShadowDebug.z = s_DebugView >= DebugViewDirectLight && s_DebugView <= DebugViewReflectionOcclusion ? (float)(s_DebugView - DebugViewDirectLight + 1) : 0.0f;
+	if (s_DebugView >= DebugViewAO && s_DebugView <= DebugViewAORaw)
+	{
+		ub.ShadowDebug.z = 6.0f; // the AO image: which of its steps it holds is the ambient occlusion's matter (see its Record)
+	}
 	ub.LocalShadowParams = glm::vec4(s_LocalShadowSettings.NormalBias, s_LocalShadowSettings.Softness,
 		s_SpotShadowMaps.IsValid() ? 1.0f / (float)s_SpotShadowMaps.GetResolution() : 0.0f,
 		s_PointShadowMaps.IsValid() ? 1.0f / (float)s_PointShadowMaps.GetResolution() : 0.0f);
@@ -8437,6 +8495,17 @@ void EnvMapVulkanRenderer::GeometryPass()
 				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::GBuffer, submitted.FirstDraw);
 			}
 			s_GBuffer.EndPass(drawCommandBuffer);
+		}
+
+		// The ambient occlusion, from the G-buffer just drawn, for the scene pass's mesh shaders
+		{
+			EnvMapVulkanProfiler::Scope occlusionScope(drawCommandBuffer, "Ambient Occlusion", "How much of the light from all around reaches "
+				"each pixel's surface past the geometry close to it (GTAO), from the G-buffer: compute passes at half the viewport's "
+				"size (linear depth, the occlusion, a blur that keeps edges, the average over the frames), then one at full size.");
+			H2M::CameraH2M& occlusionCamera = s_Data.SceneData.SceneCamera.Camera;
+			const EnvMapVulkanSSAO::Stage stage = s_DebugView == DebugViewAORaw ? EnvMapVulkanSSAO::Stage::Raw :
+				(s_DebugView == DebugViewAODenoised ? EnvMapVulkanSSAO::Stage::Denoised : EnvMapVulkanSSAO::Stage::Final);
+			s_SSAO.Record(drawCommandBuffer, s_SSAOSettings, s_GBuffer, occlusionCamera.GetViewMatrix(), occlusionCamera.GetProjectionMatrix(), stage);
 		}
 
 		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
@@ -9807,7 +9876,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::PushID("DebugView");
-					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0");
+					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0");
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
@@ -9826,7 +9895,11 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							"  the color a wall gives its surroundings.\n"
 							"Reflection Occlusion: how much of the environment's reflection the probe volume lets through at each\n"
 							"  surface (its Occlude Reflections). White = all of it (open sky, or outside the volume),\n"
-							"  black = none (a closed room).");
+							"  black = none (a closed room).\n"
+							"Ambient Occlusion: the screen-space occlusion by itself (white = open, black = closed in), as the\n"
+							"  indirect light is multiplied by it. AO Denoised: the same before the average over the frames.\n"
+							"  AO Raw: before the blur too, as the GTAO pass computes it for one frame (noisy).\n"
+							"  Opaque meshes only. The settings: Ambient Occlusion, below.");
 					}
 					if (s_DebugView == DebugViewLinearDepth)
 					{
@@ -9918,6 +9991,73 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						ImGui::SetTooltip("Wireframe, bounding box and vertex vector lines");
 					}
 
+					ImGui::PopID();
+				}
+
+				if (ImGui::CollapsingHeader("Ambient Occlusion", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::PushID("AmbientOcclusion");
+					EnvMapVulkanSSAOSettings& occlusion = s_SSAOSettings;
+					ImGui::Checkbox("Enabled", &occlusion.Enabled);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Screen-space ambient occlusion (GTAO): corners, creases and the places where things touch get less\n"
+							"of the indirect light (the environment's, the probes'), because the geometry around them is in its way.\n"
+							"The lights' own light isn't changed: that is what their shadows are for.\n"
+							"Computed from what is on the screen: what is hidden or outside the view doesn't shade.\n"
+							"Debug View > Ambient Occlusion shows it by itself; its cost: Renderer Stats.");
+					}
+					ImGui::BeginDisabled(!occlusion.Enabled);
+					ImGui::SliderFloat("Radius", &occlusion.Radius, 0.05f, 5.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("How far from a point the geometry still shades it.\n"
+							"With a probe volume keep it small (about 0.5 m): the probes already know the shade of everything\n"
+							"larger, and a large radius would darken the same places twice.\n"
+							"Without probes a larger radius (1 to 2 m) gives rooms and corners their depth.");
+					}
+					ImGui::SliderFloat("Power", &occlusion.Power, 0.5f, 4.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("The strength: the occlusion to this power. 1 = as computed, higher = darker.");
+					}
+					ImGui::SliderFloat("Falloff", &occlusion.Falloff, 0.05f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("The part of the radius over which geometry stops counting. 1: fading from the point on (soft);\n"
+							"small: everything within the radius counts fully (stronger, with a harder end).");
+					}
+					ImGui::SliderInt("Slices", &occlusion.Slices, 1, EnvMapVulkanSSAOSettings::MaxSlices, "%d", ImGuiSliderFlags_AlwaysClamp);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Directions a pixel looks in per frame. More: less noise before the filters, more time.");
+					}
+					ImGui::SliderInt("Steps", &occlusion.Steps, 2, EnvMapVulkanSSAOSettings::MaxSteps, "%d", ImGuiSliderFlags_AlwaysClamp);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Depth lookups per direction and side. More: thin things within the radius are missed less often.");
+					}
+					ImGui::Checkbox("Denoise", &occlusion.Denoise);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("A 5 x 5 blur that stops at edges (it follows each pixel's surface, by its depth and normal).");
+					}
+					ImGui::SameLine();
+					ImGui::Checkbox("Temporal Filter", &occlusion.Temporal);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("Each frame looks in other directions, and the result is the average of the last frames\n"
+							"(found again on moving surfaces through the G-buffer's motion). Off: one frame's result, with a fixed pattern.");
+					}
+					ImGui::Checkbox("Half Resolution", &occlusion.HalfResolution);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("On: computed at half the viewport's size (a quarter of the pixels) and scaled up along the edges.\n"
+							"Thin dark lines (along a crease, beside an edge) then show the steps of the half-size pixels.\n"
+							"Off: computed for every pixel. About four times the time: see Ambient Occlusion in Renderer Stats.");
+					}
+					ImGui::EndDisabled();
+					ImGui::TextDisabled("Computed at %u x %u", s_SSAO.GetWidth(), s_SSAO.GetHeight());
 					ImGui::PopID();
 				}
 
@@ -10356,11 +10496,18 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_Water.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
 		s_Glass.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
 		s_GBuffer.Resize(s_Framebuffer); // after s_Framebuffer: it shares its depth image
+		s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution); // after the G-buffer: it reads its images
+		WriteAmbientOcclusionDescriptor();
 		s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_OverlayFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_SelectionMaskFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		ResizeBloomResources(); // also rewrites the composite descriptor set
 		s_ViewportFBNeedsResize = false;
+	}
+	if (s_SSAO.IsHalfResolution() != s_SSAOSettings.HalfResolution)
+	{
+		s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution); // the setting changed (the panel, a scene opened)
+		WriteAmbientOcclusionDescriptor();
 	}
 
 	GeometryPass();

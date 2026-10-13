@@ -136,6 +136,9 @@ public:
 	bool IsReflectionActive() const { return m_ReflectionActive; }
 	// Begins the reflection render pass (outside any render pass) and returns the reflection's per-frame set (set 0)
 	VkDescriptorSet BeginReflectionPass(VkCommandBuffer commandBuffer);
+	// The reflection's set 0 has no ambient occlusion (that image belongs to the viewport's pixels): its u_AOImage gets
+	// this image, a white texel. Once, after Create.
+	void SetReflectionAmbientOcclusion(const VkDescriptorImageInfo& white);
 	void EndReflectionPass(VkCommandBuffer commandBuffer);
 	// Outside a render pass: copies the scene framebuffer's color and depth into the textures the water samples, and leaves
 	// the framebuffer's attachments in the layouts its continue render pass expects

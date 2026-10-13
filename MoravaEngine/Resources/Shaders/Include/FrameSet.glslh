@@ -91,7 +91,8 @@ layout (std140, set = 0, binding = 7) uniform Shadows
 	vec4 u_ShadowDebug;                 // offset 672: xy = Shadows Only view, see ShadowDebugValue; z = the lighting shown:
 	                                    // 1 the direct light only, 2 the indirect light only, 3 diffuse surface shading
 	                                    // (ShadeSurfaceDiffuse from the material buffer), 4 the probes' irradiance only,
-	                                    // 5 how much of the environment's reflection the probes let through; 0: all of it
+	                                    // 5 how much of the environment's reflection the probes let through, 6 the ambient
+	                                    // occlusion image; 0: all of it
 };
 layout (set = 0, binding = 8) uniform sampler2DArrayShadow u_SpotShadowMaps;  // a layer per shadowed spot light
 layout (set = 0, binding = 9) uniform samplerCubeArrayShadow u_PointShadowMaps; // a cube per shadowed point light
@@ -114,7 +115,12 @@ layout (std140, set = 0, binding = 13) uniform ProbeVolume
 };
 layout (set = 0, binding = 14) uniform sampler2D u_ProbeData;       // a texel per probe: xyz = its offset from the grid, w = 1 in use
 
-// Bindings 15 and 16 are kept for the ambient occlusion and the reflections (docs/rendering/SSAO_GI_RayTracing_Guide.html)
+// The ambient occlusion (EnvMapVulkanSSAO): a value per pixel of the viewport, 1 = the light from all around reaches the
+// surface, 0 = the geometry close to it lets none through. For the indirect light only. A set 0 of a pass that has no
+// ambient occlusion (the water's reflection) holds a white texel here.
+layout (set = 0, binding = 15) uniform sampler2D u_AOImage;
+
+// Binding 16 is kept for the reflections (docs/rendering/SSAO_GI_RayTracing_Guide.html)
 
 // The materials of the Material Library as plain values, one entry per material (EnvMapVulkanMaterialBuffer): what a
 // shader needs to know of a material it has no descriptor set for (set 1 holds one material's maps). A draw's entry is

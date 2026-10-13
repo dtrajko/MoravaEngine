@@ -1,0 +1,47 @@
+// What the ambient occlusion's compute passes share (SceneEnvMapVulkan, see EnvMapVulkanSSAO and Phase F of
+// docs/rendering/SSAO_GI_RayTracing_Guide.html): their push constants, and the way from the depth buffer to a position
+// in view space. The passes work at half the viewport's size (or at its full size: a setting). A half-size pixel stands
+// for the first of the four full-size pixels it covers (FullPixel): its depth and its normal are that pixel's, not a mix.
+// The same pixel in every frame: the image stands still.
+#ifndef SSAO_GLSLH
+#define SSAO_GLSLH
+
+// Must match EnvMapVulkanSSAO::Push (128 bytes)
+layout (push_constant) uniform SSAOPush
+{
+	mat4 View;       // offset 0:   world to view space (for the normals)
+	vec4 Projection; // offset 64:  x = P[0][0] / 2, y = P[1][1] / 2: how far a view-space unit moves on the screen (in UV) at
+	                 //             depth 1, with its direction; z = P[2][3] (-1 or 1): clip w = view z * this; w = full-size
+	                 //             pixels per pixel of the passes, along an axis (2: half size, 1: full size)
+	vec4 Depth;      // offset 80:  x = P[2][2], y = P[3][2]: the projection's two depth terms
+	vec4 Params;     // offset 96:  x = radius (world units), y = power, z = falloff (the part of the radius over which a
+	                 //             sample stops counting), w = this frame's noise offset
+	ivec4 Counts;    // offset 112: x = slices, y = steps per side, z = depth mip levels, w = the pass's own value
+} u_SSAO;
+
+// The depth buffer's value as the distance along the camera's view direction (positive in front of the camera)
+float LinearDepth(float depth)
+{
+	float viewZ = u_SSAO.Depth.y / (depth * u_SSAO.Projection.z - u_SSAO.Depth.x);
+	return viewZ * u_SSAO.Projection.z;
+}
+
+// The view-space position of what is seen at a screen position (UV) at that distance
+vec3 ViewPosition(vec2 uv, float linearDepth)
+{
+	return vec3((uv - 0.5) * linearDepth / u_SSAO.Projection.xy, linearDepth * u_SSAO.Projection.z);
+}
+
+// The full-size pixel a pixel of the passes stands for
+ivec2 FullPixel(ivec2 halfPixel, ivec2 fullSize)
+{
+	return min(halfPixel * int(u_SSAO.Projection.w), fullSize - 1);
+}
+
+// and its center as a screen position
+vec2 HalfPixelUV(ivec2 halfPixel, ivec2 fullSize)
+{
+	return (vec2(FullPixel(halfPixel, fullSize)) + 0.5) / vec2(fullSize);
+}
+
+#endif

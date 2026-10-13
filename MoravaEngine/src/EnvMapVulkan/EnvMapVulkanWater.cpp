@@ -549,6 +549,16 @@ void EnvMapVulkanWater::CreateReflection()
 	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 }
 
+void EnvMapVulkanWater::SetReflectionAmbientOcclusion(const VkDescriptorImageInfo& white)
+{
+	H2M::RefH2M<H2M::VulkanShaderH2M> pbrShader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
+	VkWriteDescriptorSet write = *pbrShader->GetDescriptorSet("u_AOImage", FrameSet);
+	write.dstSet = m_ReflectionFrameSet.DescriptorSets[0];
+	write.descriptorCount = 1;
+	write.pImageInfo = &white;
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+}
+
 void EnvMapVulkanWater::ResizeReflection()
 {
 	if (!m_ReflectionFramebuffer || m_CopyWidth == 0 || m_CopyHeight == 0)
@@ -763,7 +773,8 @@ void EnvMapVulkanWater::Update(const EnvMapVulkanWaterSettings& settings, float 
 		WriteUniformBuffer(m_ReflectionSceneData, &sceneData, sizeof(sceneData));
 
 		// The rest of set 0 (environment maps, BRDF LUT, lights, shadows, caustics: bindings 2 to 10, the probe volume: 11
-		// to 14, and the material buffer) as in the main per-frame set
+		// to 14, and the material buffer) as in the main per-frame set. Not binding 15, the ambient occlusion: see
+		// SetReflectionAmbientOcclusion
 		const uint32_t copiedBindings[] = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17 };
 		std::array<VkCopyDescriptorSet, 14> copies;
 		for (uint32_t i = 0; i < (uint32_t)copies.size(); i++)

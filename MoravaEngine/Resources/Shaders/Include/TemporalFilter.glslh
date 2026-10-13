@@ -1,0 +1,89 @@
+// The temporal filter (SceneEnvMapVulkan, see EnvMapVulkanTemporalFilter and Phase F of
+// docs/rendering/SSAO_GI_RayTracing_Guide.html): a noisy image averaged over the frames. Every pixel is mixed with what
+// the same surface point had in the frames before (the history), found through the G-buffer's motion.
+//
+// A compute shader that includes this file defines TEMPORAL_FORMAT, the format of the image it filters (r8 for the
+// ambient occlusion: TemporalFilter_R8.glsl), and nothing else: one shader per format.
+//
+// The history can be wrong, and three things keep it from showing:
+// - what the pixel shows now was hidden in the last frame (behind something, or off the screen): the history's depth
+//   doesn't match the pixel's, and the history isn't used;
+// - the value itself changed (a light, a moving object nearby): the history is limited to the range of the values
+//   around the pixel in this frame, so it can't be far from what the frame says;
+// - a pixel with little history takes more of the new frame: it gets to its value in a few frames.
+
+layout (binding = 0) uniform sampler2D u_Current;      // this frame's image
+layout (binding = 1) uniform sampler2D u_CurrentDepth; // the distance from the camera along its view direction, the same size
+layout (binding = 2) uniform sampler2D u_Motion;       // the G-buffer's motion: this frame's screen position minus the previous one's, in UV
+layout (binding = 3) uniform sampler2D u_History;      // the result of the previous frame
+layout (binding = 4) uniform sampler2D u_HistoryInfo;  // with it: r = the depth it was made for, g = the frames in it
+layout (binding = 5, TEMPORAL_FORMAT) restrict writeonly uniform image2D o_History;
+layout (binding = 6, rg16f) restrict writeonly uniform image2D o_HistoryInfo;
+
+// Must match EnvMapVulkanTemporalFilter::Push
+layout (push_constant) uniform TemporalPush
+{
+	vec4 Params; // x = the most frames a pixel's history counts (10: a new frame is a tenth of the result), y = how much
+	             // the history's depth may differ from the pixel's (a fraction of the depth), z = 1: no history (the
+	             // first frame, after a resize), w = how far the history may be outside this frame's range around the pixel
+} u_Temporal;
+
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+void main()
+{
+	ivec2 pixel = ivec2(gl_GlobalInvocationID.xy);
+	ivec2 size = imageSize(o_History);
+	if (any(greaterThanEqual(pixel, size)))
+	{
+		return;
+	}
+	vec4 current = texelFetch(u_Current, pixel, 0);
+	float depth = texelFetch(u_CurrentDepth, pixel, 0).r;
+	vec2 uv = (vec2(pixel) + 0.5) / vec2(size);
+
+	// Where the surface point was in the previous frame, and the four history texels around that place: each counts by
+	// how close it is, and only when it was made for this depth
+	vec2 previous = (uv - textureLod(u_Motion, uv, 0.0).rg) * vec2(size) - 0.5;
+	vec4 history = vec4(0.0);
+	float frames = 0.0, weights = 0.0;
+	if (u_Temporal.Params.z < 0.5 && all(greaterThanEqual(previous, vec2(-0.5))) && all(lessThanEqual(previous, vec2(size) - 0.5)))
+	{
+		ivec2 base = ivec2(floor(previous));
+		vec2 between = previous - vec2(base);
+		for (int i = 0; i < 4; i++)
+		{
+			ivec2 offset = ivec2(i & 1, i >> 1);
+			ivec2 texel = clamp(base + offset, ivec2(0), size - 1);
+			vec2 info = texelFetch(u_HistoryInfo, texel, 0).rg;
+			vec2 near = mix(1.0 - between, between, vec2(offset));
+			float weight = near.x * near.y * (abs(info.r - depth) <= u_Temporal.Params.y * depth ? 1.0 : 0.0);
+			history += texelFetch(u_History, texel, 0) * weight;
+			frames += info.g * weight;
+			weights += weight;
+		}
+	}
+
+	vec4 result = current;
+	float resultFrames = 1.0;
+	if (weights > 0.01)
+	{
+		history /= weights;
+		frames /= weights;
+		// This frame's range around the pixel
+		vec4 lowest = current, highest = current;
+		for (int y = -1; y <= 1; y++)
+		{
+			for (int x = -1; x <= 1; x++)
+			{
+				vec4 neighbor = texelFetch(u_Current, clamp(pixel + ivec2(x, y), ivec2(0), size - 1), 0);
+				lowest = min(lowest, neighbor);
+				highest = max(highest, neighbor);
+			}
+		}
+		history = clamp(history, lowest - u_Temporal.Params.w, highest + u_Temporal.Params.w);
+		resultFrames = min(frames + 1.0, u_Temporal.Params.x);
+		result = mix(history, current, 1.0 / resultFrames);
+	}
+	imageStore(o_History, pixel, result);
+	imageStore(o_HistoryInfo, pixel, vec4(depth, resultFrames, 0.0, 0.0));
+}

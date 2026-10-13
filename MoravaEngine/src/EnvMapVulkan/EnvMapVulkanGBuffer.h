@@ -63,7 +63,11 @@ public:
 	// After the scene's render passes of the frame (they leave the depth in DEPTH_STENCIL_ATTACHMENT_OPTIMAL): the depth
 	// into DEPTH_STENCIL_READ_ONLY_OPTIMAL, for the shaders that sample it until the frame ends (GetDepthInfo). The next
 	// frame's prepass clears it, whatever its layout.
-	void MakeDepthReadable(VkCommandBuffer commandBuffer);
+	// readers: the pipeline stages of the shaders that sample it.
+	void MakeDepthReadable(VkCommandBuffer commandBuffer, VkPipelineStageFlags readers = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
+	// And back to DEPTH_STENCIL_ATTACHMENT_OPTIMAL, for passes between the prepass and the scene pass that sample the
+	// depth (the ambient occlusion): the scene's render pass expects the attachment layout.
+	void MakeDepthWritable(VkCommandBuffer commandBuffer, VkPipelineStageFlags readers);
 
 	bool IsValid() const { return m_Framebuffer != VK_NULL_HANDLE; }
 

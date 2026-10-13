@@ -30,8 +30,8 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [0.27927315, 16.303885, 9.606931]
-      Rotation: [3.500049, 1.0996399, 0]
+      Translation: [0.22764742, 16.33639, 9.118297]
+      Rotation: [0.100049786, -0.20050049, 0]
       Scale: [1, 1, 1]
     Camera:
       {}
@@ -55,8 +55,8 @@ Entities:
     Parent: 0
     Transform:
       Translation: [0, 0, 0]
-      Rotation: [45.51296, 28.151096, -61.73615]
-      Scale: [0.9999687, 0.99999875, 0.9999573]
+      Rotation: [46.894745, 28.359783, -60.446182]
+      Scale: [0.99996865, 0.99999887, 0.9999573]
     Sun:
       Enabled: true
       Color: [1, 0.2515118, 0]
@@ -112,9 +112,9 @@ Entities:
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [11, 9, -8]
+      Translation: [11, 6, -8]
       Rotation: [0, -0, -90]
-      Scale: [10, 0.9999972, 1.9998946]
+      Scale: [10, 0.9999972, 1.9998641]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 12347905251721334247
@@ -224,7 +224,7 @@ Entities:
     Transform:
       Translation: [0, 11, -4.7683716e-06]
       Rotation: [0, -0, 0]
-      Scale: [18, 18, 18]
+      Scale: [25.399996, 25.4, 25.399862]
     ProbeVolume:
       Enabled: true
       Counts: [8, 8, 8]
@@ -236,6 +236,6 @@ Entities:
       Hysteresis: 0.9
       RelocateProbes: true
       OccludeReflections: true
-      ShowProbes: true
+      ShowProbes: false
       ProbeRadius: 0.12
       Show: 0

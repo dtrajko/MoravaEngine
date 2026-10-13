@@ -782,7 +782,7 @@ void main()
   <p><b>Goal:</b> small-scale contact occlusion that probes can't provide, and a temporal filter that every later noisy effect (RTAO, ray-traced reflections) reuses.</p>
   <figure>
     <div class="scroll"><svg data-d="phaseF" role="img" aria-label="Phase F data flow"></svg></div>
-    <figcaption>Figure 8. Phase F. Five compute dispatches run between the G-buffer prepass and the scene pass. The final AO image is bound in set 0 at binding 15 and read by <code>IndirectLight()</code>. The history pair belongs to the reusable temporal filter.</figcaption>
+    <figcaption>Figure 8. Phase F. Five compute steps (nine dispatches as built, see F.5) run between the G-buffer prepass and the scene pass. The final AO image is bound in set 0 at binding 15 and read by <code>IndirectLight()</code>. The history pair belongs to the reusable temporal filter.</figcaption>
   </figure>
 
   <h3>F.1 GTAO in short</h3>
@@ -848,6 +848,22 @@ float ao = visibility / float(SLICES);</code></pre>
   </ul>
   <div class="box ok"><b>Check</b>
   An AO debug view shows the raw, denoised and final images. A cube on a floor should get a soft dark contact line without a dark halo on the wall behind it (that would mean the bilateral filter is failing). Turn the camera quickly: there must be no smearing (the clamp) and no stuck dark shapes (the disocclusion test).</div>
+
+  <h3>F.5 As built</h3>
+  <ul>
+    <li><b>The module:</b> <code>EnvMapVulkanSSAO</code> (its images, pipelines and descriptor sets) and <code>EnvMapVulkanTemporalFilter</code> (the history pairs and one dispatch; made for one-channel images through <code>TemporalFilter_R8.glsl</code>, another format is another three-line shader file that includes <code>Include/TemporalFilter.glslh</code>). All images stay in <code>VK_IMAGE_LAYOUT_GENERAL</code>, as the probe atlases do.</li>
+    <li><b>The passes</b> (compute, recorded between the G-buffer prepass and the scene pass): <code>SSAODepth</code>, <code>SSAODepthMip</code> (one dispatch per smaller level, four of them), <code>SSAOGTAO</code>, <code>SSAODenoise</code>, the temporal filter, <code>SSAOUpsample</code>: nine dispatches, not five. The shared push constants and the view-space reconstruction are in <code>Include/SSAO.glslh</code>.</li>
+    <li><b>The depth buffer</b> is sampled by the first and the last pass, so its layout is changed to read-only before them and back to the attachment layout after (<code>EnvMapVulkanGBuffer::MakeDepthReadable / MakeDepthWritable</code>).</li>
+    <li><b>The AO image</b> is <code>u_AOImage</code> in set 0, binding 15, read with <code>ScreenAmbientOcclusion()</code> in <code>Include/PBRCommon.glslh</code>. With the occlusion off it is cleared to white once. The water's reflection pass has its own set 0: it holds a white texel there.</li>
+    <li><b>Half size:</b> a half-size pixel takes the depth and the normal of the first of its four full-size pixels, not a mix. A <b>Half Resolution</b> option (on by default) switches all passes to the viewport's size: thin dark lines along a crease show the half-size pixels' steps otherwise.</li>
+    <li><b>Tried and dropped:</b> letting a half-size pixel stand for another of its four pixels every frame. The temporal filter then averages the steps away, but edges shimmer (measured between two frames of a still image: mean difference 2 of 255, up to 100 at an edge, against 0.05 and 4 without it).</li>
+    <li><b>The denoise</b> weighs a neighbor by its distance from the pixel's plane (position and normal) and by its normal, not by its depth alone: a floor seen at a flat angle keeps its blur.</li>
+    <li><b>The temporal filter</b> reads the four history texels around the reprojected place itself and leaves out those made for another depth (more than 10% off), instead of a filtered lookup.</li>
+    <li><b>Applied</b> as F.4 says: <code>min(material AO, AO image)</code>, <code>MultiBounceOcclusion()</code> on the diffuse part, <code>SpecularOcclusion(ao, NdotV, roughness)</code> on the specular part (besides E.4's factor from the probes). The multi-bounce also applies to a material's own AO map now: bright materials with an AO map are a little lighter in their creases than before.</li>
+    <li><b>Settings</b> (Environment panel, Ambient Occlusion; saved in the scene's <code>RenderSettings</code>): Enabled, Radius (0.5 m), Power (1.5), Falloff (0.6), Slices (2), Steps (8), Denoise, Temporal Filter, Half Resolution.</li>
+    <li><b>Debug views:</b> Ambient Occlusion, AO Denoised, AO Raw (<code>--debug-view 10 / 11 / 12</code>). They show the AO image; which step it holds is switched in the module, so the scene is also lit with the step shown.</li>
+    <li><b>Checked</b> on a test scene (a box, a slab and a pillar on a floor in front of a wall, lit by the environment only): soft contact lines where things meet, no halo on the wall behind the box; the image of a still camera is stable. Cost at half size in a 511 x 330 viewport: 0.06 to 0.27 ms. <b>Not checked:</b> a moving camera (the clamp and the disocclusion test), resizing the viewport, and the cost at a large viewport.</li>
+  </ul>
 </section>
 
 <section id="phase-g">
