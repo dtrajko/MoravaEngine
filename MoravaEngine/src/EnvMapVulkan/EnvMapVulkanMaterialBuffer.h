@@ -48,12 +48,13 @@ public:
 		uint32_t EmissiveMapIndex = NoMap;
 		float Tiling = 1.0f;             // the texture coordinate scale the maps are read with
 		float EmissiveIntensity = 0.0f;  // multiplies the emissive map
-		uint32_t Padding0 = 0;
+		float IOR = 1.5f;                // glass: its index of refraction
 		uint32_t Padding1 = 0;
 	};
 	static constexpr uint32_t NoMap = EnvMapVulkanTextureTable::NoSlot;
 	static constexpr uint32_t FlagGlass = 1u << 0;
 	static constexpr uint32_t FlagMetalRoughPacked = 1u << 1; // glTF: roughness in G, metalness in B of their map
+	static constexpr uint32_t FlagGlassSolid = 1u << 2;       // glass: a solid body; otherwise thin (a pane, a shell)
 
 	void Create();
 	void Destroy();

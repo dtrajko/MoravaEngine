@@ -140,6 +140,12 @@ EnvMapVulkanMaterialBuffer::GPUMaterial EnvMapVulkanMaterialBuffer::Pack(const H
 	}
 	entry.Roughness = std::max(entry.Roughness, 0.05f); // as MaterialRoughness in the shaders
 	entry.Flags = (material->IsGlass() ? FlagGlass : 0) | (packed ? FlagMetalRoughPacked : 0);
+	if (material->IsGlass())
+	{
+		// What a ray needs to pass through it (the glass shader has these as push constants)
+		entry.IOR = std::max(material->GetGlassValue(EnvMapVulkanMaterial::GlassIOR), 1.0f);
+		entry.Flags |= material->GetGlassValue(EnvMapVulkanMaterial::GlassSolid) > 0.5f ? FlagGlassSolid : 0;
+	}
 
 	// The maps themselves, for a ray hit (as the mesh shaders read them: Include/MeshMaterial.glslh)
 	const float tiling = material->Get<float>("u_MaterialUniforms.TilingFactor");

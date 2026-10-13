@@ -197,6 +197,7 @@ struct RayMaterial
 	float Metalness;
 	vec3 Emissive;
 	uint Flags;      // GPUMaterialFlag...
+	float IOR;       // glass: its index of refraction
 };
 
 // A map of the array of all textures, at the level where one texel is about as big as what the ray stands for.
@@ -220,6 +221,7 @@ RayMaterial GetRayMaterial(RaySurface surface, float footprint)
 
 	RayMaterial material;
 	material.Flags = entry.Flags;
+	material.IOR = entry.IOR;
 	material.Albedo = entry.AlbedoColor.rgb;
 	if (entry.AlbedoMapIndex != GPUMaterialNoMap)
 	{

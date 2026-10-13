@@ -10,7 +10,7 @@ struct GPUMaterial
 	vec4 Emissive;          // rgb: the average color of the emissive map * the emissive intensity (0 without the map)
 	float Metalness;        // the value, or the map's average
 	float Roughness;        // the value, or the map's average
-	uint Flags;             // GPUMaterialFlagGlass, GPUMaterialFlagMetalRoughPacked
+	uint Flags;             // GPUMaterialFlag...
 	// The maps the material uses, as elements of the array of all textures (u_Textures in Include/RayTracing.glslh), for
 	// a shader that can reach any material: a ray hit. GPUMaterialNoMap: the material has the value above instead.
 	uint AlbedoMapIndex;
@@ -20,12 +20,13 @@ struct GPUMaterial
 	uint EmissiveMapIndex;
 	float Tiling;            // the texture coordinate scale the maps are read with
 	float EmissiveIntensity; // multiplies the emissive map
-	uint Padding0;
+	float IOR;               // glass: its index of refraction (a ray that passes through it: the path tracer)
 	uint Padding1;
 };
 
 const uint GPUMaterialNoMap = 0xFFFFFFFFu;
 const uint GPUMaterialFlagGlass = 1u;
 const uint GPUMaterialFlagMetalRoughPacked = 2u; // glTF: roughness in G, metalness in B of their map; otherwise both in R
+const uint GPUMaterialFlagGlassSolid = 4u;       // glass: a solid body (light bends entering and leaving); otherwise thin
 
 #endif

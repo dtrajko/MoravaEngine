@@ -44,6 +44,8 @@ layout (binding = 6) uniform sampler2D u_GBufferMotion;          // screen-space
 layout (binding = 7) uniform sampler2D u_GBufferDepth;           // the scene's depth
 // The ray-traced debug views (see EnvMapVulkanRayTracing, RayTracingView.glsl): display colors
 layout (binding = 8) uniform sampler2D u_RayTracedView;
+// The path tracer's image (see EnvMapVulkanPathTracer, PathTrace.glsl): linear HDR, as the scene
+layout (binding = 9) uniform sampler2D u_PathTracedImage;
 
 layout(push_constant) uniform Uniforms
 {
@@ -55,7 +57,7 @@ layout(push_constant) uniform Uniforms
 	float HuePreservation;    // 0: ACES per channel (bright colors turn white), 1: hue-preserving ACES (see Tonemap)
 	float RawScene;           // 1: the scene as it is, without exposure, bloom and tonemapping (Shadows Only view)
 	float DebugView;          // a G-buffer view instead of the scene: 1 normals, 2 roughness, 3 linear depth, 4 motion;
-	                          // 5 the ray-traced view's image (0: off)
+	                          // 5 the ray-traced view's image (0: off); 6: the path tracer's image in the scene's place
 	vec4 DebugParams;         // xy = the projection matrix's [2][2] and [3][2] (depth -> distance), z = the distance shown as
 	                          // white (linear depth), w = the motion shown at full color, in pixels
 } u_Uniforms;
@@ -146,21 +148,27 @@ void main()
 {
 	const float gamma = 2.2;
 
-	vec3 color = texture(u_Texture, Input.TexCoord).rgb * u_Uniforms.Exposure;
+	// The path tracer's image takes the scene's place: the same exposure, tonemapping and gamma, so the two can be
+	// compared. Without the bloom: that was made from the rasterized scene.
+	bool pathTraced = u_Uniforms.DebugView > 5.5;
+	vec3 color = (pathTraced ? texture(u_PathTracedImage, Input.TexCoord).rgb : texture(u_Texture, Input.TexCoord).rgb) * u_Uniforms.Exposure;
 
 	vec3 bloom = texture(u_BloomTexture, Input.TexCoord).rgb;
 	vec3 dirt = texture(u_BloomDirtTexture, Input.TexCoord).rgb;
-	color += bloom * u_Uniforms.BloomIntensity;
-	color += bloom * dirt * u_Uniforms.BloomDirtIntensity;
+	if (!pathTraced)
+	{
+		color += bloom * u_Uniforms.BloomIntensity;
+		color += bloom * dirt * u_Uniforms.BloomDirtIntensity;
+	}
 
 	vec3 mappedColor = Tonemap(color);
-	if (u_Uniforms.RawScene > 0.5)
+	if (u_Uniforms.RawScene > 0.5 && !pathTraced)
 	{
 		mappedColor = clamp(texture(u_Texture, Input.TexCoord).rgb, 0.0, 1.0);
 	}
 
 	vec3 displayColor = pow(mappedColor, vec3(1.0 / gamma));
-	if (u_Uniforms.DebugView > 0.5)
+	if (u_Uniforms.DebugView > 0.5 && !pathTraced)
 	{
 		displayColor = GBufferView(int(u_Uniforms.DebugView + 0.5));
 	}

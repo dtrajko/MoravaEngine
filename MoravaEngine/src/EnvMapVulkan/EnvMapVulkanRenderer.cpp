@@ -14,6 +14,7 @@
 #include "EnvMapVulkanMaterialBuffer.h"
 #include "EnvMapVulkanProbes.h"
 #include "EnvMapVulkanRayTracing.h"
+#include "EnvMapVulkanPathTracer.h"
 #include "EnvMapVulkanReflections.h"
 #include "EnvMapVulkanSSAO.h"
 #include "EnvMapVulkanWater.h"
@@ -1573,6 +1574,14 @@ static bool ReflectionsTraceRays()
 	return IsRayTracingActive() && s_ReflectionSettings.Enabled;
 }
 
+// The path tracer (Phase H.4 of the guide, see EnvMapVulkanPathTracer): the Debug View's Path Traced view, the scene by
+// rays alone as a reference for everything above. It runs only while that view is shown.
+static EnvMapVulkanPathTracer s_PathTracer;
+static EnvMapVulkanPathTracerSettings s_PathTracerSettings;
+// A number that changes whenever the scene does (OnUpdate: the models, their poses, the materials, the lights, the
+// environment): the path tracer starts its image over then
+static uint64_t s_PathTracerSceneVersion = 0;
+
 // The probe volume on the GPU (see EnvMapVulkanProbes): its atlases and ProbeVolume block are in set 0 (bindings 11 to 14),
 // read by IndirectDiffuse in Include/ShadeSurface.glslh
 static EnvMapVulkanProbes s_Probes;
@@ -2175,7 +2184,7 @@ static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light'
 enum DebugView { DebugViewOff = 0, DebugViewNormals, DebugViewRoughness, DebugViewLinearDepth, DebugViewMotion, DebugViewDirectLight, DebugViewIndirectLight,
 	DebugViewSurfaceShading, DebugViewProbeIrradiance, DebugViewReflectionOcclusion, DebugViewAO, DebugViewAODenoised, DebugViewAORaw,
 	DebugViewRayTracedNormals, DebugViewRayTracedAlbedo, DebugViewRayTracedInstances,
-	DebugViewReflections, DebugViewReflectionsRaw,
+	DebugViewReflections, DebugViewReflectionsRaw, DebugViewPathTraced,
 	DebugViewCount };
 static int s_DebugView = DebugViewOff; // --debug-view on the command line sets it at startup
 static bool IsRayTracedDebugView(int view)
@@ -2186,6 +2195,11 @@ static bool IsRayTracedDebugView(int view)
 static bool IsReflectionDebugView(int view)
 {
 	return view == DebugViewReflections || view == DebugViewReflectionsRaw;
+}
+// The views that trace rays: not available without ray tracing
+static bool DebugViewNeedsRayTracing(int view)
+{
+	return IsRayTracedDebugView(view) || IsReflectionDebugView(view) || view == DebugViewPathTraced;
 }
 static float s_DebugViewDepthRange = 50.0f;  // Linear Depth: the distance shown as white (world units)
 static float s_DebugViewMotionScale = 20.0f; // Motion: the motion shown at full color (pixels per frame)
@@ -5872,7 +5886,7 @@ static void ProcessSceneOperations()
 		MarkSceneSaved(); // the startup scene (environment and sun) has nothing to save yet
 		// --debug-view on the command line: the Environment panel's Debug View
 		s_DebugView = glm::clamp(Application::Get()->GetCommandLine().DebugView, 0, (int)DebugViewCount - 1);
-		if ((IsRayTracedDebugView(s_DebugView) || IsReflectionDebugView(s_DebugView)) && !EnvMapVulkanRayTracing::IsSupported())
+		if (DebugViewNeedsRayTracing(s_DebugView) && !EnvMapVulkanRayTracing::IsSupported())
 		{
 			Log::GetLogger()->warn("--debug-view {0} is a ray-traced view: not available without ray tracing", s_DebugView);
 			s_DebugView = DebugViewOff;
@@ -7357,7 +7371,9 @@ void EnvMapVulkanRenderer::Init()
 	s_Reflections.Resize(s_GBuffer, s_ReflectionSettings.HalfResolution);
 	s_RayTracing.Create();
 	s_RayTracing.ResizeView(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());
-	WriteBloomDescriptorSets(); // the viewport composite samples the G-buffer and the ray-traced view (debug views)
+	s_PathTracer.Create();
+	s_PathTracer.Resize(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());
+	WriteBloomDescriptorSets(); // the viewport composite samples the G-buffer and the ray-traced views (debug views)
 
 	// The scene (EnvMapVulkanScene, being introduced): its operations are checked once at startup
 	EnvMapVulkanScene::SelfTest();
@@ -7571,6 +7587,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_ProbeSunShadowMap.Destroy();
 	s_SSAO.Destroy();
 	s_Reflections.Destroy();
+	s_PathTracer.Destroy();
 	s_GBuffer.Destroy();
 	EnvMapVulkanProfiler::Shutdown();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
@@ -8576,7 +8593,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 		// acceleration structures follow the meshes as they are drawn this frame. Then the debug view, when one is shown.
 		const bool probesTraceRays = s_Probes.HasCapture() && s_Probes.TracesRays();
 		const bool occlusionTracesRays = s_SSAOSettings.Enabled && s_SSAOSettings.RayTraced;
-		if (IsRayTracingActive() && (probesTraceRays || occlusionTracesRays || ReflectionsTraceRays() || IsRayTracedDebugView(s_DebugView)))
+		if (IsRayTracingActive() && (probesTraceRays || occlusionTracesRays || ReflectionsTraceRays() || IsRayTracedDebugView(s_DebugView) ||
+			s_DebugView == DebugViewPathTraced))
 		{
 			{
 				EnvMapVulkanProfiler::Scope sceneScope(drawCommandBuffer, "Ray Tracing Scene", "The scene as rays see it: the skinned models' "
@@ -8603,6 +8621,16 @@ void EnvMapVulkanRenderer::GeometryPass()
 			const EnvMapVulkanRayTracing::View view = s_DebugView == DebugViewRayTracedAlbedo ? EnvMapVulkanRayTracing::View::Albedo :
 				(s_DebugView == DebugViewRayTracedInstances ? EnvMapVulkanRayTracing::View::Instances : EnvMapVulkanRayTracing::View::Normals);
 			s_RayTracing.RecordView(drawCommandBuffer, view, s_Data.SceneData.SceneCamera.Camera.GetViewProjection());
+		}
+		if (IsRayTracingActive() && s_DebugView == DebugViewPathTraced)
+		{
+			EnvMapVulkanProfiler::Scope pathScope(drawCommandBuffer, "Path Tracer", "The Path Traced debug view: a compute pass follows a few "
+				"random light paths per pixel through all their bounces (rays against the scene, a shadow ray per light at every "
+				"hit) and adds them to the average of the paths so far. Nothing once the image has its Max Samples.");
+			H2M::CameraH2M& pathCamera = s_Data.SceneData.SceneCamera.Camera;
+			const bool sunShadows = s_Lights.Sun.Enabled && s_Lights.Sun.CastShadows && s_Lights.Sun.Intensity > 0.0f;
+			s_PathTracer.Record(drawCommandBuffer, s_PathTracerSettings, pathCamera.GetViewProjection(), pathCamera.GetProjectionMatrix(),
+				s_PathTracerSceneVersion, s_Data.SceneData.SkyboxLod, s_RayTracing.GetDescriptorSet(), sunShadows);
 		}
 
 		// The water's caustics: the meshes under the water (in the reflection and the scene pass) are lit through them
@@ -9054,6 +9082,17 @@ static void WriteBloomDescriptorSets()
 		writes.push_back(write);
 	}
 
+	// The path tracer's image (a black texel without ray tracing)
+	const VkDescriptorImageInfo pathTracedImage = s_PathTracer.GetImageInfo();
+	if (pathTracedImage.imageView)
+	{
+		VkWriteDescriptorSet write = *compositeShader->GetDescriptorSet("u_PathTracedImage");
+		write.dstSet = s_ViewportCompositeDescriptorSet.DescriptorSets[0];
+		write.descriptorCount = 1;
+		write.pImageInfo = &pathTracedImage;
+		writes.push_back(write);
+	}
+
 	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 }
 
@@ -9207,6 +9246,10 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	if (IsRayTracedDebugView(s_DebugView))
 	{
 		uniforms.DebugView = 5.0f; // the ray-traced view's image, whichever of the views it holds
+	}
+	if (s_DebugView == DebugViewPathTraced)
+	{
+		uniforms.DebugView = 6.0f; // the path tracer's image in the scene's place (exposed and tonemapped like it)
 	}
 	uniforms.Padding = 0.0f;
 	uniforms.DebugParams = glm::vec4(projection[2][2], projection[3][2], s_DebugViewDepthRange, s_DebugViewMotionScale);
@@ -10067,7 +10110,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::PushID("DebugView");
-					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0Reflections\0Reflections Raw\0");
+					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0Reflections\0Reflections Raw\0Path Traced\0");
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
@@ -10100,7 +10143,11 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							"Reflections: the ray-traced reflection image by itself: the light each surface reflects, as it arrives\n"
 							"  (before the surface's own color and Fresnel). Black: no reflection was traced there (too rough, or the\n"
 							"  sky), and the environment's reflection is used. Reflections Raw: the same as one frame's rays give it,\n"
-							"  before the average over the frames and the blur. The settings: Reflections, below.");
+							"  before the average over the frames and the blur. The settings: Reflections, below.\n"
+							"Path Traced: the whole image by rays alone, as a reference. Every pixel's light is followed through all\n"
+							"  its bounces: no probes, no ambient occlusion pass, no reflection image, no shadow maps. Noisy at first;\n"
+							"  it gets cleaner with every frame while the camera and the scene stand still. What the normal view\n"
+							"  should look like where its approximations hold. Needs Ray Tracing.");
 					}
 					if (s_DebugView == DebugViewLinearDepth)
 					{
@@ -10117,6 +10164,45 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						{
 							ImGui::SetTooltip("The movement per frame shown at full color (lower: small movements show up more)");
 						}
+					}
+					if (s_DebugView == DebugViewPathTraced)
+					{
+						EnvMapVulkanPathTracerSettings& pathTracer = s_PathTracerSettings;
+						ImGui::SliderInt("Max Bounces", &pathTracer.MaxBounces, 0, EnvMapVulkanPathTracerSettings::MaxMaxBounces, "%d", ImGuiSliderFlags_AlwaysClamp);
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("The times a path is scattered by a surface before it ends. 0: only the light straight from the\n"
+								"lights and the sky (no bounced light, no reflections); 1: one bounce; more: the light that reaches\n"
+								"deep into a room. Passing through glass doesn't count. Paths that carry little light end earlier.");
+						}
+						ImGui::SliderInt("Samples per Frame", &pathTracer.SamplesPerFrame, 1, EnvMapVulkanPathTracerSettings::MaxSamplesPerFrame, "%d", ImGuiSliderFlags_AlwaysClamp);
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("Paths per pixel and frame. More: the image clears up in fewer frames, each of which takes longer\n"
+								"(the editor gets less responsive).");
+						}
+						ImGui::DragInt("Max Samples", &pathTracer.MaxSamples, 16.0f, 0, 1 << 20, "%d", ImGuiSliderFlags_AlwaysClamp);
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("With this many paths per pixel the image is finished and nothing more is traced. 0: never.\n"
+								"The noise halves with four times the samples.");
+						}
+						ImGui::DragFloat("Max Brightness", &pathTracer.MaxBrightness, 0.5f, 0.0f, 10000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
+						if (ImGui::IsItemHovered())
+						{
+							ImGui::SetTooltip("The most one path can add to a pixel after its first bounce. A rare path that finds a small, very\n"
+								"bright spot leaves a white dot that takes thousands of samples to fade; cutting it off loses a little\n"
+								"of the bounced light. 0: no limit (exact, with the dots).");
+						}
+						if (ImGui::Button("Restart"))
+						{
+							s_PathTracer.Restart();
+						}
+						ImGui::SameLine();
+						const uint32_t pathSamples = s_PathTracer.GetSamples();
+						const bool pathFinished = pathTracer.MaxSamples > 0 && pathSamples >= (uint32_t)pathTracer.MaxSamples;
+						ImGui::TextDisabled(pathFinished ? "%u samples per pixel: finished" : "%u samples per pixel", pathSamples);
+						ImGui::TextDisabled("No water, no bloom. Starts over when the camera or the scene changes.");
 					}
 					ImGui::PopID();
 				}
@@ -10246,6 +10332,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						addUser(s_ReflectionSettings.Enabled, "the reflections");
 						addUser(s_SSAOSettings.Enabled && s_SSAOSettings.RayTraced, "the ambient occlusion");
 						addUser(s_ProbeVolumeSettings.Exists, "the probe volume while it updates");
+						addUser(s_DebugView == DebugViewPathTraced, "the Path Traced view");
 						ImGui::TextDisabled("Tracing rays: %s", users.empty() ? "nothing at the moment" : users.c_str());
 					}
 					ImGui::PopID();
@@ -10828,6 +10915,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		const float waterHeight = s_WaterSettings.Enabled ? s_WaterSettings.Height : -std::numeric_limits<float>::max();
 		probeSceneVersion = HashBytes(probeSceneVersion, &waterHeight, sizeof(waterHeight));
 	}
+	s_PathTracerSceneVersion = HashBytes(probeSceneVersion, &probeAnimationVersion, sizeof(probeAnimationVersion));
 	if (s_Data.irradianceMap && s_Data.envFiltered &&
 		s_Probes.Update(s_ProbeVolumeSettings, s_Data.irradianceMap.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo(),
 			s_Data.envFiltered.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo(), s_EnvMapRotation, s_EnvironmentVersion, probeSceneVersion,
@@ -10854,6 +10942,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_Reflections.Resize(s_GBuffer, s_ReflectionSettings.HalfResolution);
 		WriteReflectionDescriptor();
 		s_RayTracing.ResizeView(s_GBuffer.GetWidth(), s_GBuffer.GetHeight()); // the composite's set is written below
+		s_PathTracer.Resize(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());     // the same
 		s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_OverlayFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_SelectionMaskFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
@@ -10873,7 +10962,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	}
 
 	// A ray-traced debug view can't stay when the rays were turned off (the switch, a scene opened with it off)
-	if ((IsRayTracedDebugView(s_DebugView) || IsReflectionDebugView(s_DebugView)) && !IsRayTracingActive())
+	if (DebugViewNeedsRayTracing(s_DebugView) && !IsRayTracingActive())
 	{
 		s_DebugView = DebugViewOff;
 		ShowNotification(EnvMapVulkanRayTracing::IsSupported() ? "The ray-traced views need Ray Tracing turned on (Environment panel)" :
@@ -10887,6 +10976,11 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	if (ReflectionsTraceRays())
 	{
 		s_Reflections.Prepare(s_Data.FrameDescriptorSet.DescriptorSets[0]);
+	}
+	// And for the path tracer
+	if (IsRayTracingActive() && s_DebugView == DebugViewPathTraced)
+	{
+		s_PathTracer.Prepare(s_Data.FrameDescriptorSet.DescriptorSets[0]);
 	}
 
 	GeometryPass();

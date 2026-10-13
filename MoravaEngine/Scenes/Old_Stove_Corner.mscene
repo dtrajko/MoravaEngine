@@ -19,6 +19,12 @@ RenderSettings:
     NormalBias: 1
   RayTracing:
     Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
   AmbientOcclusion:
     Enabled: true
     Radius: 0.5
@@ -29,6 +35,8 @@ RenderSettings:
     Denoise: true
     Temporal: true
     HalfResolution: true
+    RayTraced: true
+    Rays: 2
   Bloom:
     Enabled: true
     Threshold: 1
@@ -42,8 +50,8 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [38.009052, 9.22453, 1.1206006]
-      Rotation: [-2.5997598, 84.60193, 0]
+      Translation: [4.905847, 22.403711, 32.69361]
+      Rotation: [22.100233, 6.2020035, 0]
       Scale: [1, 1, 1]
     Camera:
       {}
@@ -67,8 +75,8 @@ Entities:
     Parent: 0
     Transform:
       Translation: [38.47463, 41.173023, 15.236968]
-      Rotation: [5.426863, 3.6183317, -67.36432]
-      Scale: [0.9999569, 1.0002319, 0.99995965]
+      Rotation: [9.165699, 6.0216174, -66.5438]
+      Scale: [0.99995685, 1.000232, 0.9999596]
     Sun:
       Enabled: true
       Color: [1, 0.2515118, 0]
@@ -81,7 +89,7 @@ Entities:
     Parent: 0
     Transform:
       Translation: [2.4607215, 0.9983078, 8.256666]
-      Rotation: [4.807913e-05, -18.42649, 6.519636e-05]
+      Rotation: [3.3715554e-05, -29.483227, 7.105539e-05]
       Scale: [0.20000003, 0.20000003, 0.20000003]
     Model:
       File: Models/Old_Stove/udmheheqx_LOD0.fbx
@@ -183,13 +191,13 @@ Entities:
     Name: Point Light 1
     Parent: 0
     Transform:
-      Translation: [-6.3927646, 10.458172, 6.2021446]
+      Translation: [-6.3927646, 3.9060645, 3.3397975]
       Rotation: [0.002407401, 38.925022, -0.0017775702]
       Scale: [0.9999181, 0.99999994, 0.9999354]
     PointLight:
       Enabled: true
       Color: [0.6764706, 1, 1]
-      Intensity: 100
+      Intensity: 500
       Range: 10.463261
       CastShadows: true
   - ID: 7305799606647957717
@@ -252,7 +260,7 @@ Entities:
     Name: Sphere1m.fbx
     Parent: 0
     Transform:
-      Translation: [-7.7905197, 15.446871, -6.0846663]
+      Translation: [-7.7905197, 15.2008915, -4.5715847]
       Rotation: [0, -0, 0]
       Scale: [0.10400002, 0.10400002, 0.10400002]
     Model:
