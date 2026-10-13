@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EnvMapVulkanMaterialLibrary.h"
+#include "EnvMapVulkanTextureTable.h"
 
 #include <vulkan/vulkan.h>
 
@@ -19,8 +20,10 @@
  * what a probe sees or what a ray hits, has neither. It reads the material here, by index.
  *
  * An entry holds plain values only. Where a material uses a map, the entry has the map's average color: enough for light
- * that bounces, which is blurred over the whole scene (see ShadeSurfaceDiffuse in Include/ShadeSurface.glslh). The fields
- * for the maps themselves (indices into an array of all textures) are there for ray tracing and not used yet.
+ * that bounces, which is blurred over the whole scene (see ShadeSurfaceDiffuse in Include/ShadeSurface.glslh). For a ray
+ * hit, which can show a surface sharply, the entry also has the maps themselves: each one's element in the array of all
+ * textures (EnvMapVulkanTextureTable, given to Update; without one the fields say "no map"), and what reading them takes
+ * (the tiling, the emissive intensity, how the metalness and roughness are packed).
  *
  * Update gives every material its index (the "MaterialIndex" value, pushed with the material's other values) and uploads
  * the entries when any of them changed. Shaders: u_Materials in Include/FrameSet.glslh (set 0, binding 17).
@@ -30,7 +33,7 @@
 class EnvMapVulkanMaterialBuffer
 {
 public:
-	// std430, 64 bytes: must match GPUMaterial in Include/FrameSet.glslh
+	// std430, 80 bytes: must match GPUMaterial in Include/GPUMaterial.glslh
 	struct GPUMaterial
 	{
 		glm::vec4 AlbedoColor = glm::vec4(0.0f); // rgb: the albedo color, or the average color of the albedo map when it is used
@@ -43,16 +46,23 @@ public:
 		uint32_t RoughnessMapIndex = NoMap;
 		uint32_t MetalnessMapIndex = NoMap;
 		uint32_t EmissiveMapIndex = NoMap;
+		float Tiling = 1.0f;             // the texture coordinate scale the maps are read with
+		float EmissiveIntensity = 0.0f;  // multiplies the emissive map
+		uint32_t Padding0 = 0;
+		uint32_t Padding1 = 0;
 	};
-	static constexpr uint32_t NoMap = 0xFFFFFFFF;
+	static constexpr uint32_t NoMap = EnvMapVulkanTextureTable::NoSlot;
 	static constexpr uint32_t FlagGlass = 1u << 0;
+	static constexpr uint32_t FlagMetalRoughPacked = 1u << 1; // glTF: roughness in G, metalness in B of their map
 
 	void Create();
 	void Destroy();
 
 	// Call once per frame, after the materials were edited and before anything is recorded. Returns true when the buffer
 	// was replaced by a bigger one (it waited for the GPU): descriptor sets that point to it must be written again.
-	bool Update();
+	// textures: the array of all textures the entries' map fields index (ray tracing); the maps in use get their
+	// elements there, the ones no material uses any more lose them.
+	bool Update(EnvMapVulkanTextureTable* textures = nullptr);
 
 	VkDescriptorBufferInfo GetDescriptorInfo() const { return { m_Buffer, 0, VK_WHOLE_SIZE }; }
 	// What was uploaded last, by material index (for the editor)
@@ -61,7 +71,7 @@ public:
 private:
 	void CreateBuffer(uint32_t capacity);
 	void DestroyBuffer();
-	GPUMaterial Pack(const H2M::RefH2M<EnvMapVulkanMaterial>& material);
+	GPUMaterial Pack(const H2M::RefH2M<EnvMapVulkanMaterial>& material, EnvMapVulkanTextureTable* textures);
 	// The average of the map's pixels (color maps: of their linear colors), computed once per image file
 	glm::vec4 GetAverageColor(const H2M::RefH2M<H2M::Texture2D_H2M>& texture, bool srgb);
 

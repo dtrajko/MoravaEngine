@@ -13,6 +13,7 @@
 #include "EnvMapVulkanGBuffer.h"
 #include "EnvMapVulkanMaterialBuffer.h"
 #include "EnvMapVulkanProbes.h"
+#include "EnvMapVulkanRayTracing.h"
 #include "EnvMapVulkanSSAO.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
@@ -1546,6 +1547,19 @@ static EnvMapVulkanSSAOSettings s_SSAOSettings;
 // for shaders that light a point without its material's descriptor set
 static EnvMapVulkanMaterialBuffer s_MaterialBuffer;
 
+// The scene as rays see it (Phase G of the guide, see EnvMapVulkanRayTracing): acceleration structures over the meshes
+// and the set a compute shader traces rays with. On a GPU without ray tracing it does nothing. Built in the frames that
+// trace rays: so far the ray-traced debug views.
+static EnvMapVulkanRayTracing s_RayTracing;
+// The Environment panel's Ray Tracing switch, saved with the scene (RenderSettings). Off: nothing traces rays and no
+// acceleration structure is built or updated; every effect uses its rasterized version, as on a GPU without ray tracing.
+static bool s_RayTracingEnabled = true;
+// Rays can be traced this frame: the GPU can, and the switch is on. What every ray-traced effect asks before it runs.
+static bool IsRayTracingActive()
+{
+	return s_RayTracingEnabled && EnvMapVulkanRayTracing::IsSupported();
+}
+
 // The probe volume on the GPU (see EnvMapVulkanProbes): its atlases and ProbeVolume block are in set 0 (bindings 11 to 14),
 // read by IndirectDiffuse in Include/ShadeSurface.glslh
 static EnvMapVulkanProbes s_Probes;
@@ -1608,6 +1622,7 @@ static void WriteMaterialBufferDescriptor()
 	write.descriptorCount = 1;
 	write.pBufferInfo = &bufferInfo;
 	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+	s_RayTracing.SetMaterialBuffer(bufferInfo); // the ray tracing set has the same buffer
 }
 struct GlassDraw
 {
@@ -2113,11 +2128,16 @@ static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light'
 
 // Debug views (Environment panel, Debug View): what the viewport shows instead of the finished image. The G-buffer views
 // are drawn by the viewport composite (ViewportComposite.glsl, GBufferView), the lighting views by the PBR shaders
-// (u_ShadowDebug.z).
+// (u_ShadowDebug.z), the ray-traced views by a compute pass into an image the composite shows (EnvMapVulkanRayTracing).
 enum DebugView { DebugViewOff = 0, DebugViewNormals, DebugViewRoughness, DebugViewLinearDepth, DebugViewMotion, DebugViewDirectLight, DebugViewIndirectLight,
 	DebugViewSurfaceShading, DebugViewProbeIrradiance, DebugViewReflectionOcclusion, DebugViewAO, DebugViewAODenoised, DebugViewAORaw,
+	DebugViewRayTracedNormals, DebugViewRayTracedAlbedo, DebugViewRayTracedInstances,
 	DebugViewCount };
 static int s_DebugView = DebugViewOff; // --debug-view on the command line sets it at startup
+static bool IsRayTracedDebugView(int view)
+{
+	return view >= DebugViewRayTracedNormals && view <= DebugViewRayTracedInstances;
+}
 static float s_DebugViewDepthRange = 50.0f;  // Linear Depth: the distance shown as white (world units)
 static float s_DebugViewMotionScale = 20.0f; // Motion: the motion shown at full color (pixels per frame)
 
@@ -5194,6 +5214,10 @@ static void WriteRenderSettings(YAML::Emitter& out)
 	out << YAML::Key << "NormalBias" << YAML::Value << local.NormalBias;
 	out << YAML::EndMap;
 
+	out << YAML::Key << "RayTracing" << YAML::Value << YAML::BeginMap;
+	out << YAML::Key << "Enabled" << YAML::Value << s_RayTracingEnabled;
+	out << YAML::EndMap;
+
 	const EnvMapVulkanSSAOSettings& occlusion = s_SSAOSettings;
 	out << YAML::Key << "AmbientOcclusion" << YAML::Value << YAML::BeginMap;
 	out << YAML::Key << "Enabled" << YAML::Value << occlusion.Enabled;
@@ -5259,6 +5283,12 @@ static void ReadRenderSettings(const YAML::Node& settings)
 		ReadSetting(local, "SpotResolution", spot);
 		ReadSetting(local, "PointResolution", point);
 		s_PendingLocalShadowResolutions = glm::uvec2(spot != s.SpotResolution ? spot : 0, point != s.PointResolution ? point : 0);
+	}
+	// A scene saved before ray tracing existed has it on (where the GPU can)
+	s_RayTracingEnabled = true;
+	if (YAML::Node rayTracing = settings["RayTracing"])
+	{
+		ReadSetting(rayTracing, "Enabled", s_RayTracingEnabled);
 	}
 	// A scene saved before the ambient occlusion existed gets the defaults (the settings of the scene before don't stay)
 	s_SSAOSettings = EnvMapVulkanSSAOSettings();
@@ -5769,6 +5799,11 @@ static void ProcessSceneOperations()
 		MarkSceneSaved(); // the startup scene (environment and sun) has nothing to save yet
 		// --debug-view on the command line: the Environment panel's Debug View
 		s_DebugView = glm::clamp(Application::Get()->GetCommandLine().DebugView, 0, (int)DebugViewCount - 1);
+		if (IsRayTracedDebugView(s_DebugView) && !EnvMapVulkanRayTracing::IsSupported())
+		{
+			Log::GetLogger()->warn("--debug-view {0} is a ray-traced view: not available without ray tracing", s_DebugView);
+			s_DebugView = DebugViewOff;
+		}
 		// --scene on the command line: opened like File > Open (without it the engine starts empty)
 		const std::string& startupScene = Application::Get()->GetCommandLine().ScenePath;
 		if (!startupScene.empty())
@@ -7245,7 +7280,9 @@ void EnvMapVulkanRenderer::Init()
 	s_GBuffer.CreatePipelines(s_MeshPipeline, s_MeshPipelineAnim);
 	s_SSAO.Create();
 	s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution);
-	WriteBloomDescriptorSets(); // the viewport composite samples the G-buffer (debug views)
+	s_RayTracing.Create();
+	s_RayTracing.ResizeView(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());
+	WriteBloomDescriptorSets(); // the viewport composite samples the G-buffer and the ray-traced view (debug views)
 
 	// The scene (EnvMapVulkanScene, being introduced): its operations are checked once at startup
 	EnvMapVulkanScene::SelfTest();
@@ -7450,6 +7487,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_Water.Destroy();
 	s_Glass.Destroy();
 	s_MaterialBuffer.Destroy();
+	s_RayTracing.Destroy();
 	s_Probes.Destroy();
 	s_ProbeSunShadowMap.Destroy();
 	s_SSAO.Destroy();
@@ -8437,6 +8475,34 @@ void EnvMapVulkanRenderer::GeometryPass()
 			s_ShadowMapViewerRequest.Active = false; // requested again by the panel while it shows the viewer
 		}
 
+		// The scene for the rays, in the frames that trace any: the acceleration structures follow the meshes as they are
+		// drawn this frame. Then the ray-traced debug view, when one is shown.
+		if (IsRayTracingActive() && IsRayTracedDebugView(s_DebugView))
+		{
+			{
+				EnvMapVulkanProfiler::Scope sceneScope(drawCommandBuffer, "Ray Tracing Scene", "The scene as rays see it: the skinned models' "
+					"vertices moved by their bones (a compute pass) and their acceleration structures refitted, then the top-level "
+					"structure built from every mesh's transform. Static meshes' structures are built once, when a model is loaded.");
+				s_RayTracing.BeginFrame();
+				std::vector<glm::mat4> meshTransforms;
+				for (const SubmittedModel& submitted : s_SubmittedModels)
+				{
+					meshTransforms.clear();
+					for (const H2M::RefH2M<H2M::MeshH2M>& mesh : submitted.Model->GetMeshes())
+					{
+						meshTransforms.push_back(GetMeshTransform(submitted.Model, mesh, submitted.Transform));
+					}
+					s_RayTracing.Submit(submitted.Model, meshTransforms, submitted.Materials);
+				}
+				s_RayTracing.Record(drawCommandBuffer);
+			}
+			EnvMapVulkanProfiler::Scope viewScope(drawCommandBuffer, "Ray Traced View", "The ray-traced debug view: a compute pass traces one "
+				"ray per pixel from the camera (a ray query) and writes what it hit as a color.");
+			const EnvMapVulkanRayTracing::View view = s_DebugView == DebugViewRayTracedAlbedo ? EnvMapVulkanRayTracing::View::Albedo :
+				(s_DebugView == DebugViewRayTracedInstances ? EnvMapVulkanRayTracing::View::Instances : EnvMapVulkanRayTracing::View::Normals);
+			s_RayTracing.RecordView(drawCommandBuffer, view, s_Data.SceneData.SceneCamera.Camera.GetViewProjection());
+		}
+
 		// The water's caustics: the meshes under the water (in the reflection and the scene pass) are lit through them
 		if (s_WaterSettings.Enabled)
 		{
@@ -8854,6 +8920,16 @@ static void WriteBloomDescriptorSets()
 		write.pImageInfo = &gbufferImages[i];
 		writes.push_back(write);
 	}
+	// The ray-traced debug views' image (black without ray tracing)
+	const VkDescriptorImageInfo rayTracedView = s_RayTracing.GetViewInfo();
+	if (rayTracedView.imageView)
+	{
+		VkWriteDescriptorSet write = *compositeShader->GetDescriptorSet("u_RayTracedView");
+		write.dstSet = s_ViewportCompositeDescriptorSet.DescriptorSets[0];
+		write.descriptorCount = 1;
+		write.pImageInfo = &rayTracedView;
+		writes.push_back(write);
+	}
 
 	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 }
@@ -9005,6 +9081,10 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	// The G-buffer views have the numbers of ViewportComposite.glsl's GBufferView (the lighting views are the PBR shaders')
 	const glm::mat4& projection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix();
 	uniforms.DebugView = s_DebugView >= DebugViewNormals && s_DebugView <= DebugViewMotion ? (float)s_DebugView : 0.0f;
+	if (IsRayTracedDebugView(s_DebugView))
+	{
+		uniforms.DebugView = 5.0f; // the ray-traced view's image, whichever of the views it holds
+	}
 	uniforms.Padding = 0.0f;
 	uniforms.DebugParams = glm::vec4(projection[2][2], projection[3][2], s_DebugViewDepthRange, s_DebugViewMotionScale);
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(CompositeUniforms), &uniforms);
@@ -9864,7 +9944,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::PushID("DebugView");
-					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0");
+					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0");
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
@@ -9887,7 +9967,13 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							"Ambient Occlusion: the screen-space occlusion by itself (white = open, black = closed in), as the\n"
 							"  indirect light is multiplied by it. AO Denoised: the same before the average over the frames.\n"
 							"  AO Raw: before the blur too, as the GTAO pass computes it for one frame (noisy).\n"
-							"  Opaque meshes only. The settings: Ambient Occlusion, below.");
+							"  Opaque meshes only. The settings: Ambient Occlusion, below.\n"
+							"Ray Traced Normals, Albedo, Instances: one ray per pixel from the camera against the acceleration\n"
+							"  structures, and what it hit, read the way every ray-traced effect reads it. Needs a GPU with ray tracing.\n"
+							"  Normals: must look like the Normals view (a moved model or a playing animation must follow)\n"
+							"  Albedo: the material's color or albedo map at the hit (the map at full size: it flickers far away)\n"
+							"  Instances: a color per mesh in the top-level structure\n"
+							"  Opaque meshes only (glass is in the structures, in a group these views leave out).");
 					}
 					if (s_DebugView == DebugViewLinearDepth)
 					{
@@ -9979,6 +10065,49 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						ImGui::SetTooltip("Wireframe, bounding box and vertex vector lines");
 					}
 
+					ImGui::PopID();
+				}
+
+				// The master switch of everything ray-traced
+				if (ImGui::CollapsingHeader("Ray Tracing", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::PushID("RayTracing");
+					const bool rayTracingSupported = EnvMapVulkanRayTracing::IsSupported();
+					ImGui::BeginDisabled(!rayTracingSupported);
+					bool rayTracingOn = s_RayTracingEnabled && rayTracingSupported;
+					if (ImGui::Checkbox("Enabled", &rayTracingOn))
+					{
+						s_RayTracingEnabled = rayTracingOn;
+					}
+					ImGui::EndDisabled();
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+					{
+						ImGui::SetTooltip("Everything that traces rays (hardware ray tracing: acceleration structures and ray queries).\n"
+							"Off: no rays are traced and nothing is built or updated for them. Every effect uses its rasterized\n"
+							"version, as on a GPU without ray tracing: for more frames per second when the rays cost too much.\n"
+							"So far the rays are used by the Debug View's Ray Traced views; the effects follow.\n"
+							"Its cost: Ray Tracing Scene and the passes that trace rays, in Renderer Stats.");
+					}
+					if (!rayTracingSupported)
+					{
+						ImGui::TextDisabled("This GPU (or its driver) has no ray tracing");
+					}
+					else if (!s_RayTracingEnabled)
+					{
+						ImGui::TextDisabled("Off: rasterized rendering only");
+					}
+					else if (IsRayTracedDebugView(s_DebugView))
+					{
+						const EnvMapVulkanRayTracing::Stats& rayTracingStats = s_RayTracing.GetStats();
+						ImGui::TextDisabled("%u instances of %u meshes, %s triangles", rayTracingStats.Instances, rayTracingStats.Meshes,
+							FormatCount(rayTracingStats.Triangles).c_str());
+						ImGui::TextDisabled("%u skinned models refitted, %u textures, structures %.1f MB", rayTracingStats.SkinnedModels,
+							rayTracingStats.Textures, (double)rayTracingStats.StructureBytes / (1024.0 * 1024.0));
+					}
+					else
+					{
+						ImGui::TextDisabled("Ready. No effect uses rays yet: pick a Ray Traced\nview in Debug View to see them at work");
+					}
 					ImGui::PopID();
 				}
 
@@ -10460,10 +10589,12 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	}
 	s_PreviousModelStates = std::move(modelStates);
 	// The materials into their GPU buffer, each with its index (after this frame's edits, before anything is recorded)
-	if (s_MaterialBuffer.Update())
+	// (with ray tracing, the maps they use get their elements in the array of all textures)
+	if (s_MaterialBuffer.Update(s_RayTracing.GetTextureTable()))
 	{
 		WriteMaterialBufferDescriptor(); // a bigger buffer: Update waited for the GPU
 	}
+	s_RayTracing.UpdateTextures();
 	// The probe volume: atlases for its probe counts, filled from the environment while new, and this frame's batch of
 	// probes to update when what they capture changed: the models (above), the materials' values, the lights (as of the
 	// last frame), the environment, the water the light passes through
@@ -10499,6 +10630,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_GBuffer.Resize(s_Framebuffer); // after s_Framebuffer: it shares its depth image
 		s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution); // after the G-buffer: it reads its images
 		WriteAmbientOcclusionDescriptor();
+		s_RayTracing.ResizeView(s_GBuffer.GetWidth(), s_GBuffer.GetHeight()); // the composite's set is written below
 		s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_OverlayFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_SelectionMaskFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
@@ -10509,6 +10641,14 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	{
 		s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution); // the setting changed (the panel, a scene opened)
 		WriteAmbientOcclusionDescriptor();
+	}
+
+	// A ray-traced debug view can't stay when the rays were turned off (the switch, a scene opened with it off)
+	if (IsRayTracedDebugView(s_DebugView) && !IsRayTracingActive())
+	{
+		s_DebugView = DebugViewOff;
+		ShowNotification(EnvMapVulkanRayTracing::IsSupported() ? "The ray-traced views need Ray Tracing turned on (Environment panel)" :
+			"The ray-traced views need a GPU with ray tracing", true);
 	}
 
 	GeometryPass();

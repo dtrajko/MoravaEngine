@@ -937,6 +937,19 @@ HitInfo TraceRay(vec3 origin, vec3 dir, float tMax, uint mask)
 // read the GPUMaterial, sample textures with u_Textures[nonuniformEXT(index)] at a fixed LOD.</span></code></pre>
   <div class="box ok"><b>Check: the primary-hit debug view</b>
   A compute pass traces one ray per pixel from the camera and writes the hit's albedo and normal. It must match the G-buffer debug views of Phase A pixel for pixel (except for texture LOD). Move a model, play an animation: the view must follow, which proves the TLAS rebuild and the skinned refit.</div>
+
+  <div class="box note"><b>As built</b>
+  <ul>
+    <li><b>The module:</b> <code>EnvMapVulkanRayTracing</code> (the structures, the skinned vertex buffers, the instance buffers, set 3, the debug view) and <code>EnvMapVulkanTextureTable</code> (which element of <code>u_Textures[]</code> each texture has). Shaders: <code>Include/RayTracing.glslh</code> (set 3, <code>TraceRay</code>, <code>GetRaySurface</code>, <code>GetRayMaterial</code>), <code>RayTracingSkinning.glsl</code>, <code>RayTracingView.glsl</code>. Ray queries need <code>#version 460</code>.</li>
+    <li><b>One BLAS per mesh, not per model</b> (a change from G.4). A TLAS instance is then one mesh: its transform is the one the mesh is drawn with (so a Part Transform edit needs no rebuild), and its ray mask is its own, which a model with an opaque and a glass part needs. The instance table's entry is 24 bytes: the addresses of the mesh's first vertex and first index, and its material index. Static meshes are built and compacted when they are first submitted (about half the size: 1373 KB to 641 KB for <code>Old_Stove_Corner</code>); a mesh that is no longer submitted loses its structure after 3 frames.</li>
+    <li><b>Skinned models:</b> the compute pass writes the moved vertices in the static vertex layout (56 bytes), so a hit reads every mesh the same way. The model transform stays in the TLAS instance.</li>
+    <li><b>Shader reflection, not hand-made layouts</b> (a change from G.6): <code>VulkanShaderH2M</code> now reflects acceleration structures and arrays without a size. Such an array becomes a binding of 2048 descriptors that is partially bound and update-after-bind, and its set comes from an update-after-bind pool. A ray-tracing shader is then written and loaded like any other compute shader, which Phase H needs for three more of them. They are loaded by the module, only on a device with ray tracing.</li>
+    <li><b>The material buffer's entry grew to 80 bytes</b> (<code>Include/GPUMaterial.glslh</code>): the map indices are filled now, and a hit also needs the tiling, the emissive intensity and how metalness and roughness are packed.</li>
+    <li><b>Texture level at a hit:</b> <code>GetRayMaterial</code> takes the ray's footprint (how wide the ray is where it hits, in world units) and reads each map at the level where a texel is about that big, from the triangle's texture density. At level 0 the normal-mapped walls were pure noise. One sample can't do what the rasterizer's anisotropic filter does on a slanted surface, so the views match up to that filtering.</li>
+    <li><b>The scene is built only in frames that trace rays</b> (so far: the three Ray Traced debug views), and the water is not in the TLAS yet (its surface is displaced on the GPU; Phase H decides what its reflections need).</li>
+    <li><b>The switch:</b> Environment panel &gt; Ray Tracing &gt; Enabled, saved with the scene. Off, or on a GPU without ray tracing (to try it: <code>--no-ray-tracing</code>), nothing is traced or built and every effect uses its rasterized version.</li>
+    <li><b>Measured</b> (RTX 3070 Ti, the editor viewport at about 500 × 330): Ray Tracing Scene 0.06 to 0.12 ms, Ray Traced View 0.10 to 0.13 ms. Ray Traced Normals against the G-buffer's Normals view: <code>Closed_Test_Room</code> (no maps) mean difference 0.03 of 255, only pixels on edges differ; <code>Old_Stove_Corner</code> (normal maps) 6.6 of 255, all of it on the normal-mapped surfaces.</li>
+  </ul></div>
 </section>
 
 <section id="phase-h">
@@ -1272,7 +1285,7 @@ HitInfo TraceRay(vec3 origin, vec3 dir, float tMax, uint mask)
       { id: 'ecs', k: 'cpu', x: 10, y: 170, w: 250, t: 'EnvMapVulkanScene', l: ['world transform per instance', 'mask: opaque, glass, water'] },
       { id: 'mat', k: 'buf', x: 1060, y: 60, w: 230, t: 'Material buffer', l: ['GPUMaterial[] (Phase B)'] },
       { id: 'tex', k: 'cpu', x: 1060, y: 124, w: 230, t: 'Texture cache', l: ['ResourceManager: each texture', 'gets a bindless slot'] },
-      { id: 'blas', k: 'as', x: 330, y: 10, w: 270, t: 'BLAS build (on model load)', l: ['one per model, geometry per part', 'compacted'] },
+      { id: 'blas', k: 'as', x: 330, y: 10, w: 270, t: 'BLAS build (on model load)', l: ['one per mesh', 'compacted'] },
       { id: 'skin', k: 'cs', x: 330, y: 90, w: 270, t: 'Compute skinning', l: ['Skinning.glsl, every frame', 'writes skinned vertices'] },
       { id: 'refit', k: 'as', x: 330, y: 170, w: 270, t: 'Skinned BLAS refit', l: ['ALLOW_UPDATE, mode UPDATE'] },
       { id: 'tlas', k: 'as', x: 330, y: 236, w: 270, t: 'TLAS build (every frame)', l: ['instances from the ECS', '3×4 transform (transposed)', 'custom index → instance table'] },

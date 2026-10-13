@@ -31,6 +31,12 @@ namespace H2M {
 		~VulkanPhysicalDeviceH2M();
 
 		bool IsExtensionSupported(const std::string& extensionName) const;
+		// The GPU can trace rays from any shader (ray queries) and has what the ray-traced effects need besides: acceleration
+		// structures, buffer addresses, an array of all textures (descriptor indexing). The logical device then enables all
+		// of it (VulkanDeviceH2M). False: the effects keep to their rasterized versions.
+		bool IsRayTracingSupported() const { return m_RayTracingSupported; }
+		// Before the device is selected (the --no-ray-tracing command line option): as on a GPU without ray tracing
+		static void DisableRayTracing() { s_RayTracingDisabled = true; }
 		uint32_t GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties) const;
 
 		VkPhysicalDevice GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
@@ -58,6 +64,8 @@ namespace H2M {
 		VkPhysicalDeviceMemoryProperties m_MemoryProperties;
 
 		VkFormat m_DepthFormat = VK_FORMAT_UNDEFINED;
+		bool m_RayTracingSupported = false;
+		static inline bool s_RayTracingDisabled = false;
 
 		std::vector<VkQueueFamilyProperties> m_QueueFamilyProperties;
 		std::unordered_set<std::string> m_SupportedExtensions;
@@ -86,6 +94,8 @@ namespace H2M {
 
 		const RefH2M<VulkanPhysicalDeviceH2M>& GetPhysicalDevice() const { return m_PhysicalDevice; }
 		VkDevice GetVulkanDevice() const { return m_LogicalDevice; }
+		// The ray tracing extensions and features are enabled (see VulkanPhysicalDeviceH2M::IsRayTracingSupported)
+		bool IsRayTracingSupported() const { return m_PhysicalDevice->IsRayTracingSupported(); }
 
 		/**** BEGIN Buffer Helper Functions (VulkanGameEngine by Brendan Galea) ****/
 

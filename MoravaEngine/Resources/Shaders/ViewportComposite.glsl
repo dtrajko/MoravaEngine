@@ -42,6 +42,8 @@ layout (binding = 4) uniform sampler2D u_SelectionMask;     // silhouette of the
 layout (binding = 5) uniform sampler2D u_GBufferNormalRoughness; // xyz = world-space normal (0: no surface, the sky), w = roughness
 layout (binding = 6) uniform sampler2D u_GBufferMotion;          // screen-space motion in UV units
 layout (binding = 7) uniform sampler2D u_GBufferDepth;           // the scene's depth
+// The ray-traced debug views (see EnvMapVulkanRayTracing, RayTracingView.glsl): display colors
+layout (binding = 8) uniform sampler2D u_RayTracedView;
 
 layout(push_constant) uniform Uniforms
 {
@@ -52,7 +54,8 @@ layout(push_constant) uniform Uniforms
 	vec4 OutlineColor;
 	float HuePreservation;    // 0: ACES per channel (bright colors turn white), 1: hue-preserving ACES (see Tonemap)
 	float RawScene;           // 1: the scene as it is, without exposure, bloom and tonemapping (Shadows Only view)
-	float DebugView;          // a G-buffer view instead of the scene: 1 normals, 2 roughness, 3 linear depth, 4 motion (0: off)
+	float DebugView;          // a G-buffer view instead of the scene: 1 normals, 2 roughness, 3 linear depth, 4 motion;
+	                          // 5 the ray-traced view's image (0: off)
 	vec4 DebugParams;         // xy = the projection matrix's [2][2] and [3][2] (depth -> distance), z = the distance shown as
 	                          // white (linear depth), w = the motion shown at full color, in pixels
 } u_Uniforms;
@@ -112,6 +115,10 @@ float SelectionOutline()
 // screen). Where there is no surface (the sky): black, white in the depth view.
 vec3 GBufferView(int view)
 {
+	if (view == 5)
+	{
+		return texture(u_RayTracedView, Input.TexCoord).rgb;
+	}
 	vec4 normalRoughness = texture(u_GBufferNormalRoughness, Input.TexCoord);
 	bool surface = dot(normalRoughness.xyz, normalRoughness.xyz) > 0.0;
 	if (view == 1)

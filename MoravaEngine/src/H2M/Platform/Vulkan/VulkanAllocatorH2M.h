@@ -50,7 +50,10 @@ namespace H2M
 		static void DumpStats();
 		static GPUMemoryStatsH2M GetStats();
 
-		void Allocate(VkMemoryRequirements requirements, VkDeviceMemory* dest, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+		// deviceAddress: memory for a buffer created with VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT (its address can be taken:
+		// what ray tracing reads vertices and indices through)
+		void Allocate(VkMemoryRequirements requirements, VkDeviceMemory* dest, VkMemoryPropertyFlags flags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+			bool deviceAddress = false);
 
 		static void Init(RefH2M<VulkanDeviceH2M> device);
 		static void Shutdown();

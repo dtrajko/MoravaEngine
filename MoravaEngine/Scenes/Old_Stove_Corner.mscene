@@ -17,6 +17,8 @@ RenderSettings:
     DepthBias: 1.25
     SlopeBias: 1.75
     NormalBias: 1
+  RayTracing:
+    Enabled: true
   AmbientOcclusion:
     Enabled: true
     Radius: 0.5
@@ -40,8 +42,8 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [1.6271199, 17.044716, 63.15453]
-      Rotation: [-0.8999621, 15.199997, 0]
+      Translation: [16.998093, 14.752255, 45.446896]
+      Rotation: [2.5002573, 35.90191, 0]
       Scale: [1, 1, 1]
     Camera:
       {}
@@ -65,8 +67,8 @@ Entities:
     Parent: 0
     Transform:
       Translation: [38.47463, 41.173023, 15.236968]
-      Rotation: [6.3585095, 4.2268596, -67.19816]
-      Scale: [0.9999569, 1.0002319, 0.99995977]
+      Rotation: [5.426863, 3.6183317, -67.36432]
+      Scale: [0.9999569, 1.0002319, 0.99995965]
     Sun:
       Enabled: true
       Color: [1, 0.2515118, 0]
@@ -78,8 +80,8 @@ Entities:
     Name: udmheheqx_LOD0.fbx
     Parent: 0
     Transform:
-      Translation: [0, 0.9983078, 0]
-      Rotation: [4.8079142e-05, -18.426497, 6.5196364e-05]
+      Translation: [7.23092, 0.9983078, 14.941017]
+      Rotation: [4.807913e-05, -18.42649, 6.519636e-05]
       Scale: [0.20000003, 0.20000003, 0.20000003]
     Model:
       File: Models/Old_Stove/udmheheqx_LOD0.fbx
@@ -166,14 +168,14 @@ Entities:
     Name: Spot Light 1
     Parent: 0
     Transform:
-      Translation: [5.9017067, 3.0817983, -5.742809]
-      Rotation: [-3.9056232, 33.85245, -115.98785]
-      Scale: [0.999902, 0.99996567, 0.9999367]
+      Translation: [11.418433, 11.76056, 6.690325]
+      Rotation: [-44.106956, 18.59615, -103.59688]
+      Scale: [0.999911, 0.99997836, 0.9999484]
     SpotLight:
       Enabled: true
-      Color: [0.98370814, 0.44607842, 1]
+      Color: [0.33823532, 1, 0.4160899]
       Intensity: 200
-      Range: 24.620087
+      Range: 20.196852
       InnerAngle: 29.8
       OuterAngle: 37
       CastShadows: true
@@ -181,14 +183,14 @@ Entities:
     Name: Point Light 1
     Parent: 0
     Transform:
-      Translation: [-6.3927646, 6.003108, -0.60931015]
+      Translation: [-6.3927646, 10.458172, 6.2021446]
       Rotation: [0.002407401, 38.925022, -0.0017775702]
       Scale: [0.9999181, 0.99999994, 0.9999354]
     PointLight:
       Enabled: true
       Color: [0.6764706, 1, 1]
-      Intensity: 500
-      Range: 6.980986
+      Intensity: 100
+      Range: 10.463261
       CastShadows: true
   - ID: 7305799606647957717
     Name: Water
@@ -249,7 +251,7 @@ Entities:
     Name: Sphere1m.fbx
     Parent: 0
     Transform:
-      Translation: [-9.603531, 14.23667, -3.3415756]
+      Translation: [-7.7905197, 15.446871, -2.0631294]
       Rotation: [0, -0, 0]
       Scale: [0.10400002, 0.10400002, 0.10400002]
     Model:
@@ -265,5 +267,5 @@ Entities:
       SourceMeshIndex: 0
       Material:
         ID: 6945919930644932920
-        File: assets/Materials/DefaultMaterial_2.mmat
-        Name: DefaultMaterial
+        File: assets/Materials/SphereMaterial.mmat
+        Name: SphereMaterial

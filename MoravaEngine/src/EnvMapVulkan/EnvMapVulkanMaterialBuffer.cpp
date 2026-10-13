@@ -8,7 +8,7 @@
 #include <cstring>
 
 
-static_assert(sizeof(EnvMapVulkanMaterialBuffer::GPUMaterial) == 64, "std430 layout mismatch with GPUMaterial in Include/FrameSet.glslh");
+static_assert(sizeof(EnvMapVulkanMaterialBuffer::GPUMaterial) == 80, "std430 layout mismatch with GPUMaterial in Include/GPUMaterial.glslh");
 
 static constexpr uint32_t InitialCapacity = 64; // materials
 
@@ -57,15 +57,23 @@ void EnvMapVulkanMaterialBuffer::DestroyBuffer()
 	m_Capacity = 0;
 }
 
-bool EnvMapVulkanMaterialBuffer::Update()
+bool EnvMapVulkanMaterialBuffer::Update(EnvMapVulkanTextureTable* textures)
 {
 	const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
 	std::vector<GPUMaterial> entries(materials.size());
+	if (textures)
+	{
+		textures->BeginUse();
+	}
 	for (size_t i = 0; i < materials.size(); i++)
 	{
 		H2M::RefH2M<EnvMapVulkanMaterial> material = materials[i];
 		material->Get<float>("u_MaterialUniforms.MaterialIndex") = (float)i;
-		entries[i] = Pack(material);
+		entries[i] = Pack(material, textures);
+	}
+	if (textures)
+	{
+		textures->EndUse();
 	}
 
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
@@ -97,7 +105,7 @@ bool EnvMapVulkanMaterialBuffer::Update()
 	return replaced;
 }
 
-EnvMapVulkanMaterialBuffer::GPUMaterial EnvMapVulkanMaterialBuffer::Pack(const H2M::RefH2M<EnvMapVulkanMaterial>& materialRef)
+EnvMapVulkanMaterialBuffer::GPUMaterial EnvMapVulkanMaterialBuffer::Pack(const H2M::RefH2M<EnvMapVulkanMaterial>& materialRef, EnvMapVulkanTextureTable* textures)
 {
 	H2M::RefH2M<EnvMapVulkanMaterial> material = materialRef;
 	// A map counts when it is bound and its toggle is on: what the shaders test too (Include/MeshMaterial.glslh)
@@ -131,7 +139,25 @@ EnvMapVulkanMaterialBuffer::GPUMaterial EnvMapVulkanMaterialBuffer::Pack(const H
 		entry.Roughness = packed ? average.g : average.r;
 	}
 	entry.Roughness = std::max(entry.Roughness, 0.05f); // as MaterialRoughness in the shaders
-	entry.Flags = material->IsGlass() ? FlagGlass : 0;
+	entry.Flags = (material->IsGlass() ? FlagGlass : 0) | (packed ? FlagMetalRoughPacked : 0);
+
+	// The maps themselves, for a ray hit (as the mesh shaders read them: Include/MeshMaterial.glslh)
+	const float tiling = material->Get<float>("u_MaterialUniforms.TilingFactor");
+	entry.Tiling = tiling > 0.0f ? tiling : 1.0f;
+	entry.EmissiveIntensity = material->Get<float>("u_MaterialUniforms.EmissiveIntensity");
+	if (textures)
+	{
+		auto mapIndex = [&](uint32_t slot)
+		{
+			auto map = usedMap(slot);
+			return map ? textures->GetSlot(map) : NoMap;
+		};
+		entry.AlbedoMapIndex = mapIndex(EnvMapVulkanMaterial::Albedo);
+		entry.NormalMapIndex = mapIndex(EnvMapVulkanMaterial::Normal);
+		entry.RoughnessMapIndex = mapIndex(EnvMapVulkanMaterial::Roughness);
+		entry.MetalnessMapIndex = mapIndex(EnvMapVulkanMaterial::Metalness);
+		entry.EmissiveMapIndex = mapIndex(EnvMapVulkanMaterial::Emissive);
+	}
 	return entry;
 }
 

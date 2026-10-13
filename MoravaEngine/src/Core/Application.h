@@ -32,6 +32,7 @@ struct ApplicationCommandLine
 	float ExitAfterSeconds = 0.0f; // --exit-after <seconds>: closes the window after this time in the main loop (0: never)
 	int DebugView = 0;             // --debug-view <number>: the debug view at startup (SceneEnvMapVulkan: the entry of the
 	                               // Environment panel's Debug View list, 0 = Off)
+	bool NoRayTracing = false;     // --no-ray-tracing: Vulkan without the ray tracing extensions, as on a GPU that has none
 };
 
 class Application

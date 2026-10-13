@@ -58,6 +58,14 @@ namespace H2M
 		indexbufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		indexbufferInfo.size = m_Size;
 		indexbufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+		// With ray tracing every mesh can be put into an acceleration structure, and a ray hit (or the compute skinning)
+		// reads the buffer by its address or as a storage buffer
+		const bool rayTracing = VulkanContextH2M::GetCurrentDevice()->IsRayTracingSupported();
+		if (rayTracing)
+		{
+			indexbufferInfo.usage |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT | VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR |
+				VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+		}
 
 		// Copy index data to a buffer visible to the host
 		VK_CHECK_RESULT_H2M(vkCreateBuffer(device, &indexbufferInfo, nullptr, &m_VulkanBuffer));
@@ -65,7 +73,7 @@ namespace H2M
 		vkGetBufferMemoryRequirements(device, m_VulkanBuffer, &memoryRequirements);
 
 		VulkanAllocatorH2M allocator(std::string("IndexBuffer"));
-		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		allocator.Allocate(memoryRequirements, &m_DeviceMemory, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, rayTracing);
 
 		void* dstBuffer;
 		VK_CHECK_RESULT_H2M(vkMapMemory(device, m_DeviceMemory, 0, m_Size, 0, &dstBuffer));

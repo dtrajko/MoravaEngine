@@ -124,22 +124,8 @@ layout (set = 0, binding = 15) uniform sampler2D u_AOImage;
 
 // The materials of the Material Library as plain values, one entry per material (EnvMapVulkanMaterialBuffer): what a
 // shader needs to know of a material it has no descriptor set for (set 1 holds one material's maps). A draw's entry is
-// u_MaterialUniforms.MaterialIndex. 64 bytes each, std430: must match EnvMapVulkanMaterialBuffer::GPUMaterial.
-struct GPUMaterial
-{
-	vec4 AlbedoColor;       // rgb: the albedo color, or the average color of the albedo map when it is used
-	vec4 Emissive;          // rgb: the average color of the emissive map * the emissive intensity (0 without the map)
-	float Metalness;        // the value, or the map's average
-	float Roughness;        // the value, or the map's average
-	uint Flags;             // bit 0: glass
-	// The maps in an array of all textures, for shaders that can reach any material (ray tracing): not used yet, all
-	// 0xFFFFFFFF (no map)
-	uint AlbedoMapIndex;
-	uint NormalMapIndex;
-	uint RoughnessMapIndex;
-	uint MetalnessMapIndex;
-	uint EmissiveMapIndex;
-};
+// u_MaterialUniforms.MaterialIndex.
+#include "GPUMaterial.glslh"
 layout (std430, set = 0, binding = 17) readonly buffer Materials
 {
 	GPUMaterial u_Materials[];

@@ -1,0 +1,217 @@
+// Tracing a ray against the scene and reading what it hit (SceneEnvMapVulkan, see EnvMapVulkanRayTracing and Phase G of
+// docs/rendering/SSAO_GI_RayTracing_Guide.html). For compute shaders: the ray is a ray query, traced where the shader
+// needs it. Include this file first, right after "#version 460 core" (ray queries need GLSL 4.60, and the file turns
+// on extensions).
+//
+// Set 3 holds the scene as rays see it:
+//   0  u_TLAS                  the top-level acceleration structure: every mesh of every model, where it is this frame
+//   1  u_RayTracingInstances   a mesh's vertices, indices and material, by the instance number a hit returns
+//   2  u_RayTracingMaterials   the material buffer (the same buffer as u_Materials in Include/FrameSet.glslh)
+//   3  u_Textures              every texture the materials use, by the map indices in a material's entry
+//
+// TraceRay finds the hit; GetRaySurface turns it into the surface point (position, normals, texture coordinate), as the
+// mesh shaders' vertex stage does for a pixel; GetRayMaterial reads the material there, as Include/MeshMaterial.glslh
+// does. A ray-traced pixel and a rasterized one then show the same surface.
+#ifndef RAY_TRACING_GLSLH
+#define RAY_TRACING_GLSLH
+
+#extension GL_EXT_ray_query : require
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_scalar_block_layout : require
+#extension GL_EXT_nonuniform_qualifier : require
+
+#include "GPUMaterial.glslh"
+
+// Which meshes a ray can hit (the mask of TraceRay): an instance is in one group. Must match EnvMapVulkanRayTracing.
+const uint RayMaskOpaque = 0x01u; // what the opaque passes draw
+const uint RayMaskGlass = 0x02u;  // glass meshes (the glass pass)
+const uint RayMaskAll = 0xFFu;
+
+// A vertex as the acceleration structures and the hits read it: the static mesh vertex (H2M::VertexH2M, 56 bytes, no
+// padding: the scalar layout). A skinned model's vertices are in this form too, already moved by its bones
+// (RayTracingSkinning.glsl).
+struct RayTracingVertex
+{
+	vec3 Position;
+	vec3 Normal;
+	vec3 Tangent;
+	vec3 Binormal;
+	vec2 TexCoord;
+};
+
+// Buffers reached by their address instead of a binding: one pair per mesh, far too many for a descriptor set
+layout (buffer_reference, scalar, buffer_reference_align = 4) readonly buffer RayTracingVertices
+{
+	RayTracingVertex Vertices[];
+};
+layout (buffer_reference, scalar, buffer_reference_align = 4) readonly buffer RayTracingIndices
+{
+	uint Indices[];
+};
+
+// 24 bytes, std430: must match EnvMapVulkanRayTracing::GPUInstance
+struct RayTracingInstance
+{
+	RayTracingVertices Vertices; // the mesh's first vertex
+	RayTracingIndices Indices;   // the mesh's first index (the indices count from the mesh's first vertex)
+	uint MaterialIndex;          // the mesh's entry in u_RayTracingMaterials
+	uint Flags;
+};
+
+layout (set = 3, binding = 0) uniform accelerationStructureEXT u_TLAS;
+layout (std430, set = 3, binding = 1) readonly buffer RayTracingInstances
+{
+	RayTracingInstance u_RayTracingInstances[];
+};
+layout (std430, set = 3, binding = 2) readonly buffer RayTracingMaterials
+{
+	GPUMaterial u_RayTracingMaterials[];
+};
+layout (set = 3, binding = 3) uniform sampler2D u_Textures[];
+
+struct RayHit
+{
+	bool Hit;
+	bool FrontFace;       // the ray met the triangle's front (counter-clockwise) side
+	float T;              // the distance along the ray
+	int Instance;         // the mesh: its entry in u_RayTracingInstances
+	int Primitive;        // the triangle in the mesh
+	vec2 Barycentrics;    // the weights of the triangle's second and third vertex at the hit
+	mat4x3 ObjectToWorld; // the mesh's transform
+};
+
+// The nearest hit of the ray among the meshes of the mask's groups, between tMin and tMax. Every mesh counts as opaque:
+// a hit is final, no shader runs to accept or reject it.
+RayHit TraceRay(vec3 origin, vec3 direction, float tMin, float tMax, uint mask)
+{
+	rayQueryEXT query;
+	rayQueryInitializeEXT(query, u_TLAS, gl_RayFlagsOpaqueEXT, mask, origin, tMin, direction, tMax);
+	while (rayQueryProceedEXT(query))
+	{
+	}
+
+	RayHit hit;
+	hit.Hit = rayQueryGetIntersectionTypeEXT(query, true) == gl_RayQueryCommittedIntersectionTriangleEXT;
+	if (hit.Hit)
+	{
+		hit.FrontFace = rayQueryGetIntersectionFrontFaceEXT(query, true);
+		hit.T = rayQueryGetIntersectionTEXT(query, true);
+		hit.Instance = rayQueryGetIntersectionInstanceCustomIndexEXT(query, true);
+		hit.Primitive = rayQueryGetIntersectionPrimitiveIndexEXT(query, true);
+		hit.Barycentrics = rayQueryGetIntersectionBarycentricsEXT(query, true);
+		hit.ObjectToWorld = rayQueryGetIntersectionObjectToWorldEXT(query, true);
+	}
+	return hit;
+}
+
+// The surface point of a hit, in world space
+struct RaySurface
+{
+	vec3 Position;
+	vec3 Normal;          // the vertex normals between the triangle's corners (not unit length), as the mesh shaders'
+	                      // Input.Normal
+	mat3 WorldNormals;    // the tangent frame: turns a normal map's value into world space (Input.WorldNormals)
+	vec3 GeometricNormal; // the triangle's own normal (unit length), on its front side
+	vec2 TexCoord;
+	float TexCoordDensity; // how much the texture coordinate changes per world unit on this triangle (for the maps' level)
+	uint MaterialIndex;
+};
+
+RaySurface GetRaySurface(RayHit hit)
+{
+	RayTracingInstance instance = u_RayTracingInstances[hit.Instance];
+	uint i0 = instance.Indices.Indices[hit.Primitive * 3 + 0];
+	uint i1 = instance.Indices.Indices[hit.Primitive * 3 + 1];
+	uint i2 = instance.Indices.Indices[hit.Primitive * 3 + 2];
+	RayTracingVertex v0 = instance.Vertices.Vertices[i0];
+	RayTracingVertex v1 = instance.Vertices.Vertices[i1];
+	RayTracingVertex v2 = instance.Vertices.Vertices[i2];
+	vec3 weights = vec3(1.0 - hit.Barycentrics.x - hit.Barycentrics.y, hit.Barycentrics.x, hit.Barycentrics.y);
+
+	// Normals are turned with the transform's 3 x 3 part, as in the mesh shaders' vertex stage
+	mat3 toWorld = mat3(hit.ObjectToWorld);
+	vec3 normal = v0.Normal * weights.x + v1.Normal * weights.y + v2.Normal * weights.z;
+	vec3 tangent = v0.Tangent * weights.x + v1.Tangent * weights.y + v2.Tangent * weights.z;
+	vec3 binormal = v0.Binormal * weights.x + v1.Binormal * weights.y + v2.Binormal * weights.z;
+
+	// The triangle's edges in world space and in texture space: their areas give its normal and its texture density
+	vec3 faceNormal = cross(toWorld * (v1.Position - v0.Position), toWorld * (v2.Position - v0.Position));
+	vec2 texEdge1 = v1.TexCoord - v0.TexCoord, texEdge2 = v2.TexCoord - v0.TexCoord;
+	float worldArea = length(faceNormal);
+	float texArea = abs(texEdge1.x * texEdge2.y - texEdge1.y * texEdge2.x);
+
+	RaySurface surface;
+	surface.Position = hit.ObjectToWorld * vec4(v0.Position * weights.x + v1.Position * weights.y + v2.Position * weights.z, 1.0);
+	surface.Normal = toWorld * normal;
+	surface.WorldNormals = toWorld * mat3(tangent, binormal, normal);
+	surface.GeometricNormal = worldArea > 0.0 ? faceNormal / worldArea : vec3(0.0, 1.0, 0.0);
+	surface.TexCoord = v0.TexCoord * weights.x + v1.TexCoord * weights.y + v2.TexCoord * weights.z;
+	surface.TexCoordDensity = worldArea > 0.0 ? sqrt(texArea / worldArea) : 0.0;
+	surface.MaterialIndex = instance.MaterialIndex;
+	return surface;
+}
+
+// The material at a surface point
+struct RayMaterial
+{
+	vec3 Albedo;
+	vec3 Normal;     // the world-space shading normal (unit length): the vertex normal, or the normal map's
+	float Roughness;
+	float Metalness;
+	vec3 Emissive;
+	uint Flags;      // GPUMaterialFlag...
+};
+
+// A map of the array of all textures, at the level where one texel is about as big as what the ray stands for.
+// coverage: the part of the map's width that is (in texture coordinates). A rasterized pixel gets its level from the
+// pixels next to it; a ray has none, so its caller says how wide it is.
+vec4 SampleRayTexture(uint index, vec2 texCoord, float coverage)
+{
+	vec2 size = vec2(textureSize(u_Textures[nonuniformEXT(index)], 0));
+	float lod = log2(max(coverage * sqrt(size.x * size.y), 1.0));
+	return textureLod(u_Textures[nonuniformEXT(index)], texCoord, lod);
+}
+
+// footprint: how wide the ray is where it hits, in world units (for a camera ray: a pixel's width at that distance). The
+// maps are read at the level that fits it. 0: at full size (sharp, and it flickers in the distance).
+RayMaterial GetRayMaterial(RaySurface surface, float footprint)
+{
+	GPUMaterial entry = u_RayTracingMaterials[surface.MaterialIndex];
+	vec2 texCoord = surface.TexCoord * entry.Tiling;
+	float coverage = footprint * surface.TexCoordDensity * entry.Tiling;
+	bool packed = (entry.Flags & GPUMaterialFlagMetalRoughPacked) != 0u;
+
+	RayMaterial material;
+	material.Flags = entry.Flags;
+	material.Albedo = entry.AlbedoColor.rgb;
+	if (entry.AlbedoMapIndex != GPUMaterialNoMap)
+	{
+		material.Albedo = SampleRayTexture(entry.AlbedoMapIndex, texCoord, coverage).rgb;
+	}
+	material.Normal = normalize(surface.Normal);
+	if (entry.NormalMapIndex != GPUMaterialNoMap)
+	{
+		vec3 mapNormal = normalize(2.0 * SampleRayTexture(entry.NormalMapIndex, texCoord, coverage).rgb - 1.0);
+		material.Normal = normalize(surface.WorldNormals * mapNormal);
+	}
+	material.Roughness = entry.Roughness;
+	if (entry.RoughnessMapIndex != GPUMaterialNoMap)
+	{
+		vec4 value = SampleRayTexture(entry.RoughnessMapIndex, texCoord, coverage);
+		material.Roughness = max(packed ? value.g : value.r, 0.05);
+	}
+	material.Metalness = entry.Metalness;
+	if (entry.MetalnessMapIndex != GPUMaterialNoMap)
+	{
+		vec4 value = SampleRayTexture(entry.MetalnessMapIndex, texCoord, coverage);
+		material.Metalness = packed ? value.b : value.r;
+	}
+	material.Emissive = entry.Emissive.rgb;
+	if (entry.EmissiveMapIndex != GPUMaterialNoMap)
+	{
+		material.Emissive = SampleRayTexture(entry.EmissiveMapIndex, texCoord, coverage).rgb * entry.EmissiveIntensity;
+	}
+	return material;
+}
+
+#endif

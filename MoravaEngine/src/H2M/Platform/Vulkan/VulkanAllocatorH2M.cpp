@@ -67,7 +67,8 @@ namespace H2M
 		return allocation;
 	}
 
-	void VulkanAllocatorH2M::Allocate(VkMemoryRequirements requirements, VkDeviceMemory* dest, VkMemoryPropertyFlags flags /*= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT*/)
+	void VulkanAllocatorH2M::Allocate(VkMemoryRequirements requirements, VkDeviceMemory* dest, VkMemoryPropertyFlags flags /*= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT*/,
+		bool deviceAddress /*= false*/)
 	{
 		H2M_CORE_ASSERT(m_Device);
 
@@ -78,6 +79,13 @@ namespace H2M
 		memAlloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 		memAlloc.allocationSize = requirements.size;
 		memAlloc.memoryTypeIndex = m_Device->GetPhysicalDevice()->GetMemoryTypeIndex(requirements.memoryTypeBits, flags);
+		VkMemoryAllocateFlagsInfo allocateFlags = {};
+		if (deviceAddress)
+		{
+			allocateFlags.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+			allocateFlags.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
+			memAlloc.pNext = &allocateFlags;
+		}
 		VK_CHECK_RESULT_H2M(vkAllocateMemory(m_Device->GetVulkanDevice(), &memAlloc, nullptr, dest));
 	}
 

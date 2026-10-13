@@ -125,6 +125,13 @@ namespace H2M
 		return type.array.empty() ? 1 : std::max(1u, (uint32_t)type.array[0]);
 	}
 
+	// "sampler2D u_Textures[]": an array without a size (SPIRV-Cross gives it the literal size 0)
+	static bool IsRuntimeDescriptorArray(const spirv_cross::Compiler& compiler, const spirv_cross::Resource& resource)
+	{
+		const spirv_cross::SPIRType& type = compiler.get_type(resource.type_id);
+		return !type.array.empty() && type.array_size_literal[0] && type.array[0] == 0;
+	}
+
 	// Total number of descriptors needed for a set of image bindings (arrays count every element)
 	static uint32_t GetDescriptorCount(const std::unordered_map<uint32_t, VulkanShaderH2M::ImageSamplerH2M>& imageSamplers)
 	{
@@ -385,6 +392,12 @@ namespace H2M
 			imageSampler.BindingPoint = binding;
 			imageSampler.DescriptorSet = descriptorSet;
 			imageSampler.ArraySize = GetDescriptorArraySize(compiler, resource);
+			imageSampler.Bindless = IsRuntimeDescriptorArray(compiler, resource);
+			if (imageSampler.Bindless)
+			{
+				imageSampler.ArraySize = BindlessArraySize;
+				shaderDescriptorSet.UpdateAfterBind = true;
+			}
 			imageSampler.Name = name;
 			imageSampler.ShaderStage = shaderStage;
 			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
@@ -397,6 +410,28 @@ namespace H2M
 			MORAVA_CORE_TRACE("  Binding Point: {0}", binding);
 			// MORAVA_CORE_TRACE("  Size: {0}", size);
 			MORAVA_CORE_TRACE("--------------------------");
+		}
+
+		// Acceleration structures (ray tracing): only the binding is reflected, as for a storage buffer
+		MORAVA_CORE_TRACE("Acceleration Structures:");
+		for (const spirv_cross::Resource& resource : resources.acceleration_structures)
+		{
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
+			ShaderDescriptorSetH2M& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			auto existing = shaderDescriptorSet.AccelerationStructures.find(binding);
+			if (existing != shaderDescriptorSet.AccelerationStructures.end())
+			{
+				existing->second.ShaderStage = (VkShaderStageFlagBits)(existing->second.ShaderStage | shaderStage);
+				continue;
+			}
+			AccelerationStructureH2M& accelerationStructure = shaderDescriptorSet.AccelerationStructures[binding];
+			accelerationStructure.BindingPoint = binding;
+			accelerationStructure.Name = resource.name;
+			accelerationStructure.ShaderStage = shaderStage;
+
+			MORAVA_CORE_TRACE("    {0} ({1}, {2})", resource.name, descriptorSet, binding);
 		}
 
 		MORAVA_CORE_TRACE("Storage Images:");
@@ -474,6 +509,13 @@ namespace H2M
 				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.StorageBuffers.size());
 			}
 
+			if (shaderDescriptorSet.AccelerationStructures.size())
+			{
+				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.AccelerationStructures.size());
+			}
+
 #if 0
 			// TODO: Move this to the centralized renderer
 			// Create the global descriptor pool
@@ -495,6 +537,9 @@ namespace H2M
 			//////////////////////////////////////////////////////////////////////
 
 			std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+			// What a bindless array's binding needs (in the order of layoutBindings; the other bindings have none): only
+			// the elements a shader reads must hold an image, and free elements may be written while the set is in use
+			std::unordered_map<uint32_t, VkDescriptorBindingFlags> bindingFlagsByBinding;
 			for (auto& [binding, uniformBuffer] : shaderDescriptorSet.UniformBuffers)
 			{
 				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
@@ -522,6 +567,11 @@ namespace H2M
 				layoutBinding.stageFlags = imageSampler.ShaderStage;
 				layoutBinding.pImmutableSamplers = nullptr;
 				layoutBinding.binding = binding;
+				if (imageSampler.Bindless)
+				{
+					bindingFlagsByBinding[binding] = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT |
+						VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT;
+				}
 
 				H2M_CORE_ASSERT(shaderDescriptorSet.UniformBuffers.find(binding) == shaderDescriptorSet.UniformBuffers.end(), "Binding is already present in m_UniformBuffers!");
 
@@ -578,11 +628,45 @@ namespace H2M
 				set.dstBinding = layoutBinding.binding;
 			}
 
+			for (auto& [binding, accelerationStructure] : shaderDescriptorSet.AccelerationStructures)
+			{
+				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.stageFlags = accelerationStructure.ShaderStage;
+				layoutBinding.pImmutableSamplers = nullptr;
+				layoutBinding.binding = binding;
+
+				// The structure is the caller's: a VkWriteDescriptorSetAccelerationStructureKHR goes into pNext when the set is written
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[accelerationStructure.Name];
+				set = {};
+				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+				set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR
+				set.descriptorCount = 1;
+				set.dstBinding = layoutBinding.binding;
+			}
+
 			VkDescriptorSetLayoutCreateInfo descriptorLayout = {};
 			descriptorLayout.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			descriptorLayout.pNext = nullptr;
 			descriptorLayout.bindingCount = static_cast<uint32_t>(layoutBindings.size());
 			descriptorLayout.pBindings = layoutBindings.data();
+
+			std::vector<VkDescriptorBindingFlags> bindingFlags(layoutBindings.size(), 0);
+			VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo = {};
+			if (shaderDescriptorSet.UpdateAfterBind)
+			{
+				for (size_t i = 0; i < layoutBindings.size(); i++)
+				{
+					auto flags = bindingFlagsByBinding.find(layoutBindings[i].binding);
+					bindingFlags[i] = flags != bindingFlagsByBinding.end() ? flags->second : 0;
+				}
+				bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+				bindingFlagsInfo.bindingCount = static_cast<uint32_t>(bindingFlags.size());
+				bindingFlagsInfo.pBindingFlags = bindingFlags.data();
+				descriptorLayout.pNext = &bindingFlagsInfo;
+				descriptorLayout.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+			}
 
 			MORAVA_CORE_INFO("Creating descriptor set {0} with {1} ubos, {2} samplers and {3} storage images", set,
 				shaderDescriptorSet.UniformBuffers.size(),
@@ -654,6 +738,10 @@ namespace H2M
 		descriptorPoolInfo.poolSizeCount = (uint32_t)m_TypeCounts.at(set).size();
 		descriptorPoolInfo.pPoolSizes = m_TypeCounts.at(set).data();
 		descriptorPoolInfo.maxSets = 1;
+		if (m_ShaderDescriptorSets.at(set).UpdateAfterBind)
+		{
+			descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT; // a set with a bindless array
+		}
 
 		VK_CHECK_RESULT_H2M(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &result.Pool));
 
@@ -702,6 +790,12 @@ namespace H2M
 				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.StorageBuffers.size()) * numberOfSets;
 			}
+			if (shaderDescriptorSet.AccelerationStructures.size())
+			{
+				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
+				typeCount.type = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.AccelerationStructures.size()) * numberOfSets;
+			}
 
 		}
 
@@ -718,6 +812,10 @@ namespace H2M
 		descriptorPoolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.at(set).size());
 		descriptorPoolInfo.pPoolSizes = poolSizes.at(set).data();
 		descriptorPoolInfo.maxSets = numberOfSets;
+		if (m_ShaderDescriptorSets.at(set).UpdateAfterBind)
+		{
+			descriptorPoolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT; // sets with a bindless array
+		}
 
 		VK_CHECK_RESULT_H2M(vkCreateDescriptorPool(device, &descriptorPoolInfo, nullptr, &result.Pool));
 

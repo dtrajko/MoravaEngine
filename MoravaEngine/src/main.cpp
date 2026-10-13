@@ -1,6 +1,7 @@
 #include "main.h"
 
 #include "H2M/Core/LogH2M.h"
+#include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
 
 #include <cstdlib>
 #include <string>
@@ -24,6 +25,7 @@ void SelectRendererAPI()
 //   --exit-after <seconds>  close the application after this time in the main loop
 //   --debug-view <number>   start with this debug view (SceneEnvMapVulkan: the entry of the Environment panel's Debug View
 //                           list, 0 = Off, e.g. 8 = Probe Irradiance Only, 10 = Ambient Occlusion)
+//   --no-ray-tracing        Vulkan without the ray tracing extensions, as on a GPU that has none (to check the fallbacks)
 static ApplicationCommandLine ParseCommandLine(int argc, char** argv)
 {
 	ApplicationCommandLine commandLine;
@@ -63,6 +65,10 @@ static ApplicationCommandLine ParseCommandLine(int argc, char** argv)
 				commandLine.DebugView = (int)view;
 			}
 		}
+		else if (option == "--no-ray-tracing")
+		{
+			commandLine.NoRayTracing = true;
+		}
 		else if (option == "--scene" || option == "--exit-after" || option == "--debug-view")
 		{
 			Log::GetLogger()->warn("Command line: {0} needs a value (ignored)", option);
@@ -83,6 +89,10 @@ int main(int argc, char** argv)
 	SelectRendererAPI();
 
 	Application::Get()->SetCommandLine(ParseCommandLine(argc, argv));
+	if (Application::Get()->GetCommandLine().NoRayTracing)
+	{
+		H2M::VulkanPhysicalDeviceH2M::DisableRayTracing(); // before the window creates the Vulkan device
+	}
 
 	Application::Get()->InitWindow(WindowSpecification("Morava Engine", 1280, 720));
 

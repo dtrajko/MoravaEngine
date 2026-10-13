@@ -19,6 +19,57 @@ namespace H2M
 	// Vulkan Physical Device
 	////////////////////////////////////////////////////////////////////////////////////
 
+	// What ray tracing needs of the GPU, in the structures the features are asked for and enabled with. The descriptor
+	// indexing features are for the array of all textures a ray hit reads its material's maps from.
+	struct RayTracingFeaturesH2M
+	{
+		VkPhysicalDeviceVulkan12Features Vulkan12 = {};
+		VkPhysicalDeviceAccelerationStructureFeaturesKHR AccelerationStructure = {};
+		VkPhysicalDeviceRayQueryFeaturesKHR RayQuery = {};
+
+		// The start of the chain (the address of this object must not change afterwards)
+		void* Chain()
+		{
+			Vulkan12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+			Vulkan12.pNext = &AccelerationStructure;
+			AccelerationStructure.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+			AccelerationStructure.pNext = &RayQuery;
+			RayQuery.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_QUERY_FEATURES_KHR;
+			RayQuery.pNext = nullptr;
+			return &Vulkan12;
+		}
+
+		bool HasAll() const
+		{
+			return Vulkan12.bufferDeviceAddress && Vulkan12.scalarBlockLayout && Vulkan12.runtimeDescriptorArray &&
+				Vulkan12.descriptorBindingPartiallyBound && Vulkan12.shaderSampledImageArrayNonUniformIndexing &&
+				Vulkan12.descriptorBindingSampledImageUpdateAfterBind && Vulkan12.descriptorBindingUpdateUnusedWhilePending &&
+				AccelerationStructure.accelerationStructure && RayQuery.rayQuery;
+		}
+
+		// Only what is needed, whatever else the GPU has
+		void EnableNeeded()
+		{
+			Chain();
+			Vulkan12.bufferDeviceAddress = VK_TRUE;
+			Vulkan12.scalarBlockLayout = VK_TRUE;
+			Vulkan12.descriptorIndexing = VK_TRUE;
+			Vulkan12.runtimeDescriptorArray = VK_TRUE;
+			Vulkan12.descriptorBindingPartiallyBound = VK_TRUE;
+			Vulkan12.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+			Vulkan12.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+			Vulkan12.descriptorBindingUpdateUnusedWhilePending = VK_TRUE;
+			AccelerationStructure.accelerationStructure = VK_TRUE;
+			RayQuery.rayQuery = VK_TRUE;
+		}
+	};
+
+	static const char* const s_RayTracingExtensions[] = {
+		VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
+		VK_KHR_RAY_QUERY_EXTENSION_NAME,
+		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME, // required by the acceleration structure extension
+	};
+
 	VulkanPhysicalDeviceH2M::VulkanPhysicalDeviceH2M()
 	{
 		auto vkInstance = VulkanContextH2M::GetInstance();
@@ -81,6 +132,28 @@ namespace H2M
 					MORAVA_CORE_TRACE("  {0}", ext.extensionName);
 				}
 			}
+		}
+
+		// Ray tracing: the extensions and every feature the engine's ray-traced effects use, on a Vulkan 1.2 GPU
+		{
+			bool extensionsSupported = true;
+			for (const char* extension : s_RayTracingExtensions)
+			{
+				extensionsSupported = extensionsSupported && IsExtensionSupported(extension);
+			}
+			bool featuresSupported = false;
+			if (extensionsSupported && m_Properties.apiVersion >= VK_API_VERSION_1_2)
+			{
+				RayTracingFeaturesH2M rayTracingFeatures;
+				VkPhysicalDeviceFeatures2 features2 = {};
+				features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+				features2.pNext = rayTracingFeatures.Chain();
+				vkGetPhysicalDeviceFeatures2(m_PhysicalDevice, &features2);
+				featuresSupported = rayTracingFeatures.HasAll();
+			}
+			m_RayTracingSupported = featuresSupported && !s_RayTracingDisabled;
+			MORAVA_CORE_INFO("Vulkan ray tracing (acceleration structures, ray queries): {0}", m_RayTracingSupported ? "enabled" :
+				(featuresSupported ? "turned off (--no-ray-tracing)" : "not supported"));
 		}
 
 		// Queue families
@@ -282,6 +355,18 @@ namespace H2M
 		{
 			deviceExtensions.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
 			m_EnableDebugMarkers = true;
+		}
+
+		// Ray tracing, when the GPU has all of it (feature structures in pNext may accompany pEnabledFeatures)
+		RayTracingFeaturesH2M rayTracingFeatures;
+		if (m_PhysicalDevice->IsRayTracingSupported())
+		{
+			for (const char* extension : s_RayTracingExtensions)
+			{
+				deviceExtensions.push_back(extension);
+			}
+			rayTracingFeatures.EnableNeeded();
+			deviceCreateInfo.pNext = rayTracingFeatures.Chain();
 		}
 
 		if (deviceExtensions.size() > 0)

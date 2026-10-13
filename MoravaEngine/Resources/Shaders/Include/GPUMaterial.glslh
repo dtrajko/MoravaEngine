@@ -1,0 +1,31 @@
+// A material of the Material Library as plain values: an entry of the material buffer (EnvMapVulkanMaterialBuffer), which
+// is u_Materials in the per-frame set (Include/FrameSet.glslh) and u_RayTracingMaterials in the ray tracing set
+// (Include/RayTracing.glslh). 80 bytes, std430: must match EnvMapVulkanMaterialBuffer::GPUMaterial.
+#ifndef GPU_MATERIAL_GLSLH
+#define GPU_MATERIAL_GLSLH
+
+struct GPUMaterial
+{
+	vec4 AlbedoColor;       // rgb: the albedo color, or the average color of the albedo map when it is used
+	vec4 Emissive;          // rgb: the average color of the emissive map * the emissive intensity (0 without the map)
+	float Metalness;        // the value, or the map's average
+	float Roughness;        // the value, or the map's average
+	uint Flags;             // GPUMaterialFlagGlass, GPUMaterialFlagMetalRoughPacked
+	// The maps the material uses, as elements of the array of all textures (u_Textures in Include/RayTracing.glslh), for
+	// a shader that can reach any material: a ray hit. GPUMaterialNoMap: the material has the value above instead.
+	uint AlbedoMapIndex;
+	uint NormalMapIndex;
+	uint RoughnessMapIndex;
+	uint MetalnessMapIndex;
+	uint EmissiveMapIndex;
+	float Tiling;            // the texture coordinate scale the maps are read with
+	float EmissiveIntensity; // multiplies the emissive map
+	uint Padding0;
+	uint Padding1;
+};
+
+const uint GPUMaterialNoMap = 0xFFFFFFFFu;
+const uint GPUMaterialFlagGlass = 1u;
+const uint GPUMaterialFlagMetalRoughPacked = 2u; // glTF: roughness in G, metalness in B of their map; otherwise both in R
+
+#endif

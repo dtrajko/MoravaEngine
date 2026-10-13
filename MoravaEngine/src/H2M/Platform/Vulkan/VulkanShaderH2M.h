@@ -47,9 +47,27 @@ namespace H2M
 			uint32_t BindingPoint = 0;
 			uint32_t DescriptorSet = 0;
 			uint32_t ArraySize = 1; // number of descriptors in the binding, e.g. 32 for "sampler2D u_Textures[32]"
+			// An array without a size ("sampler2D u_Textures[]"): BindlessArraySize descriptors, of which only the ones a
+			// shader really reads must be written, and which may be written while the set is in use (see BindlessArraySize)
+			bool Bindless = false;
 			std::string Name;
 			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
 		};
+
+		// "accelerationStructureEXT u_TLAS": what rays are traced against (the structure is the caller's, as a storage buffer)
+		struct AccelerationStructureH2M
+		{
+			uint32_t BindingPoint = 0;
+			std::string Name;
+			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+		};
+
+		// The descriptors of an array declared without a size: an array of all textures, indexed by a number from a
+		// buffer (ray tracing: a hit can be on any material). Its binding is partially bound and update-after-bind, so its
+		// set comes from a pool of its own kind (CreateDescriptorSets takes care of it) and new textures can be written
+		// into free elements at any time. Needs the descriptor indexing features (VulkanDeviceH2M enables them with ray
+		// tracing).
+		static constexpr uint32_t BindlessArraySize = 2048;
 
 		struct PushConstantRangeH2M
 		{
@@ -182,10 +200,12 @@ namespace H2M
 			std::unordered_map<uint32_t, StorageBufferH2M> StorageBuffers;
 			std::unordered_map<uint32_t, ImageSamplerH2M> ImageSamplers;
 			std::unordered_map<uint32_t, ImageSamplerH2M> StorageImages;
+			std::unordered_map<uint32_t, AccelerationStructureH2M> AccelerationStructures;
 
 			std::unordered_map<std::string, VkWriteDescriptorSet> WriteDescriptorSets;
+			bool UpdateAfterBind = false; // has a bindless array: its pool and layout are created for update-after-bind
 
-			operator bool() const { return !(StorageBuffers.empty() && UniformBuffers.empty() && ImageSamplers.empty() && StorageImages.empty()); }
+			operator bool() const { return !(StorageBuffers.empty() && UniformBuffers.empty() && ImageSamplers.empty() && StorageImages.empty() && AccelerationStructures.empty()); }
 		};
 
 		std::unordered_map<uint32_t, ShaderDescriptorSetH2M> m_ShaderDescriptorSets; // added in Hazel Live 19.02.2021
