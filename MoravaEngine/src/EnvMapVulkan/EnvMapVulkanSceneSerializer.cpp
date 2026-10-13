@@ -177,10 +177,12 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "CastShadows" << YAML::Value << light->CastShadows;
 			out << YAML::EndMap;
 		}
-		if (scene.TryGet<CameraComponent>(entity))
+		if (const CameraComponent* camera = scene.TryGet<CameraComponent>(entity))
 		{
 			// Its placement is the entity's transform
-			out << YAML::Key << "Camera" << YAML::Value << YAML::BeginMap << YAML::EndMap;
+			out << YAML::Key << "Camera" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "FieldOfView" << YAML::Value << camera->FieldOfView;
+			out << YAML::EndMap;
 		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
@@ -336,9 +338,10 @@ namespace EnvMapVulkanSceneSerializer
 					WaterComponent& water = scene.Add<WaterComponent>(entity);
 					ReadWater(waterNode, water.Settings);
 				}
-				if (node["Camera"])
+				if (YAML::Node cameraNode = node["Camera"])
 				{
-					scene.Add<CameraComponent>(entity);
+					CameraComponent& camera = scene.Add<CameraComponent>(entity);
+					Read(cameraNode, "FieldOfView", camera.FieldOfView); // scenes saved before the camera had a lens: 45
 				}
 				if (YAML::Node probesNode = node["ProbeVolume"])
 				{

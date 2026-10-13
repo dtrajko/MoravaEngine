@@ -1,0 +1,177 @@
+Scene:
+  Version: 1
+  Name: Cerberus_Gladiator
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 16389452200421516065
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [37.310528, 22.645681, -52.36538]
+      Rotation: [8.099902, 153.69836, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      {}
+  - ID: 2719219325639600205
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      Rotation: 202
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 7226738638345612472
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-14.381066, 13.097223, 84.5985]
+      Scale: [0.9999887, 0.99999654, 0.9999825]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 0.28021637
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 3094616813419442083
+    Name: CerberusMaterials.fbx
+    Parent: 0
+    Transform:
+      Translation: [24.740108, 10.3490095, -18.115826]
+      Rotation: [0, -0, 0]
+      Scale: [0.1999993, 0.20000005, 0.19999938]
+    Model:
+      File: Models/Cerberus/CerberusMaterials.fbx
+  - ID: 9732686343291175407
+    Name: Mesh.001
+    Parent: 3094616813419442083
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [-90.00001, -0, 0]
+      Scale: [100, 100, 100]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 11145658360458932732
+        File: assets/Materials/CerberusGlass.mmat
+        Name: CerberusGlass
+  - ID: 743085912973730001
+    Name: Water
+    Parent: 0
+    Transform:
+      Translation: [0.15944386, 10.321802, -4.063385]
+      Rotation: [0, -0, 0]
+      Scale: [80, 1, 80]
+    Water:
+      WaveDirection: 30
+      WaveSpeed: 0.5
+      WaveStrength: 0.25
+      WaveScale1: 7
+      WaveScale2: 2.5
+      SwellHeight: 0.25
+      SwellLength: 12
+      SwellSteepness: 0.5
+      Wireframe: false
+      ScatterColor: [0.012, 0.045, 0.055]
+      Roughness: 0.06
+      ReflectionStrength: 1
+      Transmittance: [0.55, 0.85, 0.88]
+      Clarity: 4
+      RefractionStrength: 1
+      EdgeSoftness: 0.3
+      FoamAmount: 0.6
+      FoamWidth: 0.4
+      TransparencyFromBelow: 0.48
+      PlanarReflection: true
+      ReflectionDivisor: 2
+      ReflectionDistortion: 1
+      Caustics: true
+      CausticsStrength: 1
+      CausticsFocus: 2
+      CausticsArea: 40
+  - ID: 6201887566730099657
+    Name: Gladiator.fbx
+    Parent: 0
+    Transform:
+      Translation: [-3.9314823, -9.327349, -8.960915]
+      Rotation: [179.9999, 89.99995, 179.9999]
+      Scale: [0.19999994, 0.20000014, 0.19999997]
+    Model:
+      File: Models/Gladiator/Gladiator.fbx
+  - ID: 6046673188521169062
+    Name: Gladiator_weapon
+    Parent: 6201887566730099657
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 11145658360458932732
+        File: assets/Materials/CerberusGlass.mmat
+        Name: CerberusGlass
+  - ID: 5131594068728338261
+    Name: Gladiator
+    Parent: 6201887566730099657
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 1
+      Material:
+        ID: 11145658360458932732
+        File: assets/Materials/CerberusGlass.mmat
+        Name: CerberusGlass

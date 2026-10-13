@@ -1,0 +1,30 @@
+Material:
+  Version: 1
+  ID: 11145658360458932732
+  Name: CerberusGlass
+  AlbedoColor: [0.5882353, 0.5882353, 0.5882353]
+  Metalness: 1
+  Roughness: 0.8585786
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Glass
+  Glass:
+    IOR: 1.35
+    Thickness: 1
+    CastShadows: 0
+    Solid: 1
+  Maps:
+    Normal:
+      File: Models/Cerberus/Textures/Cerberus_N.tga
+      Enabled: true
+    Metalness:
+      File: Models/Cerberus/Textures/Cerberus_M.png
+      Enabled: true
+    Roughness:
+      File: Models/Cerberus/Textures/Cerberus_R.png
+      Enabled: false
+    AmbientOcclusion:
+      File: Models/Cerberus/Textures/Cerberus_AO.png
+      Enabled: true

@@ -816,6 +816,10 @@ static void SyncCamera(H2M::CameraH2M* camera)
 		transform.Rotation = glm::vec3(camera->GetPitch(), turn, 0.0f);
 	}
 	transform.Scale = glm::vec3(1.0f);
+	// The lens: the projection is rebuilt from it with the viewport's size (OnUpdate)
+	CameraComponent& component = s_Scene.Get<CameraComponent>(s_CameraEntity);
+	component.FieldOfView = glm::clamp(component.FieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView);
+	camera->SetPerspectiveVerticalFOV(component.FieldOfView);
 	s_CameraEntitySynced = true;
 	s_SyncedCameraTranslation = transform.Translation;
 	s_SyncedCameraRotation = transform.Rotation;
@@ -5239,6 +5243,16 @@ static void OnImGuiRenderProperties()
 					"X: up (positive) and down, -89 to 89.\n"
 					"Y: around the vertical axis: 0 looks along -Z, positive turns to the left.\n"
 					"The camera isn't rolled.");
+			}
+			ImGui::SliderFloat("Field of View", &s_Scene.Get<CameraComponent>(entity).FieldOfView, CameraComponent::MinFieldOfView,
+				CameraComponent::MaxFieldOfView, "%.0f deg", ImGuiSliderFlags_AlwaysClamp);
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The angle the view spans from its bottom edge to its top edge.\n"
+					"Small: a telephoto lens. The view is flat, and things at different distances move almost together\n"
+					"when the camera moves.\n"
+					"Large: a wide-angle lens. Strong perspective: near things move much more than far ones, and shapes\n"
+					"stretch towards the edges. 45 to 60 is usual. Saved with the scene, and an unsaved change.");
 			}
 			ImGui::TextDisabled("Saved with the scene: an opened scene is seen from here.");
 			if (ImGui::IsItemHovered())

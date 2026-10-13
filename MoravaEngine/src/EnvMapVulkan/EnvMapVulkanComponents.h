@@ -142,7 +142,12 @@ struct ProbeVolumeComponent
 // -Z, positive turns to the left). It isn't rolled or scaled. Saved with the scene, so an opened scene is seen as it was.
 struct CameraComponent
 {
-	bool Unused = false; // a component needs a member: the scene's Add returns a reference to it
+	// The angle the view spans from its bottom edge to its top edge, in degrees. Small: a telephoto lens (flat, distant
+	// things stay large); large: a wide-angle lens (strong perspective, stretched towards the edges).
+	float FieldOfView = 45.0f;
+
+	static constexpr float MinFieldOfView = 10.0f;
+	static constexpr float MaxFieldOfView = 120.0f;
 };
 
 // The environment: the HDR map the scene is lit by and its skybox (one per scene)

@@ -50,8 +50,8 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [4.905847, 22.403711, 32.69361]
-      Rotation: [22.100233, 6.2020035, 0]
+      Translation: [19.366385, 15.09931, -2.8190084]
+      Rotation: [0.4001284, 87.40216, 0]
       Scale: [1, 1, 1]
     Camera:
       {}
@@ -176,28 +176,28 @@ Entities:
     Name: Spot Light 1
     Parent: 0
     Transform:
-      Translation: [11.418433, 11.76056, 6.690325]
-      Rotation: [-44.106956, 18.59615, -103.59688]
-      Scale: [0.999911, 0.99997836, 0.9999484]
+      Translation: [18.43828, 10.859855, -3.5044146]
+      Rotation: [13.098428, 21.158632, -84.09171]
+      Scale: [0.9999117, 0.9999839, 0.9999484]
     SpotLight:
       Enabled: true
       Color: [0.33823532, 1, 0.4160899]
       Intensity: 200
-      Range: 20.196852
-      InnerAngle: 29.8
-      OuterAngle: 37
+      Range: 97.35522
+      InnerAngle: 11.6
+      OuterAngle: 11.6
       CastShadows: true
   - ID: 17609660640847487716
     Name: Point Light 1
     Parent: 0
     Transform:
-      Translation: [-6.3927646, 3.9060645, 3.3397975]
+      Translation: [-6.3927646, 13.419079, -0.47884429]
       Rotation: [0.002407401, 38.925022, -0.0017775702]
       Scale: [0.9999181, 0.99999994, 0.9999354]
     PointLight:
       Enabled: true
       Color: [0.6764706, 1, 1]
-      Intensity: 500
+      Intensity: 100
       Range: 10.463261
       CastShadows: true
   - ID: 7305799606647957717
@@ -260,7 +260,7 @@ Entities:
     Name: Sphere1m.fbx
     Parent: 0
     Transform:
-      Translation: [-7.7905197, 15.2008915, -4.5715847]
+      Translation: [-8.196717, 13.449573, -9.046575]
       Rotation: [0, -0, 0]
       Scale: [0.10400002, 0.10400002, 0.10400002]
     Model:
