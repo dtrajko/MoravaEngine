@@ -49,6 +49,14 @@ void EnvMapVulkanSSAO::Create()
 		set = m_UpsamplePass.Pipeline->GetShader()->CreateDescriptorSets();
 	}
 	m_TemporalFilter.Create("TemporalFilter_R8", AOFormat);
+
+	// The ray-traced occlusion: a shader that only compiles for a device with ray tracing, so it is loaded here
+	if (H2M::VulkanContextH2M::GetCurrentDevice()->IsRayTracingSupported())
+	{
+		H2M::RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAORayTraced.glsl");
+		m_RayTracedPass.Create("SSAORayTraced");
+		m_RayTracedSet = m_RayTracedPass.Pipeline->GetShader()->CreateDescriptorSets(0);
+	}
 }
 
 void EnvMapVulkanSSAO::Destroy()
@@ -63,7 +71,7 @@ void EnvMapVulkanSSAO::Destroy()
 		vkDestroySampler(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), m_Sampler, nullptr);
 		m_Sampler = VK_NULL_HANDLE;
 	}
-	for (Pass* pass : { &m_DepthPass, &m_DepthMipPass, &m_GTAOPass, &m_DenoisePass, &m_UpsamplePass })
+	for (Pass* pass : { &m_DepthPass, &m_DepthMipPass, &m_GTAOPass, &m_DenoisePass, &m_UpsamplePass, &m_RayTracedPass })
 	{
 		pass->Pipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>();
 	}
@@ -144,6 +152,12 @@ void EnvMapVulkanSSAO::WriteDescriptors(const EnvMapVulkanGBuffer& gbuffer)
 	add(m_GTAOPass, m_GTAOSet, "u_Depth", &depth);
 	add(m_GTAOPass, m_GTAOSet, "u_NormalRoughness", &normalRoughness);
 	add(m_GTAOPass, m_GTAOSet, "o_AO", &rawTarget);
+	if (m_RayTracedPass.Pipeline)
+	{
+		add(m_RayTracedPass, m_RayTracedSet, "u_Depth", &depth);
+		add(m_RayTracedPass, m_RayTracedSet, "u_NormalRoughness", &normalRoughness);
+		add(m_RayTracedPass, m_RayTracedSet, "o_AO", &rawTarget);
+	}
 	add(m_DenoisePass, m_DenoiseSet, "u_AO", &raw);
 	add(m_DenoisePass, m_DenoiseSet, "u_Depth", &depth);
 	add(m_DenoisePass, m_DenoiseSet, "u_NormalRoughness", &normalRoughness);
@@ -162,12 +176,13 @@ void EnvMapVulkanSSAO::WriteDescriptors(const EnvMapVulkanGBuffer& gbuffer)
 }
 
 void EnvMapVulkanSSAO::Record(VkCommandBuffer commandBuffer, const EnvMapVulkanSSAOSettings& settings, EnvMapVulkanGBuffer& gbuffer,
-	const glm::mat4& view, const glm::mat4& projection, Stage stage)
+	const glm::mat4& view, const glm::mat4& projection, Stage stage, VkDescriptorSet rayTracingSet)
 {
 	if (!m_AO.Handle)
 	{
 		return;
 	}
+	m_RayTraced = settings.Enabled && settings.RayTraced && rayTracingSet != VK_NULL_HANDLE && m_RayTracedPass.Pipeline;
 	auto barrier = [commandBuffer](VkPipelineStageFlags sourceStages, VkAccessFlags sourceAccess, VkPipelineStageFlags destinationStages, VkAccessFlags destinationAccess)
 	{
 		VkMemoryBarrier memoryBarrier = {};
@@ -222,15 +237,26 @@ void EnvMapVulkanSSAO::Record(VkCommandBuffer commandBuffer, const EnvMapVulkanS
 	barrier(compute | fragment, readWrite, compute, readWrite);
 
 	dispatch(m_DepthPass, m_DepthSet, m_Width, m_Height);
-	for (uint32_t level = 1; level < m_DepthLevels; level++)
+	if (m_RayTraced)
 	{
+		// Rays against the scene's geometry: the depth's smaller levels aren't needed (they are GTAO's far lookups)
 		barrier(compute, VK_ACCESS_SHADER_WRITE_BIT, compute, VK_ACCESS_SHADER_READ_BIT);
-		push.Counts.w = (int)level - 1; // the level read
-		dispatch(m_DepthMipPass, m_DepthMipSets[level - 1], std::max(m_Width >> level, 1u), std::max(m_Height >> level, 1u));
+		push.Counts.x = glm::clamp(settings.Rays, 1, EnvMapVulkanSSAOSettings::MaxRays);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_RayTracedPass.Pipeline->GetVulkanPipelineLayout(), 3, 1, &rayTracingSet, 0, nullptr);
+		dispatch(m_RayTracedPass, m_RayTracedSet, m_Width, m_Height);
 	}
+	else
+	{
+		for (uint32_t level = 1; level < m_DepthLevels; level++)
+		{
+			barrier(compute, VK_ACCESS_SHADER_WRITE_BIT, compute, VK_ACCESS_SHADER_READ_BIT);
+			push.Counts.w = (int)level - 1; // the level read
+			dispatch(m_DepthMipPass, m_DepthMipSets[level - 1], std::max(m_Width >> level, 1u), std::max(m_Height >> level, 1u));
+		}
 
-	barrier(compute, VK_ACCESS_SHADER_WRITE_BIT, compute, VK_ACCESS_SHADER_READ_BIT);
-	dispatch(m_GTAOPass, m_GTAOSet, m_Width, m_Height);
+		barrier(compute, VK_ACCESS_SHADER_WRITE_BIT, compute, VK_ACCESS_SHADER_READ_BIT);
+		dispatch(m_GTAOPass, m_GTAOSet, m_Width, m_Height);
+	}
 
 	barrier(compute, VK_ACCESS_SHADER_WRITE_BIT, compute, VK_ACCESS_SHADER_READ_BIT);
 	push.Counts.w = settings.Denoise ? 1 : 0;

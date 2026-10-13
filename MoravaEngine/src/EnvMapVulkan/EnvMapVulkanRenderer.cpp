@@ -5247,6 +5247,8 @@ static void WriteRenderSettings(YAML::Emitter& out)
 	out << YAML::Key << "Denoise" << YAML::Value << occlusion.Denoise;
 	out << YAML::Key << "Temporal" << YAML::Value << occlusion.Temporal;
 	out << YAML::Key << "HalfResolution" << YAML::Value << occlusion.HalfResolution;
+	out << YAML::Key << "RayTraced" << YAML::Value << occlusion.RayTraced;
+	out << YAML::Key << "Rays" << YAML::Value << occlusion.Rays;
 	out << YAML::EndMap;
 
 	const BloomSettingsVulkan& bloom = s_BloomSettings;
@@ -5322,6 +5324,8 @@ static void ReadRenderSettings(const YAML::Node& settings)
 		ReadSetting(occlusion, "Denoise", o.Denoise);
 		ReadSetting(occlusion, "Temporal", o.Temporal);
 		ReadSetting(occlusion, "HalfResolution", o.HalfResolution);
+		ReadSetting(occlusion, "RayTraced", o.RayTraced);
+		ReadSetting(occlusion, "Rays", o.Rays);
 	}
 	if (YAML::Node bloom = settings["Bloom"])
 	{
@@ -8509,7 +8513,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 		// The scene for the rays, in the frames that trace any (the probes' update, a ray-traced debug view): the
 		// acceleration structures follow the meshes as they are drawn this frame. Then the debug view, when one is shown.
 		const bool probesTraceRays = s_Probes.HasCapture() && s_Probes.TracesRays();
-		if (IsRayTracingActive() && (probesTraceRays || IsRayTracedDebugView(s_DebugView)))
+		const bool occlusionTracesRays = s_SSAOSettings.Enabled && s_SSAOSettings.RayTraced;
+		if (IsRayTracingActive() && (probesTraceRays || occlusionTracesRays || IsRayTracedDebugView(s_DebugView)))
 		{
 			{
 				EnvMapVulkanProfiler::Scope sceneScope(drawCommandBuffer, "Ray Tracing Scene", "The scene as rays see it: the skinned models' "
@@ -8589,12 +8594,15 @@ void EnvMapVulkanRenderer::GeometryPass()
 		// The ambient occlusion, from the G-buffer just drawn, for the scene pass's mesh shaders
 		{
 			EnvMapVulkanProfiler::Scope occlusionScope(drawCommandBuffer, "Ambient Occlusion", "How much of the light from all around reaches "
-				"each pixel's surface past the geometry close to it (GTAO), from the G-buffer: compute passes at half the viewport's "
-				"size (linear depth, the occlusion, a blur that keeps edges, the average over the frames), then one at full size.");
+				"each pixel's surface past the geometry close to it: compute passes at half the viewport's size (linear depth, the "
+				"occlusion, a blur that keeps edges, the average over the frames), then one at full size. The occlusion itself: "
+				"with ray tracing a few short rays per pixel against the scene, otherwise from the G-buffer's depth (GTAO).");
 			H2M::CameraH2M& occlusionCamera = s_Data.SceneData.SceneCamera.Camera;
 			const EnvMapVulkanSSAO::Stage stage = s_DebugView == DebugViewAORaw ? EnvMapVulkanSSAO::Stage::Raw :
 				(s_DebugView == DebugViewAODenoised ? EnvMapVulkanSSAO::Stage::Denoised : EnvMapVulkanSSAO::Stage::Final);
-			s_SSAO.Record(drawCommandBuffer, s_SSAOSettings, s_GBuffer, occlusionCamera.GetViewMatrix(), occlusionCamera.GetProjectionMatrix(), stage);
+			// Traced when rays can be traced this frame (the scene for them was built above)
+			s_SSAO.Record(drawCommandBuffer, s_SSAOSettings, s_GBuffer, occlusionCamera.GetViewMatrix(), occlusionCamera.GetProjectionMatrix(), stage,
+				IsRayTracingActive() ? s_RayTracing.GetDescriptorSet() : VK_NULL_HANDLE);
 		}
 
 		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
@@ -10121,7 +10129,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							"Off: no rays are traced and nothing is built or updated for them. Every effect uses its rasterized\n"
 							"version, as on a GPU without ray tracing: for more frames per second when the rays cost too much.\n"
 							"Used by: the probe volume's updates (rays instead of cube maps: much faster to follow a change),\n"
-							"and the Debug View's Ray Traced views.\n"
+							"the ambient occlusion (its Ray Traced setting) and the Debug View's Ray Traced views.\n"
 							"Its cost: Ray Tracing Scene and the passes that trace rays, in Renderer Stats.");
 					}
 					if (!rayTracingSupported)
@@ -10142,8 +10150,10 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					}
 					else
 					{
-						ImGui::TextDisabled(s_ProbeVolumeSettings.Exists ? "The probe volume traces rays while it updates" :
-							"Nothing traces rays at the moment (no probe volume,\nno Ray Traced debug view)");
+						const bool occlusionRays = s_SSAOSettings.Enabled && s_SSAOSettings.RayTraced;
+						ImGui::TextDisabled("Tracing rays: %s%s%s", occlusionRays ? "the ambient occlusion" : "",
+							occlusionRays && s_ProbeVolumeSettings.Exists ? ",\n" : "",
+							s_ProbeVolumeSettings.Exists ? "the probe volume while it updates" : (occlusionRays ? "" : "nothing at the moment"));
 					}
 					ImGui::PopID();
 				}
@@ -10181,6 +10191,27 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						ImGui::SetTooltip("The part of the radius over which geometry stops counting. 1: fading from the point on (soft);\n"
 							"small: everything within the radius counts fully (stronger, with a harder end).");
 					}
+					// Which way the occlusion is found: by rays where they can be traced, otherwise from the depth buffer
+					const bool occlusionTraced = occlusion.RayTraced && IsRayTracingActive();
+					ImGui::BeginDisabled(!IsRayTracingActive());
+					ImGui::Checkbox("Ray Traced", &occlusion.RayTraced);
+					ImGui::EndDisabled();
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+					{
+						ImGui::SetTooltip("On: a few short rays per pixel against the scene's real geometry. It also finds what the screen\n"
+							"doesn't show: geometry hidden behind other geometry, or outside the view.\n"
+							"Off: from the depth buffer (GTAO, with Slices and Steps): what is on the screen, and nothing else.\n"
+							"Needs Ray Tracing (above) and a GPU that has it; without them it is always the depth buffer's way.");
+					}
+					ImGui::BeginDisabled(!occlusionTraced);
+					ImGui::SliderInt("Rays", &occlusion.Rays, 1, EnvMapVulkanSSAOSettings::MaxRays, "%d", ImGuiSliderFlags_AlwaysClamp);
+					ImGui::EndDisabled();
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+					{
+						ImGui::SetTooltip("Ray traced: rays per pixel and frame. More rays: less noise for the blur and the temporal filter to\n"
+							"remove (AO Raw in Debug View shows it), at a cost that grows with the number.");
+					}
+					ImGui::BeginDisabled(occlusionTraced); // the depth buffer's way
 					ImGui::SliderInt("Slices", &occlusion.Slices, 1, EnvMapVulkanSSAOSettings::MaxSlices, "%d", ImGuiSliderFlags_AlwaysClamp);
 					if (ImGui::IsItemHovered())
 					{
@@ -10191,6 +10222,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					{
 						ImGui::SetTooltip("Depth lookups per direction and side. More: thin things within the radius are missed less often.");
 					}
+					ImGui::EndDisabled();
 					ImGui::Checkbox("Denoise", &occlusion.Denoise);
 					if (ImGui::IsItemHovered())
 					{
@@ -10211,7 +10243,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							"Off: computed for every pixel. About four times the time: see Ambient Occlusion in Renderer Stats.");
 					}
 					ImGui::EndDisabled();
-					ImGui::TextDisabled("Computed at %u x %u", s_SSAO.GetWidth(), s_SSAO.GetHeight());
+					ImGui::TextDisabled("%s at %u x %u", s_SSAO.IsRayTraced() ? "Ray traced" : "From the depth buffer", s_SSAO.GetWidth(), s_SSAO.GetHeight());
 					ImGui::PopID();
 				}
 

@@ -994,6 +994,15 @@ HitInfo TraceRay(vec3 origin, vec3 dir, float tMax, uint mask)
   <h3>H.2 RTAO</h3>
   <p>From each G-buffer pixel, trace one short ray (length = the AO radius) in a cosine-weighted random direction around the normal, stopping at the first hit (<code>gl_RayFlagsTerminateOnFirstHitEXT</code>). The result is 0 or 1 per pixel; the Phase F temporal filter and spatial denoiser turn it into a smooth AO image. It writes into the same AO image (set 0, binding 15) as GTAO, so nothing else changes. Unlike GTAO, it sees geometry behind other geometry and off screen.</p>
 
+  <div class="box note"><b>As built (H.2)</b>
+  <ul>
+    <li><b>The shader:</b> <code>SSAORayTraced.glsl</code> takes the place of the depth mips and <code>SSAOGTAO.glsl</code> inside <code>EnvMapVulkanSSAO</code>; the linear depth, the blur, the temporal filter and the upsample are shared. It uses the same push constants and the same Radius, Power and Falloff, so the two ways can be compared with one switch: Ambient Occlusion &gt; <b>Ray Traced</b> (saved with the scene), plus <b>Rays</b> per pixel (1 to 8, default 2).</li>
+    <li><b>Nearest hit, not first hit:</b> the rays report how far they got, so a hit near the end of the radius counts less (the Falloff setting), as GTAO's samples do. <code>TerminateOnFirstHit</code> would only give yes or no.</li>
+    <li><b>The surface's own normal</b> comes from the depths around the pixel. The G-buffer has only the shading normal (normal-mapped); a direction sampled around it can point into the surface, and is mirrored back out. So the rays see geometry only: the relief a normal map paints (the bricks' joints) is not occluded, where GTAO darkens it a little.</li>
+    <li><b>The scene for the rays</b> is now built in every frame while the ray-traced occlusion is on (Ray Tracing Scene, about 0.1 ms).</li>
+    <li><b>Measured</b> (RTX 3070 Ti, half resolution, 2 rays): Ambient Occlusion 0.16 ms in <code>GI_Cube</code>. Open walls come out exactly white; corners darken over the radius.</li>
+  </ul></div>
+
   <h3>H.3 Ray-traced reflections</h3>
   <ol>
     <li>From each G-buffer pixel with roughness below a threshold (e.g. 0.5), sample a reflection direction from the GGX distribution of its roughness.</li>

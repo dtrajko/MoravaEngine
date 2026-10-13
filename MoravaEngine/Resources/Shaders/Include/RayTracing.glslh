@@ -108,6 +108,18 @@ RayHit TraceRay(vec3 origin, vec3 direction, float tMin, float tMax, uint mask)
 	return hit;
 }
 
+// Only how far the ray gets before its nearest hit; negative: it hits nothing between tMin and tMax
+float TraceRayDistance(vec3 origin, vec3 direction, float tMin, float tMax, uint mask)
+{
+	rayQueryEXT query;
+	rayQueryInitializeEXT(query, u_TLAS, gl_RayFlagsOpaqueEXT, mask, origin, tMin, direction, tMax);
+	while (rayQueryProceedEXT(query))
+	{
+	}
+	bool hit = rayQueryGetIntersectionTypeEXT(query, true) == gl_RayQueryCommittedIntersectionTriangleEXT;
+	return hit ? rayQueryGetIntersectionTEXT(query, true) : -1.0;
+}
+
 // Whether anything of the mask's groups is in the ray's way between tMin and tMax: for shadows, where it doesn't matter
 // what is hit or where. The search stops at the first hit it finds, so it is cheaper than TraceRay.
 bool TraceShadowRay(vec3 origin, vec3 direction, float tMin, float tMax, uint mask)
