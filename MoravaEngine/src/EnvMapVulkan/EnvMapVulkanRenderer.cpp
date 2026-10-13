@@ -4191,27 +4191,15 @@ static bool CanBeDeleted(EntityKind kind)
 }
 
 // Removes an entity (and its children): a model or a part at the start of the next frame (its GPU resources may be in use),
-// a light or the water right away
+// a light or the water right away. A model's last mesh takes the model with it (see Draw).
 static void DeleteEntity(EnvMapVulkanEntityID entity)
 {
 	switch (GetEntityKind(entity))
 	{
 		case EntityKind::Model:
+		case EntityKind::Part:
 			s_PendingRemoveEntities.push_back(entity);
 			break;
-		case EntityKind::Part:
-		{
-			H2M::RefH2M<H2M::ModelH2M> model = GetModel(s_Scene.GetParent(entity));
-			if (model && model->GetMeshes().size() > 1)
-			{
-				s_PendingRemoveEntities.push_back(entity);
-			}
-			else
-			{
-				Log::GetLogger()->warn("'{0}' is the model's only mesh: remove the model instead", s_Scene.Get<NameComponent>(entity).Name);
-			}
-			break;
-		}
 		case EntityKind::PointLight:
 		case EntityKind::SpotLight:
 			s_Scene.DestroyEntity(entity);
@@ -10259,6 +10247,19 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		if (!s_Scene.Exists(entity))
 		{
 			continue; // removed with its model (both were selected), or twice in the list
+		}
+		// A model's last mesh (its only one, or the last of several removed together): a model without meshes is nothing,
+		// so the model goes
+		if (s_Scene.Has<MeshPartComponent>(entity))
+		{
+			const EnvMapVulkanEntityID modelEntity = s_Scene.GetParent(entity);
+			H2M::RefH2M<H2M::ModelH2M> model = GetModel(modelEntity);
+			if (model && model->GetMeshes().size() <= 1 && s_Scene.Has<ModelComponent>(modelEntity))
+			{
+				Log::GetLogger()->info("Mesh '{0}' was the last one of model '{1}': the model is removed", s_Scene.Get<NameComponent>(entity).Name,
+					s_Scene.Get<ModelComponent>(modelEntity).FilePath);
+				entity = modelEntity;
+			}
 		}
 		if (const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(entity))
 		{

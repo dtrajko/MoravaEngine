@@ -5,7 +5,7 @@ Material:
   Source:
     File: Models/Hazel/Sphere1m.fbx
     Index: 0
-  AlbedoColor: [0.8, 0.8, 0.8]
+  AlbedoColor: [0.4852941, 1, 1]
   Metalness: 0
   Roughness: 0.10557282
   TilingFactor: 1

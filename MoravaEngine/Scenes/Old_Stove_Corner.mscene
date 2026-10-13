@@ -17,6 +17,16 @@ RenderSettings:
     DepthBias: 1.25
     SlopeBias: 1.75
     NormalBias: 1
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
   Bloom:
     Enabled: true
     Threshold: 1
@@ -30,8 +40,8 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [0, 22, 38]
-      Rotation: [0, 0, 0]
+      Translation: [1.6271199, 17.044716, 63.15453]
+      Rotation: [-0.8999621, 15.199997, 0]
       Scale: [1, 1, 1]
     Camera:
       {}
@@ -108,57 +118,13 @@ Entities:
         ID: 16625749967610680966
         File: assets/Materials/Floor_Material.mmat
         Name: Floor_Material
-  - ID: 11289000002954079967
-    Name: Cube
-    Parent: 0
-    Transform:
-      Translation: [0, 40, 10]
-      Rotation: [0.0076953643, -0, 0]
-      Scale: [20.000332, 1, 30]
-    Model:
-      File: Models/Primitives/cube.obj
-  - ID: 7033537657233753437
-    Name: Cube
-    Parent: 11289000002954079967
-    Transform:
-      Translation: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    MeshPart:
-      SourceMeshIndex: 0
-      Material:
-        ID: 16625749967610680966
-        File: assets/Materials/Floor_Material.mmat
-        Name: Floor_Material
-  - ID: 4858856740664828933
-    Name: Wall 01
-    Parent: 0
-    Transform:
-      Translation: [19, 16, 10]
-      Rotation: [90, -1.0060528e-05, -90]
-      Scale: [19.999102, 29.999237, 0.9998302]
-    Model:
-      File: Models/Primitives/cube.obj
-  - ID: 1081673283594027113
-    Name: Cube
-    Parent: 4858856740664828933
-    Transform:
-      Translation: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    MeshPart:
-      SourceMeshIndex: 0
-      Material:
-        ID: 5294835396988308064
-        File: assets/Materials/Wall_Material.mmat
-        Name: Wall_Material
   - ID: 3672690353914675683
     Name: Cube
     Parent: 0
     Transform:
-      Translation: [0, 20, -19]
-      Rotation: [179.9999, -8.386098e-06, -90]
-      Scale: [19.999882, 19, 0.99981236]
+      Translation: [1, 21, -19]
+      Rotation: [179.9999, -8.38603e-06, -90]
+      Scale: [19.999882, 19, 0.9998066]
     Model:
       File: Models/Primitives/cube.obj
   - ID: 5030397235619542562
@@ -174,33 +140,11 @@ Entities:
         ID: 5294835396988308064
         File: assets/Materials/Wall_Material.mmat
         Name: Wall_Material
-  - ID: 614414868128800448
-    Name: Cube
-    Parent: 0
-    Transform:
-      Translation: [1.2342019, 19, 40]
-      Rotation: [179.9999, -8.386132e-06, -90]
-      Scale: [19.999882, 19, 0.9998154]
-    Model:
-      File: Models/Primitives/cube.obj
-  - ID: 2415585982155735399
-    Name: Cube
-    Parent: 614414868128800448
-    Transform:
-      Translation: [0, 0, 0]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    MeshPart:
-      SourceMeshIndex: 0
-      Material:
-        ID: 5294835396988308064
-        File: assets/Materials/Wall_Material.mmat
-        Name: Wall_Material
   - ID: 16738116975417454179
     Name: Wall 02
     Parent: 0
     Transform:
-      Translation: [-19, 20, 10]
+      Translation: [-19, 21, 10]
       Rotation: [90, -0, 0]
       Scale: [0.99994874, 30, 19.999966]
     Model:
@@ -237,14 +181,14 @@ Entities:
     Name: Point Light 1
     Parent: 0
     Transform:
-      Translation: [-6.3927646, 7.872327, 3.7068033]
+      Translation: [-6.3927646, 6.003108, -0.60931015]
       Rotation: [0.002407401, 38.925022, -0.0017775702]
       Scale: [0.9999181, 0.99999994, 0.9999354]
     PointLight:
       Enabled: true
       Color: [0.6764706, 1, 1]
       Intensity: 500
-      Range: 5.7976637
+      Range: 6.980986
       CastShadows: true
   - ID: 7305799606647957717
     Name: Water
@@ -284,9 +228,9 @@ Entities:
     Name: Probe Volume
     Parent: 0
     Transform:
-      Translation: [0, 20, 10.071113]
+      Translation: [0, 19.997969, 10]
       Rotation: [0, -0, 0]
-      Scale: [40, 40, 60]
+      Scale: [42.200695, 44.30419, 63.20028]
     ProbeVolume:
       Enabled: true
       Counts: [8, 6, 12]
@@ -296,6 +240,8 @@ Entities:
       ProbesPerFrame: 8
       RaysPerProbe: 192
       Hysteresis: 0.9
+      RelocateProbes: true
+      OccludeReflections: true
       ShowProbes: false
       ProbeRadius: 0.25
       Show: 0
@@ -303,7 +249,7 @@ Entities:
     Name: Sphere1m.fbx
     Parent: 0
     Transform:
-      Translation: [-10.916463, 14.821604, -10.92637]
+      Translation: [-9.603531, 14.23667, -3.3415756]
       Rotation: [0, -0, 0]
       Scale: [0.10400002, 0.10400002, 0.10400002]
     Model:
