@@ -5,6 +5,7 @@
 #include "DX11Context.h"
 #include "DX11Device.h"
 #include "DX11SwapChain.h"
+#include "DX11Window.h"
 
 #include "H2M/Renderer/RendererH2M.h"
 
@@ -64,7 +65,7 @@ void DX11ImGuiLayer::OnAttach()
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 
-	HWND hwnd = Application::Get()->GetWindow()->GetHWND();
+	HWND hwnd = static_cast<DX11Window*>(Application::Get()->GetWindow())->GetHWND();
 
 	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX11_Init(

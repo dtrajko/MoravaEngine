@@ -1,18 +1,20 @@
 #pragma once
 
 #include "Core/Window.h"
-#include "Platform/DX11/DX11InputListener.h"
-#include "Core/CommonStructs.h"
 
 #include "H2M/Renderer/RendererContextH2M.h"
 
 
-class WindowsWindow : public Window, public DX11InputListener
+/**
+ * The application's window on every platform GLFW supports (Windows, Linux, macOS), for the OpenGL and Vulkan renderers:
+ * the window itself, its events (as H2M events, and the older key / button / mouse state the Morava scenes read) and, for
+ * Vulkan, the swap chain. The DirectX 11 renderer has its own window (DX11Window, Windows only).
+ */
+class GLFWWindow : public Window
 {
-	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
 public:
-	WindowsWindow(const WindowSpecification& windowSpecification);
-	virtual ~WindowsWindow();
+	GLFWWindow(const WindowSpecification& windowSpecification);
+	virtual ~GLFWWindow();
 
 	virtual void Init();
 	virtual void ProcessEvents() override;
@@ -34,8 +36,6 @@ public:
 	virtual const std::string& GetTitle() const override { return m_Data.Title; }
 	virtual void SetTitle(std::string title) override;
 
-	inline void* GetNativeWindow() const { return m_GLFW_Window; }
-
 	virtual H2M::RefH2M<H2M::RendererContextH2M> GetRenderContext() override { return m_RendererContext; }
 	virtual H2M::VulkanSwapChainH2M& GetSwapChain() override;
 
@@ -43,46 +43,13 @@ public:
 
 	void OnUpdate() override;
 
+	virtual bool IsInFocus() override;
+	virtual void SetInFocus(bool inFocus) override {}
+
 private:
 	virtual void Shutdown();
 
 	void InitGLFW(const WindowSpecification& windowSpecification);
-	void InitDX11(const WindowSpecification& windowSpecification);
-	/**** END Window Hazel version - a platform independent Window interface ****/
-
-	/**** BEGIN DirectX 11 methods ****/
-public:
-	virtual void SetHWND(HWND hwnd) override;
-	virtual HWND GetHWND() { return m_HWND; }
-	bool Broadcast();
-
-	bool IsRunning();
-	RECT GetClientWindowRect();
-	RECT GetSizeScreen();
-	bool Release();
-
-	// Events
-	virtual void OnCreate() override;
-	virtual void OnDestroy() override;
-	virtual void OnFocus() override;
-	virtual void OnKillFocus() override;
-	virtual void OnSize() override;
-
-	// Inherited via DX11InputListener
-	virtual void OnKeyDown(int key) override;
-	virtual void OnKeyUp(int key) override;
-
-	virtual void OnMouseMove(const glm::vec2& mousePosDelta, const glm::vec2& mousePosAbs) override;
-
-	virtual void OnLeftMouseDown(const glm::vec2& mousePos) override;
-	virtual void OnRightMouseDown(const glm::vec2& mousePos) override;
-
-	virtual void OnLeftMouseUp(const glm::vec2& mousePos) override;
-	virtual void OnRightMouseUp(const glm::vec2& mousePos) override;
-
-	virtual bool IsInFocus() override { return m_InFocus; }
-	virtual void SetInFocus(bool inFocus) override { m_InFocus = inFocus; }
-	/**** END DirectX 11 methods ****/
 
 public:
 	virtual inline GLFWwindow* GetHandle() override { return m_GLFW_Window; };
@@ -123,9 +90,7 @@ public:
 	virtual inline const bool GetEventLogging() const override { return m_EventLoggingEnabled; }
 
 private:
-	/**** BEGIN Window Hazel version - a platform independent Window interface ****/
-
-	GLFWwindow* m_GLFW_Window;
+	GLFWwindow* m_GLFW_Window = nullptr;
 
 	WindowSpecification m_Specification;
 
@@ -141,13 +106,6 @@ private:
 	WindowData m_Data;
 	H2M::RefH2M<H2M::RendererContextH2M> m_RendererContext;
 	H2M::VulkanSwapChainH2M m_SwapChain;
-
-	/**** END Window Hazel version - a platform independent Window interface ****/
-
-	HWND m_HWND; // windef.h
-
-	bool m_IsInitialized = false;
-	bool m_IsRunning = true;
 
 	bool keys[1024];
 	bool buttons[32];
@@ -173,9 +131,5 @@ private:
 	bool m_CursorCaptured = false;
 
 	bool m_EventLoggingEnabled;
-
-	bool m_InFocus;
-
-	EventCooldown m_ResizeViewport = { 0.0f, 0.2f }; // used for DirectX 11
 
 };

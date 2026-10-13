@@ -1,7 +1,7 @@
 #include "DX11Context.h"
 #include "DX11.h"
 
-#include "Platform/Windows/WindowsWindow.h"
+#include "Platform/DX11/DX11Window.h"
 
 #include <glfw/glfw3.h>
 
@@ -60,7 +60,7 @@ void DX11Context::Init()
 
 	m_Device = H2M::RefH2M<DX11Device>::Create(m_PhysicalDevice);
 
-	CreateSwapChain(m_Window->GetHWND(), m_Window->GetWidth(), m_Window->GetHeight());
+	CreateSwapChain(static_cast<DX11Window*>(m_Window)->GetHWND(), m_Window->GetWidth(), m_Window->GetHeight());
 }
 
 DX11Context::~DX11Context()
@@ -117,7 +117,7 @@ void DX11Context::InitRasterizerState()
 
 void DX11Context::OnResize(uint32_t width, uint32_t height)
 {
-	// m_SwapChain->OnResize(width, height); // done in WindowsWindow::OnSize();
+	// m_SwapChain->OnResize(width, height); // done in DX11Window::OnSize();
 }
 
 void DX11Context::BeginFrame()

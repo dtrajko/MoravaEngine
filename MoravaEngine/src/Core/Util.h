@@ -35,9 +35,8 @@ public:
 
 	static std::string SpaceToUnderscore(std::string text);
 
+	// UTF-8 text to wide characters (UTF-16 or UTF-32, whichever the platform's wchar_t holds), and back
 	static std::wstring to_wstr(const std::string& str);
-
-	// convert from const wchar_t* to const char*
 	static std::string to_str(const wchar_t* wcstr);
 
 	static glm::vec3 Lerp(const glm::vec3& start, const glm::vec3& end, float delta);

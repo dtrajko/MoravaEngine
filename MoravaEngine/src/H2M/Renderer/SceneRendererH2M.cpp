@@ -15,8 +15,6 @@
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <Windows.h>
-
 
 namespace H2M
 {

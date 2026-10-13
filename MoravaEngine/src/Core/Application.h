@@ -76,6 +76,7 @@ public:
 	void SetCommandLine(const ApplicationCommandLine& commandLine) { m_CommandLine = commandLine; }
 	const ApplicationCommandLine& GetCommandLine() const { return m_CommandLine; }
 
+	// The file dialogs of the older scenes (new code: FileDialogs, which these call). filter: a Windows filter string.
 	// initialDirectory (optional): the folder the dialog starts in
 	std::wstring OpenFile(const wchar_t* filter = L"All\0*.*\0", const wchar_t* initialDirectory = nullptr) const;
 	// defaultExtension (e.g. L"mscene", no dot): added to a typed file name without an extension

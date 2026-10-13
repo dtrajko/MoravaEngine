@@ -8,7 +8,7 @@
 
 #include <algorithm>
 #include <locale>
-#include <codecvt>
+#include <cstdint>
 #include <string>
 #include <cstring>
 
@@ -150,71 +150,93 @@ std::string Util::SpaceToUnderscore(std::string text)
 	return text;
 }
 
-#include <Windows.h>
+// Text between UTF-8 (std::string, what the engine works with) and wide characters (std::wstring: UTF-16 where wchar_t
+// has 16 bits, as on Windows, UTF-32 where it has 32, as on Linux and macOS). Written out here, so the same code runs on
+// every platform. A byte or unit that isn't valid text becomes U+FFFD, the replacement character.
+static const uint32_t s_ReplacementCharacter = 0xFFFD;
 
-std::wstring Util::to_wstr(const std::string& str)
+static void AppendWide(std::wstring& out, uint32_t code)
 {
-	if (str.empty())
+	if (sizeof(wchar_t) == 2 && code > 0xFFFF)
 	{
-		return L"";
-	}
-
-	int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
-	std::wstring result(size_needed, 0);
-	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, result.data(), size_needed);
-
-	// remove null terminator added by Windows API
-	if (!result.empty())
-		result.pop_back();
-
-	return result;
-}
-
-// convert from const wchar_t* to const char*
-// https://www.youtube.com/watch?v=DZyzPSwe5l4
-std::string Util::to_str(const wchar_t* wcstr)
-{
-	// not required, but nice to have
-	// use underscored "en_US" instead of 
-	// hyphened "en-US" for compatibility with GNU g++
-#ifdef _MSC_VER
-	std::setlocale(LC_ALL, "en-US"); // Microsoft Visual Studio
-#else
-	std::setlocale(LC_ALL, "en_US"); // GNU g++
-#endif
-
-	if (wcstr == NULL || wcslen(wcstr) == 0)
-	{
-		return ""; // empty string
-	}
-
-	std::mbstate_t state{};
-
-	const wchar_t* p = wcstr;
-
-	// wcsrtombs - [wide char string] to [multi byte string]
-	// https://en.cppreference.com/w/cpp/string/multibyte/wcsrtombs
-	size_t clen = wcsrtombs(NULL, &p, 0 /* ignore */, &state);
-		// + 1 is redundant, because std::string manages the terminating null character
-
-	// cannot determine or convert to const char*
-	if (clen == 0 || clen == static_cast<std::size_t>(-1))
-	{
-		return ""; // empty string
-	}
-
-	std::string rlt(clen, '\0');
-
-	size_t converted = wcsrtombs(&rlt[0], &wcstr, rlt.size(), &state);
-
-	if (converted == static_cast<size_t>(-1))
-	{
-		return ""; // return empty string
+		// Above the 16-bit range: a pair of surrogates
+		code -= 0x10000;
+		out.push_back((wchar_t)(0xD800 + (code >> 10)));
+		out.push_back((wchar_t)(0xDC00 + (code & 0x3FF)));
 	}
 	else
 	{
-		return rlt;
+		out.push_back((wchar_t)code);
 	}
+}
+
+static void AppendUtf8(std::string& out, uint32_t code)
+{
+	if (code < 0x80)
+	{
+		out.push_back((char)code);
+	}
+	else if (code < 0x800)
+	{
+		out.push_back((char)(0xC0 | (code >> 6)));
+		out.push_back((char)(0x80 | (code & 0x3F)));
+	}
+	else if (code < 0x10000)
+	{
+		out.push_back((char)(0xE0 | (code >> 12)));
+		out.push_back((char)(0x80 | ((code >> 6) & 0x3F)));
+		out.push_back((char)(0x80 | (code & 0x3F)));
+	}
+	else
+	{
+		out.push_back((char)(0xF0 | (code >> 18)));
+		out.push_back((char)(0x80 | ((code >> 12) & 0x3F)));
+		out.push_back((char)(0x80 | ((code >> 6) & 0x3F)));
+		out.push_back((char)(0x80 | (code & 0x3F)));
+	}
+}
+
+std::wstring Util::to_wstr(const std::string& str)
+{
+	std::wstring result;
+	result.reserve(str.size());
+	size_t i = 0;
+	while (i < str.size())
+	{
+		const unsigned char lead = (unsigned char)str[i];
+		// The bytes that follow the first one, and the smallest character that needs this many (a shorter one written
+		// with more bytes isn't valid)
+		size_t following = 0;
+		uint32_t code = lead;
+		uint32_t smallest = 0;
+		if (lead >= 0xF0 && lead <= 0xF4)      { following = 3; code = lead & 0x07; smallest = 0x10000; }
+		else if (lead >= 0xE0 && lead < 0xF0)  { following = 2; code = lead & 0x0F; smallest = 0x800; }
+		else if (lead >= 0xC0 && lead < 0xE0)  { following = 1; code = lead & 0x1F; smallest = 0x80; }
+		else if (lead >= 0x80)                 { code = s_ReplacementCharacter; }
+
+		bool valid = i + following < str.size() || following == 0;
+		for (size_t k = 1; valid && k <= following; k++)
+		{
+			const unsigned char next = (unsigned char)str[i + k];
+			valid = (next & 0xC0) == 0x80;
+			code = (code << 6) | (next & 0x3F);
+		}
+		if (!valid || (following > 0 && (code < smallest || code > 0x10FFFF || (code >= 0xD800 && code <= 0xDFFF))))
+		{
+			AppendWide(result, s_ReplacementCharacter);
+			i++; // go on with the next byte
+			continue;
+		}
+		AppendWide(result, code);
+		i += 1 + following;
+	}
+	return result;
+}
+
+// convert from const wchar_t* to const char* (UTF-8)
+std::string Util::to_str(const wchar_t* wcstr)
+{
+	return wcstr ? ToUtf8(std::wstring(wcstr)) : std::string();
 }
 
 glm::vec3 Util::Lerp(const glm::vec3& start, const glm::vec3& end, float delta)
@@ -290,26 +312,31 @@ const char* Util::FormatToString(GLenum format)
 	}
 }
 
-std::string Util::ToUtf8(const std::wstring & wstr)
+std::string Util::ToUtf8(const std::wstring& wstr)
 {
-		if (wstr.empty()) return {};
-
-		int size = WideCharToMultiByte(
-			CP_UTF8, 0,
-			wstr.c_str(), -1,
-			nullptr, 0,
-			nullptr, nullptr);
-
-		std::string result(size, 0);
-
-		WideCharToMultiByte(
-			CP_UTF8, 0,
-			wstr.c_str(), -1,
-			result.data(), size,
-			nullptr, nullptr);
-
-		result.pop_back(); // remove null terminator
-		return result;
+	std::string result;
+	result.reserve(wstr.size());
+	for (size_t i = 0; i < wstr.size(); i++)
+	{
+		uint32_t code = (uint32_t)wstr[i];
+		if (sizeof(wchar_t) == 2)
+		{
+			code &= 0xFFFF;
+			if (code >= 0xD800 && code <= 0xDBFF && i + 1 < wstr.size() &&
+				((uint32_t)wstr[i + 1] & 0xFFFF) >= 0xDC00 && ((uint32_t)wstr[i + 1] & 0xFFFF) <= 0xDFFF)
+			{
+				// A pair of surrogates: one character above the 16-bit range
+				code = 0x10000 + ((code - 0xD800) << 10) + (((uint32_t)wstr[i + 1] & 0xFFFF) - 0xDC00);
+				i++;
+			}
+		}
+		if ((code >= 0xD800 && code <= 0xDFFF) || code > 0x10FFFF)
+		{
+			code = s_ReplacementCharacter; // half a pair, or beyond the last character
+		}
+		AppendUtf8(result, code);
+	}
+	return result;
 }
 
 bool Util::IsValidMinFilter(GLint filter)

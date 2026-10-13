@@ -6,7 +6,7 @@
 #include "Core/Application.h"
 #include "Core/Timer.h"
 #include "ImGui/ImGuiWrapper.h"
-#include "Platform/Windows/WindowsWindow.h"
+#include "Platform/DX11/DX11Window.h"
 
 #include "imgui.h"
 
@@ -62,7 +62,7 @@ void DX11CameraFP::OnUpdate(H2M::TimestepH2M ts)
 
 void DX11CameraFP::BeginRotation()
 {
-	HWND hwnd = Application::Get()->GetWindow()->GetHWND();
+	HWND hwnd = static_cast<DX11Window*>(Application::Get()->GetWindow())->GetHWND();
 
 	// Lock the cursor where the drag started (it reappears there) and keep receiving mouse input outside the window
 	POINT cursorPos = {};

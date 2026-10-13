@@ -1,7 +1,7 @@
 #include "DX11InputSystem.h"
 
 #include "Core/Application.h"
-#include "Platform/Windows/WindowsWindow.h"
+#include "Platform/DX11/DX11Window.h"
 
 #include <Windows.h>
 
@@ -155,7 +155,7 @@ bool DX11InputSystem::IsMouseCursorAboveViewport()
 {
 	bool cursorAboveViewport = false;
 
-	WindowsWindow* windowsWindow = (WindowsWindow*)Application::Get()->GetWindow();
+	DX11Window* windowsWindow = (DX11Window*)Application::Get()->GetWindow();
 	RECT windowRECT = windowsWindow->GetClientWindowRect();
 
 	POINT currentMousePos = {};

@@ -21,6 +21,7 @@
 #include "EnvMapVulkanScene.h"
 #include "EnvMapVulkanSceneSerializer.h"
 
+#include "Core/FileDialogs.h"
 #include "Core/ResourceManager.h"
 
 #include "H2M/Platform/Vulkan/VulkanH2M.h"
@@ -3434,7 +3435,7 @@ static void EnvironmentControls()
 
 	if (ImGui::Button("Load Environment Map"))
 	{
-		std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"*.hdr"));
+		std::string filepath = FileDialogs::OpenFile({ { "HDR environment map", "hdr" } });
 		if (!filepath.empty())
 		{
 			s_PendingEnvMapFilename = filepath; // loaded at the start of the next frame (see Draw)
@@ -4078,7 +4079,7 @@ static void OnImGuiRenderModelsAndMeshes()
 
 	if (ImGui::Button("Load Model"))
 	{
-		std::string filepath = Util::ToUtf8(Application::Get()->OpenFile());
+		std::string filepath = FileDialogs::OpenFile();
 		if (!filepath.empty())
 		{
 			s_PendingModelFilename = filepath; // loaded at the start of the next frame (see Draw)
@@ -5021,7 +5022,7 @@ static void OnImGuiRenderSceneHierarchy()
 	{
 		if (ImGui::MenuItem("Model..."))
 		{
-			std::string filepath = Util::ToUtf8(Application::Get()->OpenFile());
+			std::string filepath = FileDialogs::OpenFile();
 			if (!filepath.empty())
 			{
 				s_PendingModelFilename = filepath; // loaded at the start of the next frame (see Draw)
@@ -5558,17 +5559,16 @@ static bool SaveSceneTo(const std::string& requestedPath)
 	return true;
 }
 
-static std::wstring GetScenesFolderForDialog()
+static std::string GetScenesFolderForDialog()
 {
 	std::error_code error;
 	std::filesystem::create_directories(EnvMapVulkanSceneSerializer::ScenesFolder, error);
-	return std::filesystem::absolute(EnvMapVulkanSceneSerializer::ScenesFolder, error).wstring();
+	return std::filesystem::absolute(EnvMapVulkanSceneSerializer::ScenesFolder, error).u8string();
 }
 
 static void SaveSceneAs()
 {
-	const std::wstring folder = GetScenesFolderForDialog();
-	std::string filepath = Util::ToUtf8(Application::Get()->SaveFile(L"Scene (*.mscene)\0*.mscene\0", L"mscene", folder.c_str()));
+	std::string filepath = FileDialogs::SaveFile({ { "Scene", "mscene" } }, GetScenesFolderForDialog());
 	if (!filepath.empty())
 	{
 		SaveSceneTo(filepath);
@@ -5814,8 +5814,7 @@ static void RequestOpenScene(const std::string& filepath = "")
 	std::string path = filepath;
 	if (path.empty())
 	{
-		const std::wstring folder = GetScenesFolderForDialog();
-		path = Util::ToUtf8(Application::Get()->OpenFile(L"Scene (*.mscene)\0*.mscene\0", folder.c_str()));
+		path = FileDialogs::OpenFile({ { "Scene", "mscene" } }, GetScenesFolderForDialog());
 	}
 	if (path.empty())
 	{
@@ -6091,7 +6090,7 @@ static void OnImGuiRenderMaterialLibrary()
 	ImGui::SameLine();
 	if (ImGui::Button("Save As..."))
 	{
-		std::string filepath = Util::ToUtf8(Application::Get()->SaveFile(L"Material (*.mmat)\0*.mmat\0", L"mmat"));
+		std::string filepath = FileDialogs::SaveFile({ { "Material", "mmat" } });
 		if (!filepath.empty())
 		{
 			saveOne(s_SelectedMaterial, filepath);
@@ -6128,7 +6127,7 @@ static void OnImGuiRenderMaterialLibrary()
 	ImGui::SameLine();
 	if (ImGui::Button("Load..."))
 	{
-		std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"Material (*.mmat)\0*.mmat\0"));
+		std::string filepath = FileDialogs::OpenFile({ { "Material", "mmat" } });
 		if (!filepath.empty())
 		{
 			s_PendingMaterialFiles.push_back(filepath); // loaded at the start of the next frame (see Draw)
@@ -6600,7 +6599,7 @@ static void OnImGuiRenderMaterialEditor()
 
 			if (ImGui::Button("Load..."))
 			{
-				std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"Images\0*.png;*.jpg;*.jpeg;*.tga;*.bmp\0All\0*.*\0"));
+				std::string filepath = FileDialogs::OpenFile({ { "Images", "png,jpg,jpeg,tga,bmp" } });
 				if (!filepath.empty())
 				{
 					s_PendingMaterialTextures.push_back({ material, i, filepath }); // applied at the start of the next frame
@@ -10627,7 +10626,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						: ImGui::Button("Dirt", ImVec2(64.0f, 64.0f));
 					if (clicked)
 					{
-						std::string filepath = Util::ToUtf8(Application::Get()->OpenFile(L"Images\0*.png;*.jpg;*.jpeg;*.tga;*.bmp\0All\0*.*\0"));
+						std::string filepath = FileDialogs::OpenFile({ { "Images", "png,jpg,jpeg,tga,bmp" } });
 						if (!filepath.empty())
 						{
 							s_PendingBloomDirtFilename = filepath;

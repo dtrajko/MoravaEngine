@@ -11,7 +11,7 @@
 
 #include "Core/Application.h"
 #include "Core/ResourceManager.h"
-#include "Platform/Windows/WindowsWindow.h"
+#include "Platform/DX11/DX11Window.h"
 
 
 std::shared_ptr<DX11CameraFP> DX11TestLayer::s_Camera;
@@ -308,7 +308,7 @@ void DX11TestLayer::OnKeyUp(int key)
 	{
 		m_FullscreenEnabled = !m_FullscreenEnabled;
 
-		WindowsWindow* windowsWindow = (WindowsWindow*)Application::Get()->GetWindow();
+		DX11Window* windowsWindow = (DX11Window*)Application::Get()->GetWindow();
 		RECT windowRECT = windowsWindow->GetSizeScreen();
 
 		uint32_t width = windowRECT.right; // - windowRECT.left;

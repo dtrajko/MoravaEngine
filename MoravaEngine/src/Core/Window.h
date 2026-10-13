@@ -54,28 +54,19 @@ public:
 
 	virtual void SetInputMode(bool cursorEnabled) = 0;
 
+	// The window of the current renderer API: a GLFWWindow (OpenGL, Vulkan; every platform) or a DX11Window (Windows)
 	static Window* Create(const WindowSpecification& windowSpecification = WindowSpecification());
 
 	/**** END Window Hazel version - a platform independent Window interface ****/
 
-	/**** BEGIN DirectX 11 methods ***/
-	virtual void SetHWND(HWND hwnd) = 0;
-	virtual HWND GetHWND() = 0;
-
-	// Events
-	virtual void OnCreate() = 0;
-	virtual void OnDestroy() = 0;
-	virtual void OnFocus() = 0;
-	virtual void OnKillFocus() = 0;
-	virtual void OnSize() = 0;
-
+	// The window has the keyboard's input
 	virtual bool IsInFocus() = 0;
 	virtual void SetInFocus(bool inFocus) = 0;
-	/**** END DirectX 11 methods ***/
 
 	virtual void OnUpdate() = 0;
 
 	// Methods used by MoravaEngine classes
+	// The GLFW window (nullptr: the window isn't a GLFW one, as DirectX 11's)
 	virtual GLFWwindow* GetHandle() = 0;
 	virtual GLFWwindow* GetNativeWindow() = 0; // an alias/synonim of GetHandle
 	virtual bool* getKeys() = 0;

@@ -11,16 +11,11 @@
 #include "EnvMapVulkan/EnvMapVulkanEditorLayer.h"
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 
+#include "Core/FileDialogs.h"
 #include "Core/Timer.h"
+#include "Core/Util.h"
 #include "Platform/DX11/DX11TestLayer.h"
 #include "Platform/DX11/DX11Renderer.h"
-
-#if defined(HZ_PLATFORM_WINDOWS)
-	#define GLFW_EXPOSE_NATIVE_WIN32
-	#include <GLFW/glfw3native.h>
-	#include <Windows.h>
-	#include <commdlg.h>
-#endif
 
 #include <imgui.h>
 
@@ -353,82 +348,23 @@ void Application::ClassifyEvents()
 	}
 }
 
+// The dialogs of the older scenes, with a Windows filter string and wide characters: see FileDialogs for new code
 std::wstring Application::OpenFile(const wchar_t* filter, const wchar_t* initialDirectory) const
 {
-
-#if defined(HZ_PLATFORM_WINDOWS)
-
-	OPENFILENAMEW ofn;        // common dialog box structure
-	wchar_t szFile[260] = { 0 }; // if using TCHAR macros
-
-	// Initialize OPENFILENAME
-	ZeroMemory(&ofn, sizeof(OPENFILENAMEW));
-	ofn.lStructSize = sizeof(OPENFILENAMEW);
-	switch (H2M::RendererAPI_H2M::Current())
-	{
-		case H2M::RendererAPITypeH2M::OpenGL:
-		case H2M::RendererAPITypeH2M::Vulkan:
-			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
-			break;
-		case H2M::RendererAPITypeH2M::DX11:
-			ofn.hwndOwner = m_Window->GetHWND();
-			break;
-	}
-	ofn.lpstrFile = szFile;
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrInitialDir = initialDirectory;
-	ofn.lpstrFilter = filter;
-	ofn.nFilterIndex = 1;
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
-	if (GetOpenFileNameW(&ofn) == TRUE)
-	{
-		return ofn.lpstrFile;
-	}
-
-#endif
-
-	return std::wstring();
+	const std::string path = FileDialogs::OpenFile(FileDialogs::FiltersFromWindowsString(filter),
+		initialDirectory ? Util::to_str(initialDirectory) : std::string());
+	return Util::to_wstr(path);
 }
 
 std::wstring Application::SaveFile(const wchar_t* filter, const wchar_t* defaultExtension, const wchar_t* initialDirectory) const
 {
-
-#if defined(HZ_PLATFORM_WINDOWS)
-
-	OPENFILENAMEW ofn;        // common dialog box structure
-	wchar_t szFile[260] = { 0 }; // if using TCHAR macros
-
-	// Initialize OPENFILENAME
-	ZeroMemory(&ofn, sizeof(OPENFILENAMEW));
-	ofn.lStructSize = sizeof(OPENFILENAMEW);
-	switch (H2M::RendererAPI_H2M::Current())
+	std::vector<FileDialogFilter> filters = FileDialogs::FiltersFromWindowsString(filter);
+	if (filters.empty() && defaultExtension && *defaultExtension)
 	{
-		case H2M::RendererAPITypeH2M::OpenGL:
-		case H2M::RendererAPITypeH2M::Vulkan:
-			ofn.hwndOwner = glfwGetWin32Window((GLFWwindow*)m_Window->GetHandle());
-			break;
-		case H2M::RendererAPITypeH2M::DX11:
-			ofn.hwndOwner = m_Window->GetHWND();
-			break;
+		filters.push_back({ Util::to_str(defaultExtension), Util::to_str(defaultExtension) });
 	}
-	ofn.lpstrFile = szFile;
-	ofn.nMaxFile = (DWORD)(sizeof(szFile) / sizeof(szFile[0])); // in characters, not bytes
-	ofn.lpstrFilter = filter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrDefExt = defaultExtension;
-	ofn.lpstrInitialDir = initialDirectory;
-	// A new file name can be typed (OFN_FILEMUSTEXIST is for opening); an existing file is overwritten only after asking
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
-
-	if (GetSaveFileNameW(&ofn) == TRUE)
-	{
-		return ofn.lpstrFile;
-	}
-
-#endif
-
-	return std::wstring();
+	const std::string path = FileDialogs::SaveFile(filters, initialDirectory ? Util::to_str(initialDirectory) : std::string());
+	return Util::to_wstr(path);
 }
 
 void Application::OnImGuiRender(bool* p_open)
@@ -475,6 +411,10 @@ const char* Application::GetPlatformName()
 {
 #if defined(HZ_PLATFORM_WINDOWS)
 	return "Windows x64";
+#elif defined(__APPLE__)
+	return "macOS";
+#elif defined(HZ_PLATFORM_LINUX)
+	return "Linux";
 #else
 	// #error Undefined platform?
 	return "N/A";

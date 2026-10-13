@@ -1,4 +1,4 @@
-#include "Platform/Windows/WindowsWindow.h"
+#include "Platform/GLFW/GLFWWindow.h"
 
 #include "H2M/Core/Events/KeyEventH2M.h"
 #include "H2M/Core/Events/MouseEventH2M.h"
@@ -8,24 +8,14 @@
 #include "Core/Application.h"
 #include "Core/Log.h"
 
-#include "Platform/DX11/DX11.h"
-#include "Platform/DX11/DX11Context.h"
-#include "Platform/DX11/DX11InputSystem.h"
-#include "Platform/DX11/DX11RendererBasic.h"
-#include "Platform/DX11/DX11Renderer.h"
+#include "H2M/Renderer/RendererAPI_H2M.h"
+#include "Renderer/RendererBasic.h"
 
 #include <cmath>
-#include <exception>
+#include <filesystem>
+#include <stdexcept>
 
-#define UNICODE
-#define _UNICODE
-
-Window* Window::Create(const WindowSpecification& windowSpecification)
-{
-	return new WindowsWindow(windowSpecification);
-}
-
-WindowsWindow::WindowsWindow(const WindowSpecification& windowSpecification)
+GLFWWindow::GLFWWindow(const WindowSpecification& windowSpecification)
 	: m_Specification(windowSpecification)
 {
 	m_EventLoggingEnabled = false;
@@ -33,12 +23,10 @@ WindowsWindow::WindowsWindow(const WindowSpecification& windowSpecification)
 	Init();
 }
 
-WindowsWindow::~WindowsWindow()
+GLFWWindow::~GLFWWindow()
 {
 	Shutdown();
 }
-
-/**** BEGIN Hazel properties and methods (GLFW) ****/
 
 static void GLFWErrorCallback(int error, const char* description)
 {
@@ -47,7 +35,7 @@ static void GLFWErrorCallback(int error, const char* description)
 
 static bool s_GLFWInitialized = false;
 
-void WindowsWindow::Init()
+void GLFWWindow::Init()
 {
 	m_Data.Title = m_Specification.Title;
 	m_Data.Width = m_Specification.Width;
@@ -75,24 +63,13 @@ void WindowsWindow::Init()
 	Log::GetLogger()->info("[Window] Application working directory: {}", std::filesystem::current_path().string());
 	Log::GetLogger()->info("[Window] Creating window - title: '{0}', size: [{1}x{2}]", m_Specification.Title, m_Specification.Width, m_Specification.Height);
 
-	switch (H2M::RendererAPI_H2M::Current())
-	{
-	case H2M::RendererAPITypeH2M::OpenGL:
-	case H2M::RendererAPITypeH2M::Vulkan:
-		InitGLFW(m_Specification);
-		break;
-	case H2M::RendererAPITypeH2M::DX11:
-		InitDX11(m_Specification);
-		break;
-	}
+	InitGLFW(m_Specification);
 
 	m_RendererContext = H2M::RendererContextH2M::Create(this);
 	m_RendererContext->Init();
 
 	if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
 	{
-		/**** BEGIN Move to WindowsWindow class ****/
-
 		H2M::RefH2M<H2M::VulkanContextH2M> context = m_RendererContext.As<H2M::VulkanContextH2M>();
 
 		m_SwapChain.Init(context->GetInstance(), context->GetDevice());
@@ -103,8 +80,6 @@ void WindowsWindow::Init()
 		m_SwapChain.Create(&width, &height);
 
 		H2M::VulkanAllocatorH2M::Init(context->GetDevice());
-
-		/**** END Move to WindowsWindow class ****/
 	}
 
 	RendererBasic::SetRendererContext(m_RendererContext);
@@ -120,7 +95,7 @@ void WindowsWindow::Init()
 	// SetCallbacks();
 }
 
-void WindowsWindow::InitGLFW(const WindowSpecification& props)
+void GLFWWindow::InitGLFW(const WindowSpecification& props)
 {
 	// Initialize GLFW
 	if (!s_GLFWInitialized)
@@ -131,7 +106,7 @@ void WindowsWindow::InitGLFW(const WindowSpecification& props)
 		if (!glfwInit())
 		{
 			glfwTerminate();
-			std::string msg = "WindowWindow: GLFW initialization failed!";
+			std::string msg = "GLFWWindow: GLFW initialization failed!";
 			Log::GetCoreLogger()->error(msg);
 			throw std::runtime_error(msg);
 		}
@@ -160,9 +135,8 @@ void WindowsWindow::InitGLFW(const WindowSpecification& props)
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	}
 
-	// Enable MSAA (multisample anti-aliasing)
+	// Enable MSAA (multisample anti-aliasing). OpenGL has multisampling on from the start of a context.
 	glfwWindowHint(GLFW_SAMPLES, 4);
-	glEnable(GL_MULTISAMPLE);
 
 	if (m_Specification.Fullscreen)
 	{
@@ -189,48 +163,37 @@ void WindowsWindow::InitGLFW(const WindowSpecification& props)
 	SetCallbacksHazelDev();
 }
 
-inline std::pair<int, int> WindowsWindow::GetWindowPos() const
+inline std::pair<int, int> GLFWWindow::GetWindowPos() const
 {
 	int x, y;
 	glfwGetWindowPos(m_GLFW_Window, &x, &y);
 	return { x, y };
 }
 
-void WindowsWindow::ProcessEvents()
+void GLFWWindow::ProcessEvents()
 {
-	switch (H2M::RendererAPI_H2M::Current())
-	{
-	case H2M::RendererAPITypeH2M::OpenGL:
-	case H2M::RendererAPITypeH2M::Vulkan:
-	{
-		// Mouse movement is summed per frame: start from zero, then the cursor callbacks add this frame's movement
-		xChange = 0.0f;
-		yChange = 0.0f;
+	// Mouse movement is summed per frame: start from zero, then the cursor callbacks add this frame's movement
+	xChange = 0.0f;
+	yChange = 0.0f;
 
-		glfwPollEvents();
+	glfwPollEvents();
 
-		//ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
-		//glfwSetCursor(m_GLFW_Window, m_ImGuiMouseCursors[imgui_cursor] ? m_ImGuiMouseCursors[imgui_cursor] : m_ImGuiMouseCursors[ImGuiMouseCursor_Arrow]);
-		if (!m_CursorCaptured)
-		{
-			glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-		}
-	}
-	break;
-	case H2M::RendererAPITypeH2M::DX11:
-		Broadcast();
-		break;
+	//ImGuiMouseCursor imgui_cursor = ImGui::GetMouseCursor();
+	//glfwSetCursor(m_GLFW_Window, m_ImGuiMouseCursors[imgui_cursor] ? m_ImGuiMouseCursors[imgui_cursor] : m_ImGuiMouseCursors[ImGuiMouseCursor_Arrow]);
+	if (!m_CursorCaptured)
+	{
+		glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
 }
 
-void WindowsWindow::SwapBuffers()
+void GLFWWindow::SwapBuffers()
 {
 	m_RendererContext->SwapBuffers();
 
 	// m_SwapChain.Present();
 }
 
-void WindowsWindow::SetVSync(bool enabled)
+void GLFWWindow::SetVSync(bool enabled)
 {
 	if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
 	{
@@ -245,345 +208,54 @@ void WindowsWindow::SetVSync(bool enabled)
 	m_Data.VSync = enabled;
 }
 
-bool WindowsWindow::IsVSync() const
+bool GLFWWindow::IsVSync() const
 {
 	return m_Data.VSync;
 }
 
-void WindowsWindow::Maximize()
+void GLFWWindow::Maximize()
 {
 	glfwMaximizeWindow(m_GLFW_Window);
 }
 
-void WindowsWindow::SetTitle(std::string title)
+void GLFWWindow::SetTitle(std::string title)
 {
 	m_Data.Title = title;
 	glfwSetWindowTitle(m_GLFW_Window, m_Data.Title.c_str());
 }
 
-void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)
+void GLFWWindow::SetEventCallback(const EventCallbackFn& callback)
 {
 	m_Data.EventCallback = callback;
 }
 
-/**** END Hazel properties and methods ****/
-
-// A DirectX 11 methods
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+void GLFWWindow::Shutdown()
 {
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
-	{
-		return true;
-	}
-
-	switch (msg)
-	{
-	case WM_CREATE:
-	{
-		// Event fired when the window is created
-		// Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		// window->SetHWND(hwnd);
-		// window->OnCreate();
-		break;
-	}
-	case WM_SIZE:
-	{
-		// Event fired when the window is resized
-		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		if (window)
-		{
-			window->OnSize();
-		}
-		break;
-	}
-	case WM_SETFOCUS:
-	{
-		// Event fired when the window is in focus
-		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		if (window)
-		{
-			window->OnFocus();
-		}
-		break;
-	}
-	case WM_KILLFOCUS:
-	{
-		// Event fired when the window is in focus
-		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		if (window)
-		{
-			window->OnKillFocus();
-		}
-		break;
-	}
-	case WM_INPUT:
-	{
-		// Raw mouse motion (registered in InitDX11), used for camera rotation while the cursor is captured
-		RAWINPUT raw = {};
-		UINT size = sizeof(raw);
-		if (::GetRawInputData((HRAWINPUT)lparam, RID_INPUT, &raw, &size, sizeof(RAWINPUTHEADER)) != (UINT)-1 &&
-			raw.header.dwType == RIM_TYPEMOUSE && !(raw.data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE))
-		{
-			DX11InputSystem::Get()->AddRawMouseDelta(raw.data.mouse.lLastX, raw.data.mouse.lLastY);
-		}
-		return ::DefWindowProcW(hwnd, msg, wparam, lparam); // required for WM_INPUT cleanup
-	}
-	case WM_DESTROY:
-	{
-		// Event fired when the window is destroyed
-		Window* window = (Window*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		window->OnDestroy();
-		::PostQuitMessage(0);
-		break;
-	}
-	default:
-	{
-		// The window class is registered with RegisterClassExW, so use the wide default procedure explicitly:
-		// the project is built without UNICODE, where DefWindowProc means DefWindowProcA, which reads the
-		// UTF-16 window title as ANSI and stops after the first character ("M")
-		return ::DefWindowProcW(hwnd, msg, wparam, lparam);
-	}
-	}
-
-	return NULL;
+	glfwDestroyWindow(m_GLFW_Window);
+	glfwTerminate();
+	s_GLFWInitialized = false;
 }
 
-// A DirectX 11 method
-void WindowsWindow::SetHWND(HWND hwnd)
-{
-	m_HWND = hwnd;
-}
+int GLFWWindow::m_ActionPrev;
 
-// A DirectX 11 method
-void WindowsWindow::InitDX11(const WindowSpecification& windowSpecification)
-{
-	m_IsInitialized = false;
-
-	const wchar_t* className = L"WindowsWindow";
-	const wchar_t* menuName = L"";
-
-	std::wstring windowNameWStr = Util::to_wstr(windowSpecification.Title);
-	LPCWSTR windowName = windowNameWStr.c_str();
-
-	WNDCLASSEXW wc = {};
-	wc.cbSize = sizeof(WNDCLASSEXW);
-	wc.lpfnWndProc = &WndProc;
-	wc.hInstance = GetModuleHandle(nullptr);
-	wc.lpszClassName = className;
-	wc.lpszMenuName = menuName;
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wc.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
-	wc.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
-	wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-
-	if (!RegisterClassExW(&wc))
-		throw std::exception("Window not created successfully.");
-
-	m_HWND = CreateWindowExW(
-		WS_EX_OVERLAPPEDWINDOW,
-		className,
-		windowName,
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, CW_USEDEFAULT,
-		windowSpecification.Width,
-		windowSpecification.Height,
-		nullptr, nullptr,
-		GetModuleHandle(nullptr),
-		nullptr
-	);
-
-	if (!m_HWND)
-		throw std::exception("Window not created successfully.");
-
-	ShowWindow(m_HWND, SW_SHOW);
-	UpdateWindow(m_HWND);
-
-	// Relative mouse motion for camera rotation (DX11CameraFP), see WM_INPUT in WndProc
-	DX11InputSystem::Get()->RegisterRawMouseInput(m_HWND);
-
-	m_IsRunning = true;
-}
-
-// Used only for DirectX 11
-bool WindowsWindow::Broadcast()
-{
-	if (H2M::RendererAPI_H2M::Current() != H2M::RendererAPITypeH2M::DX11) return true;
-
-	MSG msg;
-
-	if (!m_IsInitialized)
-	{
-		SetWindowLongPtr(m_HWND, GWLP_USERDATA, (LONG_PTR)this);
-		OnCreate();
-		m_IsInitialized = true;
-	}
-
-	while (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0)
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-
-	Sleep(1);
-
-	return true;
-}
-
-// A DirectX 11 method
-bool WindowsWindow::Release()
-{
-	// Destroy the window
-	if (!::DestroyWindow(m_HWND))
-	{
-		return false;
-	}
-	return true;
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnCreate()
-{
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnDestroy()
-{
-	m_IsRunning = false;
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnFocus()
-{
-	// DX11InputSystem::Get()->AddListener(this);
-	m_InFocus = true;
-	// DX11InputSystem::Get()->ShowCursor(false);
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnKillFocus()
-{
-	// DX11InputSystem::Get()->RemoveListener(this);
-	m_InFocus = false;
-	// DX11InputSystem::Get()->ShowCursor(true);
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnSize()
-{
-	// Cooldown
-	float currentTimestamp = Timer::Get()->GetCurrentTimestamp();
-	if (currentTimestamp - m_ResizeViewport.lastTime < m_ResizeViewport.cooldown) return;
-	m_ResizeViewport.lastTime = currentTimestamp;
-
-	RECT windowRECT = GetClientWindowRect();
-
-	m_Data.Width = windowRECT.right - windowRECT.left;
-	m_Data.Height = windowRECT.bottom - windowRECT.top;
-
-	// DX11Context::Get()->GetSwapChain()->OnResize(windowRECT.right, windowRECT.bottom);
-	DX11Context::Get()->GetSwapChain()->OnResize(m_Data.Width, m_Data.Height);
-
-	// TODO: use observer / event listeners to remove this unwanted and unnecessary dependency
-	DX11Renderer::OnResize(m_Data.Width, m_Data.Height);
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnKeyDown(int key)
-{
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnKeyUp(int key)
-{
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnMouseMove(const glm::vec2& mousePosDelta, const glm::vec2& mousePosAbs)
-{
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnLeftMouseDown(const glm::vec2& mousePos)
-{
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnRightMouseDown(const glm::vec2& mousePos)
-{
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnLeftMouseUp(const glm::vec2& mousePos)
-{
-}
-
-// A DirectX 11 method
-void WindowsWindow::OnRightMouseUp(const glm::vec2& mousePos)
-{
-}
-
-// A DirectX 11 method
-bool WindowsWindow::IsRunning()
-{
-	return m_IsRunning;
-}
-
-// A DirectX 11 method
-RECT WindowsWindow::GetClientWindowRect()
-{
-	RECT rect;
-	::GetClientRect(m_HWND, &rect);
-	::ClientToScreen(m_HWND, (LPPOINT)&rect.left);
-	::ClientToScreen(m_HWND, (LPPOINT)&rect.right);
-	return rect;
-}
-
-// A DirectX 11 method
-RECT WindowsWindow::GetSizeScreen()
-{
-	RECT rect;
-	rect.right = ::GetSystemMetrics(SM_CXSCREEN);
-	rect.bottom = ::GetSystemMetrics(SM_CYSCREEN);
-	return rect;
-}
-
-void WindowsWindow::Shutdown()
-{
-	switch (H2M::RendererAPI_H2M::Current())
-	{
-	case H2M::RendererAPITypeH2M::OpenGL:
-	case H2M::RendererAPITypeH2M::Vulkan:
-	{
-		glfwDestroyWindow(m_GLFW_Window);
-		glfwTerminate();
-		s_GLFWInitialized = false;
-	}
-	break;
-	case H2M::RendererAPITypeH2M::DX11:
-		Release();
-		break;
-	}
-}
-
-int WindowsWindow::m_ActionPrev;
-
-void WindowsWindow::OnUpdate()
+void GLFWWindow::OnUpdate()
 {
 	// Get and handle user input events
-	// glfwPollEvents(); // TODO: move to WindowsWindow::ProcessEvents()
+	// glfwPollEvents(); // TODO: move to GLFWWindow::ProcessEvents()
 	ProcessEvents();
 
 	// Swap buffers
-	// glfwSwapBuffers(m_GLFW_Window); // TODO: move to WindowsWindow::SwapBuffers() / OpenGLContext::SwapBuffers()
+	// glfwSwapBuffers(m_GLFW_Window); // TODO: move to GLFWWindow::SwapBuffers() / OpenGLContext::SwapBuffers()
 
 	SwapBuffers();
-
-	// Broadcast();
 }
 
-GLfloat WindowsWindow::getXChange()
+bool GLFWWindow::IsInFocus()
+{
+	return glfwGetWindowAttrib(m_GLFW_Window, GLFW_FOCUSED) == GLFW_TRUE;
+}
+
+GLfloat GLFWWindow::getXChange()
 {
 	float theChange = 0.0f;
 	if (std::abs(xChange) > m_CursorIgnoreLimit) {
@@ -592,7 +264,7 @@ GLfloat WindowsWindow::getXChange()
 	return theChange;
 }
 
-GLfloat WindowsWindow::getYChange()
+GLfloat GLFWWindow::getYChange()
 {
 	float theChange = 0.0f;
 	if (std::abs(yChange) > m_CursorIgnoreLimit) {
@@ -601,36 +273,32 @@ GLfloat WindowsWindow::getYChange()
 	return theChange;
 }
 
-float WindowsWindow::getXMouseScrollOffset()
+float GLFWWindow::getXMouseScrollOffset()
 {
 	float theOffset = xMouseScrollOffset;
 	xMouseScrollOffset = 0.0f;
 	return theOffset;
 }
 
-float WindowsWindow::getYMouseScrollOffset()
+float GLFWWindow::getYMouseScrollOffset()
 {
 	float theOffset = yMouseScrollOffset;
 	yMouseScrollOffset = 0.0f;
 	return theOffset;
 }
 
-void WindowsWindow::SetCursorDisabled()
+void GLFWWindow::SetCursorDisabled()
 {
 	glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
-void WindowsWindow::SetCursorNormal()
+void GLFWWindow::SetCursorNormal()
 {
 	glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void WindowsWindow::SetCursorCaptured(bool captured)
+void GLFWWindow::SetCursorCaptured(bool captured)
 {
-	// GLFW cursor modes only apply to the OpenGL/Vulkan (GLFW) window
-	if (H2M::RendererAPI_H2M::Current() != H2M::RendererAPITypeH2M::OpenGL &&
-		H2M::RendererAPI_H2M::Current() != H2M::RendererAPITypeH2M::Vulkan) return;
-
 	if (captured == m_CursorCaptured) return;
 	m_CursorCaptured = captured;
 
@@ -648,45 +316,36 @@ void WindowsWindow::SetCursorCaptured(bool captured)
 	mouseFirstMoved = true;
 }
 
-bool WindowsWindow::GetShouldClose()
+bool GLFWWindow::GetShouldClose()
 {
-	switch (H2M::RendererAPI_H2M::Current())
-	{
-	case H2M::RendererAPITypeH2M::OpenGL:
-	case H2M::RendererAPITypeH2M::Vulkan:
-		return glfwWindowShouldClose(m_GLFW_Window);
-	case H2M::RendererAPITypeH2M::DX11:
-		return !m_IsRunning;
-	default:
-		return true;
-	}
+	return glfwWindowShouldClose(m_GLFW_Window);
 }
 
-bool WindowsWindow::IsMouseButtonClicked(int mouseButton)
+bool GLFWWindow::IsMouseButtonClicked(int mouseButton)
 {
 	bool result = buttons[mouseButton] && !buttons_prev[mouseButton];
 	buttons_prev[mouseButton] = buttons[mouseButton];
 	return result;
 }
 
-bool WindowsWindow::IsMouseButtonReleased(int mouseButton)
+bool GLFWWindow::IsMouseButtonReleased(int mouseButton)
 {
 	bool result = !buttons[mouseButton] && buttons_prev[mouseButton];
 	buttons_prev[mouseButton] = buttons[mouseButton];
 	return result;
 }
 
-void WindowsWindow::SetShouldClose(bool shouldClose)
+void GLFWWindow::SetShouldClose(bool shouldClose)
 {
 	glfwSetWindowShouldClose(m_GLFW_Window, shouldClose);
 }
 
-H2M::VulkanSwapChainH2M& WindowsWindow::GetSwapChain()
+H2M::VulkanSwapChainH2M& GLFWWindow::GetSwapChain()
 {
 	return m_SwapChain;
 }
 
-void WindowsWindow::SetInputMode(bool cursorEnabled)
+void GLFWWindow::SetInputMode(bool cursorEnabled)
 {
 	if (cursorEnabled)
 		glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -697,7 +356,7 @@ void WindowsWindow::SetInputMode(bool cursorEnabled)
 /****
  * Obsolete after adding GLFW callbacks to Init() method
  *
-void WindowsWindow::SetCallbacks()
+void GLFWWindow::SetCallbacks()
 {
 	glfwSetKeyCallback(m_GLFW_Window, KeyCallback);
 	glfwSetCharCallback(m_GLFW_Window, CharCallback);
@@ -710,7 +369,7 @@ void WindowsWindow::SetCallbacks()
 }
 ****/
 
-void WindowsWindow::SetCallbacksHazelDev()
+void GLFWWindow::SetCallbacksHazelDev()
 {
 	// Set GLFW callbacks (Handle Key and Mouse input)
 	glfwSetWindowSizeCallback(m_GLFW_Window, [](GLFWwindow* window, int width, int height)
@@ -833,12 +492,12 @@ void WindowsWindow::SetCallbacksHazelDev()
 		});
 }
 
-void WindowsWindow::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+void GLFWWindow::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+	GLFWWindow* theWindow = static_cast<GLFWWindow*>(Application::Get()->GetWindow());
 
 	if (theWindow->m_EventLoggingEnabled) {
-		Log::GetLogger()->debug("WindowsWindow::KeyCallback(key {0}, scancode {1}, action {2}, mods {3})", key, scancode, action, mods);
+		Log::GetLogger()->debug("GLFWWindow::KeyCallback(key {0}, scancode {1}, action {2}, mods {3})", key, scancode, action, mods);
 	}
 
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -863,17 +522,17 @@ void WindowsWindow::KeyCallback(GLFWwindow* window, int key, int scancode, int a
 	}
 }
 
-void WindowsWindow::CharCallback(GLFWwindow* window, unsigned int codepoint)
+void GLFWWindow::CharCallback(GLFWwindow* window, unsigned int codepoint)
 {
 	// not implemented/used in old MoravaEngine method of handling events
 }
 
-void WindowsWindow::CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
+void GLFWWindow::CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+	GLFWWindow* theWindow = static_cast<GLFWWindow*>(Application::Get()->GetWindow());
 
 	if (theWindow->m_EventLoggingEnabled) {
-		Log::GetLogger()->debug("WindowsWindow::CursorPosCallback(xpos {0}, ypos {1})", xpos, ypos);
+		Log::GetLogger()->debug("GLFWWindow::CursorPosCallback(xpos {0}, ypos {1})", xpos, ypos);
 	}
 
 	theWindow->m_MouseX = (float)xpos;
@@ -901,12 +560,12 @@ void WindowsWindow::CursorPosCallback(GLFWwindow* window, double xpos, double yp
 	// printf("x:%.2f, y:%.2f\n", theWindow->xChange, theWindow->yChange);
 }
 
-void WindowsWindow::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+void GLFWWindow::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+	GLFWWindow* theWindow = static_cast<GLFWWindow*>(Application::Get()->GetWindow());
 
 	if (theWindow->m_EventLoggingEnabled) {
-		Log::GetLogger()->debug("WindowsWindow::MouseButtonCallback(button {0}, action {1}, mods {2})", button, action, mods);
+		Log::GetLogger()->debug("GLFWWindow::MouseButtonCallback(button {0}, action {1}, mods {2})", button, action, mods);
 	}
 
 	if (button >= 0 && button < 32)
@@ -939,12 +598,12 @@ void WindowsWindow::MouseButtonCallback(GLFWwindow* window, int button, int acti
 	}
 }
 
-void WindowsWindow::CursorEnterCallback(GLFWwindow* window, int entered)
+void GLFWWindow::CursorEnterCallback(GLFWwindow* window, int entered)
 {
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+	GLFWWindow* theWindow = static_cast<GLFWWindow*>(Application::Get()->GetWindow());
 
 	if (theWindow->m_EventLoggingEnabled) {
-		Log::GetLogger()->debug("WindowsWindow::CursorEnterCallback(entered {0})", entered);
+		Log::GetLogger()->debug("GLFWWindow::CursorEnterCallback(entered {0})", entered);
 	}
 
 	if (entered)
@@ -953,12 +612,12 @@ void WindowsWindow::CursorEnterCallback(GLFWwindow* window, int entered)
 		theWindow->mouseCursorAboveWindow = false;
 }
 
-void WindowsWindow::WindowSizeCallback(GLFWwindow* window, int width, int height)
+void GLFWWindow::WindowSizeCallback(GLFWwindow* window, int width, int height)
 {
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+	GLFWWindow* theWindow = static_cast<GLFWWindow*>(Application::Get()->GetWindow());
 
 	if (theWindow->m_EventLoggingEnabled) {
-		Log::GetLogger()->debug("WindowsWindow::WindowSizeCallback(width {0}, height {1})", width, height);
+		Log::GetLogger()->debug("GLFWWindow::WindowSizeCallback(width {0}, height {1})", width, height);
 	}
 
 	theWindow->m_Data.Width = width;
@@ -966,16 +625,16 @@ void WindowsWindow::WindowSizeCallback(GLFWwindow* window, int width, int height
 	glViewport(0, 0, width, height);
 }
 
-void WindowsWindow::WindowCloseCallback(GLFWwindow* window)
+void GLFWWindow::WindowCloseCallback(GLFWwindow* window)
 {
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+	GLFWWindow* theWindow = static_cast<GLFWWindow*>(Application::Get()->GetWindow());
 
 	// not implemented/used in old MoravaEngine method of handling events
 }
 
-void WindowsWindow::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+void GLFWWindow::ScrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	WindowsWindow* theWindow = static_cast<WindowsWindow*>(Application::Get()->GetWindow());
+	GLFWWindow* theWindow = static_cast<GLFWWindow*>(Application::Get()->GetWindow());
 
 	theWindow->xMouseScrollOffset = (float)xoffset;
 	theWindow->yMouseScrollOffset = (float)yoffset;

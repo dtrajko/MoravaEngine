@@ -40,3 +40,6 @@
 [submodule "vendor/spdlog"]
 	path = vendor/spdlog
 	url = https://github.com/gabime/spdlog
+[submodule "vendor/cross-platform/nativefiledialog-extended"]
+	path = vendor/cross-platform/nativefiledialog-extended
+	url = https://github.com/btzy/nativefiledialog-extended.git

@@ -81,6 +81,12 @@ set(BUILD_EXTRAS OFF CACHE BOOL "" FORCE)
 # ---- Shaderc ----
 set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
 
+# ---- Native File Dialog Extended (the file dialogs of Windows, Linux and macOS) ----
+set(NFD_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(NFD_INSTALL OFF CACHE BOOL "" FORCE)
+# Windows: a dialog given a folder starts there, not in the folder a dialog was last closed in
+set(NFD_OVERRIDE_RECENT_WITH_DEFAULT ON CACHE BOOL "" FORCE)
+
 # =========================================================
 # OPTIONAL SUBDIRECTORY HELPER
 # =========================================================
@@ -111,6 +117,7 @@ add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross spirv-cross)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/shaderc shaderc)
 add_optional(${ROOT_PATH_ABS}/vendor/DirectXTex directxtex)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/assimp assimp)
+add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/nativefiledialog-extended nfd)
 
 # =========================================================
 # MAIN TARGET
@@ -275,6 +282,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glfw
     Vulkan::Vulkan
     glew
+    nfd
 
     VulkanMemoryAllocator
     mono

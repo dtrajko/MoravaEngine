@@ -33,7 +33,7 @@
 #include "Core/Timer.h"
 #include "ImGui/ImGuiWrapper.h"
 #include "Light/LightManager.h"
-#include "Platform/Windows/WindowsWindow.h"
+#include "Core/Window.h"
 
 #include <GL/glew.h>
 
