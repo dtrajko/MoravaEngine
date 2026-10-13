@@ -559,6 +559,16 @@ void EnvMapVulkanWater::SetReflectionAmbientOcclusion(const VkDescriptorImageInf
 	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
 }
 
+void EnvMapVulkanWater::SetReflectionRayTracedReflections(const VkDescriptorImageInfo& none)
+{
+	H2M::RefH2M<H2M::VulkanShaderH2M> pbrShader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
+	VkWriteDescriptorSet write = *pbrShader->GetDescriptorSet("u_ReflectionImage", FrameSet);
+	write.dstSet = m_ReflectionFrameSet.DescriptorSets[0];
+	write.descriptorCount = 1;
+	write.pImageInfo = &none;
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+}
+
 void EnvMapVulkanWater::ResizeReflection()
 {
 	if (!m_ReflectionFramebuffer || m_CopyWidth == 0 || m_CopyHeight == 0)

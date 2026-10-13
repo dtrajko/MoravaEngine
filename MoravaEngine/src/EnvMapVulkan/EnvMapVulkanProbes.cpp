@@ -1,6 +1,7 @@
 #include "EnvMapVulkanProbes.h"
 
 #include "EnvMapVulkanProfiler.h"
+#include "EnvMapVulkanRayTracing.h"
 #include "EnvMapVulkanShadows.h"
 
 #include "H2M/Platform/Vulkan/VulkanAllocatorH2M.h"
@@ -51,10 +52,6 @@ static_assert(sizeof(CaptureSunUB) == 80, "std140 layout mismatch with the Captu
 // Bits of ProbeUpdatePush::Batch.w, for ProbeTrace.glsl
 static constexpr int TraceSunShadows = 1; // the sun casts shadows
 static constexpr int TracePlacing = 2;    // the batch's probes are being placed
-
-// The bindings of the per-frame set 0 that ProbeTrace.glsl declares (Include/FrameSet.glslh: all but the camera, which is
-// the vertex stage's): its own set 0 gets their contents
-static constexpr uint32_t TraceFrameBindings[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17 };
 
 // The capture cubes' far plane (meters): what is farther counts as not seen (the sky)
 static constexpr float CaptureFarPlane = 2000.0f;
@@ -1038,19 +1035,7 @@ void EnvMapVulkanProbes::PrepareTrace(VkDescriptorSet frameDescriptorSet)
 	{
 		return;
 	}
-	const uint32_t count = (uint32_t)(sizeof(TraceFrameBindings) / sizeof(TraceFrameBindings[0]));
-	std::vector<VkCopyDescriptorSet> copies(count);
-	for (uint32_t i = 0; i < count; i++)
-	{
-		copies[i] = {};
-		copies[i].sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
-		copies[i].srcSet = frameDescriptorSet;
-		copies[i].srcBinding = TraceFrameBindings[i];
-		copies[i].dstSet = m_TraceFrameSet.DescriptorSets[0];
-		copies[i].dstBinding = TraceFrameBindings[i];
-		copies[i].descriptorCount = 1;
-	}
-	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 0, nullptr, count, copies.data());
+	EnvMapVulkanRayTracing::CopyFrameSet(frameDescriptorSet, m_TraceFrameSet.DescriptorSets[0]);
 }
 
 void EnvMapVulkanProbes::RecordTraced(VkCommandBuffer commandBuffer, VkDescriptorSet rayTracingSet, bool sunShadows)

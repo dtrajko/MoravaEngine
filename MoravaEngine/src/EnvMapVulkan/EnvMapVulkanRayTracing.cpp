@@ -189,6 +189,25 @@ bool EnvMapVulkanRayTracing::IsSupported()
 	return H2M::VulkanContextH2M::GetCurrentDevice()->IsRayTracingSupported();
 }
 
+void EnvMapVulkanRayTracing::CopyFrameSet(VkDescriptorSet frameDescriptorSet, VkDescriptorSet computeSet)
+{
+	// The bindings of Include/FrameSet.glslh: all of set 0 but the camera, which is the vertex stage's
+	static constexpr uint32_t bindings[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
+	static constexpr uint32_t count = (uint32_t)(sizeof(bindings) / sizeof(bindings[0]));
+	VkCopyDescriptorSet copies[count];
+	for (uint32_t i = 0; i < count; i++)
+	{
+		copies[i] = {};
+		copies[i].sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+		copies[i].srcSet = frameDescriptorSet;
+		copies[i].srcBinding = bindings[i];
+		copies[i].dstSet = computeSet;
+		copies[i].dstBinding = bindings[i];
+		copies[i].descriptorCount = 1;
+	}
+	vkUpdateDescriptorSets(GetDevice(), 0, nullptr, count, copies);
+}
+
 void EnvMapVulkanRayTracing::Create()
 {
 	H2M::RefH2M<H2M::VulkanDeviceH2M> vulkanDevice = H2M::VulkanContextH2M::GetCurrentDevice();

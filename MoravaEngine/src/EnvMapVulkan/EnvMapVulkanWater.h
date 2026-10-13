@@ -139,6 +139,8 @@ public:
 	// The reflection's set 0 has no ambient occlusion (that image belongs to the viewport's pixels): its u_AOImage gets
 	// this image, a white texel. Once, after Create.
 	void SetReflectionAmbientOcclusion(const VkDescriptorImageInfo& white);
+	// The same for the ray-traced reflections (u_ReflectionImage): the reflection pass has none, so an empty texel
+	void SetReflectionRayTracedReflections(const VkDescriptorImageInfo& none);
 	void EndReflectionPass(VkCommandBuffer commandBuffer);
 	// Outside a render pass: copies the scene framebuffer's color and depth into the textures the water samples, and leaves
 	// the framebuffer's attachments in the layouts its continue render pass expects

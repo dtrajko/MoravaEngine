@@ -92,7 +92,7 @@ layout (std140, set = 0, binding = 7) uniform Shadows
 	                                    // 1 the direct light only, 2 the indirect light only, 3 diffuse surface shading
 	                                    // (ShadeSurfaceDiffuse from the material buffer), 4 the probes' irradiance only,
 	                                    // 5 how much of the environment's reflection the probes let through, 6 the ambient
-	                                    // occlusion image; 0: all of it
+	                                    // occlusion image, 7 the ray-traced reflection image; 0: all of it
 };
 layout (set = 0, binding = 8) uniform sampler2DArrayShadow u_SpotShadowMaps;  // a layer per shadowed spot light
 layout (set = 0, binding = 9) uniform samplerCubeArrayShadow u_PointShadowMaps; // a cube per shadowed point light
@@ -120,7 +120,10 @@ layout (set = 0, binding = 14) uniform sampler2D u_ProbeData;       // a texel p
 // ambient occlusion (the water's reflection) holds a white texel here.
 layout (set = 0, binding = 15) uniform sampler2D u_AOImage;
 
-// Binding 16 is kept for the reflections (docs/rendering/SSAO_GI_RayTracing_Guide.html)
+// The ray-traced reflections (EnvMapVulkanReflections): per pixel of the viewport, rgb = the light the surface reflects,
+// a = how much of it replaces the environment's reflection (0: none was traced there). A set 0 of a pass that has no
+// reflections (the water's reflection), and every set 0 without ray tracing, holds an empty texel here.
+layout (set = 0, binding = 16) uniform sampler2D u_ReflectionImage;
 
 // The materials of the Material Library as plain values, one entry per material (EnvMapVulkanMaterialBuffer): what a
 // shader needs to know of a material it has no descriptor set for (set 1 holds one material's maps). A draw's entry is

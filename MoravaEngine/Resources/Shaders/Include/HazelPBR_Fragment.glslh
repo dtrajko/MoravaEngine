@@ -42,7 +42,14 @@ void main()
 
 	color = vec4(directLight + indirectLight + emissive, 1.0);
 	// Debug views (Environment panel): one part of the lighting by itself, exposed and tonemapped as usual
-	if (u_ShadowDebug.z > 5.5)
+	if (u_ShadowDebug.z > 6.5)
+	{
+		// Reflections: the ray-traced reflection image by itself, the light as it arrives at the surface (black where
+		// no reflection was traced: the environment's is used there)
+		vec4 traced = ScreenReflection();
+		color.rgb = traced.rgb * traced.a;
+	}
+	else if (u_ShadowDebug.z > 5.5)
 	{
 		// Ambient Occlusion: the AO image by itself (white: open, black: closed in), without the material's map
 		color.rgb = vec3(screenAO);

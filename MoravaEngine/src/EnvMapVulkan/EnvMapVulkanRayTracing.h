@@ -88,6 +88,12 @@ public:
 
 	// The device has the ray tracing extensions and features enabled
 	static bool IsSupported();
+	// A compute shader that lights what a ray hit (Include/ShadeSurfaceRayTraced.glslh) needs what the per-frame set 0
+	// holds: lights, environment, probes, materials. It can't use that set (its layout names the vertex and fragment
+	// stages), so it has a set 0 of its own, which this fills with the per-frame set's descriptors (all that
+	// Include/FrameSet.glslh declares). Call before anything is recorded, in every frame the shader runs: the per-frame
+	// set's images change (a resize, a new environment).
+	static void CopyFrameSet(VkDescriptorSet frameDescriptorSet, VkDescriptorSet computeSet);
 
 	void Create();
 	void Destroy();

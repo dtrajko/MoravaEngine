@@ -14,6 +14,7 @@
 #include "EnvMapVulkanMaterialBuffer.h"
 #include "EnvMapVulkanProbes.h"
 #include "EnvMapVulkanRayTracing.h"
+#include "EnvMapVulkanReflections.h"
 #include "EnvMapVulkanSSAO.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
@@ -1560,6 +1561,18 @@ static bool IsRayTracingActive()
 	return s_RayTracingEnabled && EnvMapVulkanRayTracing::IsSupported();
 }
 
+// Ray-traced reflections (Phase H.3 of the guide, see EnvMapVulkanReflections): compute passes between the G-buffer
+// prepass and the scene pass fill the reflection image, u_ReflectionImage in the mesh shaders' set 0 (binding 16).
+// Without ray tracing the image stays empty and the meshes reflect the environment map, as before. Settings: the
+// Environment panel, saved with the scene.
+static EnvMapVulkanReflections s_Reflections;
+static EnvMapVulkanReflectionSettings s_ReflectionSettings;
+// Reflections are traced this frame
+static bool ReflectionsTraceRays()
+{
+	return IsRayTracingActive() && s_ReflectionSettings.Enabled;
+}
+
 // The probe volume on the GPU (see EnvMapVulkanProbes): its atlases and ProbeVolume block are in set 0 (bindings 11 to 14),
 // read by IndirectDiffuse in Include/ShadeSurface.glslh
 static EnvMapVulkanProbes s_Probes;
@@ -1606,6 +1619,18 @@ static void WriteAmbientOcclusionDescriptor()
 	H2M::RefH2M<H2M::VulkanShaderH2M> pbrShader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
 	const VkDescriptorImageInfo imageInfo = s_SSAO.GetAOInfo();
 	VkWriteDescriptorSet write = *pbrShader->GetDescriptorSet("u_AOImage", H2M::VulkanShaderH2M::FrameDescriptorSet);
+	write.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
+	write.descriptorCount = 1;
+	write.pImageInfo = &imageInfo;
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &write, 0, nullptr);
+}
+
+// Points the per-frame set's reflection binding to the reflection image (at startup, and when the viewport was resized)
+static void WriteReflectionDescriptor()
+{
+	H2M::RefH2M<H2M::VulkanShaderH2M> pbrShader = H2M::RendererH2M::GetShaderLibrary()->Get("HazelPBR_Static").As<H2M::VulkanShaderH2M>();
+	const VkDescriptorImageInfo imageInfo = s_Reflections.GetReflectionInfo();
+	VkWriteDescriptorSet write = *pbrShader->GetDescriptorSet("u_ReflectionImage", H2M::VulkanShaderH2M::FrameDescriptorSet);
 	write.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
 	write.descriptorCount = 1;
 	write.pImageInfo = &imageInfo;
@@ -2150,11 +2175,17 @@ static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light'
 enum DebugView { DebugViewOff = 0, DebugViewNormals, DebugViewRoughness, DebugViewLinearDepth, DebugViewMotion, DebugViewDirectLight, DebugViewIndirectLight,
 	DebugViewSurfaceShading, DebugViewProbeIrradiance, DebugViewReflectionOcclusion, DebugViewAO, DebugViewAODenoised, DebugViewAORaw,
 	DebugViewRayTracedNormals, DebugViewRayTracedAlbedo, DebugViewRayTracedInstances,
+	DebugViewReflections, DebugViewReflectionsRaw,
 	DebugViewCount };
 static int s_DebugView = DebugViewOff; // --debug-view on the command line sets it at startup
 static bool IsRayTracedDebugView(int view)
 {
 	return view >= DebugViewRayTracedNormals && view <= DebugViewRayTracedInstances;
+}
+// The views of the ray-traced reflection image (drawn by the PBR shaders, as the lighting views)
+static bool IsReflectionDebugView(int view)
+{
+	return view == DebugViewReflections || view == DebugViewReflectionsRaw;
 }
 static float s_DebugViewDepthRange = 50.0f;  // Linear Depth: the distance shown as white (world units)
 static float s_DebugViewMotionScale = 20.0f; // Motion: the motion shown at full color (pixels per frame)
@@ -5236,6 +5267,15 @@ static void WriteRenderSettings(YAML::Emitter& out)
 	out << YAML::Key << "Enabled" << YAML::Value << s_RayTracingEnabled;
 	out << YAML::EndMap;
 
+	const EnvMapVulkanReflectionSettings& reflections = s_ReflectionSettings;
+	out << YAML::Key << "Reflections" << YAML::Value << YAML::BeginMap;
+	out << YAML::Key << "Enabled" << YAML::Value << reflections.Enabled;
+	out << YAML::Key << "MaxRoughness" << YAML::Value << reflections.MaxRoughness;
+	out << YAML::Key << "Denoise" << YAML::Value << reflections.Denoise;
+	out << YAML::Key << "Temporal" << YAML::Value << reflections.Temporal;
+	out << YAML::Key << "HalfResolution" << YAML::Value << reflections.HalfResolution;
+	out << YAML::EndMap;
+
 	const EnvMapVulkanSSAOSettings& occlusion = s_SSAOSettings;
 	out << YAML::Key << "AmbientOcclusion" << YAML::Value << YAML::BeginMap;
 	out << YAML::Key << "Enabled" << YAML::Value << occlusion.Enabled;
@@ -5309,6 +5349,17 @@ static void ReadRenderSettings(const YAML::Node& settings)
 	if (YAML::Node rayTracing = settings["RayTracing"])
 	{
 		ReadSetting(rayTracing, "Enabled", s_RayTracingEnabled);
+	}
+	// The same for the ray-traced reflections
+	s_ReflectionSettings = EnvMapVulkanReflectionSettings();
+	if (YAML::Node reflections = settings["Reflections"])
+	{
+		EnvMapVulkanReflectionSettings& r = s_ReflectionSettings;
+		ReadSetting(reflections, "Enabled", r.Enabled);
+		ReadSetting(reflections, "MaxRoughness", r.MaxRoughness);
+		ReadSetting(reflections, "Denoise", r.Denoise);
+		ReadSetting(reflections, "Temporal", r.Temporal);
+		ReadSetting(reflections, "HalfResolution", r.HalfResolution);
 	}
 	// A scene saved before the ambient occlusion existed gets the defaults (the settings of the scene before don't stay)
 	s_SSAOSettings = EnvMapVulkanSSAOSettings();
@@ -5821,7 +5872,7 @@ static void ProcessSceneOperations()
 		MarkSceneSaved(); // the startup scene (environment and sun) has nothing to save yet
 		// --debug-view on the command line: the Environment panel's Debug View
 		s_DebugView = glm::clamp(Application::Get()->GetCommandLine().DebugView, 0, (int)DebugViewCount - 1);
-		if (IsRayTracedDebugView(s_DebugView) && !EnvMapVulkanRayTracing::IsSupported())
+		if ((IsRayTracedDebugView(s_DebugView) || IsReflectionDebugView(s_DebugView)) && !EnvMapVulkanRayTracing::IsSupported())
 		{
 			Log::GetLogger()->warn("--debug-view {0} is a ray-traced view: not available without ray tracing", s_DebugView);
 			s_DebugView = DebugViewOff;
@@ -7302,6 +7353,8 @@ void EnvMapVulkanRenderer::Init()
 	s_GBuffer.CreatePipelines(s_MeshPipeline, s_MeshPipelineAnim);
 	s_SSAO.Create();
 	s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution);
+	s_Reflections.Create();
+	s_Reflections.Resize(s_GBuffer, s_ReflectionSettings.HalfResolution);
 	s_RayTracing.Create();
 	s_RayTracing.ResizeView(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());
 	WriteBloomDescriptorSets(); // the viewport composite samples the G-buffer and the ray-traced view (debug views)
@@ -7455,6 +7508,10 @@ void EnvMapVulkanRenderer::Init()
 		WriteAmbientOcclusionDescriptor();
 		s_Water.SetReflectionAmbientOcclusion(s_SSAO.GetWhiteInfo());
 
+		// binding 16: the ray-traced reflection image (the water's reflection pass has none: an empty texel)
+		WriteReflectionDescriptor();
+		s_Water.SetReflectionRayTracedReflections(s_Reflections.GetNoneInfo());
+
 		// binding 10: the water's caustics map (it exists from s_Water.Create on, with or without water on the scene)
 		VkWriteDescriptorSet causticsWrite = *pbrShader->GetDescriptorSet("u_CausticsMap", frameSet);
 		causticsWrite.dstSet = s_Data.FrameDescriptorSet.DescriptorSets[0];
@@ -7513,6 +7570,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_Probes.Destroy();
 	s_ProbeSunShadowMap.Destroy();
 	s_SSAO.Destroy();
+	s_Reflections.Destroy();
 	s_GBuffer.Destroy();
 	EnvMapVulkanProfiler::Shutdown();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
@@ -7705,6 +7763,10 @@ static void WriteShadowUniforms()
 	if (s_DebugView >= DebugViewAO && s_DebugView <= DebugViewAORaw)
 	{
 		ub.ShadowDebug.z = 6.0f; // the AO image: which of its steps it holds is the ambient occlusion's matter (see its Record)
+	}
+	if (IsReflectionDebugView(s_DebugView))
+	{
+		ub.ShadowDebug.z = 7.0f; // the reflection image, likewise
 	}
 	ub.LocalShadowParams = glm::vec4(s_LocalShadowSettings.NormalBias, s_LocalShadowSettings.Softness,
 		s_SpotShadowMaps.IsValid() ? 1.0f / (float)s_SpotShadowMaps.GetResolution() : 0.0f,
@@ -8514,7 +8576,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 		// acceleration structures follow the meshes as they are drawn this frame. Then the debug view, when one is shown.
 		const bool probesTraceRays = s_Probes.HasCapture() && s_Probes.TracesRays();
 		const bool occlusionTracesRays = s_SSAOSettings.Enabled && s_SSAOSettings.RayTraced;
-		if (IsRayTracingActive() && (probesTraceRays || occlusionTracesRays || IsRayTracedDebugView(s_DebugView)))
+		if (IsRayTracingActive() && (probesTraceRays || occlusionTracesRays || ReflectionsTraceRays() || IsRayTracedDebugView(s_DebugView)))
 		{
 			{
 				EnvMapVulkanProfiler::Scope sceneScope(drawCommandBuffer, "Ray Tracing Scene", "The scene as rays see it: the skinned models' "
@@ -8603,6 +8665,24 @@ void EnvMapVulkanRenderer::GeometryPass()
 			// Traced when rays can be traced this frame (the scene for them was built above)
 			s_SSAO.Record(drawCommandBuffer, s_SSAOSettings, s_GBuffer, occlusionCamera.GetViewMatrix(), occlusionCamera.GetProjectionMatrix(), stage,
 				IsRayTracingActive() ? s_RayTracing.GetDescriptorSet() : VK_NULL_HANDLE);
+		}
+
+		// The ray-traced reflections, from the G-buffer too, for the scene pass's mesh shaders. Without ray tracing (or
+		// with the setting off) nothing is traced and the reflection image is empty: the environment's reflection.
+		{
+			std::optional<EnvMapVulkanProfiler::Scope> reflectionScope;
+			if (ReflectionsTraceRays())
+			{
+				reflectionScope.emplace(drawCommandBuffer, "Reflections", "Ray-traced reflections: a ray per pixel (at half the viewport's size, "
+					"or at its full size) leaves the surface as a reflection does and brings back the light of what it hits, lit "
+					"with shadow rays and the probes; then the average over the frames, and a pass to the viewport's size that "
+					"blurs by the surface's roughness. Surfaces above the max roughness get no ray.");
+			}
+			H2M::CameraH2M& reflectionCamera = s_Data.SceneData.SceneCamera.Camera;
+			const bool sunShadows = s_Lights.Sun.Enabled && s_Lights.Sun.CastShadows && s_Lights.Sun.Intensity > 0.0f;
+			s_Reflections.Record(drawCommandBuffer, s_ReflectionSettings, s_GBuffer, reflectionCamera.GetViewProjection(), reflectionCamera.GetProjectionMatrix(),
+				reflectionCamera.GetPosition(), s_DebugView == DebugViewReflectionsRaw ? EnvMapVulkanReflections::Stage::Raw : EnvMapVulkanReflections::Stage::Final,
+				ReflectionsTraceRays() ? s_RayTracing.GetDescriptorSet() : VK_NULL_HANDLE, sunShadows);
 		}
 
 		H2M::RefH2M<H2M::VulkanFramebufferH2M> framebuffer = s_Framebuffer.As<H2M::VulkanFramebufferH2M>();
@@ -9987,7 +10067,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 				if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
 				{
 					ImGui::PushID("DebugView");
-					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0");
+					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0Reflections\0Reflections Raw\0");
 					if (ImGui::IsItemHovered())
 					{
 						ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
@@ -10016,7 +10096,11 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							"  Normals: must look like the Normals view (a moved model or a playing animation must follow)\n"
 							"  Albedo: the material's color or albedo map at the hit (the map at full size: it flickers far away)\n"
 							"  Instances: a color per mesh in the top-level structure\n"
-							"  Opaque meshes only (glass is in the structures, in a group these views leave out).");
+							"  Opaque meshes only (glass is in the structures, in a group these views leave out).\n"
+							"Reflections: the ray-traced reflection image by itself: the light each surface reflects, as it arrives\n"
+							"  (before the surface's own color and Fresnel). Black: no reflection was traced there (too rough, or the\n"
+							"  sky), and the environment's reflection is used. Reflections Raw: the same as one frame's rays give it,\n"
+							"  before the average over the frames and the blur. The settings: Reflections, below.");
 					}
 					if (s_DebugView == DebugViewLinearDepth)
 					{
@@ -10129,7 +10213,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 							"Off: no rays are traced and nothing is built or updated for them. Every effect uses its rasterized\n"
 							"version, as on a GPU without ray tracing: for more frames per second when the rays cost too much.\n"
 							"Used by: the probe volume's updates (rays instead of cube maps: much faster to follow a change),\n"
-							"the ambient occlusion (its Ray Traced setting) and the Debug View's Ray Traced views.\n"
+							"the reflections, the ambient occlusion (its Ray Traced setting) and the Debug View's Ray Traced views.\n"
 							"Its cost: Ray Tracing Scene and the passes that trace rays, in Renderer Stats.");
 					}
 					if (!rayTracingSupported)
@@ -10150,10 +10234,78 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					}
 					else
 					{
-						const bool occlusionRays = s_SSAOSettings.Enabled && s_SSAOSettings.RayTraced;
-						ImGui::TextDisabled("Tracing rays: %s%s%s", occlusionRays ? "the ambient occlusion" : "",
-							occlusionRays && s_ProbeVolumeSettings.Exists ? ",\n" : "",
-							s_ProbeVolumeSettings.Exists ? "the probe volume while it updates" : (occlusionRays ? "" : "nothing at the moment"));
+						std::string users;
+						auto addUser = [&users](bool uses, const char* name)
+						{
+							if (uses)
+							{
+								users += users.empty() ? "" : ",\n";
+								users += name;
+							}
+						};
+						addUser(s_ReflectionSettings.Enabled, "the reflections");
+						addUser(s_SSAOSettings.Enabled && s_SSAOSettings.RayTraced, "the ambient occlusion");
+						addUser(s_ProbeVolumeSettings.Exists, "the probe volume while it updates");
+						ImGui::TextDisabled("Tracing rays: %s", users.empty() ? "nothing at the moment" : users.c_str());
+					}
+					ImGui::PopID();
+				}
+
+				if (ImGui::CollapsingHeader("Reflections", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::PushID("Reflections");
+					EnvMapVulkanReflectionSettings& reflections = s_ReflectionSettings;
+					const bool reflectionsAvailable = IsRayTracingActive();
+					ImGui::BeginDisabled(!reflectionsAvailable);
+					ImGui::Checkbox("Ray Traced", &reflections.Enabled);
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+					{
+						ImGui::SetTooltip("On: what a surface reflects is found by a ray against the scene, so it shows the room, the other\n"
+							"objects and their light. Off (and without Ray Tracing): every surface reflects the environment map,\n"
+							"which shows the sky only, darkened where the probe volume says the scene hides it.\n"
+							"Opaque meshes. Glass and the water keep their own reflections; a reflection seen in a reflection\n"
+							"is not followed (the reflected surface shows its matte light).\n"
+							"Debug View > Reflections shows it by itself; its cost: Reflections in Renderer Stats.");
+					}
+					ImGui::BeginDisabled(!reflections.Enabled);
+					ImGui::SliderFloat("Max Roughness", &reflections.MaxRoughness, EnvMapVulkanReflectionSettings::MinMaxRoughness,
+						EnvMapVulkanReflectionSettings::MaxMaxRoughness, "%.2f", ImGuiSliderFlags_AlwaysClamp);
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+					{
+						ImGui::SetTooltip("Surfaces rougher than this get no ray and keep the environment's reflection (the traced one fades\n"
+							"out over the last quarter below it). A rough surface's reflection is so blurred that it hardly shows\n"
+							"what it reflects, and its rays scatter so widely that they are mostly noise. Higher: more surfaces\n"
+							"reflect the scene, with more noise for the filters to remove.");
+					}
+					ImGui::Checkbox("Denoise", &reflections.Denoise);
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+					{
+						ImGui::SetTooltip("Each pixel takes its reflection from the traced pixels of its surface around it, from a wider area\n"
+							"the rougher the surface. Off: from the nearest ones only (a rough surface's reflection is grainy).");
+					}
+					ImGui::Checkbox("Temporal Filter", &reflections.Temporal);
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+					{
+						ImGui::SetTooltip("Each frame's rays go in other directions, and the result is the average of the last frames (found\n"
+							"again on moving surfaces through the G-buffer's motion). Off: one frame's rays, with a fixed pattern.\n"
+							"The reflection follows the surface it is on, not what it shows: while the camera moves, a mirror's\n"
+							"image trails a little.");
+					}
+					ImGui::Checkbox("Half Resolution", &reflections.HalfResolution);
+					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+					{
+						ImGui::SetTooltip("On: traced at half the viewport's size (a quarter of the rays) and scaled up along the edges: a mirror's\n"
+							"image is half as sharp. Off: a ray for every pixel, at about four times the time.");
+					}
+					ImGui::EndDisabled();
+					ImGui::EndDisabled();
+					if (!reflectionsAvailable)
+					{
+						ImGui::TextDisabled("Needs Ray Tracing: the environment's reflection");
+					}
+					else if (s_Reflections.IsTraced())
+					{
+						ImGui::TextDisabled("Traced at %u x %u", s_Reflections.GetWidth(), s_Reflections.GetHeight());
 					}
 					ImGui::PopID();
 				}
@@ -10699,6 +10851,8 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_GBuffer.Resize(s_Framebuffer); // after s_Framebuffer: it shares its depth image
 		s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution); // after the G-buffer: it reads its images
 		WriteAmbientOcclusionDescriptor();
+		s_Reflections.Resize(s_GBuffer, s_ReflectionSettings.HalfResolution);
+		WriteReflectionDescriptor();
 		s_RayTracing.ResizeView(s_GBuffer.GetWidth(), s_GBuffer.GetHeight()); // the composite's set is written below
 		s_ViewportCompositeFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
 		s_OverlayFramebuffer->Resize(s_ViewportWidth, s_ViewportHeight);
@@ -10712,8 +10866,14 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		WriteAmbientOcclusionDescriptor();
 	}
 
+	if (s_Reflections.IsHalfResolution() != s_ReflectionSettings.HalfResolution)
+	{
+		s_Reflections.Resize(s_GBuffer, s_ReflectionSettings.HalfResolution); // the setting changed (the panel, a scene opened)
+		WriteReflectionDescriptor();
+	}
+
 	// A ray-traced debug view can't stay when the rays were turned off (the switch, a scene opened with it off)
-	if (IsRayTracedDebugView(s_DebugView) && !IsRayTracingActive())
+	if ((IsRayTracedDebugView(s_DebugView) || IsReflectionDebugView(s_DebugView)) && !IsRayTracingActive())
 	{
 		s_DebugView = DebugViewOff;
 		ShowNotification(EnvMapVulkanRayTracing::IsSupported() ? "The ray-traced views need Ray Tracing turned on (Environment panel)" :
@@ -10723,6 +10883,11 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	// With ray tracing the probes' update traces rays: its set 0 gets what the per-frame set holds (as it is now, after
 	// everything above that may have rewritten it)
 	s_Probes.PrepareTrace(s_Data.FrameDescriptorSet.DescriptorSets[0]);
+	// The same for the reflections' trace
+	if (ReflectionsTraceRays())
+	{
+		s_Reflections.Prepare(s_Data.FrameDescriptorSet.DescriptorSets[0]);
+	}
 
 	GeometryPass();
 	CompositePass();

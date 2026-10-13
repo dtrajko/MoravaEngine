@@ -19,13 +19,12 @@
 #include "Include/RayTracing.glslh"
 #include "Include/ProbeUpdate.glslh"
 
+const int TraceSunShadows = 1; // bits of u_Update.Batch.w
+const int TracePlacing = 2;
+
 // The lights' shadows by rays, and the probes' light whether or not they light the scene (Light the Scene)
-float ProbeSunShadow(vec3 position, vec3 geometryNormal);
-float ProbeLightShadow(vec3 position, vec3 geometryNormal, vec3 L, float distance);
-#define SHADE_SURFACE_SUN_SHADOW ProbeSunShadow
-#define SHADE_SURFACE_LIGHT_SHADOW ProbeLightShadow
-#define SHADE_SURFACE_PROBES_ALWAYS
-#include "Include/ShadeSurface.glslh"
+#define RAY_TRACED_SUN_SHADOWS ((u_Update.Batch.w & TraceSunShadows) != 0)
+#include "Include/ShadeSurfaceRayTraced.glslh"
 
 layout (set = 1, binding = 0, rgba16f) restrict writeonly uniform image2D o_RayBuffer;
 
@@ -33,25 +32,6 @@ layout (set = 1, binding = 0, rgba16f) restrict writeonly uniform image2D o_RayB
 // between the probes dies out), and one ray on a small, very bright spot must not flicker in the probe
 const float MaxBounceAlbedo = 0.9;
 const float MaxRadiance = 100.0;
-const float SunDistance = 10000.0;
-
-const int TraceSunShadows = 1; // bits of u_Update.Batch.w
-const int TracePlacing = 2;
-
-// 1 when nothing stands between the point and the light, 0 in its shadow
-float ProbeLightShadow(vec3 position, vec3 geometryNormal, vec3 L, float distance)
-{
-	return TraceShadowRay(RayOriginOffSurface(position, geometryNormal), L, 0.0, distance, RayMaskShadowCasters) ? 0.0 : 1.0;
-}
-
-float ProbeSunShadow(vec3 position, vec3 geometryNormal)
-{
-	if ((u_Update.Batch.w & TraceSunShadows) == 0)
-	{
-		return 1.0;
-	}
-	return ProbeLightShadow(position, geometryNormal, u_Sun.Direction, SunDistance);
-}
 
 layout (local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
 void main()

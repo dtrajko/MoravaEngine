@@ -174,6 +174,8 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAODenoise.glsl");           // SceneEnvMapVulkan: ambient occlusion: the blur that keeps edges
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SSAOUpsample.glsl");          // SceneEnvMapVulkan: ambient occlusion: to the viewport's size
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/TemporalFilter_R8.glsl");     // SceneEnvMapVulkan: the temporal filter (one-channel images)
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/TemporalFilter_RGBA16F.glsl"); // SceneEnvMapVulkan: the temporal filter (four-channel float images)
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ReflectionResolve.glsl");     // SceneEnvMapVulkan: ray-traced reflections: to the viewport's size
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Skybox.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Texture.glsl");
 

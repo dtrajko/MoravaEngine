@@ -1010,6 +1010,17 @@ HitInfo TraceRay(vec3 origin, vec3 dir, float tMax, uint mask)
     <li>Denoise with the temporal filter (reflections reproject best along the reflected ray rather than with the surface motion) and a roughness-aware spatial blur.</li>
     <li>Bind the result in set 0 (proposed binding 16) and read it in <code>IndirectSpecular()</code>. Above the roughness threshold, keep the environment lookup normalized by the probes (E.4).</li>
   </ol>
+  <div class="box note"><b>As built (H.3)</b>
+  <ul>
+    <li><b>The module:</b> <code>EnvMapVulkanReflections</code>, three compute passes between the prepass and the scene pass: <code>ReflectionTrace.glsl</code> (one ray per pixel, the direction mirrored at a facet drawn from the roughness: GGX, visible normals), the temporal filter of Phase F with a four-channel shader (<code>TemporalFilter_RGBA16F.glsl</code>), and <code>ReflectionResolve.glsl</code> (to the viewport's size; a pixel takes the traced pixels of its own surface around it, from a wider area the rougher it is).</li>
+    <li><b>The reflection image</b> is binding 16 of set 0, as proposed: rgb = the reflected light, a = how much of it replaces the environment's reflection. The opaque meshes read it in <code>IndirectLight</code>; the ambient occlusion and the probes' reflection occlusion now apply only to the environment's part (a ray already met what hides the environment). Empty without ray tracing, and in the water's reflection pass.</li>
+    <li><b>What a ray brings back:</b> <code>ShadeSurfaceDiffuse</code> with shadow rays and the probes' light (shared with the probe trace through <code>Include/ShadeSurfaceRayTraced.glslh</code>), plus the probes' light from the side the hit would mirror, as its own blurry reflection, so a metal seen in a reflection isn't black. A miss reads the environment as the mesh shaders do. One bounce: a reflection in a reflection is not followed.</li>
+    <li><b>The surface's own normal</b> is rebuilt from the depths around the pixel, as for the ray-traced occlusion: a direction that points into the surface (a bent shading normal) is mirrored back out.</li>
+    <li><b>Settings</b> (Environment panel &gt; Reflections, saved with the scene): Ray Traced, Max Roughness (default 0.5; the traced reflection fades out over the last quarter below it), Denoise, Temporal Filter, Half Resolution (default on). Debug views: <b>Reflections</b> and <b>Reflections Raw</b>.</li>
+    <li><b>Not built:</b> the temporal filter follows the surface's motion, not the reflected ray's, so a mirror's image trails a little while the camera moves; glass and the water keep their own reflections (the glass-behind-glass idea below is still open).</li>
+    <li><b>Measured</b> (RTX 3070 Ti, half resolution, a 510 x 336 viewport): a chrome sphere in <code>Old_Stove_Corner</code> shows the stove, the brick wall and the floor where it showed only the sky; the pass costs about 0.1 ms there (few pixels are smooth enough to get a ray).</li>
+  </ul></div>
+
   <p>This fixes the last big GI problem of the raster version: interiors reflecting the outdoor sky. It also enables <b>glass behind glass</b> and <b>glass in the water reflection</b> (both current limits of the glass material), by tracing refraction rays with the glass mask.</p>
 
   <h3>H.4 A path tracer as a reference view</h3>

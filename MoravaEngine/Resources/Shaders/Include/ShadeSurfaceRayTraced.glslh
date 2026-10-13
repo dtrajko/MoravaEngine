@@ -1,0 +1,36 @@
+// Include/ShadeSurface.glslh for the compute shaders that light the point a ray hit (ProbeTrace.glsl,
+// ReflectionTrace.glsl): the lights' shadows are shadow rays instead of shadow map lookups, so a point is shadowed
+// correctly wherever it is (the shadow maps cover what the camera sees), and the probes' light is used whether or not
+// they light the scene.
+// Include after Include/RayTracing.glslh. Before including, define RAY_TRACED_SUN_SHADOWS: an expression that is true
+// when the sun casts shadows.
+// Needs set 0 with the per-frame set's contents (Include/FrameSet.glslh) and set 3 (the ray tracing set).
+#ifndef SHADE_SURFACE_RAY_TRACED_GLSLH
+#define SHADE_SURFACE_RAY_TRACED_GLSLH
+
+float RayTracedSunShadow(vec3 position, vec3 geometryNormal);
+float RayTracedLightShadow(vec3 position, vec3 geometryNormal, vec3 L, float distance);
+#define SHADE_SURFACE_SUN_SHADOW RayTracedSunShadow
+#define SHADE_SURFACE_LIGHT_SHADOW RayTracedLightShadow
+#define SHADE_SURFACE_PROBES_ALWAYS
+#include "ShadeSurface.glslh"
+
+// Farther than anything in a scene: the sun's shadow ray goes this far
+const float RayTracedSunDistance = 10000.0;
+
+// 1 when nothing stands between the point and the light, 0 in its shadow
+float RayTracedLightShadow(vec3 position, vec3 geometryNormal, vec3 L, float distance)
+{
+	return TraceShadowRay(RayOriginOffSurface(position, geometryNormal), L, 0.0, distance, RayMaskShadowCasters) ? 0.0 : 1.0;
+}
+
+float RayTracedSunShadow(vec3 position, vec3 geometryNormal)
+{
+	if (!(RAY_TRACED_SUN_SHADOWS))
+	{
+		return 1.0;
+	}
+	return RayTracedLightShadow(position, geometryNormal, u_Sun.Direction, RayTracedSunDistance);
+}
+
+#endif
