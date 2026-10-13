@@ -50,11 +50,11 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [19.366385, 15.09931, -2.8190084]
-      Rotation: [0.4001284, 87.40216, 0]
+      Translation: [36.735035, 28.063622, 18.982597]
+      Rotation: [18.300106, 58.002106, 0]
       Scale: [1, 1, 1]
     Camera:
-      {}
+      FieldOfView: 45
   - ID: 17358315660792784881
     Name: Environment
     Parent: 0
@@ -75,8 +75,8 @@ Entities:
     Parent: 0
     Transform:
       Translation: [38.47463, 41.173023, 15.236968]
-      Rotation: [9.165699, 6.0216174, -66.5438]
-      Scale: [0.99995685, 1.000232, 0.9999596]
+      Rotation: [-30.586077, 16.198923, 54.989582]
+      Scale: [0.9999568, 1.000232, 0.9999595]
     Sun:
       Enabled: true
       Color: [1, 0.2515118, 0]
@@ -176,14 +176,14 @@ Entities:
     Name: Spot Light 1
     Parent: 0
     Transform:
-      Translation: [18.43828, 10.859855, -3.5044146]
-      Rotation: [13.098428, 21.158632, -84.09171]
-      Scale: [0.9999117, 0.9999839, 0.9999484]
+      Translation: [9.184504, 10.859855, -7.8693423]
+      Rotation: [13.098425, 21.158627, -84.09168]
+      Scale: [0.9999115, 0.9999841, 0.9999483]
     SpotLight:
       Enabled: true
       Color: [0.33823532, 1, 0.4160899]
       Intensity: 200
-      Range: 97.35522
+      Range: 31.78312
       InnerAngle: 11.6
       OuterAngle: 11.6
       CastShadows: true

@@ -26,6 +26,8 @@ void SelectRendererAPI()
 //   --debug-view <number>   start with this debug view (SceneEnvMapVulkan: the entry of the Environment panel's Debug View
 //                           list, 0 = Off, e.g. 8 = Probe Irradiance Only, 10 = Ambient Occlusion)
 //   --no-ray-tracing        Vulkan without the ray tracing extensions, as on a GPU that has none (to check the fallbacks)
+//   --select <name>         select the entity of this name in the scene opened with --scene (SceneEnvMapVulkan: a name of
+//                           the Scene Hierarchy, e.g. Gladiator.fbx)
 static ApplicationCommandLine ParseCommandLine(int argc, char** argv)
 {
 	ApplicationCommandLine commandLine;
@@ -69,7 +71,11 @@ static ApplicationCommandLine ParseCommandLine(int argc, char** argv)
 		{
 			commandLine.NoRayTracing = true;
 		}
-		else if (option == "--scene" || option == "--exit-after" || option == "--debug-view")
+		else if (option == "--select" && hasValue)
+		{
+			commandLine.SelectName = argv[++i];
+		}
+		else if (option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select")
 		{
 			Log::GetLogger()->warn("Command line: {0} needs a value (ignored)", option);
 		}

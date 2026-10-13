@@ -166,6 +166,13 @@ static H2M::RefH2M<H2M::PipelineH2M> s_WireframePipelineAnim;
 static H2M::RefH2M<H2M::PipelineH2M> s_BoundingBoxPipeline;         // line list: unit cube edges (s_BoundingBoxVertexBuffer)
 static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskPipeline;
 static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskPipelineAnim;
+// The selection mask's second channel, the part of the selection that isn't hidden: the depth of what can hide it first
+// (the models and the water's surface), then the selection again, depth tested
+static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskDepthPipeline;
+static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskDepthPipelineAnim;
+static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskVisiblePipeline;
+static H2M::RefH2M<H2M::PipelineH2M> s_SelectionMaskVisiblePipelineAnim;
+static H2M::RefH2M<H2M::VertexBufferH2M> s_SelectionMaskWaterVertexBuffer; // the water's unit square (two triangles)
 static H2M::RefH2M<H2M::PipelineH2M> s_VectorsPipeline;             // line per vertex, instanced: the model's vertex buffer is per-instance data
 static H2M::RefH2M<H2M::PipelineH2M> s_VectorsPipelineAnim;
 static H2M::RefH2M<H2M::VertexBufferH2M> s_BoundingBoxVertexBuffer;
@@ -5890,6 +5897,24 @@ static void HandleSceneShortcutKeys()
 	}
 }
 
+// The first entity of this name, in the Scene Hierarchy's order (NoEntity: none)
+static EnvMapVulkanEntityID FindEntityByName(const std::vector<EnvMapVulkanEntityID>& entities, const std::string& name)
+{
+	for (EnvMapVulkanEntityID entity : entities)
+	{
+		if (s_Scene.Get<NameComponent>(entity).Name == name)
+		{
+			return entity;
+		}
+		const EnvMapVulkanEntityID found = FindEntityByName(s_Scene.GetChildren(entity), name);
+		if (found != NoEntity)
+		{
+			return found;
+		}
+	}
+	return NoEntity;
+}
+
 // At the start of Draw: New / Open once confirmed
 static void ProcessSceneOperations()
 {
@@ -5926,6 +5951,22 @@ static void ProcessSceneOperations()
 	else
 	{
 		OpenSceneNow(s_PendingScenePath);
+		// --select on the command line: an entity of the startup scene
+		static bool s_StartupSelectionDone = false;
+		const std::string& selectName = Application::Get()->GetCommandLine().SelectName;
+		if (!s_StartupSelectionDone && !selectName.empty())
+		{
+			s_StartupSelectionDone = true;
+			const EnvMapVulkanEntityID entity = FindEntityByName(s_Scene.GetRoots(), selectName);
+			if (entity != NoEntity)
+			{
+				SelectOnly(entity);
+			}
+			else
+			{
+				Log::GetLogger()->warn("--select: the scene has no entity named '{0}'", selectName);
+			}
+		}
 	}
 }
 
@@ -6656,6 +6697,10 @@ static void CreateEditorOverlayResources()
 	s_BoundingBoxPipeline       = createPipeline("BoundingBox",       false, staticLayout, s_OverlayFramebuffer, H2M::PrimitiveTopologyH2M::Lines, false, false, false);
 	s_SelectionMaskPipeline     = createPipeline("SelectionMask",      false, staticLayout, s_SelectionMaskFramebuffer, triangles, false, false, false);
 	s_SelectionMaskPipelineAnim = createPipeline("SelectionMask-Anim", true,  animLayout,   s_SelectionMaskFramebuffer, triangles, false, false, false);
+	s_SelectionMaskDepthPipeline       = createPipeline("SelectionMaskDepth",        false, staticLayout, s_SelectionMaskFramebuffer, triangles, false, true, true);
+	s_SelectionMaskDepthPipelineAnim   = createPipeline("SelectionMaskDepth-Anim",   true,  animLayout,   s_SelectionMaskFramebuffer, triangles, false, true, true);
+	s_SelectionMaskVisiblePipeline     = createPipeline("SelectionMaskVisible",      false, staticLayout, s_SelectionMaskFramebuffer, triangles, false, true, false);
+	s_SelectionMaskVisiblePipelineAnim = createPipeline("SelectionMaskVisible-Anim", true,  animLayout,   s_SelectionMaskFramebuffer, triangles, false, true, false);
 
 	// Normal, tangent and bitangent lines: no per-vertex input; the mesh vertex layout is the per-instance input (binding 1),
 	// so one instance is one mesh vertex and its two line vertices come from gl_VertexIndex (see EditorVectors.glsl)
@@ -6697,6 +6742,15 @@ static void CreateEditorOverlayResources()
 		lines[i].Position = corners[edges[i]];
 	}
 	s_BoundingBoxVertexBuffer = H2M::VertexBufferH2M::Create(lines, (uint32_t)sizeof(lines));
+
+	// The water's unit square (see EnvMapVulkanWaterSettings::GetTransform), as two triangles in the same layout
+	const glm::vec3 square[6] = { { -0.5f, 0.0f, -0.5f }, { 0.5f, 0.0f, -0.5f }, { 0.5f, 0.0f, 0.5f }, { -0.5f, 0.0f, -0.5f }, { 0.5f, 0.0f, 0.5f }, { -0.5f, 0.0f, 0.5f } };
+	LineVertex water[6] = {};
+	for (uint32_t i = 0; i < 6; i++)
+	{
+		water[i].Position = square[i];
+	}
+	s_SelectionMaskWaterVertexBuffer = H2M::VertexBufferH2M::Create(water, (uint32_t)sizeof(water));
 }
 
 // Draws a loaded model (all meshes, or only mesh onlyMesh) in one color with an overlay pipeline.
@@ -7054,15 +7108,66 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 	}
 	vkCmdEndRenderPass(commandBuffer);
 
-	// Silhouette of the selection: the selected mesh, or the whole model when no mesh is selected
+	// Silhouette of the selection: the selected mesh, or the whole model when no mesh is selected. Red: all of it, also
+	// where something is in front of it (the outline shows where a hidden model is); green: the part that isn't hidden.
+	// The composite draws the outline of the hidden part faintly (see SelectionOutline in ViewportComposite.glsl).
 	beginPass(s_SelectionMaskFramebuffer);
-	if (settings.Outline)
+	if (settings.Outline && !selectedMeshes.empty())
 	{
+		// The depth of what can hide the selection (color alpha 0 leaves the image unchanged): every model, without its
+		// glass (it shows what is behind it), and the water's surface, flat (without its waves and swell): what is under
+		// it is tinted or lost in the water's color
+		for (EnvMapVulkanEntityID entry : models)
+		{
+			const H2M::RefH2M<H2M::ModelH2M> model = GetModel(entry);
+			const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> materials = GetMeshMaterials(entry);
+			const int meshCount = (int)model->GetMeshes().size();
+			bool hasGlass = false;
+			for (int s = 0; s < meshCount && s < (int)materials.size(); s++)
+			{
+				hasGlass = hasGlass || (materials[s] && materials[s]->IsGlass() && !model->IsSkinned()); // skinned glass is drawn opaque
+			}
+			if (!hasGlass)
+			{
+				DrawModelOverlay(commandBuffer, entry, -1, s_SelectionMaskDepthPipeline, s_SelectionMaskDepthPipelineAnim, glm::vec4(0.0f), viewProjection);
+				continue;
+			}
+			for (int s = 0; s < meshCount; s++)
+			{
+				if (s >= (int)materials.size() || !materials[s] || !materials[s]->IsGlass())
+				{
+					DrawModelOverlay(commandBuffer, entry, s, s_SelectionMaskDepthPipeline, s_SelectionMaskDepthPipelineAnim, glm::vec4(0.0f), viewProjection);
+				}
+			}
+		}
+		if (s_WaterSettings.Enabled)
+		{
+			H2M::RefH2M<H2M::VulkanPipelineH2M> pipeline = s_SelectionMaskDepthPipeline.As<H2M::VulkanPipelineH2M>();
+			VkPipelineLayout layout = pipeline->GetVulkanPipelineLayout();
+			VkBuffer vertexBuffer = s_SelectionMaskWaterVertexBuffer.As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			const glm::mat4 mvp = viewProjection * s_WaterSettings.GetTransform();
+			const glm::vec4 color(0.0f);
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetVulkanPipeline());
+			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+			vkCmdDraw(commandBuffer, 6, 1, 0, 0);
+			EnvMapVulkanProfiler::CountDraw(2);
+		}
+		// All of the selection, then (over it) its part that passes the depth test
 		for (const auto& [model, meshes] : selectedMeshes)
 		{
 			for (int mesh : meshes)
 			{
-				DrawModelOverlay(commandBuffer, model, mesh, s_SelectionMaskPipeline, s_SelectionMaskPipelineAnim, glm::vec4(1.0f), viewProjection);
+				DrawModelOverlay(commandBuffer, model, mesh, s_SelectionMaskPipeline, s_SelectionMaskPipelineAnim, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), viewProjection);
+			}
+		}
+		for (const auto& [model, meshes] : selectedMeshes)
+		{
+			for (int mesh : meshes)
+			{
+				DrawModelOverlay(commandBuffer, model, mesh, s_SelectionMaskVisiblePipeline, s_SelectionMaskVisiblePipelineAnim, glm::vec4(1.0f, 1.0f, 0.0f, 1.0f), viewProjection);
 			}
 		}
 	}

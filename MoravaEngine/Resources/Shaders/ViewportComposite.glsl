@@ -37,7 +37,7 @@ layout (binding = 0) uniform sampler2D u_Texture;           // linear HDR scene
 layout (binding = 1) uniform sampler2D u_BloomTexture;      // bloom (already exposed, see BloomPass.glsl)
 layout (binding = 2) uniform sampler2D u_BloomDirtTexture;  // lens dirt, lit by the bloom
 layout (binding = 3) uniform sampler2D u_OverlayTexture;    // wireframe and bounding boxes (display colors, alpha = coverage)
-layout (binding = 4) uniform sampler2D u_SelectionMask;     // silhouette of the selected mesh/submesh (r = 1)
+layout (binding = 4) uniform sampler2D u_SelectionMask;     // silhouette of the selected mesh/submesh: r = 1 all of it, g = 1 its part that isn't hidden
 // The G-buffer (see EnvMapVulkanGBuffer), for the debug views
 layout (binding = 5) uniform sampler2D u_GBufferNormalRoughness; // xyz = world-space normal (0: no surface, the sky), w = roughness
 layout (binding = 6) uniform sampler2D u_GBufferMotion;          // screen-space motion in UV units
@@ -81,7 +81,13 @@ vec3 Tonemap(vec3 color)
 	return mix(perChannel, huePreserving, clamp(u_Uniforms.HuePreservation, 0.0, 1.0));
 }
 
-// 1 on pixels just outside the selection's silhouette (within OutlineWidth pixels of it), 0 elsewhere
+// How much of its strength the outline keeps around a part of the selection that is hidden (behind a model, under the water)
+const float HiddenOutlineStrength = 0.3;
+
+// The selection's outline on this pixel (0: none, 1: full): the pixels just outside its silhouette, within OutlineWidth
+// pixels of it. Around the part that can be seen at full strength (also where the rest of the selection goes on hidden:
+// along a waterline, an edge of what stands in front of it); around a hidden part faintly, so a hidden model can still be
+// found, but doesn't look as if it were in front of what hides it.
 float SelectionOutline()
 {
 	int radius = int(ceil(u_Uniforms.OutlineWidth));
@@ -92,25 +98,37 @@ float SelectionOutline()
 
 	ivec2 size = textureSize(u_SelectionMask, 0);
 	ivec2 pixel = ivec2(Input.TexCoord * vec2(size));
-	if (texelFetch(u_SelectionMask, clamp(pixel, ivec2(0), size - 1), 0).r > 0.5)
+	vec2 here = texelFetch(u_SelectionMask, clamp(pixel, ivec2(0), size - 1), 0).rg;
+	if (here.g > 0.5)
 	{
 		return 0.0; // inside: the selected mesh stays visible
 	}
+	bool insideHidden = here.r > 0.5;
 
-	float coverage = 0.0;
+	float visible = 0.0;
+	float hidden = 0.0;
 	for (int y = -radius; y <= radius; y++)
 	{
 		for (int x = -radius; x <= radius; x++)
 		{
 			ivec2 neighbor = clamp(pixel + ivec2(x, y), ivec2(0), size - 1);
-			if (texelFetch(u_SelectionMask, neighbor, 0).r > 0.5)
+			vec2 mask = texelFetch(u_SelectionMask, neighbor, 0).rg;
+			if (mask.r > 0.5)
 			{
 				// Round outline with a soft (anti-aliased) edge
-				coverage = max(coverage, clamp(u_Uniforms.OutlineWidth + 0.5 - length(vec2(x, y)), 0.0, 1.0));
+				float coverage = clamp(u_Uniforms.OutlineWidth + 0.5 - length(vec2(x, y)), 0.0, 1.0);
+				if (mask.g > 0.5)
+				{
+					visible = max(visible, coverage);
+				}
+				else if (!insideHidden)
+				{
+					hidden = max(hidden, coverage);
+				}
 			}
 		}
 	}
-	return coverage;
+	return max(visible, hidden * HiddenOutlineStrength);
 }
 
 // The G-buffer as a display color (shown as it is: no exposure, tonemapping or gamma, so the values can be read off the

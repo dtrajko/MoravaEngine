@@ -33,6 +33,7 @@ struct ApplicationCommandLine
 	int DebugView = 0;             // --debug-view <number>: the debug view at startup (SceneEnvMapVulkan: the entry of the
 	                               // Environment panel's Debug View list, 0 = Off)
 	bool NoRayTracing = false;     // --no-ray-tracing: Vulkan without the ray tracing extensions, as on a GPU that has none
+	std::string SelectName;        // --select <name>: the entity of this name is selected once the startup scene is open
 };
 
 class Application
