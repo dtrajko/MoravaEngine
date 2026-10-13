@@ -4,8 +4,8 @@
 // An update gives each probe of the batch a fresh set of rays. They are stored in the ray buffer: a row per probe of the
 // batch (its slot), a texel per ray: rgb = the light arriving at the probe along the ray, a = how far the ray got
 // (negative: it hit the back of a surface, so the probe is probably inside something). The passes that blend the rays
-// into the atlases read only this buffer: they don't know how it was filled (today from a small cube map drawn around
-// the probe, ProbeResample.glsl; later by ray tracing).
+// into the atlases read only this buffer: they don't know how it was filled: by rays traced from the probe
+// (ProbeTrace.glsl), or without ray tracing from a small cube map drawn around the probe (ProbeResample.glsl).
 #ifndef PROBE_UPDATE_GLSLH
 #define PROBE_UPDATE_GLSLH
 
@@ -17,7 +17,8 @@ layout (push_constant) uniform ProbeUpdate
 	vec4 RayRotation[3];  // xyz: the columns of the rotation this update's ray directions are turned by
 	ivec4 Counts;         // xyz = probes along each axis; w = the batch's first probe (its index, see BatchProbe)
 	ivec4 Batch;          // x = slots in the batch; y = rays per probe; z = a bit per slot: 1 when its probe is updated
-	                      // (a probe that is switched off keeps its slot and is left out, see BatchSlotUsed)
+	                      // (a probe that is switched off keeps its slot and is left out, see BatchSlotUsed); w = bits
+	                      // for ProbeTrace.glsl: 1 the sun casts shadows, 2 the batch's probes are being placed
 	vec4 Params;          // x = hysteresis: how much of a probe's old value stays (0: all new); y = the irradiance encoding
 	                      // gamma; z = the farthest distance the visibility stores; w = the environment's rotation (degrees)
 	vec4 Relocation;      // ProbeRelocate.glsl: xyz = from a probe to its neighbors; w = the closest a probe should stand

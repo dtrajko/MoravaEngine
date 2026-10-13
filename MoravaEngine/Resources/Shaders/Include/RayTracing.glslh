@@ -22,9 +22,13 @@
 
 #include "GPUMaterial.glslh"
 
-// Which meshes a ray can hit (the mask of TraceRay): an instance is in one group. Must match EnvMapVulkanRayTracing.
-const uint RayMaskOpaque = 0x01u; // what the opaque passes draw
-const uint RayMaskGlass = 0x02u;  // glass meshes (the glass pass)
+// Which meshes a ray can hit (the mask of TraceRay): the groups an instance is in. Must match EnvMapVulkanRayTracing.
+const uint RayMaskOpaqueStatic = 0x01u;  // opaque meshes of the models that stand still
+const uint RayMaskGlass = 0x02u;         // glass meshes (the glass pass)
+const uint RayMaskOpaqueSkinned = 0x04u; // the meshes of skinned models (all drawn as opaque)
+const uint RayMaskGlassShadow = 0x08u;   // glass whose material casts a shadow (also in RayMaskGlass)
+const uint RayMaskOpaque = RayMaskOpaqueStatic | RayMaskOpaqueSkinned; // what the opaque passes draw
+const uint RayMaskShadowCasters = RayMaskOpaque | RayMaskGlassShadow;  // what the shadow maps draw
 const uint RayMaskAll = 0xFFu;
 
 // A vertex as the acceleration structures and the hits read it: the static mesh vertex (H2M::VertexH2M, 56 bytes, no
@@ -102,6 +106,27 @@ RayHit TraceRay(vec3 origin, vec3 direction, float tMin, float tMax, uint mask)
 		hit.ObjectToWorld = rayQueryGetIntersectionObjectToWorldEXT(query, true);
 	}
 	return hit;
+}
+
+// Whether anything of the mask's groups is in the ray's way between tMin and tMax: for shadows, where it doesn't matter
+// what is hit or where. The search stops at the first hit it finds, so it is cheaper than TraceRay.
+bool TraceShadowRay(vec3 origin, vec3 direction, float tMin, float tMax, uint mask)
+{
+	rayQueryEXT query;
+	rayQueryInitializeEXT(query, u_TLAS, gl_RayFlagsOpaqueEXT | gl_RayFlagsTerminateOnFirstHitEXT, mask, origin, tMin, direction, tMax);
+	while (rayQueryProceedEXT(query))
+	{
+	}
+	return rayQueryGetIntersectionTypeEXT(query, true) != gl_RayQueryCommittedIntersectionNoneEXT;
+}
+
+// Where a ray that leaves a surface starts: a little off the surface along its normal, so it doesn't hit the triangle
+// it starts on (a float can't hold a point exactly on a triangle). Farther from the world's origin the floats are
+// coarser, so the step grows with the position.
+vec3 RayOriginOffSurface(vec3 position, vec3 normal)
+{
+	float size = max(max(abs(position.x), abs(position.y)), max(abs(position.z), 1.0));
+	return position + normal * (0.001 * size);
 }
 
 // The surface point of a hit, in world space

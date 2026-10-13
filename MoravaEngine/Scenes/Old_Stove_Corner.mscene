@@ -42,8 +42,8 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [16.998093, 14.752255, 45.446896]
-      Rotation: [2.5002573, 35.90191, 0]
+      Translation: [38.009052, 9.22453, 1.1206006]
+      Rotation: [-2.5997598, 84.60193, 0]
       Scale: [1, 1, 1]
     Camera:
       {}
@@ -80,7 +80,7 @@ Entities:
     Name: udmheheqx_LOD0.fbx
     Parent: 0
     Transform:
-      Translation: [7.23092, 0.9983078, 14.941017]
+      Translation: [2.4607215, 0.9983078, 8.256666]
       Rotation: [4.807913e-05, -18.42649, 6.519636e-05]
       Scale: [0.20000003, 0.20000003, 0.20000003]
     Model:
@@ -240,6 +240,7 @@ Entities:
       ViewBias: 0.25
       AutoUpdate: true
       ProbesPerFrame: 8
+      TracedProbesPerFrame: 1024
       RaysPerProbe: 192
       Hysteresis: 0.9
       RelocateProbes: true
@@ -251,7 +252,7 @@ Entities:
     Name: Sphere1m.fbx
     Parent: 0
     Transform:
-      Translation: [-7.7905197, 15.446871, -2.0631294]
+      Translation: [-7.7905197, 15.446871, -6.0846663]
       Rotation: [0, -0, 0]
       Scale: [0.10400002, 0.10400002, 0.10400002]
     Model:

@@ -980,6 +980,17 @@ HitInfo TraceRay(vec3 origin, vec3 dir, float tMax, uint mask)
 }</code></pre>
   <p>Two improvements become possible at the hit: <b>shadow rays</b> towards the sun and the local lights instead of shadow-map lookups (no cascade coverage problem, see B.2), and full textures through the bindless array. With no draw calls involved, the budget can grow from a few probes to hundreds per frame.</p>
 
+  <div class="box note"><b>As built (H.1)</b>
+  <ul>
+    <li><b>The shader:</b> <code>ProbeTrace.glsl</code>, as proposed, with both improvements: the lights' shadows are shadow rays (<code>TraceShadowRay</code>, which stops at the first hit; <code>ShadeSurface.glslh</code> got a second hook, <code>SHADE_SURFACE_LIGHT_SHADOW</code>, for the point and spot lights), and the hit's albedo, metalness and emissive come from the maps, read at the level that fits the ray's share of the sphere. The probes' own sun shadow map isn't drawn any more.</li>
+    <li><b>Batches:</b> the ray buffer and the blend passes still work on up to 32 probes. A traced frame runs batch after batch (trace, blend, borders, relocate), so the compute passes of Phase D are unchanged and a later batch already sees the light of the earlier ones. The probe volume has a second setting for it, <b>Probes per Frame</b> when ray traced (32 to 4096, default 1024, at most every probe once per frame).</li>
+    <li><b>Set 0 in a compute shader:</b> the per-frame set can't be bound to a compute pipeline (its layout names the vertex and fragment stages), so the trace has a set 0 of its own that gets the per-frame set's descriptors copied each frame (<code>PrepareTrace</code>).</li>
+    <li><b>Ray masks</b> grew to four groups: opaque static, glass, opaque skinned, glass that casts a shadow. While the probes are placed, their rays leave out the skinned meshes, as the capture does.</li>
+    <li><b>Which way a frame updates:</b> with Ray Tracing on (and a GPU that has it) the probes trace; otherwise they draw cube maps as before. The switch can be flipped at any time.</li>
+    <li><b>Measured</b> (RTX 3070 Ti): <code>Old_Stove_Corner</code>, 576 probes: the probes follow a change in about a second (50 frames) instead of about a minute (3600 frames at 8 probes per frame); the settled image differs from the cube-map one by 3.8 of 255 on average. A scene with two animated characters and 800 probes, all of them updated every frame with 192 rays each: Probe Update 1.1 ms, Ray Tracing Scene 0.12 ms. The cube maps took about as long for 8 probes.</li>
+    <li><b>To watch:</b> the rounds right after a change keep nothing of the old light (Phase D's schedule). Traced, such a round is a single frame of 192 rays per probe, so while something is dragged the indirect light may shimmer.</li>
+  </ul></div>
+
   <h3>H.2 RTAO</h3>
   <p>From each G-buffer pixel, trace one short ray (length = the AO radius) in a cosine-weighted random direction around the normal, stopping at the first hit (<code>gl_RayFlagsTerminateOnFirstHitEXT</code>). The result is 0 or 1 per pixel; the Phase F temporal filter and spatial denoiser turn it into a smooth AO image. It writes into the same AO image (set 0, binding 15) as GTAO, so nothing else changes. Unlike GTAO, it sees geometry behind other geometry and off screen.</p>
 

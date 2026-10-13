@@ -31,7 +31,7 @@ struct ProbeUpdatePush
 {
 	glm::vec4 RayRotation[3]; // the rotation's columns
 	glm::ivec4 Counts;        // xyz the probe counts, w the batch's first probe
-	glm::ivec4 Batch;         // x slots in the batch, y rays per probe, z a bit per slot: its probe is updated
+	glm::ivec4 Batch;         // x slots in the batch, y rays per probe, z a bit per slot: its probe is updated, w bits for the trace
 	glm::vec4 Params;         // hysteresis, irradiance gamma, the farthest distance the visibility stores, the environment's rotation
 	glm::vec4 Relocation;     // xyz the probe spacing, w the closest a probe should stand to a surface (meters)
 	glm::ivec4 RelocationMode; // x 1: probes are moved out of the meshes, 0: all back onto the grid; y the first slots that start from the grid
@@ -47,6 +47,14 @@ struct CaptureSunUB
 	glm::vec4 Params; // x 1 when the map was drawn, y world size of a texel, z 1 / resolution, w normal bias (texels)
 };
 static_assert(sizeof(CaptureSunUB) == 80, "std140 layout mismatch with the CaptureSun block in Include/ProbeCapture_Fragment.glslh");
+
+// Bits of ProbeUpdatePush::Batch.w, for ProbeTrace.glsl
+static constexpr int TraceSunShadows = 1; // the sun casts shadows
+static constexpr int TracePlacing = 2;    // the batch's probes are being placed
+
+// The bindings of the per-frame set 0 that ProbeTrace.glsl declares (Include/FrameSet.glslh: all but the camera, which is
+// the vertex stage's): its own set 0 gets their contents
+static constexpr uint32_t TraceFrameBindings[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17 };
 
 // The capture cubes' far plane (meters): what is farther counts as not seen (the sky)
 static constexpr float CaptureFarPlane = 2000.0f;
@@ -242,11 +250,12 @@ void EnvMapVulkanProbes::DestroyAtlases()
 
 bool EnvMapVulkanProbes::Update(const EnvMapVulkanProbeVolumeSettings& settings, const VkDescriptorImageInfo& environmentIrradiance,
 	const VkDescriptorImageInfo& environmentRadiance, float environmentRotation, uint32_t environmentVersion, uint64_t sceneVersion,
-	uint64_t geometryVersion, uint64_t animationVersion)
+	uint64_t geometryVersion, uint64_t animationVersion, bool traceRays)
 {
 	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 	m_Settings = settings;
 	m_EnvironmentRotation = environmentRotation;
+	m_TraceRays = traceRays;
 
 	// Where the last frames put the probes (RecordBlend copied the probe data; the frame that did is done by now, read
 	// once more a frame later in case it wasn't)
@@ -324,10 +333,8 @@ uint32_t EnvMapVulkanProbes::GetSettleRounds(float hysteresis)
 
 void EnvMapVulkanProbes::ScheduleUpdate(uint64_t sceneVersion, uint64_t geometryVersion, uint64_t animationVersion, bool restarted)
 {
-	m_BatchCount = 0;
-	m_BatchMask = 0;
-	m_BatchRelocates = false;
-	m_BatchGridSlots = 0;
+	m_Batches.clear();
+	SetCurrentBatch(Batch());
 	const uint32_t total = GetProbeCount();
 	if (!m_Settings.Exists || !m_CaptureSupported || total == 0)
 	{
@@ -375,15 +382,21 @@ void EnvMapVulkanProbes::ScheduleUpdate(uint64_t sceneVersion, uint64_t geometry
 		m_Changed = m_Animated = false; // a change during the bake still counts
 	}
 
+	// With ray tracing a frame updates many more probes, in batches of up to CaptureSlots; a probe at most once per frame
+	const bool traced = TracesRays();
+	const uint32_t tracedPerFrame = std::min((uint32_t)m_Settings.GetTracedProbesPerFrame(), total);
 	uint32_t wanted = 0;      // probes to update this frame
 	uint32_t* left = nullptr; // the probe updates they are taken from
-	float hysteresis = 0.0f;
+	// The hysteresis of a round: how many rounds replace what the probes hold, and what the rounds after them rise to
+	uint32_t propagationRounds = PropagationRounds;
+	float settledHysteresis = m_Settings.GetHysteresis();
 	if (m_BakeLeft > 0)
 	{
-		wanted = CaptureSlots;
+		wanted = traced ? std::min((uint32_t)EnvMapVulkanProbeVolumeSettings::MaxTracedProbesPerFrame, total) : CaptureSlots;
 		left = &m_BakeLeft;
 		// Half of the rounds let the light travel, the other half are averaged
-		hysteresis = GetRoundHysteresis(m_SinceChange / total, BakeRounds / 2, 0.98f);
+		propagationRounds = BakeRounds / 2;
+		settledHysteresis = 0.98f;
 	}
 	else if (m_Settings.AutoUpdate)
 	{
@@ -398,9 +411,8 @@ void EnvMapVulkanProbes::ScheduleUpdate(uint64_t sceneVersion, uint64_t geometry
 			m_UpdatesLeft = std::max(m_UpdatesLeft, settleUpdates);
 		}
 		m_Changed = m_Animated = false;
-		wanted = (uint32_t)m_Settings.GetProbesPerFrame();
+		wanted = traced ? tracedPerFrame : (uint32_t)m_Settings.GetProbesPerFrame();
 		left = &m_UpdatesLeft;
-		hysteresis = GetRoundHysteresis(m_SinceChange / total, PropagationRounds, m_Settings.GetHysteresis());
 	}
 	else if (m_UpdatesLeft > 0)
 	{
@@ -408,7 +420,7 @@ void EnvMapVulkanProbes::ScheduleUpdate(uint64_t sceneVersion, uint64_t geometry
 		m_UpdatesLeft = 0;
 		m_Changed = true;
 	}
-	if (!left || *left == 0)
+	if (!left || *left == 0 || wanted == 0)
 	{
 		return;
 	}
@@ -422,70 +434,102 @@ void EnvMapVulkanProbes::ScheduleUpdate(uint64_t sceneVersion, uint64_t geometry
 		m_RelocationDone = 0;
 		m_RelocationReported = false;
 	}
-	const bool relocating = m_RelocationDone < m_RelocationTotal;
 
-	// The batch: a run of probes from the cursor on, a slot each, of which the probes in use are updated (while they are
-	// placed: all of them, a probe that was switched off may have a way out now). The run ends when enough of them were
-	// found, when the slots are used up, or with the last probe update that is left. No probe twice in a batch (the run
-	// isn't longer than a round): two slots would write the same tile.
-	uint32_t limit = std::min(total, *left);
-	if (relocating)
+	// The frame's batches: one, or with ray tracing as many as the wanted probes take
+	uint32_t frameDone = 0, frameFound = 0; // probes the frame's batches passed, and those among them that are updated
+	while (frameFound < wanted && frameDone < total && *left > 0)
 	{
-		limit = std::min(limit, m_RelocationTotal - m_RelocationDone); // a batch places its probes or it doesn't
-	}
-	uint32_t first = m_Cursor % total, skipped = 0, run = 0, mask = 0, found = 0;
-	for (;;)
-	{
-		run = 0;
-		mask = 0;
-		found = 0;
-		while (run < CaptureSlots && skipped + run < limit && found < wanted)
+		const bool relocating = m_RelocationDone < m_RelocationTotal;
+		const float hysteresis = GetRoundHysteresis(m_SinceChange / total, propagationRounds, settledHysteresis);
+
+		// The batch: a run of probes from the cursor on, a slot each, of which the probes in use are updated (while they
+		// are placed: all of them, a probe that was switched off may have a way out now). The run ends when enough of
+		// them were found, when the slots are used up, or with the last probe update that is left. No probe twice in a
+		// frame (its batches aren't longer than a round together): two slots would write the same tile.
+		uint32_t limit = std::min(total - frameDone, *left);
+		if (relocating)
 		{
-			if (relocating || m_Placement[(first + run) % total].w > 0.5f)
+			limit = std::min(limit, m_RelocationTotal - m_RelocationDone); // a batch places its probes or it doesn't
+		}
+		const uint32_t batchWanted = wanted - frameFound;
+		uint32_t first = m_Cursor % total, skipped = 0, run = 0, mask = 0, found = 0;
+		for (;;)
+		{
+			run = 0;
+			mask = 0;
+			found = 0;
+			while (run < CaptureSlots && skipped + run < limit && found < batchWanted)
 			{
-				mask |= 1u << run;
-				found++;
+				if (relocating || m_Placement[(first + run) % total].w > 0.5f)
+				{
+					mask |= 1u << run;
+					found++;
+				}
+				run++;
 			}
-			run++;
+			if (found > 0 || skipped + run >= limit)
+			{
+				break;
+			}
+			// A run of probes that are all switched off: on to the next
+			skipped += run;
+			first = (first + run) % total;
 		}
-		if (found > 0 || skipped + run >= limit)
+		const uint32_t done = skipped + run;
+		*left -= done;
+		frameDone += done;
+		frameFound += found;
+		m_Cursor = (first + run) % total;
+		m_SinceChange = std::min(m_SinceChange + done, 1000u * total); // stays far below the largest number
+		if (mask == 0)
 		{
-			break;
+			break; // nothing in use among the probes that were left
 		}
-		// A run of probes that are all switched off: on to the next
-		skipped += run;
-		first = (first + run) % total;
-	}
-	const uint32_t done = skipped + run;
-	*left -= done;
-	m_Cursor = (first + run) % total;
-	m_SinceChange = std::min(m_SinceChange + done, 1000u * total); // stays far below the largest number
-	if (mask == 0)
-	{
-		return; // nothing in use among the probes that were left
-	}
 
-	m_BatchFirst = first;
-	m_BatchCount = run;
-	m_BatchMask = mask;
-	m_BatchHysteresis = hysteresis;
-	m_Captured = true;
-	if (relocating)
-	{
-		// In the first round every probe starts from the grid again
-		m_BatchRelocates = true;
-		m_BatchGridSlots = m_RelocationDone < total ? std::min(total - m_RelocationDone, run) : 0;
-		m_RelocationDone += run;
-		// The rays aren't turned: the same scene then always gives the same placement
-		m_BatchRotation = glm::mat3(1.0f);
-		return;
+		Batch batch;
+		batch.First = first;
+		batch.Count = run;
+		batch.Mask = mask;
+		batch.Hysteresis = hysteresis;
+		m_Captured = true;
+		if (relocating)
+		{
+			// In the first round every probe starts from the grid again
+			batch.Relocates = true;
+			batch.GridSlots = m_RelocationDone < total ? std::min(total - m_RelocationDone, run) : 0;
+			m_RelocationDone += run;
+			// The rays aren't turned: the same scene then always gives the same placement
+			batch.Rotation = glm::mat3(1.0f);
+		}
+		else
+		{
+			// A new rotation of the ray directions, any rotation equally likely (a uniformly random unit quaternion)
+			std::uniform_real_distribution<float> uniform(0.0f, 1.0f);
+			const float u1 = uniform(m_Random), u2 = uniform(m_Random) * glm::two_pi<float>(), u3 = uniform(m_Random) * glm::two_pi<float>();
+			const glm::quat rotation(std::sqrt(1.0f - u1) * std::sin(u2), std::sqrt(1.0f - u1) * std::cos(u2), std::sqrt(u1) * std::sin(u3), std::sqrt(u1) * std::cos(u3));
+			batch.Rotation = glm::mat3_cast(rotation);
+		}
+		m_Batches.push_back(batch);
+		if (!traced)
+		{
+			break; // the capture has slots for one batch
+		}
 	}
+	if (!m_Batches.empty())
+	{
+		SetCurrentBatch(m_Batches.front());
+	}
+}
 
-	// A new rotation of the ray directions, any rotation equally likely (a uniformly random unit quaternion)
-	std::uniform_real_distribution<float> uniform(0.0f, 1.0f);
-	const float u1 = uniform(m_Random), u2 = uniform(m_Random) * glm::two_pi<float>(), u3 = uniform(m_Random) * glm::two_pi<float>();
-	const glm::quat rotation(std::sqrt(1.0f - u1) * std::sin(u2), std::sqrt(1.0f - u1) * std::cos(u2), std::sqrt(u1) * std::sin(u3), std::sqrt(u1) * std::cos(u3));
-	m_BatchRotation = glm::mat3_cast(rotation);
+void EnvMapVulkanProbes::SetCurrentBatch(const Batch& batch)
+{
+	m_BatchFirst = batch.First;
+	m_BatchCount = batch.Count;
+	m_BatchMask = batch.Mask;
+	m_BatchRelocates = batch.Relocates;
+	m_BatchGridSlots = batch.GridSlots;
+	m_BatchHysteresis = batch.Hysteresis;
+	m_BatchRotation = batch.Rotation;
 }
 
 float EnvMapVulkanProbes::GetRoundHysteresis(uint32_t round, uint32_t propagationRounds, float settledHysteresis)
@@ -513,10 +557,16 @@ EnvMapVulkanProbes::UpdateStatus EnvMapVulkanProbes::GetStatus() const
 	status.BakeProgress = m_BakeTotal > 0 && !m_BakeRequested ? 1.0f - (float)m_BakeLeft / (float)m_BakeTotal : 0.0f;
 	status.UpdatesLeft = m_UpdatesLeft;
 	status.OutOfDate = (m_Changed || m_Animated) && !m_Settings.AutoUpdate && m_BakeLeft == 0;
-	for (uint32_t slot = 0; slot < m_BatchCount; slot++)
+	for (const Batch& batch : m_Batches)
 	{
-		status.ProbesThisFrame += IsCaptureSlotUsed(slot) ? 1 : 0;
+		for (uint32_t slot = 0; slot < batch.Count; slot++)
+		{
+			status.ProbesThisFrame += (batch.Mask >> slot) & 1u;
+		}
 	}
+	status.Traced = TracesRays();
+	status.ProbesPerFrame = status.Traced ? std::min((uint32_t)m_Settings.GetTracedProbesPerFrame(), std::max(GetProbeCount(), 1u)) :
+		(uint32_t)m_Settings.GetProbesPerFrame();
 	status.Relocating = m_RelocationDone < m_RelocationTotal;
 	for (const glm::vec4& placement : m_Placement)
 	{
@@ -714,6 +764,22 @@ void EnvMapVulkanProbes::CreateCaptureResources()
 	m_RelocatePipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(shaders->Get("ProbeRelocate"));
 	m_RelocateSet = m_RelocatePipeline->GetShader()->CreateDescriptorSets();
 	m_UpdateSetsWritten = false;
+
+	// With ray tracing: the pass that traces the probes' rays (a shader that only compiles for such a device, so it is
+	// loaded here). Its set 1 is the ray buffer; its set 0 is filled in PrepareTrace.
+	if (vulkanDevice->IsRayTracingSupported())
+	{
+		shaders->Load("Resources/Shaders/ProbeTrace.glsl");
+		m_TracePipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>::Create(shaders->Get("ProbeTrace"));
+		m_TraceFrameSet = m_TracePipeline->GetShader()->CreateDescriptorSets(0);
+		m_TraceRayBufferSet = m_TracePipeline->GetShader()->CreateDescriptorSets(1);
+		const VkDescriptorImageInfo rayBuffer = { VK_NULL_HANDLE, m_RayBuffer.View, VK_IMAGE_LAYOUT_GENERAL };
+		VkWriteDescriptorSet write = *m_TracePipeline->GetShader()->GetDescriptorSet("o_RayBuffer", 1);
+		write.dstSet = m_TraceRayBufferSet.DescriptorSets[0];
+		write.descriptorCount = 1;
+		write.pImageInfo = &rayBuffer;
+		vkUpdateDescriptorSets(device, 1, &write, 0, nullptr);
+	}
 }
 
 void EnvMapVulkanProbes::DestroyCaptureResources()
@@ -744,6 +810,8 @@ void EnvMapVulkanProbes::DestroyCaptureResources()
 	DestroyImage(m_RayBuffer);
 	m_ResamplePipeline = m_BlendIrradiancePipeline = m_BlendVisibilityPipeline = m_BorderPipeline = m_RelocatePipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>();
 	m_CaptureSet = m_ResampleSet = m_BlendIrradianceSet = m_BlendVisibilitySet = m_BorderSet = m_RelocateSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
+	m_TracePipeline = H2M::RefH2M<H2M::VulkanComputePipelineH2M>();
+	m_TraceFrameSet = m_TraceRayBufferSet = H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet();
 	m_CaptureSupported = false;
 }
 
@@ -964,7 +1032,42 @@ void EnvMapVulkanProbes::EndCaptureFace(VkCommandBuffer commandBuffer)
 	vkCmdEndRenderPass(commandBuffer);
 }
 
-void EnvMapVulkanProbes::RecordBlend(VkCommandBuffer commandBuffer)
+void EnvMapVulkanProbes::PrepareTrace(VkDescriptorSet frameDescriptorSet)
+{
+	if (!TracesRays() || !HasCapture())
+	{
+		return;
+	}
+	const uint32_t count = (uint32_t)(sizeof(TraceFrameBindings) / sizeof(TraceFrameBindings[0]));
+	std::vector<VkCopyDescriptorSet> copies(count);
+	for (uint32_t i = 0; i < count; i++)
+	{
+		copies[i] = {};
+		copies[i].sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+		copies[i].srcSet = frameDescriptorSet;
+		copies[i].srcBinding = TraceFrameBindings[i];
+		copies[i].dstSet = m_TraceFrameSet.DescriptorSets[0];
+		copies[i].dstBinding = TraceFrameBindings[i];
+		copies[i].descriptorCount = 1;
+	}
+	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 0, nullptr, count, copies.data());
+}
+
+void EnvMapVulkanProbes::RecordTraced(VkCommandBuffer commandBuffer, VkDescriptorSet rayTracingSet, bool sunShadows)
+{
+	if (!TracesRays() || rayTracingSet == VK_NULL_HANDLE)
+	{
+		return;
+	}
+	// Batch after batch: a later one already sees the light the earlier ones put into their probes
+	for (const Batch& batch : m_Batches)
+	{
+		SetCurrentBatch(batch);
+		RecordBatch(commandBuffer, rayTracingSet, sunShadows);
+	}
+}
+
+void EnvMapVulkanProbes::RecordBatch(VkCommandBuffer commandBuffer, VkDescriptorSet rayTracingSet, bool sunShadows)
 {
 	if (!HasCapture())
 	{
@@ -978,7 +1081,7 @@ void EnvMapVulkanProbes::RecordBlend(VkCommandBuffer commandBuffer)
 		push.RayRotation[i] = glm::vec4(m_BatchRotation[i], 0.0f);
 	}
 	push.Counts = glm::ivec4(m_Counts, (int)m_BatchFirst);
-	push.Batch = glm::ivec4((int)m_BatchCount, (int)rays, (int)m_BatchMask, 0);
+	push.Batch = glm::ivec4((int)m_BatchCount, (int)rays, (int)m_BatchMask, (sunShadows ? TraceSunShadows : 0) | (m_BatchRelocates ? TracePlacing : 0));
 	const glm::vec3 spacing = m_Settings.GetSpacing();
 	push.Relocation = glm::vec4(spacing, MinSurfaceDistance * std::min(spacing.x, std::min(spacing.y, spacing.z)));
 	push.RelocationMode = glm::ivec4(m_Settings.RelocateProbes ? 1 : 0, (int)m_BatchGridSlots, 0, 0);
@@ -1006,9 +1109,24 @@ void EnvMapVulkanProbes::RecordBlend(VkCommandBuffer commandBuffer)
 	const VkPipelineStageFlags compute = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 	const VkPipelineStageFlags shading = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 
-	// The cubes into the ray buffer (after whatever read it last): a thread per ray, 64 per group, a row of groups per slot
+	// The rays into the ray buffer (after whatever read it last): a thread per ray, 64 per group, a row of groups per slot
 	barrier(compute, readWrite, compute, readWrite);
-	dispatch(m_ResamplePipeline, m_ResampleSet, (rays + 63) / 64, m_BatchCount);
+	if (rayTracingSet != VK_NULL_HANDLE)
+	{
+		// Traced against the scene: the per-frame set's contents, the ray buffer, the ray tracing set
+		const VkPipelineLayout layout = m_TracePipeline->GetVulkanPipelineLayout();
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_TracePipeline->GetVulkanPipeline());
+		const VkDescriptorSet sets[2] = { m_TraceFrameSet.DescriptorSets[0], m_TraceRayBufferSet.DescriptorSets[0] };
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, layout, 0, 2, sets, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, layout, 3, 1, &rayTracingSet, 0, nullptr);
+		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(push), &push);
+		vkCmdDispatch(commandBuffer, (rays + 63) / 64, m_BatchCount, 1);
+	}
+	else
+	{
+		// Read from the cubes captured around the probes
+		dispatch(m_ResamplePipeline, m_ResampleSet, (rays + 63) / 64, m_BatchCount);
+	}
 
 	// The rays into the tiles: after the ray buffer is written, and after the capture's fragment shaders read the atlases
 	barrier(shading, readWrite, compute, readWrite);

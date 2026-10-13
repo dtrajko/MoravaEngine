@@ -34,7 +34,11 @@ float DistanceAttenuation(float distance, float range)
 	return window * window / max(distance * distance, 0.0001);
 }
 
+// The shadow maps' lookups, unless the shader has its own shadows for every light (the probe trace: shadow rays; the
+// lookups are written for a fragment stage and don't compile in a compute shader)
+#if !(defined(SHADE_SURFACE_SUN_SHADOW) && defined(SHADE_SURFACE_LIGHT_SHADOW))
 #include "Shadows.glslh"
+#endif
 #include "WaterVolume.glslh"
 #include "Probes.glslh"
 
@@ -46,8 +50,10 @@ float DistanceAttenuation(float distance, float range)
 // The sun, through its shadow map. Under the water its light comes in steeper (bent by the surface), dimmed by the water
 // on its way down and focused by the waves (caustics).
 // Outside the sun's cascades (they follow the camera: behind it, or beyond the shadow distance) a point counts as lit.
-// A shader with its own shadow map of the sun names its lookup in SHADE_SURFACE_SUN_SHADOW before including this file (the
-// probe capture: Include/ProbeCapture_Fragment.glslh).
+// A shader with its own shadow of the sun names its lookup in SHADE_SURFACE_SUN_SHADOW before including this file (the
+// probe capture: its own shadow map, Include/ProbeCapture_Fragment.glslh; the probe trace: a shadow ray, ProbeTrace.glsl).
+// The same for the point and spot lights' shadows with SHADE_SURFACE_LIGHT_SHADOW: a function of the point, its geometry
+// normal, the direction towards the light and the light's distance, used for the lights that cast shadows.
 bool SunLightAt(vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec3 radiance)
 {
 	L = u_Sun.Direction;
@@ -92,7 +98,11 @@ bool PointLightAt(int i, vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out ve
 	float attenuation = DistanceAttenuation(distance, u_PointLights[i].Range);
 	if (u_PointLights[i].ShadowIndex >= 0.0)
 	{
+#ifdef SHADE_SURFACE_LIGHT_SHADOW
+		attenuation *= SHADE_SURFACE_LIGHT_SHADOW(P, geometryNormal, L, distance);
+#else
 		attenuation *= PointShadow(int(u_PointLights[i].ShadowIndex), P, geometryNormal, u_PointLights[i].Position, L, distance);
+#endif
 	}
 	radiance = u_PointLights[i].Color * u_PointLights[i].Intensity * attenuation;
 	return true;
@@ -118,7 +128,11 @@ bool SpotLightAt(int i, vec3 P, vec3 N, vec3 geometryNormal, out vec3 L, out vec
 	float attenuation = DistanceAttenuation(distance, u_SpotLights[i].Range);
 	if (u_SpotLights[i].ShadowIndex >= 0.0)
 	{
+#ifdef SHADE_SURFACE_LIGHT_SHADOW
+		attenuation *= SHADE_SURFACE_LIGHT_SHADOW(P, geometryNormal, L, distance);
+#else
 		attenuation *= SpotShadow(int(u_SpotLights[i].ShadowIndex), P, geometryNormal, L, distance);
+#endif
 	}
 	radiance = u_SpotLights[i].Color * u_SpotLights[i].Intensity * attenuation * cone;
 	return true;

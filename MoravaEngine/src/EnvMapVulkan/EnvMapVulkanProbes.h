@@ -24,8 +24,12 @@ struct EnvMapVulkanProbeVolumeSettings
 	// image a GPU has to support (the visibility atlas is CountX * CountY * 18 texels wide)
 	static constexpr int MinCount = 2;
 	static constexpr glm::ivec3 MaxCounts = { 32, 16, 32 };
-	// The most probes one frame updates: each gets a slot of the capture cubes and a row of the ray buffer
+	// The most probes one batch updates: each gets a slot of the capture cubes and a row of the ray buffer. Without ray
+	// tracing a frame has one batch, so this is also the most probes per frame.
 	static constexpr int MaxProbesPerFrame = 32;
+	// With ray tracing a frame runs batch after batch (a probe costs its rays, no draw calls)
+	static constexpr int MinTracedProbesPerFrame = 32;
+	static constexpr int MaxTracedProbesPerFrame = 4096;
 	// Rays per probe and update: the ray buffer is as wide as the most
 	static constexpr int MinRaysPerProbe = 32;
 	static constexpr int MaxRaysPerProbe = 256;
@@ -45,6 +49,7 @@ struct EnvMapVulkanProbeVolumeSettings
 	// Capturing the scene into the probes
 	bool AutoUpdate = true;                      // the probes follow the scene: updated whenever something in it changed
 	int ProbesPerFrame = 8;                      // probes updated per frame while they follow a change (1 to MaxProbesPerFrame)
+	int TracedProbesPerFrame = 1024;             // the same with ray tracing (at most all of them: a probe once per frame)
 	int RaysPerProbe = 192;                      // directions a probe looks in per update
 	float Hysteresis = 0.9f;                     // how much of a probe's old value an update keeps: higher is calmer and slower
 	bool OccludeReflections = true;              // the environment's reflection is darkened where the probes say the scene hides the environment
@@ -54,6 +59,7 @@ struct EnvMapVulkanProbeVolumeSettings
 	int Show = ShowIrradiance;                   // what the balls show: the light a probe holds, how far it sees, or its state
 
 	int GetProbesPerFrame() const { return glm::clamp(ProbesPerFrame, 1, MaxProbesPerFrame); }
+	int GetTracedProbesPerFrame() const { return glm::clamp(TracedProbesPerFrame, MinTracedProbesPerFrame, MaxTracedProbesPerFrame); }
 	int GetRaysPerProbe() const { return glm::clamp(RaysPerProbe, MinRaysPerProbe, MaxRaysPerProbe); }
 	float GetHysteresis() const { return glm::clamp(Hysteresis, 0.0f, 0.99f); }
 
@@ -87,6 +93,10 @@ struct EnvMapVulkanProbeVolumeSettings
  *                (RGBA16F, a row per slot, a texel per ray: rgb = the light arriving, a = the distance; a ray that
  *                hit nothing gets the environment's light). Ray tracing will replace steps 1 and 2 and fill the same
  *                buffer; the rest stays.
+ *                With ray tracing (Update's traceRays; Phase H.1 of the guide) steps 1 and 2 are one compute pass,
+ *                ProbeTrace.glsl: each ray is traced against the scene's acceleration structures and brings back the
+ *                same values. Without draw calls a probe is cheap, so a frame updates many more of them, a batch of up
+ *                to CaptureSlots after the other (RecordTraced), each batch through steps 3 and 4.
  *   3. blend     ProbeBlendIrradiance.glsl and ProbeBlendVisibility.glsl mix the rays into the probes' tiles, keeping
  *                Hysteresis of the old values; ProbeBorders.glsl rewrites the tiles' border texels.
  *   4. relocate  only in the first rounds after the meshes or the volume changed (RelocationRounds): ProbeRelocate.glsl
@@ -151,11 +161,12 @@ public:
 	// sceneVersion: a number that changes whenever something the probes capture changed, other than by animation: the
 	// meshes, their materials, the lights, the environment. geometryVersion: the same for what decides where the probes
 	// can stand (the meshes that stand still). animationVersion: the same for what moves by itself (the skinned models
-	// and their poses).
+	// and their poses). traceRays: this frame's updates trace rays (the scene's acceleration structures are built this
+	// frame) instead of drawing cube maps.
 	// Returns true when the atlases were replaced: descriptor sets that point to them must be written again.
 	bool Update(const EnvMapVulkanProbeVolumeSettings& settings, const VkDescriptorImageInfo& environmentIrradiance,
 		const VkDescriptorImageInfo& environmentRadiance, float environmentRotation, uint32_t environmentVersion, uint64_t sceneVersion,
-		uint64_t geometryVersion, uint64_t animationVersion);
+		uint64_t geometryVersion, uint64_t animationVersion, bool traceRays);
 
 	// What the shaders need of the volume (of the settings given to Update)
 	ProbeVolumeUB GetUniforms() const;
@@ -177,7 +188,15 @@ public:
 	//   SetCaptureSun; for every slot and face: BeginCaptureFace, the meshes, EndCaptureFace; RecordBlend
 	// Slots of this frame's batch: 0 when nothing is left to do. A slot whose probe is switched off isn't used: nothing
 	// is drawn for it.
-	bool HasCapture() const { return m_BatchCount > 0; }
+	bool HasCapture() const { return !m_Batches.empty(); }
+	// This frame's updates trace rays: instead of the calls above, PrepareTrace before anything is recorded, then RecordTraced
+	bool TracesRays() const { return m_TraceRays && m_TracePipeline; }
+	// frameDescriptorSet: the per-frame set 0, whose contents (lights, environment, probes, materials) the trace's own
+	// set 0 gets (a compute pipeline can't use the mesh shaders' set: its layout names other stages)
+	void PrepareTrace(VkDescriptorSet frameDescriptorSet);
+	// Every batch of the frame: its rays traced, blended into the atlases, its probes placed. rayTracingSet: set 3 of the
+	// ray tracing shaders (EnvMapVulkanRayTracing, after its Record); sunShadows: the sun casts shadows.
+	void RecordTraced(VkCommandBuffer commandBuffer, VkDescriptorSet rayTracingSet, bool sunShadows);
 	uint32_t GetCaptureCount() const { return m_BatchCount; }
 	bool IsCaptureSlotUsed(uint32_t slot) const { return ((m_BatchMask >> slot) & 1u) != 0; }
 	glm::vec3 GetCaptureProbePosition(uint32_t slot) const;
@@ -211,7 +230,7 @@ public:
 	glm::mat4 BeginCaptureFace(VkCommandBuffer commandBuffer, uint32_t slot, uint32_t face);
 	void EndCaptureFace(VkCommandBuffer commandBuffer);
 	// After the captures: the compute passes that turn the cubes into rays and blend them into the atlases
-	void RecordBlend(VkCommandBuffer commandBuffer);
+	void RecordBlend(VkCommandBuffer commandBuffer) { RecordBatch(commandBuffer, VK_NULL_HANDLE, false); }
 
 	// ---- For the editor
 	// Updates every probe BakeRounds times, at the most probes per frame, starting with the next frame
@@ -227,6 +246,8 @@ public:
 		uint32_t UpdatesLeft = 0;  // probe updates until the probes have followed the last change
 		bool OutOfDate = false;    // something changed and nothing updates the probes (AutoUpdate is off)
 		uint32_t ProbesThisFrame = 0;
+		uint32_t ProbesPerFrame = 1; // the most a frame updates at the moment (the setting of the way they are updated)
+		bool Traced = false;         // the updates trace rays
 		bool Relocating = false;   // the probes are being placed
 		uint32_t MovedProbes = 0;  // probes that don't stand where the grid puts them
 		uint32_t UnusedProbes = 0; // probes that are switched off (inside a mesh, no way out)
@@ -261,8 +282,11 @@ private:
 	void CreateCapturePipeline(bool skinned);
 	// Points the update's compute sets to the atlases, the capture cubes, the ray buffer and the environment
 	void WriteUpdateDescriptors(const VkDescriptorImageInfo& environmentRadiance);
-	// Decides this frame's batch. restarted: the atlases were just filled from the environment.
+	// Decides this frame's batches. restarted: the atlases were just filled from the environment.
 	void ScheduleUpdate(uint64_t sceneVersion, uint64_t geometryVersion, uint64_t animationVersion, bool restarted);
+	// The current batch's rays into the ray buffer (rayTracingSet: traced; null: from the capture cubes), then blended
+	// into the atlases, then its probes placed
+	void RecordBatch(VkCommandBuffer commandBuffer, VkDescriptorSet rayTracingSet, bool sunShadows);
 
 	EnvMapVulkanProbeVolumeSettings m_Settings;
 	glm::ivec3 m_Counts = glm::ivec3(0); // of the atlases
@@ -303,6 +327,10 @@ private:
 	Image m_RayBuffer; // MaxRaysPerProbe x CaptureSlots, always VK_IMAGE_LAYOUT_GENERAL
 	H2M::RefH2M<H2M::VulkanComputePipelineH2M> m_ResamplePipeline, m_BlendIrradiancePipeline, m_BlendVisibilityPipeline, m_BorderPipeline, m_RelocatePipeline;
 	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet m_ResampleSet, m_BlendIrradianceSet, m_BlendVisibilitySet, m_BorderSet, m_RelocateSet;
+	// With ray tracing: ProbeTrace.glsl, its set 0 (the per-frame set's contents) and set 1 (the ray buffer)
+	H2M::RefH2M<H2M::VulkanComputePipelineH2M> m_TracePipeline;
+	H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet m_TraceFrameSet, m_TraceRayBufferSet;
+	bool m_TraceRays = false; // this frame's updates trace rays (Update)
 	bool m_UpdateSetsWritten = false;
 	uint32_t m_UpdateSetsEnvironmentVersion = 0;
 
@@ -323,13 +351,25 @@ private:
 	uint32_t m_RelocationTotal = 0;    // probe updates that place probes after the last such change...
 	uint32_t m_RelocationDone = 0;     // ...and how many of them are done
 	bool m_RelocationReported = true;  // the result was logged
-	// This frame's batch: m_BatchCount probes from m_BatchFirst on (wrapping around), slot i = probe m_BatchFirst + i;
-	// m_BatchMask has a bit per slot: 0 for a probe that is switched off (it isn't updated)
+	// A batch: Count probes from First on (wrapping around), slot i = probe First + i; Mask has a bit per slot: 0 for a
+	// probe that is switched off (it isn't updated)
+	struct Batch
+	{
+		uint32_t First = 0, Count = 0, Mask = 0;
+		bool Relocates = false;     // the batch's probes are placed
+		uint32_t GridSlots = 0;     // its first slots whose probes start from the grid (the first round of a placement)
+		float Hysteresis = 0.0f;
+		glm::mat3 Rotation = glm::mat3(1.0f); // of the ray directions
+	};
+	// This frame's batches: one without ray tracing, with it as many as the probes per frame take. The m_Batch... values
+	// are the current batch's: the frame's only one, or the one RecordTraced is at.
+	std::vector<Batch> m_Batches;
+	void SetCurrentBatch(const Batch& batch);
 	uint32_t m_BatchFirst = 0, m_BatchCount = 0, m_BatchMask = 0;
-	bool m_BatchRelocates = false;     // the batch's probes are placed
-	uint32_t m_BatchGridSlots = 0;     // its first slots whose probes start from the grid (the first round of a placement)
+	bool m_BatchRelocates = false;
+	uint32_t m_BatchGridSlots = 0;
 	float m_BatchHysteresis = 0.0f;
-	glm::mat3 m_BatchRotation = glm::mat3(1.0f); // of the ray directions
+	glm::mat3 m_BatchRotation = glm::mat3(1.0f);
 	float m_EnvironmentRotation = 0.0f;
 	std::mt19937 m_Random{ 1234567u };
 };

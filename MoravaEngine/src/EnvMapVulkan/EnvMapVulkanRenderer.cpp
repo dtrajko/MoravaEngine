@@ -1892,11 +1892,29 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 			"capture the scene again, a few per frame, until the change has arrived in all of them. Then the updates stop.\n"
 			"Off: the probes keep what they hold until Bake.");
 	}
-	ImGui::SliderInt("Probes per Frame", &probes.ProbesPerFrame, 1, EnvMapVulkanProbeVolumeSettings::MaxProbesPerFrame, "%d", ImGuiSliderFlags_AlwaysClamp);
-	if (ImGui::IsItemHovered())
+	if (status.Traced)
 	{
-		ImGui::SetTooltip("Probes updated per frame while they follow a change. Each one draws the scene around it 6 times (a small\n"
-			"cube map), so more probes follow a change faster and cost more frame time: see Probe Update in Rendering Stats.");
+		// With ray tracing: its own setting, with a much wider range (the two ways cost very differently)
+		ImGui::SliderInt("Probes per Frame", &probes.TracedProbesPerFrame, EnvMapVulkanProbeVolumeSettings::MinTracedProbesPerFrame,
+			EnvMapVulkanProbeVolumeSettings::MaxTracedProbesPerFrame, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Ray traced: probes updated per frame while they follow a change (at most all of them: %u here).\n"
+				"A probe costs its rays, whatever the number of meshes, so a whole volume usually fits into one frame and\n"
+				"the light follows a change within a second. Lower it when Probe Update in Renderer Stats costs too much.\n"
+				"Without ray tracing (Environment panel > Ray Tracing) the probes draw cube maps instead, with a setting\n"
+				"of their own (1 to %d per frame).", s_Probes.GetProbeCount(), EnvMapVulkanProbeVolumeSettings::MaxProbesPerFrame);
+		}
+	}
+	else
+	{
+		ImGui::SliderInt("Probes per Frame", &probes.ProbesPerFrame, 1, EnvMapVulkanProbeVolumeSettings::MaxProbesPerFrame, "%d", ImGuiSliderFlags_AlwaysClamp);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Probes updated per frame while they follow a change. Each one draws the scene around it 6 times (a small\n"
+				"cube map), so more probes follow a change faster and cost more frame time: see Probe Update in Rendering Stats.\n"
+				"With ray tracing on, the probes trace rays instead and many more fit into a frame.");
+		}
 	}
 	ImGui::SliderInt("Rays per Probe", &probes.RaysPerProbe, EnvMapVulkanProbeVolumeSettings::MinRaysPerProbe,
 		EnvMapVulkanProbeVolumeSettings::MaxRaysPerProbe, "%d", ImGuiSliderFlags_AlwaysClamp);
@@ -1956,8 +1974,8 @@ static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 	}
 	else if (status.UpdatesLeft > 0)
 	{
-		ImGui::TextDisabled("Updating %u probes per frame, %u frames to go", status.ProbesThisFrame,
-			(status.UpdatesLeft + (uint32_t)probes.GetProbesPerFrame() - 1) / (uint32_t)probes.GetProbesPerFrame());
+		ImGui::TextDisabled("%s %u probes per frame, %u frames to go", status.Traced ? "Tracing" : "Updating", status.ProbesThisFrame,
+			(status.UpdatesLeft + status.ProbesPerFrame - 1) / status.ProbesPerFrame);
 	}
 	else if (status.OutOfDate)
 	{
@@ -7962,9 +7980,22 @@ static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
 	{
 		return;
 	}
-	EnvMapVulkanProfiler::Scope updateScope(commandBuffer, "Probe Update", "The probe volume's global illumination: a few probes per frame "
+	EnvMapVulkanProfiler::Scope updateScope(commandBuffer, "Probe Update", "The probe volume's global illumination: this frame's probes "
 		"look at the scene around them and take the light they see into their stored light. Only while something changed "
 		"(or during a bake): when the probes are up to date this pass is gone.");
+
+	// With ray tracing: no shadow map, no cube maps, no draw calls. Each probe's rays are traced against the scene's
+	// acceleration structures (built earlier this frame), batch after batch.
+	if (s_Probes.TracesRays())
+	{
+		EnvMapVulkanProfiler::Scope traceScope(commandBuffer, "Probe Trace", "Compute passes, per batch of up to 32 probes: every probe's "
+			"rays are traced against the scene (ray queries) and bring back the light of what they hit, with shadow rays "
+			"to the lights; then the rays are mixed into the probe's stored light and into how far it sees. No draw calls: "
+			"the cost is rays, so many more probes fit into a frame than with cube maps.");
+		const bool sunShadows = s_Lights.Sun.Enabled && s_Lights.Sun.CastShadows && s_Lights.Sun.Intensity > 0.0f;
+		s_Probes.RecordTraced(commandBuffer, s_RayTracing.GetDescriptorSet(), sunShadows);
+		return;
+	}
 
 	// The sun's shadow map of the whole volume: an orthographic view from the sun, as wide as a sphere around the volume
 	// (so its size doesn't depend on the sun's direction) and deep enough for every shadow caster of the scene
@@ -8475,9 +8506,10 @@ void EnvMapVulkanRenderer::GeometryPass()
 			s_ShadowMapViewerRequest.Active = false; // requested again by the panel while it shows the viewer
 		}
 
-		// The scene for the rays, in the frames that trace any: the acceleration structures follow the meshes as they are
-		// drawn this frame. Then the ray-traced debug view, when one is shown.
-		if (IsRayTracingActive() && IsRayTracedDebugView(s_DebugView))
+		// The scene for the rays, in the frames that trace any (the probes' update, a ray-traced debug view): the
+		// acceleration structures follow the meshes as they are drawn this frame. Then the debug view, when one is shown.
+		const bool probesTraceRays = s_Probes.HasCapture() && s_Probes.TracesRays();
+		if (IsRayTracingActive() && (probesTraceRays || IsRayTracedDebugView(s_DebugView)))
 		{
 			{
 				EnvMapVulkanProfiler::Scope sceneScope(drawCommandBuffer, "Ray Tracing Scene", "The scene as rays see it: the skinned models' "
@@ -8496,6 +8528,9 @@ void EnvMapVulkanRenderer::GeometryPass()
 				}
 				s_RayTracing.Record(drawCommandBuffer);
 			}
+		}
+		if (IsRayTracingActive() && IsRayTracedDebugView(s_DebugView))
+		{
 			EnvMapVulkanProfiler::Scope viewScope(drawCommandBuffer, "Ray Traced View", "The ray-traced debug view: a compute pass traces one "
 				"ray per pixel from the camera (a ray query) and writes what it hit as a color.");
 			const EnvMapVulkanRayTracing::View view = s_DebugView == DebugViewRayTracedAlbedo ? EnvMapVulkanRayTracing::View::Albedo :
@@ -10085,7 +10120,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 						ImGui::SetTooltip("Everything that traces rays (hardware ray tracing: acceleration structures and ray queries).\n"
 							"Off: no rays are traced and nothing is built or updated for them. Every effect uses its rasterized\n"
 							"version, as on a GPU without ray tracing: for more frames per second when the rays cost too much.\n"
-							"So far the rays are used by the Debug View's Ray Traced views; the effects follow.\n"
+							"Used by: the probe volume's updates (rays instead of cube maps: much faster to follow a change),\n"
+							"and the Debug View's Ray Traced views.\n"
 							"Its cost: Ray Tracing Scene and the passes that trace rays, in Renderer Stats.");
 					}
 					if (!rayTracingSupported)
@@ -10106,7 +10142,8 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 					}
 					else
 					{
-						ImGui::TextDisabled("Ready. No effect uses rays yet: pick a Ray Traced\nview in Debug View to see them at work");
+						ImGui::TextDisabled(s_ProbeVolumeSettings.Exists ? "The probe volume traces rays while it updates" :
+							"Nothing traces rays at the moment (no probe volume,\nno Ray Traced debug view)");
 					}
 					ImGui::PopID();
 				}
@@ -10610,7 +10647,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	if (s_Data.irradianceMap && s_Data.envFiltered &&
 		s_Probes.Update(s_ProbeVolumeSettings, s_Data.irradianceMap.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo(),
 			s_Data.envFiltered.As<H2M::VulkanTextureCubeH2M>()->GetVulkanDescriptorInfo(), s_EnvMapRotation, s_EnvironmentVersion, probeSceneVersion,
-			probeGeometryVersion, probeAnimationVersion))
+			probeGeometryVersion, probeAnimationVersion, IsRayTracingActive()))
 	{
 		WriteProbeDescriptors(); // new atlases: Update waited for the GPU
 	}
@@ -10650,6 +10687,10 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		ShowNotification(EnvMapVulkanRayTracing::IsSupported() ? "The ray-traced views need Ray Tracing turned on (Environment panel)" :
 			"The ray-traced views need a GPU with ray tracing", true);
 	}
+
+	// With ray tracing the probes' update traces rays: its set 0 gets what the per-frame set holds (as it is now, after
+	// everything above that may have rewritten it)
+	s_Probes.PrepareTrace(s_Data.FrameDescriptorSet.DescriptorSets[0]);
 
 	GeometryPass();
 	CompositePass();

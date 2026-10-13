@@ -417,8 +417,20 @@ void EnvMapVulkanRayTracing::Submit(const H2M::RefH2M<H2M::ModelH2M>& modelRef, 
 		instance.Mesh = meshes[s];
 		instance.Transform = meshTransforms[s];
 		instance.MaterialIndex = (uint32_t)material->Get<float>("u_MaterialUniforms.MaterialIndex");
-		// As the passes draw them: glass on a skinned model is drawn with the opaque meshes
-		instance.Mask = material->IsGlass() && !skinned ? MaskGlass : MaskOpaque;
+		// As the passes draw them: glass on a skinned model is drawn with the opaque meshes, and glass casts a shadow
+		// only when its material says so
+		if (skinned)
+		{
+			instance.Mask = MaskOpaqueSkinned;
+		}
+		else if (material->IsGlass())
+		{
+			instance.Mask = MaskGlass | (material->GetGlassValue(EnvMapVulkanMaterial::GlassCastShadows) >= 0.5f ? MaskGlassShadow : 0u);
+		}
+		else
+		{
+			instance.Mask = MaskOpaqueStatic;
+		}
 	}
 }
 

@@ -17,6 +17,18 @@ RenderSettings:
     DepthBias: 1.25
     SlopeBias: 1.75
     NormalBias: 1
+  RayTracing:
+    Enabled: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
   Bloom:
     Enabled: true
     Threshold: 1
@@ -30,8 +42,8 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [0.22764742, 16.33639, 9.118297]
-      Rotation: [0.100049786, -0.20050049, 0]
+      Translation: [0.19820747, 16.353642, 9.528957]
+      Rotation: [0.6000488, -0.6003494, 0]
       Scale: [1, 1, 1]
     Camera:
       {}
@@ -44,7 +56,7 @@ Entities:
       Scale: [1, 1, 1]
     Environment:
       File: Textures/HDR/umhlanga_sunrise_4k.hdr
-      Rotation: 359
+      Rotation: 36
       Exposure: 1
       AutoExposure: true
       HuePreservation: 0.5
@@ -55,8 +67,8 @@ Entities:
     Parent: 0
     Transform:
       Translation: [0, 0, 0]
-      Rotation: [46.894745, 28.359783, -60.446182]
-      Scale: [0.99996865, 0.99999887, 0.9999573]
+      Rotation: [4.013237, 3.855196, -87.69688]
+      Scale: [0.9999674, 0.999997, 0.9999555]
     Sun:
       Enabled: true
       Color: [1, 0.2515118, 0]
@@ -232,6 +244,7 @@ Entities:
       ViewBias: 0.25
       AutoUpdate: true
       ProbesPerFrame: 8
+      TracedProbesPerFrame: 1024
       RaysPerProbe: 192
       Hysteresis: 0.9
       RelocateProbes: true

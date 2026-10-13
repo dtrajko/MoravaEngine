@@ -51,8 +51,11 @@ class EnvMapVulkanRayTracing
 public:
 	static constexpr VkFormat ViewFormat = VK_FORMAT_R8G8B8A8_UNORM;
 	// The groups an instance can be in (a ray chooses which it can hit): RayMask... in Include/RayTracing.glslh
-	static constexpr uint32_t MaskOpaque = 0x01;
-	static constexpr uint32_t MaskGlass = 0x02;
+	static constexpr uint32_t MaskOpaqueStatic = 0x01;  // opaque meshes of the models that stand still
+	static constexpr uint32_t MaskGlass = 0x02;         // glass meshes
+	static constexpr uint32_t MaskOpaqueSkinned = 0x04; // the meshes of skinned models (all drawn as opaque)
+	static constexpr uint32_t MaskGlassShadow = 0x08;   // glass whose material casts a shadow (with MaskGlass)
+	static constexpr uint32_t MaskOpaque = MaskOpaqueStatic | MaskOpaqueSkinned;
 
 	// What the view image shows (RayTracingView.glsl)
 	enum class View { Normals = 0, Albedo, Instances };
@@ -171,7 +174,7 @@ private:
 		H2M::RefH2M<H2M::MeshH2M> Mesh;
 		glm::mat4 Transform;
 		uint32_t MaterialIndex = 0;
-		uint32_t Mask = MaskOpaque;
+		uint32_t Mask = MaskOpaqueStatic;
 	};
 
 	MeshEntry* GetMeshEntry(const FrameInstance& instance, std::vector<MeshEntry*>& newStaticMeshes);
