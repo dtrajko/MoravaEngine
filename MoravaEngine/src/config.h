@@ -1,18 +1,37 @@
 #pragma once
 
-// The engine is compiled for one scene, which runs on one graphics API, and for the graphics APIs switched on in CMake
-// (MoravaEngine/CMakeLists.txt): the MORAVA_SCENE setting defines SCENE_<name> below; GRAPHICS_API_VULKAN,
-// GRAPHICS_API_OPENGL and GRAPHICS_API_DIRECTX11 are defined for the scene's API and for every API switched on with
-// MORAVA_VULKAN, MORAVA_OPENGL or MORAVA_DIRECTX11 (any combination). For example:
-//   cmake -DMORAVA_SCENE=EDITOR build          the EDITOR scene (OpenGL): only the OpenGL classes
-//   cmake -DMORAVA_OPENGL=ON build             the OpenGL classes in addition to the scene's
-// Only the classes of those APIs are compiled: code that names a class of one API stands inside
+// The graphics APIs are switched on in CMake (MoravaEngine/CMakeLists.txt), any combination: MORAVA_VULKAN, MORAVA_OPENGL
+// and MORAVA_DIRECTX11 define GRAPHICS_API_VULKAN, GRAPHICS_API_OPENGL and GRAPHICS_API_DIRECTX11. Only the classes of
+// those APIs are compiled, and all their scenes: code that names a class of one API stands inside
 // #if defined(GRAPHICS_API_...). Which API runs is decided at startup (main.cpp, RendererAPI_H2M::Current()).
+//   cmake -DMORAVA_OPENGL=ON -DMORAVA_VULKAN=OFF -DMORAVA_DIRECTX11=OFF build     the OpenGL classes and scenes
+//   cmake -DMORAVA_VULKAN=ON -DMORAVA_OPENGL=OFF -DMORAVA_DIRECTX11=OFF build     the Vulkan classes and scenes
+//
+// The scene that runs is chosen below, one per graphics API, by default the first scene of its row in the list. The first
+// compiled API in the order Vulkan, OpenGL, DirectX 11 runs its scene. CMake's MORAVA_SCENE setting chooses the scene
+// instead, when set (cmake -DMORAVA_SCENE=EDITOR build; cmake -DMORAVA_SCENE= build goes back to this choice).
+//   Vulkan:      SCENE_ENV_MAP_VULKAN, SCENE_HAZEL_VULKAN
+//   OpenGL:      SCENE_COTTAGE, SCENE_EIFFEL, SCENE_SPONZA, SCENE_TERRAIN, SCENE_PBR, SCENE_LEARN_OPENGL, SCENE_BULLET,
+//                SCENE_INSTANCED, SCENE_ASTEROIDS, SCENE_NANOSUIT, SCENE_FRAMEBUFFERS, SCENE_CUBEMAPS, SCENE_PARTICLES,
+//                SCENE_OMNI_SHADOWS, SCENE_VOXEL_TERRAIN, SCENE_PROCEDURAL_LANDMASS, SCENE_VOXEL_TERRAIN_SL,
+//                SCENE_MARCHING_CUBES, SCENE_SSAO, SCENE_BLOOM, SCENE_DEFERRED, SCENE_DEFERRED_OGL, SCENE_ANIM_PBR,
+//                SCENE_EDITOR, SCENE_EDITOR_IMGUIZMO, SCENE_HAZEL_ENV_MAP
+//   DirectX 11:  SCENE_DX11 (Windows only)
+
+#if !defined(MORAVA_SCENE_FROM_CMAKE)
+	#if defined(GRAPHICS_API_VULKAN)
+		#define SCENE_ENV_MAP_VULKAN
+	#elif defined(GRAPHICS_API_OPENGL)
+		#define SCENE_COTTAGE
+	#elif defined(GRAPHICS_API_DIRECTX11)
+		#define SCENE_DX11
+	#endif
+#endif
 
 // BEGIN compile the engine for the chosen graphics APIs only
 
 #if !defined(GRAPHICS_API_VULKAN) && !defined(GRAPHICS_API_OPENGL) && !defined(GRAPHICS_API_DIRECTX11)
-	#error No graphics API: build with CMake, which defines GRAPHICS_API_... from its MORAVA_SCENE setting
+	#error No graphics API: build with CMake, which defines GRAPHICS_API_... from its MORAVA_VULKAN, MORAVA_OPENGL, MORAVA_DIRECTX11 settings
 #endif
 
 enum class GraphicsAPI
@@ -26,26 +45,25 @@ enum class GraphicsAPI
 	WebGPU
 };
 
-// The graphics API of the scene
+// The graphics API of the scene, which has to be compiled
 #if defined(SCENE_ENV_MAP_VULKAN) || defined(SCENE_HAZEL_VULKAN)
 	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::Vulkan;
+	#if !defined(GRAPHICS_API_VULKAN)
+		#error The scene chosen in config.h is a Vulkan scene, but Vulkan is not compiled: choose a scene of a compiled API, or build with -DMORAVA_VULKAN=ON
+	#endif
 #elif defined(SCENE_DX11)
 	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::DirectX11;
+	#if !defined(GRAPHICS_API_DIRECTX11)
+		#error The scene chosen in config.h is the DirectX 11 scene, but DirectX 11 is not compiled: choose a scene of a compiled API, or build with -DMORAVA_DIRECTX11=ON
+	#endif
 #else
 	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::OpenGL;
+	#if !defined(GRAPHICS_API_OPENGL)
+		#error The scene chosen in config.h is an OpenGL scene (or no scene is chosen), but OpenGL is not compiled: choose a scene of a compiled API, or build with -DMORAVA_OPENGL=ON
+	#endif
 #endif
 
 // END compile the engine for the chosen graphics APIs only
-
-
-// The scenes (CMake's MORAVA_SCENE setting defines one of them; ENV_MAP_VULKAN unless set otherwise):
-//   OpenGL:      SCENE_COTTAGE, SCENE_EIFFEL, SCENE_SPONZA, SCENE_TERRAIN, SCENE_PBR, SCENE_LEARN_OPENGL, SCENE_BULLET,
-//                SCENE_INSTANCED, SCENE_ASTEROIDS, SCENE_NANOSUIT, SCENE_FRAMEBUFFERS, SCENE_CUBEMAPS, SCENE_PARTICLES,
-//                SCENE_OMNI_SHADOWS, SCENE_VOXEL_TERRAIN, SCENE_PROCEDURAL_LANDMASS, SCENE_VOXEL_TERRAIN_SL,
-//                SCENE_MARCHING_CUBES, SCENE_SSAO, SCENE_BLOOM, SCENE_DEFERRED, SCENE_DEFERRED_OGL, SCENE_ANIM_PBR,
-//                SCENE_EDITOR, SCENE_EDITOR_IMGUIZMO, SCENE_HAZEL_ENV_MAP
-//   DirectX 11:  SCENE_DX11 (Windows only)
-//   Vulkan:      SCENE_HAZEL_VULKAN, SCENE_ENV_MAP_VULKAN
 
 
 enum class SceneName

@@ -6,6 +6,8 @@
 
 #include "Renderer2D_H2M.h"
 
+#include "config.h" // SCENE_...
+
 #include "H2M/Renderer/FramebufferH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RendererH2M.h"

@@ -6,6 +6,8 @@
 
 #include "VulkanPipelineH2M.h"
 
+#include "config.h" // SCENE_...
+
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Platform/Vulkan/VulkanFramebufferH2M.h"
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"

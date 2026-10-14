@@ -100,65 +100,69 @@ build\Debug\MoravaEngine.exe
 
 Visual Studio is already set up to start it in that folder.
 
-### Select the scene and the graphics API
+### Select the graphics APIs and the scene
 
-The engine is built for one scene, and each scene runs on one graphics API. Both are selected when CMake configures the project, with `-D` settings:
+The graphics APIs are selected when CMake configures the project, with `-D` settings. The scene is selected in `src/config.h`, among the scenes of the compiled APIs.
 
-* `MORAVA_SCENE` selects the scene. The graphics API of that scene is compiled automatically.
-* `MORAVA_VULKAN`, `MORAVA_OPENGL` and `MORAVA_DIRECTX11` select which graphics APIs are compiled. They are independent: any combination works.
+* `MORAVA_VULKAN`, `MORAVA_OPENGL` and `MORAVA_DIRECTX11` select which graphics APIs are compiled. They are independent: any combination works. All the scenes of a compiled API are compiled.
+* In `src/config.h`, the block `#if !defined(MORAVA_SCENE_FROM_CMAKE)` has one line per API with the scene it runs, by default the first scene of that API in the list above it (`SCENE_ENV_MAP_VULKAN`, `SCENE_COTTAGE`, `SCENE_DX11`). Change the line to run another scene. When several APIs are compiled, the first in the order Vulkan, OpenGL, DirectX 11 runs its scene.
+* `MORAVA_SCENE` (optional) selects the scene in CMake instead, and then `src/config.h`'s choice is ignored. The graphics API of that scene is compiled automatically.
 
-**Example: SceneEnvMapVulkan with the Vulkan API.** From the `MoravaEngine/MoravaEngine` folder:
+**Example: the OpenGL classes and all OpenGL scenes.** From the `MoravaEngine/MoravaEngine` folder:
 
 ```
-cmake -S . -B build -DMORAVA_SCENE=ENV_MAP_VULKAN -DMORAVA_VULKAN=ON -DMORAVA_OPENGL=OFF -DMORAVA_DIRECTX11=OFF
+cmake -S . -B build -DMORAVA_OPENGL=ON -DMORAVA_VULKAN=OFF -DMORAVA_DIRECTX11=OFF
 cmake --build build --config Debug --parallel
 ```
 
-This is also what a plain `cmake -S . -B build` gives: `ENV_MAP_VULKAN` is the default scene, and the three API settings are `OFF` by default, which means "only the scene's API".
+SceneCottage runs; change `#define SCENE_COTTAGE` in `src/config.h` to e.g. `#define SCENE_EDITOR` for another OpenGL scene.
 
-**Example: SceneCottage with the OpenGL API.**
+**Example: the Vulkan classes and all Vulkan scenes.**
 
 ```
-cmake -S . -B build -DMORAVA_SCENE=COTTAGE -DMORAVA_OPENGL=ON -DMORAVA_VULKAN=OFF -DMORAVA_DIRECTX11=OFF
+cmake -S . -B build -DMORAVA_VULKAN=ON -DMORAVA_OPENGL=OFF -DMORAVA_DIRECTX11=OFF
 cmake --build build --config Debug --parallel
 ```
+
+SceneEnvMapVulkan runs (`#define SCENE_ENV_MAP_VULKAN`). A plain `cmake -S . -B build` gives the same: with no API switched on and no `MORAVA_SCENE`, Vulkan is compiled.
 
 **Example: SceneDX11 with the DirectX 11 API** (Windows only).
 
 ```
-cmake -S . -B build -DMORAVA_SCENE=DX11 -DMORAVA_DIRECTX11=ON -DMORAVA_VULKAN=OFF -DMORAVA_OPENGL=OFF
+cmake -S . -B build -DMORAVA_DIRECTX11=ON -DMORAVA_VULKAN=OFF -DMORAVA_OPENGL=OFF
 cmake --build build --config Debug --parallel
 ```
 
-**Example: SceneEnvMapVulkan with the Vulkan, OpenGL and DirectX 11 classes all compiled.**
+**Example: the scene selected in CMake.**
 
 ```
-cmake -S . -B build -DMORAVA_SCENE=ENV_MAP_VULKAN -DMORAVA_VULKAN=ON -DMORAVA_OPENGL=ON -DMORAVA_DIRECTX11=ON
+cmake -S . -B build -DMORAVA_SCENE=COTTAGE
 cmake --build build --config Debug --parallel
 ```
 
 Good to know:
 
-* The settings stay in the build folder until they are changed, so only the ones that change have to be given, e.g. `cmake -DMORAVA_SCENE=COTTAGE build`.
-* The scene's own API is compiled even when its setting is `OFF`. A scene can't be built without its API.
+* The settings stay in the build folder until they are changed, so only the ones that change have to be given, e.g. `cmake -DMORAVA_OPENGL=ON build`.
+* `cmake -DMORAVA_SCENE= build` (empty) clears a `MORAVA_SCENE` set earlier, so `src/config.h` selects the scene again.
+* A scene in `src/config.h` whose API is not compiled stops the build with an `#error` that names the missing setting.
 * After changing a setting, build again. In Visual Studio, accept "Reload All" first.
-* From a terminal that is already in the build folder (as the terminal of Visual Studio), use a dot for the folder: `cmake -DMORAVA_SCENE=COTTAGE .`
+* From a terminal that is already in the build folder (as the terminal of Visual Studio), use a dot for the folder: `cmake -DMORAVA_OPENGL=ON .`
 * `cmake-gui` shows the same settings: `MORAVA_SCENE` as a list, the others as checkboxes.
 
 All settings:
 
 | Setting | Values | Meaning |
 |---|---|---|
-| `MORAVA_SCENE` | a name from the table below, default `ENV_MAP_VULKAN` | The scene to build. Its graphics API is always compiled. |
-| `MORAVA_VULKAN` | `ON` / `OFF`, default `OFF` | Compile the Vulkan classes. |
-| `MORAVA_OPENGL` | `ON` / `OFF`, default `OFF` | Compile the OpenGL classes. |
-| `MORAVA_DIRECTX11` | `ON` / `OFF`, default `OFF` | Compile the DirectX 11 classes (Windows only). |
+| `MORAVA_SCENE` | a name from the table below, default empty | The scene to build, instead of the one selected in `src/config.h`. Its graphics API is always compiled. |
+| `MORAVA_VULKAN` | `ON` / `OFF`, default `OFF` | Compile the Vulkan classes and scenes. |
+| `MORAVA_OPENGL` | `ON` / `OFF`, default `OFF` | Compile the OpenGL classes and scenes. |
+| `MORAVA_DIRECTX11` | `ON` / `OFF`, default `OFF` | Compile the DirectX 11 classes and scene (Windows only). |
 | `MORAVA_MONO` | `ON` / `OFF`, default `ON` on Windows | C# scripting through mono. |
 | `MORAVA_MSVC_STATIC_RUNTIME` | `ON` / `OFF`, default `ON` | Static (`/MT`) or DLL (`/MD`) MSVC runtime, for the engine and every library. |
 
 The scenes:
 
-| `MORAVA_SCENE` | Scene class | Graphics API |
+| `MORAVA_SCENE` (`SCENE_...` in `config.h`) | Scene class | Graphics API |
 |---|---|---|
 | `ENV_MAP_VULKAN` | SceneEnvMapVulkan (the Vulkan editor) | Vulkan |
 | `HAZEL_VULKAN` | SceneHazelVulkan | Vulkan |

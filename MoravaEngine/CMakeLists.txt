@@ -14,14 +14,16 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 # =========================================================
 # SCENE AND GRAPHICS APIS
-#   The engine is built for one scene, which runs on one graphics API (Vulkan, OpenGL or DirectX 11). Only the classes
-#   of that API are compiled, unless more APIs are switched on: the three are independent, any combination builds.
+#   The graphics APIs (Vulkan, OpenGL, DirectX 11) are switched on independently, any combination builds; only their
+#   classes are compiled, and all the scenes of each of them. The scene that runs is chosen in src/config.h, among the
+#   scenes of the compiled APIs, unless MORAVA_SCENE chooses it here (its API is then always compiled).
 #
-#     cmake -DMORAVA_SCENE=<name> <build folder>            another scene             (e.g. -DMORAVA_SCENE=EDITOR)
-#     cmake -DMORAVA_OPENGL=ON <build folder>               the OpenGL classes too    (also MORAVA_VULKAN, MORAVA_DIRECTX11)
-#     cmake -DMORAVA_VULKAN=ON -DMORAVA_OPENGL=ON -DMORAVA_DIRECTX11=ON <build folder>     all three
+#     cmake -DMORAVA_OPENGL=ON -DMORAVA_VULKAN=OFF -DMORAVA_DIRECTX11=OFF <build folder>   OpenGL, scene in config.h
+#     cmake -DMORAVA_VULKAN=ON <build folder>                                               Vulkan, scene in config.h
+#     cmake -DMORAVA_SCENE=<name> <build folder>       this scene, config.h's choice is ignored (e.g. -DMORAVA_SCENE=EDITOR)
+#     cmake -DMORAVA_SCENE= <build folder>             back to the scene in config.h
 #
-#   The API of the scene is always compiled, whatever its switch says.
+#   With no API switched on and no MORAVA_SCENE, Vulkan is compiled.
 # =========================================================
 
 set(MORAVA_SCENES_VULKAN ENV_MAP_VULKAN HAZEL_VULKAN)
@@ -31,14 +33,16 @@ set(MORAVA_SCENES_OPENGL
     OMNI_SHADOWS VOXEL_TERRAIN PROCEDURAL_LANDMASS VOXEL_TERRAIN_SL MARCHING_CUBES SSAO BLOOM DEFERRED DEFERRED_OGL
     ANIM_PBR EDITOR EDITOR_IMGUIZMO HAZEL_ENV_MAP)
 
-set(MORAVA_SCENE "ENV_MAP_VULKAN" CACHE STRING "The scene the engine is built for (see src/config.h); its graphics API is always compiled")
-set_property(CACHE MORAVA_SCENE PROPERTY STRINGS ${MORAVA_SCENES_VULKAN} ${MORAVA_SCENES_OPENGL} ${MORAVA_SCENES_DIRECTX11})
+set(MORAVA_SCENE "" CACHE STRING "The scene the engine is built for, its graphics API always compiled; empty: the scene chosen in src/config.h")
+set_property(CACHE MORAVA_SCENE PROPERTY STRINGS "" ${MORAVA_SCENES_VULKAN} ${MORAVA_SCENES_OPENGL} ${MORAVA_SCENES_DIRECTX11})
 
-option(MORAVA_VULKAN "Compile the Vulkan classes (always, when the scene is a Vulkan scene)" OFF)
-option(MORAVA_OPENGL "Compile the OpenGL classes (always, when the scene is an OpenGL scene)" OFF)
-option(MORAVA_DIRECTX11 "Compile the DirectX 11 classes (always, when the scene is the DirectX 11 scene); Windows only" OFF)
+option(MORAVA_VULKAN "Compile the Vulkan classes and scenes (always, when MORAVA_SCENE is a Vulkan scene)" OFF)
+option(MORAVA_OPENGL "Compile the OpenGL classes and scenes (always, when MORAVA_SCENE is an OpenGL scene)" OFF)
+option(MORAVA_DIRECTX11 "Compile the DirectX 11 classes and scene (always, when MORAVA_SCENE is the DirectX 11 scene); Windows only" OFF)
 
-if(MORAVA_SCENE IN_LIST MORAVA_SCENES_VULKAN)
+if(MORAVA_SCENE STREQUAL "")
+    set(MORAVA_SCENE_GRAPHICS_API "")
+elseif(MORAVA_SCENE IN_LIST MORAVA_SCENES_VULKAN)
     set(MORAVA_SCENE_GRAPHICS_API VULKAN)
 elseif(MORAVA_SCENE IN_LIST MORAVA_SCENES_OPENGL)
     set(MORAVA_SCENE_GRAPHICS_API OPENGL)
@@ -62,11 +66,18 @@ foreach(api VULKAN OPENGL DIRECTX11)
         list(APPEND MORAVA_GRAPHICS_APIS ${api})
     endif()
 endforeach()
+if(NOT MORAVA_GRAPHICS_APIS)
+    set(MORAVA_GRAPHICS_APIS VULKAN)
+endif()
 if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS AND NOT WIN32)
     message(FATAL_ERROR "DirectX 11 exists on Windows only (MORAVA_SCENE=${MORAVA_SCENE}, MORAVA_DIRECTX11=${MORAVA_DIRECTX11})")
 endif()
 string(REPLACE ";" ", " MORAVA_GRAPHICS_APIS_TEXT "${MORAVA_GRAPHICS_APIS}")
-message(STATUS "Scene: ${MORAVA_SCENE} (${MORAVA_SCENE_GRAPHICS_API}); graphics APIs compiled: ${MORAVA_GRAPHICS_APIS_TEXT}")
+if(MORAVA_SCENE STREQUAL "")
+    message(STATUS "Scene: chosen in src/config.h; graphics APIs compiled: ${MORAVA_GRAPHICS_APIS_TEXT}")
+else()
+    message(STATUS "Scene: ${MORAVA_SCENE} (${MORAVA_SCENE_GRAPHICS_API}); graphics APIs compiled: ${MORAVA_GRAPHICS_APIS_TEXT}")
+endif()
 
 # =========================================================
 # MSVC RUNTIME LIBRARY (one switch for the engine and every vendor target)
@@ -237,8 +248,10 @@ if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /utf-8) # the sources are UTF-8 (GCC and Clang take that as given)
 endif()
 
-# The scene and the graphics APIs of the build (see src/config.h)
-target_compile_definitions(${PROJECT_NAME} PRIVATE SCENE_${MORAVA_SCENE})
+# The scene (when MORAVA_SCENE sets it; otherwise src/config.h does) and the graphics APIs of the build
+if(NOT MORAVA_SCENE STREQUAL "")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE SCENE_${MORAVA_SCENE} MORAVA_SCENE_FROM_CMAKE)
+endif()
 foreach(api ${MORAVA_GRAPHICS_APIS})
     target_compile_definitions(${PROJECT_NAME} PRIVATE GRAPHICS_API_${api})
 endforeach()
