@@ -98,6 +98,14 @@ void GBufferSSAO::Generate()
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_Width, m_Height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_RBO_Depth);
 
+	// The geometry pass writes RGB only, so alpha is never written: let it read as 1 (no shader samples it),
+	// otherwise ImGui::Image draws these attachments fully transparent in the Framebuffers panel
+	for (unsigned int texture : { m_GBufferPosition, m_GBufferNormal, m_GBufferAlbedo, m_GBufferTexCoord })
+	{
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_A, GL_ONE);
+	}
+
 	// finally check if framebuffer is complete
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		Log::GetLogger()->error("GBufferSSAO::Generate: Framebuffer not complete!");

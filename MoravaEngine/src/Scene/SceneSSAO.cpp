@@ -91,31 +91,32 @@ void SceneSSAO::UpdateImGui(float timestep, Window* mainWindow)
 
     ImGui::Begin("Framebuffers");
     {
-        ImVec2 imageSize(96.0f, 96.0f);
+        ImVec2 imageSize(192.0f, 192.0f);
+        ImVec2 uv0(0.0f, 1.0f), uv1(1.0f, 0.0f); // OpenGL textures start at the bottom row
 
         ImGui::Text("gPosition");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferPosition, imageSize);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferPosition, imageSize, uv0, uv1);
 
         ImGui::Text("gNormal");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferNormal, imageSize);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferNormal, imageSize, uv0, uv1);
 
         ImGui::Text("gAlbedo");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferAlbedo, imageSize);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferAlbedo, imageSize, uv0, uv1);
 
         ImGui::Text("gTexCoord");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferTexCoord, imageSize);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_GBufferSSAO.m_GBufferTexCoord, imageSize, uv0, uv1);
 
         ImGui::Text("m_SSAO_ColorBuffer");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBuffer, imageSize);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBuffer, imageSize, uv0, uv1);
 
         if (m_SSAO.m_BlurEnabled)
         {
             ImGui::Text("m_SSAO_ColorBufferBlur");
-            ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBufferBlur, imageSize);
+            ImGui::Image((void*)(intptr_t)m_SSAO.m_SSAO_ColorBufferBlur, imageSize, uv0, uv1);
         }
 
         ImGui::Text("m_NoiseTexture");
-        ImGui::Image((void*)(intptr_t)m_SSAO.m_NoiseTexture, imageSize);
+        ImGui::Image((void*)(intptr_t)m_SSAO.m_NoiseTexture, imageSize, uv0, uv1);
     }
     ImGui::End();
 

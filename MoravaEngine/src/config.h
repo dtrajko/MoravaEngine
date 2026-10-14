@@ -22,7 +22,7 @@
 	#if defined(GRAPHICS_API_VULKAN)
 		#define SCENE_ENV_MAP_VULKAN
 	#elif defined(GRAPHICS_API_OPENGL)
-		#define SCENE_COTTAGE
+		#define SCENE_SSAO
 	#elif defined(GRAPHICS_API_DIRECTX11)
 		#define SCENE_DX11
 	#endif
