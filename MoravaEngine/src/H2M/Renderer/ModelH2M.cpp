@@ -28,10 +28,12 @@
 #include "H2M/Renderer/RendererH2M.h"
 
 // TEMPORARY VULKAN INCLUDES
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"  // TODO: to be removed from ModelH2M
 #include "H2M/Platform/Vulkan/VulkanPipelineH2M.h" // TODO: to be removed from ModelH2M
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"   // TODO: to be removed from ModelH2M
 #include "H2M/Platform/Vulkan/VulkanTextureH2M.h"  // TODO: to be removed from ModelH2M
+#endif
 
 #include "Core/Log.h"
 #include "Core/Math.h"
@@ -55,8 +57,10 @@ namespace H2M
 	#define HZ_MESH_LOG(...)
 #endif
 
+#if defined(GRAPHICS_API_VULKAN)
 	static VkDescriptorSet s_DescriptorSet;
 	static std::vector<VkWriteDescriptorSet> s_WriteDescriptorSets;
+#endif
 
 	// glm::mat4 Mat4FromAssimpMat4(const aiMatrix4x4& matrix) moved to Math class
 
@@ -479,7 +483,9 @@ namespace H2M
 
 			m_Textures.resize(scene->mNumMaterials);
 			m_Materials.resize(scene->mNumMaterials);
+#if defined(GRAPHICS_API_VULKAN)
 			m_MaterialDescriptors.resize(scene->mNumMaterials); // TODO: to be removed from ModelH2M
+#endif
 
 			RefH2M<Texture2D_H2M> whiteTexture = RendererH2M::GetWhiteTexture();
 
@@ -494,6 +500,7 @@ namespace H2M
 				m_Materials[i] = mi;
 
 				/**** BEGIN to be removed from ModelH2M ****/
+#if defined(GRAPHICS_API_VULKAN)
 				if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 				{
 					// HazelRenderer::Submit([instance, shader, i]() mutable {});
@@ -504,6 +511,7 @@ namespace H2M
 						materialDescriptor.DescriptorSet = shader.As<VulkanShaderH2M>()->CreateDescriptorSets(VulkanShaderH2M::MaterialDescriptorSet);
 					}
 				}
+#endif
 				/**** END to be removed from ModelH2M ****/
 
 				Log::GetLogger()->info("  {0} (Index = {1})", aiMaterialName.data, i);
@@ -1040,6 +1048,7 @@ namespace H2M
 		/**** END Materials ****/
 
 		// Per-object descriptor set of a skinned model (set 2): the bone matrices, updated every frame by the renderer
+#if defined(GRAPHICS_API_VULKAN)
 		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan && m_IsAnimated)
 		{
 			RefH2M<VulkanShaderH2M> vulkanShader = m_MeshShader.As<VulkanShaderH2M>();
@@ -1054,6 +1063,7 @@ namespace H2M
 				vkUpdateDescriptorSets(VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), 1, &writeDescriptorSet, 0, nullptr);
 			}
 		}
+#endif
 
 		Log::GetLogger()->info("H2M::ModelH2M: Creating a Vertex Buffer...");
 
@@ -1144,6 +1154,7 @@ namespace H2M
 
 	void ModelH2M::AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, RefH2M<Texture2D_H2M> texture)
 	{
+#if defined(GRAPHICS_API_VULKAN)
 		// RefH2M<ModelH2M> instance = this;
 		// HazelRenderer::Submit([instance, index, name, texture]() mutable {});
 		{
@@ -1161,10 +1172,12 @@ namespace H2M
 			materialDescriptor.WriteDescriptors.push_back(descriptorSet);
 			materialDescriptor.Textures[name] = texture;
 		}
+#endif
 	}
 
 	void ModelH2M::UpdateAllDescriptorSets()
 	{
+#if defined(GRAPHICS_API_VULKAN)
 		// RefH2M<Mesh> instance = this;
 		// HazelRenderer::Submit([instance]() mutable {});
 		{
@@ -1176,6 +1189,7 @@ namespace H2M
 				vkUpdateDescriptorSets(vulkanDevice, (uint32_t)md.WriteDescriptors.size(), md.WriteDescriptors.data(), 0, nullptr);
 			}
 		}
+#endif
 	}
 
 	/**** BEGIN removed in Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****
@@ -1906,7 +1920,11 @@ namespace H2M
 
 	void* ModelH2M::GetDescriptorSet()
 	{
+#if defined(GRAPHICS_API_VULKAN)
 		return &s_DescriptorSet;
+#else
+		return nullptr;
+#endif
 	}
 
 }

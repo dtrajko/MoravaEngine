@@ -1,7 +1,9 @@
 ﻿#include "VulkanSceneRenderer.h"
 
 #include "H2M/Core/AssertH2M.h"
+#if defined(GRAPHICS_API_OPENGL)
 #include "H2M/Platform/OpenGL/OpenGLRenderPassH2M.h"
+#endif
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/ShaderH2M.h"

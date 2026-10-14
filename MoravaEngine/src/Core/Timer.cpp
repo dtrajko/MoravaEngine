@@ -51,6 +51,7 @@ void Timer::Update()
 			m_CurrentTimestamp = (float)glfwGetTime(); // returns seconds, as a double
 			break;
 		}
+#if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:
 		{
 			auto elapsedMilliseconds = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - m_StartTimeChrono);
@@ -58,6 +59,7 @@ void Timer::Update()
 			m_CurrentTimestamp = elapsedSeconds;
 			break;
 		}
+#endif
 		default:
 		{
 			Log::GetLogger()->error("Unknown RendererAPI");

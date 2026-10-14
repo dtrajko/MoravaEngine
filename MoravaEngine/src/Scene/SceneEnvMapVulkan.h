@@ -10,7 +10,9 @@
 #include "Scene/Scene.h"
 #include "Texture/MoravaTexture.h"
 
+#if defined(MORAVA_MONO)
 #include "Mono/GameInvoker/CsGame.h"
+#endif
 
 #include <map>
 #include <string>
@@ -56,7 +58,9 @@ private:
 	Grid* m_Grid;
 	Pivot* m_PivotScene;
 
-	CsGame* m_CsGame;
+#if defined(MORAVA_MONO)
+	CsGame* m_CsGame; // C# scripting (CMake: MORAVA_MONO)
+#endif
 
 	friend class EnvMapVulkanEditorLayer;
 

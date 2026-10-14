@@ -6,7 +6,9 @@
 #include "Core/Timer.h"
 #include "Core/Util.h"
 #include "ImGui/ImGuiWrapper.h"
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11Texture2D.h"
+#endif
 
 
 namespace H2M

@@ -6,7 +6,9 @@
 
 #include "RenderCommandBufferH2M.h"
 
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanRenderCommandBufferH2M.h"
+#endif
 
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
@@ -19,7 +21,9 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 			case RendererAPITypeH2M::None:    return RefH2M<RenderCommandBufferH2M>();
+#if defined(GRAPHICS_API_VULKAN)
 			case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanRenderCommandBufferH2M>::Create(count, debugName);
+#endif
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI");
@@ -32,7 +36,9 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 			case RendererAPITypeH2M::None:    return RefH2M<RenderCommandBufferH2M>();
+#if defined(GRAPHICS_API_VULKAN)
 			case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanRenderCommandBufferH2M>::Create(debugName, true);
+#endif
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI");

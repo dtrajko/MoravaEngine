@@ -1,6 +1,8 @@
 #pragma once
 
+#if defined(GRAPHICS_API_OPENGL)
 #include "Platform/OpenGL/OpenGLMoravaTexture.h"
+#endif
 
 #include <GL/glew.h>
 

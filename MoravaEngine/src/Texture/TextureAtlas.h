@@ -1,7 +1,9 @@
 #ifndef _TEXTURE_ATLAS_H
 #define _TEXTURE_ATLAS_H
 
+#if defined(GRAPHICS_API_OPENGL)
 #include "Platform/OpenGL/OpenGLMoravaTexture.h"
+#endif
 
 #include <GL/glew.h>
 

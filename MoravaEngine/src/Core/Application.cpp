@@ -1,21 +1,27 @@
 #include "Core/Application.h"
 
 #include "H2M/Core/BaseH2M.h"
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Editor/EditorLayerVulkanH2M.h"
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Platform/Vulkan/VulkanTestLayer.h"
+#endif
 #include "H2M/Project/UserPreferencesH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 
+#if defined(GRAPHICS_API_VULKAN)
 #include "EnvMapVulkan/EnvMapVulkanEditorLayer.h"
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
+#endif
 
 #include "Core/FileDialogs.h"
 #include "Core/Timer.h"
 #include "Core/Util.h"
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11TestLayer.h"
 #include "Platform/DX11/DX11Renderer.h"
+#endif
 
 #include <imgui.h>
 
@@ -93,6 +99,7 @@ void Application::OnInit()
 
 	switch (H2M::RendererAPI_H2M::Current())
 	{
+#if defined(GRAPHICS_API_VULKAN)
 		case H2M::RendererAPITypeH2M::Vulkan:
 			switch (m_SceneProperties.Name)
 			{
@@ -108,9 +115,12 @@ void Application::OnInit()
 					break;
 			}
 			break;
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:
 			PushLayer(new DX11TestLayer("DX11TestLayer"));
 			break;
+#endif
 	}
 
 	float targetFPS = 60.0f;
@@ -210,6 +220,7 @@ void Application::Run()
 
 			switch (H2M::RendererAPI_H2M::Current())
 			{
+#if defined(GRAPHICS_API_VULKAN)
 			case H2M::RendererAPITypeH2M::Vulkan:
 				// m_Scene->OnRenderEditor(deltaTime, *(H2M::EditorCamera*)m_Scene->GetCamera());
 				switch (m_SceneProperties.Name)
@@ -223,9 +234,12 @@ void Application::Run()
 						break;
 				}
 				break;
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 			case H2M::RendererAPITypeH2M::DX11:
 				DX11Renderer::Draw(m_Scene->GetCamera());
 				break;
+#endif
 			}
 
 			if (m_EnableImGui)
@@ -277,6 +291,7 @@ bool Application::OnWindowResize(H2M::WindowResizeEventH2M& e)
 
 	switch (H2M::RendererAPI_H2M::Current())
 	{
+#if defined(GRAPHICS_API_VULKAN)
 		case H2M::RendererAPITypeH2M::Vulkan:
 		{
 			auto& fbs = H2M::FramebufferPoolH2M::GetGlobal()->GetAll();
@@ -290,11 +305,14 @@ bool Application::OnWindowResize(H2M::WindowResizeEventH2M& e)
 			}
 		}
 		break;
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:
 		{
 			DX11Renderer::OnResize(width, height);
 		}
 		break;
+#endif
 	}
 
 	return false;

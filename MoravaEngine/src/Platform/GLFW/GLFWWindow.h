@@ -7,8 +7,8 @@
 
 /**
  * The application's window on every platform GLFW supports (Windows, Linux, macOS), for the OpenGL and Vulkan renderers:
- * the window itself, its events (as H2M events, and the older key / button / mouse state the Morava scenes read) and, for
- * Vulkan, the swap chain. The DirectX 11 renderer has its own window (DX11Window, Windows only).
+ * the window itself, its events (as H2M events, and the older key / button / mouse state the Morava scenes read) and, in a
+ * Vulkan build, the swap chain. The DirectX 11 renderer has its own window (DX11Window, Windows only).
  */
 class GLFWWindow : public Window
 {
@@ -37,7 +37,9 @@ public:
 	virtual void SetTitle(std::string title) override;
 
 	virtual H2M::RefH2M<H2M::RendererContextH2M> GetRenderContext() override { return m_RendererContext; }
+#if defined(GRAPHICS_API_VULKAN)
 	virtual H2M::VulkanSwapChainH2M& GetSwapChain() override;
+#endif
 
 	void SetInputMode(bool cursorEnabled) override;
 
@@ -105,7 +107,9 @@ private:
 
 	WindowData m_Data;
 	H2M::RefH2M<H2M::RendererContextH2M> m_RendererContext;
+#if defined(GRAPHICS_API_VULKAN)
 	H2M::VulkanSwapChainH2M m_SwapChain;
+#endif
 
 	bool keys[1024];
 	bool buttons[32];

@@ -13,6 +13,62 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 # =========================================================
+# SCENE AND GRAPHICS APIS
+#   The engine is built for one scene, which runs on one graphics API (Vulkan, OpenGL or DirectX 11). Only the classes
+#   of that API are compiled, unless more APIs are switched on: the three are independent, any combination builds.
+#
+#     cmake -DMORAVA_SCENE=<name> <build folder>            another scene             (e.g. -DMORAVA_SCENE=EDITOR)
+#     cmake -DMORAVA_OPENGL=ON <build folder>               the OpenGL classes too    (also MORAVA_VULKAN, MORAVA_DIRECTX11)
+#     cmake -DMORAVA_VULKAN=ON -DMORAVA_OPENGL=ON -DMORAVA_DIRECTX11=ON <build folder>     all three
+#
+#   The API of the scene is always compiled, whatever its switch says.
+# =========================================================
+
+set(MORAVA_SCENES_VULKAN ENV_MAP_VULKAN HAZEL_VULKAN)
+set(MORAVA_SCENES_DIRECTX11 DX11)
+set(MORAVA_SCENES_OPENGL
+    COTTAGE EIFFEL SPONZA TERRAIN PBR LEARN_OPENGL BULLET INSTANCED ASTEROIDS NANOSUIT FRAMEBUFFERS CUBEMAPS PARTICLES
+    OMNI_SHADOWS VOXEL_TERRAIN PROCEDURAL_LANDMASS VOXEL_TERRAIN_SL MARCHING_CUBES SSAO BLOOM DEFERRED DEFERRED_OGL
+    ANIM_PBR EDITOR EDITOR_IMGUIZMO HAZEL_ENV_MAP)
+
+set(MORAVA_SCENE "ENV_MAP_VULKAN" CACHE STRING "The scene the engine is built for (see src/config.h); its graphics API is always compiled")
+set_property(CACHE MORAVA_SCENE PROPERTY STRINGS ${MORAVA_SCENES_VULKAN} ${MORAVA_SCENES_OPENGL} ${MORAVA_SCENES_DIRECTX11})
+
+option(MORAVA_VULKAN "Compile the Vulkan classes (always, when the scene is a Vulkan scene)" OFF)
+option(MORAVA_OPENGL "Compile the OpenGL classes (always, when the scene is an OpenGL scene)" OFF)
+option(MORAVA_DIRECTX11 "Compile the DirectX 11 classes (always, when the scene is the DirectX 11 scene); Windows only" OFF)
+
+if(MORAVA_SCENE IN_LIST MORAVA_SCENES_VULKAN)
+    set(MORAVA_SCENE_GRAPHICS_API VULKAN)
+elseif(MORAVA_SCENE IN_LIST MORAVA_SCENES_OPENGL)
+    set(MORAVA_SCENE_GRAPHICS_API OPENGL)
+elseif(MORAVA_SCENE IN_LIST MORAVA_SCENES_DIRECTX11)
+    set(MORAVA_SCENE_GRAPHICS_API DIRECTX11)
+else()
+    message(FATAL_ERROR "MORAVA_SCENE=${MORAVA_SCENE} is not a scene. The scenes: ${MORAVA_SCENES_VULKAN} ${MORAVA_SCENES_OPENGL} ${MORAVA_SCENES_DIRECTX11}")
+endif()
+
+# C# scripting (mono). The repository has mono's Windows libraries only.
+if(WIN32)
+    option(MORAVA_MONO "C# scripting through mono" ON)
+else()
+    option(MORAVA_MONO "C# scripting through mono" OFF)
+endif()
+
+# The graphics APIs of this build
+set(MORAVA_GRAPHICS_APIS "")
+foreach(api VULKAN OPENGL DIRECTX11)
+    if(MORAVA_${api} OR api STREQUAL MORAVA_SCENE_GRAPHICS_API)
+        list(APPEND MORAVA_GRAPHICS_APIS ${api})
+    endif()
+endforeach()
+if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS AND NOT WIN32)
+    message(FATAL_ERROR "DirectX 11 exists on Windows only (MORAVA_SCENE=${MORAVA_SCENE}, MORAVA_DIRECTX11=${MORAVA_DIRECTX11})")
+endif()
+string(REPLACE ";" ", " MORAVA_GRAPHICS_APIS_TEXT "${MORAVA_GRAPHICS_APIS}")
+message(STATUS "Scene: ${MORAVA_SCENE} (${MORAVA_SCENE_GRAPHICS_API}); graphics APIs compiled: ${MORAVA_GRAPHICS_APIS_TEXT}")
+
+# =========================================================
 # MSVC RUNTIME LIBRARY (one switch for the engine and every vendor target)
 #   ON  = static runtime:  /MTd (Debug), /MT (Release)
 #   OFF = DLL runtime:     /MDd (Debug), /MD (Release)
@@ -67,6 +123,7 @@ set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)  # the engine only imports models
 # Headers and vulkan-1.lib come from the installed Vulkan SDK (found through the VULKAN_SDK
 # environment variable), so they match the SDK's validation layers
 find_package(Vulkan REQUIRED)
+find_package(OpenGL REQUIRED)
 message(STATUS "Vulkan SDK: ${Vulkan_VERSION} (${Vulkan_INCLUDE_DIRS})")
 
 # ---- Bullet ----
@@ -80,6 +137,9 @@ set(BUILD_EXTRAS OFF CACHE BOOL "" FORCE)
 
 # ---- Shaderc ----
 set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
+# The engine compiles GLSL only (DirectX 11 compiles its HLSL with D3DCompile): without glslang's HLSL front-end,
+# which glslang has deprecated (a warning at every configure)
+set(SHADERC_ENABLE_HLSL OFF CACHE BOOL "" FORCE)
 
 # ---- Native File Dialog Extended (the file dialogs of Windows, Linux and macOS) ----
 set(NFD_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -115,7 +175,9 @@ unset(CMAKE_POLICY_VERSION_MINIMUM)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp yaml-cpp)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross spirv-cross)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/shaderc shaderc)
-add_optional(${ROOT_PATH_ABS}/vendor/DirectXTex directxtex)
+if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS)
+    add_optional(${ROOT_PATH_ABS}/vendor/DirectXTex directxtex) # loads the DirectX 11 textures
+endif()
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/assimp assimp)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/nativefiledialog-extended nfd)
 
@@ -123,18 +185,66 @@ add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/nativefiledialog-extended nf
 # MAIN TARGET
 # =========================================================
 
-file(GLOB_RECURSE SRC CONFIGURE_DEPENDS
+file(GLOB_RECURSE SRC CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
-file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS
+file(GLOB_RECURSE HEADERS CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp
 )
 
+# Only the classes of the build's graphics APIs are compiled. A source file belongs to an API by its name:
+#   Vulkan      "Vulkan" anywhere in its path        (H2M/Platform/Vulkan/, EnvMapVulkan/, Scene/SceneEnvMapVulkan.cpp ...)
+#   OpenGL      a folder or file name that starts with "OpenGL"   (Platform/OpenGL/, .../OpenGLTextureH2M.cpp ...)
+#   DirectX 11  "DX11" anywhere in its path          (Platform/DX11/, Scene/SceneDX11.cpp)
+# Every other file is shared. Shared code that names a class of one API does so inside #if defined(GRAPHICS_API_...).
+set(MORAVA_SOURCES_OF_VULKAN "Vulkan")
+set(MORAVA_SOURCES_OF_OPENGL "(^|/)OpenGL")
+set(MORAVA_SOURCES_OF_DIRECTX11 "DX11")
+foreach(api VULKAN OPENGL DIRECTX11)
+    if(NOT api IN_LIST MORAVA_GRAPHICS_APIS)
+        list(FILTER SRC EXCLUDE REGEX "${MORAVA_SOURCES_OF_${api}}")
+        list(FILTER HEADERS EXCLUDE REGEX "${MORAVA_SOURCES_OF_${api}}")
+    endif()
+endforeach()
+
+# And the shared classes only the OpenGL scenes use (the older Morava scenes and what they are made of)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/OpenGLSceneSources.cmake)
+if(NOT "OPENGL" IN_LIST MORAVA_GRAPHICS_APIS)
+    foreach(entry ${MORAVA_SOURCES_OF_OPENGL_SCENES})
+        string(REPLACE "." "\\." entry_pattern "${entry}")
+        list(FILTER SRC EXCLUDE REGEX "^${entry_pattern}")
+        list(FILTER HEADERS EXCLUDE REGEX "^${entry_pattern}")
+    endforeach()
+endif()
+
+# C# scripting
+if(NOT MORAVA_MONO)
+    list(FILTER SRC EXCLUDE REGEX "^Mono/")
+    list(FILTER HEADERS EXCLUDE REGEX "^Mono/")
+endif()
+
+list(LENGTH SRC MORAVA_SOURCE_COUNT)
+message(STATUS "Sources compiled for ${MORAVA_GRAPHICS_APIS_TEXT}: ${MORAVA_SOURCE_COUNT}")
+
+list(TRANSFORM SRC PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+list(TRANSFORM HEADERS PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+
 add_executable(${PROJECT_NAME} ${SRC} ${HEADERS})
 
-target_compile_options(${PROJECT_NAME} PRIVATE /utf-8)
+if(MSVC)
+    target_compile_options(${PROJECT_NAME} PRIVATE /utf-8) # the sources are UTF-8 (GCC and Clang take that as given)
+endif()
+
+# The scene and the graphics APIs of the build (see src/config.h)
+target_compile_definitions(${PROJECT_NAME} PRIVATE SCENE_${MORAVA_SCENE})
+foreach(api ${MORAVA_GRAPHICS_APIS})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE GRAPHICS_API_${api})
+endforeach()
+if(MORAVA_MONO)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE MORAVA_MONO)
+endif()
 
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE HZ_PLATFORM_WINDOWS NOMINMAX WIN32_LEAN_AND_MEAN)
@@ -229,13 +339,20 @@ target_include_directories(imgui PUBLIC
 # imgui_impl_vulkan.cpp needs the Vulkan headers (from the Vulkan SDK)
 target_link_libraries(imgui PUBLIC Vulkan::Headers)
 
-target_sources(imgui PRIVATE
-    ${IMGUI_DIR}/backends/imgui_impl_win32.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_dx11.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
-    ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
-)
+# The backends: GLFW (the window of the Vulkan and OpenGL scenes) and one per graphics API of the build
+target_sources(imgui PRIVATE ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp)
+if("VULKAN" IN_LIST MORAVA_GRAPHICS_APIS)
+    target_sources(imgui PRIVATE ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp)
+endif()
+if("OPENGL" IN_LIST MORAVA_GRAPHICS_APIS)
+    target_sources(imgui PRIVATE ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp)
+endif()
+if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS)
+    target_sources(imgui PRIVATE
+        ${IMGUI_DIR}/backends/imgui_impl_win32.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_dx11.cpp
+    )
+endif()
 
 # =========================================================
 # IMGUIZMO
@@ -285,18 +402,25 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     nfd
 
     VulkanMemoryAllocator
-    mono
     NvidiaAftermath
     Optick
     farbot
 
-    opengl32
-    d3d11
-    d3dcompiler
-
-    debug ${MONO_DIR}/lib/Debug/mono-2.0-sgen.lib
-    optimized ${MONO_DIR}/lib/Release/mono-2.0-sgen.lib
+    # OpenGL itself, in every build: the older Morava classes that all scenes share call it (through GLEW)
+    OpenGL::GL
 )
+
+if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS)
+    target_link_libraries(${PROJECT_NAME} PRIVATE d3d11 d3dcompiler)
+endif()
+
+if(MORAVA_MONO)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        mono
+        debug ${MONO_DIR}/lib/Debug/mono-2.0-sgen.lib
+        optimized ${MONO_DIR}/lib/Release/mono-2.0-sgen.lib
+    )
+endif()
 
 # =========================================================
 # OPTIONAL LIBS
@@ -334,11 +458,13 @@ endif()
 # working directory (VS_DEBUGGER_WORKING_DIRECTORY below) and loads them from there.
 
 # mono ships Debug and Release builds only; RelWithDebInfo and MinSizeRel use the Release one
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${MONO_DIR}/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/mono-2.0-sgen.dll"
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>
-)
+if(MORAVA_MONO)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${MONO_DIR}/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/mono-2.0-sgen.dll"
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+    )
+endif()
 
 # =========================================================
 # APPLY MSVC RUNTIME TO EVERY TARGET (explicit, overrides vendor defaults)

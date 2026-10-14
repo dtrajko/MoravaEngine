@@ -4,7 +4,9 @@
 
 #include "Mesh/CubeSkybox.h"
 #include "Mesh/Quad.h"
+#if defined(GRAPHICS_API_OPENGL)
 #include "Platform/OpenGL/OpenGLMoravaShader.h"
+#endif
 
 #include <string>
 

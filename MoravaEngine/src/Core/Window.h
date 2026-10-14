@@ -2,7 +2,9 @@
 
 #include "H2M/Core/Events/EventH2M.h"
 #include "H2M/Renderer/RendererContextH2M.h"
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanSwapChainH2M.h"
+#endif
 
 #include "Core/CommonValues.h"
 
@@ -88,6 +90,8 @@ public:
 	virtual const bool GetEventLogging() const = 0;
 
 	virtual H2M::RefH2M<H2M::RendererContextH2M> GetRenderContext() = 0;
+#if defined(GRAPHICS_API_VULKAN)
 	virtual H2M::VulkanSwapChainH2M& GetSwapChain() = 0;
+#endif
 
 };

@@ -7,7 +7,9 @@
 #pragma once
 
 #include "H2M/Core/Math/AABB_H2M.h"
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
+#endif
 #include "H2M/Renderer/PipelineH2M.h"
 #include "H2M/Renderer/IndexBufferH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
@@ -194,6 +196,7 @@ namespace H2M
 		const VertexBufferLayoutH2M& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
 
 		/**** BEGIN this code should be removed from ModelH2M Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
+#if defined(GRAPHICS_API_VULKAN)
 		struct MaterialDescriptor
 		{
 			VulkanShaderH2M::ShaderMaterialDescriptorSet DescriptorSet;
@@ -209,13 +212,18 @@ namespace H2M
 			return &m_MaterialDescriptors[index];
 		}
 
+#endif
+
 		// VkDescriptorSet& GetDescriptorSet();
 		void* GetDescriptorSet();
 
 		// Per-object descriptor set (set 2, VulkanShaderH2M::ObjectDescriptorSet) of a skinned model: its bone matrices
 		// (the BoneTransforms uniform buffer of this model's shader). VK_NULL_HANDLE for static models.
+#if defined(GRAPHICS_API_VULKAN)
 		VkDescriptorSet GetObjectDescriptorSet() const { return m_ObjectDescriptorSet.DescriptorSets.empty() ? VK_NULL_HANDLE : m_ObjectDescriptorSet.DescriptorSets[0]; }
+#endif
 
+		// Vulkan only (nothing happens in a build for another graphics API)
 		void AddMaterialTextureWriteDescriptor(uint32_t index, const std::string& name, RefH2M<Texture2D_H2M> texture);
 		// void UpdateAllDescriptors();
 		void UpdateAllDescriptorSets(); // Vulkan branch, february 2021
@@ -309,8 +317,10 @@ namespace H2M
 
 		std::unordered_map<uint32_t, std::vector<TriangleH2M>> m_TriangleCache;
 
+#if defined(GRAPHICS_API_VULKAN)
 		std::vector<MaterialDescriptor> m_MaterialDescriptors;
 		VulkanShaderH2M::ShaderMaterialDescriptorSet m_ObjectDescriptorSet; // skinned models: bone matrices (set 2)
+#endif
 
 		// Animation
 		bool m_IsAnimated = false;

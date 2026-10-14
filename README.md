@@ -1,34 +1,48 @@
 # MoravaEngine
 
 ## About
-2D/3D graphics engine written in C++ language.
+2D/3D graphics engine written in C++.
 
-It currently supports the following graphics APIs:
+It supports three graphics APIs:
 
-- OpenGL 4.5+
-- Vulkan 1.2
-- DirectX 11
+- Vulkan 1.2 (ray tracing is used when the GPU has it)
+- OpenGL
+- DirectX 11 (Windows only)
 
-Its current purpose is to experiment with various CG concepts and techniques:
+It runs on Windows 10 and 11. Linux and macOS support is in progress: the window, input and file dialogs are already platform independent.
+
+The main scene is a Vulkan scene editor (`ENV_MAP_VULKAN`):
+
+* Scene Hierarchy, Properties, Content Browser, Material Library and Material Editor panels
+* Scenes and materials saved to files (`.mscene`, `.mmat`)
+* Physically based rendering (PBR) and image based lighting (IBL)
+* Sun, point and spot lights with shadows
+* Global illumination with a probe volume
+* Ray-traced probe updates, ambient occlusion and reflections, with raster fallbacks
+* A path tracer as a reference view
+* Screen-space ambient occlusion (GTAO)
+* Glass and water
+* Bloom, auto exposure and tonemapping
+* Skeletal animation
+* Debug views for the passes above
+
+The older scenes (OpenGL, and one DirectX 11 scene) experiment with single techniques:
 
 * Phong lighting model
 * Shadows (directional light, omni-directional shadows)
-* Physically based rendering (PBR)
-* Image based lighting (IBL)
 * Screen-space ambient occlusion (SSAO)
 * Particle systems
 * Instanced rendering
 * Surface reflection and refraction
-* Framebuffers
-* Post-processing
+* Framebuffers and post-processing
 * Level of detail
-* Scene editor
 * Perlin noise generator
 * Procedural landmass generation
 * Voxel based volumes
 * Marching cubes algorithm
 * Physics simulations
-* Skeletal animation
+
+The rendering design of the Vulkan editor is described in [docs/rendering/SSAO_GI_RayTracing_Guide.html](docs/rendering/SSAO_GI_RayTracing_Guide.html).
 
 ## Credits
 * Yan Chernikov a.k.a. <a href="https://twitter.com/thecherno" target="_blank">TheCherno</a> [ <a href="https://github.com/TheCherno/Hazel" target="_blank">Hazel</a> ]
@@ -39,107 +53,186 @@ Its current purpose is to experiment with various CG concepts and techniques:
 * <a href="https://twitter.com/sebastianlague" target="_blank">Sebastian Lague</a> [ <a href="https://www.youtube.com/c/SebastianLague" target="_blank">Sebastian Lague YouTube channel</a> ]
 * <a href="https://www.cgtrader.com/ilya73" target="_blank">ilya73</a> [ <a href="https://www.cgtrader.com/free-3d-models/character/man/gladiator-7ac625db-88c2-46ed-a2f1-182fd1f79739" target="_blank">Gladiator free VR</a> ]
 
-<!-- Installation & setup -->
+## Building
 
-## Installation
-Build automation based on CMake (in progress)
+The build is one CMake project, `MoravaEngine/CMakeLists.txt`. It builds the engine and the libraries it uses (GLFW, assimp, shaderc, SPIRV-Cross, Bullet, yaml-cpp, ImGui and others) from source.
 
-### Project setup:
+### Requirements
 
-* Install <a href="https://cmake.org/download/" target="_blank">CMake</a>
+* Windows 10 or 11 with Visual Studio 2026 (C++17)
+* <a href="https://cmake.org/download/" target="_blank">CMake</a> 3.15 or newer
+* <a href="https://vulkan.lunarg.com/" target="_blank">Vulkan SDK</a> (CMake finds it through the `VULKAN_SDK` environment variable)
+* Python 3 (used by the shaderc build)
+* Git
+
+### Get the sources
 
 ```
-$ git clone --recursive https://github.com/dtrajko/MoravaEngine.git
+git clone --recursive https://github.com/dtrajko/MoravaEngine.git
+cd MoravaEngine
+python vendor/cross-platform/shaderc/utils/git-sync-deps
 ```
-```
-$ cd MoravaEngine
-```
-* Build the MoravaEngine with CMake
-```
-$ mkdir ./MoravaEngine/build
-$ cd ./MoravaEngine/build
-$ cmake ..
-```
-* Open the solution ./MoravaEngine/build/MoravaEngine.sln
 
-* Change Runtime Library from **Multi-threaded DLL** to **Multi-threaded** for the project **glfw3**  
-Go to Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library  
-Change Runtime Library to either  
-"Multi-threaded Debug (/MTd)" (Debug) or  
-"Multi-threaded (/MT)" (Release)  
-(All projects in MoravaEngine solution should have the Runtime Library option set to either **/MTd** (Debug) or **/MT** (Release))
+The last command downloads the libraries shaderc itself depends on (glslang, SPIRV-Tools, SPIRV-Headers).
 
-* Build projects **DirectXTex** and **glfw3**
+### Configure and build
 
-* Build the project **MoravaEngine**  
+From the `MoravaEngine/MoravaEngine` folder:
 
+```
+cmake -S . -B build
+cmake --build build --config Debug --parallel
+```
 
-<!--
+This builds the default: the scene SceneEnvMapVulkan (the Vulkan editor) with the Vulkan API. Other scenes and graphics APIs: see "Select the scene and the graphics API" below.
 
-* Open solution vendor/DirectXTex/DirectXTex.sln in Visual Studio.
-- For projects DirectXTex, texassemble, texconv, texdiag
-set Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library
-  Debug: Multi-threaded Debug (/MTd)
-  Release: Multi-threaded (/MT)
-- Build projects DirectXTex, texassemble, texconv, texdiag.
+The first build takes a while, because it also builds the libraries. `--config Release` builds the optimized version.
 
+To work in Visual Studio instead, run only the first command and open `MoravaEngine/build/MoravaEngine.sln`. MoravaEngine is the startup project.
 
-* Open solution vendor/cross-platform/glfw/GLFW.sln in Visual Studio.
-- For project glfw
-set Properties > Configuration Properties > C/C++ > Code Generation > Runtime Library
-  Debug: Multi-threaded Debug (/MTd)
-  Release: Multi-threaded (/MT)
-- Build project glfw
+### Run
 
-* Build assimp with CMake
-```
-$ cd ./vendor/cross-platform/assimp
-$ cmake .
-```
-* Install GLFW
-```
-$ cd ./vendor/cross-platform/glfw
-$ cmake .
-$ cmake --build .
-```
-* Build shaderc - use python to run
-```
-$ python ./vendor/cross-platform/shaderc/utils/git-sync-deps
-```
-* Build shaderc with CMake
-```
-$ cd ./vendor/cross-platform/shaderc
-$ cmake .
-```
-* Open solution vendor/cross-platform/shaderc/shaderc.sln and build it in Visual Studio.
-```
-$ cd ./vendor/DirectXTex
-$ cmake .
-```
-* Build yaml-cpp project in MoravaEngine solution in Visual Studio.
-* Build all spirv-cross-* projects in MoravaEngine solution in Visual Studio.
-* Build BulletCollision project in MoravaEngine solution in Visual Studio.
-* Build LinearMath project in MoravaEngine solution in Visual Studio.
-* Build BulletDynamics project in MoravaEngine solution in Visual Studio.
--->
+The engine loads its shaders, models and textures relative to the `MoravaEngine/MoravaEngine` folder, so start it from there:
 
-<!-- Help section -->
+```
+build\Debug\MoravaEngine.exe
+```
+
+Visual Studio is already set up to start it in that folder.
+
+### Select the scene and the graphics API
+
+The engine is built for one scene, and each scene runs on one graphics API. Both are selected when CMake configures the project, with `-D` settings:
+
+* `MORAVA_SCENE` selects the scene. The graphics API of that scene is compiled automatically.
+* `MORAVA_VULKAN`, `MORAVA_OPENGL` and `MORAVA_DIRECTX11` select which graphics APIs are compiled. They are independent: any combination works.
+
+**Example: SceneEnvMapVulkan with the Vulkan API.** From the `MoravaEngine/MoravaEngine` folder:
+
+```
+cmake -S . -B build -DMORAVA_SCENE=ENV_MAP_VULKAN -DMORAVA_VULKAN=ON -DMORAVA_OPENGL=OFF -DMORAVA_DIRECTX11=OFF
+cmake --build build --config Debug --parallel
+```
+
+This is also what a plain `cmake -S . -B build` gives: `ENV_MAP_VULKAN` is the default scene, and the three API settings are `OFF` by default, which means "only the scene's API".
+
+**Example: SceneCottage with the OpenGL API.**
+
+```
+cmake -S . -B build -DMORAVA_SCENE=COTTAGE -DMORAVA_OPENGL=ON -DMORAVA_VULKAN=OFF -DMORAVA_DIRECTX11=OFF
+cmake --build build --config Debug --parallel
+```
+
+**Example: SceneDX11 with the DirectX 11 API** (Windows only).
+
+```
+cmake -S . -B build -DMORAVA_SCENE=DX11 -DMORAVA_DIRECTX11=ON -DMORAVA_VULKAN=OFF -DMORAVA_OPENGL=OFF
+cmake --build build --config Debug --parallel
+```
+
+**Example: SceneEnvMapVulkan with the Vulkan, OpenGL and DirectX 11 classes all compiled.**
+
+```
+cmake -S . -B build -DMORAVA_SCENE=ENV_MAP_VULKAN -DMORAVA_VULKAN=ON -DMORAVA_OPENGL=ON -DMORAVA_DIRECTX11=ON
+cmake --build build --config Debug --parallel
+```
+
+Good to know:
+
+* The settings stay in the build folder until they are changed, so only the ones that change have to be given, e.g. `cmake -DMORAVA_SCENE=COTTAGE build`.
+* The scene's own API is compiled even when its setting is `OFF`. A scene can't be built without its API.
+* After changing a setting, build again. In Visual Studio, accept "Reload All" first.
+* From a terminal that is already in the build folder (as the terminal of Visual Studio), use a dot for the folder: `cmake -DMORAVA_SCENE=COTTAGE .`
+* `cmake-gui` shows the same settings: `MORAVA_SCENE` as a list, the others as checkboxes.
+
+All settings:
+
+| Setting | Values | Meaning |
+|---|---|---|
+| `MORAVA_SCENE` | a name from the table below, default `ENV_MAP_VULKAN` | The scene to build. Its graphics API is always compiled. |
+| `MORAVA_VULKAN` | `ON` / `OFF`, default `OFF` | Compile the Vulkan classes. |
+| `MORAVA_OPENGL` | `ON` / `OFF`, default `OFF` | Compile the OpenGL classes. |
+| `MORAVA_DIRECTX11` | `ON` / `OFF`, default `OFF` | Compile the DirectX 11 classes (Windows only). |
+| `MORAVA_MONO` | `ON` / `OFF`, default `ON` on Windows | C# scripting through mono. |
+| `MORAVA_MSVC_STATIC_RUNTIME` | `ON` / `OFF`, default `ON` | Static (`/MT`) or DLL (`/MD`) MSVC runtime, for the engine and every library. |
+
+The scenes:
+
+| `MORAVA_SCENE` | Scene class | Graphics API |
+|---|---|---|
+| `ENV_MAP_VULKAN` | SceneEnvMapVulkan (the Vulkan editor) | Vulkan |
+| `HAZEL_VULKAN` | SceneHazelVulkan | Vulkan |
+| `DX11` | SceneDX11 | DirectX 11 |
+| `COTTAGE` | SceneCottage | OpenGL |
+| `EIFFEL` | SceneEiffel | OpenGL |
+| `SPONZA` | SceneSponza | OpenGL |
+| `TERRAIN` | SceneTerrain | OpenGL |
+| `PBR` | ScenePBR | OpenGL |
+| `LEARN_OPENGL` | SceneJoey | OpenGL |
+| `BULLET` | SceneBullet | OpenGL |
+| `INSTANCED` | SceneInstanced | OpenGL |
+| `ASTEROIDS` | SceneAsteroids | OpenGL |
+| `NANOSUIT` | SceneNanosuit | OpenGL |
+| `FRAMEBUFFERS` | SceneFramebuffers | OpenGL |
+| `CUBEMAPS` | SceneCubemaps | OpenGL |
+| `PARTICLES` | SceneParticles | OpenGL |
+| `OMNI_SHADOWS` | SceneOmniShadows | OpenGL |
+| `VOXEL_TERRAIN` | SceneVoxelTerrain | OpenGL |
+| `PROCEDURAL_LANDMASS` | SceneProceduralLandmass | OpenGL |
+| `VOXEL_TERRAIN_SL` | SceneVoxelTerrainSL | OpenGL |
+| `MARCHING_CUBES` | SceneMarchingCubes | OpenGL |
+| `SSAO` | SceneSSAO | OpenGL |
+| `BLOOM` | SceneBloom | OpenGL |
+| `DEFERRED` | SceneDeferred | OpenGL |
+| `DEFERRED_OGL` | SceneDeferredOGL | OpenGL |
+| `ANIM_PBR` | SceneAnimPBR | OpenGL |
+| `EDITOR` | SceneEditor | OpenGL |
+| `EDITOR_IMGUIZMO` | SceneEditorImGuizmo | OpenGL |
+| `HAZEL_ENV_MAP` | SceneHazelEnvMap | OpenGL |
+
+### Command line options
+
+For the Vulkan editor (`ENV_MAP_VULKAN`):
+
+| Option | Meaning |
+|---|---|
+| `--scene <file>` | Open this scene at startup, e.g. `--scene Scenes/Old_Stove_Corner.mscene` |
+| `--select <name>` | Select the entity of this name in that scene |
+| `--debug-view <number>` | Start with this entry of the Environment panel's Debug View list (0 = off) |
+| `--no-ray-tracing` | Run without the ray tracing extensions, as on a GPU that has none |
+| `--exit-after <seconds>` | Close the application after this time |
 
 ## Keyboard and Mouse shortcuts
 
-* Add Mesh or Model: Left CTRL + Left Mouse Button  
-* Camera Rotation: Right Mouse Button  
-* Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up  
-* Fast Movement: Left SHIFT + W|A|S|D|Q|E  
-* Enable Gizmo: TAB + Left Mouse Button  
-* Toggle Gizmo Modes: 1) Translate, 2) Scale, 3) Rotate, 4) Disable  
-* Scene Save: Left CTRL + S  
-* Scene Reset: Left CTRL + R  
-* Scene Load: Left CTRL + L  
-* Toggle Wireframe Mode: R  
-* Copy scene object: Left CTRL + C  
+Vulkan editor (`ENV_MAP_VULKAN`):
 
-<!-- Gallery (images) section -->
+* Camera Rotation: Right Mouse Button
+* Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up
+* Fast Movement: Left SHIFT + W|A|S|D|Q|E
+* Select: Left Mouse Button; add to or remove from the selection: CTRL or SHIFT + Left Mouse Button
+* Gizmo Modes: 1) Translate, 2) Rotate, 3) Scale, 4) Disable
+* Gizmo Snapping: Left CTRL while dragging
+* New Scene: CTRL + N
+* Open Scene: CTRL + O
+* Save Scene: CTRL + S
+* Save Scene As: CTRL + SHIFT + S
+* Copy and Paste: CTRL + C, CTRL + V
+* Rename: F2
+* Delete: DELETE
+
+Older editor scenes (`EDITOR`, `EDITOR_IMGUIZMO`):
+
+* Add Mesh or Model: Left CTRL + Left Mouse Button
+* Camera Rotation: Right Mouse Button
+* Camera Movement: W) forward, A) left, S) back, D) right, Q) down, E) up
+* Fast Movement: Left SHIFT + W|A|S|D|Q|E
+* Enable Gizmo: TAB + Left Mouse Button
+* Toggle Gizmo Modes: 1) Translate, 2) Scale, 3) Rotate, 4) Disable
+* Scene Save: Left CTRL + S
+* Scene Reset: Left CTRL + R
+* Scene Load: Left CTRL + L
+* Toggle Wireframe Mode: R
+* Copy scene object: Left CTRL + C
 
 ## Images
 

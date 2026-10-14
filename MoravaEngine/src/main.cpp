@@ -1,7 +1,9 @@
 #include "main.h"
 
 #include "H2M/Core/LogH2M.h"
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
+#endif
 
 #include <cstdlib>
 #include <string>
@@ -95,10 +97,12 @@ int main(int argc, char** argv)
 	SelectRendererAPI();
 
 	Application::Get()->SetCommandLine(ParseCommandLine(argc, argv));
+#if defined(GRAPHICS_API_VULKAN)
 	if (Application::Get()->GetCommandLine().NoRayTracing)
 	{
 		H2M::VulkanPhysicalDeviceH2M::DisableRayTracing(); // before the window creates the Vulkan device
 	}
+#endif
 
 	Application::Get()->InitWindow(WindowSpecification("Morava Engine", 1280, 720));
 

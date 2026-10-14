@@ -7,16 +7,26 @@
 #include "RendererH2M.h"
 
 #include "H2M/Core/AssertH2M.h"
+#if defined(GRAPHICS_API_OPENGL)
 #include "H2M/Platform/OpenGL/OpenGLRendererH2M.h"
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
+#endif
 #include "H2M/Renderer/PipelineComputeH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
+#endif
 
+#if defined(GRAPHICS_API_VULKAN)
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11Renderer.h"
+#endif
 #include "Renderer/RendererBasic.h"
 
 
@@ -55,10 +65,12 @@ namespace H2M
 				pipeline->Invalidate();
 			}
 
+#if defined(GRAPHICS_API_VULKAN)
 			for (auto& computePipeline : dependencies.ComputePipelines)
 			{
 				computePipeline.As<VulkanComputePipelineH2M>()->CreatePipeline();
 			}
+#endif
 
 			for (auto& material : dependencies.Materials)
 			{
@@ -103,7 +115,10 @@ namespace H2M
 	{
 		switch (RendererAPI_H2M::Current())
 		{
+#if defined(GRAPHICS_API_OPENGL)
 			case RendererAPITypeH2M::OpenGL: return new OpenGLRendererH2M();
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 			case RendererAPITypeH2M::Vulkan:
 				switch (Application::Get()->GetSceneProperties().Name)
 				{
@@ -112,8 +127,11 @@ namespace H2M
 				}
 				Log::GetLogger()->error("Unknown RendererAPI");
 				H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+#endif
 
+#if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   return new DX11Renderer();
+#endif
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -190,21 +208,27 @@ namespace H2M
 		RendererH2M::WaitAndRender();
 		SceneRendererH2M::Init();
 
+#if defined(GRAPHICS_API_VULKAN)
 		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 		{
 			SceneRendererVulkanH2M::Init();
 		}
+#endif
 
 		std::function<void()> initFunc;
 
 		switch (RendererAPI_H2M::Current())
 		{
+#if defined(GRAPHICS_API_OPENGL)
 		case RendererAPITypeH2M::OpenGL:
 			initFunc; // = OpenGLRenderer::Init;
 			break;
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 		case RendererAPITypeH2M::Vulkan:
 			initFunc; // = VulkanRenderer::Init;
 			break;
+#endif
 		}
 
 		// initFunc();
@@ -269,7 +293,9 @@ namespace H2M
 	{
 		// HazelRenderer::Submit([]() {});
 		{
+#if defined(GRAPHICS_API_OPENGL)
 			RendererAPI_H2M::Clear(0.0f, 0.0f, 0.0f, 1.0f);
+#endif
 		}
 	}
 	/**** END to be removed from HazelRenderer ****/
@@ -279,7 +305,9 @@ namespace H2M
 	{
 		// HazelRenderer::Submit([=]() {});
 		{
+#if defined(GRAPHICS_API_OPENGL)
 			RendererAPI_H2M::Clear(r, g, b, a);
+#endif
 		}
 	}
 	/**** END to be removed from HazelRenderer ****/
@@ -314,7 +342,9 @@ namespace H2M
 
 		// HazelRenderer::Submit([=]() {});
 		{
+#if defined(GRAPHICS_API_OPENGL)
 			RendererAPI_H2M::SetLineThickness(thickness);
+#endif
 		}
 	}
 	/**** END to be removed from HazelRenderer ****/
@@ -560,8 +590,11 @@ namespace H2M
 
 	uint32_t RendererH2M::GetCurrentFrameIndex()
 	{
-		// return uint32_t();
+#if defined(GRAPHICS_API_VULKAN)
 		return Application::Get()->GetWindow()->GetSwapChain().GetCurrentBufferIndex();
+#else
+		return uint32_t(); // frames in flight are Vulkan's
+#endif
 	}
 
 	RefH2M<RendererContextH2M> RendererH2M::GetContext()

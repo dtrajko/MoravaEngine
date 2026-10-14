@@ -17,7 +17,9 @@
 #include "Mesh/Mesh.h"
 #include "Scene/Scene.h"
 #include "Shader/MoravaShader.h"
+#if defined(GRAPHICS_API_OPENGL)
 #include "Texture/TextureCubemap.h"
+#endif
 
 // H2M classes
 #include "H2M/Core/BaseH2M.h"

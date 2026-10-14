@@ -3,7 +3,9 @@
 #include "H2M/Core/Events/KeyEventH2M.h"
 #include "H2M/Core/Events/MouseEventH2M.h"
 #include "H2M/Core/Events/ApplicationEventH2M.h"
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
+#endif
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -68,6 +70,7 @@ void GLFWWindow::Init()
 	m_RendererContext = H2M::RendererContextH2M::Create(this);
 	m_RendererContext->Init();
 
+#if defined(GRAPHICS_API_VULKAN)
 	if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
 	{
 		H2M::RefH2M<H2M::VulkanContextH2M> context = m_RendererContext.As<H2M::VulkanContextH2M>();
@@ -81,6 +84,7 @@ void GLFWWindow::Init()
 
 		H2M::VulkanAllocatorH2M::Init(context->GetDevice());
 	}
+#endif
 
 	RendererBasic::SetRendererContext(m_RendererContext);
 
@@ -340,10 +344,12 @@ void GLFWWindow::SetShouldClose(bool shouldClose)
 	glfwSetWindowShouldClose(m_GLFW_Window, shouldClose);
 }
 
+#if defined(GRAPHICS_API_VULKAN)
 H2M::VulkanSwapChainH2M& GLFWWindow::GetSwapChain()
 {
 	return m_SwapChain;
 }
+#endif
 
 void GLFWWindow::SetInputMode(bool cursorEnabled)
 {

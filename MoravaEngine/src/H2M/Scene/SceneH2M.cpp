@@ -7,12 +7,16 @@
 #include "SceneH2M.h"
 
 #include "H2M/Core/BaseH2M.h"
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
+#endif
 #include "H2M/Renderer/ModelH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
+#endif
 #include "H2M/Scene/EntityH2M.h"
 #include "H2M/Scene/ScriptableEntityH2M.h"
 
@@ -407,20 +411,26 @@ namespace H2M
 
 		switch (RendererAPI_H2M::Current())
 		{
+#if defined(GRAPHICS_API_OPENGL)
 		case RendererAPITypeH2M::OpenGL:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::MoravaShader;
 			moravaShaderSpec.VertexShaderPath = "Shaders/Hazel/Skybox.vs";
 			moravaShaderSpec.FragmentShaderPath = "Shaders/Hazel/Skybox.fs";
 			break;
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 		case RendererAPITypeH2M::Vulkan:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::HazelShader;
 			moravaShaderSpec.HazelShaderPath = "Resources/Shaders/Skybox.glsl";
 			break;
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 		case RendererAPITypeH2M::DX11:
 			moravaShaderSpec.ShaderType = MoravaShaderSpecification::ShaderType::DX11Shader;
 			moravaShaderSpec.VertexShaderPath = "Shaders/HLSL/UnlitVertexShader.hlsl";
 			moravaShaderSpec.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
 			break;
+#endif
 		}
 		moravaShaderSpec.ForceCompile = false;
 		auto skyboxShader = MoravaShader::Create(moravaShaderSpec);
@@ -717,6 +727,7 @@ namespace H2M
 		// RENDER 3D SCENE
 		/////////////////////////////////////////////////////////////////////
 
+#if defined(GRAPHICS_API_VULKAN)
 		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
 		{
 			m_SkyboxMaterial->Set("u_Uniforms.TextureLod", m_SkyboxLod);
@@ -744,6 +755,7 @@ namespace H2M
 			SceneRendererVulkanH2M::EndScene();
 		}
 		else
+#endif
 		{
 			// Process lights
 			{

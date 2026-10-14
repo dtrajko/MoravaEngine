@@ -8,9 +8,15 @@
 
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
+#if defined(GRAPHICS_API_OPENGL)
 #include "H2M/Platform/OpenGL/OpenGLMaterialH2M.h"
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanMaterialH2M.h"
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11Material.h"
+#endif
 
 
 namespace H2M {
@@ -30,9 +36,15 @@ namespace H2M {
 		switch (RendererAPI_H2M::Current())
 		{
 			case H2M::RendererAPITypeH2M::None:   return RefH2M<MaterialH2M>();
+#if defined(GRAPHICS_API_OPENGL)
 			case H2M::RendererAPITypeH2M::OpenGL: return RefH2M<OpenGLMaterialH2M>::Create(shader, name);
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 			case H2M::RendererAPITypeH2M::Vulkan: return RefH2M<VulkanMaterialH2M>::Create(shader, name);
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 			case H2M::RendererAPITypeH2M::DX11:   return RefH2M<DX11Material>::Create(shader, name);
+#endif
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");

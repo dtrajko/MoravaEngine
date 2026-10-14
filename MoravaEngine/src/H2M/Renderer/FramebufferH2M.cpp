@@ -6,9 +6,15 @@
 
 #include "FramebufferH2M.h"
 
+#if defined(GRAPHICS_API_OPENGL)
 #include "H2M/Platform/OpenGL/OpenGLFramebufferH2M.h"
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanFramebufferH2M.h"
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11Framebuffer.h"
+#endif
 
 
 namespace H2M
@@ -21,9 +27,15 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 			case RendererAPITypeH2M::None:   return RefH2M<FramebufferH2M>();
+#if defined(GRAPHICS_API_OPENGL)
 			case RendererAPITypeH2M::OpenGL: result = RefH2M<OpenGLFramebufferH2M>::Create(spec); break;
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 			case RendererAPITypeH2M::Vulkan: result = RefH2M<VulkanFramebufferH2M>::Create(spec); break;
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   result = RefH2M<DX11Framebuffer>::Create(spec); break;
+#endif
 		}
 		FramebufferPoolH2M::GetGlobal()->Add(result);
 		return result;

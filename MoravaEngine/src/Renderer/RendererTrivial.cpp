@@ -1,8 +1,12 @@
 #include "RendererTrivial.h"
 
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
+#endif
 
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11Renderer.h"
+#endif
 
 
 RendererTrivial::RendererTrivial()

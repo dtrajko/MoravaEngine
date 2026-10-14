@@ -13,10 +13,10 @@ RenderSettings:
   LocalShadows:
     SpotResolution: 1024
     PointResolution: 512
-    Softness: 1
-    DepthBias: 1.25
-    SlopeBias: 1.75
-    NormalBias: 1
+    Softness: 1.252
+    DepthBias: 4.677
+    SlopeBias: 3.918
+    NormalBias: 1.455
   RayTracing:
     Enabled: true
   Reflections:
@@ -50,8 +50,8 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [36.735035, 28.063622, 18.982597]
-      Rotation: [18.300106, 58.002106, 0]
+      Translation: [25.67858, 16.803148, 8.667671]
+      Rotation: [15.900097, 55.90207, 0]
       Scale: [1, 1, 1]
     Camera:
       FieldOfView: 45
@@ -176,16 +176,16 @@ Entities:
     Name: Spot Light 1
     Parent: 0
     Transform:
-      Translation: [9.184504, 10.859855, -7.8693423]
+      Translation: [11.018036, 10.859855, -7.8693423]
       Rotation: [13.098425, 21.158627, -84.09168]
       Scale: [0.9999115, 0.9999841, 0.9999483]
     SpotLight:
       Enabled: true
       Color: [0.33823532, 1, 0.4160899]
-      Intensity: 200
-      Range: 31.78312
-      InnerAngle: 11.6
-      OuterAngle: 11.6
+      Intensity: 196.9
+      Range: 32.125
+      InnerAngle: 17.4
+      OuterAngle: 17.4
       CastShadows: true
   - ID: 17609660640847487716
     Name: Point Light 1

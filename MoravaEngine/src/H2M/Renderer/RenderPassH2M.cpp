@@ -8,11 +8,17 @@
 
 #include "H2M/Core/BaseH2M.h"
 #include "H2M/Core/AssertH2M.h"
+#if defined(GRAPHICS_API_OPENGL)
 #include "H2M/Platform/OpenGL/OpenGLRenderPassH2M.h"
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanRenderPassH2M.h"
+#endif
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11RenderPass.h"
+#endif
 
 #include "Core/Log.h"
 
@@ -25,9 +31,15 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 		case RendererAPITypeH2M::None:    H2M_CORE_ASSERT(false, "RendererAPI_H2M::None is currently not supported!"); return RefH2M<RenderPassH2M>();
+#if defined(GRAPHICS_API_OPENGL)
 		case RendererAPITypeH2M::OpenGL:  return RefH2M<OpenGLRenderPassH2M>::Create(spec);
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 		case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanRenderPassH2M>::Create(spec);
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 		case RendererAPITypeH2M::DX11:    return RefH2M<DX11RenderPass>::Create(spec);
+#endif
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI!");

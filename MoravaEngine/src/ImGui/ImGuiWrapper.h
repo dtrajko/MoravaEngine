@@ -16,8 +16,12 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "backends/imgui_impl_glfw.h"
+#if defined(GRAPHICS_API_OPENGL)
 #include "backends/imgui_impl_opengl3.h"
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 #include "backends/imgui_impl_vulkan.h"
+#endif
 
 enum class PropertyFlag
 {

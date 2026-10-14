@@ -7,11 +7,17 @@
 #include "ShaderH2M.h"
 
 #include "H2M/Core/AssertH2M.h"
+#if defined(GRAPHICS_API_OPENGL)
 #include "H2M/Platform/OpenGL/OpenGLShaderH2M.h"
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
+#endif
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11Shader.h"
+#endif
 
 #include <filesystem>
 
@@ -30,15 +36,21 @@ namespace H2M
 		switch (H2M::RendererAPI_H2M::Current())
 		{
 			case H2M::RendererAPITypeH2M::None: return RefH2M<ShaderH2M>();
+#if defined(GRAPHICS_API_OPENGL)
 			case H2M::RendererAPITypeH2M::OpenGL:
 				result = RefH2M<OpenGLShaderH2M>::Create(filepath, forceCompile);
 				break;
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 			case H2M::RendererAPITypeH2M::Vulkan:
 				result = RefH2M<VulkanShaderH2M>::Create(filepath, forceCompile);
 				break;
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 			case H2M::RendererAPITypeH2M::DX11:
 				result = RefH2M<DX11Shader>::Create(filepath, forceCompile);
 				break;
+#endif
 		}
 		s_AllShaders.push_back(result);
 		return result;
@@ -53,9 +65,15 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 			case RendererAPITypeH2M::None:   return RefH2M<ShaderH2M>();
+#if defined(GRAPHICS_API_OPENGL)
 			case RendererAPITypeH2M::OpenGL: result = OpenGLShaderH2M::CreateFromString(source);
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 			case RendererAPITypeH2M::Vulkan: result = VulkanShaderH2M::CreateFromString(source);
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   result = DX11Shader::CreateFromString(source);
+#endif
 		}
 		s_AllShaders.push_back(result);
 		return result;

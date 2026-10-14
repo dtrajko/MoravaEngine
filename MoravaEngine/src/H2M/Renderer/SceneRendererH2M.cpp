@@ -7,7 +7,9 @@
 #include "SceneRendererH2M.h"
 
 #include "H2M/ImGui/ImGuiH2M.h"
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
+#endif
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/FramebufferH2M.h"
@@ -597,7 +599,9 @@ namespace H2M
 			UI::Property("Show Light Complexity", RendererDataUB.ShowLightComplexity);
 			UI::Property("Show Shadow Cascades", RendererDataUB.ShowCascades);
 			static int maxDrawCall = 1000;
+#if defined(GRAPHICS_API_VULKAN)
 			UI::PropertySlider("Selected Draw", VulkanRendererH2M::GetSelectedDrawCall(), -1, maxDrawCall);
+#endif
 			UI::Property("Max Draw Call", maxDrawCall);
 			UI::EndPropertyGrid();
 			UI::EndTreeNode();

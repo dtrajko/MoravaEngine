@@ -74,15 +74,19 @@ namespace H2M
 		
 		switch (RendererAPI_H2M::Current())
 		{
+#if defined(GRAPHICS_API_OPENGL)
 			case RendererAPITypeH2M::OpenGL:
 				rendererAPI = "OpenGL";
 				break;
+#endif
 			case RendererAPITypeH2M::Vulkan:
 				rendererAPI = "Vulkan";
 				break;
+#if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:
 				rendererAPI = "DirectX 11";
 				break;
+#endif
 		}
 	}
 

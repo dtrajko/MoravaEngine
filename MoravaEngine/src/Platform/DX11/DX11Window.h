@@ -40,7 +40,9 @@ public:
 	virtual void SetInputMode(bool cursorEnabled) override {}
 
 	virtual H2M::RefH2M<H2M::RendererContextH2M> GetRenderContext() override { return m_RendererContext; }
-	virtual H2M::VulkanSwapChainH2M& GetSwapChain() override { return m_SwapChain; }
+#if defined(GRAPHICS_API_VULKAN)
+	virtual H2M::VulkanSwapChainH2M& GetSwapChain() override { return m_SwapChain; } // not used: a build with Vulkan too
+#endif
 
 	virtual void OnUpdate() override;
 
@@ -114,7 +116,9 @@ private:
 
 	WindowData m_Data;
 	H2M::RefH2M<H2M::RendererContextH2M> m_RendererContext;
+#if defined(GRAPHICS_API_VULKAN)
 	H2M::VulkanSwapChainH2M m_SwapChain; // not used: the interface returns a reference to one
+#endif
 
 	HWND m_HWND = nullptr; // windef.h
 

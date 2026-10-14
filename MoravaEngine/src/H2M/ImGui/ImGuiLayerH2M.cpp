@@ -1,12 +1,20 @@
 #include "ImGuiLayerH2M.h"
 
+#if defined(GRAPHICS_API_OPENGL)
 #include "H2M/Platform/OpenGL/OpenGLImGuiLayerH2M.h"
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanImGuiLayerH2M.h"
+#endif
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
 #include "Core/Application.h"
+#if defined(GRAPHICS_API_VULKAN)
 #include "EnvMapVulkan/EnvMapVulkanImGuiLayer.h"
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11ImGuiLayer.h"
+#endif
 
 #include <imgui.h>
 
@@ -33,7 +41,10 @@ namespace H2M
 		switch (RendererAPI_H2M::Current())
 		{
 			case RendererAPITypeH2M::None:   return nullptr;
+#if defined(GRAPHICS_API_OPENGL)
 			case RendererAPITypeH2M::OpenGL: return new OpenGLImGuiLayerH2M("OpenGLImGuiLayerH2M");
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 			case RendererAPITypeH2M::Vulkan:
 				switch (Application::Get()->GetSceneProperties().Name)
 				{
@@ -45,7 +56,10 @@ namespace H2M
 				Log::GetLogger()->error("Unknown SceneName '{0}'", static_cast<int>(Application::Get()->GetSceneProperties().Name));
 				H2M_CORE_ASSERT(false, "Unknown SceneName");
 				break;
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   return new DX11ImGuiLayer("DX11ImGuiLayer");
+#endif
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");

@@ -6,7 +6,9 @@
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Mesh/GeometryFactory.h"
 #include "Scene/SceneEditor.h"
+#if defined(GRAPHICS_API_OPENGL)
 #include "Platform/OpenGL/OpenGLMoravaShader.h"
+#endif
 
 #include <stdexcept>
 

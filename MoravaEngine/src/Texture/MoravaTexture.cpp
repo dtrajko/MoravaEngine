@@ -4,9 +4,15 @@
 #include "H2M/Core/RefH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
+#if defined(GRAPHICS_API_OPENGL)
 #include "Platform/OpenGL/OpenGLMoravaTexture.h"
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 #include "Platform/Vulkan/VulkanMoravaTexture.h"
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11MoravaTexture.h"
+#endif
 
 
 H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, bool flipVert, bool isSampler, int filter)
@@ -14,9 +20,15 @@ H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, bool flipV
 	switch (H2M::RendererAPI_H2M::Current())
 	{
 		case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<MoravaTexture>();
+#if defined(GRAPHICS_API_OPENGL)
 		case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<OpenGLMoravaTexture>::Create(fileLoc, flipVert, isSampler, filter);
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 		case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<VulkanMoravaTexture>::Create(fileLoc, flipVert, isSampler, filter);
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11MoravaTexture>::Create(fileLoc, flipVert, isSampler, filter);
+#endif
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
@@ -29,9 +41,15 @@ H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, uint32_t w
 	switch (H2M::RendererAPI_H2M::Current())
 	{
 		case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<MoravaTexture>();
+#if defined(GRAPHICS_API_OPENGL)
 		case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<OpenGLMoravaTexture>::Create(fileLoc, width, height, isSampler, filter);
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 		case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<VulkanMoravaTexture>::Create(fileLoc, width, height, isSampler, filter);
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11MoravaTexture>::Create(fileLoc, width, height, isSampler, filter);
+#endif
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
@@ -44,9 +62,15 @@ H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, Specificat
 	switch (H2M::RendererAPI_H2M::Current())
 	{
 		case H2M::RendererAPITypeH2M::None:   return H2M::RefH2M<MoravaTexture>();
+#if defined(GRAPHICS_API_OPENGL)
 		case H2M::RendererAPITypeH2M::OpenGL: return H2M::RefH2M<OpenGLMoravaTexture>::Create(fileLoc, spec);
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 		case H2M::RendererAPITypeH2M::Vulkan: return H2M::RefH2M<VulkanMoravaTexture>::Create(fileLoc, spec);
+#endif
+#if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11MoravaTexture>::Create(fileLoc, spec);
+#endif
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");

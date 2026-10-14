@@ -1,0 +1,91 @@
+# Shared sources (not named after a graphics API) that only the OpenGL scenes use: left out of a build without
+# OpenGL (see "Only the classes of the build's graphics APIs are compiled" in CMakeLists.txt).
+# Each entry is the start of a path below src/: a whole folder, or a file without its extension (its .cpp and .h).
+# A file a Vulkan or DirectX 11 scene starts to use is taken off this list (the linker names what is missing).
+set(MORAVA_SOURCES_OF_OPENGL_SCENES
+    # whole folders
+    Data/
+    Deferred/
+    Instancing/
+    LearnOpenGL/
+    Misc/
+    Particle/
+    Physics/
+    Player/
+    PostProcessing/
+    SSAO/
+    SongHo/
+    # single classes
+    Camera/CameraControllerVoxelTerrain.
+    Core/InsertionSort.
+    Core/Raycast.
+    Editor/Gizmo.
+    Editor/SceneObjectLight.
+    Editor/SceneObjectParticleSystem.
+    Framebuffer/Cubemap.
+    Framebuffer/FramebufferTextureCubemap.
+    Material/MaterialInstance.
+    Material/MaterialWorkflowPBR.
+    Mesh/Cone.
+    Mesh/Cube.
+    Mesh/CubeNanosuit.
+    Mesh/Cylinder.
+    Mesh/MeshUnity.
+    Mesh/MoravaTinyMesh.
+    Mesh/Pyramid.
+    Mesh/QuadInstanced.
+    Mesh/QuadSSAO.
+    Mesh/Ring.
+    Mesh/Ring90.
+    Mesh/SkinnedMesh.
+    Mesh/Sphere.
+    Renderer/Renderer.
+    Renderer/RendererDeferredOGL.
+    Renderer/RendererEditor.
+    Renderer/RendererOmniShadows.
+    Renderer/RendererPBR.
+    Renderer/RendererVoxelTerrain.
+    Scene/SceneAnimPBR.
+    Scene/SceneAsteroids.
+    Scene/SceneBloom.
+    Scene/SceneBullet.
+    Scene/SceneCottage.
+    Scene/SceneCubemaps.
+    Scene/SceneDeferred.
+    Scene/SceneDeferredOGL.
+    Scene/SceneEditor.
+    Scene/SceneEditorImGuizmo.
+    Scene/SceneEiffel.
+    Scene/SceneFramebuffers.
+    Scene/SceneHazelEnvMap.
+    Scene/SceneInstanced.
+    Scene/SceneJoey.
+    Scene/SceneMarchingCubes.
+    Scene/SceneNanosuit.
+    Scene/SceneOmniShadows.
+    Scene/ScenePBR.
+    Scene/SceneParticles.
+    Scene/SceneProceduralLandmass.
+    Scene/SceneSSAO.
+    Scene/SceneSponza.
+    Scene/SceneTerrain.
+    Scene/SceneVoxelTerrain.
+    Scene/SceneVoxelTerrainSL.
+    Shader/ShaderMain.
+    Shader/ShaderPBR.
+    Terrain/EndlessTerrain.
+    Terrain/MapGenerator.
+    Terrain/MeshGenerator.
+    Terrain/NoiseSL.
+    Terrain/TerrainHeightMap.
+    Terrain/TerrainMarchingCubes.
+    Terrain/TerrainSL.
+    Terrain/TerrainVoxel.
+    Texture/RadianceHDR.
+    Texture/SubTexture2D.
+    Texture/TextureAtlas.
+    Texture/TextureCubemap.
+    Texture/TextureCubemapFaces.
+    Texture/TextureGenerator.
+    Texture/TextureSampler.
+)

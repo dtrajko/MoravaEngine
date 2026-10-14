@@ -1,6 +1,8 @@
 #pragma once
 
+#if defined(GRAPHICS_API_OPENGL)
 #include "Platform/OpenGL/OpenGLMoravaShader.h"
+#endif
 
 
 class ShaderPBR : public OpenGLMoravaShader

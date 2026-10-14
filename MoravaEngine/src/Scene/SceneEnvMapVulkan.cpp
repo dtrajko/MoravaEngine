@@ -131,12 +131,16 @@ SceneEnvMapVulkan::SceneEnvMapVulkan()
 
     // H2M::RendererAPI_H2M::Init();
 
+#if defined(MORAVA_MONO)
     m_CsGame = new CsGame();
+#endif
 }
 
 SceneEnvMapVulkan::~SceneEnvMapVulkan()
 {
+#if defined(MORAVA_MONO)
     delete m_CsGame;
+#endif
     delete m_EnvMapVulkanEditorLayer;
 }
 
@@ -187,7 +191,9 @@ void SceneEnvMapVulkan::Update(float timestep, Window* mainWindow)
     float deltaTime = Timer::Get()->GetDeltaTime();
     m_EnvMapVulkanEditorLayer->OnUpdate(deltaTime);
 
+#if defined(MORAVA_MONO)
     m_CsGame->tick();
+#endif
 }
 
 void SceneEnvMapVulkan::UpdateImGui(float timestep, Window* mainWindow)

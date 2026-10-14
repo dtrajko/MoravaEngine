@@ -3,7 +3,9 @@
 #include "Light/DirectionalLight.h"
 #include "Light/PointLight.h"
 #include "Light/SpotLight.h"
+#if defined(GRAPHICS_API_OPENGL)
 #include "Platform/OpenGL/OpenGLMoravaShader.h"
+#endif
 
 
 class ShaderMain : public OpenGLMoravaShader

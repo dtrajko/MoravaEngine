@@ -1,10 +1,19 @@
 #pragma once
 
-// BEGIN compile the engine for only one graphics API
+// The engine is compiled for one scene, which runs on one graphics API, and for the graphics APIs switched on in CMake
+// (MoravaEngine/CMakeLists.txt): the MORAVA_SCENE setting defines SCENE_<name> below; GRAPHICS_API_VULKAN,
+// GRAPHICS_API_OPENGL and GRAPHICS_API_DIRECTX11 are defined for the scene's API and for every API switched on with
+// MORAVA_VULKAN, MORAVA_OPENGL or MORAVA_DIRECTX11 (any combination). For example:
+//   cmake -DMORAVA_SCENE=EDITOR build          the EDITOR scene (OpenGL): only the OpenGL classes
+//   cmake -DMORAVA_OPENGL=ON build             the OpenGL classes in addition to the scene's
+// Only the classes of those APIs are compiled: code that names a class of one API stands inside
+// #if defined(GRAPHICS_API_...). Which API runs is decided at startup (main.cpp, RendererAPI_H2M::Current()).
 
-#define GRAPHICS_API_VULKAN
-// #define GRAPHICS_API_OPENGL
-// #define GRAPHICS_API_DIRECTX11
+// BEGIN compile the engine for the chosen graphics APIs only
+
+#if !defined(GRAPHICS_API_VULKAN) && !defined(GRAPHICS_API_OPENGL) && !defined(GRAPHICS_API_DIRECTX11)
+	#error No graphics API: build with CMake, which defines GRAPHICS_API_... from its MORAVA_SCENE setting
+#endif
 
 enum class GraphicsAPI
 {
@@ -17,54 +26,26 @@ enum class GraphicsAPI
 	WebGPU
 };
 
-#if defined(GRAPHICS_API_VULKAN)
+// The graphics API of the scene
+#if defined(SCENE_ENV_MAP_VULKAN) || defined(SCENE_HAZEL_VULKAN)
 	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::Vulkan;
-#elif defined(GRAPHICS_API_OPENGL)
-	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::OpenGL;
-#elif defined(GRAPHICS_API_DIRECTX11)
+#elif defined(SCENE_DX11)
 	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::DirectX11;
-#elif defined(GRAPHICS_API_DIRECTX12)
-	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::DirectX12;
-#elif defined(GRAPHICS_API_METAL)
-	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::Metal;
-#elif defined(GRAPHICS_API_WEBGPU)
-	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::WebGPU;
 #else
-	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::None;
+	constexpr GraphicsAPI CurrentGraphicsAPI = GraphicsAPI::OpenGL;
 #endif
 
-// END compile the engine for only one graphics API
+// END compile the engine for the chosen graphics APIs only
 
 
-// #define SCENE_COTTAGE
-// #define SCENE_EIFFEL
-// #define SCENE_SPONZA
-// #define SCENE_TERRAIN
-// #define SCENE_PBR
-// #define SCENE_LEARN_OPENGL
-// #define SCENE_BULLET
-// #define SCENE_INSTANCED
-// #define SCENE_ASTEROIDS
-// #define SCENE_NANOSUIT
-// #define SCENE_FRAMEBUFFERS
-// #define SCENE_CUBEMAPS
-// #define SCENE_PARTICLES
-// #define SCENE_OMNI_SHADOWS
-// #define SCENE_VOXEL_TERRAIN
-// #define SCENE_PROCEDURAL_LANDMASS
-// #define SCENE_VOXEL_TERRAIN_SL
-// #define SCENE_MARCHING_CUBES
-// #define SCENE_SSAO
-// #define SCENE_BLOOM
-// #define SCENE_DEFERRED
-// #define SCENE_DEFERRED_OGL
-// #define SCENE_ANIM_PBR
-// #define SCENE_EDITOR
-// #define SCENE_EDITOR_IMGUIZMO
-// #define SCENE_HAZEL_ENV_MAP
-// #define SCENE_DX11
-// #define SCENE_HAZEL_VULKAN
-#define SCENE_ENV_MAP_VULKAN
+// The scenes (CMake's MORAVA_SCENE setting defines one of them; ENV_MAP_VULKAN unless set otherwise):
+//   OpenGL:      SCENE_COTTAGE, SCENE_EIFFEL, SCENE_SPONZA, SCENE_TERRAIN, SCENE_PBR, SCENE_LEARN_OPENGL, SCENE_BULLET,
+//                SCENE_INSTANCED, SCENE_ASTEROIDS, SCENE_NANOSUIT, SCENE_FRAMEBUFFERS, SCENE_CUBEMAPS, SCENE_PARTICLES,
+//                SCENE_OMNI_SHADOWS, SCENE_VOXEL_TERRAIN, SCENE_PROCEDURAL_LANDMASS, SCENE_VOXEL_TERRAIN_SL,
+//                SCENE_MARCHING_CUBES, SCENE_SSAO, SCENE_BLOOM, SCENE_DEFERRED, SCENE_DEFERRED_OGL, SCENE_ANIM_PBR,
+//                SCENE_EDITOR, SCENE_EDITOR_IMGUIZMO, SCENE_HAZEL_ENV_MAP
+//   DirectX 11:  SCENE_DX11 (Windows only)
+//   Vulkan:      SCENE_HAZEL_VULKAN, SCENE_ENV_MAP_VULKAN
 
 
 enum class SceneName
@@ -194,13 +175,19 @@ struct SceneProperties
 #include "Renderer/RendererECS.h"
 #define OPENGL_4_5_PLUS // allows the use of 'ultramodern' OpenGL 4.5+ functions e.g. glCreateTextures
 #elif defined(SCENE_DX11)
+#if defined(GRAPHICS_API_DIRECTX11)
 #include "Scene/SceneDX11.h"
+#endif
 #include "Renderer/RendererTrivial.h"
 #define OPENGL_4_5_PLUS // allows the use of 'ultramodern' OpenGL 4.5+ functions e.g. glCreateTextures
 #elif defined(SCENE_HAZEL_VULKAN)
+#if defined(GRAPHICS_API_VULKAN)
 #include "Scene/SceneHazelVulkan.h"
+#endif
 #include "Renderer/RendererTrivial.h"
 #elif defined(SCENE_ENV_MAP_VULKAN)
+#if defined(GRAPHICS_API_VULKAN)
 #include "Scene/SceneEnvMapVulkan.h"
+#endif
 #include "Renderer/RendererECS.h"
 #endif

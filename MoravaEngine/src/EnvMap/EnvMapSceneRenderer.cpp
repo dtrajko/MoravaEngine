@@ -2,10 +2,14 @@
 
 #include "H2M/Core/AssertH2M.h"
 #include "H2M/ImGui/ImGuiH2M.h"
+#if defined(GRAPHICS_API_OPENGL)
 #include "H2M/Platform/OpenGL/OpenGLRenderPassH2M.h"
 #include "H2M/Platform/OpenGL/OpenGLShaderH2M.h"
 #include "H2M/Platform/OpenGL/OpenGLTextureH2M.h"
+#endif
+#if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
+#endif
 #include "H2M/Renderer/ShaderH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/ModelH2M.h"
@@ -363,6 +367,7 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
         return { H2M::RendererH2M::GetBlackCubeTexture(), H2M::RendererH2M::GetBlackCubeTexture() };
     }
 
+#if defined(GRAPHICS_API_OPENGL)
     const uint32_t cubemapSize = H2M::RendererH2M::GetConfig().EnvironmentMapResolution;
     const uint32_t irradianceMapSize = 32;
 
@@ -451,6 +456,10 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
     }
 
     return { envFiltered, irradianceMap };
+#else
+    // The maps are computed with OpenGL compute shaders
+    return { H2M::RendererH2M::GetBlackCubeTexture(), H2M::RendererH2M::GetBlackCubeTexture() };
+#endif
 }
 
 void EnvMapSceneRenderer::RenderSkybox()
@@ -657,7 +666,9 @@ void EnvMapSceneRenderer::OnImGuiRender()
         H2M::UI::Property("Show Light Complexity", s_RendererDataUB.ShowLightComplexity);
         H2M::UI::Property("Show Shadow Cascades", s_RendererDataUB.ShowCascades);
         static int maxDrawCall = 1000;
+#if defined(GRAPHICS_API_VULKAN)
         H2M::UI::PropertySlider("Selected Draw", H2M::VulkanRendererH2M::GetSelectedDrawCall(), -1, maxDrawCall);
+#endif
         H2M::UI::Property("Max Draw Call", maxDrawCall);
         H2M::UI::EndPropertyGrid();
         H2M::UI::EndTreeNode();
