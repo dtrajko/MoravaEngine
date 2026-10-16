@@ -19,6 +19,8 @@ static constexpr VkQueryPipelineStatisticFlags StatisticFlags =
 
 static constexpr uint32_t NoQuery = ~0u;
 
+EnvMapVulkanProfiler::FrameResults EnvMapVulkanProfiler::s_Results;
+
 static VkDevice GetDevice()
 {
 	return H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();

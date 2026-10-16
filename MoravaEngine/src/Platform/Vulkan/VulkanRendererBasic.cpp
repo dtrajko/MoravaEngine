@@ -42,9 +42,9 @@ void VulkanRendererBasic::SetShaders()
 {
 }
 
-void VulkanRendererBasic::RendererInfo(WindowSpecification& windowSpecification)
+const char* VulkanRendererBasic::RendererName()
 {
-	windowSpecification.Title += " [Renderer: Vulkan]";
+	return "Vulkan";
 }
 
 void VulkanRendererBasic::InitDebug()

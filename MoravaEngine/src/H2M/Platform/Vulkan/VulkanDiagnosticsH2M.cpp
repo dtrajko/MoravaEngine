@@ -20,7 +20,7 @@ namespace H2M::Utils
 		s_CheckpointStorageIndex = (s_CheckpointStorageIndex + 1) % 1024;
 		VulkanCheckpointDataH2M& checkpoint = s_CheckpointStorage[s_CheckpointStorageIndex];
 		memset(checkpoint.Data, 0, sizeof(checkpoint.Data));
-		strcpy_s(checkpoint.Data, data.data());
+		strncpy(checkpoint.Data, data.c_str(), sizeof(checkpoint.Data) - 1);
 		// vkCmdSetCheckpointNV(commandBuffer, &checkpoint);
 	}
 

@@ -475,7 +475,8 @@ namespace H2M
 		for (RefH2M<MeshH2M> submesh : mesh->GetMeshes())
 		{
 			// Material
-			auto material = overrideMaterial ? overrideMaterial : materials[submesh->MaterialIndex];
+			// The callers pass MaterialH2M overrides (converted to the parameter type on the way in)
+			RefH2M<MaterialH2M> material = overrideMaterial ? overrideMaterial.As<MaterialH2M>() : materials[submesh->MaterialIndex];
 			auto shader = material->GetShader();
 			material->Bind();
 

@@ -13,8 +13,8 @@
 
 #ifdef HZ_PLATFORM_WINDOWS
 #define H2M_DEBUGBREAK __debugbreak()
-#elif HZ_PLATFORM_LINUX
-#define HZ_DEBUGBREAK raise(SIGTRAP)
+#else
+#define H2M_DEBUGBREAK raise(SIGTRAP)
 #endif
 
 #ifdef HZ_DEBUG
@@ -36,8 +36,8 @@
 #endif
 
 #ifdef H2M_ENABLE_VERIFY
-#define H2M_VERIFY_NO_MESSAGE(condition) { if(!(condition)) { H2M_ERROR("Verify Failed"); __debugbreak(); } }
-#define H2M_VERIFY_MESSAGE(condition, ...) { if(!(condition)) { H2M_ERROR("Verify Failed: {0}", __VA_ARGS__); __debugbreak(); } }
+#define H2M_VERIFY_NO_MESSAGE(condition) { if(!(condition)) { H2M_ERROR("Verify Failed"); H2M_DEBUGBREAK; } }
+#define H2M_VERIFY_MESSAGE(condition, ...) { if(!(condition)) { H2M_ERROR("Verify Failed: {0}", __VA_ARGS__); H2M_DEBUGBREAK; } }
 
 #define H2M_VERIFY_RESOLVE(arg1, arg2, macro, ...) macro
 #define H2M_GET_VERIFY_MACRO(...) H2M_EXPAND_VARGS(H2M_VERIFY_RESOLVE(__VA_ARGS__, H2M_VERIFY_MESSAGE, H2M_VERIFY_NO_MESSAGE))

@@ -125,7 +125,7 @@ namespace H2M
 		// RefH2M<HazelShaderLibrary> m_ShaderLibrary;
 
 		// dtrajko vulkan skybox
-		RefH2M<VulkanSkyboxCube> VulkanSkyboxCube;
+		RefH2M<::VulkanSkyboxCube> VulkanSkyboxCube;
 		RefH2M<PipelineH2M> SkyboxPipeline;
 		RefH2M<ShaderH2M> SkyboxShader;
 
@@ -1508,7 +1508,7 @@ namespace H2M
 			std::vector<RefH2M<MeshH2M>>& submeshes = mesh->GetMeshes();
 			for (RefH2M<MeshH2M> submesh : submeshes)
 			{
-				auto& material = mesh->GetMaterials()[submesh->MaterialIndex].As<VulkanMaterialH2M>();
+				auto material = mesh->GetMaterials()[submesh->MaterialIndex].As<VulkanMaterialH2M>();
 				material->UpdateForRendering();
 
 				VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();

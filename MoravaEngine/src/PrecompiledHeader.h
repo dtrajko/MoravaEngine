@@ -34,9 +34,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// Logging (included by Core/Log.h)
+// Logging (included by Core/Log.h). Not in GCC builds: fmt switches on #pragma GCC optimize("Og") for its own
+// code, and a GCC precompiled header holding it leaves __OPTIMIZE__ defined in every source file of a debug build
+// (the SSE intrinsics then take their optimized forms, which stb_image can't use without optimization).
+#if !defined(__GNUC__) || defined(__clang__)
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
+#endif
 
 // Dear ImGui
 #include "imgui.h"

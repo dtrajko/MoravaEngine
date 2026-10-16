@@ -276,7 +276,7 @@ struct VulkanRendererData
 	// H2M::RefH2M<HazelShaderLibrary> m_ShaderLibrary;
 
 	// dtrajko vulkan skybox
-	H2M::RefH2M<VulkanSkyboxCube> VulkanSkyboxCube;
+	H2M::RefH2M<::VulkanSkyboxCube> VulkanSkyboxCube;
 	H2M::RefH2M<H2M::PipelineH2M> SkyboxPipeline;
 	H2M::RefH2M<H2M::ShaderH2M> SkyboxShader;
 
@@ -3107,7 +3107,7 @@ static void OnImGuiRenderLocalShadowSettings()
 static void LightNameProperty(std::string& name)
 {
 	char buffer[128] = {};
-	strncpy_s(buffer, name.c_str(), sizeof(buffer) - 1);
+	snprintf(buffer, sizeof(buffer), "%s", name.c_str());
 	ImGui::Text("Name");
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
@@ -4358,7 +4358,7 @@ static char s_RenameBuffer[128] = {};
 static void StartRenaming(EnvMapVulkanEntityID entity)
 {
 	s_RenamingEntity = entity;
-	strncpy_s(s_RenameBuffer, s_Scene.Get<NameComponent>(entity).Name.c_str(), sizeof(s_RenameBuffer) - 1);
+	snprintf(s_RenameBuffer, sizeof(s_RenameBuffer), "%s", s_Scene.Get<NameComponent>(entity).Name.c_str());
 }
 
 // Copy and paste (Ctrl+C, Ctrl+V in the viewport and the Scene Hierarchy, or its context menu): Copy takes a snapshot of
@@ -5156,7 +5156,7 @@ static void OnImGuiRenderProperties()
 	if (kind != EntityKind::PointLight && kind != EntityKind::SpotLight)
 	{
 		char buffer[128] = {};
-		strncpy_s(buffer, s_Scene.Get<NameComponent>(entity).Name.c_str(), sizeof(buffer) - 1);
+		snprintf(buffer, sizeof(buffer), "%s", s_Scene.Get<NameComponent>(entity).Name.c_str());
 		ImGui::SetNextItemWidth(-90.0f);
 		if (ImGui::InputText("##EntityName", buffer, sizeof(buffer)) && buffer[0] != '\0')
 		{
@@ -6017,7 +6017,7 @@ static void OnImGuiRenderMaterialLibrary()
 	auto startRename = [](const H2M::RefH2M<EnvMapVulkanMaterial>& material) {
 		s_RenamingMaterial = const_cast<EnvMapVulkanMaterial*>(material.Raw());
 		s_RenameNeedsFocus = true;
-		strncpy_s(s_RenameBuffer, material->GetName().c_str(), sizeof(s_RenameBuffer) - 1);
+		snprintf(s_RenameBuffer, sizeof(s_RenameBuffer), "%s", material->GetName().c_str());
 	};
 
 	// Duplicating adds to the material list, so a request from a row is carried out after the list is drawn
@@ -6318,7 +6318,7 @@ static void OnImGuiRenderMaterialEditor()
 	static EnvMapVulkanMaterial* s_NameBufferMaterial = nullptr;
 	if (s_NameBufferMaterial != material.Raw() || !ImGui::IsAnyItemActive())
 	{
-		strncpy_s(s_NameBuffer, material->GetName().c_str(), sizeof(s_NameBuffer) - 1);
+		snprintf(s_NameBuffer, sizeof(s_NameBuffer), "%s", material->GetName().c_str());
 		s_NameBufferMaterial = material.Raw();
 	}
 	ImGui::InputText("Name", s_NameBuffer, sizeof(s_NameBuffer));
@@ -11291,7 +11291,7 @@ void EnvMapVulkanRenderer::RenderMesh(H2M::RefH2M<H2M::PipelineH2M> pipeline, H2
 		std::vector<H2M::RefH2M<H2M::MeshH2M>>& meshes = model->GetMeshes();
 		for (H2M::RefH2M<H2M::MeshH2M> mesh : meshes)
 		{
-			auto& material = model->GetMaterials()[mesh->MaterialIndex].As<H2M::VulkanMaterialH2M>();
+			auto material = model->GetMaterials()[mesh->MaterialIndex].As<H2M::VulkanMaterialH2M>();
 			material->UpdateForRendering();
 
 			VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();

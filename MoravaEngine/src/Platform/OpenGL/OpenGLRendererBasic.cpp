@@ -39,9 +39,9 @@ void OpenGLRendererBasic::SetShaders()
 {
 }
 
-void OpenGLRendererBasic::RendererInfo(WindowSpecification& windowSpecification)
+const char* OpenGLRendererBasic::RendererName()
 {
-	windowSpecification.Title += " [Renderer: OpenGL]";
+	return "OpenGL";
 }
 
 void OpenGLRendererBasic::InitDebug()

@@ -150,7 +150,7 @@ void Application::RenderImGui()
 	m_ImGuiLayer->Begin();
 
 	// ImGui::Begin("Renderer");
-	// auto& caps = H2M::RendererH2M::GetCapabilities();
+	// auto caps = H2M::RendererH2M::GetCapabilities();
 	// ImGui::Text("Vendor: %s", caps.Vendor.c_str());
 	// ImGui::Text("Device: %s", caps.Device.c_str());
 	// ImGui::Text("Version: %s", caps.Version.c_str());
@@ -335,7 +335,7 @@ void Application::OnShutdown()
 	delete m_Renderer;
 }
 
-void Application::InitWindow(WindowSpecification& windowSpecification)
+void Application::InitWindow(WindowSpecification windowSpecification)
 {
 	RendererBasic::AppendRendererInfo(windowSpecification);
 
@@ -389,7 +389,7 @@ void Application::OnImGuiRender(bool* p_open)
 {
 	ImGui::Begin("Renderer", p_open);
 	{
-		auto& caps = H2M::RendererH2M::GetCapabilities();
+		auto caps = H2M::RendererH2M::GetCapabilities();
 
 		const char* vendor = "N/A";
 		const char* device = "N/A";
@@ -436,6 +436,19 @@ const char* Application::GetPlatformName()
 #else
 	// #error Undefined platform?
 	return "N/A";
+#endif
+}
+
+const char* Application::GetOSName()
+{
+#if defined(_WIN32)
+	return "Windows";
+#elif defined(__APPLE__)
+	return "macOS";
+#elif defined(__linux__)
+	return "Linux";
+#else
+	return "Unknown OS";
 #endif
 }
 

@@ -306,7 +306,7 @@ namespace H2M::UI
 		s_IDBuffer[0] = '#';
 		s_IDBuffer[1] = '#';
 		memset(s_IDBuffer + 2, 0, 14);
-		sprintf_s(s_IDBuffer + 2, 14, "%o", s_Counter++);
+		snprintf(s_IDBuffer + 2, 14, "%o", s_Counter++);
 		if (ImGui::Checkbox(s_IDBuffer, &value))
 			modified = true;
 

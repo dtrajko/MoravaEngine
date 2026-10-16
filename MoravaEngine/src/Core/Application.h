@@ -46,7 +46,7 @@ public:
 
 	static Application* Get();
 
-	void InitWindow(WindowSpecification& windowSpecification);
+	void InitWindow(WindowSpecification windowSpecification);
 
 	void OnInit();
 	void Run();
@@ -86,6 +86,7 @@ public:
 
 	static const char* GetConfigurationName();
 	static const char* GetPlatformName();
+	static const char* GetOSName(); // Windows, Linux or macOS
 
 	void CaptureScreenshot(const std::string& filePath);
 

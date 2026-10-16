@@ -736,7 +736,7 @@ namespace H2M
 			SceneRendererVulkanH2M::BeginScene(this, { editorCamera, editorCamera.GetViewMatrix() });
 			for (auto entity : group)
 			{
-				auto& [meshComponent, transformComponent] = group.get<MeshComponentH2M, TransformComponentH2M>(entity);
+				auto [meshComponent, transformComponent] = group.get<MeshComponentH2M, TransformComponentH2M>(entity);
 				if (meshComponent.Mesh)
 				{
 					meshComponent.Mesh->OnUpdate(ts);

@@ -57,13 +57,13 @@ namespace H2M::Utils
 				H2M_CORE_ERROR("Checkpoint: {0} (stage: {1})", checkpoint->Data, StageToString(data[i].stage));
 			}
 		}
-		__debugbreak();
+		H2M_DEBUGBREAK;
 	}
 
 	// A duplicate of DumpGPUInfo() in HazelRenderer
 	void DumpGPUInfoDuplicate()
 	{
-		auto& caps = RendererH2M::GetCapabilities();
+		auto caps = RendererH2M::GetCapabilities();
 		Log::GetLogger()->trace("GPU Info:");
 		Log::GetLogger()->trace("  Vendor: {0}", caps.Vendor);
 		Log::GetLogger()->trace("  Device: {0}", caps.Device);

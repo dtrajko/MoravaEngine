@@ -32,9 +32,9 @@ void DX11RendererBasic::SetShaders()
 {
 }
 
-void DX11RendererBasic::RendererInfo(WindowSpecification& windowSpecification)
+const char* DX11RendererBasic::RendererName()
 {
-	windowSpecification.Title += " [Renderer: DirectX 11]";
+	return "DirectX 11";
 }
 
 void DX11RendererBasic::InitDebug()

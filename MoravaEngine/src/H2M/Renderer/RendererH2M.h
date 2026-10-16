@@ -151,7 +151,7 @@ namespace H2M
 
 		inline void DumpGPUInfo()
 		{
-			auto& caps = RendererH2M::GetCapabilities();
+			auto caps = RendererH2M::GetCapabilities();
 			Log::GetLogger()->trace("GPU Info:");
 			Log::GetLogger()->trace("  Vendor: {0}", caps.Vendor);
 			Log::GetLogger()->trace("  Device: {0}", caps.Device);

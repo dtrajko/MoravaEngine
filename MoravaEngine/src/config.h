@@ -106,7 +106,7 @@ class RendererBasic;
 
 struct SceneProperties
 {
-	Scene* Scene;
+	::Scene* Scene;
 	RendererBasic* Renderer;
 	SceneName Name;
 	// H2M::RendererAPITypeH2M RendererAPI;

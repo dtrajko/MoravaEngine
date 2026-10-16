@@ -54,8 +54,10 @@ namespace H2M
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// Extensions and Validation
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define VK_KHR_WIN32_SURFACE_EXTENSION_NAME "VK_KHR_win32_surface"
-		std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME };
+		// The surface extensions of this platform (Win32, X11, Wayland, Metal), as GLFW creates the surface
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+		std::vector<const char*> instanceExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 		if (s_Validation)
 		{
 			instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);

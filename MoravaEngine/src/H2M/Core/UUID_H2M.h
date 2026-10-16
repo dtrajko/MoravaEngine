@@ -8,7 +8,7 @@
 
 #include "BaseH2M.h"
 
-#include <xhash>
+#include <functional>
 
 
 namespace H2M {

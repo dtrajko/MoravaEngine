@@ -508,7 +508,7 @@ namespace H2M
 
 		// ID
 		ImGui::SameLine();
-		ImGui::TextDisabled("%llx", id);
+		ImGui::TextDisabled("%llx", (unsigned long long)(uint64_t)id);
 		float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 		ImVec2 textSize = ImGui::CalcTextSize("Add Component");
 		ImGui::SameLine(contentRegionAvailable.x - (textSize.x + ImGui::GetStyle().FramePadding.y));

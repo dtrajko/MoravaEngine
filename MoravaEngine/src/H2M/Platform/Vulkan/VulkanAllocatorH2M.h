@@ -41,7 +41,7 @@ namespace H2M
 		T* MapMemory(VmaAllocation allocation)
 		{
 			T* mappedMemory;
-			vmaMapMemory(VulkanAllocator::GetVMAAllocator(), allocation, (void**)&mappedMemory);
+			vmaMapMemory(VulkanAllocatorH2M::GetVMAAllocator(), allocation, (void**)&mappedMemory);
 			return mappedMemory;
 		}
 

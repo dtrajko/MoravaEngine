@@ -429,7 +429,7 @@ namespace H2M {
 				{
 					auto& cc = deserializedEntity.AddComponent<CameraComponentH2M>();
 
-					auto& cameraProps = cameraComponent["Camera"];
+					auto cameraProps = cameraComponent["Camera"];
 					cc.Camera.SetProjectionType((SceneCameraH2M::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
 					cc.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());

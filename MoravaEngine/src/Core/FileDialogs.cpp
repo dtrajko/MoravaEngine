@@ -13,7 +13,9 @@
 	#define GLFW_EXPOSE_NATIVE_X11
 #endif
 #include <nfd.h>
+#define Window X11Window // X11 typedefs a Window too: renamed here, the engine keeps its own
 #include <nfd_glfw3.h>
+#undef Window
 
 #include <filesystem>
 

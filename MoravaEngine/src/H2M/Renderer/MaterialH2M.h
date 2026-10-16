@@ -28,6 +28,8 @@ namespace H2M {
 		TwoSided   = BIT(3),
 	};
 
+	class MaterialInstanceH2M;
+
 	class MaterialH2M : public RefCountedH2M
 	{
 		friend class MaterialInstanceH2M; // Removed in more recent commits in Vulkan branch?

@@ -75,7 +75,7 @@ namespace H2M
 		template<typename T>
 		void Push(const std::string& name, const float& data)
 		{
-			Uniforms[Index++] = { UniformType::Float, Cursor, name };
+			Uniforms[Index++] = { UniformTypeH2M::Float, Cursor, name };
 			memcpy(Buffer + Cursor, &data, sizeof(float));
 			Cursor += sizeof(float);
 		}
@@ -83,7 +83,7 @@ namespace H2M
 		template<typename T>
 		void Push(const std::string& name, const glm::vec3& data)
 		{
-			Uniforms[Index++] = { UniformType::Float3, Cursor, name };
+			Uniforms[Index++] = { UniformTypeH2M::Float3, Cursor, name };
 			memcpy(Buffer + Cursor, glm::value_ptr(data), sizeof(glm::vec3));
 			Cursor += sizeof(glm::vec3);
 		}
@@ -91,7 +91,7 @@ namespace H2M
 		template<typename T>
 		void Push(const std::string& name, const glm::vec4& data)
 		{
-			Uniforms[Index++] = { UniformType::Float4, Cursor, name };
+			Uniforms[Index++] = { UniformTypeH2M::Float4, Cursor, name };
 			memcpy(Buffer + Cursor, glm::value_ptr(data), sizeof(glm::vec4));
 			Cursor += sizeof(glm::vec4);
 		}
@@ -99,7 +99,7 @@ namespace H2M
 		template<typename T>
 		void Push(const std::string& name, const glm::mat4& data)
 		{
-			Uniforms[Index++] = { UniformType::Matrix4x4, Cursor, name };
+			Uniforms[Index++] = { UniformTypeH2M::Matrix4x4, Cursor, name };
 			memcpy(Buffer + Cursor, glm::value_ptr(data), sizeof(glm::mat4));
 			Cursor += sizeof(glm::mat4);
 		}

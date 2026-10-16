@@ -13,6 +13,7 @@
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/FramebufferH2M.h"
+#include "Core/Util.h"
 
 #include <GL/glew.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,27 +21,6 @@
 
 namespace H2M
 {
-	static std::string WStringToUTF8(const std::wstring& wstr)
-	{
-		int sizeNeeded = WideCharToMultiByte(
-			CP_UTF8, 0,
-			wstr.c_str(), (int)wstr.size(),
-			nullptr, 0,
-			nullptr, nullptr
-		);
-
-		std::string result(sizeNeeded, 0);
-
-		WideCharToMultiByte(
-			CP_UTF8, 0,
-			wstr.c_str(), (int)wstr.size(),
-			result.data(), sizeNeeded,
-			nullptr, nullptr
-		);
-
-		return result;
-	}
-
 	struct SceneRendererDataH2M
 	{
 		const SceneH2M* ActiveScene = nullptr;
@@ -657,7 +637,7 @@ namespace H2M
 
 					if (!filename.empty())
 					{
-						std::string filenameStr = WStringToUTF8(filename);
+						std::string filenameStr = Util::ToUtf8(filename);
 						m_BloomDirtTexture = Texture2D_H2M::Create(filenameStr, false);
 					}
 				}

@@ -164,7 +164,7 @@ private:
 	static inline uint64_t s_TimestampMask = ~0ull;   // the queue's valid timestamp bits
 	static inline double s_TimestampPeriodNs = 1.0;   // nanoseconds per timestamp tick
 
-	static inline FrameResults s_Results;
+	static FrameResults s_Results;
 	static inline std::unordered_map<std::string, double> s_Smoothed;
 
 	static inline std::chrono::steady_clock::time_point s_LastFrameStart;

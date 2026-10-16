@@ -61,21 +61,27 @@ void RendererBasic::SetShaders()
 
 void RendererBasic::AppendRendererInfo(WindowSpecification& windowSpecification)
 {
+	const char* rendererName = nullptr;
 	switch (H2M::RendererAPI_H2M::Current())
 	{
 		case H2M::RendererAPITypeH2M::None:   return;
 #if defined(GRAPHICS_API_OPENGL)
-		case H2M::RendererAPITypeH2M::OpenGL: return OpenGLRendererBasic::RendererInfo(windowSpecification);
+		case H2M::RendererAPITypeH2M::OpenGL: rendererName = OpenGLRendererBasic::RendererName(); break;
 #endif
 #if defined(GRAPHICS_API_VULKAN)
-		case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::RendererInfo(windowSpecification);
+		case H2M::RendererAPITypeH2M::Vulkan: rendererName = VulkanRendererBasic::RendererName(); break;
 #endif
 #if defined(GRAPHICS_API_DIRECTX11)
-		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::RendererInfo(windowSpecification);
+		case H2M::RendererAPITypeH2M::DX11:   rendererName = DX11RendererBasic::RendererName(); break;
 #endif
 	}
-	Log::GetLogger()->error("Unknown RendererAPI");
-	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+	if (!rendererName)
+	{
+		Log::GetLogger()->error("Unknown RendererAPI");
+		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
+		return;
+	}
+	windowSpecification.Title += std::string(" [OS: ") + Application::GetOSName() + ", Renderer: " + rendererName + "]";
 }
 
 void RendererBasic::InitDebug()
