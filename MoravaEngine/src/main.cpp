@@ -16,9 +16,9 @@ void SelectRendererAPI()
 	H2M::RendererAPI_H2M::SetAPI(H2M::RendererAPITypeH2M::Vulkan);
 #elif defined(SCENE_DX11) 
 	H2M::RendererAPI_H2M::SetAPI(H2M::RendererAPITypeH2M::DX11);
-#else:
+#else
 	H2M::RendererAPI_H2M::SetAPI(H2M::RendererAPITypeH2M::OpenGL);
-#endif;
+#endif
 }
 
 
