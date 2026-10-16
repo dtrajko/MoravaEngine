@@ -9,7 +9,7 @@ It supports three graphics APIs:
 - OpenGL
 - DirectX 11 (Windows only)
 
-It runs on Windows 10 and 11. Linux and macOS support is in progress: the window, input and file dialogs are already platform independent.
+It runs on Windows 10 and 11, and on Linux with the Vulkan API (built with GCC and Clang, tested on Ubuntu in WSL2). macOS support is in progress: the window, input and file dialogs are already platform independent.
 
 The main scene is a Vulkan scene editor (`ENV_MAP_VULKAN`):
 
@@ -65,6 +65,8 @@ The build is one CMake project, `MoravaEngine/CMakeLists.txt`. It builds the eng
 * Python 3 (used by the shaderc build)
 * Git
 
+On Linux: see "Building on Linux" below.
+
 ### Get the sources
 
 ```
@@ -99,6 +101,39 @@ build\Debug\MoravaEngine.exe
 ```
 
 Visual Studio is already set up to start it in that folder.
+
+### Building on Linux
+
+Tested on Ubuntu with GCC 15 and Clang, in WSL2. The Vulkan scenes build and run; the OpenGL scenes haven't been built on Linux yet, and DirectX 11 is Windows only.
+
+Install the compilers, CMake and the system libraries (Vulkan loader and headers, OpenGL, X11 and Wayland for GLFW, GTK 3 for the file dialogs):
+
+```
+sudo apt update
+sudo apt install build-essential clang cmake ninja-build git pkg-config python3 \
+    libvulkan-dev vulkan-tools libgl1-mesa-dev libglu1-mesa-dev \
+    libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev \
+    libwayland-dev wayland-protocols libgtk-3-dev zlib1g-dev
+```
+
+Get the sources as above (`git clone --recursive`, then `python3 vendor/cross-platform/shaderc/utils/git-sync-deps`). In a clone made without `--recursive`, run `git submodule update --init --recursive`: the file dialog library needs its own submodule (`wayland-protocols`) on Linux.
+
+Configure and build from the `MoravaEngine/MoravaEngine` folder. Ninja builds one configuration, chosen when configuring:
+
+```
+cmake -S . -B build-linux -G Ninja -DCMAKE_BUILD_TYPE=Debug
+cmake --build build-linux
+```
+
+For Clang, add `-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++` to the first command. The `-D` settings for the graphics APIs and the scene (below) work the same way.
+
+Run it from the same folder:
+
+```
+./build-linux/MoravaEngine
+```
+
+In WSL2 the window opens on the Windows desktop (WSLg). The only Vulkan device there is Mesa's llvmpipe, which renders on the CPU: the editor works, but at a few frames per second and without ray tracing. For full speed, run on native Linux with the GPU's Vulkan driver. Building in WSL2 is also much faster when the build folder is on the Linux file system, e.g. `-B ~/morava-build` instead of `-B build-linux`.
 
 ### Select the graphics APIs and the scene
 
@@ -239,6 +274,10 @@ Older editor scenes (`EDITOR`, `EDITOR_IMGUIZMO`):
 * Copy scene object: Left CTRL + C
 
 ## Images
+
+The Vulkan editor on Linux (Ubuntu in WSL2, rendered by Mesa's llvmpipe on the CPU):
+
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2026-10-16_22-22-15.png)
 
 ![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2021-09-15_04-36-54.jpg)
 

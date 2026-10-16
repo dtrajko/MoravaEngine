@@ -354,6 +354,7 @@ MigrationBackup/
 .ionide/
 MoravaEngine/Scenes/scene_tmp.scene
 build/
+build-linux/
 
 vendor/cross-platform/bullet3/*.*
 vendor/cross-platform/glew/*.*
