@@ -367,9 +367,18 @@ void DX11Shader::CompileOrGetDX11Binary(std::array<std::vector<uint32_t>, 2>& ou
 			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_DX11.vert");
 			std::string cachedFilePath = path.string();
 
+			std::error_code folderError; // the cache folder is in .gitignore: a fresh clone has none
+			std::filesystem::create_directories(path.parent_path(), folderError);
 			FILE* f = fopen(cachedFilePath.c_str(), "wb");
-			fwrite(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
-			fclose(f);
+			if (f)
+			{
+				fwrite(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
+				fclose(f);
+			}
+			else
+			{
+				Log::GetLogger()->warn("Shader cache file '{0}' can't be written; the shader is compiled again next time", cachedFilePath);
+			}
 		}
 	}
 
@@ -391,9 +400,18 @@ void DX11Shader::CompileOrGetDX11Binary(std::array<std::vector<uint32_t>, 2>& ou
 			auto path = p.parent_path() / "cached" / (p.filename().string() + ".cached_DX11.frag");
 			std::string cachedFilePath = path.string();
 
+			std::error_code folderError; // the cache folder is in .gitignore: a fresh clone has none
+			std::filesystem::create_directories(path.parent_path(), folderError);
 			FILE* f = fopen(cachedFilePath.c_str(), "wb");
-			fwrite(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
-			fclose(f);
+			if (f)
+			{
+				fwrite(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
+				fclose(f);
+			}
+			else
+			{
+				Log::GetLogger()->warn("Shader cache file '{0}' can't be written; the shader is compiled again next time", cachedFilePath);
+			}
 		}
 	}
 }

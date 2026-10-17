@@ -1001,9 +1001,18 @@ namespace H2M
 					auto path = p.parent_path() / "cached" / (p.filename().string() + extension);
 					std::string cachedFilePath = path.string();
 
+					std::error_code folderError; // the cache folder is in .gitignore: a fresh clone has none
+					std::filesystem::create_directories(path.parent_path(), folderError);
 					FILE* f = fopen(cachedFilePath.c_str(), "wb");
-					fwrite(outputBinary[stage].data(), sizeof(uint32_t), outputBinary[stage].size(), f);
-					fclose(f);
+					if (f)
+					{
+						fwrite(outputBinary[stage].data(), sizeof(uint32_t), outputBinary[stage].size(), f);
+						fclose(f);
+					}
+					else
+					{
+						Log::GetLogger()->warn("Shader cache file '{0}' can't be written; the shader is compiled again next time", cachedFilePath);
+					}
 				}
 			}
 		}

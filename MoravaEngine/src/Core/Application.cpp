@@ -3,6 +3,7 @@
 #include "H2M/Core/BaseH2M.h"
 #if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Editor/EditorLayerVulkanH2M.h"
+#include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Platform/Vulkan/VulkanTestLayer.h"
 #endif
@@ -16,7 +17,9 @@
 #endif
 
 #include "Core/FileDialogs.h"
+#include "Core/ResourceManager.h"
 #include "Core/Timer.h"
+#include "Material/MaterialLibrary.h"
 #include "Core/Util.h"
 #if defined(GRAPHICS_API_DIRECTX11)
 #include "Platform/DX11/DX11TestLayer.h"
@@ -330,6 +333,22 @@ bool Application::OnWindowClose(H2M::WindowCloseEventH2M& e)
 
 void Application::OnShutdown()
 {
+#if defined(GRAPHICS_API_VULKAN)
+	if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::Vulkan)
+	{
+		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice()); // the last frames may still use what is released below
+	}
+#endif
+
+	// Layers detach in reverse order. The ImGui layer is left out: deleting it (below) shuts ImGui down, as its OnDetach would
+	for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
+	{
+		if (*it != m_ImGuiLayer)
+		{
+			(*it)->OnDetach();
+		}
+	}
+
 	if (m_EnableImGui)
 	{
 		delete m_ImGuiLayer;
@@ -337,6 +356,22 @@ void Application::OnShutdown()
 
 	if (m_Scene != nullptr) delete m_Scene;
 	delete m_Renderer;
+	MaterialLibrary::Cleanup();
+	ResourceManager::Shutdown();
+
+	// The renderer's resources are released here, while main still runs: kept until the static variables are
+	// destroyed (after main returns), they would call into a graphics API that may already be torn down.
+	// Same condition as RendererH2M::Init in Application::Init.
+	if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
+	{
+#if defined(OPENGL_4_5_PLUS)
+		H2M::RendererH2M::Shutdown();
+#endif
+	}
+	else
+	{
+		H2M::RendererH2M::Shutdown();
+	}
 }
 
 void Application::InitWindow(WindowSpecification windowSpecification)

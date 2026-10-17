@@ -86,8 +86,12 @@ namespace H2M
 
 	// Texture paths in a model file are relative to the model. Some models keep their maps in Textures/PBR/<model name>/
 	// instead (e.g. Models/DamagedHelmet.gltf -> Textures/PBR/DamagedHelmet/), which is tried when the first path does not exist.
-	static std::string ResolveTexturePath(const std::string& modelPath, const std::string& texturePath)
+	static std::string ResolveTexturePath(const std::string& modelPath, const std::string& modelTexturePath)
 	{
+		// Models made on Windows may separate folders with '\', which is no separator elsewhere; '/' works everywhere
+		std::string texturePath = modelTexturePath;
+		std::replace(texturePath.begin(), texturePath.end(), '\\', '/');
+
 		std::filesystem::path path = std::filesystem::path(modelPath).parent_path() / texturePath;
 		if (std::filesystem::exists(path))
 		{

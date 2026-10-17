@@ -655,4 +655,5 @@ void EnvMapVulkanShadowMapViewer::Destroy()
 	m_Image = VK_NULL_HANDLE;
 	m_Allocation = nullptr;
 	m_BoundMap = nullptr;
+	m_Shader = {};
 }

@@ -611,9 +611,13 @@ namespace H2M
 		s_ShaderDependencies.clear();
 		SceneRendererH2M::Shutdown();
 		s_RendererAPI->Shutdown();
+		s_PipelineCache.clear();
 
 		delete s_Data;
+		s_Data = nullptr;
 		delete s_CommandQueue;
+		s_CommandQueue = nullptr;
+		ShaderH2M::s_AllShaders.clear();
 	}
 
 #if 0

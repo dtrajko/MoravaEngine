@@ -49,7 +49,7 @@ uint32_t DX11IndexBuffer::GetRendererID() const
 
 DX11IndexBuffer::~DX11IndexBuffer()
 {
-	m_Buffer->Release();
+	if (m_Buffer) m_Buffer->Release();
 
 	Log::GetLogger()->info("DX11IndexBuffer destroyed!");
 }

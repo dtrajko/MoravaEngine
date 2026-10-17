@@ -39,10 +39,10 @@ private:
 	// H2M::BufferH2M m_LocalData;
 	H2M::VertexBufferLayoutH2M m_Layout; // OpenGL-specific? Or it belongs to pipeline?
 
-	uint32_t m_Stride;
-	uint32_t m_Count;
+	uint32_t m_Stride = 0;
+	uint32_t m_Count = 0;
 
-	ID3D11Buffer* m_Buffer;
+	ID3D11Buffer* m_Buffer = nullptr; // stays null in the constructors that are not implemented yet
 
 	friend class DX11Context;
 

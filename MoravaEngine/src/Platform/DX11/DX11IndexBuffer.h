@@ -27,8 +27,8 @@ public:
 
 private:
 	uint32_t m_Size;
-	uint32_t m_Count;
-	ID3D11Buffer* m_Buffer;
+	uint32_t m_Count = 0;
+	ID3D11Buffer* m_Buffer = nullptr; // stays null in the constructors that are not implemented yet
 
 	// uint32_t m_Size = 0;
 	// H2M::BufferH2M m_LocalData;
