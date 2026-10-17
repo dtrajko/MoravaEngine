@@ -14,7 +14,7 @@
 
 // ImGui
 #define _CRT_SECURE_NO_WARNINGS
-#include "../ImGui/ImGui.h"
+#include "imgui.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>

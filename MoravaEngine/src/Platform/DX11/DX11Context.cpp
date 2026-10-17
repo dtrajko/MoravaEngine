@@ -3,7 +3,7 @@
 
 #include "Platform/DX11/DX11Window.h"
 
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 
 
 DX11Context::DX11Context(Window* window)
