@@ -28,18 +28,12 @@
 [submodule "vendor/DirectXTex"]
 	path = vendor/DirectXTex
 	url = https://github.com/microsoft/DirectXTex.git
-[submodule "vendor/PhysX"]
-	path = vendor/PhysX
-	url = https://github.com/NVIDIAGameWorks/PhysX.git
 [submodule "vendor/FastNoise"]
 	path = vendor/FastNoise
 	url = https://github.com/Auburns/FastNoise
 [submodule "vendor/msdf-atlas-gen"]
 	path = vendor/msdf-atlas-gen
 	url = https://github.com/Chlumsky/msdf-atlas-gen
-[submodule "vendor/spdlog"]
-	path = vendor/spdlog
-	url = https://github.com/gabime/spdlog
 [submodule "vendor/cross-platform/nativefiledialog-extended"]
 	path = vendor/cross-platform/nativefiledialog-extended
 	url = https://github.com/btzy/nativefiledialog-extended.git
