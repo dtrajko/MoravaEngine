@@ -56,7 +56,7 @@ namespace H2M
 
 		glEnable(GL_STENCIL_TEST);
 
-		auto& caps = GetCapabilities();
+		auto caps = GetCapabilities();
 
 		caps.Vendor = (const char*)glGetString(GL_VENDOR);
 		caps.Device = (const char*)glGetString(GL_RENDERER);

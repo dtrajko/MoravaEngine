@@ -28,8 +28,12 @@ namespace H2M {
 		// Allow modern extension features
 		glewExperimental = GL_TRUE;
 
-		if (glewInit() != GLEW_OK)
+		// On Wayland the context is an EGL one: GLEW (built for GLX) has already loaded the OpenGL functions
+		// when it reports that there's no GLX display
+		GLenum glewError = glewInit();
+		if (glewError != GLEW_OK && glewError != GLEW_ERROR_NO_GLX_DISPLAY)
 		{
+			Log::GetLogger()->error("GLEW: {0}", (const char*)glewGetErrorString(glewError));
 			glfwDestroyWindow(m_Window->GetHandle());
 			glfwTerminate();
 			throw std::runtime_error("GLEW initialization failed!");

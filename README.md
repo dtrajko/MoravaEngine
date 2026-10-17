@@ -9,7 +9,7 @@ It supports three graphics APIs:
 - OpenGL
 - DirectX 11 (Windows only)
 
-It runs on Windows 10 and 11, and on Linux with the Vulkan API (built with GCC and Clang, tested on Ubuntu in WSL2). macOS support is in progress: the window, input and file dialogs are already platform independent.
+It runs on Windows 10 and 11, and on Linux with Vulkan and OpenGL (built with GCC and Clang, tested on Ubuntu in WSL2). macOS support is in progress: the window, input and file dialogs are already platform independent.
 
 The main scene is a Vulkan scene editor (`ENV_MAP_VULKAN`):
 
@@ -104,7 +104,7 @@ Visual Studio is already set up to start it in that folder.
 
 ### Building on Linux
 
-Tested on Ubuntu with GCC 15 and Clang, in WSL2. The Vulkan scenes build and run; the OpenGL scenes haven't been built on Linux yet, and DirectX 11 is Windows only.
+Tested on Ubuntu with GCC 15 and Clang, in WSL2. The Vulkan and OpenGL scenes build (GCC; Clang tested with Vulkan); the Vulkan editor and the OpenGL scene SceneSSAO were run. DirectX 11 is Windows only.
 
 Install the compilers, CMake and the system libraries (Vulkan loader and headers, OpenGL, X11 and Wayland for GLFW, GTK 3 for the file dialogs):
 
