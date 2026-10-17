@@ -22,8 +22,9 @@ jobs:
         include:
           - name: Clang Vulkan
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
+          # macOS stops at OpenGL 4.1: an older scene (HAZEL_ENV_MAP needs 4.5)
           - name: Clang OpenGL
-            cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=HAZEL_ENV_MAP
+            cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=EDITOR_IMGUIZMO
     env:
       HOMEBREW_NO_AUTO_UPDATE: 1
       HOMEBREW_NO_INSTALL_CLEANUP: 1
