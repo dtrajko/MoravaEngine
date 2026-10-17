@@ -26,10 +26,19 @@ jobs:
             cc: gcc
             cxx: g++
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
+          # Without -fno-pch-timestamp Clang rejects a precompiled header that ccache restored (its file time differs)
+          - name: Clang Vulkan
+            cc: clang
+            cxx: clang++
+            cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN "-DCMAKE_CXX_FLAGS=-Xclang -fno-pch-timestamp"
+          - name: GCC OpenGL
+            cc: gcc
+            cxx: g++
+            cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=COTTAGE
 
     steps:
       # Only the latest commit (the history is ~700 MB), the submodules shallow too
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 1
           submodules: recursive
@@ -45,7 +54,7 @@ jobs:
       # shaderc's own dependencies (glslang, SPIRV-Tools, SPIRV-Headers...): downloaded by its script, kept until shaderc changes
       - name: Cache shaderc dependencies
         id: shaderc-deps
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: vendor/cross-platform/shaderc/third_party
           key: shaderc-deps-${{ hashFiles('vendor/cross-platform/shaderc/DEPS') }}
@@ -56,9 +65,9 @@ jobs:
 
       # Compiled files kept between runs: after the first run only what changed is compiled again
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+        uses: hendrikmuhs/ccache-action@v1.2.24
         with:
-          key: linux-${{ matrix.cc }}-${{ matrix.name }}
+          key: linux-${{ matrix.name }}
           max-size: 2G
 
       - name: Configure
