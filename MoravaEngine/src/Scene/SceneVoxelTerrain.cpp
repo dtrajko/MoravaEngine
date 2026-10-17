@@ -317,7 +317,7 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window* mainWindow)
         if (ImGui::CollapsingHeader("Show Details"))
         {
             std::string terrainPositionsSize = "Terrain Positions Size: " + std::to_string(m_TerrainVoxel->GetVoxelCount());
-            ImGui::Text(terrainPositionsSize.c_str());
+            ImGui::TextUnformatted(terrainPositionsSize.c_str());
             ImGui::SliderInt3("Terrain Scale", glm::value_ptr(m_TerrainScale), 1, 100);
             ImGui::SliderFloat("Terrain Noise Factor", &m_TerrainNoiseFactor, -0.5f, 0.5f);
         }
@@ -350,27 +350,27 @@ void SceneVoxelTerrain::UpdateImGui(float timestep, Window* mainWindow)
             char buffer[50];
 
             sprintf(buffer, "Screen Mouse Coord: [ %i, %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "Viewport Mouse Coord: [ %i, %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "Normalized Coord: [ %.3f %.3f ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "Clip Coord: [ %.3f %.3f ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "Eye Coord: [ %.3f %.3f %.3f %.3f ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "World Ray: [ %.3f, %.3f %.3f ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             ImGui::SliderFloat3("Test Point", glm::value_ptr(mp->m_TestPoint), -200.0f, 200.0f);

@@ -23,7 +23,7 @@ bool ImGuiWrapper::DrawVec3Control(const std::string& label, glm::vec3& values, 
 
 	ImGui::Columns(2);
 	ImGui::SetColumnWidth(0, columnWidth);
-	ImGui::Text(label.c_str());
+	ImGui::TextUnformatted(label.c_str());
 	ImGui::NextColumn();
 
 	ImGui::PushMultiItemsWidths(3, ImGui::CalcItemWidth());
@@ -165,7 +165,7 @@ void ImGuiWrapper::DrawMaterialUI(H2M::RefH2M<EnvMapMaterial> material, H2M::Ref
 	ImGui::SetColumnWidth(1, 200.0f);
 	ImGui::Text("UUID");
 	ImGui::NextColumn();
-	ImGui::Text(material->GetUUID().c_str());
+	ImGui::TextUnformatted(material->GetUUID().c_str());
 	ImGui::Columns(1);
 
 	auto materialName = material->GetName();
@@ -593,7 +593,7 @@ bool ImGuiWrapper::Property(const std::string& name, bool& value)
 {
 	bool modified = false;
 
-	ImGui::Text(name.c_str());
+	ImGui::TextUnformatted(name.c_str());
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
 
@@ -608,7 +608,7 @@ bool ImGuiWrapper::Property(const std::string& name, bool& value)
 
 bool ImGuiWrapper::Property(const std::string& name, float& value, float min, float max, PropertyFlag flags)
 {
-	ImGui::Text(name.c_str());
+	ImGui::TextUnformatted(name.c_str());
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
 
@@ -633,7 +633,7 @@ bool ImGuiWrapper::Property(const std::string& name, float& value, float min, fl
  */
 bool ImGuiWrapper::Property(const std::string& name, float& value, float speed, float min, float max, PropertyFlag flags)
 {
-	ImGui::Text(name.c_str());
+	ImGui::TextUnformatted(name.c_str());
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
 
@@ -660,7 +660,7 @@ bool ImGuiWrapper::Property(const std::string& name, glm::vec2& value, PropertyF
 
 bool ImGuiWrapper::Property(const std::string& name, glm::vec2& value, float min, float max, PropertyFlag flags)
 {
-	ImGui::Text(name.c_str());
+	ImGui::TextUnformatted(name.c_str());
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
 
@@ -692,7 +692,7 @@ bool ImGuiWrapper::Property(const std::string& name, glm::vec3& value, float min
 
 bool ImGuiWrapper::Property(const std::string& name, glm::vec3& value, float speed, float min, float max, PropertyFlag flags)
 {
-	ImGui::Text(name.c_str());
+	ImGui::TextUnformatted(name.c_str());
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
 
@@ -725,7 +725,7 @@ bool ImGuiWrapper::Property(const std::string& name, glm::vec4& value, PropertyF
 
 bool ImGuiWrapper::Property(const std::string& name, glm::vec4& value, float min, float max, PropertyFlag flags)
 {
-	ImGui::Text(name.c_str());
+	ImGui::TextUnformatted(name.c_str());
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
 
@@ -755,7 +755,7 @@ bool ImGuiWrapper::Property(const char* label, const char* value)
 {
 	bool modified = false;
 
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
 
@@ -776,7 +776,7 @@ bool ImGuiWrapper::Property(const char* label, int& value)
 {
 	bool modified = false;
 
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
 
@@ -799,7 +799,7 @@ bool ImGuiWrapper::Property(const char* label, float& value, float delta)
 {
 	bool modified = false;
 
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
 
@@ -823,7 +823,7 @@ bool ImGuiWrapper::Property(const char* label, glm::vec2& value, float delta)
 {
 	bool modified = false;
 
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
 	ImGui::NextColumn();
 	ImGui::PushItemWidth(-1);
 

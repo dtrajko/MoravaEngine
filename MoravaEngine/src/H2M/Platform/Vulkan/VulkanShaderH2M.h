@@ -148,7 +148,6 @@ namespace H2M
 		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set = 0);
 		ShaderMaterialDescriptorSet CreateDescriptorSets(uint32_t set, uint32_t numberOfSets);
 		const VkWriteDescriptorSet* GetDescriptorSet(const std::string& name, uint32_t set = 0) const;
-		ShaderMaterialDescriptorSet AllocateDescriptorSet(uint32_t set = 0) {}; // TODO - fix syntax error
 
 		static void ClearUniformBuffers();
 

@@ -42,7 +42,7 @@ namespace H2M::UI
 	{
 		bool modified = false;
 
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -72,7 +72,7 @@ namespace H2M::UI
 
 	static void Property(const char* label, const char* value)
 	{
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -91,7 +91,7 @@ namespace H2M::UI
 	{
 		bool modified = false;
 
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -113,7 +113,7 @@ namespace H2M::UI
 	{
 		bool modified = false;
 
-	 ImGui::Text(label);
+	 ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -135,7 +135,7 @@ namespace H2M::UI
 	{
 		bool modified = false;
 
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -157,7 +157,7 @@ namespace H2M::UI
 	{
 		bool modified = false;
 
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -179,7 +179,7 @@ namespace H2M::UI
 	{
 		bool modified = false;
 
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -201,7 +201,7 @@ namespace H2M::UI
 	{
 		bool modified = false;
 
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -224,7 +224,7 @@ namespace H2M::UI
 	{
 		bool modified = false;
 
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -246,7 +246,7 @@ namespace H2M::UI
 	{
 		bool modified = false;
 
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 
@@ -288,7 +288,7 @@ namespace H2M::UI
 
 	static void BeginCheckboxGroup(const char* label)
 	{
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::NextColumn();
 		ImGui::PushItemWidth(-1);
 	}
@@ -300,7 +300,7 @@ namespace H2M::UI
 		if (++s_CheckboxCount > 1)
 			ImGui::SameLine();
 
-		ImGui::Text(label);
+		ImGui::TextUnformatted(label);
 		ImGui::SameLine();
 
 		s_IDBuffer[0] = '#';

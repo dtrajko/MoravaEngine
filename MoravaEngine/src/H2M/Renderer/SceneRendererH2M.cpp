@@ -604,13 +604,13 @@ namespace H2M
 			if (UI::BeginTreeNode("Pipeline Statistics"))
 			{
 				const PipelineStatisticsH2M& pipelineStats = m_CommandBuffer->GetPipelineStatistics(frameIndex);
-				ImGui::Text("Input Assembly Vertices: %llu", pipelineStats.InputAssemblyVertices);
-				ImGui::Text("Input Assembly Primitives: %llu", pipelineStats.InputAssemblyPrimitives);
-				ImGui::Text("Vertex Shader Invocations: %llu", pipelineStats.VertexShaderInvocations);
-				ImGui::Text("Clipping Invocations: %llu", pipelineStats.ClippingInvocations);
-				ImGui::Text("Clipping Primitives: %llu", pipelineStats.ClippingPrimitives);
-				ImGui::Text("Fragment Shader Invocations: %llu", pipelineStats.FragmentShaderInvocations);
-				ImGui::Text("Compute Shader Invocations: %llu", pipelineStats.ComputeShaderInvocations);
+				ImGui::Text("Input Assembly Vertices: %llu", (unsigned long long)pipelineStats.InputAssemblyVertices);
+				ImGui::Text("Input Assembly Primitives: %llu", (unsigned long long)pipelineStats.InputAssemblyPrimitives);
+				ImGui::Text("Vertex Shader Invocations: %llu", (unsigned long long)pipelineStats.VertexShaderInvocations);
+				ImGui::Text("Clipping Invocations: %llu", (unsigned long long)pipelineStats.ClippingInvocations);
+				ImGui::Text("Clipping Primitives: %llu", (unsigned long long)pipelineStats.ClippingPrimitives);
+				ImGui::Text("Fragment Shader Invocations: %llu", (unsigned long long)pipelineStats.FragmentShaderInvocations);
+				ImGui::Text("Compute Shader Invocations: %llu", (unsigned long long)pipelineStats.ComputeShaderInvocations);
 				UI::EndTreeNode();
 			}
 
@@ -931,7 +931,7 @@ namespace H2M
 	{
 		H2M_CORE_ASSERT(!s_Data.ActiveScene, "");
 
-		memset(&s_Stats, 0, sizeof(SceneRendererStatsH2M));
+		s_Stats = SceneRendererStatsH2M();
 
 		{
 			// RendererH2M::Submit([]() {});

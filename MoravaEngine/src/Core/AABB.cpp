@@ -88,8 +88,8 @@ void AABB::TransformBounds(glm::vec3 positionObject, glm::quat rotationObject, g
 
     size_t vertexCount = m_Vertices.size() / m_VertexStride;
 
-    m_BoundMin.x, m_BoundMin.y, m_BoundMin.z = std::numeric_limits<float>::max();
-    m_BoundMax.x, m_BoundMax.y, m_BoundMax.z = std::numeric_limits<float>::min();
+    m_BoundMin = glm::vec3(std::numeric_limits<float>::max());
+    m_BoundMax = glm::vec3(std::numeric_limits<float>::lowest());
 
     for (size_t i = 0; i < vertexCount; i++)
     {

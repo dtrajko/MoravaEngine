@@ -15,10 +15,10 @@ public:
 	MoravaLayer(const std::string& name = "MoravaLayer");
 	virtual ~MoravaLayer();
 
-	virtual void OnAttach() = 0;
-	virtual void OnDetach() = 0;
-	virtual void OnUpdate(H2M::TimestepH2M ts) = 0;
-	virtual void OnEvent(H2M::EventH2M& event) = 0;
+	virtual void OnAttach() override = 0;
+	virtual void OnDetach() override = 0;
+	virtual void OnUpdate(H2M::TimestepH2M ts) override = 0;
+	virtual void OnEvent(H2M::EventH2M& event) override = 0;
 	virtual void OnImGuiRender() override {}; // Hazel version
 	virtual void OnImGuiRender(Window* mainWindow, Scene* scene) = 0; // MoravaEngine version
 

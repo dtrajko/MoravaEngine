@@ -22,6 +22,7 @@ namespace H2M
 #if defined(GRAPHICS_API_VULKAN)
 			case RendererAPITypeH2M::Vulkan: return RefH2M<VulkanComputePipelineH2M>::Create(computeShader);
 #endif
+			default: break;
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI");

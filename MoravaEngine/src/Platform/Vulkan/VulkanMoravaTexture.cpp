@@ -26,6 +26,7 @@ namespace Utils
 		case H2M::ImageFormatH2M::RGBA32F:  return VK_FORMAT_R32G32B32A32_SFLOAT;
 		case H2M::ImageFormatH2M::DEPTH32F: return VK_FORMAT_D32_SFLOAT;
 		case H2M::ImageFormatH2M::DEPTH24STENCIL8: return H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
+		default: break;
 		}
 
 		Log::GetLogger()->error("VulkanImageFormat: ImageFormatH2M not supported: '{0}'!", static_cast<int>(format));
@@ -39,6 +40,7 @@ namespace Utils
 		{
 		case H2M::TextureWrapH2M::Clamp:   return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 		case H2M::TextureWrapH2M::Repeat:  return VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		default: break;
 		}
 		H2M_CORE_ASSERT(false, "Unknown wrap mode");
 		return (VkSamplerAddressMode)0;
@@ -50,6 +52,7 @@ namespace Utils
 		{
 		case H2M::TextureFilterH2M::Linear:   return VK_FILTER_LINEAR;
 		case H2M::TextureFilterH2M::Nearest:  return VK_FILTER_NEAREST;
+		default: break;
 		}
 		H2M_CORE_ASSERT(false, "Unknown filter");
 		return (VkFilter)0;

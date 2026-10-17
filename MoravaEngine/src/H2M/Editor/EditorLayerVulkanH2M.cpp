@@ -87,6 +87,7 @@ namespace H2M
 				rendererAPI = "DirectX 11";
 				break;
 #endif
+			default: break;
 		}
 	}
 

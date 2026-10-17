@@ -22,10 +22,10 @@ public:
 	virtual ~VulkanMoravaTexture();
 
 	void Invalidate(); // from Hazel/Platform/Vulkan/VulkanTexture class
-	virtual bool Load(bool flipVert = false);
-	virtual void CreateAPISpecific();
-	virtual void Save();
-	virtual H2M::ImageFormatH2M GetFormat() { return m_Format; };
+	virtual bool Load(bool flipVert = false) override;
+	virtual void CreateAPISpecific() override;
+	virtual void Save() override;
+	virtual H2M::ImageFormatH2M GetFormat() override { return m_Format; };
 
 	// BEGIN pure virtual methods inherited from HazelTexture/Texture2D_H2M
 	virtual H2M::RefH2M<H2M::Image2D_H2M> GetImage() const override { return H2M::RefH2M<H2M::Image2D_H2M>(); }
@@ -45,9 +45,9 @@ public:
 
 	virtual bool IsLoaded() const override { return m_Buffer ? true : false; }; // used in H2M::Mesh
 
-	inline uint32_t GetID() const { return m_ID; };
-	inline uint32_t GetWidth() const { return m_Spec.Width; };
-	inline uint32_t GetHeight() const { return m_Spec.Height; };
+	inline uint32_t GetID() const override { return m_ID; };
+	inline uint32_t GetWidth() const override { return m_Spec.Width; };
+	inline uint32_t GetHeight() const override { return m_Spec.Height; };
 
 	virtual void Unbind() override;
 	virtual void Clear() override;

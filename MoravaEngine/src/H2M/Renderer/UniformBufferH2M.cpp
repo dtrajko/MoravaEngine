@@ -29,6 +29,7 @@ namespace H2M
 #if defined(GRAPHICS_API_VULKAN)
 			case RendererAPITypeH2M::Vulkan: return RefH2M<VulkanUniformBufferH2M>::Create(size, binding);
 #endif
+			default: break;
 		}
 
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI!");

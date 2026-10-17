@@ -48,7 +48,7 @@ namespace H2M
 
 		void GenerateMips();
 
-		virtual uint64_t GetHash() const { return (uint64_t)m_Image; }
+		virtual uint64_t GetHash() const override { return (uint64_t)m_Image; }
 
 		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_DescriptorImageInfo; }
 
@@ -105,7 +105,7 @@ namespace H2M
 
 		virtual void Bind(uint32_t slot = 0) const override {}
 
-		virtual ImageFormatH2M GetFormat() const { return m_Format; }
+		virtual ImageFormatH2M GetFormat() const override { return m_Format; }
 
 		virtual uint32_t GetWidth() const override { return m_Width; }
 		virtual uint32_t GetHeight() const override { return m_Height; }
@@ -114,7 +114,7 @@ namespace H2M
 
 		virtual bool operator==(const TextureH2M& other) const override { return false; }
 
-		virtual uint64_t GetHash() const { return (uint64_t)m_Image; }
+		virtual uint64_t GetHash() const override { return (uint64_t)m_Image; }
 
 		const VkDescriptorImageInfo& GetVulkanDescriptorInfo() const { return m_DescriptorImageInfo; }
 

@@ -448,6 +448,7 @@ void EnvMapEditorLayer::OnUpdate(float ts)
             m_ActiveScene->OnRenderRuntime(H2M::RefH2M<H2M::SceneRendererH2M>(), ts);
             break;
         }
+        default: break;
     }
 
     CameraSyncECS();
@@ -829,7 +830,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     sceneState = "Scene State: SIMULATE";
                     break;
             }
-            ImGui::Text(sceneState);
+            ImGui::TextUnformatted(sceneState);
 
             ImGui::Separator();
 
@@ -882,32 +883,32 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
                 char buffer[100];
                 sprintf(buffer, "Aspect Ratio  %.2f", m_ActiveCamera->GetAspectRatio());
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f",
                     m_ActiveCamera->GetPosition().x,
                     m_ActiveCamera->GetPosition().y,
                     m_ActiveCamera->GetPosition().z);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 sprintf(buffer, "Direction   X %.2f Y %.2f Z %.2f",
                     m_ActiveCamera->GetDirection().x,
                     m_ActiveCamera->GetDirection().y,
                     m_ActiveCamera->GetDirection().z);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 sprintf(buffer, "Front       X %.2f Y %.2f Z %.2f",
                     m_ActiveCamera->GetFront().x,
                     m_ActiveCamera->GetFront().y,
                     m_ActiveCamera->GetFront().z);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 sprintf(buffer, "Up          X %.2f Y %.2f Z %.2f",
                     m_ActiveCamera->GetUp().x,
                     m_ActiveCamera->GetUp().y,
                     m_ActiveCamera->GetUp().z);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f",
                     m_ActiveCamera->GetRight().x,
                     m_ActiveCamera->GetRight().y,
                     m_ActiveCamera->GetRight().z);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
             }
         }
         ImGui::End();
@@ -1028,7 +1029,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     std::string meshFullPath = "None";
 
                     std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
-                    ImGui::Text(fileName.c_str()); ImGui::SameLine();
+                    ImGui::TextUnformatted(fileName.c_str()); ImGui::SameLine();
                     if (ImGui::Button("...##Mesh"))
                     {
                         std::wstring fullPathW = Application::Get()->OpenFile();
@@ -1156,7 +1157,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             {
                 char buffer[100];
                 sprintf(buffer, "Can Viewport Receive Events ? %s", ImGuiWrapper::CanViewportReceiveEvents() ? "YES" : "NO");
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
 
                 ImGui::Separator();
 
@@ -1172,7 +1173,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                     Application::Get()->GetWindow()->SetEventLogging(eventLoggingEnabled);
                 }
 
-                if (ImGui::Checkbox("Show Physics Colliders", &m_ShowPhysicsColliders));
+                ImGui::Checkbox("Show Physics Colliders", &m_ShowPhysicsColliders);
 
                 float fovDegrees = GetMainCameraComponent().Camera.GetPerspectiveVerticalFOV();
                 if (ImGui::DragFloat("FOV", &fovDegrees, 1.0f, -60.0f, 180.0f)) {
@@ -1220,35 +1221,35 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
                 char buffer[100];
 
                 sprintf(buffer, "Main Window [ X %i Y %i ]", (int)m_ImGuiViewportMain.x, (int)m_ImGuiViewportMain.y);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
             }
         }
         ImGui::End();
@@ -1278,34 +1279,34 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
             char buffer[100];
 
             sprintf(buffer, "Render framebuffer size [ %i %i ]", (int)m_ViewportSize.x, (int)m_ViewportSize.y);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "ViewportBounds Min [ %i %i ]", (int)m_ViewportBounds[0].x, (int)m_ViewportBounds[0].y);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "ViewportBounds Max [ %i %i ]", (int)m_ViewportBounds[1].x, (int)m_ViewportBounds[1].y);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             glm::vec2 viewportBoundsDiff = m_ViewportBounds[1] - m_ViewportBounds[0];
             sprintf(buffer, "ViewportBounds Diff [ %i %i ]", (int)viewportBoundsDiff.x, (int)viewportBoundsDiff.y);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             m_MouseCoordsInViewport = GetMouseCoordsInViewport();
             sprintf(buffer, "Mouse Coordinates in Viewport [ %i %i ]", m_MouseCoordsInViewport.first, m_MouseCoordsInViewport.second);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             m_MouseCoordsInViewportFlipY = GetMouseCoordsInViewportFlipY();
             sprintf(buffer, "Mouse Coordinates in Viewport Flip Y [ %i %i ]", m_MouseCoordsInViewportFlipY.first, m_MouseCoordsInViewportFlipY.second);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "EntityID [ %i ]", m_EntityID);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();            
         }
         ImGui::End();
@@ -1817,11 +1818,11 @@ void EnvMapEditorLayer::DisplaySubmeshMaterialSelector(bool* p_open)
 
         ImGui::Text("Selected Entity: ");
         ImGui::SameLine();
-        ImGui::Text(entityTag.c_str());
+        ImGui::TextUnformatted(entityTag.c_str());
 
         ImGui::Text("Selected Mesh: ");
         ImGui::SameLine();
-        ImGui::Text(meshName.c_str());
+        ImGui::TextUnformatted(meshName.c_str());
 
         // Drop down for selecting a material for a specific submesh
         std::vector<std::string> materialNameStrings;

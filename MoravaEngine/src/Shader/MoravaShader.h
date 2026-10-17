@@ -118,8 +118,8 @@ public:
 
 	GLuint GetProgramID();
 
-	uint32_t GetRendererID() const;
-	void Bind();
+	uint32_t GetRendererID() const override;
+	void Bind() override;
 
 protected:
 	void CompileProgram();

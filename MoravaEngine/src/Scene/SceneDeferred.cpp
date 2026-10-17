@@ -196,15 +196,15 @@ void SceneDeferred::UpdateImGui(float timestep, Window* mainWindow)
         ImVec2 imageSize(192.0f, 192.0f);
 
         std::string gPositionText = std::string("gPosition [TextureID=") + std::to_string(gPosition) + std::string("]");
-        ImGui::Text(gPositionText.c_str());
+        ImGui::TextUnformatted(gPositionText.c_str());
         ImGui::Image((void*)(intptr_t)gPosition, imageSize);
 
         std::string gNormalText = std::string("gNormal [TextureID=") + std::to_string(gNormal) + std::string("]");
-        ImGui::Text(gNormalText.c_str());
+        ImGui::TextUnformatted(gNormalText.c_str());
         ImGui::Image((void*)(intptr_t)gNormal, imageSize);
 
         std::string gAlbedoSpecText = std::string("gAlbedoSpec [TextureID=") + std::to_string(gAlbedoSpec) + std::string("]");
-        ImGui::Text(gAlbedoSpecText.c_str());
+        ImGui::TextUnformatted(gAlbedoSpecText.c_str());
         ImGui::Image((void*)(intptr_t)gAlbedoSpec, imageSize);
     }
     ImGui::End();

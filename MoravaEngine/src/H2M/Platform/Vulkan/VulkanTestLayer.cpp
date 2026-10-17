@@ -186,7 +186,7 @@ namespace H2M {
 		// m_Meshes.push_back(RefH2M<ModelH2M>::Create("Models/Hazel/Sphere1m.fbx"));
 		s_Meshes.push_back(RefH2M<ModelH2M>::Create("Models/Cerberus/CerberusMaterials.fbx"));
 
-		/**** BEGIN the code that is not used anymore ****
+		 **** BEGIN the code that is not used anymore ****
 		RenderPassSpecification renderPassSpec;
 		FramebufferSpecificationH2M framebufferSpec;
 		framebufferSpec.DebugName = "GeoPassFramebufferSpec";
@@ -213,16 +213,16 @@ namespace H2M {
 			pipelineSpecification.DebugName = "PBR-Static";
 			s_Data.GeometryPipeline = Pipeline::Create(pipelineSpecification);
 		}
-		/**** END the code that is not used anymore ****
+		 **** END the code that is not used anymore ****
 	}
-	/**** END this version of the OnAttach method is outdated ****/
+	 **** END this version of the OnAttach method is outdated ****/
 
 	/**** BEGIN moved to VulkanRendererH2M ****
 	SceneRendererOptions& VulkanTestLayer::GetOptions()
 	{
 		return s_Data.Options;
 	}
-	/**** END moved to VulkanRendererH2M ****/
+	 **** END moved to VulkanRendererH2M ****/
 
 	/**** BEGIN code moved from VulkanTestLayer to VulkanRendererH2M ****
 	void VulkanTestLayer::MapUniformBuffersVTL(const glm::vec4& clearColor, const EditorCamera& camera)
@@ -308,7 +308,7 @@ namespace H2M {
 			shader->UnmapUniformBuffer(1, 0);
 		}
 	}
-	/**** END code moved from VulkanTestLayer to VulkanRendererH2M ****/
+	 **** END code moved from VulkanTestLayer to VulkanRendererH2M ****/
 
 	/**** BEGIN we don't need this method anymore, the only important part is mapping uniform buffers ****
 	 **** SceneRenderer::GeometryPass in Hazel Vulkan branch
@@ -352,7 +352,7 @@ namespace H2M {
 		HazelRenderer::GetRendererAPI()->EndRenderPass();
 
 #if 0
-		/**** BEGIN the old VulkanTestLayer code, belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****
+		 **** BEGIN the old VulkanTestLayer code, belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****
 
 		// HazelRenderer::Submit([=]() mutable {});
 		{
@@ -444,12 +444,12 @@ namespace H2M {
 				VK_CHECK_RESULT_H2M(vkEndCommandBuffer(drawCommandBuffer));
 			}
 
-			/**** END the old VulkanTestLayer code, belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****
+			 **** END the old VulkanTestLayer code, belongs to SceneRenderer::GeometryPass in Vulkan branch, here VulkanTestLayer::GeometryPass ****
 		}
 #endif
 
 	}
-	/**** END we don't need this method anymore, the only important part is mapping uniform buffers ****/
+	 **** END we don't need this method anymore, the only important part is mapping uniform buffers ****/
 
 	/**** BEGIN Vulkan ImGuizmo ****
 	void VulkanTestLayer::UpdateImGuizmo()
@@ -532,12 +532,12 @@ namespace H2M {
 			}
 		}
 	}
-	/**** END Vulkan ImGuizmo ****/
+	 **** END Vulkan ImGuizmo ****/
 
 	/**** BEGIN this longer version of the OnImGuiRender method is no longer needed ****
 	void VulkanTestLayer::OnImGuiRenderOld(::Window* mainWindow, ::Scene* scene)
 	{
-		/**** BEGIN Back to Vulkan // Hazel Live (17.02.2021) ****
+		 **** BEGIN Back to Vulkan // Hazel Live (17.02.2021) ****
 
 		static bool opt_fullscreen_persistant = true;
 		bool opt_fullscreen = opt_fullscreen_persistant;
@@ -580,7 +580,7 @@ namespace H2M {
 
 		// ImGui::End();
 
-		/**** END Back to Vulkan // Hazel Live (17.02.2021) ****/
+		 **** END Back to Vulkan // Hazel Live (17.02.2021) ****/
 
 		/**** BEGIN Vulkan ImGui Render Pass ****
 		{
@@ -665,8 +665,8 @@ namespace H2M {
 			ImGui::End();
 			ImGui::PopStyleVar();
 		}
-		/**** END Vulkan ImGui Render Pass ****
+		 **** END Vulkan ImGui Render Pass ****
 	}
-	/**** END this longer version of the OnImGuiRender method is no longer needed ****/
+	 **** END this longer version of the OnImGuiRender method is no longer needed ****/
 
 }

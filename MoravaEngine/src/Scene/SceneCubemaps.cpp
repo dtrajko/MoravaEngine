@@ -127,30 +127,30 @@ void SceneCubemaps::UpdateImGui(float timestep, Window* mainWindow)
         ImGui::Separator();
         std::string screenMouseCoords = "Screen Mouse Coord: MouseX = " + std::to_string(mp->m_ScreenMouseX) +
             " MouseY = " + std::to_string(mp->m_ScreenMouseY);
-        ImGui::Text(screenMouseCoords.c_str());
+        ImGui::TextUnformatted(screenMouseCoords.c_str());
 
         ImGui::Separator();
         std::string viewportMouseCoords = "Viewport Mouse Coord: MouseX = " + std::to_string(mp->m_Viewport.MouseX) +
             " MouseY = " + std::to_string(mp->m_Viewport.MouseY);
-        ImGui::Text(viewportMouseCoords.c_str());
+        ImGui::TextUnformatted(viewportMouseCoords.c_str());
 
         ImGui::Separator();
         std::string normalizedCoords = "Normalized Coords: X = " + std::to_string(mp->m_NormalizedCoords.x) +
                                                          " Y = " + std::to_string(mp->m_NormalizedCoords.y);
-        ImGui::Text(normalizedCoords.c_str());
+        ImGui::TextUnformatted(normalizedCoords.c_str());
         ImGui::Separator();
         std::string clipCoords = "Clip Coords: X = " + std::to_string(mp->m_ClipCoords.x) +
                                              " Y = " + std::to_string(mp->m_ClipCoords.y);
-        ImGui::Text(clipCoords.c_str());
+        ImGui::TextUnformatted(clipCoords.c_str());
         ImGui::Separator();
         std::string eyeCoords = "Eye Coords: X = " + std::to_string(mp->m_EyeCoords.x) + " Y = " + std::to_string(mp->m_EyeCoords.y) +
             " Z = " + std::to_string(mp->m_EyeCoords.z) + " W = " + std::to_string(mp->m_EyeCoords.w);
-        ImGui::Text(eyeCoords.c_str());
+        ImGui::TextUnformatted(eyeCoords.c_str());
         ImGui::Separator();
         std::string worldRay = "World Ray: X = " + std::to_string(mp->m_WorldRay.x) +
             " Y = " + std::to_string(mp->m_WorldRay.y) +
             " Z = " + std::to_string(mp->m_WorldRay.z);
-        ImGui::Text(worldRay.c_str());
+        ImGui::TextUnformatted(worldRay.c_str());
         ImGui::Separator();
         ImGui::Checkbox("Terrain Enabled", &m_TerrainEnabled);
         ImGui::Checkbox("Cube Terrain Enabled", &m_CubeTerrainEnabled);

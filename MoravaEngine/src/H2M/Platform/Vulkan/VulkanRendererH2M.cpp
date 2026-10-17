@@ -536,7 +536,7 @@ namespace H2M
 
 		/**** BEGIN Non-composite ****
 		RefH2M<VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<VulkanPipeline>();
-		/**** END Non-composite ****/
+		 **** END Non-composite ****/
 		/**** BEGIN Composite ****/
 		RefH2M<VulkanPipelineH2M> vulkanPipeline = s_MeshPipeline.As<VulkanPipelineH2M>(); // to be removed from VulkanRenderer
 		/**** END Composite ****/
@@ -1176,7 +1176,8 @@ namespace H2M
 						{
 							ImGui::Columns(2);
 
-							ImGui::InputText("##envmapfilepath", "", 256, ImGuiInputTextFlags_ReadOnly);
+							char envMapFilePath[256] = {}; // read-only and empty: ImGui still needs a writable buffer of the given size
+							ImGui::InputText("##envmapfilepath", envMapFilePath, sizeof(envMapFilePath), ImGuiInputTextFlags_ReadOnly);
 
 							if (ImGui::BeginDragDropTarget())
 							{
@@ -1240,7 +1241,7 @@ namespace H2M
 							std::string meshFullPath = "None";
 
 							std::string fileName = Util::GetFileNameFromFullPath(meshFullPath);
-							ImGui::Text(fileName.c_str()); ImGui::SameLine();
+							ImGui::TextUnformatted(fileName.c_str()); ImGui::SameLine();
 							if (ImGui::Button("...##Mesh"))
 							{
 								std::wstring fullPathW = Application::Get()->OpenFile();

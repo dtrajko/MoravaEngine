@@ -61,8 +61,8 @@ public:
 
 	static H2M::RefH2M<MoravaFramebuffer> Create(const FramebufferSpecification& spec);
 
-	inline uint32_t GetWidth() const { return m_FramebufferSpecs.Width; };
-	inline uint32_t GetHeight() const { return m_FramebufferSpecs.Height; };
+	inline uint32_t GetWidth() const override { return m_FramebufferSpecs.Width; };
+	inline uint32_t GetHeight() const override { return m_FramebufferSpecs.Height; };
 	inline const uint32_t GetID() const { return m_FBO; };
 
 	void Release();

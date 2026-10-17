@@ -29,6 +29,7 @@ namespace H2M
 				case PrimitiveTopologyH2M::LineStrip:		return VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
 				case PrimitiveTopologyH2M::TriangleStrip:	return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 				case PrimitiveTopologyH2M::TriangleFan:	return VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+				default: break;
 			}
 
 			H2M_CORE_ASSERT(false, "Unknown toplogy");
@@ -48,6 +49,7 @@ namespace H2M
 			case ShaderDataTypeH2M::Int2:   return VK_FORMAT_R32G32_SINT;
 			case ShaderDataTypeH2M::Int3:   return VK_FORMAT_R32G32B32_SINT;
 			case ShaderDataTypeH2M::Int4:   return VK_FORMAT_R32G32B32A32_SINT; // bone IDs (skinned meshes)
+			default: break;
 		}
 		H2M_CORE_ASSERT(false);
 		return VK_FORMAT_UNDEFINED;
@@ -151,7 +153,7 @@ namespace H2M
 			// Renderpass this pipeline is attached to
 			/**** BEGIN Non-composite ****
 			pipelineCreateInfo.renderPass = VulkanContextH2M::Get()->GetSwapChain().GetRenderPass();
-			/**** END Non-composite ****/
+			 **** END Non-composite ****/
 			/**** BEGIN Composite ****/
 			pipelineCreateInfo.renderPass = framebuffer->GetRenderPass();
 			/**** END Composite ****/
@@ -254,7 +256,7 @@ namespace H2M
 			vertexInputBinding.binding = 0;
 			/**** BEGIN Non-composite ****
 			vertexInputBinding.stride = sizeof(Vertex);
-			/**** END Non-composite ****/
+			 **** END Non-composite ****/
 			/**** BEGIN Composite ****/
 			vertexInputBinding.stride = layout.GetStride();
 			/**** END Composite ****/
@@ -289,7 +291,7 @@ namespace H2M
 			vertexInputAttributes[4].location = 4;
 			vertexInputAttributes[4].format = VK_FORMAT_R32G32_SFLOAT;
 			vertexInputAttributes[4].offset = offsetof(Vertex, Texcoord);
-			/**** END Non-composite ****/
+			 **** END Non-composite ****/
 
 			/**** BEGIN Composite ****/
 			uint32_t location = 0;

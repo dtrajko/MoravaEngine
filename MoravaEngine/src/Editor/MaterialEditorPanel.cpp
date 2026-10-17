@@ -27,7 +27,7 @@ void MaterialEditorPanel::OnImGuiRender(bool* p_open)
 
 		// Material section
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)materialIndex++, flags, materialName.c_str());
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)materialIndex++, flags, "%s", materialName.c_str());
 
 		bool materialDelete = false;
 		bool materialClone = false;

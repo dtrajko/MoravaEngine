@@ -15,6 +15,9 @@ namespace H2M {
 	class RefCountedH2M
 	{
 	public:
+		// RefH2M deletes through the type it holds (often a base class): the derived class's destructor must run
+		virtual ~RefCountedH2M() = default;
+
 		void IncRefCount() const
 		{
 			m_RefCount++;

@@ -43,7 +43,7 @@ private:
 	virtual void SetupModels() override;
 	virtual void SetupFramebuffers() override;
 
-	void SetupShaders(); // Usually in Renderer* classes
+	void SetupShaders() override; // Usually in Renderer* classes
 
 	bool OnKeyPressed(H2M::KeyPressedEventH2M& e);
 

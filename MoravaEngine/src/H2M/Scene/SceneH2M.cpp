@@ -431,6 +431,7 @@ namespace H2M
 			moravaShaderSpec.PixelShaderPath = "Shaders/HLSL/UnlitPixelShader.hlsl";
 			break;
 #endif
+		default: break;
 		}
 		moravaShaderSpec.ForceCompile = false;
 		auto skyboxShader = MoravaShader::Create(moravaShaderSpec);

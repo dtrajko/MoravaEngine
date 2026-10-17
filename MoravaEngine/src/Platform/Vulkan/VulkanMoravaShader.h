@@ -84,7 +84,7 @@ public:
 	virtual void CreateFromFileGeometry(const char* geometryLocation) override;
 	virtual void CreateFromFileCompute(const char* computeLocation) override;
 
-	virtual void Validate();
+	virtual void Validate() override;
 	virtual void ClearShader() override;
 
 	static std::string ReadFile(const char* fileLocation);
@@ -95,7 +95,7 @@ public:
 
 protected:
 	void CompileProgram();
-	virtual void GetUniformLocations();
+	virtual void GetUniformLocations() override;
 
 	void CompileShader(const char* vertexCode, const char* fragmentCode);
 	void CompileShader(const char* vertexCode, const char* geometryCode, const char* fragmentCode);

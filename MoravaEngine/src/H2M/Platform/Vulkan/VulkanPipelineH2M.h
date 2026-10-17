@@ -23,8 +23,8 @@ namespace H2M
 		VulkanPipelineH2M(const PipelineSpecificationH2M& spec);
 		virtual ~VulkanPipelineH2M();
 
-		virtual PipelineSpecificationH2M& GetSpecification() { return m_Specification; }
-		virtual const PipelineSpecificationH2M& GetSpecification() const { return m_Specification; }
+		virtual PipelineSpecificationH2M& GetSpecification() override { return m_Specification; }
+		virtual const PipelineSpecificationH2M& GetSpecification() const override { return m_Specification; }
 
 		virtual void Invalidate() override;
 		void InvalidateEnvMapVulkan();

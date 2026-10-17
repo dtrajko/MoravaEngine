@@ -36,6 +36,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:    return RefH2M<DX11Context>::Create(window);
 #endif
+			default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI_H2M");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI_H2M");

@@ -121,6 +121,7 @@ void Application::OnInit()
 			PushLayer(new DX11TestLayer("DX11TestLayer"));
 			break;
 #endif
+		default: break;
 	}
 
 	float targetFPS = 60.0f;
@@ -174,7 +175,7 @@ void Application::Run()
 	const auto loopStart = std::chrono::steady_clock::now();
 
 	// Loop until window closed
-	while (m_Running = !m_Window->GetShouldClose())
+	while ((m_Running = !m_Window->GetShouldClose()))
 	{
 		if (m_CommandLine.ExitAfterSeconds > 0.0f &&
 			std::chrono::duration<float>(std::chrono::steady_clock::now() - loopStart).count() >= m_CommandLine.ExitAfterSeconds)
@@ -232,6 +233,7 @@ void Application::Run()
 						EnvMapVulkanRenderer::Draw(m_Scene->GetCamera()); // replace with m_Scene->OnRenderEditor()
 						// TODO EnvMapVulkanRenderer::Render() (?)
 						break;
+					default: break;
 				}
 				break;
 #endif
@@ -240,6 +242,7 @@ void Application::Run()
 				DX11Renderer::Draw(m_Scene->GetCamera());
 				break;
 #endif
+			default: break;
 			}
 
 			if (m_EnableImGui)
@@ -313,6 +316,7 @@ bool Application::OnWindowResize(H2M::WindowResizeEventH2M& e)
 		}
 		break;
 #endif
+		default: break;
 	}
 
 	return false;

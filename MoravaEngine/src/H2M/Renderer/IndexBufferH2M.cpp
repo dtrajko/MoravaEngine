@@ -37,6 +37,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:    return RefH2M<DX11IndexBuffer>::Create(size);
 #endif
+			default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -57,6 +58,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:    return RefH2M<DX11IndexBuffer>::Create(data, size);
 #endif
+			default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");

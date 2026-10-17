@@ -51,6 +51,7 @@ namespace H2M
 				result = RefH2M<DX11Shader>::Create(filepath, forceCompile);
 				break;
 #endif
+			default: break;
 		}
 		s_AllShaders.push_back(result);
 		return result;
@@ -74,6 +75,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   result = DX11Shader::CreateFromString(source);
 #endif
+			default: break;
 		}
 		s_AllShaders.push_back(result);
 		return result;

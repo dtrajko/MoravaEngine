@@ -113,6 +113,7 @@ H2M::RefH2M<MoravaShader> MoravaShader::Create(const char* vertexLocation, const
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 #endif
+	default: break;
 	}
 	s_AllShaders.push_back(result);
 	return result;
@@ -135,6 +136,7 @@ H2M::RefH2M<MoravaShader> MoravaShader::Create(const char* vertexLocation, const
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 #endif
+	default: break;
 	}
 	s_AllShaders.push_back(result);
 	return result;
@@ -157,6 +159,7 @@ H2M::RefH2M<MoravaShader> MoravaShader::Create(const char* computeLocation, bool
 		Log::GetLogger()->error("Not implemented for Vulkan API!");
 		break;
 #endif
+	default: break;
 	}
 	s_AllShaders.push_back(result);
 	return result;

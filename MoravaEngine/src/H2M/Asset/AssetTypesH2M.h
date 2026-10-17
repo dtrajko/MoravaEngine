@@ -61,6 +61,7 @@ namespace H2M {
 				case AssetTypeH2M::Material:    return "Material";
 				case AssetTypeH2M::Texture:     return "Texture";
 				case AssetTypeH2M::EnvMap:     return "EnvMap";
+				default: break;
 			}
 		
 			H2M_CORE_ASSERT(false, "Unknown Asset Type");

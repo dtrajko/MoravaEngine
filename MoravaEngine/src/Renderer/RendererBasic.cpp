@@ -74,6 +74,7 @@ void RendererBasic::AppendRendererInfo(WindowSpecification& windowSpecification)
 #if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:   rendererName = DX11RendererBasic::RendererName(); break;
 #endif
+		default: break;
 	}
 	if (!rendererName)
 	{
@@ -98,6 +99,7 @@ void RendererBasic::InitDebug()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::InitDebug();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -117,6 +119,7 @@ void RendererBasic::EnableCulling()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableCulling();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -136,6 +139,7 @@ void RendererBasic::DisableCulling()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableCulling();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -155,6 +159,7 @@ void RendererBasic::EnableTransparency()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableTransparency();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -174,6 +179,7 @@ void RendererBasic::DisableTransparency()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableTransparency();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -193,6 +199,7 @@ void RendererBasic::EnableDepthBuffer()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableDepthBuffer();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -212,6 +219,7 @@ void RendererBasic::DisableDepthBuffer()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableDepthBuffer();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -231,6 +239,7 @@ void RendererBasic::ClearDepthBuffer()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::ClearDepthBuffer();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -250,6 +259,7 @@ void RendererBasic::EnableDepthTest()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableDepthTest();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -269,6 +279,7 @@ void RendererBasic::DisableDepthTest()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableDepthTest();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -288,6 +299,7 @@ void RendererBasic::EnableMSAA()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableMSAA();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -307,6 +319,7 @@ void RendererBasic::DisableMSAA()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableMSAA();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -326,6 +339,7 @@ void RendererBasic::EnableBlend()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableBlend();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -345,6 +359,7 @@ void RendererBasic::DisableBlend()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableBlend();
 #endif
+	default: break;
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
@@ -365,6 +380,7 @@ void RendererBasic::EnableWireframe()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::EnableWireframe();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -384,6 +400,7 @@ void RendererBasic::DisableWireframe()
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DisableWireframe();
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -403,6 +420,7 @@ void RendererBasic::SetViewportSize(uint32_t width, uint32_t height)
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetViewportSize(width, height);
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -422,6 +440,7 @@ void RendererBasic::SetDefaultFramebuffer(unsigned int width, unsigned int heigh
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetDefaultFramebuffer(width, height);
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -441,6 +460,7 @@ void RendererBasic::RenderPassMain(Scene* scene, glm::mat4 projectionMatrix, Win
 #if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::RenderPassMain(scene, projectionMatrix, mainWindow);
 #endif
+		default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -466,6 +486,7 @@ void RendererBasic::Clear()
 #if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::Clear();
 #endif
+		default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -485,6 +506,7 @@ void RendererBasic::Clear(float r, float g, float b, float a)
 #if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::Clear(r, g, b, a);
 #endif
+		default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -504,6 +526,7 @@ void RendererBasic::DrawIndexed(uint32_t indexCount, uint32_t startIndexLocation
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DrawIndexed(indexCount, startIndexLocation, baseVertexLocation, indicesPtr);
 #endif
+	default: break;
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
@@ -524,6 +547,7 @@ void RendererBasic::SetLineThickness(float thickness)
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetLineThickness(thickness);
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -542,6 +566,7 @@ void RendererBasic::DrawIndexed(uint32_t count, H2M::PrimitiveTypeH2M type, bool
 	case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DrawIndexed(count, type, depthTest);
 #endif
 		// case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DrawIndexed(count, type, depthTest);
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -559,6 +584,7 @@ void RendererBasic::DrawLines(RefH2M<H2M::VertexArrayH2M> vertexArray, uint32_t 
 	case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::DrawLines(vertexArray, vertexCount);
 #endif
 		// case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::DrawIndexed(count, type, depthTest);
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -578,6 +604,7 @@ void RendererBasic::SetLineWidth(float width)
 #if defined(GRAPHICS_API_DIRECTX11)
 	case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetLineWidth(width);
 #endif
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -602,6 +629,7 @@ void RendererBasic::SetPolygonMode(PolygonMode polygonMode)
 	case H2M::RendererAPITypeH2M::Vulkan: return VulkanRendererBasic::SetPolygonMode(polygonMode);
 #endif
 		// case H2M::RendererAPITypeH2M::DX11:   return DX11RendererBasic::SetPolygonMode(polygonMode);
+	default: break;
 	}
 	Log::GetLogger()->error("Unknown RendererAPI");
 	H2M_CORE_ASSERT(false, "Unknown RendererAPI");

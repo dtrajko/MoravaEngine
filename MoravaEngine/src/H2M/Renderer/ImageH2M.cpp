@@ -35,6 +35,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 		case RendererAPITypeH2M::DX11:   return RefH2M<DX11Image2D>::Create(format, width, height);
 #endif
+		default: break;
 		}
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 		return RefH2M<Image2D_H2M>();
@@ -54,6 +55,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 		case RendererAPITypeH2M::DX11:   return RefH2M<DX11Image2D>::Create(format, width, height);
 #endif
+		default: break;
 		}
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 		return RefH2M<Image2D_H2M>();
@@ -73,6 +75,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 		case RendererAPITypeH2M::DX11:   return RefH2M<DX11Image2D>::Create(specification);
 #endif
+		default: break;
 		}
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 		return RefH2M<Image2D_H2M>();

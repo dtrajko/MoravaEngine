@@ -124,6 +124,7 @@ namespace H2M
 				{
 					case SceneName::HAZEL_VULKAN: return new VulkanRendererH2M();
 					case SceneName::ENV_MAP_VULKAN: return new EnvMapVulkanRenderer();
+					default: break;
 				}
 				Log::GetLogger()->error("Unknown RendererAPI");
 				H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -132,6 +133,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   return new DX11Renderer();
 #endif
+			default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -221,14 +223,15 @@ namespace H2M
 		{
 #if defined(GRAPHICS_API_OPENGL)
 		case RendererAPITypeH2M::OpenGL:
-			initFunc; // = OpenGLRenderer::Init;
+			// initFunc = OpenGLRenderer::Init;
 			break;
 #endif
 #if defined(GRAPHICS_API_VULKAN)
 		case RendererAPITypeH2M::Vulkan:
-			initFunc; // = VulkanRenderer::Init;
+			// initFunc = VulkanRenderer::Init;
 			break;
 #endif
+		default: break;
 		}
 
 		// initFunc();
@@ -380,7 +383,7 @@ namespace H2M
 				}
 			}
 		}
-		/**** END The obsolete code moved to OpenGLRenderer ****/
+		 **** END The obsolete code moved to OpenGLRenderer ****/
 	}
 
 	void RendererH2M::EndRenderPass()
@@ -393,7 +396,7 @@ namespace H2M
 		s_Data->m_ActiveRenderPass->GetSpecification().TargetFramebuffer->Unbind();
 		s_Data->m_ActiveRenderPass = nullptr;
 
-		/**** END the old version of the method ****/
+		 **** END the old version of the method ****/
 	}
 
 	// Used by OpenGLRenderer
@@ -459,7 +462,7 @@ namespace H2M
 
 		RendererH2M::DrawIndexed(6, PrimitiveType::Triangles, depthTest);
 
-		/**** END the old version of the method ****/
+		 **** END the old version of the method ****/
 	}
 
 	void RendererH2M::SubmitMesh(RefH2M<ModelH2M> mesh, const glm::mat4& transform, RefH2M<MaterialInstanceH2M> overrideMaterial)
