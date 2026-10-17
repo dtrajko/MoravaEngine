@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.15)
 
 project(MoravaEngine VERSION 0.0.1 LANGUAGES C CXX)
 
+# macOS: GLFW's and nfd's Cocoa code is Objective-C (.m). Enabled here, for every folder: GLFW enables it only in its
+# own, and the files of the other folders then have no compile rule
+if(APPLE)
+    enable_language(OBJC)
+endif()
+
 # =========================================================
 # GLOBAL SETTINGS
 # =========================================================
@@ -269,6 +275,8 @@ endif()
 
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PRIVATE HZ_PLATFORM_WINDOWS NOMINMAX WIN32_LEAN_AND_MEAN)
+elseif(APPLE)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE HZ_PLATFORM_MACOS)
 elseif(UNIX)
     target_compile_definitions(${PROJECT_NAME} PRIVATE HZ_PLATFORM_LINUX)
 endif()
