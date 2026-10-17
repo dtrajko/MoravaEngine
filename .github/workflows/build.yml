@@ -34,7 +34,7 @@ jobs:
           - name: GCC OpenGL
             cc: gcc
             cxx: g++
-            cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=COTTAGE
+            cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=HAZEL_ENV_MAP
 
     steps:
       # Only the latest commit (the history is ~700 MB), the submodules shallow too
@@ -57,7 +57,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: vendor/cross-platform/shaderc/third_party
-          key: shaderc-deps-${{ hashFiles('vendor/cross-platform/shaderc/DEPS') }}
+          key: shaderc-deps-${{ runner.os }}-${{ hashFiles('vendor/cross-platform/shaderc/DEPS') }}
 
       - name: Download shaderc dependencies
         if: steps.shaderc-deps.outputs.cache-hit != 'true'
@@ -85,3 +85,60 @@ jobs:
         env:
           CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
         run: cmake --build build --parallel -- -k 0
+
+  # One job per graphics API: each compiles only its own API's code, so a missing #if or include shows up here
+  windows:
+    name: Windows ${{ matrix.name }}
+    runs-on: windows-2025-vs2026
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: MSVC Vulkan
+            cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
+          - name: MSVC OpenGL
+            cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=HAZEL_ENV_MAP
+          - name: MSVC DirectX 11
+            cmake-options: -DMORAVA_DIRECTX11=ON -DMORAVA_SCENE=DX11
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          submodules: recursive
+
+      # CMake always needs Vulkan's headers and vulkan-1.lib; the version of the SDK used for development
+      - name: Vulkan SDK
+        uses: jakoch/install-vulkan-sdk-action@v1.7.0
+        with:
+          vulkan_version: 1.4.357.0
+          cache: true
+
+      - name: Cache shaderc dependencies
+        id: shaderc-deps
+        uses: actions/cache@v6
+        with:
+          path: vendor/cross-platform/shaderc/third_party
+          key: shaderc-deps-${{ runner.os }}-${{ hashFiles('vendor/cross-platform/shaderc/DEPS') }}
+
+      - name: Download shaderc dependencies
+        if: steps.shaderc-deps.outputs.cache-hit != 'true'
+        run: python vendor/cross-platform/shaderc/utils/git-sync-deps
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2.24
+        with:
+          key: windows-${{ matrix.name }}
+          max-size: 2G
+
+      # Ninja (for ccache) needs the MSVC environment of vcvars64.bat, which lasts for one step only: configure and build
+      # together. cmd doesn't stop at a failed command by itself, hence the "|| exit /b 1"
+      - name: Configure and build
+        shell: cmd
+        env:
+          CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
+        run: |
+          for /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do set VS_PATH=%%i
+          call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat" || exit /b 1
+          cmake -S MoravaEngine -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DMORAVA_WARNINGS_AS_ERRORS=ON -DCMAKE_C_COMPILER=cl -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ${{ matrix.cmake-options }} || exit /b 1
+          cmake --build build --parallel -- -k 0 || exit /b 1
