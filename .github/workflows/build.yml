@@ -1,0 +1,77 @@
+# Builds MoravaEngine on every push to master and on pull requests (no GPU on GitHub's runners: build checks,
+# later a short run on Mesa's CPU drivers). Release builds: faster, and far smaller than Debug's debug info.
+name: Build
+
+on:
+  push:
+    branches: [master]
+    paths-ignore: ['**.md', 'MoravaEngine/Screenshots/**']
+  pull_request:
+    paths-ignore: ['**.md', 'MoravaEngine/Screenshots/**']
+
+# A new push cancels the run of the previous one on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: GCC Vulkan
+            cc: gcc
+            cxx: g++
+            cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
+
+    steps:
+      # Only the latest commit (the history is ~700 MB), the submodules shallow too
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build pkg-config python3 \
+            libvulkan-dev libgl1-mesa-dev libglu1-mesa-dev \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev \
+            libwayland-dev wayland-protocols libgtk-3-dev zlib1g-dev
+
+      # shaderc's own dependencies (glslang, SPIRV-Tools, SPIRV-Headers...): downloaded by its script, kept until shaderc changes
+      - name: Cache shaderc dependencies
+        id: shaderc-deps
+        uses: actions/cache@v4
+        with:
+          path: vendor/cross-platform/shaderc/third_party
+          key: shaderc-deps-${{ hashFiles('vendor/cross-platform/shaderc/DEPS') }}
+
+      - name: Download shaderc dependencies
+        if: steps.shaderc-deps.outputs.cache-hit != 'true'
+        run: python3 vendor/cross-platform/shaderc/utils/git-sync-deps
+
+      # Compiled files kept between runs: after the first run only what changed is compiled again
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: linux-${{ matrix.cc }}-${{ matrix.name }}
+          max-size: 2G
+
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: >
+          cmake -S MoravaEngine -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          ${{ matrix.cmake-options }}
+
+      # The precompiled header needs these for ccache to reuse results
+      - name: Build
+        env:
+          CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
+        run: cmake --build build --parallel
