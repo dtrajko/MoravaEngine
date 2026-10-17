@@ -1,5 +1,7 @@
 # MoravaEngine
 
+[![Build](https://github.com/dtrajko/MoravaEngine/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/dtrajko/MoravaEngine/actions/workflows/build.yml)
+
 ## About
 2D/3D graphics engine written in C++.
 
