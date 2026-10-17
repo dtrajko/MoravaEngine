@@ -574,7 +574,19 @@ namespace H2M
 
 	void VulkanSwapChainH2M::BeginFrame()
 	{
-		VK_CHECK_RESULT_H2M(AcquireNextImage(m_Semaphores.PresentComplete, &m_CurrentBufferIndex));
+		VkResult result = AcquireNextImage(m_Semaphores.PresentComplete, &m_CurrentBufferIndex);
+		// The window changed size before its resize event arrived (X11 and Wayland do this while an edge is dragged):
+		// recreate the swapchain at the surface's current size (Create reads it) and acquire again.
+		// Suboptimal still delivers an image; Present recreates the swapchain after it.
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			OnResize(m_Width, m_Height);
+			result = AcquireNextImage(m_Semaphores.PresentComplete, &m_CurrentBufferIndex);
+		}
+		if (result != VK_SUBOPTIMAL_KHR)
+		{
+			VK_CHECK_RESULT_H2M(result);
+		}
 	}
 
 	void VulkanSwapChainH2M::Present()
@@ -609,9 +621,9 @@ namespace H2M
 		// This ensures that the image is not presented to the windowing system until all commands have been submitted
 		VkResult result = QueuePresent(m_Device->GetGraphicsQueue(), m_CurrentBufferIndex, renderComplete);
 
-		if (result != VK_SUCCESS || result == VK_SUBOPTIMAL_KHR)
+		if (result != VK_SUCCESS)
 		{
-			if (result == VK_ERROR_OUT_OF_DATE_KHR)
+			if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 			{
 				// Swap chain is no longer compatible with the surface and needs to be recreated
 				OnResize(m_Width, m_Height);

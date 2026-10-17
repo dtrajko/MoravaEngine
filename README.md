@@ -133,7 +133,7 @@ Run it from the same folder:
 ./build-linux/MoravaEngine
 ```
 
-In WSL2 the window opens on the Windows desktop (WSLg). The only Vulkan device there is Mesa's llvmpipe, which renders on the CPU: the editor works, but at a few frames per second and without ray tracing. For full speed, run on native Linux with the GPU's Vulkan driver. Building in WSL2 is also much faster when the build folder is on the Linux file system, e.g. `-B ~/morava-build` instead of `-B build-linux`.
+In WSL2 the window opens on the Windows desktop (WSLg). There the engine uses X11 (through XWayland) rather than Wayland, because WSLg gives X11 windows a full frame (minimize, maximize, close, resizable edges). The only Vulkan device there is Mesa's llvmpipe, which renders on the CPU: the editor works, but at a few frames per second and without ray tracing. For full speed, run on native Linux with the GPU's Vulkan driver. Building in WSL2 is also much faster when the build folder is on the Linux file system, e.g. `-B ~/morava-build` instead of `-B build-linux`.
 
 ### Select the graphics APIs and the scene
 
@@ -277,7 +277,7 @@ Older editor scenes (`EDITOR`, `EDITOR_IMGUIZMO`):
 
 The Vulkan editor on Linux (Ubuntu in WSL2, rendered by Mesa's llvmpipe on the CPU):
 
-![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2026-10-16_22-22-15.png)
+![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2026-10-17_03-56-20.png)
 
 ![image](https://raw.githubusercontent.com/dtrajko/MoravaEngine/master/MoravaEngine/Screenshots/2021-09-15_04-36-54.jpg)
 

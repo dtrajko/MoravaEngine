@@ -14,6 +14,7 @@
 #include "Renderer/RendererBasic.h"
 
 #include <cmath>
+#include <cstdlib>
 #include <filesystem>
 #include <stdexcept>
 
@@ -106,6 +107,16 @@ void GLFWWindow::InitGLFW(const WindowSpecification& props)
 	{
 		// TODO: glfwTerminate on system shutdown
 
+#if defined(__linux__)
+		// In WSL (WSLg) a Wayland window gets libdecor's frame: only a close button, edges that don't resize, and a
+		// shadow that stays behind when Windows maximizes the window. An X11 window gets Weston's full frame
+		// (minimize, maximize, close, resizable). Native Linux stays on GLFW's choice (Wayland on a Wayland desktop).
+		if (std::getenv("WSL_DISTRO_NAME") && std::getenv("DISPLAY") && glfwPlatformSupported(GLFW_PLATFORM_X11))
+		{
+			glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+		}
+#endif
+
 		// Initialize GLFW
 		if (!glfwInit())
 		{
@@ -118,7 +129,10 @@ void GLFWWindow::InitGLFW(const WindowSpecification& props)
 		glfwSetErrorCallback(GLFWErrorCallback);
 		s_GLFWInitialized = true;
 
-		Log::GetLogger()->info("GLFW initialized.");
+		const int platform = glfwGetPlatform();
+		Log::GetLogger()->info("GLFW initialized (platform: {0}).",
+			platform == GLFW_PLATFORM_WIN32 ? "Win32" : platform == GLFW_PLATFORM_COCOA ? "Cocoa" :
+			platform == GLFW_PLATFORM_WAYLAND ? "Wayland" : platform == GLFW_PLATFORM_X11 ? "X11" : "other");
 	}
 
 	// Setup GLFW window properties
