@@ -27,7 +27,7 @@ Timer::Timer()
 	m_DeltaTime = 0.0f;
 	m_LastFrameTimestamp = 0.0f;
 
-	m_StartTimeChrono = std::chrono::high_resolution_clock::now();
+	m_StartTimeChrono = std::chrono::steady_clock::now();
 }
 
 Timer::Timer(float targetFPS) : Timer()
@@ -54,7 +54,7 @@ void Timer::Update()
 #if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:
 		{
-			auto elapsedMilliseconds = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - m_StartTimeChrono);
+			auto elapsedMilliseconds = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - m_StartTimeChrono);
 			float elapsedSeconds = (float)(elapsedMilliseconds.count() / 1000.0f);
 			m_CurrentTimestamp = elapsedSeconds;
 			break;

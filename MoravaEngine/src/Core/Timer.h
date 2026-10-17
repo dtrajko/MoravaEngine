@@ -44,11 +44,8 @@ private:
 	float m_DeltaTimeUpdate = 0.0f;
 	bool m_CanUpdate = false;
 
-	// Using chrono for DirectX 11 as GLFW is not available for it
-#ifdef _WIN32
+	// Using chrono for DirectX 11 as GLFW is not available for it. steady_clock: never adjusted, and the same clock on every
+	// standard library (high_resolution_clock is steady_clock in MSVC and libc++, system_clock in libstdc++)
 	std::chrono::time_point<std::chrono::steady_clock> m_StartTimeChrono;
-#else
-	std::chrono::time_point<std::chrono::system_clock> m_StartTimeChrono;
-#endif
 
 };
