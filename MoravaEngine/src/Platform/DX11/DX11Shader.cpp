@@ -319,7 +319,10 @@ void DX11Shader::CompileOrGetDX11Binary(std::array<std::vector<uint32_t>, 2>& ou
 			uint64_t size = ftell(f);
 			fseek(f, 0, SEEK_SET);
 			outputBinary[0] = std::vector<uint32_t>(size / sizeof(uint32_t));
-			fread(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f);
+			if (fread(outputBinary[0].data(), sizeof(uint32_t), outputBinary[0].size(), f) != outputBinary[0].size()) // truncated or unreadable cache: compiled again below
+			{
+				outputBinary[0].clear();
+			}
 			fclose(f);
 		}
 	}
@@ -337,7 +340,10 @@ void DX11Shader::CompileOrGetDX11Binary(std::array<std::vector<uint32_t>, 2>& ou
 			uint64_t size = ftell(f);
 			fseek(f, 0, SEEK_SET);
 			outputBinary[1] = std::vector<uint32_t>(size / sizeof(uint32_t));
-			fread(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f);
+			if (fread(outputBinary[1].data(), sizeof(uint32_t), outputBinary[1].size(), f) != outputBinary[1].size()) // truncated or unreadable cache: compiled again below
+			{
+				outputBinary[1].clear();
+			}
 			fclose(f);
 		}
 	}

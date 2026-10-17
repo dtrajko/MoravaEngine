@@ -953,7 +953,10 @@ namespace H2M
 					uint64_t size = ftell(f);
 					fseek(f, 0, SEEK_SET);
 					outputBinary[stage] = std::vector<uint32_t>(size / sizeof(uint32_t));
-					fread(outputBinary[stage].data(), sizeof(uint32_t), outputBinary[stage].size(), f);
+					if (fread(outputBinary[stage].data(), sizeof(uint32_t), outputBinary[stage].size(), f) != outputBinary[stage].size()) // truncated or unreadable cache: compiled again below
+					{
+						outputBinary[stage].clear();
+					}
 					fclose(f);
 				}
 			}
