@@ -1,6 +1,6 @@
 // Skybox shader
 // #type fragment
-#version 430
+#version 410
 
 layout(location = 0) out vec4 finalColor;
 layout(location = 1) out int o_EntityID;
