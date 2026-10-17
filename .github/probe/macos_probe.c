@@ -1,7 +1,7 @@
 // Probe of GitHub's macOS runner, before the macOS port. Through GLFW, as the engine: opens a window, creates a Vulkan
 // instance (MoltenVK, portability enumeration), surface, device and swapchain, presents a few cleared frames, then
-// creates OpenGL contexts. Prints what it finds, the support of the device features the engine enables, and exits with
-// 1 when Vulkan or OpenGL 4.1 fails.
+// creates OpenGL contexts (through GLFW, then CGL directly). Prints what it finds, the support of the device features the
+// engine enables, and exits with 1 when Vulkan fails.
 
 #include <vulkan/vulkan.h>
 #define GLFW_INCLUDE_NONE
@@ -9,6 +9,7 @@
 
 #if defined(__APPLE__)
 #define GL_SILENCE_DEPRECATION
+#include <OpenGL/OpenGL.h>
 #include <OpenGL/gl3.h>
 #else
 #include <GL/gl.h>
@@ -431,6 +432,64 @@ static int ProbeOpenGL(int major, int minor)
     return 0;
 }
 
+#if defined(__APPLE__)
+// GLFW always asks for an accelerated pixel format. CGL directly: the renderers macOS has, then a 4.1 core context from
+// an accelerated renderer and from Apple's software renderer
+static void ProbeCGL(void)
+{
+    printf("\n== CGL renderers\n");
+    CGLRendererInfoObj info;
+    GLint rendererCount = 0;
+    if (CGLQueryRendererInfo(0xFFFFFFFF, &info, &rendererCount) != kCGLNoError)
+    {
+        printf("CGLQueryRendererInfo failed\n");
+        return;
+    }
+    for (GLint i = 0; i < rendererCount; i++)
+    {
+        GLint id = 0, accelerated = 0, online = 0, majorVersion = 0;
+        CGLDescribeRenderer(info, i, kCGLRPRendererID, &id);
+        CGLDescribeRenderer(info, i, kCGLRPAccelerated, &accelerated);
+        CGLDescribeRenderer(info, i, kCGLRPOnline, &online);
+        CGLDescribeRenderer(info, i, kCGLRPMajorGLVersion, &majorVersion);
+        printf("Renderer %d: id 0x%X, accelerated %d, online %d, OpenGL major version %d\n", i, id, accelerated, online, majorVersion);
+    }
+    CGLDestroyRendererInfo(info);
+
+    for (int software = 0; software < 2; software++)
+    {
+        const char* name = software ? "software renderer" : "accelerated renderer";
+        CGLPixelFormatAttribute accelerated[] = { kCGLPFAOpenGLProfile, (CGLPixelFormatAttribute)kCGLOGLPVersion_GL4_Core,
+            kCGLPFAAccelerated, kCGLPFAColorSize, (CGLPixelFormatAttribute)24, kCGLPFADepthSize, (CGLPixelFormatAttribute)24,
+            (CGLPixelFormatAttribute)0 };
+        CGLPixelFormatAttribute generic[] = { kCGLPFAOpenGLProfile, (CGLPixelFormatAttribute)kCGLOGLPVersion_GL4_Core,
+            kCGLPFARendererID, (CGLPixelFormatAttribute)kCGLRendererGenericFloatID, kCGLPFAColorSize, (CGLPixelFormatAttribute)24,
+            kCGLPFADepthSize, (CGLPixelFormatAttribute)24, (CGLPixelFormatAttribute)0 };
+        CGLPixelFormatObj pixelFormat = NULL;
+        GLint formatCount = 0;
+        CGLError error = CGLChoosePixelFormat(software ? generic : accelerated, &pixelFormat, &formatCount);
+        if (error != kCGLNoError || !pixelFormat)
+        {
+            printf("CGL %s, 4.1 core: no pixel format (%s)\n", name, CGLErrorString(error));
+            continue;
+        }
+        CGLContextObj context = NULL;
+        error = CGLCreateContext(pixelFormat, NULL, &context);
+        CGLDestroyPixelFormat(pixelFormat);
+        if (error != kCGLNoError || !context)
+        {
+            printf("CGL %s, 4.1 core: no context (%s)\n", name, CGLErrorString(error));
+            continue;
+        }
+        CGLSetCurrentContext(context);
+        printf("CGL %s, 4.1 core: GL_VERSION %s, GL_RENDERER %s\n", name, (const char*)glGetString(GL_VERSION),
+            (const char*)glGetString(GL_RENDERER));
+        CGLSetCurrentContext(NULL);
+        CGLDestroyContext(context);
+    }
+}
+#endif
+
 int main(void)
 {
     glfwSetErrorCallback(ErrorCallback);
@@ -460,8 +519,12 @@ int main(void)
     int vulkanFailed = ProbeVulkan();
     int openGLFailed = ProbeOpenGL(4, 1);
     ProbeOpenGL(4, 5); // expected to fail: macOS stops at 4.1
+#if defined(__APPLE__)
+    ProbeCGL();
+#endif
 
     glfwTerminate();
-    printf("\nResult: Vulkan %s, OpenGL 4.1 %s\n", vulkanFailed ? "FAILED" : "ok", openGLFailed ? "FAILED" : "ok");
-    return (vulkanFailed || openGLFailed) ? 1 : 0;
+    // Only Vulkan fails the step: the runner's virtual GPU may have no OpenGL at all
+    printf("\nResult: Vulkan %s, OpenGL 4.1 through GLFW %s\n", vulkanFailed ? "FAILED" : "ok", openGLFailed ? "not available" : "ok");
+    return vulkanFailed ? 1 : 0;
 }
