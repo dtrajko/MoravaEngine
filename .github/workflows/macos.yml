@@ -1,0 +1,81 @@
+# macOS builds (Apple Silicon), while the port is in progress: a separate workflow, not a required check, until the
+# builds are green; then the job moves into build.yml. Warnings aren't errors yet, and the build keeps going after
+# errors (-k 0), so one run lists every compile error. Vulkan comes from Homebrew (MoltenVK, loader, validation layer).
+name: macOS
+
+on:
+  push:
+    branches: [ci-macos]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    name: macOS ${{ matrix.name }}
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Clang Vulkan
+            cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
+          - name: Clang OpenGL
+            cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=HAZEL_ENV_MAP
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          submodules: recursive
+
+      - name: Install packages
+        run: brew install molten-vk vulkan-loader vulkan-headers vulkan-validationlayers ninja
+
+      - name: Cache shaderc dependencies
+        id: shaderc-deps
+        uses: actions/cache@v6
+        with:
+          path: vendor/cross-platform/shaderc/third_party
+          key: shaderc-deps-${{ runner.os }}-${{ hashFiles('vendor/cross-platform/shaderc/DEPS') }}
+
+      - name: Download shaderc dependencies
+        if: steps.shaderc-deps.outputs.cache-hit != 'true'
+        run: python3 vendor/cross-platform/shaderc/utils/git-sync-deps
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2.24
+        with:
+          key: macos-${{ matrix.name }}
+          max-size: 2G
+
+      - name: Configure
+        run: >
+          cmake -S MoravaEngine -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_OBJC_COMPILER_LAUNCHER=ccache
+          ${{ matrix.cmake-options }}
+
+      # The log keeps every error; the summary lists each distinct one once, with how many times it occurred
+      - name: Build
+        env:
+          CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
+        run: |
+          set -o pipefail
+          status=0
+          cmake --build build --parallel -- -k 0 2>&1 | tee build.log || status=$?
+          echo "== $(grep -c ' error: ' build.log) errors, $(grep -c ' warning: ' build.log) warnings; failed files: $(grep -c '^FAILED: ' build.log)"
+          grep ' error: ' build.log | sed -E 's/^.*\/(src|vendor)\//\1\//' | sort | uniq -c | sort -rn | head -150
+          exit $status
+
+      - name: Build log
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: macos-build-log-${{ strategy.job-index }}
+          path: build.log
+          if-no-files-found: ignore
