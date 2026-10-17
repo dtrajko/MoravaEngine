@@ -123,6 +123,7 @@ namespace H2M
 				case ImageFormatH2M::RGBA8:   return 4;
 				case ImageFormatH2M::RGBA16F: return 2 * 4;
 				case ImageFormatH2M::RGBA32F: return 4 * 4;
+				default: break;
 			}
 			H2M_CORE_ASSERT(false);
 			return 0;

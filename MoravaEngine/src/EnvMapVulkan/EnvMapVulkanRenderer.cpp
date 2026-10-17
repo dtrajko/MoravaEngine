@@ -2820,7 +2820,7 @@ static void DrawShadowMapCascades()
 		{
 			ImGui::SameLine();
 		}
-		char label[16];
+		char label[32];
 		snprintf(label, sizeof(label), "%d##ShadowCascade", i);
 		ImGui::RadioButton(label, &s_ShadowMapShownCascade, i);
 	}
@@ -7739,7 +7739,7 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 
 	/**** BEGIN Non-composite ****
 	H2M::RefH2M<VulkanPipeline> vulkanPipeline = mesh->GetPipeline().As<VulkanPipeline>();
-	/**** END Non-composite ****/
+	 **** END Non-composite ****/
 	/**** BEGIN Composite ****/
 	// Skinned models have a different vertex layout (bone IDs and weights) and shader
 	bool skinned = model->IsSkinned();
@@ -9574,7 +9574,7 @@ static void DrawFrameTimeGraph(float height)
 		{
 			const float y = yOf(ms);
 			drawList->AddLine(ImVec2(min.x, y), ImVec2(max.x, y), IM_COL32(255, 255, 255, 50));
-			char label[16];
+			char label[32];
 			snprintf(label, sizeof(label), "%.0f FPS", fps);
 			drawList->AddText(ImVec2(min.x + 4.0f, y - ImGui::GetTextLineHeight()), IM_COL32(255, 255, 255, 90), label);
 		}

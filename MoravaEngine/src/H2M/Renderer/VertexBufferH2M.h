@@ -41,6 +41,7 @@ namespace H2M {
 		case ShaderDataTypeH2M::Int3:     return 4 * 3;
 		case ShaderDataTypeH2M::Int4:     return 4 * 4;
 		case ShaderDataTypeH2M::Bool:     return 1;
+		default: break;
 		}
 
 		H2M_CORE_ASSERT(false, "Unknown ShaderDataType!");
@@ -77,6 +78,7 @@ namespace H2M {
 			case ShaderDataTypeH2M::Int3:    return 3;
 			case ShaderDataTypeH2M::Int4:    return 4;
 			case ShaderDataTypeH2M::Bool:    return 1;
+			default: break;
 			}
 
 			H2M_CORE_ASSERT(false, "Unknown ShaderDataType!");

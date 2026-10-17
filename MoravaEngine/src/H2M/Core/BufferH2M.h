@@ -55,7 +55,7 @@ namespace H2M
 
 		void Release()
 		{
-			delete[] Data;
+			delete[] static_cast<byte*>(Data); // allocated as byte[] (Allocate); deleting through void* is undefined
 			Data = nullptr;
 			Size = 0;
 		}

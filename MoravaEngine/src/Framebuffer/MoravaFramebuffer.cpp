@@ -25,6 +25,7 @@ H2M::RefH2M<MoravaFramebuffer> MoravaFramebuffer::Create(uint32_t width, uint32_
 #if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11: return H2M::RefH2M<DX11MoravaFramebuffer>::Create(width, height);
 #endif
+		default: break;
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
@@ -46,6 +47,7 @@ H2M::RefH2M<MoravaFramebuffer> MoravaFramebuffer::Create(FramebufferSpecificatio
 #if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11: return H2M::RefH2M<DX11MoravaFramebuffer>::Create(spec);
 #endif
+		default: break;
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");

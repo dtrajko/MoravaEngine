@@ -87,6 +87,10 @@ endif()
 
 option(MORAVA_MSVC_STATIC_RUNTIME "Use the static MSVC runtime (/MT, /MTd) for all targets; OFF uses the DLL runtime (/MD, /MDd)" ON)
 
+# Compiler warnings in the engine's own sources fail the build (-Werror, /WX); the libraries in vendor/ are not affected.
+# Off by default so that a warning doesn't stop work in progress; CI switches it on (.github/workflows/build.yml).
+option(MORAVA_WARNINGS_AS_ERRORS "Treat compiler warnings in the engine's sources as errors" OFF)
+
 if(MORAVA_MSVC_STATIC_RUNTIME)
     set(MORAVA_MSVC_RUNTIME "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     set(MORAVA_SHARED_CRT OFF)
@@ -246,6 +250,10 @@ add_executable(${PROJECT_NAME} ${SRC} ${HEADERS})
 
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE /utf-8) # the sources are UTF-8 (GCC and Clang take that as given)
+endif()
+
+if(MORAVA_WARNINGS_AS_ERRORS)
+    target_compile_options(${PROJECT_NAME} PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/WX,-Werror>)
 endif()
 
 # The scene (when MORAVA_SCENE sets it; otherwise src/config.h does) and the graphics APIs of the build

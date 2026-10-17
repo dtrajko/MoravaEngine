@@ -30,6 +30,7 @@ namespace H2M {
 				// case ImageFormatH2M::RGBA16F: return VK_FORMAT_R16G16B16A16_SFLOAT;
 				case ImageFormatH2M::RGBA16F: return VK_FORMAT_R32G32B32A32_SFLOAT;
 				case ImageFormatH2M::RGBA32F: return VK_FORMAT_R32G32B32A32_SFLOAT;
+				default: break;
 			}
 			Log::GetLogger()->error("TextureFormatToVkFormat: ImageFormatH2M '{0}' not supported!", static_cast<int>(format));
 			H2M_CORE_ASSERT(false);
@@ -563,7 +564,7 @@ namespace H2M {
 	{
 		return m_Format;
 	}
-	/**** END removed in Hazel Live 18.03.2021 #2 ****/
+	 **** END removed in Hazel Live 18.03.2021 #2 ****/
 
 	uint32_t VulkanTexture2D_H2M::GetMipLevelCount() const
 	{

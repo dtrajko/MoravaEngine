@@ -36,6 +36,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   result = RefH2M<DX11Framebuffer>::Create(spec); break;
 #endif
+			default: break;
 		}
 		FramebufferPoolH2M::GetGlobal()->Add(result);
 		return result;

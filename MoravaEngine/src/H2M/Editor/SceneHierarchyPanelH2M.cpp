@@ -212,7 +212,7 @@ namespace H2M
 		ImGuiTreeNodeFlags flags = ((EntitySelection::s_SelectionContext.size() && EntitySelection::s_SelectionContext[0].Entity == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
 			ImGuiTreeNodeFlags_OpenOnArrow |
 			ImGuiTreeNodeFlags_SpanAvailWidth;
-		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name);
+		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, "%s", name);
 
 		if (ImGui::IsItemClicked())
 		{
@@ -299,7 +299,7 @@ namespace H2M
 			}
 
 			ImGuiTreeNodeFlags flags = (submeshSelected ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i]->BaseIndex + i), flags, submeshes[i]->MeshName.c_str());
+			bool opened = ImGui::TreeNodeEx((void*)(uint64_t)((uint32_t)entity + 1000 + submeshes[i]->BaseIndex + i), flags, "%s", submeshes[i]->MeshName.c_str());
 
 			if (ImGui::IsItemClicked())
 			{
@@ -330,15 +330,15 @@ namespace H2M
 			if (opened) {
 				ImGui::Text("MeshName: ");
 				ImGui::SameLine();
-				ImGui::Text(submeshes[i]->MeshName.c_str());
+				ImGui::TextUnformatted(submeshes[i]->MeshName.c_str());
 
 				ImGui::Text("NodeName: ");
 				ImGui::SameLine();
-				ImGui::Text(submeshes[i]->NodeName.c_str());
+				ImGui::TextUnformatted(submeshes[i]->NodeName.c_str());
 
 				ImGui::Text("MaterialIndex: ");
 				ImGui::SameLine();
-				ImGui::Text(std::to_string(submeshes[i]->MaterialIndex).c_str());
+				ImGui::TextUnformatted(std::to_string(submeshes[i]->MaterialIndex).c_str());
 
 				SubmeshUUID submeshUUID = MaterialLibrary::GetSubmeshUUID(entity, submeshes[i]);
 				std::string materialUUID = "N/A";
@@ -351,11 +351,11 @@ namespace H2M
 
 				ImGui::Text("MaterialUUID: ");
 				ImGui::SameLine();
-				ImGui::Text(materialUUID.c_str());
+				ImGui::TextUnformatted(materialUUID.c_str());
 
 				ImGui::Text("Material Name: ");
 				ImGui::SameLine();
-				ImGui::Text(materialName.c_str());
+				ImGui::TextUnformatted(materialName.c_str());
 
 				// ...
 				ImGui::TreePop();
@@ -442,7 +442,7 @@ namespace H2M
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
 			float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 			ImGui::Separator();
-			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, "%s", name.c_str());
 			ImGui::PopStyleVar();
 			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 3.0f);
 

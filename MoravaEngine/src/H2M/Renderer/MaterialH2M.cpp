@@ -45,6 +45,7 @@ namespace H2M {
 #if defined(GRAPHICS_API_DIRECTX11)
 			case H2M::RendererAPITypeH2M::DX11:   return RefH2M<DX11Material>::Create(shader, name);
 #endif
+			default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -261,6 +262,7 @@ namespace H2M {
 					shader->SetUniform(name, value);
 					break;
 				}
+				default: break;
 				}
 			}
 		}

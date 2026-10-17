@@ -157,7 +157,8 @@ namespace H2M
 		void Bind()
 		{
 			InstantiateScript = []() { return static_cast<ScriptableEntityH2M*>(new T()); };
-			DestroyScript = [](NativeScriptComponentH2M* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
+			// Deleted as T: ScriptableEntityH2M is only declared here, and T is the type it was created as
+			DestroyScript = [](NativeScriptComponentH2M* nsc) { delete static_cast<T*>(nsc->Instance); nsc->Instance = nullptr; };
 		}
 	};
 

@@ -30,6 +30,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 		case RendererAPITypeH2M::DX11:    return RefH2M<DX11VertexBuffer>::Create(data, size, usage);
 #endif
+		default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -50,6 +51,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 		case RendererAPITypeH2M::DX11:    return RefH2M<DX11VertexBuffer>::Create(size, usage);
 #endif
+		default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -70,6 +72,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 		case RendererAPITypeH2M::DX11:    return RefH2M<DX11VertexBuffer>::Create(data, stride, count);
 #endif
+		default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");

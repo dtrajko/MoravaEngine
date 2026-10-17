@@ -302,23 +302,23 @@ void SceneJoey::UpdateImGui(float timestep, Window* mainWindow)
 			{
 				char buffer[100];
 				sprintf(buffer, "Pitch         %.2f", m_Camera->GetPitch());
-				ImGui::Text(buffer);
+				ImGui::TextUnformatted(buffer);
 				sprintf(buffer, "Yaw           %.2f", m_Camera->GetYaw());
-				ImGui::Text(buffer);
+				ImGui::TextUnformatted(buffer);
 				sprintf(buffer, "FOV           %.2f", m_Camera->GetPerspectiveVerticalFOV());
-				ImGui::Text(buffer);
+				ImGui::TextUnformatted(buffer);
 				sprintf(buffer, "Aspect Ratio  %.2f", glm::degrees(m_Camera->GetAspectRatio()));
-				ImGui::Text(buffer);
+				ImGui::TextUnformatted(buffer);
 				sprintf(buffer, "Position    X %.2f Y %.2f Z %.2f", m_Camera->GetPosition().x, m_Camera->GetPosition().y, m_Camera->GetPosition().z);
-				ImGui::Text(buffer);
+				ImGui::TextUnformatted(buffer);
 				sprintf(buffer, "Direction   X %.2f Y %.2f Z %.2f", m_Camera->GetDirection().x, m_Camera->GetDirection().y, m_Camera->GetDirection().z);
-				ImGui::Text(buffer);
+				ImGui::TextUnformatted(buffer);
 				sprintf(buffer, "Front       X %.2f Y %.2f Z %.2f", m_Camera->GetFront().x, m_Camera->GetFront().y, m_Camera->GetFront().z);
-				ImGui::Text(buffer);
+				ImGui::TextUnformatted(buffer);
 				sprintf(buffer, "Up          X %.2f Y %.2f Z %.2f", m_Camera->GetUp().x, m_Camera->GetUp().y, m_Camera->GetUp().z);
-				ImGui::Text(buffer);
+				ImGui::TextUnformatted(buffer);
 				sprintf(buffer, "Right       X %.2f Y %.2f Z %.2f", m_Camera->GetRight().x, m_Camera->GetRight().y, m_Camera->GetRight().z);
-				ImGui::Text(buffer);
+				ImGui::TextUnformatted(buffer);
 			}
 		}
 		ImGui::End();

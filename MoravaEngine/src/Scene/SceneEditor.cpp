@@ -795,7 +795,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
 
                 for (std::map<std::string, H2M::RefH2M<MoravaTexture>>::iterator it = textures.begin(); it != textures.end(); ++it)
                 {
-                    ImGui::Text(it->first.c_str());
+                    ImGui::TextUnformatted(it->first.c_str());
                     ImGui::Image((void*)(intptr_t)it->second->GetID(), imageSize);
                 }
             }
@@ -939,7 +939,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
                 if (m_SceneObjects.size() > 0 && m_SelectedIndex < m_SceneObjects.size())
                 {
                     std::string objectName = "Name: " + m_SceneObjects[m_SelectedIndex]->name;
-                    ImGui::Text(objectName.c_str());
+                    ImGui::TextUnformatted(objectName.c_str());
                     ImGui::SliderInt("Selected Object", (int*)&m_SelectedIndex, 0, (int)(m_SceneObjects.size() - 1));
                     ImGui::Checkbox("Cast Shadow", &m_SceneObjects[m_SelectedIndex]->castShadow);
                     ImGui::Checkbox("Receive Shadows", &m_SceneObjects[m_SelectedIndex]->receiveShadows);
@@ -1011,7 +1011,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
                 for (auto it = counts.begin(); it != counts.end(); it++) {
                     ImGui::Separator();
                     std::string textLine = "TextureID: " + std::to_string(it->first) + " Particles: " + std::to_string(it->second);
-                    ImGui::Text(textLine.c_str());
+                    ImGui::TextUnformatted(textLine.c_str());
                 }
             }
         }
@@ -1028,7 +1028,7 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
                 std::string fullpath = (m_LoadedFile != "") ? m_LoadedFile : "None";
                 size_t found = fullpath.find_last_of("/\\");
                 std::string path = found != std::string::npos ? fullpath.substr(found + 1) : fullpath;
-                ImGui::Text(path.c_str()); ImGui::SameLine();
+                ImGui::TextUnformatted(path.c_str()); ImGui::SameLine();
 
                 if (ImGui::Button("...##Mesh"))
                 {
@@ -1113,15 +1113,15 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
 
             if (ImGui::CollapsingHeader("Timer"))
             {
-                ImGui::Text(sRealFPS.c_str());
-                ImGui::Text(sDeltaTimeMS.c_str());
+                ImGui::TextUnformatted(sRealFPS.c_str());
+                ImGui::TextUnformatted(sDeltaTimeMS.c_str());
             }
 
             if (ImGui::CollapsingHeader("Active Render Passes"))
             {
                 ImGui::Indent();
                 for (auto& renderPassName : m_ActiveRenderPasses)
-                    ImGui::Text(renderPassName.c_str());
+                    ImGui::TextUnformatted(renderPassName.c_str());
                 ImGui::Unindent();
             }
 
@@ -1153,35 +1153,35 @@ void SceneEditor::UpdateImGui(float timestep, Window* mainWindow)
                 char buffer[100];
 
                 sprintf(buffer, "Main Window [ X %i Y %i ]", m_ImGuiMainViewportX, m_ImGuiMainViewportY);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Viewport [ X %i Y %i W %i H %i ]", mp->m_Viewport.X, mp->m_Viewport.Y, mp->m_Viewport.Width, mp->m_Viewport.Height);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Screen Mouse [ %i %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Viewport Mouse [ %i %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Normalized Coords [ %.2ff %.2ff ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Clip Coords [ %.2ff %.2ff ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "Eye Coords [ %.2ff %.2ff %.2ff %.2ff ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
                 ImGui::Separator();
 
                 sprintf(buffer, "World Ray [ %.2ff %.2ff %.2ff ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
-                ImGui::Text(buffer);
+                ImGui::TextUnformatted(buffer);
             }
         }
         ImGui::End();

@@ -38,12 +38,12 @@ public:
 	Attachment(unsigned int width, unsigned int height, AttachmentType attachmentType, AttachmentFormat attachmentFormat, unsigned int orderID, uint32_t framebufferID);
 	virtual ~Attachment();
 
-	inline uint32_t GetID() const { return m_ID; };
+	inline uint32_t GetID() const override { return m_ID; };
 	inline uint32_t GetRendererID() const { return m_ID; };
 	inline virtual uint32_t GetWidth() const override { return m_Width; };
 	inline virtual uint32_t GetHeight() const override { return m_Height; };
 
-	virtual void Bind(uint32_t slot) const = 0;
+	virtual void Bind(uint32_t slot) const override = 0;
 	virtual void Unbind() = 0;
 
 	// virtual methods from H2M::HazelTexture

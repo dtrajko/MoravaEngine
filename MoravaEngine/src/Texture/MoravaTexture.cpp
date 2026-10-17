@@ -29,6 +29,7 @@ H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, bool flipV
 #if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11MoravaTexture>::Create(fileLoc, flipVert, isSampler, filter);
 #endif
+		default: break;
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
@@ -50,6 +51,7 @@ H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, uint32_t w
 #if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11MoravaTexture>::Create(fileLoc, width, height, isSampler, filter);
 #endif
+		default: break;
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");
@@ -71,6 +73,7 @@ H2M::RefH2M<MoravaTexture> MoravaTexture::Create(const char* fileLoc, Specificat
 #if defined(GRAPHICS_API_DIRECTX11)
 		case H2M::RendererAPITypeH2M::DX11:   return H2M::RefH2M<DX11MoravaTexture>::Create(fileLoc, spec);
 #endif
+		default: break;
 	}
 
 	Log::GetLogger()->error("Unknown RendererAPI");

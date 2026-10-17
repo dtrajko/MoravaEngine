@@ -35,6 +35,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   return RefH2M<DX11Texture2D>::Create(format, width, height, data);
 #endif
+			default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI_H2M");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI_H2M");
@@ -55,6 +56,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   return RefH2M<DX11Texture2D>::Create(path, srgb);
 #endif
+			default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI_H2M");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI_H2M");
@@ -75,6 +77,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 		case RendererAPITypeH2M::DX11: return RefH2M<DX11Texture2D>::Create(path, properties);
 #endif
+		default: break;
 		}
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 		return RefH2M<Texture2D_H2M>();
@@ -100,7 +103,7 @@ namespace H2M
 		HZ_CORE_ASSERT(false, "Unknown RendererAPI_H2M");
 		return RefH2M<Texture2D_H2M>();
 	}
-	/**** END Method removed in Vulkan branch ****/
+	 **** END Method removed in Vulkan branch ****/
 
 	ImTextureID Texture2D_H2M::GetImTextureID()
 	{
@@ -121,6 +124,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   return RefH2M<DX11TextureCube>::Create(format, width, height, data);
 #endif
+			default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI_H2M");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI_H2M");
@@ -141,6 +145,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   return RefH2M<DX11TextureCube>::Create(path);
 #endif
+			default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI_H2M");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI_H2M");
@@ -162,6 +167,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   return RefH2M<DX11TextureCube>::Create(format, width, height, nullptr);
 #endif
+			default: break;
 		}
 		Log::GetLogger()->error("Unknown RendererAPI_H2M");
 		H2M_CORE_ASSERT(false, "Unknown RendererAPI_H2M");
@@ -178,6 +184,7 @@ namespace H2M
 		{
 			case ImageFormatH2M::RGB:    return 3;
 			case ImageFormatH2M::RGBA:   return 4;
+			default: break;
 		}
 		return 0;
 	}
@@ -191,6 +198,6 @@ namespace H2M
 
 		return levels;
 	}
-	/**** END Removed in Hazel Live 18.03.2021 #2 ****/
+	 **** END Removed in Hazel Live 18.03.2021 #2 ****/
 
 }

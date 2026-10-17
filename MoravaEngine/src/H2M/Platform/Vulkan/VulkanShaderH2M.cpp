@@ -112,6 +112,7 @@ namespace H2M
 				if (type.columns == 3)            return ShaderUniformTypeH2M::Mat3;
 				if (type.columns == 4)            return ShaderUniformTypeH2M::Mat4;
 				break;
+			default: break;
 		}
 		H2M_CORE_ASSERT(false, "Unknown type!");
 		return ShaderUniformTypeH2M::None;
@@ -245,6 +246,7 @@ namespace H2M
 			case VK_SHADER_STAGE_VERTEX_BIT:   shaderStageName = "VERTEX";   break;
 			case VK_SHADER_STAGE_FRAGMENT_BIT: shaderStageName = "FRAGMENT"; break;
 			case VK_SHADER_STAGE_COMPUTE_BIT:  shaderStageName = "COMPUTE";  break;
+			default: break;
 		}
 
 		MORAVA_CORE_TRACE("==========================");
@@ -893,6 +895,7 @@ namespace H2M
 		case VK_SHADER_STAGE_VERTEX_BIT:   return ".cached_vulkan.vert";
 		case VK_SHADER_STAGE_FRAGMENT_BIT: return ".cached_vulkan.frag";
 		case VK_SHADER_STAGE_COMPUTE_BIT:  return ".cached_vulkan.comp";
+		default: break;
 		}
 		Log::GetLogger()->error("Invalid VkShaderStageFlagBits value '{0}'!", static_cast<int>(stage));
 		H2M_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");
@@ -906,6 +909,7 @@ namespace H2M
 		case VK_SHADER_STAGE_VERTEX_BIT:   return shaderc_vertex_shader;
 		case VK_SHADER_STAGE_FRAGMENT_BIT: return shaderc_fragment_shader;
 		case VK_SHADER_STAGE_COMPUTE_BIT:  return shaderc_compute_shader;
+		default: break;
 		}
 		Log::GetLogger()->error("Invalid VkShaderStageFlagBits value '{0}'!", static_cast<int>(stage));
 		H2M_CORE_ASSERT(false, "Invalid VkShaderStageFlagBits value!");

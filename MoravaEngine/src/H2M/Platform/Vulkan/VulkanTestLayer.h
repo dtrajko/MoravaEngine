@@ -53,7 +53,7 @@ namespace H2M {
 
 		/**** BEGIN moved to VulkanRenderer ****
 		static SceneRendererOptions& GetOptions();
-		/**** END moved to VulkanRenderer ****/
+		 **** END moved to VulkanRenderer ****/
 
 	private:
 		static std::vector<RefH2M<ModelH2M>> s_Meshes;

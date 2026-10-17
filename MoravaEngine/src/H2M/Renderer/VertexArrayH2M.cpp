@@ -19,6 +19,7 @@ namespace H2M
 #endif
 			// case RendererAPITypeH2M::Vulkan:  return RefH2M<VulkanVertexArrayH2M>::Create();
 			// case RendererAPITypeH2M::DX11:    return RefH2M<DX11VertexArrayH2M>::Create();
+			default: break;
 		}
 
 		// H2M_CORE_ASSERT(false, "Unknown RendererAPI");

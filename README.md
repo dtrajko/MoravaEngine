@@ -5,7 +5,7 @@
 
 It supports three graphics APIs:
 
-- Vulkan 1.2 (ray tracing is used when the GPU has it)
+- Vulkan 1.4 (ray tracing is used when the GPU has it)
 - OpenGL
 - DirectX 11 (Windows only)
 

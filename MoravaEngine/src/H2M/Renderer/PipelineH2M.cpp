@@ -36,6 +36,7 @@ namespace H2M
 #if defined(GRAPHICS_API_DIRECTX11)
 			case RendererAPITypeH2M::DX11:   return RefH2M<DX11Pipeline>::Create(spec);
 #endif
+			default: break;
 		}
 
 		Log::GetLogger()->error("Unknown RendererAPI");

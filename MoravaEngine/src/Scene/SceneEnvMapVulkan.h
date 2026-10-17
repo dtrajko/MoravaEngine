@@ -44,7 +44,7 @@ private:
 	virtual void SetupModels() override;
 	virtual void SetupFramebuffers() override;
 
-	void SetupShaders(); // Usually in Renderer* classes
+	void SetupShaders() override; // Usually in Renderer* classes
 
 	// Temporary/experimental
 	virtual void OnEntitySelected(H2M::EntityH2M entity) override;

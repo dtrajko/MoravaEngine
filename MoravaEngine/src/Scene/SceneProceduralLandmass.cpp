@@ -390,27 +390,27 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window* mainWindow)
             char buffer[50];
 
             sprintf(buffer, "Screen Mouse Coord: [ %i, %i ]", mp->m_ScreenMouseX, mp->m_ScreenMouseY);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "Viewport Mouse Coord: [ %i, %i ]", mp->m_Viewport.MouseX, mp->m_Viewport.MouseY);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "Normalized Coord: [ %.3f %.3f ]", mp->m_NormalizedCoords.x, mp->m_NormalizedCoords.y);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "Clip Coord: [ %.3f %.3f ]", mp->m_ClipCoords.x, mp->m_ClipCoords.y);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "Eye Coord: [ %.3f %.3f %.3f %.3f ]", mp->m_EyeCoords.x, mp->m_EyeCoords.y, mp->m_EyeCoords.z, mp->m_EyeCoords.w);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             sprintf(buffer, "World Ray: [ %.3f, %.3f %.3f ]", mp->m_WorldRay.x, mp->m_WorldRay.y, mp->m_WorldRay.z);
-            ImGui::Text(buffer);
+            ImGui::TextUnformatted(buffer);
             ImGui::Separator();
 
             ImGui::SliderFloat3("Test Point", glm::value_ptr(mp->m_TestPoint), -200.0f, 200.0f);
@@ -455,7 +455,7 @@ void SceneProceduralLandmass::UpdateImGui(float timestep, Window* mainWindow)
             // End DrawMode ImGui drop-down list
 
             std::string mapChunkSize = "Map Chunk Size: " + std::to_string(m_MapGenConf.mapChunkSize);
-            ImGui::Text(mapChunkSize.c_str());
+            ImGui::TextUnformatted(mapChunkSize.c_str());
             // ImGui::SliderInt("Map Width", &m_MapGenConf.mapWidth,   1, 512);
             // ImGui::SliderInt("Map Height", &m_MapGenConf.mapHeight, 1, 512);
 

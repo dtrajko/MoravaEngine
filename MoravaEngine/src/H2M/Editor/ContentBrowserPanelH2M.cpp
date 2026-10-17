@@ -203,7 +203,7 @@ namespace H2M
 					ImGui::EndTooltip();
 				}
 
-				ImGui::Text(filenameString.c_str());
+				ImGui::TextUnformatted(filenameString.c_str());
 
 				if (ImGui::IsItemHovered())
 				{

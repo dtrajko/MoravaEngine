@@ -343,7 +343,7 @@ void SceneBullet::UpdateImGui(float timestep, Window* mainWindow)
 		ImGui::SliderFloat("Fire Intensity", &m_FireIntensity, 0.0f, m_FireIntensityMax);
 		ImGui::SliderFloat("Tiling Factor", &m_TilingFactor, 0.0f, 2.0f);
 		std::string bulletsText = "Bullets: " + std::to_string(m_SphereCount) + "/" + std::to_string(m_SphereCountMax);
-		ImGui::Text(bulletsText.c_str());
+		ImGui::TextUnformatted(bulletsText.c_str());
 		bool wireframeEnabled = IsWireframeEnabled();
 		ImGui::Checkbox("Wireframe Enabled [R]", &wireframeEnabled);
 		SetWireframeEnabled(wireframeEnabled);

@@ -1206,7 +1206,7 @@ namespace H2M
 			}
 		}
 	}
-	/**** END removed in Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
+	 **** END removed in Vulkan + OpenGL Living in Harmony // Hazel Live (25.02.2021) ****/
 
 	bool ModelH2M::HasAnimations() const
 	{
