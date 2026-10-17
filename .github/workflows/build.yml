@@ -70,8 +70,9 @@ jobs:
           -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           ${{ matrix.cmake-options }}
 
-      # The precompiled header needs these for ccache to reuse results
+      # The precompiled header needs these for ccache to reuse results. -k 0: keep going after a failed file, so one run
+      # reports every compile error, not only the first
       - name: Build
         env:
           CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel -- -k 0

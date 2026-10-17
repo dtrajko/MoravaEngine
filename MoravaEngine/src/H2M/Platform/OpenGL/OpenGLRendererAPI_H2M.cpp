@@ -6,7 +6,7 @@
 
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
-#include <gl/glew.h>
+#include <GL/glew.h>
 
 #include "H2M/Renderer/ShaderH2M.h"
 
