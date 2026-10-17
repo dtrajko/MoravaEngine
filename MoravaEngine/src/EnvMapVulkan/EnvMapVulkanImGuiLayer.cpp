@@ -206,6 +206,14 @@ void EnvMapVulkanImGuiLayer::Begin()
 	io.DeltaTime = m_Time > 0.0f ? (time - m_Time) : (1.0f / 60.0f);
 	m_Time = time;
 
+	// ImGui hands queued input over one mouse change per frame, and measures a double-click by its frame clock:
+	// a double-click (down, up, down) takes at least two frames to arrive. At a low frame rate (software rendering
+	// in WSL) the default 0.30 s window is too short for that, and double-click to edit a drag field never works.
+	// Allow three frames, up to one second; at normal frame rates it stays the default. The delayed single click
+	// waits out a possible double-click, so it stays longer by the default 0.2 s (ImGui asserts it).
+	io.MouseDoubleClickTime = glm::clamp(3.0f * io.DeltaTime, 0.30f, 1.0f);
+	io.MouseSingleClickDelay = io.MouseDoubleClickTime + 0.20f;
+
 	// Start the Dear ImGui frame
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
