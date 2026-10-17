@@ -22,6 +22,17 @@ std::map<std::string, H2M::RefH2M<MoravaShader>> ResourceManager::s_ShaderCacheB
 std::map<std::string, H2M::RefH2M<MoravaShader>> ResourceManager::s_ShadersCacheByFilepath;
 
 
+void ResourceManager::Shutdown()
+{
+    // Released while main still runs: as static members they would be destroyed after it returns, when the graphics API
+    // (Vulkan's validation layer) may already be torn down
+    s_Textures.clear();
+    s_Materials.clear();
+    s_HazelTextures2D.clear();
+    s_ShaderCacheByTitle.clear();
+    s_ShadersCacheByFilepath.clear();
+}
+
 void ResourceManager::Init()
 {
     // Setup Textures

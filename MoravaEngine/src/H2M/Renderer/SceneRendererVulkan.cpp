@@ -19,69 +19,74 @@ namespace H2M
 {
 	static std::vector<std::thread> s_ThreadPool;
 
-	struct SceneRendererData
+	// File-local (anonymous namespace): other files have their own SceneRendererData, and one shared type name
+	// with different layouts (an ODR violation) made the linker use one destructor for all of them
+	namespace
 	{
-		const SceneH2M* ActiveScene = nullptr;
-		struct SceneInfo
+		struct SceneRendererData
 		{
-			SceneRendererCameraVulkan SceneCamera;
+			const SceneH2M* ActiveScene = nullptr;
+			struct SceneInfo
+			{
+				SceneRendererCameraVulkan SceneCamera;
 
-			// Resources
+				// Resources
+				RefH2M<MaterialH2M> SkyboxMaterial;
+				EnvironmentH2M SceneEnvironment;
+				float SkyboxLod = 0.0f;
+				float SceneEnvironmentIntensity;
+				LightEnvironmentH2M SceneLightEnvironment;
+				LightH2M ActiveLight;
+				glm::vec3 LightDirectionTemp;
+			} SceneData;
+
+			RefH2M<Texture2D_H2M> BRDFLUT;
+			RefH2M<ShaderH2M> CompositeShader;
+			RefH2M<MaterialH2M> CompositeMaterial;
+			RefH2M<MoravaShader> BloomBlurShader;
+			RefH2M<MoravaShader> BloomBlendShader;
+
+			RefH2M<RenderPassH2M> GeoPass;
+			RefH2M<RenderPassH2M> CompositePass;
+			RefH2M<RenderPassH2M> BloomBlurPass[2];
+			RefH2M<RenderPassH2M> BloomBlendPass;
+
+			RefH2M<PipelineH2M> GeometryPipeline;
+			RefH2M<PipelineH2M> CompositePipeline;
+			RefH2M<PipelineH2M> SkyboxPipeline;
+			RefH2M<PipelineH2M> ShadowPassPipeline;
 			RefH2M<MaterialH2M> SkyboxMaterial;
-			EnvironmentH2M SceneEnvironment;
-			float SkyboxLod = 0.0f;
-			float SceneEnvironmentIntensity;
-			LightEnvironmentH2M SceneLightEnvironment;
-			LightH2M ActiveLight;
-			glm::vec3 LightDirectionTemp;
-		} SceneData;
 
-		RefH2M<Texture2D_H2M> BRDFLUT;
-		RefH2M<ShaderH2M> CompositeShader;
-		RefH2M<MaterialH2M> CompositeMaterial;
-		RefH2M<MoravaShader> BloomBlurShader;
-		RefH2M<MoravaShader> BloomBlendShader;
+			struct DrawCommand
+			{
+				RefH2M<ModelH2M> Mesh;
+				RefH2M<MaterialH2M> Material;
+				glm::mat4 Transform;
+			};
 
-		RefH2M<RenderPassH2M> GeoPass;
-		RefH2M<RenderPassH2M> CompositePass;
-		RefH2M<RenderPassH2M> BloomBlurPass[2];
-		RefH2M<RenderPassH2M> BloomBlendPass;
+			std::vector<DrawCommand> DrawList;
+			std::vector<DrawCommand> SelectedMeshDrawList;
+			std::vector<DrawCommand> ColliderDrawList;
+			std::vector<DrawCommand> ShadowPassDrawList;
 
-		RefH2M<PipelineH2M> GeometryPipeline;
-		RefH2M<PipelineH2M> CompositePipeline;
-		RefH2M<PipelineH2M> SkyboxPipeline;
-		RefH2M<PipelineH2M> ShadowPassPipeline;
-		RefH2M<MaterialH2M> SkyboxMaterial;
+			// Grid
+			RefH2M<PipelineH2M> GridPipeline;
+			RefH2M<ShaderH2M> GridShader;
+			RefH2M<MaterialH2M> GridMaterial;
+			RefH2M<MaterialH2M> OutlineMaterial;
+			RefH2M<MaterialH2M> OutlineAnimMaterial;
 
-		struct DrawCommand
-		{
-			RefH2M<ModelH2M> Mesh;
-			RefH2M<MaterialH2M> Material;
-			glm::mat4 Transform;
+			SceneRendererOptionsVulkan Options;
+
+			uint32_t ViewportWidth = 0;
+			uint32_t ViewportHeight = 0;
+			bool NeedsResize = false;
+
+			VkDescriptorImageInfo ColorBufferInfo;
 		};
 
-		std::vector<DrawCommand> DrawList;
-		std::vector<DrawCommand> SelectedMeshDrawList;
-		std::vector<DrawCommand> ColliderDrawList;
-		std::vector<DrawCommand> ShadowPassDrawList;
-
-		// Grid
-		RefH2M<PipelineH2M> GridPipeline;
-		RefH2M<ShaderH2M> GridShader;
-		RefH2M<MaterialH2M> GridMaterial;
-		RefH2M<MaterialH2M> OutlineMaterial;
-		RefH2M<MaterialH2M> OutlineAnimMaterial;
-
-		SceneRendererOptionsVulkan Options;
-
-		uint32_t ViewportWidth = 0;
-		uint32_t ViewportHeight = 0;
-		bool NeedsResize = false;
-
-		VkDescriptorImageInfo ColorBufferInfo;
-	};
-
-	static SceneRendererData s_Data;
+		static SceneRendererData s_Data;
+	}
 
 	SceneRendererVulkan::SceneRendererVulkan(RefH2M<SceneH2M> scene, SceneRendererSpecificationVulkan specification)
 		: m_Scene(scene), m_Specification(specification)

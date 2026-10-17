@@ -24,44 +24,49 @@ namespace H2M {
 	ContentBrowserPanelH2M* VulkanTestLayer::s_ContentBrowserPanel;
 	MaterialEditorPanel* VulkanTestLayer::s_MaterialEditorPanel;
 
-	struct SceneRendererData
+	// File-local (anonymous namespace): other files have their own SceneRendererData, and one shared type name
+	// with different layouts (an ODR violation) made the linker use one destructor for all of them
+	namespace
 	{
-		const SceneH2M* ActiveScene = nullptr;
-
-		struct SceneInfo
+		struct SceneRendererData
 		{
-			SceneRendererCameraH2M SceneCamera;
-			EnvironmentH2M SceneEnvironment;
-			float SkyboxLod;
-			LightEnvironmentH2M SceneLightEnvironment;
-		} SceneData;
+			const SceneH2M* ActiveScene = nullptr;
 
-		// Resources
-		RefH2M<PipelineH2M> GeometryPipeline;
-		RefH2M<PipelineH2M> CompositePipeline;
-		RefH2M<PipelineH2M> SkyboxPipeline;
-		RefH2M<PipelineH2M> GridPipeline;
-		RefH2M<MaterialH2M> SkyboxMaterial;
+			struct SceneInfo
+			{
+				SceneRendererCameraH2M SceneCamera;
+				EnvironmentH2M SceneEnvironment;
+				float SkyboxLod;
+				LightEnvironmentH2M SceneLightEnvironment;
+			} SceneData;
 
-		RefH2M<RenderPassH2M> GeoPass;
+			// Resources
+			RefH2M<PipelineH2M> GeometryPipeline;
+			RefH2M<PipelineH2M> CompositePipeline;
+			RefH2M<PipelineH2M> SkyboxPipeline;
+			RefH2M<PipelineH2M> GridPipeline;
+			RefH2M<MaterialH2M> SkyboxMaterial;
 
-		struct DrawCommand
-		{
-			RefH2M<ModelH2M> Mesh;
-			RefH2M<MaterialH2M> Material;
-			glm::mat4 Transform;
+			RefH2M<RenderPassH2M> GeoPass;
+
+			struct DrawCommand
+			{
+				RefH2M<ModelH2M> Mesh;
+				RefH2M<MaterialH2M> Material;
+				glm::mat4 Transform;
+			};
+
+			std::vector<DrawCommand> DrawList;
+			std::vector<DrawCommand> SelectedMeshDrawList;
+
+			// Grid
+			RefH2M<MaterialH2M> GridMaterial;
+
+			// SceneRendererOptions Options; // moved to VulkanRendererH2M
 		};
 
-		std::vector<DrawCommand> DrawList;
-		std::vector<DrawCommand> SelectedMeshDrawList;
-
-		// Grid
-		RefH2M<MaterialH2M> GridMaterial;
-
-		// SceneRendererOptions Options; // moved to VulkanRendererH2M
-	};
-
-	static SceneRendererData s_Data;
+		static SceneRendererData s_Data;
+	}
 
 	std::vector<RefH2M<ModelH2M>> VulkanTestLayer::s_Meshes;
 

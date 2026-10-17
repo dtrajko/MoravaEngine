@@ -74,6 +74,7 @@ void EnvMapVulkanEditorLayer::OnAttach()
 
 void EnvMapVulkanEditorLayer::OnDetach()
 {
+	H2M::SceneHierarchyPanelH2M::Shutdown(); // the icons OnAttach loaded
 }
 
 void EnvMapVulkanEditorLayer::OnUpdate(H2M::TimestepH2M ts)

@@ -184,7 +184,7 @@ namespace H2M
 
 	void SceneRendererH2M::Shutdown()
 	{
-		// delete s_Data;
+		s_Data = SceneRendererDataH2M(); // its references released now, not after main returns
 	}
 
 	void SceneRendererH2M::SetViewportSize(uint32_t width, uint32_t height)

@@ -13,6 +13,7 @@ class ResourceManager
 {
 public:
 	static void Init();
+	static void Shutdown(); // releases the cached textures, materials and shaders (Application::OnShutdown)
 	static void LoadTexture(std::string name, std::string filePath);
 	static void LoadTexture(std::string name, std::string filePath, GLenum filter, bool force);
 	static void LoadMaterial(std::string name, TextureInfo textureInfo);

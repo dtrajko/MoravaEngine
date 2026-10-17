@@ -7709,7 +7709,52 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_GBuffer.Destroy();
 	EnvMapVulkanProfiler::Shutdown();
 	H2M::VulkanShaderH2M::ClearUniformBuffers();
-	// delete s_Data;
+
+	// The file's static references, released here while the device works: as statics they would be destroyed after
+	// main returns, when Vulkan (its validation layer) may already be torn down
+	s_Scene.Clear();
+	EnvMapVulkanMaterialLibrary::Clear();
+	s_SubmittedModels.clear();
+	s_GlassDraws.clear();
+	s_Clipboard.clear();
+	s_SelectedMesh = {};
+	s_SelectedMaterial = {};
+	s_PendingDeleteMaterial = {};
+	s_PendingMaterialTextures.clear();
+
+	s_Framebuffer = {};
+	s_CompositeFramebuffer = {};
+	s_CompositePipeline = {};
+	s_ViewportCompositeFramebuffer = {};
+	s_ViewportCompositePipeline = {};
+	for (auto& framebuffer : s_BloomDownFramebuffers) framebuffer = {};
+	for (auto& framebuffer : s_BloomUpFramebuffers) framebuffer = {};
+	s_BloomPipeline = {};
+	s_BloomDirtTexture = {};
+	s_GridPipeline = {};
+	s_OverlayFramebuffer = {};
+	s_SelectionMaskFramebuffer = {};
+	s_OverlayDepthPipeline = {};
+	s_OverlayDepthPipelineAnim = {};
+	s_WireframePipeline = {};
+	s_WireframePipelineAnim = {};
+	s_BoundingBoxPipeline = {};
+	s_SelectionMaskPipeline = {};
+	s_SelectionMaskPipelineAnim = {};
+	s_SelectionMaskDepthPipeline = {};
+	s_SelectionMaskDepthPipelineAnim = {};
+	s_SelectionMaskVisiblePipeline = {};
+	s_SelectionMaskVisiblePipelineAnim = {};
+	s_SelectionMaskWaterVertexBuffer = {};
+	s_VectorsPipeline = {};
+	s_VectorsPipelineAnim = {};
+	s_BoundingBoxVertexBuffer = {};
+	s_MeshPipeline = {};
+	s_MeshPipelineAnim = {};
+	s_MeshPipelineDepthEqual = {};
+	s_MeshPipelineAnimDepthEqual = {};
+	s_EnvMapCompute = EnvMapComputeResources();
+	s_Data = VulkanRendererData();
 }
 
 void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,

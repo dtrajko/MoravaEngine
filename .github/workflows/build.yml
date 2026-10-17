@@ -1,5 +1,6 @@
-# Builds MoravaEngine on every push to master and on pull requests (no GPU on GitHub's runners: build checks,
-# later a short run on Mesa's CPU drivers). Release builds: faster, and far smaller than Debug's debug info.
+# Builds MoravaEngine on every push to master and on pull requests; the Linux GCC builds also run a scene for a while
+# (smoke test: no GPU on GitHub's runners, Mesa renders on the CPU). Release builds: faster, and far smaller than Debug's
+# debug info.
 name: Build
 
 on:
@@ -26,6 +27,7 @@ jobs:
             cc: gcc
             cxx: g++
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
+            smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20
           # Without -fno-pch-timestamp Clang rejects a precompiled header that ccache restored (its file time differs)
           - name: Clang Vulkan
             cc: clang
@@ -35,6 +37,7 @@ jobs:
             cc: gcc
             cxx: g++
             cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=HAZEL_ENV_MAP
+            smoke-test: --exit-after 20
 
     steps:
       # Only the latest commit (the history is ~700 MB), the submodules shallow too
@@ -49,7 +52,7 @@ jobs:
           sudo apt-get install -y ninja-build pkg-config python3 \
             libvulkan-dev libgl1-mesa-dev libglu1-mesa-dev \
             libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev \
-            libwayland-dev wayland-protocols libgtk-3-dev zlib1g-dev
+            libwayland-dev wayland-protocols libgtk-3-dev zlib1g-dev             xvfb mesa-vulkan-drivers libgl1-mesa-dri vulkan-validationlayers
 
       # shaderc's own dependencies (glslang, SPIRV-Tools, SPIRV-Headers...): downloaded by its script, kept until shaderc changes
       - name: Cache shaderc dependencies
@@ -85,6 +88,32 @@ jobs:
         env:
           CCACHE_SLOPPINESS: pch_defines,time_macros,include_file_mtime,include_file_ctime
         run: cmake --build build --parallel -- -k 0
+
+      # The engine runs a scene for 20 s on a virtual screen (Xvfb) with Mesa's CPU drivers (lavapipe, llvmpipe), from the
+      # fresh checkout. It fails on a crash, a hang (timeout), an exit code other than 0, a Vulkan validation message or a
+      # file that can't be found or loaded (on Linux often a path whose letter case differs from the file's).
+      - name: Smoke test
+        if: matrix.smoke-test
+        working-directory: MoravaEngine
+        run: |
+          set -o pipefail
+          xvfb-run -a -s '-screen 0 1920x1080x24' timeout 600 ../build/MoravaEngine ${{ matrix.smoke-test }} 2>&1 | tee smoke-test.log
+          if grep -q VulkanDebugCallback smoke-test.log; then
+            echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
+            exit 1
+          fi
+          if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read" smoke-test.log; then
+            echo "::error::Files that could not be found or loaded"
+            exit 1
+          fi
+
+      - name: Smoke test log
+        if: always() && matrix.smoke-test
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: smoke-test-log-linux-${{ strategy.job-index }}
+          path: MoravaEngine/smoke-test.log
+          if-no-files-found: ignore
 
   # One job per graphics API: each compiles only its own API's code, so a missing #if or include shows up here
   windows:

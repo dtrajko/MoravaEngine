@@ -204,8 +204,15 @@ namespace H2M
 					std::string cachedFilePath = path.string();
 
 					FILE* f = fopen(cachedFilePath.c_str(), "wb");
-					fwrite(outputBinary[stage].data(), sizeof(uint32_t), outputBinary[stage].size(), f);
-					fclose(f);
+					if (f)
+					{
+						fwrite(outputBinary[stage].data(), sizeof(uint32_t), outputBinary[stage].size(), f);
+						fclose(f);
+					}
+					else
+					{
+						H2M_CORE_WARN("Shader cache file '{0}' can't be written; the shader is compiled again next time", cachedFilePath);
+					}
 				}
 			}
 		}
@@ -282,8 +289,15 @@ namespace H2M
 						auto path = cacheDirectory / (p.filename().string() + GLShaderStageCachedOpenGLFileExtension(stage));
 						std::string cachedFilePath = path.string();
 						FILE* f = fopen(cachedFilePath.c_str(), "wb");
-						fwrite(shaderStageData.data(), sizeof(uint32_t), shaderStageData.size(), f);
-						fclose(f);
+						if (f)
+						{
+							fwrite(shaderStageData.data(), sizeof(uint32_t), shaderStageData.size(), f);
+							fclose(f);
+						}
+						else
+						{
+							H2M_CORE_WARN("Shader cache file '{0}' can't be written; the shader is compiled again next time", cachedFilePath);
+						}
 					}
 				}
 
