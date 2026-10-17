@@ -133,7 +133,7 @@ Run it from the same folder:
 ./build-linux/MoravaEngine
 ```
 
-In WSL2 the window opens on the Windows desktop (WSLg). There the engine uses X11 (through XWayland) rather than Wayland, because WSLg gives X11 windows a full frame (minimize, maximize, close, resizable edges). The only Vulkan device there is Mesa's llvmpipe, which renders on the CPU: the editor works, but at a few frames per second and without ray tracing. For full speed, run on native Linux with the GPU's Vulkan driver. Building in WSL2 is also much faster when the build folder is on the Linux file system, e.g. `-B ~/morava-build` instead of `-B build-linux`.
+In WSL2 the window opens on the Windows desktop (WSLg). There the engine uses X11 (through XWayland) rather than Wayland, because WSLg gives X11 windows a full frame (minimize, maximize, close, resizable edges). The only Vulkan device there is Mesa's llvmpipe, which renders on the CPU: the editor works, but at a few frames per second. Recent Mesa versions also emulate ray tracing there, so the ray-traced features run too, even slower; `--no-ray-tracing` switches them off. For full speed, run on native Linux with the GPU's Vulkan driver. Building in WSL2 is also much faster when the build folder is on the Linux file system, e.g. `-B ~/morava-build` instead of `-B build-linux`.
 
 ### Select the graphics APIs and the scene
 

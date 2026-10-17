@@ -6,6 +6,7 @@
 #endif
 
 #include <cstdlib>
+#include <filesystem>
 #include <string>
 
 
@@ -89,10 +90,31 @@ static ApplicationCommandLine ParseCommandLine(int argc, char** argv)
 	return commandLine;
 }
 
+// Shaders, models, textures and scenes are loaded relative to the working directory, which must be the
+// MoravaEngine/MoravaEngine folder of the repository. Started anywhere else, the first shader comes back empty
+// and the engine fails much later with an unrelated error, so say it here.
+static bool IsWorkingDirectoryValid()
+{
+	std::error_code error;
+	if (std::filesystem::is_directory("Resources/Shaders", error))
+	{
+		return true;
+	}
+	const std::string folder = std::filesystem::current_path(error).u8string();
+	Log::GetLogger()->error("Resources/Shaders not found in the working directory '{0}'.", folder);
+	Log::GetLogger()->error("Start MoravaEngine from the MoravaEngine/MoravaEngine folder of the repository.");
+	return false;
+}
+
 int main(int argc, char** argv)
 {
 	Log::Init();
 	H2M::LogH2M::Init(); // H2M_ERROR / H2M_CORE_ERROR and failed H2M asserts log through these loggers
+
+	if (!IsWorkingDirectoryValid())
+	{
+		return 1;
+	}
 
 	SelectRendererAPI();
 

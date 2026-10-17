@@ -38,6 +38,16 @@ static void GLFWErrorCallback(int error, const char* description)
 
 static bool s_GLFWInitialized = false;
 
+// Linux in WSL (WSLg): windows and the mouse reach Windows through Remote Desktop, which changes what works best
+static bool RunningInWSL()
+{
+#if defined(__linux__)
+	return std::getenv("WSL_DISTRO_NAME") != nullptr;
+#else
+	return false;
+#endif
+}
+
 void GLFWWindow::Init()
 {
 	m_Data.Title = m_Specification.Title;
@@ -111,7 +121,7 @@ void GLFWWindow::InitGLFW(const WindowSpecification& props)
 		// In WSL (WSLg) a Wayland window gets libdecor's frame: only a close button, edges that don't resize, and a
 		// shadow that stays behind when Windows maximizes the window. An X11 window gets Weston's full frame
 		// (minimize, maximize, close, resizable). Native Linux stays on GLFW's choice (Wayland on a Wayland desktop).
-		if (std::getenv("WSL_DISTRO_NAME") && std::getenv("DISPLAY") && glfwPlatformSupported(GLFW_PLATFORM_X11))
+		if (RunningInWSL() && std::getenv("DISPLAY") && glfwPlatformSupported(GLFW_PLATFORM_X11))
 		{
 			glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 		}
@@ -319,6 +329,16 @@ void GLFWWindow::SetCursorCaptured(bool captured)
 {
 	if (captured == m_CursorCaptured) return;
 	m_CursorCaptured = captured;
+
+	// In WSL the pointer can't be locked and its raw motion arrives distorted (too large, with vertical motion
+	// that didn't happen): hide the cursor only and take the motion from its positions. The rotation then stops
+	// where the hidden cursor reaches the screen edge.
+	if (RunningInWSL())
+	{
+		glfwSetInputMode(m_GLFW_Window, GLFW_CURSOR, captured ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
+		mouseFirstMoved = true;
+		return;
+	}
 
 	// Disabled cursor: hidden and locked, movement keeps being reported without screen edges.
 	// When it is re-enabled, GLFW puts the cursor back where it was when the capture started.
