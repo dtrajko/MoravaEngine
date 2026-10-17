@@ -46,6 +46,13 @@ const char* OpenGLRendererBasic::RendererName()
 
 void OpenGLRendererBasic::InitDebug()
 {
+	// Debug output is OpenGL 4.3 / KHR_debug: macOS (OpenGL 4.1) has neither, and its function pointers are null there
+	if (!GLEW_KHR_debug)
+	{
+		Log::GetLogger()->info("OpenGL debug output not available (no KHR_debug)");
+		return;
+	}
+
 	glDebugMessageCallback(Util::OpenGLLogMessage, nullptr);
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

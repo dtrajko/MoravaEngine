@@ -168,22 +168,22 @@ void OpenGLMoravaTexture::CreateAPISpecific()
 		}
 	}
 
+	// Bind-to-edit calls only (OpenGL 3.0): macOS stops at OpenGL 4.1, without glCreateTextures / glTextureStorage2D
 	if (m_Spec.IsSRGB)
 	{
-		glCreateTextures(GL_TEXTURE_2D, 1, &m_ID);
+		glGenTextures(1, &m_ID);
 		glBindTexture(GL_TEXTURE_2D, m_ID);
 
 		int mipLevels = CalculateMipMapCount(m_Spec.Width, m_Spec.Height);
 		Log::GetLogger()->info("Creating a SRGB texture mip levels: {0}", mipLevels);
 
-		glTextureStorage2D(m_ID, mipLevels, GL_SRGB8, m_Spec.Width, m_Spec.Height);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_Spec.Texture_Wrap_S);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, m_Spec.Texture_Wrap_T);
-		glTextureParameteri(m_ID, GL_TEXTURE_MIN_FILTER, mipLevels > 1 ? GL_LINEAR_MIPMAP_LINEAR : m_Spec.Texture_Min_Filter);
-		glTextureParameteri(m_ID, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, mipLevels > 1 ? GL_LINEAR_MIPMAP_LINEAR : m_Spec.Texture_Min_Filter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, m_Spec.Texture_Mag_Filter);
 
-		glTextureSubImage2D(m_ID, 0, 0, 0, m_Spec.Width, m_Spec.Height, m_Spec.Format, m_Spec.Type, m_Buffer);
-		glGenerateTextureMipmap(m_ID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, m_Spec.Width, m_Spec.Height, 0, m_Spec.Format, m_Spec.Type, m_Buffer);
+		glGenerateMipmap(GL_TEXTURE_2D);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 	else
