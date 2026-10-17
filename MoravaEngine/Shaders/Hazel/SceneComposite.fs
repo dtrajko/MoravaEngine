@@ -1,5 +1,5 @@
 // type fragment
-#version 430
+#version 410
 
 layout (location = 0) out vec4 o_Color;
 

@@ -1,5 +1,5 @@
 // type fragment
-#version 430
+#version 410
 
 in vec2 v_TexCoord;
 
