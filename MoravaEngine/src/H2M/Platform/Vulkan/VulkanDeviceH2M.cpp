@@ -11,6 +11,9 @@
 
 #include "Core/Log.h"
 
+// VK_KHR_portability_subset (MoltenVK) is a provisional extension: its types are only in vulkan_beta.h
+#include <vulkan/vulkan_beta.h>
+
 
 namespace H2M
 {
@@ -296,7 +299,9 @@ namespace H2M
 					indices.Compute = i;
 			}
 
-			if (flags & VK_QUEUE_GRAPHICS_BIT)
+			// The first graphics family, as for the others (it took the last one: MoltenVK has four identical families, and
+			// graphics became family 3 while compute and the command pools were on family 0)
+			if ((flags & VK_QUEUE_GRAPHICS_BIT) && indices.Graphics == -1)
 			{
 				if (m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
 					indices.Graphics = i;
@@ -342,11 +347,24 @@ namespace H2M
 		deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
 		// A portability driver (MoltenVK) lists VK_KHR_portability_subset, which must then be enabled (the spec requires it).
-		// The name is spelled out: its define is in vulkan_beta.h
-		if (m_PhysicalDevice->IsExtensionSupported("VK_KHR_portability_subset"))
+		// Its features count only when enabled at device creation, so all those the device supports are (image view
+		// swizzle, comparison samplers in descriptor writes...). Declared here: the chain is read by vkCreateDevice below
+		VkPhysicalDevicePortabilitySubsetFeaturesKHR portabilityFeatures = {};
+		// VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR: vulkan_core.h declares it only with
+		// VK_ENABLE_BETA_EXTENSIONS, and the precompiled header has included it without
+		portabilityFeatures.sType = static_cast<VkStructureType>(1000163000);
+		const bool portabilitySubset = m_PhysicalDevice->IsExtensionSupported(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
+		if (portabilitySubset)
 		{
-			deviceExtensions.push_back("VK_KHR_portability_subset");
-			MORAVA_CORE_INFO("Vulkan device: portability subset (MoltenVK) enabled");
+			deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
+
+			VkPhysicalDeviceFeatures2 supportedFeatures2 = {};
+			supportedFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+			supportedFeatures2.pNext = &portabilityFeatures;
+			vkGetPhysicalDeviceFeatures2(m_PhysicalDevice->GetVulkanPhysicalDevice(), &supportedFeatures2);
+			portabilityFeatures.pNext = nullptr;
+			MORAVA_CORE_INFO("Vulkan device: portability subset (MoltenVK) enabled; imageViewFormatSwizzle {0}, mutableComparisonSamplers {1}",
+				portabilityFeatures.imageViewFormatSwizzle ? "yes" : "no", portabilityFeatures.mutableComparisonSamplers ? "yes" : "no");
 		}
 
 		VkDeviceCreateInfo deviceCreateInfo = {};
@@ -375,6 +393,13 @@ namespace H2M
 			}
 			rayTracingFeatures.EnableNeeded();
 			deviceCreateInfo.pNext = rayTracingFeatures.Chain();
+		}
+
+		// The supported portability features, in front of whatever the chain already holds
+		if (portabilitySubset)
+		{
+			portabilityFeatures.pNext = const_cast<void*>(deviceCreateInfo.pNext);
+			deviceCreateInfo.pNext = &portabilityFeatures;
 		}
 
 		if (deviceExtensions.size() > 0)
