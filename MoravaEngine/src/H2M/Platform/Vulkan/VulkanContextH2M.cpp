@@ -94,10 +94,13 @@ namespace H2M
 		instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
 		instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 
+		// Outside the if block: ppEnabledLayerNames keeps its address until vkCreateInstance (inside the block it pointed
+		// to a variable already gone; MSVC and GCC left it intact, Apple Clang reused it: VK_ERROR_LAYER_NOT_PRESENT)
+		const char* validationLayerName = "VK_LAYER_KHRONOS_validation"; // VK_LAYER_LUNARG_standard_validation
+
 		// TODO: Extract all validation into separate class
 		if (s_Validation)
 		{
-			const char* validationLayerName = "VK_LAYER_KHRONOS_validation"; // VK_LAYER_LUNARG_standard_validation
 			// Check if this layer is available at instance level
 			uint32_t instanceLayerCount;
 			vkEnumerateInstanceLayerProperties(&instanceLayerCount, nullptr);
