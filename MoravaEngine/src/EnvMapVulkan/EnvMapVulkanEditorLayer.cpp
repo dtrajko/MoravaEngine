@@ -2,6 +2,8 @@
 
 #include "EnvMapVulkanRenderer.h"
 
+#include "Editor/Editor.h"
+
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
@@ -70,15 +72,20 @@ void EnvMapVulkanEditorLayer::OnAttach()
 	UpdateSceneRendererSettings();
 
 	H2M::SceneHierarchyPanelH2M::Init();
+
+	Editor::Init(); // the renderer is initialized: the editor's scene can be made and handed to it
 }
 
 void EnvMapVulkanEditorLayer::OnDetach()
 {
+	Editor::Shutdown();
 	H2M::SceneHierarchyPanelH2M::Shutdown(); // the icons OnAttach loaded
 }
 
+// Before the frame is drawn (Application::Run updates the layers, then draws)
 void EnvMapVulkanEditorLayer::OnUpdate(H2M::TimestepH2M ts)
 {
+	Editor::OnUpdate(Application::Get()->GetScene()->GetCamera());
 }
 
 void EnvMapVulkanEditorLayer::OnImGuiRender()
@@ -127,15 +134,15 @@ void EnvMapVulkanEditorLayer::CloseProject(bool unloadProject)
 {
 }
 
-// The scene operations (Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, see HandleSceneShortcutKeys in EnvMapVulkanRenderer.cpp) are the renderer's: it owns the scene
+// The scene operations (Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, see HandleSceneShortcutKeys in Editor/EditorDocument.cpp) are the editor's: it owns the scene
 void EnvMapVulkanEditorLayer::NewScene(const std::string& name)
 {
-	EnvMapVulkanRenderer::NewScene();
+	Editor::NewScene();
 }
 
 void EnvMapVulkanEditorLayer::OpenScene()
 {
-	EnvMapVulkanRenderer::OpenScene();
+	Editor::OpenScene();
 }
 
 void EnvMapVulkanEditorLayer::OpenScene(const std::string& filepath)
@@ -148,12 +155,12 @@ void EnvMapVulkanEditorLayer::OpenScene(const H2M::AssetMetadataH2M& assetMetada
 
 void EnvMapVulkanEditorLayer::SaveScene()
 {
-	EnvMapVulkanRenderer::SaveScene();
+	Editor::SaveScene();
 }
 
 void EnvMapVulkanEditorLayer::SaveSceneAs()
 {
-	EnvMapVulkanRenderer::SaveSceneAs();
+	Editor::SaveSceneAs();
 }
 
 void EnvMapVulkanEditorLayer::UI_WelcomePopup()

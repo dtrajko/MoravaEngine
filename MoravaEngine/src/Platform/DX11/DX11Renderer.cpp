@@ -15,7 +15,7 @@
 #include "DX11VertexLayout.h"
 
 #include "Material/MaterialLibrary.h"
-#include "Editor/MaterialEditorPanel.h"
+#include "Editor_Legacy/MaterialEditorPanel.h"
 
 #include "imgui.h"
 

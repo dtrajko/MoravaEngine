@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Core/Raycast.h"
-#include "Editor/Gizmo.h"
-#include "Editor/SceneObjectParticleSystem.h"
+#include "Editor_Legacy/Gizmo.h"
+#include "Editor_Legacy/SceneObjectParticleSystem.h"
 #include "Framebuffer/MoravaFramebuffer.h"
 #include "Material/MaterialWorkflowPBR.h"
 #include "Mesh/Grid.h"

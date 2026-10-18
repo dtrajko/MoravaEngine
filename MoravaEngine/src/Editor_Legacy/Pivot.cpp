@@ -1,4 +1,4 @@
-#include "Editor/Pivot.h"
+#include "Editor_Legacy/Pivot.h"
 
 
 Pivot::Pivot(glm::vec3 position, glm::vec3 scale)

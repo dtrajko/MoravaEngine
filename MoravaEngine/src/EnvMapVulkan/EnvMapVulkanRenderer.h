@@ -17,6 +17,17 @@
 
 #include "Core/Window.h"
 
+#include "EnvMapVulkanLights.h"
+#include "EnvMapVulkanProbes.h"
+#include "EnvMapVulkanRayTracing.h"
+#include "EnvMapVulkanRenderSettings.h"
+#include "EnvMapVulkanSceneData.h"
+#include "EnvMapVulkanViewOptions.h"
+
+#include "imgui.h"
+
+#include <functional>
+
 
 class EnvMapVulkanRenderer : public H2M::RendererAPI_H2M
 {
@@ -66,12 +77,84 @@ public:
 
 	static void Draw(H2M::CameraH2M* camera); // TODO: there should be no parameters
 
-	// Scene files (.mscene): New and Open ask about unsaved changes and happen at the start of the next Draw; Save writes
-	// the scene (and its materials with unsaved changes), Save As asks for the file first
-	static void NewScene();
-	static void OpenScene();
-	static void SaveScene();
-	static void SaveSceneAs();
+	// The scene Draw draws, how (the settings saved with it) and what the view shows besides it (debug views, the
+	// selection): its owner's, read at the start of every Draw. The owner changes the scene only between frames.
+	static void SetScene(EnvMapVulkanScene* scene, const EnvMapVulkanRenderSettings* renderSettings, const EnvMapVulkanViewOptions* viewOptions);
+	// The user interface over the scene (the editor's ImGui windows), built while the window's image is recorded. Without
+	// one the window shows only the scene.
+	static void SetUserInterface(const std::function<void()>& buildUserInterface);
+
+	// --- What the editor asks the renderer (src/Editor)
+
+	// The finished viewport image, for ImGui::Image, and the size it is drawn at (from the next frame on)
+	static ImTextureID GetViewportImage();
+	static void SetViewportSize(uint32_t width, uint32_t height);
+	// Waits until the GPU is idle: before resources a recorded frame may use are destroyed (models, materials, textures)
+	static void WaitIdle();
+	// The scene's content was replaced (New, Open): what was captured from the old one is thrown away (the probes)
+	static void OnSceneReplaced();
+
+	// The environment map loaded, a number that changes whenever another one is loaded, its blur levels (the last: one
+	// average color), and the sun taken out of it (EnvMapVulkanExtractedSun::Found)
+	static const std::string& GetEnvironmentMapFile();
+	static bool HasEnvironmentMap(); // its pixels are loaded (FindEnvironmentSun)
+	static uint32_t GetEnvironmentVersion();
+	static float GetEnvironmentMaxLod();
+	static const EnvMapVulkanExtractedSun& GetExtractedSun();
+	// The map's sun: the extracted one, else its brightest region (direction and color only, Found false). False when the
+	// map's pixels are not available.
+	static bool FindEnvironmentSun(EnvMapVulkanExtractedSun& sun);
+
+	static bool IsRayTracingSupported();
+	// Rays can be traced this frame: the GPU can, and the settings' Ray Tracing is on
+	static bool IsRayTracingActive();
+
+	// The sun's shadow cascades of the last frame (false: none were drawn), and an image of one, for ImGui::Image
+	static bool AreShadowsRendered();
+	static const EnvMapVulkanShadowCascade& GetShadowCascade(uint32_t cascade);
+	static ImTextureID GetShadowCascadeImage(uint32_t cascade);
+	// The box around everything that casts shadows (min > max: nothing)
+	static void GetShadowCasterBounds(glm::vec3& boundsMin, glm::vec3& boundsMax);
+	// The shadow slot of each point and spot light of the scene's lists (-1: no shadow this frame), and how many have one
+	static void GetShadowSlotsPerLight(std::vector<int>& pointSlots, std::vector<int>& spotSlots);
+	static void GetShadowedLightCounts(uint32_t& pointLights, uint32_t& spotLights);
+	// Point and spot lights can cast shadows on this GPU (point lights need cube map arrays)
+	static bool CanPointLightsCastShadows();
+	static bool CanSpotLightsCastShadows();
+	// A point or spot light's shadow map, drawn with the next frame into an image for ImGui::Image (a spot light's map is
+	// the left 3/4 of it, a point light's cube is unfolded); null when the light has no shadow map this frame
+	static ImTextureID ShowLocalShadowMap(EnvMapVulkanSceneData::LightKind kind, int index);
+
+	// The bloom's lens dirt texture: loaded at the start of the next frame
+	static void SetBloomDirtTexture(const std::string& filepath);
+	static ImTextureID GetBloomDirtImage();
+	static std::string GetBloomDirtTextureFile();
+
+	// The probe volume's state, and its commands (see EnvMapVulkanProbes)
+	static EnvMapVulkanProbes::UpdateStatus GetProbeStatus();
+	static uint32_t GetProbeCount();
+	static void BakeProbes();
+	static void ResetProbes();
+
+	// The Path Traced view: start over, and the samples per pixel so far
+	static void RestartPathTracer();
+	static uint32_t GetPathTracerSamples();
+
+	// Numbers for the panels: the ray tracing scene, the reflection and ambient occlusion images
+	static const EnvMapVulkanRayTracing::Stats& GetRayTracingStats();
+	static bool AreReflectionsTraced();
+	static glm::uvec2 GetReflectionsSize();
+	static bool IsAmbientOcclusionRayTraced();
+	static glm::uvec2 GetAmbientOcclusionSize();
+
+	// The GPU: its name, the graphics API and its version, the driver's version (empty when unknown)
+	struct GPUInfo
+	{
+		std::string Name;
+		std::string API;
+		std::string Driver;
+	};
+	static GPUInfo GetGPUInfo();
 	// The environment map (HDR) loaded at startup: set by the scene before Init (SceneEnvMapVulkan, from its user preferences)
 	static void SetEnvironmentMapFile(const std::string& filepath);
 	static void ViewportCompositePass(VkCommandBuffer commandBuffer);
@@ -79,9 +162,6 @@ public:
 	static void GeometryPass();
 	static void CompositePass();
 	static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers);
-
-	// static void ShowExampleAppDockSpace(bool* p_open); // ImGui docking
-	static void UpdateImGuizmo(Window* mainWindow);
 
 	static int32_t& GetSelectedDrawCall();
 

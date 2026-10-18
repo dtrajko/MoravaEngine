@@ -1,4 +1,4 @@
-#include "Editor/SceneObjectLight.h"
+#include "Editor_Legacy/SceneObjectLight.h"
 
 
 SceneObjectLight::SceneObjectLight()

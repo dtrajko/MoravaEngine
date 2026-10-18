@@ -9,6 +9,7 @@
 #include "EnvMapVulkanShadows.h"
 #include "EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkanProfiler.h"
+#include "EnvMapVulkanRenderSettings.h"
 #include "EnvMapVulkanGlass.h"
 #include "EnvMapVulkanGBuffer.h"
 #include "EnvMapVulkanMaterialBuffer.h"
@@ -19,9 +20,12 @@
 #include "EnvMapVulkanSSAO.h"
 #include "EnvMapVulkanWater.h"
 #include "EnvMapVulkanScene.h"
+#include "EnvMapVulkanSceneData.h"
+#include "EnvMapVulkanSceneLoader.h"
 #include "EnvMapVulkanSceneSerializer.h"
+#include "EnvMapVulkanViewOptions.h"
 
-#include "Core/FileDialogs.h"
+
 #include "Core/ResourceManager.h"
 
 #include "H2M/Platform/Vulkan/VulkanH2M.h"
@@ -35,7 +39,6 @@
 #include "H2M/Platform/Vulkan/VulkanTestLayer.h"
 #include "H2M/Platform/Vulkan/VulkanTextureH2M.h"
 #include "H2M/Platform/Vulkan/VulkanVertexBufferH2M.h"
-#include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
@@ -43,15 +46,12 @@
 #include "Platform/Vulkan/VulkanSkyboxCube.h"
 
 #include "imgui.h"
-#include "imgui_internal.h" // BeginDragDropTargetCustom (the Models and Meshes panel as one drop area)
 
 #if !defined(IMGUI_IMPL_API)
 	#define IMGUI_IMPL_API
 #endif
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_vulkan.h"
-
-#include "ImGuizmo.h"
 
 #include "stb_image.h"
 
@@ -94,20 +94,11 @@ static H2M::RefH2M<H2M::FramebufferH2M> s_ViewportCompositeFramebuffer;
 static H2M::RefH2M<H2M::PipelineH2M> s_ViewportCompositePipeline;
 static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_ViewportCompositeDescriptorSet; // scene, bloom, lens dirt (ViewportComposite.glsl)
 
-// Bloom (Resources/Shaders/BloomPass.glsl), with the settings of SceneHazelEnvMap's "Bloom Settings" panel. The bright parts of
-// the scene are downsampled into a chain of half-resolution levels and upsampled back, which spreads them into a wide glow
-// that the viewport composite adds to the scene.
-struct BloomSettingsVulkan
-{
-	bool Enabled = true;
-	float Threshold = 1.0f;     // brightness (after exposure) where bloom starts
-	float Knee = 0.1f;          // soft transition below the threshold
-	float UpsampleScale = 1.0f; // radius of the upsample filter: larger values spread the glow further
-	float Intensity = 1.0f;
-	bool DirtEnabled = false;   // lens dirt on/off (the texture and intensity are kept)
-	float DirtIntensity = 1.0f; // lens dirt texture, lit by the bloom
-};
-static BloomSettingsVulkan s_BloomSettings;
+// How the scene is drawn: shadows, ray tracing, reflections, ambient occlusion, bloom (see EnvMapVulkanRenderSettings).
+// This frame's copy of the scene owner's settings.
+static EnvMapVulkanRenderSettings s_RenderSettings;
+
+// Bloom (Resources/Shaders/BloomPass.glsl), with the settings of SceneHazelEnvMap's "Bloom Settings" panel
 static const uint32_t s_BloomLevelCount = 6; // level i is 1/2^(i+1) of the viewport size
 static H2M::RefH2M<H2M::FramebufferH2M> s_BloomDownFramebuffers[s_BloomLevelCount];
 static H2M::RefH2M<H2M::FramebufferH2M> s_BloomUpFramebuffers[s_BloomLevelCount - 1]; // the result is s_BloomUpFramebuffers[0]
@@ -125,39 +116,10 @@ static void RecordBloomPasses(VkCommandBuffer commandBuffer);
 // Editor grid on the ground plane (Resources/Shaders/Grid.glsl), as in SceneHazelEnvMap
 static H2M::RefH2M<H2M::PipelineH2M> s_GridPipeline;
 static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_GridDescriptorSet; // allocated and written once (camera uniform buffer)
-static bool s_DisplayGrid = true;
-static float s_GridScale = 16.025f; // cells across the grid (it spans 32 x 32 units)
-static float s_GridSize = 0.025f;   // line width, as a fraction of a cell
+// The debug view, the grid, the selection and its overlays (see EnvMapVulkanViewOptions): this frame's copy of the scene
+// owner's, with a ray-traced debug view turned off when no rays can be traced
+static EnvMapVulkanViewOptions s_ViewOptions;
 
-// Editor overlays: selection outline, wireframe and bounding boxes (as "Display Outline / Wireframe / Bounding Boxes" in
-// SceneHazelEnvMap). They are drawn into two LDR framebuffers, which the viewport composite adds after tonemapping, so they
-// keep their colors (no exposure, tonemapping or bloom):
-// - overlay: wireframe (depth tested against all meshes, drawn there first) and bounding boxes (always on top)
-// - selection mask: silhouette of the selected model or mesh; the composite draws the outline around it
-enum OverlayScope { OverlayScopeOff = 0, OverlayScopeSelected = 1, OverlayScopeAll = 2 };
-static const char* s_OverlayScopeNames[] = { "Off", "Selected", "All" };
-
-struct EditorOverlaySettings
-{
-	bool Outline = true;
-	float OutlineWidth = 2.0f; // pixels (1..10)
-	glm::vec4 OutlineColor = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f);
-	int Wireframe = OverlayScopeOff;
-	glm::vec4 WireframeColor = glm::vec4(0.1f, 0.9f, 0.3f, 1.0f);
-	int BoundingBoxes = OverlayScopeOff;
-	glm::vec4 BoundingBoxColor = glm::vec4(0.2f, 0.6f, 1.0f, 1.0f);
-	glm::vec4 SelectedBoundingBoxColor = glm::vec4(1.0f, 0.5f, 0.0f, 1.0f); // the selected mesh's box (all boxes of the selected model when no mesh is selected)
-	float LineWidth = 1.0f; // wireframe, bounding boxes, and the normal/tangent/bitangent lines (pixels, 1..10)
-
-	// Vertex vectors: a line per vertex along its normal, tangent and/or bitangent
-	int Vectors = OverlayScopeOff;
-	bool ShowNormals = true;
-	bool ShowTangents = false;
-	bool ShowBitangents = false;
-	float VectorLength = 2.0f; // percent of the model's size (its bounding box diagonal), so it suits models of any scale
-	int VectorColorMode = 0;   // 0: by vector (tangent red, bitangent green, normal blue), 1: by direction (xyz as rgb)
-};
-static EditorOverlaySettings s_OverlaySettings;
 static H2M::RefH2M<H2M::FramebufferH2M> s_OverlayFramebuffer;
 static H2M::RefH2M<H2M::FramebufferH2M> s_SelectionMaskFramebuffer;
 static H2M::RefH2M<H2M::PipelineH2M> s_OverlayDepthPipeline;        // meshes with color alpha 0: depth only, hides the wireframe behind them
@@ -223,8 +185,6 @@ static std::vector<SubmittedModel> s_SubmittedModels;
 // one matrix per mesh in the order of s_SubmittedModels. The G-buffer prepass reads them per draw (see EnvMapVulkanGBuffer).
 static std::vector<glm::mat4> s_PreviousDrawTransforms;
 
-static H2M::RefH2M<H2M::MeshH2M> s_SelectedMesh;
-static glm::mat4* s_Transform_ImGuizmo = nullptr;
 
 struct VulkanRendererData
 {
@@ -319,9 +279,11 @@ static EnvMapComputeResources s_EnvMapCompute;
 static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_SkyboxDescriptorSet;
 static bool s_SkyboxDescriptorSetNeedsUpdate = true;
 
-// Environment map shown in the Environment panel, and a map requested from the UI (loaded at the start of the next Draw)
+// The environment map loaded (shown in the Environment panel), and whether its sun was taken out of it (see ExtractSun).
+// The scene's environment entity says which map it wants: another one is loaded at the start of the next Draw.
 static std::string s_EnvMapFilename;
-static std::string s_PendingEnvMapFilename;
+static bool s_EnvMapSunExtracted = true;
+static std::string s_FailedEnvMapFilename; // a map that could not be loaded is not tried again every frame
 
 // Exposure applied in the composite pass: user exposure * auto exposure (from the loaded environment map)
 static float s_Exposure = 1.0f;
@@ -371,8 +333,10 @@ static void LoadEnvironmentMap(const std::string& filepath)
 	if (!std::filesystem::exists(filepath) || !stbi_is_hdr(filepath.c_str()))
 	{
 		Log::GetLogger()->error("Environment map '{0}' was not loaded: the file does not exist or is not an HDR image. Keeping the current one.", filepath);
+		s_FailedEnvMapFilename = filepath;
 		return;
 	}
+	s_FailedEnvMapFilename.clear();
 
 	// The environment cubemaps are rewritten in place: nothing in flight may still be reading them
 	vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
@@ -388,18 +352,14 @@ static EnvMapVulkanLightEnvironment s_Lights;
 // A real sun is taken out of a loaded environment map and moved to the directional sun (see ExtractSun)
 static bool s_ExtractSunFromEnvironment = true;
 static EnvMapVulkanExtractedSun s_ExtractedSun;   // of the current environment map
-static bool s_PendingSunAlign = true;             // align the sun at the start of the next Draw (startup, a sun extracted)
-static bool s_KeepSunOnNextEnvironmentLoad = false; // an opened scene's map: its saved sun is not turned to the map's sun
 // Cascaded shadow maps of the sun (see EnvMapVulkanShadows.h)
 static EnvMapVulkanShadowMap s_ShadowMap;
-static EnvMapVulkanShadowSettings s_ShadowSettings;
 static EnvMapVulkanShadowPipeline s_ShadowPipeline;     // ShadowDepth.glsl (static models)
 static EnvMapVulkanShadowPipeline s_ShadowPipelineAnim; // ShadowDepth_Anim.glsl (skinned models)
 // Shadow maps of the spot and point lights (see EnvMapVulkanShadows.h): a layer per shadowed spot light, a cube per
 // shadowed point light (only when the GPU supports cube map arrays)
 static EnvMapVulkanShadowMap s_SpotShadowMaps;
 static EnvMapVulkanShadowMap s_PointShadowMaps;
-static EnvMapVulkanLocalShadowSettings s_LocalShadowSettings;
 
 // World bounds of each submitted model (same order as s_SubmittedModels), for the shadow passes: the cascades are fitted around all
 // of them, and a spot or point light draws only the models within its range. Computed once per frame.
@@ -407,7 +367,6 @@ static std::vector<std::pair<glm::vec3, glm::vec3>> s_ShadowCasterBounds;
 // Their union, this frame (min > max: no models)
 static glm::vec3 s_ShadowCasterBoundsMin = glm::vec3(1.0f);
 static glm::vec3 s_ShadowCasterBoundsMax = glm::vec3(-1.0f);
-static glm::uvec2 s_PendingLocalShadowResolutions = glm::uvec2(0); // spot, point: chosen in the Lights panel, applied in Draw (0: none)
 // The spot / point shadow map viewer of the Lights panel: requested while the panel shows it, recorded with the next frame
 static EnvMapVulkanShadowMapViewer s_ShadowMapViewer;
 struct ShadowMapViewerRequest
@@ -477,7 +436,6 @@ static void GetShadowSlotsPerLight(std::vector<int>& pointSlots, std::vector<int
 
 static std::array<EnvMapVulkanShadowCascade, ShadowCascadeCount> s_ShadowCascades; // this frame's, see RecordShadowPasses
 static bool s_ShadowsRendered = false; // the shadow map holds this frame's cascades
-static uint32_t s_PendingShadowResolution = 0; // chosen in the Lights panel, applied at the start of the next Draw
 static void WriteShadowMapDescriptor();
 static float s_EnvMapRotation = 0.0f; // degrees, applied to the PBR environment lookups (as in SceneHazelEnvMap)
 static uint32_t s_EnvironmentVersion = 0; // changes whenever the environment's cube maps get new contents (CreateEnvironmentMap)
@@ -486,84 +444,11 @@ static uint32_t s_EnvironmentVersion = 0; // changes whenever the environment's 
 // loaded model file (an H2M::ModelH2M), an entity with a ModelComponent; a mesh is one part of it (an H2M::MeshH2M), a
 // child entity of the model with a MeshPartComponent. Every model entity has its own ModelH2M, so editing its parts
 // changes only that model.
-static EnvMapVulkanScene s_Scene;
-// The selected entity: a model or one of its parts (NoEntity: none)
-static EnvMapVulkanEntityID s_SelectedEntity = NoEntity;
-static std::string s_PendingModelFilename;  // requested from the UI, loaded at the start of the next Draw
-static std::optional<glm::vec3> s_PendingModelGroundPosition; // dropped on the viewport: where the model is placed (see LoadModel)
-static std::vector<EnvMapVulkanEntityID> s_PendingRemoveEntities; // models and parts, requested from the UI, removed at the start of the next Draw
-
-static void CollectModels(EnvMapVulkanEntityID entity, std::vector<EnvMapVulkanEntityID>& models)
-{
-	if (s_Scene.Has<ModelComponent>(entity))
-	{
-		models.push_back(entity);
-	}
-	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
-	{
-		CollectModels(child, models);
-	}
-}
-
-// The model entities, in the order of the hierarchy
-static std::vector<EnvMapVulkanEntityID> GetModels()
-{
-	std::vector<EnvMapVulkanEntityID> models;
-	for (EnvMapVulkanEntityID root : s_Scene.GetRoots())
-	{
-		CollectModels(root, models);
-	}
-	return models;
-}
-
-static H2M::RefH2M<H2M::ModelH2M> GetModel(EnvMapVulkanEntityID model)
-{
-	const ModelComponent* component = s_Scene.TryGet<ModelComponent>(model);
-	return component ? component->Model : H2M::RefH2M<H2M::ModelH2M>();
-}
-
-// The model of the selection (the selected model, or the model of the selected part); NoEntity when no model is selected
-static EnvMapVulkanEntityID GetSelectedModel()
-{
-	if (s_Scene.Has<ModelComponent>(s_SelectedEntity))
-	{
-		return s_SelectedEntity;
-	}
-	if (s_Scene.Has<MeshPartComponent>(s_SelectedEntity))
-	{
-		return s_Scene.GetParent(s_SelectedEntity);
-	}
-	return NoEntity;
-}
-
-// The selected part's mesh index in its model; -1 when no part is selected
-static int GetSelectedMeshIndex()
-{
-	const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(s_SelectedEntity);
-	return part ? (int)part->MeshIndex : -1;
-}
-
-// The part entity of a model's mesh (NoEntity: none)
-static EnvMapVulkanEntityID FindPart(EnvMapVulkanEntityID model, int meshIndex)
-{
-	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(model))
-	{
-		const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(child);
-		if (part && (int)part->MeshIndex == meshIndex)
-		{
-			return child;
-		}
-	}
-	return NoEntity;
-}
-
-// Multi-selection: s_Selection is every selected entity, s_SelectedEntity (one of them) the primary one, which the
-// Properties panel, the Material Editor and the gizmo work with (the gizmo moves the others along, see UpdateImGuizmo).
-// Code that sets only s_SelectedEntity (a model loaded, a light added, a deselection) selects that entity alone:
-// s_Selection follows at the next SyncSelection. Ctrl + click adds or removes an entity, Shift + click (Scene Hierarchy)
-// selects a range of rows.
-static std::vector<EnvMapVulkanEntityID> s_Selection;
-static EnvMapVulkanEntityID s_SelectionAnchor = NoEntity; // where a Shift + click range starts (the last plain or Ctrl click)
+static EnvMapVulkanScene* s_Scene = nullptr; // the scene drawn, its owner's (see SetScene)
+static const EnvMapVulkanRenderSettings* s_OwnerRenderSettings = nullptr; // copied into s_RenderSettings at the start of Draw
+static const EnvMapVulkanViewOptions* s_OwnerViewOptions = nullptr;       // copied into s_ViewOptions at the start of Draw
+static std::function<void()> s_BuildUserInterface; // the editor's windows (see SetUserInterface)
+static EnvMapVulkanSceneData::LightEntities s_LightEntities; // the entities of s_Lights' lights (see ExtractLights)
 
 template<typename T>
 static bool Contains(const std::vector<T>& values, const T& value)
@@ -571,170 +456,18 @@ static bool Contains(const std::vector<T>& values, const T& value)
 	return std::find(values.begin(), values.end(), value) != values.end();
 }
 
-// Removed entities leave the selection; a primary entity that isn't in s_Selection (set on its own) is the selection
-static void SyncSelection()
-{
-	s_Selection.erase(std::remove_if(s_Selection.begin(), s_Selection.end(),
-		[](EnvMapVulkanEntityID entity) { return !s_Scene.Exists(entity); }), s_Selection.end());
-	if (s_SelectedEntity != NoEntity && !s_Scene.Exists(s_SelectedEntity))
-	{
-		s_SelectedEntity = s_Selection.empty() ? NoEntity : s_Selection.back();
-	}
-	if (s_SelectedEntity == NoEntity)
-	{
-		s_Selection.clear();
-	}
-	else if (!Contains(s_Selection, s_SelectedEntity))
-	{
-		s_Selection = { s_SelectedEntity };
-	}
-}
-
-static bool IsSelected(EnvMapVulkanEntityID entity)
-{
-	if (entity == NoEntity)
-	{
-		return false;
-	}
-	// Before SyncSelection, a primary entity set on its own is the whole selection
-	return entity == s_SelectedEntity || (Contains(s_Selection, s_SelectedEntity) && Contains(s_Selection, entity));
-}
-
-static const std::vector<EnvMapVulkanEntityID>& GetSelection()
-{
-	SyncSelection();
-	return s_Selection;
-}
-
-// A plain click: the entity alone (NoEntity: nothing)
-static void SelectOnly(EnvMapVulkanEntityID entity)
-{
-	s_SelectedEntity = entity;
-	s_Selection.clear();
-	if (entity != NoEntity)
-	{
-		s_Selection.push_back(entity);
-	}
-	s_SelectionAnchor = entity;
-}
-
-// Ctrl + click: adds the entity (it becomes the primary one) or removes it (the last selected one becomes primary)
-static void ToggleSelected(EnvMapVulkanEntityID entity)
-{
-	if (entity == NoEntity)
-	{
-		return;
-	}
-	SyncSelection();
-	auto it = std::find(s_Selection.begin(), s_Selection.end(), entity);
-	if (it != s_Selection.end())
-	{
-		s_Selection.erase(it);
-		s_SelectedEntity = s_Selection.empty() ? NoEntity : s_Selection.back();
-	}
-	else
-	{
-		s_Selection.push_back(entity);
-		s_SelectedEntity = entity;
-	}
-	s_SelectionAnchor = entity;
-}
-
-// The meshes of a model to show as selected: { -1 } when the model itself is selected, else the mesh indices of its
-// selected parts (empty: nothing of it is selected)
-static std::vector<int> GetSelectedMeshes(EnvMapVulkanEntityID model)
-{
-	if (IsSelected(model))
-	{
-		return { -1 };
-	}
-	std::vector<int> meshes;
-	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(model))
-	{
-		const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(child);
-		if (part && IsSelected(child))
-		{
-			meshes.push_back((int)part->MeshIndex);
-		}
-	}
-	return meshes;
-}
-
-// The part of a model's mesh, or the model itself (meshIndex < 0, or no part for that mesh)
-static EnvMapVulkanEntityID GetModelOrPart(EnvMapVulkanEntityID model, int meshIndex)
-{
-	EnvMapVulkanEntityID part = meshIndex >= 0 ? FindPart(model, meshIndex) : NoEntity;
-	return part != NoEntity ? part : model;
-}
-
-// Selects a model, or one of its parts (meshIndex >= 0), alone
-static void SelectModel(EnvMapVulkanEntityID model, int meshIndex = -1)
-{
-	SelectOnly(GetModelOrPart(model, meshIndex));
-}
-
-// Ctrl or Shift + double click in the viewport: every part of the model joins the selection, with the clicked one as the primary
-// entity. The model itself leaves the selection, so the gizmo doesn't move its parts twice. A model without parts is
-// selected itself.
-static void AddModelPartsToSelection(EnvMapVulkanEntityID model, EnvMapVulkanEntityID clicked)
-{
-	SyncSelection();
-	std::vector<EnvMapVulkanEntityID> parts;
-	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(model))
-	{
-		if (s_Scene.TryGet<MeshPartComponent>(child))
-		{
-			parts.push_back(child);
-		}
-	}
-	if (parts.empty())
-	{
-		parts.push_back(model);
-	}
-	else
-	{
-		s_Selection.erase(std::remove(s_Selection.begin(), s_Selection.end(), model), s_Selection.end());
-	}
-	EnvMapVulkanEntityID primary = Contains(parts, clicked) ? clicked : parts.back();
-	for (EnvMapVulkanEntityID part : parts)
-	{
-		if (part != primary && !Contains(s_Selection, part))
-		{
-			s_Selection.push_back(part);
-		}
-	}
-	s_Selection.erase(std::remove(s_Selection.begin(), s_Selection.end(), primary), s_Selection.end());
-	s_Selection.push_back(primary); // the primary entity is the last one, as after a Ctrl + click
-	s_SelectedEntity = primary;
-	s_SelectionAnchor = primary;
-}
-
-// The material each mesh of a model is drawn with (in the model's mesh order; the Default material for a mesh without a part)
-static std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> GetMeshMaterials(EnvMapVulkanEntityID model);
-
 // The environment is an entity with an EnvironmentComponent (one per scene). Every frame ExtractEnvironment reads it into
-// the renderer's environment settings (s_EnvMapRotation, s_Exposure...); the Environment panel edits those and writes them
-// back with CommitEnvironment. The map file: a newly loaded map (any way: panel, drag & drop) goes into the entity; a
-// different file in the entity (e.g. a loaded scene) is loaded.
+// the renderer's environment settings (s_EnvMapRotation, s_Exposure...), and UpdateEnvironmentMap loads the map it names
+// when that isn't the map loaded. The Environment panel edits the component.
 static EnvMapVulkanEntityID s_EnvironmentEntity = NoEntity;
 
 static void ExtractEnvironment()
 {
-	s_EnvironmentEntity = s_Scene.FindFirst<EnvironmentComponent>();
-	EnvironmentComponent* environment = s_Scene.TryGet<EnvironmentComponent>(s_EnvironmentEntity);
+	s_EnvironmentEntity = s_Scene->FindFirst<EnvironmentComponent>();
+	const EnvironmentComponent* environment = s_Scene->TryGet<EnvironmentComponent>(s_EnvironmentEntity);
 	if (!environment)
 	{
 		return;
-	}
-	static std::string s_LastLoadedEnvMap = s_EnvMapFilename;
-	if (s_EnvMapFilename != s_LastLoadedEnvMap)
-	{
-		environment->FilePath = s_EnvMapFilename; // a map was loaded: the scene refers to it
-		s_LastLoadedEnvMap = s_EnvMapFilename;
-	}
-	else if (!environment->FilePath.empty() && environment->FilePath != s_EnvMapFilename && s_PendingEnvMapFilename.empty())
-	{
-		s_PendingEnvMapFilename = environment->FilePath; // the scene asks for another map (loaded at the start of Draw)
 	}
 	s_EnvMapRotation = environment->Rotation;
 	s_Exposure = environment->Exposure;
@@ -744,278 +477,19 @@ static void ExtractEnvironment()
 	s_Data.SceneData.SkyboxLod = environment->SkyboxLod;
 }
 
-static void CommitEnvironment()
+// The scene's environment map: loaded when the environment entity names another map, or the same one with or without its
+// sun (Extract Sun). Called at the start of Draw, before any command buffer of the frame is recorded.
+static void UpdateEnvironmentMap()
 {
-	EnvironmentComponent* environment = s_Scene.TryGet<EnvironmentComponent>(s_EnvironmentEntity);
-	if (!environment)
+	const EnvironmentComponent* environment = s_Scene->TryGet<EnvironmentComponent>(s_EnvironmentEntity);
+	if (!environment || environment->FilePath.empty() || environment->FilePath == s_FailedEnvMapFilename)
 	{
 		return;
 	}
-	environment->Rotation = s_EnvMapRotation;
-	environment->Exposure = s_Exposure;
-	environment->AutoExposure = s_AutoExposureEnabled;
-	environment->HuePreservation = s_TonemapHuePreservation;
-	environment->ExtractSun = s_ExtractSunFromEnvironment;
-	environment->SkyboxLod = s_Data.SceneData.SkyboxLod;
-}
-
-// The scene's environment entity, with the renderer's current settings and map
-static void CreateEnvironmentEntity()
-{
-	EnvMapVulkanEntityID entity = s_Scene.CreateEntity("Environment");
-	s_Scene.Add<EnvironmentComponent>(entity).FilePath = s_EnvMapFilename;
-	s_EnvironmentEntity = entity;
-	CommitEnvironment();
-}
-
-// The camera is an entity with a CameraComponent (one per scene, as the environment and the sun): its transform is where
-// the editor's camera is and where it looks. SyncCamera keeps the two the same, every frame: flying the camera in the
-// viewport moves the entity, and a transform that changed without the camera (edited in Properties, or an opened
-// scene's) moves the camera.
-static EnvMapVulkanEntityID s_CameraEntity = NoEntity;
-// The entity's transform as SyncCamera left it (a difference: something else changed it); none yet: the entity takes
-// the camera's placement
-static bool s_CameraEntitySynced = false;
-static glm::vec3 s_SyncedCameraTranslation = glm::vec3(0.0f);
-static glm::vec3 s_SyncedCameraRotation = glm::vec3(0.0f);
-
-// A scene without a camera entity gets one (a new scene, a scene saved before cameras were entities): where the
-// editor's camera is now, written by the next SyncCamera
-static void EnsureCameraEntity()
-{
-	s_CameraEntity = s_Scene.FindFirst<CameraComponent>();
-	if (s_CameraEntity == NoEntity)
+	if (environment->FilePath != s_EnvMapFilename || environment->ExtractSun != s_EnvMapSunExtracted)
 	{
-		s_CameraEntity = s_Scene.CreateEntity("Camera");
-		s_Scene.Add<CameraComponent>(s_CameraEntity);
-		s_CameraEntitySynced = false;
+		LoadEnvironmentMap(environment->FilePath);
 	}
-	// The first entity of the Scene Hierarchy
-	if (s_Scene.GetRoots().empty() || s_Scene.GetRoots().front() != s_CameraEntity)
-	{
-		s_Scene.SetParent(s_CameraEntity, NoEntity, true, 0);
-	}
-}
-
-static void SyncCamera(H2M::CameraH2M* camera)
-{
-	EnsureCameraEntity();
-	TransformComponent& transform = s_Scene.Get<TransformComponent>(s_CameraEntity);
-	if (s_CameraEntitySynced && (transform.Translation != s_SyncedCameraTranslation || transform.Rotation != s_SyncedCameraRotation))
-	{
-		// The entity moved: the camera follows. The camera's yaw is measured from +X towards +Z (-90 looks along -Z).
-		transform.Rotation.x = glm::clamp(transform.Rotation.x, -89.0f, 89.0f);
-		transform.Rotation.z = 0.0f;
-		const float yaw = -transform.Rotation.y - 90.0f;
-		camera->SetPosition(transform.Translation);
-		camera->SetYaw(yaw);
-		camera->SetPitch(transform.Rotation.x);
-		// As the camera's controller does from the yaw and the pitch (it runs before the next frame is drawn, not this one)
-		camera->SetFront(glm::normalize(glm::vec3(std::cos(glm::radians(yaw)) * std::cos(glm::radians(transform.Rotation.x)),
-			std::sin(glm::radians(transform.Rotation.x)), std::sin(glm::radians(yaw)) * std::cos(glm::radians(transform.Rotation.x)))));
-		camera->OnUpdate(H2M::TimestepH2M(0.0f));
-	}
-	else
-	{
-		// The turn around the vertical axis, kept within -180 to 180
-		float turn = std::fmod(-camera->GetYaw() - 90.0f, 360.0f);
-		turn += turn > 180.0f ? -360.0f : (turn <= -180.0f ? 360.0f : 0.0f);
-		transform.Translation = camera->GetPosition();
-		transform.Rotation = glm::vec3(camera->GetPitch(), turn, 0.0f);
-	}
-	transform.Scale = glm::vec3(1.0f);
-	// The lens: the projection is rebuilt from it with the viewport's size (OnUpdate)
-	CameraComponent& component = s_Scene.Get<CameraComponent>(s_CameraEntity);
-	component.FieldOfView = glm::clamp(component.FieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView);
-	camera->SetPerspectiveVerticalFOV(component.FieldOfView);
-	s_CameraEntitySynced = true;
-	s_SyncedCameraTranslation = transform.Translation;
-	s_SyncedCameraRotation = transform.Rotation;
-}
-
-
-// Screen rectangle of the scene image in the Viewport window (for the gizmo and mouse picking)
-static ImVec2 s_ViewportImageMin = ImVec2(0.0f, 0.0f);
-static ImVec2 s_ViewportImageSize = ImVec2(0.0f, 0.0f);
-
-// Mouse position in normalized device coordinates of the scene image in the Viewport window (-1..1, +y up).
-// The image is shown vertically flipped (see ImGui::Image in OnImGuiRender), so its top edge is NDC y = +1.
-static glm::vec2 GetViewportMouseNdc()
-{
-	ImVec2 mouse = ImGui::GetMousePos();
-	return glm::vec2((mouse.x - s_ViewportImageMin.x) / s_ViewportImageSize.x * 2.0f - 1.0f,
-		1.0f - (mouse.y - s_ViewportImageMin.y) / s_ViewportImageSize.y * 2.0f);
-}
-
-// World space ray from the camera through a point of the viewport (NDC)
-static void GetCameraRay(float ndcX, float ndcY, glm::vec3& origin, glm::vec3& direction)
-{
-	H2M::CameraH2M& camera = s_Data.SceneData.SceneCamera.Camera;
-	glm::mat4 view = camera.GetViewMatrix();
-	glm::mat4 inverseViewProjection = glm::inverse(camera.GetProjectionMatrix() * view);
-
-	origin = glm::vec3(glm::inverse(view)[3]); // camera position
-	glm::vec4 farPoint = inverseViewProjection * glm::vec4(ndcX, ndcY, 1.0f, 1.0f);
-	direction = glm::normalize(glm::vec3(farPoint) / farPoint.w - origin);
-}
-
-// Where a model dropped on the viewport goes: the point under the cursor on the ground plane (y = 0, the editor grid), or a few
-// units in front of the camera when the cursor ray doesn't meet the ground nearby (looking at the sky or along the horizon)
-static glm::vec3 GetDropGroundPosition(float ndcX, float ndcY)
-{
-	glm::vec3 origin, direction;
-	GetCameraRay(ndcX, ndcY, origin, direction);
-
-	const float maxDistance = 100.0f;
-	if (direction.y < -1e-4f)
-	{
-		float t = -origin.y / direction.y;
-		if (t > 0.0f && t < maxDistance)
-		{
-			return origin + direction * t;
-		}
-	}
-	return origin + direction * 5.0f;
-}
-
-// Finds the model and mesh under the mouse: a ray through the cursor is tested against every mesh's bounding box,
-// then its triangles (as in SceneHazelEnvMap); the nearest hit wins. hitModel is NoEntity and hitMesh -1 when nothing is hit.
-// ndcX, ndcY: cursor position in normalized device coordinates of the viewport (-1..1, +y up)
-// hitPosition (optional): the world position of the hit, when something is hit
-static void RaycastMesh(float ndcX, float ndcY, EnvMapVulkanEntityID& hitModel, int& hitMesh, glm::vec3* hitPosition = nullptr)
-{
-	glm::vec3 origin, direction;
-	GetCameraRay(ndcX, ndcY, origin, direction);
-
-	float nearestT = std::numeric_limits<float>::max();
-	hitModel = NoEntity;
-	hitMesh = -1;
-
-	for (EnvMapVulkanEntityID m : GetModels())
-	{
-		H2M::RefH2M<H2M::ModelH2M> model = GetModel(m);
-		glm::mat4 modelTransform = s_Scene.GetWorldTransform(m);
-		auto& meshes = model->GetMeshes();
-
-		for (int s = 0; s < (int)meshes.size(); s++)
-		{
-			// Ray in the mesh's local space; the direction is not renormalized, so t is the same distance
-			// along the world ray for every mesh and the hits can be compared
-			glm::mat4 toLocal = glm::inverse(modelTransform * meshes[s]->Transform);
-			H2M::RayH2M ray = { glm::vec3(toLocal * glm::vec4(origin, 1.0f)), glm::mat3(toLocal) * direction };
-
-			float t;
-			if (!ray.IntersectsAABB(meshes[s]->BoundingBox, t) || t < 0.0f || t >= nearestT)
-			{
-				continue;
-			}
-
-			const auto triangles = model->GetTriangleCache((uint32_t)s);
-			if (triangles.empty())
-			{
-				nearestT = t; hitModel = m; hitMesh = s; // no triangle data: the bounding box has to do
-				continue;
-			}
-			for (const auto& triangle : triangles)
-			{
-				if (ray.IntersectsTriangle(triangle.V0.Position, triangle.V1.Position, triangle.V2.Position, t) && t >= 0.0f && t < nearestT)
-				{
-					nearestT = t; hitModel = m; hitMesh = s;
-				}
-			}
-		}
-	}
-
-	if (hitPosition && hitModel != NoEntity)
-	{
-		*hitPosition = origin + direction * nearestT;
-	}
-}
-
-// Material Library (the materials themselves are in EnvMapVulkanMaterialLibrary)
-static H2M::RefH2M<EnvMapVulkanMaterial> s_SelectedMaterial;      // edited in the Material Editor
-static H2M::RefH2M<EnvMapVulkanMaterial> s_PendingDeleteMaterial; // requested from the UI, deleted at the start of the next Draw
-static const char* s_MaterialPayload = "VULKAN_LIBRARY_MATERIAL";    // drag & drop payload: an index into EnvMapVulkanMaterialLibrary::GetMaterials()
-
-// A map assigned or removed in the Material Editor (button or drag & drop), applied at the start of the next Draw
-struct PendingMaterialTexture
-{
-	H2M::RefH2M<EnvMapVulkanMaterial> Material;
-	uint32_t Slot;        // EnvMapVulkanMaterial::Map
-	std::string FilePath; // empty: remove the map
-};
-static std::vector<PendingMaterialTexture> s_PendingMaterialTextures;
-// Material files to load (Load... or dropped on the Material Library), at the start of the next Draw: a file may replace
-// the values and maps of a material in use
-static std::vector<std::string> s_PendingMaterialFiles;
-
-static bool IsMaterialFile(const std::string& filepath)
-{
-	return std::filesystem::path(filepath).extension() == EnvMapVulkanMaterialLibrary::FileExtension;
-}
-
-static bool IsImageFile(const std::string& filepath)
-{
-	static const std::set<std::string> s_Extensions = { ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".psd", ".gif" };
-	std::string extension = std::filesystem::path(filepath).extension().string();
-	std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return (char)std::tolower(c); });
-	return s_Extensions.find(extension) != s_Extensions.end();
-}
-
-static bool IsModelFile(const std::string& filepath)
-{
-	static const std::set<std::string> s_Extensions = { ".fbx", ".obj", ".gltf", ".glb", ".dae", ".3ds", ".blend", ".ply", ".stl", ".x", ".md5mesh" };
-	std::string extension = std::filesystem::path(filepath).extension().string();
-	std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return (char)std::tolower(c); });
-	return s_Extensions.find(extension) != s_Extensions.end();
-}
-
-// Number of meshes, over all loaded models, drawn with the material
-static int CountMaterialUsers(const H2M::RefH2M<EnvMapVulkanMaterial>& material)
-{
-	int count = 0;
-	s_Scene.Each<MeshPartComponent>([&](EnvMapVulkanEntityID, MeshPartComponent& part) {
-		count += part.Material == material ? 1 : 0;
-	});
-	return count;
-}
-
-// The Material Editor follows the selection: selecting a mesh (Models and Meshes panel or viewport) selects the material it is drawn with
-static void SyncSelectedMaterial()
-{
-	static EnvMapVulkanEntityID s_LastSelected = NoEntity;
-	if (s_SelectedEntity == s_LastSelected)
-	{
-		return;
-	}
-	s_LastSelected = s_SelectedEntity;
-
-	if (const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(s_SelectedEntity))
-	{
-		s_SelectedMaterial = part->Material;
-	}
-}
-
-static std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> GetMeshMaterials(EnvMapVulkanEntityID model)
-{
-	H2M::RefH2M<H2M::ModelH2M> modelRef = GetModel(model);
-	std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> materials(modelRef ? modelRef->GetMeshes().size() : 0);
-	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(model))
-	{
-		const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(child);
-		if (part && part->MeshIndex < materials.size())
-		{
-			materials[part->MeshIndex] = part->Material;
-		}
-	}
-	for (auto& material : materials)
-	{
-		if (!material)
-		{
-			material = EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
-		}
-	}
-	return materials;
 }
 
 // The parts' transforms (the scene's) into the model's meshes, which the drawing reads. Only a transform edited since it
@@ -1023,17 +497,17 @@ static std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> GetMeshMaterials(EnvMapVul
 // part, a shear) stays as it was loaded until the part is moved.
 static void ApplyPartTransforms()
 {
-	for (EnvMapVulkanEntityID model : GetModels())
+	for (EnvMapVulkanEntityID model : EnvMapVulkanSceneData::GetModels(*s_Scene))
 	{
-		H2M::RefH2M<H2M::ModelH2M> modelRef = GetModel(model);
-		for (EnvMapVulkanEntityID child : s_Scene.GetChildren(model))
+		H2M::RefH2M<H2M::ModelH2M> modelRef = EnvMapVulkanSceneData::GetModel(*s_Scene, model);
+		for (EnvMapVulkanEntityID child : s_Scene->GetChildren(model))
 		{
-			MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(child);
+			MeshPartComponent* part = s_Scene->TryGet<MeshPartComponent>(child);
 			if (!part || part->MeshIndex >= modelRef->GetMeshes().size())
 			{
 				continue;
 			}
-			const TransformComponent& transform = s_Scene.Get<TransformComponent>(child);
+			const TransformComponent& transform = s_Scene->Get<TransformComponent>(child);
 			if (transform.Translation != part->AppliedTransform.Translation || transform.Rotation != part->AppliedTransform.Rotation ||
 				transform.Scale != part->AppliedTransform.Scale)
 			{
@@ -1044,498 +518,44 @@ static void ApplyPartTransforms()
 	}
 }
 
-// Sets a part's transform to an exact matrix (the gizmo's result, Reset Mesh): the mesh gets the matrix as it is, the
-// part's transform its decomposition
-static void SetPartMatrix(EnvMapVulkanEntityID partEntity, const glm::mat4& matrix)
-{
-	MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(partEntity);
-	H2M::RefH2M<H2M::ModelH2M> model = GetModel(s_Scene.GetParent(partEntity));
-	if (!part || !model || part->MeshIndex >= model->GetMeshes().size())
-	{
-		return;
-	}
-	TransformComponent& transform = s_Scene.Get<TransformComponent>(partEntity);
-	transform.SetMatrix(matrix);
-	part->AppliedTransform = transform;
-	model->GetMeshes()[part->MeshIndex]->Transform = matrix;
-}
-
-static glm::mat4 GetMeshTransform(H2M::RefH2M<H2M::ModelH2M> model, const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform);
-
-// Loads a model file and adds it to the scene (called at the start of a frame, see Draw). With a ground position (a model dropped
-// on the viewport), the model stands on that point: the bottom center of its bounding box is placed there, rather than its origin.
-// A model far too large or too small for the view (e.g. modeled in millimeters) is also scaled to fit (see below).
-static void LoadModel(const std::string& filepath, std::optional<glm::vec3> groundPosition = std::nullopt)
-{
-	if (!std::filesystem::exists(filepath) || !IsModelFile(filepath))
-	{
-		Log::GetLogger()->error("Model '{0}' was not loaded: the file does not exist or is not a supported model file.", filepath);
-		return;
-	}
-
-	H2M::RefH2M<H2M::ModelH2M> model = H2M::RefH2M<H2M::ModelH2M>::Create(filepath);
-	if (!model || model->GetMeshes().empty())
-	{
-		Log::GetLogger()->error("Model '{0}' was not loaded: no geometry found.", filepath);
-		return;
-	}
-
-	if (model->HasAnimations())
-	{
-		Log::GetLogger()->info("Model '{0}': {1} animation(s), {2} bones", filepath, model->GetAnimationCount(), model->GetBoneCount());
-	}
-
-	// The model entity, named after the file, and a part entity per mesh
-	const EnvMapVulkanEntityID entity = s_Scene.CreateEntity(std::filesystem::path(filepath).filename().string());
-	ModelComponent& modelComponent = s_Scene.Add<ModelComponent>(entity);
-	modelComponent.FilePath = filepath;
-	modelComponent.Model = model;
-
-	// The model's materials its meshes use go into the Material Library (reused if this model was loaded before); each
-	// mesh starts with the material the model assigns to it, or the library's Default material if the model has none for it
-	std::set<EnvMapVulkanMaterial*> usedMaterials;
-	for (uint32_t m = 0; m < (uint32_t)model->GetMeshes().size(); m++)
-	{
-		const H2M::RefH2M<H2M::MeshH2M>& mesh = model->GetMeshes()[m];
-		std::string name = !mesh->MeshName.empty() ? mesh->MeshName : (!mesh->NodeName.empty() ? mesh->NodeName : "Mesh " + std::to_string(m));
-		EnvMapVulkanEntityID partEntity = s_Scene.CreateEntity(name, entity);
-		MeshPartComponent& part = s_Scene.Add<MeshPartComponent>(partEntity);
-		part.MeshIndex = m;
-		part.SourceMeshIndex = m;
-		part.Material = EnvMapVulkanMaterialLibrary::ImportModelMaterial(model, mesh->MaterialIndex);
-		usedMaterials.insert(part.Material.Raw());
-		part.OriginalTransform = mesh->Transform;
-		TransformComponent& partTransform = s_Scene.Get<TransformComponent>(partEntity);
-		partTransform.SetMatrix(mesh->Transform);
-		part.AppliedTransform = partTransform; // the mesh keeps its exact matrix until the part is edited (see ApplyPartTransforms)
-	}
-	// After the parts: adding components may move a component pool, so references taken before would dangle
-	TransformComponent& entry = s_Scene.Get<TransformComponent>(entity);
-
-	if (groundPosition)
-	{
-		// Bounding box of the model at rest: the corners of every mesh's bounding box, placed as they are drawn
-		glm::vec3 boundsMin(std::numeric_limits<float>::max());
-		glm::vec3 boundsMax(-std::numeric_limits<float>::max());
-		for (auto& mesh : model->GetMeshes())
-		{
-			glm::mat4 meshTransform = GetMeshTransform(model, mesh, glm::mat4(1.0f));
-			const H2M::AABB_H2M& box = mesh->BoundingBox;
-			for (int corner = 0; corner < 8; corner++)
-			{
-				glm::vec3 point((corner & 1) ? box.Max.x : box.Min.x, (corner & 2) ? box.Max.y : box.Min.y, (corner & 4) ? box.Max.z : box.Min.z);
-				glm::vec3 placed = glm::vec3(meshTransform * glm::vec4(point, 1.0f));
-				boundsMin = glm::min(boundsMin, placed);
-				boundsMax = glm::max(boundsMax, placed);
-			}
-		}
-
-		if (boundsMin.x <= boundsMax.x)
-		{
-			// Fit to the view, only for extreme cases: a model that can't fit in the view at all (larger than 10x the distance from the
-			// camera to the drop point, e.g. modeled in millimeters) or would be a few pixels (smaller than 1/200 of that distance)
-			// gets a uniform scale that makes it a quarter of the distance. Every other model keeps its scale of 1.
-			float size = glm::compMax(boundsMax - boundsMin);
-			glm::vec3 cameraPosition = glm::vec3(glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix())[3]);
-			float distance = glm::max(glm::length(*groundPosition - cameraPosition), 1.0f);
-			if (size > 0.0f && (size > distance * 10.0f || size < distance * 0.005f))
-			{
-				entry.Scale = glm::vec3(distance * 0.25f / size);
-				Log::GetLogger()->info("Model '{0}' is {1} units across: scaled by {2} to fit the view (set Scale to 1 for its original size)",
-					filepath, size, entry.Scale.x);
-			}
-
-			// The bottom center of the (scaled) bounding box goes to the drop point
-			glm::vec3 bottomCenter((boundsMin.x + boundsMax.x) * 0.5f, boundsMin.y, (boundsMin.z + boundsMax.z) * 0.5f);
-			entry.Translation = *groundPosition - bottomCenter * entry.Scale;
-		}
-		else
-		{
-			entry.Translation = *groundPosition;
-		}
-	}
-
-	s_SelectedEntity = entity;
-	Log::GetLogger()->info("Model '{0}' loaded: {1} meshes, {2} materials", filepath, model->GetMeshes().size(), usedMaterials.size());
-}
-
-// Loads an image and binds it as one of a material's maps, or removes the map when the request has no file path
-// (called at the start of a frame, see Draw)
-static void ApplyMaterialTexture(const PendingMaterialTexture& request)
-{
-	H2M::RefH2M<EnvMapVulkanMaterial> material = request.Material;
-	if (!material || request.Slot >= EnvMapVulkanMaterial::MapCount)
-	{
-		return;
-	}
-
-	VkDevice device = H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
-
-	if (request.FilePath.empty())
-	{
-		vkDeviceWaitIdle(device); // the descriptor set may be used by frames in flight
-		material->RemoveMap(request.Slot);
-		Log::GetLogger()->info("{0} removed from material '{1}'", EnvMapVulkanMaterial::GetMapTextureName(request.Slot), material->GetName());
-		return;
-	}
-
-	if (!std::filesystem::exists(request.FilePath) || !IsImageFile(request.FilePath))
-	{
-		Log::GetLogger()->error("Map '{0}' was not loaded: the file does not exist or is not a supported image.", request.FilePath);
-		return;
-	}
-
-	// Through the texture cache: an image already loaded (by a model or another material) in this slot's color space is shared
-	H2M::RefH2M<H2M::Texture2D_H2M> texture = ResourceManager::LoadTexture2D_H2M(request.FilePath, EnvMapVulkanMaterial::IsColorMap(request.Slot));
-	if (!texture || !texture->Loaded())
-	{
-		Log::GetLogger()->error("Map '{0}' could not be loaded.", request.FilePath);
-		return;
-	}
-
-	vkDeviceWaitIdle(device); // the descriptor set may be used by frames in flight
-	material->SetMap(request.Slot, texture);
-
-	Log::GetLogger()->info("Map '{0}' assigned to {1} of material '{2}'", request.FilePath, EnvMapVulkanMaterial::GetMapTextureName(request.Slot), material->GetName());
-}
-
-// Deletes a material from the library (called at the start of a frame, see Draw). Meshes that used it get the Default material.
-static void DeleteMaterial(H2M::RefH2M<EnvMapVulkanMaterial> material)
-{
-	vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice()); // its descriptor set may be used by frames in flight
-
-	int users = CountMaterialUsers(material);
-	EnvMapVulkanMaterialLibrary::Remove(material);
-	if (users > 0)
-	{
-		H2M::RefH2M<EnvMapVulkanMaterial> replacement = EnvMapVulkanMaterialLibrary::GetDefaultMaterial(); // a new one if the Default was deleted
-		s_Scene.Each<MeshPartComponent>([&](EnvMapVulkanEntityID, MeshPartComponent& part) {
-			if (part.Material == material)
-			{
-				part.Material = replacement;
-			}
-		});
-	}
-	if (s_SelectedMaterial == material)
-	{
-		s_SelectedMaterial = H2M::RefH2M<EnvMapVulkanMaterial>();
-	}
-	Log::GetLogger()->info("Material '{0}' deleted ({1} meshes now use the Default material)", material->GetName(), users);
-}
-
-// "Make Unique": the part gets a new variant of its material. It looks the same and follows the material until one of its
-// properties is edited, which then applies to this part only (and to other parts given the variant).
-static void MakePartMaterialUnique(EnvMapVulkanEntityID partEntity)
-{
-	MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(partEntity);
-	if (!part)
-	{
-		return;
-	}
-	H2M::RefH2M<EnvMapVulkanMaterial> parent = part->Material ? part->Material : EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
-	part->Material = EnvMapVulkanMaterialLibrary::CreateVariant(parent); // a new descriptor set: no frame in flight uses it
-	s_SelectedMaterial = part->Material;
-	Log::GetLogger()->info("Part '{0}': its material is now '{1}', a variant of '{2}'",
-		s_Scene.Get<NameComponent>(partEntity).Name, part->Material->GetName(), parent->GetName());
-}
-
-// Lights are entities (SunComponent, PointLightComponent, SpotLightComponent): their position is the transform's
-// translation and they shine along its -Y axis. Every frame ExtractLights reads them into s_Lights, the lights the
-// renderer draws with this frame (shadow slots, the Lights buffer, the light gizmos), in the order of the hierarchy, with
-// the entity of each light alongside. The editing code (Lights panel, gizmos, Align to Environment) reads a light into its
-// EnvMapVulkan*Light struct, edits that copy and writes it back; direction and position are written only when they changed,
-// so going through Euler angles can't make a light drift.
-//
-// The selected light: derived from the selected entity (s_SelectedEntity) by ExtractLights, as a kind and an index into
-// s_Lights' lists, for the code that works with those lists
-enum class LightKind { None, Sun, Point, Spot };
-static LightKind s_SelectedLightKind = LightKind::None;
-static int s_SelectedLightIndex = 0;
-static EnvMapVulkanEntityID s_SunEntity = NoEntity;
-static std::vector<EnvMapVulkanEntityID> s_PointLightEntities; // same order as s_Lights.PointLights
-static std::vector<EnvMapVulkanEntityID> s_SpotLightEntities;  // same order as s_Lights.SpotLights
-
-static glm::vec3 GetEntityPosition(EnvMapVulkanEntityID entity)
-{
-	return glm::vec3(s_Scene.GetWorldTransform(entity)[3]);
-}
-
-static void SetEntityPosition(EnvMapVulkanEntityID entity, const glm::vec3& position)
-{
-	glm::mat4 world = s_Scene.GetWorldTransform(entity);
-	world[3] = glm::vec4(position, 1.0f);
-	s_Scene.SetWorldTransform(entity, world);
-}
-
-// The direction the entity's light travels (its world -Y axis)
-static glm::vec3 GetEntityLightDirection(EnvMapVulkanEntityID entity)
-{
-	TransformComponent world;
-	world.SetMatrix(s_Scene.GetWorldTransform(entity));
-	return world.GetLightDirection();
-}
-
-static void SetEntityLightDirection(EnvMapVulkanEntityID entity, const glm::vec3& direction)
-{
-	TransformComponent world;
-	world.SetMatrix(s_Scene.GetWorldTransform(entity));
-	world.SetLightDirection(direction);
-	s_Scene.SetWorldTransform(entity, world.GetMatrix());
-}
-
-static EnvMapVulkanDirectionalLight ReadSun(EnvMapVulkanEntityID entity)
-{
-	EnvMapVulkanDirectionalLight sun;
-	const SunComponent* component = s_Scene.TryGet<SunComponent>(entity);
-	if (!component)
-	{
-		sun.Enabled = false;
-		return sun;
-	}
-	sun.Enabled = component->Enabled;
-	sun.Color = component->Color;
-	sun.Intensity = component->Intensity;
-	sun.FollowEnvironmentRotation = component->FollowEnvironmentRotation;
-	sun.CastShadows = component->CastShadows;
-	sun.SetDirection(-GetEntityLightDirection(entity)); // the struct's direction points towards the sun
-	sun.IconMoved = component->IconPlaced;
-	sun.IconPosition = GetEntityPosition(entity);
-	return sun;
-}
-
-// before: the light as read (only what changed is written)
-static void WriteSun(EnvMapVulkanEntityID entity, const EnvMapVulkanDirectionalLight& sun, const EnvMapVulkanDirectionalLight& before)
-{
-	SunComponent* component = s_Scene.TryGet<SunComponent>(entity);
-	if (!component)
-	{
-		return;
-	}
-	component->Enabled = sun.Enabled;
-	component->Color = sun.Color;
-	component->Intensity = sun.Intensity;
-	component->FollowEnvironmentRotation = sun.FollowEnvironmentRotation;
-	component->CastShadows = sun.CastShadows;
-	component->IconPlaced = sun.IconMoved;
-	if (sun.Azimuth != before.Azimuth || sun.Elevation != before.Elevation)
-	{
-		SetEntityLightDirection(entity, -sun.GetDirection());
-	}
-	if (sun.IconPosition != before.IconPosition)
-	{
-		SetEntityPosition(entity, sun.IconPosition);
-	}
-}
-
-static EnvMapVulkanPointLight ReadPointLight(EnvMapVulkanEntityID entity)
-{
-	EnvMapVulkanPointLight light;
-	const PointLightComponent& component = s_Scene.Get<PointLightComponent>(entity);
-	light.Name = s_Scene.Get<NameComponent>(entity).Name;
-	light.Enabled = component.Enabled;
-	light.Color = component.Color;
-	light.Intensity = component.Intensity;
-	light.Position = GetEntityPosition(entity);
-	light.Range = component.Range;
-	light.CastShadows = component.CastShadows;
-	return light;
-}
-
-static void WritePointLight(EnvMapVulkanEntityID entity, const EnvMapVulkanPointLight& light, const EnvMapVulkanPointLight* before = nullptr)
-{
-	PointLightComponent& component = s_Scene.Get<PointLightComponent>(entity);
-	s_Scene.Get<NameComponent>(entity).Name = light.Name;
-	component.Enabled = light.Enabled;
-	component.Color = light.Color;
-	component.Intensity = light.Intensity;
-	component.Range = light.Range;
-	component.CastShadows = light.CastShadows;
-	if (!before || light.Position != before->Position)
-	{
-		SetEntityPosition(entity, light.Position);
-	}
-}
-
-static EnvMapVulkanSpotLight ReadSpotLight(EnvMapVulkanEntityID entity)
-{
-	EnvMapVulkanSpotLight light;
-	const SpotLightComponent& component = s_Scene.Get<SpotLightComponent>(entity);
-	light.Name = s_Scene.Get<NameComponent>(entity).Name;
-	light.Enabled = component.Enabled;
-	light.Color = component.Color;
-	light.Intensity = component.Intensity;
-	light.Position = GetEntityPosition(entity);
-	light.Range = component.Range;
-	light.SetDirection(GetEntityLightDirection(entity));
-	light.InnerAngle = component.InnerAngle;
-	light.OuterAngle = component.OuterAngle;
-	light.CastShadows = component.CastShadows;
-	return light;
-}
-
-static void WriteSpotLight(EnvMapVulkanEntityID entity, const EnvMapVulkanSpotLight& light, const EnvMapVulkanSpotLight* before = nullptr)
-{
-	SpotLightComponent& component = s_Scene.Get<SpotLightComponent>(entity);
-	s_Scene.Get<NameComponent>(entity).Name = light.Name;
-	component.Enabled = light.Enabled;
-	component.Color = light.Color;
-	component.Intensity = light.Intensity;
-	component.Range = light.Range;
-	component.InnerAngle = light.InnerAngle;
-	component.OuterAngle = light.OuterAngle;
-	component.CastShadows = light.CastShadows;
-	if (!before || light.Position != before->Position)
-	{
-		SetEntityPosition(entity, light.Position);
-	}
-	if (!before || light.Azimuth != before->Azimuth || light.Elevation != before->Elevation)
-	{
-		SetEntityLightDirection(entity, light.GetDirection());
-	}
-}
-
-static void CollectEntitiesWith(EnvMapVulkanEntityID entity, bool (*has)(EnvMapVulkanEntityID), std::vector<EnvMapVulkanEntityID>& out)
-{
-	if (has(entity))
-	{
-		out.push_back(entity);
-	}
-	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
-	{
-		CollectEntitiesWith(child, has, out);
-	}
-}
-
-// The scene's lights into s_Lights (see above), and the selected light's kind and index
+// The scene's lights into s_Lights, the lights the renderer draws with this frame (shadow slots, the Lights buffer), in
+// the order of the hierarchy, with the entity of each light in s_LightEntities
 static void ExtractLights()
 {
-	s_SunEntity = s_Scene.FindFirst<SunComponent>();
-	s_Lights.Sun = ReadSun(s_SunEntity);
+	s_LightEntities = EnvMapVulkanSceneData::ReadLights(*s_Scene, s_Lights);
+}
 
-	s_PointLightEntities.clear();
-	s_SpotLightEntities.clear();
-	for (EnvMapVulkanEntityID root : s_Scene.GetRoots())
-	{
-		CollectEntitiesWith(root, [](EnvMapVulkanEntityID e) { return s_Scene.Has<PointLightComponent>(e); }, s_PointLightEntities);
-		CollectEntitiesWith(root, [](EnvMapVulkanEntityID e) { return s_Scene.Has<SpotLightComponent>(e); }, s_SpotLightEntities);
-	}
-	s_Lights.PointLights.clear();
-	for (EnvMapVulkanEntityID entity : s_PointLightEntities)
-	{
-		s_Lights.PointLights.push_back(ReadPointLight(entity));
-	}
-	s_Lights.SpotLights.clear();
-	for (EnvMapVulkanEntityID entity : s_SpotLightEntities)
-	{
-		s_Lights.SpotLights.push_back(ReadSpotLight(entity));
-	}
+// The selection as the view draws it (EnvMapVulkanViewOptions::Selection)
+static bool IsInViewSelection(EnvMapVulkanEntityID entity)
+{
+	return entity != NoEntity && Contains(s_ViewOptions.Selection, entity);
+}
 
-	s_SelectedLightKind = LightKind::None;
-	s_SelectedLightIndex = 0;
-	if (s_SelectedEntity != NoEntity && s_SelectedEntity == s_SunEntity)
+// The meshes of a model the overlays show as selected: { -1 } when the model itself is selected, else the mesh indices of
+// its selected parts (empty: nothing of it is selected)
+static std::vector<int> GetViewSelectedMeshes(EnvMapVulkanEntityID model)
+{
+	if (IsInViewSelection(model))
 	{
-		s_SelectedLightKind = LightKind::Sun;
+		return { -1 };
 	}
-	for (int i = 0; i < (int)s_PointLightEntities.size(); i++)
+	std::vector<int> meshes;
+	for (EnvMapVulkanEntityID child : s_Scene->GetChildren(model))
 	{
-		if (s_PointLightEntities[i] == s_SelectedEntity)
+		const MeshPartComponent* part = s_Scene->TryGet<MeshPartComponent>(child);
+		if (part && IsInViewSelection(child))
 		{
-			s_SelectedLightKind = LightKind::Point;
-			s_SelectedLightIndex = i;
+			meshes.push_back((int)part->MeshIndex);
 		}
 	}
-	for (int i = 0; i < (int)s_SpotLightEntities.size(); i++)
-	{
-		if (s_SpotLightEntities[i] == s_SelectedEntity)
-		{
-			s_SelectedLightKind = LightKind::Spot;
-			s_SelectedLightIndex = i;
-		}
-	}
+	return meshes;
 }
 
-// The entity of a light of s_Lights (NoEntity: none)
-static EnvMapVulkanEntityID GetLightEntity(LightKind kind, int index)
+// The light the Shadows Only view shows: the view's primary selected entity, when it is a light of s_Lights (its kind and
+// index; None: it isn't a light)
+static EnvMapVulkanSceneData::LightKind GetShadowsOnlyLight(int& index)
 {
-	switch (kind)
-	{
-		case LightKind::Sun:   return s_SunEntity;
-		case LightKind::Point: return index >= 0 && index < (int)s_PointLightEntities.size() ? s_PointLightEntities[index] : NoEntity;
-		case LightKind::Spot:  return index >= 0 && index < (int)s_SpotLightEntities.size() ? s_SpotLightEntities[index] : NoEntity;
-		default:               return NoEntity;
-	}
-}
-
-// Writes an edited copy of a light of s_Lights back into its entity (before: the light as it was read)
-static void CommitPointLight(int index, const EnvMapVulkanPointLight& before)
-{
-	EnvMapVulkanEntityID entity = GetLightEntity(LightKind::Point, index);
-	if (entity != NoEntity)
-	{
-		WritePointLight(entity, s_Lights.PointLights[index], &before);
-	}
-}
-
-static void CommitSpotLight(int index, const EnvMapVulkanSpotLight& before)
-{
-	EnvMapVulkanEntityID entity = GetLightEntity(LightKind::Spot, index);
-	if (entity != NoEntity)
-	{
-		WriteSpotLight(entity, s_Lights.SpotLights[index], &before);
-	}
-}
-
-static void CommitSun(const EnvMapVulkanDirectionalLight& before)
-{
-	WriteSun(s_SunEntity, s_Lights.Sun, before);
-}
-
-// A new point or spot light entity from a light struct (EnvMapVulkanLightEnvironment::Add*Light makes one with its defaults)
-static EnvMapVulkanEntityID CreatePointLightEntity(const EnvMapVulkanPointLight& light)
-{
-	EnvMapVulkanEntityID entity = s_Scene.CreateEntity(light.Name);
-	s_Scene.Add<PointLightComponent>(entity);
-	WritePointLight(entity, light);
-	return entity;
-}
-
-static EnvMapVulkanEntityID CreateSpotLightEntity(const EnvMapVulkanSpotLight& light)
-{
-	EnvMapVulkanEntityID entity = s_Scene.CreateEntity(light.Name);
-	s_Scene.Add<SpotLightComponent>(entity);
-	WriteSpotLight(entity, light);
-	return entity;
-}
-
-// The scene's sun (one per scene), with the defaults of EnvMapVulkanDirectionalLight
-static void CreateSunEntity()
-{
-	EnvMapVulkanDirectionalLight defaults;
-	EnvMapVulkanEntityID entity = s_Scene.CreateEntity("Sun");
-	s_Scene.Add<SunComponent>(entity);
-	EnvMapVulkanDirectionalLight none = defaults;
-	none.Azimuth = none.Elevation = 1000.0f; // differs from the defaults: the direction is written
-	WriteSun(entity, defaults, none);
-}
-
-// The sun turns with the environment map (EnvMapVulkanDirectionalLight::FollowEnvironmentRotation). Checked once per frame,
-// so every way of changing the rotation (Environment panel, code) is covered. The shaders look the environment up at
-// RotateVectorAboutY(rotation, worldDirection), so a direction of the map has the azimuth (map azimuth + rotation) in
-// the world: a rotation change of N degrees moves the sun by N degrees of azimuth.
-static void SyncSunWithEnvironmentRotation()
-{
-	static float s_LastEnvMapRotation = s_EnvMapRotation;
-	float delta = s_EnvMapRotation - s_LastEnvMapRotation;
-	s_LastEnvMapRotation = s_EnvMapRotation;
-	if (delta == 0.0f || !s_Lights.Sun.FollowEnvironmentRotation)
-	{
-		return;
-	}
-	// The rotation wraps around at 360 degrees: 359 -> 1 is a change of +2, not -358
-	delta = std::remainder(delta, 360.0f);
-	const EnvMapVulkanDirectionalLight before = s_Lights.Sun;
-	s_Lights.Sun.Azimuth = std::remainder(s_Lights.Sun.Azimuth + delta, 360.0f); // stays in -180..180
-	CommitSun(before);
+	return s_LightEntities.Find(s_ViewOptions.PrimarySelection, index);
 }
 
 // The water plane (Water panel, see EnvMapVulkanWater.h)
@@ -1555,7 +575,6 @@ static EnvMapVulkanGBuffer s_GBuffer;
 // Screen-space ambient occlusion (Phase F of the guide): compute passes between the G-buffer prepass and the scene pass
 // fill the AO image, u_AOImage in the mesh shaders' set 0 (binding 15). Settings: the Environment panel, saved with the scene.
 static EnvMapVulkanSSAO s_SSAO;
-static EnvMapVulkanSSAOSettings s_SSAOSettings;
 
 // The Material Library's materials as plain values in one GPU buffer (see EnvMapVulkanMaterialBuffer): u_Materials in set 0,
 // for shaders that light a point without its material's descriptor set
@@ -1565,13 +584,10 @@ static EnvMapVulkanMaterialBuffer s_MaterialBuffer;
 // and the set a compute shader traces rays with. On a GPU without ray tracing it does nothing. Built in the frames that
 // trace rays: so far the ray-traced debug views.
 static EnvMapVulkanRayTracing s_RayTracing;
-// The Environment panel's Ray Tracing switch, saved with the scene (RenderSettings). Off: nothing traces rays and no
-// acceleration structure is built or updated; every effect uses its rasterized version, as on a GPU without ray tracing.
-static bool s_RayTracingEnabled = true;
 // Rays can be traced this frame: the GPU can, and the switch is on. What every ray-traced effect asks before it runs.
 static bool IsRayTracingActive()
 {
-	return s_RayTracingEnabled && EnvMapVulkanRayTracing::IsSupported();
+	return s_RenderSettings.RayTracing && EnvMapVulkanRayTracing::IsSupported();
 }
 
 // Ray-traced reflections (Phase H.3 of the guide, see EnvMapVulkanReflections): compute passes between the G-buffer
@@ -1579,17 +595,15 @@ static bool IsRayTracingActive()
 // Without ray tracing the image stays empty and the meshes reflect the environment map, as before. Settings: the
 // Environment panel, saved with the scene.
 static EnvMapVulkanReflections s_Reflections;
-static EnvMapVulkanReflectionSettings s_ReflectionSettings;
 // Reflections are traced this frame
 static bool ReflectionsTraceRays()
 {
-	return IsRayTracingActive() && s_ReflectionSettings.Enabled;
+	return IsRayTracingActive() && s_RenderSettings.Reflections.Enabled;
 }
 
 // The path tracer (Phase H.4 of the guide, see EnvMapVulkanPathTracer): the Debug View's Path Traced view, the scene by
 // rays alone as a reference for everything above. It runs only while that view is shown.
 static EnvMapVulkanPathTracer s_PathTracer;
-static EnvMapVulkanPathTracerSettings s_PathTracerSettings;
 // A number that changes whenever the scene does (OnUpdate: the models, their poses, the materials, the lights, the
 // environment): the path tracer starts its image over then
 static uint64_t s_PathTracerSceneVersion = 0;
@@ -1680,384 +694,20 @@ struct GlassDraw
 };
 static std::vector<GlassDraw> s_GlassDraws;
 static EnvMapVulkanEntityID s_WaterEntity = NoEntity; // the scene's water (at most one), NoEntity: none
-static bool s_WaterSelected = false; // the water entity is the selected entity (see ExtractWater)
 
-// The water is an entity with a WaterComponent: its settings, and its placement as the entity's transform (translation:
-// center and height, rotation around Y, scale: the size). Every frame ExtractWater reads it into s_WaterSettings (Enabled
-// when the entity exists); the editing code (Water panel, gizmo) edits that copy and writes it back with CommitWater.
+// The scene's water into s_WaterSettings (Enabled when the scene has one, see EnvMapVulkanSceneData::ReadWater)
 static void ExtractWater()
 {
-	s_WaterEntity = s_Scene.FindFirst<WaterComponent>();
-	if (s_WaterEntity == NoEntity)
-	{
-		s_WaterSettings.Enabled = false;
-		s_WaterSelected = false;
-		return;
-	}
-	s_WaterSettings = s_Scene.Get<WaterComponent>(s_WaterEntity).Settings;
-	const glm::mat4 world = s_Scene.GetWorldTransform(s_WaterEntity);
-	const glm::vec3 sideX = glm::vec3(world[0]);
-	const glm::vec3 sideZ = glm::vec3(world[2]);
-	s_WaterSettings.Enabled = true;
-	s_WaterSettings.Center = glm::vec2(world[3].x, world[3].z);
-	s_WaterSettings.Height = world[3].y;
-	s_WaterSettings.Rotation = glm::degrees(std::atan2(-sideX.z, sideX.x));
-	s_WaterSettings.Size = glm::max(glm::vec2(glm::length(sideX), glm::length(sideZ)), glm::vec2(0.1f));
-	s_WaterSelected = s_SelectedEntity == s_WaterEntity;
+	s_WaterEntity = EnvMapVulkanSceneData::ReadWater(*s_Scene, s_WaterSettings);
 }
 
-// Writes an edited s_WaterSettings back into the water entity (before: as it was read); the placement only when it changed
-static void CommitWater(const EnvMapVulkanWaterSettings& before)
-{
-	if (s_WaterEntity == NoEntity || !s_Scene.Exists(s_WaterEntity))
-	{
-		return;
-	}
-	s_Scene.Get<WaterComponent>(s_WaterEntity).Settings = s_WaterSettings;
-	if (s_WaterSettings.Center != before.Center || s_WaterSettings.Height != before.Height || s_WaterSettings.Size != before.Size ||
-		s_WaterSettings.Rotation != before.Rotation)
-	{
-		s_Scene.SetWorldTransform(s_WaterEntity, s_WaterSettings.GetTransform());
-	}
-}
-
-// Adds the water (one per scene) with these settings and selects it
-static void CreateWaterEntity(const EnvMapVulkanWaterSettings& settings)
-{
-	if (s_Scene.FindFirst<WaterComponent>() != NoEntity)
-	{
-		return;
-	}
-	EnvMapVulkanEntityID entity = s_Scene.CreateEntity("Water");
-	s_Scene.Add<WaterComponent>(entity).Settings = settings;
-	s_Scene.SetWorldTransform(entity, settings.GetTransform());
-	s_SelectedEntity = entity;
-	ExtractWater();
-}
-
-static void RemoveWaterEntity()
-{
-	if (s_WaterEntity != NoEntity)
-	{
-		s_Scene.DestroyEntity(s_WaterEntity);
-		if (s_SelectedEntity == s_WaterEntity)
-		{
-			s_SelectedEntity = NoEntity;
-		}
-	}
-	ExtractWater();
-}
-
-// The probe volume is an entity with a ProbeVolumeComponent, handled like the water: its settings, and its placement as
-// the entity's transform (translation: the box's center, scale: its size). Every frame ExtractProbeVolume reads it into
-// s_ProbeVolumeSettings (Exists when the scene has one); the Properties panel and the gizmo edit that copy and write it
-// back with CommitProbeVolume.
+// The scene's probe volume into s_ProbeVolumeSettings (Exists when the scene has one, see EnvMapVulkanSceneData::ReadProbeVolume)
 static EnvMapVulkanProbeVolumeSettings s_ProbeVolumeSettings;
 static EnvMapVulkanEntityID s_ProbeVolumeEntity = NoEntity; // the scene's probe volume (at most one), NoEntity: none
 
-static glm::mat4 GetProbeVolumeTransform(const EnvMapVulkanProbeVolumeSettings& settings)
-{
-	return glm::translate(glm::mat4(1.0f), settings.Center) * glm::scale(glm::mat4(1.0f), settings.Size);
-}
-
 static void ExtractProbeVolume()
 {
-	s_ProbeVolumeEntity = s_Scene.FindFirst<ProbeVolumeComponent>();
-	if (s_ProbeVolumeEntity == NoEntity)
-	{
-		s_ProbeVolumeSettings.Exists = false;
-		return;
-	}
-	s_ProbeVolumeSettings = s_Scene.Get<ProbeVolumeComponent>(s_ProbeVolumeEntity).Settings;
-	const glm::mat4 world = s_Scene.GetWorldTransform(s_ProbeVolumeEntity);
-	s_ProbeVolumeSettings.Exists = true;
-	s_ProbeVolumeSettings.Center = glm::vec3(world[3]);
-	s_ProbeVolumeSettings.Size = glm::max(glm::vec3(glm::length(glm::vec3(world[0])), glm::length(glm::vec3(world[1])), glm::length(glm::vec3(world[2]))),
-		glm::vec3(0.1f));
-	s_ProbeVolumeSettings.Counts = s_ProbeVolumeSettings.GetCounts();
-}
-
-// Writes an edited s_ProbeVolumeSettings back into the entity (before: as it was read); the placement only when it changed
-static void CommitProbeVolume(const EnvMapVulkanProbeVolumeSettings& before)
-{
-	if (s_ProbeVolumeEntity == NoEntity || !s_Scene.Exists(s_ProbeVolumeEntity))
-	{
-		return;
-	}
-	s_ProbeVolumeSettings.Size = glm::max(s_ProbeVolumeSettings.Size, glm::vec3(0.1f));
-	s_ProbeVolumeSettings.Counts = s_ProbeVolumeSettings.GetCounts();
-	s_Scene.Get<ProbeVolumeComponent>(s_ProbeVolumeEntity).Settings = s_ProbeVolumeSettings;
-	if (s_ProbeVolumeSettings.Center != before.Center || s_ProbeVolumeSettings.Size != before.Size)
-	{
-		s_Scene.SetWorldTransform(s_ProbeVolumeEntity, GetProbeVolumeTransform(s_ProbeVolumeSettings));
-	}
-}
-
-// Adds the probe volume (one per scene) with these settings and selects it
-static void CreateProbeVolumeEntity(const EnvMapVulkanProbeVolumeSettings& settings)
-{
-	if (s_Scene.FindFirst<ProbeVolumeComponent>() != NoEntity)
-	{
-		return;
-	}
-	EnvMapVulkanEntityID entity = s_Scene.CreateEntity("Probe Volume");
-	s_Scene.Add<ProbeVolumeComponent>(entity).Settings = settings;
-	s_Scene.SetWorldTransform(entity, GetProbeVolumeTransform(settings));
-	s_SelectedEntity = entity;
-	ExtractProbeVolume();
-}
-
-static void RemoveProbeVolumeEntity()
-{
-	if (s_ProbeVolumeEntity != NoEntity)
-	{
-		s_Scene.DestroyEntity(s_ProbeVolumeEntity);
-		if (s_SelectedEntity == s_ProbeVolumeEntity)
-		{
-			s_SelectedEntity = NoEntity;
-		}
-	}
-	ExtractProbeVolume();
-}
-
-// The box around every mesh of every model of the scene, in the world (false: the scene has no models)
-static bool GetSceneModelBounds(glm::vec3& boundsMin, glm::vec3& boundsMax)
-{
-	boundsMin = glm::vec3(std::numeric_limits<float>::max());
-	boundsMax = glm::vec3(-std::numeric_limits<float>::max());
-	bool any = false;
-	for (EnvMapVulkanEntityID entity : GetModels())
-	{
-		H2M::RefH2M<H2M::ModelH2M> model = GetModel(entity);
-		const glm::mat4 world = s_Scene.GetWorldTransform(entity);
-		for (const H2M::RefH2M<H2M::MeshH2M>& mesh : model->GetMeshes())
-		{
-			const glm::mat4 transform = GetMeshTransform(model, mesh, world);
-			for (int c = 0; c < 8; c++)
-			{
-				const glm::vec3 corner((c & 1) ? mesh->BoundingBox.Max.x : mesh->BoundingBox.Min.x, (c & 2) ? mesh->BoundingBox.Max.y : mesh->BoundingBox.Min.y,
-					(c & 4) ? mesh->BoundingBox.Max.z : mesh->BoundingBox.Min.z);
-				const glm::vec3 position = glm::vec3(transform * glm::vec4(corner, 1.0f));
-				boundsMin = glm::min(boundsMin, position);
-				boundsMax = glm::max(boundsMax, position);
-				any = true;
-			}
-		}
-	}
-	return any;
-}
-
-// The Properties panel's controls of the probe volume
-static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
-{
-	ImGui::Checkbox("Light the Scene", &probes.Enabled);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("On: inside the box, surfaces get their indirect diffuse light from the probes around them.\n"
-			"Off: from the environment map, as without a probe volume.\n"
-			"The probes keep capturing the scene either way. Until they have (and after Reset to Environment) they hold\n"
-			"the environment's light, and both look the same.");
-	}
-
-	ImGui::DragFloat3("Center", &probes.Center.x, 0.05f);
-	ImGui::DragFloat3("Size", &probes.Size.x, 0.05f, 0.1f, 1000.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The box the probes fill: the first and the last probe of each axis are on its sides.\n"
-			"The gizmo moves and sizes it too (it can't be turned). While the volume is selected, the box is outlined.\n"
-			"Only surfaces inside the box are fully lit by the probes: just outside it the environment's light fades in\n"
-			"(over half a probe spacing). So a room's walls, floor and ceiling belong inside the box: see Fit to Scene.");
-	}
-	glm::vec3 sceneMin, sceneMax;
-	const bool hasModels = GetSceneModelBounds(sceneMin, sceneMax);
-	ImGui::BeginDisabled(!hasModels);
-	if (ImGui::Button("Fit to Scene"))
-	{
-		// Around all models, a little larger: the outermost probes then stand just outside the surfaces, not in them
-		const glm::vec3 extent = sceneMax - sceneMin;
-		probes.Center = (sceneMin + sceneMax) * 0.5f;
-		probes.Size = extent * 1.05f + glm::vec3(0.2f);
-	}
-	ImGui::EndDisabled();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Sets the center and the size so the box holds every model of the scene, with a small margin.\n"
-			"The number of probes stays: in a larger box they stand farther apart (raise Probes to keep them close).");
-	}
-	ImGui::DragInt3("Probes", &probes.Counts.x, 0.1f, EnvMapVulkanProbeVolumeSettings::MinCount, 32, "%d", ImGuiSliderFlags_AlwaysClamp);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Probes along X, Y and Z (up to %d, %d, %d). More probes follow the light's changes more closely,\n"
-			"and cost more memory and more time to update.",
-			EnvMapVulkanProbeVolumeSettings::MaxCounts.x, EnvMapVulkanProbeVolumeSettings::MaxCounts.y, EnvMapVulkanProbeVolumeSettings::MaxCounts.z);
-	}
-	const glm::ivec3 counts = probes.GetCounts();
-	const glm::vec3 spacing = probes.GetSpacing();
-	const int tilesX = counts.x * counts.y;
-	ImGui::TextDisabled("%d probes, %.2f x %.2f x %.2f m apart", counts.x * counts.y * counts.z, spacing.x, spacing.y, spacing.z);
-	ImGui::TextDisabled("Atlases: irradiance %d x %d, visibility %d x %d", tilesX * (EnvMapVulkanProbes::IrradianceTexels + 2),
-		counts.z * (EnvMapVulkanProbes::IrradianceTexels + 2), tilesX * (EnvMapVulkanProbes::VisibilityTexels + 2),
-		counts.z * (EnvMapVulkanProbes::VisibilityTexels + 2));
-
-	ImGui::Separator();
-	ImGui::SliderFloat("Normal Bias", &probes.NormalBias, 0.0f, 1.0f, "%.2f");
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("How far from a surface its probe lookup starts, along the surface's normal (fractions of the\n"
-			"smallest probe spacing). Keeps a wall from being judged by the probes behind it.\n"
-			"Too little (0): light from behind a wall shows on it. Too much (0.5): the lookup of a surface facing a near\n"
-			"one (the underside of a table) starts beyond that one, and gets blotches. 0.25 suits both.");
-	}
-	ImGui::SliderFloat("View Bias", &probes.ViewBias, 0.0f, 1.0f, "%.2f");
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The same, towards the camera. This one takes a lookup away from both walls of a corner, where the light\n"
-			"from outside a room leaks in first (bright lines along the room's edges): 0.5 removes most of it.\n"
-			"What is left is a matter of the scene: a wall should be at least a tenth of the probe spacing thick,\n"
-			"and the probes closer together than the rooms are wide.");
-	}
-	ImGui::Checkbox("Occlude Reflections", &probes.OccludeReflections);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Reflections show the environment (the sky), also where the scene hides it: inside a room.\n"
-			"On: a reflection is darkened by what the probes know. They hold the light that really arrives from the\n"
-			"reflection's side; the environment map holds what would arrive with nothing in the way. The reflection is\n"
-			"multiplied by their ratio (by brightness, never above 1): a closed room stops reflecting the sky.\n"
-			"It only darkens: the room itself doesn't appear in the reflection (that needs ray tracing).\n"
-			"Debug View > Reflection Occlusion shows the factor.");
-	}
-
-	// Capturing the scene into the probes
-	ImGui::Separator();
-	const EnvMapVulkanProbes::UpdateStatus status = s_Probes.GetStatus();
-	ImGui::BeginDisabled(!status.Supported);
-	ImGui::Checkbox("Update Automatically", &probes.AutoUpdate);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("On: whenever something changes (a light, a mesh, a material, the environment, the volume), the probes\n"
-			"capture the scene again, a few per frame, until the change has arrived in all of them. Then the updates stop.\n"
-			"Off: the probes keep what they hold until Bake.");
-	}
-	if (status.Traced)
-	{
-		// With ray tracing: its own setting, with a much wider range (the two ways cost very differently)
-		ImGui::SliderInt("Probes per Frame", &probes.TracedProbesPerFrame, EnvMapVulkanProbeVolumeSettings::MinTracedProbesPerFrame,
-			EnvMapVulkanProbeVolumeSettings::MaxTracedProbesPerFrame, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Ray traced: probes updated per frame while they follow a change (at most all of them: %u here).\n"
-				"A probe costs its rays, whatever the number of meshes, so a whole volume usually fits into one frame and\n"
-				"the light follows a change within a second. Lower it when Probe Update in Renderer Stats costs too much.\n"
-				"Without ray tracing (Environment panel > Ray Tracing) the probes draw cube maps instead, with a setting\n"
-				"of their own (1 to %d per frame).", s_Probes.GetProbeCount(), EnvMapVulkanProbeVolumeSettings::MaxProbesPerFrame);
-		}
-	}
-	else
-	{
-		ImGui::SliderInt("Probes per Frame", &probes.ProbesPerFrame, 1, EnvMapVulkanProbeVolumeSettings::MaxProbesPerFrame, "%d", ImGuiSliderFlags_AlwaysClamp);
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Probes updated per frame while they follow a change. Each one draws the scene around it 6 times (a small\n"
-				"cube map), so more probes follow a change faster and cost more frame time: see Probe Update in Rendering Stats.\n"
-				"With ray tracing on, the probes trace rays instead and many more fit into a frame.");
-		}
-	}
-	ImGui::SliderInt("Rays per Probe", &probes.RaysPerProbe, EnvMapVulkanProbeVolumeSettings::MinRaysPerProbe,
-		EnvMapVulkanProbeVolumeSettings::MaxRaysPerProbe, "%d", ImGuiSliderFlags_AlwaysClamp);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Directions a probe looks in per update (turned differently every update). More rays: less noise in the\n"
-			"probes' light, a little more compute time.");
-	}
-	ImGui::SliderFloat("Hysteresis", &probes.Hysteresis, 0.0f, 0.99f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("How much of its old light a probe keeps in an update, once it has followed a change. Higher: calmer light\n"
-			"(less noise from the few rays of one update) that takes longer to settle, and follows animated models more slowly.\n"
-			"Right after a change the probes keep nothing for %u rounds over all of them, so the new light gets around fast,\n"
-			"then the rounds are averaged up to this value (%u more rounds).",
-			EnvMapVulkanProbes::PropagationRounds, EnvMapVulkanProbes::GetSettleRounds(probes.GetHysteresis()));
-	}
-	ImGui::Checkbox("Relocate Probes", &probes.RelocateProbes);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The grid ignores the scene, so some probes land inside walls or objects.\n"
-			"On: a probe that sees mostly the backs of surfaces is moved out through the nearest one, and a probe very close\n"
-			"to a surface backs away from it, never farther than 45%% of the probe spacing from its place in the grid.\n"
-			"A probe with no way out is switched off: nothing is lit by it, and it isn't updated.\n"
-			"Off: every probe stands where the grid puts it.\n"
-			"Done in the first %u rounds after a mesh or the volume changed; skinned models don't count.\n"
-			"Show Probes > State shows the result.",
-			EnvMapVulkanProbes::RelocationRounds);
-	}
-	if (ImGui::Button("Bake"))
-	{
-		s_Probes.RequestBake();
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Updates every probe %u times, as many per frame as possible: the first half lets the light bounce around,\n"
-			"the second half is averaged into a calm result. For a scene that doesn't change. The frame rate drops while it runs.",
-			EnvMapVulkanProbes::BakeRounds);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Reset to Environment"))
-	{
-		s_Probes.RequestReset();
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Every probe back to the environment's light, as if nothing stood around it.\n"
-			"With Update Automatically the capture then starts over; without it the probes stay like that until Bake.");
-	}
-	if (!status.Supported)
-	{
-		ImGui::TextDisabled("Not available: the GPU doesn't support cube map arrays");
-	}
-	else if (status.Baking)
-	{
-		ImGui::ProgressBar(status.BakeProgress, ImVec2(-1.0f, 0.0f), "Baking");
-	}
-	else if (status.UpdatesLeft > 0)
-	{
-		ImGui::TextDisabled("%s %u probes per frame, %u frames to go", status.Traced ? "Tracing" : "Updating", status.ProbesThisFrame,
-			(status.UpdatesLeft + status.ProbesPerFrame - 1) / status.ProbesPerFrame);
-	}
-	else if (status.OutOfDate)
-	{
-		ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.3f, 1.0f), "Out of date: the scene changed since the last update");
-	}
-	else
-	{
-		ImGui::TextDisabled(status.Captured ? "Up to date" : "The probes hold the environment's light");
-	}
-	if (status.Supported && probes.RelocateProbes)
-	{
-		ImGui::TextDisabled("%s%u probes moved, %u switched off", status.Relocating ? "Placing the probes: " : "", status.MovedProbes, status.UnusedProbes);
-	}
-	ImGui::EndDisabled();
-
-	ImGui::Separator();
-	ImGui::Checkbox("Show Probes", &probes.ShowProbes);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("A ball at every probe, lit by that probe alone: it shows the light the probe holds for each\n"
-			"direction, as a white matte ball there would show it");
-	}
-	ImGui::BeginDisabled(!probes.ShowProbes);
-	ImGui::DragFloat("Probe Size", &probes.ProbeRadius, 0.005f, 0.01f, 2.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
-	ImGui::Combo("Show", &probes.Show, "Light\0Visibility\0State\0");
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("State: green = the probe stands where the grid puts it, yellow = it was moved (out of a mesh, or away\n"
-			"from a surface), red = switched off (inside a mesh with no way out). A line joins a moved probe to its\n"
-			"place in the grid (drawn through the scene: that place is often inside a wall). See Relocate Probes.\n"
-			"Light: the light the probe holds for each direction.\n"
-			"Visibility: how far the probe sees in each direction. White: nothing near (as far as a probe stores, 1.5 cells'\n"
-			"diagonals). Dark: a surface close by. The probes use it to tell which surfaces they can light, so a wall\n"
-			"between a probe and a surface should show as a dark side of the ball.");
-	}
-	ImGui::EndDisabled();
+	s_ProbeVolumeEntity = EnvMapVulkanSceneData::ReadProbeVolume(*s_Scene, s_ProbeVolumeSettings);
 }
 
 // Toward the sun for the water (the light that gets into it, the caustics): pointing down while the sun is off
@@ -2104,7 +754,6 @@ static void UpdateFrameUniforms()
 	shader->UnmapUniformBuffer(13, frameSet);
 
 	// binding 5: Lights (fragment stage), see EnvMapVulkanLightsGPU
-	SyncSunWithEnvironmentRotation();
 	// The shadow slots of the spot and point lights first: the packed lights carry them (the shadow passes, recorded later
 	// this frame, use the same ones)
 	AssignLocalShadowSlots();
@@ -2151,4494 +800,7 @@ static void UpdateObjectUniforms(const H2M::RefH2M<H2M::ModelH2M>& model, const 
 	}
 }
 
-static bool IsEnvironmentMapFile(const std::string& filepath)
-{
-	std::string extension = std::filesystem::path(filepath).extension().string();
-	std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) { return (char)std::tolower(c); });
-	return extension == ".hdr";
-}
-
-// Accepts a file dragged from the Content Browser over the current drop target, if accepts(path) is true. While dragging, an
-// accepted file outlines the drop area (highlightMin..highlightMax) and any other file shows what can be dropped there
-// (expected, e.g. "a model file"). Returns true once an accepted file is dropped, with its path in filepath.
-static bool AcceptFileDrop(const ImVec2& highlightMin, const ImVec2& highlightMax, bool (*accepts)(const std::string&), const char* expected,
-	std::string& filepath)
-{
-	const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM",
-		ImGuiDragDropFlags_AcceptBeforeDelivery | ImGuiDragDropFlags_AcceptNoDrawDefaultRect);
-	if (!payload)
-	{
-		return false;
-	}
-
-	std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
-	if (!accepts(itemPath))
-	{
-		ImGui::SetTooltip("'%s' can't be dropped here: drop %s", std::filesystem::path(itemPath).filename().string().c_str(), expected);
-		return false;
-	}
-
-	ImGui::GetForegroundDrawList()->AddRect(highlightMin, highlightMax, ImGui::GetColorU32(ImGuiCol_DragDropTarget), 0.0f, 0, 2.0f);
-	if (!payload->IsDelivery())
-	{
-		return false;
-	}
-	filepath = itemPath;
-	return true;
-}
-
-static bool s_ShowLightGizmos = true; // light icons and shapes in the viewport
-static bool s_ShowShadowsOnly = false; // Shadows Only view: the selected light's shadow (see ShadowDebugValue in the PBR shaders)
-
-// Debug views (Environment panel, Debug View): what the viewport shows instead of the finished image. The G-buffer views
-// are drawn by the viewport composite (ViewportComposite.glsl, GBufferView), the lighting views by the PBR shaders
-// (u_ShadowDebug.z), the ray-traced views by a compute pass into an image the composite shows (EnvMapVulkanRayTracing).
-enum DebugView { DebugViewOff = 0, DebugViewNormals, DebugViewRoughness, DebugViewLinearDepth, DebugViewMotion, DebugViewDirectLight, DebugViewIndirectLight,
-	DebugViewSurfaceShading, DebugViewProbeIrradiance, DebugViewReflectionOcclusion, DebugViewAO, DebugViewAODenoised, DebugViewAORaw,
-	DebugViewRayTracedNormals, DebugViewRayTracedAlbedo, DebugViewRayTracedInstances,
-	DebugViewReflections, DebugViewReflectionsRaw, DebugViewPathTraced,
-	DebugViewCount };
-static int s_DebugView = DebugViewOff; // --debug-view on the command line sets it at startup
-static bool IsRayTracedDebugView(int view)
-{
-	return view >= DebugViewRayTracedNormals && view <= DebugViewRayTracedInstances;
-}
-// The views of the ray-traced reflection image (drawn by the PBR shaders, as the lighting views)
-static bool IsReflectionDebugView(int view)
-{
-	return view == DebugViewReflections || view == DebugViewReflectionsRaw;
-}
-// The views that trace rays: not available without ray tracing
-static bool DebugViewNeedsRayTracing(int view)
-{
-	return IsRayTracedDebugView(view) || IsReflectionDebugView(view) || view == DebugViewPathTraced;
-}
-static float s_DebugViewDepthRange = 50.0f;  // Linear Depth: the distance shown as white (world units)
-static float s_DebugViewMotionScale = 20.0f; // Motion: the motion shown at full color (pixels per frame)
-
-
-// Selects a light of s_Lights; None deselects the selected light (a selected model stays selected)
-static void SelectLight(LightKind kind, int index = 0)
-{
-	if (kind != LightKind::None)
-	{
-		s_SelectedEntity = GetLightEntity(kind, index);
-	}
-	else if (s_SelectedLightKind != LightKind::None)
-	{
-		s_SelectedEntity = NoEntity;
-	}
-	s_SelectedLightKind = s_SelectedEntity != NoEntity ? kind : LightKind::None;
-	s_SelectedLightIndex = index;
-}
-
-static void SelectWater()
-{
-	if (s_WaterEntity != NoEntity)
-	{
-		s_SelectedEntity = s_WaterEntity;
-	}
-	ExtractLights();
-	ExtractWater();
-}
-
-// Called once per frame, before the viewport's gizmos and picking: a selection that no longer exists (a removed entity)
-// is cleared, and the lights and the water are read again, so the selected light's kind and index and the water's
-// selection follow the selected entity
-static void SyncLightSelection()
-{
-	SyncSelection(); // removed entities leave the selection
-	ExtractLights();
-	ExtractWater();
-}
-
-// Points the sun at the brightest light source of the environment map (the sun of an outdoor HDR, a bright window
-// indoors) and gives it that light's color. The intensity stays as it is.
-static void AlignSunToEnvironment()
-{
-	H2M::RefH2M<H2M::Texture2D_H2M> equirect = s_Data.envEquirect;
-	if (!equirect)
-	{
-		return;
-	}
-	const EnvMapVulkanDirectionalLight before = s_Lights.Sun;
-	glm::vec3 mapDirection, color;
-	if (s_ExtractedSun.Found)
-	{
-		// The sun taken out of the map: its direction, color and intensity (the directional sun now carries its light)
-		mapDirection = s_ExtractedSun.Direction;
-		color = s_ExtractedSun.Color;
-		s_Lights.Sun.Intensity = s_ExtractedSun.Intensity;
-	}
-	else
-	{
-		// No sun in the map: the brightest region (a window, bright sky), direction and color only
-		H2M::BufferH2M pixels = equirect->GetWriteableBuffer();
-		uint32_t width = equirect->GetWidth(), height = equirect->GetHeight();
-		if (!pixels.Data || equirect->GetFormat() != H2M::ImageFormatH2M::RGBA32F || pixels.Size < (uint64_t)width * height * 4 * sizeof(float) ||
-			!FindBrightestDirection((const float*)pixels.Data, width, height, mapDirection, color))
-		{
-			Log::GetLogger()->warn("Align to Environment: the environment map's pixels are not available");
-			return;
-		}
-	}
-
-	// The shaders look the environment up at RotateVectorAboutY(rotation, worldDirection): undo that rotation
-	float angle = glm::radians(s_EnvMapRotation);
-	float c = std::cos(angle), s = std::sin(angle);
-	glm::vec3 worldDirection(c * mapDirection.x + s * mapDirection.z, mapDirection.y, -s * mapDirection.x + c * mapDirection.z);
-
-	s_Lights.Sun.SetDirection(worldDirection);
-	s_Lights.Sun.Color = color;
-	CommitSun(before);
-	Log::GetLogger()->info("Sun aligned to the environment: azimuth {0}, elevation {1}, color ({2}, {3}, {4}), intensity {5}",
-		s_Lights.Sun.Azimuth, s_Lights.Sun.Elevation, color.r, color.g, color.b, s_Lights.Sun.Intensity);
-}
-
-// Where the sun's icon is drawn: in the sky, far away in the sun's direction from the camera, so it moves like the skybox
-// (after "Align to Environment" it sits on the sun of the HDR map); once moved with the gizmo, at its icon position
-// (editor only: a directional light has no position)
-static glm::vec3 GetSunIconPosition()
-{
-	if (s_Lights.Sun.IconMoved)
-	{
-		return s_Lights.Sun.IconPosition;
-	}
-	glm::vec3 cameraPosition = glm::vec3(glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix())[3]);
-	return cameraPosition + s_Lights.Sun.GetDirection() * 1000.0f;
-}
-
-// Where the sun's gizmo, arrow and aim line are: at the icon once it was moved; before that on the same line from the
-// camera as the sky icon (so on top of it on screen), 10 units away, where dragging moves it at a usable scale
-static glm::vec3 GetSunGizmoPosition()
-{
-	if (s_Lights.Sun.IconMoved)
-	{
-		return s_Lights.Sun.IconPosition;
-	}
-	glm::vec3 cameraPosition = glm::vec3(glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix())[3]);
-	return cameraPosition + s_Lights.Sun.GetDirection() * 10.0f;
-}
-
-// World position -> viewport pixel (same NDC convention as GetViewportMouseNdc). False behind the camera.
-static bool ProjectToViewport(const glm::mat4& viewProjection, const glm::vec3& position, ImVec2& pixel)
-{
-	glm::vec4 clip = viewProjection * glm::vec4(position, 1.0f);
-	if (clip.w <= 1e-4f)
-	{
-		return false;
-	}
-	glm::vec2 ndc = glm::vec2(clip) / clip.w;
-	pixel = ImVec2(s_ViewportImageMin.x + (ndc.x + 1.0f) * 0.5f * s_ViewportImageSize.x,
-		s_ViewportImageMin.y + (1.0f - ndc.y) * 0.5f * s_ViewportImageSize.y);
-	return true;
-}
-
-// A world space line; a line with an end behind the camera is skipped (the shapes are made of short segments)
-static void DrawWorldLine(ImDrawList* drawList, const glm::mat4& viewProjection, const glm::vec3& a, const glm::vec3& b, ImU32 color, float thickness = 1.5f)
-{
-	ImVec2 pa, pb;
-	if (ProjectToViewport(viewProjection, a, pa) && ProjectToViewport(viewProjection, b, pb))
-	{
-		drawList->AddLine(pa, pb, color, thickness);
-	}
-}
-
-// A world space circle in the plane spanned by the unit vectors u and v
-static void DrawWorldCircle(ImDrawList* drawList, const glm::mat4& viewProjection, const glm::vec3& center, const glm::vec3& u, const glm::vec3& v,
-	float radius, ImU32 color, int segments = 48)
-{
-	const float step = glm::two_pi<float>() / segments;
-	for (int i = 0; i < segments; i++)
-	{
-		glm::vec3 a = center + radius * (std::cos(i * step) * u + std::sin(i * step) * v);
-		glm::vec3 b = center + radius * (std::cos((i + 1) * step) * u + std::sin((i + 1) * step) * v);
-		DrawWorldLine(drawList, viewProjection, a, b, color);
-	}
-}
-
-// Two unit vectors perpendicular to the unit vector w and to each other
-static void GetPerpendicularAxes(const glm::vec3& w, glm::vec3& u, glm::vec3& v)
-{
-	glm::vec3 up = std::abs(w.y) > 0.99f ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-	u = glm::normalize(glm::cross(up, w));
-	v = glm::cross(w, u);
-}
-
-// The light's color at full brightness (a dark red light still gets a clearly red icon); gray when disabled
-static ImU32 GetLightGizmoColor(const glm::vec3& color, bool enabled, float alpha = 1.0f)
-{
-	if (!enabled)
-	{
-		return ImGui::ColorConvertFloat4ToU32(ImVec4(0.5f, 0.5f, 0.5f, alpha));
-	}
-	float maxChannel = std::max(color.r, std::max(color.g, color.b));
-	glm::vec3 c = maxChannel > 1e-3f ? color / maxChannel : glm::vec3(1.0f);
-	return ImGui::ColorConvertFloat4ToU32(ImVec4(c.r, c.g, c.b, alpha));
-}
-
-// An icon: a disc in the light's color (a ring when disabled) on a dark backdrop, with rays; a white ring when selected.
-// The rays and the ring have dark outlines, so a white icon stays visible on a bright sky.
-// castsShadow: a small half-dark disc at the lower right (the light casts shadows this frame)
-static void DrawLightIcon(ImDrawList* drawList, const ImVec2& center, ImU32 color, bool enabled, bool selected, int rays, bool castsShadow)
-{
-	const float radius = 6.0f;
-	drawList->AddCircleFilled(center, radius + 3.0f, IM_COL32(0, 0, 0, 150));
-	if (enabled)
-	{
-		drawList->AddCircleFilled(center, radius, color);
-	}
-	else
-	{
-		drawList->AddCircle(center, radius, color, 0, 2.0f);
-	}
-	for (int i = 0; i < rays; i++)
-	{
-		float a = glm::two_pi<float>() * i / rays;
-		ImVec2 d(std::cos(a), std::sin(a));
-		ImVec2 from(center.x + d.x * (radius + 4.0f), center.y + d.y * (radius + 4.0f));
-		ImVec2 to(center.x + d.x * (radius + 8.0f), center.y + d.y * (radius + 8.0f));
-		drawList->AddLine(from, to, IM_COL32(0, 0, 0, 150), 4.0f);
-		drawList->AddLine(from, to, color, 2.0f);
-	}
-	if (selected)
-	{
-		drawList->AddCircle(center, radius + 11.0f, IM_COL32(0, 0, 0, 150), 0, 4.0f);
-		drawList->AddCircle(center, radius + 11.0f, IM_COL32(255, 255, 255, 230), 0, 2.0f);
-	}
-	if (castsShadow)
-	{
-		const ImVec2 mark(center.x + radius + 7.0f, center.y + radius + 7.0f);
-		drawList->AddCircleFilled(mark, 5.5f, IM_COL32(0, 0, 0, 200));
-		drawList->PathArcTo(mark, 4.0f, -glm::half_pi<float>(), glm::half_pi<float>(), 10); // lit half (right)
-		drawList->PathFillConvex(IM_COL32(255, 255, 255, 230));
-		drawList->AddCircle(mark, 4.0f, IM_COL32(255, 255, 255, 230), 0, 1.0f);
-	}
-}
-
-// Light gizmos over the viewport image. Not depth tested (as editor light gizmos in Unity and Unreal), so a light is
-// never lost behind a model:
-// - every light: an icon in its color (8 rays: point light, 4 rays and an aim line: spot light, 12 rays: the sun)
-// - the selected point light: its range as three circles
-// - the selected spot light: its range and outer cone (solid), inner cone (faint)
-// - the selected sun: an arrow ending at the world origin, in the direction its light travels
-static void DrawLightGizmos()
-{
-	if (!s_ShowLightGizmos || s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
-	{
-		return;
-	}
-	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
-	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	drawList->PushClipRect(s_ViewportImageMin, ImVec2(s_ViewportImageMin.x + s_ViewportImageSize.x, s_ViewportImageMin.y + s_ViewportImageSize.y), true);
-
-	// Shapes of the selected light first, icons on top
-	if (s_SelectedLightKind == LightKind::Sun)
-	{
-		// An arrow from the icon in the direction the light travels
-		ImU32 color = GetLightGizmoColor(s_Lights.Sun.Color, s_Lights.Sun.Enabled, 0.8f);
-		glm::vec3 travel = -s_Lights.Sun.GetDirection();
-		glm::vec3 from = GetSunGizmoPosition();
-		glm::vec3 to = from + travel * 2.0f;
-		DrawWorldLine(drawList, viewProjection, from, to, color, 2.0f);
-		glm::vec3 u, v;
-		GetPerpendicularAxes(travel, u, v);
-		for (int i = 0; i < 4; i++) // arrowhead
-		{
-			float a = glm::half_pi<float>() * i;
-			DrawWorldLine(drawList, viewProjection, to, to - travel * 0.4f + (std::cos(a) * u + std::sin(a) * v) * 0.15f, color, 2.0f);
-		}
-	}
-	else if (s_SelectedLightKind == LightKind::Point)
-	{
-		const EnvMapVulkanPointLight& light = s_Lights.PointLights[s_SelectedLightIndex];
-		ImU32 color = GetLightGizmoColor(light.Color, light.Enabled, 0.7f);
-		const glm::vec3 x(1.0f, 0.0f, 0.0f), y(0.0f, 1.0f, 0.0f), z(0.0f, 0.0f, 1.0f);
-		DrawWorldCircle(drawList, viewProjection, light.Position, x, y, light.Range, color);
-		DrawWorldCircle(drawList, viewProjection, light.Position, x, z, light.Range, color);
-		DrawWorldCircle(drawList, viewProjection, light.Position, y, z, light.Range, color);
-	}
-	else if (s_SelectedLightKind == LightKind::Spot)
-	{
-		const EnvMapVulkanSpotLight& light = s_Lights.SpotLights[s_SelectedLightIndex];
-		glm::vec3 direction = light.GetDirection();
-		glm::vec3 u, v;
-		GetPerpendicularAxes(direction, u, v);
-		auto drawCone = [&](float angle, ImU32 color, int sides) {
-			// The cone ends where it meets the range sphere
-			float halfAngle = glm::radians(glm::clamp(angle, 0.1f, 89.0f));
-			glm::vec3 center = light.Position + direction * (light.Range * std::cos(halfAngle));
-			float radius = light.Range * std::sin(halfAngle);
-			DrawWorldCircle(drawList, viewProjection, center, u, v, radius, color);
-			for (int i = 0; i < sides; i++)
-			{
-				float a = glm::two_pi<float>() * i / sides;
-				DrawWorldLine(drawList, viewProjection, light.Position, center + radius * (std::cos(a) * u + std::sin(a) * v), color);
-			}
-		};
-		drawCone(light.OuterAngle, GetLightGizmoColor(light.Color, light.Enabled, 0.8f), 8);
-		drawCone(light.InnerAngle, GetLightGizmoColor(light.Color, light.Enabled, 0.3f), 4);
-	}
-
-	std::vector<int> pointShadowSlots, spotShadowSlots;
-	GetShadowSlotsPerLight(pointShadowSlots, spotShadowSlots);
-	ImVec2 pixel;
-	DrawWorldLine(drawList, viewProjection, GetSunGizmoPosition(), GetSunGizmoPosition() - s_Lights.Sun.GetDirection() * 0.75f,
-		GetLightGizmoColor(s_Lights.Sun.Color, s_Lights.Sun.Enabled), 2.0f); // aim line, as a spot light's
-	if (ProjectToViewport(viewProjection, GetSunIconPosition(), pixel))
-	{
-		DrawLightIcon(drawList, pixel, GetLightGizmoColor(s_Lights.Sun.Color, s_Lights.Sun.Enabled), s_Lights.Sun.Enabled,
-			s_SelectedLightKind == LightKind::Sun, 12, s_ShadowsRendered);
-	}
-	for (int i = 0; i < (int)s_Lights.PointLights.size(); i++)
-	{
-		const EnvMapVulkanPointLight& light = s_Lights.PointLights[i];
-		if (ProjectToViewport(viewProjection, light.Position, pixel))
-		{
-			DrawLightIcon(drawList, pixel, GetLightGizmoColor(light.Color, light.Enabled), light.Enabled,
-				s_SelectedLightKind == LightKind::Point && s_SelectedLightIndex == i, 8, pointShadowSlots[i] >= 0);
-		}
-	}
-	for (int i = 0; i < (int)s_Lights.SpotLights.size(); i++)
-	{
-		const EnvMapVulkanSpotLight& light = s_Lights.SpotLights[i];
-		ImU32 color = GetLightGizmoColor(light.Color, light.Enabled);
-		DrawWorldLine(drawList, viewProjection, light.Position, light.Position + light.GetDirection() * 0.75f, color, 2.0f);
-		if (ProjectToViewport(viewProjection, light.Position, pixel))
-		{
-			DrawLightIcon(drawList, pixel, color, light.Enabled, s_SelectedLightKind == LightKind::Spot && s_SelectedLightIndex == i, 4,
-				spotShadowSlots[i] >= 0);
-		}
-	}
-
-	drawList->PopClipRect();
-}
-
-// The light whose icon is under the mouse (the nearest one within 12 pixels)
-// The selected water's border: an orange rectangle (made of short segments, so the parts in front of the camera show when
-// the rest is behind it)
-static void DrawWaterOutline()
-{
-	if (!s_WaterSelected || s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
-	{
-		return;
-	}
-	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
-	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	drawList->PushClipRect(s_ViewportImageMin, ImVec2(s_ViewportImageMin.x + s_ViewportImageSize.x, s_ViewportImageMin.y + s_ViewportImageSize.y), true);
-	const glm::mat4 transform = s_WaterSettings.GetTransform();
-	const glm::vec3 corners[4] = {
-		glm::vec3(transform * glm::vec4(-0.5f, 0.0f, -0.5f, 1.0f)), glm::vec3(transform * glm::vec4(0.5f, 0.0f, -0.5f, 1.0f)),
-		glm::vec3(transform * glm::vec4(0.5f, 0.0f, 0.5f, 1.0f)), glm::vec3(transform * glm::vec4(-0.5f, 0.0f, 0.5f, 1.0f)) };
-	const int segments = 32;
-	for (int side = 0; side < 4; side++)
-	{
-		const glm::vec3& a = corners[side];
-		const glm::vec3& b = corners[(side + 1) % 4];
-		for (int i = 0; i < segments; i++)
-		{
-			DrawWorldLine(drawList, viewProjection, glm::mix(a, b, (float)i / segments), glm::mix(a, b, (float)(i + 1) / segments), IM_COL32(255, 140, 0, 255), 2.0f);
-		}
-	}
-	drawList->PopClipRect();
-}
-
-static bool PickLightIcon(LightKind& kind, int& index)
-{
-	if (!s_ShowLightGizmos)
-	{
-		return false;
-	}
-	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
-	const ImVec2 mouse = ImGui::GetMousePos();
-	float nearest = 12.0f * 12.0f;
-	bool found = false;
-	auto test = [&](const glm::vec3& position, LightKind k, int i) {
-		ImVec2 pixel;
-		if (ProjectToViewport(viewProjection, position, pixel))
-		{
-			float dx = pixel.x - mouse.x, dy = pixel.y - mouse.y;
-			if (dx * dx + dy * dy < nearest)
-			{
-				nearest = dx * dx + dy * dy;
-				kind = k;
-				index = i;
-				found = true;
-			}
-		}
-	};
-	test(GetSunIconPosition(), LightKind::Sun, 0);
-	for (int i = 0; i < (int)s_Lights.PointLights.size(); i++)
-	{
-		test(s_Lights.PointLights[i].Position, LightKind::Point, i);
-	}
-	for (int i = 0; i < (int)s_Lights.SpotLights.size(); i++)
-	{
-		test(s_Lights.SpotLights[i].Position, LightKind::Spot, i);
-	}
-	return found;
-}
-
-// The gizmo for the selected sun, at its icon: 1 moves the icon (editor only, the sun has no position), 2 turns the sun.
-// Its local Z axis points towards the sun. The first change detaches the icon from the sky: from then on it stays where
-// it is (rotating the sky icon would otherwise move it, and the gizmo with it, while turning).
-static void ManipulateSun(int gizmoType, bool snap)
-{
-	const ImGuizmo::OPERATION operation = gizmoType == ImGuizmo::OPERATION::TRANSLATE ? ImGuizmo::OPERATION::TRANSLATE : ImGuizmo::OPERATION::ROTATE;
-	glm::vec3 z = s_Lights.Sun.GetDirection(), x, y;
-	GetPerpendicularAxes(z, x, y);
-	glm::mat4 transform(1.0f);
-	transform[0] = glm::vec4(x, 0.0f);
-	transform[1] = glm::vec4(y, 0.0f);
-	transform[2] = glm::vec4(z, 0.0f);
-	transform[3] = glm::vec4(GetSunGizmoPosition(), 1.0f);
-
-	float snapValue = operation == ImGuizmo::OPERATION::ROTATE ? 15.0f : 0.5f;
-	float snapValues[3] = { snapValue, snapValue, snapValue };
-	if (ImGuizmo::Manipulate(
-		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
-		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
-		operation,
-		ImGuizmo::WORLD,
-		glm::value_ptr(transform),
-		nullptr,
-		snap ? snapValues : nullptr))
-	{
-		const EnvMapVulkanDirectionalLight before = s_Lights.Sun;
-		s_Lights.Sun.IconPosition = glm::vec3(transform[3]);
-		s_Lights.Sun.IconMoved = true;
-		if (operation == ImGuizmo::OPERATION::ROTATE)
-		{
-			s_Lights.Sun.SetDirection(glm::vec3(transform[2])); // azimuth and elevation follow (azimuth in -180..180)
-		}
-		CommitSun(before);
-	}
-}
-
-// The Range of a point or spot light entity (null: not one)
-static float* GetLightRange(EnvMapVulkanEntityID entity)
-{
-	if (PointLightComponent* point = s_Scene.TryGet<PointLightComponent>(entity))
-	{
-		return &point->Range;
-	}
-	if (SpotLightComponent* spot = s_Scene.TryGet<SpotLightComponent>(entity))
-	{
-		return &spot->Range;
-	}
-	return nullptr;
-}
-
-static constexpr float MinLightRange = 0.1f;
-static constexpr float MaxLightRange = 1000.0f; // the Range drag's limit
-
-// The point and spot lights under a scaled entity (a model) are scaled with it, by the hierarchy; their Range then too,
-// by the uniform scale (see MoveLightWith). Not under a light: its children don't scale with it (its matrix isn't scaled).
-static void ScaleChildLightRanges(EnvMapVulkanEntityID entity, float scale)
-{
-	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
-	{
-		if (float* range = GetLightRange(child))
-		{
-			*range = glm::clamp(*range * scale, MinLightRange, MaxLightRange);
-			continue;
-		}
-		ScaleChildLightRanges(child, scale);
-	}
-}
-
-// How much the gizmo scaled the selected light's range this frame (1: not scaled); a multi-selection is scaled by it
-// around the light (see UpdateImGuizmo)
-static float s_LightGizmoScale = 1.0f;
-
-// The gizmo on the selected point or spot light, which works on the light entity's transform like on any entity:
-// translate moves it, rotate turns it (a spot light's beam; turning a point light changes nothing in its light, but turns
-// a multi-selection around it), scale changes its Range (one handle: a light has one reach, the same in every direction)
-static void ManipulateSelectedLight(int gizmoType, bool snap)
-{
-	s_LightGizmoScale = 1.0f;
-	const EnvMapVulkanEntityID entity = GetLightEntity(s_SelectedLightKind, s_SelectedLightIndex);
-	float* range = GetLightRange(entity);
-	if (!range)
-	{
-		return;
-	}
-
-	// The light's world matrix without scale: the gizmo's axes, and a scale handle that starts at 1
-	glm::mat4 transform = s_Scene.GetWorldTransform(entity);
-	for (int axis = 0; axis < 3; axis++)
-	{
-		transform[axis] = glm::vec4(glm::normalize(glm::vec3(transform[axis])), 0.0f);
-	}
-
-	ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)gizmoType;
-	ImGuizmo::MODE mode = ImGuizmo::WORLD;
-	float snapValue = 0.5f;
-	if (operation == ImGuizmo::OPERATION::ROTATE)
-	{
-		snapValue = 15.0f;
-	}
-	else if (operation == ImGuizmo::OPERATION::SCALE)
-	{
-		operation = ImGuizmo::OPERATION::SCALE_X; // one handle, along the light's own X axis
-		mode = ImGuizmo::LOCAL;
-		snapValue = 0.1f;
-	}
-	// ImGuizmo scales relative to the start of the drag: the range then is the range at the start times the handle's scale
-	static float s_RangeAtDragStart = 0.0f;
-	if (!ImGuizmo::IsUsing())
-	{
-		s_RangeAtDragStart = *range;
-	}
-
-	float snapValues[3] = { snapValue, snapValue, snapValue };
-	if (!ImGuizmo::Manipulate(
-		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
-		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
-		operation,
-		mode,
-		glm::value_ptr(transform),
-		nullptr,
-		snap ? snapValues : nullptr))
-	{
-		return;
-	}
-
-	if (operation == ImGuizmo::OPERATION::SCALE_X)
-	{
-		const float newRange = glm::clamp(s_RangeAtDragStart * glm::length(glm::vec3(transform[0])), MinLightRange, MaxLightRange);
-		s_LightGizmoScale = newRange / *range;
-		*range = newRange;
-	}
-	else if (operation == ImGuizmo::OPERATION::TRANSLATE)
-	{
-		SetEntityPosition(entity, glm::vec3(transform[3])); // only the position: the rotation isn't recomposed from Euler angles
-	}
-	else
-	{
-		// Rotated: the light's own scale (normally 1) is kept
-		const glm::mat4 world = s_Scene.GetWorldTransform(entity);
-		for (int axis = 0; axis < 3; axis++)
-		{
-			transform[axis] *= glm::length(glm::vec3(world[axis]));
-		}
-		s_Scene.SetWorldTransform(entity, transform);
-	}
-	ExtractLights();
-}
-
-// Where a new light goes: where the camera looks, so the light is within reach of its default range:
-// - the model surface at the center of the viewport
-// - else the ground (y = 0) there, when it's not too far
-// - else (the camera looks over the scene, e.g. horizontally) the point of the view ray nearest the models' center,
-//   at the models' height
-// The range of a new point or spot light at this position: far enough to reach every loaded model (the distance to the
-// farthest corner of their bounds), at least 10, at most 1000 (the Range drag's limit). Without models: 10.
-static float GetDefaultLightRange(const glm::vec3& position)
-{
-	float range = 10.0f;
-	if (glm::all(glm::lessThanEqual(s_ShadowCasterBoundsMin, s_ShadowCasterBoundsMax)))
-	{
-		for (int c = 0; c < 8; c++)
-		{
-			glm::vec3 corner((c & 1) ? s_ShadowCasterBoundsMax.x : s_ShadowCasterBoundsMin.x, (c & 2) ? s_ShadowCasterBoundsMax.y : s_ShadowCasterBoundsMin.y,
-				(c & 4) ? s_ShadowCasterBoundsMax.z : s_ShadowCasterBoundsMin.z);
-			range = std::max(range, glm::length(corner - position));
-		}
-	}
-	return std::min(range, 1000.0f);
-}
-
-static glm::vec3 GetLightSpawnTarget()
-{
-	EnvMapVulkanEntityID hitModel;
-	int hitMesh;
-	glm::vec3 target;
-	RaycastMesh(0.0f, 0.0f, hitModel, hitMesh, &target);
-	if (hitModel == NoEntity)
-	{
-		glm::vec3 origin, direction;
-		GetCameraRay(0.0f, 0.0f, origin, direction);
-		direction = glm::normalize(direction);
-		float groundT = direction.y < -1e-4f ? -origin.y / direction.y : -1.0f;
-		if (groundT > 0.0f && groundT < 50.0f)
-		{
-			target = origin + direction * groundT;
-		}
-		else
-		{
-			glm::vec3 sceneCenter(0.0f);
-			const std::vector<EnvMapVulkanEntityID> models = GetModels();
-			for (EnvMapVulkanEntityID model : models)
-			{
-				sceneCenter += glm::vec3(s_Scene.GetWorldTransform(model)[3]) / (float)models.size();
-			}
-			float t = glm::max(glm::dot(sceneCenter - origin, direction), 1.0f);
-			target = origin + direction * t;
-			target.y = sceneCenter.y;
-		}
-	}
-	return glm::any(glm::isnan(target)) ? glm::vec3(0.0f) : target; // NaN: the camera has no valid view matrix yet
-}
-
-// The shadow map's cascades in the Lights panel ("Show Shadow Map"): the scene seen from the sun, darker = closer to the sun
-static bool s_ShowShadowMap = false;
-static int s_ShadowMapShownCascade = 0;
-static std::array<ImTextureID, ShadowCascadeCount> s_ShadowMapTextureIDs = {};
-static uint32_t s_ShadowMapTexturesGeneration = 0; // the shadow map the IDs were registered for (EnvMapVulkanShadowMap::GetGeneration)
-
-static void DrawShadowMapCascades()
-{
-	if (!s_ShadowMap.IsValid())
-	{
-		return;
-	}
-	// Registered with the ImGui Vulkan backend once per shadow map (again after it is recreated)
-	if (s_ShadowMapTexturesGeneration != s_ShadowMap.GetGeneration())
-	{
-		for (uint32_t i = 0; i < ShadowCascadeCount; i++)
-		{
-			if (s_ShadowMapTextureIDs[i])
-			{
-				ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)s_ShadowMapTextureIDs[i]);
-			}
-			s_ShadowMapTextureIDs[i] = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(s_ShadowMap.GetDisplaySampler(), s_ShadowMap.GetDisplayView(i),
-				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		}
-		s_ShadowMapTexturesGeneration = s_ShadowMap.GetGeneration();
-	}
-
-	if (!s_ShadowsRendered)
-	{
-		ImGui::TextDisabled("No shadows this frame (sun off, Cast Shadows off or no models)");
-		return;
-	}
-	// One cascade at a time, as large as the panel allows
-	for (int i = 0; i < (int)ShadowCascadeCount; i++)
-	{
-		if (i > 0)
-		{
-			ImGui::SameLine();
-		}
-		char label[32];
-		snprintf(label, sizeof(label), "%d##ShadowCascade", i);
-		ImGui::RadioButton(label, &s_ShadowMapShownCascade, i);
-	}
-	const EnvMapVulkanShadowCascade& cascade = s_ShadowCascades[s_ShadowMapShownCascade];
-	ImGui::TextDisabled("Up to %.1f units from the camera, %.1f mm per texel", cascade.SplitDistance, cascade.TexelWorldSize * 1000.0f);
-	const float size = glm::max(ImGui::GetContentRegionAvail().x, 16.0f);
-	ImGui::Image(s_ShadowMapTextureIDs[s_ShadowMapShownCascade], ImVec2(size, size));
-}
-
-// An azimuth drag without limits (as Env Map Rotation): it can be dragged endlessly in both directions and wraps around
-// to stay in -180..180
-static bool AzimuthProperty(float& azimuth)
-{
-	if (ImGuiWrapper::Property("Azimuth", azimuth, 0.5f, 0.0f, 0.0f, PropertyFlag::DragProperty)) // min = max = 0: no limits
-	{
-		azimuth = std::remainder(azimuth, 360.0f);
-		return true;
-	}
-	return false;
-}
-
-// The sun's shadow settings, in the Lights panel when the sun is selected
-static void OnImGuiRenderShadowSettings()
-{
-	if (!ImGui::CollapsingHeader("Shadows", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		return;
-	}
-	EnvMapVulkanShadowSettings& settings = s_ShadowSettings;
-
-	ImGui::Columns(2);
-	ImGuiWrapper::Property("Distance", settings.Distance, 0.5f, 2.0f, 1000.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Shadows reach this far from the camera (they fade out before it).\nShorter: sharper shadows, as the cascades cover less");
-	}
-
-	// Resolution: the shadow map is recreated at the start of the next frame
-	static const uint32_t s_Resolutions[] = { 1024, 2048, 4096 };
-	static const char* s_ResolutionLabels[] = { "1024 (16 MB)", "2048 (64 MB)", "4096 (256 MB)" };
-	uint32_t resolution = s_PendingShadowResolution ? s_PendingShadowResolution : s_ShadowMap.GetResolution();
-	int selected = 1;
-	for (int i = 0; i < 3; i++)
-	{
-		if (s_Resolutions[i] == resolution)
-		{
-			selected = i;
-		}
-	}
-	ImGui::Text("Resolution");
-	ImGui::NextColumn();
-	ImGui::PushItemWidth(-1);
-	if (ImGui::BeginCombo("##ShadowResolution", s_ResolutionLabels[selected]))
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			if (ImGui::Selectable(s_ResolutionLabels[i], i == selected))
-			{
-				s_PendingShadowResolution = s_Resolutions[i] != s_ShadowMap.GetResolution() ? s_Resolutions[i] : 0;
-			}
-		}
-		ImGui::EndCombo();
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Of each of the 4 cascades (GPU memory for all of them)");
-	}
-	ImGui::PopItemWidth();
-	ImGui::NextColumn();
-
-	ImGuiWrapper::Property("Split", settings.SplitLambda, 0.0f, 1.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("How the distance is split into cascades:\n0 = equal parts, 1 = short near ones (sharp close to the camera), long far ones");
-	}
-	ImGuiWrapper::Property("Softness", settings.Softness, 0.0f, 4.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Width of the soft shadow edge (spacing of the 5 x 5 PCF samples, in shadow map texels)");
-	}
-	ImGuiWrapper::Property("Depth Bias", settings.DepthBias, 0.0f, 10.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Pushes the shadow map's depth away from the sun: removes \"shadow acne\" (stripes on lit surfaces).\nToo much detaches shadows from the objects (\"peter panning\")");
-	}
-	ImGuiWrapper::Property("Slope Bias", settings.SlopeBias, 0.0f, 10.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Depth bias that grows on surfaces at a grazing angle to the sun, where acne appears first");
-	}
-	ImGuiWrapper::Property("Normal Bias", settings.NormalBias, 0.0f, 5.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Looks the shadow map up this many texels off the surface, along its normal: removes acne\nwithout detaching the shadows as much as the depth bias");
-	}
-	ImGuiWrapper::Property("Show Cascades", settings.ShowCascades);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Tints the scene by cascade: red, green, blue, yellow (nearest to farthest)");
-	}
-	ImGui::Columns(1);
-
-	if (ImGui::Button("Reset Shadow Settings"))
-	{
-		EnvMapVulkanShadowSettings defaults;
-		defaults.ShowCascades = settings.ShowCascades; // a view option, not a setting
-		s_PendingShadowResolution = defaults.Resolution != s_ShadowMap.GetResolution() ? defaults.Resolution : 0;
-		defaults.Resolution = s_ShadowMap.GetResolution(); // applied with the next frame, see above
-		settings = defaults;
-	}
-
-	ImGui::Checkbox("Show Shadow Map", &s_ShowShadowMap);
-	if (s_ShowShadowMap)
-	{
-		DrawShadowMapCascades();
-	}
-}
-
-// "Cast Shadows" of a point or spot light: off when all shadow slots of its kind are taken by other lights
-static void LocalCastShadowsProperty(bool& castShadows, uint32_t shadowedCount, uint32_t maxShadowed, bool available, const char* kind)
-{
-	const bool full = !castShadows && shadowedCount >= maxShadowed;
-	ImGui::BeginDisabled(full || !available);
-	ImGuiWrapper::Property("Cast Shadows", castShadows);
-	ImGui::EndDisabled();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		if (!available)
-		{
-			ImGui::SetTooltip("Not available: the GPU doesn't support cube map arrays (imageCubeArray)");
-		}
-		else
-		{
-			ImGui::SetTooltip("%u of %u %s lights cast shadows%s", shadowedCount, maxShadowed, kind, full ? ": all shadow slots are taken" : "");
-		}
-	}
-}
-
-// A resolution combo (the map is recreated at the start of the next frame): labels "<resolution> (<memory>)"
-static void ShadowResolutionProperty(const char* label, uint32_t current, const uint32_t (&resolutions)[3], const char* const (&labels)[3], uint32_t& pending)
-{
-	uint32_t shown = pending ? pending : current;
-	int selected = 1;
-	for (int i = 0; i < 3; i++)
-	{
-		if (resolutions[i] == shown)
-		{
-			selected = i;
-		}
-	}
-	ImGui::Text("%s", label);
-	ImGui::NextColumn();
-	ImGui::PushItemWidth(-1);
-	ImGui::PushID(label);
-	if (ImGui::BeginCombo("##Resolution", labels[selected]))
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			if (ImGui::Selectable(labels[i], i == selected))
-			{
-				pending = resolutions[i] != current ? resolutions[i] : 0;
-			}
-		}
-		ImGui::EndCombo();
-	}
-	ImGui::PopID();
-	ImGui::PopItemWidth();
-	ImGui::NextColumn();
-}
-
-// The shadow settings of the spot and point lights (shared by all of them), and the selected light's shadow map
-static void OnImGuiRenderLocalShadowSettings()
-{
-	if (!ImGui::CollapsingHeader("Shadows (Spot and Point Lights)", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		return;
-	}
-	EnvMapVulkanLocalShadowSettings& settings = s_LocalShadowSettings;
-
-	ImGui::Columns(2);
-	static const uint32_t s_SpotResolutions[3] = { 512, 1024, 2048 };
-	static const char* const s_SpotLabels[3] = { "512 (4 MB)", "1024 (16 MB)", "2048 (64 MB)" };
-	static const uint32_t s_PointResolutions[3] = { 256, 512, 1024 };
-	static const char* const s_PointLabels[3] = { "256 (6 MB)", "512 (24 MB)", "1024 (96 MB)" };
-	ShadowResolutionProperty("Spot Resolution", s_SpotShadowMaps.GetResolution(), s_SpotResolutions, s_SpotLabels, s_PendingLocalShadowResolutions.x);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Of each spot light's shadow map (GPU memory for all %u)", MaxShadowedSpotLights);
-	}
-	ShadowResolutionProperty("Point Resolution", s_PointShadowMaps.IsValid() ? s_PointShadowMaps.GetResolution() : settings.PointResolution,
-		s_PointResolutions, s_PointLabels, s_PendingLocalShadowResolutions.y);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Of each cube face of a point light's shadow map (GPU memory for all %u cubes)", MaxShadowedPointLights);
-	}
-	ImGuiWrapper::Property("Softness", settings.Softness, 0.0f, 4.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Width of the soft shadow edge (spacing of the 5 x 5 PCF samples, in shadow map texels)");
-	}
-	ImGuiWrapper::Property("Depth Bias", settings.DepthBias, 0.0f, 10.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Removes \"shadow acne\" (stripes on lit surfaces); too much detaches shadows from the objects");
-	}
-	ImGuiWrapper::Property("Slope Bias", settings.SlopeBias, 0.0f, 10.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Depth bias that grows on surfaces at a grazing angle to the light");
-	}
-	ImGuiWrapper::Property("Normal Bias", settings.NormalBias, 0.0f, 5.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Looks the shadow map up this many texels off the surface, along its normal");
-	}
-	ImGui::Columns(1);
-
-	if (ImGui::Button("Reset Shadow Settings##Local"))
-	{
-		EnvMapVulkanLocalShadowSettings defaults;
-		s_PendingLocalShadowResolutions.x = defaults.SpotResolution != s_SpotShadowMaps.GetResolution() ? defaults.SpotResolution : 0;
-		s_PendingLocalShadowResolutions.y = s_PointShadowMaps.IsValid() && defaults.PointResolution != s_PointShadowMaps.GetResolution() ? defaults.PointResolution : 0;
-		defaults.SpotResolution = settings.SpotResolution; // applied with the next frame, see above
-		defaults.PointResolution = settings.PointResolution;
-		settings = defaults;
-	}
-
-	// The selected light's shadow map, drawn by the viewer with the next frame (see EnvMapVulkanShadowMapViewer)
-	ImGui::Checkbox("Show Shadow Map", &s_ShowShadowMap);
-	if (!s_ShowShadowMap)
-	{
-		return;
-	}
-	const bool spot = s_SelectedLightKind == LightKind::Spot;
-	int slot = -1;
-	float range = 1.0f;
-	if (spot)
-	{
-		for (uint32_t i = 0; i < s_LocalShadowSlots.SpotCount; i++)
-		{
-			slot = s_LocalShadowSlots.SpotLight[i] == s_SelectedLightIndex ? (int)i : slot;
-		}
-		range = s_Lights.SpotLights[s_SelectedLightIndex].Range;
-	}
-	else
-	{
-		for (uint32_t i = 0; i < s_LocalShadowSlots.PointCount; i++)
-		{
-			slot = s_LocalShadowSlots.PointLight[i] == s_SelectedLightIndex ? (int)i : slot;
-		}
-		range = s_Lights.PointLights[s_SelectedLightIndex].Range;
-	}
-	if (slot < 0 || !s_ShadowMapViewer.IsValid())
-	{
-		ImGui::TextDisabled("No shadow map this frame (Cast Shadows off, light off,\nor all shadow slots taken)");
-		return;
-	}
-
-	s_ShadowMapViewerRequest.Active = true;
-	s_ShadowMapViewerRequest.Cube = !spot;
-	s_ShadowMapViewerRequest.BaseLayer = spot ? (uint32_t)slot : (uint32_t)slot * 6;
-	s_ShadowMapViewerRequest.Near = GetLocalShadowNearPlane(range);
-	s_ShadowMapViewerRequest.Far = std::max(range, 0.02f);
-
-	static ImTextureID s_ViewerTextureID = 0;
-	if (!s_ViewerTextureID)
-	{
-		s_ViewerTextureID = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(s_ShadowMapViewer.GetSampler(), s_ShadowMapViewer.GetView(),
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	}
-	const float width = glm::max(ImGui::GetContentRegionAvail().x, 16.0f);
-	ImGui::TextDisabled(spot ? "Seen from the light, darker = closer to it" : "The 6 cube faces: -X +Z +X -Z, +Y above, -Y below; darker = closer");
-	if (spot)
-	{
-		// The spot map is the left square of the viewer image
-		ImGui::Image(s_ViewerTextureID, ImVec2(width, width), ImVec2(0.0f, 0.0f), ImVec2(0.75f, 1.0f));
-	}
-	else
-	{
-		ImGui::Image(s_ViewerTextureID, ImVec2(width, width * 0.75f));
-	}
-}
-
-static void LightNameProperty(std::string& name)
-{
-	char buffer[128] = {};
-	snprintf(buffer, sizeof(buffer), "%s", name.c_str());
-	ImGui::Text("Name");
-	ImGui::NextColumn();
-	ImGui::PushItemWidth(-1);
-	if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
-	{
-		name = buffer;
-	}
-	ImGui::PopItemWidth();
-	ImGui::NextColumn();
-}
-
-static void LightRangeProperty(float& range)
-{
-	ImGuiWrapper::Property("Range", range, 0.05f, 0.01f, 1000.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The distance where the light fades out completely");
-	}
-}
-
-// The selected light's properties (the sun, a point or a spot light), edited on this frame's copy (s_Lights) and written
-// back into its entity at the end. Used by the Lights panel and the Properties panel.
-static void LightPropertiesControls()
-{
-	EnvMapVulkanLightEnvironment before = s_Lights;
-	auto commitAll = [&before]() {
-		CommitSun(before.Sun);
-		for (int i = 0; i < (int)s_Lights.PointLights.size() && i < (int)before.PointLights.size(); i++)
-		{
-			CommitPointLight(i, before.PointLights[i]);
-		}
-		for (int i = 0; i < (int)s_Lights.SpotLights.size() && i < (int)before.SpotLights.size(); i++)
-		{
-			CommitSpotLight(i, before.SpotLights[i]);
-		}
-	};
-
-	if (s_SelectedLightKind == LightKind::None)
-	{
-		ImGui::TextDisabled("Select a light in the list,\nor click its icon in the viewport");
-		return;
-	}
-
-	if (s_SelectedLightKind == LightKind::Sun)
-	{
-		ImGui::BeginDisabled(!s_Data.envEquirect);
-		if (ImGui::Button("Align to Environment"))
-		{
-			commitAll();
-			AlignSunToEnvironment();
-			before = s_Lights;
-		}
-		ImGui::EndDisabled();
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		{
-			ImGui::SetTooltip("Points the sun at the brightest light of the environment map\n(the sun outdoors, a bright window indoors) and takes its color");
-		}
-	}
-
-	ImGui::Columns(2);
-	if (s_SelectedLightKind == LightKind::Sun)
-	{
-		EnvMapVulkanDirectionalLight& sun = s_Lights.Sun;
-		ImGuiWrapper::Property("Enabled", sun.Enabled);
-		ImGuiWrapper::Property("Color", sun.Color, PropertyFlag::ColorProperty);
-		ImGuiWrapper::Property("Intensity", sun.Intensity, 0.01f, 0.0f, 20.0f, PropertyFlag::DragProperty);
-		AzimuthProperty(sun.Azimuth);
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Compass direction of the sun (degrees around the vertical axis, 0 = +Z, 90 = +X)");
-		}
-		ImGuiWrapper::Property("Elevation", sun.Elevation, 0.5f, -90.0f, 90.0f, PropertyFlag::DragProperty);
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Height of the sun above the horizon (degrees, 90 = straight overhead)");
-		}
-		ImGuiWrapper::Property("Cast Shadows", sun.CastShadows);
-		ImGuiWrapper::Property("Follow Env Rotation", sun.FollowEnvironmentRotation);
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Env Map Rotation (Environment panel) turns the sun too,\nso a sun aligned to the environment stays on the sun of the map");
-		}
-	}
-	else if (s_SelectedLightKind == LightKind::Point)
-	{
-		EnvMapVulkanPointLight& light = s_Lights.PointLights[s_SelectedLightIndex];
-		LightNameProperty(light.Name);
-		ImGuiWrapper::Property("Enabled", light.Enabled);
-		ImGuiWrapper::Property("Color", light.Color, PropertyFlag::ColorProperty);
-		ImGuiWrapper::Property("Intensity", light.Intensity, 0.1f, 0.0f, 10000.0f, PropertyFlag::DragProperty);
-		ImGuiWrapper::Property("Position", light.Position, 0.05f, 0.0f, 0.0f, PropertyFlag::DragProperty);
-		LightRangeProperty(light.Range);
-		LocalCastShadowsProperty(light.CastShadows, s_Lights.CountShadowedPointLights(), MaxShadowedPointLights, s_PointShadowMaps.IsValid(), "point");
-	}
-	else
-	{
-		EnvMapVulkanSpotLight& light = s_Lights.SpotLights[s_SelectedLightIndex];
-		LightNameProperty(light.Name);
-		ImGuiWrapper::Property("Enabled", light.Enabled);
-		ImGuiWrapper::Property("Color", light.Color, PropertyFlag::ColorProperty);
-		ImGuiWrapper::Property("Intensity", light.Intensity, 0.1f, 0.0f, 10000.0f, PropertyFlag::DragProperty);
-		ImGuiWrapper::Property("Position", light.Position, 0.05f, 0.0f, 0.0f, PropertyFlag::DragProperty);
-		LightRangeProperty(light.Range);
-		AzimuthProperty(light.Azimuth);
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Compass direction the spot points to (degrees around the vertical axis, 0 = +Z, 90 = +X)");
-		}
-		ImGuiWrapper::Property("Elevation", light.Elevation, 0.5f, -90.0f, 90.0f, PropertyFlag::DragProperty);
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Tilt of the spot (degrees, -90 = straight down, 0 = horizontal)");
-		}
-		// The inner cone always stays inside the outer one: dragging either one past the other moves both
-		if (ImGuiWrapper::Property("Inner Angle", light.InnerAngle, 0.2f, 0.0f, 89.0f, PropertyFlag::DragProperty))
-		{
-			light.OuterAngle = std::max(light.OuterAngle, light.InnerAngle);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Half-angle of the fully lit cone (degrees)");
-		}
-		if (ImGuiWrapper::Property("Outer Angle", light.OuterAngle, 0.2f, 0.1f, 89.0f, PropertyFlag::DragProperty))
-		{
-			light.InnerAngle = std::min(light.InnerAngle, light.OuterAngle);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Half-angle where the light fades out completely (degrees)");
-		}
-		LocalCastShadowsProperty(light.CastShadows, s_Lights.CountShadowedSpotLights(), MaxShadowedSpotLights, s_SpotShadowMaps.IsValid(), "spot");
-		ImGui::Columns(1);
-		ImGui::TextDisabled("Viewport gizmo: 1 moves the light, 2 aims it");
-	}
-	ImGui::Columns(1);
-
-	if (s_SelectedLightKind == LightKind::Sun)
-	{
-		ImGui::TextDisabled("Viewport gizmo: 1 moves the sun's icon (only the icon:\nthe sun has no position), 2 turns the sun");
-		if (ImGui::Button("Icon to View"))
-		{
-			glm::mat4 cameraTransform = glm::inverse(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix());
-			s_Lights.Sun.IconPosition = glm::vec3(cameraTransform[3]) - glm::normalize(glm::vec3(cameraTransform[2])) * 10.0f;
-			s_Lights.Sun.IconMoved = true;
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Puts the sun's icon 10 units in front of the camera (when the sun is behind you)");
-		}
-		ImGui::SameLine();
-		ImGui::BeginDisabled(!s_Lights.Sun.IconMoved);
-		if (ImGui::Button("Reset Icon"))
-		{
-			s_Lights.Sun.IconMoved = false;
-		}
-		ImGui::EndDisabled();
-		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		{
-			ImGui::SetTooltip("Back in the sky, in the sun's direction");
-		}
-		OnImGuiRenderShadowSettings();
-	}
-	else
-	{
-		OnImGuiRenderLocalShadowSettings();
-	}
-
-
-	commitAll();
-}
-
-// The sun, point lights and spot lights: add, delete, enable and edit
-static void OnImGuiRenderLights()
-{
-	ImGui::Begin("Lights");
-
-	// The panel edits s_Lights (this frame's copy of the light entities): what changed goes back into the entities at the
-	// end. Adding and deleting work on the entities directly, then read them again.
-	EnvMapVulkanLightEnvironment before = s_Lights;
-	auto commitAll = [&before]() {
-		CommitSun(before.Sun);
-		for (int i = 0; i < (int)s_Lights.PointLights.size() && i < (int)before.PointLights.size(); i++)
-		{
-			CommitPointLight(i, before.PointLights[i]);
-		}
-		for (int i = 0; i < (int)s_Lights.SpotLights.size() && i < (int)before.SpotLights.size(); i++)
-		{
-			CommitSpotLight(i, before.SpotLights[i]);
-		}
-	};
-
-	// New lights go above GetLightSpawnTarget(): a point light 1.5 units above it, a spot light 3 units above it, pointing down
-
-	ImGui::BeginDisabled(!s_Lights.CanAddPointLight());
-	if (ImGui::Button("Add Point Light"))
-	{
-		commitAll();
-		if (EnvMapVulkanPointLight* light = s_Lights.AddPointLight(GetLightSpawnTarget() + glm::vec3(0.0f, 1.5f, 0.0f), MaxShadowedPointLights))
-		{
-			light->Range = GetDefaultLightRange(light->Position);
-			s_SelectedEntity = CreatePointLightEntity(*light);
-		}
-		ExtractLights();
-		before = s_Lights;
-	}
-	ImGui::EndDisabled();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Up to %u point lights", EnvMapVulkanLightsGPU::MaxPointLights);
-	}
-	ImGui::SameLine();
-	ImGui::BeginDisabled(!s_Lights.CanAddSpotLight());
-	if (ImGui::Button("Add Spot Light"))
-	{
-		commitAll();
-		if (EnvMapVulkanSpotLight* light = s_Lights.AddSpotLight(GetLightSpawnTarget() + glm::vec3(0.0f, 3.0f, 0.0f), MaxShadowedSpotLights))
-		{
-			light->Range = GetDefaultLightRange(light->Position);
-			s_SelectedEntity = CreateSpotLightEntity(*light);
-		}
-		ExtractLights();
-		before = s_Lights;
-	}
-	ImGui::EndDisabled();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Up to %u spot lights (pointing down when added)", EnvMapVulkanLightsGPU::MaxSpotLights);
-	}
-	ImGui::SameLine();
-	ImGui::BeginDisabled(s_SelectedLightKind != LightKind::Point && s_SelectedLightKind != LightKind::Spot);
-	if (ImGui::Button("Delete"))
-	{
-		commitAll();
-		s_Scene.DestroyEntity(GetLightEntity(s_SelectedLightKind, s_SelectedLightIndex));
-		s_SelectedEntity = NoEntity;
-		ExtractLights();
-		before = s_Lights;
-	}
-	ImGui::EndDisabled();
-
-	ImGui::Checkbox("Show in Viewport", &s_ShowLightGizmos);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Light icons (click one to select the light) and the selected light's range and cone");
-	}
-	ImGui::SameLine();
-	ImGui::Checkbox("Shadows Only", &s_ShowShadowsOnly);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The viewport shows only the selected light's shadow, whatever the other lights and the exposure:\n"
-			"white = lit, black = in shadow, dark gray = the light doesn't reach (out of range or cone, or facing away)");
-	}
-
-	// The light list: a checkbox (enabled) and a selectable name per light
-	auto lightRow = [](const char* name, bool& enabled, LightKind kind, int index) {
-		ImGui::PushID((int)kind * 1000 + index);
-		ImGui::Checkbox("##Enabled", &enabled);
-		ImGui::SameLine();
-		if (ImGui::Selectable(name, s_SelectedLightKind == kind && s_SelectedLightIndex == index))
-		{
-			SelectLight(kind, index);
-		}
-		ImGui::PopID();
-	};
-
-	ImGui::Separator();
-	if (ImGui::BeginChild("LightList", ImVec2(0.0f, ImGui::GetTextLineHeightWithSpacing() * 8.0f), ImGuiChildFlags_Borders))
-	{
-		lightRow("Sun", s_Lights.Sun.Enabled, LightKind::Sun, 0);
-		for (int i = 0; i < (int)s_Lights.PointLights.size(); i++)
-		{
-			lightRow(s_Lights.PointLights[i].Name.c_str(), s_Lights.PointLights[i].Enabled, LightKind::Point, i);
-		}
-		for (int i = 0; i < (int)s_Lights.SpotLights.size(); i++)
-		{
-			lightRow(s_Lights.SpotLights[i].Name.c_str(), s_Lights.SpotLights[i].Enabled, LightKind::Spot, i);
-		}
-	}
-	ImGui::EndChild();
-
-	// Properties of the selected light
-	ImGui::Separator();
-	commitAll();
-	LightPropertiesControls();
-	ImGui::End();
-}
-
-// The water plane: add / remove it, its place and size, the waves and the look (EnvMapVulkanWaterSettings)
-// The environment's settings: the map (load, or drop an .hdr), the skybox blur, exposure, Extract Sun, tonemapping and the
-// rotation, written into the environment entity (see CommitEnvironment). Used by the Environment and the Properties panels.
-static void EnvironmentControls()
-{
-	ImGui::Columns(2);
-
-	// Currently loaded environment map (file name only; the full path is in the tooltip)
-	std::string envMapName = std::filesystem::path(s_EnvMapFilename).filename().string();
-	char envMapNameBuffer[256] = {};
-	strncpy(envMapNameBuffer, envMapName.c_str(), sizeof(envMapNameBuffer) - 1);
-	ImGui::InputText("##envmapfilepath", envMapNameBuffer, sizeof(envMapNameBuffer), ImGuiInputTextFlags_ReadOnly);
-	if (ImGui::IsItemHovered() && !s_EnvMapFilename.empty())
-	{
-		ImGui::SetTooltip("%s", s_EnvMapFilename.c_str());
-	}
-
-	// Drop an .hdr file from the Content Browser here to load it
-	if (ImGui::BeginDragDropTarget())
-	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-		{
-			std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
-			Log::GetLogger()->debug("END DRAG & DROP FILE '{0}'", itemPath);
-			if (std::filesystem::path(itemPath).extension() == ".hdr")
-			{
-				s_PendingEnvMapFilename = itemPath;
-			}
-			else
-			{
-				Log::GetLogger()->warn("Only .hdr files can be used as environment maps ('{0}')", itemPath);
-			}
-		}
-		ImGui::EndDragDropTarget();
-	}
-
-	ImGui::NextColumn();
-
-	if (ImGui::Button("Load Environment Map"))
-	{
-		std::string filepath = FileDialogs::OpenFile({ { "HDR environment map", "hdr" } });
-		if (!filepath.empty())
-		{
-			s_PendingEnvMapFilename = filepath; // loaded at the start of the next frame (see Draw)
-		}
-	}
-
-	ImGui::NextColumn();
-
-	ImGui::AlignTextToFramePadding();
-
-	// Skybox blur: 0 = sharp, up to the environment map's last mip level (a single average color)
-	float maxSkyboxLod = s_Data.envUnfiltered ? (float)(s_Data.envUnfiltered->GetMipLevelCount() - 1) : 10.0f;
-	if (ImGuiWrapper::Property("Skybox LOD", s_Data.SceneData.SkyboxLod, 0.01f, 0.0f, maxSkyboxLod, PropertyFlag::DragProperty))
-	{
-		// SetSkyboxLOD(skyboxLOD);
-	}
-
-	ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
-	ImGuiWrapper::Property("Auto Exposure", s_AutoExposureEnabled);
-	if (ImGuiWrapper::Property("Extract Sun", s_ExtractSunFromEnvironment))
-	{
-		s_PendingEnvMapFilename = s_EnvMapFilename; // reloaded with or without its sun
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip(s_ExtractedSun.Found
-			? "This map's sun is moved to the directional sun (intensity %.2f), so it casts shadows with all its light\nand isn't counted twice. Off: the map keeps its sun (the directional sun adds to it)."
-			: "A real sun in a map (far brighter than the rest) is moved to the directional sun,\nso it casts shadows with all its light. This map has no sun.", s_ExtractedSun.Intensity);
-	}
-	ImGuiWrapper::Property("Preserve Hue", s_TonemapHuePreservation, 0.01f, 0.0f, 1.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("How bright colors are tonemapped:\n0 = per channel (a bright colored light turns white at its center, as on film)\n1 = hue-preserving (keeps the light's color all the way to the center)");
-	}
-	// No drag limits (min = max = 0): the value wraps around, so it can be dragged endlessly in both directions
-	if (ImGuiWrapper::Property("Env Map Rotation", s_EnvMapRotation, 1.0f, 0.0f, 0.0f, PropertyFlag::DragProperty))
-	{
-		s_EnvMapRotation = std::fmod(s_EnvMapRotation, 360.0f);
-		if (s_EnvMapRotation < 0.0f)
-		{
-			s_EnvMapRotation += 360.0f;
-		}
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Turns the environment around the vertical axis (yaw, degrees):\nskybox, reflections and environment lighting together");
-	}
-	ImGui::Columns(1);
-	CommitEnvironment(); // the settings edited above, into the environment entity
-}
-
-// A row of three drags like ImGui::DragFloat3, with components that can be locked (shown grayed out)
-static bool DragFloat3Locked(const char* label, glm::vec3& value, float speed, const bool locked[3], float min = 0.0f, float max = 0.0f,
-	const char* lockedTooltip = nullptr)
-{
-	ImGui::PushID(label);
-	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-	const float width = (ImGui::CalcItemWidth() - 2.0f * spacing) / 3.0f;
-	bool changed = false;
-	for (int i = 0; i < 3; i++)
-	{
-		if (i > 0)
-		{
-			ImGui::SameLine(0.0f, spacing);
-		}
-		ImGui::PushID(i);
-		ImGui::BeginDisabled(locked[i]);
-		ImGui::SetNextItemWidth(width);
-		changed |= ImGui::DragFloat("##value", &value[i], speed, min, max, "%.3f");
-		ImGui::EndDisabled();
-		if (locked[i] && lockedTooltip && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-		{
-			ImGui::SetTooltip("%s", lockedTooltip);
-		}
-		ImGui::PopID();
-	}
-	ImGui::SameLine(0.0f, spacing);
-	ImGui::TextUnformatted(label);
-	ImGui::PopID();
-	return changed;
-}
-
-// The water's transform, as a model's (Translation, Rotation, Scale) with the components it doesn't have locked: it is
-// always level (it turns only around Y) and flat (no height scale). Translation is its center and the height of the
-// surface; Scale is its size in meters (the water mesh is a 1 m square). Used by the Water and the Models and Meshes panels.
-static void WaterTransformControls(EnvMapVulkanWaterSettings& water)
-{
-	const bool translationLocked[3] = { false, false, false };
-	const bool rotationLocked[3] = { true, false, true };
-	const bool scaleLocked[3] = { false, true, false };
-
-	glm::vec3 translation(water.Center.x, water.Height, water.Center.y);
-	if (DragFloat3Locked("Translation", translation, 0.05f, translationLocked))
-	{
-		water.Center = glm::vec2(translation.x, translation.z);
-		water.Height = translation.y;
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The center of the water; Y is the height of the surface");
-	}
-
-	glm::vec3 rotation(0.0f, water.Rotation, 0.0f);
-	if (DragFloat3Locked("Rotation", rotation, 0.5f, rotationLocked, 0.0f, 0.0f, "Water is always level: it turns only around Y"))
-	{
-		water.Rotation = std::remainder(rotation.y, 360.0f);
-	}
-
-	glm::vec3 scale(water.Size.x, 1.0f, water.Size.y);
-	if (DragFloat3Locked("Scale", scale, 0.1f, scaleLocked, 0.1f, 10000.0f, "A flat surface: its height doesn't scale"))
-	{
-		water.Size = glm::max(glm::vec2(scale.x, scale.z), glm::vec2(0.1f));
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The size of the water in meters, along its own X and Z");
-	}
-}
-
-// The water's settings: its transform, the waves, the swell, its look, seeing into it and from under it, the caustics and
-// the reflection. Edits the given settings (the caller writes them back into the water entity, see CommitWater).
-static void WaterSettingsControls(EnvMapVulkanWaterSettings& water)
-{
-	WaterTransformControls(water);
-
-	ImGui::Separator();
-	ImGui::Text("Waves");
-	ImGui::Columns(2);
-	if (ImGuiWrapper::Property("Direction", water.WaveDirection, 0.5f, 0.0f, 0.0f, PropertyFlag::DragProperty)) // no limits, wraps
-	{
-		water.WaveDirection = std::remainder(water.WaveDirection, 360.0f);
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Degrees around the vertical axis: where the waves move");
-	}
-	ImGuiWrapper::Property("Speed", water.WaveSpeed, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("World units per second (the ripples move a bit slower, in another direction)");
-	}
-	ImGuiWrapper::Property("Strength", water.WaveStrength, 0.0f, 1.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Steepness of the waves: 0 is a mirror");
-	}
-	ImGuiWrapper::Property("Wave Size", water.WaveScale1, 0.05f, 0.1f, 100.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("World size of the larger wave pattern");
-	}
-	ImGuiWrapper::Property("Ripple Size", water.WaveScale2, 0.05f, 0.1f, 100.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("World size of the smaller wave pattern");
-	}
-	ImGui::Columns(1);
-
-	ImGui::Separator();
-	ImGui::Text("Swell");
-	ImGui::Columns(2);
-	ImGuiWrapper::Property("Swell Height", water.SwellHeight, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Meters: the most the surface rises above its level. Gerstner waves move the surface's vertices\n"
-			"(the waves above only shade it); 0 keeps it flat");
-	}
-	ImGuiWrapper::Property("Swell Length", water.SwellLength, 0.1f, 1.0f, 200.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Meters: the wavelength of the longest of the four waves (the others are shorter and cross it).\n"
-			"Longer waves travel faster, as on real water");
-	}
-	ImGuiWrapper::Property("Steepness", water.SwellSteepness, 0.0f, 1.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("0: round, rolling waves; 1: sharp crests and wide troughs (the surface moves toward the crests)");
-	}
-	ImGuiWrapper::Property("Wireframe", water.Wireframe);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Draws the surface's grid over it, where the waves move it (brighter on the crests)");
-	}
-	ImGui::Columns(1);
-
-	ImGui::Separator();
-	ImGui::Text("Look");
-	ImGui::Columns(2);
-	ImGuiWrapper::Property("Scatter Color", water.ScatterColor, PropertyFlag::ColorProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The light the water body sends back up: dark blue-green for deep, clear water,\nbrighter and greener or browner for shallow or murky water");
-	}
-	ImGuiWrapper::Property("Roughness", water.Roughness, 0.01f, 0.5f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Small: a sharp sun highlight and a clear reflection; larger: a wider highlight and a blurred reflection");
-	}
-	ImGuiWrapper::Property("Reflection", water.ReflectionStrength, 0.0f, 2.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Strength of the reflected environment (1 = physically based)");
-	}
-	ImGui::Columns(1);
-
-	ImGui::Separator();
-	ImGui::Text("Into the Water");
-	ImGui::Columns(2);
-	ImGuiWrapper::Property("Tint", water.Transmittance, PropertyFlag::ColorProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The color light keeps after Clarity meters of water: what is under the water\nturns this color with depth (water absorbs red first)");
-	}
-	ImGuiWrapper::Property("Clarity", water.Clarity, 0.01f, 0.05f, 100.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Meters: larger values let you see deeper into the water");
-	}
-	ImGuiWrapper::Property("Refraction", water.RefractionStrength, 0.0f, 3.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("How much the waves bend the view of what is under the water");
-	}
-	ImGuiWrapper::Property("Edge Softness", water.EdgeSoftness, 0.0f, 2.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Meters of water over which the surface fades in at the shore (no hard line)");
-	}
-	ImGuiWrapper::Property("Foam", water.FoamAmount, 0.0f, 1.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Foam along the shore and around objects standing in the water");
-	}
-	ImGuiWrapper::Property("Foam Width", water.FoamWidth, 0.01f, 3.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Meters of water depth that get foam");
-	}
-	ImGui::Columns(1);
-
-	ImGui::Separator();
-	ImGui::Text("Under the Water");
-	ImGui::Columns(2);
-	ImGuiWrapper::Property("Transparency", water.TransparencyFromBelow, 0.0f, 1.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The surface seen from under the water. 0 is physical: the sky shows only within Snell's window\n"
-			"(about 49 degrees around the vertical), outside it the surface mirrors the water below.\n"
-			"0.5: the window covers the whole sky (only grazing views are mirrored); 1: the mirror fades too.\n"
-			"How far you see through the water itself is its Clarity (Into the Water).");
-	}
-	ImGui::Columns(1);
-
-	ImGui::Separator();
-	ImGui::Text("Caustics");
-	ImGui::PushID("Caustics"); // the labels are the widget ids, and the waves have a Strength too
-	ImGui::Columns(2);
-	ImGuiWrapper::Property("Caustics", water.Caustics);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The waves bend the sun's light as it enters the water and focus it into moving bright lines\n"
-			"on what is under the water (computed from the waves themselves, around the camera)");
-	}
-	ImGui::BeginDisabled(!water.Caustics);
-	ImGuiWrapper::Property("Strength", water.CausticsStrength, 0.0f, 3.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("1: as the waves focus the light; more exaggerates the pattern, less fades it");
-	}
-	ImGuiWrapper::Property("Focus Depth", water.CausticsFocus, 0.01f, 0.1f, 20.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Meters under the surface where the pattern is computed: the deeper, the more the rays\n"
-			"have gathered (sharper, brighter lines). Shallower than this, the caustics fade in from the surface.");
-	}
-	ImGuiWrapper::Property("Area", water.CausticsArea, 0.5f, 2.0f, 500.0f, PropertyFlag::DragProperty);
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Meters: the square around the camera that gets caustics (they fade out at its edges).\n"
-			"Smaller: finer detail (the same map covers less water)");
-	}
-	ImGui::EndDisabled();
-	ImGui::Columns(1);
-	ImGui::PopID();
-
-	ImGui::Separator();
-	ImGui::Text("Reflection");
-	ImGui::Columns(2);
-	ImGuiWrapper::Property("Planar Reflection", water.PlanarReflection);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The scene reflected in the water (drawn a second time, from the camera mirrored in the water);\n"
-			"from under the water, the mirror the surface is outside Snell's window.\n"
-			"Off: only the environment map is reflected");
-	}
-	ImGui::Text("Resolution");
-	ImGui::NextColumn();
-	ImGui::PushItemWidth(-1);
-	const char* resolutions[] = { "Full", "Half", "Quarter" };
-	int resolution = water.ReflectionDivisor == 1 ? 0 : (water.ReflectionDivisor == 4 ? 2 : 1);
-	if (ImGui::Combo("##ReflectionResolution", &resolution, resolutions, IM_ARRAYSIZE(resolutions)))
-	{
-		water.ReflectionDivisor = resolution == 0 ? 1 : (resolution == 2 ? 4 : 2);
-	}
-	ImGui::PopItemWidth();
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Of the reflection image, relative to the viewport (the waves hide most of the difference)");
-	}
-	ImGui::NextColumn();
-	ImGuiWrapper::Property("Distortion", water.ReflectionDistortion, 0.0f, 3.0f, PropertyFlag::SliderProperty);
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("How much the waves bend the reflection");
-	}
-	ImGui::Columns(1);
-
-}
-
-static void OnImGuiRenderWater()
-{
-	ImGui::SetNextWindowSize(ImVec2(320.0f, 420.0f), ImGuiCond_FirstUseEver);
-	ImGui::Begin("Water");
-	// The panel edits s_WaterSettings (this frame's copy of the water entity) and writes it back at the end
-	EnvMapVulkanWaterSettings& water = s_WaterSettings;
-	const EnvMapVulkanWaterSettings before = s_WaterSettings;
-
-	if (!water.Enabled)
-	{
-		if (ImGui::Button("Add Water"))
-		{
-			// Under the center of the view, at the height of the ground plane
-			glm::vec3 target = GetLightSpawnTarget();
-			EnvMapVulkanWaterSettings settings = water;
-			settings.Center = glm::vec2(target.x, target.z);
-			CreateWaterEntity(settings);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("One water plane per scene: a rectangle with waves and reflections,\nmoved and resized with the gizmo when selected");
-		}
-		ImGui::TextDisabled("No water on the scene");
-		ImGui::End();
-		return;
-	}
-
-	if (ImGui::Button("Remove Water"))
-	{
-		RemoveWaterEntity();
-		ImGui::End();
-		return;
-	}
-	ImGui::SameLine();
-	ImGui::BeginDisabled(s_WaterSelected);
-	if (ImGui::Button("Select"))
-	{
-		SelectWater();
-	}
-	ImGui::EndDisabled();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Selects the water for the gizmo (or click it in the viewport):\n1 move (height and position), 3 resize");
-	}
-
-	WaterSettingsControls(water);
-
-	CommitWater(before);
-	ImGui::End();
-}
-
-// A mesh (a part of a model) that the gizmo and the Mesh Transform fields move on their own: a model with more than one
-// part, and not a rigged part of a skinned model (the skeleton places those, see GetMeshTransform)
-static bool CanManipulateMesh(EnvMapVulkanEntityID modelEntity, int meshIndex)
-{
-	H2M::RefH2M<H2M::ModelH2M> model = GetModel(modelEntity);
-	if (!model)
-	{
-		return false;
-	}
-	const auto& meshes = model->GetMeshes();
-	if (meshIndex < 0 || meshIndex >= (int)meshes.size() || meshes.size() < 2)
-	{
-		return false;
-	}
-	return !(model->IsSkinned() && meshes[meshIndex]->IsRigged);
-}
-
-// A Scale drag of a model's or a part's transform: the point and spot lights under the entity get their Range scaled by
-// the change's uniform scale, as with the gizmo (see ScaleChildLightRanges)
-static void ScaleDragScalingChildLights(const char* label, EnvMapVulkanEntityID entity, glm::vec3& scale)
-{
-	const glm::vec3 before = scale;
-	if (ImGui::DragFloat3(label, &scale.x, 0.01f, 0.001f, 1000.0f) && scale != before)
-	{
-		const float volumeBefore = std::abs(before.x * before.y * before.z);
-		if (volumeBefore > 0.0f)
-		{
-			ScaleChildLightRanges(entity, std::cbrt(std::abs(scale.x * scale.y * scale.z) / volumeBefore));
-			ExtractLights();
-		}
-	}
-}
-
-// A model's properties: its transform, the selected part's transform (when a part of it is selected), removing the model or
-// the part, the animation (skinned models) and the material slots of its parts. Used by the Models and Meshes panel and the
-// Properties panel.
-static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
-{
-	const int selectedMeshIndex = GetSelectedModel() == selectedModel ? GetSelectedMeshIndex() : -1;
-	H2M::RefH2M<H2M::ModelH2M> model = GetModel(selectedModel);
-	TransformComponent& entry = s_Scene.Get<TransformComponent>(selectedModel);
-
-	ImGui::Separator();
-	ImGui::Text("Transform");
-	ImGui::DragFloat3("Translation", &entry.Translation.x, 0.1f);
-	ImGui::DragFloat3("Rotation", &entry.Rotation.x, 1.0f);
-	ScaleDragScalingChildLights("Scale", selectedModel, entry.Scale);
-
-	// The selected part's place in the model (the viewport gizmo moves it too)
-	const EnvMapVulkanEntityID selectedPart = selectedMeshIndex >= 0 ? s_SelectedEntity : NoEntity;
-	if (selectedPart != NoEntity && selectedMeshIndex < (int)model->GetMeshes().size())
-	{
-		ImGui::Separator();
-		ImGui::Text("Mesh Transform: %s", s_Scene.Get<NameComponent>(selectedPart).Name.c_str());
-		if (CanManipulateMesh(selectedModel, selectedMeshIndex))
-		{
-			TransformComponent& partTransform = s_Scene.Get<TransformComponent>(selectedPart);
-			ImGui::DragFloat3("Translation##Mesh", &partTransform.Translation.x, 0.1f);
-			ImGui::DragFloat3("Rotation##Mesh", &partTransform.Rotation.x, 1.0f);
-			ScaleDragScalingChildLights("Scale##Mesh", selectedPart, partTransform.Scale);
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Relative to the model. Ctrl + click in the viewport selects the whole model");
-			}
-			if (ImGui::Button("Reset Mesh"))
-			{
-				SetPartMatrix(selectedPart, s_Scene.Get<MeshPartComponent>(selectedPart).OriginalTransform);
-			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Back to its place in the model file");
-			}
-		}
-		else
-		{
-			ImGui::TextDisabled(model->GetMeshes().size() < 2 ? "The model has a single mesh: the Transform above moves it"
-				: "A rigged mesh: the skeleton places it (the gizmo moves the whole model)");
-		}
-	}
-
-	if (ImGui::Button("Remove Model"))
-	{
-		s_PendingRemoveEntities.push_back(selectedModel); // removed at the start of the next frame (see Draw)
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Removes the whole model, with all its meshes");
-	}
-	ImGui::SameLine();
-	const bool canRemoveMesh = selectedPart != NoEntity && model->GetMeshes().size() > 1;
-	ImGui::BeginDisabled(!canRemoveMesh);
-	if (ImGui::Button("Remove Mesh"))
-	{
-		s_PendingRemoveEntities.push_back(selectedPart); // removed at the start of the next frame (see Draw)
-	}
-	ImGui::EndDisabled();
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip(canRemoveMesh ? "Removes only the selected mesh, a part of the model" :
-			model->GetMeshes().size() > 1 ? "Select a mesh (a part of the model) below or in the viewport" :
-			"The model has a single mesh: use Remove Model");
-	}
-
-	// Animation playback (skinned models), like the Animation section of the Mesh Debug panel in SceneHazelEnvMap
-	if (model->HasAnimations() && model->IsSkinned())
-	{
-		ImGui::Separator();
-		ImGui::Text("Animation");
-
-		ImGui::Checkbox("Animated", &model->IsAnimated());
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Off: the model is shown in its bind pose");
-		}
-
-		ImGui::BeginDisabled(!model->IsAnimated());
-		{
-			uint32_t animationCount = model->GetAnimationCount();
-			if (animationCount > 1)
-			{
-				if (ImGui::BeginCombo("Clip", model->GetAnimationName(model->GetAnimationIndex()).c_str()))
-				{
-					for (uint32_t a = 0; a < animationCount; a++)
-					{
-						ImGui::PushID((int)a);
-						if (ImGui::Selectable(model->GetAnimationName(a).c_str(), model->GetAnimationIndex() == a))
-						{
-							model->SetAnimationIndex(a);
-						}
-						ImGui::PopID();
-					}
-					ImGui::EndCombo();
-				}
-			}
-			else
-			{
-				ImGui::TextDisabled("Clip: %s", model->GetAnimationName(0).c_str());
-			}
-
-			if (ImGui::Button(model->AnimationPlaying() ? "Pause" : "Play", ImVec2(60.0f, 0.0f)))
-			{
-				model->AnimationPlaying() = !model->AnimationPlaying();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Restart"))
-			{
-				model->AnimationTime() = 0.0f;
-			}
-
-			// Scrub through the animation (in seconds; ModelH2M keeps the time in animation ticks)
-			float ticksPerSecond = model->GetAnimationTicksPerSecond();
-			float durationSeconds = model->GetAnimationDuration() / ticksPerSecond;
-			float timeSeconds = model->AnimationTime() / ticksPerSecond;
-			if (ImGui::SliderFloat("Time", &timeSeconds, 0.0f, durationSeconds, "%.2f s"))
-			{
-				model->AnimationTime() = timeSeconds * ticksPerSecond;
-			}
-			ImGui::DragFloat("Time Scale", &model->TimeMultiplier(), 0.01f, 0.0f, 10.0f, "%.2fx");
-			ImGui::TextDisabled("Duration %.2f s (%.0f ticks at %.0f/s), %u bones", durationSeconds, model->GetAnimationDuration(), ticksPerSecond, model->GetBoneCount());
-		}
-		ImGui::EndDisabled();
-	}
-
-	// Material slots, one per mesh: select a mesh to edit its material in the Material Editor. The dropdown, or a
-	// material dropped from the Material Library, chooses which library material the mesh is drawn with.
-	const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
-	const std::vector<EnvMapVulkanEntityID> parts = s_Scene.GetChildren(selectedModel); // a copy: the loop below doesn't change it
-
-	// Assigns a library material to a part; the Material Editor follows if that part is selected
-	auto assignMaterial = [&](EnvMapVulkanEntityID partEntity, H2M::RefH2M<EnvMapVulkanMaterial> material) {
-		s_Scene.Get<MeshPartComponent>(partEntity).Material = material; // drawn with it from the next frame
-		if (partEntity == s_SelectedEntity)
-		{
-			s_SelectedMaterial = material;
-		}
-	};
-	auto acceptMaterialDrop = [&](EnvMapVulkanEntityID s) {
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_MaterialPayload))
-			{
-				uint32_t index = *(const uint32_t*)payload->Data;
-				if (index < materials.size())
-				{
-					assignMaterial(s, materials[index]);
-				}
-			}
-			ImGui::EndDragDropTarget();
-		}
-	};
-
-	ImGui::Separator();
-	ImGui::Text("Meshes (%d)", (int)model->GetMeshes().size());
-
-	for (EnvMapVulkanEntityID s : parts)
-	{
-		MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(s);
-		if (!part)
-		{
-			continue;
-		}
-		ImGui::PushID((void*)(uintptr_t)s);
-
-		const std::string& meshName = s_Scene.Get<NameComponent>(s).Name;
-		if (ImGui::Selectable(meshName.c_str(), s_SelectedEntity == s, 0, ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0.0f)))
-		{
-			SelectOnly((s_SelectedEntity == s) ? selectedModel : s); // click again to deselect (back to the whole model)
-		}
-		acceptMaterialDrop(s);
-
-		ImGui::SameLine();
-		ImGui::SetNextItemWidth(-1.0f);
-		const H2M::RefH2M<EnvMapVulkanMaterial> partMaterial = part->Material ? part->Material : EnvMapVulkanMaterialLibrary::GetDefaultMaterial();
-		if (ImGui::BeginCombo("##material", partMaterial->GetName().c_str()))
-		{
-			for (uint32_t m = 0; m < (uint32_t)materials.size(); m++)
-			{
-				ImGui::PushID((int)m);
-				if (ImGui::Selectable(materials[m]->GetName().c_str(), partMaterial == materials[m]))
-				{
-					assignMaterial(s, materials[m]);
-				}
-				ImGui::PopID();
-			}
-			ImGui::EndCombo();
-		}
-		acceptMaterialDrop(s);
-
-		ImGui::PopID();
-	}
-
-	// The selected part's own material: a variant of the one it has, which it can then change without changing other meshes
-	if (s_Scene.GetParent(s_SelectedEntity) == selectedModel && s_Scene.Has<MeshPartComponent>(s_SelectedEntity))
-	{
-		const std::string& partName = s_Scene.Get<NameComponent>(s_SelectedEntity).Name;
-		if (ImGui::Button(("Make Unique: '" + partName + "'").c_str()))
-		{
-			MakePartMaterialUnique(s_SelectedEntity);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Gives this mesh a variant of its material: it looks the same and follows the material's changes,\n"
-				"but the properties you edit in the Material Editor apply to this mesh only");
-		}
-	}
-
-	if (s_SelectedMaterial)
-	{
-		std::string label = "Apply '" + s_SelectedMaterial->GetName() + "' to all meshes";
-		if (ImGui::Button(label.c_str()))
-		{
-			for (EnvMapVulkanEntityID partEntity : parts)
-			{
-				if (MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(partEntity))
-				{
-					part->Material = s_SelectedMaterial;
-				}
-			}
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("The material shown in the Material Editor");
-		}
-	}
-}
-
-static void OnImGuiRenderModelsAndMeshes()
-{
-	ImGui::SetNextWindowSize(ImVec2(420.0f, 320.0f), ImGuiCond_FirstUseEver);
-	ImGui::Begin("Models and Meshes");
-
-	if (ImGui::Button("Load Model"))
-	{
-		std::string filepath = FileDialogs::OpenFile();
-		if (!filepath.empty())
-		{
-			s_PendingModelFilename = filepath; // loaded at the start of the next frame (see Draw)
-		}
-	}
-	ImGui::SameLine();
-	ImGui::TextDisabled("or drop a model here (?)");
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Drag a model file from the Content Browser:\n"
-			"- anywhere on this panel: placed at the scene origin\n"
-			"- onto the viewport: placed standing on the ground under the cursor");
-	}
-
-	ImGui::Separator();
-
-	// The water: listed first (there is at most one). Not a model: no material slots (it has its own shaders, set in the
-	// Water panel) and only the transform it has (it is always level and axis-aligned: no rotation, no height scale).
-	if (s_WaterSettings.Enabled)
-	{
-		if (ImGui::Selectable("[Water]", s_WaterSelected))
-		{
-			SelectWater();
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("The scene's water plane (its look in the Water panel)");
-		}
-		if (s_WaterSelected)
-		{
-			const EnvMapVulkanWaterSettings before = s_WaterSettings;
-			ImGui::Separator();
-			ImGui::Text("Transform");
-			WaterTransformControls(s_WaterSettings);
-			CommitWater(before);
-			if (ImGui::Button("Remove Water"))
-			{
-				RemoveWaterEntity();
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Edit in Water Panel"))
-			{
-				ImGui::SetWindowFocus("Water");
-			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Waves, swell, color, caustics and reflection");
-			}
-		}
-		ImGui::Separator();
-	}
-
-	// Empty scene: a large box that says where models can be dropped
-	const std::vector<EnvMapVulkanEntityID> models = GetModels();
-	if (models.empty())
-	{
-		ImVec2 boxMin = ImGui::GetCursorScreenPos();
-		ImVec2 boxSize(ImGui::GetContentRegionAvail().x, glm::max(ImGui::GetContentRegionAvail().y, 80.0f));
-		ImVec2 boxMax(boxMin.x + boxSize.x, boxMin.y + boxSize.y);
-		ImDrawList* drawList = ImGui::GetWindowDrawList();
-		drawList->AddRect(boxMin, boxMax, ImGui::GetColorU32(ImGuiCol_TextDisabled), 6.0f, 0, 1.5f);
-
-		const char* hint = "Drop a model here\n(.obj, .fbx, .gltf, .glb, .dae...)";
-		ImVec2 textSize = ImGui::CalcTextSize(hint);
-		ImGui::SetCursorScreenPos(ImVec2(boxMin.x + (boxSize.x - textSize.x) * 0.5f, boxMin.y + (boxSize.y - textSize.y) * 0.5f));
-		ImGui::TextDisabled("%s", hint);
-		ImGui::SetCursorScreenPos(boxMin);
-		ImGui::Dummy(boxSize);
-	}
-
-	const EnvMapVulkanEntityID selectedModel = GetSelectedModel();
-	const int selectedMeshIndex = GetSelectedMeshIndex();
-	for (EnvMapVulkanEntityID modelEntity : models)
-	{
-		ImGui::PushID((void*)(uintptr_t)modelEntity);
-		const std::string& name = s_Scene.Get<NameComponent>(modelEntity).Name;
-		if (ImGui::Selectable(name.c_str(), selectedModel == modelEntity))
-		{
-			s_SelectedEntity = modelEntity;
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("%s", s_Scene.Get<ModelComponent>(modelEntity).FilePath.c_str());
-		}
-		ImGui::PopID();
-	}
-
-	if (selectedModel != NoEntity)
-	{
-		ModelPropertiesControls(selectedModel);
-	}
-
-	// The whole panel is a drop area for model files (loaded at the scene origin)
-	ImVec2 panelMin = ImGui::GetWindowPos();
-	ImVec2 panelMax(panelMin.x + ImGui::GetWindowSize().x, panelMin.y + ImGui::GetWindowSize().y);
-	if (ImGui::BeginDragDropTargetCustom(ImRect(panelMin, panelMax), ImGui::GetID("##ModelsAndMeshesPanelDropArea")))
-	{
-		std::string filepath;
-		if (AcceptFileDrop(panelMin, panelMax, IsModelFile, "a model file", filepath))
-		{
-			s_PendingModelFilename = filepath; // loaded at the start of the next frame (see Draw)
-			s_PendingModelGroundPosition.reset();
-		}
-		ImGui::EndDragDropTarget();
-	}
-
-	ImGui::End();
-}
-
-
-// ---- Scene files (.mscene, see EnvMapVulkanSceneSerializer.h) ----
-// The scene is saved with its materials (those with unsaved changes go to the Material Library's folder first, so the
-// scene can refer to their files) and the renderer's look settings (shadows, bloom). New and Open ask before unsaved
-// changes are lost. The engine starts with an empty scene and no materials: a scene brings the materials it uses.
-
-static std::string s_SceneFilePath;           // empty: never saved ("Untitled")
-static std::string s_SceneName = "Untitled";
-static std::string s_SavedSceneText;          // the scene as last saved, opened or created (unsaved changes: it differs)
-static bool s_SceneHasUnsavedChanges = false;
-
-// A scene operation requested from the File menu or a shortcut, carried out at the start of the next Draw (it replaces
-// models and materials the frame may be drawing); New and Open first ask about unsaved changes
-enum class SceneOperation { None, New, Open };
-static SceneOperation s_PendingSceneOperation = SceneOperation::None;
-static std::string s_PendingScenePath;
-static bool s_SceneOperationConfirmed = false; // the unsaved changes question was answered
-static bool s_AskAboutUnsavedChanges = false;  // opens the question (see OnImGuiRenderUnsavedChangesPopup)
-
-
-// ---- Scene Hierarchy and Properties panels ----
-// Scene Hierarchy: every entity of the scene in its tree (the environment, the sun, lights, the water, models with their
-// parts). Click selects (shared with the viewport); double-click or F2 renames; Delete or the context menu removes; drag an
-// entity onto another to make it its child (it keeps its place in the world), onto the empty area below the tree to move it
-// back to the top; drop a model file to load it, a material onto a part (or a model: all its parts) to assign it.
-// Properties: the selected entity's settings.
-
-enum class EntityKind { Other, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Model, Part };
-
-static EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
-{
-	if (s_Scene.Has<ModelComponent>(entity))       return EntityKind::Model;
-	if (s_Scene.Has<MeshPartComponent>(entity))    return EntityKind::Part;
-	if (s_Scene.Has<PointLightComponent>(entity))  return EntityKind::PointLight;
-	if (s_Scene.Has<SpotLightComponent>(entity))   return EntityKind::SpotLight;
-	if (s_Scene.Has<SunComponent>(entity))         return EntityKind::Sun;
-	if (s_Scene.Has<WaterComponent>(entity))       return EntityKind::Water;
-	if (s_Scene.Has<ProbeVolumeComponent>(entity)) return EntityKind::ProbeVolume;
-	if (s_Scene.Has<EnvironmentComponent>(entity)) return EntityKind::Environment;
-	if (s_Scene.Has<CameraComponent>(entity))      return EntityKind::Camera;
-	return EntityKind::Other;
-}
-
-static const char* GetEntityKindName(EntityKind kind)
-{
-	switch (kind)
-	{
-		case EntityKind::Environment: return "Environment";
-		case EntityKind::Sun:         return "Sun";
-		case EntityKind::Camera:      return "Camera";
-		case EntityKind::PointLight:  return "Point Light";
-		case EntityKind::SpotLight:   return "Spot Light";
-		case EntityKind::Water:       return "Water";
-		case EntityKind::ProbeVolume: return "Probe Volume";
-		case EntityKind::Model:       return "Model";
-		case EntityKind::Part:        return "Mesh (part of a model)";
-		default:                      return "Entity";
-	}
-}
-
-// The marker drawn in front of an entity's name in the hierarchy
-static ImU32 GetEntityKindColor(EntityKind kind)
-{
-	switch (kind)
-	{
-		case EntityKind::Environment: return IM_COL32(110, 200, 120, 255);
-		case EntityKind::Sun:         return IM_COL32(255, 210, 60, 255);
-		case EntityKind::Camera:      return IM_COL32(240, 120, 170, 255);
-		case EntityKind::PointLight:  return IM_COL32(255, 150, 60, 255);
-		case EntityKind::SpotLight:   return IM_COL32(90, 200, 255, 255);
-		case EntityKind::Water:       return IM_COL32(60, 120, 230, 255);
-		case EntityKind::ProbeVolume: return IM_COL32(190, 130, 255, 255);
-		case EntityKind::Model:       return IM_COL32(200, 200, 210, 255);
-		case EntityKind::Part:        return IM_COL32(140, 140, 150, 255);
-		default:                      return IM_COL32(128, 128, 128, 255);
-	}
-}
-
-// Entities that can be dragged under another entity, and the ones that can take children. A part stays in its model, the
-// environment, the sun and the water stay at the top (the water is always level: a parent could tilt it).
-static bool CanBeReparented(EntityKind kind)
-{
-	return kind == EntityKind::Model || kind == EntityKind::PointLight || kind == EntityKind::SpotLight;
-}
-
-static bool CanHaveChildren(EntityKind kind)
-{
-	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight;
-}
-
-static bool CanBeDeleted(EntityKind kind)
-{
-	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
-		kind == EntityKind::Water || kind == EntityKind::ProbeVolume;
-}
-
-// Removes an entity (and its children): a model or a part at the start of the next frame (its GPU resources may be in use),
-// a light or the water right away. A model's last mesh takes the model with it (see Draw).
-static void DeleteEntity(EnvMapVulkanEntityID entity)
-{
-	switch (GetEntityKind(entity))
-	{
-		case EntityKind::Model:
-		case EntityKind::Part:
-			s_PendingRemoveEntities.push_back(entity);
-			break;
-		case EntityKind::PointLight:
-		case EntityKind::SpotLight:
-			s_Scene.DestroyEntity(entity);
-			SyncSelection();
-			ExtractLights();
-			break;
-		case EntityKind::Water:
-			RemoveWaterEntity();
-			break;
-		case EntityKind::ProbeVolume:
-			RemoveProbeVolumeEntity();
-			break;
-		default:
-			break;
-	}
-}
-
-// New lights and the water go where the camera looks (see GetLightSpawnTarget), selected
-static void AddPointLightAtView()
-{
-	if (EnvMapVulkanPointLight* light = s_Lights.AddPointLight(GetLightSpawnTarget() + glm::vec3(0.0f, 1.5f, 0.0f), MaxShadowedPointLights))
-	{
-		light->Range = GetDefaultLightRange(light->Position);
-		s_SelectedEntity = CreatePointLightEntity(*light);
-	}
-	ExtractLights();
-}
-
-static void AddSpotLightAtView()
-{
-	if (EnvMapVulkanSpotLight* light = s_Lights.AddSpotLight(GetLightSpawnTarget() + glm::vec3(0.0f, 3.0f, 0.0f), MaxShadowedSpotLights))
-	{
-		light->Range = GetDefaultLightRange(light->Position);
-		s_SelectedEntity = CreateSpotLightEntity(*light);
-	}
-	ExtractLights();
-}
-
-static void AddWaterAtView()
-{
-	glm::vec3 target = GetLightSpawnTarget();
-	EnvMapVulkanWaterSettings settings;
-	settings.Center = glm::vec2(target.x, target.z);
-	CreateWaterEntity(settings);
-}
-
-// The probe volume goes around where the camera looks, standing on that point's height
-static void AddProbeVolumeAtView()
-{
-	EnvMapVulkanProbeVolumeSettings settings;
-	const glm::vec3 target = GetLightSpawnTarget();
-	settings.Center = target + glm::vec3(0.0f, settings.Size.y * 0.5f, 0.0f);
-	CreateProbeVolumeEntity(settings);
-}
-
-static const char* s_EntityPayload = "VULKAN_SCENE_ENTITY"; // drag & drop payload: an EnvMapVulkanEntityID
-static bool s_RevealSelection = false; // this frame: open the selected entity's parents in the tree and scroll to it
-static EnvMapVulkanEntityID s_RenamingEntity = NoEntity;   // the entity whose name is being edited in the hierarchy
-static char s_RenameBuffer[128] = {};
-
-static void StartRenaming(EnvMapVulkanEntityID entity)
-{
-	s_RenamingEntity = entity;
-	snprintf(s_RenameBuffer, sizeof(s_RenameBuffer), "%s", s_Scene.Get<NameComponent>(entity).Name.c_str());
-}
-
-// Copy and paste (Ctrl+C, Ctrl+V in the viewport and the Scene Hierarchy, or its context menu): Copy takes a snapshot of
-// the selected models, parts and point and spot lights, with everything under them, so a paste works after the originals
-// were changed or removed. Paste makes new entities from it, in place (where the originals were when copied), next to
-// the originals (under the same parent, right after them; at the top level when that parent is gone), and selects them.
-// A model is loaded again from its file (each model entity has its own, see ModelComponent), with the parts it had then:
-// their materials, their transforms (the meshes' exact matrices). A part copied without its model becomes a model of its
-// own, with only that mesh. The sun, the water and the environment are one per scene: not copied.
-struct ClipboardEntity
-{
-	struct Part
-	{
-		std::string Name;
-		MeshPartComponent Component;
-		TransformComponent Transform;
-		glm::mat4 MeshMatrix = glm::mat4(1.0f); // the mesh's matrix, as drawn
-		std::vector<ClipboardEntity> Children;
-	};
-
-	EntityKind Kind = EntityKind::Other;
-	std::string Name;
-	TransformComponent Local;               // a child's transform, relative to its parent
-	glm::mat4 World = glm::mat4(1.0f);      // a copied (top) entity's place: pasted there
-	EnvMapVulkanEntityID Source = NoEntity; // a copied (top) entity: pasted after it, under its parent
-	EnvMapVulkanEntityID SourceParent = NoEntity;
-	std::string ModelPath;
-	std::vector<Part> Parts;
-	PointLightComponent PointLight;
-	SpotLightComponent SpotLight;
-	std::vector<ClipboardEntity> Children;  // the models and lights under it
-};
-
-static std::vector<ClipboardEntity> s_Clipboard;
-static bool s_PendingPaste = false; // requested from the UI, pasted at the start of the next Draw (models are loaded)
-
-static bool CanBeCopied(EntityKind kind)
-{
-	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight;
-}
-
-static std::optional<ClipboardEntity> CopyEntity(EnvMapVulkanEntityID entity);
-
-// The models and lights under an entity (not its parts: a model's parts are copied with it)
-static void CopyChildren(EnvMapVulkanEntityID entity, std::vector<ClipboardEntity>& out)
-{
-	for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
-	{
-		if (!s_Scene.Has<MeshPartComponent>(child))
-		{
-			if (std::optional<ClipboardEntity> copy = CopyEntity(child))
-			{
-				out.push_back(std::move(*copy));
-			}
-		}
-	}
-}
-
-static ClipboardEntity::Part CopyPart(EnvMapVulkanEntityID partEntity, const H2M::RefH2M<H2M::ModelH2M>& model)
-{
-	ClipboardEntity::Part part;
-	part.Name = s_Scene.Get<NameComponent>(partEntity).Name;
-	part.Component = s_Scene.Get<MeshPartComponent>(partEntity);
-	part.Transform = s_Scene.Get<TransformComponent>(partEntity);
-	if (model && part.Component.MeshIndex < model->GetMeshes().size())
-	{
-		part.MeshMatrix = model->GetMeshes()[part.Component.MeshIndex]->Transform;
-	}
-	else
-	{
-		part.MeshMatrix = part.Transform.GetMatrix();
-	}
-	CopyChildren(partEntity, part.Children);
-	return part;
-}
-
-static std::optional<ClipboardEntity> CopyEntity(EnvMapVulkanEntityID entity)
-{
-	ClipboardEntity copy;
-	copy.Kind = GetEntityKind(entity);
-	copy.Name = s_Scene.Get<NameComponent>(entity).Name;
-	copy.Local = s_Scene.Get<TransformComponent>(entity);
-	copy.World = s_Scene.GetWorldTransform(entity);
-	copy.Source = entity;
-	copy.SourceParent = s_Scene.GetParent(entity);
-	switch (copy.Kind)
-	{
-		case EntityKind::Model:
-		{
-			copy.ModelPath = s_Scene.Get<ModelComponent>(entity).FilePath;
-			const H2M::RefH2M<H2M::ModelH2M> model = GetModel(entity);
-			for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
-			{
-				if (s_Scene.Has<MeshPartComponent>(child))
-				{
-					copy.Parts.push_back(CopyPart(child, model));
-				}
-			}
-			break;
-		}
-		case EntityKind::Part:
-		{
-			// A model of its own: the part's model's file and place, with only this part (its children are in its Part)
-			const EnvMapVulkanEntityID model = s_Scene.GetParent(entity);
-			copy.Kind = EntityKind::Model;
-			copy.ModelPath = s_Scene.Get<ModelComponent>(model).FilePath;
-			copy.Local = s_Scene.Get<TransformComponent>(model);
-			copy.World = s_Scene.GetWorldTransform(model);
-			copy.Source = model; // pasted after the model
-			copy.SourceParent = s_Scene.GetParent(model);
-			copy.Parts.push_back(CopyPart(entity, GetModel(model)));
-			return copy;
-		}
-		case EntityKind::PointLight:
-			copy.PointLight = s_Scene.Get<PointLightComponent>(entity);
-			break;
-		case EntityKind::SpotLight:
-			copy.SpotLight = s_Scene.Get<SpotLightComponent>(entity);
-			break;
-		default:
-			return std::nullopt;
-	}
-	CopyChildren(entity, copy.Children);
-	return copy;
-}
-
-// The selected entities that can be copied, each once: one under another selected one is copied with it
-static void CopySelection()
-{
-	const std::vector<EnvMapVulkanEntityID> selection = GetSelection();
-	std::vector<ClipboardEntity> clipboard;
-	for (EnvMapVulkanEntityID entity : selection)
-	{
-		if (!CanBeCopied(GetEntityKind(entity)))
-		{
-			continue;
-		}
-		bool underSelected = false;
-		for (EnvMapVulkanEntityID parent = s_Scene.GetParent(entity); parent != NoEntity; parent = s_Scene.GetParent(parent))
-		{
-			underSelected |= Contains(selection, parent);
-		}
-		if (!underSelected)
-		{
-			if (std::optional<ClipboardEntity> copy = CopyEntity(entity))
-			{
-				clipboard.push_back(std::move(*copy));
-			}
-		}
-	}
-	if (clipboard.empty())
-	{
-		Log::GetLogger()->warn("Copy: nothing to copy (models, meshes and point and spot lights can be copied)");
-		return;
-	}
-	s_Clipboard = std::move(clipboard);
-	Log::GetLogger()->info("Copied {0} entit{1} (Ctrl+V pastes)", s_Clipboard.size(), s_Clipboard.size() == 1 ? "y" : "ies");
-}
-
-// Lights over the limits aren't pasted (see EnvMapVulkanLightsGPU), and pasted ones cast shadows only while there are
-// shadow slots (as with Add)
-struct PasteLightCounts
-{
-	uint32_t Point = 0;
-	uint32_t PointShadowed = 0;
-	uint32_t Spot = 0;
-	uint32_t SpotShadowed = 0;
-};
-
-static EnvMapVulkanEntityID PasteEntity(const ClipboardEntity& copy, EnvMapVulkanEntityID parent, PasteLightCounts& lights);
-
-static void PasteChildren(const std::vector<ClipboardEntity>& children, EnvMapVulkanEntityID parent, PasteLightCounts& lights)
-{
-	for (const ClipboardEntity& child : children)
-	{
-		const EnvMapVulkanEntityID pasted = PasteEntity(child, parent, lights);
-		if (pasted != NoEntity)
-		{
-			s_Scene.Get<TransformComponent>(pasted) = child.Local;
-		}
-	}
-}
-
-static EnvMapVulkanEntityID PasteModel(const ClipboardEntity& copy, EnvMapVulkanEntityID parent, PasteLightCounts& lights)
-{
-	if (!std::filesystem::exists(copy.ModelPath) || !IsModelFile(copy.ModelPath))
-	{
-		Log::GetLogger()->error("Paste: model '{0}' was not found", copy.ModelPath);
-		return NoEntity;
-	}
-	H2M::RefH2M<H2M::ModelH2M> model = H2M::RefH2M<H2M::ModelH2M>::Create(copy.ModelPath);
-	if (!model || model->GetMeshes().empty())
-	{
-		Log::GetLogger()->error("Paste: model '{0}' could not be loaded", copy.ModelPath);
-		return NoEntity;
-	}
-	// Only the meshes of the copied parts (as AttachModel does for a loaded scene), from the last
-	const uint32_t meshCount = (uint32_t)model->GetMeshes().size();
-	std::set<uint32_t> kept;
-	for (const ClipboardEntity::Part& part : copy.Parts)
-	{
-		if (part.Component.SourceMeshIndex < meshCount)
-		{
-			kept.insert(part.Component.SourceMeshIndex);
-		}
-	}
-	if (kept.empty())
-	{
-		Log::GetLogger()->error("Paste: model '{0}' has none of the copied meshes any more", copy.ModelPath);
-		return NoEntity;
-	}
-	for (int m = (int)meshCount - 1; m >= 0; m--)
-	{
-		if (kept.find((uint32_t)m) == kept.end())
-		{
-			model->RemoveMesh((uint32_t)m);
-		}
-	}
-
-	const EnvMapVulkanEntityID entity = s_Scene.CreateEntity(copy.Name, parent);
-	ModelComponent& modelComponent = s_Scene.Add<ModelComponent>(entity);
-	modelComponent.FilePath = copy.ModelPath;
-	modelComponent.Model = model;
-	for (const ClipboardEntity::Part& part : copy.Parts)
-	{
-		if (kept.find(part.Component.SourceMeshIndex) == kept.end())
-		{
-			continue;
-		}
-		const EnvMapVulkanEntityID partEntity = s_Scene.CreateEntity(part.Name, entity);
-		MeshPartComponent& component = s_Scene.Add<MeshPartComponent>(partEntity);
-		component = part.Component;
-		component.MeshIndex = (uint32_t)std::distance(kept.begin(), kept.find(part.Component.SourceMeshIndex)); // among the kept meshes
-		// The mesh as it was: its exact matrix, and the transform it was written from (see ApplyPartTransforms)
-		model->GetMeshes()[component.MeshIndex]->Transform = part.MeshMatrix;
-		s_Scene.Get<TransformComponent>(partEntity) = part.Transform;
-		PasteChildren(part.Children, partEntity, lights);
-	}
-	return entity;
-}
-
-static EnvMapVulkanEntityID PasteEntity(const ClipboardEntity& copy, EnvMapVulkanEntityID parent, PasteLightCounts& lights)
-{
-	EnvMapVulkanEntityID entity = NoEntity;
-	switch (copy.Kind)
-	{
-		case EntityKind::Model:
-			entity = PasteModel(copy, parent, lights);
-			break;
-		case EntityKind::PointLight:
-		{
-			if (lights.Point >= EnvMapVulkanLightsGPU::MaxPointLights)
-			{
-				Log::GetLogger()->warn("Paste: point light '{0}' not pasted: the scene has the most point lights ({1})", copy.Name,
-					EnvMapVulkanLightsGPU::MaxPointLights);
-				return NoEntity;
-			}
-			entity = s_Scene.CreateEntity(copy.Name, parent);
-			PointLightComponent& light = s_Scene.Add<PointLightComponent>(entity);
-			light = copy.PointLight;
-			light.CastShadows = light.CastShadows && lights.PointShadowed < MaxShadowedPointLights;
-			lights.Point++;
-			lights.PointShadowed += light.CastShadows ? 1 : 0;
-			break;
-		}
-		case EntityKind::SpotLight:
-		{
-			if (lights.Spot >= EnvMapVulkanLightsGPU::MaxSpotLights)
-			{
-				Log::GetLogger()->warn("Paste: spot light '{0}' not pasted: the scene has the most spot lights ({1})", copy.Name,
-					EnvMapVulkanLightsGPU::MaxSpotLights);
-				return NoEntity;
-			}
-			entity = s_Scene.CreateEntity(copy.Name, parent);
-			SpotLightComponent& light = s_Scene.Add<SpotLightComponent>(entity);
-			light = copy.SpotLight;
-			light.CastShadows = light.CastShadows && lights.SpotShadowed < MaxShadowedSpotLights;
-			lights.Spot++;
-			lights.SpotShadowed += light.CastShadows ? 1 : 0;
-			break;
-		}
-		default:
-			return NoEntity;
-	}
-	if (entity != NoEntity)
-	{
-		PasteChildren(copy.Children, entity, lights);
-	}
-	return entity;
-}
-
-// Called at the start of a frame (see Draw)
-static void PasteClipboard()
-{
-	PasteLightCounts lights;
-	s_Scene.Each<PointLightComponent>([&](EnvMapVulkanEntityID, PointLightComponent& light) {
-		lights.Point++;
-		lights.PointShadowed += light.CastShadows ? 1 : 0;
-	});
-	s_Scene.Each<SpotLightComponent>([&](EnvMapVulkanEntityID, SpotLightComponent& light) {
-		lights.Spot++;
-		lights.SpotShadowed += light.CastShadows ? 1 : 0;
-	});
-
-	std::vector<EnvMapVulkanEntityID> pasted;
-	for (const ClipboardEntity& copy : s_Clipboard)
-	{
-		const EnvMapVulkanEntityID parent = s_Scene.Exists(copy.SourceParent) ? copy.SourceParent : NoEntity;
-		const EnvMapVulkanEntityID entity = PasteEntity(copy, parent, lights);
-		if (entity == NoEntity)
-		{
-			continue;
-		}
-		s_Scene.SetWorldTransform(entity, copy.World);
-		// Right after the original, when it is still there under the same parent
-		if (s_Scene.Exists(copy.Source) && s_Scene.GetParent(copy.Source) == parent)
-		{
-			const std::vector<EnvMapVulkanEntityID>& siblings = parent != NoEntity ? s_Scene.GetChildren(parent) : s_Scene.GetRoots();
-			const int index = (int)std::distance(siblings.begin(), std::find(siblings.begin(), siblings.end(), copy.Source));
-			s_Scene.SetParent(entity, parent, true, index + 1);
-		}
-		pasted.push_back(entity);
-	}
-	if (pasted.empty())
-	{
-		return;
-	}
-	s_Selection = pasted;
-	s_SelectedEntity = pasted.back();
-	s_SelectionAnchor = s_SelectedEntity;
-	ExtractLights();
-	Log::GetLogger()->info("Pasted {0} entit{1}", pasted.size(), pasted.size() == 1 ? "y" : "ies");
-}
-
-static void RequestPaste()
-{
-	if (!s_Clipboard.empty())
-	{
-		s_PendingPaste = true;
-	}
-}
-
-// Ctrl+C and Ctrl+V while the viewport or the Scene Hierarchy has the focus (once a frame; not while typing in a field)
-static void HandleCopyPasteKeys()
-{
-	static int s_HandledFrame = -1;
-	const ImGuiIO& io = ImGui::GetIO();
-	if (s_HandledFrame == ImGui::GetFrameCount() || io.WantTextInput || !io.KeyCtrl || s_RenamingEntity != NoEntity)
-	{
-		return;
-	}
-	if (ImGui::IsKeyPressed(ImGuiKey_C, false))
-	{
-		s_HandledFrame = ImGui::GetFrameCount();
-		CopySelection();
-	}
-	else if (ImGui::IsKeyPressed(ImGuiKey_V, false))
-	{
-		s_HandledFrame = ImGui::GetFrameCount();
-		RequestPaste();
-	}
-}
-
-// A material dropped onto a part (that part) or a model (all its parts). Dropped onto one of several selected entities,
-// it goes to all of them (every selected part, and every part of a selected model), and the selection stays.
-static void AssignMaterialToDropTarget(EnvMapVulkanEntityID target, H2M::RefH2M<EnvMapVulkanMaterial> material)
-{
-	const bool toSelection = IsSelected(target) && GetSelection().size() > 1;
-	const std::vector<EnvMapVulkanEntityID> targets = toSelection ? GetSelection() : std::vector<EnvMapVulkanEntityID>{ target };
-	for (EnvMapVulkanEntityID entity : targets)
-	{
-		if (MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(entity))
-		{
-			part->Material = material;
-		}
-		else if (s_Scene.Has<ModelComponent>(entity))
-		{
-			for (EnvMapVulkanEntityID child : s_Scene.GetChildren(entity))
-			{
-				if (MeshPartComponent* childPart = s_Scene.TryGet<MeshPartComponent>(child))
-				{
-					childPart->Material = material;
-				}
-			}
-		}
-	}
-	if (toSelection)
-	{
-		s_SelectedEntity = target;
-	}
-	else
-	{
-		SelectOnly(target);
-	}
-	s_SelectedMaterial = material;
-}
-
-// A material dropped onto a part (that part) or a model (all its parts)
-static void AcceptMaterialDropOnEntity(EnvMapVulkanEntityID entity)
-{
-	const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_MaterialPayload);
-	if (!payload)
-	{
-		return;
-	}
-	const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
-	uint32_t index = *(const uint32_t*)payload->Data;
-	if (index >= materials.size())
-	{
-		return;
-	}
-	if (!s_Scene.Has<MeshPartComponent>(entity) && !s_Scene.Has<ModelComponent>(entity))
-	{
-		return;
-	}
-	AssignMaterialToDropTarget(entity, materials[index]);
-}
-
-// Deletes every selected entity that can be deleted (the sun and the environment stay). Lights and the water go right
-// away, models and parts at the start of the next frame (see DeleteEntity).
-static void DeleteSelectedEntities()
-{
-	const std::vector<EnvMapVulkanEntityID> selection = GetSelection(); // a copy: deleting changes the selection
-	for (EnvMapVulkanEntityID entity : selection)
-	{
-		if (s_Scene.Exists(entity) && CanBeDeleted(GetEntityKind(entity)))
-		{
-			DeleteEntity(entity);
-		}
-	}
-}
-
-// What the tree asks for while it's drawn (applied after it, so the tree isn't changed while it's walked)
-struct HierarchyRequests
-{
-	bool DeleteSelection = false; // every selected entity that can be deleted
-	EnvMapVulkanEntityID Reparent = NoEntity;
-	EnvMapVulkanEntityID NewParent = NoEntity;
-};
-
-// The rows of the tree as drawn (open nodes only), top to bottom: last frame's, for Shift + click ranges, and this frame's
-static std::vector<EnvMapVulkanEntityID> s_HierarchyRows;
-static std::vector<EnvMapVulkanEntityID> s_HierarchyRowsDrawing;
-
-// Shift + click: the rows from the anchor (the last plain or Ctrl click) to the clicked one; Ctrl + Shift adds them
-static void SelectHierarchyRange(EnvMapVulkanEntityID entity, bool add)
-{
-	auto anchor = std::find(s_HierarchyRows.begin(), s_HierarchyRows.end(), s_SelectionAnchor);
-	auto clicked = std::find(s_HierarchyRows.begin(), s_HierarchyRows.end(), entity);
-	if (anchor == s_HierarchyRows.end() || clicked == s_HierarchyRows.end())
-	{
-		SelectOnly(entity); // no anchor (yet): the row alone
-		return;
-	}
-	const EnvMapVulkanEntityID keepAnchor = s_SelectionAnchor;
-	if (!add)
-	{
-		s_Selection.clear();
-	}
-	else
-	{
-		SyncSelection();
-	}
-	for (auto it = std::min(anchor, clicked); it <= std::max(anchor, clicked); ++it)
-	{
-		if (!Contains(s_Selection, *it))
-		{
-			s_Selection.push_back(*it);
-		}
-	}
-	s_SelectedEntity = entity;
-	s_SelectionAnchor = keepAnchor;
-}
-
-static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& requests)
-{
-	const EntityKind kind = GetEntityKind(entity);
-	const std::string& name = s_Scene.Get<NameComponent>(entity).Name;
-	const std::vector<EnvMapVulkanEntityID>& children = s_Scene.GetChildren(entity);
-	const bool selected = IsSelected(entity);
-	s_HierarchyRowsDrawing.push_back(entity);
-
-	ImGui::PushID((void*)(uintptr_t)entity);
-	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_FramePadding;
-	if (selected)
-	{
-		flags |= ImGuiTreeNodeFlags_Selected;
-	}
-	if (children.empty())
-	{
-		flags |= ImGuiTreeNodeFlags_Leaf;
-	}
-	if (kind != EntityKind::Model)
-	{
-		flags |= ImGuiTreeNodeFlags_DefaultOpen;
-	}
-	// Room for the marker in front of the name ("##" keeps the ID stable while the name changes)
-	const std::string label = "    " + (s_RenamingEntity == entity ? std::string() : name) + "##node";
-	if (s_RevealSelection && s_Scene.IsDescendantOf(s_SelectedEntity, entity))
-	{
-		ImGui::SetNextItemOpen(true); // a parent of the selection (e.g. a model whose part was clicked in the viewport)
-	}
-	const bool open = ImGui::TreeNodeEx(label.c_str(), flags);
-	if (s_RevealSelection && entity == s_SelectedEntity)
-	{
-		ImGui::SetScrollHereY(0.5f);
-	}
-	const ImVec2 itemMin = ImGui::GetItemRectMin();
-	const ImVec2 itemMax = ImGui::GetItemRectMax();
-
-	// Click: the entity alone; Ctrl + click adds or removes it; Shift + click selects the rows from the last clicked one
-	if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::IsItemToggledOpen())
-	{
-		const ImGuiIO& io = ImGui::GetIO();
-		if (io.KeyShift)
-		{
-			SelectHierarchyRange(entity, io.KeyCtrl);
-		}
-		else if (io.KeyCtrl)
-		{
-			ToggleSelected(entity);
-		}
-		else
-		{
-			SelectOnly(entity);
-		}
-	}
-	if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-	{
-		StartRenaming(entity);
-	}
-	if (ImGui::IsItemHovered())
-	{
-		if (const ModelComponent* model = s_Scene.TryGet<ModelComponent>(entity))
-		{
-			ImGui::SetTooltip("%s\n%s", GetEntityKindName(kind), model->FilePath.c_str());
-		}
-		else
-		{
-			ImGui::SetTooltip("%s", GetEntityKindName(kind));
-		}
-	}
-
-	// Drag the entity onto another to make it a child
-	if (CanBeReparented(kind) && ImGui::BeginDragDropSource())
-	{
-		ImGui::SetDragDropPayload(s_EntityPayload, &entity, sizeof(entity));
-		ImGui::Text("%s", name.c_str());
-		ImGui::EndDragDropSource();
-	}
-	if (ImGui::BeginDragDropTarget())
-	{
-		if (CanHaveChildren(kind))
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_EntityPayload))
-			{
-				requests.Reparent = *(const EnvMapVulkanEntityID*)payload->Data;
-				requests.NewParent = entity;
-			}
-		}
-		AcceptMaterialDropOnEntity(entity);
-		ImGui::EndDragDropTarget();
-	}
-
-	// Context menu
-	if (ImGui::BeginPopupContextItem("##context"))
-	{
-		// On a selected row the menu is for the whole selection (Delete); on another row, for that entity alone
-		if (!IsSelected(entity))
-		{
-			SelectOnly(entity);
-		}
-		else if (s_SelectedEntity != entity)
-		{
-			s_SelectedEntity = entity;
-		}
-		if (ImGui::MenuItem("Rename", "F2"))
-		{
-			StartRenaming(entity);
-		}
-		if (ImGui::MenuItem("Move to Top Level", nullptr, false, CanBeReparented(kind) && s_Scene.GetParent(entity) != NoEntity))
-		{
-			requests.Reparent = entity;
-			requests.NewParent = NoEntity;
-		}
-		ImGui::Separator();
-		if (ImGui::MenuItem("Copy", "Ctrl+C", false, CanBeCopied(kind) || GetSelection().size() > 1))
-		{
-			CopySelection();
-		}
-		if (ImGui::MenuItem("Paste", "Ctrl+V", false, !s_Clipboard.empty()))
-		{
-			RequestPaste();
-		}
-		ImGui::Separator();
-		const size_t selectedCount = GetSelection().size();
-		const std::string deleteLabel = selectedCount > 1 ? "Delete " + std::to_string(selectedCount) + " Selected" : std::string("Delete");
-		if (ImGui::MenuItem(deleteLabel.c_str(), "Delete", false, selectedCount > 1 || CanBeDeleted(kind)))
-		{
-			requests.DeleteSelection = true;
-		}
-		ImGui::EndPopup();
-	}
-
-	// The marker, and the name field while renaming
-	const float markerX = itemMin.x + ImGui::GetTreeNodeToLabelSpacing() + 5.0f;
-	const float centerY = (itemMin.y + itemMax.y) * 0.5f;
-	ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(markerX, centerY), 4.5f, GetEntityKindColor(kind));
-	if (s_RenamingEntity == entity)
-	{
-		ImGui::SameLine(markerX - ImGui::GetWindowPos().x + ImGui::GetScrollX() + 10.0f);
-		ImGui::SetNextItemWidth(-1.0f);
-		if (ImGui::IsWindowAppearing() || !ImGui::IsAnyItemActive())
-		{
-			ImGui::SetKeyboardFocusHere();
-		}
-		if (ImGui::InputText("##rename", s_RenameBuffer, sizeof(s_RenameBuffer), ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
-		{
-			if (s_RenameBuffer[0] != '\0')
-			{
-				s_Scene.Get<NameComponent>(entity).Name = s_RenameBuffer;
-			}
-			s_RenamingEntity = NoEntity;
-		}
-		else if (ImGui::IsKeyPressed(ImGuiKey_Escape) || (ImGui::IsItemDeactivated() && !ImGui::IsItemDeactivatedAfterEdit()))
-		{
-			s_RenamingEntity = NoEntity;
-		}
-		else if (ImGui::IsItemDeactivatedAfterEdit())
-		{
-			if (s_RenameBuffer[0] != '\0')
-			{
-				s_Scene.Get<NameComponent>(entity).Name = s_RenameBuffer; // clicking elsewhere applies the name too
-			}
-			s_RenamingEntity = NoEntity;
-		}
-	}
-
-	if (open)
-	{
-		for (EnvMapVulkanEntityID child : std::vector<EnvMapVulkanEntityID>(children)) // a copy: the tree isn't changed while it's drawn, but be safe
-		{
-			DrawHierarchyNode(child, requests);
-		}
-		ImGui::TreePop();
-	}
-	ImGui::PopID();
-}
-
-static void OnImGuiRenderSceneHierarchy()
-{
-	ImGui::SetNextWindowSize(ImVec2(320.0f, 360.0f), ImGuiCond_FirstUseEver);
-	ImGui::Begin("Scene Hierarchy");
-
-	// Add: a model file, a light, the water
-	if (ImGui::Button("Add..."))
-	{
-		ImGui::OpenPopup("##AddEntity");
-	}
-	if (ImGui::BeginPopup("##AddEntity"))
-	{
-		if (ImGui::MenuItem("Model..."))
-		{
-			std::string filepath = FileDialogs::OpenFile();
-			if (!filepath.empty())
-			{
-				s_PendingModelFilename = filepath; // loaded at the start of the next frame (see Draw)
-				s_PendingModelGroundPosition.reset();
-			}
-		}
-		if (ImGui::MenuItem("Point Light", nullptr, false, s_Lights.CanAddPointLight()))
-		{
-			AddPointLightAtView();
-		}
-		if (ImGui::MenuItem("Spot Light", nullptr, false, s_Lights.CanAddSpotLight()))
-		{
-			AddSpotLightAtView();
-		}
-		if (ImGui::MenuItem("Water", nullptr, false, s_WaterEntity == NoEntity))
-		{
-			AddWaterAtView();
-		}
-		if (ImGui::MenuItem("Probe Volume", nullptr, false, s_ProbeVolumeEntity == NoEntity))
-		{
-			AddProbeVolumeAtView();
-		}
-		ImGui::EndPopup();
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Load a model, add a point or spot light (up to %u each), the water or a probe volume (one each per scene).\n"
-			"Models can also be dropped here or onto the viewport from the Content Browser", EnvMapVulkanLightsGPU::MaxPointLights);
-	}
-	ImGui::SameLine();
-	ImGui::Checkbox("Light Icons", &s_ShowLightGizmos);
-	ImGui::TextDisabled("Scene: %s%s", s_SceneName.c_str(), s_SceneHasUnsavedChanges ? " *" : "");
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("%s%s", s_SceneFilePath.empty() ? "Not saved yet (File > Save Scene)" : s_SceneFilePath.c_str(),
-			s_SceneHasUnsavedChanges ? "\n* unsaved changes" : "");
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Light icons in the viewport (click one to select the light), and the selected light's range and cone");
-	}
-	ImGui::Separator();
-
-	// The tree; a new selection (from anywhere: the viewport, the Properties panel) is revealed in it
-	static EnvMapVulkanEntityID s_LastSelected = NoEntity;
-	s_RevealSelection = s_SelectedEntity != s_LastSelected && s_SelectedEntity != NoEntity;
-	s_LastSelected = s_SelectedEntity;
-	HierarchyRequests requests;
-	ImGui::BeginChild("##HierarchyTree", ImVec2(0.0f, 0.0f), ImGuiChildFlags_None);
-	SyncSelection();
-	s_HierarchyRowsDrawing.clear();
-	for (EnvMapVulkanEntityID root : std::vector<EnvMapVulkanEntityID>(s_Scene.GetRoots()))
-	{
-		DrawHierarchyNode(root, requests);
-	}
-	s_HierarchyRows.swap(s_HierarchyRowsDrawing);
-	// The empty area below the tree: drop an entity there to move it to the top level, a model file to load it
-	ImVec2 freeSize = ImGui::GetContentRegionAvail();
-	ImGui::InvisibleButton("##HierarchyFreeArea", ImVec2(std::max(freeSize.x, 1.0f), std::max(freeSize.y, 40.0f)));
-	if (ImGui::IsItemClicked(ImGuiMouseButton_Left) && !ImGui::GetIO().KeyCtrl && !ImGui::GetIO().KeyShift)
-	{
-		SelectOnly(NoEntity);
-	}
-	if (ImGui::BeginDragDropTarget())
-	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_EntityPayload))
-		{
-			requests.Reparent = *(const EnvMapVulkanEntityID*)payload->Data;
-			requests.NewParent = NoEntity;
-		}
-		std::string filepath;
-		if (AcceptFileDrop(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), IsModelFile, "a model file", filepath))
-		{
-			s_PendingModelFilename = filepath; // loaded at the start of the next frame (see Draw)
-			s_PendingModelGroundPosition.reset();
-		}
-		ImGui::EndDragDropTarget();
-	}
-	ImGui::EndChild();
-
-	// Keys, while the panel has the focus: F2 renames the selected (primary) entity, Delete removes the selected ones,
-	// Ctrl+C and Ctrl+V copy and paste them
-	if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
-	{
-		HandleCopyPasteKeys();
-	}
-	if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && s_RenamingEntity == NoEntity && s_Scene.Exists(s_SelectedEntity))
-	{
-		if (ImGui::IsKeyPressed(ImGuiKey_F2))
-		{
-			StartRenaming(s_SelectedEntity);
-		}
-		if (ImGui::IsKeyPressed(ImGuiKey_Delete))
-		{
-			requests.DeleteSelection = true;
-		}
-	}
-
-	// The requests, now that the tree is drawn
-	if (requests.Reparent != NoEntity)
-	{
-		if (!s_Scene.SetParent(requests.Reparent, requests.NewParent, true))
-		{
-			Log::GetLogger()->warn("'{0}' can't be moved under one of its own children", s_Scene.Get<NameComponent>(requests.Reparent).Name);
-		}
-		ExtractLights();
-	}
-	if (requests.DeleteSelection)
-	{
-		DeleteSelectedEntities();
-	}
-
-	ImGui::End();
-}
-
-static void OnImGuiRenderProperties()
-{
-	ImGui::SetNextWindowSize(ImVec2(360.0f, 520.0f), ImGuiCond_FirstUseEver);
-	ImGui::Begin("Properties");
-
-	const EnvMapVulkanEntityID entity = s_SelectedEntity;
-	if (!s_Scene.Exists(entity))
-	{
-		ImGui::TextDisabled("Select an entity in the Scene Hierarchy,\nor click it in the viewport");
-		ImGui::End();
-		return;
-	}
-	const EntityKind kind = GetEntityKind(entity);
-
-	// The name (point and spot lights have it with their settings below) and the kind
-	if (kind != EntityKind::PointLight && kind != EntityKind::SpotLight)
-	{
-		char buffer[128] = {};
-		snprintf(buffer, sizeof(buffer), "%s", s_Scene.Get<NameComponent>(entity).Name.c_str());
-		ImGui::SetNextItemWidth(-90.0f);
-		if (ImGui::InputText("##EntityName", buffer, sizeof(buffer)) && buffer[0] != '\0')
-		{
-			s_Scene.Get<NameComponent>(entity).Name = buffer;
-		}
-		ImGui::SameLine();
-	}
-	ImGui::TextDisabled("%s", GetEntityKindName(kind));
-	if (const size_t selectedCount = GetSelection().size(); selectedCount > 1)
-	{
-		ImGui::TextDisabled("%zu entities selected: these are the properties of the last one clicked.", selectedCount);
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("The gizmo moves all selected models, meshes and lights together, Delete removes them,\n"
-				"and a material dropped onto one of them goes to all of them");
-		}
-	}
-	ImGui::Separator();
-
-	switch (kind)
-	{
-		case EntityKind::Model:
-			ModelPropertiesControls(entity);
-			break;
-		case EntityKind::Part:
-			ModelPropertiesControls(s_Scene.GetParent(entity));
-			break;
-		case EntityKind::Sun:
-		case EntityKind::PointLight:
-		case EntityKind::SpotLight:
-			if (kind != EntityKind::Sun)
-			{
-				if (ImGui::Button("Delete Light"))
-				{
-					DeleteEntity(entity);
-					ImGui::End();
-					return;
-				}
-				ImGui::SameLine();
-			}
-			ImGui::Checkbox("Shadows Only", &s_ShowShadowsOnly);
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("The viewport shows only the selected light's shadow, whatever the other lights and the exposure:\n"
-					"white = lit, black = in shadow, dark gray = the light doesn't reach (out of range or cone, or facing away)");
-			}
-			LightPropertiesControls();
-			break;
-		case EntityKind::Water:
-		{
-			if (ImGui::Button("Remove Water"))
-			{
-				RemoveWaterEntity();
-				ImGui::End();
-				return;
-			}
-			const EnvMapVulkanWaterSettings before = s_WaterSettings;
-			WaterSettingsControls(s_WaterSettings);
-			CommitWater(before);
-			break;
-		}
-		case EntityKind::ProbeVolume:
-		{
-			if (ImGui::Button("Remove Probe Volume"))
-			{
-				RemoveProbeVolumeEntity();
-				ImGui::End();
-				return;
-			}
-			const EnvMapVulkanProbeVolumeSettings before = s_ProbeVolumeSettings;
-			ProbeVolumeControls(s_ProbeVolumeSettings);
-			CommitProbeVolume(before);
-			break;
-		}
-		case EntityKind::Environment:
-			EnvironmentControls();
-			break;
-		case EntityKind::Camera:
-		{
-			// Edited here, the camera follows in the next frame (see SyncCamera)
-			TransformComponent& transform = s_Scene.Get<TransformComponent>(entity);
-			ImGui::DragFloat3("Translation", &transform.Translation.x, 0.1f);
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Where the camera is. Flying it in the viewport changes these values too.");
-			}
-			ImGui::DragFloat2("Rotation", &transform.Rotation.x, 1.0f);
-			transform.Rotation.x = glm::clamp(transform.Rotation.x, -89.0f, 89.0f);
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Where the camera looks, in degrees.\n"
-					"X: up (positive) and down, -89 to 89.\n"
-					"Y: around the vertical axis: 0 looks along -Z, positive turns to the left.\n"
-					"The camera isn't rolled.");
-			}
-			ImGui::SliderFloat("Field of View", &s_Scene.Get<CameraComponent>(entity).FieldOfView, CameraComponent::MinFieldOfView,
-				CameraComponent::MaxFieldOfView, "%.0f deg", ImGuiSliderFlags_AlwaysClamp);
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("The angle the view spans from its bottom edge to its top edge.\n"
-					"Small: a telephoto lens. The view is flat, and things at different distances move almost together\n"
-					"when the camera moves.\n"
-					"Large: a wide-angle lens. Strong perspective: near things move much more than far ones, and shapes\n"
-					"stretch towards the edges. 45 to 60 is usual. Saved with the scene, and an unsaved change.");
-			}
-			ImGui::TextDisabled("Saved with the scene: an opened scene is seen from here.");
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Moving the camera alone doesn't count as an unsaved change: save the scene to keep the view.");
-			}
-			break;
-		}
-		default:
-			break;
-	}
-
-	ImGui::End();
-}
-
-static void WriteRenderSettings(YAML::Emitter& out)
-{
-	const EnvMapVulkanShadowSettings& shadows = s_ShadowSettings;
-	out << YAML::Key << "Shadows" << YAML::Value << YAML::BeginMap;
-	out << YAML::Key << "Distance" << YAML::Value << shadows.Distance;
-	out << YAML::Key << "Resolution" << YAML::Value << shadows.Resolution;
-	out << YAML::Key << "SplitLambda" << YAML::Value << shadows.SplitLambda;
-	out << YAML::Key << "Softness" << YAML::Value << shadows.Softness;
-	out << YAML::Key << "DepthBias" << YAML::Value << shadows.DepthBias;
-	out << YAML::Key << "SlopeBias" << YAML::Value << shadows.SlopeBias;
-	out << YAML::Key << "NormalBias" << YAML::Value << shadows.NormalBias;
-	out << YAML::EndMap;
-
-	const EnvMapVulkanLocalShadowSettings& local = s_LocalShadowSettings;
-	out << YAML::Key << "LocalShadows" << YAML::Value << YAML::BeginMap;
-	out << YAML::Key << "SpotResolution" << YAML::Value << local.SpotResolution;
-	out << YAML::Key << "PointResolution" << YAML::Value << local.PointResolution;
-	out << YAML::Key << "Softness" << YAML::Value << local.Softness;
-	out << YAML::Key << "DepthBias" << YAML::Value << local.DepthBias;
-	out << YAML::Key << "SlopeBias" << YAML::Value << local.SlopeBias;
-	out << YAML::Key << "NormalBias" << YAML::Value << local.NormalBias;
-	out << YAML::EndMap;
-
-	out << YAML::Key << "RayTracing" << YAML::Value << YAML::BeginMap;
-	out << YAML::Key << "Enabled" << YAML::Value << s_RayTracingEnabled;
-	out << YAML::EndMap;
-
-	const EnvMapVulkanReflectionSettings& reflections = s_ReflectionSettings;
-	out << YAML::Key << "Reflections" << YAML::Value << YAML::BeginMap;
-	out << YAML::Key << "Enabled" << YAML::Value << reflections.Enabled;
-	out << YAML::Key << "MaxRoughness" << YAML::Value << reflections.MaxRoughness;
-	out << YAML::Key << "Denoise" << YAML::Value << reflections.Denoise;
-	out << YAML::Key << "Temporal" << YAML::Value << reflections.Temporal;
-	out << YAML::Key << "HalfResolution" << YAML::Value << reflections.HalfResolution;
-	out << YAML::EndMap;
-
-	const EnvMapVulkanSSAOSettings& occlusion = s_SSAOSettings;
-	out << YAML::Key << "AmbientOcclusion" << YAML::Value << YAML::BeginMap;
-	out << YAML::Key << "Enabled" << YAML::Value << occlusion.Enabled;
-	out << YAML::Key << "Radius" << YAML::Value << occlusion.Radius;
-	out << YAML::Key << "Power" << YAML::Value << occlusion.Power;
-	out << YAML::Key << "Falloff" << YAML::Value << occlusion.Falloff;
-	out << YAML::Key << "Slices" << YAML::Value << occlusion.Slices;
-	out << YAML::Key << "Steps" << YAML::Value << occlusion.Steps;
-	out << YAML::Key << "Denoise" << YAML::Value << occlusion.Denoise;
-	out << YAML::Key << "Temporal" << YAML::Value << occlusion.Temporal;
-	out << YAML::Key << "HalfResolution" << YAML::Value << occlusion.HalfResolution;
-	out << YAML::Key << "RayTraced" << YAML::Value << occlusion.RayTraced;
-	out << YAML::Key << "Rays" << YAML::Value << occlusion.Rays;
-	out << YAML::EndMap;
-
-	const BloomSettingsVulkan& bloom = s_BloomSettings;
-	out << YAML::Key << "Bloom" << YAML::Value << YAML::BeginMap;
-	out << YAML::Key << "Enabled" << YAML::Value << bloom.Enabled;
-	out << YAML::Key << "Threshold" << YAML::Value << bloom.Threshold;
-	out << YAML::Key << "Knee" << YAML::Value << bloom.Knee;
-	out << YAML::Key << "UpsampleScale" << YAML::Value << bloom.UpsampleScale;
-	out << YAML::Key << "Intensity" << YAML::Value << bloom.Intensity;
-	out << YAML::Key << "DirtEnabled" << YAML::Value << bloom.DirtEnabled;
-	out << YAML::Key << "DirtIntensity" << YAML::Value << bloom.DirtIntensity;
-	out << YAML::EndMap;
-}
-
-template<typename T>
-static void ReadSetting(const YAML::Node& node, const char* key, T& value)
-{
-	if (node && node[key])
-	{
-		value = node[key].as<T>();
-	}
-}
-
-static void ReadRenderSettings(const YAML::Node& settings)
-{
-	if (!settings)
-	{
-		return;
-	}
-	// Shadow map resolutions are recreated at the start of the next Draw (the maps' descriptors may be in use)
-	if (YAML::Node shadows = settings["Shadows"])
-	{
-		EnvMapVulkanShadowSettings& s = s_ShadowSettings;
-		ReadSetting(shadows, "Distance", s.Distance);
-		ReadSetting(shadows, "SplitLambda", s.SplitLambda);
-		ReadSetting(shadows, "Softness", s.Softness);
-		ReadSetting(shadows, "DepthBias", s.DepthBias);
-		ReadSetting(shadows, "SlopeBias", s.SlopeBias);
-		ReadSetting(shadows, "NormalBias", s.NormalBias);
-		uint32_t resolution = s.Resolution;
-		ReadSetting(shadows, "Resolution", resolution);
-		s_PendingShadowResolution = resolution != s_ShadowMap.GetResolution() ? resolution : 0;
-	}
-	if (YAML::Node local = settings["LocalShadows"])
-	{
-		EnvMapVulkanLocalShadowSettings& s = s_LocalShadowSettings;
-		ReadSetting(local, "Softness", s.Softness);
-		ReadSetting(local, "DepthBias", s.DepthBias);
-		ReadSetting(local, "SlopeBias", s.SlopeBias);
-		ReadSetting(local, "NormalBias", s.NormalBias);
-		uint32_t spot = s.SpotResolution, point = s.PointResolution;
-		ReadSetting(local, "SpotResolution", spot);
-		ReadSetting(local, "PointResolution", point);
-		s_PendingLocalShadowResolutions = glm::uvec2(spot != s.SpotResolution ? spot : 0, point != s.PointResolution ? point : 0);
-	}
-	// A scene saved before ray tracing existed has it on (where the GPU can)
-	s_RayTracingEnabled = true;
-	if (YAML::Node rayTracing = settings["RayTracing"])
-	{
-		ReadSetting(rayTracing, "Enabled", s_RayTracingEnabled);
-	}
-	// The same for the ray-traced reflections
-	s_ReflectionSettings = EnvMapVulkanReflectionSettings();
-	if (YAML::Node reflections = settings["Reflections"])
-	{
-		EnvMapVulkanReflectionSettings& r = s_ReflectionSettings;
-		ReadSetting(reflections, "Enabled", r.Enabled);
-		ReadSetting(reflections, "MaxRoughness", r.MaxRoughness);
-		ReadSetting(reflections, "Denoise", r.Denoise);
-		ReadSetting(reflections, "Temporal", r.Temporal);
-		ReadSetting(reflections, "HalfResolution", r.HalfResolution);
-	}
-	// A scene saved before the ambient occlusion existed gets the defaults (the settings of the scene before don't stay)
-	s_SSAOSettings = EnvMapVulkanSSAOSettings();
-	if (YAML::Node occlusion = settings["AmbientOcclusion"])
-	{
-		EnvMapVulkanSSAOSettings& o = s_SSAOSettings;
-		ReadSetting(occlusion, "Enabled", o.Enabled);
-		ReadSetting(occlusion, "Radius", o.Radius);
-		ReadSetting(occlusion, "Power", o.Power);
-		ReadSetting(occlusion, "Falloff", o.Falloff);
-		ReadSetting(occlusion, "Slices", o.Slices);
-		ReadSetting(occlusion, "Steps", o.Steps);
-		ReadSetting(occlusion, "Denoise", o.Denoise);
-		ReadSetting(occlusion, "Temporal", o.Temporal);
-		ReadSetting(occlusion, "HalfResolution", o.HalfResolution);
-		ReadSetting(occlusion, "RayTraced", o.RayTraced);
-		ReadSetting(occlusion, "Rays", o.Rays);
-	}
-	if (YAML::Node bloom = settings["Bloom"])
-	{
-		BloomSettingsVulkan& b = s_BloomSettings;
-		ReadSetting(bloom, "Enabled", b.Enabled);
-		ReadSetting(bloom, "Threshold", b.Threshold);
-		ReadSetting(bloom, "Knee", b.Knee);
-		ReadSetting(bloom, "UpsampleScale", b.UpsampleScale);
-		ReadSetting(bloom, "Intensity", b.Intensity);
-		ReadSetting(bloom, "DirtEnabled", b.DirtEnabled);
-		ReadSetting(bloom, "DirtIntensity", b.DirtIntensity);
-	}
-}
-
-static std::string SerializeCurrentScene()
-{
-	return EnvMapVulkanSceneSerializer::Serialize(s_Scene, s_SceneName, WriteRenderSettings);
-}
-
-// The scene's text for telling whether it has unsaved changes: with the camera at the origin, so that looking around
-// isn't a change
-static std::string SerializeSceneForComparison()
-{
-	TransformComponent* cameraTransform = s_Scene.TryGet<TransformComponent>(s_Scene.FindFirst<CameraComponent>());
-	const TransformComponent kept = cameraTransform ? *cameraTransform : TransformComponent();
-	if (cameraTransform)
-	{
-		*cameraTransform = TransformComponent();
-	}
-	std::string text = SerializeCurrentScene();
-	if (cameraTransform)
-	{
-		*cameraTransform = kept;
-	}
-	return text;
-}
-
-// A short message over the bottom of the window that fades away by itself: what a command did when nothing else on the
-// screen shows it (saving a scene that had no changes left looks like nothing happened)
-static std::string s_NotificationText;
-static bool s_NotificationIsError = false;
-static double s_NotificationTime = -1000.0;     // ImGui's time when it appeared
-static const double NotificationSeconds = 3.0;  // an error stays twice as long
-static const double NotificationFadeSeconds = 0.6;
-
-static void ShowNotification(const std::string& text, bool isError = false)
-{
-	s_NotificationText = text;
-	s_NotificationIsError = isError;
-	s_NotificationTime = ImGui::GetTime();
-}
-
-static void OnImGuiRenderNotification()
-{
-	const double duration = s_NotificationIsError ? NotificationSeconds * 2.0 : NotificationSeconds;
-	const double age = ImGui::GetTime() - s_NotificationTime;
-	if (s_NotificationText.empty() || age >= duration)
-	{
-		return;
-	}
-	const float alpha = (float)glm::clamp((duration - age) / NotificationFadeSeconds, 0.0, 1.0);
-	const ImGuiViewport* viewport = ImGui::GetMainViewport();
-	ImGui::SetNextWindowPos(ImVec2(viewport->Pos.x + viewport->Size.x * 0.5f, viewport->Pos.y + viewport->Size.y - 48.0f), ImGuiCond_Always, ImVec2(0.5f, 1.0f));
-	ImGui::SetNextWindowViewport(viewport->ID);
-	ImGui::SetNextWindowBgAlpha(0.9f * alpha);
-	ImGui::PushStyleVar(ImGuiStyleVar_Alpha, alpha);
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(16.0f, 10.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 6.0f);
-	const ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_AlwaysAutoResize;
-	if (ImGui::Begin("##Notification", nullptr, flags))
-	{
-		ImGui::BringWindowToDisplayFront(ImGui::GetCurrentWindow());
-		ImGui::TextColored(s_NotificationIsError ? ImVec4(1.0f, 0.45f, 0.4f, 1.0f) : ImVec4(0.55f, 0.9f, 0.55f, 1.0f), "%s", s_NotificationText.c_str());
-	}
-	ImGui::End();
-	ImGui::PopStyleVar(3);
-}
-
-// The current scene's text becomes the "saved" state: no unsaved changes
-static void MarkSceneSaved()
-{
-	s_SavedSceneText = SerializeSceneForComparison();
-	s_SceneHasUnsavedChanges = false;
-}
-
-// Writes the scene file (its file name made by MakeFileName, with the .mscene extension); its materials with unsaved
-// changes are saved first, so the file refers to their saved files
-static bool SaveSceneTo(const std::string& requestedPath)
-{
-	std::filesystem::path path(requestedPath);
-	path.replace_filename(EnvMapVulkanMaterialLibrary::MakeFileName(path.stem().string(), "Scene") + EnvMapVulkanSceneSerializer::FileExtension);
-
-	// The parts' materials, and the parents of variants (a variant inherits from its parent's saved file when it is
-	// loaded), parents first: a variant's file refers to its parent's file
-	std::set<EnvMapVulkanMaterial*> visited;
-	bool materialsOk = true;
-	uint32_t savedCount = 0;
-	s_Scene.Each<MeshPartComponent>([&](EnvMapVulkanEntityID, MeshPartComponent& part) {
-		std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> chain;
-		for (H2M::RefH2M<EnvMapVulkanMaterial> material = part.Material; material && visited.insert(material.Raw()).second;
-			material = EnvMapVulkanMaterialLibrary::GetParent(material))
-		{
-			chain.push_back(material);
-		}
-		for (auto it = chain.rbegin(); it != chain.rend(); ++it)
-		{
-			if ((*it)->HasUnsavedChanges())
-			{
-				const bool ok = EnvMapVulkanMaterialLibrary::Save(*it);
-				materialsOk &= ok;
-				savedCount += ok ? 1 : 0;
-			}
-		}
-	});
-	if (!materialsOk)
-	{
-		Log::GetLogger()->warn("Scene: a material could not be saved; the scene refers to it by ID only (see above)");
-	}
-
-	s_SceneName = path.stem().string();
-	const std::string text = SerializeCurrentScene();
-	std::error_code error;
-	if (!path.parent_path().empty())
-	{
-		std::filesystem::create_directories(path.parent_path(), error);
-	}
-	std::ofstream file(path);
-	if (!file)
-	{
-		Log::GetLogger()->error("Scene could not be saved: '{0}' can't be written", path.string());
-		ShowNotification("Scene could not be saved: '" + path.string() + "' can't be written", true);
-		return false;
-	}
-	file << text;
-	file.close();
-
-	s_SceneFilePath = EnvMapVulkanSceneSerializer::ToStoredPath(path.string());
-	MarkSceneSaved();
-	Log::GetLogger()->info("Scene '{0}' saved to '{1}' ({2} entities, {3} material(s) saved with it)", s_SceneName, s_SceneFilePath,
-		s_Scene.GetEntityCount(), savedCount);
-	ShowNotification("Scene '" + s_SceneName + "' saved to " + s_SceneFilePath + (savedCount > 0 ? " (with " + std::to_string(savedCount) +
-		(savedCount == 1 ? " material)" : " materials)") : ""), !materialsOk);
-	return true;
-}
-
-static std::string GetScenesFolderForDialog()
-{
-	std::error_code error;
-	std::filesystem::create_directories(EnvMapVulkanSceneSerializer::ScenesFolder, error);
-	return std::filesystem::absolute(EnvMapVulkanSceneSerializer::ScenesFolder, error).u8string();
-}
-
-static void SaveSceneAs()
-{
-	std::string filepath = FileDialogs::SaveFile({ { "Scene", "mscene" } }, GetScenesFolderForDialog());
-	if (!filepath.empty())
-	{
-		SaveSceneTo(filepath);
-	}
-}
-
-static void SaveScene()
-{
-	if (s_SceneFilePath.empty())
-	{
-		SaveSceneAs();
-	}
-	else
-	{
-		SaveSceneTo(s_SceneFilePath);
-	}
-}
-
-// Everything of the current scene goes (the GPU idle first: its models may be in flight)
-static void ClearScene()
-{
-	vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
-	s_Scene.Clear();
-	s_SelectedEntity = NoEntity;
-	s_PendingRemoveEntities.clear();
-	s_RenamingEntity = NoEntity;
-	s_Probes.RequestReset(); // what the probes captured belongs to the scene that goes
-}
-
-// A model entity read from a scene file: its model is loaded, the meshes the scene removed are removed again, and each
-// part gets its mesh index, its original transform and its material (by ID; else from its file; else the model's own)
-static bool AttachModel(EnvMapVulkanEntityID entity, const std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanSceneSerializer::MaterialRef>& materialRefs)
-{
-	ModelComponent& component = s_Scene.Get<ModelComponent>(entity);
-	if (!std::filesystem::exists(component.FilePath) || !IsModelFile(component.FilePath))
-	{
-		Log::GetLogger()->error("Scene: model '{0}' was not found", component.FilePath);
-		return false;
-	}
-	H2M::RefH2M<H2M::ModelH2M> model = H2M::RefH2M<H2M::ModelH2M>::Create(component.FilePath);
-	if (!model || model->GetMeshes().empty())
-	{
-		Log::GetLogger()->error("Scene: model '{0}' could not be loaded", component.FilePath);
-		return false;
-	}
-	s_Scene.Get<ModelComponent>(entity).Model = model;
-
-	const uint32_t meshCount = (uint32_t)model->GetMeshes().size();
-	std::vector<glm::mat4> originalTransforms;
-	for (const auto& mesh : model->GetMeshes())
-	{
-		originalTransforms.push_back(mesh->Transform);
-	}
-	// The parts the scene has (one whose mesh the model file no longer has is dropped)
-	std::vector<EnvMapVulkanEntityID> parts;
-	for (EnvMapVulkanEntityID child : std::vector<EnvMapVulkanEntityID>(s_Scene.GetChildren(entity)))
-	{
-		if (const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(child))
-		{
-			if (part->SourceMeshIndex < meshCount)
-			{
-				parts.push_back(child);
-			}
-			else
-			{
-				Log::GetLogger()->warn("Scene: model '{0}' has no mesh {1} any more; part '{2}' dropped", component.FilePath, part->SourceMeshIndex,
-					s_Scene.Get<NameComponent>(child).Name);
-				s_Scene.DestroyEntity(child);
-			}
-		}
-	}
-	if (parts.empty())
-	{
-		// No parts in the file: one per mesh, as when the model is loaded
-		for (uint32_t m = 0; m < meshCount; m++)
-		{
-			const H2M::RefH2M<H2M::MeshH2M>& mesh = model->GetMeshes()[m];
-			std::string name = !mesh->MeshName.empty() ? mesh->MeshName : (!mesh->NodeName.empty() ? mesh->NodeName : "Mesh " + std::to_string(m));
-			EnvMapVulkanEntityID partEntity = s_Scene.CreateEntity(name, entity);
-			MeshPartComponent& part = s_Scene.Add<MeshPartComponent>(partEntity);
-			part.MeshIndex = part.SourceMeshIndex = m;
-			s_Scene.Get<TransformComponent>(partEntity).SetMatrix(mesh->Transform);
-			parts.push_back(partEntity);
-		}
-	}
-	std::set<uint32_t> kept;
-	for (EnvMapVulkanEntityID part : parts)
-	{
-		kept.insert(s_Scene.Get<MeshPartComponent>(part).SourceMeshIndex);
-	}
-	// The meshes removed in the scene (none of its parts uses them), from the last, so the indices before stay valid
-	if (!kept.empty())
-	{
-		for (int m = (int)meshCount - 1; m >= 0; m--)
-		{
-			if (kept.find((uint32_t)m) == kept.end())
-			{
-				model->RemoveMesh((uint32_t)m);
-			}
-		}
-	}
-
-	// The parts' materials: first those the scene refers to (in the library, or loaded from their files), then the
-	// model's own for the others. In this order, a saved edit of one of the model's materials is reused rather than
-	// imported again from the model next to it.
-	for (EnvMapVulkanEntityID partEntity : parts)
-	{
-		MeshPartComponent& part = s_Scene.Get<MeshPartComponent>(partEntity);
-		part.MeshIndex = (uint32_t)std::distance(kept.begin(), kept.find(part.SourceMeshIndex)); // its place among the kept meshes
-		part.OriginalTransform = originalTransforms[part.SourceMeshIndex];
-		part.AppliedTransform.SetMatrix(part.OriginalTransform); // the mesh keeps its exact matrix unless the part was moved
-		part.Material = H2M::RefH2M<EnvMapVulkanMaterial>();
-
-		auto ref = materialRefs.find(partEntity);
-		H2M::RefH2M<EnvMapVulkanMaterial> material;
-		if (ref != materialRefs.end())
-		{
-			material = EnvMapVulkanMaterialLibrary::FindByID(ref->second.ID);
-			if (!material && !ref->second.File.empty() && std::filesystem::exists(ref->second.File))
-			{
-				material = EnvMapVulkanMaterialLibrary::Load(ref->second.File);
-			}
-			if (!material)
-			{
-				Log::GetLogger()->warn("Scene: part '{0}': its material (ID {1}, '{2}') was not found; the model's own is used",
-					s_Scene.Get<NameComponent>(partEntity).Name, ref->second.ID, ref->second.File);
-			}
-		}
-		part.Material = material;
-	}
-	for (EnvMapVulkanEntityID partEntity : parts)
-	{
-		MeshPartComponent& part = s_Scene.Get<MeshPartComponent>(partEntity);
-		if (!part.Material)
-		{
-			part.Material = EnvMapVulkanMaterialLibrary::ImportModelMaterial(model, model->GetMeshes()[part.MeshIndex]->MaterialIndex);
-		}
-	}
-	return true;
-}
-
-static void NewSceneNow()
-{
-	ClearScene();
-	// The environment's settings back to their defaults (the map stays: loading it again would take a while)
-	const EnvironmentComponent defaults;
-	s_EnvMapRotation = defaults.Rotation;
-	s_Exposure = defaults.Exposure;
-	s_AutoExposureEnabled = defaults.AutoExposure;
-	s_TonemapHuePreservation = defaults.HuePreservation;
-	s_ExtractSunFromEnvironment = defaults.ExtractSun;
-	s_Data.SceneData.SkyboxLod = defaults.SkyboxLod;
-	CreateEnvironmentEntity();
-	CreateSunEntity();
-	EnsureCameraEntity(); // where the camera is now
-	s_PendingSunAlign = true; // the sun on the map's sun, as at startup
-	s_SceneFilePath.clear();
-	s_SceneName = "Untitled";
-	ExtractLights();
-	ExtractWater();
-	MarkSceneSaved();
-	Log::GetLogger()->info("New scene");
-}
-
-static bool OpenSceneNow(const std::string& filepath)
-{
-	// Read into a scratch scene first: a file that can't be read leaves the current scene as it is
-	{
-		EnvMapVulkanScene check;
-		std::string name, error;
-		YAML::Node settings;
-		std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanSceneSerializer::MaterialRef> refs;
-		if (!EnvMapVulkanSceneSerializer::Deserialize(filepath, check, name, settings, refs, error))
-		{
-			Log::GetLogger()->error("Scene '{0}' could not be opened: {1}", filepath, error);
-			return false;
-		}
-	}
-
-	ClearScene();
-	std::string name, error;
-	YAML::Node settings;
-	std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanSceneSerializer::MaterialRef> materialRefs;
-	EnvMapVulkanSceneSerializer::Deserialize(filepath, s_Scene, name, settings, materialRefs, error);
-
-	// The models (an entity whose model can't be loaded is removed, with its children)
-	std::vector<EnvMapVulkanEntityID> models;
-	s_Scene.Each<ModelComponent>([&](EnvMapVulkanEntityID entity, ModelComponent&) { models.push_back(entity); });
-	for (EnvMapVulkanEntityID entity : models)
-	{
-		if (s_Scene.Exists(entity) && !AttachModel(entity, materialRefs))
-		{
-			s_Scene.DestroyEntity(entity);
-		}
-	}
-
-	// A scene always has an environment and a sun
-	if (s_Scene.FindFirst<EnvironmentComponent>() == NoEntity)
-	{
-		CreateEnvironmentEntity();
-	}
-	if (s_Scene.FindFirst<SunComponent>() == NoEntity)
-	{
-		CreateSunEntity();
-	}
-	// And a camera: the scene's own puts the editor's camera where it was saved (see SyncCamera, which finds the entity's
-	// transform changed); a scene without one gets one where the camera is now
-	const bool hadCamera = s_Scene.FindFirst<CameraComponent>() != NoEntity;
-	EnsureCameraEntity();
-	if (hadCamera)
-	{
-		// Also when the saved placement happens to be the one last synced: taken as changed
-		s_CameraEntitySynced = true;
-		s_SyncedCameraTranslation = glm::vec3(std::numeric_limits<float>::max());
-	}
-	// The saved sun stays as it is: a map loaded for the scene doesn't turn it to the map's sun
-	const EnvironmentComponent& environment = s_Scene.Get<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
-	s_PendingSunAlign = false;
-	s_KeepSunOnNextEnvironmentLoad = !environment.FilePath.empty() && environment.FilePath != s_EnvMapFilename;
-
-	ReadRenderSettings(settings);
-	s_SceneName = name;
-	s_SceneFilePath = EnvMapVulkanSceneSerializer::ToStoredPath(filepath);
-	ExtractEnvironment();
-	ExtractLights();
-	ExtractWater();
-	ApplyPartTransforms();
-	MarkSceneSaved();
-	Log::GetLogger()->info("Scene '{0}' opened from '{1}': {2} entities", s_SceneName, s_SceneFilePath, s_Scene.GetEntityCount());
-	return true;
-}
-
-// New and Open, from the File menu or a shortcut (asks about unsaved changes first)
-static void RequestNewScene()
-{
-	s_PendingSceneOperation = SceneOperation::New;
-	s_SceneOperationConfirmed = !s_SceneHasUnsavedChanges;
-	s_AskAboutUnsavedChanges = s_SceneHasUnsavedChanges;
-}
-
-static void RequestOpenScene(const std::string& filepath = "")
-{
-	std::string path = filepath;
-	if (path.empty())
-	{
-		path = FileDialogs::OpenFile({ { "Scene", "mscene" } }, GetScenesFolderForDialog());
-	}
-	if (path.empty())
-	{
-		return;
-	}
-	s_PendingSceneOperation = SceneOperation::Open;
-	s_PendingScenePath = path;
-	s_SceneOperationConfirmed = !s_SceneHasUnsavedChanges;
-	s_AskAboutUnsavedChanges = s_SceneHasUnsavedChanges;
-}
-
-// The question before New or Open drops unsaved changes: Save (then go on), Don't Save, Cancel
-static void OnImGuiRenderUnsavedChangesPopup()
-{
-	if (s_AskAboutUnsavedChanges)
-	{
-		ImGui::OpenPopup("Unsaved Changes##Scene");
-		s_AskAboutUnsavedChanges = false;
-	}
-	if (ImGui::BeginPopupModal("Unsaved Changes##Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-	{
-		ImGui::Text("Save the changes to the scene '%s'?", s_SceneName.c_str());
-		ImGui::TextDisabled("They are lost otherwise.");
-		ImGui::Separator();
-		if (ImGui::Button("Save", ImVec2(110.0f, 0.0f)))
-		{
-			SaveScene();
-			s_SceneOperationConfirmed = !s_SceneHasUnsavedChanges; // a cancelled Save As keeps the scene
-			if (!s_SceneOperationConfirmed)
-			{
-				s_PendingSceneOperation = SceneOperation::None;
-			}
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Don't Save", ImVec2(110.0f, 0.0f)))
-		{
-			s_SceneOperationConfirmed = true;
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::SameLine();
-		if (ImGui::Button("Cancel", ImVec2(110.0f, 0.0f)) || ImGui::IsKeyPressed(ImGuiKey_Escape))
-		{
-			s_PendingSceneOperation = SceneOperation::None;
-			ImGui::CloseCurrentPopup();
-		}
-		ImGui::EndPopup();
-	}
-}
-
-// The File menu's shortcuts: Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S. Not while typing in a field, and not while a question
-// is open (a popup)
-static void HandleSceneShortcutKeys()
-{
-	const ImGuiIO& io = ImGui::GetIO();
-	if (!io.KeyCtrl || io.KeyAlt || io.WantTextInput || s_RenamingEntity != NoEntity ||
-		ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
-	{
-		return;
-	}
-	if (ImGui::IsKeyPressed(ImGuiKey_S, false))
-	{
-		if (io.KeyShift)
-		{
-			SaveSceneAs();
-		}
-		else
-		{
-			SaveScene();
-		}
-	}
-	else if (!io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_N, false))
-	{
-		RequestNewScene();
-	}
-	else if (!io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_O, false))
-	{
-		RequestOpenScene();
-	}
-}
-
-// The first entity of this name, in the Scene Hierarchy's order (NoEntity: none)
-static EnvMapVulkanEntityID FindEntityByName(const std::vector<EnvMapVulkanEntityID>& entities, const std::string& name)
-{
-	for (EnvMapVulkanEntityID entity : entities)
-	{
-		if (s_Scene.Get<NameComponent>(entity).Name == name)
-		{
-			return entity;
-		}
-		const EnvMapVulkanEntityID found = FindEntityByName(s_Scene.GetChildren(entity), name);
-		if (found != NoEntity)
-		{
-			return found;
-		}
-	}
-	return NoEntity;
-}
-
-// At the start of Draw: New / Open once confirmed
-static void ProcessSceneOperations()
-{
-	static bool s_StartupDone = false;
-	if (!s_StartupDone)
-	{
-		s_StartupDone = true;
-		MarkSceneSaved(); // the startup scene (environment and sun) has nothing to save yet
-		// --debug-view on the command line: the Environment panel's Debug View
-		s_DebugView = glm::clamp(Application::Get()->GetCommandLine().DebugView, 0, (int)DebugViewCount - 1);
-		if (DebugViewNeedsRayTracing(s_DebugView) && !EnvMapVulkanRayTracing::IsSupported())
-		{
-			Log::GetLogger()->warn("--debug-view {0} is a ray-traced view: not available without ray tracing", s_DebugView);
-			s_DebugView = DebugViewOff;
-		}
-		// --scene on the command line: opened like File > Open (without it the engine starts empty)
-		const std::string& startupScene = Application::Get()->GetCommandLine().ScenePath;
-		if (!startupScene.empty())
-		{
-			RequestOpenScene(startupScene);
-		}
-	}
-	if (s_PendingSceneOperation == SceneOperation::None || !s_SceneOperationConfirmed)
-	{
-		return;
-	}
-	const SceneOperation operation = s_PendingSceneOperation;
-	s_PendingSceneOperation = SceneOperation::None;
-	s_SceneOperationConfirmed = false;
-	if (operation == SceneOperation::New)
-	{
-		NewSceneNow();
-	}
-	else
-	{
-		OpenSceneNow(s_PendingScenePath);
-		// --select on the command line: an entity of the startup scene
-		static bool s_StartupSelectionDone = false;
-		const std::string& selectName = Application::Get()->GetCommandLine().SelectName;
-		if (!s_StartupSelectionDone && !selectName.empty())
-		{
-			s_StartupSelectionDone = true;
-			const EnvMapVulkanEntityID entity = FindEntityByName(s_Scene.GetRoots(), selectName);
-			if (entity != NoEntity)
-			{
-				SelectOnly(entity);
-			}
-			else
-			{
-				Log::GetLogger()->warn("--select: the scene has no entity named '{0}'", selectName);
-			}
-		}
-	}
-}
-
-// Unsaved changes: the scene's text compared with the saved one, a few times a second
-static void UpdateSceneUnsavedChanges()
-{
-	static double s_LastCheck = -1.0;
-	const double now = ImGui::GetTime();
-	if (now - s_LastCheck < 0.3)
-	{
-		return;
-	}
-	s_LastCheck = now;
-	s_SceneHasUnsavedChanges = SerializeSceneForComparison() != s_SavedSceneText;
-}
-
-void EnvMapVulkanRenderer::NewScene()
-{
-	RequestNewScene();
-}
-
-void EnvMapVulkanRenderer::OpenScene()
-{
-	RequestOpenScene();
-}
-
-void EnvMapVulkanRenderer::SaveScene()
-{
-	::SaveScene();
-}
-
-void EnvMapVulkanRenderer::SaveSceneAs()
-{
-	::SaveSceneAs();
-}
-
-// All materials of the scene: create, duplicate, delete, and drag onto a mesh (Models and Meshes panel or viewport) to assign
-static void OnImGuiRenderMaterialLibrary()
-{
-	ImGui::Begin("Material Library");
-
-	SyncSelectedMaterial();
-
-	// Renaming in place (double-click, F2, the Rename button or the context menu): the row turns into a text field.
-	// Enter or clicking elsewhere applies the name, Escape cancels.
-	static EnvMapVulkanMaterial* s_RenamingMaterial = nullptr;
-	static bool s_RenameNeedsFocus = false;
-	static char s_RenameBuffer[128] = "";
-	auto startRename = [](const H2M::RefH2M<EnvMapVulkanMaterial>& material) {
-		s_RenamingMaterial = const_cast<EnvMapVulkanMaterial*>(material.Raw());
-		s_RenameNeedsFocus = true;
-		snprintf(s_RenameBuffer, sizeof(s_RenameBuffer), "%s", material->GetName().c_str());
-	};
-
-	// Duplicating adds to the material list, so a request from a row is carried out after the list is drawn
-	H2M::RefH2M<EnvMapVulkanMaterial> duplicateRequest = H2M::RefH2M<EnvMapVulkanMaterial>();
-	H2M::RefH2M<EnvMapVulkanMaterial> variantRequest = H2M::RefH2M<EnvMapVulkanMaterial>();
-
-	if (ImGui::Button("New Material"))
-	{
-		s_SelectedMaterial = EnvMapVulkanMaterialLibrary::CreateMaterial();
-		startRename(s_SelectedMaterial); // a new material usually gets a name right away
-	}
-	ImGui::SameLine();
-	ImGui::BeginDisabled(!s_SelectedMaterial);
-	if (ImGui::Button("Rename"))
-	{
-		startRename(s_SelectedMaterial);
-	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Rename the selected material (or double-click it, or press F2)");
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Duplicate"))
-	{
-		duplicateRequest = s_SelectedMaterial;
-	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("An independent copy of the selected material, with the same values and maps");
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Delete"))
-	{
-		s_PendingDeleteMaterial = s_SelectedMaterial; // deleted at the start of the next frame (see Draw)
-	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Meshes that use the selected material get the Default material");
-	}
-	ImGui::EndDisabled();
-
-	// Material files (.mmat): one file per material. The result of a save shows below the buttons for a few seconds.
-	static std::string s_SaveStatus;
-	static double s_SaveStatusTime = -100.0;
-	auto setStatus = [](const std::string& status) {
-		s_SaveStatus = status;
-		s_SaveStatusTime = ImGui::GetTime();
-	};
-	auto saveOne = [&setStatus](H2M::RefH2M<EnvMapVulkanMaterial> material, const std::string& filepath) {
-		if (EnvMapVulkanMaterialLibrary::Save(material, filepath))
-		{
-			setStatus("Saved '" + material->GetName() + "' to " + material->GetFilePath());
-		}
-		else
-		{
-			setStatus("'" + material->GetName() + "' could not be saved (see the log)");
-		}
-	};
-	ImGui::BeginDisabled(!s_SelectedMaterial);
-	if (ImGui::Button("Save"))
-	{
-		saveOne(s_SelectedMaterial, "");
-	}
-	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-	{
-		ImGui::SetTooltip("Saves the selected material to its file, or (never saved) to %s/<name>%s\n"
-			"(file names have no spaces: \"My Material\" is saved as My_Material%s)",
-			EnvMapVulkanMaterialLibrary::MaterialsFolder, EnvMapVulkanMaterialLibrary::FileExtension, EnvMapVulkanMaterialLibrary::FileExtension);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Save As..."))
-	{
-		std::string filepath = FileDialogs::SaveFile({ { "Material", "mmat" } });
-		if (!filepath.empty())
-		{
-			saveOne(s_SelectedMaterial, filepath);
-		}
-	}
-	ImGui::EndDisabled();
-	ImGui::SameLine();
-	if (ImGui::Button("Save All"))
-	{
-		uint32_t saved = 0, failed = 0;
-		for (const auto& material : EnvMapVulkanMaterialLibrary::GetMaterials())
-		{
-			if (material->HasUnsavedChanges())
-			{
-				EnvMapVulkanMaterialLibrary::Save(material) ? saved++ : failed++;
-			}
-		}
-		Log::GetLogger()->info("Save All: {0} material(s) saved, {1} failed", saved, failed);
-		if (saved == 0 && failed == 0)
-		{
-			setStatus("All materials are already saved (nothing marked *)");
-		}
-		else
-		{
-			setStatus("Saved " + std::to_string(saved) + " material" + (saved == 1 ? "" : "s") + " (one file each)" +
-				(failed > 0 ? ", " + std::to_string(failed) + " could not be saved (see the log)" : ""));
-		}
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Saves every material with unsaved changes (marked *), each to its own file;\n"
-			"one never saved goes to %s", EnvMapVulkanMaterialLibrary::MaterialsFolder);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Load..."))
-	{
-		std::string filepath = FileDialogs::OpenFile({ { "Material", "mmat" } });
-		if (!filepath.empty())
-		{
-			s_PendingMaterialFiles.push_back(filepath); // loaded at the start of the next frame (see Draw)
-		}
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Loads a material file (or drop .mmat files onto this panel). A file of a material already in the\n"
-			"library (the same ID) reloads it; the others are added. Saved materials are in %s.", EnvMapVulkanMaterialLibrary::MaterialsFolder);
-	}
-
-	if (ImGui::GetTime() - s_SaveStatusTime < 5.0)
-	{
-		ImGui::TextDisabled("%s", s_SaveStatus.c_str());
-	}
-
-	static char s_Filter[64] = "";
-	ImGui::SetNextItemWidth(-1.0f);
-	ImGui::InputTextWithHint("##filter", "Filter by name", s_Filter, sizeof(s_Filter));
-
-	ImGui::Separator();
-
-	std::string filter = s_Filter;
-	std::transform(filter.begin(), filter.end(), filter.begin(), [](unsigned char c) { return (char)std::tolower(c); });
-
-	const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
-	if (materials.empty())
-	{
-		ImGui::TextDisabled("No materials. Load a model or click New Material.");
-	}
-
-	const float countColumnWidth = ImGui::CalcTextSize("000 uses").x;
-	for (uint32_t m = 0; m < (uint32_t)materials.size(); m++)
-	{
-		const H2M::RefH2M<EnvMapVulkanMaterial>& material = materials[m];
-
-		std::string lowerName = material->GetName();
-		std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), [](unsigned char c) { return (char)std::tolower(c); });
-		if (!filter.empty() && lowerName.find(filter) == std::string::npos)
-		{
-			continue;
-		}
-
-		ImGui::PushID((int)m);
-		ImVec2 rowSize(ImGui::GetContentRegionAvail().x - countColumnWidth, 0.0f);
-
-		if (s_RenamingMaterial == material.Raw())
-		{
-			ImGui::SetNextItemWidth(rowSize.x);
-			if (s_RenameNeedsFocus)
-			{
-				ImGui::SetKeyboardFocusHere();
-				s_RenameNeedsFocus = false;
-			}
-			bool entered = ImGui::InputText("##rename", s_RenameBuffer, sizeof(s_RenameBuffer),
-				ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll);
-			if (entered || (ImGui::IsItemDeactivated() && !ImGui::IsKeyPressed(ImGuiKey_Escape)))
-			{
-				EnvMapVulkanMaterialLibrary::Rename(material, s_RenameBuffer);
-				s_RenamingMaterial = nullptr;
-			}
-			else if (ImGui::IsItemDeactivated())
-			{
-				s_RenamingMaterial = nullptr; // Escape: keep the old name
-			}
-		}
-		else if (ImGui::Selectable((material->GetName() + (material->HasUnsavedChanges() ? " *" : "") + "##material").c_str(),
-			s_SelectedMaterial == material, ImGuiSelectableFlags_AllowDoubleClick, rowSize))
-		{
-			s_SelectedMaterial = material;
-			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-			{
-				startRename(material);
-			}
-		}
-
-		if (ImGui::BeginPopupContextItem("##materialContextMenu"))
-		{
-			s_SelectedMaterial = material;
-			if (ImGui::MenuItem("Rename", "F2"))
-			{
-				startRename(material);
-			}
-			if (ImGui::MenuItem("Duplicate"))
-			{
-				duplicateRequest = material;
-			}
-			if (ImGui::MenuItem("Create Variant"))
-			{
-				variantRequest = material;
-			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("A new material that inherits everything from this one (including later changes)\n"
-					"until you override some of its properties in the Material Editor");
-			}
-			if (ImGui::MenuItem("Delete"))
-			{
-				s_PendingDeleteMaterial = material; // deleted at the start of the next frame (see Draw)
-			}
-			ImGui::EndPopup();
-		}
-
-		if (s_RenamingMaterial != material.Raw() && ImGui::BeginDragDropSource())
-		{
-			ImGui::SetDragDropPayload(s_MaterialPayload, &m, sizeof(uint32_t));
-			ImGui::Text("%s", material->GetName().c_str());
-			ImGui::EndDragDropSource();
-		}
-		if (ImGui::IsItemHovered())
-		{
-			std::string origin = material->GetSourceFile().empty() ? "Created in the editor" : "Imported from " + material->GetSourceFile();
-			if (material->IsVariant())
-			{
-				H2M::RefH2M<EnvMapVulkanMaterial> parent = EnvMapVulkanMaterialLibrary::GetParent(material);
-				origin = "Variant of " + (parent ? "'" + parent->GetName() + "'" : std::string("a material that isn't loaded")) +
-					", " + std::to_string(material->GetOverrideCount()) + " overridden properties";
-			}
-			std::string file = material->GetFilePath().empty() ? "Not saved yet (*)" :
-				"File: " + material->GetFilePath() + (material->HasUnsavedChanges() ? " (unsaved changes *)" : "");
-			ImGui::SetTooltip("%s\n%s\nDrag onto a mesh in the Scene Hierarchy, the Properties panel or the viewport to assign it",
-				origin.c_str(), file.c_str());
-		}
-
-		int users = CountMaterialUsers(material);
-		ImGui::SameLine();
-		if (users > 0)
-		{
-			ImGui::TextDisabled("%d %s", users, users == 1 ? "use" : "uses");
-		}
-		else
-		{
-			ImGui::TextDisabled("unused");
-		}
-		ImGui::PopID();
-	}
-
-	// F2 renames the selected material while this panel has focus (and no text field is being edited)
-	if (s_SelectedMaterial && !s_RenamingMaterial && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
-		!ImGui::IsAnyItemActive() && ImGui::IsKeyPressed(ImGuiKey_F2, false))
-	{
-		startRename(s_SelectedMaterial);
-	}
-
-	if (duplicateRequest)
-	{
-		s_SelectedMaterial = EnvMapVulkanMaterialLibrary::Duplicate(duplicateRequest);
-	}
-	if (variantRequest)
-	{
-		s_SelectedMaterial = EnvMapVulkanMaterialLibrary::CreateVariant(variantRequest);
-	}
-
-	// The whole panel is a drop area for material files
-	ImVec2 panelMin = ImGui::GetWindowPos();
-	ImVec2 panelMax(panelMin.x + ImGui::GetWindowSize().x, panelMin.y + ImGui::GetWindowSize().y);
-	if (ImGui::BeginDragDropTargetCustom(ImRect(panelMin, panelMax), ImGui::GetID("##MaterialLibraryDropArea")))
-	{
-		std::string filepath;
-		if (AcceptFileDrop(panelMin, panelMax, IsMaterialFile, "a material file (.mmat)", filepath))
-		{
-			s_PendingMaterialFiles.push_back(filepath); // loaded at the start of the next frame (see Draw)
-		}
-		ImGui::EndDragDropTarget();
-	}
-
-	ImGui::End();
-}
-
-// Edits the selected library material in place: every mesh drawn with it changes (values are push constants of every
-// draw; maps are written to the material's descriptor set at the start of the next frame)
-static void OnImGuiRenderMaterialEditor()
-{
-	ImGui::Begin("Material Editor");
-
-	SyncSelectedMaterial();
-
-	H2M::RefH2M<EnvMapVulkanMaterial> material = s_SelectedMaterial;
-	if (!material)
-	{
-		ImGui::TextDisabled("Select a material in the Material Library,\nor a mesh in the Scene Hierarchy or the viewport");
-		ImGui::End();
-		return;
-	}
-
-	// Name (renamed when editing ends; names stay unique in the library)
-	static char s_NameBuffer[128] = "";
-	static EnvMapVulkanMaterial* s_NameBufferMaterial = nullptr;
-	if (s_NameBufferMaterial != material.Raw() || !ImGui::IsAnyItemActive())
-	{
-		snprintf(s_NameBuffer, sizeof(s_NameBuffer), "%s", material->GetName().c_str());
-		s_NameBufferMaterial = material.Raw();
-	}
-	ImGui::InputText("Name", s_NameBuffer, sizeof(s_NameBuffer));
-	if (ImGui::IsItemDeactivatedAfterEdit())
-	{
-		EnvMapVulkanMaterialLibrary::Rename(material, s_NameBuffer);
-	}
-
-	int users = CountMaterialUsers(material);
-	if (users > 1)
-	{
-		ImGui::TextDisabled("Used by %d meshes: changes apply to all of them.", users);
-	}
-	else if (users == 0)
-	{
-		ImGui::TextDisabled("Not used by any mesh.");
-	}
-
-	// The selected mesh's own material: a variant of this one (see MakePartMaterialUnique)
-	const MeshPartComponent* selectedPart = s_Scene.TryGet<MeshPartComponent>(s_SelectedEntity);
-	if (selectedPart && selectedPart->Material == material)
-	{
-		if (ImGui::Button("Make Unique"))
-		{
-			MakePartMaterialUnique(s_SelectedEntity);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Gives the selected mesh ('%s') a variant of this material: it looks the same and follows this\n"
-				"material's changes, but the properties you edit then apply to that mesh only",
-				s_Scene.Get<NameComponent>(s_SelectedEntity).Name.c_str());
-		}
-	}
-
-	// A variant: its parent, and which properties it overrides. Inherited properties are grayed out (editing one overrides
-	// it); overridden ones have a Reset button that makes them inherited again.
-	const bool variant = material->IsVariant();
-	H2M::RefH2M<EnvMapVulkanMaterial> parent = EnvMapVulkanMaterialLibrary::GetParent(material);
-	if (variant)
-	{
-		ImGui::Separator();
-		if (parent)
-		{
-			ImGui::TextDisabled("Variant of");
-			ImGui::SameLine();
-			if (ImGui::SmallButton(parent->GetName().c_str()))
-			{
-				s_SelectedMaterial = parent;
-			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Edit the parent material (its changes apply to this variant's inherited properties)");
-			}
-		}
-		else
-		{
-			ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.3f, 1.0f), "Variant of a material that isn't loaded: it keeps its values");
-		}
-		ImGui::SameLine();
-		if (ImGui::SmallButton("Make Independent"))
-		{
-			EnvMapVulkanMaterialLibrary::Detach(material);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("This material keeps its current values but no longer follows its parent");
-		}
-		const uint32_t overrides = material->GetOverrideCount();
-		ImGui::TextDisabled("%u overridden propert%s. Grayed ones are inherited: edit one to override it.", overrides, overrides == 1 ? "y" : "ies");
-	}
-
-	// Around each property's controls: grayed while inherited, a Reset button when overridden
-	auto beginProperty = [&](EnvMapVulkanMaterial::Property property) {
-		const bool inherited = variant && !material->IsOverridden(property);
-		if (inherited)
-		{
-			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-		}
-		return inherited;
-	};
-	auto endProperty = [&](EnvMapVulkanMaterial::Property property, bool inherited) {
-		if (inherited)
-		{
-			ImGui::PopStyleVar();
-		}
-		else if (variant)
-		{
-			ImGui::SameLine();
-			ImGui::PushID((int)property);
-			if (ImGui::SmallButton("Reset"))
-			{
-				EnvMapVulkanMaterialLibrary::ResetOverride(material, property); // the parent's value from the next frame
-			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Overridden. Reset: inherit it from '%s' again", parent ? parent->GetName().c_str() : "the parent");
-			}
-			ImGui::PopID();
-		}
-	};
-
-	ImGui::Separator();
-
-	// The surface: opaque (PBR) or glass, and the glass values
-	bool inherited = beginProperty(EnvMapVulkanMaterial::SurfaceProperty);
-	int surface = material->IsGlass() ? 1 : 0;
-	if (ImGui::Combo("Surface", &surface, "Opaque\0Glass\0"))
-	{
-		material->SetSurface(surface == 1 ? EnvMapVulkanMaterial::Surface::Glass : EnvMapVulkanMaterial::Surface::Opaque);
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("Opaque: light is reflected or scattered back, nothing passes through.\n"
-			"Glass: light passes through it, bent by its index of refraction. The albedo color (or map) tints it,\n"
-			"the roughness frosts it, the normal map ripples it. Metalness and AO don't apply.");
-	}
-	endProperty(EnvMapVulkanMaterial::SurfaceProperty, inherited);
-	const bool glass = material->IsGlass();
-	if (glass)
-	{
-		float& ior = material->GetGlassValue(EnvMapVulkanMaterial::GlassIOR);
-		float& thickness = material->GetGlassValue(EnvMapVulkanMaterial::GlassThickness);
-		float& castShadows = material->GetGlassValue(EnvMapVulkanMaterial::GlassCastShadows);
-		float& solid = material->GetGlassValue(EnvMapVulkanMaterial::GlassSolid);
-
-		ImGui::Indent();
-		inherited = beginProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassSolid));
-		int shape = solid > 0.5f ? 0 : 1;
-		if (ImGui::Combo("Shape", &shape, "Solid\0Thin\0"))
-		{
-			solid = shape == 0 ? 1.0f : 0.0f;
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Solid: a block, a ball, a bottle full of liquid. The light bends entering and leaving, as through\n"
-				"a lens: what's behind it is squeezed and turned around, more toward its outline.\n"
-				"Thin: a pane, a shell, a hollow vase. What's behind only shifts a little.");
-		}
-		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassSolid), inherited);
-		inherited = beginProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassIOR));
-		ImGui::SliderFloat("Index of Refraction", &ior, 1.0f, 2.5f, "%.2f");
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("How much the light bends entering it, and how much it reflects head-on.\n"
-				"1.00 air (no bending), 1.33 water, 1.50 glass, 1.77 sapphire, 2.42 diamond");
-		}
-		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassIOR), inherited);
-		inherited = beginProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassThickness));
-		ImGui::DragFloat("Thickness", &thickness, 0.005f, 0.0f, 10.0f, "%.3f m");
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("How far the light travels inside the glass: how far what's behind it seems to move.\n"
-				"A window pane: about 0.01 m; a glass block or a vase: its size");
-		}
-		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassThickness), inherited);
-		inherited = beginProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassCastShadows));
-		bool shadows = castShadows > 0.5f;
-		if (ImGui::Checkbox("Cast Shadows", &shadows))
-		{
-			castShadows = shadows ? 1.0f : 0.0f;
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("Off: the light passes through (no shadow). On: a full shadow, as an opaque mesh casts");
-		}
-		endProperty(EnvMapVulkanMaterial::GetGlassProperty(EnvMapVulkanMaterial::GlassCastShadows), inherited);
-		ImGui::Unindent();
-		ImGui::Separator();
-	}
-
-	glm::vec3& albedoColor = material->Get<glm::vec3>("u_MaterialUniforms.AlbedoColor");
-	float& metalness = material->Get<float>("u_MaterialUniforms.Metalness");
-	float& roughness = material->Get<float>("u_MaterialUniforms.Roughness");
-
-	inherited = beginProperty(EnvMapVulkanMaterial::AlbedoColorProperty);
-	ImGui::ColorEdit3(glass ? "Tint Color" : "Albedo Color", &albedoColor.x);
-	if (glass && ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("The albedo color: for glass, the color of the light that passes through it (white: clear)");
-	}
-	endProperty(EnvMapVulkanMaterial::AlbedoColorProperty, inherited);
-	inherited = beginProperty(EnvMapVulkanMaterial::MetalnessProperty);
-	ImGui::BeginDisabled(glass);
-	ImGui::SliderFloat("Metalness", &metalness, 0.0f, 1.0f);
-	ImGui::EndDisabled();
-	endProperty(EnvMapVulkanMaterial::MetalnessProperty, inherited);
-	inherited = beginProperty(EnvMapVulkanMaterial::RoughnessProperty);
-	ImGui::SliderFloat(glass ? "Roughness (Frost)" : "Roughness", &roughness, 0.0f, 1.0f);
-	endProperty(EnvMapVulkanMaterial::RoughnessProperty, inherited);
-
-	float& tilingFactor = material->Get<float>("u_MaterialUniforms.TilingFactor");
-	float& emissiveIntensity = material->Get<float>("u_MaterialUniforms.EmissiveIntensity");
-	float& metalRoughPacked = material->Get<float>("u_MaterialUniforms.MetalRoughPacked");
-
-	inherited = beginProperty(EnvMapVulkanMaterial::TilingFactorProperty);
-	ImGui::DragFloat("Tiling Factor", &tilingFactor, 0.01f, 0.01f, 100.0f);
-	endProperty(EnvMapVulkanMaterial::TilingFactorProperty, inherited);
-	inherited = beginProperty(EnvMapVulkanMaterial::EmissiveIntensityProperty);
-	ImGui::DragFloat("Emissive Intensity", &emissiveIntensity, 0.05f, 0.0f, 100.0f);
-	endProperty(EnvMapVulkanMaterial::EmissiveIntensityProperty, inherited);
-
-	inherited = beginProperty(EnvMapVulkanMaterial::MetalRoughPackedProperty);
-	bool packed = metalRoughPacked > 0.5f;
-	if (ImGui::Checkbox("Packed Metalness/Roughness Map", &packed))
-	{
-		metalRoughPacked = packed ? 1.0f : 0.0f;
-	}
-	if (ImGui::IsItemHovered())
-	{
-		ImGui::SetTooltip("glTF metallicRoughness map: roughness is read from G and metalness from B (otherwise both from R).\n"
-			"Assign the same map to both the metalness and the roughness slot.");
-	}
-	endProperty(EnvMapVulkanMaterial::MetalRoughPackedProperty, inherited);
-
-	static const char* s_MapLabels[EnvMapVulkanMaterial::MapCount] = {
-		"Use Albedo Map", "Use Normal Map", "Use Metalness Map", "Use Roughness Map", "Use Emissive Map", "Use AO Map" };
-
-	for (uint32_t i = 0; i < EnvMapVulkanMaterial::MapCount; i++)
-	{
-		ImGui::PushID((int)i);
-		ImGui::Separator();
-
-		const bool mapInherited = beginProperty(EnvMapVulkanMaterial::GetMapProperty(i));
-		H2M::RefH2M<H2M::Texture2D_H2M> map = material->GetMap(i);
-
-		// Thumbnail of the map; also a drop target for images from the Content Browser
-		const ImVec2 thumbnailSize(64.0f, 64.0f);
-		ImTextureID thumbnail = map ? map->GetImTextureID() : ImTextureID{};
-		if (thumbnail)
-		{
-			ImGui::Image(thumbnail, thumbnailSize, ImVec2(0, 1), ImVec2(1, 0)); // the Vulkan loader flips LDR images
-		}
-		else
-		{
-			ImGui::Button(map ? "map" : "no map", thumbnailSize);
-		}
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-			{
-				std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
-				if (IsImageFile(itemPath))
-				{
-					s_PendingMaterialTextures.push_back({ material, i, itemPath }); // applied at the start of the next frame
-				}
-				else
-				{
-					Log::GetLogger()->warn("'{0}' is not a supported image file", itemPath);
-				}
-			}
-			ImGui::EndDragDropTarget();
-		}
-		if (ImGui::IsItemHovered())
-		{
-			const char* colorSpace = EnvMapVulkanMaterial::IsColorMap(i) ? "sRGB (color data)" : "linear (raw data)";
-			if (map)
-			{
-				ImGui::SetTooltip("%s\n%s", map->GetPath().c_str(), colorSpace);
-			}
-			else
-			{
-				ImGui::SetTooltip("Drop an image from the Content Browser here\nLoaded as %s", colorSpace);
-			}
-		}
-
-		ImGui::SameLine();
-		ImGui::BeginGroup();
-		{
-			float& toggle = material->Get<float>(EnvMapVulkanMaterial::GetMapToggleName(i));
-			bool enabled = toggle > 0.5f;
-
-			ImGui::BeginDisabled(!map);
-			if (ImGui::Checkbox(s_MapLabels[i], &enabled))
-			{
-				toggle = enabled ? 1.0f : 0.0f;
-			}
-			ImGui::EndDisabled();
-
-			if (ImGui::Button("Load..."))
-			{
-				std::string filepath = FileDialogs::OpenFile({ { "Images", "png,jpg,jpeg,tga,bmp" } });
-				if (!filepath.empty())
-				{
-					s_PendingMaterialTextures.push_back({ material, i, filepath }); // applied at the start of the next frame
-				}
-			}
-
-			// Remove the map; the material then uses its value
-			if (map)
-			{
-				ImGui::SameLine();
-				if (ImGui::Button("Remove"))
-				{
-					s_PendingMaterialTextures.push_back({ material, i, std::string() }); // applied at the start of the next frame
-				}
-				if (ImGui::IsItemHovered())
-				{
-					ImGui::SetTooltip("Remove this map: the material uses its value instead\n(the model file is not changed)");
-				}
-				ImGui::SameLine();
-				ImGui::TextDisabled("%s", std::filesystem::path(map->GetPath()).filename().string().c_str());
-			}
-		}
-		ImGui::EndGroup();
-		endProperty(EnvMapVulkanMaterial::GetMapProperty(i), mapInherited);
-
-		ImGui::PopID();
-	}
-
-	ImGui::End();
-}
-
-// Where a mesh is drawn: model transform (Models and Meshes panel) * node transform from the model file. Rigged meshes: the bone matrices
-// already place the skinned vertices relative to the root node, so the root node transform replaces the node transform.
-static glm::mat4 GetMeshTransform(H2M::RefH2M<H2M::ModelH2M> model, const H2M::RefH2M<H2M::MeshH2M>& mesh, const glm::mat4& transform)
-{
-	return (model->IsSkinned() && mesh->IsRigged) ? transform * model->GetRootTransform() : transform * mesh->Transform;
-}
-
-// Framebuffers, pipelines and the bounding box vertex buffer of the editor overlays (see EditorOverlaySettings)
+// Framebuffers, pipelines and the bounding box vertex buffer of the editor overlays (see EnvMapVulkanOverlaySettings)
 static void CreateEditorOverlayResources()
 {
 	H2M::FramebufferSpecificationH2M framebufferSpec;
@@ -6757,7 +919,7 @@ static void CreateEditorOverlayResources()
 static void DrawModelOverlay(VkCommandBuffer commandBuffer, EnvMapVulkanEntityID entry, int onlyMesh, const H2M::RefH2M<H2M::PipelineH2M>& staticPipeline,
 	const H2M::RefH2M<H2M::PipelineH2M>& animPipeline, const glm::vec4& color, const glm::mat4& viewProjection, float lineWidth = 0.0f)
 {
-	H2M::RefH2M<H2M::ModelH2M> model = GetModel(entry);
+	H2M::RefH2M<H2M::ModelH2M> model = EnvMapVulkanSceneData::GetModel(*s_Scene, entry);
 	bool skinned = model->IsSkinned();
 	// EditorOverlay_Anim.glsl declares the bone matrices exactly like set 2 of HazelPBR_Anim.glsl (one uniform buffer at
 	// binding 0, vertex stage), only as its set 0: the set layouts are identical, so the model's per-object set is bound directly
@@ -6784,7 +946,7 @@ static void DrawModelOverlay(VkCommandBuffer commandBuffer, EnvMapVulkanEntityID
 	}
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
 
-	glm::mat4 transform = s_Scene.GetWorldTransform(entry);
+	glm::mat4 transform = s_Scene->GetWorldTransform(entry);
 	auto& meshes = model->GetMeshes();
 	for (int s = 0; s < (int)meshes.size(); s++)
 	{
@@ -6792,7 +954,7 @@ static void DrawModelOverlay(VkCommandBuffer commandBuffer, EnvMapVulkanEntityID
 		{
 			continue;
 		}
-		glm::mat4 mvp = viewProjection * GetMeshTransform(model, meshes[s], transform);
+		glm::mat4 mvp = viewProjection * EnvMapVulkanSceneData::GetMeshTransform(model, meshes[s], transform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
 		vkCmdDrawIndexed(commandBuffer, meshes[s]->IndexCount, 1, meshes[s]->BaseIndex, meshes[s]->BaseVertex, 0);
 		EnvMapVulkanProfiler::CountDraw(meshes[s]->IndexCount / 3);
@@ -6804,7 +966,7 @@ static void DrawModelOverlay(VkCommandBuffer commandBuffer, EnvMapVulkanEntityID
 static void DrawModelVectors(VkCommandBuffer commandBuffer, EnvMapVulkanEntityID entry, int onlyMesh, uint32_t vectorIndex, float lineLength,
 	int colorMode, const glm::mat4& viewProjection, float lineWidth)
 {
-	H2M::RefH2M<H2M::ModelH2M> model = GetModel(entry);
+	H2M::RefH2M<H2M::ModelH2M> model = EnvMapVulkanSceneData::GetModel(*s_Scene, entry);
 	bool skinned = model->IsSkinned();
 	VkDescriptorSet boneDescriptorSet = skinned ? model->GetObjectDescriptorSet() : VK_NULL_HANDLE;
 	if (skinned && !boneDescriptorSet)
@@ -6833,7 +995,7 @@ static void DrawModelVectors(VkCommandBuffer commandBuffer, EnvMapVulkanEntityID
 	} pushConstants;
 	pushConstants.ViewProjection = viewProjection;
 
-	glm::mat4 transform = s_Scene.GetWorldTransform(entry);
+	glm::mat4 transform = s_Scene->GetWorldTransform(entry);
 	auto& meshes = model->GetMeshes();
 	for (int s = 0; s < (int)meshes.size(); s++)
 	{
@@ -6841,7 +1003,7 @@ static void DrawModelVectors(VkCommandBuffer commandBuffer, EnvMapVulkanEntityID
 		{
 			continue;
 		}
-		glm::mat4 meshMatrix = GetMeshTransform(model, meshes[s], transform);
+		glm::mat4 meshMatrix = EnvMapVulkanSceneData::GetMeshTransform(model, meshes[s], transform);
 		for (int c = 0; c < 4; c++)
 		{
 			pushConstants.Model[c] = glm::vec4(glm::vec3(meshMatrix[c]), 0.0f);
@@ -6862,11 +1024,11 @@ static float GetModelWorldSize(EnvMapVulkanEntityID entry)
 {
 	glm::vec3 boundsMin(std::numeric_limits<float>::max());
 	glm::vec3 boundsMax(-std::numeric_limits<float>::max());
-	glm::mat4 transform = s_Scene.GetWorldTransform(entry);
-	H2M::RefH2M<H2M::ModelH2M> model = GetModel(entry);
+	glm::mat4 transform = s_Scene->GetWorldTransform(entry);
+	H2M::RefH2M<H2M::ModelH2M> model = EnvMapVulkanSceneData::GetModel(*s_Scene, entry);
 	for (auto& mesh : model->GetMeshes())
 	{
-		glm::mat4 meshTransform = GetMeshTransform(model, mesh, transform);
+		glm::mat4 meshTransform = EnvMapVulkanSceneData::GetMeshTransform(model, mesh, transform);
 		const H2M::AABB_H2M& box = mesh->BoundingBox;
 		for (int corner = 0; corner < 8; corner++)
 		{
@@ -6884,13 +1046,12 @@ static float GetModelWorldSize(EnvMapVulkanEntityID entry)
 static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 {
 	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
-	const std::vector<EnvMapVulkanEntityID> models = GetModels();
-	// What of each model is selected: { -1 } the whole model, or mesh indices of its selected parts (see GetSelectedMeshes)
-	SyncSelection();
+	const std::vector<EnvMapVulkanEntityID> models = EnvMapVulkanSceneData::GetModels(*s_Scene);
+	// What of each model is selected: { -1 } the whole model, or mesh indices of its selected parts (see GetViewSelectedMeshes)
 	std::map<EnvMapVulkanEntityID, std::vector<int>> selectedMeshes;
 	for (EnvMapVulkanEntityID m : models)
 	{
-		std::vector<int> meshes = GetSelectedMeshes(m);
+		std::vector<int> meshes = GetViewSelectedMeshes(m);
 		if (!meshes.empty())
 		{
 			selectedMeshes[m] = std::move(meshes);
@@ -6901,7 +1062,7 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 		auto it = selectedMeshes.find(model);
 		return it != selectedMeshes.end() ? it->second : s_None;
 	};
-	const EditorOverlaySettings& settings = s_OverlaySettings;
+	const EnvMapVulkanOverlaySettings& settings = s_ViewOptions.Overlays;
 
 	// Wide lines are limited by the GPU (at least 8 px is guaranteed)
 	const float maxLineWidth = H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetProperties().limits.lineWidthRange[1];
@@ -7018,8 +1179,8 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 				{
 					continue;
 				}
-				H2M::RefH2M<H2M::ModelH2M> model = GetModel(m);
-				glm::mat4 transform = s_Scene.GetWorldTransform(m);
+				H2M::RefH2M<H2M::ModelH2M> model = EnvMapVulkanSceneData::GetModel(*s_Scene, m);
+				glm::mat4 transform = s_Scene->GetWorldTransform(m);
 				auto& meshes = model->GetMeshes();
 				const std::vector<int>& modelSelection = getSelectedMeshes(m);
 				const bool wholeModelSelected = Contains(modelSelection, -1);
@@ -7035,7 +1196,7 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 
 					// Each mesh's box in its own space, so it turns with the model (as in SceneHazelEnvMap)
 					const H2M::AABB_H2M& box = meshes[s]->BoundingBox;
-					glm::mat4 mvp = viewProjection * GetMeshTransform(model, meshes[s], transform) *
+					glm::mat4 mvp = viewProjection * EnvMapVulkanSceneData::GetMeshTransform(model, meshes[s], transform) *
 						glm::translate(glm::mat4(1.0f), box.Min) * glm::scale(glm::mat4(1.0f), box.Max - box.Min);
 
 					glm::vec4 color = selected ? settings.SelectedBoundingBoxColor : settings.BoundingBoxColor;
@@ -7050,7 +1211,7 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 
 		// The probe volume's box, outlined while the volume is selected (it has no surface of its own to see). The
 		// overlay has its own depth, so the outline shows through the scene.
-		if (s_ProbeVolumeSettings.Exists && s_SelectedEntity == s_ProbeVolumeEntity)
+		if (s_ProbeVolumeSettings.Exists && s_ProbeVolumeEntity != NoEntity && s_ViewOptions.PrimarySelection == s_ProbeVolumeEntity)
 		{
 			H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_BoundingBoxPipeline.As<H2M::VulkanPipelineH2M>();
 			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
@@ -7118,8 +1279,8 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 		// it is tinted or lost in the water's color
 		for (EnvMapVulkanEntityID entry : models)
 		{
-			const H2M::RefH2M<H2M::ModelH2M> model = GetModel(entry);
-			const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> materials = GetMeshMaterials(entry);
+			const H2M::RefH2M<H2M::ModelH2M> model = EnvMapVulkanSceneData::GetModel(*s_Scene, entry);
+			const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> materials = EnvMapVulkanSceneData::GetMeshMaterials(*s_Scene, entry);
 			const int meshCount = (int)model->GetMeshes().size();
 			bool hasGlass = false;
 			for (int s = 0; s < meshCount && s < (int)materials.size(); s++)
@@ -7186,7 +1347,7 @@ void EnvMapVulkanRenderer::SubmitModelTemp(const H2M::RefH2M<H2M::ModelH2M>& mod
 	const auto& meshes = modelRef->GetMeshes();
 	for (size_t s = 0; s < meshes.size(); s++)
 	{
-		s_PreviousDrawTransforms.push_back(s < previousMeshTransforms.size() ? previousMeshTransforms[s] : GetMeshTransform(modelRef, meshes[s], transform));
+		s_PreviousDrawTransforms.push_back(s < previousMeshTransforms.size() ? previousMeshTransforms[s] : EnvMapVulkanSceneData::GetMeshTransform(modelRef, meshes[s], transform));
 	}
 
 	// VulkanRendererData::DrawCommand drawCommand = {};
@@ -7225,7 +1386,6 @@ static void CreateShadowMap(uint32_t resolution, bool writeDescriptor)
 	s_ShadowPipelineAnim.Destroy();
 	s_ShadowPipeline.Destroy();
 	s_ShadowMap.Create(resolution, ShadowCascadeCount);
-	s_ShadowSettings.Resolution = resolution;
 	{
 		// The mesh vertex layouts (ModelH2M's Vertex and AnimatedVertex), as in the PBR pipelines
 		H2M::VertexBufferLayoutH2M staticLayout = {
@@ -7258,10 +1418,10 @@ static void CreateShadowMap(uint32_t resolution, bool writeDescriptor)
 // them only spot lights cast shadows. Nothing in flight may still use the old maps.
 static void CreateLocalShadowMaps()
 {
-	s_SpotShadowMaps.Create(s_LocalShadowSettings.SpotResolution, MaxShadowedSpotLights);
+	s_SpotShadowMaps.Create(s_RenderSettings.LocalShadows.SpotResolution, MaxShadowedSpotLights);
 	if (H2M::VulkanContextH2M::GetCurrentDevice()->GetEnabledFeatures().imageCubeArray)
 	{
-		s_PointShadowMaps.Create(s_LocalShadowSettings.PointResolution, 6 * MaxShadowedPointLights, true);
+		s_PointShadowMaps.Create(s_RenderSettings.LocalShadows.PointResolution, 6 * MaxShadowedPointLights, true);
 	}
 	else
 	{
@@ -7269,8 +1429,8 @@ static void CreateLocalShadowMaps()
 		Log::GetLogger()->warn("Point light shadows are not available: the GPU doesn't support cube map arrays (imageCubeArray)");
 	}
 	Log::GetLogger()->info("Local light shadow maps: {0} spot lights at {1} x {1}, {2} point lights at {3} x {3} per cube face",
-		MaxShadowedSpotLights, s_LocalShadowSettings.SpotResolution, s_PointShadowMaps.IsValid() ? MaxShadowedPointLights : 0,
-		s_LocalShadowSettings.PointResolution);
+		MaxShadowedSpotLights, s_RenderSettings.LocalShadows.SpotResolution, s_PointShadowMaps.IsValid() ? MaxShadowedPointLights : 0,
+		s_RenderSettings.LocalShadows.PointResolution);
 }
 
 void EnvMapVulkanRenderer::Init()
@@ -7484,23 +1644,17 @@ void EnvMapVulkanRenderer::Init()
 	s_GBuffer.Create(s_Framebuffer);
 	s_GBuffer.CreatePipelines(s_MeshPipeline, s_MeshPipelineAnim);
 	s_SSAO.Create();
-	s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution);
+	s_SSAO.Resize(s_GBuffer, s_RenderSettings.AmbientOcclusion.HalfResolution);
 	s_Reflections.Create();
-	s_Reflections.Resize(s_GBuffer, s_ReflectionSettings.HalfResolution);
+	s_Reflections.Resize(s_GBuffer, s_RenderSettings.Reflections.HalfResolution);
 	s_RayTracing.Create();
 	s_RayTracing.ResizeView(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());
 	s_PathTracer.Create();
 	s_PathTracer.Resize(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());
 	WriteBloomDescriptorSets(); // the viewport composite samples the G-buffer and the ray-traced views (debug views)
 
-	// The scene (EnvMapVulkanScene, being introduced): its operations are checked once at startup
+	// The scene (EnvMapVulkanScene): its operations are checked once at startup
 	EnvMapVulkanScene::SelfTest();
-	CreateEnvironmentEntity();
-	CreateSunEntity();
-	EnsureCameraEntity();
-
-	ExtractLights();
-	ExtractWater();
 
 	/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
 	H2M::RenderPassSpecificationH2M renderPassSpec;
@@ -7598,7 +1752,7 @@ void EnvMapVulkanRenderer::Init()
 
 	s_Data.BRDFLut = H2M::Texture2D_H2M::Create("assets/textures/BRDF_LUT.tga", false);
 
-	CreateShadowMap(s_ShadowSettings.Resolution, false); // the descriptor is written with the rest of set 0, below
+	CreateShadowMap(s_RenderSettings.Shadows.Resolution, false); // the descriptor is written with the rest of set 0, below
 	CreateLocalShadowMaps();
 	s_ShadowMapViewer.Create(H2M::RendererH2M::GetShaderLibrary()->Get("ShadowMapView").As<H2M::VulkanShaderH2M>());
 
@@ -7676,10 +1830,7 @@ void EnvMapVulkanRenderer::Init()
 	s_Data.SkyboxPipeline = H2M::PipelineH2M::Create(skyboxPipelineSpecification);
 	/*** END Setup the Skybox ****/
 
-	Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
 	s_Data.SceneData.SkyboxLod = 0.0f;
-	Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE; // as in SceneHazelEnvMap (keys 1/2/3/4 switch the mode)
 
 	OnResize(s_ViewportWidth, s_ViewportHeight); // to be removed from VulkanRenderer
 }
@@ -7712,15 +1863,10 @@ void EnvMapVulkanRenderer::Shutdown()
 
 	// The file's static references, released here while the device works: as statics they would be destroyed after
 	// main returns, when Vulkan (its validation layer) may already be torn down
-	s_Scene.Clear();
+	s_Scene = nullptr;
 	EnvMapVulkanMaterialLibrary::Clear();
 	s_SubmittedModels.clear();
 	s_GlassDraws.clear();
-	s_Clipboard.clear();
-	s_SelectedMesh = {};
-	s_SelectedMaterial = {};
-	s_PendingDeleteMaterial = {};
-	s_PendingMaterialTextures.clear();
 
 	s_Framebuffer = {};
 	s_CompositeFramebuffer = {};
@@ -7851,7 +1997,7 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		// Push Constants
 		// glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
 		// vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
-		glm::mat4 meshTransform = GetMeshTransform(model, mesh, transform);
+		glm::mat4 meshTransform = EnvMapVulkanSceneData::GetMeshTransform(model, mesh, transform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &meshTransform);
 		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), uniformStorageBuffer.Size, uniformStorageBuffer.Data);
 		// The prepass reads the mesh's previous transform per instance: the instance index picks it (see EnvMapVulkanGBuffer)
@@ -7896,9 +2042,9 @@ static void WriteShadowUniforms()
 	}
 	ub.CameraForward = -glm::normalize(glm::vec3(cameraTransform[2]));
 	ub.ShadowsEnabled = s_ShadowsRendered ? 1.0f : 0.0f;
-	ub.NormalBias = s_ShadowSettings.NormalBias;
-	ub.Softness = s_ShadowSettings.Softness;
-	ub.ShowCascades = s_ShadowSettings.ShowCascades ? 1.0f : 0.0f;
+	ub.NormalBias = s_RenderSettings.Shadows.NormalBias;
+	ub.Softness = s_RenderSettings.Shadows.Softness;
+	ub.ShowCascades = s_ViewOptions.ShowCascades ? 1.0f : 0.0f;
 	ub.ShadowMapTexelSize = s_ShadowMap.IsValid() ? 1.0f / (float)s_ShadowMap.GetResolution() : 0.0f;
 
 	for (uint32_t slot = 0; slot < s_LocalShadowSlots.SpotCount; slot++)
@@ -7913,21 +2059,23 @@ static void WriteShadowUniforms()
 		ub.PointShadowDepthParams[slot] = glm::vec4(GetPointShadowDepthParams(light.Range), 0.0f, 0.0f);
 	}
 	// Shadows Only: the selected light, by its index among the packed lights (Pack leaves out the lights that are off)
-	if (s_ShowShadowsOnly && s_SelectedLightKind != LightKind::None)
+	int shadowsOnlyIndex = 0;
+	const EnvMapVulkanSceneData::LightKind shadowsOnlyKind = GetShadowsOnlyLight(shadowsOnlyIndex);
+	if (s_ViewOptions.ShadowsOnly && shadowsOnlyKind != EnvMapVulkanSceneData::LightKind::None)
 	{
-		if (s_SelectedLightKind == LightKind::Sun)
+		if (shadowsOnlyKind == EnvMapVulkanSceneData::LightKind::Sun)
 		{
 			ub.ShadowDebug = glm::vec4(s_Lights.Sun.Enabled ? 1.0f : 4.0f, 0.0f, 0.0f, 0.0f);
 		}
 		else
 		{
-			const bool point = s_SelectedLightKind == LightKind::Point;
+			const bool point = shadowsOnlyKind == EnvMapVulkanSceneData::LightKind::Point;
 			int packedIndex = 0;
 			bool enabled = false;
-			for (int i = 0; i <= s_SelectedLightIndex; i++)
+			for (int i = 0; i <= shadowsOnlyIndex; i++)
 			{
 				bool on = point ? s_Lights.PointLights[i].Enabled : s_Lights.SpotLights[i].Enabled;
-				if (i == s_SelectedLightIndex)
+				if (i == shadowsOnlyIndex)
 				{
 					enabled = on;
 				}
@@ -7939,16 +2087,16 @@ static void WriteShadowUniforms()
 			ub.ShadowDebug = glm::vec4(enabled ? (point ? 2.0f : 3.0f) : 4.0f, (float)packedIndex, 0.0f, 0.0f);
 		}
 	}
-	ub.ShadowDebug.z = s_DebugView >= DebugViewDirectLight && s_DebugView <= DebugViewReflectionOcclusion ? (float)(s_DebugView - DebugViewDirectLight + 1) : 0.0f;
-	if (s_DebugView >= DebugViewAO && s_DebugView <= DebugViewAORaw)
+	ub.ShadowDebug.z = s_ViewOptions.DebugView >= DebugViewDirectLight && s_ViewOptions.DebugView <= DebugViewReflectionOcclusion ? (float)(s_ViewOptions.DebugView - DebugViewDirectLight + 1) : 0.0f;
+	if (s_ViewOptions.DebugView >= DebugViewAO && s_ViewOptions.DebugView <= DebugViewAORaw)
 	{
 		ub.ShadowDebug.z = 6.0f; // the AO image: which of its steps it holds is the ambient occlusion's matter (see its Record)
 	}
-	if (IsReflectionDebugView(s_DebugView))
+	if (IsReflectionDebugView(s_ViewOptions.DebugView))
 	{
 		ub.ShadowDebug.z = 7.0f; // the reflection image, likewise
 	}
-	ub.LocalShadowParams = glm::vec4(s_LocalShadowSettings.NormalBias, s_LocalShadowSettings.Softness,
+	ub.LocalShadowParams = glm::vec4(s_RenderSettings.LocalShadows.NormalBias, s_RenderSettings.LocalShadows.Softness,
 		s_SpotShadowMaps.IsValid() ? 1.0f / (float)s_SpotShadowMaps.GetResolution() : 0.0f,
 		s_PointShadowMaps.IsValid() ? 1.0f / (float)s_PointShadowMaps.GetResolution() : 0.0f);
 
@@ -7996,7 +2144,7 @@ static void ComputeShadowCasterBounds(glm::vec3& totalMin, glm::vec3& totalMax)
 		glm::vec3 modelMax(-std::numeric_limits<float>::max());
 		for (const H2M::RefH2M<H2M::MeshH2M>& mesh : submitted.Model->GetMeshes())
 		{
-			glm::mat4 transform = GetMeshTransform(submitted.Model, mesh, submitted.Transform);
+			glm::mat4 transform = EnvMapVulkanSceneData::GetMeshTransform(submitted.Model, mesh, submitted.Transform);
 			for (int c = 0; c < 8; c++)
 			{
 				glm::vec3 corner((c & 1) ? mesh->BoundingBox.Max.x : mesh->BoundingBox.Min.x, (c & 2) ? mesh->BoundingBox.Max.y : mesh->BoundingBox.Min.y,
@@ -8086,7 +2234,7 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 			{
 				continue;
 			}
-			glm::mat4 matrices[2] = { viewProjection, GetMeshTransform(model, mesh, s_SubmittedModels[m].Transform) };
+			glm::mat4 matrices[2] = { viewProjection, EnvMapVulkanSceneData::GetMeshTransform(model, mesh, s_SubmittedModels[m].Transform) };
 			vkCmdPushConstants(commandBuffer, pipeline.Layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(matrices), matrices);
 			vkCmdDrawIndexed(commandBuffer, mesh->IndexCount, 1, mesh->BaseIndex, mesh->BaseVertex, 0);
 			EnvMapVulkanProfiler::CountDraw(mesh->IndexCount / 3);
@@ -8127,8 +2275,7 @@ static void RecordShadowPasses(VkCommandBuffer commandBuffer, const glm::vec3& b
 		return;
 	}
 
-	s_ShadowSettings.Resolution = s_ShadowMap.GetResolution();
-	ComputeShadowCascades(cameraPosition, cameraForward, cornerRays, camera.GetPerspectiveNearClip(), s_ShadowSettings, s_Lights.Sun.GetDirection(),
+	ComputeShadowCascades(cameraPosition, cameraForward, cornerRays, camera.GetPerspectiveNearClip(), s_RenderSettings.Shadows, s_Lights.Sun.GetDirection(),
 		boundsMin, boundsMax, s_ShadowCascades);
 
 	EnvMapVulkanProfiler::Scope sunScope(commandBuffer, "Sun Shadows", "The sun's shadow map: the scene's depth seen from the sun, one cascade "
@@ -8138,7 +2285,7 @@ static void RecordShadowPasses(VkCommandBuffer commandBuffer, const glm::vec3& b
 	{
 		EnvMapVulkanProfiler::Scope cascadeScope(commandBuffer, "Cascade " + std::to_string(cascade), "One layer of the sun's shadow map: every "
 			"shadow caster drawn from the sun into it, with the cascade's light view and projection.");
-		BeginShadowPass(commandBuffer, s_ShadowMap, cascade, s_ShadowSettings.DepthBias, s_ShadowSettings.SlopeBias);
+		BeginShadowPass(commandBuffer, s_ShadowMap, cascade, s_RenderSettings.Shadows.DepthBias, s_RenderSettings.Shadows.SlopeBias);
 		DrawShadowCasters(commandBuffer, s_ShadowCascades[cascade].ViewProjection);
 		vkCmdEndRenderPass(commandBuffer);
 	}
@@ -8156,7 +2303,7 @@ static void RecordLocalShadowPasses(VkCommandBuffer commandBuffer)
 	{
 		return;
 	}
-	const EnvMapVulkanLocalShadowSettings& settings = s_LocalShadowSettings;
+	const EnvMapVulkanLocalShadowSettings& settings = s_RenderSettings.LocalShadows;
 
 	if (slots.SpotCount > 0)
 	{
@@ -8273,11 +2420,11 @@ static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
 		EnvMapVulkanProfiler::Scope sunScope(commandBuffer, "Probe Sun Shadow", "The sun's shadow map of the whole probe volume: every shadow "
 			"caster drawn once from the sun. The scene's own cascades only cover what the camera sees, and a probe also sees "
 			"what is behind the camera.");
-		BeginShadowPass(commandBuffer, s_ProbeSunShadowMap, 0, s_ShadowSettings.DepthBias, s_ShadowSettings.SlopeBias);
+		BeginShadowPass(commandBuffer, s_ProbeSunShadowMap, 0, s_RenderSettings.Shadows.DepthBias, s_RenderSettings.Shadows.SlopeBias);
 		DrawShadowCasters(commandBuffer, sunViewProjection);
 		vkCmdEndRenderPass(commandBuffer);
 	}
-	s_Probes.SetCaptureSun(sunViewProjection, sunShadows, sunTexelWorldSize, ProbeSunShadowResolution, s_ShadowSettings.NormalBias);
+	s_Probes.SetCaptureSun(sunViewProjection, sunShadows, sunTexelWorldSize, ProbeSunShadowResolution, s_RenderSettings.Shadows.NormalBias);
 
 	// The meshes the probes see: the opaque ones (glass lets the light through; on a skinned mesh it is drawn as opaque, as
 	// in the scene pass). The water's surface is left out.
@@ -8309,7 +2456,7 @@ static void RecordProbeUpdate(VkCommandBuffer commandBuffer)
 			{
 				continue;
 			}
-			const glm::mat4 transform = GetMeshTransform(submitted.Model, meshes[s], submitted.Transform);
+			const glm::mat4 transform = EnvMapVulkanSceneData::GetMeshTransform(submitted.Model, meshes[s], submitted.Transform);
 			const glm::mat4 rows = glm::transpose(transform);
 			CaptureDraw draw;
 			draw.Submitted = &submitted;
@@ -8627,7 +2774,7 @@ static void CollectGlassDraws()
 			GlassDraw draw;
 			draw.Model = submitted.Model;
 			draw.MeshIndex = s;
-			draw.Transform = GetMeshTransform(submitted.Model, meshes[s], submitted.Transform);
+			draw.Transform = EnvMapVulkanSceneData::GetMeshTransform(submitted.Model, meshes[s], submitted.Transform);
 			draw.Material = submitted.Materials[s];
 			const glm::vec3 center = glm::vec3(draw.Transform * glm::vec4((meshes[s]->BoundingBox.Min + meshes[s]->BoundingBox.Max) * 0.5f, 1.0f));
 			draw.Distance = glm::length(center - cameraPosition);
@@ -8755,9 +2902,9 @@ void EnvMapVulkanRenderer::GeometryPass()
 		// The scene for the rays, in the frames that trace any (the probes' update, a ray-traced debug view): the
 		// acceleration structures follow the meshes as they are drawn this frame. Then the debug view, when one is shown.
 		const bool probesTraceRays = s_Probes.HasCapture() && s_Probes.TracesRays();
-		const bool occlusionTracesRays = s_SSAOSettings.Enabled && s_SSAOSettings.RayTraced;
-		if (IsRayTracingActive() && (probesTraceRays || occlusionTracesRays || ReflectionsTraceRays() || IsRayTracedDebugView(s_DebugView) ||
-			s_DebugView == DebugViewPathTraced))
+		const bool occlusionTracesRays = s_RenderSettings.AmbientOcclusion.Enabled && s_RenderSettings.AmbientOcclusion.RayTraced;
+		if (IsRayTracingActive() && (probesTraceRays || occlusionTracesRays || ReflectionsTraceRays() || IsRayTracedDebugView(s_ViewOptions.DebugView) ||
+			s_ViewOptions.DebugView == DebugViewPathTraced))
 		{
 			{
 				EnvMapVulkanProfiler::Scope sceneScope(drawCommandBuffer, "Ray Tracing Scene", "The scene as rays see it: the skinned models' "
@@ -8770,29 +2917,29 @@ void EnvMapVulkanRenderer::GeometryPass()
 					meshTransforms.clear();
 					for (const H2M::RefH2M<H2M::MeshH2M>& mesh : submitted.Model->GetMeshes())
 					{
-						meshTransforms.push_back(GetMeshTransform(submitted.Model, mesh, submitted.Transform));
+						meshTransforms.push_back(EnvMapVulkanSceneData::GetMeshTransform(submitted.Model, mesh, submitted.Transform));
 					}
 					s_RayTracing.Submit(submitted.Model, meshTransforms, submitted.Materials);
 				}
 				s_RayTracing.Record(drawCommandBuffer);
 			}
 		}
-		if (IsRayTracingActive() && IsRayTracedDebugView(s_DebugView))
+		if (IsRayTracingActive() && IsRayTracedDebugView(s_ViewOptions.DebugView))
 		{
 			EnvMapVulkanProfiler::Scope viewScope(drawCommandBuffer, "Ray Traced View", "The ray-traced debug view: a compute pass traces one "
 				"ray per pixel from the camera (a ray query) and writes what it hit as a color.");
-			const EnvMapVulkanRayTracing::View view = s_DebugView == DebugViewRayTracedAlbedo ? EnvMapVulkanRayTracing::View::Albedo :
-				(s_DebugView == DebugViewRayTracedInstances ? EnvMapVulkanRayTracing::View::Instances : EnvMapVulkanRayTracing::View::Normals);
+			const EnvMapVulkanRayTracing::View view = s_ViewOptions.DebugView == DebugViewRayTracedAlbedo ? EnvMapVulkanRayTracing::View::Albedo :
+				(s_ViewOptions.DebugView == DebugViewRayTracedInstances ? EnvMapVulkanRayTracing::View::Instances : EnvMapVulkanRayTracing::View::Normals);
 			s_RayTracing.RecordView(drawCommandBuffer, view, s_Data.SceneData.SceneCamera.Camera.GetViewProjection());
 		}
-		if (IsRayTracingActive() && s_DebugView == DebugViewPathTraced)
+		if (IsRayTracingActive() && s_ViewOptions.DebugView == DebugViewPathTraced)
 		{
 			EnvMapVulkanProfiler::Scope pathScope(drawCommandBuffer, "Path Tracer", "The Path Traced debug view: a compute pass follows a few "
 				"random light paths per pixel through all their bounces (rays against the scene, a shadow ray per light at every "
 				"hit) and adds them to the average of the paths so far. Nothing once the image has its Max Samples.");
 			H2M::CameraH2M& pathCamera = s_Data.SceneData.SceneCamera.Camera;
 			const bool sunShadows = s_Lights.Sun.Enabled && s_Lights.Sun.CastShadows && s_Lights.Sun.Intensity > 0.0f;
-			s_PathTracer.Record(drawCommandBuffer, s_PathTracerSettings, pathCamera.GetViewProjection(), pathCamera.GetProjectionMatrix(),
+			s_PathTracer.Record(drawCommandBuffer, s_ViewOptions.PathTracer, pathCamera.GetViewProjection(), pathCamera.GetProjectionMatrix(),
 				s_PathTracerSceneVersion, s_Data.SceneData.SkyboxLod, s_RayTracing.GetDescriptorSet(), sunShadows);
 		}
 
@@ -8851,10 +2998,10 @@ void EnvMapVulkanRenderer::GeometryPass()
 				"occlusion, a blur that keeps edges, the average over the frames), then one at full size. The occlusion itself: "
 				"with ray tracing a few short rays per pixel against the scene, otherwise from the G-buffer's depth (GTAO).");
 			H2M::CameraH2M& occlusionCamera = s_Data.SceneData.SceneCamera.Camera;
-			const EnvMapVulkanSSAO::Stage stage = s_DebugView == DebugViewAORaw ? EnvMapVulkanSSAO::Stage::Raw :
-				(s_DebugView == DebugViewAODenoised ? EnvMapVulkanSSAO::Stage::Denoised : EnvMapVulkanSSAO::Stage::Final);
+			const EnvMapVulkanSSAO::Stage stage = s_ViewOptions.DebugView == DebugViewAORaw ? EnvMapVulkanSSAO::Stage::Raw :
+				(s_ViewOptions.DebugView == DebugViewAODenoised ? EnvMapVulkanSSAO::Stage::Denoised : EnvMapVulkanSSAO::Stage::Final);
 			// Traced when rays can be traced this frame (the scene for them was built above)
-			s_SSAO.Record(drawCommandBuffer, s_SSAOSettings, s_GBuffer, occlusionCamera.GetViewMatrix(), occlusionCamera.GetProjectionMatrix(), stage,
+			s_SSAO.Record(drawCommandBuffer, s_RenderSettings.AmbientOcclusion, s_GBuffer, occlusionCamera.GetViewMatrix(), occlusionCamera.GetProjectionMatrix(), stage,
 				IsRayTracingActive() ? s_RayTracing.GetDescriptorSet() : VK_NULL_HANDLE);
 		}
 
@@ -8871,8 +3018,8 @@ void EnvMapVulkanRenderer::GeometryPass()
 			}
 			H2M::CameraH2M& reflectionCamera = s_Data.SceneData.SceneCamera.Camera;
 			const bool sunShadows = s_Lights.Sun.Enabled && s_Lights.Sun.CastShadows && s_Lights.Sun.Intensity > 0.0f;
-			s_Reflections.Record(drawCommandBuffer, s_ReflectionSettings, s_GBuffer, reflectionCamera.GetViewProjection(), reflectionCamera.GetProjectionMatrix(),
-				reflectionCamera.GetPosition(), s_DebugView == DebugViewReflectionsRaw ? EnvMapVulkanReflections::Stage::Raw : EnvMapVulkanReflections::Stage::Final,
+			s_Reflections.Record(drawCommandBuffer, s_RenderSettings.Reflections, s_GBuffer, reflectionCamera.GetViewProjection(), reflectionCamera.GetProjectionMatrix(),
+				reflectionCamera.GetPosition(), s_ViewOptions.DebugView == DebugViewReflectionsRaw ? EnvMapVulkanReflections::Stage::Raw : EnvMapVulkanReflections::Stage::Final,
 				ReflectionsTraceRays() ? s_RayTracing.GetDescriptorSet() : VK_NULL_HANDLE, sunShadows);
 		}
 
@@ -8981,14 +3128,14 @@ void EnvMapVulkanRenderer::GeometryPass()
 			// The water's wireframe: its own toggle (Water panel), or the editor's (Environment panel, Wireframe: All, or
 			// Selected while the water is selected), with the editor's line width
 			EnvMapVulkanWaterSettings waterDrawSettings = s_WaterSettings;
-			waterDrawSettings.Wireframe = s_WaterSettings.Wireframe || s_OverlaySettings.Wireframe == OverlayScopeAll ||
-				(s_OverlaySettings.Wireframe == OverlayScopeSelected && s_WaterSelected);
+			waterDrawSettings.Wireframe = s_WaterSettings.Wireframe || s_ViewOptions.Overlays.Wireframe == OverlayScopeAll ||
+				(s_ViewOptions.Overlays.Wireframe == OverlayScopeSelected && s_WaterEntity != NoEntity && s_ViewOptions.PrimarySelection == s_WaterEntity);
 			const float maxLineWidth = H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetProperties().limits.lineWidthRange[1];
 			EnvMapVulkanProfiler::Scope surfaceScope(drawCommandBuffer, "Water Surface", "The water's mesh, moved by the swell: refraction from "
 				"the scene copy, the planar reflection, foam and the sun's highlight, mixed by the Fresnel factor. Transparent "
 				"without blending: it computes what's behind it.");
 			s_Water.Record(drawCommandBuffer, s_Data.FrameDescriptorSet.DescriptorSets[0], waterDrawSettings,
-				glm::clamp(s_OverlaySettings.LineWidth, 1.0f, maxLineWidth));
+				glm::clamp(s_ViewOptions.Overlays.LineWidth, 1.0f, maxLineWidth));
 		}
 
 		// Glass: it looks into everything drawn so far, the water too
@@ -8998,7 +3145,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 		}
 
 		// Transparent, so after the opaque meshes and the water
-		if (s_DisplayGrid)
+		if (s_ViewOptions.Grid)
 		{
 			EnvMapVulkanProfiler::Scope gridScope(drawCommandBuffer, "Grid", "The editor's ground grid: one quad, blended over the scene "
 				"without writing depth.");
@@ -9009,7 +3156,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 		EnvMapVulkanProfiler::EndScope(drawCommandBuffer); // Scene
 		s_GBuffer.MakeDepthReadable(drawCommandBuffer); // the viewport composite samples it (the Linear Depth debug view)
 
-		if (s_BloomSettings.Enabled || !s_BloomChainRendered)
+		if (s_RenderSettings.Bloom.Enabled || !s_BloomChainRendered)
 		{
 			EnvMapVulkanProfiler::Scope bloomScope(drawCommandBuffer, "Bloom", "The glow around bright light: the brightest parts of the "
 				"scene are blurred by shrinking them step by step to small images and growing them back (a mip chain), one "
@@ -9078,7 +3225,7 @@ void EnvMapVulkanRenderer::RenderGrid(VkCommandBuffer commandBuffer)
 	{
 		float Scale;
 		float Size;
-	} settings = { s_GridScale, s_GridSize };
+	} settings = { s_ViewOptions.GridScale, s_ViewOptions.GridSize };
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(GridSettings), &settings);
 
 	vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
@@ -9263,7 +3410,7 @@ static void WriteBloomDescriptorSets()
 // Every render pass ends with its image in SHADER_READ_ONLY layout, ready for the next pass to sample.
 static void RecordBloomPasses(VkCommandBuffer commandBuffer)
 {
-	if (!s_BloomSettings.Enabled && s_BloomChainRendered)
+	if (!s_RenderSettings.Bloom.Enabled && s_BloomChainRendered)
 	{
 		return; // the composite multiplies the (old) bloom by 0
 	}
@@ -9280,10 +3427,10 @@ static void RecordBloomPasses(VkCommandBuffer commandBuffer)
 		float Exposure;
 		int Mode;
 	} uniforms;
-	float knee = std::max(s_BloomSettings.Knee, 1.0e-4f);
-	float threshold = s_BloomSettings.Threshold;
+	float knee = std::max(s_RenderSettings.Bloom.Knee, 1.0e-4f);
+	float threshold = s_RenderSettings.Bloom.Threshold;
 	uniforms.Params = { threshold, threshold - knee, knee * 2.0f, 0.25f / knee };
-	uniforms.UpsampleScale = s_BloomSettings.UpsampleScale;
+	uniforms.UpsampleScale = s_RenderSettings.Bloom.UpsampleScale;
 	uniforms.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
 
 	enum { ModePrefilter = 0, ModeDownsample = 1, ModeUpsample = 2 };
@@ -9397,25 +3544,26 @@ void EnvMapVulkanRenderer::ViewportCompositePass(VkCommandBuffer commandBuffer)
 	} uniforms;
 	static_assert(sizeof(CompositeUniforms) == 64, "layout mismatch with the Uniforms block of ViewportComposite.glsl");
 	uniforms.Exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
-	uniforms.BloomIntensity = s_BloomSettings.Enabled ? s_BloomSettings.Intensity : 0.0f;
-	uniforms.BloomDirtIntensity = (s_BloomSettings.Enabled && s_BloomSettings.DirtEnabled) ? s_BloomSettings.DirtIntensity : 0.0f;
-	uniforms.OutlineWidth = s_OverlaySettings.Outline ? s_OverlaySettings.OutlineWidth : 0.0f;
-	uniforms.OutlineColor = s_OverlaySettings.OutlineColor;
+	uniforms.BloomIntensity = s_RenderSettings.Bloom.Enabled ? s_RenderSettings.Bloom.Intensity : 0.0f;
+	uniforms.BloomDirtIntensity = (s_RenderSettings.Bloom.Enabled && s_RenderSettings.Bloom.DirtEnabled) ? s_RenderSettings.Bloom.DirtIntensity : 0.0f;
+	uniforms.OutlineWidth = s_ViewOptions.Overlays.Outline ? s_ViewOptions.Overlays.OutlineWidth : 0.0f;
+	uniforms.OutlineColor = s_ViewOptions.Overlays.OutlineColor;
 	uniforms.HuePreservation = s_TonemapHuePreservation;
-	uniforms.RawScene = s_ShowShadowsOnly && s_SelectedLightKind != LightKind::None ? 1.0f : 0.0f;
+	int shadowsOnlyIndex = 0;
+	uniforms.RawScene = s_ViewOptions.ShadowsOnly && GetShadowsOnlyLight(shadowsOnlyIndex) != EnvMapVulkanSceneData::LightKind::None ? 1.0f : 0.0f;
 	// The G-buffer views have the numbers of ViewportComposite.glsl's GBufferView (the lighting views are the PBR shaders')
 	const glm::mat4& projection = s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix();
-	uniforms.DebugView = s_DebugView >= DebugViewNormals && s_DebugView <= DebugViewMotion ? (float)s_DebugView : 0.0f;
-	if (IsRayTracedDebugView(s_DebugView))
+	uniforms.DebugView = s_ViewOptions.DebugView >= DebugViewNormals && s_ViewOptions.DebugView <= DebugViewMotion ? (float)s_ViewOptions.DebugView : 0.0f;
+	if (IsRayTracedDebugView(s_ViewOptions.DebugView))
 	{
 		uniforms.DebugView = 5.0f; // the ray-traced view's image, whichever of the views it holds
 	}
-	if (s_DebugView == DebugViewPathTraced)
+	if (s_ViewOptions.DebugView == DebugViewPathTraced)
 	{
 		uniforms.DebugView = 6.0f; // the path tracer's image in the scene's place (exposed and tonemapped like it)
 	}
 	uniforms.Padding = 0.0f;
-	uniforms.DebugParams = glm::vec4(projection[2][2], projection[3][2], s_DebugViewDepthRange, s_DebugViewMotionScale);
+	uniforms.DebugParams = glm::vec4(projection[2][2], projection[3][2], s_ViewOptions.DebugViewDepthRange, s_ViewOptions.DebugViewMotionScale);
 	vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(CompositeUniforms), &uniforms);
 
 	// Scene, bloom, lens dirt, overlay and selection mask images (rewritten when the framebuffers are resized, see WriteBloomDescriptorSets)
@@ -9553,1366 +3701,84 @@ void EnvMapVulkanRenderer::CompositePass()
 	}
 }
 
-// Renderer Stats panel: the frame rate, the CPU and GPU frame times and their history, what the GPU did this frame pass
-// by pass (from EnvMapVulkanProfiler: GPU time, draw calls, triangles, render passes, pipeline statistics), the scene's
-// size and the GPU. Hovering a pass explains what it does.
-static bool s_ShowRendererStats = true;
-static bool s_ShowViewportFps = true;
-
-// Colors of the top-level passes (the timeline and the table's markers)
-static ImU32 GetPassColor(int index)
-{
-	static const ImU32 colors[] = {
-		IM_COL32(86, 156, 214, 255), IM_COL32(220, 160, 70, 255), IM_COL32(120, 190, 110, 255), IM_COL32(200, 100, 160, 255),
-		IM_COL32(90, 200, 200, 255), IM_COL32(230, 110, 90, 255), IM_COL32(160, 140, 230, 255), IM_COL32(200, 200, 90, 255),
-		IM_COL32(150, 150, 160, 255), IM_COL32(100, 210, 160, 255), IM_COL32(240, 140, 180, 255), IM_COL32(130, 170, 90, 255),
-	};
-	return colors[index % (sizeof(colors) / sizeof(colors[0]))];
-}
-
-static std::string FormatCount(uint64_t value)
-{
-	char text[32];
-	if (value >= 10000000ull)
-	{
-		snprintf(text, sizeof(text), "%.1fM", value / 1.0e6);
-	}
-	else if (value >= 10000ull)
-	{
-		snprintf(text, sizeof(text), "%.1fK", value / 1.0e3);
-	}
-	else
-	{
-		snprintf(text, sizeof(text), "%llu", (unsigned long long)value);
-	}
-	return text;
-}
-
-// The CPU and GPU frame times of the last frames as two lines, with the 60 and 30 FPS marks
-static void DrawFrameTimeGraph(float height)
-{
-	const auto& cpu = EnvMapVulkanProfiler::GetCpuHistory();
-	const auto& gpu = EnvMapVulkanProfiler::GetGpuHistory();
-	const uint32_t offset = EnvMapVulkanProfiler::GetHistoryOffset();
-	const uint32_t count = EnvMapVulkanProfiler::HistorySize;
-
-	float maxMs = 1000.0f / 60.0f;
-	for (uint32_t i = 0; i < count; i++)
-	{
-		maxMs = std::max(maxMs, std::max(cpu[i], gpu[i]));
-	}
-	maxMs = std::min(maxMs * 1.1f, 100.0f); // a stall (loading a model) doesn't flatten the rest
-
-	const ImVec2 size(ImGui::GetContentRegionAvail().x, height);
-	const ImVec2 min = ImGui::GetCursorScreenPos();
-	const ImVec2 max(min.x + size.x, min.y + size.y);
-	ImGui::InvisibleButton("##FrameTimeGraph", size);
-	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	drawList->AddRectFilled(min, max, IM_COL32(25, 25, 30, 255), 3.0f);
-	drawList->PushClipRect(min, max, true);
-
-	auto yOf = [&](float ms) { return max.y - (std::min(ms, maxMs) / maxMs) * (size.y - 2.0f) - 1.0f; };
-	for (float fps : { 60.0f, 30.0f })
-	{
-		const float ms = 1000.0f / fps;
-		if (ms < maxMs)
-		{
-			const float y = yOf(ms);
-			drawList->AddLine(ImVec2(min.x, y), ImVec2(max.x, y), IM_COL32(255, 255, 255, 50));
-			char label[32];
-			snprintf(label, sizeof(label), "%.0f FPS", fps);
-			drawList->AddText(ImVec2(min.x + 4.0f, y - ImGui::GetTextLineHeight()), IM_COL32(255, 255, 255, 90), label);
-		}
-	}
-	auto drawLine = [&](const std::array<float, EnvMapVulkanProfiler::HistorySize>& values, ImU32 color) {
-		std::vector<ImVec2> points;
-		points.reserve(count);
-		for (uint32_t i = 0; i < count; i++)
-		{
-			const float x = min.x + size.x * (float)i / (float)(count - 1);
-			points.push_back(ImVec2(x, yOf(values[(offset + i) % count])));
-		}
-		drawList->AddPolyline(points.data(), (int)points.size(), color, ImDrawFlags_None, 1.5f);
-	};
-	const ImU32 cpuColor = IM_COL32(230, 180, 80, 255);
-	const ImU32 gpuColor = IM_COL32(90, 170, 240, 255);
-	drawLine(cpu, cpuColor);
-	drawLine(gpu, gpuColor);
-	drawList->PopClipRect();
-
-	if (ImGui::IsItemHovered())
-	{
-		// The frame under the cursor
-		const float t = (ImGui::GetIO().MousePos.x - min.x) / size.x;
-		const uint32_t i = (uint32_t)glm::clamp(t * (count - 1) + 0.5f, 0.0f, (float)(count - 1));
-		const float cpuMs = cpu[(offset + i) % count];
-		const float gpuMs = gpu[(offset + i) % count];
-		ImGui::SetTooltip("%u frames ago\nFrame (CPU): %.2f ms (%.0f FPS)\nGPU: %.2f ms", count - 1 - i, cpuMs, cpuMs > 0.0f ? 1000.0f / cpuMs : 0.0f, gpuMs);
-	}
-	ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(cpuColor), "Frame (CPU)");
-	ImGui::SameLine();
-	ImGui::TextColored(ImGui::ColorConvertU32ToFloat4(gpuColor), "GPU");
-	ImGui::SameLine();
-	ImGui::TextDisabled("last %u frames, up to %.1f ms", count, maxMs);
-}
-
-// The GPU frame as a bar: each top-level pass as wide as its share of the GPU time
-static void DrawGpuTimeline(const EnvMapVulkanProfiler::FrameResults& results)
-{
-	double total = 0.0;
-	for (const auto& scope : results.Scopes)
-	{
-		if (scope.Depth == 0)
-		{
-			total += scope.SmoothedGpuMs;
-		}
-	}
-	const ImVec2 size(ImGui::GetContentRegionAvail().x, 18.0f);
-	const ImVec2 min = ImGui::GetCursorScreenPos();
-	ImGui::InvisibleButton("##GpuTimeline", size);
-	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	drawList->AddRectFilled(min, ImVec2(min.x + size.x, min.y + size.y), IM_COL32(25, 25, 30, 255), 3.0f);
-	if (total <= 0.0)
-	{
-		return;
-	}
-	const float mouseX = ImGui::GetIO().MousePos.x;
-	const bool hovered = ImGui::IsItemHovered();
-	float x = min.x;
-	int top = 0;
-	for (const auto& scope : results.Scopes)
-	{
-		if (scope.Depth != 0)
-		{
-			continue;
-		}
-		const float width = (float)(scope.SmoothedGpuMs / total) * size.x;
-		const ImVec2 a(x, min.y), b(x + width, min.y + size.y);
-		drawList->AddRectFilled(a, b, GetPassColor(top));
-		if (width > 40.0f)
-		{
-			drawList->PushClipRect(a, b, true);
-			drawList->AddText(ImVec2(a.x + 3.0f, a.y + 2.0f), IM_COL32(20, 20, 20, 255), scope.Name.c_str());
-			drawList->PopClipRect();
-		}
-		if (hovered && mouseX >= a.x && mouseX < b.x)
-		{
-			ImGui::SetTooltip("%s: %.3f ms (%.0f%% of the GPU frame)", scope.Name.c_str(), scope.SmoothedGpuMs, 100.0 * scope.SmoothedGpuMs / total);
-		}
-		x += width;
-		top++;
-	}
-}
-
-// The tooltip of a pass: what it does, and the GPU's statistics for a top-level one
-static void PassTooltip(const EnvMapVulkanProfiler::ScopeResult& scope)
-{
-	ImGui::BeginTooltip();
-	ImGui::PushTextWrapPos(ImGui::GetFontSize() * 30.0f);
-	ImGui::Text("%s", scope.Name.c_str());
-	if (scope.Description)
-	{
-		ImGui::Separator();
-		ImGui::TextUnformatted(scope.Description);
-	}
-	if (scope.HasStatistics)
-	{
-		using P = EnvMapVulkanProfiler;
-		ImGui::Separator();
-		ImGui::TextDisabled("Pipeline statistics (counted by the GPU)");
-		ImGui::Text("Vertices read: %s", FormatCount(scope.Statistics[P::InputVertices]).c_str());
-		ImGui::Text("Vertex shader runs: %s", FormatCount(scope.Statistics[P::VertexShaderInvocations]).c_str());
-		ImGui::Text("Primitives assembled: %s", FormatCount(scope.Statistics[P::InputPrimitives]).c_str());
-		ImGui::Text("Primitives rasterized: %s (the rest were culled or off screen)", FormatCount(scope.Statistics[P::ClippingPrimitives]).c_str());
-		ImGui::Text("Fragment shader runs: %s", FormatCount(scope.Statistics[P::FragmentShaderInvocations]).c_str());
-		const uint64_t pixels = (uint64_t)scope.TargetWidth * scope.TargetHeight;
-		if (pixels > 0 && scope.RenderPasses == 1)
-		{
-			ImGui::Text("Shading per pixel: %.2fx (%u x %u target)", (double)scope.Statistics[P::FragmentShaderInvocations] / pixels,
-				scope.TargetWidth, scope.TargetHeight);
-			ImGui::TextDisabled("Above 1: overdraw, pixels shaded more than once");
-		}
-	}
-	ImGui::PopTextWrapPos();
-	ImGui::EndTooltip();
-}
-
-static void OnImGuiRenderRendererStats()
-{
-	if (!s_ShowRendererStats)
-	{
-		return;
-	}
-	ImGui::SetNextWindowSize(ImVec2(460.0f, 640.0f), ImGuiCond_FirstUseEver);
-	if (!ImGui::Begin("Renderer Stats", &s_ShowRendererStats))
-	{
-		ImGui::End();
-		return;
-	}
-	const EnvMapVulkanProfiler::FrameResults& results = EnvMapVulkanProfiler::GetResults();
-	const double cpuMs = EnvMapVulkanProfiler::GetSmoothedCpuFrameMs();
-	const double gpuMs = results.SmoothedGpuMs;
-
-	// The frame rate, and what limits it
-	ImGui::SetWindowFontScale(1.6f);
-	ImGui::Text("%.0f FPS", EnvMapVulkanProfiler::GetFps());
-	ImGui::SetWindowFontScale(1.0f);
-	ImGui::SameLine();
-	ImGui::BeginGroup();
-	ImGui::Text("Frame: %.2f ms", cpuMs);
-	if (results.Valid)
-	{
-		ImGui::Text("GPU:   %.2f ms", gpuMs);
-	}
-	else
-	{
-		ImGui::TextDisabled("GPU: no timestamps on this device");
-	}
-	ImGui::EndGroup();
-	if (results.Valid && cpuMs > 0.0)
-	{
-		const bool gpuBound = gpuMs > cpuMs * 0.75;
-		ImGui::TextColored(gpuBound ? ImVec4(0.55f, 0.75f, 1.0f, 1.0f) : ImVec4(1.0f, 0.8f, 0.45f, 1.0f), gpuBound ? "GPU-bound" : "CPU-bound");
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip(gpuBound
-				? "The GPU's work takes most of the frame: fewer or cheaper pixels and passes (resolution, shadows, reflections) "
-				  "raise the frame rate."
-				: "The GPU finishes early and waits: the frame time is the CPU's (the editor UI, scene updates, recording "
-				  "commands, waiting for the GPU at the end of each frame). Cheaper GPU work won't raise the frame rate much.");
-		}
-		ImGui::SameLine();
-		ImGui::TextDisabled("(GPU busy %.0f%% of the frame)", 100.0 * std::min(gpuMs / cpuMs, 1.0));
-	}
-	ImGui::Checkbox("FPS in the viewport", &s_ShowViewportFps);
-
-	ImGui::Spacing();
-	DrawFrameTimeGraph(80.0f);
-
-	// The passes
-	ImGui::Spacing();
-	ImGui::SeparatorText("GPU passes (last finished frame)");
-	if (!results.Valid)
-	{
-		ImGui::TextDisabled("The GPU's timestamps aren't available: only the counts are shown");
-	}
-	DrawGpuTimeline(results);
-	ImGui::TextDisabled("%u draw calls, %s triangles, %u render passes", results.Draws, FormatCount(results.Triangles).c_str(), results.RenderPasses);
-
-	// Top-level passes that ran before but not in this frame (turned off: no water, no point light shadows...)
-	static std::vector<std::pair<std::string, const char*>> s_KnownPasses;
-	for (const auto& scope : results.Scopes)
-	{
-		if (scope.Depth == 0 && std::find_if(s_KnownPasses.begin(), s_KnownPasses.end(), [&](const auto& p) { return p.first == scope.Name; }) == s_KnownPasses.end())
-		{
-			s_KnownPasses.push_back({ scope.Name, scope.Description });
-		}
-	}
-
-	const ImGuiTableFlags tableFlags = ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Resizable;
-	if (ImGui::BeginTable("##Passes", 6, tableFlags))
-	{
-		ImGui::TableSetupColumn("Pass", ImGuiTableColumnFlags_WidthStretch);
-		ImGui::TableSetupColumn("GPU ms");
-		ImGui::TableSetupColumn("%");
-		ImGui::TableSetupColumn("Draws");
-		ImGui::TableSetupColumn("Triangles");
-		ImGui::TableSetupColumn("Target");
-		ImGui::TableHeadersRow();
-
-		const double total = gpuMs > 0.0 ? gpuMs : 1.0;
-		int top = -1;
-		// The scopes are in recording order, a parent before its children: a tree node per scope; a closed node skips its
-		// children (the scopes after it with a greater depth), an open one is popped when its subtree ends
-		const auto& scopes = results.Scopes;
-		std::vector<int> openDepths; // the open tree nodes that have children
-		for (size_t i = 0; i < scopes.size();)
-		{
-			const auto& scope = scopes[i];
-			top += scope.Depth == 0 ? 1 : 0;
-			const bool hasChildren = i + 1 < scopes.size() && scopes[i + 1].Depth > scope.Depth;
-
-			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
-			ImGui::PushID((int)i);
-			if (scope.Depth == 0)
-			{
-				// The pass's color in the timeline
-				const ImVec2 p = ImGui::GetCursorScreenPos();
-				const float h = ImGui::GetTextLineHeight();
-				ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(p.x, p.y + 2.0f), ImVec2(p.x + 4.0f, p.y + h - 2.0f), GetPassColor(top));
-				ImGui::SetCursorScreenPos(ImVec2(p.x + 8.0f, p.y));
-			}
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanFullWidth;
-			flags |= hasChildren ? (scope.Depth == 0 ? ImGuiTreeNodeFlags_DefaultOpen : 0) : (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen);
-			const bool open = ImGui::TreeNodeEx(scope.Name.c_str(), flags);
-			if (hasChildren && open)
-			{
-				openDepths.push_back(scope.Depth);
-			}
-			if (ImGui::IsItemHovered())
-			{
-				PassTooltip(scope);
-			}
-			ImGui::TableNextColumn();
-			ImGui::Text("%.3f", scope.SmoothedGpuMs);
-			ImGui::TableNextColumn();
-			ImGui::Text("%.0f", 100.0 * scope.SmoothedGpuMs / total);
-			ImGui::TableNextColumn();
-			ImGui::Text("%u", scope.Draws);
-			ImGui::TableNextColumn();
-			ImGui::Text("%s", FormatCount(scope.Triangles).c_str());
-			ImGui::TableNextColumn();
-			if (scope.TargetWidth > 0)
-			{
-				ImGui::Text(scope.RenderPasses > 1 ? "%ux%u (x%u)" : "%ux%u", scope.TargetWidth, scope.TargetHeight, scope.RenderPasses);
-				if (ImGui::IsItemHovered())
-				{
-					ImGui::SetTooltip("%u render pass(es); the last one drew into a %u x %u image", scope.RenderPasses, scope.TargetWidth, scope.TargetHeight);
-				}
-			}
-			else
-			{
-				ImGui::TextDisabled("-");
-			}
-			ImGui::PopID();
-
-			size_t next = i + 1;
-			if (hasChildren && !open)
-			{
-				while (next < scopes.size() && scopes[next].Depth > scope.Depth)
-				{
-					next++;
-				}
-			}
-			const int nextDepth = next < scopes.size() ? scopes[next].Depth : -1;
-			while (!openDepths.empty() && openDepths.back() >= nextDepth)
-			{
-				ImGui::TreePop();
-				openDepths.pop_back();
-			}
-			i = next;
-		}
-
-		// Passes that didn't run in this frame
-		for (const auto& [name, description] : s_KnownPasses)
-		{
-			bool ran = false;
-			for (const auto& scope : scopes)
-			{
-				ran |= scope.Depth == 0 && scope.Name == name;
-			}
-			if (ran)
-			{
-				continue;
-			}
-			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
-			ImGui::TextDisabled("    %s (off)", name.c_str());
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("Not running in this frame%s%s", description ? ":\n" : "", description ? description : "");
-			}
-		}
-		ImGui::EndTable();
-	}
-	ImGui::TextDisabled("Hover a pass for what it does and the GPU's counts");
-
-	// The scene
-	ImGui::Spacing();
-	ImGui::SeparatorText("Scene");
-	uint32_t modelCount = 0, meshCount = 0;
-	uint64_t triangleCount = 0;
-	for (EnvMapVulkanEntityID model : GetModels())
-	{
-		if (H2M::RefH2M<H2M::ModelH2M> modelRef = GetModel(model))
-		{
-			modelCount++;
-			for (const auto& mesh : modelRef->GetMeshes())
-			{
-				meshCount++;
-				triangleCount += mesh->IndexCount / 3;
-			}
-		}
-	}
-	ImGui::Text("%u models, %u meshes, %s triangles", modelCount, meshCount, FormatCount(triangleCount).c_str());
-	ImGui::Text("%zu point lights (%u with shadows), %zu spot lights (%u with shadows)", s_Lights.PointLights.size(), s_LocalShadowSlots.PointCount,
-		s_Lights.SpotLights.size(), s_LocalShadowSlots.SpotCount);
-	ImGui::Text("Viewport: %u x %u", s_Framebuffer.As<H2M::VulkanFramebufferH2M>()->GetWidth(), s_Framebuffer.As<H2M::VulkanFramebufferH2M>()->GetHeight());
-
-	// The GPU
-	ImGui::Spacing();
-	ImGui::SeparatorText("GPU");
-	const VkPhysicalDeviceProperties& properties = H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
-	ImGui::Text("%s", properties.deviceName);
-	ImGui::Text("Vulkan %u.%u.%u", VK_API_VERSION_MAJOR(properties.apiVersion), VK_API_VERSION_MINOR(properties.apiVersion),
-		VK_API_VERSION_PATCH(properties.apiVersion));
-	if (properties.vendorID == 0x10DE) // NVIDIA's driver version encoding
-	{
-		ImGui::SameLine();
-		ImGui::Text(", driver %u.%u", (properties.driverVersion >> 22) & 0x3FF, (properties.driverVersion >> 14) & 0xFF);
-	}
-	ImGui::TextDisabled("Timestamps: %s, pipeline statistics: %s", EnvMapVulkanProfiler::IsSupported() ? "yes" : "no",
-		EnvMapVulkanProfiler::AreStatisticsSupported() ? "yes" : "no");
-
-	ImGui::End();
-}
-
-// The frame rate in the viewport's top-left corner
-static void DrawViewportFps()
-{
-	if (!s_ShowViewportFps || s_ViewportImageSize.x <= 0.0f)
-	{
-		return;
-	}
-	char text[64];
-	const auto& results = EnvMapVulkanProfiler::GetResults();
-	if (results.Valid)
-	{
-		snprintf(text, sizeof(text), "%.0f FPS  %.2f ms  GPU %.2f ms", EnvMapVulkanProfiler::GetFps(), EnvMapVulkanProfiler::GetSmoothedCpuFrameMs(),
-			results.SmoothedGpuMs);
-	}
-	else
-	{
-		snprintf(text, sizeof(text), "%.0f FPS  %.2f ms", EnvMapVulkanProfiler::GetFps(), EnvMapVulkanProfiler::GetSmoothedCpuFrameMs());
-	}
-	ImDrawList* drawList = ImGui::GetWindowDrawList();
-	const ImVec2 textSize = ImGui::CalcTextSize(text);
-	const ImVec2 position(s_ViewportImageMin.x + 8.0f, s_ViewportImageMin.y + 8.0f);
-	drawList->AddRectFilled(ImVec2(position.x - 5.0f, position.y - 3.0f), ImVec2(position.x + textSize.x + 5.0f, position.y + textSize.y + 3.0f),
-		IM_COL32(0, 0, 0, 140), 4.0f);
-	drawList->AddText(position, IM_COL32(235, 235, 235, 255), text);
-}
-
+// The window's user interface (SetUserInterface): built with ImGui, recorded with the ImGui Vulkan backend into a secondary
+// command buffer of the window's render pass, after the composite of the scene
 void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers)
 {
-	// H2M::RefH2M<H2M::VulkanContextH2M> context = H2M::VulkanContextH2M::Get();
 	H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
-
 	uint32_t width = swapChain.GetWidth();
 	uint32_t height = swapChain.GetHeight();
 
-	// ImGui Pass
+	VkCommandBufferBeginInfo cmdBufInfo = {};
+	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+	cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
+	VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(s_ImGuiCommandBuffer, &cmdBufInfo));
+
+	VkViewport viewport = {};
+	viewport.x = 0.0f;
+	viewport.y = (float)height;
+	viewport.height = -(float)height;
+	viewport.width = (float)width;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	vkCmdSetViewport(s_ImGuiCommandBuffer, 0, 1, &viewport);
+
+	VkRect2D scissor = {};
+	scissor.extent.width = width;
+	scissor.extent.height = height;
+	vkCmdSetScissor(s_ImGuiCommandBuffer, 0, 1, &scissor);
+
+	if (s_BuildUserInterface)
 	{
-		VkCommandBufferBeginInfo cmdBufInfo = {};
-		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-		cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
-
-		VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(s_ImGuiCommandBuffer, &cmdBufInfo));
-
-		// Update dynamic viewport state
-		VkViewport viewport = {};
-		viewport.x = 0.0f;
-		viewport.y = (float)height;
-		viewport.height = -(float)height;
-		viewport.width = (float)width;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(s_ImGuiCommandBuffer, 0, 1, &viewport);
-
-		// Update dynamic scissor state
-		VkRect2D scissor = {};
-		scissor.extent.width = width;
-		scissor.extent.height = height;
-		scissor.offset.x = 0;
-		scissor.offset.y = 0;
-		vkCmdSetScissor(s_ImGuiCommandBuffer, 0, 1, &scissor);
-
-		// ImGui Dockspace
-		bool open = true;
-		bool* p_open = &open;
-
-		static bool opt_fullscreen_persistant = true;
-		bool opt_fullscreen = opt_fullscreen_persistant;
-		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-		// because it would be confusing to have two docking targets within each others.
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-		if (opt_fullscreen)
-		{
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->Pos);
-			ImGui::SetNextWindowSize(viewport->Size);
-			ImGui::SetNextWindowViewport(viewport->ID);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-			window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-		}
-
-		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background 
-		// and handle the pass-thru hole, so we ask Begin() to not render a background.
-		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-			window_flags |= ImGuiWindowFlags_NoBackground;
-
-		// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-		// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-		// all active windows docked into it will lose their parent and become undocked.
-		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin("DockSpace Demo", p_open, window_flags);
-		{
-			if (opt_fullscreen)
-			{
-				ImGui::PopStyleVar(2);
-			}
-
-			// DockSpace
-			ImGuiIO& io = ImGui::GetIO();
-			if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-			{
-				ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-				ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-			}
-			else
-			{
-				// ShowDockingDisabledMessage();
-			}
-
-			/**** BEGIN Viewport ****/
-
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-			ImGui::Begin("Viewport");
-
-			// Tell ImGuiWrapper the scene is shown in this ImGui window, so camera input (CameraController)
-			// works while the viewport is hovered/focused, instead of being blocked as "mouse over an ImGui window"
-			ImGuiWrapper::SetViewportEnabled(true);
-			ImGuiWrapper::SetViewportHovered(ImGui::IsWindowHovered());
-			ImGuiWrapper::SetViewportFocused(ImGui::IsWindowFocused());
-			if (ImGui::IsWindowFocused())
-			{
-				HandleCopyPasteKeys(); // Ctrl+C, Ctrl+V: copy and paste the selected models, meshes and lights
-				// Delete: the selected entities, as in the Scene Hierarchy (not while typing in a field)
-				if (!ImGui::GetIO().WantTextInput && s_RenamingEntity == NoEntity && ImGui::IsKeyPressed(ImGuiKey_Delete, false))
-				{
-					DeleteSelectedEntities();
-				}
-			}
-
-			auto viewportOffset = ImGui::GetCursorPos(); // includes tab bar
-			auto viewportSize = ImGui::GetContentRegionAvail();
-			if (!s_TextureID || s_ViewportTextureNeedsUpdate)
-			{
-				RegisterViewportTextureWithImGui();
-			}
-			ImGui::Image(s_TextureID, viewportSize, { 0, 1 }, { 1, 0 });
-			s_ViewportImageMin = ImGui::GetItemRectMin();
-			s_ViewportImageSize = ImGui::GetItemRectSize();
-			bool viewportImageHovered = ImGui::IsItemHovered();
-
-			// Drop onto the scene:
-			// - a material from the Material Library: the mesh under the cursor gets it and becomes the selection
-			//   (so the Material Editor shows the material)
-			// - a model file from the Content Browser: placed standing on the ground under the cursor (see LoadModel)
-			// - an .hdr file from the Content Browser: loaded as the environment map
-			if (ImGui::BeginDragDropTarget())
-			{
-				glm::vec2 ndc = GetViewportMouseNdc();
-
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(s_MaterialPayload))
-				{
-					uint32_t index = *(const uint32_t*)payload->Data;
-					const auto& materials = EnvMapVulkanMaterialLibrary::GetMaterials();
-
-					EnvMapVulkanEntityID hitModel;
-					int hitMesh;
-					RaycastMesh(ndc.x, ndc.y, hitModel, hitMesh);
-
-					EnvMapVulkanEntityID hitPart = hitModel != NoEntity ? FindPart(hitModel, hitMesh) : NoEntity;
-					if (index < materials.size() && hitPart != NoEntity)
-					{
-						AssignMaterialToDropTarget(hitPart, materials[index]);
-					}
-				}
-
-				ImVec2 imageMax(s_ViewportImageMin.x + s_ViewportImageSize.x, s_ViewportImageMin.y + s_ViewportImageSize.y);
-				auto isSceneFile = [](const std::string& path) { return IsModelFile(path) || IsEnvironmentMapFile(path); };
-				std::string droppedPath;
-				if (AcceptFileDrop(s_ViewportImageMin, imageMax, isSceneFile, "a model file or an .hdr environment map", droppedPath))
-				{
-					// loaded at the start of the next frame (see Draw)
-					if (IsEnvironmentMapFile(droppedPath))
-					{
-						s_PendingEnvMapFilename = droppedPath;
-					}
-					else
-					{
-						s_PendingModelFilename = droppedPath;
-						s_PendingModelGroundPosition = GetDropGroundPosition(ndc.x, ndc.y);
-					}
-				}
-				ImGui::EndDragDropTarget();
-			}
-
-			// Compare whole pixels: the panel size can be fractional (DPI scaling, docking), and comparing the float size with
-			// the stored integer size requested a framebuffer resize every frame. A collapsed/hidden panel has no area: keep the size.
-			uint32_t viewportWidth = (uint32_t)glm::max(viewportSize.x, 0.0f);
-			uint32_t viewportHeight = (uint32_t)glm::max(viewportSize.y, 0.0f);
-			if (viewportWidth > 0 && viewportHeight > 0 && (s_ViewportWidth != viewportWidth || s_ViewportHeight != viewportHeight))
-			{
-				s_ViewportWidth = viewportWidth;
-				s_ViewportHeight = viewportHeight;
-				s_ViewportFBNeedsResize = true;
-			}
-
-			SyncLightSelection();
-			DrawLightGizmos();
-			DrawViewportFps();
-			DrawWaterOutline();
-
-			Window* mainWindow = Application::Get()->GetWindow();
-			UpdateImGuizmo(mainWindow);
-
-			// Mouse picking: left click on the scene (not on the gizmo, not with Alt) selects the light icon, or else the
-			// mesh under the cursor (or the water in front of it). Ctrl or Shift + click adds it to the selection or removes
-			// it (as in Unity); a double click selects the whole model of the mesh, and Ctrl or Shift + double click adds
-			// all the model's meshes (parts) to the selection.
-			if (viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
-				!Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
-			{
-				const bool toggle = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl) ||
-					Input::IsKeyPressed(KeyH2M::LeftShift) || Input::IsKeyPressed(KeyH2M::RightShift);
-				EnvMapVulkanEntityID clicked = NoEntity;
-				EnvMapVulkanEntityID clickedModel = NoEntity;
-				LightKind lightKind;
-				int lightIndex;
-				if (PickLightIcon(lightKind, lightIndex))
-				{
-					clicked = GetLightEntity(lightKind, lightIndex);
-				}
-				else
-				{
-					glm::vec2 ndc = GetViewportMouseNdc();
-					glm::vec3 meshHit;
-					int hitMesh;
-					RaycastMesh(ndc.x, ndc.y, clickedModel, hitMesh, &meshHit);
-					clicked = clickedModel != NoEntity ? GetModelOrPart(clickedModel, hitMesh) : NoEntity;
-					// The water, when it is in front of the model under the cursor (or there is none)
-					glm::vec3 rayOrigin, rayDirection;
-					GetCameraRay(ndc.x, ndc.y, rayOrigin, rayDirection);
-					float waterT;
-					if (s_WaterEntity != NoEntity && RaycastWater(s_WaterSettings, rayOrigin, rayDirection, waterT) &&
-						(clickedModel == NoEntity || waterT < glm::length(meshHit - rayOrigin)))
-					{
-						clicked = s_WaterEntity;
-						clickedModel = NoEntity;
-					}
-				}
-				if (toggle && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && clickedModel != NoEntity)
-				{
-					AddModelPartsToSelection(clickedModel, clicked); // before the toggle: its first click toggled the mesh already
-				}
-				else if (toggle)
-				{
-					ToggleSelected(clicked); // nothing under the cursor: the selection stays
-				}
-				else if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left) && clickedModel != NoEntity)
-				{
-					SelectOnly(clickedModel); // the gizmo moves the model, not the part under the mouse
-				}
-				else
-				{
-					SelectOnly(clicked); // NoEntity: nothing under the cursor deselects
-				}
-				ExtractLights(); // the selected light's kind and the water's selection follow the primary entity
-				ExtractWater();
-			}
-
-			ImGui::End();
-			ImGui::PopStyleVar();
-
-			/**** END Viewport ****/
-
-			/**** BEGIN ImGui panels ****/
-
-			// ImGui::Begin("Scene Hierarchy");
-			// ImGui::End();
-
-			bool showSceneHierarchyPanel = true;
-			// H2M::VulkanTestLayer::s_SceneHierarchyPanel->OnImGuiRender(&showSceneHierarchyPanel);
-
-			// Content Browser (shared with SceneHazelEnvMap): drag .hdr files onto the Environment panel and
-			// model files onto the Models and Meshes panel's "Load Model" button
-			static H2M::ContentBrowserPanelH2M* s_ContentBrowserPanel = nullptr;
-			static bool s_ShowContentBrowserPanel = true;
-			if (!s_ContentBrowserPanel)
-			{
-				s_ContentBrowserPanel = new H2M::ContentBrowserPanelH2M();
-			}
-			s_ContentBrowserPanel->OnImGuiRender(&s_ShowContentBrowserPanel);
-
-			bool showMaterialEditorPanel = true;
-			// H2M::VulkanTestLayer::s_MaterialEditorPanel->OnImGuiRender(&showMaterialEditorPanel);
-
-			/**** END ImGui panels ****/
-
-			/////////////////////////////////////////////////////////////////////////////////////
-			//// ENVIRONMENT
-			/////////////////////////////////////////////////////////////////////////////////////
-
-			/**** BEGIN Environment ****/
-			ImGui::Begin("Environment");
-			{
-				if (ImGui::CollapsingHeader("Display Info", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					{
-						EnvironmentControls();
-						ImGui::Columns(2);
-						ImGuiWrapper::Property("Display Grid", s_DisplayGrid);
-						ImGuiWrapper::Property("Grid Scale", s_GridScale, 0.1f, 1.0f, 256.0f, PropertyFlag::DragProperty);
-						ImGuiWrapper::Property("Grid Line Width", s_GridSize, 0.001f, 0.001f, 0.5f, PropertyFlag::DragProperty);
-
-						ImGui::Columns(1);
-					}
-				}
-
-				// What the viewport shows instead of the finished image: the G-buffer's contents, or one part of the lighting
-				if (ImGui::CollapsingHeader("Debug View", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ImGui::PushID("DebugView");
-					ImGui::Combo("View", &s_DebugView, "Off\0Normals\0Roughness\0Linear Depth\0Motion\0Direct Light Only\0Indirect Light Only\0Diffuse Surface Shading\0Probe Irradiance Only\0Reflection Occlusion\0Ambient Occlusion\0AO Denoised\0AO Raw\0Ray Traced Normals\0Ray Traced Albedo\0Ray Traced Instances\0Reflections\0Reflections Raw\0Path Traced\0");
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Normals, Roughness, Linear Depth, Motion: the data the G-buffer prepass writes for the opaque meshes\n"
-							"  Normals: the world direction as a color (x red, y green, z blue; straight up is light green)\n"
-							"  Roughness: black = smooth, white = rough\n"
-							"  Linear Depth: the distance from the camera, black = near, white = Depth Range and beyond\n"
-							"  Motion: movement on the screen since the previous frame. Gray = none, more red = to the right,\n"
-							"  more green = down\n"
-							"Direct Light Only: the sun, point and spot lights. Indirect Light Only: the environment's light.\n"
-							"Diffuse Surface Shading: each surface as light that bounces sees it. One color per material (a map's\n"
-							"  average), the mesh's own normals, no reflections: what the probes and ray hits will be lit with.\n"
-							"  Opaque meshes only: the water and glass are drawn as usual.\n"
-							"Probe Irradiance Only: the indirect diffuse light arriving at every surface, as a white matte surface\n"
-							"  would show it: no textures, no direct light, no reflections. From the probes inside the probe volume,\n"
-							"  from the environment elsewhere. For judging the global illumination by itself: leaks, blotches,\n"
-							"  the color a wall gives its surroundings.\n"
-							"Reflection Occlusion: how much of the environment's reflection the probe volume lets through at each\n"
-							"  surface (its Occlude Reflections). White = all of it (open sky, or outside the volume),\n"
-							"  black = none (a closed room).\n"
-							"Ambient Occlusion: the screen-space occlusion by itself (white = open, black = closed in), as the\n"
-							"  indirect light is multiplied by it. AO Denoised: the same before the average over the frames.\n"
-							"  AO Raw: before the blur too, as the GTAO pass computes it for one frame (noisy).\n"
-							"  Opaque meshes only. The settings: Ambient Occlusion, below.\n"
-							"Ray Traced Normals, Albedo, Instances: one ray per pixel from the camera against the acceleration\n"
-							"  structures, and what it hit, read the way every ray-traced effect reads it. Needs a GPU with ray tracing.\n"
-							"  Normals: must look like the Normals view (a moved model or a playing animation must follow)\n"
-							"  Albedo: the material's color or albedo map at the hit (the map at full size: it flickers far away)\n"
-							"  Instances: a color per mesh in the top-level structure\n"
-							"  Opaque meshes only (glass is in the structures, in a group these views leave out).\n"
-							"Reflections: the ray-traced reflection image by itself: the light each surface reflects, as it arrives\n"
-							"  (before the surface's own color and Fresnel). Black: no reflection was traced there (too rough, or the\n"
-							"  sky), and the environment's reflection is used. Reflections Raw: the same as one frame's rays give it,\n"
-							"  before the average over the frames and the blur. The settings: Reflections, below.\n"
-							"Path Traced: the whole image by rays alone, as a reference. Every pixel's light is followed through all\n"
-							"  its bounces: no probes, no ambient occlusion pass, no reflection image, no shadow maps. Noisy at first;\n"
-							"  it gets cleaner with every frame while the camera and the scene stand still. What the normal view\n"
-							"  should look like where its approximations hold. Needs Ray Tracing.");
-					}
-					if (s_DebugView == DebugViewLinearDepth)
-					{
-						ImGui::DragFloat("Depth Range", &s_DebugViewDepthRange, 0.5f, 1.0f, 1000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
-						if (ImGui::IsItemHovered())
-						{
-							ImGui::SetTooltip("The distance shown as white");
-						}
-					}
-					if (s_DebugView == DebugViewMotion)
-					{
-						ImGui::DragFloat("Motion Scale", &s_DebugViewMotionScale, 0.1f, 0.5f, 200.0f, "%.1f px", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
-						if (ImGui::IsItemHovered())
-						{
-							ImGui::SetTooltip("The movement per frame shown at full color (lower: small movements show up more)");
-						}
-					}
-					if (s_DebugView == DebugViewPathTraced)
-					{
-						EnvMapVulkanPathTracerSettings& pathTracer = s_PathTracerSettings;
-						ImGui::SliderInt("Max Bounces", &pathTracer.MaxBounces, 0, EnvMapVulkanPathTracerSettings::MaxMaxBounces, "%d", ImGuiSliderFlags_AlwaysClamp);
-						if (ImGui::IsItemHovered())
-						{
-							ImGui::SetTooltip("The times a path is scattered by a surface before it ends. 0: only the light straight from the\n"
-								"lights and the sky (no bounced light, no reflections); 1: one bounce; more: the light that reaches\n"
-								"deep into a room. Passing through glass doesn't count. Paths that carry little light end earlier.");
-						}
-						ImGui::SliderInt("Samples per Frame", &pathTracer.SamplesPerFrame, 1, EnvMapVulkanPathTracerSettings::MaxSamplesPerFrame, "%d", ImGuiSliderFlags_AlwaysClamp);
-						if (ImGui::IsItemHovered())
-						{
-							ImGui::SetTooltip("Paths per pixel and frame. More: the image clears up in fewer frames, each of which takes longer\n"
-								"(the editor gets less responsive).");
-						}
-						ImGui::DragInt("Max Samples", &pathTracer.MaxSamples, 16.0f, 0, 1 << 20, "%d", ImGuiSliderFlags_AlwaysClamp);
-						if (ImGui::IsItemHovered())
-						{
-							ImGui::SetTooltip("With this many paths per pixel the image is finished and nothing more is traced. 0: never.\n"
-								"The noise halves with four times the samples.");
-						}
-						ImGui::DragFloat("Max Brightness", &pathTracer.MaxBrightness, 0.5f, 0.0f, 10000.0f, "%.1f", ImGuiSliderFlags_AlwaysClamp);
-						if (ImGui::IsItemHovered())
-						{
-							ImGui::SetTooltip("The most one path can add to a pixel after its first bounce. A rare path that finds a small, very\n"
-								"bright spot leaves a white dot that takes thousands of samples to fade; cutting it off loses a little\n"
-								"of the bounced light. 0: no limit (exact, with the dots).");
-						}
-						if (ImGui::Button("Restart"))
-						{
-							s_PathTracer.Restart();
-						}
-						ImGui::SameLine();
-						const uint32_t pathSamples = s_PathTracer.GetSamples();
-						const bool pathFinished = pathTracer.MaxSamples > 0 && pathSamples >= (uint32_t)pathTracer.MaxSamples;
-						ImGui::TextDisabled(pathFinished ? "%u samples per pixel: finished" : "%u samples per pixel", pathSamples);
-						ImGui::TextDisabled("No water, no bloom. Starts over when the camera or the scene changes.");
-					}
-					ImGui::PopID();
-				}
-
-				// Like "Display Outline / Wireframe / Bounding Boxes" in SceneHazelEnvMap
-				if (ImGui::CollapsingHeader("Selection and Overlays", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					EditorOverlaySettings& overlay = s_OverlaySettings;
-					ImGui::PushID("Overlays");
-
-					ImGui::Checkbox("Selection Outline", &overlay.Outline);
-					ImGui::BeginDisabled(!overlay.Outline);
-					ImGui::DragFloat("Outline Width", &overlay.OutlineWidth, 0.05f, 1.0f, 10.0f, "%.1f px", ImGuiSliderFlags_AlwaysClamp);
-					ImGui::ColorEdit4("Outline Color", &overlay.OutlineColor.x, ImGuiColorEditFlags_NoInputs);
-					ImGui::EndDisabled();
-
-					ImGui::Separator();
-					ImGui::Combo("Wireframe", &overlay.Wireframe, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Selected: the selected mesh, or the whole model when no mesh is selected (the water's grid\n"
-							"when the water is selected)\nAll: every loaded model and the water");
-					}
-					ImGui::ColorEdit4("Wireframe Color", &overlay.WireframeColor.x, ImGuiColorEditFlags_NoInputs);
-
-					ImGui::Separator();
-					ImGui::Combo("Bounding Boxes", &overlay.BoundingBoxes, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Selected: the selected mesh's box, or all boxes of the model when no mesh is selected\nAll: the boxes of every loaded model");
-					}
-					ImGui::ColorEdit4("Selected Box", &overlay.SelectedBoundingBoxColor.x, ImGuiColorEditFlags_NoInputs);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Box of the selected mesh\n(all boxes of the selected model when no mesh is selected)");
-					}
-					ImGui::SameLine();
-					ImGui::ColorEdit4("Unselected Boxes", &overlay.BoundingBoxColor.x, ImGuiColorEditFlags_NoInputs);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("All other boxes: other models, and the other meshes of the selected model.\n"
-							"Only drawn with Bounding Boxes = All.");
-					}
-
-					ImGui::Separator();
-					ImGui::Combo("Vertex Vectors", &overlay.Vectors, s_OverlayScopeNames, IM_ARRAYSIZE(s_OverlayScopeNames));
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("A line per vertex along its normal, tangent and/or bitangent\n"
-							"Selected: the selected mesh, or the whole model when no mesh is selected\nAll: every loaded model");
-					}
-					ImGui::BeginDisabled(overlay.Vectors == OverlayScopeOff);
-					ImGui::Checkbox("Normals", &overlay.ShowNormals);
-					ImGui::SameLine();
-					ImGui::Checkbox("Tangents", &overlay.ShowTangents);
-					ImGui::SameLine();
-					ImGui::Checkbox("Bitangents", &overlay.ShowBitangents);
-					ImGui::DragFloat("Vector Length", &overlay.VectorLength, 0.05f, 0.1f, 50.0f, "%.1f %% of model size", ImGuiSliderFlags_AlwaysClamp);
-					static const char* s_VectorColorModes[] = { "By Vector", "By Direction" };
-					ImGui::Combo("Vector Colors", &overlay.VectorColorMode, s_VectorColorModes, IM_ARRAYSIZE(s_VectorColorModes));
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("By Vector: tangent red, bitangent green, normal blue (tangent space x, y, z)\n"
-							"By Direction: the world direction as a color (x red, y green, z blue)\n"
-							"Lines are darker at the vertex and brighter at the tip");
-					}
-					ImGui::EndDisabled();
-
-					ImGui::Separator();
-					ImGui::DragFloat("Line Width", &overlay.LineWidth, 0.05f, 1.0f, 10.0f, "%.1f px", ImGuiSliderFlags_AlwaysClamp);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Wireframe, bounding box and vertex vector lines");
-					}
-
-					ImGui::PopID();
-				}
-
-				// The master switch of everything ray-traced
-				if (ImGui::CollapsingHeader("Ray Tracing", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ImGui::PushID("RayTracing");
-					const bool rayTracingSupported = EnvMapVulkanRayTracing::IsSupported();
-					ImGui::BeginDisabled(!rayTracingSupported);
-					bool rayTracingOn = s_RayTracingEnabled && rayTracingSupported;
-					if (ImGui::Checkbox("Enabled", &rayTracingOn))
-					{
-						s_RayTracingEnabled = rayTracingOn;
-					}
-					ImGui::EndDisabled();
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-					{
-						ImGui::SetTooltip("Everything that traces rays (hardware ray tracing: acceleration structures and ray queries).\n"
-							"Off: no rays are traced and nothing is built or updated for them. Every effect uses its rasterized\n"
-							"version, as on a GPU without ray tracing: for more frames per second when the rays cost too much.\n"
-							"Used by: the probe volume's updates (rays instead of cube maps: much faster to follow a change),\n"
-							"the reflections, the ambient occlusion (its Ray Traced setting) and the Debug View's Ray Traced views.\n"
-							"Its cost: Ray Tracing Scene and the passes that trace rays, in Renderer Stats.");
-					}
-					if (!rayTracingSupported)
-					{
-						ImGui::TextDisabled("This GPU (or its driver) has no ray tracing");
-					}
-					else if (!s_RayTracingEnabled)
-					{
-						ImGui::TextDisabled("Off: rasterized rendering only");
-					}
-					else if (IsRayTracedDebugView(s_DebugView))
-					{
-						const EnvMapVulkanRayTracing::Stats& rayTracingStats = s_RayTracing.GetStats();
-						ImGui::TextDisabled("%u instances of %u meshes, %s triangles", rayTracingStats.Instances, rayTracingStats.Meshes,
-							FormatCount(rayTracingStats.Triangles).c_str());
-						ImGui::TextDisabled("%u skinned models refitted, %u textures, structures %.1f MB", rayTracingStats.SkinnedModels,
-							rayTracingStats.Textures, (double)rayTracingStats.StructureBytes / (1024.0 * 1024.0));
-					}
-					else
-					{
-						std::string users;
-						auto addUser = [&users](bool uses, const char* name)
-						{
-							if (uses)
-							{
-								users += users.empty() ? "" : ",\n";
-								users += name;
-							}
-						};
-						addUser(s_ReflectionSettings.Enabled, "the reflections");
-						addUser(s_SSAOSettings.Enabled && s_SSAOSettings.RayTraced, "the ambient occlusion");
-						addUser(s_ProbeVolumeSettings.Exists, "the probe volume while it updates");
-						addUser(s_DebugView == DebugViewPathTraced, "the Path Traced view");
-						ImGui::TextDisabled("Tracing rays: %s", users.empty() ? "nothing at the moment" : users.c_str());
-					}
-					ImGui::PopID();
-				}
-
-				if (ImGui::CollapsingHeader("Reflections", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ImGui::PushID("Reflections");
-					EnvMapVulkanReflectionSettings& reflections = s_ReflectionSettings;
-					const bool reflectionsAvailable = IsRayTracingActive();
-					ImGui::BeginDisabled(!reflectionsAvailable);
-					ImGui::Checkbox("Ray Traced", &reflections.Enabled);
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-					{
-						ImGui::SetTooltip("On: what a surface reflects is found by a ray against the scene, so it shows the room, the other\n"
-							"objects and their light. Off (and without Ray Tracing): every surface reflects the environment map,\n"
-							"which shows the sky only, darkened where the probe volume says the scene hides it.\n"
-							"Opaque meshes. Glass and the water keep their own reflections; a reflection seen in a reflection\n"
-							"is not followed (the reflected surface shows its matte light).\n"
-							"Debug View > Reflections shows it by itself; its cost: Reflections in Renderer Stats.");
-					}
-					ImGui::BeginDisabled(!reflections.Enabled);
-					ImGui::SliderFloat("Max Roughness", &reflections.MaxRoughness, EnvMapVulkanReflectionSettings::MinMaxRoughness,
-						EnvMapVulkanReflectionSettings::MaxMaxRoughness, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-					{
-						ImGui::SetTooltip("Surfaces rougher than this get no ray and keep the environment's reflection (the traced one fades\n"
-							"out over the last quarter below it). A rough surface's reflection is so blurred that it hardly shows\n"
-							"what it reflects, and its rays scatter so widely that they are mostly noise. Higher: more surfaces\n"
-							"reflect the scene, with more noise for the filters to remove.");
-					}
-					ImGui::Checkbox("Denoise", &reflections.Denoise);
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-					{
-						ImGui::SetTooltip("Each pixel takes its reflection from the traced pixels of its surface around it, from a wider area\n"
-							"the rougher the surface. Off: from the nearest ones only (a rough surface's reflection is grainy).");
-					}
-					ImGui::Checkbox("Temporal Filter", &reflections.Temporal);
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-					{
-						ImGui::SetTooltip("Each frame's rays go in other directions, and the result is the average of the last frames (found\n"
-							"again on moving surfaces through the G-buffer's motion). Off: one frame's rays, with a fixed pattern.\n"
-							"The reflection follows the surface it is on, not what it shows: while the camera moves, a mirror's\n"
-							"image trails a little.");
-					}
-					ImGui::Checkbox("Half Resolution", &reflections.HalfResolution);
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-					{
-						ImGui::SetTooltip("On: traced at half the viewport's size (a quarter of the rays) and scaled up along the edges: a mirror's\n"
-							"image is half as sharp. Off: a ray for every pixel, at about four times the time.");
-					}
-					ImGui::EndDisabled();
-					ImGui::EndDisabled();
-					if (!reflectionsAvailable)
-					{
-						ImGui::TextDisabled("Needs Ray Tracing: the environment's reflection");
-					}
-					else if (s_Reflections.IsTraced())
-					{
-						ImGui::TextDisabled("Traced at %u x %u", s_Reflections.GetWidth(), s_Reflections.GetHeight());
-					}
-					ImGui::PopID();
-				}
-
-				if (ImGui::CollapsingHeader("Ambient Occlusion", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ImGui::PushID("AmbientOcclusion");
-					EnvMapVulkanSSAOSettings& occlusion = s_SSAOSettings;
-					ImGui::Checkbox("Enabled", &occlusion.Enabled);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Screen-space ambient occlusion (GTAO): corners, creases and the places where things touch get less\n"
-							"of the indirect light (the environment's, the probes'), because the geometry around them is in its way.\n"
-							"The lights' own light isn't changed: that is what their shadows are for.\n"
-							"Computed from what is on the screen: what is hidden or outside the view doesn't shade.\n"
-							"Debug View > Ambient Occlusion shows it by itself; its cost: Renderer Stats.");
-					}
-					ImGui::BeginDisabled(!occlusion.Enabled);
-					ImGui::SliderFloat("Radius", &occlusion.Radius, 0.05f, 5.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("How far from a point the geometry still shades it.\n"
-							"With a probe volume keep it small (about 0.5 m): the probes already know the shade of everything\n"
-							"larger, and a large radius would darken the same places twice.\n"
-							"Without probes a larger radius (1 to 2 m) gives rooms and corners their depth.");
-					}
-					ImGui::SliderFloat("Power", &occlusion.Power, 0.5f, 4.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("The strength: the occlusion to this power. 1 = as computed, higher = darker.");
-					}
-					ImGui::SliderFloat("Falloff", &occlusion.Falloff, 0.05f, 1.0f, "%.2f", ImGuiSliderFlags_AlwaysClamp);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("The part of the radius over which geometry stops counting. 1: fading from the point on (soft);\n"
-							"small: everything within the radius counts fully (stronger, with a harder end).");
-					}
-					// Which way the occlusion is found: by rays where they can be traced, otherwise from the depth buffer
-					const bool occlusionTraced = occlusion.RayTraced && IsRayTracingActive();
-					ImGui::BeginDisabled(!IsRayTracingActive());
-					ImGui::Checkbox("Ray Traced", &occlusion.RayTraced);
-					ImGui::EndDisabled();
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-					{
-						ImGui::SetTooltip("On: a few short rays per pixel against the scene's real geometry. It also finds what the screen\n"
-							"doesn't show: geometry hidden behind other geometry, or outside the view.\n"
-							"Off: from the depth buffer (GTAO, with Slices and Steps): what is on the screen, and nothing else.\n"
-							"Needs Ray Tracing (above) and a GPU that has it; without them it is always the depth buffer's way.");
-					}
-					ImGui::BeginDisabled(!occlusionTraced);
-					ImGui::SliderInt("Rays", &occlusion.Rays, 1, EnvMapVulkanSSAOSettings::MaxRays, "%d", ImGuiSliderFlags_AlwaysClamp);
-					ImGui::EndDisabled();
-					if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
-					{
-						ImGui::SetTooltip("Ray traced: rays per pixel and frame. More rays: less noise for the blur and the temporal filter to\n"
-							"remove (AO Raw in Debug View shows it), at a cost that grows with the number.");
-					}
-					ImGui::BeginDisabled(occlusionTraced); // the depth buffer's way
-					ImGui::SliderInt("Slices", &occlusion.Slices, 1, EnvMapVulkanSSAOSettings::MaxSlices, "%d", ImGuiSliderFlags_AlwaysClamp);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Directions a pixel looks in per frame. More: less noise before the filters, more time.");
-					}
-					ImGui::SliderInt("Steps", &occlusion.Steps, 2, EnvMapVulkanSSAOSettings::MaxSteps, "%d", ImGuiSliderFlags_AlwaysClamp);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Depth lookups per direction and side. More: thin things within the radius are missed less often.");
-					}
-					ImGui::EndDisabled();
-					ImGui::Checkbox("Denoise", &occlusion.Denoise);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("A 5 x 5 blur that stops at edges (it follows each pixel's surface, by its depth and normal).");
-					}
-					ImGui::SameLine();
-					ImGui::Checkbox("Temporal Filter", &occlusion.Temporal);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Each frame looks in other directions, and the result is the average of the last frames\n"
-							"(found again on moving surfaces through the G-buffer's motion). Off: one frame's result, with a fixed pattern.");
-					}
-					ImGui::Checkbox("Half Resolution", &occlusion.HalfResolution);
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("On: computed at half the viewport's size (a quarter of the pixels) and scaled up along the edges.\n"
-							"Thin dark lines (along a crease, beside an edge) then show the steps of the half-size pixels.\n"
-							"Off: computed for every pixel. About four times the time: see Ambient Occlusion in Renderer Stats.");
-					}
-					ImGui::EndDisabled();
-					ImGui::TextDisabled("%s at %u x %u", s_SSAO.IsRayTraced() ? "Ray traced" : "From the depth buffer", s_SSAO.GetWidth(), s_SSAO.GetHeight());
-					ImGui::PopID();
-				}
-
-				// Same settings as "Bloom Settings" in SceneHazelEnvMap's Scene Renderer panel
-				if (ImGui::CollapsingHeader("Bloom Settings", nullptr, ImGuiTreeNodeFlags_DefaultOpen))
-				{
-					ImGui::Columns(2);
-					ImGui::AlignTextToFramePadding();
-					ImGuiWrapper::Property("Bloom Enabled", s_BloomSettings.Enabled);
-					ImGuiWrapper::Property("Threshold", s_BloomSettings.Threshold, 0.01f, 0.0f, 20.0f, PropertyFlag::DragProperty);
-					ImGuiWrapper::Property("Knee", s_BloomSettings.Knee, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
-					ImGuiWrapper::Property("Upsample Scale", s_BloomSettings.UpsampleScale, 0.01f, 0.0f, 10.0f, PropertyFlag::DragProperty);
-					ImGuiWrapper::Property("Intensity", s_BloomSettings.Intensity, 0.05f, 0.0f, 20.0f, PropertyFlag::DragProperty);
-					ImGuiWrapper::Property("Lens Dirt", s_BloomSettings.DirtEnabled);
-					ImGui::BeginDisabled(!s_BloomSettings.DirtEnabled);
-					ImGuiWrapper::Property("Dirt Intensity", s_BloomSettings.DirtIntensity, 0.05f, 0.0f, 20.0f, PropertyFlag::DragProperty);
-					ImGui::EndDisabled();
-					ImGui::Columns(1);
-
-					// Lens dirt texture: click the thumbnail (or drop an image on it) to choose another one
-					ImTextureID dirtThumbnail = s_BloomDirtTexture ? s_BloomDirtTexture->GetImTextureID() : ImTextureID{};
-					bool clicked = dirtThumbnail ? ImGui::ImageButton("##bloomdirt", dirtThumbnail, ImVec2(64.0f, 64.0f), ImVec2(0, 1), ImVec2(1, 0))
-						: ImGui::Button("Dirt", ImVec2(64.0f, 64.0f));
-					if (clicked)
-					{
-						std::string filepath = FileDialogs::OpenFile({ { "Images", "png,jpg,jpeg,tga,bmp" } });
-						if (!filepath.empty())
-						{
-							s_PendingBloomDirtFilename = filepath;
-						}
-					}
-					if (ImGui::BeginDragDropTarget())
-					{
-						if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-						{
-							std::string itemPath = Util::to_str((const wchar_t*)payload->Data);
-							if (IsImageFile(itemPath))
-							{
-								s_PendingBloomDirtFilename = itemPath;
-							}
-						}
-						ImGui::EndDragDropTarget();
-					}
-					if (ImGui::IsItemHovered())
-					{
-						ImGui::SetTooltip("Lens dirt: %s\nClick to load another image, or drop one from the Content Browser", s_BloomDirtTexture ? s_BloomDirtTexture->GetPath().c_str() : "");
-					}
-					ImGui::SameLine();
-					ImGui::TextDisabled("Lens dirt texture");
-				}
-			}
-			ImGui::End();
-			/**** END Environment ****/
-
-			// Retired: their functions are in the Scene Hierarchy and Properties panels (the functions are kept, not shown)
-			// OnImGuiRenderModelsAndMeshes();
-			// OnImGuiRenderLights();
-			// OnImGuiRenderWater();
-			UpdateSceneUnsavedChanges();
-			HandleSceneShortcutKeys();
-			OnImGuiRenderUnsavedChangesPopup();
-			OnImGuiRenderNotification();
-			OnImGuiRenderSceneHierarchy();
-			OnImGuiRenderProperties();
-			OnImGuiRenderMaterialLibrary();
-			OnImGuiRenderMaterialEditor();
-			OnImGuiRenderRendererStats();
-
-			/**** BEGIN DockSpace menu bar ****/
-
-			if (ImGui::BeginMenuBar())
-			{
-				if (ImGui::BeginMenu("File"))
-				{
-					if (ImGui::MenuItem("New Scene", "Ctrl+N"))
-					{
-						RequestNewScene();
-					}
-					if (ImGui::MenuItem("Open Scene...", "Ctrl+O"))
-					{
-						RequestOpenScene();
-					}
-					ImGui::Separator();
-					if (ImGui::MenuItem("Save Scene", "Ctrl+S"))
-					{
-						::SaveScene();
-					}
-					if (ImGui::MenuItem("Save Scene As...", "Ctrl+Shift+S"))
-					{
-						::SaveSceneAs();
-					}
-					ImGui::EndMenu();
-				}
-				if (ImGui::BeginMenu("View"))
-				{
-					ImGui::MenuItem("Renderer Stats", nullptr, &s_ShowRendererStats);
-					ImGui::MenuItem("FPS in the Viewport", nullptr, &s_ShowViewportFps);
-					ImGui::EndMenu();
-				}
-				if (ImGui::BeginMenu("Docking"))
-				{
-					// Disabling fullscreen would allow the window to be moved to the front of other windows,
-					// which we can't undo at the moment without finer window depth/z control.
-					//ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen_persistant);
-
-					// if (ImGui::MenuItem("Flag: NoSplit", "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 dockspace_flags ^= ImGuiDockNodeFlags_NoSplit;
-					// if (ImGui::MenuItem("Flag: NoResize", "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                dockspace_flags ^= ImGuiDockNodeFlags_NoResize;
-					// if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  dockspace_flags ^=  ImGuiDockNodeFlags_NoDockingInCentralNode;
-					// if (ImGui::MenuItem("Flag: PassthruCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0))     dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode;
-					// if (ImGui::MenuItem("Flag: AutoHideTabBar", "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar;
-					ImGui::Separator();
-					if (ImGui::MenuItem("Close DockSpace", NULL, false, p_open != NULL))
-						*p_open = false;
-					ImGui::EndMenu();
-				}
-				ImGui::EndMenuBar();
-			}
-		}
-		ImGui::End(); // END DockSpace Demo
-		ImGui::PopStyleVar();
-
-		/**** END DockSpace menu bar ****/
-
-		// TODO: Move to VulkanImGuiLayer
-		// Rendering
-		ImGui::Render();
-
-		ImDrawData* main_draw_data = ImGui::GetDrawData();
-		ImGui_ImplVulkan_RenderDrawData(main_draw_data, s_ImGuiCommandBuffer);
-
-		VK_CHECK_RESULT_H2M(vkEndCommandBuffer(s_ImGuiCommandBuffer));
-
-		commandBuffers.push_back(s_ImGuiCommandBuffer);
+		s_BuildUserInterface();
 	}
+
+	// TODO: Move to VulkanImGuiLayer
+	ImGui::Render();
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), s_ImGuiCommandBuffer);
+
+	VK_CHECK_RESULT_H2M(vkEndCommandBuffer(s_ImGuiCommandBuffer));
+	commandBuffers.push_back(s_ImGuiCommandBuffer);
 }
 
-// TODO: Temporary method until composite rendering is enabled
 void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 {
+	if (!s_Scene)
+	{
+		return; // no scene yet (see SetScene)
+	}
+	s_RenderSettings = s_OwnerRenderSettings ? *s_OwnerRenderSettings : EnvMapVulkanRenderSettings();
+	s_ViewOptions = s_OwnerViewOptions ? *s_OwnerViewOptions : EnvMapVulkanViewOptions();
+
 	// This frame's environment, lights, water and probe volume, from the scene (see ExtractEnvironment, ExtractLights,
 	// ExtractWater, ExtractProbeVolume)
 	ExtractEnvironment();
 	ExtractLights();
 	ExtractWater();
 	ExtractProbeVolume();
-	SyncCamera(camera);
 
-	// The sun points at the sun of the environment map: at startup, and after loading a map whose sun was taken out of
-	// it (its light now has to come from the directional sun), once the map's pixels are available
-	if (s_PendingSunAlign && s_Data.envEquirect)
-	{
-		AlignSunToEnvironment();
-		s_PendingSunAlign = false;
-	}
-
-	// A shadow map resolution chosen in the Lights panel: the map is recreated before any command buffer of this frame is
-	// recorded (its descriptor in set 0 can't change while a recorded frame uses it)
-	if (s_PendingShadowResolution != 0)
+	// Shadow map resolutions that differ from the settings (changed in the panel, a scene opened): the maps are recreated
+	// before any command buffer of this frame is recorded (their descriptors in set 0 can't change while a recorded frame
+	// uses them)
+	if (s_RenderSettings.Shadows.Resolution != s_ShadowMap.GetResolution())
 	{
 		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
-		CreateShadowMap(s_PendingShadowResolution, true);
-		s_PendingShadowResolution = 0;
+		CreateShadowMap(s_RenderSettings.Shadows.Resolution, true);
 	}
-
-	// Spot / point shadow map resolutions chosen in the Lights panel (recreated as the sun's, see above)
-	if (s_PendingLocalShadowResolutions != glm::uvec2(0))
+	const EnvMapVulkanLocalShadowSettings& localShadows = s_RenderSettings.LocalShadows;
+	if (localShadows.SpotResolution != s_SpotShadowMaps.GetResolution() ||
+		(s_PointShadowMaps.IsValid() && localShadows.PointResolution != s_PointShadowMaps.GetResolution()))
 	{
 		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
-		if (s_PendingLocalShadowResolutions.x)
-		{
-			s_LocalShadowSettings.SpotResolution = s_PendingLocalShadowResolutions.x;
-		}
-		if (s_PendingLocalShadowResolutions.y)
-		{
-			s_LocalShadowSettings.PointResolution = s_PendingLocalShadowResolutions.y;
-		}
 		CreateLocalShadowMaps();
 		WriteShadowMapDescriptor();
-		s_PendingLocalShadowResolutions = glm::uvec2(0);
 	}
 
-	// An environment map requested from the UI (button or drag & drop) is loaded here, before any command buffer
-	// of this frame is recorded, not in the middle of the ImGui pass that requested it
-	if (!s_PendingEnvMapFilename.empty())
-	{
-		std::string filepath = s_PendingEnvMapFilename;
-		s_PendingEnvMapFilename.clear();
-		LoadEnvironmentMap(filepath);
-	}
+	// The environment map the scene asks for (the panel, a file dropped, a scene opened) is loaded here, before any command
+	// buffer of this frame is recorded, not in the middle of the ImGui pass that requested it
+	UpdateEnvironmentMap();
 
-	// Set when a change below may leave cached textures unused (a model or mesh removed, a map replaced or removed, a material deleted)
-	bool texturesMayBeUnused = false;
-
-	// Model / mesh removal and model loading requested from the Models and Meshes panel
-	const std::vector<EnvMapVulkanEntityID> removeEntities = std::move(s_PendingRemoveEntities);
-	s_PendingRemoveEntities.clear();
-	for (EnvMapVulkanEntityID entity : removeEntities)
-	{
-		if (!s_Scene.Exists(entity))
-		{
-			continue; // removed with its model (both were selected), or twice in the list
-		}
-		// A model's last mesh (its only one, or the last of several removed together): a model without meshes is nothing,
-		// so the model goes
-		if (s_Scene.Has<MeshPartComponent>(entity))
-		{
-			const EnvMapVulkanEntityID modelEntity = s_Scene.GetParent(entity);
-			H2M::RefH2M<H2M::ModelH2M> model = GetModel(modelEntity);
-			if (model && model->GetMeshes().size() <= 1 && s_Scene.Has<ModelComponent>(modelEntity))
-			{
-				Log::GetLogger()->info("Mesh '{0}' was the last one of model '{1}': the model is removed", s_Scene.Get<NameComponent>(entity).Name,
-					s_Scene.Get<ModelComponent>(modelEntity).FilePath);
-				entity = modelEntity;
-			}
-		}
-		if (const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(entity))
-		{
-			// Only a part of a model: its geometry stays in the model's buffers, so nothing on the GPU is freed. The mesh
-			// leaves the model's list, so the parts after it move up by one.
-			const EnvMapVulkanEntityID modelEntity = s_Scene.GetParent(entity);
-			H2M::RefH2M<H2M::ModelH2M> model = GetModel(modelEntity);
-			const uint32_t index = part->MeshIndex;
-			if (model && index < model->GetMeshes().size() && model->GetMeshes().size() > 1)
-			{
-				Log::GetLogger()->info("Mesh '{0}' removed from model '{1}'", s_Scene.Get<NameComponent>(entity).Name, s_Scene.Get<ModelComponent>(modelEntity).FilePath);
-				model->RemoveMesh(index);
-				s_Scene.DestroyEntity(entity);
-				for (EnvMapVulkanEntityID sibling : s_Scene.GetChildren(modelEntity))
-				{
-					MeshPartComponent* other = s_Scene.TryGet<MeshPartComponent>(sibling);
-					if (other && other->MeshIndex > index)
-					{
-						other->MeshIndex--;
-					}
-				}
-				if (s_SelectedEntity == entity)
-				{
-					s_SelectedEntity = modelEntity;
-				}
-				texturesMayBeUnused = true; // its material may have no other users
-			}
-		}
-		else if (s_Scene.Has<ModelComponent>(entity))
-		{
-			// The model's buffers and descriptor sets may still be used by frames in flight
-			vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
-			s_Scene.DestroyEntity(entity);
-			SyncSelection(); // the model and its parts leave the selection
-			texturesMayBeUnused = true;
-		}
-	}
-	if (!s_PendingModelFilename.empty())
-	{
-		std::string filepath = s_PendingModelFilename;
-		std::optional<glm::vec3> groundPosition = s_PendingModelGroundPosition;
-		s_PendingModelFilename.clear();
-		s_PendingModelGroundPosition.reset();
-		LoadModel(filepath, groundPosition);
-	}
-	if (s_PendingPaste)
-	{
-		s_PendingPaste = false;
-		PasteClipboard();
-	}
-	ExtractLights(); // after the scene changes above
-	ExtractWater();
-	ExtractProbeVolume();
 	// Lens dirt texture chosen in the Bloom settings
 	if (!s_PendingBloomDirtFilename.empty())
 	{
@@ -10930,36 +3796,8 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 			Log::GetLogger()->error("Lens dirt texture '{0}' could not be loaded.", filepath);
 		}
 	}
-	// New / Open from the File menu (an opened scene loads the material files it refers to)
-	ProcessSceneOperations();
-	// Material files loaded from the Material Library
-	if (!s_PendingMaterialFiles.empty())
-	{
-		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice()); // a material's descriptor set may be in use
-		for (const std::string& filepath : s_PendingMaterialFiles)
-		{
-			if (H2M::RefH2M<EnvMapVulkanMaterial> material = EnvMapVulkanMaterialLibrary::Load(filepath))
-			{
-				s_SelectedMaterial = material;
-				Log::GetLogger()->info("Material '{0}' loaded from '{1}'", material->GetName(), filepath);
-			}
-		}
-		s_PendingMaterialFiles.clear();
-		texturesMayBeUnused = true; // replaced maps
-	}
-	// Maps assigned or removed in the Material Editor, then a material deleted in the Material Library
-	for (const PendingMaterialTexture& request : s_PendingMaterialTextures)
-	{
-		ApplyMaterialTexture(request);
-		texturesMayBeUnused = true;
-	}
-	s_PendingMaterialTextures.clear();
-	if (s_PendingDeleteMaterial)
-	{
-		DeleteMaterial(s_PendingDeleteMaterial);
-		s_PendingDeleteMaterial = H2M::RefH2M<EnvMapVulkanMaterial>();
-		texturesMayBeUnused = true;
-	}
+	// Set when a change below may leave cached textures unused (a material's inherited map replaced)
+	bool texturesMayBeUnused = false;
 	// Material variants get their parents' inherited values and maps (after every change above), and an inherited
 	// property edited since the last frame becomes an override
 	if (EnvMapVulkanMaterialLibrary::ResolveVariants([] { vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice()); }))
@@ -11008,20 +3846,20 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	uint64_t probeSceneVersion = HashStart, probeAnimationVersion = HashStart, probeGeometryVersion = HashStart;
 
 	ApplyPartTransforms();
-	for (EnvMapVulkanEntityID entity : GetModels())
+	for (EnvMapVulkanEntityID entity : EnvMapVulkanSceneData::GetModels(*s_Scene))
 	{
-		H2M::RefH2M<H2M::ModelH2M> model = GetModel(entity);
+		H2M::RefH2M<H2M::ModelH2M> model = EnvMapVulkanSceneData::GetModel(*s_Scene, entity);
 		if (model->IsSkinned())
 		{
 			model->OnUpdate(H2M::TimestepH2M(deltaTime), false); // bone matrices of the current frame (bind pose when not animated)
 		}
-		glm::mat4 worldTransform = s_Scene.GetWorldTransform(entity);
+		glm::mat4 worldTransform = s_Scene->GetWorldTransform(entity);
 
 		ModelMotionState state;
 		state.Model = model.Raw();
 		for (const H2M::RefH2M<H2M::MeshH2M>& mesh : model->GetMeshes())
 		{
-			state.MeshTransforms.push_back(GetMeshTransform(model, mesh, worldTransform));
+			state.MeshTransforms.push_back(EnvMapVulkanSceneData::GetMeshTransform(model, mesh, worldTransform));
 		}
 		if (model->IsSkinned())
 		{
@@ -11033,7 +3871,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		const ModelMotionState& previousState = hasPrevious ? previousIt->second : state;
 
 		UpdateObjectUniforms(model, previousState.BoneTransforms);
-		const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> meshMaterials = GetMeshMaterials(entity);
+		const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>> meshMaterials = EnvMapVulkanSceneData::GetMeshMaterials(*s_Scene, entity);
 		SubmitModelTemp(model, worldTransform, meshMaterials, previousState.MeshTransforms);
 
 		// The model, where its meshes are, its pose and which materials they have (the materials' values: below)
@@ -11100,9 +3938,9 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_Water.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
 		s_Glass.Resize(s_Framebuffer->GetWidth(), s_Framebuffer->GetHeight());
 		s_GBuffer.Resize(s_Framebuffer); // after s_Framebuffer: it shares its depth image
-		s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution); // after the G-buffer: it reads its images
+		s_SSAO.Resize(s_GBuffer, s_RenderSettings.AmbientOcclusion.HalfResolution); // after the G-buffer: it reads its images
 		WriteAmbientOcclusionDescriptor();
-		s_Reflections.Resize(s_GBuffer, s_ReflectionSettings.HalfResolution);
+		s_Reflections.Resize(s_GBuffer, s_RenderSettings.Reflections.HalfResolution);
 		WriteReflectionDescriptor();
 		s_RayTracing.ResizeView(s_GBuffer.GetWidth(), s_GBuffer.GetHeight()); // the composite's set is written below
 		s_PathTracer.Resize(s_GBuffer.GetWidth(), s_GBuffer.GetHeight());     // the same
@@ -11112,24 +3950,22 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		ResizeBloomResources(); // also rewrites the composite descriptor set
 		s_ViewportFBNeedsResize = false;
 	}
-	if (s_SSAO.IsHalfResolution() != s_SSAOSettings.HalfResolution)
+	if (s_SSAO.IsHalfResolution() != s_RenderSettings.AmbientOcclusion.HalfResolution)
 	{
-		s_SSAO.Resize(s_GBuffer, s_SSAOSettings.HalfResolution); // the setting changed (the panel, a scene opened)
+		s_SSAO.Resize(s_GBuffer, s_RenderSettings.AmbientOcclusion.HalfResolution); // the setting changed (the panel, a scene opened)
 		WriteAmbientOcclusionDescriptor();
 	}
 
-	if (s_Reflections.IsHalfResolution() != s_ReflectionSettings.HalfResolution)
+	if (s_Reflections.IsHalfResolution() != s_RenderSettings.Reflections.HalfResolution)
 	{
-		s_Reflections.Resize(s_GBuffer, s_ReflectionSettings.HalfResolution); // the setting changed (the panel, a scene opened)
+		s_Reflections.Resize(s_GBuffer, s_RenderSettings.Reflections.HalfResolution); // the setting changed (the panel, a scene opened)
 		WriteReflectionDescriptor();
 	}
 
-	// A ray-traced debug view can't stay when the rays were turned off (the switch, a scene opened with it off)
-	if (DebugViewNeedsRayTracing(s_DebugView) && !IsRayTracingActive())
+	// A ray-traced debug view needs rays (the editor tells why it isn't shown)
+	if (DebugViewNeedsRayTracing(s_ViewOptions.DebugView) && !IsRayTracingActive())
 	{
-		s_DebugView = DebugViewOff;
-		ShowNotification(EnvMapVulkanRayTracing::IsSupported() ? "The ray-traced views need Ray Tracing turned on (Environment panel)" :
-			"The ray-traced views need a GPU with ray tracing", true);
+		s_ViewOptions.DebugView = DebugViewOff;
 	}
 
 	// With ray tracing the probes' update traces rays: its set 0 gets what the per-frame set holds (as it is now, after
@@ -11141,7 +3977,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 		s_Reflections.Prepare(s_Data.FrameDescriptorSet.DescriptorSets[0]);
 	}
 	// And for the path tracer
-	if (IsRayTracingActive() && s_DebugView == DebugViewPathTraced)
+	if (IsRayTracingActive() && s_ViewOptions.DebugView == DebugViewPathTraced)
 	{
 		s_PathTracer.Prepare(s_Data.FrameDescriptorSet.DescriptorSets[0]);
 	}
@@ -11183,6 +4019,7 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
 	// A real sun is taken out of the map before the environment lighting is built from it, and moved to the directional
 	// sun (see ExtractSun): the texture is recreated from the edited pixels
 	s_ExtractedSun = EnvMapVulkanExtractedSun();
+	s_EnvMapSunExtracted = s_ExtractSunFromEnvironment;
 	{
 		H2M::BufferH2M pixels = s_Data.envEquirect->GetWriteableBuffer();
 		uint32_t width = s_Data.envEquirect->GetWidth(), height = s_Data.envEquirect->GetHeight();
@@ -11190,12 +4027,10 @@ std::pair<H2M::RefH2M<H2M::TextureCubeH2M>, H2M::RefH2M<H2M::TextureCubeH2M>> En
 			pixels.Size >= (uint64_t)width * height * 4 * sizeof(float) && ExtractSun((float*)pixels.Data, width, height, s_ExtractedSun))
 		{
 			s_Data.envEquirect = H2M::Texture2D_H2M::Create(H2M::ImageFormatH2M::RGBA32F, width, height, pixels.Data);
-			s_PendingSunAlign = !s_KeepSunOnNextEnvironmentLoad;
 			Log::GetLogger()->info("Sun extracted from '{0}': {1} pixels, {2}x brighter than the map's average, intensity {3}",
 				filepath, s_ExtractedSun.PixelCount, s_ExtractedSun.PeakToAverage, s_ExtractedSun.Intensity);
 		}
 	}
-	s_KeepSunOnNextEnvironmentLoad = false; // only for the map of the scene that asked for it
 	s_EnvMapAutoExposure = ComputeAutoExposure(s_Data.envEquirect);
 
 	uint32_t mipFilterLevels = s_MipMapsEnabled ? glm::min(11u, envFilteredCubemap->GetMipLevelCount()) : 1;
@@ -11446,368 +4281,294 @@ H2M::RendererCapabilitiesH2M EnvMapVulkanRenderer::GetCapabilities()
 	return s_Data.RenderCaps;
 }
 
-// The gizmo on the primary selected entity (s_SelectedEntity): a light (the sun turns), the water, a part of a model or a model
-static void ManipulatePrimarySelection()
+/**** BEGIN to be removed from VulkanRenderer ****/
+void EnvMapVulkanRenderer::SetScene(EnvMapVulkanScene* scene, const EnvMapVulkanRenderSettings* renderSettings, const EnvMapVulkanViewOptions* viewOptions)
 {
-	// The probe volume: translate moves its box, scale sizes it along the world's axes; it can't be turned
-	if (s_ProbeVolumeEntity != NoEntity && s_SelectedEntity == s_ProbeVolumeEntity)
+	s_Scene = scene;
+	s_OwnerRenderSettings = renderSettings;
+	s_OwnerViewOptions = viewOptions;
+}
+
+void EnvMapVulkanRenderer::SetUserInterface(const std::function<void()>& buildUserInterface)
+{
+	s_BuildUserInterface = buildUserInterface;
+}
+
+ImTextureID EnvMapVulkanRenderer::GetViewportImage()
+{
+	if (!s_TextureID || s_ViewportTextureNeedsUpdate)
 	{
-		const bool movable = Scene::s_ImGuizmoType == ImGuizmo::OPERATION::TRANSLATE || Scene::s_ImGuizmoType == ImGuizmo::OPERATION::SCALE;
-		if (movable && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+		RegisterViewportTextureWithImGui();
+	}
+	return s_TextureID;
+}
+
+void EnvMapVulkanRenderer::SetViewportSize(uint32_t width, uint32_t height)
+{
+	if (width > 0 && height > 0 && (s_ViewportWidth != width || s_ViewportHeight != height))
+	{
+		s_ViewportWidth = width;
+		s_ViewportHeight = height;
+		s_ViewportFBNeedsResize = true;
+	}
+}
+
+void EnvMapVulkanRenderer::WaitIdle()
+{
+	vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
+}
+
+void EnvMapVulkanRenderer::OnSceneReplaced()
+{
+	s_Probes.RequestReset(); // what the probes captured belongs to the scene that went
+}
+
+const std::string& EnvMapVulkanRenderer::GetEnvironmentMapFile()
+{
+	return s_EnvMapFilename;
+}
+
+bool EnvMapVulkanRenderer::HasEnvironmentMap()
+{
+	return (bool)s_Data.envEquirect;
+}
+
+uint32_t EnvMapVulkanRenderer::GetEnvironmentVersion()
+{
+	return s_EnvironmentVersion;
+}
+
+float EnvMapVulkanRenderer::GetEnvironmentMaxLod()
+{
+	return s_Data.envUnfiltered ? (float)(s_Data.envUnfiltered->GetMipLevelCount() - 1) : 10.0f;
+}
+
+const EnvMapVulkanExtractedSun& EnvMapVulkanRenderer::GetExtractedSun()
+{
+	return s_ExtractedSun;
+}
+
+bool EnvMapVulkanRenderer::FindEnvironmentSun(EnvMapVulkanExtractedSun& sun)
+{
+	H2M::RefH2M<H2M::Texture2D_H2M> equirect = s_Data.envEquirect;
+	if (!equirect)
+	{
+		return false;
+	}
+	if (s_ExtractedSun.Found)
+	{
+		sun = s_ExtractedSun;
+		return true;
+	}
+	// No sun in the map: the brightest region (a window, bright sky), direction and color only
+	sun = EnvMapVulkanExtractedSun();
+	H2M::BufferH2M pixels = equirect->GetWriteableBuffer();
+	uint32_t width = equirect->GetWidth(), height = equirect->GetHeight();
+	return pixels.Data && equirect->GetFormat() == H2M::ImageFormatH2M::RGBA32F && pixels.Size >= (uint64_t)width * height * 4 * sizeof(float) &&
+		FindBrightestDirection((const float*)pixels.Data, width, height, sun.Direction, sun.Color);
+}
+
+bool EnvMapVulkanRenderer::IsRayTracingSupported()
+{
+	return EnvMapVulkanRayTracing::IsSupported();
+}
+
+bool EnvMapVulkanRenderer::IsRayTracingActive()
+{
+	return (s_OwnerRenderSettings ? s_OwnerRenderSettings->RayTracing : s_RenderSettings.RayTracing) && EnvMapVulkanRayTracing::IsSupported();
+}
+
+bool EnvMapVulkanRenderer::AreShadowsRendered()
+{
+	return s_ShadowsRendered;
+}
+
+const EnvMapVulkanShadowCascade& EnvMapVulkanRenderer::GetShadowCascade(uint32_t cascade)
+{
+	return s_ShadowCascades[glm::min(cascade, ShadowCascadeCount - 1)];
+}
+
+ImTextureID EnvMapVulkanRenderer::GetShadowCascadeImage(uint32_t cascade)
+{
+	static std::array<ImTextureID, ShadowCascadeCount> s_ShadowMapTextureIDs = {};
+	static uint32_t s_ShadowMapTexturesGeneration = 0; // the shadow map the IDs were registered for (EnvMapVulkanShadowMap::GetGeneration)
+	if (!s_ShadowMap.IsValid() || cascade >= ShadowCascadeCount)
+	{
+		return ImTextureID{};
+	}
+	// Registered with the ImGui Vulkan backend once per shadow map (again after it is recreated)
+	if (s_ShadowMapTexturesGeneration != s_ShadowMap.GetGeneration())
+	{
+		for (uint32_t i = 0; i < ShadowCascadeCount; i++)
 		{
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
-			float snapValues[3] = { 1.0f, 1.0f, 1.0f };
-			glm::mat4 world = GetProbeVolumeTransform(s_ProbeVolumeSettings);
-			if (ImGuizmo::Manipulate(
-				glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
-				glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
-				(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-				ImGuizmo::WORLD,
-				glm::value_ptr(world),
-				nullptr,
-				Input::IsKeyPressed(KeyH2M::LeftControl) ? snapValues : nullptr))
+			if (s_ShadowMapTextureIDs[i])
 			{
-				const EnvMapVulkanProbeVolumeSettings before = s_ProbeVolumeSettings;
-				s_ProbeVolumeSettings.Center = glm::vec3(world[3]);
-				s_ProbeVolumeSettings.Size = glm::vec3(glm::length(glm::vec3(world[0])), glm::length(glm::vec3(world[1])), glm::length(glm::vec3(world[2])));
-				CommitProbeVolume(before);
+				ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)s_ShadowMapTextureIDs[i]);
 			}
+			s_ShadowMapTextureIDs[i] = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(s_ShadowMap.GetDisplaySampler(), s_ShadowMap.GetDisplayView(i),
+				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
-		return;
+		s_ShadowMapTexturesGeneration = s_ShadowMap.GetGeneration();
 	}
-
-	// The gizmo moves the selected point or spot light, or else the model or mesh selected in the Models and Meshes panel (or picked with the mouse)
-	if (Scene::s_ImGuizmoType != -1 && s_SelectedLightKind != LightKind::None && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
-	{
-		ImGuizmo::SetOrthographic(false);
-		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
-		if (s_SelectedLightKind == LightKind::Sun)
-		{
-			ManipulateSun(Scene::s_ImGuizmoType, Input::IsKeyPressed(KeyH2M::LeftControl));
-		}
-		else
-		{
-			ManipulateSelectedLight(Scene::s_ImGuizmoType, Input::IsKeyPressed(KeyH2M::LeftControl));
-		}
-		return;
-	}
-
-	// The water: translate moves it (its position and height), rotate turns it around Y only (it is always level), scale
-	// resizes it along its own X and Z (a flat surface: no height scale)
-	if (Scene::s_ImGuizmoType != -1 && s_WaterSelected && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
-	{
-		ImGuizmo::OPERATION operation = (ImGuizmo::OPERATION)Scene::s_ImGuizmoType;
-		ImGuizmo::MODE mode = ImGuizmo::WORLD;
-		float snap = 1.0f;
-		if (operation == ImGuizmo::OPERATION::ROTATE)
-		{
-			operation = ImGuizmo::OPERATION::ROTATE_Y;
-			snap = 45.0f;
-		}
-		else if (operation == ImGuizmo::OPERATION::SCALE)
-		{
-			operation = ImGuizmo::OPERATION::SCALE_X | ImGuizmo::OPERATION::SCALE_Z;
-			mode = ImGuizmo::LOCAL; // along the water's own sides
-		}
-		ImGuizmo::SetOrthographic(false);
-		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
-		float snapValues[3] = { snap, snap, snap };
-		glm::mat4 transform = s_WaterSettings.GetTransform();
-		if (ImGuizmo::Manipulate(
-			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
-			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
-			operation,
-			mode,
-			glm::value_ptr(transform),
-			nullptr,
-			Input::IsKeyPressed(KeyH2M::LeftControl) ? snapValues : nullptr))
-		{
-			// Read back from the matrix's columns (Euler angles would turn a Y rotation past 90 degrees into 180, y, 180):
-			// the water's X side is the first column (cos, 0, -sin) * size x, its Z side the third
-			const glm::vec3 sideX = glm::vec3(transform[0]);
-			const glm::vec3 sideZ = glm::vec3(transform[2]);
-			const EnvMapVulkanWaterSettings before = s_WaterSettings;
-			s_WaterSettings.Center = glm::vec2(transform[3].x, transform[3].z);
-			s_WaterSettings.Height = transform[3].y;
-			s_WaterSettings.Rotation = glm::degrees(std::atan2(-sideX.z, sideX.x));
-			s_WaterSettings.Size = glm::max(glm::vec2(glm::length(sideX), glm::length(sideZ)), glm::vec2(0.1f));
-			CommitWater(before);
-		}
-		return;
-	}
-
-	const EnvMapVulkanEntityID selectedModel = GetSelectedModel();
-	if (Scene::s_ImGuizmoType == -1 || selectedModel == NoEntity || s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
-	{
-		return;
-	}
-	const int selectedMesh = GetSelectedMeshIndex();
-
-	ImGuizmo::SetOrthographic(false);
-	ImGuizmo::SetDrawlist();
-	// The scene image, not the whole window (which includes the tab bar)
-	ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
-
-	// Snapping with Ctrl: 1 unit for translation/scale, 45 degrees for rotation
-	bool snap = Input::IsKeyPressed(KeyH2M::LeftControl);
-	float snapValue = Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE ? 45.0f : 1.0f;
-	float snapValues[3] = { snapValue, snapValue, snapValue };
-
-	// A selected part of a multi-part model: the gizmo moves the part. It sits at the center of the part's bounding box
-	// (as in SceneHazelEnvMap): imported parts often have their origin at the model's origin, far from the part, and would
-	// turn around it. world = model * part * T(center); after the gizmo: part = model^-1 * world * T(-center)
-	if (CanManipulateMesh(selectedModel, selectedMesh))
-	{
-		H2M::RefH2M<H2M::MeshH2M> part = GetModel(selectedModel)->GetMeshes()[selectedMesh];
-		const glm::mat4 modelMatrix = s_Scene.GetWorldTransform(selectedModel);
-		const glm::vec3 center = (part->BoundingBox.Min + part->BoundingBox.Max) * 0.5f;
-		glm::mat4 world = modelMatrix * part->Transform * glm::translate(glm::mat4(1.0f), center);
-		if (ImGuizmo::Manipulate(
-			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
-			glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
-			(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-			ImGuizmo::WORLD,
-			glm::value_ptr(world),
-			nullptr,
-			snap ? snapValues : nullptr))
-		{
-			SetPartMatrix(s_SelectedEntity, glm::inverse(modelMatrix) * world * glm::translate(glm::mat4(1.0f), -center));
-		}
-		return;
-	}
-
-	glm::mat4 transform = s_Scene.GetWorldTransform(selectedModel);
-	if (ImGuizmo::Manipulate(
-		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetViewMatrix()),
-		glm::value_ptr(s_Data.SceneData.SceneCamera.Camera.GetProjectionMatrix()),
-		(ImGuizmo::OPERATION)Scene::s_ImGuizmoType,
-		ImGuizmo::WORLD,
-		glm::value_ptr(transform),
-		nullptr,
-		snap ? snapValues : nullptr))
-	{
-		// Back into the values shown (and editable) in the Models and Meshes panel
-		s_Scene.SetWorldTransform(selectedModel, transform);
-	}
+	return s_ShadowMapTextureIDs[cascade];
 }
 
-// Multi-selection: what the gizmo moves for a selected entity, as it does for the primary one (see
-// ManipulatePrimarySelection): a model, a point or spot light, the water, a part the gizmo can move on its own, or else
-// the part's model (a part of a single-mesh model, a rigged part). NoEntity: it doesn't move (the sun, the environment).
-static EnvMapVulkanEntityID GetMovedEntity(EnvMapVulkanEntityID entity)
+void EnvMapVulkanRenderer::GetShadowCasterBounds(glm::vec3& boundsMin, glm::vec3& boundsMax)
 {
-	switch (GetEntityKind(entity))
+	boundsMin = s_ShadowCasterBoundsMin;
+	boundsMax = s_ShadowCasterBoundsMax;
+}
+
+void EnvMapVulkanRenderer::GetShadowSlotsPerLight(std::vector<int>& pointSlots, std::vector<int>& spotSlots)
+{
+	::GetShadowSlotsPerLight(pointSlots, spotSlots);
+}
+
+void EnvMapVulkanRenderer::GetShadowedLightCounts(uint32_t& pointLights, uint32_t& spotLights)
+{
+	pointLights = s_LocalShadowSlots.PointCount;
+	spotLights = s_LocalShadowSlots.SpotCount;
+}
+
+bool EnvMapVulkanRenderer::CanPointLightsCastShadows()
+{
+	return s_PointShadowMaps.IsValid();
+}
+
+bool EnvMapVulkanRenderer::CanSpotLightsCastShadows()
+{
+	return s_SpotShadowMaps.IsValid();
+}
+
+ImTextureID EnvMapVulkanRenderer::ShowLocalShadowMap(EnvMapVulkanSceneData::LightKind kind, int index)
+{
+	const bool spot = kind == EnvMapVulkanSceneData::LightKind::Spot;
+	if (!spot && kind != EnvMapVulkanSceneData::LightKind::Point)
 	{
-		case EntityKind::Model:
-		case EntityKind::PointLight:
-		case EntityKind::SpotLight:
-		case EntityKind::Water:
-			return entity;
-		case EntityKind::Part:
+		return ImTextureID{};
+	}
+	int slot = -1;
+	float range = 1.0f;
+	if (spot)
+	{
+		for (uint32_t i = 0; i < s_LocalShadowSlots.SpotCount; i++)
 		{
-			const EnvMapVulkanEntityID model = s_Scene.GetParent(entity);
-			return CanManipulateMesh(model, (int)s_Scene.Get<MeshPartComponent>(entity).MeshIndex) ? entity : model;
+			slot = s_LocalShadowSlots.SpotLight[i] == index ? (int)i : slot;
 		}
-		default:
-			return NoEntity;
-	}
-}
-
-// The world matrix of a moved entity (a part's: its mesh matrix, which drawing uses, in its model)
-
-static glm::mat4 GetMovableWorldMatrix(EnvMapVulkanEntityID entity)
-{
-	if (const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(entity))
-	{
-		const EnvMapVulkanEntityID model = s_Scene.GetParent(entity);
-		return s_Scene.GetWorldTransform(model) * GetModel(model)->GetMeshes()[part->MeshIndex]->Transform;
-	}
-	return s_Scene.GetWorldTransform(entity);
-}
-
-static void SetMovableWorldMatrix(EnvMapVulkanEntityID entity, const glm::mat4& world)
-{
-	if (s_Scene.Has<MeshPartComponent>(entity))
-	{
-		SetPartMatrix(entity, glm::inverse(s_Scene.GetWorldTransform(s_Scene.GetParent(entity))) * world);
+		range = index >= 0 && index < (int)s_Lights.SpotLights.size() ? s_Lights.SpotLights[index].Range : range;
 	}
 	else
 	{
-		s_Scene.SetWorldTransform(entity, world);
+		for (uint32_t i = 0; i < s_LocalShadowSlots.PointCount; i++)
+		{
+			slot = s_LocalShadowSlots.PointLight[i] == index ? (int)i : slot;
+		}
+		range = index >= 0 && index < (int)s_Lights.PointLights.size() ? s_Lights.PointLights[index].Range : range;
 	}
+	if (slot < 0 || !s_ShadowMapViewer.IsValid())
+	{
+		return ImTextureID{};
+	}
+
+	s_ShadowMapViewerRequest.Active = true;
+	s_ShadowMapViewerRequest.Cube = !spot;
+	s_ShadowMapViewerRequest.BaseLayer = spot ? (uint32_t)slot : (uint32_t)slot * 6;
+	s_ShadowMapViewerRequest.Near = GetLocalShadowNearPlane(range);
+	s_ShadowMapViewerRequest.Far = std::max(range, 0.02f);
+
+	static ImTextureID s_ViewerTextureID = 0;
+	if (!s_ViewerTextureID)
+	{
+		s_ViewerTextureID = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(s_ShadowMapViewer.GetSampler(), s_ShadowMapViewer.GetView(),
+			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	}
+	return s_ViewerTextureID;
 }
 
-// A point or spot light moved with a multi-selection: it moves and turns with it, but isn't scaled: its Range is, by the
-// change's uniform scale (the cube root of its volume change: a light's reach is the same in every direction)
-static void MoveLightWith(EnvMapVulkanEntityID entity, const glm::mat4& delta)
+void EnvMapVulkanRenderer::SetBloomDirtTexture(const std::string& filepath)
 {
-	const glm::mat4 old = s_Scene.GetWorldTransform(entity);
-	const glm::mat4 moved = delta * old;
-
-	// Its axes without the change's scale (and the shear a non-uniform scale gives a turned light), the Y axis (the
-	// light's direction) kept; then its own scale (normally 1)
-	const glm::vec3 y = glm::normalize(glm::vec3(moved[1]));
-	const glm::vec3 x = glm::normalize(glm::vec3(moved[0]) - glm::dot(glm::vec3(moved[0]), y) * y);
-	const glm::vec3 z = glm::cross(x, y);
-	glm::mat4 world = moved;
-	world[0] = glm::vec4(x * glm::length(glm::vec3(old[0])), 0.0f);
-	world[1] = glm::vec4(y * glm::length(glm::vec3(old[1])), 0.0f);
-	world[2] = glm::vec4(z * glm::length(glm::vec3(old[2])), 0.0f);
-	s_Scene.SetWorldTransform(entity, world);
-
-	const float scale = std::cbrt(std::abs(glm::determinant(glm::mat3(delta))));
-	float* range = GetLightRange(entity);
-	if (range && std::abs(scale - 1.0f) > 1e-5f)
-	{
-		*range = glm::clamp(*range * scale, MinLightRange, MaxLightRange);
-	}
+	s_PendingBloomDirtFilename = filepath;
 }
 
-// The water moved with a multi-selection, only as its own gizmo can move it: translated in X, Y and Z, turned only
-// around Y (the part of the change that turns its X side around Y; it stays level), sized only along its own X and Z
-// (its sides' new lengths; never in height)
-static void MoveWaterWith(EnvMapVulkanEntityID entity, const glm::mat4& delta)
+ImTextureID EnvMapVulkanRenderer::GetBloomDirtImage()
 {
-	const glm::mat4 moved = delta * s_Scene.GetWorldTransform(entity);
-	const glm::vec3 sideX = glm::vec3(moved[0]);
-	const glm::vec3 sideZ = glm::vec3(moved[2]);
-	EnvMapVulkanWaterSettings& settings = s_Scene.Get<WaterComponent>(entity).Settings;
-	settings.Center = glm::vec2(moved[3].x, moved[3].z);
-	settings.Height = moved[3].y;
-	if (glm::length(glm::vec2(sideX.x, sideX.z)) > 1e-4f)
-	{
-		settings.Rotation = glm::degrees(std::atan2(-sideX.z, sideX.x));
-	}
-	settings.Size = glm::max(glm::vec2(glm::length(sideX), glm::length(sideZ)), glm::vec2(0.1f));
-	s_Scene.SetWorldTransform(entity, settings.GetTransform());
+	return s_BloomDirtTexture ? s_BloomDirtTexture->GetImTextureID() : ImTextureID{};
 }
 
-// An entity under another moved entity moves with that one (it isn't moved twice)
-static bool HasMovedAncestor(EnvMapVulkanEntityID entity, const std::vector<EnvMapVulkanEntityID>& moved)
+std::string EnvMapVulkanRenderer::GetBloomDirtTextureFile()
 {
-	for (EnvMapVulkanEntityID parent = s_Scene.GetParent(entity); parent != NoEntity; parent = s_Scene.GetParent(parent))
-	{
-		if (Contains(moved, parent))
-		{
-			return true;
-		}
-	}
-	return false;
+	return s_BloomDirtTexture ? s_BloomDirtTexture->GetPath() : std::string();
 }
 
-void EnvMapVulkanRenderer::UpdateImGuizmo(Window* mainWindow)
+EnvMapVulkanProbes::UpdateStatus EnvMapVulkanRenderer::GetProbeStatus()
 {
-	// BEGIN ImGuizmo
-
-	// Gizmo mode: 1 translate, 2 rotate, 3 scale, 4 hide (not while typing into an ImGui text field)
-	if (!ImGui::GetIO().WantTextInput)
-	{
-		if (Input::IsKeyPressed(KeyH2M::D1))
-			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
-
-		if (Input::IsKeyPressed(KeyH2M::D2))
-			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::ROTATE;
-
-		if (Input::IsKeyPressed(KeyH2M::D3))
-			Scene::s_ImGuizmoType = ImGuizmo::OPERATION::SCALE;
-
-		if (Input::IsKeyPressed(KeyH2M::D4))
-			Scene::s_ImGuizmoType = -1;
-	}
-
-	// The gizmo is on the primary selected entity. The other selected entities that can move go along: the change of the
-	// primary entity's world matrix (a translation, a rotation around the gizmo, a scale) is applied to each of them.
-	SyncSelection();
-	std::vector<EnvMapVulkanEntityID> moved; // what moves for the selected entities, once each
-	for (EnvMapVulkanEntityID entity : s_Selection)
-	{
-		const EnvMapVulkanEntityID movedEntity = GetMovedEntity(entity);
-		if (movedEntity != NoEntity && !Contains(moved, movedEntity))
-		{
-			moved.push_back(movedEntity);
-		}
-	}
-	const EnvMapVulkanEntityID primary = GetMovedEntity(s_SelectedEntity);
-	const bool moveOthers = moved.size() > 1 && primary != NoEntity;
-	const glm::mat4 before = primary != NoEntity ? GetMovableWorldMatrix(primary) : glm::mat4(1.0f);
-	s_LightGizmoScale = 1.0f; // set by the light gizmo when it scales a light's Range
-
-	ManipulatePrimarySelection();
-
-	if (primary == NoEntity || !s_Scene.Exists(primary))
-	{
-		return;
-	}
-	const glm::mat4 after = GetMovableWorldMatrix(primary);
-	if (after == before && s_LightGizmoScale == 1.0f)
-	{
-		return;
-	}
-	glm::mat4 delta = after * glm::inverse(before);
-	if (s_LightGizmoScale != 1.0f)
-	{
-		// The primary light's Range was scaled (its matrix doesn't change): the others scale around the light
-		const glm::vec3 center = GetEntityPosition(primary);
-		delta = glm::translate(glm::mat4(1.0f), center) * glm::scale(glm::mat4(1.0f), glm::vec3(s_LightGizmoScale)) *
-			glm::translate(glm::mat4(1.0f), -center);
-	}
-	const float uniformScale = std::cbrt(std::abs(glm::determinant(glm::mat3(delta))));
-	const bool scaled = std::abs(uniformScale - 1.0f) > 1e-5f;
-
-	if (!moveOthers)
-	{
-		if (scaled && !GetLightRange(primary))
-		{
-			ScaleChildLightRanges(primary, uniformScale);
-			ExtractLights();
-		}
-		return;
-	}
-
-	if (HasMovedAncestor(primary, moved))
-	{
-		SetMovableWorldMatrix(primary, before); // a moved parent of it moves it (below)
-	}
-	for (EnvMapVulkanEntityID entity : moved)
-	{
-		if (!s_Scene.Exists(entity) || HasMovedAncestor(entity, moved))
-		{
-			continue;
-		}
-		if (GetLightRange(entity))
-		{
-			if (entity != primary)
-			{
-				MoveLightWith(entity, delta);
-			}
-			continue;
-		}
-		if (s_Scene.Has<WaterComponent>(entity))
-		{
-			if (entity != primary)
-			{
-				MoveWaterWith(entity, delta);
-			}
-			continue;
-		}
-		if (entity != primary)
-		{
-			SetMovableWorldMatrix(entity, delta * GetMovableWorldMatrix(entity));
-		}
-		if (scaled)
-		{
-			ScaleChildLightRanges(entity, uniformScale);
-		}
-	}
-	ExtractLights(); // moved lights
-	ExtractWater();  // the moved water
+	return s_Probes.GetStatus();
 }
 
-/**** BEGIN to be removed from VulkanRenderer ****/
+uint32_t EnvMapVulkanRenderer::GetProbeCount()
+{
+	return s_Probes.GetProbeCount();
+}
+
+void EnvMapVulkanRenderer::BakeProbes()
+{
+	s_Probes.RequestBake();
+}
+
+void EnvMapVulkanRenderer::ResetProbes()
+{
+	s_Probes.RequestReset();
+}
+
+void EnvMapVulkanRenderer::RestartPathTracer()
+{
+	s_PathTracer.Restart();
+}
+
+uint32_t EnvMapVulkanRenderer::GetPathTracerSamples()
+{
+	return s_PathTracer.GetSamples();
+}
+
+const EnvMapVulkanRayTracing::Stats& EnvMapVulkanRenderer::GetRayTracingStats()
+{
+	return s_RayTracing.GetStats();
+}
+
+bool EnvMapVulkanRenderer::AreReflectionsTraced()
+{
+	return s_Reflections.IsTraced();
+}
+
+glm::uvec2 EnvMapVulkanRenderer::GetReflectionsSize()
+{
+	return glm::uvec2(s_Reflections.GetWidth(), s_Reflections.GetHeight());
+}
+
+bool EnvMapVulkanRenderer::IsAmbientOcclusionRayTraced()
+{
+	return s_SSAO.IsRayTraced();
+}
+
+glm::uvec2 EnvMapVulkanRenderer::GetAmbientOcclusionSize()
+{
+	return glm::uvec2(s_SSAO.GetWidth(), s_SSAO.GetHeight());
+}
+
+EnvMapVulkanRenderer::GPUInfo EnvMapVulkanRenderer::GetGPUInfo()
+{
+	const VkPhysicalDeviceProperties& properties = H2M::VulkanContextH2M::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
+	GPUInfo info;
+	info.Name = properties.deviceName;
+	info.API = "Vulkan " + std::to_string(VK_API_VERSION_MAJOR(properties.apiVersion)) + "." + std::to_string(VK_API_VERSION_MINOR(properties.apiVersion)) +
+		"." + std::to_string(VK_API_VERSION_PATCH(properties.apiVersion));
+	if (properties.vendorID == 0x10DE) // NVIDIA's driver version encoding
+	{
+		info.Driver = std::to_string((properties.driverVersion >> 22) & 0x3FF) + "." + std::to_string((properties.driverVersion >> 14) & 0xFF);
+	}
+	return info;
+}
+
 uint32_t EnvMapVulkanRenderer::GetViewportWidth()
 {
 	return s_ViewportWidth;

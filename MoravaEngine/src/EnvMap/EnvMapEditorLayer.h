@@ -6,8 +6,8 @@
 #include "H2M/Editor/SceneHierarchyPanelH2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
 
-#include "Editor/EntitySelection.h"
-#include "Editor/MaterialEditorPanel.h"
+#include "Editor_Legacy/EntitySelection.h"
+#include "Editor_Legacy/MaterialEditorPanel.h"
 #include "EnvMap/EnvMapMaterial.h"
 #include "EnvMap/EnvMapSharedData.h"
 #include "Framebuffer/ShadowMap.h"

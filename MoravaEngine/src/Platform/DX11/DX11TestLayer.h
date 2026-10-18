@@ -21,8 +21,8 @@
 #include "Core/MoravaLayer.h"
 #include "Core/Window.h"
 #include "Scene/Scene.h"
-#include "Editor/EntitySelection.h"
-#include "Editor/MaterialEditorPanel.h"
+#include "Editor_Legacy/EntitySelection.h"
+#include "Editor_Legacy/MaterialEditorPanel.h"
 
 #include "ImGuizmo.h"
 

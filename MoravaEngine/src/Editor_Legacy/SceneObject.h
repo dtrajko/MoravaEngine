@@ -3,7 +3,7 @@
 #include "Core/AABB.h"
 #include "Mesh/Mesh.h"
 #include "Mesh/Model.h"
-#include "Editor/Pivot.h"
+#include "Editor_Legacy/Pivot.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext/quaternion_float.hpp>

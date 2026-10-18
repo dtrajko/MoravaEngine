@@ -235,6 +235,12 @@ foreach(api VULKAN OPENGL DIRECTX11)
     endif()
 endforeach()
 
+# The editor (src/Editor) edits the scene of SceneEnvMapVulkan (EnvMapVulkanScene), so far only in Vulkan builds
+if(NOT "VULKAN" IN_LIST MORAVA_GRAPHICS_APIS)
+    list(FILTER SRC EXCLUDE REGEX "^Editor/")
+    list(FILTER HEADERS EXCLUDE REGEX "^Editor/")
+endif()
+
 # And the shared classes only the OpenGL scenes use (the older Morava scenes and what they are made of)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/OpenGLSceneSources.cmake)
 if(NOT "OPENGL" IN_LIST MORAVA_GRAPHICS_APIS)
