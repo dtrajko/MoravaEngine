@@ -134,14 +134,92 @@ namespace H2M
 	}
 
 	// Total number of descriptors needed for a set of image bindings (arrays count every element)
-	static uint32_t GetDescriptorCount(const std::unordered_map<uint32_t, VulkanShaderH2M::ImageSamplerH2M>& imageSamplers)
+	// The descriptors of one type in the bindings (textures with and without a sampler share ImageSamplers)
+	static uint32_t GetDescriptorCount(const std::unordered_map<uint32_t, VulkanShaderH2M::ImageSamplerH2M>& imageSamplers, VkDescriptorType type)
 	{
 		uint32_t count = 0;
 		for (const auto& [binding, imageSampler] : imageSamplers)
 		{
-			count += imageSampler.ArraySize;
+			if (imageSampler.DescriptorType == type)
+				count += imageSampler.ArraySize;
 		}
 		return count;
+	}
+
+	// Pool sizes of a set's textures and samplers, numberOfSets times
+	static void AddImagePoolSizes(std::vector<VkDescriptorPoolSize>& poolSizes, const std::unordered_map<uint32_t, VulkanShaderH2M::ImageSamplerH2M>& imageSamplers,
+		uint32_t numberOfSets)
+	{
+		for (VkDescriptorType type : { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_SAMPLER })
+		{
+			uint32_t count = GetDescriptorCount(imageSamplers, type);
+			if (count)
+				poolSizes.push_back({ type, count * numberOfSets });
+		}
+	}
+
+	// The shared samplers (GetSharedSampler), made on first use. The settings are those the textures read with them had
+	// as their own samplers: one sampler per kind of texture instead of one per texture.
+	static std::unordered_map<std::string, VkSampler> s_SharedSamplers;
+
+	VkSampler VulkanShaderH2M::GetSharedSampler(const std::string& name)
+	{
+		auto existing = s_SharedSamplers.find(name);
+		if (existing != s_SharedSamplers.end())
+			return existing->second;
+
+		VkSamplerCreateInfo info = {};
+		info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		info.maxAnisotropy = 1.0f;
+		info.minLod = 0.0f;
+		info.maxLod = VK_LOD_CLAMP_NONE;
+		info.compareOp = VK_COMPARE_OP_NEVER;
+		info.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+		if (name == "s_LinearRepeat") // material maps, environment cube maps, the BRDF LUT (as Texture2D_H2M / TextureCubeH2M)
+		{
+			info.magFilter = info.minFilter = VK_FILTER_LINEAR;
+			info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			info.addressModeU = info.addressModeV = info.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+		}
+		else if (name == "s_LinearClamp") // the probe atlases, the caustics map
+		{
+			info.magFilter = info.minFilter = VK_FILTER_LINEAR;
+			info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			info.addressModeU = info.addressModeV = info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		}
+		else if (name == "s_NearestClamp") // single texels: the probes' data, the ambient occlusion and reflection images
+		{
+			info.magFilter = info.minFilter = VK_FILTER_NEAREST;
+			info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+			info.addressModeU = info.addressModeV = info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+		}
+		else if (name == "s_ShadowCompare") // the shadow maps (sampler2DArrayShadow...): 1 lit, 0 shadow; outside the map: lit
+		{
+			info.magFilter = info.minFilter = VK_FILTER_LINEAR;
+			info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+			info.addressModeU = info.addressModeV = info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+			info.compareEnable = VK_TRUE;
+			info.compareOp = VK_COMPARE_OP_LESS_OR_EQUAL; // lit when the fragment's depth <= the depth in the map
+			info.maxLod = 0.0f;
+		}
+		else
+		{
+			MORAVA_CORE_ERROR("VulkanShaderH2M: no shared sampler '{0}' (see Include/Samplers.glslh)", name);
+			return VK_NULL_HANDLE;
+		}
+
+		VkSampler sampler = VK_NULL_HANDLE;
+		VK_CHECK_RESULT_H2M(vkCreateSampler(VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), &info, nullptr, &sampler));
+		s_SharedSamplers[name] = sampler;
+		return sampler;
+	}
+
+	void VulkanShaderH2M::DestroySharedSamplers()
+	{
+		VkDevice device = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
+		for (auto& [name, sampler] : s_SharedSamplers)
+			vkDestroySampler(device, sampler, nullptr);
+		s_SharedSamplers.clear();
 	}
 
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShaderH2M::UniformBufferH2M*>> s_UniformBuffers; // set -> binding point -> buffer
@@ -373,7 +451,9 @@ namespace H2M
 		}
 
 		MORAVA_CORE_TRACE("Sampled Images:");
-		for (const auto& resource : resources.sampled_images)
+		// Textures with their own sampler ("sampler2D u_X") and without one ("texture2D u_X", read with a shared sampler)
+		for (VkDescriptorType textureType : { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE })
+		for (const auto& resource : textureType == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER ? resources.sampled_images : resources.separate_images)
 		{
 			const auto& name = resource.name;
 			auto& type = compiler.get_type(resource.base_type_id);
@@ -402,6 +482,7 @@ namespace H2M
 			}
 			imageSampler.Name = name;
 			imageSampler.ShaderStage = shaderStage;
+			imageSampler.DescriptorType = textureType;
 			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
 
 			MORAVA_CORE_TRACE("    {0} ({1}, {2})", name, descriptorSet, binding);
@@ -412,6 +493,33 @@ namespace H2M
 			MORAVA_CORE_TRACE("  Binding Point: {0}", binding);
 			// MORAVA_CORE_TRACE("  Size: {0}", size);
 			MORAVA_CORE_TRACE("--------------------------");
+		}
+
+		// Samplers without a texture ("sampler s_LinearClamp"): the shared samplers, fixed in the layout by name
+		MORAVA_CORE_TRACE("Samplers:");
+		for (const auto& resource : resources.separate_samplers)
+		{
+			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
+			ShaderDescriptorSetH2M& shaderDescriptorSet = m_ShaderDescriptorSets[descriptorSet];
+			auto existing = shaderDescriptorSet.Samplers.find(binding);
+			if (existing != shaderDescriptorSet.Samplers.end())
+			{
+				existing->second.ShaderStage = (VkShaderStageFlagBits)(existing->second.ShaderStage | shaderStage);
+				continue;
+			}
+
+			ImageSamplerH2M& sampler = shaderDescriptorSet.Samplers[binding];
+			sampler.BindingPoint = binding;
+			sampler.DescriptorSet = descriptorSet;
+			sampler.ArraySize = 1;
+			sampler.Name = resource.name;
+			sampler.ShaderStage = shaderStage;
+			sampler.DescriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+			sampler.ImmutableSampler = GetSharedSampler(resource.name);
+
+			MORAVA_CORE_TRACE("    {0} ({1}, {2})", resource.name, descriptorSet, binding);
 		}
 
 		// Acceleration structures (ray tracing): only the binding is reflected, as for a storage buffer
@@ -455,6 +563,7 @@ namespace H2M
 			imageSampler.ArraySize = GetDescriptorArraySize(compiler, resource);
 			imageSampler.Name = name;
 			imageSampler.ShaderStage = shaderStage;
+			imageSampler.DescriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 			// m_ImageSamplers.insert(std::pair(bindingPoint, imageSampler));
 
 			MORAVA_CORE_TRACE("    {0} ({1}, {2})", name, descriptorSet, binding);
@@ -490,18 +599,14 @@ namespace H2M
 				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.UniformBuffers.size());
 			}
 
-			if (shaderDescriptorSet.ImageSamplers.size())
-			{
-				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
-				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.ImageSamplers);
-			}
+			AddImagePoolSizes(m_TypeCounts[set], shaderDescriptorSet.ImageSamplers, 1);
+			AddImagePoolSizes(m_TypeCounts[set], shaderDescriptorSet.Samplers, 1);
 
 			if (shaderDescriptorSet.StorageImages.size())
 			{
 				VkDescriptorPoolSize& typeCount = m_TypeCounts[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.StorageImages);
+				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.StorageImages, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
 			}
 
 			if (shaderDescriptorSet.StorageBuffers.size())
@@ -564,7 +669,7 @@ namespace H2M
 			for (auto& [binding, imageSampler] : shaderDescriptorSet.ImageSamplers)
 			{
 				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
-				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+				layoutBinding.descriptorType = imageSampler.DescriptorType; // with or without its own sampler
 				layoutBinding.descriptorCount = imageSampler.ArraySize; // must match the array size in the shader
 				layoutBinding.stageFlags = imageSampler.ShaderStage;
 				layoutBinding.pImmutableSamplers = nullptr;
@@ -580,9 +685,21 @@ namespace H2M
 				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[imageSampler.Name];
 				set = {};
 				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-				set.descriptorType = layoutBinding.descriptorType; // VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+				set.descriptorType = layoutBinding.descriptorType; // COMBINED_IMAGE_SAMPLER or SAMPLED_IMAGE
 				set.descriptorCount = 1;
 				set.dstBinding = layoutBinding.binding;
+			}
+
+			// The shared samplers: fixed in the layout (pImmutableSamplers points into the map, which isn't changed until the
+			// layout is created), so the sets need no write for them
+			for (auto& [binding, sampler] : shaderDescriptorSet.Samplers)
+			{
+				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
+				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+				layoutBinding.descriptorCount = 1;
+				layoutBinding.stageFlags = sampler.ShaderStage;
+				layoutBinding.pImmutableSamplers = sampler.ImmutableSampler ? &sampler.ImmutableSampler : nullptr;
+				layoutBinding.binding = binding;
 			}
 
 			for (auto& [binding, storageImage] : shaderDescriptorSet.StorageImages)
@@ -774,17 +891,14 @@ namespace H2M
 				typeCount.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				typeCount.descriptorCount = static_cast<uint32_t>(shaderDescriptorSet.UniformBuffers.size()) * numberOfSets;
 			}
-			if (shaderDescriptorSet.ImageSamplers.size())
-			{
-				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
-				typeCount.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.ImageSamplers) * numberOfSets;
-			}
+			// The shared samplers too: a binding with an immutable sampler still takes its descriptor from the pool
+			AddImagePoolSizes(poolSizes[set], shaderDescriptorSet.ImageSamplers, numberOfSets);
+			AddImagePoolSizes(poolSizes[set], shaderDescriptorSet.Samplers, numberOfSets);
 			if (shaderDescriptorSet.StorageImages.size())
 			{
 				VkDescriptorPoolSize& typeCount = poolSizes[set].emplace_back();
 				typeCount.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.StorageImages) * numberOfSets;
+				typeCount.descriptorCount = GetDescriptorCount(shaderDescriptorSet.StorageImages, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE) * numberOfSets;
 			}
 			if (shaderDescriptorSet.StorageBuffers.size())
 			{

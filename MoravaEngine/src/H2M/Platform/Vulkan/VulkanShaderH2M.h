@@ -52,6 +52,10 @@ namespace H2M
 			bool Bindless = false;
 			std::string Name;
 			VkShaderStageFlagBits ShaderStage = VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
+			// "sampler2D u_X": COMBINED_IMAGE_SAMPLER; "texture2D u_X" (a texture without a sampler): SAMPLED_IMAGE; "sampler s_X"
+			// (a sampler without a texture, in Samplers): SAMPLER, then ImmutableSampler is the shared sampler of that name
+			VkDescriptorType DescriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			VkSampler ImmutableSampler = VK_NULL_HANDLE;
 		};
 
 		// "accelerationStructureEXT u_TLAS": what rays are traced against (the structure is the caller's, as a storage buffer)
@@ -151,6 +155,13 @@ namespace H2M
 
 		static void ClearUniformBuffers();
 
+		// The samplers shaders share: "sampler s_LinearRepeat" (or s_LinearClamp, s_NearestClamp, s_ShadowCompare; see
+		// Include/Samplers.glslh) is a binding whose sampler is fixed in the descriptor set layout (an immutable sampler),
+		// so no code writes it. Textures declared without a sampler ("texture2D u_X") are read with these. Metal (MoltenVK)
+		// allows 16 samplers per shader stage: a texture with its own sampler counts as one, a shared sampler once for all.
+		static VkSampler GetSharedSampler(const std::string& name);
+		static void DestroySharedSamplers();
+
 		// Vulkan-specific
 		virtual uint32_t GetRendererID() const override;
 		virtual void SetUniformBuffer(const std::string& name, const void* data, uint32_t size) override;
@@ -197,14 +208,15 @@ namespace H2M
 		{
 			std::unordered_map<uint32_t, UniformBufferH2M> UniformBuffers;
 			std::unordered_map<uint32_t, StorageBufferH2M> StorageBuffers;
-			std::unordered_map<uint32_t, ImageSamplerH2M> ImageSamplers;
+			std::unordered_map<uint32_t, ImageSamplerH2M> ImageSamplers; // textures: with their sampler, or without (DescriptorType)
+			std::unordered_map<uint32_t, ImageSamplerH2M> Samplers;      // shared samplers (immutable, never written)
 			std::unordered_map<uint32_t, ImageSamplerH2M> StorageImages;
 			std::unordered_map<uint32_t, AccelerationStructureH2M> AccelerationStructures;
 
 			std::unordered_map<std::string, VkWriteDescriptorSet> WriteDescriptorSets;
 			bool UpdateAfterBind = false; // has a bindless array: its pool and layout are created for update-after-bind
 
-			operator bool() const { return !(StorageBuffers.empty() && UniformBuffers.empty() && ImageSamplers.empty() && StorageImages.empty() && AccelerationStructures.empty()); }
+			operator bool() const { return !(StorageBuffers.empty() && UniformBuffers.empty() && ImageSamplers.empty() && Samplers.empty() && StorageImages.empty() && AccelerationStructures.empty()); }
 		};
 
 		std::unordered_map<uint32_t, ShaderDescriptorSetH2M> m_ShaderDescriptorSets; // added in Hazel Live 19.02.2021

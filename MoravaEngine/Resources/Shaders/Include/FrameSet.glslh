@@ -3,6 +3,11 @@
 #ifndef FRAME_SET_GLSLH
 #define FRAME_SET_GLSLH
 
+// The textures here have no sampler of their own: each is declared as a texture (texture2D...) and then, under the same
+// name, as a macro that pairs it with a shared sampler (Include/Samplers.glslh). Code reads them as before
+// (texture(u_ShadowMap, ...)); the name of the binding (what the engine writes by name) stays the texture's.
+#include "Samplers.glslh"
+
 // Lights (EnvMapVulkanLights.h): the std140 layouts must match EnvMapVulkanLightsGPU byte for byte
 const int MaxPointLights = 16;
 const int MaxSpotLights = 16;
@@ -58,9 +63,12 @@ layout (std140, set = 0, binding = 1) uniform SceneData
 	vec4 u_CausticsRegion;        // offset 80: the caustics map (u_CausticsMap): xy = its corner (min x, min z), z = 1 / its size, w = 1 / fade width (map units)
 	vec4 u_CausticsParams;        // offset 96: x = strength (0 = no caustics this frame), y = the focus depth (meters)
 };
-layout (set = 0, binding = 2) uniform samplerCube u_EnvRadianceTex;
-layout (set = 0, binding = 3) uniform samplerCube u_EnvIrradianceTex;
-layout (set = 0, binding = 4) uniform sampler2D u_BRDFLUTTexture;
+layout (set = 0, binding = 2) uniform textureCube u_EnvRadianceTex;
+#define u_EnvRadianceTex samplerCube(u_EnvRadianceTex, s_LinearRepeat)
+layout (set = 0, binding = 3) uniform textureCube u_EnvIrradianceTex;
+#define u_EnvIrradianceTex samplerCube(u_EnvIrradianceTex, s_LinearRepeat)
+layout (set = 0, binding = 4) uniform texture2D u_BRDFLUTTexture;
+#define u_BRDFLUTTexture sampler2D(u_BRDFLUTTexture, s_LinearRepeat)
 layout (std140, set = 0, binding = 5) uniform Lights
 {
 	DirectionalLight u_Sun;                    // offset 0 (32 bytes)
@@ -71,7 +79,8 @@ layout (std140, set = 0, binding = 5) uniform Lights
 	SpotLight u_SpotLights[MaxSpotLights];     // offset 816 (64 bytes each)
 };
 // The sun's cascaded shadow map (EnvMapVulkanShadows.h): a layer per cascade, compared in the sampler (1 lit, 0 shadow)
-layout (set = 0, binding = 6) uniform sampler2DArrayShadow u_ShadowMap;
+layout (set = 0, binding = 6) uniform texture2DArray u_ShadowMap;
+#define u_ShadowMap sampler2DArrayShadow(u_ShadowMap, s_ShadowCompare)
 layout (std140, set = 0, binding = 7) uniform Shadows
 {
 	mat4 u_CascadeViewProjection[4]; // offset 0: world -> shadow map clip space, per cascade
@@ -94,15 +103,20 @@ layout (std140, set = 0, binding = 7) uniform Shadows
 	                                    // 5 how much of the environment's reflection the probes let through, 6 the ambient
 	                                    // occlusion image, 7 the ray-traced reflection image; 0: all of it
 };
-layout (set = 0, binding = 8) uniform sampler2DArrayShadow u_SpotShadowMaps;  // a layer per shadowed spot light
-layout (set = 0, binding = 9) uniform samplerCubeArrayShadow u_PointShadowMaps; // a cube per shadowed point light
+layout (set = 0, binding = 8) uniform texture2DArray u_SpotShadowMaps;  // a layer per shadowed spot light
+#define u_SpotShadowMaps sampler2DArrayShadow(u_SpotShadowMaps, s_ShadowCompare)
+layout (set = 0, binding = 9) uniform textureCubeArray u_PointShadowMaps; // a cube per shadowed point light
+#define u_PointShadowMaps samplerCubeArrayShadow(u_PointShadowMaps, s_ShadowCompare)
 // The light the waves focus under the water (WaterCaustics.glsl): 1 = the light of a flat surface
-layout (set = 0, binding = 10) uniform sampler2D u_CausticsMap;
+layout (set = 0, binding = 10) uniform texture2D u_CausticsMap;
+#define u_CausticsMap sampler2D(u_CausticsMap, s_LinearClamp)
 
 // The probe volume (EnvMapVulkanProbes, read with Include/Probes.glslh): a grid of points that each hold the light
 // arriving there from every direction. The atlases have a tile per probe (see Include/ProbeOctahedral.glslh).
-layout (set = 0, binding = 11) uniform sampler2D u_ProbeIrradiance; // rgb: the irradiance / pi, to the power 1 / gamma
-layout (set = 0, binding = 12) uniform sampler2D u_ProbeVisibility; // r: how far the probe sees in a direction (mean), g: mean of its square
+layout (set = 0, binding = 11) uniform texture2D u_ProbeIrradiance; // rgb: the irradiance / pi, to the power 1 / gamma
+#define u_ProbeIrradiance sampler2D(u_ProbeIrradiance, s_LinearClamp)
+layout (set = 0, binding = 12) uniform texture2D u_ProbeVisibility; // r: how far the probe sees in a direction (mean), g: mean of its square
+#define u_ProbeVisibility sampler2D(u_ProbeVisibility, s_LinearClamp)
 layout (std140, set = 0, binding = 13) uniform ProbeVolume
 {
 	vec4 u_ProbeOrigin;     // offset 0:  xyz = the position of probe (0, 0, 0), the volume's lowest corner; w = 1 when the
@@ -113,17 +127,20 @@ layout (std140, set = 0, binding = 13) uniform ProbeVolume
 	                        // probes darken the environment's reflection (EnvironmentVisibility in Include/ShadeSurface.glslh)
 	vec4 u_ProbeAtlasSizes; // offset 64: xy = the irradiance atlas in texels, zw = the visibility atlas
 };
-layout (set = 0, binding = 14) uniform sampler2D u_ProbeData;       // a texel per probe: xyz = its offset from the grid, w = 1 in use
+layout (set = 0, binding = 14) uniform texture2D u_ProbeData;       // a texel per probe: xyz = its offset from the grid, w = 1 in use
+#define u_ProbeData sampler2D(u_ProbeData, s_NearestClamp)
 
 // The ambient occlusion (EnvMapVulkanSSAO): a value per pixel of the viewport, 1 = the light from all around reaches the
 // surface, 0 = the geometry close to it lets none through. For the indirect light only. A set 0 of a pass that has no
 // ambient occlusion (the water's reflection) holds a white texel here.
-layout (set = 0, binding = 15) uniform sampler2D u_AOImage;
+layout (set = 0, binding = 15) uniform texture2D u_AOImage;
+#define u_AOImage sampler2D(u_AOImage, s_NearestClamp)
 
 // The ray-traced reflections (EnvMapVulkanReflections): per pixel of the viewport, rgb = the light the surface reflects,
 // a = how much of it replaces the environment's reflection (0: none was traced there). A set 0 of a pass that has no
 // reflections (the water's reflection), and every set 0 without ray tracing, holds an empty texel here.
-layout (set = 0, binding = 16) uniform sampler2D u_ReflectionImage;
+layout (set = 0, binding = 16) uniform texture2D u_ReflectionImage;
+#define u_ReflectionImage sampler2D(u_ReflectionImage, s_NearestClamp)
 
 // The materials of the Material Library as plain values, one entry per material (EnvMapVulkanMaterialBuffer): what a
 // shader needs to know of a material it has no descriptor set for (set 1 holds one material's maps). A draw's entry is
@@ -135,7 +152,7 @@ layout (std430, set = 0, binding = 17) readonly buffer Materials
 };
 
 // The BRDF lookup table for the environment's reflections: x = scale, y = bias of F0 (the texture was made for a gloss
-// model: its v axis is 1 - roughness). Read between the centers of its outermost texels: the texture's sampler repeats,
+// model: its v axis is 1 - roughness). Read between the centers of its outermost texels: its sampler repeats,
 // so at the very edge linear filtering would mix in the opposite edge. At NdotV = 1 (a surface seen head-on) that is
 // the grazing angle's strong reflection, a bright disc on whatever faces the camera.
 vec2 SampleBRDFLUT(float NdotV, float roughness)

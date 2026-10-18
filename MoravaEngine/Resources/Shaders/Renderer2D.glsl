@@ -53,11 +53,14 @@ struct VertexOutput
 layout (location = 0) in VertexOutput Input;
 layout (location = 5) in flat float TexIndex;
 
-layout (binding = 1) uniform sampler2D u_Textures[32];
+// 32 textures without samplers of their own, read with one shared sampler (VulkanShaderH2M::GetSharedSampler): Metal
+// (macOS) allows 16 samplers per shader stage, and an array of sampler2D counts each element as one
+layout (binding = 1) uniform texture2D u_Textures[32];
+layout (binding = 2) uniform sampler s_LinearRepeat;
 
 void main()
 {
-	color = texture(u_Textures[int(TexIndex)], Input.TexCoord * Input.TilingFactor) * Input.Color;
+	color = texture(sampler2D(u_Textures[int(TexIndex)], s_LinearRepeat), Input.TexCoord * Input.TilingFactor) * Input.Color;
 	if (color.a < 0.5)
 		discard;
 }

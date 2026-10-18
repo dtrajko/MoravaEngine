@@ -49,7 +49,9 @@ struct VertexOutput
 layout (location = 0) in VertexOutput Input;
 layout (location = 5) in flat float TexIndex;
 
-layout (binding = 1) uniform sampler2D u_FontAtlases[32];
+// 32 font atlases without samplers of their own, read with one shared sampler (as u_Textures in Renderer2D.glsl)
+layout (binding = 1) uniform texture2D u_FontAtlases[32];
+layout (binding = 2) uniform sampler s_LinearRepeat;
 
 float median(float r, float g, float b)
 {
@@ -68,7 +70,7 @@ float ScreenPxRange()
 float ScreenPxRange()
 {
 	float pxRange = 2.0f;
-    vec2 unitRange = vec2(pxRange)/vec2(textureSize(u_FontAtlases[int(TexIndex)], 0));
+    vec2 unitRange = vec2(pxRange)/vec2(textureSize(sampler2D(u_FontAtlases[int(TexIndex)], s_LinearRepeat), 0));
     vec2 screenTexSize = vec2(1.0)/fwidth(Input.TexCoord);
     return max(0.5*dot(unitRange, screenTexSize), 1.0);
 }
@@ -80,7 +82,7 @@ void main()
 
 	// NOTE(Yan): MSDF texture has no mips (only LOD 0), but in the future it might
 	//            be nice to do some sort of fading/smoothing when camera is far
-	vec3 msd = texture(u_FontAtlases[int(TexIndex)], Input.TexCoord).rgb;
+	vec3 msd = texture(sampler2D(u_FontAtlases[int(TexIndex)], s_LinearRepeat), Input.TexCoord).rgb;
     float sd = median(msd.r, msd.g, msd.b);
     float screenPxDistance = ScreenPxRange() * (sd - 0.5f);
     float opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
