@@ -341,6 +341,14 @@ namespace H2M
 		H2M_CORE_ASSERT(m_PhysicalDevice->IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME));
 		deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
+		// A portability driver (MoltenVK) lists VK_KHR_portability_subset, which must then be enabled (the spec requires it).
+		// The name is spelled out: its define is in vulkan_beta.h
+		if (m_PhysicalDevice->IsExtensionSupported("VK_KHR_portability_subset"))
+		{
+			deviceExtensions.push_back("VK_KHR_portability_subset");
+			MORAVA_CORE_INFO("Vulkan device: portability subset (MoltenVK) enabled");
+		}
+
 		VkDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(physicalDevice->m_QueueCreateInfos.size());;

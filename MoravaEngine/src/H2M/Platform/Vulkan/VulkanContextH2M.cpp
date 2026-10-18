@@ -71,9 +71,25 @@ namespace H2M
 		features.enabledValidationFeatureCount = 1;
 		features.pEnabledValidationFeatures = enables;
 
+		// Portability drivers (MoltenVK on macOS: Vulkan on Metal, not fully conformant) are listed by the loader only when the
+		// instance asks for them with this extension and flag; elsewhere the loader doesn't have the extension
+		uint32_t availableExtensionCount = 0;
+		vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, nullptr);
+		std::vector<VkExtensionProperties> availableExtensions(availableExtensionCount);
+		vkEnumerateInstanceExtensionProperties(nullptr, &availableExtensionCount, availableExtensions.data());
+		bool portabilityEnumeration = false;
+		for (const VkExtensionProperties& extension : availableExtensions)
+		{
+			if (strcmp(extension.extensionName, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) == 0)
+				portabilityEnumeration = true;
+		}
+		if (portabilityEnumeration)
+			instanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+
 		VkInstanceCreateInfo instanceCreateInfo = {};
 		instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 		instanceCreateInfo.pNext = nullptr;// &features;
+		instanceCreateInfo.flags = portabilityEnumeration ? VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR : 0;
 		instanceCreateInfo.pApplicationInfo = &appInfo;
 		instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
 		instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
@@ -128,15 +144,21 @@ namespace H2M
 
 		m_PhysicalDevice = VulkanPhysicalDeviceH2M::Select();
 
+		// Device creation fails on a feature the device doesn't have, so the optional ones are enabled only where supported:
+		// MoltenVK (macOS) has no wideLines (line widths are clamped to lineWidthRange, 1..1 then) and no
+		// pipelineStatisticsQuery (the profiler and the command buffers skip those queries)
+		const VkPhysicalDeviceFeatures& supportedFeatures = m_PhysicalDevice->GetFeatures();
 		VkPhysicalDeviceFeatures enabledFeatures;
 		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
 		enabledFeatures.samplerAnisotropy = true;
-		enabledFeatures.wideLines = true;
+		enabledFeatures.wideLines = supportedFeatures.wideLines;
 		enabledFeatures.fillModeNonSolid = true;
-		enabledFeatures.pipelineStatisticsQuery = true;
+		enabledFeatures.pipelineStatisticsQuery = supportedFeatures.pipelineStatisticsQuery;
 		// Cube map arrays (samplerCubeArrayShadow): the point light shadow maps of SceneEnvMapVulkan, when the GPU has them
-		enabledFeatures.imageCubeArray = m_PhysicalDevice->GetFeatures().imageCubeArray;
-		MORAVA_CORE_INFO("Vulkan device feature imageCubeArray: {0}", enabledFeatures.imageCubeArray ? "enabled" : "not supported");
+		enabledFeatures.imageCubeArray = supportedFeatures.imageCubeArray;
+		MORAVA_CORE_INFO("Vulkan device features: wideLines {0}, pipelineStatisticsQuery {1}, imageCubeArray {2}",
+			enabledFeatures.wideLines ? "enabled" : "not supported", enabledFeatures.pipelineStatisticsQuery ? "enabled" : "not supported",
+			enabledFeatures.imageCubeArray ? "enabled" : "not supported");
 		m_Device = RefH2M<VulkanDeviceH2M>::Create(m_PhysicalDevice, enabledFeatures);
 
 		// Why is this here?
