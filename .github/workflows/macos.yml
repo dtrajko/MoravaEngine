@@ -22,6 +22,7 @@ jobs:
         include:
           - name: Clang Vulkan
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
+            smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20
           # macOS stops at OpenGL 4.1: an older scene (HAZEL_ENV_MAP needs 4.5)
           - name: Clang OpenGL
             cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=EDITOR_IMGUIZMO
@@ -36,7 +37,18 @@ jobs:
           submodules: recursive
 
       - name: Install packages
-        run: brew install molten-vk vulkan-loader vulkan-headers vulkan-validationlayers ninja
+        run: brew install molten-vk vulkan-loader vulkan-headers vulkan-validationlayers ninja coreutils
+
+      # The loader may not search Homebrew's folders: point it at MoltenVK's driver file and the validation layer
+      - name: Vulkan environment
+        run: |
+          prefix=$(brew --prefix)
+          icd=$(find "$prefix/etc/vulkan" "$prefix/share/vulkan" -name 'MoltenVK_icd.json' 2>/dev/null | head -1)
+          layer=$(find "$prefix/share/vulkan" "$prefix/etc/vulkan" -name 'VkLayer_khronos_validation.json' 2>/dev/null | head -1)
+          echo "MoltenVK driver: $icd, validation layer: $layer"
+          [ -n "$icd" ] && echo "VK_DRIVER_FILES=$icd" >> "$GITHUB_ENV"
+          [ -n "$layer" ] && echo "VK_ADD_LAYER_PATH=$(dirname "$layer")" >> "$GITHUB_ENV"
+          true
 
       - name: Cache shaderc dependencies
         id: shaderc-deps
@@ -72,6 +84,31 @@ jobs:
           echo "== $(grep -c ' error: ' build.log) errors, $(grep -c ' warning: ' build.log) warnings; failed files: $(grep -c '^FAILED: ' build.log)"
           grep ' error: ' build.log | sed -E 's/^.*\/(src|vendor)\//\1\//' | sort | uniq -c | sort -rn | head -150 || true
           exit $status
+
+      # As on Linux: the scene runs for 20 s (the runner's desktop session, MoltenVK on the virtual GPU, no ray tracing).
+      # Fails on a crash, a hang, an exit code other than 0, a Vulkan validation message or a file that can't be loaded
+      - name: Smoke test
+        if: matrix.smoke-test
+        working-directory: MoravaEngine
+        run: |
+          set -o pipefail
+          gtimeout 600 ../build/MoravaEngine ${{ matrix.smoke-test }} 2>&1 | tee smoke-test.log
+          if grep -q VulkanDebugCallback smoke-test.log; then
+            echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
+            exit 1
+          fi
+          if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read" smoke-test.log; then
+            echo "::error::Files that could not be found or loaded"
+            exit 1
+          fi
+
+      - name: Smoke test log
+        if: always() && matrix.smoke-test
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: smoke-test-log-macos-${{ strategy.job-index }}
+          path: MoravaEngine/smoke-test.log
+          if-no-files-found: ignore
 
       - name: Build log
         if: always()
