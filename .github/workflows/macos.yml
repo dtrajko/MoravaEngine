@@ -1,11 +1,15 @@
-# macOS builds (Apple Silicon), while the port is in progress: a separate workflow, not a required check, until the
-# builds are green; then the job moves into build.yml. Warnings aren't errors yet, and the build keeps going after
-# errors (-k 0), so one run lists every compile error. Vulkan comes from Homebrew (MoltenVK, loader, validation layer).
+# macOS builds (Apple Silicon), on the same triggers as build.yml: a separate workflow, not a required check, until the
+# engine's warnings on Apple Clang are fixed; then the jobs move into build.yml with warnings as errors. The build keeps
+# going after errors (-k 0), so one run lists every compile error. Vulkan comes from Homebrew (MoltenVK, loader,
+# validation layer).
 name: macOS
 
 on:
   push:
-    branches: [ci-macos]
+    branches: [master]
+    paths-ignore: ['**.md', 'MoravaEngine/Screenshots/**']
+  pull_request:
+    paths-ignore: ['**.md', 'MoravaEngine/Screenshots/**']
   workflow_dispatch:
 
 concurrency:
