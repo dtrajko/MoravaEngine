@@ -19,9 +19,9 @@ set(MORAVA_SOURCES_OF_OPENGL_SCENES
     Camera/CameraControllerVoxelTerrain.
     Core/InsertionSort.
     Core/Raycast.
-    Editor/Gizmo.
-    Editor/SceneObjectLight.
-    Editor/SceneObjectParticleSystem.
+    Editor_Legacy/Gizmo.
+    Editor_Legacy/SceneObjectLight.
+    Editor_Legacy/SceneObjectParticleSystem.
     Framebuffer/Cubemap.
     Framebuffer/FramebufferTextureCubemap.
     Material/MaterialInstance.

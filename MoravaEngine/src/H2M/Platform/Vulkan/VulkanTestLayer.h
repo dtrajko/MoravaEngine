@@ -21,7 +21,7 @@
 
 #include "Core/MoravaLayer.h"
 #include "Core/Window.h"
-#include "Editor/MaterialEditorPanel.h"
+#include "Editor_Legacy/MaterialEditorPanel.h"
 #include "Scene/Scene.h"
 
 

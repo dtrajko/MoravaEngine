@@ -1,4 +1,4 @@
-#include "Editor/SceneObjectParticleSystem.h"
+#include "Editor_Legacy/SceneObjectParticleSystem.h"
 
 #include "Core/Log.h"
 #include "Core/Profiler.h"

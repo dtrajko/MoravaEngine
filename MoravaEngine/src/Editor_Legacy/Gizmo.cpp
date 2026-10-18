@@ -1,4 +1,4 @@
-#include "Editor/Gizmo.h"
+#include "Editor_Legacy/Gizmo.h"
 
 #include "Core/Math.h"
 #include "Core/MousePicker.h"

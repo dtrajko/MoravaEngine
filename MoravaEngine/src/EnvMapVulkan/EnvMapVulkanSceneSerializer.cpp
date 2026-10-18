@@ -229,7 +229,7 @@ namespace EnvMapVulkanSceneSerializer
 		}
 	}
 
-	std::string Serialize(EnvMapVulkanScene& scene, const std::string& sceneName, const std::function<void(YAML::Emitter&)>& writeRenderSettings)
+	std::string Serialize(EnvMapVulkanScene& scene, const std::string& sceneName, const EnvMapVulkanRenderSettings& renderSettings)
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -237,12 +237,9 @@ namespace EnvMapVulkanSceneSerializer
 		out << YAML::Key << "Version" << YAML::Value << 1;
 		out << YAML::Key << "Name" << YAML::Value << sceneName;
 		out << YAML::EndMap;
-		if (writeRenderSettings)
-		{
-			out << YAML::Key << "RenderSettings" << YAML::Value << YAML::BeginMap;
-			writeRenderSettings(out);
-			out << YAML::EndMap;
-		}
+		out << YAML::Key << "RenderSettings" << YAML::Value << YAML::BeginMap;
+		renderSettings.Serialize(out);
+		out << YAML::EndMap;
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		for (EnvMapVulkanEntityID root : scene.GetRoots())
 		{
@@ -253,7 +250,7 @@ namespace EnvMapVulkanSceneSerializer
 		return std::string(out.c_str()) + "\n";
 	}
 
-	bool Deserialize(const std::string& filepath, EnvMapVulkanScene& scene, std::string& sceneName, YAML::Node& renderSettings,
+	bool Deserialize(const std::string& filepath, EnvMapVulkanScene& scene, std::string& sceneName, EnvMapVulkanRenderSettings& renderSettings,
 		std::unordered_map<EnvMapVulkanEntityID, MaterialRef>& materialRefs, std::string& error)
 	{
 		YAML::Node root;
@@ -272,7 +269,7 @@ namespace EnvMapVulkanSceneSerializer
 			return false;
 		}
 		sceneName = root["Scene"]["Name"].as<std::string>(std::filesystem::path(filepath).stem().string());
-		renderSettings = root["RenderSettings"];
+		renderSettings = EnvMapVulkanRenderSettings::Deserialize(root["RenderSettings"]);
 
 		try
 		{

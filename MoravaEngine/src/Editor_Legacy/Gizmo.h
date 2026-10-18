@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Editor/SceneObject.h"
+#include "Editor_Legacy/SceneObject.h"
 #include "Mesh/Block.h"
 #include "Mesh/Cone.h"
 #include "Mesh/Cylinder.h"

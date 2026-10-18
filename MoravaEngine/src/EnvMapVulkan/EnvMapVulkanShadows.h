@@ -26,7 +26,6 @@ struct EnvMapVulkanShadowSettings
 	float DepthBias = 1.25f;     // constant depth bias of the shadow pass (Vulkan depth bias units)
 	float SlopeBias = 1.75f;     // depth bias that grows with the surface slope, seen from the sun
 	float NormalBias = 1.0f;     // receivers look the shadow map up this many texels off their surface, along the normal
-	bool ShowCascades = false;   // tints the scene by cascade (red, green, blue, yellow)
 };
 
 struct EnvMapVulkanShadowCascade

@@ -8,7 +8,7 @@
 #include "H2M/ImGui/ImGuiH2M.h"
 
 // Morava
-#include "Editor/EntitySelection.h"
+#include "Editor_Legacy/EntitySelection.h"
 #include "EnvMap/EnvMapEditorLayer.h"
 #include "Material/MaterialLibrary.h"
 
