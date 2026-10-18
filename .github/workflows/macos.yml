@@ -70,7 +70,7 @@ jobs:
           status=0
           cmake --build build --parallel -- -k 0 2>&1 | tee build.log || status=$?
           echo "== $(grep -c ' error: ' build.log) errors, $(grep -c ' warning: ' build.log) warnings; failed files: $(grep -c '^FAILED: ' build.log)"
-          grep ' error: ' build.log | sed -E 's/^.*\/(src|vendor)\//\1\//' | sort | uniq -c | sort -rn | head -150
+          grep ' error: ' build.log | sed -E 's/^.*\/(src|vendor)\//\1\//' | sort | uniq -c | sort -rn | head -150 || true
           exit $status
 
       - name: Build log
