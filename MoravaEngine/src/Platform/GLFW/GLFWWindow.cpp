@@ -127,6 +127,12 @@ void GLFWWindow::InitGLFW(const WindowSpecification& props)
 		}
 #endif
 
+#if defined(GRAPHICS_API_VULKAN)
+		// GLFW's Vulkan functions (surface, instance extensions) through the loader the engine is linked with. On its own GLFW
+		// opens libvulkan by name, only from the system's library folders: on macOS the loader is in Homebrew's or the SDK's
+		glfwInitVulkanLoader(vkGetInstanceProcAddr);
+#endif
+
 		// Initialize GLFW
 		if (!glfwInit())
 		{
