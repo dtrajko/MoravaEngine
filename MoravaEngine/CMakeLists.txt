@@ -444,6 +444,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenGL::GL
 )
 
+# macOS: Vulkan layers name their library by file name only (Homebrew's validation layer: libVkLayer_khronos_validation.dylib),
+# and the loader opens it from the executable's search paths, which don't include Homebrew's folder. The layers sit next to
+# the Vulkan loader (Homebrew's lib folder, or the Vulkan SDK's), so that folder joins the search paths
+if(APPLE AND Vulkan_LIBRARY)
+    get_filename_component(MORAVA_VULKAN_LIBRARY_DIR "${Vulkan_LIBRARY}" DIRECTORY)
+    set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY BUILD_RPATH "${MORAVA_VULKAN_LIBRARY_DIR}")
+endif()
+
 if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS)
     target_link_libraries(${PROJECT_NAME} PRIVATE d3d11 d3dcompiler)
 endif()
