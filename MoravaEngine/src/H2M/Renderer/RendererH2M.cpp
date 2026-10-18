@@ -13,6 +13,7 @@
 #if defined(GRAPHICS_API_VULKAN)
 #include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
+#include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
 #endif
 #include "H2M/Renderer/PipelineComputeH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
@@ -618,6 +619,14 @@ namespace H2M
 		delete s_CommandQueue;
 		s_CommandQueue = nullptr;
 		ShaderH2M::s_AllShaders.clear();
+
+#if defined(GRAPHICS_API_VULKAN)
+		// After the shaders: their descriptor set layouts hold the shared samplers
+		if (RendererAPI_H2M::Current() == RendererAPITypeH2M::Vulkan)
+		{
+			VulkanShaderH2M::DestroySharedSamplers();
+		}
+#endif
 	}
 
 #if 0

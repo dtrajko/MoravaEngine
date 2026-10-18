@@ -1,0 +1,13 @@
+// Set 0: the samplers the textures of the frame set (Include/FrameSet.glslh) and of a material (Include/MaterialMaps.glslh)
+// are read with. Shared by name (VulkanShaderH2M::GetSharedSampler) and fixed in the descriptor set layout (immutable
+// samplers): no code writes them. Metal (macOS) allows 16 samplers per shader stage; a texture declared with its own
+// sampler (sampler2D) counts as one, these count once for all the textures declared without one (texture2D...).
+#ifndef SAMPLERS_GLSLH
+#define SAMPLERS_GLSLH
+
+layout (set = 0, binding = 18) uniform sampler s_LinearRepeat;        // material maps, environment maps, the BRDF LUT
+layout (set = 0, binding = 19) uniform sampler s_LinearClamp;         // the probe atlases, the caustics map
+layout (set = 0, binding = 20) uniform sampler s_NearestClamp;        // single texels: the probes' data, ambient occlusion, reflections
+layout (set = 0, binding = 21) uniform samplerShadow s_ShadowCompare; // the shadow maps: compared in the sampler (1 lit, 0 shadow)
+
+#endif
