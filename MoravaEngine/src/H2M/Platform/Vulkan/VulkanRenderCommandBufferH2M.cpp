@@ -76,9 +76,13 @@ namespace H2M {
 			VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT |
 			VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
 
-		m_PipelineStatisticsQueryPools.resize(framesInFlight);
-		for (auto& pipelineStatisticsQueryPools : m_PipelineStatisticsQueryPools)
-			VK_CHECK_RESULT_H2M(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &pipelineStatisticsQueryPools));
+		// Only with the device feature (MoltenVK has none): without it there are no pools, and no statistics queries
+		if (device->GetEnabledFeatures().pipelineStatisticsQuery)
+		{
+			m_PipelineStatisticsQueryPools.resize(framesInFlight);
+			for (auto& pipelineStatisticsQueryPools : m_PipelineStatisticsQueryPools)
+				VK_CHECK_RESULT_H2M(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &pipelineStatisticsQueryPools));
+		}
 
 		m_PipelineStatisticsQueryResults.resize(framesInFlight);
 	}
@@ -129,9 +133,13 @@ namespace H2M {
 			VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT |
 			VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
 
-		m_PipelineStatisticsQueryPools.resize(framesInFlight);
-		for (auto& pipelineStatisticsQueryPools : m_PipelineStatisticsQueryPools)
-			VK_CHECK_RESULT_H2M(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &pipelineStatisticsQueryPools));
+		// Only with the device feature (MoltenVK has none): without it there are no pools, and no statistics queries
+		if (device->GetEnabledFeatures().pipelineStatisticsQuery)
+		{
+			m_PipelineStatisticsQueryPools.resize(framesInFlight);
+			for (auto& pipelineStatisticsQueryPools : m_PipelineStatisticsQueryPools)
+				VK_CHECK_RESULT_H2M(vkCreateQueryPool(device->GetVulkanDevice(), &queryPoolCreateInfo, nullptr, &pipelineStatisticsQueryPools));
+		}
 
 		m_PipelineStatisticsQueryResults.resize(framesInFlight);
 	}
@@ -170,8 +178,11 @@ namespace H2M {
 			vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_TimestampQueryPools[frameIndex], 0);
 
 			// Pipeline stats query
-			vkCmdResetQueryPool(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, m_PipelineQueryCount);
-			vkCmdBeginQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, 0);
+			if (!m_PipelineStatisticsQueryPools.empty())
+			{
+				vkCmdResetQueryPool(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, m_PipelineQueryCount);
+				vkCmdBeginQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, 0);
+			}
 		}
 	}
 
@@ -183,7 +194,8 @@ namespace H2M {
 			uint32_t frameIndex = RendererH2M::GetCurrentFrameIndex();
 			VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
 			vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, m_TimestampQueryPools[frameIndex], 1);
-			vkCmdEndQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0);
+			if (!m_PipelineStatisticsQueryPools.empty())
+				vkCmdEndQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0);
 			VK_CHECK_RESULT_H2M(vkEndCommandBuffer(commandBuffer));
 		}
 	}
@@ -222,8 +234,9 @@ namespace H2M {
 			}
 
 			// Retrieve pipeline stats results
-			vkGetQueryPoolResults(device->GetVulkanDevice(), m_PipelineStatisticsQueryPools[frameIndex], 0, 1,
-				sizeof(PipelineStatisticsH2M), &m_PipelineStatisticsQueryResults[frameIndex], sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+			if (!m_PipelineStatisticsQueryPools.empty())
+				vkGetQueryPoolResults(device->GetVulkanDevice(), m_PipelineStatisticsQueryPools[frameIndex], 0, 1,
+					sizeof(PipelineStatisticsH2M), &m_PipelineStatisticsQueryResults[frameIndex], sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
 		}
 	}
 
