@@ -200,6 +200,11 @@ if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS)
     add_optional(${ROOT_PATH_ABS}/vendor/DirectXTex directxtex) # loads the DirectX 11 textures
 endif()
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/assimp assimp)
+# assimp turns on Clang's -Wunsafe-buffer-usage for its own sources (~9000 warnings about raw pointer indexing in every
+# Clang build); off again for its target, whose options come after the folder's
+if(TARGET assimp AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(assimp PRIVATE -Wno-unsafe-buffer-usage -Wno-unsafe-buffer-usage-in-libc-call)
+endif()
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/nativefiledialog-extended nfd)
 
 # =========================================================
