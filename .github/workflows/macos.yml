@@ -91,7 +91,7 @@ jobs:
         if: matrix.smoke-test
         working-directory: MoravaEngine
         env:
-          VK_LOADER_DEBUG: error,warn,layer
+          VK_LOADER_DEBUG: error,warn
         run: |
           set -o pipefail
           gtimeout 600 ../build/MoravaEngine ${{ matrix.smoke-test }} 2>&1 | tee smoke-test.log
