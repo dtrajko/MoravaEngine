@@ -367,6 +367,7 @@ namespace H2M
 			}
 
 			if (submeshCloned && submeshSelected) {
+				EntitySelection::s_SelectionContext.clear(); // the selection points into the mesh list CloneMesh changes
 				mesh->CloneMesh(submeshes[i]);
 			}
 		}

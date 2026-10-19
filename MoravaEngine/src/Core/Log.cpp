@@ -3,8 +3,8 @@
 #include "spdlog/sinks/stdout_color_sinks.h"
 
 
-std::shared_ptr<spdlog::logger> Log::s_CoreLogger;
-std::shared_ptr<spdlog::logger> Log::s_ClientLogger;
+std::shared_ptr<spdlog::logger>& Log::s_CoreLogger = *new std::shared_ptr<spdlog::logger>();
+std::shared_ptr<spdlog::logger>& Log::s_ClientLogger = *new std::shared_ptr<spdlog::logger>();
 
 void Log::Init()
 {

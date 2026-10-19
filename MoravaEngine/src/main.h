@@ -2,9 +2,6 @@
 
 #pragma once
 
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-
 #define GLM_ENABLE_EXPERIMENTAL
 
 #ifndef  NOMINMAX

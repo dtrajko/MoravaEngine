@@ -15,7 +15,6 @@
 #include "H2M/Renderer/ImageH2M.h"
 #include "H2M/Renderer/RendererTypesH2M.h"
 
-#include <imgui.h>
 
 
 namespace H2M
@@ -88,7 +87,8 @@ namespace H2M
 
 		virtual TextureTypeH2M GetType() const override { return TextureTypeH2M::Texture2D; }
 
-		virtual ImTextureID GetImTextureID();
+		// The texture's ID in the user interface (an ImTextureID for ImGui::Image; 0: none)
+		virtual uint64_t GetImTextureID();
 	};
 
 	class TextureCubeH2M : public TextureH2M

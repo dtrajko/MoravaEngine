@@ -1,7 +1,6 @@
 #include "EnvMapMaterial.h"
 
 #include "Core/Util.h"
-#include "EnvMap/EnvMapEditorLayer.h"
 #include "Material/MaterialLibrary.h"
 
 

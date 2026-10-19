@@ -432,13 +432,11 @@ void Editor::Init()
 	ExtractLights();
 	ExtractWater();
 	EnvMapVulkanRenderer::SetScene(&s_Scene, &s_RenderSettings, &s_ViewOptions);
-	EnvMapVulkanRenderer::SetUserInterface(&Editor::OnImGuiRender);
 }
 
 void Editor::Shutdown()
 {
 	EnvMapVulkanRenderer::WaitIdle();
-	EnvMapVulkanRenderer::SetUserInterface({});
 	EnvMapVulkanRenderer::SetScene(nullptr, nullptr, nullptr);
 	// The editor's references, released here while the device works: as statics they would be destroyed after main
 	// returns, when Vulkan (its validation layer) may already be torn down

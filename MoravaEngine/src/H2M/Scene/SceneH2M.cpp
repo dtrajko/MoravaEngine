@@ -21,7 +21,6 @@
 #include "H2M/Scene/ScriptableEntityH2M.h"
 
 #include "Core/Math.h"
-#include "EnvMap/EnvMapSceneRenderer.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
@@ -487,7 +486,10 @@ namespace H2M
 		m_Registry.view<MeshComponentH2M>().each([=](auto entity, auto& mc)
 			{
 				// TODO: Should we render (logically)
-				::EnvMapSceneRenderer::SubmitEntity(EntityH2M{ entity, this });
+				if (s_SubmitEntity)
+				{
+					s_SubmitEntity(EntityH2M{ entity, this });
+				}
 			});
 
 		SceneRendererH2M::EndScene();

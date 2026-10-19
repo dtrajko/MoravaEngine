@@ -148,7 +148,7 @@ private:
 public:
 	static glm::mat4* s_ImGuizmoTransform;
 	static int s_ImGuizmoType;
-	static SceneSettings sceneSettings;
+	inline static SceneSettings sceneSettings;
 
 protected:
 

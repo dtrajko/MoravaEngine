@@ -20,6 +20,7 @@
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
+#include "H2M/Renderer/SceneRendererVulkanH2M.h"
 
 #include "Platform/Vulkan/VulkanSkyboxCube.h"
 
@@ -52,7 +53,6 @@ namespace H2M
 		}
 	}
 
-	bool VulkanRendererH2M::s_MipMapsEnabled = true;
 	bool VulkanRendererH2M::s_ViewportFBNeedsResize = false;
 
 	static VkCommandBuffer s_ImGuiCommandBuffer;         // to be removed from VulkanRenderer
@@ -94,7 +94,6 @@ namespace H2M
 			SceneRendererCameraH2M SceneCamera;
 			EnvironmentH2M SceneEnvironment;
 			float SkyboxLod;
-			glm::vec3 LightDirectionTemp;
 		} SceneData;
 
 		std::pair<RefH2M<TextureCubeH2M>, RefH2M<TextureCubeH2M>> EnvironmentMap;
@@ -499,7 +498,7 @@ namespace H2M
 		Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE;
 
 		s_Data.SceneData.SkyboxLod = 0.0f;
-		s_Data.SceneData.LightDirectionTemp = { 0.5f, 0.5f, 0.5f };
+		SceneRendererVulkanH2M::GetLightDirection() = { 0.5f, 0.5f, 0.5f };
 
 		OnResize(s_ViewportWidth, s_ViewportHeight); // to be removed from VulkanRenderer
 	}
@@ -1219,7 +1218,7 @@ namespace H2M
 							LightH2M light; // = EnvMapSceneRenderer::GetActiveLight();
 							LightH2M lightPrev = light;
 
-							ImGuiWrapper::Property("Light Direction", s_Data.SceneData.LightDirectionTemp, 0.01f, -1.0f, 1.0f, PropertyFlag::DragProperty);
+							ImGuiWrapper::Property("Light Direction", SceneRendererVulkanH2M::GetLightDirection(), 0.01f, -1.0f, 1.0f, PropertyFlag::DragProperty);
 							ImGuiWrapper::Property("Light Radiance", light.Radiance, PropertyFlag::ColorProperty);
 							ImGuiWrapper::Property("Light Multiplier", light.Multiplier, 0.01f, 0.0f, 5.0f, PropertyFlag::DragProperty);
 							ImGuiWrapper::Property("Exposure", s_Exposure, 0.01f, 0.0f, 40.0f, PropertyFlag::DragProperty);
@@ -1694,7 +1693,7 @@ namespace H2M
 
 	glm::vec3 VulkanRendererH2M::GetLightDirectionTemp()
 	{
-		return s_Data.SceneData.LightDirectionTemp;
+		return SceneRendererVulkanH2M::GetLightDirection();
 	}
 
 	void VulkanRendererH2M::SetCamera(CameraH2M& camera)
@@ -1792,192 +1791,6 @@ namespace H2M
 			memcpy(ubPtr, &ub, sizeof(UB));
 			shader->UnmapUniformBuffer(1, 0);
 		}
-	}
-
-	namespace Utils
-	{
-
-		void InsertImageMemoryBarrier(
-			VkCommandBuffer cmdbuffer,
-			VkImage image,
-			VkAccessFlags srcAccessMask,
-			VkAccessFlags dstAccessMask,
-			VkImageLayout oldImageLayout,
-			VkImageLayout newImageLayout,
-			VkPipelineStageFlags srcStageMask,
-			VkPipelineStageFlags dstStageMask,
-			VkImageSubresourceRange subresourceRange)
-		{
-			VkImageMemoryBarrier imageMemoryBarrier{};
-			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-
-			imageMemoryBarrier.srcAccessMask = srcAccessMask;
-			imageMemoryBarrier.dstAccessMask = dstAccessMask;
-			imageMemoryBarrier.oldLayout = oldImageLayout;
-			imageMemoryBarrier.newLayout = newImageLayout;
-			imageMemoryBarrier.image = image;
-			imageMemoryBarrier.subresourceRange = subresourceRange;
-
-			vkCmdPipelineBarrier(
-				cmdbuffer,
-				srcStageMask,
-				dstStageMask,
-				0,
-				0, nullptr,
-				0, nullptr,
-				1, &imageMemoryBarrier);
-		}
-
-		void SetImageLayout(
-			VkCommandBuffer cmdbuffer,
-			VkImage image,
-			VkImageLayout oldImageLayout,
-			VkImageLayout newImageLayout,
-			VkImageSubresourceRange subresourceRange,
-			VkPipelineStageFlags srcStageMask,
-			VkPipelineStageFlags dstStageMask)
-		{
-			// Create an image barrier object
-			VkImageMemoryBarrier imageMemoryBarrier = {};
-			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-			imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-			imageMemoryBarrier.oldLayout = oldImageLayout;
-			imageMemoryBarrier.newLayout = newImageLayout;
-			imageMemoryBarrier.image = image;
-			imageMemoryBarrier.subresourceRange = subresourceRange;
-
-			// Source layouts (old)
-			// Source access mask controls actions that have to be finished on the old layout
-			// before it will be transitioned to the new layout
-			switch (oldImageLayout)
-			{
-			case VK_IMAGE_LAYOUT_UNDEFINED:
-				// Image layout is undefined (or does not matter)
-				// Only valid as initial layout
-				// No flags required, listed only for completeness
-				imageMemoryBarrier.srcAccessMask = 0;
-				break;
-
-			case VK_IMAGE_LAYOUT_PREINITIALIZED:
-				// Image is preinitialized
-				// Only valid as initial layout for linear images, preserves memory contents
-				// Make sure host writes have been finished
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
-				break;
-
-			case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-				// Image is a color attachment
-				// Make sure any writes to the color buffer have been finished
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				break;
-
-			case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-				// Image is a depth/stencil attachment
-				// Make sure any writes to the depth/stencil buffer have been finished
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-				break;
-
-			case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-				// Image is a transfer source
-				// Make sure any reads from the image have been finished
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-				break;
-
-			case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-				// Image is a transfer destination
-				// Make sure any writes to the image have been finished
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				break;
-
-			case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-				// Image is read by a shader
-				// Make sure any shader reads from the image have been finished
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				break;
-			default:
-				// Other source layouts aren't handled (yet)
-				break;
-			}
-
-			// Target layouts (new)
-			// Destination access mask controls the dependency for the new image layout
-			switch (newImageLayout)
-			{
-			case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-				// Image will be used as a transfer destination
-				// Make sure any writes to the image have been finished
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-				break;
-
-			case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-				// Image will be used as a transfer source
-				// Make sure any reads from the image have been finished
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-				break;
-
-			case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-				// Image will be used as a color attachment
-				// Make sure any writes to the color buffer have been finished
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-				break;
-
-			case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-				// Image layout will be used as a depth/stencil attachment
-				// Make sure any writes to depth/stencil buffer have been finished
-				imageMemoryBarrier.dstAccessMask = imageMemoryBarrier.dstAccessMask | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-				break;
-
-			case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-				// Image will be read in a shader (sampler, input attachment)
-				// Make sure any writes to the image have been finished
-				if (imageMemoryBarrier.srcAccessMask == 0)
-				{
-					imageMemoryBarrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT | VK_ACCESS_TRANSFER_WRITE_BIT;
-				}
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				break;
-			default:
-				// Other source layouts aren't handled (yet)
-				break;
-			}
-
-			// Host writes are only covered by the HOST pipeline stage
-			if (imageMemoryBarrier.srcAccessMask & VK_ACCESS_HOST_WRITE_BIT)
-			{
-				srcStageMask |= VK_PIPELINE_STAGE_HOST_BIT;
-			}
-
-			// Put barrier inside setup command buffer
-			vkCmdPipelineBarrier(
-				cmdbuffer,
-				srcStageMask,
-				dstStageMask,
-				0,
-				0, nullptr,
-				0, nullptr,
-				1, &imageMemoryBarrier);
-		}
-
-		void SetImageLayout(
-			VkCommandBuffer cmdbuffer,
-			VkImage image,
-			VkImageAspectFlags aspectMask,
-			VkImageLayout oldImageLayout,
-			VkImageLayout newImageLayout,
-			VkPipelineStageFlags srcStageMask,
-			VkPipelineStageFlags dstStageMask)
-		{
-			VkImageSubresourceRange subresourceRange = {};
-			subresourceRange.aspectMask = aspectMask;
-			subresourceRange.baseMipLevel = 0;
-			subresourceRange.levelCount = 1;
-			subresourceRange.layerCount = 1;
-			SetImageLayout(cmdbuffer, image, oldImageLayout, newImageLayout, subresourceRange, srcStageMask, dstStageMask);
-		}
-
 	}
 
 }

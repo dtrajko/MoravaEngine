@@ -5,6 +5,7 @@
 #include "H2M/Scene/ComponentsH2M.h"
 #include "H2M/Renderer/TextureH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
+#include "H2M/Project/UserPreferencesH2M.h"
 
 #include "../../ImGuizmo/src/ImGuizmo.h"
 
@@ -13,7 +14,6 @@
 #include "Core/Math.h"
 #include "Core/Timer.h"
 #include "Core/Util.h"
-#include "EnvMapVulkan/EnvMapVulkanEditorLayer.h"
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "Mesh/Block.h"
 #include "Shader/MoravaShader.h"
@@ -121,7 +121,6 @@ SceneEnvMapVulkan::SceneEnvMapVulkan()
     H2M::RefH2M<H2M::UserPreferencesH2M> userPreferences = H2M::RefH2M<H2M::UserPreferencesH2M>::Create();
     userPreferences->FilePath = "Textures/HDR/umhlanga_sunrise_4k.hdr";
     EnvMapVulkanRenderer::SetEnvironmentMapFile(userPreferences->FilePath); // the scene is created before the renderer's Init
-    m_EnvMapVulkanEditorLayer = new EnvMapVulkanEditorLayer(userPreferences);
 
     SetupMeshes();
     SetupModels();
@@ -141,7 +140,6 @@ SceneEnvMapVulkan::~SceneEnvMapVulkan()
 #if defined(MORAVA_MONO)
     delete m_CsGame;
 #endif
-    delete m_EnvMapVulkanEditorLayer;
 }
 
 void SceneEnvMapVulkan::SetupShaders()
@@ -188,9 +186,6 @@ void SceneEnvMapVulkan::Update(float timestep, Window* mainWindow)
 {
     Scene::Update(timestep, mainWindow);
 
-    float deltaTime = Timer::Get()->GetDeltaTime();
-    m_EnvMapVulkanEditorLayer->OnUpdate(deltaTime);
-
 #if defined(MORAVA_MONO)
     m_CsGame->tick();
 #endif
@@ -198,7 +193,7 @@ void SceneEnvMapVulkan::Update(float timestep, Window* mainWindow)
 
 void SceneEnvMapVulkan::UpdateImGui(float timestep, Window* mainWindow)
 {
-    m_EnvMapVulkanEditorLayer->OnImGuiRender();
+    // The editor's windows: the editor layer (EnvMapVulkanEditorLayer, pushed by EditorApplication)
 }
 
 void SceneEnvMapVulkan::ShowExampleAppDockSpace(bool* p_open, Window* mainWindow)
@@ -233,10 +228,6 @@ void SceneEnvMapVulkan::Render(Window* mainWindow, glm::mat4 projectionMatrix, s
 
     if (passType == "water_refraction" && sceneSettings.enableWaterEffects) {
         // m_EnvMapVulkanEditorLayer->OnRenderWaterRefraction(mainWindow);
-    }
-
-    if (passType == "main") {
-        m_EnvMapVulkanEditorLayer->OnRender2D();
     }
 
     if (passType == "post_processing") {

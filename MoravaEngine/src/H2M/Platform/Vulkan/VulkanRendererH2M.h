@@ -13,6 +13,7 @@
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RendererCapabilitiesH2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
+#include "H2M/Platform/Vulkan/VulkanUtilsH2M.h"
 
 #include "Core/Window.h"
 
@@ -77,41 +78,9 @@ namespace H2M
 		/**** END methods moved from VulkanTestLayer to VulkanRendererH2M ****/
 
 	public:
-		static bool s_MipMapsEnabled;
+		inline static bool s_MipMapsEnabled = true; // also the textures' (VulkanTexture2D_H2M::GetMipLevelCount)
 		static bool s_ViewportFBNeedsResize;
 
 	};
-
-	namespace Utils {
-
-		void InsertImageMemoryBarrier(
-			VkCommandBuffer cmdbuffer,
-			VkImage image,
-			VkAccessFlags srcAccessMask,
-			VkAccessFlags dstAccessMask,
-			VkImageLayout oldImageLayout,
-			VkImageLayout newImageLayout,
-			VkPipelineStageFlags srcStageMask,
-			VkPipelineStageFlags dstStageMask,
-			VkImageSubresourceRange subresourceRange);
-
-		void SetImageLayout(
-			VkCommandBuffer cmdbuffer,
-			VkImage image,
-			VkImageLayout oldImageLayout,
-			VkImageLayout newImageLayout,
-			VkImageSubresourceRange subresourceRange,
-			VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-			VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-
-		void SetImageLayout(
-			VkCommandBuffer cmdbuffer,
-			VkImage image,
-			VkImageAspectFlags aspectMask,
-			VkImageLayout oldImageLayout,
-			VkImageLayout newImageLayout,
-			VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-			VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-	}
 
 }

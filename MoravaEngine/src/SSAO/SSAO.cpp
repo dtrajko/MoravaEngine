@@ -5,6 +5,7 @@
 #include "Core/Math.h"
 #include "Core/Timer.h"
 #include "LearnOpenGL/ModelSSAO.h"
+#include "Light/LightManager.h"
 #include "Mesh/Mesh.h"
 
 #include <random>

@@ -10,6 +10,7 @@
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
 #include "H2M/Platform/Vulkan/VulkanSwapChainH2M.h"
+#include "H2M/Platform/Vulkan/VulkanUIImagesH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 
 #include "Core/Application.h"
@@ -55,6 +56,7 @@ EnvMapVulkanImGuiLayer::~EnvMapVulkanImGuiLayer()
 	// Cleanup
 	VkResult err = vkDeviceWaitIdle(device);
 	check_vk_result(err);
+	H2M::VulkanUIImagesH2M::SetBackend(nullptr, nullptr);
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
@@ -138,6 +140,11 @@ void EnvMapVulkanImGuiLayer::OnAttach()
 	init_info.PipelineInfoMain.RenderPass = app->GetWindow()->GetSwapChain().GetRenderPass();
 	ImGui_ImplVulkan_Init(&init_info);
 
+	// The images of ImGui::Image (textures, the viewport, shadow maps) are registered with ImGui's Vulkan backend
+	H2M::VulkanUIImagesH2M::SetBackend(
+		[](VkSampler sampler, VkImageView view, VkImageLayout layout) { return (uint64_t)(uintptr_t)ImGui_ImplVulkan_AddTexture(sampler, view, layout); },
+		[](uint64_t id) { ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)id); });
+
 	// Load Fonts
 	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
 	// - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
@@ -192,6 +199,7 @@ void EnvMapVulkanImGuiLayer::OnDetach()
 		check_vk_result(err);
 
 		// ImGui Cleanup
+		H2M::VulkanUIImagesH2M::SetBackend(nullptr, nullptr);
 		ImGui_ImplVulkan_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
@@ -242,6 +250,12 @@ void EnvMapVulkanImGuiLayer::End()
 		ImGui::RenderPlatformWindowsDefault();
 		glfwMakeContextCurrent(backup_current_context);
 	}
+}
+
+void EnvMapVulkanImGuiLayer::RenderDrawData(VkCommandBuffer commandBuffer)
+{
+	ImGui::Render();
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
 }
 
 void EnvMapVulkanImGuiLayer::OnUpdate(H2M::TimestepH2M ts)

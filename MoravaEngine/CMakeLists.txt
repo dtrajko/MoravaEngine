@@ -117,7 +117,7 @@ set(YAML_MSVC_SHARED_RT ${MORAVA_SHARED_CRT} CACHE BOOL "" FORCE)             # 
 set(SHADERC_ENABLE_SHARED_CRT ${MORAVA_SHARED_CRT} CACHE BOOL "" FORCE)       # shaderc, glslang, spirv-tools
 set(USE_STATIC_CRT ${MORAVA_MSVC_STATIC_RUNTIME} CACHE BOOL "" FORCE)         # assimp
 
-# Engine-only defines (platform, HZ_DEBUG/HZ_RELEASE) are set on the MoravaEngine target below,
+# Engine-only defines (platform, HZ_DEBUG/HZ_RELEASE) are set on the engine's targets below,
 # so they don't leak into the vendor projects
 
 # =========================================================
@@ -208,7 +208,7 @@ endif()
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/nativefiledialog-extended nfd)
 
 # =========================================================
-# MAIN TARGET
+# SOURCES
 # =========================================================
 
 file(GLOB_RECURSE SRC CONFIGURE_DEPENDS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -235,10 +235,11 @@ foreach(api VULKAN OPENGL DIRECTX11)
     endif()
 endforeach()
 
-# The editor (src/Editor) edits the scene of SceneEnvMapVulkan (EnvMapVulkanScene), so far only in Vulkan builds
+# The editor (src/Editor) edits the scene of SceneEnvMapVulkan (EnvMapVulkanScene), and the player (src/Runtime) runs it:
+# so far only in Vulkan builds
 if(NOT "VULKAN" IN_LIST MORAVA_GRAPHICS_APIS)
-    list(FILTER SRC EXCLUDE REGEX "^Editor/")
-    list(FILTER HEADERS EXCLUDE REGEX "^Editor/")
+    list(FILTER SRC EXCLUDE REGEX "^(Editor|Runtime)/")
+    list(FILTER HEADERS EXCLUDE REGEX "^(Editor|Runtime)/")
 endif()
 
 # And the shared classes only the OpenGL scenes use (the older Morava scenes and what they are made of)
@@ -257,60 +258,127 @@ if(NOT MORAVA_MONO)
     list(FILTER HEADERS EXCLUDE REGEX "^Mono/")
 endif()
 
-list(LENGTH SRC MORAVA_SOURCE_COUNT)
-message(STATUS "Sources compiled for ${MORAVA_GRAPHICS_APIS_TEXT}: ${MORAVA_SOURCE_COUNT}")
+# =========================================================
+# TARGETS
+#   MoravaCore    static library: what a game runs on. The platform layer (window, input, files), the H2M classes, the
+#                 renderers, the scene and its files
+#   MoravaEngine  executable: the editor (src/Editor), the older scenes and their editors, and everything else that draws
+#                 with ImGui, on MoravaCore
+#   MoravaPlayer  executable: runs a game on MoravaCore alone, without the editor and without ImGui (src/Runtime; in builds
+#                 with Vulkan)
+#   A source belongs to the core unless a rule below gives it to one of the executables. An executable links only the
+#   core's object files it calls, so the player's link line shows what the core still needs from the editor.
+# =========================================================
 
-list(TRANSFORM SRC PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src/)
-list(TRANSFORM HEADERS PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src/)
-
-add_executable(${PROJECT_NAME} ${SRC} ${HEADERS})
-
-if(MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE /utf-8) # the sources are UTF-8 (GCC and Clang take that as given)
-endif()
-
-if(MORAVA_WARNINGS_AS_ERRORS)
-    target_compile_options(${PROJECT_NAME} PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/WX,-Werror>)
-endif()
-
-# The scene (when MORAVA_SCENE sets it; otherwise src/config.h does) and the graphics APIs of the build
-if(NOT MORAVA_SCENE STREQUAL "")
-    target_compile_definitions(${PROJECT_NAME} PRIVATE SCENE_${MORAVA_SCENE} MORAVA_SCENE_FROM_CMAKE)
-endif()
-foreach(api ${MORAVA_GRAPHICS_APIS})
-    target_compile_definitions(${PROJECT_NAME} PRIVATE GRAPHICS_API_${api})
+set(MORAVA_PLAYER_SOURCES "^Runtime/")
+set(MORAVA_EDITOR_SOURCES
+    "^main\\.cpp$"
+    "^EditorApplication\\."
+    "^Editor/"
+    "^Editor_Legacy/"
+    "^EnvMap/EnvMap(SceneRenderer|SharedData)\\." # the OpenGL editor of SCENE_HAZEL_ENV_MAP (its materials are the core's)
+    "^HazelVulkan/"
+    "^ImGui/"
+    "^Mono/"
+    "^Scene/"                                     # the older scenes, with ImGui windows in their base class
+    "^Camera/CameraController\\."                 # the older scenes' camera control (asks ImGui whether the viewport has the mouse)
+    "^H2M/Editor/"
+    "^H2M/ImGui/"
+    "ImGuiLayer"                                  # the ImGui layers of every graphics API
+    "TestLayer"                                   # the test scenes of Hazel Vulkan and DirectX 11
+    "EditorLayer"
+    "^H2M/Platform/Vulkan/VulkanRendererH2M\\."   # the renderer of SCENE_HAZEL_VULKAN, with its ImGui windows
+    "^Platform/DX11/DX11Renderer\\."              # the renderer of SCENE_DX11, with its ImGui windows
+    "_ImGui\\.cpp$"                               # the ImGui windows of a core class (SceneRendererH2M_ImGui.cpp)
+)
+foreach(entry ${MORAVA_SOURCES_OF_OPENGL_SCENES})
+    string(REPLACE "." "\\." entry_pattern "${entry}")
+    list(APPEND MORAVA_EDITOR_SOURCES "^${entry_pattern}")
 endforeach()
-if(MORAVA_MONO)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE MORAVA_MONO)
+string(JOIN "|" MORAVA_EDITOR_SOURCES_REGEX ${MORAVA_EDITOR_SOURCES})
+
+set(MORAVA_ALL_SOURCES ${SRC} ${HEADERS})
+set(PLAYER_SRC ${MORAVA_ALL_SOURCES})
+list(FILTER PLAYER_SRC INCLUDE REGEX "${MORAVA_PLAYER_SOURCES}")
+set(EDITOR_SRC ${MORAVA_ALL_SOURCES})
+list(FILTER EDITOR_SRC INCLUDE REGEX "${MORAVA_EDITOR_SOURCES_REGEX}")
+set(CORE_SRC ${MORAVA_ALL_SOURCES})
+list(FILTER CORE_SRC EXCLUDE REGEX "${MORAVA_PLAYER_SOURCES}|${MORAVA_EDITOR_SOURCES_REGEX}")
+
+foreach(part CORE EDITOR PLAYER)
+    set(part_sources ${${part}_SRC})
+    list(FILTER part_sources INCLUDE REGEX "\\.cpp$")
+    list(LENGTH part_sources MORAVA_${part}_SOURCE_COUNT)
+endforeach()
+message(STATUS "Sources compiled for ${MORAVA_GRAPHICS_APIS_TEXT}: core ${MORAVA_CORE_SOURCE_COUNT}, editor ${MORAVA_EDITOR_SOURCE_COUNT}, player ${MORAVA_PLAYER_SOURCE_COUNT}")
+
+list(TRANSFORM CORE_SRC PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+list(TRANSFORM EDITOR_SRC PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+list(TRANSFORM PLAYER_SRC PREPEND ${CMAKE_CURRENT_SOURCE_DIR}/src/)
+
+add_library(MoravaCore STATIC ${CORE_SRC})
+add_executable(${PROJECT_NAME} ${EDITOR_SRC})
+if("VULKAN" IN_LIST MORAVA_GRAPHICS_APIS)
+    add_executable(MoravaPlayer ${PLAYER_SRC})
+endif()
+set(MORAVA_ENGINE_TARGETS MoravaCore ${PROJECT_NAME})
+if(TARGET MoravaPlayer)
+    list(APPEND MORAVA_ENGINE_TARGETS MoravaPlayer)
 endif()
 
-if(WIN32)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE HZ_PLATFORM_WINDOWS NOMINMAX WIN32_LEAN_AND_MEAN)
-elseif(APPLE)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE HZ_PLATFORM_MACOS)
-elseif(UNIX)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE HZ_PLATFORM_LINUX)
-endif()
+# The settings of the engine's own sources, the same in each of its targets
+foreach(tgt ${MORAVA_ENGINE_TARGETS})
+    if(MSVC)
+        target_compile_options(${tgt} PRIVATE /utf-8) # the sources are UTF-8 (GCC and Clang take that as given)
+    endif()
 
-# Debug: asserts and debug-only code; Release/RelWithDebInfo/MinSizeRel: HZ_RELEASE
-target_compile_definitions(${PROJECT_NAME} PRIVATE
-    $<$<CONFIG:Debug>:HZ_DEBUG>
-    $<$<NOT:$<CONFIG:Debug>>:HZ_RELEASE>
-)
+    if(MORAVA_WARNINGS_AS_ERRORS)
+        target_compile_options(${tgt} PRIVATE $<IF:$<CXX_COMPILER_ID:MSVC>,/WX,-Werror>)
+    endif()
 
-# Precompiled header: stable third-party and standard headers, included first in every source file
-# (src/PrecompiledHeader.h; the older src/pch.h is an ordinary header some engine headers include)
-target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/PrecompiledHeader.h)
+    # The scene (when MORAVA_SCENE sets it; otherwise src/config.h does) and the graphics APIs of the build
+    if(NOT MORAVA_SCENE STREQUAL "")
+        target_compile_definitions(${tgt} PRIVATE SCENE_${MORAVA_SCENE} MORAVA_SCENE_FROM_CMAKE)
+    endif()
+    foreach(api ${MORAVA_GRAPHICS_APIS})
+        target_compile_definitions(${tgt} PRIVATE GRAPHICS_API_${api})
+    endforeach()
+    if(MORAVA_MONO)
+        target_compile_definitions(${tgt} PRIVATE MORAVA_MONO)
+    endif()
 
-# Many sources #define this at their top; the precompiled header now comes first, so define it for the whole target.
-# Defined empty ("=") to match those #defines exactly, otherwise MSVC warns about a redefinition (C4005).
-target_compile_definitions(${PROJECT_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS=)
+    if(WIN32)
+        target_compile_definitions(${tgt} PRIVATE HZ_PLATFORM_WINDOWS NOMINMAX WIN32_LEAN_AND_MEAN)
+    elseif(APPLE)
+        target_compile_definitions(${tgt} PRIVATE HZ_PLATFORM_MACOS)
+    elseif(UNIX)
+        target_compile_definitions(${tgt} PRIVATE HZ_PLATFORM_LINUX)
+    endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${ROOT_PATH_ABS}/vendor
-    ${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src
-)
+    # Debug: asserts and debug-only code; Release/RelWithDebInfo/MinSizeRel: HZ_RELEASE
+    target_compile_definitions(${tgt} PRIVATE
+        $<$<CONFIG:Debug>:HZ_DEBUG>
+        $<$<NOT:$<CONFIG:Debug>>:HZ_RELEASE>
+    )
+
+    # Many sources #define this at their top; the precompiled header now comes first, so define it for the whole target.
+    # Defined empty ("=") to match those #defines exactly, otherwise MSVC warns about a redefinition (C4005).
+    target_compile_definitions(${tgt} PRIVATE _CRT_SECURE_NO_WARNINGS=)
+
+    target_include_directories(${tgt} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${ROOT_PATH_ABS}/vendor
+        ${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src
+        ${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross
+    )
+
+    # Precompiled header: stable third-party and standard headers, included first in every source file
+    # (src/PrecompiledHeader.h; the older src/pch.h is an ordinary header some engine headers include)
+    target_precompile_headers(${tgt} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/PrecompiledHeader.h)
+endforeach()
+
+# The editor's sources draw with ImGui
+target_precompile_headers(${PROJECT_NAME} PRIVATE <imgui.h>)
 
 # =========================================================
 # INTERFACE LIBS
@@ -409,31 +477,13 @@ target_include_directories(ImGuizmo PUBLIC
 target_link_libraries(ImGuizmo PUBLIC imgui)
 
 # =========================================================
-# SPIRV-CROSS (FIXED ORDER)
-# =========================================================
-
-target_include_directories(${PROJECT_NAME} PRIVATE
-    ${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross
-)
-
-if(TARGET spirv-cross-core)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-        spirv-cross-core
-        spirv-cross-glsl
-    )
-endif()
-
-# =========================================================
-# CORE LINKING
+# LINKING
 # =========================================================
 
 set(MONO_DIR ${ROOT_PATH_ABS}/vendor/mono)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-
-    imgui
-    ImGuizmo
-
+# The core's libraries: the executables get them through the core
+target_link_libraries(MoravaCore PUBLIC
     glm entt spdlog tinyobjloader
 
     glfw
@@ -450,17 +500,47 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenGL::GL
 )
 
-# macOS: Vulkan layers name their library by file name only (Homebrew's validation layer: libVkLayer_khronos_validation.dylib),
-# and the loader opens it from the executable's search paths, which don't include Homebrew's folder. The layers sit next to
-# the Vulkan loader (Homebrew's lib folder, or the Vulkan SDK's), so that folder joins the search paths
-if(APPLE AND Vulkan_LIBRARY)
-    get_filename_component(MORAVA_VULKAN_LIBRARY_DIR "${Vulkan_LIBRARY}" DIRECTORY)
-    set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY BUILD_RPATH "${MORAVA_VULKAN_LIBRARY_DIR}")
+if(TARGET spirv-cross-core)
+    target_link_libraries(MoravaCore PUBLIC spirv-cross-core spirv-cross-glsl)
+endif()
+
+foreach(lib box2d yaml-cpp DirectXTex)
+    if(TARGET ${lib})
+        target_link_libraries(MoravaCore PUBLIC ${lib})
+    endif()
+endforeach()
+
+if(TARGET assimp)
+    target_link_libraries(MoravaCore PUBLIC assimp)
+elseif(TARGET assimp::assimp)
+    target_link_libraries(MoravaCore PUBLIC assimp::assimp)
+else()
+    message(FATAL_ERROR "Assimp target not found")
+endif()
+
+if(TARGET shaderc)
+    target_link_libraries(MoravaCore PUBLIC shaderc shaderc_util)
 endif()
 
 if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS)
-    target_link_libraries(${PROJECT_NAME} PRIVATE d3d11 d3dcompiler)
+    target_link_libraries(MoravaCore PUBLIC d3d11 d3dcompiler)
 endif()
+
+# Some of the core's headers still include ImGui's: the core sees them, but doesn't link ImGui (the player has none)
+target_include_directories(MoravaCore PRIVATE
+    $<TARGET_PROPERTY:imgui,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:ImGuizmo,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+# The editor: ImGui, and what only the older scenes use (Bullet: SceneBullet; mono: C# in SceneEnvMapVulkan)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    MoravaCore
+    imgui
+    ImGuizmo
+    BulletDynamics
+    BulletCollision
+    LinearMath
+)
 
 if(MORAVA_MONO)
     target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -470,32 +550,20 @@ if(MORAVA_MONO)
     )
 endif()
 
-# =========================================================
-# OPTIONAL LIBS
-# =========================================================
-
-foreach(lib box2d yaml-cpp DirectXTex)
-    if(TARGET ${lib})
-        target_link_libraries(${PROJECT_NAME} PRIVATE ${lib})
-    endif()
-endforeach()
-
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    BulletDynamics
-    BulletCollision
-    LinearMath
-)
-
-if(TARGET assimp)
-    target_link_libraries(${PROJECT_NAME} PRIVATE assimp)
-elseif(TARGET assimp::assimp)
-    target_link_libraries(${PROJECT_NAME} PRIVATE assimp::assimp)
-else()
-    message(FATAL_ERROR "Assimp target not found")
+if(TARGET MoravaPlayer)
+    target_link_libraries(MoravaPlayer PRIVATE MoravaCore)
 endif()
 
-if(TARGET shaderc)
-    target_link_libraries(${PROJECT_NAME} PRIVATE shaderc shaderc_util)
+# macOS: Vulkan layers name their library by file name only (Homebrew's validation layer: libVkLayer_khronos_validation.dylib),
+# and the loader opens it from the executable's search paths, which don't include Homebrew's folder. The layers sit next to
+# the Vulkan loader (Homebrew's lib folder, or the Vulkan SDK's), so that folder joins the search paths
+if(APPLE AND Vulkan_LIBRARY)
+    get_filename_component(MORAVA_VULKAN_LIBRARY_DIR "${Vulkan_LIBRARY}" DIRECTORY)
+    foreach(tgt ${PROJECT_NAME} MoravaPlayer)
+        if(TARGET ${tgt})
+            set_property(TARGET ${tgt} APPEND PROPERTY BUILD_RPATH "${MORAVA_VULKAN_LIBRARY_DIR}")
+        endif()
+    endforeach()
 endif()
 
 # =========================================================
@@ -551,8 +619,11 @@ set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME}
 )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-)
+# Both executables run with the source folder as their working directory (Models, Shaders, Textures...)
+foreach(tgt ${PROJECT_NAME} MoravaPlayer)
+    if(TARGET ${tgt})
+        set_target_properties(${tgt} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}")
+    endif()
+endforeach()
 
 message(STATUS "MoravaEngine configured successfully")

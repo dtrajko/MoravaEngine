@@ -16,8 +16,10 @@ public:
 	inline static std::shared_ptr<spdlog::logger>& GetLogger() { return s_ClientLogger; } // alias of GetClientLogger()
 
 private:
-	static std::shared_ptr<spdlog::logger> s_CoreLogger;
-	static std::shared_ptr<spdlog::logger> s_ClientLogger;
+	// Never destroyed: objects destroyed after main returns (statics that hold meshes and textures) still log, and the
+	// order of the static objects' destruction depends on the link order (the core is a library linked after the editor)
+	static std::shared_ptr<spdlog::logger>& s_CoreLogger;
+	static std::shared_ptr<spdlog::logger>& s_ClientLogger;
 };
 
 // Core Logging Macros

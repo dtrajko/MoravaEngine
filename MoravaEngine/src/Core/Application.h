@@ -7,12 +7,18 @@
 #include "H2M/Core/LayerStackH2M.h"
 #include "H2M/Core/Events/ApplicationEventH2M.h"
 #include "H2M/Core/Events/EventH2M.h"
-#include "H2M/ImGui/ImGuiLayerH2M.h"
 
 #include "Core/Log.h"
 #include "Core/Window.h"
-#include "Renderer/RendererBasic.h"
 
+#include <memory>
+
+
+namespace H2M
+{
+	class ImGuiLayerH2M;
+	class RendererAPI_H2M;
+}
 
 struct ApplicationSpecification
 {
@@ -34,6 +40,31 @@ struct ApplicationCommandLine
 	                               // Environment panel's Debug View list, 0 = Off)
 	bool NoRayTracing = false;     // --no-ray-tracing: Vulkan without the ray tracing extensions, as on a GPU that has none
 	std::string SelectName;        // --select <name>: the entity of this name is selected once the startup scene is open
+
+	static ApplicationCommandLine Parse(int argc, char** argv);
+};
+
+class Application;
+
+// What an executable runs on the application, given before Run: the editor's (EditorApplication.cpp) and the player's
+// (Runtime/PlayerMain.cpp). The main loop is the application's, the same for both.
+class ApplicationClient
+{
+public:
+	virtual ~ApplicationClient() = default;
+
+	// The older scene class the main loop updates every frame, and its renderer (both nullptr: none)
+	virtual SceneProperties CreateScene() = 0;
+	// The graphics API's renderer, created by H2M::RendererH2M::Init
+	virtual H2M::RendererAPI_H2M* CreateRendererAPI() = 0;
+	// The ImGui layer, over the other layers (nullptr: no ImGui)
+	virtual H2M::ImGuiLayerH2M* CreateImGuiLayer() { return nullptr; }
+	// The layers, once the renderer is initialized
+	virtual void PushLayers(Application& application) {}
+	// Draws the frame with the graphics API's renderer, after the layers' updates
+	virtual void Draw() = 0;
+	// The window has a new size (not 0): after the window's swapchain and the framebuffers that follow its size
+	virtual void OnWindowResize(uint32_t width, uint32_t height) {}
 };
 
 class Application
@@ -46,13 +77,19 @@ public:
 
 	static Application* Get();
 
+	void SetClient(std::unique_ptr<ApplicationClient> client) { m_Client = std::move(client); }
+	ApplicationClient* GetClient() const { return m_Client.get(); }
+
+	// Shaders, models, textures and scenes are loaded relative to the working directory: false (and why, in the log) when
+	// it isn't the MoravaEngine/MoravaEngine folder of the repository
+	static bool IsWorkingDirectoryValid();
+
 	void InitWindow(WindowSpecification windowSpecification);
 
 	void OnInit();
 	void Run();
 	void OnShutdown();
 
-	SceneProperties SetSceneProperties();
 	SceneProperties GetSceneProperties() { return m_SceneProperties; }
 	void InitializeScene(SceneProperties sceneProperties); // TODO: Initialize Scene and Renderer here
 
@@ -82,8 +119,6 @@ public:
 	// defaultExtension (e.g. L"mscene", no dot): added to a typed file name without an extension
 	std::wstring SaveFile(const wchar_t* filter = L"All\0*.*\0", const wchar_t* defaultExtension = nullptr, const wchar_t* initialDirectory = nullptr) const;
 
-	void OnImGuiRender(bool* p_open = (bool*)0);
-
 	static const char* GetConfigurationName();
 	static const char* GetPlatformName();
 	static const char* GetOSName(); // Windows, Linux or macOS
@@ -99,6 +134,7 @@ private:
 
 	ApplicationSpecification m_Specification;
 	ApplicationCommandLine m_CommandLine;
+	std::unique_ptr<ApplicationClient> m_Client;
 	std::string m_ProjectPath;
 
 	Scene* m_Scene = nullptr;
@@ -110,13 +146,8 @@ private:
 	bool m_Minimized = false;
 	H2M::LayerStackH2M m_LayerStack;
 
-	H2M::ImGuiLayerH2M* m_ImGuiLayer;
-
-#if defined(OPENGL_4_5_PLUS)
-	bool m_EnableImGui = true;
-#else
-	bool m_EnableImGui = true;
-#endif
+	H2M::ImGuiLayerH2M* m_ImGuiLayer = nullptr;
+	bool m_EnableImGui = false; // the client has an ImGui layer (ApplicationClient::CreateImGuiLayer)
 
 	float m_TimeStep = 0;
 	float m_LastFrameTime = 0;

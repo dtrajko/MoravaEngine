@@ -79,6 +79,9 @@ namespace H2M
 	class SceneH2M : public AssetH2M
 	{
 	public:
+		// Draws a mesh entity in OnUpdate (SCENE_HAZEL_ENV_MAP: EnvMapSceneRenderer::SubmitEntity, set by its Init); nullptr: none
+		inline static void (*s_SubmitEntity)(EntityH2M entity) = nullptr;
+
 		SceneH2M(const std::string& debugName = "SceneH2M", bool isEditorScene = false, bool initalize = true);
 		~SceneH2M();
 

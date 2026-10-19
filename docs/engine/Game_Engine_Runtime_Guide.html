@@ -202,7 +202,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
     <tr><td>Scene ownership</td><td><code>static EnvMapVulkanScene s_Scene</code> in <code>EnvMapVulkanRenderer.cpp</code></td><td>Owned by the application or editor, handed to the renderer each frame (Phase 1)</td></tr>
     <tr><td>Renderer</td><td><code>EnvMapVulkanRenderer.cpp</code>, about 12,000 lines: all passes, plus about 1,100 <code>ImGui::</code> calls (panels, light gizmos, overlays) and scene New/Open/Save</td><td>Renderer without ImGui, so the player can link it without the editor (Phase 1)</td></tr>
     <tr><td>Output</td><td>The viewport composite is a framebuffer shown inside the ImGui Viewport panel</td><td>The player presents it to the swapchain, full screen</td></tr>
-    <tr><td>Play mode</td><td><code>EnvMapVulkanEditorLayer::OnScenePlay</code>, <code>OnSceneStop</code>, <code>OnSceneStartSimulation</code>: empty stubs (the play state, buttons and textures are Hazel's)</td><td>Real Play / Pause / Simulate on a copy of the scene (Phase 1)</td></tr>
+    <tr><td>Play mode</td><td><code>EnvMapVulkanEditorLayer::OnScenePlay</code>, <code>OnSceneStop</code>, <code>OnSceneStartSimulation</code>: empty stubs (the play state, buttons and textures are Hazel's)</td><td>Real Play / Pause / Step / Stop on a copy of the scene (Phase 1), Simulate (Phase 3)</td></tr>
     <tr><td>Input</td><td><code>Input::IsKeyPressed</code> and GLFW callbacks; no gamepad</td><td>Named actions with bindings, gamepads (Phase 2)</td></tr>
     <tr><td>Physics</td><td>bullet3 submodule, used only by the OpenGL <code>SceneBullet</code>; <code>Physics/SpartanPhysics</code> is referenced nowhere</td><td>Jolt, as components of the scene (Phase 3)</td></tr>
     <tr><td>Scripting</td><td>Mono (Windows libraries only) used by a console demo in <code>Mono/</code>; Hazel's <code>H2M/Hazel-ScriptCore</code> C# sample</td><td>.NET hosting, a C# engine API, a game assembly (Phase 4)</td></tr>
@@ -299,9 +299,19 @@ target_link_libraries(MoravaCore PUBLIC glfw glm entt yaml-cpp VulkanMemoryAlloc
 add_executable(MoravaEngine ${EDITOR_SRC} ${LEGACY_SCENES_SRC})   <span class="c"># the editor; keeps its name, CI keeps working</span>
 target_link_libraries(MoravaEngine PRIVATE MoravaCore imgui ImGuizmo assimp shaderc nfd ...)
 
-add_executable(MoravaPlayer ${PLAYER_SRC})          <span class="c"># src/Player/PlayerMain.cpp, a handful of files</span>
+add_executable(MoravaPlayer ${PLAYER_SRC})          <span class="c"># src/Runtime/PlayerMain.cpp, a handful of files</span>
 target_link_libraries(MoravaPlayer PRIVATE MoravaCore)</code></pre>
   <p>The existing glob over <code>src/</code> stays for the editor; the core gets its own list of folders. Expect to find hidden dependencies from H2M classes on ImGui (the Vulkan context and the ImGui layer are created together today). List them with a test: build <code>MoravaPlayer</code> without <code>imgui</code> on the link line and fix what fails to link. Until Phase 8, the core still needs assimp and shaderc (models and shaders are compiled at load); they move to the editor when cooked formats exist.</p>
+  <div class="box note"><b>As built: three targets</b>
+  <ul>
+    <li><b>Which file goes where.</b> One glob over <code>src/</code>, then path rules in <code>CMakeLists.txt</code>: <code>src/Runtime</code> goes to <code>MoravaPlayer</code>. The editor's files go to <code>MoravaEngine</code>: <code>src/Editor</code>, <code>src/Editor_Legacy</code>, <code>EditorApplication.cpp</code>, the older scenes with their base class (<code>src/Scene</code>), every <code>*ImGuiLayer*</code>, <code>*TestLayer*</code> and <code>*EditorLayer*</code>, the Hazel Vulkan and DirectX 11 test renderers, <code>ImGui/</code>, <code>H2M/Editor</code>, <code>H2M/ImGui</code>, <code>Mono/</code>, the OpenGL scenes' list and every <code>*_ImGui.cpp</code>. Everything else is <code>MoravaCore</code>, a static library. Visual Studio shows three projects; <code>MoravaEngine</code> stays the startup project. A Vulkan build: core 153 sources, editor 48, player 1.</li>
+    <li><b>The application asks the executable.</b> <code>ApplicationClient</code> (<code>Core/Application.h</code>), given before <code>Run</code>: the older scene class and its renderer (none in the player), the graphics API's renderer, the ImGui layer (none in the player), the layers, <code>Draw</code> and <code>OnWindowResize</code>. The editor's is <code>EditorApplication.cpp</code> (the scene choice that was in <code>Application.cpp</code> and <code>config.h</code>, the layer and draw switches); the player's is in <code>Runtime/PlayerMain.cpp</code>. The command line and the working-directory check moved into <code>Application</code>, for both. The main loop works without an older scene class.</li>
+    <li><b>ImGui out of the core's code.</b> The renderer records the user interface through <code>SetUserInterface</code>, a function given a command buffer of the window's render pass: <code>EnvMapVulkanEditorLayer</code> passes <code>Editor::OnImGuiRender</code> followed by ImGui's Vulkan backend (<code>EnvMapVulkanImGuiLayer::RenderDrawData</code>). The images for <code>ImGui::Image</code> (viewport, shadow maps, textures) are IDs from <code>H2M::VulkanUIImagesH2M</code>, a registration hook the ImGui layer sets; without it every ID is 0. ImGui windows of core classes moved to <code>*_ImGui.cpp</code> files of the editor (<code>SceneRendererH2M_ImGui.cpp</code>, <code>ModelH2M_ImGui.cpp</code>). Transforms are composed and decomposed by the core itself, operation by operation as ImGuizmo does it, so the values are bit-identical. The DirectX 11 window's ImGui message hook is a handler its ImGui layer sets.</li>
+    <li><b>The test.</b> The player links <code>MoravaCore</code> without <code>imgui</code> on its link line. A temporary call to <code>EnvMapVulkanSceneLoader::Open</code> linked too: opening and drawing a scene needs no ImGui. The core still compiles with ImGui's include folders (some older headers include ImGui's), but doesn't link it.</li>
+    <li><b>The player so far.</b> It opens a window, initializes the renderer and clears the window every frame (without a scene, <code>Draw</code> records an empty frame instead of nothing). <code>--exit-after</code> works, 0 validation messages, exit code 0. Opening the scene and its camera follow in 1.3. The folder is <code>src/Runtime</code>: <code>src/Player</code> holds the older OpenGL scenes' <code>Player</code> class.</li>
+    <li><b>Found on the way.</b> <code>SceneEnvMapVulkan</code> owned a second <code>EnvMapVulkanEditorLayer</code>, so <code>Editor::OnUpdate</code> ran twice per frame; now once. <code>config.h</code> included the chosen scene's header into every source file; now only <code>EditorApplication.cpp</code> includes it. With the core in a library linked after the editor, static objects are destroyed in a different order: the DirectX 11 scene's meshes, destroyed after <code>main</code> returns, logged after the logger was gone (a crash at exit). The loggers are now never destroyed. Helpers the core needs moved out of the Hazel Vulkan test renderer: the image layout barriers (<code>VulkanUtilsH2M</code>), the textures' mip switch and the test scene's light direction.</li>
+    <li><b>Limit:</b> assimp, shaderc, nfd, GLEW and OpenGL stay on the core's link line: models and shaders load at runtime until Phase 8, and the older shared classes call OpenGL.</li>
+  </ul></div>
 
   <h3>1.3 The player</h3>
   <p>The player is an <code>Application</code> with one layer, <code>RuntimeLayer</code> (proposed), that loads the project, opens the start scene, runs the game loop and renders. Two things differ from the editor:</p>
@@ -337,7 +347,7 @@ void GameLoop::Frame(float frameTime)
 }</code></pre>
   <p>The existing <code>Timer</code> keeps giving the frame time; its update-rate logic is not used by the game loop. Until Phase 3 the loop only has the frame update, but its shape is final.</p>
 
-  <h3>1.5 Play, Pause, Simulate</h3>
+  <h3>1.5 Play, Pause, Step, Stop</h3>
   <figure class="wide">
     <div class="scroll"><svg data-d="playmode" role="img" aria-label="Play mode: the editor scene is copied, the copy runs, Stop destroys it"></svg></div>
   </figure>
@@ -362,7 +372,14 @@ void EnvMapVulkanScene::CopyFrom(const EnvMapVulkanScene&amp; other)
 }</code></pre>
   <div class="box note"><b>Models are shared, not reloaded</b>
   <code>ModelComponent::Model</code> is a <code>RefH2M</code>: the copy shares the loaded model, so Play starts instantly. That is safe while the game only moves entities. If a script ever edits mesh data, it must clone the model first.</div>
-  <p><b>Simulate</b> is Play without scripts and with the editor camera: physics runs, you can watch it and move the camera. <b>Pause</b> stops the game loop; <b>Step</b> (one frame) is cheap to add and very useful.</p>
+  <p>The toolbar's controls, as in Unity (the Play button becomes Stop while the game runs):</p>
+  <ul>
+    <li><b>Play:</b> the editor scene is copied, the copy runs, the view comes from the scene's camera.</li>
+    <li><b>Pause:</b> the game loop stops, the scene stays as it is: look around, select, inspect.</li>
+    <li><b>Step:</b> while paused, exactly one frame (one variable update and the fixed steps it is due), then paused again. For watching a collision or a script bug frame by frame.</li>
+    <li><b>Stop:</b> the copy is destroyed, the edited scene is shown again, unchanged.</li>
+    <li><b>Simulate</b> (Phase 3, 3.7): Play without scripts and with the editor camera. It comes with Jolt: before it, there is nothing for it to run.</li>
+  </ul>
 
   <h3>1.6 Projects</h3>
 <pre><code><span class="c"># RollABall/RollABall.mproject (YAML)</span>
@@ -381,6 +398,7 @@ Project:
     <li><code>MoravaPlayer --scene Scenes/GI_Cube.mscene --exit-after 20</code> shows the scene full screen and exits cleanly with 0 validation messages, in CI on all three platforms.</li>
     <li>The player's link line has no ImGui (and, after Phase 8, no assimp or shaderc).</li>
     <li>Play, move an entity by hand in the Properties panel, Stop: the entity is back where it was.</li>
+    <li>Pause and Step: the frame counter advances by exactly one per Step; Stop from Pause works.</li>
   </ul></div>
 </section>
 
@@ -540,11 +558,19 @@ bool grounded = character-&gt;GetGroundState() == JPH::CharacterVirtual::EGround
     <li><b>Contacts:</b> contact points and normals of the last step.</li>
     <li><b>Physics panel:</b> body counts by type, step time, active pairs, the collision matrix editor.</li>
   </ul></div>
+  <h3>3.7 Simulate</h3>
+  <p>The fifth toolbar control (after Play, Pause, Step, Stop of 1.5): the same scene copy as Play and the same game loop, with physics (and, from Phase 5, audio), but without scripts, and seen through the editor camera. The viewport keeps the editor's tools: select, gizmos, the Properties panel shows the bodies moving. Pause, Step and Stop work as in Play.</p>
+  <ul>
+    <li><b>What it is for:</b> tuning masses, friction and colliders without a player script fighting you, and telling apart a physics problem (wrong in Simulate too) from a script problem (right in Simulate, wrong in Play).</li>
+    <li><b>The rule for later systems:</b> each phase states what runs in Simulate. Physics and audio do; scripts (Phase 4) and game UI (Phase 7) don't; animation (Phase 6) does, so animated kinematic bodies push things as in the game.</li>
+    <li><b>Implementation:</b> the play state is <code>Edit</code>, <code>Play</code> or <code>Simulate</code>, plus a paused flag. The game loop of 1.4 skips the script calls when the state is <code>Simulate</code>; the editor stubs <code>OnSceneStartSimulation</code> and <code>OnSceneStop</code> get their code.</li>
+  </ul>
   <div class="box ok"><b>Check</b>
   <ul>
     <li>SceneJolt behaves like SceneBullet (fire spheres, boxes topple, gravity slider), in CI on all platforms.</li>
     <li>In the Vulkan editor: a stack of 100 boxes settles and sleeps; Stop restores it.</li>
     <li>A capsule character walks up a ramp below 45°, slides down a steeper one, climbs 30 cm steps, and a trigger reports enter and exit once each.</li>
+    <li>Simulate: the box stack falls while the editor camera moves and boxes can be selected; Stop restores it.</li>
   </ul></div>
 </section>
 
@@ -892,9 +918,9 @@ Build:
   <h3>The phases at a glance</h3>
   <div class="table-wrap"><table>
     <tr><th>Phase</th><th>Adds</th><th>Depends on</th><th>Proved by</th></tr>
-    <tr><td>1</td><td>MoravaCore, MoravaPlayer, game loop, Play/Stop, projects</td><td>—</td><td>Player shows a scene in CI; editor unchanged</td></tr>
+    <tr><td>1</td><td>MoravaCore, MoravaPlayer, game loop, Play/Pause/Step/Stop, projects</td><td>—</td><td>Player shows a scene in CI; editor unchanged</td></tr>
     <tr><td>2</td><td>Input actions, gamepads</td><td>1</td><td>Input panel; cube moved by gamepad</td></tr>
-    <tr><td>3</td><td>Jolt: SceneJolt, bodies, colliders, character, events, queries</td><td>1</td><td>Box stack, character on stairs, triggers</td></tr>
+    <tr><td>3</td><td>Jolt: SceneJolt, bodies, colliders, character, events, queries, Simulate</td><td>1</td><td>Box stack, character on stairs, triggers</td></tr>
     <tr><td>4</td><td>C# on .NET: host, API, fields, hot reload, debugging</td><td>1, 2, 3</td><td><b>Milestone 1: Roll a Ball</b></td></tr>
     <tr><td>5</td><td>Audio sources, listener, buses, music</td><td>1, 4</td><td>3D sound, music, mixer</td></tr>
     <tr><td>6</td><td>Prefabs, spawning, scene loading, game camera, animator, culling</td><td>3, 4</td><td>500 spawned pickups, crossfades, level change</td></tr>
@@ -1018,7 +1044,7 @@ Build:
       { id: 'ed', k: 'file', x: 10, y: 10, w: 240, t: 'Editor scene', l: ['EnvMapVulkanScene, edited', 'saved to .mscene'] },
       { id: 'cp', k: 'sys', x: 320, y: 10, w: 240, t: 'Play: CopyFrom', l: ['every component, same IDs', 'models shared, not reloaded'] },
       { id: 'rt', k: 'cpu', x: 630, y: 10, w: 270, t: 'Runtime scene', l: ['bodies, scripts, sounds created', 'game loop runs on it'] },
-      { id: 'sim', k: 'sys', x: 320, y: 110, w: 240, t: 'Simulate', l: ['copy + physics only', 'no scripts, editor camera'] },
+      { id: 'sim', k: 'sys', x: 320, y: 110, w: 240, t: 'Simulate (Phase 3)', l: ['copy + physics only', 'no scripts, editor camera'] },
       { id: 'stop', k: 'sys', x: 630, y: 110, w: 270, t: 'Stop', l: ['runtime scene destroyed', 'editor scene shown again'] }
     ], e: [
       { f: 'ed', t: 'cp', k: 'x', l: 'copy' }, { f: 'cp', t: 'rt', k: 'w', l: 'creates' }, { f: 'rt', t: 'stop', k: 's' },

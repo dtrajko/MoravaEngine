@@ -9,11 +9,9 @@
 #include "VulkanContextH2M.h"
 #include "VulkanImageH2M.h"
 #include "VulkanRendererH2M.h"
+#include "VulkanUIImagesH2M.h"
 
 #include "stb_image.h"
-
-#include "imgui.h"
-#include "backends/imgui_impl_vulkan.h"
 
 
 namespace H2M {
@@ -310,11 +308,8 @@ namespace H2M {
 		{
 			auto vulkanDevice = VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice();
 
-			// Only while the ImGui Vulkan backend is alive (it frees all its descriptor sets on shutdown)
-			if (m_ImGuiDescriptorSet && ImGui::GetCurrentContext() && ImGui::GetIO().BackendRendererUserData)
-			{
-				ImGui_ImplVulkan_RemoveTexture(m_ImGuiDescriptorSet);
-			}
+			// Only while the user interface's backend is alive (it frees all its images on shutdown)
+			VulkanUIImagesH2M::Remove(m_UIImageID);
 
 			vkDestroyImageView(vulkanDevice, m_DescriptorImageInfo.imageView, nullptr);
 			vkDestroyImage(vulkanDevice, m_VkImage, nullptr);
@@ -323,14 +318,14 @@ namespace H2M {
 		}
 	}
 
-	ImTextureID VulkanTexture2D_H2M::GetImTextureID()
+	uint64_t VulkanTexture2D_H2M::GetImTextureID()
 	{
 		// ImGui's Vulkan backend identifies textures by descriptor set (the base version returns an OpenGL texture ID)
-		if (!m_ImGuiDescriptorSet && m_DescriptorImageInfo.imageView && ImGui::GetCurrentContext() && ImGui::GetIO().BackendRendererUserData)
+		if (!m_UIImageID && m_DescriptorImageInfo.imageView)
 		{
-			m_ImGuiDescriptorSet = ImGui_ImplVulkan_AddTexture(m_DescriptorImageInfo.sampler, m_DescriptorImageInfo.imageView, m_DescriptorImageInfo.imageLayout);
+			m_UIImageID = VulkanUIImagesH2M::Add(m_DescriptorImageInfo.sampler, m_DescriptorImageInfo.imageView, m_DescriptorImageInfo.imageLayout);
 		}
-		return (ImTextureID)(uintptr_t)m_ImGuiDescriptorSet;
+		return m_UIImageID;
 	}
 
 	bool VulkanTexture2D_H2M::LoadImageH2M(const std::string& path)

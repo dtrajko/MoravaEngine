@@ -24,8 +24,9 @@ namespace H2M
 		inline static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }
 
 	private:
-		static std::shared_ptr<spdlog::logger> s_CoreLogger;
-		static std::shared_ptr<spdlog::logger> s_ClientLogger;
+		// Never destroyed, as Log's loggers: objects destroyed after main returns still log
+		static std::shared_ptr<spdlog::logger>& s_CoreLogger;
+		static std::shared_ptr<spdlog::logger>& s_ClientLogger;
 	};
 
 }
