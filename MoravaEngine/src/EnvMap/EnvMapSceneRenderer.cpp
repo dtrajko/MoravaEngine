@@ -128,6 +128,8 @@ static EnvMapSceneRendererData s_Data;
 
 void EnvMapSceneRenderer::Init(std::string filepath, H2M::SceneH2M* scene, EnvMapEditorLayer* editorLayer)
 {
+    H2M::SceneH2M::s_SubmitEntity = &EnvMapSceneRenderer::SubmitEntity; // the scene's meshes are drawn here
+
     s_EditorLayer = editorLayer;
 
     s_Data.ActiveScene = scene;

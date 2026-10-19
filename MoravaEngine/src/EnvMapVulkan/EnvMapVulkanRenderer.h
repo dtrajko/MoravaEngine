@@ -24,8 +24,6 @@
 #include "EnvMapVulkanSceneData.h"
 #include "EnvMapVulkanViewOptions.h"
 
-#include "imgui.h"
-
 #include <functional>
 
 
@@ -80,14 +78,16 @@ public:
 	// The scene Draw draws, how (the settings saved with it) and what the view shows besides it (debug views, the
 	// selection): its owner's, read at the start of every Draw. The owner changes the scene only between frames.
 	static void SetScene(EnvMapVulkanScene* scene, const EnvMapVulkanRenderSettings* renderSettings, const EnvMapVulkanViewOptions* viewOptions);
-	// The user interface over the scene (the editor's ImGui windows), built while the window's image is recorded. Without
-	// one the window shows only the scene.
-	static void SetUserInterface(const std::function<void()>& buildUserInterface);
+	// The user interface over the scene (the editor's ImGui windows): recorded into the given command buffer of the window's
+	// render pass while the window's image is recorded. Without one the window shows only the scene.
+	static void SetUserInterface(const std::function<void(VkCommandBuffer)>& recordUserInterface);
 
 	// --- What the editor asks the renderer (src/Editor)
 
+	// The images for ImGui::Image below are IDs of the user interface (ImTextureID; 0 without one, see H2M::VulkanUIImagesH2M)
+
 	// The finished viewport image, for ImGui::Image, and the size it is drawn at (from the next frame on)
-	static ImTextureID GetViewportImage();
+	static uint64_t GetViewportImage();
 	static void SetViewportSize(uint32_t width, uint32_t height);
 	// Waits until the GPU is idle: before resources a recorded frame may use are destroyed (models, materials, textures)
 	static void WaitIdle();
@@ -112,7 +112,7 @@ public:
 	// The sun's shadow cascades of the last frame (false: none were drawn), and an image of one, for ImGui::Image
 	static bool AreShadowsRendered();
 	static const EnvMapVulkanShadowCascade& GetShadowCascade(uint32_t cascade);
-	static ImTextureID GetShadowCascadeImage(uint32_t cascade);
+	static uint64_t GetShadowCascadeImage(uint32_t cascade);
 	// The box around everything that casts shadows (min > max: nothing)
 	static void GetShadowCasterBounds(glm::vec3& boundsMin, glm::vec3& boundsMax);
 	// The shadow slot of each point and spot light of the scene's lists (-1: no shadow this frame), and how many have one
@@ -122,12 +122,12 @@ public:
 	static bool CanPointLightsCastShadows();
 	static bool CanSpotLightsCastShadows();
 	// A point or spot light's shadow map, drawn with the next frame into an image for ImGui::Image (a spot light's map is
-	// the left 3/4 of it, a point light's cube is unfolded); null when the light has no shadow map this frame
-	static ImTextureID ShowLocalShadowMap(EnvMapVulkanSceneData::LightKind kind, int index);
+	// the left 3/4 of it, a point light's cube is unfolded); 0 when the light has no shadow map this frame
+	static uint64_t ShowLocalShadowMap(EnvMapVulkanSceneData::LightKind kind, int index);
 
 	// The bloom's lens dirt texture: loaded at the start of the next frame
 	static void SetBloomDirtTexture(const std::string& filepath);
-	static ImTextureID GetBloomDirtImage();
+	static uint64_t GetBloomDirtImage();
 	static std::string GetBloomDirtTextureFile();
 
 	// The probe volume's state, and its commands (see EnvMapVulkanProbes)
@@ -161,7 +161,7 @@ public:
 	static void RenderGrid(VkCommandBuffer commandBuffer);
 	static void GeometryPass();
 	static void CompositePass();
-	static void OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers);
+	static void RecordUserInterface(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers);
 
 	static int32_t& GetSelectedDrawCall();
 

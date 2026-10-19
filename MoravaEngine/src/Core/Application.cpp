@@ -1,34 +1,24 @@
 #include "Core/Application.h"
 
 #include "H2M/Core/BaseH2M.h"
+#include "H2M/ImGui/ImGuiLayerH2M.h"
 #if defined(GRAPHICS_API_VULKAN)
-#include "H2M/Editor/EditorLayerVulkanH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
-#include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
-#include "H2M/Platform/Vulkan/VulkanTestLayer.h"
 #endif
-#include "H2M/Project/UserPreferencesH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 #include "H2M/Renderer/RendererH2M.h"
-
-#if defined(GRAPHICS_API_VULKAN)
-#include "EnvMapVulkan/EnvMapVulkanEditorLayer.h"
-#include "EnvMapVulkan/EnvMapVulkanRenderer.h"
-#endif
 
 #include "Core/FileDialogs.h"
 #include "Core/ResourceManager.h"
 #include "Core/Timer.h"
 #include "Material/MaterialLibrary.h"
 #include "Core/Util.h"
-#if defined(GRAPHICS_API_DIRECTX11)
-#include "Platform/DX11/DX11TestLayer.h"
-#include "Platform/DX11/DX11Renderer.h"
-#endif
-
-#include <imgui.h>
+#include "Renderer/RendererBasic.h"
+#include "Scene/Scene.h"
 
 #include <chrono>
+#include <cstdlib>
+#include <filesystem>
 
 
 Application* Application::s_Instance = nullptr;
@@ -61,31 +51,121 @@ Application* Application::Get()
 	return s_Instance;
 }
 
+// Command line options:
+//   --scene <file>          open this scene at startup (SceneEnvMapVulkan: an .mscene file, e.g. Scenes/Old_Stove_Corner.mscene)
+//   --exit-after <seconds>  close the application after this time in the main loop
+//   --debug-view <number>   start with this debug view (SceneEnvMapVulkan: the entry of the Environment panel's Debug View
+//                           list, 0 = Off, e.g. 8 = Probe Irradiance Only, 10 = Ambient Occlusion)
+//   --no-ray-tracing        Vulkan without the ray tracing extensions, as on a GPU that has none (to check the fallbacks)
+//   --select <name>         select the entity of this name in the scene opened with --scene (SceneEnvMapVulkan: a name of
+//                           the Scene Hierarchy, e.g. Gladiator.fbx)
+ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
+{
+	ApplicationCommandLine commandLine;
+	for (int i = 1; i < argc; i++)
+	{
+		const std::string option = argv[i];
+		const bool hasValue = i + 1 < argc;
+		if (option == "--scene" && hasValue)
+		{
+			commandLine.ScenePath = argv[++i];
+		}
+		else if (option == "--exit-after" && hasValue)
+		{
+			const char* value = argv[++i];
+			char* end = nullptr;
+			float seconds = std::strtof(value, &end);
+			if (end == value || *end != '\0' || seconds <= 0.0f)
+			{
+				Log::GetLogger()->warn("Command line: --exit-after needs a number of seconds above 0, got '{0}' (ignored)", value);
+			}
+			else
+			{
+				commandLine.ExitAfterSeconds = seconds;
+			}
+		}
+		else if (option == "--debug-view" && hasValue)
+		{
+			const char* value = argv[++i];
+			char* end = nullptr;
+			long view = std::strtol(value, &end, 10);
+			if (end == value || *end != '\0' || view < 0)
+			{
+				Log::GetLogger()->warn("Command line: --debug-view needs a number from 0 on, got '{0}' (ignored)", value);
+			}
+			else
+			{
+				commandLine.DebugView = (int)view;
+			}
+		}
+		else if (option == "--no-ray-tracing")
+		{
+			commandLine.NoRayTracing = true;
+		}
+		else if (option == "--select" && hasValue)
+		{
+			commandLine.SelectName = argv[++i];
+		}
+		else if (option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select")
+		{
+			Log::GetLogger()->warn("Command line: {0} needs a value (ignored)", option);
+		}
+		else
+		{
+			Log::GetLogger()->warn("Command line: unknown option '{0}' (ignored)", option);
+		}
+	}
+	return commandLine;
+}
+
+// Started anywhere else, the first shader comes back empty and the engine fails much later with an unrelated error, so
+// this says it at the start
+bool Application::IsWorkingDirectoryValid()
+{
+	std::error_code error;
+	if (std::filesystem::is_directory("Resources/Shaders", error))
+	{
+		return true;
+	}
+	const std::string folder = std::filesystem::current_path(error).u8string();
+	Log::GetLogger()->error("Resources/Shaders not found in the working directory '{0}'.", folder);
+	Log::GetLogger()->error("Start MoravaEngine from the MoravaEngine/MoravaEngine folder of the repository.");
+	return false;
+}
+
 void Application::OnInit()
 {
-	m_SceneProperties = Application::SetSceneProperties();
+	H2M_CORE_ASSERT(m_Client, "Application::SetClient before Run");
+	m_SceneProperties = m_Client->CreateScene();
 	InitializeScene(m_SceneProperties);
 
-	// Projection matrix
-	glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
-		(float)Application::Get()->GetWindow()->GetWidth() / (float)Application::Get()->GetWindow()->GetHeight(),
-		Scene::GetSettings().nearPlane, Scene::GetSettings().farPlane);
+	if (m_Scene)
+	{
+		// Projection matrix
+		glm::mat4 projectionMatrix = glm::perspective(glm::radians(60.0f),
+			(float)Application::Get()->GetWindow()->GetWidth() / (float)Application::Get()->GetWindow()->GetHeight(),
+			Scene::GetSettings().nearPlane, Scene::GetSettings().farPlane);
 
-	RendererBasic::SetProjectionMatrix(projectionMatrix);
+		RendererBasic::SetProjectionMatrix(projectionMatrix);
 
-	m_Scene->SetCamera();
-	m_Scene->SetLightManager();
-	m_Scene->SetWaterManager(
-		(int)Application::Get()->GetWindow()->GetWidth(),
-		(int)Application::Get()->GetWindow()->GetHeight());
+		m_Scene->SetCamera();
+		m_Scene->SetLightManager();
+		m_Scene->SetWaterManager(
+			(int)Application::Get()->GetWindow()->GetWidth(),
+			(int)Application::Get()->GetWindow()->GetHeight());
+	}
 
-	m_Renderer->Init(m_Scene);
+	if (m_Renderer)
+	{
+		m_Renderer->Init(m_Scene);
+	}
 
 	RendererBasic::InitDebug();
 
+	m_ImGuiLayer = m_Client->CreateImGuiLayer();
+	m_EnableImGui = m_ImGuiLayer != nullptr;
 	if (m_EnableImGui)
 	{
-		m_ImGuiLayer = H2M::ImGuiLayerH2M::Create();
 		PushOverlay(m_ImGuiLayer);
 	}
 
@@ -100,32 +180,7 @@ void Application::OnInit()
 		H2M::RendererH2M::Init();
 	}
 
-	switch (H2M::RendererAPI_H2M::Current())
-	{
-#if defined(GRAPHICS_API_VULKAN)
-		case H2M::RendererAPITypeH2M::Vulkan:
-			switch (m_SceneProperties.Name)
-			{
-				case SceneName::HAZEL_VULKAN:
-					PushLayer(new H2M::VulkanTestLayer("VulkanTestLayer")); // to be removed
-					break;
-				case SceneName::ENV_MAP_VULKAN:
-					// PushLayer(new H2M::VulkanTestLayer("VulkanTestLayer")); // to be removed
-					PushLayer(new EnvMapVulkanEditorLayer(H2M::RefH2M<H2M::UserPreferencesH2M>::Create())); // Used in SCENE_ENV_MAP_VULKAN
-					break;
-				default:
-					// PushLayer(new H2M::EditorLayerVulkanH2M(H2M::RefH2M<H2M::UserPreferencesH2M>::Create())); // Used in Hazel-dev
-					break;
-			}
-			break;
-#endif
-#if defined(GRAPHICS_API_DIRECTX11)
-		case H2M::RendererAPITypeH2M::DX11:
-			PushLayer(new DX11TestLayer("DX11TestLayer"));
-			break;
-#endif
-		default: break;
-	}
+	m_Client->PushLayers(*this);
 
 	float targetFPS = 60.0f;
 	float targetUpdateRate = 24.0f;
@@ -201,7 +256,10 @@ void Application::Run()
 				}
 			}
 
-			m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window);
+			if (m_Scene)
+			{
+				m_Scene->Update(Timer::Get()->GetCurrentTimestamp(), m_Window);
+			}
 
 			// Render ImGui on render thread
 			Application* app = this;
@@ -215,38 +273,17 @@ void Application::Run()
 			// On Render thread
 			m_Window->GetRenderContext()->BeginFrame();
 
-			m_Renderer->WaitAndRender(deltaTime, m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
+			if (m_Renderer)
+			{
+				m_Renderer->WaitAndRender(deltaTime, m_Window, m_Scene, RendererBasic::GetProjectionMatrix());
+			}
 
-			if (m_EnableImGui)
+			if (m_EnableImGui && m_Scene)
 			{
 				m_Scene->UpdateImGui(Timer::Get()->GetCurrentTimestamp(), m_Window);
 			}
 
-			switch (H2M::RendererAPI_H2M::Current())
-			{
-#if defined(GRAPHICS_API_VULKAN)
-			case H2M::RendererAPITypeH2M::Vulkan:
-				// m_Scene->OnRenderEditor(deltaTime, *(H2M::EditorCamera*)m_Scene->GetCamera());
-				switch (m_SceneProperties.Name)
-				{
-					case SceneName::HAZEL_VULKAN:
-						H2M::VulkanRendererH2M::Draw(m_Scene->GetCamera()); // replace with m_Scene->OnRenderEditor()
-						break;
-					case SceneName::ENV_MAP_VULKAN:
-						EnvMapVulkanRenderer::Draw(m_Scene->GetCamera()); // replace with m_Scene->OnRenderEditor()
-						// TODO EnvMapVulkanRenderer::Render() (?)
-						break;
-					default: break;
-				}
-				break;
-#endif
-#if defined(GRAPHICS_API_DIRECTX11)
-			case H2M::RendererAPITypeH2M::DX11:
-				DX11Renderer::Draw(m_Scene->GetCamera());
-				break;
-#endif
-			default: break;
-			}
+			m_Client->Draw();
 
 			if (m_EnableImGui)
 			{
@@ -292,7 +329,10 @@ bool Application::OnWindowResize(H2M::WindowResizeEventH2M& e)
 	m_Minimized = false;
 	H2M::RendererH2M::Submit([=]() { glViewport(0, 0, width, height); });
 
-	m_Scene->OnWindowResize(e);
+	if (m_Scene)
+	{
+		m_Scene->OnWindowResize(e);
+	}
 	m_Window->GetRenderContext()->OnResize(width, height);
 
 	switch (H2M::RendererAPI_H2M::Current())
@@ -312,15 +352,10 @@ bool Application::OnWindowResize(H2M::WindowResizeEventH2M& e)
 		}
 		break;
 #endif
-#if defined(GRAPHICS_API_DIRECTX11)
-		case H2M::RendererAPITypeH2M::DX11:
-		{
-			DX11Renderer::OnResize(width, height);
-		}
-		break;
-#endif
 		default: break;
 	}
+
+	m_Client->OnWindowResize((uint32_t)width, (uint32_t)height);
 
 	return false;
 }
@@ -424,32 +459,6 @@ std::wstring Application::SaveFile(const wchar_t* filter, const wchar_t* default
 	return Util::to_wstr(path);
 }
 
-void Application::OnImGuiRender(bool* p_open)
-{
-	ImGui::Begin("Renderer", p_open);
-	{
-		auto caps = H2M::RendererH2M::GetCapabilities();
-
-		const char* vendor = "N/A";
-		const char* device = "N/A";
-		const char* version = "N/A";
-
-		if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
-		{
-			vendor = (const char*)glGetString(GL_VENDOR);
-			device = (const char*)glGetString(GL_RENDERER);
-			version = (const char*)glGetString(GL_VERSION);
-		}
-
-		ImGui::Text("Vendor: %s", vendor);
-		ImGui::Text("Device: %s", device);
-		ImGui::Text("Version: %s", version);
-
-		ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
-	}
-	ImGui::End();
-}
-
 const char* Application::GetConfigurationName()
 {
 #if defined(HZ_DEBUG)
@@ -503,134 +512,4 @@ void Application::CaptureScreenshot(const std::string& filePath)
 	// stbi_write_png(filePath.c_str(), width, height, 4, ptr, 0);
 	stbi_write_jpg(filePath.c_str(), width, height, 4, ptr, 60);
 	free(ptr);
-}
-
-SceneProperties Application::SetSceneProperties()
-{
-	SceneProperties sceneProperties;
-
-#if defined(SCENE_COTTAGE)
-	sceneProperties.Scene = new SceneCottage();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
-	sceneProperties.Name = SceneName::COTTAGE;
-#elif defined(SCENE_EIFFEL)
-	sceneProperties.Scene = new SceneEiffel();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
-	sceneProperties.Name = SceneName::EIFFEL;
-#elif defined(SCENE_SPONZA)
-	sceneProperties.Scene = new SceneSponza();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
-	sceneProperties.Name = SceneName::SPONZA;
-#elif defined(SCENE_TERRAIN)
-	sceneProperties.Scene = new SceneTerrain();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
-	sceneProperties.Name = SceneName::TERRAIN;
-#elif defined(SCENE_PBR)
-	sceneProperties.Scene = new ScenePBR();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererPBR());
-	sceneProperties.Name = SceneName::PBR;
-#elif defined(SCENE_LEARN_OPENGL)
-	sceneProperties.Scene = new SceneJoey();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::LEARN_OPENGL;
-#elif defined(SCENE_BULLET)
-	sceneProperties.Scene = new SceneBullet();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
-	sceneProperties.Name = SceneName::BULLET;
-#elif defined(SCENE_INSTANCED)
-	sceneProperties.Scene = new SceneInstanced();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::INSTANCED;
-#elif defined(SCENE_ASTEROIDS)
-	sceneProperties.Scene = new SceneAsteroids();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::ASTEROIDS;
-#elif defined(SCENE_NANOSUIT)
-	sceneProperties.Scene = new SceneNanosuit();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::NANOSUIT;
-#elif defined(SCENE_FRAMEBUFFERS)
-	sceneProperties.Scene = new SceneFramebuffers();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::FRAMEBUFFERS;
-#elif defined(SCENE_CUBEMAPS)
-	sceneProperties.Scene = new SceneCubemaps();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::CUBEMAPS;
-#elif defined(SCENE_PARTICLES)
-	sceneProperties.Scene = new SceneParticles();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::PARTICLES;
-#elif defined(SCENE_OMNI_SHADOWS)
-	sceneProperties.Scene = new SceneOmniShadows();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererOmniShadows());
-	sceneProperties.Name = SceneName::OMNI_SHADOWS;
-#elif defined(SCENE_PROCEDURAL_LANDMASS)
-	sceneProperties.Scene = new SceneProceduralLandmass();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
-	sceneProperties.Name = SceneName::PROCEDURAL_LANDMASS;
-#elif defined(SCENE_VOXEL_TERRAIN)
-	sceneProperties.Scene = new SceneVoxelTerrain();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
-	sceneProperties.Name = SceneName::VOXEL_TERRAIN;
-#elif defined(SCENE_VOXEL_TERRAIN_SL)
-	sceneProperties.Scene = new SceneVoxelTerrainSL();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
-	sceneProperties.Name = SceneName::VOXEL_TERRAIN_SL;
-#elif defined(SCENE_MARCHING_CUBES)
-	sceneProperties.Scene = new SceneMarchingCubes();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererVoxelTerrain());
-	sceneProperties.Name = SceneName::MARCHING_CUBES;
-#elif defined(SCENE_SSAO)
-	sceneProperties.Scene = new SceneSSAO();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::SSAO;
-#elif defined(SCENE_BLOOM)
-	sceneProperties.Scene = new SceneBloom();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::BLOOM;
-#elif defined(SCENE_ANIM_PBR)
-	sceneProperties.Scene = new SceneAnimPBR();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::ANIM_PBR;
-#elif defined(SCENE_DEFERRED)
-	sceneProperties.Scene = new SceneDeferred();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::DEFERRED;
-#elif defined(SCENE_DEFERRED_OGL)
-	sceneProperties.Scene = new SceneDeferredOGL();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererDeferredOGL());
-	sceneProperties.Name = SceneName::DEFERRED_OGL;
-#elif defined(SCENE_EDITOR)
-	sceneProperties.Scene = new SceneEditor();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererEditor());
-	sceneProperties.Name = SceneName::EDITOR;
-#elif defined(SCENE_EDITOR_IMGUIZMO)
-	sceneProperties.Scene = new SceneEditorImGuizmo();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererEditor());
-	sceneProperties.Name = SceneName::EDITOR_IMGUIZMO;
-#elif defined(SCENE_HAZEL_ENV_MAP)
-	sceneProperties.Scene = new SceneHazelEnvMap();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererECS());
-	sceneProperties.Name = SceneName::HAZEL_ENV_MAP;
-#elif defined(SCENE_DX11)
-	sceneProperties.Scene = new SceneDX11();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::HAZEL_VULKAN;
-#elif defined(SCENE_HAZEL_VULKAN)
-	sceneProperties.Scene = new SceneHazelVulkan();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
-	sceneProperties.Name = SceneName::HAZEL_VULKAN;
-#elif defined(SCENE_ENV_MAP_VULKAN)
-	sceneProperties.Scene = new SceneEnvMapVulkan();
-	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererECS());
-	sceneProperties.Name = SceneName::ENV_MAP_VULKAN;
-#else
-	sceneProperties.Scene = nullptr;
-	sceneProperties.Renderer = nullptr;
-	sceneProperties.Name = SceneName::NONE;
-	throw std::runtime_error("Scene and Renderer could not be loaded!");
-#endif
-
-	return sceneProperties;
 }

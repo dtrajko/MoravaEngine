@@ -6,6 +6,8 @@
 
 #include "VulkanImGuiLayerH2M.h"
 
+#include "VulkanUIImagesH2M.h"
+
 #include "VulkanH2M.h"
 #include "H2M/Renderer/RendererH2M.h"
 #include "H2M/Platform/Vulkan/VulkanContextH2M.h"
@@ -218,6 +220,11 @@ namespace H2M
 			&initInfo
 		);
 
+		// The images of ImGui::Image (textures, the viewport) are registered with ImGui's Vulkan backend
+		VulkanUIImagesH2M::SetBackend(
+			[](VkSampler sampler, VkImageView view, VkImageLayout layout) { return (uint64_t)(uintptr_t)ImGui_ImplVulkan_AddTexture(sampler, view, layout); },
+			[](uint64_t id) { ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)id); });
+
 		// Upload fonts
 		{
 			m_CommandBuffer =
@@ -247,6 +254,7 @@ namespace H2M
 			);
 		}
 
+		VulkanUIImagesH2M::SetBackend(nullptr, nullptr);
 		ImGui_ImplVulkan_Shutdown();
 
 		ImGui_ImplGlfw_Shutdown();

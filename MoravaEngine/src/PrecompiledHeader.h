@@ -1,6 +1,6 @@
 #pragma once
 
-// Precompiled header for the MoravaEngine target.
+// Precompiled header for the engine's targets (MoravaCore, MoravaEngine, MoravaPlayer).
 // CMake (target_precompile_headers) includes it automatically at the top of every source file.
 //
 // Keep it to stable third-party and standard library headers:
@@ -42,5 +42,4 @@
 #include "spdlog/fmt/ostr.h"
 #endif
 
-// Dear ImGui
-#include "imgui.h"
+// (The editor's target adds Dear ImGui: imgui.h. The core and the player have no ImGui.)

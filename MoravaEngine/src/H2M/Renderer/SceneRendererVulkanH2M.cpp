@@ -324,7 +324,7 @@ namespace H2M {
 				1.0f
 			};
 
-			ub.lights.Direction = VulkanRendererH2M::GetLightDirectionTemp();
+			ub.lights.Direction = GetLightDirection();
 			ub.u_CameraPosition = cameraPosition;
 
 			ubPtr = shader->MapUniformBuffer(1, 0);
@@ -394,6 +394,12 @@ namespace H2M {
 
 		GeometryPass();
 		CompositePass();
+	}
+
+	glm::vec3& SceneRendererVulkanH2M::GetLightDirection()
+	{
+		static glm::vec3 s_LightDirection = { 0.5f, 0.5f, 0.5f };
+		return s_LightDirection;
 	}
 
 	SceneRendererOptionsH2M& SceneRendererVulkanH2M::GetOptions()

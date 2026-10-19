@@ -27,6 +27,9 @@ public:
 	virtual void OnEvent(H2M::EventH2M& event) override;
 	virtual void OnImGuiRender() override;
 
+	// Ends the ImGui frame (the windows built since Begin) and records it into a command buffer of the window's render pass
+	static void RenderDrawData(VkCommandBuffer commandBuffer);
+
 private:
 	float m_Time = 0.0f;
 

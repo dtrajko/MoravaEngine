@@ -47,6 +47,11 @@ public:
 	virtual void OnUpdate() override;
 
 	// The Win32 window
+	// A handler that sees the window's messages first (the ImGui layer's: ImGui_ImplWin32_WndProcHandler); a result other
+	// than 0: the message is handled. nullptr: none.
+	using MessageHandler = LRESULT(*)(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	static void SetMessageHandler(MessageHandler handler);
+
 	void SetHWND(HWND hwnd) { m_HWND = hwnd; }
 	HWND GetHWND() { return m_HWND; }
 	bool Broadcast();

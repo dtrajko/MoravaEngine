@@ -18,8 +18,6 @@
 #include <string>
 
 
-class EnvMapVulkanEditorLayer;
-
 class SceneEnvMapVulkan : public Scene
 {
 
@@ -50,8 +48,6 @@ private:
 	virtual void OnEntitySelected(H2M::EntityH2M entity) override;
 
 private:
-	EnvMapVulkanEditorLayer* m_EnvMapVulkanEditorLayer;
-
 	H2M::RefH2M<MoravaShader> m_ShaderBackground;
 	H2M::RefH2M<MoravaShader> m_ShaderBasic;
 
@@ -61,7 +57,5 @@ private:
 #if defined(MORAVA_MONO)
 	CsGame* m_CsGame; // C# scripting (CMake: MORAVA_MONO)
 #endif
-
-	friend class EnvMapVulkanEditorLayer;
 
 };

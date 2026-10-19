@@ -23,6 +23,7 @@
 
 
 LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 DX11ImGuiLayer::DX11ImGuiLayer()
 {
@@ -68,6 +69,7 @@ void DX11ImGuiLayer::OnAttach()
 	HWND hwnd = static_cast<DX11Window*>(Application::Get()->GetWindow())->GetHWND();
 
 	ImGui_ImplWin32_Init(hwnd);
+	DX11Window::SetMessageHandler(&ImGui_ImplWin32_WndProcHandler); // the window's messages go to ImGui first
 	ImGui_ImplDX11_Init(
 		DX11Context::Get()->GetDX11Device(),
 		DX11Context::Get()->GetDX11DeviceContext()
@@ -77,6 +79,7 @@ void DX11ImGuiLayer::OnAttach()
 void DX11ImGuiLayer::OnDetach()
 {
 	// ImGui Cleanup
+	DX11Window::SetMessageHandler(nullptr);
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();

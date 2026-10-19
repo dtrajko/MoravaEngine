@@ -30,6 +30,31 @@ H2M::RefH2M<EnvMapMaterial> EnvMapEditorLayer::s_LightMaterial;
 
 static const std::filesystem::path g_AssetPath = ".";
 
+// The Renderer window: the OpenGL driver and the frame time
+static void ShowRendererWindow(bool* p_open)
+{
+	ImGui::Begin("Renderer", p_open);
+	{
+		const char* vendor = "N/A";
+		const char* device = "N/A";
+		const char* version = "N/A";
+
+		if (H2M::RendererAPI_H2M::Current() == H2M::RendererAPITypeH2M::OpenGL)
+		{
+			vendor = (const char*)glGetString(GL_VENDOR);
+			device = (const char*)glGetString(GL_RENDERER);
+			version = (const char*)glGetString(GL_VERSION);
+		}
+
+		ImGui::Text("Vendor: %s", vendor);
+		ImGui::Text("Device: %s", device);
+		ImGui::Text("Version: %s", version);
+
+		ImGui::Text("Frame Time: %.2fms\n", Timer::Get()->GetDeltaTime() * 1000.0f);
+	}
+	ImGui::End();
+}
+
 EnvMapEditorLayer::EnvMapEditorLayer(const std::string& filepath, Scene* scene)
 {
     m_Filepath = filepath;
@@ -1194,7 +1219,7 @@ void EnvMapEditorLayer::OnImGuiRender(Window* mainWindow, Scene* scene)
 
     if (m_ShowWindowRendererStats)
     {
-        Application::Get()->OnImGuiRender(&m_ShowWindowRendererStats);
+        ShowRendererWindow(&m_ShowWindowRendererStats);
     }
 
     if (m_ShowWindowHelp)

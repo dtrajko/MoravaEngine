@@ -31,6 +31,9 @@ namespace H2M
 		static void SubmitSelectedMesh(RefH2M<ModelH2M> mesh, const glm::mat4& transform = glm::mat4(1.0f));
 
 		static SceneRendererOptionsH2M& GetOptions();
+
+		// The light of the Hazel Vulkan test scene (SCENE_HAZEL_VULKAN: its Light Direction, edited in VulkanRendererH2M's window)
+		static glm::vec3& GetLightDirection();
 private:
 		static void FlushDrawList();
 		static void GeometryPass();

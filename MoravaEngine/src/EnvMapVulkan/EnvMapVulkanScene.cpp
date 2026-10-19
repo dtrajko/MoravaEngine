@@ -2,30 +2,155 @@
 
 #include "Core/Log.h"
 
-#include "ImGuizmo.h"
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 #include <algorithm>
+#include <cfloat>
+#include <cmath>
 #include <random>
 
 
 // TransformComponent
 
+// The matrix from the components and back, computed as ImGuizmo computes them (RecomposeMatrixFromComponents,
+// DecomposeMatrixToComponents; https://github.com/CedricGuillemet/ImGuizmo, MIT license, Copyright (c) 2016-2026 Cedric
+// Guillemet and contributors), operation by operation: the gizmo the editor draws with ImGuizmo and the scene agree to the
+// last bit, and the core needs no ImGui. A matrix is 16 floats in glm's layout, m[column * 4 + row] (ImGuizmo's rows).
+namespace GizmoMath
+{
+	constexpr float Pi = 3.14159265358979323846f;
+	constexpr float RadiansToDegrees = 180.f / Pi;
+	constexpr float DegreesToRadians = Pi / 180.f;
+
+	static void Multiply(const float* a, const float* b, float* r)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				r[i * 4 + j] = a[i * 4 + 0] * b[j] + a[i * 4 + 1] * b[4 + j] + a[i * 4 + 2] * b[8 + j] + a[i * 4 + 3] * b[12 + j];
+			}
+		}
+	}
+
+	static float Length(const float* v)
+	{
+		return sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+	}
+
+	static void Normalize(float* v)
+	{
+		const float scale = 1.f / (Length(v) > FLT_EPSILON ? Length(v) : FLT_EPSILON);
+		for (int i = 0; i < 4; i++)
+		{
+			v[i] *= scale;
+		}
+	}
+
+	static void RotationAxis(const float* axis, float angle, float* m)
+	{
+		const float length2 = axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2];
+		if (length2 < FLT_EPSILON)
+		{
+			for (int i = 0; i < 16; i++)
+			{
+				m[i] = i % 5 == 0 ? 1.f : 0.f;
+			}
+			return;
+		}
+
+		const float inverseLength = 1.f / sqrtf(length2);
+		const float nx = axis[0] * inverseLength, ny = axis[1] * inverseLength, nz = axis[2] * inverseLength;
+		const float s = sinf(angle);
+		const float c = cosf(angle);
+		const float k = 1.f - c;
+
+		const float xx = nx * nx * k + c;
+		const float yy = ny * ny * k + c;
+		const float zz = nz * nz * k + c;
+		const float xy = nx * ny * k;
+		const float yz = ny * nz * k;
+		const float zx = nz * nx * k;
+		const float xs = nx * s;
+		const float ys = ny * s;
+		const float zs = nz * s;
+
+		const float result[16] = {
+			xx,      xy + zs, zx - ys, 0.f,
+			xy - zs, yy,      yz + xs, 0.f,
+			zx + ys, yz - xs, zz,      0.f,
+			0.f,     0.f,     0.f,     1.f };
+		for (int i = 0; i < 16; i++)
+		{
+			m[i] = result[i];
+		}
+	}
+
+	static void Recompose(const float* translation, const float* rotation, const float* scale, float* m)
+	{
+		static const float axes[3][4] = { { 1.f, 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f, 0.f }, { 0.f, 0.f, 1.f, 0.f } };
+		float rot[3][16];
+		for (int i = 0; i < 3; i++)
+		{
+			RotationAxis(axes[i], rotation[i] * DegreesToRadians, rot[i]);
+		}
+		float rot01[16];
+		Multiply(rot[0], rot[1], rot01);
+		Multiply(rot01, rot[2], m);
+
+		for (int i = 0; i < 3; i++)
+		{
+			const float validScale = fabsf(scale[i]) < FLT_EPSILON ? 0.001f : scale[i];
+			for (int j = 0; j < 4; j++)
+			{
+				m[i * 4 + j] *= validScale;
+			}
+		}
+		m[12] = translation[0];
+		m[13] = translation[1];
+		m[14] = translation[2];
+		m[15] = 1.f;
+	}
+
+	static void Decompose(const float* matrix, float* translation, float* rotation, float* scale)
+	{
+		float m[16];
+		for (int i = 0; i < 16; i++)
+		{
+			m[i] = matrix[i];
+		}
+
+		scale[0] = Length(&m[0]);
+		scale[1] = Length(&m[4]);
+		scale[2] = Length(&m[8]);
+
+		Normalize(&m[0]);
+		Normalize(&m[4]);
+		Normalize(&m[8]);
+
+		rotation[0] = RadiansToDegrees * atan2f(m[1 * 4 + 2], m[2 * 4 + 2]);
+		rotation[1] = RadiansToDegrees * atan2f(-m[0 * 4 + 2], sqrtf(m[1 * 4 + 2] * m[1 * 4 + 2] + m[2 * 4 + 2] * m[2 * 4 + 2]));
+		rotation[2] = RadiansToDegrees * atan2f(m[0 * 4 + 1], m[0 * 4 + 0]);
+
+		translation[0] = m[12];
+		translation[1] = m[13];
+		translation[2] = m[14];
+	}
+}
+
 glm::mat4 TransformComponent::GetMatrix() const
 {
 	glm::mat4 matrix;
-	ImGuizmo::RecomposeMatrixFromComponents(&Translation.x, &Rotation.x, &Scale.x, glm::value_ptr(matrix));
+	GizmoMath::Recompose(&Translation.x, &Rotation.x, &Scale.x, glm::value_ptr(matrix));
 	return matrix;
 }
 
 void TransformComponent::SetMatrix(const glm::mat4& matrix)
 {
-	glm::mat4 copy = matrix;
-	ImGuizmo::DecomposeMatrixToComponents(glm::value_ptr(copy), &Translation.x, &Rotation.x, &Scale.x);
+	GizmoMath::Decompose(glm::value_ptr(matrix), &Translation.x, &Rotation.x, &Scale.x);
 }
 
 glm::vec3 TransformComponent::GetLightDirection() const

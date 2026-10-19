@@ -9,7 +9,6 @@
 #include "Platform/DX11/DX11Context.h"
 #include "Platform/DX11/DX11InputSystem.h"
 #include "Platform/DX11/DX11RendererBasic.h"
-#include "Platform/DX11/DX11Renderer.h"
 
 #include <exception>
 #include <filesystem>
@@ -28,11 +27,16 @@ DX11Window::~DX11Window()
 	Release();
 }
 
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+static DX11Window::MessageHandler s_MessageHandler = nullptr;
+
+void DX11Window::SetMessageHandler(MessageHandler handler)
+{
+	s_MessageHandler = handler;
+}
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam))
+	if (s_MessageHandler && s_MessageHandler(hwnd, msg, wparam, lparam))
 	{
 		return true;
 	}
@@ -268,8 +272,8 @@ void DX11Window::OnSize()
 	// DX11Context::Get()->GetSwapChain()->OnResize(windowRECT.right, windowRECT.bottom);
 	DX11Context::Get()->GetSwapChain()->OnResize(m_Data.Width, m_Data.Height);
 
-	// TODO: use observer / event listeners to remove this unwanted and unnecessary dependency
-	DX11Renderer::OnResize(m_Data.Width, m_Data.Height);
+	// The renderer's images that follow the window's size (the editor's DirectX 11 scene: DX11Renderer)
+	Application::Get()->GetClient()->OnWindowResize(m_Data.Width, m_Data.Height);
 }
 
 RECT DX11Window::GetClientWindowRect()

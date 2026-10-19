@@ -105,9 +105,9 @@ namespace H2M
 	}
 	 **** END Method removed in Vulkan branch ****/
 
-	ImTextureID Texture2D_H2M::GetImTextureID()
+	uint64_t Texture2D_H2M::GetImTextureID()
 	{
-		return (ImTextureID)(intptr_t)GetID();
+		return (uint64_t)GetID(); // OpenGL's ImGui backend: the texture's name
 	}
 
 	RefH2M<TextureCubeH2M> TextureCubeH2M::Create(ImageFormatH2M format, uint32_t width, uint32_t height, const void* data)

@@ -7,11 +7,7 @@
 #include "RendererH2M.h"
 
 #include "H2M/Core/AssertH2M.h"
-#if defined(GRAPHICS_API_OPENGL)
-#include "H2M/Platform/OpenGL/OpenGLRendererH2M.h"
-#endif
 #if defined(GRAPHICS_API_VULKAN)
-#include "H2M/Platform/Vulkan/VulkanRendererH2M.h"
 #include "H2M/Platform/Vulkan/VulkanComputePipelineH2M.h"
 #include "H2M/Platform/Vulkan/VulkanShaderH2M.h"
 #endif
@@ -22,12 +18,7 @@
 #include "H2M/Renderer/SceneRendererVulkanH2M.h"
 #endif
 
-#if defined(GRAPHICS_API_VULKAN)
-#include "EnvMapVulkan/EnvMapVulkanRenderer.h"
-#endif
-#if defined(GRAPHICS_API_DIRECTX11)
-#include "Platform/DX11/DX11Renderer.h"
-#endif
+#include "Core/Application.h"
 #include "Renderer/RendererBasic.h"
 
 
@@ -112,33 +103,16 @@ namespace H2M
 
 	// static std::unordered_map<size_t, RefH2M<Pipeline>> s_PipelineCache;
 
+	// The executable chooses the renderer (ApplicationClient::CreateRendererAPI): the editor's scenes have their own
 	static RendererAPI_H2M* InitRendererAPI()
 	{
-		switch (RendererAPI_H2M::Current())
+		RendererAPI_H2M* rendererAPI = Application::Get()->GetClient()->CreateRendererAPI();
+		if (!rendererAPI)
 		{
-#if defined(GRAPHICS_API_OPENGL)
-			case RendererAPITypeH2M::OpenGL: return new OpenGLRendererH2M();
-#endif
-#if defined(GRAPHICS_API_VULKAN)
-			case RendererAPITypeH2M::Vulkan:
-				switch (Application::Get()->GetSceneProperties().Name)
-				{
-					case SceneName::HAZEL_VULKAN: return new VulkanRendererH2M();
-					case SceneName::ENV_MAP_VULKAN: return new EnvMapVulkanRenderer();
-					default: break;
-				}
-				Log::GetLogger()->error("Unknown RendererAPI");
-				H2M_CORE_ASSERT(false, "Unknown RendererAPI");
-#endif
-
-#if defined(GRAPHICS_API_DIRECTX11)
-			case RendererAPITypeH2M::DX11:   return new DX11Renderer();
-#endif
-			default: break;
+			Log::GetLogger()->error("Unknown RendererAPI");
+			H2M_CORE_ASSERT(false, "Unknown RendererAPI");
 		}
-		Log::GetLogger()->error("Unknown RendererAPI");
-		H2M_CORE_ASSERT(false, "Unknown RendererAPI");
-		return nullptr;
+		return rendererAPI;
 	}
 
 	void RendererH2M::Init()

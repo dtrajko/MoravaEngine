@@ -11,8 +11,8 @@
 namespace H2M
 {
 
-	std::shared_ptr<spdlog::logger> LogH2M::s_CoreLogger;
-	std::shared_ptr<spdlog::logger> LogH2M::s_ClientLogger;
+	std::shared_ptr<spdlog::logger>& LogH2M::s_CoreLogger = *new std::shared_ptr<spdlog::logger>();
+	std::shared_ptr<spdlog::logger>& LogH2M::s_ClientLogger = *new std::shared_ptr<spdlog::logger>();
 
 	void LogH2M::Init()
 	{

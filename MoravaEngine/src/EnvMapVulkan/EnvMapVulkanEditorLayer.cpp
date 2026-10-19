@@ -1,5 +1,6 @@
 #include "EnvMapVulkanEditorLayer.h"
 
+#include "EnvMapVulkanImGuiLayer.h"
 #include "EnvMapVulkanRenderer.h"
 
 #include "Editor/Editor.h"
@@ -74,10 +75,19 @@ void EnvMapVulkanEditorLayer::OnAttach()
 	H2M::SceneHierarchyPanelH2M::Init();
 
 	Editor::Init(); // the renderer is initialized: the editor's scene can be made and handed to it
+
+	// The editor's windows over the scene: built (Editor::OnImGuiRender) and recorded with ImGui's Vulkan backend while the
+	// renderer records the window's image
+	EnvMapVulkanRenderer::SetUserInterface([](VkCommandBuffer commandBuffer)
+	{
+		Editor::OnImGuiRender();
+		EnvMapVulkanImGuiLayer::RenderDrawData(commandBuffer);
+	});
 }
 
 void EnvMapVulkanEditorLayer::OnDetach()
 {
+	EnvMapVulkanRenderer::SetUserInterface({});
 	Editor::Shutdown();
 	H2M::SceneHierarchyPanelH2M::Shutdown(); // the icons OnAttach loaded
 }

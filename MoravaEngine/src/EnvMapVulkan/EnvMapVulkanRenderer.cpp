@@ -43,15 +43,9 @@
 #include "H2M/Renderer/Renderer2D_H2M.h"
 #include "H2M/Renderer/SceneRendererH2M.h"
 
+#include "H2M/Platform/Vulkan/VulkanUIImagesH2M.h"
+
 #include "Platform/Vulkan/VulkanSkyboxCube.h"
-
-#include "imgui.h"
-
-#if !defined(IMGUI_IMPL_API)
-	#define IMGUI_IMPL_API
-#endif
-#include "backends/imgui_impl_glfw.h"
-#include "backends/imgui_impl_vulkan.h"
 
 #include "stb_image.h"
 
@@ -84,7 +78,7 @@ namespace Utils
 bool EnvMapVulkanRenderer::s_MipMapsEnabled = true;
 bool EnvMapVulkanRenderer::s_ViewportFBNeedsResize = false;
 
-static VkCommandBuffer s_ImGuiCommandBuffer;         // to be removed from VulkanRenderer
+static VkCommandBuffer s_UserInterfaceCommandBuffer; // the user interface's commands (SetUserInterface)
 static VkCommandBuffer s_CompositeCommandBuffer;     // to be removed from VulkanRenderer
 static H2M::RefH2M<H2M::FramebufferH2M> s_Framebuffer;          // to be removed from VulkanRenderer
 static H2M::RefH2M<H2M::FramebufferH2M> s_CompositeFramebuffer; // to be removed from VulkanRenderer
@@ -149,25 +143,24 @@ static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnim; // skinned models (Haze
 // draw where there is no prepass (the water's reflection) and lend their layouts to the prepass pipelines.
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineDepthEqual;
 static H2M::RefH2M<H2M::PipelineH2M> s_MeshPipelineAnimDepthEqual;
-static ImTextureID s_TextureID;                      // to be removed from VulkanRenderer
+static uint64_t s_ViewportImageID = 0;                // the viewport image's ID in the user interface (GetViewportImage)
 static bool s_ViewportTextureNeedsUpdate = false;     // the viewport framebuffer was recreated (resize)
 
-// ImGui::Image() needs the viewport framebuffer's color image registered with the ImGui Vulkan backend
-// (as a descriptor set). Called from OnImGuiRender, when the backend is initialized. After a resize the
-// framebuffer has a new image, so the old registration is replaced.
-static void RegisterViewportTextureWithImGui()
+// ImGui::Image() needs the viewport framebuffer's color image registered with the user interface (ImGui's Vulkan
+// backend: as a descriptor set). After a resize the framebuffer has a new image, so the old registration is replaced.
+static void RegisterViewportImage()
 {
-	if (s_TextureID)
+	if (s_ViewportImageID)
 	{
 		// The old descriptor set may still be used by frames in flight (only happens on resize)
 		vkDeviceWaitIdle(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice());
-		ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)s_TextureID);
+		H2M::VulkanUIImagesH2M::Remove(s_ViewportImageID);
 	}
 
 	// The tonemapped image (not the linear HDR s_Framebuffer)
 	auto vulkanFB = s_ViewportCompositeFramebuffer.As<H2M::VulkanFramebufferH2M>();
 	const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
-	s_TextureID = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
+	s_ViewportImageID = H2M::VulkanUIImagesH2M::Add(imageInfo.sampler, imageInfo.imageView, imageInfo.imageLayout);
 	s_ViewportTextureNeedsUpdate = false;
 }
 static uint32_t s_ViewportWidth = 1280;              // to be removed from VulkanRenderer
@@ -447,7 +440,7 @@ static uint32_t s_EnvironmentVersion = 0; // changes whenever the environment's 
 static EnvMapVulkanScene* s_Scene = nullptr; // the scene drawn, its owner's (see SetScene)
 static const EnvMapVulkanRenderSettings* s_OwnerRenderSettings = nullptr; // copied into s_RenderSettings at the start of Draw
 static const EnvMapVulkanViewOptions* s_OwnerViewOptions = nullptr;       // copied into s_ViewOptions at the start of Draw
-static std::function<void()> s_BuildUserInterface; // the editor's windows (see SetUserInterface)
+static std::function<void(VkCommandBuffer)> s_RecordUserInterface; // the editor's windows (see SetUserInterface)
 static EnvMapVulkanSceneData::LightEntities s_LightEntities; // the entities of s_Lights' lights (see ExtractLights)
 
 template<typename T>
@@ -1438,7 +1431,7 @@ void EnvMapVulkanRenderer::Init()
 	/**** BEGIN: to be removed from VulkanRenderer ****/
 	// H2M::RendererH2M::Submit([=]() {});
 	{
-		s_ImGuiCommandBuffer = H2M::VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+		s_UserInterfaceCommandBuffer = H2M::VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
 		s_CompositeCommandBuffer = H2M::VulkanContextH2M::GetCurrentDevice()->CreateSecondaryCommandBuffer();
 	}
 	EnvMapVulkanProfiler::Init();
@@ -1492,7 +1485,7 @@ void EnvMapVulkanRenderer::Init()
 				auto vulkanFB = framebuffer.As<H2M::VulkanFramebufferH2M>();
 				const auto& imageInfo = vulkanFB->GetVulkanDescriptorInfo();
 				Log::GetLogger()->warn("Resizing framebuffer; image layout is {0}", static_cast<uint32_t>(imageInfo.imageLayout));
-				s_ViewportTextureNeedsUpdate = true; // re-register the new image with ImGui (see RegisterViewportTextureWithImGui)
+				s_ViewportTextureNeedsUpdate = true; // re-register the new image (see RegisterViewportImage)
 
 				auto shader = s_CompositePipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>();
 
@@ -1600,7 +1593,7 @@ void EnvMapVulkanRenderer::Init()
 		s_ViewportCompositeFramebuffer = H2M::FramebufferH2M::Create(framebufferSpec);
 		s_ViewportCompositeFramebuffer->AddResizeCallback([](H2M::RefH2M<H2M::FramebufferH2M> framebuffer)
 		{
-			s_ViewportTextureNeedsUpdate = true; // re-register the new image with ImGui (see RegisterViewportTextureWithImGui)
+			s_ViewportTextureNeedsUpdate = true; // re-register the new image (see RegisterViewportImage)
 		});
 
 		H2M::PipelineSpecificationH2M pipelineSpecification;
@@ -3689,7 +3682,7 @@ void EnvMapVulkanRenderer::CompositePass()
 
 		commandBuffers.push_back(s_CompositeCommandBuffer);
 
-		OnImGuiRender(inheritanceInfo, commandBuffers);
+		RecordUserInterface(inheritanceInfo, commandBuffers);
 
 		vkCmdExecuteCommands(drawCommandBuffer, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
@@ -3701,10 +3694,15 @@ void EnvMapVulkanRenderer::CompositePass()
 	}
 }
 
-// The window's user interface (SetUserInterface): built with ImGui, recorded with the ImGui Vulkan backend into a secondary
-// command buffer of the window's render pass, after the composite of the scene
-void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers)
+// The window's user interface (SetUserInterface), recorded by its owner into a secondary command buffer of the window's
+// render pass, after the composite of the scene. Without one the window shows only the scene.
+void EnvMapVulkanRenderer::RecordUserInterface(VkCommandBufferInheritanceInfo& inheritanceInfo, std::vector<VkCommandBuffer>& commandBuffers)
 {
+	if (!s_RecordUserInterface)
+	{
+		return;
+	}
+
 	H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 	uint32_t width = swapChain.GetWidth();
 	uint32_t height = swapChain.GetHeight();
@@ -3713,7 +3711,7 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
 	cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
-	VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(s_ImGuiCommandBuffer, &cmdBufInfo));
+	VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(s_UserInterfaceCommandBuffer, &cmdBufInfo));
 
 	VkViewport viewport = {};
 	viewport.x = 0.0f;
@@ -3722,31 +3720,54 @@ void EnvMapVulkanRenderer::OnImGuiRender(VkCommandBufferInheritanceInfo& inherit
 	viewport.width = (float)width;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(s_ImGuiCommandBuffer, 0, 1, &viewport);
+	vkCmdSetViewport(s_UserInterfaceCommandBuffer, 0, 1, &viewport);
 
 	VkRect2D scissor = {};
 	scissor.extent.width = width;
 	scissor.extent.height = height;
-	vkCmdSetScissor(s_ImGuiCommandBuffer, 0, 1, &scissor);
+	vkCmdSetScissor(s_UserInterfaceCommandBuffer, 0, 1, &scissor);
 
-	if (s_BuildUserInterface)
-	{
-		s_BuildUserInterface();
-	}
+	s_RecordUserInterface(s_UserInterfaceCommandBuffer);
 
-	// TODO: Move to VulkanImGuiLayer
-	ImGui::Render();
-	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), s_ImGuiCommandBuffer);
+	VK_CHECK_RESULT_H2M(vkEndCommandBuffer(s_UserInterfaceCommandBuffer));
+	commandBuffers.push_back(s_UserInterfaceCommandBuffer);
+}
 
-	VK_CHECK_RESULT_H2M(vkEndCommandBuffer(s_ImGuiCommandBuffer));
-	commandBuffers.push_back(s_ImGuiCommandBuffer);
+// A frame without a scene (the player before it opens one): the window is cleared. Every frame records the window's
+// command buffer, which the swapchain submits and presents.
+static void RecordEmptyFrame()
+{
+	H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
+	VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentDrawCommandBuffer();
+
+	VkCommandBufferBeginInfo cmdBufInfo = {};
+	cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	VK_CHECK_RESULT_H2M(vkBeginCommandBuffer(drawCommandBuffer, &cmdBufInfo));
+
+	VkClearValue clearValues[2];
+	clearValues[0].color = { { 0.1f, 0.1f, 0.1f, 1.0f} };
+	clearValues[1].depthStencil = { 1.0f, 0 };
+
+	VkRenderPassBeginInfo renderPassBeginInfo = {};
+	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassBeginInfo.renderPass = swapChain.GetRenderPass();
+	renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+	renderPassBeginInfo.renderArea.extent.width = swapChain.GetWidth();
+	renderPassBeginInfo.renderArea.extent.height = swapChain.GetHeight();
+	renderPassBeginInfo.clearValueCount = 2;
+	renderPassBeginInfo.pClearValues = clearValues;
+	vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdEndRenderPass(drawCommandBuffer);
+
+	VK_CHECK_RESULT_H2M(vkEndCommandBuffer(drawCommandBuffer));
 }
 
 void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 {
 	if (!s_Scene)
 	{
-		return; // no scene yet (see SetScene)
+		RecordEmptyFrame(); // no scene yet (see SetScene)
+		return;
 	}
 	s_RenderSettings = s_OwnerRenderSettings ? *s_OwnerRenderSettings : EnvMapVulkanRenderSettings();
 	s_ViewOptions = s_OwnerViewOptions ? *s_OwnerViewOptions : EnvMapVulkanViewOptions();
@@ -4289,18 +4310,18 @@ void EnvMapVulkanRenderer::SetScene(EnvMapVulkanScene* scene, const EnvMapVulkan
 	s_OwnerViewOptions = viewOptions;
 }
 
-void EnvMapVulkanRenderer::SetUserInterface(const std::function<void()>& buildUserInterface)
+void EnvMapVulkanRenderer::SetUserInterface(const std::function<void(VkCommandBuffer)>& recordUserInterface)
 {
-	s_BuildUserInterface = buildUserInterface;
+	s_RecordUserInterface = recordUserInterface;
 }
 
-ImTextureID EnvMapVulkanRenderer::GetViewportImage()
+uint64_t EnvMapVulkanRenderer::GetViewportImage()
 {
-	if (!s_TextureID || s_ViewportTextureNeedsUpdate)
+	if (!s_ViewportImageID || s_ViewportTextureNeedsUpdate)
 	{
-		RegisterViewportTextureWithImGui();
+		RegisterViewportImage();
 	}
-	return s_TextureID;
+	return s_ViewportImageID;
 }
 
 void EnvMapVulkanRenderer::SetViewportSize(uint32_t width, uint32_t height)
@@ -4388,24 +4409,21 @@ const EnvMapVulkanShadowCascade& EnvMapVulkanRenderer::GetShadowCascade(uint32_t
 	return s_ShadowCascades[glm::min(cascade, ShadowCascadeCount - 1)];
 }
 
-ImTextureID EnvMapVulkanRenderer::GetShadowCascadeImage(uint32_t cascade)
+uint64_t EnvMapVulkanRenderer::GetShadowCascadeImage(uint32_t cascade)
 {
-	static std::array<ImTextureID, ShadowCascadeCount> s_ShadowMapTextureIDs = {};
+	static std::array<uint64_t, ShadowCascadeCount> s_ShadowMapTextureIDs = {};
 	static uint32_t s_ShadowMapTexturesGeneration = 0; // the shadow map the IDs were registered for (EnvMapVulkanShadowMap::GetGeneration)
 	if (!s_ShadowMap.IsValid() || cascade >= ShadowCascadeCount)
 	{
-		return ImTextureID{};
+		return 0;
 	}
-	// Registered with the ImGui Vulkan backend once per shadow map (again after it is recreated)
+	// Registered with the user interface once per shadow map (again after it is recreated)
 	if (s_ShadowMapTexturesGeneration != s_ShadowMap.GetGeneration())
 	{
 		for (uint32_t i = 0; i < ShadowCascadeCount; i++)
 		{
-			if (s_ShadowMapTextureIDs[i])
-			{
-				ImGui_ImplVulkan_RemoveTexture((VkDescriptorSet)(uintptr_t)s_ShadowMapTextureIDs[i]);
-			}
-			s_ShadowMapTextureIDs[i] = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(s_ShadowMap.GetDisplaySampler(), s_ShadowMap.GetDisplayView(i),
+			H2M::VulkanUIImagesH2M::Remove(s_ShadowMapTextureIDs[i]);
+			s_ShadowMapTextureIDs[i] = H2M::VulkanUIImagesH2M::Add(s_ShadowMap.GetDisplaySampler(), s_ShadowMap.GetDisplayView(i),
 				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		s_ShadowMapTexturesGeneration = s_ShadowMap.GetGeneration();
@@ -4440,12 +4458,12 @@ bool EnvMapVulkanRenderer::CanSpotLightsCastShadows()
 	return s_SpotShadowMaps.IsValid();
 }
 
-ImTextureID EnvMapVulkanRenderer::ShowLocalShadowMap(EnvMapVulkanSceneData::LightKind kind, int index)
+uint64_t EnvMapVulkanRenderer::ShowLocalShadowMap(EnvMapVulkanSceneData::LightKind kind, int index)
 {
 	const bool spot = kind == EnvMapVulkanSceneData::LightKind::Spot;
 	if (!spot && kind != EnvMapVulkanSceneData::LightKind::Point)
 	{
-		return ImTextureID{};
+		return 0;
 	}
 	int slot = -1;
 	float range = 1.0f;
@@ -4467,7 +4485,7 @@ ImTextureID EnvMapVulkanRenderer::ShowLocalShadowMap(EnvMapVulkanSceneData::Ligh
 	}
 	if (slot < 0 || !s_ShadowMapViewer.IsValid())
 	{
-		return ImTextureID{};
+		return 0;
 	}
 
 	s_ShadowMapViewerRequest.Active = true;
@@ -4476,10 +4494,10 @@ ImTextureID EnvMapVulkanRenderer::ShowLocalShadowMap(EnvMapVulkanSceneData::Ligh
 	s_ShadowMapViewerRequest.Near = GetLocalShadowNearPlane(range);
 	s_ShadowMapViewerRequest.Far = std::max(range, 0.02f);
 
-	static ImTextureID s_ViewerTextureID = 0;
+	static uint64_t s_ViewerTextureID = 0;
 	if (!s_ViewerTextureID)
 	{
-		s_ViewerTextureID = (ImTextureID)(uintptr_t)ImGui_ImplVulkan_AddTexture(s_ShadowMapViewer.GetSampler(), s_ShadowMapViewer.GetView(),
+		s_ViewerTextureID = H2M::VulkanUIImagesH2M::Add(s_ShadowMapViewer.GetSampler(), s_ShadowMapViewer.GetView(),
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 	return s_ViewerTextureID;
@@ -4490,9 +4508,9 @@ void EnvMapVulkanRenderer::SetBloomDirtTexture(const std::string& filepath)
 	s_PendingBloomDirtFilename = filepath;
 }
 
-ImTextureID EnvMapVulkanRenderer::GetBloomDirtImage()
+uint64_t EnvMapVulkanRenderer::GetBloomDirtImage()
 {
-	return s_BloomDirtTexture ? s_BloomDirtTexture->GetImTextureID() : ImTextureID{};
+	return s_BloomDirtTexture ? s_BloomDirtTexture->GetImTextureID() : 0;
 }
 
 std::string EnvMapVulkanRenderer::GetBloomDirtTextureFile()
