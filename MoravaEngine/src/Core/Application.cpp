@@ -231,6 +231,7 @@ void Application::Run()
 
 	// --exit-after: counted from here, after the startup (the shaders may have been compiled)
 	const auto loopStart = std::chrono::steady_clock::now();
+	auto frameStart = loopStart;
 
 	// Loop until window closed
 	while ((m_Running = !m_Window->GetShouldClose()))
@@ -294,9 +295,10 @@ void Application::Run()
 			m_Window->SwapBuffers();
 		}
 
-		float time = Timer::Get()->GetCurrentTimestamp();
-		m_TimeStep = time - m_LastFrameTime;
-		m_LastFrameTime = time;
+		// The frame's time, for the layers next frame. Measured here: the Timer is ticked only by an older scene class
+		const auto frameEnd = std::chrono::steady_clock::now();
+		m_TimeStep = std::chrono::duration<float>(frameEnd - frameStart).count();
+		frameStart = frameEnd;
 	}
 
 	OnShutdown();

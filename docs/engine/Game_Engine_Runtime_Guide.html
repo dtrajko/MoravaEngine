@@ -355,6 +355,12 @@ void GameLoop::Frame(float frameTime)
     m_Scene.FlushDeferred();                          <span class="c">// destroyed entities, scene loads requested by scripts</span>
 }</code></pre>
   <p>The existing <code>Timer</code> keeps giving the frame time; its update-rate logic is not used by the game loop. Until Phase 3 the loop only has the frame update, but its shape is final.</p>
+  <div class="box note"><b>As built: the game loop</b>
+  <ul>
+    <li><b>Files.</b> <code>src/Game/GameLoop.h/.cpp</code>, in the core: <code>Frame(frameTime)</code> with <code>FixedStep</code> (1/60 s), <code>MaxFrameTime</code> (0.25 s), the time scale (0 or more), the alpha, <code>Reset</code> for the next start, and counters: frames, fixed steps, game time. Comments in <code>Frame</code> mark where scripts, physics, animation, audio and the deferred scene changes go; until then the loop only keeps time.</li>
+    <li><b>The player runs it.</b> <code>PlayerLayer::OnUpdate</code> calls <code>Frame</code> first, then places the camera where the game put the camera entity. At exit it logs the counters: <code>GI_Cube.mscene</code> for 20 s gave 5198 frames, 1185 fixed steps, 19.76 s of game time (19.76 &times; 60 = 1185.6: the steps follow game time, not the frame rate). The editor runs it in Play (1.5).</li>
+    <li><b>The frame time.</b> Not from <code>Timer</code> after all: it is ticked only in the older scene class's <code>Update</code>, which the player doesn't have, so the player's layers got 0 every frame. <code>Application::Run</code> now measures each frame with <code>steady_clock</code> and gives it to the layers' <code>OnUpdate</code>. The editor's first frame no longer gets the startup time (several seconds) as its frame time; otherwise it is the same. <code>Timer</code> stays for the older scenes.</li>
+  </ul></div>
 
   <h3>1.5 Play, Pause, Step, Stop</h3>
   <figure class="wide">
@@ -810,10 +816,19 @@ struct UIButtonComponent { glm::vec4 Normal, Hover, Pressed, Disabled; std::stri
   <p>UI is drawn after tonemapping, onto the final image, so its colors are exactly the colors given (not exposed or bloomed). The batched quad and text path of <code>Renderer2D</code> (with the MSDF text shader, <code>Renderer2D_Text</code>) already exists in the Vulkan code and is the base; fonts are atlases made by msdf-atlas-gen. In the editor, the Viewport panel shows the UI in Play and, optionally, in Edit.</p>
   <h3>7.3 Input and time</h3>
   <p>UI gets the mouse first: a click on a button doesn't also fire the gun. Gamepad and keyboard navigation (up/down between buttons, A to press) uses the Input actions <code>UI_Navigate</code> and <code>UI_Submit</code>. Menus use <b>unscaled time</b>, so a pause menu (time scale 0) still animates.</p>
+  <h3>7.4 The debug overlay</h3>
+  <p>The player has no ImGui (1.2), and keeps it that way: a development player with ImGui would be a second player, different from the one customers run. Inspecting and tweaking a running game is the editor's job (Play, 1.5, with all its panels). What the player needs is to <b>show</b> what is happening, and that is a few lines of text on the same <code>Renderer2D</code> text path as the HUD:</p>
+  <ul>
+    <li><b>A key turns it on and off</b> (F3, as in Minecraft; Unreal's <code>stat fps</code> is the same idea), in every build, also an exported game: when a customer reports a stutter, they can show the numbers of the build they have.</li>
+    <li><b>What it shows:</b> FPS and frame time (with a short history as a bar graph), the game loop's fixed steps in the last frame and its time scale (1.4), entities and draw calls, GPU time per pass where the renderer measures it; later the physics bodies and contacts (Phase 3), the managed memory and script exceptions (Phase 4), playing sounds (Phase 5).</li>
+    <li><b>Not UI entities:</b> drawn by the engine in screen space, after the game's UI, at a fixed size in pixels. It is not part of any scene, so a game can't break it, hide it or save it.</li>
+    <li><b>Read only:</b> it takes no input apart from its key, so it never competes with the game for the mouse or the gamepad.</li>
+  </ul>
+  <p>Until it exists, the player's log (the game loop's counters at exit, 1.4) and the editor's Play mode cover it.</p>
   <div class="box note"><b>Debug view: UI</b>
   Rectangle outlines with anchors and pivots of the selected element, and the element under the mouse.</div>
   <div class="box ok"><b>Check: milestone 2, the third-person collector</b>
-  A character controller with an animated character, a follow camera with mouse and gamepad, coin sounds and music, a HUD with the score, a main menu (Play, Settings, Quit), a pause menu on Escape/Start, and two levels. It runs in the editor from start to finish.</div>
+  A character controller with an animated character, a follow camera with mouse and gamepad, coin sounds and music, a HUD with the score, a main menu (Play, Settings, Quit), a pause menu on Escape/Start, and two levels. It runs in the editor from start to finish. In the player, F3 shows the debug overlay over the HUD and the menus.</div>
 </section>
 
 <section id="phase-8">

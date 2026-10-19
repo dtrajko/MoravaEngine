@@ -44,10 +44,17 @@ void PlayerLayer::OnAttach()
 
 	// The renderer draws it with the scene's render settings and a game's view (no grid, no selection, no debug view)
 	EnvMapVulkanRenderer::SetScene(&m_Scene, &m_RenderSettings, nullptr);
+	m_Playing = true;
 }
 
 void PlayerLayer::OnDetach()
 {
+	if (m_Playing)
+	{
+		Log::GetLogger()->info("Game loop: {0} frames, {1} fixed steps, {2:.2f} s of game time", m_GameLoop.GetFrameCount(),
+			m_GameLoop.GetFixedStepCount(), m_GameLoop.GetGameTime());
+	}
+
 	// The application waited for the device: no frame in flight draws the scene's models any more
 	EnvMapVulkanRenderer::SetScene(nullptr, nullptr, nullptr);
 	m_Scene.Clear();
@@ -55,6 +62,14 @@ void PlayerLayer::OnDetach()
 
 void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 {
+	if (!m_Playing)
+	{
+		return; // the scene could not be opened: the player is closing
+	}
+
+	// The game first, then the camera where the game put the camera entity
+	m_GameLoop.Frame(ts.GetSeconds());
+
 	// The view fills the window: the camera's aspect ratio follows it (the swapchain's size, in pixels)
 	H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 	EnvMapVulkanRenderer::SetViewportSize(swapChain.GetWidth(), swapChain.GetHeight());
