@@ -7,11 +7,13 @@
 #include "EnvMapVulkan/EnvMapVulkanRenderSettings.h"
 #include "EnvMapVulkan/EnvMapVulkanScene.h"
 
+#include "Game/GameLoop.h"
+
 
 /**
  * The game the player runs (docs/engine/Game_Engine_Runtime_Guide.html, 1.3): the scene given with --scene, seen through
- * its camera entity, over the whole window. Opening the scene fails: the player closes with exit code 1. The project
- * (1.6) will name the start scene instead, and the game loop (1.4) will update the scene.
+ * its camera entity, over the whole window, run by the game loop. Opening the scene fails: the player closes with exit
+ * code 1. The project (1.6) will name the start scene instead.
  */
 class PlayerLayer : public H2M::LayerH2M
 {
@@ -31,4 +33,6 @@ private:
 	EnvMapVulkanScene m_Scene;
 	EnvMapVulkanRenderSettings m_RenderSettings;
 	Camera m_Camera;
+	GameLoop m_GameLoop;
+	bool m_Playing = false; // the scene is open
 };

@@ -154,8 +154,7 @@ private:
 	H2M::ImGuiLayerH2M* m_ImGuiLayer = nullptr;
 	bool m_EnableImGui = false; // the client has an ImGui layer (ApplicationClient::CreateImGuiLayer)
 
-	float m_TimeStep = 0;
-	float m_LastFrameTime = 0;
+	float m_TimeStep = 0; // the last frame's time, in seconds, the layers' OnUpdate gets
 
 	SceneProperties m_SceneProperties;
 
