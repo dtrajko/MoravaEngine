@@ -114,8 +114,8 @@ SceneVoxelTerrain::SceneVoxelTerrain()
     m_RenderInstanced = new RenderInstanced(m_TerrainVoxel, ResourceManager::GetTexture("diffuse"), meshes["cube"]);
 
     Mesh* mesh = new Block();
-    m_Player = new Player(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
-    m_PlayerController = new PlayerController(m_Player);
+    m_Player = new PlayerCharacter(glm::vec3(0.0f, m_TerrainScale.y, 0.0f), mesh, m_Camera);
+    m_PlayerController = new PlayerCharacterController(m_Player);
     m_PlayerController->SetTerrain(m_TerrainVoxel);
 
     m_DrawGizmos = true;

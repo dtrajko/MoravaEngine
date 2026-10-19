@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CameraController.h"
-#include "Player/Player.h"
+#include "PlayerCharacter/PlayerCharacter.h"
 
 
 class CameraControllerVoxelTerrain : public CameraController
@@ -9,7 +9,7 @@ class CameraControllerVoxelTerrain : public CameraController
 
 public:
 	CameraControllerVoxelTerrain();
-	CameraControllerVoxelTerrain(H2M::CameraH2M* camera, Player* player, float aspectRatio, float moveSpeed, float turnSpeed, float cameraPlayerDistance);
+	CameraControllerVoxelTerrain(H2M::CameraH2M* camera, PlayerCharacter* player, float aspectRatio, float moveSpeed, float turnSpeed, float cameraPlayerDistance);
 	~CameraControllerVoxelTerrain();
 
 	virtual void KeyControl(bool* keys, float deltaTime) override;
@@ -30,7 +30,7 @@ private:
 	void CalculateCameraPosition(float horizontalDistance, float verticalDistance);
 
 private:
-	Player* m_Player;
+	PlayerCharacter* m_Player;
 
 	float m_CameraPlayerDistance;
 	float m_AngleAroundPlayer;

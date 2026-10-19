@@ -4,8 +4,8 @@
 
 #include "Core/Raycast.h"
 #include "Instancing/RenderInstanced.h"
-#include "Player/Player.h"
-#include "Player/PlayerController.h"
+#include "PlayerCharacter/PlayerCharacter.h"
+#include "PlayerCharacter/PlayerCharacterController.h"
 #include "Terrain/TerrainVoxel.h"
 
 
@@ -52,8 +52,8 @@ private:
 	EventCooldown m_RayCastCooldown;
 	EventCooldown m_OnClickCooldown;
 
-	Player* m_Player;
-	PlayerController* m_PlayerController;
+	PlayerCharacter* m_Player;
+	PlayerCharacterController* m_PlayerController;
 	bool m_TerrainSettingsChanged;
 	Pivot* m_PivotScene;
 	float m_DigDistance;

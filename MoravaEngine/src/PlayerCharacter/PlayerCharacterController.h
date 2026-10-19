@@ -1,22 +1,22 @@
 #pragma once
 
-#include "Player/Player.h"
+#include "PlayerCharacter/PlayerCharacter.h"
 #include "Terrain/TerrainVoxel.h"
 
 
-class PlayerController
+class PlayerCharacterController
 {
 public:
-	PlayerController();
-	PlayerController(Player* player);
+	PlayerCharacterController();
+	PlayerCharacterController(PlayerCharacter* player);
 	void SetTerrain(TerrainBase* terrain);
 	bool IsColliding(glm::vec3 position, float distanceAllowed);
-	~PlayerController();
+	~PlayerCharacterController();
 
 	void KeyControl(bool* keys, float deltaTime);
 	void MouseControl(bool* buttons, float xChange, float yChange);
 	void MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset);
-	inline Player* GetPlayer() { return m_Player; };
+	inline PlayerCharacter* GetPlayer() { return m_Player; };
 	inline void SetUnlockRotation(bool unlockRotation) { m_UnlockRotation = unlockRotation; };
 	inline void SetGravity(float gravity) { m_Gravity = gravity; };
 	inline void SetMoveSpeed(float moveSpeed) { m_MoveSpeed = moveSpeed; };
@@ -25,7 +25,7 @@ public:
 	void Update();
 
 private:
-	Player* m_Player;
+	PlayerCharacter* m_Player;
 	TerrainVoxel* m_Terrain;
 
 	float m_Gravity = 0.1f;

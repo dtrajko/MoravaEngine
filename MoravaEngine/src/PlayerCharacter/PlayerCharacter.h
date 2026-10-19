@@ -6,12 +6,12 @@
 #include <glm/ext/quaternion_float.hpp>
 
 
-class Player
+class PlayerCharacter
 {
 public:
-	Player();
-	Player(glm::vec3 position, Mesh* mesh, Camera* camera);
-	~Player();
+	PlayerCharacter();
+	PlayerCharacter(glm::vec3 position, Mesh* mesh, Camera* camera);
+	~PlayerCharacter();
 
 	// getters
 	inline glm::vec3 GetPosition() { return m_Position; };

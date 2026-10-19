@@ -11,7 +11,7 @@ set(MORAVA_SOURCES_OF_OPENGL_SCENES
     Misc/
     Particle/
     Physics/
-    Player/
+    PlayerCharacter/
     PostProcessing/
     SSAO/
     SongHo/

@@ -1,31 +1,31 @@
-#include "Player/PlayerController.h"
+#include "PlayerCharacter/PlayerCharacterController.h"
 
 #include "Core/CommonValues.h"
 #include "Core/Log.h"
 
 
-PlayerController::PlayerController()
+PlayerCharacterController::PlayerCharacterController()
 {
 	m_Player = nullptr;
 	m_Terrain = nullptr;
 }
 
-PlayerController::PlayerController(Player* player)
+PlayerCharacterController::PlayerCharacterController(PlayerCharacter* player)
 {
 	m_Player = player;
 	m_Terrain = nullptr;
 }
 
-void PlayerController::SetTerrain(TerrainBase* terrain)
+void PlayerCharacterController::SetTerrain(TerrainBase* terrain)
 {
 	m_Terrain = (TerrainVoxel*)terrain;
 }
 
-PlayerController::~PlayerController()
+PlayerCharacterController::~PlayerCharacterController()
 {
 }
 
-void PlayerController::KeyControl(bool* keys, float deltaTime)
+void PlayerCharacterController::KeyControl(bool* keys, float deltaTime)
 {
 	glm::vec3 newPosition = m_Player->GetPosition();
 	glm::vec3 oldPosition = newPosition;
@@ -71,7 +71,7 @@ void PlayerController::KeyControl(bool* keys, float deltaTime)
 	}
 
 	bool bColliding = IsColliding(newPosition, m_DistanceAllowed);
-	// printf("PlayerController newPosition [ %.2ff %.2ff %.2ff ] minDistance = %.2ff\n", newPosition.x, newPosition.y, newPosition.z, minDistance);
+	// printf("PlayerCharacterController newPosition [ %.2ff %.2ff %.2ff ] minDistance = %.2ff\n", newPosition.x, newPosition.y, newPosition.z, minDistance);
 
 	// Check the collision
 	if (bColliding) {
@@ -82,17 +82,17 @@ void PlayerController::KeyControl(bool* keys, float deltaTime)
 			m_MoveDirectionLast = m_MoveDirection;
 		}
 
-		// printf("PlayerController COLLISION DETECTED Position: [ %.2ff %.2ff %.2ff ] m_MoveDirectionLast [ %.2ff %.2ff %.2ff ]\n",
+		// printf("PlayerCharacterController COLLISION DETECTED Position: [ %.2ff %.2ff %.2ff ] m_MoveDirectionLast [ %.2ff %.2ff %.2ff ]\n",
 		// 	oldPosition.x, oldPosition.y, oldPosition.z, m_MoveDirectionLast.x, m_MoveDirectionLast.y, m_MoveDirectionLast.z);
 	}
 	else {
 		// Collision not detected
 		m_Player->SetPosition(newPosition);
-		// printf("PlayerController COLLISION NOT DETECTED Position: [ %.2ff %.2ff %.2ff ]\n", newPosition.x, newPosition.y, newPosition.z);
+		// printf("PlayerCharacterController COLLISION NOT DETECTED Position: [ %.2ff %.2ff %.2ff ]\n", newPosition.x, newPosition.y, newPosition.z);
 	}
 }
 
-void PlayerController::MouseControl(bool* buttons, float xChange, float yChange)
+void PlayerCharacterController::MouseControl(bool* buttons, float xChange, float yChange)
 {
 	if (m_UnlockRotation || buttons[GLFW_MOUSE_BUTTON_RIGHT]) {
 		glm::vec3 oldRotation = m_Player->GetRotation();
@@ -102,11 +102,11 @@ void PlayerController::MouseControl(bool* buttons, float xChange, float yChange)
 	}
 }
 
-void PlayerController::MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset)
+void PlayerCharacterController::MouseScrollControl(bool* keys, float deltaTime, float xOffset, float yOffset)
 {
 }
 
-bool PlayerController::IsColliding(glm::vec3 position, float distanceAllowed)
+bool PlayerCharacterController::IsColliding(glm::vec3 position, float distanceAllowed)
 {
 	bool isColliding = false;
 
@@ -121,7 +121,7 @@ bool PlayerController::IsColliding(glm::vec3 position, float distanceAllowed)
 	float tempDistance;
 	glm::vec3 collidingPosition;
 
-	// printf("PlayerController::IsColliding m_Voxels.size = %zu\n", m_Terrain->m_Voxels.size());
+	// printf("PlayerCharacterController::IsColliding m_Voxels.size = %zu\n", m_Terrain->m_Voxels.size());
 
 	for (auto voxel : m_Terrain->m_Voxels)
 	{
@@ -152,7 +152,7 @@ bool PlayerController::IsColliding(glm::vec3 position, float distanceAllowed)
 	return isColliding;
 }
 
-void PlayerController::Update()
+void PlayerCharacterController::Update()
 {
 	m_Player->Update();
 }
