@@ -1218,7 +1218,7 @@ void SceneEditorImGuizmo::UpdateImGui(float timestep, Window* mainWindow)
                 ImGui::Text("* Left CTRL + R - Scene Reset");
                 ImGui::Text("* Left CTRL + L - Scene Load");
                 ImGui::Text("* Left CTRL + C - Copy scene object");
-                ImGui::Text("* Left CTRL + P - Capture a screenshot");
+                ImGui::Text("* F12 - Capture a screenshot");
                 ImGui::Text("* Left CTRL + Left Mouse Button - Add Mesh or Model");
                 ImGui::Text("* Left SHIFT + R - Toggle Wireframe Mode");
                 ImGui::Text("* Right Mouse Button - Camera Rotation");

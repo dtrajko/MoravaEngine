@@ -1,0 +1,381 @@
+// Play mode (docs/engine/Game_Engine_Runtime_Guide.html, 1.5): Play, Pause, Step and Stop, and their toolbar
+//
+// The game runs on s_Scene, the scene every panel and the renderer show, so they all show the running game; the edited
+// scene waits in a copy (s_EditedScene) and comes back at Stop. It is the same as running the game on a copy: nothing the
+// game does reaches the edited scene. While the game runs, the view is the scene's camera entity, the game loop runs once
+// per frame, and the viewport belongs to the game (no camera flying, picking or gizmo). Paused, the game loop stops and
+// the viewport is the editor's again: fly around, select, inspect, Step one frame at a time.
+
+
+#include "EnvMapVulkan/EnvMapVulkanRenderer.h"
+#include "EnvMapVulkan/EnvMapVulkanSceneData.h"
+#include "EnvMapVulkan/EnvMapVulkanSceneSerializer.h"
+
+#include "Core/Log.h"
+#include "Core/ResourceManager.h"
+#include "H2M/Renderer/ModelH2M.h"
+
+#include "imgui.h"
+#include "imgui_internal.h" // the menu bar's rectangle
+
+#include <utility>
+
+
+#include "EditorState.h"
+
+
+using namespace EnvMapVulkanSceneData;
+
+// What the toolbar asked for, done at the start of the next frame (the renderer may be drawing the scene now)
+enum class PlayRequest { None, Play, Step, Stop };
+static PlayRequest s_PlayRequest = PlayRequest::None;
+
+static bool s_Playing = false;
+static bool s_Paused = false;
+static GameLoop s_GameLoop;
+
+// The edited scene while the game runs: the scene, its render settings, and the matrices of its models' meshes. The
+// models are shared with the game (CopyFrom doesn't load them again), and a part's transform is written into its mesh
+// (the renderer's ApplyPartTransforms, the gizmo), so the meshes' matrices are kept too.
+static EnvMapVulkanScene s_EditedScene;
+static EnvMapVulkanRenderSettings s_EditedRenderSettings;
+static std::vector<std::pair<H2M::RefH2M<H2M::ModelH2M>, std::vector<glm::mat4>>> s_EditedMeshTransforms;
+static std::string s_EditedSceneText; // the edited scene as text: at Stop, the scene that came back must be the same
+
+// The game's view: the editor's view options without the grid and the selection's overlays
+static EnvMapVulkanViewOptions s_GameViewOptions;
+
+bool IsPlaying()
+{
+	return s_Playing;
+}
+
+bool IsGameRunning()
+{
+	return s_Playing && !s_Paused;
+}
+
+void RequestPlay()
+{
+	s_PlayRequest = PlayRequest::Play;
+}
+
+bool RefusedWhilePlaying(const char* what)
+{
+	if (!s_Playing)
+	{
+		return false;
+	}
+	ShowNotification(std::string(what) + " isn't possible while the game runs: Stop first", true);
+	return true;
+}
+
+// The camera where the scene's camera entity is, with its lens: the game's view
+static void PlaceGameCamera(H2M::CameraH2M* camera)
+{
+	const EnvMapVulkanEntityID cameraEntity = s_Scene.FindFirst<CameraComponent>();
+	if (cameraEntity == NoEntity)
+	{
+		return;
+	}
+	PlaceCamera(*camera, s_Scene.Get<TransformComponent>(cameraEntity));
+	const float fieldOfView = s_Scene.Get<CameraComponent>(cameraEntity).FieldOfView;
+	camera->SetPerspectiveVerticalFOV(glm::clamp(fieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView));
+}
+
+static std::string SerializeScene()
+{
+	return EnvMapVulkanSceneSerializer::Serialize(s_Scene, s_SceneName, s_RenderSettings);
+}
+
+static void StartPlay(H2M::CameraH2M* camera)
+{
+	// The camera entity where the editor's camera is: the game starts with the view as it was
+	SyncCamera(camera);
+
+	s_EditedScene.CopyFrom(s_Scene);
+	s_EditedRenderSettings = s_RenderSettings;
+	s_EditedSceneText = SerializeScene();
+	s_EditedMeshTransforms.clear();
+	for (EnvMapVulkanEntityID model : GetModels(s_Scene))
+	{
+		H2M::RefH2M<H2M::ModelH2M> modelRef = GetModel(s_Scene, model);
+		std::vector<glm::mat4> transforms;
+		for (const H2M::RefH2M<H2M::MeshH2M>& mesh : modelRef->GetMeshes())
+		{
+			transforms.push_back(mesh->Transform);
+		}
+		s_EditedMeshTransforms.emplace_back(modelRef, std::move(transforms));
+	}
+
+	s_GameLoop.Reset();
+	s_Playing = true;
+	s_Paused = false;
+	PlaceGameCamera(camera);
+	Log::GetLogger()->info("Play: scene '{0}', {1} entities", s_SceneName, s_Scene.GetEntityCount());
+}
+
+// camera: placed where the edited scene's camera entity is (nullptr: at exit, no view to restore)
+static void StopPlay(H2M::CameraH2M* camera)
+{
+	// Models the game loaded may still be drawn by frames in flight
+	EnvMapVulkanRenderer::WaitIdle();
+
+	// A map the game (or a panel) changed: the edited scene's comes back with its sun as it is, not turned to the map's sun
+	const EnvironmentComponent* playedEnvironment = s_Scene.TryGet<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
+	const std::string playedMap = playedEnvironment ? playedEnvironment->FilePath : std::string();
+	const bool playedSunExtracted = playedEnvironment && playedEnvironment->ExtractSun;
+
+	s_Scene.CopyFrom(s_EditedScene);
+	s_EditedScene.Clear();
+	s_RenderSettings = s_EditedRenderSettings;
+	for (auto& [model, transforms] : s_EditedMeshTransforms)
+	{
+		std::vector<H2M::RefH2M<H2M::MeshH2M>>& meshes = model->GetMeshes();
+		for (size_t i = 0; i < meshes.size() && i < transforms.size(); i++)
+		{
+			meshes[i]->Transform = transforms[i];
+		}
+	}
+	s_EditedMeshTransforms.clear();
+
+	const EnvironmentComponent* environment = s_Scene.TryGet<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
+	if (environment && (environment->FilePath != playedMap || environment->ExtractSun != playedSunExtracted))
+	{
+		s_KeepSunOnNextEnvironmentLoad = true;
+	}
+
+	// What the editor and the renderer keep about the scene: the environment's rotation the sun follows from (the game may
+	// have turned it; else the sun would be turned back with it), and the light the probes gathered from the game's scene
+	s_SunRotationSynced = false;
+	EnvMapVulkanRenderer::OnSceneReplaced();
+
+	// What referred to entities only the game had
+	s_EditorSelection.Sync();
+	s_PendingRemoveEntities.clear();
+	if (!s_Scene.Exists(s_RenamingEntity))
+	{
+		s_RenamingEntity = NoEntity;
+	}
+
+	// The view as before Play: the edited scene's camera entity is where the editor's camera was then
+	if (camera)
+	{
+		PlaceGameCamera(camera);
+	}
+
+	s_Playing = false;
+	s_Paused = false;
+	const bool unchanged = SerializeScene() == s_EditedSceneText;
+	s_EditedSceneText.clear();
+	if (unchanged)
+	{
+		Log::GetLogger()->info("Stop: {0} frames, {1} fixed steps, {2:.2f} s of game time; the edited scene is back, unchanged",
+			s_GameLoop.GetFrameCount(), s_GameLoop.GetFixedStepCount(), s_GameLoop.GetGameTime());
+	}
+	else
+	{
+		Log::GetLogger()->error("Stop: the scene that came back differs from the scene at Play (something the game changed wasn't restored)");
+	}
+
+	const uint32_t released = ResourceManager::PurgeUnusedTextures2D(); // the textures of models the game loaded
+	if (released > 0)
+	{
+		Log::GetLogger()->info("{0} unused texture(s) released", released);
+	}
+}
+
+void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
+{
+	const PlayRequest request = s_PlayRequest;
+	s_PlayRequest = PlayRequest::None;
+	if (request == PlayRequest::Play && !s_Playing)
+	{
+		StartPlay(camera);
+	}
+	else if (request == PlayRequest::Stop && s_Playing)
+	{
+		StopPlay(camera);
+		return;
+	}
+	if (!s_Playing)
+	{
+		return;
+	}
+
+	if (!s_Paused)
+	{
+		s_GameLoop.Frame(frameTime);
+		PlaceGameCamera(camera); // where the game put the camera entity
+	}
+	else if (request == PlayRequest::Step)
+	{
+		// One frame of exactly one fixed step, whatever this frame's time: Step after Step gives the same steps
+		s_GameLoop.Frame(GameLoop::FixedStep);
+	}
+
+}
+
+void HandlePlayModeShortcutKeys()
+{
+	const ImGuiIO& io = ImGui::GetIO();
+	if (!io.KeyCtrl || io.KeyShift || io.KeyAlt || io.WantTextInput || s_RenamingEntity != NoEntity ||
+		ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
+	{
+		return;
+	}
+	if (ImGui::IsKeyPressed(ImGuiKey_P, false))
+	{
+		s_PlayRequest = s_Playing ? PlayRequest::Stop : PlayRequest::Play;
+	}
+}
+
+void ShutdownPlayMode()
+{
+	if (s_Playing)
+	{
+		StopPlay(nullptr);
+	}
+}
+
+const EnvMapVulkanViewOptions* GetDrawnViewOptions()
+{
+	if (!IsGameRunning())
+	{
+		return &s_ViewOptions;
+	}
+	// The editor's choices that suit a game too stay (the debug view, the shadow views)
+	s_GameViewOptions = s_ViewOptions;
+	s_GameViewOptions.Grid = false;
+	s_GameViewOptions.Overlays = EnvMapVulkanViewOptions().Overlays;
+	s_GameViewOptions.Selection.clear();
+	return &s_GameViewOptions;
+}
+
+// The toolbar's icons, drawn in a button's square
+enum class ToolbarIcon { Play, Stop, Pause, Step };
+
+static void DrawToolbarIcon(ToolbarIcon icon, const ImVec2& min, const ImVec2& max)
+{
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	const ImU32 color = ImGui::GetColorU32(ImGuiCol_Text); // faded by BeginDisabled
+	const float size = max.x - min.x;
+	const ImVec2 center((min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f);
+	const float half = size * 0.22f;
+	switch (icon)
+	{
+		case ToolbarIcon::Play:
+			drawList->AddTriangleFilled(ImVec2(center.x - half * 0.8f, center.y - half), ImVec2(center.x - half * 0.8f, center.y + half),
+				ImVec2(center.x + half, center.y), color);
+			break;
+		case ToolbarIcon::Stop:
+			drawList->AddRectFilled(ImVec2(center.x - half * 0.85f, center.y - half * 0.85f), ImVec2(center.x + half * 0.85f, center.y + half * 0.85f), color);
+			break;
+		case ToolbarIcon::Pause:
+			drawList->AddRectFilled(ImVec2(center.x - half * 0.8f, center.y - half), ImVec2(center.x - half * 0.25f, center.y + half), color);
+			drawList->AddRectFilled(ImVec2(center.x + half * 0.25f, center.y - half), ImVec2(center.x + half * 0.8f, center.y + half), color);
+			break;
+		case ToolbarIcon::Step:
+			drawList->AddTriangleFilled(ImVec2(center.x - half, center.y - half), ImVec2(center.x - half, center.y + half),
+				ImVec2(center.x + half * 0.35f, center.y), color);
+			drawList->AddRectFilled(ImVec2(center.x + half * 0.45f, center.y - half), ImVec2(center.x + half * 0.9f, center.y + half), color);
+			break;
+	}
+}
+
+// The toolbar's buttons, and their margin from the menu bar's top and bottom edges: the menu bar is made taller for them
+// (GetMenuBarFramePadding)
+static float GetToolbarButtonSize()
+{
+	return IM_ROUND(ImGui::GetFontSize() * 1.8f);
+}
+
+static float GetToolbarMargin()
+{
+	return IM_ROUND(ImGui::GetFontSize() * 0.35f);
+}
+
+ImVec2 GetMenuBarFramePadding()
+{
+	const float barHeight = GetToolbarButtonSize() + 2.0f * GetToolbarMargin();
+	return ImVec2(ImGui::GetStyle().FramePadding.x, (barHeight - ImGui::GetFontSize()) * 0.5f);
+}
+
+// A square button with an icon; active: highlighted (the game runs, or is paused)
+static bool ToolbarButton(const char* id, ToolbarIcon icon, bool active, bool enabled, const char* tooltip)
+{
+	const float size = GetToolbarButtonSize();
+	ImGui::BeginDisabled(!enabled);
+	if (active)
+	{
+		ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+	}
+	const bool clicked = ImGui::Button(id, ImVec2(size, size));
+	if (active)
+	{
+		ImGui::PopStyleColor();
+	}
+	DrawToolbarIcon(icon, ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("%s", tooltip);
+	}
+	return clicked;
+}
+
+void OnImGuiRenderPlayToolbar()
+{
+	// Centered in the menu bar, the margin below its top edge
+	const ImRect bar = ImGui::GetCurrentWindow()->MenuBarRect();
+	const float size = GetToolbarButtonSize();
+	const float spacing = ImGui::GetStyle().ItemSpacing.x;
+	const float width = 3.0f * size + 2.0f * spacing;
+	// Each button at its own position: SameLine would put the next one on the menu bar's text line, not this button's
+	float x = std::max(ImGui::GetCursorScreenPos().x, IM_ROUND(bar.GetCenter().x - width * 0.5f));
+	const float y = bar.Min.y + GetToolbarMargin();
+	auto nextButton = [&]()
+	{
+		ImGui::SetCursorScreenPos(ImVec2(x, y));
+		x += size + spacing;
+	};
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+
+	nextButton();
+	if (ToolbarButton("##PlayStop", s_Playing ? ToolbarIcon::Stop : ToolbarIcon::Play, s_Playing, true,
+		s_Playing ? "Stop (Ctrl+P): back to the edited scene, as it was at Play" : "Play (Ctrl+P): the game runs on a copy of the scene, seen through its camera"))
+	{
+		s_PlayRequest = s_Playing ? PlayRequest::Stop : PlayRequest::Play;
+	}
+	nextButton();
+	if (ToolbarButton("##Pause", ToolbarIcon::Pause, s_Paused, s_Playing,
+		s_Paused ? "Go on (the game is paused: look around, select, inspect)" : "Pause: the game stops where it is"))
+	{
+		s_Paused = !s_Paused;
+	}
+	nextButton();
+	if (ToolbarButton("##Step", ToolbarIcon::Step, false, s_Playing && s_Paused, "Step: one frame of the paused game (one fixed step of 1/60 s)"))
+	{
+		s_PlayRequest = PlayRequest::Step;
+	}
+	ImGui::PopStyleVar();
+
+	// The game loop's counters (1.4): a Step adds exactly one frame
+	if (s_Playing)
+	{
+		ImGui::SetCursorScreenPos(ImVec2(x, bar.Min.y)); // the menu bar centers its text from its top
+		ImGui::TextDisabled("Frame %llu  %.2f s%s", (unsigned long long)s_GameLoop.GetFrameCount(), s_GameLoop.GetGameTime(),
+			s_Paused ? "  (paused)" : "");
+	}
+}
+
+void DrawPlayModeOutline(const ImVec2& imageMin, const ImVec2& imageSize)
+{
+	if (!s_Playing || imageSize.x <= 0.0f || imageSize.y <= 0.0f)
+	{
+		return;
+	}
+	// Running: blue, as the active Play button; paused: amber
+	const ImU32 color = s_Paused ? IM_COL32(230, 160, 40, 255) : ImGui::GetColorU32(ImGuiCol_ButtonActive, 1.0f);
+	ImGui::GetWindowDrawList()->AddRect(imageMin, ImVec2(imageMin.x + imageSize.x, imageMin.y + imageSize.y), color, 0.0f, 0, 3.0f);
+}

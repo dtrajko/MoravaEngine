@@ -122,7 +122,9 @@ void Editor::OnImGuiRender()
 		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
 		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, GetMenuBarFramePadding()); // the menu bar's height: room for the toolbar
 		ImGui::Begin("DockSpace Demo", p_open, window_flags);
+		ImGui::PopStyleVar();
 		{
 			if (opt_fullscreen)
 			{
@@ -175,6 +177,7 @@ void Editor::OnImGuiRender()
 			// OnImGuiRenderWater();
 			UpdateSceneUnsavedChanges();
 			HandleSceneShortcutKeys();
+			HandlePlayModeShortcutKeys();
 			OnImGuiRenderUnsavedChangesPopup();
 			OnImGuiRenderNotification();
 			OnImGuiRenderSceneHierarchy();
@@ -185,7 +188,10 @@ void Editor::OnImGuiRender()
 
 			/**** BEGIN DockSpace menu bar ****/
 
-			if (ImGui::BeginMenuBar())
+			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, GetMenuBarFramePadding()); // the menus' text centered in the taller bar
+			const bool menuBar = ImGui::BeginMenuBar();
+			ImGui::PopStyleVar();
+			if (menuBar)
 			{
 				if (ImGui::BeginMenu("File"))
 				{
@@ -230,6 +236,7 @@ void Editor::OnImGuiRender()
 						*p_open = false;
 					ImGui::EndMenu();
 				}
+				OnImGuiRenderPlayToolbar();
 				ImGui::EndMenuBar();
 			}
 		}
@@ -244,14 +251,20 @@ void Editor::OnImGuiRender()
 // The editor's part of a frame, before the renderer draws it (see OnUpdate): the camera entity and the sun follow the
 // editor's camera and the environment, and what the panels asked for in the last frame happens now, while the renderer
 // records nothing: models removed and loaded, pasting, New and Open, material files loaded, maps assigned, materials deleted.
-void EditorPreFrame(H2M::CameraH2M* camera)
+void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 {
+	// Play, Step and Stop asked for in the last frame, then the game's frame (see EditorPlayMode.cpp)
+	UpdatePlayMode(camera, frameTime);
+
 	// The editor's copies of the scene's environment, lights, water and probe volume (see ExtractLights)
 	ExtractEnvironment();
 	ExtractLights();
 	ExtractWater();
 	ExtractProbeVolume();
-	SyncCamera(camera);
+	if (!IsPlaying())
+	{
+		SyncCamera(camera); // while the game runs, the view is the camera entity's (UpdatePlayMode)
+	}
 	// The sun turns with the environment map's rotation (EnvMapVulkanDirectionalLight::FollowEnvironmentRotation)
 	SyncSunWithEnvironmentRotation();
 
@@ -299,6 +312,12 @@ void EditorPreFrame(H2M::CameraH2M* camera)
 		}
 		if (const MeshPartComponent* part = s_Scene.TryGet<MeshPartComponent>(entity))
 		{
+			if (IsPlaying())
+			{
+				// Its mesh would leave the model, which the edited scene shares with the game
+				ShowNotification("A part of a model can't be removed while the game runs: Stop first", true);
+				continue;
+			}
 			// Only a part of a model: its geometry stays in the model's buffers, so nothing on the GPU is freed. The mesh
 			// leaves the model's list, so the parts after it move up by one.
 			const EnvMapVulkanEntityID modelEntity = s_Scene.GetParent(entity);
@@ -437,6 +456,7 @@ void Editor::Init()
 void Editor::Shutdown()
 {
 	EnvMapVulkanRenderer::WaitIdle();
+	ShutdownPlayMode();
 	EnvMapVulkanRenderer::SetScene(nullptr, nullptr, nullptr);
 	// The editor's references, released here while the device works: as statics they would be destroyed after main
 	// returns, when Vulkan (its validation layer) may already be torn down
@@ -447,10 +467,10 @@ void Editor::Shutdown()
 	s_PendingMaterialTextures.clear();
 }
 
-void Editor::OnUpdate(H2M::CameraH2M* camera)
+void Editor::OnUpdate(H2M::CameraH2M* camera, float frameTime)
 {
 	s_Camera = camera;
-	EditorPreFrame(camera);
+	EditorPreFrame(camera, frameTime);
 
 	// A ray-traced debug view can't stay when the rays were turned off (the switch, a scene opened with it off)
 	if (DebugViewNeedsRayTracing(s_ViewOptions.DebugView) && !EnvMapVulkanRenderer::IsRayTracingActive())
@@ -463,4 +483,6 @@ void Editor::OnUpdate(H2M::CameraH2M* camera)
 	// The selection as this frame draws it (after the changes above)
 	s_ViewOptions.Selection = s_EditorSelection.GetAll();
 	s_ViewOptions.PrimarySelection = s_EditorSelection.GetPrimary();
+	// The editor's view, or while the game runs the game's
+	EnvMapVulkanRenderer::SetScene(&s_Scene, &s_RenderSettings, GetDrawnViewOptions());
 }

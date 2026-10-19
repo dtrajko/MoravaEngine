@@ -59,6 +59,8 @@ Application* Application::Get()
 //   --no-ray-tracing        Vulkan without the ray tracing extensions, as on a GPU that has none (to check the fallbacks)
 //   --select <name>         select the entity of this name in the scene opened with --scene (SceneEnvMapVulkan: a name of
 //                           the Scene Hierarchy, e.g. Gladiator.fbx)
+//   --play                  the editor starts the game (Play) once the scene is open; with --exit-after it is stopped
+//                           at exit, which checks that the edited scene came back unchanged (the player always plays)
 ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 {
 	ApplicationCommandLine commandLine;
@@ -105,6 +107,10 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		else if (option == "--select" && hasValue)
 		{
 			commandLine.SelectName = argv[++i];
+		}
+		else if (option == "--play")
+		{
+			commandLine.Play = true;
 		}
 		else if (option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select")
 		{

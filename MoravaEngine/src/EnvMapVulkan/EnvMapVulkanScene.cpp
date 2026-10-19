@@ -1,5 +1,8 @@
 #include "EnvMapVulkanScene.h"
 
+#include "EnvMapVulkanMaterialLibrary.h" // the components' references, copied by CopyFrom
+#include "H2M/Renderer/ModelH2M.h"
+
 #include "Core/Log.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
@@ -241,6 +244,43 @@ void EnvMapVulkanScene::Clear()
 	m_Roots.clear();
 }
 
+void EnvMapVulkanScene::CopyFrom(const EnvMapVulkanScene& other)
+{
+	if (&other == this)
+	{
+		return;
+	}
+	Clear();
+
+	// The entities, in the hierarchy's order, with their IDs and nothing else yet
+	auto createEntity = [&](auto& createEntity, EnvMapVulkanEntityID id) -> void
+	{
+		const entt::entity entity = m_Registry.create();
+		m_Entities[id] = entity;
+		m_Registry.emplace<IDComponent>(entity, id);
+		for (EnvMapVulkanEntityID child : other.GetChildren(id))
+		{
+			createEntity(createEntity, child);
+		}
+	};
+	for (EnvMapVulkanEntityID root : other.m_Roots)
+	{
+		createEntity(createEntity, root);
+	}
+
+	// Their components, type by type
+	SceneComponents::ForEach([&](auto type)
+	{
+		using T = typename decltype(type)::Type;
+		auto view = other.m_Registry.view<const IDComponent, const T>();
+		for (entt::entity entity : view)
+		{
+			m_Registry.emplace<T>(Handle(view.template get<const IDComponent>(entity).ID), view.template get<const T>(entity));
+		}
+	});
+	m_Roots = other.m_Roots;
+}
+
 const std::vector<EnvMapVulkanEntityID>& EnvMapVulkanScene::GetChildren(EnvMapVulkanEntityID id) const
 {
 	static const std::vector<EnvMapVulkanEntityID> s_None;
@@ -364,6 +404,27 @@ bool EnvMapVulkanScene::SelfTest()
 	if (!Near(grandchildWorld, expected))
 	{
 		return fail("world transform");
+	}
+
+	// A copy has the same entities, IDs, hierarchy and components, and changes to it don't reach the original
+	scene.Add<CameraComponent>(other).FieldOfView = 60.0f;
+	{
+		EnvMapVulkanScene copy;
+		copy.CopyFrom(scene);
+		if (copy.GetEntityCount() != scene.GetEntityCount() || copy.GetRoots() != scene.GetRoots() ||
+			copy.GetChildren(root) != scene.GetChildren(root) || copy.GetParent(grandchild) != child ||
+			copy.Get<NameComponent>(child).Name != "Child" || copy.Get<IDComponent>(grandchild).ID != grandchild ||
+			!Near(copy.GetWorldTransform(grandchild), grandchildWorld) || !copy.Has<CameraComponent>(other) ||
+			copy.Get<CameraComponent>(other).FieldOfView != 60.0f || copy.Has<CameraComponent>(root))
+		{
+			return fail("copy");
+		}
+		copy.Get<TransformComponent>(root).Translation.x = 20.0f;
+		copy.DestroyEntity(other);
+		if (scene.Get<TransformComponent>(root).Translation.x != 10.0f || !scene.Exists(other))
+		{
+			return fail("copy independent of the original");
+		}
 	}
 
 	// Reparenting keeps the world transform; cycles are refused

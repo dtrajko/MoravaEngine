@@ -190,6 +190,10 @@ static std::string GetScenesFolderForDialog()
 
 void SaveSceneAs()
 {
+	if (RefusedWhilePlaying("Save"))
+	{
+		return;
+	}
 	std::string filepath = FileDialogs::SaveFile({ { "Scene", "mscene" } }, GetScenesFolderForDialog());
 	if (!filepath.empty())
 	{
@@ -199,6 +203,10 @@ void SaveSceneAs()
 
 void SaveScene()
 {
+	if (RefusedWhilePlaying("Save"))
+	{
+		return;
+	}
 	if (s_SceneFilePath.empty())
 	{
 		SaveSceneAs();
@@ -294,6 +302,10 @@ static bool OpenSceneNow(const std::string& filepath)
 // New and Open, from the File menu or a shortcut (asks about unsaved changes first)
 void RequestNewScene()
 {
+	if (RefusedWhilePlaying("New Scene"))
+	{
+		return;
+	}
 	s_PendingSceneOperation = SceneOperation::New;
 	s_SceneOperationConfirmed = !s_SceneHasUnsavedChanges;
 	s_AskAboutUnsavedChanges = s_SceneHasUnsavedChanges;
@@ -301,6 +313,10 @@ void RequestNewScene()
 
 void RequestOpenScene(const std::string& filepath)
 {
+	if (RefusedWhilePlaying("Open Scene"))
+	{
+		return;
+	}
 	std::string path = filepath;
 	if (path.empty())
 	{
@@ -425,6 +441,11 @@ void ProcessSceneOperations()
 		{
 			RequestOpenScene(startupScene);
 		}
+		// --play: the game starts at the start of the next frame, after the scene opened below
+			if (Application::Get()->GetCommandLine().Play)
+			{
+				RequestPlay();
+			}
 	}
 	if (s_PendingSceneOperation == SceneOperation::None || !s_SceneOperationConfirmed)
 	{
@@ -462,6 +483,10 @@ void ProcessSceneOperations()
 // Unsaved changes: the scene's text compared with the saved one, a few times a second
 void UpdateSceneUnsavedChanges()
 {
+	if (IsPlaying())
+	{
+		return; // what the game changes isn't a change of the scene: it stays as it was at Play
+	}
 	static double s_LastCheck = -1.0;
 	const double now = ImGui::GetTime();
 	if (now - s_LastCheck < 0.3)
