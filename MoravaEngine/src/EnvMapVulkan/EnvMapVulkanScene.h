@@ -20,6 +20,7 @@ class EnvMapVulkanScene
 {
 public:
 	EnvMapVulkanScene() = default;
+	// Not by accident: a copy is made with CopyFrom
 	EnvMapVulkanScene(const EnvMapVulkanScene&) = delete;
 	EnvMapVulkanScene& operator=(const EnvMapVulkanScene&) = delete;
 
@@ -29,6 +30,11 @@ public:
 	// Removes the entity and all its descendants
 	void DestroyEntity(EnvMapVulkanEntityID id);
 	void Clear();
+
+	// This scene becomes a copy of another: the same entities with the same IDs (a selection made in one is valid in the
+	// other), in the same hierarchy, with a copy of every component of SceneComponents. The models and materials the
+	// components refer to are shared, not loaded again.
+	void CopyFrom(const EnvMapVulkanScene& other);
 
 	bool Exists(EnvMapVulkanEntityID id) const { return m_Entities.find(id) != m_Entities.end(); }
 	size_t GetEntityCount() const { return m_Entities.size(); }

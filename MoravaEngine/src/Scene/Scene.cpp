@@ -183,8 +183,8 @@ void Scene::Update(float timestep, Window* mainWindow)
 			// Application::Get()->GetWindow()->getKeys()[GLFW_KEY_L] = false;
 		}
 
-		// Take a screenshot
-		if (Input::IsKeyPressed(KeyH2M::LeftControl) && Input::IsKeyPressed(KeyH2M::P))
+		// Take a screenshot (F12; Ctrl+P is the editor's Play, as in Unity)
+		if (Input::IsKeyPressed(KeyH2M::F12))
 		{
 			if (Timer::Get()->GetCurrentTimestamp() - m_KeyPressCooldown.lastTime > m_KeyPressCooldown.cooldown)
 			{

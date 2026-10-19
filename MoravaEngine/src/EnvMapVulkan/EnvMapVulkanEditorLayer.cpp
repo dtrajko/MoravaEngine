@@ -95,7 +95,7 @@ void EnvMapVulkanEditorLayer::OnDetach()
 // Before the frame is drawn (Application::Run updates the layers, then draws)
 void EnvMapVulkanEditorLayer::OnUpdate(H2M::TimestepH2M ts)
 {
-	Editor::OnUpdate(Application::Get()->GetScene()->GetCamera());
+	Editor::OnUpdate(Application::Get()->GetScene()->GetCamera(), ts.GetSeconds());
 }
 
 void EnvMapVulkanEditorLayer::OnImGuiRender()

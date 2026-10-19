@@ -161,3 +161,26 @@ struct EnvironmentComponent
 	bool ExtractSun = true;          // a real sun in the map is taken out of the lighting and given to the sun entity
 	float SkyboxLod = 0.0f;
 };
+
+// A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
+// ComponentList<A, B>::ForEach([](auto type) { using T = typename decltype(type)::Type; ... });
+template<typename T>
+struct ComponentType
+{
+	using Type = T;
+};
+
+template<typename... T>
+struct ComponentList
+{
+	template<typename F>
+	static void ForEach(F&& f)
+	{
+		(f(ComponentType<T>{}), ...);
+	}
+};
+
+// The components that are scene data: every component above but IDComponent (the scene gives each entity its own). A new
+// component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
+using SceneComponents = ComponentList<NameComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
+	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent>;

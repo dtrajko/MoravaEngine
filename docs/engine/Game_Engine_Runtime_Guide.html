@@ -395,6 +395,18 @@ void EnvMapVulkanScene::CopyFrom(const EnvMapVulkanScene&amp; other)
     <li><b>Stop:</b> the copy is destroyed, the edited scene is shown again, unchanged.</li>
     <li><b>Simulate</b> (Phase 3, 3.7): Play without scripts and with the editor camera. It comes with Jolt: before it, there is nothing for it to run.</li>
   </ul>
+  <div class="box note"><b>As built: Play, Pause, Step, Stop</b>
+  <ul>
+    <li><b>The copy.</b> <code>EnvMapVulkanScene::CopyFrom</code> creates the entities in the hierarchy's order with their IDs, then copies each type of <code>SceneComponents</code> (<code>EnvMapVulkanComponents.h</code>: every component but <code>IDComponent</code>, which the scene gives each entity; a new component must be added there). The scene's self-test checks a copy: same entities, IDs, hierarchy and components, and changes to it don't reach the original.</li>
+    <li><b>Which scene runs.</b> The game runs on the editor's scene, the one every panel and the renderer show, and the edited scene waits in a copy that comes back at Stop. It is the same as running a copy (nothing the game does reaches the edited scene), but no panel had to learn about a second scene: the Hierarchy and Properties show and edit the running game.</li>
+    <li><b>What else is kept.</b> The render settings, and the matrices of the models' meshes: the models are shared, and a part's transform is written into its mesh. At Stop, the editor's own state about the scene starts over: the environment rotation the sun follows (else the sun would be turned back with an environment the game turned), and what the probes gathered from the game's scene (<code>OnSceneReplaced</code>).</li>
+    <li><b>The check.</b> At Play the scene is saved as text, at Stop the scene that came back is compared with it, and the log says <i>the edited scene is back, unchanged</i>, or an error. A scene whose models and environment were moved during Play comes back unchanged and looks as before Play, up to the GI's noise (the probes settle to a slightly different noise after their reset, &plusmn;1 brightness level).</li>
+    <li><b>The view.</b> While the game runs: the camera is placed where the scene's camera entity is (as in the player), the camera entity no longer follows the editor's camera, and the viewport is the game's (no camera flying, picking, gizmo, light icons, grid or selection outline; Delete and Ctrl+C/V do nothing there), framed in blue. Paused: the viewport is the editor's again (fly, select, inspect), framed in amber; going on puts the view back on the camera entity. Stop puts the camera back where it was at Play.</li>
+    <li><b>Step</b> runs one frame of exactly one fixed step (<code>GameLoop::Frame(FixedStep)</code>), whatever the editor's frame time: Step after Step gives the same steps. The frame counter goes up by one per Step.</li>
+    <li><b>Not while the game runs:</b> Save, Save As, New and Open (a notification says to Stop first), and removing a part of a model (its mesh would leave the model the edited scene shares). The unsaved-changes check pauses. Material Library edits are not scene data and stay after Stop, as asset edits in Unity.</li>
+    <li><b>Files.</b> <code>Editor/EditorPlayMode.cpp</code>: the state, Play and Stop, the game loop, the toolbar (Play/Stop, Pause, Step centered in a taller menu bar, drawn icons, then the frame and the game time) and the viewport's frame. The Hazel stubs of <code>EnvMapVulkanEditorLayer</code> stay unused. Ctrl+P plays and stops, as in Unity; the screenshot it took in the older <code>Scene</code> class moved to F12.</li>
+    <li><b>Unattended.</b> <code>--play</code> starts the game once the scene given with <code>--scene</code> is open; with <code>--exit-after</code> the game is stopped at exit, with the check. The editor's smoke test in CI runs with it and requires the check's line.</li>
+  </ul></div>
 
   <h3>1.6 Projects</h3>
 <pre><code><span class="c"># RollABall/RollABall.mproject (YAML)</span>
@@ -578,7 +590,7 @@ bool grounded = character-&gt;GetGroundState() == JPH::CharacterVirtual::EGround
   <ul>
     <li><b>What it is for:</b> tuning masses, friction and colliders without a player script fighting you, and telling apart a physics problem (wrong in Simulate too) from a script problem (right in Simulate, wrong in Play).</li>
     <li><b>The rule for later systems:</b> each phase states what runs in Simulate. Physics and audio do; scripts (Phase 4) and game UI (Phase 7) don't; animation (Phase 6) does, so animated kinematic bodies push things as in the game.</li>
-    <li><b>Implementation:</b> the play state is <code>Edit</code>, <code>Play</code> or <code>Simulate</code>, plus a paused flag. The game loop of 1.4 skips the script calls when the state is <code>Simulate</code>; the editor stubs <code>OnSceneStartSimulation</code> and <code>OnSceneStop</code> get their code.</li>
+    <li><b>Implementation:</b> the play state is <code>Edit</code>, <code>Play</code> or <code>Simulate</code>, plus a paused flag. The game loop of 1.4 skips the script calls when the state is <code>Simulate</code>; Play mode (<code>Editor/EditorPlayMode.cpp</code>, 1.5) gets the <code>Simulate</code> state and its button.</li>
   </ul>
   <div class="box ok"><b>Check</b>
   <ul>

@@ -606,10 +606,13 @@ void OnImGuiRenderViewport()
 
 	// Tell ImGuiWrapper the scene is shown in this ImGui window, so camera input (CameraController)
 	// works while the viewport is hovered/focused, instead of being blocked as "mouse over an ImGui window"
+	// While the game runs, the viewport is the game's: the editor's camera doesn't fly, nothing is picked or moved with
+	// the gizmo, and Delete, Ctrl+C and Ctrl+V do nothing here (the panels still edit the running game)
+	const bool gameRunning = IsGameRunning();
 	ImGuiWrapper::SetViewportEnabled(true);
-	ImGuiWrapper::SetViewportHovered(ImGui::IsWindowHovered());
-	ImGuiWrapper::SetViewportFocused(ImGui::IsWindowFocused());
-	if (ImGui::IsWindowFocused())
+	ImGuiWrapper::SetViewportHovered(ImGui::IsWindowHovered() && !gameRunning);
+	ImGuiWrapper::SetViewportFocused(ImGui::IsWindowFocused() && !gameRunning);
+	if (ImGui::IsWindowFocused() && !gameRunning)
 	{
 		HandleCopyPasteKeys(); // Ctrl+C, Ctrl+V: copy and paste the selected models, meshes and lights
 		// Delete: the selected entities, as in the Scene Hierarchy (not while typing in a field)
@@ -677,18 +680,28 @@ void OnImGuiRenderViewport()
 	EnvMapVulkanRenderer::SetViewportSize(viewportWidth, viewportHeight);
 
 	SyncLightSelection();
-	DrawLightGizmos();
+	if (!gameRunning)
+	{
+		DrawLightGizmos();
+	}
 	DrawViewportFps();
-	DrawWaterOutline();
+	if (!gameRunning)
+	{
+		DrawWaterOutline();
+	}
+	DrawPlayModeOutline(s_ViewportImageMin, s_ViewportImageSize);
 
 	Window* mainWindow = Application::Get()->GetWindow();
-	UpdateImGuizmo(mainWindow);
+	if (!gameRunning)
+	{
+		UpdateImGuizmo(mainWindow);
+	}
 
 	// Mouse picking: left click on the scene (not on the gizmo, not with Alt) selects the light icon, or else the
 	// mesh under the cursor (or the water in front of it). Ctrl or Shift + click adds it to the selection or removes
 	// it (as in Unity); a double click selects the whole model of the mesh, and Ctrl or Shift + double click adds
 	// all the model's meshes (parts) to the selection.
-	if (viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
+	if (!gameRunning && viewportImageHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing() &&
 		!Input::IsKeyPressed(KeyH2M::LeftAlt) && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 	{
 		const bool toggle = Input::IsKeyPressed(KeyH2M::LeftControl) || Input::IsKeyPressed(KeyH2M::RightControl) ||

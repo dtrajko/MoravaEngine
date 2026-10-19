@@ -7,6 +7,8 @@
 #include "Editor.h"
 #include "EditorSelection.h"
 
+#include "Game/GameLoop.h"
+
 #include "EnvMapVulkan/EnvMapVulkanLights.h"
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
@@ -123,7 +125,7 @@ bool AcceptFileDrop(const ImVec2& highlightMin, const ImVec2& highlightMax, bool
 // The editor's part of a frame, before the renderer draws it (see OnUpdate): the camera entity and the sun follow the
 // editor's camera and the environment, and what the panels asked for in the last frame happens now, while the renderer
 // records nothing: models removed and loaded, pasting, New and Open, material files loaded, maps assigned, materials deleted.
-void EditorPreFrame(H2M::CameraH2M* camera);
+void EditorPreFrame(H2M::CameraH2M* camera, float frameTime);
 
 void ExtractEnvironment();
 
@@ -140,6 +142,42 @@ void ExtractWater();
 void ExtractProbeVolume();
 
 void ShowNotification(const std::string& text, bool isError = false);
+
+// ---- Play mode (EditorPlayMode.cpp)
+
+// The game runs (Play), also while paused: the panels show and edit the running game, not the edited scene
+bool IsPlaying();
+
+// The game runs and isn't paused: the game loop runs every frame, the view is the scene's camera
+bool IsGameRunning();
+
+// Play at the start of the next frame (the toolbar, --play)
+void RequestPlay();
+
+// At the start of a frame (EditorPreFrame): Play, Step and Stop asked for in the last frame; the game's frame
+void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime);
+
+// Ctrl+P: Play, and Stop while the game runs (as in Unity). Not while typing in a field, and not while a question is open
+void HandlePlayModeShortcutKeys();
+
+// A game still running at exit is stopped (the edited scene comes back and is checked)
+void ShutdownPlayMode();
+
+// Refuses what can't be done while the game runs (Save, New, Open...), with a notification: true when refused
+bool RefusedWhilePlaying(const char* what);
+
+// The view options the renderer draws with: the editor's, or while the game runs the game's (no grid, no selection)
+const EnvMapVulkanViewOptions* GetDrawnViewOptions();
+
+// Play, Pause and Step, centered in the menu bar (as in Unity), and the game's frame and time while it runs
+void OnImGuiRenderPlayToolbar();
+
+// The frame padding that makes the menu bar tall enough for the toolbar's buttons (given while the window with the menu bar
+// begins, and while its menu bar begins, so the menus' text is centered in it)
+ImVec2 GetMenuBarFramePadding();
+
+// A frame around the viewport's image while the game runs (paused: in another color)
+void DrawPlayModeOutline(const ImVec2& imageMin, const ImVec2& imageSize);
 
 // ---- Scene edits (EditorSceneEdits.cpp)
 

@@ -26,7 +26,7 @@ jobs:
         include:
           - name: Clang Vulkan
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
-            smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20
+            smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20 --play
             player-smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20
           # macOS stops at OpenGL 4.1: an older scene (HAZEL_ENV_MAP needs 4.5)
           - name: Clang OpenGL
@@ -106,6 +106,11 @@ jobs:
           fi
           if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read" smoke-test.log; then
             echo "::error::Files that could not be found or loaded"
+            exit 1
+          fi
+          # --play: the editor ran the game, and at exit Stop brought the edited scene back unchanged
+          if [[ "${{ matrix.smoke-test }}" == *--play* ]] && ! grep -q "the edited scene is back, unchanged" smoke-test.log; then
+            echo "::error::Play mode: the game didn't run, or Stop didn't bring the edited scene back unchanged"
             exit 1
           fi
 

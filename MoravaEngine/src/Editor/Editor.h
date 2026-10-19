@@ -10,7 +10,7 @@
 /**
  * The scene editor: the scene being edited and its file (New, Open, Save), the panels (Scene Hierarchy, Properties,
  * Environment, Material Library and Editor, Renderer Stats), the viewport with picking, gizmos and light icons, the
- * selection and the clipboard.
+ * selection, the clipboard, and Play mode (Play, Pause, Step, Stop: the game runs in the viewport).
  *
  * It owns the scene, how it is drawn (EnvMapVulkanRenderSettings, saved with the scene) and the view's options; the renderer
  * draws them (EnvMapVulkanRenderer::SetScene) and asks the editor to build its windows (SetUserInterface). Every frame:
@@ -28,8 +28,9 @@ public:
 	// Before the renderer's Shutdown: the scene and everything the editor holds on to are released
 	static void Shutdown();
 
-	// Before the renderer draws the frame. camera: the editor's camera (the viewport's)
-	static void OnUpdate(H2M::CameraH2M* camera);
+	// Before the renderer draws the frame. camera: the editor's camera (the viewport's); frameTime: the last frame's time,
+	// in seconds (the game's frame, while it runs)
+	static void OnUpdate(H2M::CameraH2M* camera, float frameTime);
 	// The editor's windows (ImGui), built while the renderer records the window's image
 	static void OnImGuiRender();
 
