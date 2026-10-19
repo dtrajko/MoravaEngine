@@ -235,11 +235,11 @@ foreach(api VULKAN OPENGL DIRECTX11)
     endif()
 endforeach()
 
-# The editor (src/Editor) edits the scene of SceneEnvMapVulkan (EnvMapVulkanScene), and the player (src/Runtime) runs it:
+# The editor (src/Editor) edits the scene of SceneEnvMapVulkan (EnvMapVulkanScene), and the player (src/Player) runs it:
 # so far only in Vulkan builds
 if(NOT "VULKAN" IN_LIST MORAVA_GRAPHICS_APIS)
-    list(FILTER SRC EXCLUDE REGEX "^(Editor|Runtime)/")
-    list(FILTER HEADERS EXCLUDE REGEX "^(Editor|Runtime)/")
+    list(FILTER SRC EXCLUDE REGEX "^(Editor|Player)/")
+    list(FILTER HEADERS EXCLUDE REGEX "^(Editor|Player)/")
 endif()
 
 # And the shared classes only the OpenGL scenes use (the older Morava scenes and what they are made of)
@@ -264,13 +264,13 @@ endif()
 #                 renderers, the scene and its files
 #   MoravaEngine  executable: the editor (src/Editor), the older scenes and their editors, and everything else that draws
 #                 with ImGui, on MoravaCore
-#   MoravaPlayer  executable: runs a game on MoravaCore alone, without the editor and without ImGui (src/Runtime; in builds
+#   MoravaPlayer  executable: runs a game on MoravaCore alone, without the editor and without ImGui (src/Player; in builds
 #                 with Vulkan)
 #   A source belongs to the core unless a rule below gives it to one of the executables. An executable links only the
 #   core's object files it calls, so the player's link line shows what the core still needs from the editor.
 # =========================================================
 
-set(MORAVA_PLAYER_SOURCES "^Runtime/")
+set(MORAVA_PLAYER_SOURCES "^Player/")
 set(MORAVA_EDITOR_SOURCES
     "^main\\.cpp$"
     "^EditorApplication\\."

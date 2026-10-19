@@ -151,8 +151,8 @@ SceneVoxelTerrainSL::SceneVoxelTerrainSL()
     /**** END Procedural Landmass Generation Terrain ****/
 
     Mesh* mesh = new Block();
-    m_Player = new Player(glm::vec3(0.0f, 20.0f, 0.0f), mesh, m_Camera);
-    m_PlayerController = new PlayerController(m_Player);
+    m_Player = new PlayerCharacter(glm::vec3(0.0f, 20.0f, 0.0f), mesh, m_Camera);
+    m_PlayerController = new PlayerCharacterController(m_Player);
     m_PlayerController->SetTerrain(m_TerrainSL);
     m_PlayerController->SetGravity(0.0f);
     m_PlayerController->SetMoveSpeed(0.5f);
