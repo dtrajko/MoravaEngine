@@ -136,6 +136,7 @@ namespace H2M
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Grid.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/SceneComposite.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/ViewportComposite.glsl"); // SceneEnvMapVulkan: composite with bloom
+			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/Present.glsl");           // SceneEnvMapVulkan: the composite into the window
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/BloomPass.glsl");         // SceneEnvMapVulkan: bloom downsample/upsample chain
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Static.glsl");
 			RendererH2M::GetShaderLibrary()->Load("Resources/Shaders/HazelPBR_Anim.glsl"); // skinned meshes (SceneEnvMapVulkan)

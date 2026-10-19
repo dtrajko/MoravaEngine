@@ -27,6 +27,7 @@ jobs:
           - name: Clang Vulkan
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
             smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20
+            player-smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20
           # macOS stops at OpenGL 4.1: an older scene (HAZEL_ENV_MAP needs 4.5)
           - name: Clang OpenGL
             cmake-options: -DMORAVA_OPENGL=ON -DMORAVA_SCENE=EDITOR_IMGUIZMO
@@ -108,12 +109,32 @@ jobs:
             exit 1
           fi
 
+      # The player (MoravaPlayer, without the editor) shows a scene the same way, and fails on the same things
+      - name: Player smoke test
+        if: matrix.player-smoke-test
+        working-directory: MoravaEngine
+        env:
+          VK_LOADER_DEBUG: error,warn
+        run: |
+          set -o pipefail
+          gtimeout 600 ../build/MoravaPlayer ${{ matrix.player-smoke-test }} 2>&1 | tee player-smoke-test.log
+          if grep -q VulkanDebugCallback player-smoke-test.log; then
+            echo "::error::Vulkan validation messages (see the log above or the smoke-test-log artifact)"
+            exit 1
+          fi
+          if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read" player-smoke-test.log; then
+            echo "::error::Files that could not be found or loaded"
+            exit 1
+          fi
+
       - name: Smoke test log
-        if: always() && matrix.smoke-test
+        if: always() && (matrix.smoke-test || matrix.player-smoke-test)
         uses: actions/upload-artifact@v7.0.2
         with:
           name: smoke-test-log-macos-${{ strategy.job-index }}
-          path: MoravaEngine/smoke-test.log
+          path: |
+            MoravaEngine/smoke-test.log
+            MoravaEngine/player-smoke-test.log
           if-no-files-found: ignore
 
       - name: Build log

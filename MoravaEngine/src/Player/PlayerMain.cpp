@@ -1,6 +1,8 @@
 // MoravaPlayer: runs a game on MoravaCore alone, without the editor and without ImGui
-// (docs/engine/Game_Engine_Runtime_Guide.html, Phase 1). So far the window and the renderer; the runtime layer that opens
-// the game's scene and runs it comes next (1.3).
+// (docs/engine/Game_Engine_Runtime_Guide.html, Phase 1): MoravaPlayer --scene <file.mscene> shows the scene through its
+// camera, over the whole window (see PlayerLayer).
+
+#include "PlayerApplication.h"
 
 #include "Core/Application.h"
 #include "Core/Log.h"
@@ -9,30 +11,8 @@
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
 #include "H2M/Renderer/RendererAPI_H2M.h"
 
-#include "EnvMapVulkan/EnvMapVulkanRenderer.h"
-
 #include <memory>
 
-
-// The player on the application: the EnvMapVulkan renderer, no older scene class, no ImGui
-class PlayerApplication : public ApplicationClient
-{
-public:
-	virtual SceneProperties CreateScene() override
-	{
-		return { nullptr, nullptr, SceneName::ENV_MAP_VULKAN };
-	}
-
-	virtual H2M::RendererAPI_H2M* CreateRendererAPI() override
-	{
-		return new EnvMapVulkanRenderer();
-	}
-
-	virtual void Draw() override
-	{
-		EnvMapVulkanRenderer::Draw(nullptr);
-	}
-};
 
 int main(int argc, char** argv)
 {
@@ -57,5 +37,5 @@ int main(int argc, char** argv)
 
 	Application::Get()->Run();
 
-	return 0;
+	return Application::Get()->GetExitCode();
 }
