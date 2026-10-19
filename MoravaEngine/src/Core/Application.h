@@ -47,7 +47,7 @@ struct ApplicationCommandLine
 class Application;
 
 // What an executable runs on the application, given before Run: the editor's (EditorApplication.cpp) and the player's
-// (Runtime/PlayerMain.cpp). The main loop is the application's, the same for both.
+// (Player/PlayerMain.cpp). The main loop is the application's, the same for both.
 class ApplicationClient
 {
 public:
@@ -113,6 +113,10 @@ public:
 	void SetCommandLine(const ApplicationCommandLine& commandLine) { m_CommandLine = commandLine; }
 	const ApplicationCommandLine& GetCommandLine() const { return m_CommandLine; }
 
+	// Closes the window after this frame, as if it was closed, and sets the exit code main returns (not 0: the run failed)
+	void Close(int exitCode = 0);
+	int GetExitCode() const { return m_ExitCode; }
+
 	// The file dialogs of the older scenes (new code: FileDialogs, which these call). filter: a Windows filter string.
 	// initialDirectory (optional): the folder the dialog starts in
 	std::wstring OpenFile(const wchar_t* filter = L"All\0*.*\0", const wchar_t* initialDirectory = nullptr) const;
@@ -134,6 +138,7 @@ private:
 
 	ApplicationSpecification m_Specification;
 	ApplicationCommandLine m_CommandLine;
+	int m_ExitCode = 0;
 	std::unique_ptr<ApplicationClient> m_Client;
 	std::string m_ProjectPath;
 

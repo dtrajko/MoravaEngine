@@ -87,6 +87,9 @@ static H2M::RefH2M<H2M::PipelineH2M> s_CompositePipeline;            // to be re
 static H2M::RefH2M<H2M::FramebufferH2M> s_ViewportCompositeFramebuffer;
 static H2M::RefH2M<H2M::PipelineH2M> s_ViewportCompositePipeline;
 static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_ViewportCompositeDescriptorSet; // scene, bloom, lens dirt (ViewportComposite.glsl)
+// The window shows that image too, under the user interface (all of the window in the player): see CompositePass
+static H2M::RefH2M<H2M::PipelineH2M> s_PresentPipeline;
+static H2M::VulkanShaderH2M::ShaderMaterialDescriptorSet s_PresentDescriptorSet; // the viewport composite (Present.glsl)
 
 // How the scene is drawn: shadows, ray tracing, reflections, ambient occlusion, bloom (see EnvMapVulkanRenderSettings).
 // This frame's copy of the scene owner's settings.
@@ -1609,6 +1612,15 @@ void EnvMapVulkanRenderer::Init()
 		pipelineSpecification.DebugName = "ViewportComposite";
 		s_ViewportCompositePipeline = H2M::PipelineH2M::Create(pipelineSpecification);
 
+		// Its image into the window (the swapchain's render pass, as the user interface)
+		pipelineSpecification.Shader = H2M::RendererH2M::GetShaderLibrary()->Get("Present");
+		H2M::RenderPassSpecificationH2M presentRenderPassSpec;
+		presentRenderPassSpec.TargetFramebuffer = s_CompositeFramebuffer;
+		pipelineSpecification.RenderPass = H2M::RenderPassH2M::Create(presentRenderPassSpec);
+		pipelineSpecification.DebugName = "Present";
+		s_PresentPipeline = H2M::PipelineH2M::Create(pipelineSpecification);
+		s_PresentDescriptorSet = s_PresentPipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>()->CreateDescriptorSets();
+
 		CreateEditorOverlayResources(); // before CreateBloomResources: the composite samples the overlay and selection mask images
 		CreateBloomResources(); // also writes s_ViewportCompositeDescriptorSet
 	}
@@ -1866,6 +1878,7 @@ void EnvMapVulkanRenderer::Shutdown()
 	s_CompositePipeline = {};
 	s_ViewportCompositeFramebuffer = {};
 	s_ViewportCompositePipeline = {};
+	s_PresentPipeline = {};
 	for (auto& framebuffer : s_BloomDownFramebuffers) framebuffer = {};
 	for (auto& framebuffer : s_BloomUpFramebuffers) framebuffer = {};
 	s_BloomPipeline = {};
@@ -3363,6 +3376,14 @@ static void WriteBloomDescriptorSets()
 		write.pImageInfo = compositeImages[i];
 		writes.push_back(write);
 	}
+	// The window's copy of the composite (see CompositePass)
+	{
+		VkWriteDescriptorSet write = *s_PresentPipeline->GetSpecification().Shader.As<H2M::VulkanShaderH2M>()->GetDescriptorSet("u_Texture");
+		write.dstSet = s_PresentDescriptorSet.DescriptorSets[0];
+		write.descriptorCount = 1;
+		write.pImageInfo = imageInfo(s_ViewportCompositeFramebuffer);
+		writes.push_back(write);
+	}
 	// The G-buffer, for the debug views (created after the bloom resources: Init writes the sets again once it exists)
 	const VkDescriptorImageInfo gbufferImages[3] = { s_GBuffer.GetNormalRoughnessInfo(), s_GBuffer.GetMotionInfo(), s_GBuffer.GetDepthInfo() };
 	const char* gbufferBindings[3] = { "u_GBufferNormalRoughness", "u_GBufferMotion", "u_GBufferDepth" };
@@ -3648,8 +3669,8 @@ void EnvMapVulkanRenderer::CompositePass()
 		scissor.offset.y = 0;
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-		// Copy 3D scene here!
-		H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_CompositePipeline.As<H2M::VulkanPipelineH2M>();
+		// The finished image (the viewport composite) over the whole window: what the player shows, under the editor's panels
+		H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_PresentPipeline.As<H2M::VulkanPipelineH2M>();
 
 		VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
 				
@@ -3667,11 +3688,7 @@ void EnvMapVulkanRenderer::CompositePass()
 		VkPipeline pipeline = vulkanPipeline->GetVulkanPipeline();
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-		float exposure = s_Exposure * (s_AutoExposureEnabled ? s_EnvMapAutoExposure : 1.0f);
-		vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(float), &exposure);
-
-		// Bind descriptor sets describing shader binding points
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, (uint32_t)s_Data.QuadDescriptorSet.DescriptorSets.size(), s_Data.QuadDescriptorSet.DescriptorSets.data(), 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout, 0, 1, s_PresentDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
 		vkCmdDrawIndexed(commandBuffer, s_Data.QuadIndexBuffer->GetCount(), 1, 0, 0, 0);
 		EnvMapVulkanProfiler::CountDraw(s_Data.QuadIndexBuffer->GetCount() / 3);

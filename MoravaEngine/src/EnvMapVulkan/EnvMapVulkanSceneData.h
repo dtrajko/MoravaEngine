@@ -3,6 +3,7 @@
 #include "EnvMapVulkanLights.h"
 #include "EnvMapVulkanScene.h"
 
+#include "H2M/Renderer/CameraH2M.h"
 #include "H2M/Renderer/ModelH2M.h"
 
 #include <glm/glm.hpp>
@@ -76,4 +77,10 @@ namespace EnvMapVulkanSceneData
 	// its size); Exists when the scene has one. Returns the entity (NoEntity: none).
 	EnvMapVulkanEntityID ReadProbeVolume(const EnvMapVulkanScene& scene, EnvMapVulkanProbeVolumeSettings& settings);
 	glm::mat4 GetProbeVolumeTransform(const EnvMapVulkanProbeVolumeSettings& settings);
+
+	// --- The camera (CameraComponent, one per scene)
+
+	// Puts a camera where the camera entity's transform says: at its translation, looking as its rotation says (x: up and
+	// down, y: around the vertical axis, 0 looking along -Z). The pitch is limited to -89..89 degrees, as the camera's own.
+	void PlaceCamera(H2M::CameraH2M& camera, const TransformComponent& transform);
 }

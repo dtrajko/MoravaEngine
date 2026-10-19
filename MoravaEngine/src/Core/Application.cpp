@@ -360,6 +360,12 @@ bool Application::OnWindowResize(H2M::WindowResizeEventH2M& e)
 	return false;
 }
 
+void Application::Close(int exitCode)
+{
+	m_ExitCode = exitCode;
+	m_Window->SetShouldClose(true);
+}
+
 bool Application::OnWindowClose(H2M::WindowCloseEventH2M& e)
 {
 	m_Running = false;

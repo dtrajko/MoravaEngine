@@ -333,4 +333,18 @@ namespace EnvMapVulkanSceneData
 	{
 		return glm::translate(glm::mat4(1.0f), settings.Center) * glm::scale(glm::mat4(1.0f), settings.Size);
 	}
+
+	void PlaceCamera(H2M::CameraH2M& camera, const TransformComponent& transform)
+	{
+		// The camera's yaw is measured from +X towards +Z (-90 looks along -Z)
+		const float pitch = glm::clamp(transform.Rotation.x, -89.0f, 89.0f);
+		const float yaw = -transform.Rotation.y - 90.0f;
+		camera.SetPosition(transform.Translation);
+		camera.SetYaw(yaw);
+		camera.SetPitch(pitch);
+		// As the camera's controller does from the yaw and the pitch
+		camera.SetFront(glm::normalize(glm::vec3(std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch)),
+			std::sin(glm::radians(pitch)), std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch)))));
+		camera.OnUpdate(H2M::TimestepH2M(0.0f));
+	}
 }
