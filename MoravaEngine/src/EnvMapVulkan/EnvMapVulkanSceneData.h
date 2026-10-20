@@ -80,7 +80,8 @@ namespace EnvMapVulkanSceneData
 
 	// --- The camera (CameraComponent, one per scene)
 
-	// Puts a camera where the camera entity's transform says: at its translation, looking as its rotation says (x: up and
-	// down, y: around the vertical axis, 0 looking along -Z). The pitch is limited to -89..89 degrees, as the camera's own.
+	// Puts a camera where the camera entity's transform says: at its translation, looking as its rotation says (x: down
+	// (positive) and up, as the editor's camera; y: around the vertical axis, 0 looking along -Z). The pitch is limited to
+	// -89..89 degrees, as the camera's own.
 	void PlaceCamera(H2M::CameraH2M& camera, const TransformComponent& transform);
 }

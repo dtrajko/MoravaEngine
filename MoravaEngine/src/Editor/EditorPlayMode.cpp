@@ -5,18 +5,26 @@
 // game does reaches the edited scene. While the game runs, the view is the scene's camera entity, the game loop runs once
 // per frame, and the viewport belongs to the game (no camera flying, picking or gizmo). Paused, the game loop stops and
 // the viewport is the editor's again: fly around, select, inspect, Step one frame at a time.
+//
+// Input (2.3): the game gets the keyboard, the mouse and the gamepads only while the Viewport panel has the focus (a click
+// on it gives it). The mouse is captured only when the game asks for it; Escape (Shift+F1 when the game binds Escape) always
+// gives the focus, and so the mouse, back to the editor.
 
 
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneSerializer.h"
 
+#include "Core/Application.h"
 #include "Core/Log.h"
 #include "Core/ResourceManager.h"
 #include "H2M/Renderer/ModelH2M.h"
 
 #include "imgui.h"
 #include "imgui_internal.h" // the menu bar's rectangle
+
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 
 #include <utility>
 
@@ -33,6 +41,11 @@ static PlayRequest s_PlayRequest = PlayRequest::None;
 static bool s_Playing = false;
 static bool s_Paused = false;
 static GameLoop s_GameLoop;
+static GameSystems s_GameSystems;
+static InputSystem s_GameInput;
+static bool s_GameViewportFocused = false; // the Viewport panel had the focus in the last frame: the game gets input
+static GLFWwindow* s_GameWindow = nullptr;  // the OS window the Viewport panel is in (the main one, or its own when dragged out)
+static bool s_FocusViewport = false;       // Play: the Viewport panel gets the focus, so the game has input at once
 
 // The edited scene while the game runs: the scene, its render settings, and the matrices of its models' meshes. The
 // models are shared with the game (CopyFrom doesn't load them again), and a part's transform is written into its mesh
@@ -108,7 +121,12 @@ static void StartPlay(H2M::CameraH2M* camera)
 		s_EditedMeshTransforms.emplace_back(modelRef, std::move(transforms));
 	}
 
+	// The project's input file is read at each Play: an edit of it counts at the next Play
+	s_GameInput.SetMap(GameSystems::LoadInputMap());
+	s_GameSystems.Begin(&s_Scene, &s_GameInput);
+
 	s_GameLoop.Reset();
+	s_FocusViewport = true;
 	s_Playing = true;
 	s_Paused = false;
 	PlaceGameCamera(camera);
@@ -120,6 +138,11 @@ static void StopPlay(H2M::CameraH2M* camera)
 {
 	// Models the game loaded may still be drawn by frames in flight
 	EnvMapVulkanRenderer::WaitIdle();
+
+	// The mouse back to the editor
+	s_GameInput.Reset(s_GameWindow ? s_GameWindow : Application::Get()->GetWindow()->GetHandle());
+	s_GameSystems.Begin(nullptr, nullptr);
+	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
 
 	// A map the game (or a panel) changed: the edited scene's comes back with its sun as it is, not turned to the map's sun
 	const EnvironmentComponent* playedEnvironment = s_Scene.TryGet<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
@@ -203,17 +226,105 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 		return;
 	}
 
+	// Input while the game runs and the viewport has the focus (paused, the viewport is the editor's: a Step gets none),
+	// from the OS window the viewport is in
+	GLFWwindow* window = s_GameWindow ? s_GameWindow : Application::Get()->GetWindow()->GetHandle();
+	const bool gameInput = !s_Paused && s_GameViewportFocused;
 	if (!s_Paused)
 	{
-		s_GameLoop.Frame(frameTime);
+		s_GameInput.Update(window, gameInput, frameTime);
+		s_GameLoop.Frame(frameTime, &s_GameSystems);
 		PlaceGameCamera(camera); // where the game put the camera entity
 	}
-	else if (request == PlayRequest::Step)
+	else
 	{
+		const bool step = request == PlayRequest::Step;
 		// One frame of exactly one fixed step, whatever this frame's time: Step after Step gives the same steps
-		s_GameLoop.Frame(GameLoop::FixedStep);
+		s_GameInput.Update(window, false, step ? GameLoop::FixedStep : frameTime);
+		if (step)
+		{
+			s_GameLoop.Frame(GameLoop::FixedStep, &s_GameSystems);
+		}
 	}
 
+	// A captured mouse moves without a cursor: ImGui leaves it alone (a click would land where the hidden cursor drifted)
+	ImGuiIO& io = ImGui::GetIO();
+	if (s_GameInput.IsMouseCaptured())
+	{
+		io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+	}
+	else
+	{
+		io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+	}
+
+}
+
+GLFWwindow* GetCurrentPlatformWindow()
+{
+	const ImGuiViewport* viewport = ImGui::GetWindowViewport();
+	GLFWwindow* window = viewport ? static_cast<GLFWwindow*>(viewport->PlatformHandle) : nullptr;
+	return window ? window : Application::Get()->GetWindow()->GetHandle();
+}
+
+const InputSystem* GetGameInput()
+{
+	return s_Playing ? &s_GameInput : nullptr;
+}
+
+// The game binds Escape: Shift+F1 gives the mouse back instead
+static bool GameBindsEscape()
+{
+	for (const InputAction& action : s_GameInput.GetMap().Actions)
+	{
+		for (const InputBinding& binding : action.Bindings)
+		{
+			const bool escape = binding.Source == InputBindingSource::Key ? binding.Code == GLFW_KEY_ESCAPE :
+				binding.Source == InputBindingSource::Composite && (binding.Up == GLFW_KEY_ESCAPE || binding.Down == GLFW_KEY_ESCAPE ||
+					binding.Left == GLFW_KEY_ESCAPE || binding.Right == GLFW_KEY_ESCAPE);
+			if (escape)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+static const char* GetReleaseKeyName()
+{
+	return GameBindsEscape() ? "Shift+F1" : "Escape";
+}
+
+void UpdateGameViewportFocus(bool viewportFocused)
+{
+	// Its OS window: changes when the panel is dragged out of the main window or back (the mouse goes back to the old one)
+	GLFWwindow* window = GetCurrentPlatformWindow();
+	if (window != s_GameWindow && s_GameWindow)
+	{
+		s_GameInput.Reset(s_GameWindow);
+	}
+	s_GameWindow = window;
+
+	if (s_FocusViewport)
+	{
+		ImGui::SetWindowFocus(); // the current window: the viewport
+		s_FocusViewport = false;
+		viewportFocused = true;
+	}
+	s_GameViewportFocused = viewportFocused && IsGameRunning();
+	if (!s_GameViewportFocused)
+	{
+		return;
+	}
+	const ImGuiIO& io = ImGui::GetIO();
+	const bool release = GameBindsEscape() ? io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_F1, false) :
+		ImGui::IsKeyPressed(ImGuiKey_Escape, false) || (io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_F1, false));
+	if (release)
+	{
+		ImGui::SetWindowFocus(nullptr); // no panel has the focus: the game has no input, and the mouse is the editor's
+		s_GameViewportFocused = false;
+	}
 }
 
 void HandlePlayModeShortcutKeys()
@@ -377,5 +488,30 @@ void DrawPlayModeOutline(const ImVec2& imageMin, const ImVec2& imageSize)
 	}
 	// Running: blue, as the active Play button; paused: amber
 	const ImU32 color = s_Paused ? IM_COL32(230, 160, 40, 255) : ImGui::GetColorU32(ImGuiCol_ButtonActive, 1.0f);
-	ImGui::GetWindowDrawList()->AddRect(imageMin, ImVec2(imageMin.x + imageSize.x, imageMin.y + imageSize.y), color, 0.0f, 0, 3.0f);
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	drawList->AddRect(imageMin, ImVec2(imageMin.x + imageSize.x, imageMin.y + imageSize.y), color, 0.0f, 0, 3.0f);
+
+	// Who has the input, at the bottom of the view
+	if (s_Paused)
+	{
+		return;
+	}
+	char text[128];
+	if (!s_GameViewportFocused)
+	{
+		snprintf(text, sizeof(text), "Click the view: the game gets the input");
+	}
+	else if (s_GameInput.IsMouseCaptured())
+	{
+		snprintf(text, sizeof(text), "%s: the mouse back to the editor", GetReleaseKeyName());
+	}
+	else
+	{
+		snprintf(text, sizeof(text), "The game has the input (%s: back to the editor)", GetReleaseKeyName());
+	}
+	const ImVec2 textSize = ImGui::CalcTextSize(text);
+	const ImVec2 position(IM_ROUND(imageMin.x + (imageSize.x - textSize.x) * 0.5f), IM_ROUND(imageMin.y + imageSize.y - textSize.y - 12.0f));
+	drawList->AddRectFilled(ImVec2(position.x - 6.0f, position.y - 3.0f), ImVec2(position.x + textSize.x + 6.0f, position.y + textSize.y + 3.0f),
+		IM_COL32(0, 0, 0, 140), 4.0f);
+	drawList->AddText(position, s_GameViewportFocused ? IM_COL32(235, 235, 235, 255) : IM_COL32(255, 200, 90, 255), text);
 }

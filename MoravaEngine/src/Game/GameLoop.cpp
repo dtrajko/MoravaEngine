@@ -3,14 +3,19 @@
 #include <algorithm>
 
 
-void GameLoop::Frame(float frameTime)
+void GameLoop::Frame(float frameTime, GameLoopSystems* systems)
 {
 	const float gameFrameTime = std::clamp(frameTime, 0.0f, MaxFrameTime) * m_TimeScale;
 	m_Accumulator += gameFrameTime;
 
 	while (m_Accumulator >= FixedStep)
 	{
-		// Phase 4: the scripts' FixedUpdate. Phase 3: the physics step, then its contacts and triggers to the scripts
+		// The systems' fixed step (input's test now; Phase 4: the scripts' FixedUpdate. Phase 3: the physics step, then its
+		// contacts and triggers to the scripts); they end it with the input's edges cleared
+		if (systems)
+		{
+			systems->FixedUpdate(FixedStep);
+		}
 		m_Accumulator -= FixedStep;
 		m_FixedStepCount++;
 	}
@@ -18,6 +23,10 @@ void GameLoop::Frame(float frameTime)
 
 	// Phase 4: the scripts' Update(gameFrameTime). Phase 6: animation. Phase 5: the listener and sound positions. Then the
 	// scene changes the frame asked for (destroyed entities, a scene to load)
+	if (systems)
+	{
+		systems->Update(gameFrameTime);
+	}
 	m_GameTime += gameFrameTime;
 	m_FrameCount++;
 }

@@ -22,9 +22,10 @@ struct ProjectWindow
  *     Name: RollABall
  *     StartScene: Scenes/Main.mscene
  *     AssetDirectory: Assets
+ *     InputMap: Settings/Input.minput
  *     Window: { Width: 1600, Height: 900, Fullscreen: false, VSync: true, Title: Roll a Ball }
  *
- * The script assembly (Phase 4) and the input map (Phase 2) come with their phases.
+ * The script assembly comes with Phase 4.
  *
  * One project is open at a time (GetOpen): the paths in scene and material files resolve against it (ProjectPaths).
  */
@@ -33,10 +34,12 @@ struct Project
 	static constexpr const char* FileExtension = ".mproject";
 	static constexpr const char* ScenesFolder = "Scenes";       // in the project folder: new projects get it
 	static constexpr const char* MaterialsFolder = "Materials"; // in the asset folder
+	static constexpr const char* DefaultInputMap = "Settings/Input.minput";
 
 	std::string Name = "Untitled";
 	std::string StartScene;                // relative to the project folder (empty: none)
 	std::string AssetDirectory = "Assets"; // relative to the project folder
+	std::string InputMapFile = DefaultInputMap; // the actions and their bindings (InputMap), relative to the project folder
 	ProjectWindow Window;
 
 	std::string FilePath; // the .mproject file, absolute (not written in it)
@@ -45,6 +48,7 @@ struct Project
 	std::string GetDirectory() const;
 	std::string GetAssetFolder() const;
 	std::string GetScenesFolder() const;
+	std::string GetInputMapPath() const; // empty: the project has none (the game gets InputMap::Default)
 	// The window's title: Window.Title, or the name
 	std::string GetWindowTitle() const;
 
@@ -53,7 +57,8 @@ struct Project
 	// Writes the project to its FilePath. False (error explains) when it can't be written
 	bool Save(std::string& error) const;
 	// A new project in a folder (made if it doesn't exist): <folder>/<folder's name>.mproject, named after the folder, with
-	// its asset and scenes folders. False (error explains) when the folder has a project already or can't be written
+	// its asset and scenes folders and the default input file (InputMap::Default). False (error explains) when the folder
+	// has a project already or can't be written
 	static bool Create(const std::string& folder, Project& project, std::string& error);
 
 	// The open project (nullptr: none; the engine's own files only)

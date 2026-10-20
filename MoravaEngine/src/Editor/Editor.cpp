@@ -187,6 +187,7 @@ void Editor::OnImGuiRender()
 			OnImGuiRenderMaterialEditor();
 			OnImGuiRenderRendererStats();
 			OnImGuiRenderProjectPanel();
+			OnImGuiRenderInputPanel();
 
 			/**** BEGIN DockSpace menu bar ****/
 
@@ -234,6 +235,7 @@ void Editor::OnImGuiRender()
 				{
 					ImGui::MenuItem("Renderer Stats", nullptr, &s_ShowRendererStats);
 					ImGui::MenuItem("FPS in the Viewport", nullptr, &s_ShowViewportFps);
+					ImGui::MenuItem("Input", nullptr, &s_ShowInputPanel);
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("Docking"))

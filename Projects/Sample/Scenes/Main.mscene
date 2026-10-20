@@ -50,8 +50,8 @@ Entities:
     Name: Camera
     Parent: 0
     Transform:
-      Translation: [0.36906093, 16.773945, 9.299732]
-      Rotation: [1.5000473, 0.3997574, 0]
+      Translation: [0, 8, 9]
+      Rotation: [30, 0, 0]
       Scale: [1, 1, 1]
     Camera:
       {}
@@ -238,6 +238,47 @@ Entities:
         ID: 7290184736519204517
         File: Assets/Materials/Walls.mmat
         Name: Walls
+  - ID: 5528310947716204811
+    Name: Player
+    Parent: 0
+    Transform:
+      Translation: [0, 1.75, 2]
+      Rotation: [0, 0, 0]
+      Scale: [0.75, 0.75, 0.75]
+    Model:
+      File: Models/Primitives/cube.obj
+    InputTest:
+      Speed: 4
+      JumpSpeed: 6
+      Gravity: 20
+      TurnSpeed: 1
+      CaptureMouse: false
+  - ID: 9137462205581127730
+    Name: Cube
+    Parent: 5528310947716204811
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 3318840571902216447
+    Name: Player Light
+    Parent: 0
+    Transform:
+      Translation: [0, 7, 3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 30
+      Range: 18
+      CastShadows: true
   - ID: 12292673721498952904
     Name: Probe Volume
     Parent: 0

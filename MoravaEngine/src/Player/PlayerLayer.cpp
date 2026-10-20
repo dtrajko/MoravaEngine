@@ -11,6 +11,9 @@
 
 #include "Project/Project.h"
 
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
+
 #include <glm/glm.hpp>
 
 #include <string>
@@ -57,6 +60,9 @@ void PlayerLayer::OnAttach()
 
 	// The renderer draws it with the scene's render settings and a game's view (no grid, no selection, no debug view)
 	EnvMapVulkanRenderer::SetScene(&m_Scene, &m_RenderSettings, nullptr);
+
+	m_Input.SetMap(GameSystems::LoadInputMap());
+	m_Systems.Begin(&m_Scene, &m_Input);
 	m_Playing = true;
 }
 
@@ -67,6 +73,9 @@ void PlayerLayer::OnDetach()
 		Log::GetLogger()->info("Game loop: {0} frames, {1} fixed steps, {2:.2f} s of game time", m_GameLoop.GetFrameCount(),
 			m_GameLoop.GetFixedStepCount(), m_GameLoop.GetGameTime());
 	}
+
+	m_Input.Reset(Application::Get()->GetWindow()->GetHandle()); // the mouse given back
+	m_Systems.Begin(nullptr, nullptr);
 
 	// The application waited for the device: no frame in flight draws the scene's models any more
 	EnvMapVulkanRenderer::SetScene(nullptr, nullptr, nullptr);
@@ -80,8 +89,11 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 		return; // the scene could not be opened: the player is closing
 	}
 
-	// The game first, then the camera where the game put the camera entity
-	m_GameLoop.Frame(ts.GetSeconds());
+	// Input (the window is the game: it has input while it has the focus), the game, then the camera where the game put the
+	// camera entity
+	GLFWwindow* window = Application::Get()->GetWindow()->GetHandle();
+	m_Input.Update(window, glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE, ts.GetSeconds());
+	m_GameLoop.Frame(ts.GetSeconds(), &m_Systems);
 
 	// The view fills the window: the camera's aspect ratio follows it (the swapchain's size, in pixels)
 	H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
