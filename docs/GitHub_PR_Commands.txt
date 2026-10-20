@@ -1,0 +1,19 @@
+git push -u origin input-actions
+
+$body = @'
+- Per-project actions file Settings/Input.minput (src/Input: InputMap, InputSystem), defaults for new projects and scenes without a project
+- Keyboard, mouse and every connected gamepad; edges kept for the fixed step; mouse and stick turn at the same rate
+- GameSystems run by the game loop, the same in the player and in the editor's Play
+- InputTestComponent (Move, Jump, Look, Capture Mouse) on the sample's Player cube, lit by a new point light
+- Editor: Play focuses the Viewport, game input only while it has the focus, Escape gives it back, works in a dragged-out Viewport
+- View > Input panel: live action values, the binding that gave each one, gamepads, Try without Play
+- Connected gamepads listed in the log when a game starts
+- Fixed: the player read the camera's tilt with the opposite sign from the editor
+- CI fails if the sample's input file can't be read
+- Tested with an Xbox 360 controller
+- README and guide: Phase 2 as built
+'@
+$body | gh pr create --base master --head input-actions --title "Input actions and gamepads (Phase 2) - #25" --body-file -
+
+gh pr checks --watch # follows the PR's CI checks live in the terminal
+gh pr view --web # opens the PR's page on GitHub in the default browser

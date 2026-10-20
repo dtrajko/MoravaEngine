@@ -35,7 +35,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(MORAVA_SCENES_VULKAN ENV_MAP_VULKAN HAZEL_VULKAN)
 set(MORAVA_SCENES_DIRECTX11 DX11)
 set(MORAVA_SCENES_OPENGL
-    COTTAGE EIFFEL SPONZA TERRAIN PBR LEARN_OPENGL BULLET INSTANCED ASTEROIDS NANOSUIT FRAMEBUFFERS CUBEMAPS PARTICLES
+    COTTAGE EIFFEL SPONZA TERRAIN PBR LEARN_OPENGL JOLT INSTANCED ASTEROIDS NANOSUIT FRAMEBUFFERS CUBEMAPS PARTICLES
     OMNI_SHADOWS VOXEL_TERRAIN PROCEDURAL_LANDMASS VOXEL_TERRAIN_SL MARCHING_CUBES SSAO BLOOM DEFERRED DEFERRED_OGL
     ANIM_PBR EDITOR EDITOR_IMGUIZMO HAZEL_ENV_MAP)
 
@@ -105,14 +105,12 @@ else()
     set(MORAVA_SHARED_CRT ON)
 endif()
 
-# Vendors with an old cmake_minimum_required (e.g. bullet3: 3.5) would otherwise
-# ignore CMAKE_MSVC_RUNTIME_LIBRARY
+# Vendors with an old cmake_minimum_required would otherwise ignore CMAKE_MSVC_RUNTIME_LIBRARY
 set(CMAKE_POLICY_DEFAULT_CMP0091 NEW)
 set(CMAKE_MSVC_RUNTIME_LIBRARY ${MORAVA_MSVC_RUNTIME})
 
 # Each vendor's own runtime switch, set to match
-set(USE_MSVC_RUNTIME_LIBRARY_DLL ${MORAVA_SHARED_CRT} CACHE BOOL "" FORCE)    # glfw, bullet3
-set(USE_MSVC_RELEASE_RUNTIME_ALWAYS OFF CACHE BOOL "" FORCE)                  # bullet3
+set(USE_MSVC_RUNTIME_LIBRARY_DLL ${MORAVA_SHARED_CRT} CACHE BOOL "" FORCE)    # glfw
 set(YAML_MSVC_SHARED_RT ${MORAVA_SHARED_CRT} CACHE BOOL "" FORCE)             # yaml-cpp
 set(SHADERC_ENABLE_SHARED_CRT ${MORAVA_SHARED_CRT} CACHE BOOL "" FORCE)       # shaderc, glslang, spirv-tools
 set(USE_STATIC_CRT ${MORAVA_MSVC_STATIC_RUNTIME} CACHE BOOL "" FORCE)         # assimp
@@ -147,14 +145,33 @@ find_package(Vulkan REQUIRED)
 find_package(OpenGL REQUIRED)
 message(STATUS "Vulkan SDK: ${Vulkan_VERSION} (${Vulkan_INCLUDE_DIRS})")
 
-# ---- Bullet ----
-set(BUILD_BULLET2_DEMOS OFF CACHE BOOL "" FORCE)
-set(BUILD_CPU_DEMOS OFF CACHE BOOL "" FORCE)
-set(BUILD_OPENGL3_DEMOS OFF CACHE BOOL "" FORCE)
-set(BUILD_UNIT_TESTS OFF CACHE BOOL "" FORCE)
-set(INSTALL_LIBS OFF CACHE BOOL "" FORCE)
-set(BUILD_BULLET3 OFF CACHE BOOL "" FORCE)  # the engine only uses Bullet 2 (BulletDynamics, BulletCollision, LinearMath)
-set(BUILD_EXTRAS OFF CACHE BOOL "" FORCE)
+# ---- Jolt Physics ----
+# The library alone: no samples, tests or viewer, and none of its GPU compute (DirectX 12, Vulkan, Metal shaders)
+foreach(option TARGET_UNIT_TESTS TARGET_HELLO_WORLD TARGET_PERFORMANCE_TEST TARGET_SAMPLES TARGET_VIEWER ENABLE_INSTALL
+        JPH_USE_DX12 JPH_USE_VK JPH_USE_MTL JPH_USE_CPU_COMPUTE)
+    set(${option} OFF CACHE BOOL "" FORCE)
+endforeach()
+set(USE_STATIC_MSVC_RUNTIME_LIBRARY ${MORAVA_MSVC_STATIC_RUNTIME} CACHE BOOL "" FORCE)
+# Compiled with the engine's flags (Debug: debug info, no optimization), not Jolt's own, and without link-time optimization
+# (its objects would need the same compiler's linker plugin, and ccache can't keep them)
+set(OVERRIDE_CXX_FLAGS OFF CACHE BOOL "" FORCE)
+set(GENERATE_DEBUG_SYMBOLS OFF CACHE BOOL "" FORCE)
+set(INTERPROCEDURAL_OPTIMIZATION OFF CACHE BOOL "" FORCE)
+# A vendor's warnings don't fail the build (MORAVA_WARNINGS_AS_ERRORS is for the engine's sources)
+set(ENABLE_ALL_WARNINGS OFF CACHE BOOL "" FORCE)
+set(DEBUG_RENDERER_IN_DEBUG_AND_RELEASE ON CACHE BOOL "" FORCE)    # the physics debug view (shapes as lines)
+set(PROFILER_IN_DEBUG_AND_RELEASE OFF CACHE BOOL "" FORCE)
+set(ENABLE_OBJECT_STREAM OFF CACHE BOOL "" FORCE)                  # Jolt's own file format: the scene saves the components
+set(CROSS_PLATFORM_DETERMINISTIC OFF CACHE BOOL "" FORCE)
+# The CPU a game needs (x64; Apple Silicon and ARM use NEON, no option). Jolt's default is AVX2 with FMA, F16C, LZCNT and
+# BMI (Haswell, 2013): a game built with it crashes at startup on a CPU without them (Pentium and Celeron sold until ~2020
+# have no AVX). SSE4.2 runs on every x64 CPU of the last 15 years; the instructions after it make physics a few percent
+# faster at most. The flags are Jolt's PUBLIC ones: the engine's own code is compiled for the same CPU
+set(USE_SSE4_1 ON CACHE BOOL "" FORCE)
+set(USE_SSE4_2 ON CACHE BOOL "" FORCE)
+foreach(option USE_AVX USE_AVX2 USE_AVX512 USE_LZCNT USE_TZCNT USE_F16C USE_FMADD)
+    set(${option} OFF CACHE BOOL "" FORCE)
+endforeach()
 
 # ---- Shaderc ----
 set(SHADERC_SKIP_TESTS ON CACHE BOOL "" FORCE)
@@ -189,10 +206,11 @@ endfunction()
 
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/glfw glfw)
 add_optional(${ROOT_PATH_ABS}/vendor/box2d box2d)
-# bullet3 declares cmake_minimum_required(3.5); raise its policy version to avoid CMake's deprecation warning
-set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
-add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/bullet3 bullet3)
-unset(CMAKE_POLICY_VERSION_MINIMUM)
+# Jolt's CMakeLists.txt is in its Build folder
+add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/JoltPhysics/Build JoltPhysics)
+if(NOT TARGET Jolt)
+    message(FATAL_ERROR "Jolt Physics not found: git submodule update --init vendor/cross-platform/JoltPhysics")
+endif()
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/yaml-cpp yaml-cpp)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross spirv-cross)
 add_optional(${ROOT_PATH_ABS}/vendor/cross-platform/shaderc shaderc)
@@ -368,7 +386,6 @@ foreach(tgt ${MORAVA_ENGINE_TARGETS})
     target_include_directories(${tgt} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${ROOT_PATH_ABS}/vendor
-        ${ROOT_PATH_ABS}/vendor/cross-platform/bullet3/src
         ${ROOT_PATH_ABS}/vendor/cross-platform/SPIRV-Cross
     )
 
@@ -498,6 +515,9 @@ target_link_libraries(MoravaCore PUBLIC
 
     # OpenGL itself, in every build: the older Morava classes that all scenes share call it (through GLEW)
     OpenGL::GL
+
+    # PUBLIC: Jolt checks at startup that the program was compiled with its JPH_* defines (and for its CPU)
+    Jolt
 )
 
 if(TARGET spirv-cross-core)
@@ -532,14 +552,11 @@ target_include_directories(MoravaCore PRIVATE
     $<TARGET_PROPERTY:ImGuizmo,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-# The editor: ImGui, and what only the older scenes use (Bullet: SceneBullet; mono: C# in SceneEnvMapVulkan)
+# The editor: ImGui, and what only the older scenes use (mono: C# in SceneEnvMapVulkan)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     MoravaCore
     imgui
     ImGuizmo
-    BulletDynamics
-    BulletCollision
-    LinearMath
 )
 
 if(MORAVA_MONO)

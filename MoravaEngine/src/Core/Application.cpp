@@ -13,6 +13,7 @@
 #include "Core/Timer.h"
 #include "Material/MaterialLibrary.h"
 #include "Core/Util.h"
+#include "Physics/PhysicsWorld.h"
 #include "Renderer/RendererBasic.h"
 #include "Scene/Scene.h"
 
@@ -148,6 +149,10 @@ bool Application::IsWorkingDirectoryValid()
 void Application::OnInit()
 {
 	H2M_CORE_ASSERT(m_Client, "Application::SetClient before Run");
+
+	// Jolt, once for the process: before a scene creates a physics world
+	PhysicsWorld::Initialize();
+
 	m_SceneProperties = m_Client->CreateScene();
 	InitializeScene(m_SceneProperties);
 
@@ -427,6 +432,8 @@ void Application::OnShutdown()
 	{
 		H2M::RendererH2M::Shutdown();
 	}
+
+	PhysicsWorld::Shutdown(); // after the scene and the layers, whose physics worlds are gone with them
 }
 
 void Application::InitWindow(WindowSpecification windowSpecification)

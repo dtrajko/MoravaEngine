@@ -171,6 +171,8 @@ protected:
 
 	std::map<std::string, float> m_ProfilerResults;
 
+	ImGuiID m_DockspaceID = 0; // the dockspace of ShowExampleAppDockSpace (0 until it ran), for docking a scene's panels
+
 private:
 	DirectionalLight directionalLight;
 	PointLight pointLights[MAX_POINT_LIGHTS];
