@@ -37,8 +37,8 @@
 #elif defined(SCENE_LEARN_OPENGL)
 #include "Scene/SceneJoey.h"
 #include "Renderer/RendererTrivial.h"
-#elif defined(SCENE_BULLET)
-#include "Scene/SceneBullet.h"
+#elif defined(SCENE_JOLT)
+#include "Scene/SceneJolt.h"
 #include "Renderer/Renderer.h"
 #elif defined(SCENE_INSTANCED)
 #include "Scene/SceneInstanced.h"
@@ -143,10 +143,10 @@ SceneProperties EditorApplication::CreateScene()
 	sceneProperties.Scene = new SceneJoey();
 	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());
 	sceneProperties.Name = SceneName::LEARN_OPENGL;
-#elif defined(SCENE_BULLET)
-	sceneProperties.Scene = new SceneBullet();
+#elif defined(SCENE_JOLT)
+	sceneProperties.Scene = new SceneJolt();
 	sceneProperties.Renderer = static_cast<RendererBasic*>(new Renderer());
-	sceneProperties.Name = SceneName::BULLET;
+	sceneProperties.Name = SceneName::JOLT;
 #elif defined(SCENE_INSTANCED)
 	sceneProperties.Scene = new SceneInstanced();
 	sceneProperties.Renderer = static_cast<RendererBasic*>(new RendererTrivial());

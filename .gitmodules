@@ -37,3 +37,6 @@
 [submodule "vendor/cross-platform/nativefiledialog-extended"]
 	path = vendor/cross-platform/nativefiledialog-extended
 	url = https://github.com/btzy/nativefiledialog-extended.git
+[submodule "vendor/cross-platform/JoltPhysics"]
+	path = vendor/cross-platform/JoltPhysics
+	url = https://github.com/jrouwe/JoltPhysics

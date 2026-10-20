@@ -8,9 +8,7 @@ set(MORAVA_SOURCES_OF_OPENGL_SCENES
     Deferred/
     Instancing/
     LearnOpenGL/
-    Misc/
     Particle/
-    Physics/
     PlayerCharacter/
     PostProcessing/
     SSAO/
@@ -48,7 +46,6 @@ set(MORAVA_SOURCES_OF_OPENGL_SCENES
     Scene/SceneAnimPBR.
     Scene/SceneAsteroids.
     Scene/SceneBloom.
-    Scene/SceneBullet.
     Scene/SceneCottage.
     Scene/SceneCubemaps.
     Scene/SceneDeferred.
@@ -59,6 +56,7 @@ set(MORAVA_SOURCES_OF_OPENGL_SCENES
     Scene/SceneFramebuffers.
     Scene/SceneHazelEnvMap.
     Scene/SceneInstanced.
+    Scene/SceneJolt.
     Scene/SceneJoey.
     Scene/SceneMarchingCubes.
     Scene/SceneNanosuit.

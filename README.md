@@ -57,7 +57,7 @@ The rendering design of the Vulkan editor is described in [docs/rendering/SSAO_G
 
 ## Building
 
-The build is one CMake project, `MoravaEngine/CMakeLists.txt`. It builds the engine and the libraries it uses (GLFW, assimp, shaderc, SPIRV-Cross, Bullet, yaml-cpp, ImGui and others) from source.
+The build is one CMake project, `MoravaEngine/CMakeLists.txt`. It builds the engine and the libraries it uses (GLFW, assimp, shaderc, SPIRV-Cross, Jolt Physics, yaml-cpp, ImGui and others) from source.
 
 ### Requirements
 
@@ -229,7 +229,7 @@ The scenes:
 | `TERRAIN` | SceneTerrain | OpenGL |
 | `PBR` | ScenePBR | OpenGL |
 | `LEARN_OPENGL` | SceneJoey | OpenGL |
-| `BULLET` | SceneBullet | OpenGL |
+| `JOLT` | SceneJolt (Jolt Physics: a tower of planks, fire spheres with the left mouse button) | OpenGL |
 | `INSTANCED` | SceneInstanced | OpenGL |
 | `ASTEROIDS` | SceneAsteroids | OpenGL |
 | `NANOSUIT` | SceneNanosuit | OpenGL |
