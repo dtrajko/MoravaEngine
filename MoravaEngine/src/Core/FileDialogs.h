@@ -26,6 +26,8 @@ public:
 	// A new name can be typed; an existing file is overwritten only after the dialog has asked. A typed name without an
 	// extension gets the first one of the first filter.
 	static std::string SaveFile(const std::vector<FileDialogFilter>& filters = {}, const std::string& initialDirectory = {});
+	// A folder (one can be made in the dialog). title (optional): the dialog's title, saying what the folder is for
+	static std::string PickFolder(const std::string& title = {}, const std::string& initialDirectory = {});
 
 	// The filters of a Windows filter string, as the older scenes pass them: pairs of name and patterns separated and
 	// ended by null characters, e.g. "Images\0*.png;*.jpg\0All\0*.*\0". A single pattern alone ("*.hdr") is also taken.

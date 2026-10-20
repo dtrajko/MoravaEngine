@@ -91,7 +91,7 @@ void GLFWWindow::Init()
 
 		uint32_t width = GetWidth();
 		uint32_t height = GetHeight();
-		m_SwapChain.Create(&width, &height);
+		m_SwapChain.Create(&width, &height, m_Specification.VSync);
 
 		H2M::VulkanAllocatorH2M::Init(context->GetDevice());
 	}
@@ -99,7 +99,7 @@ void GLFWWindow::Init()
 
 	RendererBasic::SetRendererContext(m_RendererContext);
 
-	SetVSync(true);
+	SetVSync(m_Specification.VSync);
 
 	RendererBasic::EnableDepthTest();
 	RendererBasic::SetViewportSize(m_Data.Width, m_Data.Height);
@@ -176,8 +176,9 @@ void GLFWWindow::InitGLFW(const WindowSpecification& props)
 	{
 		GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
 		const GLFWvidmode* mode = glfwGetVideoMode(primaryMonitor);
+		m_Data.Width = (uint32_t)mode->width;
+		m_Data.Height = (uint32_t)mode->height;
 		m_GLFW_Window = glfwCreateWindow(mode->width, mode->height, m_Data.Title.c_str(), primaryMonitor, nullptr);
-		m_GLFW_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
 	}
 	else
 	{

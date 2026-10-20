@@ -91,7 +91,7 @@ void EnvironmentControls()
 
 	if (ImGui::Button("Load Environment Map"))
 	{
-		std::string filepath = FileDialogs::OpenFile({ { "HDR environment map", "hdr" } });
+		std::string filepath = FileDialogs::OpenFile({ { "HDR environment map", "hdr" } }, GetAssetFolderForDialog());
 		if (!filepath.empty())
 		{
 			RequestEnvironmentMap(filepath); // loaded at the start of the next frame (see EditorPreFrame)
@@ -557,7 +557,7 @@ void OnImGuiRenderEnvironment()
 				: ImGui::Button("Dirt", ImVec2(64.0f, 64.0f));
 			if (clicked)
 			{
-				std::string filepath = FileDialogs::OpenFile({ { "Images", "png,jpg,jpeg,tga,bmp" } });
+				std::string filepath = FileDialogs::OpenFile({ { "Images", "png,jpg,jpeg,tga,bmp" } }, GetAssetFolderForDialog());
 				if (!filepath.empty())
 				{
 					EnvMapVulkanRenderer::SetBloomDirtTexture(filepath);

@@ -1,4 +1,5 @@
-// The scene as a document: New, Open, Save, Save As, unsaved changes, the File menu's shortcuts and the notifications
+// The scene as a document: New, Open, Save, Save As, unsaved changes, the File menu's shortcuts and the notifications;
+// and the project the scenes belong to: New, Open and Close Project
 
 
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
@@ -17,6 +18,7 @@
 #include "ImGui/ImGuiWrapper.h"
 #include "Scene/Scene.h"
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
+#include "Project/Project.h"
 
 #include "imgui.h"
 #include "imgui_internal.h" // BeginDragDropTargetCustom (the Models and Meshes panel as one drop area)
@@ -42,10 +44,11 @@ using namespace EnvMapVulkanSceneData;
 static std::string s_SavedSceneText;          // the scene as last saved, opened or created (unsaved changes: it differs)
 
 // A scene operation requested from the File menu or a shortcut, carried out at the start of the next frame (it replaces
-// models and materials the frame may be drawing); New and Open first ask about unsaved changes
-enum class SceneOperation { None, New, Open };
+// models and materials the frame may be drawing); each first asks about unsaved changes. The project operations replace
+// the scene too.
+enum class SceneOperation { None, New, Open, NewProject, OpenProject, CloseProject };
 static SceneOperation s_PendingSceneOperation = SceneOperation::None;
-static std::string s_PendingScenePath;
+static std::string s_PendingScenePath; // Open: the scene file; NewProject: the folder; OpenProject: the project file
 static bool s_SceneOperationConfirmed = false; // the unsaved changes question was answered
 static bool s_AskAboutUnsavedChanges = false;  // opens the question (see OnImGuiRenderUnsavedChangesPopup)
 
@@ -172,20 +175,30 @@ static bool SaveSceneTo(const std::string& requestedPath)
 	file << text;
 	file.close();
 
-	s_SceneFilePath = EnvMapVulkanSceneSerializer::ToStoredPath(path.string());
+	s_SceneFilePath = ProjectPaths::Normalize(path.string());
 	MarkSceneSaved();
-	Log::GetLogger()->info("Scene '{0}' saved to '{1}' ({2} entities, {3} material(s) saved with it)", s_SceneName, s_SceneFilePath,
+	const std::string shownPath = ProjectPaths::ToStored(s_SceneFilePath);
+	Log::GetLogger()->info("Scene '{0}' saved to '{1}' ({2} entities, {3} material(s) saved with it)", s_SceneName, shownPath,
 		s_Scene.GetEntityCount(), savedCount);
-	ShowNotification("Scene '" + s_SceneName + "' saved to " + s_SceneFilePath + (savedCount > 0 ? " (with " + std::to_string(savedCount) +
+	ShowNotification("Scene '" + s_SceneName + "' saved to " + shownPath + (savedCount > 0 ? " (with " + std::to_string(savedCount) +
 		(savedCount == 1 ? " material)" : " materials)") : ""), !materialsOk);
 	return true;
 }
 
+// The open project's scenes folder, else the engine's
 static std::string GetScenesFolderForDialog()
 {
+	const Project* project = Project::GetOpen();
+	const std::string folder = project ? project->GetScenesFolder() : std::string(EnvMapVulkanSceneSerializer::ScenesFolder);
 	std::error_code error;
-	std::filesystem::create_directories(EnvMapVulkanSceneSerializer::ScenesFolder, error);
-	return std::filesystem::absolute(EnvMapVulkanSceneSerializer::ScenesFolder, error).u8string();
+	std::filesystem::create_directories(folder, error);
+	return std::filesystem::absolute(folder, error).u8string();
+}
+
+std::string GetAssetFolderForDialog()
+{
+	const Project* project = Project::GetOpen();
+	return project ? project->GetAssetFolder() : std::string();
 }
 
 void SaveSceneAs()
@@ -290,13 +303,139 @@ static bool OpenSceneNow(const std::string& filepath)
 
 	s_RenderSettings = settings;
 	s_SceneName = name;
-	s_SceneFilePath = EnvMapVulkanSceneSerializer::ToStoredPath(filepath);
+	s_SceneFilePath = ProjectPaths::Normalize(filepath);
 	ExtractEnvironment();
 	ExtractLights();
 	ExtractWater();
 	MarkSceneSaved();
-	Log::GetLogger()->info("Scene '{0}' opened from '{1}': {2} entities", s_SceneName, s_SceneFilePath, s_Scene.GetEntityCount());
+	Log::GetLogger()->info("Scene '{0}' opened from '{1}': {2} entities", s_SceneName, ProjectPaths::ToStored(s_SceneFilePath),
+		s_Scene.GetEntityCount());
 	return true;
+}
+
+// The editor window's title, with the open project's name after it
+static void ShowProjectInWindowTitle()
+{
+	static std::string s_TitleWithoutProject;
+	Window* window = Application::Get()->GetWindow();
+	if (s_TitleWithoutProject.empty())
+	{
+		s_TitleWithoutProject = window->GetTitle();
+	}
+	const Project* project = Project::GetOpen();
+	window->SetTitle(project ? s_TitleWithoutProject + " - " + project->Name : s_TitleWithoutProject);
+}
+
+static bool OpenProjectNow(const std::string& filepath)
+{
+	Project project;
+	std::string error;
+	if (!Project::Load(filepath, project, error))
+	{
+		Log::GetLogger()->error("Project '{0}' could not be opened: {1}", filepath, error);
+		ShowNotification("Project could not be opened: " + error, true);
+		return false;
+	}
+	Project::SetOpen(project);
+	ShowProjectInWindowTitle();
+	return true;
+}
+
+// The open project's start scene (a new scene when it has none, or it can't be opened)
+static void OpenStartSceneNow()
+{
+	const Project* project = Project::GetOpen();
+	const std::string startScene = project ? ProjectPaths::Resolve(project->StartScene) : std::string();
+	if (startScene.empty() || !OpenSceneNow(startScene))
+	{
+		NewSceneNow();
+	}
+}
+
+// A project in the folder, with a new scene saved as its start scene (Scenes/Main.mscene)
+static void NewProjectNow(const std::string& folder)
+{
+	Project project;
+	std::string error;
+	if (!Project::Create(folder, project, error))
+	{
+		Log::GetLogger()->error("Project could not be made in '{0}': {1}", folder, error);
+		ShowNotification("Project could not be made: " + error, true);
+		return;
+	}
+	Project::SetOpen(project);
+	ShowProjectInWindowTitle();
+	NewSceneNow();
+	if (SaveSceneTo(project.GetScenesFolder() + "/Main" + EnvMapVulkanSceneSerializer::FileExtension))
+	{
+		Project::GetOpen()->StartScene = ProjectPaths::ToStored(s_SceneFilePath);
+		SaveProject();
+	}
+	s_ShowProjectPanel = true;
+	Log::GetLogger()->info("Project '{0}' made in '{1}'", project.Name, project.GetDirectory());
+	ShowNotification("Project '" + project.Name + "' made in " + project.GetDirectory());
+}
+
+static void CloseProjectNow()
+{
+	Project::Close();
+	ShowProjectInWindowTitle();
+	NewSceneNow();
+}
+
+void SaveProject()
+{
+	std::string error;
+	const Project* project = Project::GetOpen();
+	if (project && !project->Save(error))
+	{
+		Log::GetLogger()->error("Project '{0}' could not be saved: {1}", project->Name, error);
+		ShowNotification("Project could not be saved: " + error, true);
+	}
+	ShowProjectInWindowTitle(); // its name may have changed
+}
+
+// An operation that replaces the scene: carried out once the unsaved changes question is answered (or there are none)
+static void RequestSceneOperation(SceneOperation operation, const std::string& path)
+{
+	s_PendingSceneOperation = operation;
+	s_PendingScenePath = path;
+	s_SceneOperationConfirmed = !s_SceneHasUnsavedChanges;
+	s_AskAboutUnsavedChanges = s_SceneHasUnsavedChanges;
+}
+
+void RequestNewProject()
+{
+	if (RefusedWhilePlaying("New Project"))
+	{
+		return;
+	}
+	const std::string folder = FileDialogs::PickFolder("New Project: a folder for it (the project is named after it)");
+	if (!folder.empty())
+	{
+		RequestSceneOperation(SceneOperation::NewProject, folder);
+	}
+}
+
+void RequestOpenProject()
+{
+	if (RefusedWhilePlaying("Open Project"))
+	{
+		return;
+	}
+	const std::string filepath = FileDialogs::OpenFile({ { "Project", "mproject" } });
+	if (!filepath.empty())
+	{
+		RequestSceneOperation(SceneOperation::OpenProject, filepath);
+	}
+}
+
+void RequestCloseProject()
+{
+	if (!RefusedWhilePlaying("Close Project") && Project::GetOpen())
+	{
+		RequestSceneOperation(SceneOperation::CloseProject, "");
+	}
 }
 
 // New and Open, from the File menu or a shortcut (asks about unsaved changes first)
@@ -306,9 +445,7 @@ void RequestNewScene()
 	{
 		return;
 	}
-	s_PendingSceneOperation = SceneOperation::New;
-	s_SceneOperationConfirmed = !s_SceneHasUnsavedChanges;
-	s_AskAboutUnsavedChanges = s_SceneHasUnsavedChanges;
+	RequestSceneOperation(SceneOperation::New, "");
 }
 
 void RequestOpenScene(const std::string& filepath)
@@ -322,14 +459,10 @@ void RequestOpenScene(const std::string& filepath)
 	{
 		path = FileDialogs::OpenFile({ { "Scene", "mscene" } }, GetScenesFolderForDialog());
 	}
-	if (path.empty())
+	if (!path.empty())
 	{
-		return;
+		RequestSceneOperation(SceneOperation::Open, path);
 	}
-	s_PendingSceneOperation = SceneOperation::Open;
-	s_PendingScenePath = path;
-	s_SceneOperationConfirmed = !s_SceneHasUnsavedChanges;
-	s_AskAboutUnsavedChanges = s_SceneHasUnsavedChanges;
 }
 
 // The question before New or Open drops unsaved changes: Save (then go on), Don't Save, Cancel
@@ -435,17 +568,28 @@ void ProcessSceneOperations()
 			Log::GetLogger()->warn("--debug-view {0} is a ray-traced view: not available without ray tracing", s_ViewOptions.DebugView);
 			s_ViewOptions.DebugView = DebugViewOff;
 		}
-		// --scene on the command line: opened like File > Open (without it the engine starts empty)
-		const std::string& startupScene = Application::Get()->GetCommandLine().ScenePath;
+		// --project on the command line: opened like File > Open Project
+		const std::string& startupProject = Application::Get()->GetCommandLine().ProjectPath;
+		if (!startupProject.empty())
+		{
+			OpenProjectNow(startupProject);
+		}
+		// --scene on the command line: opened like File > Open, else the project's start scene (without either the
+		// engine starts empty)
+		std::string startupScene = Application::Get()->GetCommandLine().ScenePath;
+		if (startupScene.empty() && Project::GetOpen())
+		{
+			startupScene = ProjectPaths::Resolve(Project::GetOpen()->StartScene);
+		}
 		if (!startupScene.empty())
 		{
 			RequestOpenScene(startupScene);
 		}
 		// --play: the game starts at the start of the next frame, after the scene opened below
-			if (Application::Get()->GetCommandLine().Play)
-			{
-				RequestPlay();
-			}
+		if (Application::Get()->GetCommandLine().Play)
+		{
+			RequestPlay();
+		}
 	}
 	if (s_PendingSceneOperation == SceneOperation::None || !s_SceneOperationConfirmed)
 	{
@@ -457,6 +601,21 @@ void ProcessSceneOperations()
 	if (operation == SceneOperation::New)
 	{
 		NewSceneNow();
+	}
+	else if (operation == SceneOperation::NewProject)
+	{
+		NewProjectNow(s_PendingScenePath);
+	}
+	else if (operation == SceneOperation::OpenProject)
+	{
+		if (OpenProjectNow(s_PendingScenePath))
+		{
+			OpenStartSceneNow();
+		}
+	}
+	else if (operation == SceneOperation::CloseProject)
+	{
+		CloseProjectNow();
 	}
 	else
 	{

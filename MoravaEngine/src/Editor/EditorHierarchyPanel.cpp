@@ -324,7 +324,7 @@ void OnImGuiRenderSceneHierarchy()
 	{
 		if (ImGui::MenuItem("Model..."))
 		{
-			std::string filepath = FileDialogs::OpenFile();
+			std::string filepath = FileDialogs::OpenFile({}, GetAssetFolderForDialog());
 			if (!filepath.empty())
 			{
 				s_PendingModelFilename = filepath; // loaded at the start of the next frame (see EditorPreFrame)

@@ -201,9 +201,12 @@ public:
 
 	// Material files (.mmat, YAML): the name, the values, the maps (image files and whether they are used) and, for an
 	// imported material, the model file and material index it came from (so loading that model again reuses it).
-	// Paths are stored relative to the working directory (the project folder) when they are inside it.
-	static constexpr const char* MaterialsFolder = "assets/Materials"; // the project's assets folder is lowercase
+	// Paths are written and read through ProjectPaths: relative to the open project's folder or to the engine's.
+	static constexpr const char* MaterialsFolder = "assets/Materials"; // the engine's (its assets folder is lowercase)
 	static constexpr const char* FileExtension = ".mmat";
+
+	// Where materials never saved go: the open project's asset folder's Materials, else the engine's MaterialsFolder
+	static std::string GetMaterialsFolder();
 
 	// A file name (without extension) for files the engine saves: only letters, digits, '-', '_' and '.'. A run of spaces
 	// and other characters becomes one '_' (dropped at the start and the end): "DamagedHelmet Material 1" ->
@@ -212,7 +215,7 @@ public:
 
 	static H2M::RefH2M<EnvMapVulkanMaterial> FindByID(uint64_t id);
 	// Writes the material to filepath (its file name made by MakeFileName); empty: to its own file, or (never saved) to
-	// MaterialsFolder/<name>.mmat (MakeFileName, "_2", "_3"... when taken). Returns false (logged) when it can't be written.
+	// GetMaterialsFolder()/<name>.mmat (MakeFileName, "_2", "_3"... when taken). Returns false (logged) when it can't be written.
 	// A variant's file has its parent (ID and file) and the list of its overrides; a parent never saved is saved first.
 	static bool Save(H2M::RefH2M<EnvMapVulkanMaterial> material, const std::string& filepath = "");
 	// Reads a material file: into the library's material with the same ID (its values and maps are replaced: the GPU must

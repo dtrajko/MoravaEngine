@@ -28,7 +28,8 @@ jobs:
             cxx: g++
             cmake-options: -DMORAVA_VULKAN=ON -DMORAVA_SCENE=ENV_MAP_VULKAN
             smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20 --play
-            player-smoke-test: --scene Scenes/GI_Cube.mscene --exit-after 20
+            # A project outside the engine's folder (Projects/Sample): its start scene, its own materials, its window
+            player-smoke-test: --project ../Projects/Sample/Sample.mproject --exit-after 20
           # Without -fno-pch-timestamp Clang rejects a precompiled header that ccache restored (its file time differs)
           - name: Clang Vulkan
             cc: clang
@@ -113,7 +114,8 @@ jobs:
             exit 1
           fi
 
-      # The player (MoravaPlayer, without the editor) shows a scene the same way, and fails on the same things
+      # The player (MoravaPlayer, without the editor) plays a project's start scene the same way, and fails on the same
+      # things, and on the project's files that could not be found
       - name: Player smoke test
         if: matrix.player-smoke-test
         working-directory: MoravaEngine
@@ -126,6 +128,10 @@ jobs:
           fi
           if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read" player-smoke-test.log; then
             echo "::error::Files that could not be found or loaded"
+            exit 1
+          fi
+          if grep -E "Scene: .*(not found|could not be loaded)|could not be opened" player-smoke-test.log; then
+            echo "::error::The project, its scene, or a model or material of the scene could not be found or opened"
             exit 1
           fi
 

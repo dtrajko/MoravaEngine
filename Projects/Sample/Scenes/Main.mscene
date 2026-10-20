@@ -1,0 +1,262 @@
+Scene:
+  Version: 1
+  Name: Main
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 4797481855757227527
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0.36906093, 16.773945, 9.299732]
+      Rotation: [1.5000473, 0.3997574, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      {}
+  - ID: 16040318626583559303
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 17664899364368859239
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0.0067483177, 0.0065134675, -87.970924]
+      Scale: [0.99996686, 0.99999785, 0.9999558]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 0.28021637
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 8601021745167664655
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [10, 1, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 4645328179557402687
+    Name: Cube
+    Parent: 8601021745167664655
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 11173523489358520666
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [11, 11, 2]
+      Rotation: [0, -0, -90]
+      Scale: [9.999993, 0.9999972, 7.9999247]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 11005680830479748476
+    Name: Cube
+    Parent: 11173523489358520666
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 10946202904542493917
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [11, 6, -8]
+      Rotation: [0, -0, -90]
+      Scale: [10, 0.9999972, 1.9998641]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 12347905251721334247
+    Name: Cube
+    Parent: 10946202904542493917
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4411623245843787822
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, -11]
+      Rotation: [90, 4.3089303e-06, -90]
+      Scale: [9.999842, 0.99993837, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 3390355051436957147
+    Name: Cube
+    Parent: 4411623245843787822
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4760625982631271431
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, 11]
+      Rotation: [90, 4.308828e-06, -90]
+      Scale: [9.999682, 0.9999284, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 4372998666035804560
+    Name: Cube
+    Parent: 4760625982631271431
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 16332770661743169074
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-11, 11, 0]
+      Rotation: [0, -0, -90]
+      Scale: [9.999993, 0.9999972, 9.999189]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 8715774543680231152
+    Name: Cube
+    Parent: 16332770661743169074
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 191337683009812853
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 22, 0]
+      Rotation: [0, -0, 0]
+      Scale: [10, 1, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+  - ID: 1610167032220544294
+    Name: Cube
+    Parent: 191337683009812853
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 12292673721498952904
+    Name: Probe Volume
+    Parent: 0
+    Transform:
+      Translation: [0, 11, -4.7683716e-06]
+      Rotation: [0, -0, 0]
+      Scale: [25.399996, 25.4, 25.399862]
+    ProbeVolume:
+      Enabled: true
+      Counts: [8, 8, 8]
+      NormalBias: 0.25
+      ViewBias: 0.25
+      AutoUpdate: true
+      ProbesPerFrame: 8
+      TracedProbesPerFrame: 1024
+      RaysPerProbe: 192
+      Hysteresis: 0.9
+      RelocateProbes: true
+      OccludeReflections: true
+      ShowProbes: false
+      ProbeRadius: 0.12
+      Show: 0

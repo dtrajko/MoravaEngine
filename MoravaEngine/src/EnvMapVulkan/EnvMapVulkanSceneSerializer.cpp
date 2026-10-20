@@ -2,29 +2,14 @@
 
 #include "EnvMapVulkanMaterialLibrary.h"
 
+#include "Project/Project.h"
+
 #include <filesystem>
 #include <fstream>
 
 
 namespace EnvMapVulkanSceneSerializer
 {
-	std::string ToStoredPath(const std::string& path)
-	{
-		if (path.empty())
-		{
-			return path;
-		}
-		std::error_code error;
-		std::filesystem::path absolute = std::filesystem::weakly_canonical(path, error);
-		if (error)
-		{
-			return std::filesystem::path(path).generic_string();
-		}
-		std::filesystem::path relative = absolute.lexically_relative(std::filesystem::current_path(error));
-		std::filesystem::path stored = (!relative.empty() && *relative.begin() != "..") ? relative : absolute;
-		return stored.generic_string();
-	}
-
 	static void WriteVec3(YAML::Emitter& out, const char* key, const glm::vec3& v)
 	{
 		out << YAML::Key << key << YAML::Value << YAML::Flow << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
@@ -127,7 +112,7 @@ namespace EnvMapVulkanSceneSerializer
 		if (const ModelComponent* model = scene.TryGet<ModelComponent>(entity))
 		{
 			out << YAML::Key << "Model" << YAML::Value << YAML::BeginMap;
-			out << YAML::Key << "File" << YAML::Value << ToStoredPath(model->FilePath);
+			out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(model->FilePath);
 			out << YAML::EndMap;
 		}
 		if (const MeshPartComponent* part = scene.TryGet<MeshPartComponent>(entity))
@@ -138,7 +123,7 @@ namespace EnvMapVulkanSceneSerializer
 			{
 				out << YAML::Key << "Material" << YAML::Value << YAML::BeginMap;
 				out << YAML::Key << "ID" << YAML::Value << part->Material->GetID();
-				out << YAML::Key << "File" << YAML::Value << part->Material->GetFilePath();
+				out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(part->Material->GetFilePath());
 				out << YAML::Key << "Name" << YAML::Value << part->Material->GetName(); // for people reading the file
 				out << YAML::EndMap;
 			}
@@ -212,7 +197,7 @@ namespace EnvMapVulkanSceneSerializer
 		if (const EnvironmentComponent* environment = scene.TryGet<EnvironmentComponent>(entity))
 		{
 			out << YAML::Key << "Environment" << YAML::Value << YAML::BeginMap;
-			out << YAML::Key << "File" << YAML::Value << ToStoredPath(environment->FilePath);
+			out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(environment->FilePath);
 			out << YAML::Key << "Rotation" << YAML::Value << environment->Rotation;
 			out << YAML::Key << "Exposure" << YAML::Value << environment->Exposure;
 			out << YAML::Key << "AutoExposure" << YAML::Value << environment->AutoExposure;
@@ -288,7 +273,7 @@ namespace EnvMapVulkanSceneSerializer
 				}
 				if (YAML::Node modelNode = node["Model"])
 				{
-					scene.Add<ModelComponent>(entity).FilePath = modelNode["File"].as<std::string>("");
+					scene.Add<ModelComponent>(entity).FilePath = ProjectPaths::Resolve(modelNode["File"].as<std::string>(""));
 				}
 				if (YAML::Node partNode = node["MeshPart"])
 				{
@@ -297,7 +282,7 @@ namespace EnvMapVulkanSceneSerializer
 					part.MeshIndex = part.SourceMeshIndex; // the caller sets it once the model's meshes are known
 					if (YAML::Node materialNode = partNode["Material"])
 					{
-						materialRefs[entity] = { materialNode["ID"].as<uint64_t>(0), materialNode["File"].as<std::string>("") };
+						materialRefs[entity] = { materialNode["ID"].as<uint64_t>(0), ProjectPaths::Resolve(materialNode["File"].as<std::string>("")) };
 					}
 				}
 				if (YAML::Node sunNode = node["Sun"])
@@ -365,6 +350,7 @@ namespace EnvMapVulkanSceneSerializer
 				{
 					EnvironmentComponent& environment = scene.Add<EnvironmentComponent>(entity);
 					Read(environmentNode, "File", environment.FilePath);
+					environment.FilePath = ProjectPaths::Resolve(environment.FilePath);
 					Read(environmentNode, "Rotation", environment.Rotation);
 					Read(environmentNode, "Exposure", environment.Exposure);
 					Read(environmentNode, "AutoExposure", environment.AutoExposure);

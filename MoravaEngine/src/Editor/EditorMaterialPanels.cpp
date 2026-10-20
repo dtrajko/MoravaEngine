@@ -17,6 +17,7 @@
 #include "ImGui/ImGuiWrapper.h"
 #include "Scene/Scene.h"
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
+#include "Project/Project.h"
 
 #include "imgui.h"
 #include "imgui_internal.h" // BeginDragDropTargetCustom (the Models and Meshes panel as one drop area)
@@ -38,6 +39,18 @@
 
 
 using namespace EnvMapVulkanSceneData;
+
+// Where materials never saved go, as the tooltips show it (the project's: relative to the project folder)
+static std::string GetMaterialsFolderShown()
+{
+	return ProjectPaths::ToStored(EnvMapVulkanMaterialLibrary::GetMaterialsFolder());
+}
+
+// The material dialogs start in the open project's materials folder (empty: no project, the dialog's own choice)
+static std::string GetMaterialsFolderForDialog()
+{
+	return Project::GetOpen() ? EnvMapVulkanMaterialLibrary::GetMaterialsFolder() : std::string();
+}
 
 static bool IsMaterialFile(const std::string& filepath)
 {
@@ -239,12 +252,12 @@ void OnImGuiRenderMaterialLibrary()
 	{
 		ImGui::SetTooltip("Saves the selected material to its file, or (never saved) to %s/<name>%s\n"
 			"(file names have no spaces: \"My Material\" is saved as My_Material%s)",
-			EnvMapVulkanMaterialLibrary::MaterialsFolder, EnvMapVulkanMaterialLibrary::FileExtension, EnvMapVulkanMaterialLibrary::FileExtension);
+			GetMaterialsFolderShown().c_str(), EnvMapVulkanMaterialLibrary::FileExtension, EnvMapVulkanMaterialLibrary::FileExtension);
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Save As..."))
 	{
-		std::string filepath = FileDialogs::SaveFile({ { "Material", "mmat" } });
+		std::string filepath = FileDialogs::SaveFile({ { "Material", "mmat" } }, GetMaterialsFolderForDialog());
 		if (!filepath.empty())
 		{
 			saveOne(s_SelectedMaterial, filepath);
@@ -276,12 +289,12 @@ void OnImGuiRenderMaterialLibrary()
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("Saves every material with unsaved changes (marked *), each to its own file;\n"
-			"one never saved goes to %s", EnvMapVulkanMaterialLibrary::MaterialsFolder);
+			"one never saved goes to %s", GetMaterialsFolderShown().c_str());
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Load..."))
 	{
-		std::string filepath = FileDialogs::OpenFile({ { "Material", "mmat" } });
+		std::string filepath = FileDialogs::OpenFile({ { "Material", "mmat" } }, GetMaterialsFolderForDialog());
 		if (!filepath.empty())
 		{
 			s_PendingMaterialFiles.push_back(filepath); // loaded at the start of the next frame (see EditorPreFrame)
@@ -290,7 +303,7 @@ void OnImGuiRenderMaterialLibrary()
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("Loads a material file (or drop .mmat files onto this panel). A file of a material already in the\n"
-			"library (the same ID) reloads it; the others are added. Saved materials are in %s.", EnvMapVulkanMaterialLibrary::MaterialsFolder);
+			"library (the same ID) reloads it; the others are added. Saved materials are in %s.", GetMaterialsFolderShown().c_str());
 	}
 
 	if (ImGui::GetTime() - s_SaveStatusTime < 5.0)
@@ -753,7 +766,7 @@ void OnImGuiRenderMaterialEditor()
 
 			if (ImGui::Button("Load..."))
 			{
-				std::string filepath = FileDialogs::OpenFile({ { "Images", "png,jpg,jpeg,tga,bmp" } });
+				std::string filepath = FileDialogs::OpenFile({ { "Images", "png,jpg,jpeg,tga,bmp" } }, GetAssetFolderForDialog());
 				if (!filepath.empty())
 				{
 					s_PendingMaterialTextures.push_back({ material, i, filepath }); // applied at the start of the next frame

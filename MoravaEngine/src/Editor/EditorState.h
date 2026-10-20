@@ -100,6 +100,7 @@ extern EnvMapVulkanEntityID s_RenamingEntity;                // the entity whose
 extern char s_RenameBuffer[128];
 extern bool s_ShowLightGizmos;                               // light icons and shapes in the viewport
 extern bool s_ShowRendererStats;
+extern bool s_ShowProjectPanel;
 extern bool s_ShowViewportFps;
 
 // Drag & drop payload of a Material Library material: an index into EnvMapVulkanMaterialLibrary::GetMaterials()
@@ -310,6 +311,20 @@ void RequestNewScene();
 
 void RequestOpenScene(const std::string& filepath = "");
 
+// The project (Project::GetOpen) from the File menu: a new one in a folder chosen in a dialog (with a first scene, its start
+// scene), one opened from its .mproject file (with its start scene), or none (a new scene). Each replaces the scene, so it
+// asks about unsaved changes first.
+void RequestNewProject();
+void RequestOpenProject();
+void RequestCloseProject();
+
+// Writes the open project's file (after an edit in the Project panel)
+void SaveProject();
+
+// The folder file dialogs for assets (models, maps, images, materials) start in: the open project's asset folder (empty:
+// none, the dialog's own choice)
+std::string GetAssetFolderForDialog();
+
 // The question before New or Open drops unsaved changes: Save (then go on), Don't Save, Cancel
 void OnImGuiRenderUnsavedChangesPopup();
 
@@ -432,3 +447,9 @@ void OnImGuiRenderMaterialEditor();
 std::string FormatCount(uint64_t value);
 
 void OnImGuiRenderRendererStats();
+
+// ---- The Project panel (EditorProjectPanel.cpp)
+
+// The open project's settings (its name, start scene, asset folder and the game's window), saved as they are edited; without
+// a project, New Project and Open Project
+void OnImGuiRenderProjectPanel();

@@ -211,6 +211,33 @@ std::string FileDialogs::SaveFile(const std::vector<FileDialogFilter>& filters, 
 	return path;
 }
 
+std::string FileDialogs::PickFolder(const std::string& title, const std::string& initialDirectory)
+{
+	DialogSession session;
+	if (!session.Ready)
+	{
+		return std::string();
+	}
+	nfdpickfolderu8args_t arguments = {};
+	arguments.defaultPath = initialDirectory.empty() ? nullptr : initialDirectory.c_str();
+	arguments.parentWindow = GetOwnerWindow();
+	arguments.title = title.empty() ? nullptr : title.c_str();
+
+	std::string path;
+	nfdu8char_t* chosen = nullptr;
+	const nfdresult_t result = NFD_PickFolderU8_With(&chosen, &arguments);
+	if (result == NFD_OKAY && chosen)
+	{
+		path = chosen;
+		NFD_FreePathU8(chosen);
+	}
+	else if (result == NFD_ERROR)
+	{
+		Log::GetLogger()->error("File dialog: {0}", NFD_GetError() ? NFD_GetError() : "failed");
+	}
+	return path;
+}
+
 std::vector<FileDialogFilter> FileDialogs::FiltersFromWindowsString(const char* filter)
 {
 	return ParseWindowsFilter(filter, [](const std::string& text) { return text; });
