@@ -169,6 +169,16 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "FieldOfView" << YAML::Value << camera->FieldOfView;
 			out << YAML::EndMap;
 		}
+		if (const InputTestComponent* test = scene.TryGet<InputTestComponent>(entity))
+		{
+			out << YAML::Key << "InputTest" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Speed" << YAML::Value << test->Speed;
+			out << YAML::Key << "JumpSpeed" << YAML::Value << test->JumpSpeed;
+			out << YAML::Key << "Gravity" << YAML::Value << test->Gravity;
+			out << YAML::Key << "TurnSpeed" << YAML::Value << test->TurnSpeed;
+			out << YAML::Key << "CaptureMouse" << YAML::Value << test->CaptureMouse;
+			out << YAML::EndMap;
+		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
 			WriteWater(out, water->Settings);
@@ -324,6 +334,15 @@ namespace EnvMapVulkanSceneSerializer
 				{
 					CameraComponent& camera = scene.Add<CameraComponent>(entity);
 					Read(cameraNode, "FieldOfView", camera.FieldOfView); // scenes saved before the camera had a lens: 45
+				}
+				if (YAML::Node testNode = node["InputTest"])
+				{
+					InputTestComponent& test = scene.Add<InputTestComponent>(entity);
+					Read(testNode, "Speed", test.Speed);
+					Read(testNode, "JumpSpeed", test.JumpSpeed);
+					Read(testNode, "Gravity", test.Gravity);
+					Read(testNode, "TurnSpeed", test.TurnSpeed);
+					Read(testNode, "CaptureMouse", test.CaptureMouse);
 				}
 				if (YAML::Node probesNode = node["ProbeVolume"])
 				{

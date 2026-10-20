@@ -608,6 +608,49 @@ static void ScaleDragScalingChildLights(const char* label, EnvMapVulkanEntityID 
 // A model's properties: its transform, the selected part's transform (when a part of it is selected), removing the model or
 // the part, the animation (skinned models) and the material slots of its parts. Used by the Models and Meshes panel and the
 // Properties panel.
+// The input test (InputTestComponent): the model moves with Move, jumps with Jump and turns with Look while the game runs
+static void InputTestControls(EnvMapVulkanEntityID model)
+{
+	ImGui::Separator();
+	bool enabled = s_Scene.Has<InputTestComponent>(model);
+	if (ImGui::Checkbox("Input Test", &enabled))
+	{
+		if (enabled)
+		{
+			s_Scene.Add<InputTestComponent>(model);
+		}
+		else
+		{
+			s_Scene.Remove<InputTestComponent>(model);
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Play: the model moves with the Move action (WASD, the arrow keys, the left stick; forward is away\n"
+			"from the camera), jumps with Jump (Space, A) and turns with Look (the right stick; the mouse when captured).\n"
+			"A test of input until scripts (Phase 4); no physics yet, so it goes through walls. View > Input shows the actions.");
+	}
+	InputTestComponent* test = s_Scene.TryGet<InputTestComponent>(model);
+	if (!test)
+	{
+		return;
+	}
+	ImGui::DragFloat("Speed", &test->Speed, 0.1f, 0.0f, 50.0f, "%.1f m/s");
+	ImGui::DragFloat("Jump Speed", &test->JumpSpeed, 0.1f, 0.0f, 50.0f, "%.1f m/s");
+	ImGui::DragFloat("Gravity", &test->Gravity, 0.1f, 0.0f, 100.0f, "%.1f m/s2");
+	ImGui::DragFloat("Turn Speed", &test->TurnSpeed, 0.01f, 0.0f, 10.0f, "%.2f");
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Degrees per unit of Look: the mouse gives 0.1 degrees per pixel, the right stick 180 degrees per second");
+	}
+	ImGui::Checkbox("Capture Mouse", &test->CaptureMouse);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The game takes the mouse while it has input: the cursor is hidden and the mouse turns the model.\n"
+			"Escape gives the mouse back to the editor; a click on the view gives it to the game again.");
+	}
+}
+
 static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 {
 	const int selectedMeshIndex = GetSelectedModel() == selectedModel ? GetSelectedMeshIndex() : -1;
@@ -651,6 +694,8 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 				: "A rigged mesh: the skeleton places it (the gizmo moves the whole model)");
 		}
 	}
+
+	InputTestControls(selectedModel);
 
 	if (ImGui::Button("Remove Model"))
 	{
@@ -1065,7 +1110,7 @@ void OnImGuiRenderProperties()
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("Where the camera looks, in degrees.\n"
-					"X: up (positive) and down, -89 to 89.\n"
+					"X: down (positive) and up, -89 to 89.\n"
 					"Y: around the vertical axis: 0 looks along -Z, positive turns to the left.\n"
 					"The camera isn't rolled.");
 			}

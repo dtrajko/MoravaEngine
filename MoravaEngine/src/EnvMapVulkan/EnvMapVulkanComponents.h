@@ -138,7 +138,7 @@ struct ProbeVolumeComponent
 };
 
 // The camera the scene is seen through in the editor (one per scene). Its placement is the entity's transform:
-// translation = where it is, rotation = where it looks: x up and down (pitch), y around the vertical axis (0 looks along
+// translation = where it is, rotation = where it looks: x down (positive) and up (pitch), y around the vertical axis (0 looks along
 // -Z, positive turns to the left). It isn't rolled or scaled. Saved with the scene, so an opened scene is seen as it was.
 struct CameraComponent
 {
@@ -162,6 +162,23 @@ struct EnvironmentComponent
 	float SkyboxLod = 0.0f;
 };
 
+// A test of the game's input (docs/engine/Game_Engine_Runtime_Guide.html, 2.3), until scripts do this (Phase 4): while the
+// game runs, the entity moves with the Move action (as seen from the camera: forward is away from it), jumps with Jump and
+// lands back at its height when the game started, and turns with Look. No physics: it goes through walls.
+struct InputTestComponent
+{
+	float Speed = 4.0f;        // meters per second
+	float JumpSpeed = 6.0f;    // meters per second, up, when it jumps
+	float Gravity = 20.0f;     // meters per second squared
+	float TurnSpeed = 1.0f;    // Look turns it: degrees per unit of Look (the mouse: 0.1 degrees per pixel by default)
+	bool CaptureMouse = false; // the game captures the mouse (Escape gives it back in the editor)
+
+	// Runtime: not saved
+	bool Started = false;
+	float GroundHeight = 0.0f;
+	float VerticalSpeed = 0.0f;
+};
+
 // A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
 // ComponentList<A, B>::ForEach([](auto type) { using T = typename decltype(type)::Type; ... });
 template<typename T>
@@ -183,4 +200,4 @@ struct ComponentList
 // The components that are scene data: every component above but IDComponent (the scene gives each entity its own). A new
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
-	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent>;
+	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent>;

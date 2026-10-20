@@ -342,9 +342,10 @@ namespace EnvMapVulkanSceneData
 		camera.SetPosition(transform.Translation);
 		camera.SetYaw(yaw);
 		camera.SetPitch(pitch);
-		// As the camera's controller does from the yaw and the pitch
+		// As the camera's controller does from the yaw and the pitch (CameraController::CalculateFront: a positive pitch
+		// looks down)
 		camera.SetFront(glm::normalize(glm::vec3(std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch)),
-			std::sin(glm::radians(pitch)), std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch)))));
+			-std::sin(glm::radians(pitch)), std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch)))));
 		camera.OnUpdate(H2M::TimestepH2M(0.0f));
 	}
 }

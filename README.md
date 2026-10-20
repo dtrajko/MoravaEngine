@@ -121,6 +121,8 @@ Start-Process .\MoravaEngine\build\Debug\MoravaPlayer.exe -WorkingDirectory .\Mo
 
 A project is a folder of its own, anywhere (`Projects/Sample` is the sample): a `.mproject` file names the project, its start scene, its asset folder and the game's window (size, full screen, VSync, title). Its scenes and materials are found in the project's folder first, then in the engine's (its models and environment maps). In the editor, File > New Project makes one in a chosen folder (with a first scene as its start scene), File > Open Project opens one, and File > Project Settings edits it. `--scene <file>` instead of `--project` plays a single scene.
 
+The game reads *actions*, not keys: a project's `Settings/Input.minput` names them and their bindings (keys, the mouse, gamepad buttons and sticks). Any connected gamepad works; GLFW knows the layout of most controllers (Xbox, PlayStation and many more). The sample's actions are Move (WASD, the arrow keys, the left stick), Look (the mouse, the right stick) and Jump (Space, A): its orange cube, Player, moves with them. In the editor, View > Input shows each action's live value and the connected gamepads; its *Try* option checks the bindings without Play. During Play the game has the input while the Viewport has the focus (Play gives it, a click on the view gives it back); Escape gives the mouse back to the editor.
+
 ### Building on Linux
 
 Tested on Ubuntu with GCC 15 and Clang, in WSL2. The Vulkan and OpenGL scenes build (GCC; Clang tested with Vulkan); the Vulkan editor and the OpenGL scene SceneSSAO were run. DirectX 11 is Windows only.
@@ -279,6 +281,8 @@ Vulkan editor (`ENV_MAP_VULKAN`):
 * Copy and Paste: CTRL + C, CTRL + V
 * Rename: F2
 * Delete: DELETE
+* Play and Stop: CTRL + P
+* While the game runs: Escape gives the input (and a captured mouse) back to the editor, a click on the view gives it to the game
 
 Older editor scenes (`EDITOR`, `EDITOR_IMGUIZMO`):
 

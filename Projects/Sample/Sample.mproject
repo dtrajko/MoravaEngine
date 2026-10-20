@@ -3,4 +3,5 @@ Project:
   Name: Sample
   StartScene: Scenes/Main.mscene
   AssetDirectory: Assets
+  InputMap: Settings/Input.minput
   Window: {Width: 1280, Height: 720, Fullscreen: false, VSync: true, Title: Morava Sample}

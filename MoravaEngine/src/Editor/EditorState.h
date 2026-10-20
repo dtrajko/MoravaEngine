@@ -8,6 +8,9 @@
 #include "EditorSelection.h"
 
 #include "Game/GameLoop.h"
+#include "Game/GameSystems.h"
+
+#include "Input/InputSystem.h"
 
 #include "EnvMapVulkan/EnvMapVulkanLights.h"
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
@@ -101,6 +104,7 @@ extern char s_RenameBuffer[128];
 extern bool s_ShowLightGizmos;                               // light icons and shapes in the viewport
 extern bool s_ShowRendererStats;
 extern bool s_ShowProjectPanel;
+extern bool s_ShowInputPanel;
 extern bool s_ShowViewportFps;
 
 // Drag & drop payload of a Material Library material: an index into EnvMapVulkanMaterialLibrary::GetMaterials()
@@ -160,6 +164,17 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime);
 
 // Ctrl+P: Play, and Stop while the game runs (as in Unity). Not while typing in a field, and not while a question is open
 void HandlePlayModeShortcutKeys();
+
+// The Viewport panel, each frame: it has the focus (the game gets input in the next frame); Escape (Shift+F1 when the game
+// binds Escape) takes the focus away, giving the mouse back to the editor
+void UpdateGameViewportFocus(bool viewportFocused);
+
+// The running game's input, for the Input panel (nullptr: no game)
+const InputSystem* GetGameInput();
+
+// The OS window the current ImGui window is in: the main window, or its own when it was dragged out (multi-viewports).
+// Keys and the mouse are read from it
+GLFWwindow* GetCurrentPlatformWindow();
 
 // A game still running at exit is stopped (the edited scene comes back and is checked)
 void ShutdownPlayMode();
@@ -453,3 +468,8 @@ void OnImGuiRenderRendererStats();
 // The open project's settings (its name, start scene, asset folder and the game's window), saved as they are edited; without
 // a project, New Project and Open Project
 void OnImGuiRenderProjectPanel();
+
+// ---- The Input panel (EditorInputPanel.cpp)
+
+// The game's actions with their live values and the bindings that gave them, and the connected gamepads (View > Input)
+void OnImGuiRenderInputPanel();

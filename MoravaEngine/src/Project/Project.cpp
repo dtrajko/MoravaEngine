@@ -2,6 +2,8 @@
 
 #include "Core/Log.h"
 
+#include "Input/InputMap.h"
+
 #include <yaml-cpp/yaml.h>
 
 #include <filesystem>
@@ -26,6 +28,11 @@ std::string Project::GetAssetFolder() const
 std::string Project::GetScenesFolder() const
 {
 	return (std::filesystem::path(GetDirectory()) / ScenesFolder).generic_string();
+}
+
+std::string Project::GetInputMapPath() const
+{
+	return InputMapFile.empty() ? std::string() : (std::filesystem::path(GetDirectory()) / InputMapFile).lexically_normal().generic_string();
 }
 
 std::string Project::GetWindowTitle() const
@@ -58,6 +65,7 @@ bool Project::Load(const std::string& filepath, Project& project, std::string& e
 	project.Name = node["Name"].as<std::string>(std::filesystem::path(filepath).stem().string());
 	project.StartScene = node["StartScene"].as<std::string>("");
 	project.AssetDirectory = node["AssetDirectory"].as<std::string>(project.AssetDirectory);
+	project.InputMapFile = node["InputMap"].as<std::string>(""); // projects made before input actions have none
 	if (YAML::Node window = node["Window"])
 	{
 		project.Window.Width = window["Width"].as<uint32_t>(project.Window.Width);
@@ -78,6 +86,7 @@ bool Project::Save(std::string& error) const
 	out << YAML::Key << "Name" << YAML::Value << Name;
 	out << YAML::Key << "StartScene" << YAML::Value << StartScene;
 	out << YAML::Key << "AssetDirectory" << YAML::Value << AssetDirectory;
+	out << YAML::Key << "InputMap" << YAML::Value << InputMapFile;
 	out << YAML::Key << "Window" << YAML::Value << YAML::Flow << YAML::BeginMap;
 	out << YAML::Key << "Width" << YAML::Value << Window.Width;
 	out << YAML::Key << "Height" << YAML::Value << Window.Height;
@@ -123,6 +132,12 @@ bool Project::Create(const std::string& folder, Project& project, std::string& e
 	project.FilePath = (directory / (project.Name + FileExtension)).generic_string();
 	std::filesystem::create_directories(project.GetAssetFolder() + "/" + MaterialsFolder, fileError);
 	std::filesystem::create_directories(project.GetScenesFolder(), fileError);
+	const std::string inputMapPath = project.GetInputMapPath();
+	std::filesystem::create_directories(std::filesystem::path(inputMapPath).parent_path(), fileError);
+	if (!InputMap::Default().Save(inputMapPath, error))
+	{
+		return false;
+	}
 	return project.Save(error);
 }
 

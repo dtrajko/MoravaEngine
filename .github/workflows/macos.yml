@@ -133,8 +133,8 @@ jobs:
             echo "::error::Files that could not be found or loaded"
             exit 1
           fi
-          if grep -E "Scene: .*(not found|could not be loaded)|could not be opened" player-smoke-test.log; then
-            echo "::error::The project, its scene, or a model or material of the scene could not be found or opened"
+          if grep -E "Scene: .*(not found|could not be loaded)|could not be opened|Input file .* could not be loaded|binding of .* is left out" player-smoke-test.log; then
+            echo "::error::The project, its scene, its input file, or a model or material of the scene could not be found or opened"
             exit 1
           fi
 

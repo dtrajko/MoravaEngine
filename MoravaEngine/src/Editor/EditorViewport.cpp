@@ -609,6 +609,7 @@ void OnImGuiRenderViewport()
 	// While the game runs, the viewport is the game's: the editor's camera doesn't fly, nothing is picked or moved with
 	// the gizmo, and Delete, Ctrl+C and Ctrl+V do nothing here (the panels still edit the running game)
 	const bool gameRunning = IsGameRunning();
+	UpdateGameViewportFocus(ImGui::IsWindowFocused());
 	ImGuiWrapper::SetViewportEnabled(true);
 	ImGuiWrapper::SetViewportHovered(ImGui::IsWindowHovered() && !gameRunning);
 	ImGuiWrapper::SetViewportFocused(ImGui::IsWindowFocused() && !gameRunning);
