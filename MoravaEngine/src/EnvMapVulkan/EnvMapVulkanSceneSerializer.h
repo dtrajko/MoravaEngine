@@ -20,7 +20,7 @@
  *       SpotLight, Water, Environment
  *
  * Entities are written parents first (the order of the hierarchy), so a parent exists when its children are read.
- * Paths are relative to the working directory (the project folder) when they are inside it.
+ * Paths are written and read through ProjectPaths: relative to the open project's folder or to the engine's.
  *
  * Reading creates the entities and their components; what needs the renderer is left to the caller: the models are not
  * loaded (ModelComponent::Model is null; the parts say which meshes and materials they use), and the materials are only
@@ -45,7 +45,4 @@ namespace EnvMapVulkanSceneSerializer
 	// come back to the caller. False (error explains) when the file can't be read.
 	bool Deserialize(const std::string& filepath, EnvMapVulkanScene& scene, std::string& sceneName, EnvMapVulkanRenderSettings& renderSettings,
 		std::unordered_map<EnvMapVulkanEntityID, MaterialRef>& materialRefs, std::string& error);
-
-	// A path as stored in scene and material files: relative to the working directory when it is inside it, forward slashes
-	std::string ToStoredPath(const std::string& path);
 }

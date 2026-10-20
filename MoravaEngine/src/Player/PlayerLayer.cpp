@@ -9,6 +9,8 @@
 
 #include "H2M/Platform/Vulkan/VulkanSwapChainH2M.h"
 
+#include "Project/Project.h"
+
 #include <glm/glm.hpp>
 
 #include <string>
@@ -21,10 +23,21 @@ PlayerLayer::PlayerLayer()
 
 void PlayerLayer::OnAttach()
 {
-	const std::string& scenePath = Application::Get()->GetCommandLine().ScenePath;
+	// --scene, else the project's start scene
+	std::string scenePath = Application::Get()->GetCommandLine().ScenePath;
+	if (scenePath.empty() && Project::GetOpen())
+	{
+		scenePath = ProjectPaths::Resolve(Project::GetOpen()->StartScene);
+		if (scenePath.empty())
+		{
+			Log::GetLogger()->error("No scene to play: the project '{0}' has no start scene", Project::GetOpen()->Name);
+			Application::Get()->Close(1);
+			return;
+		}
+	}
 	if (scenePath.empty())
 	{
-		Log::GetLogger()->error("No scene to play: start the player with --scene <file.mscene>");
+		Log::GetLogger()->error("No scene to play: start the player with --project <file.mproject> or --scene <file.mscene>");
 		Application::Get()->Close(1);
 		return;
 	}

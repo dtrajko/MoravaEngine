@@ -52,6 +52,8 @@ Application* Application::Get()
 }
 
 // Command line options:
+//   --project <file>        open this project at startup (a .mproject file), and its start scene unless --scene names one
+//                           (the player: the project's start scene, in the project's window)
 //   --scene <file>          open this scene at startup (SceneEnvMapVulkan: an .mscene file, e.g. Scenes/Old_Stove_Corner.mscene)
 //   --exit-after <seconds>  close the application after this time in the main loop
 //   --debug-view <number>   start with this debug view (SceneEnvMapVulkan: the entry of the Environment panel's Debug View
@@ -68,7 +70,11 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 	{
 		const std::string option = argv[i];
 		const bool hasValue = i + 1 < argc;
-		if (option == "--scene" && hasValue)
+		if (option == "--project" && hasValue)
+		{
+			commandLine.ProjectPath = argv[++i];
+		}
+		else if (option == "--scene" && hasValue)
 		{
 			commandLine.ScenePath = argv[++i];
 		}
@@ -112,7 +118,7 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		{
 			commandLine.Play = true;
 		}
-		else if (option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select")
+		else if (option == "--project" || option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select")
 		{
 			Log::GetLogger()->warn("Command line: {0} needs a value (ignored)", option);
 		}

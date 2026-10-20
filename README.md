@@ -104,6 +104,23 @@ build\Debug\MoravaEngine.exe
 
 Visual Studio is already set up to start it in that folder.
 
+### Run a project with MoravaPlayer
+
+The Vulkan build also makes `MoravaPlayer`, the game player: it plays a project's start scene in the project's window, without the editor. It is built next to the editor (`build\Debug\MoravaPlayer.exe`; `build-linux/MoravaPlayer` on Linux) and, like the editor, has to be started from the `MoravaEngine/MoravaEngine` folder, where the engine's shaders are. The project's path is then relative to that folder:
+
+```
+cd MoravaEngine
+build\Debug\MoravaPlayer.exe --project ..\Projects\Sample\Sample.mproject
+```
+
+Started from another folder, it stops at once with "Resources/Shaders not found in the working directory". From the repository's root folder, PowerShell can set the working folder for one run:
+
+```
+Start-Process .\MoravaEngine\build\Debug\MoravaPlayer.exe -WorkingDirectory .\MoravaEngine -ArgumentList "--project ..\Projects\Sample\Sample.mproject"
+```
+
+A project is a folder of its own, anywhere (`Projects/Sample` is the sample): a `.mproject` file names the project, its start scene, its asset folder and the game's window (size, full screen, VSync, title). Its scenes and materials are found in the project's folder first, then in the engine's (its models and environment maps). In the editor, File > New Project makes one in a chosen folder (with a first scene as its start scene), File > Open Project opens one, and File > Project Settings edits it. `--scene <file>` instead of `--project` plays a single scene.
+
 ### Building on Linux
 
 Tested on Ubuntu with GCC 15 and Clang, in WSL2. The Vulkan and OpenGL scenes build (GCC; Clang tested with Vulkan); the Vulkan editor and the OpenGL scene SceneSSAO were run. DirectX 11 is Windows only.
@@ -237,10 +254,12 @@ For the Vulkan editor (`ENV_MAP_VULKAN`):
 
 | Option | Meaning |
 |---|---|
-| `--scene <file>` | Open this scene at startup, e.g. `--scene Scenes/Old_Stove_Corner.mscene` |
+| `--project <file>` | Open this project and its start scene at startup, e.g. `--project ../Projects/Sample/Sample.mproject` (also MoravaPlayer: plays it) |
+| `--scene <file>` | Open this scene at startup, e.g. `--scene Scenes/Old_Stove_Corner.mscene` (also MoravaPlayer: plays it) |
 | `--select <name>` | Select the entity of this name in that scene |
 | `--debug-view <number>` | Start with this entry of the Environment panel's Debug View list (0 = off) |
 | `--no-ray-tracing` | Run without the ray tracing extensions, as on a GPU that has none |
+| `--play` | Start the game (Play) once the scene is open |
 | `--exit-after <seconds>` | Close the application after this time |
 
 ## Keyboard and Mouse shortcuts

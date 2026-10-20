@@ -44,7 +44,10 @@ int main(int argc, char** argv)
 	}
 #endif
 
-	Application::Get()->InitWindow(WindowSpecification("Morava Engine", 1280, 720));
+	WindowSpecification window("Morava Engine", 1280, 720);
+	// Vulkan presents without waiting for the display (mailbox or immediate): the editor shows how fast a frame really is
+	window.VSync = H2M::RendererAPI_H2M::Current() != H2M::RendererAPITypeH2M::Vulkan;
+	Application::Get()->InitWindow(window);
 
 	Application::Get()->Run();
 

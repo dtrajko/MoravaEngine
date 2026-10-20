@@ -125,6 +125,7 @@ namespace H2M
 
 	void VulkanSwapChainH2M::Create(uint32_t* width, uint32_t* height, bool vsync)
 	{
+		m_VSync = vsync; // kept for OnResize
 		VkDevice device = m_Device->GetVulkanDevice();
 		VkPhysicalDevice physicalDevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 
@@ -550,7 +551,7 @@ namespace H2M
 
 		vkDeviceWaitIdle(device);
 
-		Create(&width, &height);
+		Create(&width, &height, m_VSync);
 		// Recreate the frame buffers
 		vkDestroyImageView(device, m_DepthStencil.ImageView, nullptr);
 		vkDestroyImage(device, m_DepthStencil.Image, nullptr);

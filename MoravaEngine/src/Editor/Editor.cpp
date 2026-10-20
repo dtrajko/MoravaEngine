@@ -17,6 +17,7 @@
 #include "ImGui/ImGuiWrapper.h"
 #include "Scene/Scene.h"
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
+#include "Project/Project.h"
 
 #include "imgui.h"
 #include "imgui_internal.h" // BeginDragDropTargetCustom (the Models and Meshes panel as one drop area)
@@ -185,6 +186,7 @@ void Editor::OnImGuiRender()
 			OnImGuiRenderMaterialLibrary();
 			OnImGuiRenderMaterialEditor();
 			OnImGuiRenderRendererStats();
+			OnImGuiRenderProjectPanel();
 
 			/**** BEGIN DockSpace menu bar ****/
 
@@ -212,6 +214,20 @@ void Editor::OnImGuiRender()
 					{
 						::SaveSceneAs();
 					}
+					ImGui::Separator();
+					if (ImGui::MenuItem("New Project..."))
+					{
+						RequestNewProject();
+					}
+					if (ImGui::MenuItem("Open Project..."))
+					{
+						RequestOpenProject();
+					}
+					if (ImGui::MenuItem("Close Project", nullptr, false, Project::GetOpen() != nullptr))
+					{
+						RequestCloseProject();
+					}
+					ImGui::MenuItem("Project Settings", nullptr, &s_ShowProjectPanel);
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("View"))

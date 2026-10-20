@@ -46,4 +46,5 @@ EnvMapVulkanEntityID s_RenamingEntity = NoEntity;   // the entity whose name is 
 char s_RenameBuffer[128] = {};
 bool s_ShowLightGizmos = true; // light icons and shapes in the viewport
 bool s_ShowRendererStats = true;
+bool s_ShowProjectPanel = false; // opened from the File menu (Project Settings), and by New Project
 bool s_ShowViewportFps = true;

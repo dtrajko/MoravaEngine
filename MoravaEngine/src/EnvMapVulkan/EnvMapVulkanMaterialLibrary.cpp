@@ -8,6 +8,8 @@
 #include "Core/Log.h"
 #include "Core/ResourceManager.h"
 
+#include "Project/Project.h"
+
 #include <yaml-cpp/yaml.h>
 
 #include <algorithm>
@@ -428,22 +430,10 @@ static const MaterialValueKey s_ValueKeys[] = {
 	{ "RadiancePrefilter", "u_MaterialUniforms.RadiancePrefilter" },
 };
 
-// A path as stored in a file: relative to the working directory (the project folder) when it is inside it, with forward slashes
-static std::string ToStoredPath(const std::string& path)
+std::string EnvMapVulkanMaterialLibrary::GetMaterialsFolder()
 {
-	if (path.empty())
-	{
-		return path;
-	}
-	std::error_code error;
-	std::filesystem::path absolute = std::filesystem::weakly_canonical(path, error);
-	if (error)
-	{
-		return std::filesystem::path(path).generic_string();
-	}
-	std::filesystem::path relative = absolute.lexically_relative(std::filesystem::current_path(error));
-	std::filesystem::path stored = (!relative.empty() && *relative.begin() != "..") ? relative : absolute;
-	return stored.generic_string();
+	const Project* project = Project::GetOpen();
+	return project ? project->GetAssetFolder() + "/" + Project::MaterialsFolder : std::string(MaterialsFolder);
 }
 
 static uint64_t HashBytes(uint64_t hash, const void* data, size_t size)
@@ -723,7 +713,7 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 	}
 	const std::string wantedName = MakeFileName(material->m_Name, "Material");
 	std::string path = filepath.empty() ? material->m_FilePath : filepath;
-	std::string folder = MaterialsFolder;
+	std::string folder = GetMaterialsFolder();
 	std::string previousFile; // the material's file, replaced by a file with its new name (renamed material)
 	if (!filepath.empty())
 	{
@@ -775,7 +765,7 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 	if (!material->m_SourceFile.empty())
 	{
 		out << YAML::Key << "Source" << YAML::Value << YAML::BeginMap;
-		out << YAML::Key << "File" << YAML::Value << ToStoredPath(material->m_SourceFile);
+		out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(material->m_SourceFile);
 		out << YAML::Key << "Index" << YAML::Value << material->m_SourceIndex;
 		out << YAML::EndMap;
 	}
@@ -787,7 +777,7 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 		out << YAML::Key << "ID" << YAML::Value << material->m_ParentID;
 		if (parentMaterial && !parentMaterial->m_FilePath.empty())
 		{
-			out << YAML::Key << "File" << YAML::Value << parentMaterial->m_FilePath;
+			out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(parentMaterial->m_FilePath);
 		}
 		out << YAML::EndMap;
 		out << YAML::Key << "Overrides" << YAML::Value << YAML::Flow << YAML::BeginSeq;
@@ -827,7 +817,7 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 			continue;
 		}
 		out << YAML::Key << s_MapKeys[slot] << YAML::Value << YAML::BeginMap;
-		out << YAML::Key << "File" << YAML::Value << ToStoredPath(map->GetPath());
+		out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(map->GetPath());
 		out << YAML::Key << "Enabled" << YAML::Value << (material->Get<float>(s_MapToggleNames[slot]) > 0.5f);
 		out << YAML::EndMap;
 	}
@@ -857,7 +847,7 @@ bool EnvMapVulkanMaterialLibrary::Save(H2M::RefH2M<EnvMapVulkanMaterial> materia
 		Log::GetLogger()->info("Material '{0}': its previous file '{1}' was removed (renamed)", material->m_Name, previousFile);
 	}
 
-	material->m_FilePath = ToStoredPath(path);
+	material->m_FilePath = ProjectPaths::Normalize(path);
 	material->m_SavedHash = material->ComputeContentHash();
 	Log::GetLogger()->info("Material '{0}' saved to '{1}'", material->m_Name, material->m_FilePath);
 	return true;
@@ -903,7 +893,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 
 	if (YAML::Node source = node["Source"])
 	{
-		material->m_SourceFile = source["File"].as<std::string>("");
+		material->m_SourceFile = ProjectPaths::Resolve(source["File"].as<std::string>(""));
 		material->m_SourceIndex = source["Index"].as<uint32_t>(0);
 	}
 	YAML::Node albedo = node["AlbedoColor"];
@@ -930,7 +920,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 	for (uint32_t slot = 0; slot < EnvMapVulkanMaterial::MapCount; slot++)
 	{
 		YAML::Node map = maps ? maps[s_MapKeys[slot]] : YAML::Node();
-		const std::string mapFile = map ? map["File"].as<std::string>("") : std::string();
+		const std::string mapFile = map ? ProjectPaths::Resolve(map["File"].as<std::string>("")) : std::string();
 		H2M::RefH2M<H2M::Texture2D_H2M> texture;
 		if (!mapFile.empty())
 		{
@@ -967,7 +957,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 	{
 		const uint64_t parentID = parentNode["ID"].as<uint64_t>(0);
 		material->m_ParentID = parentID != material->m_ID ? parentID : 0;
-		const std::string parentFile = parentNode["File"].as<std::string>("");
+		const std::string parentFile = ProjectPaths::Resolve(parentNode["File"].as<std::string>(""));
 		if (material->m_ParentID != 0 && !FindByID(material->m_ParentID) && !parentFile.empty() && std::filesystem::exists(parentFile))
 		{
 			Load(parentFile); // this material is in the library already, so a loop of parents ends here
@@ -990,7 +980,7 @@ H2M::RefH2M<EnvMapVulkanMaterial> EnvMapVulkanMaterialLibrary::Load(const std::s
 		}
 	}
 
-	material->m_FilePath = ToStoredPath(filepath);
+	material->m_FilePath = ProjectPaths::Normalize(filepath);
 	material->TakeResolvedSnapshot(); // the values from the file are not edits: inherited ones follow the parent from now on
 	material->m_SavedHash = material->ComputeContentHash();
 	return material;
