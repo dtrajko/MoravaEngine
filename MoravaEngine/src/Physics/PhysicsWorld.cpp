@@ -74,15 +74,17 @@ PhysicsWorld::PhysicsWorld(const PhysicsWorldSettings& settings)
 {
 	JPH_ASSERT(s_Initialized);
 
-	// Who collides with whom. Static bodies don't collide with each other (neither moves), a trigger collides with
-	// nothing that doesn't move (it only notices what enters it)
-	m_ObjectLayerPairs.EnableCollision(ObjectLayers::Static, ObjectLayers::Dynamic);
-	m_ObjectLayerPairs.EnableCollision(ObjectLayers::Static, ObjectLayers::Character);
-	m_ObjectLayerPairs.EnableCollision(ObjectLayers::Dynamic, ObjectLayers::Dynamic);
-	m_ObjectLayerPairs.EnableCollision(ObjectLayers::Dynamic, ObjectLayers::Character);
-	m_ObjectLayerPairs.EnableCollision(ObjectLayers::Dynamic, ObjectLayers::Trigger);
-	m_ObjectLayerPairs.EnableCollision(ObjectLayers::Character, ObjectLayers::Character);
-	m_ObjectLayerPairs.EnableCollision(ObjectLayers::Character, ObjectLayers::Trigger);
+	// Who collides with whom: the project's matrix
+	for (JPH::ObjectLayer a = 0; a < ObjectLayers::Count; a++)
+	{
+		for (JPH::ObjectLayer b = a; b < ObjectLayers::Count; b++)
+		{
+			if (settings.Collisions.Collides(a, b))
+			{
+				m_ObjectLayerPairs.EnableCollision(a, b);
+			}
+		}
+	}
 
 	m_BroadPhaseLayers.MapObjectToBroadPhaseLayer(ObjectLayers::Static, BroadPhaseLayers::NonMoving);
 	m_BroadPhaseLayers.MapObjectToBroadPhaseLayer(ObjectLayers::Dynamic, BroadPhaseLayers::Moving);

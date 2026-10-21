@@ -4,9 +4,11 @@
 #include <Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h>
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 
+#include "PhysicsCollisionMatrix.h"
+
 
 // What a body is, for who collides with whom (docs/engine/Game_Engine_Runtime_Guide.html, 3.3). The pairs that collide
-// are in PhysicsWorld's constructor
+// are the project's PhysicsCollisionMatrix, whose layers these are
 namespace ObjectLayers
 {
 	enum : JPH::ObjectLayer
@@ -16,6 +18,15 @@ namespace ObjectLayers
 		Character, // a character controller
 		Trigger,   // a sensor: reports what enters and leaves it, collides with nothing
 		Count
+	};
+	static_assert(Count == PhysicsCollisionMatrix::LayerCount && Trigger == PhysicsCollisionMatrix::Trigger, "the matrix's layers are these");
+
+	// Layers as bits, for the queries (ScenePhysics::Raycast...): what they hit
+	enum : uint32_t
+	{
+		StaticBit = 1u << Static, DynamicBit = 1u << Dynamic, CharacterBit = 1u << Character, TriggerBit = 1u << Trigger,
+		Solid = StaticBit | DynamicBit | CharacterBit, // everything but triggers (the default)
+		All = Solid | TriggerBit
 	};
 }
 

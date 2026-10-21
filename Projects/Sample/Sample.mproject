@@ -5,3 +5,4 @@ Project:
   AssetDirectory: Assets
   InputMap: Settings/Input.minput
   Window: {Width: 1280, Height: 720, Fullscreen: false, VSync: true, Title: Morava Sample}
+  Physics: {Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, Dynamic-Character, Dynamic-Trigger, Character-Character, Character-Trigger]}

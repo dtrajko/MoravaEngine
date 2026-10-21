@@ -356,7 +356,31 @@ static void DrawLightGizmos()
 	drawList->PopClipRect();
 }
 
-// The light whose icon is under the mouse (the nearest one within 12 pixels)
+// The physics debug views (the Physics panel): colliders, contacts and the query test, as thin lines over the scene (not
+// depth tested: a collider is seen through what is in front of it)
+static void DrawPhysicsOverlay()
+{
+	if (s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
+	{
+		return;
+	}
+	static std::vector<EditorWorldLine> lines; // kept: its memory is reused each frame
+	lines.clear();
+	GetPhysicsOverlayLines(lines);
+	if (lines.empty())
+	{
+		return;
+	}
+	const glm::mat4 viewProjection = (*s_Camera).GetViewProjection();
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	drawList->PushClipRect(s_ViewportImageMin, ImVec2(s_ViewportImageMin.x + s_ViewportImageSize.x, s_ViewportImageMin.y + s_ViewportImageSize.y), true);
+	for (const EditorWorldLine& line : lines)
+	{
+		DrawWorldLine(drawList, viewProjection, line.A, line.B, line.Color, 1.0f);
+	}
+	drawList->PopClipRect();
+}
+
 // The selected water's border: an orange rectangle (made of short segments, so the parts in front of the camera show when
 // the rest is behind it)
 static void DrawWaterOutline()
@@ -385,6 +409,7 @@ static void DrawWaterOutline()
 	drawList->PopClipRect();
 }
 
+// The light whose icon is under the mouse (the nearest one within 12 pixels)
 static bool PickLightIcon(LightKind& kind, int& index)
 {
 	if (!s_ShowLightGizmos)
@@ -681,6 +706,7 @@ void OnImGuiRenderViewport()
 	EnvMapVulkanRenderer::SetViewportSize(viewportWidth, viewportHeight);
 
 	SyncLightSelection();
+	DrawPhysicsOverlay();
 	if (!gameRunning)
 	{
 		DrawLightGizmos();

@@ -193,7 +193,7 @@ struct ColliderComponent
 	float HalfHeight = 0.5f;                   // Capsule: of its middle part (it stands along Y: 2 * (HalfHeight + Radius) tall)
 	float Friction = 0.5f;
 	float Restitution = 0.0f;                  // bounciness: 0 stays, 1 bounces back as high
-	bool IsTrigger = false;                    // a sensor: things pass through it (it will report them, 3.6)
+	bool IsTrigger = false;                    // a sensor: things pass through it, and it reports what enters and leaves it
 
 	// ConvexMesh: the model's meshes wrapped tightly (no holes or hollows), for moving bodies. TriangleMesh: the
 	// meshes' triangles as they are, for static bodies only (a moving one gets the convex hull)

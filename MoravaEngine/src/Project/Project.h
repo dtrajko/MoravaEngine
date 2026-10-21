@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Physics/PhysicsCollisionMatrix.h"
+
 #include <cstdint>
 #include <string>
 
@@ -24,6 +26,7 @@ struct ProjectWindow
  *     AssetDirectory: Assets
  *     InputMap: Settings/Input.minput
  *     Window: { Width: 1600, Height: 900, Fullscreen: false, VSync: true, Title: Roll a Ball }
+ *     Physics: { Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, ...] }
  *
  * The script assembly comes with Phase 4.
  *
@@ -41,6 +44,7 @@ struct Project
 	std::string AssetDirectory = "Assets"; // relative to the project folder
 	std::string InputMapFile = DefaultInputMap; // the actions and their bindings (InputMap), relative to the project folder
 	ProjectWindow Window;
+	PhysicsCollisionMatrix Collisions; // the physics layers that collide (written as the pairs that do)
 
 	std::string FilePath; // the .mproject file, absolute (not written in it)
 

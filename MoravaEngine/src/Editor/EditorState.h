@@ -105,6 +105,9 @@ extern bool s_ShowLightGizmos;                               // light icons and 
 extern bool s_ShowRendererStats;
 extern bool s_ShowProjectPanel;
 extern bool s_ShowInputPanel;
+extern bool s_ShowPhysicsPanel;
+extern bool s_ShowPhysicsColliders;                          // physics debug views in the viewport (the Physics panel)
+extern bool s_ShowPhysicsContacts;
 extern bool s_ShowViewportFps;
 
 // Drag & drop payload of a Material Library material: an index into EnvMapVulkanMaterialLibrary::GetMaterials()
@@ -172,8 +175,8 @@ void UpdateGameViewportFocus(bool viewportFocused);
 // The running game's input, for the Input panel (nullptr: no game)
 const InputSystem* GetGameInput();
 
-// The running game's physics, for the Properties panel (nullptr: no game)
-const ScenePhysics* GetGamePhysics();
+// The running game's physics, for the Properties and Physics panels (nullptr: no game)
+ScenePhysics* GetGamePhysics();
 
 // The OS window the current ImGui window is in: the main window, or its own when it was dragged out (multi-viewports).
 // Keys and the mouse are read from it
@@ -476,3 +479,19 @@ void OnImGuiRenderProjectPanel();
 
 // The game's actions with their live values and the bindings that gave them, and the connected gamepads (View > Input)
 void OnImGuiRenderInputPanel();
+
+// ---- The Physics panel (EditorPhysicsPanel.cpp)
+
+// The running game's bodies, steps and events, the debug views, a query test from the view's center and the project's
+// collision layers (View > Physics)
+void OnImGuiRenderPhysicsPanel();
+
+// A line the viewport draws over the scene, in the world, in its color (ImGui's)
+struct EditorWorldLine
+{
+	glm::vec3 A, B;
+	ImU32 Color;
+};
+// The physics debug views' lines for this frame: the colliders (the running game's, else the edited scene's), the contacts
+// and the query test
+void GetPhysicsOverlayLines(std::vector<EditorWorldLine>& lines);

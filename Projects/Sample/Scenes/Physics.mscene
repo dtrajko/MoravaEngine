@@ -4754,3 +4754,34 @@ Entities:
         ID: 7002
         File: assets/Materials/Test_Red.mmat
         Name: Test_Red
+  - ID: 10441731230579875629
+    Name: Trigger Zone
+    Parent: 0
+    Transform:
+      Translation: [-2.5, 2, -1.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+  - ID: 10993303015692213329
+    Name: Trigger
+    Parent: 10441731230579875629
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 1706394913290854299
+        File: assets/Materials/Glass.mmat
+        Name: Glass
