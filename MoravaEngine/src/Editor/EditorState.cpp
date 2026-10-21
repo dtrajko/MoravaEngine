@@ -48,4 +48,7 @@ bool s_ShowLightGizmos = true; // light icons and shapes in the viewport
 bool s_ShowRendererStats = true;
 bool s_ShowProjectPanel = false; // opened from the File menu (Project Settings), and by New Project
 bool s_ShowInputPanel = false;
+bool s_ShowPhysicsPanel = false;
+bool s_ShowPhysicsColliders = false;
+bool s_ShowPhysicsContacts = false;
 bool s_ShowViewportFps = true;

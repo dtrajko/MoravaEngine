@@ -129,6 +129,8 @@ Models collide and move with physics (Jolt) while the game runs. In the Properti
 build\Debug\MoravaPlayer.exe --project ..\Projects\Sample\Sample.mproject --scene ..\Projects\Sample\Scenes\Physics.mscene
 ```
 
+A collider marked *Trigger* is a zone things pass through: the log says what enters and leaves it (the Physics scene has a glass Trigger Zone). View > Physics opens the Physics panel: the bodies, the step time and the last collision and trigger events while the game runs, debug views that draw every collider (colored by state: static, awake, sleeping, trigger, character) and the contact points into the viewport, a query test that casts a ray or a sphere from the middle of the view, and the project's collision layers (which kinds of bodies collide, saved in the `.mproject` file).
+
 ### Building on Linux
 
 Tested on Ubuntu with GCC 15 and Clang, in WSL2. The Vulkan and OpenGL scenes build (GCC; Clang tested with Vulkan); the Vulkan editor and the OpenGL scene SceneSSAO were run. DirectX 11 is Windows only.

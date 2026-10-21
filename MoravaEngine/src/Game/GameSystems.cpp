@@ -33,7 +33,9 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 			test.VerticalSpeed = 0.0f;
 		});
 
-		m_Physics.Start(*m_Scene);
+		// The project's collision layers (no project: the engine's)
+		const Project* project = Project::GetOpen();
+		m_Physics.Start(*m_Scene, project ? project->Collisions : PhysicsCollisionMatrix());
 	}
 }
 

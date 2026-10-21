@@ -272,7 +272,7 @@ const InputSystem* GetGameInput()
 	return s_Playing ? &s_GameInput : nullptr;
 }
 
-const ScenePhysics* GetGamePhysics()
+ScenePhysics* GetGamePhysics()
 {
 	return s_Playing ? &s_GameSystems.GetPhysics() : nullptr;
 }

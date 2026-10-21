@@ -79,6 +79,15 @@ public:
 			f(view.template get<IDComponent>(entity).ID, view.template get<T>(entity)...);
 		}
 	}
+	template<typename... T, typename F>
+	void Each(F&& f) const
+	{
+		auto view = m_Registry.view<const IDComponent, const T...>();
+		for (entt::entity entity : view)
+		{
+			f(view.template get<const IDComponent>(entity).ID, view.template get<const T>(entity)...);
+		}
+	}
 	// The first entity with the component (NoEntity: none), for the scene's single entities (the environment, the sun,
 	// the water)
 	template<typename T>

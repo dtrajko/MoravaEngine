@@ -74,6 +74,29 @@ bool Project::Load(const std::string& filepath, Project& project, std::string& e
 		project.Window.VSync = window["VSync"].as<bool>(project.Window.VSync);
 		project.Window.Title = window["Title"].as<std::string>("");
 	}
+	YAML::Node physics = node["Physics"];
+	if (YAML::Node collisions = physics && physics.IsMap() ? physics["Collisions"] : YAML::Node(); collisions && collisions.IsSequence())
+	{
+		// The pairs that collide: any other pair doesn't (projects made before have none: the engine's choice)
+		project.Collisions = PhysicsCollisionMatrix();
+		for (uint32_t& mask : project.Collisions.Masks)
+		{
+			mask = 0;
+		}
+		for (const YAML::Node& pair : collisions)
+		{
+			const std::string text = pair.as<std::string>("");
+			const size_t dash = text.find('-');
+			uint32_t a, b;
+			if (dash == std::string::npos || !PhysicsCollisionMatrix::FindLayer(text.substr(0, dash), a) ||
+				!PhysicsCollisionMatrix::FindLayer(text.substr(dash + 1), b))
+			{
+				Log::GetLogger()->warn("Project '{0}': '{1}' is not a pair of physics layers (as Static-Dynamic): left out", filepath, text);
+				continue;
+			}
+			project.Collisions.Set(a, b, true);
+		}
+	}
 	return true;
 }
 
@@ -93,6 +116,20 @@ bool Project::Save(std::string& error) const
 	out << YAML::Key << "Fullscreen" << YAML::Value << Window.Fullscreen;
 	out << YAML::Key << "VSync" << YAML::Value << Window.VSync;
 	out << YAML::Key << "Title" << YAML::Value << Window.Title;
+	out << YAML::EndMap;
+	out << YAML::Key << "Physics" << YAML::Value << YAML::Flow << YAML::BeginMap;
+	out << YAML::Key << "Collisions" << YAML::Value << YAML::BeginSeq;
+	for (uint32_t a = 0; a < PhysicsCollisionMatrix::LayerCount; a++)
+	{
+		for (uint32_t b = a; b < PhysicsCollisionMatrix::LayerCount; b++)
+		{
+			if (Collisions.Collides(a, b))
+			{
+				out << std::string(PhysicsCollisionMatrix::GetLayerName(a)) + "-" + PhysicsCollisionMatrix::GetLayerName(b);
+			}
+		}
+	}
+	out << YAML::EndSeq;
 	out << YAML::EndMap;
 	out << YAML::EndMap;
 	out << YAML::EndMap;

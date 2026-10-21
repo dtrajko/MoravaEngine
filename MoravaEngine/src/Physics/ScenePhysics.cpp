@@ -8,6 +8,13 @@
 
 #include "Core/Log.h"
 
+#include <Jolt/Physics/Body/BodyLock.h>
+#include <Jolt/Physics/Collision/CastResult.h>
+#include <Jolt/Physics/Collision/CollideShape.h>
+#include <Jolt/Physics/Collision/CollisionCollectorImpl.h>
+#include <Jolt/Physics/Collision/ContactListener.h>
+#include <Jolt/Physics/Collision/RayCast.h>
+#include <Jolt/Physics/Collision/ShapeCast.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/ConvexHullShape.h>
@@ -15,6 +22,7 @@
 #include <Jolt/Physics/Collision/Shape/RotatedTranslatedShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 
+#include <glm/gtc/constants.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <algorithm>
@@ -22,7 +30,79 @@
 #include <chrono>
 #include <cmath>
 #include <limits>
+#include <mutex>
 
+
+/**
+ * Jolt's contact callbacks, which run on its worker threads during the step, several at once: they only write down what
+ * happened (behind a mutex), and ScenePhysics turns it into events on the main thread after the step (DispatchContacts).
+ * A contact is between two sub-shapes (a mesh's triangle, the body's shape for the others): added when they start
+ * touching, removed when they stop.
+ */
+class ScenePhysicsContactListener : public JPH::ContactListener
+{
+public:
+	struct Change
+	{
+		JPH::BodyID A, B;
+		int Delta = 0;                                        // +1 added, -1 removed
+		glm::vec3 Point = glm::vec3(0.0f), Normal = glm::vec3(0.0f); // added: where, and from A towards B
+	};
+	struct Contact
+	{
+		glm::vec3 Point, Normal;
+	};
+
+	std::mutex Mutex;
+	std::vector<Change> Changes;   // since the last DispatchContacts
+	std::vector<Contact> Contacts; // the last step's (while Collect)
+	bool Collect = false;          // set between the steps only
+
+	virtual void OnContactAdded(const JPH::Body& a, const JPH::Body& b, const JPH::ContactManifold& manifold, JPH::ContactSettings&) override
+	{
+		Change change;
+		change.A = a.GetID();
+		change.B = b.GetID();
+		change.Delta = 1;
+		change.Point = ToGlm(manifold.mRelativeContactPointsOn1.empty() ? manifold.mBaseOffset : manifold.GetWorldSpaceContactPointOn1(0));
+		change.Normal = ToGlm(manifold.mWorldSpaceNormal);
+		std::lock_guard<std::mutex> lock(Mutex);
+		Changes.push_back(change);
+		AddContacts(manifold);
+	}
+
+	virtual void OnContactPersisted(const JPH::Body&, const JPH::Body&, const JPH::ContactManifold& manifold, JPH::ContactSettings&) override
+	{
+		if (Collect)
+		{
+			std::lock_guard<std::mutex> lock(Mutex);
+			AddContacts(manifold);
+		}
+	}
+
+	virtual void OnContactRemoved(const JPH::SubShapeIDPair& pair) override
+	{
+		Change change;
+		change.A = pair.GetBody1ID();
+		change.B = pair.GetBody2ID();
+		change.Delta = -1;
+		std::lock_guard<std::mutex> lock(Mutex);
+		Changes.push_back(change);
+	}
+
+private:
+	void AddContacts(const JPH::ContactManifold& manifold) // under the mutex
+	{
+		if (!Collect)
+		{
+			return;
+		}
+		for (JPH::uint i = 0; i < (JPH::uint)manifold.mRelativeContactPointsOn1.size(); i++)
+		{
+			Contacts.push_back({ ToGlm(manifold.GetWorldSpaceContactPointOn1(i)), ToGlm(manifold.mWorldSpaceNormal) });
+		}
+	}
+};
 
 ScenePhysics::ScenePhysics() = default;
 
@@ -253,12 +333,25 @@ bool ScenePhysics::CreateBody(Body& body, const ColliderComponent& collider, con
 		return false;
 	}
 
-	const JPH::ObjectLayer layer = collider.IsTrigger ? ObjectLayers::Trigger
+	// A trigger that doesn't move by itself is kinematic and never sleeps: a static sensor loses what is in it when that goes
+	// to sleep (a character standing still in it would leave), and only a kinematic one senses kinematic bodies (a
+	// character's inner body)
+	body.Trigger = collider.IsTrigger;
+	if (body.Trigger && body.Motion == JPH::EMotionType::Static)
+	{
+		body.Motion = JPH::EMotionType::Kinematic;
+	}
+	const JPH::ObjectLayer layer = body.Trigger ? ObjectLayers::Trigger
 		: body.Motion == JPH::EMotionType::Static ? ObjectLayers::Static : ObjectLayers::Dynamic;
 	JPH::BodyCreationSettings settings(shape, ToJolt(position), ToJolt(rotation), body.Motion, layer);
 	settings.mFriction = collider.Friction;
 	settings.mRestitution = collider.Restitution;
-	settings.mIsSensor = collider.IsTrigger;
+	settings.mIsSensor = body.Trigger;
+	if (body.Trigger)
+	{
+		settings.mAllowSleeping = false;
+		settings.mCollideKinematicVsNonDynamic = true; // kinematic bodies, and static ones when the project's matrix says so
+	}
 	if (rigidBody && body.Motion != JPH::EMotionType::Static)
 	{
 		// The mass as set; how it spreads (what makes a long plank harder to spin than a cube) from the shape
@@ -322,13 +415,19 @@ void ScenePhysics::CreateCharacter(Character& character, const CharacterControll
 	character.Written = m_Scene->Get<TransformComponent>(character.Entity).Translation;
 }
 
-void ScenePhysics::Start(EnvMapVulkanScene& scene)
+void ScenePhysics::Start(EnvMapVulkanScene& scene, const PhysicsCollisionMatrix& collisions)
 {
 	Stop();
 	m_Scene = &scene;
-	m_World = std::make_unique<PhysicsWorld>();
+	PhysicsWorldSettings settings;
+	settings.Collisions = collisions;
+	m_World = std::make_unique<PhysicsWorld>(settings);
+	m_Listener = std::make_unique<ScenePhysicsContactListener>();
+	m_Listener->Collect = m_CollectContacts;
+	m_World->GetSystem().SetContactListener(m_Listener.get());
 
-	uint32_t counts[3] = {}; // by JPH::EMotionType: static, kinematic, dynamic
+	uint32_t counts[3] = {}; // by JPH::EMotionType: static, kinematic, dynamic (the triggers apart)
+	uint32_t triggers = 0;
 	uint32_t failed = 0;
 	scene.Each<ColliderComponent>([&](EnvMapVulkanEntityID entity, ColliderComponent& collider)
 	{
@@ -341,7 +440,15 @@ void ScenePhysics::Start(EnvMapVulkanScene& scene)
 		body.Entity = entity;
 		if (CreateBody(body, collider, scene.TryGet<RigidBodyComponent>(entity)))
 		{
-			counts[(int)body.Motion]++;
+			if (body.Trigger)
+			{
+				triggers++;
+			}
+			else
+			{
+				counts[(int)body.Motion]++;
+			}
+			m_BodyInfo[body.ID.GetIndexAndSequenceNumber()] = { entity, body.Trigger };
 			m_Bodies.push_back(body);
 		}
 		else
@@ -362,14 +469,16 @@ void ScenePhysics::Start(EnvMapVulkanScene& scene)
 		Character character;
 		character.Entity = entity;
 		CreateCharacter(character, settings);
+		m_BodyInfo[character.Controller->GetInnerBodyID().GetIndexAndSequenceNumber()] = { entity, false };
 		m_Characters.push_back(character);
 	});
 
 	// The bodies added one by one: the broad phase's trees are rebuilt once, for a first step as fast as the next ones
 	m_World->GetSystem().OptimizeBroadPhase();
-	Log::GetLogger()->info("Physics: {0} bodies ({1} dynamic, {2} kinematic, {3} static), {4} character{5}{6}", m_Bodies.size(),
-		counts[(int)JPH::EMotionType::Dynamic], counts[(int)JPH::EMotionType::Kinematic], counts[(int)JPH::EMotionType::Static],
-		m_Characters.size(), m_Characters.size() == 1 ? "" : "s", failed > 0 ? ", " + std::to_string(failed) + " could not be made" : std::string());
+	Log::GetLogger()->info("Physics: {0} bodies ({1} dynamic, {2} kinematic, {3} static, {4} trigger{5}), {6} character{7}{8}", m_Bodies.size(),
+		counts[(int)JPH::EMotionType::Dynamic], counts[(int)JPH::EMotionType::Kinematic], counts[(int)JPH::EMotionType::Static], triggers,
+		triggers == 1 ? "" : "s", m_Characters.size(), m_Characters.size() == 1 ? "" : "s",
+		failed > 0 ? ", " + std::to_string(failed) + " could not be made" : std::string());
 }
 
 void ScenePhysics::Stop()
@@ -381,9 +490,16 @@ void ScenePhysics::Stop()
 	}
 	m_StepCount = 0;
 	m_StepSeconds = 0.0;
+	m_LastStepMs = 0.0f;
 	m_Characters.clear(); // before the world: they remove their inner bodies from it
 	m_Bodies.clear();
 	m_World.reset();
+	m_Listener.reset();   // after the world, which calls it
+	m_BodyInfo.clear();
+	m_Touching.clear();
+	m_Events.clear();
+	m_RecentEvents.clear();
+	m_Alpha = 1.0f;
 	m_Scene = nullptr;
 }
 
@@ -472,7 +588,12 @@ void ScenePhysics::Step(float fixedStep)
 		character.Position = ToGlm(controller.GetPosition());
 	}
 
+	if (m_Listener->Collect)
+	{
+		m_Listener->Contacts.clear(); // the listener isn't called between the steps: no lock needed
+	}
 	m_World->Step(fixedStep);
+	DispatchContacts();
 
 	for (Body& body : m_Bodies)
 	{
@@ -488,7 +609,9 @@ void ScenePhysics::Step(float fixedStep)
 		body.Position = ToGlm(position);
 		body.Rotation = ToGlm(rotation);
 	}
-	m_StepSeconds += std::chrono::duration<double>(std::chrono::steady_clock::now() - stepStart).count();
+	const double seconds = std::chrono::duration<double>(std::chrono::steady_clock::now() - stepStart).count();
+	m_StepSeconds += seconds;
+	m_LastStepMs = (float)(seconds * 1000.0);
 	m_StepCount++;
 }
 
@@ -555,6 +678,7 @@ void ScenePhysics::WriteTransforms(float alpha)
 	{
 		return;
 	}
+	m_Alpha = alpha;
 	for (Character& character : m_Characters)
 	{
 		if (m_Scene->Exists(character.Entity))
@@ -575,4 +699,571 @@ void ScenePhysics::WriteTransforms(float alpha)
 		m_Scene->SetWorldTransform(body.Entity, ComposeWorld(position, rotation, body.Scale));
 		body.Written = m_Scene->Get<TransformComponent>(body.Entity);
 	}
+}
+
+// ---- Events
+
+EnvMapVulkanEntityID ScenePhysics::GetBodyEntity(JPH::BodyID body) const
+{
+	const auto found = m_BodyInfo.find(body.GetIndexAndSequenceNumber());
+	return found != m_BodyInfo.end() ? found->second.Entity : NoEntity;
+}
+
+void ScenePhysics::DispatchContacts()
+{
+	std::vector<ScenePhysicsContactListener::Change> changes;
+	{
+		std::lock_guard<std::mutex> lock(m_Listener->Mutex);
+		changes.swap(m_Listener->Changes);
+	}
+	m_Events.clear();
+	if (changes.empty())
+	{
+		return;
+	}
+
+	// The pairs of bodies whose contacts changed (the lower body ID first), with how many contacts they had before the step:
+	// a pair that went from none to some started touching, from some to none it stopped. The changes come from several
+	// threads in no order, so only the count at the end of the step matters
+	struct PairChange
+	{
+		uint64_t Key = 0;
+		int Before = 0;
+		bool HasPoint = false;
+		glm::vec3 Point = glm::vec3(0.0f), Normal = glm::vec3(0.0f); // from the first body towards the second
+	};
+	std::unordered_map<uint64_t, size_t> pairIndex;
+	std::vector<PairChange> pairs;
+	for (const ScenePhysicsContactListener::Change& change : changes)
+	{
+		const uint32_t a = change.A.GetIndexAndSequenceNumber(), b = change.B.GetIndexAndSequenceNumber();
+		const uint64_t key = a < b ? ((uint64_t)a << 32) | b : ((uint64_t)b << 32) | a;
+		const auto [index, added] = pairIndex.try_emplace(key, pairs.size());
+		if (added)
+		{
+			PairChange pair;
+			pair.Key = key;
+			const auto touching = m_Touching.find(key);
+			pair.Before = touching != m_Touching.end() ? touching->second : 0;
+			pairs.push_back(pair);
+		}
+		PairChange& pair = pairs[index->second];
+		if (change.Delta > 0 && !pair.HasPoint)
+		{
+			pair.HasPoint = true;
+			pair.Point = change.Point;
+			pair.Normal = a < b ? change.Normal : -change.Normal;
+		}
+		m_Touching[key] += change.Delta;
+	}
+
+	// In the same order whatever the threads did
+	std::sort(pairs.begin(), pairs.end(), [](const PairChange& x, const PairChange& y) { return x.Key < y.Key; });
+	for (const PairChange& pair : pairs)
+	{
+		const int after = m_Touching[pair.Key];
+		if (after <= 0)
+		{
+			m_Touching.erase(pair.Key);
+		}
+		const bool enter = pair.Before <= 0 && after > 0, exit = pair.Before > 0 && after <= 0;
+		const auto first = m_BodyInfo.find((uint32_t)(pair.Key >> 32)), second = m_BodyInfo.find((uint32_t)pair.Key);
+		if ((!enter && !exit) || first == m_BodyInfo.end() || second == m_BodyInfo.end() || first->second.Entity == second->second.Entity)
+		{
+			continue;
+		}
+		Event event;
+		event.Step = m_StepCount + 1;
+		event.Entity = first->second.Entity;
+		event.Other = second->second.Entity;
+		event.Point = enter ? pair.Point : glm::vec3(0.0f);
+		event.Normal = enter ? pair.Normal : glm::vec3(0.0f);
+		if (first->second.Trigger || second->second.Trigger)
+		{
+			event.Type = enter ? EventType::TriggerEnter : EventType::TriggerExit;
+			if (!first->second.Trigger)
+			{
+				// The trigger first
+				std::swap(event.Entity, event.Other);
+				event.Normal = -event.Normal;
+			}
+			if (m_Scene->Exists(event.Entity) && m_Scene->Exists(event.Other))
+			{
+				Log::GetLogger()->info("Physics: '{0}' {1} the trigger '{2}'", m_Scene->Get<NameComponent>(event.Other).Name,
+					enter ? "entered" : "left", m_Scene->Get<NameComponent>(event.Entity).Name);
+			}
+		}
+		else
+		{
+			event.Type = enter ? EventType::CollisionEnter : EventType::CollisionExit;
+		}
+		m_Events.push_back(event);
+	}
+
+	const size_t maxRecent = 100;
+	m_RecentEvents.insert(m_RecentEvents.end(), m_Events.begin(), m_Events.end());
+	if (m_RecentEvents.size() > maxRecent)
+	{
+		m_RecentEvents.erase(m_RecentEvents.begin(), m_RecentEvents.end() - maxRecent);
+	}
+}
+
+const char* ScenePhysics::GetEventName(EventType type)
+{
+	switch (type)
+	{
+		case EventType::CollisionEnter: return "Collision Enter";
+		case EventType::CollisionExit:  return "Collision Exit";
+		case EventType::TriggerEnter:   return "Trigger Enter";
+		case EventType::TriggerExit:    return "Trigger Exit";
+		default:                        return "?";
+	}
+}
+
+// ---- Queries
+
+// The layers a query hits (ObjectLayers' bits)
+class LayerMaskFilter : public JPH::ObjectLayerFilter
+{
+public:
+	explicit LayerMaskFilter(uint32_t layers) : m_Layers(layers) {}
+	virtual bool ShouldCollide(JPH::ObjectLayer layer) const override { return ((m_Layers >> layer) & 1u) != 0; }
+
+private:
+	uint32_t m_Layers;
+};
+
+std::vector<JPH::BodyID> ScenePhysics::GetEntityBodies(EnvMapVulkanEntityID entity) const
+{
+	std::vector<JPH::BodyID> bodies;
+	if (entity == NoEntity)
+	{
+		return bodies;
+	}
+	for (const Body& body : m_Bodies)
+	{
+		if (body.Entity == entity)
+		{
+			bodies.push_back(body.ID);
+		}
+	}
+	for (const Character& character : m_Characters)
+	{
+		if (character.Entity == entity)
+		{
+			bodies.push_back(character.Controller->GetInnerBodyID());
+		}
+	}
+	return bodies;
+}
+
+bool ScenePhysics::Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, Hit& hit, uint32_t layers,
+	EnvMapVulkanEntityID ignore) const
+{
+	const float length = glm::length(direction);
+	if (!m_World || length < 1e-6f || maxDistance <= 0.0f)
+	{
+		return false;
+	}
+	const glm::vec3 unit = direction / length;
+	const JPH::RRayCast ray(ToJolt(origin), ToJolt(unit * maxDistance));
+	JPH::RayCastResult result;
+	const LayerMaskFilter layerFilter(layers);
+	JPH::IgnoreMultipleBodiesFilter bodyFilter;
+	for (JPH::BodyID body : GetEntityBodies(ignore))
+	{
+		bodyFilter.IgnoreBody(body);
+	}
+	const JPH::PhysicsSystem& system = m_World->GetSystem();
+	if (!system.GetNarrowPhaseQuery().CastRay(ray, result, JPH::BroadPhaseLayerFilter(), layerFilter, bodyFilter))
+	{
+		return false;
+	}
+	hit.Entity = GetBodyEntity(result.mBodyID);
+	hit.Point = ToGlm(ray.GetPointOnRay(result.mFraction));
+	hit.Distance = result.mFraction * maxDistance;
+	hit.Normal = -unit;
+	JPH::BodyLockRead lock(system.GetBodyLockInterface(), result.mBodyID);
+	if (lock.Succeeded())
+	{
+		hit.Normal = ToGlm(lock.GetBody().GetWorldSpaceSurfaceNormal(result.mSubShapeID2, ToJolt(hit.Point)));
+	}
+	return true;
+}
+
+bool ScenePhysics::SphereCast(const glm::vec3& origin, float radius, const glm::vec3& direction, float maxDistance, Hit& hit,
+	uint32_t layers, EnvMapVulkanEntityID ignore) const
+{
+	const float length = glm::length(direction);
+	if (!m_World || length < 1e-6f || maxDistance <= 0.0f || radius <= 0.0f)
+	{
+		return false;
+	}
+	const glm::vec3 unit = direction / length;
+	JPH::SphereShape sphere(radius);
+	sphere.SetEmbedded(); // on the stack: not reference counted
+	const JPH::RShapeCast cast(&sphere, JPH::Vec3::sOne(), JPH::RMat44::sTranslation(ToJolt(origin)), ToJolt(unit * maxDistance));
+	JPH::ShapeCastSettings settings;
+	JPH::ClosestHitCollisionCollector<JPH::CastShapeCollector> collector;
+	const LayerMaskFilter layerFilter(layers);
+	JPH::IgnoreMultipleBodiesFilter bodyFilter;
+	for (JPH::BodyID body : GetEntityBodies(ignore))
+	{
+		bodyFilter.IgnoreBody(body);
+	}
+	m_World->GetSystem().GetNarrowPhaseQuery().CastShape(cast, settings, JPH::RVec3::sZero(), collector, JPH::BroadPhaseLayerFilter(),
+		layerFilter, bodyFilter);
+	if (!collector.HadHit())
+	{
+		return false;
+	}
+	const JPH::ShapeCastResult& result = collector.mHit;
+	hit.Entity = GetBodyEntity(result.mBodyID2);
+	hit.Point = ToGlm(result.mContactPointOn2);
+	hit.Distance = result.mFraction * maxDistance;
+	// The axis the sphere would move along to go deeper into the other shape: the surface faces the other way
+	const glm::vec3 axis = ToGlm(result.mPenetrationAxis);
+	hit.Normal = glm::length(axis) > 1e-6f ? -glm::normalize(axis) : -unit;
+	return true;
+}
+
+std::vector<EnvMapVulkanEntityID> ScenePhysics::Overlap(const JPH::Shape& shape, const JPH::RMat44& transform, uint32_t layers) const
+{
+	std::vector<EnvMapVulkanEntityID> entities;
+	if (!m_World)
+	{
+		return entities;
+	}
+	JPH::CollideShapeSettings settings;
+	JPH::AllHitCollisionCollector<JPH::CollideShapeCollector> collector;
+	const LayerMaskFilter layerFilter(layers);
+	m_World->GetSystem().GetNarrowPhaseQuery().CollideShape(&shape, JPH::Vec3::sOne(), transform, settings, JPH::RVec3::sZero(), collector,
+		JPH::BroadPhaseLayerFilter(), layerFilter);
+	for (const JPH::CollideShapeResult& result : collector.mHits)
+	{
+		const EnvMapVulkanEntityID entity = GetBodyEntity(result.mBodyID2);
+		if (entity != NoEntity && std::find(entities.begin(), entities.end(), entity) == entities.end())
+		{
+			entities.push_back(entity);
+		}
+	}
+	return entities;
+}
+
+std::vector<EnvMapVulkanEntityID> ScenePhysics::OverlapSphere(const glm::vec3& center, float radius, uint32_t layers) const
+{
+	JPH::SphereShape sphere(std::max(radius, 0.001f));
+	sphere.SetEmbedded();
+	return Overlap(sphere, JPH::RMat44::sTranslation(ToJolt(center)), layers);
+}
+
+std::vector<EnvMapVulkanEntityID> ScenePhysics::OverlapBox(const glm::vec3& center, const glm::vec3& halfExtents, const glm::quat& rotation,
+	uint32_t layers) const
+{
+	JPH::BoxShape box(ToJolt(glm::max(halfExtents, glm::vec3(0.001f))), 0.0f);
+	box.SetEmbedded();
+	return Overlap(box, JPH::RMat44::sRotationTranslation(ToJolt(rotation), ToJolt(center)), layers);
+}
+
+// ---- Debug views
+
+using DebugLines = std::vector<ScenePhysics::DebugLine>;
+
+static void AddLine(DebugLines& lines, const glm::mat4& transform, const glm::vec3& a, const glm::vec3& b, ScenePhysics::DebugLineKind kind)
+{
+	lines.push_back({ glm::vec3(transform * glm::vec4(a, 1.0f)), glm::vec3(transform * glm::vec4(b, 1.0f)), kind });
+}
+
+// An arc around center in the plane of the unit vectors u and v, from angle "from" to "to" (radians)
+static void AddArc(DebugLines& lines, const glm::mat4& transform, const glm::vec3& center, const glm::vec3& u, const glm::vec3& v, float radius,
+	float from, float to, int segments, ScenePhysics::DebugLineKind kind)
+{
+	const float step = (to - from) / segments;
+	for (int i = 0; i < segments; i++)
+	{
+		const float a = from + i * step, b = a + step;
+		AddLine(lines, transform, center + radius * (std::cos(a) * u + std::sin(a) * v), center + radius * (std::cos(b) * u + std::sin(b) * v), kind);
+	}
+}
+
+static const glm::vec3 AxisX(1.0f, 0.0f, 0.0f), AxisY(0.0f, 1.0f, 0.0f), AxisZ(0.0f, 0.0f, 1.0f);
+
+static void AddBoxLines(DebugLines& lines, const glm::mat4& transform, const glm::vec3& half, ScenePhysics::DebugLineKind kind)
+{
+	for (int axis = 0; axis < 3; axis++)
+	{
+		// The four edges along this axis
+		const int u = (axis + 1) % 3, v = (axis + 2) % 3;
+		for (int corner = 0; corner < 4; corner++)
+		{
+			glm::vec3 a(0.0f);
+			a[u] = (corner & 1) ? half[u] : -half[u];
+			a[v] = (corner & 2) ? half[v] : -half[v];
+			glm::vec3 b = a;
+			a[axis] = -half[axis];
+			b[axis] = half[axis];
+			AddLine(lines, transform, a, b, kind);
+		}
+	}
+}
+
+static void AddSphereLines(DebugLines& lines, const glm::mat4& transform, float radius, ScenePhysics::DebugLineKind kind)
+{
+	const float full = glm::two_pi<float>();
+	AddArc(lines, transform, glm::vec3(0.0f), AxisX, AxisY, radius, 0.0f, full, 32, kind);
+	AddArc(lines, transform, glm::vec3(0.0f), AxisX, AxisZ, radius, 0.0f, full, 32, kind);
+	AddArc(lines, transform, glm::vec3(0.0f), AxisY, AxisZ, radius, 0.0f, full, 32, kind);
+}
+
+// Standing along Y: halfHeight is its middle part's
+static void AddCapsuleLines(DebugLines& lines, const glm::mat4& transform, float halfHeight, float radius, ScenePhysics::DebugLineKind kind)
+{
+	if (halfHeight <= 0.0f)
+	{
+		AddSphereLines(lines, transform, radius, kind);
+		return;
+	}
+	const float pi = glm::pi<float>();
+	const glm::vec3 top(0.0f, halfHeight, 0.0f), bottom(0.0f, -halfHeight, 0.0f);
+	AddArc(lines, transform, top, AxisX, AxisZ, radius, 0.0f, 2.0f * pi, 32, kind);
+	AddArc(lines, transform, bottom, AxisX, AxisZ, radius, 0.0f, 2.0f * pi, 32, kind);
+	AddArc(lines, transform, top, AxisX, AxisY, radius, 0.0f, pi, 16, kind);
+	AddArc(lines, transform, top, AxisZ, AxisY, radius, 0.0f, pi, 16, kind);
+	AddArc(lines, transform, bottom, AxisX, AxisY, radius, pi, 2.0f * pi, 16, kind);
+	AddArc(lines, transform, bottom, AxisZ, AxisY, radius, pi, 2.0f * pi, 16, kind);
+	for (const glm::vec3& side : { AxisX, -AxisX, AxisZ, -AxisZ })
+	{
+		AddLine(lines, transform, bottom + side * radius, top + side * radius, kind);
+	}
+}
+
+// A Jolt shape, in the space of its center of mass (transform: that space in the world, as Jolt draws its shapes). The
+// simple shapes as their outlines, a hull as its faces, anything else (a mesh) as its triangles, up to triangleBudget
+static void AddShapeLines(DebugLines& lines, const JPH::Shape& shape, const glm::mat4& transform, ScenePhysics::DebugLineKind kind,
+	uint32_t& triangleBudget)
+{
+	switch (shape.GetSubType())
+	{
+		case JPH::EShapeSubType::RotatedTranslated:
+		{
+			// Its inner shape's center of mass is at its own, turned
+			const JPH::RotatedTranslatedShape& moved = static_cast<const JPH::RotatedTranslatedShape&>(shape);
+			AddShapeLines(lines, *moved.GetInnerShape(), transform * glm::mat4_cast(ToGlm(moved.GetRotation())), kind, triangleBudget);
+			return;
+		}
+		case JPH::EShapeSubType::Box:
+			AddBoxLines(lines, transform, ToGlm(static_cast<const JPH::BoxShape&>(shape).GetHalfExtent()), kind);
+			return;
+		case JPH::EShapeSubType::Sphere:
+			AddSphereLines(lines, transform, static_cast<const JPH::SphereShape&>(shape).GetRadius(), kind);
+			return;
+		case JPH::EShapeSubType::Capsule:
+		{
+			const JPH::CapsuleShape& capsule = static_cast<const JPH::CapsuleShape&>(shape);
+			AddCapsuleLines(lines, transform, capsule.GetHalfHeightOfCylinder(), capsule.GetRadius(), kind);
+			return;
+		}
+		case JPH::EShapeSubType::ConvexHull:
+		{
+			const JPH::ConvexHullShape& hull = static_cast<const JPH::ConvexHullShape&>(shape);
+			std::vector<JPH::uint> face(hull.GetNumPoints());
+			for (JPH::uint f = 0; f < hull.GetNumFaces(); f++)
+			{
+				const JPH::uint count = hull.GetFaceVertices(f, (JPH::uint)face.size(), face.data());
+				for (JPH::uint i = 0; i < count; i++)
+				{
+					AddLine(lines, transform, ToGlm(hull.GetPoint(face[i])), ToGlm(hull.GetPoint(face[(i + 1) % count])), kind);
+				}
+			}
+			return;
+		}
+		default:
+		{
+			JPH::Shape::GetTrianglesContext context;
+			shape.GetTrianglesStart(context, JPH::AABox::sBiggest(), JPH::Vec3::sZero(), JPH::Quat::sIdentity(), JPH::Vec3::sOne());
+			JPH::Float3 vertices[JPH::Shape::cGetTrianglesMinTrianglesRequested * 3];
+			while (triangleBudget > 0)
+			{
+				const int count = shape.GetTrianglesNext(context, JPH::Shape::cGetTrianglesMinTrianglesRequested, vertices);
+				if (count <= 0)
+				{
+					break;
+				}
+				for (int t = 0; t < count && triangleBudget > 0; t++, triangleBudget--)
+				{
+					const glm::vec3 a(vertices[t * 3].x, vertices[t * 3].y, vertices[t * 3].z);
+					const glm::vec3 b(vertices[t * 3 + 1].x, vertices[t * 3 + 1].y, vertices[t * 3 + 1].z);
+					const glm::vec3 c(vertices[t * 3 + 2].x, vertices[t * 3 + 2].y, vertices[t * 3 + 2].z);
+					AddLine(lines, transform, a, b, kind);
+					AddLine(lines, transform, b, c, kind);
+					AddLine(lines, transform, c, a, kind);
+				}
+			}
+			return;
+		}
+	}
+}
+
+// A contact: a small cross at the point, and its normal
+static void AddContactLines(DebugLines& lines, const glm::vec3& point, const glm::vec3& normal)
+{
+	const float size = 0.04f, normalLength = 0.25f;
+	const glm::mat4 identity(1.0f);
+	for (const glm::vec3& axis : { AxisX, AxisY, AxisZ })
+	{
+		AddLine(lines, identity, point - axis * size, point + axis * size, ScenePhysics::DebugLineKind::Contact);
+	}
+	AddLine(lines, identity, point, point + normal * normalLength, ScenePhysics::DebugLineKind::Contact);
+}
+
+void ScenePhysics::SetCollectContacts(bool collect)
+{
+	m_CollectContacts = collect;
+	if (m_Listener)
+	{
+		m_Listener->Collect = collect; // between the steps: the listener isn't running
+		if (!collect)
+		{
+			m_Listener->Contacts.clear();
+		}
+	}
+}
+
+void ScenePhysics::GetDebugLines(bool colliders, bool contacts, std::vector<DebugLine>& lines, uint32_t maxTriangles) const
+{
+	if (!m_World)
+	{
+		return;
+	}
+	const JPH::BodyInterface& bodies = m_World->GetSystem().GetBodyInterface();
+	if (colliders)
+	{
+		uint32_t triangleBudget = maxTriangles;
+		for (const Body& body : m_Bodies)
+		{
+			glm::vec3 position;
+			glm::quat rotation;
+			if (body.Motion == JPH::EMotionType::Dynamic)
+			{
+				position = glm::mix(body.PreviousPosition, body.Position, m_Alpha);
+				rotation = glm::slerp(body.PreviousRotation, body.Rotation, m_Alpha);
+			}
+			else
+			{
+				JPH::RVec3 joltPosition;
+				JPH::Quat joltRotation;
+				bodies.GetPositionAndRotation(body.ID, joltPosition, joltRotation);
+				position = ToGlm(joltPosition);
+				rotation = ToGlm(joltRotation);
+			}
+			const DebugLineKind kind = body.Trigger ? DebugLineKind::Trigger : body.Motion == JPH::EMotionType::Static ? DebugLineKind::Static
+				: bodies.IsActive(body.ID) ? DebugLineKind::Active : DebugLineKind::Sleeping;
+			const JPH::RefConst<JPH::Shape> shape = bodies.GetShape(body.ID);
+			const glm::mat4 centerOfMass = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation) *
+				glm::translate(glm::mat4(1.0f), ToGlm(shape->GetCenterOfMass()));
+			AddShapeLines(lines, *shape, centerOfMass, kind, triangleBudget);
+		}
+		for (const Character& character : m_Characters)
+		{
+			const JPH::CharacterVirtual& controller = *character.Controller;
+			const glm::vec3 position = glm::mix(character.PreviousPosition, character.Position, m_Alpha) +
+				ToGlm(controller.GetShapeOffset() + controller.GetShape()->GetCenterOfMass());
+			AddShapeLines(lines, *controller.GetShape(), glm::translate(glm::mat4(1.0f), position), DebugLineKind::Character, triangleBudget);
+		}
+	}
+	if (contacts && m_Listener)
+	{
+		for (const ScenePhysicsContactListener::Contact& contact : m_Listener->Contacts)
+		{
+			AddContactLines(lines, contact.Point, contact.Normal);
+		}
+		// The characters' own (they aren't bodies: Jolt's listener doesn't see them)
+		for (const Character& character : m_Characters)
+		{
+			for (const JPH::CharacterContact& contact : character.Controller->GetActiveContacts())
+			{
+				if (contact.mHadCollision)
+				{
+					AddContactLines(lines, ToGlm(contact.mPosition), ToGlm(contact.mContactNormal));
+				}
+			}
+		}
+	}
+}
+
+void ScenePhysics::GetColliderLines(const EnvMapVulkanScene& scene, std::vector<DebugLine>& lines)
+{
+	// As CreateShape makes them from the world scale (the mesh shapes aren't made here: they take time)
+	scene.Each<ColliderComponent>([&](EnvMapVulkanEntityID entity, const ColliderComponent& collider)
+	{
+		if (scene.Has<CharacterControllerComponent>(entity))
+		{
+			return;
+		}
+		glm::vec3 position, scale;
+		glm::quat rotation;
+		DecomposeWorld(scene.GetWorldTransform(entity), position, rotation, scale);
+		const glm::vec3 size = glm::abs(scale);
+		const RigidBodyComponent* rigidBody = scene.TryGet<RigidBodyComponent>(entity);
+		const DebugLineKind kind = collider.IsTrigger ? DebugLineKind::Trigger
+			: rigidBody && rigidBody->Type != RigidBodyComponent::BodyType::Static ? DebugLineKind::Active : DebugLineKind::Static;
+		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation) *
+			glm::translate(glm::mat4(1.0f), collider.Offset * scale);
+		switch (collider.Type)
+		{
+			case ColliderComponent::Shape::Box:
+				AddBoxLines(lines, transform, glm::max(collider.HalfExtents * size, glm::vec3(0.001f)), kind);
+				break;
+			case ColliderComponent::Shape::Sphere:
+				AddSphereLines(lines, transform, std::max(collider.Radius * std::max({ size.x, size.y, size.z }), 0.001f), kind);
+				break;
+			case ColliderComponent::Shape::Capsule:
+				AddCapsuleLines(lines, transform, collider.HalfHeight * size.y, std::max(collider.Radius * std::max(size.x, size.z), 0.001f), kind);
+				break;
+			default:
+				break;
+		}
+	});
+	scene.Each<CharacterControllerComponent>([&](EnvMapVulkanEntityID entity, const CharacterControllerComponent& character)
+	{
+		const float radius = std::max(character.Radius, 0.01f);
+		const glm::vec3 position = glm::vec3(scene.GetWorldTransform(entity)[3]) + character.Offset;
+		AddCapsuleLines(lines, glm::translate(glm::mat4(1.0f), position), std::max(character.Height * 0.5f - radius, 0.0f), radius,
+			DebugLineKind::Character);
+	});
+}
+
+ScenePhysics::Stats ScenePhysics::GetStats() const
+{
+	Stats stats;
+	if (!m_World)
+	{
+		return stats;
+	}
+	for (const Body& body : m_Bodies)
+	{
+		if (body.Trigger)
+		{
+			stats.Triggers++;
+		}
+		else if (body.Motion == JPH::EMotionType::Dynamic)
+		{
+			stats.Dynamic++;
+		}
+		else if (body.Motion == JPH::EMotionType::Kinematic)
+		{
+			stats.Kinematic++;
+		}
+		else
+		{
+			stats.Static++;
+		}
+	}
+	stats.Characters = (uint32_t)m_Characters.size();
+	stats.Awake = m_World->GetActiveBodyCount();
+	stats.TouchingPairs = (uint32_t)m_Touching.size();
+	stats.Steps = m_StepCount;
+	stats.LastStepMs = m_LastStepMs;
+	stats.AverageStepMs = m_StepCount > 0 ? (float)(m_StepSeconds * 1000.0 / m_StepCount) : 0.0f;
+	return stats;
 }

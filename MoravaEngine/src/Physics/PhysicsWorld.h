@@ -9,6 +9,8 @@
 #include <Jolt/Physics/Collision/ObjectLayerPairFilterTable.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 
+#include "PhysicsCollisionMatrix.h"
+
 #include <glm/glm.hpp>
 
 #include <cstdint>
@@ -21,6 +23,7 @@ struct PhysicsWorldSettings
 	uint32_t MaxBodies = 10240;
 	uint32_t MaxBodyPairs = 65536;          // pairs of bodies whose bounding boxes overlap, per step
 	uint32_t MaxContactConstraints = 10240; // pairs of bodies that touch, per step
+	PhysicsCollisionMatrix Collisions;      // the layers that collide
 };
 
 /**
