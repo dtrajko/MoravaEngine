@@ -93,6 +93,15 @@ Entities:
       Scale: [10, 1, 10]
     Model:
       File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
   - ID: 4645328179557402687
     Name: Cube
     Parent: 8601021745167664655
@@ -115,6 +124,15 @@ Entities:
       Scale: [9.999993, 0.9999972, 7.9999247]
     Model:
       File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
   - ID: 11005680830479748476
     Name: Cube
     Parent: 11173523489358520666
@@ -137,6 +155,15 @@ Entities:
       Scale: [10, 0.9999972, 1.9998641]
     Model:
       File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
   - ID: 12347905251721334247
     Name: Cube
     Parent: 10946202904542493917
@@ -159,6 +186,15 @@ Entities:
       Scale: [9.999842, 0.99993837, 10]
     Model:
       File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
   - ID: 3390355051436957147
     Name: Cube
     Parent: 4411623245843787822
@@ -181,6 +217,15 @@ Entities:
       Scale: [9.999682, 0.9999284, 10]
     Model:
       File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
   - ID: 4372998666035804560
     Name: Cube
     Parent: 4760625982631271431
@@ -203,6 +248,15 @@ Entities:
       Scale: [9.999993, 0.9999972, 9.999189]
     Model:
       File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
   - ID: 8715774543680231152
     Name: Cube
     Parent: 16332770661743169074
@@ -225,6 +279,15 @@ Entities:
       Scale: [10, 1, 10]
     Model:
       File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
   - ID: 1610167032220544294
     Name: Cube
     Parent: 191337683009812853
@@ -247,6 +310,14 @@ Entities:
       Scale: [0.75, 0.75, 0.75]
     Model:
       File: Models/Primitives/cube.obj
+    CharacterController:
+      Height: 1.5
+      Radius: 0.75
+      Offset: [0, 0, 0]
+      MaxSlopeDegrees: 45
+      StepHeight: 0.35
+      Mass: 70
+      PushStrength: 100
     InputTest:
       Speed: 4
       JumpSpeed: 6

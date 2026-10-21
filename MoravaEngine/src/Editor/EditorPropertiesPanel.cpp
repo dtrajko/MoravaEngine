@@ -696,7 +696,26 @@ static void PhysicsControls(EnvMapVulkanEntityID model)
 		ImGui::SetTooltip("The model moves with physics while the game runs: it falls, is pushed and bounces (Dynamic),\n"
 			"or is moved by the game and pushes the others (Kinematic). It needs a Collider (added with it).");
 	}
-	if (IsPlaying() && (hasCollider || hasBody))
+	ImGui::SameLine();
+	bool isCharacter = s_Scene.Has<CharacterControllerComponent>(model);
+	if (ImGui::Checkbox("Character", &isCharacter))
+	{
+		if (isCharacter)
+		{
+			ScenePhysics::FitCharacter(s_Scene, model, s_Scene.Add<CharacterControllerComponent>(model));
+		}
+		else
+		{
+			s_Scene.Remove<CharacterControllerComponent>(model);
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("A player or another walking figure: a standing capsule (fitted around the model at first) that the game\n"
+			"moves by asking for a velocity, as the Input Test does. It stops at walls and slides along them, walks up\n"
+			"gentle slopes and steps, slides down steep slopes, stands on things and pushes dynamic models.");
+	}
+	if (IsPlaying() && (hasCollider || hasBody || isCharacter))
 	{
 		ImGui::TextDisabled("Changes count from the next Play (the bodies are made at Play)");
 	}
@@ -841,6 +860,64 @@ static void PhysicsControls(EnvMapVulkanEntityID model)
 				"through a thin wall between two steps. Costs a little more.");
 		}
 		ImGui::EndDisabled();
+	}
+
+	if (CharacterControllerComponent* character = s_Scene.TryGet<CharacterControllerComponent>(model))
+	{
+		ImGui::Spacing();
+		ImGui::TextUnformatted("Character");
+		if (hasCollider || hasBody)
+		{
+			ImGui::TextColored(warningColor, "Its Collider and Rigid Body aren't used: the capsule is its shape");
+		}
+		ImGui::DragFloat("Height", &character->Height, 0.01f, 0.02f, 100.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
+		ImGui::DragFloat("Radius##Character", &character->Radius, 0.01f, 0.01f, 50.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The capsule, in meters in the world (the model's scale doesn't change it): a capsule no taller\n"
+				"than twice its radius is a ball");
+		}
+		ImGui::DragFloat3("Offset##Character", &character->Offset.x, 0.01f);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The capsule's center, from the model's position, in meters (it doesn't turn with the model)");
+		}
+		if (ImGui::Button("Fit to Model##Character"))
+		{
+			ScenePhysics::FitCharacter(s_Scene, model, *character);
+		}
+		ImGui::SliderFloat("Max Slope", &character->MaxSlopeDegrees, 0.0f, 89.0f, "%.0f deg");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The steepest ground it can walk up and stand on; on steeper ground it slides down");
+		}
+		ImGui::DragFloat("Step Height", &character->StepHeight, 0.01f, 0.0f, 2.0f, "%.2f m", ImGuiSliderFlags_AlwaysClamp);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The highest step it walks up without jumping (a stair is about 0.18 m, a curb 0.15)");
+		}
+		ImGui::DragFloat("Mass##Character", &character->Mass, 0.5f, 0.1f, 10000.0f, "%.1f kg", ImGuiSliderFlags_AlwaysClamp);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Its weight presses on what it stands on (a box tips over, a plank bends down)");
+		}
+		ImGui::DragFloat("Push Strength", &character->PushStrength, 1.0f, 0.0f, 100000.0f, "%.0f N", ImGuiSliderFlags_AlwaysClamp);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The most force it pushes a dynamic model with: 0 pushes nothing, and it is stopped by a box as by a wall");
+		}
+
+		// The running game: what the character stands on and how it moves (the editor's copy has none)
+		ScenePhysics::CharacterState state;
+		if (const ScenePhysics* physics = GetGamePhysics(); physics && physics->GetCharacterState(model, state))
+		{
+			ImGui::TextDisabled("%s", ScenePhysics::GetGroundName(state.Ground));
+			ImGui::TextDisabled("Speed %.2f m/s, %.2f m/s up", glm::length(glm::vec2(state.Velocity.x, state.Velocity.z)), state.Velocity.y);
+			if (state.Ground != ScenePhysics::CharacterGround::InAir)
+			{
+				ImGui::TextDisabled("Ground slope %.0f deg", glm::degrees(std::acos(glm::clamp(state.GroundNormal.y, -1.0f, 1.0f))));
+			}
+		}
 	}
 	ImGui::PopID();
 }

@@ -79,8 +79,27 @@ void GameSystems::FixedUpdate(float fixedStep)
 		glm::vec3 forward, right;
 		GetCameraGroundAxes(*m_Scene, forward, right);
 
-		m_Scene->Each<InputTestComponent, TransformComponent>([&](EnvMapVulkanEntityID, InputTestComponent& test, TransformComponent& transform)
+		m_Scene->Each<InputTestComponent, TransformComponent>([&](EnvMapVulkanEntityID entity, InputTestComponent& test, TransformComponent& transform)
 		{
+			// A character: the input says how it wants to move, physics where it can (walls, slopes, steps, the ground)
+			ScenePhysics::CharacterState character;
+			if (m_Physics.GetCharacterState(entity, character))
+			{
+				const glm::vec3 horizontal = (right * move.Value.x + forward * move.Value.y) * test.Speed;
+				float vertical = character.Velocity.y;
+				if (character.Ground == ScenePhysics::CharacterGround::OnGround)
+				{
+					vertical = jump.PressedSinceFixed ? test.JumpSpeed : 0.0f;
+				}
+				else
+				{
+					vertical -= test.Gravity * fixedStep; // in the air or sliding down a steep slope
+				}
+				m_Physics.SetCharacterVelocity(entity, glm::vec3(horizontal.x, vertical, horizontal.z));
+				return;
+			}
+
+			// Without one: moved directly, through anything, falling back to its height when the game started
 			if (!test.Started)
 			{
 				test.GroundHeight = transform.Translation.y;
