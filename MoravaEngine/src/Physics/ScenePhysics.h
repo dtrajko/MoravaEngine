@@ -4,6 +4,8 @@
 
 #include "EnvMapVulkan/EnvMapVulkanComponents.h"
 
+#include <Jolt/Physics/Character/CharacterVirtual.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -22,6 +24,11 @@ class EnvMapVulkanScene;
  * body whose entity was moved by something else (the game, or the editor while paused) is put there. After the steps the
  * dynamic bodies' places are written into their entities' transforms, between their last two steps (WriteTransforms), so
  * they move smoothly whatever the frame rate.
+ *
+ * Characters (CharacterControllerComponent, 3.5) are Jolt CharacterVirtuals: moved in each step by the velocity the game
+ * asked for (SetCharacterVelocity), stopped and guided by what they touch, and written back like the dynamic bodies (their
+ * position only: the entity's rotation stays the game's). Each has an inner body, so falling boxes and other characters
+ * collide with it.
  */
 class ScenePhysics
 {
@@ -41,10 +48,29 @@ public:
 
 	PhysicsWorld* GetWorld() { return m_World.get(); }
 
+	// Characters. The game sets the velocity it wants before the steps (meters per second, in the world: the horizontal
+	// from its input, the vertical from its jumps and its gravity: the character applies none of its own); the character
+	// keeps it until the game sets another. The state is the one after the last step: Velocity is how it really moved
+	// (zero towards a wall it ran into, zero downward when it landed).
+	enum class CharacterGround { InAir, OnGround, OnSteepGround, NotSupported };
+	struct CharacterState
+	{
+		CharacterGround Ground = CharacterGround::InAir; // OnSteepGround: too steep to stand on, it slides down
+		glm::vec3 Velocity = glm::vec3(0.0f);
+		glm::vec3 GroundNormal = glm::vec3(0.0f, 1.0f, 0.0f);
+	};
+	void SetCharacterVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity);
+	// False: the entity isn't a running character
+	bool GetCharacterState(EnvMapVulkanEntityID entity, CharacterState& state) const;
+	static const char* GetGroundName(CharacterGround ground);
+
 	// A collider that fits around a model entity's meshes, in the entity's own space (without its scale), for the shape it
 	// has: its size and center (ConvexMesh and TriangleMesh are the meshes themselves: nothing to fit). False: the entity
 	// has no model, or a model without meshes.
 	static bool FitCollider(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, ColliderComponent& collider);
+	// A character's capsule that fits around a model entity's meshes, at its scale: as tall as the model, as wide as its
+	// wider side (X or Z), around its center
+	static bool FitCharacter(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, CharacterControllerComponent& character);
 
 private:
 	struct Body
@@ -58,12 +84,25 @@ private:
 		TransformComponent Written;                // the entity's transform as physics last left it: anything else moved it
 	};
 
+	struct Character
+	{
+		EnvMapVulkanEntityID Entity = NoEntity;
+		JPH::Ref<JPH::CharacterVirtual> Controller;
+		float StepHeight = 0.0f;
+		glm::vec3 WantedVelocity = glm::vec3(0.0f);
+		glm::vec3 PreviousPosition = glm::vec3(0.0f), Position = glm::vec3(0.0f);
+		glm::vec3 Written = glm::vec3(0.0f); // the entity's translation as physics last left it
+	};
+
 	// The body of body.Entity, added to the world (false: its shape could not be made, or the world is full)
 	bool CreateBody(Body& body, const ColliderComponent& collider, const RigidBodyComponent* rigidBody);
+	void CreateCharacter(Character& character, const CharacterControllerComponent& settings);
+	void SetEntityPosition(EnvMapVulkanEntityID entity, const glm::vec3& position); // the translation only
 
 	EnvMapVulkanScene* m_Scene = nullptr;
 	std::unique_ptr<PhysicsWorld> m_World;
 	std::vector<Body> m_Bodies;
+	std::vector<Character> m_Characters;
 
 	// The steps' cost, logged at Stop
 	uint64_t m_StepCount = 0;

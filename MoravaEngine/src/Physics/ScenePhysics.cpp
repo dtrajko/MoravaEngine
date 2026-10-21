@@ -123,6 +123,22 @@ bool ScenePhysics::FitCollider(const EnvMapVulkanScene& scene, EnvMapVulkanEntit
 	return true;
 }
 
+bool ScenePhysics::FitCharacter(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, CharacterControllerComponent& character)
+{
+	glm::vec3 boundsMin, boundsMax;
+	if (!GetModelBounds(scene, entity, boundsMin, boundsMax))
+	{
+		return false;
+	}
+	const glm::mat4 world = scene.GetWorldTransform(entity);
+	const glm::vec3 scale(glm::length(glm::vec3(world[0])), glm::length(glm::vec3(world[1])), glm::length(glm::vec3(world[2])));
+	const glm::vec3 size = (boundsMax - boundsMin) * scale;
+	character.Radius = std::max(0.5f * std::max(size.x, size.z), 0.01f);
+	character.Height = std::max(size.y, 2.0f * character.Radius);
+	character.Offset = (boundsMin + boundsMax) * 0.5f * scale;
+	return true;
+}
+
 // The collider's shape at a scale (the entity's world scale), with its offset; nullptr when it can't be made (logged)
 static JPH::RefConst<JPH::Shape> CreateShape(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity, const ColliderComponent& collider,
 	ColliderComponent::Shape type, const glm::vec3& scale)
@@ -279,6 +295,33 @@ bool ScenePhysics::CreateBody(Body& body, const ColliderComponent& collider, con
 	return true;
 }
 
+void ScenePhysics::CreateCharacter(Character& character, const CharacterControllerComponent& settings)
+{
+	// A standing capsule (a ball when it is no taller than it is wide), around the entity's position plus the offset
+	const float radius = std::max(settings.Radius, 0.01f);
+	const float halfHeight = std::max(settings.Height * 0.5f - radius, 0.0f);
+	JPH::RefConst<JPH::Shape> shape = halfHeight > 0.0f ? JPH::RefConst<JPH::Shape>(new JPH::CapsuleShape(halfHeight, radius))
+		: JPH::RefConst<JPH::Shape>(new JPH::SphereShape(radius));
+
+	JPH::Ref<JPH::CharacterVirtualSettings> controller = new JPH::CharacterVirtualSettings();
+	controller->mShape = shape;
+	controller->mShapeOffset = ToJolt(settings.Offset);
+	controller->mMaxSlopeAngle = glm::radians(glm::clamp(settings.MaxSlopeDegrees, 0.0f, 89.0f));
+	controller->mMass = std::max(settings.Mass, 0.001f);
+	controller->mMaxStrength = std::max(settings.PushStrength, 0.0f);
+	// It stands on what touches its lower round end (below that end's center); a touch higher up is a wall or a ceiling
+	controller->mSupportingVolume = JPH::Plane(JPH::Vec3::sAxisY(), -(settings.Offset.y - halfHeight));
+	// A body of the same shape that moves with it, for the rest of the world to collide with
+	controller->mInnerBodyShape = shape;
+	controller->mInnerBodyLayer = ObjectLayers::Character;
+
+	const glm::vec3 position = glm::vec3(m_Scene->GetWorldTransform(character.Entity)[3]);
+	character.Controller = new JPH::CharacterVirtual(controller, ToJolt(position), JPH::Quat::sIdentity(), &m_World->GetSystem());
+	character.StepHeight = std::max(settings.StepHeight, 0.0f);
+	character.PreviousPosition = character.Position = position;
+	character.Written = m_Scene->Get<TransformComponent>(character.Entity).Translation;
+}
+
 void ScenePhysics::Start(EnvMapVulkanScene& scene)
 {
 	Stop();
@@ -289,6 +332,11 @@ void ScenePhysics::Start(EnvMapVulkanScene& scene)
 	uint32_t failed = 0;
 	scene.Each<ColliderComponent>([&](EnvMapVulkanEntityID entity, ColliderComponent& collider)
 	{
+		if (scene.Has<CharacterControllerComponent>(entity))
+		{
+			Log::GetLogger()->warn("Physics: '{0}' is a character: its Collider and Rigid Body aren't used", scene.Get<NameComponent>(entity).Name);
+			return;
+		}
 		Body body;
 		body.Entity = entity;
 		if (CreateBody(body, collider, scene.TryGet<RigidBodyComponent>(entity)))
@@ -303,17 +351,25 @@ void ScenePhysics::Start(EnvMapVulkanScene& scene)
 	});
 	scene.Each<RigidBodyComponent>([&](EnvMapVulkanEntityID entity, RigidBodyComponent&)
 	{
-		if (!scene.Has<ColliderComponent>(entity))
+		if (!scene.Has<ColliderComponent>(entity) && !scene.Has<CharacterControllerComponent>(entity))
 		{
 			Log::GetLogger()->warn("Physics: '{0}' has a rigid body but no collider: not simulated", scene.Get<NameComponent>(entity).Name);
 		}
 	});
 
+	scene.Each<CharacterControllerComponent>([&](EnvMapVulkanEntityID entity, CharacterControllerComponent& settings)
+	{
+		Character character;
+		character.Entity = entity;
+		CreateCharacter(character, settings);
+		m_Characters.push_back(character);
+	});
+
 	// The bodies added one by one: the broad phase's trees are rebuilt once, for a first step as fast as the next ones
 	m_World->GetSystem().OptimizeBroadPhase();
-	Log::GetLogger()->info("Physics: {0} bodies ({1} dynamic, {2} kinematic, {3} static){4}", m_Bodies.size(),
+	Log::GetLogger()->info("Physics: {0} bodies ({1} dynamic, {2} kinematic, {3} static), {4} character{5}{6}", m_Bodies.size(),
 		counts[(int)JPH::EMotionType::Dynamic], counts[(int)JPH::EMotionType::Kinematic], counts[(int)JPH::EMotionType::Static],
-		failed > 0 ? ", " + std::to_string(failed) + " could not be made" : std::string());
+		m_Characters.size(), m_Characters.size() == 1 ? "" : "s", failed > 0 ? ", " + std::to_string(failed) + " could not be made" : std::string());
 }
 
 void ScenePhysics::Stop()
@@ -325,6 +381,7 @@ void ScenePhysics::Stop()
 	}
 	m_StepCount = 0;
 	m_StepSeconds = 0.0;
+	m_Characters.clear(); // before the world: they remove their inner bodies from it
 	m_Bodies.clear();
 	m_World.reset();
 	m_Scene = nullptr;
@@ -379,6 +436,42 @@ void ScenePhysics::Step(float fixedStep)
 		}
 	}
 
+	// The characters, before the bodies move (as Jolt's samples do): each with the velocity the game asked for
+	JPH::PhysicsSystem& system = m_World->GetSystem();
+	for (Character& character : m_Characters)
+	{
+		if (!m_Scene->Exists(character.Entity))
+		{
+			continue;
+		}
+		JPH::CharacterVirtual& controller = *character.Controller;
+		if (m_Scene->Get<TransformComponent>(character.Entity).Translation != character.Written)
+		{
+			// Put somewhere (the editor's gizmo while paused, the game): it is there now
+			const glm::vec3 position = glm::vec3(m_Scene->GetWorldTransform(character.Entity)[3]);
+			controller.SetPosition(ToJolt(position));
+			character.PreviousPosition = character.Position = position;
+			character.Written = m_Scene->Get<TransformComponent>(character.Entity).Translation;
+		}
+
+		// Not up a slope it can't stand on; on the ground, it moves with the ground (a platform, a box it stands on)
+		controller.UpdateGroundVelocity();
+		JPH::Vec3 velocity = controller.CancelVelocityTowardsSteepSlopes(ToJolt(character.WantedVelocity));
+		if (controller.GetGroundState() == JPH::CharacterBase::EGroundState::OnGround)
+		{
+			velocity += controller.GetGroundVelocity();
+		}
+		controller.SetLinearVelocity(velocity);
+
+		// The move: stopped and guided by what it touches, up steps, kept on the floor going down slopes and steps
+		JPH::CharacterVirtual::ExtendedUpdateSettings update;
+		update.mWalkStairsStepUp = JPH::Vec3(0.0f, character.StepHeight, 0.0f);
+		controller.ExtendedUpdate(fixedStep, system.GetGravity(), update, system.GetDefaultBroadPhaseLayerFilter(ObjectLayers::Character),
+			system.GetDefaultLayerFilter(ObjectLayers::Character), JPH::BodyFilter(), JPH::ShapeFilter(), m_World->GetTempAllocator());
+		character.PreviousPosition = character.Position;
+		character.Position = ToGlm(controller.GetPosition());
+	}
+
 	m_World->Step(fixedStep);
 
 	for (Body& body : m_Bodies)
@@ -399,11 +492,76 @@ void ScenePhysics::Step(float fixedStep)
 	m_StepCount++;
 }
 
+void ScenePhysics::SetEntityPosition(EnvMapVulkanEntityID entity, const glm::vec3& position)
+{
+	// The translation alone: the rotation (the game's) isn't decomposed again, so it can't drift
+	const EnvMapVulkanEntityID parent = m_Scene->GetParent(entity);
+	m_Scene->Get<TransformComponent>(entity).Translation = parent != NoEntity
+		? glm::vec3(glm::inverse(m_Scene->GetWorldTransform(parent)) * glm::vec4(position, 1.0f)) : position;
+}
+
+void ScenePhysics::SetCharacterVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity)
+{
+	for (Character& character : m_Characters)
+	{
+		if (character.Entity == entity)
+		{
+			character.WantedVelocity = velocity;
+			return;
+		}
+	}
+}
+
+static ScenePhysics::CharacterGround ToCharacterGround(JPH::CharacterBase::EGroundState state)
+{
+	switch (state)
+	{
+		case JPH::CharacterBase::EGroundState::OnGround:      return ScenePhysics::CharacterGround::OnGround;
+		case JPH::CharacterBase::EGroundState::OnSteepGround: return ScenePhysics::CharacterGround::OnSteepGround;
+		case JPH::CharacterBase::EGroundState::NotSupported:  return ScenePhysics::CharacterGround::NotSupported;
+		default:                                              return ScenePhysics::CharacterGround::InAir;
+	}
+}
+
+bool ScenePhysics::GetCharacterState(EnvMapVulkanEntityID entity, CharacterState& state) const
+{
+	for (const Character& character : m_Characters)
+	{
+		if (character.Entity == entity)
+		{
+			state.Ground = ToCharacterGround(character.Controller->GetGroundState());
+			state.Velocity = ToGlm(character.Controller->GetLinearVelocity());
+			state.GroundNormal = ToGlm(character.Controller->GetGroundNormal());
+			return true;
+		}
+	}
+	return false;
+}
+
+const char* ScenePhysics::GetGroundName(CharacterGround ground)
+{
+	switch (ground)
+	{
+		case CharacterGround::OnGround:      return "On the ground";
+		case CharacterGround::OnSteepGround: return "On a slope too steep: sliding";
+		case CharacterGround::NotSupported:  return "Touching something it can't stand on";
+		default:                             return "In the air";
+	}
+}
+
 void ScenePhysics::WriteTransforms(float alpha)
 {
 	if (!m_World)
 	{
 		return;
+	}
+	for (Character& character : m_Characters)
+	{
+		if (m_Scene->Exists(character.Entity))
+		{
+			SetEntityPosition(character.Entity, glm::mix(character.PreviousPosition, character.Position, alpha));
+			character.Written = m_Scene->Get<TransformComponent>(character.Entity).Translation;
+		}
 	}
 	for (Body& body : m_Bodies)
 	{

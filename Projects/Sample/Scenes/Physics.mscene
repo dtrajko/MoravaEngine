@@ -305,36 +305,27 @@ Entities:
     Name: Player
     Parent: 0
     Transform:
-      Translation: [0, 1.75, 2]
+      Translation: [0, 1.82, 2]
       Rotation: [0, 0, 0]
-      Scale: [0.75, 0.75, 0.75]
+      Scale: [0.4, 0.4, 0.4]
     Model:
-      File: Models/Primitives/cube.obj
+      File: Models/Primitives/capsule.obj
     InputTest:
       Speed: 4
       JumpSpeed: 6
       Gravity: 20
       TurnSpeed: 1
       CaptureMouse: false
-    Collider:
-      Shape: Box
+    CharacterController:
+      Height: 1.6
+      Radius: 0.4
       Offset: [0, 0, 0]
-      HalfExtents: [1, 1, 1]
-      Radius: 1
-      HalfHeight: 0
-      Friction: 0.5
-      Restitution: 0
-      IsTrigger: false
-    RigidBody:
-      Type: Kinematic
-      Mass: 1
-      LinearDamping: 0.05
-      AngularDamping: 0.05
-      GravityFactor: 1
-      LockRotation: [false, false, false]
-      ContinuousCollision: false
+      MaxSlopeDegrees: 45
+      StepHeight: 0.35
+      Mass: 70
+      PushStrength: 100
   - ID: 9137462205581127730
-    Name: Cube
+    Name: Capsule
     Parent: 5528310947716204811
     Transform:
       Translation: [0, 0, 0]
@@ -4352,6 +4343,223 @@ Entities:
         File: assets/Materials/Test_Red.mmat
         Name: Test_Red
   - ID: 8257674312753966733
+    Name: Step 1
+    Parent: 0
+    Transform:
+      Translation: [5.8, 1.15, 3]
+      Rotation: [0, 0, 0]
+      Scale: [0.3, 0.15, 1.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 12286937548047448027
+    Name: Step
+    Parent: 8257674312753966733
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 18224631776143472975
+    Name: Step 2
+    Parent: 0
+    Transform:
+      Translation: [6.4, 1.3, 3]
+      Rotation: [0, 0, 0]
+      Scale: [0.3, 0.3, 1.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 18246975545272153242
+    Name: Step
+    Parent: 18224631776143472975
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 12629503816424893674
+    Name: Step 3
+    Parent: 0
+    Transform:
+      Translation: [7, 1.45, 3]
+      Rotation: [0, 0, 0]
+      Scale: [0.3, 0.45, 1.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 13807713839662627102
+    Name: Step
+    Parent: 12629503816424893674
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 5015821845047867614
+    Name: Step 4
+    Parent: 0
+    Transform:
+      Translation: [7.6, 1.6, 3]
+      Rotation: [0, 0, 0]
+      Scale: [0.3, 0.6, 1.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 16187127829733168441
+    Name: Step
+    Parent: 5015821845047867614
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 16809107920621817265
+    Name: Step 5
+    Parent: 0
+    Transform:
+      Translation: [8.2, 1.75, 3]
+      Rotation: [0, 0, 0]
+      Scale: [0.3, 0.75, 1.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 5117896246320175531
+    Name: Step
+    Parent: 16809107920621817265
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 7647296020130087891
+    Name: Platform
+    Parent: 0
+    Transform:
+      Translation: [9.05, 1.75, 3]
+      Rotation: [0, 0, 0]
+      Scale: [0.85, 0.75, 1.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 1506684315997966474
+    Name: Platform
+    Parent: 7647296020130087891
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 14510155226303056785
+    Name: Steep Ramp
+    Parent: 0
+    Transform:
+      Translation: [-8, 2.5, -2.5]
+      Rotation: [0, 0, -55]
+      Scale: [1.8, 0.1, 1.2]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 1806270638064822359
+    Name: Steep
+    Parent: 14510155226303056785
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 12346501100759015740
     Name: Ball 2
     Parent: 0
     Transform:
@@ -4377,9 +4585,9 @@ Entities:
       GravityFactor: 1
       LockRotation: [false, false, false]
       ContinuousCollision: false
-  - ID: 12286937548047448027
+  - ID: 10905319825909515062
     Name: Ball
-    Parent: 8257674312753966733
+    Parent: 12346501100759015740
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
@@ -4390,7 +4598,7 @@ Entities:
         ID: 7002
         File: assets/Materials/Test_Red.mmat
         Name: Test_Red
-  - ID: 18224631776143472975
+  - ID: 1053406368284671366
     Name: Ball 3
     Parent: 0
     Transform:
@@ -4416,9 +4624,9 @@ Entities:
       GravityFactor: 1
       LockRotation: [false, false, false]
       ContinuousCollision: false
-  - ID: 18246975545272153242
+  - ID: 6555859158344053425
     Name: Ball
-    Parent: 18224631776143472975
+    Parent: 1053406368284671366
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
@@ -4429,7 +4637,7 @@ Entities:
         ID: 7002
         File: assets/Materials/Test_Red.mmat
         Name: Test_Red
-  - ID: 12629503816424893674
+  - ID: 5841693918885742578
     Name: Ball 4
     Parent: 0
     Transform:
@@ -4455,9 +4663,9 @@ Entities:
       GravityFactor: 1
       LockRotation: [false, false, false]
       ContinuousCollision: false
-  - ID: 13807713839662627102
+  - ID: 17748471200120878941
     Name: Ball
-    Parent: 12629503816424893674
+    Parent: 5841693918885742578
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
@@ -4468,7 +4676,7 @@ Entities:
         ID: 7002
         File: assets/Materials/Test_Red.mmat
         Name: Test_Red
-  - ID: 5015821845047867614
+  - ID: 331250866412665437
     Name: Ball 5
     Parent: 0
     Transform:
@@ -4494,9 +4702,9 @@ Entities:
       GravityFactor: 1
       LockRotation: [false, false, false]
       ContinuousCollision: false
-  - ID: 16187127829733168441
+  - ID: 6095259619250736324
     Name: Ball
-    Parent: 5015821845047867614
+    Parent: 331250866412665437
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
@@ -4507,7 +4715,7 @@ Entities:
         ID: 7002
         File: assets/Materials/Test_Red.mmat
         Name: Test_Red
-  - ID: 16809107920621817265
+  - ID: 8940288540167056351
     Name: Ball 6
     Parent: 0
     Transform:
@@ -4533,9 +4741,9 @@ Entities:
       GravityFactor: 1
       LockRotation: [false, false, false]
       ContinuousCollision: false
-  - ID: 5117896246320175531
+  - ID: 10447610501580284568
     Name: Ball
-    Parent: 16809107920621817265
+    Parent: 8940288540167056351
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]

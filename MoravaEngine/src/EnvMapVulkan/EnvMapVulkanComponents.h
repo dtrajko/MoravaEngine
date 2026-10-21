@@ -164,7 +164,8 @@ struct EnvironmentComponent
 
 // A test of the game's input (docs/engine/Game_Engine_Runtime_Guide.html, 2.3), until scripts do this (Phase 4): while the
 // game runs, the entity moves with the Move action (as seen from the camera: forward is away from it), jumps with Jump and
-// lands back at its height when the game started, and turns with Look. No physics: it goes through walls.
+// lands back at its height when the game started, and turns with Look. Without a CharacterControllerComponent it goes
+// through walls; with one it asks the character for that velocity (the jump and the gravity its own), and physics stops it.
 struct InputTestComponent
 {
 	float Speed = 4.0f;        // meters per second
@@ -215,6 +216,22 @@ struct RigidBodyComponent
 	static const char* GetTypeName(BodyType type);
 };
 
+// The entity is a character (docs/engine/Game_Engine_Runtime_Guide.html, 3.5): a standing capsule the game moves by
+// asking for a velocity. It stops at walls and slides along them, walks up slopes up to MaxSlopeDegrees and slides down
+// steeper ones, climbs steps up to StepHeight, stands on what is below it (also when that moves) and pushes dynamic bodies.
+// It doesn't turn: the entity's rotation stays the game's. Sizes in meters, in the world (the entity's scale doesn't
+// change them). A Collider or Rigid Body on the same entity isn't used: the capsule is its shape.
+struct CharacterControllerComponent
+{
+	float Height = 1.8f;                       // the capsule, top to bottom
+	float Radius = 0.3f;
+	glm::vec3 Offset = glm::vec3(0.0f);        // the capsule's center, from the entity's position
+	float MaxSlopeDegrees = 45.0f;
+	float StepHeight = 0.35f;
+	float Mass = 70.0f;                        // kilograms: its weight presses on what it stands on
+	float PushStrength = 100.0f;               // newtons: the most it pushes a dynamic body with
+};
+
 // A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
 // ComponentList<A, B>::ForEach([](auto type) { using T = typename decltype(type)::Type; ... });
 template<typename T>
@@ -237,4 +254,4 @@ struct ComponentList
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
-	ColliderComponent, RigidBodyComponent>;
+	ColliderComponent, RigidBodyComponent, CharacterControllerComponent>;

@@ -205,6 +205,18 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "ContinuousCollision" << YAML::Value << body->ContinuousCollision;
 			out << YAML::EndMap;
 		}
+		if (const CharacterControllerComponent* character = scene.TryGet<CharacterControllerComponent>(entity))
+		{
+			out << YAML::Key << "CharacterController" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Height" << YAML::Value << character->Height;
+			out << YAML::Key << "Radius" << YAML::Value << character->Radius;
+			WriteVec3(out, "Offset", character->Offset);
+			out << YAML::Key << "MaxSlopeDegrees" << YAML::Value << character->MaxSlopeDegrees;
+			out << YAML::Key << "StepHeight" << YAML::Value << character->StepHeight;
+			out << YAML::Key << "Mass" << YAML::Value << character->Mass;
+			out << YAML::Key << "PushStrength" << YAML::Value << character->PushStrength;
+			out << YAML::EndMap;
+		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
 			WriteWater(out, water->Settings);
@@ -413,6 +425,17 @@ namespace EnvMapVulkanSceneSerializer
 						body.LockRotationZ = locks[2].as<bool>();
 					}
 					Read(bodyNode, "ContinuousCollision", body.ContinuousCollision);
+				}
+				if (YAML::Node characterNode = node["CharacterController"])
+				{
+					CharacterControllerComponent& character = scene.Add<CharacterControllerComponent>(entity);
+					Read(characterNode, "Height", character.Height);
+					Read(characterNode, "Radius", character.Radius);
+					ReadVec3(characterNode["Offset"], character.Offset);
+					Read(characterNode, "MaxSlopeDegrees", character.MaxSlopeDegrees);
+					Read(characterNode, "StepHeight", character.StepHeight);
+					Read(characterNode, "Mass", character.Mass);
+					Read(characterNode, "PushStrength", character.PushStrength);
 				}
 				if (YAML::Node probesNode = node["ProbeVolume"])
 				{

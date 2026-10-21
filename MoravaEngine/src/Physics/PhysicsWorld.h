@@ -61,6 +61,7 @@ public:
 
 	JPH::BodyInterface& GetBodyInterface() { return m_System.GetBodyInterface(); }
 	JPH::PhysicsSystem& GetSystem() { return m_System; }
+	JPH::TempAllocator& GetTempAllocator() { return *m_TempAllocator; } // for work between the steps (character controllers)
 
 private:
 	// Declared before the system, which keeps references to them

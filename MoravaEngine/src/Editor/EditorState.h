@@ -172,6 +172,9 @@ void UpdateGameViewportFocus(bool viewportFocused);
 // The running game's input, for the Input panel (nullptr: no game)
 const InputSystem* GetGameInput();
 
+// The running game's physics, for the Properties panel (nullptr: no game)
+const ScenePhysics* GetGamePhysics();
+
 // The OS window the current ImGui window is in: the main window, or its own when it was dragged out (multi-viewports).
 // Keys and the mouse are read from it
 GLFWwindow* GetCurrentPlatformWindow();
