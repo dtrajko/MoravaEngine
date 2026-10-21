@@ -17,6 +17,7 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 {
 	m_Scene = scene;
 	m_Input = input;
+	m_Physics.Stop();
 	if (m_Scene)
 	{
 		// The controllers the game can read (in the log: "why doesn't my gamepad work?")
@@ -31,6 +32,8 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 			test.Started = false;
 			test.VerticalSpeed = 0.0f;
 		});
+
+		m_Physics.Start(*m_Scene);
 	}
 }
 
@@ -103,6 +106,9 @@ void GameSystems::FixedUpdate(float fixedStep)
 		});
 	}
 
+	// Physics, after what moves kinematic bodies (the input test now, scripts in Phase 4)
+	m_Physics.Step(fixedStep);
+
 	// The fixed step saw the input's edges: the next one sees only newer ones
 	if (m_Input)
 	{
@@ -110,8 +116,11 @@ void GameSystems::FixedUpdate(float fixedStep)
 	}
 }
 
-void GameSystems::Update(float frameTime)
+void GameSystems::Update(float frameTime, float alpha)
 {
+	// The bodies where physics has them, between its last two steps
+	m_Physics.WriteTransforms(alpha);
+
 	if (!m_Scene || !m_Input)
 	{
 		return;

@@ -179,6 +179,42 @@ struct InputTestComponent
 	float VerticalSpeed = 0.0f;
 };
 
+// The shape the entity collides with (docs/engine/Game_Engine_Runtime_Guide.html, 3.4). With a RigidBodyComponent the
+// entity is simulated as its Type says; without one it is static (a floor, a wall). In the entity's own space: the
+// entity's world scale is applied when the game starts (Sphere and Capsule take the largest scale: they stay round).
+struct ColliderComponent
+{
+	enum class Shape { Box, Sphere, Capsule, ConvexMesh, TriangleMesh };
+	Shape Type = Shape::Box;
+	glm::vec3 Offset = glm::vec3(0.0f);        // the shape's center (Box, Sphere, Capsule)
+	glm::vec3 HalfExtents = glm::vec3(0.5f);   // Box
+	float Radius = 0.5f;                       // Sphere, Capsule
+	float HalfHeight = 0.5f;                   // Capsule: of its middle part (it stands along Y: 2 * (HalfHeight + Radius) tall)
+	float Friction = 0.5f;
+	float Restitution = 0.0f;                  // bounciness: 0 stays, 1 bounces back as high
+	bool IsTrigger = false;                    // a sensor: things pass through it (it will report them, 3.6)
+
+	// ConvexMesh: the model's meshes wrapped tightly (no holes or hollows), for moving bodies. TriangleMesh: the
+	// meshes' triangles as they are, for static bodies only (a moving one gets the convex hull)
+	static const char* GetShapeName(Shape shape);
+};
+
+// The entity moves with physics: Dynamic (falls, is pushed, bounces), Kinematic (moved by the game, pushes the dynamic
+// ones and isn't pushed back) or Static. Needs a ColliderComponent on the same entity.
+struct RigidBodyComponent
+{
+	enum class BodyType { Static, Dynamic, Kinematic };
+	BodyType Type = BodyType::Dynamic;
+	float Mass = 1.0f;                         // kilograms
+	float LinearDamping = 0.05f;               // how fast moving and turning slow down by themselves (air)
+	float AngularDamping = 0.05f;
+	float GravityFactor = 1.0f;                // 0: floats
+	bool LockRotationX = false, LockRotationY = false, LockRotationZ = false;
+	bool ContinuousCollision = false;          // fast and small: never passes through a thin wall between two steps
+
+	static const char* GetTypeName(BodyType type);
+};
+
 // A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
 // ComponentList<A, B>::ForEach([](auto type) { using T = typename decltype(type)::Type; ... });
 template<typename T>
@@ -200,4 +236,5 @@ struct ComponentList
 // The components that are scene data: every component above but IDComponent (the scene gives each entity its own). A new
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
-	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent>;
+	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
+	ColliderComponent, RigidBodyComponent>;

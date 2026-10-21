@@ -179,6 +179,32 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "CaptureMouse" << YAML::Value << test->CaptureMouse;
 			out << YAML::EndMap;
 		}
+		if (const ColliderComponent* collider = scene.TryGet<ColliderComponent>(entity))
+		{
+			out << YAML::Key << "Collider" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Shape" << YAML::Value << ColliderComponent::GetShapeName(collider->Type);
+			WriteVec3(out, "Offset", collider->Offset);
+			WriteVec3(out, "HalfExtents", collider->HalfExtents);
+			out << YAML::Key << "Radius" << YAML::Value << collider->Radius;
+			out << YAML::Key << "HalfHeight" << YAML::Value << collider->HalfHeight;
+			out << YAML::Key << "Friction" << YAML::Value << collider->Friction;
+			out << YAML::Key << "Restitution" << YAML::Value << collider->Restitution;
+			out << YAML::Key << "IsTrigger" << YAML::Value << collider->IsTrigger;
+			out << YAML::EndMap;
+		}
+		if (const RigidBodyComponent* body = scene.TryGet<RigidBodyComponent>(entity))
+		{
+			out << YAML::Key << "RigidBody" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Type" << YAML::Value << RigidBodyComponent::GetTypeName(body->Type);
+			out << YAML::Key << "Mass" << YAML::Value << body->Mass;
+			out << YAML::Key << "LinearDamping" << YAML::Value << body->LinearDamping;
+			out << YAML::Key << "AngularDamping" << YAML::Value << body->AngularDamping;
+			out << YAML::Key << "GravityFactor" << YAML::Value << body->GravityFactor;
+			out << YAML::Key << "LockRotation" << YAML::Value << YAML::Flow << YAML::BeginSeq << body->LockRotationX << body->LockRotationY
+				<< body->LockRotationZ << YAML::EndSeq;
+			out << YAML::Key << "ContinuousCollision" << YAML::Value << body->ContinuousCollision;
+			out << YAML::EndMap;
+		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
 			WriteWater(out, water->Settings);
@@ -343,6 +369,50 @@ namespace EnvMapVulkanSceneSerializer
 					Read(testNode, "Gravity", test.Gravity);
 					Read(testNode, "TurnSpeed", test.TurnSpeed);
 					Read(testNode, "CaptureMouse", test.CaptureMouse);
+				}
+				if (YAML::Node colliderNode = node["Collider"])
+				{
+					ColliderComponent& collider = scene.Add<ColliderComponent>(entity);
+					const std::string shape = colliderNode["Shape"].as<std::string>("Box");
+					for (ColliderComponent::Shape s : { ColliderComponent::Shape::Box, ColliderComponent::Shape::Sphere, ColliderComponent::Shape::Capsule,
+						ColliderComponent::Shape::ConvexMesh, ColliderComponent::Shape::TriangleMesh })
+					{
+						if (shape == ColliderComponent::GetShapeName(s))
+						{
+							collider.Type = s;
+						}
+					}
+					ReadVec3(colliderNode["Offset"], collider.Offset);
+					ReadVec3(colliderNode["HalfExtents"], collider.HalfExtents);
+					Read(colliderNode, "Radius", collider.Radius);
+					Read(colliderNode, "HalfHeight", collider.HalfHeight);
+					Read(colliderNode, "Friction", collider.Friction);
+					Read(colliderNode, "Restitution", collider.Restitution);
+					Read(colliderNode, "IsTrigger", collider.IsTrigger);
+				}
+				if (YAML::Node bodyNode = node["RigidBody"])
+				{
+					RigidBodyComponent& body = scene.Add<RigidBodyComponent>(entity);
+					const std::string type = bodyNode["Type"].as<std::string>("Dynamic");
+					for (RigidBodyComponent::BodyType t : { RigidBodyComponent::BodyType::Static, RigidBodyComponent::BodyType::Dynamic,
+						RigidBodyComponent::BodyType::Kinematic })
+					{
+						if (type == RigidBodyComponent::GetTypeName(t))
+						{
+							body.Type = t;
+						}
+					}
+					Read(bodyNode, "Mass", body.Mass);
+					Read(bodyNode, "LinearDamping", body.LinearDamping);
+					Read(bodyNode, "AngularDamping", body.AngularDamping);
+					Read(bodyNode, "GravityFactor", body.GravityFactor);
+					if (YAML::Node locks = bodyNode["LockRotation"]; locks && locks.IsSequence() && locks.size() == 3)
+					{
+						body.LockRotationX = locks[0].as<bool>();
+						body.LockRotationY = locks[1].as<bool>();
+						body.LockRotationZ = locks[2].as<bool>();
+					}
+					Read(bodyNode, "ContinuousCollision", body.ContinuousCollision);
 				}
 				if (YAML::Node probesNode = node["ProbeVolume"])
 				{

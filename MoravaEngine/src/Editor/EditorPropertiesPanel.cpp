@@ -17,6 +17,7 @@
 #include "ImGui/ImGuiWrapper.h"
 #include "Scene/Scene.h"
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
+#include "Physics/ScenePhysics.h"
 
 #include "imgui.h"
 #include "imgui_internal.h" // BeginDragDropTargetCustom (the Models and Meshes panel as one drop area)
@@ -605,9 +606,6 @@ static void ScaleDragScalingChildLights(const char* label, EnvMapVulkanEntityID 
 	}
 }
 
-// A model's properties: its transform, the selected part's transform (when a part of it is selected), removing the model or
-// the part, the animation (skinned models) and the material slots of its parts. Used by the Models and Meshes panel and the
-// Properties panel.
 // The input test (InputTestComponent): the model moves with Move, jumps with Jump and turns with Look while the game runs
 static void InputTestControls(EnvMapVulkanEntityID model)
 {
@@ -651,6 +649,205 @@ static void InputTestControls(EnvMapVulkanEntityID model)
 	}
 }
 
+// The model's physics (docs/engine/Game_Engine_Runtime_Guide.html, 3.4): its collider (alone: a static body, as a floor or
+// a wall) and its rigid body (it moves). The bodies are made when the game starts.
+static void PhysicsControls(EnvMapVulkanEntityID model)
+{
+	const ImVec4 warningColor(1.0f, 0.8f, 0.3f, 1.0f);
+	ImGui::Separator();
+	ImGui::PushID("Physics");
+
+	bool hasCollider = s_Scene.Has<ColliderComponent>(model);
+	if (ImGui::Checkbox("Collider", &hasCollider))
+	{
+		if (hasCollider)
+		{
+			ScenePhysics::FitCollider(s_Scene, model, s_Scene.Add<ColliderComponent>(model));
+		}
+		else
+		{
+			s_Scene.Remove<ColliderComponent>(model);
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The shape the model collides with while the game runs (a box around the model at first).\n"
+			"Alone it makes the model static: a floor, a wall, anything that never moves. With a Rigid Body it moves.");
+	}
+	ImGui::SameLine();
+	bool hasBody = s_Scene.Has<RigidBodyComponent>(model);
+	if (ImGui::Checkbox("Rigid Body", &hasBody))
+	{
+		if (hasBody)
+		{
+			s_Scene.Add<RigidBodyComponent>(model);
+			if (!s_Scene.Has<ColliderComponent>(model))
+			{
+				ScenePhysics::FitCollider(s_Scene, model, s_Scene.Add<ColliderComponent>(model)); // a body needs a shape
+			}
+		}
+		else
+		{
+			s_Scene.Remove<RigidBodyComponent>(model);
+		}
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The model moves with physics while the game runs: it falls, is pushed and bounces (Dynamic),\n"
+			"or is moved by the game and pushes the others (Kinematic). It needs a Collider (added with it).");
+	}
+	if (IsPlaying() && (hasCollider || hasBody))
+	{
+		ImGui::TextDisabled("Changes count from the next Play (the bodies are made at Play)");
+	}
+
+	RigidBodyComponent* body = s_Scene.TryGet<RigidBodyComponent>(model);
+	if (ColliderComponent* collider = s_Scene.TryGet<ColliderComponent>(model))
+	{
+		using Shape = ColliderComponent::Shape;
+		int shape = (int)collider->Type;
+		if (ImGui::Combo("Shape", &shape, "Box\0Sphere\0Capsule\0Convex Mesh\0Triangle Mesh\0"))
+		{
+			collider->Type = (Shape)shape;
+			ScenePhysics::FitCollider(s_Scene, model, *collider);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Box, Sphere, Capsule: simple shapes, the fastest. They fit around the model when chosen.\n"
+				"Convex Mesh: the model wrapped tightly, as in plastic film (no holes or hollows): for moving models.\n"
+				"Triangle Mesh: the model's triangles as they are (a room, a terrain): for static models only.");
+		}
+
+		// The model's world scale: the sizes below are in its own space, and the scale is applied to them
+		const glm::mat4 world = s_Scene.GetWorldTransform(model);
+		const glm::vec3 scale(glm::length(glm::vec3(world[0])), glm::length(glm::vec3(world[1])), glm::length(glm::vec3(world[2])));
+		const bool round = collider->Type == Shape::Sphere || collider->Type == Shape::Capsule;
+		const bool primitive = collider->Type == Shape::Box || round;
+		switch (collider->Type)
+		{
+			case Shape::Box:
+				ImGui::DragFloat3("Half Extents", &collider->HalfExtents.x, 0.01f, 0.001f, 1000.0f, "%.3f");
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("Half the box's size along X, Y and Z, in the model's own space (before its scale)");
+				}
+				break;
+			case Shape::Sphere:
+				ImGui::DragFloat("Radius", &collider->Radius, 0.01f, 0.001f, 1000.0f, "%.3f");
+				break;
+			case Shape::Capsule:
+				ImGui::DragFloat("Radius", &collider->Radius, 0.01f, 0.001f, 1000.0f, "%.3f");
+				ImGui::DragFloat("Half Height", &collider->HalfHeight, 0.01f, 0.0f, 1000.0f, "%.3f");
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("Half the height of its straight middle, along Y: with the round ends it is 2 x (Half Height + Radius) tall");
+				}
+				break;
+			default:
+				ImGui::TextDisabled("The model's meshes, at its scale");
+				break;
+		}
+		if (primitive)
+		{
+			ImGui::DragFloat3("Offset", &collider->Offset.x, 0.01f);
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The shape's center, in the model's own space");
+			}
+			if (ImGui::Button("Fit to Model"))
+			{
+				ScenePhysics::FitCollider(s_Scene, model, *collider);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The size and the center that fit around the model's meshes");
+			}
+		}
+		if (round && (std::abs(scale.x - scale.y) > 0.01f * scale.x || std::abs(scale.x - scale.z) > 0.01f * scale.x))
+		{
+			ImGui::TextColored(warningColor, "The model's scale differs per axis: the %s takes the largest\n(it stays round)",
+				collider->Type == Shape::Sphere ? "sphere" : "capsule's width");
+		}
+		if (collider->Type == Shape::TriangleMesh && body && body->Type != RigidBodyComponent::BodyType::Static)
+		{
+			ImGui::TextColored(warningColor, "It moves: it gets a Convex Mesh instead\n(a Triangle Mesh only for static models)");
+		}
+
+		ImGui::SliderFloat("Friction", &collider->Friction, 0.0f, 1.0f, "%.2f");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("How much it grips what it slides on: 0 ice, 0.5 wood, 1 rubber (two touching models: both count)");
+		}
+		ImGui::SliderFloat("Bounciness", &collider->Restitution, 0.0f, 1.0f, "%.2f");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("0: it stops where it lands. 1: it bounces back as high as it fell (the bouncier of two touching models counts)");
+		}
+		ImGui::Checkbox("Trigger", &collider->IsTrigger);
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("A sensor: things pass through it. It will tell the game what enters and leaves it (Phase 3.6)");
+		}
+	}
+
+	if (body)
+	{
+		ImGui::Spacing();
+		int type = (int)body->Type;
+		ImGui::Combo("Body Type", &type, "Static\0Dynamic\0Kinematic\0");
+		body->Type = (RigidBodyComponent::BodyType)type;
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Dynamic: physics moves it (gravity, collisions).\n"
+				"Kinematic: the game moves it (as the Input Test does): it pushes dynamic models and isn't pushed back.\n"
+				"Static: it never moves (the same as a Collider without a Rigid Body).");
+		}
+		if (!s_Scene.Has<ColliderComponent>(model))
+		{
+			ImGui::TextColored(warningColor, "No Collider: it isn't simulated");
+		}
+		ImGui::BeginDisabled(body->Type != RigidBodyComponent::BodyType::Dynamic);
+		ImGui::DragFloat("Mass", &body->Mass, 0.1f, 0.001f, 100000.0f, "%.2f kg", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			ImGui::SetTooltip("A heavier model pushes lighter ones away and is hardly moved by them (it falls just as fast)");
+		}
+		ImGui::SliderFloat("Linear Damping", &body->LinearDamping, 0.0f, 1.0f, "%.2f");
+		ImGui::SliderFloat("Angular Damping", &body->AngularDamping, 0.0f, 1.0f, "%.2f");
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			ImGui::SetTooltip("How fast moving (Linear) and spinning (Angular) slow down by themselves, as in air or water");
+		}
+		ImGui::DragFloat("Gravity Factor", &body->GravityFactor, 0.01f, -10.0f, 10.0f, "%.2f");
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			ImGui::SetTooltip("1: falls as everything does. 0: floats. Negative: rises");
+		}
+		ImGui::TextUnformatted("Lock Rotation");
+		ImGui::SameLine();
+		ImGui::Checkbox("X", &body->LockRotationX);
+		ImGui::SameLine();
+		ImGui::Checkbox("Y", &body->LockRotationY);
+		ImGui::SameLine();
+		ImGui::Checkbox("Z", &body->LockRotationZ);
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			ImGui::SetTooltip("It doesn't turn around the locked world axes (a player that shouldn't tip over: X and Z)");
+		}
+		ImGui::Checkbox("Continuous Collision", &body->ContinuousCollision);
+		if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+		{
+			ImGui::SetTooltip("For small, fast models (a bullet): its whole path is checked in each step, so it can't pass\n"
+				"through a thin wall between two steps. Costs a little more.");
+		}
+		ImGui::EndDisabled();
+	}
+	ImGui::PopID();
+}
+
+// A model's properties: its transform, the selected part's transform (when a part of it is selected), its physics and the
+// input test, removing the model or the part, the animation (skinned models) and the material slots of its parts. Used by
+// the Models and Meshes panel and the Properties panel.
 static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 {
 	const int selectedMeshIndex = GetSelectedModel() == selectedModel ? GetSelectedMeshIndex() : -1;
@@ -695,8 +892,10 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 		}
 	}
 
+	PhysicsControls(selectedModel);
 	InputTestControls(selectedModel);
 
+	ImGui::Separator();
 	if (ImGui::Button("Remove Model"))
 	{
 		s_PendingRemoveEntities.push_back(selectedModel); // removed at the start of the next frame (see EditorPreFrame)
