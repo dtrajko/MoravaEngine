@@ -175,6 +175,32 @@ void TransformComponent::SetLightDirection(const glm::vec3& direction)
 	SetMatrix(matrix);
 }
 
+// ColliderComponent, RigidBodyComponent
+
+const char* ColliderComponent::GetShapeName(Shape shape)
+{
+	switch (shape)
+	{
+		case Shape::Box:          return "Box";
+		case Shape::Sphere:       return "Sphere";
+		case Shape::Capsule:      return "Capsule";
+		case Shape::ConvexMesh:   return "ConvexMesh";
+		case Shape::TriangleMesh: return "TriangleMesh";
+	}
+	return "Box";
+}
+
+const char* RigidBodyComponent::GetTypeName(BodyType type)
+{
+	switch (type)
+	{
+		case BodyType::Static:    return "Static";
+		case BodyType::Dynamic:   return "Dynamic";
+		case BodyType::Kinematic: return "Kinematic";
+	}
+	return "Dynamic";
+}
+
 // EnvMapVulkanScene
 
 EnvMapVulkanEntityID EnvMapVulkanScene::NewID()

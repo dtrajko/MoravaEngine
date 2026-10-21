@@ -10,8 +10,8 @@ void GameLoop::Frame(float frameTime, GameLoopSystems* systems)
 
 	while (m_Accumulator >= FixedStep)
 	{
-		// The systems' fixed step (input's test now; Phase 4: the scripts' FixedUpdate. Phase 3: the physics step, then its
-		// contacts and triggers to the scripts); they end it with the input's edges cleared
+		// The systems' fixed step (input's test and the physics step now; Phase 4: the scripts' FixedUpdate. 3.6: the
+		// physics contacts and triggers to the scripts); they end it with the input's edges cleared
 		if (systems)
 		{
 			systems->FixedUpdate(FixedStep);
@@ -25,7 +25,7 @@ void GameLoop::Frame(float frameTime, GameLoopSystems* systems)
 	// scene changes the frame asked for (destroyed entities, a scene to load)
 	if (systems)
 	{
-		systems->Update(gameFrameTime);
+		systems->Update(gameFrameTime, m_Alpha);
 	}
 	m_GameTime += gameFrameTime;
 	m_FrameCount++;

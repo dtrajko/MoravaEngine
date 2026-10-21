@@ -9,7 +9,9 @@ class GameLoopSystems
 public:
 	virtual ~GameLoopSystems() = default;
 	virtual void FixedUpdate(float /*fixedStep*/) {}
-	virtual void Update(float /*frameTime*/) {} // frameTime: the frame's game time (scaled)
+	// frameTime: the frame's game time (scaled); alpha: how far the game is between its last two fixed steps (GetAlpha), for
+	// drawing what the steps move (bodies) between them
+	virtual void Update(float /*frameTime*/, float /*alpha*/) {}
 };
 
 /**

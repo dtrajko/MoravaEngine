@@ -3878,9 +3878,9 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 	std::unordered_map<EnvMapVulkanEntityID, ModelMotionState> modelStates; // this frame's: deleted models drop out
 
 	// For the probe volume: numbers that change whenever something its probes capture changed. Apart: what moves by
-	// itself (the skinned models), which the probes follow more calmly than an edit (see EnvMapVulkanProbes).
-	// And what decides where the probes can stand: the models that stand still, where their meshes are and which
-	// materials they have (glass isn't captured).
+	// itself (the skinned models, and the models physics moves: dynamic and kinematic bodies), which the probes follow
+	// more calmly than an edit (see EnvMapVulkanProbes). And what decides where the probes can stand: the models that
+	// stand still, where their meshes are and which materials they have (glass isn't captured).
 	uint64_t probeSceneVersion = HashStart, probeAnimationVersion = HashStart, probeGeometryVersion = HashStart;
 
 	ApplyPartTransforms();
@@ -3914,7 +3914,9 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 
 		// The model, where its meshes are, its pose and which materials they have (the materials' values: below)
 		probeSceneVersion = HashBytes(probeSceneVersion, &state.Model, sizeof(state.Model));
-		uint64_t& motionVersion = model->IsSkinned() ? probeAnimationVersion : probeSceneVersion;
+		const RigidBodyComponent* rigidBody = s_Scene->TryGet<RigidBodyComponent>(entity);
+		const bool movesByItself = model->IsSkinned() || (rigidBody && rigidBody->Type != RigidBodyComponent::BodyType::Static);
+		uint64_t& motionVersion = movesByItself ? probeAnimationVersion : probeSceneVersion;
 		motionVersion = HashBytes(motionVersion, state.MeshTransforms.data(), state.MeshTransforms.size() * sizeof(glm::mat4));
 		motionVersion = HashBytes(motionVersion, state.BoneTransforms.data(), state.BoneTransforms.size() * sizeof(glm::mat4));
 		for (const H2M::RefH2M<EnvMapVulkanMaterial>& material : meshMaterials)
@@ -3922,7 +3924,7 @@ void EnvMapVulkanRenderer::Draw(H2M::CameraH2M* camera)
 			const EnvMapVulkanMaterial* materialPointer = material.Raw();
 			probeSceneVersion = HashBytes(probeSceneVersion, &materialPointer, sizeof(materialPointer));
 		}
-		if (!model->IsSkinned())
+		if (!movesByItself)
 		{
 			probeGeometryVersion = HashBytes(probeGeometryVersion, &state.Model, sizeof(state.Model));
 			probeGeometryVersion = HashBytes(probeGeometryVersion, state.MeshTransforms.data(), state.MeshTransforms.size() * sizeof(glm::mat4));

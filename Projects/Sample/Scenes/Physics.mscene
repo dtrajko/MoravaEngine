@@ -1,0 +1,4548 @@
+Scene:
+  Version: 1
+  Name: Physics
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 4797481855757227527
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 9, 9.5]
+      Rotation: [34, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      FieldOfView: 70
+  - ID: 16040318626583559303
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 17664899364368859239
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0.0067483177, 0.0065134675, -87.970924]
+      Scale: [0.99996686, 0.99999785, 0.9999558]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 0.28021637
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 8601021745167664655
+    Name: cube.obj
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [10, 1, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 4645328179557402687
+    Name: Cube
+    Parent: 8601021745167664655
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 11173523489358520666
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [11, 11, 2]
+      Rotation: [0, 0, -90]
+      Scale: [9.999993, 0.9999972, 7.9999247]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 11005680830479748476
+    Name: Cube
+    Parent: 11173523489358520666
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 10946202904542493917
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [11, 6, -8]
+      Rotation: [0, 0, -90]
+      Scale: [10, 0.9999972, 1.9998641]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 12347905251721334247
+    Name: Cube
+    Parent: 10946202904542493917
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4411623245843787822
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, -11]
+      Rotation: [90, 4.3089303e-06, -90]
+      Scale: [9.999842, 0.99993837, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 3390355051436957147
+    Name: Cube
+    Parent: 4411623245843787822
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 4760625982631271431
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 11, 11]
+      Rotation: [90, 4.308828e-06, -90]
+      Scale: [9.999682, 0.9999284, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 4372998666035804560
+    Name: Cube
+    Parent: 4760625982631271431
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 16332770661743169074
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [-11, 11, 0]
+      Rotation: [0, 0, -90]
+      Scale: [9.999993, 0.9999972, 9.999189]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 8715774543680231152
+    Name: Cube
+    Parent: 16332770661743169074
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 191337683009812853
+    Name: Cube
+    Parent: 0
+    Transform:
+      Translation: [0, 22, 0]
+      Rotation: [0, 0, 0]
+      Scale: [10, 1, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 1610167032220544294
+    Name: Cube
+    Parent: 191337683009812853
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 5528310947716204811
+    Name: Player
+    Parent: 0
+    Transform:
+      Translation: [0, 1.75, 2]
+      Rotation: [0, 0, 0]
+      Scale: [0.75, 0.75, 0.75]
+    Model:
+      File: Models/Primitives/cube.obj
+    InputTest:
+      Speed: 4
+      JumpSpeed: 6
+      Gravity: 20
+      TurnSpeed: 1
+      CaptureMouse: false
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Kinematic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 9137462205581127730
+    Name: Cube
+    Parent: 5528310947716204811
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 3318840571902216447
+    Name: Player Light
+    Parent: 0
+    Transform:
+      Translation: [0, 7, 3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 30
+      Range: 18
+      CastShadows: true
+  - ID: 12292673721498952904
+    Name: Probe Volume
+    Parent: 0
+    Transform:
+      Translation: [0, 11, -4.7683716e-06]
+      Rotation: [0, 0, 0]
+      Scale: [25.399996, 25.4, 25.399862]
+    ProbeVolume:
+      Enabled: true
+      Counts: [8, 8, 8]
+      NormalBias: 0.25
+      ViewBias: 0.25
+      AutoUpdate: true
+      ProbesPerFrame: 8
+      TracedProbesPerFrame: 1024
+      RaysPerProbe: 192
+      Hysteresis: 0.9
+      RelocateProbes: true
+      OccludeReflections: true
+      ShowProbes: false
+      ProbeRadius: 0.12
+      Show: 0
+  - ID: 17789468089534087242
+    Name: Box 1
+    Parent: 0
+    Transform:
+      Translation: [2.36, 1.4, -4.64]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 10705334037087944837
+    Name: Box
+    Parent: 17789468089534087242
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 17913624767761385674
+    Name: Box 2
+    Parent: 0
+    Transform:
+      Translation: [2.36, 1.4, -3.82]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 18077719800783899301
+    Name: Box
+    Parent: 17913624767761385674
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 7459546183977166668
+    Name: Box 3
+    Parent: 0
+    Transform:
+      Translation: [2.36, 1.4, -3]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 11772210776468265987
+    Name: Box
+    Parent: 7459546183977166668
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 4302001347091405090
+    Name: Box 4
+    Parent: 0
+    Transform:
+      Translation: [2.36, 1.4, -2.18]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 7360842205245396170
+    Name: Box
+    Parent: 4302001347091405090
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 2379001307486502
+    Name: Box 5
+    Parent: 0
+    Transform:
+      Translation: [2.36, 1.4, -1.36]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 4052691145376787351
+    Name: Box
+    Parent: 2379001307486502
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 994202736312747298
+    Name: Box 6
+    Parent: 0
+    Transform:
+      Translation: [3.18, 1.4, -4.64]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 11523281968286947414
+    Name: Box
+    Parent: 994202736312747298
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 11607360243371851231
+    Name: Box 7
+    Parent: 0
+    Transform:
+      Translation: [3.18, 1.4, -3.82]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 2216860551350920307
+    Name: Box
+    Parent: 11607360243371851231
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 7536614716705324292
+    Name: Box 8
+    Parent: 0
+    Transform:
+      Translation: [3.18, 1.4, -3]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 2012412712250446087
+    Name: Box
+    Parent: 7536614716705324292
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 13888732232838850555
+    Name: Box 9
+    Parent: 0
+    Transform:
+      Translation: [3.18, 1.4, -2.18]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 12423139349079926484
+    Name: Box
+    Parent: 13888732232838850555
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 14702237212160144450
+    Name: Box 10
+    Parent: 0
+    Transform:
+      Translation: [3.18, 1.4, -1.36]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 2596663775398633643
+    Name: Box
+    Parent: 14702237212160144450
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 2185218299310052829
+    Name: Box 11
+    Parent: 0
+    Transform:
+      Translation: [4, 1.4, -4.64]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 17268362586975946893
+    Name: Box
+    Parent: 2185218299310052829
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 1016966130128771635
+    Name: Box 12
+    Parent: 0
+    Transform:
+      Translation: [4, 1.4, -3.82]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 13027282141707272162
+    Name: Box
+    Parent: 1016966130128771635
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 13555126926255998972
+    Name: Box 13
+    Parent: 0
+    Transform:
+      Translation: [4, 1.4, -3]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 4670708871657083046
+    Name: Box
+    Parent: 13555126926255998972
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 6601235597901140152
+    Name: Box 14
+    Parent: 0
+    Transform:
+      Translation: [4, 1.4, -2.18]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 13312506043464699881
+    Name: Box
+    Parent: 6601235597901140152
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 15921757371953927701
+    Name: Box 15
+    Parent: 0
+    Transform:
+      Translation: [4, 1.4, -1.36]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 10300815592613060722
+    Name: Box
+    Parent: 15921757371953927701
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 5160030348720552579
+    Name: Box 16
+    Parent: 0
+    Transform:
+      Translation: [4.82, 1.4, -4.64]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 1953309261150153581
+    Name: Box
+    Parent: 5160030348720552579
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 1906370451014193720
+    Name: Box 17
+    Parent: 0
+    Transform:
+      Translation: [4.82, 1.4, -3.82]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 14865284289848055763
+    Name: Box
+    Parent: 1906370451014193720
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 1584987940889880441
+    Name: Box 18
+    Parent: 0
+    Transform:
+      Translation: [4.82, 1.4, -3]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 17819314986835959088
+    Name: Box
+    Parent: 1584987940889880441
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 10403909614672211646
+    Name: Box 19
+    Parent: 0
+    Transform:
+      Translation: [4.82, 1.4, -2.18]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 10472698618831187505
+    Name: Box
+    Parent: 10403909614672211646
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 11822725622356889608
+    Name: Box 20
+    Parent: 0
+    Transform:
+      Translation: [4.82, 1.4, -1.36]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 14897074271080278717
+    Name: Box
+    Parent: 11822725622356889608
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 7061702837597646479
+    Name: Box 21
+    Parent: 0
+    Transform:
+      Translation: [5.64, 1.4, -4.64]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 14955667663748152265
+    Name: Box
+    Parent: 7061702837597646479
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 12065420002788668977
+    Name: Box 22
+    Parent: 0
+    Transform:
+      Translation: [5.64, 1.4, -3.82]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 2893009680531975716
+    Name: Box
+    Parent: 12065420002788668977
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 10269941635705409799
+    Name: Box 23
+    Parent: 0
+    Transform:
+      Translation: [5.64, 1.4, -3]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 12598360072525691605
+    Name: Box
+    Parent: 10269941635705409799
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 11872334787582160195
+    Name: Box 24
+    Parent: 0
+    Transform:
+      Translation: [5.64, 1.4, -2.18]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 14282680258670043574
+    Name: Box
+    Parent: 11872334787582160195
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 11025799711440683744
+    Name: Box 25
+    Parent: 0
+    Transform:
+      Translation: [5.64, 1.4, -1.36]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 14700180321273864732
+    Name: Box
+    Parent: 11025799711440683744
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 12944800850845627580
+    Name: Box 26
+    Parent: 0
+    Transform:
+      Translation: [2.77, 2.2, -4.23]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 9722906953901131006
+    Name: Box
+    Parent: 12944800850845627580
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 13692228927481640184
+    Name: Box 27
+    Parent: 0
+    Transform:
+      Translation: [2.77, 2.2, -3.41]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 6011055742730835247
+    Name: Box
+    Parent: 13692228927481640184
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 4706923211430296553
+    Name: Box 28
+    Parent: 0
+    Transform:
+      Translation: [2.77, 2.2, -2.59]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 13081399559424616008
+    Name: Box
+    Parent: 4706923211430296553
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 859645384456958725
+    Name: Box 29
+    Parent: 0
+    Transform:
+      Translation: [2.77, 2.2, -1.77]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 4995474467080213640
+    Name: Box
+    Parent: 859645384456958725
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 4646172165930737685
+    Name: Box 30
+    Parent: 0
+    Transform:
+      Translation: [3.59, 2.2, -4.23]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 9540105323881635702
+    Name: Box
+    Parent: 4646172165930737685
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 13292492778455414199
+    Name: Box 31
+    Parent: 0
+    Transform:
+      Translation: [3.59, 2.2, -3.41]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 11194572291528775178
+    Name: Box
+    Parent: 13292492778455414199
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 10268685784618383145
+    Name: Box 32
+    Parent: 0
+    Transform:
+      Translation: [3.59, 2.2, -2.59]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 5188295158444145441
+    Name: Box
+    Parent: 10268685784618383145
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 4226379596029633395
+    Name: Box 33
+    Parent: 0
+    Transform:
+      Translation: [3.59, 2.2, -1.77]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 1034492579829557910
+    Name: Box
+    Parent: 4226379596029633395
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 17793099940798676599
+    Name: Box 34
+    Parent: 0
+    Transform:
+      Translation: [4.41, 2.2, -4.23]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 10204907316829390787
+    Name: Box
+    Parent: 17793099940798676599
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 4020610860218387031
+    Name: Box 35
+    Parent: 0
+    Transform:
+      Translation: [4.41, 2.2, -3.41]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 2779508633508469525
+    Name: Box
+    Parent: 4020610860218387031
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 13319547798626688970
+    Name: Box 36
+    Parent: 0
+    Transform:
+      Translation: [4.41, 2.2, -2.59]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 15322517030098962913
+    Name: Box
+    Parent: 13319547798626688970
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 16609751312264423752
+    Name: Box 37
+    Parent: 0
+    Transform:
+      Translation: [4.41, 2.2, -1.77]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 8654175460581801750
+    Name: Box
+    Parent: 16609751312264423752
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 6385939437244718475
+    Name: Box 38
+    Parent: 0
+    Transform:
+      Translation: [5.23, 2.2, -4.23]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 10337409008544090485
+    Name: Box
+    Parent: 6385939437244718475
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 15152232124369614739
+    Name: Box 39
+    Parent: 0
+    Transform:
+      Translation: [5.23, 2.2, -3.41]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 8008185394379408884
+    Name: Box
+    Parent: 15152232124369614739
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 15477801204841506985
+    Name: Box 40
+    Parent: 0
+    Transform:
+      Translation: [5.23, 2.2, -2.59]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 8855020820574311145
+    Name: Box
+    Parent: 15477801204841506985
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 9391162109426168705
+    Name: Box 41
+    Parent: 0
+    Transform:
+      Translation: [5.23, 2.2, -1.77]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 17501834854823063738
+    Name: Box
+    Parent: 9391162109426168705
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 8302996063409074625
+    Name: Box 42
+    Parent: 0
+    Transform:
+      Translation: [3.18, 3, -3.82]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 1057642972288389471
+    Name: Box
+    Parent: 8302996063409074625
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 7189724513428478771
+    Name: Box 43
+    Parent: 0
+    Transform:
+      Translation: [3.18, 3, -3]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 14152960480358322958
+    Name: Box
+    Parent: 7189724513428478771
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 5348164978363949782
+    Name: Box 44
+    Parent: 0
+    Transform:
+      Translation: [3.18, 3, -2.18]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 6753574742029767506
+    Name: Box
+    Parent: 5348164978363949782
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 11715087054878830627
+    Name: Box 45
+    Parent: 0
+    Transform:
+      Translation: [4, 3, -3.82]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 1666218039946331813
+    Name: Box
+    Parent: 11715087054878830627
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 8487330916855157205
+    Name: Box 46
+    Parent: 0
+    Transform:
+      Translation: [4, 3, -3]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 12032666735408644615
+    Name: Box
+    Parent: 8487330916855157205
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 3137462482875699114
+    Name: Box 47
+    Parent: 0
+    Transform:
+      Translation: [4, 3, -2.18]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 4130514560463828798
+    Name: Box
+    Parent: 3137462482875699114
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 874005775756352278
+    Name: Box 48
+    Parent: 0
+    Transform:
+      Translation: [4.82, 3, -3.82]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 6775640927049477861
+    Name: Box
+    Parent: 874005775756352278
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 17796741660137285022
+    Name: Box 49
+    Parent: 0
+    Transform:
+      Translation: [4.82, 3, -3]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 12058044833158559300
+    Name: Box
+    Parent: 17796741660137285022
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 9549606745760697156
+    Name: Box 50
+    Parent: 0
+    Transform:
+      Translation: [4.82, 3, -2.18]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 79220688061919693
+    Name: Box
+    Parent: 9549606745760697156
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 16270546240568543227
+    Name: Box 51
+    Parent: 0
+    Transform:
+      Translation: [3.59, 3.8, -3.41]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 14354646833007826681
+    Name: Box
+    Parent: 16270546240568543227
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 11812012313315230568
+    Name: Box 52
+    Parent: 0
+    Transform:
+      Translation: [3.59, 3.8, -2.59]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 13997421662384604482
+    Name: Box
+    Parent: 11812012313315230568
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 13109172511738833581
+    Name: Box 53
+    Parent: 0
+    Transform:
+      Translation: [4.41, 3.8, -3.41]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 13185309877837192457
+    Name: Box
+    Parent: 13109172511738833581
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 2303628507770664522
+    Name: Box 54
+    Parent: 0
+    Transform:
+      Translation: [4.41, 3.8, -2.59]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 834020531952467489
+    Name: Box
+    Parent: 2303628507770664522
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 1293869994014344670
+    Name: Box 55
+    Parent: 0
+    Transform:
+      Translation: [4, 4.6, -3]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 4339532150207838285
+    Name: Box
+    Parent: 1293869994014344670
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 10545517507026321153
+    Name: Box 56
+    Parent: 0
+    Transform:
+      Translation: [-7.5, 1.4, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 1911479984446858944
+    Name: Box
+    Parent: 10545517507026321153
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 12699181157457992131
+    Name: Box 57
+    Parent: 0
+    Transform:
+      Translation: [-6.68, 1.4, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 7592479606747544228
+    Name: Box
+    Parent: 12699181157457992131
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 16083769098541224258
+    Name: Box 58
+    Parent: 0
+    Transform:
+      Translation: [-5.86, 1.4, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 16793645056497653059
+    Name: Box
+    Parent: 16083769098541224258
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 11119370686408090453
+    Name: Box 59
+    Parent: 0
+    Transform:
+      Translation: [-5.04, 1.4, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 5858008529936470609
+    Name: Box
+    Parent: 11119370686408090453
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 7044950964503824322
+    Name: Box 60
+    Parent: 0
+    Transform:
+      Translation: [-4.22, 1.4, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 9577063720380628399
+    Name: Box
+    Parent: 7044950964503824322
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 5945328911756253222
+    Name: Box 61
+    Parent: 0
+    Transform:
+      Translation: [-3.4, 1.4, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 6181853811556526808
+    Name: Box
+    Parent: 5945328911756253222
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 2051836378990237213
+    Name: Box 62
+    Parent: 0
+    Transform:
+      Translation: [-2.58, 1.4, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 667426157459111151
+    Name: Box
+    Parent: 2051836378990237213
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 15138772869160806612
+    Name: Box 63
+    Parent: 0
+    Transform:
+      Translation: [-1.76, 1.4, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 10185737065456193125
+    Name: Box
+    Parent: 15138772869160806612
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 3569336687541107077
+    Name: Box 64
+    Parent: 0
+    Transform:
+      Translation: [-0.94, 1.4, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 17615214196609896363
+    Name: Box
+    Parent: 3569336687541107077
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 13286329485507402978
+    Name: Box 65
+    Parent: 0
+    Transform:
+      Translation: [-7.09, 2.2, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 18363064222078710046
+    Name: Box
+    Parent: 13286329485507402978
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 4350617159803754265
+    Name: Box 66
+    Parent: 0
+    Transform:
+      Translation: [-6.27, 2.2, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 6070367421694771753
+    Name: Box
+    Parent: 4350617159803754265
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 12186750966668733314
+    Name: Box 67
+    Parent: 0
+    Transform:
+      Translation: [-5.45, 2.2, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 1172065043063167800
+    Name: Box
+    Parent: 12186750966668733314
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 2176475652519723395
+    Name: Box 68
+    Parent: 0
+    Transform:
+      Translation: [-4.63, 2.2, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 2254237032074219049
+    Name: Box
+    Parent: 2176475652519723395
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 14638397147904216627
+    Name: Box 69
+    Parent: 0
+    Transform:
+      Translation: [-3.81, 2.2, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 18122157238139015299
+    Name: Box
+    Parent: 14638397147904216627
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 16196171502001540693
+    Name: Box 70
+    Parent: 0
+    Transform:
+      Translation: [-2.99, 2.2, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 2177491322513567569
+    Name: Box
+    Parent: 16196171502001540693
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 14475991367427827158
+    Name: Box 71
+    Parent: 0
+    Transform:
+      Translation: [-2.17, 2.2, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 7582123935932431593
+    Name: Box
+    Parent: 14475991367427827158
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 3274726863763898787
+    Name: Box 72
+    Parent: 0
+    Transform:
+      Translation: [-1.35, 2.2, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 16708539733671649295
+    Name: Box
+    Parent: 3274726863763898787
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 13598536843612077802
+    Name: Box 73
+    Parent: 0
+    Transform:
+      Translation: [-0.53, 2.2, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 7861702504245512207
+    Name: Box
+    Parent: 13598536843612077802
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 314105274495021191
+    Name: Box 74
+    Parent: 0
+    Transform:
+      Translation: [-7.5, 3, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 11779434872179100114
+    Name: Box
+    Parent: 314105274495021191
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 8426377340047575865
+    Name: Box 75
+    Parent: 0
+    Transform:
+      Translation: [-6.68, 3, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 4074311003673569777
+    Name: Box
+    Parent: 8426377340047575865
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 8167291711730415566
+    Name: Box 76
+    Parent: 0
+    Transform:
+      Translation: [-5.86, 3, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 4316041525764412511
+    Name: Box
+    Parent: 8167291711730415566
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 10456479453979954706
+    Name: Box 77
+    Parent: 0
+    Transform:
+      Translation: [-5.04, 3, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 6244753594362534232
+    Name: Box
+    Parent: 10456479453979954706
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 12088570421598269118
+    Name: Box 78
+    Parent: 0
+    Transform:
+      Translation: [-4.22, 3, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 10355025061626588691
+    Name: Box
+    Parent: 12088570421598269118
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 16640509791272098336
+    Name: Box 79
+    Parent: 0
+    Transform:
+      Translation: [-3.4, 3, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 1572365701436390933
+    Name: Box
+    Parent: 16640509791272098336
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 16184748074833410071
+    Name: Box 80
+    Parent: 0
+    Transform:
+      Translation: [-2.58, 3, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 4330971136915920807
+    Name: Box
+    Parent: 16184748074833410071
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 7201210924555640148
+    Name: Box 81
+    Parent: 0
+    Transform:
+      Translation: [-1.76, 3, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 7949254403591004427
+    Name: Box
+    Parent: 7201210924555640148
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 1354770642108110566
+    Name: Box 82
+    Parent: 0
+    Transform:
+      Translation: [-0.94, 3, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 13551727838030234751
+    Name: Box
+    Parent: 1354770642108110566
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 5051983485743528155
+    Name: Box 83
+    Parent: 0
+    Transform:
+      Translation: [-7.09, 3.8, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 6237750631256498985
+    Name: Box
+    Parent: 5051983485743528155
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 17353055036629030171
+    Name: Box 84
+    Parent: 0
+    Transform:
+      Translation: [-6.27, 3.8, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 4066496879274644002
+    Name: Box
+    Parent: 17353055036629030171
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 12276027875002009255
+    Name: Box 85
+    Parent: 0
+    Transform:
+      Translation: [-5.45, 3.8, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 11392566855658867113
+    Name: Box
+    Parent: 12276027875002009255
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 5446397493947976485
+    Name: Box 86
+    Parent: 0
+    Transform:
+      Translation: [-4.63, 3.8, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 14082552690071621877
+    Name: Box
+    Parent: 5446397493947976485
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 12428090902221797170
+    Name: Box 87
+    Parent: 0
+    Transform:
+      Translation: [-3.81, 3.8, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 7161494715110610576
+    Name: Box
+    Parent: 12428090902221797170
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 4871643615123086496
+    Name: Box 88
+    Parent: 0
+    Transform:
+      Translation: [-2.99, 3.8, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 10228513781136688183
+    Name: Box
+    Parent: 4871643615123086496
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 17483373807425792074
+    Name: Box 89
+    Parent: 0
+    Transform:
+      Translation: [-2.17, 3.8, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 1664976433050427048
+    Name: Box
+    Parent: 17483373807425792074
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 10281003091569182738
+    Name: Box 90
+    Parent: 0
+    Transform:
+      Translation: [-1.35, 3.8, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 9756837503096206589
+    Name: Box
+    Parent: 10281003091569182738
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 12470313527719807840
+    Name: Box 91
+    Parent: 0
+    Transform:
+      Translation: [-0.53, 3.8, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 9670266436841564341
+    Name: Box
+    Parent: 12470313527719807840
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 16710275015534931832
+    Name: Box 92
+    Parent: 0
+    Transform:
+      Translation: [-7.5, 4.6, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 16697562148863346551
+    Name: Box
+    Parent: 16710275015534931832
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 17210510681357857556
+    Name: Box 93
+    Parent: 0
+    Transform:
+      Translation: [-6.68, 4.6, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 16053641893398400401
+    Name: Box
+    Parent: 17210510681357857556
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 2134435437669265810
+    Name: Box 94
+    Parent: 0
+    Transform:
+      Translation: [-5.86, 4.6, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 7868765274549104984
+    Name: Box
+    Parent: 2134435437669265810
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 4959801549387167463
+    Name: Box 95
+    Parent: 0
+    Transform:
+      Translation: [-5.04, 4.6, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 14970693892889999708
+    Name: Box
+    Parent: 4959801549387167463
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 17912319636924343713
+    Name: Box 96
+    Parent: 0
+    Transform:
+      Translation: [-4.22, 4.6, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 2279142028062226956
+    Name: Box
+    Parent: 17912319636924343713
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 8363877795581449408
+    Name: Box 97
+    Parent: 0
+    Transform:
+      Translation: [-3.4, 4.6, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 13146643409441941847
+    Name: Box
+    Parent: 8363877795581449408
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 14900914336389560199
+    Name: Box 98
+    Parent: 0
+    Transform:
+      Translation: [-2.58, 4.6, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 10760717777344683507
+    Name: Box
+    Parent: 14900914336389560199
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 9506149854698338705
+    Name: Box 99
+    Parent: 0
+    Transform:
+      Translation: [-1.76, 4.6, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 10849144013170268761
+    Name: Box
+    Parent: 9506149854698338705
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 4176871329512816159
+    Name: Box 100
+    Parent: 0
+    Transform:
+      Translation: [-0.94, 4.6, -7]
+      Rotation: [0, 0, 0]
+      Scale: [0.4, 0.4, 0.4]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 4577035770341089231
+    Name: Box
+    Parent: 4176871329512816159
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7001
+        File: assets/Materials/Test_White.mmat
+        Name: Test_White
+  - ID: 5374894455816083647
+    Name: Ramp
+    Parent: 0
+    Transform:
+      Translation: [-5, 2.6, 4]
+      Rotation: [0, 0, 20]
+      Scale: [3.5, 0.1, 1.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 5006397828503977419
+    Name: Ramp
+    Parent: 5374894455816083647
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 9952472534167506408
+    Name: Ball 1
+    Parent: 0
+    Transform:
+      Translation: [-2.4, 4.6, 4]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/sphere.obj
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0.3
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 3
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 3996086390940063179
+    Name: Ball
+    Parent: 9952472534167506408
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7002
+        File: assets/Materials/Test_Red.mmat
+        Name: Test_Red
+  - ID: 8257674312753966733
+    Name: Ball 2
+    Parent: 0
+    Transform:
+      Translation: [3.6, 9, -2.6]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/sphere.obj
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0.5
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 3
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 12286937548047448027
+    Name: Ball
+    Parent: 8257674312753966733
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7002
+        File: assets/Materials/Test_Red.mmat
+        Name: Test_Red
+  - ID: 18224631776143472975
+    Name: Ball 3
+    Parent: 0
+    Transform:
+      Translation: [4.6, 11, -3.4]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/sphere.obj
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0.5
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 3
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 18246975545272153242
+    Name: Ball
+    Parent: 18224631776143472975
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7002
+        File: assets/Materials/Test_Red.mmat
+        Name: Test_Red
+  - ID: 12629503816424893674
+    Name: Ball 4
+    Parent: 0
+    Transform:
+      Translation: [-4, 10, -6.6]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/sphere.obj
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0.5
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 3
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 13807713839662627102
+    Name: Ball
+    Parent: 12629503816424893674
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7002
+        File: assets/Materials/Test_Red.mmat
+        Name: Test_Red
+  - ID: 5015821845047867614
+    Name: Ball 5
+    Parent: 0
+    Transform:
+      Translation: [-1.5, 12, -7.2]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/sphere.obj
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0.5
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 3
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 16187127829733168441
+    Name: Ball
+    Parent: 5015821845047867614
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7002
+        File: assets/Materials/Test_Red.mmat
+        Name: Test_Red
+  - ID: 16809107920621817265
+    Name: Ball 6
+    Parent: 0
+    Transform:
+      Translation: [0.5, 8, 0.5]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/sphere.obj
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0.5
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 3
+      LinearDamping: 0.05
+      AngularDamping: 0.05
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+  - ID: 5117896246320175531
+    Name: Ball
+    Parent: 16809107920621817265
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7002
+        File: assets/Materials/Test_Red.mmat
+        Name: Test_Red
