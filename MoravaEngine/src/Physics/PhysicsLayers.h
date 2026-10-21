@@ -19,7 +19,8 @@ namespace ObjectLayers
 		Trigger,   // a sensor: reports what enters and leaves it, collides with nothing
 		Count
 	};
-	static_assert(Count == PhysicsCollisionMatrix::LayerCount && Trigger == PhysicsCollisionMatrix::Trigger, "the matrix's layers are these");
+	static_assert(uint32_t(Count) == uint32_t(PhysicsCollisionMatrix::LayerCount) && uint32_t(Trigger) == uint32_t(PhysicsCollisionMatrix::Trigger),
+		"the matrix's layers are these");
 
 	// Layers as bits, for the queries (ScenePhysics::Raycast...): what they hit
 	enum : uint32_t
