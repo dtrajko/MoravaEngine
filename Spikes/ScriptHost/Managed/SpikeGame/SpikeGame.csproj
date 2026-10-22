@@ -1,0 +1,17 @@
+<!-- A game's scripts: built against SpikeCore.dll (not copied: the host's copy is the one used), loaded into a collectible
+     context. SpikeGameVersion 1 or 2 builds two versions of the same game for the reload test, each with its own obj. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <SpikeGameVersion Condition="'$(SpikeGameVersion)' == ''">1</SpikeGameVersion>
+    <IntermediateOutputPath>obj\v$(SpikeGameVersion)\$(Configuration)\</IntermediateOutputPath>
+    <DefineConstants>$(DefineConstants);GAME_V$(SpikeGameVersion)</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="SpikeCore">
+      <HintPath>$(SpikeCoreDir)SpikeCore.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,47 @@
+# Phase 4.1 spike (Spikes/ScriptHost): hosts .NET 10 from a private folder next to the executable on Windows, Linux and
+# macOS, and fails if any of its checks fails (runtime started from the private folder, calls both ways, an exception
+# stopped at the boundary, a game assembly overwritten while loaded, unloaded, collected and reloaded, a leak reported).
+# Runs only when the spike changes: it's small and builds in a minute.
+name: Script host spike
+
+on:
+  push:
+    branches: [master]
+    paths: ['Spikes/ScriptHost/**', '.github/workflows/script-host-spike.yml']
+  pull_request:
+    paths: ['Spikes/ScriptHost/**', '.github/workflows/script-host-spike.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  spike:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, ubuntu-24.04, macos-15]
+
+    steps:
+      # No submodules: the spike uses only the .NET SDK
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      # Sets DOTNET_ROOT, which the spike's CMakeLists.txt copies the private .NET from
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Configure
+        run: cmake -S Spikes/ScriptHost -B Spikes/ScriptHost/build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build Spikes/ScriptHost/build --config Release
+
+      - name: Run
+        shell: bash
+        run: Spikes/ScriptHost/build/out/ScriptHostSpike

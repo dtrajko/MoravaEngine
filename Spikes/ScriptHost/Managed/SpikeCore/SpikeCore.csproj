@@ -1,0 +1,12 @@
+<!-- The engine's side in C# (Morava.ScriptCore in Phase 4.2+): loaded once, stays loaded. The runtimeconfig.json that
+     the build writes next to it is what the host starts the runtime with. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <RootNamespace>Morava.Spike</RootNamespace>
+  </PropertyGroup>
+</Project>
