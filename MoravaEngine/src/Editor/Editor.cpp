@@ -281,9 +281,9 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 	ExtractLights();
 	ExtractWater();
 	ExtractProbeVolume();
-	if (!IsPlaying())
+	if (!IsPlaying() || IsSimulating())
 	{
-		SyncCamera(camera); // while the game runs, the view is the camera entity's (UpdatePlayMode)
+		SyncCamera(camera); // in Play the view is the camera entity's (UpdatePlayMode); Simulate keeps the editor's
 	}
 	// The sun turns with the environment map's rotation (EnvMapVulkanDirectionalLight::FollowEnvironmentRotation)
 	SyncSunWithEnvironmentRotation();

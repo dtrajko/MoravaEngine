@@ -42,6 +42,7 @@ struct ApplicationCommandLine
 	bool NoRayTracing = false;     // --no-ray-tracing: Vulkan without the ray tracing extensions, as on a GPU that has none
 	std::string SelectName;        // --select <name>: the entity of this name is selected once the startup scene is open
 	bool Play = false;             // --play: the editor starts the game (Play) once the startup scene is open
+	bool Simulate = false;         // --simulate: the editor starts Simulate (physics only) once the startup scene is open
 
 	static ApplicationCommandLine Parse(int argc, char** argv);
 };

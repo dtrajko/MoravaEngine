@@ -655,6 +655,14 @@ bool grounded = character-&gt;GetGroundState() == JPH::CharacterVirtual::EGround
     <li>A capsule character walks up a ramp below 45°, slides down a steeper one, climbs 30 cm steps, and a trigger reports enter and exit once each.</li>
     <li>Simulate: the box stack falls while the editor camera moves and boxes can be selected; Stop restores it.</li>
   </ul></div>
+  <div class="box note"><b>As built: Simulate (3.7)</b>
+  <ul>
+    <li><b>The state.</b> <code>EditorPlayMode.cpp</code> keeps a <code>PlayState</code> (<code>Edit</code>, <code>Play</code>, <code>Simulate</code>) and the paused flag. Simulate starts like Play (the scene copied, the bodies made, the same game loop and fixed step) and stops like it (the edited scene back, checked against its text). <code>IsPlaying()</code> is true for both, so what is refused while the game runs (Save, Open, removing a part) is refused in Simulate too; <code>IsGameRunning()</code>, "the game owns the view", is true only for Play.</li>
+    <li><b>What runs.</b> <code>GameSystems::Begin(scene, nullptr)</code>: no input, so the game's logic (the input test now, scripts from Phase 4) doesn't run, physics does. The skip is in <code>GameSystems</code>, not the game loop of 1.4: the loop only calls <code>FixedUpdate</code> and <code>Update</code>, and the systems know what they are. A character stands where it is (its game moves it, and gravity is the game's), and dynamic bodies still bump into it.</li>
+    <li><b>The view.</b> The editor's camera, as while paused: fly, select, move a body with the gizmo (physics takes it where it is put), the Properties panel shows the bodies moving and the Physics panel the events. At Stop the view stays where it is (the camera entity follows it in the next frame), unlike Play, which goes back to the view at Play.</li>
+    <li><b>The toolbar.</b> A second button after Play, a ball over the ground; each of the two becomes Stop while it runs and is off while the other runs; Pause and Step work for both. Ctrl+Shift+P starts Simulate (Ctrl+P Play; either stops). The viewport's outline is green in Simulate (blue in Play, amber paused), and the counter says "Simulate". <code>--simulate</code> starts it from the command line, like <code>--play</code>; checked unattended on the Physics scene: the boxes fall, a ball passes the trigger, no input is read, and at exit the edited scene is back, unchanged.</li>
+    <li><b>Tuning.</b> The bodies are made at the start, so a changed mass, friction or collider counts at the next Simulate (Stop, change, Simulate), as the Properties panel says.</li>
+  </ul></div>
 </section>
 
 <section id="phase-4">

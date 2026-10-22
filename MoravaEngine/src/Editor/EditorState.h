@@ -153,26 +153,32 @@ void ShowNotification(const std::string& text, bool isError = false);
 
 // ---- Play mode (EditorPlayMode.cpp)
 
-// The game runs (Play), also while paused: the panels show and edit the running game, not the edited scene
+// The game runs (Play or Simulate), also while paused: the panels show and edit the running game, not the edited scene
 bool IsPlaying();
 
-// The game runs and isn't paused: the game loop runs every frame, the view is the scene's camera
+// Simulate (3.7): the game runs with physics only (no game logic: the input test, scripts from Phase 4), seen through the
+// editor's camera, and the viewport keeps the editor's tools
+bool IsSimulating();
+
+// Play (not Simulate) runs and isn't paused: the view is the scene's camera, and the viewport is the game's
 bool IsGameRunning();
 
-// Play at the start of the next frame (the toolbar, --play)
+// Play or Simulate at the start of the next frame (the toolbar, --play, --simulate)
 void RequestPlay();
+void RequestSimulate();
 
 // At the start of a frame (EditorPreFrame): Play, Step and Stop asked for in the last frame; the game's frame
 void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime);
 
-// Ctrl+P: Play, and Stop while the game runs (as in Unity). Not while typing in a field, and not while a question is open
+// Ctrl+P: Play, Ctrl+Shift+P: Simulate, and either Stops while the game runs (as in Unity). Not while typing in a field,
+// and not while a question is open
 void HandlePlayModeShortcutKeys();
 
 // The Viewport panel, each frame: it has the focus (the game gets input in the next frame); Escape (Shift+F1 when the game
 // binds Escape) takes the focus away, giving the mouse back to the editor
 void UpdateGameViewportFocus(bool viewportFocused);
 
-// The running game's input, for the Input panel (nullptr: no game)
+// The running game's input, for the Input panel (nullptr: no game, or Simulate: it has none)
 const InputSystem* GetGameInput();
 
 // The running game's physics, for the Properties and Physics panels (nullptr: no game)

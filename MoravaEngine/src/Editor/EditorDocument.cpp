@@ -585,10 +585,14 @@ void ProcessSceneOperations()
 		{
 			RequestOpenScene(startupScene);
 		}
-		// --play: the game starts at the start of the next frame, after the scene opened below
+		// --play, --simulate: the game starts at the start of the next frame, after the scene opened below
 		if (Application::Get()->GetCommandLine().Play)
 		{
 			RequestPlay();
+		}
+		else if (Application::Get()->GetCommandLine().Simulate)
+		{
+			RequestSimulate();
 		}
 	}
 	if (s_PendingSceneOperation == SceneOperation::None || !s_SceneOperationConfirmed)

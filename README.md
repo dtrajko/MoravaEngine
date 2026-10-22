@@ -131,6 +131,8 @@ build\Debug\MoravaPlayer.exe --project ..\Projects\Sample\Sample.mproject --scen
 
 A collider marked *Trigger* is a zone things pass through: the log says what enters and leaves it (the Physics scene has a glass Trigger Zone). View > Physics opens the Physics panel: the bodies, the step time and the last collision and trigger events while the game runs, debug views that draw every collider (colored by state: static, awake, sleeping, trigger, character) and the contact points into the viewport, a query test that casts a ray or a sphere from the middle of the view, and the project's collision layers (which kinds of bodies collide, saved in the `.mproject` file).
 
+Simulate (the button after Play, CTRL + SHIFT + P) runs physics alone, without the game's logic and input, on a copy of the scene like Play: the view stays the editor's camera and models can be selected and moved while the bodies fall, roll and settle. Stop brings the scene back as it was.
+
 ### Building on Linux
 
 Tested on Ubuntu with GCC 15 and Clang, in WSL2. The Vulkan and OpenGL scenes build (GCC; Clang tested with Vulkan); the Vulkan editor and the OpenGL scene SceneSSAO were run. DirectX 11 is Windows only.
@@ -270,6 +272,7 @@ For the Vulkan editor (`ENV_MAP_VULKAN`):
 | `--debug-view <number>` | Start with this entry of the Environment panel's Debug View list (0 = off) |
 | `--no-ray-tracing` | Run without the ray tracing extensions, as on a GPU that has none |
 | `--play` | Start the game (Play) once the scene is open |
+| `--simulate` | Start Simulate (physics only, seen through the editor's camera) once the scene is open |
 | `--exit-after <seconds>` | Close the application after this time |
 
 ## Keyboard and Mouse shortcuts
@@ -290,6 +293,7 @@ Vulkan editor (`ENV_MAP_VULKAN`):
 * Rename: F2
 * Delete: DELETE
 * Play and Stop: CTRL + P
+* Simulate and Stop: CTRL + SHIFT + P
 * While the game runs: Escape gives the input (and a captured mouse) back to the editor, a click on the view gives it to the game
 
 Older editor scenes (`EDITOR`, `EDITOR_IMGUIZMO`):

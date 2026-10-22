@@ -1,4 +1,4 @@
-// Play mode (docs/engine/Game_Engine_Runtime_Guide.html, 1.5): Play, Pause, Step and Stop, and their toolbar
+// Play mode (docs/engine/Game_Engine_Runtime_Guide.html, 1.5): Play, Simulate, Pause, Step and Stop, and their toolbar
 //
 // The game runs on s_Scene, the scene every panel and the renderer show, so they all show the running game; the edited
 // scene waits in a copy (s_EditedScene) and comes back at Stop. It is the same as running the game on a copy: nothing the
@@ -9,6 +9,10 @@
 // Input (2.3): the game gets the keyboard, the mouse and the gamepads only while the Viewport panel has the focus (a click
 // on it gives it). The mouse is captured only when the game asks for it; Escape (Shift+F1 when the game binds Escape) always
 // gives the focus, and so the mouse, back to the editor.
+//
+// Simulate (3.7): the same copy of the scene and the same game loop, with physics but without the game's logic (the input
+// test now, scripts from Phase 4) and without input. The view stays the editor's camera and the viewport keeps its tools
+// (select, gizmo, the Properties panel shows the bodies moving), as while paused. At Stop the view stays where it is.
 
 
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
@@ -35,10 +39,12 @@
 using namespace EnvMapVulkanSceneData;
 
 // What the toolbar asked for, done at the start of the next frame (the renderer may be drawing the scene now)
-enum class PlayRequest { None, Play, Step, Stop };
+enum class PlayRequest { None, Play, Simulate, Step, Stop };
 static PlayRequest s_PlayRequest = PlayRequest::None;
 
-static bool s_Playing = false;
+// Edit: no game; Play: the game; Simulate: physics only, in the editor's view. Play and Simulate can be paused.
+enum class PlayState { Edit, Play, Simulate };
+static PlayState s_PlayState = PlayState::Edit;
 static bool s_Paused = false;
 static GameLoop s_GameLoop;
 static GameSystems s_GameSystems;
@@ -60,12 +66,17 @@ static EnvMapVulkanViewOptions s_GameViewOptions;
 
 bool IsPlaying()
 {
-	return s_Playing;
+	return s_PlayState != PlayState::Edit;
+}
+
+bool IsSimulating()
+{
+	return s_PlayState == PlayState::Simulate;
 }
 
 bool IsGameRunning()
 {
-	return s_Playing && !s_Paused;
+	return s_PlayState == PlayState::Play && !s_Paused;
 }
 
 void RequestPlay()
@@ -73,9 +84,14 @@ void RequestPlay()
 	s_PlayRequest = PlayRequest::Play;
 }
 
+void RequestSimulate()
+{
+	s_PlayRequest = PlayRequest::Simulate;
+}
+
 bool RefusedWhilePlaying(const char* what)
 {
-	if (!s_Playing)
+	if (!IsPlaying())
 	{
 		return false;
 	}
@@ -101,7 +117,7 @@ static std::string SerializeScene()
 	return EnvMapVulkanSceneSerializer::Serialize(s_Scene, s_SceneName, s_RenderSettings);
 }
 
-static void StartPlay(H2M::CameraH2M* camera)
+static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 {
 	// The camera entity where the editor's camera is: the game starts with the view as it was
 	SyncCamera(camera);
@@ -121,16 +137,22 @@ static void StartPlay(H2M::CameraH2M* camera)
 		s_EditedMeshTransforms.emplace_back(modelRef, std::move(transforms));
 	}
 
-	// The project's input file is read at each Play: an edit of it counts at the next Play
-	s_GameInput.SetMap(GameSystems::LoadInputMap());
-	s_GameSystems.Begin(&s_Scene, &s_GameInput);
-
-	s_GameLoop.Reset();
-	s_FocusViewport = true;
-	s_Playing = true;
+	s_PlayState = state;
 	s_Paused = false;
-	PlaceGameCamera(camera);
-	Log::GetLogger()->info("Play: scene '{0}', {1} entities", s_SceneName, s_Scene.GetEntityCount());
+	s_GameLoop.Reset();
+	if (state == PlayState::Play)
+	{
+		// The project's input file is read at each Play: an edit of it counts at the next Play
+		s_GameInput.SetMap(GameSystems::LoadInputMap());
+		s_GameSystems.Begin(&s_Scene, &s_GameInput);
+		s_FocusViewport = true;
+		PlaceGameCamera(camera);
+	}
+	else
+	{
+		s_GameSystems.Begin(&s_Scene, nullptr); // no input: physics only
+	}
+	Log::GetLogger()->info("{0}: scene '{1}', {2} entities", state == PlayState::Play ? "Play" : "Simulate", s_SceneName, s_Scene.GetEntityCount());
 }
 
 // camera: placed where the edited scene's camera entity is (nullptr: at exit, no view to restore)
@@ -181,13 +203,18 @@ static void StopPlay(H2M::CameraH2M* camera)
 		s_RenamingEntity = NoEntity;
 	}
 
-	// The view as before Play: the edited scene's camera entity is where the editor's camera was then
-	if (camera)
+	// Play: the view as before Play (the edited scene's camera entity is where the editor's camera was then). Simulate: the
+	// view stays where it is, and the camera entity follows it in the next frame (SyncCamera)
+	if (s_PlayState == PlayState::Simulate)
+	{
+		s_CameraEntitySynced = false;
+	}
+	else if (camera)
 	{
 		PlaceGameCamera(camera);
 	}
 
-	s_Playing = false;
+	s_PlayState = PlayState::Edit;
 	s_Paused = false;
 	const bool unchanged = SerializeScene() == s_EditedSceneText;
 	s_EditedSceneText.clear();
@@ -212,17 +239,31 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 {
 	const PlayRequest request = s_PlayRequest;
 	s_PlayRequest = PlayRequest::None;
-	if (request == PlayRequest::Play && !s_Playing)
+	if ((request == PlayRequest::Play || request == PlayRequest::Simulate) && !IsPlaying())
 	{
-		StartPlay(camera);
+		StartPlay(camera, request == PlayRequest::Play ? PlayState::Play : PlayState::Simulate);
 	}
-	else if (request == PlayRequest::Stop && s_Playing)
+	else if (request == PlayRequest::Stop && IsPlaying())
 	{
 		StopPlay(camera);
 		return;
 	}
-	if (!s_Playing)
+	if (!IsPlaying())
 	{
+		return;
+	}
+
+	// Simulate: the game loop alone (no input, the editor's view)
+	if (s_PlayState == PlayState::Simulate)
+	{
+		if (!s_Paused)
+		{
+			s_GameLoop.Frame(frameTime, &s_GameSystems);
+		}
+		else if (request == PlayRequest::Step)
+		{
+			s_GameLoop.Frame(GameLoop::FixedStep, &s_GameSystems);
+		}
 		return;
 	}
 
@@ -269,12 +310,12 @@ GLFWwindow* GetCurrentPlatformWindow()
 
 const InputSystem* GetGameInput()
 {
-	return s_Playing ? &s_GameInput : nullptr;
+	return s_PlayState == PlayState::Play ? &s_GameInput : nullptr;
 }
 
 ScenePhysics* GetGamePhysics()
 {
-	return s_Playing ? &s_GameSystems.GetPhysics() : nullptr;
+	return IsPlaying() ? &s_GameSystems.GetPhysics() : nullptr;
 }
 
 // The game binds Escape: Shift+F1 gives the mouse back instead
@@ -335,20 +376,20 @@ void UpdateGameViewportFocus(bool viewportFocused)
 void HandlePlayModeShortcutKeys()
 {
 	const ImGuiIO& io = ImGui::GetIO();
-	if (!io.KeyCtrl || io.KeyShift || io.KeyAlt || io.WantTextInput || s_RenamingEntity != NoEntity ||
+	if (!io.KeyCtrl || io.KeyAlt || io.WantTextInput || s_RenamingEntity != NoEntity ||
 		ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
 	{
 		return;
 	}
 	if (ImGui::IsKeyPressed(ImGuiKey_P, false))
 	{
-		s_PlayRequest = s_Playing ? PlayRequest::Stop : PlayRequest::Play;
+		s_PlayRequest = IsPlaying() ? PlayRequest::Stop : (io.KeyShift ? PlayRequest::Simulate : PlayRequest::Play);
 	}
 }
 
 void ShutdownPlayMode()
 {
-	if (s_Playing)
+	if (IsPlaying())
 	{
 		StopPlay(nullptr);
 	}
@@ -369,7 +410,7 @@ const EnvMapVulkanViewOptions* GetDrawnViewOptions()
 }
 
 // The toolbar's icons, drawn in a button's square
-enum class ToolbarIcon { Play, Stop, Pause, Step };
+enum class ToolbarIcon { Play, Simulate, Stop, Pause, Step };
 
 static void DrawToolbarIcon(ToolbarIcon icon, const ImVec2& min, const ImVec2& max)
 {
@@ -383,6 +424,11 @@ static void DrawToolbarIcon(ToolbarIcon icon, const ImVec2& min, const ImVec2& m
 		case ToolbarIcon::Play:
 			drawList->AddTriangleFilled(ImVec2(center.x - half * 0.8f, center.y - half), ImVec2(center.x - half * 0.8f, center.y + half),
 				ImVec2(center.x + half, center.y), color);
+			break;
+		case ToolbarIcon::Simulate:
+			// A ball falling onto the ground: physics
+			drawList->AddCircleFilled(ImVec2(center.x, center.y - half * 0.3f), half * 0.55f, color);
+			drawList->AddRectFilled(ImVec2(center.x - half, center.y + half * 0.6f), ImVec2(center.x + half, center.y + half * 0.9f), color);
 			break;
 		case ToolbarIcon::Stop:
 			drawList->AddRectFilled(ImVec2(center.x - half * 0.85f, center.y - half * 0.85f), ImVec2(center.x + half * 0.85f, center.y + half * 0.85f), color);
@@ -446,7 +492,7 @@ void OnImGuiRenderPlayToolbar()
 	const ImRect bar = ImGui::GetCurrentWindow()->MenuBarRect();
 	const float size = GetToolbarButtonSize();
 	const float spacing = ImGui::GetStyle().ItemSpacing.x;
-	const float width = 3.0f * size + 2.0f * spacing;
+	const float width = 4.0f * size + 3.0f * spacing;
 	// Each button at its own position: SameLine would put the next one on the menu bar's text line, not this button's
 	float x = std::max(ImGui::GetCursorScreenPos().x, IM_ROUND(bar.GetCenter().x - width * 0.5f));
 	const float y = bar.Min.y + GetToolbarMargin();
@@ -457,47 +503,58 @@ void OnImGuiRenderPlayToolbar()
 	};
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 
+	// Play and Simulate: each becomes Stop while it runs, and can't start while the other runs
+	const bool playing = s_PlayState == PlayState::Play;
+	const bool simulating = s_PlayState == PlayState::Simulate;
 	nextButton();
-	if (ToolbarButton("##PlayStop", s_Playing ? ToolbarIcon::Stop : ToolbarIcon::Play, s_Playing, true,
-		s_Playing ? "Stop (Ctrl+P): back to the edited scene, as it was at Play" : "Play (Ctrl+P): the game runs on a copy of the scene, seen through its camera"))
+	if (ToolbarButton("##PlayStop", playing ? ToolbarIcon::Stop : ToolbarIcon::Play, playing, !simulating,
+		playing ? "Stop (Ctrl+P): back to the edited scene, as it was at Play" : "Play (Ctrl+P): the game runs on a copy of the scene, seen through its camera"))
 	{
-		s_PlayRequest = s_Playing ? PlayRequest::Stop : PlayRequest::Play;
+		s_PlayRequest = playing ? PlayRequest::Stop : PlayRequest::Play;
 	}
 	nextButton();
-	if (ToolbarButton("##Pause", ToolbarIcon::Pause, s_Paused, s_Playing,
+	if (ToolbarButton("##SimulateStop", simulating ? ToolbarIcon::Stop : ToolbarIcon::Simulate, simulating, !playing,
+		simulating ? "Stop (Ctrl+Shift+P): back to the edited scene, as it was at Simulate" :
+			"Simulate (Ctrl+Shift+P): physics only, without the game's logic and input, on a copy of the scene; the view and the tools stay the editor's"))
+	{
+		s_PlayRequest = simulating ? PlayRequest::Stop : PlayRequest::Simulate;
+	}
+	nextButton();
+	if (ToolbarButton("##Pause", ToolbarIcon::Pause, s_Paused, IsPlaying(),
 		s_Paused ? "Go on (the game is paused: look around, select, inspect)" : "Pause: the game stops where it is"))
 	{
 		s_Paused = !s_Paused;
 	}
 	nextButton();
-	if (ToolbarButton("##Step", ToolbarIcon::Step, false, s_Playing && s_Paused, "Step: one frame of the paused game (one fixed step of 1/60 s)"))
+	if (ToolbarButton("##Step", ToolbarIcon::Step, false, IsPlaying() && s_Paused, "Step: one frame of the paused game (one fixed step of 1/60 s)"))
 	{
 		s_PlayRequest = PlayRequest::Step;
 	}
 	ImGui::PopStyleVar();
 
 	// The game loop's counters (1.4): a Step adds exactly one frame
-	if (s_Playing)
+	if (IsPlaying())
 	{
 		ImGui::SetCursorScreenPos(ImVec2(x, bar.Min.y)); // the menu bar centers its text from its top
-		ImGui::TextDisabled("Frame %llu  %.2f s%s", (unsigned long long)s_GameLoop.GetFrameCount(), s_GameLoop.GetGameTime(),
-			s_Paused ? "  (paused)" : "");
+		ImGui::TextDisabled("%sFrame %llu  %.2f s%s", simulating ? "Simulate  " : "", (unsigned long long)s_GameLoop.GetFrameCount(),
+			s_GameLoop.GetGameTime(), s_Paused ? "  (paused)" : "");
 	}
 }
 
 void DrawPlayModeOutline(const ImVec2& imageMin, const ImVec2& imageSize)
 {
-	if (!s_Playing || imageSize.x <= 0.0f || imageSize.y <= 0.0f)
+	if (!IsPlaying() || imageSize.x <= 0.0f || imageSize.y <= 0.0f)
 	{
 		return;
 	}
-	// Running: blue, as the active Play button; paused: amber
-	const ImU32 color = s_Paused ? IM_COL32(230, 160, 40, 255) : ImGui::GetColorU32(ImGuiCol_ButtonActive, 1.0f);
+	// Play: blue, as the active Play button; Simulate: green; paused: amber
+	const ImU32 color = s_Paused ? IM_COL32(230, 160, 40, 255) :
+		(IsSimulating() ? IM_COL32(70, 190, 110, 255) : ImGui::GetColorU32(ImGuiCol_ButtonActive, 1.0f));
 	ImDrawList* drawList = ImGui::GetWindowDrawList();
 	drawList->AddRect(imageMin, ImVec2(imageMin.x + imageSize.x, imageMin.y + imageSize.y), color, 0.0f, 0, 3.0f);
 
-	// Who has the input, at the bottom of the view
-	if (s_Paused)
+	// Who has the input, at the bottom of the view (Simulate: nobody, the view is the editor's)
+	if (s_Paused || IsSimulating())
 	{
 		return;
 	}

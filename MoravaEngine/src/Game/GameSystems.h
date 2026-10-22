@@ -18,7 +18,9 @@ class GameSystems : public GameLoopSystems
 {
 public:
 	// The scene and the input the systems work with (the game starts: InputTestComponent's runtime state is fresh, the
-	// physics bodies are made). Begin(nullptr, nullptr): the game is over (the bodies are gone).
+	// physics bodies are made). Begin(nullptr, nullptr): the game is over (the bodies are gone). Begin(scene, nullptr):
+	// Simulate (3.7): physics only, without the game's logic (the input test now, scripts from Phase 4); a character
+	// stands where it is, since its game moves it.
 	void Begin(EnvMapVulkanScene* scene, InputSystem* input);
 
 	virtual void FixedUpdate(float fixedStep) override;
