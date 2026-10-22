@@ -21,10 +21,13 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 	if (m_Scene)
 	{
 		// The controllers the game can read (in the log: "why doesn't my gamepad work?")
-		for (const InputGamepadInfo& gamepad : InputSystem::GetGamepads())
+		if (m_Input)
 		{
-			Log::GetLogger()->info("Input: gamepad {0}: {1}{2}", gamepad.Index + 1, gamepad.Name,
-				gamepad.Mapped ? "" : " (no layout known: not read)");
+			for (const InputGamepadInfo& gamepad : InputSystem::GetGamepads())
+			{
+				Log::GetLogger()->info("Input: gamepad {0}: {1}{2}", gamepad.Index + 1, gamepad.Name,
+					gamepad.Mapped ? "" : " (no layout known: not read)");
+			}
 		}
 
 		m_Scene->Each<InputTestComponent>([](EnvMapVulkanEntityID, InputTestComponent& test)
@@ -73,6 +76,7 @@ static void GetCameraGroundAxes(EnvMapVulkanScene& scene, glm::vec3& forward, gl
 
 void GameSystems::FixedUpdate(float fixedStep)
 {
+	// The game's logic (not in Simulate: no input)
 	if (m_Scene && m_Input)
 	{
 		// The input test: Move, Jump and a fall back to the ground (its height when the game started)
