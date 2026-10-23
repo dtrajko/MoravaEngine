@@ -119,7 +119,19 @@ void OnImGuiRenderProjectPanel()
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 	{
 		ImGui::SetTooltip("The built DLL of the project's C# scripts, relative to the project folder.\n"
-			"Loaded when the project opens and when this path changes; Stop the game first.");
+			"Loaded when the project opens and when this path changes, and again after each build\n"
+			"(a build during Play: at Stop).");
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(IsPlaying() || project->ScriptAssembly.empty() || !ScriptHost::IsAvailable());
+	if (ImGui::SmallButton("Reload"))
+	{
+		RequestScriptReload();
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Loads the scripts again now. A new build is loaded by itself; this is for anything else");
 	}
 	if (!ScriptHost::IsAvailable())
 	{

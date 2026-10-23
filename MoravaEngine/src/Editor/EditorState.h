@@ -187,6 +187,11 @@ ScenePhysics* GetGamePhysics();
 // The running game's scripts, for the Properties panel (nullptr: no game, or Simulate: no scripts run)
 ScriptRuntime* GetGameScripts();
 
+// Hot reload (EditorScriptReload.cpp): each frame, after Play and Stop, a newer build of the project's scripts is loaded
+// (while the game doesn't run). RequestScriptReload: load the scripts again now (the Project panel's Reload)
+void UpdateScriptReload();
+void RequestScriptReload();
+
 // The OS window the current ImGui window is in: the main window, or its own when it was dragged out (multi-viewports).
 // Keys and the mouse are read from it
 GLFWwindow* GetCurrentPlatformWindow();

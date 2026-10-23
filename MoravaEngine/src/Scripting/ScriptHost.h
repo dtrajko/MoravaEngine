@@ -46,6 +46,10 @@ public:
 	static ScriptUnloadResult UnloadGameAssembly();
 	static bool IsGameAssemblyLoaded();
 	static const std::filesystem::path& GetGameAssemblyPath(); // the one loaded (empty: none)
+	// The loaded file's time when it was read: a newer one is a new build (hot reload, 4.6)
+	static std::filesystem::file_time_type GetGameAssemblyWriteTime();
+	// How many unloaded game assemblies something still held (ScriptUnloadResult::StillAlive) since startup
+	static uint32_t GetLeakedAssemblyCount();
 
 	// The loaded game's script classes with their public fields (4.5), sorted by name; empty without a game
 	static const std::vector<ScriptClass>& GetClasses();

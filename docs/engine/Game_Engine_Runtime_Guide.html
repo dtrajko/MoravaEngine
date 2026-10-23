@@ -148,6 +148,7 @@ svg .e-s path { stroke: var(--e-read); stroke-width: 1.2; } svg .e-s polygon { f
       <li><a href="#phase-8">Phase 8: assets and cooking</a></li>
       <li><a href="#phase-9">Phase 9: Build Game and shipping</a></li>
       <li><a href="#phase-10">Phase 10: later</a></li>
+      <li><a href="#phase-11">Phase 11: editing a model's meshes</a></li>
       <li><a href="#final">Milestones and checklist</a></li>
       <li><a href="#refs">Glossary and references</a></li>
     </ol>
@@ -840,6 +841,15 @@ public class PlayerBall : Entity
   <p>When the editor (in Edit mode only) sees a newer DLL: destroy all instances, unload the context, wait until it's collected, load the new bytes, refresh the field lists. A reload in Play is refused with a message; Stop first.</p>
   <div class="box warn"><b>What keeps an old assembly alive</b>
   Any reference from ScriptCore or from C++ into the game assembly: a cached <code>Type</code>, a delegate, a <code>GCHandle</code> not freed, a static event subscription. If the context doesn't unload, the editor logs it: a WeakReference to the context that stays alive after a few GC cycles shows the leak.</div>
+  <div class="box note"><b>As built: 4.6, hot reload</b>
+  <ul>
+    <li><b>The watcher</b> (<code>src/Editor/EditorScriptReload.cpp</code>, called each frame after Play mode's update). Every 250 ms it reads the project's script assembly's write time and size; a build that differs from the loaded one is loaded once both have stayed the same for 0.5 s (<code>dotnet build</code> writes the DLL, then the PDB). The reload is <code>GameSystems::LoadScripts</code>, as at project open: unload (C# drops its context and runs up to 10 GC cycles), then the new bytes, then the class and field lists. In the test project a reload takes about 70 ms; the log says <code>Scripts: reloaded in 69 ms</code>, a notification gives the class count. The first build of a project whose DLL didn't exist yet is loaded the same way. The player doesn't watch: a shipped game's scripts don't change.</li>
+    <li><b>During Play: at Stop, not refused.</b> The plan refused a reload in Play; instead the game keeps the scripts it started with, the log and a notification say once that the scripts were rebuilt, and the reload happens when Play stops (Pause counts as Play). Building while playing is common, and nothing has to be done again afterwards.</li>
+    <li><b>The scene's values survive</b> without any work: a ScriptComponent keeps its class by name and only the fields it sets (4.5), so a new field shows with its initializer, a removed one stays in the scene with the usual warning, and a renamed class is reported at Play as before.</li>
+    <li><b>Leaks.</b> When the old context is still alive after the GC cycles, <code>ScriptHost</code> logs what can hold it (a static, a delegate or a <code>GCHandle</code> into the game), counts it (<code>GetLeakedAssemblyCount</code>) and the notification says the old scripts are still held; the new ones load anyway. <code>ScriptHost::GetGameAssemblyWriteTime</code> is the loaded file's write time, read before its bytes.</li>
+    <li><b>A build that fails to load</b> (a broken DLL, a missing reference) is reported once and tried again only when there is a newer one. <b>Project panel: Reload</b>, next to Script Assembly, loads the scripts again now (not in Play); the missing-DLL warning now says the editor loads the scripts once they are built.</li>
+    <li><b>Checked</b> with the scratch test project: an open editor, three <code>dotnet build</code>s 12 s apart: a class added (5 → 6 classes), one added whose static constructor subscribes to <code>AppDomain.ProcessExit</code> (7 classes), and the original again (5): the third unload reported the planted leak, each reload took 65-70 ms, about 3 s after the build started. A build during Play (<code>--play</code>, paused by the test's planned exception): the "rebuilt" message once, Ctrl+P, Stop's "edited scene is back, unchanged", then the reload in the same frame.</li>
+  </ul></div>
 
   <h3>4.7 Writing and debugging scripts</h3>
   <ul>
@@ -1062,6 +1072,37 @@ Build:
   </table></div>
 </section>
 
+<section id="phase-11">
+  <h2><span class="tag">11</span>Editing a model's meshes</h2>
+  <p><b>Goal:</b> a model entity's meshes can be changed in the editor without making the entity again: its model file replaced by another (the sample's cube Player becomes a sphere, keeping its transform, character, script, tags and the fields set in the scene), and meshes from another file added to it or removed from it. Asked for by the user on 2026-10-23, as the last phase.</p>
+  <h3>Today</h3>
+  <p>A model entity has a <code>ModelComponent</code> (the file's path, and its own loaded <code>ModelH2M</code>) and a child entity per mesh with a <code>MeshPartComponent</code>: the mesh's index in the file (<code>SourceMeshIndex</code>, which a saved scene matches parts by), its material and its transform in the model. A part can be removed, but every part belongs to the model's one file: nothing changes the file, and nothing adds a part from another one. Replacing a model today means a new entity and every component made again by hand.</p>
+  <div class="box note"><b>Why after Phase 8</b>
+  Phase 8.1 (Shared models) changes what a part is: the geometry is loaded once per asset and referenced by UUID, and a part's transform and material are the entity's, given to the renderer per draw. With that, a part can name its own asset (<code>Asset</code> UUID plus <code>SourceMeshIndex</code>), so a model can be made of meshes from several files, and replacing a model is changing a UUID rather than reloading a <code>ModelH2M</code> that owns its parts' state. Built on today's model, both would have to be rebuilt after 8.1.</div>
+
+  <h3>11.1 Replace the model</h3>
+  <ul>
+    <li><b>Properties panel, Model:</b> the file, with <b>Replace…</b> (the asset's file dialog) and a drop target for a model dragged from the Content Browser. A <b>Primitive</b> menu next to it offers the engine's <code>Models/Primitives</code> (cube, sphere, capsule, cylinder, cone, quad) without a dialog.</li>
+    <li><b>What stays:</b> the entity and its ID (other entities' script fields that name it still work), its transform, name, tags, script and its fields, character, rigid body, and every other component. <b>What changes:</b> the parts. A new file's mesh whose name (else its index) matches an old part keeps that part's material and transform; the others get the file's own.</li>
+    <li><b>Physics:</b> a box, sphere or capsule collider is offered a refit to the new model (<b>Fit to Model</b>, as now); a convex or triangle mesh collider follows the new meshes by itself. A character keeps its capsule: its sizes are in meters, chosen for the game, not the model.</li>
+    <li>Not during Play, as for other structural edits (Save and part removal are refused there too).</li>
+  </ul>
+
+  <h3>11.2 Add and remove meshes</h3>
+  <ul>
+    <li><b>Add Mesh…</b> on a model (Properties panel, or the Scene Hierarchy's menu on the model) picks a file and one or all of its meshes; each becomes a new part under the model, with its own asset, index, material and transform. A mesh can also be dropped from the Content Browser onto a model in the Scene Hierarchy.</li>
+    <li><b>Remove</b> on a part, as now; a model may end up with no parts (an empty model: a placeholder that a script fills).</li>
+    <li><b>Saved</b> in the <code>.mscene</code>: a part that comes from another file than its model's has its own <code>Asset</code>; parts of the model's file are written as now, so older scenes read unchanged.</li>
+    <li><b>Ray tracing and probes:</b> the model's top-level instances follow its parts (one per part's asset, sharing the bottom-level structures of 8.1), and the change counts as a geometry change for the probes, as adding a model does now.</li>
+  </ul>
+
+  <h3>11.3 With prefabs</h3>
+  <p>In a prefab (6.1) the change is made in the prefab and reaches its instances. On one instance it is an override, which needs the prefab overrides of Phase 10; until then, the editor asks to unpack the instance first.</p>
+
+  <div class="box ok"><b>Check</b>
+  The sample's Main: the Player's cube replaced with the primitive sphere: same ID, the Camera's script field still finds it, the PlayerController's fields and the character unchanged, the collider refit offered; saved, reopened and played. A sphere mesh added to the Player's cube and a part removed, saved and reopened as edited; an older scene opens unchanged; ray-traced reflections and the probes show the new meshes; the Physics scene's 123 models still load <code>cube.obj</code> once.</div>
+</section>
+
 <section id="final">
   <h2>Milestones and checklist</h2>
   <h3>The phases at a glance</h3>
@@ -1076,6 +1117,7 @@ Build:
     <tr><td>7</td><td>Game UI: canvas, text, images, buttons, menus</td><td>2, 4, 6</td><td><b>Milestone 2: third-person collector</b></td></tr>
     <tr><td>8</td><td>Asset registry, cooking, pack file</td><td>1</td><td>Player runs from the pack only</td></tr>
     <tr><td>9</td><td>Build Game, player templates, private .NET, quality tiers, crash dumps</td><td>4, 8</td><td><b>Milestone 3: shipped on a clean machine</b></td></tr>
+    <tr><td>11</td><td>Replace a model's file, add and remove meshes</td><td>8 (shared models)</td><td>The Player's cube becomes a sphere, keeping its components</td></tr>
   </table></div>
   <p>Phase 8 depends only on Phase 1 and could run in parallel with 5 to 7, but doing it after the collector exists means the cooker is tested on a real game's assets.</p>
 

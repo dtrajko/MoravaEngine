@@ -78,8 +78,8 @@ void GameSystems::LoadScripts()
 	std::error_code error;
 	if (!std::filesystem::exists(std::filesystem::u8path(path), error))
 	{
-		Log::GetLogger()->warn("Scripts: the project's script assembly '{0}' doesn't exist yet: build the project's scripts (dotnet build) "
-			"and open the project again", path);
+		Log::GetLogger()->warn("Scripts: the project's script assembly '{0}' doesn't exist yet: build the project's scripts (dotnet build; "
+			"the editor loads them once they are built)", path);
 		return;
 	}
 	ScriptHost::LoadGameAssembly(std::filesystem::u8path(path));

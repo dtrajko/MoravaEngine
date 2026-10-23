@@ -35,6 +35,8 @@ static bool s_Available = false;
 static bool s_Initialized = false;
 static bool s_GameAssemblyLoaded = false;
 static fs::path s_GameAssemblyPath;
+static fs::file_time_type s_GameAssemblyWriteTime;
+static uint32_t s_LeakedAssemblyCount = 0;
 static std::vector<ScriptClass> s_Classes;
 static std::string s_RuntimeVersion;
 static fs::path s_RuntimeDirectory;
@@ -383,6 +385,9 @@ bool ScriptHost::LoadGameAssembly(const fs::path& path)
 	{
 		return false;
 	}
+	// The file's time before it is read: a build that overwrites it while it is read is newer still, and loads next
+	std::error_code timeError;
+	const fs::file_time_type writeTime = fs::last_write_time(path, timeError);
 	const std::u16string text = path.u16string();
 	if (s_Managed.LoadGameAssembly(text.c_str(), int(text.size())) != 0)
 	{
@@ -391,6 +396,7 @@ bool ScriptHost::LoadGameAssembly(const fs::path& path)
 	}
 	s_GameAssemblyLoaded = true;
 	s_GameAssemblyPath = path;
+	s_GameAssemblyWriteTime = writeTime;
 
 	// Its script classes and their fields, for the Properties panel and the script runtime
 	s_Classes.clear();
@@ -427,6 +433,7 @@ ScriptUnloadResult ScriptHost::UnloadGameAssembly()
 		s_GameAssemblyLoaded = false;
 		s_GameAssemblyPath.clear();
 		s_Classes.clear();
+		s_LeakedAssemblyCount++;
 		Log::GetLogger()->error("C# scripting: the game assembly was unloaded, but something still holds it (a static, a delegate or a "
 			"GCHandle into the game): its memory stays in use");
 		return ScriptUnloadResult::StillAlive;
@@ -441,6 +448,16 @@ bool ScriptHost::IsGameAssemblyLoaded()
 const fs::path& ScriptHost::GetGameAssemblyPath()
 {
 	return s_GameAssemblyPath;
+}
+
+fs::file_time_type ScriptHost::GetGameAssemblyWriteTime()
+{
+	return s_GameAssemblyWriteTime;
+}
+
+uint32_t ScriptHost::GetLeakedAssemblyCount()
+{
+	return s_LeakedAssemblyCount;
 }
 
 const std::vector<ScriptClass>& ScriptHost::GetClasses()
