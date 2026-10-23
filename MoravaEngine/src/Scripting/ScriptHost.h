@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ScriptApi.h"
+#include "ScriptField.h"
 
 #include <cstdint>
 #include <filesystem>
@@ -44,6 +45,11 @@ public:
 	static bool LoadGameAssembly(const std::filesystem::path& path);
 	static ScriptUnloadResult UnloadGameAssembly();
 	static bool IsGameAssemblyLoaded();
+	static const std::filesystem::path& GetGameAssemblyPath(); // the one loaded (empty: none)
+
+	// The loaded game's script classes with their public fields (4.5), sorted by name; empty without a game
+	static const std::vector<ScriptClass>& GetClasses();
+	static const ScriptClass* FindClass(const std::string& name);
 
 	// An instance of a game's script class for an entity, nullptr when there is none (logged). OnCreate is called by
 	// InvokeCreate, so the script's fields can be set in between. The Invoke functions return false when the script threw.
@@ -55,6 +61,11 @@ public:
 	// other: the entity it touched or that entered or left (a trigger); point and normal for CollisionEnter
 	static bool InvokeCollision(void* instance, ScriptCollisionKind kind, uint64_t other, const glm::vec3& point, const glm::vec3& normal);
 
-	// The functions C# calls, which it reads through a pointer: ScriptGlue sets the game's into it
+	// A public field of an instance (field: of its class, GetClasses). The value must be of the field's type (an Enum by
+	// its name); false when it isn't, or C# refused it (logged)
+	static bool SetField(void* instance, const ScriptFieldInfo& field, const ScriptFieldValue& value);
+	static bool GetField(void* instance, const ScriptFieldInfo& field, ScriptFieldValue& value);
+
+	// The functions C# calls, which it reads through a pointer: ScriptBindings sets the game's into it
 	static ScriptNativeApi& GetNativeApi();
 };

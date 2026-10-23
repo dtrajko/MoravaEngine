@@ -48,12 +48,42 @@ struct ScriptTime
 	uint64_t FixedStepCount = 0;
 };
 
+// A script field's value between C++ and C# (ScriptField.h has the engine's own ScriptFieldValue). Type: ScriptFieldType.
+// Text is UTF-16: a String's characters. GetField: C++ gives Text room for TextCapacity characters, C# writes what fits
+// and sets TextLength to the string's full length.
+struct ScriptValue
+{
+	int32_t Type = 0;
+	int32_t TextLength = 0;
+	int64_t Integer = 0;                // Bool (0 or 1), Int, Enum
+	double Number = 0.0;                // Float, Double
+	glm::vec4 Vector = glm::vec4(0.0f); // Vector2, Vector3, Vector4
+	uint64_t Entity = 0;                // Entity: 0 for none
+	char16_t* Text = nullptr;           // String
+	int32_t TextCapacity = 0;
+	int32_t Reserved = 0;
+};
+
+// One report of what the game's assembly has (DescribeScripts): a class (Name is nullptr), then each of its fields
+struct ScriptFieldReport
+{
+	const char16_t* Class = nullptr;     // the full name, with the namespace
+	const char16_t* Name = nullptr;      // the field's
+	const char16_t* TypeName = nullptr;  // the C# type's: "Single", "PlayerController", "Axis"
+	const char16_t* EnumNames = nullptr; // Enum: its names, a line feed between them
+	const int64_t* EnumValues = nullptr; // and their values
+	int32_t ClassLength = 0, NameLength = 0, TypeNameLength = 0, EnumNamesLength = 0;
+	int32_t EnumCount = 0;
+	int32_t Reserved = 0;
+	ScriptValue Default;                 // the field's value in a new instance (a String's Text: its characters)
+};
+
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
-enum class ScriptComponent : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2 };
+enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
-// scene (ScriptGlue)
+// scene (ScriptBindings)
 struct ScriptNativeApi
 {
 	void (*Log)(int level, const char16_t* text, int length); // 0 info, 1 warning, 2 error
@@ -125,6 +155,12 @@ struct ScriptManagedApi
 	int (*InvokeFixedUpdate)(void* instance, float dt);
 	// kind: ScriptCollisionKind; point and normal (from the script's entity towards the other) for CollisionEnter
 	int (*InvokeCollision)(void* instance, int kind, uint64_t other, const glm::vec3* point, const glm::vec3* normal);
+	// The game's script classes and their public fields, one report per call of report (user is passed through): the
+	// number of classes, -1 on an error (logged)
+	int (*DescribeScripts)(void* user, void (*report)(void* user, const ScriptFieldReport* field));
+	// A public field of an instance, by name: 0 done, 1 not (logged: no such field, or of another type)
+	int (*SetField)(void* instance, const char16_t* name, int length, const ScriptValue* value);
+	int (*GetField)(void* instance, const char16_t* name, int length, ScriptValue* value);
 };
 
 enum class ScriptCollisionKind : int32_t { CollisionEnter = 0, CollisionExit = 1, TriggerEnter = 2, TriggerExit = 3 };

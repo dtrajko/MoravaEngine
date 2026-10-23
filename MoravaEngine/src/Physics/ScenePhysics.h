@@ -101,7 +101,7 @@ public:
 		glm::vec3 Point = glm::vec3(0.0f), Normal = glm::vec3(0.0f);
 		uint64_t Step = 0; // the step it happened in (the first is 1)
 	};
-	// The last step's events (Phase 4: the scripts get them), and the last ones of all steps, for the Physics panel
+	// The last step's events (the scripts get them: ScriptRuntime), and the last ones of all steps, for the Physics panel
 	const std::vector<Event>& GetEvents() const { return m_Events; }
 	const std::vector<Event>& GetRecentEvents() const { return m_RecentEvents; } // the newest last
 	static const char* GetEventName(EventType type);

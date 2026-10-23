@@ -95,6 +95,82 @@ namespace EnvMapVulkanSceneSerializer
 		Read(node, "CausticsArea", w.CausticsArea);
 	}
 
+	// A script's fields, each with its type, so they are read back as they were without the game's assembly:
+	//   Fields:
+	//     Speed: {Float: 4}
+	//     Camera: {Entity: 4797481855757227527}
+	//     Around: {Enum: Y}
+	static void WriteScript(YAML::Emitter& out, const ScriptComponent& script)
+	{
+		out << YAML::Key << "Script" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "Class" << YAML::Value << script.ClassName;
+		if (!script.Fields.empty())
+		{
+			out << YAML::Key << "Fields" << YAML::Value << YAML::BeginMap;
+			for (const ScriptComponent::Field& field : script.Fields)
+			{
+				const ScriptFieldValue& v = field.Value;
+				out << YAML::Key << field.Name << YAML::Value << YAML::Flow << YAML::BeginMap << YAML::Key << ScriptFieldValue::GetTypeName(v.Type) << YAML::Value;
+				switch (v.Type)
+				{
+				case ScriptFieldType::Bool:    out << (v.Integer != 0); break;
+				case ScriptFieldType::Int:     out << v.Integer; break;
+				case ScriptFieldType::Float:   out << float(v.Number); break;
+				case ScriptFieldType::Double:  out << v.Number; break;
+				case ScriptFieldType::Vector2: out << YAML::Flow << YAML::BeginSeq << v.Vector.x << v.Vector.y << YAML::EndSeq; break;
+				case ScriptFieldType::Vector3: out << YAML::Flow << YAML::BeginSeq << v.Vector.x << v.Vector.y << v.Vector.z << YAML::EndSeq; break;
+				case ScriptFieldType::Vector4: out << YAML::Flow << YAML::BeginSeq << v.Vector.x << v.Vector.y << v.Vector.z << v.Vector.w << YAML::EndSeq; break;
+				case ScriptFieldType::Entity:  out << v.Entity; break;
+				case ScriptFieldType::String:
+				case ScriptFieldType::Enum:    out << v.Text; break;
+				}
+				out << YAML::EndMap;
+			}
+			out << YAML::EndMap;
+		}
+		out << YAML::EndMap;
+	}
+
+	static void ReadScript(const YAML::Node& node, ScriptComponent& script)
+	{
+		script.ClassName = node["Class"].as<std::string>("");
+		const YAML::Node fields = node["Fields"];
+		if (!fields || !fields.IsMap())
+		{
+			return;
+		}
+		for (const auto& entry : fields)
+		{
+			const YAML::Node typed = entry.second;
+			ScriptFieldValue v;
+			if (!typed.IsMap() || typed.size() != 1 || !ScriptFieldValue::ParseTypeName(typed.begin()->first.as<std::string>(), v.Type))
+			{
+				continue; // not a field this version knows
+			}
+			const YAML::Node value = typed.begin()->second;
+			const size_t components = v.Type == ScriptFieldType::Vector2 ? 2 : v.Type == ScriptFieldType::Vector3 ? 3 : 4;
+			switch (v.Type)
+			{
+			case ScriptFieldType::Bool:   v.Integer = value.as<bool>(false) ? 1 : 0; break;
+			case ScriptFieldType::Int:    v.Integer = value.as<int64_t>(0); break;
+			case ScriptFieldType::Float:
+			case ScriptFieldType::Double: v.Number = value.as<double>(0.0); break;
+			case ScriptFieldType::Vector2:
+			case ScriptFieldType::Vector3:
+			case ScriptFieldType::Vector4:
+				for (size_t i = 0; value.IsSequence() && i < components && i < value.size(); i++)
+				{
+					v.Vector[int(i)] = value[i].as<float>(0.0f);
+				}
+				break;
+			case ScriptFieldType::Entity: v.Entity = value.as<uint64_t>(0); break;
+			case ScriptFieldType::String:
+			case ScriptFieldType::Enum:   v.Text = value.as<std::string>(""); break;
+			}
+			script.Fields.push_back({ entry.first.as<std::string>(), v });
+		}
+	}
+
 	static void WriteEntity(YAML::Emitter& out, EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity)
 	{
 		out << YAML::BeginMap;
@@ -220,6 +296,10 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "Mass" << YAML::Value << character->Mass;
 			out << YAML::Key << "PushStrength" << YAML::Value << character->PushStrength;
 			out << YAML::EndMap;
+		}
+		if (const ScriptComponent* script = scene.TryGet<ScriptComponent>(entity))
+		{
+			WriteScript(out, *script);
 		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
@@ -448,6 +528,10 @@ namespace EnvMapVulkanSceneSerializer
 					Read(characterNode, "StepHeight", character.StepHeight);
 					Read(characterNode, "Mass", character.Mass);
 					Read(characterNode, "PushStrength", character.PushStrength);
+				}
+				if (YAML::Node scriptNode = node["Script"]; scriptNode && scriptNode.IsMap())
+				{
+					ReadScript(scriptNode, scene.Add<ScriptComponent>(entity));
 				}
 				if (YAML::Node probesNode = node["ProbeVolume"])
 				{

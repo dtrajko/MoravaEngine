@@ -25,10 +25,9 @@ struct ProjectWindow
  *     StartScene: Scenes/Main.mscene
  *     AssetDirectory: Assets
  *     InputMap: Settings/Input.minput
+ *     ScriptAssembly: Scripts/bin/RollABall.dll
  *     Window: { Width: 1600, Height: 900, Fullscreen: false, VSync: true, Title: Roll a Ball }
  *     Physics: { Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, ...] }
- *
- * The script assembly comes with Phase 4.
  *
  * One project is open at a time (GetOpen): the paths in scene and material files resolve against it (ProjectPaths).
  */
@@ -43,6 +42,7 @@ struct Project
 	std::string StartScene;                // relative to the project folder (empty: none)
 	std::string AssetDirectory = "Assets"; // relative to the project folder
 	std::string InputMapFile = DefaultInputMap; // the actions and their bindings (InputMap), relative to the project folder
+	std::string ScriptAssembly;            // the game's C# scripts as built, relative to the project folder (empty: none)
 	ProjectWindow Window;
 	PhysicsCollisionMatrix Collisions; // the physics layers that collide (written as the pairs that do)
 
@@ -53,6 +53,7 @@ struct Project
 	std::string GetAssetFolder() const;
 	std::string GetScenesFolder() const;
 	std::string GetInputMapPath() const; // empty: the project has none (the game gets InputMap::Default)
+	std::string GetScriptAssemblyPath() const; // empty: the project has no scripts
 	// The window's title: Window.Title, or the name
 	std::string GetWindowTitle() const;
 

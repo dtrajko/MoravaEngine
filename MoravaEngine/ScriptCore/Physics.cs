@@ -95,6 +95,6 @@ namespace Morava
                 return Scene.ToEntities(buffer, Math.Min(count, Interop.Game->Physics_OverlapBox(&center, &halfExtents, &rotation, (uint)layers, buffer, large.Length)));
         }
 
-        static RaycastHit ToHit(NativeRaycastHit hit) => new RaycastHit(new Entity(hit.Entity), hit.Point, hit.Normal, hit.Distance);
+        static RaycastHit ToHit(NativeRaycastHit hit) => new RaycastHit(Interop.EntityFor(hit.Entity)!, hit.Point, hit.Normal, hit.Distance);
     }
 }

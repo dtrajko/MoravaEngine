@@ -23,6 +23,9 @@ namespace Morava
         public delegate* unmanaged<IntPtr, float, int> InvokeUpdate;
         public delegate* unmanaged<IntPtr, float, int> InvokeFixedUpdate;
         public delegate* unmanaged<IntPtr, int, ulong, Vector3*, Vector3*, int> InvokeCollision;
+        public delegate* unmanaged<IntPtr, delegate* unmanaged<IntPtr, NativeFieldReport*, void>, int> DescribeScripts;
+        public delegate* unmanaged<IntPtr, char*, int, NativeValue*, int> SetField;
+        public delegate* unmanaged<IntPtr, char*, int, NativeValue*, int> GetField;
     }
 
     // The game's assembly in a context of its own that can be unloaded (hot reload). ScriptCore is the one already
@@ -60,6 +63,16 @@ namespace Morava
         static GameLoadContext? s_Context;
         static Assembly? s_Game;
         static readonly HashSet<IntPtr> s_Instances = new();
+        // The script instance of each entity that has one: what scripts get for that entity
+        static readonly Dictionary<ulong, Entity> s_ByEntity = new();
+
+        // An entity as scripts see it: its script instance when it has one (so `other is Coin coin` works in
+        // OnTriggerEnter), else a plain Entity; null for 0 (no entity)
+        internal static Entity? EntityFor(ulong id)
+        {
+            if (id == 0) return null;
+            return s_ByEntity.TryGetValue(id, out Entity? script) ? script : new Entity(id);
+        }
 
         // The first call, from ScriptHost::Initialize: takes the C++ functions, gives the C# ones. 0 when done.
         [UnmanagedCallersOnly]
@@ -78,6 +91,9 @@ namespace Morava
                 managed->InvokeUpdate = &InvokeUpdate;
                 managed->InvokeFixedUpdate = &InvokeFixedUpdate;
                 managed->InvokeCollision = &InvokeCollision;
+                managed->DescribeScripts = &DescribeScripts;
+                managed->SetField = &SetField;
+                managed->GetField = &GetField;
                 return 0;
             }
             catch (Exception) { return 1; }
@@ -165,7 +181,7 @@ namespace Morava
             try
             {
                 Type? type = s_Game?.GetType(name);
-                if (type == null || !type.IsSubclassOf(typeof(Entity)) || type.IsAbstract)
+                if (type == null || !ScriptFields.IsScript(type))
                 {
                     Log.Error($"CreateInstance: the game has no script class '{name}' (a non-abstract class deriving from Entity)");
                     return IntPtr.Zero;
@@ -174,6 +190,7 @@ namespace Morava
                 entity.Id = entityId;
                 IntPtr handle = GCHandle.ToIntPtr(GCHandle.Alloc(entity));
                 s_Instances.Add(handle);
+                s_ByEntity[entityId] = entity;
                 return handle;
             }
             catch (Exception e) { Log.Error($"{name}: {e.InnerException ?? e}"); return IntPtr.Zero; }
@@ -183,7 +200,11 @@ namespace Morava
         static void DestroyInstance(IntPtr instance)
         {
             if (!s_Instances.Remove(instance)) return;
-            GCHandle.FromIntPtr(instance).Free();
+            GCHandle handle = GCHandle.FromIntPtr(instance);
+            var entity = (Entity)handle.Target!;
+            if (s_ByEntity.TryGetValue(entity.Id, out Entity? registered) && ReferenceEquals(registered, entity))
+                s_ByEntity.Remove(entity.Id);
+            handle.Free();
         }
 
         // The script's methods; the collision kinds are ScriptCollisionKind's values (2 + kind)
@@ -203,10 +224,10 @@ namespace Morava
                     case Method.OnCreate: entity.OnCreate(); break;
                     case Method.OnUpdate: entity.OnUpdate(dt); break;
                     case Method.OnFixedUpdate: entity.OnFixedUpdate(dt); break;
-                    case Method.OnCollisionEnter: entity.OnCollisionEnter(new Collision(new Entity(other), point, normal)); break;
-                    case Method.OnCollisionExit: entity.OnCollisionExit(new Entity(other)); break;
-                    case Method.OnTriggerEnter: entity.OnTriggerEnter(new Entity(other)); break;
-                    case Method.OnTriggerExit: entity.OnTriggerExit(new Entity(other)); break;
+                    case Method.OnCollisionEnter: entity.OnCollisionEnter(new Collision(EntityFor(other)!, point, normal)); break;
+                    case Method.OnCollisionExit: entity.OnCollisionExit(EntityFor(other)!); break;
+                    case Method.OnTriggerEnter: entity.OnTriggerEnter(EntityFor(other)!); break;
+                    case Method.OnTriggerExit: entity.OnTriggerExit(EntityFor(other)!); break;
                 }
                 return 0;
             }
@@ -229,8 +250,40 @@ namespace Morava
         [UnmanagedCallersOnly]
         static int InvokeCollision(IntPtr instance, int kind, ulong other, Vector3* point, Vector3* normal)
         {
-            if (kind < 0 || kind > 3) { Log.Error($"InvokeCollision: no collision kind {kind}"); return 1; }
+            if (kind < 0 || kind > 3 || other == 0) { Log.Error($"InvokeCollision: no collision kind {kind}, or no other entity"); return 1; }
             return Invoke(instance, Method.OnCollisionEnter + kind, 0, other, *point, *normal);
+        }
+
+        // The game's script classes and their fields, for the editor (ScriptFields.Describe): how many classes, -1 on an error
+        [UnmanagedCallersOnly]
+        static int DescribeScripts(IntPtr user, delegate* unmanaged<IntPtr, NativeFieldReport*, void> report)
+        {
+            try { return s_Game != null ? ScriptFields.Describe(s_Game, user, report) : 0; }
+            catch (Exception e) { Log.Error($"DescribeScripts: {e}"); return -1; }
+        }
+
+        [UnmanagedCallersOnly]
+        static int SetField(IntPtr instance, char* name, int length, NativeValue* value)
+        {
+            string field = new string(name, 0, length);
+            try
+            {
+                if (!s_Instances.Contains(instance)) { Log.Error($"SetField {field}: not a script instance"); return 1; }
+                return ScriptFields.Set((Entity)GCHandle.FromIntPtr(instance).Target!, field, value) ? 0 : 1;
+            }
+            catch (Exception e) { Log.Error($"SetField {field}: {e}"); return 1; }
+        }
+
+        [UnmanagedCallersOnly]
+        static int GetField(IntPtr instance, char* name, int length, NativeValue* value)
+        {
+            string field = new string(name, 0, length);
+            try
+            {
+                if (!s_Instances.Contains(instance)) return 1;
+                return ScriptFields.Get((Entity)GCHandle.FromIntPtr(instance).Target!, field, value) ? 0 : 1;
+            }
+            catch (Exception e) { Log.Error($"GetField {field}: {e}"); return 1; }
         }
     }
 }

@@ -922,8 +922,8 @@ static void PhysicsControls(EnvMapVulkanEntityID model)
 	ImGui::PopID();
 }
 
-// A model's properties: its transform, the selected part's transform (when a part of it is selected), its physics and the
-// input test, removing the model or the part, the animation (skinned models) and the material slots of its parts. Used by
+// A model's properties: its transform, the selected part's transform (when a part of it is selected), its physics, the
+// input test and its script, removing the model or the part, the animation (skinned models) and the material slots of its parts. Used by
 // the Models and Meshes panel and the Properties panel.
 static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 {
@@ -971,6 +971,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 
 	PhysicsControls(selectedModel);
 	InputTestControls(selectedModel);
+	ScriptPropertiesControls(selectedModel);
 
 	ImGui::Separator();
 	if (ImGui::Button("Remove Model"))
@@ -1442,6 +1443,12 @@ void OnImGuiRenderProperties()
 		}
 		default:
 			break;
+	}
+
+	// The C# script of any other entity (a camera that follows the player); a model's is with its physics above
+	if (kind != EntityKind::Environment && kind != EntityKind::Model && kind != EntityKind::Part)
+	{
+		ScriptPropertiesControls(entity);
 	}
 
 	ImGui::End();

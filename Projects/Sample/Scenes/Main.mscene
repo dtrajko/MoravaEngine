@@ -318,15 +318,39 @@ Entities:
       StepHeight: 0.35
       Mass: 70
       PushStrength: 100
-    InputTest:
-      Speed: 4
-      JumpSpeed: 6
-      Gravity: 20
-      TurnSpeed: 1
-      CaptureMouse: false
+    Script:
+      Class: Sample.PlayerController
+      Fields:
+        Camera: {Entity: 4797481855757227527}
   - ID: 9137462205581127730
     Name: Cube
     Parent: 5528310947716204811
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 15620937154082316693
+        File: Assets/Materials/Orange.mmat
+        Name: Orange
+  - ID: 6151200438114250001
+    Name: Spinning Cube
+    Parent: 0
+    Transform:
+      Translation: [-3, 2.5, -2]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Script:
+      Class: Sample.Spinner
+      Fields:
+        DegreesPerSecond: {Float: 90}
+  - ID: 6151200438114250002
+    Name: Cube
+    Parent: 6151200438114250001
     Transform:
       Translation: [0, 0, 0]
       Rotation: [0, 0, 0]

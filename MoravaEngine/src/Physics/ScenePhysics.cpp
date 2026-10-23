@@ -811,9 +811,11 @@ void ScenePhysics::WriteTransforms(float alpha)
 		return;
 	}
 	m_Alpha = alpha;
+	// A body or character the game put somewhere since the last write (a script, between two steps) stays there: the next
+	// step takes it from there (Step: "Put somewhere"), instead of this write putting it back where physics had it
 	for (Character& character : m_Characters)
 	{
-		if (m_Scene->Exists(character.Entity))
+		if (m_Scene->Exists(character.Entity) && m_Scene->Get<TransformComponent>(character.Entity).Translation == character.Written)
 		{
 			SetEntityPosition(character.Entity, glm::mix(character.PreviousPosition, character.Position, alpha));
 			character.Written = m_Scene->Get<TransformComponent>(character.Entity).Translation;
@@ -822,6 +824,11 @@ void ScenePhysics::WriteTransforms(float alpha)
 	for (Body& body : m_Bodies)
 	{
 		if (body.Motion != JPH::EMotionType::Dynamic || !m_Scene->Exists(body.Entity))
+		{
+			continue;
+		}
+		const TransformComponent& transform = m_Scene->Get<TransformComponent>(body.Entity);
+		if (transform.Translation != body.Written.Translation || transform.Rotation != body.Written.Rotation)
 		{
 			continue;
 		}

@@ -8,13 +8,18 @@
 
 #include "Project/Project.h"
 
+#include "Scripting/ScriptHost.h"
+
 #include <glm/glm.hpp>
 
 #include <cmath>
+#include <filesystem>
+#include <system_error>
 
 
 void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 {
+	m_Scripts.Stop();
 	m_Scene = scene;
 	m_Input = input;
 	m_Physics.Stop();
@@ -25,8 +30,8 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 	m_ScriptContext.Physics = &m_Physics;
 	m_ScriptContext.Input = input;
 	m_ScriptContext.FixedDeltaTime = GameLoop::FixedStep;
-	ScriptGlue::Bind();
-	ScriptGlue::SetContext(scene ? &m_ScriptContext : nullptr);
+	ScriptBindings::Bind();
+	ScriptBindings::SetContext(scene ? &m_ScriptContext : nullptr);
 
 	if (m_Scene)
 	{
@@ -49,7 +54,35 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 		// The project's collision layers (no project: the engine's)
 		const Project* project = Project::GetOpen();
 		m_Physics.Start(*m_Scene, project ? project->Collisions : PhysicsCollisionMatrix());
+
+		// The scripts after the bodies: OnCreate may ask for its Rigidbody (not in Simulate: no game logic there)
+		if (m_Input)
+		{
+			m_Scripts.Start(*m_Scene);
+		}
 	}
+}
+
+void GameSystems::LoadScripts()
+{
+	if (ScriptHost::IsGameAssemblyLoaded() && ScriptHost::UnloadGameAssembly() == ScriptUnloadResult::Refused)
+	{
+		return; // C# logged why
+	}
+	const Project* project = Project::GetOpen();
+	const std::string path = project ? project->GetScriptAssemblyPath() : std::string();
+	if (path.empty() || !ScriptHost::IsAvailable())
+	{
+		return;
+	}
+	std::error_code error;
+	if (!std::filesystem::exists(std::filesystem::u8path(path), error))
+	{
+		Log::GetLogger()->warn("Scripts: the project's script assembly '{0}' doesn't exist yet: build the project's scripts (dotnet build) "
+			"and open the project again", path);
+		return;
+	}
+	ScriptHost::LoadGameAssembly(std::filesystem::u8path(path));
 }
 
 InputMap GameSystems::LoadInputMap()
@@ -91,6 +124,7 @@ void GameSystems::FixedUpdate(float fixedStep)
 	m_ScriptContext.FixedDeltaTime = fixedStep;
 	m_ScriptContext.Time += fixedStep;
 	m_ScriptContext.FixedStepCount++;
+	m_Scripts.RemoveDestroyed(); // the editor may have removed an entity
 
 	// The game's logic (not in Simulate: no input)
 	if (m_Scene && m_Input)
@@ -147,11 +181,18 @@ void GameSystems::FixedUpdate(float fixedStep)
 		});
 	}
 
-	// What the game destroyed in this step is gone before physics steps (its bodies with it)
-	ScriptGlue::DestroyQueued(m_ScriptContext);
+	m_Scripts.FixedUpdate(fixedStep);
 
-	// Physics, after what moves kinematic bodies (the input test now, scripts in Phase 4)
+	// What the game destroyed in this step is gone before physics steps (its bodies with it)
+	ScriptBindings::DestroyQueued(m_ScriptContext);
+	m_Scripts.RemoveDestroyed();
+
+	// Physics, after what moves kinematic bodies (the input test, the scripts), then its collisions and triggers to the
+	// scripts (still the fixed step: Input's edges are the step's), and what they destroyed (a pickup: gone in this frame)
 	m_Physics.Step(fixedStep);
+	m_Scripts.DispatchEvents(m_Physics.GetEvents());
+	ScriptBindings::DestroyQueued(m_ScriptContext);
+	m_Scripts.RemoveDestroyed();
 	m_ScriptContext.InFixedStep = false;
 
 	// The fixed step saw the input's edges: the next one sees only newer ones
@@ -188,6 +229,10 @@ void GameSystems::Update(float frameTime, float alpha)
 	});
 	m_Input->SetMouseCaptureWanted(captureMouse);
 
+	m_Scripts.RemoveDestroyed();
+	m_Scripts.Update(frameTime);
+
 	// What the game destroyed in this frame
-	ScriptGlue::DestroyQueued(m_ScriptContext);
+	ScriptBindings::DestroyQueued(m_ScriptContext);
+	m_Scripts.RemoveDestroyed();
 }

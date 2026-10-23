@@ -10,7 +10,7 @@ namespace Morava
         {
             ulong id;
             fixed (char* chars = name) id = Interop.Game->Scene_FindEntityByName(chars, name.Length);
-            return id != 0 ? new Entity(id) : null;
+            return Interop.EntityFor(id);
         }
 
         /// <summary>All entities with this tag (Properties panel: Tags); none: an empty array.</summary>
@@ -34,7 +34,7 @@ namespace Morava
         {
             var entities = new Entity[count];
             for (int i = 0; i < count; i++)
-                entities[i] = new Entity(ids[i]);
+                entities[i] = Interop.EntityFor(ids[i])!;
             return entities;
         }
     }

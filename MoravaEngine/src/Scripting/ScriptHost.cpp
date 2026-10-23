@@ -4,6 +4,7 @@
 
 #include "Core/Log.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cstdio>
 #include <iterator>
@@ -33,6 +34,8 @@ namespace fs = std::filesystem;
 static bool s_Available = false;
 static bool s_Initialized = false;
 static bool s_GameAssemblyLoaded = false;
+static fs::path s_GameAssemblyPath;
+static std::vector<ScriptClass> s_Classes;
 static std::string s_RuntimeVersion;
 static fs::path s_RuntimeDirectory;
 static ScriptManagedApi s_Managed {};
@@ -114,7 +117,7 @@ static void NativeLog(int level, const char16_t* text, int length)
 	}
 }
 
-// C# keeps a pointer to it: ScriptGlue fills in the scene's functions later (only Log works without a game)
+// C# keeps a pointer to it: ScriptBindings fills in the scene's functions later (only Log works without a game)
 static ScriptNativeApi MakeNativeApi()
 {
 	ScriptNativeApi api {};
@@ -123,6 +126,49 @@ static ScriptNativeApi MakeNativeApi()
 }
 
 static ScriptNativeApi s_Native = MakeNativeApi();
+
+// DescribeScripts' reports: a class, then its fields
+static void ReportScriptField(void*, const ScriptFieldReport* report)
+{
+	const std::string className = ScriptUtf16ToUtf8(report->Class, report->ClassLength);
+	if (!report->Name)
+	{
+		s_Classes.push_back({ className, {} });
+		return;
+	}
+	if (s_Classes.empty() || s_Classes.back().Name != className)
+	{
+		return; // a field before its class: not from ScriptCore
+	}
+	ScriptFieldInfo field;
+	field.Name = ScriptUtf16ToUtf8(report->Name, report->NameLength);
+	field.Type = ScriptFieldType(report->Default.Type);
+	field.TypeName = ScriptUtf16ToUtf8(report->TypeName, report->TypeNameLength);
+	const std::string enumNames = ScriptUtf16ToUtf8(report->EnumNames, report->EnumNamesLength);
+	for (size_t start = 0; field.Type == ScriptFieldType::Enum && report->EnumCount > 0 && start <= enumNames.size();)
+	{
+		const size_t end = std::min(enumNames.find('\n', start), enumNames.size());
+		field.EnumNames.push_back(enumNames.substr(start, end - start));
+		start = end + 1;
+	}
+	field.EnumValues.assign(report->EnumValues, report->EnumValues + (report->EnumValues ? report->EnumCount : 0));
+
+	const ScriptValue& value = report->Default;
+	field.Default.Type = field.Type;
+	field.Default.Integer = value.Integer;
+	field.Default.Number = value.Number;
+	field.Default.Vector = value.Vector;
+	field.Default.Entity = value.Entity;
+	if (field.Type == ScriptFieldType::String)
+	{
+		field.Default.Text = ScriptUtf16ToUtf8(value.Text, value.TextLength);
+	}
+	else if (field.Type == ScriptFieldType::Enum && !field.FindEnumName(value.Integer, field.Default.Text))
+	{
+		field.Default.Text = field.EnumNames.empty() ? std::string() : field.EnumNames.front();
+	}
+	s_Classes.back().Fields.push_back(std::move(field));
+}
 
 #if defined(MORAVA_SCRIPTING)
 
@@ -270,7 +316,7 @@ static bool StartRuntime()
 		result = getFunctionPointer(SCRIPT_HOST_STR("Morava.Interop, Morava.ScriptCore"), SCRIPT_HOST_STR("Initialize"),
 			UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, reinterpret_cast<void**>(&initializeCore));
 	}
-	if (result != 0 || !initializeCore || initializeCore(&s_Native, &s_Managed) != 0 || !s_Managed.InvokeCollision)
+	if (result != 0 || !initializeCore || initializeCore(&s_Native, &s_Managed) != 0 || !s_Managed.GetField)
 	{
 		Log::GetLogger()->error("C# scripting is not available: '{0}' could not be loaded ({1})", coreDll.u8string(), ResultCode(result));
 		s_Managed = {};
@@ -344,7 +390,19 @@ bool ScriptHost::LoadGameAssembly(const fs::path& path)
 		return false;
 	}
 	s_GameAssemblyLoaded = true;
-	Log::GetLogger()->info("C# scripting: game assembly '{0}' loaded", path.u8string());
+	s_GameAssemblyPath = path;
+
+	// Its script classes and their fields, for the Properties panel and the script runtime
+	s_Classes.clear();
+	const int classCount = s_Managed.DescribeScripts(nullptr, ReportScriptField);
+	std::sort(s_Classes.begin(), s_Classes.end(), [](const ScriptClass& a, const ScriptClass& b) { return a.Name < b.Name; });
+	std::string names;
+	for (const ScriptClass& scriptClass : s_Classes)
+	{
+		names += (names.empty() ? "" : ", ") + scriptClass.Name;
+	}
+	Log::GetLogger()->info("C# scripting: game assembly '{0}' loaded, {1} script class(es){2}{3}", path.u8string(),
+		std::max(classCount, 0), names.empty() ? "" : ": ", names);
 	return true;
 }
 
@@ -358,6 +416,8 @@ ScriptUnloadResult ScriptHost::UnloadGameAssembly()
 	{
 	case 0:
 		s_GameAssemblyLoaded = false;
+		s_GameAssemblyPath.clear();
+		s_Classes.clear();
 		Log::GetLogger()->info("C# scripting: game assembly unloaded");
 		return ScriptUnloadResult::Unloaded;
 	case -1:
@@ -365,6 +425,8 @@ ScriptUnloadResult ScriptHost::UnloadGameAssembly()
 	default:
 		// The context is gone from ScriptCore's side either way: a new one can be loaded, the old code stays in memory
 		s_GameAssemblyLoaded = false;
+		s_GameAssemblyPath.clear();
+		s_Classes.clear();
 		Log::GetLogger()->error("C# scripting: the game assembly was unloaded, but something still holds it (a static, a delegate or a "
 			"GCHandle into the game): its memory stays in use");
 		return ScriptUnloadResult::StillAlive;
@@ -374,6 +436,28 @@ ScriptUnloadResult ScriptHost::UnloadGameAssembly()
 bool ScriptHost::IsGameAssemblyLoaded()
 {
 	return s_GameAssemblyLoaded;
+}
+
+const fs::path& ScriptHost::GetGameAssemblyPath()
+{
+	return s_GameAssemblyPath;
+}
+
+const std::vector<ScriptClass>& ScriptHost::GetClasses()
+{
+	return s_Classes;
+}
+
+const ScriptClass* ScriptHost::FindClass(const std::string& name)
+{
+	for (const ScriptClass& scriptClass : s_Classes)
+	{
+		if (scriptClass.Name == name)
+		{
+			return &scriptClass;
+		}
+	}
+	return nullptr;
 }
 
 void* ScriptHost::CreateInstance(const std::string& className, uint64_t entity)
@@ -412,6 +496,77 @@ bool ScriptHost::InvokeFixedUpdate(void* instance, float dt)
 bool ScriptHost::InvokeCollision(void* instance, ScriptCollisionKind kind, uint64_t other, const glm::vec3& point, const glm::vec3& normal)
 {
 	return s_Available && instance && s_Managed.InvokeCollision(instance, int(kind), other, &point, &normal) == 0;
+}
+
+bool ScriptHost::SetField(void* instance, const ScriptFieldInfo& field, const ScriptFieldValue& value)
+{
+	if (!s_Available || !instance || value.Type != field.Type)
+	{
+		return false;
+	}
+	ScriptValue native;
+	native.Type = int32_t(value.Type);
+	native.Integer = value.Integer;
+	native.Number = value.Number;
+	native.Vector = value.Vector;
+	native.Entity = value.Entity;
+	std::u16string text;
+	if (value.Type == ScriptFieldType::String)
+	{
+		text = ScriptUtf8ToUtf16(value.Text);
+		native.Text = text.data();
+		native.TextLength = int32_t(text.size());
+	}
+	else if (value.Type == ScriptFieldType::Enum && !field.FindEnumValue(value.Text, native.Integer))
+	{
+		Log::GetLogger()->warn("C# scripting: {0} has no value '{1}' (the field {2} keeps its own)", field.TypeName, value.Text, field.Name);
+		return false;
+	}
+	const std::u16string name = ScriptUtf8ToUtf16(field.Name);
+	return s_Managed.SetField(instance, name.c_str(), int(name.size()), &native) == 0;
+}
+
+bool ScriptHost::GetField(void* instance, const ScriptFieldInfo& field, ScriptFieldValue& value)
+{
+	if (!s_Available || !instance)
+	{
+		return false;
+	}
+	const std::u16string name = ScriptUtf8ToUtf16(field.Name);
+	std::u16string text(256, u'\0');
+	ScriptValue native;
+	native.Text = text.data();
+	native.TextCapacity = int32_t(text.size());
+	if (s_Managed.GetField(instance, name.c_str(), int(name.size()), &native) != 0)
+	{
+		return false;
+	}
+	if (native.Type == int32_t(ScriptFieldType::String) && native.TextLength > native.TextCapacity)
+	{
+		// A longer string: again, with room for it
+		text.assign(size_t(native.TextLength), u'\0');
+		native.Text = text.data();
+		native.TextCapacity = int32_t(text.size());
+		if (s_Managed.GetField(instance, name.c_str(), int(name.size()), &native) != 0)
+		{
+			return false;
+		}
+	}
+	value = ScriptFieldValue();
+	value.Type = ScriptFieldType(native.Type);
+	value.Integer = native.Integer;
+	value.Number = native.Number;
+	value.Vector = native.Vector;
+	value.Entity = native.Entity;
+	if (value.Type == ScriptFieldType::String)
+	{
+		value.Text = ScriptUtf16ToUtf8(native.Text, std::min(native.TextLength, native.TextCapacity));
+	}
+	else if (value.Type == ScriptFieldType::Enum && !field.FindEnumName(native.Integer, value.Text))
+	{
+		value.Text = std::to_string(native.Integer); // a value the enum doesn't name (a cast in the script)
+	}
+	return true;
 }
 
 ScriptNativeApi& ScriptHost::GetNativeApi()

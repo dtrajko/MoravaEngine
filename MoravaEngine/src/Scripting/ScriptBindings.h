@@ -34,7 +34,7 @@ struct ScriptContext
  * them into ScriptHost's table; SetContext tells them which game (nullptr: none, and the calls do nothing or return "no
  * entity").
  */
-namespace ScriptGlue
+namespace ScriptBindings
 {
 	void Bind();
 	void SetContext(ScriptContext* context);

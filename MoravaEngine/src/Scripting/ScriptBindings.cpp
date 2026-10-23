@@ -1,4 +1,4 @@
-#include "ScriptGlue.h"
+#include "ScriptBindings.h"
 
 #include "ScriptHost.h"
 
@@ -253,15 +253,15 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 	{
 		return -1;
 	}
-	switch ((ScriptComponent)component)
+	switch ((ScriptComponentKind)component)
 	{
-		case ScriptComponent::Rigidbody:
+		case ScriptComponentKind::Rigidbody:
 		{
 			const RigidBodyComponent* body = scene->TryGet<RigidBodyComponent>(entity);
 			return body && scene->Has<ColliderComponent>(entity) && body->Type == RigidBodyComponent::BodyType::Dynamic ? 1 : 0;
 		}
-		case ScriptComponent::CharacterController: return scene->Has<CharacterControllerComponent>(entity) ? 1 : 0;
-		case ScriptComponent::Collider:            return scene->Has<ColliderComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::CharacterController: return scene->Has<CharacterControllerComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::Collider:          return scene->Has<ColliderComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -487,7 +487,7 @@ static void TimeGet(ScriptTime* out)
 	}
 }
 
-namespace ScriptGlue
+namespace ScriptBindings
 {
 	void Bind()
 	{

@@ -338,6 +338,7 @@ static bool OpenProjectNow(const std::string& filepath)
 	}
 	Project::SetOpen(project);
 	ShowProjectInWindowTitle();
+	GameSystems::LoadScripts();
 	return true;
 }
 
@@ -365,6 +366,7 @@ static void NewProjectNow(const std::string& folder)
 	}
 	Project::SetOpen(project);
 	ShowProjectInWindowTitle();
+	GameSystems::LoadScripts();
 	NewSceneNow();
 	if (SaveSceneTo(project.GetScenesFolder() + "/Main" + EnvMapVulkanSceneSerializer::FileExtension))
 	{
@@ -380,6 +382,7 @@ static void CloseProjectNow()
 {
 	Project::Close();
 	ShowProjectInWindowTitle();
+	GameSystems::LoadScripts(); // none: the project's are unloaded
 	NewSceneNow();
 }
 

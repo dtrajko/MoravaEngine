@@ -2,12 +2,14 @@
 
 
 #include "Project/Project.h"
+#include "Scripting/ScriptHost.h"
 
 #include "imgui.h"
 
 #include <glm/glm.hpp>
 
 #include <cstring>
+#include <string>
 
 
 #include "EditorState.h"
@@ -103,6 +105,42 @@ void OnImGuiRenderProjectPanel()
 		ImGui::SetTooltip("%s\nThe file dialogs for models, maps and materials start here; new materials are saved in its %s folder.\n"
 			"The project's files are found first, then the engine's (its models and environment maps).",
 			project->GetAssetFolder().c_str(), Project::MaterialsFolder);
+	}
+
+	// The game's C# scripts: loaded again when the path changes (not while the game runs: its scripts hold them)
+	ImGui::SeparatorText("Scripts");
+	ImGui::BeginDisabled(IsPlaying());
+	if (InputSetting("Script Assembly", project->ScriptAssembly, "Scripts/bin/Game.dll"))
+	{
+		save = true;
+		GameSystems::LoadScripts();
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("The built DLL of the project's C# scripts, relative to the project folder.\n"
+			"Loaded when the project opens and when this path changes; Stop the game first.");
+	}
+	if (!ScriptHost::IsAvailable())
+	{
+		ImGui::TextDisabled("C# scripting isn't available (the log says why)");
+	}
+	else if (ScriptHost::IsGameAssemblyLoaded())
+	{
+		ImGui::TextDisabled("Loaded: %zu script class(es)", ScriptHost::GetClasses().size());
+		if (ImGui::IsItemHovered() && !ScriptHost::GetClasses().empty())
+		{
+			std::string names;
+			for (const ScriptClass& scriptClass : ScriptHost::GetClasses())
+			{
+				names += (names.empty() ? "" : "\n") + scriptClass.Name;
+			}
+			ImGui::SetTooltip("%s", names.c_str());
+		}
+	}
+	else if (!project->ScriptAssembly.empty())
+	{
+		ImGui::TextDisabled("Not loaded (built yet? the log says why)");
 	}
 
 	// The player's window

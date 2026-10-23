@@ -6,9 +6,15 @@ namespace Morava
     /// <summary>
     /// An entity of the running game's scene, and the base class of a game's scripts. A script is attached to one entity:
     /// the engine creates it when the game starts and calls its methods while the game runs. Other entities (found by
-    /// name or tag, hit by a ray, touched) are Entity objects too: two of them are equal when they are the same entity.
+    /// name or tag, hit by a ray, touched) are Entity objects too, or the entity's script when it has one (so
+    /// <c>other is Coin coin</c> works): two of them are equal when they are the same entity.
     /// </summary>
-    /// <remarks>Translation, Rotation and Scale are relative to the entity's parent (to the world without one).</remarks>
+    /// <remarks>
+    /// Translation, Rotation and Scale are relative to the entity's parent (to the world without one).
+    /// A script's public fields of type bool, int, float, double, string, Vector2, Vector3, Vector4, Entity (or a script
+    /// class) and enums show in the editor's Properties panel: a value set there is given to the script before its
+    /// OnCreate, and the others keep the value the field's initializer gives them.
+    /// </remarks>
     public unsafe class Entity : IEquatable<Entity>
     {
         /// <summary>A script: the engine sets its entity.</summary>

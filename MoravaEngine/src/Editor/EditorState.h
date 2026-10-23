@@ -156,7 +156,7 @@ void ShowNotification(const std::string& text, bool isError = false);
 // The game runs (Play or Simulate), also while paused: the panels show and edit the running game, not the edited scene
 bool IsPlaying();
 
-// Simulate (3.7): the game runs with physics only (no game logic: the input test, scripts from Phase 4), seen through the
+// Simulate (3.7): the game runs with physics only (no game logic: the input test, the scripts), seen through the
 // editor's camera, and the viewport keeps the editor's tools
 bool IsSimulating();
 
@@ -183,6 +183,9 @@ const InputSystem* GetGameInput();
 
 // The running game's physics, for the Properties and Physics panels (nullptr: no game)
 ScenePhysics* GetGamePhysics();
+
+// The running game's scripts, for the Properties panel (nullptr: no game, or Simulate: no scripts run)
+ScriptRuntime* GetGameScripts();
 
 // The OS window the current ImGui window is in: the main window, or its own when it was dragged out (multi-viewports).
 // Keys and the mouse are read from it
@@ -427,6 +430,9 @@ bool CanManipulateMesh(EnvMapVulkanEntityID modelEntity, int meshIndex);
 void OnImGuiRenderModelsAndMeshes();
 
 void OnImGuiRenderProperties();
+
+// The Properties panel's Script section (EditorScriptProperties.cpp): the entity's C# script class and its fields
+void ScriptPropertiesControls(EnvMapVulkanEntityID entity);
 
 // ---- Lights (EditorLightsPanel.cpp)
 

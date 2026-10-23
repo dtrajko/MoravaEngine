@@ -83,4 +83,34 @@ namespace Morava
         public double Time;
         public ulong FrameCount, FixedStepCount;
     }
+
+    // A script field's value (ScriptValue). Type: FieldKind. GetField: C++ gives Text room for TextCapacity characters
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct NativeValue
+    {
+        public int Type;
+        public int TextLength;
+        public long Integer;
+        public double Number;
+        public Vector4 Vector;
+        public ulong Entity;
+        public char* Text;
+        public int TextCapacity;
+        public int Reserved;
+    }
+
+    // A class (Name null) or one of its fields (ScriptFieldReport)
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct NativeFieldReport
+    {
+        public char* Class;
+        public char* Name;
+        public char* TypeName;
+        public char* EnumNames;
+        public long* EnumValues;
+        public int ClassLength, NameLength, TypeNameLength, EnumNamesLength;
+        public int EnumCount;
+        public int Reserved;
+        public NativeValue Default;
+    }
 }
