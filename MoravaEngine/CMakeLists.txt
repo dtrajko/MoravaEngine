@@ -58,7 +58,10 @@ else()
     message(FATAL_ERROR "MORAVA_SCENE=${MORAVA_SCENE} is not a scene. The scenes: ${MORAVA_SCENES_VULKAN} ${MORAVA_SCENES_OPENGL} ${MORAVA_SCENES_DIRECTX11}")
 endif()
 
-# C# scripting (mono). The repository has mono's Windows libraries only.
+# C# scripting of games on .NET 10 (src/Scripting, ScriptCore/): needs the .NET 10 SDK
+option(MORAVA_SCRIPTING "C# scripting on .NET (needs the .NET 10 SDK)" ON)
+
+# The older C# demo through mono (src/Mono, used by SceneEnvMapVulkan). The repository has mono's Windows libraries only.
 if(WIN32)
     option(MORAVA_MONO "C# scripting through mono" ON)
 else()
@@ -144,6 +147,11 @@ set(ASSIMP_NO_EXPORT ON CACHE BOOL "" FORCE)  # the engine only imports models
 find_package(Vulkan REQUIRED)
 find_package(OpenGL REQUIRED)
 message(STATUS "Vulkan SDK: ${Vulkan_VERSION} (${Vulkan_INCLUDE_DIRS})")
+
+# ---- .NET (C# scripting) ----
+if(MORAVA_SCRIPTING)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DotNet.cmake)
+endif()
 
 # ---- Jolt Physics ----
 # The library alone: no samples, tests or viewer, and none of its GPU compute (DirectX 12, Vulkan, Metal shaders)
@@ -361,6 +369,9 @@ foreach(tgt ${MORAVA_ENGINE_TARGETS})
     foreach(api ${MORAVA_GRAPHICS_APIS})
         target_compile_definitions(${tgt} PRIVATE GRAPHICS_API_${api})
     endforeach()
+    if(MORAVA_SCRIPTING)
+        target_compile_definitions(${tgt} PRIVATE MORAVA_SCRIPTING)
+    endif()
     if(MORAVA_MONO)
         target_compile_definitions(${tgt} PRIVATE MORAVA_MONO)
     endif()
@@ -546,6 +557,18 @@ if("DIRECTX11" IN_LIST MORAVA_GRAPHICS_APIS)
     target_link_libraries(MoravaCore PUBLIC d3d11 d3dcompiler)
 endif()
 
+# nethost finds hostfxr in the private .NET folder (src/Scripting/ScriptHost.cpp). Windows: nethost.dll through its import
+# library, not the static libnethost.lib, which is built with the static release runtime (/MT) only and clashes with
+# Debug builds and with /MD
+if(MORAVA_SCRIPTING)
+    target_include_directories(MoravaCore PRIVATE "${MORAVA_NETHOST_DIR}")
+    if(WIN32)
+        target_link_libraries(MoravaCore PUBLIC "${MORAVA_NETHOST_DIR}/nethost.lib")
+    else()
+        target_link_libraries(MoravaCore PUBLIC "${MORAVA_NETHOST_DIR}/libnethost.a" ${CMAKE_DL_LIBS})
+    endif()
+endif()
+
 # Some of the core's headers still include ImGui's: the core sees them, but doesn't link ImGui (the player has none)
 target_include_directories(MoravaCore PRIVATE
     $<TARGET_PROPERTY:imgui,INTERFACE_INCLUDE_DIRECTORIES>
@@ -597,6 +620,70 @@ if(MORAVA_MONO)
             "${MONO_DIR}/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/mono-2.0-sgen.dll"
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
     )
+endif()
+
+# C# scripting: next to the executables (the folder they share: per configuration in Visual Studio, the build folder with
+# Ninja) as in a shipped game. Morava.ScriptCore.dll with its runtimeconfig.json, built from ScriptCore/ when a source
+# changed (dotnet's obj/ and bin/ in the build folder, not in the sources); the private .NET (dotnet/: hostfxr and the base
+# runtime, about 75 MB, copied once per version); nethost.dll on Windows
+if(MORAVA_SCRIPTING)
+    if(CMAKE_CONFIGURATION_TYPES)
+        set(MORAVA_OUTPUT_DIR "${CMAKE_BINARY_DIR}/$<CONFIG>")
+    else()
+        set(MORAVA_OUTPUT_DIR "${CMAKE_BINARY_DIR}")
+    endif()
+
+    file(GLOB MORAVA_SCRIPT_CORE_SOURCES CONFIGURE_DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/ScriptCore/*.cs
+        ${CMAKE_CURRENT_SOURCE_DIR}/ScriptCore/*.csproj
+    )
+    if(MORAVA_WARNINGS_AS_ERRORS)
+        set(MORAVA_DOTNET_WARNINGS_AS_ERRORS true)
+    else()
+        set(MORAVA_DOTNET_WARNINGS_AS_ERRORS false)
+    endif()
+    # touch: dotnet leaves an unchanged DLL's time as it was, and the command would run again on every build
+    add_custom_command(
+        OUTPUT "${MORAVA_OUTPUT_DIR}/Morava.ScriptCore.dll"
+        COMMAND "${MORAVA_DOTNET_EXE}" build "${CMAKE_CURRENT_SOURCE_DIR}/ScriptCore/Morava.ScriptCore.csproj"
+            -c $<IF:$<CONFIG:Debug>,Debug,Release> --nologo -v q
+            --artifacts-path "${CMAKE_BINARY_DIR}/ScriptCore" -o "${MORAVA_OUTPUT_DIR}"
+            -p:TreatWarningsAsErrors=${MORAVA_DOTNET_WARNINGS_AS_ERRORS}
+        COMMAND ${CMAKE_COMMAND} -E touch "${MORAVA_OUTPUT_DIR}/Morava.ScriptCore.dll"
+        DEPENDS ${MORAVA_SCRIPT_CORE_SOURCES}
+        COMMENT "Building Morava.ScriptCore (C#)"
+        VERBATIM
+    )
+
+    set(MORAVA_PRIVATE_DOTNET_STAMP "${MORAVA_OUTPUT_DIR}/dotnet/.copied-${MORAVA_DOTNET_RUNTIME_VERSION}-${MORAVA_HOSTFXR_VERSION}")
+    add_custom_command(
+        OUTPUT "${MORAVA_PRIVATE_DOTNET_STAMP}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${MORAVA_HOSTFXR_DIR}"
+            "${MORAVA_OUTPUT_DIR}/dotnet/host/fxr/${MORAVA_HOSTFXR_VERSION}"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory "${MORAVA_DOTNET_RUNTIME_DIR}"
+            "${MORAVA_OUTPUT_DIR}/dotnet/shared/Microsoft.NETCore.App/${MORAVA_DOTNET_RUNTIME_VERSION}"
+        COMMAND ${CMAKE_COMMAND} -E touch "${MORAVA_PRIVATE_DOTNET_STAMP}"
+        COMMENT "Copying the private .NET ${MORAVA_DOTNET_RUNTIME_VERSION} next to the executables"
+        VERBATIM
+    )
+
+    set(MORAVA_SCRIPTING_OUTPUTS "${MORAVA_OUTPUT_DIR}/Morava.ScriptCore.dll" "${MORAVA_PRIVATE_DOTNET_STAMP}")
+    if(WIN32)
+        add_custom_command(
+            OUTPUT "${MORAVA_OUTPUT_DIR}/nethost.dll"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${MORAVA_NETHOST_DIR}/nethost.dll" "${MORAVA_OUTPUT_DIR}"
+            DEPENDS "${MORAVA_NETHOST_DIR}/nethost.dll"
+            VERBATIM
+        )
+        list(APPEND MORAVA_SCRIPTING_OUTPUTS "${MORAVA_OUTPUT_DIR}/nethost.dll")
+    endif()
+
+    add_custom_target(MoravaScriptCore DEPENDS ${MORAVA_SCRIPTING_OUTPUTS} SOURCES ${MORAVA_SCRIPT_CORE_SOURCES})
+    foreach(tgt ${PROJECT_NAME} MoravaPlayer)
+        if(TARGET ${tgt})
+            add_dependencies(${tgt} MoravaScriptCore)
+        endif()
+    endforeach()
 endif()
 
 # =========================================================

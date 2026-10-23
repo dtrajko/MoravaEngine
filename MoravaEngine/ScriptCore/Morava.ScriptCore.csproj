@@ -1,0 +1,17 @@
+<!-- The engine's side in C# (docs/engine/Game_Engine_Runtime_Guide.html, Phase 4): the API game scripts are written against,
+     and the Interop the engine's ScriptHost calls. Loaded once when the engine starts, stays loaded; the runtimeconfig.json
+     the build writes next to it is what the host starts .NET with. Built by CMake (target MoravaScriptCore) into the
+     executables' folder. -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Morava.ScriptCore</AssemblyName>
+    <RootNamespace>Morava</RootNamespace>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <!-- The API's comments, shown by the IDE while a game's scripts are written -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+</Project>

@@ -48,6 +48,12 @@ jobs:
           fetch-depth: 1
           submodules: recursive
 
+      # C# scripting: the .NET 10 SDK builds Morava.ScriptCore, and CMake copies the private .NET next to the executables
+      # from the installed one (DOTNET_ROOT, which this sets)
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
       - name: Install packages
         run: |
           sudo apt-get update
@@ -108,6 +114,10 @@ jobs:
             echo "::error::Files that could not be found or loaded"
             exit 1
           fi
+          if ! grep -q "C# scripting: .NET" smoke-test.log; then
+            echo "::error::C# scripting: .NET didn't start from the private folder next to the executable"
+            exit 1
+          fi
           # --play: the editor ran the game, and at exit Stop brought the edited scene back unchanged
           if [[ "${{ matrix.smoke-test }}" == *--play* ]] && ! grep -q "the edited scene is back, unchanged" smoke-test.log; then
             echo "::error::Play mode: the game didn't run, or Stop didn't bring the edited scene back unchanged"
@@ -128,6 +138,10 @@ jobs:
           fi
           if grep -E "Could not load texture|Failed to load image|doesn't exist|Failed to read" player-smoke-test.log; then
             echo "::error::Files that could not be found or loaded"
+            exit 1
+          fi
+          if ! grep -q "C# scripting: .NET" player-smoke-test.log; then
+            echo "::error::C# scripting: .NET didn't start from the private folder next to the executable"
             exit 1
           fi
           if grep -E "Scene: .*(not found|could not be loaded)|could not be opened|Input file .* could not be loaded|binding of .* is left out" player-smoke-test.log; then
@@ -165,6 +179,10 @@ jobs:
         with:
           fetch-depth: 1
           submodules: recursive
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
 
       # CMake always needs Vulkan's headers and vulkan-1.lib; the version of the SDK used for development
       - name: Vulkan SDK
