@@ -14,6 +14,7 @@
 #include "Material/MaterialLibrary.h"
 #include "Core/Util.h"
 #include "Physics/PhysicsWorld.h"
+#include "Scripting/ScriptHost.h"
 #include "Renderer/RendererBasic.h"
 #include "Scene/Scene.h"
 
@@ -157,6 +158,9 @@ void Application::OnInit()
 
 	// Jolt, once for the process: before a scene creates a physics world
 	PhysicsWorld::Initialize();
+
+	// .NET, once for the process (C# scripting): the runtime starts here, a game's scripts are loaded later
+	ScriptHost::Initialize();
 
 	m_SceneProperties = m_Client->CreateScene();
 	InitializeScene(m_SceneProperties);
@@ -439,6 +443,7 @@ void Application::OnShutdown()
 	}
 
 	PhysicsWorld::Shutdown(); // after the scene and the layers, whose physics worlds are gone with them
+	ScriptHost::Shutdown();  // the same: their script instances are gone
 }
 
 void Application::InitWindow(WindowSpecification windowSpecification)

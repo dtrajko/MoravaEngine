@@ -64,6 +64,7 @@ The build is one CMake project, `MoravaEngine/CMakeLists.txt`. It builds the eng
 * Windows 10 or 11 with Visual Studio 2026 (C++17)
 * <a href="https://cmake.org/download/" target="_blank">CMake</a> 3.15 or newer
 * <a href="https://vulkan.lunarg.com/" target="_blank">Vulkan SDK</a> (CMake finds it through the `VULKAN_SDK` environment variable)
+* <a href="https://dotnet.microsoft.com/download" target="_blank">.NET 10 SDK</a> (C# scripting: CMake finds it through `DOTNET_ROOT` or the `dotnet` command; `-DMORAVA_SCRIPTING=OFF` builds without it)
 * Python 3 (used by the shaderc build)
 * Git
 
@@ -133,6 +134,8 @@ A collider marked *Trigger* is a zone things pass through: the log says what ent
 
 Simulate (the button after Play, CTRL + SHIFT + P) runs physics alone, without the game's logic and input, on a copy of the scene like Play: the view stays the editor's camera and models can be selected and moved while the bodies fall, roll and settle. Stop brings the scene back as it was.
 
+Games will be scripted in C# on .NET 10 (in progress). The build puts `Morava.ScriptCore.dll` (the engine's C# side) and a private copy of the .NET runtime (`dotnet/`, about 75 MB) next to the executables, and the engine starts .NET from there at startup, as a shipped game will: the log says `C# scripting: .NET 10.0.x from ...`.
+
 ### Building on Linux
 
 Tested on Ubuntu with GCC 15 and Clang, in WSL2. The Vulkan and OpenGL scenes build (GCC; Clang tested with Vulkan); the Vulkan editor and the OpenGL scene SceneSSAO were run. DirectX 11 is Windows only.
@@ -146,6 +149,8 @@ sudo apt install build-essential clang cmake ninja-build git pkg-config python3 
     libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxkbcommon-dev \
     libwayland-dev wayland-protocols libgtk-3-dev zlib1g-dev
 ```
+
+Install the .NET 10 SDK for C# scripting (Microsoft's `dotnet-sdk-10.0` package, or the `dotnet-install.sh` script; or configure with `-DMORAVA_SCRIPTING=OFF`).
 
 Get the sources as above (`git clone --recursive`, then `python3 vendor/cross-platform/shaderc/utils/git-sync-deps`). In a clone made without `--recursive`, run `git submodule update --init --recursive`: the file dialog library needs its own submodule (`wayland-protocols`) on Linux.
 
