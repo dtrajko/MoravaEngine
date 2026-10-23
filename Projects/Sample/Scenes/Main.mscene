@@ -54,7 +54,7 @@ Entities:
       Rotation: [30, 0, 0]
       Scale: [1, 1, 1]
     Camera:
-      {}
+      FieldOfView: 45
   - ID: 16040318626583559303
     Name: Environment
     Parent: 0
@@ -309,7 +309,16 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [0.75, 0.75, 0.75]
     Model:
-      File: Models/Primitives/cube.obj
+      File: Models/Primitives/sphere.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
     CharacterController:
       Height: 1.5
       Radius: 0.75
@@ -322,6 +331,7 @@ Entities:
       Class: Sample.PlayerController
       Fields:
         Camera: {Entity: 4797481855757227527}
+        Gravity: {Float: 10}
   - ID: 9137462205581127730
     Name: Cube
     Parent: 5528310947716204811
@@ -344,6 +354,15 @@ Entities:
       Scale: [0.5, 0.5, 0.5]
     Model:
       File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 0.5
+      HalfHeight: 0.5
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
     Script:
       Class: Sample.Spinner
       Fields:

@@ -276,6 +276,9 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 	// Play, Step and Stop asked for in the last frame, then the game's frame (see EditorPlayMode.cpp)
 	UpdatePlayMode(camera, frameTime);
 
+	// A newer build of the project's scripts, while the game doesn't run (after a Stop in this frame, at once)
+	UpdateScriptReload();
+
 	// The editor's copies of the scene's environment, lights, water and probe volume (see ExtractLights)
 	ExtractEnvironment();
 	ExtractLights();
