@@ -134,7 +134,7 @@ A collider marked *Trigger* is a zone things pass through: the log says what ent
 
 Simulate (the button after Play, CTRL + SHIFT + P) runs physics alone, without the game's logic and input, on a copy of the scene like Play: the view stays the editor's camera and models can be selected and moved while the bodies fall, roll and settle. Stop brings the scene back as it was.
 
-Games will be scripted in C# on .NET 10 (in progress). The build puts `Morava.ScriptCore.dll` (the engine's C# side) and a private copy of the .NET runtime (`dotnet/`, about 75 MB) next to the executables, and the engine starts .NET from there at startup, as a shipped game will: the log says `C# scripting: .NET 10.0.x from ...`.
+Games will be scripted in C# on .NET 10 (in progress). The build puts `Morava.ScriptCore.dll` (the engine's C# side) and a private copy of the .NET runtime (`dotnet/`, about 75 MB) next to the executables, and the engine starts .NET from there at startup, as a shipped game will: the log says `C# scripting: .NET 10.0.x from ...`. The C# API scripts will use is in `MoravaEngine/ScriptCore` (namespace `Morava`): `Entity` (transform, name, tags, `Destroy`, components, collision and trigger methods), `Rigidbody`, `CharacterController`, `Scene`, `Input`, `Physics` queries and `Time`. Entities get tags for the scripts in the Properties panel, under the name (*Tags, separated by commas*).
 
 ### Building on Linux
 

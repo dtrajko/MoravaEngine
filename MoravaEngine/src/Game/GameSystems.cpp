@@ -18,6 +18,16 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 	m_Scene = scene;
 	m_Input = input;
 	m_Physics.Stop();
+
+	// The scripts' API on this game (a fresh clock), or on none
+	m_ScriptContext = ScriptContext();
+	m_ScriptContext.Scene = scene;
+	m_ScriptContext.Physics = &m_Physics;
+	m_ScriptContext.Input = input;
+	m_ScriptContext.FixedDeltaTime = GameLoop::FixedStep;
+	ScriptGlue::Bind();
+	ScriptGlue::SetContext(scene ? &m_ScriptContext : nullptr);
+
 	if (m_Scene)
 	{
 		// The controllers the game can read (in the log: "why doesn't my gamepad work?")
@@ -76,6 +86,12 @@ static void GetCameraGroundAxes(EnvMapVulkanScene& scene, glm::vec3& forward, gl
 
 void GameSystems::FixedUpdate(float fixedStep)
 {
+	m_ScriptContext.InFixedStep = true;
+	m_ScriptContext.DeltaTime = fixedStep;
+	m_ScriptContext.FixedDeltaTime = fixedStep;
+	m_ScriptContext.Time += fixedStep;
+	m_ScriptContext.FixedStepCount++;
+
 	// The game's logic (not in Simulate: no input)
 	if (m_Scene && m_Input)
 	{
@@ -131,8 +147,12 @@ void GameSystems::FixedUpdate(float fixedStep)
 		});
 	}
 
+	// What the game destroyed in this step is gone before physics steps (its bodies with it)
+	ScriptGlue::DestroyQueued(m_ScriptContext);
+
 	// Physics, after what moves kinematic bodies (the input test now, scripts in Phase 4)
 	m_Physics.Step(fixedStep);
+	m_ScriptContext.InFixedStep = false;
 
 	// The fixed step saw the input's edges: the next one sees only newer ones
 	if (m_Input)
@@ -146,6 +166,8 @@ void GameSystems::Update(float frameTime, float alpha)
 	// The bodies where physics has them, between its last two steps
 	m_Physics.WriteTransforms(alpha);
 
+	m_ScriptContext.DeltaTime = frameTime;
+	m_ScriptContext.FrameCount++;
 	if (!m_Scene || !m_Input)
 	{
 		return;
@@ -165,4 +187,7 @@ void GameSystems::Update(float frameTime, float alpha)
 		captureMouse |= test.CaptureMouse;
 	});
 	m_Input->SetMouseCaptureWanted(captureMouse);
+
+	// What the game destroyed in this frame
+	ScriptGlue::DestroyQueued(m_ScriptContext);
 }

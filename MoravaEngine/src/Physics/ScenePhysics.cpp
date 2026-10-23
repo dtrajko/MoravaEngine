@@ -511,14 +511,12 @@ void ScenePhysics::Step(float fixedStep)
 	}
 	const auto stepStart = std::chrono::steady_clock::now();
 	JPH::BodyInterface& bodies = m_World->GetBodyInterface();
+	m_FixedStep = fixedStep;
 
 	// What the game did since the last step
+	RemoveDestroyedEntities();
 	for (Body& body : m_Bodies)
 	{
-		if (!m_Scene->Exists(body.Entity))
-		{
-			continue; // the game removed it (Phase 6: its body goes with it)
-		}
 		const TransformComponent& transform = m_Scene->Get<TransformComponent>(body.Entity);
 		const bool moved = transform.Translation != body.Written.Translation || transform.Rotation != body.Written.Rotation;
 		if (body.Motion == JPH::EMotionType::Kinematic)
@@ -556,10 +554,6 @@ void ScenePhysics::Step(float fixedStep)
 	JPH::PhysicsSystem& system = m_World->GetSystem();
 	for (Character& character : m_Characters)
 	{
-		if (!m_Scene->Exists(character.Entity))
-		{
-			continue;
-		}
 		JPH::CharacterVirtual& controller = *character.Controller;
 		if (m_Scene->Get<TransformComponent>(character.Entity).Translation != character.Written)
 		{
@@ -613,6 +607,144 @@ void ScenePhysics::Step(float fixedStep)
 	m_StepSeconds += seconds;
 	m_LastStepMs = (float)(seconds * 1000.0);
 	m_StepCount++;
+}
+
+void ScenePhysics::RemoveDestroyedEntities()
+{
+	JPH::BodyInterface& bodies = m_World->GetBodyInterface();
+	std::vector<uint32_t> removed; // body IDs, for the pairs they touched
+	auto wakeAround = [&](JPH::BodyID id)
+	{
+		JPH::AABox bounds = bodies.GetTransformedShape(id).GetWorldSpaceBounds();
+		bounds.ExpandBy(JPH::Vec3::sReplicate(0.05f));
+		bodies.ActivateBodiesInAABox(bounds, JPH::BroadPhaseLayerFilter(), JPH::ObjectLayerFilter());
+		removed.push_back(id.GetIndexAndSequenceNumber());
+		m_BodyInfo.erase(id.GetIndexAndSequenceNumber());
+	};
+
+	for (auto body = m_Bodies.begin(); body != m_Bodies.end();)
+	{
+		if (m_Scene->Exists(body->Entity))
+		{
+			++body;
+			continue;
+		}
+		wakeAround(body->ID);
+		m_World->RemoveBody(body->ID);
+		body = m_Bodies.erase(body);
+	}
+	for (auto character = m_Characters.begin(); character != m_Characters.end();)
+	{
+		if (m_Scene->Exists(character->Entity))
+		{
+			++character;
+			continue;
+		}
+		wakeAround(character->Controller->GetInnerBodyID());
+		character = m_Characters.erase(character); // its controller removes its inner body
+	}
+
+	// Their contacts are gone too, without events: the entity isn't there to get them (nor is it for the other side)
+	if (!removed.empty())
+	{
+		for (auto pair = m_Touching.begin(); pair != m_Touching.end();)
+		{
+			const uint32_t a = (uint32_t)(pair->first >> 32), b = (uint32_t)pair->first;
+			const bool gone = std::find(removed.begin(), removed.end(), a) != removed.end() || std::find(removed.begin(), removed.end(), b) != removed.end();
+			pair = gone ? m_Touching.erase(pair) : std::next(pair);
+		}
+	}
+}
+
+const ScenePhysics::Body* ScenePhysics::FindDynamicBody(EnvMapVulkanEntityID entity) const
+{
+	for (const Body& body : m_Bodies)
+	{
+		if (body.Entity == entity && body.Motion == JPH::EMotionType::Dynamic)
+		{
+			return &body;
+		}
+	}
+	return nullptr;
+}
+
+bool ScenePhysics::AddForce(EnvMapVulkanEntityID entity, const glm::vec3& force, ForceMode mode)
+{
+	const Body* body = m_World ? FindDynamicBody(entity) : nullptr;
+	if (!body)
+	{
+		return false;
+	}
+	JPH::BodyInterface& bodies = m_World->GetBodyInterface();
+	switch (mode)
+	{
+		case ForceMode::Force:          bodies.AddForce(body->ID, ToJolt(force), JPH::EActivation::Activate); break;
+		case ForceMode::Impulse:        bodies.AddImpulse(body->ID, ToJolt(force)); break;
+		case ForceMode::Acceleration:   bodies.AddLinearVelocity(body->ID, ToJolt(force * m_FixedStep)); break;
+		case ForceMode::VelocityChange: bodies.AddLinearVelocity(body->ID, ToJolt(force)); break;
+	}
+	return true;
+}
+
+bool ScenePhysics::AddTorque(EnvMapVulkanEntityID entity, const glm::vec3& torque, ForceMode mode)
+{
+	const Body* body = m_World ? FindDynamicBody(entity) : nullptr;
+	if (!body)
+	{
+		return false;
+	}
+	JPH::BodyInterface& bodies = m_World->GetBodyInterface();
+	switch (mode)
+	{
+		case ForceMode::Force:          bodies.AddTorque(body->ID, ToJolt(torque), JPH::EActivation::Activate); break;
+		case ForceMode::Impulse:        bodies.AddAngularImpulse(body->ID, ToJolt(torque)); break;
+		case ForceMode::Acceleration:
+		case ForceMode::VelocityChange:
+		{
+			const glm::vec3 change = mode == ForceMode::Acceleration ? torque * m_FixedStep : torque;
+			bodies.SetAngularVelocity(body->ID, bodies.GetAngularVelocity(body->ID) + ToJolt(change));
+			bodies.ActivateBody(body->ID);
+			break;
+		}
+	}
+	return true;
+}
+
+bool ScenePhysics::GetVelocity(EnvMapVulkanEntityID entity, glm::vec3& linear, glm::vec3& angular) const
+{
+	const Body* body = m_World ? FindDynamicBody(entity) : nullptr;
+	if (!body)
+	{
+		return false;
+	}
+	const JPH::BodyInterface& bodies = m_World->GetSystem().GetBodyInterface();
+	linear = ToGlm(bodies.GetLinearVelocity(body->ID));
+	angular = ToGlm(bodies.GetAngularVelocity(body->ID));
+	return true;
+}
+
+bool ScenePhysics::SetLinearVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity)
+{
+	const Body* body = m_World ? FindDynamicBody(entity) : nullptr;
+	if (!body)
+	{
+		return false;
+	}
+	m_World->GetBodyInterface().SetLinearVelocity(body->ID, ToJolt(velocity)); // wakes it
+	return true;
+}
+
+bool ScenePhysics::SetAngularVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity)
+{
+	const Body* body = m_World ? FindDynamicBody(entity) : nullptr;
+	if (!body)
+	{
+		return false;
+	}
+	JPH::BodyInterface& bodies = m_World->GetBodyInterface();
+	bodies.SetAngularVelocity(body->ID, ToJolt(velocity));
+	bodies.ActivateBody(body->ID);
+	return true;
 }
 
 void ScenePhysics::SetEntityPosition(EnvMapVulkanEntityID entity, const glm::vec3& position)

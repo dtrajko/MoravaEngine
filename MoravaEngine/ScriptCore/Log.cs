@@ -15,7 +15,7 @@ namespace Morava
         static void Write(int level, string text)
         {
             fixed (char* chars = text)
-                Interop.Native.Log(level, chars, text.Length);
+                Interop.Native->Log(level, chars, text.Length);
         }
     }
 }

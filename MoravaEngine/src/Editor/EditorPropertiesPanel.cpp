@@ -1303,6 +1303,39 @@ void OnImGuiRenderProperties()
 		ImGui::SameLine();
 	}
 	ImGui::TextDisabled("%s", GetEntityKindName(kind));
+
+	// Tags, for the game's scripts (HasTag, Scene.FindEntitiesWithTag)
+	{
+		const TagComponent* tags = s_Scene.TryGet<TagComponent>(entity);
+		char buffer[256] = {};
+		snprintf(buffer, sizeof(buffer), "%s", tags ? tags->ToText().c_str() : "");
+		ImGui::SetNextItemWidth(-90.0f);
+		if (ImGui::InputTextWithHint("##EntityTags", "Tags, separated by commas", buffer, sizeof(buffer)))
+		{
+			TagComponent edited;
+			edited.FromText(buffer);
+			if (edited.Tags.empty())
+			{
+				if (tags)
+				{
+					s_Scene.Remove<TagComponent>(entity);
+				}
+			}
+			else
+			{
+				// The text as typed stays in ImGui's field while it has the focus (a trailing comma, spaces)
+				(tags ? s_Scene.Get<TagComponent>(entity) : s_Scene.Add<TagComponent>(entity)) = edited;
+			}
+		}
+		ImGui::SameLine();
+		ImGui::TextDisabled("Tags");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Words the game's C# scripts sort entities by: entity.HasTag(\"Pickup\"),\n"
+				"Scene.FindEntitiesWithTag(\"Pickup\"). Separated by commas");
+		}
+	}
+
 	if (const size_t selectedCount = s_EditorSelection.GetAll().size(); selectedCount > 1)
 	{
 		ImGui::TextDisabled("%zu entities selected: these are the properties of the last one clicked.", selectedCount);
