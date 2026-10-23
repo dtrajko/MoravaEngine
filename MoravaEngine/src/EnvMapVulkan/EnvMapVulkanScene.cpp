@@ -191,6 +191,36 @@ void TagComponent::FromText(const std::string& text)
 	}
 }
 
+const ScriptFieldValue* ScriptComponent::FindField(const std::string& name) const
+{
+	for (const Field& field : Fields)
+	{
+		if (field.Name == name)
+		{
+			return &field.Value;
+		}
+	}
+	return nullptr;
+}
+
+void ScriptComponent::SetField(const std::string& name, const ScriptFieldValue& value)
+{
+	for (Field& field : Fields)
+	{
+		if (field.Name == name)
+		{
+			field.Value = value;
+			return;
+		}
+	}
+	Fields.push_back({ name, value });
+}
+
+void ScriptComponent::ResetField(const std::string& name)
+{
+	Fields.erase(std::remove_if(Fields.begin(), Fields.end(), [&](const Field& field) { return field.Name == name; }), Fields.end());
+}
+
 glm::mat4 TransformComponent::GetMatrix() const
 {
 	glm::mat4 matrix;
@@ -496,6 +526,36 @@ bool EnvMapVulkanScene::SelfTest()
 		scene.Add<TagComponent>(child) = tags;
 	}
 
+	// A script's fields: set once each (a second set replaces the value), back to the class's value when reset, numbers
+	// kept across a change of the field's type
+	{
+		ScriptComponent script;
+		script.ClassName = "Game.Player";
+		ScriptFieldValue speed;
+		speed.Type = ScriptFieldType::Float;
+		speed.Number = 7.6;
+		ScriptFieldValue target;
+		target.Type = ScriptFieldType::Entity;
+		target.Entity = other;
+		script.SetField("Speed", speed);
+		script.SetField("Target", target);
+		speed.Number = 8.4;
+		script.SetField("Speed", speed);
+		ScriptFieldValue asInt;
+		if (script.Fields.size() != 2 || !script.FindField("Speed") || script.FindField("Speed")->Number != 8.4 ||
+			!script.FindField("Speed")->ConvertTo(ScriptFieldType::Int, asInt) || asInt.Integer != 8 ||
+			script.FindField("Speed")->ConvertTo(ScriptFieldType::Entity, asInt))
+		{
+			return fail("script fields");
+		}
+		script.ResetField("Speed");
+		if (script.Fields.size() != 1 || script.FindField("Speed") || *script.FindField("Target") != target)
+		{
+			return fail("script field reset");
+		}
+		scene.Add<ScriptComponent>(child) = script;
+	}
+
 	// A copy has the same entities, IDs, hierarchy and components, and changes to it don't reach the original
 	scene.Add<CameraComponent>(other).FieldOfView = 60.0f;
 	{
@@ -506,7 +566,9 @@ bool EnvMapVulkanScene::SelfTest()
 			copy.Get<NameComponent>(child).Name != "Child" || copy.Get<IDComponent>(grandchild).ID != grandchild ||
 			!Near(copy.GetWorldTransform(grandchild), grandchildWorld) || !copy.Has<CameraComponent>(other) ||
 			copy.Get<CameraComponent>(other).FieldOfView != 60.0f || copy.Has<CameraComponent>(root) ||
-			!copy.Has<TagComponent>(child) || copy.Get<TagComponent>(child).Tags != scene.Get<TagComponent>(child).Tags)
+			!copy.Has<TagComponent>(child) || copy.Get<TagComponent>(child).Tags != scene.Get<TagComponent>(child).Tags ||
+			!copy.Has<ScriptComponent>(child) || copy.Get<ScriptComponent>(child).ClassName != "Game.Player" ||
+			copy.Get<ScriptComponent>(child).Fields.size() != 1)
 		{
 			return fail("copy");
 		}

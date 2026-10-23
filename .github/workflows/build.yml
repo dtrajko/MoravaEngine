@@ -148,6 +148,11 @@ jobs:
             echo "::error::The project, its scene, its input file, or a model or material of the scene could not be found or opened"
             exit 1
           fi
+          # The sample's C# scripts (built by CMake): loaded, their instances made, and none of them threw
+          if ! grep -q "Scripts: [1-9][0-9]* instance(s)" player-smoke-test.log || grep -E "Script error:|Scripts: .*(isn't in the game's assembly|no game assembly)" player-smoke-test.log; then
+            echo "::error::The sample's C# scripts didn't load or run, or one of them threw an exception (see the log)"
+            exit 1
+          fi
 
       - name: Smoke test log
         if: always() && (matrix.smoke-test || matrix.player-smoke-test)

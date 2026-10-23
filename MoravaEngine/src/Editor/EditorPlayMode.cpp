@@ -11,8 +11,11 @@
 // gives the focus, and so the mouse, back to the editor.
 //
 // Simulate (3.7): the same copy of the scene and the same game loop, with physics but without the game's logic (the input
-// test now, scripts from Phase 4) and without input. The view stays the editor's camera and the viewport keeps its tools
+// test and the scripts) and without input. The view stays the editor's camera and the viewport keeps its tools
 // (select, gizmo, the Properties panel shows the bodies moving), as while paused. At Stop the view stays where it is.
+//
+// Scripts (4.5): a script that throws pauses Play, with a notification (the exception is in the log with its file and
+// line), so the scene is there to look at as it was. Play on, or Step, carries on.
 
 
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
@@ -52,6 +55,7 @@ static InputSystem s_GameInput;
 static bool s_GameViewportFocused = false; // the Viewport panel had the focus in the last frame: the game gets input
 static GLFWwindow* s_GameWindow = nullptr;  // the OS window the Viewport panel is in (the main one, or its own when dragged out)
 static bool s_FocusViewport = false;       // Play: the Viewport panel gets the focus, so the game has input at once
+static uint64_t s_ScriptExceptionsSeen = 0; // Play pauses when a script throws: the ones it paused for already
 
 // The edited scene while the game runs: the scene, its render settings, and the matrices of its models' meshes. The
 // models are shared with the game (CopyFrom doesn't load them again), and a part's transform is written into its mesh
@@ -140,6 +144,7 @@ static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 	s_PlayState = state;
 	s_Paused = false;
 	s_GameLoop.Reset();
+	s_ScriptExceptionsSeen = 0;
 	if (state == PlayState::Play)
 	{
 		// The project's input file is read at each Play: an edit of it counts at the next Play
@@ -235,6 +240,24 @@ static void StopPlay(H2M::CameraH2M* camera)
 	}
 }
 
+// A script threw (C# logged it with the file and line): the game pauses, so the error and the scene are there to look at.
+// Play on, or Step, carries on with the scripts as they are
+static void PauseOnScriptException()
+{
+	const ScriptRuntime& scripts = s_GameSystems.GetScripts();
+	if (scripts.GetExceptionCount() == s_ScriptExceptionsSeen)
+	{
+		return;
+	}
+	s_ScriptExceptionsSeen = scripts.GetExceptionCount();
+	if (!s_Paused)
+	{
+		s_Paused = true;
+		Log::GetLogger()->warn("Play paused: {0} threw an exception", scripts.GetLastException());
+	}
+	ShowNotification(scripts.GetLastException() + " threw an exception: Play is paused (the log has the file and line)", true);
+}
+
 void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 {
 	const PlayRequest request = s_PlayRequest;
@@ -276,6 +299,7 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 		s_GameInput.Update(window, gameInput, frameTime);
 		s_GameLoop.Frame(frameTime, &s_GameSystems);
 		PlaceGameCamera(camera); // where the game put the camera entity
+		PauseOnScriptException();
 	}
 	else
 	{
@@ -285,6 +309,7 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 		if (step)
 		{
 			s_GameLoop.Frame(GameLoop::FixedStep, &s_GameSystems);
+			PauseOnScriptException();
 		}
 	}
 
@@ -316,6 +341,11 @@ const InputSystem* GetGameInput()
 ScenePhysics* GetGamePhysics()
 {
 	return IsPlaying() ? &s_GameSystems.GetPhysics() : nullptr;
+}
+
+ScriptRuntime* GetGameScripts()
+{
+	return s_PlayState == PlayState::Play ? &s_GameSystems.GetScripts() : nullptr;
 }
 
 // The game binds Escape: Shift+F1 gives the mouse back instead

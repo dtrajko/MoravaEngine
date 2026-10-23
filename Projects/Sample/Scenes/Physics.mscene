@@ -310,12 +310,6 @@ Entities:
       Scale: [0.4, 0.4, 0.4]
     Model:
       File: Models/Primitives/capsule.obj
-    InputTest:
-      Speed: 4
-      JumpSpeed: 6
-      Gravity: 20
-      TurnSpeed: 1
-      CaptureMouse: false
     CharacterController:
       Height: 1.6
       Radius: 0.4
@@ -324,6 +318,10 @@ Entities:
       StepHeight: 0.35
       Mass: 70
       PushStrength: 100
+    Script:
+      Class: Sample.PlayerController
+      Fields:
+        Camera: {Entity: 4797481855757227527}
   - ID: 9137462205581127730
     Name: Capsule
     Parent: 5528310947716204811
@@ -4772,6 +4770,10 @@ Entities:
       Friction: 0.5
       Restitution: 0
       IsTrigger: true
+    Script:
+      Class: Sample.ZoneCounter
+      Fields:
+        Message: {String: Welcome to the zone}
   - ID: 10993303015692213329
     Name: Trigger
     Parent: 10441731230579875629

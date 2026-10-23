@@ -684,6 +684,35 @@ if(MORAVA_SCRIPTING)
             add_dependencies(${tgt} MoravaScriptCore)
         endif()
     endforeach()
+
+    # The sample project's scripts (Projects/Sample/Scripts), which its scenes use: built after ScriptCore into the sample's
+    # Scripts/bin (where Sample.mproject's ScriptAssembly points) when a .cs or the .csproj changed. The smoke tests play
+    # the sample with them
+    set(MORAVA_SAMPLE_SCRIPTS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../Projects/Sample/Scripts")
+    if(EXISTS "${MORAVA_SAMPLE_SCRIPTS_DIR}/Sample.csproj")
+        file(GLOB MORAVA_SAMPLE_SCRIPT_SOURCES CONFIGURE_DEPENDS
+            ${MORAVA_SAMPLE_SCRIPTS_DIR}/*.cs
+            ${MORAVA_SAMPLE_SCRIPTS_DIR}/*.csproj
+        )
+        add_custom_command(
+            OUTPUT "${MORAVA_SAMPLE_SCRIPTS_DIR}/bin/Sample.dll"
+            COMMAND "${MORAVA_DOTNET_EXE}" build "${MORAVA_SAMPLE_SCRIPTS_DIR}/Sample.csproj"
+                -c $<IF:$<CONFIG:Debug>,Debug,Release> --nologo -v q
+                "-p:MoravaScriptCoreDir=${MORAVA_OUTPUT_DIR}/"
+                -p:TreatWarningsAsErrors=${MORAVA_DOTNET_WARNINGS_AS_ERRORS}
+            COMMAND ${CMAKE_COMMAND} -E touch "${MORAVA_SAMPLE_SCRIPTS_DIR}/bin/Sample.dll"
+            DEPENDS ${MORAVA_SAMPLE_SCRIPT_SOURCES} "${MORAVA_OUTPUT_DIR}/Morava.ScriptCore.dll"
+            COMMENT "Building the sample project's scripts (C#)"
+            VERBATIM
+        )
+        add_custom_target(MoravaSampleScripts DEPENDS "${MORAVA_SAMPLE_SCRIPTS_DIR}/bin/Sample.dll" SOURCES ${MORAVA_SAMPLE_SCRIPT_SOURCES})
+        add_dependencies(MoravaSampleScripts MoravaScriptCore)
+        foreach(tgt ${PROJECT_NAME} MoravaPlayer)
+            if(TARGET ${tgt})
+                add_dependencies(${tgt} MoravaSampleScripts)
+            endif()
+        endforeach()
+    endif()
 endif()
 
 # =========================================================

@@ -61,6 +61,8 @@ void PlayerLayer::OnAttach()
 	// The renderer draws it with the scene's render settings and a game's view (no grid, no selection, no debug view)
 	EnvMapVulkanRenderer::SetScene(&m_Scene, &m_RenderSettings, nullptr);
 
+	// The project's scripts, then the game: the scripts' instances are made when it starts
+	GameSystems::LoadScripts();
 	m_Input.SetMap(GameSystems::LoadInputMap());
 	m_Systems.Begin(&m_Scene, &m_Input);
 	m_Playing = true;

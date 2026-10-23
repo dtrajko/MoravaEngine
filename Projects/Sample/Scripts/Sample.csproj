@@ -1,0 +1,22 @@
+<!-- The sample project's C# scripts (docs/engine/Game_Engine_Runtime_Guide.html, 4.5). The build puts Sample.dll in bin/,
+     where Sample.mproject's ScriptAssembly points. Built by the engine's CMake (target MoravaSampleScripts), or by hand with
+     dotnet build: MoravaScriptCoreDir is the folder with the engine's Morava.ScriptCore.dll (its executables' folder). -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Sample</AssemblyName>
+    <RootNamespace>Sample</RootNamespace>
+    <Nullable>enable</Nullable>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <OutputPath>bin/</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <MoravaScriptCoreDir Condition="'$(MoravaScriptCoreDir)' == ''">$(MSBuildThisFileDirectory)../../../MoravaEngine/build/Debug/</MoravaScriptCoreDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The engine's API: not copied next to the game (the engine has it loaded already) -->
+    <Reference Include="Morava.ScriptCore">
+      <HintPath>$(MoravaScriptCoreDir)Morava.ScriptCore.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

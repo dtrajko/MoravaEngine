@@ -35,6 +35,11 @@ std::string Project::GetInputMapPath() const
 	return InputMapFile.empty() ? std::string() : (std::filesystem::path(GetDirectory()) / InputMapFile).lexically_normal().generic_string();
 }
 
+std::string Project::GetScriptAssemblyPath() const
+{
+	return ScriptAssembly.empty() ? std::string() : (std::filesystem::path(GetDirectory()) / ScriptAssembly).lexically_normal().generic_string();
+}
+
 std::string Project::GetWindowTitle() const
 {
 	return Window.Title.empty() ? Name : Window.Title;
@@ -66,6 +71,7 @@ bool Project::Load(const std::string& filepath, Project& project, std::string& e
 	project.StartScene = node["StartScene"].as<std::string>("");
 	project.AssetDirectory = node["AssetDirectory"].as<std::string>(project.AssetDirectory);
 	project.InputMapFile = node["InputMap"].as<std::string>(""); // projects made before input actions have none
+	project.ScriptAssembly = node["ScriptAssembly"].as<std::string>(""); // the game's C# scripts (none before Phase 4)
 	if (YAML::Node window = node["Window"])
 	{
 		project.Window.Width = window["Width"].as<uint32_t>(project.Window.Width);
@@ -110,6 +116,7 @@ bool Project::Save(std::string& error) const
 	out << YAML::Key << "StartScene" << YAML::Value << StartScene;
 	out << YAML::Key << "AssetDirectory" << YAML::Value << AssetDirectory;
 	out << YAML::Key << "InputMap" << YAML::Value << InputMapFile;
+	out << YAML::Key << "ScriptAssembly" << YAML::Value << ScriptAssembly;
 	out << YAML::Key << "Window" << YAML::Value << YAML::Flow << YAML::BeginMap;
 	out << YAML::Key << "Width" << YAML::Value << Window.Width;
 	out << YAML::Key << "Height" << YAML::Value << Window.Height;

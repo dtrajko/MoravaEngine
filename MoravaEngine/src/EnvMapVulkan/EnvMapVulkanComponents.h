@@ -5,6 +5,8 @@
 
 #include "H2M/Core/RefH2M.h"
 
+#include "Scripting/ScriptField.h"
+
 #include <glm/glm.hpp>
 
 #include <cstdint>
@@ -245,6 +247,26 @@ struct CharacterControllerComponent
 	float PushStrength = 100.0f;               // newtons: the most it pushes a dynamic body with
 };
 
+// A C# script on the entity (docs/engine/Game_Engine_Runtime_Guide.html, 4.5): a class of the project's game assembly that
+// derives from Morava.Entity. While the game runs, an instance of it gets the entity's OnCreate, OnUpdate, OnFixedUpdate and
+// collision calls (ScriptRuntime keeps the instances, not this component). Fields: the public fields set in the Properties
+// panel, given to the instance after it is made and before its OnCreate; the others keep the values the class gives them,
+// so a changed default in the code reaches every entity that didn't set its own.
+struct ScriptComponent
+{
+	struct Field
+	{
+		std::string Name;
+		ScriptFieldValue Value;
+	};
+	std::string ClassName;     // with its namespace: "Sample.PlayerController"
+	std::vector<Field> Fields; // in the order they were set
+
+	const ScriptFieldValue* FindField(const std::string& name) const;
+	void SetField(const std::string& name, const ScriptFieldValue& value);
+	void ResetField(const std::string& name); // back to the class's own value
+};
+
 // A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
 // ComponentList<A, B>::ForEach([](auto type) { using T = typename decltype(type)::Type; ... });
 template<typename T>
@@ -267,4 +289,4 @@ struct ComponentList
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
-	ColliderComponent, RigidBodyComponent, CharacterControllerComponent>;
+	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent>;
