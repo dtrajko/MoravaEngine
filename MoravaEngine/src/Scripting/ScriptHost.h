@@ -1,9 +1,15 @@
 #pragma once
 
+#include "ScriptApi.h"
+
 #include <cstdint>
 #include <filesystem>
 #include <string>
 
+
+// Strings between C# (UTF-16) and the engine (UTF-8)
+std::string ScriptUtf16ToUtf8(const char16_t* text, int length);
+std::u16string ScriptUtf8ToUtf16(const std::string& text);
 
 enum class ScriptUnloadResult
 {
@@ -46,4 +52,9 @@ public:
 	static bool InvokeCreate(void* instance);
 	static bool InvokeUpdate(void* instance, float dt);
 	static bool InvokeFixedUpdate(void* instance, float dt);
+	// other: the entity it touched or that entered or left (a trigger); point and normal for CollisionEnter
+	static bool InvokeCollision(void* instance, ScriptCollisionKind kind, uint64_t other, const glm::vec3& point, const glm::vec3& normal);
+
+	// The functions C# calls, which it reads through a pointer: ScriptGlue sets the game's into it
+	static ScriptNativeApi& GetNativeApi();
 };

@@ -36,6 +36,8 @@ class ScenePhysicsContactListener;
  * Events and queries (3.6): bodies that start and stop touching, and what enters and leaves a trigger, are reported once
  * each after the step they happen in (GetEvents); Raycast, SphereCast and the Overlap functions ask what is where, between
  * the steps. GetDebugLines draws the shapes and the contacts for the editor's debug views.
+ *
+ * An entity destroyed while the game runs takes its body with it at the next step (Phase 4.4: scripts destroy entities).
  */
 class ScenePhysics
 {
@@ -71,6 +73,19 @@ public:
 	// False: the entity isn't a running character
 	bool GetCharacterState(EnvMapVulkanEntityID entity, CharacterState& state) const;
 	static const char* GetGroundName(CharacterGround ground);
+
+	// ---- Rigid bodies (Phase 4: the scripts' Rigidbody): a dynamic body's forces and velocities, between the steps. False:
+	// the entity has no dynamic body (a kinematic one follows its entity, a static one doesn't move)
+
+	// Force: newtons (torque: newton meters), for the next step; Impulse: at once (newton seconds), with the body's mass.
+	// Acceleration and VelocityChange: the same without the mass (an acceleration over the next step, a speed added at once)
+	enum class ForceMode { Force, Acceleration, Impulse, VelocityChange };
+	bool AddForce(EnvMapVulkanEntityID entity, const glm::vec3& force, ForceMode mode);
+	bool AddTorque(EnvMapVulkanEntityID entity, const glm::vec3& torque, ForceMode mode);
+	// Meters per second in the world; radians per second around the world's axes
+	bool GetVelocity(EnvMapVulkanEntityID entity, glm::vec3& linear, glm::vec3& angular) const;
+	bool SetLinearVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity);
+	bool SetAngularVelocity(EnvMapVulkanEntityID entity, const glm::vec3& velocity);
 
 	// ---- Events (3.6)
 
@@ -177,6 +192,11 @@ private:
 	bool CreateBody(Body& body, const ColliderComponent& collider, const RigidBodyComponent* rigidBody);
 	void CreateCharacter(Character& character, const CharacterControllerComponent& settings);
 	void SetEntityPosition(EnvMapVulkanEntityID entity, const glm::vec3& position); // the translation only
+	// The bodies and characters of entities that are gone (destroyed by the game, deleted in the editor): out of the world,
+	// and what was near them awake, so what stood on them falls
+	void RemoveDestroyedEntities();
+	// The dynamic body of an entity, nullptr: none
+	const Body* FindDynamicBody(EnvMapVulkanEntityID entity) const;
 	// The contacts the listener collected in the step, as events
 	void DispatchContacts();
 	// The entity of a body (a character's for its inner body; NoEntity: none of the scene's)
@@ -206,6 +226,7 @@ private:
 	std::vector<Event> m_Events, m_RecentEvents;
 	bool m_CollectContacts = false;
 	float m_Alpha = 1.0f; // WriteTransforms' last
+	float m_FixedStep = 1.0f / 60.0f; // the last step's (an acceleration is a speed added over it)
 
 	// The steps' cost, logged at Stop
 	uint64_t m_StepCount = 0;

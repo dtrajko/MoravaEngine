@@ -45,6 +45,19 @@ struct NameComponent
 	std::string Name;
 };
 
+// Words the game sorts entities by ("Pickup", "Enemy"): scripts ask HasTag and find entities by tag. Any number, each once
+struct TagComponent
+{
+	std::vector<std::string> Tags;
+
+	bool Has(const std::string& tag) const;
+	void Add(const std::string& tag);
+	void Remove(const std::string& tag);
+	// "Pickup, Coin" (the Properties panel's field) and back: trimmed, without empty or repeated ones
+	std::string ToText() const;
+	void FromText(const std::string& text);
+};
+
 // The entity's place in the tree. Children are kept in order (the order the hierarchy panel shows them in).
 struct HierarchyComponent
 {
@@ -252,6 +265,6 @@ struct ComponentList
 
 // The components that are scene data: every component above but IDComponent (the scene gives each entity its own). A new
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
-using SceneComponents = ComponentList<NameComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
+using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
 	ColliderComponent, RigidBodyComponent, CharacterControllerComponent>;

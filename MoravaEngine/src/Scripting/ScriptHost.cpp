@@ -37,7 +37,7 @@ static std::string s_RuntimeVersion;
 static fs::path s_RuntimeDirectory;
 static ScriptManagedApi s_Managed {};
 
-static std::string Utf16ToUtf8(const char16_t* text, int length)
+std::string ScriptUtf16ToUtf8(const char16_t* text, int length)
 {
 	std::string out;
 	out.reserve(length);
@@ -74,7 +74,7 @@ static std::string Utf16ToUtf8(const char16_t* text, int length)
 	return out;
 }
 
-static std::u16string Utf8ToUtf16(const std::string& text)
+std::u16string ScriptUtf8ToUtf16(const std::string& text)
 {
 	std::u16string out;
 	out.reserve(text.size());
@@ -105,7 +105,7 @@ static std::u16string Utf8ToUtf16(const std::string& text)
 // What C# calls (ScriptNativeApi)
 static void NativeLog(int level, const char16_t* text, int length)
 {
-	const std::string message = Utf16ToUtf8(text, length);
+	const std::string message = ScriptUtf16ToUtf8(text, length);
 	switch (level)
 	{
 	case 0:  Log::GetLogger()->info("C#: {0}", message); break;
@@ -114,7 +114,15 @@ static void NativeLog(int level, const char16_t* text, int length)
 	}
 }
 
-static const ScriptNativeApi s_Native { NativeLog };
+// C# keeps a pointer to it: ScriptGlue fills in the scene's functions later (only Log works without a game)
+static ScriptNativeApi MakeNativeApi()
+{
+	ScriptNativeApi api {};
+	api.Log = NativeLog;
+	return api;
+}
+
+static ScriptNativeApi s_Native = MakeNativeApi();
 
 #if defined(MORAVA_SCRIPTING)
 
@@ -185,7 +193,7 @@ static std::string ReadManagedString(int (*read)(char16_t*, int))
 {
 	char16_t buffer[1024];
 	const int length = read(buffer, int(std::size(buffer)));
-	return length > 0 ? Utf16ToUtf8(buffer, length) : std::string();
+	return length > 0 ? ScriptUtf16ToUtf8(buffer, length) : std::string();
 }
 
 static bool StartRuntime()
@@ -262,7 +270,7 @@ static bool StartRuntime()
 		result = getFunctionPointer(SCRIPT_HOST_STR("Morava.Interop, Morava.ScriptCore"), SCRIPT_HOST_STR("Initialize"),
 			UNMANAGEDCALLERSONLY_METHOD, nullptr, nullptr, reinterpret_cast<void**>(&initializeCore));
 	}
-	if (result != 0 || !initializeCore || initializeCore(&s_Native, &s_Managed) != 0 || !s_Managed.InvokeFixedUpdate)
+	if (result != 0 || !initializeCore || initializeCore(&s_Native, &s_Managed) != 0 || !s_Managed.InvokeCollision)
 	{
 		Log::GetLogger()->error("C# scripting is not available: '{0}' could not be loaded ({1})", coreDll.u8string(), ResultCode(result));
 		s_Managed = {};
@@ -374,7 +382,7 @@ void* ScriptHost::CreateInstance(const std::string& className, uint64_t entity)
 	{
 		return nullptr;
 	}
-	const std::u16string name = Utf8ToUtf16(className);
+	const std::u16string name = ScriptUtf8ToUtf16(className);
 	return s_Managed.CreateInstance(name.c_str(), int(name.size()), entity);
 }
 
@@ -399,4 +407,14 @@ bool ScriptHost::InvokeUpdate(void* instance, float dt)
 bool ScriptHost::InvokeFixedUpdate(void* instance, float dt)
 {
 	return s_Available && instance && s_Managed.InvokeFixedUpdate(instance, dt) == 0;
+}
+
+bool ScriptHost::InvokeCollision(void* instance, ScriptCollisionKind kind, uint64_t other, const glm::vec3& point, const glm::vec3& normal)
+{
+	return s_Available && instance && s_Managed.InvokeCollision(instance, int(kind), other, &point, &normal) == 0;
+}
+
+ScriptNativeApi& ScriptHost::GetNativeApi()
+{
+	return s_Native;
 }

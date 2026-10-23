@@ -101,6 +101,10 @@ namespace EnvMapVulkanSceneSerializer
 		out << YAML::Key << "ID" << YAML::Value << entity;
 		out << YAML::Key << "Name" << YAML::Value << scene.Get<NameComponent>(entity).Name;
 		out << YAML::Key << "Parent" << YAML::Value << scene.GetParent(entity);
+		if (const TagComponent* tags = scene.TryGet<TagComponent>(entity); tags && !tags->Tags.empty())
+		{
+			out << YAML::Key << "Tags" << YAML::Value << YAML::Flow << tags->Tags;
+		}
 
 		const TransformComponent& transform = scene.Get<TransformComponent>(entity);
 		out << YAML::Key << "Transform" << YAML::Value << YAML::BeginMap;
@@ -311,6 +315,14 @@ namespace EnvMapVulkanSceneSerializer
 				const EnvMapVulkanEntityID id = node["ID"].as<uint64_t>(NoEntity);
 				const EnvMapVulkanEntityID parent = node["Parent"].as<uint64_t>(NoEntity);
 				const EnvMapVulkanEntityID entity = scene.CreateEntity(node["Name"].as<std::string>("Entity"), parent, id);
+				if (YAML::Node tagsNode = node["Tags"]; tagsNode && tagsNode.IsSequence())
+				{
+					TagComponent& tags = scene.Add<TagComponent>(entity);
+					for (const YAML::Node& tag : tagsNode)
+					{
+						tags.Add(tag.as<std::string>(""));
+					}
+				}
 
 				if (YAML::Node transformNode = node["Transform"])
 				{

@@ -144,6 +144,53 @@ namespace GizmoMath
 	}
 }
 
+static std::string TrimTag(const std::string& tag)
+{
+	const size_t first = tag.find_first_not_of(" \t");
+	return first == std::string::npos ? std::string() : tag.substr(first, tag.find_last_not_of(" \t") - first + 1);
+}
+
+bool TagComponent::Has(const std::string& tag) const
+{
+	return std::find(Tags.begin(), Tags.end(), tag) != Tags.end();
+}
+
+void TagComponent::Add(const std::string& tag)
+{
+	const std::string trimmed = TrimTag(tag);
+	if (!trimmed.empty() && !Has(trimmed))
+	{
+		Tags.push_back(trimmed);
+	}
+}
+
+void TagComponent::Remove(const std::string& tag)
+{
+	Tags.erase(std::remove(Tags.begin(), Tags.end(), tag), Tags.end());
+}
+
+std::string TagComponent::ToText() const
+{
+	std::string text;
+	for (const std::string& tag : Tags)
+	{
+		text += (text.empty() ? "" : ", ") + tag;
+	}
+	return text;
+}
+
+void TagComponent::FromText(const std::string& text)
+{
+	Tags.clear();
+	size_t start = 0;
+	while (start <= text.size())
+	{
+		const size_t comma = std::min(text.find(',', start), text.size());
+		Add(text.substr(start, comma - start));
+		start = comma + 1;
+	}
+}
+
 glm::mat4 TransformComponent::GetMatrix() const
 {
 	glm::mat4 matrix;
@@ -432,6 +479,23 @@ bool EnvMapVulkanScene::SelfTest()
 		return fail("world transform");
 	}
 
+	// Tags: trimmed, each once, as the Properties panel's text and back
+	{
+		TagComponent tags;
+		tags.FromText(" Pickup, ,Coin,Pickup ");
+		if (tags.Tags != std::vector<std::string>{ "Pickup", "Coin" } || tags.ToText() != "Pickup, Coin" || !tags.Has("Coin") || tags.Has("Pick"))
+		{
+			return fail("tags from text");
+		}
+		tags.Remove("Pickup");
+		tags.Add("Enemy");
+		if (tags.Tags != std::vector<std::string>{ "Coin", "Enemy" })
+		{
+			return fail("tags add / remove");
+		}
+		scene.Add<TagComponent>(child) = tags;
+	}
+
 	// A copy has the same entities, IDs, hierarchy and components, and changes to it don't reach the original
 	scene.Add<CameraComponent>(other).FieldOfView = 60.0f;
 	{
@@ -441,7 +505,8 @@ bool EnvMapVulkanScene::SelfTest()
 			copy.GetChildren(root) != scene.GetChildren(root) || copy.GetParent(grandchild) != child ||
 			copy.Get<NameComponent>(child).Name != "Child" || copy.Get<IDComponent>(grandchild).ID != grandchild ||
 			!Near(copy.GetWorldTransform(grandchild), grandchildWorld) || !copy.Has<CameraComponent>(other) ||
-			copy.Get<CameraComponent>(other).FieldOfView != 60.0f || copy.Has<CameraComponent>(root))
+			copy.Get<CameraComponent>(other).FieldOfView != 60.0f || copy.Has<CameraComponent>(root) ||
+			!copy.Has<TagComponent>(child) || copy.Get<TagComponent>(child).Tags != scene.Get<TagComponent>(child).Tags)
 		{
 			return fail("copy");
 		}

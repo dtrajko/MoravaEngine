@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -8,14 +9,6 @@ using System.Runtime.Loader;
 
 namespace Morava
 {
-    // What C# may call in C++: plain C functions, blittable arguments only, strings as UTF-16 with a length. Same order
-    // as ScriptNativeApi in src/Scripting/ScriptApi.h; grows with each phase.
-    [StructLayout(LayoutKind.Sequential)]
-    unsafe struct NativeApi
-    {
-        public delegate* unmanaged<int, char*, int, void> Log;
-    }
-
     // What C++ calls in C#; Interop.Initialize fills it in. Same order as ScriptManagedApi in src/Scripting/ScriptApi.h.
     [StructLayout(LayoutKind.Sequential)]
     unsafe struct ManagedApi
@@ -29,6 +22,7 @@ namespace Morava
         public delegate* unmanaged<IntPtr, int> InvokeCreate;
         public delegate* unmanaged<IntPtr, float, int> InvokeUpdate;
         public delegate* unmanaged<IntPtr, float, int> InvokeFixedUpdate;
+        public delegate* unmanaged<IntPtr, int, ulong, Vector3*, Vector3*, int> InvokeCollision;
     }
 
     // The game's assembly in a context of its own that can be unloaded (hot reload). ScriptCore is the one already
@@ -48,7 +42,20 @@ namespace Morava
     /// <summary>The engine's entry points into C#. Called by the engine only, not by scripts.</summary>
     public static unsafe class Interop
     {
-        internal static NativeApi Native;
+        // C++'s table, read through the pointer: the game's functions are set into it when a game starts
+        internal static NativeApi* Native;
+
+        // The table for the functions of a running game: an exception that says so outside one (a script's static
+        // constructor, a thread of its own) instead of a call through a null pointer
+        internal static NativeApi* Game
+        {
+            get
+            {
+                if (Native == null || Native->Time_Get == null)
+                    throw new InvalidOperationException("The engine's API works only while the game runs (in a script's methods)");
+                return Native;
+            }
+        }
 
         static GameLoadContext? s_Context;
         static Assembly? s_Game;
@@ -60,7 +67,7 @@ namespace Morava
         {
             try
             {
-                Native = *native;
+                Native = native;
                 managed->GetRuntimeVersion = &GetRuntimeVersion;
                 managed->GetRuntimeDirectory = &GetRuntimeDirectory;
                 managed->LoadGameAssembly = &LoadGameAssembly;
@@ -70,6 +77,7 @@ namespace Morava
                 managed->InvokeCreate = &InvokeCreate;
                 managed->InvokeUpdate = &InvokeUpdate;
                 managed->InvokeFixedUpdate = &InvokeFixedUpdate;
+                managed->InvokeCollision = &InvokeCollision;
                 return 0;
             }
             catch (Exception) { return 1; }
@@ -178,11 +186,12 @@ namespace Morava
             GCHandle.FromIntPtr(instance).Free();
         }
 
-        enum Method { OnCreate, OnUpdate, OnFixedUpdate }
+        // The script's methods; the collision kinds are ScriptCollisionKind's values (2 + kind)
+        enum Method { OnCreate, OnUpdate, OnFixedUpdate, OnCollisionEnter, OnCollisionExit, OnTriggerEnter, OnTriggerExit }
 
-        // The script's methods. An exception must never leave an [UnmanagedCallersOnly] method (it would end the process):
-        // it is logged here with the script's class and where it was thrown, and the engine gets 1 instead of 0
-        static int Invoke(IntPtr instance, Method method, float dt)
+        // An exception must never leave an [UnmanagedCallersOnly] method (it would end the process): it is logged here with
+        // the script's class and where it was thrown, and the engine gets 1 instead of 0
+        static int Invoke(IntPtr instance, Method method, float dt, ulong other = 0, Vector3 point = default, Vector3 normal = default)
         {
             Entity? entity = null;
             try
@@ -194,6 +203,10 @@ namespace Morava
                     case Method.OnCreate: entity.OnCreate(); break;
                     case Method.OnUpdate: entity.OnUpdate(dt); break;
                     case Method.OnFixedUpdate: entity.OnFixedUpdate(dt); break;
+                    case Method.OnCollisionEnter: entity.OnCollisionEnter(new Collision(new Entity(other), point, normal)); break;
+                    case Method.OnCollisionExit: entity.OnCollisionExit(new Entity(other)); break;
+                    case Method.OnTriggerEnter: entity.OnTriggerEnter(new Entity(other)); break;
+                    case Method.OnTriggerExit: entity.OnTriggerExit(new Entity(other)); break;
                 }
                 return 0;
             }
@@ -212,5 +225,12 @@ namespace Morava
 
         [UnmanagedCallersOnly]
         static int InvokeFixedUpdate(IntPtr instance, float dt) => Invoke(instance, Method.OnFixedUpdate, dt);
+
+        [UnmanagedCallersOnly]
+        static int InvokeCollision(IntPtr instance, int kind, ulong other, Vector3* point, Vector3* normal)
+        {
+            if (kind < 0 || kind > 3) { Log.Error($"InvokeCollision: no collision kind {kind}"); return 1; }
+            return Invoke(instance, Method.OnCollisionEnter + kind, 0, other, *point, *normal);
+        }
     }
 }
