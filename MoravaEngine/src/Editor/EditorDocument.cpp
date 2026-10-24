@@ -11,6 +11,7 @@
 
 #include "Core/Application.h"
 #include "Core/FileDialogs.h"
+#include "Core/Process.h"
 #include "Core/Input.h"
 #include "Core/ResourceManager.h"
 #include "Core/Util.h"
@@ -19,6 +20,7 @@
 #include "Scene/Scene.h"
 #include "H2M/Editor/ContentBrowserPanelH2M.h"
 #include "Project/Project.h"
+#include "Scripting/ScriptProjectFiles.h"
 
 #include "imgui.h"
 #include "imgui_internal.h" // BeginDragDropTargetCustom (the Models and Meshes panel as one drop area)
@@ -364,6 +366,18 @@ static void NewProjectNow(const std::string& folder)
 		ShowNotification("Project could not be made: " + error, true);
 		return;
 	}
+	// Its C# scripts' .NET project (4.7), next to the engine's Morava.ScriptCore.dll: the first script is made with New Script.
+	// The editor's working directory is the one the engine starts in (IsWorkingDirectoryValid)
+	std::error_code folderError;
+	if (ScriptProjectFiles::CreateScriptProject(project, Process::GetExecutablePath().parent_path(),
+		std::filesystem::current_path(folderError), error))
+	{
+		project.Save(error);
+	}
+	else
+	{
+		Log::GetLogger()->warn("Project: its scripts' .NET project could not be made ({0})", error);
+	}
 	Project::SetOpen(project);
 	ShowProjectInWindowTitle();
 	GameSystems::LoadScripts();
@@ -507,7 +521,7 @@ void OnImGuiRenderUnsavedChangesPopup()
 	}
 }
 
-// The File menu's shortcuts: Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S. Not while typing in a field, and not while a question
+// The File menu's shortcuts: Ctrl+N, Ctrl+O, Ctrl+S, Ctrl+Shift+S, and the Scripts menu's Build Scripts: Ctrl+B. Not while typing in a field, and not while a question
 // is open (a popup)
 void HandleSceneShortcutKeys()
 {
@@ -535,6 +549,10 @@ void HandleSceneShortcutKeys()
 	else if (!io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_O, false))
 	{
 		RequestOpenScene();
+	}
+	else if (!io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_B, false))
+	{
+		RequestScriptBuild();
 	}
 }
 

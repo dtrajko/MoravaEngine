@@ -4,6 +4,7 @@
 
 #include "H2M/Core/LogH2M.h"
 #if defined(GRAPHICS_API_VULKAN)
+#include "Editor/Editor.h"
 #include "H2M/Platform/Vulkan/VulkanDeviceH2M.h"
 #endif
 
@@ -26,6 +27,9 @@ void SelectRendererAPI()
 int main(int argc, char** argv)
 {
 	Log::Init();
+#if defined(GRAPHICS_API_VULKAN)
+	Editor::InstallConsole(); // the editor (src/Editor) is in Vulkan builds only
+#endif
 	H2M::LogH2M::Init(); // H2M_ERROR / H2M_CORE_ERROR and failed H2M asserts log through these loggers
 
 	if (!Application::IsWorkingDirectoryValid())

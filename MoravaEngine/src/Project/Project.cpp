@@ -40,6 +40,11 @@ std::string Project::GetScriptAssemblyPath() const
 	return ScriptAssembly.empty() ? std::string() : (std::filesystem::path(GetDirectory()) / ScriptAssembly).lexically_normal().generic_string();
 }
 
+std::string Project::GetScriptProjectPath() const
+{
+	return ScriptProject.empty() ? std::string() : (std::filesystem::path(GetDirectory()) / ScriptProject).lexically_normal().generic_string();
+}
+
 std::string Project::GetWindowTitle() const
 {
 	return Window.Title.empty() ? Name : Window.Title;
@@ -72,6 +77,20 @@ bool Project::Load(const std::string& filepath, Project& project, std::string& e
 	project.AssetDirectory = node["AssetDirectory"].as<std::string>(project.AssetDirectory);
 	project.InputMapFile = node["InputMap"].as<std::string>(""); // projects made before input actions have none
 	project.ScriptAssembly = node["ScriptAssembly"].as<std::string>(""); // the game's C# scripts (none before Phase 4)
+	project.ScriptProject = node["ScriptProject"].as<std::string>("");
+	if (project.ScriptProject.empty() && !project.ScriptAssembly.empty())
+	{
+		// Projects made before 4.7: the .csproj in its Scripts folder, when there is one
+		const std::filesystem::path scripts = std::filesystem::path(project.GetDirectory()) / "Scripts";
+		for (const auto& entry : std::filesystem::directory_iterator(scripts, fileError))
+		{
+			if (entry.path().extension() == ".csproj")
+			{
+				project.ScriptProject = "Scripts/" + entry.path().filename().generic_string();
+				break;
+			}
+		}
+	}
 	if (YAML::Node window = node["Window"])
 	{
 		project.Window.Width = window["Width"].as<uint32_t>(project.Window.Width);
@@ -117,6 +136,7 @@ bool Project::Save(std::string& error) const
 	out << YAML::Key << "AssetDirectory" << YAML::Value << AssetDirectory;
 	out << YAML::Key << "InputMap" << YAML::Value << InputMapFile;
 	out << YAML::Key << "ScriptAssembly" << YAML::Value << ScriptAssembly;
+	out << YAML::Key << "ScriptProject" << YAML::Value << ScriptProject;
 	out << YAML::Key << "Window" << YAML::Value << YAML::Flow << YAML::BeginMap;
 	out << YAML::Key << "Width" << YAML::Value << Window.Width;
 	out << YAML::Key << "Height" << YAML::Value << Window.Height;

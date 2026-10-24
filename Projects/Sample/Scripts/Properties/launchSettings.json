@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Morava Player": {
+      "commandName": "Executable",
+      "executablePath": "$(MoravaScriptCoreDir)MoravaPlayer.exe",
+      "commandLineArgs": "--project \"$(MSBuildProjectDirectory)/../Sample.mproject\"",
+      "workingDirectory": "$(MoravaScriptCoreDir)../../"
+    },
+    "Morava Editor": {
+      "commandName": "Executable",
+      "executablePath": "$(MoravaScriptCoreDir)MoravaEngine.exe",
+      "commandLineArgs": "--project \"$(MSBuildProjectDirectory)/../Sample.mproject\"",
+      "workingDirectory": "$(MoravaScriptCoreDir)../../"
+    }
+  }
+}

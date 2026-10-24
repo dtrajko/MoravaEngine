@@ -1,0 +1,724 @@
+Scene:
+  Version: 1
+  Name: RollABall
+RenderSettings:
+  Shadows:
+    Distance: 40
+    Resolution: 2048
+    SplitLambda: 0.75
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  LocalShadows:
+    SpotResolution: 1024
+    PointResolution: 512
+    Softness: 1
+    DepthBias: 1.25
+    SlopeBias: 1.75
+    NormalBias: 1
+  RayTracing:
+    Enabled: true
+  Reflections:
+    Enabled: true
+    MaxRoughness: 0.5
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+  AmbientOcclusion:
+    Enabled: true
+    Radius: 0.5
+    Power: 1.5
+    Falloff: 0.6
+    Slices: 2
+    Steps: 8
+    Denoise: true
+    Temporal: true
+    HalfResolution: true
+    RayTraced: true
+    Rays: 2
+  Bloom:
+    Enabled: true
+    Threshold: 1
+    Knee: 0.1
+    UpsampleScale: 1
+    Intensity: 1
+    DirtEnabled: false
+    DirtIntensity: 1
+Entities:
+  - ID: 7310000000000000001
+    Name: Camera
+    Parent: 0
+    Transform:
+      Translation: [0, 9, 11]
+      Rotation: [38, 0, 0]
+      Scale: [1, 1, 1]
+    Camera:
+      FieldOfView: 60
+    Script:
+      Class: Sample.CameraFollow
+      Fields:
+        Target: {Entity: 7310000000000000002}
+  - ID: 16040318626583559303
+    Name: Environment
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Environment:
+      File: Textures/HDR/umhlanga_sunrise_4k.hdr
+      Rotation: 4
+      Exposure: 1
+      AutoExposure: true
+      HuePreservation: 0.5
+      ExtractSun: true
+      SkyboxLod: 0
+  - ID: 17664899364368859239
+    Name: Sun
+    Parent: 0
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0.0067483177, 0.0065134675, -87.970924]
+      Scale: [0.99996686, 0.99999785, 0.9999558]
+    Sun:
+      Enabled: true
+      Color: [1, 0.2515118, 0]
+      Intensity: 0.28021637
+      FollowEnvironmentRotation: true
+      CastShadows: true
+      IconPlaced: false
+  - ID: 7310000000000000005
+    Name: Arena Light
+    Parent: 0
+    Transform:
+      Translation: [0, 8, 2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    PointLight:
+      Enabled: true
+      Color: [1, 0.95, 0.85]
+      Intensity: 40
+      Range: 26
+      CastShadows: true
+  - ID: 7310000000000000006
+    Name: Probe Volume
+    Parent: 0
+    Transform:
+      Translation: [0, 4, 0]
+      Rotation: [0, 0, 0]
+      Scale: [23, 10, 23]
+    ProbeVolume:
+      Enabled: true
+      Counts: [8, 4, 8]
+      NormalBias: 0.25
+      ViewBias: 0.25
+      AutoUpdate: true
+      ProbesPerFrame: 8
+      TracedProbesPerFrame: 1024
+  - ID: 7310000000000000101
+    Name: Floor
+    Parent: 0
+    Transform:
+      Translation: [0, -0.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [10.5, 0.5, 10.5]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 7310000000000000102
+    Name: Cube
+    Parent: 7310000000000000101
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 7310000000000000103
+    Name: North Wall
+    Parent: 0
+    Transform:
+      Translation: [0, 0.25, -10.25]
+      Rotation: [0, 0, 0]
+      Scale: [10.5, 0.75, 0.25]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 7310000000000000104
+    Name: Cube
+    Parent: 7310000000000000103
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 7310000000000000105
+    Name: South Wall
+    Parent: 0
+    Transform:
+      Translation: [0, 0.25, 10.25]
+      Rotation: [0, 0, 0]
+      Scale: [10.5, 0.75, 0.25]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 7310000000000000106
+    Name: Cube
+    Parent: 7310000000000000105
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 7310000000000000107
+    Name: East Wall
+    Parent: 0
+    Transform:
+      Translation: [10.25, 0.25, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.25, 0.75, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 7310000000000000108
+    Name: Cube
+    Parent: 7310000000000000107
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 7310000000000000109
+    Name: West Wall
+    Parent: 0
+    Transform:
+      Translation: [-10.25, 0.25, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.25, 0.75, 10]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: false
+  - ID: 7310000000000000110
+    Name: Cube
+    Parent: 7310000000000000109
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 7290184736519204517
+        File: Assets/Materials/Walls.mmat
+        Name: Walls
+  - ID: 7310000000000000002
+    Name: Ball
+    Parent: 0
+    Transform:
+      Translation: [0, 0.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    Model:
+      File: Models/Primitives/sphere.obj
+    Collider:
+      Shape: Sphere
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.8
+      Restitution: 0.2
+      IsTrigger: false
+    RigidBody:
+      Type: Dynamic
+      Mass: 1
+      LinearDamping: 0.3
+      AngularDamping: 0.5
+      GravityFactor: 1
+      LockRotation: [false, false, false]
+      ContinuousCollision: false
+    Script:
+      Class: Sample.BallController
+      Fields:
+        Camera: {Entity: 7310000000000000001}
+  - ID: 7310000000000000003
+    Name: Sphere
+    Parent: 7310000000000000002
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840017
+        File: Assets/Materials/Ball.mmat
+        Name: Ball
+  - ID: 7310000000000000111
+    Name: Pickup 1
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [0.000, 0.6, -6.000]
+      Rotation: [45, 0, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000112
+    Name: Cube
+    Parent: 7310000000000000111
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000113
+    Name: Pickup 2
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [3.000, 0.6, -5.196]
+      Rotation: [45, 15, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000114
+    Name: Cube
+    Parent: 7310000000000000113
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000115
+    Name: Pickup 3
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [5.196, 0.6, -3.000]
+      Rotation: [45, 30, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000116
+    Name: Cube
+    Parent: 7310000000000000115
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000117
+    Name: Pickup 4
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [6.000, 0.6, -0.000]
+      Rotation: [45, 45, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000118
+    Name: Cube
+    Parent: 7310000000000000117
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000119
+    Name: Pickup 5
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [5.196, 0.6, 3.000]
+      Rotation: [45, 60, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000120
+    Name: Cube
+    Parent: 7310000000000000119
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000121
+    Name: Pickup 6
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [3.000, 0.6, 5.196]
+      Rotation: [45, 75, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000122
+    Name: Cube
+    Parent: 7310000000000000121
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000123
+    Name: Pickup 7
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [0.000, 0.6, 6.000]
+      Rotation: [45, 90, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000124
+    Name: Cube
+    Parent: 7310000000000000123
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000125
+    Name: Pickup 8
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [-3.000, 0.6, 5.196]
+      Rotation: [45, 105, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000126
+    Name: Cube
+    Parent: 7310000000000000125
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000127
+    Name: Pickup 9
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [-5.196, 0.6, 3.000]
+      Rotation: [45, 120, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000128
+    Name: Cube
+    Parent: 7310000000000000127
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000129
+    Name: Pickup 10
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [-6.000, 0.6, 0.000]
+      Rotation: [45, 135, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000130
+    Name: Cube
+    Parent: 7310000000000000129
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000131
+    Name: Pickup 11
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [-5.196, 0.6, -3.000]
+      Rotation: [45, 150, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000132
+    Name: Cube
+    Parent: 7310000000000000131
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup
+  - ID: 7310000000000000133
+    Name: Pickup 12
+    Parent: 0
+    Tags: [Pickup]
+    Transform:
+      Translation: [-3.000, 0.6, -5.196]
+      Rotation: [45, 165, 45]
+      Scale: [0.3, 0.3, 0.3]
+    Model:
+      File: Models/Primitives/cube.obj
+    Collider:
+      Shape: Box
+      Offset: [0, 0, 0]
+      HalfExtents: [1, 1, 1]
+      Radius: 1
+      HalfHeight: 0
+      Friction: 0.5
+      Restitution: 0
+      IsTrigger: true
+    Script:
+      Class: Sample.Pickup
+  - ID: 7310000000000000134
+    Name: Cube
+    Parent: 7310000000000000133
+    Transform:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshPart:
+      SourceMeshIndex: 0
+      Material:
+        ID: 9184467301225840023
+        File: Assets/Materials/Pickup.mmat
+        Name: Pickup

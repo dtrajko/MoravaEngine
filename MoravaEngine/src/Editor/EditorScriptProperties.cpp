@@ -327,6 +327,42 @@ void ScriptPropertiesControls(EnvMapVulkanEntityID entity)
 			"OnCreate, OnUpdate, OnFixedUpdate and collision methods are called for this entity.");
 	}
 	ScriptComponent* script = s_Scene.TryGet<ScriptComponent>(entity);
+
+	// Its class's file in the code editor, and a new script for it (4.7)
+	if (script && !script->ClassName.empty())
+	{
+		ImGui::SameLine();
+		if (ImGui::SmallButton("Edit Script"))
+		{
+			std::string file;
+			int line = 0;
+			if (FindScriptClassFile(script->ClassName, file, line))
+			{
+				OpenScriptFile(file, line);
+			}
+			else
+			{
+				ShowNotification("No file in the scripts' folder declares 'class " + script->ClassName.substr(script->ClassName.rfind('.') + 1) + "'", true);
+			}
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Opens the class's file in the code editor (%s), at the class", GetResolvedCodeEditorName());
+		}
+	}
+	ImGui::SameLine();
+	ImGui::BeginDisabled(GetScriptProjectPath().empty() || IsPlaying());
+	if (ImGui::SmallButton("New Script..."))
+	{
+		OpenNewScriptDialog(entity);
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip(GetScriptProjectPath().empty() ? "The project has no script project (Project Settings: Script Project)" :
+			IsPlaying() ? "Not while the game runs: Stop first" :
+			"A new script from a template, given to this entity: it opens in the code editor and is built");
+	}
 	if (!script)
 	{
 		ImGui::PopID();

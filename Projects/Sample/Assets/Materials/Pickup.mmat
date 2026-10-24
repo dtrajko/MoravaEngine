@@ -1,0 +1,12 @@
+Material:
+  Version: 1
+  ID: 9184467301225840023
+  Name: Pickup
+  AlbedoColor: [1, 0.75, 0.1]
+  Metalness: 1
+  Roughness: 0.3
+  TilingFactor: 1
+  EmissiveIntensity: 1
+  MetalRoughPacked: 0
+  RadiancePrefilter: 0
+  Surface: Opaque

@@ -3,6 +3,7 @@
 #include "ScriptApi.h"
 
 #include "Core/Log.h"
+#include "Core/Process.h"
 
 #include <algorithm>
 #include <chrono>
@@ -22,9 +23,6 @@
 	#else
 		#include <dlfcn.h>
 		#define SCRIPT_HOST_STR(s) s
-		#if defined(__APPLE__)
-			#include <mach-o/dyld.h>
-		#endif
 	#endif
 #endif
 
@@ -174,30 +172,6 @@ static void ReportScriptField(void*, const ScriptFieldReport* report)
 
 #if defined(MORAVA_SCRIPTING)
 
-static fs::path ExecutablePath()
-{
-#if defined(_WIN32)
-	std::wstring buffer(MAX_PATH, L'\0');
-	DWORD length = 0;
-	while ((length = GetModuleFileNameW(nullptr, buffer.data(), DWORD(buffer.size()))) == buffer.size())
-	{
-		buffer.resize(buffer.size() * 2);
-	}
-	buffer.resize(length);
-	return buffer;
-#elif defined(__APPLE__)
-	uint32_t size = 0;
-	_NSGetExecutablePath(nullptr, &size);
-	std::string buffer(size, '\0');
-	_NSGetExecutablePath(buffer.data(), &size);
-	std::error_code error;
-	return fs::canonical(buffer.c_str(), error);
-#else
-	std::error_code error;
-	return fs::read_symlink("/proc/self/exe", error);
-#endif
-}
-
 static void* LoadLibraryAt(const fs::path& path)
 {
 #if defined(_WIN32)
@@ -247,7 +221,7 @@ static std::string ReadManagedString(int (*read)(char16_t*, int))
 static bool StartRuntime()
 {
 	const auto start = std::chrono::steady_clock::now();
-	const fs::path executable = ExecutablePath();
+	const fs::path executable = Process::GetExecutablePath();
 	const fs::path folder = executable.parent_path();
 	const fs::path dotnetRoot = folder / "dotnet";
 	const fs::path coreDll = folder / "Morava.ScriptCore.dll";

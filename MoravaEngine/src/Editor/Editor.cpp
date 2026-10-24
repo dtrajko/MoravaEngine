@@ -189,6 +189,9 @@ void Editor::OnImGuiRender()
 			OnImGuiRenderProjectPanel();
 			OnImGuiRenderInputPanel();
 			OnImGuiRenderPhysicsPanel();
+			OnImGuiRenderScriptsPanel();
+			OnImGuiRenderConsolePanel();
+			OnImGuiRenderNewScriptDialog();
 
 			/**** BEGIN DockSpace menu bar ****/
 
@@ -238,6 +241,33 @@ void Editor::OnImGuiRender()
 					ImGui::MenuItem("FPS in the Viewport", nullptr, &s_ShowViewportFps);
 					ImGui::MenuItem("Input", nullptr, &s_ShowInputPanel);
 					ImGui::MenuItem("Physics", nullptr, &s_ShowPhysicsPanel);
+					ImGui::MenuItem("Scripts", nullptr, &s_ShowScriptsPanel);
+					ImGui::MenuItem("Console", nullptr, &s_ShowConsolePanel);
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("Scripts"))
+				{
+					const bool hasScripts = !GetScriptProjectPath().empty();
+					if (ImGui::MenuItem("Build Scripts", "Ctrl+B", false, hasScripts && !IsScriptBuildRunning()))
+					{
+						RequestScriptBuild();
+					}
+					if (ImGui::MenuItem("Build on Save", nullptr, &s_BuildScriptsOnSave))
+					{
+						SaveEditorSettings();
+					}
+					ImGui::Separator();
+					if (ImGui::MenuItem("New Script...", nullptr, false, hasScripts && !IsPlaying()))
+					{
+						OpenNewScriptDialog();
+					}
+					if (ImGui::MenuItem("Open in Code Editor", nullptr, false, hasScripts))
+					{
+						OpenScriptProjectInCodeEditor();
+					}
+					ImGui::Separator();
+					ImGui::MenuItem("Scripts Panel", nullptr, &s_ShowScriptsPanel);
+					ImGui::MenuItem("Console", nullptr, &s_ShowConsolePanel);
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("Docking"))
@@ -276,7 +306,9 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 	// Play, Step and Stop asked for in the last frame, then the game's frame (see EditorPlayMode.cpp)
 	UpdatePlayMode(camera, frameTime);
 
-	// A newer build of the project's scripts, while the game doesn't run (after a Stop in this frame, at once)
+	// The scripts built when one was saved (or asked for), then a newer build loaded while the game doesn't run (after a
+	// Stop in this frame, at once)
+	UpdateScriptBuild();
 	UpdateScriptReload();
 
 	// The editor's copies of the scene's environment, lights, water and probe volume (see ExtractLights)
@@ -464,6 +496,7 @@ void ExtractProbeVolume()
 
 void Editor::Init()
 {
+	RegisterEditorSettings(); // the code editor and Build on Save, from imgui.ini
 	Scene::s_ImGuizmoType = ImGuizmo::OPERATION::TRANSLATE; // as in SceneHazelEnvMap (keys 1/2/3/4 switch the mode)
 
 	// The startup scene: the environment with the map the renderer loaded, a sun and a camera
@@ -478,6 +511,7 @@ void Editor::Init()
 
 void Editor::Shutdown()
 {
+	ShutdownScriptBuild();
 	EnvMapVulkanRenderer::WaitIdle();
 	ShutdownPlayMode();
 	EnvMapVulkanRenderer::SetScene(nullptr, nullptr, nullptr);

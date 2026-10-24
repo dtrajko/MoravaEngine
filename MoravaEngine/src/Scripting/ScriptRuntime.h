@@ -46,14 +46,19 @@ public:
 	uint64_t GetExceptionCount() const { return m_ExceptionCount; }
 	const std::string& GetLastException() const { return m_LastException; }
 
-private:
 	struct Instance
 	{
 		EnvMapVulkanEntityID Entity = NoEntity;
 		void* Handle = nullptr;
 		std::string ClassName;
+		// Its calls that threw, and the last one's method ("OnFixedUpdate"): the Scripts panel shows them
+		mutable uint64_t ExceptionCount = 0;
+		mutable std::string LastExceptionMethod;
 	};
+	// In the order they were made: the order they are called in
+	const std::vector<Instance>& GetInstances() const { return m_Instances; }
 
+private:
 	void ApplyFields(const Instance& instance, const ScriptComponent& script);
 	void Threw(const Instance& instance, const char* method);
 	const Instance* Find(EnvMapVulkanEntityID entity) const;

@@ -70,7 +70,11 @@ void ScriptRuntime::Start(EnvMapVulkanScene& scene)
 			continue; // C# logged why (its constructor threw)
 		}
 		m_ByEntity[entity] = m_Instances.size();
-		m_Instances.push_back({ entity, handle, script.ClassName });
+		Instance instance;
+		instance.Entity = entity;
+		instance.Handle = handle;
+		instance.ClassName = script.ClassName;
+		m_Instances.push_back(std::move(instance));
 		classes.insert(script.ClassName);
 	}
 	for (const Instance& instance : m_Instances)
@@ -232,6 +236,8 @@ void ScriptRuntime::Threw(const Instance& instance, const char* method)
 {
 	m_ExceptionCount++;
 	m_LastException = instance.ClassName + "." + method;
+	instance.ExceptionCount++;
+	instance.LastExceptionMethod = method;
 	Log::GetLogger()->error("Script error: {0} on '{1}' threw an exception (above, with the file and line)", m_LastException,
 		m_Scene ? EntityName(*m_Scene, instance.Entity) : std::to_string(instance.Entity));
 }
