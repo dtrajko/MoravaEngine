@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Morava Player",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Build scripts",
+      "program": "${workspaceFolder}/../../../MoravaEngine/build/Debug/MoravaPlayer",
+      "windows": { "program": "${workspaceFolder}/../../../MoravaEngine/build/Debug/MoravaPlayer.exe" },
+      "args": [ "--project", "${workspaceFolder}/../Sample.mproject" ],
+      "cwd": "${workspaceFolder}/../../../MoravaEngine"
+    },
+    {
+      "name": "Morava Editor",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "Build scripts",
+      "program": "${workspaceFolder}/../../../MoravaEngine/build/Debug/MoravaEngine",
+      "windows": { "program": "${workspaceFolder}/../../../MoravaEngine/build/Debug/MoravaEngine.exe" },
+      "args": [ "--project", "${workspaceFolder}/../Sample.mproject" ],
+      "cwd": "${workspaceFolder}/../../../MoravaEngine"
+    },
+    {
+      "name": "Attach to the Morava editor",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    }
+  ]
+}

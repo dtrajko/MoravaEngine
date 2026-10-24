@@ -13,6 +13,7 @@
 #include "Core/Log.h"
 
 #include <chrono>
+#include <ctime>
 #include <filesystem>
 #include <string>
 #include <system_error>
@@ -38,6 +39,32 @@ static Clock::time_point s_SeenSince;
 static bool s_Failed = false;
 static fs::file_time_type s_FailedTime;
 static bool s_WaitingForStop = false;   // told once: a build during Play is loaded at Stop
+static std::vector<ScriptReloadRecord> s_History;
+
+const std::vector<ScriptReloadRecord>& GetScriptReloadHistory()
+{
+	return s_History;
+}
+
+// A reload for the history (the Scripts panel)
+static void Record(bool loaded, bool leaked, bool rebuilt, double milliseconds)
+{
+	ScriptReloadRecord record;
+	const std::time_t now = std::time(nullptr);
+	std::tm local {};
+#if defined(_WIN32)
+	localtime_s(&local, &now);
+#else
+	localtime_r(&now, &local);
+#endif
+	std::strftime(record.Time, sizeof(record.Time), "%H:%M:%S", &local);
+	record.Loaded = loaded;
+	record.Leaked = leaked;
+	record.Rebuilt = rebuilt;
+	record.Milliseconds = milliseconds;
+	record.ClassCount = loaded ? ScriptHost::GetClasses().size() : 0;
+	s_History.push_back(record);
+}
 
 void RequestScriptReload()
 {
@@ -56,10 +83,12 @@ static void Reload(const std::string& path, fs::file_time_type writeTime, bool r
 	{
 		s_Failed = true;
 		s_FailedTime = writeTime;
+		Record(false, false, !requested, (double)milliseconds);
 		ShowNotification("The scripts could not be loaded: the log says why", true);
 		return;
 	}
 	s_Failed = false;
+	Record(true, ScriptHost::GetLeakedAssemblyCount() != leaksBefore, !requested, (double)milliseconds);
 	if (ScriptHost::GetLeakedAssemblyCount() != leaksBefore)
 	{
 		ShowNotification("Scripts reloaded, but the old ones are still held (a leak): the log says more", true);

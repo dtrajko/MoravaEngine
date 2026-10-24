@@ -26,6 +26,7 @@ struct ProjectWindow
  *     AssetDirectory: Assets
  *     InputMap: Settings/Input.minput
  *     ScriptAssembly: Scripts/bin/RollABall.dll
+ *     ScriptProject: Scripts/RollABall.csproj
  *     Window: { Width: 1600, Height: 900, Fullscreen: false, VSync: true, Title: Roll a Ball }
  *     Physics: { Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, ...] }
  *
@@ -43,6 +44,7 @@ struct Project
 	std::string AssetDirectory = "Assets"; // relative to the project folder
 	std::string InputMapFile = DefaultInputMap; // the actions and their bindings (InputMap), relative to the project folder
 	std::string ScriptAssembly;            // the game's C# scripts as built, relative to the project folder (empty: none)
+	std::string ScriptProject;             // the scripts' .NET project (.csproj) the editor builds, relative to the project folder (empty: none)
 	ProjectWindow Window;
 	PhysicsCollisionMatrix Collisions; // the physics layers that collide (written as the pairs that do)
 
@@ -54,6 +56,7 @@ struct Project
 	std::string GetScenesFolder() const;
 	std::string GetInputMapPath() const; // empty: the project has none (the game gets InputMap::Default)
 	std::string GetScriptAssemblyPath() const; // empty: the project has no scripts
+	std::string GetScriptProjectPath() const;  // empty: the project has no scripts to build
 	// The window's title: Window.Title, or the name
 	std::string GetWindowTitle() const;
 

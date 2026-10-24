@@ -123,6 +123,8 @@ static std::string SerializeScene()
 
 static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 {
+	ClearConsoleIfAskedOnPlay();
+
 	// The camera entity where the editor's camera is: the game starts with the view as it was
 	SyncCamera(camera);
 

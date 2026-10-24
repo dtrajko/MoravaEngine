@@ -23,6 +23,8 @@
 class Editor
 {
 public:
+	// In main, right after Log::Init: the log also goes to the Console panel, from the first line on
+	static void InstallConsole();
 	// After the renderer's Init: the startup scene (an environment, a sun and a camera); hands the renderer the scene
 	static void Init();
 	// Before the renderer's Shutdown: the scene and everything the editor holds on to are released

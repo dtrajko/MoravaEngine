@@ -10,6 +10,8 @@ class Log
 {
 public:
 	static void Init();
+	// Another place both loggers write to, as well as the standard output (the editor's Console panel): before other threads log
+	static void AddSink(const spdlog::sink_ptr& sink);
 
 	inline static std::shared_ptr<spdlog::logger>& GetCoreLogger() { return s_CoreLogger; }
 	inline static std::shared_ptr<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }

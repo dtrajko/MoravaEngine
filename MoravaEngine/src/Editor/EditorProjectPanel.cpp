@@ -133,6 +133,80 @@ void OnImGuiRenderProjectPanel()
 	{
 		ImGui::SetTooltip("Loads the scripts again now. A new build is loaded by itself; this is for anything else");
 	}
+	// The scripts' .NET project: built by the editor, opened in the code editor (4.7)
+	if (InputSetting("Script Project", project->ScriptProject, "Scripts/Game.csproj"))
+	{
+		save = true;
+	}
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The .csproj of the project's C# scripts, relative to the project folder: the editor builds it\n"
+			"(dotnet build) when a script is saved and with Build Scripts, and opens it in the code editor.\n"
+			"New projects get one in Scripts/.");
+	}
+	ImGui::BeginDisabled(project->ScriptProject.empty() || !ScriptHost::IsAvailable());
+	ImGui::BeginDisabled(IsScriptBuildRunning());
+	if (ImGui::Button(IsScriptBuildRunning() ? "Building..." : "Build Scripts"))
+	{
+		RequestScriptBuild();
+	}
+	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("dotnet build (Ctrl+B): errors and warnings in the Console, double-click one to open it.\n"
+			"A build that succeeds is loaded by itself (during Play: at Stop)");
+	}
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Build on Save", &s_BuildScriptsOnSave))
+	{
+		SaveEditorSettings();
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("The scripts are built when one is saved (any .cs in the script project's folder).\n"
+			"An editor setting on this computer, not the project's");
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("New Script..."))
+	{
+		OpenNewScriptDialog();
+	}
+	if (ImGui::Button("Open in Code Editor"))
+	{
+		OpenScriptProjectInCodeEditor();
+	}
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+	const std::string editorPreview = s_CodeEditor == CodeEditorKind::Automatic ?
+		std::string("Automatic: ") + GetResolvedCodeEditorName() : GetCodeEditorName(s_CodeEditor);
+	if (ImGui::BeginCombo("##CodeEditor", editorPreview.c_str()))
+	{
+		for (int kind = 0; kind < (int)CodeEditorKind::Count; kind++)
+		{
+			const bool available = IsCodeEditorAvailable((CodeEditorKind)kind);
+			ImGui::BeginDisabled(!available);
+			const std::string label = std::string(GetCodeEditorName((CodeEditorKind)kind)) + (available ? "" : " (not found)");
+			if (ImGui::Selectable(label.c_str(), s_CodeEditor == (CodeEditorKind)kind))
+			{
+				s_CodeEditor = (CodeEditorKind)kind;
+				SaveEditorSettings();
+			}
+			ImGui::EndDisabled();
+		}
+		ImGui::EndCombo();
+	}
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		ImGui::SetTooltip("Where scripts open: the project, an error's line (Console), a class (Properties: Edit Script).\n"
+			"Automatic: the first one found of Visual Studio, VS Code and Rider. An editor setting on this computer");
+	}
+	ImGui::EndDisabled();
+	const ScriptBuildResult build = GetLastScriptBuild();
+	if (build.Finished && !build.Succeeded && !IsScriptBuildRunning())
+	{
+		ImGui::TextColored(ImVec4(1.0f, 0.42f, 0.38f, 1.0f), "The last build failed: %d error(s) (Console)", build.Errors);
+	}
+
 	if (!ScriptHost::IsAvailable())
 	{
 		ImGui::TextDisabled("C# scripting isn't available (the log says why)");

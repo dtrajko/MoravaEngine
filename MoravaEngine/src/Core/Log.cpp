@@ -16,3 +16,9 @@ void Log::Init()
 	s_ClientLogger = spdlog::stdout_color_mt("MORAVA");
 	s_ClientLogger->set_level(spdlog::level::trace);
 }
+
+void Log::AddSink(const spdlog::sink_ptr& sink)
+{
+	s_CoreLogger->sinks().push_back(sink);
+	s_ClientLogger->sinks().push_back(sink);
+}

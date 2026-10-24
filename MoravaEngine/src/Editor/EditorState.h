@@ -192,6 +192,78 @@ ScriptRuntime* GetGameScripts();
 void UpdateScriptReload();
 void RequestScriptReload();
 
+// The reloads since the editor started, for the Scripts panel: when, how long, and how it went
+struct ScriptReloadRecord
+{
+	char Time[12] = {};          // the clock's time, "14:03:27"
+	bool Loaded = false;         // else the log says why it couldn't be
+	bool Leaked = false;         // the old assembly is still held
+	bool Rebuilt = false;        // a new build (else Reload in the Project panel)
+	double Milliseconds = 0.0;
+	size_t ClassCount = 0;
+};
+const std::vector<ScriptReloadRecord>& GetScriptReloadHistory();
+
+// ---- Writing scripts (EditorScriptBuild.cpp, EditorCodeEditor.cpp, 4.7)
+
+// The open project's script project (.csproj), absolute; empty: none
+std::string GetScriptProjectPath();
+
+// The scripts are built with dotnet build on a thread of their own: when asked (Build Scripts, Ctrl+B) and, with Build on
+// Save, when a script in the script project's folder changes. Errors and warnings go to the log (and the Console), the
+// built assembly is loaded by hot reload. UpdateScriptBuild: each frame
+struct ScriptBuildResult
+{
+	bool Finished = false;     // a build has finished since the editor started
+	bool Succeeded = false;
+	int Errors = 0, Warnings = 0;
+	double Seconds = 0.0;
+	std::string FirstMessage;  // the first error (or why the build couldn't start)
+};
+extern bool s_BuildScriptsOnSave;
+void RequestScriptBuild();
+void UpdateScriptBuild();
+bool IsScriptBuildRunning();
+ScriptBuildResult GetLastScriptBuild();
+void ShutdownScriptBuild(); // waits for a build in progress
+
+// The code editor the scripts open in; Automatic: the first one found of Visual Studio (Windows), VS Code and Rider
+enum class CodeEditorKind { Automatic, VisualStudio, VSCode, Rider, System, Count };
+extern CodeEditorKind s_CodeEditor;
+const char* GetCodeEditorName(CodeEditorKind kind);
+const char* GetResolvedCodeEditorName(); // the one Automatic (or a choice that isn't installed) uses
+bool IsCodeEditorAvailable(CodeEditorKind kind);
+bool OpenScriptProjectInCodeEditor();
+// A file at a line (a path relative to the project folder, as the build writes it, or absolute)
+bool OpenScriptFile(const std::string& file, int line);
+// The .cs file and line declaring a script class ("Sample.Spinner"); false when none is found
+bool FindScriptClassFile(const std::string& className, std::string& file, int& line);
+// A new script <name>.cs in the scripts' folder, from the template, opened in the code editor and built; className: with
+// its namespace (it can be chosen once built). False (error says why) when it can't be made
+bool NewScript(const std::string& name, std::string& className, std::string& error);
+// New Script asks for its name (the Scripts menu, the Project and Properties panels); with an entity, its Script becomes
+// the new class. The dialog: each frame, at the top level
+void OpenNewScriptDialog(EnvMapVulkanEntityID entity = NoEntity);
+void OnImGuiRenderNewScriptDialog();
+// The code editor and Build on Save are kept in imgui.ini: the handler is registered at startup, a change marks it to save
+void RegisterEditorSettings();
+void SaveEditorSettings();
+
+// ---- The Console panel (EditorConsolePanel.cpp)
+
+// The log in the editor (View > Console): filters, a message opened at its file and line (double-click)
+extern bool s_ShowConsolePanel;
+void OnImGuiRenderConsolePanel();
+void ClearConsole();
+void ClearConsoleIfAskedOnPlay(); // Play: Clear on Play
+
+// ---- The Scripts panel (EditorScriptsPanel.cpp)
+
+// The scripts' debug view (View > Scripts): the loaded assembly and its classes, the builds and reloads, and while the game
+// runs each script instance with its exceptions
+extern bool s_ShowScriptsPanel;
+void OnImGuiRenderScriptsPanel();
+
 // The OS window the current ImGui window is in: the main window, or its own when it was dragged out (multi-viewports).
 // Keys and the mouse are read from it
 GLFWwindow* GetCurrentPlatformWindow();
