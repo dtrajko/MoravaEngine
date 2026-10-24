@@ -105,17 +105,17 @@ bool RefusedWhilePlaying(const char* what)
 	return true;
 }
 
-// The camera where the scene's camera entity is, with its lens: the game's view
+// The editor's view when Play started: back at Stop (6.3)
+static EnvMapVulkanSceneSerializer::EditorView s_ViewBeforePlay;
+
+// The view of the primary game camera, with its lens: the game's view (none: the editor's view stays)
 static void PlaceGameCamera(H2M::CameraH2M* camera)
 {
-	const EnvMapVulkanEntityID cameraEntity = s_Scene.FindFirst<CameraComponent>();
-	if (cameraEntity == NoEntity)
+	const EnvMapVulkanEntityID cameraEntity = FindPrimaryCamera(s_Scene);
+	if (cameraEntity != NoEntity)
 	{
-		return;
+		EnvMapVulkanSceneData::PlaceGameCamera(*camera, s_Scene, cameraEntity);
 	}
-	PlaceCamera(*camera, s_Scene.Get<TransformComponent>(cameraEntity));
-	const float fieldOfView = s_Scene.Get<CameraComponent>(cameraEntity).FieldOfView;
-	camera->SetPerspectiveVerticalFOV(glm::clamp(fieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView));
 }
 
 static std::string SerializeScene()
@@ -127,8 +127,12 @@ static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 {
 	ClearConsoleIfAskedOnPlay();
 
-	// The camera entity where the editor's camera is: the game starts with the view as it was
-	SyncCamera(camera);
+	// The editor's view, for Stop: Play shows the primary game camera's
+	s_ViewBeforePlay = GetEditorView();
+	if (state == PlayState::Play && FindPrimaryCamera(s_Scene) == NoEntity)
+	{
+		ShowNotification("The scene has no camera: the game is seen from the editor's view (Scene Hierarchy: Add > Camera)", true);
+	}
 
 	s_EditedScene.CopyFrom(s_Scene);
 	s_EditedRenderSettings = s_RenderSettings;
@@ -165,7 +169,7 @@ static void StartPlay(H2M::CameraH2M* camera, PlayState state)
 }
 
 // camera: placed where the edited scene's camera entity is (nullptr: at exit, no view to restore)
-static void StopPlay(H2M::CameraH2M* camera)
+static void StopPlay()
 {
 	// Models the game loaded may still be drawn by frames in flight
 	EnvMapVulkanRenderer::WaitIdle();
@@ -212,15 +216,10 @@ static void StopPlay(H2M::CameraH2M* camera)
 		s_RenamingEntity = NoEntity;
 	}
 
-	// Play: the view as before Play (the edited scene's camera entity is where the editor's camera was then). Simulate: the
-	// view stays where it is, and the camera entity follows it in the next frame (SyncCamera)
-	if (s_PlayState == PlayState::Simulate)
+	// Play: the editor's view as before Play. Simulate: the view stays where it is (it was the editor's all along)
+	if (s_PlayState == PlayState::Play)
 	{
-		s_CameraEntitySynced = false;
-	}
-	else if (camera)
-	{
-		PlaceGameCamera(camera);
+		SetEditorView(s_ViewBeforePlay);
 	}
 
 	s_PlayState = PlayState::Edit;
@@ -272,7 +271,7 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 	}
 	else if (request == PlayRequest::Stop && IsPlaying())
 	{
-		StopPlay(camera);
+		StopPlay();
 		return;
 	}
 	if (!IsPlaying())
@@ -362,20 +361,7 @@ ScriptRuntime* GetGameScripts()
 // The game binds Escape: Shift+F1 gives the mouse back instead
 static bool GameBindsEscape()
 {
-	for (const InputAction& action : s_GameInput.GetMap().Actions)
-	{
-		for (const InputBinding& binding : action.Bindings)
-		{
-			const bool escape = binding.Source == InputBindingSource::Key ? binding.Code == GLFW_KEY_ESCAPE :
-				binding.Source == InputBindingSource::Composite && (binding.Up == GLFW_KEY_ESCAPE || binding.Down == GLFW_KEY_ESCAPE ||
-					binding.Left == GLFW_KEY_ESCAPE || binding.Right == GLFW_KEY_ESCAPE);
-			if (escape)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
+	return s_GameInput.GetMap().BindsKey(GLFW_KEY_ESCAPE);
 }
 
 static const char* GetReleaseKeyName()
@@ -432,7 +418,7 @@ void ShutdownPlayMode()
 {
 	if (IsPlaying())
 	{
-		StopPlay(nullptr);
+		StopPlay();
 	}
 }
 

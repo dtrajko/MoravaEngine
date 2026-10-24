@@ -1409,37 +1409,105 @@ void OnImGuiRenderInspector()
 			break;
 		case EntityKind::Camera:
 		{
-			// Edited here, the camera follows in the next frame (see SyncCamera)
+			if (ImGui::Button("Delete Camera"))
+			{
+				DeleteEntity(entity);
+				ImGui::End();
+				return;
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Move to View"))
+			{
+				// The game camera where the editor looks from (the easiest way to aim it)
+				const EnvMapVulkanSceneSerializer::EditorView view = GetEditorView();
+				TransformComponent placement;
+				placement.Translation = view.Translation;
+				placement.Rotation = view.Rotation;
+				const EnvMapVulkanEntityID parent = s_Scene.GetParent(entity);
+				if (parent == NoEntity)
+				{
+					s_Scene.Get<TransformComponent>(entity).Translation = placement.Translation;
+					s_Scene.Get<TransformComponent>(entity).Rotation = placement.Rotation;
+				}
+				else
+				{
+					SetEntityPosition(s_Scene, entity, placement.Translation); // under a parent: its place only
+				}
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The camera where the editor's view is, looking the same way: fly the view, then this");
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("View from Camera"))
+			{
+				const TransformComponent placement = GetGameCameraPlacement(s_Scene, entity);
+				EnvMapVulkanSceneSerializer::EditorView view;
+				view.Translation = placement.Translation;
+				view.Rotation = placement.Rotation;
+				view.FieldOfView = s_Scene.Get<CameraComponent>(entity).FieldOfView;
+				SetEditorView(view);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The editor's view jumps to the camera, with its field of view: the game's view, before Play");
+			}
+
 			TransformComponent& transform = s_Scene.Get<TransformComponent>(entity);
 			ImGui::DragFloat3("Translation", &transform.Translation.x, 0.1f);
 			if (ImGui::IsItemHovered())
 			{
-				ImGui::SetTooltip("Where the camera is. Flying it in the viewport changes these values too.");
+				ImGui::SetTooltip("Where the camera is, relative to its parent. The gizmo moves it too.");
 			}
 			ImGui::DragFloat2("Rotation", &transform.Rotation.x, 1.0f);
 			transform.Rotation.x = glm::clamp(transform.Rotation.x, -89.0f, 89.0f);
+			transform.Rotation.z = 0.0f;
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("Where the camera looks, in degrees.\n"
 					"X: down (positive) and up, -89 to 89.\n"
 					"Y: around the vertical axis: 0 looks along -Z, positive turns to the left.\n"
-					"The camera isn't rolled.");
+					"The camera isn't rolled. The rotate gizmo turns it too: its red ring up and down, its green ring around.");
 			}
-			ImGui::SliderFloat("Field of View", &s_Scene.Get<CameraComponent>(entity).FieldOfView, CameraComponent::MinFieldOfView,
-				CameraComponent::MaxFieldOfView, "%.0f deg", ImGuiSliderFlags_AlwaysClamp);
+
+			CameraComponent& camera = s_Scene.Get<CameraComponent>(entity);
+			if (ImGui::Checkbox("Primary", &camera.Primary) && camera.Primary)
+			{
+				// One camera shows the game: the others stop being primary
+				s_Scene.Each<CameraComponent>([&](EnvMapVulkanEntityID other, CameraComponent& otherCamera)
+				{
+					otherCamera.Primary = other == entity;
+				});
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("The game is seen through this camera (the first primary one; none: the first camera).\n"
+					"A script switches cameras by setting Primary: GetComponent<Camera>().Primary = true");
+			}
+			if (FindPrimaryCamera(s_Scene) != entity)
+			{
+				ImGui::SameLine();
+				ImGui::TextDisabled("(another camera shows the game)");
+			}
+			ImGui::SliderFloat("Field of View", &camera.FieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView,
+				"%.0f deg", ImGuiSliderFlags_AlwaysClamp);
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("The angle the view spans from its bottom edge to its top edge.\n"
 					"Small: a telephoto lens. The view is flat, and things at different distances move almost together\n"
 					"when the camera moves.\n"
 					"Large: a wide-angle lens. Strong perspective: near things move much more than far ones, and shapes\n"
-					"stretch towards the edges. 45 to 60 is usual. Saved with the scene, and an unsaved change.");
+					"stretch towards the edges. 45 to 60 is usual.");
 			}
-			ImGui::TextDisabled("Saved with the scene: an opened scene is seen from here.");
+			ImGui::DragFloatRange2("Clip Planes", &camera.NearClip, &camera.FarClip, 0.05f, CameraComponent::MinNearClip, 100000.0f,
+				"Near %.3f m", "Far %.0f m", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+			camera.FarClip = std::max(camera.FarClip, camera.NearClip * 2.0f);
 			if (ImGui::IsItemHovered())
 			{
-				ImGui::SetTooltip("Moving the camera alone doesn't count as an unsaved change: save the scene to keep the view.");
+				ImGui::SetTooltip("Nothing nearer than Near or farther than Far is drawn. Near very small and Far very far make\n"
+					"distant surfaces flicker into each other (the depth buffer's precision).");
 			}
+			ImGui::TextDisabled("Play shows the primary camera; Edit and Simulate the editor's view.");
 			break;
 		}
 		case EntityKind::Sound:

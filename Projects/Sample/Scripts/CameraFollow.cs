@@ -19,7 +19,9 @@ namespace Sample
     /// A camera that follows its target, from one of three views (SwitchCamera: C, the gamepad's Y): above the playground
     /// (the offset and rotation it starts with, catching up smoothly), behind the target, or from its front. Behind and
     /// in front, Orbit (Q, E, R, F, the right stick) turns the view; the target's controller moves it where the camera
-    /// looks. Behind, the camera comes closer instead of going through a wall. A switch glides there in SwitchSeconds.
+    /// looks. With FollowMovement, the view also turns by itself towards where the target rolls (not while Orbit turns it,
+    /// and not when it rolls back towards the camera). Behind, the camera comes closer instead of going through a wall. A
+    /// switch glides there in SwitchSeconds.
     /// </summary>
     public class CameraFollow : Entity
     {
@@ -41,10 +43,24 @@ namespace Sample
         /// <summary>How long a switch glides from one view to the next.</summary>
         public float SwitchSeconds = 0.4f;
 
+        /// <summary>Behind and in front: the view turns by itself towards where the target moves.</summary>
+        public bool FollowMovement = true;
+
+        /// <summary>Degrees per second it turns at most (the faster the target, the closer to this).</summary>
+        public float FollowTurnSpeed = 90.0f;
+
+        /// <summary>Meters per second the target has to move before the view follows it.</summary>
+        public float FollowMinSpeed = 1.0f;
+
+        /// <summary>Seconds after Orbit was last used before the view follows the movement again.</summary>
+        public float FollowDelay = 1.0f;
+
         Vector3 offset, aboveRotation;
         float yaw, pitch; // behind and in front: degrees, as the camera's rotation (X down, Y to the left)
         float blend = 1.0f;
         Vector3 fromTranslation, fromRotation;
+        Vector3 lastTarget;
+        float sinceOrbit = float.MaxValue;
 
         protected override void OnCreate()
         {
@@ -52,7 +68,10 @@ namespace Sample
             yaw = aboveRotation.Y;
             pitch = BehindPitch;
             if (Target != null)
+            {
                 offset = Translation - Target.Translation;
+                lastTarget = Target.WorldPosition;
+            }
         }
 
         protected override void OnUpdate(float dt)
@@ -68,6 +87,9 @@ namespace Sample
                 fromRotation = EulerAngles;
                 blend = 0.0f;
             }
+            Vector3 targetNow = Target.WorldPosition;
+            Vector3 moved = targetNow - lastTarget;
+            lastTarget = targetNow;
             if (View != CameraView.Above)
             {
                 // Right: clockwise seen from above; up: the view looks up
@@ -75,6 +97,9 @@ namespace Sample
                 yaw -= orbit.X * dt;
                 pitch = View == CameraView.Behind ? Math.Clamp(pitch - orbit.Y * dt, -5.0f, 70.0f)
                     : Math.Clamp(pitch - orbit.Y * dt, -60.0f, 60.0f);
+                sinceOrbit = orbit.LengthSquared() > 1e-4f ? 0.0f : sinceOrbit + dt;
+                if (FollowMovement && dt > 0 && sinceOrbit >= FollowDelay)
+                    FollowTheMovement(moved / dt, dt);
             }
 
             Vector3 wanted;
@@ -122,6 +147,23 @@ namespace Sample
             }
             Translation = wanted;
             EulerAngles = rotation;
+        }
+
+        // The view's turn towards where the target moves on the ground: at most FollowTurnSpeed, the faster it moves the
+        // closer to that; not when it moves back towards the camera (pulling back would spin the view round), nor at a
+        // teleport's speed
+        void FollowTheMovement(Vector3 velocity, float dt)
+        {
+            velocity.Y = 0.0f;
+            float speed = velocity.Length();
+            if (speed < MathF.Max(FollowMinSpeed, 0.01f) || speed > 50.0f)
+                return;
+            float wanted = MathF.Atan2(-velocity.X, -velocity.Z) * 180.0f / MathF.PI; // a yaw: 0 along -Z, positive to the left
+            float delta = ((wanted - yaw) % 360.0f + 540.0f) % 360.0f - 180.0f;
+            if (MathF.Abs(delta) > 120.0f)
+                return;
+            float step = FollowTurnSpeed * dt * MathF.Min(1.0f, speed / (4.0f * FollowMinSpeed));
+            yaw += Math.Clamp(delta, -step, step);
         }
 
         // Each angle the short way round (from 170 to -170 through 180, not through 0)

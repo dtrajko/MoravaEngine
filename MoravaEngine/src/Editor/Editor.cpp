@@ -245,6 +245,14 @@ void Editor::OnImGuiRender()
 					ImGui::MenuItem("Audio", nullptr, &s_ShowAudioPanel);
 					ImGui::MenuItem("Scripts", nullptr, &s_ShowScriptsPanel);
 					ImGui::MenuItem("Console", nullptr, &s_ShowConsolePanel);
+					ImGui::Separator();
+					ImGui::SetNextItemWidth(160.0f);
+					ImGui::SliderFloat("Editor Field of View", &s_EditorFieldOfView, CameraComponent::MinFieldOfView,
+						CameraComponent::MaxFieldOfView, "%.0f deg", ImGuiSliderFlags_AlwaysClamp);
+					if (ImGui::IsItemHovered())
+					{
+						ImGui::SetTooltip("The editor's view's lens (saved with the scene). A game camera has its own (Inspector)");
+					}
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("Scripts"))
@@ -321,7 +329,7 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 	ExtractProbeVolume();
 	if (!IsPlaying() || IsSimulating())
 	{
-		SyncCamera(camera); // in Play the view is the camera entity's (UpdatePlayMode); Simulate keeps the editor's
+		UpdateEditorCamera(camera); // in Play the view is the primary game camera's (UpdatePlayMode); Simulate keeps the editor's
 	}
 	// The sun turns with the environment map's rotation (EnvMapVulkanDirectionalLight::FollowEnvironmentRotation)
 	SyncSunWithEnvironmentRotation();
@@ -505,7 +513,7 @@ void Editor::Init()
 	// The startup scene: the environment with the map the renderer loaded, a sun and a camera
 	CreateEnvironmentEntity();
 	CreateSunEntity();
-	EnsureCameraEntity();
+	CreateCameraAtView();
 	ExtractEnvironment();
 	ExtractLights();
 	ExtractWater();

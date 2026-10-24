@@ -173,7 +173,7 @@ void AudioControls(EnvMapVulkanEntityID entity)
 	if (ImGui::IsItemHovered())
 	{
 		ImGui::SetTooltip("The game is heard from here: from its position, facing its forward (-Z; a camera: where it looks).\n"
-			"Usually on the camera. Without one, the scene's camera listens.");
+			"Usually on the camera. Without one, the primary game camera listens.");
 	}
 	if (AudioListenerComponent* listener = s_Scene.TryGet<AudioListenerComponent>(entity))
 	{

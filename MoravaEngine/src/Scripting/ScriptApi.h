@@ -58,6 +58,14 @@ struct ScriptAudioSettings
 	int32_t Reserved = 0;
 };
 
+// A CameraComponent's settings as a script reads and writes them (Camera's properties)
+struct ScriptCameraSettings
+{
+	int32_t Primary = 1;
+	float FieldOfView = 45.0f;
+	float NearClip = 0.01f, FarClip = 1000.0f;
+};
+
 // A script field's value between C++ and C# (ScriptField.h has the engine's own ScriptFieldValue). Type: ScriptFieldType.
 // Text is UTF-16: a String's characters. GetField: C++ gives Text room for TextCapacity characters, C# writes what fits
 // and sets TextLength to the string's full length.
@@ -89,7 +97,7 @@ struct ScriptFieldReport
 };
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
-enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4 };
+enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -168,6 +176,10 @@ struct ScriptNativeApi
 	int32_t (*Audio_PlayOneShot)(const char16_t* clip, int length, const glm::vec3* position, int32_t bus, float volume, float pitch);
 	void (*Audio_GetVolumes)(float* out);
 	void (*Audio_SetVolumes)(const float* volumes);
+
+	// Camera (6.3): 0 when the entity has no CameraComponent. Primary set: the other cameras stop being primary
+	int32_t (*Camera_GetSettings)(uint64_t entity, ScriptCameraSettings* out);
+	int32_t (*Camera_SetSettings)(uint64_t entity, const ScriptCameraSettings* value);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

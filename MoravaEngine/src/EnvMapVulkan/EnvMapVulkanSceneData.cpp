@@ -4,6 +4,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <algorithm>
 #include <cmath>
 
 
@@ -347,5 +348,64 @@ namespace EnvMapVulkanSceneData
 		camera.SetFront(glm::normalize(glm::vec3(std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch)),
 			-std::sin(glm::radians(pitch)), std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch)))));
 		camera.OnUpdate(H2M::TimestepH2M(0.0f));
+	}
+
+	TransformComponent GetCameraPlacement(const H2M::CameraH2M& camera)
+	{
+		// The turn around the vertical axis, kept within -180 to 180
+		float turn = std::fmod(-camera.GetYaw() - 90.0f, 360.0f);
+		turn += turn > 180.0f ? -360.0f : (turn <= -180.0f ? 360.0f : 0.0f);
+		TransformComponent transform;
+		transform.Translation = camera.GetPosition();
+		transform.Rotation = glm::vec3(camera.GetPitch(), turn, 0.0f);
+		return transform;
+	}
+
+	EnvMapVulkanEntityID FindPrimaryCamera(const EnvMapVulkanScene& scene)
+	{
+		EnvMapVulkanEntityID first = NoEntity, primary = NoEntity;
+		scene.Each<CameraComponent>([&](EnvMapVulkanEntityID entity, const CameraComponent& camera)
+		{
+			first = first == NoEntity ? entity : first;
+			primary = primary == NoEntity && camera.Primary ? entity : primary;
+		});
+		return primary != NoEntity ? primary : first;
+	}
+
+	TransformComponent GetGameCameraPlacement(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID cameraEntity)
+	{
+		TransformComponent placement = scene.Get<TransformComponent>(cameraEntity);
+		if (scene.GetParent(cameraEntity) != NoEntity)
+		{
+			const glm::mat4 world = scene.GetWorldTransform(cameraEntity);
+			const glm::mat4 parent = scene.GetWorldTransform(scene.GetParent(cameraEntity));
+			placement.Translation = glm::vec3(world[3]);
+			const glm::vec3 forward = glm::vec3(parent * glm::vec4(0.0f, 0.0f, -1.0f, 0.0f));
+			placement.Rotation.y += glm::degrees(std::atan2(-forward.x, -forward.z));
+		}
+		placement.Scale = glm::vec3(1.0f);
+		return placement;
+	}
+
+	glm::vec3 GetCameraForward(const glm::vec3& rotation)
+	{
+		// As PlaceCamera: the camera's yaw is measured from +X towards +Z, a positive pitch looks down
+		const float pitch = glm::radians(glm::clamp(rotation.x, -89.0f, 89.0f));
+		const float yaw = glm::radians(-rotation.y - 90.0f);
+		return glm::normalize(glm::vec3(std::cos(yaw) * std::cos(pitch), -std::sin(pitch), std::sin(yaw) * std::cos(pitch)));
+	}
+
+	void PlaceGameCamera(H2M::CameraH2M& camera, const EnvMapVulkanScene& scene, EnvMapVulkanEntityID cameraEntity)
+	{
+		const CameraComponent* lens = scene.TryGet<CameraComponent>(cameraEntity);
+		if (!lens)
+		{
+			return;
+		}
+		PlaceCamera(camera, GetGameCameraPlacement(scene, cameraEntity));
+		camera.SetPerspectiveVerticalFOV(glm::clamp(lens->FieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView));
+		const float nearClip = std::max(lens->NearClip, CameraComponent::MinNearClip);
+		camera.SetPerspectiveNearClip(nearClip);
+		camera.SetPerspectiveFarClip(std::max(lens->FarClip, nearClip * 2.0f));
 	}
 }

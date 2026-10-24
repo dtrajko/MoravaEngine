@@ -65,6 +65,9 @@ namespace Morava
         public delegate* unmanaged<char*, int, Vector3*, int, float, float, int> Audio_PlayOneShot;
         public delegate* unmanaged<float*, void> Audio_GetVolumes;
         public delegate* unmanaged<float*, void> Audio_SetVolumes;
+
+        public delegate* unmanaged<ulong, NativeCameraSettings*, int> Camera_GetSettings;
+        public delegate* unmanaged<ulong, NativeCameraSettings*, int> Camera_SetSettings;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -99,6 +102,14 @@ namespace Morava
         public int Bus;
         public int Loop, Spatial;
         public int Reserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeCameraSettings
+    {
+        public int Primary;
+        public float FieldOfView;
+        public float NearClip, FarClip;
     }
 
     [StructLayout(LayoutKind.Sequential)]

@@ -1,6 +1,10 @@
 Scene:
   Version: 1
   Name: RollABall
+EditorCamera:
+  Translation: [0, 9, 11]
+  Rotation: [38, 0, 0]
+  FieldOfView: 60
 RenderSettings:
   Shadows:
     Distance: 40
@@ -54,12 +58,16 @@ Entities:
       Rotation: [38, 0, 0]
       Scale: [1, 1, 1]
     Camera:
+      Primary: true
       FieldOfView: 60
-    AudioListener: {Active: true}
+      NearClip: 0.01
+      FarClip: 1000
     Script:
       Class: Sample.CameraFollow
       Fields:
         Target: {Entity: 7310000000000000002}
+        View: {Enum: Behind}
+    AudioListener: {Active: true}
   - ID: 16040318626583559303
     Name: Environment
     Parent: 0
@@ -117,6 +125,13 @@ Entities:
       AutoUpdate: true
       ProbesPerFrame: 8
       TracedProbesPerFrame: 1024
+      RaysPerProbe: 192
+      Hysteresis: 0.9
+      RelocateProbes: true
+      OccludeReflections: true
+      ShowProbes: false
+      ProbeRadius: 0.12
+      Show: 0
   - ID: 7310000000000000101
     Name: Floor
     Parent: 0
@@ -320,7 +335,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [0.000, 0.6, -6.000]
+      Translation: [0, 0.6, -6]
       Rotation: [45, 0, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -365,7 +380,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [3.000, 0.6, -5.196]
+      Translation: [3, 0.6, -5.196]
       Rotation: [45, 15, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -410,7 +425,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [5.196, 0.6, -3.000]
+      Translation: [5.196, 0.6, -3]
       Rotation: [45, 30, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -455,7 +470,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [6.000, 0.6, -0.000]
+      Translation: [6, 0.6, -0]
       Rotation: [45, 45, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -500,7 +515,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [5.196, 0.6, 3.000]
+      Translation: [5.196, 0.6, 3]
       Rotation: [45, 60, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -545,7 +560,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [3.000, 0.6, 5.196]
+      Translation: [3, 0.6, 5.196]
       Rotation: [45, 75, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -590,7 +605,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [0.000, 0.6, 6.000]
+      Translation: [0, 0.6, 6]
       Rotation: [45, 90, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -635,7 +650,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [-3.000, 0.6, 5.196]
+      Translation: [-3, 0.6, 5.196]
       Rotation: [45, 105, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -680,7 +695,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [-5.196, 0.6, 3.000]
+      Translation: [-5.196, 0.6, 3]
       Rotation: [45, 120, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -725,7 +740,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [-6.000, 0.6, 0.000]
+      Translation: [-6, 0.6, 0]
       Rotation: [45, 135, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -770,7 +785,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [-5.196, 0.6, -3.000]
+      Translation: [-5.196, 0.6, -3]
       Rotation: [45, 150, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:
@@ -815,7 +830,7 @@ Entities:
     Parent: 0
     Tags: [Pickup]
     Transform:
-      Translation: [-3.000, 0.6, -5.196]
+      Translation: [-3, 0.6, -5.196]
       Rotation: [45, 165, 45]
       Scale: [0.3, 0.3, 0.3]
     Model:

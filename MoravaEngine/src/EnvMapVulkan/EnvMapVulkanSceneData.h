@@ -78,10 +78,23 @@ namespace EnvMapVulkanSceneData
 	EnvMapVulkanEntityID ReadProbeVolume(const EnvMapVulkanScene& scene, EnvMapVulkanProbeVolumeSettings& settings);
 	glm::mat4 GetProbeVolumeTransform(const EnvMapVulkanProbeVolumeSettings& settings);
 
-	// --- The camera (CameraComponent, one per scene)
+	// --- The cameras (CameraComponent, 6.3)
 
-	// Puts a camera where the camera entity's transform says: at its translation, looking as its rotation says (x: down
-	// (positive) and up, as the editor's camera; y: around the vertical axis, 0 looking along -Z). The pitch is limited to
-	// -89..89 degrees, as the camera's own.
+	// Puts a camera where the transform says: at its translation, looking as its rotation says (x: down (positive) and up,
+	// as the editor's camera; y: around the vertical axis, 0 looking along -Z). The pitch is limited to -89..89 degrees,
+	// as the camera's own.
 	void PlaceCamera(H2M::CameraH2M& camera, const TransformComponent& transform);
+	// Where a camera is and looks, as a transform PlaceCamera takes back (y within -180..180, no roll, scale 1)
+	TransformComponent GetCameraPlacement(const H2M::CameraH2M& camera);
+
+	// The camera the game is seen through: the first with Primary, else the first there is (NoEntity: none)
+	EnvMapVulkanEntityID FindPrimaryCamera(const EnvMapVulkanScene& scene);
+	// Where a camera entity is in the world and where it looks, as a transform PlaceCamera takes: a child (of a car, a
+	// character) is where its parent puts it, turned with the parent around the vertical axis (a parent's tilt isn't
+	// followed: a camera isn't rolled)
+	TransformComponent GetGameCameraPlacement(const EnvMapVulkanScene& scene, EnvMapVulkanEntityID cameraEntity);
+	// The direction a camera's rotation looks (x down, y around the vertical axis, 0 along -Z), of length 1
+	glm::vec3 GetCameraForward(const glm::vec3& rotation);
+	// The camera placed as the game camera's entity is in the world, with its lens (field of view, near and far planes)
+	void PlaceGameCamera(H2M::CameraH2M& camera, const EnvMapVulkanScene& scene, EnvMapVulkanEntityID cameraEntity);
 }

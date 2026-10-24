@@ -3,6 +3,7 @@
 #include "AudioEngine.h"
 
 #include "EnvMapVulkan/EnvMapVulkanScene.h"
+#include "EnvMapVulkan/EnvMapVulkanSceneData.h"
 
 #include "Core/Log.h"
 
@@ -189,7 +190,7 @@ void SceneAudio::UpdateListener(float frameTime)
 {
 	ma_engine* engine = AudioEngine::GetEngine();
 
-	// The active listener, else the camera
+	// The active listener, else the primary game camera
 	m_Listener = NoEntity;
 	m_Scene->Each<AudioListenerComponent>([&](EnvMapVulkanEntityID entity, AudioListenerComponent& listener)
 	{
@@ -200,7 +201,7 @@ void SceneAudio::UpdateListener(float frameTime)
 	});
 	if (m_Listener == NoEntity)
 	{
-		m_Listener = m_Scene->FindFirst<CameraComponent>();
+		m_Listener = EnvMapVulkanSceneData::FindPrimaryCamera(*m_Scene);
 	}
 	if (m_Listener == NoEntity)
 	{
@@ -208,17 +209,16 @@ void SceneAudio::UpdateListener(float frameTime)
 	}
 
 	const glm::mat4 world = m_Scene->GetWorldTransform(m_Listener);
-	const glm::vec3 position = glm::vec3(world[3]);
+	glm::vec3 position = glm::vec3(world[3]);
 	glm::vec3 forward = -glm::vec3(world[2]);
 	glm::vec3 up = glm::vec3(world[1]);
 	if (m_Scene->Has<CameraComponent>(m_Listener))
 	{
-		// The camera looks as the renderer places it (EnvMapVulkanSceneData::PlaceCamera): X down (positive) and up, Y
+		// A camera looks as the renderer places it (EnvMapVulkanSceneData::PlaceGameCamera): X down (positive) and up, Y
 		// around the vertical axis, 0 along -Z; never rolled
-		const glm::vec3& rotation = m_Scene->Get<TransformComponent>(m_Listener).Rotation;
-		const float pitch = glm::radians(glm::clamp(rotation.x, -89.0f, 89.0f));
-		const float yaw = glm::radians(-rotation.y - 90.0f);
-		forward = glm::vec3(std::cos(yaw) * std::cos(pitch), -std::sin(pitch), std::sin(yaw) * std::cos(pitch));
+		const TransformComponent placement = EnvMapVulkanSceneData::GetGameCameraPlacement(*m_Scene, m_Listener);
+		position = placement.Translation;
+		forward = EnvMapVulkanSceneData::GetCameraForward(placement.Rotation);
 		up = glm::vec3(0.0f, 1.0f, 0.0f);
 	}
 	if (glm::length(forward) < 1e-6f || glm::length(up) < 1e-6f)

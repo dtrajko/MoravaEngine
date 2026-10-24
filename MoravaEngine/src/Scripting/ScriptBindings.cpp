@@ -269,6 +269,7 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		case ScriptComponentKind::Collider:          return scene->Has<ColliderComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::AudioSource:       return scene->Has<AudioSourceComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::AudioListener:     return scene->Has<AudioListenerComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::Camera:            return scene->Has<CameraComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -652,6 +653,43 @@ static void AudioSetVolumes(const float* in)
 	AudioEngine::SetVolumes(volumes);
 }
 
+// ---- Camera (6.3)
+
+static int32_t CameraGetSettings(uint64_t entity, ScriptCameraSettings* out)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	const CameraComponent* camera = scene ? scene->TryGet<CameraComponent>(entity) : nullptr;
+	if (!camera)
+	{
+		return 0;
+	}
+	out->Primary = camera->Primary ? 1 : 0;
+	out->FieldOfView = camera->FieldOfView;
+	out->NearClip = camera->NearClip;
+	out->FarClip = camera->FarClip;
+	return 1;
+}
+
+static int32_t CameraSetSettings(uint64_t entity, const ScriptCameraSettings* value)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	CameraComponent* camera = scene ? scene->TryGet<CameraComponent>(entity) : nullptr;
+	if (!camera)
+	{
+		return 0;
+	}
+	if (value->Primary != 0 && !camera->Primary)
+	{
+		// One camera shows the game, as in the Inspector
+		scene->Each<CameraComponent>([&](EnvMapVulkanEntityID, CameraComponent& other) { other.Primary = false; });
+	}
+	camera->Primary = value->Primary != 0;
+	camera->FieldOfView = glm::clamp(value->FieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView);
+	camera->NearClip = std::max(value->NearClip, CameraComponent::MinNearClip);
+	camera->FarClip = std::max(value->FarClip, camera->NearClip * 2.0f);
+	return 1;
+}
+
 namespace ScriptBindings
 {
 	void Bind()
@@ -703,6 +741,8 @@ namespace ScriptBindings
 		api.Audio_PlayOneShot = AudioPlayOneShot;
 		api.Audio_GetVolumes = AudioGetVolumes;
 		api.Audio_SetVolumes = AudioSetVolumes;
+		api.Camera_GetSettings = CameraGetSettings;
+		api.Camera_SetSettings = CameraSetSettings;
 	}
 
 	void SetContext(ScriptContext* context)

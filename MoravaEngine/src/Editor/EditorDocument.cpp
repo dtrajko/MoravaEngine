@@ -54,27 +54,18 @@ static std::string s_PendingScenePath; // Open: the scene file; NewProject: the 
 static bool s_SceneOperationConfirmed = false; // the unsaved changes question was answered
 static bool s_AskAboutUnsavedChanges = false;  // opens the question (see OnImGuiRenderUnsavedChangesPopup)
 
+// The scene's file: with the editor's view, so it opens as it was seen
 static std::string SerializeCurrentScene()
 {
-	return EnvMapVulkanSceneSerializer::Serialize(s_Scene, s_SceneName, s_RenderSettings);
+	const EnvMapVulkanSceneSerializer::EditorView view = GetEditorView();
+	return EnvMapVulkanSceneSerializer::Serialize(s_Scene, s_SceneName, s_RenderSettings, &view);
 }
 
-// The scene's text for telling whether it has unsaved changes: with the camera at the origin, so that looking around
-// isn't a change
+// The scene's text for telling whether it has unsaved changes: without the editor's view, so that looking around isn't
+// a change (moving a game camera is)
 static std::string SerializeSceneForComparison()
 {
-	TransformComponent* cameraTransform = s_Scene.TryGet<TransformComponent>(s_Scene.FindFirst<CameraComponent>());
-	const TransformComponent kept = cameraTransform ? *cameraTransform : TransformComponent();
-	if (cameraTransform)
-	{
-		*cameraTransform = TransformComponent();
-	}
-	std::string text = SerializeCurrentScene();
-	if (cameraTransform)
-	{
-		*cameraTransform = kept;
-	}
-	return text;
+	return EnvMapVulkanSceneSerializer::Serialize(s_Scene, s_SceneName, s_RenderSettings);
 }
 
 // A short message over the bottom of the window that fades away by itself: what a command did when nothing else on the
@@ -256,7 +247,7 @@ static void NewSceneNow()
 	// The environment's settings back to their defaults (the map stays: loading it again would take a while)
 	CreateEnvironmentEntity();
 	CreateSunEntity();
-	EnsureCameraEntity(); // where the camera is now
+	CreateCameraAtView(); // a game camera where the editor looks from
 	s_PendingSunAlign = true; // the sun on the map's sun, as at startup
 	s_SceneFilePath.clear();
 	s_SceneName = "Untitled";
@@ -288,15 +279,20 @@ static bool OpenSceneNow(const std::string& filepath)
 	{
 		CreateSunEntity();
 	}
-	// And a camera: the scene's own puts the editor's camera where it was saved (see SyncCamera, which finds the entity's
-	// transform changed); a scene without one gets one where the camera is now
-	const bool hadCamera = s_Scene.FindFirst<CameraComponent>() != NoEntity;
-	EnsureCameraEntity();
-	if (hadCamera)
+	// The editor's view as the scene was saved with it; a scene saved before 6.3 is seen from its game camera (which was
+	// the editor's view then). A scene without a game camera keeps none: Play shows the editor's view
+	EnvMapVulkanSceneSerializer::EditorView view;
+	if (EnvMapVulkanSceneSerializer::ReadEditorView(filepath, view))
 	{
-		// Also when the saved placement happens to be the one last synced: taken as changed
-		s_CameraEntitySynced = true;
-		s_SyncedCameraTranslation = glm::vec3(std::numeric_limits<float>::max());
+		SetEditorView(view);
+	}
+	else if (const EnvMapVulkanEntityID camera = FindPrimaryCamera(s_Scene); camera != NoEntity)
+	{
+		const TransformComponent& transform = s_Scene.Get<TransformComponent>(camera);
+		view.Translation = transform.Translation;
+		view.Rotation = transform.Rotation;
+		view.FieldOfView = s_Scene.Get<CameraComponent>(camera).FieldOfView;
+		SetEditorView(view);
 	}
 	// The saved sun stays as it is: a map loaded for the scene doesn't turn it to the map's sun
 	const EnvironmentComponent& environment = s_Scene.Get<EnvironmentComponent>(s_Scene.FindFirst<EnvironmentComponent>());
