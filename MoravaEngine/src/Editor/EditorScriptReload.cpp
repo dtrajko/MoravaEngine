@@ -2,7 +2,7 @@
 // project's script assembly (Project Settings: Script Assembly). A newer build is loaded once the file has stopped
 // changing (dotnet build writes the DLL and its PDB), while the game isn't running: the old assembly is unloaded first and
 // must be collected (ScriptHost reports what still holds it), then the new one is read from bytes and its classes and
-// fields replace the old ones in the Properties panel. A build during Play waits for Stop; the game keeps the scripts it
+// fields replace the old ones in the Inspector. A build during Play waits for Stop; the game keeps the scripts it
 // started with. The player doesn't reload: a shipped game's scripts don't change.
 
 

@@ -1,4 +1,4 @@
-// The Properties panel, with the models', the water's and the probe volume's controls, and the retired Models and Meshes and Water panels
+// The Inspector, with the models', the water's and the probe volume's controls, and the retired Models and Meshes and Water panels
 
 
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
@@ -40,7 +40,7 @@
 
 using namespace EnvMapVulkanSceneData;
 
-// The Properties panel's controls of the probe volume
+// The Inspector's controls of the probe volume
 static void ProbeVolumeControls(EnvMapVulkanProbeVolumeSettings& probes)
 {
 	ImGui::Checkbox("Light the Scene", &probes.Enabled);
@@ -924,7 +924,7 @@ static void PhysicsControls(EnvMapVulkanEntityID model)
 
 // A model's properties: its transform, the selected part's transform (when a part of it is selected), its physics, the
 // input test and its script, removing the model or the part, the animation (skinned models) and the material slots of its parts. Used by
-// the Models and Meshes panel and the Properties panel.
+// the Models and Meshes panel and the Inspector.
 static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 {
 	const int selectedMeshIndex = GetSelectedModel() == selectedModel ? GetSelectedMeshIndex() : -1;
@@ -972,6 +972,7 @@ static void ModelPropertiesControls(EnvMapVulkanEntityID selectedModel)
 	PhysicsControls(selectedModel);
 	InputTestControls(selectedModel);
 	ScriptPropertiesControls(selectedModel);
+	AudioControls(selectedModel);
 
 	ImGui::Separator();
 	if (ImGui::Button("Remove Model"))
@@ -1277,10 +1278,10 @@ void OnImGuiRenderModelsAndMeshes()
 	ImGui::End();
 }
 
-void OnImGuiRenderProperties()
+void OnImGuiRenderInspector()
 {
 	ImGui::SetNextWindowSize(ImVec2(360.0f, 520.0f), ImGuiCond_FirstUseEver);
-	ImGui::Begin("Properties");
+	ImGui::Begin("Inspector");
 
 	const EnvMapVulkanEntityID entity = s_EditorSelection.GetPrimary();
 	if (!s_Scene.Exists(entity))
@@ -1441,14 +1442,32 @@ void OnImGuiRenderProperties()
 			}
 			break;
 		}
+		case EntityKind::Sound:
+		{
+			if (ImGui::Button("Delete Sound"))
+			{
+				DeleteEntity(entity);
+				ImGui::End();
+				return;
+			}
+			TransformComponent& transform = s_Scene.Get<TransformComponent>(entity);
+			ImGui::DragFloat3("Translation", &transform.Translation.x, 0.1f);
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("Where the sound is heard from (Spatial), relative to its parent. The gizmo moves it too.");
+			}
+			break;
+		}
 		default:
 			break;
 	}
 
-	// The C# script of any other entity (a camera that follows the player); a model's is with its physics above
+	// The C# script and the sound of any other entity (a camera that follows the player, and listens); a model's are
+	// with its physics above
 	if (kind != EntityKind::Environment && kind != EntityKind::Model && kind != EntityKind::Part)
 	{
 		ScriptPropertiesControls(entity);
+		AudioControls(entity);
 	}
 
 	ImGui::End();

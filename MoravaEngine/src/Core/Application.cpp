@@ -13,6 +13,7 @@
 #include "Core/Timer.h"
 #include "Material/MaterialLibrary.h"
 #include "Core/Util.h"
+#include "Audio/AudioEngine.h"
 #include "Physics/PhysicsWorld.h"
 #include "Scripting/ScriptHost.h"
 #include "Renderer/RendererBasic.h"
@@ -161,6 +162,9 @@ void Application::OnInit()
 
 	// .NET, once for the process (C# scripting): the runtime starts here, a game's scripts are loaded later
 	ScriptHost::Initialize();
+
+	// The audio device, once for the process (a game's sounds are made in it when it starts)
+	AudioEngine::Initialize();
 
 	m_SceneProperties = m_Client->CreateScene();
 	InitializeScene(m_SceneProperties);
@@ -444,6 +448,7 @@ void Application::OnShutdown()
 
 	PhysicsWorld::Shutdown(); // after the scene and the layers, whose physics worlds are gone with them
 	ScriptHost::Shutdown();  // the same: their script instances are gone
+	AudioEngine::Shutdown(); // and their sounds
 }
 
 void Application::InitWindow(WindowSpecification windowSpecification)

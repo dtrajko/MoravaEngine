@@ -1,4 +1,4 @@
-// The lights' properties and shadow settings (Properties panel), the shadow map viewers, and the retired Lights panel
+// The lights' properties and shadow settings (Inspector), the shadow map viewers, and the retired Lights panel
 
 
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
@@ -329,7 +329,7 @@ static void LightRangeProperty(float& range)
 }
 
 // The selected light's properties (the sun, a point or a spot light), edited on this frame's copy (s_Lights) and written
-// back into its entity at the end. Used by the Lights panel and the Properties panel.
+// back into its entity at the end. Used by the Lights panel and the Inspector.
 void LightPropertiesControls()
 {
 	EnvMapVulkanLightEnvironment before = s_Lights;

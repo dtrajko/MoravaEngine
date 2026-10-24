@@ -1,4 +1,4 @@
-// The Properties panel's Script section (docs/engine/Game_Engine_Runtime_Guide.html, 4.5): the entity's C# script class
+// The Inspector's Script section (docs/engine/Game_Engine_Runtime_Guide.html, 4.5): the entity's C# script class
 // and its public fields. Editing, a field set here is saved with the scene and given to the script before its OnCreate;
 // the others show the value the class gives them. While the game runs, the fields are the running script's, as they are
 // now: a change reaches it at once and lasts until Stop.

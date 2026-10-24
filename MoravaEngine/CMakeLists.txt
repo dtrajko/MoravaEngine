@@ -505,6 +505,29 @@ target_include_directories(ImGuizmo PUBLIC
 target_link_libraries(ImGuizmo PUBLIC imgui)
 
 # =========================================================
+# MINIAUDIO (audio, Phase 5)
+# =========================================================
+
+# One C file: miniaudio's implementation with stb_vorbis (src/Audio/MiniaudioLibrary.c). Not miniaudio's own CMakeLists,
+# which looks for libvorbis and libopus. A vendor's warnings are off
+add_library(miniaudio STATIC ${CMAKE_CURRENT_SOURCE_DIR}/src/Audio/MiniaudioLibrary.c)
+target_include_directories(miniaudio PUBLIC ${ROOT_PATH_ABS}/vendor/cross-platform/miniaudio)
+if(MSVC)
+    target_compile_options(miniaudio PRIVATE /w)
+else()
+    target_compile_options(miniaudio PRIVATE -w)
+endif()
+if(APPLE)
+    # Linked to Core Audio, not loading it at runtime (miniaudio's default, which Apple's notarization can refuse)
+    target_compile_definitions(miniaudio PUBLIC MA_NO_RUNTIME_LINKING)
+    target_link_libraries(miniaudio PUBLIC "-framework CoreFoundation" "-framework CoreAudio" "-framework AudioToolbox")
+elseif(UNIX)
+    # ALSA, PulseAudio and JACK are loaded at runtime (a computer without them plays through the null device)
+    find_package(Threads REQUIRED)
+    target_link_libraries(miniaudio PUBLIC Threads::Threads m ${CMAKE_DL_LIBS})
+endif()
+
+# =========================================================
 # LINKING
 # =========================================================
 
@@ -529,6 +552,8 @@ target_link_libraries(MoravaCore PUBLIC
 
     # PUBLIC: Jolt checks at startup that the program was compiled with its JPH_* defines (and for its CPU)
     Jolt
+
+    miniaudio
 )
 
 if(TARGET spirv-cross-core)

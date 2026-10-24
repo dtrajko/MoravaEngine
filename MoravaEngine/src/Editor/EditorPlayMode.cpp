@@ -12,11 +12,13 @@
 //
 // Simulate (3.7): the same copy of the scene and the same game loop, with physics but without the game's logic (the input
 // test and the scripts) and without input. The view stays the editor's camera and the viewport keeps its tools
-// (select, gizmo, the Properties panel shows the bodies moving), as while paused. At Stop the view stays where it is.
+// (select, gizmo, the Inspector shows the bodies moving), as while paused. At Stop the view stays where it is.
 //
 // Scripts (4.5): a script that throws pauses Play, with a notification (the exception is in the log with its file and
 // line), so the scene is there to look at as it was. Play on, or Step, carries on.
 
+
+#include "Audio/AudioEngine.h"
 
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
@@ -277,6 +279,8 @@ void UpdatePlayMode(H2M::CameraH2M* camera, float frameTime)
 	{
 		return;
 	}
+	// Paused, the sounds stop where they are (a Step doesn't play them: its frame is too short to hear)
+	AudioEngine::SetPaused(s_Paused);
 
 	// Simulate: the game loop alone (no input, the editor's view)
 	if (s_PlayState == PlayState::Simulate)
@@ -343,6 +347,11 @@ const InputSystem* GetGameInput()
 ScenePhysics* GetGamePhysics()
 {
 	return IsPlaying() ? &s_GameSystems.GetPhysics() : nullptr;
+}
+
+SceneAudio* GetGameAudio()
+{
+	return s_PlayState == PlayState::Play ? &s_GameSystems.GetAudio() : nullptr;
 }
 
 ScriptRuntime* GetGameScripts()

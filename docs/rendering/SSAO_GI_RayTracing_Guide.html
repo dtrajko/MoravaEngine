@@ -462,7 +462,7 @@ layout (std430, set = 0, binding = 17) readonly buffer Materials { GPUMaterial u
   </figure>
 
   <h3>C.1 The ECS component</h3>
-  <p>The probe volume is an entity like the water (at most one per scene): added from the Scene Hierarchy's Add menu, selectable there, edited in Properties, moved and sized with the gizmo (it can't be turned), and saved in the <code>.mscene</code> file by <code>EnvMapVulkanSceneSerializer</code>. Its box is the entity's transform: translation = center, scale = size in meters. <b>Fit to Scene</b> in its Properties sets both from the bounding box of all models, with a small margin, and the box is outlined in the viewport while the volume is selected.</p>
+  <p>The probe volume is an entity like the water (at most one per scene): added from the Scene Hierarchy's Add menu, selectable there, edited in the Inspector, moved and sized with the gizmo (it can't be turned), and saved in the <code>.mscene</code> file by <code>EnvMapVulkanSceneSerializer</code>. Its box is the entity's transform: translation = center, scale = size in meters. <b>Fit to Scene</b> in its Properties sets both from the bounding box of all models, with a small margin, and the box is outlined in the viewport while the volume is selected.</p>
 <pre><code><span class="c">// EnvMapVulkanProbes.h: the component holds these settings (ProbeVolumeComponent in EnvMapVulkanComponents.h)</span>
 struct EnvMapVulkanProbeVolumeSettings
 {

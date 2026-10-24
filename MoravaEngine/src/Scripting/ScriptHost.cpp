@@ -372,7 +372,7 @@ bool ScriptHost::LoadGameAssembly(const fs::path& path)
 	s_GameAssemblyPath = path;
 	s_GameAssemblyWriteTime = writeTime;
 
-	// Its script classes and their fields, for the Properties panel and the script runtime
+	// Its script classes and their fields, for the Inspector and the script runtime
 	s_Classes.clear();
 	const int classCount = s_Managed.DescribeScripts(nullptr, ReportScriptField);
 	std::sort(s_Classes.begin(), s_Classes.end(), [](const ScriptClass& a, const ScriptClass& b) { return a.Name < b.Name; });

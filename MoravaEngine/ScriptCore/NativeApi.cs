@@ -50,6 +50,21 @@ namespace Morava
         public delegate* unmanaged<Vector3*, Vector3*, Quaternion*, uint, ulong*, int, int> Physics_OverlapBox;
 
         public delegate* unmanaged<NativeTime*, void> Time_Get;
+
+        public delegate* unmanaged<ulong, int> AudioSource_Play;
+        public delegate* unmanaged<ulong, int> AudioSource_Pause;
+        public delegate* unmanaged<ulong, int> AudioSource_Stop;
+        public delegate* unmanaged<ulong, int> AudioSource_IsPlaying;
+        public delegate* unmanaged<ulong, NativeAudioSettings*, int> AudioSource_GetSettings;
+        public delegate* unmanaged<ulong, NativeAudioSettings*, int> AudioSource_SetSettings;
+        public delegate* unmanaged<ulong, char*, int, int> AudioSource_GetClip;
+        public delegate* unmanaged<ulong, char*, int, int> AudioSource_SetClip;
+        public delegate* unmanaged<ulong, int*, int> AudioListener_GetActive;
+        public delegate* unmanaged<ulong, int, int> AudioListener_SetActive;
+
+        public delegate* unmanaged<char*, int, Vector3*, int, float, float, int> Audio_PlayOneShot;
+        public delegate* unmanaged<float*, void> Audio_GetVolumes;
+        public delegate* unmanaged<float*, void> Audio_SetVolumes;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -74,6 +89,16 @@ namespace Morava
         public Vector3 Point;
         public Vector3 Normal;
         public float Distance;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct NativeAudioSettings
+    {
+        public float Volume, Pitch;
+        public float MinDistance, MaxDistance;
+        public int Bus;
+        public int Loop, Spatial;
+        public int Reserved;
     }
 
     [StructLayout(LayoutKind.Sequential)]

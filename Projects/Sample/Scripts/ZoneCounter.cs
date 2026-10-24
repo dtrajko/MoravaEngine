@@ -13,7 +13,7 @@ namespace Sample
         /// <summary>Also say when something leaves.</summary>
         public bool ReportExits = true;
 
-        /// <summary>How many bodies are inside now (the Properties panel shows it while the game runs).</summary>
+        /// <summary>How many bodies are inside now (the Inspector shows it while the game runs).</summary>
         public int Inside;
 
         protected override void OnTriggerEnter(Entity other)

@@ -7,7 +7,7 @@ namespace Sample
     /// <summary>
     /// The ball of Roll a Ball: Move pushes it (forward being away from the camera), Jump hops it off the ground. It needs
     /// a Rigid Body (Dynamic) and a sphere Collider: physics rolls it. It counts the pickups it collects (Pickup calls
-    /// Collect) and says the score in the log.
+    /// Collect), says the score in the log, and plays a sound for each pickup, each jump and the win.
     /// </summary>
     public class BallController : Entity
     {
@@ -20,8 +20,13 @@ namespace Sample
         /// <summary>Forward is where this entity looks (none: along -Z).</summary>
         public Entity? Camera;
 
-        /// <summary>The pickups collected (the Properties panel shows it while the game runs).</summary>
+        /// <summary>The pickups collected (the Inspector shows it while the game runs).</summary>
         public int Score;
+
+        /// <summary>The sounds, relative to the project (empty: none).</summary>
+        public string PickupSound = "Assets/Audio/Pickup.wav";
+        public string JumpSound = "Assets/Audio/Jump.wav";
+        public string WinSound = "Assets/Audio/Win.wav";
 
         Rigidbody body = null!;
         float radius;
@@ -50,6 +55,8 @@ namespace Sample
             {
                 Vector3 velocity = body.LinearVelocity;
                 body.LinearVelocity = new Vector3(velocity.X, JumpSpeed, velocity.Z);
+                if (JumpSound.Length > 0)
+                    Audio.PlayOneShot(JumpSound, WorldPosition, 0.6f);
             }
         }
 
@@ -58,8 +65,15 @@ namespace Sample
         {
             Score++;
             Log.Info($"Score: {Score} / {total} ({pickup.Name})");
+            // From where the pickup was, a little higher each time
+            if (PickupSound.Length > 0)
+                Audio.PlayOneShot(PickupSound, pickup.WorldPosition, 0.8f, AudioBus.Effects, 1.0f + 0.04f * (Score - 1));
             if (Score == total)
+            {
                 Log.Info($"You win! All {total} pickups in {Time.GameTime:0.0} s");
+                if (WinSound.Length > 0)
+                    Audio.PlayOneShot(WinSound);
+            }
         }
     }
 }

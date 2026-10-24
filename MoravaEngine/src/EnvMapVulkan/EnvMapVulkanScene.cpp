@@ -509,7 +509,7 @@ bool EnvMapVulkanScene::SelfTest()
 		return fail("world transform");
 	}
 
-	// Tags: trimmed, each once, as the Properties panel's text and back
+	// Tags: trimmed, each once, as the Inspector's text and back
 	{
 		TagComponent tags;
 		tags.FromText(" Pickup, ,Coin,Pickup ");

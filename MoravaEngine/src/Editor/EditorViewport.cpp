@@ -23,6 +23,7 @@
 #include "ImGuizmo.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/component_wise.hpp>
 #include <glm/gtx/quaternion.hpp>
 
@@ -354,6 +355,92 @@ static void DrawLightGizmos()
 	}
 
 	drawList->PopClipRect();
+}
+
+// A speaker: a box and a cone facing right, with two sound arcs while it plays; a white ring when selected
+static void DrawSoundIcon(ImDrawList* drawList, const ImVec2& c, bool playing, bool selected)
+{
+	const ImU32 color = playing ? IM_COL32(80, 235, 210, 255) : IM_COL32(80, 170, 160, 200);
+	drawList->AddCircleFilled(c, 11.0f, IM_COL32(0, 0, 0, 150));
+	drawList->AddRectFilled(ImVec2(c.x - 6.0f, c.y - 2.5f), ImVec2(c.x - 2.5f, c.y + 2.5f), color);
+	drawList->AddTriangleFilled(ImVec2(c.x - 3.0f, c.y - 2.5f), ImVec2(c.x + 2.0f, c.y - 6.5f), ImVec2(c.x + 2.0f, c.y + 6.5f), color);
+	drawList->AddTriangleFilled(ImVec2(c.x - 3.0f, c.y + 2.5f), ImVec2(c.x - 3.0f, c.y - 2.5f), ImVec2(c.x + 2.0f, c.y + 6.5f), color);
+	if (playing)
+	{
+		drawList->PathArcTo(c, 6.0f, -0.7f, 0.7f, 8);
+		drawList->PathStroke(color, 0, 1.5f);
+		drawList->PathArcTo(c, 9.0f, -0.7f, 0.7f, 8);
+		drawList->PathStroke(color, 0, 1.5f);
+	}
+	if (selected)
+	{
+		drawList->AddCircle(c, 15.0f, IM_COL32(0, 0, 0, 150), 0, 4.0f);
+		drawList->AddCircle(c, 15.0f, IM_COL32(255, 255, 255, 230), 0, 2.0f);
+	}
+}
+
+// The Audio debug view (5.3): a speaker icon on every sound (bright while it plays), and the selected spatial sound's
+// distances: Min (full volume inside) and Max (no softer beyond) as three circles each. Not depth tested, as the lights
+static void DrawAudioGizmos()
+{
+	if (!s_ShowAudioGizmos || s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
+	{
+		return;
+	}
+	const glm::mat4 viewProjection = (*s_Camera).GetViewProjection();
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	drawList->PushClipRect(s_ViewportImageMin, ImVec2(s_ViewportImageMin.x + s_ViewportImageSize.x, s_ViewportImageMin.y + s_ViewportImageSize.y), true);
+	const EnvMapVulkanEntityID selected = s_EditorSelection.GetPrimary();
+	SceneAudio* game = GetGameAudio();
+	s_Scene.Each<AudioSourceComponent>([&](EnvMapVulkanEntityID entity, AudioSourceComponent& source)
+	{
+		const glm::vec3 position = glm::vec3(s_Scene.GetWorldTransform(entity)[3]);
+		if (entity == selected && source.Spatial)
+		{
+			const glm::vec3 x(1.0f, 0.0f, 0.0f), y(0.0f, 1.0f, 0.0f), z(0.0f, 0.0f, 1.0f);
+			for (int i = 0; i < 2; i++)
+			{
+				const float radius = i == 0 ? source.MinDistance : source.MaxDistance;
+				const ImU32 color = i == 0 ? IM_COL32(80, 235, 210, 200) : IM_COL32(80, 235, 210, 90);
+				DrawWorldCircle(drawList, viewProjection, position, x, y, radius, color);
+				DrawWorldCircle(drawList, viewProjection, position, x, z, radius, color);
+				DrawWorldCircle(drawList, viewProjection, position, y, z, radius, color);
+			}
+		}
+		ImVec2 pixel;
+		if (ProjectToViewport(viewProjection, position, pixel))
+		{
+			DrawSoundIcon(drawList, pixel, game && game->IsPlaying(entity), s_EditorSelection.IsSelected(entity));
+		}
+	});
+	drawList->PopClipRect();
+}
+
+// The sound whose icon is under the mouse (the nearest one within 12 pixels)
+static EnvMapVulkanEntityID PickSoundIcon()
+{
+	if (!s_ShowAudioGizmos)
+	{
+		return NoEntity;
+	}
+	const glm::mat4 viewProjection = (*s_Camera).GetViewProjection();
+	const ImVec2 mouse = ImGui::GetMousePos();
+	float nearest = 12.0f * 12.0f;
+	EnvMapVulkanEntityID found = NoEntity;
+	s_Scene.Each<AudioSourceComponent>([&](EnvMapVulkanEntityID entity, AudioSourceComponent&)
+	{
+		ImVec2 pixel;
+		if (ProjectToViewport(viewProjection, glm::vec3(s_Scene.GetWorldTransform(entity)[3]), pixel))
+		{
+			const float dx = pixel.x - mouse.x, dy = pixel.y - mouse.y;
+			if (dx * dx + dy * dy < nearest)
+			{
+				nearest = dx * dx + dy * dy;
+				found = entity;
+			}
+		}
+	});
+	return found;
 }
 
 // The physics debug views (the Physics panel): colliders, contacts and the query test, as thin lines over the scene (not
@@ -710,6 +797,7 @@ void OnImGuiRenderViewport()
 	if (!gameRunning)
 	{
 		DrawLightGizmos();
+		DrawAudioGizmos();
 	}
 	DrawViewportFps();
 	if (!gameRunning)
@@ -737,9 +825,14 @@ void OnImGuiRenderViewport()
 		EnvMapVulkanEntityID clickedModel = NoEntity;
 		LightKind lightKind;
 		int lightIndex;
+		const EnvMapVulkanEntityID clickedSound = PickSoundIcon();
 		if (PickLightIcon(lightKind, lightIndex))
 		{
 			clicked = s_LightEntities.Get(lightKind, lightIndex);
+		}
+		else if (clickedSound != NoEntity)
+		{
+			clicked = clickedSound;
 		}
 		else
 		{
@@ -810,6 +903,31 @@ static void ManipulatePrimarySelection()
 				s_ProbeVolumeSettings.Center = glm::vec3(world[3]);
 				s_ProbeVolumeSettings.Size = glm::vec3(glm::length(glm::vec3(world[0])), glm::length(glm::vec3(world[1])), glm::length(glm::vec3(world[2])));
 				CommitProbeVolume(before);
+			}
+		}
+		return;
+	}
+
+	// A sound alone: translate moves it (it has no size, and only its place is heard)
+	if (const EnvMapVulkanEntityID primary = s_EditorSelection.GetPrimary(); s_Scene.Exists(primary) && GetEntityKind(primary) == EntityKind::Sound)
+	{
+		if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::TRANSLATE && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
+			float snapValues[3] = { 0.5f, 0.5f, 0.5f };
+			glm::mat4 world = glm::translate(glm::mat4(1.0f), glm::vec3(s_Scene.GetWorldTransform(primary)[3]));
+			if (ImGuizmo::Manipulate(
+				glm::value_ptr((*s_Camera).GetViewMatrix()),
+				glm::value_ptr((*s_Camera).GetProjectionMatrix()),
+				ImGuizmo::OPERATION::TRANSLATE,
+				ImGuizmo::WORLD,
+				glm::value_ptr(world),
+				nullptr,
+				Input::IsKeyPressed(KeyH2M::LeftControl) ? snapValues : nullptr))
+			{
+				SetEntityPosition(s_Scene, primary, glm::vec3(world[3]));
 			}
 		}
 		return;

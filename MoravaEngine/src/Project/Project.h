@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Audio/AudioBus.h"
 #include "Physics/PhysicsCollisionMatrix.h"
 
 #include <cstdint>
@@ -29,6 +30,7 @@ struct ProjectWindow
  *     ScriptProject: Scripts/RollABall.csproj
  *     Window: { Width: 1600, Height: 900, Fullscreen: false, VSync: true, Title: Roll a Ball }
  *     Physics: { Collisions: [Static-Dynamic, Static-Character, Dynamic-Dynamic, ...] }
+ *     Audio: { Master: 1, Music: 0.8, Effects: 1, UI: 1 }
  *
  * One project is open at a time (GetOpen): the paths in scene and material files resolve against it (ProjectPaths).
  */
@@ -47,6 +49,7 @@ struct Project
 	std::string ScriptProject;             // the scripts' .NET project (.csproj) the editor builds, relative to the project folder (empty: none)
 	ProjectWindow Window;
 	PhysicsCollisionMatrix Collisions; // the physics layers that collide (written as the pairs that do)
+	AudioVolumes Volumes;              // the master's and the buses' (the Audio panel's mixer)
 
 	std::string FilePath; // the .mproject file, absolute (not written in it)
 

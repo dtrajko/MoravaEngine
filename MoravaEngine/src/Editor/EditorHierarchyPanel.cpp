@@ -315,7 +315,7 @@ void OnImGuiRenderSceneHierarchy()
 	ImGui::SetNextWindowSize(ImVec2(320.0f, 360.0f), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Scene Hierarchy");
 
-	// Add: a model file, a light, the water
+	// Add: a model file, a light, the water, a sound
 	if (ImGui::Button("Add..."))
 	{
 		ImGui::OpenPopup("##AddEntity");
@@ -347,6 +347,15 @@ void OnImGuiRenderSceneHierarchy()
 		{
 			AddProbeVolumeAtView();
 		}
+		if (ImGui::MenuItem("Sound"))
+		{
+			AddSoundAtView();
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("A sound that belongs to no model: music, a waterfall, a humming machine.\n"
+				"Choose its clip in the Inspector. A model gets its own sound in its Audio section.");
+		}
 		ImGui::EndPopup();
 	}
 	if (ImGui::IsItemHovered())
@@ -368,7 +377,7 @@ void OnImGuiRenderSceneHierarchy()
 	}
 	ImGui::Separator();
 
-	// The tree; a new selection (from anywhere: the viewport, the Properties panel) is revealed in it
+	// The tree; a new selection (from anywhere: the viewport, the Inspector) is revealed in it
 	static EnvMapVulkanEntityID s_LastSelected = NoEntity;
 	s_RevealSelection = s_EditorSelection.GetPrimary() != s_LastSelected && s_EditorSelection.GetPrimary() != NoEntity;
 	s_LastSelected = s_EditorSelection.GetPrimary();

@@ -172,7 +172,7 @@ void Editor::OnImGuiRender()
 
 			OnImGuiRenderEnvironment();
 
-			// Retired: their functions are in the Scene Hierarchy and Properties panels (the functions are kept, not shown)
+			// Retired: their functions are in the Scene Hierarchy and the Inspector (the functions are kept, not shown)
 			// OnImGuiRenderModelsAndMeshes();
 			// OnImGuiRenderLights();
 			// OnImGuiRenderWater();
@@ -182,13 +182,14 @@ void Editor::OnImGuiRender()
 			OnImGuiRenderUnsavedChangesPopup();
 			OnImGuiRenderNotification();
 			OnImGuiRenderSceneHierarchy();
-			OnImGuiRenderProperties();
+			OnImGuiRenderInspector();
 			OnImGuiRenderMaterialLibrary();
 			OnImGuiRenderMaterialEditor();
 			OnImGuiRenderRendererStats();
 			OnImGuiRenderProjectPanel();
 			OnImGuiRenderInputPanel();
 			OnImGuiRenderPhysicsPanel();
+			OnImGuiRenderAudioPanel();
 			OnImGuiRenderScriptsPanel();
 			OnImGuiRenderConsolePanel();
 			OnImGuiRenderNewScriptDialog();
@@ -241,6 +242,7 @@ void Editor::OnImGuiRender()
 					ImGui::MenuItem("FPS in the Viewport", nullptr, &s_ShowViewportFps);
 					ImGui::MenuItem("Input", nullptr, &s_ShowInputPanel);
 					ImGui::MenuItem("Physics", nullptr, &s_ShowPhysicsPanel);
+					ImGui::MenuItem("Audio", nullptr, &s_ShowAudioPanel);
 					ImGui::MenuItem("Scripts", nullptr, &s_ShowScriptsPanel);
 					ImGui::MenuItem("Console", nullptr, &s_ShowConsolePanel);
 					ImGui::EndMenu();
@@ -310,6 +312,7 @@ void EditorPreFrame(H2M::CameraH2M* camera, float frameTime)
 	// Stop in this frame, at once)
 	UpdateScriptBuild();
 	UpdateScriptReload();
+	UpdateVisualStudio();
 
 	// The editor's copies of the scene's environment, lights, water and probe volume (see ExtractLights)
 	ExtractEnvironment();
@@ -487,7 +490,7 @@ void ExtractWater()
 	s_WaterSelected = s_WaterEntity != NoEntity && s_EditorSelection.GetPrimary() == s_WaterEntity;
 }
 
-// The probe volume, handled like the water (see EnvMapVulkanSceneData::ReadProbeVolume): the Properties panel and the
+// The probe volume, handled like the water (see EnvMapVulkanSceneData::ReadProbeVolume): the Inspector and the
 // gizmo edit s_ProbeVolumeSettings and write it back with CommitProbeVolume
 void ExtractProbeVolume()
 {

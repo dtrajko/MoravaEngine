@@ -197,7 +197,7 @@ void OnImGuiRenderProjectPanel()
 	}
 	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
 	{
-		ImGui::SetTooltip("Where scripts open: the project, an error's line (Console), a class (Properties: Edit Script).\n"
+		ImGui::SetTooltip("Where scripts open: the project, an error's line (Console), a class (Inspector: Edit Script).\n"
 			"Automatic: the first one found of Visual Studio, VS Code and Rider. An editor setting on this computer");
 	}
 	ImGui::EndDisabled();

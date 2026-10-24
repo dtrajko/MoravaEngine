@@ -92,7 +92,7 @@ void CreateEnvironmentEntity()
 
 // The camera is an entity with a CameraComponent (one per scene, as the environment and the sun): its transform is where
 // the editor's camera is and where it looks. SyncCamera keeps the two the same, every frame: flying the camera in the
-// viewport moves the entity, and a transform that changed without the camera (edited in Properties, or an opened
+// viewport moves the entity, and a transform that changed without the camera (edited in the Inspector, or an opened
 // scene's) moves the camera.
 static EnvMapVulkanEntityID s_CameraEntity = NoEntity;
 static glm::vec3 s_SyncedCameraRotation = glm::vec3(0.0f);
@@ -550,6 +550,7 @@ EntityKind GetEntityKind(EnvMapVulkanEntityID entity)
 	if (s_Scene.Has<ProbeVolumeComponent>(entity)) return EntityKind::ProbeVolume;
 	if (s_Scene.Has<EnvironmentComponent>(entity)) return EntityKind::Environment;
 	if (s_Scene.Has<CameraComponent>(entity))      return EntityKind::Camera;
+	if (s_Scene.Has<AudioSourceComponent>(entity)) return EntityKind::Sound; // a sound alone (a model's is the model's)
 	return EntityKind::Other;
 }
 
@@ -566,6 +567,7 @@ const char* GetEntityKindName(EntityKind kind)
 		case EntityKind::ProbeVolume: return "Probe Volume";
 		case EntityKind::Model:       return "Model";
 		case EntityKind::Part:        return "Mesh (part of a model)";
+		case EntityKind::Sound:       return "Sound";
 		default:                      return "Entity";
 	}
 }
@@ -584,6 +586,7 @@ ImU32 GetEntityKindColor(EntityKind kind)
 		case EntityKind::ProbeVolume: return IM_COL32(190, 130, 255, 255);
 		case EntityKind::Model:       return IM_COL32(200, 200, 210, 255);
 		case EntityKind::Part:        return IM_COL32(140, 140, 150, 255);
+		case EntityKind::Sound:       return IM_COL32(80, 220, 200, 255);
 		default:                      return IM_COL32(128, 128, 128, 255);
 	}
 }
@@ -592,7 +595,7 @@ ImU32 GetEntityKindColor(EntityKind kind)
 // environment, the sun and the water stay at the top (the water is always level: a parent could tilt it).
 bool CanBeReparented(EntityKind kind)
 {
-	return kind == EntityKind::Model || kind == EntityKind::PointLight || kind == EntityKind::SpotLight;
+	return kind == EntityKind::Model || kind == EntityKind::PointLight || kind == EntityKind::SpotLight || kind == EntityKind::Sound;
 }
 
 bool CanHaveChildren(EntityKind kind)
@@ -603,7 +606,7 @@ bool CanHaveChildren(EntityKind kind)
 bool CanBeDeleted(EntityKind kind)
 {
 	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
-		kind == EntityKind::Water || kind == EntityKind::ProbeVolume;
+		kind == EntityKind::Water || kind == EntityKind::ProbeVolume || kind == EntityKind::Sound;
 }
 
 // Removes an entity (and its children): a model or a part at the start of the next frame (its GPU resources may be in use),
@@ -628,9 +631,24 @@ void DeleteEntity(EnvMapVulkanEntityID entity)
 		case EntityKind::ProbeVolume:
 			RemoveProbeVolumeEntity();
 			break;
+		case EntityKind::Sound:
+			s_Scene.DestroyEntity(entity);
+			s_EditorSelection.Sync();
+			break;
 		default:
 			break;
 	}
+}
+
+// A sound alone (5.3): an entity with an Audio Source, where the camera looks, selected. Its clip is chosen in the Inspector
+void AddSoundAtView()
+{
+	const EnvMapVulkanEntityID entity = s_Scene.CreateEntity("Sound");
+	s_Scene.Get<TransformComponent>(entity).Translation = GetLightSpawnTarget() + glm::vec3(0.0f, 1.0f, 0.0f);
+	AudioSourceComponent& source = s_Scene.Add<AudioSourceComponent>(entity);
+	source.Loop = true;
+	source.PlayOnStart = true;
+	s_EditorSelection.SetPrimary(entity);
 }
 
 // New lights and the water go where the camera looks (see GetLightSpawnTarget), selected

@@ -122,6 +122,14 @@ bool Project::Load(const std::string& filepath, Project& project, std::string& e
 			project.Collisions.Set(a, b, true);
 		}
 	}
+	if (YAML::Node audio = node["Audio"]; audio && audio.IsMap())
+	{
+		project.Volumes.Master = audio["Master"].as<float>(project.Volumes.Master);
+		for (int i = 0; i < (int)AudioBus::Count; i++)
+		{
+			project.Volumes.Buses[i] = audio[GetAudioBusName((AudioBus)i)].as<float>(project.Volumes.Buses[i]);
+		}
+	}
 	return true;
 }
 
@@ -158,6 +166,13 @@ bool Project::Save(std::string& error) const
 	}
 	out << YAML::EndSeq;
 	out << YAML::EndMap;
+	out << YAML::Key << "Audio" << YAML::Value << YAML::Flow << YAML::BeginMap;
+	out << YAML::Key << "Master" << YAML::Value << Volumes.Master;
+	for (int i = 0; i < (int)AudioBus::Count; i++)
+	{
+		out << YAML::Key << GetAudioBusName((AudioBus)i) << YAML::Value << Volumes.Buses[i];
+	}
+	out << YAML::EndMap;
 	out << YAML::EndMap;
 	out << YAML::EndMap;
 
@@ -175,6 +190,18 @@ bool Project::Create(const std::string& folder, Project& project, std::string& e
 {
 	std::error_code fileError;
 	const std::filesystem::path directory = std::filesystem::absolute(folder, fileError).lexically_normal();
+	// Not inside another project: its folders (Scenes, Scripts, ...) would get a project of their own
+	for (std::filesystem::path parent = directory.parent_path(); parent.has_relative_path(); parent = parent.parent_path())
+	{
+		for (const auto& entry : std::filesystem::directory_iterator(parent, fileError))
+		{
+			if (entry.path().extension() == FileExtension)
+			{
+				error = "the folder is inside the project '" + entry.path().generic_string() + "': choose one outside it";
+				return false;
+			}
+		}
+	}
 	std::filesystem::create_directories(directory, fileError);
 	if (!std::filesystem::is_directory(directory, fileError))
 	{

@@ -415,7 +415,7 @@ void OnImGuiRenderMaterialLibrary()
 			}
 			std::string file = material->GetFilePath().empty() ? "Not saved yet (*)" :
 				"File: " + material->GetFilePath() + (material->HasUnsavedChanges() ? " (unsaved changes *)" : "");
-			ImGui::SetTooltip("%s\n%s\nDrag onto a mesh in the Scene Hierarchy, the Properties panel or the viewport to assign it",
+			ImGui::SetTooltip("%s\n%s\nDrag onto a mesh in the Scene Hierarchy, the Inspector or the viewport to assign it",
 				origin.c_str(), file.c_str());
 		}
 

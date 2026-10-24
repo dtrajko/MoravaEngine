@@ -14,3 +14,11 @@ Actions:
   - Name: Jump
     Type: Button
     Bindings: [ { Key: Space }, { Gamepad: A } ]
+  - Name: Orbit         # Axis2D, degrees per second: turns the camera's view around the ball (CameraFollow)
+    Type: Axis2D
+    Bindings:
+      - { Composite: QERF, Up: R, Down: F, Left: Q, Right: E, Scale: 120 }
+      - { Gamepad: RightStick, Scale: 180, DeadZone: 0.15 }
+  - Name: SwitchCamera  # the next camera view: above, behind the ball, the ball's eyes
+    Type: Button
+    Bindings: [ { Key: C }, { Gamepad: Y } ]

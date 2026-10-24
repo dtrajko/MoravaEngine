@@ -2,6 +2,8 @@
 
 #include "EnvMapVulkan/EnvMapVulkanScene.h"
 
+#include "Audio/AudioEngine.h"
+
 #include "Core/Log.h"
 
 #include "Input/InputSystem.h"
@@ -23,11 +25,14 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 	m_Scene = scene;
 	m_Input = input;
 	m_Physics.Stop();
+	m_Audio.Stop();
+	AudioEngine::SetPaused(false);
 
 	// The scripts' API on this game (a fresh clock), or on none
 	m_ScriptContext = ScriptContext();
 	m_ScriptContext.Scene = scene;
 	m_ScriptContext.Physics = &m_Physics;
+	m_ScriptContext.Audio = &m_Audio;
 	m_ScriptContext.Input = input;
 	m_ScriptContext.FixedDeltaTime = GameLoop::FixedStep;
 	ScriptBindings::Bind();
@@ -55,9 +60,12 @@ void GameSystems::Begin(EnvMapVulkanScene* scene, InputSystem* input)
 		const Project* project = Project::GetOpen();
 		m_Physics.Start(*m_Scene, project ? project->Collisions : PhysicsCollisionMatrix());
 
-		// The scripts after the bodies: OnCreate may ask for its Rigidbody (not in Simulate: no game logic there)
+		// The sounds, mixed at the project's volumes, and the scripts after the bodies and the sounds: OnCreate may ask for
+		// its Rigidbody or play a sound (not in Simulate: no game logic there, and no sound)
 		if (m_Input)
 		{
+			AudioEngine::SetVolumes(project ? project->Volumes : AudioVolumes());
+			m_Audio.Start(*m_Scene);
 			m_Scripts.Start(*m_Scene);
 		}
 	}
@@ -235,4 +243,7 @@ void GameSystems::Update(float frameTime, float alpha)
 	// What the game destroyed in this frame
 	ScriptBindings::DestroyQueued(m_ScriptContext);
 	m_Scripts.RemoveDestroyed();
+
+	// The listener and the sounds where the frame left their entities (the sounds of destroyed ones go)
+	m_Audio.Update(frameTime);
 }

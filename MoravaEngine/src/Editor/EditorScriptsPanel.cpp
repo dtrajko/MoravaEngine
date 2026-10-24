@@ -223,7 +223,7 @@ static void InstancesSection()
 			if (ImGui::Selectable(name ? name->Name.c_str() : "(gone)", s_EditorSelection.GetPrimary() == instance.Entity,
 				ImGuiSelectableFlags_SpanAllColumns) && s_Scene.Exists(instance.Entity))
 			{
-				s_EditorSelection.SetPrimary(instance.Entity); // the Properties panel shows its fields as they are now
+				s_EditorSelection.SetPrimary(instance.Entity); // the Inspector shows its fields as they are now
 			}
 			ImGui::PopID();
 			ImGui::TableNextColumn();

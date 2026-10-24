@@ -11,7 +11,7 @@ namespace Morava
     // A script's public fields for the engine (docs/engine/Game_Engine_Runtime_Guide.html, 4.5): which ones there are, with
     // the values a new instance has, and setting and reading them by name. Reflection, never cached: a cached Type or
     // FieldInfo would hold the game's context alive (hot reload, 4.6). It runs when the game loads, when a game starts and
-    // for the one entity the Properties panel shows, not per frame and script.
+    // for the one entity the Inspector shows, not per frame and script.
     static unsafe class ScriptFields
     {
         // A class the engine creates for entities
@@ -189,7 +189,7 @@ namespace Morava
             return true;
         }
 
-        // A field's value now (the Properties panel while the game runs). A string longer than C++'s room: only its length
+        // A field's value now (the Inspector while the game runs). A string longer than C++'s room: only its length
         internal static bool Get(Entity script, string name, NativeValue* native)
         {
             FieldInfo? field = Find(script, name);

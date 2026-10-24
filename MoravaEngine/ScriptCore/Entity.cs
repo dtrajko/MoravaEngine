@@ -12,7 +12,7 @@ namespace Morava
     /// <remarks>
     /// Translation, Rotation and Scale are relative to the entity's parent (to the world without one).
     /// A script's public fields of type bool, int, float, double, string, Vector2, Vector3, Vector4, Entity (or a script
-    /// class) and enums show in the editor's Properties panel: a value set there is given to the script before its
+    /// class) and enums show in the editor's Inspector: a value set there is given to the script before its
     /// OnCreate, and the others keep the value the field's initializer gives them.
     /// </remarks>
     public unsafe class Entity : IEquatable<Entity>
@@ -59,7 +59,7 @@ namespace Morava
             set => Check(Interop.Game->Entity_SetRotation(Id, &value));
         }
 
-        /// <summary>The rotation as the Properties panel shows it: degrees around X, Y and Z (Y turns left and right).</summary>
+        /// <summary>The rotation as the Inspector shows it: degrees around X, Y and Z (Y turns left and right).</summary>
         public Vector3 EulerAngles
         {
             get { Vector3 value; Check(Interop.Game->Entity_GetEulerAngles(Id, &value)); return value; }
@@ -97,7 +97,7 @@ namespace Morava
             return v.LengthSquared() > 0 ? Vector3.Normalize(v) : v;
         }
 
-        /// <summary>The entity has this tag (Properties panel: Tags).</summary>
+        /// <summary>The entity has this tag (Inspector: Tags).</summary>
         public bool HasTag(string tag)
         {
             int result;
