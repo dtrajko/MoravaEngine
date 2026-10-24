@@ -23,8 +23,7 @@ bool s_WaterSelected = false; // the water entity is the selected entity (see Ex
 EnvMapVulkanProbeVolumeSettings s_ProbeVolumeSettings;
 EnvMapVulkanEntityID s_ProbeVolumeEntity = NoEntity; // the scene's probe volume (at most one), NoEntity: none
 
-bool s_CameraEntitySynced = false;
-glm::vec3 s_SyncedCameraTranslation = glm::vec3(0.0f);
+float s_EditorFieldOfView = 45.0f;
 bool s_SunRotationSynced = false;
 bool s_PendingSunAlign = true;             // align the sun at the start of the next frame (see EditorPreFrame) (startup, a sun extracted)
 bool s_KeepSunOnNextEnvironmentLoad = false; // an opened scene's map: its saved sun is not turned to the map's sun

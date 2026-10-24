@@ -416,6 +416,92 @@ static void DrawAudioGizmos()
 	drawList->PopClipRect();
 }
 
+// A camera: a body and a lens; a white ring when selected
+static void DrawCameraIcon(ImDrawList* drawList, const ImVec2& c, ImU32 color, bool selected)
+{
+	drawList->AddCircleFilled(c, 11.0f, IM_COL32(0, 0, 0, 150));
+	drawList->AddRectFilled(ImVec2(c.x - 6.5f, c.y - 4.0f), ImVec2(c.x + 2.5f, c.y + 4.0f), color, 1.5f);
+	drawList->AddTriangleFilled(ImVec2(c.x + 2.5f, c.y), ImVec2(c.x + 7.0f, c.y - 4.0f), ImVec2(c.x + 7.0f, c.y + 4.0f), color);
+	if (selected)
+	{
+		drawList->AddCircle(c, 15.0f, IM_COL32(0, 0, 0, 150), 0, 4.0f);
+		drawList->AddCircle(c, 15.0f, IM_COL32(255, 255, 255, 230), 0, 2.0f);
+	}
+}
+
+// The game cameras (6.3): an icon on each (bright: the primary one, which Play shows) and the view it sees as a short
+// pyramid (the selected one's longer), with the viewport's aspect ratio. Not depth tested, as the lights. The Light
+// Icons checkbox shows and hides them with the lights
+static void DrawCameraGizmos()
+{
+	if (!s_ShowLightGizmos || s_ViewportImageSize.x <= 0.0f || s_ViewportImageSize.y <= 0.0f)
+	{
+		return;
+	}
+	const glm::mat4 viewProjection = (*s_Camera).GetViewProjection();
+	ImDrawList* drawList = ImGui::GetWindowDrawList();
+	drawList->PushClipRect(s_ViewportImageMin, ImVec2(s_ViewportImageMin.x + s_ViewportImageSize.x, s_ViewportImageMin.y + s_ViewportImageSize.y), true);
+	const EnvMapVulkanEntityID primary = FindPrimaryCamera(s_Scene);
+	const float aspect = s_ViewportImageSize.x / s_ViewportImageSize.y;
+	s_Scene.Each<CameraComponent>([&](EnvMapVulkanEntityID entity, CameraComponent& camera)
+	{
+		const TransformComponent placement = GetGameCameraPlacement(s_Scene, entity);
+		const bool selected = s_EditorSelection.IsSelected(entity);
+		const ImU32 color = entity == primary ? IM_COL32(240, 120, 170, 255) : IM_COL32(170, 120, 150, 200);
+		const glm::vec3 forward = GetCameraForward(placement.Rotation);
+		const glm::vec3 right = glm::normalize(glm::cross(forward, glm::vec3(0.0f, 1.0f, 0.0f)));
+		const glm::vec3 up = glm::cross(right, forward);
+		const float depth = selected ? 3.0f : 1.2f;
+		const float halfHeight = depth * std::tan(glm::radians(camera.FieldOfView) * 0.5f);
+		const float halfWidth = halfHeight * aspect;
+		const glm::vec3 center = placement.Translation + forward * depth;
+		const glm::vec3 corners[4] = { center + up * halfHeight - right * halfWidth, center + up * halfHeight + right * halfWidth,
+			center - up * halfHeight + right * halfWidth, center - up * halfHeight - right * halfWidth };
+		const float thickness = selected ? 2.0f : 1.0f;
+		for (int i = 0; i < 4; i++)
+		{
+			DrawWorldLine(drawList, viewProjection, placement.Translation, corners[i], color, thickness);
+			DrawWorldLine(drawList, viewProjection, corners[i], corners[(i + 1) % 4], color, thickness);
+		}
+		// Which way is up in its view: a small triangle on the top edge
+		DrawWorldLine(drawList, viewProjection, corners[0] + right * halfWidth * 0.6f, center + up * halfHeight * 1.3f, color, thickness);
+		DrawWorldLine(drawList, viewProjection, center + up * halfHeight * 1.3f, corners[1] - right * halfWidth * 0.6f, color, thickness);
+		ImVec2 pixel;
+		if (ProjectToViewport(viewProjection, placement.Translation, pixel))
+		{
+			DrawCameraIcon(drawList, pixel, color, selected);
+		}
+	});
+	drawList->PopClipRect();
+}
+
+// The camera whose icon is under the mouse (the nearest one within 12 pixels)
+static EnvMapVulkanEntityID PickCameraIcon()
+{
+	if (!s_ShowLightGizmos)
+	{
+		return NoEntity;
+	}
+	const glm::mat4 viewProjection = (*s_Camera).GetViewProjection();
+	const ImVec2 mouse = ImGui::GetMousePos();
+	float nearest = 12.0f * 12.0f;
+	EnvMapVulkanEntityID found = NoEntity;
+	s_Scene.Each<CameraComponent>([&](EnvMapVulkanEntityID entity, CameraComponent&)
+	{
+		ImVec2 pixel;
+		if (ProjectToViewport(viewProjection, GetGameCameraPlacement(s_Scene, entity).Translation, pixel))
+		{
+			const float dx = pixel.x - mouse.x, dy = pixel.y - mouse.y;
+			if (dx * dx + dy * dy < nearest)
+			{
+				nearest = dx * dx + dy * dy;
+				found = entity;
+			}
+		}
+	});
+	return found;
+}
+
 // The sound whose icon is under the mouse (the nearest one within 12 pixels)
 static EnvMapVulkanEntityID PickSoundIcon()
 {
@@ -797,6 +883,7 @@ void OnImGuiRenderViewport()
 	if (!gameRunning)
 	{
 		DrawLightGizmos();
+		DrawCameraGizmos();
 		DrawAudioGizmos();
 	}
 	DrawViewportFps();
@@ -826,9 +913,14 @@ void OnImGuiRenderViewport()
 		LightKind lightKind;
 		int lightIndex;
 		const EnvMapVulkanEntityID clickedSound = PickSoundIcon();
+		const EnvMapVulkanEntityID clickedCamera = PickCameraIcon();
 		if (PickLightIcon(lightKind, lightIndex))
 		{
 			clicked = s_LightEntities.Get(lightKind, lightIndex);
+		}
+		else if (clickedCamera != NoEntity)
+		{
+			clicked = clickedCamera;
 		}
 		else if (clickedSound != NoEntity)
 		{
@@ -876,6 +968,49 @@ void OnImGuiRenderViewport()
 	ImGui::PopStyleVar();
 }
 
+// The rotate gizmo on a game camera: two rings, pitch around the camera's own right axis (red) and yaw around the
+// world's vertical axis (green), in a frame that turns with the camera but stays level, so the yaw ring stays flat
+// however far it looks down. No roll ring: a camera isn't rolled. Ctrl snaps to 15 degrees
+static void ManipulateCameraRotation(EnvMapVulkanEntityID entity, bool snap)
+{
+	TransformComponent& local = s_Scene.Get<TransformComponent>(entity);
+	const TransformComponent placement = GetGameCameraPlacement(s_Scene, entity);
+	const float parentYaw = placement.Rotation.y - local.Rotation.y; // a child turns with its parent
+	const glm::vec3 forward = GetCameraForward(placement.Rotation);
+	const glm::vec3 up(0.0f, 1.0f, 0.0f);
+	const glm::vec3 flat = glm::normalize(glm::vec3(forward.x, 0.0f, forward.z)); // the pitch stays within 89 degrees
+	const glm::vec3 right = glm::normalize(glm::cross(flat, up));
+	glm::mat4 frame(1.0f);
+	frame[0] = glm::vec4(right, 0.0f);
+	frame[1] = glm::vec4(up, 0.0f);
+	frame[2] = glm::vec4(-flat, 0.0f);
+	frame[3] = glm::vec4(placement.Translation, 1.0f);
+	// The view's direction in that frame: the gizmo turns the frame, and the view with it
+	const glm::vec3 localForward = glm::transpose(glm::mat3(frame)) * forward;
+
+	glm::mat4 result = frame;
+	float snapValues[3] = { 15.0f, 15.0f, 15.0f };
+	if (!ImGuizmo::Manipulate(
+		glm::value_ptr((*s_Camera).GetViewMatrix()),
+		glm::value_ptr((*s_Camera).GetProjectionMatrix()),
+		ImGuizmo::OPERATION::ROTATE_X | ImGuizmo::OPERATION::ROTATE_Y,
+		ImGuizmo::LOCAL,
+		glm::value_ptr(result),
+		nullptr,
+		snap ? snapValues : nullptr))
+	{
+		return;
+	}
+
+	// Back to the camera's angles (as GetCameraForward has them): x down, y to the left, 0 along -Z
+	const glm::vec3 turned = glm::normalize(glm::mat3(result) * localForward);
+	const float pitch = glm::degrees(std::asin(glm::clamp(-turned.y, -1.0f, 1.0f)));
+	float yaw = -glm::degrees(std::atan2(turned.z, turned.x)) - 90.0f - parentYaw;
+	yaw = std::fmod(yaw, 360.0f);
+	yaw += yaw > 180.0f ? -360.0f : (yaw <= -180.0f ? 360.0f : 0.0f);
+	local.Rotation = glm::vec3(glm::clamp(pitch, -89.0f, 89.0f), yaw, 0.0f);
+}
+
 // The gizmo on the primary selected entity (s_EditorSelection.GetPrimary()): a light (the sun turns), the water, a part of a model or a model
 static void ManipulatePrimarySelection()
 {
@@ -908,10 +1043,20 @@ static void ManipulatePrimarySelection()
 		return;
 	}
 
-	// A sound alone: translate moves it (it has no size, and only its place is heard)
-	if (const EnvMapVulkanEntityID primary = s_EditorSelection.GetPrimary(); s_Scene.Exists(primary) && GetEntityKind(primary) == EntityKind::Sound)
+	// A sound alone or a game camera: translate moves it (a sound has no size, and only its place is heard); rotate aims a
+	// camera (pitch and yaw only: it isn't rolled)
+	if (const EnvMapVulkanEntityID primary = s_EditorSelection.GetPrimary(); s_Scene.Exists(primary) &&
+		(GetEntityKind(primary) == EntityKind::Sound || GetEntityKind(primary) == EntityKind::Camera))
 	{
-		if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::TRANSLATE && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+		if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::ROTATE && GetEntityKind(primary) == EntityKind::Camera &&
+			s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
+		{
+			ImGuizmo::SetOrthographic(false);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(s_ViewportImageMin.x, s_ViewportImageMin.y, s_ViewportImageSize.x, s_ViewportImageSize.y);
+			ManipulateCameraRotation(primary, Input::IsKeyPressed(KeyH2M::LeftControl));
+		}
+		else if (Scene::s_ImGuizmoType == ImGuizmo::OPERATION::TRANSLATE && s_ViewportImageSize.x > 0.0f && s_ViewportImageSize.y > 0.0f)
 		{
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();

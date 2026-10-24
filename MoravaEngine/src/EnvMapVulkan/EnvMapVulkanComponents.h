@@ -154,17 +154,26 @@ struct ProbeVolumeComponent
 	EnvMapVulkanProbeVolumeSettings Settings;
 };
 
-// The camera the scene is seen through in the editor (one per scene). Its placement is the entity's transform:
-// translation = where it is, rotation = where it looks: x down (positive) and up (pitch), y around the vertical axis (0 looks along
-// -Z, positive turns to the left). It isn't rolled or scaled. Saved with the scene, so an opened scene is seen as it was.
+// A game camera (docs/engine/Game_Engine_Runtime_Guide.html, 6.3): the game is seen through the primary one (the first
+// with Primary). Its placement is the entity's world transform: translation = where it is, rotation = where it looks: x
+// down (positive) and up (pitch), y around the vertical axis (0 looks along -Z, positive turns to the left); it isn't
+// rolled. The editor has a view of its own (the scene file's EditorCamera), which Edit and Simulate show; Play shows this.
 struct CameraComponent
 {
+	bool Primary = true;
+
 	// The angle the view spans from its bottom edge to its top edge, in degrees. Small: a telephoto lens (flat, distant
 	// things stay large); large: a wide-angle lens (strong perspective, stretched towards the edges).
 	float FieldOfView = 45.0f;
 
+	// Meters: nothing nearer or farther is drawn. A far plane far away from a near plane very near makes distant surfaces
+	// flicker into each other (the depth buffer's precision)
+	float NearClip = 0.01f;
+	float FarClip = 1000.0f;
+
 	static constexpr float MinFieldOfView = 10.0f;
 	static constexpr float MaxFieldOfView = 120.0f;
+	static constexpr float MinNearClip = 0.001f;
 };
 
 // The environment: the HDR map the scene is lit by and its skybox (one per scene)
@@ -288,7 +297,7 @@ struct AudioSourceComponent
 };
 
 // Where the game is heard from: its position and the way it faces (-Z: forward, Y: up). Usually on the camera. Without one
-// (or none Active), the scene's camera is the listener
+// (or none Active), the primary game camera is the listener
 struct AudioListenerComponent
 {
 	bool Active = true;

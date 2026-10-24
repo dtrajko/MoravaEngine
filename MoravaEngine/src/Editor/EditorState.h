@@ -15,6 +15,7 @@
 #include "EnvMapVulkan/EnvMapVulkanLights.h"
 #include "EnvMapVulkan/EnvMapVulkanMaterialLibrary.h"
 #include "EnvMapVulkan/EnvMapVulkanSceneData.h"
+#include "EnvMapVulkan/EnvMapVulkanSceneSerializer.h"
 
 #include "Core/Window.h"
 
@@ -73,9 +74,8 @@ extern bool s_WaterSelected;
 extern EnvMapVulkanProbeVolumeSettings s_ProbeVolumeSettings;
 extern EnvMapVulkanEntityID s_ProbeVolumeEntity;
 
-// The camera entity follows the editor's camera (SyncCamera): its transform as last synced, and whether it was
-extern bool s_CameraEntitySynced;
-extern glm::vec3 s_SyncedCameraTranslation;
+// The editor's view's field of view (View > Editor Camera; saved with the scene's EditorCamera)
+extern float s_EditorFieldOfView;
 // The sun follows the environment's rotation (SyncSunWithEnvironmentRotation): false makes it start over from the rotation now
 extern bool s_SunRotationSynced;
 // The sun is turned to the environment map's sun at the start of the next frame (startup, a sun extracted); not for the
@@ -313,11 +313,14 @@ void RequestEnvironmentMap(const std::string& filepath);
 // The scene's environment entity: the default settings, with the map loaded now
 void CreateEnvironmentEntity();
 
-// A scene without a camera entity gets one (a new scene, a scene saved before cameras were entities): where the
-// editor's camera is now, written by the next SyncCamera
-void EnsureCameraEntity();
-
-void SyncCamera(H2M::CameraH2M* camera);
+// The editor's view (6.3, EditorSceneEdits.cpp): where the editor's camera is and looks, and its field of view; Set
+// shows another one from the next frame (an opened scene's, the one from before Play)
+EnvMapVulkanSceneSerializer::EditorView GetEditorView();
+void SetEditorView(const EnvMapVulkanSceneSerializer::EditorView& view);
+// A game camera where the editor looks from (a new scene's, Add > Camera), primary when the scene had none
+EnvMapVulkanEntityID CreateCameraAtView(const std::string& name = "Camera");
+// Each frame in Edit and Simulate: the view to show and the editor's lens
+void UpdateEditorCamera(H2M::CameraH2M* camera);
 
 // Sets a part's transform to an exact matrix (the gizmo's result, Reset Mesh): the mesh gets the matrix as it is, the
 // part's transform its decomposition

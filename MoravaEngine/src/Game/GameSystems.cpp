@@ -1,6 +1,7 @@
 #include "GameSystems.h"
 
 #include "EnvMapVulkan/EnvMapVulkanScene.h"
+#include "EnvMapVulkan/EnvMapVulkanSceneData.h"
 
 #include "Audio/AudioEngine.h"
 
@@ -116,7 +117,7 @@ InputMap GameSystems::LoadInputMap()
 static void GetCameraGroundAxes(EnvMapVulkanScene& scene, glm::vec3& forward, glm::vec3& right)
 {
 	float yaw = 0.0f;
-	const EnvMapVulkanEntityID camera = scene.FindFirst<CameraComponent>();
+	const EnvMapVulkanEntityID camera = EnvMapVulkanSceneData::FindPrimaryCamera(scene);
 	if (camera != NoEntity)
 	{
 		yaw = glm::radians(scene.Get<TransformComponent>(camera).Rotation.y);

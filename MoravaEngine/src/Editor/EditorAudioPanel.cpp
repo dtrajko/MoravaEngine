@@ -66,7 +66,7 @@ static void GameSoundsControls(SceneAudio& audio)
 	ImGui::Text("Listener: %s", listenerName ? listenerName->Name.c_str() : "none (no camera and no Audio Listener)");
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip("The first entity with an active Audio Listener, else the scene's camera");
+		ImGui::SetTooltip("The first entity with an active Audio Listener, else the primary game camera");
 	}
 
 	if (ImGui::BeginTable("##Sounds", 3, ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_ScrollY,

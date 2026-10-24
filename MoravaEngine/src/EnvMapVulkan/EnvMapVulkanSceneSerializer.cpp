@@ -246,7 +246,10 @@ namespace EnvMapVulkanSceneSerializer
 		{
 			// Its placement is the entity's transform
 			out << YAML::Key << "Camera" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Primary" << YAML::Value << camera->Primary;
 			out << YAML::Key << "FieldOfView" << YAML::Value << camera->FieldOfView;
+			out << YAML::Key << "NearClip" << YAML::Value << camera->NearClip;
+			out << YAML::Key << "FarClip" << YAML::Value << camera->FarClip;
 			out << YAML::EndMap;
 		}
 		if (const InputTestComponent* test = scene.TryGet<InputTestComponent>(entity))
@@ -367,7 +370,8 @@ namespace EnvMapVulkanSceneSerializer
 		}
 	}
 
-	std::string Serialize(EnvMapVulkanScene& scene, const std::string& sceneName, const EnvMapVulkanRenderSettings& renderSettings)
+	std::string Serialize(EnvMapVulkanScene& scene, const std::string& sceneName, const EnvMapVulkanRenderSettings& renderSettings,
+		const EditorView* editorView)
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -375,6 +379,14 @@ namespace EnvMapVulkanSceneSerializer
 		out << YAML::Key << "Version" << YAML::Value << 1;
 		out << YAML::Key << "Name" << YAML::Value << sceneName;
 		out << YAML::EndMap;
+		if (editorView)
+		{
+			out << YAML::Key << "EditorCamera" << YAML::Value << YAML::BeginMap;
+			WriteVec3(out, "Translation", editorView->Translation);
+			WriteVec3(out, "Rotation", editorView->Rotation);
+			out << YAML::Key << "FieldOfView" << YAML::Value << editorView->FieldOfView;
+			out << YAML::EndMap;
+		}
 		out << YAML::Key << "RenderSettings" << YAML::Value << YAML::BeginMap;
 		renderSettings.Serialize(out);
 		out << YAML::EndMap;
@@ -386,6 +398,26 @@ namespace EnvMapVulkanSceneSerializer
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 		return std::string(out.c_str()) + "\n";
+	}
+
+	bool ReadEditorView(const std::string& filepath, EditorView& view)
+	{
+		try
+		{
+			const YAML::Node camera = YAML::LoadFile(filepath)["EditorCamera"];
+			if (!camera || !camera.IsMap())
+			{
+				return false;
+			}
+			ReadVec3(camera["Translation"], view.Translation);
+			ReadVec3(camera["Rotation"], view.Rotation);
+			Read(camera, "FieldOfView", view.FieldOfView);
+			return true;
+		}
+		catch (const std::exception&)
+		{
+			return false; // Deserialize says what is wrong with the file
+		}
 	}
 
 	bool Deserialize(const std::string& filepath, EnvMapVulkanScene& scene, std::string& sceneName, EnvMapVulkanRenderSettings& renderSettings,
@@ -483,8 +515,12 @@ namespace EnvMapVulkanSceneSerializer
 				}
 				if (YAML::Node cameraNode = node["Camera"])
 				{
+					// Scenes saved before 6.3: the one camera, primary, with the planes every view had
 					CameraComponent& camera = scene.Add<CameraComponent>(entity);
+					Read(cameraNode, "Primary", camera.Primary);
 					Read(cameraNode, "FieldOfView", camera.FieldOfView); // scenes saved before the camera had a lens: 45
+					Read(cameraNode, "NearClip", camera.NearClip);
+					Read(cameraNode, "FarClip", camera.FarClip);
 				}
 				if (YAML::Node testNode = node["InputTest"])
 				{

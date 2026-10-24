@@ -13,11 +13,12 @@
  * renderer draws it (EnvMapVulkanRenderSettings; exposure is the environment's).
  *
  *   Scene: { Version, Name }
+ *   EditorCamera: { Translation, Rotation, FieldOfView }   (the editor's view, 6.3; the player doesn't read it)
  *   RenderSettings: { Shadows, LocalShadows, RayTracing, Reflections, AmbientOcclusion, Bloom }
  *   Entities:
  *     - ID, Name, Parent (0: top level), Transform { Translation, Rotation, Scale }
  *       and the components it has: Model { File }, MeshPart { SourceMeshIndex, Material { ID, File } }, Sun, PointLight,
- *       SpotLight, Water, Environment
+ *       SpotLight, Water, Environment, Camera { Primary, FieldOfView, NearClip, FarClip }, physics, Script, AudioSource...
  *
  * Entities are written parents first (the order of the hierarchy), so a parent exists when its children are read.
  * Paths are written and read through ProjectPaths: relative to the open project's folder or to the engine's.
@@ -38,8 +39,20 @@ namespace EnvMapVulkanSceneSerializer
 		std::string File;
 	};
 
-	// The scene as text (the file's content)
-	std::string Serialize(EnvMapVulkanScene& scene, const std::string& sceneName, const EnvMapVulkanRenderSettings& renderSettings);
+	// Where the editor looks at the scene from (its own camera, not an entity): saved with the scene, so an opened scene is
+	// seen as it was. Rotation as a camera entity's: x down (positive) and up, y around the vertical axis
+	struct EditorView
+	{
+		glm::vec3 Translation = glm::vec3(0.0f);
+		glm::vec3 Rotation = glm::vec3(0.0f);
+		float FieldOfView = 45.0f;
+	};
+
+	// The scene as text (the file's content), with the editor's view when given
+	std::string Serialize(EnvMapVulkanScene& scene, const std::string& sceneName, const EnvMapVulkanRenderSettings& renderSettings,
+		const EditorView* editorView = nullptr);
+	// The editor's view a scene file was saved with: false when it has none (saved before 6.3, or by the player)
+	bool ReadEditorView(const std::string& filepath, EditorView& view);
 
 	// Reads a scene file into the (empty) scene. sceneName, renderSettings and each part's material reference (by entity)
 	// come back to the caller. False (error explains) when the file can't be read.

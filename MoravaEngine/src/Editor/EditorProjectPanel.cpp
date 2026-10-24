@@ -92,11 +92,23 @@ void OnImGuiRenderProjectPanel()
 	}
 	ImGui::SameLine();
 	ImGui::BeginDisabled(project->StartScene.empty());
-	if (ImGui::Button("Open It"))
+	if (ImGui::Button("Open Start Scene"))
 	{
 		RequestOpenScene(ProjectPaths::Resolve(project->StartScene));
 	}
 	ImGui::EndDisabled();
+	if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+	{
+		if (project->StartScene.empty())
+		{
+			ImGui::SetTooltip("The project has no start scene: Use the Open Scene makes the one you edit it");
+		}
+		else
+		{
+			ImGui::SetTooltip("Opens %s in the editor (as File > Open Scene: unsaved changes of the open scene are asked about first)",
+				project->StartScene.c_str());
+		}
+	}
 
 	ImGui::SeparatorText("Assets");
 	ImGui::Text("Asset folder: %s", project->AssetDirectory.c_str());

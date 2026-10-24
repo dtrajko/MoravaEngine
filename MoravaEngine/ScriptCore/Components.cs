@@ -10,7 +10,7 @@ namespace Morava
         public Entity Entity { get; internal set; } = null!;
 
         // The engine's numbers for the kinds (ScriptComponent in src/Scripting/ScriptApi.h)
-        internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4 }
+        internal enum Kind { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4, Camera = 5 }
 
         internal static Kind KindOf(Type type)
         {
@@ -19,6 +19,7 @@ namespace Morava
             if (type == typeof(Collider)) return Kind.Collider;
             if (type == typeof(AudioSource)) return Kind.AudioSource;
             if (type == typeof(AudioListener)) return Kind.AudioListener;
+            if (type == typeof(Camera)) return Kind.Camera;
             throw new ArgumentException($"{type.Name} is not a component of the engine");
         }
 
@@ -217,11 +218,44 @@ namespace Morava
     /// <summary>Where the game is heard from (Inspector: Audio Listener), usually the camera. The first active one listens.</summary>
     public sealed unsafe class AudioListener : Component
     {
-        /// <summary>It listens (when it is the first active one); none active: the scene's camera does.</summary>
+        /// <summary>It listens (when it is the first active one); none active: the primary camera does.</summary>
         public bool Active
         {
             get { int value; if (Interop.Game->AudioListener_GetActive(Entity.Id, &value) == 0) throw Missing("audio listener"); return value != 0; }
             set { if (Interop.Game->AudioListener_SetActive(Entity.Id, value ? 1 : 0) == 0) throw Missing("audio listener"); }
         }
+    }
+
+    /// <summary>
+    /// A game camera (Inspector: Camera): the game is seen through the primary one. It is placed and aimed by its entity
+    /// (Translation, EulerAngles: X down, Y to the left). Setting Primary switches the game's view to it.
+    /// </summary>
+    public sealed unsafe class Camera : Component
+    {
+        NativeCameraSettings Settings
+        {
+            get
+            {
+                NativeCameraSettings settings;
+                if (Interop.Game->Camera_GetSettings(Entity.Id, &settings) == 0) throw Missing("camera");
+                return settings;
+            }
+            set
+            {
+                if (Interop.Game->Camera_SetSettings(Entity.Id, &value) == 0) throw Missing("camera");
+            }
+        }
+
+        /// <summary>The game is seen through it. Set: the other cameras stop being primary.</summary>
+        public bool Primary { get => Settings.Primary != 0; set { var s = Settings; s.Primary = value ? 1 : 0; Settings = s; } }
+
+        /// <summary>Degrees from the view's bottom edge to its top edge, 10 to 120: smaller zooms in.</summary>
+        public float FieldOfView { get => Settings.FieldOfView; set { var s = Settings; s.FieldOfView = value; Settings = s; } }
+
+        /// <summary>Meters: nothing nearer is drawn.</summary>
+        public float NearClip { get => Settings.NearClip; set { var s = Settings; s.NearClip = value; Settings = s; } }
+
+        /// <summary>Meters: nothing farther is drawn.</summary>
+        public float FarClip { get => Settings.FarClip; set { var s = Settings; s.FarClip = value; Settings = s; } }
     }
 }

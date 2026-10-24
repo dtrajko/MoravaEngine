@@ -90,58 +90,86 @@ void CreateEnvironmentEntity()
 	s_EnvironmentEntity = entity;
 }
 
-// The camera is an entity with a CameraComponent (one per scene, as the environment and the sun): its transform is where
-// the editor's camera is and where it looks. SyncCamera keeps the two the same, every frame: flying the camera in the
-// viewport moves the entity, and a transform that changed without the camera (edited in the Inspector, or an opened
-// scene's) moves the camera.
-static EnvMapVulkanEntityID s_CameraEntity = NoEntity;
-static glm::vec3 s_SyncedCameraRotation = glm::vec3(0.0f);
+// The editor's view (6.3): the editor's own camera, which Edit and Simulate show and the scene file saves (EditorCamera).
+// Game cameras are entities with a CameraComponent: the view doesn't move them. A view to show (an opened scene's, the
+// one from before Play) and a game camera to put where the editor looks from (a new scene's) wait for the next frame:
+// at startup the editor's camera isn't there yet
+static std::optional<EnvMapVulkanSceneSerializer::EditorView> s_PendingEditorView;
+static EnvMapVulkanEntityID s_PendingCameraAtView = NoEntity;
+static constexpr float EditorNearClip = 0.01f, EditorFarClip = 1000.0f;
 
-// A scene without a camera entity gets one (a new scene, a scene saved before cameras were entities): where the
-// editor's camera is now, written by the next SyncCamera
-void EnsureCameraEntity()
+EnvMapVulkanSceneSerializer::EditorView GetEditorView()
 {
-	s_CameraEntity = s_Scene.FindFirst<CameraComponent>();
-	if (s_CameraEntity == NoEntity)
+	if (s_PendingEditorView)
 	{
-		s_CameraEntity = s_Scene.CreateEntity("Camera");
-		s_Scene.Add<CameraComponent>(s_CameraEntity);
-		s_CameraEntitySynced = false;
+		return *s_PendingEditorView;
 	}
-	// The first entity of the Scene Hierarchy
-	if (s_Scene.GetRoots().empty() || s_Scene.GetRoots().front() != s_CameraEntity)
+	EnvMapVulkanSceneSerializer::EditorView view;
+	if (s_Camera)
 	{
-		s_Scene.SetParent(s_CameraEntity, NoEntity, true, 0);
+		const TransformComponent placement = GetCameraPlacement(*s_Camera);
+		view.Translation = placement.Translation;
+		view.Rotation = placement.Rotation;
 	}
+	view.FieldOfView = s_EditorFieldOfView;
+	return view;
 }
 
-void SyncCamera(H2M::CameraH2M* camera)
+void SetEditorView(const EnvMapVulkanSceneSerializer::EditorView& view)
 {
-	EnsureCameraEntity();
-	TransformComponent& transform = s_Scene.Get<TransformComponent>(s_CameraEntity);
-	if (s_CameraEntitySynced && (transform.Translation != s_SyncedCameraTranslation || transform.Rotation != s_SyncedCameraRotation))
+	s_PendingEditorView = view;
+}
+
+EnvMapVulkanEntityID CreateCameraAtView(const std::string& name)
+{
+	const bool first = FindPrimaryCamera(s_Scene) == NoEntity;
+	const EnvMapVulkanEntityID entity = s_Scene.CreateEntity(name);
+	CameraComponent& camera = s_Scene.Add<CameraComponent>(entity);
+	camera.Primary = first; // a second camera doesn't take the game's view from the first
+	camera.FieldOfView = s_EditorFieldOfView;
+	if (s_Camera && !s_PendingEditorView)
 	{
-		// The entity moved: the camera follows (now: the camera's controller runs before the next frame is drawn, not this one)
-		transform.Rotation.x = glm::clamp(transform.Rotation.x, -89.0f, 89.0f);
-		transform.Rotation.z = 0.0f;
-		PlaceCamera(*camera, transform);
+		const TransformComponent placement = GetCameraPlacement(*s_Camera);
+		TransformComponent& transform = s_Scene.Get<TransformComponent>(entity);
+		transform.Translation = placement.Translation;
+		transform.Rotation = placement.Rotation;
 	}
 	else
 	{
-		// The turn around the vertical axis, kept within -180 to 180
-		float turn = std::fmod(-camera->GetYaw() - 90.0f, 360.0f);
-		turn += turn > 180.0f ? -360.0f : (turn <= -180.0f ? 360.0f : 0.0f);
-		transform.Translation = camera->GetPosition();
-		transform.Rotation = glm::vec3(camera->GetPitch(), turn, 0.0f);
+		s_PendingCameraAtView = entity;
 	}
-	transform.Scale = glm::vec3(1.0f);
-	// The lens: the projection is rebuilt from it with the viewport's size (OnUpdate)
-	CameraComponent& component = s_Scene.Get<CameraComponent>(s_CameraEntity);
-	component.FieldOfView = glm::clamp(component.FieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView);
-	camera->SetPerspectiveVerticalFOV(component.FieldOfView);
-	s_CameraEntitySynced = true;
-	s_SyncedCameraTranslation = transform.Translation;
-	s_SyncedCameraRotation = transform.Rotation;
+	return entity;
+}
+
+void UpdateEditorCamera(H2M::CameraH2M* camera)
+{
+	if (s_PendingEditorView)
+	{
+		TransformComponent placement;
+		placement.Translation = s_PendingEditorView->Translation;
+		placement.Rotation = s_PendingEditorView->Rotation;
+		PlaceCamera(*camera, placement);
+		s_EditorFieldOfView = s_PendingEditorView->FieldOfView;
+		s_PendingEditorView.reset();
+	}
+	// The editor's lens (Play showed a game camera's)
+	s_EditorFieldOfView = glm::clamp(s_EditorFieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView);
+	camera->SetPerspectiveVerticalFOV(s_EditorFieldOfView);
+	if (camera->GetPerspectiveNearClip() != EditorNearClip || camera->GetPerspectiveFarClip() != EditorFarClip)
+	{
+		camera->SetPerspectiveNearClip(EditorNearClip);
+		camera->SetPerspectiveFarClip(EditorFarClip);
+	}
+	if (s_PendingCameraAtView != NoEntity)
+	{
+		if (TransformComponent* transform = s_Scene.TryGet<TransformComponent>(s_PendingCameraAtView))
+		{
+			const TransformComponent placement = GetCameraPlacement(*camera);
+			transform->Translation = placement.Translation;
+			transform->Rotation = placement.Rotation;
+		}
+		s_PendingCameraAtView = NoEntity;
+	}
 }
 
 // Sets a part's transform to an exact matrix (the gizmo's result, Reset Mesh): the mesh gets the matrix as it is, the
@@ -595,7 +623,8 @@ ImU32 GetEntityKindColor(EntityKind kind)
 // environment, the sun and the water stay at the top (the water is always level: a parent could tilt it).
 bool CanBeReparented(EntityKind kind)
 {
-	return kind == EntityKind::Model || kind == EntityKind::PointLight || kind == EntityKind::SpotLight || kind == EntityKind::Sound;
+	return kind == EntityKind::Model || kind == EntityKind::PointLight || kind == EntityKind::SpotLight || kind == EntityKind::Sound ||
+		kind == EntityKind::Camera;
 }
 
 bool CanHaveChildren(EntityKind kind)
@@ -606,7 +635,7 @@ bool CanHaveChildren(EntityKind kind)
 bool CanBeDeleted(EntityKind kind)
 {
 	return kind == EntityKind::Model || kind == EntityKind::Part || kind == EntityKind::PointLight || kind == EntityKind::SpotLight ||
-		kind == EntityKind::Water || kind == EntityKind::ProbeVolume || kind == EntityKind::Sound;
+		kind == EntityKind::Water || kind == EntityKind::ProbeVolume || kind == EntityKind::Sound || kind == EntityKind::Camera;
 }
 
 // Removes an entity (and its children): a model or a part at the start of the next frame (its GPU resources may be in use),
@@ -632,6 +661,7 @@ void DeleteEntity(EnvMapVulkanEntityID entity)
 			RemoveProbeVolumeEntity();
 			break;
 		case EntityKind::Sound:
+		case EntityKind::Camera:
 			s_Scene.DestroyEntity(entity);
 			s_EditorSelection.Sync();
 			break;

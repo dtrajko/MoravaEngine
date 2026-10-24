@@ -21,7 +21,7 @@ struct ma_sound;
  * AudioSourceComponent, made when the game starts (the ones with PlayOnStart start playing), and the one-shots the game
  * plays (Audio.PlayOneShot). GameSystems owns it, the same in the player and in the editor's Play.
  *
- * Each frame (Update): the listener (the entity with an active AudioListenerComponent, else the scene's camera) and the
+ * Each frame (Update): the listener (the entity with an active AudioListenerComponent, else the primary game camera) and the
  * spatial sounds follow their entities, with their velocities for the Doppler effect; finished one-shots and the sounds of
  * destroyed entities go. Stop: every sound stops and is freed. A clip's file is loaded (decoded) once per game, and shared
  * by every sound of it; Stream sounds read their file as they play.

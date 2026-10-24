@@ -145,6 +145,22 @@ const InputAction* InputMap::Find(const std::string& name) const
 	return nullptr;
 }
 
+bool InputMap::BindsKey(int key) const
+{
+	for (const InputAction& action : Actions)
+	{
+		for (const InputBinding& binding : action.Bindings)
+		{
+			if (binding.Source == InputBindingSource::Key ? binding.Code == key :
+				binding.Source == InputBindingSource::Composite && (binding.Up == key || binding.Down == key || binding.Left == key || binding.Right == key))
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 // ---- Reading and writing
 
 // A key of a composite: -1 when the node doesn't name one; false when it names a key that doesn't exist

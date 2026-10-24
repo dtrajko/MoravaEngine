@@ -52,7 +52,7 @@ void PlayerLayer::OnAttach()
 		Application::Get()->Close(1);
 		return;
 	}
-	if (m_Scene.FindFirst<CameraComponent>() == NoEntity)
+	if (EnvMapVulkanSceneData::FindPrimaryCamera(m_Scene) == NoEntity)
 	{
 		Log::GetLogger()->warn("Scene '{0}' has no camera: seen from the origin, looking along -Z", name);
 	}
@@ -94,6 +94,7 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	// Input (the window is the game: it has input while it has the focus), the game, then the camera where the game put the
 	// camera entity
 	GLFWwindow* window = Application::Get()->GetWindow()->GetHandle();
+	UpdateFullscreenKeys(window);
 	m_Input.Update(window, glfwGetWindowAttrib(window, GLFW_FOCUSED) == GLFW_TRUE, ts.GetSeconds());
 	m_GameLoop.Frame(ts.GetSeconds(), &m_Systems);
 
@@ -101,13 +102,84 @@ void PlayerLayer::OnUpdate(H2M::TimestepH2M ts)
 	H2M::VulkanSwapChainH2M& swapChain = Application::Get()->GetWindow()->GetSwapChain();
 	EnvMapVulkanRenderer::SetViewportSize(swapChain.GetWidth(), swapChain.GetHeight());
 
-	// The camera where the scene's camera entity is, with its lens
-	const EnvMapVulkanEntityID cameraEntity = m_Scene.FindFirst<CameraComponent>();
+	// The view of the primary game camera (a script may have switched it), with its lens
+	const EnvMapVulkanEntityID cameraEntity = EnvMapVulkanSceneData::FindPrimaryCamera(m_Scene);
 	if (cameraEntity != NoEntity)
 	{
-		EnvMapVulkanSceneData::PlaceCamera(m_Camera, m_Scene.Get<TransformComponent>(cameraEntity));
-		const float fieldOfView = m_Scene.Get<CameraComponent>(cameraEntity).FieldOfView;
-		m_Camera.SetPerspectiveVerticalFOV(glm::clamp(fieldOfView, CameraComponent::MinFieldOfView, CameraComponent::MaxFieldOfView));
+		EnvMapVulkanSceneData::PlaceGameCamera(m_Camera, m_Scene, cameraEntity);
+	}
+}
+
+// A key's press: down now, up in the last frame
+static bool WasPressed(GLFWwindow* window, int key, bool& wasDown)
+{
+	const bool down = glfwGetKey(window, key) == GLFW_PRESS;
+	const bool pressed = down && !wasDown;
+	wasDown = down;
+	return pressed;
+}
+
+void PlayerLayer::UpdateFullscreenKeys(GLFWwindow* window)
+{
+	const bool fullscreen = glfwGetWindowMonitor(window) != nullptr;
+	const bool alt = glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS || glfwGetKey(window, GLFW_KEY_RIGHT_ALT) == GLFW_PRESS;
+	const bool enter = WasPressed(window, GLFW_KEY_ENTER, m_EnterDown);
+	const bool f11 = WasPressed(window, GLFW_KEY_F11, m_F11Down);
+	const bool escape = WasPressed(window, GLFW_KEY_ESCAPE, m_EscapeDown);
+	if ((alt && enter) || f11)
+	{
+		SetFullscreen(window, !fullscreen);
+	}
+	else if (escape && fullscreen && !m_Input.GetMap().BindsKey(GLFW_KEY_ESCAPE))
+	{
+		SetFullscreen(window, false);
+	}
+}
+
+void PlayerLayer::SetFullscreen(GLFWwindow* window, bool fullscreen)
+{
+	if (fullscreen)
+	{
+		// On the monitor the window is on (its center), at the monitor's own resolution
+		int x = 0, y = 0, width = 0, height = 0;
+		glfwGetWindowPos(window, &x, &y);
+		glfwGetWindowSize(window, &width, &height);
+		int count = 0;
+		GLFWmonitor** monitors = glfwGetMonitors(&count);
+		GLFWmonitor* target = glfwGetPrimaryMonitor();
+		for (int i = 0; i < count; i++)
+		{
+			int mx = 0, my = 0;
+			glfwGetMonitorPos(monitors[i], &mx, &my);
+			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+			const int cx = x + width / 2, cy = y + height / 2;
+			if (mode && cx >= mx && cx < mx + mode->width && cy >= my && cy < my + mode->height)
+			{
+				target = monitors[i];
+			}
+		}
+		const GLFWvidmode* mode = glfwGetVideoMode(target);
+		glfwSetWindowMonitor(window, target, 0, 0, mode->width, mode->height, mode->refreshRate);
+		Log::GetLogger()->info("Player: fullscreen, {0}x{1}", mode->width, mode->height);
+	}
+	else
+	{
+		// The project's window size, centered on the monitor it was on, then maximized (its title bar has the close button)
+		GLFWmonitor* monitor = glfwGetWindowMonitor(window);
+		const Project* project = Project::GetOpen();
+		const int width = project ? (int)project->Window.Width : 1280;
+		const int height = project ? (int)project->Window.Height : 720;
+		int mx = 0, my = 0;
+		const GLFWvidmode* mode = monitor ? glfwGetVideoMode(monitor) : nullptr;
+		if (monitor)
+		{
+			glfwGetMonitorPos(monitor, &mx, &my);
+		}
+		const int x = mode ? mx + (mode->width - width) / 2 : 100;
+		const int y = mode ? my + (mode->height - height) / 2 : 100;
+		glfwSetWindowMonitor(window, nullptr, x, y, width, height, GLFW_DONT_CARE);
+		glfwMaximizeWindow(window);
+		Log::GetLogger()->info("Player: a window (maximized); Alt+Enter or F11: fullscreen again");
 	}
 }
 

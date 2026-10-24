@@ -79,6 +79,9 @@ struct InputMap
 	std::vector<InputAction> Actions;
 
 	const InputAction* Find(const std::string& name) const;
+	// An action is bound to this key (a GLFW_KEY_*), alone or in a composite: the engine then leaves the key to the game
+	// (the editor's Escape, the player's Escape out of fullscreen)
+	bool BindsKey(int key) const;
 
 	// Move (WASD, the arrow keys, the left stick), Look (the mouse, 0.1 degrees per pixel; the right stick, 180 degrees per
 	// second) and Jump (Space, A): what a new project starts with, and what a game without a project gets

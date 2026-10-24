@@ -315,7 +315,7 @@ void OnImGuiRenderSceneHierarchy()
 	ImGui::SetNextWindowSize(ImVec2(320.0f, 360.0f), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Scene Hierarchy");
 
-	// Add: a model file, a light, the water, a sound
+	// Add: a model file, a light, the water, a camera, a sound
 	if (ImGui::Button("Add..."))
 	{
 		ImGui::OpenPopup("##AddEntity");
@@ -346,6 +346,15 @@ void OnImGuiRenderSceneHierarchy()
 		if (ImGui::MenuItem("Probe Volume", nullptr, false, s_ProbeVolumeEntity == NoEntity))
 		{
 			AddProbeVolumeAtView();
+		}
+		if (ImGui::MenuItem("Camera"))
+		{
+			s_EditorSelection.SetPrimary(CreateCameraAtView());
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("A game camera where the editor looks from (primary when the scene has none).\n"
+				"Play shows the primary camera; a script switches cameras with GetComponent<Camera>().Primary.");
 		}
 		if (ImGui::MenuItem("Sound"))
 		{
