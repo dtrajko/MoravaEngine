@@ -238,7 +238,7 @@ using Morava;
 namespace $NAMESPACE$
 {
     /// <summary>
-    /// $CLASS$: put it on an entity in the Properties panel (Script). Its public fields show there, to set for each entity.
+    /// $CLASS$: put it on an entity in the Inspector (Script). Its public fields show there, to set for each entity.
     /// </summary>
     public class $CLASS$ : Entity
     {

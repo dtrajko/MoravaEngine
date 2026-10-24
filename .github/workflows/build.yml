@@ -153,6 +153,11 @@ jobs:
             echo "::error::The sample's C# scripts didn't load or run, or one of them threw an exception (see the log)"
             exit 1
           fi
+          # Audio (5.1): miniaudio started (a runner has no sound card: the null device), the sample's sounds were made
+          if ! grep -q "Audio: miniaudio" player-smoke-test.log || ! grep -q "Audio: [1-9][0-9]* sound(s)" player-smoke-test.log || grep -E "Audio: .*can't be played|Audio: miniaudio could not start" player-smoke-test.log; then
+            echo "::error::Audio didn't start, or a sound of the sample couldn't be loaded (see the log)"
+            exit 1
+          fi
 
       - name: Smoke test log
         if: always() && (matrix.smoke-test || matrix.player-smoke-test)

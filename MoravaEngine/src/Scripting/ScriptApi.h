@@ -48,6 +48,16 @@ struct ScriptTime
 	uint64_t FixedStepCount = 0;
 };
 
+// An AudioSourceComponent's settings as a script reads and writes them (AudioSource's properties). Bus: AudioBus
+struct ScriptAudioSettings
+{
+	float Volume = 1.0f, Pitch = 1.0f;
+	float MinDistance = 1.0f, MaxDistance = 30.0f;
+	int32_t Bus = 1;
+	int32_t Loop = 0, Spatial = 1;
+	int32_t Reserved = 0;
+};
+
 // A script field's value between C++ and C# (ScriptField.h has the engine's own ScriptFieldValue). Type: ScriptFieldType.
 // Text is UTF-16: a String's characters. GetField: C++ gives Text room for TextCapacity characters, C# writes what fits
 // and sets TextLength to the string's full length.
@@ -79,7 +89,7 @@ struct ScriptFieldReport
 };
 
 // The components a script can ask an entity for (Entity.HasComponent<T>, GetComponent<T>)
-enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2 };
+enum class ScriptComponentKind : int32_t { Rigidbody = 0, CharacterController = 1, Collider = 2, AudioSource = 3, AudioListener = 4 };
 
 // What C# may call in C++: grows with each phase. The functions about an entity return 0 when it doesn't exist (any more):
 // C# turns that into an exception that names it. Only Log works outside a running game; the rest come with the game's
@@ -96,7 +106,7 @@ struct ScriptNativeApi
 	int32_t (*Entity_SetTranslation)(uint64_t entity, const glm::vec3* value);
 	int32_t (*Entity_GetRotation)(uint64_t entity, ScriptQuat* out);
 	int32_t (*Entity_SetRotation)(uint64_t entity, const ScriptQuat* value);
-	int32_t (*Entity_GetEulerAngles)(uint64_t entity, glm::vec3* out); // degrees, as the Properties panel shows them
+	int32_t (*Entity_GetEulerAngles)(uint64_t entity, glm::vec3* out); // degrees, as the Inspector shows them
 	int32_t (*Entity_SetEulerAngles)(uint64_t entity, const glm::vec3* value);
 	int32_t (*Entity_GetScale)(uint64_t entity, glm::vec3* out);
 	int32_t (*Entity_SetScale)(uint64_t entity, const glm::vec3* value);
@@ -138,6 +148,26 @@ struct ScriptNativeApi
 
 	// Time
 	void (*Time_Get)(ScriptTime* out);
+
+	// AudioSource (5.2): 0 when the entity has no AudioSourceComponent. Play, Pause and Stop: also 0 when the game has no
+	// sound (its clip couldn't be loaded). Clips are paths relative to the project ("Assets/Audio/Pickup.wav")
+	int32_t (*AudioSource_Play)(uint64_t entity);
+	int32_t (*AudioSource_Pause)(uint64_t entity);
+	int32_t (*AudioSource_Stop)(uint64_t entity);
+	int32_t (*AudioSource_IsPlaying)(uint64_t entity); // 1 yes, 0 no, -1 no source
+	int32_t (*AudioSource_GetSettings)(uint64_t entity, ScriptAudioSettings* out);
+	int32_t (*AudioSource_SetSettings)(uint64_t entity, const ScriptAudioSettings* value);
+	int32_t (*AudioSource_GetClip)(uint64_t entity, char16_t* buffer, int capacity); // as Entity_GetName
+	int32_t (*AudioSource_SetClip)(uint64_t entity, const char16_t* clip, int length);
+	// AudioListener: 0 when the entity has none
+	int32_t (*AudioListener_GetActive)(uint64_t entity, int32_t* out);
+	int32_t (*AudioListener_SetActive)(uint64_t entity, int32_t active);
+
+	// Audio: a sound played once, at a place (position) or everywhere (nullptr); 0 when its clip can't be loaded. The
+	// volumes: Master, then each bus's (AudioBus order), for this game (the project's again at the next Play)
+	int32_t (*Audio_PlayOneShot)(const char16_t* clip, int length, const glm::vec3* position, int32_t bus, float volume, float pitch);
+	void (*Audio_GetVolumes)(float* out);
+	void (*Audio_SetVolumes)(const float* volumes);
 };
 
 // What C++ calls in C#; Interop.Initialize fills it in. A script instance is a GCHandle of the C# object. The Invoke

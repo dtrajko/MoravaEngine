@@ -1,6 +1,6 @@
 // The code editor the project's scripts are written in (docs/engine/Game_Engine_Runtime_Guide.html, 4.7): Visual Studio,
 // VS Code, Rider, or the program the system has for .csproj and .cs files. The editor opens the scripts' project in it, a
-// script at a line (an error in the Console, Edit Script in the Properties panel) and a script made with New Script. The
+// script at a line (an error in the Console, Edit Script in the Inspector) and a script made with New Script. The
 // choice and Build on Save are the editor's settings on this computer, kept in imgui.ini (with the View menu's panels that
 // are open).
 
@@ -206,7 +206,7 @@ bool OpenScriptProjectInCodeEditor()
 	Log::GetLogger()->info("Code editor: '{0}' in {1}", csproj, GetCodeEditorName(kind));
 	switch (kind)
 	{
-		case CodeEditorKind::VisualStudio: return Launch(GetCodeEditorProgram(kind), { csproj });
+		case CodeEditorKind::VisualStudio: return OpenInVisualStudio(GetCodeEditorProgram(kind), csproj, std::string(), 1);
 		case CodeEditorKind::VSCode:       return Launch(GetCodeEditorProgram(kind), { folder });
 		case CodeEditorKind::Rider:        return Launch(GetCodeEditorProgram(kind), { csproj });
 		default:                           return OpenWithSystem(csproj);
@@ -233,8 +233,15 @@ bool OpenScriptFile(const std::string& file, int line)
 	switch (kind)
 	{
 		case CodeEditorKind::VisualStudio:
-			// In the Visual Studio that is open (/Edit), at the line
+		{
+			// In the Visual Studio of the scripts' project, at the line; without a project, in the one used last (/Edit)
+			const std::string csproj = GetScriptProjectPath();
+			if (!csproj.empty() && fs::is_regular_file(fs::u8path(csproj), error))
+			{
+				return OpenInVisualStudio(GetCodeEditorProgram(kind), csproj, target, std::max(line, 1));
+			}
 			return Launch(GetCodeEditorProgram(kind), { "/Edit", target, "/Command", "Edit.GoTo " + lineText });
+		}
 		case CodeEditorKind::VSCode:
 		{
 			// In the window of the scripts' folder (its C# tools need it), at the line
@@ -377,7 +384,7 @@ struct PanelSetting
 };
 static const PanelSetting s_PanelSettings[] = {
 	{ "ShowRendererStats", &s_ShowRendererStats }, { "ShowViewportFps", &s_ShowViewportFps }, { "ShowProject", &s_ShowProjectPanel },
-	{ "ShowInput", &s_ShowInputPanel }, { "ShowPhysics", &s_ShowPhysicsPanel }, { "ShowScripts", &s_ShowScriptsPanel },
+	{ "ShowInput", &s_ShowInputPanel }, { "ShowPhysics", &s_ShowPhysicsPanel }, { "ShowAudio", &s_ShowAudioPanel }, { "ShowScripts", &s_ShowScriptsPanel },
 	{ "ShowConsole", &s_ShowConsolePanel },
 };
 
@@ -525,7 +532,7 @@ void OnImGuiRenderNewScriptDialog()
 		std::string className;
 		if (NewScript(name, className, s_NewScriptError))
 		{
-			// The entity's Script is the new class already: the Properties panel says "not built yet" until it is
+			// The entity's Script is the new class already: the Inspector says "not built yet" until it is
 			if (s_NewScriptEntity != NoEntity && s_Scene.Exists(s_NewScriptEntity) && !IsPlaying())
 			{
 				ScriptComponent& script = s_Scene.Has<ScriptComponent>(s_NewScriptEntity) ? s_Scene.Get<ScriptComponent>(s_NewScriptEntity) :

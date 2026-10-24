@@ -13,7 +13,7 @@ namespace Morava
             return Interop.EntityFor(id);
         }
 
-        /// <summary>All entities with this tag (Properties panel: Tags); none: an empty array.</summary>
+        /// <summary>All entities with this tag (Inspector: Tags); none: an empty array.</summary>
         public static Entity[] FindEntitiesWithTag(string tag)
         {
             ulong* ids = stackalloc ulong[64];

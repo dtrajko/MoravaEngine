@@ -5,6 +5,8 @@
 
 #include "H2M/Core/RefH2M.h"
 
+#include "Audio/AudioBus.h"
+
 #include "Scripting/ScriptField.h"
 
 #include <glm/glm.hpp>
@@ -55,7 +57,7 @@ struct TagComponent
 	bool Has(const std::string& tag) const;
 	void Add(const std::string& tag);
 	void Remove(const std::string& tag);
-	// "Pickup, Coin" (the Properties panel's field) and back: trimmed, without empty or repeated ones
+	// "Pickup, Coin" (the Inspector's field) and back: trimmed, without empty or repeated ones
 	std::string ToText() const;
 	void FromText(const std::string& text);
 };
@@ -249,8 +251,8 @@ struct CharacterControllerComponent
 
 // A C# script on the entity (docs/engine/Game_Engine_Runtime_Guide.html, 4.5): a class of the project's game assembly that
 // derives from Morava.Entity. While the game runs, an instance of it gets the entity's OnCreate, OnUpdate, OnFixedUpdate and
-// collision calls (ScriptRuntime keeps the instances, not this component). Fields: the public fields set in the Properties
-// panel, given to the instance after it is made and before its OnCreate; the others keep the values the class gives them,
+// collision calls (ScriptRuntime keeps the instances, not this component). Fields: the public fields set in the
+// Inspector, given to the instance after it is made and before its OnCreate; the others keep the values the class gives them,
 // so a changed default in the code reaches every entity that didn't set its own.
 struct ScriptComponent
 {
@@ -265,6 +267,31 @@ struct ScriptComponent
 	const ScriptFieldValue* FindField(const std::string& name) const;
 	void SetField(const std::string& name, const ScriptFieldValue& value);
 	void ResetField(const std::string& name); // back to the class's own value
+};
+
+// A sound the entity plays while the game runs (docs/engine/Game_Engine_Runtime_Guide.html, 5.1), from where it is: louder
+// near the listener and from its side (Spatial), or the same everywhere (music, a menu's sounds). SceneAudio plays it (this
+// component holds the settings, not the playing sound). Clip: WAV, FLAC, MP3 or Ogg Vorbis, absolute here and relative to
+// the project in the scene file. Stream: read while it plays, not loaded first (music: long, played once at a time)
+struct AudioSourceComponent
+{
+	std::string Clip;
+	AudioBus Bus = AudioBus::Effects;
+	float Volume = 1.0f;                       // 0 to 1 (above 1 amplifies)
+	float Pitch = 1.0f;                        // 2: an octave higher and twice as fast
+	bool Loop = false;
+	bool PlayOnStart = false;                  // when the game starts; else when a script plays it
+	bool Stream = false;
+	bool Spatial = true;
+	float MinDistance = 1.0f;                  // meters: full volume up to here, then softer (inverse distance)
+	float MaxDistance = 30.0f;                 // meters: no softer beyond
+};
+
+// Where the game is heard from: its position and the way it faces (-Z: forward, Y: up). Usually on the camera. Without one
+// (or none Active), the scene's camera is the listener
+struct AudioListenerComponent
+{
+	bool Active = true;
 };
 
 // A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
@@ -289,4 +316,4 @@ struct ComponentList
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
-	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent>;
+	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent>;

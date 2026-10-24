@@ -38,7 +38,7 @@ public:
 	// Drops the instances of entities that are gone
 	void RemoveDestroyed();
 
-	// The instance of an entity's script (nullptr: none): the Properties panel shows its fields as they are now
+	// The instance of an entity's script (nullptr: none): the Inspector shows its fields as they are now
 	void* GetInstance(EnvMapVulkanEntityID entity) const;
 	size_t GetInstanceCount() const { return m_Instances.size(); }
 

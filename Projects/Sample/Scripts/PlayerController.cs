@@ -5,8 +5,8 @@ using Morava;
 namespace Sample
 {
     /// <summary>
-    /// The player: Move walks it, forward being away from the camera, and Jump jumps. It needs a Character (Properties
-    /// panel: Physics): the character stops at walls and climbs steps, the script says where it wants to go, adds gravity
+    /// The player: Move walks it, forward being away from the camera, and Jump jumps. It needs a Character (Inspector:
+    /// Physics): the character stops at walls and climbs steps, the script says where it wants to go, adds gravity
     /// and jumps. The C# version of the engine's Input Test.
     /// </summary>
     public class PlayerController : Entity
@@ -28,7 +28,7 @@ namespace Sample
         protected override void OnCreate()
         {
             character = GetComponent<CharacterController>() ??
-                throw new InvalidOperationException($"{Name} needs a Character (Properties panel: Physics) for PlayerController");
+                throw new InvalidOperationException($"{Name} needs a Character (Inspector: Physics) for PlayerController");
         }
 
         protected override void OnFixedUpdate(float dt)

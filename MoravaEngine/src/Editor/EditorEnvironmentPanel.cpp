@@ -47,7 +47,7 @@ using namespace EnvMapVulkanSceneData;
 static const char* s_OverlayScopeNames[] = { "Off", "Selected", "All" };
 
 // The environment's settings: the map (load, or drop an .hdr), the skybox blur, exposure, Extract Sun, tonemapping and the
-// rotation of the scene's environment entity. Used by the Environment and the Properties panels.
+// rotation of the scene's environment entity. Used by the Environment and the Inspectors.
 void EnvironmentControls()
 {
 	EnvironmentComponent* environmentComponent = s_Scene.TryGet<EnvironmentComponent>(s_EnvironmentEntity);

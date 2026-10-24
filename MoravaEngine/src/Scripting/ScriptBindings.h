@@ -8,16 +8,18 @@
 
 class EnvMapVulkanScene;
 class InputSystem;
+class SceneAudio;
 class ScenePhysics;
 
 /**
  * What the scripts' C# API works on while a game runs (docs/engine/Game_Engine_Runtime_Guide.html, 4.4): the running
- * game's scene, its physics and its input, and where the game loop is. GameSystems owns it and keeps it current.
+ * game's scene, its physics, its sounds and its input, and where the game loop is. GameSystems owns it and keeps it current.
  */
 struct ScriptContext
 {
 	EnvMapVulkanScene* Scene = nullptr;
 	ScenePhysics* Physics = nullptr;
+	SceneAudio* Audio = nullptr;
 	InputSystem* Input = nullptr;   // nullptr: no input (Simulate, where scripts don't run)
 
 	bool InFixedStep = false;       // in OnFixedUpdate: Input's edges and Time.DeltaTime are the fixed step's

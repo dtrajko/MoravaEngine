@@ -55,6 +55,7 @@ Entities:
       Scale: [1, 1, 1]
     Camera:
       FieldOfView: 60
+    AudioListener: {Active: true}
     Script:
       Class: Sample.CameraFollow
       Fields:
@@ -335,6 +336,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000112
     Name: Cube
     Parent: 7310000000000000111
@@ -369,6 +381,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000114
     Name: Cube
     Parent: 7310000000000000113
@@ -403,6 +426,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000116
     Name: Cube
     Parent: 7310000000000000115
@@ -437,6 +471,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000118
     Name: Cube
     Parent: 7310000000000000117
@@ -471,6 +516,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000120
     Name: Cube
     Parent: 7310000000000000119
@@ -505,6 +561,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000122
     Name: Cube
     Parent: 7310000000000000121
@@ -539,6 +606,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000124
     Name: Cube
     Parent: 7310000000000000123
@@ -573,6 +651,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000126
     Name: Cube
     Parent: 7310000000000000125
@@ -607,6 +696,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000128
     Name: Cube
     Parent: 7310000000000000127
@@ -641,6 +741,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000130
     Name: Cube
     Parent: 7310000000000000129
@@ -675,6 +786,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000132
     Name: Cube
     Parent: 7310000000000000131
@@ -709,6 +831,17 @@ Entities:
       IsTrigger: true
     Script:
       Class: Sample.Pickup
+    AudioSource:
+      Clip: Assets/Audio/Hum.wav
+      Bus: Effects
+      Volume: 0.35
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: false
+      Spatial: true
+      MinDistance: 0.5
+      MaxDistance: 8
   - ID: 7310000000000000134
     Name: Cube
     Parent: 7310000000000000133
@@ -722,3 +855,21 @@ Entities:
         ID: 9184467301225840023
         File: Assets/Materials/Pickup.mmat
         Name: Pickup
+  - ID: 7310000000000000201
+    Name: Music
+    Parent: 0
+    Transform:
+      Translation: [0, 2, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    AudioSource:
+      Clip: Assets/Audio/Music.wav
+      Bus: Music
+      Volume: 0.6
+      Pitch: 1
+      Loop: true
+      PlayOnStart: true
+      Stream: true
+      Spatial: false
+      MinDistance: 1
+      MaxDistance: 30

@@ -301,6 +301,27 @@ namespace EnvMapVulkanSceneSerializer
 		{
 			WriteScript(out, *script);
 		}
+		if (const AudioSourceComponent* source = scene.TryGet<AudioSourceComponent>(entity))
+		{
+			out << YAML::Key << "AudioSource" << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "Clip" << YAML::Value << ProjectPaths::ToStored(source->Clip);
+			out << YAML::Key << "Bus" << YAML::Value << GetAudioBusName(source->Bus);
+			out << YAML::Key << "Volume" << YAML::Value << source->Volume;
+			out << YAML::Key << "Pitch" << YAML::Value << source->Pitch;
+			out << YAML::Key << "Loop" << YAML::Value << source->Loop;
+			out << YAML::Key << "PlayOnStart" << YAML::Value << source->PlayOnStart;
+			out << YAML::Key << "Stream" << YAML::Value << source->Stream;
+			out << YAML::Key << "Spatial" << YAML::Value << source->Spatial;
+			out << YAML::Key << "MinDistance" << YAML::Value << source->MinDistance;
+			out << YAML::Key << "MaxDistance" << YAML::Value << source->MaxDistance;
+			out << YAML::EndMap;
+		}
+		if (const AudioListenerComponent* listener = scene.TryGet<AudioListenerComponent>(entity))
+		{
+			out << YAML::Key << "AudioListener" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			out << YAML::Key << "Active" << YAML::Value << listener->Active;
+			out << YAML::EndMap;
+		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
 			WriteWater(out, water->Settings);
@@ -532,6 +553,27 @@ namespace EnvMapVulkanSceneSerializer
 				if (YAML::Node scriptNode = node["Script"]; scriptNode && scriptNode.IsMap())
 				{
 					ReadScript(scriptNode, scene.Add<ScriptComponent>(entity));
+				}
+				if (YAML::Node sourceNode = node["AudioSource"]; sourceNode && sourceNode.IsMap())
+				{
+					AudioSourceComponent& source = scene.Add<AudioSourceComponent>(entity);
+					source.Clip = ProjectPaths::Resolve(sourceNode["Clip"].as<std::string>(""));
+					if (!FindAudioBus(sourceNode["Bus"].as<std::string>("Effects").c_str(), source.Bus))
+					{
+						source.Bus = AudioBus::Effects;
+					}
+					Read(sourceNode, "Volume", source.Volume);
+					Read(sourceNode, "Pitch", source.Pitch);
+					Read(sourceNode, "Loop", source.Loop);
+					Read(sourceNode, "PlayOnStart", source.PlayOnStart);
+					Read(sourceNode, "Stream", source.Stream);
+					Read(sourceNode, "Spatial", source.Spatial);
+					Read(sourceNode, "MinDistance", source.MinDistance);
+					Read(sourceNode, "MaxDistance", source.MaxDistance);
+				}
+				if (YAML::Node listenerNode = node["AudioListener"]; listenerNode && listenerNode.IsMap())
+				{
+					Read(listenerNode, "Active", scene.Add<AudioListenerComponent>(entity).Active);
 				}
 				if (YAML::Node probesNode = node["ProbeVolume"])
 				{

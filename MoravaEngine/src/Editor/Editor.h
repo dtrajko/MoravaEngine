@@ -8,7 +8,7 @@
 
 
 /**
- * The scene editor: the scene being edited and its file (New, Open, Save), the panels (Scene Hierarchy, Properties,
+ * The scene editor: the scene being edited and its file (New, Open, Save), the panels (Scene Hierarchy, Inspector,
  * Environment, Material Library and Editor, Renderer Stats), the viewport with picking, gizmos and light icons, the
  * selection, the clipboard, and Play mode (Play, Pause, Step, Stop: the game runs in the viewport).
  *

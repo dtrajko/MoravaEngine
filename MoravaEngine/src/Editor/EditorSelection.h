@@ -6,7 +6,7 @@
 
 
 /**
- * The editor's selection: every selected entity, and the primary one (one of them), which the Properties panel, the
+ * The editor's selection: every selected entity, and the primary one (one of them), which the Inspector, the
  * Material Editor and the gizmo work with (the gizmo moves the others along).
  *
  * Setting only the primary entity (a model loaded, a light added, a deselection) selects that entity alone: the list

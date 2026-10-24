@@ -38,7 +38,7 @@ bool Contains(const std::vector<T>& values, const T& value)
 }
 
 // What an entity is, by its components (see GetEntityKind)
-enum class EntityKind { Other, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Model, Part };
+enum class EntityKind { Other, Environment, Sun, Camera, PointLight, SpotLight, Water, ProbeVolume, Model, Part, Sound };
 
 // A map assigned or removed in the Material Editor (button or drag & drop), applied at the start of the next frame (see EditorPreFrame)
 struct PendingMaterialTexture
@@ -102,10 +102,12 @@ extern H2M::RefH2M<EnvMapVulkanMaterial> s_SelectedMaterial; // edited in the Ma
 extern EnvMapVulkanEntityID s_RenamingEntity;                // the entity whose name is being edited in the hierarchy
 extern char s_RenameBuffer[128];
 extern bool s_ShowLightGizmos;                               // light icons and shapes in the viewport
+extern bool s_ShowAudioGizmos;                               // sound icons and the selected sound's distances (Audio panel)
 extern bool s_ShowRendererStats;
 extern bool s_ShowProjectPanel;
 extern bool s_ShowInputPanel;
 extern bool s_ShowPhysicsPanel;
+extern bool s_ShowAudioPanel;                                // View > Audio (EditorAudioPanel.cpp)
 extern bool s_ShowPhysicsColliders;                          // physics debug views in the viewport (the Physics panel)
 extern bool s_ShowPhysicsContacts;
 extern bool s_ShowViewportFps;
@@ -145,7 +147,7 @@ void ExtractLights();
 // EnvMapVulkanSceneData::ReadWater). The editing code (Water panel, gizmo) edits s_WaterSettings and writes it back with CommitWater.
 void ExtractWater();
 
-// The probe volume, handled like the water (see EnvMapVulkanSceneData::ReadProbeVolume): the Properties panel and the
+// The probe volume, handled like the water (see EnvMapVulkanSceneData::ReadProbeVolume): the Inspector and the
 // gizmo edit s_ProbeVolumeSettings and write it back with CommitProbeVolume
 void ExtractProbeVolume();
 
@@ -181,10 +183,12 @@ void UpdateGameViewportFocus(bool viewportFocused);
 // The running game's input, for the Input panel (nullptr: no game, or Simulate: it has none)
 const InputSystem* GetGameInput();
 
-// The running game's physics, for the Properties and Physics panels (nullptr: no game)
+// The running game's physics, for the Inspector and the Physics panel (nullptr: no game)
 ScenePhysics* GetGamePhysics();
 
-// The running game's scripts, for the Properties panel (nullptr: no game, or Simulate: no scripts run)
+// The running game's sounds, for the Inspector and the Audio panel (nullptr: no game, or Simulate: no sound)
+SceneAudio* GetGameAudio();
+// The running game's scripts, for the Inspector (nullptr: no game, or Simulate: no scripts run)
 ScriptRuntime* GetGameScripts();
 
 // Hot reload (EditorScriptReload.cpp): each frame, after Play and Stop, a newer build of the project's scripts is loaded
@@ -238,10 +242,15 @@ bool OpenScriptProjectInCodeEditor();
 bool OpenScriptFile(const std::string& file, int line);
 // The .cs file and line declaring a script class ("Sample.Spinner"); false when none is found
 bool FindScriptClassFile(const std::string& className, std::string& file, int& line);
+// Visual Studio (EditorVisualStudio.cpp, Windows): the file at the line (empty: only the window) in the Visual Studio that
+// has the .csproj open, else in one started with it; on a thread of its own. UpdateVisualStudio: each frame, shows the
+// result when it went wrong
+bool OpenInVisualStudio(const std::string& devenv, const std::string& csproj, const std::string& file, int line);
+void UpdateVisualStudio();
 // A new script <name>.cs in the scripts' folder, from the template, opened in the code editor and built; className: with
 // its namespace (it can be chosen once built). False (error says why) when it can't be made
 bool NewScript(const std::string& name, std::string& className, std::string& error);
-// New Script asks for its name (the Scripts menu, the Project and Properties panels); with an entity, its Script becomes
+// New Script asks for its name (the Scripts menu, the Project panel and the Inspector); with an entity, its Script becomes
 // the new class. The dialog: each frame, at the top level
 void OpenNewScriptDialog(EnvMapVulkanEntityID entity = NoEntity);
 void OnImGuiRenderNewScriptDialog();
@@ -396,6 +405,9 @@ bool CanBeDeleted(EntityKind kind);
 // a light or the water right away. A model's last mesh takes the model with it (see EditorPreFrame).
 void DeleteEntity(EnvMapVulkanEntityID entity);
 
+// A sound alone (Scene Hierarchy: Add > Sound): an entity with an Audio Source where the camera looks, selected
+void AddSoundAtView();
+
 // New lights and the water go where the camera looks (see GetLightSpawnTarget), selected
 void AddPointLightAtView();
 
@@ -495,7 +507,7 @@ void RequestPaste();
 // Ctrl+C and Ctrl+V while the viewport or the Scene Hierarchy has the focus (once a frame; not while typing in a field)
 void HandleCopyPasteKeys();
 
-// ---- Properties (EditorPropertiesPanel.cpp)
+// ---- Inspector (EditorInspectorPanel.cpp)
 
 // The water plane: add / remove it, its place and size, the waves and the look (EnvMapVulkanWaterSettings)
 void OnImGuiRenderWater();
@@ -506,15 +518,17 @@ bool CanManipulateMesh(EnvMapVulkanEntityID modelEntity, int meshIndex);
 
 void OnImGuiRenderModelsAndMeshes();
 
-void OnImGuiRenderProperties();
+void OnImGuiRenderInspector();
 
-// The Properties panel's Script section (EditorScriptProperties.cpp): the entity's C# script class and its fields
+// The Inspector's Script section (EditorInspectorScript.cpp): the entity's C# script class and its fields
 void ScriptPropertiesControls(EnvMapVulkanEntityID entity);
+// The Inspector's Audio section (EditorInspectorAudio.cpp, 5.3): the entity's Audio Source and Audio Listener
+void AudioControls(EnvMapVulkanEntityID entity);
 
 // ---- Lights (EditorLightsPanel.cpp)
 
 // The selected light's properties (the sun, a point or a spot light), edited on this frame's copy (s_Lights) and written
-// back into its entity at the end. Used by the Lights panel and the Properties panel.
+// back into its entity at the end. Used by the Lights panel and the Inspector.
 void LightPropertiesControls();
 
 // The sun, point lights and spot lights: add, delete, enable and edit
@@ -523,7 +537,7 @@ void OnImGuiRenderLights();
 // ---- Environment (EditorEnvironmentPanel.cpp)
 
 // The environment's settings: the map (load, or drop an .hdr), the skybox blur, exposure, Extract Sun, tonemapping and the
-// rotation of the scene's environment entity. Used by the Environment and the Properties panels.
+// rotation of the scene's environment entity. Used by the Environment and the Inspectors.
 void EnvironmentControls();
 
 // The Environment panel: the environment map and display, the debug views, the selection overlays, ray tracing, the
@@ -574,6 +588,7 @@ void OnImGuiRenderInputPanel();
 // The running game's bodies, steps and events, the debug views, a query test from the view's center and the project's
 // collision layers (View > Physics)
 void OnImGuiRenderPhysicsPanel();
+void OnImGuiRenderAudioPanel();
 
 // A line the viewport draws over the scene, in the world, in its color (ImGui's)
 struct EditorWorldLine

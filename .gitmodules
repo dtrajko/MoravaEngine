@@ -37,3 +37,6 @@
 [submodule "vendor/cross-platform/JoltPhysics"]
 	path = vendor/cross-platform/JoltPhysics
 	url = https://github.com/jrouwe/JoltPhysics
+[submodule "vendor/cross-platform/miniaudio"]
+	path = vendor/cross-platform/miniaudio
+	url = https://github.com/mackron/miniaudio

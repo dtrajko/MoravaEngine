@@ -5,9 +5,14 @@
 #include "EnvMapVulkan/EnvMapVulkanRenderer.h"
 #include "EnvMapVulkan/EnvMapVulkanScene.h"
 
+#include "Audio/AudioEngine.h"
+#include "Audio/SceneAudio.h"
+
 #include "Input/InputSystem.h"
 
 #include "Physics/ScenePhysics.h"
+
+#include "Project/Project.h"
 
 #include <glm/gtc/quaternion.hpp>
 
@@ -262,6 +267,8 @@ static int32_t EntityHasComponent(uint64_t entity, int32_t component)
 		}
 		case ScriptComponentKind::CharacterController: return scene->Has<CharacterControllerComponent>(entity) ? 1 : 0;
 		case ScriptComponentKind::Collider:          return scene->Has<ColliderComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::AudioSource:       return scene->Has<AudioSourceComponent>(entity) ? 1 : 0;
+		case ScriptComponentKind::AudioListener:     return scene->Has<AudioListenerComponent>(entity) ? 1 : 0;
 	}
 	return 0;
 }
@@ -487,6 +494,164 @@ static void TimeGet(ScriptTime* out)
 	}
 }
 
+// ---- Audio (5.2)
+
+static AudioSourceComponent* GetAudioSource(uint64_t entity)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	return scene ? scene->TryGet<AudioSourceComponent>(entity) : nullptr;
+}
+
+static SceneAudio* GetAudio()
+{
+	return s_Context ? s_Context->Audio : nullptr;
+}
+
+static int32_t AudioSourcePlay(uint64_t entity)
+{
+	SceneAudio* audio = GetAudio();
+	return GetAudioSource(entity) && audio && audio->Play(entity) ? 1 : 0;
+}
+
+static int32_t AudioSourcePause(uint64_t entity)
+{
+	SceneAudio* audio = GetAudio();
+	return GetAudioSource(entity) && audio && audio->Pause(entity) ? 1 : 0;
+}
+
+static int32_t AudioSourceStop(uint64_t entity)
+{
+	SceneAudio* audio = GetAudio();
+	return GetAudioSource(entity) && audio && audio->StopSound(entity) ? 1 : 0;
+}
+
+static int32_t AudioSourceIsPlaying(uint64_t entity)
+{
+	if (!GetAudioSource(entity))
+	{
+		return -1;
+	}
+	SceneAudio* audio = GetAudio();
+	return audio && audio->IsPlaying(entity) ? 1 : 0;
+}
+
+static int32_t AudioSourceGetSettings(uint64_t entity, ScriptAudioSettings* out)
+{
+	const AudioSourceComponent* source = GetAudioSource(entity);
+	if (!source)
+	{
+		return 0;
+	}
+	out->Volume = source->Volume;
+	out->Pitch = source->Pitch;
+	out->MinDistance = source->MinDistance;
+	out->MaxDistance = source->MaxDistance;
+	out->Bus = (int32_t)source->Bus;
+	out->Loop = source->Loop ? 1 : 0;
+	out->Spatial = source->Spatial ? 1 : 0;
+	return 1;
+}
+
+static int32_t AudioSourceSetSettings(uint64_t entity, const ScriptAudioSettings* value)
+{
+	AudioSourceComponent* source = GetAudioSource(entity);
+	if (!source)
+	{
+		return 0;
+	}
+	source->Volume = std::max(value->Volume, 0.0f);
+	source->Pitch = std::max(value->Pitch, 0.01f);
+	source->MinDistance = std::max(value->MinDistance, 0.01f);
+	source->MaxDistance = std::max(value->MaxDistance, source->MinDistance);
+	if (value->Bus >= 0 && value->Bus < (int32_t)AudioBus::Count)
+	{
+		source->Bus = (AudioBus)value->Bus; // a new bus or Spatial: from the next Play
+	}
+	source->Loop = value->Loop != 0;
+	source->Spatial = value->Spatial != 0;
+	if (SceneAudio* audio = GetAudio())
+	{
+		audio->ApplySettings(entity);
+	}
+	return 1;
+}
+
+static int32_t AudioSourceGetClip(uint64_t entity, char16_t* buffer, int capacity)
+{
+	const AudioSourceComponent* source = GetAudioSource(entity);
+	return source ? CopyString(ProjectPaths::ToStored(source->Clip), buffer, capacity) : -2;
+}
+
+static int32_t AudioSourceSetClip(uint64_t entity, const char16_t* clip, int length)
+{
+	AudioSourceComponent* source = GetAudioSource(entity);
+	if (!source)
+	{
+		return 0;
+	}
+	source->Clip = ProjectPaths::Resolve(ToUtf8(clip, length)); // from the next Play
+	return 1;
+}
+
+static int32_t AudioListenerGetActive(uint64_t entity, int32_t* out)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	const AudioListenerComponent* listener = scene ? scene->TryGet<AudioListenerComponent>(entity) : nullptr;
+	if (!listener)
+	{
+		return 0;
+	}
+	*out = listener->Active ? 1 : 0;
+	return 1;
+}
+
+static int32_t AudioListenerSetActive(uint64_t entity, int32_t active)
+{
+	EnvMapVulkanScene* scene = GetScene();
+	AudioListenerComponent* listener = scene ? scene->TryGet<AudioListenerComponent>(entity) : nullptr;
+	if (!listener)
+	{
+		return 0;
+	}
+	listener->Active = active != 0;
+	return 1;
+}
+
+static int32_t AudioPlayOneShot(const char16_t* clip, int length, const glm::vec3* position, int32_t bus, float volume, float pitch)
+{
+	SceneAudio* audio = GetAudio();
+	if (!audio || bus < 0 || bus >= (int32_t)AudioBus::Count)
+	{
+		return 0;
+	}
+	return audio->PlayOneShot(ProjectPaths::Resolve(ToUtf8(clip, length)), position, (AudioBus)bus, volume, pitch) ? 1 : 0;
+}
+
+static void AudioGetVolumes(float* out)
+{
+	const AudioVolumes& volumes = AudioEngine::GetVolumes();
+	out[0] = volumes.Master;
+	for (int i = 0; i < (int)AudioBus::Count; i++)
+	{
+		out[1 + i] = volumes.Buses[i];
+	}
+}
+
+static void AudioSetVolumes(const float* in)
+{
+	if (!GetAudio())
+	{
+		return; // only a running game's
+	}
+	AudioVolumes volumes;
+	volumes.Master = std::max(in[0], 0.0f);
+	for (int i = 0; i < (int)AudioBus::Count; i++)
+	{
+		volumes.Buses[i] = std::max(in[1 + i], 0.0f);
+	}
+	AudioEngine::SetVolumes(volumes);
+}
+
 namespace ScriptBindings
 {
 	void Bind()
@@ -525,6 +690,19 @@ namespace ScriptBindings
 		api.Physics_OverlapSphere = PhysicsOverlapSphere;
 		api.Physics_OverlapBox = PhysicsOverlapBox;
 		api.Time_Get = TimeGet;
+		api.AudioSource_Play = AudioSourcePlay;
+		api.AudioSource_Pause = AudioSourcePause;
+		api.AudioSource_Stop = AudioSourceStop;
+		api.AudioSource_IsPlaying = AudioSourceIsPlaying;
+		api.AudioSource_GetSettings = AudioSourceGetSettings;
+		api.AudioSource_SetSettings = AudioSourceSetSettings;
+		api.AudioSource_GetClip = AudioSourceGetClip;
+		api.AudioSource_SetClip = AudioSourceSetClip;
+		api.AudioListener_GetActive = AudioListenerGetActive;
+		api.AudioListener_SetActive = AudioListenerSetActive;
+		api.Audio_PlayOneShot = AudioPlayOneShot;
+		api.Audio_GetVolumes = AudioGetVolumes;
+		api.Audio_SetVolumes = AudioSetVolumes;
 	}
 
 	void SetContext(ScriptContext* context)
