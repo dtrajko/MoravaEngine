@@ -182,6 +182,13 @@ static std::vector<SubmittedModel> s_SubmittedModels;
 // For the motion vectors: where every mesh of the submitted models was drawn in the previous frame (GetMeshTransform then),
 // one matrix per mesh in the order of s_SubmittedModels. The G-buffer prepass reads them per draw (see EnvMapVulkanGBuffer).
 static std::vector<glm::mat4> s_PreviousDrawTransforms;
+// Frustum culling of the main view (see CullMainView): whether each mesh of the submitted models is drawn, in the order of
+// s_PreviousDrawTransforms; the boxes of the culled ones (Show Culled), and the frustum culled against
+static std::vector<uint8_t> s_MeshInView;
+static std::vector<glm::mat4> s_CulledBoxes; // the unit cube (0..1) to each culled mesh's box in the world
+static EnvMapVulkanRenderer::CullingStats s_CullingStats;
+static glm::mat4 s_CullingViewProjection = glm::mat4(1.0f);
+static bool s_CullingFrozen = false; // s_CullingViewProjection is kept from an earlier frame (FreezeCulling)
 
 
 struct VulkanRendererData
@@ -533,6 +540,10 @@ static bool IsInViewSelection(EnvMapVulkanEntityID entity)
 // its selected parts (empty: nothing of it is selected)
 static std::vector<int> GetViewSelectedMeshes(EnvMapVulkanEntityID model)
 {
+	if (s_ViewOptions.Selection.empty())
+	{
+		return {}; // the player's view, or nothing selected: no walk through every model's parts each frame
+	}
 	if (IsInViewSelection(model))
 	{
 		return { -1 };
@@ -1044,7 +1055,11 @@ static float GetModelWorldSize(EnvMapVulkanEntityID entry)
 static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 {
 	const glm::mat4 viewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
-	const std::vector<EnvMapVulkanEntityID> models = EnvMapVulkanSceneData::GetModels(*s_Scene);
+	// The models, when an overlay draws them (the player's view draws none: no walk through the scene each frame)
+	const EnvMapVulkanOverlaySettings& overlays = s_ViewOptions.Overlays;
+	const bool drawsModels = !s_ViewOptions.Selection.empty() || overlays.Wireframe != OverlayScopeOff || overlays.BoundingBoxes != OverlayScopeOff ||
+		overlays.Vectors != OverlayScopeOff;
+	const std::vector<EnvMapVulkanEntityID> models = drawsModels ? EnvMapVulkanSceneData::GetModels(*s_Scene) : std::vector<EnvMapVulkanEntityID>();
 	// What of each model is selected: { -1 } the whole model, or mesh indices of its selected parts (see GetViewSelectedMeshes)
 	std::map<EnvMapVulkanEntityID, std::vector<int>> selectedMeshes;
 	for (EnvMapVulkanEntityID m : models)
@@ -1259,6 +1274,40 @@ static void RecordEditorOverlayPasses(VkCommandBuffer commandBuffer)
 				const glm::vec4 color = inUse ? glm::vec4(1.0f, 0.72f, 0.1f, 1.0f) : glm::vec4(0.8f, 0.08f, 0.08f, 1.0f); // as the balls
 				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
 				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &color);
+				vkCmdDraw(commandBuffer, s_BoundingBoxVertexCount, 1, 0, 0);
+				EnvMapVulkanProfiler::CountDraw(0);
+			}
+		}
+
+		// Frustum culling (Show Culled): the boxes of the meshes culled in this frame, and the frustum culled against while it
+		// is frozen (the camera's own frustum is the view's edge: nothing to see)
+		if (s_ViewOptions.ShowCulled && (!s_CulledBoxes.empty() || s_CullingFrozen))
+		{
+			H2M::RefH2M<H2M::VulkanPipelineH2M> vulkanPipeline = s_BoundingBoxPipeline.As<H2M::VulkanPipelineH2M>();
+			VkPipelineLayout layout = vulkanPipeline->GetVulkanPipelineLayout();
+			VkBuffer vertexBuffer = s_BoundingBoxVertexBuffer.As<H2M::VulkanVertexBufferH2M>()->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer, offsets);
+			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipeline());
+			vkCmdSetLineWidth(commandBuffer, lineWidth);
+
+			const glm::vec4 culledColor(1.0f, 0.2f, 0.25f, 1.0f);
+			for (const glm::mat4& box : s_CulledBoxes)
+			{
+				const glm::mat4 mvp = viewProjection * box;
+				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &culledColor);
+				vkCmdDraw(commandBuffer, s_BoundingBoxVertexCount, 1, 0, 0);
+				EnvMapVulkanProfiler::CountDraw(0);
+			}
+			if (s_CullingFrozen)
+			{
+				// The unit cube to the clip space cube (-1..1), and back into the world through the frozen camera
+				const glm::mat4 mvp = viewProjection * glm::inverse(s_CullingViewProjection) * glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f)) *
+					glm::scale(glm::mat4(1.0f), glm::vec3(2.0f));
+				const glm::vec4 frustumColor(1.0f, 0.85f, 0.2f, 1.0f);
+				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mvp);
+				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(glm::mat4), sizeof(glm::vec4), &frustumColor);
 				vkCmdDraw(commandBuffer, s_BoundingBoxVertexCount, 1, 0, 0);
 				EnvMapVulkanProfiler::CountDraw(0);
 			}
@@ -1915,6 +1964,16 @@ void EnvMapVulkanRenderer::Shutdown()
 void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
 	MeshPass pass, uint32_t firstDraw)
 {
+	// A model whose meshes are all outside the camera's frustum binds nothing (see CullMainView)
+	if (pass != MeshPass::WaterReflection && firstDraw < s_MeshInView.size())
+	{
+		const size_t end = std::min(s_MeshInView.size(), (size_t)firstDraw + model->GetMeshes().size());
+		if (std::find(s_MeshInView.begin() + firstDraw, s_MeshInView.begin() + end, (uint8_t)1) == s_MeshInView.begin() + end)
+		{
+			return;
+		}
+	}
+
 	/**** BEGIN keep smart references alive ****/
 	H2M::RefH2M<H2M::TextureCubeH2M> envUnfiltered = s_Data.envUnfiltered;
 	H2M::RefH2M<H2M::TextureCubeH2M> envFiltered = s_Data.envFiltered;
@@ -1991,6 +2050,10 @@ void EnvMapVulkanRenderer::RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, c
 		if (material->IsGlass() && !skinned)
 		{
 			continue; // drawn after the opaque meshes and the water (see RecordGlassPass)
+		}
+		if (pass != MeshPass::WaterReflection && firstDraw + s < s_MeshInView.size() && !s_MeshInView[firstDraw + s])
+		{
+			continue; // outside the camera's frustum (see CullMainView)
 		}
 		H2M::BufferH2M uniformStorageBuffer = material->GetUniformStorageBuffer();
 
@@ -2141,6 +2204,35 @@ static void WriteShadowMapDescriptor()
 	vkUpdateDescriptorSets(H2M::VulkanContextH2M::GetCurrentDevice()->GetVulkanDevice(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
 }
 
+// The six planes of a view-projection's clip volume (Gribb and Hartmann: from the rows of the matrix), as (normal,
+// distance) with the normals inwards: a point p is inside where dot(normal, p) + distance >= 0 for all six. The near plane
+// is the one of a -1..1 depth range (the camera's projection); for a 0..1 one (the shadow maps') it lies a little further
+// back, which only keeps a few more boxes.
+static void GetFrustumPlanes(const glm::mat4& viewProjection, glm::vec4 planes[6])
+{
+	const glm::mat4 rows = glm::transpose(viewProjection);
+	planes[0] = rows[3] + rows[0];
+	planes[1] = rows[3] - rows[0];
+	planes[2] = rows[3] + rows[1];
+	planes[3] = rows[3] - rows[1];
+	planes[4] = rows[3] + rows[2];
+	planes[5] = rows[3] - rows[2];
+}
+
+// A box in the world (center, half size along the world's axes) is entirely behind one of the planes: nothing of it can
+// be seen. A box outside the frustum but across its corner passes (it is behind no single plane).
+static bool IsBoxOutsideFrustum(const glm::vec4 planes[6], const glm::vec3& center, const glm::vec3& half)
+{
+	for (int p = 0; p < 6; p++)
+	{
+		const glm::vec3 normal(planes[p]);
+		if (glm::dot(normal, center) + planes[p].w + glm::dot(glm::abs(normal), half) < 0.0f)
+		{
+			return true;
+		}
+	}
+	return false;
+}
 
 static void ComputeShadowCasterBounds(glm::vec3& totalMin, glm::vec3& totalMax)
 {
@@ -2194,12 +2286,15 @@ static void BeginShadowPass(VkCommandBuffer commandBuffer, const EnvMapVulkanSha
 	vkCmdSetDepthBias(commandBuffer, depthBias, 0.0f, slopeBias);
 }
 
-// Draws the submitted models into the current shadow pass. With a light sphere (center, radius), only the models whose
-// bounds reach into it: a spot or point light can't shadow anything beyond its range. The shadow pipelines were built for
-// the sun's render pass; the spot and point light passes are compatible with it (one depth attachment of the same format).
-// Returns the number of models drawn.
+// Draws the submitted models into the current shadow pass: the models whose bounds are in the pass's view (as for the
+// main view, see CullMainView; the sun's cascades reach back behind every caster, so a caster outside the camera's view
+// still casts into it). With a light sphere (center, radius), only the models whose bounds reach into it: a spot or point
+// light can't shadow anything beyond its range. The shadow pipelines were built for the sun's render pass; the spot and
+// point light passes are compatible with it (one depth attachment of the same format). Returns the number of models drawn.
 static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4& viewProjection, const glm::vec3* lightCenter = nullptr, float lightRadius = 0.0f)
 {
+	glm::vec4 planes[6];
+	GetFrustumPlanes(viewProjection, planes);
 	uint32_t drawn = 0;
 	for (size_t m = 0; m < s_SubmittedModels.size(); m++)
 	{
@@ -2215,6 +2310,15 @@ static uint32_t DrawShadowCasters(VkCommandBuffer commandBuffer, const glm::mat4
 
 		H2M::RefH2M<H2M::ModelH2M> model = s_SubmittedModels[m].Model;
 		const bool skinned = model->IsSkinned();
+		// Not a skinned model: its bones move it out of its bounds
+		if (!skinned && s_ViewOptions.FrustumCulling)
+		{
+			const auto& [boundsMin, boundsMax] = s_ShadowCasterBounds[m];
+			if (IsBoxOutsideFrustum(planes, (boundsMin + boundsMax) * 0.5f, (boundsMax - boundsMin) * 0.5f))
+			{
+				continue;
+			}
+		}
 		const EnvMapVulkanShadowPipeline& pipeline = skinned ? s_ShadowPipelineAnim : s_ShadowPipeline;
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.Pipeline);
 		if (skinned)
@@ -2293,7 +2397,7 @@ static void RecordShadowPasses(VkCommandBuffer commandBuffer, const glm::vec3& b
 	for (uint32_t cascade = 0; cascade < ShadowCascadeCount; cascade++)
 	{
 		EnvMapVulkanProfiler::Scope cascadeScope(commandBuffer, "Cascade " + std::to_string(cascade), "One layer of the sun's shadow map: every "
-			"shadow caster drawn from the sun into it, with the cascade's light view and projection.");
+			"shadow caster in the cascade's view drawn from the sun into it, with the cascade's light view and projection.");
 		BeginShadowPass(commandBuffer, s_ShadowMap, cascade, s_RenderSettings.Shadows.DepthBias, s_RenderSettings.Shadows.SlopeBias);
 		DrawShadowCasters(commandBuffer, s_ShadowCascades[cascade].ViewProjection);
 		vkCmdEndRenderPass(commandBuffer);
@@ -2371,6 +2475,64 @@ static bool BoxTouchesCubeFace(const glm::vec3& boxMin, const glm::vec3& boxMax,
 		}
 	}
 	return true;
+}
+
+// Frustum culling of the main view: which meshes of the submitted models the G-buffer prepass, the scene pass and the
+// glass draw (s_MeshInView). Each mesh's box, turned with the mesh into the world, against the camera's frustum. Done
+// after the water reflection (its mirrored camera sees other meshes); the shadow maps cull against their own views.
+static void CullMainView()
+{
+	const glm::mat4 cameraViewProjection = s_Data.SceneData.SceneCamera.Camera.GetViewProjection();
+	if (!s_ViewOptions.FreezeCulling || !s_CullingFrozen)
+	{
+		s_CullingViewProjection = cameraViewProjection;
+	}
+	s_CullingFrozen = s_ViewOptions.FreezeCulling;
+	glm::vec4 planes[6];
+	GetFrustumPlanes(s_CullingViewProjection, planes);
+
+	s_MeshInView.assign(s_PreviousDrawTransforms.size(), 1);
+	s_CulledBoxes.clear();
+	s_CullingStats = {};
+	for (const SubmittedModel& submitted : s_SubmittedModels)
+	{
+		const auto& meshes = submitted.Model->GetMeshes();
+		const bool skinned = submitted.Model->IsSkinned();
+		for (uint32_t s = 0; s < (uint32_t)meshes.size(); s++)
+		{
+			s_CullingStats.Meshes++;
+			if (skinned)
+			{
+				s_CullingStats.Skinned++;
+				continue;
+			}
+			if (!s_ViewOptions.FrustumCulling)
+			{
+				continue;
+			}
+			// The box in the world: its center moved with the mesh, its half size along each world axis
+			const H2M::AABB_H2M& box = meshes[s]->BoundingBox;
+			const glm::mat4 transform = EnvMapVulkanSceneData::GetMeshTransform(submitted.Model, meshes[s], submitted.Transform);
+			const glm::vec3 center = glm::vec3(transform * glm::vec4((box.Min + box.Max) * 0.5f, 1.0f));
+			const glm::vec3 localHalf = (box.Max - box.Min) * 0.5f;
+			const glm::vec3 half = glm::abs(glm::vec3(transform[0])) * localHalf.x + glm::abs(glm::vec3(transform[1])) * localHalf.y +
+				glm::abs(glm::vec3(transform[2])) * localHalf.z;
+			if (IsBoxOutsideFrustum(planes, center, half) && submitted.FirstDraw + s < s_MeshInView.size())
+			{
+				s_MeshInView[submitted.FirstDraw + s] = 0;
+				s_CullingStats.Culled++;
+				if (s_ViewOptions.ShowCulled)
+				{
+					s_CulledBoxes.push_back(transform * glm::translate(glm::mat4(1.0f), box.Min) * glm::scale(glm::mat4(1.0f), box.Max - box.Min));
+				}
+			}
+		}
+	}
+}
+
+const EnvMapVulkanRenderer::CullingStats& EnvMapVulkanRenderer::GetCullingStats()
+{
+	return s_CullingStats;
 }
 
 // The probe volume's update of this frame (see EnvMapVulkanProbes): the probes of the batch capture the scene around
@@ -2776,7 +2938,7 @@ static void CollectGlassDraws()
 		const auto& meshes = submitted.Model->GetMeshes();
 		for (uint32_t s = 0; s < (uint32_t)meshes.size() && s < (uint32_t)submitted.Materials.size(); s++)
 		{
-			if (!submitted.Materials[s]->IsGlass())
+			if (!submitted.Materials[s]->IsGlass() || (submitted.FirstDraw + s < s_MeshInView.size() && !s_MeshInView[submitted.FirstDraw + s]))
 			{
 				continue;
 			}
@@ -2983,6 +3145,7 @@ void EnvMapVulkanRenderer::GeometryPass()
 		}
 
 		// The G-buffer prepass: the opaque meshes' normals, roughness, motion and depth, before the scene pass
+		CullMainView();
 		{
 			EnvMapVulkanProfiler::Scope prepassScope(drawCommandBuffer, "G-Buffer Prepass", "The surface data of every pixel (normal, "
 				"roughness, motion, depth) for the effects that need it before or after the lighting, such as ambient occlusion: "
@@ -3088,12 +3251,12 @@ void EnvMapVulkanRenderer::GeometryPass()
 			s_Data.FrameDescriptorSet.DescriptorSets.data(), 0, nullptr);
 
 		{
-			EnvMapVulkanProfiler::Scope meshesScope(drawCommandBuffer, "Opaque Meshes", "Every mesh of every model, one draw call per mesh, "
-				"with its material: the PBR fragment shader runs once for each covered pixel (the depth test keeps only the surface "
-				"the G-buffer prepass found in front). Usually the biggest part of the frame.");
+			EnvMapVulkanProfiler::Scope meshesScope(drawCommandBuffer, "Opaque Meshes", "Every mesh in the camera's view (the others are "
+				"culled by their boxes), one draw call per mesh, with its material: the PBR fragment shader runs once for each covered "
+				"pixel (the depth test keeps only the surface the G-buffer prepass found in front). Usually the biggest part of the frame.");
 			for (const SubmittedModel& submitted : s_SubmittedModels)
 			{
-				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::Scene);
+				RenderModelVulkan(submitted.Model, submitted.Transform, submitted.Materials, drawCommandBuffer, MeshPass::Scene, submitted.FirstDraw);
 			}
 		}
 		if (s_Probes.ShowsSpheres())

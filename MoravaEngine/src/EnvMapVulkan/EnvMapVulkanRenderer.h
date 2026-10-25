@@ -69,7 +69,7 @@ public:
 	// test (no prepass there); GBuffer: the prepass shaders
 	enum class MeshPass { Scene, WaterReflection, GBuffer };
 	static void RenderModelVulkan(H2M::RefH2M<H2M::ModelH2M> model, const glm::mat4& transform, const std::vector<H2M::RefH2M<EnvMapVulkanMaterial>>& materials, VkCommandBuffer commandBuffer,
-		MeshPass pass, uint32_t firstDraw = 0); // firstDraw (MeshPass::GBuffer): the model's first mesh among the frame's previous transforms
+		MeshPass pass, uint32_t firstDraw = 0); // firstDraw: the model's first mesh among the frame's meshes (previous transforms, culling)
 
 	static void RenderSkybox(VkCommandBuffer commandBuffer);
 
@@ -118,6 +118,16 @@ public:
 	// The shadow slot of each point and spot light of the scene's lists (-1: no shadow this frame), and how many have one
 	static void GetShadowSlotsPerLight(std::vector<int>& pointSlots, std::vector<int>& spotSlots);
 	static void GetShadowedLightCounts(uint32_t& pointLights, uint32_t& spotLights);
+
+	// Frustum culling of the main view (the G-buffer prepass, the scene pass and the glass) in the last frame: each mesh's
+	// box against the camera's frustum. Skinned meshes are always drawn (their bones move them out of their boxes).
+	struct CullingStats
+	{
+		uint32_t Meshes = 0;  // of the submitted models
+		uint32_t Culled = 0;  // outside the frustum: not drawn
+		uint32_t Skinned = 0; // not tested
+	};
+	static const CullingStats& GetCullingStats();
 	// Point and spot lights can cast shadows on this GPU (point lights need cube map arrays)
 	static bool CanPointLightsCastShadows();
 	static bool CanSpotLightsCastShadows();

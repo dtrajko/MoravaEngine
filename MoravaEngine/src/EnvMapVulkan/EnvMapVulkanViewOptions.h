@@ -77,6 +77,13 @@ struct EnvMapVulkanViewOptions
 	bool ShowCascades = false; // the scene tinted by sun shadow cascade: red, green, blue, yellow (nearest to farthest)
 	bool ShadowsOnly = false;  // the selected light's shadow alone (see ShadowDebugValue in the PBR shaders)
 
+	// Frustum culling of the main view: off draws every mesh (to compare). Freeze keeps the frustum of the moment it was
+	// turned on, so the view can move out of it and look at what is culled; Show Culled draws the culled meshes' boxes
+	// and the frozen frustum.
+	bool FrustumCulling = true;
+	bool FreezeCulling = false;
+	bool ShowCulled = false;
+
 	bool Grid = false;
 	float GridScale = 16.025f; // cells across the grid (it spans 32 x 32 units)
 	float GridSize = 0.025f;   // line width, as a fraction of a cell

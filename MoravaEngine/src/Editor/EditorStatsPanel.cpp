@@ -416,6 +416,35 @@ void OnImGuiRenderRendererStats()
 		}
 	}
 	ImGui::Text("%u models, %u meshes, %s triangles", modelCount, meshCount, FormatCount(triangleCount).c_str());
+
+	// Frustum culling of the main view (this frame's recording, a frame ahead of the passes above)
+	const EnvMapVulkanRenderer::CullingStats& culling = EnvMapVulkanRenderer::GetCullingStats();
+	ImGui::Text("Main view: %u of %u meshes drawn, %u culled", culling.Meshes - culling.Culled, culling.Meshes, culling.Culled);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Frustum culling: before the G-Buffer Prepass and the Scene pass, each mesh's bounding box (turned with\n"
+			"the mesh) is tested against the camera's view; a mesh entirely outside it isn't drawn in them.\n"
+			"Skinned meshes are always drawn (%u of them): their bones move them out of their boxes.\n"
+			"The shadow maps cull against their own views; the water's reflection and ray tracing see every mesh.", culling.Skinned);
+	}
+	ImGui::Checkbox("Frustum Culling", &s_ViewOptions.FrustumCulling);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Off: every mesh is drawn, to compare the frame times and to check that culling changes nothing on screen");
+	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Freeze", &s_ViewOptions.FreezeCulling);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("Keeps culling against the view of the moment it was turned on: move the camera out of it to see\n"
+			"what is culled (with Show Culled: the frozen view as a yellow frustum)");
+	}
+	ImGui::SameLine();
+	ImGui::Checkbox("Show Culled", &s_ViewOptions.ShowCulled);
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("The bounding boxes of the culled meshes in red, and the frozen view's frustum in yellow");
+	}
 	uint32_t shadowedPointLights = 0, shadowedSpotLights = 0;
 	EnvMapVulkanRenderer::GetShadowedLightCounts(shadowedPointLights, shadowedSpotLights);
 	ImGui::Text("%zu point lights (%u with shadows), %zu spot lights (%u with shadows)", s_Lights.PointLights.size(), shadowedPointLights,
