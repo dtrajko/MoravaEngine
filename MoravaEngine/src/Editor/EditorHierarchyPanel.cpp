@@ -194,7 +194,11 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 	}
 	if (ImGui::IsItemHovered())
 	{
-		if (const ModelComponent* model = s_Scene.TryGet<ModelComponent>(entity))
+		if (const PrefabComponent* prefab = s_Scene.TryGet<PrefabComponent>(entity))
+		{
+			ImGui::SetTooltip("%s, an instance of the prefab\n%s", GetEntityKindName(kind), prefab->File.c_str());
+		}
+		else if (const ModelComponent* model = s_Scene.TryGet<ModelComponent>(entity))
 		{
 			ImGui::SetTooltip("%s\n%s", GetEntityKindName(kind), model->FilePath.c_str());
 		}
@@ -247,6 +251,16 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 			requests.NewParent = NoEntity;
 		}
 		ImGui::Separator();
+		if (ImGui::MenuItem("Save as Prefab...", nullptr, false, CanBeReparented(kind) || kind == EntityKind::Other))
+		{
+			SaveAsPrefabWithDialog(entity);
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("The entity and everything under it as a prefab file, to place again (Add > Prefab, the Content\n"
+				"Browser). It becomes the prefab's first instance. Or drag the entity onto the Content Browser");
+		}
+		ImGui::Separator();
 		if (ImGui::MenuItem("Copy", "Ctrl+C", false, CanBeCopied(kind) || s_EditorSelection.GetAll().size() > 1))
 		{
 			CopySelection();
@@ -269,6 +283,11 @@ static void DrawHierarchyNode(EnvMapVulkanEntityID entity, HierarchyRequests& re
 	const float markerX = itemMin.x + ImGui::GetTreeNodeToLabelSpacing() + 5.0f;
 	const float centerY = (itemMin.y + itemMax.y) * 0.5f;
 	ImGui::GetWindowDrawList()->AddCircleFilled(ImVec2(markerX, centerY), 4.5f, GetEntityKindColor(kind));
+	if (s_Scene.Has<PrefabComponent>(entity))
+	{
+		// A prefab's instance: a blue ring around the marker (its parts have the blue name in the Inspector)
+		ImGui::GetWindowDrawList()->AddCircle(ImVec2(markerX, centerY), 7.0f, IM_COL32(115, 190, 255, 255), 0, 1.5f);
+	}
 	if (s_RenamingEntity == entity)
 	{
 		ImGui::SameLine(markerX - ImGui::GetWindowPos().x + ImGui::GetScrollX() + 10.0f);
@@ -347,6 +366,20 @@ void OnImGuiRenderSceneHierarchy()
 		{
 			AddProbeVolumeAtView();
 		}
+		if (ImGui::MenuItem("Prefab..."))
+		{
+			const std::string folder = GetPrefabsFolder();
+			const std::string file = FileDialogs::OpenFile({ { "Prefab", "mprefab" } }, folder.empty() ? GetAssetFolderForDialog() : folder);
+			if (!file.empty())
+			{
+				RequestPrefabOperation(PrefabOperation::Place, NoEntity, file); // where the camera looks
+			}
+		}
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("An instance of a prefab file (.mprefab) where the camera looks. Or drag one from the Content\n"
+				"Browser onto the viewport (on the ground under the cursor) or here");
+		}
 		if (ImGui::MenuItem("Camera"))
 		{
 			s_EditorSelection.SetPrimary(CreateCameraAtView());
@@ -414,10 +447,18 @@ void OnImGuiRenderSceneHierarchy()
 			requests.NewParent = NoEntity;
 		}
 		std::string filepath;
-		if (AcceptFileDrop(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), EnvMapVulkanSceneLoader::IsModelFile, "a model file", filepath))
+		auto isModelOrPrefab = [](const std::string& path) { return EnvMapVulkanSceneLoader::IsModelFile(path) || IsPrefabFile(path); };
+		if (AcceptFileDrop(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), isModelOrPrefab, "a model file or a prefab", filepath))
 		{
-			s_PendingModelFilename = filepath; // loaded at the start of the next frame (see EditorPreFrame)
-			s_PendingModelGroundPosition.reset();
+			if (IsPrefabFile(filepath))
+			{
+				RequestPrefabOperation(PrefabOperation::Place, NoEntity, filepath); // where the camera looks
+			}
+			else
+			{
+				s_PendingModelFilename = filepath; // loaded at the start of the next frame (see EditorPreFrame)
+				s_PendingModelGroundPosition.reset();
+			}
 		}
 		ImGui::EndDragDropTarget();
 	}

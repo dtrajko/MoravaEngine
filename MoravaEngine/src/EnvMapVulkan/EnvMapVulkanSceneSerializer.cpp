@@ -325,6 +325,14 @@ namespace EnvMapVulkanSceneSerializer
 			out << YAML::Key << "Active" << YAML::Value << listener->Active;
 			out << YAML::EndMap;
 		}
+		if (const PrefabComponent* prefab = scene.TryGet<PrefabComponent>(entity))
+		{
+			out << YAML::Key << "Prefab" << YAML::Value << YAML::Flow << YAML::BeginMap;
+			out << YAML::Key << "File" << YAML::Value << ProjectPaths::ToStored(prefab->File);
+			out << YAML::Key << "PrefabHash" << YAML::Value << prefab->PrefabHash;
+			out << YAML::Key << "InstanceHash" << YAML::Value << prefab->InstanceHash;
+			out << YAML::EndMap;
+		}
 		if (const WaterComponent* water = scene.TryGet<WaterComponent>(entity))
 		{
 			WriteWater(out, water->Settings);
@@ -400,6 +408,215 @@ namespace EnvMapVulkanSceneSerializer
 		return std::string(out.c_str()) + "\n";
 	}
 
+	// The components of an entity read from a scene or prefab file (its ID, name and parent are the caller's)
+	static void ReadComponents(const YAML::Node& node, EnvMapVulkanScene& scene, EnvMapVulkanEntityID entity,
+		std::unordered_map<EnvMapVulkanEntityID, MaterialRef>& materialRefs)
+	{
+		if (YAML::Node tagsNode = node["Tags"]; tagsNode && tagsNode.IsSequence())
+		{
+			TagComponent& tags = scene.Add<TagComponent>(entity);
+			for (const YAML::Node& tag : tagsNode)
+			{
+				tags.Add(tag.as<std::string>(""));
+			}
+		}
+
+		if (YAML::Node transformNode = node["Transform"])
+		{
+			TransformComponent& transform = scene.Get<TransformComponent>(entity);
+			ReadVec3(transformNode["Translation"], transform.Translation);
+			ReadVec3(transformNode["Rotation"], transform.Rotation);
+			ReadVec3(transformNode["Scale"], transform.Scale);
+		}
+		if (YAML::Node modelNode = node["Model"])
+		{
+			scene.Add<ModelComponent>(entity).FilePath = ProjectPaths::Resolve(modelNode["File"].as<std::string>(""));
+		}
+		if (YAML::Node partNode = node["MeshPart"])
+		{
+			MeshPartComponent& part = scene.Add<MeshPartComponent>(entity);
+			part.SourceMeshIndex = partNode["SourceMeshIndex"].as<uint32_t>(0);
+			part.MeshIndex = part.SourceMeshIndex; // the caller sets it once the model's meshes are known
+			if (YAML::Node materialNode = partNode["Material"])
+			{
+				materialRefs[entity] = { materialNode["ID"].as<uint64_t>(0), ProjectPaths::Resolve(materialNode["File"].as<std::string>("")) };
+			}
+		}
+		if (YAML::Node sunNode = node["Sun"])
+		{
+			SunComponent& sun = scene.Add<SunComponent>(entity);
+			Read(sunNode, "Enabled", sun.Enabled);
+			ReadVec3(sunNode["Color"], sun.Color);
+			Read(sunNode, "Intensity", sun.Intensity);
+			Read(sunNode, "FollowEnvironmentRotation", sun.FollowEnvironmentRotation);
+			Read(sunNode, "CastShadows", sun.CastShadows);
+			Read(sunNode, "IconPlaced", sun.IconPlaced);
+		}
+		if (YAML::Node lightNode = node["PointLight"])
+		{
+			PointLightComponent& light = scene.Add<PointLightComponent>(entity);
+			Read(lightNode, "Enabled", light.Enabled);
+			ReadVec3(lightNode["Color"], light.Color);
+			Read(lightNode, "Intensity", light.Intensity);
+			Read(lightNode, "Range", light.Range);
+			Read(lightNode, "CastShadows", light.CastShadows);
+		}
+		if (YAML::Node lightNode = node["SpotLight"])
+		{
+			SpotLightComponent& light = scene.Add<SpotLightComponent>(entity);
+			Read(lightNode, "Enabled", light.Enabled);
+			ReadVec3(lightNode["Color"], light.Color);
+			Read(lightNode, "Intensity", light.Intensity);
+			Read(lightNode, "Range", light.Range);
+			Read(lightNode, "InnerAngle", light.InnerAngle);
+			Read(lightNode, "OuterAngle", light.OuterAngle);
+			Read(lightNode, "CastShadows", light.CastShadows);
+		}
+		if (YAML::Node waterNode = node["Water"])
+		{
+			WaterComponent& water = scene.Add<WaterComponent>(entity);
+			ReadWater(waterNode, water.Settings);
+		}
+		if (YAML::Node cameraNode = node["Camera"])
+		{
+			// Scenes saved before 6.3: the one camera, primary, with the planes every view had
+			CameraComponent& camera = scene.Add<CameraComponent>(entity);
+			Read(cameraNode, "Primary", camera.Primary);
+			Read(cameraNode, "FieldOfView", camera.FieldOfView); // scenes saved before the camera had a lens: 45
+			Read(cameraNode, "NearClip", camera.NearClip);
+			Read(cameraNode, "FarClip", camera.FarClip);
+		}
+		if (YAML::Node testNode = node["InputTest"])
+		{
+			InputTestComponent& test = scene.Add<InputTestComponent>(entity);
+			Read(testNode, "Speed", test.Speed);
+			Read(testNode, "JumpSpeed", test.JumpSpeed);
+			Read(testNode, "Gravity", test.Gravity);
+			Read(testNode, "TurnSpeed", test.TurnSpeed);
+			Read(testNode, "CaptureMouse", test.CaptureMouse);
+		}
+		if (YAML::Node colliderNode = node["Collider"])
+		{
+			ColliderComponent& collider = scene.Add<ColliderComponent>(entity);
+			const std::string shape = colliderNode["Shape"].as<std::string>("Box");
+			for (ColliderComponent::Shape s : { ColliderComponent::Shape::Box, ColliderComponent::Shape::Sphere, ColliderComponent::Shape::Capsule,
+				ColliderComponent::Shape::ConvexMesh, ColliderComponent::Shape::TriangleMesh })
+			{
+				if (shape == ColliderComponent::GetShapeName(s))
+				{
+					collider.Type = s;
+				}
+			}
+			ReadVec3(colliderNode["Offset"], collider.Offset);
+			ReadVec3(colliderNode["HalfExtents"], collider.HalfExtents);
+			Read(colliderNode, "Radius", collider.Radius);
+			Read(colliderNode, "HalfHeight", collider.HalfHeight);
+			Read(colliderNode, "Friction", collider.Friction);
+			Read(colliderNode, "Restitution", collider.Restitution);
+			Read(colliderNode, "IsTrigger", collider.IsTrigger);
+		}
+		if (YAML::Node bodyNode = node["RigidBody"])
+		{
+			RigidBodyComponent& body = scene.Add<RigidBodyComponent>(entity);
+			const std::string type = bodyNode["Type"].as<std::string>("Dynamic");
+			for (RigidBodyComponent::BodyType t : { RigidBodyComponent::BodyType::Static, RigidBodyComponent::BodyType::Dynamic,
+				RigidBodyComponent::BodyType::Kinematic })
+			{
+				if (type == RigidBodyComponent::GetTypeName(t))
+				{
+					body.Type = t;
+				}
+			}
+			Read(bodyNode, "Mass", body.Mass);
+			Read(bodyNode, "LinearDamping", body.LinearDamping);
+			Read(bodyNode, "AngularDamping", body.AngularDamping);
+			Read(bodyNode, "GravityFactor", body.GravityFactor);
+			if (YAML::Node locks = bodyNode["LockRotation"]; locks && locks.IsSequence() && locks.size() == 3)
+			{
+				body.LockRotationX = locks[0].as<bool>();
+				body.LockRotationY = locks[1].as<bool>();
+				body.LockRotationZ = locks[2].as<bool>();
+			}
+			Read(bodyNode, "ContinuousCollision", body.ContinuousCollision);
+		}
+		if (YAML::Node characterNode = node["CharacterController"])
+		{
+			CharacterControllerComponent& character = scene.Add<CharacterControllerComponent>(entity);
+			Read(characterNode, "Height", character.Height);
+			Read(characterNode, "Radius", character.Radius);
+			ReadVec3(characterNode["Offset"], character.Offset);
+			Read(characterNode, "MaxSlopeDegrees", character.MaxSlopeDegrees);
+			Read(characterNode, "StepHeight", character.StepHeight);
+			Read(characterNode, "Mass", character.Mass);
+			Read(characterNode, "PushStrength", character.PushStrength);
+		}
+		if (YAML::Node scriptNode = node["Script"]; scriptNode && scriptNode.IsMap())
+		{
+			ReadScript(scriptNode, scene.Add<ScriptComponent>(entity));
+		}
+		if (YAML::Node sourceNode = node["AudioSource"]; sourceNode && sourceNode.IsMap())
+		{
+			AudioSourceComponent& source = scene.Add<AudioSourceComponent>(entity);
+			source.Clip = ProjectPaths::Resolve(sourceNode["Clip"].as<std::string>(""));
+			if (!FindAudioBus(sourceNode["Bus"].as<std::string>("Effects").c_str(), source.Bus))
+			{
+				source.Bus = AudioBus::Effects;
+			}
+			Read(sourceNode, "Volume", source.Volume);
+			Read(sourceNode, "Pitch", source.Pitch);
+			Read(sourceNode, "Loop", source.Loop);
+			Read(sourceNode, "PlayOnStart", source.PlayOnStart);
+			Read(sourceNode, "Stream", source.Stream);
+			Read(sourceNode, "Spatial", source.Spatial);
+			Read(sourceNode, "MinDistance", source.MinDistance);
+			Read(sourceNode, "MaxDistance", source.MaxDistance);
+		}
+		if (YAML::Node listenerNode = node["AudioListener"]; listenerNode && listenerNode.IsMap())
+		{
+			Read(listenerNode, "Active", scene.Add<AudioListenerComponent>(entity).Active);
+		}
+		if (YAML::Node prefabNode = node["Prefab"]; prefabNode && prefabNode.IsMap())
+		{
+			PrefabComponent& prefab = scene.Add<PrefabComponent>(entity);
+			prefab.File = ProjectPaths::Resolve(prefabNode["File"].as<std::string>(""));
+			Read(prefabNode, "PrefabHash", prefab.PrefabHash);
+			Read(prefabNode, "InstanceHash", prefab.InstanceHash);
+		}
+		if (YAML::Node probesNode = node["ProbeVolume"])
+		{
+			EnvMapVulkanProbeVolumeSettings& p = scene.Add<ProbeVolumeComponent>(entity).Settings;
+			Read(probesNode, "Enabled", p.Enabled);
+			if (YAML::Node counts = probesNode["Counts"]; counts && counts.IsSequence() && counts.size() == 3)
+			{
+				p.Counts = glm::ivec3(counts[0].as<int>(), counts[1].as<int>(), counts[2].as<int>());
+			}
+			Read(probesNode, "NormalBias", p.NormalBias);
+			Read(probesNode, "ViewBias", p.ViewBias);
+			Read(probesNode, "AutoUpdate", p.AutoUpdate);
+			Read(probesNode, "ProbesPerFrame", p.ProbesPerFrame);
+			Read(probesNode, "TracedProbesPerFrame", p.TracedProbesPerFrame);
+			Read(probesNode, "RaysPerProbe", p.RaysPerProbe);
+			Read(probesNode, "Hysteresis", p.Hysteresis);
+			Read(probesNode, "RelocateProbes", p.RelocateProbes);
+			Read(probesNode, "OccludeReflections", p.OccludeReflections);
+			Read(probesNode, "ShowProbes", p.ShowProbes);
+			Read(probesNode, "ProbeRadius", p.ProbeRadius);
+			Read(probesNode, "Show", p.Show);
+		}
+		if (YAML::Node environmentNode = node["Environment"])
+		{
+			EnvironmentComponent& environment = scene.Add<EnvironmentComponent>(entity);
+			Read(environmentNode, "File", environment.FilePath);
+			environment.FilePath = ProjectPaths::Resolve(environment.FilePath);
+			Read(environmentNode, "Rotation", environment.Rotation);
+			Read(environmentNode, "Exposure", environment.Exposure);
+			Read(environmentNode, "AutoExposure", environment.AutoExposure);
+			Read(environmentNode, "HuePreservation", environment.HuePreservation);
+			Read(environmentNode, "ExtractSun", environment.ExtractSun);
+			Read(environmentNode, "SkyboxLod", environment.SkyboxLod);
+		}
+	}
+
 	bool ReadEditorView(const std::string& filepath, EditorView& view)
 	{
 		try
@@ -448,208 +665,97 @@ namespace EnvMapVulkanSceneSerializer
 				const EnvMapVulkanEntityID id = node["ID"].as<uint64_t>(NoEntity);
 				const EnvMapVulkanEntityID parent = node["Parent"].as<uint64_t>(NoEntity);
 				const EnvMapVulkanEntityID entity = scene.CreateEntity(node["Name"].as<std::string>("Entity"), parent, id);
-				if (YAML::Node tagsNode = node["Tags"]; tagsNode && tagsNode.IsSequence())
-				{
-					TagComponent& tags = scene.Add<TagComponent>(entity);
-					for (const YAML::Node& tag : tagsNode)
-					{
-						tags.Add(tag.as<std::string>(""));
-					}
-				}
-
-				if (YAML::Node transformNode = node["Transform"])
-				{
-					TransformComponent& transform = scene.Get<TransformComponent>(entity);
-					ReadVec3(transformNode["Translation"], transform.Translation);
-					ReadVec3(transformNode["Rotation"], transform.Rotation);
-					ReadVec3(transformNode["Scale"], transform.Scale);
-				}
-				if (YAML::Node modelNode = node["Model"])
-				{
-					scene.Add<ModelComponent>(entity).FilePath = ProjectPaths::Resolve(modelNode["File"].as<std::string>(""));
-				}
-				if (YAML::Node partNode = node["MeshPart"])
-				{
-					MeshPartComponent& part = scene.Add<MeshPartComponent>(entity);
-					part.SourceMeshIndex = partNode["SourceMeshIndex"].as<uint32_t>(0);
-					part.MeshIndex = part.SourceMeshIndex; // the caller sets it once the model's meshes are known
-					if (YAML::Node materialNode = partNode["Material"])
-					{
-						materialRefs[entity] = { materialNode["ID"].as<uint64_t>(0), ProjectPaths::Resolve(materialNode["File"].as<std::string>("")) };
-					}
-				}
-				if (YAML::Node sunNode = node["Sun"])
-				{
-					SunComponent& sun = scene.Add<SunComponent>(entity);
-					Read(sunNode, "Enabled", sun.Enabled);
-					ReadVec3(sunNode["Color"], sun.Color);
-					Read(sunNode, "Intensity", sun.Intensity);
-					Read(sunNode, "FollowEnvironmentRotation", sun.FollowEnvironmentRotation);
-					Read(sunNode, "CastShadows", sun.CastShadows);
-					Read(sunNode, "IconPlaced", sun.IconPlaced);
-				}
-				if (YAML::Node lightNode = node["PointLight"])
-				{
-					PointLightComponent& light = scene.Add<PointLightComponent>(entity);
-					Read(lightNode, "Enabled", light.Enabled);
-					ReadVec3(lightNode["Color"], light.Color);
-					Read(lightNode, "Intensity", light.Intensity);
-					Read(lightNode, "Range", light.Range);
-					Read(lightNode, "CastShadows", light.CastShadows);
-				}
-				if (YAML::Node lightNode = node["SpotLight"])
-				{
-					SpotLightComponent& light = scene.Add<SpotLightComponent>(entity);
-					Read(lightNode, "Enabled", light.Enabled);
-					ReadVec3(lightNode["Color"], light.Color);
-					Read(lightNode, "Intensity", light.Intensity);
-					Read(lightNode, "Range", light.Range);
-					Read(lightNode, "InnerAngle", light.InnerAngle);
-					Read(lightNode, "OuterAngle", light.OuterAngle);
-					Read(lightNode, "CastShadows", light.CastShadows);
-				}
-				if (YAML::Node waterNode = node["Water"])
-				{
-					WaterComponent& water = scene.Add<WaterComponent>(entity);
-					ReadWater(waterNode, water.Settings);
-				}
-				if (YAML::Node cameraNode = node["Camera"])
-				{
-					// Scenes saved before 6.3: the one camera, primary, with the planes every view had
-					CameraComponent& camera = scene.Add<CameraComponent>(entity);
-					Read(cameraNode, "Primary", camera.Primary);
-					Read(cameraNode, "FieldOfView", camera.FieldOfView); // scenes saved before the camera had a lens: 45
-					Read(cameraNode, "NearClip", camera.NearClip);
-					Read(cameraNode, "FarClip", camera.FarClip);
-				}
-				if (YAML::Node testNode = node["InputTest"])
-				{
-					InputTestComponent& test = scene.Add<InputTestComponent>(entity);
-					Read(testNode, "Speed", test.Speed);
-					Read(testNode, "JumpSpeed", test.JumpSpeed);
-					Read(testNode, "Gravity", test.Gravity);
-					Read(testNode, "TurnSpeed", test.TurnSpeed);
-					Read(testNode, "CaptureMouse", test.CaptureMouse);
-				}
-				if (YAML::Node colliderNode = node["Collider"])
-				{
-					ColliderComponent& collider = scene.Add<ColliderComponent>(entity);
-					const std::string shape = colliderNode["Shape"].as<std::string>("Box");
-					for (ColliderComponent::Shape s : { ColliderComponent::Shape::Box, ColliderComponent::Shape::Sphere, ColliderComponent::Shape::Capsule,
-						ColliderComponent::Shape::ConvexMesh, ColliderComponent::Shape::TriangleMesh })
-					{
-						if (shape == ColliderComponent::GetShapeName(s))
-						{
-							collider.Type = s;
-						}
-					}
-					ReadVec3(colliderNode["Offset"], collider.Offset);
-					ReadVec3(colliderNode["HalfExtents"], collider.HalfExtents);
-					Read(colliderNode, "Radius", collider.Radius);
-					Read(colliderNode, "HalfHeight", collider.HalfHeight);
-					Read(colliderNode, "Friction", collider.Friction);
-					Read(colliderNode, "Restitution", collider.Restitution);
-					Read(colliderNode, "IsTrigger", collider.IsTrigger);
-				}
-				if (YAML::Node bodyNode = node["RigidBody"])
-				{
-					RigidBodyComponent& body = scene.Add<RigidBodyComponent>(entity);
-					const std::string type = bodyNode["Type"].as<std::string>("Dynamic");
-					for (RigidBodyComponent::BodyType t : { RigidBodyComponent::BodyType::Static, RigidBodyComponent::BodyType::Dynamic,
-						RigidBodyComponent::BodyType::Kinematic })
-					{
-						if (type == RigidBodyComponent::GetTypeName(t))
-						{
-							body.Type = t;
-						}
-					}
-					Read(bodyNode, "Mass", body.Mass);
-					Read(bodyNode, "LinearDamping", body.LinearDamping);
-					Read(bodyNode, "AngularDamping", body.AngularDamping);
-					Read(bodyNode, "GravityFactor", body.GravityFactor);
-					if (YAML::Node locks = bodyNode["LockRotation"]; locks && locks.IsSequence() && locks.size() == 3)
-					{
-						body.LockRotationX = locks[0].as<bool>();
-						body.LockRotationY = locks[1].as<bool>();
-						body.LockRotationZ = locks[2].as<bool>();
-					}
-					Read(bodyNode, "ContinuousCollision", body.ContinuousCollision);
-				}
-				if (YAML::Node characterNode = node["CharacterController"])
-				{
-					CharacterControllerComponent& character = scene.Add<CharacterControllerComponent>(entity);
-					Read(characterNode, "Height", character.Height);
-					Read(characterNode, "Radius", character.Radius);
-					ReadVec3(characterNode["Offset"], character.Offset);
-					Read(characterNode, "MaxSlopeDegrees", character.MaxSlopeDegrees);
-					Read(characterNode, "StepHeight", character.StepHeight);
-					Read(characterNode, "Mass", character.Mass);
-					Read(characterNode, "PushStrength", character.PushStrength);
-				}
-				if (YAML::Node scriptNode = node["Script"]; scriptNode && scriptNode.IsMap())
-				{
-					ReadScript(scriptNode, scene.Add<ScriptComponent>(entity));
-				}
-				if (YAML::Node sourceNode = node["AudioSource"]; sourceNode && sourceNode.IsMap())
-				{
-					AudioSourceComponent& source = scene.Add<AudioSourceComponent>(entity);
-					source.Clip = ProjectPaths::Resolve(sourceNode["Clip"].as<std::string>(""));
-					if (!FindAudioBus(sourceNode["Bus"].as<std::string>("Effects").c_str(), source.Bus))
-					{
-						source.Bus = AudioBus::Effects;
-					}
-					Read(sourceNode, "Volume", source.Volume);
-					Read(sourceNode, "Pitch", source.Pitch);
-					Read(sourceNode, "Loop", source.Loop);
-					Read(sourceNode, "PlayOnStart", source.PlayOnStart);
-					Read(sourceNode, "Stream", source.Stream);
-					Read(sourceNode, "Spatial", source.Spatial);
-					Read(sourceNode, "MinDistance", source.MinDistance);
-					Read(sourceNode, "MaxDistance", source.MaxDistance);
-				}
-				if (YAML::Node listenerNode = node["AudioListener"]; listenerNode && listenerNode.IsMap())
-				{
-					Read(listenerNode, "Active", scene.Add<AudioListenerComponent>(entity).Active);
-				}
-				if (YAML::Node probesNode = node["ProbeVolume"])
-				{
-					EnvMapVulkanProbeVolumeSettings& p = scene.Add<ProbeVolumeComponent>(entity).Settings;
-					Read(probesNode, "Enabled", p.Enabled);
-					if (YAML::Node counts = probesNode["Counts"]; counts && counts.IsSequence() && counts.size() == 3)
-					{
-						p.Counts = glm::ivec3(counts[0].as<int>(), counts[1].as<int>(), counts[2].as<int>());
-					}
-					Read(probesNode, "NormalBias", p.NormalBias);
-					Read(probesNode, "ViewBias", p.ViewBias);
-					Read(probesNode, "AutoUpdate", p.AutoUpdate);
-					Read(probesNode, "ProbesPerFrame", p.ProbesPerFrame);
-					Read(probesNode, "TracedProbesPerFrame", p.TracedProbesPerFrame);
-					Read(probesNode, "RaysPerProbe", p.RaysPerProbe);
-					Read(probesNode, "Hysteresis", p.Hysteresis);
-					Read(probesNode, "RelocateProbes", p.RelocateProbes);
-					Read(probesNode, "OccludeReflections", p.OccludeReflections);
-					Read(probesNode, "ShowProbes", p.ShowProbes);
-					Read(probesNode, "ProbeRadius", p.ProbeRadius);
-					Read(probesNode, "Show", p.Show);
-				}
-				if (YAML::Node environmentNode = node["Environment"])
-				{
-					EnvironmentComponent& environment = scene.Add<EnvironmentComponent>(entity);
-					Read(environmentNode, "File", environment.FilePath);
-					environment.FilePath = ProjectPaths::Resolve(environment.FilePath);
-					Read(environmentNode, "Rotation", environment.Rotation);
-					Read(environmentNode, "Exposure", environment.Exposure);
-					Read(environmentNode, "AutoExposure", environment.AutoExposure);
-					Read(environmentNode, "HuePreservation", environment.HuePreservation);
-					Read(environmentNode, "ExtractSun", environment.ExtractSun);
-					Read(environmentNode, "SkyboxLod", environment.SkyboxLod);
-				}
+				ReadComponents(node, scene, entity, materialRefs);
 			}
 		}
 		catch (const std::exception& e)
 		{
 			error = std::string("an entity could not be read: ") + e.what();
 			return false;
+		}
+		return true;
+	}
+
+	std::string SerializePrefab(EnvMapVulkanScene& prefab, const std::string& name)
+	{
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Prefab" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "Version" << YAML::Value << 1;
+		out << YAML::Key << "Name" << YAML::Value << name;
+		out << YAML::EndMap;
+		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+		for (EnvMapVulkanEntityID root : prefab.GetRoots())
+		{
+			WriteEntity(out, prefab, root);
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
+		return std::string(out.c_str()) + "\n";
+	}
+
+	bool DeserializePrefab(const std::string& filepath, EnvMapVulkanScene& scene, EnvMapVulkanEntityID parent,
+		const std::function<EnvMapVulkanEntityID(size_t)>& newId, std::unordered_map<EnvMapVulkanEntityID, MaterialRef>& materialRefs,
+		std::vector<EnvMapVulkanEntityID>& created, std::string& error)
+	{
+		created.clear();
+		YAML::Node root;
+		try
+		{
+			root = YAML::LoadFile(filepath);
+		}
+		catch (const std::exception& e)
+		{
+			error = e.what();
+			return false;
+		}
+		if (!root["Prefab"] || !root["Entities"] || !root["Entities"].IsSequence() || root["Entities"].size() == 0)
+		{
+			error = "not a prefab file (no Prefab and Entities)";
+			return false;
+		}
+		std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanEntityID> newOf; // the file's IDs: the new ones
+		try
+		{
+			for (const YAML::Node& node : root["Entities"])
+			{
+				const EnvMapVulkanEntityID fileId = node["ID"].as<uint64_t>(NoEntity);
+				const EnvMapVulkanEntityID fileParent = node["Parent"].as<uint64_t>(NoEntity);
+				auto parentIt = newOf.find(fileParent);
+				const EnvMapVulkanEntityID entityParent = created.empty() || parentIt == newOf.end() ? parent : parentIt->second;
+				const EnvMapVulkanEntityID entity = scene.CreateEntity(node["Name"].as<std::string>("Entity"), entityParent,
+					newId ? newId(created.size()) : NoEntity);
+				newOf[fileId] = entity;
+				created.push_back(entity);
+				ReadComponents(node, scene, entity, materialRefs);
+			}
+		}
+		catch (const std::exception& e)
+		{
+			if (!created.empty())
+			{
+				scene.DestroyEntity(created.front());
+			}
+			created.clear();
+			error = std::string("an entity could not be read: ") + e.what();
+			return false;
+		}
+		// References between the prefab's entities: to their new IDs
+		for (EnvMapVulkanEntityID entity : created)
+		{
+			if (ScriptComponent* script = scene.TryGet<ScriptComponent>(entity))
+			{
+				for (ScriptComponent::Field& field : script->Fields)
+				{
+					if (field.Value.Type == ScriptFieldType::Entity)
+					{
+						if (auto it = newOf.find(field.Value.Entity); it != newOf.end())
+						{
+							field.Value.Entity = it->second;
+						}
+					}
+				}
+			}
 		}
 		return true;
 	}

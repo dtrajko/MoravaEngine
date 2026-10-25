@@ -408,6 +408,27 @@ bool CanBeDeleted(EntityKind kind);
 // a light or the water right away. A model's last mesh takes the model with it (see EditorPreFrame).
 void DeleteEntity(EnvMapVulkanEntityID entity);
 
+// ---- Prefabs (EditorPrefabs.cpp, 6.1): requests done at the start of the next frame (ProcessPrefabOperations)
+enum class PrefabOperation { Save, Place, Apply, Revert, Unpack };
+// Save: the entity as the file (it becomes an instance); Place: the file as a new instance at position (none: where the
+// camera looks); Apply, Revert, Unpack: the instance whose root is the entity
+void RequestPrefabOperation(PrefabOperation kind, EnvMapVulkanEntityID entity, const std::string& file = std::string(),
+	std::optional<glm::vec3> position = std::nullopt);
+void ProcessPrefabOperations();
+// After a scene opened: the instances of changed prefabs that didn't change themselves take the prefab's new content
+void UpdatePrefabInstancesOfOpenedScene();
+bool IsPrefabFile(const std::string& path);
+// The root of the instance the entity is in (itself, or a parent with a PrefabComponent); NoEntity: none
+EnvMapVulkanEntityID FindPrefabInstanceRoot(EnvMapVulkanEntityID entity);
+// The project's Assets/Prefabs (empty: no project); a free file name there for an entity's prefab
+std::string GetPrefabsFolder();
+std::string GetNewPrefabFile(const std::string& folder, const std::string& entityName);
+void SaveAsPrefabWithDialog(EnvMapVulkanEntityID entity);
+// The Inspector's Prefab section (EditorInspectorPanel.cpp): the instance's prefab, its state, Apply, Revert, Unpack
+void PrefabControls(EnvMapVulkanEntityID entity);
+// The Content Browser (EditorContentBrowser.cpp)
+void OnImGuiRenderContentBrowser();
+
 // A sound alone (Scene Hierarchy: Add > Sound): an entity with an Audio Source where the camera looks, selected
 void AddSoundAtView();
 
@@ -462,6 +483,8 @@ void UpdateSceneUnsavedChanges();
 
 // File menu: Save (Save As for a scene never saved), Save As (asks for the file)
 void SaveScene();
+// --save-scene: the open scene to its file, at exit (never a dialog)
+void SaveSceneOnExit();
 void SaveSceneAs();
 
 // ---- Viewport (EditorViewport.cpp)

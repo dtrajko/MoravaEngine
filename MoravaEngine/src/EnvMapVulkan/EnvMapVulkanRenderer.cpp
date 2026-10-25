@@ -5,6 +5,8 @@
  */
 
 #include "EnvMapVulkanRenderer.h"
+
+#include "EnvMapVulkanPrefab.h"
 #include "EnvMapVulkanLights.h"
 #include "EnvMapVulkanShadows.h"
 #include "EnvMapVulkanMaterialLibrary.h"
@@ -1660,6 +1662,7 @@ void EnvMapVulkanRenderer::Init()
 
 	// The scene (EnvMapVulkanScene): its operations are checked once at startup
 	EnvMapVulkanScene::SelfTest();
+	EnvMapVulkanPrefab::SelfTest();
 
 	/**** BEGIN code moved from VulkanTestLayer to VulkanRenderer ****/
 	H2M::RenderPassSpecificationH2M renderPassSpec;

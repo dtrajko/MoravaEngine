@@ -362,6 +362,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000112
     Name: Cube
     Parent: 7310000000000000111
@@ -407,6 +408,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000114
     Name: Cube
     Parent: 7310000000000000113
@@ -452,6 +454,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000116
     Name: Cube
     Parent: 7310000000000000115
@@ -497,6 +500,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000118
     Name: Cube
     Parent: 7310000000000000117
@@ -542,6 +546,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000120
     Name: Cube
     Parent: 7310000000000000119
@@ -587,6 +592,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000122
     Name: Cube
     Parent: 7310000000000000121
@@ -632,6 +638,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000124
     Name: Cube
     Parent: 7310000000000000123
@@ -677,6 +684,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000126
     Name: Cube
     Parent: 7310000000000000125
@@ -722,6 +730,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000128
     Name: Cube
     Parent: 7310000000000000127
@@ -767,6 +776,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000130
     Name: Cube
     Parent: 7310000000000000129
@@ -812,6 +822,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000132
     Name: Cube
     Parent: 7310000000000000131
@@ -857,6 +868,7 @@ Entities:
       Spatial: true
       MinDistance: 0.5
       MaxDistance: 8
+    Prefab: {File: Assets/Prefabs/Pickup.mprefab, PrefabHash: 11083392821953790082, InstanceHash: 2502613046361386522}
   - ID: 7310000000000000134
     Name: Cube
     Parent: 7310000000000000133

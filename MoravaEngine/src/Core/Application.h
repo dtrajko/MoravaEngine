@@ -43,6 +43,7 @@ struct ApplicationCommandLine
 	std::string SelectName;        // --select <name>: the entity of this name is selected once the startup scene is open
 	bool Play = false;             // --play: the editor starts the game (Play) once the startup scene is open
 	bool Simulate = false;         // --simulate: the editor starts Simulate (physics only) once the startup scene is open
+	bool SaveScene = false;        // --save-scene: the editor saves the open scene when it closes (after a Play's Stop)
 
 	static ApplicationCommandLine Parse(int argc, char** argv);
 };

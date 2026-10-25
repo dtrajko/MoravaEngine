@@ -1348,6 +1348,7 @@ void OnImGuiRenderInspector()
 		}
 	}
 	ImGui::Separator();
+	PrefabControls(entity); // an instance's root, or a part of one
 
 	switch (kind)
 	{

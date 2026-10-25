@@ -4,7 +4,9 @@
 
 #include "entt.hpp"
 
+#include <functional>
 #include <unordered_map>
+#include <vector>
 
 
 /**
@@ -35,6 +37,16 @@ public:
 	// other), in the same hierarchy, with a copy of every component of SceneComponents. The models and materials the
 	// components refer to are shared, not loaded again.
 	void CopyFrom(const EnvMapVulkanScene& other);
+	// A copy of an entity and its descendants (of another scene, or of this one) under parent, as its last child: every
+	// component of SceneComponents copied (models and materials shared), the hierarchy's order kept. Each copy's ID is
+	// newId(i), i counting the copies in the hierarchy's order from 0 (the root), or a new random one when newId returns
+	// NoEntity or an ID in use. Script fields that point inside the subtree point at the copies. Returns the root's copy;
+	// copies (when given) gets each source entity's copy.
+	EnvMapVulkanEntityID CopySubtree(const EnvMapVulkanScene& from, EnvMapVulkanEntityID root, EnvMapVulkanEntityID parent,
+		const std::function<EnvMapVulkanEntityID(size_t)>& newId = nullptr,
+		std::unordered_map<EnvMapVulkanEntityID, EnvMapVulkanEntityID>* copies = nullptr);
+	// The entity and its descendants in the hierarchy's order (the root first, each entity before its children)
+	std::vector<EnvMapVulkanEntityID> GetSubtree(EnvMapVulkanEntityID root) const;
 
 	bool Exists(EnvMapVulkanEntityID id) const { return m_Entities.find(id) != m_Entities.end(); }
 	size_t GetEntityCount() const { return m_Entities.size(); }

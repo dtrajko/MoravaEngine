@@ -303,6 +303,16 @@ struct AudioListenerComponent
 	bool Active = true;
 };
 
+// The root of a placed prefab (docs/engine/Game_Engine_Runtime_Guide.html, 6.1): the prefab file it came from, and what
+// it was when it last matched it, to tell what changed since (EnvMapVulkanPrefab). The root's translation and rotation
+// are the instance's own (where it is placed); the rest of the instance is the prefab's
+struct PrefabComponent
+{
+	std::string File;            // absolute here, relative to the project in the scene file (an asset handle from Phase 8)
+	uint64_t PrefabHash = 0;     // the prefab file's content when the instance last matched it
+	uint64_t InstanceHash = 0;   // the instance's own content then (EnvMapVulkanPrefab::GetInstanceHash)
+};
+
 // A list of component types, for code that does the same for each (EnvMapVulkanScene::CopyFrom):
 // ComponentList<A, B>::ForEach([](auto type) { using T = typename decltype(type)::Type; ... });
 template<typename T>
@@ -325,4 +335,4 @@ struct ComponentList
 // component is added here too (Phase 3 on: rigid bodies, scripts, sounds...), or a copied scene (Play) goes without it.
 using SceneComponents = ComponentList<NameComponent, TagComponent, HierarchyComponent, TransformComponent, ModelComponent, MeshPartComponent,
 	SunComponent, PointLightComponent, SpotLightComponent, WaterComponent, ProbeVolumeComponent, CameraComponent, EnvironmentComponent, InputTestComponent,
-	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent>;
+	ColliderComponent, RigidBodyComponent, CharacterControllerComponent, ScriptComponent, AudioSourceComponent, AudioListenerComponent, PrefabComponent>;

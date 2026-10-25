@@ -854,14 +854,19 @@ void OnImGuiRenderViewport()
 		}
 
 		ImVec2 imageMax(s_ViewportImageMin.x + s_ViewportImageSize.x, s_ViewportImageMin.y + s_ViewportImageSize.y);
-		auto isSceneFile = [](const std::string& path) { return EnvMapVulkanSceneLoader::IsModelFile(path) || IsEnvironmentMapFile(path); };
+		auto isSceneFile = [](const std::string& path) { return EnvMapVulkanSceneLoader::IsModelFile(path) || IsEnvironmentMapFile(path) || IsPrefabFile(path); };
 		std::string droppedPath;
-		if (AcceptFileDrop(s_ViewportImageMin, imageMax, isSceneFile, "a model file or an .hdr environment map", droppedPath))
+		if (AcceptFileDrop(s_ViewportImageMin, imageMax, isSceneFile, "a model file, a prefab or an .hdr environment map", droppedPath))
 		{
 			// loaded at the start of the next frame (see EditorPreFrame)
 			if (IsEnvironmentMapFile(droppedPath))
 			{
 				RequestEnvironmentMap(droppedPath);
+			}
+			else if (IsPrefabFile(droppedPath))
+			{
+				// Placed on the ground under the cursor (its root's origin there)
+				RequestPrefabOperation(PrefabOperation::Place, NoEntity, droppedPath, GetDropGroundPosition(ndc.x, ndc.y));
 			}
 			else
 			{

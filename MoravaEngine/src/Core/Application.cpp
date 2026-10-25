@@ -67,6 +67,8 @@ Application* Application::Get()
 //   --play                  the editor starts the game (Play) once the scene is open; with --exit-after it is stopped
 //                           at exit, which checks that the edited scene came back unchanged (the player always plays)
 //   --simulate              the same with Simulate: physics only, seen through the editor's camera
+//   --save-scene            the editor saves the open scene to its file when it closes: with --exit-after, a scene opened
+//                           and saved unattended (what opening it changed: prefab links, a newer file format)
 ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 {
 	ApplicationCommandLine commandLine;
@@ -125,6 +127,10 @@ ApplicationCommandLine ApplicationCommandLine::Parse(int argc, char** argv)
 		else if (option == "--simulate")
 		{
 			commandLine.Simulate = true;
+		}
+		else if (option == "--save-scene")
+		{
+			commandLine.SaveScene = true;
 		}
 		else if (option == "--project" || option == "--scene" || option == "--exit-after" || option == "--debug-view" || option == "--select")
 		{
